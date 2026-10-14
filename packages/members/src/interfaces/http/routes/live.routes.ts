@@ -1,5 +1,4 @@
 import { ForbiddenError } from '@sistemazero/core/http'
-import type { InteractiveBlock } from '@sistemazero/core/learning'
 import { Elysia, t } from 'elysia'
 import type { LiveService } from '../../../application/live/live.service'
 import type { LiveActor } from '../../../domain/ports/live-repository.port'
@@ -22,23 +21,12 @@ export interface LiveRoutesDeps {
 const uuid = () => t.String({ format: 'uuid' })
 const integer = (minimum: number, maximum: number) => t.Number({ minimum, maximum, multipleOf: 1 })
 const idParams = t.Object({ id: uuid() })
+const audience = t.Union([t.Literal('adult'), t.Literal('kids')])
 const catalogQuery = t.Object({
   cursor: t.Optional(uuid()),
   limit: t.Optional(t.Numeric({ minimum: 1, maximum: 50, multipleOf: 1 })),
-})
-/** Same knobs as the recorded lesson Studio block; undeclared fields would be dropped. */
-const studio = t.Object({
-  level: t.Optional(t.String({ minLength: 1, maxLength: 40 })),
-  allowBlocks: t.Optional(t.Array(t.String({ minLength: 1, maxLength: 160 }), { maxItems: 3000 })),
-  allowCategories: t.Optional(t.Array(t.String({ minLength: 1, maxLength: 80 }), { maxItems: 80 })),
-  allowedModes: t.Optional(
-    t.Array(t.Union([t.Literal('blocks'), t.Literal('bridge'), t.Literal('code')]), {
-      minItems: 1,
-      maxItems: 3,
-      uniqueItems: true,
-    }),
-  ),
-  allowLevelReveal: t.Optional(t.Boolean()),
+  /** The course platform (Kids × adults). Admin filters its management by it. */
+  audience: t.Optional(audience),
 })
 const teacherIds = t.Array(uuid(), { minItems: 1, maxItems: 4, uniqueItems: true })
 const teacherNames = t.Record(
@@ -48,45 +36,6 @@ const teacherNames = t.Record(
     maxProperties: 4,
   },
 )
-const lesson = t.Object({
-  title: t.String({ minLength: 1, maxLength: 160 }),
-  instructions: t.String({ minLength: 1, maxLength: 24_000 }),
-  starterProjectId: t.Union([uuid(), t.Null()]),
-  continueProjectFrom: t.Optional(t.Union([integer(0, 23), t.Null()])),
-  materials: t.Array(
-    t.Object({
-      id: uuid(),
-      title: t.String({ minLength: 1, maxLength: 160 }),
-      storageKey: t.String({ minLength: 1, maxLength: 1000 }),
-      fileName: t.String({ minLength: 1, maxLength: 200 }),
-    }),
-    { maxItems: 30 },
-  ),
-  steps: t.Optional(
-    t.Array(
-      t.Object({
-        id: uuid(),
-        title: t.String({ minLength: 1, maxLength: 160 }),
-        instructions: t.String({ maxLength: 10_000 }),
-        blocks: t.Array(
-          t.Object({
-            id: uuid(),
-            revision: uuid(),
-            content: t.Unsafe<InteractiveBlock>(t.Unknown()),
-          }),
-          { maxItems: 12 },
-        ),
-      }),
-      { maxItems: 24 },
-    ),
-  ),
-  studio: t.Optional(t.Union([studio, t.Null()])),
-})
-const programFields = {
-  title: t.String({ minLength: 1, maxLength: 160 }),
-  description: t.String({ minLength: 1, maxLength: 4000 }),
-  lessons: t.Array(lesson, { minItems: 1, maxItems: 24 }),
-}
 const status = t.Union([
   t.Literal('draft'),
   t.Literal('open'),
@@ -95,7 +44,8 @@ const status = t.Union([
 ])
 const speakingMode = t.Union([t.Literal('open'), t.Literal('turns'), t.Literal('listen')])
 const control = t.Union([
-  t.Object({ kind: t.Literal('suggest-step'), stepId: t.Union([uuid(), t.Null()]) }),
+  /** The teacher opens a part of the published lesson and makes it current (only while live). */
+  t.Object({ kind: t.Literal('open-section'), sectionId: uuid() }),
   t.Object({
     kind: t.Union([
       t.Literal('start'),
@@ -211,10 +161,10 @@ export function liveRoutes(deps: LiveRoutesDeps) {
     )
     .get(
       '/sessions/:id',
-      ({ headers, params, query }) =>
-        deps.live.room(resolveLiveActor(headers), params.id, query.planRevision),
+      ({ headers, params }) => deps.live.room(resolveLiveActor(headers), params.id),
       {
         params: idParams,
+        // `planRevision` was the old script cache key: still accepted from older rooms, ignored.
         query: t.Object({ planRevision: t.Optional(t.String({ pattern: '^[a-f0-9]{64}$' })) }),
       },
     )
@@ -226,20 +176,30 @@ export function liveRoutes(deps: LiveRoutesDeps) {
     .post(
       '/sessions/:id/heartbeat',
       ({ headers, params, body }) =>
-        deps.live.heartbeat(resolveLiveActor(headers), params.id, body.deviceId, body.activity),
+        deps.live.heartbeat(
+          resolveLiveActor(headers),
+          params.id,
+          body.deviceId,
+          body.activity && { ...body.activity, stepId: body.activity.stepId ?? null },
+        ),
       {
         params: idParams,
         body: t.Object({
           deviceId: uuid(),
           activity: t.Optional(
             t.Object({
-              stepId: t.Union([uuid(), t.Null()]),
+              /** Old script steps: only `null` is valid now (kept for older rooms). */
+              stepId: t.Optional(t.Union([uuid(), t.Null()])),
               saveState: t.Union([
                 t.Literal('not-open'),
                 t.Literal('saving'),
                 t.Literal('saved'),
                 t.Literal('offline'),
               ]),
+              /** The part of the published lesson the child is in. */
+              sectionId: t.Optional(t.Union([uuid(), t.Null()])),
+              /** Parts she completed (the lesson progress), for the teacher's cards. */
+              completedSectionIds: t.Optional(t.Array(uuid(), { maxItems: 60, uniqueItems: true })),
             }),
           ),
         }),
@@ -287,12 +247,6 @@ export function liveRoutes(deps: LiveRoutesDeps) {
       },
     )
     .get(
-      '/sessions/:id/materials/:materialId/download',
-      ({ headers, params }) =>
-        deps.live.material(resolveLiveActor(headers), params.id, params.materialId),
-      { params: t.Object({ id: uuid(), materialId: uuid() }) },
-    )
-    .get(
       '/sessions/:id/recording',
       ({ headers, params, query }) =>
         deps.live.recording(resolveLiveActor(headers), params.id, query.occurrenceId),
@@ -321,7 +275,7 @@ export function liveRoutes(deps: LiveRoutesDeps) {
       assertNoLiveSupportWrite(headers, request.method)
       if (
         request.method !== 'GET' &&
-        !/^\/members\/admin\/live\/sessions\/[\da-f-]+\/(recording\/publish|occurrences)$/.test(
+        !/^\/members\/admin\/live\/(sessions\/[\da-f-]+\/(recording\/publish|occurrences)|occurrences\/[\da-f-]+\/recording\/vimeo)$/.test(
           new URL(request.url).pathname,
         ) &&
         !['superadmin', 'admin'].includes(headers['x-auth-user-role'] ?? '')
@@ -334,38 +288,13 @@ export function liveRoutes(deps: LiveRoutesDeps) {
       { query: catalogQuery },
     )
     .post(
-      '/programs',
-      ({ headers, body, set }) => {
-        set.status = 201
-        return deps.live.createProgram(resolveLiveActor(headers), body)
-      },
-      { body: t.Object(programFields) },
-    )
-    .patch(
-      '/programs/:id',
-      ({ headers, params, body }) =>
-        deps.live.updateProgram(resolveLiveActor(headers), params.id, body),
-      {
-        params: idParams,
-        body: t.Object({
-          title: t.Optional(programFields.title),
-          description: t.Optional(programFields.description),
-          lessons: t.Optional(programFields.lessons),
-          expectedRevision: integer(1, Number.MAX_SAFE_INTEGER),
-          status: t.Optional(
-            t.Union([t.Literal('draft'), t.Literal('published'), t.Literal('archived')]),
-          ),
-        }),
-      },
-    )
-    .post(
-      '/programs/:id/cohorts',
+      '/courses/:courseId/cohorts',
       ({ headers, params, body, set }) => {
         set.status = 201
-        return deps.live.createCohort(resolveLiveActor(headers), params.id, body)
+        return deps.live.createCohort(resolveLiveActor(headers), params.courseId, body)
       },
       {
-        params: idParams,
+        params: t.Object({ courseId: uuid() }),
         body: t.Object({
           title: t.String({ minLength: 1, maxLength: 160 }),
           timeZone: t.String({ minLength: 1, maxLength: 100 }),
@@ -373,6 +302,7 @@ export function liveRoutes(deps: LiveRoutesDeps) {
           accessDays: integer(1, 366),
           teacherIds,
           teacherNames: t.Optional(teacherNames),
+          // One interval per PUBLISHED lesson of the course, in the course order.
           schedule: t.Array(
             t.Object({
               startsAt: t.String({ format: 'date-time' }),
@@ -443,6 +373,24 @@ export function liveRoutes(deps: LiveRoutesDeps) {
           expectedVersion: integer(0, Number.MAX_SAFE_INTEGER),
           published: t.Boolean(),
           occurrenceId: t.Optional(uuid()),
+        }),
+      },
+    )
+    .get(
+      '/occurrences/:id/recording/source',
+      ({ headers, params }) => deps.live.recordingSource(resolveLiveActor(headers), params.id),
+      { params: idParams },
+    )
+    .put(
+      '/occurrences/:id/recording/vimeo',
+      ({ headers, params, body }) =>
+        deps.live.setRecordingVimeo(resolveLiveActor(headers), params.id, body),
+      {
+        params: idParams,
+        body: t.Object({
+          videoId: t.String({ pattern: '^[0-9]{1,20}$' }),
+          embedUrl: t.String({ minLength: 1, maxLength: 300 }),
+          status: t.Union([t.Literal('processing'), t.Literal('ready'), t.Literal('failed')]),
         }),
       },
     )

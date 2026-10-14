@@ -64,6 +64,9 @@ conferem), `LiveUpdateCohort`, `LiveCohort.teacherNames`, `LiveOccurrence.conduc
 visão da criança) e os estados de gravação `empty` e `unavailable`. ⚠️ Estado novo em
 `LiveRecordingState` quebra quem indexa um objeto de rótulos pelo estado (o member-shell tem um).
 Regras e motivos: `packages/members/CLAUDE.md`, seção das oficinas.
+Cursos ao vivo (lote de 14/10): `LiveRecordingSourceView` (`{ storageKey, bucket, title? }`, o
+bucket REAL do gravador) e `LiveWorkspaceView.studio` (a curadoria do bloco Estúdio da aula
+publicada, na abertura por bloco). Só acréscimos.
 
 ## O que é
 

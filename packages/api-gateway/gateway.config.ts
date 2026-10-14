@@ -1424,6 +1424,44 @@ const config: GatewayConfigInput = {
       transforms: membersInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
+    // Cursos ao vivo (14/10/2026). Gravação revisada: o Admin pede onde está o MP4 (assina a
+    // URL temporária com as credenciais dele) e devolve o vídeo do Vimeo. Equipe da turma (o
+    // members confere professora atribuída ou administração); a escrita é auditada.
+    {
+      id: 'members-live-recording-source',
+      methods: ['GET'],
+      pathPattern: '/members/admin/live/occurrences/:id/recording/source',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'members-live-recording-vimeo',
+      methods: ['PUT'],
+      pathPattern: '/members/admin/live/occurrences/:id/recording/vimeo',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      maxBodyBytes: 4096,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+      audit: {},
+    },
+    // Turma de um curso ao vivo: uma data por aula publicada. Só admin, auditada.
+    {
+      id: 'members-admin-live-course-cohort-create',
+      methods: ['POST'],
+      pathPattern: '/members/admin/live/courses/:courseId/cohorts',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      maxBodyBytes: 65_536,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+      audit: {},
+    },
     {
       id: 'members-admin-live-read',
       methods: ['GET'],

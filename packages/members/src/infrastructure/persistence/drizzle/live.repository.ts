@@ -1,23 +1,35 @@
-import type { LiveProgram } from '@sistemazero/core/live'
-import { and, asc, eq, inArray, sql } from 'drizzle-orm'
-import { LiveAccessError, LiveNotFoundError } from '../../../domain/live/live.errors'
 import type {
+  LiveCohort,
+  LiveEnrollment,
+  LiveOccurrence,
+  LiveSession,
+} from '@sistemazero/core/live'
+import { and, asc, eq, inArray, isNotNull, sql } from 'drizzle-orm'
+import {
+  LiveAccessError,
+  LiveConflictError,
+  LiveNotFoundError,
+} from '../../../domain/live/live.errors'
+import { type LivePresenceRow, overlayPresence } from '../../../domain/live/presence'
+import type {
+  LiveAccessGrant,
   LiveCatalogQuery,
   LiveCohortAggregate,
+  LivePresenceTouch,
   LiveRepository,
-  LiveTransactionReads,
+  LiveRoomRef,
 } from '../../../domain/ports/live-repository.port'
 import type { Database } from './db'
+import { courseModality } from './live-course.repository'
 import {
   accountDeletionFences,
+  courses,
   liveAccessGrants,
   liveAudit,
   liveCohorts,
   liveEnrollments,
-  liveLearningAttempts,
-  liveLearningProgress,
   liveOccurrences,
-  livePrograms,
+  livePresence,
   liveReplayPositions,
   liveSessions,
 } from './schema'
@@ -60,59 +72,112 @@ export async function loadLiveCohort(db: Reader, id: string): Promise<LiveCohort
           endsAt: row.endsAt.toISOString(),
           revokedAt: row.revokedAt?.toISOString() ?? null,
         }))
-  return { cohort, sessions, enrollments, occurrences, grants, audit: [] }
+  const presence =
+    occurrences.length === 0
+      ? []
+      : await db
+          .select()
+          .from(livePresence)
+          .where(
+            inArray(
+              livePresence.occurrenceId,
+              occurrences.map((occurrence) => occurrence.id),
+            ),
+          )
+  return overlayPresence(
+    { cohort, sessions, enrollments, occurrences, grants, audit: [] },
+    presence.map((row) => ({
+      occurrenceId: row.occurrenceId,
+      actorId: row.actorId,
+      seenAt: row.seenAt.toISOString(),
+      activityAt: row.activityAt?.toISOString() ?? null,
+    })),
+  )
 }
 
-function learningProgressOf(db: Reader, sessionId: string, learnerId: string, accountId: string) {
-  return db
-    .select()
-    .from(liveLearningProgress)
-    .where(
-      and(
-        eq(liveLearningProgress.sessionId, sessionId),
-        eq(liveLearningProgress.learnerId, learnerId),
-        eq(liveLearningProgress.accountId, accountId),
-      ),
-    )
-    .then((rows) => rows.map((row) => row.document))
-}
-function learningAttemptOf(
+const iso = (value: string) => new Date(value).toISOString()
+
+/**
+ * The room of ONE encounter in ONE statement (one snapshot, one round trip): the cohort
+ * document, the session, the occurrences of that session, the seats, this session's grants and
+ * the presence rows. Nothing of the other encounters is read.
+ */
+export async function loadLiveRoom(
   db: Reader,
-  sessionId: string,
-  learnerId: string,
-  accountId: string,
-  id: string,
-) {
-  return db
-    .select()
-    .from(liveLearningAttempts)
-    .where(
-      and(
-        eq(liveLearningAttempts.sessionId, sessionId),
-        eq(liveLearningAttempts.learnerId, learnerId),
-        eq(liveLearningAttempts.accountId, accountId),
-        eq(liveLearningAttempts.id, id),
-      ),
-    )
-    .then((rows) => rows[0]?.document ?? null)
+  ref: LiveRoomRef,
+): Promise<LiveCohortAggregate | null> {
+  const session =
+    'sessionId' in ref
+      ? sql`s.id = ${ref.sessionId}::uuid`
+      : sql`s.id = (select o.session_id from members.live_occurrences o where o.id = ${ref.occurrenceId}::uuid)`
+  const rows = await db.execute<{
+    cohort: LiveCohort
+    session: LiveSession
+    occurrences: LiveOccurrence[]
+    enrollments: LiveEnrollment[]
+    grants: (Omit<LiveAccessGrant, 'revokedAt'> & { revokedAt: string | null })[]
+    presence: LivePresenceRow[]
+  }>(sql`
+    select
+      c.document as cohort,
+      s.document as session,
+      coalesce((select jsonb_agg(o.document) from members.live_occurrences o
+        where o.session_id = s.id), '[]'::jsonb) as occurrences,
+      coalesce((select jsonb_agg(e.document) from members.live_enrollments e
+        where e.cohort_id = c.id), '[]'::jsonb) as enrollments,
+      coalesce((select jsonb_agg(jsonb_build_object(
+          'id', g.id, 'enrollmentId', g.enrollment_id, 'sessionId', g.session_id,
+          'startsAt', g.starts_at, 'endsAt', g.ends_at, 'revokedAt', g.revoked_at))
+        from members.live_access_grants g where g.session_id = s.id), '[]'::jsonb) as grants,
+      coalesce((select jsonb_agg(jsonb_build_object(
+          'occurrenceId', p.occurrence_id, 'actorId', p.actor_id,
+          'seenAt', p.seen_at, 'activityAt', p.activity_at))
+        from members.live_presence p join members.live_occurrences o on o.id = p.occurrence_id
+        where o.session_id = s.id), '[]'::jsonb) as presence
+    from members.live_sessions s
+    join members.live_cohorts c on c.id = s.cohort_id
+    where ${session}`)
+  const row = [...rows][0]
+  if (!row) return null
+  return overlayPresence(
+    {
+      cohort: row.cohort,
+      sessions: [row.session],
+      occurrences: row.occurrences,
+      enrollments: row.enrollments,
+      // Same instant format as the full load (the room shows the grant window).
+      grants: row.grants.map((grant) => ({
+        ...grant,
+        startsAt: iso(grant.startsAt),
+        endsAt: iso(grant.endsAt),
+        revokedAt: grant.revokedAt ? iso(grant.revokedAt) : null,
+      })),
+      audit: [],
+    },
+    row.presence,
+  )
+}
+
+async function lockAccount(tx: Transaction, accountId: string) {
+  // Same order as account erasure: account first, then cohort/workspace.
+  await tx.execute(
+    sql`select pg_advisory_xact_lock(hashtextextended(${`members-account:${accountId}`}, 0))`,
+  )
+  if (
+    (
+      await tx
+        .select({ id: accountDeletionFences.accountId })
+        .from(accountDeletionFences)
+        .where(eq(accountDeletionFences.accountId, accountId))
+    )[0]
+  )
+    throw new LiveAccessError('Esta conta está em exclusão.')
 }
 
 /** All changes to a cohort take the same row lock, including seat allocation. */
 export class DrizzleLiveRepository implements LiveRepository {
   constructor(private readonly db: Database) {}
 
-  async listPrograms() {
-    return (await this.db.select().from(livePrograms)).map((row) => row.document)
-  }
-  async findProgram(id: string) {
-    return (
-      (await this.db.select().from(livePrograms).where(eq(livePrograms.id, id)))[0]?.document ??
-      null
-    )
-  }
-  async createProgram(document: LiveProgram) {
-    await this.db.insert(livePrograms).values({ id: document.id, document })
-  }
   async readReplayPosition(sessionId: string, learnerId: string, version: number) {
     const row = (
       await this.db
@@ -128,29 +193,27 @@ export class DrizzleLiveRepository implements LiveRepository {
     )[0]
     return row?.positionSeconds ?? 0
   }
-  async readLearningProgress(sessionId: string, learnerId: string, accountId: string) {
-    return learningProgressOf(this.db, sessionId, learnerId, accountId)
-  }
-  async findLearningAttempt(sessionId: string, learnerId: string, accountId: string, id: string) {
-    return learningAttemptOf(this.db, sessionId, learnerId, accountId, id)
-  }
-  async updateProgram(id: string, mutate: (program: LiveProgram) => void) {
-    return this.db.transaction(async (tx) => {
-      const row = (
-        await tx.select().from(livePrograms).where(eq(livePrograms.id, id)).for('update')
-      )[0]
-      if (!row) throw new LiveNotFoundError()
-      mutate(row.document)
-      await tx.update(livePrograms).set({ document: row.document }).where(eq(livePrograms.id, id))
-      return row.document
-    })
-  }
-
+  /**
+   * The course row is locked in the same transaction and its modality re-checked: changing a
+   * course's modality checks "no cohort" under that same lock, so the two never cross.
+   */
   async createCohort(aggregate: LiveCohortAggregate) {
     await this.db.transaction(async (tx) => {
+      const courseId = aggregate.cohort.courseId
+      if (courseId) {
+        const [course] = await tx
+          .select()
+          .from(courses)
+          .where(eq(courses.id, courseId))
+          .for('update')
+        if (!course) throw new LiveNotFoundError()
+        if (courseModality(course) !== 'live')
+          throw new LiveConflictError('Este curso não é mais ao vivo. Atualize a página.')
+      }
       await tx.insert(liveCohorts).values({
         id: aggregate.cohort.id,
-        programId: aggregate.cohort.programId,
+        programId: aggregate.cohort.programId || null,
+        courseId: aggregate.cohort.courseId ?? null,
         document: aggregate.cohort,
       })
       await this.persist(tx, aggregate)
@@ -185,14 +248,20 @@ export class DrizzleLiveRepository implements LiveRepository {
     )[0]
     return row ? this.findCohort(row.cohortId) : null
   }
-  async cohortIdForSession(id: string) {
+  async sessionRef(id: string) {
     const row = (
       await this.db
-        .select({ cohortId: liveSessions.cohortId })
+        .select({
+          cohortId: liveSessions.cohortId,
+          lessonId: sql<string | null>`${liveSessions.document}->>'lessonId'`,
+          occurrenceId: sql<string>`${liveSessions.document}->>'occurrenceId'`,
+        })
         .from(liveSessions)
         .where(eq(liveSessions.id, id))
     )[0]
-    return row?.cohortId ?? null
+    return row
+      ? { cohortId: row.cohortId, lessonId: row.lessonId, occurrenceId: row.occurrenceId }
+      : null
   }
   async findByEnrollment(id: string) {
     const row = (
@@ -211,12 +280,15 @@ export class DrizzleLiveRepository implements LiveRepository {
           .from(liveCohorts)
           .where(
             and(
+              // Old script cohorts (no course) are archived by 0110 and never listed.
+              isNotNull(liveCohorts.courseId),
               query?.cursor ? sql`${liveCohorts.id} > ${query.cursor}::uuid` : undefined,
+              query?.audience
+                ? sql`${liveCohorts.document}->'course'->>'audience' = ${query.audience}`
+                : undefined,
               query && query.mode !== 'admin'
                 ? sql`(
-              (${liveCohorts.document}->>'status' = 'open' and exists (
-                select 1 from ${livePrograms} where ${livePrograms.id} = ${liveCohorts.programId} and ${livePrograms.document}->>'status' = 'published'
-              )) or exists (
+              (${liveCohorts.document}->>'status' = 'open' and ${liveCohorts.courseId} = any(${`{${(query.discoverableCourseIds ?? []).join(',')}}`}::uuid[])) or exists (
                 select 1 from ${liveEnrollments} where ${liveEnrollments.cohortId} = ${liveCohorts.id}
                   and ${liveEnrollments.accountId} = ${query.actor.accountId}::uuid
                   ${query.mode === 'parents' ? sql`` : sql`and ${liveEnrollments.learnerId} = ${query.actor.id}::uuid`}
@@ -237,6 +309,62 @@ export class DrizzleLiveRepository implements LiveRepository {
       { isolationLevel: 'repeatable read', accessMode: 'read only' },
     )
   }
+  async findRoom(ref: LiveRoomRef) {
+    return loadLiveRoom(this.db, ref)
+  }
+  async roomTransaction<T>(
+    ref: LiveRoomRef,
+    mutate: (aggregate: LiveCohortAggregate) => T | Promise<T>,
+    accountId?: string,
+  ): Promise<T> {
+    return this.db.transaction(async (tx) => {
+      if (accountId) await lockAccount(tx, accountId)
+      const target = (
+        await tx.execute<{ session_id: string; cohort_id: string }>(
+          'sessionId' in ref
+            ? sql`select id as session_id, cohort_id from members.live_sessions where id = ${ref.sessionId}::uuid`
+            : sql`select session_id, cohort_id from members.live_occurrences where id = ${ref.occurrenceId}::uuid`,
+        )
+      )[0]
+      if (!target) throw new LiveNotFoundError()
+      // The same cohort row lock as every other cohort write: seats, commands and recording.
+      await tx
+        .select({ id: liveCohorts.id })
+        .from(liveCohorts)
+        .where(eq(liveCohorts.id, target.cohort_id))
+        .for('update')
+      const aggregate = await loadLiveRoom(tx, { sessionId: target.session_id })
+      if (!aggregate) throw new LiveNotFoundError()
+      const before = structuredClone(aggregate)
+      const result = await mutate(aggregate)
+      await this.persist(tx, aggregate, before)
+      return result
+    })
+  }
+  async touchPresence(input: LivePresenceTouch) {
+    await this.db.transaction(async (tx) => {
+      await lockAccount(tx, input.accountId)
+      const row = {
+        occurrenceId: input.occurrenceId,
+        actorId: input.actorId,
+        accountId: input.accountId,
+        seenAt: input.at,
+        activityAt: input.activity ? input.at : null,
+      }
+      await tx
+        .insert(livePresence)
+        .values(row)
+        .onConflictDoUpdate({
+          target: [livePresence.occurrenceId, livePresence.actorId],
+          set: {
+            seenAt: sql`greatest(${livePresence.seenAt}, excluded.seen_at)`,
+            activityAt: input.activity
+              ? sql`greatest(${livePresence.activityAt}, excluded.activity_at)`
+              : sql`${livePresence.activityAt}`,
+          },
+        })
+    })
+  }
   async overdueOccurrences(now: Date) {
     const rows = await this.db
       .select({ id: liveOccurrences.id })
@@ -255,25 +383,11 @@ export class DrizzleLiveRepository implements LiveRepository {
 
   async transaction<T>(
     id: string,
-    mutate: (aggregate: LiveCohortAggregate, reads: LiveTransactionReads) => T | Promise<T>,
+    mutate: (aggregate: LiveCohortAggregate) => T | Promise<T>,
     accountId?: string,
   ): Promise<T> {
     return this.db.transaction(async (tx) => {
-      // Same order as account erasure: account first, then cohort/workspace.
-      if (accountId) {
-        await tx.execute(
-          sql`select pg_advisory_xact_lock(hashtextextended(${`members-account:${accountId}`}, 0))`,
-        )
-        if (
-          (
-            await tx
-              .select({ id: accountDeletionFences.accountId })
-              .from(accountDeletionFences)
-              .where(eq(accountDeletionFences.accountId, accountId))
-          )[0]
-        )
-          throw new LiveAccessError('Esta conta está em exclusão.')
-      }
+      if (accountId) await lockAccount(tx, accountId)
       const row = (
         await tx
           .select({ id: liveCohorts.id })
@@ -285,12 +399,7 @@ export class DrizzleLiveRepository implements LiveRepository {
       const aggregate = await this.load(tx, id)
       if (!aggregate) throw new LiveNotFoundError()
       const before = structuredClone(aggregate)
-      const result = await mutate(aggregate, {
-        learningProgress: (sessionId, learnerId, owner) =>
-          learningProgressOf(tx, sessionId, learnerId, owner),
-        learningAttempt: (sessionId, learnerId, owner, attemptId) =>
-          learningAttemptOf(tx, sessionId, learnerId, owner, attemptId),
-      })
+      const result = await mutate(aggregate)
       await this.persist(tx, aggregate, before)
       return result
     })
@@ -388,32 +497,6 @@ export class DrizzleLiveRepository implements LiveRepository {
             liveReplayPositions.version,
           ],
           set: { positionSeconds: position.positionSeconds },
-        })
-    }
-    for (const write of aggregate.learningWrites ?? []) {
-      const { sessionId, learnerId, accountId, progress, attempt } = write
-      if (attempt)
-        await tx
-          .insert(liveLearningAttempts)
-          .values({ sessionId, learnerId, accountId, id: attempt.id, document: attempt })
-      await tx
-        .insert(liveLearningProgress)
-        .values({
-          sessionId,
-          learnerId,
-          accountId,
-          blockId: progress.blockId,
-          revision: progress.revision,
-          document: progress,
-        })
-        .onConflictDoUpdate({
-          target: [
-            liveLearningProgress.sessionId,
-            liveLearningProgress.learnerId,
-            liveLearningProgress.blockId,
-            liveLearningProgress.revision,
-          ],
-          set: { document: progress },
         })
     }
   }

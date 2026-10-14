@@ -1,8 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
-import type { LiveLearningStep } from '@sistemazero/core/live'
 import { LiveService } from '../../src/application/live/live.service'
-import { LiveLearningService } from '../../src/application/live/live-learning.service'
 import { LivePublicationService } from '../../src/application/live/live-publication.service'
 import { LiveWorkspaceService } from '../../src/application/live/live-workspace.service'
 import type { LiveActor } from '../../src/domain/ports/live-repository.port'
@@ -15,6 +13,8 @@ import { DrizzleLiveBenefitsRepository } from '../../src/infrastructure/persiste
 import { purgeLiveAccount } from '../../src/infrastructure/persistence/drizzle/live-purge'
 import { DrizzleLiveWorkspaceRepository } from '../../src/infrastructure/persistence/drizzle/live-workspace.repository'
 import { accountDeletionFences } from '../../src/infrastructure/persistence/drizzle/schema'
+import { InMemoryLiveCourses } from '../fakes/live-in-memory'
+import { persistLiveCourse } from './live-course-rows'
 import { prepareTestDatabase } from './test-database'
 
 const databaseUrl = await prepareTestDatabase('sistemazero_live_test')
@@ -44,13 +44,15 @@ describe.skipIf(!databaseUrl)('Oficinas no PostgreSQL real', () => {
     await connection?.close()
   })
 
-  async function setup(capacity = 1, steps?: LiveLearningStep[]) {
+  // The live course itself is read through the port; its SQL adapter has its own test file.
+  const courses = new InMemoryLiveCourses((course) => persistLiveCourse(connection, course))
+  async function setup(capacity = 1, courseStatus: 'draft' | 'published' = 'published') {
     const repository = new DrizzleLiveRepository(connection.db)
     const service = new LiveService(
       repository,
       () => new Date('2026-11-07T17:00:00Z'),
       { assertOwnership: async () => ({ name: 'Criador' }) },
-      { mediaReady: true },
+      { mediaReady: true, courses },
     )
     const actor: LiveActor = {
       id: randomUUID(),
@@ -58,20 +60,9 @@ describe.skipIf(!databaseUrl)('Oficinas no PostgreSQL real', () => {
       name: 'Professora',
       staff: true,
     }
-    const program = await service.createProgram(actor, {
-      title: 'Oficina teste',
-      description: 'Somente neste banco de teste',
-      lessons: [
-        {
-          title: 'Cenário',
-          instructions: 'Criar o cenário',
-          starterProjectId: null,
-          materials: [],
-          steps,
-        },
-      ],
-    })
-    const { cohort, sessions } = await service.createCohort(actor, program.id, {
+    const { course, lessons } = courses.add({ lessons: 1, status: courseStatus })
+    const block = courses.addStudioBlock(course.id, lessons[0]!.id)
+    const { cohort, sessions } = await service.createCohort(actor, course.id, {
       title: 'Turma SQL',
       timeZone: 'America/Sao_Paulo',
       capacity,
@@ -80,11 +71,21 @@ describe.skipIf(!databaseUrl)('Oficinas no PostgreSQL real', () => {
       schedule: [{ startsAt: '2026-11-07T17:00:00Z', endsAt: '2026-11-07T18:00:00Z' }],
     })
     await service.updateCohort({ ...actor, admin: true }, cohort.id, { status: 'open' })
-    return { repository, service, actor, cohort, session: sessions[0]! }
+    return {
+      repository,
+      service,
+      actor,
+      cohort,
+      session: sessions[0]!,
+      course,
+      lesson: lessons[0]!,
+      block,
+    }
   }
 
   test('SQL filters owned cohorts before cursor pagination, excluding unrelated drafts', async () => {
-    const records = await Promise.all([setup(), setup(), setup(), setup()])
+    // The fourth cohort is open, but its live course is still a draft: not discovery.
+    const records = await Promise.all([setup(), setup(), setup(), setup(1, 'draft')])
     const child = { id: randomUUID(), accountId: randomUUID(), name: 'Alice', staff: false }
     for (const item of records.slice(0, 3))
       await item.service.enroll(item.actor, item.cohort.id, {
@@ -122,86 +123,8 @@ describe.skipIf(!databaseUrl)('Oficinas no PostgreSQL real', () => {
     expect(aggregate.grants[0]?.endsAt).toBe('2026-12-07T17:00:00.000Z')
   })
 
-  test('atividade persiste fora de cursos, serializa tentativa duplicada e purga as respostas', async () => {
-    const block = {
-      id: randomUUID(),
-      revision: randomUUID(),
-      content: {
-        kind: 'interactive' as const,
-        title: 'Minha descoberta',
-        instructions: 'Experimente',
-        required: false,
-        hints: [],
-        activity: { type: 'html' as const, html: '<p>Experimente!</p>' },
-      },
-    }
-    const { service, actor, cohort, session, repository } = await setup(1, [
-      { id: randomUUID(), title: 'Etapa', instructions: 'Crie algo', blocks: [block] },
-    ])
-    const child: LiveActor = {
-      id: randomUUID(),
-      accountId: randomUUID(),
-      name: 'Alice',
-      staff: false,
-    }
-    await service.enroll(actor, cohort.id, {
-      accountId: child.accountId,
-      learnerId: child.id,
-      learnerName: child.name,
-    })
-    const learning = new LiveLearningService(
-      service,
-      repository,
-      () => new Date('2026-11-07T17:00:00Z'),
-    )
-    const input = {
-      id: randomUUID(),
-      revision: block.revision,
-      answers: { participated: true },
-      hintsUsed: 0,
-    }
-    const duplicate = await Promise.all([
-      learning.attempt(child, session.id, block.id, input),
-      learning.attempt(child, session.id, block.id, input),
-    ])
-    expect(duplicate.map((result) => result.progress.attemptsCount)).toEqual([1, 1])
-    const restored = new LiveLearningService(
-      service,
-      new DrizzleLiveRepository(connection.db),
-      () => new Date('2026-11-07T17:00:00Z'),
-    )
-    expect((await restored.read(child, session.id)).blocks[0]).toMatchObject({
-      attemptsCount: 1,
-      result: { passed: true, verifiedBy: 'client' },
-    })
-    await connection.db.transaction(async (tx) => {
-      await tx
-        .insert(accountDeletionFences)
-        .values({ accountId: child.accountId, createdAt: new Date() })
-      await purgeLiveAccount(tx, child.accountId, [child.id])
-    })
-    expect(await repository.readLearningProgress(session.id, child.id, child.accountId)).toEqual([])
-    expect(
-      await repository.findLearningAttempt(session.id, child.id, child.accountId, input.id),
-    ).toBeNull()
-  })
-
   test('S1: um pool de UMA conexão basta; a escrita do projeto não espera a trava da turma', async () => {
-    const block = {
-      id: randomUUID(),
-      revision: randomUUID(),
-      content: {
-        kind: 'interactive' as const,
-        title: 'Descoberta',
-        instructions: 'Experimente',
-        required: false,
-        hints: [],
-        activity: { type: 'html' as const, html: '<p>Experimente!</p>' },
-      },
-    }
-    const { service, actor, cohort, session } = await setup(1, [
-      { id: randomUUID(), title: 'Etapa', instructions: 'Crie algo', blocks: [block] },
-    ])
+    const { service, actor, cohort, session, block, lesson } = await setup(1)
     const child: LiveActor = {
       id: randomUUID(),
       accountId: randomUUID(),
@@ -229,9 +152,8 @@ describe.skipIf(!databaseUrl)('Oficinas no PostgreSQL real', () => {
         new DrizzleLiveRepository(single.db),
         clock,
         { assertOwnership: async () => ({ name: 'Criador' }) },
-        { mediaReady: true },
+        { mediaReady: true, courses },
       )
-      const learning = new LiveLearningService(live, new DrizzleLiveRepository(single.db), clock)
       const workspaces = new LiveWorkspaceService(
         new DrizzleLiveWorkspaceRepository(single.db),
         live,
@@ -240,20 +162,22 @@ describe.skipIf(!databaseUrl)('Oficinas no PostgreSQL real', () => {
       const deviceId = randomUUID()
       const saved = await bounded(
         (async () => {
-          const opened = await workspaces.open(child, session.id, child.id)
+          const opened = await workspaces.openForBlock(child, session.id, block.blockId)
           const claimed = await workspaces.claim(child, opened.id, deviceId, false)
           await workspaces.renew(child, opened.id, deviceId, claimed.writerEpoch)
-          await learning.save(child, session.id, block.id, {
-            revision: block.revision,
-            answers: {},
-            hintsUsed: 0,
-            positionSeconds: null,
+          // Room commands that read the published lesson do it before taking the cohort lock.
+          await live.control(actor, session.id, undefined, { kind: 'start' })
+          await live.join(child, session.id, { deviceId, takeover: false })
+          await live.control(actor, session.id, undefined, { kind: 'admit', learnerId: child.id })
+          await live.control(actor, session.id, undefined, {
+            kind: 'open-section',
+            sectionId: lesson.sectionIds[1]!,
           })
-          await learning.attempt(child, session.id, block.id, {
-            id: randomUUID(),
-            revision: block.revision,
-            answers: { participated: true },
-            hintsUsed: 0,
+          await live.heartbeat(child, session.id, deviceId, {
+            stepId: null,
+            saveState: 'saved',
+            sectionId: lesson.sectionIds[1]!,
+            completedSectionIds: [lesson.sectionIds[0]!],
           })
           return claimed
         })(),
@@ -341,7 +265,7 @@ describe.skipIf(!databaseUrl)('Oficinas no PostgreSQL real', () => {
   })
 
   test('publicação usa a revisão canônica persistida e revalida família e revogação no PostgreSQL', async () => {
-    const { service, actor, cohort, session } = await setup()
+    const { service, actor, cohort, session, block } = await setup()
     const child: LiveActor = {
       id: randomUUID(),
       accountId: randomUUID(),
@@ -359,7 +283,7 @@ describe.skipIf(!databaseUrl)('Oficinas no PostgreSQL real', () => {
       service,
       clock,
     )
-    const opened = await workspaces.open(child, session.id, child.id),
+    const opened = await workspaces.openForBlock(child, session.id, block.blockId),
       deviceId = randomUUID()
     let workspace = await workspaces.claim(child, opened.id, deviceId, false)
     workspace = await workspaces.commit(child, workspace.id, {
@@ -469,14 +393,10 @@ describe.skipIf(!databaseUrl)('Oficinas no PostgreSQL real', () => {
   test('encontro agendado vencido entra na varredura em SQL e vira cancelado', async () => {
     const { repository, service, actor } = await setup()
     // A schedule older than any other fixture: the sweep is oldest-first and bounded to 100.
-    const program = await service.createProgram(actor, {
-      title: 'Oficina antiga',
-      description: 'Somente neste banco de teste',
-      lessons: [{ title: 'Cenário', instructions: 'Criar', starterProjectId: null, materials: [] }],
-    })
+    const { course } = courses.add({ lessons: 1 })
     const {
       sessions: [session],
-    } = await service.createCohort(actor, program.id, {
+    } = await service.createCohort(actor, course.id, {
       title: 'Turma que não aconteceu',
       timeZone: 'America/Sao_Paulo',
       capacity: 1,
@@ -490,16 +410,122 @@ describe.skipIf(!databaseUrl)('Oficinas no PostgreSQL real', () => {
     expect(await repository.overdueOccurrences(new Date('2001-01-01T17:59:59Z'))).not.toContain(
       session.occurrenceId,
     )
-    expect(await repository.cohortIdForSession(session.id)).toBe(session.cohortId)
+    expect(await repository.sessionRef(session.id)).toEqual({
+      cohortId: session.cohortId,
+      lessonId: course.lessons[0]!.id,
+      occurrenceId: session.occurrenceId,
+    })
     const later = new LiveService(
       repository,
       () => after,
       { assertOwnership: async () => ({ name: 'Criador' }) },
-      { mediaReady: true },
+      { mediaReady: true, courses },
     )
     // The room view of the teacher triggers the same deadline path for this occurrence only.
     expect((await later.room(actor, session.id)).occurrence?.state).toBe('cancelled')
     expect(await repository.overdueOccurrences(after)).not.toContain(session.occurrenceId)
+  })
+
+  test('sala de UM encontro: leitura só dele, escrita só dele, presença na linha pequena', async () => {
+    const repository = new DrizzleLiveRepository(connection.db)
+    const service = new LiveService(
+      repository,
+      () => new Date('2026-11-07T17:00:00Z'),
+      { assertOwnership: async () => ({ name: 'Criador' }) },
+      { mediaReady: true, courses },
+    )
+    const actor: LiveActor = { id: randomUUID(), accountId: randomUUID(), name: 'Ana', staff: true }
+    const child: LiveActor = {
+      id: randomUUID(),
+      accountId: randomUUID(),
+      name: 'Bia',
+      staff: false,
+    }
+    const { course } = courses.add({ lessons: 2 })
+    const { cohort, sessions } = await service.createCohort(actor, course.id, {
+      title: 'Turma de dois encontros',
+      timeZone: 'America/Sao_Paulo',
+      capacity: 2,
+      accessDays: 30,
+      teacherIds: [actor.id],
+      schedule: [
+        { startsAt: '2026-11-07T17:00:00Z', endsAt: '2026-11-07T18:00:00Z' },
+        { startsAt: '2026-11-14T17:00:00Z', endsAt: '2026-11-14T18:00:00Z' },
+      ],
+    })
+    await service.updateCohort({ ...actor, admin: true }, cohort.id, { status: 'open' })
+    await service.enroll(actor, cohort.id, {
+      accountId: child.accountId,
+      learnerId: child.id,
+      learnerName: 'Bia',
+    })
+    const [first, second] = sessions as [(typeof sessions)[number], (typeof sessions)[number]]
+    const room = (await repository.findRoom({ sessionId: first.id }))!
+    expect(room.sessions.map((session) => session.id)).toEqual([first.id])
+    expect(room.occurrences.map((occurrence) => occurrence.id)).toEqual([first.occurrenceId])
+    expect(room.grants.map((grant) => grant.sessionId)).toEqual([first.id])
+    expect(room.grants[0]?.endsAt).toBe('2026-12-07T17:00:00.000Z')
+    expect(
+      (await repository.findRoom({ occurrenceId: second.occurrenceId }))?.sessions[0]?.id,
+    ).toBe(second.id)
+    const xmin = async (id: string) =>
+      (
+        await connection.sql`select xmin::text as v from members.live_occurrences where id = ${id}`
+      )[0]?.v as string
+    const untouched = await xmin(second.occurrenceId)
+    await service.control(actor, first.id, undefined, { kind: 'start' })
+    const deviceId = randomUUID()
+    await service.join(child, first.id, { deviceId, takeover: false })
+    await service.control(actor, first.id, undefined, { kind: 'admit', learnerId: child.id })
+    expect(await xmin(second.occurrenceId)).toBe(untouched)
+    // Presence: the small row, overlaid on every read; the occurrence row stays as it was.
+    const written = await xmin(first.occurrenceId)
+    await repository.touchPresence({
+      occurrenceId: first.occurrenceId,
+      actorId: child.id,
+      accountId: child.accountId,
+      at: new Date('2026-11-07T17:00:30Z'),
+      activity: true,
+    })
+    expect(await xmin(first.occurrenceId)).toBe(written)
+    const seen = (await repository.findRoom({ sessionId: first.id }))!.occurrences[0]!
+    expect(seen.participants[0]?.seenAt).toBe('2026-11-07T17:00:30.000Z')
+    expect(
+      (await repository.findCohort(cohort.id))!.occurrences.find((o) => o.id === first.occurrenceId)
+        ?.participants[0]?.seenAt,
+    ).toBe('2026-11-07T17:00:30.000Z')
+    // An older presence never moves it back.
+    await repository.touchPresence({
+      occurrenceId: first.occurrenceId,
+      actorId: child.id,
+      accountId: child.accountId,
+      at: new Date('2026-11-07T17:00:10Z'),
+    })
+    expect(
+      (await repository.findRoom({ sessionId: first.id }))!.occurrences[0]!.participants[0]?.seenAt,
+    ).toBe('2026-11-07T17:00:30.000Z')
+    // Account erasure: no presence after the fence, and the purge removes it.
+    await connection.db.transaction(async (tx) => {
+      await tx
+        .insert(accountDeletionFences)
+        .values({ accountId: child.accountId, createdAt: new Date() })
+      await purgeLiveAccount(tx, child.accountId, [child.id])
+    })
+    const refused = await repository
+      .touchPresence({
+        occurrenceId: first.occurrenceId,
+        actorId: child.id,
+        accountId: child.accountId,
+        at: new Date('2026-11-07T17:01:00Z'),
+      })
+      .then(
+        () => null,
+        (error: Error) => error,
+      )
+    expect(refused?.message).toContain('exclusão')
+    const [left] =
+      await connection.sql`select count(*)::int as n from members.live_presence where actor_id = ${child.id}`
+    expect(left?.n).toBe(0)
   })
 
   test('purga remove apenas a família alvo e a cerca impede matrícula tardia', async () => {

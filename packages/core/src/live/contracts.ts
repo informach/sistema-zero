@@ -219,6 +219,17 @@ export interface LiveRecordingChapter {
   sectionId: string
   seconds: number
 }
+/**
+ * Onde está o MP4 revisado de um encontro (`GET …/occurrences/:id/recording/source`). O members
+ * não guarda credencial de armazenamento: o Admin assina a URL temporária com as dele.
+ */
+export interface LiveRecordingSourceView {
+  storageKey: string
+  /** O bucket REAL onde o gravador grava o MP4 (o `R2_BUCKET` do gravador). */
+  bucket: string
+  /** Nome do vídeo no Vimeo: "<curso> · <aula> · <turma> · <data>". */
+  title?: string
+}
 export interface LiveLessonAccessView {
   startsAt: string
   endsAt: string

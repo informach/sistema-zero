@@ -20,6 +20,29 @@ describe('loadGatewayConfig', () => {
     expect(registry.resolve('POST', '/members/admin/live/programs', 'v1')?.route).toMatchObject({
       authorize: { roles: ['superadmin', 'admin'] },
     })
+    // Cursos ao vivo: turma do curso (admin, auditada); gravação ao Vimeo pela equipe da turma.
+    expect(
+      registry.resolve('POST', '/members/admin/live/courses/c/cohorts', 'v1')?.route,
+    ).toMatchObject({
+      id: 'members-admin-live-course-cohort-create',
+      authorize: { roles: ['superadmin', 'admin'] },
+      audit: {},
+    })
+    expect(
+      registry.resolve('GET', '/members/admin/live/occurrences/o/recording/source', 'v1')?.route,
+    ).toMatchObject({
+      id: 'members-live-recording-source',
+      authorize: { roles: ['superadmin', 'admin', 'staff'] },
+    })
+    expect(
+      registry.resolve('PUT', '/members/admin/live/occurrences/o/recording/vimeo', 'v1')?.route,
+    ).toMatchObject({
+      id: 'members-live-recording-vimeo',
+      authorize: { roles: ['superadmin', 'admin', 'staff'] },
+      audit: {},
+    })
+    // The child's project by block stays under the authenticated child routes.
+    expect(registry.resolve('GET', '/members/live/workspaces', 'v1')?.route.id).toBe('members-live')
     expect(
       registry.resolve('POST', '/members/admin/live/workspaces/a/cursor', 'v1')?.route.id,
     ).toBe('members-live-cursor')

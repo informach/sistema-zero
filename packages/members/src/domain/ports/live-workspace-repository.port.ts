@@ -3,6 +3,13 @@ import type { LiveCohortAggregate } from './live-repository.port'
 
 export interface LiveWorkspaceRecord extends LiveWorkspaceView {
   accountId: string
+  /**
+   * The per-block key (course + `chain` of the Studio block, or course + block id), unique per
+   * child. Null only in the old script projects, which no longer open for editing.
+   */
+  projectKey: string | null
+  /** Lessons of the live course that already opened this project (access is judged in them). */
+  lessonIds: string[]
 }
 export interface LiveWorkspaceRevision {
   workspaceId: string
@@ -27,14 +34,17 @@ export interface LiveWorkspaceTransaction {
 export interface LiveWorkspaceRepository {
   find(id: string): Promise<LiveWorkspaceRecord | null>
   listOwned(accountId: string, learnerId: string): Promise<LiveWorkspaceRecord[]>
-  ensure(workspace: LiveWorkspaceRecord): Promise<LiveWorkspaceRecord>
+  findByKey(learnerId: string, projectKey: string): Promise<LiveWorkspaceRecord | null>
+  /** Creates the project of this key, or returns the one a concurrent open created first. */
+  ensureByKey(workspace: LiveWorkspaceRecord & { projectKey: string }): Promise<LiveWorkspaceRecord>
+  /**
+   * The project opened in another lesson of the course: the lesson joins `lessonIds`. When the
+   * project belongs to an encounter of ANOTHER cohort (the child is in a new cohort of the same
+   * course), it moves to this encounter, unless a teacher's help is in progress.
+   */
+  linkLesson(
+    id: string,
+    input: { lessonId: string; sessionId: string },
+  ): Promise<LiveWorkspaceRecord>
   transaction<T>(id: string, action: (tx: LiveWorkspaceTransaction) => Promise<T>): Promise<T>
-  createTemplate(input: {
-    id: string
-    project: Record<string, unknown>
-    createdBy: string
-    createdAt: string
-  }): Promise<void>
-  findTemplate(id: string): Promise<Record<string, unknown> | null>
-  listTemplates(): Promise<{ id: string; title: string }[]>
 }

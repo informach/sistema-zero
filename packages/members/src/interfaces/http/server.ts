@@ -6,7 +6,6 @@ import {
 } from '@sistemazero/core/http'
 import type { Logger } from '@sistemazero/core/logging'
 import { Elysia } from 'elysia'
-import type { LiveLearningService } from '../../application/live/live-learning.service'
 import type { LiveMaterialsService } from '../../application/live/live-materials.service'
 import type { LivePublicationService } from '../../application/live/live-publication.service'
 import type { LiveWorkspaceService } from '../../application/live/live-workspace.service'
@@ -28,7 +27,6 @@ import { type InternalRoutesDeps, internalRoutes } from './routes/internal.route
 import { type LearningRoutesDeps, learningRoutes } from './routes/learning.routes'
 import { type LiveRoutesDeps, liveRoutes } from './routes/live.routes'
 import { type LiveCourseRoutesDeps, liveCourseRoutes } from './routes/live-course.routes'
-import { liveLearningRoutes } from './routes/live-learning.routes'
 import { liveMaterialsRoutes } from './routes/live-materials.routes'
 import { livePublicationRoutes } from './routes/live-publication.routes'
 import { liveWorkspaceRoutes } from './routes/live-workspaces.routes'
@@ -37,7 +35,6 @@ import { type PensaRoutesDeps, pensaRoutes } from './routes/pensa.routes'
 import { type WebhooksRoutesDeps, webhooksRoutes } from './routes/webhooks.routes'
 
 export interface HttpDeps {
-  liveLearning?: LiveLearningService
   liveMaterials?: LiveMaterialsService
   livePublication?: LivePublicationService
   liveBenefits?: LiveBenefitsPort
@@ -204,14 +201,6 @@ export function createServer(deps: HttpDeps) {
     .use(helpRoutes(deps.help))
     .use(deps.live ? liveRoutes(deps.live) : new Elysia())
     .use(deps.liveCourse ? liveCourseRoutes(deps.liveCourse) : new Elysia())
-    .use(
-      deps.liveLearning
-        ? liveLearningRoutes({
-            learning: deps.liveLearning,
-            internalToken: deps.env.INTERNAL_API_TOKEN,
-          })
-        : new Elysia(),
-    )
     .use(
       deps.liveWorkspace
         ? liveWorkspaceRoutes({

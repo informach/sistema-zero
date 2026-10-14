@@ -59,21 +59,28 @@ export function liveWorkspaceRoutes(deps: {
   const student = new Elysia({ prefix: '/members/live' })
     .onBeforeHandle(guard)
     .onBeforeHandle(support)
+    // Without `blockId`: the child's own projects (library). With `sessionId` + `blockId`: open
+    // or create the project of that Studio block of the encounter's PUBLISHED lesson (a teacher
+    // of the cohort passes the child's `learnerId`).
     .get(
-      '/sessions/:id/demonstration',
-      ({ request, headers, params }) => workspace(request).demonstration(actor(headers), params.id),
-      { params: Params },
-    )
-    .get('/workspaces', ({ request, headers }) => workspace(request).listOwned(actor(headers)))
-    .post(
-      '/sessions/:id/workspace',
-      ({ request, headers, params, body }) =>
-        workspace(request).open(
+      '/workspaces',
+      ({ request, headers, query }) => {
+        if (!query.blockId) return workspace(request).listOwned(actor(headers))
+        if (!query.sessionId) throw new ValidationError('Informe o encontro do projeto.')
+        return workspace(request).openForBlock(
           actor(headers),
-          params.id,
-          body.learnerId ?? resolveUserId(headers),
-        ),
-      { params: Params, body: t.Object({ learnerId: t.Optional(uuid()) }) },
+          query.sessionId,
+          query.blockId,
+          query.learnerId ?? resolveUserId(headers),
+        )
+      },
+      {
+        query: t.Object({
+          sessionId: t.Optional(uuid()),
+          blockId: t.Optional(uuid()),
+          learnerId: t.Optional(uuid()),
+        }),
+      },
     )
     .get(
       '/workspaces/:id',
@@ -137,13 +144,6 @@ export function liveWorkspaceRoutes(deps: {
     .onBeforeHandle(guard)
     .onBeforeHandle(({ headers }) => requireAdmin(headers, deps.requireAdminEnabled))
     .onBeforeHandle(support)
-    .get('/templates', ({ request, headers }) => workspace(request).listTemplates(actor(headers)))
-    .post(
-      '/templates',
-      ({ request, headers, body }) =>
-        workspace(request).createTemplate(actor(headers), body.project),
-      { body: t.Object({ project: t.Record(t.String(), t.Unknown()) }) },
-    )
     .post(
       '/workspaces/:id/assistance',
       ({ request, headers, params }) =>

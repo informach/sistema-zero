@@ -1,22 +1,21 @@
-import { createHash, randomUUID } from 'node:crypto'
+import { randomUUID } from 'node:crypto'
 import { ValidationError } from '@sistemazero/core/errors'
-import { publicInteractiveBlock } from '@sistemazero/core/learning'
 import {
   addCalendarDays,
   type LiveActivityReport,
   type LiveCatalogView,
   type LiveCohort,
   type LiveControl,
+  type LiveCourseSummary,
   type LiveCreateCohort,
-  type LiveCreateProgram,
   type LiveEnrollment,
   type LiveJoinRequest,
-  type LiveLessonPlan,
-  type LiveLessonPlanView,
   type LiveOccurrence,
   type LiveParticipation,
-  type LiveProgram,
+  type LiveRecordingSourceView,
   type LiveRecordingState,
+  type LiveRecordingSummary,
+  type LiveRecordingVimeo,
   type LiveRoomView,
   type LiveSession,
   type LiveUpdateCohort,
@@ -24,21 +23,31 @@ import {
   occurrenceIsOpen,
   supervisionStatus,
 } from '@sistemazero/core/live'
-import { sanitizeLiveSteps, sanitizeLiveStudio } from '../../domain/live/learning-plan'
 import {
   LiveAccessError,
   LiveConflictError,
   LiveNotFoundError,
   LiveUnavailableError,
 } from '../../domain/live/live.errors'
+import { LIVE_SECTIONS_MAX, liveVimeoRecording } from '../../domain/live/live-course-rules'
+import { presenceStale, sameActivity } from '../../domain/live/presence'
+import {
+  type LiveRecordingSegmentTime,
+  recordingChapters,
+} from '../../domain/live/recording-chapters'
+import type {
+  LiveCoursePort,
+  LiveCourseRecord,
+  LiveStudioBlockRecord,
+} from '../../domain/ports/live-course.port'
 import type {
   LiveAccessGrant,
   LiveActor,
   LiveCohortAggregate,
   LiveProfileOwnershipPort,
   LiveRepository,
-  LiveTransactionReads,
 } from '../../domain/ports/live-repository.port'
+import type { LiveRewardsPort } from '../../domain/ports/live-rewards.port'
 
 export interface LiveContext {
   aggregate: LiveCohortAggregate
@@ -51,9 +60,23 @@ export interface LiveContext {
 export interface LiveServiceOptions {
   /** Enabled only after actual media + supervision rehearsal, never inferred from credentials. */
   mediaReady?: boolean
-  validatePlanAssets?: (plan: LiveLessonPlan) => Promise<void>
   /** Revoke SFU/resources and writer leases immediately after a durable permission change. */
   onPermissionsChanged?: (occurrenceId: string) => Promise<void>
+  /** The live courses (cohorts, catalog, the published lesson parts). Without it: no cohorts. */
+  courses?: LiveCoursePort
+  /**
+   * Achievements and missions when a child is received in a `live` encounter. Best effort,
+   * outside the transaction: a failure never undoes nor fails the teacher's command.
+   */
+  liveRewards?: LiveRewardsPort
+  onRewardsError?: (error: unknown) => void
+  /** The segment timeline the recorder confirmed (chapters are computed on publication). */
+  recordingTimeline?: (occurrenceId: string) => Promise<LiveRecordingSegmentTime[] | null>
+  /**
+   * The REAL bucket where the recorder writes the MP4 (`R2_BUCKET` of the recorder). The Admin
+   * signs the temporary URL with its own credentials. Without it, the source is unavailable.
+   */
+  recordingBucket?: string
 }
 /** Media authorization computed from one cohort snapshot (one load, many publishers). */
 export interface LiveMediaAuthorization {
@@ -79,34 +102,60 @@ export const LIVE_LOBBY_EARLY_MS = 15 * 60_000
 const TRANSITIONS = new Set<LiveControl['kind']>(['start', 'end', 'open-lobby', 'cancel'])
 
 const firstName = (name: string) => name.trim().split(/\s+/)[0]?.slice(0, 50) || 'Criador'
+/** A recording the child can watch: the platform file or the video already ready on Vimeo. */
+const watchable = (recording: LiveOccurrence['recording']) =>
+  recording.storageKey !== null || recording.vimeo?.status === 'ready'
 const recordingPublished = (aggregate: LiveCohortAggregate, sessionId: string) =>
   aggregate.occurrences.some(
     (item) =>
       item.sessionId === sessionId &&
       item.recording.published &&
       item.recording.state === 'ready' &&
-      item.recording.storageKey !== null,
+      watchable(item.recording),
   )
 const summary = (
   { plan, ...session }: LiveSession,
   occurrence?: LiveOccurrence,
   aggregate?: LiveCohortAggregate,
+  titles?: Map<string, string>,
 ) => ({
   ...session,
-  title: plan.title,
+  // The lesson title of the live course (fresh in the catalog); the creation snapshot otherwise.
+  title: (session.lessonId && titles?.get(session.lessonId)) || plan.title,
   occurrenceStartsAt: occurrence?.startsAt ?? session.startsAt,
   occurrenceEndsAt: occurrence?.endsAt ?? session.endsAt,
   ...(occurrence ? { occurrenceState: occurrence.state } : {}),
   ...(aggregate ? { recordingPublished: recordingPublished(aggregate, session.id) } : {}),
 })
-const sessionSummaries = (aggregate: LiveCohortAggregate) =>
+const sessionSummaries = (aggregate: LiveCohortAggregate, titles?: Map<string, string>) =>
   aggregate.sessions.map((session) =>
     summary(
       session,
       aggregate.occurrences.find((occurrence) => occurrence.id === session.occurrenceId),
       aggregate,
+      titles,
     ),
   )
+const courseSummary = ({
+  status: _status,
+  modality: _modality,
+  ...course
+}: LiveCourseRecord): LiveCourseSummary => course
+const recordingSummary = (item: LiveOccurrence): LiveRecordingSummary => {
+  const { storageKey: _key, ...recording } = item.recording
+  return { occurrenceId: item.id, startsAt: item.startsAt, recording }
+}
+/** Section ids of the published lesson stay cached briefly: heartbeats validate against them. */
+const SECTIONS_CACHE_MS = 30_000
+const SECTIONS_CACHE_LIMIT = 500
+const UUID = /^[\da-f]{8}-(?:[\da-f]{4}-){3}[\da-f]{12}$/i
+interface RewardCandidate {
+  learnerId: string
+  accountId: string
+  occurrenceId: string
+  courseId: string
+  audience: 'adult' | 'kids'
+}
 const validDate = (value: string) => {
   const time = Date.parse(value)
   if (!Number.isFinite(time)) throw new ValidationError('Data inválida.')
@@ -161,6 +210,8 @@ export class LiveService {
     private readonly id: () => string = randomUUID,
   ) {}
 
+  private readonly sectionsCache = new Map<string, { until: number; ids: string[] | null }>()
+
   private requireStaff(actor: LiveActor) {
     if (!actor.staff) throw new LiveAccessError('Acesso da equipe necessário.')
   }
@@ -183,112 +234,58 @@ export class LiveService {
     })
   }
 
-  private async validatePlan(plan: LiveLessonPlan) {
-    text(plan.title, 160)
-    text(plan.instructions, 24_000)
-    plan.steps = sanitizeLiveSteps(plan.steps)
-    const studio = sanitizeLiveStudio(plan.studio)
-    if (studio === undefined) delete plan.studio
-    else plan.studio = studio
-    if (Buffer.byteLength(JSON.stringify(plan), 'utf8') > 2_000_000)
-      throw new ValidationError('O roteiro do encontro pode ter até 2 MB.')
-    if (
-      plan.materials.length > 30 ||
-      new Set(plan.materials.map((material) => material.id)).size !== plan.materials.length
-    )
-      throw new ValidationError('Materiais repetidos ou acima do limite.')
-    for (const material of plan.materials) {
-      text(material.title, 160)
-      text(material.fileName, 200)
-      if (
-        !material.storageKey.startsWith('live/materials/') ||
-        material.storageKey.includes('..') ||
-        [...material.storageKey].some(
-          (character) => character.charCodeAt(0) < 32 || character === '\\',
-        )
-      )
-        throw new ValidationError('Material fora da área de arquivos da oficina.')
-    }
-    if (plan.starterProjectId || plan.materials.length) {
-      if (!this.options.validatePlanAssets)
-        throw new LiveUnavailableError(
-          'A importação de projetos e materiais precisa estar configurada antes de publicar estes arquivos.',
-        )
-      await this.options.validatePlanAssets(plan)
-    }
+  private requireCourses(): LiveCoursePort {
+    if (!this.options.courses)
+      throw new LiveUnavailableError('Os cursos ao vivo ainda não estão configurados.')
+    return this.options.courses
   }
 
-  private validateProjectContinuity(lessons: LiveLessonPlan[]) {
-    for (const [index, lesson] of lessons.entries()) {
-      const source = lesson.continueProjectFrom
-      if (
-        source != null &&
-        (!Number.isInteger(source) || source < 0 || source >= index || lesson.starterProjectId)
-      )
-        throw new ValidationError(
-          'Continue o projeto de um encontro anterior, sem escolher outro modelo inicial.',
-        )
-    }
+  /**
+   * The parts of the PUBLISHED lesson, in order. `fresh` skips the short cache (start and
+   * open-section read the lesson as it is now); heartbeats use the cache. Null = no published
+   * lesson (unpublished, deleted, or no course port).
+   */
+  private async publishedSections(lessonId: string, fresh = false): Promise<string[] | null> {
+    const now = this.clock().getTime()
+    const cached = this.sectionsCache.get(lessonId)
+    if (!fresh && cached && cached.until > now) return cached.ids
+    const lesson = await this.options.courses?.lessonSections(lessonId)
+    const ids = lesson?.published ? lesson.sectionIds : null
+    if (this.sectionsCache.size >= SECTIONS_CACHE_LIMIT)
+      for (const [key, value] of this.sectionsCache)
+        if (value.until <= now) this.sectionsCache.delete(key)
+    if (this.sectionsCache.size >= SECTIONS_CACHE_LIMIT) this.sectionsCache.clear()
+    this.sectionsCache.set(lessonId, { until: now + SECTIONS_CACHE_MS, ids })
+    return ids
   }
 
-  async createProgram(actor: LiveActor, input: LiveCreateProgram): Promise<LiveProgram> {
+  /**
+   * A cohort of a LIVE course: one encounter per PUBLISHED lesson, in the course order. The
+   * course summary is kept in the cohort (lists, platform filter, the room's lesson address).
+   */
+  async createCohort(actor: LiveActor, courseId: string, input: LiveCreateCohort) {
     this.requireStaff(actor)
-    if (!input.lessons.length || input.lessons.length > 24)
-      throw new ValidationError('A oficina precisa de 1 a 24 encontros.')
-    for (const lesson of input.lessons) await this.validatePlan(lesson)
-    this.validateProjectContinuity(input.lessons)
-    const program: LiveProgram = {
-      id: this.id(),
-      title: text(input.title, 160),
-      description: text(input.description, 4000),
-      lessons: structuredClone(input.lessons),
-      status: 'draft',
-      revision: 1,
-      createdAt: this.clock().toISOString(),
-    }
-    await this.repository.createProgram(program)
-    return program
-  }
-
-  async updateProgram(
-    actor: LiveActor,
-    id: string,
-    patch: Partial<LiveCreateProgram> & {
-      expectedRevision: number
-      status?: LiveProgram['status']
-    },
-  ) {
-    this.requireStaff(actor)
-    if (patch.lessons) {
-      if (!patch.lessons.length || patch.lessons.length > 24)
-        throw new ValidationError('A oficina precisa de 1 a 24 encontros.')
-      for (const lesson of patch.lessons) await this.validatePlan(lesson)
-      this.validateProjectContinuity(patch.lessons)
-    }
-    return this.repository.updateProgram(id, (program) => {
-      if (program.revision !== patch.expectedRevision) throw new LiveConflictError()
-      if (patch.title !== undefined) program.title = text(patch.title, 160)
-      if (patch.description !== undefined) program.description = text(patch.description, 4000)
-      if (patch.lessons) program.lessons = structuredClone(patch.lessons)
-      if (patch.status) program.status = patch.status
-      program.revision++
-    })
-  }
-
-  async createCohort(actor: LiveActor, programId: string, input: LiveCreateCohort) {
-    this.requireStaff(actor)
-    const program = await this.repository.findProgram(programId)
-    if (!program) throw new LiveNotFoundError()
-    if (program.status === 'archived') throw new LiveConflictError('Esta oficina está arquivada.')
+    const course = await this.requireCourses().findCourse(courseId)
+    if (!course) throw new LiveNotFoundError()
+    if (course.modality !== 'live')
+      throw new ValidationError('Turmas são só de cursos ao vivo. Este curso é gravado.')
+    if (course.status === 'archived') throw new LiveConflictError('Este curso está arquivado.')
+    if (!course.lessons.length)
+      throw new ValidationError('Publique as aulas do curso antes de criar a turma.')
+    if (course.lessons.length > 24)
+      throw new ValidationError('Uma turma tem até 24 encontros: o curso tem aulas demais.')
     if (!Number.isInteger(input.capacity) || input.capacity < 1 || input.capacity > 8)
       throw new ValidationError('A turma pode ter até oito crianças.')
     const teacherIds = validTeachers(input.teacherIds)
     const teacherNames = teacherNamesFor(teacherIds, input.teacherNames)
-    if (input.schedule.length !== program.lessons.length)
-      throw new ValidationError('Agende uma data para cada encontro da oficina.')
+    if (input.schedule.length !== course.lessons.length)
+      throw new ValidationError('Agende uma data para cada aula publicada do curso.')
     const cohort: LiveCohort = {
       id: this.id(),
-      programId,
+      // A course cohort has no script; the field stays for the old contract.
+      programId: '',
+      courseId: course.id,
+      course: { id: course.id, slug: course.slug, title: course.title, audience: course.audience },
       title: text(input.title, 160),
       timeZone: input.timeZone,
       capacity: input.capacity,
@@ -320,13 +317,14 @@ export class LiveService {
       } catch {
         throw new ValidationError('Confira o fuso, a duração do acesso e as datas da turma.')
       }
-      const plan = program.lessons[order]
-      if (!plan) throw new ValidationError('Encontro não encontrado no roteiro.')
+      const lesson = course.lessons[order]!
       return {
         id: sessionId,
         cohortId: cohort.id,
         order,
-        plan: structuredClone(plan),
+        lessonId: lesson.id,
+        // The old script field stays typed; only the title is read (as a fallback).
+        plan: { title: lesson.title, instructions: '', starterProjectId: null, materials: [] },
         startsAt: occurrence.startsAt,
         endsAt: occurrence.endsAt,
         accessEndsAt,
@@ -565,10 +563,15 @@ export class LiveService {
     return { enrollments: aggregate.enrollments }
   }
 
+  /**
+   * Admin: the cohorts of the platform (`audience`, from the course) and every LIVE course of
+   * it, to pick one for a new cohort. Child/parents: discovery (open cohorts) + own seats, with
+   * the courses of those cohorts (published lessons only). Old script cohorts never appear.
+   */
   async catalog(
     actor: LiveActor,
     mode: 'learner' | 'parents' | 'admin' = 'learner',
-    page: { cursor?: string; limit?: number } = {},
+    page: { cursor?: string; limit?: number; audience?: 'adult' | 'kids' } = {},
   ) {
     if (mode === 'admin') this.requireStaff(actor)
     if (mode === 'parents' && actor.id !== actor.accountId)
@@ -578,49 +581,81 @@ export class LiveService {
       !Number.isInteger(limit) ||
       limit < 1 ||
       limit > 50 ||
-      (page.cursor && !/^[\da-f]{8}-(?:[\da-f]{4}-){3}[\da-f]{12}$/i.test(page.cursor))
+      (page.cursor && !UUID.test(page.cursor)) ||
+      (page.audience !== undefined && page.audience !== 'adult' && page.audience !== 'kids')
     )
       throw new ValidationError('Página de oficinas inválida.')
-    const [allPrograms, rows] = await Promise.all([
-      this.repository.listPrograms(),
-      this.repository.listCohorts({ actor, mode, cursor: page.cursor, limit: limit + 1 }),
-    ])
+    // The live courses of the platform (few): the admin picks one; discovery needs it PUBLISHED.
+    const liveCourses =
+      (await this.options.courses?.listLiveCourses({ audience: page.audience })) ?? []
+    const discoverable = new Set(
+      liveCourses.filter((course) => course.status === 'published').map((course) => course.id),
+    )
+    const rows = await this.repository.listCohorts({
+      actor,
+      mode,
+      cursor: page.cursor,
+      limit: limit + 1,
+      audience: page.audience,
+      discoverableCourseIds: [...discoverable],
+    })
     const all = rows.slice(0, limit)
     const nextCursor = rows.length > limit ? all.at(-1)!.cohort.id : null
+    const own = (enrollment: LiveEnrollment) =>
+      enrollment.accountId === actor.accountId &&
+      (mode === 'parents' || enrollment.learnerId === actor.id)
+    const visible =
+      mode === 'admin'
+        ? all
+        : all.filter(
+            (item) =>
+              (item.cohort.status === 'open' &&
+                item.cohort.courseId !== undefined &&
+                item.cohort.courseId !== null &&
+                discoverable.has(item.cohort.courseId)) ||
+              item.enrollments.some(own) ||
+              (actor.staff && item.cohort.teacherIds.includes(actor.id)),
+          )
+    const visibleCourses = new Set(visible.map((item) => item.cohort.courseId))
+    const courses =
+      mode === 'admin' ? liveCourses : liveCourses.filter((course) => visibleCourses.has(course.id))
+    const fresh = new Map(courses.map((course) => [course.id, course]))
+    const titles = new Map(
+      courses.flatMap((course) => course.lessons.map((lesson) => [lesson.id, lesson.title])),
+    )
+    // The cohort keeps a course summary from its creation; the catalog shows the current one.
+    const cohortOf = ({ cohort }: LiveCohortAggregate): LiveCohort => {
+      const course = cohort.courseId ? fresh.get(cohort.courseId) : undefined
+      return course
+        ? {
+            ...cohort,
+            course: {
+              id: course.id,
+              slug: course.slug,
+              title: course.title,
+              audience: course.audience,
+            },
+          }
+        : cohort
+    }
+    const summaries = (aggregate: LiveCohortAggregate) => sessionSummaries(aggregate, titles)
     if (mode === 'admin')
       return {
         nextCursor,
-        programs: allPrograms,
-        cohorts: all.map((item) => item.cohort),
-        sessions: all.flatMap(sessionSummaries),
+        courses: courses.map(courseSummary),
+        programs: [],
+        cohorts: all.map(cohortOf),
+        sessions: all.flatMap(summaries),
         // Staff not assigned to a cohort does not see that cohort's children or families.
         enrollments: all.flatMap((item) =>
           this.seesRoster(actor, item.cohort) ? item.enrollments : [],
         ),
-      }
-    const own = (enrollment: LiveEnrollment) =>
-      enrollment.accountId === actor.accountId &&
-      (mode === 'parents' || enrollment.learnerId === actor.id)
-    const visible = all.filter(
-      (item) =>
-        (item.cohort.status === 'open' &&
-          allPrograms.some(
-            (program) => program.id === item.cohort.programId && program.status === 'published',
-          )) ||
-        item.enrollments.some(own) ||
-        (actor.staff && item.cohort.teacherIds.includes(actor.id)),
-    )
-    const programs = allPrograms
-      .filter(
-        (program) =>
-          program.status === 'published' ||
-          visible.some((item) => item.cohort.programId === program.id),
-      )
-      .map(({ lessons, ...program }) => ({ ...program, lessonCount: lessons.length }))
+      } satisfies LiveCatalogView
     return {
       nextCursor,
-      programs,
-      cohorts: visible.map((item) => item.cohort),
+      courses: courses.map(courseSummary),
+      programs: [],
+      cohorts: visible.map(cohortOf),
       // Discovery can include public offers; the personal agenda requires a seat
       // or an assigned teacher. Expired grants remain visible as lesson history.
       sessions: visible
@@ -632,7 +667,7 @@ export class LiveService {
                 (enrollment) => own(enrollment) && enrollment.status === 'active',
               )),
         )
-        .flatMap(sessionSummaries),
+        .flatMap(summaries),
       enrollments: visible.flatMap((item) => item.enrollments.filter(own)),
     } satisfies LiveCatalogView
   }
@@ -641,7 +676,8 @@ export class LiveService {
   contextFor(actor: LiveActor, aggregate: LiveCohortAggregate, sessionId: string): LiveContext {
     const session = aggregate.sessions.find((item) => item.id === sessionId)
     const occurrence = aggregate.occurrences.find((item) => item.id === session?.occurrenceId)
-    if (!session || !occurrence) throw new LiveNotFoundError()
+    // An old script cohort (no live course) was archived by 0110 and is ignored everywhere.
+    if (!session || !occurrence || !aggregate.cohort.courseId) throw new LiveNotFoundError()
     if (actor.staff && aggregate.cohort.teacherIds.includes(actor.id))
       return { aggregate, session, occurrence, enrollment: null, grant: null, role: 'teacher' }
     const enrollment = aggregate.enrollments.find(
@@ -662,8 +698,14 @@ export class LiveService {
     return this.repository.findBySession(sessionId)
   }
 
+  /** A Studio block of the PUBLISHED lesson (the live project seed and curation). */
+  async studioBlock(lessonId: string, blockId: string): Promise<LiveStudioBlockRecord | null> {
+    return (await this.options.courses?.studioBlock(lessonId, blockId)) ?? null
+  }
+
+  /** The room of ONE encounter (never the other encounters of the cohort). */
   async requireContext(actor: LiveActor, sessionId: string): Promise<LiveContext> {
-    const aggregate = await this.repository.findBySession(sessionId)
+    const aggregate = await this.repository.findRoom({ sessionId })
     if (!aggregate) throw new LiveNotFoundError()
     return this.contextFor(actor, aggregate, sessionId)
   }
@@ -735,20 +777,20 @@ export class LiveService {
               )
           : []
     }
-    const plan: LiveLessonPlanView | null = canOpen
-      ? {
-          ...structuredClone(session.plan),
-          steps: session.plan.steps?.map((step) => ({
-            ...structuredClone(step),
-            blocks: step.blocks.map((block) => ({
-              ...block,
-              content: publicInteractiveBlock(block.content),
-            })),
-          })),
-        }
-      : null
-    // Identifiers for materials remain; download resolution performs a new access check.
-    if (plan) plan.materials = plan.materials.map((material) => ({ ...material, storageKey: '' }))
+    // An unpublished recording (under review) never shows its Vimeo link or chapters to a child.
+    if (role === 'learner' && !occurrence.recording.published) {
+      delete occurrence.recording.vimeo
+      delete occurrence.recording.chapters
+    }
+    // The lesson of the encounter opens through the regular lesson routes (null when expired).
+    const lesson =
+      canOpen && aggregate.cohort.courseId && aggregate.cohort.course && session.lessonId
+        ? {
+            courseId: aggregate.cohort.courseId,
+            courseSlug: aggregate.cohort.course.slug,
+            lessonId: session.lessonId,
+          }
+        : null
     const reception =
       (canOpen || early) &&
       ['lobby', 'live'].includes(occurrence.state) &&
@@ -757,12 +799,7 @@ export class LiveService {
     return {
       session: summary(session, occurrence, aggregate),
       cohort: aggregate.cohort,
-      plan,
-      // Only alongside a plan: a revision that came with `plan: null` would make the client
-      // keep asking for "the same" plan and never receive it after the release.
-      ...(plan
-        ? { planRevision: createHash('sha256').update(JSON.stringify(session.plan)).digest('hex') }
-        : {}),
+      lesson,
       access: {
         startsAt: grant?.startsAt ?? session.startsAt,
         endsAt: grant?.endsAt ?? session.accessEndsAt,
@@ -779,15 +816,12 @@ export class LiveService {
             .filter(
               (item) =>
                 item.sessionId === session.id &&
-                item.recording.storageKey &&
+                (item.recording.storageKey || item.recording.vimeo) &&
                 ['review', 'ready'].includes(item.recording.state) &&
                 (role === 'teacher' || item.recording.published),
             )
             .sort((a, b) => validDate(b.startsAt) - validDate(a.startsAt))
-            .map((item) => {
-              const { storageKey: _key, ...recording } = item.recording
-              return { occurrenceId: item.id, startsAt: item.startsAt, recording }
-            })
+            .map((item) => recordingSummary(item))
         : [],
       role,
       actorId: actor.id,
@@ -804,15 +838,13 @@ export class LiveService {
     )
   }
 
-  async room(actor: LiveActor, sessionId: string, knownPlanRevision?: string) {
+  async room(actor: LiveActor, sessionId: string) {
     let context = await this.requireContext(actor, sessionId)
     if (this.overdue(context.occurrence)) {
       await this.endExpiredOccurrence(context.occurrence.id)
       context = await this.requireContext(actor, sessionId)
     }
-    const room = this.view(actor, context)
-    if (room.plan && knownPlanRevision === room.planRevision) delete room.plan
-    return room
+    return this.view(actor, context)
   }
 
   /** Separate from recording: a slow recorder never delays the end of a class. */
@@ -822,9 +854,18 @@ export class LiveService {
   }
 
   private async endExpiredOccurrence(id: string): Promise<void> {
-    const cohortId = (await this.repository.findByOccurrence(id))?.cohort.id
-    if (!cohortId) return
-    const changed = await this.repository.transaction(cohortId, (aggregate) => {
+    let changed: boolean
+    try {
+      changed = await this.endExpired(id)
+    } catch (error) {
+      if (error instanceof LiveNotFoundError) return
+      throw error
+    }
+    if (changed) await this.options.onPermissionsChanged?.(id)
+  }
+
+  private endExpired(id: string): Promise<boolean> {
+    return this.repository.roomTransaction({ occurrenceId: id }, (aggregate) => {
       const occurrence = aggregate.occurrences.find((item) => item.id === id)
       if (!occurrence || !this.overdue(occurrence)) return false
       // An encounter that never happened is cancelled (and can get a replacement);
@@ -847,33 +888,28 @@ export class LiveService {
       })
       return true
     })
-    if (changed) await this.options.onPermissionsChanged?.(id)
   }
 
-  async withAvailableSession<T>(
-    actor: LiveActor,
-    sessionId: string,
-    action: (context: LiveContext, reads: LiveTransactionReads) => Promise<T>,
-  ) {
-    return this.mutateRoom(actor, sessionId, async (context, reads) => {
-      this.assertAvailable(context)
-      return action(context, reads)
-    })
-  }
-
-  /** One indexed lookup, then the cohort lock; authorization happens on the locked snapshot. */
+  /**
+   * Writes of ONE encounter: the cohort lock, then only this encounter is loaded and persisted.
+   * Authorization happens on the locked snapshot.
+   */
   private async mutateRoom<T>(
     actor: LiveActor,
     sessionId: string,
-    mutate: (context: LiveContext, reads: LiveTransactionReads) => T | Promise<T>,
+    mutate: (context: LiveContext) => T | Promise<T>,
   ) {
-    const cohortId = await this.repository.cohortIdForSession(sessionId)
-    if (!cohortId) throw new LiveNotFoundError()
-    return this.repository.transaction(
-      cohortId,
-      async (aggregate, reads) => mutate(this.contextFor(actor, aggregate, sessionId), reads),
+    return this.repository.roomTransaction(
+      { sessionId },
+      async (aggregate) => mutate(this.contextFor(actor, aggregate, sessionId)),
       actor.accountId,
     )
+  }
+
+  private async requireRef(sessionId: string) {
+    const ref = await this.repository.sessionRef(sessionId)
+    if (!ref) throw new LiveNotFoundError()
+    return ref
   }
 
   private operational(context: LiveContext, allowLobby = false) {
@@ -948,36 +984,96 @@ export class LiveService {
     return room
   }
 
+  /**
+   * Presence plus what the child is doing: the part of the lesson she is in (`sectionId`) and
+   * the parts she already completed (`completedSectionIds`, from the real lesson progress), for
+   * the teacher's cards. Section ids must be parts of the PUBLISHED lesson.
+   */
   async heartbeat(
     actor: LiveActor,
     sessionId: string,
     deviceId: string,
     activity?: LiveActivityReport,
   ) {
-    return this.mutateRoom(actor, sessionId, (context) => {
-      this.operational(context, true)
-      if (context.role === 'teacher')
-        context.occurrence.teachers[actor.id] = this.clock().toISOString()
-      else {
-        const participant = this.participation(actor, context, deviceId)
-        participant.seenAt = this.clock().toISOString()
-        if (activity && participant.admission === 'admitted') {
-          if (
-            activity.stepId &&
-            !context.session.plan.steps?.some((step) => step.id === activity.stepId)
-          )
-            throw new ValidationError('Etapa inválida para este encontro.')
-          if (!['not-open', 'saving', 'saved', 'offline'].includes(activity.saveState))
-            throw new ValidationError('Estado de salvamento inválido.')
-          participant.activity = {
-            stepId: activity.stepId,
-            saveState: activity.saveState,
-            reportedAt: participant.seenAt,
-          }
-        }
-      }
+    const report = activity ? this.activityReport(activity) : null
+    // One read of this encounter, no lock: most beats change nothing but presence.
+    const context = await this.requireContext(actor, sessionId)
+    this.operational(context, true)
+    if (report && (report.sectionId || report.completedSectionIds?.length)) {
+      const lessonId = context.session.lessonId
+      const known = new Set((lessonId ? await this.publishedSections(lessonId) : null) ?? [])
+      if (
+        (report.sectionId && !known.has(report.sectionId)) ||
+        report.completedSectionIds?.some((id) => !known.has(id))
+      )
+        throw new ValidationError('Parte inválida para este encontro.')
+    }
+    const now = this.clock()
+    const at = now.toISOString()
+    const { occurrence } = context
+    if (context.role === 'teacher') {
+      if (presenceStale(occurrence.teachers[actor.id], now))
+        await this.repository.touchPresence({
+          occurrenceId: occurrence.id,
+          actorId: actor.id,
+          accountId: actor.accountId,
+          at: now,
+        })
+      occurrence.teachers[actor.id] = at
       return this.view(actor, context)
-    })
+    }
+    const participant = this.participation(actor, context, deviceId)
+    const reporting = report !== null && participant.admission === 'admitted'
+    if (reporting && !sameActivity(participant.activity, report))
+      // What the child is doing changed: the occurrence document, under the cohort lock.
+      return this.mutateRoom(actor, sessionId, (locked) => {
+        this.operational(locked, true)
+        const current = this.participation(actor, locked, deviceId)
+        current.seenAt = at
+        if (current.admission === 'admitted') current.activity = { ...report, reportedAt: at }
+        return this.view(actor, locked)
+      })
+    if (
+      presenceStale(participant.seenAt, now) ||
+      (reporting && presenceStale(participant.activity?.reportedAt, now))
+    )
+      await this.repository.touchPresence({
+        occurrenceId: occurrence.id,
+        actorId: actor.id,
+        accountId: actor.accountId,
+        at: now,
+        activity: reporting,
+      })
+    participant.seenAt = at
+    if (reporting && participant.activity) participant.activity.reportedAt = at
+    return this.view(actor, context)
+  }
+
+  /** The child's report, validated in shape (no I/O): parts are checked against the lesson. */
+  private activityReport(
+    activity: LiveActivityReport,
+  ): Omit<LiveActivityReport, 'stepId'> & { stepId: null } {
+    if (!['not-open', 'saving', 'saved', 'offline'].includes(activity.saveState))
+      throw new ValidationError('Estado de salvamento inválido.')
+    // The old script steps are gone: a step id is never valid in a course encounter.
+    if (activity.stepId) throw new ValidationError('Etapa inválida para este encontro.')
+    const sectionId = activity.sectionId ?? null
+    const completed = activity.completedSectionIds
+    if (
+      (sectionId !== null && (typeof sectionId !== 'string' || !UUID.test(sectionId))) ||
+      (completed !== undefined &&
+        (!Array.isArray(completed) ||
+          completed.length > LIVE_SECTIONS_MAX ||
+          new Set(completed).size !== completed.length ||
+          completed.some((id) => typeof id !== 'string' || !UUID.test(id))))
+    )
+      throw new ValidationError('Parte inválida para este encontro.')
+    return {
+      stepId: null,
+      saveState: activity.saveState,
+      sectionId,
+      ...(completed !== undefined ? { completedSectionIds: [...completed] } : {}),
+    }
   }
 
   async request(
@@ -1055,183 +1151,267 @@ export class LiveService {
     command: LiveControl,
   ) {
     if (command.kind === 'lower-hands' && command.before !== undefined) validDate(command.before)
+    const ref = await this.requireRef(sessionId)
+    // The parts of the PUBLISHED lesson, read before the cohort lock (never a second
+    // connection while it is held) and fresh: the teacher conducts the lesson as it is now.
+    const sections =
+      (command.kind === 'start' || command.kind === 'open-section') && ref.lessonId
+        ? await this.publishedSections(ref.lessonId, true)
+        : null
+    let rewards: RewardCandidate[] = []
     const room = await this.mutateRoom(actor, sessionId, (context) => {
       if (context.role !== 'teacher')
         throw new LiveAccessError('Somente a professora desta turma pode conduzir a sala.')
-      const { occurrence } = context
-      if (
-        TRANSITIONS.has(command.kind) &&
-        expectedVersion !== undefined &&
-        occurrence.version !== expectedVersion
-      )
-        throw new LiveConflictError()
-      if (['ended', 'cancelled'].includes(occurrence.state)) {
-        if (
-          (command.kind === 'end' && occurrence.state === 'ended') ||
-          (command.kind === 'cancel' && occurrence.state === 'cancelled')
-        )
-          return this.view(actor, context)
-        throw new LiveConflictError('Este encontro já terminou. Agende uma reposição.')
-      }
-      if (
-        command.kind !== 'end' &&
-        command.kind !== 'cancel' &&
-        this.clock().getTime() >= validDate(occurrence.hardEndsAt)
-      )
-        throw new LiveConflictError('O horário deste encontro terminou.')
-      switch (command.kind) {
-        case 'suggest-step':
-          if (
-            command.stepId !== null &&
-            !context.session.plan.steps?.some((step) => step.id === command.stepId)
-          )
-            throw new LiveNotFoundError()
-          occurrence.suggestedStepId = command.stepId
-          break
-        case 'open-lobby':
-          if (occurrence.state !== 'scheduled') throw new LiveConflictError()
-          if (this.clock().getTime() < validDate(occurrence.startsAt) - LIVE_LOBBY_EARLY_MS)
-            throw new LiveConflictError('A sala de espera abre quinze minutos antes do encontro.')
-          occurrence.state = 'lobby'
-          break
-        case 'start':
-          if (
-            !['scheduled', 'lobby'].includes(occurrence.state) ||
-            this.clock().getTime() < validDate(occurrence.startsAt)
-          )
-            throw new LiveConflictError('O encontro só pode começar no horário agendado.')
-          if (!this.options.mediaReady)
-            throw new LiveUnavailableError(
-              'A transmissão precisa concluir a verificação operacional antes de iniciar uma turma.',
-            )
-          occurrence.state = 'live'
-          // The recording follows whoever actually conducts this occurrence.
-          occurrence.conductorId = actor.id
-          break
-        case 'end':
-          occurrence.state = 'ended'
-          for (const participant of occurrence.participants) {
-            participant.turnGranted = false
-            participant.muteEpoch++
-          }
-          break
-        case 'cancel':
-          if (!['scheduled', 'lobby'].includes(occurrence.state))
-            throw new LiveConflictError(
-              'Só dá para cancelar um encontro que ainda não começou. Use Encerrar.',
-            )
-          occurrence.state = 'cancelled'
-          occurrence.guidance = null
-          for (const participant of occurrence.participants) {
-            participant.turnGranted = false
-            participant.muteEpoch++
-          }
-          break
-        case 'speaking-mode':
-          occurrence.speakingMode = command.mode
-          for (const participant of occurrence.participants) {
-            participant.turnGranted = false
-            participant.muteEpoch++
-          }
-          break
-        case 'chat':
-          occurrence.chatEnabled = command.enabled
-          break
-        case 'guide': {
-          if (
-            command.learnerId &&
-            !occurrence.participants.some(
-              (participant) =>
-                participant.learnerId === command.learnerId && participant.admission === 'admitted',
-            )
-          )
-            throw new LiveNotFoundError()
-          occurrence.guidance = {
-            id: this.id(),
-            target: command.target,
-            learnerId: command.learnerId,
-            expiresAt: new Date(this.clock().getTime() + 8_000).toISOString(),
-          }
-          break
-        }
-        case 'remove-message':
-        case 'pin-message': {
-          const message = occurrence.messages.find((item) => item.id === command.messageId)
-          if (!message) throw new LiveNotFoundError()
-          if (command.kind === 'remove-message') {
-            message.removed = true
-            message.text = ''
-            message.pinned = false
-          } else if (!message.removed) message.pinned = !message.pinned
-          break
-        }
-        case 'open-section':
-          // Partes conduzidas (cursos ao vivo): implementado no lote dos cursos ao vivo.
-          throw new LiveConflictError('Esta parte ainda não pode ser aberta.')
-        case 'admit-all':
-          for (const participant of occurrence.participants)
-            if (participant.admission === 'waiting') participant.admission = 'admitted'
-          break
-        default: {
-          const participants =
-            command.learnerId === null
-              ? occurrence.participants
-              : occurrence.participants.filter((item) => item.learnerId === command.learnerId)
-          if (command.learnerId && participants.length === 0) throw new LiveNotFoundError()
-          for (const participant of participants) {
-            switch (command.kind) {
-              case 'admit':
-                participant.admission = 'admitted'
-                break
-              case 'remove':
-                participant.admission = 'removed'
-                participant.turnGranted = false
-                participant.muteEpoch++
-                break
-              case 'grant-turn':
-                if (participant.admission === 'admitted') participant.turnGranted = true
-                break
-              case 'revoke-turn':
-                participant.turnGranted = false
-                participant.muteEpoch++
-                break
-              case 'mute':
-                participant.muteEpoch++
-                break
-              case 'lower-hands':
-                // A hand raised after the teacher's snapshot stays up.
-                if (
-                  command.before === undefined ||
-                  (participant.handAt !== null &&
-                    Date.parse(participant.handAt) <= Date.parse(command.before))
-                )
-                  participant.handAt = null
-                break
-              case 'lock-microphone':
-                participant.microphoneLocked = true
-                participant.turnGranted = false
-                participant.muteEpoch++
-                break
-              case 'unlock-microphone':
-                participant.microphoneLocked = false
-                break
-              case 'lock-camera':
-                participant.cameraLocked = true
-                break
-              case 'unlock-camera':
-                participant.cameraLocked = false
-                break
-            }
-          }
-        }
-      }
-      occurrence.teachers[actor.id] = this.clock().toISOString()
-      occurrence.version++
-      this.audit(context.aggregate, actor, `room.${command.kind}`, occurrence.id)
-      return this.view(actor, context)
+      const result = this.applyControl(actor, context, expectedVersion, command, sections)
+      rewards = result.rewards
+      return result.room
     })
     await this.options.onPermissionsChanged?.(room.occurrence?.id ?? '')
+    await this.grantRewards(rewards)
     return room
+  }
+
+  /** Children received in a `live` encounter: the rewards port is told after the commit. */
+  private receivedLive(context: LiveContext) {
+    if (context.occurrence.state !== 'live') return new Set<string>()
+    return new Set(
+      context.occurrence.participants
+        .filter((participant) => participant.admission === 'admitted')
+        .map((participant) => participant.learnerId),
+    )
+  }
+
+  private async grantRewards(candidates: RewardCandidate[]) {
+    const rewards = this.options.liveRewards
+    if (!rewards || !candidates.length) return
+    const results = await Promise.allSettled(
+      candidates.map((candidate) => rewards.encounterAttended(candidate)),
+    )
+    for (const result of results)
+      if (result.status === 'rejected') this.options.onRewardsError?.(result.reason)
+  }
+
+  private applyControl(
+    actor: LiveActor,
+    context: LiveContext,
+    expectedVersion: number | undefined,
+    command: LiveControl,
+    sections: string[] | null,
+  ): { room: LiveRoomView; rewards: RewardCandidate[] } {
+    const before = this.receivedLive(context)
+    const room = this.applyCommand(actor, context, expectedVersion, command, sections)
+    const { cohort } = context.aggregate
+    const rewards: RewardCandidate[] = []
+    for (const learnerId of this.receivedLive(context)) {
+      if (before.has(learnerId) || !cohort.courseId || !cohort.course) continue
+      const enrollment = context.aggregate.enrollments.find(
+        (item) => item.learnerId === learnerId && item.status === 'active',
+      )
+      if (!enrollment) continue
+      rewards.push({
+        learnerId,
+        accountId: enrollment.accountId,
+        occurrenceId: context.occurrence.id,
+        courseId: cohort.courseId,
+        audience: cohort.course.audience,
+      })
+    }
+    return { room, rewards }
+  }
+
+  private applyCommand(
+    actor: LiveActor,
+    context: LiveContext,
+    expectedVersion: number | undefined,
+    command: LiveControl,
+    sections: string[] | null,
+  ): LiveRoomView {
+    const { occurrence } = context
+    if (
+      TRANSITIONS.has(command.kind) &&
+      expectedVersion !== undefined &&
+      occurrence.version !== expectedVersion
+    )
+      throw new LiveConflictError()
+    if (['ended', 'cancelled'].includes(occurrence.state)) {
+      if (
+        (command.kind === 'end' && occurrence.state === 'ended') ||
+        (command.kind === 'cancel' && occurrence.state === 'cancelled')
+      )
+        return this.view(actor, context)
+      throw new LiveConflictError('Este encontro já terminou. Agende uma reposição.')
+    }
+    if (
+      command.kind !== 'end' &&
+      command.kind !== 'cancel' &&
+      this.clock().getTime() >= validDate(occurrence.hardEndsAt)
+    )
+      throw new LiveConflictError('O horário deste encontro terminou.')
+    switch (command.kind) {
+      case 'suggest-step':
+        // The old script steps are gone: the teacher conducts the parts (`open-section`).
+        throw new ValidationError('Este encontro não tem etapas. Abra as partes da aula.')
+      case 'open-lobby':
+        if (occurrence.state !== 'scheduled') throw new LiveConflictError()
+        if (this.clock().getTime() < validDate(occurrence.startsAt) - LIVE_LOBBY_EARLY_MS)
+          throw new LiveConflictError('A sala de espera abre quinze minutos antes do encontro.')
+        occurrence.state = 'lobby'
+        break
+      case 'start':
+        if (
+          !['scheduled', 'lobby'].includes(occurrence.state) ||
+          this.clock().getTime() < validDate(occurrence.startsAt)
+        )
+          throw new LiveConflictError('O encontro só pode começar no horário agendado.')
+        if (!this.options.mediaReady)
+          throw new LiveUnavailableError(
+            'A transmissão precisa concluir a verificação operacional antes de iniciar uma turma.',
+          )
+        occurrence.state = 'live'
+        // The recording follows whoever actually conducts this occurrence.
+        occurrence.conductorId = actor.id
+        {
+          // The FIRST part of the published lesson opens with the encounter (chapter mark).
+          const first = sections?.[0]
+          occurrence.sections = { openedIds: first ? [first] : [], currentId: first ?? null }
+          occurrence.marks = first ? [{ sectionId: first, at: this.clock().toISOString() }] : []
+        }
+        break
+      case 'end':
+        occurrence.state = 'ended'
+        for (const participant of occurrence.participants) {
+          participant.turnGranted = false
+          participant.muteEpoch++
+        }
+        break
+      case 'cancel':
+        if (!['scheduled', 'lobby'].includes(occurrence.state))
+          throw new LiveConflictError(
+            'Só dá para cancelar um encontro que ainda não começou. Use Encerrar.',
+          )
+        occurrence.state = 'cancelled'
+        occurrence.guidance = null
+        for (const participant of occurrence.participants) {
+          participant.turnGranted = false
+          participant.muteEpoch++
+        }
+        break
+      case 'speaking-mode':
+        occurrence.speakingMode = command.mode
+        for (const participant of occurrence.participants) {
+          participant.turnGranted = false
+          participant.muteEpoch++
+        }
+        break
+      case 'chat':
+        occurrence.chatEnabled = command.enabled
+        break
+      case 'guide': {
+        if (
+          command.learnerId &&
+          !occurrence.participants.some(
+            (participant) =>
+              participant.learnerId === command.learnerId && participant.admission === 'admitted',
+          )
+        )
+          throw new LiveNotFoundError()
+        occurrence.guidance = {
+          id: this.id(),
+          target: command.target,
+          learnerId: command.learnerId,
+          expiresAt: new Date(this.clock().getTime() + 8_000).toISOString(),
+        }
+        break
+      }
+      case 'remove-message':
+      case 'pin-message': {
+        const message = occurrence.messages.find((item) => item.id === command.messageId)
+        if (!message) throw new LiveNotFoundError()
+        if (command.kind === 'remove-message') {
+          message.removed = true
+          message.text = ''
+          message.pinned = false
+        } else if (!message.removed) message.pinned = !message.pinned
+        break
+      }
+      case 'open-section': {
+        if (occurrence.state !== 'live')
+          throw new LiveConflictError('As partes abrem com o encontro ao vivo.')
+        if (!sections?.includes(command.sectionId)) throw new LiveNotFoundError()
+        const control = occurrence.sections ?? { openedIds: [], currentId: null }
+        // Reopening an already opened part only makes it current: no second chapter.
+        if (!control.openedIds.includes(command.sectionId)) {
+          control.openedIds = [...control.openedIds, command.sectionId]
+          occurrence.marks = [
+            ...(occurrence.marks ?? []),
+            { sectionId: command.sectionId, at: this.clock().toISOString() },
+          ]
+        }
+        control.currentId = command.sectionId
+        occurrence.sections = control
+        break
+      }
+      case 'admit-all':
+        for (const participant of occurrence.participants)
+          if (participant.admission === 'waiting') participant.admission = 'admitted'
+        break
+      default: {
+        const participants =
+          command.learnerId === null
+            ? occurrence.participants
+            : occurrence.participants.filter((item) => item.learnerId === command.learnerId)
+        if (command.learnerId && participants.length === 0) throw new LiveNotFoundError()
+        for (const participant of participants) {
+          switch (command.kind) {
+            case 'admit':
+              participant.admission = 'admitted'
+              break
+            case 'remove':
+              participant.admission = 'removed'
+              participant.turnGranted = false
+              participant.muteEpoch++
+              break
+            case 'grant-turn':
+              if (participant.admission === 'admitted') participant.turnGranted = true
+              break
+            case 'revoke-turn':
+              participant.turnGranted = false
+              participant.muteEpoch++
+              break
+            case 'mute':
+              participant.muteEpoch++
+              break
+            case 'lower-hands':
+              // A hand raised after the teacher's snapshot stays up.
+              if (
+                command.before === undefined ||
+                (participant.handAt !== null &&
+                  Date.parse(participant.handAt) <= Date.parse(command.before))
+              )
+                participant.handAt = null
+              break
+            case 'lock-microphone':
+              participant.microphoneLocked = true
+              participant.turnGranted = false
+              participant.muteEpoch++
+              break
+            case 'unlock-microphone':
+              participant.microphoneLocked = false
+              break
+            case 'lock-camera':
+              participant.cameraLocked = true
+              break
+            case 'unlock-camera':
+              participant.cameraLocked = false
+              break
+          }
+        }
+      }
+    }
+    occurrence.teachers[actor.id] = this.clock().toISOString()
+    occurrence.version++
+    this.audit(context.aggregate, actor, `room.${command.kind}`, occurrence.id)
+    return this.view(actor, context)
   }
 
   /** Media authorization of one actor over an already loaded snapshot (no I/O). */
@@ -1273,7 +1453,7 @@ export class LiveService {
   }
 
   async authorizeMedia(actor: LiveActor, occurrenceId: string, deviceId: string) {
-    const aggregate = await this.repository.findByOccurrence(occurrenceId)
+    const aggregate = await this.repository.findRoom({ occurrenceId })
     if (!aggregate) throw new LiveNotFoundError()
     return this.mediaAccess(aggregate, actor, occurrenceId, deviceId)
   }
@@ -1287,7 +1467,7 @@ export class LiveService {
     occurrenceId: string,
     entries: { actor: LiveActor; deviceId: string }[],
   ): Promise<LiveMediaPublisherResult[]> {
-    const aggregate = await this.repository.findByOccurrence(occurrenceId)
+    const aggregate = await this.repository.findRoom({ occurrenceId })
     return entries.map(({ actor, deviceId }) => {
       try {
         if (!aggregate) throw new LiveNotFoundError()
@@ -1299,18 +1479,6 @@ export class LiveService {
         return { ok: false as const, error }
       }
     })
-  }
-
-  async material(actor: LiveActor, sessionId: string, materialId: string) {
-    const context = await this.requireContext(actor, sessionId)
-    this.assertAvailable(context)
-    const material = context.session.plan.materials.find((item) => item.id === materialId)
-    if (!material) throw new LiveNotFoundError()
-    return {
-      storageKey: material.storageKey,
-      fileName: material.fileName,
-      expiresAt: context.grant?.endsAt ?? context.session.accessEndsAt,
-    }
   }
 
   async recording(actor: LiveActor, sessionId: string, occurrenceId?: string) {
@@ -1346,12 +1514,18 @@ export class LiveService {
     occurrenceId: string,
     update: { state: Exclude<LiveRecordingState, 'ready'>; storageKey?: string | null },
   ) {
-    const found = await this.repository.findByOccurrence(occurrenceId)
-    if (!found) throw new LiveNotFoundError()
-    return this.repository.transaction(found.cohort.id, (aggregate) => {
+    return this.repository.roomTransaction({ occurrenceId }, (aggregate) => {
       const occurrence = aggregate.occurrences.find((item) => item.id === occurrenceId)
       if (!occurrence) throw new LiveNotFoundError()
       const recording = occurrence.recording
+      // The same state again (a recorder event replayed, a re-sync): nothing changes, no new
+      // version (the children's replay positions are tied to it).
+      if (
+        recording.state === update.state &&
+        (update.storageKey === undefined || update.storageKey === recording.storageKey) &&
+        !recording.published
+      )
+        return { ...recording }
       // Published footage is immutable. New captures require a new occurrence/job.
       if (recording.published || recording.state === 'ready')
         throw new LiveConflictError('Esta gravação já foi revisada. Preserve a versão publicada.')
@@ -1377,6 +1551,11 @@ export class LiveService {
     })
   }
 
+  /**
+   * Publishing a reviewed recording also computes its CHAPTERS: each part opening (`marks`)
+   * becomes a position in the video, discounting the pauses, from the segment timeline the
+   * recorder confirmed. Without a timeline the recording is published without chapters.
+   */
   async publishRecording(
     actor: LiveActor,
     sessionId: string,
@@ -1384,6 +1563,15 @@ export class LiveService {
     published: boolean,
     occurrenceId?: string,
   ) {
+    const ref = await this.requireRef(sessionId)
+    const target = occurrenceId ?? ref.occurrenceId
+    let segments: LiveRecordingSegmentTime[] | null = null
+    if (published && this.options.recordingTimeline)
+      try {
+        segments = await this.options.recordingTimeline(target)
+      } catch {
+        segments = null
+      }
     return this.mutateRoom(actor, sessionId, (context) => {
       if (context.role !== 'teacher') throw new LiveAccessError()
       const occurrence = occurrenceId
@@ -1394,10 +1582,16 @@ export class LiveService {
       if (!occurrence) throw new LiveNotFoundError()
       const recording = occurrence.recording
       if (recording.version !== expectedVersion) throw new LiveConflictError()
-      if (published && (!['review', 'ready'].includes(recording.state) || !recording.storageKey))
+      if (
+        published &&
+        (!['review', 'ready'].includes(recording.state) ||
+          !(recording.storageKey || recording.vimeo))
+      )
         throw new LiveConflictError('A gravação ainda não está pronta para revisão e publicação.')
       recording.published = published
       if (published) recording.state = 'ready'
+      if (published && segments && occurrence.id === target)
+        recording.chapters = recordingChapters(occurrence.marks ?? [], segments)
       recording.version =
         Math.max(
           ...context.aggregate.occurrences
@@ -1411,6 +1605,79 @@ export class LiveService {
         occurrence.id,
       )
       return this.view(actor, context)
+    })
+  }
+
+  /** Who sends a recording to Vimeo: the administration or a teacher assigned to the cohort. */
+  private assertRecordingManager(actor: LiveActor, aggregate: LiveCohortAggregate) {
+    if (
+      !aggregate.cohort.courseId ||
+      !actor.staff ||
+      !(actor.admin === true || aggregate.cohort.teacherIds.includes(actor.id))
+    )
+      throw new LiveNotFoundError()
+  }
+
+  /** A recording that went through review (or publication): the only one that leaves for Vimeo. */
+  private reviewedRecording(occurrence: LiveOccurrence) {
+    const { recording } = occurrence
+    if (!['review', 'ready'].includes(recording.state) || !recording.storageKey)
+      throw new LiveConflictError('A gravação deste encontro ainda não foi revisada.')
+    return recording
+  }
+
+  /** The reviewed MP4 for the Admin to sign a temporary URL with its own credentials. */
+  async recordingSource(actor: LiveActor, occurrenceId: string): Promise<LiveRecordingSourceView> {
+    const aggregate = await this.repository.findRoom({ occurrenceId })
+    const occurrence = aggregate?.occurrences.find((item) => item.id === occurrenceId)
+    if (!aggregate || !occurrence) throw new LiveNotFoundError()
+    this.assertRecordingManager(actor, aggregate)
+    const recording = this.reviewedRecording(occurrence)
+    if (!this.options.recordingBucket)
+      throw new LiveUnavailableError('O armazenamento das gravações ainda não está configurado.')
+    const { cohort } = aggregate
+    const session = aggregate.sessions.find((item) => item.id === occurrence.sessionId)
+    // "<curso> · <aula> · <turma> · <data>": the name of the video on Vimeo.
+    const title = [
+      cohort.course?.title,
+      session?.plan.title,
+      cohort.title,
+      new Intl.DateTimeFormat('pt-BR', { timeZone: cohort.timeZone, dateStyle: 'short' }).format(
+        new Date(occurrence.startsAt),
+      ),
+    ]
+      .filter((part): part is string => Boolean(part?.trim()))
+      .join(' · ')
+      .slice(0, 200)
+    return { storageKey: recording.storageKey!, bucket: this.options.recordingBucket, title }
+  }
+
+  /**
+   * The Admin created (or follows) the video on Vimeo. Never changes the recording version: the
+   * children's replay positions are kept. Audited.
+   */
+  async setRecordingVimeo(
+    actor: LiveActor,
+    occurrenceId: string,
+    input: { videoId: string; embedUrl: string; status: string },
+  ): Promise<LiveRecordingSummary> {
+    const vimeo: LiveRecordingVimeo = liveVimeoRecording(input)
+    return this.repository.roomTransaction({ occurrenceId }, (aggregate) => {
+      const occurrence = aggregate.occurrences.find((item) => item.id === occurrenceId)
+      if (!occurrence) throw new LiveNotFoundError()
+      this.assertRecordingManager(actor, aggregate)
+      const current = occurrence.recording.vimeo
+      // A video being processed (or ready) is never swapped for another one: two publications
+      // racing would leave the children on a video nobody follows. A failed one may be replaced.
+      if (current && current.status !== 'failed' && current.videoId !== vimeo.videoId)
+        throw new LiveConflictError('Esta gravação já tem um vídeo no Vimeo.')
+      // The platform MP4 may be deleted once Vimeo is ready; a later status update still counts.
+      if (!occurrence.recording.vimeo) this.reviewedRecording(occurrence)
+      else if (!['review', 'ready'].includes(occurrence.recording.state))
+        throw new LiveConflictError('A gravação deste encontro ainda não foi revisada.')
+      occurrence.recording.vimeo = vimeo
+      this.audit(aggregate, actor, `recording.vimeo-${vimeo.status}`, occurrence.id)
+      return recordingSummary(occurrence)
     })
   }
 

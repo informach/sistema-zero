@@ -10,8 +10,14 @@ import { createDbConnection } from '../../src/infrastructure/persistence/drizzle
 import { DrizzleLiveRepository } from '../../src/infrastructure/persistence/drizzle/live.repository'
 import { DrizzleLiveWorkspaceRepository } from '../../src/infrastructure/persistence/drizzle/live-workspace.repository'
 import { liveRecordingJobs } from '../../src/infrastructure/persistence/drizzle/schema'
-import { InMemoryLiveRepository } from '../fakes/live-in-memory'
+import { InMemoryLiveCourses, InMemoryLiveRepository } from '../fakes/live-in-memory'
+import { persistLiveCourse } from './live-course-rows'
 import { prepareTestDatabase } from './test-database'
+
+/** The live course is read through the port; its SQL adapter has its own test. */
+const liveCourses = new InMemoryLiveCourses((course) =>
+  connection ? persistLiveCourse(connection, course) : Promise.resolve(),
+)
 
 const databaseUrl = await prepareTestDatabase('sistemazero_live_corrections_test')
 const connection = databaseUrl ? createDbConnection(databaseUrl) : null
@@ -29,17 +35,14 @@ async function fixture(repository: LiveRepository = new InMemoryLiveRepository()
     repository,
     () => now,
     { assertOwnership: async () => ({ name: child.name }) },
-    { mediaReady: true },
+    { mediaReady: true, courses: liveCourses },
   )
-  const program = await live.createProgram(teacher, {
-    title: 'Review',
-    description: 'Reprodução isolada',
-    lessons: [{ title: 'Encontro', instructions: 'Criar', starterProjectId: null, materials: [] }],
-  })
+  const { course, lessons } = liveCourses.add({ lessons: 1 })
+  const block = liveCourses.addStudioBlock(course.id, lessons[0]!.id)
   const {
     cohort,
     sessions: [session],
-  } = await live.createCohort(teacher, program.id, {
+  } = await live.createCohort(teacher, course.id, {
     title: 'Review',
     timeZone: 'America/Sao_Paulo',
     capacity: 8,
@@ -61,6 +64,7 @@ async function fixture(repository: LiveRepository = new InMemoryLiveRepository()
     child,
     cohort,
     session: session!,
+    block,
     setTime: (date: string) => {
       now = new Date(date)
     },
@@ -135,7 +139,7 @@ describe.skipIf(!connection)('Regression: recorder reconciliation on local Postg
       new DrizzleLiveWorkspaceRepository(connection!.db),
       f.live,
     )
-    const workspace = await workspaceService.open(f.child, f.session.id, f.child.id)
+    const workspace = await workspaceService.openForBlock(f.child, f.session.id, f.block.blockId)
     await workspaceService.claim(f.child, workspace.id, deviceId, false)
     const requested = await workspaceService.requestAssistance(f.teacher, workspace.id)
     const commands: any[] = []

@@ -10,7 +10,6 @@ import type { Database } from './db'
 import { loadLiveCohort } from './live.repository'
 import {
   accountDeletionFences,
-  liveProjectTemplates,
   liveSessions,
   liveWorkspaceRevisions,
   liveWorkspaces,
@@ -38,6 +37,7 @@ function record(row: typeof liveWorkspaces.$inferSelect): LiveWorkspaceRecord {
     leaseExpiresAt: row.leaseExpiresAt?.toISOString() ?? null,
     updatedAt: row.updatedAt.toISOString(),
     assistance: row.assistance as LiveAssistanceView | null,
+    lessonIds: Array.isArray(row.lessonIds) ? row.lessonIds : [],
   }
 }
 function values(workspace: LiveWorkspaceRecord) {
@@ -62,24 +62,71 @@ export class DrizzleLiveWorkspaceRepository implements LiveWorkspaceRepository {
       .limit(100)
     return rows.map(record)
   }
-  async ensure(workspace: LiveWorkspaceRecord) {
+  async findByKey(learnerId: string, projectKey: string) {
+    const [row] = await this.db
+      .select()
+      .from(liveWorkspaces)
+      .where(
+        and(eq(liveWorkspaces.learnerId, learnerId), eq(liveWorkspaces.projectKey, projectKey)),
+      )
+    return row ? record(row) : null
+  }
+  async ensureByKey(workspace: LiveWorkspaceRecord & { projectKey: string }) {
     return this.db.transaction(async (tx) => {
       await lockAccount(tx, workspace.accountId)
-      await tx
-        .insert(liveWorkspaces)
-        .values(values(workspace))
-        .onConflictDoNothing({ target: [liveWorkspaces.sessionId, liveWorkspaces.learnerId] })
+      // Any unique conflict means a concurrent open created it first: return that one.
+      await tx.insert(liveWorkspaces).values(values(workspace)).onConflictDoNothing()
       const [row] = await tx
         .select()
         .from(liveWorkspaces)
         .where(
           and(
-            eq(liveWorkspaces.sessionId, workspace.sessionId),
             eq(liveWorkspaces.learnerId, workspace.learnerId),
+            eq(liveWorkspaces.projectKey, workspace.projectKey),
           ),
         )
       if (!row) throw new LiveNotFoundError()
       return record(row)
+    })
+  }
+  async linkLesson(id: string, input: { lessonId: string; sessionId: string }) {
+    return this.db.transaction(async (tx) => {
+      const [owner] = await tx
+        .select({ accountId: liveWorkspaces.accountId })
+        .from(liveWorkspaces)
+        .where(eq(liveWorkspaces.id, id))
+      if (!owner) throw new LiveNotFoundError()
+      await lockAccount(tx, owner.accountId)
+      const [row] = await tx
+        .select()
+        .from(liveWorkspaces)
+        .where(eq(liveWorkspaces.id, id))
+        .for('update')
+      if (!row) throw new LiveNotFoundError()
+      const cohorts = await tx
+        .select({ id: liveSessions.id, cohortId: liveSessions.cohortId })
+        .from(liveSessions)
+        .where(inArray(liveSessions.id, [row.sessionId, input.sessionId]))
+      const anchor = cohorts.find((item) => item.id === row.sessionId)?.cohortId
+      const target = cohorts.find((item) => item.id === input.sessionId)?.cohortId
+      if (!target) throw new LiveNotFoundError()
+      const lessonIds = Array.isArray(row.lessonIds) ? row.lessonIds : []
+      // A new cohort of the same course: the project follows the child (never during help).
+      const move = anchor !== target && row.assistance === null
+      const next = move
+        ? { sessionId: input.sessionId, lessonIds: [input.lessonId] }
+        : {
+            lessonIds: lessonIds.includes(input.lessonId)
+              ? lessonIds
+              : [...lessonIds, input.lessonId],
+          }
+      const [updated] = await tx
+        .update(liveWorkspaces)
+        .set(next)
+        .where(eq(liveWorkspaces.id, id))
+        .returning()
+      if (!updated) throw new LiveNotFoundError()
+      return record(updated)
     })
   }
   async transaction<T>(
@@ -187,33 +234,5 @@ export class DrizzleLiveWorkspaceRepository implements LiveWorkspaceRepository {
           )
       return result
     })
-  }
-  async createTemplate(input: {
-    id: string
-    project: Record<string, unknown>
-    createdBy: string
-    createdAt: string
-  }) {
-    await this.db
-      .insert(liveProjectTemplates)
-      .values({ ...input, createdAt: new Date(input.createdAt) })
-  }
-  async findTemplate(id: string) {
-    const [row] = await this.db
-      .select()
-      .from(liveProjectTemplates)
-      .where(eq(liveProjectTemplates.id, id))
-    return row?.project ?? null
-  }
-  async listTemplates() {
-    const rows = await this.db
-      .select()
-      .from(liveProjectTemplates)
-      .orderBy(desc(liveProjectTemplates.createdAt))
-      .limit(100)
-    return rows.map((row) => ({
-      id: row.id,
-      title: typeof row.project.name === 'string' ? row.project.name : 'Projeto inicial',
-    }))
   }
 }

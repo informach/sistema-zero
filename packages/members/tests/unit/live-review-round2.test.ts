@@ -52,13 +52,9 @@ test.each([
 
 test('discovery stays public while personal agendas contain only active enrollments or assigned teaching', async () => {
   const f = await liveFixture()
-  await f.live.updateProgram(f.teacher, f.cohort.programId, {
-    expectedRevision: 1,
-    status: 'published',
-  })
   const visitor = { id: randomUUID(), accountId: randomUUID(), name: 'Visitante', staff: false }
   const publicCatalog = await f.live.catalog(visitor)
-  expect(publicCatalog.programs.map((item) => item.id)).toContain(f.cohort.programId)
+  expect(publicCatalog.courses?.map((item) => item.id)).toContain(f.course.id)
   expect(publicCatalog.cohorts.map((item) => item.id)).toContain(f.cohort.id)
   expect(publicCatalog.sessions).toEqual([])
   expect((await f.live.catalog({ ...visitor, staff: true })).sessions).toEqual([])

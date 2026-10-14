@@ -1,6 +1,11 @@
 import { assistanceRequestExpired, type LiveRecordingState } from '@sistemazero/core/live'
 import { and, eq, isNotNull, isNull, lte, ne, or, sql } from 'drizzle-orm'
 import type { LiveService } from '../../application/live/live.service'
+import { LiveConflictError } from '../../domain/live/live.errors'
+import {
+  type LiveRecordingSegmentTime,
+  recordingSegmentsOf,
+} from '../../domain/live/recording-chapters'
 import type { LiveActor, LiveRepository } from '../../domain/ports/live-repository.port'
 import type { Database } from '../persistence/drizzle/db'
 import { liveRecordingJobs, liveWorkspaces } from '../persistence/drizzle/schema'
@@ -159,7 +164,7 @@ export class OwnRecordingProvider {
   }
 
   async syncOccurrence(occurrenceId: string): Promise<void> {
-    const aggregate = await this.repository.findByOccurrence(occurrenceId)
+    const aggregate = await this.repository.findRoom({ occurrenceId })
     const occurrence = aggregate?.occurrences.find((item) => item.id === occurrenceId)
     if (!occurrence || !['live', 'ended', 'cancelled'].includes(occurrence.state)) return
     const existing = await this.findJob(occurrenceId)
@@ -183,6 +188,8 @@ export class OwnRecordingProvider {
       .update(liveRecordingJobs)
       .set({ attempts: 0, nextAttemptAt: null, confirmedAt: new Date(this.now()) })
       .where(eq(liveRecordingJobs.occurrenceId, occurrenceId))
+    // The acknowledgement carries the manifest: its segments are the chapters' timeline.
+    await this.keepSegments(occurrenceId, job, result.segments).catch(() => undefined)
     if (
       occurrence.recording.state === 'unavailable' &&
       result.state &&
@@ -257,6 +264,40 @@ export class OwnRecordingProvider {
   }
 
   /**
+   * The segment timeline of a recording, for the chapters of the published video. The private
+   * recorder is asked first (its stored manifest is complete after the end); if it does not
+   * answer for this exact job, the last timeline confirmed during the class is used.
+   */
+  async timeline(occurrenceId: string): Promise<LiveRecordingSegmentTime[] | null> {
+    const job = await this.findJob(occurrenceId)
+    if (!job) return null
+    const status = await this.status(occurrenceId)
+    if (status && status.jobId === job.jobId && status.generation === job.generation) {
+      const fresh = await this.keepSegments(occurrenceId, job, status.segments)
+      if (fresh) return fresh
+    }
+    return recordingSegmentsOf(job.segments)
+  }
+
+  /** Stores a longer confirmed timeline (never a shorter one: segments only accumulate). */
+  private async keepSegments(occurrenceId: string, job: RecordingJobRow, raw: unknown) {
+    const segments = recordingSegmentsOf(raw)
+    if (!segments?.length) return null
+    if (segments.length > (recordingSegmentsOf(job.segments)?.length ?? 0))
+      await this.db
+        .update(liveRecordingJobs)
+        .set({ segments })
+        .where(
+          and(
+            eq(liveRecordingJobs.occurrenceId, occurrenceId),
+            eq(liveRecordingJobs.jobId, job.jobId),
+            eq(liveRecordingJobs.generation, job.generation),
+          ),
+        )
+    return segments
+  }
+
+  /**
    * Help (assistance) needs proof that nothing is being recorded. Proof is either an explicit
    * acknowledgement from the recorder or the capture lease contract: once the newest
    * `recording` lease ended (plus a margin) the recorder has paused itself. A recorder that is
@@ -278,7 +319,7 @@ export class OwnRecordingProvider {
     if (job.commandVersion === 0 && job.confirmedState !== 'review') return
     const lease = job.recordingLeaseEndsAt ?? job.leaseEndsAt
     if (lease.getTime() + LEASE_STOP_MARGIN_MS <= this.now()) {
-      const aggregate = await this.repository.findByOccurrence(occurrenceId)
+      const aggregate = await this.repository.findRoom({ occurrenceId })
       const shown = aggregate?.occurrences.find((item) => item.id === occurrenceId)?.recording
       if (shown && CAPTURING.includes(shown.state))
         await this.showState(occurrenceId, 'unavailable')
@@ -326,7 +367,7 @@ export class OwnRecordingProvider {
     sessionId: string,
     action: 'pause' | 'resume' | 'stop',
   ): Promise<void> {
-    const aggregate = await this.repository.findBySession(sessionId)
+    const aggregate = await this.repository.findRoom({ sessionId })
     const session = aggregate?.sessions.find((item) => item.id === sessionId)
     if (!aggregate || !session || !actor.staff || !aggregate.cohort.teacherIds.includes(actor.id))
       throw new LiveMediaError(
@@ -370,8 +411,13 @@ export class OwnRecordingProvider {
     await this.send(session.occurrenceId)
   }
 
+  /**
+   * The job row lock covers only the job (validation and the confirmed state, all fast). The
+   * room is updated AFTER the commit, from the job as it is then: two events racing still leave
+   * the room on the newest confirmed state, and no cohort work ever waits inside the job lock.
+   */
   async acceptEvent(event: RecordingEvent): Promise<void> {
-    await this.db.transaction(async (tx) => {
+    const accepted = await this.db.transaction(async (tx) => {
       const [job] = await tx
         .select()
         .from(liveRecordingJobs)
@@ -379,7 +425,8 @@ export class OwnRecordingProvider {
         .for('update')
       if (!job || job.jobId !== event.jobId || job.generation !== event.generation)
         throw new LiveMediaError('RECORDING_STALE_GENERATION', 'Geração de gravação inválida.', 409)
-      if (event.eventSequence <= job.version) return
+      // A replayed event (lost acknowledgement): the room is re-synced below, nothing else.
+      if (event.eventSequence <= job.version) return true
       const prefix = `live/recordings/${event.occurrenceId}/${event.jobId}/${event.generation}/`
       if (
         !event.manifestKey.startsWith(prefix) ||
@@ -388,11 +435,7 @@ export class OwnRecordingProvider {
         throw new LiveMediaError('RECORDING_INVALID_ARTIFACT', 'Artefato fora da gravação.', 400)
       if (event.state === 'paused' && !event.captureStopped)
         throw new LiveMediaError('RECORDING_PAUSE_UNCONFIRMED', 'Captura ainda ativa.', 409)
-      if (event.state === 'recording' && job.desiredState !== 'recording') return
-      await this.live.setRecordingState(event.occurrenceId, {
-        state: event.state,
-        storageKey: event.replayKey,
-      })
+      if (event.state === 'recording' && job.desiredState !== 'recording') return false
       await tx
         .update(liveRecordingJobs)
         .set({
@@ -407,7 +450,25 @@ export class OwnRecordingProvider {
           ...(event.state === 'review' ? { finishedAt: new Date(this.now()) } : {}),
         })
         .where(eq(liveRecordingJobs.occurrenceId, event.occurrenceId))
+      return true
     })
+    if (accepted) await this.syncRoomFromJob(event.occurrenceId)
+  }
+
+  /** The room shows the newest state the recorder confirmed (idempotent, outside any lock). */
+  private async syncRoomFromJob(occurrenceId: string) {
+    const job = await this.findJob(occurrenceId)
+    if (!job || job.confirmedState === 'not_started') return
+    try {
+      await this.live.setRecordingState(occurrenceId, {
+        state: job.confirmedState,
+        storageKey: job.replayKey,
+      })
+    } catch (error) {
+      // Published footage is immutable: a late event never rewrites what the teacher published.
+      if (error instanceof LiveConflictError) return
+      throw error
+    }
   }
 
   private async ensureJob(
@@ -448,7 +509,7 @@ export class OwnRecordingProvider {
   }
 
   private async send(occurrenceId: string): Promise<SendResult> {
-    const aggregate = await this.repository.findByOccurrence(occurrenceId)
+    const aggregate = await this.repository.findRoom({ occurrenceId })
     const occurrence = aggregate?.occurrences.find((item) => item.id === occurrenceId)
     if (!aggregate || !occurrence)
       throw new LiveMediaError('RECORDING_JOB_MISSING', 'Encontro não encontrado.', 404)
