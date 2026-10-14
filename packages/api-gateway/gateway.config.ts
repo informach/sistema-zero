@@ -1411,6 +1411,19 @@ const config: GatewayConfigInput = {
       transforms: membersInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
+    // Cursos ao vivo (14/10/2026): as anotações da professora de uma aula PUBLICADA, por parte.
+    // Leitura de equipe; o members confere administração OU professora atribuída a uma turma do
+    // curso. Rota explícita (o wildcard abaixo também casaria) para o contrato ficar à vista.
+    {
+      id: 'members-admin-live-teacher-notes',
+      methods: ['GET'],
+      pathPattern: '/members/admin/live/lessons/:lessonId/teacher-notes',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
     {
       id: 'members-admin-live-read',
       methods: ['GET'],

@@ -1,5 +1,14 @@
 # @sistemazero/api-gateway — Guia do Agente
 
+## Cursos ao vivo (14/10/2026)
+
+`members-admin-live-teacher-notes` (`GET /members/admin/live/lessons/:lessonId/teacher-notes`,
+staff+, 120/min) devolve as anotações da professora da versão publicada da aula; o members
+confere administração ou professora atribuída a uma turma do curso. Rota explícita (o wildcard
+`members-admin-live-read` também casaria) para o contrato ficar à vista; teste em
+`tests/unit/config.test.ts`. As demais mudanças do curso (modalidade no POST/PATCH e o filtro
+`?modality=`) passam pelos wildcards de autoria de sempre.
+
 ## Acesso infantil — correções do review (10/10/2026)
 
 - `kidsMayAccess` roda ANTES da introspecção no Auth (pedido proibido não custa ida ao Auth) e

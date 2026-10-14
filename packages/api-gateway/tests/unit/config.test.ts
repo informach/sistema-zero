@@ -36,6 +36,19 @@ describe('loadGatewayConfig', () => {
       authorize: { roles: ['superadmin', 'admin'] },
       audit: {},
     })
+    // Cursos ao vivo: as anotações da professora são leitura de equipe (o members confere a
+    // professora atribuída), nunca da criança; não há escrita nesse caminho.
+    expect(
+      registry.resolve('GET', '/members/admin/live/lessons/a/teacher-notes', 'v1')?.route,
+    ).toMatchObject({
+      id: 'members-admin-live-teacher-notes',
+      service: 'members',
+      auth: { strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+    })
+    expect(
+      registry.resolve('POST', '/members/admin/live/lessons/a/teacher-notes', 'v1')?.route.id,
+    ).not.toBe('members-admin-live-teacher-notes')
   })
   test('self-service mutante da conta é autenticado no gateway e preserva o Bearer', () => {
     const byId = new Map(realConfig.routes.map((route) => [route.id, route]))
