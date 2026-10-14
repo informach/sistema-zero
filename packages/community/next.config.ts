@@ -100,6 +100,27 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       { source: '/:path*', headers: securityHeaders },
+      // ⭐ A SALA da oficina ao vivo (curso ao vivo, 14/10/2026), como no Kids: câmera, microfone e
+      // a tela liberados SÓ nesta rota, e o jogo do Estúdio da sala num documento temporário do R2
+      // privado (o `frame-src`). O cabeçalho vale para o documento carregado: a sala se abre e se
+      // deixa por navegação COMPLETA (`<a>`), nunca por `<Link>` (a aba seguiria com a câmera
+      // liberada nas outras telas). A regra vem DEPOIS da geral: a chave repetida vence.
+      {
+        source: '/oficinas/aulas/:id',
+        headers: [
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(self), microphone=(self), display-capture=(self), geolocation=()',
+          },
+          {
+            key: 'Content-Security-Policy',
+            value: csp.replace(
+              "frame-src 'self' blob:",
+              "frame-src 'self' blob: https://*.r2.cloudflarestorage.com",
+            ),
+          },
+        ],
+      },
       // Kill-switch do service worker fantasma (public/sw.js): o update-check do
       // navegador precisa SEMPRE buscar a versão nova — nunca servir do cache HTTP.
       {
