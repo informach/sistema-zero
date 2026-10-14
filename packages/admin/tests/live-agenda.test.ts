@@ -1,12 +1,11 @@
 import { describe, expect, test } from 'bun:test'
-import type { LiveCohort } from '@sistemazero/core/live'
+import type { LiveCohort, LiveSessionSummary } from '@sistemazero/core/live'
 import {
   agendaActionLabel,
   agendaDayKey,
   agendaState,
   agendaWhen,
   groupLiveAgenda,
-  type LiveAgendaSession,
   roomHref,
 } from '../src/lib/live-agenda'
 
@@ -28,8 +27,8 @@ const TZ = 'America/Sao_Paulo'
 function session(
   id: string,
   startsAt: string,
-  extra: Partial<LiveAgendaSession> = {},
-): LiveAgendaSession {
+  extra: Partial<LiveSessionSummary> = {},
+): LiveSessionSummary {
   const endsAt = new Date(Date.parse(startsAt) + 90 * 60_000).toISOString()
   return {
     id,
@@ -97,28 +96,26 @@ describe('agenda da professora', () => {
     expect(agendaState(session('no-horario', '2026-10-14T17:30:00Z'), NOW)).toBe('in-time')
     expect(agendaState(session('passou', '2026-10-13T17:30:00Z'), NOW)).toBe('ended')
     const groups = groupLiveAgenda([session('passou', '2026-10-13T17:30:00Z')], [cohort], NOW, TZ)
-    expect(groups.past[0]?.recordingToReview).toBe(false)
+    expect(groups.past[0]?.recordingPublished).toBe(false)
   })
 
-  test('"Gravação para revisar" só com gravação pronta e ainda não publicada', () => {
-    const ended = (state: 'review' | 'ready' | 'processing', published: boolean) =>
+  test('"Gravação publicada" segue o que o servidor manda', () => {
+    const ended = (recordingPublished?: boolean) =>
       groupLiveAgenda(
         [
           session('g', '2026-10-13T18:00:00Z', {
             occurrenceState: 'ended',
-            recording: { state, published },
+            ...(recordingPublished === undefined ? {} : { recordingPublished }),
           }),
         ],
         [cohort],
         NOW,
         TZ,
       ).past[0]!
-    expect(ended('review', false).recordingToReview).toBe(true)
-    expect(ended('ready', false).recordingToReview).toBe(true)
-    expect(ended('ready', true).recordingToReview).toBe(false)
-    expect(ended('processing', false).recordingToReview).toBe(false)
-    expect(agendaActionLabel(ended('review', false), 'past')).toBe('Revisar gravação')
-    expect(agendaActionLabel(ended('ready', true), 'past')).toBe('Ver encontro')
+    expect(ended(true).recordingPublished).toBe(true)
+    expect(ended(false).recordingPublished).toBe(false)
+    expect(ended().recordingPublished).toBe(false)
+    expect(agendaActionLabel(ended(true), 'past')).toBe('Ver encontro')
   })
 
   test('o botão diz o que a professora vai fazer', () => {

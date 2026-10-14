@@ -1,5 +1,6 @@
 'use client'
 
+import type { LiveStudioConfig } from '@sistemazero/core/live'
 import {
   BLOCK_LEVEL_OPTIONS,
   CORE_CATEGORY_OPTIONS,
@@ -14,7 +15,6 @@ import {
   curationToClipboard,
   defaultLiveStudio,
   LIVE_STUDIO_MODES,
-  type LiveStudioCuration,
   toggleStudioMode,
 } from '@/lib/live-studio-curation'
 
@@ -27,8 +27,8 @@ export function LiveStudioEditor({
   value,
   onChange,
 }: {
-  value: LiveStudioCuration | null | undefined
-  onChange(next: LiveStudioCuration): void
+  value: LiveStudioConfig | null | undefined
+  onChange(next: LiveStudioConfig): void
 }) {
   const id = useId()
   if (!value)
@@ -46,7 +46,7 @@ export function LiveStudioEditor({
     )
   const modes = value.allowedModes?.length ? value.allowedModes : ['blocks' as const]
   const categories = value.allowCategories ?? []
-  const set = (patch: Partial<LiveStudioCuration>) => onChange({ ...value, ...patch })
+  const set = (patch: Partial<LiveStudioConfig>) => onChange({ ...value, ...patch })
   return (
     <fieldset className="space-y-4 rounded-lg border p-4">
       <legend className="px-2 text-sm font-medium">Estúdio deste encontro</legend>

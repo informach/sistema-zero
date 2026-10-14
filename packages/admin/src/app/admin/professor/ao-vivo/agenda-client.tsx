@@ -26,11 +26,8 @@ import {
   agendaActionLabel,
   agendaWhen,
   groupLiveAgenda,
-  type LiveAgendaSession,
   roomHref,
 } from '@/lib/live-agenda'
-
-type AgendaCatalog = Omit<LiveCatalogView, 'sessions'> & { sessions: LiveAgendaSession[] }
 
 const STATE_BADGE: Record<
   AgendaState,
@@ -61,7 +58,7 @@ const merge = <T extends { id: string }>(previous: T[], next: T[]) => [
  * a sala precisa de navegação completa (ver `roomHref`).
  */
 export function LiveAgenda() {
-  const [data, setData] = useState<AgendaCatalog | null>(null)
+  const [data, setData] = useState<LiveCatalogView | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loadingMore, setLoadingMore] = useState(false)
   const [reload, setReload] = useState(0)
@@ -70,7 +67,7 @@ export function LiveAgenda() {
   useEffect(() => {
     const controller = new AbortController()
     setError(null)
-    liveRequest<AgendaCatalog>('/api/live/catalog?limit=50', undefined, 'GET', controller.signal)
+    liveRequest<LiveCatalogView>('/api/live/catalog?limit=50', undefined, 'GET', controller.signal)
       .then((next) => {
         setData(next)
         setNow(Date.now())
@@ -90,7 +87,7 @@ export function LiveAgenda() {
     if (!data?.nextCursor || loadingMore) return
     setLoadingMore(true)
     try {
-      const next = await liveRequest<AgendaCatalog>(
+      const next = await liveRequest<LiveCatalogView>(
         `/api/live/catalog?limit=50&cursor=${encodeURIComponent(data.nextCursor)}`,
       )
       setData((previous) =>
@@ -216,10 +213,10 @@ function AgendaRow({ item, group }: { item: AgendaItem; group: keyof AgendaGroup
             <Icon className="size-3.5" aria-hidden />
             {AGENDA_STATE_LABEL[item.state]}
           </Badge>
-          {item.recordingToReview ? (
+          {item.recordingPublished ? (
             <Badge variant="outline">
               <Clapperboard className="size-3.5" aria-hidden />
-              Gravação para revisar
+              Gravação publicada
             </Badge>
           ) : null}
         </div>
@@ -235,7 +232,7 @@ function AgendaRow({ item, group }: { item: AgendaItem; group: keyof AgendaGroup
       </div>
       <a
         href={roomHref(item.session.id)}
-        className={`${buttonVariants({ variant: highlight || item.recordingToReview ? 'default' : 'outline' })} min-h-11 shrink-0 px-4`}
+        className={`${buttonVariants({ variant: highlight ? 'default' : 'outline' })} min-h-11 shrink-0 px-4`}
       >
         {agendaActionLabel(item, group)}
       </a>

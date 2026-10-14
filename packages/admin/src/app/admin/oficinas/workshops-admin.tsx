@@ -3,9 +3,12 @@
 import type {
   LiveCatalogView,
   LiveCohort,
+  LiveCreateCohort,
   LiveEnrollment,
+  LiveLessonPlan,
   LiveMaterial,
   LiveProgram,
+  LiveStudioConfig,
 } from '@sistemazero/core/live'
 import { LiveRequestError, liveDate, liveRequest } from '@sistemazero/member-shell/lib/live/client'
 import { Badge, Button, Dialog, Input, Textarea } from '@sistemazero/ui'
@@ -16,14 +19,9 @@ import { useEffect, useId, useRef, useState } from 'react'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { useConfirm } from '@/components/admin/use-confirm'
 import { roomHref } from '@/lib/live-agenda'
-import {
-  defaultLiveStudio,
-  type LiveLessonPlanWithStudio,
-  type LiveStudioCuration,
-} from '@/lib/live-studio-curation'
+import { defaultLiveStudio } from '@/lib/live-studio-curation'
 import {
   COHORT_STATUS_LABEL,
-  type CohortCreateBody,
   cohortPatch,
   type FamilyAccount,
   familyLabel,
@@ -41,7 +39,7 @@ const LiveStudioEditor = dynamic(
 )
 
 type AdminCatalog = Omit<LiveCatalogView, 'programs'> & { programs: LiveProgram[] }
-type DraftLesson = LiveLessonPlanWithStudio & { editorId: string }
+type DraftLesson = LiveLessonPlan & { editorId: string }
 const newLesson = (): DraftLesson => ({
   editorId: crypto.randomUUID(),
   title: '',
@@ -246,7 +244,7 @@ export function LiveAdmin({
       onConfirm: go,
     })
   }
-  const updateLesson = (index: number, patch: Partial<LiveLessonPlanWithStudio>) =>
+  const updateLesson = (index: number, patch: Partial<LiveLessonPlan>) =>
     setLessons((previous) =>
       previous.map((lesson, i) => (i === index ? { ...lesson, ...patch } : lesson)),
     )
@@ -683,7 +681,7 @@ export function LiveAdmin({
               </label>
               <LiveStudioEditor
                 value={lesson.studio}
-                onChange={(studio: LiveStudioCuration) => updateLesson(index, { studio })}
+                onChange={(studio: LiveStudioConfig) => updateLesson(index, { studio })}
               />
               <LiveStepsEditor
                 value={lesson.steps}
@@ -861,7 +859,7 @@ function CohortCreateDialog({
       setError(`No encontro ${wrong + 1}, o fim da chamada precisa ser depois do início.`)
       return
     }
-    const body: CohortCreateBody = {
+    const body: LiveCreateCohort = {
       title: String(data.get('title')),
       timeZone: zone,
       capacity: Number(data.get('capacity')),

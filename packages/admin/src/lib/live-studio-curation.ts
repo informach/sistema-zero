@@ -1,23 +1,9 @@
-import type { LiveLessonPlan } from '@sistemazero/core/live'
+import type { LiveStudioConfig } from '@sistemazero/core/live'
 
-export type LiveStudioMode = 'blocks' | 'bridge' | 'code'
-
-/**
- * TODO contrato do servidor: `LiveLessonPlan.studio` no core
- * (`packages/core/src/live/contracts.ts`). Estrutura idêntica à combinada; depois do merge,
- * troque por `NonNullable<LiveLessonPlan['studio']>`.
- */
-export interface LiveStudioCuration {
-  level?: string
-  allowBlocks?: string[]
-  allowCategories?: string[]
-  allowedModes?: LiveStudioMode[]
-  allowLevelReveal?: boolean
-}
-export type LiveLessonPlanWithStudio = LiveLessonPlan & { studio?: LiveStudioCuration | null }
+export type LiveStudioMode = NonNullable<LiveStudioConfig['allowedModes']>[number]
 
 /** Encontro novo: só Blocos e sem revelar o avançado (a criança vê a paleta da oficina). */
-export function defaultLiveStudio(): LiveStudioCuration {
+export function defaultLiveStudio(): LiveStudioConfig {
   return { allowedModes: ['blocks'], allowLevelReveal: false }
 }
 
@@ -48,7 +34,7 @@ export interface StudioClipboardShape {
   allowBlocks: string[]
 }
 
-export function curationToClipboard(value: LiveStudioCuration): StudioClipboardShape {
+export function curationToClipboard(value: LiveStudioConfig): StudioClipboardShape {
   return {
     level: value.level ?? 'iniciante-2d',
     modes: value.allowedModes?.length ? [...value.allowedModes] : ['blocks'],
@@ -58,7 +44,7 @@ export function curationToClipboard(value: LiveStudioCuration): StudioClipboardS
   }
 }
 
-export function clipboardToCuration(snapshot: StudioClipboardShape): LiveStudioCuration {
+export function clipboardToCuration(snapshot: StudioClipboardShape): LiveStudioConfig {
   const modes = snapshot.modes.filter((mode): mode is LiveStudioMode =>
     LIVE_STUDIO_MODES.some((item) => item.value === mode),
   )

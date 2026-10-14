@@ -1,30 +1,20 @@
-import type {
-  LiveCohort,
-  LiveOccurrenceState,
-  LiveRecordingState,
-  LiveSessionSummary,
-} from '@sistemazero/core/live'
-
-/**
- * TODO contrato do servidor: o resumo do encontro passa a trazer o estado da chamada e o da
- * gravação. Enquanto não vierem, a agenda deduz o estado pelo horário e não mostra o selo de
- * gravação (nunca inventa um "para revisar").
- */
-export type LiveAgendaSession = LiveSessionSummary & {
-  occurrenceState?: LiveOccurrenceState
-  recording?: { state: LiveRecordingState; published: boolean } | null
-}
+import type { LiveCohort, LiveOccurrenceState, LiveSessionSummary } from '@sistemazero/core/live'
 
 /** `missed`: ficou "marcado" depois do fim (não aconteceu). `in-time`: no horário, sem estado do servidor. */
 export type AgendaState = LiveOccurrenceState | 'missed' | 'in-time'
 
 export interface AgendaItem {
-  session: LiveAgendaSession
+  session: LiveSessionSummary
   cohort: LiveCohort | undefined
   state: AgendaState
   startsAt: string
   endsAt: string
-  recordingToReview: boolean
+  /**
+   * A turma já pode rever a gravação. ⚠️ O resumo do encontro não diz se há uma gravação
+   * esperando revisão (só se há uma publicada): "para revisar" aparece dentro da sala, na seção
+   * "Gravação do encontro", e não aqui.
+   */
+  recordingPublished: boolean
 }
 
 export interface AgendaGroups {
@@ -46,7 +36,7 @@ export const AGENDA_STATE_LABEL: Record<AgendaState, string> = {
 const startOf = (session: LiveSessionSummary) => session.occurrenceStartsAt ?? session.startsAt
 const endOf = (session: LiveSessionSummary) => session.occurrenceEndsAt ?? session.endsAt
 
-export function agendaState(session: LiveAgendaSession, now: number): AgendaState {
+export function agendaState(session: LiveSessionSummary, now: number): AgendaState {
   const known = session.occurrenceState
   if (known === 'lobby' || known === 'live' || known === 'ended' || known === 'cancelled')
     return known
@@ -72,7 +62,7 @@ export function agendaDayKey(value: string | number, timeZone: string): string {
  * ordem de horário; Encerrados do mais recente para o mais antigo.
  */
 export function groupLiveAgenda(
-  sessions: readonly LiveAgendaSession[],
+  sessions: readonly LiveSessionSummary[],
   cohorts: readonly LiveCohort[],
   now: number,
   timeZone: string = Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -87,10 +77,7 @@ export function groupLiveAgenda(
       state,
       startsAt: startOf(session),
       endsAt: endOf(session),
-      recordingToReview:
-        !!session.recording &&
-        !session.recording.published &&
-        (session.recording.state === 'review' || session.recording.state === 'ready'),
+      recordingPublished: session.recordingPublished === true,
     }
     if (state === 'lobby' || state === 'live' || state === 'in-time') groups.today.push(item)
     else if (state === 'ended' || state === 'cancelled' || state === 'missed')
@@ -111,7 +98,6 @@ export function agendaActionLabel(item: AgendaItem, group: keyof AgendaGroups): 
   if (item.state === 'live' || item.state === 'lobby') return 'Entrar na sala'
   if (group === 'today') return 'Preparar sala'
   if (group === 'upcoming') return 'Preparar encontro'
-  if (item.recordingToReview) return 'Revisar gravação'
   return 'Ver encontro'
 }
 

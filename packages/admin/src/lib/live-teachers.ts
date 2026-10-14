@@ -1,4 +1,4 @@
-import type { LiveCohort, LiveCreateCohort } from '@sistemazero/core/live'
+import type { LiveCohort, LiveUpdateCohort } from '@sistemazero/core/live'
 
 /** Quem pode conduzir uma turma: a equipe do painel. */
 export const TEACHER_ROLES = ['superadmin', 'admin', 'staff'] as const
@@ -10,17 +10,6 @@ export interface StaffUser {
   lastName: string
   email: string
   role: string
-}
-
-/**
- * TODO contrato do servidor: `teacherNames` (id → nome curto, como "Ana") entra no POST da
- * turma e no PATCH, junto de `teacherIds`. O PATCH da turma aceita `status` e professoras.
- */
-export type CohortCreateBody = LiveCreateCohort & { teacherNames?: Record<string, string> }
-export interface CohortPatchBody {
-  status?: LiveCohort['status']
-  teacherIds?: string[]
-  teacherNames?: Record<string, string>
 }
 
 export function teacherDisplayName(user: Pick<StaffUser, 'firstName' | 'lastName' | 'email'>) {
@@ -83,8 +72,8 @@ export function teacherSelectionPayload(
 export function cohortPatch(
   cohort: Pick<LiveCohort, 'status' | 'teacherIds'>,
   next: { status: LiveCohort['status']; selection: Extract<TeacherSelection, { ok: true }> },
-): CohortPatchBody | null {
-  const body: CohortPatchBody = {}
+): LiveUpdateCohort | null {
+  const body: LiveUpdateCohort = {}
   if (next.status !== cohort.status) body.status = next.status
   const sameTeachers =
     next.selection.teacherIds.length === cohort.teacherIds.length &&
