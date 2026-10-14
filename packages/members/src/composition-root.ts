@@ -74,6 +74,7 @@ import { LiveLearningService } from './application/live/live-learning.service'
 import { LiveMaterialsService } from './application/live/live-materials.service'
 import { LivePublicationService } from './application/live/live-publication.service'
 import { LiveWorkspaceService } from './application/live/live-workspace.service'
+import { LiveTeacherNotesService } from './application/live-course/teacher-notes.service'
 import { ManageEntitlementService } from './application/manage-entitlement/manage-entitlement.service'
 import { MarkLessonCompleteService } from './application/mark-lesson-complete/mark-lesson-complete.service'
 import { ParentReportPrefsService } from './application/parent-report/report-prefs.service'
@@ -160,6 +161,7 @@ import { DrizzleLearningRepository } from './infrastructure/persistence/drizzle/
 import { DrizzleLessonDraftRepository } from './infrastructure/persistence/drizzle/lesson-draft.repository'
 import { DrizzleLiveRepository } from './infrastructure/persistence/drizzle/live.repository'
 import { DrizzleLiveBenefitsRepository } from './infrastructure/persistence/drizzle/live-benefits.repository'
+import { DrizzleLiveLessonAccessRepository } from './infrastructure/persistence/drizzle/live-lesson-access.repository'
 import { DrizzleLiveMaterialsRepository } from './infrastructure/persistence/drizzle/live-materials.repository'
 import { DrizzleLiveWorkspaceRepository } from './infrastructure/persistence/drizzle/live-workspace.repository'
 import { DrizzleParentReportRepository } from './infrastructure/persistence/drizzle/parent-report.repository'
@@ -263,7 +265,15 @@ export async function createApplication(env: Env): Promise<Application> {
     : noopHubGateway
 
   // Casos de uso do aluno
-  const checkAccess = new CheckAccessService(courses, entitlements, gamificationRepo, clock)
+  // Curso AO VIVO (14/10/2026): a aula abre pela vaga na turma (grants das oficinas).
+  const liveLessonAccess = new DrizzleLiveLessonAccessRepository(db)
+  const checkAccess = new CheckAccessService(
+    courses,
+    entitlements,
+    gamificationRepo,
+    clock,
+    liveLessonAccess,
+  )
   // S2S: resolução de acesso em lote (consumido pela comunidade @sistemazero/hub).
   const accessCheck = new AccessCheckService(entitlements, clock)
   const liveBenefits = new DrizzleLiveBenefitsRepository(db)
@@ -621,8 +631,20 @@ export async function createApplication(env: Env): Promise<Application> {
   // Paleta do Estúdio livre pelo CURRÍCULO (união dos cursos concluídos+publicados).
   const getStudioUnlocks = new GetStudioUnlocksService(gamificationRepo, studioUnlockRepo, logger)
   const challengeAdmin = new ChallengeAdminService(challengeConfigRepo, clock)
-  const getMissions = new GetMissionsService(gamificationRepo, accessCheck, clock, listMyCourses)
-  const claimMission = new ClaimMissionService(gamificationRepo, accessCheck, clock)
+  // A missão das oficinas ao vivo (`live_encounter`) entra só para quem tem vaga ativa.
+  const getMissions = new GetMissionsService(
+    gamificationRepo,
+    accessCheck,
+    clock,
+    listMyCourses,
+    liveLessonAccess,
+  )
+  const claimMission = new ClaimMissionService(
+    gamificationRepo,
+    accessCheck,
+    clock,
+    liveLessonAccess,
+  )
   // Baú de fim de unidade: a criança clica na trilha e AÍ ganha o XP (antes ele caía
   // sozinho ao concluir a última aula do módulo).
   const claimUnitChest = new ClaimUnitChestService(
@@ -1019,6 +1041,11 @@ export async function createApplication(env: Env): Promise<Application> {
     },
     live: {
       live: liveService,
+      internalToken: env.INTERNAL_API_TOKEN,
+      requireAdminEnabled: env.REQUIRE_ADMIN,
+    },
+    liveCourse: {
+      teacherNotes: new LiveTeacherNotesService(courses, learningRepository, liveLessonAccess),
       internalToken: env.INTERNAL_API_TOKEN,
       requireAdminEnabled: env.REQUIRE_ADMIN,
     },

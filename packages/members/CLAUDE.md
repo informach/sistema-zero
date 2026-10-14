@@ -1,5 +1,67 @@
 # CLAUDE.md — @sistemazero/members
 
+## Cursos ao vivo: a modalidade do curso (14/10/2026, migration `0109`)
+
+Decisão da dona: um curso é GRAVADO ou AO VIVO, nunca os dois (desenho em
+`docs/plans/2026-10-14-cursos-ao-vivo-design.md`). O ao vivo só existe em Oficinas: é "uma coisa a
+mais, para vender mais", então fica fora de tudo o que é da Jornada.
+
+- **Coluna** `courses.modality` (`text` + CHECK `courses_modality_check`, padrão `recorded`) e o
+  CHECK `courses_live_off_journey_check` (ao vivo nunca tem `career_slot`). Texto e não enum do
+  Postgres: valor de enum não pode ser usado na transação que o cria. A `0109` (`when`
+  1792100000000) é idempotente (`IF NOT EXISTS` e os CHECKs em `DO … duplicate_object`) e também
+  acrescenta `live_encounter` e `live_course_complete` ao `xp_source_type`. Provada num banco
+  descartável simulando produção na 0108: o `db:migrate` aplicou SÓ a 0109.
+- **Autoria**: `modality` no POST/PATCH (declarado no `CourseBody`: o `normalize` do Elysia
+  descarta o resto), `CourseView.modality`, `?modality=` na listagem do Admin e o clone preserva.
+  Ausente no PATCH preserva. Curso ao vivo recusa posição (`careerSlot`) e papel na Jornada
+  (`positioned`/`extra`); guarda `journeyRole: 'reward'` com posição vazia (o CHECK da Jornada
+  exige papel). Trocar a modalidade só sem turma (`CourseModalityLockedError`, 409), conferido no
+  `updateCourse` sob a trava do curso, contando `live_cohorts` pelo `document->>'courseId'`. ⚠️ A
+  frente das oficinas, ao criar turma, deveria travar a mesma linha do curso para fechar a corrida.
+- **Acesso** (`CheckAccessService.assertLive` + `LiveLessonAccessPort`, implementação
+  `DrizzleLiveLessonAccessRepository`): matrícula e chave-mestra NÃO abrem curso ao vivo. Abre para
+  a equipe (inclusive o curso em rascunho; a professora atribuída é equipe, o `LiveService` exige
+  `staff` para conduzir) e para a criança com grant ATIVO da sessão daquela aula (vaga ativa, grant
+  não revogado, `starts_at <= agora < ends_at`, turma fora de rascunho, aula ligada pelo
+  `live_sessions.document->>'lessonId'`). `requireById/BySlug` ganharam o 5º parâmetro
+  obrigatório `scope` (`{ lessonId }` ou `'course'`): toda rota de AULA passa o `lessonId`, senão
+  uma vaga aberta na aula 1 abriria a aula 2 por aquela rota. Aula fechada → `LIVE_LESSON_CLOSED`
+  (403). A trava sequencial (`usesSequentialLock`) e a da Jornada não valem no ao vivo; o detalhe
+  do curso marca como travada a aula que a vaga ainda não abriu. O prazo vai num entitlement
+  virtual (`EntitlementAggregate.virtualLiveSeat`, nunca persistido).
+- **Onde o ao vivo NÃO entra**: `listPublishedCourses` (catálogo, "meus cursos" pela chave-mestra,
+  painel dos pais), `findAccessibleCoursesBySlugs` ("meus cursos" por matrícula),
+  `hasPublishedFoundationCourse`, `eligibleStudioGrants` e a revisão dos blocos
+  (`publishedCourseSourceInAudience`), e a base do Zappy inteira (busca, reindexação, relatório e
+  a faxina do reconcile). Marco da Jornada: o `award` DESCARTA `course_complete`/`course_showcased`
+  de curso ao vivo (régua única para a conclusão, o certificado e o webhook do Mural); a conclusão
+  do curso ao vivo vira `live_course_complete`. As consultas da Jornada seguem pelo snapshot do
+  ledger, de propósito: um curso que já foi gravado e virou ao vivo não tira posto de ninguém.
+  `grantByCourse` recusa curso ao vivo (a vaga é na turma). ⚠️ O resumo semanal dos pais
+  (`learning.repository`: `weeklyTopics` e afins) CONTA a oficina ao vivo de propósito: é atividade
+  real da criança, não listagem.
+- **Anotações da professora** (`LessonSection.teacherNotes`, até `TEACHER_NOTES_MAX`): o core valida
+  (seções e manifesto), o DTO declara, rascunho e publicação guardam. A view do aluno
+  (`GetLessonService`) monta as partes campo a campo e nunca as leva. Rota
+  `GET /members/admin/live/lessons/:lessonId/teacher-notes` → `{ notes: { [sectionId]: texto } }`
+  da versão publicada (`LiveTeacherNotesService`, `live-course.routes.ts`): administração ou staff
+  atribuída a uma turma do curso; aula de curso gravado → 404.
+- **Manifesto**: numa aula de curso ao vivo, `plannedVideo` e `pendingMedia` são recusados
+  ("Aula ao vivo não tem vídeo gravado: a transmissão do encontro faz esse papel.") e
+  `teacherNotes` por seção viaja ao rascunho.
+- **Recompensas** (`LiveRewardsPort` em `domain/ports/live-rewards.port.ts`, implementação
+  `LiveRewardsService` na gamificação): `encounterAttended` grava o marco `live_encounter` (amount
+  0, sourceId = ocorrência, idempotente) → conquista `live-first-encounter` e a missão semanal
+  `weekly-encontro-ao-vivo` (goal `live_encounter`, gate `LIVE_ACCESS_REF`, só para quem tem vaga
+  ATIVA na vitrine: `hasActiveSeat`, resolvido em `mission-access.ts` para leitura e resgate). Sem
+  XP de presença; o XP vem das rotas de aula. "Oficina completa" = `live-course-complete` com o
+  troféu `trofeu-oficina-completa`. ⚠️ A ligação no `LiveService` (`liveRewards`) é da integração.
+  Lockstep: `BADGE_SLUGS` + `BadgeSlug` (member-shell) + `BADGE_INFO`, `room-catalog` e
+  `furniture-models` (kids).
+- Testes: `tests/integration/live-course.test.ts` (HTTP com os fakes) e
+  `tests/db/live-course-modality.test.ts` (migrations reais, `LEARNING_QA_DATABASE_URL`).
+
 ## Oficinas ao vivo (14/10/2026)
 
 `application/live` mantém oficinas reutilizáveis, snapshots das aulas por turma, matrículas

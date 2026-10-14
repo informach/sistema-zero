@@ -1,5 +1,6 @@
 import {
   Armchair,
+  Award,
   BrainCircuit,
   Coins,
   Crown,
@@ -13,6 +14,7 @@ import {
   MessagesSquare,
   PiggyBank,
   Play,
+  Radio,
   Rocket,
   Shirt,
   Shuffle,
@@ -184,6 +186,17 @@ export const BADGE_INFO: Record<BadgeSlug, BadgeInfo> = {
     description: 'Dez comentários seus aprovados no Mural. Os colegas adoram!',
     icon: MessageCircle,
   },
+  'live-first-encounter': {
+    title: 'Primeiro encontro ao vivo',
+    description: 'Você entrou no seu primeiro encontro ao vivo de uma oficina!',
+    icon: Radio,
+  },
+  'live-course-complete': {
+    title: 'Oficina completa',
+    description:
+      'Você terminou todas as fases de uma oficina ao vivo! Tem até troféu no seu quarto.',
+    icon: Award,
+  },
 }
 
 /** Slug desconhecido (badge nova do backend antes do deploy daqui) → `null` = a UI ignora. */
@@ -214,14 +227,14 @@ const TOM_DO_MURAL = new Set(['first-showcase', 'remix-first', 'mural-commenter-
  * que já passam AA (tinta escura no âmbar), e o verde é o profundo da paleta, fundo que
  * não segue o tema. A cor sai da FAMÍLIA do slug, para uma conquista nova já nascer
  * colorida sem ninguém lembrar de pintá-la: fogo em coral, nota e ideia em âmbar, Mural e
- * enfeites em roxo, Clube em verde, aula, curso e Estúdio em azul.
+ * enfeites em roxo, Clube e oficinas ao vivo em verde, aula, curso e Estúdio em azul.
  */
 export function badgeTone(slug: string): BadgeTone {
   if (slug.startsWith('streak-')) return TOM_CORAL
   if (slug.startsWith('quiz-') || slug.startsWith('pensa-') || slug.startsWith('coins-')) {
     return TOM_AMBAR
   }
-  if (slug.startsWith('clube-')) return TOM_VERDE
+  if (slug.startsWith('clube-') || slug.startsWith('live-')) return TOM_VERDE
   if (
     TOM_DO_MURAL.has(slug) ||
     slug.startsWith('plays-') ||

@@ -10,7 +10,7 @@ import type { StudioSubmissionRepository } from '../../domain/ports/studio-submi
 import type { VideoPositionRepository } from '../../domain/ports/video-position-repository.port'
 import type { CheckAccessService } from '../access/check-access.service'
 import type { LearningService } from '../learning/learning.service'
-import { assertLessonUnlockedFromState } from '../lesson-locking/lesson-locking'
+import { assertLessonUnlockedFromState, usesSequentialLock } from '../lesson-locking/lesson-locking'
 import {
   type LessonDetailView,
   type QuizStateView,
@@ -43,6 +43,7 @@ export class GetLessonService {
       courseSlug,
       privileged,
       userId,
+      { lessonId },
     )
     const lesson = await this.courses.findLessonWithContent(lessonId)
     // Aula rascunho é invisível ao aluno (mesmo por URL direta) → 404.
@@ -60,7 +61,7 @@ export class GetLessonService {
     // com a trava desligada ignoram o estado (early-return em assertLessonUnlockedFromState).
     // Carregar a árvore do curso à toa no caminho MAIS quente (toda abertura de aula)
     // é desperdício — espelha o curto-circuito de assertLessonUnlocked.
-    const needsLock = course.sequentialLock && !privileged
+    const needsLock = usesSequentialLock(course) && !privileged
     const [completedIds, positionSeconds, summaries, studioSummaries, outline] = await Promise.all([
       this.progress.listCompletedLessonIds(userId, course.id),
       this.positions.findPosition(userId, lessonId),

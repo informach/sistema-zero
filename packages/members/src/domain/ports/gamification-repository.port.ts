@@ -67,6 +67,13 @@ export type XpSourceType =
   // plays-10/plays-100 (+ troféu) — anti-farm natural: exige volume real de outros.
   | 'play_milestone_10'
   | 'play_milestone_100'
+  // Cursos AO VIVO (14/10/2026) — MARCOS (amount 0; nada de XP por presença, o XP vem das
+  // rotas de aula de sempre): `live_encounter` = a criança foi recebida num encontro (sourceId =
+  // ocorrência; conquista `live-first-encounter` + missão semanal `live_encounter`) e
+  // `live_course_complete` = concluiu TODAS as aulas publicadas de um curso ao vivo (sourceId =
+  // curso; conquista `live-course-complete` + troféu). Nenhum dos dois é marco da Jornada.
+  | 'live_encounter'
+  | 'live_course_complete'
 
 export interface XpEventInput {
   sourceType: XpSourceType

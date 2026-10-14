@@ -1,3 +1,4 @@
+import type { CourseModality } from '@sistemazero/core/course/modality'
 import type { Logger } from '@sistemazero/core/logging'
 import type { CourseAudience } from '../../domain/course/course'
 import { CHALLENGE_ENTRY_XP, challengeSourceId } from '../../domain/gamification/challenges'
@@ -46,6 +47,8 @@ export class AwardGamificationService {
     unitCompleted: boolean
     courseCompleted: boolean
     privileged: boolean
+    /** Curso AO VIVO conclui como `live_course_complete`, nunca como marco da Jornada. */
+    modality?: CourseModality
   }): Promise<GamificationDeltaView | null> {
     const events: AwardXpEventInput[] = [
       {
@@ -69,8 +72,14 @@ export class AwardGamificationService {
     }
     // Curso 100% → MARCO no ledger (amount 0): conta cursos concluídos p/ as
     // badges course-complete/-2/-3 (derivadas no repositório, dedupe por curso).
+    // Curso AO VIVO (14/10/2026): o marco é `live_course_complete` ("Oficina completa" + troféu)
+    // e nunca o da Jornada; o XP das aulas segue a mesma régua do gravado.
     if (input.courseCompleted) {
-      events.push({ sourceType: 'course_complete', sourceId: input.courseId, amount: 0 })
+      events.push({
+        sourceType: input.modality === 'live' ? 'live_course_complete' : 'course_complete',
+        sourceId: input.courseId,
+        amount: 0,
+      })
     }
     return this.award(input.userId, input.accountId, input.audience, events, input.privileged)
   }
@@ -506,6 +515,28 @@ export class AwardGamificationService {
           amount: 0,
         },
       ],
+      false,
+    )
+  }
+
+  /**
+   * MARCO `live_encounter` (amount 0, 14/10/2026): a criança foi RECEBIDA num encontro de
+   * curso ao vivo. sourceId = a ocorrência → idempotente por criança + encontro (entrar de novo
+   * na mesma sala não conta duas vezes). Deriva a conquista `live-first-encounter` e alimenta a
+   * missão semanal `live_encounter`. Sem XP de presença (decisão da dona): amount 0 não move XP
+   * nem streak. `privileged: false`: quem é recebida na sala é a criança. Fail-open.
+   */
+  async awardLiveEncounter(input: {
+    userId: string
+    accountId: string
+    occurrenceId: string
+    audience: CourseAudience
+  }): Promise<GamificationDeltaView | null> {
+    return this.award(
+      input.userId,
+      input.accountId,
+      input.audience,
+      [{ sourceType: 'live_encounter', sourceId: input.occurrenceId, amount: 0 }],
       false,
     )
   }

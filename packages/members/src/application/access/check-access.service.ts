@@ -1,17 +1,35 @@
 import { resolveJourneyCourseLock } from '@sistemazero/core/journey'
 import { type Course, isCourseAccessible } from '../../domain/course/course'
-import { CourseJourneyLockedError, CourseNotFoundError } from '../../domain/course/course.errors'
+import {
+  CourseJourneyLockedError,
+  CourseNotFoundError,
+  LiveLessonClosedError,
+} from '../../domain/course/course.errors'
 import { EntitlementAggregate } from '../../domain/entitlement/entitlement.aggregate'
 import { AccessDeniedError } from '../../domain/entitlement/entitlement.errors'
 import { courseTier } from '../../domain/gamification/levels'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { EntitlementRepository } from '../../domain/ports/entitlement-repository.port'
 import type { GamificationRepository } from '../../domain/ports/gamification-repository.port'
+import type { LiveLessonAccessPort } from '../../domain/ports/live-lesson-access.port'
 
 export interface CourseAccess {
   course: Course
   entitlement: EntitlementAggregate
+  /**
+   * Curso AO VIVO visto por quem NÃO é equipe: as aulas que a vaga abre agora. Ausente = sem
+   * restrição por aula (curso gravado, ou a equipe num curso ao vivo).
+   */
+  liveLessonIds?: ReadonlySet<string>
 }
+
+/**
+ * O alcance da checagem. Toda rota que mexe numa AULA passa o `lessonId`: no curso ao vivo o
+ * acesso é POR AULA (o grant é da sessão daquela aula), e sem ele uma vaga aberta na aula 1
+ * abriria a aula 2 por essa rota. `'course'` é só para o que é do curso inteiro (detalhe,
+ * progresso, classificação, baú da unidade, público de um recado).
+ */
+export type AccessScope = { lessonId: string } | 'course'
 
 /**
  * Centraliza a trinca repetida nos endpoints de conteúdo: resolve o curso →
@@ -24,6 +42,12 @@ export interface CourseAccess {
  * matrícula com uma chave-mestra VIRTUAL que cobre as DUAS audiências (suporte);
  * o 404 de curso draft fica ANTES do bypass — equipe vê só conteúdo acessível,
  * igual ao aluno com chave-mestra real.
+ *
+ * Curso AO VIVO (14/10/2026) tem régua própria (`assertLive`): matrícula e chave-mestra NÃO
+ * abrem nada; a aula abre pela vaga na turma (grant ativo da sessão DAQUELA aula) e a equipe
+ * vê tudo, inclusive o curso ainda em rascunho. A professora atribuída à turma é equipe (o
+ * `LiveService` exige `staff` para conduzir), então entra pelo mesmo passe. A trava
+ * sequencial e a da Jornada não se aplicam: o grant já é por aula e por data.
  */
 export class CheckAccessService {
   constructor(
@@ -31,34 +55,41 @@ export class CheckAccessService {
     private readonly entitlements: EntitlementRepository,
     private readonly gamification: GamificationRepository,
     private readonly clock: () => Date,
+    private readonly live: LiveLessonAccessPort,
   ) {}
 
   async requireBySlug(
     userId: string,
     courseSlug: string,
-    privileged = false,
-    learnerId?: string,
+    privileged: boolean,
+    learnerId: string | undefined,
+    scope: AccessScope,
   ): Promise<CourseAccess> {
     const course = await this.courses.findCourseBySlug(courseSlug)
-    return this.assert(userId, course, privileged, learnerId)
+    return this.assert(userId, course, privileged, learnerId, scope)
   }
 
   async requireById(
     userId: string,
     courseId: string,
-    privileged = false,
-    learnerId?: string,
+    privileged: boolean,
+    learnerId: string | undefined,
+    scope: AccessScope,
   ): Promise<CourseAccess> {
     const course = await this.courses.findCourseById(courseId)
-    return this.assert(userId, course, privileged, learnerId)
+    return this.assert(userId, course, privileged, learnerId, scope)
   }
 
   private async assert(
     userId: string,
     course: Course | null,
     privileged: boolean,
-    learnerId?: string,
+    learnerId: string | undefined,
+    scope: AccessScope,
   ): Promise<CourseAccess> {
+    if (course?.modality === 'live') {
+      return this.assertLive(userId, course, privileged, learnerId ?? userId, scope)
+    }
     // `published` ou `archived` concedem acesso a quem já tem matrícula; `draft`
     // (ou inexistente) → 404 (não vaza a existência de curso não publicado).
     if (!course || !isCourseAccessible(course.status)) throw new CourseNotFoundError()
@@ -110,5 +141,43 @@ export class CheckAccessService {
       }
     }
     return { course, entitlement }
+  }
+
+  /**
+   * Curso AO VIVO. A equipe passa (o rascunho incluído: é ela que prepara a turma); quem não é
+   * equipe precisa de vaga com grant ativo. No alcance de AULA, a aula precisa estar entre as
+   * abertas pela vaga; no do curso, basta uma aberta.
+   */
+  private async assertLive(
+    accountId: string,
+    course: Course,
+    privileged: boolean,
+    learnerId: string,
+    scope: AccessScope,
+  ): Promise<CourseAccess> {
+    const now = this.clock()
+    if (privileged) {
+      return { course, entitlement: EntitlementAggregate.virtualAllCourses(accountId, now) }
+    }
+    if (!isCourseAccessible(course.status)) throw new CourseNotFoundError()
+    const open = await this.live.openLessons({
+      accountId,
+      learnerId,
+      courseId: course.id,
+      now,
+    })
+    if (open.length === 0) throw new LiveLessonClosedError()
+    const target =
+      scope === 'course' ? null : open.find((lesson) => lesson.lessonId === scope.lessonId)
+    if (scope !== 'course' && !target) throw new LiveLessonClosedError()
+    // O prazo que vale: o da aula pedida, ou o mais longo entre as abertas (alcance do curso).
+    const endsAt =
+      target?.endsAt ??
+      open.reduce((latest, lesson) => (lesson.endsAt > latest ? lesson.endsAt : latest), now)
+    return {
+      course,
+      entitlement: EntitlementAggregate.virtualLiveSeat(accountId, course.slug, now, endsAt),
+      liveLessonIds: new Set(open.map((lesson) => lesson.lessonId)),
+    }
   }
 }

@@ -1,3 +1,4 @@
+import { ValidationError } from '@sistemazero/core/errors'
 import type { Logger } from '@sistemazero/core/logging'
 import { CourseNotFoundError } from '../../domain/course/course.errors'
 import { EntitlementAggregate } from '../../domain/entitlement/entitlement.aggregate'
@@ -101,7 +102,10 @@ export class GrantManualEntitlementService {
 
   async isPublishedKidsCourse(courseRef: string): Promise<boolean> {
     const course = await this.deps.courses.findCourseBySlug(courseRef)
-    return course?.status === 'published' && course.audience === 'kids'
+    // Curso ao vivo não se libera por matrícula (a vaga é na turma): nunca vira presente.
+    return (
+      course?.status === 'published' && course.audience === 'kids' && course.modality === 'recorded'
+    )
   }
 
   async execute(cmd: GrantManualCommand): Promise<GrantManualResult> {
@@ -194,6 +198,12 @@ export class GrantManualEntitlementService {
       (requirePublishedKids && (course.status !== 'published' || course.audience !== 'kids'))
     )
       throw new CourseNotFoundError()
+    // O curso AO VIVO abre pela vaga na turma das oficinas, nunca por matrícula: a concessão
+    // seria uma matrícula morta (o `CheckAccessService` não a lê para curso ao vivo).
+    if (course.modality === 'live')
+      throw new ValidationError(
+        'Curso ao vivo não se libera por matrícula. A vaga é numa turma das oficinas.',
+      )
 
     // `product_id = course.id`: uuid estável → o índice de dedupe funciona (re-conceder
     // o mesmo curso ao mesmo membro colide em vez de duplicar). Snapshot sintético (sem oferta).

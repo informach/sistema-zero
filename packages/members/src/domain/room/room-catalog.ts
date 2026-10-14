@@ -6,7 +6,7 @@
  * pelo MESMO `id`. Itens/temas são SINKS das moedas Zappy (cosmético puro).
  */
 
-import type { BadgeSlug } from '../gamification/badges'
+import { type BadgeSlug, HIDDEN_UNTIL_UNLOCKED_BADGES } from '../gamification/badges'
 
 export type RoomItemCategory = 'furniture' | 'decor' | 'plant' | 'light' | 'pet'
 
@@ -133,6 +133,7 @@ export const ROOM_ITEMS: readonly RoomItemDef[] = [
   trophy('trofeu-foguete', 1, 2), // 1º plano ZERO aprovado (slug histórico pensa-first-launch)
   trophy('trofeu-console', 1, 1), // 3 atividades do Estúdio aprovadas (studio-master-3 — bônus)
   trophy('trofeu-estrela-do-mural', 1, 1), // um jogo seu foi jogado 100× (plays-100 — universal)
+  trophy('trofeu-oficina-completa', 1, 1), // um curso AO VIVO inteiro (live-course-complete — bônus)
   // 🏆 ESTANTE DE TROFÉUS (24/07): móvel NÃO-comprável concedido junto com o 1º troféu
   // (o award insere no `room_inventory` na mesma tx). 6 nichos p/ exibir a coleção.
   {
@@ -166,7 +167,19 @@ export const TROPHY_FOR_BADGE: Readonly<Partial<Record<BadgeSlug, string>>> = {
   'pensa-first-launch': 'trofeu-foguete',
   'studio-master-3': 'trofeu-console',
   'plays-100': 'trofeu-estrela-do-mural',
+  'live-course-complete': 'trofeu-oficina-completa',
 }
+
+/**
+ * Troféus que só aparecem na bandeja DEPOIS de ganhos: os das conquistas que não se divulgam
+ * (`HIDDEN_UNTIL_UNLOCKED_BADGES`, as das oficinas ao vivo). Derivado do mapa acima.
+ */
+export const HIDDEN_UNTIL_OWNED_TROPHIES: ReadonlySet<string> = new Set(
+  [...HIDDEN_UNTIL_UNLOCKED_BADGES].flatMap((slug) => {
+    const itemId = TROPHY_FOR_BADGE[slug]
+    return itemId ? [itemId] : []
+  }),
+)
 
 export const ROOM_THEMES: readonly RoomThemeDef[] = [
   { id: 'aconchego', tier: 'free', price: 0 },

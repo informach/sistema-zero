@@ -81,6 +81,14 @@ export const ROOM_ITEM_INFO: Record<string, RoomItemInfo> = {
     h: 1,
     stackable: true,
   },
+  // Cursos ao vivo (14/10/2026): uma oficina ao vivo inteira (badge live-course-complete).
+  'trofeu-oficina-completa': {
+    labelPt: 'Troféu da Oficina',
+    emoji: '🎬',
+    w: 1,
+    h: 1,
+    stackable: true,
+  },
   // 🏆 Estante de Troféus (24/07) — vem de graça com o 1º troféu (não tem badge própria).
   'estante-trofeus': { labelPt: 'Estante de Troféus', emoji: '🏅', w: 3, h: 2, surface: 6 },
 }
@@ -100,6 +108,7 @@ export const TROPHY_HINT: Record<string, string> = {
   'trofeu-foguete': 'Lance a Versão 1 de um plano no Pensa!',
   'trofeu-console': 'Alcance a meta em 3 projetos do Estúdio!',
   'trofeu-estrela-do-mural': 'Tenha um jogo seu jogado 100 vezes!',
+  'trofeu-oficina-completa': 'Complete todas as fases de uma oficina ao vivo!',
   'estante-trofeus': 'Ganhe o seu primeiro troféu e a estante vem junto!',
 }
 
@@ -151,6 +160,7 @@ export const TROPHY_BADGE_SLUGS: ReadonlySet<string> = new Set([
   'pensa-first-launch',
   'studio-master-3',
   'plays-100',
+  'live-course-complete',
 ])
 
 interface RoomThemeInfo {

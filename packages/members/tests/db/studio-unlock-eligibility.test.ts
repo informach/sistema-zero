@@ -45,6 +45,8 @@ describe.skipIf(!testDatabaseUrl)('ferramentas de bônus Kids (SQL real)', () =>
       'career_slot smallint',
       'sequential_lock boolean not null default true',
       'video_before_activity boolean not null default false',
+      // Cursos ao vivo (0109): as consultas da Jornada/Estúdio filtram a modalidade.
+      "modality text not null default 'recorded'",
       'metadata jsonb',
       'created_at timestamptz not null default now()',
       'updated_at timestamptz not null default now()',

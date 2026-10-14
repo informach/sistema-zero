@@ -87,6 +87,7 @@ export class IssueCertificateService {
       lesson.courseId,
       input.privileged,
       input.userId,
+      { lessonId: input.lessonId },
     )
 
     // Idempotente: já emitido → replay da conclusão/award (auto-cura falha pós-insert)
@@ -219,6 +220,7 @@ export class IssueCertificateService {
       unitCompleted,
       courseCompleted: total > 0 && completed === total,
       privileged: input.privileged,
+      modality: course.modality,
     })
   }
 }

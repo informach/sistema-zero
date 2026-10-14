@@ -1,3 +1,4 @@
+import type { CourseModality } from '@sistemazero/core/course/modality'
 import type { HelpTutorialDocument } from '@sistemazero/core/help'
 import type {
   LearningAnswers,
@@ -192,6 +193,11 @@ export const courses = members.table(
     // abre depois que o aluno assiste ao vídeo uma vez. Desligado por padrão: a autora liga
     // nos cursos de quem está começando. Guia de interface, sem checagem no servidor.
     videoBeforeActivity: boolean('video_before_activity').notNull().default(false),
+    // Modalidade (14/10/2026, migration 0109): GRAVADO (o curso de sempre) ou AO VIVO (só existe
+    // em Oficinas; o acesso vem da vaga na turma). Texto + CHECK, não enum do Postgres: valor novo
+    // de enum não pode ser usado na mesma transação que o cria. Mesma régua de autoria do
+    // `audience`: o UPDATE sem o campo PRESERVA o valor atual.
+    modality: text('modality').$type<CourseModality>().notNull().default('recorded'),
     metadata: jsonb('metadata').$type<Record<string, unknown>>(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
@@ -214,6 +220,12 @@ export const courses = members.table(
     check(
       'courses_journey_role_slot_check',
       sql`(${t.journeyRole} = 'positioned') = (${t.careerSlot} is not null)`,
+    ),
+    check('courses_modality_check', sql`${t.modality} in ('recorded', 'live')`),
+    // Curso ao vivo nunca ocupa posição na Jornada (espelha a validação do `CourseAdminService`).
+    check(
+      'courses_live_off_journey_check',
+      sql`${t.modality} = 'recorded' or ${t.careerSlot} is null`,
     ),
   ],
 )
@@ -685,6 +697,12 @@ export const xpSourceTypeEnum = members.enum('xp_source_type', [
   'studio_remix',
   'play_milestone_10',
   'play_milestone_100',
+  // Cursos AO VIVO (14/10/2026, migration 0109) — MARCOS (amount 0, nada de XP por presença):
+  // a criança foi recebida num encontro (sourceId = ocorrência; conquista `live-first-encounter`
+  // e missão `live_encounter`) e concluiu todas as aulas de um curso ao vivo (sourceId = curso;
+  // conquista `live-course-complete` + troféu). Nenhum dos dois conta para a Jornada.
+  'live_encounter',
+  'live_course_complete',
 ])
 
 // Origem de um evento de moeda Zappy (carteira, fatia 06/2026). Faucets (ganho)

@@ -4,6 +4,15 @@ import type { CourseRepository } from '../../domain/ports/course-repository.port
 import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
 import { isLessonLocked, lockedLessonIds } from '../../domain/progress/locking'
 
+/**
+ * A trava sequencial vale para o curso GRAVADO com a trava ligada. No curso AO VIVO quem abre a
+ * aula é a vaga na turma (grant por aula e por data, ver `CheckAccessService`): a ordem do
+ * curso não trava nada ali.
+ */
+export function usesSequentialLock(course: Pick<Course, 'sequentialLock' | 'modality'>): boolean {
+  return course.sequentialLock && course.modality !== 'live'
+}
+
 export interface LessonLockState {
   completedLessonIds: string[]
   orderedPublishedLessonIds: string[]
@@ -15,7 +24,7 @@ export function assertLessonUnlockedFromState(
   state: LessonLockState,
   privileged: boolean,
 ): void {
-  if (privileged || !course.sequentialLock) return
+  if (privileged || !usesSequentialLock(course)) return
   if (isLessonLocked(state.orderedPublishedLessonIds, lessonId, state.completedLessonIds)) {
     throw new LessonLockedError()
   }
@@ -50,7 +59,7 @@ export async function assertLessonUnlocked(
   // CHAMAM o assert (save-position, quiz, studio, anexo/ebook resolve) pagavam as
   // queries à toa. Todos os chamadores descartam o retorno, então o estado vazio
   // aqui é inócuo (o gate só roda quando há trava real a aplicar).
-  if (privileged || !course.sequentialLock) {
+  if (privileged || !usesSequentialLock(course)) {
     return { completedLessonIds: [], orderedPublishedLessonIds: [] }
   }
   const state = await resolveLessonLockState(courses, progress, userId, course.id)
@@ -64,7 +73,7 @@ export function lockedLessonSetForCourse(
   completedLessonIds: Iterable<string>,
   privileged: boolean,
 ): Set<string> {
-  return privileged || !course.sequentialLock
+  return privileged || !usesSequentialLock(course)
     ? new Set<string>()
     : lockedLessonIds(orderedPublishedLessonIds, completedLessonIds)
 }

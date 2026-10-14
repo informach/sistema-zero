@@ -1,3 +1,4 @@
+import { COURSE_MODALITIES } from '@sistemazero/core/course/modality'
 import {
   HELP_COLLECTION_ICONS,
   HELP_COLLECTION_TONES,
@@ -993,6 +994,8 @@ const COURSE_LEVEL = t.Union([
 ])
 // Eixo 2D/3D do curso — espelha o enum `course_track` do schema.
 const COURSE_TRACK = t.Union([t.Literal('2d'), t.Literal('3d')])
+// Modalidade (14/10/2026) — deriva de `COURSE_MODALITIES` do core (fonte única).
+const COURSE_MODALITY = t.Union(COURSE_MODALITIES.map((modality) => t.Literal(modality)))
 const TITLE = t.String({ minLength: 1, maxLength: 300 })
 const NULLABLE_TEXT = t.Optional(t.Union([t.String({ maxLength: 20_000 }), t.Null()]))
 // URLs escritas pelo admin exigem esquema http(s) — sem isto um `javascript:`
@@ -1041,6 +1044,10 @@ const CourseBodyProperties = {
   journeyRole: t.Optional(
     t.Union([t.Literal('positioned'), t.Literal('reward'), t.Literal('extra')]),
   ),
+  // Gravado ou ao vivo. AUSENTE: create → `recorded`; update → PRESERVA a atual (régua do
+  // audience). ⚠️ Declarado aqui de propósito: o `normalize` do Elysia descarta campo que o
+  // schema não conhece, e a modalidade nunca chegaria ao serviço.
+  modality: t.Optional(t.Union([COURSE_MODALITY, t.Null()])),
   // Blocos que este curso LIBERA no Estúdio livre ao satisfazer o critério atual:
   // bônus Kids exige conclusão; curso Kids com posição e Adult exigem também Mural.
   // Mesmo formato do `allowBlocks` da aula, só que no CURSO. Vira
@@ -1073,6 +1080,7 @@ export const ListCoursesQuery = t.Object({
   q: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
   status: t.Optional(COURSE_STATUS),
   audience: t.Optional(AUDIENCE),
+  modality: t.Optional(COURSE_MODALITY),
   limit: t.Optional(t.Numeric({ minimum: 1, maximum: 100 })),
   offset: t.Optional(t.Numeric({ minimum: 0, maximum: 1_000_000 })),
 })

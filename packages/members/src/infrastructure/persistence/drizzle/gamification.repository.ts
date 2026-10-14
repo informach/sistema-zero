@@ -30,6 +30,8 @@ import {
   clubeBadgeSlugs,
   coinsSaverBadgeSlugs,
   courseBadgeSlugs,
+  liveCourseBadgeSlugs,
+  liveEncounterBadgeSlugs,
   muralCommenterBadgeSlugs,
   pensaCycleBadgeSlugs,
   pensaStageBadgeSlugs,
@@ -114,6 +116,8 @@ function publishedCourseSourceInAudience(audience: CourseAudience) {
     eq(courses.id, xpEvents.sourceId),
     eq(courses.audience, audience),
     eq(courses.status, 'published'),
+    // Curso ao vivo não libera bloco do Estúdio (mesma régua do `eligibleStudioGrants`).
+    eq(courses.modality, 'recorded'),
   )
 }
 
@@ -146,24 +150,34 @@ export class DrizzleGamificationRepository implements GamificationRepository {
       // no ledger — o rank do aluno deixa de depender do curso ao vivo, então
       // re-nivelar/apagar o curso depois NUNCA rebaixa o rank. Demais sources não
       // têm degrau (null).
-      const courseMarcoIds = input.events
+      const requestedMarcoIds = input.events
         .filter((e) => e.sourceType === 'course_complete' || e.sourceType === 'course_showcased')
         .map((e) => e.sourceId)
       const tierByCourseId = new Map<
         string,
         { level: CourseLevel; track: CourseTrack; careerSlot: number | null }
       >()
-      if (courseMarcoIds.length > 0) {
+      // Curso AO VIVO nunca gera marco da Jornada (14/10/2026): `course_complete` e
+      // `course_showcased` de um curso `live` são descartados AQUI, numa régua só para todos os
+      // caminhos (conclusão de aula, certificado e o webhook do Mural). O curso ao vivo concluído
+      // vira `live_course_complete` em quem o pede (`awardLessonCompletion`).
+      const liveCourseIds = new Set<string>()
+      if (requestedMarcoIds.length > 0) {
         const tierRows = await tx
           .select({
             id: courses.id,
             level: courses.level,
             track: courses.track,
             careerSlot: courses.careerSlot,
+            modality: courses.modality,
           })
           .from(courses)
-          .where(inArray(courses.id, courseMarcoIds))
+          .where(inArray(courses.id, requestedMarcoIds))
         for (const r of tierRows) {
+          if (r.modality === 'live') {
+            liveCourseIds.add(r.id)
+            continue
+          }
           tierByCourseId.set(r.id, {
             level: r.level,
             track: r.track,
@@ -171,14 +185,22 @@ export class DrizzleGamificationRepository implements GamificationRepository {
           })
         }
       }
+      const events = input.events.filter(
+        (e) =>
+          !(
+            (e.sourceType === 'course_complete' || e.sourceType === 'course_showcased') &&
+            liveCourseIds.has(e.sourceId)
+          ),
+      )
+      const courseMarcoIds = requestedMarcoIds.filter((id) => !liveCourseIds.has(id))
 
       // Ledger idempotente: só os eventos realmente NOVOS voltam do RETURNING.
       const newEvents =
-        input.events.length > 0
+        events.length > 0
           ? await tx
               .insert(xpEvents)
               .values(
-                input.events.map((e) => ({
+                events.map((e) => ({
                   id: randomUUID(),
                   userId: input.userId,
                   audience: input.audience,
@@ -331,6 +353,17 @@ export class DrizzleGamificationRepository implements GamificationRepository {
       }
       if (newEvents.some((e) => e.sourceType === 'mural_comment')) {
         for (const slug of muralCommenterBadgeSlugs(await countByType('mural_comment'))) {
+          badgeCandidates.add(slug)
+        }
+      }
+      // Cursos ao vivo (14/10/2026): 1º encontro recebido e curso ao vivo inteiro concluído.
+      if (newEvents.some((e) => e.sourceType === 'live_encounter')) {
+        for (const slug of liveEncounterBadgeSlugs(await countByType('live_encounter'))) {
+          badgeCandidates.add(slug)
+        }
+      }
+      if (newEvents.some((e) => e.sourceType === 'live_course_complete')) {
+        for (const slug of liveCourseBadgeSlugs(await countByType('live_course_complete'))) {
           badgeCandidates.add(slug)
         }
       }

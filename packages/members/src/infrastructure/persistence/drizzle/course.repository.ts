@@ -37,6 +37,7 @@ function toCourse(row: typeof courses.$inferSelect): Course {
     audience: row.audience,
     sequentialLock: row.sequentialLock,
     videoBeforeActivity: row.videoBeforeActivity,
+    modality: row.modality,
     level: row.level,
     track: row.track,
     careerSlot: row.careerSlot,
@@ -167,7 +168,12 @@ export class DrizzleCourseRepository implements CourseRepository {
       .select()
       .from(courses)
       .where(
-        and(inArray(courses.slug, slugs), inArray(courses.status, [...ACCESSIBLE_COURSE_STATUSES])),
+        and(
+          inArray(courses.slug, slugs),
+          inArray(courses.status, [...ACCESSIBLE_COURSE_STATUSES]),
+          // Curso ao vivo não se libera por matrícula: fica fora de "meus cursos".
+          eq(courses.modality, 'recorded'),
+        ),
       )
       // Mesma régua da vitrine: mais antigos primeiro (antes era ordem indefinida).
       .orderBy(asc(courses.createdAt))
@@ -190,7 +196,14 @@ export class DrizzleCourseRepository implements CourseRepository {
     const rows = await this.db
       .select()
       .from(courses)
-      .where(and(eq(courses.status, 'published'), eq(courses.audience, audience)))
+      .where(
+        and(
+          eq(courses.status, 'published'),
+          eq(courses.audience, audience),
+          // Curso ao vivo só existe em Oficinas: fora do catálogo e da chave-mestra.
+          eq(courses.modality, 'recorded'),
+        ),
+      )
       // Ordem PADRÃO das vitrines: jornada de criação (mais antigos primeiro) —
       // decisão da usuária 13/07. A→Z virou opção do seletor no front.
       .orderBy(asc(courses.createdAt))
@@ -214,6 +227,7 @@ export class DrizzleCourseRepository implements CourseRepository {
           eq(courses.level, level),
           eq(courses.track, track),
           eq(courses.careerSlot, 1),
+          eq(courses.modality, 'recorded'),
         ),
       )
       .limit(1)

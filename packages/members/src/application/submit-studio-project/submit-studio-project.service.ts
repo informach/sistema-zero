@@ -156,6 +156,7 @@ export class SubmitStudioProjectService {
       lesson.courseId,
       privileged,
       userId,
+      { lessonId },
     )
     await assertLessonUnlocked(this.courses, this.progress, course, lessonId, userId, privileged)
     const block = lesson.blocks.find((b) => b.id === blockId)

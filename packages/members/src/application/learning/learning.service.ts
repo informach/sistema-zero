@@ -131,6 +131,7 @@ export class LearningService {
       lesson.courseId,
       actor.privileged,
       actor.userId,
+      { lessonId },
     )
     if (hasComingSoonBlock(lesson.blocks)) throw new LessonComingSoonError()
     const [completedLessonIds, outline] = await Promise.all([

@@ -1,5 +1,18 @@
 # CLAUDE.md — @sistemazero/community-kids
 
+## Oficinas ao vivo: conquistas, troféu e missão (14/10/2026)
+
+Lockstep dos cursos ao vivo (regras no CLAUDE.md do members): `BADGE_INFO` ganhou
+`live-first-encounter` ("Primeiro encontro ao vivo", `Radio`) e `live-course-complete` ("Oficina
+completa", `Award`), no tom verde do Clube (`badgeTone` pelo prefixo `live-`); o quarto ganhou
+`trofeu-oficina-completa` ("Troféu da Oficina", telinha de transmissão dourada com o ponto
+vermelho em `furniture-models.tsx`), em `ROOM_ITEM_INFO`/`TROPHY_HINT`/`TROPHY_BADGE_SLUGS`; e o
+painel de missões nomeia o goal `live_encounter` ("Participe de um encontro ao vivo"). As duas
+conquistas e o troféu só chegam aqui DEPOIS de ganhos (o members não os lista travados: as
+oficinas não se divulgam fora delas). `tests/room-trophy-models.test.ts` reprova troféu sem
+modelo próprio (a caixa neutra), além do `badge-conformance` e do `catalog-conformance` do
+members.
+
 ## Falar em vez de escrever (14/10/2026)
 
 A criança fala a mensagem para a equipe e confere o texto antes de enviar; a voz não é guardada.

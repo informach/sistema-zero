@@ -282,6 +282,8 @@ async function ensureTables(conn: DbConnection) {
     'video_before_activity boolean not null default false',
     'created_at timestamptz not null default now()',
     'updated_at timestamptz not null default now()',
+    // Cursos ao vivo (0109): as consultas da Jornada/Estúdio filtram a modalidade.
+    "modality text not null default 'recorded'",
   ]) {
     await conn.sql.unsafe(`alter table members.courses add column if not exists ${column}`)
   }

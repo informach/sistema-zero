@@ -1,4 +1,8 @@
-import { CourseJourneyLockedError, CourseNotFoundError } from '../../domain/course/course.errors'
+import {
+  CourseJourneyLockedError,
+  CourseNotFoundError,
+  LiveLessonClosedError,
+} from '../../domain/course/course.errors'
 import { AccessDeniedError } from '../../domain/entitlement/entitlement.errors'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { EntitlementRepository } from '../../domain/ports/entitlement-repository.port'
@@ -74,6 +78,7 @@ export class TeacherBroadcastsService {
                   input.audience.courseId,
                   false,
                   recipient.profileId,
+                  'course',
                 )
                 eligible = true
               } catch (error) {
@@ -81,7 +86,8 @@ export class TeacherBroadcastsService {
                   !(
                     error instanceof AccessDeniedError ||
                     error instanceof CourseJourneyLockedError ||
-                    error instanceof CourseNotFoundError
+                    error instanceof CourseNotFoundError ||
+                    error instanceof LiveLessonClosedError
                   )
                 )
                   throw error

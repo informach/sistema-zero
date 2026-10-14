@@ -27,6 +27,7 @@ import { type HelpRoutesDeps, helpRoutes } from './routes/help.routes'
 import { type InternalRoutesDeps, internalRoutes } from './routes/internal.routes'
 import { type LearningRoutesDeps, learningRoutes } from './routes/learning.routes'
 import { type LiveRoutesDeps, liveRoutes } from './routes/live.routes'
+import { type LiveCourseRoutesDeps, liveCourseRoutes } from './routes/live-course.routes'
 import { liveLearningRoutes } from './routes/live-learning.routes'
 import { liveMaterialsRoutes } from './routes/live-materials.routes'
 import { livePublicationRoutes } from './routes/live-publication.routes'
@@ -44,6 +45,8 @@ export interface HttpDeps {
   liveMedia?: CloudflareSfuMediaProvider
   liveRecording?: OwnRecordingProvider
   live?: LiveRoutesDeps
+  /** Cursos ao vivo (14/10/2026): anotações da professora (fora da sala). */
+  liveCourse?: LiveCourseRoutesDeps
   learning: LearningRoutesDeps
   env: Env
   logger: Logger
@@ -200,6 +203,7 @@ export function createServer(deps: HttpDeps) {
     .use(internalRoutes(deps.internal))
     .use(helpRoutes(deps.help))
     .use(deps.live ? liveRoutes(deps.live) : new Elysia())
+    .use(deps.liveCourse ? liveCourseRoutes(deps.liveCourse) : new Elysia())
     .use(
       deps.liveLearning
         ? liveLearningRoutes({

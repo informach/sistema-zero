@@ -37,6 +37,7 @@ export class SaveVideoPositionService {
       courseSlug,
       privileged,
       userId,
+      { lessonId },
     )
     const lesson = await this.courses.findLesson(lessonId)
     // Aula rascunho é invisível ao aluno → não aceita posição de vídeo.

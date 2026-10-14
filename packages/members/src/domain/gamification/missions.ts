@@ -40,6 +40,9 @@ export type MissionGoalType =
   // remixou jogo de colega (marco por playId do ORIGINAL; validado no hub).
   | 'studio_published'
   | 'studio_remix'
+  // Oficinas AO VIVO (14/10/2026): foi recebida num encontro (MARCO amount 0 por ocorrência).
+  // GATED pela vaga ativa numa turma (ver `LIVE_ACCESS_REF`).
+  | 'live_encounter'
 
 export interface MissionDef {
   slug: string
@@ -63,6 +66,14 @@ export const CLUBE_ACCESS_REF = 'clube-dos-criadores'
 
 /** Ref do produto Estúdio Completo (vendido à parte) — gate das missões de criação. */
 export const ESTUDIO_ACCESS_REF = 'estudio-completo'
+
+/**
+ * Gate das missões das oficinas AO VIVO (14/10/2026). Não é um produto do catálogo: quem o
+ * "possui" é a criança com VAGA ATIVA numa turma de curso ao vivo da vitrine
+ * (`LiveLessonAccessPort.hasActiveSeat`), resolvida pelos serviços de missão junto com as
+ * refs de produto.
+ */
+export const LIVE_ACCESS_REF = 'oficina-ao-vivo'
 
 export const DAILY_MISSIONS: readonly MissionDef[] = [
   {
@@ -199,6 +210,18 @@ export const WEEKLY_MISSIONS: readonly MissionDef[] = [
     rewardXp: 40,
     rewardCoins: 45,
     requiresAccess: ESTUDIO_ACCESS_REF,
+  },
+  // Oficinas ao vivo (14/10/2026): participar de um encontro. Só entra no sorteio de quem tem
+  // vaga ativa numa turma. O encontro em si não dá XP (nada de bônus por presença); o prêmio é
+  // o de resgatar uma missão semanal, a mesma régua do "abrir um baú".
+  {
+    slug: 'weekly-encontro-ao-vivo',
+    cadence: 'weekly',
+    goalType: 'live_encounter',
+    target: 1,
+    rewardXp: 30,
+    rewardCoins: 35,
+    requiresAccess: LIVE_ACCESS_REF,
   },
 ]
 

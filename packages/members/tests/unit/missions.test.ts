@@ -8,6 +8,7 @@ import {
   DAILY_SET_SIZE,
   dayBoundsUtc,
   ESTUDIO_ACCESS_REF,
+  LIVE_ACCESS_REF,
   MISSIONS_BY_SLUG,
   MONTHLY_MISSIONS,
   MONTHLY_SET_SIZE,
@@ -33,16 +34,33 @@ describe('catálogo de missões', () => {
     expect(MISSIONS_BY_SLUG.size).toBe(all.length)
   })
 
-  test('gating por produto: Clube e Estúdio, cada goalType com a ref certa', () => {
+  test('gating por produto: Clube, Estúdio e oficina ao vivo, cada goalType com a ref certa', () => {
     const all = [...DAILY_MISSIONS, ...WEEKLY_MISSIONS, ...MONTHLY_MISSIONS]
     for (const m of all) {
       if (m.requiresAccess) {
-        expect([CLUBE_ACCESS_REF, ESTUDIO_ACCESS_REF]).toContain(m.requiresAccess)
+        expect([CLUBE_ACCESS_REF, ESTUDIO_ACCESS_REF, LIVE_ACCESS_REF]).toContain(m.requiresAccess)
       }
       if (m.goalType === 'clube_thread') expect(m.requiresAccess).toBe(CLUBE_ACCESS_REF)
       if (m.goalType === 'studio_published' || m.goalType === 'studio_remix') {
         expect(m.requiresAccess).toBe(ESTUDIO_ACCESS_REF)
       }
+      // A missão do encontro ao vivo é SEMANAL e só para quem tem vaga numa turma.
+      if (m.goalType === 'live_encounter') {
+        expect(m.requiresAccess).toBe(LIVE_ACCESS_REF)
+        expect(m.cadence).toBe('weekly')
+      }
+    }
+    expect(all.some((m) => m.goalType === 'live_encounter')).toBe(true)
+  })
+
+  test('sem a vaga, a missão do encontro ao vivo nunca é sorteada', () => {
+    for (let i = 0; i < 200; i++) {
+      const weekly = assignWeeklyMissions(
+        `user-${i}`,
+        'w:2026-11-02',
+        (ref) => ref !== LIVE_ACCESS_REF,
+      )
+      expect(weekly.some((m) => m.goalType === 'live_encounter')).toBe(false)
     }
   })
 })

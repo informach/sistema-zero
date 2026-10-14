@@ -4,7 +4,10 @@ import type { CourseAudience } from '../../../domain/course/course'
 import type { Database } from './db'
 import { courses, xpEvents } from './schema'
 
-/** Same eligibility during earning and later reads, including bonus courses and legacy metadata. */
+/**
+ * Same eligibility during earning and later reads, including bonus courses and legacy metadata.
+ * Curso AO VIVO (14/10/2026) nunca libera bloco do Estúdio pelo currículo: só o gravado entra.
+ */
 export async function eligibleStudioGrants(
   db: Pick<Database, 'select'>,
   userId: string,
@@ -22,6 +25,7 @@ export async function eligibleStudioGrants(
         eq(courses.id, xpEvents.sourceId),
         eq(courses.audience, audience),
         eq(courses.status, 'published'),
+        eq(courses.modality, 'recorded'),
       ),
     )
     .leftJoin(

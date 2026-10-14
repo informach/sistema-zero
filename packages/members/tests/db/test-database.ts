@@ -74,6 +74,13 @@ async function prepareBlockReadModel(database: ReturnType<typeof postgres>) {
   )`)
   // A coluna `support_block_ids` saiu na migration 0091: todo bloco pertence a uma seção.
   await database`alter table members.lesson_structures drop column if exists support_block_ids`
+  // Cursos ao vivo (0109): quem já criou `members.courses` neste banco compartilhado ganha a
+  // modalidade antes do próximo arquivo; cada arquivo que cria a tabela também a acrescenta.
+  await database.unsafe(`do $$ begin
+    if to_regclass('members.courses') is not null then
+      alter table members.courses add column if not exists modality text not null default 'recorded';
+    end if;
+  end $$`)
   await database.unsafe(`create or replace view members.active_lesson_blocks as
     select id,lesson_id,kind,sort_order,content,content_revision,archived_at from members.lesson_blocks where archived_at is null`)
 }

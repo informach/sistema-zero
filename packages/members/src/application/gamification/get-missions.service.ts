@@ -6,9 +6,7 @@ import {
   assignDailyMissions,
   assignMonthlyMissions,
   assignWeeklyMissions,
-  CLUBE_ACCESS_REF,
   ESTUDIO_ACCESS_REF,
-  type MissionAccessPredicate,
   type MissionDef,
   type MissionGoalType,
   monthlyPeriodKey,
@@ -17,9 +15,11 @@ import {
   weeklyPeriodKey,
 } from '../../domain/gamification/missions'
 import type { GamificationRepository } from '../../domain/ports/gamification-repository.port'
+import type { LiveLessonAccessPort } from '../../domain/ports/live-lesson-access.port'
 import type { AccessCheckService } from '../access-check/access-check.service'
 import type { ListMyCoursesService } from '../list-my-courses/list-my-courses.service'
 import type { MissionsMeView, MissionView } from '../mappers/views'
+import { resolveMissionAccess } from './mission-access'
 
 /**
  * Missões do aluno NA VITRINE: set diário + semanal + mensal (determinísticos por
@@ -33,6 +33,8 @@ export class GetMissionsService {
     private readonly accessCheck: AccessCheckService,
     private readonly clock: () => Date,
     private readonly listMyCourses: ListMyCoursesService,
+    /** Vaga nas oficinas ao vivo (missão `live_encounter`). Ausente = a missão não entra. */
+    private readonly liveSeats?: Pick<LiveLessonAccessPort, 'hasActiveSeat'>,
   ) {}
 
   async execute(
@@ -44,7 +46,15 @@ export class GetMissionsService {
     const today = localDateSaoPaulo(this.clock())
     const weekKey = weeklyPeriodKey(today)
     const monthKey = monthlyPeriodKey(today)
-    const hasAccess = await this.resolveAccess(accountId, privileged)
+    const hasAccess = await resolveMissionAccess({
+      accessCheck: this.accessCheck,
+      liveSeats: this.liveSeats,
+      accountId,
+      userId,
+      audience,
+      privileged,
+      now: this.clock(),
+    })
     const level = computeStudentLevel(await this.repo.listQualifyingJourneySlots(userId, audience))
     const freeCreation =
       creativeToolAvailability({
@@ -119,20 +129,5 @@ export class GetMissionsService {
       weekly: weeklyViews.filter(available),
       monthly: monthlyViews.filter(available),
     }
-  }
-
-  /**
-   * Predicado de posse p/ podar missões GATED do pool. Equipe (privileged) libera
-   * tudo (passe livre). Resolve pela CONTA — mesma régua da rota `/members/access`
-   * (grant específico OU comunidade) — as DUAS refs gated (Clube + Estúdio) numa ida.
-   */
-  private async resolveAccess(
-    accountId: string,
-    privileged: boolean,
-  ): Promise<MissionAccessPredicate> {
-    if (privileged) return () => true
-    const result = await this.accessCheck.execute(accountId, [CLUBE_ACCESS_REF, ESTUDIO_ACCESS_REF])
-    const owned = new Set<string>([...result.grants, ...result.communities])
-    return (ref: string) => owned.has(ref)
   }
 }

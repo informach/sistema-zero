@@ -91,6 +91,30 @@ export class JourneySlotConflictError extends DomainError {
   }
 }
 
+/**
+ * Trocar a modalidade (gravado ⇄ ao vivo) de um curso que já tem turma das oficinas. A turma é
+ * feita das aulas do curso ao vivo: virar gravado deixaria a turma sem curso. → 409.
+ */
+export class CourseModalityLockedError extends DomainError {
+  readonly code = 'COURSE_MODALITY_LOCKED'
+  constructor(
+    message = 'Este curso já tem turma nas oficinas. A modalidade só muda num curso sem turma.',
+  ) {
+    super(message)
+  }
+}
+
+/**
+ * Aula de curso AO VIVO fora da vaga da criança: sem turma no curso, ou o encontro desta aula
+ * ainda não começou ou o prazo dele acabou. → 403 (a criança não tem acesso a ESTA aula agora).
+ */
+export class LiveLessonClosedError extends DomainError {
+  readonly code = 'LIVE_LESSON_CLOSED'
+  constructor(message = 'Este encontro abre no dia marcado, para quem tem vaga na turma.') {
+    super(message)
+  }
+}
+
 /** Comando de autoria inválido (ex.: reordenar com ids que não batem). → 400. */
 export class InvalidContentCommandError extends DomainError {
   readonly code = 'VALIDATION_ERROR'

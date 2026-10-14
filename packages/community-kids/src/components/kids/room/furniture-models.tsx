@@ -453,6 +453,23 @@ function TrofeuEstrelaDoMural() {
   )
 }
 
+/**
+ * Troféu da Oficina (cursos ao vivo, 14/10/2026): uma telinha de transmissão dourada sobre o
+ * pedestal, com o ponto vermelho de "ao vivo" no canto. Mesma base e escala dos irmãos.
+ */
+function TrofeuOficinaCompleta() {
+  return (
+    <group>
+      <Cyl s={[0.5, 0.2, 0.5]} p={[0, 0.1, 0]} m="grayDark" />
+      <Cyl s={[0.12, 0.26, 0.12]} p={[0, 0.32, 0]} m="gold" />
+      <Box s={[0.6, 0.42, 0.08]} p={[0, 0.66, 0]} m="gold" />
+      <Box s={[0.48, 0.3, 0.04]} p={[0, 0.66, 0.05]} m="screen" />
+      <Ball s={[0.09, 0.09, 0.06]} p={[0.2, 0.76, 0.08]} m="red" />
+      <Cone s={[0.12, 0.14, 0.04]} p={[-0.04, 0.64, 0.08]} m="lamp" r={[0, 0, -Math.PI / 2]} />
+    </group>
+  )
+}
+
 function FallbackBox({ w, h }: FProps) {
   return <Box s={[w * 0.7, 0.7, h * 0.7]} p={[0, 0.35, 0]} m="gray" />
 }
@@ -528,6 +545,8 @@ export function FurnitureModel({ itemId, w, h }: { itemId: string; w: number; h:
       return <TrofeuConsole />
     case 'trofeu-estrela-do-mural':
       return <TrofeuEstrelaDoMural />
+    case 'trofeu-oficina-completa':
+      return <TrofeuOficinaCompleta />
     case 'estante-trofeus':
       return <EstanteTrofeus w={w} h={h} />
     default:

@@ -1,4 +1,4 @@
-import { PLATFORM_ACTIONS } from '@sistemazero/core/learning'
+import { PLATFORM_ACTIONS, TEACHER_NOTES_MAX } from '@sistemazero/core/learning'
 import {
   LIGHTHOUSE_POSITION,
   LIGHTHOUSE_WALK_SPEEDS,
@@ -708,6 +708,10 @@ export const LessonSectionSchema = t.Object({
   externalTool: t.Nullable(t.Union([t.Literal('estudio'), t.Literal('pinta')])),
   completion: t.Optional(SectionCompletionSchema),
   pendingMedia: t.Array(t.String({ minLength: 1, maxLength: 2000 }), { maxItems: 20 }),
+  // Anotações da professora (cursos ao vivo, 14/10/2026). Declaradas aqui de propósito: o
+  // `normalize` do Elysia tiraria o campo do rascunho em silêncio. Só a autoria e a rota da
+  // professora as leem; a view do aluno NUNCA leva o campo (`GetLessonService`).
+  teacherNotes: t.Optional(t.String({ maxLength: TEACHER_NOTES_MAX })),
 })
 export const LearningStructureBody = t.Object({
   expectedRevision: t.Nullable(Id),

@@ -123,6 +123,51 @@ export class EntitlementAggregate {
     })
   }
 
+  /**
+   * A VAGA numa turma de curso AO VIVO vista pelos fluxos de leitura (14/10/2026). Como a
+   * chave-mestra virtual, nunca é persistida: o curso ao vivo não se libera por matrícula, e é
+   * a vaga (os `live_access_grants`) que diz até quando a aula fica aberta (`expiresAt`).
+   */
+  static virtualLiveSeat(
+    userId: string,
+    courseSlug: string,
+    now: Date,
+    expiresAt: Date,
+  ): EntitlementAggregate {
+    return new EntitlementAggregate({
+      id: 'virtual-live-seat',
+      version: 0,
+      userId,
+      productId: 'virtual',
+      productKind: 'internal',
+      accessType: 'course',
+      courseRef: courseSlug,
+      offerId: null,
+      snapshot: {
+        offerId: 'virtual',
+        offerSlug: 'virtual',
+        productId: 'virtual',
+        sku: 'virtual',
+        name: 'Vaga na turma da oficina ao vivo',
+        kind: 'internal',
+        accessType: 'course',
+        courseRef: courseSlug,
+        fulfillment: null,
+        resolvedAt: now.toISOString(),
+      },
+      status: 'active',
+      sourceKind: 'manual',
+      sourceId: 'live-seat',
+      subscriptionId: null,
+      grantedAt: now,
+      expiresAt,
+      revokedAt: null,
+      idempotencyKey: `virtual-live:${userId}:${courseSlug}`,
+      createdAt: now,
+      updatedAt: now,
+    })
+  }
+
   /** Acesso liberado? `active` E (vitalício OU dentro da validade). Leitura pura. */
   isActiveAt(now: Date): boolean {
     if (this.state.status !== 'active') return false

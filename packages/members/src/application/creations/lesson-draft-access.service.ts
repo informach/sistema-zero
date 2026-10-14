@@ -83,6 +83,7 @@ export class LessonDraftAccessService {
       lesson.courseId,
       input.privileged,
       input.userId,
+      { lessonId: lesson.id },
     )
     await assertLessonUnlocked(
       this.courses,

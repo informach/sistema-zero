@@ -68,6 +68,7 @@ import { ListMemberCertificatesService } from '../src/application/list-member-ce
 import { ListMemberRatingsService } from '../src/application/list-member-ratings/list-member-ratings.service'
 import { ListMembersService } from '../src/application/list-members/list-members.service'
 import { ListMyCoursesService } from '../src/application/list-my-courses/list-my-courses.service'
+import { LiveTeacherNotesService } from '../src/application/live-course/teacher-notes.service'
 import { ManageEntitlementService } from '../src/application/manage-entitlement/manage-entitlement.service'
 import { MarkLessonCompleteService } from '../src/application/mark-lesson-complete/mark-lesson-complete.service'
 import { ParentReportPrefsService } from '../src/application/parent-report/report-prefs.service'
@@ -158,6 +159,7 @@ import {
 } from './fakes/in-memory'
 import { InMemoryLearningRepository } from './fakes/learning-in-memory'
 import { InMemoryLessonDraftRepository } from './fakes/lesson-draft-in-memory'
+import { InMemoryLiveLessonAccess } from './fakes/live-lesson-access-in-memory'
 import { InMemoryPensaRepository } from './fakes/pensa-in-memory'
 import { InMemoryToolUsageRepository } from './fakes/tool-usage-in-memory'
 
@@ -231,7 +233,15 @@ export function buildApp(
     clock,
   })
 
-  const checkAccess = new CheckAccessService(courses, entitlements, gamification, clock)
+  // Curso ao vivo: as vagas (grants) das oficinas, semeáveis por teste.
+  const liveLessonAccess = new InMemoryLiveLessonAccess(courses)
+  const checkAccess = new CheckAccessService(
+    courses,
+    entitlements,
+    gamification,
+    clock,
+    liveLessonAccess,
+  )
   const awardGamification = new AwardGamificationService(gamification, clock, silentLogger)
   const accessCheck = new AccessCheckService(entitlements, clock)
   const grant = new GrantEntitlementService({
@@ -509,8 +519,9 @@ export function buildApp(
         accessCheck,
         clock,
         new ListMyCoursesService(entitlements, courses, progress, positions, gamification, clock),
+        liveLessonAccess,
       ),
-      claimMission: new ClaimMissionService(gamification, accessCheck, clock),
+      claimMission: new ClaimMissionService(gamification, accessCheck, clock, liveLessonAccess),
       claimUnitChest: new ClaimUnitChestService(checkAccess, courses, progress, awardGamification),
       recordRemix: new RecordStudioRemixService(accessCheck, hub, awardGamification),
       recordStudioActivity: new RecordStudioActivityDayService(accessCheck, awardGamification),
@@ -683,11 +694,17 @@ export function buildApp(
       internalToken: opts.internalToken,
       requireAdminEnabled: opts.requireAdmin ?? false,
     },
+    liveCourse: {
+      teacherNotes: new LiveTeacherNotesService(courses, learningRepository, liveLessonAccess),
+      internalToken: opts.internalToken,
+      requireAdminEnabled: opts.requireAdmin ?? false,
+    },
   })
 
   return {
     learning,
     learningRepository,
+    liveLessonAccess,
     app,
     entitlements,
     courses,
@@ -758,6 +775,7 @@ export function seedSampleCourse(
     track,
     careerSlot,
     journeyRole,
+    modality: 'recorded',
     metadata: null,
     createdAt: now,
     updatedAt: now,
