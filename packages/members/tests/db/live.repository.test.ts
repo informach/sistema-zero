@@ -79,7 +79,7 @@ describe.skipIf(!databaseUrl)('Oficinas no PostgreSQL real', () => {
       teacherIds: [actor.id],
       schedule: [{ startsAt: '2026-11-07T17:00:00Z', endsAt: '2026-11-07T18:00:00Z' }],
     })
-    await service.updateCohort(actor, cohort.id, 'open')
+    await service.updateCohort({ ...actor, admin: true }, cohort.id, { status: 'open' })
     return { repository, service, actor, cohort, session: sessions[0]! }
   }
 
@@ -352,7 +352,8 @@ describe.skipIf(!databaseUrl)('Oficinas no PostgreSQL real', () => {
     })
     const reconnect = await service.join(child, session.id, { deviceId, takeover: false })
     expect(reconnect.occurrence?.participants[0]?.admission).toBe('admitted')
-    const results = await Promise.allSettled([
+    // Moderation does not depend on the version: two concurrent toggles both apply, in turn.
+    const toggles = await Promise.allSettled([
       service.control(actor, session.id, reconnect.occurrence!.version, {
         kind: 'chat',
         enabled: false,
@@ -362,10 +363,52 @@ describe.skipIf(!databaseUrl)('Oficinas no PostgreSQL real', () => {
         enabled: true,
       }),
     ])
+    expect(toggles.filter((result) => result.status === 'fulfilled')).toHaveLength(2)
+    const current = (await service.room(actor, session.id)).occurrence!.version
+    expect(current).toBe(reconnect.occurrence!.version + 2)
+    // A state transition still checks the version: the loser is rolled back.
+    const results = await Promise.allSettled([
+      service.control(actor, session.id, current, { kind: 'end' }),
+      service.control(actor, session.id, current, { kind: 'end' }),
+    ])
     expect(results.filter((result) => result.status === 'fulfilled')).toHaveLength(1)
-    expect((await service.room(actor, session.id)).occurrence?.version).toBe(
-      reconnect.occurrence!.version + 1,
+    expect((await service.room(actor, session.id)).occurrence?.version).toBe(current + 1)
+  })
+
+  test('encontro agendado vencido entra na varredura em SQL e vira cancelado', async () => {
+    const { repository, service, actor } = await setup()
+    // A schedule older than any other fixture: the sweep is oldest-first and bounded to 100.
+    const program = await service.createProgram(actor, {
+      title: 'Oficina antiga',
+      description: 'Somente neste banco de teste',
+      lessons: [{ title: 'Cenário', instructions: 'Criar', starterProjectId: null, materials: [] }],
+    })
+    const {
+      sessions: [session],
+    } = await service.createCohort(actor, program.id, {
+      title: 'Turma que não aconteceu',
+      timeZone: 'America/Sao_Paulo',
+      capacity: 1,
+      accessDays: 30,
+      teacherIds: [actor.id],
+      schedule: [{ startsAt: '2001-01-01T17:00:00Z', endsAt: '2001-01-01T18:00:00Z' }],
+    })
+    if (!session) throw new Error('missing session')
+    const after = new Date('2001-01-01T18:00:01Z')
+    expect(await repository.overdueOccurrences(after)).toContain(session.occurrenceId)
+    expect(await repository.overdueOccurrences(new Date('2001-01-01T17:59:59Z'))).not.toContain(
+      session.occurrenceId,
     )
+    expect(await repository.cohortIdForSession(session.id)).toBe(session.cohortId)
+    const later = new LiveService(
+      repository,
+      () => after,
+      { assertOwnership: async () => ({ name: 'Criador' }) },
+      { mediaReady: true },
+    )
+    // The room view of the teacher triggers the same deadline path for this occurrence only.
+    expect((await later.room(actor, session.id)).occurrence?.state).toBe('cancelled')
+    expect(await repository.overdueOccurrences(after)).not.toContain(session.occurrenceId)
   })
 
   test('purga remove apenas a família alvo e a cerca impede matrícula tardia', async () => {

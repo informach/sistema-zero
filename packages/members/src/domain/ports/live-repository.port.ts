@@ -12,6 +12,8 @@ export interface LiveActor {
   accountId: string
   name: string
   staff: boolean
+  /** superadmin/admin (not plain staff): cohort edits, access extensions, every cohort's roster. */
+  admin?: boolean
 }
 export interface LiveAccessGrant {
   id: string
@@ -54,6 +56,23 @@ export interface LiveCohortAggregate {
   replayPositions?: LiveReplayPosition[]
   learningWrites?: LiveLearningWrite[]
 }
+/**
+ * Reads bound to the SAME connection/transaction that holds the cohort lock. Never open a
+ * second pool connection while the lock is held: under load every connection would wait.
+ */
+export interface LiveTransactionReads {
+  learningProgress(
+    sessionId: string,
+    learnerId: string,
+    accountId: string,
+  ): Promise<LearningBlockProgress[]>
+  learningAttempt(
+    sessionId: string,
+    learnerId: string,
+    accountId: string,
+    id: string,
+  ): Promise<LearningAttemptView | null>
+}
 export interface LiveRepository {
   listPrograms(): Promise<LiveProgram[]>
   findProgram(id: string): Promise<LiveProgram | null>
@@ -66,6 +85,8 @@ export interface LiveRepository {
   findBySession(id: string): Promise<LiveCohortAggregate | null>
   findByOccurrence(id: string): Promise<LiveCohortAggregate | null>
   findByEnrollment(id: string): Promise<LiveCohortAggregate | null>
+  /** One indexed lookup; lets a mutation lock the cohort without loading it twice. */
+  cohortIdForSession(sessionId: string): Promise<string | null>
   readReplayPosition(sessionId: string, learnerId: string, version: number): Promise<number>
   readLearningProgress(
     sessionId: string,
@@ -80,7 +101,7 @@ export interface LiveRepository {
   ): Promise<LearningAttemptView | null>
   transaction<T>(
     cohortId: string,
-    mutate: (aggregate: LiveCohortAggregate) => T | Promise<T>,
+    mutate: (aggregate: LiveCohortAggregate, reads: LiveTransactionReads) => T | Promise<T>,
     accountId?: string,
   ): Promise<T>
 }

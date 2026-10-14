@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
-import { LiveConflictError } from '../../src/domain/live/live.errors'
+import { ValidationError } from '@sistemazero/core/errors'
 import { liveFixture } from '../fakes/live-fixture'
 
 test.each([
@@ -9,26 +9,45 @@ test.each([
 ])('a delayed lower-hands command preserves newer requests (all=%s)', async (all) => {
   const f = await liveFixture()
   await f.start()
+  // The teacher's screen shows the room at this instant; the command carries it as `before`.
   const before = await f.live.room(f.teacher, f.session.id)
+  f.advance(1000)
   await f.live.request(f.child, f.session.id, f.deviceId, 'hand', true)
   const raised = await f.live.room(f.teacher, f.session.id)
-  const command = { kind: 'lower-hands' as const, learnerId: all ? null : f.child.id }
-  await expect(
-    f.live.control(f.teacher, f.session.id, before.occurrence!.version, command),
-  ).rejects.toBeInstanceOf(LiveConflictError)
-  expect(
-    (await f.live.room(f.teacher, f.session.id)).occurrence!.participants[0]!.handAt,
-  ).not.toBeNull()
-  // A repeated request is idempotent and does not invalidate an otherwise current command.
+  const learnerId = all ? null : f.child.id
+  // A stale version no longer fails a moderation command, and a newer hand stays up.
+  const stale = await f.live.control(f.teacher, f.session.id, before.occurrence!.version, {
+    kind: 'lower-hands',
+    learnerId,
+    before: before.serverTime,
+  })
+  expect(stale.occurrence!.participants[0]!.handAt).not.toBeNull()
+  // A repeated request is idempotent and does not change the room.
   const repeated = await f.live.request(f.child, f.session.id, f.deviceId, 'hand', true)
-  expect(repeated.occurrence!.version).toBe(raised.occurrence!.version)
-  const lowered = await f.live.control(f.teacher, f.session.id, raised.occurrence!.version, command)
+  expect(repeated.occurrence!.participants[0]!.handAt).toBe(
+    raised.occurrence!.participants[0]!.handAt,
+  )
+  const lowered = await f.live.control(f.teacher, f.session.id, undefined, {
+    kind: 'lower-hands',
+    learnerId,
+    before: raised.serverTime,
+  })
   expect(lowered.occurrence!.participants[0]!.handAt).toBeNull()
-  // Even within the same millisecond, lowering and raising again constitutes a new request.
+  // Without `before`, every hand is lowered (the command is idempotent).
+  f.advance(1000)
   await f.live.request(f.child, f.session.id, f.deviceId, 'hand', true)
+  const all2 = await f.live.control(f.teacher, f.session.id, undefined, {
+    kind: 'lower-hands',
+    learnerId,
+  })
+  expect(all2.occurrence!.participants[0]!.handAt).toBeNull()
   await expect(
-    f.live.control(f.teacher, f.session.id, lowered.occurrence!.version, command),
-  ).rejects.toBeInstanceOf(LiveConflictError)
+    f.live.control(f.teacher, f.session.id, undefined, {
+      kind: 'lower-hands',
+      learnerId,
+      before: 'ontem',
+    }),
+  ).rejects.toBeInstanceOf(ValidationError)
 })
 
 test('discovery stays public while personal agendas contain only active enrollments or assigned teaching', async () => {

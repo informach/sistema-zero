@@ -5,6 +5,7 @@ import type {
   LiveCatalogQuery,
   LiveCohortAggregate,
   LiveRepository,
+  LiveTransactionReads,
 } from '../../src/domain/ports/live-repository.port'
 
 export class InMemoryLiveRepository implements LiveRepository {
@@ -13,6 +14,8 @@ export class InMemoryLiveRepository implements LiveRepository {
   readonly positions = new Map<string, number>()
   readonly learning = new Map<string, LearningBlockProgress>()
   readonly attempts = new Map<string, LearningAttemptView>()
+  /** Every audit entry appended by transactions, in order (the real repository inserts them). */
+  readonly auditLog: LiveCohortAggregate['audit'] = []
   async readLearningProgress(sessionId: string, learnerId: string, accountId: string) {
     return structuredClone(
       [...this.learning]
@@ -91,7 +94,8 @@ export class InMemoryLiveRepository implements LiveRepository {
       .flatMap((item) => item.occurrences)
       .filter(
         (item) =>
-          ['live', 'lobby'].includes(item.state) && Date.parse(item.hardEndsAt) <= now.getTime(),
+          ['live', 'lobby', 'scheduled'].includes(item.state) &&
+          Date.parse(item.hardEndsAt) <= now.getTime(),
       )
       .slice(0, 100)
       .map((item) => item.id)
@@ -113,6 +117,12 @@ export class InMemoryLiveRepository implements LiveRepository {
       ) ?? null,
     )
   }
+  async cohortIdForSession(id: string) {
+    return (
+      [...this.cohorts.values()].find((item) => item.sessions.some((session) => session.id === id))
+        ?.cohort.id ?? null
+    )
+  }
   async findByEnrollment(id: string) {
     return structuredClone(
       [...this.cohorts.values()].find((item) =>
@@ -122,13 +132,19 @@ export class InMemoryLiveRepository implements LiveRepository {
   }
   async transaction<T>(
     id: string,
-    mutate: (aggregate: LiveCohortAggregate) => T | Promise<T>,
+    mutate: (aggregate: LiveCohortAggregate, reads: LiveTransactionReads) => T | Promise<T>,
   ): Promise<T> {
     return this.lock(id, async () => {
       const aggregate = await this.findCohort(id)
       if (!aggregate) throw new LiveNotFoundError()
       aggregate.audit = []
-      const result = await mutate(aggregate)
+      const result = await mutate(aggregate, {
+        learningProgress: (sessionId, learnerId, accountId) =>
+          this.readLearningProgress(sessionId, learnerId, accountId),
+        learningAttempt: (sessionId, learnerId, accountId, attemptId) =>
+          this.findLearningAttempt(sessionId, learnerId, accountId, attemptId),
+      })
+      this.auditLog.push(...structuredClone(aggregate.audit))
       for (const position of aggregate.replayPositions ?? [])
         this.positions.set(
           `${position.sessionId}:${position.learnerId}:${position.version}`,

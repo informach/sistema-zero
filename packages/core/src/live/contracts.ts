@@ -14,11 +14,26 @@ export type LiveRecordingState =
   | 'review'
   | 'ready'
   | 'failed'
+  /** Terminal: the occurrence ended without any durable segment; there is nothing to review. */
+  | 'empty'
+  /** The private recorder stopped confirming its state; never shown as "recording". */
+  | 'unavailable'
 export interface LiveMaterial {
   id: string
   title: string
   storageKey: string
   fileName: string
+}
+/**
+ * Studio curation for a live lesson, the same knobs as the recorded lesson Studio block.
+ * `allowBlocks` non-empty is RESTRICTIVE (only those blocks); empty/absent = curation by level.
+ */
+export interface LiveStudioConfig {
+  level?: string
+  allowBlocks?: string[]
+  allowCategories?: string[]
+  allowedModes?: ('blocks' | 'bridge' | 'code')[]
+  allowLevelReveal?: boolean
 }
 export interface LiveLessonPlan {
   title: string
@@ -29,6 +44,8 @@ export interface LiveLessonPlan {
   continueProjectFrom?: number | null
   materials: LiveMaterial[]
   steps?: LiveLearningStep[]
+  /** Studio curation sent to the classroom editor. Absent/null = the Studio defaults. */
+  studio?: LiveStudioConfig | null
 }
 export interface LiveLearningBlock {
   id: string
@@ -64,6 +81,8 @@ export interface LiveCohort {
   capacity: number
   accessDays: number
   teacherIds: string[]
+  /** Display name per assigned teacher id (e.g. "Ana"); only ids present in `teacherIds`. */
+  teacherNames?: Record<string, string>
   status: 'draft' | 'open' | 'closed' | 'archived'
   createdAt: string
 }
@@ -108,7 +127,8 @@ export interface LiveActivityReport {
 }
 export interface LiveChatMessage {
   id: string
-  authorId: string
+  /** Null in a learner's view for messages written by other children (no classmate UUIDs). */
+  authorId: string | null
   authorName: string
   role: 'teacher' | 'learner'
   text: string
@@ -131,6 +151,8 @@ export interface LiveOccurrence {
   messages: LiveChatMessage[]
   guidance?: LiveGuidance | null
   suggestedStepId?: string | null
+  /** Teacher who issued `start`; the recording follows this teacher. Null until started. */
+  conductorId?: string | null
   recording: {
     state: LiveRecordingState
     published: boolean
@@ -145,6 +167,11 @@ export interface LiveLessonAccessView {
   canOpen: boolean
   canJoinMedia: boolean
   canWatchRecording: boolean
+  /**
+   * The child may join the reception now: from 15 minutes before the encounter, while the
+   * teacher keeps the lobby open. Content (plan, chat, media) still opens only at `startsAt`.
+   */
+  canEnterLobby?: boolean
 }
 export type LiveProgramSummary = Omit<LiveProgram, 'lessons'> & { lessonCount: number }
 export interface LiveCatalogView {
@@ -159,6 +186,10 @@ export type LiveSessionSummary = Omit<LiveSession, 'plan'> & {
   /** Operational schedule; startsAt/accessEndsAt remain the original commercial window. */
   occurrenceStartsAt?: string
   occurrenceEndsAt?: string
+  /** State of the current occurrence, for "Ao vivo agora" / "Acabou" without opening the room. */
+  occurrenceState?: LiveOccurrenceState
+  /** Some occurrence of this lesson has a published, ready recording. */
+  recordingPublished?: boolean
 }
 export interface LiveRecordingSummary {
   occurrenceId: string
@@ -169,7 +200,8 @@ export interface LiveRoomView {
   session: LiveSessionSummary
   cohort: LiveCohort
   plan?: LiveLessonPlanView | null
-  planRevision: string
+  /** Present only when `plan` is non-null (or omitted because the client already has it). */
+  planRevision?: string
   access: LiveLessonAccessView
   occurrence: LiveOccurrence | null
   recordings?: LiveRecordingSummary[]
@@ -182,18 +214,16 @@ export interface LiveRoomView {
 export type LiveControl =
   | { kind: 'suggest-step'; stepId: string | null }
   | { kind: 'guide'; target: LiveGuidance['target']; learnerId: string | null }
-  | { kind: 'start' | 'end' | 'open-lobby' }
+  /** State transitions: the only commands whose `expectedVersion` is checked. */
+  | { kind: 'start' | 'end' | 'open-lobby' | 'cancel' }
+  | { kind: 'admit-all' }
   | { kind: 'speaking-mode'; mode: LiveSpeakingMode }
   | { kind: 'chat'; enabled: boolean }
   | { kind: 'admit' | 'remove' | 'grant-turn' | 'revoke-turn'; learnerId: string }
+  /** `before` (ISO instant): only hands raised at or before it are lowered. */
+  | { kind: 'lower-hands'; learnerId: string | null; before?: string }
   | {
-      kind:
-        | 'mute'
-        | 'lower-hands'
-        | 'lock-microphone'
-        | 'unlock-microphone'
-        | 'lock-camera'
-        | 'unlock-camera'
+      kind: 'mute' | 'lock-microphone' | 'unlock-microphone' | 'lock-camera' | 'unlock-camera'
       learnerId: string | null
     }
   | { kind: 'remove-message' | 'pin-message'; messageId: string }
@@ -208,8 +238,20 @@ export interface LiveCreateCohort {
   capacity: number
   accessDays: number
   teacherIds: string[]
+  teacherNames?: Record<string, string>
   /** One interval per program lesson, in its original order. */
   schedule: { startsAt: string; endsAt: string }[]
+}
+/** Room control request. `expectedVersion` matters only for state transitions. */
+export interface LiveControlRequest {
+  expectedVersion?: number
+  command: LiveControl
+}
+/** Admin-only cohort edit. */
+export interface LiveUpdateCohort {
+  status?: LiveCohort['status']
+  teacherIds?: string[]
+  teacherNames?: Record<string, string>
 }
 export interface LiveJoinRequest {
   deviceId: string

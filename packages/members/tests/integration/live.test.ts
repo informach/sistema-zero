@@ -96,7 +96,7 @@ describe('HTTP das oficinas', () => {
       teacherIds: [actor.id],
       schedule: [{ startsAt: '2026-11-07T17:00:00Z', endsAt: '2026-11-07T18:00:00Z' }],
     })
-    await live.updateCohort(actor, cohort.id, 'open')
+    await live.updateCohort({ ...actor, admin: true }, cohort.id, { status: 'open' })
     const child = { id: randomUUID(), accountId: randomUUID() }
     await live.enroll(actor, cohort.id, {
       accountId: child.accountId,
@@ -179,7 +179,7 @@ describe('HTTP das oficinas', () => {
       teacherIds: [adminId],
       schedule: [{ startsAt: '2026-11-07T17:00:00Z', endsAt: '2026-11-07T18:00:00Z' }],
     })
-    await live.updateCohort(actor, cohort.id, 'open')
+    await live.updateCohort({ ...actor, admin: true }, cohort.id, { status: 'open' })
     const childId = randomUUID(),
       parentId = randomUUID()
     await live.enroll(actor, cohort.id, {
@@ -247,4 +247,95 @@ test('assigned staff can review a replay while unrelated staff and configuration
       .status,
   ).toBe(200)
   expect((await send('/members/admin/live/programs', staff, program)).status).toBe(403)
+})
+
+describe('HTTP do contrato de 14/10', () => {
+  test('curadoria do Estúdio, nomes das professoras e controles sem versão atravessam o DTO', async () => {
+    const { send, live } = app()
+    const studio = {
+      level: 'iniciante',
+      allowBlocks: ['when_flag_clicked'],
+      allowCategories: ['eventos'],
+      allowedModes: ['blocks', 'bridge'],
+      allowLevelReveal: false,
+    }
+    const authored = await send('/members/admin/live/programs', admin, {
+      ...program,
+      lessons: [{ ...program.lessons[0]!, studio }],
+    })
+    expect(authored.status).toBe(201)
+    const created = (await authored.json()) as { id: string; lessons: { studio?: unknown }[] }
+    expect(created.lessons[0]?.studio).toEqual(studio)
+    expect(
+      (
+        await send('/members/admin/live/programs', admin, {
+          ...program,
+          lessons: [{ ...program.lessons[0]!, studio: { allowedModes: ['code', 'code'] } }],
+        })
+      ).status,
+    ).toBeGreaterThanOrEqual(400)
+    const other = randomUUID()
+    const cohortResponse = await send(`/members/admin/live/programs/${created.id}/cohorts`, admin, {
+      title: 'Turma',
+      timeZone: 'America/Sao_Paulo',
+      accessDays: 30,
+      capacity: 8,
+      teacherIds: [adminId],
+      teacherNames: { [adminId]: 'Ana', [other]: 'Fora' },
+      schedule: [{ startsAt: '2026-11-07T17:00:00Z', endsAt: '2026-11-07T18:00:00Z' }],
+    })
+    expect(cohortResponse.status).toBe(201)
+    const { cohort, sessions } = (await cohortResponse.json()) as {
+      cohort: { id: string; teacherNames: Record<string, string> }
+      sessions: { id: string }[]
+    }
+    expect(cohort.teacherNames).toEqual({ [adminId]: 'Ana' })
+    // Cohort PATCH: admin only, teacherIds validated (unique uuids, 1..4).
+    const patch = `/members/admin/live/cohorts/${cohort.id}`
+    expect(
+      (await send(patch, { ...admin, 'x-auth-user-role': 'staff' }, { status: 'open' }, 'PATCH'))
+        .status,
+    ).toBe(403)
+    expect(
+      (await send(patch, admin, { teacherIds: [adminId, adminId] }, 'PATCH')).status,
+    ).toBeGreaterThanOrEqual(400)
+    expect((await send(patch, admin, { teacherIds: [] }, 'PATCH')).status).toBeGreaterThanOrEqual(
+      400,
+    )
+    const opened = await send(
+      patch,
+      admin,
+      { status: 'open', teacherIds: [adminId, other], teacherNames: { [other]: 'Dora' } },
+      'PATCH',
+    )
+    expect(opened.status).toBe(200)
+    expect(await opened.json()).toMatchObject({
+      status: 'open',
+      teacherIds: [adminId, other],
+      teacherNames: { [adminId]: 'Ana', [other]: 'Dora' },
+    })
+    const childId = randomUUID(),
+      parentId = randomUUID()
+    await live.enroll(actor, cohort.id, {
+      learnerId: childId,
+      accountId: parentId,
+      learnerName: 'Criança',
+    })
+    const path = `/members/live/sessions/${sessions[0]!.id}/control`
+    expect((await send(path, admin, { command: { kind: 'admit-all' } })).status).toBe(200)
+    const lowered = await send(path, admin, {
+      command: { kind: 'lower-hands', learnerId: null, before: '2026-11-07T17:00:00.000Z' },
+    })
+    expect(lowered.status).toBe(200)
+    expect(
+      (await send(path, admin, { command: { kind: 'lower-hands', learnerId: null, before: 'x' } }))
+        .status,
+    ).toBeGreaterThanOrEqual(400)
+    expect(
+      (await send(path, admin, { expectedVersion: 99, command: { kind: 'cancel' } })).status,
+    ).toBe(409)
+    const cancelled = await send(path, admin, { command: { kind: 'cancel' } })
+    expect(cancelled.status).toBe(200)
+    expect(await cancelled.json()).toMatchObject({ occurrence: { state: 'cancelled' } })
+  })
 })

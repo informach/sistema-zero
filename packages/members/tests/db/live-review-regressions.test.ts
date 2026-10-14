@@ -47,7 +47,7 @@ async function fixture(repository: LiveRepository = new InMemoryLiveRepository()
     teacherIds: [teacher.id],
     schedule: [{ startsAt, endsAt }],
   })
-  await live.updateCohort(teacher, cohort.id, 'open')
+  await live.updateCohort({ ...teacher, admin: true }, cohort.id, { status: 'open' })
   await live.enroll(teacher, cohort.id, {
     accountId: child.accountId,
     learnerId: child.id,

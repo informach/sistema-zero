@@ -49,7 +49,9 @@ export async function purgeLiveAccount(tx: Transaction, accountId: string, userI
       document.participants = document.participants.filter(
         (participant) => !ids.includes(participant.learnerId),
       )
-      document.messages = document.messages.filter((message) => !ids.includes(message.authorId))
+      document.messages = document.messages.filter(
+        (message) => !(message.authorId && ids.includes(message.authorId)),
+      )
       if (document.guidance?.learnerId && ids.includes(document.guidance.learnerId))
         document.guidance = null
       document.version++

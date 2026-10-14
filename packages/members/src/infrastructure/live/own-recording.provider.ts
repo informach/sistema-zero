@@ -186,7 +186,7 @@ export class OwnRecordingProvider {
       if (action === 'stop') return
       throw new LiveMediaError(
         'RECORDING_FINALIZED',
-        'Esta gravação já foi finalizada. Preserve o replay desta aula.',
+        'Esta gravação já foi finalizada. Preserve o replay deste encontro.',
         409,
       )
     }
