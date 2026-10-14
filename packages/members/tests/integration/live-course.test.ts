@@ -745,3 +745,74 @@ describe('Manifesto de aula de curso ao vivo', () => {
     expect(res.status).toBe(200)
   })
 })
+
+describe('Curso ao vivo — as partes não trancam a seguinte', () => {
+  /**
+   * Uma fase com DUAS partes, cada uma com um critério que a criança ainda não cumpriu. No curso
+   * gravado a segunda fica trancada; no ao vivo a professora abre as partes na sala, e a criança
+   * precisa entrar na parte aberta mesmo sem ter concluído a anterior.
+   */
+  async function twoSections(env: Env, slug: string, modality: 'live' | 'recorded') {
+    const seeded = seedLiveCourse(env, 'published', slug)
+    seeded.course.modality = modality
+    const lessonId = seeded.lessonIds[0] as string
+    const first = await readDraft(env.app, lessonId)
+    const firstSection = first.document.sections[0] as LessonSection
+    const secondBlock = randomUUID()
+    const added = await changeDraft(env.app, lessonId, {
+      type: 'block',
+      block: {
+        id: secondBlock,
+        content: { kind: 'rich_text', markdown: 'Agora a segunda parte.' },
+      },
+      sectionId: firstSection.id,
+    })
+    expect(added.status).toBe(200)
+    const draft = await readDraft(env.app, lessonId)
+    const base = draft.document.sections[0] as LessonSection
+    const sections: LessonSection[] = [
+      {
+        ...base,
+        title: 'Parte um',
+        objective: 'Começar.',
+        intent: 'presentation',
+        blockIds: base.blockIds.filter((id) => id !== secondBlock),
+        completion: { version: 1, blockIds: [], platformAction: 'customize-avatar' },
+      },
+      {
+        ...base,
+        id: randomUUID(),
+        title: 'Parte dois',
+        objective: 'Continuar.',
+        intent: 'presentation',
+        blockIds: [secondBlock],
+        workspaceBlockId: null,
+        completion: { version: 1, blockIds: [], platformAction: 'customize-room' },
+      },
+    ]
+    expect((await changeDraft(env.app, lessonId, { type: 'structure', sections })).status).toBe(200)
+    expect((await publishDraft(env.app, lessonId)).status).toBe(200)
+    return { ...seeded, lessonId }
+  }
+
+  const statuses = async (env: Env, slug: string, lessonId: string) => {
+    const res = await request(env, lessonPath(slug, lessonId), { headers: childHeaders })
+    expect(res.status).toBe(200)
+    const body = await readJson(res)
+    return (body.sectionProgress?.sections ?? []).map((s: { status: string }) => s.status)
+  }
+
+  test('no ao vivo a segunda parte fica aberta antes de a primeira ser concluída', async () => {
+    const env = buildApp({ now: NOW })
+    const { course, lessonId } = await twoSections(env, 'oficina-partes', 'live')
+    grant(env, course.id, lessonId, { from: -HOUR, to: DAY })
+    expect(await statuses(env, 'oficina-partes', lessonId)).toEqual(['available', 'available'])
+  })
+
+  test('no gravado a mesma fase tranca a segunda parte (anti-vácuo)', async () => {
+    const env = buildApp({ now: NOW })
+    const { lessonId } = await twoSections(env, 'aventura-partes', 'recorded')
+    grantLifetime(env.entitlements, { userId: ACCOUNT, courseRef: 'aventura-partes' })
+    expect(await statuses(env, 'aventura-partes', lessonId)).toEqual(['available', 'locked'])
+  })
+})

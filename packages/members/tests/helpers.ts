@@ -356,6 +356,7 @@ export function buildApp(
     new PlatformActionService(avatar, room, preferencesRepository),
     certificates,
     creations,
+    async (courseId) => (await courses.findCourseById(courseId))?.modality ?? 'recorded',
   )
   const learning = new LearningService(
     learningRepository,

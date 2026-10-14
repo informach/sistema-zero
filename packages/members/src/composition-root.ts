@@ -566,6 +566,7 @@ export async function createApplication(env: Env): Promise<Application> {
     new PlatformActionService(avatarRepo, roomRepo, preferencesRepository),
     certificates,
     creationsRepo,
+    async (courseId) => (await courses.findCourseById(courseId))?.modality ?? 'recorded',
   )
   const learning = new LearningService(
     learningRepository,
