@@ -13,7 +13,7 @@ import type { OwnRecordingProvider } from './own-recording.provider'
 const uuid = () => t.String({ format: 'uuid' })
 
 export function liveRecordingRoutes(deps: {
-  recording: OwnRecordingProvider
+  recording: Pick<OwnRecordingProvider, 'command' | 'acceptEvent'>
   token: string
   internalToken?: string
 }) {
@@ -57,7 +57,7 @@ export function liveRecordingRoutes(deps: {
         }),
       },
     )
-  const admin = new Elysia({ prefix: '/members/admin/live/sessions/:sessionId/recording' })
+  const admin = new Elysia({ prefix: '/members/admin/live/sessions/:id/recording' })
     .onTransform(({ headers }) =>
       assertInternalCaller(headers['x-internal-token'], deps.internalToken),
     )
@@ -71,14 +71,14 @@ export function liveRecordingRoutes(deps: {
             name: resolveStudentName(headers),
             staff: isPrivilegedActor(headers),
           },
-          params.sessionId,
+          params.id,
           params.action,
         )
         return { ok: true }
       },
       {
         params: t.Object({
-          sessionId: uuid(),
+          id: uuid(),
           action: t.Union([t.Literal('pause'), t.Literal('resume'), t.Literal('stop')]),
         }),
       },

@@ -1,4 +1,4 @@
-FROM oven/bun:1.3.11 AS dependencies
+FROM oven/bun:1.4.3 AS dependencies
 WORKDIR /build
 COPY packages/live-recorder/package.json ./package.json
 RUN bun install --production
