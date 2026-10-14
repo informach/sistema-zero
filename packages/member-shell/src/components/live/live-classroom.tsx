@@ -1,6 +1,6 @@
 'use client'
 
-import type { LiveActivityReport, LiveControl, LiveRoomView } from '@sistemazero/core/live'
+import type { LiveActivityReport, LiveRoomView } from '@sistemazero/core/live'
 import { Button } from '@sistemazero/ui'
 import { ArrowLeft, Download, Hand, LifeBuoy, MessageCircle, Send } from 'lucide-react'
 import Link from 'next/link'
@@ -17,6 +17,7 @@ import { LiveRecordingReview } from './live-recording-review'
 import { LiveRecordingStatus } from './live-recording-status'
 import { LiveReplacement } from './live-replacement'
 import { LiveReplay } from './live-replay'
+import { type LiveTeacherControl, LiveTeacherControls } from './live-teacher-controls'
 import { LiveWorkspace } from './live-workspace'
 
 export function LiveClassroom({
@@ -205,7 +206,7 @@ export function LiveClassroom({
       setTakeover(false)
     }
   }
-  const control = (command: LiveControl) =>
+  const control = (command: LiveTeacherControl) =>
     perform('control', { expectedVersion: room?.occurrence?.version, command })
   const { self, isTeacher, admitted, live, supervised, canInteract, canEnter, canSendChat } =
     classroomState(room, deviceId, joined, stale)
@@ -299,15 +300,7 @@ export function LiveClassroom({
             <div className="space-y-4">
               <LivePreflight />
               {isTeacher && room.occurrence?.state === 'scheduled' ? (
-                <div className="space-y-3 rounded-2xl border bg-card p-5">
-                  <p>A recepção pode abrir quinze minutos antes do encontro.</p>
-                  <Button
-                    disabled={busy || stale}
-                    onClick={() => void control({ kind: 'open-lobby' })}
-                  >
-                    Abrir recepção
-                  </Button>
-                </div>
+                <LiveTeacherControls room={room} busy={busy} stale={stale} onControl={control} />
               ) : null}
               {canEnter ? (
                 <div className="rounded-2xl border bg-card p-5">
@@ -341,98 +334,12 @@ export function LiveClassroom({
             </p>
           ) : null}
           {joined && isTeacher && room.occurrence ? (
-            <section
-              className="space-y-3 rounded-2xl border bg-card p-4"
-              aria-label="Organização da sala"
-            >
-              <div className="flex flex-wrap items-center gap-2">
-                {room.occurrence.state === 'lobby' ? (
-                  <Button disabled={busy || stale} onClick={() => void control({ kind: 'start' })}>
-                    Começar encontro
-                  </Button>
-                ) : null}
-                {live ? (
-                  <Button
-                    variant="outline"
-                    disabled={busy || stale}
-                    onClick={() => {
-                      if (
-                        window.confirm(
-                          'Encerrar a chamada para toda a turma? Os desafios permanecem disponíveis pelo prazo de cada encontro.',
-                        )
-                      )
-                        void control({ kind: 'end' })
-                    }}
-                  >
-                    Encerrar encontro
-                  </Button>
-                ) : null}
-                <Button
-                  variant="outline"
-                  disabled={busy || stale}
-                  onClick={() => void control({ kind: 'mute', learnerId: null })}
-                >
-                  Silenciar todos agora
-                </Button>
-                <Button
-                  variant="outline"
-                  disabled={busy || stale}
-                  onClick={() => void control({ kind: 'lower-hands', learnerId: null })}
-                >
-                  Abaixar todas as mãos
-                </Button>
-                <label className="flex items-center gap-2 text-sm font-bold">
-                  Microfones
-                  <select
-                    className="min-h-10 rounded-lg border bg-background p-2"
-                    value={room.occurrence.speakingMode}
-                    disabled={busy || stale}
-                    onChange={(event) =>
-                      void control({
-                        kind: 'speaking-mode',
-                        mode: event.target.value as 'open' | 'turns' | 'listen',
-                      })
-                    }
-                  >
-                    <option value="open">Conversa aberta</option>
-                    <option value="turns">Uma pessoa por vez</option>
-                    <option value="listen">Ouvir a explicação</option>
-                  </select>
-                </label>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Liberar o microfone permite que a criança o ligue. Não liga o aparelho por ela.
-              </p>
-              <div className="flex flex-wrap gap-2">
-                <span className="self-center text-sm font-bold">Apontar para a turma:</span>
-                {(
-                  [
-                    ['studio-run', 'Executar projeto'],
-                    ['studio-stop', 'Parar projeto'],
-                    ['studio-blocks', 'Blocos'],
-                    ['studio-code', 'Código'],
-                    ['studio-save', 'Guardar projeto'],
-                    ['room-hand', 'Levantar a mão'],
-                    ['room-help', 'Pedir ajuda'],
-                  ] as const
-                ).map(([target, label]) => (
-                  <Button
-                    key={target}
-                    size="sm"
-                    variant="outline"
-                    disabled={busy || stale || !live}
-                    onClick={() => void control({ kind: 'guide', target, learnerId: null })}
-                  >
-                    {label}
-                  </Button>
-                ))}
-              </div>
-            </section>
+            <LiveTeacherControls room={room} busy={busy} stale={stale} onControl={control} />
           ) : null}
           {joined && isTeacher && room.occurrence ? (
             <LiveParticipants
               room={room}
-              disabled={busy || stale || !live}
+              disabled={busy || stale}
               onControl={control}
               onObserve={(learnerId) => {
                 setObservedLearner(learnerId)
@@ -442,6 +349,9 @@ export function LiveClassroom({
                 )
               }}
             />
+          ) : null}
+          {isTeacher ? (
+            <LiveRecordingReview room={room} onUpdated={() => setRefresh((value) => value + 1)} />
           ) : null}
           {room.plan && room.access.canOpen ? (
             <section aria-label="Desafio do encontro" className="space-y-4">
@@ -500,12 +410,7 @@ export function LiveClassroom({
                         disabled={busy || stale || !live}
                       />
                     ) : null}
-                    {isTeacher ? (
-                      <LiveRecordingReview
-                        room={room}
-                        onUpdated={() => setRefresh((value) => value + 1)}
-                      />
-                    ) : room.access.canWatchRecording ? (
+                    {isTeacher ? null : room.access.canWatchRecording ? (
                       <LiveReplay sessionId={sessionId} />
                     ) : room.occurrence?.state === 'ended' ? (
                       <p className="rounded-xl border bg-card p-4 text-sm">
