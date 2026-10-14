@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import { createLogger, type Logger } from '@sistemazero/core/logging'
+import { eq } from 'drizzle-orm'
 import { CheckAccessService } from './application/access/check-access.service'
 import { AccessCheckService } from './application/access-check/access-check.service'
 import { CreationCleanupService } from './application/admin/creation-cleanup/creation-cleanup.service'
@@ -68,6 +69,11 @@ import { ListMemberCertificatesService } from './application/list-member-certifi
 import { ListMemberRatingsService } from './application/list-member-ratings/list-member-ratings.service'
 import { ListMembersService } from './application/list-members/list-members.service'
 import { ListMyCoursesService } from './application/list-my-courses/list-my-courses.service'
+import { LiveService } from './application/live/live.service'
+import { LiveLearningService } from './application/live/live-learning.service'
+import { LiveMaterialsService } from './application/live/live-materials.service'
+import { LivePublicationService } from './application/live/live-publication.service'
+import { LiveWorkspaceService } from './application/live/live-workspace.service'
 import { ManageEntitlementService } from './application/manage-entitlement/manage-entitlement.service'
 import { MarkLessonCompleteService } from './application/mark-lesson-complete/mark-lesson-complete.service'
 import { ParentReportPrefsService } from './application/parent-report/report-prefs.service'
@@ -119,13 +125,18 @@ import {
 } from './application/validate-certificate/validate-certificate.service'
 import { ZappyHistoryService } from './application/zappy/zappy-history.service'
 import { ZappyKnowledgeService } from './application/zappy/zappy-knowledge.service'
+import { LiveNotFoundError, LiveUnavailableError } from './domain/live/live.errors'
 import type { Env } from './infrastructure/config/env'
 import { createAuthHttpGateway } from './infrastructure/gateways/auth-http.gateway'
 import { createCatalogHttpGateway } from './infrastructure/gateways/catalog-http.gateway'
 import { FunnelChallengeAnalyticsGateway } from './infrastructure/gateways/funnel-challenge-analytics.gateway'
 import { createGatewayMessagingClient } from './infrastructure/gateways/gateway-messaging-client'
 import { createHubHttpGateway, noopHubGateway } from './infrastructure/gateways/hub-http.gateway'
+import { LiveProfileOwnershipGateway } from './infrastructure/gateways/live-profile-ownership.gateway'
 import { teacherRecipientDirectory } from './infrastructure/gateways/teacher-recipient-http.gateway'
+import type { CloudflareSfuMediaProvider } from './infrastructure/live/cloudflare-sfu.provider'
+import { createLiveMediaInfrastructure } from './infrastructure/live/create-live-media'
+import { OwnRecordingProvider } from './infrastructure/live/own-recording.provider'
 import { withSentryMirror } from './infrastructure/observability/sentry'
 import { DrizzleAiUsageRepository } from './infrastructure/persistence/drizzle/ai-usage.repository'
 import { DrizzleAnalyticsRepository } from './infrastructure/persistence/drizzle/analytics.repository'
@@ -147,6 +158,10 @@ import {
 } from './infrastructure/persistence/drizzle/help.repository'
 import { DrizzleLearningRepository } from './infrastructure/persistence/drizzle/learning.repository'
 import { DrizzleLessonDraftRepository } from './infrastructure/persistence/drizzle/lesson-draft.repository'
+import { DrizzleLiveRepository } from './infrastructure/persistence/drizzle/live.repository'
+import { DrizzleLiveBenefitsRepository } from './infrastructure/persistence/drizzle/live-benefits.repository'
+import { DrizzleLiveMaterialsRepository } from './infrastructure/persistence/drizzle/live-materials.repository'
+import { DrizzleLiveWorkspaceRepository } from './infrastructure/persistence/drizzle/live-workspace.repository'
 import { DrizzleParentReportRepository } from './infrastructure/persistence/drizzle/parent-report.repository'
 import { DrizzlePensaRepository } from './infrastructure/persistence/drizzle/pensa.repository'
 import { DrizzleProcessedWebhookRepository } from './infrastructure/persistence/drizzle/processed-webhook.repository'
@@ -154,6 +169,7 @@ import { DrizzleProgressRepository } from './infrastructure/persistence/drizzle/
 import { DrizzleQuizAttemptRepository } from './infrastructure/persistence/drizzle/quiz-attempt.repository'
 import { DrizzleRenewalReminderRepository } from './infrastructure/persistence/drizzle/renewal-reminder.repository'
 import { DrizzleRoomRepository } from './infrastructure/persistence/drizzle/room.repository'
+import { liveProjectTemplates } from './infrastructure/persistence/drizzle/schema'
 import { DrizzleStudioSubmissionRepository } from './infrastructure/persistence/drizzle/studio-submission.repository'
 import { DrizzleStudioUnlockRepository } from './infrastructure/persistence/drizzle/studio-unlock.repository'
 import { DrizzleTeacherBroadcastRepository } from './infrastructure/persistence/drizzle/teacher-broadcast.repository'
@@ -250,10 +266,16 @@ export async function createApplication(env: Env): Promise<Application> {
   const checkAccess = new CheckAccessService(courses, entitlements, gamificationRepo, clock)
   // S2S: resolução de acesso em lote (consumido pela comunidade @sistemazero/hub).
   const accessCheck = new AccessCheckService(entitlements, clock)
+  const liveBenefits = new DrizzleLiveBenefitsRepository(db)
   // S2S: teto de perfis kids da conta (consumido pelo `auth` ao criar perfil).
-  const profileAllowance = new GetProfileAllowanceService(entitlements, clock, {
-    defaultMaxProfiles: env.DEFAULT_KIDS_MAX_PROFILES,
-  })
+  const profileAllowance = new GetProfileAllowanceService(
+    entitlements,
+    clock,
+    {
+      defaultMaxProfiles: env.DEFAULT_KIDS_MAX_PROFILES,
+    },
+    liveBenefits,
+  )
   // Quota de IA por conta (o BFF consome 1 crédito antes de cada ida ao LLM).
   const aiUsageRepo = new DrizzleAiUsageRepository(db)
   const consumeAiUsage = new ConsumeAiUsageService({
@@ -410,6 +432,91 @@ export async function createApplication(env: Env): Promise<Application> {
     new DrizzleHelpTutorialRepository(db),
     clock,
   )
+  let liveMedia: CloudflareSfuMediaProvider | undefined
+  let liveRecording: OwnRecordingProvider | undefined
+  let stopLiveRecording: (() => Promise<void>) | undefined
+  const liveRepository = new DrizzleLiveRepository(db)
+  const liveMaterials = new LiveMaterialsService(new DrizzleLiveMaterialsRepository(db), clock)
+  const liveConfigurationComplete = Boolean(
+    env.LIVE_SFU_APP_ID &&
+      env.LIVE_SFU_APP_SECRET &&
+      env.LIVE_TURN_KEY_ID &&
+      env.LIVE_TURN_API_TOKEN &&
+      env.LIVE_SUPERVISOR_URL &&
+      env.LIVE_SUPERVISOR_TOKEN &&
+      env.LIVE_RECORDER_URL &&
+      env.LIVE_RECORDER_TOKEN,
+  )
+  if (env.LIVE_MEDIA_READY && !liveConfigurationComplete)
+    throw new Error('LIVE_MEDIA_READY exige SFU, TURN, supervisor e gravador configurados.')
+  const liveService = new LiveService(
+    liveRepository,
+    clock,
+    new LiveProfileOwnershipGateway({
+      baseUrl: env.AUTH_BASE_URL,
+      internalToken: env.AUTH_INTERNAL_TOKEN,
+      timeoutMs: env.AUTH_REQUEST_TIMEOUT_MS,
+    }),
+    {
+      mediaReady: env.LIVE_MEDIA_READY,
+      async onPermissionsChanged(occurrenceId) {
+        await Promise.all([
+          liveMedia?.reconcile(occurrenceId),
+          liveRecording?.syncOccurrence(occurrenceId),
+        ])
+      },
+      async validatePlanAssets(plan) {
+        if (plan.starterProjectId) {
+          const template = await db
+            .select({ id: liveProjectTemplates.id })
+            .from(liveProjectTemplates)
+            .where(eq(liveProjectTemplates.id, plan.starterProjectId))
+            .limit(1)
+          if (!template[0]) throw new LiveNotFoundError()
+        }
+        await liveMaterials.validate(plan.materials)
+      },
+    },
+  )
+  if (liveConfigurationComplete) {
+    liveMedia = createLiveMediaInfrastructure({
+      db,
+      live: liveService,
+      config: {
+        appId: env.LIVE_SFU_APP_ID!,
+        appSecret: env.LIVE_SFU_APP_SECRET!,
+        turnKeyId: env.LIVE_TURN_KEY_ID!,
+        turnApiToken: env.LIVE_TURN_API_TOKEN!,
+        supervisorUrl: env.LIVE_SUPERVISOR_URL!,
+        supervisorToken: env.LIVE_SUPERVISOR_TOKEN!,
+      },
+    })
+    liveRecording = new OwnRecordingProvider(db, liveRepository, liveService, {
+      url: env.LIVE_RECORDER_URL!,
+      token: env.LIVE_RECORDER_TOKEN!,
+    })
+  }
+  const liveWorkspace = new LiveWorkspaceService(
+    new DrizzleLiveWorkspaceRepository(db),
+    liveService,
+    clock,
+    {
+      async confirmPaused(occurrenceId) {
+        if (!liveRecording)
+          throw new LiveUnavailableError(
+            'O gravador da sala precisa estar configurado antes da ajuda.',
+          )
+        await liveRecording.confirmPaused(occurrenceId)
+      },
+    },
+    {
+      async canContinue(accountId) {
+        return (await accessCheck.execute(accountId, [])).communities.includes('estudio-completo')
+      },
+    },
+  )
+  const liveLearning = new LiveLearningService(liveService, liveRepository, clock)
+  const livePublication = new LivePublicationService(liveWorkspace, env.INTERNAL_API_TOKEN, clock)
   const zappyKnowledge = new ZappyKnowledgeService(
     new DrizzleZappyKnowledgeRepository(db),
     listMyCourses,
@@ -731,6 +838,13 @@ export async function createApplication(env: Env): Promise<Application> {
   }
 
   const server = createServer({
+    liveLearning,
+    liveMaterials,
+    livePublication,
+    liveBenefits,
+    liveWorkspace,
+    liveMedia,
+    liveRecording,
     learning: {
       gallery: new GalleryDeliveryService(
         courses,
@@ -903,6 +1017,11 @@ export async function createApplication(env: Env): Promise<Application> {
       internalToken: env.INTERNAL_API_TOKEN,
       requireAdminEnabled: env.REQUIRE_ADMIN,
     },
+    live: {
+      live: liveService,
+      internalToken: env.INTERNAL_API_TOKEN,
+      requireAdminEnabled: env.REQUIRE_ADMIN,
+    },
   })
 
   let cleanupTimer: ReturnType<typeof setInterval> | null = null
@@ -968,6 +1087,7 @@ export async function createApplication(env: Env): Promise<Application> {
   return {
     logger,
     async start() {
+      stopLiveRecording = liveRecording?.start()
       const deliverRecados = () => {
         if (broadcastCycle) return
         broadcastCycle = teacherBroadcasts
@@ -1012,6 +1132,7 @@ export async function createApplication(env: Env): Promise<Application> {
       logger.info('http.listening', { port: env.PORT, host: env.HOST })
     },
     async stop() {
+      await stopLiveRecording?.()
       if (broadcastTimer) clearInterval(broadcastTimer)
       if (broadcastCycle) await broadcastCycle
       if (cleanupTimer) clearInterval(cleanupTimer)

@@ -1094,6 +1094,14 @@ export class InMemoryProcessedWebhookRepository implements ProcessedWebhookRepos
 
 /** Fake do gateway do members: grants e master configuráveis por usuário. */
 export class FakeMembersGateway implements MembersGateway {
+  liveMuralLearners = new Set<string>()
+  async getLiveMuralAccess(userId: string, accountId: string) {
+    return this.liveMuralLearners.has(`${accountId}:${userId}`)
+  }
+  liveEligibility = { eligible: false, title: '' }
+  async getLiveShowcaseEligibility() {
+    return this.liveEligibility
+  }
   /** userId → cursos com matrícula ativa. */
   grantsByUser = new Map<string, Set<string>>()
   /** userIds com chave-mestra ADULTA (all_courses) ativa. */

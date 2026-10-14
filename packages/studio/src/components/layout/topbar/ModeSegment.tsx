@@ -35,6 +35,7 @@ export function ModeSegment({
         const label = t(`mode.${mode}`)
         return (
           <button
+            data-live-target={mode === 'blocks' ? 'studio-blocks' : 'studio-code'}
             key={mode}
             type="button"
             aria-pressed={active === mode}

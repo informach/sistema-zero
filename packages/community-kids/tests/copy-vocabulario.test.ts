@@ -413,6 +413,13 @@ const casaCaminho = (caminho: string | RegExp, arquivo: string) =>
       ? arquivo.startsWith(caminho)
       : arquivo === caminho
 
+// Na oficina ao vivo há uma professora presente, assim nomeada na proposta aprovada
+// de 14/10/2026. Isso não muda os nomes da aventura nem libera outro jargão escolar.
+function palavrasDaEscolaNesteContexto(arquivo: string, palavras: string[]) {
+  if (!arquivo.startsWith('member-shell/src/components/live/')) return palavras
+  return palavras.filter((palavra) => !/^professor(?:a|es|as)?$/i.test(palavra))
+}
+
 function varrerAlcance() {
   const achados: Achado[] = []
   /** "o fase", "no parte", "próximo parte": a troca palavra por palavra deixa o gênero errado. */
@@ -448,7 +455,8 @@ function varrerAlcance() {
           const chave = `${arquivo} → ${trecho}`
           usosDoTrecho.set(chave, (usosDoTrecho.get(chave) ?? 0) + 1)
         }
-        if (soltas.length) achados.push({ arquivo, linha: literal.linha, texto, palavras: soltas })
+        const palavras = palavrasDaEscolaNesteContexto(arquivo, soltas)
+        if (palavras.length) achados.push({ arquivo, linha: literal.linha, texto, palavras })
       }
     }
   }
@@ -460,6 +468,19 @@ const descrever = (a: Achado) =>
 
 describe('a criança lê aventura, não escola', () => {
   const varredura = varrerAlcance()
+
+  test('professora nomeia a pessoa da oficina ao vivo, sem liberar o vocabulário da aventura', () => {
+    const palavras = ['professora', 'aula', 'atividade', 'aluno']
+    expect(
+      palavrasDaEscolaNesteContexto(
+        'member-shell/src/components/live/live-classroom.tsx',
+        palavras,
+      ),
+    ).toEqual(['aula', 'atividade', 'aluno'])
+    expect(
+      palavrasDaEscolaNesteContexto('member-shell/src/components/lesson-player.tsx', palavras),
+    ).toEqual(palavras)
+  })
 
   test('nada que a criança lê diz aula, curso, seção, caderno, professor nem aluno', () => {
     // ⚠️ Guarda que não lê nada aprova tudo, e em silêncio: cada raiz precisa ter sido lida.

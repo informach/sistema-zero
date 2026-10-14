@@ -5,6 +5,7 @@ import { useModalA11y } from '@sistemazero/ui/use-modal-a11y'
 import { Maximize2, Minimize2 } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
 import { useReportActivityExpanded } from '../lib/lesson-activity-expansion'
+import { useLearningPresentation } from './learning-execution-context'
 import { useLessonCopy } from './lesson-copy-context'
 import { EXPANDED_EXIT_ATTR, LessonVideoToggle } from './lesson-video-float'
 
@@ -19,6 +20,7 @@ export function SceneWorkspace({
   children: ReactNode
 }) {
   const { voltarDaAmpliacao } = useLessonCopy()
+  const presentation = useLearningPresentation()
   // Reserva o lugar na aula enquanto a experiência ocupa a janela.
   const [inlineHeight, setInlineHeight] = useState<number | null>(null)
   const expanded = inlineHeight !== null
@@ -46,6 +48,7 @@ export function SceneWorkspace({
               <LessonVideoToggle expanded={expanded} className="min-h-11 gap-2" />
               <Button
                 variant="outline"
+                hidden={presentation.keepLessonVisible}
                 className="min-h-11 gap-2 whitespace-normal"
                 aria-expanded={expanded}
                 // O vídeo flutuante da aula começa abaixo da saída, nunca por cima dela.

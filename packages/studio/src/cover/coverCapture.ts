@@ -8,6 +8,10 @@ import {
 import { type ExtensionPermission, loadExtensionBootstrapScripts } from '#extensions'
 import { findExtension } from '#official-extensions'
 import { buildPreviewDoc, withCoreImports } from '#preview'
+import {
+  type StudioPlayerOriginAdapter,
+  validateIsolatedPreviewUrl,
+} from '../components/preview/playerOriginAdapter'
 import { loadGameUiFont } from '../official-extensions/gameUiFont'
 import { resolveGameUiFontId } from '../official-extensions/gameUiFonts/resolve'
 import { buildDomRasterizerRuntime } from '../preview/domRasterizerRuntime'
@@ -38,6 +42,9 @@ export interface CaptureCoverOptions {
   /** Origens liberadas pelo professor (espelha o sandbox de atividade). */
   fetchAllowedOrigins?: readonly string[]
   loopBudgetMs?: number
+  /** Live classrooms must isolate every execution, including cover capture. */
+  originAdapter?: StudioPlayerOriginAdapter
+  requireIsolatedPreview?: boolean
 }
 
 const DEFAULT_WARMUP_MS = 1_500
@@ -76,6 +83,7 @@ async function runCapture(
   opts: CaptureCoverOptions,
   harness: string,
 ): Promise<string | null> {
+  if (opts.requireIsolatedPreview && !opts.originAdapter) return null
   const ctx = await extensionContext(project)
   const parentOrigin = window.location.origin
   const warmupMs = opts.warmupMs ?? DEFAULT_WARMUP_MS
@@ -128,13 +136,20 @@ async function runCapture(
 
     let done = false
     let timer: ReturnType<typeof setTimeout> | null = null
+    const controller = new AbortController()
+    let previewUrl: string | null = null
+    const release = (url: string) => {
+      void Promise.resolve(opts.originAdapter?.releasePreviewUrl?.(url)).catch(() => {})
+    }
 
     const finish = (value: string | null) => {
       if (done) return
       done = true
+      controller.abort()
       if (timer) clearTimeout(timer)
       window.removeEventListener('message', onMessage)
       iframe.remove()
+      if (previewUrl) release(previewUrl)
       resolve(value)
     }
 
@@ -156,8 +171,29 @@ async function runCapture(
     window.addEventListener('message', onMessage)
     // Timeout → null (cai na próxima passada / capa do admin). O warmup já está no harness.
     timer = setTimeout(() => finish(null), timeoutMs)
-    iframe.srcdoc = doc
-    document.body.appendChild(iframe)
+    if (opts.originAdapter) {
+      void opts.originAdapter
+        .createPreviewUrl({ project, document: doc, signal: controller.signal })
+        .then(
+          (url) => {
+            if (done) {
+              release(url)
+              return
+            }
+            previewUrl = url
+            try {
+              iframe.src = validateIsolatedPreviewUrl(url, parentOrigin)
+              document.body.appendChild(iframe)
+            } catch {
+              finish(null)
+            }
+          },
+          () => finish(null),
+        )
+    } else {
+      iframe.srcdoc = doc
+      document.body.appendChild(iframe)
+    }
   })
 }
 

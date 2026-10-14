@@ -62,6 +62,7 @@ describe('o menu: Explorar ao lado de Criar', () => {
     expect(NAV_ITEMS.map((item) => item.label)).toEqual([
       'Início',
       'Explorar',
+      'Oficinas',
       'Criar',
       'Comunidade',
       'Meu espaço',

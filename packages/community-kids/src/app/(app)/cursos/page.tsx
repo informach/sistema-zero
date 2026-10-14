@@ -3,6 +3,7 @@ import { CatalogCourseCard } from '@/components/kids/catalog-course-card'
 import { JourneyMap } from '@/components/kids/journey-map'
 import { KidsBand } from '@/components/kids/kids-band'
 import { KidsSectionHeader } from '@/components/kids/kids-section-header'
+import { LiveWorkshopShortcut } from '@/components/kids/live-workshop-shortcut'
 import { KidsMascot } from '@/components/kids/mascot'
 import { journeyProgress } from '@/lib/journey-horizon'
 import { coursesForLevel, tierCompletionByLevel } from '@/lib/journey-map'
@@ -90,6 +91,7 @@ export default async function CatalogPage() {
             <p className="mt-2.5 max-w-3xl font-medium text-[1.0625rem] text-muted-foreground">
               De Faísca a Lenda. Toque num nível para ver as aventuras da trilha dele!
             </p>
+            <LiveWorkshopShortcut />
             {/* O amarelo é cor de fundo e não segue o tema; a tinta escura dá 8,73:1 nele. */}
             <span className="mt-5 inline-flex items-center gap-2 rounded-full bg-(--sz-kids-amarelo) px-4 py-2 font-extrabold text-(--sz-kids-tinta) text-[0.9375rem]">
               <CurrentIcon className="size-4" aria-hidden />
@@ -161,6 +163,7 @@ export default async function CatalogPage() {
     <>
       <KidsBand tone="creme">
         <h1 className="sz-display text-[clamp(2rem,3.4vw,2.8125rem)]">Todas as aventuras</h1>
+        <LiveWorkshopShortcut />
         <p className="mt-2.5 max-w-3xl font-medium text-[1.0625rem] text-muted-foreground">
           Suas aventuras: as que já são suas e as que você ainda pode ganhar.
         </p>

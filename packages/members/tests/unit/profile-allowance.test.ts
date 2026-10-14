@@ -51,6 +51,18 @@ function service(repo: InMemoryEntitlementRepository, defaultMaxProfiles = 1) {
 }
 
 describe('GetProfileAllowanceService', () => {
+  test('vagas de oficinas permitem perfis antes da aula sem conceder produto, e plano maior prevalece', async () => {
+    const repo = new InMemoryEntitlementRepository()
+    const live = new GetProfileAllowanceService(
+      repo,
+      () => NOW,
+      { defaultMaxProfiles: 1 },
+      { maxProfiles: async () => 2 },
+    )
+    expect(await live.execute('pai')).toEqual({ maxProfiles: 2 })
+    repo.seed(grant({ userId: 'pai', maxProfiles: 4 }))
+    expect(await live.execute('pai')).toEqual({ maxProfiles: 4 })
+  })
   test('conta sem matrícula ativa → 0 (não comprou, não cria perfil)', async () => {
     const repo = new InMemoryEntitlementRepository()
     expect(await service(repo).execute('conta-sem-compra')).toEqual({ maxProfiles: 0 })

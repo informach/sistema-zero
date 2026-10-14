@@ -1,0 +1,22 @@
+{
+  "name": "sistemazero-live-supervisor",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-14",
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["LiveConnectionSupervisor"] }],
+  "observability": { "enabled": true },
+  "env": {
+    "staging": {
+      "name": "sistemazero-live-supervisor-staging",
+      "durable_objects": {
+        "bindings": [{ "name": "CONNECTIONS", "class_name": "LiveConnectionSupervisor" }]
+      }
+    },
+    "production": {
+      "name": "sistemazero-live-supervisor-production",
+      "durable_objects": {
+        "bindings": [{ "name": "CONNECTIONS", "class_name": "LiveConnectionSupervisor" }]
+      }
+    }
+  }
+  // Secrets por ambiente: SFU_APP_ID, SFU_APP_SECRET, SUPERVISOR_TOKEN.
+}

@@ -1,0 +1,14 @@
+{
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "packages/live-recorder/Dockerfile",
+    "watchPatterns": ["/packages/live-recorder/**", "/.dockerignore", "/.railway/**"]
+  },
+  "deploy": {
+    "healthcheckPath": "/health",
+    "healthcheckTimeout": 60,
+    "drainingSeconds": 60,
+    "overlapSeconds": 0,
+    "restartPolicyMaxRetries": 3
+  }
+}

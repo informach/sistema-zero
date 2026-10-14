@@ -6,13 +6,19 @@
   "private": true,
   "module": "src/index.ts",
   "exports": {
+    "./assets/live-camera/*": "./assets/live-camera/*",
     ".": "./src/index.ts",
     "./server/*": "./src/server/*.ts",
     "./lib/markdown": "./src/lib/markdown.tsx",
     "./lib/*": "./src/lib/*.ts",
     "./components/ebook/*": "./src/components/ebook/*.tsx",
     "./components/*": "./src/components/*.tsx",
-    "./routes": "./src/routes/index.ts"
+    "./routes": "./src/routes/index.ts",
+    "./routes/live": "./src/routes/live.ts",
+    "./routes/live-materials": "./src/routes/live-materials.ts",
+    "./routes/live-preview": "./src/routes/live-preview.ts",
+    "./components/live/*": "./src/components/live/*.tsx",
+    "./lib/live/*": "./src/lib/live/*.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
@@ -24,6 +30,7 @@
     "@aws-sdk/client-s3": "^3.1032.0",
     "@aws-sdk/s3-request-presigner": "^3.1032.0",
     "@cantoo/pdf-lib": "^2.7.1",
+    "@mediapipe/tasks-vision": "1.1.0",
     "@react-three/drei": "^10",
     "@react-three/fiber": "^9",
     "@sistemazero/core": "workspace:*",
@@ -61,6 +68,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/three": "^0.184.1",
+    "fake-indexeddb": "6.2.5",
     "typescript": "^5.7.0"
   }
 }

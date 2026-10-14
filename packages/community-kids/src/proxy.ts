@@ -16,6 +16,7 @@ export const proxy = createMemberProxy({
   // de SELEÇÃO — isenta do gate de perfil abaixo.
   protectedPrefixes: [
     '/cursos',
+    '/oficinas',
     '/perfil',
     '/meu-avatar',
     // Hub "Criar" (tab bar mobile de 5 itens): cards p/ o trio criativo + quarto + clube.

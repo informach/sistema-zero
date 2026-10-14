@@ -21,6 +21,8 @@ export interface StudioPersistenceAdapter {
   loadBlocksState?(project: Project): Promise<Project['blocksState']>
   /** Persiste o snapshot completo. Chamado no debounce do autosave e no salvar explícito. */
   save(project: Project): Promise<void>
+  /** Optional durable outbox. Called immediately on edits, before remote autosave debounce. */
+  stage?(project: Project): Promise<void>
   /**
    * `true` quando o próprio armazenamento aplica os `save` do mesmo projeto na ORDEM em que
    * foram chamados, mesmo com vários em voo. É o caso do adapter local: o IndexedDB executa as

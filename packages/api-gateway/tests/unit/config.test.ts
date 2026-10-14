@@ -9,6 +9,28 @@ const env = loadEnv({})
 const service = { name: 'p', upstreamGroups: { default: [{ url: 'http://p' }] } }
 
 describe('loadGatewayConfig', () => {
+  test('live boundaries preserve actors and reserve material registration for the BFF', () => {
+    const registry = new RouteRegistry(
+      realConfig.routes.map((route) => routeConfigSchema.parse(route)),
+    )
+    expect(registry.resolve('GET', '/members/live/catalog', 'v1')?.route).toMatchObject({
+      auth: { strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+    })
+    expect(registry.resolve('POST', '/members/admin/live/programs', 'v1')?.route).toMatchObject({
+      authorize: { roles: ['superadmin', 'admin'] },
+    })
+    expect(
+      registry.resolve('POST', '/members/admin/live/workspaces/a/cursor', 'v1')?.route.id,
+    ).toBe('members-live-cursor')
+    expect(
+      registry.resolve('POST', '/members/admin/live/workspaces/a/return', 'v1')?.route,
+    ).toMatchObject({ authorize: { roles: ['superadmin', 'admin', 'staff'] } })
+    expect(registry.resolve('POST', '/members/internal/live/materials', 'v1')?.route).toMatchObject(
+      { auth: { strategies: ['hmac'], allowedConsumers: ['member-shell'] }, maxBodyBytes: 4096 },
+    )
+    expect(registry.resolve('GET', '/members/internal/live/materials', 'v1')).toBeUndefined()
+  })
   test('self-service mutante da conta é autenticado no gateway e preserva o Bearer', () => {
     const byId = new Map(realConfig.routes.map((route) => [route.id, route]))
 

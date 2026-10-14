@@ -1468,6 +1468,25 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
         { method: 'GET' },
       )
     },
+    getLiveShowcasePayload(
+      workspaceId: string,
+      revision: number,
+      clientIdempotencyKey: string,
+    ): Promise<
+      GatewayResponse<{
+        eligible: boolean
+        project: Record<string, unknown>
+        revision: number
+        title: string
+        playId: string
+        publicationToken: string
+      }>
+    > {
+      return gw.gatewayFetch(
+        `/members/live/workspaces/${enc(workspaceId)}/showcase?revision=${revision}&clientIdempotencyKey=${enc(clientIdempotencyKey)}`,
+        { method: 'GET' },
+      )
+    },
 
     // ── Certificado de conclusão ─────────────────────────────────────────────
     /** Estado do bloco certificado (elegível p/ emitir? já emitido?). */
@@ -1672,6 +1691,7 @@ export function createHubClient(gw: GatewayModule, opts: { audience: MembersAudi
      * dedup-a duplo-clique (republicar = post novo).
      */
     createShowcaseThreadStudioStandalone(body: {
+      liveWorkspace?: { id: string; revision: number; publicationToken: string }
       spaceSlug: string
       title: string
       description: string

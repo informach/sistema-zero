@@ -78,6 +78,7 @@ export function showcaseRoutes(deps: ShowcaseRoutesDeps) {
             clientIdempotencyKey: body.clientIdempotencyKey,
             challengeKey: body.challengeKey ?? null,
             studioMeta: body.studioMeta ?? null,
+            liveWorkspace: body.liveWorkspace,
           },
         )
         return { thread, deduped }

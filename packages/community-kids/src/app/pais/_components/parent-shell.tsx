@@ -1,7 +1,16 @@
 'use client'
 
 import { UserAvatar } from '@sistemazero/member-shell/components/user-avatar'
-import { ChevronDown, KeyRound, LifeBuoy, LogOut, Receipt, Sparkles, Users } from 'lucide-react'
+import {
+  CalendarDays,
+  ChevronDown,
+  KeyRound,
+  LifeBuoy,
+  LogOut,
+  Receipt,
+  Sparkles,
+  Users,
+} from 'lucide-react'
 import Link from 'next/link'
 import { type ReactNode, useState } from 'react'
 import { toast } from 'sonner'
@@ -16,6 +25,7 @@ import { OptionsMenu } from './parent-ui'
 const ICONS: Record<ParentSectionId, typeof Users> = {
   familia: Users,
   acompanhamento: Sparkles,
+  oficinas: CalendarDays,
   conta: Receipt,
   ajuda: LifeBuoy,
 }

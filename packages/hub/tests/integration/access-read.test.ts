@@ -210,6 +210,55 @@ describe('leitura do aluno com resolução de acesso', () => {
     expect(await lapsed.json()).toMatchObject({ canInteract: false })
   })
 
+  test('oficina libera apenas o Mural e o perfil matriculado, sem contaminar irmãos da mesma conta', async () => {
+    const accountId = randomUUID(),
+      learner = randomUUID(),
+      sibling = randomUUID()
+    ctx.members.liveMuralLearners.add(`${accountId}:${learner}`)
+    const mural = await ctx.repo.createSpace(
+      space({
+        slug: 'mural-dos-criadores',
+        name: 'Mural',
+        audience: 'kids',
+        accessConfig: {
+          visibility: 'community_gated',
+          courses: [],
+          roles: [],
+          communities: ['mural-dos-criadores'],
+        },
+      }),
+    )
+    await ctx.repo.createChannel(mural.id, {
+      slug: 'parede',
+      name: 'Parede',
+      topic: null,
+      accessConfig: null,
+      postingPolicy: 'staff_only',
+      requiresApproval: null,
+      status: 'active',
+    })
+    const fetchMural = (id: string, account = accountId) =>
+      ctx.app.handle(
+        jsonRequest('GET', '/hub/spaces/mural-dos-criadores', {
+          headers: studentHeaders(id, { 'x-auth-account-id': account }),
+        }),
+      )
+    expect(await (await fetchMural(learner)).json()).toMatchObject({ canInteract: true })
+    expect((await fetchMural(sibling)).status).toBe(403)
+    expect((await fetchMural(learner, randomUUID())).status).toBe(403)
+    expect(
+      (
+        await ctx.app.handle(
+          jsonRequest('GET', '/hub/spaces/curso-a-srv', {
+            headers: studentHeaders(learner, { 'x-auth-account-id': accountId }),
+          }),
+        )
+      ).status,
+    ).toBe(403)
+    ctx.members.liveMuralLearners.clear()
+    expect((await fetchMural(learner)).status).toBe(403)
+  })
+
   test('staff/admin vê tudo (bypass) sem chamar o members', async () => {
     const slugs = await listSlugs(ctx.app, adminHeaders())
     expect(new Set(slugs)).toEqual(new Set(['geral', 'curso-a-srv']))

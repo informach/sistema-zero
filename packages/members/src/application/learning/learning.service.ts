@@ -69,7 +69,7 @@ type CenaGuardada = { checkpoint: SceneCheckpoint<ExperimentSession> }
  * (obrigatório, a nave começa em 300, 40) um toque no "+" do y concluía na tela e gravava
  * `passed:false` — e todo caso novo dos próximos lotes herdaria a divergência.
  */
-function sceneStartOf(content: Partial<InteractiveBlock> & { kind?: string }): Cena | null {
+export function sceneStartOf(content: Partial<InteractiveBlock> & { kind?: string }): Cena | null {
   if (content.kind !== 'interactive') return null
   const a = content.activity
   if (a?.type === 'experimentation') return { start: sceneStart(a) }
@@ -78,7 +78,7 @@ function sceneStartOf(content: Partial<InteractiveBlock> & { kind?: string }): C
 
 /** Lê o que está guardado na forma da cena certa. Formato errado devolve `null`, e quem chama
  *  trata isso como sessão INEXISTENTE: a cena recomeça limpa e a gravação nova substitui a linha. */
-function readSceneCheckpointOf(cena: Cena, answers: LearningAnswers): CenaGuardada | null {
+export function readSceneCheckpointOf(cena: Cena, answers: LearningAnswers): CenaGuardada | null {
   const { sceneSequence, sceneSessionId, sceneSegmentId, sceneCheckpoint } = answers
   if (!Number.isSafeInteger(sceneSequence) || Number(sceneSequence) < 0) return null
   if (typeof sceneSessionId !== 'string' || typeof sceneSegmentId !== 'string') return null
@@ -92,7 +92,7 @@ function readSceneCheckpointOf(cena: Cena, answers: LearningAnswers): CenaGuarda
 }
 
 /** Aplica o segmento sobre o que estava guardado e devolve as respostas prontas para gravar. */
-function applySceneSegment(
+export function applySceneSegment(
   cena: Cena,
   guardado: CenaGuardada | null,
   segment: SceneSegment,

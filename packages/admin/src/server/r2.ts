@@ -167,6 +167,11 @@ export interface R2PutObjectPrivateInput {
  * Sobe um objeto no bucket PRIVADO (materiais didáticos). Devolve só a key —
  * NUNCA existe URL pública; o download é servido pelo community (com marca d'água).
  */
+export async function r2DeletePrivateObject(key: string): Promise<void> {
+  const cfg = requirePrivateR2Config()
+  await getClient(cfg).send(new DeleteObjectCommand({ Bucket: cfg.bucket, Key: key }))
+}
+
 export async function r2PutObjectPrivate(input: R2PutObjectPrivateInput): Promise<{ key: string }> {
   const cfg = requirePrivateR2Config()
   const key = normalizeKey(input.key)

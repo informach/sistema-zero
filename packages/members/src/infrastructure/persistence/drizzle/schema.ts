@@ -1,10 +1,20 @@
 import type { HelpTutorialDocument } from '@sistemazero/core/help'
 import type {
   LearningAnswers,
+  LearningAttemptView,
+  LearningBlockProgress,
   LearningResult,
   LessonDraftDocument,
   LessonSection,
 } from '@sistemazero/core/learning'
+import type {
+  LiveAssistanceView,
+  LiveCohort,
+  LiveEnrollment,
+  LiveOccurrence,
+  LiveProgram,
+  LiveSession,
+} from '@sistemazero/core/live'
 import type { Palette } from '@sistemazero/core/palette'
 import { isNull, sql } from 'drizzle-orm'
 import {
@@ -1809,7 +1819,283 @@ export const processedWebhooks = members.table(
   (t) => [index('processed_webhooks_processed_at_idx').on(t.processedAt)],
 )
 
+// Live workshops keep their own commercial clock and immutable lesson snapshots.
+// Never create recorded-course entitlements as a side effect of a workshop seat.
+export const livePrograms = members.table('live_programs', {
+  id: uuid('id').primaryKey(),
+  document: jsonb('document').$type<LiveProgram>().notNull(),
+})
+
+export const liveCohorts = members.table(
+  'live_cohorts',
+  {
+    id: uuid('id').primaryKey(),
+    programId: uuid('program_id')
+      .notNull()
+      .references(() => livePrograms.id),
+    document: jsonb('document').$type<LiveCohort>().notNull(),
+  },
+  (t) => [index('live_cohorts_program_idx').on(t.programId)],
+)
+
+export const liveSessions = members.table(
+  'live_sessions',
+  {
+    id: uuid('id').primaryKey(),
+    cohortId: uuid('cohort_id')
+      .notNull()
+      .references(() => liveCohorts.id),
+    document: jsonb('document').$type<LiveSession>().notNull(),
+  },
+  (t) => [index('live_sessions_cohort_idx').on(t.cohortId)],
+)
+
+export const liveOccurrences = members.table(
+  'live_occurrences',
+  {
+    id: uuid('id').primaryKey(),
+    cohortId: uuid('cohort_id')
+      .notNull()
+      .references(() => liveCohorts.id),
+    sessionId: uuid('session_id')
+      .notNull()
+      .references(() => liveSessions.id),
+    document: jsonb('document').$type<LiveOccurrence>().notNull(),
+  },
+  (t) => [
+    index('live_occurrences_session_idx').on(t.sessionId),
+    index('live_occurrences_cohort_idx').on(t.cohortId),
+  ],
+)
+
+export const liveEnrollments = members.table(
+  'live_enrollments',
+  {
+    id: uuid('id').primaryKey(),
+    cohortId: uuid('cohort_id')
+      .notNull()
+      .references(() => liveCohorts.id),
+    accountId: uuid('account_id').notNull(),
+    learnerId: uuid('learner_id'),
+    status: text('status').$type<LiveEnrollment['status']>().notNull(),
+    document: jsonb('document').$type<LiveEnrollment>().notNull(),
+  },
+  (t) => [
+    index('live_enrollments_account_idx').on(t.accountId),
+    index('live_enrollments_cohort_idx').on(t.cohortId),
+    uniqueIndex('live_enrollments_active_learner_uq')
+      .on(t.cohortId, t.learnerId)
+      .where(sql`${t.status} = 'active'`),
+    check('live_enrollments_status_check', sql`${t.status} in ('active', 'revoked')`),
+  ],
+)
+
+export const liveAccessGrants = members.table(
+  'live_access_grants',
+  {
+    id: uuid('id').primaryKey(),
+    enrollmentId: uuid('enrollment_id')
+      .notNull()
+      .references(() => liveEnrollments.id),
+    sessionId: uuid('session_id')
+      .notNull()
+      .references(() => liveSessions.id),
+    startsAt: timestamp('starts_at', { withTimezone: true }).notNull(),
+    endsAt: timestamp('ends_at', { withTimezone: true }).notNull(),
+    revokedAt: timestamp('revoked_at', { withTimezone: true }),
+  },
+  (t) => [
+    uniqueIndex('live_grants_enrollment_session_uq').on(t.enrollmentId, t.sessionId),
+    index('live_grants_session_idx').on(t.sessionId),
+    check('live_grants_interval_check', sql`${t.endsAt} > ${t.startsAt}`),
+  ],
+)
+
+export const liveAudit = members.table(
+  'live_audit',
+  {
+    id: uuid('id').primaryKey(),
+    cohortId: uuid('cohort_id')
+      .notNull()
+      .references(() => liveCohorts.id),
+    actorId: uuid('actor_id').notNull(),
+    action: varchar('action', { length: 80 }).notNull(),
+    targetId: uuid('target_id').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [index('live_audit_cohort_idx').on(t.cohortId, t.createdAt)],
+)
+
+export const liveMediaConnections = members.table(
+  'live_media_connections',
+  {
+    id: uuid('id').primaryKey(),
+    occurrenceId: uuid('occurrence_id')
+      .notNull()
+      .references(() => liveOccurrences.id),
+    participationId: text('participation_id').notNull(),
+    actorId: uuid('actor_id').notNull(),
+    deviceId: uuid('device_id').notNull(),
+    generation: integer('generation').notNull(),
+    state: jsonb('state').$type<Record<string, unknown>>().notNull(),
+  },
+  (t) => [index('live_media_occurrence_actor_idx').on(t.occurrenceId, t.actorId)],
+)
+
+export const liveWorkspaces = members.table(
+  'live_workspaces',
+  {
+    id: uuid('id').primaryKey(),
+    sessionId: uuid('session_id')
+      .notNull()
+      .references(() => liveSessions.id),
+    learnerId: uuid('learner_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    revision: integer('revision').notNull().default(0),
+    writerEpoch: integer('writer_epoch').notNull().default(0),
+    writerId: uuid('writer_id').notNull(),
+    writerDeviceId: text('writer_device_id'),
+    leaseExpiresAt: timestamp('lease_expires_at', { withTimezone: true }),
+    project: jsonb('project').$type<Record<string, unknown>>().notNull(),
+    assistance: jsonb('assistance').$type<LiveAssistanceView | null>(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    uniqueIndex('live_workspace_session_learner_uq').on(t.sessionId, t.learnerId),
+    index('live_workspaces_account_idx').on(t.accountId),
+  ],
+)
+
+export const liveWorkspaceRevisions = members.table(
+  'live_workspace_revisions',
+  {
+    workspaceId: uuid('workspace_id')
+      .notNull()
+      .references(() => liveWorkspaces.id),
+    revision: integer('revision').notNull(),
+    project: jsonb('project').$type<Record<string, unknown>>().notNull(),
+    writerId: uuid('writer_id').notNull(),
+    mutationId: uuid('mutation_id').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.workspaceId, t.revision] }),
+    uniqueIndex('live_workspace_mutation_uq').on(t.workspaceId, t.mutationId),
+  ],
+)
+
+export const liveProjectTemplates = members.table('live_project_templates', {
+  id: uuid('id').primaryKey(),
+  project: jsonb('project').$type<Record<string, unknown>>().notNull(),
+  createdBy: uuid('created_by').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+})
+
+export const liveRecordingJobs = members.table(
+  'live_recording_jobs',
+  {
+    occurrenceId: uuid('occurrence_id')
+      .primaryKey()
+      .references(() => liveOccurrences.id),
+    jobId: uuid('job_id').notNull(),
+    generation: integer('generation').notNull().default(1),
+    desiredState: text('desired_state').$type<'paused' | 'recording' | 'stopped'>().notNull(),
+    confirmedState: text('confirmed_state')
+      .$type<
+        'not_started' | 'starting' | 'recording' | 'paused' | 'processing' | 'review' | 'failed'
+      >()
+      .notNull()
+      .default('not_started'),
+    version: integer('version').notNull().default(0),
+    leaseEndsAt: timestamp('lease_ends_at', { withTimezone: true }).notNull(),
+    commandVersion: integer('command_version').notNull().default(0),
+    manifestKey: text('manifest_key'),
+    replayKey: text('replay_key'),
+    error: text('error'),
+  },
+  (t) => [uniqueIndex('live_recording_job_uq').on(t.jobId)],
+)
+
+export const liveReplayPositions = members.table(
+  'live_replay_positions',
+  {
+    sessionId: uuid('session_id')
+      .notNull()
+      .references(() => liveSessions.id),
+    learnerId: uuid('learner_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    version: integer('version').notNull(),
+    positionSeconds: integer('position_seconds').notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.sessionId, t.learnerId, t.version] }),
+    index('live_replay_positions_account_idx').on(t.accountId),
+  ],
+)
+
+export const liveMaterials = members.table('live_materials', {
+  id: uuid('id').primaryKey(),
+  storageKey: text('storage_key').notNull().unique(),
+  fileName: text('file_name').notNull(),
+  title: text('title').notNull(),
+  contentType: text('content_type').notNull(),
+  sizeBytes: integer('size_bytes').notNull(),
+  sha256: text('sha256').notNull(),
+  uploadedBy: uuid('uploaded_by').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+})
+
+export const liveLearningProgress = members.table(
+  'live_learning_progress',
+  {
+    sessionId: uuid('session_id')
+      .notNull()
+      .references(() => liveSessions.id),
+    learnerId: uuid('learner_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    blockId: uuid('block_id').notNull(),
+    revision: uuid('revision').notNull(),
+    document: jsonb('document').$type<LearningBlockProgress>().notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.sessionId, t.learnerId, t.blockId, t.revision] }),
+    index('live_learning_progress_account_idx').on(t.accountId),
+  ],
+)
+export const liveLearningAttempts = members.table(
+  'live_learning_attempts',
+  {
+    sessionId: uuid('session_id')
+      .notNull()
+      .references(() => liveSessions.id),
+    learnerId: uuid('learner_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    id: uuid('id').notNull(),
+    document: jsonb('document').$type<LearningAttemptView>().notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.sessionId, t.learnerId, t.id] }),
+    index('live_learning_attempts_account_idx').on(t.accountId),
+  ],
+)
+
 export const schema = {
+  liveLearningProgress,
+  liveLearningAttempts,
+  livePrograms,
+  liveCohorts,
+  liveSessions,
+  liveOccurrences,
+  liveEnrollments,
+  liveAccessGrants,
+  liveAudit,
+  liveMediaConnections,
+  liveWorkspaces,
+  liveWorkspaceRevisions,
+  liveProjectTemplates,
+  liveRecordingJobs,
+  liveReplayPositions,
+  liveMaterials,
   teacherBroadcasts,
   teacherBroadcastRecipients,
   teacherThreadStaffReads,

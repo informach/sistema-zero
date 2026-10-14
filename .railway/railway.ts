@@ -29,6 +29,7 @@ const rootServices = new Set([
   'members',
   'admin',
   'community-kids',
+  'live-recorder',
 ])
 
 const productionDomains: Record<string, Array<{ domain: string; port?: number }>> = {
@@ -46,6 +47,12 @@ export default defineRailway((ctx) => {
     throw new Error('Selecione staging ou production do projeto sistema-zero antes de aplicar')
   }
   const production = environment === 'production'
+  const recorderVolume = volume('live-recorder-volume', {
+    region: 'us-west2',
+    sizeMB: 50000,
+    allowOnlineResize: true,
+    alerts: { usage: { '80': {}, '95': {}, '100': {} } },
+  })
   const directory = new URL('./services/', import.meta.url)
   const apps = readdirSync(directory)
     .filter((file) => file.endsWith('.json'))
@@ -68,6 +75,9 @@ export default defineRailway((ctx) => {
         replicas: { 'us-west2': 1 },
         domains: production ? productionDomains[name] : undefined,
         env: preservedVariables(environment, name),
+        ...(name === 'live-recorder'
+          ? { volumeMounts: { '/data/live-recorder': recorderVolume } }
+          : {}),
       })
     })
 
@@ -90,6 +100,6 @@ export default defineRailway((ctx) => {
   })
 
   return project('sistema-zero', {
-    resources: [...apps, database, evolution, postgresVolume, evolutionVolume],
+    resources: [...apps, database, evolution, postgresVolume, evolutionVolume, recorderVolume],
   })
 })

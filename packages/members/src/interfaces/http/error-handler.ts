@@ -24,6 +24,10 @@ export type { ErrorEnvelope }
 
 /** Mapeia o `code` de domínio para o status HTTP apropriado. */
 const DOMAIN_STATUS: Record<string, number> = {
+  LIVE_NOT_FOUND: 404,
+  LIVE_ACCESS_DENIED: 403,
+  LIVE_CONFLICT: 409,
+  LIVE_UNAVAILABLE: 503,
   VALIDATION_ERROR: 400,
   PURCHASE_ACCESS_POLICY_INVALID: 422,
   ACCESS_DENIED: 403,

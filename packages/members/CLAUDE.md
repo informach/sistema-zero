@@ -1,5 +1,43 @@
 # CLAUDE.md — @sistemazero/members
 
+## Oficinas ao vivo (14/10/2026)
+
+`application/live` mantém oficinas reutilizáveis, snapshots das aulas por turma, matrículas
+manuais, grants por aula e ocorrências separadas para reposições. Migrations geradas
+`0102`–`0106` acrescentam as tabelas do módulo, gravação, posição de replay, materiais e atividades.
+Turmas limitadas a oito vagas; pendentes também ocupam vaga. Todas as mutações da turma
+tomam o mesmo lock no PostgreSQL. A identidade combina conta responsável e perfil; o Auth
+confirma o vínculo antes de matricular ou atribuir uma reserva. Uma professora precisa ser
+equipe ativa **e** estar atribuída à turma. O gateway continua responsável pelo RBAC.
+
+- O prazo é de dias civis no fuso da turma, contado da data original de cada aula.
+  Publicar replay, reenviar matrícula e criar reposição não reiniciam esse prazo. Ampliá-lo
+  exige uma extensão explícita e auditada. Replay só abre publicado, dentro do grant; a
+  posição é isolada por perfil, aula e versão da gravação.
+- `live_workspaces` é a fonte canônica do projeto, com revisões, lease, epoch e checkpoint
+  anterior à assistência. Um projeto existente pode continuar com acesso ao Estúdio depois
+  do grant; isso não abre a aula vencida nem cria projetos de aulas futuras. Não copiar esse
+  workspace para `creations`: permitiria gravações antigas contornarem o epoch.
+- Publicação no Mural usa o snapshot salvo e uma prova HMAC curta vinculada à conta, perfil,
+  workspace, revisão e playId gerado no servidor. O Hub revalida a revisão e o acesso. Não
+  conceder entitlements genéricos, conclusão de curso ou desafio por essa publicação.
+- Benefícios de oficinas são específicos: vagas ativas permitem criar os perfis contratados;
+  apenas o perfil matriculado recebe interação no Mural durante a janela da oficina. Esse
+  direito nunca entra no cache de entitlement da conta, para não liberar seus irmãos.
+- Materiais vêm do upload BFF privado `/api/media/live-materials`, com máximo de 8 MiB.
+  O registro interno exige consumer HMAC `member-shell`; o roteiro só aceita id/key/filename
+  já registrados em `live_materials`. Catálogo e sala não devolvem as chaves privadas.
+- Etapas opcionais reutilizam `InteractiveBlock` e os avaliadores de Learning, com IDs e revisões
+  UUID congelados no snapshot da turma. Progresso e tentativas usam a identidade real da aula
+  ao vivo; não inventar IDs de curso. Cada escrita verifica o grant sob o lock da turma, e cenas
+  reaplicam comandos no servidor. A prévia docente não grava progresso infantil. Gabaritos só
+  saem em `learning-preview` para a professora atribuída; a sala usa `PublicInteractiveBlock`.
+  `planRevision` permite omitir o roteiro inalterado no polling, mas acesso vencido sempre retorna
+  `plan: null`. A sugestão de etapa da professora não muda a navegação da criança automaticamente.
+- Exclusão de conta usa a mesma cerca e ordem de locks, removendo matrículas, grants,
+  mensagens, participações, posições e workspaces sem recriar dados após a purga.
+  `LIVE_MEDIA_READY=false` mantém o início da transmissão fechado até a validação operacional.
+
 > **Quiz antes do certificado (03/10/2026):** o rascunho pode publicar quiz obrigatório em seção anterior à emissão, com o quiz e o certificado selecionados nos respectivos critérios. `certificateLessonIssues` mantém a restrição para outros blocos obrigatórios e recusa quiz misturado, posterior ou sem critério. A primeira emissão verifica a seção no servidor; o GET informa `eligible: false` enquanto ela estiver trancada. Certificados já emitidos seguem acessíveis sem reavaliar requisitos novos. Quiz selecionado como critério permite corrigir imediatamente. O CRUD legado sem estrutura mantém a restrição antiga.
 
 
@@ -45,12 +83,11 @@ boa vontade um erro de transcrição no Admin.
   `tests/integration/gallery-delivery.test.ts` (1001 → 400 no preparo e no commit, sem entrega e
   sem turno; 1000 passa inteiro; o serviço recusa direto). O BFF e as telas do member-shell/kids
   acompanham o teto do lado deles.
-- ⚠️⚠️ **Numerada 0107 de propósito:** o lote das oficinas ao vivo, ainda não mesclado, usa 0102 a
-  0106. No merge, renumere ou reordene: aqui a entrada do `_journal.json` tem `idx` 102 e `when`
-  1791993851297 (relógio real, acima do 1791984332314 da 0106) e o snapshot é
-  `meta/0107_snapshot.json` com `prevId` = o da 0101. Depois de juntar os lotes, acerte a cadeia de
-  `prevId`, confira que o `when` cresce na ordem do journal (marca d'água) e rode `db:generate`,
-  que precisa responder "No schema changes".
+- **`0107` vem depois do lote das oficinas ao vivo (0102 a 0106).** No merge de 14/10/2026 a
+  migration foi GERADA de novo sobre a 0106 (`db:generate --name teacher_message_spoken`): `idx`
+  107, `when` 1792000899277 (acima da marca d'água da 0106), snapshot com `prevId` = o da 0106, e o
+  SQL mantém o `ADD COLUMN IF NOT EXISTS` (banco de teste que já tinha a versão anterior não quebra).
+  `db:generate` responde "No schema changes".
 - Testes: os "voz para texto" de `tests/integration/{teacher-threads,learning,studio,pinta,
   gallery-delivery}.test.ts` e, contra Postgres, `tests/db/teacher-thread.repository.test.ts` e
   `tests/db/studio-submission-previous.test.ts`. Os DDL à mão de `tests/db` ganharam as colunas.

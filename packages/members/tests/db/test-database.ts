@@ -1,4 +1,5 @@
 import postgres from 'postgres'
+import { prepareLiveTestSchema } from './live-test-schema'
 
 const DEFAULT_TEST_DB_NAME = 'sistemazero_test'
 const FALLBACK_URL = 'postgres://postgres:postgres@localhost:5433/sistemazero'
@@ -60,6 +61,7 @@ export async function prepareTestDatabase(
 /** Sparse repository fixtures share the current block read model, without production foreign keys. */
 async function prepareBlockReadModel(database: ReturnType<typeof postgres>) {
   await database`create schema if not exists members`
+  await prepareLiveTestSchema(database)
   await database.unsafe(`create table if not exists members.lesson_blocks (
     id uuid primary key, lesson_id uuid not null, kind text not null,
     sort_order integer not null default 0, content jsonb not null,

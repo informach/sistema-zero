@@ -1,0 +1,23 @@
+{
+  "name": "@sistemazero/live-recorder",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "bun src/server.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test",
+    "test:csp": "bun scripts/check-camera-csp.ts",
+    "check": "biome check ."
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1032.0",
+    "playwright": "1.62.1",
+    "railway": "3.16.0",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@types/bun": "1.4.3",
+    "@types/node": "24.19.0",
+    "typescript": "^5.7.0"
+  }
+}
