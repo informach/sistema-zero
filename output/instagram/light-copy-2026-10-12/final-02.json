@@ -1,0 +1,374 @@
+[
+  {
+    "id": "P11",
+    "pillar": "Desejo",
+    "parent": "Incluir criação no interesse que o filho já tem por jogos.",
+    "title": "A tela já fazia parte da nossa casa.",
+    "format": "Reel",
+    "skill": "Autoria e programação: incluir construção no interesse por tecnologia.",
+    "cta": "Conversar sobre algo que o filho gostaria de criar.",
+    "cover": "A gente começou por um interesse do André.",
+    "scenes": [
+      [
+        0,
+        9,
+        "Helena conta olhando para a câmera; foto familiar real do André.",
+        "O interesse já estava ali.",
+        "O André sempre gostou muito de jogar e assistir a jogos. A gente queria incluir outra possibilidade nesse tempo: criar também."
+      ],
+      [
+        9,
+        19,
+        "Fotos da família e caderno com ideias; captação atual, sem simular passado.",
+        "Uma parte do tempo ganhou outra atividade.",
+        "Começamos a ensinar a fazer os próprios jogos. Ele passou a ter ideias para experimentar e escolhas para mostrar."
+      ],
+      [
+        19,
+        29,
+        "Júlio e Helena conversam; detalhe de uma criação atual.",
+        "A gente percebeu mais interesse em aprender.",
+        "Ao longo desse caminho, percebemos mais interesse dele em aprender e participar das aulas. Essa é a experiência que vivemos em casa."
+      ],
+      [
+        29,
+        40,
+        "Pais ouvem uma ideia; uma versão de jogo aparece apenas no fechamento.",
+        "O que seu filho gostaria de criar?",
+        "Você pode começar ouvindo o que seu filho gostaria de inventar. Criar jogos oferece um jeito de transformar parte desse interesse em construção."
+      ]
+    ],
+    "caption": "O André já gostava de jogar. A gente começou a usar uma parte desse tempo para ensinar a fazer os próprios jogos.\n\nAo longo desse caminho, percebemos mais interesse dele em aprender. É a nossa experiência com o nosso filho, que ajudou a dar origem ao trabalho que fazemos hoje.\n\nPara outra família, a conversa pode começar por uma ideia: o que ele gostaria de inventar ou mudar? A criação abre espaço para usar a tecnologia também para construir algo seu.\n\nAs imagens atuais apoiam a explicação; não são registros do primeiro dia em que ensinamos o André.",
+    "visual": "Relato de Helena e Júlio com fotos reais da família, seguido de uma criação atual.",
+    "proof": "História confirmada pelo usuário; sem alegar que o curso causou notas, medalhas ou um resultado universal."
+  },
+  {
+    "id": "P12",
+    "pillar": "Desejo",
+    "parent": "Dar forma ao que o filho imagina.",
+    "title": "Uma ideia que só ele teve merece espaço.",
+    "format": "Imagem única",
+    "skill": "Criatividade e expressão: dar forma a uma ideia própria.",
+    "cta": "Ouvir uma ideia antes de decidir como executá-la.",
+    "text": [
+      "Uma ideia que só ele teve merece espaço.",
+      "“Eu gosto bastante de produzir os meus jogos, porque é uma forma de eu expressar as minhas ideias.”",
+      "Jeffrey · Aluno"
+    ],
+    "visual": "Rosto real do Jeffrey em destaque e pequeno desenho autoral de uma ideia ganhando forma; não começar por captura de jogo. Aspas equivalentes.",
+    "caption": "Às vezes, a ideia ainda vem misturada, sem todos os detalhes. Vale ouvir antes de decidir se ela é fácil ou difícil de fazer.\n\nPeça que seu filho desenhe ou conte uma parte. O registro ajuda vocês a conversar sobre o que ele imaginou.\n\nJeffrey fala da criação de jogos como uma forma de expressar as próprias ideias. A programação pode dar ações àquilo que antes existia só na imaginação: uma regra, um movimento ou uma resposta para quem joga.\n\nA fala é do Jeffrey sobre a experiência dele criando jogos.",
+    "proof": "Jeffrey, vídeo autorizado, 101,42–109,34 s. Preservar literalidade."
+  },
+  {
+    "id": "P13",
+    "pillar": "Dor",
+    "parent": "Ter uma ideia na cabeça e dificuldade para explicá-la.",
+    "title": "Ele sabe o que quer dizer. Você ainda não entendeu.",
+    "format": "Carrossel",
+    "skill": "Comunicação e perspectiva: explicar para quem ainda não conhece a ideia.",
+    "cta": "Dizer em qual parte da explicação surgiu a dúvida.",
+    "slides": [
+      [
+        "Ele sabe o que quer dizer. Você ainda não entendeu.",
+        "Isso pode acontecer quando a ideia está clara na cabeça dele, mas faltam partes na explicação.",
+        "Criança apresenta desenho ao adulto, que acompanha com expressão curiosa."
+      ],
+      [
+        "Mostre onde você conseguiu acompanhar.",
+        "“Eu entendi onde começa. Ainda não entendi o que acontece depois.”",
+        "Dedo do adulto indica a passagem entre dois desenhos."
+      ],
+      [
+        "Peça uma parte por vez.",
+        "Ele pode apontar, desenhar ou contar de outro jeito. A explicação não precisa sair pronta na primeira tentativa.",
+        "Criança acrescenta um quadro entre começo e fim."
+      ],
+      [
+        "Depois, tentem seguir a orientação.",
+        "O que ficou claro? O que ainda falta para outra pessoa conseguir fazer?",
+        "Adulto realiza uma brincadeira seguindo a explicação da criança."
+      ],
+      [
+        "Criar jogos dá um motivo para cuidar dessa clareza.",
+        "Um aviso como “Pegue a chave antes de abrir a porta” ajuda o jogador a saber o próximo passo.",
+        "Última tela: aviso real no Farol e personagem indo buscar a chave."
+      ]
+    ],
+    "caption": "Quando não entendemos uma explicação, podemos ajudar mostrando o ponto em que nos perdemos.\n\nIsso dá uma tarefa mais clara do que pedir “explique melhor”. A criança pode acrescentar uma parte, mudar as palavras ou usar um desenho.\n\nAo criar um jogo, ela também pensa em alguém que ainda não conhece suas regras. Escrever um aviso e observar se o jogador entendeu oferece uma oportunidade concreta de praticar comunicação.\n\nAs primeiras cenas são situações familiares encenadas; o exemplo final usa uma mensagem preparada por nós no Farol."
+  },
+  {
+    "id": "P14",
+    "pillar": "Desejo",
+    "parent": "Ver a criança colocar uma escolha sua na criação.",
+    "title": "Seu filho pode perceber um detalhe que passou por você.",
+    "format": "Reel",
+    "skill": "Observação e criatividade: notar diferenças e propor escolhas.",
+    "cta": "Comparar duas versões e ouvir o detalhe percebido.",
+    "cover": "Ele reparou numa coisa que você nem tinha visto.",
+    "scenes": [
+      [
+        0,
+        8,
+        "Duas construções de papel quase iguais; criança aponta uma janela diferente.",
+        "Um detalhe chamou a atenção dele.",
+        "Pode ser uma cor, uma janela ou o lugar de uma peça. Seu filho reparou num detalhe que passou por você."
+      ],
+      [
+        8,
+        18,
+        "Adulto aproxima as duas construções e ouve.",
+        "Peça que ele mostre a diferença.",
+        "Peça que mostre o que mudou. Depois, vocês podem escolher um detalhe para alterar e comparar as versões."
+      ],
+      [
+        18,
+        28,
+        "Mudar só a janela ou a cor, mantendo a estrutura.",
+        "Uma escolha de cada vez.",
+        "Quando uma coisa muda e o restante fica igual, vocês conseguem acompanhar o efeito daquela escolha."
+      ],
+      [
+        28,
+        38,
+        "Fechar com duas personalizações reais do Farol.",
+        "Criar jogos também abre espaço para essas escolhas.",
+        "Ao criar um jogo, a criança pode escolher a aparência e observar como ficou. Comparar ajuda a transformar uma preferência numa decisão visível."
+      ]
+    ],
+    "caption": "Uma diferença pequena pode render uma conversa: o que ele percebeu e por que aquilo chamou a atenção?\n\nComparem dois desenhos ou duas construções. Depois, escolham uma mudança e observem o resultado.\n\nNa criação de jogos, a criança também pode fazer escolhas visuais e testar como ficam na tela. É um espaço para observar, comparar e dar forma a uma preferência.\n\nAs versões digitais do final foram preparadas por nós no Farol.",
+    "visual": "Família compara construções de papel; o exemplo digital entra somente no final."
+  },
+  {
+    "id": "P15",
+    "pillar": "Dica",
+    "parent": "Ajudar o filho a considerar o ponto de vista de outra pessoa.",
+    "title": "Pedir opinião é mais fácil quando a pergunta é pequena.",
+    "format": "Carrossel",
+    "skill": "Resolução de problemas e colaboração: usar uma observação para melhorar uma criação.",
+    "cta": "Escolher um ponto específico para pedir opinião.",
+    "slides": [
+      [
+        "Pedir opinião é mais fácil quando a pergunta é pequena.",
+        "“Ficou bom?” pode receber um “sim” e encerrar a conversa. Uma dúvida específica dá mais assunto.",
+        "Criança mostra um desenho e adulto observa."
+      ],
+      [
+        "Escolham uma parte sobre a qual conversar.",
+        "“Dá para entender onde a história começa?” A outra pessoa sabe o que olhar.",
+        "Desenho com sequência de três acontecimentos; primeiro quadro em destaque."
+      ],
+      [
+        "Ouçam o que a pessoa realmente percebeu.",
+        "Talvez ela tenha entendido de um jeito diferente. Peçam que mostre em qual parte.",
+        "Adulto aponta um detalhe; criança escuta e anota."
+      ],
+      [
+        "A criança pode escolher o que fazer com essa opinião.",
+        "Ela pode ajustar, testar outra versão ou explicar por que quer manter a ideia.",
+        "Duas versões do desenho e anotação de uma escolha."
+      ],
+      [
+        "Ao criar jogos, uma partida oferece esse retorno.",
+        "Observar onde alguém ficou com dúvida ajuda a decidir se uma mensagem ou um caminho precisa mudar.",
+        "Última tela: pessoa joga uma versão real enquanto quem criou observa."
+      ]
+    ],
+    "caption": "Pedir uma opinião específica ajuda a conversa a sair do “gostei” ou “não gostei”.\n\nEscolham um ponto: ficou claro onde começa, qual é o objetivo ou o que a pessoa deve fazer? Ouçam a resposta e deixem a criança decidir o que quer experimentar.\n\nNa criação de jogos, isso pode acontecer quando outra pessoa joga pela primeira vez. Uma dúvida vira informação para ajustar o projeto.\n\nÉ uma oportunidade de praticar escuta, fazer escolhas e melhorar algo com a participação de outra pessoa."
+  },
+  {
+    "id": "P16",
+    "pillar": "Dor",
+    "parent": "Mexer em tudo após um erro e perder o caminho da tentativa.",
+    "title": "Na terceira tentativa, veio a vontade de largar.",
+    "format": "Carrossel",
+    "skill": "Resolução de problemas: comparar tentativas e ajustar uma parte.",
+    "cta": "Fazer uma pausa e escolher uma mudança para testar.",
+    "slides": [
+      [
+        "Na terceira tentativa, veio a vontade de largar.",
+        "Quando nada parece funcionar, repetir “tenta de novo” pode não mostrar por onde seguir.",
+        "Criança diante de uma construção de papel que não ficou de pé; adulto se aproxima."
+      ],
+      [
+        "Primeiro, deem espaço para uma pausa.",
+        "Vocês podem voltar quando for possível olhar para a tarefa com mais calma.",
+        "Mãos se afastam da construção; material permanece guardado, sem rosto exageradamente triste."
+      ],
+      [
+        "Na volta, comparem ideia e resultado.",
+        "O que ele queria que acontecesse? O que aconteceu de verdade?",
+        "Desenho de uma ponte ao lado da tentativa montada."
+      ],
+      [
+        "Escolham uma coisa para mudar.",
+        "Testem essa parte e observem a diferença. Mudar tudo junto dificulta saber o que ajudou.",
+        "Uma dobra é modificada; a ponte é testada novamente, sem prometer resultado específico."
+      ],
+      [
+        "Programar jogos também envolve essas tentativas.",
+        "A criança monta, joga, observa e ajusta. O erro mostra uma parte que ainda precisa de investigação.",
+        "Última tela: uma mudança em um comando real seguida de teste no jogo."
+      ]
+    ],
+    "caption": "Uma tentativa que falhou pode trazer frustração. Às vezes, o próximo passo é uma pausa, não outra explicação.\n\nQuando retomarem, comparem o que deveria acontecer com o que aconteceu. Escolham uma mudança para testar. Assim, a criança consegue acompanhar a tentativa, mesmo quando ainda precisa de ajuda.\n\nAo programar jogos, esse ciclo aparece na própria construção: fazer, testar e ajustar. A atividade oferece situações para praticar resolução de problemas; isso não significa que toda dificuldade será resolvida sozinha ou rapidamente."
+  },
+  {
+    "id": "P17",
+    "pillar": "Curiosidade",
+    "parent": "Entender uma regra por uma comparação que dá para ver.",
+    "title": "Uma pergunta pode virar uma pequena investigação.",
+    "format": "Reel",
+    "skill": "Raciocínio lógico e inovação: prever, comparar e testar possibilidades.",
+    "cta": "Experimentar uma mudança mantendo o restante igual.",
+    "cover": "“E se a gente mudasse só esta parte?”",
+    "scenes": [
+      [
+        0,
+        8,
+        "Folha apoiada entre dois livros e algumas moedas ao lado; adulto e criança observam.",
+        "Uma pergunta para experimentar juntos.",
+        "Uma folha vira uma pequena ponte entre dois livros. O que acontece se a gente dobrar essa folha de outro jeito?"
+      ],
+      [
+        8,
+        18,
+        "Fazer uma dobra e testar com os mesmos apoios; capturar resultado real sem predeterminar sucesso.",
+        "Mudar uma coisa e observar.",
+        "Vocês podem manter os apoios no mesmo lugar, mudar uma dobra e testar. Antes, cada um conta o que imagina que vai acontecer."
+      ],
+      [
+        18,
+        28,
+        "Comparar duas tentativas com desenhos e marcações simples.",
+        "A tentativa dá informação para a conversa.",
+        "Depois, comparem o resultado com a ideia. Se foi diferente, vocês têm uma nova pergunta para investigar."
+      ],
+      [
+        28,
+        39,
+        "Exemplo final: mesma porta do Farol sem chave e depois com chave.",
+        "Criar jogos também permite testar uma ideia.",
+        "Na programação de jogos, a criança prevê uma resposta, testa e confere. Ela pode mudar uma parte e observar como isso altera o que acontece."
+      ]
+    ],
+    "caption": "Uma curiosidade pode virar uma experiência pequena com materiais de casa.\n\nUsem a mesma folha e os mesmos apoios para comparar duas formas de dobrar uma ponte de papel. Façam uma tentativa, observem e conversem sobre o que mudou. A proposta é investigar o resultado que vocês encontrarem.\n\nAo criar jogos, a criança também pode transformar uma pergunta numa comparação: e se eu mudar esta parte, o que acontece?\n\nPrever, testar e ajustar são ações concretas dentro da atividade. No final do vídeo, mostramos uma demonstração nossa de uma regra no Farol.",
+    "visual": "Experimento de papel em família; jogo aparece apenas como aplicação final da mesma forma de investigar."
+  },
+  {
+    "id": "P18",
+    "pillar": "Dica",
+    "parent": "Preparar um espaço que facilite a atividade.",
+    "title": "Começar a estudar dá trabalho antes da primeira tarefa.",
+    "format": "Carrossel",
+    "skill": "Planejamento e autonomia acompanhada: preparar o necessário para agir.",
+    "cta": "Separar o necessário antes de iniciar.",
+    "slides": [
+      [
+        "Começar a estudar dá trabalho antes da primeira tarefa.",
+        "Falta o lápis, o material ficou em outro lugar e ninguém sabe onde está a orientação.",
+        "Mesa de estudo com itens faltando e criança procurando o caderno."
+      ],
+      [
+        "Façam uma preparação curta juntos.",
+        "Olhem o que a atividade pede e separem o material necessário.",
+        "Criança e adulto conferem uma orientação e colocam poucos materiais na mesa."
+      ],
+      [
+        "Deixem a primeira ação visível.",
+        "Pode ser ler um trecho, abrir uma página ou começar um desenho. O pedido fica mais fácil de localizar.",
+        "Cartão simples com a primeira ação junto da tarefa."
+      ],
+      [
+        "Combinem como pedir ajuda.",
+        "Se surgir uma dúvida, ele pode mostrar onde parou. Vocês não precisam prever todos os problemas antes de começar.",
+        "Criança aponta um trecho ao adulto."
+      ],
+      [
+        "Para criar no computador, a preparação também ajuda.",
+        "Abram a atividade, confiram som, internet, mouse e teclado. Depois, escolham uma parte para construir e testar.",
+        "Última tela: computador preparado para uma atividade real de criação."
+      ]
+    ],
+    "caption": "A preparação pode diminuir as buscas por material durante a atividade.\n\nOlhem o pedido, separem o necessário e deixem uma primeira ação clara. Quando der, façam isso com a criança, para ela participar da organização.\n\nNa criação de jogos, preparar o computador e escolher uma parte para fazer dá um começo concreto. Depois, ela pode montar, testar e pedir ajuda mostrando onde parou.\n\nO combinado deve caber no espaço e nos materiais que a família tem."
+  },
+  {
+    "id": "P19",
+    "pillar": "Curiosidade",
+    "parent": "Descobrir o trabalho que existe por trás de tentar outra vez.",
+    "title": "Guardar onde parou facilita a próxima tentativa.",
+    "format": "Carrossel",
+    "skill": "Planejamento: registrar o estado de uma tarefa e seu próximo passo.",
+    "cta": "Deixar um registro curto antes de interromper.",
+    "slides": [
+      [
+        "Guardar onde parou facilita a próxima tentativa.",
+        "A criança interrompe uma atividade e, quando volta, precisa descobrir de novo o que estava fazendo.",
+        "Construção de papel parcialmente montada, guardada ao lado do material."
+      ],
+      [
+        "Antes de parar, registrem uma coisa que já foi feita.",
+        "“A base está pronta.” Pode ser uma frase, uma foto do trabalho ou uma marca no desenho.",
+        "Pequena anotação junto da base pronta."
+      ],
+      [
+        "Depois, deixem uma próxima ação.",
+        "“Na volta, vou montar a ponte.” Um passo curto dá um ponto para retomar.",
+        "Cartão com próxima ação colocado sobre os materiais."
+      ],
+      [
+        "Na volta, confiram se esse passo ainda faz sentido.",
+        "A criança pode ter outra ideia. O registro ajuda a lembrar; ele também pode ser ajustado.",
+        "Criança consulta o cartão e altera um pequeno desenho."
+      ],
+      [
+        "Criar jogos também é um trabalho que pode continuar depois.",
+        "Guardar o projeto e registrar o próximo teste ajuda a retomar uma ideia em construção.",
+        "Última tela: projeto real salvo e anotação de uma próxima ação ao lado do computador."
+      ]
+    ],
+    "caption": "Uma atividade não precisa terminar numa única vez.\n\nAntes de parar, ajudem a criança a registrar o que fez e qual parte quer tentar depois. Duas frases curtas podem servir de ponto de partida para a volta.\n\nAo criar jogos, ela também lida com projetos que crescem por etapas. Guardar o trabalho e escolher o próximo teste são partes dessa construção.\n\nNa ferramenta que estiverem usando, confiram como salvar antes de fechar. O registro no papel lembra a próxima ideia, mas não substitui o salvamento do projeto."
+  },
+  {
+    "id": "P20",
+    "pillar": "Desejo",
+    "parent": "Acompanhar com a ajuda de que o filho precisa em cada etapa.",
+    "title": "A ajuda pode mudar conforme ele aprende.",
+    "format": "Reel",
+    "skill": "Autonomia acompanhada: reconhecer o que consegue fazer e quando pedir apoio.",
+    "cta": "Combinar um modo de pedir ajuda.",
+    "cover": "Em uma parte ele tenta. Em outra, chama você.",
+    "scenes": [
+      [
+        0,
+        8,
+        "Adulto acompanha uma tarefa manual; criança assume uma etapa já conhecida.",
+        "A ajuda não precisa ser igual em toda etapa.",
+        "Em uma parte, seu filho já sabe como seguir. Em outra, precisa de você por perto. A ajuda pode acompanhar essa diferença."
+      ],
+      [
+        8,
+        15,
+        "Flávia em vídeo original, identificada como Mãe do Fernando.",
+        "Uma experiência contada pela mãe.",
+        "[ÁUDIO ORIGINAL] No início eu acompanhei mais, agora eu acompanho menos. Ele faz o curso com total independência no momento."
+      ],
+      [
+        15,
+        25,
+        "Helena mostra um combinado simples no papel.",
+        "Combinem como pedir apoio.",
+        "Flávia conta o que percebeu com o Fernando. Para a sua família, vale combinar como a criança vai mostrar uma dúvida e procurar apoio."
+      ],
+      [
+        25,
+        35,
+        "Criança testa uma criação digital e chama o adulto para mostrar um ponto.",
+        "Criar também inclui saber pedir ajuda.",
+        "Ao criar jogos, ela pode tentar uma parte, observar o resultado e pedir ajuda em outra. O apoio continua disponível."
+      ]
+    ],
+    "caption": "Acompanhar pode mudar de uma atividade para outra. Vale observar o que a criança consegue tentar e onde ainda precisa de participação mais próxima.\n\nFlávia relata que passou a acompanhar menos o Fernando nas atividades. É a experiência dela naquele momento, sem uma regra de prazo para outras crianças.\n\nCriar jogos oferece tarefas para tentar, decisões para tomar e dúvidas para explicar. Combinar como pedir ajuda permite que a criança participe desse caminho com apoio.",
+    "visual": "Situação familiar antes do relato original de Flávia; criação digital aparece no fechamento.",
+    "proof": "Flávia: trecho autorizado 56,14–62,14 s. Preservar “no momento” e contexto individual."
+  }
+]

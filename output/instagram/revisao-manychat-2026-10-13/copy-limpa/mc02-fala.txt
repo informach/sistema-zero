@@ -1,0 +1,11 @@
+Um robô regeu uma orquestra na Avenida Paulista.
+
+Depois, João Carlos Martins assumiu a mesma peça. O concerto colocou máquina e interpretação humana lado a lado.
+
+Essa cena abre uma conversa em casa: quem escolhe o que uma máquina vai fazer?
+
+Criar jogos permite experimentar isso. Neste exemplo do nosso Estúdio, o adversário automático calcula lançamentos. Quem cria escolhe quando ele joga e o que acontece se errar.
+
+Ele monta uma regra, testa e observa a máquina executá-la.
+
+Comente MAESTRO e conheça no direct um primeiro projeto para ele começar a criar jogos.

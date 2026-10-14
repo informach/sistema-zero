@@ -1,0 +1,3 @@
+Até a chance de encontrar um cristal foi escolhida: cada bloco novo tem 3 chances em 10 de ser cristal.
+
+Quem cria decide o que vale ponto e com que frequência aparece.

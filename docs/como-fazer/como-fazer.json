@@ -397,14 +397,14 @@
           {
             "id": "compartilhar",
             "title": "Abra Compartilhar",
-            "body": "Clique em **Compartilhar**, o botão com a setinha para cima no canto da barra do Estúdio, quando ele estiver disponível. No Cadê Todo Mundo?, ele fica disponível depois que você envia o seu projeto da Fase 2. Abre a janela **Compartilhar no Mural dos Criadores**.",
+            "body": "Clique em **Compartilhar**, o botão com a setinha para cima no canto da barra do Estúdio, quando ele estiver disponível. Nas aventuras, ele fica disponível depois que você envia o seu projeto: no Cadê Todo Mundo?, o da Fase 2; na Chave do Farol, o da parte **Escolha onde fica a chave**. Abre a janela **Compartilhar no Mural dos Criadores**.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-publicar-no-mural/compartilhar-6782ce0fbfda4375.webp",
             "imageAlt": "Barra do Estúdio na fase com o botão Compartilhar destacado, liberado depois do envio do projeto."
           },
           {
             "id": "texto",
             "title": "Confira o nome e o resumo",
-            "body": "Confira o **Resumo do projeto**. Na Fase 2 do Cadê Todo Mundo?, o nome do jogo e o resumo já vêm prontos: pode deixar como está. Nos outros projetos, a janela também mostra o **Título**, e você pode manter ou ajustar os textos prontos. Se estiverem vazios, escreva o nome do jogo e uma frase contando como jogar.",
+            "body": "Confira o **Resumo do projeto**. Quando você publica dentro de uma aventura, como na Fase 2 do Cadê Todo Mundo? ou na última fase da Chave do Farol, o nome do jogo e o resumo já vêm prontos: pode deixar como está. Nos outros projetos, a janela também mostra o **Título**, e você pode manter ou ajustar os textos prontos. Se estiverem vazios, escreva o nome do jogo e uma frase contando como jogar.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-publicar-no-mural/texto-3d7b0008ed24ee47.webp",
             "imageAlt": "Janela Compartilhar no Mural dos Criadores com o Resumo do projeto já preenchido destacado."
           },
@@ -439,7 +439,7 @@
           {
             "id": "opcional",
             "title": "Conclua a fase",
-            "body": "Na última parte da Fase 2 do Cadê Todo Mundo?, você publica o seu jogo. Quando aparecer **Seu jogo está no Mural!**, clique em **Fechar** e depois em **Concluir fase**.",
+            "body": "Nas aventuras, publicar é a última parte da fase: no Cadê Todo Mundo?, na Fase 2; na Chave do Farol, em **Publique seu jogo**. Quando aparecer **Seu jogo está no Mural!**, clique em **Fechar** e depois em **Concluir fase**.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-publicar-no-mural/opcional-af5fe807ac901d04.webp",
             "imageAlt": "Comemoração Seu jogo está no Mural! com o botão Fechar destacado, antes de concluir a fase."
           }

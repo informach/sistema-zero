@@ -1,0 +1,9 @@
+“Tenta de novo” fica mais útil quando a criança sabe o que vai fazer diferente.
+
+Quando seu filho disser que nada funciona, peça para ele mostrar o que estava tentando fazer. Você pode perguntar: “Qual parte deu certo? E o que aconteceu depois?” Assim, vocês começam a entender onde ele precisa de ajuda.
+
+Criar jogos dá oportunidades de praticar esse cuidado. No exemplo que montamos, o personagem andava e pulava, mas não alcançava a plataforma seguinte. A gente aproximou a plataforma e repetiu o teste. Dessa vez, ele chegou.
+
+A próxima tentativa teve uma mudança escolhida por um motivo. É esse processo que a criança pratica: observar o erro, pensar numa solução e testar se ela funcionou. Você pode ajudá-la a explicar o que aconteceu, mesmo sem saber programar.
+
+Siga @criecomhelenaejulio. Aqui mostramos como seu filho pode praticar isso criando os próprios jogos.

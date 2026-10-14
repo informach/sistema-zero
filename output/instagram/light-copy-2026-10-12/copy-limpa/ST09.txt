@@ -1,0 +1,8 @@
+Ele sabe jogar. Você ficou perdido na explicação.
+Seu filho contou como ganhar, mas ainda não disse quantas cartas pode virar.
+
+“Na minha vez, eu viro uma ou duas?”
+A pergunta mostra uma informação que ele precisa acrescentar para quem está aprendendo.
+
+Programar um jogo exige organizar as regras.
+No jogo da memória, a criança define o que fazer com duas cartas iguais e com duas diferentes. O teste revela se falta alguma instrução.

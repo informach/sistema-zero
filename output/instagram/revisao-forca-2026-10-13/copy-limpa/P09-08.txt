@@ -1,0 +1,9 @@
+Uma pausa de 0,7 segundo muda o jogo da memória inteiro.
+
+No exemplo do nosso Estúdio, duas cartas diferentes esperam antes de desvirar. Sem essa espera, fica difícil enxergar a segunda carta.
+
+Quem monta a regra pode retirar a pausa, jogar e comparar. A explicação passa a ter uma demonstração: “olha o que acontece quando tiro isso”.
+
+No projeto do seu filho, escolha um detalhe e peça que mostre para que serve. A conversa ajuda a conhecer o que ele entendeu e o que ainda está explorando.
+
+Siga @criecomhelenaejulio para ver essas escolhas de criação por dentro.

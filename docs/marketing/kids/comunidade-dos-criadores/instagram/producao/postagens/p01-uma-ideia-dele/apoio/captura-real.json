@@ -1,0 +1,21 @@
+{
+  "source": "meuMundoExample, world-3d/examples.ts",
+  "adaptations": [
+    "terreno plano",
+    "rede de caminhos organica",
+    "sete moedas no trajeto",
+    "camera para captação",
+    "sem grama alta, som do motor, totem ou legenda de velocidade"
+  ],
+  "canvas": [
+    {
+      "width": 1280,
+      "height": 720
+    }
+  ],
+  "car": {
+    "x": 0,
+    "z": 0.5066246551500048
+  },
+  "errors": []
+}

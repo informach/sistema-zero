@@ -21,27 +21,27 @@
         "questions": [
           {
             "id": "q1",
-            "prompt": "Seu personagem anda até a beirada da tela. Qual ordem você montou para ele continuar visível enquanto se move?",
+            "prompt": "Seu personagem anda até a beirada da tela. Que ordem você montou para ele não sair da tela?",
             "choices": [
               {
                 "id": "a",
-                "label": "Conferir a borda e depois mover o personagem para qualquer posição."
+                "label": "Primeiro conferir o limite da tela e depois mover o personagem."
               },
               {
                 "id": "b",
-                "label": "Mover o personagem e depois conferir o limite da tela."
+                "label": "Primeiro mover o personagem e depois conferir o limite da tela."
               },
               {
                 "id": "c",
-                "label": "Conferir a borda só quando o jogo começa."
+                "label": "Conferir o limite da tela uma vez só, quando o jogo começa."
               }
             ],
             "correctChoiceIds": ["b"],
-            "explanation": "Dentro de A cada quadro do jogo, primeiro o jogo move o personagem e, logo depois, a regra da borda segura ele dentro da tela. Isso se repete em todo quadro."
+            "explanation": "Dentro de A cada quadro do jogo, primeiro o personagem anda e, logo depois, Manter o sprite personagem dentro da tela segura ele na borda. Se o limite viesse antes, o personagem andaria depois da conferência, e um pedacinho dele passaria da borda. E, conferido só no começo, o limite não seguraria nada depois. Por isso ele fica dentro de A cada quadro do jogo."
           },
           {
             "id": "q-memoria-coleta",
-            "prompt": "Você pegou a chave: ela sumiu do chão e o aviso mudou. Mas, no farol, o jogo disse que falta a chave. A pergunta da porta está certa. Qual bloco da coleta você deve conferir primeiro?",
+            "prompt": "Você pegou a chave: ela sumiu do chão e o aviso mudou. Mas, no farol, o jogo disse que falta a chave. A pergunta do farol está certa. O que você deve conferir primeiro nos blocos da coleta?",
             "choices": [
               {
                 "id": "a",
@@ -53,11 +53,11 @@
               },
               {
                 "id": "c",
-                "label": "Se a velocidade do personagem está mais alta."
+                "label": "Se o bloco Destruir o sprite tira a chave do chão."
               }
             ],
             "correctChoiceIds": ["b"],
-            "explanation": "Destruir o sprite retira a chave do chão. Alterar aviso muda a mensagem para quem joga. Essas duas ações não guardam a coleta em temChave. Dentro do encontro com a chave, o bloco que altera temChave precisa guardar verdadeiro. É essa informação que a porta consulta depois."
+            "explanation": "Destruir o sprite já funcionou: a chave sumiu do chão. Alterar aviso também: a mensagem mudou. Essas duas ações não guardam a coleta em temChave. Dentro do encontro com a chave, o bloco que altera temChave precisa guardar verdadeiro. É essa informação que o farol consulta depois."
           },
           {
             "id": "q3",
@@ -69,7 +69,7 @@
               },
               {
                 "id": "b",
-                "label": "Retirar a chave do chão, mesmo sem o personagem encostar nela."
+                "label": "Não fazer nada, porque o personagem ainda não pegou a chave."
               },
               {
                 "id": "c",
@@ -77,7 +77,7 @@
               }
             ],
             "correctChoiceIds": ["c"],
-            "explanation": "A porta confere temChave. Se você não pegou a chave, temChave ainda é falso, e o jogo segue o senão: avisa que falta a chave. O então, que acende o farol e chama o barco, só acontece quando temChave é verdadeiro."
+            "explanation": "A porta confere temChave. Se você não pegou a chave, temChave ainda é falso, e o jogo segue o senão: avisa que falta a chave. Antes de você montar o senão, era isso que acontecia: nada. O então, que acende o farol e chama o barco, só acontece quando temChave é verdadeiro."
           },
           {
             "id": "q4",
@@ -97,21 +97,21 @@
               }
             ],
             "correctChoiceIds": ["b"],
-            "explanation": "A porta tem duas respostas. Você já conferiu o caminho com a chave. Começar uma partida nova e ir direto ao farol permite conferir o caminho sem ela. Nesse teste, a luz deve continuar apagada e a mensagem deve explicar que falta a chave. Testar só o caminho que dá certo pode esconder uma regra montada no lugar errado."
+            "explanation": "A porta tem duas respostas, a do então e a do senão. Você já conferiu o caminho com a chave. Na mesma partida, temChave continua verdadeiro, por isso o farol escolheria o então de novo. Só numa partida nova temChave volta a ser falso: clique em Atualizar e vá direto até a porta do farol. A luz deve continuar apagada, e o aviso deve dizer que falta a chave. Testar só o caminho que dá certo pode esconder uma regra montada no lugar errado."
           }
         ]
       }
     },
     {
       "key": "video-certificado-farol",
-      "plannedVideo": "Título: Comemore sua criação\n\nComemorar o movimento, a coleta e a decisão programados pela criança com a fala: \"Você terminou A Chave do Farol! Olha só o que você programou: o personagem que anda, o jogo que guarda a chave e o farol que confere se ela foi encontrada. São essas regras que fazem o seu jogo funcionar, e quem montou foi você!\". O preparo do cenário, dos desenhos e do barco é informação interna da equipe, sem ressalva na comemoração. Mostrar Pegar meu certificado e encerrar em Concluir fase. Não incluir pitch comercial. Participações de Dedé, na ordem de corte: FCP2-D01, depois de \"São essas regras que fazem o seu jogo funcionar, e quem montou foi você!\", Dedé diz \"Eu fiz o jogo funcionar!\"; a professora retoma \"Parabéns pelo seu jogo! Agora clique em Pegar meu certificado\". Concluir o gesto antes de Dedé entrar e manter o resultado à vista; marcar entrada e saída sem cobrir controles, e a resposta e o próximo gesto vêm depois da saída do avatar.\n\nRoteiro falado: desafio-certificado.roteiro.md. Produção em 10/10/2026: roteiro com vozes identificadas, ainda sem confirmação de gravação ou edição desta versão. A professora conduz; Dedé entra, fala e sai nos pontos do roteiro. Zappy só fala na página, fora do vídeo; memes e interface mostram o mascote sem voz. Conferir a duração com as participações e os gestos, sem acelerar. Ver AVATARES-NOS-VIDEOS.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam."
+      "plannedVideo": "Título: Comemore sua criação\n\nComemorar o jogo do jeito que a criança escolheu e as regras que ela programou (o personagem que anda, a coleta da chave e o farol que confere a chave) com a fala: \"Você terminou A Chave do Farol! Olha só o seu jogo, do jeito que você escolheu, e o que você programou: o personagem que anda, o jogo que guarda a chave e o farol que confere se ela foi encontrada. São essas regras que fazem o seu jogo funcionar, e quem montou foi você!\". Esta parte não tem Estúdio: no \"Olha só\", mostrar o jogo da demonstração do Dia 3 (pirata, barco pirata, chave de estrela, farol de pedra, noite na ilha), gravado antes na conta de ensaio, com o farol aceso e o barco chegando. O preparo do cenário, dos desenhos e do barco é informação interna da equipe, sem ressalva na comemoração. Mostrar Pegar meu certificado numa conta com os Dias 1 a 3 concluídos, a revisão aprovada e nenhum certificado emitido; esperar o certificado baixar e encerrar em Concluir fase. Não incluir pitch comercial. Participações de Dedé, na ordem de corte: FCP2-D01, depois de \"São essas regras que fazem o seu jogo funcionar, e quem montou foi você!\", Dedé diz \"Eu fiz o jogo funcionar!\"; a professora retoma \"Parabéns pelo seu jogo! Agora clique em Pegar meu certificado\". Quando a entrada vem depois de um gesto, concluir o gesto antes de Dedé entrar e manter o resultado à vista; quando a entrada é uma pergunta antes do gesto, manter a cena parada. Marcar entrada e saída sem cobrir controles, e a resposta e o próximo gesto vêm depois da saída do avatar.\n\nRoteiro falado: desafio-certificado.roteiro.md. Produção em 10/10/2026: roteiro com vozes identificadas, ainda sem confirmação de gravação ou edição desta versão. A professora conduz; Dedé entra, fala e sai nos pontos do roteiro. Zappy só fala na página, fora do vídeo; memes e interface mostram o mascote sem voz. Conferir a duração com as participações e os gestos, sem acelerar. Ver AVATARES-NOS-VIDEOS.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam."
     },
     {
       "key": "fala-certificado",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Parabéns! Você programou o movimento, a coleta da chave e a decisão do farol. Agora clique em Pegar meu certificado para guardar essa conquista e, depois, em Concluir fase."
+        "text": "Parabéns! Você programou o personagem que anda, a coleta da chave e o farol que confere se você tem a chave. Agora clique em Pegar meu certificado para guardar essa conquista e, quando ele baixar, clique em Concluir fase."
       }
     },
     {
@@ -121,7 +121,7 @@
         "title": "Certificado de Criador",
         "introLine": "Certificamos que",
         "coursePhrase": "completou o Desafio do Primeiro Jogo",
-        "bodyText": "Criou A Chave do Farol: movimento, coleta da chave e uma decisão que acende a luz."
+        "bodyText": "Criou A Chave do Farol: o personagem que anda, a coleta da chave e o farol que acende com a chave."
       }
     }
   ],

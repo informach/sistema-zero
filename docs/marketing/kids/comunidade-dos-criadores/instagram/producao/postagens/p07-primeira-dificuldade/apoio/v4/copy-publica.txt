@@ -1,0 +1,37 @@
+“Nada funciona”, ele diz, e fecha o notebook.
+
+Antes de pedir que tente de novo, ajude seu filho a descobrir o que deu errado.
+
+Quando ele diz “nada funciona”, você ainda não sabe onde ajudar.
+
+Peça: “Me mostra o que você queria fazer e o que aconteceu.”
+
+Ao criar um jogo, seu filho pode praticar isso: olhar para o que falhou.
+
+Neste exemplo, o personagem pula, mas não chega à próxima plataforma.
+
+Agora dá para pensar em duas mudanças: fazer o personagem pular mais longe ou deixar a plataforma mais perto.
+
+Vamos testar só uma delas.
+
+A gente deixou a plataforma mais perto e testou o mesmo pulo.
+
+Dessa vez, o personagem chegou e pegou a moeda. Bastou mudar essa parte do jogo.
+
+É isso que seu filho pratica ao criar jogos: entender o erro, escolher uma mudança e tentar de novo.
+
+Se estiver cansado, façam uma pausa e retomem depois.
+
+Resolver um problema começa por entender o que deu errado.
+
+Siga @criecomhelenaejulio. Aqui mostramos como seu filho pode praticar isso criando os próprios jogos.
+
+“Tenta de novo” fica mais útil quando a criança sabe o que vai fazer diferente.
+
+Quando seu filho disser que nada funciona, peça para ele mostrar o que estava tentando fazer. Você pode perguntar: “Qual parte deu certo? E o que aconteceu depois?” Assim, vocês começam a entender onde ele precisa de ajuda.
+
+Criar jogos dá oportunidades de praticar esse cuidado. No exemplo que montamos, o personagem andava e pulava, mas não alcançava a plataforma seguinte. A gente aproximou a plataforma e repetiu o teste. Dessa vez, ele chegou.
+
+A próxima tentativa teve uma mudança escolhida por um motivo. É esse processo que a criança pratica: observar o erro, pensar numa solução e testar se ela funcionou. Você pode ajudá-la a explicar o que aconteceu, mesmo sem saber programar.
+
+Siga @criecomhelenaejulio. Aqui mostramos como seu filho pode praticar isso criando os próprios jogos.

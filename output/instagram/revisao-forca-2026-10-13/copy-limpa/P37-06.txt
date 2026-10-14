@@ -1,0 +1,3 @@
+Cada inimigo vira uma tarefa: montar sua regra, jogar e conferir.
+
+A chegada também precisa de uma regra. Ao entrar na área da bandeira, o herói vence a fase.

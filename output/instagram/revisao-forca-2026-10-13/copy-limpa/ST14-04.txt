@@ -1,0 +1,1 @@
+Neste exemplo, o fogo tira o dobro da planta. Quem cria monta essa regra e testa a conta. No projeto dele, procurem uma escolha para experimentar.

@@ -1,0 +1,359 @@
+[
+  {
+    "id": "s1",
+    "dimensions": [
+      1080,
+      1350
+    ],
+    "copy": "“Eu quero mudar isso aqui no jogo.” A ideia veio dele. Daniel, pai do Rafael, contando uma fala do filho.",
+    "content": [
+      {
+        "kind": "copy quote",
+        "isCopy": true,
+        "top": 126,
+        "bottom": 321,
+        "left": 64,
+        "right": 989,
+        "overflow": false
+      },
+      {
+        "kind": "copy headline",
+        "isCopy": true,
+        "top": 350,
+        "bottom": 442,
+        "left": 64,
+        "right": 1016,
+        "overflow": false
+      },
+      {
+        "kind": "scene",
+        "isCopy": false,
+        "top": 490,
+        "bottom": 1110,
+        "left": 64,
+        "right": 1016,
+        "overflow": false
+      },
+      {
+        "kind": "copy attribution",
+        "isCopy": true,
+        "top": 1143,
+        "bottom": 1193,
+        "left": 64,
+        "right": 934,
+        "overflow": false
+      }
+    ],
+    "overlaps": [],
+    "passed": true,
+    "copyMatches": true
+  },
+  {
+    "id": "s2",
+    "dimensions": [
+      1080,
+      1350
+    ],
+    "copy": "Daniel relata que começou a ouvir essa vontade de mudar. Rafael · Aluno O filho passou a propor o que gostaria de experimentar.",
+    "content": [
+      {
+        "kind": "copy title",
+        "isCopy": true,
+        "top": 131,
+        "bottom": 281,
+        "left": 64,
+        "right": 1016,
+        "overflow": false
+      },
+      {
+        "kind": "scene",
+        "isCopy": false,
+        "top": 358,
+        "bottom": 960,
+        "left": 64,
+        "right": 1016,
+        "overflow": false
+      },
+      {
+        "kind": "rafael",
+        "isCopy": false,
+        "top": 808,
+        "bottom": 1040,
+        "left": 748,
+        "right": 980,
+        "overflow": false
+      },
+      {
+        "kind": "copy rafael-label",
+        "isCopy": true,
+        "top": 1049,
+        "bottom": 1088,
+        "left": 715,
+        "right": 1016,
+        "overflow": false
+      },
+      {
+        "kind": "copy ending",
+        "isCopy": true,
+        "top": 1105,
+        "bottom": 1223,
+        "left": 64,
+        "right": 1016,
+        "overflow": false
+      }
+    ],
+    "overlaps": [],
+    "passed": true,
+    "copyMatches": true
+  },
+  {
+    "id": "s3",
+    "dimensions": [
+      1080,
+      1350
+    ],
+    "copy": "Essa é uma parte interessante de criar: a criança pode transformar uma preferência em uma versão para testar. Uma ideia para testar: deixar a bola mais devagar.",
+    "content": [
+      {
+        "kind": "copy title",
+        "isCopy": true,
+        "top": 131,
+        "bottom": 271,
+        "left": 64,
+        "right": 954,
+        "overflow": false
+      },
+      {
+        "kind": "copy lead",
+        "isCopy": true,
+        "top": 288,
+        "bottom": 395,
+        "left": 64,
+        "right": 1016,
+        "overflow": false
+      },
+      {
+        "kind": "scene",
+        "isCopy": false,
+        "top": 440,
+        "bottom": 1075,
+        "left": 32,
+        "right": 1048,
+        "overflow": false
+      },
+      {
+        "kind": "copy ending",
+        "isCopy": true,
+        "top": 1117,
+        "bottom": 1230,
+        "left": 64,
+        "right": 1016,
+        "overflow": false
+      }
+    ],
+    "overlaps": [],
+    "passed": true,
+    "copyMatches": true
+  },
+  {
+    "id": "s4",
+    "dimensions": [
+      1080,
+      1350
+    ],
+    "copy": "Se a bola estiver rápida demais, por exemplo, quem cria pode ajustar a velocidade e observar a diferença na partida. Velocidade original Mais devagar Mesmo tempo de movimento. O rastro mostra o caminho da bola. Ela anda menos nesse tempo. Sobra mais tempo para mover a raquete.",
+    "content": [
+      {
+        "kind": "copy title",
+        "isCopy": true,
+        "top": 132,
+        "bottom": 384,
+        "left": 64,
+        "right": 1016,
+        "overflow": false
+      },
+      {
+        "kind": "copy label left",
+        "isCopy": true,
+        "top": 435,
+        "bottom": 480,
+        "left": 64,
+        "right": 512,
+        "overflow": false
+      },
+      {
+        "kind": "copy label right",
+        "isCopy": true,
+        "top": 435,
+        "bottom": 480,
+        "left": 568,
+        "right": 1016,
+        "overflow": false
+      },
+      {
+        "kind": "game left",
+        "isCopy": false,
+        "top": 506,
+        "bottom": 842,
+        "left": 64,
+        "right": 512,
+        "overflow": false
+      },
+      {
+        "kind": "game right",
+        "isCopy": false,
+        "top": 506,
+        "bottom": 842,
+        "left": 568,
+        "right": 1016,
+        "overflow": false
+      },
+      {
+        "kind": "copy explain",
+        "isCopy": true,
+        "top": 873,
+        "bottom": 959,
+        "left": 64,
+        "right": 904,
+        "overflow": false
+      },
+      {
+        "kind": "zoom",
+        "isCopy": false,
+        "top": 978,
+        "bottom": 1078,
+        "left": 64,
+        "right": 1016,
+        "overflow": false
+      },
+      {
+        "kind": "copy ending",
+        "isCopy": true,
+        "top": 1107,
+        "bottom": 1216,
+        "left": 64,
+        "right": 1016,
+        "overflow": false
+      }
+    ],
+    "overlaps": [],
+    "passed": true,
+    "copyMatches": true
+  },
+  {
+    "id": "s5",
+    "dimensions": [
+      1080,
+      1350
+    ],
+    "copy": "Inventar também envolve escolher, experimentar e decidir se a mudança melhorou aquilo que se queria fazer. Velocidade original Mais devagar Nesta versão, há mais tempo para mover a raquete. Ficou fácil demais? Dá para testar outra velocidade.",
+    "content": [
+      {
+        "kind": "copy title",
+        "isCopy": true,
+        "top": 132,
+        "bottom": 328,
+        "left": 64,
+        "right": 1016,
+        "overflow": false
+      },
+      {
+        "kind": "copy label left",
+        "isCopy": true,
+        "top": 438,
+        "bottom": 483,
+        "left": 64,
+        "right": 512,
+        "overflow": false
+      },
+      {
+        "kind": "copy label right",
+        "isCopy": true,
+        "top": 438,
+        "bottom": 483,
+        "left": 568,
+        "right": 1016,
+        "overflow": false
+      },
+      {
+        "kind": "game left",
+        "isCopy": false,
+        "top": 505,
+        "bottom": 841,
+        "left": 64,
+        "right": 512,
+        "overflow": false
+      },
+      {
+        "kind": "game right selected",
+        "isCopy": false,
+        "top": 505,
+        "bottom": 841,
+        "left": 568,
+        "right": 1016,
+        "overflow": false
+      },
+      {
+        "kind": "copy reason",
+        "isCopy": true,
+        "top": 903,
+        "bottom": 1054,
+        "left": 64,
+        "right": 1016,
+        "overflow": false
+      },
+      {
+        "kind": "copy ending",
+        "isCopy": true,
+        "top": 1116,
+        "bottom": 1229,
+        "left": 64,
+        "right": 1016,
+        "overflow": false
+      }
+    ],
+    "overlaps": [],
+    "passed": true,
+    "copyMatches": true
+  },
+  {
+    "id": "s6",
+    "dimensions": [
+      1080,
+      1350
+    ],
+    "copy": "Aqui, a gente ensina\ncrianças a criar\nos próprios jogos. Siga o perfil para conhecer esse caminho.",
+    "content": [
+      {
+        "kind": "copy title",
+        "isCopy": true,
+        "top": 128,
+        "bottom": 400,
+        "left": 64,
+        "right": 1004,
+        "overflow": false
+      },
+      {
+        "kind": "scene",
+        "isCopy": false,
+        "top": 470,
+        "bottom": 1070,
+        "left": 64,
+        "right": 1016,
+        "overflow": false
+      },
+      {
+        "kind": "copy invitation",
+        "isCopy": true,
+        "top": 1110,
+        "bottom": 1206,
+        "left": 64,
+        "right": 1016,
+        "overflow": false
+      }
+    ],
+    "overlaps": [],
+    "passed": true,
+    "copyMatches": true
+  }
+]

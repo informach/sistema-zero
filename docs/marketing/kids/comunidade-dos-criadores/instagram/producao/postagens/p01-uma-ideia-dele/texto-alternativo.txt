@@ -1,0 +1,41 @@
+SLIDE 1
+Curto (70 caracteres): Cena encenada: menino no sofá assiste no tablet a um vídeo de corrida.
+
+Longo: Cena encenada: menino no sofá assiste no tablet a um vídeo de corrida.
+Texto da arte: Seu filho sabe o nome de todos os youtubers de jogo. Mas nunca viu como um jogo é feito.
+
+SLIDE 2
+Curto (80 caracteres): Cena encenada: o mesmo menino observa o tablet; a luz da tela ilumina seu rosto.
+
+Longo: Cena encenada: o mesmo menino observa o tablet; a luz da tela ilumina seu rosto.
+Texto da arte: Esse interesse pelos jogos também pode ser usado para criar. Num jogo feito por ele, seu filho escolhe o cenário, os personagens e o que acontece quando alguém joga.
+
+SLIDE 3
+Curto (80 caracteres): Captura do Estúdio: carrinho no jogo e bloco do turbo com força 1.5 em destaque.
+
+Longo: Captura do Estúdio: carrinho no jogo e bloco do turbo com força 1.5 em destaque.
+Texto da arte: Na nossa ferramenta, a criança encaixa blocos com instruções para o jogo. Este manda o carrinho acelerar quando o jogador usa o turbo.
+
+SLIDE 4
+Curto (77 caracteres): Cena encenada: mãe aponta para o tablet e o menino explica uma ideia no sofá.
+
+Longo: Cena encenada: mãe aponta para o tablet e o menino explica uma ideia no sofá.
+Texto da arte: Enquanto ele assiste, pergunte: “O que faria esse carrinho andar mais rápido?” Essa pergunta convida seu filho a pensar numa mudança para o jogo.
+
+SLIDE 5
+Curto (82 caracteres): Captura do Estúdio: turbo 1.5 chega a 28; turbo 3 chega a 45 com as mesmas teclas.
+
+Longo: Captura do Estúdio: turbo 1.5 chega a 28; turbo 3 chega a 45 com as mesmas teclas.
+Texto da arte: A gente aumentou a força do turbo e testou o carrinho de novo. Com as mesmas teclas, a velocidade passou de 28 para 45. O carrinho ficou mais rápido.
+
+SLIDE 6
+Curto (71 caracteres): Captura do Estúdio: a mesma floresta de manhã, ao entardecer e à noite.
+
+Longo: Captura do Estúdio: a mesma floresta de manhã, ao entardecer e à noite.
+Texto da arte: Seu filho decide como quer o cenário: com árvores, com morros ou numa noite escura. Depois monta as instruções para fazer essas ideias aparecerem no jogo.
+
+SLIDE 7
+Curto (75 caracteres): Cena encenada: o menino usa os blocos no computador; sua mãe está ao fundo.
+
+Longo: Cena encenada: o menino usa os blocos no computador; sua mãe está ao fundo.
+Texto da arte: Ele pode continuar assistindo e também aprender a criar. Somos Helena e Júlio, pais e programadores. Siga @criecomhelenaejulio para ver como ensinamos crianças a criar os próprios jogos.

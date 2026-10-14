@@ -1,0 +1,293 @@
+{
+  "pecas": 14,
+  "carrosseis": 10,
+  "reels": 4,
+  "slides": 75,
+  "links_locais": 43,
+  "referencias_preservadas": 14,
+  "falas_literais_preservadas": 6,
+  "copy_units": 64,
+  "medidas": [
+    {
+      "id": "mc01",
+      "palavra": "JEITO",
+      "dm1_antes": 45,
+      "dm1_depois": 24,
+      "dm2_antes": 127,
+      "dm2_depois": 78,
+      "reel": []
+    },
+    {
+      "id": "mc02",
+      "palavra": "MAESTRO",
+      "dm1_antes": 43,
+      "dm1_depois": 24,
+      "dm2_antes": 140,
+      "dm2_depois": 72,
+      "reel": [
+        {
+          "inicio": 0,
+          "fim": 5,
+          "palavras": 8,
+          "ppm": 96.0
+        },
+        {
+          "inicio": 5,
+          "fim": 13,
+          "palavras": 18,
+          "ppm": 135.0
+        },
+        {
+          "inicio": 13,
+          "fim": 21,
+          "palavras": 15,
+          "ppm": 112.5
+        },
+        {
+          "inicio": 21,
+          "fim": 33,
+          "palavras": 27,
+          "ppm": 135.0
+        },
+        {
+          "inicio": 33,
+          "fim": 39,
+          "palavras": 10,
+          "ppm": 100.0
+        },
+        {
+          "inicio": 39,
+          "fim": 46,
+          "palavras": 15,
+          "ppm": 128.6
+        }
+      ]
+    },
+    {
+      "id": "mc03",
+      "palavra": "RITMO",
+      "dm1_antes": 41,
+      "dm1_depois": 22,
+      "dm2_antes": 125,
+      "dm2_depois": 75,
+      "reel": []
+    },
+    {
+      "id": "mc04",
+      "palavra": "CRIADOR",
+      "dm1_antes": 39,
+      "dm1_depois": 23,
+      "dm2_antes": 129,
+      "dm2_depois": 76,
+      "reel": []
+    },
+    {
+      "id": "mc05",
+      "palavra": "AUTONOMIA",
+      "dm1_antes": 38,
+      "dm1_depois": 22,
+      "dm2_antes": 138,
+      "dm2_depois": 75,
+      "reel": []
+    },
+    {
+      "id": "mc06",
+      "palavra": "SINAIS",
+      "dm1_antes": 36,
+      "dm1_depois": 23,
+      "dm2_antes": 140,
+      "dm2_depois": 75,
+      "reel": []
+    },
+    {
+      "id": "mc07",
+      "palavra": "FERIAS",
+      "dm1_antes": 36,
+      "dm1_depois": 27,
+      "dm2_antes": 139,
+      "dm2_depois": 74,
+      "reel": [
+        {
+          "inicio": 0,
+          "fim": 4,
+          "palavras": 8,
+          "ppm": 120.0
+        },
+        {
+          "inicio": 4,
+          "fim": 12,
+          "palavras": 16,
+          "ppm": 120.0
+        },
+        {
+          "inicio": 12,
+          "fim": 22,
+          "palavras": 18,
+          "ppm": 108.0
+        },
+        {
+          "inicio": 22,
+          "fim": 33,
+          "palavras": 23,
+          "ppm": 125.5
+        },
+        {
+          "inicio": 33,
+          "fim": 43,
+          "palavras": 17,
+          "ppm": 102.0
+        },
+        {
+          "inicio": 43,
+          "fim": 50,
+          "palavras": 13,
+          "ppm": 111.4
+        }
+      ]
+    },
+    {
+      "id": "mc08",
+      "palavra": "PRIMEIRO",
+      "dm1_antes": 41,
+      "dm1_depois": 26,
+      "dm2_antes": 121,
+      "dm2_depois": 74,
+      "reel": []
+    },
+    {
+      "id": "mc09",
+      "palavra": "MUNDO",
+      "dm1_antes": 38,
+      "dm1_depois": 25,
+      "dm2_antes": 121,
+      "dm2_depois": 76,
+      "reel": []
+    },
+    {
+      "id": "mc10",
+      "palavra": "PERSONAGEM",
+      "dm1_antes": 33,
+      "dm1_depois": 25,
+      "dm2_antes": 141,
+      "dm2_depois": 75,
+      "reel": []
+    },
+    {
+      "id": "mc11",
+      "palavra": "TELA",
+      "dm1_antes": 47,
+      "dm1_depois": 21,
+      "dm2_antes": 91,
+      "dm2_depois": 71,
+      "reel": [
+        {
+          "inicio": 0,
+          "fim": 5,
+          "palavras": 12,
+          "ppm": 144.0
+        },
+        {
+          "inicio": 5,
+          "fim": 12,
+          "palavras": 12,
+          "ppm": 102.9
+        },
+        {
+          "inicio": 12,
+          "fim": 20,
+          "palavras": 18,
+          "ppm": 135.0
+        },
+        {
+          "inicio": 20,
+          "fim": 30,
+          "palavras": 19,
+          "ppm": 114.0
+        },
+        {
+          "inicio": 30,
+          "fim": 37,
+          "palavras": 12,
+          "ppm": 102.9
+        },
+        {
+          "inicio": 37,
+          "fim": 44,
+          "palavras": 13,
+          "ppm": 111.4
+        },
+        {
+          "inicio": 44,
+          "fim": 51,
+          "palavras": 15,
+          "ppm": 128.6
+        }
+      ]
+    },
+    {
+      "id": "mc12",
+      "palavra": "FUTURO",
+      "dm1_antes": 39,
+      "dm1_depois": 22,
+      "dm2_antes": 108,
+      "dm2_depois": 74,
+      "reel": [
+        {
+          "inicio": 0,
+          "fim": 5,
+          "palavras": 8,
+          "ppm": 96.0
+        },
+        {
+          "inicio": 5,
+          "fim": 13,
+          "palavras": 15,
+          "ppm": 112.5
+        },
+        {
+          "inicio": 13,
+          "fim": 21,
+          "palavras": 17,
+          "ppm": 127.5
+        },
+        {
+          "inicio": 21,
+          "fim": 33,
+          "palavras": 25,
+          "ppm": 125.0
+        },
+        {
+          "inicio": 33,
+          "fim": 41,
+          "palavras": 19,
+          "ppm": 142.5
+        },
+        {
+          "inicio": 41,
+          "fim": 48,
+          "palavras": 13,
+          "ppm": 111.4
+        }
+      ]
+    },
+    {
+      "id": "mc13",
+      "palavra": "APRENDER",
+      "dm1_antes": 39,
+      "dm1_depois": 22,
+      "dm2_antes": 122,
+      "dm2_depois": 74,
+      "reel": []
+    },
+    {
+      "id": "mc14",
+      "palavra": "TENTATIVA",
+      "dm1_antes": 41,
+      "dm1_depois": 25,
+      "dm2_antes": 98,
+      "dm2_depois": 75,
+      "reel": []
+    }
+  ],
+  "erros": []
+}

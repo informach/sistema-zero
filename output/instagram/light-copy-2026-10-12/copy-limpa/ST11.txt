@@ -1,0 +1,8 @@
+Ele apagou a conta e fez de novo. O resultado errado voltou.
+Antes de repetir tudo, peçam que mostre a resolução linha por linha.
+
+Procurem o primeiro passo que ficou diferente.
+Compare com o exemplo da aula. Se a dúvida continuar, marquem onde pedir ajuda.
+
+Criar jogos permite investigar uma dificuldade pelo resultado.
+Se o personagem não alcança a plataforma, quem programa muda uma coisa e testa. O efeito ajuda a decidir a próxima tentativa.

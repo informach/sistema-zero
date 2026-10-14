@@ -1,20 +1,34 @@
 # Instagram: posicionamento e guia de execução
 
-**Revisão: 08/10/2026. Perfil: @criecomhelenaejulio.** A proposta aprovada foi incorporada a estes documentos. O ciclo ainda está em preparação. Esta revisão altera os materiais locais e os acessos da página inicial do funil; aplicação no perfil, gravação e publicação são etapas de produção.
+**Revisão de copy do calendário: 13/10/2026. Perfil: @criecomhelenaejulio.** O calendário contém 60 publicações principais, uma para cada uma das 30 dores e dos 30 desejos pesquisados, seis extras para famílias que já começaram e 80 telas de stories. Os três fixados ficam separados. O ciclo ainda está em preparação. Esta revisão atualiza os documentos e materiais locais; aplicação no perfil, gravação e publicação são etapas de produção. Os acessos da página inicial do funil já foram tratados na revisão anterior.
 
 **Atalhos:** [Posicionamento](#posicionamento) · [Bio e perfil](#perfil-e-bio-completos) · [Diretrizes de escrita e pedagogia](#direção-de-escrita-e-pedagogia) · [Orientações de produção](#orientações-de-produção).
 
+**Categoria adicional, 13/10/2026:** [Postagens ManyChat: 14 copies revisadas](04-postagens-manychat.md). Documento único com referência, objetivo, texto de cada slide ou cena, legenda, palavra e conversa de direct. Fica fora do calendário comum e dos fixados. A etapa atual é a revisão dos textos, antes de produzir imagens ou vídeos. [Análise de cada referência](campanhas/manychat-desafio/analise-referencias.md) · [Fluxo curto](campanhas/manychat-desafio/fluxo-curto.md).
+
+**Pesquisa de base — 12/10/2026:** [mercado e definição do avatar](pesquisas/mercado-e-avatar-2026-10-12.md), [30 dores e 30 desejos](pesquisas/30-dores-e-30-desejos-2026-10-12.md) e [fontes e limites](pesquisas/fontes-mercado-avatar-2026-10-12.md). A pesquisa foi aplicada à revisão das 60 publicações. O [mapa de cobertura](postagens/12-mapa-cobertura.md) liga cada dor e desejo à copy completa, preservando a distinção entre relatos, interpretações e hipóteses. A ordem intercalada está no [calendário](03-postagens.md).
+
+**Clareza aplicada ao conjunto, 13/10/2026:** a régua aprovada em P01, P07 e P34 foi aplicada às demais postagens principais, aos extras, às vinte sequências de stories e às 14 peças ManyChat. [Registro e conferências](pesquisas/revisao-clareza-geral-2026-10-13.md). As três peças de referência e suas artes foram preservadas; as demais têm textos atualizados para a futura produção.
+
 ## Posicionamento
 
-O Instagram de Helena e Júlio apresenta o **Desafio do Primeiro Jogo como primeiro passo** para famílias com crianças de **9 a 14 anos**. O exemplo principal é **A Chave do Farol**: a criança aprende a fazer o personagem andar, pegar uma chave e acender o farol quando chega com ela.
+O feed de Helena e Júlio começa nas **dores, desejos, curiosidades e dicas do cotidiano dos pais**, principalmente de crianças de **9 a 14 anos**. Entrega uma reflexão, curiosidade, história ou dica clara e conduz o raciocínio até mostrar como programar e criar jogos oferece situações para organizar ideias, resolver problemas, inventar e construir com tecnologia.
+
+**Papel dos espaços:** as postagens atraem pelo interesse da família e terminam no convite para seguir; os stories educam quem já segue; destaques e fixados explicam a oferta. O Desafio do Primeiro Jogo continua sendo o primeiro passo comercial sugerido, com A Chave do Farol como projeto. A bio permite conhecer as ofertas. As [Postagens ManyChat](04-postagens-manychat.md) são uma categoria separada, com conversa solicitada por palavra-chave e percurso próprio até a oferta.
+
+**Exemplos do feed:** escolher jogos pela habilidade e variar os exemplos do Estúdio entre todas as extensões, 2D e 3D: mundos para explorar, corridas, plataformas, batalhas de criaturas, fazendas, física e aventuras. A demonstração de jogo entra onde prova algo; peças de rotina, conversa e relato podem ficar sem jogo. A [vitrine atual](postagens/14-vitrine-de-exemplos.md) e as notas de cada ficha registram as fontes, as regras e o que precisa ser preparado. Um exemplo da galeria não equivale a um curso disponível nem comprova acesso da criança a toda a galeria.
+
+**Minecraft e Roblox:** o interesse por esses jogos pode inspirar personagens, cenários e regras de jogos próprios, construídos nas ferramentas do Sistema Zero. A plataforma não ensina a programar dentro de Minecraft ou Roblox. Nas Postagens ManyChat, mostrar as possibilidades com capturas reais e apresentar o Desafio apenas na conversa solicitada, como primeiro passo guiado. O [print do personagem 3D](campanhas/manychat-desafio/assets.md) foi localizado no Molda; não identificá-lo como Pinta nem como integração com Minecraft.
+
+**Situação e explicação:** começar por uma cena reconhecível para famílias com filhos de 9 a 14 anos. Depois, explicar por que construir um jogo permite praticar a habilidade: a criança organiza uma regra, faz uma escolha, testa e vê o resultado. Não basta trocar a cena por uma tela. O jogo entra como oportunidade de aprender, sem prometer corrigir a vida escolar por conta própria.
 
 **Faixa etária:** 9 a 14 anos é o público principal para quem as aulas da Comunidade foram pensadas, com a intenção de desenvolver autonomia. Conforme orientação do responsável em 09/10/2026, crianças mais novas podem participar acompanhadas dos pais ou de um responsável; pessoas mais velhas também podem fazer se tiverem interesse em aprender a criar jogos. Essa orientação vale para a Comunidade, incluindo o Desafio. A copy não promete que toda criança fará tudo sozinha.
 
-Queremos mostrar **o que a criança faz na aula, como recebe ajuda e o que consegue mostrar para a família**. O responsável precisa entender a atividade antes de decidir pela compra. Usar cenas do jogo e das aulas para explicar, sem prometer melhora na escola ou resultados que não foram medidos.
+Queremos ajudar o responsável a enxergar possibilidades para o filho: iniciativa, ideias próprias, raciocínio lógico e capacidade de investigar uma dificuldade. A demonstração de criação aparece como conclusão concreta da conversa. Nos espaços de apresentação, explicar também o que a criança faz na aula e como recebe apoio. Não prometer melhora escolar ou resultados não medidos.
 
 **Formulação pública do posicionamento:**
 
-> No Desafio do Primeiro Jogo, seu filho aprende a criar A Chave do Farol. As aulas mostram como fazer o personagem andar, pegar a chave e acender o farol. Ele faz uma parte de cada vez e joga para conferir se funcionou. Para criar outros jogos depois, vocês podem conhecer os cursos da Comunidade dos Criadores.
+> Seu filho pode usar a tecnologia também para criar. Ao programar jogos, ele organiza ideias, constrói uma parte, testa e decide o que mudar. Você pode acompanhar as escolhas que ele faz e as dúvidas que aprende a investigar.
 
 **Visão de continuidade da marca:**
 
@@ -26,8 +40,8 @@ Falar com o responsável que está escolhendo uma atividade, considerando també
 
 | Oferta | Papel no Instagram | Limite da comunicação |
 | --- | --- | --- |
-| Desafio do Primeiro Jogo | Primeiro passo sugerido e principal exemplo de aprendizagem; oferta acessível pela página da bio | Percurso guiado do Farol, pagamento único e 30 dias de acesso a partir da aprovação do pagamento |
-| A Chave do Farol | Projeto ensinado no Desafio; referência principal das demonstrações deste ciclo | Artes, cenário e movimento do barco preparados; regras montadas com orientação; personalização pelas opções ensinadas |
+| Desafio do Primeiro Jogo | Primeiro passo comercial sugerido nos destaques, fixados e direct solicitado; oferta na bio | Percurso guiado do Farol, pagamento único e 30 dias de acesso a partir da aprovação do pagamento |
+| A Chave do Farol | Projeto apresentado nos fixados, destaques e conversas de oferta; não é o exemplo recorrente do feed | Artes, cenário e movimento do barco preparados; regras montadas com orientação; personalização pelas opções ensinadas |
 | Comunidade dos Criadores | Continuidade opcional, com outros cursos e ferramentas conforme o plano e a Jornada | Assinatura contratada separadamente; concluir o Desafio avulso não libera automaticamente todas as ferramentas |
 | Cadê Todo Mundo? | Projeto do catálogo apresentado no destaque Projetos | Sua campanha de entrada continua nos casos presenciais específicos; a apresentação do jogo não inclui convite de presente |
 | Nave Contra Asteroides | Projeto do catálogo apresentado no destaque Projetos | Movimento, tiros, asteroides, pontos, vidas e recomeço; acesso pela Comunidade |
@@ -71,7 +85,7 @@ O jeito de ensinar aparece com sutileza, ligado às escolhas e à responsabilida
 
 **Destino:** página inicial do funil, `https://sistemazero.com.br/`, com o endereço completo em [Links e publicação](apoio/links-e-publicacao.md#links-prontos).
 
-A bio apresenta público, atividade e próximo passo. O link abre a página inicial com três caminhos, nesta ordem: Como funciona, oferta do Desafio e oferta da Comunidade. Os botões dos produtos abrem diretamente suas ofertas. Os quizzes ficam para campanhas específicas e não são destinos dos posts ou destaques deste ciclo. Manter a página inicial como destino da bio durante todo o ciclo, inclusive quando F12 apresentar a Comunidade.
+A bio apresenta público, atividade e próximo passo. O link abre a página inicial com três caminhos, nesta ordem: Como funciona, oferta do Desafio e oferta da Comunidade. Os botões dos produtos abrem diretamente suas ofertas. Os quizzes ficam para campanhas específicas e não são destinos dos posts ou destaques deste ciclo. Manter a página inicial como destino da bio durante todo o ciclo, inclusive nas publicações sobre a Comunidade.
 
 ### Copy dos três caminhos na página inicial
 
@@ -83,7 +97,7 @@ A bio apresenta público, atividade e próximo passo. O link abre a página inic
 
 Cada botão usa o nome da opção, uma frase curta e a informação essencial da contratação. Manter os detalhes da experiência nas páginas de destino. A explicação aparece junto ao botão, antes do clique. O Desafio é uma primeira experiência paga; a Comunidade também recebe iniciantes e pode ser contratada diretamente. O cadastro acontece no fluxo de contratação, não é a promessa desses botões. O prazo do Desafio começa na aprovação do pagamento; sua inclusão na Comunidade vale durante a assinatura ativa, conforme as ofertas.
 
-Nos Reels e carrosséis, indicar o nome do botão que a família deve escolher ao abrir a bio. Nos stories, o sticker pode levar diretamente à oferta pertinente. A página Como funciona também oferece os dois produtos diretamente. A implementação dos acessos está em [index.astro](../../../../../packages/funnel/src/pages/index.astro) e [como-funciona.astro](../../../../../packages/funnel/src/pages/como-funciona.astro).
+Nos fixados e destaques que apresentam uma oferta, indicar o botão ou sticker correspondente. As postagens e os stories do calendário entregam orientação e conduzem à criação, sem chamada obrigatória à bio. O calendário comum termina em convite para seguir; as palavras-chave pertencem às [Postagens ManyChat](04-postagens-manychat.md). A página Como funciona oferece os dois produtos diretamente. Os acessos estão em [index.astro](../../../../../packages/funnel/src/pages/index.astro) e [como-funciona.astro](../../../../../packages/funnel/src/pages/como-funciona.astro).
 
 ## Documentos para produzir
 
@@ -91,12 +105,19 @@ Nos Reels e carrosséis, indicar o nome do botão que a família deve escolher a
 | --- | --- | --- |
 | Seis destaques | [01 · Destaques](01-destaques.md) | Texto de cada tela, fala, cena, identificação e sticker |
 | Três fixados | [02 · Fixados](02-fixados.md) | F01, F02 e F03 em carrosséis 4:5, com 24 PNGs, copy completa, legendas e texto alternativo |
-| Ciclo de quatro semanas | [03 · Postagens](03-postagens.md) | Único calendário, nove peças adicionais F04 a F12 e doze sequências de stories completas |
+| Ciclo de vinte semanas | [03 · Postagens](03-postagens.md) | P01–P60: 30 carrosséis, 18 Reels e 12 imagens; seis extras E01–E06; 20 sequências de quatro stories (80 telas) |
+| Cobertura da pesquisa | [30 dores e 30 desejos](postagens/12-mapa-cobertura.md) | Uma publicação principal exclusiva por necessidade, com copy e base identificadas |
+| Pesquisa e decisões | [50 publicações e análise](pesquisas/kodland-50-publicacoes-2026-10-12.md) | Perfil da Kodland consultado com login, peças examinadas, fontes, limites e hipóteses para o novo ciclo |
 | Destinos e publicação | [Links e publicação](apoio/links-e-publicacao.md) | Links completos, identificação da origem, produção e medição |
+| Exemplos do feed | [Vitrine de exemplos do Estúdio](postagens/14-vitrine-de-exemplos.md) | Jogos 2D e 3D de todas as extensões; o mapa antigo de 11 bases ([08](postagens/08-exemplos-do-estudio.md)) fica como histórico |
 | Captação do produto | [Demonstração do Farol](apoio/valor-e-demonstracao-2026-10-03.md) | O que gravar, sequência pedagógica e limites de cada cena |
 | Produção dos materiais | [Capacidades e limites](apoio/capacidades-redes-sociais-2026-10-04.md) | Entregáveis, arquivos necessários e condições de operação |
 
-Os 12 posts incluem os três fixados, não são 15 posts. F09 passa a mostrar a porta e F08, a autoria do projeto. As versões antigas sobre postos e inteligência artificial não pertencem a este ciclo. Os IDs identificam peças, não sua ordem de publicação.
+Os três fixados F01–F03 ficam fora das 60 publicações P01–P60. Com os seis extras, são 66 posts de calendário; os três fixados continuam separados dessa contagem. As antigas peças F04–F12 e S01–S12 estão no histórico. A formação dos destaques também fica separada das 60 telas novas do calendário.
+
+**Copy reescrita em 13/10/2026:** as 60 publicações, os 20 stories e as 14 postagens do ManyChat ganharam ganchos que abrem curiosidade, legendas com a causa do problema, exemplos variados do Estúdio e o convite certo para cada espaço: publicações de atração terminam em seguir, stories educam e o ManyChat converte. Régua em [Guia de copy](postagens/13-guia-de-copy.md); versão anterior em `historico/2026-10-13-antes-reescrita-dos-ganchos/`. A copy foi revista de novo na tarde e em duas rodadas na noite de 13/10, com cinco trocas de semana no calendário; as versões anteriores estão em `historico/`. Os três carrosséis abaixo já foram refeitos conforme as fichas atuais, com fontes das imagens em `apoio/v3` e a revisão de clareza em `apoio/v4`.
+
+**Três carrosséis com a copy simplificada após leitura das artes:** [P01](producao/postagens/p01-uma-ideia-dele/index.html) (sete slides), [P07](producao/postagens/p07-primeira-dificuldade/index.html) (sete slides) e [P34](producao/postagens/p34-a-ideia-veio-dele/index.html) (oito slides). São 22 PNGs em 1080 × 1350, com a copy atual, legendas e textos alternativos. P01 usa a mesma criança fictícia em cenas diferentes, editor real e comparação do turbo. P07 mantém André e Júlio, com novas capturas do salto, céu e ângulos variados. P34 usa retratos reais de Daniel e Rafael, ilustrações distintas e a comparação da batalha. A paleta azul, branca e amarela foi mantida; a mudança solicitada foi de direção de arte, copy e produção. [Prévia das postagens produzidas](producao/postagens/index.html). Ordem no calendário: P01 e P07 na semana 1, P34 na semana 2. **P04 produzido em 14/10/2026:** [sete slides sobre arquivos no computador](producao/postagens/p04-arquivos-no-computador/index.html), com novas cenas, legenda e textos alternativos. O conjunto soma 29 PNGs; P04 abre a semana 3 e o próximo carrossel é P37. Nenhuma peça foi publicada ou agendada. As artes antigas do “não consigo” foram apagadas a pedido do usuário.
 
 **Destaques:** Como funciona, Projetos, Alunos, Dúvidas, Avaliações e Sobre nós. Essa é uma referência de organização inicial, não uma posição permanente. A ordem é viva: atualizações podem trazer o destaque para a frente. Como funciona e Sobre nós podem permanecer ao final; os três fixados orientam quem chega. Não republicar stories só para recompor uma ordem. [Prévia das capas](capas/index.html) · [PNGs em ZIP](capas/capas-instagram.zip). Manter as seis capas. Projetos apresenta Farol, Cadê Todo Mundo?, Nave Contra Asteroides e Corre Dino. Alunos é um destaque vivo de crianças em atividade. A produção atual tem sete stories: abertura com as cinco fotos, cenas provisórias de Rafael, Jeffrey, Débora, André e Fernando e convite final. Os [PNGs e as cinco molduras para vídeos](producao/destaques/alunos/) estão prontos. As cenas foram geradas com as referências das crianças a pedido do responsável e serão trocadas pelos vídeos. A abertura não fixa nomes ou quantidade no texto; novos registros entram conforme forem selecionados. Cada criança tem sua identificação e uma legenda correspondente à ação: aprender, explorar, personalizar, testar ou mostrar o que fez.
 
@@ -125,7 +146,7 @@ A voz comercial tem fonte única nas [regras de copy](../../../../../packages/ma
 - **Causa e consequência concretas.** A porta responde porque o jogo consulta a informação da chave. Mudar a posição da chave altera o percurso. Não converter essas cenas em promessa de domínio de programação ou de transferência automática para a escola.
 - **Autoria precisa.** A criança programa regras guiadas e faz escolhas nas etapas previstas. Os desenhos disponíveis, o cenário e o movimento do barco são preparados pela equipe. Escolher uma arte não é desenhá-la. Não apresentar mudança de velocidade como personalização do Farol: essa escolha foi retirada do curso.
 - **Orientação visível.** Mostrar explicação, montagem, teste e critérios quando pertinentes. O botão infantil atual é “Verificar esta parte”. A verificação confere os critérios configurados; não encontra qualquer problema nem mede, sozinha, a compreensão. Ajuda por mensagens pode ter espera.
-- **Instrução no ritmo de quem acompanha.** Os Reels deste ciclo são demonstrações para o adulto. Se uma futura peça ensinar uma montagem executável, conservar os passos, o destino do encaixe e o teste. Para encurtar, reduzir o assunto, não acelerar gestos essenciais.
+- **Instrução no ritmo de quem acompanha.** Os Reels deste ciclo conversam com o responsável e incluem situações, relatos e demonstrações. Se uma peça ensinar uma montagem executável, conservar os passos, o destino do encaixe e o teste. Para encurtar, reduzir o assunto, não acelerar gestos essenciais.
 - **Próximo passo que corresponde ao assunto.** Convite pela bio nomeia o botão da oferta desejada; stickers levam diretamente à oferta. Os quizzes ficam para campanhas específicas. Continuidade leva à Comunidade e explicita a contratação separada. Não inventar segredo, urgência ou surpresa comercial.
 - **Adulto decide, criança participa da conversa.** O convite de compra fica na fala dirigida ao responsável. Uma cena de conquista infantil não termina com a criança pedindo assinatura. Curso e aula são termos adequados ao marketing; trechos da aula preservam aventura, fase, parte e Mapa da Aventura.
 
@@ -133,7 +154,7 @@ Não é necessário repetir todas as condições em cada peça. Idade, equipamen
 
 ## Orientações de produção
 
-1. Gravar primeiro o Farol: personagem andando, chave sendo pega, farol com e sem chave, escolhas de visual e publicação do jogo. Usar conta com acesso correspondente ao Desafio; acesso administrativo não comprova o que a família recebe.
+1. Produzir primeiro as cenas do cotidiano previstas nas fichas: tarefa, conversa, tentativa, escolha e acompanhamento. Captar as demonstrações reais de jogos como fechamento do raciocínio. Acesso administrativo não comprova o que a família recebe.
 2. Nos três fixados F01, F02 e F03, as capturas não levam o rótulo **“Demonstração da equipe”**, conforme orientação do responsável. Nas demais peças, seguir os rótulos previstos em cada roteiro. Nos recortes pedagógicos, indicar experiência, montagem guiada ou teste. Esses rótulos estão escritos nos roteiros.
 3. Ler as falas como uma conversa antes de gravar: um responsável que nunca programou precisa entender o que está acontecendo e por que aquilo importa. Captar Helena e Júlio em tom de conversa. Os tempos sugeridos orientam edição; preservar a pausa necessária para ver o efeito. Usar legendas fiéis à fala e conferir legibilidade no celular, inclusive com os controles do Instagram sobrepostos.
 4. Em carrosséis, o texto público de cada slide está completo. Notas de cena e objetivo não entram na arte. Em stories, o documento informa se o texto é cartela, fala ou sobreposição; não acrescentar outra explicação improvisada.
@@ -143,8 +164,8 @@ Não é necessário repetir todas as condições em cada peça. Idade, equipamen
 
 ## Execução e manutenção
 
-**T0** será a primeira publicação efetiva, após os materiais iniciais e os destinos estarem prontos. O calendário usa quatro semanas relativas e três posts mais três dias de stories por semana. Não há obrigação de recuperar as antigas datas de outubro. O guia 03 concentra também a formação inicial dos destaques, para não manter outro calendário.
+**T0** será a primeira publicação efetiva, após os materiais iniciais e os destinos estarem prontos. O calendário sugere vinte semanas relativas: três posts e uma sequência de stories por semana, intercalando dores e desejos. Não há obrigação de recuperar as antigas datas de outubro. Os destaques e fixados podem ser preparados antes do ciclo, sem ocupar vagas das 60 publicações principais.
 
-A [proposta incorporada](pesquisas/proposta-melhoria-2026-10-08.md) e a [pesquisa de 08/10](pesquisas/pesquisa-evidencias-2026-10-08.md) preservam a fundamentação. As [versões anteriores](historico/2026-10-08-antes-do-desafio/README.md) são históricas. Orientações antigas sobre campanha, ferramentas ou destinos não prevalecem sobre estes guias.
+A [pesquisa de mercado e avatar](pesquisas/mercado-e-avatar-2026-10-12.md) fundamenta a cobertura das 60 necessidades. A [análise de 50 publicações](pesquisas/kodland-50-publicacoes-2026-10-12.md) e a [revisão de método de 12/10](pesquisas/light-copy-valor-e-persuasao-2026-10-12.md) permanecem como referências, com os limites registrados em cada documento. A pesquisa de 11/10 registra a primeira etapa, superada por esta direção. A [proposta de 08/10](pesquisas/proposta-melhoria-2026-10-08.md) e a [pesquisa de 08/10](pesquisas/pesquisa-evidencias-2026-10-08.md) preservam a fundamentação anterior. O [calendário substituído](historico/2026-10-11-calendario-com-fixados/LEIA-ME.md) é histórico. Orientações antigas sobre contagem, campanha, ferramentas ou destinos não prevalecem sobre estes guias.
 
 Editar a copy no documento que a contém. Ao mudar uma condição, conferir Destaques, Fixados, Postagens e Links. Registrar separadamente revisão editorial, prova selecionada, arquivo final, agendamento e publicação. As métricas serão lidas depois da publicação; esta revisão não demonstra aumento de conversão nem resultado de aprendizagem.

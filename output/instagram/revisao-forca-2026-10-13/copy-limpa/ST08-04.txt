@@ -1,0 +1,1 @@
+Nesse começo, precisamos fazer o herói andar. Guardem as outras ideias numa lista e testem a primeira ação antes de acrescentar a próxima.

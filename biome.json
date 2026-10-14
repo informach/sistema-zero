@@ -17,7 +17,9 @@
       "!**/test-results",
       "!**/playwright-report",
       "!**/.cache",
-      "!output/instagram/**/*.html",
+      "!output/instagram",
+      "!docs/marketing/**/instagram/producao",
+      "!docs/marketing/**/instagram/historico",
       "!**/.agents",
       "!**/.claude"
     ]

@@ -1,6 +1,6 @@
 # Fixados: carrosséis 4:5 com copy completa
 
-**Revisão: 09/10/2026.** Os três fixados são carrosséis de **1080 × 1350 pixels (4:5)**, conforme orientação do responsável. F01 apresenta o primeiro jogo, F02 apresenta os alunos e F03 explica como começar. Fazem parte do mesmo calendário de 12 posts; não são publicações adicionais.
+**Revisão: 11/10/2026.** Os três fixados são carrosséis de **1080 × 1350 pixels (4:5)**, conforme orientação do responsável. F01 apresenta o primeiro jogo, F02 apresenta os alunos e F03 explica como começar. São independentes das 30 publicações P01–P30 do [calendário](03-postagens.md), que não inclui os fixados. As artes e copies aprovadas dos fixados foram preservadas.
 
 Todas as frases destinadas às artes estão nos blocos de citação de cada slide. Títulos, textos, destaques visuais e chamadas entram na imagem. As notas de cena são internas. As legendas completas acompanham cada carrossel. O destino é sempre a página da bio (LB), seguida do botão **Desafio do Primeiro Jogo**, que abre a oferta (L0).
 

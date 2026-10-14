@@ -17,6 +17,8 @@
 
 **Personalização ampliada, 06/10/2026:** as seções `tanto` e `velocidade` foram retiradas por decisão do responsável. Seus vídeos, pontes e experiência estão em `retireBlockKeys`. O movimento permanece em 3. A personalização se concentra no Dia 3: visuais, avisos e lugar da chave. As demais chaves e o progresso são preservados.
 
+**Revisão antes da gravação, 13/10/2026:** a fala diz o que chega no bloco e onde clicar (**Ativar controles clássicos** chega com **automáticos no celular**; **Mover sprite** e **Manter o sprite** chegam com **heroi**). A procura de **Enquanto estiver rodando** ganhou o socorro de arrastar um espaço vazio, e a área vem antes do bloco. As retomadas das partes 4 e 6 começam por um gesto da criança que mostra o que falta, e o fim do dia reconhece a conquista depois do envio. Na experiência do quadro, o vídeo aponta o **quadro** passando de 0 para 1 e o **+3** embaixo do personagem, e as descobertas dizem "personagem" (a palavra sprite só é explicada na parte 4). Na do limite, a comparação da janela explica a faixa **fora da tela** que a cena desenha, e o vídeo aponta na regra **Manter o sprite personagem dentro da tela** logo abaixo do bloco que move. No jogo pronto, o vídeo aponta o aviso do alto da tela. As listas de conferência ficaram curtas, as pontes das partes 4 e 6 terminam na saída e o critério das direções diz qual bloco usar. O roteiro ganhou as notas de gravação (aba nova depois do deploy, experiência sem progresso, envio sem envio anterior, selo **Guardado na sua conta** só quando aparece). As durações foram medidas de novo e subiram, sem acelerar.
+
 ## Vozes e produção · 10/10/2026
 
 **Debinha** participa em 8 entradas, alternando por aula: Debinha, Dedé, Debinha e Dedé no certificado. O [roteiro completo](desafio-dia-1.roteiro.md) identifica **Professora**, **Debinha (avatar)** e as falas do **Zappy na página (não gravar)**. Cada entrada tem ID, fala literal, saída e retomada da professora.
@@ -31,6 +33,8 @@ O vídeo do Mapa da Aventura continua só com a professora. As participações a
 | F1P5-D01 | “Como eu faço ele parar na borda?” |
 | F1P6-D01 | “E onde eu coloco esse limite?” |
 
+As três entradas da revisão de ritmo (F1P4-R01, F1P4-R02 e F1P6-R01) estão na tabela do fim desta proposta. Na ordem de corte da parte 4: F1P4-R01, F1P4-D01, F1P4-R02.
+
 As falas estão aplicadas aos documentos; gravação, edição e publicação desta versão ainda não foram confirmadas. As durações da tabela foram revistas em 10/10/2026 com as participações: cobrem a fala estimada a 137 palavras por minuto e, nas montagens, os gestos sem fala. Medir a montagem final sem acelerar. Zappy permanece nas instruções da página e no recurso Ouvir; no vídeo, sua presença em memes ou na interface é visual. Manter o passo a passo completo, sem intervenções durante um arraste. [Direção e âncoras de edição](../AVATARES-NOS-VIDEOS.md#chave-do-farol).
 
 ## Triagem dos conceitos
@@ -44,7 +48,7 @@ As falas estão aplicadas aos documentos; gravação, edição e publicação de
 | Sprite | Vocabulário | Na identificação do personagem | Definição curta antes de nomear o bloco | Na montagem | Evitar termo desconhecido na instrução |
 | Controles e movimento | Não | No jogo | Setas aparecem; personagem se move depois do segundo bloco | Após cada montagem | Mostrar que os controles sozinhos não movem ninguém |
 | A cada quadro do jogo | Sim, em nível inicial | Na experiência `quadro` (cena `lighthouse-walk`) | Avançar quadro a quadro sem e com a seta, depois Rodar | Seção 3, antes da montagem `andar` | Ver a repetição antes de pôr o movimento dentro dela |
-| Borda e ordem | Relação concreta | Na experiência `limite` e depois no próprio jogo | Rodar sem e com Manter dentro da tela; no jogo, ver o personagem sair e pôr o limite logo abaixo do movimento | Seções 5 e 6 | Mover primeiro, conferir o limite depois |
+| Borda e ordem | Relação concreta | Na experiência `limite` e depois no próprio jogo | Rodar sem e com Manter dentro da tela e apontar, na regra, o limite logo abaixo do movimento; no jogo, ver o personagem sair e pôr o limite logo abaixo do movimento | Seções 5 e 6 | Mover primeiro, conferir o limite depois |
 
 ## Diagnóstico do desenho atual
 
@@ -76,7 +80,7 @@ O vídeo é uma demonstração, como nas experiências: apresenta a aventura, mo
 
 O vídeo chama a atenção para o caderno ("Olha aqui: este é o seu Mapa da Aventura!") e oferece as duas escolhas como convite: ler aqui mesmo ou clicar em **Baixar** para guardar o mapa e consultar onde quiser. A fala não diz que a pessoa não precisa baixar ou imprimir, porque soa como uma ordem para não fazer (ajuste do responsável, 06/10/2026).
 
-Anexar somente `output/pdf/desafio-farol-caderno.pdf` ao leitor. O caderno tem 27 páginas e acompanha a memória, a montagem da porta em duas etapas, as galerias de personalização, a posição da chave, os testes, a publicação e o certificado. O mapa antigo para responsáveis não integra esta versão.
+Anexar somente `output/pdf/desafio-farol-caderno.pdf` ao leitor. O caderno tem 29 páginas (27 até a revisão de 13/10/2026) e acompanha a memória, a montagem da porta em duas etapas, as galerias de personalização, a posição da chave, os testes, a publicação e o certificado. O mapa antigo para responsáveis não integra esta versão.
 
 ### Seção 3. Como o personagem anda
 
@@ -85,7 +89,7 @@ Anexar somente `output/pdf/desafio-farol-caderno.pdf` ao leitor. O caderno tem 2
 - **Conclui quando:** vídeo e os dois testes da experiência.
 - **Blocos:** `video-d1-quadro`, `ponte-d1-quadro` e `experiencia-quadro` (cena `lighthouse-walk`, metas `still-without-arrow` e `moves-each-frame`).
 
-**Ponte do Zappy na página (não gravar):** Sua vez! Avance um quadro de cada vez e fique de olho no x. Quando terminar, clique em Próxima parte.
+**Ponte do Zappy na página (não gravar):** Sua vez! Teste sem a seta e com a seta e repare no que acontece com o x. Quando terminar, clique em Próxima parte.
 
 ### Seção 4. Faça o personagem andar
 
@@ -94,14 +98,14 @@ Anexar somente `output/pdf/desafio-farol-caderno.pdf` ao leitor. O caderno tem 2
 - **Conclui quando:** vídeo e aprovação de dois critérios: as quatro direções e o movimento dentro de A cada quadro do jogo.
 - **Blocos:** `video-d1-andar` e `ponte-d1-andar`; Estúdio pela `workspaceKey: projeto`. A ajuda opcional que ficava aqui (`ajuda-d1`) entrou no bloco do Mapa em 07/10/2026.
 
-**Ponte do Zappy na página (não gravar):** Hora de fazer o seu personagem andar! Faça as setas aparecerem e coloque o movimento dentro de A cada quadro do jogo. Depois teste e clique em Verificar esta parte.
+**Ponte do Zappy na página (não gravar):** Hora de fazer o seu personagem andar! Faça as setas aparecerem e coloque o movimento dentro de A cada quadro do jogo. Depois teste e clique em Verificar esta parte. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
 Depois da retomada da experiência e antes de procurar **Ao iniciar**, apresentar os comandos como
 instruções que dizem ao jogo o que fazer e que aparecem como bloquinhos. No "Olha aqui: neste menu",
 apontar a paleta de comandos como o lugar de escolher os blocos, sem pegar nenhum ainda. Esta é a
 primeira montagem do Desafio, que também recebe quem nunca programou; a fala completa está no roteiro.
 
-Com o destino à vista antes de cada bloco: controles com só as quatro direções no fim de Ao iniciar; movimento dentro de **A cada quadro do jogo**, logo abaixo de Desenhar o cenário praia-tropical.
+Com o destino à vista antes de cada bloco: controles com só as quatro direções no fim de Ao iniciar; movimento dentro de **A cada quadro do jogo**, logo abaixo de Desenhar o cenário praia-tropical. Primeiro a área **Enquanto estiver rodando**, com o socorro de arrastar um espaço vazio, e depois o bloco dentro dela. A fala diz o que chega em cada bloco e onde clicar: **Ativar controles clássicos** chega com **automáticos no celular** (trocar para **só as quatro direções**) e **Mover sprite** chega com **heroi** (trocar para **personagem**).
 
 ### Seção 5. Até onde ele pode ir?
 
@@ -119,9 +123,9 @@ Com o destino à vista antes de cada bloco: controles com só as quatro direçõ
 - **Conclui quando:** vídeo, três critérios de projeto aprovados e envio confirmado.
 - **Blocos:** `video-d1-borda`, `ponte-d1-borda` e o Estúdio `projeto`.
 
-**Ponte do Zappy na página (não gravar):** Agora mantenha o personagem na tela! Coloque o limite logo abaixo do movimento, teste as quatro beiradas e clique em Verificar esta parte antes de enviar o seu projeto.
+**Ponte do Zappy na página (não gravar):** Agora mantenha o personagem na tela! Coloque o limite logo abaixo do movimento, teste as quatro beiradas e clique em Verificar esta parte. Depois clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir fase.
 
-Primeiro a pessoa vê o personagem sair pela beirada no próprio jogo. Depois, com o bloco de movimento à vista, encaixa **Manter o sprite dentro da tela** logo abaixo dele: primeiro move, depois confere a borda. Testar as quatro bordas com o dispositivo disponível, sem exigir teclado e toque de quem só tem um deles. Terminar em **Verificar esta parte → Objetivo cumprido! → Enviar meu projeto → Enviar → Concluir fase**.
+Primeiro a pessoa vê o personagem sair pela beirada no próprio jogo. Depois, com o bloco de movimento à vista, encaixa **Manter o sprite dentro da tela** logo abaixo dele (o bloco chega com **heroi**: trocar para **personagem**): primeiro move, depois confere a borda. Testar as quatro bordas com o dispositivo disponível, sem exigir teclado e toque de quem só tem um deles. Terminar em **Verificar esta parte → Objetivo cumprido! → Enviar meu projeto → Enviar → Projeto enviado! → Concluir fase**, com o reconhecimento da conquista antes de **Concluir fase**.
 
 ## Experiências e demonstrações desta aula
 
@@ -135,12 +139,12 @@ Não apresentar evento, variável ou condição antes do uso. Nenhuma demonstra�
 
 | Chave | O que mostra | Origem | Duração alvo | Reaproveita gravação? |
 | --- | --- | --- | --- | --- |
-| `video-intro-farol` | Jogo, contexto, demonstração de um gesto, sem resolver, e a surpresa do final plantada | Versão pronta | 70 a 90 s | Regravar |
-| `video-intro-caderno` | Capa e página real do PDF | Caderno anexado | 25 a 35 s | Regravar |
-| `video-d1-quadro` | Experiência: sem a seta e com a seta, quadro a quadro | Cena nova | 90 a 110 s | Gravar |
-| `video-d1-andar` | Controles e movimento, teste e verificação | Projeto inicial | 4 a 5 min | Gravar |
-| `video-d1-limite` | Experiência: sem e com o limite | Cena nova | 50 a 65 s | Gravar |
-| `video-d1-borda` | Borda no jogo, limite, testes e entrega | Mesmo projeto | 2 a 3 min | Regravar |
+| `video-intro-farol` | Jogo, contexto, demonstração de um gesto, sem resolver, o aviso da partida e a surpresa do final plantada | Versão pronta | 80 a 100 s | Gravar (se houver mídia antiga no Admin, substituir) |
+| `video-intro-caderno` | Capa e página real do PDF | Caderno anexado | 30 a 40 s | Gravar (se houver mídia antiga no Admin, substituir) |
+| `video-d1-quadro` | Experiência: sem a seta e com a seta, quadro a quadro | Cena nova | 100 a 120 s | Gravar |
+| `video-d1-andar` | Controles e movimento, teste e verificação | Projeto inicial | 5 a 6 min | Gravar |
+| `video-d1-limite` | Experiência: sem e com o limite, a faixa fora da tela e a ordem na regra | Cena nova | 75 a 95 s | Gravar |
+| `video-d1-borda` | Borda no jogo, limite, testes e entrega | Mesmo projeto | 150 a 190 s | Gravar (se houver mídia antiga no Admin, substituir) |
 
 ## Continuidade
 
@@ -156,6 +160,6 @@ O roteiro tem 8 entradas ao todo. As novas falas abaixo distribuem perguntas, re
 
 | Entrada | Depois da professora | Criança | Retomada da professora |
 | --- | --- | --- | --- |
-| F1P4-R01 | “Para fazer isso, a gente precisa dizer ao jogo o que ele deve fazer. É para isso que servem os comandos, que aqui aparecem como bloquinhos. Olha aqui: neste menu, chamado paleta de comandos, você escolhe os blocos que vai encaixar para montar as regras do seu jogo.” | Debinha: “Quero fazer as setas funcionarem!” | “As setas entram quando o jogo começa, na área Ao iniciar. Encontre essa área e deixe à vista o fim dela, depois dos blocos que já estão lá. Se ela não estiver aparecendo, é só arrastar um espaço vazio entre os blocos até ela aparecer.” |
-| F1P4-R02 | “Agora vamos testar! Segure uma seta da tela, ou, no computador, clique dentro do jogo e use as setas do teclado. Olha só: o personagem anda na direção da seta!” | Debinha: “Foi! Agora ele anda!” | “Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: Ativar controles clássicos, com só as quatro direções, está no fim de Ao iniciar, e o bloco de movimento está dentro de A cada quadro do jogo, logo abaixo de Desenhar o cenário, com o sprite personagem. Depois de corrigir, teste de novo.” |
-| F1P6-R01 | “Agora teste as quatro direções até chegar às beiradas. Repare: o personagem tem que ficar sempre inteiro na tela.” | Debinha: “Agora posso segurar a seta que ele não vai embora!” | “Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, primeiro está Mover sprite personagem em 4 direções com setas, com a velocidade 3, e logo abaixo está Manter o sprite personagem dentro da tela. Depois de corrigir, teste de novo.” |
+| F1P4-R01 | “Para fazer isso, a gente precisa dizer ao jogo o que ele deve fazer. É para isso que servem os comandos, que aqui aparecem como bloquinhos. Olha aqui: neste menu, chamado paleta de comandos, você escolhe os blocos que vai encaixar para montar as regras do seu jogo.” | Debinha: “Primeiro eu preciso pôr as setas na tela!” | “As setas entram quando o jogo começa, na área Ao iniciar. Encontre essa área e deixe à vista o fim dela, depois dos blocos que já estão lá. Se ela não estiver aparecendo, é só arrastar um espaço vazio entre os blocos até ela aparecer.” |
+| F1P4-R02 | “Agora vamos testar! Segure uma seta da tela, ou, no computador, clique dentro do jogo e use as setas do teclado. Olha só: o personagem anda na direção da seta!” | Debinha: “Foi! Agora ele anda!” | “Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: Ativar controles clássicos, com só as quatro direções, está no fim de Ao iniciar. E o bloco de movimento, com o sprite personagem, está dentro de A cada quadro do jogo. Depois de corrigir, teste de novo.” |
+| F1P6-R01 | “Agora teste as quatro direções até chegar às beiradas. Olha só: ele para em cada beirada e não sai mais da tela!” | Debinha: “Agora posso segurar a seta que ele não vai embora!” | “Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, o bloco que move o personagem vem antes, e logo abaixo dele está Manter o sprite personagem dentro da tela. Depois de corrigir, teste de novo.” |

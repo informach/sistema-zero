@@ -1,0 +1,306 @@
+{
+  "MC08": {
+    "slides": [
+      [
+        "Seu filho gosta de Roblox e quer criar um jogo próprio.",
+        "Ele pode aprender a programar enquanto monta o primeiro."
+      ],
+      [
+        "Comecem conversando sobre uma ideia dele.",
+        "Pode ser um percurso com plataformas, obstáculos e um lugar para chegar."
+      ],
+      [
+        "Para fazer a ideia funcionar, é preciso dar instruções ao jogo.",
+        "Por exemplo: quando o personagem cair, voltar ao começo."
+      ],
+      [
+        "Neste percurso que montamos, outra regra faz a vitória aparecer ao recolher três gemas.",
+        "Quem cria monta essas respostas e joga para conferir se funcionam."
+      ],
+      [
+        "Nas nossas ferramentas, também dá para criar cenários e personagens em três dimensões.",
+        "Jogos conhecidos podem inspirar ideias. A criação acontece na nossa plataforma."
+      ],
+      [
+        "Um primeiro projeto com orientação ajuda a conhecer os comandos e testar o que eles fazem.",
+        "Comente PRIMEIRO para ver no direct o começo que preparamos."
+      ]
+    ],
+    "caption": [
+      "Para começar a criar, seu filho pode aprender uma instrução de cada vez e ver o resultado no jogo.",
+      "No percurso mostrado, cair leva ao começo e recolher três gemas faz aparecer a vitória. Essas são duas regras entre as partes que precisam ser montadas e testadas. O exemplo mostra possibilidades das nossas ferramentas.",
+      "A criação acontece na plataforma do Sistema Zero. Roblox pode servir de inspiração para uma ideia, mas nossas aulas não ensinam a programar dentro dele. A marca pertence aos seus responsáveis e não tem vínculo com a gente.",
+      "Comente PRIMEIRO para conhecer no direct um primeiro projeto com aulas passo a passo."
+    ],
+    "dm1": "Oi, esta é uma resposta automática da Helena e do Júlio. Toque para conhecer um primeiro projeto de jogo nas nossas ferramentas.",
+    "dm2Start": "No Desafio do Primeiro Jogo, seu filho programa A Chave do Farol no nosso Estúdio. O percurso é demonstração da equipe, fora do Roblox.",
+    "direction": "Interesse em Roblox e possibilidade de começar sem experiência em programação. Explicar instrução por ação e resultado; retirar ‘duas frases fazem o jogo existir’, sonho menor e inversão confusa entre aprender e fazer.",
+    "productionNote": "Manter Parkour do Vulcão e as outras possibilidades identificadas separadamente. A captura real do Molda permanece como referência de ferramenta, sem inserir o personagem dentro do percurso nem prometer esse conteúdo no Desafio. Não exigir conhecimento prévio."
+  },
+  "MC09": {
+    "slides": [
+      [
+        "O mundo que seu filho construiu no Minecraft pode inspirar um jogo próprio.",
+        "Ele pode imaginar o que vai acontecer em cada lugar."
+      ],
+      [
+        "Uma torre pode virar o destino da aventura.",
+        "Uma ponte pode levar a um tesouro. O cenário ajuda a escolher o objetivo do jogador."
+      ],
+      [
+        "Depois, é preciso definir as respostas do jogo.",
+        "O que acontece quando alguém chega ao topo? E quando cai pelo caminho?"
+      ],
+      [
+        "Na nossa plataforma, essas instruções são montadas com blocos de comando.",
+        "Eles dizem quando uma ação acontece e qual resposta o jogo deve dar."
+      ],
+      [
+        "Veja este mundo de blocos que criamos.",
+        "O jogador coloca uma peça junto da muralha, sobe nela e pula até o alto para vencer."
+      ],
+      [
+        "Na nossa Mina de Cristais, a regra é outra: recolher dez cristais antes de o tempo acabar.",
+        "São objetivos diferentes para mundos que alguém criou."
+      ],
+      [
+        "Seu filho pode aprender a programar as ações de um jogo com orientação.",
+        "Comente MUNDO para conhecer no direct um primeiro projeto e suas aulas."
+      ]
+    ],
+    "caption": [
+      "Uma construção pode dar ideias para o caminho, os desafios e o objetivo de um jogo.",
+      "Se seu filho gosta de inventar mundos, pergunte o que alguém faria ao entrar num deles. Procuraria um tesouro? Tentaria chegar ao alto de uma torre? A resposta ajuda a imaginar ações que precisam ser programadas e testadas.",
+      "Os exemplos do post foram feitos pela equipe nas ferramentas do Sistema Zero. Minecraft entra como inspiração; não ensinamos a programar dentro dele. A marca pertence aos seus responsáveis e não tem vínculo com a gente.",
+      "Comente MUNDO para conhecer no direct um primeiro projeto com aulas passo a passo."
+    ],
+    "dm1": "Oi, esta é uma resposta automática da Helena e do Júlio. Toque para conhecer um projeto em que seu filho programa ações num cenário.",
+    "dm2Start": "No Desafio do Primeiro Jogo, seu filho programa A Chave do Farol num cenário preparado no nosso Estúdio. Os mundos são demonstrações da equipe.",
+    "direction": "O interesse por construir inspira objetivos e regras. Não dizer que Minecraft deixa de ser jogo sem programação extra nem reduzir um projeto inteiro a uma única instrução. Explicar diferença entre peça de construção e bloco de comando.",
+    "productionNote": "Preservar as limitações da demonstração: blocos são colocados no chão, sem empilhar. As hipóteses de torre e tesouro são ideias para conversar; as capturas dos slides cinco e seis mostram somente as regras reais dos exemplos."
+  },
+  "MC10": {
+    "slides": [
+      [
+        "Sua filha desenha personagens e inventa histórias para eles.",
+        "Imagine um desses personagens participando de um jogo."
+      ],
+      [
+        "Ela pode escolher o que ele faz e o que tenta conseguir.",
+        "Por exemplo: atravessar um lugar perigoso usando um poder que ela inventou."
+      ],
+      [
+        "Esse poder precisa de regras para funcionar no jogo.",
+        "Se ele fica invisível, por quanto tempo? Pode usar o poder de novo logo depois?"
+      ],
+      [
+        "Ao programar, a criança monta as instruções que fazem essas escolhas acontecer.",
+        "Depois, joga para conferir o movimento e a reação que imaginou."
+      ],
+      [
+        "Veja uma possibilidade da nossa plataforma.",
+        "Um desenho foi usado como cenário, e as instruções fazem o herói andar pela frente dele."
+      ],
+      [
+        "Nossas ferramentas também incluem o Pinta, para desenhar e animar, e o Molda, para criar personagens em três dimensões.",
+        "São outras possibilidades de criação."
+      ],
+      [
+        "Para começar com orientação, ela pode aprender os primeiros comandos de um jogo.",
+        "Comente PERSONAGEM para conhecer no direct um primeiro projeto com aulas passo a passo."
+      ]
+    ],
+    "caption": [
+      "Um personagem inventado pela sua filha pode trazer boas perguntas para a criação de um jogo.",
+      "O que ele faz? Qual é o objetivo? Se tem um poder, quando pode usá-lo? Essas escolhas ajudam a pensar nas instruções que fariam o personagem agir. Depois de montar, é preciso testar se o resultado ficou como ela imaginou.",
+      "O post mostra possibilidades das nossas ferramentas de criação. No direct, apresentamos um primeiro projeto guiado para aprender comandos, com cenário e personagens preparados. Assim, você conhece o que está incluído nesse começo.",
+      "Comente PERSONAGEM para receber a apresentação no direct."
+    ],
+    "dm1": "Oi, esta é uma resposta automática da Helena e do Júlio. Toque para conhecer o projeto em que sua filha aprende os primeiros comandos.",
+    "dm2Start": "No Desafio do Primeiro Jogo, sua filha programa A Chave do Farol, com personagens e cenário preparados. O desenho do post é demonstração da equipe.",
+    "direction": "Desenho como interesse que pode inspirar ações e regras. Retirar depreciação do caderno ou da história desenhada. Apresentar Pinta e Molda como possibilidades distintas; no direct, explicar exatamente o primeiro projeto guiado.",
+    "productionNote": "Invisibilidade é hipótese para conversar sobre regras, não promessa de conteúdo do primeiro curso. A captura de Cenário do meu desenho é demonstração da equipe; o Desafio não ensina a desenhar esses personagens."
+  },
+  "MC11": {
+    "cover": "Uma parte do tempo de tela do nosso filho virou criação de jogos.",
+    "reel": [
+      [
+        "Uma parte do tempo virou criação",
+        "A gente começou a usar uma parte do tempo de tela do nosso filho para ensinar ele a criar jogos."
+      ],
+      [
+        "André, nosso filho",
+        "O André sempre gostou de jogar e assistir a vídeos de jogos."
+      ],
+      [
+        "A gente quis aproveitar esse interesse",
+        "Como trabalhamos com programação, pensamos em ensinar ele a fazer os próprios jogos a partir desse interesse."
+      ],
+      [
+        "Depois, ele queria mostrar o que criou",
+        "Ele começou a chamar a gente para jogar e contar como tinha feito."
+      ],
+      [
+        "Criar inclui escolher as regras",
+        "Num jogo como este duelo da nossa equipe, é preciso definir quem vence quando o tempo termina."
+      ],
+      [
+        "Acabou o tempo: vence quem tem mais vida",
+        ""
+      ],
+      [
+        "André conta a experiência dele",
+        "Num relato sobre o curso, André disse: ‘Eu já jogava um monte, agora eu faço os meus jogos.’"
+      ],
+      [
+        "Comente TELA",
+        "Comente TELA para conhecer no direct o primeiro projeto com aulas que preparamos para outras famílias."
+      ]
+    ],
+    "caption": [
+      "A ideia de ensinar outras crianças a criar jogos também passou pela experiência da nossa família.",
+      "Somos Helena e Júlio, formados em Sistemas de Informação e profissionais de programação. André, nosso filho, gostava de jogar e assistir a vídeos de jogos. Usamos parte desse tempo para ensinar ele a criar, e depois ele chamava a gente para jogar e contar como tinha feito.",
+      "A fala do vídeo é o relato dele. O duelo é uma demonstração das nossas ferramentas, para mostrar uma das decisões de quem cria.",
+      "Comente TELA para conhecer no direct o primeiro projeto com aulas que preparamos para outras famílias."
+    ],
+    "dm1": "Oi, somos Helena e Júlio. Esta resposta é automática. Toque para conhecer o primeiro projeto com aulas que preparamos para outras famílias.",
+    "dm2Start": "No Desafio do Primeiro Jogo, seu filho programa A Chave do Farol e pode compartilhar o jogo por link. O duelo é demonstração da equipe.",
+    "direction": "Origem da proposta contada pelos pais, usando apenas os fatos confirmados sobre André. A vontade de mostrar é relato real; não acrescentar resultados escolares, comparação com outras famílias ou diagnóstico de uso de tela.",
+    "productionNote": "Preservar a fala literal do André e o vínculo de filho neste relato de origem. O duelo não é o projeto citado no depoimento. O texto não diz que ele só queria jogar nem que toda a rotina foi convertida em estudo."
+  },
+  "MC12": {
+    "cover": "A profissão do seu filho ainda pode mudar. Hoje, ele já pode aprender a construir uma ideia.",
+    "reel": [
+      [
+        "O futuro ainda tem muitas possibilidades",
+        "A profissão que seu filho imagina hoje pode mudar. O que ele aprende agora pode começar com um projeto que desperte seu interesse."
+      ],
+      [
+        "Uma ideia para colocar em prática",
+        "Ao criar, ele precisa escolher o que quer fazer e separar a ideia em partes."
+      ],
+      [
+        "Depois, testa o resultado",
+        "Também precisa testar e explicar as escolhas. Vamos mostrar um exemplo simples nas nossas ferramentas."
+      ],
+      [
+        "Uma escolha muda a orientação",
+        "Neste jogo, a pessoa escolhe uma resposta sobre o que quer ser. O personagem indica um lugar diferente conforme essa escolha."
+      ],
+      [
+        "As duas respostas precisam funcionar",
+        "Quem cria monta essa regra e testa as duas respostas. Cada uma mostrou o caminho combinado?"
+      ],
+      [
+        "Veja os dois caminhos indicados",
+        ""
+      ],
+      [
+        "Planejar, conferir e explicar",
+        "A criança tem decisões concretas para praticar: organizar os caminhos, conferir o resultado e contar como fez."
+      ],
+      [
+        "Comente FUTURO",
+        "Comente FUTURO para conhecer no direct um primeiro projeto em que seu filho aprende a montar e testar um jogo."
+      ]
+    ],
+    "caption": [
+      "Um projeto dá à criança decisões que ela pode colocar em prática e explicar hoje.",
+      "No jogo mostrado, cada resposta leva a uma indicação de caminho. Quem cria precisa organizar essas opções e testar as duas para conferir se mostram o que foi planejado. A escolha deixa um resultado visível na tela.",
+      "Ao acompanhar seu filho, peça para contar uma decisão que tomou e como conferiu se funcionou. É uma conversa sobre o que ele está aprendendo agora, enquanto seus interesses e planos continuam se formando.",
+      "Comente FUTURO para conhecer no direct um primeiro projeto com aulas passo a passo."
+    ],
+    "dm1": "Oi, esta é uma resposta automática da Helena e do Júlio. Toque para conhecer um primeiro projeto que seu filho aprende a montar e testar.",
+    "dm2Start": "No Desafio do Primeiro Jogo, seu filho programa A Chave do Farol e testa a porta com e sem chave. A vila é demonstração da equipe.",
+    "direction": "Preparação pelo que a criança pratica num projeto hoje. Retirar previsão de carreira, mudança semanal de preferência e metáforas sobre treinar o jeito de pensar sem mostrar a ação.",
+    "productionNote": "Preservar Vila das Vocações. As respostas indicam lugares; não teleportam o jogador nem constituem teste vocacional. A profissão aparece como assunto do exemplo, sem sugerir encaminhamento profissional da criança."
+  },
+  "MC13": {
+    "slides": [
+      [
+        "Alunos de sete cidades usaram Minecraft para imaginar melhorias no lugar onde vivem.",
+        "A construção fazia parte de um projeto da escola."
+      ],
+      [
+        "O caso foi registrado em 2023 pelo Minecraft Education, em parceria com a rede C40.",
+        "Os alunos propuseram cidades mais verdes e outras melhorias para o ambiente."
+      ],
+      [
+        "O guia do projeto orienta pesquisar, planejar, construir e apresentar a ideia.",
+        "A construção ganha um motivo: pensar numa mudança para a cidade."
+      ],
+      [
+        "Em casa, vale conversar sobre o que seu filho cria.",
+        "Para quem é aquele lugar? O que a pessoa faria ao chegar lá?"
+      ],
+      [
+        "Se ele quiser transformar uma ideia em jogo, precisa pensar em quem vai jogar.",
+        "Como mostrar o caminho? Onde um aviso ajudaria?"
+      ],
+      [
+        "Neste exemplo da nossa plataforma, entrar numa área faz aparecer um aviso.",
+        "Quem cria escolhe o lugar, escreve a mensagem e testa quando ela aparece."
+      ],
+      [
+        "Um projeto dá espaço para construir uma ideia e conferir como outra pessoa a entende.",
+        "Comente APRENDER para conhecer no direct um primeiro jogo com aulas passo a passo."
+      ]
+    ],
+    "caption": [
+      "Uma construção ganha novas perguntas quando é feita para alguém usar ou conhecer.",
+      "Na próxima vez que seu filho mostrar uma criação, pergunte quem usaria aquele lugar e o que precisaria saber ao chegar. Se a ideia virar um jogo, isso pode orientar caminhos, instruções e avisos para o jogador.",
+      "O caso escolar citado é o Schools Reinventing Cities, documentado pelo Minecraft Education em 2023. A demonstração do aviso foi feita pela nossa equipe no Sistema Zero. Usamos ferramentas próprias; não somos parceiros do Minecraft e não ensinamos a programar dentro dele.",
+      "Comente APRENDER para conhecer no direct um primeiro projeto e suas aulas."
+    ],
+    "dm1": "Oi, esta é uma resposta automática da Helena e do Júlio. Toque para conhecer um projeto em que o jogo mostra uma orientação ao jogador.",
+    "dm2Start": "No Desafio do Primeiro Jogo, seu filho programa A Chave do Farol: a porta avisa quando falta a chave. O mundo é demonstração da equipe.",
+    "direction": "Preservar o caso escolar documentado, sem transformá-lo em prova da nossa proposta. A conexão é pensar em quem usa a criação e montar uma resposta que oriente o jogador.",
+    "productionNote": "Fonte primária Minecraft Education relida nesta revisão. Manter 2023 e sete cidades como contexto histórico. Na demonstração Meu Mundo, usar a área marcada na cópia e o aviso acentuado; não mostrar um lago que não aparece no exemplo original. Retirar prazo de oito a doze semanas, irrelevante para este argumento."
+  },
+  "MC14": {
+    "slides": [
+      [
+        "‘Não sei fazer.’ E seu filho fecha o caderno.",
+        "Antes de pedir outra tentativa, descubra o que ficou difícil."
+      ],
+      [
+        "Peça para ele mostrar o que tentou.",
+        "Pode ter faltado entender a pergunta, lembrar um passo ou conferir uma resposta."
+      ],
+      [
+        "Ouvir essa parte ajuda a escolher o apoio.",
+        "Se a explicação não ficou clara, vale retomá-la antes de pedir que ele tente sozinho."
+      ],
+      [
+        "Conversem uma pergunta de cada vez.",
+        "‘Em que parte você parou?’ Depois: ‘O que aconteceu quando tentou?’"
+      ],
+      [
+        "Uma resposta clara também ajuda quem está jogando.",
+        "Veja o que acontece neste jogo da nossa plataforma."
+      ],
+      [
+        "O jogador segura o botão para fazer uma ponte crescer e solta para derrubá-la.",
+        "Se ficar curta, ela não alcança o outro lado."
+      ],
+      [
+        "A mensagem diz: ‘O bastão não alcançou a plataforma.’",
+        "Ela explica o resultado e ajuda o jogador a pensar na próxima tentativa: deixar crescer um pouco mais."
+      ],
+      [
+        "Ao criar jogos, a criança também pode aprender a conferir o que fez e procurar o que precisa mudar.",
+        "Comente TENTATIVA para conhecer no direct um primeiro projeto com orientação."
+      ]
+    ],
+    "caption": [
+      "Pedir para ver a tentativa ajuda a entender uma dúvida que ‘não sei fazer’ ainda não explica.",
+      "Seu filho pode precisar de outra explicação, de ajuda para começar ou de uma conferência do que montou. Ouça antes de escolher a orientação. Repetir o pedido de tentar, sozinho, pode deixar a mesma dúvida sem resposta.",
+      "Ao montar um jogo, seu filho também precisa testar o que fez. Se uma ação não acontece, vale conferir a instrução daquela parte e voltar à explicação. Comparar o que esperava com o que apareceu ajuda a escolher por onde começar.",
+      "Comente TENTATIVA para conhecer no direct um primeiro projeto com aulas e orientação."
+    ],
+    "dm1": "Oi, esta é uma resposta automática da Helena e do Júlio. Toque para conhecer um projeto com explicação e ajuda para conferir as atividades.",
+    "dm2Start": "No Desafio do Primeiro Jogo, seu filho programa A Chave do Farol e confere os blocos pedidos nas atividades. O equilibrista é demonstração da equipe.",
+    "direction": "Reação do adulto a uma dúvida, sem chamar de preguiça nem supor que o problema é sempre pequeno. Distinguir a mensagem do jogo, que orienta uma jogada, da verificação da aula, que confere os blocos pedidos.",
+    "productionNote": "Preservar a mensagem exata do Equilibrista. Não dizer que toda falha pode ser localizada num bloco nem que Verificar esta parte identifica qualquer erro de lógica. A copy explica a função real de cada orientação."
+  }
+}

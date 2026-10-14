@@ -1,0 +1,1 @@
+Neste salto, podemos comparar a força do pulo e a distância da plataforma. Mude uma coisa, mantenha a outra e teste. Exemplo do nosso Estúdio.

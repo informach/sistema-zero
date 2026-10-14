@@ -1,0 +1,1 @@
+Peça que mostre a dúvida antes de assumir o mouse. Se precisar demonstrar um passo, depois dê espaço para ele fazer e testar.

@@ -1,0 +1,9 @@
+Quando várias coisas mudam juntas, fica mais difícil descobrir o efeito de cada uma.
+
+Se a intenção é entender o que fez diferença, guardem a versão inicial e comparem uma mudança de cada vez, mantendo o restante igual.
+
+No Parque dos Brinquedos, do nosso Estúdio, preparamos caixas de TNT afastadas. A explosão só passa para outra caixa a menos de 6 metros. Testamos pintura, turbo e distância separadamente. Nesse exemplo, só aproximar as caixas altera a sequência de explosões.
+
+Criar permite fazer uma pergunta, preparar uma comparação e observar o resultado. Funcionar ganha uma explicação.
+
+Siga @criecomhelenaejulio para ver o que acontece quando mudamos uma regra.

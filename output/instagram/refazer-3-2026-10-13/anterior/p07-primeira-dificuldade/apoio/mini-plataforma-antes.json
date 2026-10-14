@@ -1,0 +1,125 @@
+{
+  "html": [],
+  "css": [
+    {
+      "selector": "body",
+      "declarations": {
+        "background": "#0b1020",
+        "display": "flex",
+        "align-items": "center",
+        "justify-content": "center",
+        "min-height": "100vh",
+        "margin": "0"
+      }
+    },
+    {
+      "selector": "canvas",
+      "declarations": {
+        "border": "2px solid #4ade80",
+        "background": "#11172a"
+      }
+    }
+  ],
+  "version": 2,
+  "behavior": {
+    "molds": [],
+    "start": [
+      {
+        "type": "g2d:setupStage",
+        "width": 320,
+        "height": 200,
+        "bg": "#e8f3fc",
+        "__id": "exemplo-mini-plataforma"
+      },
+      {
+        "type": "g2d:setStageDescription",
+        "description": "Herói que anda, pula com gravidade e fica preso na tela (setas).",
+        "__id": "exemplo-mini-plataforma-descricao"
+      },
+      {
+        "type": "g2d:createImageSprite",
+        "varName": "heroi",
+        "x": 64,
+        "y": 128,
+        "w": 36,
+        "h": 36,
+        "image": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48cmVjdCB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHJ4PSI3IiBmaWxsPSIjMjU2M2ViIi8+PGNpcmNsZSBjeD0iMTYiIGN5PSIxMCIgcj0iNiIgZmlsbD0iI2ZkZTY4YSIvPjxyZWN0IHg9IjEwIiB5PSIxNiIgd2lkdGg9IjEyIiBoZWlnaHQ9IjEyIiByeD0iNCIgZmlsbD0iIzYwYTVmYSIvPjxjaXJjbGUgY3g9IjE0IiBjeT0iOSIgcj0iMSIvPjxjaXJjbGUgY3g9IjE4IiBjeT0iOSIgcj0iMSIvPjwvc3ZnPg=="
+      },
+      {
+        "type": "g2d:createSprite",
+        "varName": "inicio",
+        "x": 0,
+        "y": 164,
+        "w": 100,
+        "h": 36,
+        "color": "#16a34a"
+      },
+      {
+        "type": "g2d:createSprite",
+        "varName": "destino",
+        "x": 240,
+        "y": 110,
+        "w": 80,
+        "h": 90,
+        "color": "#16a34a"
+      }
+    ],
+    "events": [],
+    "loops": [
+      {
+        "type": "g2d:updateEachFrame",
+        "body": [
+          {
+            "type": "g2d:clear"
+          },
+          {
+            "type": "g2d:applyGravity",
+            "spriteVar": "heroi"
+          },
+          {
+            "type": "g2d:platformer",
+            "spriteVar": "heroi",
+            "ctxVar": "ctx",
+            "speed": 4,
+            "jump": 11
+          },
+          {
+            "type": "g2d:collidePlatform",
+            "spriteVar": "heroi",
+            "otherVar": "inicio"
+          },
+          {
+            "type": "g2d:collidePlatform",
+            "spriteVar": "heroi",
+            "otherVar": "destino"
+          },
+          {
+            "type": "g2d:clampToScreen",
+            "spriteVar": "heroi",
+            "ctxVar": "ctx"
+          },
+          {
+            "type": "g2d:drawSprite",
+            "spriteVar": "inicio",
+            "ctxVar": "ctx"
+          },
+          {
+            "type": "g2d:drawSprite",
+            "spriteVar": "destino",
+            "ctxVar": "ctx"
+          },
+          {
+            "type": "g2d:drawSprite",
+            "spriteVar": "heroi",
+            "ctxVar": "ctx"
+          }
+        ]
+      }
+    ]
+  },
+  "extensions": [
+    {
+      "extensionId": "game-2d"
+    }
+  ]
+}

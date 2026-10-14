@@ -32,7 +32,7 @@ const aviso: ProjectBlockPattern = {
 }
 
 export const movimento: SectionProjectCheck[] = [
-  check('direcional', 'Mostre somente as quatro direções.', {
+  check('direcional', 'Em Ao iniciar, use Ativar controles clássicos com só as quatro direções.', {
     type: 'usesBlock',
     blockType: 'sz_g2d_enable_classic_controls',
     area: 'start',
@@ -41,7 +41,7 @@ export const movimento: SectionProjectCheck[] = [
   // A montagem usa 3; a conferência conserva também os projetos anteriores do curso.
   check(
     'andar',
-    'Dentro de A cada quadro do jogo, mova o personagem, antes de mantê-lo dentro da tela.',
+    'Dentro de A cada quadro do jogo, o bloco que move o personagem vem antes de Manter o sprite dentro da tela.',
     {
       type: 'usesBlock',
       blockType: 'sz_g2d_update_each_frame',
@@ -117,7 +117,7 @@ export const coleta: SectionProjectCheck[] = [
   ),
   check(
     'aviso-chave',
-    'Altere aviso com um texto dentro do encontro com a chave.',
+    'Mude aviso para um texto dentro do encontro com a chave.',
     noEncontro('chave', aviso),
   ),
 ]

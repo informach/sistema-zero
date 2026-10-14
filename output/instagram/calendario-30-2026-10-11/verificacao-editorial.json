@@ -1,0 +1,302 @@
+{
+  "posts": 30,
+  "formats": {
+    "reel": 10,
+    "imagem única": 6,
+    "carrossel": 14
+  },
+  "story_sequences": 20,
+  "story_screens": 60,
+  "reels": [
+    {
+      "id": "P02",
+      "words": 67,
+      "duration": [
+        30,
+        40
+      ],
+      "scenes": [
+        {
+          "start": 0,
+          "end": 6,
+          "words": 12
+        },
+        {
+          "start": 6,
+          "end": 14,
+          "words": 17
+        },
+        {
+          "start": 14,
+          "end": 25,
+          "words": 25
+        },
+        {
+          "start": 25,
+          "end": 32,
+          "words": 13
+        }
+      ]
+    },
+    {
+      "id": "P05",
+      "words": 51,
+      "duration": [
+        20,
+        30
+      ],
+      "scenes": [
+        {
+          "start": 0,
+          "end": 7,
+          "words": 13
+        },
+        {
+          "start": 7,
+          "end": 18,
+          "words": 25
+        },
+        {
+          "start": 18,
+          "end": 25,
+          "words": 13
+        }
+      ]
+    },
+    {
+      "id": "P08",
+      "words": 66,
+      "duration": [
+        30,
+        40
+      ],
+      "scenes": [
+        {
+          "start": 0,
+          "end": 7,
+          "words": 13
+        },
+        {
+          "start": 7,
+          "end": 18,
+          "words": 23
+        },
+        {
+          "start": 18,
+          "end": 25,
+          "words": 15
+        },
+        {
+          "start": 25,
+          "end": 32,
+          "words": 15
+        }
+      ]
+    },
+    {
+      "id": "P11",
+      "words": 87,
+      "duration": [
+        35,
+        45
+      ],
+      "scenes": [
+        {
+          "start": 0,
+          "end": 11,
+          "words": 25
+        },
+        {
+          "start": 11,
+          "end": 23,
+          "words": 26
+        },
+        {
+          "start": 23,
+          "end": 34,
+          "words": 24
+        },
+        {
+          "start": 34,
+          "end": 40,
+          "words": 12
+        }
+      ]
+    },
+    {
+      "id": "P14",
+      "words": 60,
+      "duration": [
+        25,
+        35
+      ],
+      "scenes": [
+        {
+          "start": 0,
+          "end": 5,
+          "words": 9
+        },
+        {
+          "start": 5,
+          "end": 14,
+          "words": 20
+        },
+        {
+          "start": 14,
+          "end": 23,
+          "words": 19
+        },
+        {
+          "start": 23,
+          "end": 29,
+          "words": 12
+        }
+      ]
+    },
+    {
+      "id": "P17",
+      "words": 67,
+      "duration": [
+        30,
+        40
+      ],
+      "scenes": [
+        {
+          "start": 0,
+          "end": 9,
+          "words": 18
+        },
+        {
+          "start": 9,
+          "end": 18,
+          "words": 18
+        },
+        {
+          "start": 18,
+          "end": 27,
+          "words": 20
+        },
+        {
+          "start": 27,
+          "end": 33,
+          "words": 11
+        }
+      ]
+    },
+    {
+      "id": "P20",
+      "words": 57,
+      "duration": [
+        25,
+        35
+      ],
+      "scenes": [
+        {
+          "start": 0,
+          "end": 8,
+          "words": 18
+        },
+        {
+          "start": 8,
+          "end": 19,
+          "words": 25
+        },
+        {
+          "start": 19,
+          "end": 26,
+          "words": 14
+        }
+      ]
+    },
+    {
+      "id": "P23",
+      "words": 61,
+      "duration": [
+        25,
+        35
+      ],
+      "scenes": [
+        {
+          "start": 0,
+          "end": 7,
+          "words": 15
+        },
+        {
+          "start": 7,
+          "end": 13,
+          "words": 11
+        },
+        {
+          "start": 13,
+          "end": 24,
+          "words": 23
+        },
+        {
+          "start": 24,
+          "end": 30,
+          "words": 12
+        }
+      ]
+    },
+    {
+      "id": "P26",
+      "words": 65,
+      "duration": [
+        30,
+        40
+      ],
+      "scenes": [
+        {
+          "start": 0,
+          "end": 7,
+          "words": 14
+        },
+        {
+          "start": 7,
+          "end": 14,
+          "words": 13
+        },
+        {
+          "start": 14,
+          "end": 24,
+          "words": 21
+        },
+        {
+          "start": 24,
+          "end": 32,
+          "words": 17
+        }
+      ]
+    },
+    {
+      "id": "P29",
+      "words": 69,
+      "duration": [
+        30,
+        40
+      ],
+      "scenes": [
+        {
+          "start": 0,
+          "end": 9,
+          "words": 20
+        },
+        {
+          "start": 9,
+          "end": 17,
+          "words": 16
+        },
+        {
+          "start": 17,
+          "end": 24,
+          "words": 15
+        },
+        {
+          "start": 24,
+          "end": 33,
+          "words": 18
+        }
+      ]
+    }
+  ]
+}

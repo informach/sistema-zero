@@ -1,0 +1,5 @@
+Na próxima vez que ele salvar um trabalho, façam o caminho completo:
+
+nomear, escolher onde guardar, fechar e abrir de novo.
+
+O teste termina quando ele encontra o que fez.

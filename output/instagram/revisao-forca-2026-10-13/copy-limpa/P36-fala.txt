@@ -1,0 +1,9 @@
+Ele mudou três coisas. Funcionou. Mas qual mudança fez diferença?
+
+No cartaz, trocou cor, tamanho e lugar do título. Ficou mais legível. Ainda falta descobrir o efeito de cada mudança.
+
+Neste parque do nosso Estúdio, afastamos as caixas de TNT. Para recuperar a explosão em sequência, testamos pintura do carro, turbo e distância, separadamente.
+
+Nesta regra, aproximar as caixas faz a explosão passar para a próxima. Pintura e turbo não entram nessa conta.
+
+Siga a gente para acompanhar testes que mostram por que uma mudança funcionou.

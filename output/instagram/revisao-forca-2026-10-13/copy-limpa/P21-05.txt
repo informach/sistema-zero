@@ -1,0 +1,3 @@
+Este duelo de cartas foi feito no nosso Estúdio.
+
+Decisão: cada turno dá 3 de energia, e cada carta custa 1. Montagem: essa regra em blocos. Teste: jogar três cartas e tentar a quarta.

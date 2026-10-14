@@ -13,6 +13,8 @@
 
 **Full review de 06/10/2026:** "então" saiu de todas as falas como palavra de ligação (no Farol inteiro ele é o nome de um espaço do bloco Se); no lugar ficaram "por isso", "para o jogo responder" ou duas frases. A abertura da experiência ganhou o porquê ("Para o jogo saber que a chave foi pega, ele precisa guardar essa informação") e o evento passou a ser "uma coisa que acontece no jogo". Na criação da área **Quando acontecer**, o destino virou "um lugar sem blocos, ao lado das áreas", para não se confundir com o "espaço vazio" que se arrasta para abrir lugar. A ponte da experiência termina em "Quando terminar, clique em Próxima parte.". Seções, blocos e critérios não mudaram.
 
+**Revisão para a gravação, 13/10/2026:** a experiência abre direto na cena, sem o projeto do Dia 1; o personagem passando pela chave fica para a retomada da seção 2. A variável virou "um lugar com nome onde o jogo guarda uma informação", e o próprio nome temChave é a pergunta de sim ou não (verdadeiro quer dizer sim, falso quer dizer não). A comparação diz o que é cada coisa: temChave é o bloquinho, e anotar é mudar temChave para verdadeiro. O vídeo aponta, na regra da coleta, a linha Alterar temChave para verdadeiro desligada, explica por que recomeçar antes de ligar e diz que o sumiço e o aviso são iguais nos dois modos. Cada bloco que chega com nome de outro jogo diz o nome e o clique: o encontro chega com jogador e inimigo, Destruir o sprite chega com resposta, e Criar e Alterar variável chegam com contador. O encaixe no evento é "no espaço vazio ao lado da palavra fazer", a seção 3 manda encontrar a área Quando acontecer antes do segundo bloco, a seção 4 fala o reinício por Atualizar, e a comemoração do fim cita temChave. As três pontes das montagens terminam na ação de saída. Durações novas, sem acelerar: seção 1 de 120 a 140 s para 160 a 190 s, seções 2 e 3 de 3 a 4 min para 4 a 5 min e seção 4 de 2 a 3 min para 3 a 4 min. Seções, blocos e critérios não mudaram; o texto do critério do aviso passou a "Mude aviso para um texto dentro do encontro com a chave.".
+
 ## Vozes e produção · 10/10/2026
 
 **Dedé** participa em 6 entradas, alternando por aula: Debinha, Dedé, Debinha e Dedé no certificado. O [roteiro completo](desafio-dia-2.roteiro.md) identifica **Professora**, **Dedé (avatar)** e as falas do **Zappy na página (não gravar)**. Cada entrada tem ID, fala literal, saída e retomada da professora.
@@ -32,7 +34,7 @@ As falas estão aplicadas aos documentos; gravação, edição e publicação de
 
 | O que a aula ensina | Abstrato? | Vira concreto? | Como | Quando | Por quê |
 | --- | --- | --- | --- | --- | --- |
-| Falta da coleta | Não | No próprio jogo | Personagem passa pela chave e se afasta; ela continua no chão | Antes da montagem, seção 1 | Problema real, sem simular defeito |
+| Falta da coleta | Não | No próprio jogo | Personagem passa por cima da chave; ela continua no chão | Na retomada da seção 2, antes de montar | Problema real, sem simular defeito |
 | Variável | Sim | No mostrador da experiência e depois na construção | Comparar a coleta com a regra de guardar desligada e ligada | Antes da montagem | Separar aparência, aviso e informação guardada |
 | Falso e verdadeiro | Sim | No mostrador temChave | Falso: coleta ainda não guardada; verdadeiro: guardada | Na experiência e no valor inicial | Evitar confundir falso com erro do aluno |
 | Evento | Sim, mas próximo da ação | No encontro real | Contato personagem/chave dispara ações | Explicar fazendo, na experiência da seção 1; lembrar na seção 2 antes de pegar o bloco | Ligar acontecimento a resposta |
@@ -43,7 +45,7 @@ A nova cena `collect-and-remember` concretiza a memória booleana deste jogo. A 
 
 ## Diagnóstico do desenho atual
 
-O review de 03/10 encontrou conceitos na seção somente de vídeo, separados do momento da montagem. A revisão de 04/10 acrescenta ação nessa primeira seção: comparar, afastar e reiniciar, acompanhando temChave. A definição de variável aparece no mostrador; evento é explicado ao montar o encontro.
+O review de 03/10 encontrou conceitos na seção somente de vídeo, separados do momento da montagem. A revisão de 04/10 acrescenta ação nessa primeira seção: comparar, afastar e reiniciar, acompanhando temChave. A definição de variável aparece no mostrador temChave; o evento é explicado na experiência da seção 1, ao clicar em Encostar na chave, e lembrado na seção 2, antes de criar a área Quando acontecer.
 
 A definição de evento como “uma instrução” foi corrigida: o encontro é o acontecimento; o bloco programa a resposta. Falso ganhou significado concreto. O aviso foi distinguido da memória.
 
@@ -67,9 +69,9 @@ A verificação aceitava temChave verdadeiro em outro encontro e não cobrava a 
 - **Conclui quando:** vídeo e aprovação dos três critérios de movimento mais a retirada dentro do encontro.
 - **Blocos:** `video-d2-recolher`, `ponte-d2-recolher`; Estúdio pela `workspaceKey: projeto`.
 
-**Ponte do Zappy na página (não gravar):** Agora faça o seu personagem pegar a chave! Programe o encontro e faça a chave sair do chão. Depois teste e clique em Verificar esta parte.
+**Ponte do Zappy na página (não gravar):** Agora faça o seu personagem pegar a chave! Programe o encontro e faça a chave sair do chão. Depois teste e clique em Verificar esta parte. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
-O projeto do Dia 1 ainda não tem a área **Quando acontecer**: o Estúdio só cria as áreas que têm blocos. A fala ensina a pegá-la em **Áreas do projeto** e soltar num espaço vazio, e só depois o encontro vai para dentro dela. O critério `recolher` exige o encontro nessa área.
+O projeto do Dia 1 ainda não tem a área **Quando acontecer**: o Estúdio só cria as áreas que têm blocos. A fala ensina a pegá-la em **Áreas do projeto** e soltar num lugar sem blocos, ao lado das áreas, e só depois o encontro vai para dentro dela. O critério `recolher` exige o encontro nessa área.
 
 ### Seção 3. Guarde que a chave foi encontrada
 
@@ -78,7 +80,7 @@ O projeto do Dia 1 ainda não tem a área **Quando acontecer**: o Estúdio só c
 - **Conclui quando:** vídeo e aprovação de sete critérios: movimento, retirada, temChave em falso e verdadeiro no encontro, depois da retirada.
 - **Blocos:** `video-d2-guardar`, `ponte-d2-guardar`; Estúdio pela `workspaceKey: projeto`.
 
-**Ponte do Zappy na página (não gravar):** Agora ensine o seu jogo a lembrar da chave! Crie temChave começando em falso e mude para verdadeiro no encontro com a chave. Depois clique em Verificar esta parte.
+**Ponte do Zappy na página (não gravar):** Agora ensine o seu jogo a lembrar da chave! Crie temChave começando em falso e mude para verdadeiro no encontro com a chave. Depois clique em Verificar esta parte. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
 A mudança de temChave não aparece no jogo. A fala diz isso com honestidade: quem usa a informação é a porta, no Dia 3, e por enquanto quem confere é a verificação.
 
@@ -89,9 +91,9 @@ A mudança de temChave não aparece no jogo. A fala diz isso com honestidade: qu
 - **Conclui quando:** vídeo, aprovação dos oito critérios e envio confirmado do projeto.
 - **Blocos:** `video-d2-programar`, `ponte-d2-programar` e o Estúdio `projeto` com a cadeia existente.
 
-**Ponte do Zappy na página (não gravar):** Agora avise quem está jogando! Mostre uma mensagem quando a chave for encontrada. Teste a coleta e clique em Verificar esta parte antes de enviar o seu projeto.
+**Ponte do Zappy na página (não gravar):** Agora avise quem está jogando! Mostre uma mensagem quando a chave for encontrada. Teste a coleta e clique em Verificar esta parte. Depois clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir fase.
 
-Testar coleta, mudança do aviso e reinício por Atualizar. O texto do aviso com as palavras da criança fica para o mexa e veja do Dia 3. Conferir **Verificar esta parte → Objetivo cumprido! → Enviar meu projeto → Enviar → Concluir fase**. Entre o envio e **Concluir fase**, reconhecer a conquista com "Pronto, você programou a coleta da chave e o aviso do seu jogo!" e retomar uma vez só a surpresa que o narrador contou no Dia 1, sem mostrar nada dela ("E lembra da surpresa que eu te contei quando a aventura começou? Ela está quase aqui! Na próxima fase você vai descobrir o que é.").
+Testar coleta, mudança do aviso e reinício por Atualizar, que a fala pede ("Agora clique em Atualizar. Começa uma partida nova: a chave volta para o chão, e o aviso diz de novo Encontre a chave e vá ao farol."). O texto do aviso com as palavras da criança fica para o mexa e veja do Dia 3. Conferir **Verificar esta parte → Objetivo cumprido! → Enviar meu projeto → Enviar → Concluir fase**. Entre o envio e **Concluir fase**, reconhecer a conquista com "Pronto, você programou a coleta da chave: ela sai do chão, o jogo guarda em temChave que ela foi pega, e o aviso muda!" e retomar uma vez só a surpresa que o narrador contou no Dia 1, sem mostrar nada dela ("E lembra da surpresa que eu te contei quando a aventura começou? Ela está quase aqui! Na próxima fase você vai descobrir o que é.").
 
 ## Experiências e demonstrações desta aula
 
@@ -103,10 +105,10 @@ A verificação é cumulativa em cada montagem: a seção 2 confere o movimento 
 
 | Chave | O que mostra | Origem | Duração alvo | Reaproveita gravação? |
 | --- | --- | --- | --- | --- |
-| `video-d2-contexto` | Demonstração explicada da memória | Retomada e nova experiência | 120 a 140 s | Regravar |
-| `video-d2-recolher` | Encontro com a chave, retirada, teste e verificação | Projeto do Dia 1 | 3 a 4 min | Gravar |
-| `video-d2-guardar` | temChave em falso e verdadeiro no encontro, verificação | Mesmo projeto | 3 a 4 min | Gravar |
-| `video-d2-programar` | Aviso, teste e envio (o aviso com as palavras da criança fica para o Dia 3) | Mesmo projeto | 2 a 3 min | Regravar |
+| `video-d2-contexto` | Demonstração explicada da memória | Nova experiência, aberta direto na cena | 160 a 190 s | Gravar |
+| `video-d2-recolher` | Encontro com a chave, retirada, teste e verificação | Projeto do Dia 1 | 4 a 5 min | Gravar |
+| `video-d2-guardar` | temChave em falso e verdadeiro no encontro, verificação | Mesmo projeto | 4 a 5 min | Gravar |
+| `video-d2-programar` | Aviso, teste e envio (o aviso com as palavras da criança fica para o Dia 3) | Mesmo projeto | 3 a 4 min | Gravar |
 
 **Personalização de 06/10/2026:** os projetos recebem o catálogo ampliado de imagens, com nomes reconhecíveis. Os sprites continuam `personagem`, `chave`, `farol` e `barco`; os passos e os critérios de coleta usam esses nomes e não dependem do desenho escolhido. A escolha de velocidade saiu do Dia 1; o movimento preparado permanece em 3.
 
@@ -122,5 +124,5 @@ O roteiro tem 6 entradas ao todo. As novas falas abaixo distribuem perguntas, re
 
 | Entrada | Depois da professora | Criança | Retomada da professora |
 | --- | --- | --- | --- |
-| F2P2-R01 | “No primeiro nome, escolha personagem e, no segundo, escolha chave. Assim, tudo o que você colocar dentro desse bloco vai acontecer quando o personagem encostar na chave.” | Dedé: “Se eu só passar perto da chave, não vale!” | “Agora vem a ação: tirar a chave do chão. Ela vai dentro desse encontro. Deixe à vista o espaço vazio dentro dele.” |
-| F2P3-R01 | “Confira se ficou assim: no fim de Ao iniciar, está Criar variável temChave com valor falso.” | Dedé: “Ah! Na partida nova eu tenho que buscar a chave outra vez!” | “Agora que temChave existe, o jogo precisa mudar essa informação quando o personagem encostar na chave. Por isso, o próximo bloco vai logo abaixo de Destruir o sprite, dentro do encontro. Deixe esse lugar à vista.” |
+| F2P2-R01 | “Repare que o bloco chega com dois nomes, jogador e inimigo. Clique em jogador e escolha personagem. Depois clique em inimigo e escolha chave. Assim, tudo o que você colocar dentro desse bloco vai acontecer quando o personagem encostar na chave.” | Dedé: “Só pega se o personagem encostar mesmo na chave!” | “Agora vem a ação: tirar a chave do chão. Essa ação vai dentro do encontro, no espaço vazio ao lado da palavra fazer. Deixe esse espaço à vista.” |
+| F2P3-R01 | “Confira se ficou assim: no fim de Ao iniciar, está Criar variável temChave com valor falso.” | Dedé: “Ah! Na partida nova eu tenho que buscar a chave outra vez!” | “Agora que temChave existe, o jogo precisa mudar essa informação quando o personagem encostar na chave. Por isso, o próximo bloco vai logo abaixo de Destruir o sprite, dentro do encontro. Encontre a área Quando acontecer, arrastando um espaço vazio entre os blocos se precisar, e deixe esse lugar à vista.” |

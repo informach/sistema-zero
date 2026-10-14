@@ -1,0 +1,216 @@
+<!doctype html><html lang="pt-BR"><meta charset="utf-8"><link rel="icon" href="data:,"><style>html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:Arial;background:#091429}</style><script>let seed=314159;Math.random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296};;window.__SZSTUDIO_RUNTIME_INSPECTORS={};</script><script src="./batalha-runtime.js"></script><script type="module">
+SZGameKit.runProject(function __szProjectRun() {
+  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGameKit.restartGame());
+  // Meus moldes
+  SZGameKit.defineLook("treinadora", (ctx) => {
+    ctx.fillStyle = "#e8590c";
+    ctx.fillRect(10, 0, 24, 10);
+    ctx.fillStyle = "#ffd8a8";
+    ctx.fillRect(12, 10, 20, 12);
+    ctx.fillStyle = "#1971c2";
+    ctx.fillRect(8, 22, 28, 18);
+    ctx.fillStyle = "#343a40";
+    ctx.fillRect(12, 40, 20, 16);
+  }, 44, 56);
+  SZGameKit.defineLook("rival", (ctx) => {
+    ctx.fillStyle = "#2f9e44";
+    ctx.fillRect(10, 0, 24, 10);
+    ctx.fillStyle = "#ffe8cc";
+    ctx.fillRect(12, 10, 20, 12);
+    ctx.fillStyle = "#e03131";
+    ctx.fillRect(8, 22, 28, 18);
+    ctx.fillStyle = "#212529";
+    ctx.fillRect(12, 40, 20, 16);
+  }, 44, 56);
+  SZGameKit.defineLook("fonte", (ctx) => {
+    ctx.fillStyle = "#adb5bd";
+    ctx.fillRect(5, 70, 120, 30);
+    ctx.fillStyle = "#74c0fc";
+    ctx.fillRect(15, 76, 100, 18);
+    ctx.fillStyle = "#ced4da";
+    ctx.fillRect(52, 30, 26, 44);
+    ctx.fillStyle = "#a5d8ff";
+    ctx.beginPath();
+    ctx.arc(65, 22, 14, 0, Math.PI * 2);
+    ctx.fill();
+  }, 130, 110);
+  SZGameKit.defineLook("grama", (ctx) => {
+    ctx.fillStyle = "#2f9e44";
+    ctx.fillRect(6, 24, 10, 32);
+    ctx.fillRect(24, 12, 10, 44);
+    ctx.fillRect(42, 26, 10, 30);
+    ctx.fillStyle = "#51cf66";
+    ctx.fillRect(15, 34, 8, 22);
+  }, 56, 56);
+  SZGameKit.defineLook("faisco", (ctx) => {
+    ctx.fillStyle = "#ff922b";
+    ctx.fillRect(14, 26, 46, 30);
+    ctx.fillRect(18, 10, 12, 18);
+    ctx.fillStyle = "#ffd43b";
+    ctx.fillRect(54, 6, 14, 24);
+    ctx.fillStyle = "#212529";
+    ctx.fillRect(46, 34, 6, 6);
+  }, 80, 64);
+  SZGameKit.defineLook("gotinha", (ctx) => {
+    ctx.fillStyle = "#4dabf7";
+    ctx.beginPath();
+    ctx.arc(36, 38, 24, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillRect(30, 4, 12, 16);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(26, 32, 6, 8);
+  }, 72, 64);
+  SZGameKit.defineLook("brotinho", (ctx) => {
+    ctx.fillStyle = "#69db7c";
+    ctx.fillRect(16, 28, 40, 32);
+    ctx.fillStyle = "#2f9e44";
+    ctx.fillRect(31, 6, 10, 24);
+    ctx.fillRect(39, 10, 16, 8);
+    ctx.fillStyle = "#212529";
+    ctx.fillRect(44, 38, 6, 6);
+  }, 72, 68);
+  SZGameKit.defineLook("folhito", (ctx) => {
+    ctx.fillStyle = "#8ce99a";
+    ctx.fillRect(12, 20, 40, 28);
+    ctx.fillStyle = "#2b8a3e";
+    ctx.fillRect(16, 6, 8, 16);
+    ctx.fillStyle = "#212529";
+    ctx.fillRect(40, 28, 5, 5);
+  }, 64, 56);
+  SZGameKit.defineLook("pingo", (ctx) => {
+    ctx.fillStyle = "#74c0fc";
+    ctx.beginPath();
+    ctx.arc(28, 30, 20, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillRect(24, 2, 8, 14);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(22, 24, 5, 7);
+  }, 56, 52);
+  SZGameKit.defineLook("braseiro", (ctx) => {
+    ctx.fillStyle = "#fa5252";
+    ctx.fillRect(14, 24, 44, 30);
+    ctx.fillStyle = "#ffa94d";
+    ctx.fillRect(26, 4, 10, 22);
+    ctx.fillStyle = "#ffe066";
+    ctx.fillRect(28, 0, 6, 8);
+    ctx.fillStyle = "#212529";
+    ctx.fillRect(48, 32, 6, 6);
+  }, 72, 60);
+  SZGameKit.defineLook("faiscolosso", (ctx) => {
+    ctx.fillStyle = "#f59f00";
+    ctx.fillRect(12, 30, 72, 44);
+    ctx.fillStyle = "#ffd43b";
+    ctx.fillRect(28, 4, 16, 28);
+    ctx.fillRect(52, 10, 14, 22);
+    ctx.fillStyle = "#e8590c";
+    ctx.fillRect(12, 14, 10, 18);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(62, 42, 10, 8);
+  }, 96, 80);
+  SZGameKit.pkmCreature("Faisco", "fogo", 34, 9, 5, 8, "", "faisco");
+  SZGameKit.pkmCreature("Gotinha", "água", 36, 8, 6, 6, "", "gotinha");
+  SZGameKit.pkmCreature("Brotinho", "planta", 38, 8, 7, 5, "", "brotinho");
+  SZGameKit.pkmCreature("Folhito", "planta", 30, 7, 5, 6, "", "folhito");
+  SZGameKit.pkmCreature("Pingo", "água", 32, 8, 5, 7, "", "pingo");
+  SZGameKit.pkmCreature("Braseiro", "fogo", 34, 10, 6, 8, "", "braseiro");
+  SZGameKit.pkmCreature("Faiscolosso", "fogo", 60, 12, 8, 10, "", "faiscolosso");
+  SZGameKit.pkmMove("Brasa", "Faisco", "fogo", 14, 95, "bola", "#ff922b");
+  SZGameKit.pkmMove("Rasteira", "Faisco", "normal", 9, 100, "investida", "#ced4da");
+  SZGameKit.pkmMove("Esguicho", "Gotinha", "água", 14, 95, "onda", "#339af0");
+  SZGameKit.pkmMove("Chicote de Folha", "Brotinho", "planta", 14, 95, "raio", "#51cf66");
+  SZGameKit.pkmMove("Folha Afiada", "Folhito", "planta", 12, 95, "raio", "#40c057");
+  SZGameKit.pkmMove("Bolha", "Pingo", "água", 12, 95, "bola", "#4dabf7");
+  SZGameKit.pkmMove("Labareda", "Braseiro", "fogo", 16, 90, "bola", "#fa5252");
+  SZGameKit.pkmMove("Trovão de Fogo", "Faiscolosso", "fogo", 22, 90, "raio", "#ffd43b");
+  SZGameKit.pkmTypeChart("fogo", "planta", 1.5);
+  SZGameKit.pkmTypeChart("planta", "fogo", 0.5);
+  SZGameKit.pkmTypeChart("água", "fogo", 2);
+  SZGameKit.pkmTypeChart("fogo", "água", 0.5);
+  SZGameKit.pkmTypeChart("planta", "água", 2);
+  SZGameKit.pkmTypeChart("água", "planta", 0.5);
+  SZGameKit.defineRegion("fonte", 50, 40, 130, 110);
+  SZGameKit.defineRegion("grama", 660, 360, 240, 150);
+  SZGameKit.defineMold("rival", { w: 44, h: 56, health: 1, speed: 0, damage: 0, color: "#e03131", image: "", look: "rival" });
+  // Ao iniciar
+  SZGameKit.setup({ width: 960, height: 540, background: "#8fce77", accent: "#2b8a3e" });
+  SZGameKit.setScreenText("menu", "Batalha de Monstrinhos Profissional", "Setas: andar. ESPAÇO perto da rival Alice: batalhar! Fogo vence planta, planta vence água e água vence fogo. Cure o time na fonte e capture o Faiscolosso no mato fundo.", "Começar");
+  SZGameKit.setScreenText("vitoria", "Capturou!", "O Faiscolosso entrou para o seu time. Você é a nova lenda do quintal!", "Jogar de novo");
+  SZGameKit.pkmCatchDifficulty("Faiscolosso", "difícil");
+  SZGameKit.pkmGive("Faisco", 5);
+  SZGameKit.pkmGive("Gotinha", 5);
+  SZGameKit.pkmGive("Brotinho", 5);
+  SZGameKit.pkmGiveBall(5, 65);
+  const rival = SZGameKit.spawnFromMold("rival", 760, 230);
+  const heroi = SZGameKit.createCharacter({ image: "", w: 44, h: 56, speed: 240, color: "#1971c2" });
+  SZGameKit.placeCharacter(heroi, 140, 420);
+  SZGameKit.setHitbox(heroi, 8, 8, 28, 44);
+  SZGameKit.stateLook(heroi, "parado", "treinadora");
+  SZGameKit.stateLook(heroi, "andando", "treinadora");
+  let timeCaido = 0;
+  // Quando acontecer
+  SZGameKit.on("monstrinho:pegou", () => {
+    SZGameKit.playEffect("win");
+  });
+  SZGameKit.rpgOnBattleEnd(() => {
+    if (!SZGameKit.rpgBattleWon() && !SZGameKit.pkmCaught()) {
+      timeCaido = 1;
+    }
+  });
+  // Enquanto estiver rodando
+  SZGameKit.onUpdate((dt) => {
+    if (SZGameKit.pkmCaught()) {
+      SZGameKit.setState("vitoria");
+    }
+    SZGameKit.moveWithKeys(heroi, dt);
+    SZGameKit.keepOnScreen(heroi);
+    SZGameKit.autoAnimate(heroi);
+    if (SZGameKit.touching(heroi, rival) && SZGameKit.keyPressed(" ")) {
+      SZGameKit.playEffect("click");
+      SZGameKit.pkmBattleTrainer("Alice", () => {
+        SZGameKit.pkmTrainerCreature("Folhito", 5);
+        SZGameKit.pkmTrainerCreature("Pingo", 6);
+        SZGameKit.pkmTrainerCreature("Braseiro", 7);
+      });
+    }
+  });
+  SZGameKit.onDraw((ctx) => {
+    SZGameKit.drawBackground("#8fce77", false);
+    SZGameKit.drawLook("fonte", 50, 40, 130, 110);
+    for (let i = 0, fim = 4, passo = 1; passo > 0 ? i < fim : passo < 0 ? i > fim : false; i += passo) {
+      SZGameKit.drawLook("grama", 660 + i * 60, 366, 56, 56);
+      SZGameKit.drawLook("grama", 690 + i * 60, 440, 56, 56);
+    }
+    SZGameKit.drawActive("rival");
+    SZGameKit.drawCharacter(heroi);
+  });
+  SZGameKit.onDrawHud((ctx) => {
+    SZGameKit.pkmDrawTeam(16, 14);
+    ctx.fillStyle = "#14331a";
+    ctx.font = "16px sans-serif";
+    ctx.fillText("Bolas de captura: " + SZGameKit.pkmBallCount(), 20, 128);
+    ctx.fillText("Fonte: cura o time e repõe as bolas. Mato fundo: monstrinho raro!", 20, 528);
+  });
+  SZGameKit.onUpdate(function __szPeriodicLoop(dt) {
+    if (SZGameKit.everySeconds("cada", 1.5)) {
+      if (SZGameKit.overlapPercent(heroi, "fonte") > 50) {
+        SZGameKit.pkmHealTeam();
+        timeCaido = 0;
+        if (SZGameKit.pkmBallCount() == 0) {
+          SZGameKit.pkmGiveBall(3, 65);
+          SZGameKit.floatText("Bolas novas!", SZGameKit.charX(heroi), SZGameKit.charY(heroi) - 44, "#fff3bf", 18);
+        }
+        SZGameKit.playEffect("powerup");
+        SZGameKit.floatText("Time curado!", SZGameKit.charX(heroi), SZGameKit.charY(heroi) - 20, "#e7f5ff", 18);
+      }
+    }
+  });
+  SZGameKit.onUpdate(function __szPeriodicLoop(dt) {
+    if (SZGameKit.everySeconds("cada_2", 1)) {
+      if (timeCaido == 0 && SZGameKit.overlapPercent(heroi, "grama") > 50 && SZGameKit.chance(35)) {
+        SZGameKit.pkmBattleWild("Faiscolosso", 9);
+      }
+    }
+  });
+});
+SZGameKit.start();
+</script></html>

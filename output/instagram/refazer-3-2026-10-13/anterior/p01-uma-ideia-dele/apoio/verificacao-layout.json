@@ -1,0 +1,266 @@
+[
+  {
+    "id": "s1",
+    "dimensions": [
+      1080,
+      1350
+    ],
+    "copy": "Seu filho sabe tudo\nsobre o\njogo dos outros. Ele conhece personagens, mapas e atalhos.\nUma dessas preferências pode virar uma ideia dele.",
+    "content": [
+      {
+        "kind": "copy title",
+        "isCopy": true,
+        "top": 125,
+        "bottom": 417,
+        "left": 64,
+        "right": 1016,
+        "overflow": false
+      },
+      {
+        "kind": "copy lead",
+        "isCopy": true,
+        "top": 449,
+        "bottom": 545,
+        "left": 67,
+        "right": 1016,
+        "overflow": false
+      },
+      {
+        "kind": "scene",
+        "isCopy": false,
+        "top": 583,
+        "bottom": 1218,
+        "left": 64,
+        "right": 1016,
+        "overflow": false
+      }
+    ],
+    "overlaps": [],
+    "footerTop": 1281,
+    "passed": true,
+    "copyMatches": true
+  },
+  {
+    "id": "s2",
+    "dimensions": [
+      1080,
+      1350
+    ],
+    "copy": "Assistir e jogar fazem\nparte da diversão. Mas vale abrir espaço para uma pergunta: “O que você gostaria\nde fazer do seu jeito?”",
+    "content": [
+      {
+        "kind": "copy title",
+        "isCopy": true,
+        "top": 128,
+        "bottom": 299,
+        "left": 64,
+        "right": 1016,
+        "overflow": false
+      },
+      {
+        "kind": "scene",
+        "isCopy": false,
+        "top": 339,
+        "bottom": 959,
+        "left": 64,
+        "right": 1016,
+        "overflow": false
+      },
+      {
+        "kind": "copy bridge",
+        "isCopy": true,
+        "top": 995,
+        "bottom": 1041,
+        "left": 64,
+        "right": 1016,
+        "overflow": false
+      },
+      {
+        "kind": "copy question-text",
+        "isCopy": true,
+        "top": 1050,
+        "bottom": 1190,
+        "left": 64,
+        "right": 1016,
+        "overflow": false
+      }
+    ],
+    "overlaps": [],
+    "footerTop": 1281,
+    "passed": true,
+    "copyMatches": true
+  },
+  {
+    "id": "s3",
+    "dimensions": [
+      1080,
+      1350
+    ],
+    "copy": "Talvez ele queira uma casa numa árvore, um personagem engraçado ou um caminho cheio de surpresas. A ideia pode começar pequena.",
+    "content": [
+      {
+        "kind": "copy title",
+        "isCopy": true,
+        "top": 126,
+        "bottom": 318,
+        "left": 64,
+        "right": 1016,
+        "overflow": false
+      },
+      {
+        "kind": "scene",
+        "isCopy": false,
+        "top": 434,
+        "bottom": 1104,
+        "left": 32,
+        "right": 1048,
+        "overflow": false
+      },
+      {
+        "kind": "copy ending",
+        "isCopy": true,
+        "top": 1145,
+        "bottom": 1208,
+        "left": 64,
+        "right": 1016,
+        "overflow": false
+      }
+    ],
+    "overlaps": [],
+    "footerTop": 1281,
+    "passed": true,
+    "copyMatches": true
+  },
+  {
+    "id": "s4",
+    "dimensions": [
+      1080,
+      1350
+    ],
+    "copy": "Ao criar, ele pode decidir\nonde passa o caminho\ne o que alguém encontra nele. Montar e testar mostra\nse a ideia funciona.",
+    "content": [
+      {
+        "kind": "copy title",
+        "isCopy": true,
+        "top": 132,
+        "bottom": 347,
+        "left": 64,
+        "right": 1016,
+        "overflow": false
+      },
+      {
+        "kind": "game",
+        "isCopy": false,
+        "top": 424,
+        "bottom": 1066,
+        "left": 42,
+        "right": 1038,
+        "overflow": false
+      },
+      {
+        "kind": "copy ending",
+        "isCopy": true,
+        "top": 1114,
+        "bottom": 1242,
+        "left": 64,
+        "right": 1016,
+        "overflow": false
+      }
+    ],
+    "overlaps": [],
+    "footerTop": 1281,
+    "passed": true,
+    "copyMatches": true
+  },
+  {
+    "id": "s5",
+    "dimensions": [
+      1080,
+      1350
+    ],
+    "copy": "Parte daquela tarde pode terminar com algo que ele queira mostrar: “Esse caminho\nfui eu que fiz”.",
+    "content": [
+      {
+        "kind": "copy title",
+        "isCopy": true,
+        "top": 131,
+        "bottom": 267,
+        "left": 64,
+        "right": 1016,
+        "overflow": false
+      },
+      {
+        "kind": "sketch",
+        "isCopy": false,
+        "top": 312,
+        "bottom": 820,
+        "left": 51,
+        "right": 771,
+        "overflow": false
+      },
+      {
+        "kind": "built",
+        "isCopy": false,
+        "top": 641,
+        "bottom": 1085,
+        "left": 261,
+        "right": 1018,
+        "overflow": false
+      },
+      {
+        "kind": "copy ending",
+        "isCopy": true,
+        "top": 1114,
+        "bottom": 1249,
+        "left": 64,
+        "right": 435,
+        "overflow": false
+      }
+    ],
+    "overlaps": [],
+    "footerTop": 1281,
+    "passed": true,
+    "copyMatches": true
+  },
+  {
+    "id": "s6",
+    "dimensions": [
+      1080,
+      1350
+    ],
+    "copy": "Aqui, a gente ensina\ncrianças a criar\nos próprios jogos. Siga o perfil\npara conhecer esse caminho.",
+    "content": [
+      {
+        "kind": "copy title",
+        "isCopy": true,
+        "top": 128,
+        "bottom": 400,
+        "left": 64,
+        "right": 1016,
+        "overflow": false
+      },
+      {
+        "kind": "scene",
+        "isCopy": false,
+        "top": 435,
+        "bottom": 1055,
+        "left": 64,
+        "right": 1016,
+        "overflow": false
+      },
+      {
+        "kind": "copy invitation",
+        "isCopy": true,
+        "top": 1100,
+        "bottom": 1238,
+        "left": 64,
+        "right": 1016,
+        "overflow": false
+      }
+    ],
+    "overlaps": [],
+    "footerTop": 1281,
+    "passed": true,
+    "copyMatches": true
+  }
+]

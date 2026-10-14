@@ -1,0 +1,3 @@
+Ele pausa para montar uma parte, testa e volta ao trecho quando precisa.
+
+Numa atividade de criação, esse intervalo pode estar cheio de trabalho.

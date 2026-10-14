@@ -1,0 +1,240 @@
+[
+  {
+    "id": "slide-1",
+    "copy": [
+      "“Nada funciona”, ele diz, e fecha o notebook.",
+      "Antes de pedir que tente de novo, ajude seu filho a descobrir o que deu errado."
+    ],
+    "parts": [
+      {
+        "class": "series",
+        "x": 64,
+        "y": 122,
+        "w": 263.625,
+        "h": 45.59375
+      },
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 191.59375,
+        "w": 952,
+        "h": 166.90625
+      },
+      {
+        "class": "copy tail",
+        "x": 64,
+        "y": 382.5,
+        "w": 952,
+        "h": 102.9375
+      },
+      {
+        "class": "media photo ",
+        "x": 64,
+        "y": 509.4375,
+        "w": 952,
+        "h": 738.5625
+      }
+    ],
+    "issues": [],
+    "missing": 0
+  },
+  {
+    "id": "slide-2",
+    "copy": [
+      "Quando ele diz “nada funciona”, você ainda não sabe onde ajudar.",
+      "Peça: “Me mostra o que você queria fazer e o que aconteceu.”"
+    ],
+    "parts": [
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 122,
+        "w": 952,
+        "h": 124.28125
+      },
+      {
+        "class": "media photo ",
+        "x": 64,
+        "y": 274.28125,
+        "w": 952,
+        "h": 840.71875
+      },
+      {
+        "class": "copy tail",
+        "x": 64,
+        "y": 1143,
+        "w": 952,
+        "h": 105
+      }
+    ],
+    "issues": [],
+    "missing": 0
+  },
+  {
+    "id": "slide-3",
+    "copy": [
+      "Ao criar um jogo, seu filho pode praticar isso: olhar para o que falhou.",
+      "Neste exemplo, o personagem pula, mas não chega à próxima plataforma."
+    ],
+    "parts": [
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 122,
+        "w": 952,
+        "h": 111.84375
+      },
+      {
+        "class": "media game ",
+        "x": 64,
+        "y": 261.84375,
+        "w": 952,
+        "h": 828.15625
+      },
+      {
+        "class": "copy tail",
+        "x": 64,
+        "y": 1118,
+        "w": 952,
+        "h": 130
+      }
+    ],
+    "issues": [],
+    "missing": 0
+  },
+  {
+    "id": "slide-4",
+    "copy": [
+      "Agora dá para pensar em duas mudanças: fazer o personagem pular mais longe ou deixar a plataforma mais perto.",
+      "Vamos testar só uma delas."
+    ],
+    "parts": [
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 122,
+        "w": 952,
+        "h": 166.078125
+      },
+      {
+        "class": "media game ",
+        "x": 64,
+        "y": 316.078125,
+        "w": 952,
+        "h": 842.671875
+      },
+      {
+        "class": "copy tail",
+        "x": 64,
+        "y": 1186.75,
+        "w": 952,
+        "h": 61.25
+      }
+    ],
+    "issues": [],
+    "missing": 0
+  },
+  {
+    "id": "slide-5",
+    "copy": [
+      "A gente deixou a plataforma mais perto e testou o mesmo pulo.",
+      "Dessa vez, o personagem chegou e pegou a moeda. Bastou mudar essa parte do jogo."
+    ],
+    "parts": [
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 122,
+        "w": 952,
+        "h": 110.71875
+      },
+      {
+        "class": "comparison jump",
+        "x": 64,
+        "y": 253.71875,
+        "w": 952,
+        "h": 712.78125
+      },
+      {
+        "class": "block",
+        "x": 64,
+        "y": 987.5,
+        "w": 952,
+        "h": 132
+      },
+      {
+        "class": "copy tail",
+        "x": 64,
+        "y": 1140.5,
+        "w": 952,
+        "h": 107.5
+      }
+    ],
+    "issues": [],
+    "missing": 0
+  },
+  {
+    "id": "slide-6",
+    "copy": [
+      "É isso que seu filho pratica ao criar jogos: entender o erro, escolher uma mudança e tentar de novo.",
+      "Se estiver cansado, façam uma pausa e retomem depois."
+    ],
+    "parts": [
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 122,
+        "w": 952,
+        "h": 172.875
+      },
+      {
+        "class": "media photo ",
+        "x": 64,
+        "y": 322.875,
+        "w": 952,
+        "h": 789.625
+      },
+      {
+        "class": "copy tail",
+        "x": 64,
+        "y": 1140.5,
+        "w": 952,
+        "h": 107.5
+      }
+    ],
+    "issues": [],
+    "missing": 0
+  },
+  {
+    "id": "slide-7",
+    "copy": [
+      "Resolver um problema começa por entender o que deu errado.",
+      "Siga @criecomhelenaejulio. Aqui mostramos como seu filho pode praticar isso criando os próprios jogos."
+    ],
+    "parts": [
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 122,
+        "w": 952,
+        "h": 118.53125
+      },
+      {
+        "class": "media photo ",
+        "x": 64,
+        "y": 268.53125,
+        "w": 952,
+        "h": 797.71875
+      },
+      {
+        "class": "copy tail",
+        "x": 64,
+        "y": 1094.25,
+        "w": 952,
+        "h": 153.75
+      }
+    ],
+    "issues": [],
+    "missing": 0
+  }
+]

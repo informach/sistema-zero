@@ -1,0 +1,53 @@
+{
+  "status": "conferido",
+  "slides": [
+    {
+      "file": "01-p04.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 1112228
+    },
+    {
+      "file": "02-p04.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 1103375
+    },
+    {
+      "file": "03-p04.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 357831
+    },
+    {
+      "file": "04-p04.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 1052605
+    },
+    {
+      "file": "05-p04.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 183615
+    },
+    {
+      "file": "06-p04.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 1132509
+    },
+    {
+      "file": "07-p04.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 1179097
+    }
+  ],
+  "copyPreserved": true,
+  "fontsLoaded": true,
+  "localLinks": 31,
+  "errors": [],
+  "artDirection": "Leitura visual de capa, sete slides, continuidade da personagem e prévia móvel; imagens independentes por slide.",
+  "scope": "P04 produzido, índices atualizados. Sem publicar, agendar, commit ou deploy."
+}

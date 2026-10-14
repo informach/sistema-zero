@@ -1,0 +1,9 @@
+Quase todo “nada funciona” que a gente ouve programando é, no fim, uma coisa só.
+
+Só que, do jeito que a frase sai, parece que tudo quebrou. E ninguém tem energia para consertar tudo.
+
+A gente chama isso de dar endereço ao erro. No jogo de plataformas nas nuvens do nosso Estúdio, afastamos uma plataforma para mostrar: o herói pulava e caía. Com endereço, virou “o salto ficou curto”. Mantivemos o pulo 11, aproximamos a plataforma e ele alcançou a moeda.
+
+Na próxima dificuldade, peça para ele mostrar onde começa a dar errado. Se ele estiver cansado, deixe para depois do lanche: o endereço continua lá.
+
+Siga @criecomhelenaejulio para a próxima tradução de criança.

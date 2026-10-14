@@ -1,0 +1,120 @@
+{
+  "passed": true,
+  "slides": [
+    {
+      "file": "01-p01.png",
+      "png": true,
+      "width": 1080,
+      "height": 1350
+    },
+    {
+      "file": "02-p01.png",
+      "png": true,
+      "width": 1080,
+      "height": 1350
+    },
+    {
+      "file": "03-p01.png",
+      "png": true,
+      "width": 1080,
+      "height": 1350
+    },
+    {
+      "file": "04-p01.png",
+      "png": true,
+      "width": 1080,
+      "height": 1350
+    },
+    {
+      "file": "05-p01.png",
+      "png": true,
+      "width": 1080,
+      "height": 1350
+    },
+    {
+      "file": "06-p01.png",
+      "png": true,
+      "width": 1080,
+      "height": 1350
+    }
+  ],
+  "removed": [
+    {
+      "path": "producao/postagens/p01-nao-consigo",
+      "absent": true
+    },
+    {
+      "path": "historico/2026-10-12-antes-revisao-cotidiano/p01-nao-consigo",
+      "absent": true
+    },
+    {
+      "path": "historico/2026-10-12-antes-revisao-de-clareza/p01-nao-consigo",
+      "absent": true
+    }
+  ],
+  "localLinks": [
+    {
+      "source": "03-postagens.md",
+      "target": "producao/postagens/p01-uma-ideia-dele/index.html",
+      "exists": true
+    },
+    {
+      "source": "historico\\2026-10-12-antes-60-dores-desejos\\LEIA-ME.md",
+      "target": "../../producao/postagens/p01-uma-ideia-dele/index.html",
+      "exists": true
+    },
+    {
+      "source": "historico\\2026-10-12-antes-60-dores-desejos\\producao\\postagens\\README.md",
+      "target": "../../../../producao/postagens/p01-uma-ideia-dele/index.html",
+      "exists": true
+    },
+    {
+      "source": "historico\\2026-10-12-antes-revisao-cotidiano\\LEIA-ME.md",
+      "target": "../../producao/postagens/p01-uma-ideia-dele/index.html",
+      "exists": true
+    },
+    {
+      "source": "historico\\2026-10-12-antes-revisao-de-clareza\\LEIA-ME.md",
+      "target": "../../producao/postagens/p01-uma-ideia-dele/index.html",
+      "exists": true
+    },
+    {
+      "source": "pesquisas\\revisao-60-dores-desejos-2026-10-12.md",
+      "target": "../producao/postagens/p01-uma-ideia-dele/index.html",
+      "exists": true
+    },
+    {
+      "source": "postagens\\01-p01-a-p10.md",
+      "target": "../producao/postagens/p01-uma-ideia-dele/index.html",
+      "exists": true
+    },
+    {
+      "source": "postagens\\01-p01-a-p10.md",
+      "target": "../producao/postagens/p01-uma-ideia-dele/",
+      "exists": true
+    },
+    {
+      "source": "postagens\\05-direcao-visual-e-producao.md",
+      "target": "../producao/postagens/p01-uma-ideia-dele/index.html",
+      "exists": true
+    },
+    {
+      "source": "postagens\\08-exemplos-do-estudio.md",
+      "target": "../producao/postagens/p01-uma-ideia-dele/apoio/captura-real.json",
+      "exists": true
+    },
+    {
+      "source": "postagens\\08-exemplos-do-estudio.md",
+      "target": "../producao/postagens/p01-uma-ideia-dele/apoio/meu-mundo-variante.js",
+      "exists": true
+    },
+    {
+      "source": "README.md",
+      "target": "producao/postagens/p01-uma-ideia-dele/index.html",
+      "exists": true
+    }
+  ],
+  "layoutPassed": true,
+  "publication": "Não agendado nem publicado",
+  "copyReview": "Verificador Light Copy: zero ocorrências; composição e narrativa conferidas visualmente."
+}

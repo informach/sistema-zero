@@ -1,0 +1,11 @@
+Todo jogo que seu filho ama começou como um monte de frases escritas por alguém.
+
+A gente é a Helena e o Júlio, pais e programadores, e vê isso todo dia: o carrinho que dispara, a moeda que some e o recorde que aparece no fim têm, cada um, uma linha por trás.
+
+Mas o tempo de tela assistindo e jogando ensina muito sobre a plateia e quase nada sobre os bastidores, porque essa parte não aparece na tela. Por isso dá para conhecer cada youtuber de jogo e nunca ter mudado uma regra.
+
+No Estúdio, a ferramenta onde a gente cria jogos com blocos de encaixar, o turbo de um carrinho é uma regra escrita em português: turbo com força 1,5. A gente trocou por 3, e o carrinho ficou bem mais rápido na reta. Ninguém precisou desmontar o jogo: bastou mudar um número e testar de novo.
+
+Hoje, faça a pergunta “como será que fizeram isso?” e depois conte aqui o palpite dele.
+
+Siga @criecomhelenaejulio para levar essa conversa sobre os jogos para dentro de casa.

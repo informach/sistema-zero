@@ -1,0 +1,3 @@
+Numa batalha de monstrinhos, o golpe de fogo tira o dobro do monstrinho de planta.
+
+Neste jogo, feito no nosso Estúdio, essa regra é um bloco: “fogo contra planta causa 2 × de dano”.

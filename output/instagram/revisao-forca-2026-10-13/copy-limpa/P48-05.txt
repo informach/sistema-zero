@@ -1,0 +1,3 @@
+Um número na tela pode depender de escolhas: o que conta, quanto vale e quando aparece.
+
+Conhecer essas escolhas ajuda a entender o que aquele número representa.

@@ -1,0 +1,3 @@
+Nesta base da lua, feita no nosso Estúdio, mudar a gravidade altera o pulo.
+
+Quem cria pode escolher dois valores, testar e comparar como o personagem se move.

@@ -1,0 +1,3 @@
+Um jogo pronto mostra o resultado. Conversar sobre uma regra ajuda a conhecer o que ele entendeu.
+
+A explicação pode vir em palavras ou numa demonstração.

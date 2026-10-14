@@ -1,0 +1,177 @@
+{
+  "pngs": [
+    {
+      "id": "P01",
+      "file": "01-p01.png",
+      "width": 1080,
+      "height": 1350,
+      "sha256": "3b81a35bd61a5a785ca0916c63e035a4111bd5e8666ed7d383dae88f8960d9ec"
+    },
+    {
+      "id": "P01",
+      "file": "02-p01.png",
+      "width": 1080,
+      "height": 1350,
+      "sha256": "d74e87c36c761c9bbac25edf2104e105eeeb4dd181730ff047d3f5f909b9bbb4"
+    },
+    {
+      "id": "P01",
+      "file": "03-p01.png",
+      "width": 1080,
+      "height": 1350,
+      "sha256": "1c04230a84ad1b317d4d30d1e8f247e80d7f03385e98daedd18d3ec3d280f8b0"
+    },
+    {
+      "id": "P01",
+      "file": "04-p01.png",
+      "width": 1080,
+      "height": 1350,
+      "sha256": "2936da2fd28a445642d42d4cc06694aa8c97ea01767298c048f71d0d0debf3eb"
+    },
+    {
+      "id": "P01",
+      "file": "05-p01.png",
+      "width": 1080,
+      "height": 1350,
+      "sha256": "99fc0a8ad7c0ed06babf77013191805e2eadfd3396b611f31ab56caff80e539f"
+    },
+    {
+      "id": "P01",
+      "file": "06-p01.png",
+      "width": 1080,
+      "height": 1350,
+      "sha256": "d4fcd415ef0bc89af41ca04585ab4421bf175542cec2218a6c09e8fd8a194560"
+    },
+    {
+      "id": "P01",
+      "file": "07-p01.png",
+      "width": 1080,
+      "height": 1350,
+      "sha256": "632e4e42bcccf5934a24926cc5649a1970984682b7687e6d6db07473c735a0c7"
+    },
+    {
+      "id": "P34",
+      "file": "01-p34.png",
+      "width": 1080,
+      "height": 1350,
+      "sha256": "8ae4d64cdf22dbab2615cf38b5f890e2ba5451c4b7bf4e4c8e73443449115cb1"
+    },
+    {
+      "id": "P34",
+      "file": "02-p34.png",
+      "width": 1080,
+      "height": 1350,
+      "sha256": "8fcaa3969dc3d5d960d76e604203adc9389d248bf08fbedd1e9748bdc13429ab"
+    },
+    {
+      "id": "P34",
+      "file": "03-p34.png",
+      "width": 1080,
+      "height": 1350,
+      "sha256": "7484c6517d53c6d3105911738f77b705733752da6c765587b9466e64f4a90502"
+    },
+    {
+      "id": "P34",
+      "file": "04-p34.png",
+      "width": 1080,
+      "height": 1350,
+      "sha256": "871a646aa7f6a010773e8097ab70033699730a62757497e4d63fb988fb23d607"
+    },
+    {
+      "id": "P34",
+      "file": "05-p34.png",
+      "width": 1080,
+      "height": 1350,
+      "sha256": "c93aeb9e2cba949f76a1addd84fe3719674518ebd5d1316c172952eb3d862788"
+    },
+    {
+      "id": "P34",
+      "file": "06-p34.png",
+      "width": 1080,
+      "height": 1350,
+      "sha256": "0eb18649c1b0dce4021f64f306027596198aa13ed37675698437c29300c638d8"
+    },
+    {
+      "id": "P34",
+      "file": "07-p34.png",
+      "width": 1080,
+      "height": 1350,
+      "sha256": "57224e2513a3c544f8c6b2145c548f88341b76bf9139b38277689d885ffac9f8"
+    },
+    {
+      "id": "P34",
+      "file": "08-p34.png",
+      "width": 1080,
+      "height": 1350,
+      "sha256": "654546786a9da7f2ce1734c92b239867e60c564e8e66b767305a684d2e31482b"
+    },
+    {
+      "id": "P07",
+      "file": "01-p07.png",
+      "width": 1080,
+      "height": 1350,
+      "sha256": "2fffe84f2197bd9a45852e12859135964b694d26b3906dec3e3799fd8932d22e"
+    },
+    {
+      "id": "P07",
+      "file": "02-p07.png",
+      "width": 1080,
+      "height": 1350,
+      "sha256": "adec754e707fc6555e867959400b22cde73f5b593a8c36db69ff47207b844433"
+    },
+    {
+      "id": "P07",
+      "file": "03-p07.png",
+      "width": 1080,
+      "height": 1350,
+      "sha256": "61675a435decc51332370b5e00cbd0e04a67d00f9dae8d2248ff5dd12b408fc7"
+    },
+    {
+      "id": "P07",
+      "file": "04-p07.png",
+      "width": 1080,
+      "height": 1350,
+      "sha256": "bc2f97391e1fcc89728db3188184d3c36a88c353c1e7b8392420b0f53dfc982a"
+    },
+    {
+      "id": "P07",
+      "file": "05-p07.png",
+      "width": 1080,
+      "height": 1350,
+      "sha256": "629df7135e1c3ae9b6a61000d9545e0c072bd3c327ee2df955e18cf5d98c92e1"
+    },
+    {
+      "id": "P07",
+      "file": "06-p07.png",
+      "width": 1080,
+      "height": 1350,
+      "sha256": "58119b1cffb4d9da7b230c476e513214eec6f10f185934b55846d8e614c1d110"
+    },
+    {
+      "id": "P07",
+      "file": "07-p07.png",
+      "width": 1080,
+      "height": 1350,
+      "sha256": "db2f807cbd63b2dd0710a41492e0bcf983c4f3b7777e77b56db631abac204813"
+    }
+  ],
+  "copy": [
+    {
+      "id": "P01",
+      "slides": 7,
+      "captionExact": true
+    },
+    {
+      "id": "P34",
+      "slides": 8,
+      "captionExact": true
+    },
+    {
+      "id": "P07",
+      "slides": 7,
+      "captionExact": true
+    }
+  ],
+  "errors": [],
+  "links": 89
+}

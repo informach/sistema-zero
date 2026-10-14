@@ -1,0 +1,336 @@
+[
+  {
+    "id": "P21",
+    "pillar": "Desejo",
+    "parent": "Ouvir o filho explicar algo que conhece.",
+    "title": "Você pode participar sem ser o especialista.",
+    "format": "Imagem única",
+    "skill": "Comunicação: explicar uma ação a outra pessoa e ouvir sua dúvida.",
+    "cta": "Deixar o filho ensinar uma parte de algo que conhece.",
+    "text": [
+      "Você pode participar sem ser o especialista.",
+      "“Me ensina por onde eu começo.”"
+    ],
+    "visual": "Criança explica ao adulto uma construção ou desenho. O adulto experimenta a orientação. Sem plataforma ou curso na arte.",
+    "caption": "Escolham algo que seu filho conheça e peça que ensine uma parte. Pode ser uma brincadeira, uma dobradura ou uma criação dele.\n\nTente seguir a orientação e conte onde ficou com dúvida. A conversa dá a ele uma chance de explicar de outro jeito e a você uma forma de participar.\n\nQuando a criança cria um jogo, você também pode ocupar o lugar de quem está chegando pela primeira vez. Ela explica o objetivo, mostra os controles e observa sua tentativa.\n\nSeu interesse em entender já dá um começo para essa troca."
+  },
+  {
+    "id": "P22",
+    "pillar": "Dor",
+    "parent": "Confundir seguir um exemplo com nunca criar por conta própria.",
+    "title": "Começar por um exemplo pode ajudar a inventar.",
+    "format": "Carrossel",
+    "skill": "Criatividade: compreender uma referência e fazer uma adaptação própria.",
+    "cta": "Escolher uma parte de um exemplo para modificar.",
+    "slides": [
+      [
+        "Começar por um exemplo pode ajudar a inventar.",
+        "Às vezes, uma referência dá à criança o ponto de partida que faltava.",
+        "Criança observa uma dobradura simples e começa sua própria versão."
+      ],
+      [
+        "Primeiro, ela entende como uma parte funciona.",
+        "Acompanha uma dobra, repete e observa o que mudou no papel.",
+        "Duas mãos mostram a mesma etapa numa folha."
+      ],
+      [
+        "Depois, pode escolher uma diferença.",
+        "Outra cor, outro detalhe ou outra forma de usar a construção. A escolha tem um motivo dela.",
+        "Criança acrescenta um detalhe próprio a sua versão."
+      ],
+      [
+        "Peça que ela mostre o que decidiu mudar.",
+        "A conversa revela a ideia por trás da diferença, mesmo quando ela é pequena.",
+        "Criança aponta um detalhe e explica ao adulto."
+      ],
+      [
+        "Na programação de jogos, um exemplo também pode abrir esse caminho.",
+        "Depois de entender uma ação, a criança pode fazer uma mudança e conferir como o jogo responde.",
+        "Última tela: duas versões reais de uma ação ou caminho no jogo."
+      ]
+    ],
+    "caption": "Uma folha em branco pode deixar a criança sem saber por onde começar. Um exemplo oferece uma referência para experimentar.\n\nDepois de entender uma parte, ela pode escolher o que quer adaptar e explicar a escolha. A diferença pode ser pequena e ainda assim ter uma ideia própria por trás.\n\nAo criar jogos, acompanhar um exemplo e testar uma mudança permite observar o que foi mantido e o que ficou diferente. A programação dá forma à escolha para que ela possa ser experimentada."
+  },
+  {
+    "id": "P23",
+    "pillar": "Curiosidade",
+    "parent": "Entender por que a mesma ação pode ter respostas diferentes.",
+    "title": "Explicar uma regra também é uma tarefa.",
+    "format": "Reel",
+    "skill": "Raciocínio lógico e comunicação: estabelecer condições claras e conferir sua aplicação.",
+    "cta": "Explicar uma regra e experimentar com outra pessoa.",
+    "cover": "A brincadeira começou. Cada um entendeu uma regra.",
+    "scenes": [
+      [
+        0,
+        8,
+        "Duas pessoas brincam com peças de papel e interpretam uma regra de modos diferentes.",
+        "Faltou combinar uma parte.",
+        "A brincadeira começou, mas cada um entendeu uma regra. Antes de continuar, vale combinar o que acontece nessa situação."
+      ],
+      [
+        8,
+        18,
+        "Criança desenha estrela numa casa do percurso; adulto acompanha.",
+        "Dizer quando acontece e o que muda.",
+        "Por exemplo: ao chegar na casa com estrela, avance uma casa extra. Agora a condição e a ação estão claras."
+      ],
+      [
+        18,
+        28,
+        "Fazer duas tentativas: casa sem estrela e casa com estrela.",
+        "Testem a regra que combinaram.",
+        "Joguem uma vez passando pela estrela e outra sem passar. Observem se a regra está sendo usada do mesmo jeito."
+      ],
+      [
+        28,
+        39,
+        "Última cena: porta real com e sem chave.",
+        "Programar transforma uma regra em ação.",
+        "Ao criar jogos, a criança precisa dizer ao computador quando uma ação pode acontecer. Montar e testar essa regra dá uma prática concreta de raciocínio lógico."
+      ]
+    ],
+    "caption": "Uma regra precisa dizer o suficiente para que outra pessoa consiga usá-la.\n\nNa brincadeira do exemplo, chegar à estrela permite avançar uma casa extra. A criança pode explicar, experimentar e ajustar o que ficou confuso.\n\nNa programação, regras também ligam uma condição a uma ação. Ao criar um jogo, ela decide o que precisa acontecer antes e confere a resposta na tela.\n\nA clareza tem uma função: fazer a brincadeira funcionar para quem vai participar.",
+    "visual": "Brincadeira de papel e combinação de uma regra; somente no fim entra a porta do Farol como exemplo digital."
+  },
+  {
+    "id": "P24",
+    "pillar": "Dica",
+    "parent": "Sair de uma ideia vaga para uma primeira versão visível.",
+    "title": "Uma ideia grande cabe em três desenhos.",
+    "format": "Imagem única",
+    "skill": "Planejamento e expressão: representar etapas antes de construir.",
+    "cta": "Desenhar começo, ação e resultado.",
+    "text": [
+      "Uma ideia grande cabe em três desenhos.",
+      "Como começa.",
+      "O que precisa acontecer.",
+      "Como vai ficar no final."
+    ],
+    "visual": "Três desenhos de uma construção de papel: materiais separados, montagem de uma ponte e ponte pronta ligando dois apoios. Não usar jogo na capa.",
+    "caption": "Seu filho tem uma ideia, mas ainda está difícil explicar. Dobrem uma folha em três partes e desenhem um começo, uma ação e um resultado.\n\nPode ser uma história, uma construção de papel ou uma brincadeira. Peça que ele conte a ideia seguindo os desenhos. Se faltar uma parte para entender, vocês descobrem o que acrescentar.\n\nAo criar jogos, esse registro também ajuda a pensar no objetivo e no que precisa acontecer. A programação permite transformar as ações desenhadas em uma versão que dá para jogar.\n\nO desenho pode ser simples. Ele está ali para ajudar a organizar a ideia."
+  },
+  {
+    "id": "P25",
+    "pillar": "Dica",
+    "parent": "Perceber se o filho gosta também de criar jogos.",
+    "title": "Vale conhecer o que chama a atenção do seu filho nos jogos.",
+    "format": "Carrossel",
+    "skill": "Autoria: partir de um interesse e explorar uma possibilidade de criação.",
+    "cta": "Ouvir o interesse e convidar para uma pequena invenção.",
+    "slides": [
+      [
+        "Vale conhecer o que chama a atenção do seu filho nos jogos.",
+        "A conversa pode começar pela curiosidade de entender o que ele gosta de encontrar ali.",
+        "Adulto escuta a criança; tela ao fundo desfocada, sem promover jogo ou curso."
+      ],
+      [
+        "Peça que ele escolha uma parte para mostrar.",
+        "Pode ser uma história, um desafio, um personagem ou algo que construiu.",
+        "Criança mostra um desenho do aspecto que escolheu."
+      ],
+      [
+        "Ouça o motivo antes de sugerir outra atividade.",
+        "“O que você mais gosta nessa parte?” A resposta dá um assunto que faz sentido para ele.",
+        "Adulto olha para a criança e para o detalhe indicado."
+      ],
+      [
+        "Depois, vocês podem imaginar uma mudança.",
+        "“Se pudesse inventar uma parte sua, o que colocaria?” Guardem a ideia num desenho.",
+        "Criança desenha uma ideia própria no papel."
+      ],
+      [
+        "Uma pequena versão ajuda a experimentar.",
+        "Se for um caminho, usem um marcador para percorrê-lo. Se for uma história, contem seguindo os desenhos.",
+        "Mãos testam um percurso original desenhado."
+      ],
+      [
+        "Criar jogos oferece uma continuação para esse interesse.",
+        "A criança pode transformar uma ideia em ações na tela. Vale observar se ela gosta de construir e testar também.",
+        "Somente no final, ideia desenhada ao lado de uma pequena ação num jogo real."
+      ]
+    ],
+    "caption": "Gostar de jogar pode ter muitos motivos. Ouvir o que chama a atenção do seu filho ajuda a conhecer melhor esse interesse.\n\nDepois, vocês podem imaginar uma mudança e experimentar uma pequena versão no papel. O convite é explorar, sem transformar todo momento de lazer numa obrigação de produzir.\n\nPara quem se interessa em continuar, a programação permite construir ações e testar ideias em um jogo próprio. A criança ganha a possibilidade de criar algo com a tecnologia que já conhece como jogadora."
+  },
+  {
+    "id": "P26",
+    "pillar": "Curiosidade",
+    "parent": "Ver uma utilidade concreta para contar e guardar números.",
+    "title": "Um número faz mais sentido quando conta alguma coisa.",
+    "format": "Reel",
+    "skill": "Raciocínio lógico: associar uma contagem às ações que a produzem.",
+    "cta": "Criar uma contagem numa brincadeira.",
+    "cover": "Cada acerto deixa uma marca.",
+    "scenes": [
+      [
+        0,
+        8,
+        "Família tenta acertar um alvo de papel com bolinhas de papel; marca riscos numa folha.",
+        "Um ponto para cada acerto.",
+        "Uma brincadeira de acertar um alvo já dá uma tarefa para os números: guardar quantas vezes a pessoa acertou."
+      ],
+      [
+        8,
+        18,
+        "Criança compara marcas com tentativas e conta o total.",
+        "A contagem acompanha o que aconteceu.",
+        "Marquem um risco por acerto e contem no final. Depois, inventem uma segunda rodada e comparem os resultados."
+      ],
+      [
+        18,
+        28,
+        "Agora entra captura real da nave acertando asteroide e placar aumentando.",
+        "Nos jogos, alguém precisa construir essa ligação.",
+        "Ao programar um jogo, a criança liga uma ação à mudança no placar. Ela escolhe o que vale ponto e testa a contagem."
+      ],
+      [
+        28,
+        36,
+        "Repetição lenta de um acerto e um ponto.",
+        "Uma ação. Uma mudança para conferir.",
+        "O número tem uma função dentro da criação. Dá para observar se ele está contando o que deveria."
+      ]
+    ],
+    "caption": "Uma contagem fica ligada a algo concreto quando registra as ações de uma brincadeira.\n\nFaçam um alvo de papel, tentem acertá-lo com bolinhas de papel e marquem um risco por acerto. No final, contem e comparem as rodadas.\n\nNa criação de jogos, a programação permite construir essa ligação: reconhecer uma ação e mudar a pontuação. A criança precisa testar se o número corresponde ao que aconteceu.\n\nO exemplo digital é uma demonstração nossa de Nave Contra Asteroides, com um ponto por acerto. É uma aplicação de contagem dentro da atividade, sem promessa de melhora automática em matemática.",
+    "visual": "Brincadeira familiar com alvo e contagem; jogo de nave aparece na segunda metade como aplicação.",
+    "proof": "Confirmar um ponto por acerto na versão real antes de captar; não editar placar fictício."
+  },
+  {
+    "id": "P27",
+    "pillar": "Dica",
+    "parent": "Ajudar o filho a apresentar uma criação com clareza.",
+    "title": "Terminar não é a única coisa que vale observar.",
+    "format": "Carrossel",
+    "skill": "Aprender a aprender: tornar uma escolha ou compreensão observável.",
+    "cta": "Pedir uma demonstração de uma parte, sem transformar em prova.",
+    "slides": [
+      [
+        "Terminar não é a única coisa que vale observar.",
+        "Você quer saber se seu filho está aprendendo. O caminho da atividade pode dar assunto para essa conversa.",
+        "Adulto olha uma criação em andamento, sem checklist de notas ou medalhas."
+      ],
+      [
+        "Peça que ele mostre uma escolha.",
+        "“Por que você colocou esta parte aqui?” Ele pode explicar falando, apontando ou demonstrando.",
+        "Criança aponta uma decisão numa construção de papel."
+      ],
+      [
+        "Conversem sobre uma mudança que ele fez.",
+        "“O que estava diferente antes?” Comparar as versões ajuda a tornar a tentativa visível.",
+        "Primeiro desenho ao lado da versão ajustada."
+      ],
+      [
+        "Observem também de que ajuda ele precisou.",
+        "Uma parte feita com apoio continua sendo uma oportunidade de aprender. A próxima tarefa pode exigir outra ajuda.",
+        "Adulto auxilia numa etapa; criança realiza a seguinte."
+      ],
+      [
+        "Ao criar jogos, as escolhas ficam disponíveis para experimentar.",
+        "Seu filho pode mostrar uma regra, jogar e explicar o que mudou. Isso dá pistas para acompanhar o processo.",
+        "Última tela: criança demonstra uma ação no jogo e aponta seu efeito."
+      ]
+    ],
+    "caption": "Um trabalho pronto mostra um resultado. Conversar sobre uma escolha ou uma mudança ajuda a conhecer um pouco do caminho até ele.\n\nPeça que seu filho mostre uma parte que entendeu. Ele pode explicar com palavras, apontar ou fazer uma demonstração. Se ainda houver dúvida, vocês encontram uma oportunidade de retomar.\n\nNa criação de jogos, dá para experimentar a regra que ele montou e observar o resultado junto. Isso oferece pistas para acompanhar a atividade, sem transformar uma conversa em prova ou exigir uma explicação perfeita."
+  },
+  {
+    "id": "P28",
+    "pillar": "Desejo",
+    "parent": "Ver o filho animado para experimentar o resultado de uma ideia.",
+    "title": "Ver uma ideia funcionar dá vontade de mostrar.",
+    "format": "Imagem única",
+    "skill": "Autoria e motivação: observar o resultado de uma ideia própria.",
+    "cta": "Dar espaço para a criança mostrar uma tentativa.",
+    "text": [
+      "Ver uma ideia funcionar dá vontade de mostrar.",
+      "“Eu me sinto criando meus próprios jogos muito feliz, animado, para ver depois o que que vai dar.”",
+      "Fernando · Aluno"
+    ],
+    "visual": "Fotograma real do Fernando com rosto e expressão legíveis; sem tela de produto dominando a imagem. Aspas equivalentes.",
+    "caption": "O desenho ficou de pé, a história ganhou um final ou uma ideia começou a funcionar. A criança agora tem algo para mostrar.\n\nFernando conta essa expectativa ao criar os próprios jogos: ele quer ver o resultado do que está fazendo.\n\nA programação oferece um jeito de dar ações a uma ideia e experimentar como ela ficou. Você pode participar pedindo que ele mostre uma parte e conte o que quer tentar depois.\n\nA fala é do Fernando sobre a experiência dele. Cada criança pode se envolver de um jeito.",
+    "proof": "Fernando, trecho autorizado 0–8,14 s; preservar as palavras."
+  },
+  {
+    "id": "P29",
+    "pillar": "Dor",
+    "parent": "Dividir um computador entre trabalho, estudo e lazer.",
+    "title": "A rotina precisa caber na vida da família.",
+    "format": "Reel",
+    "skill": "Planejamento: combinar condições e uma tarefa possível.",
+    "cta": "Escolher um momento possível e um pequeno objetivo.",
+    "cover": "O horário perfeito pode não aparecer.",
+    "scenes": [
+      [
+        0,
+        8,
+        "Agenda familiar com trabalho, escola e tarefas; um computador compartilhado.",
+        "Comecem pelo tempo que existe.",
+        "Entre escola, trabalho e tarefas de casa, o horário perfeito pode não aparecer. Vale combinar um momento que realmente caiba na rotina."
+      ],
+      [
+        8,
+        18,
+        "Adulto e criança escolhem um período e separam o material.",
+        "Um combinado possível para vocês.",
+        "Confiram quando o material ou o computador estará disponível e escolham uma parte pequena para fazer nesse momento."
+      ],
+      [
+        18,
+        28,
+        "Criança anota o que fará agora e o próximo passo, sem duração fixa.",
+        "A atividade pode continuar depois.",
+        "Antes de encerrar, guardem o trabalho e registrem o próximo passo. Assim, existe um ponto para retomar."
+      ],
+      [
+        28,
+        39,
+        "Só no final: criança monta uma parte real do jogo e testa.",
+        "Criar um jogo também pode acontecer por etapas.",
+        "Na criação de jogos, ela pode construir uma ação, testar e continuar em outro momento. O projeto ganha espaço dentro de uma rotina possível."
+      ]
+    ],
+    "caption": "Uma rotina útil precisa considerar o tempo e os recursos da família.\n\nCombinem um período possível, deixem o necessário à mão e escolham uma tarefa pequena. Antes de parar, guardem o trabalho e anotem uma próxima ação.\n\nCriar jogos pode fazer parte desse combinado. A criança constrói uma parte, testa e continua depois, sem precisar terminar um projeto inteiro de uma vez.\n\nNa ferramenta utilizada, confiram o salvamento antes de fechar. O tempo de cada atividade varia; o combinado pode ser ajustado.",
+    "visual": "Agenda e computador compartilhado, escolha de pequena tarefa e registro de continuidade; jogo aparece no fechamento."
+  },
+  {
+    "id": "P30",
+    "pillar": "Desejo",
+    "parent": "Transformar o interesse por jogos em uma primeira experiência de criação.",
+    "title": "Seu filho vai encontrar tecnologias que ainda vão mudar.",
+    "format": "Carrossel",
+    "skill": "Preparação para o futuro: compreender, criar, testar e aprender com tecnologia.",
+    "cta": "Convidar o filho a construir algo a partir de um interesse.",
+    "slides": [
+      [
+        "Seu filho vai encontrar tecnologias que ainda vão mudar.",
+        "Preparar para esse caminho também pode incluir entender como as coisas funcionam e experimentar construir.",
+        "Criança e adulto exploram um objeto ou construção; sem robôs futuristas, profissão prometida ou curso na capa."
+      ],
+      [
+        "Usar uma ferramenta é um começo.",
+        "A curiosidade pode levar a outra pergunta: “Como eu faria algo com isso?”",
+        "Criança observa materiais e esboça uma ideia própria."
+      ],
+      [
+        "Uma criação pede decisões.",
+        "O que quero fazer? Por onde começo? Como vou conferir se funcionou?",
+        "Três desenhos mostram ideia, primeira etapa e teste."
+      ],
+      [
+        "A primeira versão pode pedir mudanças.",
+        "A criança observa o resultado, procura ajuda e escolhe o que tentar depois.",
+        "Construção sendo ajustada a partir de uma tentativa."
+      ],
+      [
+        "Programar jogos reúne essas ações numa criação.",
+        "Ela organiza comandos, testa regras e dá forma a ideias que outra pessoa pode experimentar.",
+        "Somente aqui entram comandos reais e jogo em andamento."
+      ],
+      [
+        "Parte do tempo de tela pode ganhar esse uso também.",
+        "Seu filho pode conhecer a tecnologia como alguém que cria com ela. Comecem por uma ideia que desperte a curiosidade dele.",
+        "Criança mostra uma pequena criação ao adulto; tela participa da cena sem dominar."
+      ]
+    ],
+    "caption": "Não sabemos quais ferramentas seu filho vai usar daqui a muitos anos. Podemos oferecer oportunidades para perguntar, construir, testar e continuar aprendendo.\n\nA programação por meio da criação de jogos reúne essas ações em algo que a criança consegue experimentar. Ela organiza uma sequência, resolve dificuldades do projeto, adapta ideias e vê o efeito das escolhas.\n\nIsso oferece um contato com a tecnologia pelo lado de quem cria. É uma possibilidade para uma parte do tempo de tela, junto dos outros usos e atividades da vida.\n\nPreparar para o futuro, aqui, significa abrir espaço para essas experiências. Não é escolher uma profissão para a criança."
+  }
+]

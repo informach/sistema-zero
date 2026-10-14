@@ -1,0 +1,3 @@
+Na Vila do Dragão, a porta da caverna aparece quando o herói recebe a chave do ferreiro.
+
+Quem cria precisa ligar esses acontecimentos e testar se a porta aparece na hora certa.

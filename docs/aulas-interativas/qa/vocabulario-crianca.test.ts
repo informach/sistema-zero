@@ -289,3 +289,45 @@ describe('vocabulário da criança nos manifestos', () => {
       expect(CONCORDANCIA_ERRADA.test(certo), certo).toBe(false)
   })
 })
+
+/**
+ * O Mapa da Aventura que vem de conteúdo separado (`recursos/<curso>/caderno-conteudo.json`).
+ * Foi assim que "a mesma entrega" passou no PDF do Farol sem nenhum guarda ver (revisão de
+ * 13/10/2026). Desde então, o gerador do Farol lê todo texto que a criança lê desse arquivo,
+ * inclusive o índice e a página da revisão; no gerador ficam só os rótulos dos blocos desenhados.
+ * Os Mapas dos outros cursos têm o texto dentro do próprio gerador e seguem sem este guarda.
+ */
+const RECURSOS = join(import.meta.dir, '..', 'recursos')
+const CAMPOS_INTERNOS_DO_MAPA = new Set(['id', 'kind', 'tone', 'category', 'name'])
+const mapas = readdirSync(RECURSOS)
+  .filter((curso) => readdirSync(join(RECURSOS, curso)).includes('caderno-conteudo.json'))
+  .map((curso) => ({
+    curso,
+    textos: (function textos(
+      valor: unknown,
+      caminho: string,
+    ): { caminho: string; texto: string }[] {
+      if (typeof valor === 'string') return [{ caminho, texto: valor.replace(/<[^>]+>/g, '') }]
+      if (Array.isArray(valor)) return valor.flatMap((item, i) => textos(item, `${caminho}[${i}]`))
+      if (typeof valor !== 'object' || valor === null) return []
+      return Object.entries(valor).flatMap(([chave, item]) =>
+        CAMPOS_INTERNOS_DO_MAPA.has(chave) ? [] : textos(item, `${caminho}.${chave}`),
+      )
+    })(JSON.parse(readFileSync(join(RECURSOS, curso, 'caderno-conteudo.json'), 'utf8')), curso),
+  }))
+
+describe('vocabulário da criança no Mapa da Aventura', () => {
+  test('nenhuma palavra da escola, "guia" como pessoa ou concordância trocada', () => {
+    // Guarda que não lê nada aprova tudo, e em silêncio.
+    expect(mapas.map(({ curso }) => curso)).toContain('desafio-farol')
+    expect(mapas.flatMap(({ textos }) => textos).length).toBeGreaterThan(100)
+    const achados = mapas.flatMap(({ textos }) =>
+      textos.flatMap(({ caminho, texto }) => [
+        ...palavrasDaEscola(texto).map((palavra) => `${caminho}: palavra da escola "${palavra}"`),
+        ...guiasPessoa(texto).map((trecho) => `${caminho}: "${trecho}"`),
+        ...concordanciasErradas(texto).map((trecho) => `${caminho}: concordância "${trecho}"`),
+      ]),
+    )
+    expect(achados).toEqual([])
+  })
+})

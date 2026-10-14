@@ -1,0 +1,337 @@
+{
+  "MC01": {
+    "slides": [
+      [
+        "‘Não gosto de estudar.’",
+        "Seu filho também diz isso, mas procura dicas para passar de fase?"
+      ],
+      [
+        "Para vencer uma parte difícil, ele pode assistir a uma explicação, tentar de novo e pedir uma dica.",
+        "Existe algo que ele quer conseguir, e isso dá um motivo para buscar a resposta."
+      ],
+      [
+        "Esse interesse pode ser um começo para aprender a criar jogos.",
+        "Agora, a pergunta pode ser: como faço o personagem pular do jeito que imaginei?"
+      ],
+      [
+        "Para responder, a criança precisa conhecer as instruções que controlam o salto.",
+        "Ela monta uma parte, testa e observa o que mudou."
+      ],
+      [
+        "Veja uma experiência que fizemos na nossa plataforma.",
+        "Comparamos o mesmo pulo em dois cenários: floresta e Lua. Na Lua, o personagem demora mais para cair."
+      ],
+      [
+        "O estilo Lua desse jogo tem uma gravidade mais fraca.",
+        "Comparar as tentativas permite conversar sobre o que fez o movimento mudar."
+      ],
+      [
+        "Na criação, uma ideia dá motivo para aprender uma instrução e testar o resultado.",
+        "Comente JEITO para conhecer no direct um primeiro projeto com aulas passo a passo."
+      ]
+    ],
+    "caption": [
+      "Seu filho pode encontrar na vontade de criar um jogo um motivo para aprender algo novo.",
+      "Se ele quer um personagem que pule alto, precisa entender como controlar esse movimento. Depois, pode montar a instrução, jogar e conferir se ficou como imaginou. A explicação tem uma aplicação que ele consegue ver.",
+      "Na demonstração do post, comparamos dois estilos de cenário para observar uma mudança no salto. Esse é um exemplo das nossas ferramentas. O começo que apresentamos no direct é um projeto guiado, com uma parte de cada vez.",
+      "Comente JEITO para conhecer esse primeiro projeto e as aulas."
+    ],
+    "dm1": "Oi, esta é uma resposta automática da Helena e do Júlio. Toque para conhecer um primeiro projeto com aulas passo a passo.",
+    "dm2Start": "No Desafio do Primeiro Jogo, seu filho joga A Chave do Farol e aprende a programar suas regras. A Lua é demonstração da equipe.",
+    "direction": "Partir da diferença entre recusar uma tarefa e buscar uma explicação por interesse, sem diagnosticar estilo de aprendizagem. A conexão é desejar uma ação no jogo, aprender a instrução e testar. Comparar floresta/Lua sem equiparar a configuração à gravidade real.",
+    "visuals": [
+      "Criança com controle vendo uma dica sobre um jogo, com adulto interessado ao lado. Cena fictícia e cotidiana, sem expressão de preguiça.",
+      "Mãos no controle, tentativa em andamento e uma explicação pausada ao lado. Sem caderno tratado como atividade inferior.",
+      "Criança desenhando o salto que imagina para seu personagem; cenário simples.",
+      "Tela da plataforma com uma instrução de movimento legível e o resultado ao lado.",
+      "Duas capturas reais da cópia da Base da Lua sem jetpack: floresta e Lua, sob as mesmas condições, com os estilos identificados.",
+      "Vídeo curto ou sequência de quadros do salto no estilo Lua, mostrando o tempo maior de queda. Não escrever proporção da gravidade real.",
+      "Criança montando o jogo numa cena distinta da capa, palavra JEITO em destaque."
+    ],
+    "productionNote": "Manter os cuidados técnicos da cópia sem jetpack. A sequência mostra uma possibilidade de investigação; não atribuir à criança um jeito fixo de aprender nem garantir interesse em toda explicação."
+  },
+  "MC02": {
+    "cover": "Um robô regeu uma orquestra. A tecnologia também pode executar uma ideia do seu filho.",
+    "reel": [
+      [
+        "Um robô regeu uma orquestra",
+        "Um robô regeu o começo de uma música na Avenida Paulista, em São Paulo."
+      ],
+      [
+        "Depois, o maestro continuou",
+        "Na apresentação de março de 2026, João Carlos Martins assumiu a regência depois dele."
+      ],
+      [
+        "Alguém preparou o que o robô faria",
+        "O robô foi preparado para realizar aquela ação. Isso abre uma conversa: como fazemos uma máquina responder ao que planejamos?"
+      ],
+      [
+        "Seu filho pode começar com uma ação pequena",
+        "Na criação de um jogo, a criança começa dando instruções simples, como mover um personagem ao apertar uma tecla.",
+        "Júlio mostra uma ação e a instrução correspondente na plataforma. Retirar a lista de vídeos sugeridos."
+      ],
+      [
+        "A regra define o que acontece",
+        "Depois, pode combinar regras: se o ataque errar, passa a vez para o outro jogador.",
+        "Criança fictícia montando instruções e observando a alternância entre jogadores."
+      ],
+      [
+        "Veja uma regra em ação",
+        "Neste jogo da nossa equipe, há um adversário automático. Quando o lançamento erra, a vez muda e o vento também."
+      ],
+      [
+        "Errou: mudou a vez e o vento",
+        ""
+      ],
+      [
+        "Comente MAESTRO",
+        "Comente MAESTRO para conhecer no direct um primeiro projeto em que seu filho aprende a dar instruções ao jogo."
+      ]
+    ],
+    "caption": [
+      "Um robô participou da regência de uma orquestra na Avenida Paulista em março de 2026.",
+      "Ele conduziu o começo de uma peça de Mozart, e João Carlos Martins continuou a apresentação. A cena convida a pensar em como a tecnologia pode executar ações preparadas por pessoas.",
+      "Na criação de jogos, seu filho pode começar com instruções pequenas: mover um personagem, recolher um objeto ou mostrar uma mensagem. Ele monta a regra e testa a resposta na tela. O duelo mostrado é uma demonstração das nossas ferramentas.",
+      "Comente MAESTRO para conhecer no direct um primeiro projeto com aulas passo a passo."
+    ],
+    "dm1": "Oi, esta é uma resposta automática da Helena e do Júlio. Toque para conhecer um projeto em que seu filho começa a programar.",
+    "dm2Start": "No Desafio do Primeiro Jogo, seu filho programa A Chave do Farol: andar, pegar a chave e abrir a porta. O robô é demonstração da equipe.",
+    "direction": "Manter a curiosidade factual do concerto. Explicar programação por instruções pequenas e observáveis, sem fazer afirmações gerais sobre inteligência artificial ou dizer que a criança programa o cálculo automático do robô.",
+    "productionNote": "Fontes do concerto preservadas e página primária do SESI-SP relida nesta revisão. Não atribuir endosso, opinião ou resultado pedagógico ao maestro. O algoritmo do adversário já existe na ferramenta; a copy trata das regras observadas na partida."
+  },
+  "MC03": {
+    "slides": [
+      [
+        "As férias acabaram. A rotina ainda está se ajeitando.",
+        "Vale combinar mais do que ‘depois você faz’."
+      ],
+      [
+        "Escolham um momento possível para começar.",
+        "Por exemplo: depois do lanche, com o computador livre e o material por perto."
+      ],
+      [
+        "Depois, deixem clara a tarefa daquele momento.",
+        "‘Escrever três ideias para o trabalho’ mostra um começo mais concreto do que ‘fazer o trabalho inteiro’."
+      ],
+      [
+        "Combinem também quando parar e como continuar depois.",
+        "Se uma parte exigir mais tempo ou ajuda, vocês podem ajustar o plano."
+      ],
+      [
+        "Criar um jogo permite trabalhar em partes.",
+        "Nesta fazenda da nossa plataforma, uma delas é fazer a semente entrar na terra preparada."
+      ],
+      [
+        "Para conferir essa regra, testamos dois lugares.",
+        "Na terra sem preparo, a semente não entra. No canteiro preparado, entra. Depois podemos seguir para outra parte."
+      ],
+      [
+        "‘Começou a ter a sua regra de todo dia ir lá olhar, ver o que que tem no curso pra ele fazer.’",
+        "Harle · pai do Jeffrey"
+      ],
+      [
+        "Uma parte de cada vez ajuda a deixar claro o que fazer agora e o que continuar depois.",
+        "Comente RITMO para conhecer no direct um primeiro projeto com aulas passo a passo."
+      ]
+    ],
+    "caption": [
+      "Na volta à rotina, ajuda combinar o momento da atividade e uma tarefa que seu filho entenda.",
+      "Pode ser escrever três ideias para um trabalho ou montar uma ação num jogo. Depois de tentar, vocês veem se precisam ajustar o tempo ou procurar uma explicação. O combinado acompanha o que a criança precisa.",
+      "Harle contou sobre o curso que Jeffrey fez com a gente: ‘Ele ficou mais responsável com as coisas dele.’ É a experiência dessa família. A fazenda mostrada é uma demonstração da equipe de como um projeto pode ser montado e testado em partes.",
+      "Comente RITMO para conhecer no direct um primeiro projeto e suas aulas."
+    ],
+    "dm1": "Oi, esta é uma resposta automática da Helena e do Júlio. Toque para conhecer um projeto que seu filho constrói em partes.",
+    "dm2Start": "No Desafio do Primeiro Jogo, seu filho programa A Chave do Farol em partes: movimento, chave e porta. A fazenda é demonstração da equipe.",
+    "direction": "Rotina com momento, tarefa compreensível e possibilidade de ajuste. A fazenda mostra como separar uma criação em partes. O depoimento é experiência da família; não prova que um combinado elimina cobranças.",
+    "productionNote": "Preservar a fala literal do Harle e os dois testes da semente. Não afirmar que uma etapa sempre cabe numa tarde ou que terminar um teste implica encerrar obrigatoriamente a aula."
+  },
+  "MC04": {
+    "slides": [
+      [
+        "Seu filho conhece cada detalhe do jogo preferido.",
+        "Convide ele a imaginar uma versão própria."
+      ],
+      [
+        "Ele pode gostar dos personagens, dos caminhos ou dos desafios.",
+        "Peça para mostrar uma parte e contar por que gosta dela."
+      ],
+      [
+        "Depois, pergunte: ‘Se esse jogo fosse seu, o que você acrescentaria?’",
+        "A resposta pode ser um personagem, uma fase ou uma regra diferente."
+      ],
+      [
+        "Escolham um detalhe dessa ideia para conversar.",
+        "Como ele funcionaria? O que o jogador precisaria fazer?"
+      ],
+      [
+        "Veja uma escolha simples de quem cria uma fase.",
+        "Colocar um obstáculo baixo antes de um alto permite experimentar pulos diferentes ao longo do caminho."
+      ],
+      [
+        "Foi o que fizemos nesta aventura da nossa plataforma.",
+        "Os canos aumentam de altura conforme o personagem avança."
+      ],
+      [
+        "Ao criar, a criança pode mudar essa ordem ou ajustar o salto e testar.",
+        "Ela observa se a fase ficou como imaginou e escolhe o que manter."
+      ],
+      [
+        "O interesse em jogar pode inspirar algo que ela queira construir.",
+        "Comente CRIADOR para conhecer no direct um primeiro projeto com aulas passo a passo."
+      ]
+    ],
+    "caption": [
+      "Uma conversa sobre o jogo preferido pode revelar uma ideia que seu filho gostaria de experimentar.",
+      "Peça para ele mostrar uma parte de que gosta. Depois, pergunte o que acrescentaria numa versão própria. Ouça um detalhe: como seria o novo personagem, onde apareceria o obstáculo ou o que mudaria numa regra.",
+      "Ao criar jogos, ele pode montar uma parte dessa ideia e testar. Na aventura que mostramos, mudar a altura e a posição dos obstáculos muda os pulos necessários. São escolhas que aparecem no resultado da partida.",
+      "Comente CRIADOR para conhecer no direct um primeiro projeto com aulas passo a passo."
+    ],
+    "dm1": "Oi, esta é uma resposta automática da Helena e do Júlio. Toque para conhecer o projeto em que seu filho começa a montar regras.",
+    "dm2Start": "No Desafio do Primeiro Jogo, seu filho programa A Chave do Farol: a porta abre com a chave. A aventura do post é demonstração da equipe.",
+    "direction": "Interesse pelo jogo e convite para imaginar uma criação. Retirar a suposição de que a criança reclama de fases ou discute consigo mesma. Explicar a escolha de obstáculos e o efeito observável do teste.",
+    "productionNote": "A aventura de canos é demonstração da equipe. As perguntas abrem conversa, sem exigir quatro respostas nem declarar que fases boas ensinam sempre sem texto."
+  },
+  "MC05": {
+    "slides": [
+      [
+        "Seu filho usa o aplicativo com facilidade.",
+        "Criar algo nele traz outro tipo de escolha."
+      ],
+      [
+        "Ao usar um aplicativo, ele encontra botões e opções que já foram preparados.",
+        "Ao criar um jogo, pode decidir o que acontece quando alguém aperta um botão."
+      ],
+      [
+        "Essa decisão começa pequena.",
+        "Por exemplo: qual tecla faz o personagem andar e para onde ele vai?"
+      ],
+      [
+        "A explicação mostra como montar a instrução.",
+        "Depois, a criança faz e testa para conferir se entendeu aquele passo."
+      ],
+      [
+        "Quando quiser mudar algo, ela pode escolher uma ideia para tentar.",
+        "Você pode perguntar: ‘Qual mudança vamos testar primeiro?’"
+      ],
+      [
+        "Se não funcionar como esperava, peça para mostrar.",
+        "O que ela queria que acontecesse? O que apareceu na tentativa?"
+      ],
+      [
+        "Veja um exemplo mais avançado das nossas ferramentas.",
+        "Uma nave inimiga começa a perseguir o jogador quando ele chega perto."
+      ],
+      [
+        "Quem cria escolhe a distância que faz a perseguição começar.",
+        "Mudar esse valor faz a nave reagir mais cedo ou mais tarde."
+      ],
+      [
+        "A criança pode testar a escolha e decidir se quer ajustar.",
+        "Quando precisa, volta à explicação ou procura ajuda para continuar."
+      ],
+      [
+        "Ela participa montando, escolhendo e testando, com orientação ao longo do caminho.",
+        "Comente AUTONOMIA para conhecer no direct um primeiro projeto com aulas passo a passo."
+      ]
+    ],
+    "caption": [
+      "Criar um jogo oferece decisões que vão além de escolher uma opção pronta num aplicativo.",
+      "Seu filho pode definir como um personagem reage, montar a instrução e testar. No exemplo do post, a distância escolhida muda quando a nave começa a perseguir. Ao comparar as tentativas, dá para observar o efeito dessa decisão.",
+      "A orientação continua importante. Se ele pedir ajuda, comece ouvindo o que esperava e o que aconteceu. Vocês podem rever a explicação e escolher uma mudança para tentar, respeitando o apoio de que ele precisa.",
+      "Comente AUTONOMIA para conhecer no direct um primeiro projeto e suas aulas."
+    ],
+    "dm1": "Oi, esta é uma resposta automática da Helena e do Júlio. Toque para conhecer um projeto que seu filho monta e testa com orientação.",
+    "dm2Start": "No Desafio do Primeiro Jogo, seu filho programa A Chave do Farol, acompanhando a explicação e testando cada parte. A nave é demonstração da equipe.",
+    "direction": "Distinguir usar opções e construir respostas sem diminuir a habilidade que a criança já tem. A nave explica uma escolha por seu efeito, sem unidades, jargão de comportamento ou promessa de autonomia geral.",
+    "productionNote": "Conservar os valores quatorze e vinte apenas na captura técnica da distância, não no texto principal. Não afirmar que o aluno passa a resolver qualquer problema sozinho nem que basta conferir um bloco para encontrar toda falha."
+  },
+  "MC06": {
+    "slides": [
+      [
+        "Sua filha inventa personagens, histórias ou regras de brincadeira.",
+        "Alguma dessas ideias pode virar um jogo."
+      ],
+      [
+        "Um personagem no caderno, um mapa inventado ou uma regra diferente são bons assuntos para conversar.",
+        "Peça para ela contar como imaginou."
+      ],
+      [
+        "Se ela quiser criar um jogo, vocês podem escolher uma parte dessa ideia.",
+        "Quem é o personagem? Onde vive? O que o jogador precisa fazer?"
+      ],
+      [
+        "Um jogo pode reunir essas escolhas.",
+        "A história dá um lugar e um objetivo. As instruções fazem os personagens agir."
+      ],
+      [
+        "Veja este exemplo das nossas ferramentas.",
+        "Os bichinhos vivem num mundo para explorar e participam de batalhas com ataques diferentes."
+      ],
+      [
+        "Quem cria escolhe como cada ataque funciona.",
+        "Um pode tirar mais vida e outro ter mais chance de acertar. Essas decisões mudam a partida."
+      ],
+      [
+        "Ao experimentar uma criação, sua filha pode descobrir do que gosta mais.",
+        "Vale ouvir o que achou interessante e o que gostaria de continuar fazendo."
+      ],
+      [
+        "O interesse dela ajuda a conversar sobre o próximo passo.",
+        "Comente SINAIS para conhecer no direct um primeiro projeto com aulas passo a passo."
+      ]
+    ],
+    "caption": [
+      "Uma ideia que sua filha já inventou pode ser o começo de uma conversa sobre criar jogos.",
+      "Peça para ela contar quem é o personagem, onde a história acontece ou como funciona a regra que imaginou. Se quiser experimentar, ela pode começar por uma ação pequena e descobrir se gosta de construí-la.",
+      "O jogo de bichinhos mostrado no post é uma demonstração das nossas ferramentas. Ele reúne personagens, lugares e regras diferentes. Ao experimentar e contar o que achou, sua filha ajuda você a conhecer melhor os interesses dela.",
+      "Comente SINAIS para conhecer no direct um primeiro projeto e suas aulas."
+    ],
+    "dm1": "Oi, esta é uma resposta automática da Helena e do Júlio. Toque para conhecer um projeto e conversar com sua filha sobre experimentar.",
+    "dm2Start": "No Desafio do Primeiro Jogo, sua filha programa A Chave do Farol, com personagens e cenário preparados. Os bichinhos são demonstração da equipe.",
+    "direction": "Interesses observados abrem uma conversa, sem diagnóstico, sinais de talento ou obrigação de gostar de toda parte. O exemplo mostra como personagens, lugares e regras se encontram numa criação.",
+    "productionNote": "Não interpretar insistência em refazer como prova de preferência. A DM deixa claro que a arte inicial do projeto está preparada; não promete desenho livre ou modelagem como conteúdo do Desafio."
+  },
+  "MC07": {
+    "cover": "Nas férias, seu filho pode criar um jogo para vocês jogarem juntos.",
+    "reel": [
+      [
+        "Uma criação para compartilhar nas férias",
+        "Nas férias, uma parte do tempo no computador pode ser usada para criar um jogo próprio."
+      ],
+      [
+        "Converse sobre o que ele quer fazer",
+        "Vocês podem escolher um projeto que ele tenha vontade de experimentar e combinar um horário para a atividade."
+      ],
+      [
+        "Montar, testar e continuar",
+        "Ao criar, ele aprende uma parte, monta e testa. Depois pode mostrar o resultado e continuar no próximo encontro."
+      ],
+      [
+        "Ele pode escolher até a comemoração",
+        "Neste boliche da nossa equipe, uma instrução mostra o aviso e treme a tela quando todos os pinos caem."
+      ],
+      [
+        "Os dez pinos caíram",
+        ""
+      ],
+      [
+        "Flávia · mãe do Fernando",
+        "O Fernando passava muito tempo nas telas, mas ele mais assistia, não desenvolvia nada. O curso incentivou ele a desenvolver, a programar, não a jogar."
+      ],
+      [
+        "Comente FÉRIAS",
+        "Comente FÉRIAS para conhecer no direct um primeiro projeto com aulas passo a passo."
+      ]
+    ],
+    "caption": [
+      "Criar um jogo pode ser uma das atividades das férias, junto das outras brincadeiras e momentos de descanso.",
+      "Converse com seu filho sobre o interesse em experimentar e combinem quando usar o computador. As aulas gravadas permitem pausar para montar uma parte e voltar à explicação quando necessário.",
+      "No vídeo, Flávia conta a experiência do Fernando com o curso que fez com a gente. O boliche é uma demonstração da equipe para mostrar uma possibilidade das ferramentas. O projeto apresentado no direct tem suas próprias etapas e prazo de acesso.",
+      "Comente FÉRIAS para conhecer esse primeiro projeto e as aulas."
+    ],
+    "dm1": "Oi, esta é uma resposta automática da Helena e do Júlio. Toque para conhecer um projeto que pode entrar nos planos de férias.",
+    "dm2Start": "No Desafio do Primeiro Jogo, seu filho programa A Chave do Farol e pode compartilhar o jogo por link. O boliche é demonstração da equipe.",
+    "direction": "Férias com uma possibilidade de criação, sem fatalismo sobre tela ligada, agenda de uma parte por dia ou estreia obrigatória. Manter o relato literal da Flávia sobre o curso que Fernando fez.",
+    "productionNote": "Conservar a fala da Flávia e a comemoração real do Boliche na Praça. Não marcar uma data de estreia nem sugerir que o projeto deve terminar numa semana ou que o acesso acompanha a duração das férias."
+  }
+}

@@ -228,6 +228,23 @@ para cada encaixe. Incluir as participações dos avatares na medição final e 
 anteriores quando a inserção for feita depois da gravação. Não acelerar a demonstração para caber
 numa duração arbitrária.
 
+A tela da gravação precisa ser a tela que a criança vai ver. Lições da gravação do Cadê
+(10 e 11/10/2026), para registrar no cabeçalho de produção de cada roteiro:
+
+- abrir a fase numa aba nova depois do último deploy; uma aba aberta antes pode recarregar a
+  página no meio da tomada ou mostrar um segundo **Atualizar** no cabeçalho do Estúdio;
+- gravar cada experiência numa sessão sem progresso naquele bloco: quem já fez abre a revisita,
+  em "Você descobriu", e um controle deixado ligado no ensaio volta ligado;
+- gravar o envio numa sessão sem envio anterior na fase, confirmando em **Enviar** sem preencher
+  o **Recado (opcional)**. Depois do primeiro envio, a tela mostra **Enviar de novo** e
+  **Reenviar**, e o **Recomeçar** do Estúdio não apaga o envio: para repetir a tomada, usar outro
+  perfil de ensaio. O mesmo vale para publicar no Mural, que trava o **Compartilhar** naquele
+  navegador;
+- quando a fala diz que o Estúdio guarda o jogo sozinho, mostrar o selo **Guardado na sua conta**
+  só depois de ele aparecer de verdade, sem simular na edição;
+- numa parte sem Estúdio, dizer de onde vem a imagem do jogo, ou gravar só a cena da própria
+  parte.
+
 Nas seções com ferramenta externa, manter a autoconferência visual: pedir que a pessoa compare
 um resultado funcional ou legível. O vídeo assistido não prova sozinho que o trabalho está
 correto. A liberdade de cor e detalhes continua livre.
@@ -246,6 +263,8 @@ correto. A liberdade de cor e detalhes continua livre.
 - A fala corresponde ao projeto, aos controles e aos critérios de conclusão reais?
 - As notas de tela e narrações estão pareadas e a leitura soa natural?
 - Quem fala está identificado? A entrada do avatar contribui para a conversa e a professora responde antes de seguir? Zappy está separado como fala da página?
+- Quando um bloco chega com um nome de outro jogo, a fala diz a palavra da tela e onde clicar?
+- O estado da conta de gravação (sem progresso nas experiências, sem envio na fase, aba aberta depois do deploy) bate com o que a criança vai ver?
 - Proposta, gerador, manifesto, roteiro e falas do Zappy concordam?
 - Os tutoriais retirados têm destino no Como Fazer?
 

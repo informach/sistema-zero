@@ -1,0 +1,26 @@
+{
+  "posts_principais": 30,
+  "extras": 6,
+  "mix_principais": {
+    "Carrossel": 14,
+    "Reel": 10,
+    "Imagem única": 6
+  },
+  "stories": 60,
+  "exemplos_distintos": 11,
+  "extensoes": 4,
+  "posts_com_referencia": 27,
+  "kodland_urls_distintas": 50,
+  "entradas_manychat": 6,
+  "urls_oferta_direct": 12,
+  "pngs_4_5": 6,
+  "lint_pecas": 56,
+  "issues": [],
+  "limits": [
+    "Pesquisa de Reels por legenda e três quadros; áudio não transcrito integralmente.",
+    "Mídias P02–P30, E01–E06 e ST01–ST20 ainda não produzidas.",
+    "Exemplos do Estúdio conferidos no catálogo e código; execução e captação de cada variante ainda pendentes.",
+    "ManyChat só planejado; nenhum envio, integração ou teste remoto realizado.",
+    "Nenhuma publicação, commit, push ou deploy."
+  ]
+}

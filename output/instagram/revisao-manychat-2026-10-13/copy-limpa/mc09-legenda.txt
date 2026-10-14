@@ -1,0 +1,9 @@
+Uma torre pode ser cenário. Também pode guardar a regra mais importante da aventura.
+
+Imagine que chegar ao topo abre uma ponte. Agora a construção participa do jogo: quem cria precisa programar essa reação e testar se a ponte abre na hora certa.
+
+É uma forma de apresentar programação a quem gosta de inventar mundos. O interesse pela construção ajuda a dar sentido ao que ele quer fazer funcionar.
+
+Os exemplos do post foram feitos nas nossas ferramentas, com Minecraft como inspiração. O personagem 3D está no Molda; os jogos rodam no nosso Estúdio.
+
+Comente MUNDO e conheça no direct um primeiro projeto para ele aprender a criar jogos.

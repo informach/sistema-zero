@@ -1,0 +1,288 @@
+[
+  {
+    "id": "slide-1",
+    "copy": [
+      "Seu filho vive reclamando de jogo.",
+      "Até que um dia diz: “Eu quero mudar isso aqui no jogo.”",
+      "Frase do Rafael, contada pelo pai."
+    ],
+    "parts": [
+      {
+        "class": "series",
+        "x": 64,
+        "y": 122,
+        "w": 228.15625,
+        "h": 45.59375
+      },
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 191.59375,
+        "w": 952,
+        "h": 162.625
+      },
+      {
+        "class": "copy tail",
+        "x": 64,
+        "y": 378.21875,
+        "w": 952,
+        "h": 119.3125
+      },
+      {
+        "class": "copy credit",
+        "x": 64,
+        "y": 521.53125,
+        "w": 952,
+        "h": 33.34375
+      },
+      {
+        "class": "media photo daniel",
+        "x": 64,
+        "y": 578.875,
+        "w": 952,
+        "h": 669.125
+      }
+    ],
+    "issues": [],
+    "missing": 0
+  },
+  {
+    "id": "slide-2",
+    "copy": [
+      "O Daniel, pai do nosso aluno Rafael, ouviu essa frase do filho.",
+      "E o detalhe está no “isso aqui”: a frase aponta o lugar exato e já avisa que quer mexer nele."
+    ],
+    "parts": [
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 122,
+        "w": 952,
+        "h": 119.75
+      },
+      {
+        "class": "media photo ",
+        "x": 64,
+        "y": 269.75,
+        "w": 952,
+        "h": 842.75
+      },
+      {
+        "class": "copy tail",
+        "x": 64,
+        "y": 1140.5,
+        "w": 952,
+        "h": 107.5
+      }
+    ],
+    "issues": [],
+    "missing": 0
+  },
+  {
+    "id": "slide-3",
+    "copy": [
+      "Reclamar é esperar que alguém conserte. Querer mudar é perguntar onde fica o botão.",
+      "E esse botão existe em todo jogo, só que fica nos bastidores, do outro lado da tela."
+    ],
+    "parts": [
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 122,
+        "w": 952,
+        "h": 189.796875
+      },
+      {
+        "class": "media photo ",
+        "x": 64,
+        "y": 339.796875,
+        "w": 952,
+        "h": 770.203125
+      },
+      {
+        "class": "copy tail",
+        "x": 64,
+        "y": 1138,
+        "w": 952,
+        "h": 110
+      }
+    ],
+    "issues": [],
+    "missing": 0
+  },
+  {
+    "id": "slide-4",
+    "copy": [
+      "Numa batalha de monstrinhos, o fogo tira o dobro da planta.",
+      "Parece lei da natureza, só que, no nosso Estúdio de criar jogos, é um 2 num bloco de encaixar."
+    ],
+    "parts": [
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 122,
+        "w": 952,
+        "h": 124.28125
+      },
+      {
+        "class": "media game ",
+        "x": 64,
+        "y": 274.28125,
+        "w": 952,
+        "h": 660.625
+      },
+      {
+        "class": "block",
+        "x": 64,
+        "y": 962.90625,
+        "w": 952,
+        "h": 149.59375
+      },
+      {
+        "class": "copy tail",
+        "x": 64,
+        "y": 1140.5,
+        "w": 952,
+        "h": 107.5
+      }
+    ],
+    "issues": [],
+    "missing": 0
+  },
+  {
+    "id": "slide-5",
+    "copy": [
+      "A gente quis um fogo menos forte e trocou o 2 por 1,5.",
+      "Depois jogou a mesma luta de novo, e ela mudou para os dois lados."
+    ],
+    "parts": [
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 122,
+        "w": 952,
+        "h": 131.0625
+      },
+      {
+        "class": "comparison life",
+        "x": 64,
+        "y": 281.0625,
+        "w": 952,
+        "h": 821.4375
+      },
+      {
+        "class": "copy tail",
+        "x": 64,
+        "y": 1130.5,
+        "w": 952,
+        "h": 117.5
+      }
+    ],
+    "issues": [],
+    "missing": 0
+  },
+  {
+    "id": "slide-6",
+    "copy": [
+      "O fogo perdeu força, e a planta passou a aguentar mais.",
+      "Mudar a regra levou um segundo, mas decidir se a luta ficou melhor é o trabalho todo."
+    ],
+    "parts": [
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 122,
+        "w": 952,
+        "h": 117.5
+      },
+      {
+        "class": "media table",
+        "x": 64,
+        "y": 267.5,
+        "w": 952,
+        "h": 768.75
+      },
+      {
+        "class": "copy tail",
+        "x": 64,
+        "y": 1064.25,
+        "w": 952,
+        "h": 183.75
+      }
+    ],
+    "issues": [],
+    "missing": 0
+  },
+  {
+    "id": "slide-7",
+    "copy": [
+      "E o Rafael foi parar nos bastidores. Quando o jogo dele ficou pronto, ele contou:",
+      "“No fim eu peguei o link e mandei pro meu amigo jogar.”",
+      "Rafael, aluno"
+    ],
+    "parts": [
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 342.78125,
+        "w": 952,
+        "h": 103.9375
+      },
+      {
+        "class": "quote-line",
+        "x": 64,
+        "y": 498.71875,
+        "w": 130,
+        "h": 8
+      },
+      {
+        "class": "copy quote",
+        "x": 64,
+        "y": 558.71875,
+        "w": 952,
+        "h": 256.5
+      },
+      {
+        "class": "testimonial",
+        "x": 64,
+        "y": 867.21875,
+        "w": 952,
+        "h": 160
+      }
+    ],
+    "issues": [],
+    "missing": 0
+  },
+  {
+    "id": "slide-8",
+    "copy": [
+      "Na próxima reclamação de jogo, devolva com a pergunta de criador: “O que você mudaria, e como ia saber se ficou melhor?”",
+      "Siga @criecomhelenaejulio para transformar mais reclamações de jogo em perguntas de criador."
+    ],
+    "parts": [
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 122,
+        "w": 952,
+        "h": 237.0625
+      },
+      {
+        "class": "media photo ",
+        "x": 64,
+        "y": 387.0625,
+        "w": 952,
+        "h": 730.4375
+      },
+      {
+        "class": "copy tail",
+        "x": 64,
+        "y": 1145.5,
+        "w": 952,
+        "h": 102.5
+      }
+    ],
+    "issues": [],
+    "missing": 0
+  }
+]

@@ -1,0 +1,3 @@
+Aqui, o goblin tem 20 de vida e cada golpe tira 10. Ele precisa de dois golpes para cair.
+
+A regra funciona assim. Quem cria pode decidir se quer manter ou mudar esses valores.

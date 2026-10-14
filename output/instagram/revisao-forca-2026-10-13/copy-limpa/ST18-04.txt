@@ -1,0 +1,1 @@
+Na próxima atividade que permita escolhas, mostre uma delas: o lugar, a cor ou o caminho. Ele pode começar por essa decisão.

@@ -1,0 +1,39 @@
+P01 · Mudar a chave muda o caminho
+Primeiro post do calendário novo. Não é F01 nem outro fixado.
+
+FORMATO E ORDEM
+Carrossel 4:5, seis imagens PNG, 1080 × 1350 pixels.
+Publicar 01-p01.png até 06-p01.png, nessa ordem.
+Usar legenda.txt e adicionar o texto alternativo correspondente a cada imagem.
+Não publicar previa.png, montagem.html ou arquivos da pasta apoio.
+
+DESTINO
+Bio: https://sistemazero.com.br/
+Na página, escolher Desafio do Primeiro Jogo.
+Oferta: https://sistemazero.com.br/kids/desafio-primeiro-jogo/oferta
+O carrossel não contém botão clicável. Não acrescentar sticker ou QR de compra.
+O link comum da bio não comprova atribuição individual deste post.
+
+ORIGEM DAS IMAGENS
+Capturas do renderizador real do Estúdio a partir do projeto completo de A Chave do Farol, com duas posições alcançáveis da chave.
+Versão A: x 115, y 160. Versão B: x 211, y 53.
+Mesmo personagem, cenário, farol, regras e ponto inicial nas duas versões.
+Os dois percursos foram jogados por teclado e terminaram com a chave coletada e o farol aceso. Registro: apoio/verificacao-percursos.json.
+A aproximação do personagem foi capturada durante a partida da versão A.
+As linhas de percurso, círculos e letras A/B são sobreposições editoriais. Não fazem parte do jogo.
+As linhas representam caminhos possíveis, não um replay exato das teclas da captura.
+Não são projetos de alunos nem prova de resultado individual. A legenda identifica a comparação preparada pela equipe.
+Não foram usadas imagens, ilustrações ou frases da Kodland nas artes.
+
+ARQUIVOS EDITÁVEIS E CONFERÊNCIA
+montagem.html compõe as seis imagens; manter a pasta apoio ao lado.
+index.html apresenta a sequência para revisão.
+apoio/verificacao-layout.json registra dimensões, limites da composição e ausência de sobreposição/estouro de texto.
+Fonte da copy: ../../../postagens/01-p01-a-p10.md, P01.
+Os scripts de preparação, captura e montagem ficam em output/instagram/postagens/2026-10-11 na cópia de trabalho.
+
+PUBLICAÇÃO E RESULTADOS
+Estado: produzido localmente, não agendado nem publicado.
+Ocasião prevista: semana 1, primeiro post. Datas relativas ao início real.
+Conferir a prévia do Instagram, a ordem e o destino da bio antes de publicar.
+Sete dias após publicar: registrar compartilhamentos, alcance, salvamentos e visitas ao perfil disponíveis, com as contagens e o período. A métrica principal é compartilhamentos/alcance. Não chamar likes de vendas.

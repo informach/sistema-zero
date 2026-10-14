@@ -1,0 +1,9 @@
+O herói caiu no mesmo lugar. Antes da próxima tentativa, escolha uma coisa para investigar.
+
+Neste percurso do nosso Estúdio, o trampolim lança o herói, mas ele não chega à plataforma. Será a distância ou a força do salto?
+
+Na versão preparada, mantemos a plataforma e aumentamos a força do trampolim. O teste seguinte mostra o herói alcançando a borda.
+
+Ao criar, ele pode comparar duas versões e explicar o efeito. A nova tentativa tem uma pergunta para responder.
+
+Siga a gente para ver dificuldades de criação virando ideias para testar.

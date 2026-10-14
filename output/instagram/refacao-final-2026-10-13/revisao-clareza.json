@@ -1,0 +1,60 @@
+{
+  "P01": {
+    "reason": "A conversa passa do interesse da criança pelos jogos para as escolhas que ela faz ao criar. Saem plateia, bastidores e dois lados da tela. Blocos são apresentados como instruções; a comparação do carrinho mostra o resultado de uma mudança. A arte aprovada permanece.",
+    "slides": [
+      ["Seu filho sabe o nome de todos os youtubers de jogo.", "Mas nunca viu como um jogo é feito."],
+      ["Esse interesse pelos jogos também pode ser usado para criar.", "Num jogo feito por ele, seu filho escolhe o cenário, os personagens e o que acontece quando alguém joga."],
+      ["Na nossa ferramenta, a criança encaixa blocos com instruções para o jogo.", "Este manda o carrinho acelerar quando o jogador usa o turbo."],
+      ["Enquanto ele assiste, pergunte: “O que faria esse carrinho andar mais rápido?”", "Essa pergunta convida seu filho a pensar numa mudança para o jogo."],
+      ["A gente aumentou a força do turbo e testou o carrinho de novo.", "Com as mesmas teclas, a velocidade passou de 28 para 45. O carrinho ficou mais rápido."],
+      ["Seu filho decide como quer o cenário: com árvores, com morros ou numa noite escura.", "Depois monta as instruções para fazer essas ideias aparecerem no jogo."],
+      ["Ele pode continuar assistindo e também aprender a criar.", "Somos Helena e Júlio, pais e programadores. Siga @criecomhelenaejulio para ver como ensinamos crianças a criar os próprios jogos."]
+    ],
+    "caption": [
+      "Seu filho já gosta de jogos. Esse interesse também pode ajudá-lo a começar a criar.",
+      "Enquanto ele assiste a um vídeo, você pode perguntar: “Se fosse você fazendo esse jogo, o que colocaria nele?” Deixe ele contar. Um personagem diferente, uma pista à noite, um carrinho mais rápido: são ideias para começar uma criação.",
+      "Para fazer essas ideias funcionarem, ele aprende a dar instruções ao computador. Na nossa ferramenta, essas instruções aparecem em blocos com frases em português. A criança encaixa os blocos, testa o jogo e vê o resultado do que montou.",
+      "Aí uma parte do tempo de tela ganha uma atividade nova: pensar no que quer fazer, montar e testar. E ele tem algo que pode mostrar a você no fim.",
+      "Somos Helena e Júlio, pais e programadores. Siga @criecomhelenaejulio para ver como ensinamos crianças a criar os próprios jogos."
+    ]
+  },
+  "P07": {
+    "reason": "Sai a metáfora erro com endereço e a promessa das quatro palavras. Primeiro vem uma pergunta que ajuda o responsável a entender a dificuldade. Depois, a criação de jogos aparece como uma forma de praticar observar, escolher uma mudança e testar. O exemplo e a conclusão dizem exatamente o que aconteceu, sem transformar um teste em promessa de persistência.",
+    "slides": [
+      ["“Nada funciona”, ele diz, e fecha o notebook.", "Antes de pedir que tente de novo, ajude seu filho a descobrir o que deu errado."],
+      ["Quando ele diz “nada funciona”, você ainda não sabe onde ajudar.", "Peça: “Me mostra o que você queria fazer e o que aconteceu.”"],
+      ["Ao criar um jogo, seu filho pode praticar isso: olhar para o que falhou.", "Neste exemplo, o personagem pula, mas não chega à próxima plataforma."],
+      ["Agora dá para pensar em duas mudanças: fazer o personagem pular mais longe ou deixar a plataforma mais perto.", "Vamos testar só uma delas."],
+      ["A gente deixou a plataforma mais perto e testou o mesmo pulo.", "Dessa vez, o personagem chegou e pegou a moeda. Bastou mudar essa parte do jogo."],
+      ["É isso que seu filho pratica ao criar jogos: entender o erro, escolher uma mudança e tentar de novo.", "Se estiver cansado, façam uma pausa e retomem depois."],
+      ["Resolver um problema começa por entender o que deu errado.", "Siga @criecomhelenaejulio. Aqui mostramos como seu filho pode praticar isso criando os próprios jogos."]
+    ],
+    "caption": [
+      "“Tenta de novo” fica mais útil quando a criança sabe o que vai fazer diferente.",
+      "Quando seu filho disser que nada funciona, peça para ele mostrar o que estava tentando fazer. Você pode perguntar: “Qual parte deu certo? E o que aconteceu depois?” Assim, vocês começam a entender onde ele precisa de ajuda.",
+      "Criar jogos dá oportunidades de praticar esse cuidado. No exemplo que montamos, o personagem andava e pulava, mas não alcançava a plataforma seguinte. A gente aproximou a plataforma e repetiu o teste. Dessa vez, ele chegou.",
+      "A próxima tentativa teve uma mudança escolhida por um motivo. É esse processo que a criança pratica: observar o erro, pensar numa solução e testar se ela funcionou. Você pode ajudá-la a explicar o que aconteceu, mesmo sem saber programar.",
+      "Siga @criecomhelenaejulio. Aqui mostramos como seu filho pode praticar isso criando os próprios jogos."
+    ]
+  },
+  "P34": {
+    "reason": "O desejo de propor mudanças fica ligado às decisões que a criança toma ao criar o próprio jogo. A capa, o convite para conversar e a legenda partem desse desejo; não supõem que o filho reclame de jogos. O relato do Daniel trata da vontade de Rafael de mudar o que estava criando, não de um hábito de reclamar. A batalha mostra uma ideia, uma alteração e o resultado observado; o relato de Rafael continua separado da demonstração da equipe.",
+    "slides": [
+      ["Imagine seu filho criando um jogo do jeito dele.", "“Eu quero mudar isso aqui no jogo.”", "Frase do Rafael, contada pelo pai."],
+      ["Daniel, pai do nosso aluno Rafael, contou que o filho queria mudar o próprio jogo.", "Criar jogos dá espaço para isso: a criança pensa numa ideia e tenta colocá-la em prática."],
+      ["Num jogo que ela está criando, a criança pode mudar as regras.", "Por exemplo: diminuir a força de um ataque para o outro personagem resistir por mais tempo."],
+      ["Neste jogo que montamos, um ataque de fogo tira vida do monstrinho de planta.", "A força do ataque aparece num bloco, uma instrução do jogo."],
+      ["A gente trocou o 2 por 1,5 e repetiu o mesmo ataque.", "Veja a barra: agora o monstrinho de planta perde menos vida."],
+      ["É assim que a criança testa uma ideia: muda uma regra, joga e observa o que aconteceu.", "Depois decide se gostou ou se quer mudar mais alguma coisa."],
+      ["Rafael criou o jogo dele e quis mostrar para um amigo. Ele contou:", "“No fim eu peguei o link e mandei pro meu amigo jogar.”", "Rafael, aluno"],
+      ["Quando conversar sobre jogos, pergunte: “Se você criasse um jogo, como ele seria?”", "Siga @criecomhelenaejulio para ver como seu filho pode transformar essas ideias em jogos criados por ele."]
+    ],
+    "caption": [
+      "Na criação de um jogo, seu filho decide até a força de um ataque.",
+      "Durante uma conversa sobre jogos, pergunte: “Se você criasse um jogo, como ele seria?” Deixe seu filho contar. Depois escolha um detalhe da ideia dele e pergunte como funcionaria.",
+      "Ao criar o próprio jogo, ele pode experimentar a resposta. Escolhe uma mudança, joga e vê se o resultado ficou como imaginava. Está tomando decisões sobre algo que está construindo.",
+      "Daniel, pai do nosso aluno Rafael, contou: “Vai criando, vai sendo mais criativo. ‘Eu quero mudar isso aqui no jogo.’” O relato mostra essa vontade de fazer diferente. A batalha dos slides é um exemplo que nós montamos para mostrar como uma regra pode ser alterada.",
+      "Siga @criecomhelenaejulio para ver como seu filho pode transformar essas ideias em jogos criados por ele."
+    ]
+  }
+}

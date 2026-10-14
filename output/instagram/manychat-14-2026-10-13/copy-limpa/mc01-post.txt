@@ -1,0 +1,16 @@
+Para aprender a fazer um personagem pular, ele tem um motivo: chegar do outro lado.
+Seu filho imagina uma fase com uma ponte quebrada. Agora quer descobrir como o personagem vai atravessar.
+
+A vontade de jogar a própria ideia dá um motivo para prestar atenção na explicação.
+Para isso acontecer, ele precisa dar uma instrução ao jogo: ao apertar esta tecla, o personagem pula.
+
+Na nossa ferramenta, essas instruções são montadas com bloquinhos.
+Ele monta, joga e observa o salto.
+
+Se o personagem não chega ao outro lado, pode conferir o comando e a distância entre as plataformas. A próxima tentativa tem algo concreto para investigar.
+Criar jogos dá à criança uma ideia para realizar e um resultado para conferir.
+
+Ela aprende um comando para fazer algo que quer ver acontecer. Depois pode usar o que entendeu em outra parte do jogo.
+Seu filho também tem ideias para um jogo?
+
+Comente CURIOSIDADE. Vamos mostrar no direct um primeiro passo para ele começar a criar com orientação.

@@ -1,0 +1,3 @@
+Veja uma possibilidade de criação: ligar a tecla espaço ao laser desta nave do nosso Estúdio.
+
+Depois de montar a regra, quem cria testa a tecla e confere o disparo.

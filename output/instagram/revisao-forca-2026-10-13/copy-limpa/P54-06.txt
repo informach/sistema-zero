@@ -1,0 +1,3 @@
+Quem cria escolhe usar os semáforos e testa a parada dos carrinhos.
+
+A comparação permite ver como uma regra muda o funcionamento da cidade.
