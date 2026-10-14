@@ -14,16 +14,21 @@ import type {
 } from '@sistemazero/studio'
 import { createLocalPersistenceAdapter } from '@sistemazero/studio/local-persistence'
 import { Button, Dialog } from '@sistemazero/ui'
+import { useBodyScrollLock } from '@sistemazero/ui/scroll-lock'
 import { Maximize2, Minimize2, Save, Volume2, VolumeX } from 'lucide-react'
 import dynamic from 'next/dynamic'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { cn } from '../../lib/cn'
 import { dataUrlBase64ToBlob } from '../../lib/data-url'
+import { useReportActivityExpanded } from '../../lib/lesson-activity-expansion'
 import { liveRequest } from '../../lib/live/client'
 import { cursorAnchor } from '../../lib/live/cursor'
+import type { LiveLessonWorkspace } from '../../lib/live/lesson-slot'
 import { createLivePreviewAdapter } from '../../lib/live/preview'
 import { isTransientLiveFailure, sameLiveProject } from '../../lib/live/workspace-compare'
 import { type LiveDraft, LiveDraftJournal, liveDraftScope } from '../../lib/live/workspace-drafts'
 import { sessionFetch as fetch } from '../../lib/session-fetch'
+import { EXPANDED_EXIT_ATTR, EXPANDED_EXIT_EDITOR, LessonVideoToggle } from '../lesson-video-float'
 import { LiveAssistanceCursor } from './live-assistance-cursor'
 
 const StudioEditor = dynamic(
@@ -38,6 +43,10 @@ const StudioEditor = dynamic(
   },
 )
 const SAVE_RETRY_MS = [2_000, 4_000, 8_000, 15_000]
+// Constantes para o editor memorizado não receber um objeto novo a cada render.
+const LEARNER_MODES: ('blocks' | 'bridge' | 'code')[] = ['blocks']
+const LEARNER_FEATURES = { terminal: false, ai: false, extensions: false }
+const TEACHER_FEATURES = { terminal: false, ai: false, extensions: true }
 
 /** Uma cópia do projeto que a criança guarda no próprio computador. */
 function downloadProject(project: unknown) {
@@ -219,6 +228,185 @@ export function LiveWorkspace({
     </section>
   )
 }
+/** A curadoria do bloco Estúdio da aula (os mesmos campos do `StudioBlock`). */
+export type LiveBlockCuration = LiveStudioConfig
+
+/**
+ * O BLOCO ESTÚDIO de uma aula de curso ao vivo (14/10/2026, "um projeto só"): o projeto ao vivo da
+ * criança para o bloco (`GET /members/live/workspaces?sessionId=&blockId=`; chave = curso +
+ * criança + `chain` do bloco ou o id dele; semente e curadoria vêm do bloco PUBLICADO), com lease,
+ * revisões e a ajuda da professora. Não há "Enviar para a equipe": a professora vê o projeto ao
+ * vivo. Publicar no Mural continua (prova do projeto ao vivo).
+ *
+ * Amplia como os editores da aula (sobreposição `fixed`, a saída marcada para o flutuante), e
+ * avisa a aula pelo `useReportActivityExpanded`: é o que faz a transmissão virar o flutuante.
+ */
+export const LiveBlockWorkspace = memo(function LiveBlockWorkspace({
+  workspace: context,
+  blockId,
+  curation,
+  title,
+  fillHeight = false,
+}: {
+  workspace: LiveLessonWorkspace
+  blockId: string
+  curation?: LiveBlockCuration | null
+  /** O título da barra do bloco (o `estudio.titulo` do `LessonCopy`). */
+  title: string
+  fillHeight?: boolean
+}) {
+  const teacher = context.role === 'teacher'
+  const learnerId = teacher ? (context.learnerId ?? '') : context.actorId
+  const key = `${context.sessionId}:${blockId}:${learnerId}`
+  const [opened, setOpened] = useState<{ key: string; view: LiveWorkspaceView } | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [expanded, setExpanded] = useState(false)
+  const root = useRef<HTMLDivElement>(null)
+  const onError = context.onError
+  useEffect(() => {
+    if (!learnerId || !context.deviceId) return
+    const controller = new AbortController()
+    setError(null)
+    const query = new URLSearchParams({ sessionId: context.sessionId, blockId })
+    if (teacher) query.set('learnerId', learnerId)
+    void liveRequest<LiveWorkspaceView>(
+      `/api/live/workspaces?${query}`,
+      undefined,
+      'GET',
+      controller.signal,
+    )
+      .then(async (view) => {
+        let next = view
+        if (!teacher && !view.readOnly) {
+          try {
+            next = await liveRequest<LiveWorkspaceView>(
+              `/api/live/workspaces/${view.id}/claim?sessionId=${context.sessionId}`,
+              { deviceId: context.deviceId, takeover: false },
+              'POST',
+              controller.signal,
+            )
+          } catch (cause) {
+            if (!controller.signal.aborted)
+              setError(cause instanceof Error ? cause.message : 'O projeto já está aberto.')
+          }
+        }
+        if (!controller.signal.aborted) setOpened({ key, view: next })
+      })
+      .catch((cause) => {
+        if (controller.signal.aborted) return
+        const message = cause instanceof Error ? cause.message : 'Não foi possível abrir o projeto.'
+        setError(message)
+        onError?.(message)
+      })
+    return () => controller.abort()
+  }, [key, learnerId, teacher, blockId, context.sessionId, context.deviceId, onError])
+  // Esc reduz, como no Estúdio da aula (salvo com um menu ou diálogo aberto: o Esc é deles).
+  useEffect(() => {
+    if (!expanded) return
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return
+      if (document.querySelector('[role="menu"],[role="dialog"]')) return
+      setExpanded(false)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [expanded])
+  // A professora abriu uma parte sem este bloco: a aula o esconde (`display: none`) e a tela vai
+  // junto com a turma. Ampliado e escondido, ele seguiria avisando "atividade ampliada" e a
+  // transmissão ficaria flutuando sobre nada.
+  useEffect(() => {
+    const element = root.current
+    if (!expanded || !element || typeof ResizeObserver === 'undefined') return
+    const observer = new ResizeObserver(() => {
+      if (element.getClientRects().length === 0) setExpanded(false)
+    })
+    observer.observe(element)
+    return () => observer.disconnect()
+  }, [expanded])
+  useBodyScrollLock(expanded)
+  useReportActivityExpanded(expanded)
+  const view = opened?.key === key ? opened.view : null
+  return (
+    <div
+      ref={root}
+      className={cn(
+        'sz-live-block-workspace flex flex-col gap-3 rounded-lg border border-border bg-card p-4',
+        expanded && 'fixed inset-0 z-50 rounded-none',
+        fillHeight && !expanded && 'min-h-0 flex-1',
+      )}
+    >
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h3 className="sz-display text-base">{title}</h3>
+        <div className="flex flex-wrap items-center gap-2">
+          <LessonVideoToggle expanded={expanded} size="sm" />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setExpanded((value) => !value)}
+            disabled={!view}
+            {...(expanded ? { [EXPANDED_EXIT_ATTR]: EXPANDED_EXIT_EDITOR } : {})}
+          >
+            {expanded ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
+            {expanded ? 'Reduzir' : 'Expandir'}
+          </Button>
+        </div>
+      </div>
+      {teacher ? (
+        <label className="flex flex-wrap items-center gap-2 text-sm font-semibold">
+          Acompanhar projeto
+          <select
+            className="min-h-11 rounded-xl border bg-background px-3"
+            value={learnerId}
+            onChange={(event) => context.onSelectLearner?.(event.target.value)}
+          >
+            <option value="">Escolha uma criança</option>
+            {(context.learners ?? []).map((learner) => (
+              <option key={learner.id} value={learner.id}>
+                {learner.name}
+              </option>
+            ))}
+          </select>
+        </label>
+      ) : null}
+      {error ? (
+        <p role="alert" className="rounded-xl border p-3 text-sm">
+          {error}
+        </p>
+      ) : null}
+      {view ? (
+        <WorkspaceEditor
+          key={view.id}
+          initial={view}
+          room={{
+            session: { id: context.sessionId },
+            actorId: context.actorId,
+            role: context.role,
+          }}
+          deviceId={context.deviceId}
+          onError={onError}
+          onSaveStateChange={context.onSaveStateChange}
+          curation={curation}
+          onNeedsAttention={context.onNeedsAttention}
+          fill={expanded || fillHeight}
+          publishToMural={context.publishToMural === true}
+        />
+      ) : (
+        // A altura do editor já reservada: ele chega sem empurrar a aula.
+        <p
+          className={cn(
+            'grid place-items-center rounded-2xl border bg-card p-6 text-center text-muted-foreground',
+            expanded || fillHeight ? 'min-h-[420px] flex-1' : 'h-[min(72vh,820px)] min-h-[420px]',
+          )}
+        >
+          {teacher && !learnerId
+            ? 'Escolha um projeto para acompanhar. O jogo da criança não será executado no seu painel.'
+            : 'Abrindo o projeto guardado deste encontro…'}
+        </p>
+      )}
+    </div>
+  )
+})
+
 function WorkspaceEditor({
   initial,
   room,
@@ -229,6 +417,8 @@ function WorkspaceEditor({
   wide = false,
   onWideChange,
   onNeedsAttention,
+  fill = false,
+  publishToMural = true,
 }: {
   initial: LiveWorkspaceView
   room: WorkspaceContext
@@ -240,6 +430,10 @@ function WorkspaceEditor({
   wide?: boolean
   onWideChange?(wide: boolean): void
   onNeedsAttention?(): void
+  /** O editor ocupa a altura do pai (o bloco ampliado). */
+  fill?: boolean
+  /** "Compartilhar" no Mural: só no Kids (a comunidade adulta não tem o Mural). */
+  publishToMural?: boolean
 }) {
   const [workspace, setWorkspace] = useState(initial)
   const latest = useRef(initial)
@@ -350,7 +544,7 @@ function WorkspaceEditor({
   )
   const publication = useRef<{ key: string; id: string } | null>(null)
   const [share] = useState<StudioShareAdapter | undefined>(() =>
-    teacher
+    teacher || !publishToMural
       ? undefined
       : {
           async publish(input) {
@@ -398,9 +592,26 @@ function WorkspaceEditor({
       if (retryTimer.current) clearTimeout(retryTimer.current)
     }
   }, [])
+  // A consulta do projeto (a cada 1 s) devolve um objeto novo mesmo sem nada novo: só vira estado
+  // (e re-render) quando muda o que a tela usa. O Estúdio, esse, nem com isso re-renderiza (ver o
+  // elemento memorizado abaixo).
   const remember = useCallback((next: LiveWorkspaceView) => {
+    const previous = latest.current
     latest.current = next
-    if (mounted.current) setWorkspace(next)
+    if (!mounted.current) return
+    if (
+      previous.id === next.id &&
+      previous.revision === next.revision &&
+      previous.writerEpoch === next.writerEpoch &&
+      previous.writerId === next.writerId &&
+      previous.writerDeviceId === next.writerDeviceId &&
+      previous.leaseExpiresAt === next.leaseExpiresAt &&
+      previous.readOnly === next.readOnly &&
+      previous.project === next.project &&
+      JSON.stringify(previous.assistance) === JSON.stringify(next.assistance)
+    )
+      return
+    setWorkspace(next)
   }, [])
   const fail = useCallback(
     (cause: unknown) => {
@@ -812,8 +1023,72 @@ function WorkspaceEditor({
   }, [askingId])
   const saving = status === 'Guardando o projeto…'
   const offline = status.startsWith('Sem internet')
+  // ⭐ O ESTÚDIO memorizado: a barra de status, a ajuda e a consulta re-renderizam este componente,
+  // e o editor (Blockly, código, prévia) só re-renderiza quando muda o que ele recebe.
+  const onStudioReady = useCallback(() => setReady(true), [])
+  const onStudioError = useCallback(
+    (cause: { message: string }) => fail(new Error(cause.message)),
+    [fail],
+  )
+  const shareDisabledReason = assistance
+    ? 'Conclua a ajuda antes de compartilhar.'
+    : !editing
+      ? 'Continue neste aparelho antes de compartilhar.'
+      : undefined
+  const curationLevel = curation?.level
+  const curationBlocks = curation?.allowBlocks
+  const curationCategories = curation?.allowCategories
+  const curationModes = curation?.allowedModes
+  const curationReveal = curation?.allowLevelReveal
+  const studioElement = useMemo(
+    () =>
+      persistence ? (
+        <StudioEditor
+          ref={editor}
+          initialProject={initialProject.current}
+          persistence={persistence}
+          editingAccess={editing ? 'author' : 'observer'}
+          autoRun={false}
+          requireIsolatedPreview
+          previewOriginAdapter={previewAdapter}
+          projectMuted={muted}
+          share={share}
+          shareDisabledReason={shareDisabledReason}
+          onReady={onStudioReady}
+          onError={onStudioError}
+          // A curadoria (como no bloco do Estúdio das aulas). Sem ela, a criança via a paleta
+          // inteira, os modos Ponte e Código e instalava qualquer extensão.
+          level={curationLevel as never}
+          allowBlocks={curationBlocks}
+          allowCategories={curationCategories}
+          allowedModes={curationModes ?? (teacher ? undefined : LEARNER_MODES)}
+          allowLevelReveal={curationReveal ?? false}
+          features={teacher ? TEACHER_FEATURES : LEARNER_FEATURES}
+        />
+      ) : (
+        <p role="status" className="p-6">
+          Preparando seu rascunho…
+        </p>
+      ),
+    [
+      persistence,
+      editing,
+      previewAdapter,
+      muted,
+      share,
+      shareDisabledReason,
+      onStudioReady,
+      onStudioError,
+      curationLevel,
+      curationBlocks,
+      curationCategories,
+      curationModes,
+      curationReveal,
+      teacher,
+    ],
+  )
   return (
-    <div className="space-y-2.5">
+    <div className={cn('space-y-2.5', fill && 'flex min-h-0 flex-1 flex-col')}>
       <div className="flex flex-wrap items-center gap-2 rounded-2xl border bg-card p-2.5">
         <span
           className={`mr-auto inline-flex items-center gap-2 rounded-full px-3 py-1.5 font-bold text-sm ${offline || recovery ? 'bg-amber-100 text-amber-950' : 'text-muted-foreground'}`}
@@ -1053,7 +1328,7 @@ function WorkspaceEditor({
         </div>
       </Dialog>
       <div
-        className={`relative overflow-hidden rounded-2xl border ${wide ? 'h-[calc(100dvh-13rem)] min-h-[480px]' : 'h-[min(72vh,820px)] min-h-[420px]'}`}
+        className={`relative overflow-hidden rounded-2xl border ${fill ? 'min-h-[420px] flex-1' : wide ? 'h-[calc(100dvh-13rem)] min-h-[480px]' : 'h-[min(72vh,820px)] min-h-[420px]'}`}
         ref={editorRoot}
         onPointerMove={(event) => {
           if (
@@ -1079,40 +1354,7 @@ function WorkspaceEditor({
           }).catch(() => {})
         }}
       >
-        {persistence ? (
-          <StudioEditor
-            ref={editor}
-            initialProject={initialProject.current}
-            persistence={persistence}
-            editingAccess={editing ? 'author' : 'observer'}
-            autoRun={false}
-            requireIsolatedPreview
-            previewOriginAdapter={previewAdapter}
-            projectMuted={muted}
-            share={share}
-            shareDisabledReason={
-              assistance
-                ? 'Conclua a ajuda antes de compartilhar.'
-                : !editing
-                  ? 'Continue neste aparelho antes de compartilhar.'
-                  : undefined
-            }
-            onReady={() => setReady(true)}
-            onError={(cause) => fail(new Error(cause.message))}
-            // A curadoria do roteiro (como no bloco do Estúdio das aulas). Sem ela, a criança
-            // via a paleta inteira, os modos Ponte e Código e instalava qualquer extensão.
-            level={curation?.level as never}
-            allowBlocks={curation?.allowBlocks}
-            allowCategories={curation?.allowCategories}
-            allowedModes={curation?.allowedModes ?? (teacher ? undefined : ['blocks'])}
-            allowLevelReveal={curation?.allowLevelReveal ?? false}
-            features={{ terminal: false, ai: false, extensions: teacher }}
-          />
-        ) : (
-          <p role="status" className="p-6">
-            Preparando seu rascunho…
-          </p>
-        )}
+        {studioElement}
         {cursorVisible && (
           <LiveAssistanceCursor
             root={editorRoot}

@@ -12,16 +12,20 @@ import { ConfirmDialog } from '@sistemazero/ui/confirm-dialog'
 import {
   Ban,
   CalendarX2,
+  Check,
   DoorOpen,
   Hand,
+  ListOrdered,
   MousePointerClick,
   Play,
   Radio,
+  SkipForward,
   Square,
   UserCheck,
   VolumeX,
 } from 'lucide-react'
 import { useId, useState } from 'react'
+import { nextSectionId } from '../../lib/live/sections'
 
 export const SPEAKING_MODES: readonly { value: LiveSpeakingMode; label: string; hint: string }[] = [
   {
@@ -100,11 +104,18 @@ export function LiveTeacherControls({
   busy,
   stale,
   onControl,
+  sections = [],
 }: {
   room: LiveRoomView
   busy: boolean
   stale: boolean
   onControl(command: LiveControl): Promise<boolean>
+  /**
+   * As partes da aula do encontro (curso ao vivo, 14/10/2026). Com o encontro ao vivo a professora
+   * abre as partes: "Próxima parte" ou qualquer uma da lista (`open-section`). A tela da turma vai
+   * junto e as crianças navegam só entre as abertas.
+   */
+  sections?: { id: string; title: string }[]
 }) {
   const [confirming, setConfirming] = useState<'end' | 'cancel' | null>(null)
   const headingId = useId()
@@ -171,6 +182,15 @@ export function LiveTeacherControls({
           </Button>
         ) : null}
       </div>
+
+      {live && sections.length ? (
+        <LiveSectionsControl
+          room={room}
+          sections={sections}
+          off={off}
+          onOpen={(sectionId) => run({ kind: 'open-section', sectionId })}
+        />
+      ) : null}
 
       {moderation ? (
         <div className="space-y-4 border-t pt-4">
@@ -299,5 +319,76 @@ export function LiveTeacherControls({
         }}
       />
     </section>
+  )
+}
+
+/** As partes do encontro: a atual, "Próxima parte" e a lista para abrir qualquer uma. */
+function LiveSectionsControl({
+  room,
+  sections,
+  off,
+  onOpen,
+}: {
+  room: LiveRoomView
+  sections: { id: string; title: string }[]
+  off: boolean
+  onOpen(sectionId: string): void
+}) {
+  const headingId = useId()
+  const control = room.occurrence?.sections ?? null
+  const currentIndex = sections.findIndex((section) => section.id === control?.currentId)
+  const next = nextSectionId(sections, control)
+  const nextIndex = sections.findIndex((section) => section.id === next)
+  const opened = new Set(control?.openedIds ?? [])
+  return (
+    <div className="space-y-3 border-t pt-4" aria-labelledby={headingId} role="group">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p id={headingId} className="flex items-center gap-2 text-sm font-semibold">
+          <ListOrdered className="size-4" aria-hidden />
+          Partes do encontro
+        </p>
+        <p role="status" className="text-sm text-muted-foreground">
+          {currentIndex >= 0
+            ? `A turma está na parte ${currentIndex + 1} de ${sections.length}`
+            : 'Nenhuma parte aberta ainda'}
+        </p>
+      </div>
+      <Button
+        className="min-h-11 px-4"
+        disabled={off || !next}
+        onClick={() => {
+          if (next) onOpen(next)
+        }}
+      >
+        <SkipForward aria-hidden />
+        {next ? `Próxima parte (${nextIndex + 1})` : 'Esta é a última parte'}
+      </Button>
+      <ol className="flex flex-wrap gap-2" aria-label="Abrir uma parte">
+        {sections.map((section, index) => {
+          const current = section.id === control?.currentId
+          return (
+            <li key={section.id}>
+              <Button
+                className="min-h-11 max-w-72 justify-start px-3"
+                variant={current ? 'default' : 'outline'}
+                aria-pressed={current}
+                disabled={off}
+                onClick={() => {
+                  if (!current) onOpen(section.id)
+                }}
+              >
+                {opened.has(section.id) && !current ? <Check aria-hidden /> : null}
+                <span className="truncate">
+                  {index + 1}. {section.title}
+                </span>
+                <span className="sr-only">
+                  {current ? ', parte atual' : opened.has(section.id) ? ', já aberta' : ''}
+                </span>
+              </Button>
+            </li>
+          )
+        })}
+      </ol>
+    </div>
   )
 }

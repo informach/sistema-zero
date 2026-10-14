@@ -5,6 +5,141 @@
 > prévia do Kids usa a mesma regra. O Members repete a recusa por `x-auth-impersonator-id`.
 > `live-recording-status.tsx` ganhou os rótulos de `empty` e `unavailable`.
 
+## Cursos ao vivo: a sala é o layout da aula (14/10/2026)
+
+Decisão dela (`docs/plans/2026-10-14-cursos-ao-vivo-design.md`, §§1, 5, 8 e 10): a oficina virou
+um CURSO de modalidade ao vivo e a sala é a AULA gravada com a transmissão. Esquerda: a transmissão
+FIXA no alto e a orientação curta da parte embaixo; direita: a atividade da parte. A divisória
+arrasta; ampliada a atividade, a transmissão vira o flutuante; no celular empilha.
+
+- **`LessonSections` ganhou `stage?: ReactNode` e `sectionControl?: LiveSectionControl | null`.**
+  Sem as duas, NADA muda: a árvore, as classes e a navegação são as de sempre (travado em
+  `community-kids/tests/live-lesson-room.test.tsx`, primeiro caso).
+  - `stage` mora no alto da coluna da esquerda (`sz-lesson-stage`, gancho novo) e é o MESMO nó
+    entre as partes (o painel da esquerda nunca desmonta). Com ele, a orientação vai num invólucro
+    (`sz-lesson-stage-content`) que some na aba "Criar" SEM levar a transmissão junto.
+  - ⚠️⚠️ **Fixa (`sticky`) só ao lado da atividade e no estreito** (`arrastavel || largura < 768`).
+    Lado a lado o painel ganha `self-stretch` para a transmissão grudar enquanto a criança rola a
+    atividade; empilhado o painel vira `display: contents` e ela gruda no alto da PARTE inteira
+    (o bloco de conteúdo do sticky passa a ser o `PanelGroup`). Numa parte só de leitura no
+    computador ela fica no fluxo, com a altura contida pela janela (fixa, cobriria o texto). O topo
+    do sticky é `--sz-lesson-stage-top` (cada app o põe abaixo da barra fixa dele).
+  - ⚠️⚠️ **Nunca `sticky` enquanto flutua**: o `z-20` faria do invólucro um contexto de
+    empilhamento e o flutuante (`fixed`, z-85) ficaria preso embaixo da atividade ampliada.
+  - **O flutuante é o do vídeo da aula** (`LessonVideoFrame` + `LessonVideoFloatContext`): com
+    qualquer atividade ampliada a transmissão flutua sempre (é ao vivo, não há "parada"); o
+    interruptor da barra da atividade e o Minimizar a escondem. Com `stage`, o vídeo de seção não
+    flutua (um flutuante só). `VideoFloatSlot.label` e `VideoToggle.label` (opcionais) nomeiam o
+    que flutua: "Ao vivo" com as partes conduzidas e "Gravação" sem elas (o título cabe no degrau
+    pequeno de 300px; "Transmissão" truncava), e o interruptor diz "Transmissão".
+  - **`sectionControl`**: a trava passa a ser SÓ "a professora ainda não abriu" (a progressão por
+    conclusão não vale no encontro); voltar pode, pular não, e o "Próxima parte" travado diz
+    "A professora abre já já" (`aria-describedby`). A MUDANÇA de `currentId` leva a tela junto, na
+    hora e localmente (a navegação registrada no servidor vai em tentativa, em silêncio), com o
+    aviso `role="status"` "A turma está na parte N" por 6 s. Quem voltou para rever fica lá até a
+    professora abrir OUTRA parte. Com o controle, o "Preciso de ajuda" do rodapé some (o pedido de
+    ajuda é o da barra da chamada) e a faixa "Pode seguir!" não aparece enquanto ela espera a
+    professora. As frases moram em `components/live/live-section-copy.tsx` (a única pasta em que a
+    criança lê "professora"; `.tsx` porque o mapa de exports do pacote só abre `components/live/*.tsx`).
+  - `onSectionChange` passou a mandar também o `sectionId` (a sala relata a parte à professora).
+- **O Estúdio da sala é o bloco Estúdio da aula** ("um projeto só"):
+  `LessonPlayerContextValue.liveWorkspace` (`LiveLessonWorkspace`, `lib/live/lesson-slot.ts`)
+  faz o `StudioBlockView` virar o `LiveBlockWorkspace` (`live-workspace.tsx`, por `next/dynamic`,
+  para as aulas gravadas não pagarem por ele): o projeto ao vivo da criança
+  (`GET /api/live/workspaces?sessionId=&blockId=`; a professora acompanha com `&learnerId=`), lease,
+  revisões, ajuda da professora e a curadoria DO BLOCO. Sem "Enviar para a equipe"; o Compartilhar
+  no Mural continua (`publishToMural`, só o Kids liga). Amplia como os editores (`fixed`, saída
+  marcada `editor`, `useReportActivityExpanded`) e ⚠️ reduz sozinho quando a aula o esconde (a
+  professora abriu uma parte sem ele): ampliado e escondido, seguiria dizendo "atividade ampliada".
+- **`LiveClassroom` recebe a aula pelo slot** `renderLesson(props: LiveLessonSlotProps)`. Contrato
+  combinado: `lesson`, `stage`, `sectionControl`, `teacher`, `teacherNotes?`,
+  `onSectionReport({sectionId, completedSectionIds})`; acréscimos da sala: `liveWorkspace`,
+  `onOutline({sections, attachments})` (as partes para os controles da professora e os anexos para
+  os Materiais da barra) e `audience`. Kids e adulto montam o player de verdade com
+  `components/live/use-live-lesson.tsx` (`useLiveLesson`): a aula vem pela rota de aula de SEMPRE
+  (`/api/live/courses/:slug/lessons/:id` → `/members/courses/:slug/lessons/:id`) e ⚠️⚠️ atualizar é
+  RELER o JSON, nunca `router.refresh()` (num build novo ele vira recarregamento e derrubaria a
+  chamada). O Admin monta a prévia do documento publicado e busca as anotações da professora por
+  `/api/admin/live/lessons/:id/teacher-notes` (o `LiveClassroom` as passa no slot).
+- **Réguas puras** em `lib/live/sections.ts`: `learnerSectionControl` (encontro `live` = as
+  abertas; recepção = nenhuma aberta, a tela mostra a primeira; fora disso `null`, tudo livre;
+  servidor sem a lista = livre, nunca preso), `teacherSectionControl` (todas abertas, acompanhando
+  a atual), `nextSectionId`, `chapterSeconds`, `sectionLabel`.
+- **Professora**: `LiveTeacherControls` ganhou `sections` ("Partes do encontro": a atual,
+  "Próxima parte (N)" e a lista para abrir qualquer uma, comando `open-section`, só com o encontro
+  ao vivo). Os cartões (`LiveParticipants` + `participantStatus`) dizem "Parte N · título" pelo
+  `activity.sectionId` e o selo "Concluiu a parte da turma" pelo `completedSectionIds` (a conclusão
+  é durável; vale com o relato velho). O relato da criança no batimento leva `stepId: null`,
+  `sectionId` e `completedSectionIds` (até 60).
+- **A criança** (`live-learner-room.tsx`): o palco (`LiveStage`) com "Ampliar a transmissão"
+  (tela cheia do navegador; sem ela, cobre a página), a barra da chamada ACIMA do rodapé da aula
+  (`sz-live-controls`, publica `--sz-live-bar-height` para a página reservar) e, fora do encontro,
+  a gravação no lugar da transmissão (`live-recording-stage.tsx`): Vimeo pronto toca no player das
+  aulas com a marca d'água; antes disso, o MP4 (`LiveReplay bare`). Capítulos: trocar de parte leva
+  o vídeo ao trecho dela (só na troca, nunca na abertura) e "Ver este trecho" leva quando a criança
+  pedir (`LessonVideoControls.seek`, opcional, no `VimeoPlayer` e no `LiveReplay`). Os cartões
+  trocam a pele pela plataforma do curso (a carta do Kids ou o cartão sóbrio do adulto).
+- **Saiu da sala o roteiro antigo**: instruções, etapas e materiais do `plan`, o
+  `LiveLearningActivities` (arquivo e teste apagados), o "suggest-step" e as rotas
+  `sessions/:id/learning-*` da lista do BFF. Turma sem `room.lesson` cai no recado "Esta turma é de
+  um formato antigo" (`live-legacy-notice.tsx`).
+- **BFF** (`lib/live-route-policy.ts`): `GET courses/:slug/lessons/:id` (só a sala da criança),
+  `GET lessons/:id/teacher-notes` (só o escopo admin) e o encaminhamento de `blockId`/`learnerId`
+  (uuid) na consulta (`routes/live.ts`).
+- **Oficinas**: `LiveCatalog` agrupa as turmas por CURSO ("Suas oficinas": encontros, o próximo, as
+  gravações para rever); "Conheça as oficinas" ficou só para o roteiro antigo (nada de divulgação).
+  `skin="adult"` para a comunidade adulta.
+- ⭐⭐ **Desempenho** (pedido dela: "criança não tem paciência de esperar e repara tudo"). A sala é
+  consultada a cada 3 s e chega como objeto NOVO (o relógio do servidor, o "visto há pouco" de
+  cada um); nada disso pode re-renderizar a aula:
+  - O `LessonRoom` (`live-learner-room.tsx`) MEMORIZA o elemento da aula (`renderLesson`) com as
+    propriedades comparadas pelo conteúdo (a aula, as partes abertas como texto, o projeto ao
+    vivo, os relatos), e o palco é UM elemento só (`StageSlot`) que lê o que desenhar do
+    `StageContext`, um modelo memorizado com valores estáveis (o modo, quem está na tela, os
+    fluxos de mídia, que são ESTADO no `useLiveMedia`). Na chamada o palco nem sabe a parte (só a
+    gravação a usa). A professora: o mesmo, com o `TeacherStageSlot`.
+  - O `LiveClassroom` compara a turma recebida pelo conteúdo (`admittedKey`) antes de montar o
+    `liveWorkspace`; o `renderLesson` dos apps é estável (`useCallback` com os campos do leitor).
+  - O `LiveBlockWorkspace` é `memo`, o `StudioBlockView` memoriza a curadoria, e o editor dentro
+    do `WorkspaceEditor` é um ELEMENTO memorizado (handlers estáveis, constantes de modo e
+    recursos): a barra de status, a ajuda e a consulta do projeto (1 s) não o re-renderizam. A
+    consulta do projeto só vira estado quando muda o que a tela usa (`remember`).
+  - Nada pula: a porta da sala ("Entrar na sala", "Testar meu computador" num diálogo) mora
+    DENTRO do palco em 16:9 (`DoorStage`), então entrar só troca o que está no palco; o palco,
+    o placeholder, a gravação (MP4 e Vimeo, carregada por `next/dynamic`) e o esqueleto da aula
+    (`LiveLessonSkeleton`) reservam 16:9 desde o primeiro quadro; as câmeras da turma passam POR
+    CIMA do vídeo; a linha do "Ver este trecho" fica reservada; o editor reserva a altura dele
+    antes de chegar. ⭐ Com a transmissão, a coluna da esquerda é dela em TODAS as partes: uma
+    parte sem atividade leva o conteúdo para a direita (`semFerramenta` no `LessonSections`), e a
+    transmissão não muda de lugar nem de tamanho quando a professora abre a parte seguinte.
+  - Primeiro quadro: a página lê a sala e a aula no servidor (`server/live-room-initial.ts`,
+    `loadLiveRoomInitial`, só leitura e melhor esforço) e passa `initialRoom`/`initialLesson`;
+    sem isso eram três quadros ("Abrindo…", esqueleto, aula).
+  - O código do Estúdio (o `LiveBlockWorkspace` e o editor) é baixado no tempo OCIOSO depois que
+    a aula chega, quando ela tem um bloco Estúdio (`useLiveLesson`): sob demanda, sem atrasar a
+    transmissão e sem a criança esperar ao chegar à parte dele.
+  - Números do ensaio (`community-kids/tmp/sala-visual`, `perf.spec.ts`, 1366×768, Chromium com a
+    câmera falsa): 2 minutos de sala parada = **0** renders do Estúdio, do `LessonSections` e do
+    palco; troca de parte pela professora = 1,9 s (dentro de 1 consulta), **0** render do Estúdio
+    e do palco, 1 do `LessonSections`; deslocamento de layout (CLS) ao entrar e ao conectar = 0, na
+    troca de parte = 0,0004; palco à vista em 1,4 s desde a navegação (ensaio sem servidor) e a
+    transmissão tocando 155 ms depois do "Entrar na sala".
+- **Aula ainda fechada para a vaga** (`403 LIVE_LESSON_CLOSED`, frente curso: a matrícula e a
+  chave-mestra não abrem curso ao vivo, a vaga da sessão abre no dia marcado): o `useLiveLesson`
+  devolve `closed` e tenta de novo a cada 15 s; os apps mostram `LiveLessonClosed` (a transmissão
+  no lugar e "O encontro ainda vai abrir"), nunca um erro cru.
+- ⚠️ **Pendente do servidor** (frentes curso e oficina): `occurrence.sections`/`marks`, o comando
+  `open-section`, o relato `sectionId`/`completedSectionIds`, `GET /members/live/workspaces?
+  sessionId=&blockId=` (e a variante da professora com `learnerId`), a rota das anotações, o acesso
+  da aula ao vivo pelo grant (inclusive as partes abertas pela professora: a progressão por
+  conclusão do members recusaria `navigation` e atividades de uma parte "trancada") e a gravação
+  com `vimeo`/`chapters`. Sem a lista de partes, a sala roda livre e a gravação em MP4.
+- Testes: `tests/live-sections.test.ts`, `tests/live-participants.test.ts` (parte e conclusão),
+  `tests/live-route-policy.test.ts`; no Kids, `live-lesson-room.test.tsx` (a aula com as props
+  novas, de verdade) e `live-classroom-slot.test.ts` (o slot em processo próprio); no Admin,
+  `teacher-live-room.test.ts`; no adulto, `live-room.test.ts`. Ensaio visual (fora do git):
+  `community-kids/tmp/sala-visual/`.
+
 ## Falar em vez de escrever: a voz vira texto para a equipe (14/10/2026)
 
 Decisão dela: a criança FALA a mensagem para a equipe, o servidor transcreve na hora, ela CONFERE

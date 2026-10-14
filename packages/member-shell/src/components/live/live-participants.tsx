@@ -8,7 +8,7 @@ import type {
 } from '@sistemazero/core/live'
 import { Button } from '@sistemazero/ui'
 import { ConfirmDialog } from '@sistemazero/ui/confirm-dialog'
-import { Ellipsis, Hand, LifeBuoy, Mic, MicOff, VideoOff } from 'lucide-react'
+import { CheckCircle2, Ellipsis, Hand, LifeBuoy, Mic, MicOff, VideoOff } from 'lucide-react'
 import { type MouseEvent, useId, useState } from 'react'
 import { orderedParticipants, participantStatus } from '../../lib/live/participants'
 
@@ -70,11 +70,17 @@ export function LiveParticipants({
   disabled,
   onControl,
   onObserve,
+  sections,
 }: {
   room: LiveRoomView
   disabled: boolean
   onControl(command: LiveControl): Promise<boolean>
   onObserve(learnerId: string): void
+  /**
+   * As partes da aula do encontro (curso ao vivo): o cartão diz em que parte a criança está e se
+   * ela já concluiu a parte da turma. Ausente: as etapas do roteiro antigo.
+   */
+  sections?: { id: string; title: string }[]
 }) {
   const [removing, setRemoving] = useState<LiveParticipation | null>(null)
   const headingId = useId()
@@ -113,7 +119,12 @@ export function LiveParticipants({
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {participants.map((participant) => {
-            const status = participantStatus(participant, room.serverTime, room.plan?.steps ?? [])
+            const status = participantStatus(
+              participant,
+              room.serverTime,
+              sections ?? room.plan?.steps ?? [],
+              room.occurrence?.sections?.currentId ?? null,
+            )
             const signals = participantSignals(participant)
             const main = primary(participant)
             const name = participant.displayName
@@ -159,6 +170,15 @@ export function LiveParticipants({
                 {participant.admission === 'admitted' ? (
                   <p className="text-xs text-muted-foreground">
                     <span>{status.step}</span> · <span>{status.save}</span>
+                  </p>
+                ) : null}
+                {participant.admission === 'admitted' && status.done ? (
+                  <p
+                    data-signal="section-done"
+                    className="inline-flex w-fit items-center gap-1 rounded-full border border-emerald-600/30 bg-emerald-50 px-2 py-0.5 font-medium text-emerald-900 text-xs"
+                  >
+                    <CheckCircle2 className="size-3.5" aria-hidden />
+                    Concluiu a parte da turma
                   </p>
                 ) : null}
                 <div className="mt-auto flex items-start gap-2">

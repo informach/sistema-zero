@@ -3,15 +3,22 @@ import { Button } from '@sistemazero/ui'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { liveRequest } from '../../lib/live/client'
 import { sessionFetch as fetch } from '../../lib/session-fetch'
+import type { LessonVideoControls } from '../lesson-player-context'
 
 export function LiveReplay({
   sessionId,
   teacherPreview = false,
   occurrenceId,
+  bare = false,
+  onControls,
 }: {
   sessionId: string
   teacherPreview?: boolean
   occurrenceId?: string
+  /** Só o vídeo (no lugar da transmissão, na sala de curso ao vivo): sem título nem explicação. */
+  bare?: boolean
+  /** Play, pausa e o salto para um capítulo (os capítulos da gravação, 14/10/2026). */
+  onControls?: (controls: LessonVideoControls | null) => void
 }) {
   const [source, setSource] = useState<{ url: string; version: number; expiresAt: string } | null>(
     null,
@@ -45,6 +52,24 @@ export function LiveReplay({
       document.removeEventListener('visibilitychange', hide)
     }
   }, [saveProgress])
+  const controlsRef = useRef(onControls)
+  controlsRef.current = onControls
+  useEffect(() => {
+    controlsRef.current?.({
+      play: () => void player.current?.play().catch(() => undefined),
+      pause: () => player.current?.pause(),
+      seek: (seconds) => {
+        const video = player.current
+        if (!video) return
+        video.currentTime = Math.max(
+          0,
+          Math.min(seconds, Math.max(0, video.duration - 0.1) || seconds),
+        )
+        void video.play().catch(() => undefined)
+      },
+    })
+    return () => controlsRef.current?.(null)
+  }, [])
   // biome-ignore lint/correctness/useExhaustiveDependencies: Retry deliberately renews the private replay URL.
   useEffect(() => {
     const controller = new AbortController()
@@ -102,13 +127,24 @@ export function LiveReplay({
   }, [sessionId, occurrenceId, retry, teacherPreview])
   return (
     <section className="space-y-3">
-      <h2 className="sz-display text-xl font-bold">Rever a explicação</h2>
-      <p className="text-sm text-muted-foreground">
-        A gravação reúne a professora e a demonstração. Os momentos de ajuda individual ficam de
-        fora.
-      </p>
+      {bare ? null : (
+        <>
+          <h2 className="sz-display text-xl font-bold">Rever a explicação</h2>
+          <p className="text-sm text-muted-foreground">
+            A gravação reúne a professora e a demonstração. Os momentos de ajuda individual ficam de
+            fora.
+          </p>
+        </>
+      )}
       {error ? (
-        <div role="alert">
+        <div
+          role="alert"
+          className={
+            bare
+              ? 'grid aspect-video place-items-center rounded-xl bg-black p-6 text-center text-white'
+              : undefined
+          }
+        >
           <p>{error}</p>
           <Button className="mt-2" variant="outline" onClick={() => setRetry((value) => value + 1)}>
             Tentar novamente
@@ -137,7 +173,17 @@ export function LiveReplay({
           onError={() => setError('A gravação foi interrompida. Tente carregar novamente.')}
         />
       ) : (
-        <p role="status">Preparando a gravação…</p>
+        // No lugar da transmissão, o 16:9 já está reservado enquanto o endereço chega.
+        <p
+          role="status"
+          className={
+            bare
+              ? 'grid aspect-video place-items-center rounded-xl bg-black p-6 text-center text-white'
+              : undefined
+          }
+        >
+          Preparando a gravação…
+        </p>
       )}
     </section>
   )

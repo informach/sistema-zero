@@ -1,9 +1,22 @@
 'use client'
 
-import type { LiveCatalogView, LiveCohort, LiveSessionSummary } from '@sistemazero/core/live'
+import type {
+  LiveCatalogView,
+  LiveCohort,
+  LiveCourseSummary,
+  LiveSessionSummary,
+} from '@sistemazero/core/live'
 import { Button } from '@sistemazero/ui'
-import { ArrowRight, CalendarDays, Clock3, Headphones, Laptop, Users } from 'lucide-react'
-import { type ReactNode, useEffect, useState } from 'react'
+import {
+  ArrowRight,
+  CalendarDays,
+  Clock3,
+  Headphones,
+  Laptop,
+  PlayCircle,
+  Users,
+} from 'lucide-react'
+import { createContext, type ReactNode, useContext, useEffect, useState } from 'react'
 import { liveDate, liveRequest } from '../../lib/live/client'
 import {
   countdown,
@@ -14,6 +27,24 @@ import {
   liveScheduleState,
 } from '../../lib/live/schedule'
 import { LiveParentReservations } from './live-parent-reservations'
+
+/**
+ * A pele dos cartões: a carta do Kids ou o cartão sóbrio da comunidade adulta, que não carrega as
+ * classes do Kids (`skin="adult"`, 14/10/2026).
+ */
+const SKINS = {
+  kids: {
+    card: 'kids-carta',
+    hero: 'kids-marca',
+    heroAction: 'sz-btn-inverso',
+  },
+  adult: {
+    card: 'rounded-2xl border bg-card',
+    hero: 'bg-primary text-primary-foreground',
+    heroAction: 'bg-background text-foreground hover:bg-background/90',
+  },
+} as const
+const SkinContext = createContext<(typeof SKINS)[keyof typeof SKINS]>(SKINS.kids)
 
 function teacherOf(cohort?: LiveCohort): string | null {
   if (!cohort?.teacherNames) return null
@@ -45,13 +76,33 @@ export function LiveCatalog({
   mode = 'learner',
   empty,
   prepareHref,
+  skin = 'kids',
 }: {
   mode?: 'learner' | 'parent' | 'teacher'
   /** Estado vazio da área (com o Zappy, no Kids). */
   empty?: ReactNode
   /** Área dos pais: onde se prepara o acesso da criança no computador. */
   prepareHref?: string
+  /** A comunidade adulta não tem as classes do Kids. */
+  skin?: 'kids' | 'adult'
 }) {
+  return (
+    <SkinContext.Provider value={SKINS[skin]}>
+      <Catalog mode={mode} empty={empty} prepareHref={prepareHref} />
+    </SkinContext.Provider>
+  )
+}
+
+function Catalog({
+  mode,
+  empty,
+  prepareHref,
+}: {
+  mode: 'learner' | 'parent' | 'teacher'
+  empty?: ReactNode
+  prepareHref?: string
+}) {
+  const { card: cardSkin } = useContext(SkinContext)
   const [data, setData] = useState<LiveCatalogView | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loadingMore, setLoadingMore] = useState(false)
@@ -80,7 +131,8 @@ export function LiveCatalog({
         previous
           ? {
               ...next,
-              programs: merge(previous.programs, next.programs),
+              courses: merge(previous.courses ?? [], next.courses ?? []),
+              programs: merge(previous.programs ?? [], next.programs ?? []),
               cohorts: merge(previous.cohorts, next.cohorts),
               sessions: merge(previous.sessions, next.sessions),
               enrollments: merge(previous.enrollments, next.enrollments),
@@ -95,7 +147,7 @@ export function LiveCatalog({
   }
   if (error && !data)
     return (
-      <div role="alert" className="kids-carta space-y-3 p-6">
+      <div role="alert" className={`${cardSkin} space-y-3 p-6`}>
         <p className="font-semibold">{error}</p>
         <Button className="min-h-11" onClick={() => setReload((value) => value + 1)}>
           Tentar de novo
@@ -104,7 +156,7 @@ export function LiveCatalog({
     )
   if (!data)
     return (
-      <p role="status" className="kids-carta p-6 font-semibold">
+      <p role="status" className={`${cardSkin} p-6 font-semibold`}>
         Buscando as oficinas…
       </p>
     )
@@ -127,7 +179,16 @@ export function LiveCatalog({
       .filter((cohort) => data.enrollments.some((item) => item.cohortId === cohort.id))
       .map((cohort) => cohort.programId),
   )
-  const explore = data.programs.filter((program) => !enrolledPrograms.has(program.id))
+  // "Conheça as oficinas" é do roteiro antigo: os cursos ao vivo só aparecem para quem tem vaga
+  // (nada de divulgação, decisão de 14/10/2026), então não há o que explorar entre eles.
+  const explore = (data.programs ?? []).filter((program) => !enrolledPrograms.has(program.id))
+  // As turmas de CURSO ao vivo da criança, uma por curso (a mesma criança pode estar em duas).
+  const myCourses = (data.courses ?? [])
+    .map((course) => ({
+      course,
+      cohorts: data.cohorts.filter((cohort) => cohort.courseId === course.id),
+    }))
+    .filter((item) => item.cohorts.length > 0)
   const [next, ...upcoming] = ahead
   const parent = mode === 'parent'
   const card = (session: LiveSessionSummary, state: LiveScheduleState) => (
@@ -165,6 +226,25 @@ export function LiveCatalog({
         />
       ) : null}
       {parent && sessions.length ? <ParentPreparation prepareHref={prepareHref} /> : null}
+      {myCourses.length && !parent ? (
+        <section aria-labelledby="live-courses" className="space-y-4">
+          <h2 id="live-courses" className="sz-display text-2xl">
+            Suas oficinas
+          </h2>
+          <div className="grid gap-4 md:grid-cols-2">
+            {myCourses.map(({ course, cohorts }) => (
+              <CourseCard
+                key={course.id}
+                course={course}
+                cohorts={cohorts}
+                sessions={sessions.filter((session) =>
+                  cohorts.some((cohort) => cohort.id === session.cohortId),
+                )}
+              />
+            ))}
+          </div>
+        </section>
+      ) : null}
       {(parent ? ahead : upcoming).length ? (
         <section aria-labelledby="live-ahead" className="space-y-4">
           <h2 id="live-ahead" className="sz-display text-2xl">
@@ -202,7 +282,7 @@ export function LiveCatalog({
           </h2>
           <div className="grid gap-4 md:grid-cols-2">
             {explore.map((program) => (
-              <article key={program.id} className="kids-carta space-y-3 p-6">
+              <article key={program.id} className={`${cardSkin} space-y-3 p-6`}>
                 <span className="grid size-11 place-items-center rounded-2xl bg-primary/10 text-primary">
                   <Users className="size-5" aria-hidden />
                 </span>
@@ -220,7 +300,7 @@ export function LiveCatalog({
       ) : null}
       {!sessions.length && !(mode === 'learner' && explore.length)
         ? (empty ?? (
-            <p className="kids-carta p-6 font-semibold">
+            <p className={`${cardSkin} p-6 font-semibold`}>
               {parent
                 ? 'Quando uma criança da família tiver vaga numa oficina, os encontros aparecem aqui.'
                 : 'Sua próxima oficina vai aparecer aqui.'}
@@ -228,6 +308,65 @@ export function LiveCatalog({
           ))
         : null}
     </div>
+  )
+}
+
+/**
+ * Uma oficina (curso ao vivo) da criança: os encontros da turma dela, quanto já aconteceu e as
+ * gravações para rever no prazo. A entrada de cada encontro é pelo cartão do encontro.
+ */
+function CourseCard({
+  course,
+  cohorts,
+  sessions,
+}: {
+  course: LiveCourseSummary
+  cohorts: LiveCohort[]
+  sessions: LiveSessionSummary[]
+}) {
+  const teacher = teacherOf(cohorts[0])
+  const zone = cohorts[0]?.timeZone ?? 'America/Sao_Paulo'
+  const states = sessions.map((session) => liveScheduleState(session, zone))
+  const done = states.filter((state) => state === 'ended' || state === 'expired').length
+  const recordings = sessions.filter((session) => session.recordingPublished).length
+  const next = sessions.find((_, index) =>
+    ['live', 'soon', 'today', 'upcoming'].includes(states[index]!),
+  )
+  const { card } = useContext(SkinContext)
+  return (
+    <article className={`${card} flex flex-col gap-3 overflow-hidden p-0`}>
+      {course.coverImageUrl ? (
+        // Capa da autoria (URL externa arbitrária), como nos cartões de curso.
+        <img src={course.coverImageUrl} alt="" className="aspect-[16/7] w-full object-cover" />
+      ) : null}
+      <div className="flex flex-col gap-2.5 p-5 pt-2">
+        <p className="font-bold text-primary text-sm">
+          {cohorts.map((item) => item.title).join(' · ')}
+        </p>
+        <h3 className="sz-display text-xl leading-snug">{course.title}</h3>
+        {course.description ? (
+          <p className="line-clamp-3 font-medium text-muted-foreground">{course.description}</p>
+        ) : null}
+        <p className="flex items-center gap-2 font-semibold text-sm">
+          <Users className="size-4 shrink-0 text-primary" aria-hidden />
+          {sessions.length === 1 ? '1 encontro' : `${sessions.length} encontros`}
+          {done ? ` · ${done} já aconteceu${done === 1 ? '' : 'ram'}` : ''}
+          {teacher ? ` · com a professora ${teacher}` : ''}
+        </p>
+        {next ? (
+          <p className="flex items-center gap-2 font-semibold text-sm">
+            <CalendarDays className="size-4 shrink-0 text-primary" aria-hidden />
+            Próximo: {friendlyWhen(next.occurrenceStartsAt ?? next.startsAt, zone)}
+          </p>
+        ) : null}
+        {recordings ? (
+          <p className="flex items-center gap-2 font-semibold text-sm">
+            <PlayCircle className="size-4 shrink-0 text-primary" aria-hidden />
+            {recordings === 1 ? '1 gravação para rever' : `${recordings} gravações para rever`}
+          </p>
+        ) : null}
+      </div>
+    </article>
   )
 }
 
@@ -255,10 +394,11 @@ function NextHero({
   const duration = durationLabel(start, session.occurrenceEndsAt ?? session.endsAt)
   const left = countdown(start, zone)
   const now = state === 'live' || state === 'soon' || state === 'today'
+  const { hero, heroAction } = useContext(SkinContext)
   return (
     <section
       aria-labelledby="live-next"
-      className="kids-marca flex flex-col gap-6 rounded-[1.75rem] p-7 md:flex-row md:items-end md:justify-between md:p-9"
+      className={`${hero} flex flex-col gap-6 rounded-[1.75rem] p-7 md:flex-row md:items-end md:justify-between md:p-9`}
     >
       <div className="min-w-0 space-y-2">
         <p className="inline-flex flex-wrap items-center gap-2 font-extrabold text-sm uppercase tracking-wide">
@@ -287,7 +427,7 @@ function NextHero({
       {/* Navegação completa: a sala libera câmera e o jogo isolado pelos cabeçalhos DELA. */}
       <a
         href={roomHref(mode, session)}
-        className="sz-btn-inverso inline-flex min-h-12 shrink-0 rounded-full items-center justify-center gap-2 px-7 font-extrabold text-lg"
+        className={`${heroAction} inline-flex min-h-12 shrink-0 rounded-full items-center justify-center gap-2 px-7 font-extrabold text-lg`}
       >
         {now ? 'Entrar na oficina' : 'Ver o encontro'}
         <ArrowRight className="size-5" aria-hidden />
@@ -314,6 +454,7 @@ function SessionCard({
   const teacher = teacherOf(cohort)
   const duration = durationLabel(start, session.occurrenceEndsAt ?? session.endsAt)
   const closed = state === 'expired' || state === 'cancelled'
+  const { card } = useContext(SkinContext)
   const tone =
     state === 'live'
       ? 'bg-destructive text-white'
@@ -364,7 +505,7 @@ function SessionCard({
   // A família só acompanha: o cartão não leva à sala da criança.
   if (mode === 'parent' || closed)
     return (
-      <article className={`kids-carta flex flex-col gap-2.5 p-5 ${closed ? 'opacity-80' : ''}`}>
+      <article className={`${card} flex flex-col gap-2.5 p-5 ${closed ? 'opacity-80' : ''}`}>
         {content}
       </article>
     )
@@ -373,7 +514,7 @@ function SessionCard({
   return (
     <a
       href={roomHref(mode, session)}
-      className="kids-carta flex flex-col gap-2.5 p-5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
+      className={`${card} flex flex-col gap-2.5 p-5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring`}
     >
       {content}
       <span className="mt-1 inline-flex items-center gap-1.5 font-extrabold text-primary">
@@ -385,8 +526,9 @@ function SessionCard({
 }
 
 function ParentPreparation({ prepareHref }: { prepareHref?: string }) {
+  const { card } = useContext(SkinContext)
   return (
-    <section aria-labelledby="live-prepare" className="kids-carta space-y-4 p-6">
+    <section aria-labelledby="live-prepare" className={`${card} space-y-4 p-6`}>
       <h2 id="live-prepare" className="sz-display text-2xl">
         Antes do primeiro encontro
       </h2>
