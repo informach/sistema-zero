@@ -715,6 +715,13 @@
       "when": 1791666505573,
       "tag": "0101_content_fingerprints",
       "breakpoints": true
+    },
+    {
+      "idx": 102,
+      "version": "7",
+      "when": 1791993851297,
+      "tag": "0107_teacher_message_spoken",
+      "breakpoints": true
     }
   ]
 }

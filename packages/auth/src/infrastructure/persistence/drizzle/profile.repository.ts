@@ -5,11 +5,31 @@ import type {
   ProfileWithAccountRow,
   SearchProfilesFilter,
 } from '../../../domain/ports/profile-repository.port'
-import { ProfileAggregate } from '../../../domain/profile/profile.aggregate'
+import {
+  ProfileAggregate,
+  type ProfileSnapshot,
+  type VoiceInputConsentChange,
+} from '../../../domain/profile/profile.aggregate'
 import type { Database } from './db'
-import { profiles, users } from './schema'
+import { profiles, profileVoiceInputEvents, users } from './schema'
 
 type Row = typeof profiles.$inferSelect
+
+/** A linha da trilha append-only do consentimento da fala (sempre junto do perfil). */
+function voiceInputEventRow(
+  s: ProfileSnapshot,
+  change: VoiceInputConsentChange,
+): typeof profileVoiceInputEvents.$inferInsert {
+  return {
+    profileId: s.id,
+    accountUserId: s.accountUserId,
+    enabled: change.enabled,
+    actor: change.actor,
+    impersonatorId: change.impersonatorId,
+    // A MESMA hora do `voice_input_enabled_at` (quando liga): as duas se cruzam na consulta.
+    createdAt: change.at,
+  }
+}
 
 function fromRow(row: Row): ProfileAggregate {
   return ProfileAggregate.restore({
@@ -20,6 +40,8 @@ function fromRow(row: Row): ProfileAggregate {
     whatsapp: row.whatsapp,
     birthDate: row.birthDate,
     publicProfileEnabled: row.publicProfileEnabled,
+    voiceInputEnabled: row.voiceInputEnabled,
+    voiceInputEnabledAt: row.voiceInputEnabledAt,
     status: row.status,
     sortOrder: row.sortOrder,
     createdAt: row.createdAt,
@@ -120,7 +142,7 @@ export class DrizzleProfileRepository implements ProfileRepository {
     maxProfiles: number,
   ): Promise<CreateProfileOutcome> {
     const s = profile.toSnapshot()
-    return await this.db.transaction(async (tx) => {
+    const outcome = await this.db.transaction(async (tx): Promise<CreateProfileOutcome> => {
       // Serializa os creates DESTA conta (o xact-lock solta no commit/rollback) →
       // contagem + insert viram atômicos: dois creates simultâneos não furam o teto.
       await tx.execute(
@@ -150,33 +172,76 @@ export class DrizzleProfileRepository implements ProfileRepository {
           whatsapp: s.whatsapp,
           birthDate: s.birthDate,
           publicProfileEnabled: s.publicProfileEnabled,
+          voiceInputEnabled: s.voiceInputEnabled,
+          voiceInputEnabledAt: s.voiceInputEnabledAt,
           status: s.status,
           sortOrder: (agg?.maxOrder ?? -1) + 1,
           createdAt: s.createdAt,
           updatedAt: s.updatedAt,
         })
         .returning()
+      // Criado já com a fala ligada: a 1ª linha da trilha entra na MESMA transação.
+      const change = profile.voiceInputChange
+      if (change) await tx.insert(profileVoiceInputEvents).values(voiceInputEventRow(s, change))
       // `row` sempre existe após um insert bem-sucedido (não-condicional).
       return { outcome: 'created' as const, profile: fromRow(row as Row) }
     })
+    if (outcome.outcome === 'created') profile.markVoiceInputChangeSaved()
+    return outcome
   }
 
+  /**
+   * ⚠️ As colunas da FALA só são escritas junto com a linha da trilha, na mesma transação:
+   * toda mudança de `voice_input_enabled` no banco tem a sua prova. Sem mudança pendente, o
+   * UPDATE nem toca nelas (uma edição de nome com o perfil lido antes não desfaz o "desligar"
+   * que outra requisição acabou de gravar). Com mudança pendente, a linha é travada e relida:
+   * se outra requisição já gravou o mesmo valor (duplo clique), não há linha nova nem data nova.
+   */
   async update(profile: ProfileAggregate): Promise<boolean> {
     const s = profile.toSnapshot()
-    const updated = await this.db
-      .update(profiles)
-      .set({
-        name: s.name,
-        avatarUrl: s.avatarUrl,
-        whatsapp: s.whatsapp,
-        birthDate: s.birthDate,
-        publicProfileEnabled: s.publicProfileEnabled,
-        status: s.status,
-        updatedAt: s.updatedAt,
-      })
-      .where(eq(profiles.id, s.id))
-      .returning({ id: profiles.id })
-    return updated.length > 0
+    const details = {
+      name: s.name,
+      avatarUrl: s.avatarUrl,
+      whatsapp: s.whatsapp,
+      birthDate: s.birthDate,
+      publicProfileEnabled: s.publicProfileEnabled,
+      status: s.status,
+      updatedAt: s.updatedAt,
+    }
+    const change = profile.voiceInputChange
+    if (!change) {
+      const updated = await this.db
+        .update(profiles)
+        .set(details)
+        .where(eq(profiles.id, s.id))
+        .returning({ id: profiles.id })
+      return updated.length > 0
+    }
+    const saved = await this.db.transaction(async (tx) => {
+      const [current] = await tx
+        .select({ voiceInputEnabled: profiles.voiceInputEnabled })
+        .from(profiles)
+        .where(eq(profiles.id, s.id))
+        .for('update')
+      if (!current) return false
+      const flips = current.voiceInputEnabled !== change.enabled
+      await tx
+        .update(profiles)
+        .set(
+          flips
+            ? {
+                ...details,
+                voiceInputEnabled: s.voiceInputEnabled,
+                voiceInputEnabledAt: s.voiceInputEnabledAt,
+              }
+            : details,
+        )
+        .where(eq(profiles.id, s.id))
+      if (flips) await tx.insert(profileVoiceInputEvents).values(voiceInputEventRow(s, change))
+      return true
+    })
+    if (saved) profile.markVoiceInputChangeSaved()
+    return saved
   }
 }
 

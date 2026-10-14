@@ -4,6 +4,7 @@ import type { ProfileRepository } from '../../domain/ports/profile-repository.po
 import { ProfileAggregate } from '../../domain/profile/profile.aggregate'
 import { ProfileLimitReachedError } from '../../domain/profile/profile.errors'
 import { type ProfileView, toProfileView } from '../mappers/profile-view'
+import { assertMayEnableVoiceInput, voiceInputActor } from './voice-input.policy'
 
 export interface CreateProfileCommand {
   /** Conta do responsável (x-auth-user-id) — dona do perfil. */
@@ -25,6 +26,21 @@ export interface CreateProfileCommand {
    * (o default seguro do agregado).
    */
   publicProfileEnabled?: boolean
+  /**
+   * Fala da criança já na CRIAÇÃO. `true` segue a MESMA régua do PATCH ao ligar (login
+   * recente do responsável do Kids; suporte nunca liga). Ausente/`false` → nasce desligada.
+   */
+  voiceInputEnabled?: boolean
+  /**
+   * Ator REAL de uma sessão de SUPORTE (impersonação, `x-auth-impersonator-id`); ausente =
+   * os responsáveis. O suporte não pode criar o perfil já com a fala ligada.
+   */
+  impersonatorId?: string | null
+  /**
+   * Responsável do Kids com login de até 15 minutos? `undefined` = outro produto. Na criação
+   * só pesa para ligar a fala (o perfil público na criação segue sem a exigência).
+   */
+  parentAuthRecent?: boolean
 }
 
 /** Teto efetivo da equipe interna — sem limite prático de perfis. */
@@ -46,6 +62,14 @@ export class CreateProfileService {
   ) {}
 
   async execute(cmd: CreateProfileCommand): Promise<ProfileView> {
+    // Antes de tudo (sem S2S nem insert): criar com a fala LIGADA é o mesmo consentimento
+    // sensível do PATCH.
+    if (cmd.voiceInputEnabled === true) {
+      assertMayEnableVoiceInput({
+        supportSession: Boolean(cmd.impersonatorId),
+        parentAuthRecent: cmd.parentAuthRecent,
+      })
+    }
     // Constrói o agregado ANTES da chamada S2S — valida nome/foto na borda do domínio.
     const profile = ProfileAggregate.create({
       id: this.newId(),
@@ -60,6 +84,15 @@ export class CreateProfileService {
     // pais na criação entra pelo MESMO caminho autorizado do PATCH.
     if (cmd.publicProfileEnabled !== undefined) {
       profile.setPublicProfileEnabled(cmd.publicProfileEnabled, this.clock())
+    }
+    // Fala: nasce desligada; ligar na criação carimba o consentimento (régua checada acima) e
+    // deixa a 1ª linha da trilha, gravada pelo repositório na mesma transação do insert.
+    if (cmd.voiceInputEnabled !== undefined) {
+      profile.setVoiceInputEnabled(
+        cmd.voiceInputEnabled,
+        voiceInputActor(cmd.impersonatorId),
+        this.clock(),
+      )
     }
     const maxProfiles = cmd.privileged
       ? UNLIMITED_PROFILES

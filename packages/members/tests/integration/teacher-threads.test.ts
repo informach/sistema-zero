@@ -135,6 +135,55 @@ describe('conversas com o professor (canal de retorno)', () => {
     expect(adminUnread.threads[0].lastMessageRole).toBe('student')
   })
 
+  test('voz para texto: a resposta FALADA leva `spoken`; payload antigo e a equipe ficam `false`', async () => {
+    const { app, clockRef } = buildApp()
+    const created = await readJson(await adminPost(app, studioBody()))
+    expect(created.messages[0].spoken).toBe(false)
+
+    clockRef.now = new Date('2026-06-02T12:05:00.000Z')
+    const falada = await app.handle(
+      new Request(`http://localhost/members/teacher-threads/${created.id}/messages?audience=kids`, {
+        method: 'POST',
+        headers: studentHeaders(),
+        body: JSON.stringify({ body: 'Eu fechei o laço', spoken: true }),
+      }),
+    )
+    expect(falada.status).toBe(200)
+    const doAluno = await readJson(falada)
+    expect(doAluno.messages.at(-1)).toMatchObject({ body: 'Eu fechei o laço', spoken: true })
+
+    // App antigo: o corpo não traz o campo e a resposta conta como digitada.
+    clockRef.now = new Date('2026-06-02T12:06:00.000Z')
+    expect((await studentReply(app, created.id, 'Digitei esta')).status).toBe(200)
+
+    // A rota da EQUIPE aceita o mesmo corpo, mas a marca é só da criança.
+    clockRef.now = new Date('2026-06-02T12:07:00.000Z')
+    const daEquipe = await app.handle(
+      new Request(`http://localhost/members/admin/teacher-threads/${created.id}/messages`, {
+        method: 'POST',
+        headers: adminHeaders,
+        body: JSON.stringify({ body: 'Muito bem!', spoken: true }),
+      }),
+    )
+    expect(daEquipe.status).toBe(200)
+
+    const visto = await readJson(
+      await app.handle(
+        new Request(`http://localhost/members/admin/teacher-threads/${created.id}`, {
+          headers: adminHeaders,
+        }),
+      ),
+    )
+    expect(
+      visto.messages.map((m: { authorRole: string; spoken: boolean }) => [m.authorRole, m.spoken]),
+    ).toEqual([
+      ['teacher', false],
+      ['student', true],
+      ['student', false],
+      ['teacher', false],
+    ])
+  })
+
   test('leitura é individual por professor', async () => {
     const { app, clockRef } = buildApp()
     const created = await readJson(await adminPost(app, studioBody()))

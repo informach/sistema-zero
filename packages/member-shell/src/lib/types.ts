@@ -87,6 +87,11 @@ export interface ProfileView {
   birthDate: string | null
   /** Perfil público entre crianças (opt-in dos pais). */
   publicProfileEnabled: boolean
+  /**
+   * A criança pode falar em vez de escrever para a equipe (opt-in dos pais, 14/10/2026). OPCIONAL
+   * para tolerar o auth antigo: só `=== true` liga.
+   */
+  voiceInputEnabled?: boolean
   sortOrder: number
 }
 
@@ -1717,6 +1722,8 @@ export interface TeacherMessageView {
   /** Nome de EXIBIÇÃO do professor; `null` no aluno (a UI mostra "Você"). */
   authorName: string | null
   body: string
+  /** O texto veio da fala transcrita (14/10/2026). OPCIONAL: members antigo não manda. */
+  spoken?: boolean
   createdAt: string
 }
 

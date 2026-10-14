@@ -45,6 +45,7 @@ import {
 } from '../lesson-draft-status'
 import { useLessonPlayer } from '../lesson-player-context'
 import { EXPANDED_EXIT_ATTR, EXPANDED_EXIT_EDITOR, LessonVideoToggle } from '../lesson-video-float'
+import { VoiceInputButton } from '../voice-input/voice-input-button'
 import {
   type PintaDraftDeps,
   pintaDraftProducer,
@@ -108,6 +109,10 @@ export function PintaBlockView({
   const [error, setError] = useState<string | null>(null)
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [message, setMessage] = useState('')
+  // O recado tem texto que veio da fala (botão "Falar"): a equipe vê o chip "falado".
+  const [messageSpoken, setMessageSpoken] = useState(false)
+  // A fala ainda vira texto: o "Enviar" espera (senão o recado sai sem ela).
+  const [voiceBusy, setVoiceBusy] = useState(false)
   const [expanded, setExpanded] = useState(() => expandedByBlock.get(blockId) ?? false)
   // Trocar pela "outra versão" remonta o editor com o desenho novo.
   const [pintaVersion, setPintaVersion] = useState(0)
@@ -319,6 +324,7 @@ export function PintaBlockView({
         {
           asset,
           ...(note ? { message: note } : {}),
+          ...(note && messageSpoken ? { messageSpoken: true } : {}),
           ...(fingerprint ? { fingerprint } : {}),
         },
       )
@@ -328,6 +334,7 @@ export function PintaBlockView({
       setSubmittedAt(res.submittedAt)
       setReviewed(false) // entrega nova: o carimbo do professor não vale mais
       setMessage('')
+      setMessageSpoken(false)
       player?.refreshAfterStudio?.()
     } catch (err) {
       const apiErr = err as ApiError
@@ -339,7 +346,7 @@ export function PintaBlockView({
     } finally {
       setSubmitting(false)
     }
-  }, [lessonId, blockId, player, message, channel])
+  }, [lessonId, blockId, player, message, messageSpoken, channel])
 
   // Troca o desenho de agora com a "outra versão" guardada neste navegador.
   const doSwap = useCallback(async () => {
@@ -593,7 +600,7 @@ export function PintaBlockView({
                 setConfirmOpen(false)
                 void submit()
               }}
-              disabled={submitting}
+              disabled={submitting || voiceBusy}
             >
               <Send className="size-4" />
               Enviar
@@ -606,12 +613,27 @@ export function PintaBlockView({
           <label className="block space-y-1">
             <span className="font-medium">Quer escrever um recado? (opcional)</span>
             <Textarea
+              id={`pinta-teacher-message-${blockId}`}
               value={message}
-              onChange={(e) => setMessage(e.target.value.slice(0, MESSAGE_MAX))}
+              onChange={(e) => {
+                setMessage(e.target.value.slice(0, MESSAGE_MAX))
+                if (!e.target.value.trim()) setMessageSpoken(false)
+              }}
               rows={3}
               placeholder="Ex.: desenhei o meu personagem com a capa vermelha!"
             />
           </label>
+          {player?.voiceInput ? (
+            <VoiceInputButton
+              viewerId={player.viewerId}
+              value={message}
+              maxLength={MESSAGE_MAX}
+              onChange={setMessage}
+              onSpoken={() => setMessageSpoken(true)}
+              onBusyChange={setVoiceBusy}
+              textareaId={`pinta-teacher-message-${blockId}`}
+            />
+          ) : null}
         </div>
       </Dialog>
     </div>

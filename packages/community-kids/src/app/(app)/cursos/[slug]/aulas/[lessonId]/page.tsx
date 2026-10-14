@@ -1,3 +1,4 @@
+import { isVoiceInputConfigured } from '@sistemazero/member-shell/server/openrouter-transcribe'
 import { notFound } from 'next/navigation'
 import { journeyLockReason, KidsLockedCourse } from '@/components/kids/kids-locked-course'
 import { KidsLockedLesson } from '@/components/kids/kids-locked-lesson'
@@ -69,6 +70,14 @@ export default async function LessonPage({
       // sessão de suporte só leitura (o BFF recusaria as escritas de qualquer jeito).
       lessonDraftsEnabled={
         getEnv().LESSON_DRAFTS_ENABLED && session?.act?.mode !== 'readonly' && Boolean(session?.id)
+      }
+      // Falar em vez de escrever para a equipe (14/10/2026): a criança, com a fala ligada pelos
+      // pais e no servidor. Sessão de suporte nunca grava a voz de ninguém.
+      voiceInput={
+        activeProfile?.voiceInputEnabled === true &&
+        session?.kids?.kind === 'student' &&
+        !session.act &&
+        isVoiceInputConfigured()
       }
       ratingViewer={{
         name: activeProfile?.name ?? session?.activeProfile?.name ?? null,

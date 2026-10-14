@@ -1,5 +1,56 @@
 # CLAUDE.md — @sistemazero/auth
 
+## Fala da criança (voz → texto) por perfil (14/10/2026)
+
+- **O quê:** no Kids a criança pode FALAR em vez de escrever as mensagens para a equipe (o navegador
+  grava, o servidor transcreve, a voz nunca é guardada, a criança confere e envia o texto). Os PAIS
+  decidem POR CRIANÇA. Colunas `profiles.voice_input_enabled` (boolean NOT NULL, default `false`) e
+  `voice_input_enabled_at` (timestamptz nulo = a hora do consentimento EM VIGOR, a última vez que
+  ligaram; volta a `null` ao desligar), migration `0019_profile_voice_input`.
+  `ProfileView.voiceInputEnabled` sai na lista de perfis e no `GET /auth/me` da sessão da criança
+  (é por aí que o app Kids lê); o `_at` NUNCA sai na view.
+- **Trilha do consentimento** (LGPD art. 8º §2º: o controlador prova o consentimento; migration
+  `0020_profile_voice_input_events`): tabela APPEND-ONLY `auth.profile_voice_input_events` (`id`
+  `gen_random_uuid()`, `profile_id` FK → `profiles` `ON DELETE CASCADE`, `account_user_id`
+  snapshot da conta dona, `enabled`, `actor` `parent|support`, `impersonator_id` = ator REAL da
+  sessão de suporte, `created_at`; índice `(profile_id, created_at)`). Uma linha por MUDANÇA
+  efetiva (desligada→ligada ou ligada→desligada), inclusive o perfil criado já ligado; reenviar o
+  mesmo valor não grava. O `_at` do perfil continua sendo zerado ao desligar DE PROPÓSITO: ele
+  responde "há consentimento agora?"; o histórico (quando ligou, quando desligou, quem) é a trilha.
+  - **Como grava:** `setVoiceInputEnabled(valor, ator, agora)` deixa uma `VoiceInputConsentChange`
+    pendente no agregado (fora do snapshot; ida e volta antes de salvar = nada). O
+    `DrizzleProfileRepository` a grava na MESMA transação do perfil (`createWithinLimit` já era
+    transacional; o `update` abre transação só quando há mudança, trava a linha com `FOR UPDATE`
+    e só grava se o valor do banco ainda é o outro: duplo clique não duplica). ⚠️ As colunas da
+    fala só são escritas JUNTO com a linha da trilha: um `update` sem mudança pendente nem toca
+    nelas (uma edição defasada de nome não religa a fala sem prova). O ator vem do
+    `x-auth-impersonator-id` (`impersonatorId` nos comandos de criar/editar, `voiceInputActor`
+    na policy); sem ele, `parent`.
+  - **Suporte só desliga, em três camadas:** a policy (403 `FORBIDDEN`), o agregado
+    (`VoiceInputSupportCannotEnableError`, 403) e um CHECK no banco
+    (`profile_voice_input_events_actor_ck`: `parent` sem `impersonator_id`; `support` com ele e
+    `enabled = false`).
+  - **Sem rota de leitura** (consulta por SQL, para auditoria/jurídico). **Fora da purga
+    periódica.** Sai com a exclusão física da conta pelo painel (`deleteById` apaga os perfis e a
+    FK em cascata leva a trilha: é dado pessoal da criança).
+  - Testes: `tests/unit/profile-voice-input.test.ts` (agregado e serviços com o fake, que espelha
+    a trilha em `InMemoryProfileRepository.voiceInputEvents`), o "o suporte nunca liga" de
+    `tests/integration/http-server.test.ts` (o ator do header chega à trilha) e
+    `tests/db/repositories.test.ts` (persistência junto, duplo clique, edição defasada, CHECK e
+    cascata na exclusão).
+- **Por quê desligada por padrão:** é consentimento dos pais, e a Política promete a opção mais
+  protetiva por padrão. Perfil antigo vem `false`.
+- **Regras** (`voice-input.policy.ts`, régua ÚNICA de criar e editar): a criança (`x-auth-account-id`)
+  não liga nem desliga (403 `FORBIDDEN`, "A fala da criança só pode ser alterada pelos
+  responsáveis"); o suporte (`x-auth-impersonator-id`) nunca LIGA, mesmo em modo escrita (403
+  `FORBIDDEN`), mas pode desligar; LIGAR pede o login recente de 15 min do responsável Kids
+  (`PARENT_REAUTH_REQUIRED`), também no `POST /auth/profiles` com `voiceInputEnabled: true`.
+  **Desligar é livre** (voltar ao mais protetivo nunca encontra obstáculo). Só a passagem de
+  desligada para ligada conta: reenviar `true` com ela já ligada é no-op, preserva a data do
+  consentimento e não grava trilha (`setVoiceInputEnabled`). ⚠️ Diferente do
+  `publicProfileEnabled`, que segue pedindo login recente nos DOIS sentidos (de propósito, não
+  unificar).
+
 ## Acesso infantil por aparelho — correções do review (10/10/2026)
 
 - **Sessão adulta do Kids** (`kids.parent`, login com `platform: 'kids'` por senha ou OTP): família de
@@ -480,7 +531,8 @@ Espelha o padrão do payments (3 camadas, `infrastructure/observability/sentry.t
   bloqueia a conta e captura **todos** os perfis (inclusive arquivados) antes da purga externa;
   uma conta não ativa não cria perfil novo. A chamada final faz a limpeza de contas de
   teste/lixo. `DeleteUserService` apaga FÍSICA e definitivamente o usuário + os dados auth-owned
-  (refresh/reset/otp/impersonation tokens + `profiles`) numa transação (`UserRepository.deleteById`);
+  (refresh/reset/otp/impersonation tokens + `profiles`, e com eles, pela FK em cascata, a trilha
+  `profile_voice_input_events`) numa transação (`UserRepository.deleteById`);
   **`audit_logs` é PRESERVADA** (compliance, `actor_id` snapshot). Guards (defesa em profundidade,
   o gateway já restringe a `superadmin`): SÓ superadmin, **nunca a si mesmo** nem alvo
   `admin`/`superadmin` (403 `FORBIDDEN`); alvo inexistente → 404; sucesso → **204**. A cascata em

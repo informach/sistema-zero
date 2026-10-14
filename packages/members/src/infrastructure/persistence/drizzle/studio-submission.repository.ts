@@ -45,6 +45,7 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
       checkedAt: submission.checkedAt ?? null,
       passedAt: submission.passedAt ?? null,
       message: submission.message ?? null,
+      messageSpoken: submission.messageSpoken ?? false,
       contentFingerprint: submission.contentFingerprint ?? null,
     }
 
@@ -137,6 +138,7 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
             checkedAt: values.checkedAt,
             passedAt: nextPassedAt,
             message: values.message,
+            messageSpoken: values.messageSpoken,
             contentFingerprint: values.contentFingerprint,
           },
         })
@@ -184,6 +186,7 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
         checkedAt: studioSubmissions.checkedAt,
         passedAt: studioSubmissions.passedAt,
         message: studioSubmissions.message,
+        messageSpoken: studioSubmissions.messageSpoken,
       })
       .from(studioSubmissions)
       .where(eq(studioSubmissions.blockId, blockId))
@@ -196,6 +199,7 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
       checkedAt: r.checkedAt ?? null,
       passed: r.passedAt != null,
       message: r.message ?? null,
+      messageSpoken: r.messageSpoken,
     }))
   }
 
@@ -216,6 +220,7 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
         checkedAt: studioSubmissions.checkedAt,
         passedAt: studioSubmissions.passedAt,
         message: studioSubmissions.message,
+        messageSpoken: studioSubmissions.messageSpoken,
       })
       .from(studioSubmissions)
       .innerJoin(lessons, eq(lessons.id, studioSubmissions.lessonId))
@@ -234,6 +239,7 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
       checkedAt: r.checkedAt ?? null,
       passed: r.passedAt != null,
       message: r.message ?? null,
+      messageSpoken: r.messageSpoken,
     }))
   }
 
@@ -337,6 +343,7 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
           checkedAt: studioSubmissions.checkedAt,
           passedAt: studioSubmissions.passedAt,
           message: studioSubmissions.message,
+          messageSpoken: studioSubmissions.messageSpoken,
           answered,
           reviewed,
         })
@@ -374,6 +381,7 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
         checkedAt: r.checkedAt ?? null,
         passed: r.passedAt != null,
         message: r.message ?? null,
+        messageSpoken: r.messageSpoken,
         answered: r.answered,
         reviewed: r.reviewed,
       })),
@@ -391,6 +399,7 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
         checkedAt: studioSubmissions.checkedAt,
         passedAt: studioSubmissions.passedAt,
         message: studioSubmissions.message,
+        messageSpoken: studioSubmissions.messageSpoken,
         reviewedAt: studioSubmissions.reviewedAt,
         // ⚠️ SÓ o timestamp da versão anterior — o jsonb `previous_project` fica de
         // fora de propósito: este detalhe alimenta também o seed do aluno e o
@@ -410,6 +419,7 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
       checkedAt: row.checkedAt ?? null,
       passedAt: row.passedAt ?? null,
       message: row.message ?? null,
+      messageSpoken: row.messageSpoken,
       reviewedAt: row.reviewedAt ?? null,
       previousSubmittedAt: row.previousSubmittedAt ?? null,
     }
@@ -440,7 +450,7 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
     // inicial (reversível de propósito: o "desfazer" do próprio restaurar).
     // Zera a correção (score/results/checked_at pertenciam à versão sobrescrita);
     // PRESERVA passed_at (sticky — a restauração do professor não pune a criança),
-    // reviewed_at/by e message (não listados no SET).
+    // reviewed_at/by, message e message_spoken (não listados no SET).
     const rows = await this.db
       .update(studioSubmissions)
       .set({
@@ -578,6 +588,7 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
         passedAt: studioSubmissions.passedAt,
         submittedAt: studioSubmissions.submittedAt,
         message: studioSubmissions.message,
+        messageSpoken: studioSubmissions.messageSpoken,
       })
       .from(studioSubmissions)
       .innerJoin(lessonBlocks, eq(lessonBlocks.id, studioSubmissions.blockId))
@@ -601,6 +612,7 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
           passed: r.checkedAt == null ? null : r.passedAt != null,
           submittedAt: r.submittedAt,
           message: r.message ?? null,
+          messageSpoken: r.messageSpoken,
         },
       ]
     })

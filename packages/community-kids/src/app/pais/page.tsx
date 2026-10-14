@@ -1,3 +1,4 @@
+import { isVoiceInputConfigured } from '@sistemazero/member-shell/server/openrouter-transcribe'
 import { redirect } from 'next/navigation'
 import { ProfilesNotIncluded, ProfilesUnavailable } from '@/components/kids/profiles-unavailable'
 import { requestedStudyDestination } from '@/lib/entry-destination'
@@ -56,6 +57,7 @@ export default async function ParentsPage({
       avatarPhotoByProfile={photos}
       initialAccess={access}
       studentDestination={studentDestination}
+      voiceAvailable={isVoiceInputConfigured()}
     />
   )
 }

@@ -1,5 +1,6 @@
 import { Elysia, t } from 'elysia'
 import type { GalleryDeliveryService } from '../../../application/learning/gallery-delivery.service'
+import { MAX_SUBMISSION_MESSAGE_CHARS } from '../../../domain/course/lesson-block'
 import {
   assertInternalCaller,
   assertMemberShellConsumer,
@@ -20,7 +21,14 @@ const Input = t.Object({
     }),
     { minItems: 1, maxItems: 12 },
   ),
-  message: t.Optional(t.String({ maxLength: 2000 })),
+  /**
+   * Recado OPCIONAL ao professor, o mesmo teto do Estúdio e do Pinta (a coluna é
+   * `varchar(1000)`). Vale no preparo E no commit assinado: o preparo recusa ANTES de o BFF
+   * copiar os trabalhos no armazenamento.
+   */
+  message: t.Optional(t.String({ maxLength: MAX_SUBMISSION_MESSAGE_CHARS })),
+  /** O recado foi falado e transcrito (voz para texto). Ausente = digitado. */
+  messageSpoken: t.Optional(t.Boolean()),
 })
 export function galleryDeliveryRoutes(deps: {
   gallery: GalleryDeliveryService

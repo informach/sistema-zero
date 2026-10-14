@@ -323,6 +323,8 @@ const common: Record<string, string[]> = {
     'R2_UGC_BUCKET',
     'STUDIO_PRO_RUNTIME_TOKEN',
     'STUDIO_PRO_RUNTIME_URL',
+    // Interruptor da fala da criança (14/10/2026): nasce desligado e é ligado no Railway.
+    'VOICE_INPUT_ENABLED',
     'ZAPPY_ENABLED',
   ],
 }

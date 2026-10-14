@@ -535,6 +535,69 @@ describe('Bloco Estúdio — gate de conclusão + entrega', () => {
     expect(after.message).toBeNull()
   })
 
+  test('voz para texto: o recado FALADO volta marcado nas Entregas e na conversa; reenvio digitado desmarca', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const { slug, lessonIds, courseId } = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: slug })
+    const blockId = seedStudioBlock(courses, lessonIds[0])
+    const send = (extra: Record<string, unknown>) =>
+      app.handle(
+        new Request(
+          `http://localhost/members/lessons/${lessonIds[0]}/blocks/${blockId}/studio-submission`,
+          {
+            method: 'POST',
+            headers: authHeaders,
+            body: JSON.stringify({ project: STUDENT_PROJECT, ...extra }),
+          },
+        ),
+      )
+    const admin = (path: string) =>
+      app.handle(new Request(`http://localhost/members/admin${path}`)).then(readJson)
+    const detail = () => admin(`/blocks/${blockId}/studio-submissions/${USER}`)
+    const thread = () =>
+      admin(
+        `/teacher-threads/by-context?userId=${USER}&contextType=studio_submission&contextRef=${blockId}`,
+      ).then((r) => r.thread)
+
+    expect((await send({ message: 'Fiz o pulo duplo', messageSpoken: true })).status).toBe(200)
+
+    // As quatro telas da equipe que mostram o recado levam a marca junto.
+    const list = await admin(`/blocks/${blockId}/studio-submissions`)
+    expect(list.submissions[0]).toMatchObject({ message: 'Fiz o pulo duplo', messageSpoken: true })
+    expect(await detail()).toMatchObject({ message: 'Fiz o pulo duplo', messageSpoken: true })
+    const byCourse = await admin(`/courses/${courseId}/studio-submissions`)
+    expect(byCourse.submissions[0].messageSpoken).toBe(true)
+    const global = await admin('/studio-submissions')
+    expect(global.items[0].messageSpoken).toBe(true)
+    const activity = await admin(`/members/${USER}/activity`)
+    expect(
+      activity.items.find((i: { kind: string }) => i.kind === 'studio_submission'),
+    ).toMatchObject({ message: 'Fiz o pulo duplo', messageSpoken: true })
+    // O turno espelhado na conversa também.
+    expect((await thread()).messages[0]).toMatchObject({
+      body: 'Fiz o pulo duplo',
+      spoken: true,
+    })
+
+    // App antigo (sem o campo): o reenvio digitado desmarca a entrega; o turno falado fica.
+    expect((await send({ message: 'Agora digitei' })).status).toBe(200)
+    expect(await detail()).toMatchObject({ message: 'Agora digitei', messageSpoken: false })
+    const turns = (await thread()).messages.map((m: { body: string; spoken: boolean }) => [
+      m.body,
+      m.spoken,
+    ])
+    expect(turns).toEqual(
+      expect.arrayContaining([
+        ['Fiz o pulo duplo', true],
+        ['Agora digitei', false],
+      ]),
+    )
+
+    // Sem recado, a marca não vale nada.
+    expect((await send({ message: '   ', messageSpoken: true })).status).toBe(200)
+    expect(await detail()).toMatchObject({ message: null, messageSpoken: false })
+  })
+
   test('recado do envio VIRA histórico na conversa e SOBREVIVE ao reenvio', async () => {
     const { app, courses, entitlements } = buildApp()
     const { slug, lessonIds } = seedSampleCourse(courses)

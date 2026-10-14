@@ -1299,6 +1299,8 @@ describe('Auth admin routes (/auth/admin/users)', () => {
       whatsapp: null,
       birthDate: over.birthDate ?? null,
       publicProfileEnabled: false,
+      voiceInputEnabled: false,
+      voiceInputEnabledAt: null,
       status: over.status ?? 'active',
       sortOrder: 0,
       createdAt: now,
@@ -1442,6 +1444,8 @@ describe('Auth admin routes (/auth/admin/users)', () => {
       whatsapp: '+5511999999999',
       birthDate: '2015-05-10',
       publicProfileEnabled: true,
+      voiceInputEnabled: false,
+      voiceInputEnabledAt: null,
       status: 'active',
       sortOrder: 0,
       createdAt: now,
@@ -1455,6 +1459,8 @@ describe('Auth admin routes (/auth/admin/users)', () => {
       whatsapp: null,
       birthDate: null,
       publicProfileEnabled: false,
+      voiceInputEnabled: false,
+      voiceInputEnabledAt: null,
       status: 'archived',
       sortOrder: 1,
       createdAt: now,
@@ -2845,5 +2851,226 @@ describe('Kids: sessão adulta curta, login recente nos dados sensíveis e fluxo
     expect(body.user).toBeUndefined()
     expect(body.profile).toMatchObject({ id: PROFILE_ID, name: 'Sofia', birthDate: '2016-05-01' })
     expect(JSON.stringify(body).toLowerCase()).not.toContain(REGISTER_BODY.email.toLowerCase())
+  })
+})
+
+describe('Kids: fala da criança (voz → texto), consentimento dos pais por criança', () => {
+  const PROFILE_ID = '77777777-7777-4777-8777-777777777777'
+  const nowSeconds = () => Math.floor(Date.now() / 1000)
+  function req(
+    method: string,
+    path: string,
+    headers: Record<string, string>,
+    body?: unknown,
+  ): Request {
+    return new Request(`http://localhost${path}`, {
+      method,
+      headers: { 'content-type': 'application/json', ...headers },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    })
+  }
+  const gwAccount = (accountId: string, extra: Record<string, string> = {}) => ({
+    'x-internal-token': INTERNAL_TOKEN,
+    'x-auth-user-id': accountId,
+    'x-auth-user-role': 'customer',
+    'x-auth-user-status': 'active',
+    ...extra,
+  })
+  // Responsável do Kids (o Gateway injeta o contexto e a hora do login).
+  const gwParent = (accountId: string, authenticatedAt: number) =>
+    gwAccount(accountId, {
+      'x-auth-kids-context': 'parent',
+      'x-auth-kids-auth-time': String(authenticatedAt),
+    })
+  // Suporte "entrando como" o responsável: o Gateway injeta o ator em `x-auth-impersonator-id`.
+  const gwSupport = (accountId: string) =>
+    gwAccount(accountId, { 'x-auth-impersonator-id': 'ffffffff-ffff-4fff-8fff-ffffffffffff' })
+  // A própria criança (sessão de perfil): o Gateway injeta `x-auth-account-id`.
+  const gwChild = (accountId: string) =>
+    gwAccount(PROFILE_ID, { 'x-auth-account-id': accountId, 'x-auth-kids-context': 'student' })
+  async function setup() {
+    const built = buildApp()
+    built.allowance.maxProfiles = 5
+    const reg = (await (await built.app.handle(post('/auth/register', REGISTER_BODY))).json()) as {
+      user: { id: string }
+    }
+    const accountId = reg.user.id
+    built.profilesRepo.seed(
+      ProfileAggregate.create({ id: PROFILE_ID, accountUserId: accountId, name: 'Sofia' }),
+    )
+    const patchProfile = (headers: Record<string, string>, body: unknown) =>
+      built.app.handle(req('PATCH', `/auth/profiles/${PROFILE_ID}`, headers, body))
+    const stored = () => built.profilesRepo.byId.get(PROFILE_ID)
+    return { ...built, accountId, patchProfile, stored }
+  }
+  async function errorOf(res: Response) {
+    return ((await res.json()) as { error?: { code?: string; message?: string } }).error
+  }
+
+  test('perfil antigo vem com a fala desligada; a lista e o /auth/me da criança devolvem o campo', async () => {
+    const { app, accountId, patchProfile } = await setup()
+    const list = (await (
+      await app.handle(req('GET', '/auth/profiles', gwAccount(accountId)))
+    ).json()) as { profiles: Array<Record<string, unknown>> }
+    expect(list.profiles[0]?.voiceInputEnabled).toBe(false)
+    // A data do consentimento nunca sai na view.
+    expect(list.profiles[0]).not.toHaveProperty('voiceInputEnabledAt')
+
+    // É pelo `GET /auth/me` da sessão da criança que o app Kids lê a preferência.
+    const selected = (await (
+      await app.handle(req('POST', `/auth/profiles/${PROFILE_ID}/select`, gwAccount(accountId)))
+    ).json()) as { tokens: { accessToken: string } }
+    const me = async () =>
+      (
+        (await (
+          await app.handle(
+            req('GET', '/auth/me', { authorization: `Bearer ${selected.tokens.accessToken}` }),
+          )
+        ).json()) as { profile: Record<string, unknown> }
+      ).profile
+    expect((await me()).voiceInputEnabled).toBe(false)
+
+    expect(
+      (await patchProfile(gwParent(accountId, nowSeconds() - 60), { voiceInputEnabled: true }))
+        .status,
+    ).toBe(200)
+    // O mesmo token já enxerga a mudança: o /me lê o perfil fresco do repositório.
+    const after = await me()
+    expect(after.voiceInputEnabled).toBe(true)
+    expect(after).not.toHaveProperty('voiceInputEnabledAt')
+  })
+
+  test('a criança não liga nem desliga a própria fala (403 com mensagem clara)', async () => {
+    const { accountId, patchProfile, stored } = await setup()
+    for (const voiceInputEnabled of [true, false]) {
+      const res = await patchProfile(gwChild(accountId), { voiceInputEnabled })
+      expect(res.status).toBe(403)
+      expect(await errorOf(res)).toEqual({
+        code: 'FORBIDDEN',
+        message: 'A fala da criança só pode ser alterada pelos responsáveis',
+      })
+    }
+    expect(stored()?.voiceInputEnabled).toBe(false)
+    // O auto-serviço dela (nome) segue igual.
+    expect((await patchProfile(gwChild(accountId), { name: 'Sofia S' })).status).toBe(200)
+  })
+
+  test('o suporte nunca liga, mas pode desligar', async () => {
+    const { accountId, patchProfile, stored, profilesRepo } = await setup()
+    const denied = await patchProfile(gwSupport(accountId), { voiceInputEnabled: true })
+    expect(denied.status).toBe(403)
+    expect(await errorOf(denied)).toEqual({
+      code: 'FORBIDDEN',
+      message:
+        'Só os responsáveis podem ligar a fala da criança. A equipe de suporte pode apenas desligar.',
+    })
+    expect(stored()?.voiceInputEnabled).toBe(false)
+
+    // Os pais ligam; o suporte reenviar o mesmo valor (editando o nome) não é ligar.
+    await patchProfile(gwParent(accountId, nowSeconds() - 60), { voiceInputEnabled: true })
+    expect(
+      (await patchProfile(gwSupport(accountId), { name: 'Sofia M', voiceInputEnabled: true }))
+        .status,
+    ).toBe(200)
+    // E desligar pela equipe é permitido.
+    const off = await patchProfile(gwSupport(accountId), { voiceInputEnabled: false })
+    expect(off.status).toBe(200)
+    expect(stored()?.voiceInputEnabled).toBe(false)
+
+    // A trilha do consentimento: os pais ligaram, o suporte (ator real do header) desligou. A
+    // recusa e o reenvio do mesmo valor não viraram linha.
+    expect(profilesRepo.voiceInputEvents).toEqual([
+      {
+        profileId: PROFILE_ID,
+        accountUserId: accountId,
+        enabled: true,
+        actor: 'parent',
+        impersonatorId: null,
+        at: expect.any(Date),
+      },
+      {
+        profileId: PROFILE_ID,
+        accountUserId: accountId,
+        enabled: false,
+        actor: 'support',
+        impersonatorId: 'ffffffff-ffff-4fff-8fff-ffffffffffff',
+        at: expect.any(Date),
+      },
+    ])
+  })
+
+  test('ligar pede login recente do responsável; desligar não pede', async () => {
+    const { accountId, patchProfile, stored } = await setup()
+    const stale = gwParent(accountId, nowSeconds() - 16 * 60)
+    const turnOnStale = await patchProfile(stale, { voiceInputEnabled: true })
+    expect(turnOnStale.status).toBe(403)
+    expect((await errorOf(turnOnStale))?.code).toBe('PARENT_REAUTH_REQUIRED')
+    // Hora de login ilegível vale como antiga (falha fechada).
+    expect((await patchProfile(gwParent(accountId, 0), { voiceInputEnabled: true })).status).toBe(
+      403,
+    )
+    expect(stored()?.voiceInputEnabled).toBe(false)
+
+    const on = (await (
+      await patchProfile(gwParent(accountId, nowSeconds() - 60), { voiceInputEnabled: true })
+    ).json()) as { profile: { voiceInputEnabled: boolean } }
+    expect(on.profile.voiceInputEnabled).toBe(true)
+    expect(stored()?.voiceInputEnabledAt).toBeInstanceOf(Date)
+
+    // Formulário dos pais reenviando tudo ao trocar só o nome: não pede login de novo.
+    expect(
+      (await patchProfile(stale, { name: 'Sofia Maria', voiceInputEnabled: true })).status,
+    ).toBe(200)
+    // Desligar com login antigo: livre (voltar à opção mais protetiva não tem obstáculo).
+    const off = await patchProfile(stale, { voiceInputEnabled: false })
+    expect(off.status).toBe(200)
+    expect(stored()?.voiceInputEnabled).toBe(false)
+    expect(stored()?.voiceInputEnabledAt).toBeNull()
+  })
+
+  test('o perfil público segue pedindo login recente nos DOIS sentidos (sem mudança)', async () => {
+    const { accountId, patchProfile } = await setup()
+    const recent = gwParent(accountId, nowSeconds() - 60)
+    const stale = gwParent(accountId, nowSeconds() - 16 * 60)
+    expect((await patchProfile(recent, { publicProfileEnabled: true })).status).toBe(200)
+    const off = await patchProfile(stale, { publicProfileEnabled: false })
+    expect(off.status).toBe(403)
+    expect((await errorOf(off))?.code).toBe('PARENT_REAUTH_REQUIRED')
+  })
+
+  test('criar já com a fala ligada pede login recente e nunca vem do suporte', async () => {
+    const { app, accountId, profilesRepo } = await setup()
+    const create = (headers: Record<string, string>, body: unknown) =>
+      app.handle(req('POST', '/auth/profiles', headers, body))
+    const before = profilesRepo.byId.size
+
+    const stale = await create(gwParent(accountId, nowSeconds() - 16 * 60), {
+      name: 'Théo',
+      voiceInputEnabled: true,
+    })
+    expect(stale.status).toBe(403)
+    expect((await errorOf(stale))?.code).toBe('PARENT_REAUTH_REQUIRED')
+    const support = await create(gwSupport(accountId), { name: 'Théo', voiceInputEnabled: true })
+    expect(support.status).toBe(403)
+    expect((await errorOf(support))?.code).toBe('FORBIDDEN')
+    // Nenhum perfil foi criado pelas tentativas recusadas.
+    expect(profilesRepo.byId.size).toBe(before)
+
+    // Criar sem o campo ou com false não muda nada (nem com login antigo).
+    for (const body of [{ name: 'Bia' }, { name: 'Lia', voiceInputEnabled: false }]) {
+      const res = await create(gwParent(accountId, nowSeconds() - 16 * 60), body)
+      expect(res.status).toBe(201)
+      const created = (await res.json()) as { profile: { voiceInputEnabled: boolean } }
+      expect(created.profile.voiceInputEnabled).toBe(false)
+    }
+
+    const ok = await create(gwParent(accountId, nowSeconds() - 60), {
+      name: 'Théo',
+      voiceInputEnabled: true,
+    })
+    expect(ok.status).toBe(201)
+    const created = (await ok.json()) as { profile: { id: string; voiceInputEnabled: boolean } }
+    expect(created.profile.voiceInputEnabled).toBe(true)
+    expect(profilesRepo.byId.get(created.profile.id)?.voiceInputEnabledAt).toBeInstanceOf(Date)
   })
 })

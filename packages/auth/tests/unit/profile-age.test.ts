@@ -47,6 +47,8 @@ describe('idade do perfil Kids', () => {
       whatsapp: null,
       birthDate: '2007-08-15',
       publicProfileEnabled: false,
+      voiceInputEnabled: false,
+      voiceInputEnabledAt: null,
       status: 'active',
       sortOrder: 0,
       createdAt,

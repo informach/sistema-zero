@@ -99,7 +99,12 @@ const securityHeaders = [
   { key: 'X-Frame-Options', value: 'DENY' },
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-  { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+  // Microfone liberado para a PRÓPRIA origem (14/10/2026): a criança fala em vez de escrever
+  // para a equipe. Tem que ser global: o cabeçalho vale para o PRIMEIRO documento carregado e
+  // a navegação do Next o mantém, então liberar só na fase e nos Recados não funcionaria para
+  // quem chega por um link. `(self)` não alcança os iframes de terceiros nem as prévias em
+  // `srcdoc` sem `allow-same-origin`, e o navegador ainda pergunta antes de abrir o microfone.
+  { key: 'Permissions-Policy', value: 'camera=(), microphone=(self), geolocation=()' },
   // Isolamento de janela/recurso (defesa em profundidade numa área infantil). COOP
   // corta a referência de janela de um abridor cross-origin; CORP barra que outra
   // origem embuta as respostas autenticadas como subrecurso (sondagem por timing).

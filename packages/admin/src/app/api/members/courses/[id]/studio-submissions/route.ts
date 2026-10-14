@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { toCourseSubmissionRow } from '@/lib/course-submission-rows'
 import { forwardUpstream } from '@/server/forward'
 import { listCourseStudioSubmissions } from '@/server/members'
 import { resolveSubmissionIdentities } from '@/server/studio-submissions'
@@ -35,18 +36,6 @@ export async function GET(_req: Request, { params }: Ctx) {
 
   const submissions = body.submissions
   const identityOf = await resolveSubmissionIdentities(submissions)
-  const rows = submissions.map((s) => ({
-    userId: s.userId,
-    blockId: s.blockId,
-    lessonId: s.lessonId,
-    lessonTitle: s.lessonTitle,
-    moduleTitle: s.moduleTitle,
-    submittedAt: s.submittedAt,
-    ...identityOf(s),
-    score: s.score,
-    checkedAt: s.checkedAt,
-    passed: s.passed,
-    message: s.message,
-  }))
+  const rows = submissions.map((s) => toCourseSubmissionRow(s, identityOf(s)))
   return NextResponse.json({ submissions: rows }, { status: 200 })
 }

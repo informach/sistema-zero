@@ -12,6 +12,7 @@ import { createPensaAiRoutes } from './routes/pensa-ai'
 import { createStudioRoutes } from './routes/studio'
 import { createStudioZappyRoutes } from './routes/studio-zappy'
 import { createStudyAccessRoutes } from './routes/study-access'
+import { createVoiceRoutes } from './routes/voice'
 import {
   createAuthClient,
   createHubClient,
@@ -87,6 +88,7 @@ export function createShell(cfg: ShellConfig) {
     ...createPensaAiRoutes({ members, session }),
     ...createCreationsRoutes({ members, session }),
     ...createCreationCleanupWorkerRoutes({ gateway }),
+    ...createVoiceRoutes({ session, auth }),
   }
 
   return {

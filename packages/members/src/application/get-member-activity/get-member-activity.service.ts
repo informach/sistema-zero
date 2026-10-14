@@ -67,6 +67,7 @@ export class GetMemberActivityService {
         score: s.score,
         passed: s.passed,
         message: s.message,
+        messageSpoken: s.messageSpoken,
       })),
     ]
 

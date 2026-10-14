@@ -90,6 +90,7 @@ export class DrizzleTeacherThreadRepository implements TeacherThreadRepository {
         authorId: input.authorId ?? null,
         authorName: input.authorName ?? null,
         body: input.body,
+        spoken: input.spoken ?? false,
         helpContext: input.helpContext,
         createdAt: input.now,
       }
@@ -455,6 +456,7 @@ export class DrizzleTeacherThreadRepository implements TeacherThreadRepository {
       authorId: row.authorId ?? null,
       authorName: row.authorName ?? null,
       body: row.body,
+      spoken: row.spoken,
       helpContext: row.helpContext,
       createdAt: row.createdAt,
     }

@@ -1,0 +1,2 @@
+ALTER TABLE "auth"."profiles" ADD COLUMN "voice_input_enabled" boolean DEFAULT false NOT NULL;--> statement-breakpoint
+ALTER TABLE "auth"."profiles" ADD COLUMN "voice_input_enabled_at" timestamp with time zone;

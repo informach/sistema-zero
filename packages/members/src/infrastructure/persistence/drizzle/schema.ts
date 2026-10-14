@@ -584,6 +584,11 @@ export const studioSubmissions = members.table(
      */
     message: varchar('message', { length: 1000 }),
     /**
+     * O recado acima foi FALADO pela criança e transcrito pelo servidor (14/10/2026). A equipe lê
+     * com boa vontade um erro de transcrição. `false` = digitado, sem recado ou app antigo.
+     */
+    messageSpoken: boolean('message_spoken').notNull().default(false),
+    /**
      * Quando o professor disse "já conferi". Comparado com `submitted_at` (>=), a
      * MESMA régua da resposta do professor: um reenvio da criança reabre a
      * pendência sozinho. `null` = nunca conferida.
@@ -1356,6 +1361,11 @@ export const teacherMessages = members.table(
     // 8000: o professor escreve markdown com print (URL) + trecho de código; o recado curto
     // do aluno cabe de sobra. Espelha os DTOs `TeacherThreadReplyBody`/`AdminTeacherThreadPostBody`.
     body: varchar('body', { length: 8000 }).notNull(),
+    /**
+     * Turno FALADO pela criança e transcrito pelo servidor (14/10/2026): o Admin avisa a equipe
+     * para ler um erro de transcrição com boa vontade. `false` = digitado (e todo o legado).
+     */
+    spoken: boolean('spoken').notNull().default(false),
     helpContext:
       jsonb('help_context').$type<
         import('../../../domain/ports/teacher-thread-repository.port').TeacherHelpContext

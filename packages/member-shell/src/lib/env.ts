@@ -5,7 +5,8 @@ import { z } from 'zod'
  * Env do servidor (fail-fast). NUNCA é importado por Client Component — `server-only`
  * garante o erro de build se vazar para o bundle do cliente.
  */
-const EnvSchema = z
+// Exportado para o teste do interruptor tolerante (`VOICE_INPUT_ENABLED`).
+export const EnvSchema = z
   .object({
     GATEWAY_URL: z.string().url().default('http://localhost:3000'),
     // Verificação do access JWT — HS256 (segredo compartilhado; dev/local) e/ou
@@ -73,7 +74,20 @@ const EnvSchema = z
     // no OPENROUTER_PENSA_MODEL, e este no OPENROUTER_MODEL.
     OPENROUTER_PENSA_SYNTHESIS_MODEL: z.string().optional(),
     OPENROUTER_ZAPPY_MODEL: z.string().optional(),
+    // Transcrição da fala da criança (voz → texto para a equipe). Ausentes → os padrões de
+    // `server/openrouter-transcribe.ts` (`openai/gpt-transcribe`, reserva `gpt-4o-mini-transcribe`).
+    OPENROUTER_TRANSCRIBE_MODEL: z.string().optional(),
+    OPENROUTER_TRANSCRIBE_FALLBACK_MODEL: z.string().optional(),
     OPENROUTER_REFERER: z.string().url().optional(),
+    // Interruptor da fala da criança (14/10/2026), DESLIGADO por padrão: ligado e com a chave do
+    // OpenRouter, a opção aparece para os pais (que ligam por criança) e o botão de falar nas
+    // mensagens para a equipe.
+    // ⚠️ Tolerante DE PROPÓSITO: é a chave que se digita à mão no Railway, e um `enum` estrito
+    // derrubava o app inteiro (toda rota lê o `getEnv()`) com um "TRUE" ou "1". Só "true" liga.
+    VOICE_INPUT_ENABLED: z
+      .string()
+      .optional()
+      .transform((value) => value?.trim().toLowerCase() === 'true'),
     // Interruptor de emergência. A jornada decide o acesso; equipe sempre entra.
     ZAPPY_ENABLED: z
       .enum(['true', 'false'])

@@ -2,6 +2,7 @@ import type { ProfileRepository } from '../../domain/ports/profile-repository.po
 import { ProfileNotFoundError } from '../../domain/profile/profile.errors'
 import { ParentReauthenticationRequiredError } from '../../domain/study-access/errors'
 import { type ProfileView, toProfileView } from '../mappers/profile-view'
+import { assertMayEnableVoiceInput, voiceInputActor } from './voice-input.policy'
 
 export interface UpdateProfileDetailsCommand {
   accountUserId: string
@@ -17,8 +18,19 @@ export interface UpdateProfileDetailsCommand {
   /** Perfil público (opt-in). AUTORIZAÇÃO parent-only é da rota; `undefined` = não mexe. */
   publicProfileEnabled?: boolean
   /**
+   * Fala da criança (voz → texto). A rota barra a sessão da criança; aqui valem as regras
+   * de LIGAR (`assertMayEnableVoiceInput`). Desligar é livre. `undefined` = não mexe.
+   */
+  voiceInputEnabled?: boolean
+  /**
+   * Ator REAL de uma sessão de SUPORTE (impersonação, `x-auth-impersonator-id`); ausente =
+   * os responsáveis. O suporte pode desligar a fala, nunca ligar; o id vai para a trilha.
+   */
+  impersonatorId?: string | null
+  /**
    * Sessão de RESPONSÁVEL do Kids: o login dele tem até 15 minutos? `undefined` = sessão de
-   * outro produto (sem a exigência). `false` recusa MUDAR nascimento ou perfil público.
+   * outro produto (sem a exigência). `false` recusa MUDAR nascimento ou perfil público e
+   * LIGAR a fala (desligar não pede login de novo).
    */
   parentAuthRecent?: boolean
 }
@@ -39,6 +51,14 @@ export class UpdateProfileDetailsService {
     if (!profile?.belongsTo(cmd.accountUserId) || profile.isArchived) {
       throw new ProfileNotFoundError()
     }
+    // Fala: só a passagem de DESLIGADA para LIGADA é sensível. Reenviar `true` com ela já
+    // ligada (formulário dos pais trocando só o nome) e desligar seguem livres.
+    if (cmd.voiceInputEnabled === true && !profile.voiceInputEnabled) {
+      assertMayEnableVoiceInput({
+        supportSession: Boolean(cmd.impersonatorId),
+        parentAuthRecent: cmd.parentAuthRecent,
+      })
+    }
     // ⚠️ A exigência vale para a MUDANÇA, não para o campo no corpo: o formulário dos pais
     // reenvia nascimento e perfil público ao trocar só o nome, e isso não pede login de novo.
     const sensitiveChange =
@@ -54,6 +74,11 @@ export class UpdateProfileDetailsService {
     // Perfil público: idem (parent-only na rota).
     if (cmd.publicProfileEnabled !== undefined) {
       profile.setPublicProfileEnabled(cmd.publicProfileEnabled, now)
+    }
+    // Fala: caminho próprio (ligar carimba o consentimento; desligar zera). A mudança efetiva
+    // vai para a trilha na mesma transação do UPDATE; reenviar o mesmo valor não registra nada.
+    if (cmd.voiceInputEnabled !== undefined) {
+      profile.setVoiceInputEnabled(cmd.voiceInputEnabled, voiceInputActor(cmd.impersonatorId), now)
     }
     const ok = await this.profiles.update(profile)
     if (!ok) throw new ProfileNotFoundError()

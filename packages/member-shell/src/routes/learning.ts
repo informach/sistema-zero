@@ -32,6 +32,8 @@ export function createLearningRoutes({
         sectionId: z.uuid(),
         body: z.string().trim().min(1).max(8000),
         requestId: z.uuid().optional(),
+        // O texto veio da fala transcrita (botão "Falar" do Kids): a equipe vê o chip "falado".
+        spoken: z.boolean().optional(),
       })
       .strict(),
     'learning-progress': z

@@ -294,7 +294,8 @@ async function prepareSchema(conn: DbConnection): Promise<void> {
       add column if not exists user_id uuid,
       add column if not exists account_id uuid,
       add column if not exists course_id uuid,
-      add column if not exists content_fingerprint varchar(70)`,
+      add column if not exists content_fingerprint varchar(70),
+      add column if not exists message_spoken boolean not null default false`,
     `create table if not exists members.lesson_progress (user_id uuid not null, course_id uuid not null)`,
     `alter table members.lesson_progress
       add column if not exists user_id uuid,

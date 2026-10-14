@@ -142,6 +142,8 @@ export class DrizzleUserRepository implements UserRepository {
       await tx
         .delete(impersonationTokens)
         .where(or(eq(impersonationTokens.targetUserId, id), eq(impersonationTokens.actorId, id)))
+      // A trilha do consentimento da fala (`profile_voice_input_events`, dado pessoal da
+      // criança) sai junto pela FK `ON DELETE CASCADE` do `profile_id`.
       await tx.delete(profiles).where(eq(profiles.accountUserId, id))
       return true
     })

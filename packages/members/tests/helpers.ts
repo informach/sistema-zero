@@ -695,6 +695,7 @@ export function buildApp(
     positions,
     quizAttempts,
     studioSubmissions,
+    submitStudio,
     teacherThreadsRepo,
     ratings,
     certificates,

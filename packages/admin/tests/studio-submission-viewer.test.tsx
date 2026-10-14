@@ -185,3 +185,78 @@ describe('restauração no viewer da entrega', () => {
     }
   })
 })
+
+describe('recado falado (14/10/2026)', () => {
+  async function renderDetail(message: string | null, messageSpoken?: boolean) {
+    const originalFetch = globalThis.fetch
+    globalThis.fetch = Object.assign(
+      async (input: URL | RequestInfo) => {
+        const path = String(input)
+        if (path === '/api/members/blocks/bloco-1/studio-submissions/aluno-1') {
+          return Response.json({
+            project: project('Projeto'),
+            submittedAt: '2026-10-14T12:00:00.000Z',
+            score: null,
+            results: null,
+            checkedAt: null,
+            passed: false,
+            message,
+            ...(messageSpoken === undefined ? {} : { messageSpoken }),
+            reviewedAt: null,
+            reviewed: false,
+          })
+        }
+        throw new Error(`Fetch inesperado: ${path}`)
+      },
+      { preconnect: () => {} },
+    ) as typeof fetch
+    const container = document.createElement('div')
+    document.body.append(container)
+    const root = createRoot(container)
+    await act(async () => {
+      root.render(
+        <StudioSubmissionViewer
+          open
+          onClose={() => {}}
+          blockId="bloco-1"
+          userId="aluno-1"
+          studentName="Aluno"
+          audience="kids"
+          courseId="curso-1"
+          lessonId="aula-1"
+          lessonTitle="Aula 1"
+        />,
+      )
+    })
+    await waitForElement(() => document.querySelector('[data-testid="studio-project"]'))
+    return async () => {
+      globalThis.fetch = originalFetch
+      await act(async () => root.unmount())
+      container.remove()
+    }
+  }
+
+  test('o recado que veio da fala ganha o selo "falado", lido como transcrito automaticamente', async () => {
+    const cleanup = await renderDetail('meu personagem não pula', true)
+    try {
+      const text = document.body.textContent ?? ''
+      expect(text).toContain('meu personagem não pula')
+      expect(text).toContain('falado')
+      expect(text).toContain('transcrito automaticamente')
+    } finally {
+      await cleanup()
+    }
+  })
+
+  test('recado escrito e members antigo (sem o campo) não mostram o selo', async () => {
+    for (const spoken of [false, undefined]) {
+      const cleanup = await renderDetail('escrevi isto', spoken)
+      try {
+        expect(document.body.textContent).toContain('escrevi isto')
+        expect(document.body.textContent).not.toContain('falado')
+      } finally {
+        await cleanup()
+      }
+    }
+  })
+})

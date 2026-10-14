@@ -1,5 +1,41 @@
 # CLAUDE.md — @sistemazero/community-kids
 
+## Falar em vez de escrever (14/10/2026)
+
+A criança fala a mensagem para a equipe e confere o texto antes de enviar; a voz não é guardada.
+A lógica mora no member-shell (ver a seção de lá); aqui moram a porta e o lado dos pais.
+
+- **Porta:** shim `app/api/voice/transcribe/route.ts` (`shell.routes.voiceTranscribe`, dentro do
+  matcher). `next.config.ts`: `microphone=(self)` na política GERAL (o cabeçalho vale para o
+  primeiro documento e a navegação do Next o mantém, então por rota não funcionaria para quem
+  chega por um link); a câmera segue `()` na política geral (o lote das oficinas ao vivo abre a
+  câmera só na rota da sala dele).
+- **Railway:** `VOICE_INPUT_ENABLED` está em `.railway/variables.ts`, e a regra da casa é CRIAR a
+  variável no painel ANTES de o nome chegar à lista (o portão recusa mudança em variável). Crie
+  `VOICE_INPUT_ENABLED=false` em staging e produção antes do merge; ligar é trocar o valor.
+- **Quem vê o botão:** a página da fase passa `voiceInput` = perfil com `voiceInputEnabled`,
+  sessão de criança, sem suporte e `isVoiceInputConfigured()`; os Recados passam `voiceEnabled`
+  pela mesma régua ("Escreva ou fale uma resposta…").
+- **Os pais ligam por criança, e a escolha nasce DESLIGADA** (a Política promete a opção mais
+  protetiva por padrão): caixa "Falar em vez de escrever (recomendado)" no `ProfileForm`, logo
+  abaixo do perfil público, dizendo quem vê o quê (só a equipe lê o texto; a gravação não fica
+  guardada pela Empresa, e a fala vai a um serviço fora do Brasil: é o consentimento para a
+  transferência; link para a Política ao lado). O perfil público diz agora "nunca na internet
+  aberta". O `onSave` virou objeto (`ProfileFormValues`), e o `profile-editor` CONFERE o valor
+  devolvido (um auth antigo responderia 200 sem gravar). Ligar exige login recente (o
+  `PARENT_REAUTH_REQUIRED` de sempre); desligar é livre. ⚠️ Na CRIAÇÃO com a fala marcada e
+  login antigo, o editor cria o perfil SEM a fala e leva à página da criança com
+  `?aviso=fala-entrar` (o `child-client` mostra o recado com "Entrar de novo" e apaga o
+  parâmetro); antes a recusa levava o formulário inteiro junto. O aviso de servidor antigo na
+  criação viaja do mesmo jeito (`?aviso=fala-nao-gravou`): um toast antes de navegar sumia. A página da criança mostra "fala liberada"; o guia dos pais
+  (`parentWelcomeSteps({voiceAvailable})`) orienta a ligar; as famílias que já existem veem a
+  novidade na Família (`_components/voice-news-card.tsx`, dispensável por navegador).
+- **Testes:** `voice-input.test.tsx` (o gravador e o botão com o microfone de mentira de
+  `tests/helpers/fake-microphone.ts`: a espera do envio, o emoji no contexto, o medidor parado do
+  iPhone, a interrupção, o cancelar e a caixa cheia), `voice-parents.test.tsx` (formulário,
+  criação com login antigo, guia, novidade e a `Permissions-Policy`), `recados-voice.test.tsx` e o caso da fala em `lesson-sections.test.tsx`
+  (a dúvida falada chega com `spoken: true`).
+
 ## Acesso infantil por aparelho (10/10/2026)
 
 A implementação de entrada Kids passa a usar sessões discriminadas `kids.kind`: responsável em `/pais`, criança em `/login/aluno` e `/perfis`. `/login` escolhe o público. O login adulto exige senha ou OTP próprio e não autoriza perfis implicitamente. Cada autorização pertence a um perfil e navegador; o cookie HttpOnly do aparelho é separado da sessão ativa. Os endpoints antigos de seleção/saída de perfil do Kids retornam 410 para a família. A seleção aceita exclusivamente sessões de suporte autenticadas (`act`), sem criar autorização de aparelho; `/perfis` mostra um seletor separado nesse contexto. As descrições antigas do portão de senha e da grade mista de perfis neste documento são históricas.

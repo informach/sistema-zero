@@ -1,5 +1,19 @@
 # CLAUDE.md — @sistemazero/admin
 
+## O selo "falado" (14/10/2026)
+
+Quando a criança FALOU a mensagem (a voz vira texto no Kids e não é guardada), a equipe vê o selo
+`SpokenChip` (`components/admin/spoken-chip.tsx`, ícone `Mic`, "falado" e "transcrito
+automaticamente" para o leitor): numa palavra estranha, o erro é da transcrição, não da criança.
+Aparece nas mensagens da criança no diálogo de Recados e no painel do curso
+(`TeacherMessageView.spoken`), e no recado da entrega (visor, lista do curso, fila de Entregas e
+linha do tempo da ficha do aluno, `messageSpoken`). Os dois campos são OPCIONAIS: members antigo
+= sem selo. Não há áudio para ouvir. ⚠️ A rota da lista do curso
+(`api/members/courses/[id]/studio-submissions`) monta cada linha CAMPO A CAMPO, pela função pura
+`lib/course-submission-rows.ts`: campo novo do members precisa entrar ali, senão some (foi o que
+aconteceu com o selo até o full review). Testes: `tests/studio-submission-viewer.test.tsx`
+("recado falado") e `tests/course-submission-rows.test.ts`.
+
 > **Contrato vigente das aulas (26/09/2026):** o editor de bloco interativo oferece
 > **Jogo pronto para jogar**, **Experimentação** e **HTML personalizado**. Cena pronta é experimentação conduzida pela
 > criança. O palpite e a pergunta final são partes opcionais da experiência; pergunta isolada

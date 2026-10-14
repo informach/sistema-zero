@@ -27,6 +27,11 @@ export interface StudioSubmissionRecord {
   /** Recado OPCIONAL do aluno ao professor (modal de envio). `null` = sem recado. */
   message?: string | null
   /**
+   * O recado foi FALADO e transcrito pelo servidor (voz para texto, 14/10/2026). Ausente/`false` =
+   * digitado ou sem recado. Reenvio sobrescreve junto com o `message`; restaurar preserva os dois.
+   */
+  messageSpoken?: boolean
+  /**
    * Impressão digital do conteúdo enviado ("envio em dia"). `null` = sem conferência (envio
    * antigo, galeria, restaurado pelo professor).
    */
@@ -60,6 +65,8 @@ export interface StudioSubmissionSummary {
   passed: boolean
   /** Recado OPCIONAL do aluno ao professor. `null` = sem recado. */
   message: string | null
+  /** O recado foi falado e transcrito (voz para texto). */
+  messageSpoken: boolean
 }
 
 /** Estado por bloco para o ALUNO (gate da conclusão + UI). */
@@ -87,6 +94,8 @@ export interface StudioSubmissionDetail {
   passedAt: Date | null
   /** Recado OPCIONAL do aluno ao professor. `null` = sem recado. */
   message: string | null
+  /** O recado foi falado e transcrito (voz para texto). */
+  messageSpoken: boolean
   /** Carimbo de "já conferi" (o botão do professor). `null` = nunca conferida. */
   reviewedAt: Date | null
   /**
@@ -114,6 +123,8 @@ export interface StudioSubmissionCourseRow {
   checkedAt: Date | null
   passed: boolean
   message: string | null
+  /** O recado foi falado e transcrito (voz para texto). */
+  messageSpoken: boolean
 }
 
 /** Filtro da fila GLOBAL de entregas (página "Entregas" da Sala do Professor). */
@@ -162,6 +173,8 @@ export interface RecentStudioSubmission {
   passed: boolean | null
   submittedAt: Date
   message: string | null
+  /** O recado foi falado e transcrito (voz para texto). */
+  messageSpoken: boolean
 }
 
 export interface StudioSubmissionRepository {
@@ -214,7 +227,7 @@ export interface StudioSubmissionRepository {
    * restaurar 2× volta ao estado inicial) num único UPDATE atômico. Zera a
    * correção (score/results/checked_at — era da versão sobrescrita) e PRESERVA
    * `passed_at` (sticky: a restauração do professor não pune a criança),
-   * `reviewed_at/by` e `message`. `false` = sem linha ou sem versão anterior.
+   * `reviewed_at/by`, `message` e `message_spoken`. `false` = sem linha ou sem versão anterior.
    */
   restorePrevious(input: { userId: string; blockId: string }): Promise<boolean>
   /**

@@ -52,6 +52,12 @@ export interface LessonPlayerContextValue {
    * por perfil — irmãos no mesmo navegador não misturam o trabalho. `null` fora do player.
    */
   viewerId: string | null
+  /**
+   * A criança pode FALAR em vez de escrever para a equipe (14/10/2026): mostra o botão "Falar" no
+   * pedido de ajuda e no recado do envio. Só o Kids passa, com a fala ligada pelos pais e no
+   * servidor; o adulto e o Admin nunca passam.
+   */
+  voiceInput?: boolean
   /** Posição salva do vídeo (segundos) para retomar de onde parou. */
   initialPositionSeconds: number | null
   /** A cada `timeupdate` do vídeo (o consumidor faz o throttle de persistência). */

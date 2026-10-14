@@ -2,6 +2,7 @@ import type { KidsSessionClaim } from '@sistemazero/core/security'
 import { sql } from 'drizzle-orm'
 import {
   boolean,
+  check,
   date,
   index,
   integer,
@@ -240,6 +241,14 @@ export const profiles = auth.table(
     // clicável no Mural). OPT-IN dos pais (default false, segurança infantil); SÓ os
     // pais editam (a sessão de perfil da criança é barrada na rota, como o birthDate).
     publicProfileEnabled: boolean('public_profile_enabled').notNull().default(false),
+    // FALA da criança (voz → texto nas mensagens para a equipe). Consentimento dos pais
+    // POR CRIANÇA: nasce DESLIGADA (default false, a opção mais protetiva que a Política
+    // promete); SÓ os pais ligam, com login recente. `_at` = quando o consentimento EM VIGOR
+    // foi dado (`null` desligada). O HISTÓRICO (prova do consentimento) mora na trilha
+    // `profile_voice_input_events`; as duas colunas só mudam junto com uma linha de lá.
+    // A voz nunca é guardada; só o texto conferido vira mensagem.
+    voiceInputEnabled: boolean('voice_input_enabled').notNull().default(false),
+    voiceInputEnabledAt: timestamp('voice_input_enabled_at', { withTimezone: true }),
     status: profileStatusEnum('status').notNull().default('active'),
     sortOrder: integer('sort_order').notNull().default(0),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
@@ -249,6 +258,41 @@ export const profiles = auth.table(
   (t) => [
     index('profiles_account_idx').on(t.accountUserId, t.sortOrder),
     index('profiles_name_trgm_idx').using('gin', t.name.op('gin_trgm_ops')),
+  ],
+)
+
+/**
+ * Trilha APPEND-ONLY do consentimento da FALA da criança (LGPD art. 8º §2º: cabe ao
+ * controlador provar o consentimento). Uma linha a cada MUDANÇA efetiva de
+ * `profiles.voice_input_enabled` (inclusive o perfil criado já com a fala ligada), gravada
+ * na MESMA transação que salva o perfil; reenviar o mesmo valor não grava nada. A app só
+ * INSERE: sem update, sem rota de leitura (consulta por SQL, para auditoria/jurídico) e
+ * fora da purga periódica. Sai junto com o perfil na exclusão física da conta (FK em
+ * cascata), porque é dado pessoal da criança. `account_user_id` é snapshot da conta dona;
+ * `impersonator_id` = o ator REAL numa sessão de suporte (`act.sub`). O CHECK prende a
+ * regra do domínio no banco: a equipe de suporte só DESLIGA.
+ */
+export const profileVoiceInputEvents = auth.table(
+  'profile_voice_input_events',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    profileId: uuid('profile_id')
+      .notNull()
+      .references(() => profiles.id, { onDelete: 'cascade' }),
+    accountUserId: uuid('account_user_id').notNull(),
+    enabled: boolean('enabled').notNull(),
+    /** `parent` (sessão dos responsáveis) | `support` (equipe "entrando como" eles). */
+    actor: text('actor', { enum: ['parent', 'support'] }).notNull(),
+    impersonatorId: uuid('impersonator_id'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    // Histórico de um perfil em ordem + a busca da cascada quando o perfil sai.
+    index('profile_voice_input_events_profile_created_idx').on(t.profileId, t.createdAt),
+    check(
+      'profile_voice_input_events_actor_ck',
+      sql`(${t.actor} = 'parent' and ${t.impersonatorId} is null) or (${t.actor} = 'support' and ${t.impersonatorId} is not null and ${t.enabled} = false)`,
+    ),
   ],
 )
 
@@ -383,5 +427,6 @@ export const schema = {
   otpCodes,
   impersonationTokens,
   profiles,
+  profileVoiceInputEvents,
   auditLogs,
 }

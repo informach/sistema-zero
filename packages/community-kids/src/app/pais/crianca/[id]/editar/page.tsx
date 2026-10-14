@@ -1,3 +1,4 @@
+import { isVoiceInputConfigured } from '@sistemazero/member-shell/server/openrouter-transcribe'
 import { redirect } from 'next/navigation'
 import { ProfilesUnavailable } from '@/components/kids/profiles-unavailable'
 import { listReadonly } from '@/server/profiles'
@@ -14,5 +15,11 @@ export default async function EditChildPage({ params }: { params: Promise<{ id: 
   if (profilesRes.status !== 200) return <ProfilesUnavailable />
   const profile = (profilesRes.body?.profiles ?? []).find((item) => item.id === id)
   if (!profile) redirect('/pais')
-  return <ProfileEditor parentName={session.firstName} profile={profile} />
+  return (
+    <ProfileEditor
+      parentName={session.firstName}
+      profile={profile}
+      voiceAvailable={isVoiceInputConfigured()}
+    />
+  )
 }

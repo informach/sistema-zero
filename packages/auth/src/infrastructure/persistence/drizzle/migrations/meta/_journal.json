@@ -134,6 +134,20 @@
       "when": 1791640222715,
       "tag": "0018_kids_study_access",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1791993795448,
+      "tag": "0019_profile_voice_input",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1791998448688,
+      "tag": "0020_profile_voice_input_events",
+      "breakpoints": true
     }
   ]
 }

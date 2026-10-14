@@ -164,9 +164,12 @@ export function resolveChildGuideStep(input: ChildGuideInput): ChildGuideStep | 
 export function parentWelcomeSteps({
   profilesCount,
   canCreateProfile,
+  voiceAvailable = false,
 }: {
   profilesCount: number
   canCreateProfile: boolean
+  /** A fala da criança está ligada no servidor: o passo de adicionar orienta a ligá-la. */
+  voiceAvailable?: boolean
 }): readonly GuideWelcomeStep[] {
   // Os títulos e os nomes entre aspas são os rótulos REAIS da tela (a Família em `/pais` e a
   // página da criança, desde o redesenho de 11/10/2026). Sem criança cadastrada, o primeiro passo
@@ -180,7 +183,9 @@ export function parentWelcomeSteps({
         profilesCount > 0
           ? 'Use o perfil que já existe: em "Suas crianças", clique em "Acesso nos aparelhos" no cartão dela. O progresso continua guardado.'
           : canCreateProfile
-            ? 'Use "Adicionar criança" e coloque o nome dela. A data de nascimento é opcional.'
+            ? voiceAvailable
+              ? 'Use "Adicionar criança" e coloque o nome dela. A data de nascimento é opcional. Ali você também pode ligar "Falar em vez de escrever", que ajuda quem ainda escreve devagar a pedir ajuda.'
+              : 'Use "Adicionar criança" e coloque o nome dela. A data de nascimento é opcional.'
             : 'Confira o acesso da família antes de adicionar um perfil.',
     },
     {

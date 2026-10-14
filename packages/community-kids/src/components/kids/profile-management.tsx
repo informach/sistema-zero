@@ -13,6 +13,7 @@ import { Pencil, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { GuideBalloon } from '@/components/kids/parent-guide'
+import { POLITICA_PRIVACIDADE_URL } from '@/lib/links'
 import {
   ADULT_COMMUNITY_INSTAGRAM,
   ADULT_COMMUNITY_INSTAGRAM_URL,
@@ -72,15 +73,31 @@ export function ProfileTile({
   )
 }
 
+/** O que o formulário do perfil devolve ao salvar. */
+export interface ProfileFormValues {
+  name: string
+  birthDate: string | null
+  publicProfileEnabled: boolean
+  /** Só vem quando a fala está disponível no servidor (`voiceAvailable`). */
+  voiceInputEnabled?: boolean
+}
+
 /**
- * Formulário de criar/editar perfil (nome + nascimento + perfil público). SEM foto
+ * Formulário de criar/editar perfil (nome + nascimento + perfil público + fala). SEM foto
  * (24/07): a cara da criança vem EXCLUSIVAMENTE do snapshot do avatar 3D — ela
  * mesma troca em /meu-avatar; os pais não editam imagem.
+ *
+ * ⭐ É o onboarding dos pais (14/10/2026, pedido dela): as duas escolhas que mudam a vida da
+ * criança na plataforma ficam aqui, lado a lado, e cada uma diz QUEM vê o quê. O perfil público
+ * só aparece dentro da plataforma (`/crianca` exige entrar); a fala vira texto que só a equipe
+ * lê, e a gravação não fica guardada. As duas nascem DESLIGADAS: a Política promete a opção mais
+ * protetiva por padrão.
  */
 export function ProfileForm({
   editing,
   busy,
   showGuideHint = false,
+  voiceAvailable = false,
   onCancel,
   onSave,
   onArchive,
@@ -89,13 +106,10 @@ export function ProfileForm({
   busy: boolean
   /** Passo `form` do tutorial guiado dos pais: dica do Zappy no topo. */
   showGuideHint?: boolean
+  /** A fala está ligada no servidor: mostra a escolha "Falar em vez de escrever". */
+  voiceAvailable?: boolean
   onCancel: () => void
-  onSave: (
-    name: string,
-    birthDate: string | null,
-    publicProfileEnabled: boolean,
-    existing?: ProfileView,
-  ) => void
+  onSave: (values: ProfileFormValues, existing?: ProfileView) => void
   onArchive: (p: ProfileView) => void
 }) {
   const isEdit = editing.mode === 'edit'
@@ -105,6 +119,7 @@ export function ProfileForm({
   const [publicProfileEnabled, setPublicProfileEnabled] = useState(
     profile?.publicProfileEnabled ?? false,
   )
+  const [voiceInputEnabled, setVoiceInputEnabled] = useState(profile?.voiceInputEnabled === true)
   // `max` do seletor = hoje (nascimento não pode ser no futuro).
   const today = saoPauloDayKey()
   // O auth exige nome com ≥3 caracteres — validar AQUI dá a mensagem amigável em
@@ -119,9 +134,21 @@ export function ProfileForm({
     <div className="mx-auto flex w-full max-w-xl flex-col gap-6">
       {showGuideHint ? (
         <GuideBalloon arrow="none">
-          Coloque o nome da criança. A data de nascimento é opcional, e é aqui que você decide se o
-          perfil aparece para outras crianças na comunidade. Depois de salvar, a página dela abre
-          para você autorizar o aparelho.
+          {voiceAvailable ? (
+            <>
+              Coloque o nome da criança. A data de nascimento é opcional. Aqui você também faz duas
+              escolhas: se o perfil aparece para as outras crianças (só dentro da plataforma) e se
+              ela pode falar em vez de escrever quando pedir ajuda. Ligar a fala facilita muito para
+              quem ainda escreve devagar. Depois de salvar, a página dela abre para você autorizar o
+              aparelho.
+            </>
+          ) : (
+            <>
+              Coloque o nome da criança. A data de nascimento é opcional, e é aqui que você decide
+              se o perfil aparece para outras crianças da plataforma. Depois de salvar, a página
+              dela abre para você autorizar o aparelho.
+            </>
+          )}
         </GuideBalloon>
       ) : null}
       {/* O formulário num cartão branco, dentro da moldura da área dos pais. */}
@@ -134,7 +161,15 @@ export function ProfileForm({
           onSubmit={(event) => {
             event.preventDefault()
             if (busy || trimmedName.length < 3 || ageRestricted) return
-            onSave(trimmedName, birthDate || null, publicProfileEnabled, profile ?? undefined)
+            onSave(
+              {
+                name: trimmedName,
+                birthDate: birthDate || null,
+                publicProfileEnabled,
+                ...(voiceAvailable ? { voiceInputEnabled } : {}),
+              },
+              profile ?? undefined,
+            )
           }}
         >
           <Field
@@ -197,11 +232,45 @@ export function ProfileForm({
             <span className="flex flex-col gap-1">
               <span className="font-semibold text-sm">Perfil público na comunidade kids</span>
               <span className="text-muted-foreground text-xs">
-                Mostra nome, avatar, conquistas e quarto para outras crianças. Nunca mostra e-mail,
-                telefone ou nascimento.
+                Mostra nome, avatar, conquistas e quarto para outras crianças da plataforma. Só
+                aparece para quem está dentro da plataforma, nunca na internet aberta. Nunca mostra
+                e-mail, telefone ou nascimento.
               </span>
             </span>
           </label>
+
+          {voiceAvailable ? (
+            <label className="flex items-start gap-3 rounded-2xl bg-background p-4">
+              <input
+                name="voiceInputEnabled"
+                type="checkbox"
+                checked={voiceInputEnabled}
+                onChange={(e) => setVoiceInputEnabled(e.target.checked)}
+                className="mt-1 size-4 accent-primary"
+              />
+              <span className="flex flex-col gap-1">
+                <span className="font-semibold text-sm">
+                  Falar em vez de escrever (recomendado)
+                </span>
+                <span className="text-muted-foreground text-xs">
+                  Para pedir ajuda, a criança pode falar em vez de digitar. Facilita muito para quem
+                  ainda escreve devagar. A fala vai a um serviço de transcrição fora do Brasil e
+                  vira texto na hora; nós não guardamos a gravação. Só a nossa equipe lê esse texto:
+                  outras crianças não veem.
+                </span>
+              </span>
+            </label>
+          ) : null}
+          {voiceAvailable ? (
+            <a
+              href={POLITICA_PRIVACIDADE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="-mt-3 inline-flex min-h-11 items-center self-start px-1 text-primary text-xs underline underline-offset-4"
+            >
+              Como tratamos a fala na Política de Privacidade
+            </a>
+          ) : null}
 
           {/* Os botões em pílula, como no resto do app (o ui desenha cantos de 8px). */}
           <div className="flex items-center justify-between gap-3 [&_button]:min-h-11 [&_button]:rounded-full [&_button]:px-5">

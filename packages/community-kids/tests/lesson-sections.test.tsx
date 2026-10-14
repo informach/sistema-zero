@@ -29,6 +29,14 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-libra
 import { useState } from 'react'
 import { KidsLessonCopy } from '../src/components/kids/kids-lesson-copy'
 
+import {
+  desinstalarMicrofone,
+  falar,
+  instalarMicrofone,
+  microfone,
+  parar,
+} from './helpers/fake-microphone'
+
 const lesson: LessonDetailView = {
   id: 'lesson',
   slug: 'aula',
@@ -1373,5 +1381,57 @@ describe('o cabeçalho aguenta o conteúdo real', () => {
     expect(rotulo.className).toContain('sr-only')
     expect(rotulo.className).toContain('sm:not-sr-only')
     expect(rotulo.closest('summary')?.getAttribute('aria-label')).toBe('Índice da aula')
+  })
+})
+
+describe('a fala da criança no pedido de ajuda (14/10/2026)', () => {
+  afterEach(desinstalarMicrofone)
+
+  test('sem a fala ligada pelos pais, o botão Falar não existe', () => {
+    instalarMicrofone()
+    render(
+      <LessonPlayerProvider value={player}>
+        <LessonSections lesson={lesson} renderBlocks={() => null} />
+      </LessonPlayerProvider>,
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Preciso de ajuda' }))
+    expect(screen.queryByRole('button', { name: 'Falar em vez de escrever' })).toBeNull()
+  })
+
+  test('falada, a dúvida chega à equipe marcada como falada; reescrita do zero, não', async () => {
+    const pedidos: Array<{ url: string; body: Record<string, unknown> }> = []
+    instalarMicrofone(async (input, init) => {
+      pedidos.push({ url: String(input), body: JSON.parse(String(init?.body)) })
+      return Response.json({ ok: true })
+    })
+    render(
+      <LessonPlayerProvider value={{ ...player, voiceInput: true }}>
+        <LessonSections lesson={lesson} renderBlocks={() => null} />
+      </LessonPlayerProvider>,
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Preciso de ajuda' }))
+    await falar(2)
+    await parar()
+    const caixa = screen.getByRole('textbox') as HTMLTextAreaElement
+    expect(caixa.value).toBe('meu personagem não pula')
+    // O contexto da transcrição é a fase e a parte em que a criança está.
+    expect(
+      decodeURIComponent(microfone.envios[0]?.headers.get('x-sz-voice-context') ?? ''),
+    ).toContain(lesson.title)
+    fireEvent.click(screen.getByRole('button', { name: 'Enviar ao professor' }))
+    await screen.findByText('Pedido enviado. A resposta aparecerá nos seus recados.')
+    const ajuda = pedidos.filter((p) => p.url.endsWith('/section-help'))
+    expect(ajuda.at(-1)?.body).toMatchObject({ body: 'meu personagem não pula', spoken: true })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Preciso de ajuda' }))
+    const nova = screen.getByRole('textbox') as HTMLTextAreaElement
+    fireEvent.change(nova, { target: { value: 'escrevi sozinha' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Enviar ao professor' }))
+    await waitFor(() =>
+      expect(pedidos.filter((p) => p.url.endsWith('/section-help'))).toHaveLength(2),
+    )
+    const escrita = pedidos.filter((p) => p.url.endsWith('/section-help')).at(-1)?.body
+    expect(escrita?.body).toBe('escrevi sozinha')
+    expect(escrita?.spoken).not.toBe(true)
   })
 })

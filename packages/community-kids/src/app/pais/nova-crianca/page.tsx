@@ -1,3 +1,4 @@
+import { isVoiceInputConfigured } from '@sistemazero/member-shell/server/openrouter-transcribe'
 import { redirect } from 'next/navigation'
 import { ProfilesNotIncluded, ProfilesUnavailable } from '@/components/kids/profiles-unavailable'
 import { canAddProfile, resolveProfileAllowance } from '@/lib/profile-allowance'
@@ -27,5 +28,11 @@ export default async function NewChildPage() {
     if (allowance.kind === 'unavailable') return <ProfilesUnavailable reason="allowance" />
     redirect('/pais')
   }
-  return <ProfileEditor parentName={session.firstName} showGuideHint={count === 0} />
+  return (
+    <ProfileEditor
+      parentName={session.firstName}
+      showGuideHint={count === 0}
+      voiceAvailable={isVoiceInputConfigured()}
+    />
+  )
 }

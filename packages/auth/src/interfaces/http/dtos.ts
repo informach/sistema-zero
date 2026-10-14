@@ -257,6 +257,9 @@ export const CreateProfileBody = t.Object({
   // A rota de criar RECUSA sessão de perfil, então o guard "só os pais" vale por
   // construção — diferente do PATCH, que precisa barrar a criança explicitamente.
   publicProfileEnabled: t.Optional(t.Boolean()),
+  // Fala da criança (voz → texto). `true` na criação pede o MESMO login recente do PATCH
+  // e é recusado à equipe de suporte; ausente/`false` = nasce desligada.
+  voiceInputEnabled: t.Optional(t.Boolean()),
 })
 
 /** Corpo de `PATCH /auth/profiles/:id` (edição parcial). */
@@ -267,6 +270,9 @@ export const UpdateProfileBody = t.Object({
   birthDate: t.Optional(PROFILE_BIRTH_DATE),
   // Perfil público entre crianças — SÓ os pais editam (a rota barra sessão de perfil).
   publicProfileEnabled: t.Optional(t.Boolean()),
+  // Fala da criança — SÓ os pais editam; LIGAR pede login recente e a equipe de suporte
+  // nunca liga. Desligar é livre (regras no `UpdateProfileDetailsService`).
+  voiceInputEnabled: t.Optional(t.Boolean()),
 })
 
 /** Prova da família atual; obrigatória no serviço somente sob impersonação. */

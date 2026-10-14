@@ -153,6 +153,8 @@ export interface ProfileWriteInput {
   birthDate?: string | null
   /** Perfil público entre crianças — o auth recusa edição em sessão de perfil. */
   publicProfileEnabled?: boolean
+  /** Falar em vez de escrever para a equipe — só os pais; ligar pede login recente no auth. */
+  voiceInputEnabled?: boolean
 }
 
 /**
@@ -274,6 +276,20 @@ export function createAuthClient(gw: GatewayModule) {
      */
     async getMyProfileReadonly(): Promise<GatewayResponse<{ profile: ProfileView | null }>> {
       const res = (await getMeReadonly()) as GatewayResponse<{ profile?: ProfileView } | null>
+      return {
+        status: res.status,
+        body: { profile: res.status === 200 ? (res.body?.profile ?? null) : null },
+      }
+    },
+
+    /**
+     * O mesmo `getMyProfileReadonly`, COM renovação do token: para Route Handlers que precisam da
+     * preferência FRESCA do perfil (a fala da criança relê a escolha dos pais a cada pedido).
+     */
+    async getMyProfile(): Promise<GatewayResponse<{ profile: ProfileView | null }>> {
+      const res = (await gw.gatewayFetch('/auth/me')) as GatewayResponse<{
+        profile?: ProfileView
+      } | null>
       return {
         status: res.status,
         body: { profile: res.status === 200 ? (res.body?.profile ?? null) : null },
@@ -1223,6 +1239,8 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
       results?: unknown,
       message?: string,
       fingerprint?: string,
+      /** O recado veio da fala transcrita (o Admin mostra o chip "falado"). */
+      messageSpoken?: boolean,
     ): Promise<GatewayResponse<StudioSubmissionResultView>> {
       return gw.gatewayFetch(
         `/members/lessons/${enc(lessonId)}/blocks/${enc(blockId)}/studio-submission`,
@@ -1232,6 +1250,7 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
             project,
             ...(results === undefined ? {} : { results }),
             ...(message ? { message } : {}),
+            ...(message && messageSpoken ? { messageSpoken: true } : {}),
             ...(fingerprint ? { fingerprint } : {}),
           },
         },
@@ -1270,6 +1289,8 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
       asset: unknown,
       message?: string,
       fingerprint?: string,
+      /** O recado veio da fala transcrita (o Admin mostra o chip "falado"). */
+      messageSpoken?: boolean,
     ): Promise<GatewayResponse<PintaSubmissionResultView>> {
       return gw.gatewayFetch(
         `/members/lessons/${enc(lessonId)}/blocks/${enc(blockId)}/pinta-submission`,
@@ -1278,6 +1299,7 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
           body: {
             asset,
             ...(message ? { message } : {}),
+            ...(message && messageSpoken ? { messageSpoken: true } : {}),
             ...(fingerprint ? { fingerprint } : {}),
           },
         },
@@ -1415,11 +1437,13 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     postTeacherMessage(
       threadId: string,
       body: string,
+      /** O texto veio da fala transcrita (o Admin mostra o chip "falado"). */
+      spoken?: boolean,
     ): Promise<GatewayResponse<TeacherThreadView>> {
       return gw.gatewayFetch(`/members/teacher-threads/${enc(threadId)}/messages`, {
         method: 'POST',
         query: { audience },
-        body: { body },
+        body: spoken ? { body, spoken: true } : { body },
       })
     },
     /** Marca a conversa como lida (zera o não-lido do aluno). */

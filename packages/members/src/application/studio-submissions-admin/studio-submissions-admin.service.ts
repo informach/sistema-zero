@@ -20,6 +20,11 @@ export interface StudioSubmissionSummaryView {
   passed: boolean
   /** Recado OPCIONAL do aluno ao professor. `null` = sem recado. */
   message: string | null
+  /**
+   * O recado foi FALADO pela criança e transcrito pelo servidor (voz para texto, 14/10/2026): o
+   * painel avisa a equipe para ler um erro de transcrição com boa vontade. `false` = digitado.
+   */
+  messageSpoken: boolean
 }
 
 /**
@@ -39,6 +44,8 @@ export interface StudioSubmissionCourseView {
   checkedAt: string | null
   passed: boolean
   message: string | null
+  /** O recado foi falado e transcrito (voz para texto). */
+  messageSpoken: boolean
 }
 
 /** Linha da fila GLOBAL de entregas (todos os cursos) — o curso resolvido + o estado. */
@@ -67,6 +74,11 @@ export interface StudioSubmissionDetailView {
   passed: boolean
   /** Recado OPCIONAL do aluno ao professor. `null` = sem recado. */
   message: string | null
+  /**
+   * O recado foi FALADO pela criança e transcrito pelo servidor (voz para texto, 14/10/2026): o
+   * painel avisa a equipe para ler um erro de transcrição com boa vontade. `false` = digitado.
+   */
+  messageSpoken: boolean
   /** ISO do carimbo "já conferi"; `null` = nunca conferida. */
   reviewedAt: string | null
   /** O carimbo vale para a entrega ATUAL (um reenvio depois dele o invalida). */
@@ -114,6 +126,7 @@ export class StudioSubmissionsAdminService {
       checkedAt: r.checkedAt?.toISOString() ?? null,
       passed: r.passed,
       message: r.message,
+      messageSpoken: r.messageSpoken,
     }))
   }
 
@@ -131,6 +144,7 @@ export class StudioSubmissionsAdminService {
       checkedAt: r.checkedAt?.toISOString() ?? null,
       passed: r.passed,
       message: r.message,
+      messageSpoken: r.messageSpoken,
     }))
   }
 
@@ -154,6 +168,7 @@ export class StudioSubmissionsAdminService {
         checkedAt: r.checkedAt?.toISOString() ?? null,
         passed: r.passed,
         message: r.message,
+        messageSpoken: r.messageSpoken,
         answered: r.answered,
         reviewed: r.reviewed,
       })),
@@ -172,6 +187,7 @@ export class StudioSubmissionsAdminService {
       checkedAt: row.checkedAt?.toISOString() ?? null,
       passed: row.passedAt != null,
       message: row.message,
+      messageSpoken: row.messageSpoken,
       reviewedAt: row.reviewedAt?.toISOString() ?? null,
       reviewed: row.reviewedAt != null && row.reviewedAt >= row.submittedAt,
       previousSubmittedAt: row.previousSubmittedAt?.toISOString() ?? null,

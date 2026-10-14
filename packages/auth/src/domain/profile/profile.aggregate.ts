@@ -1,8 +1,26 @@
 import { ValidationError } from '@sistemazero/core/errors'
 import { saoPauloDayKey } from '@sistemazero/core/time'
-import { ProfileAgeRestrictedError } from './profile.errors'
+import { ProfileAgeRestrictedError, VoiceInputSupportCannotEnableError } from './profile.errors'
 
 export type ProfileStatus = 'active' | 'archived'
+
+/**
+ * Quem mudou a fala da criança: os responsáveis (sessão da conta) ou a equipe de suporte
+ * "entrando como" eles (`impersonatorId` = o ator REAL, claim `act.sub`).
+ */
+export type VoiceInputActor = { kind: 'parent' } | { kind: 'support'; impersonatorId: string }
+
+/**
+ * Uma MUDANÇA efetiva da fala (desligada→ligada ou ligada→desligada) ainda não gravada: vira
+ * uma linha da trilha append-only do consentimento, na mesma transação que salva o perfil.
+ */
+export interface VoiceInputConsentChange {
+  enabled: boolean
+  actor: VoiceInputActor['kind']
+  /** O ator real numa sessão de suporte; `null` quando foram os responsáveis. */
+  impersonatorId: string | null
+  at: Date
+}
 
 /** Estado serializável do perfil (ida/volta ao banco). */
 export interface ProfileSnapshot {
@@ -15,6 +33,16 @@ export interface ProfileSnapshot {
   birthDate: string | null
   /** Perfil público entre crianças da comunidade (opt-in dos pais; default false). */
   publicProfileEnabled: boolean
+  /**
+   * Fala da criança (voz → texto nas mensagens para a equipe). Consentimento dos pais POR
+   * CRIANÇA; nasce DESLIGADA (default false). Só os pais ligam (regras na rota/serviço).
+   */
+  voiceInputEnabled: boolean
+  /**
+   * Quando foi dado o consentimento EM VIGOR (a última vez que os pais ligaram); `null`
+   * enquanto desligada. O histórico completo (a prova) é a trilha de mudanças, não esta data.
+   */
+  voiceInputEnabledAt: Date | null
   status: ProfileStatus
   sortOrder: number
   createdAt: Date
@@ -37,6 +65,12 @@ export interface CreateProfileInput {
  * atribuído pelo repositório (max+1 sob lock); o agregado nasce com 0.
  */
 export class ProfileAggregate {
+  /**
+   * Mudança da fala ainda não gravada. Fica FORA do snapshot (não é coluna do perfil): o
+   * repositório a grava na trilha junto com o perfil e então a dá por salva.
+   */
+  private pendingVoiceInputChange: VoiceInputConsentChange | null = null
+
   private constructor(private readonly props: ProfileSnapshot) {}
 
   static create(input: CreateProfileInput): ProfileAggregate {
@@ -55,6 +89,9 @@ export class ProfileAggregate {
       birthDate,
       // Novo perfil nasce PRIVADO (opt-in dos pais).
       publicProfileEnabled: false,
+      // Fala nasce DESLIGADA: a opção mais protetiva por padrão (a Política promete isso).
+      voiceInputEnabled: false,
+      voiceInputEnabledAt: null,
       status: 'active',
       sortOrder: 0,
       createdAt: now,
@@ -90,6 +127,9 @@ export class ProfileAggregate {
   }
   get publicProfileEnabled(): boolean {
     return this.props.publicProfileEnabled
+  }
+  get voiceInputEnabled(): boolean {
+    return this.props.voiceInputEnabled
   }
   get status(): ProfileStatus {
     return this.props.status
@@ -152,6 +192,45 @@ export class ProfileAggregate {
   setPublicProfileEnabled(value: boolean, now: Date = new Date()): void {
     this.props.publicProfileEnabled = value
     this.props.updatedAt = now
+  }
+
+  /**
+   * Liga/desliga a FALA da criança (voz → texto). Separado de `updateDetails` DE PROPÓSITO,
+   * como o perfil público: a autorização é da rota/serviço (só os pais; ligar pede login
+   * recente e a equipe de suporte nunca liga). Ligar carimba `voiceInputEnabledAt` (o
+   * momento do consentimento em vigor); desligar zera para `null`. Cada mudança efetiva
+   * deixa uma `VoiceInputConsentChange` pendente para a trilha (quem, quando, para qual
+   * valor), que é a prova histórica do consentimento. Mesmo valor = no-op, sem trilha: o
+   * formulário dos pais reenvia o campo ao trocar só o nome, e isso não pode reescrever a
+   * data do consentimento nem registrar uma mudança que não houve.
+   */
+  setVoiceInputEnabled(value: boolean, by: VoiceInputActor, now: Date = new Date()): void {
+    if (value === this.props.voiceInputEnabled) return
+    // Defesa em profundidade da régua da aplicação (`assertMayEnableVoiceInput`): a trilha
+    // nunca registra a equipe de suporte LIGANDO a fala (o banco também recusa, por CHECK).
+    if (value && by.kind === 'support') throw new VoiceInputSupportCannotEnableError()
+    this.props.voiceInputEnabled = value
+    this.props.voiceInputEnabledAt = value ? now : null
+    this.props.updatedAt = now
+    // Ida e volta antes de salvar deixa o valor como estava no banco: nada a registrar.
+    this.pendingVoiceInputChange = this.pendingVoiceInputChange
+      ? null
+      : {
+          enabled: value,
+          actor: by.kind,
+          impersonatorId: by.kind === 'support' ? by.impersonatorId : null,
+          at: now,
+        }
+  }
+
+  /** A mudança da fala que o repositório deve gravar na trilha junto com o perfil (ou `null`). */
+  get voiceInputChange(): VoiceInputConsentChange | null {
+    return this.pendingVoiceInputChange ? { ...this.pendingVoiceInputChange } : null
+  }
+
+  /** O repositório chama depois do commit: a mudança já está na trilha. */
+  markVoiceInputChangeSaved(): void {
+    this.pendingVoiceInputChange = null
   }
 
   /** Arquiva (some da grade; o histórico keyado no id sobrevive). Idempotente. */

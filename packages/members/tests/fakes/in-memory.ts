@@ -1648,6 +1648,7 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
           ? existing.passedAt
           : (submission.passedAt ?? null)
       existing.message = submission.message ?? null
+      existing.messageSpoken = submission.messageSpoken ?? false
       existing.contentFingerprint = submission.contentFingerprint ?? null
     } else {
       this.submissions.push({
@@ -1657,6 +1658,7 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
         checkedAt: submission.checkedAt ?? null,
         passedAt: submission.passedAt ?? null,
         message: submission.message ?? null,
+        messageSpoken: submission.messageSpoken ?? false,
         contentFingerprint: submission.contentFingerprint ?? null,
         previousProject: null,
         previousSubmittedAt: null,
@@ -1735,6 +1737,7 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
         checkedAt: s.checkedAt ?? null,
         passed: s.passedAt != null,
         message: s.message ?? null,
+        messageSpoken: s.messageSpoken ?? false,
       }))
   }
 
@@ -1759,6 +1762,7 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
             checkedAt: s.checkedAt ?? null,
             passed: s.passedAt != null,
             message: s.message ?? null,
+            messageSpoken: s.messageSpoken ?? false,
           } satisfies StudioSubmissionCourseRow,
         }
       })
@@ -1820,6 +1824,7 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
           checkedAt: s.checkedAt ?? null,
           passed: s.passedAt != null,
           message: s.message ?? null,
+          messageSpoken: s.messageSpoken ?? false,
           answered: this.answeredKeys.has(`${s.userId}:${s.blockId}`),
           // Espelha a régua do SQL: o carimbo só vale para a entrega ATUAL.
           reviewed: s.reviewedAt != null && s.reviewedAt >= s.submittedAt,
@@ -1864,6 +1869,7 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
           checkedAt: s.checkedAt ?? null,
           passedAt: s.passedAt ?? null,
           message: s.message ?? null,
+          messageSpoken: s.messageSpoken ?? false,
           reviewedAt: s.reviewedAt ?? null,
           previousSubmittedAt: s.previousSubmittedAt ?? null,
         }
@@ -1939,6 +1945,7 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
         passed: s.checkedAt == null ? null : s.passedAt != null,
         submittedAt: s.submittedAt,
         message: s.message ?? null,
+        messageSpoken: s.messageSpoken ?? false,
       }))
   }
 }
@@ -2021,6 +2028,7 @@ export class InMemoryTeacherThreadRepository implements TeacherThreadRepository 
       authorId: input.authorId ?? null,
       authorName: input.authorName ?? null,
       body: input.body,
+      spoken: input.spoken ?? false,
       createdAt: input.now,
     }
     this.messages.push(record)

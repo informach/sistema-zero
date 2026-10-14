@@ -33,6 +33,8 @@ const DOMAIN_STATUS: Record<string, number> = {
   PROFILE_NOT_FOUND: 404,
   PROFILE_LIMIT_REACHED: 409,
   PROFILE_AGE_RESTRICTED: 400,
+  // Guarda do agregado (a régua da aplicação já responde FORBIDDEN antes).
+  VOICE_INPUT_SUPPORT_CANNOT_ENABLE: 403,
   STUDY_ACCESS_REQUIRED: 403,
   PARENT_REAUTH_REQUIRED: 403,
   // Navegador preso a OUTRA família com acesso vivo (a interface explica "use outro navegador").

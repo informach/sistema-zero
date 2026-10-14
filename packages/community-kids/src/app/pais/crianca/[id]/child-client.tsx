@@ -5,7 +5,8 @@ import type { StudyGrantView } from '@sistemazero/member-shell/lib/study-access'
 import { computeAgeFromBirthDate } from '@sistemazero/member-shell/lib/user-display'
 import { ArrowLeft, Monitor, Pencil, Sparkles } from 'lucide-react'
 import Link from 'next/link'
-import { type KeyboardEvent, useCallback, useRef, useState } from 'react'
+import { type KeyboardEvent, useCallback, useEffect, useRef, useState } from 'react'
+import { toast } from 'sonner'
 import { StudyDeviceManager } from '@/components/kids/study-device-manager'
 import { cn } from '@/lib/cn'
 import { levelInfo } from '@/lib/level-info'
@@ -65,6 +66,31 @@ export function ChildClient({
     reported.current = true
     trackOnboardingEvent({ audience: 'parent', action: 'access_prepared', step: 'access' })
   }, [])
+  // O recado que o editor do perfil deixou no endereço (`?aviso=`): lido uma vez e apagado.
+  useEffect(() => {
+    const url = new URL(window.location.href)
+    const aviso = url.searchParams.get('aviso')
+    if (!aviso) return
+    url.searchParams.delete('aviso')
+    window.history.replaceState(window.history.state, '', url)
+    if (aviso === 'fala-entrar') {
+      const next = encodeURIComponent(childEditHref(profile.id))
+      toast.info(
+        `O perfil de ${profile.name} foi criado, ainda sem a fala. Ligar a fala pede um login recente: entre de novo e ligue em Editar perfil.`,
+        {
+          duration: 20_000,
+          action: {
+            label: 'Entrar de novo',
+            onClick: () => window.location.assign(`/login/responsavel?next=${next}`),
+          },
+        },
+      )
+    } else if (aviso === 'fala-nao-gravou')
+      toast.error(
+        'Não consegui guardar a escolha da fala agora. Confira em Editar perfil daqui a pouco.',
+        { duration: 20_000 },
+      )
+  }, [profile.id, profile.name])
   function choose(next: ChildTab) {
     setTab(next)
     // O endereço acompanha a aba (voltar e recarregar abrem a mesma), sem nova navegação.
@@ -99,6 +125,8 @@ export function ChildClient({
   const details = [
     age !== null ? (age === 1 ? '1 ano' : `${age} anos`) : null,
     profile.publicProfileEnabled ? 'perfil público' : 'perfil privado',
+    // Falar em vez de escrever para a equipe (14/10/2026): só aparece quando os pais ligaram.
+    profile.voiceInputEnabled === true ? 'fala liberada' : null,
   ].filter(Boolean)
   return (
     <ParentShell active="familia" parentName={parentName} studentDestination={studentEntry}>

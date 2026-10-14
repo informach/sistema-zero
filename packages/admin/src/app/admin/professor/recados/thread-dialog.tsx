@@ -9,6 +9,7 @@ import dynamic from 'next/dynamic'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { refreshProfessorCounts } from '@/components/admin/professor-counts-store'
+import { SpokenChip } from '@/components/admin/spoken-chip'
 import { RichTextEditor } from '@/components/editor/rich-text-editor'
 import { LessonLearningPanel } from '@/components/professor/lesson-learning-panel'
 import { ReplyTemplatesMenu } from '@/components/professor/reply-templates'
@@ -239,6 +240,7 @@ export function ThreadDialog({ threadId, studentName, onClose }: Props) {
                         <span className="ml-2 font-normal">
                           {new Date(m.createdAt).toLocaleString('pt-BR')}
                         </span>
+                        {!teacher && m.spoken ? <SpokenChip /> : null}
                       </p>
                       {teacher ? (
                         // Recado do PROFESSOR = markdown rico (autor confiável).

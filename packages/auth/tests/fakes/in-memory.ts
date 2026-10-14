@@ -37,7 +37,11 @@ import type {
   RefreshTokenRepository,
 } from '../../src/domain/ports/refresh-token-repository.port'
 import type { ListUsersFilter, UserRepository } from '../../src/domain/ports/user-repository.port'
-import { ProfileAggregate, type ProfileSnapshot } from '../../src/domain/profile/profile.aggregate'
+import {
+  ProfileAggregate,
+  type ProfileSnapshot,
+  type VoiceInputConsentChange,
+} from '../../src/domain/profile/profile.aggregate'
 import { UserAggregate } from '../../src/domain/user/user.aggregate'
 import { EmailAlreadyInUseError } from '../../src/domain/user/user.errors'
 
@@ -544,9 +548,17 @@ export class InMemoryOtpCodeRepository implements OtpCodeRepository {
   }
 }
 
+/** Linha da trilha do consentimento da fala, como `auth.profile_voice_input_events`. */
+export interface StoredVoiceInputEvent extends VoiceInputConsentChange {
+  profileId: string
+  accountUserId: string
+}
+
 /** Repositório de perfis em memória (espelha o create atômico sob teto). */
 export class InMemoryProfileRepository implements ProfileRepository {
   readonly byId = new Map<string, ProfileSnapshot>()
+  /** Trilha append-only do consentimento da fala (espelha a gravação junto com o perfil). */
+  readonly voiceInputEvents: StoredVoiceInputEvent[] = []
 
   /** `accounts` alimenta o LEFT JOIN do `searchWithAccount` (ausente → `account: null`). */
   constructor(private readonly accounts?: InMemoryUserRepository) {}
@@ -633,13 +645,35 @@ export class InMemoryProfileRepository implements ProfileRepository {
     const maxOrder = active.reduce((mx, p) => Math.max(mx, p.sortOrder), -1)
     const stored: ProfileSnapshot = { ...s, sortOrder: maxOrder + 1 }
     this.byId.set(stored.id, stored)
+    const change = profile.voiceInputChange
+    if (change)
+      this.voiceInputEvents.push({ ...change, profileId: s.id, accountUserId: s.accountUserId })
+    profile.markVoiceInputChangeSaved()
     return { outcome: 'created', profile: ProfileAggregate.restore({ ...stored }) }
   }
 
   async update(profile: ProfileAggregate): Promise<boolean> {
     const s = profile.toSnapshot()
-    if (!this.byId.has(s.id)) return false
-    this.byId.set(s.id, { ...s })
+    const current = this.byId.get(s.id)
+    if (!current) return false
+    // Espelha o adapter: as colunas da fala só mudam junto com a linha da trilha, e só se o
+    // valor guardado ainda é o outro (duplo clique não grava duas vezes).
+    const change = profile.voiceInputChange
+    const flips = change !== null && current.voiceInputEnabled !== change.enabled
+    this.byId.set(
+      s.id,
+      flips
+        ? { ...s }
+        : {
+            ...s,
+            voiceInputEnabled: current.voiceInputEnabled,
+            voiceInputEnabledAt: current.voiceInputEnabledAt,
+          },
+    )
+    if (flips && change) {
+      this.voiceInputEvents.push({ ...change, profileId: s.id, accountUserId: s.accountUserId })
+    }
+    profile.markVoiceInputChangeSaved()
     return true
   }
 

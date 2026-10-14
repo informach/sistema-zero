@@ -7,6 +7,7 @@ import {
   HELP_VIDEO_PROVIDERS,
 } from '@sistemazero/core/help'
 import { t } from 'elysia'
+import { MAX_SUBMISSION_MESSAGE_CHARS } from '../../domain/course/lesson-block'
 import { InteractiveBlockSchema } from './learning.dtos'
 import { fieldOptionsSchema, ProjectBlockRelationshipsSchema } from './project-pattern.schema'
 
@@ -1554,7 +1555,12 @@ export const StudioSubmissionBody = t.Object({
   /** Resultados das checagens rodadas no cliente (behavior/testcase/code). */
   results: t.Optional(t.Array(ClientCheckResultSchema, { maxItems: 50 })),
   /** Recado OPCIONAL do aluno ao professor (modal de envio). Vazio → sem recado. */
-  message: t.Optional(t.String({ maxLength: 1000 })),
+  message: t.Optional(t.String({ maxLength: MAX_SUBMISSION_MESSAGE_CHARS })),
+  /**
+   * O recado foi FALADO e transcrito pelo servidor (voz para texto, 14/10/2026). Opcional: app
+   * antigo não manda e vale `false`. Sem recado, é ignorado.
+   */
+  messageSpoken: t.Optional(t.Boolean()),
   /**
    * Impressão digital do conteúdo enviado (`v1:<sha256>`, do navegador): é o que o "envio em
    * dia" compara com o rascunho guardado na conta. Opcional (cliente antigo = sem conferência).
@@ -1569,7 +1575,9 @@ export const StudioSubmissionBody = t.Object({
 export const PintaSubmissionBody = t.Object({
   asset: PintaAssetSchema,
   /** Recado OPCIONAL da criança ao professor. Vazio → sem recado. */
-  message: t.Optional(t.String({ maxLength: 1000 })),
+  message: t.Optional(t.String({ maxLength: MAX_SUBMISSION_MESSAGE_CHARS })),
+  /** O recado foi falado e transcrito (voz para texto). Ausente = digitado. */
+  messageSpoken: t.Optional(t.Boolean()),
   /**
    * Impressão digital do conteúdo enviado (`v1:<sha256>`, do navegador): é o que o "envio em
    * dia" compara com o rascunho guardado na conta. Opcional (cliente antigo = sem conferência).
@@ -1591,6 +1599,11 @@ const TEACHER_CONTEXT = t.Union([
  */
 export const TeacherThreadReplyBody = t.Object({
   body: t.String({ minLength: 1, maxLength: 8000 }),
+  /**
+   * Resposta FALADA pela criança e transcrita pelo servidor (voz para texto, 14/10/2026).
+   * Opcional (app antigo = digitado). Só a rota do ALUNO a usa; a do professor a ignora.
+   */
+  spoken: t.Optional(t.Boolean()),
 })
 /** Query da caixa de entrada do ALUNO (`GET /members/teacher-threads`). */
 export const TeacherThreadsQuery = t.Object({

@@ -1,7 +1,9 @@
 'use client'
 import { TeacherLessonLink } from '@sistemazero/member-shell/components/teacher-lesson-link'
+import { VoiceInputButton } from '@sistemazero/member-shell/components/voice-input/voice-input-button'
 import { renderMarkdown } from '@sistemazero/member-shell/lib/markdown'
 import { refreshTeacherUnread } from '@sistemazero/member-shell/lib/teacher-unread'
+import { voiceRecordingSupported } from '@sistemazero/member-shell/lib/voice/use-voice-recorder'
 import { Mail, Send } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
@@ -24,10 +26,26 @@ const CONTEXT_LABEL: Record<TeacherThreadContext, string> = {
  * markdown rico (negrito/listas/print/código — autor confiável, `renderMarkdown`); a
  * resposta do ALUNO é PLAIN (React escapa — sem markdown/HTML de UGC infantil).
  */
-export function RecadoThreadClient({ threadId }: { threadId: string }) {
+export function RecadoThreadClient({
+  threadId,
+  viewerId = null,
+  voiceEnabled = false,
+}: {
+  threadId: string
+  viewerId?: string | null
+  /** A criança pode falar em vez de escrever (ligado pelos pais, 14/10/2026). */
+  voiceEnabled?: boolean
+}) {
   const [thread, setThread] = useState<TeacherThreadView | null>(null)
   const [state, setState] = useState<'loading' | 'ready' | 'notfound'>('loading')
   const [reply, setReply] = useState('')
+  // A resposta tem texto que veio da fala: a equipe vê o chip "falado".
+  const [replySpoken, setReplySpoken] = useState(false)
+  // A fala ainda vira texto: o "Enviar" espera (senão a limpeza do envio apagava o que chegasse).
+  const [voiceBusy, setVoiceBusy] = useState(false)
+  // "fale" no convite só quando este navegador grava (o botão some sem gravador).
+  const [podeGravar, setPodeGravar] = useState(false)
+  useEffect(() => setPodeGravar(voiceEnabled && voiceRecordingSupported()), [voiceEnabled])
   const [sending, setSending] = useState(false)
   const [loadingOlder, setLoadingOlder] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -67,18 +85,19 @@ export function RecadoThreadClient({ threadId }: { threadId: string }) {
 
   const send = async () => {
     const body = reply.trim()
-    if (!body || sending) return
+    if (!body || sending || voiceBusy) return
     setSending(true)
     scrollOnNextMessages.current = true
     try {
       const updated = await apiSend<TeacherThreadView>(
         `/api/members/teacher-threads/${threadId}/messages`,
         'POST',
-        { body },
+        replySpoken ? { body, spoken: true } : { body },
       )
       setThread(updated)
       refreshTeacherUnread()
       setReply('')
+      setReplySpoken(false)
     } catch {
       setError('Não consegui enviar agora. Seu texto ficou aqui para você tentar de novo.')
     } finally {
@@ -212,8 +231,11 @@ export function RecadoThreadClient({ threadId }: { threadId: string }) {
               id="teacher-reply"
               name="reply"
               value={reply}
-              onChange={(e) => setReply(e.target.value)}
-              placeholder="Escreva uma resposta…"
+              onChange={(e) => {
+                setReply(e.target.value)
+                if (!e.target.value.trim()) setReplySpoken(false)
+              }}
+              placeholder={podeGravar ? 'Escreva ou fale uma resposta…' : 'Escreva uma resposta…'}
               maxLength={1000}
               rows={2}
               className="flex-1 resize-none bg-transparent py-2 text-[0.9375rem] outline-none placeholder:text-muted-foreground"
@@ -221,13 +243,26 @@ export function RecadoThreadClient({ threadId }: { threadId: string }) {
             <button
               type="button"
               onClick={send}
-              disabled={!reply.trim() || sending}
+              disabled={!reply.trim() || sending || voiceBusy}
               aria-label="Enviar resposta"
               className="kids-marca inline-flex size-11 shrink-0 items-center justify-center rounded-full transition-transform hover:scale-105 disabled:opacity-40"
             >
               <Send className="size-5" />
             </button>
           </div>
+          {voiceEnabled ? (
+            <VoiceInputButton
+              className="mt-2"
+              viewerId={viewerId}
+              value={reply}
+              maxLength={1000}
+              onChange={setReply}
+              onSpoken={() => setReplySpoken(true)}
+              onBusyChange={setVoiceBusy}
+              textareaId="teacher-reply"
+              disabled={sending}
+            />
+          ) : null}
         </div>
       </KidsBand>
     </>

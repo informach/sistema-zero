@@ -22,6 +22,12 @@ import type { SubmitStudioProjectService } from '../submit-studio-project/submit
 import type { LearningActor } from './learning.service'
 import type { SectionProgressionService } from './section-progression.service'
 
+/**
+ * O pedido da galeria como a borda o recebe: o contrato do core + a marca da voz para texto
+ * (14/10/2026). `messageSpoken` acompanha o recado até a entrega; ausente = digitado.
+ */
+export type GalleryDeliveryRequest = GalleryDeliveryInput & { messageSpoken?: boolean }
+
 export class GalleryDeliveryService {
   constructor(
     private readonly courses: CourseRepository,
@@ -37,7 +43,7 @@ export class GalleryDeliveryService {
     actor: LearningActor,
     lessonId: string,
     blockId: string,
-    input: GalleryDeliveryInput,
+    input: GalleryDeliveryRequest,
   ): Promise<GalleryDeliveryPlan> {
     const lesson = await this.courses.findLessonWithContent(lessonId)
     if (!lesson?.isPublished || hasComingSoonBlock(lesson.blocks)) throw new LessonNotFoundError()
@@ -144,23 +150,18 @@ export class GalleryDeliveryService {
     actor: LearningActor,
     lessonId: string,
     blockId: string,
-    input: GalleryDeliveryInput,
+    input: GalleryDeliveryRequest,
     projectForChecks: unknown,
   ) {
     const plan = await this.prepare(actor, lessonId, blockId, input)
     if (plan.completed) return plan.result
-    return this.submit.execute(
-      actor.userId,
-      lessonId,
-      blockId,
-      plan.snapshot,
-      [],
-      input.message ?? null,
-      actor.privileged,
-      actor.accountId,
-      null,
-      plan.snapshot.tool,
-      { snapshot: plan.snapshot, projectForChecks, revision: input.revision },
-    )
+    return this.submit.execute(actor.userId, lessonId, blockId, plan.snapshot, {
+      message: input.message ?? null,
+      messageSpoken: input.messageSpoken,
+      privileged: actor.privileged,
+      accountId: actor.accountId,
+      kind: plan.snapshot.tool,
+      gallery: { snapshot: plan.snapshot, projectForChecks, revision: input.revision },
+    })
   }
 }

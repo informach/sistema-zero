@@ -106,7 +106,10 @@ describe('formulário do primeiro perfil', () => {
     if (!form) throw new Error('form semântico não renderizado')
     fireEvent.submit(form)
 
-    expect(onSave).toHaveBeenCalledWith('Sofia', '2008-08-16', false, undefined)
+    expect(onSave).toHaveBeenCalledWith(
+      { name: 'Sofia', birthDate: '2008-08-16', publicProfileEnabled: false },
+      undefined,
+    )
   })
 
   it('é um form semântico e salva pelo submit do teclado', () => {
@@ -126,7 +129,10 @@ describe('formulário do primeiro perfil', () => {
     expect(form).not.toBeNull()
     if (!form) throw new Error('form semântico não renderizado')
     fireEvent.submit(form)
-    expect(onSave).toHaveBeenCalledWith('Sofia', null, false, undefined)
+    expect(onSave).toHaveBeenCalledWith(
+      { name: 'Sofia', birthDate: null, publicProfileEnabled: false },
+      undefined,
+    )
   })
 
   it('explica a faixa etária e não envia um novo perfil adulto', () => {
@@ -192,9 +198,7 @@ describe('formulário do primeiro perfil', () => {
     fireEvent.submit(form)
 
     expect(onSave).toHaveBeenCalledWith(
-      'Sofia Silva',
-      '2000-01-01',
-      false,
+      { name: 'Sofia Silva', birthDate: '2000-01-01', publicProfileEnabled: false },
       expect.objectContaining({ id: '11111111-1111-4111-8111-111111111111' }),
     )
   })

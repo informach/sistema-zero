@@ -32,7 +32,7 @@ export const PRIVACIDADE_KIDS: LegalDoc = {
   titulo: 'Política de Privacidade',
   descricao:
     'Como a Informach — Núcleo de Aprendizagem Ltda. trata os dados pessoais no Desafio do Primeiro Jogo e na Comunidade dos Criadores, com proteção reforçada para crianças e adolescentes, em conformidade com a LGPD, o ECA e o ECA Digital.',
-  atualizadoEm: '3 de outubro de 2026',
+  atualizadoEm: '14 de outubro de 2026',
   secoes: [
     {
       titulo: '1. Do objeto e do público',
@@ -62,6 +62,7 @@ export const PRIVACIDADE_KIDS: LegalDoc = {
       bullets: [
         'Do responsável: nome, e-mail e telefone (informados no pré-checkout); CPF e dados de pagamento necessários para processar a compra; e as respostas do diagnóstico, que são respondidas pelo adulto sobre o perfil de interesse da criança.',
         'Da criança/aluno: nome ou apelido de exibição, progresso nos cursos e na Jornada do Criador, as criações feitas por ela na plataforma (por exemplo, o jogo montado no Estúdio) e, na Comunidade dos Criadores, as mensagens publicadas no Clube dos Criadores e as atividades enviadas ao professor. Pedimos que o responsável evite inserir dados desnecessários da criança (como documentos ou endereço) nos campos livres.',
+        'Fala da criança, somente quando o responsável liga a opção "Falar em vez de escrever" no perfil dela (a opção vem desligada): a criança pode falar, em vez de digitar, a mensagem que envia à nossa equipe, como um pedido de ajuda, uma resposta nos Recados ou o recado que acompanha um projeto enviado. A gravação vai a um provedor de transcrição, fora do Brasil, só para virar texto, e não é guardada pela Empresa: não a gravamos em nossos sistemas e não a usamos para reconhecer ou identificar a criança, de modo que a voz não é tratada como dado biométrico. O provedor pode manter o pedido por um prazo curto, para segurança e prevenção de abuso, conforme as regras dele, e o pedido é feito com a configuração que proíbe o uso dos dados para treinar modelos. A criança confere o texto antes de enviar, e esse texto é guardado como qualquer mensagem escrita para a nossa equipe: outras crianças nunca o veem.',
         'Coletados automaticamente: endereço IP, características do dispositivo e do navegador e dados de navegação, por meio de cookies e tecnologias semelhantes, para manter a sessão e a segurança. As métricas próprias registram também origem, páginas, cliques e etapas, conforme a seção Cookies.',
       ],
       posBullets: [
@@ -75,6 +76,7 @@ export const PRIVACIDADE_KIDS: LegalDoc = {
         'Liberar e entregar o acesso ao produto e às criações da criança (criação da conta na área de membros e instruções de primeiro acesso enviadas ao responsável);',
         'Enviar comunicações transacionais ao responsável por e-mail e/ou WhatsApp (confirmação de pagamento, instruções de acesso e avisos sobre o produto);',
         'Personalizar o resultado do diagnóstico e adequar a experiência educacional;',
+        'Transformar em texto a fala da criança, quando o responsável liga essa opção, para que a mensagem dela chegue à nossa equipe;',
         'Prestar suporte, cumprir obrigações legais, regulatórias e fiscais e prevenir fraudes.',
       ],
       posBullets: [
@@ -97,16 +99,18 @@ export const PRIVACIDADE_KIDS: LegalDoc = {
         'Processador de pagamentos (Efí — Efí S.A. Instituição de Pagamento), para processar cobranças via Pix e cartão de crédito;',
         'Provedores de envio de e-mail e mensagens, para as comunicações transacionais dirigidas ao responsável;',
         'Provedores de infraestrutura e hospedagem que armazenam os nossos sistemas;',
+        'Provedores de inteligência artificial: o OpenRouter (OpenRouter, Inc.), que encaminha cada pedido ao modelo usado, e, por meio dele, os responsáveis por esses modelos, como a OpenAI. Eles atendem o assistente Zappy, o planejador Pensa, a sugestão de descrição ao compartilhar um jogo, a transformação da fala da criança em texto e o nosso atendimento, em que a IA ajuda a equipe a resumir e rascunhar respostas que uma pessoa sempre revisa antes de enviar. Recebem somente o conteúdo de cada pedido (por exemplo, a pergunta escrita, o áudio da fala ou a mensagem enviada ao atendimento). Não acrescentamos o e-mail, o telefone ou os documentos do responsável; se o responsável escrever esses dados numa mensagem ao atendimento, eles seguem junto com o texto. No caso da fala, o pedido é feito com a configuração que proíbe o uso dos dados para treinar modelos;',
         'Autoridades públicas, mediante obrigação legal, ordem judicial ou requisição de autoridade competente.',
       ],
       posBullets: [
-        'Todos os operadores atuam sob contrato e em conformidade com a LGPD, tratando os dados apenas para as finalidades desta Política.',
+        'Os operadores tratam os dados apenas para as finalidades desta Política, em conformidade com a LGPD, sob contrato ou sob os termos de uso do serviço contratado.',
+        'Alguns operadores, como os de inteligência artificial, de hospedagem e de envio de mensagens, ficam fora do Brasil. Nesses casos, a transferência internacional dos dados ocorre nas hipóteses do art. 33 da LGPD. A fala da criança só vai ao exterior com o consentimento específico do responsável, dado ao ligar a opção "Falar em vez de escrever" no perfil, em que essa transferência é informada.',
       ],
     },
     {
       titulo: '8. Privacidade desde a concepção e segurança',
       paragrafos: [
-        'Seguimos o princípio da privacidade desde a concepção e por padrão (privacy by design e by default): a plataforma é configurada, por padrão, na opção mais protetiva à privacidade da criança, sem depender de ajuste manual pelo responsável.',
+        'Seguimos o princípio da privacidade desde a concepção e por padrão (privacy by design e by default): a plataforma é configurada, por padrão, na opção mais protetiva à privacidade da criança, sem depender de ajuste manual pelo responsável. A fala da criança, por exemplo, vem desligada e só passa a funcionar quando o responsável a liga no perfil dela, podendo desligá-la a qualquer momento.',
         'Adotamos medidas técnicas e organizacionais alinhadas às boas práticas: criptografia em trânsito (HTTPS), senhas armazenadas com algoritmos de hash modernos, controle de acesso restrito aos dados e registro de operações. Caso ocorra um incidente de segurança com risco ou dano relevante, comunicaremos a ANPD e os titulares afetados, conforme a LGPD.',
       ],
     },

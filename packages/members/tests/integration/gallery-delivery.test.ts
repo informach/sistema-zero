@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
+import { ValidationError } from '@sistemazero/core/errors'
 import {
   defaultLessonSection,
   type GalleryDeliveryPlan,
@@ -176,6 +177,95 @@ describe('gallery submission as a section criterion', () => {
     expect(retry.completed).toBe(true)
     const saved = await ctx.studioSubmissions.getOne(ctx.owner.userId, ctx.blockId)
     expect(saved?.previousSubmittedAt).toBeNull()
+  })
+  test('voz para texto: o recado FALADO atravessa preparo e confirmação assinada; sem o campo, digitado', async () => {
+    const ctx = setup(),
+      items = [await ctx.seed('dino'), await ctx.seed('cacto')]
+    const deliver = async (input: Record<string, unknown>) => {
+      const prepared = await ctx.request(`${ctx.path}/gallery-prepare`, input)
+      expect(prepared.status).toBe(200)
+      const committed = await ctx.request(
+        `/internal${ctx.path}/gallery-commit`,
+        { actor: ctx.owner, input, projectForChecks: null },
+        { 'x-consumer-id': 'member-shell' },
+      )
+      expect(committed.status).toBe(200)
+    }
+    const base = { revision: ctx.revision, items }
+
+    await deliver({
+      ...base,
+      requestId: randomUUID(),
+      message: 'Escolhi os mais coloridos',
+      messageSpoken: true,
+    })
+    expect(await ctx.studioSubmissions.getOne(ctx.owner.userId, ctx.blockId)).toMatchObject({
+      message: 'Escolhi os mais coloridos',
+      messageSpoken: true,
+    })
+
+    await deliver({ ...base, requestId: randomUUID(), message: 'Troquei a ordem' })
+    expect(await ctx.studioSubmissions.getOne(ctx.owner.userId, ctx.blockId)).toMatchObject({
+      message: 'Troquei a ordem',
+      messageSpoken: false,
+    })
+    expect(ctx.teacherThreadsRepo.messages.map((m) => [m.body, m.spoken])).toEqual([
+      ['Escolhi os mais coloridos', true],
+      ['Troquei a ordem', false],
+    ])
+  })
+  test('recado acima de 1000 caracteres: 400 no preparo e no commit, sem entrega e sem turno espelhado', async () => {
+    const ctx = setup(),
+      items = [await ctx.seed('dino'), await ctx.seed('cacto')]
+    const commit = (input: Record<string, unknown>) =>
+      ctx.request(
+        `/internal${ctx.path}/gallery-commit`,
+        { actor: ctx.owner, input, projectForChecks: null },
+        { 'x-consumer-id': 'member-shell' },
+      )
+    // A coluna é varchar(1000): antes a galeria aceitava 2000 e o upsert estourava 500 DEPOIS
+    // de o recado já ter virado turno na conversa com o professor.
+    const tooLong = {
+      requestId: randomUUID(),
+      revision: ctx.revision,
+      items,
+      message: 'a'.repeat(1001),
+      messageSpoken: true,
+    }
+    const prepared = await ctx.request(`${ctx.path}/gallery-prepare`, tooLong)
+    expect(prepared.status).toBe(400)
+    const committed = await commit(tooLong)
+    expect(committed.status).toBe(400)
+    expect(await ctx.studioSubmissions.getOne(ctx.owner.userId, ctx.blockId)).toBeNull()
+    expect(ctx.teacherThreadsRepo.messages).toEqual([])
+
+    // No limite exato a entrega passa e o recado chega inteiro.
+    const atLimit = { ...tooLong, requestId: randomUUID(), message: 'b'.repeat(1000) }
+    expect((await ctx.request(`${ctx.path}/gallery-prepare`, atLimit)).status).toBe(200)
+    expect((await commit(atLimit)).status).toBe(200)
+    expect(
+      (await ctx.studioSubmissions.getOne(ctx.owner.userId, ctx.blockId))?.message,
+    ).toHaveLength(1000)
+    expect(ctx.teacherThreadsRepo.messages.map((m) => m.body.length)).toEqual([1000])
+  })
+  test('o serviço de entrega recusa recado acima do teto antes de espelhar o turno', async () => {
+    const ctx = setup()
+    // Rede para quem chamar o serviço sem passar por uma borda HTTP validada.
+    await expect(
+      ctx.submitStudio.execute(
+        ctx.owner.userId,
+        ctx.lessonId,
+        ctx.blockId,
+        {},
+        {
+          message: `  ${'c'.repeat(1001)}  `,
+          accountId: ctx.owner.accountId,
+          kind: 'pinta',
+        },
+      ),
+    ).rejects.toBeInstanceOf(ValidationError)
+    expect(ctx.teacherThreadsRepo.messages).toEqual([])
+    expect(await ctx.studioSubmissions.getOne(ctx.owner.userId, ctx.blockId)).toBeNull()
   })
   test('rejects a sibling, stale revision, duplicates, counts, forged raw submission and a changed request', async () => {
     const ctx = setup(),

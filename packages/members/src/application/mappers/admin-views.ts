@@ -155,6 +155,8 @@ export interface MemberActivityItemView {
   score?: number | null
   passed?: boolean | null
   message?: string | null
+  /** Só nas entregas: o recado foi falado e transcrito (voz para texto, 14/10/2026). */
+  messageSpoken?: boolean
 }
 
 /** Certificado emitido (ficha admin): inclui revogados. */

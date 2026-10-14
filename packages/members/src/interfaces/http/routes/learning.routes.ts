@@ -92,13 +92,10 @@ export function learningRoutes(deps: LearningRoutesDeps) {
       .post(
         '/lessons/:lessonId/section-help',
         ({ headers, params, body }) =>
-          deps.learning.help(
-            actor(headers),
-            params.lessonId,
-            body.sectionId,
-            body.body,
-            body.requestId,
-          ),
+          deps.learning.help(actor(headers), params.lessonId, body.sectionId, body.body, {
+            requestId: body.requestId,
+            spoken: body.spoken,
+          }),
         { params: LearningLessonParams, body: LearningHelpBody },
       )
       .put(

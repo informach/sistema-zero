@@ -79,7 +79,8 @@ describe.skipIf(!testDatabaseUrl)('updateBlock preserva as entregas (Postgres re
       results jsonb,
       checked_at timestamptz,
       passed_at timestamptz,
-      message varchar(1000)
+      message varchar(1000),
+      message_spoken boolean not null default false
     )`)
     for (const col of [
       'id uuid',
@@ -94,6 +95,8 @@ describe.skipIf(!testDatabaseUrl)('updateBlock preserva as entregas (Postgres re
       'passed_at timestamptz',
       'message varchar(1000)',
       'content_fingerprint varchar(70)',
+      // Voz para texto (0107): o insert do Drizzle nomeia a coluna; NOT NULL pede o default.
+      'message_spoken boolean not null default false',
     ]) {
       await conn.sql.unsafe(
         `alter table members.studio_submissions add column if not exists ${col}`,

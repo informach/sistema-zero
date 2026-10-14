@@ -194,13 +194,18 @@ export class LearningService {
     await this.repository.saveNavigation(actor, lessonId, sectionId)
     return { ok: true }
   }
+  /**
+   * Pedido de ajuda da fase. `requestId` torna o reenvio idempotente; `spoken` = a criança falou e
+   * o servidor transcreveu (voz para texto). Ausente = digitado.
+   */
   async help(
     actor: LearningActor,
     lessonId: string,
     sectionId: string,
     body: string,
-    requestId?: string,
+    options: { requestId?: string; spoken?: boolean } = {},
   ) {
+    const { requestId, spoken } = options
     const lesson = await this.requireLesson(actor, lessonId)
     await this.sections.assertSection(actor, lesson, sectionId, actor.privileged)
     const section = playbackLessonStructure(lesson, await this.structure(lesson)).sections.find(
@@ -234,6 +239,7 @@ export class LearningService {
       title: `${lesson.title} · ${section.title}`.slice(0, 300),
       authorName: null,
       body,
+      spoken: spoken === true,
     })
     return { threadId }
   }

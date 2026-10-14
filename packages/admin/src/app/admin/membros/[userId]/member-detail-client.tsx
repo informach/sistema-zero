@@ -24,6 +24,7 @@ import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { GrantAccessDialog } from '@/components/admin/grant-access-dialog'
 import { usePlatform } from '@/components/admin/platform-provider'
+import { SpokenChip } from '@/components/admin/spoken-chip'
 import { StatusBadge } from '@/components/admin/status-badge'
 import { useConfirm } from '@/components/admin/use-confirm'
 import { CourseProgressCard, ToolUsageGrid } from '@/components/members/usage-cards'
@@ -965,7 +966,9 @@ function ActivityTab({ learnerId }: { learnerId: string }) {
               {it.passed != null ? (it.passed ? ' · aprovado' : ' · não aprovado') : ''}
             </div>
             {it.message ? (
-              <div className="mt-1 text-muted-foreground text-xs italic">“{it.message}”</div>
+              <div className="mt-1 text-muted-foreground text-xs italic">
+                “{it.message}”{it.messageSpoken ? <SpokenChip /> : null}
+              </div>
             ) : null}
           </div>
           <div className="shrink-0 text-muted-foreground text-xs">{formatDate(it.at)}</div>

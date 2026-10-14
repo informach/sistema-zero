@@ -13,6 +13,7 @@ import { apiGet, apiSend } from '../lib/api'
 import type { CreationIndexView, CreationSummaryView, LessonBlockView } from '../lib/types'
 import { useLessonCopy } from './lesson-copy-context'
 import { useLessonPlayer } from './lesson-player-context'
+import { VoiceInputButton } from './voice-input/voice-input-button'
 
 export function LessonGalleryDelivery({
   block,
@@ -30,6 +31,10 @@ export function LessonGalleryDelivery({
   const [cursor, setCursor] = useState<string | null>(null)
   const [selected, setSelected] = useState<GallerySelection[]>([])
   const [message, setMessage] = useState('')
+  // O recado tem texto que veio da fala (botão "Falar"): a equipe vê o chip "falado".
+  const [messageSpoken, setMessageSpoken] = useState(false)
+  // A fala ainda vira texto: o "Enviar" espera (senão o recado sai sem ela).
+  const [voiceBusy, setVoiceBusy] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [sending, setSending] = useState(false)
@@ -87,7 +92,7 @@ export function LessonGalleryDelivery({
     busy.current = true
     setSending(true)
     setError('')
-    const key = JSON.stringify({ selected, message, revision: block.blockRevision })
+    const key = JSON.stringify({ selected, message, messageSpoken, revision: block.blockRevision })
     if (request.current?.key !== key) request.current = { key, id: crypto.randomUUID() }
     try {
       await apiSend(
@@ -98,11 +103,15 @@ export function LessonGalleryDelivery({
           revision: block.blockRevision,
           items: selected,
           ...(message.trim() ? { message: message.trim() } : {}),
+          ...(message.trim() && messageSpoken ? { messageSpoken: true } : {}),
         },
         { 'x-sz-viewer': player.viewerId ?? '' },
       )
       setConfirmed(true)
       setOpen(false)
+      // O recado foi com a entrega: a próxima versão começa sem ele (e sem a marca de falado).
+      setMessage('')
+      setMessageSpoken(false)
       player.refreshAfterStudio?.()
       player.refreshAfterLearning?.()
     } catch (cause) {
@@ -170,7 +179,7 @@ export function LessonGalleryDelivery({
           <Button
             type="button"
             onClick={submit}
-            disabled={loading || sending || selected.length < config.minItems}
+            disabled={loading || sending || voiceBusy || selected.length < config.minItems}
           >
             <Send aria-hidden className="size-4" />
             {sending ? 'Enviando…' : galeria.enviar(selected.length)}
@@ -246,14 +255,31 @@ export function LessonGalleryDelivery({
           <label className="block space-y-1 text-sm">
             {galeria.recado}
             <textarea
+              id={`gallery-teacher-message-${block.id}`}
               value={message}
-              onChange={(event) => setMessage(event.target.value)}
+              onChange={(event) => {
+                setMessage(event.target.value)
+                if (!event.target.value.trim()) setMessageSpoken(false)
+              }}
               disabled={sending}
-              maxLength={2000}
+              // O teto da coluna do recado no banco (acima disso a entrega falhava).
+              maxLength={1000}
               rows={2}
               className="mt-1 w-full rounded-lg border bg-background p-3"
             />
           </label>
+          {player?.voiceInput ? (
+            <VoiceInputButton
+              viewerId={player.viewerId}
+              value={message}
+              maxLength={1000}
+              onChange={setMessage}
+              onSpoken={() => setMessageSpoken(true)}
+              onBusyChange={setVoiceBusy}
+              textareaId={`gallery-teacher-message-${block.id}`}
+              disabled={sending}
+            />
+          ) : null}
         </div>
       </Dialog>
     </div>

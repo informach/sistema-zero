@@ -8,6 +8,7 @@ import type { GetPublicProfileService } from '../../../application/profiles/get-
 import type { ListProfilesService } from '../../../application/profiles/list-profiles.service'
 import type { SelectProfileService } from '../../../application/profiles/select-profile.service'
 import type { UpdateProfileDetailsService } from '../../../application/profiles/update-profile.service'
+import { VOICE_INPUT_PARENT_ONLY_MESSAGE } from '../../../application/profiles/voice-input.policy'
 import { isRecentParentAuth } from '../../../domain/study-access/policy'
 import {
   type AuthContext,
@@ -105,14 +106,20 @@ export function profilesRoutes(deps: ProfilesRoutesDeps) {
   }
 
   // Sessão de RESPONSÁVEL do Kids: o login tem até 15 min? `undefined` nos outros produtos
-  // (e no suporte), que não ganham a exigência. Arquivar e mudar nascimento ou perfil
-  // público pedem o MESMO "entre de novo" (`PARENT_REAUTH_REQUIRED`) das ações de aparelho.
+  // (e no suporte), que não ganham a exigência. Arquivar, mudar nascimento ou perfil
+  // público e LIGAR a fala pedem o MESMO "entre de novo" (`PARENT_REAUTH_REQUIRED`) das
+  // ações de aparelho.
   const parentAuthRecent = (headers: Record<string, string | undefined>) => {
     const kids = resolveGatewayKidsContext(headers)
     return kids?.kind === 'parent' ? isRecentParentAuth(kids.authenticatedAt) : undefined
   }
   const kidsContext = (headers: Record<string, string | undefined>) =>
     resolveGatewayKidsContext(headers)?.kind ?? null
+  // Sessão de SUPORTE: o gateway injeta o ATOR (claim `act.sub`) em `x-auth-impersonator-id`.
+  // A equipe pode desligar a fala da criança, nunca ligar (consentimento é dos pais); o id
+  // do ator real assina a mudança na trilha do consentimento. `null` = os responsáveis.
+  const impersonatorId = (headers: Record<string, string | undefined>) =>
+    headers['x-auth-impersonator-id']?.trim() || null
 
   return (
     new Elysia({ prefix: '/auth' })
@@ -132,6 +139,10 @@ export function profilesRoutes(deps: ProfilesRoutesDeps) {
             birthDate: body.birthDate,
             // Idem: o opt-in de perfil público na criação é parent-only por construção.
             publicProfileEnabled: body.publicProfileEnabled,
+            // Fala ligada já na criação: login recente do responsável e nunca pelo suporte.
+            voiceInputEnabled: body.voiceInputEnabled,
+            impersonatorId: impersonatorId(headers),
+            parentAuthRecent: parentAuthRecent(headers),
           })
           set.status = 201
           return { profile }
@@ -154,6 +165,10 @@ export function profilesRoutes(deps: ProfilesRoutesDeps) {
               'A visibilidade do perfil só pode ser alterada pelos responsáveis',
             )
           }
+          // Fala da criança: idem (consentimento dos pais; a criança não liga nem desliga).
+          if (body.voiceInputEnabled !== undefined && headers['x-auth-account-id']?.trim()) {
+            throw new ForbiddenError(VOICE_INPUT_PARENT_ONLY_MESSAGE)
+          }
           const profile = await deps.updateProfile.execute({
             accountUserId,
             profileId: params.id,
@@ -162,6 +177,8 @@ export function profilesRoutes(deps: ProfilesRoutesDeps) {
             whatsapp: body.whatsapp,
             birthDate: body.birthDate,
             publicProfileEnabled: body.publicProfileEnabled,
+            voiceInputEnabled: body.voiceInputEnabled,
+            impersonatorId: impersonatorId(headers),
             parentAuthRecent: parentAuthRecent(headers),
           })
           return { profile }

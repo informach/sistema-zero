@@ -515,6 +515,42 @@ describe('learning activities and sections', () => {
     ).toBe(404)
   })
 
+  test('voz para texto: o pedido de ajuda FALADO chega marcado à equipe; payload antigo vale digitado', async () => {
+    const ctx = setup()
+    const falado = await ctx.request(`/lessons/${ctx.lessonId}/section-help`, 'POST', {
+      sectionId: ctx.lessonId,
+      body: 'Não sei onde fica o bloco de pular.',
+      spoken: true,
+    })
+    expect(falado.status).toBe(200)
+    const { threadId } = (await falado.json()) as { threadId: string }
+    const digitado = await ctx.request(`/lessons/${ctx.lessonId}/section-help`, 'POST', {
+      sectionId: ctx.lessonId,
+      body: 'E o de girar?',
+    })
+    expect(digitado.status).toBe(200)
+
+    expect(ctx.teacherThreadsRepo.messages.map((m) => [m.body, m.spoken])).toEqual([
+      ['Não sei onde fica o bloco de pular.', true],
+      ['E o de girar?', false],
+    ])
+    const open = await ctx.request(
+      `/admin/teacher-threads/${threadId}`,
+      'GET',
+      undefined,
+      randomUUID(),
+      true,
+    )
+    expect(open.status).toBe(200)
+    const view = (await open.json()) as { messages: Array<{ body: string; spoken: unknown }> }
+    expect(view.messages.map((m) => [m.body, m.spoken])).toEqual(
+      expect.arrayContaining([
+        ['Não sei onde fica o bloco de pular.', true],
+        ['E o de girar?', false],
+      ]),
+    )
+  })
+
   test('a dúvida mostra ao professor o NOME DO CURSO, na lista e na conversa aberta', async () => {
     const ctx = setup()
     const course = ctx.courses.courses.find((c) => c.id === ctx.courseId)

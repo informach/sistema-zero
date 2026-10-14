@@ -720,6 +720,8 @@ export const LearningHelpBody = t.Object({
   requestId: t.Optional(t.String({ format: 'uuid' })),
   sectionId: Id,
   body: t.String({ minLength: 1, maxLength: 8000 }),
+  /** Pedido FALADO e transcrito pelo servidor (voz para texto). Ausente = digitado. */
+  spoken: t.Optional(t.Boolean()),
 })
 const Answers = t.Record(
   t.String({ pattern: '^[a-zA-Z][\\w-]{0,79}$' }),

@@ -1,5 +1,80 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## Falar em vez de escrever: a voz vira texto para a equipe (14/10/2026)
+
+Decisão dela: a criança FALA a mensagem para a equipe, o servidor transcreve na hora, ela CONFERE
+e envia TEXTO. **Nenhum áudio é guardado** (nem disco, nem R2, nem log, nem Sentry); por dentro
+tudo continua sendo texto, com uma marca de que veio da fala (o chip "falado" do Admin).
+
+- **`lib/voice/transcription.ts`** (puro): o formato pelos BYTES (`audioFormatFromBytes`: WebM,
+  MP4 como `m4a` do Safari, OGG, WAV), as palavras-chave da plataforma (`TRANSCRIBE_KEYWORDS`), o
+  prompt (`transcribePrompt`, que DESCREVE a situação: os modelos o leem como o texto antes da
+  fala), o filtro de alucinação (`isHallucinatedTranscript`: o texto INTEIRO igual a "Obrigado por
+  assistir", "Legendas pela comunidade Amara.org" e afins, nunca remove pedaço; a assinatura
+  "amara org" só conta como PALAVRAS inteiras, senão "a Samara organizou" caía) e os tetos (2 MB,
+  1 KB, 1000 caracteres, contexto de 200).
+- **`server/openrouter-transcribe.ts`**: `openai/gpt-transcribe` pelo OpenRouter (a MESMA
+  `OPENROUTER_API_KEY`), reserva `openai/gpt-4o-mini-transcribe` (vocabulário no TEXTO do prompt,
+  ela não tem `keywords`). Corpo JSON com o áudio em base64, `language: 'pt'`, `temperature: 0` e
+  `provider: { data_collection: 'deny', options: { openai: { prompt, keywords } } }`.
+  ⚠️⚠️ **Sem `zdr`**: com ele o OpenRouter responde 404 "No endpoints found matching your data
+  policy" para TODO modelo da OpenAI (sondagem de 14/10/2026); ela escolheu o gpt-transcribe sem
+  a trava, porque ele acertou o vocabulário. Prazo único de 30 s (20 s por chamada), uma nova
+  tentativa em 429/5xx/rede, depois a reserva; 401/402/403 param na hora. ⚠️ Nenhum erro, log ou
+  Sentry leva o áudio, o texto ou o corpo do provedor (`TranscribeError(reason)` fixo; o corpo de
+  erro é descartado sem ler). Não copie o padrão do `pensa-llm.ts`.
+- **`routes/voice.ts`** (`POST /api/voice/transcribe`, dentro do matcher do proxy): sessão de
+  CRIANÇA (`kids.kind === 'student'`), nenhuma sessão de suporte (nem em modo de escrita),
+  `x-sz-viewer` estrito, interruptor, `Content-Type: audio/*`, a escolha dos pais RELIDA a cada
+  pedido (`auth.getMyProfile()`, só `voiceInputEnabled === true` liga; desligar vale no pedido
+  seguinte), leitura em fluxo com teto de 2 MB, bytes mágicos e, POR ÚLTIMO, os limites: UMA
+  transcrição por vez por perfil (`inflight`), depois minuto (6) → hora (40) → global (600/h), em
+  `globalThis`. ⚠️⚠️ A ordem é do mais estreito para o mais largo porque `check` CONSOME: com o
+  global primeiro, as recusas do minuto de UMA criança insistindo gastavam a cota de todas e
+  desligavam a fala da plataforma por uma hora (achado do full review, travado por teste com
+  `setSystemTime`). Erro que não é `TranscribeError` vira 503 e registra só o NOME. Fora da cota
+  de IA compartilhada: pedir ajuda nunca disputa com o Zappy. O contexto da fase vem em `x-sz-voice-context` com percent-encoding
+  (emoji num título quebraria o cabeçalho). Resposta `{text}`; erros `VOICE_*` com frase.
+- **O gravador** (`lib/voice/use-voice-recorder.ts`) e o **botão**
+  (`components/voice-input/voice-input-button.tsx`, `VoiceInputButton`): captura mono com
+  cancelamento de eco, supressão de ruído e ganho automático; "Pode falar" só no `start` do
+  gravador e 300 ms de cauda no "Parar"; mínimo 0,8 s, máximo 60 s; o medidor (`AnalyserNode`)
+  barra o silêncio ANTES de sair do aparelho (é onde os modelos inventam frases). ⚠️ No iOS o
+  `AudioContext` nasce DENTRO do clique (nada de `await` antes) e é retomado de novo depois que o
+  microfone abre. ⚠️ O filtro de silêncio só vale quando o medidor leu ALGUM som (`meterOk`):
+  contexto suspenso lê zeros absolutos, e sem essa guarda toda fala virava "Não ouvi nada" (o
+  servidor decide nesse caso). Outra mídia da fase e aba escondida param, DESCARTAM, soltam o
+  microfone e DIZEM por quê (`interrupted`); `pagehide` e desmontagem descartam calados. O texto
+  entra na caixa somado ao que havia, cortado no teto em unidades UTF-16 (como o `maxLength` e o
+  `.max()` contam; `juntarFala` nunca parte emoji e não marca "falado" quando nada entrou), com o
+  foco na caixa e o "Ouvir o que eu falei". O botão é UM só (vira "Parar") e fica `aria-disabled`
+  quando ocupado, para não perder o foco; "Cancelar" aparece enquanto o microfone abre; o
+  contexto é cortado por caractere DENTRO do `try` (o emoji partido travava o botão). Envia por
+  `sessionFetch`. Some sem `getUserMedia`/`MediaRecorder`.
+- **Onde aparece:** só com `LessonPlayerContextValue.voiceInput` (o Kids passa; o adulto e o Admin
+  nunca) no pedido de ajuda (`lesson-sections.tsx`), no recado do Estúdio (`studio-block`), do
+  Pinta (`pinta-block`) e da galeria (`lesson-gallery-delivery`); nos Recados o Kids passa
+  `voiceEnabled`. Cada formulário guarda um `*Spoken` que liga com a fala e volta a falso quando a
+  caixa é esvaziada ou enviada. ⚠️⚠️ O `useCallback` do envio PRECISA ter o `messageSpoken` nas
+  dependências: sem ele o Estúdio e o Pinta mandavam a marca antiga (o lint pegou, 14/10/2026).
+  ⚠️⚠️ Todo formulário passa `onBusyChange` e segura o "Enviar" enquanto a fala vira texto:
+  enviando no meio, o diálogo do Estúdio, do Pinta e da galeria fechava e abortava a
+  transcrição (o recado saía sem a fala), e na ajuda e nos Recados a limpeza do envio apagava o
+  texto que chegasse depois. O recado da galeria tem teto de 1000 (o da coluna no banco).
+- **Contrato:** `spoken` no `section-help` e no `TeacherReplyBody`, `messageSpoken` no envio do
+  Estúdio, do Pinta e da galeria (7º/6º argumento posicional dos clients); `ProfileView` e
+  `ProfileWriteInput.voiceInputEnabled?` (opcional: auth antigo = desligado) e
+  `TeacherMessageView.spoken?`. `isVoiceInputConfigured()` = `VOICE_INPUT_ENABLED` + chave.
+- **Env:** `VOICE_INPUT_ENABLED` (só `true`, sem diferença de maiúsculas, liga; QUALQUER outro
+  valor desliga, de propósito: um `enum` estrito derrubava o app inteiro com um "TRUE" digitado no
+  Railway), `OPENROUTER_TRANSCRIBE_MODEL` e `OPENROUTER_TRANSCRIBE_FALLBACK_MODEL` (opcionais).
+- **Testes:** `tests/voice-transcribe.test.ts` (regras puras, provedor falso: parâmetros, nova
+  tentativa, reserva, 401, alucinação, prazo, aborto no meio da chamada, nada do provedor nem do
+  áudio nos erros; cada recusa da rota, a ordem dos limites com o relógio e uma por vez) e
+  `tests/voice-spoken-forwarding.test.ts` (a marca atravessa o BFF e os clients).
+  O botão, os pais e os Recados são testados no Kids (DOM de verdade). Sondagem com gravações de
+  ADULTOS: `scripts/sondar-transcricao.ts` (mesma configuração do servidor).
+
 ## A atualização da aula não derruba a atividade (11/10/2026)
 
 Relato dela (staging, Cadê aula 2 parte 3): com o Estúdio AMPLIADO, "Verificar esta parte"

@@ -127,7 +127,7 @@ describe.skipIf(!testDatabaseUrl)('Adapters Drizzle no Postgres real (schema aut
   beforeEach(async () => {
     await conn.sql`
       truncate table auth.users, auth.user_deletion_receipts, auth.refresh_tokens,
-        auth.refresh_token_families, auth.profiles,
+        auth.refresh_token_families, auth.profiles, auth.profile_voice_input_events,
         auth.password_reset_tokens, auth.otp_codes, auth.audit_logs cascade`
   })
 
@@ -190,6 +190,178 @@ describe.skipIf(!testDatabaseUrl)('Adapters Drizzle no Postgres real (schema aut
     expect(await profiles.createWithinLimit(candidate, 5)).toEqual({
       outcome: 'account_inactive',
     })
+  })
+
+  test('fala da criança: linha antiga vem desligada; ligar/desligar faz ida e volta no banco', async () => {
+    const user = newUser('voice-input@example.com')
+    await users.create(user)
+    // Linha como as de antes da migration 0019 (o INSERT não conhece as colunas novas).
+    const legacyId = randomUUID()
+    await conn.sql`
+      insert into auth.profiles
+        (id, account_user_id, name, status, sort_order, created_at, updated_at)
+      values (${legacyId}, ${user.id}, 'Antigo', 'active', 0, now(), now())`
+    const legacy = await profiles.findById(legacyId)
+    if (!legacy) throw new Error('perfil não encontrado')
+    expect(legacy.voiceInputEnabled).toBe(false)
+    expect(legacy.toSnapshot().voiceInputEnabledAt).toBeNull()
+
+    const consentAt = new Date('2026-10-14T15:30:00.000Z')
+    legacy.setVoiceInputEnabled(true, { kind: 'parent' }, consentAt)
+    expect(await profiles.update(legacy)).toBe(true)
+    const on = await profiles.findById(legacyId)
+    expect(on?.voiceInputEnabled).toBe(true)
+    expect(on?.toSnapshot().voiceInputEnabledAt?.toISOString()).toBe(consentAt.toISOString())
+
+    on?.setVoiceInputEnabled(false, { kind: 'parent' }, new Date('2026-10-14T16:00:00.000Z'))
+    if (on) expect(await profiles.update(on)).toBe(true)
+    const off = await profiles.findById(legacyId)
+    expect(off?.voiceInputEnabled).toBe(false)
+    expect(off?.toSnapshot().voiceInputEnabledAt).toBeNull()
+
+    // Criar já ligada (régua de autorização é do serviço) persiste os dois campos no insert.
+    const created = ProfileAggregate.create({
+      id: randomUUID(),
+      accountUserId: user.id,
+      name: 'Novo',
+      now: consentAt,
+    })
+    created.setVoiceInputEnabled(true, { kind: 'parent' }, consentAt)
+    const outcome = await profiles.createWithinLimit(created, 5)
+    if (outcome.outcome !== 'created') throw new Error(`perfil não criado: ${outcome.outcome}`)
+    const reloaded = await profiles.findById(created.id)
+    expect(reloaded?.voiceInputEnabled).toBe(true)
+    expect(reloaded?.toSnapshot().voiceInputEnabledAt?.toISOString()).toBe(consentAt.toISOString())
+  })
+
+  test('fala da criança: cada mudança efetiva grava a trilha JUNTO com o perfil', async () => {
+    const user = newUser('voice-trail@example.com')
+    await users.create(user)
+    const supportId = randomUUID()
+    const trailOf = (profileId: string) => conn.sql<
+      {
+        account_user_id: string
+        enabled: boolean
+        actor: string
+        impersonator_id: string | null
+        // O driver do drizzle troca o parser de timestamptz do cliente cru: chega texto.
+        created_at: string
+      }[]
+    >`
+      select account_user_id, enabled, actor, impersonator_id, created_at
+        from auth.profile_voice_input_events
+       where profile_id = ${profileId}
+       order by created_at, id`
+
+    // Criação já ligada: a 1ª linha entra na mesma transação do insert do perfil.
+    const createdAt = new Date('2026-10-14T15:00:00.000Z')
+    const created = ProfileAggregate.create({
+      id: randomUUID(),
+      accountUserId: user.id,
+      name: 'Bia',
+      now: createdAt,
+    })
+    created.setVoiceInputEnabled(true, { kind: 'parent' }, createdAt)
+    expect((await profiles.createWithinLimit(created, 5)).outcome).toBe('created')
+    expect(created.voiceInputChange).toBeNull()
+
+    // Reenviar ligada (o formulário dos pais trocando só o nome): nenhuma linha nova.
+    const resend = await profiles.findById(created.id)
+    if (!resend) throw new Error('perfil não encontrado')
+    resend.updateDetails({ name: 'Bia Maria' }, new Date('2026-10-14T15:10:00.000Z'))
+    resend.setVoiceInputEnabled(true, { kind: 'parent' }, new Date('2026-10-14T15:10:00.000Z'))
+    expect(await profiles.update(resend)).toBe(true)
+
+    // O suporte desliga: a linha leva o ator real.
+    const offAt = new Date('2026-10-14T15:20:00.000Z')
+    const off = await profiles.findById(created.id)
+    if (!off) throw new Error('perfil não encontrado')
+    off.setVoiceInputEnabled(false, { kind: 'support', impersonatorId: supportId }, offAt)
+    expect(await profiles.update(off)).toBe(true)
+
+    // Os pais religam: a data em vigor é a nova, e a antiga segue provada na trilha.
+    const onAgainAt = new Date('2026-10-14T15:30:00.000Z')
+    const onAgain = await profiles.findById(created.id)
+    if (!onAgain) throw new Error('perfil não encontrado')
+    onAgain.setVoiceInputEnabled(true, { kind: 'parent' }, onAgainAt)
+    expect(await profiles.update(onAgain)).toBe(true)
+
+    const reloaded = await profiles.findById(created.id)
+    expect(reloaded?.name).toBe('Bia Maria')
+    expect(reloaded?.toSnapshot().voiceInputEnabledAt?.toISOString()).toBe(onAgainAt.toISOString())
+    const trail = await trailOf(created.id)
+    expect(
+      trail.map((row) => ({
+        account: row.account_user_id,
+        enabled: row.enabled,
+        actor: row.actor,
+        impersonator: row.impersonator_id,
+        at: new Date(row.created_at).toISOString(),
+      })),
+    ).toEqual([
+      {
+        account: user.id,
+        enabled: true,
+        actor: 'parent',
+        impersonator: null,
+        at: createdAt.toISOString(),
+      },
+      {
+        account: user.id,
+        enabled: false,
+        actor: 'support',
+        impersonator: supportId,
+        at: offAt.toISOString(),
+      },
+      {
+        account: user.id,
+        enabled: true,
+        actor: 'parent',
+        impersonator: null,
+        at: onAgainAt.toISOString(),
+      },
+    ])
+
+    // Duplo clique: duas requisições leem ligada e ambas desligam. Só a 1ª é mudança;
+    // a 2ª não grava linha nem mexe na data.
+    const first = await profiles.findById(created.id)
+    const second = await profiles.findById(created.id)
+    if (!first || !second) throw new Error('perfil não encontrado')
+    first.setVoiceInputEnabled(false, { kind: 'parent' }, new Date('2026-10-14T15:40:00.000Z'))
+    second.setVoiceInputEnabled(false, { kind: 'parent' }, new Date('2026-10-14T15:41:00.000Z'))
+    expect(await profiles.update(first)).toBe(true)
+    expect(await profiles.update(second)).toBe(true)
+    expect((await trailOf(created.id)).map((row) => row.enabled)).toEqual([
+      true,
+      false,
+      true,
+      false,
+    ])
+
+    // Edição defasada (`reloaded` leu ligada antes do "desligar") não religa sem trilha.
+    if (!reloaded) throw new Error('perfil não encontrado')
+    reloaded.updateDetails({ name: 'Bia M' }, new Date('2026-10-14T15:50:00.000Z'))
+    expect(await profiles.update(reloaded)).toBe(true)
+    const afterStale = await profiles.findById(created.id)
+    expect(afterStale?.name).toBe('Bia M')
+    expect(afterStale?.voiceInputEnabled).toBe(false)
+    expect(afterStale?.toSnapshot().voiceInputEnabledAt).toBeNull()
+
+    // O banco também recusa o suporte LIGANDO (CHECK), além do agregado.
+    let caught: unknown = null
+    try {
+      await conn.sql`
+        insert into auth.profile_voice_input_events
+          (profile_id, account_user_id, enabled, actor, impersonator_id)
+        values (${created.id}, ${user.id}, true, 'support', ${supportId})`
+    } catch (error) {
+      caught = error
+    }
+    expect((caught as { code?: string } | null)?.code).toBe('23514')
+
+    // Exclusão da conta pelo painel: a trilha da criança sai junto com o perfil.
+    await users.deleteById(user.id)
+    expect((await trailOf(created.id)).length).toBe(0)
   })
 
   test('deleteById grava recibo durável com os perfis e o retry preserva o resultado', async () => {

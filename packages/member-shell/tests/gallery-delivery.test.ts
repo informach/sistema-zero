@@ -135,3 +135,22 @@ describe('gallery delivery BFF confirmation', () => {
     expect(readonly.calls).toHaveLength(0)
   })
 })
+
+describe('recado da galeria (14/10/2026)', () => {
+  test('o recado falado segue com `messageSpoken` até a confirmação assinada', async () => {
+    const env = setup()
+    const body = { ...input, message: 'meu dino pula', messageSpoken: true }
+    expect((await env.route.POST(req(body), ctx)).status).toBe(200)
+    expect(env.calls[0]?.opts.body).toMatchObject({ message: 'meu dino pula', messageSpoken: true })
+    expect(env.calls[1]?.opts.body).toMatchObject({
+      input: { message: 'meu dino pula', messageSpoken: true },
+    })
+  })
+
+  test('recado acima de 1000 caracteres (o teto da coluna) é recusado antes do members', async () => {
+    const env = setup()
+    const res = await env.route.POST(req({ ...input, message: 'a'.repeat(1001) }), ctx)
+    expect(res.status).toBe(400)
+    expect(env.calls).toHaveLength(0)
+  })
+})

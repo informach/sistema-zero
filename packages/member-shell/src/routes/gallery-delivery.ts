@@ -22,7 +22,10 @@ const Input = z
       )
       .min(1)
       .max(12),
-    message: z.string().max(2000).optional(),
+    // 1000: o teto da coluna `studio_submissions.message` (acima disso o members dava 500).
+    message: z.string().max(1000).optional(),
+    // O recado veio da fala transcrita (botão "Falar" do Kids): a equipe vê o chip "falado".
+    messageSpoken: z.boolean().optional(),
   })
   .strict()
 const record = (v: unknown): v is Record<string, unknown> =>

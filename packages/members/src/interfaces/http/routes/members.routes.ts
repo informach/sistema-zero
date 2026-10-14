@@ -919,20 +919,16 @@ export function membersRoutes(deps: MembersRoutesDeps) {
         '/lessons/:lessonId/blocks/:blockId/studio-submission',
         async ({ headers, params, body }) => {
           const userId = resolveUserId(headers)
-          return deps.submitStudio.execute(
-            userId,
-            params.lessonId,
-            params.blockId,
-            body.project,
-            body.results ?? [],
-            body.message ?? null,
-            isPrivilegedActor(headers),
-            resolveAccountId(headers),
-            resolveStudentName(headers) || null,
-            'studio',
-            undefined,
-            body.fingerprint ?? null,
-          )
+          return deps.submitStudio.execute(userId, params.lessonId, params.blockId, body.project, {
+            clientResults: body.results ?? [],
+            message: body.message ?? null,
+            messageSpoken: body.messageSpoken,
+            privileged: isPrivilegedActor(headers),
+            accountId: resolveAccountId(headers),
+            authorName: resolveStudentName(headers) || null,
+            kind: 'studio',
+            fingerprint: body.fingerprint ?? null,
+          })
         },
         { body: StudioSubmissionBody, params: StudioSubmissionParams },
       )
@@ -959,20 +955,15 @@ export function membersRoutes(deps: MembersRoutesDeps) {
         '/lessons/:lessonId/blocks/:blockId/pinta-submission',
         async ({ headers, params, body }) => {
           const userId = resolveUserId(headers)
-          return deps.submitStudio.execute(
-            userId,
-            params.lessonId,
-            params.blockId,
-            body.asset,
-            [],
-            body.message ?? null,
-            isPrivilegedActor(headers),
-            resolveAccountId(headers),
-            resolveStudentName(headers) || null,
-            'pinta',
-            undefined,
-            body.fingerprint ?? null,
-          )
+          return deps.submitStudio.execute(userId, params.lessonId, params.blockId, body.asset, {
+            message: body.message ?? null,
+            messageSpoken: body.messageSpoken,
+            privileged: isPrivilegedActor(headers),
+            accountId: resolveAccountId(headers),
+            authorName: resolveStudentName(headers) || null,
+            kind: 'pinta',
+            fingerprint: body.fingerprint ?? null,
+          })
         },
         { body: PintaSubmissionBody, params: StudioSubmissionParams },
       )
@@ -1101,6 +1092,7 @@ export function membersRoutes(deps: MembersRoutesDeps) {
             query.audience ?? 'adult',
             params.id,
             body.body,
+            { spoken: body.spoken },
           )
         },
         { params: IdParams, query: AudienceQuery, body: TeacherThreadReplyBody },

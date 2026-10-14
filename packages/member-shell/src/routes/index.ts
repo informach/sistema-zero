@@ -182,6 +182,9 @@ const CreateProfileBody = z.object({
   // O pai decide o perfil público já na criação (tutorial de 1º acesso, 08/2026);
   // o auth aceita o campo no create e a rota de lá é parent-only por construção.
   publicProfileEnabled: z.boolean().optional(),
+  // A criança pode falar em vez de escrever para a equipe (14/10/2026). Só os pais decidem: a
+  // regra (e o login recente para LIGAR) é do auth.
+  voiceInputEnabled: z.boolean().optional(),
 })
 const UpdateProfileBody = z
   .object({
@@ -189,13 +192,15 @@ const UpdateProfileBody = z
     whatsapp: ProfileWhatsapp,
     birthDate: ProfileBirthDate,
     publicProfileEnabled: z.boolean().optional(),
+    voiceInputEnabled: z.boolean().optional(),
   })
   .refine(
     (b) =>
       b.name !== undefined ||
       b.whatsapp !== undefined ||
       b.birthDate !== undefined ||
-      b.publicProfileEnabled !== undefined,
+      b.publicProfileEnabled !== undefined ||
+      b.voiceInputEnabled !== undefined,
     'Nada para atualizar',
   )
 const ExitProfileBody = z.object({ password: z.string().min(1).max(200) })
@@ -243,7 +248,16 @@ const ParentReportPrefsBody = z.object({
 const ImpersonationModeBody = z.object({ mode: z.enum(IMPERSONATION_MODES) })
 
 /** Resposta do aluno numa conversa com o professor (o members revalida ≤1000 + trim). */
-const TeacherReplyBody = z.object({ body: z.string().trim().min(1).max(1000) })
+const TeacherReplyBody = z.object({
+  body: z.string().trim().min(1).max(1000),
+  // O texto veio da fala transcrita (botão "Falar" do Kids): a equipe vê o chip "falado".
+  spoken: z.boolean().optional(),
+})
+
+/** O recado do envio veio da fala transcrita? Só `true` conta. */
+function readMessageSpoken(raw: unknown): boolean {
+  return (raw as { messageSpoken?: unknown } | null)?.messageSpoken === true
+}
 
 const QuizAttemptBody = z.object({
   // Espelha o TypeBox do members: ≤100 questões, ≤20 choices/questão, chaves/ids ≤64.
@@ -1398,6 +1412,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
         results,
         message,
         readFingerprint(raw),
+        readMessageSpoken(raw),
       )
       return NextResponse.json(body ?? { ok: status === 200 }, { status })
     },
@@ -1444,6 +1459,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
         asset,
         message,
         readFingerprint(raw),
+        readMessageSpoken(raw),
       )
       return NextResponse.json(body ?? { ok: status === 200 }, { status })
     },
@@ -1505,7 +1521,11 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
       if (!UUID_RE.test(threadId)) return invalidInput()
       const parsed = TeacherReplyBody.safeParse(await req.json().catch(() => null))
       if (!parsed.success) return invalidInput()
-      const { status, body } = await members.postTeacherMessage(threadId, parsed.data.body)
+      const { status, body } = await members.postTeacherMessage(
+        threadId,
+        parsed.data.body,
+        parsed.data.spoken === true,
+      )
       return NextResponse.json(body ?? { ok: status === 200 }, { status })
     },
   }

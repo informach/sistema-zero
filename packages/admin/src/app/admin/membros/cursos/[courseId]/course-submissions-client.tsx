@@ -7,6 +7,7 @@ import { Spinner } from '@sistemazero/ui/spinner'
 import { ArrowLeft, MessageSquare } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
+import { SpokenChip } from '@/components/admin/spoken-chip'
 import { type ApiError, apiGet } from '@/lib/api'
 import type { StudioSubmissionCourseRow } from '@/lib/types'
 import { StudioSubmissionViewer } from './studio-submission-viewer'
@@ -157,6 +158,7 @@ export function CourseSubmissionsPanel({
                       {r.message ? (
                         <div className="mt-0.5 flex items-center gap-1 text-foreground text-xs">
                           <MessageSquare className="size-3 shrink-0" /> Deixou um recado
+                          {r.messageSpoken ? <SpokenChip /> : null}
                         </div>
                       ) : null}
                     </div>

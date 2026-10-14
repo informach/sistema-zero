@@ -12,6 +12,49 @@
 > `quiz`. Sessões de cena só têm comandos e avaliação de experimentação; não há migração de
 > demonstrações antigas. Notas históricas abaixo sobre esses formatos não se aplicam.
 
+## Voz para texto: a marca `spoken` (14/10/2026, migration `0107`)
+
+A criança pode FALAR o recado em vez de escrever: o member-shell transcreve e o app envia TEXTO
+normal. O members só guarda e devolve a marca de que a mensagem foi falada, para a equipe ler com
+boa vontade um erro de transcrição no Admin.
+
+- **Colunas** (`0107_teacher_message_spoken`, `ADD COLUMN IF NOT EXISTS`, `boolean NOT NULL DEFAULT
+  false`): `teacher_messages.spoken` e `studio_submissions.message_spoken`.
+- **Entrada SEMPRE opcional** (ausente = `false`; app antigo segue igual): `LearningHelpBody.spoken`
+  (pedido de ajuda da fase → `LearningService.help(…, { requestId, spoken })`),
+  `TeacherThreadReplyBody.spoken` (resposta nos Recados → `studentReply(…, { spoken })`; a rota da
+  EQUIPE usa o mesmo DTO e ignora o campo) e `messageSpoken` em `StudioSubmissionBody`,
+  `PintaSubmissionBody` e no corpo da galeria (`gallery-prepare` e o commit assinado;
+  `GalleryDeliveryRequest` = `GalleryDeliveryInput` do core + o campo).
+- **Regras:** a marca é do ALUNO (`postByContext` grava `false` em turno `teacher`). Na entrega,
+  sem recado ela vira `false`; o reenvio a sobrescreve junto com o `message` e o `restorePrevious`
+  preserva os dois. O turno espelhado (`mirrorSubmitNote`) leva `spoken`; a idempotência dele não
+  compara a marca (retry com o mesmo texto devolve o turno original).
+- **Saída:** `TeacherMessageView.spoken`; `messageSpoken` nas views de entrega do Admin
+  (`StudioSubmissionSummaryView`, `…CourseView`/`…GlobalView`, `…DetailView`) e no item de entrega
+  da ficha 360 (`MemberActivityItemView`). Nenhuma view do aluno expõe o recado da entrega.
+- `SubmitStudioProjectService.execute(userId, lessonId, blockId, project, options)`: os argumentos
+  opcionais viraram o objeto `SubmitStudioProjectOptions` (rotas do Estúdio/Pinta e galeria).
+- ⚠️ **Teto do recado da entrega = 1000, em TODA borda** (`MAX_SUBMISSION_MESSAGE_CHARS`, em
+  `domain/course/lesson-block.ts`, = `studio_submissions.message varchar(1000)`). A galeria
+  (`gallery-prepare` e o commit assinado, mesmo `Input`) aceitava 2000: o upsert estourava
+  "value too long" (500) DEPOIS de o turno já ter sido espelhado na conversa. Agora os três DTOs
+  (`StudioSubmissionBody`, `PintaSubmissionBody`, galeria) usam a constante e o
+  `SubmitStudioProjectService` recusa (`ValidationError`, 400) recado aparado acima dela ANTES de
+  qualquer efeito, para quem chamar o serviço por outro caminho. Testes em
+  `tests/integration/gallery-delivery.test.ts` (1001 → 400 no preparo e no commit, sem entrega e
+  sem turno; 1000 passa inteiro; o serviço recusa direto). O BFF e as telas do member-shell/kids
+  acompanham o teto do lado deles.
+- ⚠️⚠️ **Numerada 0107 de propósito:** o lote das oficinas ao vivo, ainda não mesclado, usa 0102 a
+  0106. No merge, renumere ou reordene: aqui a entrada do `_journal.json` tem `idx` 102 e `when`
+  1791993851297 (relógio real, acima do 1791984332314 da 0106) e o snapshot é
+  `meta/0107_snapshot.json` com `prevId` = o da 0101. Depois de juntar os lotes, acerte a cadeia de
+  `prevId`, confira que o `when` cresce na ordem do journal (marca d'água) e rode `db:generate`,
+  que precisa responder "No schema changes".
+- Testes: os "voz para texto" de `tests/integration/{teacher-threads,learning,studio,pinta,
+  gallery-delivery}.test.ts` e, contra Postgres, `tests/db/teacher-thread.repository.test.ts` e
+  `tests/db/studio-submission-previous.test.ts`. Os DDL à mão de `tests/db` ganharam as colunas.
+
 ## Rascunho da fase guardado na conta + "envio em dia" (10/10/2026)
 
 Plano: `~/.claude/plans/wise-drifting-pelican.md` (resumo aqui). O rascunho do Estúdio e do Pinta

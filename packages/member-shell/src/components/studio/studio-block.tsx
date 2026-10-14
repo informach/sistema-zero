@@ -45,6 +45,7 @@ import {
 } from '../lesson-draft-status'
 import { useLessonPlayer } from '../lesson-player-context'
 import { EXPANDED_EXIT_ATTR, EXPANDED_EXIT_EDITOR, LessonVideoToggle } from '../lesson-video-float'
+import { VoiceInputButton } from '../voice-input/voice-input-button'
 import {
   diskFingerprint,
   prepareStudioLessonDraft,
@@ -227,6 +228,10 @@ export function StudioBlockView({
   const [templateWarning, setTemplateWarning] = useState(false)
   // Recado OPCIONAL do aluno ao professor, digitado no modal de confirmação.
   const [message, setMessage] = useState('')
+  // O recado tem texto que veio da fala (botão "Falar"): a equipe vê o chip "falado".
+  const [messageSpoken, setMessageSpoken] = useState(false)
+  // A fala ainda vira texto: o "Enviar" espera (senão o recado sai sem ela).
+  const [voiceBusy, setVoiceBusy] = useState(false)
   const MESSAGE_MAX = 1000
   // "Trazer o que eu enviei": puxa do servidor o projeto que o aluno enviou e
   // substitui o editor (o editor semeia do rascunho LOCAL — defasa se terminou em
@@ -504,6 +509,7 @@ export function StudioBlockView({
           project,
           ...(activity ? { results } : {}),
           ...(note ? { message: note } : {}),
+          ...(note && messageSpoken ? { messageSpoken: true } : {}),
           ...(fingerprint ? { fingerprint } : {}),
         },
       )
@@ -516,6 +522,7 @@ export function StudioBlockView({
       if (res.passed !== undefined) setPassed(res.passed)
       setXp(res.gamification?.xpAwarded ?? null)
       setMessage('') // recado é por envio: limpa após mandar
+      setMessageSpoken(false)
       // Destrava o "Concluir aula" (gate do backend) → re-render da página.
       player?.refreshAfterStudio?.()
     } catch (err) {
@@ -530,7 +537,7 @@ export function StudioBlockView({
     } finally {
       setSubmitting(false)
     }
-  }, [lessonId, blockId, player, activity, message, studioMod, projectId, channel])
+  }, [lessonId, blockId, player, activity, message, messageSpoken, studioMod, projectId, channel])
 
   // Abre a confirmação de "Trazer o que eu enviei" (item do menu ⋯ do Estúdio).
   // Estável (o Studio latcha este callback no mount).
@@ -940,7 +947,7 @@ export function StudioBlockView({
                 setConfirmOpen(false)
                 void submit()
               }}
-              disabled={submitting}
+              disabled={submitting || voiceBusy}
             >
               <Send className="size-4" />
               {submitted ? 'Reenviar' : 'Enviar'}
@@ -963,12 +970,27 @@ export function StudioBlockView({
           <Textarea
             id="studio-teacher-message"
             value={message}
-            onChange={(e) => setMessage(e.target.value.slice(0, MESSAGE_MAX))}
+            onChange={(e) => {
+              setMessage(e.target.value.slice(0, MESSAGE_MAX))
+              if (!e.target.value.trim()) setMessageSpoken(false)
+            }}
             maxLength={MESSAGE_MAX}
             rows={3}
             disabled={submitting}
             placeholder={estudio.recadoExemplo}
           />
+          {player?.voiceInput ? (
+            <VoiceInputButton
+              viewerId={player.viewerId}
+              value={message}
+              maxLength={MESSAGE_MAX}
+              onChange={setMessage}
+              onSpoken={() => setMessageSpoken(true)}
+              onBusyChange={setVoiceBusy}
+              textareaId="studio-teacher-message"
+              disabled={submitting}
+            />
+          ) : null}
         </div>
       </Dialog>
 

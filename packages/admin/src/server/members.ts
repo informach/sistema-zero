@@ -318,6 +318,8 @@ export function listCourseStudioSubmissions(courseId: string): Promise<
       passed: boolean
       /** Recado opcional do aluno ao professor. `null` = sem recado. */
       message: string | null
+      /** O recado veio da fala transcrita (14/10/2026). OPCIONAL: members antigo não manda. */
+      messageSpoken?: boolean
     }[]
   }>
 > {

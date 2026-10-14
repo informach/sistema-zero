@@ -230,6 +230,8 @@ export interface MemberActivityItemView {
   score?: number | null
   passed?: boolean | null
   message?: string | null
+  /** O recado veio da fala transcrita (14/10/2026). */
+  messageSpoken?: boolean
 }
 
 export interface MemberActivityPage {
@@ -734,6 +736,8 @@ export interface StudioSubmissionRow {
   passed: boolean
   /** Recado OPCIONAL do aluno ao professor. `null` = sem recado. */
   message: string | null
+  /** O recado veio da fala transcrita (14/10/2026). */
+  messageSpoken?: boolean
 }
 
 /**
@@ -762,6 +766,8 @@ export interface StudioSubmissionDetailView {
   passed: boolean
   /** Recado OPCIONAL do aluno ao professor. `null` = sem recado. */
   message: string | null
+  /** O recado veio da fala transcrita (14/10/2026). */
+  messageSpoken?: boolean
   /** ISO do carimbo "já conferi"; `null` = nunca conferida. */
   reviewedAt: string | null
   /** O carimbo vale para a entrega ATUAL (um reenvio depois dele o invalida). */
@@ -809,6 +815,8 @@ export interface StudioSubmissionQueueRow {
   passed: boolean
   /** Recado opcional do aluno no envio. */
   message: string | null
+  /** O recado veio da fala transcrita (14/10/2026). */
+  messageSpoken?: boolean
   /** Há resposta do professor após o último envio. */
   answered: boolean
   /**
@@ -843,6 +851,8 @@ export interface TeacherMessageView {
   authorId: string | null
   authorName: string | null
   body: string
+  /** O texto veio da fala transcrita (14/10/2026). OPCIONAL: members antigo não manda. */
+  spoken?: boolean
   createdAt: string
 }
 

@@ -60,7 +60,8 @@ describe.skipIf(!testDatabaseUrl)('versão anterior da entrega (Postgres real)',
       reviewed_by uuid,
       previous_project jsonb,
       previous_submitted_at timestamptz,
-      content_fingerprint varchar(70)
+      content_fingerprint varchar(70),
+      message_spoken boolean not null default false
     )`)
     for (const col of [
       'id uuid',
@@ -79,6 +80,8 @@ describe.skipIf(!testDatabaseUrl)('versão anterior da entrega (Postgres real)',
       'previous_project jsonb',
       'previous_submitted_at timestamptz',
       'content_fingerprint varchar(70)',
+      // Voz para texto (0107): o insert do Drizzle nomeia a coluna; NOT NULL pede o default.
+      'message_spoken boolean not null default false',
     ]) {
       await conn.sql.unsafe(
         `alter table members.studio_submissions add column if not exists ${col}`,
@@ -201,6 +204,42 @@ describe.skipIf(!testDatabaseUrl)('versão anterior da entrega (Postgres real)',
     })
     expect(await repo.restorePrevious({ userId: aluno, blockId })).toBe(true)
     expect((await repo.getOne(aluno, blockId))?.project).toEqual({ name: 'template por engano' })
+  })
+
+  test('voz para texto: `message_spoken` grava, volta nas leituras, o reenvio sobrescreve e restaurar preserva', async () => {
+    const blockId = randomUUID()
+    const t1 = new Date('2026-08-01T10:00:00.000Z')
+    const t2 = new Date('2026-08-10T10:00:00.000Z')
+    const t3 = new Date('2026-08-15T10:00:00.000Z')
+
+    await repo.upsert(
+      entrega(blockId, { name: 'v1' }, t1, { message: 'falei', messageSpoken: true }),
+    )
+    expect(await repo.getOne(aluno, blockId)).toMatchObject({
+      message: 'falei',
+      messageSpoken: true,
+    })
+    expect((await repo.listByBlock(blockId))[0]).toMatchObject({ messageSpoken: true })
+
+    // Reenvio do app antigo (sem o campo): a marca cai junto com o recado novo.
+    await repo.upsert(entrega(blockId, { name: 'v2' }, t2, { message: 'digitei' }), {
+      preservePassedAt: true,
+    })
+    expect(await repo.getOne(aluno, blockId)).toMatchObject({
+      message: 'digitei',
+      messageSpoken: false,
+    })
+
+    // Restaurar troca só o projeto: recado e marca ficam (mesma régua do `message`).
+    await repo.upsert(
+      entrega(blockId, { name: 'v3' }, t3, { message: 'falei de novo', messageSpoken: true }),
+    )
+    expect(await repo.restorePrevious({ userId: aluno, blockId })).toBe(true)
+    expect(await repo.getOne(aluno, blockId)).toMatchObject({
+      project: { name: 'v2' },
+      message: 'falei de novo',
+      messageSpoken: true,
+    })
   })
 
   test('restaurar sem versão anterior devolve false (linha nova ou inexistente)', async () => {

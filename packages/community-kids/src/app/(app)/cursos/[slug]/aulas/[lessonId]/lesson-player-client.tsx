@@ -61,6 +61,8 @@ interface Props {
   shareUrl: string | null
   /** O rascunho do Estúdio/Pinta da fase guardado na conta (10/10/2026). */
   lessonDraftsEnabled?: boolean
+  /** A criança pode falar em vez de escrever para a equipe (14/10/2026). */
+  voiceInput?: boolean
 }
 
 export function LessonPlayer({
@@ -72,6 +74,7 @@ export function LessonPlayer({
   ratingViewer,
   shareUrl,
   lessonDraftsEnabled = false,
+  voiceInput = false,
 }: Props) {
   const router = useRouter()
   // Junta os pedidos e espera a atividade ampliada fechar (ver `use-lesson-refresh`).
@@ -220,6 +223,7 @@ export function LessonPlayer({
       showActivityRequirement: false,
       viewerWatermark,
       viewerId,
+      voiceInput,
       initialPositionSeconds: lesson.positionSeconds,
       learningProgress: learning.progress,
       onLearningProgress: learning.onProgress,
@@ -254,6 +258,7 @@ export function LessonPlayer({
       course.slug,
       viewerWatermark,
       viewerId,
+      voiceInput,
       refreshLesson,
       lessonDrafts,
     ],

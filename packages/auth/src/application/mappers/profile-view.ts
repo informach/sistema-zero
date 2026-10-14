@@ -9,6 +9,11 @@ export interface ProfileView {
   birthDate: string | null
   /** Perfil público entre crianças (opt-in dos pais). A grade/área dos pais exibe o toggle. */
   publicProfileEnabled: boolean
+  /**
+   * Fala da criança ligada pelos pais (voz → texto). O app Kids lê pelo `GET /auth/me` da
+   * sessão da criança; a área dos pais exibe o toggle. A data do consentimento NÃO sai aqui.
+   */
+  voiceInputEnabled: boolean
   sortOrder: number
 }
 
@@ -20,6 +25,7 @@ export function toProfileView(p: ProfileAggregate): ProfileView {
     whatsapp: p.whatsapp,
     birthDate: p.birthDate,
     publicProfileEnabled: p.publicProfileEnabled,
+    voiceInputEnabled: p.voiceInputEnabled,
     sortOrder: p.sortOrder,
   }
 }

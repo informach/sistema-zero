@@ -15,6 +15,7 @@ import {
   hasComingSoonBlock,
   MAX_PINTA_ASSET_CHARS,
   MAX_STUDIO_PROJECT_CHARS,
+  MAX_SUBMISSION_MESSAGE_CHARS,
   type SubmissionBlockKind,
 } from '../../domain/course/lesson-block'
 import {
@@ -48,6 +49,33 @@ export interface StudioSubmissionResultView {
   results?: StudioCheckResult[]
   /** Delta de gamificação quando passou (XP/streak/badges) — `null` se award falhou. */
   gamification?: GamificationDeltaView | null
+}
+
+/**
+ * Tudo o que é OPCIONAL na entrega (14/10/2026: era uma fila de argumentos posicionais e cada
+ * campo novo empurrava `undefined` em todos os chamadores). Ausente = o comportamento clássico.
+ */
+export interface SubmitStudioProjectOptions {
+  /** Resultados das checagens rodadas no cliente (behavior/testcase/code). */
+  clientResults?: readonly ClientCheckResult[]
+  /** Recado OPCIONAL do aluno ao professor. Em branco = sem recado. */
+  message?: string | null
+  /**
+   * O recado foi FALADO e transcrito pelo servidor (voz para texto). Sem recado, não vale nada:
+   * a entrega grava `false`.
+   */
+  messageSpoken?: boolean
+  privileged?: boolean
+  /** Conta responsável (sessão de perfil); ausente = a própria conta é o `userId`. */
+  accountId?: string
+  /** Nome de EXIBIÇÃO do aluno (header confiável do gateway) p/ o turno na conversa. */
+  authorName?: string | null
+  /** Bloco que esta entrega atende. Default `studio` — zero regressão no caminho existente. */
+  kind?: SubmissionBlockKind
+  /** Only the authenticated gallery service can supply a validated immutable snapshot. */
+  gallery?: { snapshot: GallerySubmission; projectForChecks: unknown; revision: string }
+  /** Impressão digital do conteúdo enviado ("envio em dia"); a galeria não tem. */
+  fingerprint?: string | null
 }
 
 /**
@@ -91,23 +119,34 @@ export class SubmitStudioProjectService {
     lessonId: string,
     blockId: string,
     project: unknown,
-    clientResults: readonly ClientCheckResult[] = [],
-    message: string | null = null,
-    privileged = false,
-    accountId?: string,
-    /** Nome de EXIBIÇÃO do aluno (header confiável do gateway) p/ o turno na conversa. */
-    authorName: string | null = null,
-    /** Bloco que esta entrega atende. Default `studio` — zero regressão no caminho existente. */
-    kind: SubmissionBlockKind = 'studio',
-    /** Only the authenticated gallery service can supply a validated immutable snapshot. */
-    gallery?: { snapshot: GallerySubmission; projectForChecks: unknown; revision: string },
-    /** Impressão digital do conteúdo enviado ("envio em dia"); a galeria não tem. */
-    fingerprint: string | null = null,
+    options: SubmitStudioProjectOptions = {},
   ): Promise<StudioSubmissionResultView> {
+    const {
+      clientResults = [],
+      message = null,
+      messageSpoken = false,
+      privileged = false,
+      accountId,
+      authorName = null,
+      kind = 'studio',
+      gallery,
+      fingerprint = null,
+    } = options
     const contentFingerprint = gallery ? null : fingerprint
     const limits = SUBMISSION_LIMITS[kind]
     // Recado do aluno ao professor: trim → vazio vira null (não guarda " ").
     const note = message?.trim() ? message.trim() : null
+    // O recado é espelhado na conversa ANTES do upsert e a coluna é `varchar(1000)`: um recado
+    // longo demais precisa parar aqui, sem efeito colateral, e não virar 500 no banco depois do
+    // turno gravado. As bordas HTTP já recusam pelo mesmo teto; esta é a rede para quem chamar
+    // o serviço por outro caminho.
+    if (note !== null && note.length > MAX_SUBMISSION_MESSAGE_CHARS) {
+      throw new ValidationError(
+        `O recado para o professor pode ter até ${MAX_SUBMISSION_MESSAGE_CHARS} caracteres.`,
+      )
+    }
+    // A marca da voz acompanha o recado: sem recado não há o que ler com boa vontade.
+    const noteSpoken = note !== null && messageSpoken === true
     const lesson = await this.courses.findLessonWithContent(lessonId)
     // Aula rascunho é invisível ao aluno → não aceita entregas.
     if (!lesson?.isPublished) throw new LessonNotFoundError()
@@ -182,6 +221,7 @@ export class SubmitStudioProjectService {
       // parcialmente confirmada e o aluno pode reenviar com segurança.
       await this.mirrorSubmitNote({
         note,
+        noteSpoken,
         userId,
         accountId: accountId ?? userId,
         audience: course.audience,
@@ -203,6 +243,7 @@ export class SubmitStudioProjectService {
           project: submissionProject,
           submittedAt,
           message: note,
+          messageSpoken: noteSpoken,
           contentFingerprint,
         },
         { revision: block.contentRevision, galleryRequestId: gallery?.snapshot.requestId },
@@ -230,6 +271,7 @@ export class SubmitStudioProjectService {
 
     await this.mirrorSubmitNote({
       note,
+      noteSpoken,
       userId,
       accountId: accountId ?? userId,
       audience: course.audience,
@@ -257,6 +299,7 @@ export class SubmitStudioProjectService {
         checkedAt: submittedAt,
         passedAt,
         message: note,
+        messageSpoken: noteSpoken,
         contentFingerprint,
       },
       {
@@ -308,6 +351,8 @@ export class SubmitStudioProjectService {
    */
   private async mirrorSubmitNote(args: {
     note: string | null
+    /** O recado foi falado e transcrito (voz para texto): o turno espelhado leva a marca. */
+    noteSpoken: boolean
     userId: string
     accountId: string
     audience: CourseAudience
@@ -332,6 +377,7 @@ export class SubmitStudioProjectService {
         title: args.title,
         authorName: args.authorName,
         body: args.note,
+        spoken: args.noteSpoken,
         dedupeId: deterministicSourceId(
           STUDIO_SUBMIT_NOTE_NAMESPACE,
           `${args.userId}:${args.blockId}:${projectHash}:${args.note}`,

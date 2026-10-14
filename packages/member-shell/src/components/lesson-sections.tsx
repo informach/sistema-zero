@@ -63,6 +63,7 @@ import {
   type VideoToggle,
 } from './lesson-video-float'
 import { LessonVideoGate, LessonVideoGateDone } from './lesson-video-gate'
+import { VoiceInputButton } from './voice-input/voice-input-button'
 
 /**
  * A ligação entre os vídeos da seção e o `LessonSectionsContent` (vídeo flutuante e aviso "assista
@@ -458,6 +459,10 @@ function LessonSectionsContent({
   const [help, setHelp] = useState('')
   const [helpStatus, setHelpStatus] = useState('')
   const [helpThreadId, setHelpThreadId] = useState<string | null>(null)
+  // O pedido tem texto que veio da fala (o botão "Falar"): a equipe vê o chip "falado".
+  const [helpSpoken, setHelpSpoken] = useState(false)
+  // A fala ainda vira texto: o "Enviar" espera (senão a limpeza do envio apagava o que chegasse).
+  const [helpVoiceBusy, setHelpVoiceBusy] = useState(false)
   const helpRequest = useRef<{ body: string; sectionId: string; id: string } | null>(null)
   const [sending, setSending] = useState(false)
   const requirements = lessonCompletionRequirements({
@@ -700,6 +705,7 @@ function LessonSectionsContent({
       setToolMode('example')
       setHelpOpen(false)
       setHelp('')
+      setHelpSpoken(false)
       setHelpStatus('')
       setHelpThreadId(null)
       setVisited(
@@ -740,7 +746,7 @@ function LessonSectionsContent({
     }
   }
   async function sendHelp() {
-    if (!section || !help.trim() || sending) return
+    if (!section || !help.trim() || sending || helpVoiceBusy) return
     if (
       helpRequest.current?.body !== help.trim() ||
       helpRequest.current?.sectionId !== section.id
@@ -752,10 +758,16 @@ function LessonSectionsContent({
       const result = await apiSend<{ threadId: string }>(
         `/api/members/lessons/${encodeURIComponent(lesson.id)}/section-help`,
         'POST',
-        { sectionId: section.id, body: help.trim(), requestId: helpRequest.current.id },
+        {
+          sectionId: section.id,
+          body: help.trim(),
+          requestId: helpRequest.current.id,
+          ...(helpSpoken ? { spoken: true } : {}),
+        },
         { 'x-sz-viewer': player?.viewerId ?? '' },
       )
       setHelp('')
+      setHelpSpoken(false)
       setHelpStatus('Pedido enviado. A resposta aparecerá nos seus recados.')
       setHelpThreadId(result.threadId)
       helpRequest.current = null
@@ -902,12 +914,28 @@ function LessonSectionsContent({
       <textarea
         id={`section-help-${lesson.id}`}
         value={help}
-        onChange={(e) => setHelp(e.target.value)}
+        onChange={(e) => {
+          setHelp(e.target.value)
+          if (!e.target.value.trim()) setHelpSpoken(false)
+        }}
         maxLength={8000}
         rows={3}
         className="w-full rounded-lg border border-border bg-background p-3"
       />
-      <Button type="submit" disabled={sending || !help.trim()}>
+      {player?.voiceInput ? (
+        <VoiceInputButton
+          viewerId={player.viewerId}
+          context={section ? `${lesson.title} · ${section.title}` : lesson.title}
+          value={help}
+          maxLength={8000}
+          onChange={setHelp}
+          onSpoken={() => setHelpSpoken(true)}
+          onBusyChange={setHelpVoiceBusy}
+          textareaId={`section-help-${lesson.id}`}
+          disabled={sending}
+        />
+      ) : null}
+      <Button type="submit" disabled={sending || helpVoiceBusy || !help.trim()}>
         {sending ? 'Enviando…' : copy.secoes.enviarAjuda}
       </Button>
     </form>

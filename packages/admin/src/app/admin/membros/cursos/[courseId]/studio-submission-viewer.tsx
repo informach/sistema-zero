@@ -26,6 +26,7 @@ import {
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { refreshProfessorCounts } from '@/components/admin/professor-counts-store'
+import { SpokenChip } from '@/components/admin/spoken-chip'
 import { useConfirm } from '@/components/admin/use-confirm'
 import { PintaEmbed } from '@/components/pinta/pinta-embed'
 import { GallerySubmissionViewer } from '@/components/professor/gallery-submission-viewer'
@@ -337,6 +338,7 @@ export function StudioSubmissionViewer({
             <Card className="space-y-1 p-3">
               <div className="flex items-center gap-1.5 font-medium text-sm">
                 <MessageSquare className="size-4" /> Recado do aluno
+                {detail.messageSpoken ? <SpokenChip /> : null}
               </div>
               <p className="whitespace-pre-wrap text-sm text-muted-foreground">{detail.message}</p>
             </Card>

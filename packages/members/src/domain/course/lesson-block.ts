@@ -37,6 +37,14 @@ export type LessonBlockKind = (typeof LESSON_BLOCK_KINDS)[number]
 /** Kinds que compartilham o fluxo e a persistência de entrega de projeto. */
 export type SubmissionBlockKind = Extract<LessonBlockKind, 'studio' | 'pinta'>
 
+/**
+ * Teto do RECADO da entrega ao professor (Estúdio, Pinta e galeria), em caracteres. É o
+ * tamanho da coluna `studio_submissions.message` (`varchar(1000)`), e TODA borda que recebe o
+ * recado usa esta constante: a galeria aceitava 2000, o upsert estourava "value too long"
+ * (500) e o turno já tinha sido espelhado na conversa (14/10/2026).
+ */
+export const MAX_SUBMISSION_MESSAGE_CHARS = 1000
+
 export function isLessonBlockKind(value: unknown): value is LessonBlockKind {
   return typeof value === 'string' && (LESSON_BLOCK_KINDS as readonly string[]).includes(value)
 }
