@@ -2002,7 +2002,14 @@ export const liveRecordingJobs = members.table(
     desiredState: text('desired_state').$type<'paused' | 'recording' | 'stopped'>().notNull(),
     confirmedState: text('confirmed_state')
       .$type<
-        'not_started' | 'starting' | 'recording' | 'paused' | 'processing' | 'review' | 'failed'
+        | 'not_started'
+        | 'starting'
+        | 'recording'
+        | 'paused'
+        | 'processing'
+        | 'review'
+        | 'failed'
+        | 'empty'
       >()
       .notNull()
       .default('not_started'),
@@ -2012,9 +2019,32 @@ export const liveRecordingJobs = members.table(
     manifestKey: text('manifest_key'),
     replayKey: text('replay_key'),
     error: text('error'),
+    /** Consecutive failed syncs; reset by any acknowledgement from the recorder. */
+    attempts: integer('attempts').notNull().default(0),
+    /** Exponential backoff: the loop skips the job until this instant. */
+    nextAttemptAt: timestamp('next_attempt_at', { withTimezone: true }),
+    /** Last acknowledgement (command response or event) from the private recorder. */
+    confirmedAt: timestamp('confirmed_at', { withTimezone: true }),
+    /**
+     * Lease of the newest command sent with desired `recording`. The recorder stops capturing
+     * when its lease ends, so once this passed (plus a margin) nothing can be recording.
+     */
+    recordingLeaseEndsAt: timestamp('recording_lease_ends_at', { withTimezone: true }),
+    /** Terminal: review, empty (no segments) or failed after the retry budget. Never retried. */
+    finishedAt: timestamp('finished_at', { withTimezone: true }),
   },
   (t) => [uniqueIndex('live_recording_job_uq').on(t.jobId)],
 )
+
+/**
+ * Cross-replica serialization of the media reconcile of one occurrence. A short lease row
+ * (never a connection held across provider calls); expired leases are taken over.
+ */
+export const liveMediaReconcileLeases = members.table('live_media_reconcile_leases', {
+  occurrenceId: uuid('occurrence_id').primaryKey(),
+  holder: uuid('holder').notNull(),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+})
 
 export const liveReplayPositions = members.table(
   'live_replay_positions',

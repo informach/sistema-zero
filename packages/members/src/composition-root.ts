@@ -125,7 +125,7 @@ import {
 } from './application/validate-certificate/validate-certificate.service'
 import { ZappyHistoryService } from './application/zappy/zappy-history.service'
 import { ZappyKnowledgeService } from './application/zappy/zappy-knowledge.service'
-import { LiveNotFoundError, LiveUnavailableError } from './domain/live/live.errors'
+import { LiveNotFoundError } from './domain/live/live.errors'
 import type { Env } from './infrastructure/config/env'
 import { createAuthHttpGateway } from './infrastructure/gateways/auth-http.gateway'
 import { createCatalogHttpGateway } from './infrastructure/gateways/catalog-http.gateway'
@@ -460,10 +460,13 @@ export async function createApplication(env: Env): Promise<Application> {
     {
       mediaReady: env.LIVE_MEDIA_READY,
       async onPermissionsChanged(occurrenceId) {
-        await Promise.all([
-          liveMedia?.reconcile(occurrenceId),
-          liveRecording?.syncOccurrence(occurrenceId),
-        ])
+        // Media revocation must be prompt and is awaited. The recorder is NOT: a slow or
+        // unreachable recorder must not hold a teacher's command or a child's join (the
+        // recording loop retries it with its own backoff).
+        void liveRecording
+          ?.syncOccurrence(occurrenceId)
+          .catch(() => logger.warn('live_recording.sync_deferred', { occurrenceId }))
+        await liveMedia?.reconcile(occurrenceId)
       },
       async validatePlanAssets(plan) {
         if (plan.starterProjectId) {
@@ -501,12 +504,9 @@ export async function createApplication(env: Env): Promise<Application> {
     liveService,
     clock,
     {
+      // Without a configured recorder nothing can be recording: help is never blocked by it.
       async confirmPaused(occurrenceId) {
-        if (!liveRecording)
-          throw new LiveUnavailableError(
-            'O gravador da sala precisa estar configurado antes da ajuda.',
-          )
-        await liveRecording.confirmPaused(occurrenceId)
+        await liveRecording?.confirmPaused(occurrenceId)
       },
     },
     {
@@ -1029,6 +1029,10 @@ export async function createApplication(env: Env): Promise<Application> {
   let broadcastCycle: Promise<unknown> | null = null
   let parentReportTimer: ReturnType<typeof setInterval> | null = null
   let renewalReminderTimer: ReturnType<typeof setInterval> | null = null
+  // Live deadlines (end overdue calls, cancel encounters that never happened) run in their own
+  // loop: independent of the recorder and of whether live media is configured at all.
+  let liveDeadlineTimer: ReturnType<typeof setInterval> | null = null
+  let liveDeadlineCycle: Promise<void> | null = null
 
   // Retenção do dedupe de webhooks (fora do hot path): apaga `processed_webhooks`
   // antigos para a tabela não crescer sem limite. O advisory lock garante que SÓ
@@ -1088,6 +1092,19 @@ export async function createApplication(env: Env): Promise<Application> {
     logger,
     async start() {
       stopLiveRecording = liveRecording?.start()
+      liveDeadlineTimer = setInterval(() => {
+        if (liveDeadlineCycle) return
+        liveDeadlineCycle = liveService
+          .reconcileDeadlines()
+          .catch((error) =>
+            logger.error('live.deadline_sweep_failed', {
+              error: error instanceof Error ? error.message : String(error),
+            }),
+          )
+          .finally(() => {
+            liveDeadlineCycle = null
+          })
+      }, 5000)
       const deliverRecados = () => {
         if (broadcastCycle) return
         broadcastCycle = teacherBroadcasts
@@ -1133,6 +1150,8 @@ export async function createApplication(env: Env): Promise<Application> {
     },
     async stop() {
       await stopLiveRecording?.()
+      if (liveDeadlineTimer) clearInterval(liveDeadlineTimer)
+      if (liveDeadlineCycle) await liveDeadlineCycle
       if (broadcastTimer) clearInterval(broadcastTimer)
       if (broadcastCycle) await broadcastCycle
       if (cleanupTimer) clearInterval(cleanupTimer)

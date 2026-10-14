@@ -581,11 +581,11 @@ export class LiveWorkspaceService {
         request.status !== 'requested'
       )
         throw new LiveAccessError()
-      // A failed recorder is NOT proof that capture has stopped. The recording service
-      // must first acknowledge paused or finalized capture; database status alone
-      // must not authorize help against a finalized receiver generation.
+      // A failed recorder is NOT proof that capture has stopped. `confirmPaused` just proved
+      // it (acknowledgement or expired capture lease); `unavailable`/`empty` are only shown
+      // after such a proof or when nothing was captured. Without a recorder nothing records.
       const safeRecordingStates = this.recording
-        ? ['not_started', 'paused', 'review', 'ready']
+        ? ['not_started', 'paused', 'review', 'ready', 'unavailable', 'empty']
         : ['not_started', 'paused', 'ready']
       if (!safeRecordingStates.includes(context.occurrence.recording.state))
         throw new LiveConflictError(
