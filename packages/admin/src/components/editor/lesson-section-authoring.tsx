@@ -59,10 +59,12 @@ import {
   sectionCompletionCandidates,
   sectionCompletionSummary,
   suggestedCompletion,
+  teacherNotesValue,
 } from '@/lib/lesson-authoring'
 import type { BlockView, LessonBlockContent, LessonContentView } from '@/lib/types'
 import { LessonBlockKindBadge } from './lesson-block-kind'
 import { SectionCompletionEditor } from './section-completion-editor'
+import { TeacherNotesField } from './teacher-notes-field'
 
 export interface SectionAuthoringProps {
   lesson: LessonContentView
@@ -78,6 +80,11 @@ export interface SectionAuthoringProps {
   area: 'sections' | 'materials'
   focusRequest?: { sectionId: string; target?: 'completion' | 'settings'; sequence: number }
   uploadStatus?: Record<string, string>
+  /**
+   * Aula de curso AO VIVO: cada parte ganha as "Anotações da professora" (`teacherNotes`, só ela
+   * vê na sala) e o bloco de vídeo antigo é sinalizado (a transmissão faz o papel dele).
+   */
+  live?: boolean
 }
 
 function SortableSection({
@@ -128,6 +135,7 @@ export function LessonSectionAuthoring({
   area,
   focusRequest,
   uploadStatus = {},
+  live = false,
 }: SectionAuthoringProps) {
   const [openIds, setOpenIds] = useState<string[]>([])
   const [activeEditor, setActiveEditor] = useState<{
@@ -391,6 +399,11 @@ export function LessonSectionAuthoring({
                   {uploadStatus[id]}
                 </p>
               )}
+              {live && block.content.kind === 'video' && (
+                <p className="mt-2 text-xs text-amber-700 dark:text-amber-400">
+                  Bloco de vídeo antigo: na aula ao vivo, a transmissão do encontro faz esse papel.
+                </p>
+              )}
               {allIssues
                 .filter((issue) => issue.blockId === id)
                 .map((issue) => (
@@ -545,6 +558,14 @@ export function LessonSectionAuthoring({
                     onChange={(e) => patch(editing.id, { objective: e.target.value })}
                   />
                 </label>
+                {live && (
+                  <TeacherNotesField
+                    value={editing.teacherNotes ?? ''}
+                    onChange={(value) =>
+                      patch(editing.id, { teacherNotes: teacherNotesValue(value) })
+                    }
+                  />
+                )}
                 <label className="block space-y-2 text-sm">
                   Onde a criança cria
                   <Select
@@ -722,11 +743,20 @@ export function LessonSectionAuthoring({
                                 {sectionIssues[0]?.message}
                               </button>
                             )}
-                            {pendingMedia.length > 0 && (
+                            {pendingMedia.length > 0 && !live && (
                               <p className="text-xs text-amber-700 dark:text-amber-400">
                                 Vídeo aguardando envio
                               </p>
                             )}
+                            {live && section.teacherNotes?.trim() ? (
+                              <button
+                                type="button"
+                                onClick={() => editSection(section.id, 'settings')}
+                                className="block max-w-full truncate text-left text-xs text-primary underline-offset-4 hover:underline"
+                              >
+                                Anotações da professora: {section.teacherNotes.trim()}
+                              </button>
+                            ) : null}
                             {section.blockIds
                               .filter((id) => uploadStatus[id])
                               .map((id) => (

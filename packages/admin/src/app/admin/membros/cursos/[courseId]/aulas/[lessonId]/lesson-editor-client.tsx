@@ -9,6 +9,7 @@ import {
   useSensors,
 } from '@dnd-kit/core'
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { type CourseModality, courseModalityOf } from '@sistemazero/core/course/modality'
 import {
   type InteractiveBlock,
   isInteractiveBlock,
@@ -69,6 +70,7 @@ import { LessonManifestExport } from '@/components/editor/lesson-manifest-export
 import { LessonManifestImport } from '@/components/editor/lesson-manifest-import'
 import { LessonPublishedCompare } from '@/components/editor/lesson-published-compare'
 import { LessonStructureEditor } from '@/components/editor/lesson-structure-editor'
+import { LiveBroadcastCard } from '@/components/editor/live-broadcast-card'
 import { RichTextEditor } from '@/components/editor/rich-text-editor'
 import { useLessonDraft } from '@/components/editor/use-lesson-draft'
 import { VozZappyButton } from '@/components/editor/voz-zappy-button'
@@ -89,6 +91,7 @@ import { StudioBlocksPicker } from '@/components/studio/studio-blocks-picker'
 import { StudioConfigClipboard } from '@/components/studio/studio-config-clipboard'
 import { StudioEmbed } from '@/components/studio/studio-embed'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
+import { studentLessonLink } from '@/lib/course-modality'
 import {
   appendLessonSection,
   newAuthoringSection,
@@ -639,9 +642,12 @@ function LessonEditorSession({
   const [courseInfo, setCourseInfo] = useState<{
     slug: string
     audience: 'adult' | 'kids'
+    /** Curso ao vivo: transmissão no lugar do vídeo, anotações da professora por parte. */
+    modality: CourseModality
     status: string
     lessonPublished: boolean
   } | null>(null)
+  const live = courseInfo?.modality === 'live'
   const [busy, setBusy] = useState(false)
   const { confirm, confirmDialog } = useConfirm()
 
@@ -774,6 +780,7 @@ function LessonEditorSession({
       setCourseInfo({
         slug: tree.slug,
         audience: (tree.audience ?? 'adult') as 'adult' | 'kids',
+        modality: courseModalityOf(tree.modality),
         status: tree.status,
         lessonPublished: treeLesson?.isPublished ?? false,
       })
@@ -791,6 +798,7 @@ function LessonEditorSession({
         setCourseInfo({
           slug: tree.slug,
           audience: tree.audience === 'kids' ? 'kids' : 'adult',
+          modality: courseModalityOf(tree.modality),
           status: tree.status,
           lessonPublished: treeLesson?.isPublished ?? false,
         })
@@ -1228,7 +1236,8 @@ function LessonEditorSession({
         return
       add(
         seed(
-          intent === 'application'
+          // Curso ao vivo: quem explica é a transmissão do encontro, nunca um bloco de vídeo.
+          intent === 'application' && !live
             ? 'video'
             : courseInfo?.audience === 'adult'
               ? 'rich_text'
@@ -1268,7 +1277,7 @@ function LessonEditorSession({
     } else
       add(
         seed(
-          intent === 'presentation'
+          intent === 'presentation' && !live
             ? 'video'
             : intent === 'closing'
               ? 'quiz'
@@ -1349,7 +1358,11 @@ function LessonEditorSession({
       await apiSend(`/api/members/lessons/${lessonId}/draft/publish`, 'POST', command)
       publication.current = null
       await load()
-      toast.success('Aula publicada. A base do Zappy será atualizada com esta versão.')
+      toast.success(
+        live
+          ? 'Aula publicada. Turmas novas deste curso ganham um encontro para ela.'
+          : 'Aula publicada. A base do Zappy será atualizada com esta versão.',
+      )
       return true
     } catch (error) {
       toast.error((error as ApiError).message ?? 'Não foi possível publicar.')
@@ -1499,13 +1512,10 @@ function LessonEditorSession({
                 // "Ver como aluno": abre a aula no app do aluno (pela audience) com a
                 // PRÓPRIA conta de equipe (passe livre). Rascunho → 404 na visão do
                 // aluno (o filtro roda antes do bypass), por isso só habilita publicado.
-                if (!courseInfo) return null
-                const base =
-                  courseInfo.audience === 'kids' ? studentAppUrls?.kids : studentAppUrls?.adult
-                if (!base) return null
-                const publishedBoth =
-                  courseInfo.status === 'published' && courseInfo.lessonPublished
-                const url = `${base.replace(/\/+$/, '')}/cursos/${encodeURIComponent(courseInfo.slug)}/aulas/${encodeURIComponent(lessonId)}`
+                // ⚠️ Curso ao vivo não tem essa porta: a aula abre pela sala do encontro.
+                const link = studentLessonLink(courseInfo, studentAppUrls, lessonId)
+                if (!link) return null
+                const { url, enabled: publishedBoth } = link
                 return (
                   <Button
                     variant="outline"
@@ -1657,6 +1667,9 @@ function LessonEditorSession({
             </details>
           </div>
         )}
+        {/* Curso ao vivo: o cartão fica no topo de todas as áreas (a transmissão é da aula
+            inteira, não de uma parte), menos dentro do editor de um bloco. */}
+        {draft && live && !blockOpen ? <LiveBroadcastCard /> : null}
         {draft && (
           <div
             hidden={blockOpen}
@@ -1762,6 +1775,7 @@ function LessonEditorSession({
                 lessonId={lessonId}
                 lessonSlug={lesson.slug}
                 courseSlug={courseInfo.slug}
+                live={live}
                 disabled={busy || draftState.status === 'conflict'}
                 beforeImport={beforePublish}
                 onImported={load}
@@ -1775,6 +1789,7 @@ function LessonEditorSession({
               <div hidden={area === 'data' || blockOpen}>
                 <LessonStructureEditor
                   authorId={authorId}
+                  live={live}
                   // A prévia e o ensaio montam a aula no layout do app de destino: os
                   // dois divergem desde 13/09/2026 (o kids não tem a barra do topo e
                   // leva o índice para o cabeçalho da seção).
@@ -1853,7 +1868,11 @@ function LessonEditorSession({
           title="Adicionar conteúdo"
           className="max-w-3xl"
         >
-          <LessonContentCatalog audience={courseInfo?.audience ?? 'kids'} onSelect={createBlock} />
+          <LessonContentCatalog
+            audience={courseInfo?.audience ?? 'kids'}
+            live={live}
+            onSelect={createBlock}
+          />
         </Dialog>
         {compareOpen && draft ? (
           <LessonPublishedCompare
@@ -2173,6 +2192,17 @@ function LessonEditorSession({
 
                 {blockForm.kind === 'video' ? (
                   <>
+                    {live ? (
+                      <p
+                        role="note"
+                        className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-sm"
+                      >
+                        Este curso é ao vivo: o vídeo da aula é a transmissão do encontro, que vira
+                        a gravação da turma. Este bloco de vídeo é antigo e continua editável, mas
+                        não aparece mais na lista de conteúdos novos. Se ele não for necessário,
+                        retire-o da aula.
+                      </p>
+                    ) : null}
                     <div className="grid items-start gap-5 xl:grid-cols-2">
                       <Field
                         label="Vídeo (Vimeo)"
@@ -3066,13 +3096,13 @@ function LessonEditorSession({
                 </Button>
               </div>
             ))}
-            {draft && lessonEditorialWarnings(draft.document).length > 0 && (
+            {draft && lessonEditorialWarnings(draft.document, { live }).length > 0 && (
               <details>
                 <summary className="cursor-pointer text-sm font-medium">
                   Sugestões didáticas (não impedem publicar)
                 </summary>
                 <ul className="mt-3 list-disc space-y-2 pl-5 text-sm">
-                  {lessonEditorialWarnings(draft.document).map((warning) => (
+                  {lessonEditorialWarnings(draft.document, { live }).map((warning) => (
                     <li key={warning}>{warning}</li>
                   ))}
                 </ul>

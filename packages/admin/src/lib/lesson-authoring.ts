@@ -8,8 +8,18 @@ import {
   PLATFORM_ACTION_LABELS,
   type SectionCompletion,
   sectionCompletionIssues,
+  TEACHER_NOTES_MAX,
 } from '@sistemazero/core/learning'
 import type { LessonBlockContent } from './types'
+
+/**
+ * As "Anotações da professora" de uma parte (curso ao vivo). O texto fica como digitado (aparar a
+ * cada tecla comeria o espaço antes da palavra seguinte); vazio ou só espaços TIRA o campo da
+ * parte, para não gravar uma anotação em branco que a sala mostraria como vazia.
+ */
+export function teacherNotesValue(value: string): string | undefined {
+  return value.trim() ? value.slice(0, TEACHER_NOTES_MAX) : undefined
+}
 
 type Document = LessonDraftDocument<LessonBlockContent>
 type Block = Document['blocks'][number]
