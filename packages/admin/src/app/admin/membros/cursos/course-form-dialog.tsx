@@ -1,5 +1,6 @@
 'use client'
 
+import { type CourseModality, courseModalityOf } from '@sistemazero/core/course/modality'
 import { Button } from '@sistemazero/ui/button'
 import { Dialog } from '@sistemazero/ui/dialog'
 import { Input } from '@sistemazero/ui/input'
@@ -16,11 +17,13 @@ import { ImageUploader } from '@/components/media/image-uploader'
 import { StudioBlocksPicker } from '@/components/studio/studio-blocks-picker'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { courseSaveError } from '@/lib/course-errors'
+import { LIVE_MODALITY_HINT, modalityChangeWarning } from '@/lib/course-modality'
 import { loadAllPages } from '@/lib/load-all-pages'
 import { slugify } from '@/lib/slug'
 import {
   AUDIENCE_LABELS,
   COURSE_AUDIENCES,
+  COURSE_MODALITY_LABELS,
   COURSE_STATUSES,
   COURSE_TIER_OPTIONS,
   type CourseView,
@@ -30,6 +33,8 @@ import {
 /** Pré-preenchimento ao criar um curso já mirando uma posição da jornada. */
 export interface CoursePrefill {
   audience?: string
+  /** Oficinas ao vivo: "Criar curso ao vivo" abre o formulário já em Ao vivo. */
+  modality?: CourseModality
   level?: string
   track?: string
   careerSlot?: number
@@ -44,6 +49,8 @@ interface FormState {
   salesPageUrl: string
   status: string
   audience: string
+  /** Gravado ou ao vivo. Ao vivo não ocupa posição na Jornada nem libera blocos do Estúdio. */
+  modality: CourseModality
   level: string
   track: string
   careerSlot: string
@@ -65,6 +72,8 @@ const EMPTY: FormState = {
   status: 'draft',
   // A operação hoje é Kids-first; Adult continua disponível no seletor.
   audience: 'kids',
+  // Padrão GRAVADO: o curso ao vivo é escolhido de propósito (ou pelo atalho das Oficinas).
+  modality: 'recorded',
   // Padrão: todo curso nasce Iniciante 2D (espelha os defaults das colunas no members).
   level: 'iniciante',
   track: '2d',
@@ -104,6 +113,7 @@ function formFromCourse(c: CourseView): FormState {
     salesPageUrl: c.salesPageUrl ?? '',
     status: c.status,
     audience: c.audience ?? 'adult',
+    modality: courseModalityOf(c.modality),
     level: c.level ?? 'iniciante',
     track: c.track ?? '2d',
     careerSlot: c.careerSlot == null ? '' : String(c.careerSlot),
@@ -119,6 +129,7 @@ function formFromPrefill(prefill: CoursePrefill | undefined): FormState {
   return {
     ...EMPTY,
     audience: prefill.audience ?? EMPTY.audience,
+    modality: prefill.modality ?? EMPTY.modality,
     level: prefill.level ?? EMPTY.level,
     track: prefill.track ?? EMPTY.track,
     careerSlot: prefill.careerSlot != null ? String(prefill.careerSlot) : '',
@@ -148,7 +159,8 @@ export function CourseFormDialog({
   prefill?: CoursePrefill
   /** Lista de cursos Kids p/ mostrar a OCUPAÇÃO das posições; buscada sozinha se ausente. */
   journeyCourses?: CourseView[]
-  onSaved: () => void | Promise<void>
+  /** Recebe o curso salvo quando o servidor o devolve (as Oficinas levam ao editor dele). */
+  onSaved: (saved?: CourseView) => void | Promise<void>
 }) {
   const [form, setForm] = useState<FormState>(EMPTY)
   const [saving, setSaving] = useState(false)
@@ -199,6 +211,8 @@ export function CourseFormDialog({
   }, [open, journeyCourses, refreshOccupancy])
 
   const isKids = form.audience === 'kids'
+  // Curso ao vivo não entra na Jornada: sem posição, sem liberação de blocos, sem trava de aula.
+  const isLive = form.modality === 'live'
   const studioUnlockRule =
     form.journeyRole === 'positioned'
       ? 'Curso da jornada: a criança recebe as ferramentas quando conclui o curso e publica no Mural.'
@@ -206,7 +220,12 @@ export function CourseFormDialog({
   const maxSlot = slotsForTier(form.level, form.track)
   const occupantBySlot = new Map<number, CourseView>()
   for (const c of kidsCourses) {
-    if (c.careerSlot != null && c.level === form.level && (c.track ?? '2d') === form.track) {
+    if (
+      c.careerSlot != null &&
+      courseModalityOf(c.modality) === 'recorded' &&
+      c.level === form.level &&
+      (c.track ?? '2d') === form.track
+    ) {
       occupantBySlot.set(c.careerSlot, c)
     }
   }
@@ -218,6 +237,10 @@ export function CourseFormDialog({
    */
   async function collectSaveWarnings(): Promise<string[]> {
     const warnings: string[] = []
+    const modalityWarning = editing
+      ? modalityChangeWarning(courseModalityOf(editing.modality), form.modality)
+      : null
+    if (modalityWarning) warnings.push(modalityWarning)
     const publishing = form.status === 'published' && editing?.status !== 'published'
     if (publishing) {
       if (!form.coverImageUrl.trim())
@@ -226,7 +249,7 @@ export function CourseFormDialog({
       // Pré-aviso amigável do 409 NO_SHOWCASE_BLOCK (só quando dá pra saber: o campo
       // `hasShowcaseBlock` vem na listagem — aberto pelo editor ele é undefined e o
       // server cobre com o 409).
-      if (form.careerSlot === '1' && editing?.hasShowcaseBlock === false) {
+      if (!isLive && form.careerSlot === '1' && editing?.hasShowcaseBlock === false) {
         warnings.push(
           'Curso-base sem aula publicada com vitrine (Publicar no Mural) — o server vai recusar a publicação.',
         )
@@ -266,7 +289,12 @@ export function CourseFormDialog({
       toast.error('A página de vendas precisa ser uma URL completa (começando com https://).')
       return
     }
-    if (form.audience === 'kids' && form.journeyRole === 'positioned' && !form.careerSlot) {
+    if (
+      !isLive &&
+      form.audience === 'kids' &&
+      form.journeyRole === 'positioned' &&
+      !form.careerSlot
+    ) {
       toast.error('Escolha a posição do curso na jornada.')
       return
     }
@@ -294,6 +322,15 @@ export function CourseFormDialog({
   async function doSave() {
     setSaving(true)
     try {
+      const journey = isLive
+        ? // ⚠️ Curso ao vivo NUNCA leva posição nem papel na Jornada (o members recusa os dois):
+          // `careerSlot: null` limpa e `journeyRole` fica de fora.
+          { careerSlot: null }
+        : {
+            careerSlot:
+              form.audience === 'kids' && form.careerSlot ? Number(form.careerSlot) : null,
+            journeyRole: form.audience === 'kids' ? form.journeyRole : 'reward',
+          }
       const payload = {
         slug: form.slug.trim(),
         title: form.title.trim(),
@@ -304,31 +341,34 @@ export function CourseFormDialog({
         status: form.status,
         // SEMPRE enviado (explícito > depender do preserve do members no PATCH).
         audience: form.audience,
+        // SEMPRE enviado: o members antigo descarta o campo; o novo só recusa a TROCA de
+        // modalidade de um curso que já tem turma (409 com o recado, mostrado no toast).
+        modality: form.modality,
         level: form.level,
         track: form.track,
-        careerSlot: form.audience === 'kids' && form.careerSlot ? Number(form.careerSlot) : null,
-        journeyRole: form.audience === 'kids' ? form.journeyRole : 'reward',
+        ...journey,
         sequentialLock: form.sequentialLock,
         videoBeforeActivity: form.videoBeforeActivity,
         // SEMPRE enviado (como os demais): o members PRESERVA quando ausente, então
         // omitir aqui esconderia uma limpeza intencional do professor.
         studioUnlockBlocks: form.studioUnlockBlocks,
       }
+      let saved: CourseView | undefined
       if (editing) {
         // O PATCH do members EXIGE `version` (concorrência otimista → 409 se
         // defasada); o POST NÃO aceita o campo. Sem ele, o body reprovava na
         // validação do members ("on":"body") em toda edição de curso.
-        await apiSend(`/api/members/courses/${editing.id}`, 'PATCH', {
+        saved = await apiSend<CourseView>(`/api/members/courses/${editing.id}`, 'PATCH', {
           ...payload,
           version: editing.version,
         })
         toast.success('Curso atualizado.')
       } else {
-        await apiSend('/api/members/courses', 'POST', payload)
+        saved = await apiSend<CourseView>('/api/members/courses', 'POST', payload)
         toast.success('Curso criado.')
       }
       onClose()
-      await onSaved()
+      await onSaved(saved && typeof saved === 'object' && 'id' in saved ? saved : undefined)
     } catch (err) {
       const apiErr = err as ApiError
       const mapped = courseSaveError(apiErr.code, apiErr.message ?? 'Não foi possível salvar.')
@@ -440,6 +480,33 @@ export function CourseFormDialog({
           </Select>
         </Field>
         <Field
+          label="Modalidade"
+          htmlFor="cmodality"
+          hint={
+            editing
+              ? `${LIVE_MODALITY_HINT} Trocar depois só vale enquanto o curso não tem turma.`
+              : LIVE_MODALITY_HINT
+          }
+        >
+          <Select
+            id="cmodality"
+            value={form.modality}
+            onChange={(e) => {
+              const modality: CourseModality = e.target.value === 'live' ? 'live' : 'recorded'
+              setForm((f) => ({
+                ...f,
+                modality,
+                // Ao vivo não ocupa posição na Jornada: limpa ao trocar.
+                careerSlot: modality === 'live' ? '' : f.careerSlot,
+                journeyRole: modality === 'live' ? 'reward' : f.journeyRole,
+              }))
+            }}
+          >
+            <option value="recorded">{COURSE_MODALITY_LABELS.recorded}</option>
+            <option value="live">{COURSE_MODALITY_LABELS.live}</option>
+          </Select>
+        </Field>
+        <Field
           label="Nível do curso"
           htmlFor="clevel"
           tooltip="Degrau do curso: dificuldade (Iniciante/Intermediário/Avançado) × eixo (2D/3D). Conta para a JORNADA do aluno: concluir e publicar no Mural cursos de cada degrau, na ordem da escada (2D antes do 3D em cada dificuldade), faz o aluno subir de Faísca até Lenda."
@@ -477,7 +544,7 @@ export function CourseFormDialog({
             <option value="lenda:2d">👑 Lenda (curso bônus da formatura)</option>
           </Select>
         </Field>
-        {form.level === 'lenda' ? (
+        {isLive ? null : form.level === 'lenda' ? (
           <p className="rounded-lg bg-muted/50 px-3 py-2 text-muted-foreground text-xs">
             👑 Curso bônus da <strong>Lenda</strong> (formatura): FORA da jornada — sem posição, não
             conta pontos e não trava. Aparece só na trilha da Lenda em <code>/cursos</code>, para
@@ -544,7 +611,7 @@ export function CourseFormDialog({
             cursos elegíveis. Bônus Kids exige conclusão; curso com posição exige também
             o Mural. É o MESMO formato da aula (`allowBlocks`), então o picker e a
             importação por JSON já recusam id inexistente ou repetido. */}
-        {form.audience === 'kids' && (
+        {form.audience === 'kids' && !isLive && (
           <Field
             label="Ferramentas que este curso libera no Estúdio"
             tooltip={`Liste os blocos que este curso usa, inclusive os fundamentos que já apareceram em cursos anteriores. ${studioUnlockRule} A caixa de ferramentas soma tudo que ela já conquistou, sem repetir.`}
@@ -575,44 +642,52 @@ export function CourseFormDialog({
             </p>
           </Field>
         )}
-        <Field
-          label="Trava sequencial das aulas"
-          htmlFor="csequentiallock"
-          tooltip="Estilo Duolingo: o aluno só abre a próxima aula depois de concluir a anterior, na ordem. Desligado = navegação livre (pode pular entre as aulas)."
-        >
-          <label
-            htmlFor="csequentiallock"
-            className="flex items-center gap-2 text-muted-foreground text-sm"
-          >
-            <input
-              id="csequentiallock"
-              type="checkbox"
-              checked={form.sequentialLock}
-              onChange={(e) => setForm((f) => ({ ...f, sequentialLock: e.target.checked }))}
-              className="size-4"
-            />
-            Liberar uma aula de cada vez (concluir a anterior destrava a próxima)
-          </label>
-        </Field>
-        <Field
-          label="Assistir ao vídeo antes da atividade"
-          htmlFor="cvideobeforeactivity"
-          hint="Para cursos de quem está começando. Em cada seção com vídeo e um jogo pronto ou uma experiência, a atividade abre depois que o aluno assiste ao vídeo uma vez até o fim (90%). Seções só com Estúdio ou Pinta não travam: o aluno monta junto com o vídeo. Vale para Kids e Adultos. A equipe e a prévia do admin veem tudo liberado."
-        >
-          <label
-            htmlFor="cvideobeforeactivity"
-            className="flex items-center gap-2 text-muted-foreground text-sm"
-          >
-            <input
-              id="cvideobeforeactivity"
-              type="checkbox"
-              checked={form.videoBeforeActivity}
-              onChange={(e) => setForm((f) => ({ ...f, videoBeforeActivity: e.target.checked }))}
-              className="size-4"
-            />
-            Trancar a atividade até o vídeo ser visto uma vez
-          </label>
-        </Field>
+        {/* No curso ao vivo a aula abre pela vaga na turma e pela data do encontro: a trava
+            sequencial e o "vídeo antes da atividade" (não há bloco de vídeo) não se aplicam. */}
+        {isLive ? null : (
+          <>
+            <Field
+              label="Trava sequencial das aulas"
+              htmlFor="csequentiallock"
+              tooltip="Estilo Duolingo: o aluno só abre a próxima aula depois de concluir a anterior, na ordem. Desligado = navegação livre (pode pular entre as aulas)."
+            >
+              <label
+                htmlFor="csequentiallock"
+                className="flex items-center gap-2 text-muted-foreground text-sm"
+              >
+                <input
+                  id="csequentiallock"
+                  type="checkbox"
+                  checked={form.sequentialLock}
+                  onChange={(e) => setForm((f) => ({ ...f, sequentialLock: e.target.checked }))}
+                  className="size-4"
+                />
+                Liberar uma aula de cada vez (concluir a anterior destrava a próxima)
+              </label>
+            </Field>
+            <Field
+              label="Assistir ao vídeo antes da atividade"
+              htmlFor="cvideobeforeactivity"
+              hint="Para cursos de quem está começando. Em cada seção com vídeo e um jogo pronto ou uma experiência, a atividade abre depois que o aluno assiste ao vídeo uma vez até o fim (90%). Seções só com Estúdio ou Pinta não travam: o aluno monta junto com o vídeo. Vale para Kids e Adultos. A equipe e a prévia do admin veem tudo liberado."
+            >
+              <label
+                htmlFor="cvideobeforeactivity"
+                className="flex items-center gap-2 text-muted-foreground text-sm"
+              >
+                <input
+                  id="cvideobeforeactivity"
+                  type="checkbox"
+                  checked={form.videoBeforeActivity}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, videoBeforeActivity: e.target.checked }))
+                  }
+                  className="size-4"
+                />
+                Trancar a atividade até o vídeo ser visto uma vez
+              </label>
+            </Field>
+          </>
+        )}
         <Field label="Subtítulo" htmlFor="subtitle" hint="Opcional.">
           <Input
             id="subtitle"

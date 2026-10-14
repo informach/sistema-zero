@@ -35,6 +35,7 @@ import { useSortableItem } from '@/components/dnd/use-sortable-item'
 import { ModuleRiveUploader } from '@/components/media/module-rive-uploader'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { cn } from '@/lib/cn'
+import { isLiveCourse } from '@/lib/course-modality'
 import { slugify } from '@/lib/slug'
 import {
   fetchSubmissionCountsSafe,
@@ -291,7 +292,11 @@ export function CourseEditorClient({
         title={tree?.title ?? 'Curso'}
         description={
           tree
-            ? `${tree.slug} · ${tree.status} · ${tree.audience === 'kids' ? 'Kids' : 'Adulto'}`
+            ? `${tree.slug} · ${tree.status} · ${tree.audience === 'kids' ? 'Kids' : 'Adulto'}${
+                isLiveCourse(tree)
+                  ? ' · Ao vivo: cada aula publicada é um encontro das turmas em Oficinas ao vivo'
+                  : ''
+              }`
             : courseId
         }
         action={
