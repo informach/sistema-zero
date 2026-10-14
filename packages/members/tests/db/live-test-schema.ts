@@ -19,6 +19,16 @@ export async function prepareLiveTestSchema(database: ReturnType<typeof postgres
       for (const statement of migration.split('--> statement-breakpoint'))
         if (statement.trim()) await sql.unsafe(statement)
     }
+    // 0108 is idempotent (IF NOT EXISTS): always applied, so an older test database that
+    // already had the live tables gains the recording columns and the reconcile lease table.
+    const terminal = await Bun.file(
+      new URL(
+        '../../src/infrastructure/persistence/drizzle/migrations/0108_live_recording_terminal_states.sql',
+        import.meta.url,
+      ),
+    ).text()
+    for (const statement of terminal.split('--> statement-breakpoint'))
+      if (statement.trim()) await sql.unsafe(statement)
     await sql`create table if not exists members.account_deletion_fences (account_id uuid primary key, created_at timestamptz not null)`
   })
 }

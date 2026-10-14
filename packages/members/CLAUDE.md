@@ -38,6 +38,71 @@ equipe ativa **e** estar atribuída à turma. O gateway continua responsável pe
   mensagens, participações, posições e workspaces sem recriar dados após a purga.
   `LIVE_MEDIA_READY=false` mantém o início da transmissão fechado até a validação operacional.
 
+### Oficinas: contrato de 14/10 e correções da revisão (migration `0108`)
+
+Revisão: `docs/plans/2026-10-14-oficinas-ao-vivo-full-review.md`. Todo campo novo está declarado
+no schema da rota (o `normalize` do Elysia descarta o que não está).
+
+- **Contrato** (`@sistemazero/core/live`): `LiveLessonPlan.studio` (curadoria do Estúdio: `level`
+  até 40, `allowBlocks` até 3000 itens de 1 a 160, `allowCategories` até 80, `allowedModes` de 1
+  a 3 sem repetir, `allowLevelReveal`; vive no JSON do roteiro, sem migration; `null` limpa;
+  `sanitizeLiveStudio` repete a validação). Controles `cancel` (scheduled ou lobby para
+  cancelled, idempotente), `admit-all` (só quem está `waiting`) e `lower-hands.before` (ISO: só
+  mãos com `handAt <= before`). `expectedVersion` é opcional e só é conferido nas transições
+  (start, end, open-lobby, cancel); o resto é idempotente e vale também na recepção.
+- **Recepção antecipada**: `LIVE_LOBBY_EARLY_MS` (15 min antes de `occurrence.startsAt`). Com a
+  recepção aberta, a criança de grant ainda `scheduled` entra e manda batimento; a sala devolve a
+  ocorrência (sem chat) e `access.canEnterLobby`. Roteiro, chat, mãos e mídia seguem só no horário.
+  `planRevision` só acompanha um `plan` não nulo (antes a criança que esperava na página nunca
+  recebia o roteiro).
+- **Turma**: `teacherNames` (id para nome, 1 a 80, só ids de `teacherIds`; mescla e poda).
+  `PATCH /members/admin/live/cohorts/:id` aceita `{status?, teacherIds?, teacherNames?}`, só
+  admin (`LiveActor.admin` no serviço, guarda da borda e rota auditada no gateway). Professora
+  removida sai do mapa de batimentos (não "supervisiona" mais) e dispara `onPermissionsChanged`.
+  `LiveOccurrence.conductorId` = quem deu `start`; a gravação segue essa professora.
+  `LiveSessionSummary.occurrenceState`/`recordingPublished` para o catálogo.
+- **Projeto vencido**: `LiveWorkspaceView.readOnly`. Sem assinatura do Estúdio, a dona (pela
+  biblioteca, sem `sessionId`) e a professora atribuída leem e exportam; `listOwned` traz
+  `readOnly`; claim, renew, commit, ajuda e publicação continuam recusados.
+- **Privacidade**: na sala da criança, `messages[].authorId` é `null` nas mensagens de outras
+  crianças; `LiveMediaPublication.displayName` é o primeiro nome (participação da criança,
+  `teacherNames` ou o nome do header da professora). Equipe não atribuída não vê matrículas
+  (nomes e contas) de outras turmas no catálogo admin nem em `enrollments`; admin vê tudo.
+- **S1 (pool)**: nenhuma escrita abre segunda conexão segurando trava. Sala: `mutateRoom` acha a
+  turma por `cohortIdForSession` e autoriza no snapshot travado; atividades leem progresso e
+  tentativas por `LiveTransactionReads` do mesmo `tx`. Projeto: a transação trava conta e linha do
+  projeto, NÃO a turma, e lê a turma por `tx.loadCohort()` (uma vez por transação); a consulta da
+  assinatura roda fora das travas (`ContinuationCheckRequired` refaz a transação). Prova em
+  `tests/db/live.repository.test.ts`, com pool de UMA conexão.
+- **S2 (carga)**: publicações de mídia autorizam todos numa leitura (`authorizeMediaMany`); a
+  consulta de 1 s do projeto sem revisão nova reaproveita a autorização por 5 s; sala e batimento
+  carregam a turma uma vez. ⚠️ Pendente: a sala ainda relê a turma inteira (roteiros de até 2 MB)
+  a cada 3 s; o batimento regrava o JSON da ocorrência a cada 5 s; `acceptEvent` do gravador chama
+  `setRecordingState` com a linha do job travada (raro); `publications()` aposenta conexão vencida
+  dentro da consulta. Medir no ensaio com 8 aparelhos antes de mexer.
+- **Gravação (S3/A10)**: sem job para ocorrência que nunca foi ao vivo; `empty` quando encerra sem
+  trechos; depois do fim, falha espera de 5 s a 10 min e vira `failed` na 8ª; ao vivo, 30 s sem
+  confirmação mostram `unavailable`. Colunas `attempts`, `next_attempt_at`, `confirmed_at`,
+  `recording_lease_ends_at` e `finished_at` (0108). A ajuda aceita a confirmação do gravador OU o
+  contrato do lease: passado o último lease de `recording` mais 15 s, o gravador já se pausou; sem
+  job, sem comando enviado ou sem gravador configurado, nada grava. O sync do gravador não segura
+  comando da professora nem entrada da criança (sai do `await` do `onPermissionsChanged`).
+- **Prazos (A5)**: `reconcileDeadlines` roda em laço próprio de 5 s no composition-root,
+  independente do gravador e da config de mídia; cancela `scheduled` vencido
+  (`room.deadline-cancelled`, aceita reposição), do mais antigo, até 100 por ciclo.
+- **Mídia (A9)**: reconcile um por vez por encontro no processo (pedidos no meio viram uma rodada
+  a mais) e entre réplicas pelo lease `live_media_reconcile_leases` (relógio do banco, 60 s).
+  Negociação recente espera o próximo ciclo; silenciar fecha só a trilha proibida; só negação de
+  política (`isDefinitiveDenial`) aposenta, nunca erro transitório.
+- **Suporte (S4)**: `assertNoLiveSupportWrite` recusa toda escrita das oficinas (sala, pais,
+  admin, projeto, atividades, mídia, gravação e preparo do Mural) quando o gateway marca
+  `x-auth-impersonator-id`. Leitura segue livre. O BFF recusa antes (`SUPPORT_SESSION`).
+- **Reposição (S7)**: `extendAccessUntil` só para admin; a professora agenda dentro do prazo.
+  **Inscrição (S9)**: repetir a mesma criança (ou a mesma reserva pendente da conta, mesmo nome,
+  em até 10 min) devolve a vaga existente. Mensagens para a criança falam em encontro, não em aula.
+- ⚠️ `tests/db`: use try/catch em vez de `expect(...).rejects` (ver "Como fazer");
+  `live-test-schema.ts` aplica a 0108 sempre (é idempotente).
+
 > **Quiz antes do certificado (03/10/2026):** o rascunho pode publicar quiz obrigatório em seção anterior à emissão, com o quiz e o certificado selecionados nos respectivos critérios. `certificateLessonIssues` mantém a restrição para outros blocos obrigatórios e recusa quiz misturado, posterior ou sem critério. A primeira emissão verifica a seção no servidor; o GET informa `eligible: false` enquanto ela estiver trancada. Certificados já emitidos seguem acessíveis sem reavaliar requisitos novos. Quiz selecionado como critério permite corrigir imediatamente. O CRUD legado sem estrutura mantém a restrição antiga.
 
 

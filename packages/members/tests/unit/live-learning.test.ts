@@ -76,7 +76,7 @@ async function setup(content: InteractiveBlock = html) {
     teacherIds: [teacher.id],
     schedule: [{ startsAt: now.toISOString(), endsAt: '2026-11-07T18:00:00Z' }],
   })
-  await live.updateCohort(teacher, cohort.id, 'open')
+  await live.updateCohort({ ...teacher, admin: true }, cohort.id, { status: 'open' })
   const enrollment = await live.enroll(teacher, cohort.id, {
     accountId: child.accountId,
     learnerId: child.id,

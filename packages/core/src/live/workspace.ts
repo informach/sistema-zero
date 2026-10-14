@@ -59,6 +59,11 @@ export interface LiveWorkspaceView {
   project: Record<string, unknown>
   assistance: LiveAssistanceView | null
   updatedAt: string
+  /**
+   * The lesson grant expired without a Studio continuation: the owner (and an assigned
+   * teacher) can still view and export, but every write is refused.
+   */
+  readOnly?: boolean
 }
 export interface LiveWorkspaceCommitRequest extends LiveWriteGuard {
   deviceId: string

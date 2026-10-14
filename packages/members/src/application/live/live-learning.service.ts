@@ -19,7 +19,11 @@ import {
   LiveConflictError,
   LiveNotFoundError,
 } from '../../domain/live/live.errors'
-import type { LiveActor, LiveRepository } from '../../domain/ports/live-repository.port'
+import type {
+  LiveActor,
+  LiveRepository,
+  LiveTransactionReads,
+} from '../../domain/ports/live-repository.port'
 import {
   applySceneSegment,
   type LearningProgressInput,
@@ -47,7 +51,7 @@ export class LiveLearningService {
     const block = this.blocks(context).find((item) => item.id === id)
     if (!block) throw new LiveNotFoundError()
     if (block.revision !== revision)
-      throw new LiveConflictError('A atividade mudou. Reabra a aula antes de continuar.')
+      throw new LiveConflictError('A atividade mudou. Abra o encontro de novo antes de continuar.')
     return block
   }
   async read(actor: LiveActor, sessionId: string): Promise<LessonLearningProgress> {
@@ -82,13 +86,20 @@ export class LiveLearningService {
       throw new ValidationError('Respostas ou pistas inválidas.')
     return block
   }
-  private current(actor: LiveActor, sessionId: string, blockId: string, revision: string) {
-    return this.repository
-      .readLearningProgress(sessionId, actor.id, actor.accountId)
+  /** Read through the transaction that holds the cohort lock (never a second connection). */
+  private current(
+    reads: LiveTransactionReads,
+    actor: LiveActor,
+    sessionId: string,
+    blockId: string,
+    revision: string,
+  ) {
+    return reads
+      .learningProgress(sessionId, actor.id, actor.accountId)
       .then((rows) => rows.find((item) => item.blockId === blockId && item.revision === revision))
   }
   async save(actor: LiveActor, sessionId: string, blockId: string, input: LearningProgressInput) {
-    return this.live.withAvailableSession(actor, sessionId, async (context) => {
+    return this.live.withAvailableSession(actor, sessionId, async (context, reads) => {
       const block = this.validate(context, blockId, input)
       if (
         input.positionSeconds !== null &&
@@ -97,7 +108,7 @@ export class LiveLearningService {
           input.positionSeconds > 86_400)
       )
         throw new ValidationError('Posição inválida.')
-      const previous = await this.current(actor, sessionId, blockId, input.revision)
+      const previous = await this.current(reads, actor, sessionId, blockId, input.revision)
       let answers = input.answers
       const scene = sceneStartOf(block.content)
       if (scene) {
@@ -149,15 +160,10 @@ export class LiveLearningService {
     blockId: string,
     input: Omit<LearningProgressInput, 'positionSeconds'> & { id: string },
   ) {
-    return this.live.withAvailableSession(actor, sessionId, async (context) => {
+    return this.live.withAvailableSession(actor, sessionId, async (context, reads) => {
       const block = this.validate(context, blockId, input)
-      const previous = await this.current(actor, sessionId, blockId, input.revision)
-      const existing = await this.repository.findLearningAttempt(
-        sessionId,
-        actor.id,
-        actor.accountId,
-        input.id,
-      )
+      const previous = await this.current(reads, actor, sessionId, blockId, input.revision)
+      const existing = await reads.learningAttempt(sessionId, actor.id, actor.accountId, input.id)
       if (existing) {
         if (existing.blockId !== blockId || existing.revision !== input.revision || !previous)
           throw new LiveConflictError()

@@ -86,7 +86,7 @@ async function fixture(capacity = 8, mediaReady = true) {
       { startsAt: '2026-11-14T17:00:00Z', endsAt: '2026-11-14T18:00:00Z' },
     ],
   })
-  await service.updateCohort(teacher, cohort.id, 'open')
+  await service.updateCohort({ ...teacher, admin: true }, cohort.id, { status: 'open' })
   const session = sessions[0]!
   const enrollment = await service.enroll(teacher, cohort.id, {
     accountId: learner.accountId,
@@ -185,15 +185,20 @@ describe('Oficinas: acesso e consistência', () => {
     expect(results.filter((result) => result.status === 'fulfilled')).toHaveLength(1)
     expect((await service.enrollments(teacher, cohort.id)).enrollments).toHaveLength(2)
   })
-  test('perfil duplicado e vínculo a conta errada são recusados', async () => {
-    const { service, cohort } = await fixture()
-    await expect(
-      service.enroll(teacher, cohort.id, {
-        accountId: learner.accountId,
-        learnerId: learner.id,
-        learnerName: 'Bia',
-      }),
-    ).rejects.toBeInstanceOf(LiveConflictError)
+  test('inscrição repetida devolve a mesma vaga; vínculo a conta errada é recusado', async () => {
+    const { service, cohort, enrollment } = await fixture()
+    // A double click (or a retry) returns the seat that already exists, never a second one.
+    const again = await service.enroll(teacher, cohort.id, {
+      accountId: learner.accountId,
+      learnerId: learner.id,
+      learnerName: 'Bia',
+    })
+    expect(again.id).toBe(enrollment.id)
+    const pending = { accountId: other.accountId, learnerId: null, learnerName: 'Irmão' }
+    const first = await service.enroll(teacher, cohort.id, pending)
+    const second = await service.enroll(teacher, cohort.id, { ...pending, learnerName: ' irmão ' })
+    expect(second.id).toBe(first.id)
+    expect((await service.enrollments(teacher, cohort.id)).enrollments).toHaveLength(2)
     await expect(
       service.enroll(teacher, cohort.id, {
         accountId: other.accountId,
@@ -365,11 +370,15 @@ describe('Oficinas: supervisão e participação', () => {
       mode: 'open',
     })
     expect(room.occurrence?.participants[0]?.microphoneLocked).toBe(true)
+    // Moderation is idempotent: a busy room (stale version) never makes it fail.
+    room = await service.control(teacher, session.id, oldVersion, {
+      kind: 'unlock-microphone',
+      learnerId: learner.id,
+    })
+    expect(room.occurrence?.participants[0]?.microphoneLocked).toBe(false)
+    // State transitions still require the version the teacher saw.
     await expect(
-      service.control(teacher, session.id, oldVersion, {
-        kind: 'unlock-microphone',
-        learnerId: learner.id,
-      }),
+      service.control(teacher, session.id, oldVersion, { kind: 'end' }),
     ).rejects.toBeInstanceOf(LiveConflictError)
     await expect(
       service.control(learner, session.id, room.occurrence!.version, { kind: 'end' }),
@@ -388,7 +397,16 @@ describe('Oficinas: supervisão e participação', () => {
         endsAt: '2026-12-09T18:00:00Z',
       }),
     ).rejects.toBeInstanceOf(LiveConflictError)
-    const replacement = await service.replaceOccurrence(teacher, session.id, {
+    // Extending the family's commercial access is admin-only (S7).
+    await expect(
+      service.replaceOccurrence(teacher, session.id, {
+        expectedVersion: ended.occurrence!.version,
+        startsAt: '2026-12-09T17:00:00Z',
+        endsAt: '2026-12-09T18:00:00Z',
+        extendAccessUntil: '2026-12-10T17:00:00Z',
+      }),
+    ).rejects.toBeInstanceOf(LiveAccessError)
+    const replacement = await service.replaceOccurrence({ ...teacher, admin: true }, session.id, {
       expectedVersion: ended.occurrence!.version,
       startsAt: '2026-12-09T17:00:00Z',
       endsAt: '2026-12-09T18:00:00Z',

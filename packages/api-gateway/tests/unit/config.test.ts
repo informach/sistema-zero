@@ -30,6 +30,12 @@ describe('loadGatewayConfig', () => {
       { auth: { strategies: ['hmac'], allowedConsumers: ['member-shell'] }, maxBodyBytes: 4096 },
     )
     expect(registry.resolve('GET', '/members/internal/live/materials', 'v1')).toBeUndefined()
+    // Cohort edits (status, assigned teachers): admin-only and audited.
+    expect(registry.resolve('PATCH', '/members/admin/live/cohorts/a', 'v1')?.route).toMatchObject({
+      id: 'members-admin-live-cohort-update',
+      authorize: { roles: ['superadmin', 'admin'] },
+      audit: {},
+    })
   })
   test('self-service mutante da conta é autenticado no gateway e preserva o Bearer', () => {
     const byId = new Map(realConfig.routes.map((route) => [route.id, route]))

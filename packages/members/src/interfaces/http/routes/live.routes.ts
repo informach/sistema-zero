@@ -5,6 +5,7 @@ import type { LiveService } from '../../../application/live/live.service'
 import type { LiveActor } from '../../../domain/ports/live-repository.port'
 import {
   assertInternalCaller,
+  assertNoLiveSupportWrite,
   isPrivilegedActor,
   requireAdmin,
   resolveAccountId,
@@ -12,6 +13,7 @@ import {
   resolveUserId,
 } from '../auth'
 
+const ADMIN_ROLES = new Set(['superadmin', 'admin'])
 export interface LiveRoutesDeps {
   live: LiveService
   internalToken?: string
@@ -24,6 +26,28 @@ const catalogQuery = t.Object({
   cursor: t.Optional(uuid()),
   limit: t.Optional(t.Numeric({ minimum: 1, maximum: 50, multipleOf: 1 })),
 })
+/** Same knobs as the recorded lesson Studio block; undeclared fields would be dropped. */
+const studio = t.Object({
+  level: t.Optional(t.String({ minLength: 1, maxLength: 40 })),
+  allowBlocks: t.Optional(t.Array(t.String({ minLength: 1, maxLength: 160 }), { maxItems: 3000 })),
+  allowCategories: t.Optional(t.Array(t.String({ minLength: 1, maxLength: 80 }), { maxItems: 80 })),
+  allowedModes: t.Optional(
+    t.Array(t.Union([t.Literal('blocks'), t.Literal('bridge'), t.Literal('code')]), {
+      minItems: 1,
+      maxItems: 3,
+      uniqueItems: true,
+    }),
+  ),
+  allowLevelReveal: t.Optional(t.Boolean()),
+})
+const teacherIds = t.Array(uuid(), { minItems: 1, maxItems: 4, uniqueItems: true })
+const teacherNames = t.Record(
+  t.String({ minLength: 1, maxLength: 64 }),
+  t.String({ minLength: 1, maxLength: 80 }),
+  {
+    maxProperties: 4,
+  },
+)
 const lesson = t.Object({
   title: t.String({ minLength: 1, maxLength: 160 }),
   instructions: t.String({ minLength: 1, maxLength: 24_000 }),
@@ -56,6 +80,7 @@ const lesson = t.Object({
       { maxItems: 24 },
     ),
   ),
+  studio: t.Optional(t.Union([studio, t.Null()])),
 })
 const programFields = {
   title: t.String({ minLength: 1, maxLength: 160 }),
@@ -71,7 +96,20 @@ const status = t.Union([
 const speakingMode = t.Union([t.Literal('open'), t.Literal('turns'), t.Literal('listen')])
 const control = t.Union([
   t.Object({ kind: t.Literal('suggest-step'), stepId: t.Union([uuid(), t.Null()]) }),
-  t.Object({ kind: t.Union([t.Literal('start'), t.Literal('end'), t.Literal('open-lobby')]) }),
+  t.Object({
+    kind: t.Union([
+      t.Literal('start'),
+      t.Literal('end'),
+      t.Literal('open-lobby'),
+      t.Literal('cancel'),
+    ]),
+  }),
+  t.Object({ kind: t.Literal('admit-all') }),
+  t.Object({
+    kind: t.Literal('lower-hands'),
+    learnerId: t.Union([uuid(), t.Null()]),
+    before: t.Optional(t.String({ format: 'date-time' })),
+  }),
   t.Object({ kind: t.Literal('speaking-mode'), mode: speakingMode }),
   t.Object({ kind: t.Literal('chat'), enabled: t.Boolean() }),
   t.Object({
@@ -99,7 +137,6 @@ const control = t.Union([
   t.Object({
     kind: t.Union([
       t.Literal('mute'),
-      t.Literal('lower-hands'),
       t.Literal('lock-microphone'),
       t.Literal('unlock-microphone'),
       t.Literal('lock-camera'),
@@ -119,6 +156,7 @@ export function resolveLiveActor(headers: Record<string, string | undefined>): L
     accountId: resolveAccountId(headers),
     name: resolveStudentName(headers),
     staff: isPrivilegedActor(headers),
+    admin: isPrivilegedActor(headers) && ADMIN_ROLES.has(headers['x-auth-user-role'] ?? ''),
   }
 }
 
@@ -133,8 +171,16 @@ export function liveRoutes(deps: LiveRoutesDeps) {
     assertInternalCaller(headers['x-internal-token'], deps.internalToken)
     set.headers['cache-control'] = 'private, no-store'
   }
+  const support = ({
+    headers,
+    request,
+  }: {
+    headers: Record<string, string | undefined>
+    request: Request
+  }) => assertNoLiveSupportWrite(headers, request.method)
   const student = new Elysia({ prefix: '/members/live' })
     .onTransform(guard)
+    .onBeforeHandle(support)
     .get(
       '/sessions/:id/replay-progress',
       ({ headers, params, query }) =>
@@ -233,7 +279,11 @@ export function liveRoutes(deps: LiveRoutesDeps) {
         deps.live.control(resolveLiveActor(headers), params.id, body.expectedVersion, body.command),
       {
         params: idParams,
-        body: t.Object({ expectedVersion: integer(1, Number.MAX_SAFE_INTEGER), command: control }),
+        // The version is checked only for state transitions (start/end/open-lobby/cancel).
+        body: t.Object({
+          expectedVersion: t.Optional(integer(1, Number.MAX_SAFE_INTEGER)),
+          command: control,
+        }),
       },
     )
     .get(
@@ -251,6 +301,7 @@ export function liveRoutes(deps: LiveRoutesDeps) {
 
   const parents = new Elysia({ prefix: '/members/parents/live' })
     .onTransform(guard)
+    .onBeforeHandle(support)
     .get(
       '/enrollments',
       ({ headers, query }) => deps.live.catalog(resolveLiveActor(headers), 'parents', query),
@@ -267,6 +318,7 @@ export function liveRoutes(deps: LiveRoutesDeps) {
     .onTransform(guard)
     .onBeforeHandle(({ headers, request }) => {
       requireAdmin(headers, deps.requireAdminEnabled)
+      assertNoLiveSupportWrite(headers, request.method)
       if (
         request.method !== 'GET' &&
         !/^\/members\/admin\/live\/sessions\/[\da-f-]+\/(recording\/publish|occurrences)$/.test(
@@ -319,7 +371,8 @@ export function liveRoutes(deps: LiveRoutesDeps) {
           timeZone: t.String({ minLength: 1, maxLength: 100 }),
           capacity: integer(1, 8),
           accessDays: integer(1, 366),
-          teacherIds: t.Array(uuid(), { minItems: 1, maxItems: 4 }),
+          teacherIds,
+          teacherNames: t.Optional(teacherNames),
           schedule: t.Array(
             t.Object({
               startsAt: t.String({ format: 'date-time' }),
@@ -333,8 +386,15 @@ export function liveRoutes(deps: LiveRoutesDeps) {
     .patch(
       '/cohorts/:id',
       ({ headers, params, body }) =>
-        deps.live.updateCohort(resolveLiveActor(headers), params.id, body.status),
-      { params: idParams, body: t.Object({ status }) },
+        deps.live.updateCohort(resolveLiveActor(headers), params.id, body),
+      {
+        params: idParams,
+        body: t.Object({
+          status: t.Optional(status),
+          teacherIds: t.Optional(teacherIds),
+          teacherNames: t.Optional(teacherNames),
+        }),
+      },
     )
     .get(
       '/cohorts/:id/enrollments',

@@ -1,6 +1,7 @@
 import { Elysia, t } from 'elysia'
 import {
   assertInternalCaller,
+  assertNoLiveSupportWrite,
   isPrivilegedActor,
   resolveAccountId,
   resolveStudentName,
@@ -48,6 +49,7 @@ export function liveMediaRoutes(deps: {
     .onTransform(({ headers }) =>
       assertInternalCaller(headers['x-internal-token'], deps.internalToken),
     )
+    .onBeforeHandle(({ headers, request }) => assertNoLiveSupportWrite(headers, request.method))
     .onError(({ error, set }) => {
       if (error instanceof LiveMediaError) {
         set.status = error.status

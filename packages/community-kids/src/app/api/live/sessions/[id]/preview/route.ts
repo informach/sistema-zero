@@ -1,10 +1,11 @@
-import { isReadonlyImpersonation } from '@sistemazero/member-shell/lib/act'
+import { isSupportSession } from '@sistemazero/member-shell/lib/act'
 import { handleLivePreview } from '@sistemazero/member-shell/routes/live-preview'
 import { shell } from '@/server/shell'
 
 async function handle(request: Request, context: { params: Promise<{ id: string }> }) {
   const user = await shell.session.getSession()
-  if (!user || isReadonlyImpersonation(user))
+  // Any support session (read-only or write) stays out of the live room, as in /api/live.
+  if (!user || isSupportSession(user))
     return Response.json(
       { error: { message: 'Entre com uma sessão que permita criar.' } },
       { status: user ? 403 : 401 },

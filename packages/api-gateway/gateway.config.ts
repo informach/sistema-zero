@@ -1421,6 +1421,19 @@ const config: GatewayConfigInput = {
       transforms: membersInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
+    // Turma: status e professoras atribuídas (com os nomes de exibição). Só admin, auditado:
+    // trocar a professora muda quem conduz, grava e vê as crianças da turma.
+    {
+      id: 'members-admin-live-cohort-update',
+      methods: ['PATCH'],
+      pathPattern: '/members/admin/live/cohorts/:id',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+      audit: {},
+    },
     {
       id: 'members-admin-live-write',
       methods: ['POST', 'PATCH'],

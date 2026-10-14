@@ -1,6 +1,6 @@
 import { Elysia, t } from 'elysia'
 import type { LiveLearningService } from '../../../application/live/live-learning.service'
-import { assertInternalCaller } from '../auth'
+import { assertInternalCaller, assertNoLiveSupportWrite } from '../auth'
 import { LearningAttemptBody, LearningProgressBody } from '../learning.dtos'
 import { resolveLiveActor } from './live.routes'
 
@@ -23,6 +23,7 @@ export function liveLearningRoutes(deps: {
       assertInternalCaller(headers['x-internal-token'], deps.internalToken)
       set.headers['cache-control'] = 'private, no-store'
     })
+    .onBeforeHandle(({ headers, request }) => assertNoLiveSupportWrite(headers, request.method))
     .get(
       '/:id/learning-preview',
       ({ headers, params }) => deps.learning.preview(resolveLiveActor(headers), params.id),

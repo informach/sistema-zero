@@ -31,6 +31,9 @@ function setup(
   }
   const records = new Map<string, LiveWorkspaceRecord>()
   const revisions = new Map<string, LiveWorkspaceRevision>()
+  /** Cohort loads: through the pool (outside locks) and through a write transaction. */
+  const loads = { pool: 0, transaction: 0, continuationInsideLock: 0, continuation: 0 }
+  let insideLock = false
   const context = {
     session: {
       id: ids.session,
@@ -48,6 +51,7 @@ function setup(
       participants: [{ learnerId: ids.child, deviceId: ids.device, admission: 'admitted' }],
     },
     aggregate: {
+      cohort: { teacherIds: [ids.teacher] },
       enrollments: [
         { id: 'enrollment', learnerId: ids.child, accountId: ids.account, status: 'active' },
       ],
@@ -81,6 +85,7 @@ function setup(
     transaction: async (id, mutate) => {
       const record = records.get(id)
       if (!record) throw new Error('Missing workspace')
+      insideLock = true
       const workspace = structuredClone(record)
       const added: LiveWorkspaceRevision[] = []
       const result = await mutate({
@@ -90,6 +95,12 @@ function setup(
           added.push(revision)
         },
         teacherHasActiveWorkspace: async () => false,
+        loadCohort: async () => {
+          loads.transaction++
+          return context.aggregate
+        },
+      }).finally(() => {
+        insideLock = false
       })
       records.set(id, workspace)
       for (const revision of added) revisions.set(revision.mutationId, revision)
@@ -102,17 +113,28 @@ function setup(
   const service = new LiveWorkspaceService(
     repository,
     {
-      requireContext: async (actor, sessionId) => ({
+      cohortForSession: async () => {
+        loads.pool++
+        if (insideLock) throw new Error('Second pool connection while holding the locks')
+        return context.aggregate
+      },
+      contextFor: (actor, aggregate, sessionId) => ({
         ...context,
-        session:
-          context.aggregate.sessions.find((item) => item.id === sessionId) ?? context.session,
+        aggregate,
+        session: aggregate.sessions.find((item) => item.id === sessionId) ?? context.session,
         role: actor.id === ids.teacher ? 'teacher' : 'learner',
-        grant: context.aggregate.grants.find((item) => item.sessionId === sessionId)!,
+        grant: aggregate.grants.find((item) => item.sessionId === sessionId)!,
       }),
     },
     () => now,
     recording,
-    { canContinue: async () => continuation },
+    {
+      canContinue: async () => {
+        loads.continuation++
+        if (insideLock) loads.continuationInsideLock++
+        return continuation
+      },
+    },
   )
   return {
     service,
@@ -121,6 +143,7 @@ function setup(
     records,
     revisions,
     context,
+    loads,
     advance: (ms: number) => {
       now = new Date(now.getTime() + ms)
       context.occurrence.teachers[ids.teacher] = now.toISOString()
@@ -239,13 +262,81 @@ describe('live project writer ownership', () => {
     await expect(service.get({ ...child, accountId: ids.teacher }, workspace.id)).rejects.toThrow()
     expect((await service.listOwned({ ...child, accountId: ids.teacher })).workspaces).toEqual([])
   })
-  test('without a subscription expiry denies saved content and publication, keeping only its library card', async () => {
-    const { service, child, advance } = setup()
+  test('without a subscription expiry keeps the project readable (view/export) but never writable', async () => {
+    const { service, child, teacher, advance } = setup()
     const workspace = await service.open(child, ids.session, ids.child)
+    const claimed = await service.claim(child, workspace.id, ids.device, false)
     advance(31 * 24 * 60 * 60 * 1000)
-    await expect(service.get(child, workspace.id)).rejects.toThrow()
+    const readable = await service.get(child, workspace.id)
+    expect(readable.readOnly).toBe(true)
+    expect(readable.project.id).toBe(workspace.id)
+    expect((await service.poll(child, workspace.id, 0)).readOnly).toBe(true)
+    // The assigned teacher can still review it; another family cannot.
+    expect((await service.get(teacher, workspace.id)).readOnly).toBe(true)
+    await expect(service.get({ ...child, accountId: ids.teacher }, workspace.id)).rejects.toThrow()
+    await expect(
+      service.get({ ...teacher, id: crypto.randomUUID() }, workspace.id),
+    ).rejects.toThrow()
+    // An explicit lesson context never turns into a read-only bypass for the child.
+    await expect(service.forSession(ids.session).get(child, workspace.id)).rejects.toThrow()
+    // Every write path stays closed.
+    await expect(service.claim(child, workspace.id, ids.device, true)).rejects.toThrow()
+    await expect(
+      service.renew(child, workspace.id, ids.device, claimed.writerEpoch),
+    ).rejects.toThrow()
+    await expect(
+      service.commit(child, workspace.id, {
+        deviceId: ids.device,
+        expectedRevision: 0,
+        writerEpoch: claimed.writerEpoch,
+        mutationId: crypto.randomUUID(),
+        project: claimed.project,
+      }),
+    ).rejects.toThrow()
+    await expect(service.requestAssistance(teacher, workspace.id)).rejects.toThrow()
     await expect(service.showcaseSnapshot(child, workspace.id, 1)).rejects.toThrow()
-    expect((await service.listOwned(child)).workspaces[0]?.canEdit).toBe(false)
+    expect((await service.listOwned(child)).workspaces[0]).toMatchObject({
+      canEdit: false,
+      readOnly: true,
+    })
+  })
+  test('writes read the cohort through their own transaction and ask the subscription outside it', async () => {
+    const { service, child, advance, loads } = setup(true)
+    const workspace = await service.open(child, ids.session, ids.child)
+    const before = { ...loads }
+    const claimed = await service.claim(child, workspace.id, ids.device, false)
+    await service.commit(child, workspace.id, {
+      deviceId: ids.device,
+      expectedRevision: 0,
+      writerEpoch: claimed.writerEpoch,
+      mutationId: crypto.randomUUID(),
+      project: claimed.project,
+    })
+    // One cohort read per write transaction (cached across the checks), none through the pool.
+    expect(loads.pool).toBe(before.pool)
+    expect(loads.transaction - before.transaction).toBe(2)
+    // After the lesson window the subscription decides, but never while the locks are held.
+    advance(31 * 24 * 60 * 60 * 1000)
+    const renewed = await service.claim(child, workspace.id, ids.device, true)
+    expect(renewed.writerId).toBe(ids.child)
+    expect(loads.continuation).toBeGreaterThan(0)
+    expect(loads.continuationInsideLock).toBe(0)
+  })
+  test('an unchanged poll reuses a recent authorization instead of reloading the cohort', async () => {
+    const { service, child, advance, loads } = setup()
+    const workspace = await service.open(child, ids.session, ids.child)
+    await service.poll(child, workspace.id, 0)
+    const after = loads.pool
+    await service.poll(child, workspace.id, 0)
+    await service.forSession().poll(child, workspace.id, 0)
+    expect(loads.pool).toBe(after)
+    // A different identity is never served from another one's authorization.
+    await expect(
+      service.poll({ ...child, accountId: ids.teacher }, workspace.id, 0),
+    ).rejects.toThrow()
+    advance(5_001)
+    await service.poll(child, workspace.id, 0)
+    expect(loads.pool).toBeGreaterThan(after + 1)
   })
   test('subscription does not bypass the active room device or publish another revision', async () => {
     const { service, child, teacher } = setup(true)

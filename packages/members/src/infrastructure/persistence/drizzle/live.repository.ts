@@ -5,6 +5,7 @@ import type {
   LiveCatalogQuery,
   LiveCohortAggregate,
   LiveRepository,
+  LiveTransactionReads,
 } from '../../../domain/ports/live-repository.port'
 import type { Database } from './db'
 import {
@@ -23,6 +24,78 @@ import {
 
 type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0]
 type Reader = Database | Transaction
+
+/**
+ * Loads a cohort aggregate through the given reader. Inside a transaction, pass the `tx`:
+ * a second pool connection while a lock is held can exhaust the pool under load.
+ */
+export async function loadLiveCohort(db: Reader, id: string): Promise<LiveCohortAggregate | null> {
+  const cohort = (await db.select().from(liveCohorts).where(eq(liveCohorts.id, id)))[0]?.document
+  if (!cohort) return null
+  const sessions = (await db.select().from(liveSessions).where(eq(liveSessions.cohortId, id)))
+    .map((row) => row.document)
+    .sort((a, b) => a.order - b.order)
+  const enrollments = (
+    await db.select().from(liveEnrollments).where(eq(liveEnrollments.cohortId, id))
+  ).map((row) => row.document)
+  const occurrences = (
+    await db.select().from(liveOccurrences).where(eq(liveOccurrences.cohortId, id))
+  ).map((row) => row.document)
+  const grants =
+    sessions.length === 0
+      ? []
+      : (
+          await db
+            .select()
+            .from(liveAccessGrants)
+            .where(
+              inArray(
+                liveAccessGrants.sessionId,
+                sessions.map((session) => session.id),
+              ),
+            )
+        ).map((row) => ({
+          ...row,
+          startsAt: row.startsAt.toISOString(),
+          endsAt: row.endsAt.toISOString(),
+          revokedAt: row.revokedAt?.toISOString() ?? null,
+        }))
+  return { cohort, sessions, enrollments, occurrences, grants, audit: [] }
+}
+
+function learningProgressOf(db: Reader, sessionId: string, learnerId: string, accountId: string) {
+  return db
+    .select()
+    .from(liveLearningProgress)
+    .where(
+      and(
+        eq(liveLearningProgress.sessionId, sessionId),
+        eq(liveLearningProgress.learnerId, learnerId),
+        eq(liveLearningProgress.accountId, accountId),
+      ),
+    )
+    .then((rows) => rows.map((row) => row.document))
+}
+function learningAttemptOf(
+  db: Reader,
+  sessionId: string,
+  learnerId: string,
+  accountId: string,
+  id: string,
+) {
+  return db
+    .select()
+    .from(liveLearningAttempts)
+    .where(
+      and(
+        eq(liveLearningAttempts.sessionId, sessionId),
+        eq(liveLearningAttempts.learnerId, learnerId),
+        eq(liveLearningAttempts.accountId, accountId),
+        eq(liveLearningAttempts.id, id),
+      ),
+    )
+    .then((rows) => rows[0]?.document ?? null)
+}
 
 /** All changes to a cohort take the same row lock, including seat allocation. */
 export class DrizzleLiveRepository implements LiveRepository {
@@ -56,35 +129,10 @@ export class DrizzleLiveRepository implements LiveRepository {
     return row?.positionSeconds ?? 0
   }
   async readLearningProgress(sessionId: string, learnerId: string, accountId: string) {
-    return (
-      await this.db
-        .select()
-        .from(liveLearningProgress)
-        .where(
-          and(
-            eq(liveLearningProgress.sessionId, sessionId),
-            eq(liveLearningProgress.learnerId, learnerId),
-            eq(liveLearningProgress.accountId, accountId),
-          ),
-        )
-    ).map((row) => row.document)
+    return learningProgressOf(this.db, sessionId, learnerId, accountId)
   }
   async findLearningAttempt(sessionId: string, learnerId: string, accountId: string, id: string) {
-    return (
-      (
-        await this.db
-          .select()
-          .from(liveLearningAttempts)
-          .where(
-            and(
-              eq(liveLearningAttempts.sessionId, sessionId),
-              eq(liveLearningAttempts.learnerId, learnerId),
-              eq(liveLearningAttempts.accountId, accountId),
-              eq(liveLearningAttempts.id, id),
-            ),
-          )
-      )[0]?.document ?? null
-    )
+    return learningAttemptOf(this.db, sessionId, learnerId, accountId, id)
   }
   async updateProgram(id: string, mutate: (program: LiveProgram) => void) {
     return this.db.transaction(async (tx) => {
@@ -109,38 +157,8 @@ export class DrizzleLiveRepository implements LiveRepository {
     })
   }
 
-  private async load(db: Reader, id: string): Promise<LiveCohortAggregate | null> {
-    const cohort = (await db.select().from(liveCohorts).where(eq(liveCohorts.id, id)))[0]?.document
-    if (!cohort) return null
-    const sessions = (await db.select().from(liveSessions).where(eq(liveSessions.cohortId, id)))
-      .map((row) => row.document)
-      .sort((a, b) => a.order - b.order)
-    const enrollments = (
-      await db.select().from(liveEnrollments).where(eq(liveEnrollments.cohortId, id))
-    ).map((row) => row.document)
-    const occurrences = (
-      await db.select().from(liveOccurrences).where(eq(liveOccurrences.cohortId, id))
-    ).map((row) => row.document)
-    const grants =
-      sessions.length === 0
-        ? []
-        : (
-            await db
-              .select()
-              .from(liveAccessGrants)
-              .where(
-                inArray(
-                  liveAccessGrants.sessionId,
-                  sessions.map((session) => session.id),
-                ),
-              )
-          ).map((row) => ({
-            ...row,
-            startsAt: row.startsAt.toISOString(),
-            endsAt: row.endsAt.toISOString(),
-            revokedAt: row.revokedAt?.toISOString() ?? null,
-          }))
-    return { cohort, sessions, enrollments, occurrences, grants, audit: [] }
+  private load(db: Reader, id: string): Promise<LiveCohortAggregate | null> {
+    return loadLiveCohort(db, id)
   }
 
   async findCohort(id: string) {
@@ -166,6 +184,15 @@ export class DrizzleLiveRepository implements LiveRepository {
         .where(eq(liveOccurrences.id, id))
     )[0]
     return row ? this.findCohort(row.cohortId) : null
+  }
+  async cohortIdForSession(id: string) {
+    const row = (
+      await this.db
+        .select({ cohortId: liveSessions.cohortId })
+        .from(liveSessions)
+        .where(eq(liveSessions.id, id))
+    )[0]
+    return row?.cohortId ?? null
   }
   async findByEnrollment(id: string) {
     const row = (
@@ -215,16 +242,20 @@ export class DrizzleLiveRepository implements LiveRepository {
       .select({ id: liveOccurrences.id })
       .from(liveOccurrences)
       .where(
-        sql`${liveOccurrences.document}->>'state' in ('live', 'lobby') and (${liveOccurrences.document}->>'hardEndsAt')::timestamptz <= ${now.toISOString()}::timestamptz`,
+        // Scheduled occurrences whose end passed are cancelled by the sweep (never stuck).
+        sql`${liveOccurrences.document}->>'state' in ('live', 'lobby', 'scheduled') and (${liveOccurrences.document}->>'hardEndsAt')::timestamptz <= ${now.toISOString()}::timestamptz`,
       )
-      .orderBy(asc(liveOccurrences.id))
+      .orderBy(
+        sql`(${liveOccurrences.document}->>'hardEndsAt')::timestamptz`,
+        asc(liveOccurrences.id),
+      )
       .limit(100)
     return rows.map((row) => row.id)
   }
 
   async transaction<T>(
     id: string,
-    mutate: (aggregate: LiveCohortAggregate) => T | Promise<T>,
+    mutate: (aggregate: LiveCohortAggregate, reads: LiveTransactionReads) => T | Promise<T>,
     accountId?: string,
   ): Promise<T> {
     return this.db.transaction(async (tx) => {
@@ -254,7 +285,12 @@ export class DrizzleLiveRepository implements LiveRepository {
       const aggregate = await this.load(tx, id)
       if (!aggregate) throw new LiveNotFoundError()
       const before = structuredClone(aggregate)
-      const result = await mutate(aggregate)
+      const result = await mutate(aggregate, {
+        learningProgress: (sessionId, learnerId, owner) =>
+          learningProgressOf(tx, sessionId, learnerId, owner),
+        learningAttempt: (sessionId, learnerId, owner, attemptId) =>
+          learningAttemptOf(tx, sessionId, learnerId, owner, attemptId),
+      })
       await this.persist(tx, aggregate, before)
       return result
     })

@@ -25,6 +25,8 @@ export function LiveRecordingStatus({
       ? 'Gravação disponível para a turma.'
       : 'Gravação aguardando publicação.',
     failed: 'A gravação foi interrompida. A chamada continua.',
+    empty: 'Este encontro terminou sem trechos gravados.',
+    unavailable: 'O gravador não está respondendo. A chamada continua.',
   }
   async function command(action: 'pause' | 'resume') {
     setBusy(true)

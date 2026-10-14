@@ -13,9 +13,11 @@ import {
 import {
   canPublishLiveKind,
   canReceiveLivePublication,
+  isDefinitiveDenial,
   type LiveMediaAccess,
   type LiveMediaActor,
   type LiveMediaAuthorizationPort,
+  type LiveMediaAuthorizationResult,
   type LiveMediaConnection,
   LiveMediaError,
   type LiveMediaRegistryPort,
@@ -31,8 +33,15 @@ export interface LiveMediaSupervisorPort {
 
 type Context = { actor: LiveMediaActor; occurrenceId: string; deviceId: string }
 
+/** Long enough for a full reconcile; a crashed replica's lease is taken over after it. */
+const RECONCILE_LEASE_MS = 60_000
+
 export class CloudflareSfuMediaProvider {
   readonly controlLeaseMs = 15_000
+  /** One reconcile per occurrence at a time in this process; later requests coalesce. */
+  private readonly reconciling = new Map<string, { again: boolean; done: Promise<void> }>()
+  private readonly retryTimers = new Map<string, ReturnType<typeof setTimeout>>()
+  private readonly holder = crypto.randomUUID()
 
   constructor(
     private readonly sfu: CloudflareSfuClient,
@@ -42,6 +51,8 @@ export class CloudflareSfuMediaProvider {
     private readonly iceServers: (hardEndsAt: string) => Promise<LiveMediaJoin['iceServers']>,
     private readonly now: () => number = Date.now,
     private readonly operationTimeoutMs = 12_000,
+    /** How long a reconcile waits for another replica's lease before leaving it to the next one. */
+    private readonly leaseWaitMs = 5_000,
   ) {}
 
   async join(context: Context, attemptId: string): Promise<LiveMediaJoin> {
@@ -109,9 +120,13 @@ export class CloudflareSfuMediaProvider {
     }
   }
 
+  /**
+   * What this receiver may subscribe to. The receiver and every publisher are authorized on
+   * ONE room snapshot (one load per poll, not one per publisher). Only a definitive denial
+   * retires a publisher; a failed snapshot read fails this poll and retires nobody.
+   */
   async publications(context: Context): Promise<LiveMediaPublication[]> {
-    const receiver = await this.access(context)
-    const results: LiveMediaPublication[] = []
+    const candidates: LiveMediaConnection[] = []
     for (const connection of await this.registry.list(context.occurrenceId)) {
       if (connection.status !== 'active' || connection.actor.id === context.actor.id) continue
       if (
@@ -121,26 +136,38 @@ export class CloudflareSfuMediaProvider {
         await this.retire(connection.id)
         continue
       }
-      let publisher: LiveMediaAccess
-      try {
-        publisher = await this.access({
-          ...context,
-          actor: connection.actor,
-          deviceId: connection.deviceId,
-        })
-      } catch {
-        await this.retire(connection.id)
+      candidates.push(connection)
+    }
+    const [receiver, ...publishers] = await this.authorization.authorizeMany(context.occurrenceId, [
+      { actor: context.actor, deviceId: context.deviceId },
+      ...candidates.map((connection) => ({
+        actor: connection.actor,
+        deviceId: connection.deviceId,
+      })),
+    ])
+    if (!receiver?.ok)
+      throw receiver?.error ?? new LiveMediaError('MEDIA_FORBIDDEN', 'Sem acesso à sala.', 403)
+    const results: LiveMediaPublication[] = []
+    for (const [index, connection] of candidates.entries()) {
+      const outcome = publishers[index]
+      if (!outcome?.ok) {
+        if (outcome && isDefinitiveDenial(outcome.error)) await this.retire(connection.id)
         continue
       }
+      const publisher = outcome.access
       for (const resource of connection.resources) {
         if (
           resource.direction === 'local' &&
           resource.state === 'active' &&
-          canReceiveLivePublication(receiver.role, resource.publication) &&
+          canReceiveLivePublication(receiver.access.role, resource.publication) &&
           canPublishLiveKind(publisher, resource.publication.kind) &&
           (resource.publication.kind !== 'microphone' || resource.muteEpoch === publisher.muteEpoch)
         )
-          results.push(resource.publication)
+          results.push(
+            publisher.displayName
+              ? { ...resource.publication, displayName: publisher.displayName }
+              : resource.publication,
+          )
       }
     }
     return results
@@ -391,23 +418,79 @@ export class CloudflareSfuMediaProvider {
     }
   }
 
+  /**
+   * Serialized per occurrence: one run at a time in this process (requests that arrive
+   * meanwhile coalesce into one more run) and, across replicas, a short database lease.
+   */
   async reconcile(occurrenceId: string): Promise<void> {
+    const running = this.reconciling.get(occurrenceId)
+    if (running) {
+      running.again = true
+      return running.done
+    }
+    const state = { again: true, done: Promise.resolve() }
+    this.reconciling.set(occurrenceId, state)
+    state.done = (async () => {
+      try {
+        while (state.again) {
+          state.again = false
+          await this.reconcileExclusive(occurrenceId)
+        }
+      } finally {
+        this.reconciling.delete(occurrenceId)
+      }
+    })()
+    return state.done
+  }
+
+  private async reconcileExclusive(occurrenceId: string): Promise<void> {
+    const deadline = this.now() + this.leaseWaitMs
+    while (!(await this.registry.tryLease(occurrenceId, this.holder, RECONCILE_LEASE_MS))) {
+      // Another replica is reconciling this room; the next heartbeat brings us back.
+      if (this.now() >= deadline) return
+      await new Promise((resolve) => setTimeout(resolve, 200))
+    }
+    try {
+      await this.reconcileOnce(occurrenceId)
+    } finally {
+      await this.registry.releaseLease(occurrenceId, this.holder).catch(() => undefined)
+    }
+  }
+
+  private async reconcileOnce(occurrenceId: string): Promise<void> {
+    const active: LiveMediaConnection[] = []
     for (const connection of await this.registry.list(occurrenceId)) {
       if (connection.status === 'closed') continue
+      if (
+        connection.status !== 'active' ||
+        Date.parse(connection.leaseEndsAt) <= this.now() ||
+        Date.parse(connection.hardEndsAt) <= this.now()
+      ) {
+        await this.retire(connection.id).catch(() => undefined)
+        continue
+      }
+      active.push(connection)
+    }
+    if (!active.length) return
+    let results: LiveMediaAuthorizationResult[]
+    try {
+      results = await this.authorization.authorizeMany(
+        occurrenceId,
+        active.map((connection) => ({ actor: connection.actor, deviceId: connection.deviceId })),
+      )
+    } catch {
+      // The room could not be read: a transient failure never retires a working connection.
+      return
+    }
+    let skipped = false
+    for (const [index, connection] of active.entries()) {
+      const outcome = results[index]
       try {
-        if (
-          connection.status !== 'active' ||
-          Date.parse(connection.leaseEndsAt) <= this.now() ||
-          Date.parse(connection.hardEndsAt) <= this.now()
-        ) {
-          await this.retire(connection.id)
+        if (!outcome?.ok) {
+          if (outcome && isDefinitiveDenial(outcome.error)) await this.retire(connection.id)
           continue
         }
-        const access = await this.authorization.authorize(
-          connection.actor,
-          occurrenceId,
-          connection.deviceId,
-        )
+        const access = outcome.access
         const forbidden = connection.resources.filter(
           (resource) =>
             resource.direction === 'local' &&
@@ -416,19 +499,77 @@ export class CloudflareSfuMediaProvider {
               (resource.publication.kind === 'microphone' &&
                 resource.muteEpoch !== access.muteEpoch)),
         )
-        if (forbidden.length) {
-          // An urgent revocation may abandon negotiation, but that connection can never resume.
-          if (connection.pending) await this.retire(connection.id)
-          else
-            await this.remove(
-              { actor: connection.actor, occurrenceId, deviceId: connection.deviceId },
-              connection.id,
-              (resource) => forbidden.some((item) => item.mid === resource.mid),
-            )
+        if (!forbidden.length) continue
+        if (connection.pending) {
+          // A negotiation in flight finishes (its completion re-checks the policy) and the next
+          // cycle closes the track; only an abandoned negotiation retires the connection.
+          if (
+            this.now() - Date.parse(connection.pending.startedAt) <
+            this.operationTimeoutMs + 3_000
+          ) {
+            skipped = true
+            continue
+          }
+          await this.retire(connection.id)
+          continue
         }
+        // Close only the forbidden tracks: the child keeps hearing the teacher.
+        const closed = await this.closeLocal(
+          connection.id,
+          forbidden.map((resource) => resource.mid),
+        )
+        if (!closed) skipped = true
       } catch {
-        await this.retire(connection.id)
+        // Provider or registry trouble: keep the connection; the next cycle retries.
+        skipped = true
       }
+    }
+    if (skipped) this.retrySoon(occurrenceId)
+  }
+
+  private retrySoon(occurrenceId: string): void {
+    if (this.retryTimers.has(occurrenceId)) return
+    const timer = setTimeout(() => {
+      this.retryTimers.delete(occurrenceId)
+      void this.reconcile(occurrenceId).catch(() => undefined)
+    }, 1_000)
+    if (typeof timer === 'object' && 'unref' in timer) timer.unref()
+    this.retryTimers.set(occurrenceId, timer)
+  }
+
+  /** Server-initiated close of some local tracks; false when a negotiation got there first. */
+  private async closeLocal(connectionId: string, mids: string[]): Promise<boolean> {
+    const operationId = crypto.randomUUID()
+    let connection: LiveMediaConnection
+    try {
+      connection = await this.registry.mutate(connectionId, (saved) => {
+        this.assertActive(saved)
+        if (saved.pending)
+          throw new LiveMediaError(
+            'MEDIA_NEGOTIATION_PENDING',
+            'A conexão está terminando outra operação.',
+          )
+        saved.pending = {
+          id: operationId,
+          state: 'requesting',
+          startedAt: new Date(this.now()).toISOString(),
+        }
+        return structuredClone(saved)
+      })
+    } catch (error) {
+      if (error instanceof LiveMediaError && error.code === 'MEDIA_NEGOTIATION_PENDING')
+        return false
+      throw error
+    }
+    try {
+      await this.closeResources(connection, mids)
+      await this.registry.mutate(connectionId, (saved) => {
+        if (saved.pending?.id === operationId) saved.pending = null
+      })
+      return true
+    } catch (error) {
+      await this.retire(connectionId, true)
+      throw error
     }
   }
 

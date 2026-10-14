@@ -3,12 +3,12 @@ import { DomainError } from '../shared/errors'
 export class LiveNotFoundError extends DomainError {
   readonly code = 'LIVE_NOT_FOUND'
   constructor() {
-    super('Oficina ou aula não encontrada.')
+    super('Oficina ou encontro não encontrado.')
   }
 }
 export class LiveAccessError extends DomainError {
   readonly code = 'LIVE_ACCESS_DENIED'
-  constructor(message = 'Esta aula não está disponível para este perfil.') {
+  constructor(message = 'Este encontro não está disponível para este perfil.') {
     super(message)
   }
 }
