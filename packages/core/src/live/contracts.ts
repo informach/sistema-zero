@@ -225,8 +225,10 @@ export interface LiveRecordingChapter {
  */
 export interface LiveRecordingSourceView {
   storageKey: string
-  /** Bucket LÓGICO: `private` é o bucket privado de mídia da plataforma (o mesmo dos materiais). */
-  bucket: 'private'
+  /** O bucket REAL onde o gravador grava o MP4 (o `R2_BUCKET` do gravador). */
+  bucket: string
+  /** Nome do vídeo no Vimeo: "<curso> · <aula> · <turma> · <data>". */
+  title?: string
 }
 export interface LiveLessonAccessView {
   startsAt: string
