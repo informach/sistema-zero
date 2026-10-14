@@ -1,0 +1,1 @@
+Criar também ganha começo com uma tarefa específica: montar a regra que faz o bastão crescer ao segurar o mouse. Exemplo do nosso Estúdio.

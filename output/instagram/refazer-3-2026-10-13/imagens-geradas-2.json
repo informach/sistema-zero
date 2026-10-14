@@ -1,0 +1,29 @@
+[
+  {
+    "id": "p01-conversa",
+    "refs": [
+      "C:/Users/tocha/Downloads/FotosHelenaJulio/WhatsApp Image 2026-10-09 at 08.36.33 (2).jpeg",
+      "C:/Users/tocha/Downloads/FotosHelenaJulio/WhatsApp Image 2026-10-04 at 17.54.34.jpeg"
+    ],
+    "prompt": "Create a completely NEW photorealistic editorial family scene in landscape 3:2, premium natural daylight, real Brazilian home, warm cream and blue palette. Reference1 is ONLY identity of the boy at the LEFT, André, curly short dark hair, black rectangular glasses, same face age proportions and skin. Reference2 ONLY identity of Júlio adult father same blue rectangular glasses, short dark/grey hair, beard and face. Do NOT reproduce their original poses, room, clothes, companions or photo. André in plain cobalt tshirt seated LEFT at light oak desktop computer, turns toward Júlio seated RIGHT, enthusiastic thoughtful expression explaining an idea, open hand near mouse. Júlio listens with a gentle smile, eye contact with boy, not lecturing or pointing at him. Mid shot shows both real faces clearly, hands natural. Monitor far LEFT EDGE seen mainly from rear, screen not visible, avoid fake UI. Scene conveys father asking child what he would change in a game. No text, no logos, no watermarks, no collage, no other people. Child must clearly be the exact same boy from reference1 and father exact identity of ref2.",
+    "path": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-a60b8c35-b7c2-4127-85b0-900958a9e34b.png"
+  },
+  {
+    "id": "p07-pausa",
+    "refs": [
+      "C:/Users/tocha/Downloads/FotosHelenaJulio/WhatsApp Image 2026-10-09 at 08.36.33 (2).jpeg",
+      "C:/Users/tocha/Downloads/FotosHelenaJulio/WhatsApp Image 2026-10-04 at 17.54.34.jpeg"
+    ],
+    "prompt": "Generate a NEW photorealistic editorial photograph, landscape3:2, warm bright natural Brazilian home. Preserve exact identities: ref1 ONLY André boy on LEFT of photo with curly dark hair black rectangular glasses and same age/face, ref2 ONLY Júlio father short brown/grey hair, blue glasses and light stubble. New scene: taking a short break from a coding activity. André in plain cobaltblue t-shirt sits relaxed on blue fabric sofa holding a glass of water with one anatomically correct hand, thoughtful relief small natural smile; Júlio plain cream shirt sits alongside listening warmly at his eye level. Behind them on desk a closed silver laptop, no visible screen. Scene meaningful calm break before trying again, not distressed, no big exaggerated acting, no pointing. Both faces clear. New camera composition and background, not a crop/paste of reference images. No text/logos/brands/medals/no decorations with words.",
+    "path": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-095e38a0-1fc0-4a11-8579-14845c1db91a.png"
+  },
+  {
+    "id": "p34-pai-filho",
+    "refs": [
+      "C:/Users/tocha/projects/sistema-zero/docs/marketing/kids/comunidade-dos-criadores/instagram/producao/postagens/p34-a-ideia-veio-dele/apoio/daniel-12s.png",
+      "C:/Users/tocha/projects/sistema-zero/docs/marketing/kids/comunidade-dos-criadores/instagram/producao/postagens/p34-a-ideia-veio-dele/apoio/rafael.webp"
+    ],
+    "prompt": "Generate a completely NEW realistic family editorial photo landscape3:2. Reference1 ONLY face identity Daniel adult father, dark curly short hair, full cheeks, short full dark beard, same skin and age, ref2 ONLY identity of Rafael his boy same round face brown bowl-cut hair brown eyes child age. Build a new scene in warm bright home: Daniel plain navy tshirt and Rafael coral orange shirt sit at wooden dining table discussing an idea. Rafael looks excitedly up at dad with one hand open, dad leaning in attentively with warm small smile. A sketchbook and colored pencils on table but drawings indistinct no game identifiable; no computer screen. Capture actual natural father-son eye contact, both faces sharp three quarter views with exact reference likeness, real skin detail. Never reuse old room, composition, old monitor, old clothes prints or video frame. No text, no typography, no logos, no trophies, no screenshots in photo. This is contextual newly created scene not reproduction of testimonial frame.",
+    "path": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-58facd4d-25c4-4e2f-9282-85ff4de11c34.png"
+  }
+]

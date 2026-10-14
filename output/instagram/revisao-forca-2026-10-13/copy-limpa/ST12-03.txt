@@ -1,0 +1,1 @@
+Na fazenda do nosso Estúdio, a semente depende do canteiro arado. Quem cria programa essa condição e testa as duas situações: terra preparada ou ainda intacta.

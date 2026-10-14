@@ -1,0 +1,33 @@
+import fs from 'node:fs'
+import path from 'node:path'
+const root=path.resolve('docs/marketing/kids/comunidade-dos-criadores/instagram')
+const work=path.resolve('output/instagram/p04-2026-10-14')
+const dir='producao/postagens/p04-arquivos-no-computador'
+const dest=path.join(root,dir)
+const prompts=JSON.parse(fs.readFileSync(path.join(work,'prompts.json'),'utf8'))
+prompts['07-conversa']=fs.readFileSync(path.join(work,'prompt-07.txt'),'utf8')
+fs.writeFileSync(path.join(dest,'apoio/prompts.json'),JSON.stringify({tool:'image_gen integrado',prompts},null,2))
+fs.copyFileSync(path.join(work,'imagens-geradas.json'),path.join(dest,'apoio/imagens-geradas.json'))
+const read=f=>fs.readFileSync(path.join(root,f),'utf8').replaceAll('\r\n','\n')
+const write=(f,s)=>fs.writeFileSync(path.join(root,f),s)
+let index=read('producao/postagens/index.html')
+index=index.replace('<title>Três carrosséis · Crie com Helena e Júlio</title>','<title>Carrosséis produzidos · Crie com Helena e Júlio</title>')
+index=index.replace('<h1>As três postagens refeitas</h1>','<h1>Carrosséis produzidos</h1>')
+index=index.replace('Copy simplificada · Arte aprovada preservada · 22 slides em 4:5 · Azul, branco e amarelo','P01, P07, P34 e P04 · 29 slides em 4:5 · Azul, branco e amarelo')
+if(!index.includes('href="p04-arquivos-no-computador/index.html"'))index=index.replace('</main>','<a class="card" href="p04-arquivos-no-computador/index.html"><img src="p04-arquivos-no-computador/01-p04.png" alt="Capa P04"><div><h2>P04 · 7 slides</h2><p>Celular, arquivos e primeiros passos no computador</p></div></a></main>')
+write('producao/postagens/index.html',index)
+let overview=read('producao/postagens/README.md')
+overview=overview.replace('[Abrir as três prévias](index.html).','**Produção de 14/10/2026:** P04 acrescenta sete slides com a copy revisada, cenas novas e tela real da lista de projetos. O conjunto passa a ter **29 PNGs em quatro carrosséis**.\n\n[Abrir as quatro prévias](index.html).')
+if(!overview.includes('| P04 ·'))overview=overview.replace('| P34 · Imagine seu filho criando um jogo do jeito dele | 8 slides; retratos reais de Daniel e Rafael, ilustrações novas e batalha comparada | [Abrir](p34-a-ideia-veio-dele/index.html) |','| P34 · Imagine seu filho criando um jogo do jeito dele | 8 slides; retratos reais de Daniel e Rafael, ilustrações novas e batalha comparada | [Abrir](p34-a-ideia-veio-dele/index.html) |\n| P04 · Sua filha acha qualquer vídeo em dois toques | 7 slides; menina fictícia, prática com arquivos e lista real do Estúdio | [Abrir](p04-arquivos-no-computador/index.html) |')
+overview=overview.replace('P34 abre a semana 2. As demais mídias','P34 abre a semana 2 e P04 abre a semana 3. O próximo carrossel é P37. As demais mídias')
+overview=overview.replace('**apoio/v4** registra a copy atual e as verificações.','No P04, **apoio** reúne copy, fontes, prompts e verificações. Nas três referências anteriores, **apoio/v4** registra a copy atual e as verificações.')
+write('producao/postagens/README.md',overview)
+let cal=read('03-postagens.md')
+const old='**Mídias produzidas:** [P01, P07 e P34](producao/postagens/index.html), com 22 PNGs em 4:5, legendas, textos alternativos e copy atual em `apoio/v4` e fontes visuais em `apoio/v3`.'
+const replacement='**Mídias produzidas:** [P01, P07, P34 e P04](producao/postagens/index.html), com 29 PNGs em 4:5, legendas e textos alternativos. P04 foi produzido em 14/10/2026 com a copy revisada; fontes, prompts e verificações em sua pasta `apoio`. As três referências anteriores conservam `apoio/v4` para copy e `apoio/v3` para fontes visuais.'
+cal=cal.replace(old,replacement)
+write('03-postagens.md',cal)
+let main=read('README.md')
+main=main.replace('[Prévia das três postagens](producao/postagens/index.html). Ordem no calendário: P01 e P07 na semana 1, P34 na semana 2; o próximo carrossel é P04.','[Prévia das postagens produzidas](producao/postagens/index.html). Ordem no calendário: P01 e P07 na semana 1, P34 na semana 2. **P04 produzido em 14/10/2026:** [sete slides sobre arquivos no computador](producao/postagens/p04-arquivos-no-computador/index.html), com novas cenas, legenda e textos alternativos. O conjunto soma 29 PNGs; P04 abre a semana 3 e o próximo carrossel é P37.')
+write('README.md',main)
+console.log('Registro e índices atualizados. Próximo carrossel: P37. Nenhuma publicação executada.')

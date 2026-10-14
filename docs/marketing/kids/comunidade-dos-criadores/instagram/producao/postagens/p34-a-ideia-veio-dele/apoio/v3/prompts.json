@@ -1,0 +1,20 @@
+[
+  {
+    "id": "p34-apontar",
+    "prompt": "Use case: illustration-story. ONE sophisticated editorial illustration for a parent-focused carousel, landscape 3:2. Scene is a close three-quarter view of a desktop monitor displaying a GENERIC invented monster battle: little orange fire creature on left, leafy green creature on right, simple green meadow arena, small health bars without words. In the foreground a child's hand points with one finger precisely at the green creature's health bar. Only arm and hand, no identifiable child's face. Warm ivory paper background, bold cobalt blue monitor frame, vivid yellow accent and restrained green/orange creature colors. Contemporary gouache with cut-paper shapes, subtle paper texture, elegant adult-facing editorial illustration, clear friendly forms, excellent visual hierarchy, no 3D shiny stock art. Monitor is NOT the Sistema Zero interface, no existing brand or game characters. No words, no lettering, no numbers, no watermark. Image should visually communicate pointing to exactly what you would change in a game. Fill frame with useful scene, plain ivory around.",
+    "path": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-29bbddec-be08-4542-bfb1-248b454d00e7.png",
+    "tool": "image_gen integrada"
+  },
+  {
+    "id": "p34-bastidores",
+    "prompt": "Use case: illustration-story. ONE conceptual editorial illustration, landscape 3:2, beautiful gouache and cut-paper texture on warm white paper. Show a literal theater/backstage metaphor in a single coherent scene: on the LEFT a small audience seen from behind sitting before a screen showing two very simple orange and green monster silhouettes; through an open cobalt blue stage curtain in the CENTER we can see on the RIGHT a compact backstage control desk with ONE large luminous yellow button. A curious small child silhouette has stepped behind the curtain looking toward this control desk. Strong composition and negative space, clear relation audience -> curtain -> creator's controls, not a split collage, not instructions. Palette cobalt blue #194bd7, warm white #fffcf4, yellow #ffdb56, tiny orange/green accents. Sophisticated parent-facing editorial illustration, no floating digital blocks, no actual studio interface, no screen text, no letters, no labels, no words or logo. Elegant expressive handmade shapes, clean readability at small size.",
+    "path": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-0b562bfb-ef30-4d8d-8342-653b7be8e37d.png",
+    "tool": "image_gen integrada"
+  },
+  {
+    "id": "p34-conversa",
+    "prompt": "Use case: photorealistic-natural. Create ONE new candid editorial photograph landscape 3:2 of a FICTIONAL Brazilian father age38 with medium brown skin, short close-cropped black hair, NO glasses, plain soft blue T-shirt and his FICTIONAL son aged11 with darker skin and short tight curls, muted golden-yellow T-shirt, seated at an oak kitchen table. Father looks at son attentively while asking a curious question; child thinks, looking slightly upward, a pencil held gently near his lips and an open notebook with a few simple visual game doodles on table. NO writing in notebook. Warm morning daylight, pale cream kitchen, subtle blue ceramic details, genuine domestic conversation, no screens necessary. This is an anonymous hypothetical family, NOT Daniel, NOT Rafael, NOT Júlio, NOT André. Natural human proportions, realistic skin, gentle thoughtful mood, beautiful composition centered enough for 1.5:1 crop. No text of any kind, no wall posters with words, no watermark, no logos.",
+    "path": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-9ff74151-df9f-4c12-bac7-62c7e85e5aa3.png",
+    "tool": "image_gen integrada"
+  }
+]

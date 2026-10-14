@@ -1,0 +1,324 @@
+{
+  "source": "docs/marketing/kids/comunidade-dos-criadores/instagram/postagens/01-p01-a-p10.md",
+  "sourceSectionHash": "9833fb83ee3271bcc0a1f4bce0dca84a97b4d42a61640ddcd4c8d9f5569d6a6b",
+  "copyEqual": true,
+  "slides": [
+    {
+      "number": 1,
+      "file": "01-p04.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "series",
+          "top": 0,
+          "bottom": 45.59375,
+          "height": 45.59375,
+          "left": 0,
+          "right": 220.515625
+        },
+        {
+          "kind": "copy lead",
+          "top": 69.59375,
+          "bottom": 225.8125,
+          "height": 156.21875,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 249.8125,
+          "bottom": 359.78125,
+          "height": 109.96875,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo",
+          "top": 383.78125,
+          "bottom": 1126,
+          "height": 742.21875,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 47
+    },
+    {
+      "number": 2,
+      "file": "02-p04.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1127,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "media photo",
+          "top": 0,
+          "bottom": 724.34375,
+          "height": 724.34375,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy lead",
+          "top": 752.34375,
+          "bottom": 936.75,
+          "height": 184.40625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 964.75,
+          "bottom": 1126,
+          "height": 161.25,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 43
+    },
+    {
+      "number": 3,
+      "file": "03-p04.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1128,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 177.46875,
+          "height": 177.46875,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media diagram",
+          "top": 205.46875,
+          "bottom": 1041.75,
+          "height": 836.28125,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 1069.75,
+          "bottom": 1126,
+          "height": 56.25,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 45
+    },
+    {
+      "number": 4,
+      "file": "04-p04.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1127,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 125.25,
+          "height": 125.25,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo",
+          "top": 148.25,
+          "bottom": 795.5,
+          "height": 647.25,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "save-example",
+          "top": 818.5,
+          "bottom": 995.5,
+          "height": 177,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 1018.5,
+          "bottom": 1126,
+          "height": 107.5,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 43
+    },
+    {
+      "number": 5,
+      "file": "05-p04.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 120.625,
+          "height": 120.625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media diagram",
+          "top": 148.625,
+          "bottom": 979.625,
+          "height": 831,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 1007.625,
+          "bottom": 1118,
+          "height": 110.375,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 46
+    },
+    {
+      "number": 6,
+      "file": "06-p04.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1128,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 127.59375,
+          "height": 127.59375,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo",
+          "top": 155.59375,
+          "bottom": 985.5,
+          "height": 829.90625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 1013.5,
+          "bottom": 1126,
+          "height": 112.5,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 45
+    },
+    {
+      "number": 7,
+      "file": "07-p04.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1128,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 191.484375,
+          "height": 191.484375,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo",
+          "top": 219.484375,
+          "bottom": 992.25,
+          "height": 772.765625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 1020.25,
+          "bottom": 1126,
+          "height": 105.75,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 43
+    }
+  ],
+  "images": [
+    {
+      "src": "apoio/01-capa-foto.png",
+      "loaded": true,
+      "width": 1448,
+      "height": 1086
+    },
+    {
+      "src": "apoio/02-galeria-foto.png",
+      "loaded": true,
+      "width": 1448,
+      "height": 1086
+    },
+    {
+      "src": "apoio/03-arquivos.png",
+      "loaded": true,
+      "width": 1000,
+      "height": 850
+    },
+    {
+      "src": "apoio/04-pratica-foto.png",
+      "loaded": true,
+      "width": 1448,
+      "height": 1086
+    },
+    {
+      "src": "apoio/05-pasta-escola.png",
+      "loaded": true,
+      "width": 1000,
+      "height": 810
+    },
+    {
+      "src": "apoio/06-projeto-foto.png",
+      "loaded": true,
+      "width": 1448,
+      "height": 1086
+    },
+    {
+      "src": "apoio/07-conversa-foto.png",
+      "loaded": true,
+      "width": 1448,
+      "height": 1086
+    }
+  ],
+  "errors": [],
+  "fonts": {
+    "normal": true,
+    "bold": true
+  }
+}

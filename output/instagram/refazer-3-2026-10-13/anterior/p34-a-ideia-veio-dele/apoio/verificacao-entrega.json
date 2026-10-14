@@ -1,0 +1,155 @@
+{
+  "passed": true,
+  "slides": [
+    {
+      "file": "01-p34.png",
+      "png": true,
+      "width": 1080,
+      "height": 1350
+    },
+    {
+      "file": "02-p34.png",
+      "png": true,
+      "width": 1080,
+      "height": 1350
+    },
+    {
+      "file": "03-p34.png",
+      "png": true,
+      "width": 1080,
+      "height": 1350
+    },
+    {
+      "file": "04-p34.png",
+      "png": true,
+      "width": 1080,
+      "height": 1350
+    },
+    {
+      "file": "05-p34.png",
+      "png": true,
+      "width": 1080,
+      "height": 1350
+    },
+    {
+      "file": "06-p34.png",
+      "png": true,
+      "width": 1080,
+      "height": 1350
+    }
+  ],
+  "localLinks": [
+    {
+      "source": "03-postagens.md",
+      "target": "producao/postagens/p34-a-ideia-veio-dele/index.html",
+      "exists": true
+    },
+    {
+      "source": "postagens\\05-direcao-visual-e-producao.md",
+      "target": "../producao/postagens/p34-a-ideia-veio-dele/index.html",
+      "exists": true
+    },
+    {
+      "source": "postagens\\08-exemplos-do-estudio.md",
+      "target": "../producao/postagens/p34-a-ideia-veio-dele/apoio/captura-real.json",
+      "exists": true
+    },
+    {
+      "source": "postagens\\08-exemplos-do-estudio.md",
+      "target": "../producao/postagens/p34-a-ideia-veio-dele/apoio/fontes.md",
+      "exists": true
+    },
+    {
+      "source": "postagens\\09-p31-a-p40.md",
+      "target": "../producao/postagens/p34-a-ideia-veio-dele/index.html",
+      "exists": true
+    },
+    {
+      "source": "postagens\\09-p31-a-p40.md",
+      "target": "../producao/postagens/p34-a-ideia-veio-dele/",
+      "exists": true
+    },
+    {
+      "source": "producao\\postagens\\p34-a-ideia-veio-dele\\apoio\\fontes.md",
+      "target": "../../../destaques/avaliacoes/fontes-dos-relatos.txt",
+      "exists": true
+    },
+    {
+      "source": "producao\\postagens\\p34-a-ideia-veio-dele\\apoio\\fontes.md",
+      "target": "daniel-12s.png",
+      "exists": true
+    },
+    {
+      "source": "producao\\postagens\\p34-a-ideia-veio-dele\\apoio\\fontes.md",
+      "target": "daniel-45s.png",
+      "exists": true
+    },
+    {
+      "source": "producao\\postagens\\p34-a-ideia-veio-dele\\apoio\\fontes.md",
+      "target": "rafael.webp",
+      "exists": true
+    },
+    {
+      "source": "producao\\postagens\\p34-a-ideia-veio-dele\\apoio\\fontes.md",
+      "target": "quebra-blocos-original.json",
+      "exists": true
+    },
+    {
+      "source": "producao\\postagens\\p34-a-ideia-veio-dele\\apoio\\fontes.md",
+      "target": "quebra-blocos-mais-devagar.json",
+      "exists": true
+    },
+    {
+      "source": "producao\\postagens\\p34-a-ideia-veio-dele\\apoio\\fontes.md",
+      "target": "captura-real.json",
+      "exists": true
+    },
+    {
+      "source": "producao\\postagens\\p34-a-ideia-veio-dele\\apoio\\fontes.md",
+      "target": "prompts.md",
+      "exists": true
+    },
+    {
+      "source": "producao\\postagens\\p34-a-ideia-veio-dele\\apoio\\fontes.md",
+      "target": "LICENSE-Nunito",
+      "exists": true
+    },
+    {
+      "source": "producao\\postagens\\README.md",
+      "target": "p34-a-ideia-veio-dele/index.html",
+      "exists": true
+    },
+    {
+      "source": "producao\\postagens\\README.md",
+      "target": "p34-a-ideia-veio-dele/",
+      "exists": true
+    },
+    {
+      "source": "producao\\postagens\\README.md",
+      "target": "p34-a-ideia-veio-dele/legenda.txt",
+      "exists": true
+    },
+    {
+      "source": "README.md",
+      "target": "producao/postagens/p34-a-ideia-veio-dele/index.html",
+      "exists": true
+    }
+  ],
+  "gameChanges": [
+    {
+      "key": "behavior.start.7.vx.value",
+      "from": 220,
+      "to": 110
+    },
+    {
+      "key": "behavior.start.7.vy.value",
+      "from": 260,
+      "to": 130
+    }
+  ],
+  "onlyVelocity": true,
+  "layoutPassed": true,
+  "capturePassed": true,
+  "publication": "Não agendado nem publicado",
+  "copyReview": "Light Copy: zero ocorrências; texto, fontes e composição conferidos."
+}

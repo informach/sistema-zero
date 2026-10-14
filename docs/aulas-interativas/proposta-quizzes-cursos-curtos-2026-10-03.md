@@ -62,41 +62,45 @@ Na seção do quiz, somente Zappy e quiz, conforme o [briefing](BRIEFING.md) e a
 
 ### 1. Movimento e borda
 
-**Pergunta:** Seu personagem anda até a beirada da tela. Qual ordem você montou para ele continuar visível enquanto se move?
+Revista em 13/10/2026: as três alternativas têm a mesma forma (antes, só a certa dizia "limite da tela", e a forma entregava a resposta), e a explicação diz por que A e C falham.
 
-- A. Conferir a borda e depois mover o personagem para qualquer posição.
-- B. Mover o personagem e depois conferir o limite da tela.
-- C. Conferir a borda só quando o jogo começa.
+**Pergunta:** Seu personagem anda até a beirada da tela. Que ordem você montou para ele não sair da tela?
+
+- A. Primeiro conferir o limite da tela e depois mover o personagem.
+- B. Primeiro mover o personagem e depois conferir o limite da tela.
+- C. Conferir o limite da tela uma vez só, quando o jogo começa.
 
 **Correta:** B.
 
-**Explicação:** Dentro de A cada quadro do jogo, primeiro o jogo move o personagem e, logo depois, a regra da borda segura ele dentro da tela. Isso se repete em todo quadro.
+**Explicação:** Dentro de A cada quadro do jogo, primeiro o personagem anda e, logo depois, Manter o sprite personagem dentro da tela segura ele na borda. Se o limite viesse antes, o personagem andaria depois da conferência, e um pedacinho dele passaria da borda. E, conferido só no começo, o limite não seguraria nada depois. Por isso ele fica dentro de A cada quadro do jogo.
 
 ### 2. Conferir a memória da coleta
 
-Atualizada em 04/10/2026, com id `q-memoria-coleta` no lugar de `q2` do Farol.
+Atualizada em 04/10/2026, com id `q-memoria-coleta` no lugar de `q2` do Farol. Revista em 13/10/2026: a alternativa da velocidade saiu (a escolha de velocidade saiu do curso em 06/10) e deu lugar a uma confusão que a pista do enunciado resolve; "qual bloco" virou "o que conferir", porque as alternativas não são blocos; "a pergunta da porta" virou "a pergunta do farol", para o enunciado não chamar a mesma coisa de dois nomes.
 
-**Pergunta:** Você pegou a chave: ela sumiu do chão e o aviso mudou. Mas, no farol, o jogo disse que falta a chave. A pergunta da porta está certa. Qual bloco da coleta você deve conferir primeiro?
+**Pergunta:** Você pegou a chave: ela sumiu do chão e o aviso mudou. Mas, no farol, o jogo disse que falta a chave. A pergunta do farol está certa. O que você deve conferir primeiro nos blocos da coleta?
 
 - A. Se o aviso usa exatamente as mesmas palavras do vídeo.
 - B. Se o encontro com a chave muda temChave para verdadeiro.
-- C. Se a velocidade do personagem está mais alta.
+- C. Se o bloco Destruir o sprite tira a chave do chão.
 
 **Correta:** B.
 
-**Explicação:** Destruir o sprite retira a chave do chão. Alterar aviso muda a mensagem para quem joga. Essas duas ações não guardam a coleta em temChave. Dentro do encontro com a chave, o bloco que altera temChave precisa guardar verdadeiro. É essa informação que a porta consulta depois.
+**Explicação:** Destruir o sprite já funcionou: a chave sumiu do chão. Alterar aviso também: a mensagem mudou. Essas duas ações não guardam a coleta em temChave. Dentro do encontro com a chave, o bloco que altera temChave precisa guardar verdadeiro. É essa informação que o farol consulta depois.
 
 ### 3. A porta confere uma condição
 
 **Pergunta:** Você chega ao farol sem recolher a chave. Com a condição que programou, o que o jogo deve fazer?
 
 - A. Acender o farol, porque chegar à porta já é suficiente.
-- B. Retirar a chave do chão, mesmo sem o personagem encostar nela.
+- B. Não fazer nada, porque o personagem ainda não pegou a chave.
 - C. Manter o farol apagado e avisar que falta a chave.
 
 **Correta:** C.
 
-**Explicação:** A porta confere temChave. Se você não pegou a chave, temChave ainda é falso, e o jogo segue o senão: avisa que falta a chave. O então, que acende o farol e chama o barco, só acontece quando temChave é verdadeiro.
+**Explicação:** A porta confere temChave. Se você não pegou a chave, temChave ainda é falso, e o jogo segue o senão: avisa que falta a chave. Antes de você montar o senão, era isso que acontecia: nada. O então, que acende o farol e chama o barco, só acontece quando temChave é verdadeiro.
+
+Revista em 13/10/2026: a alternativa B era implausível ("Retirar a chave do chão, mesmo sem o personagem encostar nela"); "Não fazer nada" é o que a criança viu no começo da parte 2 do Dia 3, antes de montar o senão.
 
 ### 4. Conferir os dois caminhos
 
@@ -108,7 +112,9 @@ Atualizada em 04/10/2026, com id `q-memoria-coleta` no lugar de `q2` do Farol.
 
 **Correta:** B.
 
-**Explicação:** A porta tem duas respostas. Você já conferiu o caminho com a chave. Começar uma partida nova e ir direto ao farol permite conferir o caminho sem ela. Nesse teste, a luz deve continuar apagada e a mensagem deve explicar que falta a chave. Testar só o caminho que dá certo pode esconder uma regra montada no lugar errado.
+**Explicação:** A porta tem duas respostas, a do então e a do senão. Você já conferiu o caminho com a chave. Na mesma partida, temChave continua verdadeiro, por isso o farol escolheria o então de novo. Só numa partida nova temChave volta a ser falso: clique em Atualizar e vá direto até a porta do farol. A luz deve continuar apagada, e o aviso deve dizer que falta a chave. Testar só o caminho que dá certo pode esconder uma regra montada no lugar errado.
+
+Revista em 13/10/2026: a explicação passou a dizer por que a mesma partida (A e C) não testa o senão. "Até a porta do farol" acompanha o Dia 3: o farol só percebe o encontro na porta, na base da torre.
 
 ## Correção e conclusão
 
@@ -126,6 +132,8 @@ Ler as perguntas com crianças da faixa atendida, sem explicar a resposta antes.
 
 
 ## Estado da implementação local
+
+Registro de 03 a 05/10; hoje o Farol tem vinte seções, dezenove vídeos e Mapa de 29 páginas (ver `modulos-desafio-primeiro-jogo.md`). As quatro perguntas do Farol foram revistas em 13/10/2026, antes da gravação, sem mudar ids nem respostas certas; o manifesto do certificado é regerado por `qa/gerar-desafio-farol.ts`, que importa as perguntas de `qa/quizzes-cursos-curtos.ts` (a fonte das perguntas dos dois cursos).
 
 - Dois geradores e manifestos atualizados: Cadê Todo Mundo com onze seções e dez vídeos após a revisão de 05/10 (a seção Deixe o jogo com a sua cara entrou na Aula 2); Farol com onze seções e dez vídeos após a revisão de 04/10. A revisão sem vídeo foi acrescentada à aula do certificado, sem mudar os identificadores existentes.
 - Publicação no Members aceita quiz obrigatório em seção anterior ao certificado. A primeira emissão respeita essa seção; certificados emitidos continuam acessíveis. Os endpoints de correção e retorno à aula conservam a tentativa imediata.

@@ -1,0 +1,194 @@
+{
+  "checkedAt": "2026-10-13T21:25:49.223Z",
+  "posts": [
+    {
+      "id": "P01",
+      "slides": 7,
+      "copyExact": true,
+      "captionExact": true,
+      "fonts": [
+        {
+          "family": "Nunito",
+          "status": "loaded"
+        },
+        {
+          "family": "Nunito",
+          "status": "loaded"
+        }
+      ],
+      "files": [
+        {
+          "name": "01-p01.png",
+          "width": 1080,
+          "height": 1350,
+          "sha256": "3585c22fdb00e005b28c823789a21db403eda905a13d3eb94729713cb7ee0fa2"
+        },
+        {
+          "name": "02-p01.png",
+          "width": 1080,
+          "height": 1350,
+          "sha256": "2218c27083bcd3f943e524401f1ed3831a7d85834eb1c3f4ceb5a9e4b414c028"
+        },
+        {
+          "name": "03-p01.png",
+          "width": 1080,
+          "height": 1350,
+          "sha256": "40d227b097830ff9cfb67c4250ac0e10e52447cd686d5c19153e6a93dd21a2af"
+        },
+        {
+          "name": "04-p01.png",
+          "width": 1080,
+          "height": 1350,
+          "sha256": "dc3b086f7e75f85cb7d384e60f3fe7d5f9032a1694ddcbdeee87e5bfe94e27da"
+        },
+        {
+          "name": "05-p01.png",
+          "width": 1080,
+          "height": 1350,
+          "sha256": "daf1ec911c96bb21de42d260a269759185348eb8b226c3f09c7ef206dd105dee"
+        },
+        {
+          "name": "06-p01.png",
+          "width": 1080,
+          "height": 1350,
+          "sha256": "42d1a764f6c4c2f4b865d1f172316491afc216f9a4be8c72bc00582f3b089a2d"
+        },
+        {
+          "name": "07-p01.png",
+          "width": 1080,
+          "height": 1350,
+          "sha256": "40087d7b6ad7d2fb6453f0fb43bd8580e4bb57a5789846dd4434bb194893c90c"
+        }
+      ]
+    },
+    {
+      "id": "P07",
+      "slides": 7,
+      "copyExact": true,
+      "captionExact": true,
+      "fonts": [
+        {
+          "family": "Nunito",
+          "status": "loaded"
+        },
+        {
+          "family": "Nunito",
+          "status": "loaded"
+        }
+      ],
+      "files": [
+        {
+          "name": "01-p07.png",
+          "width": 1080,
+          "height": 1350,
+          "sha256": "57af1ff84fdc467ef63e1bea9bfb941f439eed8ef2580ccb37588cb6c3ed1dab"
+        },
+        {
+          "name": "02-p07.png",
+          "width": 1080,
+          "height": 1350,
+          "sha256": "965ca942226797f793be704463b8d9afa5b49f76164f5abb77c2cdc529b7daba"
+        },
+        {
+          "name": "03-p07.png",
+          "width": 1080,
+          "height": 1350,
+          "sha256": "459bf96ad8fea8038a090042a8bd5d4375bc06d435e7b0935e868d451f16c02a"
+        },
+        {
+          "name": "04-p07.png",
+          "width": 1080,
+          "height": 1350,
+          "sha256": "f4d56429bbedbd6ac6262a979af26d080366ddee6656a94f596837b07642c51d"
+        },
+        {
+          "name": "05-p07.png",
+          "width": 1080,
+          "height": 1350,
+          "sha256": "787bf30fa5d8f346be7cf31e9a207ee5a26e1bd9f448fb45020fabf0001b2373"
+        },
+        {
+          "name": "06-p07.png",
+          "width": 1080,
+          "height": 1350,
+          "sha256": "a6c54add6a5857a3b6de90759f10b2aa97d817039415b8edf0eb116c41a0b90c"
+        },
+        {
+          "name": "07-p07.png",
+          "width": 1080,
+          "height": 1350,
+          "sha256": "db2ebe79d3c42c7fd5bb9381df27b3753bf709c4ab8fac0fbec2e33a30f95fd2"
+        }
+      ]
+    },
+    {
+      "id": "P34",
+      "slides": 8,
+      "copyExact": true,
+      "captionExact": true,
+      "fonts": [
+        {
+          "family": "Nunito",
+          "status": "loaded"
+        },
+        {
+          "family": "Nunito",
+          "status": "loaded"
+        }
+      ],
+      "files": [
+        {
+          "name": "01-p34.png",
+          "width": 1080,
+          "height": 1350,
+          "sha256": "58306cb9d782fd96b46e46307f1c989a88c229c6056f9599d6b3563217eebc57"
+        },
+        {
+          "name": "02-p34.png",
+          "width": 1080,
+          "height": 1350,
+          "sha256": "bb36f40b2fc5fb58241fbda2c3abdfde6c9d05aa91775acf18a3df6e6958c5c9"
+        },
+        {
+          "name": "03-p34.png",
+          "width": 1080,
+          "height": 1350,
+          "sha256": "db4264744c9a748d2aca31fe39502b1ae7d7a2037b726ae0b208678d63bb1ecd"
+        },
+        {
+          "name": "04-p34.png",
+          "width": 1080,
+          "height": 1350,
+          "sha256": "214ce764ae333f0aabd5c1add745269e7c0dbe44e037aaaffd95caa771858a33"
+        },
+        {
+          "name": "05-p34.png",
+          "width": 1080,
+          "height": 1350,
+          "sha256": "61f1591b70249fd400fd819ae7990ab9ffad97ab499a7d6b3009602cb9199ee1"
+        },
+        {
+          "name": "06-p34.png",
+          "width": 1080,
+          "height": 1350,
+          "sha256": "721bfc35d8bc29ae3eea7e4a6e2d6d8710321ef2243afc382e376eba92e7ee01"
+        },
+        {
+          "name": "07-p34.png",
+          "width": 1080,
+          "height": 1350,
+          "sha256": "b90498165d07cee52daa2bdc895d7c62253439ada6d1db2870de5a0a72e9958b"
+        },
+        {
+          "name": "08-p34.png",
+          "width": 1080,
+          "height": 1350,
+          "sha256": "62796163957dfae831afced708264b511703ea9576b121d483fe27ccde403fbf"
+        }
+      ]
+    }
+  ],
+  "linksChecked": 107,
+  "issues": [],
+  "totalSlides": 22
+}

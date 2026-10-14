@@ -1,0 +1,3 @@
+Se o herói precisa chegar à caverna, há duas coisas para montar: o caminho e o movimento.
+
+Testar essa pequena parte prepara a próxima.

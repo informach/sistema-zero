@@ -1,0 +1,9 @@
+O começo e a chegada desenham o percurso. O quadro do meio pede uma decisão a mais: o que acontece no caminho?
+
+Dividam uma folha em três. Desenhem onde o herói começa, o que encontra e onde chega. Para cada obstáculo, escrevam o que ele faz.
+
+No Mundo Pirata Profissional, exemplo do nosso Estúdio, um inimigo persegue e outro dispara a cada 2 segundos. São regras diferentes para montar e testar. A bandeira também precisa de uma condição de vitória.
+
+O desenho vira uma lista de partes para construir. Ele pode mudar conforme os testes revelam novas ideias.
+
+Siga @criecomhelenaejulio para acompanhar ideias virando fases, parte por parte.

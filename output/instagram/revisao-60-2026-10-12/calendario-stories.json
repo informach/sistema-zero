@@ -1,0 +1,510 @@
+{
+  "weeks": [
+    [
+      1,
+      33,
+      16
+    ],
+    [
+      34,
+      7,
+      51
+    ],
+    [
+      4,
+      37,
+      20
+    ],
+    [
+      14,
+      41,
+      24
+    ],
+    [
+      31,
+      12,
+      54
+    ],
+    [
+      3,
+      44,
+      17
+    ],
+    [
+      5,
+      32,
+      38
+    ],
+    [
+      11,
+      49,
+      22
+    ],
+    [
+      2,
+      35,
+      46
+    ],
+    [
+      6,
+      53,
+      28
+    ],
+    [
+      40,
+      8,
+      55
+    ],
+    [
+      13,
+      50,
+      29
+    ],
+    [
+      36,
+      19,
+      52
+    ],
+    [
+      9,
+      42,
+      30
+    ],
+    [
+      47,
+      10,
+      58
+    ],
+    [
+      18,
+      43,
+      59
+    ],
+    [
+      39,
+      21,
+      56
+    ],
+    [
+      15,
+      48,
+      27
+    ],
+    [
+      26,
+      45,
+      23
+    ],
+    [
+      57,
+      25,
+      60
+    ]
+  ],
+  "stories": [
+    [
+      "Uma ideia que começa no interesse",
+      [
+        1,
+        33,
+        16
+      ],
+      [
+        [
+          "Seu filho sabe cada detalhe daquela aventura. Peça que conte uma coisa que gostaria de mudar.",
+          "Adulto escuta a criança descrevendo; a tela fica ao fundo."
+        ],
+        [
+          "Pode ser um caminho diferente ou um personagem que ele inventou. Escute a ideia antes de completar por ele.",
+          "Rascunho feito durante a conversa, sem exemplo pronto dominando a cena."
+        ],
+        [
+          "Criar um jogo permite experimentar uma dessas escolhas. Ele monta uma parte e testa se ficou como imaginou.",
+          "Meu Mundo: comparação entre caminho desenhado e construção. Demonstração da equipe."
+        ]
+      ]
+    ],
+    [
+      "Uma dificuldade com nome",
+      [
+        7
+      ],
+      [
+        [
+          "Seu filho quer parar logo depois de uma tentativa. Antes de pedir que continue, descubra onde travou.",
+          "Cena encenada: criança aponta o trecho que não entendeu."
+        ],
+        [
+          "“Me mostra o que você queria fazer.” A resposta ajuda a procurar a orientação certa.",
+          "Adulto escuta sem tomar o mouse; pergunta em balão editorial."
+        ],
+        [
+          "Criando um jogo, ele pode investigar por que o personagem não alcança um lugar. Com ajuda, muda uma parte e tenta de novo.",
+          "Mini plataforma: adaptação real com plataforma de chegada e teste do pulo."
+        ]
+      ]
+    ],
+    [
+      "Saber usar e aprender a construir",
+      [
+        4
+      ],
+      [
+        [
+          "Ele encontra qualquer vídeo no celular. No computador, ainda pede ajuda para achar um arquivo.",
+          "Celular deixado na mesa; computador com pasta de demonstração, sem dados pessoais."
+        ],
+        [
+          "São experiências diferentes. Mostre onde o arquivo fica e deixe que ele tente encontrar na próxima vez.",
+          "Adulto aponta o caminho; criança opera o mouse."
+        ],
+        [
+          "Criar jogos acrescenta outras experiências: abrir o projeto, montar comandos e testar. Cada etapa dá uma tarefa concreta para aprender.",
+          "Mini plataforma: arquivo aberto e uma regra sendo montada na interface real."
+        ]
+      ]
+    ],
+    [
+      "Uma história para explorar",
+      [
+        14
+      ],
+      [
+        [
+          "Seu filho inventou um lugar cheio de detalhes. Tem uma história ali que merece ser ouvida.",
+          "Criança mostra um desenho de lugar imaginado, sem atribuição a aluno real."
+        ],
+        [
+          "Peça que conte quem vive lá e o que alguém encontraria ao chegar.",
+          "Adulto acompanha o desenho com o olhar; dois detalhes destacados."
+        ],
+        [
+          "Um jogo pode dar movimento à ideia: quem cria decide o caminho e o que alguém encontra ao explorar aquele lugar.",
+          "Meu Mundo, caminho explorável. Não inventar missões ou reações ausentes; mostrar a navegação."
+        ]
+      ]
+    ],
+    [
+      "Uma pista antes de mexer em tudo",
+      [
+        12
+      ],
+      [
+        [
+          "Ele diz “não funciona”. Comece descobrindo o que deveria acontecer.",
+          "Duas pessoas diante da tela; expressão curiosa, sem caricatura de irritação."
+        ],
+        [
+          "Depois, peça que mostre a tentativa. “Apertei a seta e a raquete ficou parada” já dá uma pista para investigar.",
+          "Diagrama editorial simples de tecla e movimento esperado. Não simular defeito da plataforma."
+        ],
+        [
+          "Criar jogos permite comparar intenção e resultado. Com orientação, ele confere o comando e testa se a reação mudou.",
+          "Pong: controle real e reação correspondente."
+        ]
+      ]
+    ],
+    [
+      "Acompanhar num dia cheio",
+      [
+        17
+      ],
+      [
+        [
+          "Seu filho quer aprender. Você ainda está trabalhando. Vale preparar um começo que caiba nesse dia.",
+          "Cena encenada de adulto encerrando trabalho, criança com pedido de atividade."
+        ],
+        [
+          "Confiram como abrir a explicação e qual parte fazer primeiro. Observem também onde ele precisa de companhia.",
+          "Responsável ajuda no primeiro acesso, depois deixa a criança tentar."
+        ],
+        [
+          "Na criação de jogos com aulas gravadas, ele pode pausar para montar e voltar à explicação. O apoio da família se ajusta ao que ele precisa.",
+          "Captura real de aula e Estúdio; controle de pausa legível."
+        ]
+      ]
+    ],
+    [
+      "Conhecer o que acontece na tela",
+      [
+        5
+      ],
+      [
+        [
+          "“Está no computador” pode significar muitas atividades. Peça que seu filho mostre qual está fazendo.",
+          "Porta aberta para conversa, computador no ambiente familiar."
+        ],
+        [
+          "Conheçam juntos onde ele aprende e com quem pode conversar. Combinem que pedidos de dados pessoais passam por você.",
+          "Conversa ao lado do computador; sem mensagens ameaçadoras inventadas."
+        ],
+        [
+          "Se ele estiver criando, há mais para conhecer: uma escolha que fez e o efeito dela no jogo. Acompanhamento também pode ser conversa.",
+          "Quiz: criança aponta uma alternativa e mostra a resposta real."
+        ]
+      ]
+    ],
+    [
+      "O primeiro pedaço da aventura",
+      [
+        11
+      ],
+      [
+        [
+          "Ele inventou uma história enorme e não sabe por onde começar. Guardar as outras ideias ajuda a escolher uma primeira parte.",
+          "Folha com mapa imaginado e várias ideias visíveis."
+        ],
+        [
+          "Escolham uma cena: quem aparece, o que quer fazer e o que precisa acontecer ali.",
+          "Três rascunhos simples da mesma situação."
+        ],
+        [
+          "Num jogo, essa primeira cena já pode virar uma tarefa: fazer o personagem andar por um lugar. Depois de testar, fica mais claro o próximo passo.",
+          "Aventura do Herói: movimento básico na captura real; não prometer criar toda a aventura de uma vez."
+        ]
+      ]
+    ],
+    [
+      "Criação também tem hora de parar",
+      [
+        2
+      ],
+      [
+        [
+          "A hora do jantar chegou no meio da atividade. O combinado funciona melhor quando o momento de parar já foi conversado.",
+          "Relógio discreto, prato na mesa, adulto avisa sem bronca encenada."
+        ],
+        [
+          "Perto desse horário, avise que está chegando a pausa. No trabalho de criação, deixem uma anotação do próximo passo e confiram o salvamento.",
+          "Folha com próximo passo; confirmação de salvamento da ferramenta efetivamente usada."
+        ],
+        [
+          "Criar jogos também usa tela. A atividade pode ter espaço na semana junto com descanso, conversa e outras brincadeiras.",
+          "Computador encerrado após salvar; família sai da mesa."
+        ]
+      ]
+    ],
+    [
+      "Um começo que dá para enxergar",
+      [
+        6
+      ],
+      [
+        [
+          "“Vai estudar” pode deixar o começo pouco claro. Experimente combinar uma primeira ação.",
+          "Material da atividade fechado; adulto conversa com a criança."
+        ],
+        [
+          "“Abra a aula em que parou e veja qual é a próxima tarefa.” Depois, deixe que ele tente.",
+          "Criança abre a aula real e localiza a orientação."
+        ],
+        [
+          "Ao criar um jogo, a tarefa pode ser montar uma regra e conferir o efeito. Um começo concreto ajuda a saber o que fazer agora.",
+          "Fazenda Feliz: sequência de plantar e observar crescimento, capturada no exemplo real."
+        ]
+      ]
+    ],
+    [
+      "Antes do “sou ruim nisso” virar conclusão",
+      [
+        8
+      ],
+      [
+        [
+          "Se seu filho disser “sou ruim nisso”, vale escutar qual parte ficou difícil.",
+          "Cena encenada de conversa ao lado de caderno; sem diagnóstico ou tristeza exagerada."
+        ],
+        [
+          "Uma tentativa que falhou conta sobre aquela tentativa. Vocês podem procurar uma explicação ou diminuir o primeiro passo.",
+          "Duas anotações: tarefa escolhida e dúvida específica. Sem frases motivacionais soltas."
+        ],
+        [
+          "Criando um jogo, ele pode testar uma mudança pequena. Ver a bola rebater após ajustar a regra dá um resultado concreto para conversar.",
+          "Pong: trecho real com rebote, como demonstração, sem promessa de autoestima."
+        ]
+      ]
+    ],
+    [
+      "O trabalho começa antes dos slides",
+      [
+        13
+      ],
+      [
+        [
+          "Seu filho abriu a apresentação e ficou escolhendo a cor. Ainda falta decidir o que precisa explicar.",
+          "Editor genérico de apresentação vazio e folha de tarefa ao lado."
+        ],
+        [
+          "Leiam o pedido e anotem três pontos que precisam aparecer. Depois, escolham qual pesquisar primeiro.",
+          "Exemplo: animal escolhido, onde vive, alimentação e deslocamento. Sem dados escolares reais."
+        ],
+        [
+          "Criar jogos também pede uma ordem. Na fazenda, primeiro vem plantar; depois, crescer e colher. Programar torna essa sequência visível.",
+          "Fazenda Feliz básica em três momentos reais, sem rega ou loja."
+        ]
+      ]
+    ],
+    [
+      "Interesse da criança entra na escolha",
+      [
+        19,
+        52
+      ],
+      [
+        [
+          "Seu filho pede para parar. Vale perguntar se ainda quer realizar aquela ideia ou se perdeu a vontade.",
+          "Responsável escuta resposta, sem mão empurrando a criança para a atividade."
+        ],
+        [
+          "Se ele quer continuar, procurem ajuda para a parte difícil. Se o interesse mudou, a decisão precisa considerar isso.",
+          "Duas possibilidades em cartões simples, sem seta obrigatória para continuar."
+        ],
+        [
+          "Criar jogos pode ser um caminho para quem quer inventar histórias, regras e desafios. A vontade de construir faz parte da escolha.",
+          "Aventura do Herói ao lado de rascunho; não usar personagem como promessa de sucesso."
+        ]
+      ]
+    ],
+    [
+      "Uma pergunta sobre o trabalho pronto",
+      [
+        9
+      ],
+      [
+        [
+          "Seu filho mostrou o trabalho pronto. Escolha um detalhe para conhecer melhor.",
+          "Trabalho ou desenho na mesa; adulto aponta um detalhe."
+        ],
+        [
+          "“Como você decidiu fazer essa parte?” Dê tempo para ele mostrar, sem pedir uma defesa do trabalho inteiro.",
+          "Balão com a pergunta e espaço visual de escuta."
+        ],
+        [
+          "Num jogo criado por ele, uma regra oferece esse assunto: o que acontece com cartas iguais e diferentes. Ele pode jogar e explicar.",
+          "Jogo da Memoria: dois resultados lado a lado, reais e legíveis."
+        ]
+      ]
+    ],
+    [
+      "Participar sem tomar o mouse",
+      [
+        58
+      ],
+      [
+        [
+          "Seu filho está criando e chama você. Peça que mostre o que quer fazer acontecer.",
+          "Adulto chega à mesa, mão da criança no mouse."
+        ],
+        [
+          "Vocês podem procurar juntos a orientação e localizar a dúvida. Deixe espaço para ele testar o próximo passo.",
+          "Trecho de aula retomado; adulto aponta sem operar."
+        ],
+        [
+          "Na criação de jogos, sua participação pode ser essa conversa. Você conhece as ideias dele enquanto ele constrói e testa.",
+          "Aventura do Herói: criança demonstra movimento, sem encenar autonomia como resultado comprovado."
+        ]
+      ]
+    ],
+    [
+      "O próximo desafio tem um motivo",
+      [
+        59
+      ],
+      [
+        [
+          "Ele já sabe fazer uma parte. O próximo desafio pode nascer de uma pergunta dele.",
+          "Criança aponta um detalhe da própria atividade; fala genérica encenada."
+        ],
+        [
+          "“O que você gostaria de mudar?” Escute antes de escolher uma dificuldade por ele.",
+          "Duas ideias em rascunho, mantendo uma escolhida pela criança."
+        ],
+        [
+          "Na Cobrinha, uma área menor muda o espaço para desviar. Criar e testar essa versão permite descobrir o efeito da escolha.",
+          "Comparação de duas áreas preparada pela equipe. Jogabilidade conferida antes da captura."
+        ]
+      ]
+    ],
+    [
+      "Uma anotação ajuda a voltar",
+      [
+        56
+      ],
+      [
+        [
+          "Seu filho vai interromper uma criação. Deixem escrito o que já fez e o que quer tentar depois.",
+          "Lápis e bilhete ao lado do computador."
+        ],
+        [
+          "Pode ser: “Já fiz plantar. Na volta vou testar a colheita”. Antes de fechar, confiram o salvamento na ferramenta usada.",
+          "Bilhete legível e confirmação real de salvamento, sem ensinar fechar durante envio."
+        ],
+        [
+          "Ao retomar o jogo, ele já tem uma tarefa para conferir. A pausa pode fazer parte da rotina de criação.",
+          "Fazenda Feliz: retorno ao projeto e teste de colher."
+        ]
+      ]
+    ],
+    [
+      "Uma escolha precisa ter espaço para existir",
+      [
+        15
+      ],
+      [
+        [
+          "Se ele pergunta se pode fazer diferente, deixem claro o que a atividade permite escolher.",
+          "Duas opções de desenho sobre a mesa, sem símbolos de certo e errado."
+        ],
+        [
+          "Uma referência pode ajudar a começar e ainda deixar uma decisão verdadeira para a criança.",
+          "Modelo de início e uma escolha pequena de caminho ou personagem."
+        ],
+        [
+          "Criando jogos, ela pode mudar uma regra e descobrir o efeito. Na Cobrinha, variar o espaço de movimento muda o desafio.",
+          "Áreas diferentes no exemplo real; adaptação preparada pela equipe, sem interface fictícia."
+        ]
+      ]
+    ],
+    [
+      "O que acontece durante a pausa do vídeo",
+      [
+        23
+      ],
+      [
+        [
+          "O vídeo está parado, mas seu filho está mexendo no projeto. Vale olhar antes de pedir que continue a aula.",
+          "Player pausado junto da atividade real em andamento."
+        ],
+        [
+          "Ele pode estar tentando usar a explicação que acabou de ouvir. Fazer e testar também ocupam tempo.",
+          "Mãos montam um comando; não usar apenas ícone de play."
+        ],
+        [
+          "Na criação de jogos, um pulo funcionando mostra algo que ele conseguiu montar. Se ainda não funcionou, há uma parte para rever.",
+          "Mini plataforma: teste de movimento e retorno ao trecho pertinente."
+        ]
+      ]
+    ],
+    [
+      "Uma experiência para observar",
+      [
+        25,
+        60
+      ],
+      [
+        [
+          "Antes de decidir pela continuidade de uma atividade, converse sobre a experiência que seu filho teve.",
+          "Conversa familiar depois da atividade, computador fechado."
+        ],
+        [
+          "O que quis criar? Em que parte precisou de ajuda? Tem vontade de continuar? As respostas ajudam a decidir.",
+          "Três perguntas em composição limpa, sem campos de diagnóstico ou pontuação."
+        ],
+        [
+          "Criar jogos oferece ideias e regras para experimentar. O valor aparece nas escolhas e no que a criança vai aprendendo a fazer.",
+          "Recorte do Jogo da Memoria e rascunho de regra; fecha sem preço, link ou oferta obrigatória."
+        ]
+      ]
+    ]
+  ]
+}

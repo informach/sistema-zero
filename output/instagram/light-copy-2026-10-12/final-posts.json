@@ -1,0 +1,1507 @@
+[
+  {
+    "id": "P01",
+    "pillar": "Dor",
+    "title": "A tarefa é do seu filho. Mas é você que acaba fazendo.",
+    "format": "Carrossel",
+    "skill": "Organização de ideias: distinguir compreensão da história e planejamento da escrita.",
+    "cta": "Ouvir o que o filho entendeu e ajudá-lo a escolher um começo, preservando sua autoria.",
+    "slides": [
+      [
+        "A tarefa é do seu filho. Mas é você que acaba fazendo.",
+        "Ele diz “não consigo”. Você começa a explicar e, quando percebe, está dizendo até o que ele deve escrever.",
+        "Mãe e filho de 11–12 anos à mesa de casa. Livro aberto e caderno com poucas linhas escritas. Ele segura o lápis; ela escuta. Sem tarefa de artesanato."
+      ],
+      [
+        "Ele precisa fazer um resumo. A página continua em branco.",
+        "O pedido da escola é resumir uma história que leu. Antes de ditar a primeira frase, tente descobrir em qual parte ele precisa de ajuda.",
+        "Livro aberto ao lado de caderno intitulado Resumo da história. Mostrar página vazia e gesto de hesitação, sem expressão exagerada."
+      ],
+      [
+        "“Me conta o que aconteceu nessa história.”",
+        "Ele consegue contar, mas mistura tudo: personagens, detalhes e final. Nesse caso, falta escolher o que entra no resumo e organizar o começo.",
+        "Filho conta a história com gestos. Mãe olha para ele, sem escrever em seu lugar. Livro e caderno permanecem abertos."
+      ],
+      [
+        "Ajude a escolher as ideias. Deixe ele escrever.",
+        "“Qual foi o principal problema da história? Como terminou?” Ele anota essas ideias e tenta a primeira frase com as próprias palavras.",
+        "Detalhe do caderno com duas anotações editoriais: Principal problema / Como terminou. Abaixo, linha começada pela criança. A mãe não segura o lápis."
+      ],
+      [
+        "Criar um jogo exige colocar as ideias em ordem.",
+        "Para criar um jogo da memória, por exemplo, a criança precisa transformar o que imaginou em regras: virar duas cartas, comparar e manter os pares. Depois, joga para conferir.",
+        "Diagrama editorial de duas cartas viradas iguais, baseado na regra do exemplo Jogo da Memoria do Estúdio. Três etapas: Virar duas / Comparar / Manter o par. Não imitar a interface do produto."
+      ],
+      [
+        "A primeira frase pode ser dele.",
+        "Você ajuda a organizar o que ele quer dizer. Ele tenta escrever e vocês leem juntos. Se ainda faltar compreensão da história, voltem à leitura antes de continuar.",
+        "Filho escreve no próprio caderno; mãe acompanha ao lado. Encerrar na tarefa escolar, sem sugerir que criar jogos substitui ajuda em leitura."
+      ]
+    ],
+    "caption": "O filho chama porque não consegue fazer a tarefa. A gente começa explicando e acaba ditando a resposta. É fácil a atividade passar para a mão do adulto.\n\nNo caso de um resumo, peça primeiro que ele conte a história. A resposta ajuda a perceber se precisa voltar à leitura ou se já entendeu o texto e está com dificuldade para organizar o que vai escrever.\n\nSe for essa segunda situação, ajude a escolher as ideias principais e deixe que tente a primeira frase. Depois, leiam juntos.\n\nCriar jogos oferece outra oportunidade de praticar a organização de ideias. No jogo da memória, a criança precisa transformar a ideia da brincadeira em regras que o computador siga. O teste mostra se a sequência funciona.\n\nEssa prática não substitui o apoio na tarefa escolar. É uma forma de trabalhar a habilidade em algo que ela tem interesse em construir.\n\nCenas de família ilustradas; cartas em diagrama editorial.",
+    "dm": {
+      "word": "PASSO",
+      "cta": "Comente PASSO para receber pelo direct três perguntas para ajudar seu filho quando ele trava numa tarefa."
+    },
+    "delivery": "Dica com exemplo",
+    "game_reference": {
+      "key": "memoria",
+      "name": "Jogo da Memoria",
+      "extension": "Jogo 2D Avançado",
+      "source": "packages/studio/src/official-extensions/game-2d-advanced/examples/jogoDaMemoriaExample.ts",
+      "rule": "Virar duas cartas; iguais permanecem, diferentes desviram.",
+      "kind": "Exemplo do Estúdio, não anúncio de curso"
+    }
+  },
+  {
+    "id": "P02",
+    "pillar": "Curiosidade",
+    "title": "Ele lembra cada regra do jogo. Na tarefa, diz “não sei”.",
+    "format": "Reel",
+    "skill": "Raciocínio lógico e comunicação: organizar uma explicação em passos.",
+    "cta": "Perceber a experiência por trás de uma habilidade que o filho já mostra.",
+    "cover": "Ele lembra cada regra do jogo. Na tarefa, diz “não sei”.",
+    "scenes": [
+      [
+        0,
+        9,
+        "Helena imita uma conversa cotidiana; criança explica animadamente uma brincadeira, sem tela de produto.",
+        "Ele tem muito para contar.",
+        "Seu filho lembra as regras, os nomes e os caminhos de uma brincadeira. Aí você pergunta sobre a tarefa da escola e ouve: “Não sei”."
+      ],
+      [
+        9,
+        18,
+        "Detalhes encenados: criança acompanha uma partida, conversa com amigo e tenta outra vez.",
+        "Ali, ele viu, tentou e repetiu.",
+        "Vale olhar para o caminho até essa explicação: ele participou, errou, repetiu e conversou sobre aquilo. Na tarefa nova, talvez ainda esteja no primeiro contato."
+      ],
+      [
+        18,
+        27,
+        "Voltar à conversa, com adulto ouvindo em vez de apontar caderno como cobrança.",
+        "A comparação deixa uma parte da história de fora.",
+        "Usar o jogo como cobrança deixa essa diferença de fora. Conhecer bem uma atividade não significa saber começar qualquer outra."
+      ],
+      [
+        27,
+        36,
+        "Quiz de números no Estúdio: pergunta, alternativas e resposta.",
+        "Criar exige entender o que se quer perguntar.",
+        "Criar um jogo de perguntas dá um motivo para organizar o que sabe. A criança escreve a questão, escolhe as alternativas e define a resposta. Para funcionar, precisa pensar no que o jogador vai entender."
+      ]
+    ],
+    "caption": "“Se lembra tudo do jogo, por que não lembra da matéria?” É uma comparação fácil de fazer.\n\nMas compare também a experiência: quantas vezes ele viu, tentou e explicou aquele jogo? A matéria pode ser nova ou pedir outra ajuda. Conhecer bem uma atividade não torna todas as outras fáceis.\n\nO interesse pelos jogos pode abrir uma oportunidade de aprender criando. Num jogo de perguntas, por exemplo, a criança precisa organizar o assunto, escrever questões claras e conferir as respostas.\n\nA programação dá um destino para esse trabalho: outra pessoa vai jogar o que ela preparou. O interesse vira um motivo para investigar e explicar, sem ser usado como cobrança sobre todas as tarefas.",
+    "visual": "Helena imita uma conversa cotidiana; criança explica animadamente uma brincadeira, sem tela de produto. Detalhes encenados: criança acompanha uma partida, conversa com amigo e tenta outra vez. Voltar à conversa, com adulto ouvindo em vez de apontar caderno como cobrança. Quiz de números no Estúdio: pergunta, alternativas e resposta.",
+    "delivery": "Reflexão",
+    "game_reference": {
+      "key": "quiz",
+      "name": "Quiz de números",
+      "extension": "Jogo 2D",
+      "source": "packages/studio/src/official-extensions/game-2d/examples/textGames.ts",
+      "rule": "Perguntas, três alternativas e avanço após responder.",
+      "kind": "Exemplo do Estúdio, não anúncio de curso"
+    }
+  },
+  {
+    "id": "P03",
+    "pillar": "Desejo",
+    "title": "Depois do “ficou bonito”, ainda tem uma história para ouvir.",
+    "format": "Imagem única",
+    "skill": "Comunicação e autoria: mostrar uma escolha e contar seu motivo.",
+    "cta": "Ouvir a história de uma escolha que não aparece no resultado pronto.",
+    "text": [
+      "Depois do “ficou bonito”, ainda tem uma história para ouvir.",
+      "“Qual parte você mais gostou de fazer?”"
+    ],
+    "visual": "Filho mostra desenho com rascunhos visíveis ao lado; mãe se aproxima do detalhe que ele aponta. Composição com objeto grande e gesto de conversa.",
+    "caption": "Você vê um desenho pronto. Seu filho lembra da parte que apagou, da cor que escolheu e do detalhe que decidiu mudar.\n\nDepois do “ficou bonito”, a conversa pode continuar: “Qual parte você mais gostou de fazer?”. Talvez ele mostre algo que você nem tinha reparado.\n\nCriar um mundo em 3D também dá espaço para essas decisões. A criança escolhe onde colocar os objetos, por onde alguém vai passar e como o cenário vai aparecer.\n\nAo apresentar a criação, tem escolhas próprias para explicar. Pedir que conte é uma forma de conhecer o que ela imaginou e os motivos por trás do resultado.",
+    "delivery": "Reflexão",
+    "game_reference": {
+      "key": "mundo",
+      "name": "Meu Mundo",
+      "extension": "Mundo 3D",
+      "source": "packages/studio/src/official-extensions/world-3d/examples.ts",
+      "rule": "Cenário explorável com objetos, terreno e caminho.",
+      "kind": "Exemplo do Estúdio, não anúncio de curso"
+    }
+  },
+  {
+    "id": "P04",
+    "pillar": "Dor",
+    "title": "“Arrume a mochila” parece uma tarefa. Esconde várias.",
+    "format": "Carrossel",
+    "skill": "Raciocínio lógico: dividir uma tarefa e organizar a ordem.",
+    "cta": "Montar uma lista de três ações para preparar a mochila.",
+    "slides": [
+      [
+        "“Arrume a mochila” parece uma tarefa. Esconde várias.",
+        "Para quem já sabe a rotina, é simples. Para quem ainda está aprendendo, falta descobrir por onde começar.",
+        "Mochila aberta e três objetos fora dela: agenda, caderno e estojo. Criança olha para a agenda."
+      ],
+      [
+        "Primeiro, ele precisa saber o que levar.",
+        "Colocar todos os cadernos na mochila resolve a pressa. Conferir quais aulas terá amanhã ajuda a escolher os certos.",
+        "Dois desenhos: pilha de todos os cadernos e grade de aulas indicando apenas dois. Sem carga exagerada nas costas."
+      ],
+      [
+        "Uma ordem para vocês experimentarem.",
+        "1. Olhar as aulas de amanhã.\n2. Separar os cadernos dessas aulas.\n3. Conferir se o estojo está junto.",
+        "Três cenas grandes correspondentes a cada ação. Não acrescentar instruções na imagem que não estejam no texto."
+      ],
+      [
+        "Agora dá para saber onde ele precisa de ajuda.",
+        "Se não encontra a grade de aulas, vocês começam por aí. Se separou os cadernos, falta conferir o estojo. O pedido ficou mais claro.",
+        "Adulto aponta a grade junto da criança; as duas etapas seguintes permanecem visíveis."
+      ],
+      [
+        "No jogo de fazenda, a ordem faz a diferença.",
+        "Num jogo de fazenda, só dá para colher depois de plantar e esperar crescer. Quem programa precisa organizar essas etapas para que o jogo funcione.",
+        "Fazenda Feliz no Estúdio: terra, broto e planta madura. Mostrar a sequência real, sem inventar ação de regar na versão básica."
+      ],
+      [
+        "“Se organize” fica mais fácil de entender quando vira uma ação.",
+        "Olhar, separar e conferir são coisas que seu filho consegue fazer e acompanhar. Vocês podem deixar a lista perto da mochila.",
+        "Lista curta junto da mochila, criança conferindo o estojo. Fechamento no cotidiano, não na interface."
+      ]
+    ],
+    "caption": "“Se organize” diz o resultado que a gente espera. A criança ainda pode precisar aprender as ações que levam até ele.\n\nNa mochila, uma lista curta mostra o caminho: olhar as aulas, separar os cadernos e conferir o estojo. Vocês podem observar onde ainda precisa de ajuda.\n\nCriar jogos é outra oportunidade de praticar a organização de uma sequência. Numa fazenda, plantar, crescer e colher são etapas que dependem umas das outras.\n\nQuem programa precisa definir essas regras e conferir se acontecem na ordem esperada. O raciocínio tem uma função: fazer a criação funcionar.",
+    "delivery": "Dica com exemplo",
+    "game_reference": {
+      "key": "fazenda",
+      "name": "Fazenda Feliz",
+      "extension": "Jogo 2D",
+      "source": "packages/studio/src/official-extensions/game-2d/examples/clearcode/fazendaFeliz.ts",
+      "rule": "Plantar, esperar crescimento e colher. Não incluir rega ou loja da versão avançada.",
+      "kind": "Exemplo do Estúdio, não anúncio de curso"
+    }
+  },
+  {
+    "id": "P05",
+    "pillar": "Desejo",
+    "title": "Seu filho vive inventando outro jeito de fazer.",
+    "format": "Reel",
+    "skill": "Criatividade e inovação: propor uma mudança e verificar se ajuda.",
+    "cta": "Ouvir o motivo de uma mudança proposta pelo filho.",
+    "cover": "Seu filho vive inventando outro jeito de fazer.",
+    "scenes": [
+      [
+        0,
+        9,
+        "Filho conta o que mudaria no final de um filme; responsável ouve. Nenhuma obra de terceiros na tela.",
+        "“Eu faria diferente.”",
+        "Seu filho termina um filme e já conta o final que teria inventado. Ele está propondo uma mudança. Vale ouvir o motivo antes de encerrar a conversa."
+      ],
+      [
+        9,
+        18,
+        "Daniel no registro original. Identificação: Daniel · Pai do Rafael.",
+        "Uma ideia do Rafael.",
+        "[ÁUDIO ORIGINAL] Vai criando, vai sendo mais criativo. “Eu quero mudar isso aqui no jogo.”"
+      ],
+      [
+        18,
+        27,
+        "Helena apresenta duas versões próprias do Quebra-blocos, depois do relato de Daniel.",
+        "Uma ideia pode virar algo para experimentar.",
+        "Daniel percebeu essa vontade no Rafael. Criar jogos dá um caminho para experimentar: quem programa pode mudar a velocidade de uma bola e ver como fica a partida."
+      ],
+      [
+        27,
+        36,
+        "Duas velocidades da bola no mesmo Quebra-blocos, preparadas e testadas pela equipe.",
+        "A escolha tem um efeito para quem joga.",
+        "Uma bola mais rápida muda o tempo para reagir. A criança pode comparar versões e decidir qual desafio quer criar. Inventar também inclui descobrir o efeito da própria ideia."
+      ]
+    ],
+    "caption": "A vontade de fazer diferente pode aparecer depois de um filme, durante uma partida ou quando a criança conhece uma ideia nova.\n\nDaniel conta que passou a ouvir do Rafael: “Eu quero mudar isso aqui no jogo”. É um relato da experiência deles.\n\nCriar jogos oferece um jeito de transformar essa vontade em uma versão para experimentar. Mudar a velocidade de uma bola, por exemplo, muda o tempo que o jogador tem para reagir.\n\nA criança propõe, constrói e compara. A criatividade ganha um resultado para observar, e a escolha passa a ter um motivo. As versões de Quebra-blocos são exemplos demonstrados pela equipe.",
+    "visual": "Filho conta o que mudaria no final de um filme; responsável ouve. Nenhuma obra de terceiros na tela. Daniel no registro original. Identificação: Daniel · Pai do Rafael. Helena apresenta duas versões próprias do Quebra-blocos, depois do relato de Daniel. Duas velocidades da bola no mesmo Quebra-blocos, preparadas e testadas pela equipe.",
+    "proof": "Daniel: recortes autorizados 25,26–27,92 e 28,58–30,22 s. Não atribuir seu relato a um jogo específico.",
+    "delivery": "História e reflexão",
+    "game_reference": {
+      "key": "quebra",
+      "name": "Quebra-blocos",
+      "extension": "Jogo 2D Avançado",
+      "source": "packages/studio/src/official-extensions/game-2d-advanced/examples/quebraBlocosExample.ts",
+      "rule": "Bola, rebote na raquete, blocos e velocidade. Variantes precisam ser preparadas.",
+      "kind": "Exemplo do Estúdio, não anúncio de curso"
+    }
+  },
+  {
+    "id": "P06",
+    "pillar": "Dor",
+    "title": "Seu filho pede ajuda. Você não lembra de aprender daquele jeito.",
+    "format": "Carrossel",
+    "skill": "Resolução de problemas e autonomia acompanhada: localizar uma dúvida e procurar apoio.",
+    "cta": "Consultar o exemplo da aula e localizar a dúvida antes de procurar ajuda.",
+    "slides": [
+      [
+        "Seu filho pede ajuda. Você não lembra de aprender daquele jeito.",
+        "Ele mostra a conta de matemática. O jeito de resolver no caderno é diferente do que você conhece.",
+        "Responsável olha um exercício no caderno do filho, com exemplo resolvido pela professora na página anterior."
+      ],
+      [
+        "Comecem pelo exemplo da aula.",
+        "Peça que ele mostre uma conta que já fez com a professora. Vocês têm uma explicação para consultar, em vez de tentar adivinhar o método.",
+        "Criança aponta exemplo anterior. Adulto acompanha sem apagar a resolução ou inventar um procedimento diferente."
+      ],
+      [
+        "Peça que mostre até onde acompanhou.",
+        "“Qual foi o primeiro passo? Em qual parte você se perdeu?” Talvez ele saiba começar e precise de ajuda num ponto específico.",
+        "Caderno aberto, dedo indica uma linha do cálculo. Se mostrar números, conferir o cálculo antes de produzir a arte."
+      ],
+      [
+        "Se a dúvida continuar, registrem onde travou.",
+        "Levar essa pergunta à professora é mais útil do que dizer só “não entendi nada”. Você não precisa inventar uma resposta.",
+        "Pequeno bilhete junto do exercício com o ponto da dúvida. Não simular conversa real com professora."
+      ],
+      [
+        "Na criação de jogos, dá para mostrar onde a ideia parou de funcionar.",
+        "Num jogo de rebater a bola, seu filho consegue mostrar: “Era para ela voltar, mas atravessou a raquete”. Ele aprende a explicar o problema e procurar o comando que precisa rever.",
+        "Usar Pong como base para demonstrar uma alteração preparada pela equipe e sua correção. O exemplo original não deve ser apresentado como defeituoso. Mostrar a passagem pela raquete só após preparar a variação."
+      ]
+    ],
+    "caption": "“Na minha época era diferente” pode ser uma reação bem real diante do caderno. Vocês podem começar pelo exemplo que a criança já trabalhou na aula.\n\nPeça que mostre o caminho e onde deixou de entender. Se vocês não conseguirem resolver, anotem a dúvida para levar à professora. Participar também é ajudar a fazer uma pergunta mais clara.\n\nCriar jogos pode trabalhar essa habilidade de explicar problemas: a criança compara o que queria com o que aconteceu na tela. Num jogo de rebater a bola, dá para mostrar onde a reação saiu diferente.\n\nEla passa a ter uma dúvida específica para investigar ou levar a quem pode ajudar. Exemplo de Pong demonstrado pela equipe.",
+    "dm": {
+      "word": "APOIO",
+      "cta": "Comente APOIO para receber pelo direct três formas de participar quando você não sabe a resposta."
+    },
+    "delivery": "Reflexão com exemplo",
+    "game_reference": {
+      "key": "pong",
+      "name": "Pong",
+      "extension": "Jogo 2D",
+      "source": "packages/studio/src/official-extensions/game-2d/examples/clearcode/pong.ts",
+      "rule": "Raquete controlada por setas; disputa até cinco pontos.",
+      "kind": "Exemplo do Estúdio, não anúncio de curso"
+    }
+  },
+  {
+    "id": "P07",
+    "pillar": "Dica",
+    "title": "Ele respondeu “entendi”. Mas ainda não sabe o que precisa entregar.",
+    "format": "Imagem única",
+    "skill": "Compreensão de instruções e clareza ao formular perguntas.",
+    "cta": "Conferir com o filho o que a tarefa pede antes de começar.",
+    "text": [
+      "Ele respondeu “entendi”. Mas ainda não sabe o que precisa entregar.",
+      "Peça: “Me conta o que a professora pediu para fazer”."
+    ],
+    "visual": "Filho de 10–13 anos com enunciado de trabalho escolar e caderno. Responsável ouve a explicação do pedido, sem olhar nota ou boletim.",
+    "caption": "O trabalho pede pesquisar um animal e apresentar onde vive, o que come e como se desloca. Seu filho diz que entendeu, mas começa procurando qualquer imagem do animal.\n\nPedir que ele conte o que precisa entregar ajuda a conferir se o pedido ficou claro. Vocês podem anotar os três assuntos antes de abrir a pesquisa.\n\nCriar um jogo de perguntas é uma forma de trabalhar clareza: quem programa precisa escrever uma pergunta que dê para entender e definir qual resposta vale. Outra pessoa joga e mostra se ficou alguma dúvida.\n\nA atividade dá um motivo para cuidar das instruções, porque alguém vai tentar segui-las.",
+    "delivery": "Dica",
+    "game_reference": {
+      "key": "quiz",
+      "name": "Quiz de números",
+      "extension": "Jogo 2D",
+      "source": "packages/studio/src/official-extensions/game-2d/examples/textGames.ts",
+      "rule": "Perguntas, três alternativas e avanço após responder.",
+      "kind": "Exemplo do Estúdio, não anúncio de curso"
+    }
+  },
+  {
+    "id": "P08",
+    "pillar": "Dor",
+    "title": "Ele quer colocar tudo no trabalho. Ainda não terminou a primeira parte.",
+    "format": "Reel",
+    "skill": "Planejamento e criatividade: preservar ideias e escolher uma primeira tarefa.",
+    "cta": "Separar o necessário para a entrega das ideias que podem entrar depois.",
+    "cover": "Ele quer colocar tudo no trabalho. Ainda não terminou a primeira parte.",
+    "scenes": [
+      [
+        0,
+        9,
+        "Criança planeja apresentação escolar; caderno com várias ideias de imagens e assuntos.",
+        "O trabalho cresceu antes de começar.",
+        "Seu filho precisa fazer uma apresentação para a escola. Quer vídeo, fotos, animação e um monte de curiosidades. Mas ainda não escolheu o que vai contar."
+      ],
+      [
+        9,
+        18,
+        "Adulto e criança leem o pedido e separam os assuntos obrigatórios das ideias extras.",
+        "Primeiro, o que precisa ser explicado.",
+        "Voltem ao pedido da professora. Escolham os assuntos que precisam entrar. Deixem as ideias extras numa lista para depois."
+      ],
+      [
+        18,
+        27,
+        "Criança escreve três tópicos e escolhe uma imagem que explica um deles.",
+        "Uma imagem com função.",
+        "Se o tema é um animal, comecem por onde vive, o que come e como se desloca. Depois escolham imagens que ajudem a explicar isso."
+      ],
+      [
+        27,
+        36,
+        "Só agora, exemplo Mini plataforma no Estúdio, com andar e pular.",
+        "Primeiro, uma parte que dê para jogar.",
+        "Ao criar um jogo, também é preciso escolher o que fazer primeiro. Antes de inventar dez fases, a criança pode fazer o personagem andar e pular. Testar essa parte dá uma base para continuar."
+      ]
+    ],
+    "caption": "Quando o trabalho tem muitas possibilidades, escolher o que vem primeiro já faz parte da tarefa.\n\nComecem pelo que foi pedido. As ideias de vídeo, efeitos e imagens podem ficar numa lista para depois. Assim, o conteúdo ganha um começo antes da decoração.\n\nPlanejar uma primeira versão também é importante na criação de jogos. Fazer o personagem andar e pular é um objetivo que dá para construir e testar antes de pensar em várias fases.\n\nO jogo oferece uma razão para praticar essa escolha: sem a primeira parte funcionando, as próximas ideias ainda não podem ser experimentadas.",
+    "visual": "Criança planeja apresentação escolar; caderno com várias ideias de imagens e assuntos. Adulto e criança leem o pedido e separam os assuntos obrigatórios das ideias extras. Criança escreve três tópicos e escolhe uma imagem que explica um deles. Só agora, exemplo Mini plataforma no Estúdio, com andar e pular.",
+    "note": "Humor sobre a quantidade de ideias, sem ridicularizar a criança ou prometer que toda ideia cabe no primeiro curso.",
+    "dm": {
+      "word": "IDEIA",
+      "cta": "Comente IDEIA para receber pelo direct uma atividade para organizar as ideias e escolher por onde começar."
+    },
+    "delivery": "Dica com humor",
+    "game_reference": {
+      "key": "plataforma",
+      "name": "Mini plataforma",
+      "extension": "Jogo 2D",
+      "source": "packages/studio/src/official-extensions/game-2d/examples/foundations.ts",
+      "rule": "Andar e pular com gravidade. Novos destinos ou obstáculos são adaptações.",
+      "kind": "Exemplo do Estúdio, não anúncio de curso"
+    }
+  },
+  {
+    "id": "P09",
+    "pillar": "Dica",
+    "title": "Ele viu o tutorial inteiro. Agora não sabe por onde começar.",
+    "format": "Carrossel",
+    "skill": "Aprender fazendo: comparar uma explicação com uma tentativa.",
+    "cta": "Pausar um tutorial para executar a ação que acabou de ser explicada.",
+    "slides": [
+      [
+        "Ele viu o tutorial inteiro. Agora não sabe por onde começar.",
+        "Queria colocar uma imagem na apresentação da escola. Acompanhou o vídeo, abriu o programa e se perdeu no primeiro passo.",
+        "Criança com notebook, apresentação escolar e tutorial genérico autorizado, sem artesanato."
+      ],
+      [
+        "No vídeo, tudo já estava no lugar.",
+        "Quem explicou já tinha a imagem salva e sabia qual menu abrir. Seu filho precisa localizar o arquivo e encontrar esse caminho.",
+        "Comparar pasta com arquivo de imagem e menu real da ferramenta escolhida para gravação. Não inventar botões."
+      ],
+      [
+        "Vale pausar antes de acumular mais passos.",
+        "Viu como inserir a imagem? Pause e tente fazer. Agora dá para perceber se a dúvida está em achar o arquivo ou em usar o programa.",
+        "Tutorial pausado; criança procura a imagem que vai usar."
+      ],
+      [
+        "Voltar ao vídeo passa a ter um motivo.",
+        "Ele encontra o trecho que mostra a ação de que precisa. Faz, confere e só depois continua.",
+        "Revisão do trecho correspondente e imagem finalmente inserida no slide escolar."
+      ],
+      [
+        "Aprender a programar um jogo precisa desse tempo de fazer.",
+        "A criança vê como fazer o personagem pular, monta o comando e testa. Se ele não pula, há uma ação concreta para comparar com a explicação.",
+        "Mini plataforma no Estúdio. Captar montar e testar um comando real, sem sugerir que é um curso específico."
+      ]
+    ],
+    "caption": "Um tutorial pode parecer claro enquanto outra pessoa faz tudo. A dúvida aparece quando a criança tenta localizar o arquivo, abrir o menu ou repetir a ação.\n\nPausar depois de um passo dá tempo para fazer essa tentativa. Voltar ao trecho certo responde à dúvida que acabou de aparecer.\n\nCriar jogos torna essa prática visível: programar um pulo só está completo depois de experimentar o movimento. A criança alterna explicação, construção e teste para fazer a própria ideia funcionar.\n\nPor isso, vídeo pausado não significa, por si só, atividade parada.",
+    "delivery": "Dica com explicação",
+    "game_reference": {
+      "key": "plataforma",
+      "name": "Mini plataforma",
+      "extension": "Jogo 2D",
+      "source": "packages/studio/src/official-extensions/game-2d/examples/foundations.ts",
+      "rule": "Andar e pular com gravidade. Novos destinos ou obstáculos são adaptações.",
+      "kind": "Exemplo do Estúdio, não anúncio de curso"
+    }
+  },
+  {
+    "id": "P10",
+    "pillar": "Desejo",
+    "title": "Ele inventou outro final para o filme. Isso também é criatividade.",
+    "format": "Carrossel",
+    "skill": "Criatividade e inovação: adaptar uma ideia e comparar versões.",
+    "cta": "Reconhecer uma ideia própria numa conversa sobre uma história.",
+    "slides": [
+      [
+        "Ele inventou outro final para o filme. Isso também é criatividade.",
+        "Depois de assistir, seu filho conta o que faria diferente: salvaria outro personagem, mudaria a escolha do herói ou deixaria uma pista para continuar.",
+        "Responsável e filho conversam depois de um filme. Televisão sem obra protegida visível; foco nos rostos e na conversa."
+      ],
+      [
+        "A ideia começa com algo que ele conhece.",
+        "Seu filho já entendeu a história. Agora está imaginando outra possibilidade para ela.",
+        "Filho descreve a mudança com gestos. Não usar personagem de franquia como se fosse material próprio."
+      ],
+      [
+        "Vale ouvir o motivo da mudança.",
+        "“Por que você queria esse final?” Ele pode estar pensando em justiça, surpresa ou num personagem de que gostou.",
+        "Responsável escuta, sem corrigir o gosto ou exigir uma resposta certa."
+      ],
+      [
+        "Uma ideia também traz consequências.",
+        "Se o vilão muda de lado, quem vira o desafio? A conversa pode seguir pela história que seu filho está inventando.",
+        "Rascunho original de dois personagens e uma mudança na relação, adequado a 9–14 anos."
+      ],
+      [
+        "Criar jogos dá um caminho para transformar ideias em escolhas.",
+        "Num jogo de aventura, a criança pode inventar o objetivo e o que atrapalha o personagem. A programação faz as ações acontecerem para alguém jogar essa criação.",
+        "Aventura do Herói como base visual. Qualquer novo objetivo ou enredo é adaptação a produzir; não atribuir história inventada à versão existente."
+      ]
+    ],
+    "caption": "Criatividade não aparece só quando a criança desenha ou começa algo do zero. Ela também pode aparecer numa conversa depois de um filme.\n\nAo imaginar outro final, seu filho usa uma história conhecida para propor uma mudança. Ouvir o motivo ajuda a conhecer a ideia por trás dela.\n\nCriar jogos pode aprofundar essa vontade de inventar: a criança decide um objetivo, pensa nos obstáculos e usa a programação para fazer essas escolhas funcionarem. Outra pessoa consegue experimentar a aventura.\n\nEla ganha um projeto em que a imaginação precisa tomar forma, com decisões que mudam a experiência de quem joga.",
+    "delivery": "Reflexão",
+    "game_reference": {
+      "key": "aventura",
+      "name": "Aventura do Herói",
+      "extension": "Jogo 2D",
+      "source": "packages/studio/src/official-extensions/game-2d/examples/clearcode/aventuraHeroi.ts",
+      "rule": "Explorar cenário, cortar mato e enfrentar guardiões. Novo enredo é adaptação.",
+      "kind": "Exemplo do Estúdio, não anúncio de curso"
+    }
+  },
+  {
+    "id": "P11",
+    "pillar": "Desejo",
+    "title": "O André gostava de jogar. A gente ensinou a criar.",
+    "format": "Reel",
+    "skill": "Autoria e programação: incluir construção no interesse por tecnologia.",
+    "cta": "Conhecer a origem de uma escolha feita pela nossa família.",
+    "cover": "O André gostava de jogar. A gente ensinou a criar.",
+    "scenes": [
+      [
+        0,
+        9,
+        "Helena fala para câmera, com foto real do André ao lado. Sem abrir com interface.",
+        "A história começou dentro de casa.",
+        "O André sempre gostou muito de jogar e de assistir a jogos. Isso já fazia parte da vida dele. A gente começou a pensar no que mais ele poderia fazer com esse interesse."
+      ],
+      [
+        9,
+        18,
+        "Júlio e Helena em gravação atual com fotos familiares. Não simular um registro antigo.",
+        "Uma parte do tempo virou criação.",
+        "Foi quando começamos a ensinar a fazer os próprios jogos. Ele continuou gostando de jogar e passou a ter também coisas dele para construir e experimentar."
+      ],
+      [
+        18,
+        27,
+        "Helena retoma a câmera. Usar fotos atuais com identificação de época na produção.",
+        "Aprender passou a despertar mais interesse.",
+        "Ao longo desse caminho, percebemos que ele se envolveu mais nas aulas e começou a gostar mais de aprender. Foi uma mudança que vimos no nosso filho."
+      ],
+      [
+        27,
+        36,
+        "André mostra criação atual; pais ouvem.",
+        "Um interesse que já existia abriu espaço para outro.",
+        "Essa experiência ajudou a dar origem à Comunidade dos Criadores. A gente queria abrir para outras famílias essa possibilidade de usar a tecnologia também para criar."
+      ]
+    ],
+    "caption": "A história da Comunidade começou com um interesse do André: jogar e assistir a jogos.\n\nEm vez de tentar preencher todo o tempo dele com outro assunto, começamos a usar uma parte para ensinar a criar os próprios jogos. A programação entrou por algo de que ele já gostava.\n\nCom o tempo, percebemos mais interesse em aprender e mais participação nas aulas. Esse é o relato da nossa família. Não dá para atribuir toda mudança a uma atividade nem esperar o mesmo caminho de cada criança.\n\nO que essa experiência nos mostrou foi uma possibilidade: a tela também pode ser um lugar para o filho tirar uma ideia da cabeça e fazer algo com ela.\n\nAs imagens atuais acompanham a história; não são registros do início desse processo.",
+    "visual": "Helena fala para câmera, com foto real do André ao lado. Sem abrir com interface. Júlio e Helena em gravação atual com fotos familiares. Não simular um registro antigo. Helena retoma a câmera. Usar fotos atuais com identificação de época na produção. André mostra criação atual; pais ouvem.",
+    "proof": "História confirmada pelo usuário; sem alegar que o curso causou notas, medalhas ou um resultado universal.",
+    "delivery": "História real"
+  },
+  {
+    "id": "P12",
+    "pillar": "Desejo",
+    "title": "Seu filho tem ideias que você ainda não conhece.",
+    "format": "Imagem única",
+    "skill": "Criatividade e expressão: dar forma a uma ideia própria.",
+    "cta": "Olhar uma criação como uma forma de conhecer as ideias do filho.",
+    "text": [
+      "Seu filho tem ideias que você ainda não conhece.",
+      "“Eu gosto bastante de produzir os meus jogos, porque é uma forma de eu expressar as minhas ideias.”",
+      "Jeffrey · Aluno"
+    ],
+    "visual": "Retrato real do Jeffrey ocupando grande parte da arte; aspas com estilos iguais. Palavra ideias em destaque discreto; nenhum cenário inventado atribuído a ele.",
+    "caption": "Há ideias que aparecem num desenho. Outras viram uma história, uma construção ou uma brincadeira inventada.\n\nJeffrey encontrou nos jogos uma forma de mostrar as dele. A fala é simples: ele gosta de produzir porque consegue se expressar.\n\nAo criar, a criança escolhe o que existe naquele mundo e o que pode acontecer nele. Quem joga consegue experimentar algumas dessas escolhas.\n\nPara o pai, a tela pode mostrar algo além da partida: o que o filho quis inventar. Vale pedir que ele conte de onde veio a ideia.",
+    "proof": "Jeffrey, vídeo autorizado, 101,42–109,34 s. Preservar literalidade.",
+    "delivery": "Relato e reflexão"
+  },
+  {
+    "id": "P13",
+    "pillar": "Dor",
+    "title": "Ele explica a regra. Você termina sem entender como joga.",
+    "format": "Carrossel",
+    "skill": "Comunicação e perspectiva: explicar para quem ainda não conhece a ideia.",
+    "cta": "Mostrar uma informação que falta na explicação para quem está chegando.",
+    "slides": [
+      [
+        "Ele explica a regra. Você termina sem entender como joga.",
+        "Seu filho conhece tão bem aquela brincadeira que pula as partes que parecem óbvias para ele. Para você, elas ainda fazem falta.",
+        "Criança explica jogo de cartas à família numa mesa. Usar cartas genéricas, sem mascotes infantis ou material escolar montado só para a foto."
+      ],
+      [
+        "Pode ter faltado o começo da partida.",
+        "Você já ouviu como ganhar. Ainda não sabe quantas cartas pode virar na sua vez.",
+        "Mesa com cartas de memória viradas para baixo e adulto indicando duas delas."
+      ],
+      [
+        "Diga qual informação falta.",
+        "“Na minha vez, eu viro uma ou duas?” Ele consegue completar uma parte específica da explicação.",
+        "Adulto faz pergunta e criança mostra a vez com duas cartas."
+      ],
+      [
+        "Agora ele precisa pensar em quem está aprendendo.",
+        "A regra era conhecida por ele. Explicá-la para outra pessoa exige escolher por onde começar e quais detalhes contar.",
+        "Criança reorganiza explicação ao adulto. Não usar setas ou listas abstratas no lugar da interação."
+      ],
+      [
+        "Programar um jogo trabalha essa clareza de outro jeito.",
+        "No jogo da memória, o computador precisa receber a regra: virar duas cartas, comparar as figuras e esconder de novo se forem diferentes. A criança organiza as instruções e testa se faltou alguma.",
+        "Exemplo Jogo da Memoria. Captar par diferente sendo ocultado e par igual mantido; não associar a curso vendido."
+      ]
+    ],
+    "caption": "Explicar uma regra para quem nunca jogou exige perceber o que a outra pessoa ainda não sabe. A dúvida dela mostra qual informação ficou de fora.\n\n“Na minha vez, viro uma ou duas?” dá à criança um ponto claro para completar.\n\nCriar jogos pode trabalhar essa habilidade porque programar exige dizer o que acontece em cada situação. No jogo da memória, cartas iguais e diferentes pedem respostas diferentes.\n\nA criança precisa organizar essas regras para que a partida funcione. Depois, pode observar outra pessoa jogar e descobrir o que ainda falta explicar.",
+    "delivery": "Reflexão com cena",
+    "game_reference": {
+      "key": "memoria",
+      "name": "Jogo da Memoria",
+      "extension": "Jogo 2D Avançado",
+      "source": "packages/studio/src/official-extensions/game-2d-advanced/examples/jogoDaMemoriaExample.ts",
+      "rule": "Virar duas cartas; iguais permanecem, diferentes desviram.",
+      "kind": "Exemplo do Estúdio, não anúncio de curso"
+    }
+  },
+  {
+    "id": "P14",
+    "pillar": "Curiosidade",
+    "title": "Ele caprichou no slide. Na hora de mostrar, mal dá para ler.",
+    "format": "Reel",
+    "skill": "Observação e criatividade: notar diferenças e propor escolhas.",
+    "cta": "Comparar uma escolha visual pelo efeito para quem vai ler ou jogar.",
+    "cover": "Ele caprichou no slide. Na hora de mostrar, mal dá para ler.",
+    "scenes": [
+      [
+        0,
+        9,
+        "Filho prepara apresentação escolar, aproxima o notebook do responsável.",
+        "A cor ficou bonita de perto.",
+        "Seu filho escolheu uma cor de que gosta para o trabalho da escola. De perto, parece boa. Quando mostra para você, as palavras quase somem."
+      ],
+      [
+        9,
+        18,
+        "Mesmo slide e mesmo texto, amarelo-claro sobre branco e depois azul-escuro sobre branco.",
+        "A mesma frase, em duas cores.",
+        "Compare o mesmo texto nestas duas cores. Dá para gostar do amarelo e ainda perceber que ele dificulta a leitura nesse fundo."
+      ],
+      [
+        18,
+        27,
+        "Criança mantém detalhe amarelo e escurece letras.",
+        "Uma escolha também precisa funcionar para quem vê.",
+        "Ele pode guardar o amarelo para um detalhe e usar uma cor mais escura nas palavras. A escolha passa a considerar quem vai ler a apresentação."
+      ],
+      [
+        27,
+        36,
+        "Quebra-blocos com contraste legível entre bola, blocos e fundo.",
+        "A bola precisa aparecer para quem joga.",
+        "Num jogo, a bola precisa aparecer no cenário. Quem cria escolhe cores e testa se outra pessoa consegue acompanhar o movimento. A aparência passa a ter uma função na partida."
+      ]
+    ],
+    "caption": "Uma apresentação pode ficar bonita no computador e difícil de ler quando alguém tenta acompanhar. O contraste entre texto e fundo ajuda a perceber essa diferença.\n\nSeu filho pode comparar duas versões e escolher a que deixa a mensagem mais clara. A preferência de cor encontra uma necessidade de quem vai usar.\n\nCriar jogos oferece decisões desse tipo: uma bola precisa ser vista, os obstáculos precisam se distinguir do fundo. A criança pode testar as escolhas e observar a experiência de outra pessoa.\n\nÉ uma forma concreta de trabalhar criatividade com uma finalidade, além de escolher o que acha bonito.",
+    "visual": "Filho prepara apresentação escolar, aproxima o notebook do responsável. Mesmo slide e mesmo texto, amarelo-claro sobre branco e depois azul-escuro sobre branco. Criança mantém detalhe amarelo e escurece letras. Quebra-blocos com contraste legível entre bola, blocos e fundo.",
+    "delivery": "Curiosidade visual",
+    "game_reference": {
+      "key": "quebra",
+      "name": "Quebra-blocos",
+      "extension": "Jogo 2D Avançado",
+      "source": "packages/studio/src/official-extensions/game-2d-advanced/examples/quebraBlocosExample.ts",
+      "rule": "Bola, rebote na raquete, blocos e velocidade. Variantes precisam ser preparadas.",
+      "kind": "Exemplo do Estúdio, não anúncio de curso"
+    }
+  },
+  {
+    "id": "P15",
+    "pillar": "Dica",
+    "title": "Seu filho pediu opinião. Você ficou no “gostei”.",
+    "format": "Carrossel",
+    "skill": "Resolução de problemas e colaboração: usar uma observação para melhorar uma criação.",
+    "cta": "Dar retorno sobre um ponto específico de uma apresentação ou criação.",
+    "slides": [
+      [
+        "Seu filho pediu opinião. Você ficou no “gostei”.",
+        "Ele ensaiou a apresentação da escola. Você gostou, mas percebeu uma parte confusa e não sabe como ajudar.",
+        "Filho ensaia apresentação escolar para responsável; notebook e caderno, sem figurino ou palco artificial."
+      ],
+      [
+        "Escolham um ponto para conferir.",
+        "“Deu para entender por que esse animal vive nesse lugar?” Agora você sabe qual parte da explicação ouvir.",
+        "Página escolar sobre habitat com imagem própria ou licenciada; criança explica ao adulto."
+      ],
+      [
+        "Conte o que você conseguiu acompanhar.",
+        "“Entendi onde ele vive. Não entendi o que ele encontra ali para comer.” Essa diferença mostra o trecho que ficou faltando.",
+        "Adulto aponta imagem do habitat e criança consulta anotações sobre alimentação."
+      ],
+      [
+        "Ele pode completar a própria explicação.",
+        "Seu filho escolhe uma informação e ensaia de novo. A opinião virou uma ajuda que dá para usar.",
+        "Criança acrescenta uma anotação e retoma fala; adulto não reescreve tudo por ela."
+      ],
+      [
+        "Quem cria um jogo precisa ouvir quem joga.",
+        "Num jogo de perguntas, outra pessoa pode entender uma questão de um jeito diferente. Quem criou observa a dúvida, melhora o texto e testa de novo.",
+        "Quiz de números como base para demonstrar pergunta e respostas. Ambiguidade deve ser variação preparada pela equipe, não problema atribuído ao original."
+      ]
+    ],
+    "caption": "Uma opinião ajuda mais quando mostra o que a outra pessoa entendeu e em qual ponto se perdeu.\n\nNo ensaio da apresentação escolar, vocês podem escolher uma parte para ouvir. Se faltou explicar a alimentação do animal, há algo específico para acrescentar.\n\nCriar jogos também oferece esse contato com quem vai usar a criação. Num jogo de perguntas, o autor precisa considerar como o jogador lê e escolhe uma resposta.\n\nOuvir essa pessoa e ajustar a pergunta dá uma experiência concreta de melhorar algo a partir de uma opinião.",
+    "delivery": "Dica",
+    "game_reference": {
+      "key": "quiz",
+      "name": "Quiz de números",
+      "extension": "Jogo 2D",
+      "source": "packages/studio/src/official-extensions/game-2d/examples/textGames.ts",
+      "rule": "Perguntas, três alternativas e avanço após responder.",
+      "kind": "Exemplo do Estúdio, não anúncio de curso"
+    }
+  },
+  {
+    "id": "P16",
+    "pillar": "Dor",
+    "title": "Ele refez a conta. O resultado errado apareceu de novo.",
+    "format": "Carrossel",
+    "skill": "Resolução de problemas: comparar tentativas e ajustar uma parte.",
+    "cta": "Localizar a etapa da dificuldade antes de repetir toda a tarefa.",
+    "slides": [
+      [
+        "Ele refez a conta. O resultado errado apareceu de novo.",
+        "Seu filho apagou e começou do início. Mas repetiu o mesmo passo que estava causando a dificuldade.",
+        "Caderno de matemática com exercício refeito. Criança de 10–13 anos olha para a conta; sem nota vermelha ou humilhação."
+      ],
+      [
+        "“Faz de novo” ainda não mostra o que precisa mudar.",
+        "Peça que ele explique a conta linha por linha. Vocês podem comparar com o exemplo feito na aula.",
+        "Duas contas lado a lado: exemplo da aula e tentativa. Valores só entram depois de conferir a matemática."
+      ],
+      [
+        "Procurem o primeiro passo que ficou diferente.",
+        "Pode ser um sinal copiado errado ou uma etapa que não entendeu. Se vocês não souberem, marquem esse ponto para pedir ajuda.",
+        "Criança aponta um sinal diferente no próprio caderno, adulto acompanha sem assumir o lápis."
+      ],
+      [
+        "A próxima tentativa ganha um motivo.",
+        "Agora ele volta àquela etapa. Se estiver frustrado, uma pausa pode vir antes de continuar.",
+        "Caderno marcado para retomar; criança revisa uma linha, sem encenação de transformação emocional."
+      ],
+      [
+        "Criar jogos permite testar o que precisa mudar.",
+        "Se o personagem não alcança uma plataforma, a criança pode ajustar o pulo ou a distância. Ao mudar uma coisa por vez e jogar, consegue observar o efeito de cada escolha.",
+        "Mini plataforma como base: uma variação com destino a alcançar deve ser preparada e testada. Mostrar uma alteração por vez; não prometer esse desafio num curso específico."
+      ]
+    ],
+    "caption": "Refazer uma conta inteira pode repetir a mesma dúvida. O passo que a criança não entendeu continua ali.\n\nAcompanhar a resolução ajuda a localizar onde pedir outra explicação. Vocês podem usar um exemplo da aula como referência e marcar o primeiro ponto que ficou diferente.\n\nCriar jogos pode ser uma forma de praticar a investigação de problemas, porque a criança vê o efeito das instruções que montou. Um personagem que não chega à plataforma dá um resultado para examinar.\n\nEla escolhe uma mudança, testa e compara. Existe um motivo para tentar de novo, além de repetir o esforço. Isso complementa outras experiências de aprendizagem; não substitui o ensino de matemática.",
+    "dm": {
+      "word": "TESTE",
+      "cta": "Comente TESTE para receber pelo direct três perguntas para investigar uma tentativa que não funcionou, com um exemplo."
+    },
+    "delivery": "Reflexão com exemplo",
+    "game_reference": {
+      "key": "plataforma",
+      "name": "Mini plataforma",
+      "extension": "Jogo 2D",
+      "source": "packages/studio/src/official-extensions/game-2d/examples/foundations.ts",
+      "rule": "Andar e pular com gravidade. Novos destinos ou obstáculos são adaptações.",
+      "kind": "Exemplo do Estúdio, não anúncio de curso"
+    }
+  },
+  {
+    "id": "P17",
+    "pillar": "Curiosidade",
+    "title": "Ele quis mudar uma coisa no vídeo. O resultado ficou outro.",
+    "format": "Reel",
+    "skill": "Comparação de versões: perceber o efeito de uma mudança.",
+    "cta": "Comparar uma alteração por vez e ouvir o motivo da escolha.",
+    "cover": "Ele quis mudar uma coisa no vídeo. O resultado ficou outro.",
+    "scenes": [
+      [
+        0,
+        9,
+        "Criança edita vídeo caseiro autorizado da família ou do próprio animal, sem rede social aberta.",
+        "O mesmo vídeo, dois começos.",
+        "Seu filho gravou um vídeo e quer tirar um pedaço do começo. Antes de apagar tudo, ele compara o trecho inteiro com uma versão mais curta."
+      ],
+      [
+        9,
+        18,
+        "Reproduzir original e versão cortada. Manter som e demais elementos iguais.",
+        "Mudou só o corte.",
+        "Se mudar corte, música e velocidade de uma vez, fica difícil perceber o efeito de cada escolha. Comparar só o começo deixa a diferença mais clara."
+      ],
+      [
+        18,
+        27,
+        "Responsável assiste e ouve o motivo da escolha.",
+        "Agora ele tem um motivo para escolher.",
+        "A parte importante ficou mais fácil de encontrar? Faltou entender o que estava acontecendo? A criança pode ouvir sua impressão e decidir o que prefere."
+      ],
+      [
+        27,
+        36,
+        "Quebra-blocos: mesma cena com duas velocidades preparadas pela equipe.",
+        "Criar jogos permite experimentar escolhas e comparar.",
+        "Num jogo de rebater a bola, aumentar a velocidade muda o tempo para reagir. Quem cria pode testar duas versões e decidir qual partida faz mais sentido. A mudança tem um efeito que dá para observar."
+      ]
+    ],
+    "caption": "Quando a criança edita um vídeo, pode fazer várias mudanças antes de assistir ao resultado. Comparar uma alteração por vez ajuda a entender o que cada escolha fez.\n\nIsso dá uma conversa concreta: o corte deixou a ação mais clara ou tirou uma parte necessária?\n\nCriar jogos permite fazer essa comparação com as próprias ideias. Num jogo de rebater a bola, quem programa testa duas velocidades e observa como muda a dificuldade antes de escolher a versão.\n\nA curiosidade ganha um método simples: mudar, comparar e explicar a preferência.",
+    "visual": "Criança edita vídeo caseiro autorizado da família ou do próprio animal, sem rede social aberta. Reproduzir original e versão cortada. Manter som e demais elementos iguais. Responsável assiste e ouve o motivo da escolha. Quebra-blocos: mesma cena com duas velocidades preparadas pela equipe.",
+    "delivery": "Curiosidade e reflexão",
+    "note": "Usar vídeo caseiro autorizado. Não exigir publicação da criança. Demonstrar as duas versões de fato; manter as demais condições iguais.",
+    "proof": "Exemplo Quebra-blocos registrado em game-2d-advanced; velocidade da bola faz parte do projeto. A variante será preparada antes da captação.",
+    "game_reference": {
+      "key": "quebra",
+      "name": "Quebra-blocos",
+      "extension": "Jogo 2D Avançado",
+      "source": "packages/studio/src/official-extensions/game-2d-advanced/examples/quebraBlocosExample.ts",
+      "rule": "Bola, rebote na raquete, blocos e velocidade. Variantes precisam ser preparadas.",
+      "kind": "Exemplo do Estúdio, não anúncio de curso"
+    }
+  },
+  {
+    "id": "P18",
+    "pillar": "Dica",
+    "title": "Ele sentou para estudar. Levantou para buscar tudo.",
+    "format": "Carrossel",
+    "skill": "Planejamento e autonomia acompanhada: preparar o necessário para agir.",
+    "cta": "Preparar material e acesso antes de começar a atividade.",
+    "slides": [
+      [
+        "Ele sentou para estudar. Levantou para buscar tudo.",
+        "O lápis, o caderno, a borracha. Antes da primeira atividade, o começo já virou uma sequência de interrupções.",
+        "Três momentos da mesma mesa: sem lápis, sem caderno, sem borracha. Humor leve, sem atribuir preguiça."
+      ],
+      [
+        "Olhem o pedido antes de espalhar o material.",
+        "“O que essa atividade vai usar?” Separem só o necessário e deixem ao alcance da criança.",
+        "Pedido de exercícios no caderno, livro da matéria, lápis e borracha à mão. Evitar atividade de desenho inventada só para a cena."
+      ],
+      [
+        "No computador, preparem também o caminho até a aula.",
+        "Confiram internet, som e mouse. Se o aparelho é compartilhado, combinem quando ele estará disponível.",
+        "Responsável e criança conferem volume e uso do computador, sem exibir senha."
+      ],
+      [
+        "Deixem claro como a atividade começa.",
+        "“Abra a aula em que parou e veja o próximo passo.” É mais fácil agir quando o começo tem um lugar.",
+        "Marcador de aula ou bilhete junto da tela, sem inventar estado de progresso."
+      ],
+      [
+        "Para aprender a criar jogos, esse preparo deixa tempo para fazer.",
+        "Com a aula aberta e o computador pronto, seu filho pode montar os comandos e experimentar a criação. A organização ajuda a chegar à atividade.",
+        "Tela real de uma aula existente, seguida de Corrida Maluca em demonstração separada da equipe. Não montar uma tela de aula de Corrida nem sugerir que esse exemplo já tem curso."
+      ]
+    ],
+    "caption": "Um estudo pode ser interrompido antes mesmo de começar. Às vezes, basta olhar para a mesa: falta tudo o que a atividade vai usar.\n\nVocês podem fazer essa preparação juntos, até descobrir o que a criança consegue organizar sozinha. Leiam o pedido, separem o material e confiram a primeira ação.\n\nNa criação de jogos, entram também computador disponível, internet, som e mouse. Resolver essas condições antes dá espaço para montar, experimentar e tirar dúvidas durante a atividade.\n\nA ideia é facilitar o começo com o que a família tem, sem exigir uma mesa perfeita.",
+    "delivery": "Dica de rotina",
+    "game_reference": {
+      "key": "corrida",
+      "name": "Corrida Maluca",
+      "extension": "Jogo 3D",
+      "source": "packages/studio/src/official-extensions/game-3d/examples.ts",
+      "rule": "Acelerar, frear e contar voltas completas.",
+      "kind": "Exemplo do Estúdio, não anúncio de curso"
+    },
+    "note": "A organização permite chegar à atividade; não afirmar que criar jogos corrige a rotina por si só. Corrida é exemplo do Estúdio, separado da captura de aula existente."
+  },
+  {
+    "id": "P19",
+    "pillar": "Dica",
+    "title": "Ele parou no trabalho. Amanhã vai tentar lembrar onde estava.",
+    "format": "Carrossel",
+    "skill": "Planejamento: registrar o estado de uma tarefa e seu próximo passo.",
+    "cta": "Salvar o trabalho e anotar uma próxima ação específica.",
+    "slides": [
+      [
+        "Ele parou no trabalho. Amanhã vai tentar lembrar onde estava.",
+        "O texto está pela metade, as imagens estão numa pasta e chegou a hora de sair. Um recado para si mesmo ajuda a deixar o começo da volta.",
+        "Trabalho escolar no computador, arquivo salvo e caderno ao lado. Sem dados de escola ou aluno real."
+      ],
+      [
+        "Anote o que já está pronto.",
+        "“Já escrevi onde o animal vive e o que ele come.” A frase lembra o que não precisa refazer.",
+        "Caderno com anotação literal ao lado da apresentação escolar."
+      ],
+      [
+        "Deixe uma tarefa para a volta.",
+        "“Falta escolher uma imagem para mostrar como ele se desloca.” É mais claro do que escrever só “continuar o trabalho”.",
+        "Segunda anotação junto do material. Imagem ainda a escolher, sem mostrar mecanismo inexistente no programa."
+      ],
+      [
+        "Antes de fechar, confira se o arquivo ficou salvo.",
+        "O recado guarda a próxima ideia. O salvamento guarda o que ele já fez.",
+        "Responsável e criança conferem o salvamento real da ferramenta usada na apresentação."
+      ],
+      [
+        "Aprender a criar jogos também envolve continuar um projeto depois.",
+        "Num jogo de fazenda, ele pode montar o plantio numa etapa e deixar o teste do crescimento para a próxima. Registrar o que falta dá um começo para retomar a criação.",
+        "Fazenda Feliz, com estados de terra, broto e planta madura. Referência de planejamento de projeto, não promessa de recurso de tarefa no editor."
+      ]
+    ],
+    "caption": "Um trabalho pode continuar em outro dia. O que atrapalha é voltar e precisar descobrir de novo onde tinha parado.\n\nUma anotação com o que está pronto e o que falta ajuda a guardar essa decisão. “Escolher uma imagem para explicar o deslocamento” aponta uma tarefa; “continuar” ainda deixa tudo em aberto.\n\nNa criação de jogos, o mesmo cuidado acompanha um projeto que cresce por etapas. Um jogo de fazenda tem plantio, crescimento e colheita para construir e conferir.\n\nA criança pode registrar o próximo teste e retomar dali. Antes de fechar, confiram também o salvamento da ferramenta utilizada.",
+    "delivery": "Dica",
+    "game_reference": {
+      "key": "fazenda",
+      "name": "Fazenda Feliz",
+      "extension": "Jogo 2D",
+      "source": "packages/studio/src/official-extensions/game-2d/examples/clearcode/fazendaFeliz.ts",
+      "rule": "Plantar, esperar crescimento e colher. Não incluir rega ou loja da versão avançada.",
+      "kind": "Exemplo do Estúdio, não anúncio de curso"
+    }
+  },
+  {
+    "id": "P20",
+    "pillar": "Desejo",
+    "title": "Ele já faz sozinho uma parte em que antes chamava você.",
+    "format": "Reel",
+    "skill": "Autonomia acompanhada: reconhecer o que consegue fazer e quando pedir apoio.",
+    "cta": "Observar uma mudança concreta na ajuda de que o filho precisa.",
+    "cover": "Ele já faz sozinho uma parte em que antes chamava você.",
+    "scenes": [
+      [
+        0,
+        9,
+        "Adulto ao lado da criança; na cena seguinte, observa enquanto ela assume uma etapa conhecida.",
+        "Uma ajuda que mudou com o tempo.",
+        "No começo, você senta junto para cada passo. Depois, percebe que seu filho já abriu a atividade e começou uma parte por conta própria."
+      ],
+      [
+        9,
+        18,
+        "Flávia no vídeo original. Identificação: Flávia · Mãe do Fernando.",
+        "O que a Flávia percebeu.",
+        "[ÁUDIO ORIGINAL] No início eu acompanhei mais, agora eu acompanho menos. Ele faz o curso com total independência no momento."
+      ],
+      [
+        18,
+        27,
+        "Helena para câmera, seguida de criança mostrando dúvida ao adulto.",
+        "Observe o que mudou na ajuda.",
+        "Esse foi o caminho do Fernando, contado pela mãe. Vale reparar em qual etapa seu filho já consegue seguir e em qual ainda precisa de você."
+      ],
+      [
+        27,
+        36,
+        "Pong sendo testado pela equipe, separado do vídeo de Flávia.",
+        "Uma criação dá decisões para tomar.",
+        "Criar jogos dá oportunidades para tentar e conferir: a criança monta a reação da bola, testa e procura ajuda se ela faz algo diferente. O apoio acompanha o que ainda precisa aprender."
+      ]
+    ],
+    "caption": "Uma mudança importante pode aparecer numa cena pequena: a criança começa uma parte que antes só fazia com você ao lado.\n\nFlávia conta que passou a acompanhar menos o Fernando. A fala descreve a experiência dela naquele momento, sem estabelecer idade ou prazo para outras famílias.\n\nCriar jogos oferece decisões que a criança pode assumir conforme aprende: montar uma ação, testar e mostrar uma dúvida. O resultado na tela ajuda a perceber o que conseguiu e onde precisa de apoio.\n\nA autonomia pode ser acompanhada por essas ações. A demonstração de Pong é da equipe; não é um projeto atribuído ao Fernando.",
+    "visual": "Adulto ao lado da criança; na cena seguinte, observa enquanto ela assume uma etapa conhecida. Flávia no vídeo original. Identificação: Flávia · Mãe do Fernando. Helena para câmera, seguida de criança mostrando dúvida ao adulto. Pong sendo testado pela equipe, separado do vídeo de Flávia.",
+    "proof": "Flávia: trecho autorizado 56,14–62,14 s. Preservar “no momento” e contexto individual.",
+    "delivery": "Relato e reflexão",
+    "game_reference": {
+      "key": "pong",
+      "name": "Pong",
+      "extension": "Jogo 2D",
+      "source": "packages/studio/src/official-extensions/game-2d/examples/clearcode/pong.ts",
+      "rule": "Raquete controlada por setas; disputa até cinco pontos.",
+      "kind": "Exemplo do Estúdio, não anúncio de curso"
+    }
+  },
+  {
+    "id": "P21",
+    "pillar": "Desejo",
+    "title": "Seu filho também pode ensinar uma coisa a você.",
+    "format": "Imagem única",
+    "skill": "Comunicação: explicar uma ação a outra pessoa e ouvir sua dúvida.",
+    "cta": "Se interessar por uma descoberta que o filho queira mostrar.",
+    "text": [
+      "Seu filho também pode ensinar uma coisa a você.",
+      "“Me mostra como você fez isso.”"
+    ],
+    "visual": "Filho mostra ao responsável como recortou um vídeo caseiro no computador. Adulto observa o trecho e a ferramenta usada; sem fingir que não sabe mexer para provocar a cena.",
+    "caption": "Seu filho colocou uma legenda num vídeo ou encontrou um jeito de organizar as fotos. Você ainda não conhece aquele recurso e pede que ele mostre.\n\nA conversa muda de lugar: agora ele precisa explicar e você pode dizer onde ficou com dúvida.\n\nCriar um mundo ou um jogo dá outras oportunidades para essa troca. A criança toma decisões sobre o cenário, os caminhos e as ações; depois, apresenta algo que ajudou a construir.\n\nAo pedir que mostre essas escolhas, você participa do interesse dele e abre espaço para que ele também ensine.",
+    "delivery": "Reflexão",
+    "game_reference": {
+      "key": "mundo",
+      "name": "Meu Mundo",
+      "extension": "Mundo 3D",
+      "source": "packages/studio/src/official-extensions/world-3d/examples.ts",
+      "rule": "Cenário explorável com objetos, terreno e caminho.",
+      "kind": "Exemplo do Estúdio, não anúncio de curso"
+    }
+  },
+  {
+    "id": "P22",
+    "pillar": "Curiosidade",
+    "title": "Ele seguiu um tutorial. Depois quis fazer do jeito dele.",
+    "format": "Carrossel",
+    "skill": "Criatividade: compreender uma referência e fazer uma adaptação própria.",
+    "cta": "Ouvir a intenção de uma mudança feita a partir de uma referência.",
+    "slides": [
+      [
+        "Ele seguiu um tutorial. Depois quis fazer do jeito dele.",
+        "Seu filho aprende um desenho pelo vídeo. Na segunda tentativa, troca a roupa do personagem, muda o cabelo e inventa outra expressão.",
+        "Adolescente de 12–14 anos desenha personagem original a partir de tutorial próprio, com duas versões. Evitar origami ou estética pré-escolar."
+      ],
+      [
+        "O exemplo ensinou por onde começar.",
+        "Ele observou as formas e experimentou os traços. Agora tem uma referência para fazer escolhas.",
+        "Detalhe de esboço de rosto e segunda tentativa, sem exigir desenho profissional."
+      ],
+      [
+        "A diferença tem uma intenção.",
+        "“Quero que pareça mais bravo.” A criança muda as sobrancelhas e vê se a expressão ficou como imaginou.",
+        "Duas expressões do mesmo personagem original. Sobrancelhas em destaque apenas como exemplo, sem promessa de método de desenho."
+      ],
+      [
+        "Uma escolha própria pode nascer depois de aprender o básico.",
+        "Vale ouvir o que ele quis mudar. O exemplo pode dar apoio para criar outra versão.",
+        "Responsável observa os dois desenhos e criança aponta a alteração."
+      ],
+      [
+        "Na programação, uma regra conhecida também pode virar uma nova ideia.",
+        "Depois de entender a Cobrinha, quem cria pode experimentar outra velocidade ou mudar o tamanho do espaço. O teste mostra como a escolha muda a partida.",
+        "Cobrinha do Estúdio. Preparar duas variações reais; tamanho do tabuleiro e velocidade não são botões prometidos, são ajustes no projeto."
+      ]
+    ],
+    "caption": "Aprender por um exemplo pode dar à criança uma forma de começar. Depois, ela enxerga o que gostaria de mudar.\n\nNum desenho, a intenção pode ser outra expressão. Num jogo, pode ser uma partida mais rápida ou um espaço menor para se mover.\n\nCriar jogos trabalha essa passagem da referência para a escolha própria: a criança entende uma regra, modifica uma parte e experimenta o efeito.\n\nA criatividade aparece na intenção e na versão que ela constrói, sem exigir que invente tudo do zero.",
+    "delivery": "Reflexão",
+    "game_reference": {
+      "key": "cobrinha",
+      "name": "Cobrinha",
+      "extension": "Jogo 2D Avançado",
+      "source": "packages/studio/src/official-extensions/game-2d-advanced/examples/cobrinhaExample.ts",
+      "rule": "Mover, comer maçãs, crescer; fim ao bater na parede ou no corpo.",
+      "kind": "Exemplo do Estúdio, não anúncio de curso"
+    }
+  },
+  {
+    "id": "P23",
+    "pillar": "Curiosidade",
+    "title": "“Põe ali” só funciona para quem sabe onde é “ali”.",
+    "format": "Reel",
+    "skill": "Raciocínio lógico e comunicação: estabelecer condições claras e conferir sua aplicação.",
+    "cta": "Notar uma informação que fica escondida numa instrução cotidiana.",
+    "cover": "“Põe ali” só funciona para quem sabe onde é “ali”.",
+    "scenes": [
+      [
+        0,
+        9,
+        "Adulto aponta vagamente para uma estante com duas prateleiras; criança segura um caderno.",
+        "“Põe ali.”",
+        "Você fala “põe ali”, aponta para a estante e acha que explicou. Seu filho olha para duas prateleiras e ainda precisa descobrir qual delas."
+      ],
+      [
+        9,
+        18,
+        "Mesmo enquadramento; adulto aponta um lugar concreto junto do estojo.",
+        "“Na prateleira de baixo, ao lado do estojo.”",
+        "Quando você diz “na prateleira de baixo, ao lado do estojo”, aparece uma informação que faltava. A intenção já existia. A outra pessoa ainda não tinha como saber."
+      ],
+      [
+        18,
+        27,
+        "Helena diante dos mesmos objetos.",
+        "Uma instrução precisa de detalhes que o outro consegue usar.",
+        "Essa cena ajuda a entender uma coisa sobre programação: o computador não conhece o “ali” que a gente imaginou. Precisa receber uma instrução."
+      ],
+      [
+        27,
+        36,
+        "Corrida Maluca, controles de acelerar e frear e seus efeitos reais.",
+        "Uma instrução precisa dizer qual ação acontece.",
+        "Criar jogos é uma forma de praticar essa clareza. Na corrida, a criança define qual tecla acelera e qual freia. Ao testar, vê se as instruções fizeram o carro responder como imaginou."
+      ]
+    ],
+    "caption": "“Ali”, “aquilo” e “do jeito certo” parecem claros quando a gente já sabe o que quer. Para quem está ouvindo, pode faltar uma informação.\n\nExplicar um lugar na estante torna isso visível: “na prateleira de baixo, ao lado do estojo” dá referências para agir.\n\nCriar jogos trabalha a precisão das instruções. Num jogo de corrida, a criança precisa definir o que cada tecla faz e conferir a resposta do carro.\n\nA programação dá um motivo para escolher os detalhes: o computador vai executar o que foi montado. O teste mostra se a intenção virou uma instrução que funciona.",
+    "visual": "Adulto aponta vagamente para uma estante com duas prateleiras; criança segura um caderno. Mesmo enquadramento; adulto aponta um lugar concreto junto do estojo. Helena diante dos mesmos objetos. Corrida Maluca, controles de acelerar e frear e seus efeitos reais.",
+    "delivery": "Curiosidade com humor",
+    "game_reference": {
+      "key": "corrida",
+      "name": "Corrida Maluca",
+      "extension": "Jogo 3D",
+      "source": "packages/studio/src/official-extensions/game-3d/examples.ts",
+      "rule": "Acelerar, frear e contar voltas completas.",
+      "kind": "Exemplo do Estúdio, não anúncio de curso"
+    }
+  },
+  {
+    "id": "P24",
+    "pillar": "Dica",
+    "title": "Ele tem assunto para a apresentação. Falta colocar em ordem.",
+    "format": "Imagem única",
+    "skill": "Planejamento e expressão: representar etapas antes de construir.",
+    "cta": "Organizar uma apresentação em explicação, exemplo e ideia principal.",
+    "text": [
+      "Ele tem assunto para a apresentação. Falta colocar em ordem.",
+      "O que vou explicar.\nUm exemplo para mostrar.\nO que a turma precisa lembrar."
+    ],
+    "visual": "Três partes de uma apresentação escolar sobre reciclagem: separação de resíduos, exemplo de garrafa destinada à coleta, recado para consultar as orientações locais. Não representar cores ou destinação como universais.",
+    "caption": "Seu filho pesquisou, juntou imagens e agora não sabe por onde começar a apresentação. Uma lista curta pode organizar a fala.\n\nEscolham o que ele vai explicar, um exemplo que ajude a entender e a ideia que quer deixar com a turma. Depois, ele ensaia olhando para esses pontos.\n\nCriar jogos também exige dar uma ordem ao que será apresentado. No Pong, quem vai jogar precisa saber que controla uma raquete, que deve rebater a bola e como a partida termina.\n\nAo escrever essas orientações e ver alguém jogar, a criança percebe se deixou uma informação importante para trás.",
+    "delivery": "Dica visual",
+    "game_reference": {
+      "key": "pong",
+      "name": "Pong",
+      "extension": "Jogo 2D",
+      "source": "packages/studio/src/official-extensions/game-2d/examples/clearcode/pong.ts",
+      "rule": "Raquete controlada por setas; disputa até cinco pontos.",
+      "kind": "Exemplo do Estúdio, não anúncio de curso"
+    }
+  },
+  {
+    "id": "P25",
+    "pillar": "Curiosidade",
+    "title": "Seu filho fala tanto daquele jogo. Tem um interesse para conhecer aí.",
+    "format": "Carrossel",
+    "skill": "Autoria: partir de um interesse e explorar uma possibilidade de criação.",
+    "cta": "Conhecer um interesse específico e abrir uma possibilidade de criação.",
+    "slides": [
+      [
+        "Seu filho fala tanto daquele jogo. Tem um interesse para conhecer aí.",
+        "Talvez seja construir casas, inventar personagens ou descobrir caminhos. “Gosta de jogar” ainda diz pouco sobre o que chama a atenção dele.",
+        "Adulto escuta filho contando com gestos; três pequenos desenhos próprios representam casa, personagem e caminho. Não abrir com produto."
+      ],
+      [
+        "Dois filhos podem gostar do mesmo jogo por motivos diferentes.",
+        "Um quer vencer o desafio. Outro passa o tempo imaginando como decorar uma casa. A conversa muda quando você conhece essa diferença.",
+        "Duas crianças em situações ilustradas diferentes, sem atribuir interesses a alunos reais."
+      ],
+      [
+        "Peça que ele mostre a parte preferida.",
+        "“O que você mais gosta de fazer aí?” Deixe que ele conte antes de sugerir outra atividade.",
+        "Adulto ouve e olha para o detalhe indicado pela criança; tela secundária."
+      ],
+      [
+        "Uma resposta pode virar um convite.",
+        "Se gosta das histórias: “Que final você inventaria?”. Se gosta de construir: “Como seria um lugar criado por você?”.",
+        "Duas propostas visuais: final desenhado e planta simples de um lugar. Texto integral permanece na copy."
+      ],
+      [
+        "O convite pode começar numa conversa.",
+        "Se ele gosta de desafios, pergunte o que tornaria uma partida mais interessante. Ouçam a ideia antes de pensar em como programar.",
+        "Responsável e filho conversam sobre um desafio conhecido. Não propor circuito de tampinhas ou artesanato como rotina da faixa etária."
+      ],
+      [
+        "Criar jogos dá um jeito de experimentar essas decisões.",
+        "Num jogo de atravessar a rua, quem cria organiza os obstáculos e testa se existe passagem. A criança pode construir um desafio, jogar e decidir o que precisa mudar.",
+        "Atravesse a Rua, exemplo do Jogo 3D. Usar travessia e obstáculos da versão real; adaptações devem ser preparadas antes da captação."
+      ]
+    ],
+    "caption": "“Meu filho gosta de jogos” pode significar muitas coisas. Descobrir qual parte interessa a ele dá uma conversa mais próxima do que tratar todos os jogos como iguais.\n\nQuem gosta de histórias pode imaginar personagens. Quem gosta de construir pode pensar num lugar. Quem gosta de desafios pode propor uma dificuldade para uma partida.\n\nCriar jogos oferece espaço para levar algumas dessas ideias adiante. Num jogo de travessia, por exemplo, os obstáculos precisam criar dificuldade sem impedir todas as passagens. Quem programa organiza, joga e ajusta.\n\nA criança ganha um motivo para pensar em soluções e experimentar escolhas. O convite pode ocupar uma parte do tempo; o lazer não precisa virar obrigação de produzir.",
+    "dm": {
+      "word": "CRIAR",
+      "cta": "Comente CRIAR para receber pelo direct três convites para conversar sobre o que seu filho gostaria de criar."
+    },
+    "delivery": "Reflexão e convite para criar",
+    "game_reference": {
+      "key": "travessia",
+      "name": "Atravesse a Rua",
+      "extension": "Jogo 3D",
+      "source": "packages/studio/src/official-extensions/game-3d/examples.ts",
+      "rule": "Atravessar uma grade desviando de carros e caminhões.",
+      "kind": "Exemplo do Estúdio, não anúncio de curso"
+    }
+  },
+  {
+    "id": "P26",
+    "pillar": "Curiosidade",
+    "title": "Ele diz que não gosta de conta. Mas confere cada ponto da partida.",
+    "format": "Reel",
+    "skill": "Raciocínio lógico: associar uma contagem às ações que a produzem.",
+    "cta": "Conhecer um uso dos números que interessa ao filho.",
+    "cover": "Ele diz que não gosta de conta. Mas confere cada ponto da partida.",
+    "scenes": [
+      [
+        0,
+        9,
+        "Filho e responsável assistem ou comentam futebol; usar placar próprio, sem vídeo de transmissão.",
+        "“Se ganhar, vai para quantos pontos?”",
+        "Seu filho acompanha um campeonato e quer saber quantos pontos o time terá se vencer a próxima partida. A conta responde a uma dúvida que interessa a ele."
+      ],
+      [
+        9,
+        18,
+        "Tabela fictícia claramente simples, time com 10 pontos e vitória somando 3.",
+        "Dez pontos, mais três: treze.",
+        "Na tabela do exemplo, o time tem dez pontos e a vitória vale três. Somar dá o resultado que ele quer comparar com os outros times."
+      ],
+      [
+        18,
+        27,
+        "Responsável conversa sobre o cálculo, sem mostrar boletim ou prometer mudança escolar.",
+        "Um motivo para conferir a conta.",
+        "Esse interesse não elimina dificuldades em matemática. Ele oferece uma situação em que vale descobrir o resultado e explicar como chegou nele."
+      ],
+      [
+        27,
+        36,
+        "Corrida Maluca no Estúdio: mostrar volta completa alterando contador.",
+        "Criar um jogo exige fazer a contagem funcionar.",
+        "Num jogo de corrida, quem programa precisa definir quando uma volta conta. Depois, testa se o placar corresponde ao que aconteceu. O número tem uma função que a criança consegue conferir."
+      ]
+    ],
+    "caption": "A criança pode querer fazer uma conta para descobrir a posição do time, comparar pontos ou saber o que falta para alcançar outro jogador.\n\nIsso não torna toda tarefa de matemática fácil. Mas dá um motivo concreto para calcular e conferir.\n\nCriar jogos amplia essa experiência: a criança passa a construir a própria contagem. Num jogo de corrida, precisa decidir quando uma volta é completada e verificar se o placar soma corretamente.\n\nA programação liga o número a uma ação. No exemplo mostrado, cada volta completa soma um ponto.",
+    "visual": "Filho e responsável assistem ou comentam futebol; usar placar próprio, sem vídeo de transmissão. Tabela fictícia claramente simples, time com 10 pontos e vitória somando 3. Responsável conversa sobre o cálculo, sem mostrar boletim ou prometer mudança escolar. Corrida Maluca no Estúdio: mostrar volta completa alterando contador.",
+    "proof": "Corrida Maluca, game-3d/examples.ts: descrição e projeto contam voltas completas. A tabela de futebol é um exemplo inventado, não classificação real.",
+    "delivery": "Curiosidade",
+    "game_reference": {
+      "key": "corrida",
+      "name": "Corrida Maluca",
+      "extension": "Jogo 3D",
+      "source": "packages/studio/src/official-extensions/game-3d/examples.ts",
+      "rule": "Acelerar, frear e contar voltas completas.",
+      "kind": "Exemplo do Estúdio, não anúncio de curso"
+    }
+  },
+  {
+    "id": "P27",
+    "pillar": "Dica",
+    "title": "Dois trabalhos prontos podem esconder caminhos bem diferentes.",
+    "format": "Carrossel",
+    "skill": "Aprender a aprender: tornar uma escolha ou compreensão observável.",
+    "cta": "Conversar sobre uma escolha e a ajuda necessária, além da aparência da entrega.",
+    "slides": [
+      [
+        "Dois trabalhos prontos podem esconder caminhos bem diferentes.",
+        "Numa apresentação, a criança escolheu as informações e explicou com suas palavras. Na outra, ainda precisou de ajuda para entender o que colocou.",
+        "Duas apresentações escolares parecidas, sem nomes, notas ou julgamento visual de melhor e pior."
+      ],
+      [
+        "A aparência mostra só uma parte.",
+        "Imagens bonitas e texto bem alinhado não contam como seu filho escolheu o conteúdo.",
+        "Slide escolar visualmente arrumado e anotações da pesquisa ao lado."
+      ],
+      [
+        "Peça que ele explique uma escolha.",
+        "“Por que você colocou essa imagem?” Ele pode mostrar como ela ajuda a entender o assunto.",
+        "Criança aponta a relação entre imagem e informação da apresentação."
+      ],
+      [
+        "Ouça também onde ainda precisou de ajuda.",
+        "Talvez saiba explicar, mas tenha dificuldade para escrever. Talvez use o programa com facilidade e ainda precise entender o texto. São apoios diferentes.",
+        "Responsável conversa sobre conteúdo e uso da ferramenta, sem medir a criança por uma única resposta."
+      ],
+      [
+        "Criar jogos deixa algumas decisões disponíveis para experimentar.",
+        "No jogo da memória, seu filho pode mostrar por que cartas iguais ficam abertas e as diferentes voltam a esconder. Jogar e explicar a regra dá pistas sobre o que ele compreendeu.",
+        "Jogo da Memoria, mesma regra comprovada no exemplo. Não chamar a demonstração de avaliação completa da aprendizagem."
+      ]
+    ],
+    "caption": "O trabalho pronto não mostra sozinho o que a criança entendeu ou de que ajuda precisou.\n\nPedir que explique uma escolha abre essa conversa. Uma imagem pode ter sido escolhida porque ajuda a entender o assunto ou só porque apareceu primeiro na busca. Vale ouvir o motivo.\n\nCriar jogos pode tornar decisões parecidas mais visíveis: a criança programa uma regra, vê o resultado e consegue mostrar como funciona.\n\nNo jogo da memória, comparar cartas iguais e diferentes dá uma demonstração concreta para conversar sobre a lógica. São pistas daquele momento, sem transformar a conversa numa prova.",
+    "delivery": "Reflexão",
+    "game_reference": {
+      "key": "memoria",
+      "name": "Jogo da Memoria",
+      "extension": "Jogo 2D Avançado",
+      "source": "packages/studio/src/official-extensions/game-2d-advanced/examples/jogoDaMemoriaExample.ts",
+      "rule": "Virar duas cartas; iguais permanecem, diferentes desviram.",
+      "kind": "Exemplo do Estúdio, não anúncio de curso"
+    }
+  },
+  {
+    "id": "P28",
+    "pillar": "Desejo",
+    "title": "A ideia dele está ganhando forma. Agora dá vontade de ver o resultado.",
+    "format": "Imagem única",
+    "skill": "Autoria e motivação: observar o resultado de uma ideia própria.",
+    "cta": "Perceber a satisfação de experimentar uma ideia própria.",
+    "text": [
+      "A ideia dele está ganhando forma. Agora dá vontade de ver o resultado.",
+      "“Eu me sinto criando meus próprios jogos muito feliz, animado, para ver depois o que que vai dar.”",
+      "Fernando · Aluno"
+    ],
+    "visual": "Fotograma real do Fernando com expressão legível. Aspas equivalentes, retrato grande, sem interface ou projeto inventado em nome dele.",
+    "caption": "Fernando está animado para descobrir o resultado do que ele mesmo está fazendo. Essa expectativa aparece na fala dele.\n\nCriar jogos oferece um projeto em que a criança tem decisões para tomar: o que acontece numa partida, como o personagem se move e qual é o desafio. A programação transforma essas escolhas em ações.\n\nQuando testa, ela consegue experimentar algo que ajudou a construir. Essa relação entre ideia e resultado pode dar um motivo para continuar aprendendo.\n\nO relato é do Fernando. Cada criança tem seus interesses e seu caminho.",
+    "proof": "Fernando, trecho autorizado 0–8,14 s; preservar as palavras.",
+    "delivery": "Relato e reflexão"
+  },
+  {
+    "id": "P29",
+    "pillar": "Dica",
+    "title": "“Depois a gente estuda” ficou para amanhã de novo.",
+    "format": "Reel",
+    "skill": "Planejamento: combinar condições e uma tarefa possível.",
+    "cta": "Trocar um horário indefinido por um combinado possível.",
+    "cover": "“Depois a gente estuda” ficou para amanhã de novo.",
+    "scenes": [
+      [
+        0,
+        9,
+        "Adulto e criança olham agenda; computador compartilhado com trabalho.",
+        "O “depois” ainda não tem lugar na rotina.",
+        "Vocês combinam de estudar depois. Só que depois vem banho, jantar, trabalho e a hora de dormir. A atividade fica para amanhã."
+      ],
+      [
+        9,
+        18,
+        "Calendário simples com período escolhido; preservar horários reais da família.",
+        "Escolham quando e onde.",
+        "Troquem o “depois” por um momento possível: sábado depois do café, por exemplo. Confiram também se o computador estará disponível."
+      ],
+      [
+        18,
+        27,
+        "Bilhete com uma ação: abrir aula e montar o próximo passo.",
+        "Escolham o que cabe nesse momento.",
+        "O combinado pode ser montar e testar a próxima parte. Se o tempo acabar, guardem o trabalho e anotem por onde continuar."
+      ],
+      [
+        27,
+        36,
+        "Fazenda Feliz no Estúdio, mostrando uma etapa montada e o projeto guardado.",
+        "Uma criação pode continuar em outro dia.",
+        "Se seu filho está aprendendo a criar jogos, o combinado pode ter um objetivo pequeno: fazer o plantio funcionar e testar. Depois de salvar, ele deixa anotado o que vai construir na volta."
+      ]
+    ],
+    "caption": "“Depois” parece um horário, mas ainda está disputando espaço com tudo o que vai acontecer.\n\nEscolham juntos um momento, confiram o computador e definam um começo. Pode ser sábado depois do café ou outro período que exista na vida de vocês.\n\nNa criação de jogos, o projeto pode continuar em outro momento. Guardem o trabalho na ferramenta e anotem a próxima ação antes de encerrar.\n\nSe o combinado não couber, ajustem. Uma rotina serve para ajudar a atividade a acontecer, sem exigir que toda semana seja igual.",
+    "visual": "Adulto e criança olham agenda; computador compartilhado com trabalho. Calendário simples com período escolhido; preservar horários reais da família. Bilhete com uma ação: abrir aula e montar o próximo passo. Fazenda Feliz no Estúdio, mostrando uma etapa montada e o projeto guardado.",
+    "dm": {
+      "word": "ROTINA",
+      "cta": "Comente ROTINA para receber pelo direct um combinado de começo, pausa e volta à atividade."
+    },
+    "delivery": "Dica de rotina",
+    "game_reference": {
+      "key": "fazenda",
+      "name": "Fazenda Feliz",
+      "extension": "Jogo 2D",
+      "source": "packages/studio/src/official-extensions/game-2d/examples/clearcode/fazendaFeliz.ts",
+      "rule": "Plantar, esperar crescimento e colher. Não incluir rega ou loja da versão avançada.",
+      "kind": "Exemplo do Estúdio, não anúncio de curso"
+    }
+  },
+  {
+    "id": "P30",
+    "pillar": "Desejo",
+    "title": "Seu filho sabe mexer no celular. Alguém programou cada botão.",
+    "format": "Carrossel",
+    "skill": "Preparação para o futuro: compreender, criar, testar e aprender com tecnologia.",
+    "cta": "Ampliar a ideia de preparação para o futuro para incluir criação e compreensão.",
+    "slides": [
+      [
+        "Seu filho sabe mexer no celular. Alguém programou cada botão.",
+        "Por trás de uma tela pronta, houve pessoas decidindo o que acontece quando alguém toca, escolhe ou escreve.",
+        "Filho usa um aplicativo genérico; detalhe ampliado de um botão neutro. Nada de código na capa, robôs ou profissão prometida."
+      ],
+      [
+        "Quem usa escolhe entre as opções da tela.",
+        "Abrir uma imagem, passar um vídeo, começar uma partida. O aplicativo já tem regras para responder a cada ação.",
+        "Três gestos simples sobre cartões genéricos, sem reproduzir marca de terceiro."
+      ],
+      [
+        "Quem cria decide quais ações vão existir.",
+        "Na Cobrinha: como ela muda de direção? O que acontece quando pega uma maçã? Em que situação a partida acaba? Essas regras precisam ser construídas.",
+        "Cobrinha: setas, maçã, corpo crescendo e limite da área. Mostrar os estados reais depois da abertura cotidiana."
+      ],
+      [
+        "Programar dá um jeito de construir essas respostas.",
+        "A criança organiza as instruções e testa: a maçã fez a cobra crescer? A partida acabou ao bater? O resultado mostra se a regra funciona.",
+        "Duas regras reais da Cobrinha: aumentar tamanho ao comer maçã; fim ao bater na parede ou no corpo."
+      ],
+      [
+        "Criar jogos apresenta esse outro lado da tecnologia.",
+        "Seu filho deixa de apenas escolher as opções prontas e passa a entender como algumas delas são feitas. Aprende a construir e conferir uma regra.",
+        "Projeto Cobrinha e comportamento em execução. Não prometer domínio de toda a programação com um exemplo."
+      ],
+      [
+        "As ferramentas vão mudar. Ele pode começar a entender como construir com elas.",
+        "Além de aprender a usar o que já existe, seu filho pode ter experiências de criar, testar e explicar as próprias ideias.",
+        "Fechamento em três objetos concretos: rascunho, criação funcionando e outra pessoa testando. Sem promessa de carreira."
+      ]
+    ],
+    "caption": "Saber usar um aplicativo é útil. Conhecer o lado de quem cria acrescenta perguntas: por que funciona assim e como eu faria algo parecido?\n\nCriar jogos é um caminho para começar a responder. Na Cobrinha, a criança pode estudar e montar regras de movimento, crescimento e fim de partida. Depois, testa se cada uma faz o que esperava.\n\nEla pratica organizar instruções, investigar problemas e explicar escolhas com um resultado concreto para observar. Esse contato amplia a experiência com tecnologia para incluir construção.\n\nNão é preciso escolher a profissão do filho para dar espaço a isso. Uma ideia que ele tenha vontade de criar pode ser um começo.",
+    "delivery": "Reflexão sobre o futuro",
+    "game_reference": {
+      "key": "cobrinha",
+      "name": "Cobrinha",
+      "extension": "Jogo 2D Avançado",
+      "source": "packages/studio/src/official-extensions/game-2d-advanced/examples/cobrinhaExample.ts",
+      "rule": "Mover, comer maçãs, crescer; fim ao bater na parede ou no corpo.",
+      "kind": "Exemplo do Estúdio, não anúncio de curso"
+    }
+  },
+  {
+    "id": "E01",
+    "title": "A aula cabe na semana. Só falta reservar o computador.",
+    "format": "Carrossel",
+    "pillar": "Apoio às famílias",
+    "skill": "Organização para aproveitar as aulas.",
+    "cta": "Combinar o uso do computador e reservar tempo para a prática.",
+    "slides": [
+      [
+        "A aula cabe na semana. Só falta reservar o computador.",
+        "Quando o aparelho é compartilhado, o horário de estudar também precisa combinar com quem vai usá-lo.",
+        "Agenda de adulto e criança ao lado do mesmo notebook."
+      ],
+      [
+        "Escolham um momento que exista na rotina.",
+        "Pode ser depois do lanche em um dia combinado. Confiram se o computador estará livre nesse período.",
+        "Calendário com um período reservado, sem sugerir frequência universal."
+      ],
+      [
+        "Reservem tempo para assistir e fazer.",
+        "A criança vai pausar para montar e testar o jogo. O tempo do vídeo é só uma parte da atividade.",
+        "Player pausado e Estúdio em uso, sem relógio prometendo duração fixa."
+      ],
+      [
+        "Deixem pronto o começo.",
+        "Abram a aula em que ele parou e confiram internet, som, mouse e teclado. Depois, sigam a próxima orientação.",
+        "Aula real aberta com material necessário ao alcance."
+      ],
+      [
+        "Antes de sair, confiram o salvamento.",
+        "Na atividade do Estúdio, esperem aparecer Guardado na sua conta. Anotem o próximo passo para a volta.",
+        "Captura real do indicador no cabeçalho da atividade, não apenas Salvo no editor."
+      ]
+    ],
+    "caption": "As aulas gravadas permitem escolher o horário dentro da rotina da família e do prazo de acesso contratado. Num computador compartilhado, vale combinar também quem vai usar o aparelho.\n\nReservem espaço para assistir e fazer. Pausar para montar um comando e testar faz parte da atividade.\n\nAo encerrar, esperem Guardado na sua conta no cabeçalho da atividade do Estúdio. Quando a aula pedir Enviar meu projeto, façam também essa entrega.",
+    "delivery": "Dica para aproveitar as aulas"
+  },
+  {
+    "id": "E02",
+    "title": "A aula acabou. Peça para ver uma coisa que ele fez.",
+    "format": "Reel",
+    "pillar": "Apoio às famílias",
+    "skill": "Participação adequada à ajuda de que a criança precisa.",
+    "cta": "Combinar uma demonstração depois da atividade.",
+    "cover": "A aula acabou. Peça para ver uma coisa que ele fez.",
+    "scenes": [
+      [
+        0,
+        9,
+        "Responsável se aproxima depois da atividade.",
+        "“Escolhe uma parte para me mostrar.”",
+        "Você quer acompanhar o curso do seu filho. Depois da atividade, peça que ele escolha uma coisa para mostrar: um movimento, uma regra ou algo que mudou."
+      ],
+      [
+        9,
+        18,
+        "Criança demonstra ação real no jogo, sem memorizar uma explicação.",
+        "Deixe ele demonstrar.",
+        "Se ele disser “fiz o dinossauro pular”, peça para ver. Deixe que jogue, aponte ou conte. A demonstração ajuda a conversa a sair do “foi legal”."
+      ],
+      [
+        18,
+        27,
+        "Adulto escuta uma dúvida e retoma um trecho da aula junto.",
+        "“Ficou alguma coisa difícil?”",
+        "Pergunte também se ficou alguma coisa difícil. Vocês podem voltar ao trecho da aula ou usar Preciso de ajuda. Ajuste a sua presença ao apoio de que ele precisa."
+      ]
+    ],
+    "caption": "Nem sempre a conversa depois da aula precisa começar com “terminou?”. “Escolhe uma parte para me mostrar” dá à criança um assunto concreto.\n\nOlhem uma ação funcionando e ouçam uma dúvida. Assim, você conhece uma parte da atividade e descobre onde pode acompanhar mais de perto.\n\nSe precisar de orientação, retomem a explicação ou usem Preciso de ajuda. Esse momento de conversa complementa o acompanhamento de que cada criança necessita.",
+    "visual": "Responsável se aproxima depois da atividade. Criança demonstra ação real no jogo, sem memorizar uma explicação. Adulto escuta uma dúvida e retoma um trecho da aula junto.",
+    "delivery": "Dica para acompanhar"
+  },
+  {
+    "id": "E03",
+    "title": "O jogo ficou pronto. Peça para ele mostrar como uma parte funciona.",
+    "format": "Carrossel",
+    "pillar": "Apoio às famílias",
+    "skill": "Observação do aprendizado durante o curso.",
+    "cta": "Observar uma ação do jogo e a ajuda necessária para construí-la.",
+    "slides": [
+      [
+        "O jogo ficou pronto. Peça para ele mostrar como uma parte funciona.",
+        "A demonstração conta algo que a tela pronta, sozinha, não mostra.",
+        "Criança mostra uma ação do curso Corre Dino ao responsável."
+      ],
+      [
+        "Escolham uma ação simples.",
+        "“Me mostra como você faz o dinossauro pular.” Deixem ele jogar e apontar o comando que está usando.",
+        "Curso Corre Dino, controle de pulo e reação real. Conferir interface e entrada usada antes da captação."
+      ],
+      [
+        "Conversem sobre o que acontece na partida.",
+        "“O que acontece quando encosta no obstáculo?” Ele pode jogar para mostrar, sem decorar o nome de cada bloco.",
+        "Corre Dino: colisão e estado de fim conforme versão real."
+      ],
+      [
+        "Se a resposta surpreender, olhem juntos.",
+        "Talvez aquela parte ainda esteja em construção. Voltar ao teste ou à explicação ajuda a entender o que falta.",
+        "Retorno ao trecho correspondente da aula real."
+      ],
+      [
+        "Guardem uma observação para a próxima aula.",
+        "Por exemplo: “Já entendeu o pulo. Ainda precisa de ajuda para montar a reação ao obstáculo”. Essa informação orienta o acompanhamento.",
+        "Anotação privada, sem avaliar ou expor aluno real."
+      ]
+    ],
+    "caption": "Para acompanhar a atividade, escolham uma ação do jogo e deixem seu filho mostrar como funciona.\n\nNo Corre Dino, o pulo e a reação aos obstáculos oferecem exemplos para conversar. A criança pode demonstrar e apontar os comandos, em vez de responder de memória.\n\nSe houver dúvida, voltem à experiência ou à aula. A intenção é conhecer o que ela já compreendeu e onde precisa de apoio.\n\nUma demonstração dá pistas daquele momento, sem resumir toda a aprendizagem.",
+    "delivery": "Dica para observar aprendizagem"
+  },
+  {
+    "id": "E04",
+    "title": "O vídeo está pausado. Seu filho pode estar no meio da parte mais importante.",
+    "format": "Imagem única",
+    "pillar": "Apoio às famílias",
+    "skill": "Alternância entre assistir, fazer e testar.",
+    "cta": "Olhar a atividade em andamento antes de pedir que o vídeo continue.",
+    "text": [
+      "O vídeo está pausado. Seu filho pode estar no meio da parte mais importante.",
+      "Ele está montando, testando e descobrindo o que entendeu."
+    ],
+    "visual": "Tela real do curso com player pausado e criança trabalhando no Estúdio. Mostrar as mãos em atividade; não usar ícone de pausa solto no lugar de cena.",
+    "caption": "Você olha para o computador e vê a aula parada. Antes de pedir que continue o vídeo, vale olhar para o que seu filho está fazendo.\n\nEle pode estar montando o comando que acabou de ver, jogando para conferir ou voltando a uma parte que deu diferente. A pausa abriu tempo para usar a explicação.\n\nNo curso, assistir, fazer e testar fazem parte da mesma atividade. O vídeo andando não é a única forma de perceber que a criança está estudando.",
+    "delivery": "Reflexão para quem acompanha"
+  },
+  {
+    "id": "E05",
+    "title": "“Não funciona” é o começo do pedido de ajuda. Conte o que aconteceu.",
+    "format": "Carrossel",
+    "pillar": "Apoio às famílias",
+    "skill": "Pedir apoio com contexto.",
+    "cta": "Enviar uma dúvida com resultado esperado e resultado observado.",
+    "slides": [
+      [
+        "“Não funciona” é o começo do pedido de ajuda. Conte o que aconteceu.",
+        "Duas informações deixam a dúvida mais clara: o que seu filho queria fazer e o que apareceu na tentativa.",
+        "Tela real de atividade com criança apontando o problema."
+      ],
+      [
+        "Primeiro: o que ele estava tentando fazer.",
+        "“Eu queria fazer o personagem andar para a direita.” Agora quem vai ajudar conhece o resultado esperado.",
+        "Campo real de pedido de ajuda, se compatível; manter exemplo de mensagem fora da interface caso necessário."
+      ],
+      [
+        "Depois: o que aconteceu quando tentou.",
+        "“Apertei a seta, mas ele ficou parado.” Essa diferença mostra onde começar a olhar.",
+        "Personagem parado e indicação do controle realmente usado, sem fingir bug do curso."
+      ],
+      [
+        "Na aula, usem Preciso de ajuda.",
+        "Sigam as orientações da tela para enviar o pedido com esse contexto.",
+        "Fluxo atual de ajuda capturado na plataforma, sem dados de alunos."
+      ],
+      [
+        "A resposta chega em Recados.",
+        "Leiam a orientação e tentem a parte indicada. Se ainda houver dúvida, contem o que aconteceu nessa nova tentativa.",
+        "Recados em conta de demonstração e retorno à atividade."
+      ]
+    ],
+    "caption": "Compare os dois pedidos: “Não funciona” e “Queria fazer o personagem andar para a direita. Apertei a seta, mas ele ficou parado”.\n\nO segundo mostra uma ação e um resultado para investigar. Você pode ajudar seu filho a contar essas duas coisas.\n\nNa aula, usem Preciso de ajuda e sigam o que a tela pede. A resposta chega em Recados. Depois de experimentar a orientação, contem o que aconteceu se ainda precisarem de apoio.",
+    "note": "Conferir os campos atuais na captação. Não inventar upload, tempo de resposta ou professor ao vivo.",
+    "delivery": "Tutorial de ajuda"
+  },
+  {
+    "id": "E06",
+    "title": "Chamou para almoçar. Antes de fechar, olhem este aviso.",
+    "format": "Reel",
+    "pillar": "Apoio às famílias",
+    "skill": "Preservar o trabalho e distinguir salvamento de entrega.",
+    "cta": "Confirmar o salvamento na conta e seguir a entrega quando solicitada.",
+    "cover": "Chamou para almoçar. Antes de fechar, olhem este aviso.",
+    "scenes": [
+      [
+        0,
+        9,
+        "Responsável chama para interromper a atividade; mostrar tela real da aula.",
+        "Antes de fechar o Estúdio.",
+        "Chegou a hora do almoço e seu filho precisa sair da aula. Antes de fechar a atividade do Estúdio, olhem o aviso de salvamento."
+      ],
+      [
+        9,
+        18,
+        "Captura aproximada no cabeçalho da atividade: Guardando na sua conta e depois Guardado na sua conta.",
+        "Espere: Guardado na sua conta.",
+        "Esperem aparecer Guardado na sua conta. Esse aviso confirma que o projeto da atividade ficou salvo na conta. Se ainda estiver guardando, mantenham a página aberta."
+      ],
+      [
+        18,
+        27,
+        "Mostrar aviso real de falta de internet apenas se disponível em captação controlada.",
+        "Se houver aviso de erro, leiam antes de sair.",
+        "Se aparecer um erro ou aviso de falta de internet, leiam a orientação da tela antes de fechar. Não tratem esse estado como confirmação de que chegou à conta."
+      ],
+      [
+        27,
+        36,
+        "Separar visualmente salvamento e botão real Enviar meu projeto.",
+        "Quando a aula pedir, façam também o envio.",
+        "Guardar preserva o trabalho. Quando a aula pedir Enviar meu projeto, façam também essa entrega. Assim vocês seguem a atividade até o final."
+      ]
+    ],
+    "caption": "Na atividade do Estúdio dentro da aula, esperem Guardado na sua conta antes de fechar. O aviso fica no cabeçalho da atividade.\n\nSe ainda estiver guardando, ou houver erro ou falta de internet, mantenham a página aberta e confiram a orientação. Esse estado ainda não confirma o salvamento na conta.\n\nQuando a aula pedir Enviar meu projeto, façam também o envio. Guardar as alterações e entregar a atividade são ações diferentes.\n\nAntes de sair, uma anotação como “na volta vou testar o pulo” ajuda a lembrar por onde continuar.",
+    "visual": "Responsável chama para interromper a atividade; mostrar tela real da aula. Captura aproximada no cabeçalho da atividade: Guardando na sua conta e depois Guardado na sua conta. Mostrar aviso real de falta de internet apenas se disponível em captação controlada. Separar visualmente salvamento e botão real Enviar meu projeto.",
+    "note": "Fonte conferida: packages/member-shell/src/lib/lesson-copy-kids.ts e components/lesson-draft-status.tsx. Captar o indicador da atividade, não apenas o Salvo local do editor completo. Não prometer guardar alterações depois de fechar.",
+    "delivery": "Tutorial de salvamento"
+  }
+]

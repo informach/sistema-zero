@@ -1,0 +1,8 @@
+Seu filho sabe tocar em cada botão. Alguém decidiu o que eles fazem.
+Por trás da tela pronta, existem escolhas de quem criou.
+
+Criar coloca outras decisões nas mãos dele.
+Na Cobrinha, o que acontece ao pegar uma maçã? E ao encostar na parede? Alguém precisa construir essas regras.
+
+Programar jogos permite entender algumas dessas decisões por dentro.
+A criança monta uma regra e confere seu efeito. Aprende a usar instruções para construir algo, além de escolher opções já prontas.

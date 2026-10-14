@@ -1,6 +1,6 @@
 # Destaques: copy completa por story
 
-**Revisão: 09/10/2026.** Direção e bio no [guia principal](README.md). Os seis destaques são **Como funciona, Projetos, Alunos, Dúvidas, Avaliações e Sobre nós**. A ordem é viva: uma atualização pode trazer o destaque para a frente. Como funciona e Sobre nós podem ficar ao final; os fixados orientam quem chega. São **61 telas na seleção inicial**, numeradas abaixo; os blocos entram pelo [calendário único](03-postagens.md#calendário).
+**Revisão: 09/10/2026.** Direção e bio no [guia principal](README.md). Os seis destaques são **Como funciona, Projetos, Alunos, Dúvidas, Avaliações e Sobre nós**. A ordem é viva: uma atualização pode trazer o destaque para a frente. Como funciona e Sobre nós podem ficar ao final; os fixados orientam quem chega. São **61 telas na seleção inicial**, numeradas abaixo; os blocos entram pelo [calendário único](03-postagens.md#vinte-semanas-sugeridas).
 
 ## Como produzir estas telas
 

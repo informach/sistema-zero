@@ -1,0 +1,3 @@
+Ao criar um jogo, a condição de vitória também precisa ficar clara.
+
+Na Caça Estelar, do nosso Estúdio, o placar mostra quantas naves já foram derrotadas: 4 de 10.

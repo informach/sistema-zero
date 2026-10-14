@@ -1,0 +1,62 @@
+SZGameKit3D.runProject(function __szProjectRun() {
+  const __szProjectRunContext = window.__SZProjectLifecycle.begin();
+  // Meus moldes
+  SZGameKit3D.defineMold("heroi", { health: 1, speed: 0 }, () => {
+    SZGameKit3D.part({ shape: "box", material: "normal", color: "#38bdf8", texture: "", model: "", w: 0.9, h: 1.1, d: 0.9, x: 0, y: 0.55, z: 0 });
+    SZGameKit3D.part({ shape: "sphere", material: "normal", color: "#e0f2fe", texture: "", model: "", w: 0.7, h: 0.7, d: 0.7, x: 0, y: 1.3, z: 0 });
+  });
+  SZGameKit3D.defineMold("chao", { health: 1, speed: 0 }, () => {
+    SZGameKit3D.part({ shape: "box", material: "normal", color: "#334155", texture: "", model: "", w: 4, h: 0.6, d: 4, x: 0, y: 0, z: 0 });
+  });
+  SZGameKit3D.defineMold("moeda", { health: 1, speed: 0 }, () => {
+    SZGameKit3D.part({ shape: "torus", material: "brilho", color: "#fde047", texture: "", model: "", w: 0.7, h: 0.7, d: 0.3, x: 0, y: 0, z: 0 });
+  });
+  SZGameKit3D.defineEmitter("poeira", { colorFrom: "#e0f2fe", colorTo: "#38bdf8", sizeFrom: 0.35, sizeTo: 0, rate: 18, speed: 1.5, cone: 40, gravity: -3, glow: true, curve: "suave" });
+  SZGameKit3D.defineEffect("brilho", { count: 16, colorFrom: "#fde047", colorTo: "#f97316", spread: 4, sizeFrom: 0.4, sizeTo: 0, life: 0.5, gravity: 2 });
+  // Ao iniciar
+  SZGameKit3D.setup({ width: 1280, height: 720, world: 60, sky: "#0b1026", ground: "#1e293b" });
+  SZGameKit3D.setEffects({ shadows: true, bloom: true, strength: 1.1, vignette: true });
+  SZGameKit3D.setScreenText("menu", "Salto nas Nuvens", "Pule de plataforma em plataforma e junte as moedas. Cuidado para não cair!", "Pular");
+  SZGameKit3D.setScreenText("vitoria", "Você juntou tudo!", "Que pulos!", "Jogar de novo");
+  SZGameKit3D.makeSolid("chao");
+  let moedas = 0;
+  // Quando acontecer
+  SZGameKit3D.onEnterState("jogando", () => {
+    moedas = 0;
+    SZGameKit3D.setAmbient(0.5);
+    SZGameKit3D.addLight("#fef3c7", 0, 16, 6, 1.2);
+    SZGameKit3D.spawn("chao", 0, 15, 0);
+    SZGameKit3D.spawn("chao", 7, 16.5, -2);
+    SZGameKit3D.spawn("chao", -7, 18, 2);
+    SZGameKit3D.spawn("chao", 0, 19.5, -8);
+    SZGameKit3D.spawn("moeda", 7, 18, -2);
+    SZGameKit3D.spawn("moeda", -7, 19.5, 2);
+    SZGameKit3D.spawn("moeda", 0, 21, -8);
+    const heroi = SZGameKit3D.spawn("heroi", 0, 18, 0);
+    SZGameKit3D.cameraFollow(heroi, 12, 6);
+    SZGameKit3D.emitterOn("poeira", heroi);
+  });
+  // Enquanto estiver rodando
+  SZGameKit3D.onEntityStateUpdate("heroi", "parado", (ela, dt) => {
+    SZGameKit3D.platformerKeys(ela, 8, 11);
+    SZGameKit3D.forEachNear(ela, "moeda", 1.4, (m) => {
+      SZGameKit3D.burstOn("brilho", m);
+      SZGameKit3D.recycle(m);
+      moedas = moedas + 1;
+      if (moedas >= 3) {
+        SZGameKit3D.setState("vitoria");
+      }
+    });
+    if (SZGameKit3D.posOf(ela, "y") < -12) {
+      SZGameKit3D.setState("menu");
+    }
+  });
+  SZGameKit3D.onEntityStateUpdate("moeda", "parado", (ela, dt) => {
+    SZGameKit3D.setYaw(ela, SZGameKit3D.stateTime(ela) * 120);
+  });
+  SZGameKit3D.onUpdate((dt) => {
+    SZGameKit3D.setHud("top-left", "Moedas: " + moedas);
+    SZGameKit3D.setHud("top-right", "Faltam: " + (3 - moedas));
+  });
+});
+SZGameKit3D.start();

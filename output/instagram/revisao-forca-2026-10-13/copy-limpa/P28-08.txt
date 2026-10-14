@@ -1,0 +1,7 @@
+Na nossa ferramenta, criar jogos usa computador ou notebook com internet, mouse e teclado. Há um motivo prático: o mouse posiciona elementos e comandos, a tela mostra mais do projeto e o teclado permite testar movimentos.
+
+Na Quadra Maluca, exemplo do nosso Estúdio, a câmera responde ao mouse e o personagem às teclas W, A, S e D. Quem cria monta essas ligações e testa se funcionam juntas.
+
+Se o computador é compartilhado, combinem também um horário em que esteja livre. Esse detalhe faz parte de preparar a atividade.
+
+Siga @criecomhelenaejulio para conhecer as possibilidades de criação na nossa plataforma.

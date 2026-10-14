@@ -1,0 +1,3 @@
+Na Quadra Maluca, feita no nosso Estúdio, o mouse gira a câmera e W, A, S e D movem o personagem.
+
+Quem programa liga os controles aos movimentos e testa os dois juntos.

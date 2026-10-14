@@ -1,0 +1,9 @@
+Um adversário com 20 de vida. Um golpe que tira 8. Dois ataques ainda deixam 4; o terceiro vence a luta.
+
+Na Batalha de Monstrinhos, exemplo do nosso Estúdio, quem cria escolhe os valores e monta a regra do dano. Depois, joga para comparar o resultado com a conta.
+
+Mudar a força para 4 aumenta a quantidade de golpes necessários para cinco. A matemática participa de uma decisão: quanto essa batalha deve durar?
+
+É uma forma de praticar contas e conferir seus efeitos numa criação que a criança consegue experimentar.
+
+Siga @criecomhelenaejulio para ver outras contas que mudam os jogos.

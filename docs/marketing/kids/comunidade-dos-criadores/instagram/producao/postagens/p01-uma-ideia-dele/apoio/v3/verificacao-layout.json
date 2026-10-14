@@ -1,0 +1,254 @@
+[
+  {
+    "id": "slide-1",
+    "copy": [
+      "Seu filho sabe o nome de todos os youtubers de jogo.",
+      "Mas nunca viu um jogo por dentro."
+    ],
+    "parts": [
+      {
+        "class": "series",
+        "x": 64,
+        "y": 122,
+        "w": 220.515625,
+        "h": 45.59375
+      },
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 191.59375,
+        "w": 952,
+        "h": 154.0625
+      },
+      {
+        "class": "copy tail",
+        "x": 64,
+        "y": 369.65625,
+        "w": 952,
+        "h": 53.8125
+      },
+      {
+        "class": "media photo ",
+        "x": 64,
+        "y": 447.46875,
+        "w": 952,
+        "h": 800.53125
+      }
+    ],
+    "issues": [],
+    "missing": 0
+  },
+  {
+    "id": "slide-2",
+    "copy": [
+      "Ele conhece cada fase, cada truque e cada personagem, sempre do lugar de quem assiste.",
+      "Do outro lado ficam os bastidores, onde alguém decidiu tudo isso. E quase ninguém leva uma criança até lá."
+    ],
+    "parts": [
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 882.25,
+        "w": 952,
+        "h": 176.25
+      },
+      {
+        "class": "media photo ",
+        "x": 64,
+        "y": 122,
+        "w": 952,
+        "h": 728.25
+      },
+      {
+        "class": "copy tail",
+        "x": 64,
+        "y": 1090.5,
+        "w": 952,
+        "h": 157.5
+      }
+    ],
+    "issues": [],
+    "missing": 0
+  },
+  {
+    "id": "slide-3",
+    "copy": [
+      "Lá, tudo começa numa frase.",
+      "Num mundo que a gente montou, o carrinho dispara porque alguém encaixou um bloco, uma pecinha com a regra em português: turbo com força 1,5."
+    ],
+    "parts": [
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 122,
+        "w": 952,
+        "h": 72.3125
+      },
+      {
+        "class": "copy tail",
+        "x": 64,
+        "y": 222.3125,
+        "w": 952,
+        "h": 215
+      },
+      {
+        "class": "media game ",
+        "x": 64,
+        "y": 465.3125,
+        "w": 952,
+        "h": 592.703125
+      },
+      {
+        "class": "block",
+        "x": 64,
+        "y": 1086.015625,
+        "w": 952,
+        "h": 161.984375
+      }
+    ],
+    "issues": [],
+    "missing": 0
+  },
+  {
+    "id": "slide-4",
+    "copy": [
+      "Dá para levar ele até lá: enquanto ele vê alguém jogar, pergunte: “Como será que fizeram isso?”",
+      "Quem cria jogos começa por essa pergunta, e nos bastidores todo palpite se testa."
+    ],
+    "parts": [
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 122,
+        "w": 952,
+        "h": 179.625
+      },
+      {
+        "class": "media photo ",
+        "x": 64,
+        "y": 329.625,
+        "w": 952,
+        "h": 785.375
+      },
+      {
+        "class": "copy tail",
+        "x": 64,
+        "y": 1143,
+        "w": 952,
+        "h": 105
+      }
+    ],
+    "issues": [],
+    "missing": 0
+  },
+  {
+    "id": "slide-5",
+    "copy": [
+      "A gente testou um palpite: trocou 1,5 por 3.",
+      "Com as mesmas teclas, a velocidade na reta foi de 28 para 45. Programar é isso: um palpite, uma troca e um teste."
+    ],
+    "parts": [
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 122,
+        "w": 952,
+        "h": 122.03125
+      },
+      {
+        "class": "comparison turbo",
+        "x": 64,
+        "y": 272.03125,
+        "w": 952,
+        "h": 626.71875
+      },
+      {
+        "class": "block",
+        "x": 64,
+        "y": 926.75,
+        "w": 952,
+        "h": 132
+      },
+      {
+        "class": "copy tail",
+        "x": 64,
+        "y": 1086.75,
+        "w": 952,
+        "h": 161.25
+      }
+    ],
+    "issues": [],
+    "missing": 0
+  },
+  {
+    "id": "slide-6",
+    "copy": [
+      "A floresta, os morros e o dia virando noite também nasceram de blocos.",
+      "E, quando seu filho troca um número desses num jogo dele, ele passa para o outro lado."
+    ],
+    "parts": [
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 122,
+        "w": 952,
+        "h": 115.25
+      },
+      {
+        "class": "triptych",
+        "x": 64,
+        "y": 265.25,
+        "w": 952,
+        "h": 619.765625
+      },
+      {
+        "class": "block",
+        "x": 64,
+        "y": 913.015625,
+        "w": 952,
+        "h": 201.984375
+      },
+      {
+        "class": "copy tail",
+        "x": 64,
+        "y": 1143,
+        "w": 952,
+        "h": 105
+      }
+    ],
+    "issues": [],
+    "missing": 0
+  },
+  {
+    "id": "slide-7",
+    "copy": [
+      "Ele vai continuar assistindo, e tudo bem: agora sabe que a tela tem dois lados.",
+      "Somos Helena e Júlio, pais e programadores. Siga @criecomhelenaejulio para levar essa conversa sobre os jogos para dentro de casa."
+    ],
+    "parts": [
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 122,
+        "w": 952,
+        "h": 118.53125
+      },
+      {
+        "class": "media photo ",
+        "x": 64,
+        "y": 268.53125,
+        "w": 952,
+        "h": 797.71875
+      },
+      {
+        "class": "copy tail",
+        "x": 64,
+        "y": 1094.25,
+        "w": 952,
+        "h": 153.75
+      }
+    ],
+    "issues": [],
+    "missing": 0
+  }
+]

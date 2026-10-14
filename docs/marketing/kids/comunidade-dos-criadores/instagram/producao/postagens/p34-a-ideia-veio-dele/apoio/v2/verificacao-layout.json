@@ -1,0 +1,273 @@
+[
+  {
+    "id": "slide-1",
+    "copy": [
+      "“Eu quero mudar isso aqui no jogo.”",
+      "O Rafael disse isso ao pai. É uma reclamação virada do avesso."
+    ],
+    "parts": [
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 126,
+        "w": 952,
+        "h": 171.1875
+      },
+      {
+        "class": "copy ",
+        "x": 64,
+        "y": 401.796875,
+        "w": 952,
+        "h": 97.59375
+      },
+      {
+        "class": "media photo",
+        "x": 64,
+        "y": 608,
+        "w": 952,
+        "h": 635
+      }
+    ],
+    "issues": [],
+    "missingImages": 0
+  },
+  {
+    "id": "slide-2",
+    "copy": [
+      "Toda criança que joga já reclamou: a luta injusta, a fase impossível, o monstro que sempre ganha.",
+      "A frase do Rafael dá um passo a mais. Aponta o lugar e quer mexer."
+    ],
+    "parts": [
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 126,
+        "w": 952,
+        "h": 169.03125
+      },
+      {
+        "class": "media photo",
+        "x": 64,
+        "y": 399.4375,
+        "w": 952,
+        "h": 635
+      },
+      {
+        "class": "copy ",
+        "x": 64,
+        "y": 1138.84375,
+        "w": 952,
+        "h": 104.15625
+      }
+    ],
+    "issues": [],
+    "missingImages": 0
+  },
+  {
+    "id": "slide-3",
+    "copy": [
+      "Reclamar é esperar que alguém conserte. Querer mudar é perguntar onde fica o botão.",
+      "Em todo jogo, esse botão existe. Ele só fica do lado do bastidor."
+    ],
+    "parts": [
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 126,
+        "w": 952,
+        "h": 182.8125
+      },
+      {
+        "class": "with-block",
+        "x": 64,
+        "y": 336.8125,
+        "w": 952,
+        "h": 774.03125
+      },
+      {
+        "class": "copy ",
+        "x": 64,
+        "y": 1138.84375,
+        "w": 952,
+        "h": 104.15625
+      }
+    ],
+    "issues": [],
+    "missingImages": 0
+  },
+  {
+    "id": "slide-4",
+    "copy": [
+      "Numa batalha de monstrinhos, o fogo tira o dobro da planta.",
+      "Parece lei da natureza. Neste jogo do nosso Estúdio, é uma frase que dá para ler e mudar: “fogo contra planta causa 2 × de dano”."
+    ],
+    "parts": [
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 126,
+        "w": 952,
+        "h": 121.875
+      },
+      {
+        "class": "with-block",
+        "x": 64,
+        "y": 275.875,
+        "w": 952,
+        "h": 782.890625
+      },
+      {
+        "class": "copy ",
+        "x": 64,
+        "y": 1086.765625,
+        "w": 952,
+        "h": 156.234375
+      }
+    ],
+    "issues": [],
+    "missingImages": 0
+  },
+  {
+    "id": "slide-5",
+    "copy": [
+      "Achou o fogo forte demais? Troque 2 por 1,5 e jogue a mesma luta.",
+      "A gente fez esse teste. A luta muda para os dois lados."
+    ],
+    "parts": [
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 126,
+        "w": 952,
+        "h": 105.78125
+      },
+      {
+        "class": "media comparisons vertical",
+        "x": 64,
+        "y": 259.78125,
+        "w": 952,
+        "h": 670.59375
+      },
+      {
+        "class": "block",
+        "x": 64,
+        "y": 958.375,
+        "w": 952,
+        "h": 152.46875
+      },
+      {
+        "class": "copy ",
+        "x": 64,
+        "y": 1138.84375,
+        "w": 952,
+        "h": 104.15625
+      }
+    ],
+    "issues": [],
+    "missingImages": 0
+  },
+  {
+    "id": "slide-6",
+    "copy": [
+      "O fogo perde força. A planta aguenta mais. E quem jogava com fogo precisa de outra estratégia.",
+      "Uma vírgula num número mudou a partida inteira. No bastidor, é assim que se decide: muda, joga, compara."
+    ],
+    "parts": [
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 126,
+        "w": 952,
+        "h": 169.03125
+      },
+      {
+        "class": "media tablemedia",
+        "x": 64,
+        "y": 323.03125,
+        "w": 952,
+        "h": 736.0625
+      },
+      {
+        "class": "copy quote",
+        "x": 64,
+        "y": 1087.09375,
+        "w": 952,
+        "h": 155.90625
+      }
+    ],
+    "issues": [],
+    "missingImages": 0
+  },
+  {
+    "id": "slide-7",
+    "copy": [
+      "E o Rafael foi até o fim da própria criação:",
+      "“No fim eu peguei o link e mandei pro meu amigo jogar.”",
+      "Rafael, aluno"
+    ],
+    "parts": [
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 126,
+        "w": 952,
+        "h": 50.59375
+      },
+      {
+        "class": "media photo",
+        "x": 64,
+        "y": 265.75,
+        "w": 952,
+        "h": 635
+      },
+      {
+        "class": "copy quote",
+        "x": 64,
+        "y": 989.890625,
+        "w": 952,
+        "h": 124.28125
+      },
+      {
+        "class": "copy byline",
+        "x": 64,
+        "y": 1203.328125,
+        "w": 952,
+        "h": 39.671875
+      }
+    ],
+    "issues": [],
+    "missingImages": 0
+  },
+  {
+    "id": "slide-8",
+    "copy": [
+      "Na próxima reclamação de jogo aí em casa, devolva com a pergunta de criador: “o que você mudaria?”",
+      "Siga @criecomhelenaejulio para ouvir os próximos criadores e o que eles mudaram."
+    ],
+    "parts": [
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 126,
+        "w": 952,
+        "h": 174.703125
+      },
+      {
+        "class": "media photo",
+        "x": 64,
+        "y": 401.046875,
+        "w": 952,
+        "h": 635
+      },
+      {
+        "class": "copy last",
+        "x": 64,
+        "y": 1136.375,
+        "w": 952,
+        "h": 106.625
+      }
+    ],
+    "issues": [],
+    "missingImages": 0
+  }
+]

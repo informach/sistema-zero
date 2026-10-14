@@ -1,0 +1,241 @@
+[
+  {
+    "id": "slide-1",
+    "copy": [
+      "Ele sabe o nome de todos os youtubers de jogo.",
+      "Nunca viu um jogo por dentro."
+    ],
+    "parts": [
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 126,
+        "w": 952,
+        "h": 272.8125
+      },
+      {
+        "class": "copy ",
+        "x": 64,
+        "y": 477.015625,
+        "w": 952,
+        "h": 48.796875
+      },
+      {
+        "class": "media photo",
+        "x": 64,
+        "y": 608,
+        "w": 952,
+        "h": 635
+      }
+    ],
+    "issues": [],
+    "missingImages": 0
+  },
+  {
+    "id": "slide-2",
+    "copy": [
+      "Ele conhece cada fase, cada truque e cada personagem.",
+      "Tudo visto da plateia. Do outro lado da tela existe um bastidor, e quase ninguém leva uma criança até lá."
+    ],
+    "parts": [
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 126,
+        "w": 952,
+        "h": 149.5
+      },
+      {
+        "class": "media photo",
+        "x": 64,
+        "y": 363.640625,
+        "w": 952,
+        "h": 635
+      },
+      {
+        "class": "copy ",
+        "x": 64,
+        "y": 1086.765625,
+        "w": 952,
+        "h": 156.234375
+      }
+    ],
+    "issues": [],
+    "missingImages": 0
+  },
+  {
+    "id": "slide-3",
+    "copy": [
+      "No bastidor, tudo é frase.",
+      "Neste mundo do nosso Estúdio, o carrinho dispara porque alguém escreveu num bloco: turbo com força 1,5."
+    ],
+    "parts": [
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 126,
+        "w": 952,
+        "h": 60.9375
+      },
+      {
+        "class": "with-block",
+        "x": 64,
+        "y": 214.9375,
+        "w": 952,
+        "h": 843.828125
+      },
+      {
+        "class": "copy ",
+        "x": 64,
+        "y": 1086.765625,
+        "w": 952,
+        "h": 156.234375
+      }
+    ],
+    "issues": [],
+    "missingImages": 0
+  },
+  {
+    "id": "slide-4",
+    "copy": [
+      "Hoje, quando ele estiver assistindo alguém jogar, pergunte:",
+      "“Como será que fizeram isso?”",
+      "Repare se ele arrisca um palpite. É a primeira pergunta de quem cria jogos."
+    ],
+    "parts": [
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 126,
+        "w": 952,
+        "h": 98.875
+      },
+      {
+        "class": "copy quote",
+        "x": 64,
+        "y": 296.546875,
+        "w": 952,
+        "h": 68.921875
+      },
+      {
+        "class": "media photo",
+        "x": 64,
+        "y": 437.140625,
+        "w": 952,
+        "h": 635
+      },
+      {
+        "class": "copy last",
+        "x": 64,
+        "y": 1143.8125,
+        "w": 952,
+        "h": 99.1875
+      }
+    ],
+    "issues": [],
+    "missingImages": 0
+  },
+  {
+    "id": "slide-5",
+    "copy": [
+      "Agora troque 1,5 por 3 e aperte jogar.",
+      "Na reta, o carrinho voa. E na curva? Só testando para saber. Programar começa assim: mudar uma frase e descobrir o que ela faz."
+    ],
+    "parts": [
+      {
+        "class": "copy lead pair-lead",
+        "x": 64,
+        "y": 126,
+        "w": 952,
+        "h": 51.75
+      },
+      {
+        "class": "media comparisons vertical",
+        "x": 64,
+        "y": 205.75,
+        "w": 952,
+        "h": 624.015625
+      },
+      {
+        "class": "block",
+        "x": 64,
+        "y": 857.765625,
+        "w": 952,
+        "h": 201
+      },
+      {
+        "class": "copy ",
+        "x": 64,
+        "y": 1086.765625,
+        "w": 952,
+        "h": 156.234375
+      }
+    ],
+    "issues": [],
+    "missingImages": 0
+  },
+  {
+    "id": "slide-6",
+    "copy": [
+      "Floresta, rio, morros, o dia virando noite. Cada pedaço deste mundo tem uma frase por trás.",
+      "Depois que uma criança descobre isso, jogo nenhum volta a parecer mágica. Vira um monte de frases que ela também pode escrever."
+    ],
+    "parts": [
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 126,
+        "w": 952,
+        "h": 172.5
+      },
+      {
+        "class": "with-block",
+        "x": 64,
+        "y": 326.5,
+        "w": 952,
+        "h": 732.265625
+      },
+      {
+        "class": "copy ",
+        "x": 64,
+        "y": 1086.765625,
+        "w": 952,
+        "h": 156.234375
+      }
+    ],
+    "issues": [],
+    "missingImages": 0
+  },
+  {
+    "id": "slide-7",
+    "copy": [
+      "Assistir continua valendo. Agora ele sabe que a tela tem dois lados.",
+      "Siga @criecomhelenaejulio para ver o que existe por trás dos jogos que ele joga."
+    ],
+    "parts": [
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 126,
+        "w": 952,
+        "h": 208.3125
+      },
+      {
+        "class": "media photo",
+        "x": 64,
+        "y": 417.84375,
+        "w": 952,
+        "h": 635
+      },
+      {
+        "class": "copy last",
+        "x": 64,
+        "y": 1136.375,
+        "w": 952,
+        "h": 106.625
+      }
+    ],
+    "issues": [],
+    "missingImages": 0
+  }
+]

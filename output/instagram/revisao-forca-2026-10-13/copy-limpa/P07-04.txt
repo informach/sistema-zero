@@ -1,0 +1,5 @@
+“O salto ficou curto.” Agora há duas coisas para conferir:
+
+a força do pulo e a distância até a plataforma.
+
+Escolham uma mudança e testem o efeito.

@@ -1,0 +1,38 @@
+[
+  {
+    "version": "a",
+    "initial": {
+      "personagem": {
+        "x": 21,
+        "y": 141
+      },
+      "key": {
+        "x": 115,
+        "y": 160
+      },
+      "hasKey": false
+    },
+    "final": {
+      "hasKey": true,
+      "won": true
+    }
+  },
+  {
+    "version": "b",
+    "initial": {
+      "personagem": {
+        "x": 21,
+        "y": 141
+      },
+      "key": {
+        "x": 211,
+        "y": 53
+      },
+      "hasKey": false
+    },
+    "final": {
+      "hasKey": true,
+      "won": true
+    }
+  }
+]

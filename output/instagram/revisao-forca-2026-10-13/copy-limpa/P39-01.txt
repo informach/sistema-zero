@@ -1,0 +1,7 @@
+Tentar outra vez pode ajudar. Ao criar, também dá para escolher o que essa tentativa vai investigar.
+
+No Parkour do Vulcão, do nosso Estúdio, preparamos um trampolim com quique insuficiente para o salto mostrado. Mantivemos a plataforma e aumentamos o valor de 0,6 para 0,9. A comparação mostra a diferença de alcance.
+
+Se seu filho travar num projeto, peça que mostre o resultado esperado e o que aconteceu. Escolham uma mudança para testar e comparem.
+
+Siga @criecomhelenaejulio para acompanhar as perguntas que ajudam a construir jogos.

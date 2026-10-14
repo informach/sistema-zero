@@ -1,0 +1,60 @@
+<!doctype html><html lang="pt-BR"><meta charset="utf-8"><title>“Nada funciona”, ele diz. E fecha o notebook.</title><style>
+@font-face{font-family:Nunito;src:url(apoio/nunito-800.woff2);font-weight:800;font-display:block}
+@font-face{font-family:Nunito;src:url(apoio/nunito-600.woff2);font-weight:600;font-display:block}
+*{box-sizing:border-box}body{margin:0;background:#dce5f4;color:#172a46;font-family:Nunito,Arial,sans-serif}
+article{position:relative;width:1080px;height:1350px;overflow:hidden;background:#fffcf4;margin:0 0 24px}
+header{position:absolute;top:43px;left:64px;right:64px;display:flex;justify-content:space-between;font-size:22px;font-weight:800;letter-spacing:1.7px}
+header .dot{display:inline-block;width:12px;height:12px;border-radius:50%;background:#194bd7;margin-right:13px}header b{letter-spacing:0;font-size:25px}
+.series{background:#ffdb56;color:#172a46;border-radius:999px;padding:5px 14px;font-size:18px;letter-spacing:.3px;line-height:1.15}
+footer{position:absolute;bottom:35px;left:64px;right:64px;display:flex;justify-content:space-between;font-size:23px;font-weight:600;line-height:1.3}
+.progress{position:absolute;height:9px;bottom:0;left:0;background:#ffdb56}
+.content{position:absolute;inset:126px 64px 107px;display:flex;flex-direction:column;gap:28px;justify-content:space-between}
+p,figure{margin:0}.copy{flex:none;font-size:42px;line-height:1.24;font-weight:600;letter-spacing:-.4px}.copy strong{font-weight:800}
+.lead{font-size:53px;line-height:1.15;font-weight:800;letter-spacing:-1.1px}
+.quote{font-size:58px;line-height:1.13;font-weight:800;color:#194bd7}
+.media{flex:1;min-height:0;position:relative;overflow:hidden;border-radius:26px}
+.media img{display:block;width:100%;height:100%}
+.photo{background:#e7ded3;max-height:635px}.photo img{object-fit:cover;object-position:left center}
+.game{background:#0c1320;display:flex;align-items:center;justify-content:center}
+.game img{object-fit:contain}
+.block{flex:none;width:100%;padding:18px 22px;border-radius:18px;background:#fff9ed;display:flex;align-items:center;justify-content:center}
+.block img{display:block;width:100%;max-height:165px;object-fit:contain}
+.with-block{display:flex;flex-direction:column;gap:20px;flex:1;min-height:0}.with-block .game{flex:1}
+.blue{background:#194bd7;color:#fff}.blue header .dot{background:#ffdb56}.blue .quote{color:#ffdb56}
+.cover .lead{font-size:77px;line-height:1.07;letter-spacing:-2px}.cover .copy:not(.lead){font-size:40px;line-height:1.22}
+.cover .media{margin-top:4px}.cover .content{gap:30px}
+.follow .lead{font-size:62px;line-height:1.12}.follow .last{font-size:43px}
+.follow strong{color:#ffdb56;white-space:nowrap;font-size:41px}.follow .photo{flex:1}
+.comparisons{display:flex;gap:24px;align-items:stretch;background:#e8eefb;padding:22px}
+.compare{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;justify-content:center;gap:16px}
+.compare figcaption{font-size:34px;font-weight:800;color:#194bd7;line-height:1.15}
+.comparison-shot{width:100%;height:auto!important;object-fit:contain;border-radius:12px;background:#091429}
+.compare .block{padding:10px;border-radius:12px}.compare .block img{max-height:120px}
+.comparisons.vertical{flex-direction:column;gap:20px;padding:20px;background:#e8eefb}
+.vertical .compare{flex-direction:row;align-items:center;gap:18px;flex:1 1 0;min-height:0}
+.vertical figcaption{width:178px;flex:none;font-size:31px}
+.vertical .comparison-shot{width:calc(100% - 196px);height:100%!important;max-height:100%;min-height:0;object-fit:contain}
+.pair-lead{font-size:45px}
+.tablemedia{padding:28px;background:#f5edda;display:flex;align-items:center;justify-content:center}.tablemedia img{object-fit:contain;width:100%;height:100%}.tablewrap{position:relative;height:100%;width:auto;max-width:100%;aspect-ratio:1638/1206}.row-highlight{position:absolute;left:2.6%;right:0.7%;top:12.2%;height:14%;border:5px solid #ffcf26;border-radius:12px;pointer-events:none}
+.splitview{display:grid;grid-template-columns:1fr;grid-template-rows:1fr 1fr;gap:18px;background:#ecf1fb;padding:18px}
+.splitview img{object-fit:contain;background:#091429;border-radius:16px;min-height:0}
+.portrait .lead{font-size:44px}.portrait .photo{flex:1}.portrait .quote{font-size:55px}.byline{font-size:32px;font-weight:800;color:#194bd7}
+.p01-1 .lead{font-size:85px}.p01-2 .lead{font-size:65px;color:#194bd7}
+.p01-4 .lead{font-size:43px}.p01-4 .quote{font-size:61px}.p01-4 .last{font-size:40px}
+.p01-6 .lead{font-size:50px}
+.p01-6 .block img{max-height:310px}
+.p07-1 .lead{font-size:83px}.p07-3 .lead{font-size:46px}.p07-4 .lead{font-size:52px}.p07-4 .quote{font-size:53px}
+.p07-5 .lead{font-size:42px}.p07-5 .content{gap:20px}.p07-5 .block img{max-height:116px}
+.p07-5 .quote{font-size:44px;line-height:1.16}
+.p07-6 .lead{font-size:48px}
+.p34-1 .lead{font-size:80px}.p34-2 .lead{font-size:49px}.p34-5 .lead{font-size:46px}.p34-6 .lead{font-size:49px}
+.p34-6 .quote{font-size:46px}
+.photo-label{position:absolute;bottom:18px;left:18px;background:#fffcf4;color:#172a46;padding:10px 18px;font-size:27px;font-weight:800;border-radius:14px}
+.p34-8 .lead{font-size:52px}
+</style><article id="slide-1" class="p07-1 cover blue"><header><span><i class="dot"></i>CRIE COM HELENA E JÚLIO</span><span class="series">TRADUÇÃO DE CRIANÇA</span><b>01 / 07</b></header><div class="content"><p class="copy lead">“Nada funciona”, ele diz. E fecha o notebook.</p><p class="copy ">O problema de verdade cabia em quatro palavras.</p><figure class="media photo"><img src="apoio/v2/p07-fechar.png" alt="André começa a fechar o notebook. A imagem acompanha uma situação de frustração com uma atividade, sem retratar um relato real. Cena recriada."></figure></div><footer><span>Comunidade dos Criadores</span><span>Deslize →</span></footer><div class="progress" style="width:14.285714285714285%"></div></article>
+<article id="slide-2" class="p07-2"><header><span><i class="dot"></i>CRIE COM HELENA E JÚLIO</span><b>02 / 07</b></header><div class="content"><p class="copy lead">“Nada funciona” é um erro sem endereço.</p><figure class="media photo"><img src="apoio/v2/p07-investigar.png" alt="André aponta para o salto que falhou na tela, enquanto Júlio observa a mesma parte. Cena recriada com o jogo da plataforma."></figure><p class="copy ">Do jeito que ele falou, parece que o jogo inteiro quebrou. E consertar um jogo inteiro dá vontade de desistir.</p></div><footer><span>Comunidade dos Criadores</span><span>Deslize →</span></footer><div class="progress" style="width:28.57142857142857%"></div></article>
+<article id="slide-3" class="p07-3"><header><span><i class="dot"></i>CRIE COM HELENA E JÚLIO</span><b>03 / 07</b></header><div class="content"><p class="copy lead">Para mostrar, a gente afastou uma plataforma neste jogo do nosso Estúdio. O herói pula e cai no vazio.</p><figure class="media game"><img src="apoio/v2/salto-antes-fim.png" alt="Captura real do Salto nas Nuvens: com a plataforma afastada, o personagem fica abaixo dela depois do salto."></figure><p class="copy quote">Agora, o mesmo problema com endereço: o salto ficou curto.</p></div><footer><span>Comunidade dos Criadores</span><span>Deslize →</span></footer><div class="progress" style="width:42.857142857142854%"></div></article>
+<article id="slide-4" class="p07-4"><header><span><i class="dot"></i>CRIE COM HELENA E JÚLIO</span><b>04 / 07</b></header><div class="content"><p class="copy lead">Com endereço, o problema encolhe.</p><div class="with-block"><div class="block"><img src="apoio/v2/bloco-nuvens-antes.png" alt="Blocos reais do Estúdio"></div><figure class="media game"><img src="apoio/v2/salto-antes-inicio.png" alt="Recorte do bloco real com força do pulo 11 e imagem da plataforma de destino. Duas partes da mesma investigação: força e distância."></figure></div><p class="copy ">Sobram duas suspeitas: a força do pulo ou a distância até a plataforma. Uma mudança de cada vez.</p></div><footer><span>Comunidade dos Criadores</span><span>Deslize →</span></footer><div class="progress" style="width:57.14285714285714%"></div></article>
+<article id="slide-5" class="p07-5"><header><span><i class="dot"></i>CRIE COM HELENA E JÚLIO</span><b>05 / 07</b></header><div class="content"><p class="copy lead">O pulo continua 11, escrito no bloco do herói. A plataforma chega mais perto.</p><div class="media comparisons vertical"><figure class="compare"><figcaption>Plataforma distante</figcaption><img class="comparison-shot" src="apoio/v2/salto-antes-fim.png" alt="Comparação real: plataforma em x 12 e em x 7, mantendo força do pulo 11 e a mesma sequência de teclas. Na segunda versão, o personagem chega e o contador mostra uma moeda."></figure><figure class="compare"><figcaption>Plataforma mais perto</figcaption><img class="comparison-shot" src="apoio/v2/salto-depois-fim.png" alt="Comparação real: plataforma em x 12 e em x 7, mantendo força do pulo 11 e a mesma sequência de teclas. Na segunda versão, o personagem chega e o contador mostra uma moeda."></figure></div><div class="block"><img src="apoio/v2/bloco-nuvens-depois.png" alt="Blocos reais do Estúdio"></div><p class="copy quote">Ele alcança e pega a moeda. Um número mudou. O resto do jogo estava certo o tempo todo.</p></div><footer><span>Comunidade dos Criadores</span><span>Deslize →</span></footer><div class="progress" style="width:71.42857142857143%"></div></article>
+<article id="slide-6" class="p07-6"><header><span><i class="dot"></i>CRIE COM HELENA E JÚLIO</span><b>06 / 07</b></header><div class="content"><p class="copy lead">Da próxima vez que ouvir “nada funciona”, peça: “me mostra onde começa a dar errado”.</p><figure class="media photo"><img src="apoio/v2/p07-pausa.png" alt="André e Júlio fazem uma pausa no sofá. André segura um copo de água. Cena recriada."></figure><p class="copy ">Se ele estiver cansado, o endereço pode esperar o lanche.</p></div><footer><span>Comunidade dos Criadores</span><span>Deslize →</span></footer><div class="progress" style="width:85.71428571428571%"></div></article>
+<article id="slide-7" class="p07-7 follow blue"><header><span><i class="dot"></i>CRIE COM HELENA E JÚLIO</span><b>07 / 07</b></header><div class="content"><p class="copy lead">“Nada funciona” pede para desistir. “O salto ficou curto” pede só uma mudança.</p><figure class="media photo"><img src="apoio/v2/p07-descoberta.png" alt="André sorri depois do teste. O monitor mostra o personagem sobre a plataforma e uma moeda coletada. Cena recriada com referência do jogo real."></figure><p class="copy last">Siga <strong>@criecomhelenaejulio</strong> para a próxima tradução de criança. A de hoje era “nada funciona”.</p></div><footer><span>Comunidade dos Criadores</span><span>@criecomhelenaejulio</span></footer><div class="progress" style="width:100%"></div></article></html>

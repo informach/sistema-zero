@@ -1,0 +1,3 @@
+A Vila do Dragão foi feita no nosso Estúdio. Tem conversa com o ferreiro, poção, herói que sobe de nível e batalha por turnos contra o dragão.
+
+Só que o dragão chega por último.

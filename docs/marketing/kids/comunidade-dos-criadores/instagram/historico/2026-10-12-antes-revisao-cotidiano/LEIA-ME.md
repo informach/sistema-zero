@@ -1,0 +1,1 @@
+Registro da versão anterior do P01, com a ponte de papel. Substituída pela revisão de cotidiano de 12/10/2026. As artes desta versão foram apagadas a pedido do usuário em 13/10/2026. Não publicar os textos históricos. O [P01 vigente](../../producao/postagens/p01-uma-ideia-dele/index.html) começa com “Seu filho sabe tudo sobre o jogo dos outros”.

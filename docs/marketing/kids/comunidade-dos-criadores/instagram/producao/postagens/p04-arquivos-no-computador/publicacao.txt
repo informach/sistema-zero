@@ -1,0 +1,24 @@
+P04 · Arquivos no computador
+Produção: 14/10/2026
+Estado: produzido, aguardando revisão da Helena. Não publicado e não agendado.
+
+FORMATO
+Carrossel com 7 PNGs em 1080 × 1350, proporção 4:5.
+Selecionar os arquivos 01-p04.png a 07-p04.png na ordem numérica.
+Usar legenda.txt integralmente e o texto alternativo curto de cada slide em texto-alternativo.txt.
+
+PREVISUALIZAÇÃO
+index.html abre as artes, a legenda e os arquivos de apoio.
+previa.png reúne os sete slides.
+montagem.html contém a montagem editável, com tipografia e textos aplicados.
+
+IDENTIFICAÇÃO DA MÍDIA
+As fotografias foram geradas com personagens fictícias. Aplicar o Rótulo de IA na publicação, conforme a direção editorial vigente. Não adicionar rodapé “Cena ilustrativa” às artes.
+Não apresentar as pessoas das fotos como alunas reais ou como depoentes.
+As janelas de arquivos são ilustrações editoriais; a lista de projetos do slide 6 parte de uma captura real do Estúdio.
+
+DESTINO
+Convite para seguir @criecomhelenaejulio. Não há palavra-chave, automação ou link de oferta nesta peça.
+
+POSIÇÃO NO CALENDÁRIO
+Primeira publicação da semana 3. P01, P07 e P34 são os carrosséis anteriores já produzidos. Os Reels e imagens únicas entre eles mantêm seus estados; esta entrega não muda a ordem de publicação.

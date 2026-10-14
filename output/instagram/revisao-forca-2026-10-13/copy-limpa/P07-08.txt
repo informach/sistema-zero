@@ -1,0 +1,7 @@
+“Nada funciona” e “o salto ficou curto” dão rumos diferentes à próxima tentativa.
+
+No jogo de plataformas nas nuvens, do nosso Estúdio, afastamos uma plataforma para a demonstração. O herói passou a cair antes de alcançá-la. Mantivemos o salto e aproximamos a plataforma. O novo teste mostrou o efeito dessa mudança.
+
+Na próxima dificuldade, peça que seu filho mostre o que tentou fazer e onde o resultado mudou. Se ele estiver cansado ou quiser parar, conversem sobre isso antes de continuar.
+
+Siga @criecomhelenaejulio para acompanhar descobertas feitas criando e testando jogos.

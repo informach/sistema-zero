@@ -1,0 +1,3 @@
+“Nada funciona” não mostra onde procurar. Parece que é preciso refazer tudo.
+
+Peça que ele aponte a parte que saiu diferente. É ali que começa a investigação.

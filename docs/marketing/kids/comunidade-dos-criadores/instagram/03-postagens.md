@@ -1,579 +1,120 @@
-# Postagens: calendário e copy completa
+# Calendário editorial: 60 postagens, 30 dores e 30 desejos
 
-**Revisão: 08/10/2026.** Este é o único calendário de execução. O ciclo ainda não começou. **T0** é a primeira publicação efetiva, após conferir materiais e destinos. Usar quatro semanas relativas, com **três posts e três dias de stories por semana**. Datas e horários entram aqui quando a produção os definir; não recuperar datas antigas acumulando posts.
+**Revisão de clareza: 13/10/2026.** São **60 publicações principais**, uma para cada uma das 30 dores e dos 30 desejos: **30 carrosséis, 18 Reels e 12 imagens únicas**. Há seis extras de acompanhamento e vinte sequências de quatro stories. Os três fixados e as 14 peças ManyChat ficam separados. As 57 peças restantes receberam a mesma revisão aprovada em P01, P07 e P34, preservadas integralmente.
 
-O ciclo contém **12 posts: cinco Reels e sete carrosséis**. F01, F02 e F03 têm copy integral em [Fixados](02-fixados.md); F04 a F12 estão abaixo. Há **12 sequências de stories, com 70 telas**: 61 têm copy integral em [Destaques](01-destaques.md) e nove telas novas estão neste arquivo. As sequências indicam exatamente quais textos publicar e em que ordem; não são pedidos de adaptação.
+## Direção do conteúdo
 
-## Calendário
+As [14 Postagens ManyChat](04-postagens-manychat.md) formam uma categoria adicional, com documento próprio de copies e referências. Não ocupam vagas, não alteram a ordem e não entram na contagem deste calendário. Estão em revisão de texto, antes da produção das imagens.
 
-Cada linha é uma ocasião de publicação dentro da semana. A referência de capacidade é três dias distintos por semana, ajustados pela equipe. Os três fixados têm PNGs, legendas e instruções nas pastas de produção; a publicação permanece pendente. Conferir o estado de produção das demais peças antes de agendar.
+O começo pertence à família: uma situação reconhecível, uma vontade, uma dúvida ou uma descoberta. A peça precisa acrescentar algo: um jeito de olhar, uma pergunta útil, um exemplo ou uma ação que dê para experimentar. A criação de jogos entra quando o raciocínio já oferece uma razão para falar dela.
 
-| Semana / ocasião | Post | Formato e objetivo | Stories do dia | Destino principal |
+A ligação mostra o que a criança faz: escolhe uma regra, coloca uma ideia em ordem, testa uma mudança, explica uma decisão. Isso dá ao responsável uma cena para compreender. Não atribuir à programação melhora garantida de notas, atenção, autoestima ou futuro profissional. Nem toda dor é resolvida por uma atividade; contratação, equipamento e apoio também precisam de informação clara.
+
+A linguagem é simples, conversada e direta. Não tratar os pais como especialistas, nem como culpados pelo uso de telas. Reflexões podem terminar com uma ideia; dicas precisam dizer o que fazer. Nenhuma peça depende de comentar uma palavra para receber sua resposta principal.
+
+**Objetivo de cada espaço (decisão de 13/10):** as 60 publicações são de **atração**. O gancho e o corpo prendem e entregam valor a quem ainda não conhece o perfil; o convite para **seguir** fica só no último slide e na última linha da legenda. Os **stories educam** quem já segue. A conversão pelo direct fica com as [Postagens ManyChat](04-postagens-manychat.md). A régua está no [Guia de copy](postagens/13-guia-de-copy.md).
+
+**Ajustes de força e precisão, 13/10:** capas concretas preservadas, argumentos revistos, exemplos ligados à construção dos jogos e Reels com espaço para demonstrar. [Registro da revisão e conferências](pesquisas/revisao-forca-e-precisao-2026-10-13.md).
+
+**Variedade:** histórias reais, dicas de rotina, conversas em família, critérios de escolha e curiosidades sobre regras e criação. As demonstrações usam exemplos variados de todas as extensões do Estúdio, 2D e 3D, listados na [vitrine](postagens/14-vitrine-de-exemplos.md); nenhum se repete em semanas vizinhas. Farol fica nos fixados, destaques e conversas de oferta. Exemplos da galeria não são anunciados como cursos nem como projetos feitos pelos alunos dos relatos.
+
+## Pesquisa e cobertura
+
+- [Pesquisa de mercado e avatar](pesquisas/mercado-e-avatar-2026-10-12.md).
+- [30 dores e 30 desejos, com base de cada item](pesquisas/30-dores-e-30-desejos-2026-10-12.md).
+- [Mapa verificável: uma publicação por necessidade](postagens/12-mapa-cobertura.md).
+- [Revisão aplicada e conferências](pesquisas/revisao-60-dores-desejos-2026-10-12.md).
+
+R, I e H nas fichas distinguem relatos, interpretações e hipóteses. A pesquisa não mede a frequência dessas necessidades nem comprova que criar jogos resolve todas elas. As oito hipóteses recebem abordagem condicional. Os relatos deste ciclo mantêm as palavras e a atribuição das fontes reais.
+
+## Copy completa para produzir
+
+| Material | Arquivo |
+| --- | --- |
+| D01–D10 · P01–P10 | [Dez dores: rotina, tela e aprendizagem](postagens/01-p01-a-p10.md) |
+| D11–D20 · P11–P20 | [Dez dores: ideias, ajuda e participação](postagens/02-p11-a-p20.md) |
+| D21–D30 · P21–P30 | [Dez dores: escolha e acompanhamento](postagens/03-p21-a-p30.md) |
+| W01–W10 · P31–P40 | [Dez desejos: autoria e raciocínio](postagens/09-p31-a-p40.md) |
+| W11–W20 · P41–P50 | [Dez desejos: autonomia e possibilidades](postagens/10-p41-a-p50.md) |
+| W21–W30 · P51–P60 | [Dez desejos: vínculo e desenvolvimento](postagens/11-p51-a-p60.md) |
+| ST01–ST20 | [80 telas de stories](postagens/04-stories.md) |
+| E01–E06 | [Seis extras de acompanhamento](postagens/07-extras-para-familias.md) |
+| Direct | [Postagens ManyChat](04-postagens-manychat.md), a categoria de conversão |
+| Régua de copy | [Guia de copy](postagens/13-guia-de-copy.md) |
+| Demonstrações | [Vitrine de exemplos](postagens/14-vitrine-de-exemplos.md); o que capturar está na linha Produção de cada ficha |
+| Produção | [Direção visual](postagens/05-direcao-visual-e-producao.md) e [estado das mídias](producao/postagens/README.md) |
+| Destinos | [Links e publicação](apoio/links-e-publicacao.md) |
+
+Todas as peças têm copy literal, legenda e direção visual. Os Reels também têm falas, sobreposições e tempos de referência. Esses tempos orientam a edição; a leitura natural e o áudio original governam o corte final.
+
+## Vinte semanas sugeridas
+
+Três posts por semana e uma sequência de stories. A ordem abaixo intercala dores e desejos, evitando publicar blocos de trinta problemas seguidos de trinta aspirações. Os IDs organizam a cobertura, não a ordem de publicação. A primeira semana começa quando os materiais estiverem prontos. Não há datas, horários, responsáveis por gravação ou capacidade de produção presumidos.
+
+| Semana | Primeira publicação | Segunda publicação | Terceira publicação | Stories |
 | --- | --- | --- | --- | --- |
-| 1 / 1, T0 | F01 · O primeiro jogo do seu filho | Carrossel 4:5; apresentar projeto, método e personalização | S01 · Como funciona, nove telas | Desafio |
-| 1 / 2 | F10 · A chave mudou de lugar | Reel; mostrar uma escolha e seu efeito | S02 · Sobre nós, sete telas | Desafio |
-| 1 / 3 | F03 · Como começar pelo Desafio | Carrossel; explicar formato e acesso | S03 · Dúvidas sobre o começo, seis telas | Desafio |
-| 2 / 1 | F02 · Alunos em atividade | Carrossel 4:5; imagens provisórias dos cinco alunos | S04 · Avaliações, doze telas | Desafio |
-| 2 / 2 | F05 · O personagem ainda não anda | Carrossel; experiência, montagem e teste | S05 · Pausar para construir, três telas novas | Desafio |
-| 2 / 3 | F09 · A porta confere a chave | Reel; comparar duas respostas | S06 · Dúvidas sobre a compra, quatro telas | Desafio |
-| 3 / 1 | F06 · O mesmo jogo, outras escolhas | Reel; personalização com artes disponíveis | S07 · Farol e Cadê Todo Mundo?, quatro telas | Desafio e Comunidade |
-| 3 / 2 | F04 · Uma partida em família | Reel; convite para conhecer uma escolha | S08 · Alunos e Nave Contra Asteroides, nove telas neste lote | Desafio e Comunidade |
-| 3 / 3 | F08 · O que vem pronto e o que ele programa | Carrossel; esclarecer autoria | S09 · Compartilhamento e Corre Dino, sete telas | Desafio em F08; Comunidade em S09 |
-| 4 / 1 | F07 · O jogo lembra da chave | Carrossel; conectar coleta e memória | S10 · Escolher o caminho, três telas novas | Desafio |
-| 4 / 2 | F11 · Um começo que cabe na rotina | Carrossel; apoiar decisão | S11 · Próximos passos, três telas | Comunidade e Desafio, conforme cada tela |
-| 4 / 3 | F12 · Depois do primeiro jogo | Reel; continuidade opcional | S12 · Da experiência ao próximo passo, três telas novas | Comunidade |
+| 1 | [P01 · Seu filho sabe o nome de todos os youtubers de jogo. Mas nunca viu como um jogo é feito.](postagens/01-p01-a-p10.md#p01)<br>Carrossel · D01 · Por trás do jogo | [P07 · “Nada funciona”, ele diz, e fecha o notebook. Antes de pedir que tente de novo, ajude seu filho a descobrir o que deu errado.](postagens/01-p01-a-p10.md#p07)<br>Carrossel · D07 · Tradução de criança | [P16 · Você pode ajudar seu filho a pensar sem saber programar.](postagens/02-p11-a-p20.md#p16)<br>Reel · D16 · Teste em casa | [ST01 · Os pinos caíram. Quem mandou o jogo comemorar?](postagens/04-stories.md#st01) |
+| 2 | [P34 · Imagine seu filho criando um jogo do jeito dele.](postagens/09-p31-a-p40.md#p34)<br>Carrossel · W04 · Diário de criador | [P03 · Você liga a tela para conseguir trabalhar. E depois fica se cobrando por isso.](postagens/01-p01-a-p10.md#p03)<br>Imagem única · D03 | [P51 · Hoje, peça para seu filho ensinar você a jogar.](postagens/11-p51-a-p60.md#p51)<br>Reel · W21 · Teste em casa | [ST02 · Uma regra de jogo pode ser testada no papel.](postagens/04-stories.md#st02) |
+| 3 | [P04 · Sua filha acha qualquer vídeo em dois toques. Mas não acha o trabalho da escola que salvou ontem.](postagens/01-p01-a-p10.md#p04)<br>Carrossel · D04 · Por trás do jogo | [P37 · Seu filho tem uma ideia enorme de jogo. Três desenhos podem ajudar a escolher por onde começar.](postagens/09-p31-a-p40.md#p37)<br>Carrossel · W07 · Por trás do jogo | [P24 · A atividade ficou para ‘quando der’. A semana passou.](postagens/03-p21-a-p30.md#p24)<br>Reel · D24 · Antes de escolher | [ST03 · ‘Trabalho final’ ou ‘trabalho final 2’? Qual é o certo?](postagens/04-stories.md#st03) |
+| 4 | [P14 · Seu filho também pode mostrar o que imagina num jogo criado por ele.](postagens/02-p11-a-p20.md#p14)<br>Imagem única · D14 · Diário de criador | [P41 · No começo, Flávia acompanhava mais. Hoje, Fernando faz a atividade com mais independência.](postagens/10-p41-a-p50.md#p41)<br>Reel · W11 · Diário de criador | [P20 · A conversa sobre jogos pode ir além de “já deu a hora”. Peça para sua filha contar como seria um jogo inventado por ela.](postagens/02-p11-a-p20.md#p20)<br>Carrossel · D20 · Teste em casa | [ST04 · Uma trilha de moedas também pode mostrar o caminho.](postagens/04-stories.md#st04) |
+| 5 | [P31 · Imagine seu filho escondendo um tesouro num jogo. E chamando você para encontrar.](postagens/09-p31-a-p40.md#p31)<br>Carrossel · W01 · Por trás do jogo | [P12 · “Pai, deu ruim.” Peça para ele mostrar o que mudou.](postagens/02-p11-a-p20.md#p12)<br>Reel · D12 · Tradução de criança | [P40 · Seu filho sabe o caminho. Consegue explicar para outra pessoa chegar?](postagens/09-p31-a-p40.md#p40)<br>Carrossel · W10 · Teste em casa | [ST05 · Ele disse ‘deu errado’. Peça para mostrar o que fez.](postagens/04-stories.md#st05) |
+| 6 | [P33 · Imagine ouvir: ‘Vem jogar o que eu criei.’](postagens/09-p31-a-p40.md#p33)<br>Imagem única · W03 · Diário de criador | [P44 · Uma conta pode decidir quanto dura a batalha de um jogo. Seu filho pode escolher os números e testar o resultado.](postagens/10-p41-a-p50.md#p44)<br>Carrossel · W14 · Por trás do jogo | [P17 · Ele quer começar a aula. Você ainda está trabalhando.](postagens/02-p11-a-p20.md#p17)<br>Reel · D17 · Antes de escolher | [ST06 · Pedir ajuda também pode fazer parte de aprender.](postagens/04-stories.md#st06) |
+| 7 | [P05 · Da porta, você vê as costas dele e o monitor por trás. Para saber o que acontece na tela, chegue mais perto.](postagens/01-p01-a-p10.md#p05)<br>Carrossel · D05 · Teste em casa | [P32 · O filho do Harle começou a procurar a aula por conta própria.](postagens/09-p31-a-p40.md#p32)<br>Reel · W02 · Diário de criador | [P38 · ‘Gostei mais desse.’ Peça para seu filho mostrar o que fez ele escolher.](postagens/09-p31-a-p40.md#p38)<br>Imagem única · W08 · Tradução de criança | [ST07 · ‘Só hoje’ pede pressa. Seu filho pode aprender a perceber isso.](postagens/04-stories.md#st07) |
+| 8 | [P11 · Ele imaginou o jogo inteiro. Na hora de começar, ficou sem saber o que fazer primeiro.](postagens/02-p11-a-p20.md#p11)<br>Carrossel · D11 · Por trás do jogo | [P49 · Guarde um registro da primeira tentativa. Seu filho pode se surpreender ao ver o que já aprendeu.](postagens/10-p41-a-p50.md#p49)<br>Imagem única · W19 · Tradução de criança | [P22 · O curso combina com a idade. E com o que seu filho já sabe?](postagens/03-p21-a-p30.md#p22)<br>Reel · D22 · Antes de escolher | [ST08 · O primeiro teste do jogo pode usar só formas simples.](postagens/04-stories.md#st08) |
+| 9 | [P02 · “Só mais uma partida.” E o jantar vai esfriando.](postagens/01-p01-a-p10.md#p02)<br>Reel · D02 · Por trás do jogo | [P35 · A história que seu filho inventou pode virar um jogo. E você pode participar da aventura.](postagens/09-p31-a-p40.md#p35)<br>Carrossel · W05 · Por trás do jogo | [P46 · Os botões mudam de lugar. Surgem programas novos. Seu filho também pode aprender como começar a explorar uma ferramenta.](postagens/10-p41-a-p50.md#p46)<br>Carrossel · W16 · Teste em casa | [ST09 · O primeiro obstáculo pode ensinar a pular.](postagens/04-stories.md#st09) |
+| 10 | [P06 · “Vai estudar” ainda não diz por onde começar.](postagens/01-p01-a-p10.md#p06)<br>Reel · D06 · Por trás do jogo | [P53 · ‘No último dia chamei a minha mãe pra ver o meu jogo.’](postagens/11-p51-a-p60.md#p53)<br>Imagem única · W23 · Diário de criador | [P28 · Seu filho usa bem o celular. Para criar na nossa plataforma, ele vai usar computador ou notebook.](postagens/03-p21-a-p30.md#p28)<br>Carrossel · D28 · Antes de escolher | [ST10 · A lista inteira está difícil de começar. Escolham a primeira tarefa.](postagens/04-stories.md#st10) |
+| 11 | [P54 · O combinado para parar fica mais claro quando vem antes de ligar a tela. Criar jogos também entra nessa conversa.](postagens/11-p51-a-p60.md#p54)<br>Carrossel · W24 · Teste em casa | [P08 · “Sou ruim nisso.” Uma derrota não conta tudo o que seu filho já conseguiu.](postagens/01-p01-a-p10.md#p08)<br>Imagem única · D08 · Por trás do jogo | [P55 · ‘Gostei’ é um começo de conversa. Antes de escolher a próxima atividade, descubra do que seu filho gostou.](postagens/11-p51-a-p60.md#p55)<br>Carrossel · W25 · Antes de escolher | [ST11 · ‘Sou ruim nisso.’ Pergunte qual parte ficou difícil.](postagens/04-stories.md#st11) |
+| 12 | [P13 · “Faça uma apresentação sobre um animal.” Esse pedido tem várias tarefas dentro dele.](postagens/02-p11-a-p20.md#p13)<br>Carrossel · D13 · Teste em casa | [P50 · Rafael criou um jogo e convidou um amigo para jogar. A ideia dele virou uma experiência que podia compartilhar.](postagens/10-p41-a-p50.md#p50)<br>Carrossel · W20 · Diário de criador | [P29 · Você quer preparar seu filho para o futuro. Observe também o que ele está aprendendo a fazer hoje.](postagens/03-p21-a-p30.md#p29)<br>Imagem única · D29 | [ST12 · O slide já tem cor e letra bonita. O que ele vai explicar?](postagens/04-stories.md#st12) |
+| 13 | [P36 · Seu filho mudou três coisas e funcionou. Qual delas resolveu?](postagens/09-p31-a-p40.md#p36)<br>Reel · W06 · Por trás do jogo | [P19 · “Quero parar.” Antes de insistir, pergunte o que aconteceu.](postagens/02-p11-a-p20.md#p19)<br>Imagem única · D19 · Tradução de criança | [P52 · Seu filho adora futebol. Imagine ele inventando as regras de um jogo de futebol próprio.](postagens/11-p51-a-p60.md#p52)<br>Carrossel · W22 | [ST13 · Ela quer parar sempre na mesma parte. Vale olhar o que acontece ali.](postagens/04-stories.md#st13) |
+| 14 | [P09 · A atividade ficou pronta. Mas sua filha sabe explicar uma escolha que fez?](postagens/01-p01-a-p10.md#p09)<br>Carrossel · D09 · Por trás do jogo | [P42 · Seu filho diz ‘terminei’. Você ainda vê coisa por fazer. Vocês combinaram o que precisava estar pronto?](postagens/10-p41-a-p50.md#p42)<br>Carrossel · W12 · Tradução de criança | [P30 · Seu filho gosta de jogar. Convide ele a experimentar criar uma regra.](postagens/03-p21-a-p30.md#p30)<br>Reel · D30 · Teste em casa | [ST14 · Quem cria um jogo também inventa maneiras de testá-lo.](postagens/04-stories.md#st14) |
+| 15 | [P25 · Seu filho adorou a primeira aula. Antes de contratar, veja também o que vem depois.](postagens/03-p21-a-p30.md#p25)<br>Carrossel · D25 · Antes de escolher | [P10 · A tarefa está aberta. O celular continua chamando.](postagens/01-p01-a-p10.md#p10)<br>Reel · D10 · Por trás do jogo | [P58 · Sua filha conhece o jogo que criou. Você pode mostrar como ele parece para quem joga pela primeira vez.](postagens/11-p51-a-p60.md#p58)<br>Imagem única · W28 · Teste em casa | [ST15 · Ele pediu ajuda. O mouse foi parar na sua mão.](postagens/04-stories.md#st15) |
+| 16 | [P18 · A aula é para seu filho. Antes de contratar, descubra quanto do seu tempo ela vai pedir.](postagens/02-p11-a-p20.md#p18)<br>Carrossel · D18 · Antes de escolher | [P43 · ‘Foi legal.’ Você queria ouvir um pouco mais sobre a aula.](postagens/10-p41-a-p50.md#p43)<br>Reel · W13 · Tradução de criança | [P45 · Seu filho teve uma ideia para o jogo. Criar permite testar o que ele imaginou e ver o resultado.](postagens/10-p41-a-p50.md#p45)<br>Imagem única · W15 · Por trás do jogo | [ST16 · Dá para testar uma ideia sem mudar a única versão do projeto.](postagens/04-stories.md#st16) |
+| 17 | [P39 · Seu filho errou uma parte. Vejam o que pode ser aproveitado antes de refazer tudo.](postagens/09-p31-a-p40.md#p39)<br>Reel · W09 · Por trás do jogo | [P21 · O curso promete criatividade e raciocínio. Peça para ver a atividade que trabalha isso.](postagens/03-p21-a-p30.md#p21)<br>Carrossel · D21 · Antes de escolher | [P56 · Ele abriu o projeto e esqueceu o que ia fazer. Um bilhete pode ajudar.](postagens/11-p51-a-p60.md#p56)<br>Reel · W26 · Teste em casa | [ST17 · Caiu perto do fim. Precisa jogar tudo de novo?](postagens/04-stories.md#st17) |
+| 18 | [P15 · Um modelo pode ajudar seu filho a começar. As escolhas dele podem vir depois.](postagens/02-p11-a-p20.md#p15)<br>Carrossel · D15 · Teste em casa | [P48 · O placar não mostra tudo o que aconteceu no jogo. Ele conta o que alguém escolheu contar.](postagens/10-p41-a-p50.md#p48)<br>Carrossel · W18 · Por trás do jogo | [P27 · Uma parcela pequena não conta o custo inteiro da atividade.](postagens/03-p21-a-p30.md#p27)<br>Imagem única · D27 · Antes de escolher | [ST18 · Ela usou um modelo da aula. Vale contar de onde veio a ideia.](postagens/04-stories.md#st18) |
+| 19 | [P26 · Você pode conversar sobre o que seu filho aprendeu, mesmo sem saber programar. Comece pedindo para ele mostrar o que fez.](postagens/03-p21-a-p30.md#p26)<br>Carrossel · D26 · Teste em casa | [P59 · A atividade que animava seu filho perdeu a graça. O desafio continua fazendo sentido?](postagens/11-p51-a-p60.md#p59)<br>Reel · W29 · Por trás do jogo | [P23 · Pausar a aula pode fazer parte de aprender. O importante é o que seu filho faz depois da pausa.](postagens/03-p21-a-p30.md#p23)<br>Carrossel · D23 · Antes de escolher | [ST19 · O chefe do jogo muda de ataque. Alguém planejou essa surpresa.](postagens/04-stories.md#st19) |
+| 20 | [P57 · Seu filho pediu ajuda no jogo. Você não sabe programar. Comece entendendo o que ele estava tentando fazer.](postagens/11-p51-a-p60.md#p57)<br>Carrossel · W27 · Antes de escolher | [P47 · Seu filho gosta de Minecraft. Descubra o que ele mais gosta de fazer lá.](postagens/10-p41-a-p50.md#p47)<br>Reel · W17 · Tradução de criança | [P60 · André terminou o primeiro jogo e já imaginava o próximo. ‘Esse foi o primeiro e já quero fazer um maior.’](postagens/11-p51-a-p60.md#p60)<br>Carrossel · W30 · Diário de criador | [ST20 · A ideia nova chegou antes de terminar o jogo atual.](postagens/04-stories.md#st20) |
 
-S01 apresenta o percurso em nove telas, S02 conta a origem da Comunidade em sete, e S03 reúne seis dúvidas iniciais. Na terceira semana, os quatro projetos entram em blocos completos distribuídos entre S07, S08 e S09, junto dos vídeos de alunos e das dúvidas de compartilhamento. Cada projeto recebe duas cartelas: uma montagem com dois momentos da partida, pelo menos um em andamento, seguida de um recorte dos blocos no Estúdio com as habilidades praticadas. Esses dias têm quatro, nove e sete telas, respectivamente; Avaliações tem doze telas. As demais sequências mantêm as quantidades indicadas no calendário. Cada bloco tem sua identificação e destino próprios. Esta é também a formação inicial dos destaques, não um calendário adicional. Cada sequência é salva no destaque indicado abaixo.
+As semanas são uma organização inicial. É possível mudar a ordem conforme conversas reais, materiais disponíveis e desempenho, mantendo os 60 IDs na fila. Não alegar que três publicações semanais são uma exigência do algoritmo. Registrar a data real e o fuso America/Sao_Paulo quando houver agendamento.
 
-**Ordem viva dos destaques:** atualizações podem trazer Alunos, Avaliações, Projetos ou Dúvidas para a frente. Aceitar essa mudança; não republicar stories só para reposicionar Como funciona ou Sobre nós. Os fixados orientam a chegada, e as peças remetem aos destaques pelo nome. A posição não é requisito de publicação.
+## Seis extras para quem já começou
 
-**IDs preservados:** F08 agora explica autoria; F09 mostra a condição da porta; F12 apresenta continuidade. Os antigos assuntos de ferramentas e postos ficaram no histórico e não têm peças adicionais neste ciclo. F01, F02 e F03 são os três carrosséis 4:5; F02 inclui os cinco alunos. A antiga alternativa F02B permanece apenas no histórico de produção.
+- **E01:** reservar o computador e tempo para fazer a atividade. Pode acompanhar P24 ou P28.
+- **E02:** pedir que a criança mostre uma parte do que fez. Complementa P43.
+- **E03:** observar uma regra funcionando no Corre Dino. Complementa P26.
+- **E04:** reconhecer a prática durante a pausa do vídeo. Aprofunda P23 para famílias participantes.
+- **E05:** formular uma dúvida e usar Preciso de ajuda. Complementa P57.
+- **E06:** conferir Guardado na sua conta antes de fechar. Complementa P56.
 
-## Como ler os roteiros
+Os extras têm copy completa e público diferente dos conteúdos de atração. Usar conforme necessidade; evitar publicar um extra junto de uma peça muito parecida só para preencher frequência.
 
-Todas as falas, sobreposições, capas, legendas e slides estão escritos por inteiro. Notas de imagem e objetivo são internas. Nos Reels, legendar a fala literalmente e manter **Demonstração da equipe** visível nas capturas operadas pelo casal. Durações são estimativas de edição; dar tempo para observar o resultado.
+## Direct
 
-Nos carrosséis, cada bloco de citação é o texto completo do slide. Usar o visual indicado sem acrescentar chamadas improvisadas. As peças falam com o responsável. O link da bio permanece na página inicial, LB. Para o Desafio, escolher o botão Desafio do Primeiro Jogo, que leva a L0; para a Comunidade, escolher Comunidade dos Criadores. Os destinos L0 e L5 nas fichas indicam a oferta final. F12 também pode usar os stories e o destaque Dúvidas para apresentar a continuidade.
+As publicações do calendário terminam no convite para seguir o perfil. As seis palavras do plano anterior (P11 IDEIA, P12 TESTE, P13 PASSO, P16 APOIO, P24 ROTINA e P30 CRIAR) saíram das legendas: a dica de cada uma agora está dentro da própria peça. O [plano antigo](postagens/06-manychat.md) fica como referência. A conversa pelo direct fica com as [Postagens ManyChat](04-postagens-manychat.md). Nenhuma automação foi ativada.
 
-## F04 · Uma partida em família
+## Conferência e estado
 
-**Formato:** Reel de 30 a 45 segundos. **Objetivo:** mostrar como o projeto dá assunto para uma conversa. **Destino:** convite para jogar com o filho, seguido de L0 na legenda. **Captação:** Helena e Júlio jogando a demonstração; não representar uma cena inventada como registro de aluno.
+**Clareza aplicada ao conjunto:** P01, P07 e P34 foram usados como referência para revisar as demais 97 peças: 57 principais, seis extras, vinte sequências de stories e 14 ManyChat. Foram revistos ganchos, explicações, legendas, falas, directs e as cenas que deixaram de combinar com o texto. A ordem do calendário e a cobertura de necessidades foram mantidas.
 
-**Capa:**
+**Registro da revisão atual:** [Clareza aplicada ao calendário e ao ManyChat](pesquisas/revisao-clareza-geral-2026-10-13.md). A [versão anterior](historico/2026-10-13-antes-clareza-geral/03-postagens.md) conserva o histórico e as formulações substituídas.
 
-> Jogue com seu filho e deixe ele mostrar o que fez
+**Antes de publicar:**
 
-**Cena 1. Imagem:** Júlio abre o link do Farol e começa a jogar. **Sobreposição:** Seu filho tem um jogo para mostrar. **Fala:**
+- **Termos de autorização** das famílias dos depoimentos (Daniel e Rafael, Harle e Jeffrey, Flávia e Fernando) assinados; até lá, as peças com depoimento não saem. Para André e Débora, consentimento registrado dos pais.
+- **Rótulo de IA** ligado em toda peça com pessoa fotorrealista gerada; obrigatório em Reel com vídeo ou voz gerados.
+- **Identificação dos relatos:** Débora e André aparecem como aluna e aluno, conforme decisão da Helena. O vínculo de filho aparece na história de origem da família.
+- **Palavra PRIMEIRO (MC08):** decisão da dona; a recomendação é PERCURSO, porque “Primeiro!” é comentário comum.
+- **FÉRIAS:** cadastrar FÉRIAS e FERIAS no ManyChat e testar as duas na prévia.
+- **Capturas preparadas** das versões da equipe no Estúdio (lista na linha Produção de cada ficha), feitas e conferidas antes da arte.
+- **P01 da tarde** (com o André na capa) foi substituído e arquivado; a versão atual usa criança fictícia. **P34** já voltou aos retratos reais do Daniel e do Rafael.
 
-> Quando seu filho terminar o jogo, convide ele para mostrar como se joga. Ele pode contar o que fez enquanto você tenta encontrar a chave e chegar ao farol.
+**Copy e direção completas:** 60 principais e 20 sequências de quatro stories; seis extras permanecem disponíveis. **Mídias produzidas:** [P01, P07, P34 e P04](producao/postagens/index.html), com 29 PNGs em 4:5, legendas e textos alternativos. P04 foi produzido em 14/10/2026 com a copy revisada; fontes, prompts e verificações em sua pasta `apoio`. As três referências anteriores conservam `apoio/v4` para copy e `apoio/v3` para fontes visuais. As outras peças aguardam produção. As revisões da noite mudaram textos e direção de imagem e fizeram cinco trocas de semana no calendário (ver acima). Nenhuma peça foi publicada, agendada ou enviada por mensagem nesta revisão.
 
-**Cena 2. Imagem:** Helena aponta a posição escolhida para a chave na demonstração. **Sobreposição:** O lugar da chave muda o caminho. **Fala:**
+Na produção, confirmar capturas reais, acesso, legibilidade e correspondência entre imagem e fala. As demonstrações precisam mostrar a ação descrita; não substituir ilustração por uma segunda cópia do texto. Os relatos usam os vídeos fornecidos e não recebem falas sintetizadas. [Direção e fontes](postagens/05-direcao-visual-e-producao.md).
 
-> Nesta versão, eu coloquei a chave aqui. Quem joga precisa andar até ela antes de ir ao farol. Quando seu filho mostrar a versão dele, você pode pedir que conte por que escolheu aquele lugar.
+## Como ler os resultados
 
-**Cena 3. Imagem:** casal termina o recorte da partida. **Sobreposição:** Ouvir o que ele tem para contar. **Fala:**
+A função da peça define o que observar. Dicas: salvamentos e relatos de uso. Reflexões: compartilhamentos e comentários que acrescentam uma experiência. Relatos: retenção e conversas sobre interesse. Critérios de escolha: dúvidas pertinentes e visitas aos espaços que explicam a oferta. São sinais para comparar, não promessa de conversão.
 
-> Assim, você conhece uma escolha dele enquanto vocês jogam juntos. No Desafio do Primeiro Jogo, a aula também ensina a compartilhar o jogo por um link, para outras pessoas poderem jogar.
+Depois de sete dias, registrar alcance, salvamentos, compartilhamentos e retenção disponível. Comparar peças de função e formato semelhantes, considerando o alcance. Depois de 28 dias, observar conversas, cliques e compras atribuíveis quando houver dados. Comentário com palavra-chave não equivale a compra. Link comum da bio não identifica sozinho o post que despertou interesse.
 
-**Legenda completa:**
-
-> Depois de criar o jogo, seu filho tem algo para mostrar a você.
->
-> Vocês podem jogar juntos, e ele pode contar o que escolheu: o personagem, o lugar da chave ou uma mensagem que escreveu para quem joga. Você acompanha uma parte do que ele aprendeu a fazer.
->
-> A aula também ensina a publicar o jogo e mandar o link. Qualquer pessoa que tenha esse link pode abri-lo; para jogar, precisa dos controles que o jogo usa, como teclado. Combinem para quem vão mandar.
->
-> Neste vídeo, Helena e Júlio mostram um exemplo. Para conhecer as aulas, abra o link da bio e escolha Desafio do Primeiro Jogo.
-
-## F05 · O personagem ainda não anda
-
-**Formato:** carrossel de sete slides. **Objetivo:** explicar como a experiência prepara a montagem do movimento. **Destino:** L0. **Visual:** experiência de quadros e montagem real da primeira etapa; demonstração da equipe. Não inventar uma dificuldade vivida por aluno.
-
-### Slide 1
-
-> Fazer o personagem andar é uma das primeiras coisas que seu filho aprende no Farol.
->
-> A aula começa mostrando como esse movimento acontece.
-
-**Imagem:** personagem parado na experiência.
-
-### Slide 2
-
-> Antes de montar o jogo, ele usa uma experiência na tela para ver o movimento devagar.
->
-> A cada avanço da imagem, o personagem muda um pouquinho de lugar.
-
-**Imagem:** dois estados reais da experiência, identificados como quadros diferentes.
-
-### Slide 3
-
-> Quando essas mudanças se repetem, o personagem continua andando.
->
-> Seu filho vê o que acontece ao manter uma direção pressionada antes de aprender a fazer isso no jogo.
-
-**Imagem:** direção ativa e posição alterada em quadros sucessivos.
-
-### Slide 4
-
-> Depois, a aula mostra como encaixar os blocos que fazem o personagem andar.
->
-> Seu filho acompanha os passos e monta essa parte no próprio jogo.
-
-**Imagem:** construção de movimento ensinada; não transformar o slide em tutorial incompleto.
-
-### Slide 5
-
-> Agora ele pode conferir se funcionou.
->
-> Aperta uma tecla de direção e vê se o personagem anda para o lado esperado.
-
-**Imagem:** direção e movimento correspondentes.
-
-### Slide 6
-
-> Se o personagem ainda não anda como deveria, ele pode voltar ao vídeo.
->
-> Compara o que montou com a explicação, muda o que falta e joga de novo para conferir.
-
-**Imagem:** explicação e caderno, sem erro encenado como caso real.
-
-### Slide 7
-
-> É assim que seu filho começa a fazer A Chave do Farol funcionar.
->
-> Para conhecer o jogo e as aulas, abra o link da bio e escolha Desafio do Primeiro Jogo.
-
-**Imagem:** personagem caminhando no Farol.
-
-**Legenda completa:**
-
-> Para fazer o personagem andar, seu filho primeiro observa como o movimento acontece na tela. A aula tem uma experiência em que ele vê a imagem mudar de lugar aos poucos.
->
-> Depois, aprende a encaixar os blocos que fazem o personagem andar. Aperta as teclas para conferir e pode voltar à explicação se alguma coisa sair diferente.
->
-> Esse é um dos primeiros passos de A Chave do Farol, o jogo ensinado no Desafio do Primeiro Jogo. O curso tem aulas gravadas para crianças de 9 a 14 anos, no computador.
->
-> As imagens mostram uma demonstração da equipe. Para ver as aulas e o preço, abra o link da bio e escolha Desafio do Primeiro Jogo.
-
-## F06 · O mesmo jogo, outras escolhas
-
-**Formato:** Reel de 25 a 40 segundos. **Objetivo:** mostrar personalização real, sem atribuir desenho autoral à criança. **Destino:** L0.
-
-**Capa:**
-
-> Seu filho também escolhe como o jogo vai ficar
-
-**Cena 1. Imagem:** versão antes e depois de escolher personagem e cenário entre as opções do Farol. **Sobreposição:** Ele escolhe entre os desenhos da aula. **Fala:**
-
-> Eu troquei o personagem e o cenário pelas opções que já vêm na aula. A aventura continua sendo A Chave do Farol, agora com outro visual.
-
-**Cena 2. Imagem:** escrever e mostrar o aviso “Encontre a chave e volte ao farol.” na personalização, identificado como exemplo da equipe. **Sobreposição:** Ele também escreve os avisos. **Fala:**
-
-> Seu filho também pode escrever as mensagens do jogo. Aqui, por exemplo, eu escrevi um aviso para lembrar quem joga de buscar a chave.
-
-**Cena 3. Imagem:** resultado em execução. **Sobreposição:** Conheça o Desafio no link da bio. **Fala:**
-
-> Depois de aprender a fazer o jogo funcionar, ele pode dar seu jeito a essas partes. Para conhecer as aulas, abra o link da bio e escolha Desafio do Primeiro Jogo.
-
-**Texto do aviso demonstrado, digitado na etapa apropriada:**
-
-> Encontre a chave e volte ao farol.
-
-**Legenda completa:**
-
-> Seu filho aprende a fazer o jogo funcionar e depois escolhe como algumas partes vão ficar.
->
-> Em A Chave do Farol, pode trocar o personagem e o cenário entre os desenhos que já vêm no curso. Também escreve as mensagens do jogo e escolhe onde colocar a chave.
->
-> São escolhas que ele pode mostrar para você quando terminar. Os desenhos foram feitos pela equipe; seu filho escolhe quais usar no jogo dele.
->
-> Este vídeo mostra um exemplo da equipe. Para conhecer o curso, abra o link da bio e escolha Desafio do Primeiro Jogo.
-
-## F07 · O jogo lembra da chave
-
-**Formato:** carrossel de seis slides. **Objetivo:** apresentar a relação entre recolher a chave e guardar essa informação. **Destino:** L0. **Visual:** experiência de coleta e memória, com estados reais; demonstração da equipe.
-
-### Slide 1
-
-> Pegar a chave muda o que acontece no farol.
->
-> Por isso, o jogo precisa guardar que o personagem já está com ela.
-
-**Imagem:** personagem depois da coleta, com o indicador de memória visível.
-
-### Slide 2
-
-> Nesta experiência, a chave desaparece quando o personagem encosta nela.
->
-> Mas o jogo ainda marca que ele está sem a chave. A imagem sumiu, só que essa informação não ficou guardada.
-
-**Imagem:** coleta com a opção de guardar desativada.
-
-### Slide 3
-
-> Quando o jogo guarda que a chave foi pega, isso muda.
->
-> O personagem pode andar para outro lugar, e o jogo continua sabendo que a chave está com ele.
-
-**Imagem:** reiniciar a experiência, ativar a opção correspondente e coletar de novo; depois afastar o personagem.
-
-### Slide 4
-
-> Depois de experimentar essa diferença, seu filho aprende a fazer as duas coisas no próprio jogo.
->
-> Ao pegar a chave, ela sai do cenário, e o jogo guarda que o personagem está com ela.
-
-**Imagem:** regra correspondente da segunda etapa.
-
-### Slide 5
-
-> Essa informação vai ser usada mais adiante, na porta do farol.
->
-> Se o personagem já pegou a chave, a luz acende. Se ainda não pegou, precisa voltar para buscá-la.
-
-**Imagem:** porta com e sem chave; identificar a passagem para a construção seguinte.
-
-### Slide 6
-
-> Assim, seu filho vê por que pegar a chave precisa vir antes de acender o farol.
->
-> Para conhecer essa aventura, abra o link da bio e escolha Desafio do Primeiro Jogo.
-
-**Imagem:** movimento, coleta e porta ligados por uma sequência simples.
-
-**Legenda completa:**
-
-> A chave some do chão quando o personagem pega. Mas o jogo também precisa guardar que ele está com ela. É isso que vai permitir acender o farol depois.
->
-> Na aula, seu filho experimenta as duas situações: uma em que essa informação fica guardada e outra em que não fica. Depois, aprende a fazer essa parte no jogo que está construindo.
->
-> Ele começa a entender por que uma coisa precisa acontecer antes da outra. Para acender o farol, primeiro tem que buscar a chave.
->
-> As imagens mostram a equipe usando a experiência da aula. Para conhecer o curso, abra o link da bio e escolha Desafio do Primeiro Jogo.
-
-## F08 · O que vem pronto e o que ele programa
-
-**Formato:** carrossel de seis slides. **Objetivo:** esclarecer a autoria e o motivo do começo preparado. **Destino:** L0. **Visual:** projeto inicial, experiências e regras reais.
-
-### Slide 1
-
-> Em A Chave do Farol, seu filho encontra desenhos prontos.
->
-> O trabalho dele é aprender a fazer o jogo funcionar.
-
-**Imagem:** cenário inicial; rótulo Demonstração da equipe.
-
-### Slide 2
-
-> Primeiro, ele joga uma versão pronta para conhecer a aventura.
->
-> Antes de aprender cada parte, experimenta o que acontece na tela, como o personagem andar ou pegar a chave.
-
-**Imagem:** demonstração inicial e experiência, com cada momento identificado.
-
-### Slide 3
-
-> Depois, as aulas mostram os passos para ele montar o próprio jogo.
->
-> Seu filho aprende a fazer o personagem andar, pegar a chave e acender o farol. A cada parte, joga para conferir se funcionou.
-
-**Imagem:** regras reais dessas construções.
-
-### Slide 4
-
-> O cenário, os desenhos e o movimento do barco já vêm preparados.
->
-> Assim, ele pode começar aprendendo programação, com um jogo que já tem personagens e um lugar para explorar.
-
-**Imagem:** elementos preparados claramente identificados.
-
-### Slide 5
-
-> Ao longo do curso, ele também faz escolhas para o jogo ficar do jeito dele.
->
-> Pode trocar os desenhos pelas opções da aula, escrever mensagens e escolher o lugar da chave.
-
-**Imagem:** personalização do mesmo projeto.
-
-### Slide 6
-
-> Quando ele mostrar o jogo, peça que conte uma parte que aprendeu a fazer.
->
-> Para conhecer as aulas, abra o link da bio e escolha Desafio do Primeiro Jogo.
-
-**Imagem:** casal com o projeto, sem aluno fictício.
-
-**Legenda completa:**
-
-> No Farol, seu filho começa com o cenário e os desenhos preparados. O movimento do barco também já vem pronto.
->
-> Nas aulas, ele aprende a fazer o personagem andar, pegar a chave e acender o farol. A explicação mostra os passos, e ele joga para conferir se conseguiu fazer funcionar.
->
-> Depois, pode escolher outros desenhos entre as opções da aula, escrever mensagens e mudar o lugar da chave. Quando mostrar o jogo, tem tanto o que aprendeu a fazer quanto as escolhas dele para contar.
->
-> As imagens são uma demonstração da equipe. Para conhecer o curso, abra o link da bio e escolha Desafio do Primeiro Jogo.
-
-## F09 · A porta confere a chave
-
-**Formato:** Reel de 20 a 35 segundos. **Objetivo:** mostrar uma condição, com causa e resposta visíveis. **Destino:** L0. **Captação:** experiência da porta; não remontar toda a programação num vídeo curto.
-
-**Capa:**
-
-> Com a chave, a luz do farol acende
-
-**Cena 1. Imagem:** chegar à porta sem chave. **Sobreposição:** Sem a chave. **Fala:**
-
-> Eu chego à porta sem a chave, e a luz fica apagada. O jogo avisa que preciso buscar a chave.
-
-**Cena 2. Imagem:** mesmo teste com chave. **Sobreposição:** Com a chave. **Fala:**
-
-> Agora eu volto com ela, e o farol acende. Foi ter pegado a chave que fez a diferença.
-
-**Cena 3. Imagem:** casal e experiência. **Sobreposição:** Experimentar antes de montar. **Fala:**
-
-> Seu filho experimenta as duas situações na aula. Depois, aprende a fazer isso no próprio jogo. Para conhecer o curso, abra o link da bio e escolha Desafio do Primeiro Jogo.
-
-**Legenda completa:**
-
-> No Farol, a luz só acende quando o personagem chega com a chave. Seu filho precisa fazer o jogo conferir isso.
->
-> Primeiro, ele experimenta chegar com a chave e sem ela. Depois, a aula mostra como encaixar os blocos que fazem a luz acender na hora certa. Ele joga das duas formas para conferir o que montou.
->
-> Essa aula vem depois de aprender a fazer o personagem andar e pegar a chave. As imagens mostram uma demonstração da equipe.
->
-> Para conhecer as aulas, abra o link da bio e escolha Desafio do Primeiro Jogo.
-
-## F10 · A chave mudou de lugar
-
-**Formato:** Reel de 25 a 40 segundos. **Objetivo:** comparar uma escolha permitida e seu efeito na partida. **Destino:** L0. **Captação:** duas posições válidas e alcançáveis da chave, escolhidas na etapa de personalização. Não mudar a velocidade.
-
-**Capa:**
-
-> A chave mudou de lugar
->
-> Agora o personagem precisa fazer outro caminho
-
-**Cena 1. Imagem:** chave perto do início e percurso até ela. **Sobreposição:** Primeiro caminho. **Fala:**
-
-> Nesta versão, a chave está perto de onde o personagem começa. Eu ando até ela, pego a chave e sigo para o farol.
-
-**Cena 2. Imagem:** outra posição válida, mais distante do início, e o percurso correspondente. **Sobreposição:** Outra posição, outro caminho. **Fala:**
-
-> Agora coloquei a chave mais longe. Para buscar, o personagem precisa andar por outro caminho. Mudar uma coisa no cenário já mudou a forma de jogar.
-
-**Cena 3. Imagem:** experiência de posição, escolha salva para a chave e teste do caminho até ela. **Sobreposição:** Escolher onde colocar a chave. **Fala:**
-
-> Na aula, seu filho experimenta mudar o lugar da chave. Depois, escolhe onde ela vai ficar no jogo dele e confere se o personagem consegue chegar até lá. Conheça o curso pelo botão Desafio do Primeiro Jogo no link da bio.
-
-**Legenda completa:**
-
-> Ao mudar a chave de lugar, seu filho muda o caminho de quem joga.
->
-> A aula deixa ele experimentar essa mudança antes de escolher onde a chave vai ficar no próprio jogo. Depois, ele precisa jogar e conferir se dá para chegar até ela.
->
-> É uma escolha com um efeito que ele consegue ver: colocar a chave mais longe faz o personagem andar mais antes de chegar ao farol.
->
-> As duas versões do vídeo foram preparadas pela equipe. Para conhecer as aulas, abra o link da bio e escolha Desafio do Primeiro Jogo.
-
-## F11 · Um começo que cabe na rotina
-
-**Formato:** carrossel de sete slides. **Objetivo:** apoiar uma decisão informada sobre interesse, formato, equipamento e prazo. **Destino:** L0. **Visual:** casal, projeto e cartelas; sem comparações depreciativas com outros cursos.
-
-### Slide 1
-
-> Antes de escolher o curso, vale conhecer o jogo e combinar como as aulas vão entrar na rotina.
-
-### Slide 2
-
-> Comece mostrando A Chave do Farol ao seu filho.
->
-> Conversem sobre a ideia de criar esse jogo e ouça o que ele tem vontade de fazer.
-
-**Imagem:** projeto atual, como demonstração da equipe.
-
-### Slide 3
-
-> Confiram se ele terá um computador para usar.
->
-> O curso precisa de internet, mouse e teclado. Combinem um horário em que o computador esteja disponível.
-
-### Slide 4
-
-> As aulas são gravadas, e ele pode pausar ou assistir de novo.
->
-> Se tiver dúvida, pode mandar uma mensagem para a equipe. A resposta pode levar um tempo; não há professor ao vivo durante a atividade.
-
-### Slide 5
-
-> Vocês têm 30 dias de acesso a partir da aprovação do pagamento.
->
-> Escolham um momento para começar. Na primeira aula, vale ficar por perto para ver de que ajuda seu filho precisa.
-
-### Slide 6
-
-> O Desafio ensina a construir A Chave do Farol.
->
-> Ele inclui as aulas, o espaço para montar o jogo e o Mural para compartilhar e jogar. Para conhecer outros cursos, vocês podem olhar a assinatura da Comunidade, paga separadamente.
-
-### Slide 7
-
-> Depois dessa conversa, vocês podem decidir se querem começar.
->
-> No link da bio, escolha Desafio do Primeiro Jogo para conferir o preço e o que está incluído.
-
-**Legenda completa:**
-
-> Seu filho vai usar o computador para construir A Chave do Farol, com a ajuda das aulas. Antes de comprar, mostre o jogo a ele e combinem quando vai poder estudar.
->
-> O curso é para crianças de 9 a 14 anos e precisa de internet, mouse e teclado. As aulas são gravadas: ele pode pausar para fazer a atividade e voltar ao vídeo.
->
-> O pagamento é único, com 30 dias de acesso a partir da aprovação do pagamento. Vale reservar um primeiro horário para abrir a aula juntos e ver como ele acompanha.
->
-> No link da bio, escolha Desafio do Primeiro Jogo. O destaque Dúvidas também explica o acesso e como pedir ajuda.
-
-## F12 · Depois do primeiro jogo
-
-**Formato:** Reel de 35 a 50 segundos. **Objetivo:** apresentar continuidade sem converter o Desafio em assinatura automática. **Destino:** L5 pelo story S12 e por DU16 ou DU17 no destaque Dúvidas. A bio continua em LB e oferece o botão Comunidade dos Criadores.
-
-**Capa:**
-
-> Depois do primeiro jogo
->
-> Conheça outros cursos para seu filho
-
-**Cena 1. Imagem:** casal com o Farol funcionando. **Sobreposição:** Conversar sobre o próximo jogo. **Fala:**
-
-> Depois de criar o Farol, seu filho pode ter vontade de fazer outro jogo. Vale conversar sobre o que ele gostou nas aulas e o que quer tentar agora.
-
-**Cena 2. Imagem:** catálogo e percurso atuais da Comunidade em conta elegível. Não mostrar curso interno como publicado. **Sobreposição:** Comunidade dos Criadores. **Fala:**
-
-> Na Comunidade dos Criadores, seu filho encontra outros cursos e continua na mesma conta. Conforme avança nas atividades, libera mais ferramentas para criar.
-
-**Cena 3. Imagem:** casal e cartela de contratação, sem preço fixo. **Sobreposição:** A assinatura é uma escolha de vocês. **Fala:**
-
-> A Comunidade é uma assinatura paga separadamente. O Desafio não vira uma assinatura quando termina. Para ver os cursos e os planos, abra o link da bio e escolha Comunidade dos Criadores.
-
-**Legenda completa:**
-
-> Depois do Farol, vocês podem conversar sobre o que seu filho quer criar a seguir. Ele gostou de fazer o personagem andar, de mudar o visual ou de mostrar o jogo para alguém? O que ele contar ajuda a escolher a próxima atividade.
->
-> A Comunidade dos Criadores reúne outros cursos. Seu filho continua na mesma conta, com os jogos que já fez, e encontra mais ferramentas de criação conforme avança nas atividades.
->
-> A assinatura é paga separadamente. O Desafio não vira uma cobrança mensal quando termina. Vocês também podem começar direto pela Comunidade: ela já inclui o Desafio enquanto a assinatura estiver ativa.
->
-> No link da bio, escolha Comunidade dos Criadores para conhecer os cursos, os preços e como funciona a cobrança.
-
-**Captação:** conferir o catálogo publicado antes de gravar. Mostrar apenas o que a conta elegível consegue acessar; não prometer quantidade de cursos nem liberação imediata de todas as ferramentas.
-
-## Stories do ciclo
-
-As sequências S01 a S12 são as publicações dos três dias semanais, incluindo a formação dos destaques. Quando a copy já pertence ao guia 01, o vínculo abaixo aponta para a sequência exata, integral e pronta. Publicar todas as telas indicadas, com as falas, cartelas e stickers escritos ali. Não acrescentar uma abertura ou um encerramento que ainda precise de copy.
-
-### S01 · Como funciona
-
-**Nove stories, em ordem:** CF01 → CF02 → CF03 → CF04 → CF05 → CF06 → CF07 → CF08 → CF09. **Copy integral:** [Como funciona](01-destaques.md#como-funciona). **Salvar:** Como funciona. **Link:** só CF09, L0. A sequência já tem contexto, desenvolvimento, condições e convite.
-
-### S02 · Sobre nós
-
-**Sete stories, em ordem:** SN01 → SN02 → SN03 → SN04 → SN05 → SN06 → SN07. **Copy integral:** [Sobre nós](01-destaques.md#sobre-nós). **Salvar:** Sobre nós. **Produção:** cinco vídeos com o casal, um vídeo narrado sobre a foto do certificado em SN04 e uma cartela com a foto do André com as medalhas em SN05. **Sem sticker:** o último story convida a conhecer o destaque Como funciona pelo nome. A presença do casal entra na primeira semana, com foco na apresentação, na decisão sobre parte do tempo de tela do André, no que os pais observaram e na origem da Comunidade. As mudanças na escola são o relato da família sobre o André. Selecionar as fotografias antes de montar a sequência final.
-
-### S03 · Dúvidas sobre o começo
-
-**Seis stories, em ordem:** DU01 → DU02 → DU03 → DU04 → DU05 → DU06. **Copy integral:** [Dúvidas](01-destaques.md#dúvidas). **Salvar:** Dúvidas. Sem sticker comercial nesse bloco; F03 e a bio oferecem o caminho da compra.
-
-### S04 · Avaliações
-
-**Doze stories, em ordem:** AV01 → AV02 → AV08 → AV03 → AV10 → AV07 → AV09 → AV04 → AV11 → AV06 → AV12 → AV05. **Copy integral:** [Avaliações](01-destaques.md#avaliações). **Salvar:** Avaliações. **Link:** AV05, L0, no arquivo 12. As cinco crianças alternam com cinco cartelas de responsáveis: duas de Daniel, uma de Harle e duas de Flávia. Os relatos mostram organização, criatividade, responsabilidade, independência e uso da tela para criar. A abertura reúne oito pessoas. Manter as falas, os temas e os contextos do guia. Não colocar reticências ou colchetes nas cartelas; consultar os recortes no arquivo de fontes. As duas aspas recebem o mesmo estilo gráfico.
-
-### S05 · Pausar para construir
-
-**Três stories novos. Objetivo:** mostrar a utilidade da pausa e abrir espaço para dúvidas do responsável. **Salvar:** Como funciona, como aprofundamento depois da sequência inicial.
-
-#### S05.1 · A pausa faz parte da montagem
-
-**Vídeo. Cena:** pausar uma explicação real antes de realizar um encaixe. **Sobreposição:** Tempo para fazer o passo. **Rótulo:** Demonstração da equipe.
-
-> Aqui eu pauso o vídeo para fazer o que acabou de ser mostrado. Seu filho pode fazer o mesmo. O vídeo fica parado enquanto ele encontra o bloco e encaixa no lugar.
-
-#### S05.2 · Voltar com uma dúvida concreta
-
-**Vídeo. Cena:** rever o mesmo trecho e comparar caderno. **Sobreposição:** Rever e comparar. **Rótulo:** Demonstração da equipe.
-
-> Se ficar diferente do vídeo, ele pode voltar ao trecho e comparar com o que montou. Se a dúvida continuar, pode escrever para a equipe pelo botão “Preciso de ajuda”. A resposta chega por mensagem e pode levar um tempo.
-
-#### S05.3 · Ouvir a família
-
-**Cartela. Título:** Conte sua dúvida sobre as aulas.
-
-> Seu filho pode pausar a aula, assistir de novo e pedir ajuda por mensagem. Conte para a gente o que você ainda quer saber sobre as aulas antes de escolher o curso.
-
-**Caixa de perguntas:** Sua dúvida sobre as aulas gravadas. Sem link. Não preencher a caixa com uma pergunta inventada como se tivesse sido enviada por seguidor.
-
-### S06 · Dúvidas sobre a compra
-
-**Quatro stories, em ordem:** DU07 → DU08 → DU09 → DU10. **Copy integral:** [Dúvidas](01-destaques.md#du07--o-desafio-é-uma-assinatura). **Salvar:** Dúvidas. **Links:** DU07 e DU10, L0. Preservar pagamento único, início do prazo e distinção entre garantia e acesso.
-
-### S07 · Farol e Cadê Todo Mundo?
-
-**Quatro stories, em ordem:** PJ01 → PJ02 → PJ03 → PJ04. **Copy integral:** [Projetos](01-destaques.md#projetos). **Salvar:** Projetos. **Links:** PJ02 para o Desafio, L0; PJ04 para a Comunidade, L5. Cada projeto tem duas cartelas: começo e final da partida em duas imagens; depois, recorte dos blocos ligado às habilidades praticadas. O Farol é identificado como primeiro projeto; o Cadê entra como parte do catálogo, sem convite de presente.
-
-### S08 · Alunos e Nave Contra Asteroides
-
-**Nove stories neste lote, em dois blocos completos:** AL01 → AL02 → AL03 → AL04 → AL05 → AL07 → AL06; depois PJ05 → PJ06. **Copy integral:** [Alunos](01-destaques.md#alunos) e [Nave Contra Asteroides](01-destaques.md#pj05--nave-contra-asteroides-o-jogo-que-a-criança-constrói).
-
-**Salvar:** AL01, AL02, AL03, AL04, AL05, AL07 e AL06 em Alunos; PJ05 e PJ06 em Projetos. **Links:** AL06 para o Desafio, L0; PJ06 para a Comunidade, L5. A produção atual usa imagens provisórias de Rafael, Jeffrey, Débora, André e Fernando, geradas com suas referências a pedido do responsável, com legendas diferentes para cada atividade. Substituir essas cenas pelos vídeos reais posteriormente, conferindo se cada legenda corresponde à ação filmada. A abertura reúne as cinco fotos, sem enumerar participantes na copy, e novos registros podem entrar no destaque ao longo do tempo. As duas cartelas da nave mostram uma cena em andamento com nave, tiro e asteroides e a vitória na partida, seguidos de um recorte da regra que soma pontos ao acertar um asteroide, com identificação de demonstração da equipe.
-
-### S09 · Compartilhamento e Corre Dino
-
-**Sete stories, em dois blocos completos:** DU11 → DU12 → DU13 → DU14 → DU15; depois PJ07 → PJ08. **Copy integral:** [Dúvidas](01-destaques.md#du11--no-desafio-ele-precisa-desenhar) e [Corre Dino](01-destaques.md#pj07--corre-dino-o-jogo-que-a-criança-constrói).
-
-**Salvar:** DU11 a DU15 em Dúvidas; PJ07 e PJ08 em Projetos. **Link:** PJ08 para a Comunidade, L5. As respostas preservam a diferença entre perfil oculto e link público. O bloco do Dino mostra o salto sobre um cacto durante a corrida e a tela de fim, seguidos de um recorte da regra que limita a dificuldade. A copy explica a prática de observar, comparar e ajustar. O curso pertence à Comunidade, com contratação separada do Desafio avulso.
-
-### S10 · Escolher o caminho
-
-**Três stories novos. Objetivo:** convidar o adulto a observar o efeito de uma escolha. **Salvar:** Projetos. A enquete faz parte da observação, não mede aprendizagem nem preferência representativa do público.
-
-#### S10.1 · Comparar duas posições
-
-**Vídeo. Cena:** duas versões do Farol, chave perto do início e chave perto do farol, ambas alcançáveis. **Sobreposição:** Dois caminhos possíveis. **Rótulo:** Demonstração da equipe.
-
-> Nesta versão, coloquei a chave perto de onde o personagem começa. Na outra, ela está perto do farol. A chave faz a mesma coisa nas duas, mas quem joga precisa fazer caminhos diferentes para buscar.
-
-#### S10.2 · Uma escolha para observar
-
-**Cartela com os dois recortes. Título:** O lugar da chave muda a partida.
-
-> Veja onde a chave está em cada imagem e imagine o caminho até ela. Escolha qual versão você gostaria de jogar primeiro.
-
-**Enquete:** Qual caminho testar primeiro? **Opções:** Chave perto do início / Chave perto do farol. Não anunciar vencedor antes de haver respostas.
-
-#### S10.3 · A escolha no curso
-
-**Vídeo. Cena:** experiência de posição, seguida da personalização. **Sobreposição:** Experimentar, escolher e testar. **Rótulo:** Demonstração da equipe. **Sticker:** Conhecer o Desafio → L0, origem s10.
-
-> Na aula, seu filho experimenta mudar a chave de lugar. Depois, escolhe onde ela vai ficar no jogo dele e confere se consegue chegar até lá. No botão, veja A Chave do Farol e como são as aulas.
-
-### S11 · Próximos passos
-
-**Três stories, em ordem:** DU16 → DU17 → DU18. **Copy integral:** [Dúvidas](01-destaques.md#du16--como-ele-pode-continuar-depois-do-desafio). **Salvar:** Dúvidas. **Links:** DU16 e DU17 para Comunidade, L5; DU18 para o Desafio, L0. Cada tela nomeia seu destino; não usar um único endereço para as três.
-
-### S12 · Da experiência ao próximo passo
-
-**Três stories novos. Objetivo:** abrir uma conversa sobre continuidade com uma decisão do adulto. **Salvar:** Como funciona, como complemento posterior ao percurso inicial.
-
-#### S12.1 · Uma parte para mostrar
-
-**Vídeo. Cena:** casal com a regra da porta e seu teste. **Sobreposição:** Ele pode contar como fez. **Rótulo:** Demonstração da equipe.
-
-> Quando seu filho mostrar o Farol, peça que conte como faz a luz acender. Ele pode mostrar a busca pela chave e explicar por que precisa pegá-la primeiro. Vocês conversam a partir do jogo que ele fez.
-
-#### S12.2 · Conhecer o interesse de continuar
-
-**Cartela. Título:** A conversa pode seguir daqui.
-
-> Depois de jogar, conversem sobre a parte que ele mais gostou de fazer e o que quer criar a seguir. Vale falar também sobre as dúvidas que teve. Isso ajuda a escolher a próxima atividade e combinar a ajuda de que ele precisa.
-
-#### S12.3 · Conhecer a Comunidade
-
-**Vídeo. Cena:** casal e catálogo atual, conferido antes de gravar. **Sobreposição:** Outros cursos na Comunidade. **Sticker:** Conhecer a Comunidade → L5, origem s12.
-
-> Se seu filho quiser criar outros jogos, vocês podem conhecer a Comunidade dos Criadores. A assinatura dá acesso a outros cursos e a ferramentas que ele vai liberando ao avançar nas atividades. É uma compra separada do Desafio. No botão, veja os cursos e os planos.
-
-## Leitura dos resultados
-
-Registrar no fluxo existente de marketing, sem criar outro calendário ou CRM. A aprovação da copy não é agendamento, e a revisão editorial não demonstra ganho de conversão.
-
-| Pergunta | Registro | Janela e limite |
-| --- | --- | --- |
-| A peça foi vista e acompanhada? | Alcance, retenção disponível, salvamentos, compartilhamentos e respostas pertinentes | D+7 de cada post; comparar formatos e durações semelhantes |
-| O perfil levou às ofertas? | Visitas ao perfil, toques na bio, escolha de cada botão na página inicial e sessões identificáveis nas ofertas | Semanas do ciclo; o link comum da bio não identifica sozinho qual Reel gerou a visita |
-| A visita levou à compra? | Sessões, checkouts e primeiras compras pagas atribuíveis à mesma origem | Coortes com janela comum, primeira leitura em D+14; registrar reembolsos e perdas de atribuição |
-| A criança começou? | Primeiro início do curso entre compradores com acesso aprovado | Até sete dias da aprovação; medir somente se o evento e a ligação com a compra estiverem disponíveis |
-| O projeto foi concluído? | Conclusão registrada entre compradores cujo prazo de 30 dias já terminou | Comparar coortes maduras; assistir a um vídeo não equivale a concluir o projeto |
-| Houve continuidade? | Primeiras assinaturas pagas da Comunidade entre compradores do Desafio que ainda não eram assinantes | D+45 da compra; contrato separado, com reembolsos identificados |
-
-Usar números absolutos junto das taxas e marcar dado **ausente**, nunca zero por falta de acesso. Fechar a leitura de conteúdo sete dias depois do último post. A análise de compra e uso continua nas janelas das respectivas coortes; não declarar retenção de longo prazo com esse ciclo.
-
-**Primeiras decisões:** observar se responsáveis entendem o que vem pronto, o que a criança programa e como recebe orientação. Em cinco conversas exploratórias com responsáveis, dois casos de confusão já podem motivar ajuste de clareza; esse é um critério operacional, não um resultado estatístico. Comparar ganchos com o mesmo destino sem atribuir diferenças isoladas ao algoritmo. Anotar também o tempo de produção e as perguntas recebidas.
-
-[Posicionamento e bio](README.md) · [Destaques](01-destaques.md) · [Fixados](02-fixados.md) · [Links e publicação](apoio/links-e-publicacao.md)
+Para as oito hipóteses, observar primeiro se a situação é reconhecida espontaneamente e o que os responsáveis contam. Não concluir que uma dor é comum ou que houve mudança na aprendizagem a partir de curtidas.

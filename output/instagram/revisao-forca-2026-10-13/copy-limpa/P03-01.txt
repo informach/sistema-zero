@@ -1,0 +1,3 @@
+O relógio conta as horas de tela.
+
+Não conta o que seu filho fez nelas.

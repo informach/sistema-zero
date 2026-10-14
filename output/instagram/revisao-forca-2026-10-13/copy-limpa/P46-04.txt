@@ -1,0 +1,3 @@
+No primeiro jogo, o herói pula numa tela plana.
+
+No Salto nas Nuvens, feito no nosso Estúdio, a mesma ideia ganha profundidade: plataformas no céu, 3 moedas girando e a câmera atrás do herói.

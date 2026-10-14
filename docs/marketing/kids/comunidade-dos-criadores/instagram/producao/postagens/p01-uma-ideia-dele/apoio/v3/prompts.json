@@ -1,0 +1,46 @@
+[
+  {
+    "id": "p01-assistindo",
+    "prompt": "Use case: photorealistic-natural. Create ONE new landscape 3:2 editorial photograph for a Brazilian parent-focused Instagram carousel, no layout and no lettering. A fictional Brazilian boy aged 11 with straight dark brown hair in a casual side part, warm medium-brown skin, dark eyes, NO glasses, in a plain mustard-yellow T-shirt, comfortably sitting on a light neutral sofa at home, absorbed and happy watching a racing gameplay video on a tablet. Camera at a three-quarter angle from slightly behind his right shoulder, with enough of his face in side profile visible, and tablet screen ALSO clearly visible. Screen shows a generic stylized colorful racing game: red small car on a winding road across green rolling hills, game in progress, a subtle video playback timeline with no words or branding, no identifiable streamer. Both hands hold the tablet realistically. Natural Brazilian family home, light warm walls, blue cushion, soft afternoon window light, warm oak side table. Beautiful candid photography with realistic skin and believable hands, clean art direction, authentic everyday home, not neon gamer room. Frame fairly close, boy and tablet dominant in the central composition; allow a crop to landscape 1.5:1 with no vital object cut off. The boy is fictional and must not resemble André from prior images: straight hair, no glasses. No overlay text, no watermark, no logos, no collage, no fake quote. Mood: interested and enjoying the video, no sadness or guilt.",
+    "refs": [],
+    "path": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-b3f836d0-2e35-4e1f-b0e5-99612ae11494.png",
+    "tool": "image_gen integrada"
+  },
+  {
+    "id": "p01-rosto",
+    "refs": [
+      "C:/Users/tocha/projects/sistema-zero/docs/marketing/kids/comunidade-dos-criadores/instagram/producao/postagens/p01-uma-ideia-dele/apoio/v3/p01-assistindo.png"
+    ],
+    "prompt": "Create ONE new photoreal editorial photo, landscape 3:2. Image1 reference ONLY for identity: keep exactly this fictional 11-year-old boy's face, straight dark side-parted hair, medium-brown skin, no glasses, mustard yellow T-shirt. Completely new camera: tight three-quarter FRONT portrait of his face and shoulders as he watches the tablet just below the frame, at home in the evening. His eyes have tiny natural reflections of a racing video; curious happy engaged expression, no unnatural screen image superimposed on his face. Soft blue tablet glow on cheeks balanced by a warm lamp bokeh behind him. Both eyes visible, lifelike real skin, not uncanny, not distressed. Background subtle deep blue and warm beige. Editorial family photograph, no text, no watermark, no graphic overlays. Do not simply crop the previous photo: change view, time of day and framing.",
+    "path": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-f3367fd8-cc2e-46f2-af38-919c03e93483.png",
+    "tool": "image_gen integrada"
+  },
+  {
+    "id": "p01-conversa",
+    "refs": [
+      "C:/Users/tocha/projects/sistema-zero/docs/marketing/kids/comunidade-dos-criadores/instagram/producao/postagens/p01-uma-ideia-dele/apoio/v3/p01-assistindo.png"
+    ],
+    "prompt": "Create ONE new candid photoreal editorial photograph landscape 3:2. Reference ONLY for the fictional boy's identity and home: same 11yo straight dark-haired boy with warm medium-brown skin, no glasses, mustard yellow T-shirt. New scene: side-by-side on the cream sofa, a fictional Brazilian mother age36 with shoulder-length dark hair and a simple cobalt-blue blouse gently points to the tablet in her son's lap while looking at him with interest; the boy turns his face toward her and gestures one open hand explaining an idea. Tablet shows a generic car racing video, no famous brands or real streamers. New camera frontal three-quarter at eye-level, both faces recognizable and clearly visible, full natural hands, spacious warm home in daylight, oak furniture, blue cushion. The conversation is playful and curious, no lecture. This adult is fictional, NOT Helena or Júlio. No text, no watermark, no quote, no floating UI.",
+    "path": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-abf60615-0e36-4238-ac2b-e8d968d431e6.png",
+    "tool": "image_gen integrada"
+  },
+  {
+    "id": "p01-criando",
+    "refs": [
+      "C:/Users/tocha/projects/sistema-zero/docs/marketing/kids/comunidade-dos-criadores/instagram/producao/postagens/p01-uma-ideia-dele/apoio/v3/p01-assistindo.png",
+      "C:/Users/tocha/projects/sistema-zero/docs/marketing/kids/comunidade-dos-criadores/instagram/producao/postagens/p01-uma-ideia-dele/apoio/v2/estudio-world.png"
+    ],
+    "prompt": "Create ONE entirely new photoreal editorial photo landscape 3:2. Image1 ONLY for identity: exact same fictional 11-year-old boy, straight dark hair, warm medium-brown skin, no glasses, plain mustard yellow shirt. Image2 is the REAL Sistema Zero Studio interface to faithfully show ON the computer monitor: white and pale blue editor, green/turquoise Portuguese coding blocks on the left, own red-car low-poly green-world game preview on the right, small blue controls at top. Reproduce this screen's visual layout, do not invent a different program or draw floating blocks outside the screen. New scene the boy now at an oak desk, using mouse with right hand and left hand beside keyboard, slightly smiling as he drags a coding block within the workspace. Three-quarter side view so boy's face on left and screen angled toward us on right are both clearly visible. Fictional mother with cobalt-blue blouse is softly blurred far in background, no real person. Bright afternoon daylight Brazilian home, calm realistic room, no gamer neon. No overlay text, no watermark, no collage. Face identity same as ref1; scene entirely new.",
+    "path": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-a8832e9b-c273-4255-bd15-5a55f327f843.png",
+    "tool": "image_gen integrada"
+  },
+  {
+    "id": "p01-criando-final",
+    "refs": [
+      "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-a8832e9b-c273-4255-bd15-5a55f327f843.png"
+    ],
+    "prompt": "Precise image edit of this photo. Change ONLY the unsolicited decorative written messages: replace the framed wall poster at upper right with a simple abstract blue and cream geometric art print with NO words; replace the words and lightbulb on the pencil holder at lower right with a plain unmarked cream holder. Preserve absolutely everything else: boy's identical face/body/hair, fictional mother in background, pose and hands, lighting, room, and especially all existing text and interface inside the COMPUTER SCREEN. Do not touch screen. No added text or graphics elsewhere. Keep landscape 3:2.",
+    "path": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-542a207d-bc7a-480b-a68f-af643a6b588f.png",
+    "tool": "image_gen integrada"
+  }
+]

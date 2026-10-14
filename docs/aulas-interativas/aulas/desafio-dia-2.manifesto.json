@@ -7,7 +7,7 @@
   "blocks": [
     {
       "key": "video-d2-contexto",
-      "plannedVideo": "Título: O jogo guardou a chave?\n\nSituar a coleta que falta. Abrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: encostar na chave é um evento, e guardar é como anotar num bloquinho. Mostrar a coleta sem memória, o recomeço, Guardar a coleta ligado, o afastamento e o recomeço, nomeando temChave em cada um. Terminar com Agora é a sua vez e Próxima parte. Participações de Dedé, na ordem de corte: F2P1-D01, depois de \"temChave continua falso.\", Dedé diz \"Mas a chave sumiu. Por que ainda está falso?\"; a professora retoma \"É que tirar a chave do chão não guarda essa informação.\". Concluir o gesto antes de Dedé entrar e manter o resultado à vista; marcar entrada e saída sem cobrir controles, e a resposta e o próximo gesto vêm depois da saída do avatar.\n\nRoteiro falado: desafio-dia-2.roteiro.md. Produção em 10/10/2026: roteiro com vozes identificadas, ainda sem confirmação de gravação ou edição desta versão. A professora conduz; Dedé entra, fala e sai nos pontos do roteiro. Zappy só fala na página, fora do vídeo; memes e interface mostram o mascote sem voz. Conferir a duração com as participações e os gestos, sem acelerar. Ver AVATARES-NOS-VIDEOS.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam."
+      "plannedVideo": "Título: O jogo guardou a chave?\n\nSituar a coleta que falta já dentro da experiência, aberta direto na cena com a chave no chão (o teste no projeto da pessoa fica para a retomada da parte 2). Abrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: temChave é um lugar com nome onde o jogo guarda uma informação, e o nome é uma pergunta de sim ou não; encostar na chave é um evento; temChave é o bloquinho, e anotar é mudar temChave para verdadeiro. Mostrar a coleta sem memória, apontar na regra da coleta a linha Alterar temChave para verdadeiro desligada, recomeçar a partida antes de ligar Guardar a coleta, repetir a coleta com o mesmo sumiço e o mesmo aviso, afastar e recomeçar, nomeando temChave em cada um. Terminar com Agora é a sua vez e Próxima parte. Participações de Dedé, na ordem de corte: F2P1-D01, depois de \"temChave continua falso.\", Dedé diz \"Mas a chave sumiu. Por que ainda está falso?\"; a professora retoma \"É que tirar a chave do chão não guarda essa informação.\". Quando a entrada vem depois de um gesto, concluir o gesto antes de Dedé entrar e manter o resultado à vista; quando a entrada é uma pergunta antes do gesto, manter a cena parada. Marcar entrada e saída sem cobrir controles, e a resposta e o próximo gesto vêm depois da saída do avatar.\n\nRoteiro falado: desafio-dia-2.roteiro.md. Produção em 10/10/2026: roteiro com vozes identificadas, ainda sem confirmação de gravação ou edição desta versão. A professora conduz; Dedé entra, fala e sai nos pontos do roteiro. Zappy só fala na página, fora do vídeo; memes e interface mostram o mascote sem voz. Conferir a duração com as participações e os gestos, sem acelerar. Ver AVATARES-NOS-VIDEOS.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam."
     },
     {
       "key": "ponte-d2-contexto",
@@ -35,38 +35,38 @@
     },
     {
       "key": "video-d2-recolher",
-      "plannedVideo": "Título: Recolha a chave\n\nComeçar pela retomada, curta e nesta ordem: o problema no jogo (o personagem passa pela chave e nada acontece, porque o jogo não sabe o que fazer nesse encontro), a lembrança da experiência (ao encostar, a chave saía do chão) e o anúncio colado ao primeiro passo. No projeto enviado no Dia 1, que ainda não tem a área Quando acontecer: criá-la por Áreas do projeto e, com o destino à vista, montar o encontro personagem/chave dentro dela e Destruir o sprite chave dentro dele. Testar a chave sumindo e voltando com Atualizar. Verificar esta parte, Objetivo cumprido! e Próxima parte, sem envio. Participações de Dedé, na ordem de corte: F2P2-R01, depois de \"No primeiro nome, escolha personagem e, no segundo, escolha chave. Assim, tudo o que você colocar dentro desse bloco vai acontecer quando o personagem encostar na chave.\", Dedé diz \"Se eu só passar perto da chave, não vale!\"; a professora retoma \"Agora vem a ação: tirar a chave do chão. Ela vai dentro desse encontro. Deixe à vista o espaço vazio dentro dele.\". F2P2-D01, depois de \"Arraste para o espaço vazio dentro do encontro e escolha chave.\", Dedé diz \"A chave some para sempre?\"; a professora retoma \"Aqui, destruir só tira a chave desta partida.\". As entradas -R vieram da revisão de ritmo de 10/10/2026: mostram uma consequência, fazem uma pergunta ou reagem ao teste, sem tirar passos da professora. Concluir o gesto antes de Dedé entrar e manter o resultado à vista; marcar entrada e saída sem cobrir controles, e a resposta e o próximo gesto vêm depois da saída do avatar.\n\nRoteiro falado: desafio-dia-2.roteiro.md. Produção em 10/10/2026: roteiro com vozes identificadas, ainda sem confirmação de gravação ou edição desta versão. A professora conduz; Dedé entra, fala e sai nos pontos do roteiro. Zappy só fala na página, fora do vídeo; memes e interface mostram o mascote sem voz. Conferir a duração com as participações e os gestos, sem acelerar. Ver AVATARES-NOS-VIDEOS.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam."
+      "plannedVideo": "Título: Recolha a chave\n\nComeçar pela retomada, curta e nesta ordem: o problema no jogo (o personagem passa por cima da chave e ela continua no chão, porque o jogo ainda não sabe o que fazer quando os dois se encostam), a lembrança da experiência (ao encostar, a chave saía do chão) e o anúncio colado ao primeiro passo. No projeto enviado no Dia 1, que ainda não tem a área Quando acontecer: criá-la por Áreas do projeto e, com o destino à vista, montar dentro dela o encontro (o bloco chega com jogador e inimigo: clicar em cada nome e escolher personagem e chave) e, no espaço vazio ao lado da palavra fazer, Destruir o sprite (chega com resposta: clicar e escolher chave). Testar a chave sumindo e voltando com Atualizar. Verificar esta parte, Objetivo cumprido! e Próxima parte, sem envio. Participações de Dedé, na ordem de corte: F2P2-R01, depois de \"Repare que o bloco chega com dois nomes, jogador e inimigo. Clique em jogador e escolha personagem. Depois clique em inimigo e escolha chave. Assim, tudo o que você colocar dentro desse bloco vai acontecer quando o personagem encostar na chave.\", Dedé diz \"Só pega se o personagem encostar mesmo na chave!\"; a professora retoma \"Agora vem a ação: tirar a chave do chão. Essa ação vai dentro do encontro, no espaço vazio ao lado da palavra fazer. Deixe esse espaço à vista.\". F2P2-D01, depois de \"O bloco chega com o nome resposta: clique em resposta e escolha chave.\", Dedé diz \"A chave some para sempre?\"; a professora retoma \"Aqui, destruir só tira a chave desta partida.\". As entradas -R vieram da revisão de ritmo de 10/10/2026: mostram uma consequência, fazem uma pergunta ou reagem ao teste, sem tirar passos da professora. Quando a entrada vem depois de um gesto, concluir o gesto antes de Dedé entrar e manter o resultado à vista; quando a entrada é uma pergunta antes do gesto, manter a cena parada. Marcar entrada e saída sem cobrir controles, e a resposta e o próximo gesto vêm depois da saída do avatar.\n\nRoteiro falado: desafio-dia-2.roteiro.md. Produção em 10/10/2026: roteiro com vozes identificadas, ainda sem confirmação de gravação ou edição desta versão. A professora conduz; Dedé entra, fala e sai nos pontos do roteiro. Zappy só fala na página, fora do vídeo; memes e interface mostram o mascote sem voz. Conferir a duração com as participações e os gestos, sem acelerar. Ver AVATARES-NOS-VIDEOS.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam."
     },
     {
       "key": "ponte-d2-recolher",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora faça o seu personagem pegar a chave! Programe o encontro e faça a chave sair do chão. Depois teste e clique em Verificar esta parte."
+        "text": "Agora faça o seu personagem pegar a chave! Programe o encontro e faça a chave sair do chão. Depois teste e clique em Verificar esta parte. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
       }
     },
     {
       "key": "video-d2-guardar",
-      "plannedVideo": "Título: Guarde que a chave foi encontrada\n\nComeçar pela retomada, curta: como o efeito não aparece no jogo, só a lembrança (com Guardar a coleta desligado, a chave sumia, mas temChave continuava falso; o jogo está assim) e o anúncio colado ao primeiro passo. Criar temChave começando em falso no fim de Ao iniciar e mudar para verdadeiro dentro do encontro, logo abaixo de Destruir o sprite. Verificar esta parte, Objetivo cumprido! e Próxima parte, sem envio. Participações de Dedé, na ordem de corte: F2P3-R01, depois de \"Confira se ficou assim: no fim de Ao iniciar, está Criar variável temChave com valor falso.\", Dedé diz \"Ah! Na partida nova eu tenho que buscar a chave outra vez!\"; a professora retoma \"Agora que temChave existe, o jogo precisa mudar essa informação quando o personagem encostar na chave. Por isso, o próximo bloco vai logo abaixo de Destruir o sprite, dentro do encontro. Deixe esse lugar à vista.\". F2P3-D01, depois de \"Alterar temChave para verdadeiro.\", Dedé diz \"Como eu vejo se o jogo guardou a chave?\"; a professora retoma \"No jogo, você ainda não consegue ver temChave,\". As entradas -R vieram da revisão de ritmo de 10/10/2026: mostram uma consequência, fazem uma pergunta ou reagem ao teste, sem tirar passos da professora. Concluir o gesto antes de Dedé entrar e manter o resultado à vista; marcar entrada e saída sem cobrir controles, e a resposta e o próximo gesto vêm depois da saída do avatar.\n\nRoteiro falado: desafio-dia-2.roteiro.md. Produção em 10/10/2026: roteiro com vozes identificadas, ainda sem confirmação de gravação ou edição desta versão. A professora conduz; Dedé entra, fala e sai nos pontos do roteiro. Zappy só fala na página, fora do vídeo; memes e interface mostram o mascote sem voz. Conferir a duração com as participações e os gestos, sem acelerar. Ver AVATARES-NOS-VIDEOS.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam."
+      "plannedVideo": "Título: Guarde que a chave foi encontrada\n\nComeçar pela retomada, curta: como o efeito não aparece no jogo, só a lembrança (com Guardar a coleta desligado, a chave sumia, mas temChave continuava falso; o jogo está assim) e o anúncio colado ao primeiro passo. Criar temChave começando em falso no fim de Ao iniciar, junto das variáveis que já estão ali (o bloco chega com contador e 0: clicar em contador, escrever temChave e trocar o 0 por falso). Depois encontrar a área Quando acontecer e mudar temChave para verdadeiro dentro do encontro, logo abaixo de Destruir o sprite (o Alterar chega com contador: clicar e escolher temChave). Verificar esta parte, Objetivo cumprido! e Próxima parte, sem envio. Participações de Dedé, na ordem de corte: F2P3-R01, depois de \"Confira se ficou assim: no fim de Ao iniciar, está Criar variável temChave com valor falso.\", Dedé diz \"Ah! Na partida nova eu tenho que buscar a chave outra vez!\"; a professora retoma \"Agora que temChave existe, o jogo precisa mudar essa informação quando o personagem encostar na chave. Por isso, o próximo bloco vai logo abaixo de Destruir o sprite, dentro do encontro. Encontre a área Quando acontecer, arrastando um espaço vazio entre os blocos se precisar, e deixe esse lugar à vista.\". F2P3-D01, depois de \"Alterar temChave para verdadeiro.\", Dedé diz \"Como eu vejo se o jogo guardou a chave?\"; a professora retoma \"No jogo, você ainda não consegue ver temChave,\". As entradas -R vieram da revisão de ritmo de 10/10/2026: mostram uma consequência, fazem uma pergunta ou reagem ao teste, sem tirar passos da professora. Quando a entrada vem depois de um gesto, concluir o gesto antes de Dedé entrar e manter o resultado à vista; quando a entrada é uma pergunta antes do gesto, manter a cena parada. Marcar entrada e saída sem cobrir controles, e a resposta e o próximo gesto vêm depois da saída do avatar.\n\nRoteiro falado: desafio-dia-2.roteiro.md. Produção em 10/10/2026: roteiro com vozes identificadas, ainda sem confirmação de gravação ou edição desta versão. A professora conduz; Dedé entra, fala e sai nos pontos do roteiro. Zappy só fala na página, fora do vídeo; memes e interface mostram o mascote sem voz. Conferir a duração com as participações e os gestos, sem acelerar. Ver AVATARES-NOS-VIDEOS.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam."
     },
     {
       "key": "ponte-d2-guardar",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora ensine o seu jogo a lembrar da chave! Crie temChave começando em falso e mude para verdadeiro no encontro com a chave. Depois clique em Verificar esta parte."
+        "text": "Agora ensine o seu jogo a lembrar da chave! Crie temChave começando em falso e mude para verdadeiro no encontro com a chave. Depois clique em Verificar esta parte. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
       }
     },
     {
       "key": "video-d2-programar",
-      "plannedVideo": "Título: Avise quem está jogando\n\nComeçar pela retomada, curta e nesta ordem: o problema no jogo (a chave some, mas a mensagem continua a inicial), a lembrança da experiência (o aviso mudava) e o anúncio colado ao primeiro passo. Mudar o aviso dentro do encontro, logo abaixo de temChave, com o texto de coleta. Testar, verificar inclusive o movimento anterior, envio confirmado. Antes de Concluir fase, reconhecer a conquista com Pronto, você programou a coleta da chave e o aviso do seu jogo! e lembrar a surpresa uma vez só, sem mostrar nada dela (E lembra da surpresa que eu te contei quando a aventura começou? Ela está quase aqui! Na próxima fase você vai descobrir o que é.). Terminar em Concluir fase. Participações de Dedé, na ordem de corte: F2P4-D01, depois de \"Você pegou a chave! Agora vá ao farol.\", Dedé diz \"Agora quem joga vai saber para onde ir!\"; a professora retoma \"Vamos conferir no jogo! Leve o personagem até a chave.\". Concluir o gesto antes de Dedé entrar e manter o resultado à vista; marcar entrada e saída sem cobrir controles, e a resposta e o próximo gesto vêm depois da saída do avatar.\n\nRoteiro falado: desafio-dia-2.roteiro.md. Produção em 10/10/2026: roteiro com vozes identificadas, ainda sem confirmação de gravação ou edição desta versão. A professora conduz; Dedé entra, fala e sai nos pontos do roteiro. Zappy só fala na página, fora do vídeo; memes e interface mostram o mascote sem voz. Conferir a duração com as participações e os gestos, sem acelerar. Ver AVATARES-NOS-VIDEOS.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam."
+      "plannedVideo": "Título: Avise quem está jogando\n\nComeçar pela retomada, curta e nesta ordem: o problema no jogo (a chave some, mas o aviso continua dizendo Encontre a chave e vá ao farol, porque nenhum bloco muda o aviso), a lembrança da experiência (o aviso mudava) e o anúncio colado ao primeiro passo. Mudar o aviso dentro do encontro, logo abaixo de temChave (o Alterar chega com contador: clicar e escolher aviso), com o texto de coleta no lugar de Olá. Testar, clicar em Atualizar e mostrar a chave e o aviso inicial de volta, verificar inclusive o movimento anterior, envio confirmado. Antes de Concluir fase, reconhecer a conquista com Pronto, você programou a coleta da chave: ela sai do chão, o jogo guarda em temChave que ela foi pega, e o aviso muda! e lembrar a surpresa uma vez só, sem mostrar nada dela (E lembra da surpresa que eu te contei quando a aventura começou? Ela está quase aqui! Na próxima fase você vai descobrir o que é.). Terminar em Concluir fase. Participações de Dedé, na ordem de corte: F2P4-D01, depois de \"Você pegou a chave! Agora vá ao farol.\", Dedé diz \"Agora quem joga vai saber para onde ir!\"; a professora retoma \"Vamos conferir no jogo! Leve o personagem até a chave.\". Quando a entrada vem depois de um gesto, concluir o gesto antes de Dedé entrar e manter o resultado à vista; quando a entrada é uma pergunta antes do gesto, manter a cena parada. Marcar entrada e saída sem cobrir controles, e a resposta e o próximo gesto vêm depois da saída do avatar.\n\nRoteiro falado: desafio-dia-2.roteiro.md. Produção em 10/10/2026: roteiro com vozes identificadas, ainda sem confirmação de gravação ou edição desta versão. A professora conduz; Dedé entra, fala e sai nos pontos do roteiro. Zappy só fala na página, fora do vídeo; memes e interface mostram o mascote sem voz. Conferir a duração com as participações e os gestos, sem acelerar. Ver AVATARES-NOS-VIDEOS.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam."
     },
     {
       "key": "ponte-d2-programar",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora avise quem está jogando! Mostre uma mensagem quando a chave for encontrada. Teste a coleta e clique em Verificar esta parte antes de enviar o seu projeto."
+        "text": "Agora avise quem está jogando! Mostre uma mensagem quando a chave for encontrada. Teste a coleta e clique em Verificar esta parte. Depois clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir fase."
       }
     },
     {
@@ -1485,7 +1485,7 @@
         "projectChecks": [
           {
             "id": "direcional",
-            "label": "Mostre somente as quatro direções.",
+            "label": "Em Ao iniciar, use Ativar controles clássicos com só as quatro direções.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_enable_classic_controls",
@@ -1497,7 +1497,7 @@
           },
           {
             "id": "andar",
-            "label": "Dentro de A cada quadro do jogo, mova o personagem, antes de mantê-lo dentro da tela.",
+            "label": "Dentro de A cada quadro do jogo, o bloco que move o personagem vem antes de Manter o sprite dentro da tela.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_update_each_frame",
@@ -1569,7 +1569,7 @@
         "projectChecks": [
           {
             "id": "direcional",
-            "label": "Mostre somente as quatro direções.",
+            "label": "Em Ao iniciar, use Ativar controles clássicos com só as quatro direções.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_enable_classic_controls",
@@ -1581,7 +1581,7 @@
           },
           {
             "id": "andar",
-            "label": "Dentro de A cada quadro do jogo, mova o personagem, antes de mantê-lo dentro da tela.",
+            "label": "Dentro de A cada quadro do jogo, o bloco que move o personagem vem antes de Manter o sprite dentro da tela.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_update_each_frame",
@@ -1714,7 +1714,7 @@
         "projectChecks": [
           {
             "id": "direcional",
-            "label": "Mostre somente as quatro direções.",
+            "label": "Em Ao iniciar, use Ativar controles clássicos com só as quatro direções.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_enable_classic_controls",
@@ -1726,7 +1726,7 @@
           },
           {
             "id": "andar",
-            "label": "Dentro de A cada quadro do jogo, mova o personagem, antes de mantê-lo dentro da tela.",
+            "label": "Dentro de A cada quadro do jogo, o bloco que move o personagem vem antes de Manter o sprite dentro da tela.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_update_each_frame",
@@ -1843,7 +1843,7 @@
           },
           {
             "id": "aviso-chave",
-            "label": "Altere aviso com um texto dentro do encontro com a chave.",
+            "label": "Mude aviso para um texto dentro do encontro com a chave.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_on_overlap",

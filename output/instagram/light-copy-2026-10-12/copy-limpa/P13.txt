@@ -1,0 +1,22 @@
+Ele explica a regra. Você termina sem entender como joga.
+Seu filho conhece tão bem aquela brincadeira que pula as partes que parecem óbvias para ele. Para você, elas ainda fazem falta.
+
+Pode ter faltado o começo da partida.
+Você já ouviu como ganhar. Ainda não sabe quantas cartas pode virar na sua vez.
+
+Diga qual informação falta.
+“Na minha vez, eu viro uma ou duas?” Ele consegue completar uma parte específica da explicação.
+
+Agora ele precisa pensar em quem está aprendendo.
+A regra era conhecida por ele. Explicá-la para outra pessoa exige escolher por onde começar e quais detalhes contar.
+
+Programar um jogo trabalha essa clareza de outro jeito.
+No jogo da memória, o computador precisa receber a regra: virar duas cartas, comparar as figuras e esconder de novo se forem diferentes. A criança organiza as instruções e testa se faltou alguma.
+
+Explicar uma regra para quem nunca jogou exige perceber o que a outra pessoa ainda não sabe. A dúvida dela mostra qual informação ficou de fora.
+
+“Na minha vez, viro uma ou duas?” dá à criança um ponto claro para completar.
+
+Criar jogos pode trabalhar essa habilidade porque programar exige dizer o que acontece em cada situação. No jogo da memória, cartas iguais e diferentes pedem respostas diferentes.
+
+A criança precisa organizar essas regras para que a partida funcione. Depois, pode observar outra pessoa jogar e descobrir o que ainda falta explicar.

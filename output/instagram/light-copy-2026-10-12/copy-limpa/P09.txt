@@ -1,0 +1,22 @@
+Ele viu o tutorial inteiro. Agora não sabe por onde começar.
+Queria colocar uma imagem na apresentação da escola. Acompanhou o vídeo, abriu o programa e se perdeu no primeiro passo.
+
+No vídeo, tudo já estava no lugar.
+Quem explicou já tinha a imagem salva e sabia qual menu abrir. Seu filho precisa localizar o arquivo e encontrar esse caminho.
+
+Vale pausar antes de acumular mais passos.
+Viu como inserir a imagem? Pause e tente fazer. Agora dá para perceber se a dúvida está em achar o arquivo ou em usar o programa.
+
+Voltar ao vídeo passa a ter um motivo.
+Ele encontra o trecho que mostra a ação de que precisa. Faz, confere e só depois continua.
+
+Aprender a programar um jogo precisa desse tempo de fazer.
+A criança vê como fazer o personagem pular, monta o comando e testa. Se ele não pula, há uma ação concreta para comparar com a explicação.
+
+Um tutorial pode parecer claro enquanto outra pessoa faz tudo. A dúvida aparece quando a criança tenta localizar o arquivo, abrir o menu ou repetir a ação.
+
+Pausar depois de um passo dá tempo para fazer essa tentativa. Voltar ao trecho certo responde à dúvida que acabou de aparecer.
+
+Criar jogos torna essa prática visível: programar um pulo só está completo depois de experimentar o movimento. A criança alterna explicação, construção e teste para fazer a própria ideia funcionar.
+
+Por isso, vídeo pausado não significa, por si só, atividade parada.

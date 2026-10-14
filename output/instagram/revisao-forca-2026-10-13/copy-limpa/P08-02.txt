@@ -1,0 +1,9 @@
+O fim da luta mostra a derrota. A barra de vida também mostra o quanto ele avançou.
+
+Neste jogo do nosso Estúdio, o dragão muda de comportamento quando a vida cai abaixo da metade. Chegar até ali e vencer a etapa seguinte são desafios diferentes.
+
+Se seu filho disser “sou ruim nisso”, peçam que mostre onde a dificuldade apareceu. O que funcionou antes? O que mudou depois?
+
+Ao programar uma batalha, ele trabalha justamente nessa mudança: escolhe quando o inimigo reage de outro jeito e testa as duas situações.
+
+Siga @criecomhelenaejulio para descobrir as regras que mudam uma partida.

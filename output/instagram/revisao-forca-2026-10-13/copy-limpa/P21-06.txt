@@ -1,0 +1,3 @@
+Se a quarta carta fica na mão por falta de energia, esse teste deu o resultado esperado.
+
+Agora dá para testar outro turno e conferir se a energia volta.

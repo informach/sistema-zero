@@ -4,6 +4,8 @@
 
 **Edição:** o avatar entra, fala e sai antes da resposta e do próximo gesto da professora. Não cobrir controles, blocos, mostradores ou resultados nem sobrepor vozes. Esta versão está preparada no roteiro; gravação, edição e publicação ainda não foram confirmadas. As durações foram revistas em 10/10/2026 com as novas falas: cada alvo cobre a fala estimada a 137 palavras por minuto, contando a criança, e, nas montagens, os gestos sem fala; conferir a montagem final sem acelerar. [Entradas e direção dos avatares](../AVATARES-NOS-VIDEOS.md#chave-do-farol).
 
+**Notas de gravação · 13/10/2026:** gravar a experiência da seção 1 numa sessão sem progresso nesse bloco, com o estado inicial da cena: chave no chão, Guardar a coleta desligado, temChave falso e o aviso Encontre a chave e vá ao farol. Abrir a fase numa aba nova depois do último deploy. Gravar o envio da seção 4 numa sessão sem envio anterior nesta fase: Recomeçar não apaga o envio; para repetir a tomada, usar outro perfil de ensaio. Mostrar o selo **Guardado na sua conta** só quando ele aparecer de verdade. Confirmar em **Enviar** sem preencher o **Recado (opcional)**. Na revisão de 13/10/2026, os alvos subiram para cobrir as falas e os gestos novos, sem acelerar: seção 1 de 120 a 140 s para 160 a 190 s, seções 2 e 3 de 3 a 4 min para 4 a 5 min e seção 4 de 2 a 3 min para 3 a 4 min.
+
 Quatro seções, quatro vídeos: a experiência da memória e, depois, uma montagem para cada ideia, sempre no mesmo projeto (recolher a chave, guardar a coleta e avisar quem joga). As seções 2 e 3 verificam sem enviar; a seção 4 verifica e envia. Retomar o projeto enviado no Dia 1; o projeto preparado do Dia 2 só é a alternativa quando não houver envio anterior. Não reconstruir nem substituir um projeto já feito pela pessoa. O vídeo da experiência é uma demonstração: o narrador faz cada gesto na primeira pessoa e explica; só no fim passa a vez, e a pessoa repete os testes na experiência, que cobra as metas. Cada montagem tem tempo para os encaixes.
 
 **Continuidade das imagens:** o projeto traz o catálogo ampliado de personagens, cenários, barcos, chaves e pares de faróis. Nesta montagem, os nomes dos sprites continuam personagem e chave; não trocar por nomes de imagens nos campos do encontro. As escolhas ficam no Dia 3.
@@ -14,19 +16,19 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 ### Vídeo `video-d2-contexto` · O jogo guardou a chave?
 
-**Duração alvo:** 120 a 140 segundos.
+**Duração alvo:** 160 a 190 segundos.
 
-**Na tela:** mostrar brevemente, no projeto do fim do Dia 1, o personagem passando pela chave sem pegá-la. Depois abrir a experiência `collect-and-remember` e demonstrar a coleta com Guardar a coleta desligado, no ritmo da fala, deixando ver a chave sumir e o aviso mudar, enquanto `temChave` continua falso. No "Repare neste nome aqui", apontar o mostrador `temChave`; no "tá vendo?", manter `temChave` em falso à vista. **Meme na comparação:** na frase do bloquinho, o personagem anotando "peguei a chave ✔" num bloquinho; ao lado, o mesmo personagem sem anotar, com cara de "esqueci…". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência; a narração explica sozinha.
+**Na tela:** abrir direto na experiência `collect-and-remember`, com a chave no chão. Na primeira frase, apontar o personagem e a chave da cena; o teste no projeto da pessoa fica para a retomada da seção 2. Depois demonstrar a coleta com Guardar a coleta desligado, no ritmo da fala. No "Repare neste nome aqui", apontar o mostrador `temChave`. No "Olha só", deixar ver a chave subindo e sumindo e o aviso novo na faixa do jogo. No "A regra da coleta", apontar a regra na bancada, começando pelo bloco do evento. No "tá vendo?", manter `temChave` em falso à vista. **Meme na comparação:** na frase do bloquinho, o personagem anotando "peguei a chave ✔" num bloquinho; ao lado, o mesmo personagem sem anotar, com cara de "esqueci…". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência; a narração explica sozinha.
 
 **Professora:**
 
 > "O seu personagem já anda, mas passa pela chave sem pegar. Para o jogo saber que a chave foi pega, ele precisa guardar essa informação. Esta é uma experiência para a gente entender como uma variável guarda uma informação do jogo.
 >
-> Repare neste nome aqui: temChave. Ele é uma variável, que é um nome que guarda uma informação do jogo. Nesse caso, a informação é se o personagem está com a chave ou não, e, quando aparece falso, quer dizer que ele ainda não está com ela.
+> Repare neste nome aqui: temChave. temChave é uma variável: um lugar com nome onde o jogo guarda uma informação. O próprio nome é uma pergunta: o personagem tem chave? E a resposta só pode ser verdadeiro, que quer dizer sim, ou falso, que quer dizer não. Agora está falso, porque ele ainda não pegou a chave.
 >
-> Guardar uma informação é como anotar num bloquinho: se ninguém anota, o jogo esquece.
+> Guardar uma informação é como anotar num bloquinho para não esquecer: se ninguém anota, ninguém lembra depois. No seu jogo, temChave é o bloquinho, e anotar é mudar temChave para verdadeiro.
 >
-> Olha aqui: com Guardar a coleta desligado, eu clico em Encostar na chave. Encostar na chave é um evento, que é uma coisa que acontece no jogo. A regra Quando o personagem encostar na chave responde a esse evento: ela tira a chave do chão e muda o aviso. Mas tá vendo? temChave continua falso."
+> Olha aqui: com Guardar a coleta desligado, eu clico em Encostar na chave. Olha só: a chave saiu do chão, e o aviso mudou. Encostar na chave é um evento, que é uma coisa que acontece no jogo. A regra da coleta responde a esse evento: ela tira a chave do chão e muda o aviso. Mas tá vendo? temChave continua falso."
 
 **Na tela:** **F2P1-D01** · Dedé entra depois da coleta sem memória, com a chave ausente e temChave falso visíveis. Não reiniciar durante a pergunta.
 
@@ -34,15 +36,15 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > "Mas a chave sumiu. Por que ainda está falso?"
 
-**Na tela:** Dedé sai. Mostrar o valor falso ao responder. Depois recomeçar a partida antes de ligar Guardar a coleta, repetir o encontro, afastar e reiniciar conforme a fala.
+**Na tela:** Dedé sai. Mostrar o valor falso ao responder e, no "Olha aqui na regra", apontar a linha Alterar temChave para verdadeiro com a marca (desligado). Depois recomeçar a partida antes de ligar Guardar a coleta; ao ligar, deixar ver a marca (desligado) sumir da linha antes de clicar em Encostar na chave. No "Olha só", deixar ver a chave sumir, o aviso novo e `temChave` em verdadeiro. Depois afastar e reiniciar conforme a fala.
 
 **Professora:**
 
-> "É que tirar a chave do chão não guarda essa informação. Falta anotar que ela foi pega.
+> "É que tirar a chave do chão não guarda essa informação. Olha aqui na regra: a linha Alterar temChave para verdadeiro está desligada. Falta anotar que a chave foi pega. E é essa anotação que a porta do farol vai conferir.
 >
-> Agora eu clico em Recomeçar a partida, ligo Guardar a coleta e clico em Encostar na chave de novo. Olha só: desta vez, temChave vira verdadeiro! O jogo anotou que a chave foi encontrada.
+> A regra só pode mudar com a chave no chão. Por isso, eu clico em Recomeçar a partida, ligo Guardar a coleta e clico em Encostar na chave de novo. Olha só: a chave sumiu e o aviso mudou igualzinho, mas desta vez temChave virou verdadeiro! O jogo anotou que a chave foi pega.
 >
-> E repare: quando eu clico em Afastar, temChave continua verdadeiro, mesmo longe da chave. É que a anotação fica guardada.
+> E quando eu clico em Afastar, temChave continua verdadeiro, mesmo longe da chave. É que a anotação fica guardada.
 >
 > Por último, eu clico em Recomeçar a partida, e temChave volta para falso, porque uma partida nova começa com o bloquinho em branco.
 >
@@ -56,13 +58,13 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 ### Vídeo `video-d2-recolher` · Recolha a chave
 
-**Duração alvo:** 3 a 4 minutos, incluindo encaixes, teste e verificação.
+**Duração alvo:** 4 a 5 minutos, incluindo encaixes, teste e verificação.
 
-**Na tela:** abrir o projeto da pessoa. Começar pela retomada, antes de qualquer bloco e nesta ordem: primeiro o problema (levar o personagem até a chave e, no "Tá vendo?", mostrar que ele passa por ela sem efeito), depois a lembrança e o anúncio. Em cada encaixe, primeiro deixar o destino à vista; só então abrir a categoria e pegar o bloco. O projeto ainda não tem a área **Quando acontecer**: deixar à vista um lugar sem blocos ao lado das áreas, abrir **Áreas do projeto**, pegar **Quando acontecer** e soltar nesse lugar. Se for preciso abrir espaço, arrastar um espaço vazio entre os blocos; na fala, "lugar sem blocos" é o destino e "espaço vazio" é só o ponto de onde se arrasta. Depois abrir **Jogo 2D → Colisões → Encostar e bloquear**, pegar **Quando o sprite ... começar a encostar no sprite ...** e soltar dentro da área nova. Escolher `personagem` no primeiro nome e `chave` no segundo.
+**Na tela:** abrir o projeto da pessoa, o enviado no Dia 1. Começar pela retomada, antes de qualquer bloco e nesta ordem: primeiro o problema (levar o personagem até a chave e, no "Tá vendo?", mostrar que ele passa por cima dela e a chave continua no chão), depois a lembrança e o anúncio. Em cada encaixe, primeiro deixar o destino à vista; só então abrir a categoria e pegar o bloco. O projeto ainda não tem a área **Quando acontecer**: deixar à vista um lugar sem blocos ao lado das áreas, abrir **Áreas do projeto**, pegar **Quando acontecer** e soltar nesse lugar. Se for preciso abrir espaço, arrastar um espaço vazio entre os blocos; na fala, "lugar sem blocos" é o destino e "espaço vazio" é só o ponto de onde se arrasta. Depois abrir **Jogo 2D → Colisões → Encostar e bloquear**, pegar **Quando o sprite ... começar a encostar no sprite ...** e soltar dentro da área nova. O bloco nasce com `jogador` e `inimigo`: no "Repare", apontar os dois nomes; clicar em `jogador` e escolher `personagem`, depois em `inimigo` e escolher `chave`.
 
 **Professora:**
 
-> "Aqui no seu jogo, leve o personagem até a chave. Tá vendo? Ele passa por ela, porque o jogo não sabe o que fazer nesse encontro.
+> "Aqui no seu jogo, leve o personagem até a chave. Tá vendo? Ele passa por cima dela, e a chave continua no chão, porque o jogo ainda não sabe o que fazer quando os dois se encostam.
 >
 > Lembra da experiência da parte anterior? Quando o personagem encostava, a chave saía do chão. Agora a gente vai programar isso no seu jogo!
 >
@@ -76,23 +78,23 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Arraste para dentro de Quando acontecer e solte quando aparecer o encaixe.
 >
-> No primeiro nome, escolha personagem e, no segundo, escolha chave. Assim, tudo o que você colocar dentro desse bloco vai acontecer quando o personagem encostar na chave."
+> Repare que o bloco chega com dois nomes, jogador e inimigo. Clique em jogador e escolha personagem. Depois clique em inimigo e escolha chave. Assim, tudo o que você colocar dentro desse bloco vai acontecer quando o personagem encostar na chave."
 
 **Na tela:** **F2P2-R01** · Dedé entra depois de configurar os dois nomes. Deixar o evento visível, sem executar o encontro ainda.
 
 **Dedé (avatar):**
 
-> "Se eu só passar perto da chave, não vale!"
+> "Só pega se o personagem encostar mesmo na chave!"
 
-**Na tela:** Dedé sai. Mostrar o espaço da ação dentro do encontro antes de buscar Destruir o sprite. Com o espaço vazio do evento à vista, abrir **Jogo 2D → Sprites → Criar e trocar aparência**, pegar **Destruir o sprite ...**, soltar dentro do evento e escolher `chave`.
+**Na tela:** Dedé sai. Mostrar o espaço vazio ao lado de **fazer**, dentro do encontro, antes de buscar Destruir o sprite. Com esse espaço à vista, abrir **Jogo 2D → Sprites → Criar e trocar aparência**, pegar **Destruir o sprite ...**, soltar ao lado de **fazer**, clicar em `resposta` (o nome com que o bloco nasce) e escolher `chave`.
 
 **Professora:**
 
-> "Agora vem a ação: tirar a chave do chão. Ela vai dentro desse encontro. Deixe à vista o espaço vazio dentro dele.
+> "Agora vem a ação: tirar a chave do chão. Essa ação vai dentro do encontro, no espaço vazio ao lado da palavra fazer. Deixe esse espaço à vista.
 >
 > Abra Jogo 2D, depois Sprites e depois Criar e trocar aparência, e pegue o bloco Destruir o sprite.
 >
-> Arraste para o espaço vazio dentro do encontro e escolha chave."
+> Arraste e solte no espaço vazio ao lado de fazer. O bloco chega com o nome resposta: clique em resposta e escolha chave."
 
 **Na tela:** **F2P2-D01** · Dedé entra depois do encaixe e da escolha de chave. Não interromper a professora com um bloco preso no cursor; manter o nome Destruir o sprite chave visível.
 
@@ -120,7 +122,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Quando aparecer Objetivo cumprido!, clique em Próxima parte."
 
-**Ponte do Zappy na página (não gravar):** Agora faça o seu personagem pegar a chave! Programe o encontro e faça a chave sair do chão. Depois teste e clique em Verificar esta parte.
+**Ponte do Zappy na página (não gravar):** Agora faça o seu personagem pegar a chave! Programe o encontro e faça a chave sair do chão. Depois teste e clique em Verificar esta parte. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
 **Conferência de produção:** a verificação confere também o movimento do Dia 1. A seção exige o vídeo e a aprovação, sem envio.
 
@@ -128,9 +130,9 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 ### Vídeo `video-d2-guardar` · Guarde que a chave foi encontrada
 
-**Duração alvo:** 3 a 4 minutos, incluindo encaixes e verificação.
+**Duração alvo:** 4 a 5 minutos, incluindo encaixes e verificação.
 
-**Na tela:** mostrar o fim da área **Ao iniciar**, logo abaixo de **Ativar controles clássicos**. Abrir **Programação → Variáveis**, pegar **Criar variável ... com valor ...** e soltar ali. Trocar o nome para `temChave` e clicar fora do campo. Abrir **Programação → Lógica & Se**, pegar o bloco **verdadeiro** (no catálogo, Verdadeiro ou falso; na tela, só o menu), soltar sobre o número do bloco e escolher **falso** no menu.
+**Na tela:** mostrar o fim da área **Ao iniciar**, logo abaixo de **Ativar controles clássicos**. Abrir **Programação → Variáveis**, pegar **Criar variável ... com valor ...** e soltar ali. No "Repare que, logo acima", apontar as variáveis `aviso` e `ganhou` que já estão em **Ao iniciar**. Clicar em `contador` (o nome com que o bloco nasce), apagar, escrever `temChave` e clicar fora do campo. Abrir **Programação → Lógica & Se**, pegar o bloco **verdadeiro** (no catálogo, Verdadeiro ou falso; na tela, só o menu), soltar sobre o `0` do bloco e escolher **falso** no menu.
 
 **Professora:**
 
@@ -140,11 +142,11 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Agora abra Programação e depois Variáveis, e pegue o bloco Criar variável com valor.
 >
-> Arraste e solte logo abaixo de Ativar controles clássicos.
+> Arraste e solte logo abaixo de Ativar controles clássicos. Repare que, logo acima, o seu jogo já tem outras variáveis, como aviso. temChave vai ficar junto delas.
 >
-> O nome chega como contador. Troque contador por temChave. Escreva tudo junto, com o C maiúsculo, e depois clique fora do campo.
+> Esse bloco chega com o nome contador. Clique em contador, apague e escreva temChave, tudo junto e com o C maiúsculo. Depois clique fora do campo.
 >
-> Repare que o valor desse bloco começa com um número. Só que temChave não guarda número: ela guarda verdadeiro ou falso. Por isso, a gente vai trocar esse número. Abra Programação e depois Lógica e Se, pegue o bloco verdadeiro e solte em cima do número. Ele toma o lugar do número.
+> O valor desse bloco vem com o número 0. Só que temChave não guarda número: ela guarda verdadeiro ou falso. Por isso, a gente vai trocar esse 0. Abra Programação e depois Lógica e Se, pegue o bloco verdadeiro e solte em cima do 0. Ele toma o lugar do número.
 >
 > No menu desse bloco, troque verdadeiro por falso, porque o jogo começa sem a chave.
 >
@@ -156,17 +158,17 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > "Ah! Na partida nova eu tenho que buscar a chave outra vez!"
 
-**Na tela:** Dedé sai. Mostrar o encontro que vai mudar a informação depois da coleta. Deixar à vista o bloco **Destruir o sprite chave**, dentro do encontro. Abrir **Programação → Variáveis**, pegar **Alterar variável ... para ...** e soltar logo abaixo dele, ainda dentro do evento. Escolher `temChave`. Em **Programação → Lógica & Se**, pegar o bloco **verdadeiro**, soltar sobre o número e manter **verdadeiro**.
+**Na tela:** Dedé sai. Trazer à vista a área **Quando acontecer**, arrastando um espaço vazio se for preciso, e mostrar o encontro que vai mudar a informação depois da coleta. Deixar à vista o bloco **Destruir o sprite chave**, dentro do encontro. Abrir **Programação → Variáveis**, pegar **Alterar variável ... para ...** e soltar logo abaixo dele, ainda dentro do evento. Clicar em `contador` (o nome com que o bloco nasce) e escolher `temChave` na lista. Em **Programação → Lógica & Se**, pegar o bloco **verdadeiro**, soltar sobre o `1` e manter **verdadeiro**.
 
 **Professora:**
 
-> "Agora que temChave existe, o jogo precisa mudar essa informação quando o personagem encostar na chave. Por isso, o próximo bloco vai logo abaixo de Destruir o sprite, dentro do encontro. Deixe esse lugar à vista.
+> "Agora que temChave existe, o jogo precisa mudar essa informação quando o personagem encostar na chave. Por isso, o próximo bloco vai logo abaixo de Destruir o sprite, dentro do encontro. Encontre a área Quando acontecer, arrastando um espaço vazio entre os blocos se precisar, e deixe esse lugar à vista.
 >
 > Abra Programação e depois Variáveis, e pegue o bloco Alterar variável para.
 >
-> Arraste e solte logo abaixo de Destruir o sprite e escolha temChave.
+> Arraste e solte logo abaixo de Destruir o sprite. Esse bloco também chega com contador: clique em contador e escolha temChave.
 >
-> Esse bloco também chega com um número. Troque o número do mesmo jeito: abra Programação e depois Lógica e Se, pegue o bloco verdadeiro e solte em cima do número. Desta vez, deixe em verdadeiro, porque agora o personagem está com a chave.
+> O valor dele vem com o número 1. Troque do mesmo jeito: abra Programação e depois Lógica e Se, pegue o bloco verdadeiro e solte em cima do 1. Desta vez, deixe em verdadeiro, porque agora o personagem está com a chave.
 >
 > Confira se ficou assim: no encontro com a chave, primeiro vem Destruir o sprite chave e, logo abaixo, Alterar temChave para verdadeiro."
 
@@ -186,7 +188,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Quando aparecer Objetivo cumprido!, clique em Próxima parte."
 
-**Ponte do Zappy na página (não gravar):** Agora ensine o seu jogo a lembrar da chave! Crie temChave começando em falso e mude para verdadeiro no encontro com a chave. Depois clique em Verificar esta parte.
+**Ponte do Zappy na página (não gravar):** Agora ensine o seu jogo a lembrar da chave! Crie temChave começando em falso e mude para verdadeiro no encontro com a chave. Depois clique em Verificar esta parte. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
 **Conferência de produção:** a mudança de temChave não aparece no jogo; a experiência da seção 1 já mostrou a informação guardada. A seção exige o vídeo e a aprovação, sem envio.
 
@@ -194,25 +196,25 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 ### Vídeo `video-d2-programar` · Avise quem está jogando
 
-**Duração alvo:** 2 a 3 minutos, incluindo encaixe, testes e envio.
+**Duração alvo:** 3 a 4 minutos, incluindo encaixe, testes e envio.
 
-**Na tela:** Começar pela retomada, antes de qualquer bloco e nesta ordem: primeiro o problema (recolher a chave no jogo e mostrar que a mensagem continua a inicial), depois a lembrança e o anúncio. Depois, com o bloco de `temChave` à vista dentro do encontro, abrir **Programação → Variáveis**, pegar outro **Alterar variável ... para ...**, soltar logo abaixo dele e escolher `aviso`. Em **Programação → Valores**, pegar **texto**, soltar sobre o número, apagar `Olá` e escrever `Você pegou a chave! Agora vá ao farol.`. Mostrar os três blocos na ordem.
+**Na tela:** Começar pela retomada, antes de qualquer bloco e nesta ordem: primeiro o problema (levar o personagem até a chave e, no "Tá vendo?", mostrar que o aviso continua dizendo Encontre a chave e vá ao farol), depois a lembrança e o anúncio. Depois, com o bloco de `temChave` à vista dentro do encontro, abrir **Programação → Variáveis**, pegar outro **Alterar variável ... para ...**, soltar logo abaixo dele, clicar em `contador` e escolher `aviso`. Em **Programação → Valores**, pegar **texto**, soltar sobre o `1`, clicar em `Olá`, apagar e escrever `Você pegou a chave! Agora vá ao farol.`. Mostrar os três blocos na ordem.
 
 **Professora:**
 
-> "Aqui no seu jogo, pegue a chave. Tá vendo? Ela some, mas a mensagem continua a mesma, porque o jogo não muda o aviso.
+> "Aqui no seu jogo, leve o personagem até a chave. Tá vendo? Ela some, mas o aviso continua dizendo Encontre a chave e vá ao farol, porque nenhum bloco muda o aviso quando a chave é pega.
 >
 > Lembra da experiência da primeira parte desta fase? Quando a chave era recolhida, o aviso mudava. Agora a gente vai fazer o seu aviso mudar também!
 >
-> A mensagem também tem que mudar no encontro com a chave. Por isso, o próximo bloco vai logo abaixo do bloco de temChave, ainda dentro do encontro. Deixe esse lugar à vista.
+> O aviso tem que mudar no encontro com a chave. Por isso, o próximo bloco vai logo abaixo do bloco de temChave, ainda dentro do encontro. Deixe esse lugar à vista.
 >
 > Abra Programação e depois Variáveis, e pegue outro bloco Alterar variável para.
 >
-> Arraste e solte logo abaixo do bloco de temChave e escolha aviso. É essa variável que mostra a mensagem na tela.
+> Arraste e solte logo abaixo do bloco de temChave. Clique em contador e escolha aviso. É essa variável que mostra a mensagem na tela.
 >
 > Agora a gente precisa trocar o número desse bloco por um texto, que é a mensagem. Abra Programação e depois Valores, pegue o bloco texto e solte em cima do número.
 >
-> Repare que o bloco texto vem com a palavra Olá. Apague Olá e escreva: Você pegou a chave! Agora vá ao farol."
+> Repare que o bloco texto vem com a palavra Olá. Clique em Olá, apague e escreva: Você pegou a chave! Agora vá ao farol."
 
 **Na tela:** **F2P4-D01** · Dedé entra depois de a mensagem ser escrita, com o texto encaixado à vista. A reação comenta a função do aviso; ainda falta testar o resultado.
 
@@ -220,15 +222,17 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > "Agora quem joga vai saber para onde ir!"
 
-**Na tela:** Dedé sai. Depois da atualização da Pré-visualização, recolher a chave e ler o aviso. Clicar em **Atualizar** e repetir. Depois apontar o texto encaixado em **Alterar variável aviso**, dentro do encontro; não apontar a declaração de `aviso` em **Ao iniciar** nem o bloco de `temChave`.
+**Na tela:** Dedé sai. Depois da atualização da Pré-visualização, levar o personagem até a chave e ler o aviso novo. No "clique em Atualizar", clicar em **Atualizar**, na barra logo acima do jogo, e mostrar a chave de volta no chão e o aviso inicial. Na conferência, apontar o texto encaixado em **Alterar variável aviso**, dentro do encontro; não apontar a declaração de `aviso` em **Ao iniciar** nem o bloco de `temChave`.
 
 **Professora:**
 
-> "Vamos conferir no jogo! Leve o personagem até a chave. Olha só: a chave some e a mensagem muda!
+> "Vamos conferir no jogo! Leve o personagem até a chave. Olha só: a chave some e o aviso muda!
+>
+> Agora clique em Atualizar. Começa uma partida nova: a chave volta para o chão, e o aviso diz de novo Encontre a chave e vá ao farol.
 >
 > Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro do encontro com a chave estão três blocos, primeiro Destruir o sprite chave, depois Alterar temChave para verdadeiro e, por último, Alterar aviso para a sua mensagem. Depois de corrigir, teste de novo."
 
-**Na tela:** clicar em **Verificar esta parte**, mostrar o resultado ou uma pendência real e corrigir antes de verificar de novo. Depois de **Objetivo cumprido!**, clicar em **Enviar meu projeto**, confirmar em **Enviar** sem exigir recado e aguardar. No "lembra da surpresa", lembrar sem mostrar nada dela. Apontar **Concluir fase**.
+**Na tela:** clicar em **Verificar esta parte**, mostrar o resultado ou uma pendência real e corrigir antes de verificar de novo. Depois de **Objetivo cumprido!**, clicar em **Enviar meu projeto**, confirmar em **Enviar** sem preencher o **Recado (opcional)** e aguardar. Gravar numa sessão sem envio anterior nesta fase (ver as notas de gravação). No "lembra da surpresa", lembrar sem mostrar nada dela. Apontar **Concluir fase**.
 
 **Professora:**
 
@@ -236,10 +240,10 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar.
 >
-> Pronto, você programou a coleta da chave e o aviso do seu jogo! E lembra da surpresa que eu te contei quando a aventura começou? Ela está quase aqui! Na próxima fase você vai descobrir o que é.
+> Pronto, você programou a coleta da chave: ela sai do chão, o jogo guarda em temChave que ela foi pega, e o aviso muda! E lembra da surpresa que eu te contei quando a aventura começou? Ela está quase aqui! Na próxima fase você vai descobrir o que é.
 >
 > Quando aparecer Projeto enviado!, clique em Concluir fase."
 
-**Ponte do Zappy na página (não gravar):** Agora avise quem está jogando! Mostre uma mensagem quando a chave for encontrada. Teste a coleta e clique em Verificar esta parte antes de enviar o seu projeto.
+**Ponte do Zappy na página (não gravar):** Agora avise quem está jogando! Mostre uma mensagem quando a chave for encontrada. Teste a coleta e clique em Verificar esta parte. Depois clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir fase.
 
 **Conferência de produção:** a verificação confere também o movimento do Dia 1 e não exige copiar o texto do aviso. Antes de Concluir fase, a fala lembra uma vez só a surpresa plantada no Dia 1, sem dizer o que é (decisão do responsável, 07/10/2026). A seção exige o vídeo, a aprovação em **Verificar esta parte** e o envio confirmado.

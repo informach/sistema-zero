@@ -1,0 +1,317 @@
+## P41 · Na primeira semana, você senta do lado do seu filho.
+**Necessidade:** W11 · Ver meu filho começar a resolver algumas coisas por conta própria. **Base da pesquisa:** **R — V05; experiência relacionada em F02.** Autonomia inclui saber pedir ajuda.
+**Capa do Reel:** Na primeira semana, você senta do lado do seu filho. E bate o medo de que seja assim para sempre.
+| 0–5 s | Na primeira semana, você senta do lado do seu filho. | Na primeira semana, você senta do lado do seu filho. | Helena e uma criança encenada, sem nome, lado a lado diante do computador, as duas vistas de trás; da criança, só as costas (Helena, pessoa real: fisionomia fiel ao retrato autorizado; comparar lado a lado antes de aprovar). Selo da série no alto: Diário de criador. |
+| 5–10 s | E bate o medo de que seja assim para sempre. | E bate o medo de que seja assim para sempre. | Close da mão do adulto pousada perto do mouse; a mão da criança parada no teclado. |
+| 10–18 s | “No início eu acompanhei mais, agora eu acompanho menos.” | Áudio da Flávia: “No início eu acompanhei mais, agora eu acompanho menos. Ele faz o curso com total independência no momento.” | Retrato autorizado da Flávia, com o áudio real; o retrato segue 2 s na tela depois do fim do áudio, com o último cartão da legenda sincronizada (pessoa real: retrato real autorizado, sem recriação por IA). |
+| 18–23 s | Flávia, mãe do Fernando, nosso aluno. | Essa é a Flávia, mãe do Fernando, nosso aluno. | Helena à câmera, na sala (pessoa real: fisionomia fiel ao retrato autorizado; comparar lado a lado antes de aprovar). |
+| 23–31 s | No começo, ficar do lado faz parte. | No começo, tudo é novo, até o lugar de clicar. Então ficar do lado faz parte. | Helena aponta a tela; da criança encenada aparecem só as mãos no teclado, em primeiro plano, num ângulo diferente da abertura (Helena, pessoa real: fisionomia fiel ao retrato autorizado; comparar lado a lado antes de aprovar). |
+| 31–42 s | Aos poucos, você passa a ajuda para a aula. | Só que, aos poucos, você passa a ajuda para a aula: quando ele travar, peça para voltar o vídeo antes de chamar você. | Tela real de uma aula, numa conta de demonstração: o vídeo pausado e o cursor voltando a barra do tempo. |
+| 42–46 s | (sem texto) | (sem fala) | Close nas mãos da criança encenada montando blocos depois da pausa. |
+| 46–55 s | Acompanhar menos continua sendo acompanhar. | Acompanhar menos continua sendo acompanhar. Você só troca a cadeira ao lado por um “me mostra” no fim do dia. | As mãos da criança viram o notebook para mostrar; Helena se aproxima, já de noite, com a luz da luminária; da criança, só as mãos (Helena, pessoa real: fisionomia fiel ao retrato autorizado; comparar lado a lado antes de aprovar). |
+| 55–60 s | Siga @criecomhelenaejulio | Siga a gente para mais jeitos de acompanhar sem tomar o mouse. | Helena fecha em plano aberto da sala (pessoa real: fisionomia fiel ao retrato autorizado; comparar lado a lado antes de aprovar). |
+### Legenda
+> A Flávia, mãe do nosso aluno Fernando, também começou do lado do filho. Hoje ela conta outra história.
+>
+> É o relato de uma família, nas palavras dela: “No início eu acompanhei mais, agora eu acompanho menos. Ele faz o curso com total independência no momento.”
+>
+> O que mais conta nessa frase é o “no início”. Antes do “acompanho menos”, teve um tempo de ficar perto, porque tudo era novo, até o lugar de clicar.
+>
+> Nas primeiras semanas, fique perto, mas com as mãos longe do mouse. Quando ele travar, pergunte o que a aula pediu antes de responder. Aos poucos, você passa a ajuda para a aula online: o vídeo fica ali para ele pausar e voltar quantas vezes precisar.
+>
+> Acompanhar menos continua sendo acompanhar. Você só troca a cadeira ao lado por um “me mostra o que você fez hoje”.
+>
+> Siga @criecomhelenaejulio para mais jeitos de acompanhar a criação dele sem tomar o mouse.
+
+## P42 · “Terminei”, ele diz. E você encontra metade feita.
+**Necessidade:** W12 · Ver meu filho assumir uma pequena responsabilidade de aprender. **Base da pesquisa:** **I — F03.** Não extrapolar para todas as tarefas da casa ou da escola.
+### Slide 1 · Capa
+> “Terminei”, ele diz. E você encontra metade feita.
+>
+> Os dois estão certos, e programadores têm um nome para isso.
+### Slide 2
+> Ninguém mentiu. Só que cada um tinha um “pronto” diferente na cabeça, e é daí que sai a discussão.
+### Slide 3
+> Por isso muitas equipes de programação combinam algo antes de começar, e isso tem nome: definição de pronto.
+>
+> É uma lista curta para toda tarefa, e só está pronto o que cumpre a lista inteira.
+### Slide 4
+> Na lição de casa, isso vira uma lista para todo dia:
+>
+> “Pronto é exercício feito e conferido, com o caderno na mochila.”
+>
+> Aí, na hora do “terminei”, ele confere a lista antes de chamar você.
+### Slide 5
+> Nos jogos, a linha de chegada também vem combinada antes. Na caça de naves do nosso Estúdio, onde as crianças da Comunidade criam jogos, o placar mostra o caminho:
+>
+> Naves: 4 de 10.
+### Slide 6
+> Por trás do placar há duas regras: abateu 10 naves, vence; perdeu 3 escudos, a nave cai.
+>
+> Quando o jogo é dele, ele decide esses números antes de jogar.
+### Slide 7
+> Com o pronto combinado antes, a discussão sai do fim da tarefa e vai para o começo, quando todos estão calmos.
+>
+> Siga @criecomhelenaejulio para traduzir a próxima frase que vira discussão. A de hoje: “terminei”.
+### Legenda
+> Em muitas equipes de programação, tarefa que ninguém conferiu não conta como pronta. Por isso a lista de hoje tem a palavra “conferido”.
+>
+> Essas equipes combinam uma vez o que é “pronto”, e a lista vale para toda tarefa. O nome disso é definição de pronto. Em casa funciona do mesmo jeito: com a linha de chegada combinada antes, o “terminei” vira uma coisa que vocês dois conseguem conferir.
+>
+> Escrevam juntos, num papel, o que é pronto para qualquer lição de casa: exercício feito e conferido, com o caderno na mochila. Quando ele disser “terminei”, peça que confira a lista antes de chamar você.
+>
+> Nos jogos, a linha de chegada também vem combinada antes. Na caça de naves do nosso Estúdio, a vitória chega com 10 naves abatidas, e a partida termina se os 3 escudos acabarem. Quem programa escolhe esses dois números antes de jogar.
+>
+> Salve para usar na próxima tarefa.
+>
+> Siga @criecomhelenaejulio para traduzir a próxima frase que vira discussão. A de hoje: “terminei”.
+
+## P43 · “Foi legal.” E a conversa acabou ali.
+**Necessidade:** W13 · Conseguir conversar com meu filho sobre o que ele aprendeu. **Base da pesquisa:** **I — F04, F01.** Conversa sobre processo; não interrogatório ou prova extra.
+**Capa do Reel:** “Foi legal.” E a conversa acabou ali. Só que o problema estava na pergunta.
+| 0–4 s | “Foi legal.” E a conversa acabou ali. | “Foi legal.” E a conversa acabou ali. | Helena na cozinha; a criança encenada passa de mochila, de costas, e some pelo corredor (Helena, pessoa real: fisionomia fiel ao retrato autorizado; comparar lado a lado antes de aprovar). Selo da série no alto: Tradução de criança. |
+| 4–15 s | Só que o problema estava na pergunta. | Só que o problema estava na pergunta. “Como foi?” pede para ele resumir uma tarde inteira, e o resumo mais curto é “foi legal”. | Helena à câmera, de perto (pessoa real: fisionomia fiel ao retrato autorizado; comparar lado a lado antes de aprovar). |
+| 15–25 s | Pergunte uma coisa só. | Então pergunte uma coisa só: “O que de mais esquisito aconteceu hoje?” ou “O que deu errado e você consertou?” | A criança encenada volta e aponta a tela do computador, vista de costas: aparecem as mãos e a tela desfocada, com um projeto próprio. |
+| 25–39 s | Se ele cria jogos, peça a parte mais doida. | Se ele está criando um jogo, peça para ver a parte mais doida. Num parque do nosso Estúdio de criar jogos, é um tornado que aparece quando o carrinho chega ao ponto certo. | Parque dos Brinquedos pela câmera do próprio jogo, que segue o carrinho por trás: o carrinho chega ao ponto do tornado e a tecla E é apertada. |
+| 39–43 s | (sem texto) | (sem fala) | O tornado passeando pelo parque e arrastando o carrinho de lado, no meio da ação. |
+| 43–50 s | Pergunte qual ele mudaria, e a conversa continua. | Onde fica, como solta, quanto dura: três decisões. Pergunte qual ele mudaria, e a conversa continua. | Recorte do bloco “Quando apertar E no ponto tornado” ao lado de um quadro do tornado passeando pelo parque, perto do carrinho. |
+| 50–55 s | Siga @criecomhelenaejulio | Siga a gente para trocar mais perguntas que acabam em “foi legal”. | Helena encerra à mesa do jantar (pessoa real: fisionomia fiel ao retrato autorizado; comparar lado a lado antes de aprovar). |
+### Legenda
+> “Como foi?” é a pergunta mais fácil de fazer e a mais difícil de responder.
+>
+> Para responder, seu filho teria que escolher, entre tudo o que fez, o que vale contar. No fim do dia, isso é trabalho demais, e “foi legal” resolve.
+>
+> Por isso pergunta pequena funciona melhor: o que de mais esquisito aconteceu hoje, o erro que ele consertou, a parte mais doida do jogo. E aí uma resposta puxa a outra.
+>
+> No Parque dos Brinquedos, um jogo de exemplo do nosso Estúdio, apertar a tecla E perto do ponto certo solta um tornado por 12 segundos. Atrás disso há três decisões: onde fica o ponto, como o tornado é solto e quanto tempo dura. Em qualquer jogo, dá para perguntar sobre uma decisão assim: “Se o jogo fosse seu, quanto tempo o tornado duraria?”
+>
+> Se ele estiver cansado, a conversa pode esperar o jantar. Salve estas perguntas para fazer ao seu filho.
+>
+> Siga @criecomhelenaejulio para trocar mais perguntas que acabam em “foi legal”.
+
+## P44 · Ele empaca na tabuada do dever de casa.
+**Necessidade:** W14 · Ver sentido em números e regras que ele encontra na escola. **Base da pesquisa:** **I — F01, E04.** Uso contextual não garante melhora de notas.
+### Slide 1 · Capa
+> Ele empaca na tabuada do dever de casa.
+>
+> Mas, na batalha do jogo, faz a mesma conta de cabeça sem ninguém pedir.
+### Slide 2
+> Numa batalha de monstrinhos, o monstrinho tem 20 de vida e o golpe tira 8. Quantos golpes até ele cair?
+>
+> Essa conta decide quem ganha a luta, por isso ninguém precisa pedir.
+### Slide 3
+> No caderno, 8 × 3 é só mais um exercício.
+>
+> Já na batalha, essa conta avisa que dois golpes não bastam e que o rival ainda bate mais uma vez.
+### Slide 4
+> Numa batalha do nosso Estúdio de criar jogos, a conta está num bloco de encaixar: dano igual a força vezes 2.
+>
+> Com força 4, a Faísca tira 8.
+### Slide 5
+> Então três Faíscas derrubam o Folhito, o de planta, e duas deixam ele com 4 de vida.
+>
+> Com o Jato, que tira 4, são cinco golpes.
+### Slide 6
+> Agora imagine a batalha dele com força 5: a Faísca tira 10, e a luta acaba em dois golpes.
+>
+> Ficou fácil demais? Ele faz a conta e joga para conferir.
+### Slide 7
+> No caderno, o número é a resposta. Já no jogo que ele cria, o número vira uma decisão.
+>
+> Siga @criecomhelenaejulio para levar mais contas do jogo para o dever de casa.
+### Legenda
+> Na próxima tabuada, troque o “quanto é 8 × 3” por uma batalha: um monstrinho com 20 de vida e um golpe que tira 8.
+>
+> A conta é a mesma, só que agora ela tem um motivo para acontecer. Na batalha, errar a conta pode custar a luta.
+>
+> Na Batalha de Monstrinhos, um jogo de exemplo do nosso Estúdio, a regra está num bloco: dano igual a força vezes 2. Com força 4, o golpe Faísca tira 8, e mudar um número muda quantos golpes a luta dura.
+>
+> Quando ele cria a batalha, a pergunta deixa de ser “quanto é 8 × 3” e vira “quantos golpes eu quero que essa luta tenha”. Ele calcula, joga e confere.
+>
+> A tabuada continua sendo da escola. O jogo só dá a ela um lugar para aparecer.
+>
+> Siga @criecomhelenaejulio para levar mais contas do jogo para o dever de casa.
+
+## P45 · Sua filha pergunta “e se” até na hora de dormir.
+**Necessidade:** W15 · Ver meu filho se envolver de verdade numa atividade de criação. **Base da pesquisa:** **H.** Desejo a validar; não prometer corrigir concentração ou dificuldades de atenção.
+### Arte
+> Sua filha pergunta “e se” até na hora de dormir.
+>
+> E, criando um jogo, cada “e se” vira um teste.
+### Legenda
+> Na hora de dormir, cada “e se” dela só atrasa o sono. Criando um jogo, cada “e se” ganha resposta em segundos.
+>
+> Jogando, ela aceita o jogo do jeito que veio. Criando jogos, cada número vira uma pergunta: e se fosse mais? E se fosse menos?
+>
+> No Balão, um exemplo do nosso Estúdio de criar jogos, segurar o mouse acende o fogo. O bloco dessa regra, uma pecinha de encaixar, diz: “Acender o fogo do balão (força 1)”. Só que quem fez o jogo deixou um detalhe: quanto mais alto o balão está, mais combustível o fogo gasta.
+>
+> Por isso, trocar o 1 pelo 2 traz outra pergunta: o balão sobe mais depressa, mas o combustível aguenta?
+>
+> É assim que uma tarde de criação anda: uma mudança pequena, um teste e, logo depois, outro “e se”.
+>
+> Siga @criecomhelenaejulio para dar destino a mais um “e se” dela. O de hoje foi a força do fogo.
+
+## P46 · O banco mudou o aplicativo, e você passou um minuto caçando o botão.
+**Necessidade:** W16 · Dar uma base para ele aprender novas tecnologias ao longo da vida. **Base da pesquisa:** **I — E03, V06.** Preparação ampla, não garantia de emprego ou salário.
+### Slide 1 · Capa
+> O banco mudou o aplicativo, e você passou um minuto caçando o botão.
+>
+> E programador vive esse minuto a vida inteira.
+### Slide 2
+> Seu filho também vive esse minuto.
+>
+> Cada criança reage de um jeito: clica em tudo, procura ajuda ou espera alguém explicar. Um teste de um minuto mostra o dele.
+### Slide 3
+> Programador começa de novo muitas vezes na vida, porque as linguagens e os programas mudam o tempo todo.
+>
+> Só que uma coisa vai junto de uma ferramenta para outra: o jeito de começar.
+### Slide 4
+> O jeito que funciona tem três passos: um objetivo pequeno, uma mudança e um teste.
+>
+> Então abra um programa que ele nunca viu e peça: “Em um minuto, faça alguma coisa mudar de cor.”
+### Slide 5
+> Trocar de tipo de jogo traz esse minuto de volta, e dois exemplos do nosso Estúdio de criar jogos mostram isso.
+>
+> No primeiro, em 2D, o herói anda e pula no chão da tela.
+### Slide 6
+> Já no Salto nas Nuvens, em 3D, as plataformas flutuam no céu.
+>
+> Os blocos de programar mudam, mas a ideia de andar e pular vai junto, e isso conta mais que o lugar dos botões.
+### Slide 7
+> O primeiro minuto mostra o jeito de começar, e esse jeito se treina.
+>
+> Siga @criecomhelenaejulio para o próximo teste de um minuto aí em casa. O de hoje era o programa novo.
+### Legenda
+> Seu filho ainda vai trocar de programa muitas vezes, e de um para o outro só uma coisa vai junto: o jeito de começar.
+>
+> Programador sabe disso porque vive o minuto do aplicativo do banco a vida inteira: as linguagens e os programas mudam o tempo todo. E o jeito de começar que funciona tem três passos: um objetivo pequeno, uma mudança e um teste.
+>
+> Para ver o jeito do seu filho, abra um programa que ele não conhece e dê um alvo de um minuto: fazer alguma coisa mudar de cor. Com um alvo, clicar em tudo vira procurar. Ele procura, arrisca ou pede ajuda, e tudo isso conta.
+>
+> Aprender a programar criando jogos repete esse minuto muitas vezes. Quando se passa de um jogo em 2D para um em 3D, como o Salto nas Nuvens do nosso Estúdio, os blocos mudam. Mesmo assim, a ideia de andar e pular vai junto.
+>
+> Siga @criecomhelenaejulio para o próximo teste de um minuto aí em casa. O de hoje era o programa novo.
+
+## P47 · Ninguém gosta de Minecraft inteiro.
+**Necessidade:** W17 · Ajudar meu filho a descobrir do que gosta e no que quer se aprofundar. **Base da pesquisa:** **R — V09, V06.** Inclui a possibilidade de preferir outra atividade.
+**Capa do Reel:** Ninguém gosta de Minecraft inteiro. Sua filha gosta de uma parte, e é por ela que dá para começar a criar.
+| 0–3 s | Ninguém gosta de Minecraft inteiro. | Ninguém gosta de Minecraft inteiro. | Júlio à câmera, com uma tela de blocos desfocada ao fundo (pessoa real: fisionomia fiel ao retrato autorizado; comparar lado a lado antes de aprovar). Selo da série no alto: Tradução de criança. |
+| 3–11 s | Uns constroem, outros exploram, outros vivem o personagem. | Tem criança que só quer construir, outra quer explorar, e tem a que vive o personagem. | Três objetos sobre a mesa, um por vez: um tijolo de brinquedo (construir), um mapa desenhado à mão (explorar) e uma máscara de papel (personagem). Sem crianças nesta cena. |
+| 11–19 s | “Gosto de Minecraft”: pergunte qual parte. | Quando sua filha diz “gosto de Minecraft”, pergunte qual parte. É por ali que se começa a criar. | Júlio, plano mais fechado (pessoa real: fisionomia fiel ao retrato autorizado; comparar lado a lado antes de aprovar). |
+| 19–29 s | Construir: um mundo de blocos. | Se é construir, um mundo de blocos para colocar, quebrar e escolher cada peça, como este exemplo do nosso Estúdio de criar jogos. | Mundo de Blocos rodando: espaço coloca um bloco, clique quebra outro, e as teclas 1, 2 e 3 trocam o tipo entre grama, pedra e madeira. |
+| 29–32 s | (sem texto) | (sem fala) | A torre de blocos crescendo na vista do próprio jogo, de cima e na diagonal, até a festa da torre de 5 blocos. |
+| 32–40 s | Explorar: o lugar muda as regras. | Se é explorar, um mundo em que o lugar muda as regras: no chão de neve, o carrinho escorrega. | Inverno Mágico à noite: neve caindo e o jipe derrapando no gelo, visto por trás, pela câmera que segue o jipe. |
+| 40–49 s | Personagem: criado no Molda. | Se é o personagem, dá para criar o dela, como este, feito no Molda, a nossa oficina de modelar em 3D. | Um personagem criado no Molda que não lembre personagem de marca. O print `tela-molda@2x.webp` lembra a Alex do Minecraft e só entra se a dona liberar; se não, a equipe monta outro modelo no Molda e declara a adaptação. |
+| 49–54 s | Minecraft inspira, e o jogo fica dela. | Aí o Minecraft vira inspiração, e o jogo fica dela. | Júlio diante de uma mesa com três telas, uma de cada exemplo (pessoa real: fisionomia fiel ao retrato autorizado; comparar lado a lado antes de aprovar). |
+| 54–59 s | Siga @criecomhelenaejulio | Siga a gente para entender melhor as frases dela. | Júlio encerra; @ visível (pessoa real: fisionomia fiel ao retrato autorizado; comparar lado a lado antes de aprovar). |
+### Legenda
+> “Gosto de Minecraft” é uma resposta grande demais, e dentro dela cabe uma preferência pequena, bem da sua filha.
+>
+> Construir, explorar, inventar o personagem: são jeitos diferentes de gostar do mesmo jogo, e cada um aponta para um tipo de criação.
+>
+> Se ela gosta de construir, dá para criar um mundo de blocos em que se coloca, quebra e escolhe cada peça, como o exemplo que a gente fez no nosso Estúdio. Se gosta de explorar, um mundo em que o lugar muda o jogo: no Inverno Mágico, outro exemplo do Estúdio, o chão de neve faz o carrinho escorregar. E, se o que ela ama é o personagem, o Molda, a nossa oficina de modelar em 3D, deixa criar o próprio boneco.
+>
+> Pergunte hoje: “O que você mais gosta de fazer lá dentro?” O Minecraft, marca dos seus donos e sem ligação com a gente, fica como inspiração, e a parte preferida dela mostra por onde começar.
+>
+> Siga @criecomhelenaejulio para entender melhor as frases dela. A de hoje era “gosto de Minecraft”.
+
+## P48 · O placar do jogo e as curtidas têm uma coisa em comum.
+**Necessidade:** W18 · Ver meu filho entender e questionar o que a tecnologia faz. **Base da pesquisa:** **H; contexto em E01.** O uso de IA não prova esse desejo nem que criar jogos ensine sozinho avaliação de fontes.
+### Slide 1 · Capa
+> O placar do jogo e as curtidas têm uma coisa em comum.
+>
+> Os dois só contam o que alguém mandou contar.
+### Slide 2
+> Comece pelo placar: ele não sabe quem jogou melhor.
+>
+> Ele só conhece a regra que alguém escreveu, e todo o resto fica de fora.
+### Slide 3
+> No nosso Estúdio de criar jogos tem uma mina em que cavar pedra bem rápido deixa o placar no zero.
+>
+> Já um cristal, cavado devagar, faz o placar subir.
+### Slide 4
+> Por trás do placar existe uma regra só: cavou cristal, soma 1. A pedra desaparece sem valer nada.
+>
+> Velocidade, esforço e estilo não entram no placar, porque ninguém escreveu essa linha.
+### Slide 5
+> Até a sorte foi escrita: cada pedaço novo da mina tem 3 chances em 10 de ser cristal.
+>
+> Se alguém mudar esse número, a partida inteira muda, e quem joga nem fica sabendo.
+### Slide 6
+> Na próxima partida, escolham juntos um número e adivinhem a regra que faz ele subir.
+>
+> Depois façam o mesmo com as curtidas, e a conversa vai mais longe que um “não liga para isso”.
+### Slide 7
+> Depois de escrever um placar, fica difícil olhar para qualquer número sem perguntar o que entrou na conta.
+>
+> Siga @criecomhelenaejulio para descobrir o que cada número da tela está contando, do placar às curtidas.
+### Legenda
+> Quando seu filho sai de uma partida chateado com o placar, lembre que alguém escolheu o que aquele número conta.
+>
+> Na Mina de Cristais, um jogo de exemplo do nosso Estúdio, a partida dura 50 segundos e a vitória vem com 10 cristais. Cavar cristal soma 1 e cavar pedra não soma nada, então dá para passar a partida inteira cavando pedra sem marcar um ponto. Velocidade e esforço ajudam a vencer, mas não entram no placar.
+>
+> Até a sorte está escrita: cada pedaço novo da mina tem 3 chances em 10 de ser cristal. Trocar esse número muda a partida inteira.
+>
+> Pontos, estrelas, níveis e as curtidas das redes sociais funcionam do mesmo jeito. Escrever um placar é um caminho rápido para entender isso, porque quem escreve decide o que vale, testa e vê o número obedecer.
+>
+> Siga @criecomhelenaejulio para descobrir o que cada número da tela está contando, do placar às curtidas.
+
+## P49 · Guarde a primeira versão do que seu filho faz, porque um dia ele vai dizer “não consigo aprender isso”.
+**Necessidade:** W19 · Ver meu filho reconhecer que consegue aprender coisas novas. **Base da pesquisa:** **I — F02, F05.** Confiança localizada; não transformação geral de autoestima.
+### Arte
+> Guarde a primeira versão do que seu filho faz,
+>
+> porque um dia ele vai dizer “não consigo aprender isso”.
+### Legenda
+> “Eu sempre soube isso”, ele diz, e uma semana antes travava nessa mesma parte.
+>
+> Depois que a gente aprende, esquece rápido como era não saber. Programadores guardam as versões do que fazem, e esse costume tem um efeito bom: basta abrir o projeto de meses atrás para ver como era antes.
+>
+> Na imagem, duas versões de um projeto que a nossa equipe fez no Estúdio de criar jogos: na primeira, o personagem só andava; na segunda, ganhou a regra de pular. Lado a lado, as duas contam o que mudou no meio.
+>
+> Guardar a primeira versão serve para muito mais do que jogo: o primeiro desenho, a primeira redação, o primeiro projeto.
+>
+> E o melhor momento para mostrar as duas lado a lado chega no dia em que ele disser que não consegue aprender alguma coisa.
+>
+> Siga @criecomhelenaejulio para ter o que mostrar no próximo “não consigo”.
+
+## P50 · Um jogo só fica completo quando outra pessoa joga.
+**Necessidade:** W20 · Encontrar pessoas com quem ele possa compartilhar esse interesse. **Base da pesquisa:** **R — V08.** Desejo observado em caso estrangeiro avançado; não prometer convivência presencial ou encontros inexistentes.
+### Slide 1 · Capa
+> Um jogo só fica completo quando outra pessoa joga.
+>
+> E o Rafael, nosso aluno, mandou o link do jogo a um amigo.
+### Slide 2
+> “No fim eu peguei o link e mandei pro meu amigo jogar.” Rafael, nosso aluno.
+>
+> Antes desse link teve um jogo inteiro, feito por ele, e mesmo assim é o amigo jogando que ele conta.
+### Slide 3
+> Um jogo feito em casa pede alguém do outro lado da tela.
+>
+> E o convite vai para quem divide o mesmo assunto, como o amigo do recreio.
+### Slide 4
+> Aí o jogo vira assunto entre os dois: quem chegou mais longe, onde está o atalho, o que muda na próxima versão.
+>
+> É o interesse dele ganhando companhia.
+### Slide 5
+> Na Corrida Infinita 3D, do nosso Estúdio de criar jogos, as caixas aceleram a cada segundo, e o placar conta quanto tempo você aguentou.
+>
+> Esse número vira desafio entre amigos.
+### Slide 6
+> No Mural dos Criadores, o jogo publicado ganha um link que abre no navegador, e crianças da Comunidade jogam e comentam, com moderação.
+>
+> E o amigo, o primo e a turma entram pelo mesmo link.
+### Slide 7
+> Guardado no computador, o jogo é um segredo. Com um link, ele vira presente para um amigo.
+>
+> Siga @criecomhelenaejulio para transformar o próximo jogo do seu filho em conversa entre amigos.
+### Legenda
+> Quando o jogo fica pronto, ele vira assunto, e assunto pede alguém do outro lado da tela.
+>
+> Foi isso que o Rafael, nosso aluno, contou do fim da criação dele: “No fim eu peguei o link e mandei pro meu amigo jogar.”
+>
+> Na Corrida Infinita 3D, do nosso Estúdio, as caixas aceleram com o tempo, e o placar conta quantos segundos você aguentou. É o tipo de número que vira desafio entre amigos.
+>
+> Aqui na Comunidade, cada jogo publicado ganha um link que abre no navegador e pode ir para o Mural dos Criadores, onde outras crianças jogam e comentam, com moderação. Quando o jogo do seu filho ficar pronto, combinem para quem mandar primeiro.
+>
+> Siga @criecomhelenaejulio para transformar o próximo jogo do seu filho em conversa entre amigos.

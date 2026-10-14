@@ -1,0 +1,327 @@
+[
+  {
+    "id": "s1",
+    "dimensions": [
+      1080,
+      1350
+    ],
+    "copy": "A vontade de desistir\napareceu junto com a\nprimeira dificuldade.",
+    "content": [
+      {
+        "kind": "copy title",
+        "isCopy": true,
+        "top": 126,
+        "bottom": 422,
+        "left": 64,
+        "right": 1016,
+        "overflow": false
+      },
+      {
+        "kind": "scene",
+        "isCopy": false,
+        "top": 455,
+        "bottom": 1238,
+        "left": 64,
+        "right": 1016,
+        "overflow": false
+      }
+    ],
+    "overlaps": [],
+    "passed": true,
+    "copyMatches": true
+  },
+  {
+    "id": "s2",
+    "dimensions": [
+      1080,
+      1350
+    ],
+    "copy": "Antes de pedir que continue, tentem descobrir o que mudou. Ela perdeu o interesse? Ou encontrou uma parte que não sabe fazer?",
+    "content": [
+      {
+        "kind": "copy title",
+        "isCopy": true,
+        "top": 131,
+        "bottom": 282,
+        "left": 64,
+        "right": 994,
+        "overflow": false
+      },
+      {
+        "kind": "scene",
+        "isCopy": false,
+        "top": 369,
+        "bottom": 1004,
+        "left": 64,
+        "right": 1016,
+        "overflow": false
+      },
+      {
+        "kind": "copy question left",
+        "isCopy": true,
+        "top": 1056,
+        "bottom": 1165,
+        "left": 64,
+        "right": 512,
+        "overflow": false
+      },
+      {
+        "kind": "copy question right",
+        "isCopy": true,
+        "top": 1056,
+        "bottom": 1215,
+        "left": 568,
+        "right": 1016,
+        "overflow": false
+      }
+    ],
+    "overlaps": [],
+    "passed": true,
+    "copyMatches": true
+  },
+  {
+    "id": "s3",
+    "dimensions": [
+      1080,
+      1350
+    ],
+    "copy": "Peça que mostre onde parou. Uma dificuldade com nome permite procurar a ajuda certa.",
+    "content": [
+      {
+        "kind": "copy title",
+        "isCopy": true,
+        "top": 127,
+        "bottom": 311,
+        "left": 64,
+        "right": 984,
+        "overflow": false
+      },
+      {
+        "kind": "scene",
+        "isCopy": false,
+        "top": 354,
+        "bottom": 1009,
+        "left": 64,
+        "right": 1016,
+        "overflow": false
+      },
+      {
+        "kind": "copy ending",
+        "isCopy": true,
+        "top": 1058,
+        "bottom": 1182,
+        "left": 64,
+        "right": 1016,
+        "overflow": false
+      }
+    ],
+    "overlaps": [],
+    "passed": true,
+    "copyMatches": true
+  },
+  {
+    "id": "s4",
+    "dimensions": [
+      1080,
+      1350
+    ],
+    "copy": "Criar jogos oferece resultados para investigar. Se o personagem não alcança uma plataforma, dá para olhar o salto e a distância. O salto ficou curto.",
+    "content": [
+      {
+        "kind": "copy title",
+        "isCopy": true,
+        "top": 131,
+        "bottom": 284,
+        "left": 64,
+        "right": 994,
+        "overflow": false
+      },
+      {
+        "kind": "copy lead",
+        "isCopy": true,
+        "top": 314,
+        "bottom": 426,
+        "left": 64,
+        "right": 1016,
+        "overflow": false
+      },
+      {
+        "kind": "game large",
+        "isCopy": false,
+        "top": 505,
+        "bottom": 1100,
+        "left": 64,
+        "right": 1016,
+        "overflow": false
+      },
+      {
+        "kind": "copy ending",
+        "isCopy": true,
+        "top": 1141,
+        "bottom": 1211,
+        "left": 64,
+        "right": 1016,
+        "overflow": false
+      }
+    ],
+    "overlaps": [],
+    "passed": true,
+    "copyMatches": true
+  },
+  {
+    "id": "s5",
+    "dimensions": [
+      1080,
+      1350
+    ],
+    "copy": "Com orientação, a criança escolhe uma mudança e testa de novo. Antes Plataforma mais perto O salto é o mesmo. Agora ele alcança. A tentativa seguinte já responde a uma dúvida.",
+    "content": [
+      {
+        "kind": "copy title",
+        "isCopy": true,
+        "top": 131,
+        "bottom": 284,
+        "left": 64,
+        "right": 994,
+        "overflow": false
+      },
+      {
+        "kind": "copy label left",
+        "isCopy": true,
+        "top": 460,
+        "bottom": 509,
+        "left": 64,
+        "right": 512,
+        "overflow": false
+      },
+      {
+        "kind": "copy label right",
+        "isCopy": true,
+        "top": 460,
+        "bottom": 509,
+        "left": 568,
+        "right": 1016,
+        "overflow": false
+      },
+      {
+        "kind": "game left",
+        "isCopy": false,
+        "top": 554,
+        "bottom": 834,
+        "left": 64,
+        "right": 512,
+        "overflow": false
+      },
+      {
+        "kind": "game right selected",
+        "isCopy": false,
+        "top": 554,
+        "bottom": 834,
+        "left": 568,
+        "right": 1016,
+        "overflow": false
+      },
+      {
+        "kind": "copy reason",
+        "isCopy": true,
+        "top": 910,
+        "bottom": 1013,
+        "left": 64,
+        "right": 1016,
+        "overflow": false
+      },
+      {
+        "kind": "copy ending",
+        "isCopy": true,
+        "top": 1129,
+        "bottom": 1244,
+        "left": 64,
+        "right": 934,
+        "overflow": false
+      }
+    ],
+    "overlaps": [],
+    "passed": true,
+    "copyMatches": true
+  },
+  {
+    "id": "s6",
+    "dimensions": [
+      1080,
+      1350
+    ],
+    "copy": "E, se ela realmente não quiser continuar, essa resposta também merece ser ouvida. Incentivar inclui entender o motivo.",
+    "content": [
+      {
+        "kind": "copy title",
+        "isCopy": true,
+        "top": 131,
+        "bottom": 336,
+        "left": 64,
+        "right": 1016,
+        "overflow": false
+      },
+      {
+        "kind": "scene",
+        "isCopy": false,
+        "top": 436,
+        "bottom": 1060,
+        "left": 64,
+        "right": 1016,
+        "overflow": false
+      },
+      {
+        "kind": "copy ending",
+        "isCopy": true,
+        "top": 1107,
+        "bottom": 1176,
+        "left": 64,
+        "right": 994,
+        "overflow": false
+      }
+    ],
+    "overlaps": [],
+    "passed": true,
+    "copyMatches": true
+  },
+  {
+    "id": "s7",
+    "dimensions": [
+      1080,
+      1350
+    ],
+    "copy": "Aqui, a gente ensina\ncrianças a criar\nos próprios jogos. Siga o perfil para conhecer esse caminho.",
+    "content": [
+      {
+        "kind": "copy title",
+        "isCopy": true,
+        "top": 128,
+        "bottom": 400,
+        "left": 64,
+        "right": 1004,
+        "overflow": false
+      },
+      {
+        "kind": "scene",
+        "isCopy": false,
+        "top": 465,
+        "bottom": 1075,
+        "left": 64,
+        "right": 1016,
+        "overflow": false
+      },
+      {
+        "kind": "copy invitation",
+        "isCopy": true,
+        "top": 1120,
+        "bottom": 1216,
+        "left": 64,
+        "right": 1016,
+        "overflow": false
+      }
+    ],
+    "overlaps": [],
+    "passed": true,
+    "copyMatches": true
+  }
+]

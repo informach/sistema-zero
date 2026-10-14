@@ -1,0 +1,3 @@
+Mudar a força do golpe muda a duração da luta.
+
+Quem cria calcula o resultado esperado, monta a regra e joga para conferir. A conta tem um efeito que aparece na tela.

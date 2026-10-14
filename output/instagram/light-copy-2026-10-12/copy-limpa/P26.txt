@@ -1,0 +1,21 @@
+Ele diz que não gosta de conta. Mas confere cada ponto da partida.
+
+“Se ganhar, vai para quantos pontos?”
+Seu filho acompanha um campeonato e quer saber quantos pontos o time terá se vencer a próxima partida. A conta responde a uma dúvida que interessa a ele.
+
+Dez pontos, mais três: treze.
+Na tabela do exemplo, o time tem dez pontos e a vitória vale três. Somar dá o resultado que ele quer comparar com os outros times.
+
+Um motivo para conferir a conta.
+Esse interesse não elimina dificuldades em matemática. Ele oferece uma situação em que vale descobrir o resultado e explicar como chegou nele.
+
+Criar um jogo exige fazer a contagem funcionar.
+Num jogo de corrida, quem programa precisa definir quando uma volta conta. Depois, testa se o placar corresponde ao que aconteceu. O número tem uma função que a criança consegue conferir.
+
+A criança pode querer fazer uma conta para descobrir a posição do time, comparar pontos ou saber o que falta para alcançar outro jogador.
+
+Isso não torna toda tarefa de matemática fácil. Mas dá um motivo concreto para calcular e conferir.
+
+Criar jogos amplia essa experiência: a criança passa a construir a própria contagem. Num jogo de corrida, precisa decidir quando uma volta é completada e verificar se o placar soma corretamente.
+
+A programação liga o número a uma ação. No exemplo mostrado, cada volta completa soma um ponto.

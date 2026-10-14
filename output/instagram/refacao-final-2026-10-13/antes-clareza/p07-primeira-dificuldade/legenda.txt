@@ -1,0 +1,9 @@
+Quase todo “nada funciona” que a gente ouve programando acaba sendo uma coisa só.
+
+Acontece que, do jeito que a frase sai, parece que tudo quebrou, e ninguém tem energia para consertar tudo. Vale para o jogo e vale para a lição de casa.
+
+A gente chama isso de dar endereço ao erro. Quando a frase muda de “nada funciona” para “o salto ficou curto”, muda também o tamanho do problema: de um jogo inteiro para um número. Num jogo de plataformas do nosso Estúdio, a gente afastou uma plataforma para mostrar isso, e bastou trazê-la de volta para o herói pegar a primeira moeda.
+
+Na próxima frustração, peça para ele mostrar onde começa a dar errado. E, se ele estiver cansado, deixe para depois do lanche, porque o endereço continua lá.
+
+Siga @criecomhelenaejulio para entender as próximas frases que ele solta quando trava.

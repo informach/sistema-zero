@@ -1,0 +1,3 @@
+Se essa escolha está aberta, diga isso com um exemplo.
+
+“O personagem precisa andar com as setas. Você pode escolher por onde ele vai andar.”

@@ -1,0 +1,199 @@
+{
+  "passed": true,
+  "slides": [
+    {
+      "file": "01-p07.png",
+      "png": true,
+      "width": 1080,
+      "height": 1350
+    },
+    {
+      "file": "02-p07.png",
+      "png": true,
+      "width": 1080,
+      "height": 1350
+    },
+    {
+      "file": "03-p07.png",
+      "png": true,
+      "width": 1080,
+      "height": 1350
+    },
+    {
+      "file": "04-p07.png",
+      "png": true,
+      "width": 1080,
+      "height": 1350
+    },
+    {
+      "file": "05-p07.png",
+      "png": true,
+      "width": 1080,
+      "height": 1350
+    },
+    {
+      "file": "06-p07.png",
+      "png": true,
+      "width": 1080,
+      "height": 1350
+    },
+    {
+      "file": "07-p07.png",
+      "png": true,
+      "width": 1080,
+      "height": 1350
+    }
+  ],
+  "localLinks": [
+    {
+      "source": "03-postagens.md",
+      "target": "producao/postagens/p07-primeira-dificuldade/index.html",
+      "exists": true
+    },
+    {
+      "source": "postagens\\01-p01-a-p10.md",
+      "target": "../producao/postagens/p07-primeira-dificuldade/index.html",
+      "exists": true
+    },
+    {
+      "source": "postagens\\01-p01-a-p10.md",
+      "target": "../producao/postagens/p07-primeira-dificuldade/",
+      "exists": true
+    },
+    {
+      "source": "postagens\\05-direcao-visual-e-producao.md",
+      "target": "../producao/postagens/p07-primeira-dificuldade/index.html",
+      "exists": true
+    },
+    {
+      "source": "producao\\postagens\\p07-primeira-dificuldade\\apoio\\fontes.md",
+      "target": "../../../../postagens/01-p01-a-p10.md",
+      "exists": true
+    },
+    {
+      "source": "producao\\postagens\\p07-primeira-dificuldade\\apoio\\fontes.md",
+      "target": "prompts.md",
+      "exists": true
+    },
+    {
+      "source": "producao\\postagens\\p07-primeira-dificuldade\\apoio\\fontes.md",
+      "target": "01-dificuldade.png",
+      "exists": true
+    },
+    {
+      "source": "producao\\postagens\\p07-primeira-dificuldade\\apoio\\fontes.md",
+      "target": "02-possibilidades.png",
+      "exists": true
+    },
+    {
+      "source": "producao\\postagens\\p07-primeira-dificuldade\\apoio\\fontes.md",
+      "target": "03-mostrar.png",
+      "exists": true
+    },
+    {
+      "source": "producao\\postagens\\p07-primeira-dificuldade\\apoio\\fontes.md",
+      "target": "06-escutar.png",
+      "exists": true
+    },
+    {
+      "source": "producao\\postagens\\p07-primeira-dificuldade\\apoio\\fontes.md",
+      "target": "LICENSE-Nunito",
+      "exists": true
+    },
+    {
+      "source": "producao\\postagens\\p07-primeira-dificuldade\\apoio\\fontes.md",
+      "target": "mini-plataforma-base.json",
+      "exists": true
+    },
+    {
+      "source": "producao\\postagens\\p07-primeira-dificuldade\\apoio\\fontes.md",
+      "target": "mini-plataforma-antes.json",
+      "exists": true
+    },
+    {
+      "source": "producao\\postagens\\p07-primeira-dificuldade\\apoio\\fontes.md",
+      "target": "mini-plataforma-depois.json",
+      "exists": true
+    },
+    {
+      "source": "producao\\postagens\\p07-primeira-dificuldade\\apoio\\fontes.md",
+      "target": "captura-real.json",
+      "exists": true
+    },
+    {
+      "source": "producao\\postagens\\p07-primeira-dificuldade\\apoio\\fontes.md",
+      "target": "jogo-antes.png",
+      "exists": true
+    },
+    {
+      "source": "producao\\postagens\\p07-primeira-dificuldade\\apoio\\fontes.md",
+      "target": "jogo-depois.png",
+      "exists": true
+    },
+    {
+      "source": "producao\\postagens\\p07-primeira-dificuldade\\apoio\\fontes.md",
+      "target": "../montagem.html",
+      "exists": true
+    },
+    {
+      "source": "producao\\postagens\\p07-primeira-dificuldade\\apoio\\fontes.md",
+      "target": "../index.html",
+      "exists": true
+    },
+    {
+      "source": "producao\\postagens\\p07-primeira-dificuldade\\apoio\\fontes.md",
+      "target": "../legenda.txt",
+      "exists": true
+    },
+    {
+      "source": "producao\\postagens\\p07-primeira-dificuldade\\apoio\\fontes.md",
+      "target": "../texto-alternativo.txt",
+      "exists": true
+    },
+    {
+      "source": "producao\\postagens\\p07-primeira-dificuldade\\apoio\\fontes.md",
+      "target": "verificacao-layout.json",
+      "exists": true
+    },
+    {
+      "source": "producao\\postagens\\p07-primeira-dificuldade\\apoio\\fontes.md",
+      "target": "verificacao-entrega.json",
+      "exists": true
+    },
+    {
+      "source": "producao\\postagens\\README.md",
+      "target": "p07-primeira-dificuldade/index.html",
+      "exists": true
+    },
+    {
+      "source": "producao\\postagens\\README.md",
+      "target": "p07-primeira-dificuldade/",
+      "exists": true
+    },
+    {
+      "source": "producao\\postagens\\README.md",
+      "target": "p07-primeira-dificuldade/legenda.txt",
+      "exists": true
+    },
+    {
+      "source": "README.md",
+      "target": "producao/postagens/p07-primeira-dificuldade/index.html",
+      "exists": true
+    }
+  ],
+  "gameChanges": [
+    {
+      "key": "behavior.start.4.x",
+      "from": 240,
+      "to": 180
+    }
+  ],
+  "onlyDistance": true,
+  "equalFrames": true,
+  "observedResult": true,
+  "metadataCorrect": true,
+  "layoutPassed": true,
+  "capturePassed": true,
+  "publication": "Não agendado nem publicado",
+  "copyReview": "Texto conferido contra a ficha editorial; ilustrações e capturas revisadas visualmente."
+}

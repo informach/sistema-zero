@@ -1,0 +1,98 @@
+{
+  "pecas": 14,
+  "carrosseis": 10,
+  "slides": 60,
+  "reels": 4,
+  "legendas": 14,
+  "mensagens_novas": 28,
+  "palavras_unicas": [
+    "CURIOSIDADE",
+    "ESCOLHAS",
+    "RITMO",
+    "CONVERSA",
+    "AUTONOMIA",
+    "TALENTO",
+    "FERIAS",
+    "PRIMEIRO",
+    "MUNDO",
+    "PERSONAGEM",
+    "TELA",
+    "FUTURO",
+    "APRENDER",
+    "TENTATIVA"
+  ],
+  "links_locais_conferidos": 67,
+  "dm2_tamanhos": [
+    {
+      "id": "mc01",
+      "dm2_caracteres": 410,
+      "dm2_palavras": 76
+    },
+    {
+      "id": "mc02",
+      "dm2_caracteres": 375,
+      "dm2_palavras": 67
+    },
+    {
+      "id": "mc03",
+      "dm2_caracteres": 359,
+      "dm2_palavras": 68
+    },
+    {
+      "id": "mc04",
+      "dm2_caracteres": 377,
+      "dm2_palavras": 65
+    },
+    {
+      "id": "mc05",
+      "dm2_caracteres": 387,
+      "dm2_palavras": 74
+    },
+    {
+      "id": "mc06",
+      "dm2_caracteres": 420,
+      "dm2_palavras": 72
+    },
+    {
+      "id": "mc07",
+      "dm2_caracteres": 378,
+      "dm2_palavras": 69
+    },
+    {
+      "id": "mc08",
+      "dm2_caracteres": 445,
+      "dm2_palavras": 72
+    },
+    {
+      "id": "mc09",
+      "dm2_caracteres": 432,
+      "dm2_palavras": 74
+    },
+    {
+      "id": "mc10",
+      "dm2_caracteres": 465,
+      "dm2_palavras": 76
+    },
+    {
+      "id": "mc11",
+      "dm2_caracteres": 372,
+      "dm2_palavras": 69
+    },
+    {
+      "id": "mc12",
+      "dm2_caracteres": 431,
+      "dm2_palavras": 73
+    },
+    {
+      "id": "mc13",
+      "dm2_caracteres": 418,
+      "dm2_palavras": 74
+    },
+    {
+      "id": "mc14",
+      "dm2_caracteres": 382,
+      "dm2_palavras": 70
+    }
+  ],
+  "escopo": "Conferência estrutural e editorial local. Não é teste de automação ou de oferta publicada."
+}

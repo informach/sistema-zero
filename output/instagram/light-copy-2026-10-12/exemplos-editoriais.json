@@ -1,0 +1,99 @@
+{
+  "games": {
+    "memoria": [
+      "Jogo da Memoria",
+      "Jogo 2D Avançado",
+      "game-2d-advanced/examples/jogoDaMemoriaExample.ts",
+      "Virar duas cartas; iguais permanecem, diferentes desviram."
+    ],
+    "quiz": [
+      "Quiz de números",
+      "Jogo 2D",
+      "game-2d/examples/textGames.ts",
+      "Perguntas, três alternativas e avanço após responder."
+    ],
+    "mundo": [
+      "Meu Mundo",
+      "Mundo 3D",
+      "world-3d/examples.ts",
+      "Cenário explorável com objetos, terreno e caminho."
+    ],
+    "fazenda": [
+      "Fazenda Feliz",
+      "Jogo 2D",
+      "game-2d/examples/clearcode/fazendaFeliz.ts",
+      "Plantar, esperar crescimento e colher. Não incluir rega ou loja da versão avançada."
+    ],
+    "quebra": [
+      "Quebra-blocos",
+      "Jogo 2D Avançado",
+      "game-2d-advanced/examples/quebraBlocosExample.ts",
+      "Bola, rebote na raquete, blocos e velocidade. Variantes precisam ser preparadas."
+    ],
+    "pong": [
+      "Pong",
+      "Jogo 2D",
+      "game-2d/examples/clearcode/pong.ts",
+      "Raquete controlada por setas; disputa até cinco pontos."
+    ],
+    "plataforma": [
+      "Mini plataforma",
+      "Jogo 2D",
+      "game-2d/examples/foundations.ts",
+      "Andar e pular com gravidade. Novos destinos ou obstáculos são adaptações."
+    ],
+    "aventura": [
+      "Aventura do Herói",
+      "Jogo 2D",
+      "game-2d/examples/clearcode/aventuraHeroi.ts",
+      "Explorar cenário, cortar mato e enfrentar guardiões. Novo enredo é adaptação."
+    ],
+    "cobrinha": [
+      "Cobrinha",
+      "Jogo 2D Avançado",
+      "game-2d-advanced/examples/cobrinhaExample.ts",
+      "Mover, comer maçãs, crescer; fim ao bater na parede ou no corpo."
+    ],
+    "corrida": [
+      "Corrida Maluca",
+      "Jogo 3D",
+      "game-3d/examples.ts",
+      "Acelerar, frear e contar voltas completas."
+    ],
+    "travessia": [
+      "Atravesse a Rua",
+      "Jogo 3D",
+      "game-3d/examples.ts",
+      "Atravessar uma grade desviando de carros e caminhões."
+    ]
+  },
+  "mapping": {
+    "P01": "memoria",
+    "P02": "quiz",
+    "P03": "mundo",
+    "P04": "fazenda",
+    "P05": "quebra",
+    "P06": "pong",
+    "P07": "quiz",
+    "P08": "plataforma",
+    "P09": "plataforma",
+    "P10": "aventura",
+    "P13": "memoria",
+    "P14": "quebra",
+    "P15": "quiz",
+    "P16": "plataforma",
+    "P17": "quebra",
+    "P18": "corrida",
+    "P19": "fazenda",
+    "P20": "pong",
+    "P21": "mundo",
+    "P22": "cobrinha",
+    "P23": "corrida",
+    "P24": "pong",
+    "P25": "travessia",
+    "P26": "corrida",
+    "P27": "memoria",
+    "P29": "fazenda",
+    "P30": "cobrinha"
+  }
+}

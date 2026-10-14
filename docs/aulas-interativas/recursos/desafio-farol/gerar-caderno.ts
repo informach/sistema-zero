@@ -19,6 +19,17 @@ import { gameTwoDBlocks } from '../../../../packages/studio/src/official-extensi
 import { FONTE as baloo } from '../../../../packages/studio/src/official-extensions/gameUiFonts/baloo2'
 import { FONTE as nunito } from '../../../../packages/studio/src/official-extensions/gameUiFonts/nunito'
 
+/**
+ * Todo texto que a criança lê mora em `caderno-conteudo.json` (13/10/2026), inclusive o índice,
+ * a revisão e os títulos dos desenhos: é ele que o guarda do vocabulário
+ * (`qa/vocabulario-crianca.test.ts`) confere. Aqui ficam só a composição, os desenhos dos
+ * encaixes (com os rótulos que os blocos mostram no Estúdio) e a capa.
+ *
+ * Itens do conteúdo: `text`, `step` (título "N. …" vira passo numerado), `box` (com `tone`),
+ * `note`, `activity` (com `pill`), `delivery` (com `finish`), `gallery` (com `category`) e
+ * `drawing` (com `name`, um dos desenhos abaixo, e `title`). `{{pagina:<id>}}` vira o número
+ * da página com aquele id, depois de montadas todas as folhas.
+ */
 type Item = {
   kind: string
   title?: string
@@ -26,8 +37,17 @@ type Item = {
   tone?: string
   finish?: string
   category?: string
+  name?: string
+  pill?: string
 }
-type ContentPage = { id: string; kicker: string; title: string; subtitle: string; items: Item[] }
+type ContentPage = {
+  id: string
+  kicker: string
+  title: string
+  subtitle: string
+  lit?: boolean
+  items: Item[]
+}
 const root = resolve(import.meta.dir, '../../../..')
 const pages = JSON.parse(
   readFileSync(resolve(import.meta.dir, 'caderno-conteudo.json'), 'utf8'),
@@ -84,8 +104,16 @@ const areaTypes: Record<string, string> = {
 }
 const area = (name: string, body: string) =>
   `<div class="event-block" ${colorAttributes(areaTypes[name] ?? '')}><span class="tag">Áreas do projeto · ${name}</span><div class="event-body">${body}</div></div>`
-const nested = (type: string, title: string, body: string) =>
-  `<div class="block" ${colorAttributes(type)}>${title}<div class="event-body">${body}</div></div>`
+/**
+ * Bloco com corpo. Os eventos do Jogo 2D (encostar e "A cada quadro do jogo") mostram no Estúdio
+ * a palavra "fazer" à esquerda da boca do bloco (`message1: 'fazer %1'`); o desenho repete, com
+ * as classes `do-row`/`do-label` do CSS de referência, porque a criança solta o bloco "ao lado da
+ * palavra fazer".
+ */
+const nested = (type: string, title: string, body: string, doLabel = '') =>
+  doLabel
+    ? `<div class="block" ${colorAttributes(type)}>${title}<div class="do-row"><span class="do-label">${doLabel}</span><div class="event-body">${body}</div></div></div>`
+    : `<div class="block" ${colorAttributes(type)}>${title}<div class="event-body">${body}</div></div>`
 const diagram = (title: string, body: string) =>
   `<div class="blocks"><h3>${title}</h3>${body}<p class="diagram-note">Esquema dos encaixes, com as cores dos blocos do Estúdio.</p></div>`
 const assign = (name: string, value: string) =>
@@ -105,30 +133,50 @@ const overlap = (target: string, body: string) =>
       'sz_g2d_on_overlap',
       `Quando o sprite ${field('personagem')} começar a encostar no sprite ${field(target)}`,
       body,
+      'fazer',
     ),
   )
-const movement = diagram(
-  'Primeiro move. Depois confere a borda.',
+const moveBlock = () =>
+  block(
+    'sz_g2d_top_down',
+    `Mover sprite ${field('personagem')} em 4 direções com setas, velocidade ${valueBlock('sz_val_number', field('3'))}`,
+  )
+const eachFrame = (body: string) =>
   area(
     'Enquanto estiver rodando',
     nested(
       'sz_g2d_update_each_frame',
       'A cada quadro do jogo',
       prepared('Blocos para limpar a tela e desenhar o cenário') +
-        block(
-          'sz_g2d_top_down',
-          `Mover sprite ${field('personagem')} em 4 direções com setas · velocidade ${valueBlock('sz_val_number', field('3'))}`,
-        ) +
-        block('sz_g2d_clamp_to_screen', `Manter o sprite ${field('personagem')} dentro da tela`) +
+        body +
         prepared('Outros blocos do jogo'),
+      'fazer',
     ),
-  ),
-)
+  )
 const controls = () =>
-  block('sz_g2d_enable_classic_controls', 'Ativar controles clássicos · só as quatro direções')
-const memory = diagram(
-  'A informação começa em falso',
-  area(
+  block(
+    'sz_g2d_enable_classic_controls',
+    `Ativar controles clássicos ${field('só as quatro direções')}`,
+  )
+const ifTemChave = (body: string) =>
+  nested(
+    'sz_js_if_else',
+    `Se ${valueBlock('sz_val_variable', `valor da variável ${field('temChave')}`)}`,
+    body,
+  )
+// Os desenhos dos encaixes. O conteúdo escolhe onde cada um entra e dá o título dele.
+const drawings: Record<string, string> = {
+  'controles-ao-iniciar': area(
+    'Ao iniciar',
+    prepared('Os blocos que já estão em Ao iniciar') + controls(),
+  ),
+  'movimento-sem-limite': eachFrame(moveBlock()),
+  movimento: eachFrame(
+    moveBlock() +
+      block('sz_g2d_clamp_to_screen', `Manter o sprite ${field('personagem')} dentro da tela`),
+  ),
+  retirada: overlap('chave', block('sz_g2d_destroy_sprite', `Destruir o sprite ${field('chave')}`)),
+  memoria: area(
     'Ao iniciar',
     prepared('Blocos anteriores do projeto') +
       controls() +
@@ -137,23 +185,25 @@ const memory = diagram(
         `Criar variável ${field('temChave')} com valor ${valueBlock('sz_val_bool', field('falso'))}`,
       ),
   ),
-)
-const collection = diagram(
-  'Três ações dentro do encontro com a chave',
-  overlap(
+  coleta: overlap(
     'chave',
     block('sz_g2d_destroy_sprite', `Destruir o sprite ${field('chave')}`) +
       assign('temChave', 'verdadeiro') +
       message('Você pegou a chave! Agora vá ao farol.'),
   ),
-)
-const door = diagram(
-  'Duas respostas para a mesma pergunta',
-  overlap(
+  // Dia 3, parte 2: só o senão tem bloco; o então fica vazio até a parte seguinte.
+  'sem-chave': overlap(
     'farol',
-    nested(
-      'sz_js_if_else',
-      `Se ${valueBlock('sz_val_variable', `valor da variável ${field('temChave')}`)}`,
+    ifTemChave(
+      '<div class="branch-label">então · quando temChave é verdadeiro</div>' +
+        '<div class="empty-slot">vazio por enquanto: você completa na próxima parte</div>' +
+        '<div class="branch-label">senão · quando temChave é falso</div>' +
+        message('A porta não abriu. Falta a chave.'),
+    ),
+  ),
+  porta: overlap(
+    'farol',
+    ifTemChave(
       '<div class="branch-label">então · quando temChave é verdadeiro</div>' +
         assign('ganhou', 'verdadeiro') +
         block(
@@ -165,7 +215,7 @@ const door = diagram(
         message('A porta não abriu. Falta a chave.'),
     ),
   ),
-)
+}
 function imageOption(name: FarolAssetName): string {
   const src = `data:image/svg+xml;base64,${Buffer.from(farolSvg(name)).toString('base64')}`
   return `<figure class="farol-option" data-image-name="${name}"><img src="${src}" alt="${name}"><figcaption>${name}</figcaption></figure>`
@@ -186,8 +236,15 @@ function gallery(category: string | undefined): string {
 function renderItem(item: Item): string {
   if (item.kind === 'gallery')
     return `${item.title ? `<h3>${item.title}</h3>` : ''}${gallery(item.category)}`
-  if (item.kind === 'index') return '<!-- course-index -->'
+  if (item.kind === 'drawing') {
+    const drawing = drawings[item.name ?? '']
+    if (!drawing) throw new Error(`Desenho desconhecido: ${item.name}`)
+    return diagram(item.title ?? '', drawing)
+  }
   if (item.kind === 'text') return `<p class="body-text">${item.text}</p>`
+  if (item.kind === 'note') return `<div class="note">${item.text}</div>`
+  if (item.kind === 'activity')
+    return `<div class="soft-box activity"><span class="pill pill--experience">${item.pill}</span><p>${item.text}</p></div>`
   if (item.kind === 'step') {
     const match = item.title?.match(/^(\d+)\.\s*(.*)$/)
     return match
@@ -198,7 +255,7 @@ function renderItem(item: Item): string {
     return `<div class="check"><span class="pill pill--test">Confira antes de enviar</span><p>Funcionou? Clique em <strong>Verificar esta parte</strong>. Se faltar alguma coisa, corrija os blocos e clique novamente.</p><p>Quando aparecer <strong>Objetivo cumprido!</strong>, clique em <strong>Enviar meu projeto</strong> e confirme em <strong>Enviar</strong>. Quando aparecer <strong>Projeto enviado!</strong>, clique em <strong>${item.finish}</strong>.</p></div>`
   if (item.kind === 'box')
     return `<div class="soft-box box-${item.tone ?? 'note'}"><h3>${item.title}</h3><p>${item.text}</p></div>`
-  return '' // Os diagramas antigos em texto foram substituídos por encaixes desenhados.
+  throw new Error(`Item desconhecido no caderno: ${item.kind}`)
 }
 type Sheet = {
   id: string
@@ -209,77 +266,29 @@ type Sheet = {
   body: string
   lit?: boolean
 }
-const sheets: Sheet[] = []
-for (const page of pages) {
-  const items = page.items
-  let body = items
-    .map((item) => (item.kind === 'diagram' && page.id === 'p3' ? movement : renderItem(item)))
-    .join('')
-  if (page.id === 'p2') {
-    const first = renderItem(items[0]!)
-    body = body.replace(
-      first,
-      first +
-        diagram(
-          'No fim da área Ao iniciar',
-          area('Ao iniciar', prepared('Blocos do projeto') + controls()),
-        ),
-    )
-  }
-  // Dia 2 em três montagens (05/10/2026): recolher, guardar e avisar, cada uma com seu desenho.
-  if (page.id === 'p4')
-    body =
-      items.slice(0, 2).map(renderItem).join('') +
-      diagram(
-        'A retirada acontece dentro do encontro',
-        overlap('chave', block('sz_g2d_destroy_sprite', `Destruir o sprite ${field('chave')}`)),
-      ) +
-      items.slice(2).map(renderItem).join('')
-  if (page.id === 'guardar-coleta')
-    body =
-      items.slice(0, 2).map(renderItem).join('') + memory + items.slice(2).map(renderItem).join('')
-  if (page.id === 'p5')
-    body =
-      items.map(renderItem).join('') +
-      collection +
-      '<div class="note">A mensagem conta o que aconteceu. Quem guarda a informação da coleta é <strong>temChave</strong>. O jogo pode continuar sabendo da chave mesmo quando ela não está mais no chão.</div>'
-  const theme = page.kicker.startsWith('Dia 2') ? 'lesson-two' : 'lesson-one'
-  if (page.id === 'p10')
-    sheets.push({
-      id: 'revisao-final',
-      theme: 'lesson-one',
-      lit: true,
-      kicker: 'Seu certificado · Revisão',
-      title: 'As regras da sua aventura',
-      subtitle:
-        'Você programou o movimento, a coleta e a decisão do farol. Agora confira o que faz essas regras funcionarem.',
-      body: '<div class="soft-box activity"><span class="pill pill--experience">Na fase, antes do certificado</span><p>Leia a fala do Zappy e responda às quatro perguntas sobre seu jogo. Esta parte tem somente a conversa do Zappy e o quiz, sem vídeo.</p></div><div class="step"><span class="number">1</span><div><h3>Pense no que você construiu</h3><p>As perguntas retomam o movimento, a informação da chave, a resposta do farol e os testes da porta. Clique em <strong>Começar!</strong>, escolha uma resposta em cada pergunta e clique em <strong>Próxima</strong>; na última, clique em <strong>Responder!</strong>.</p></div></div><div class="step"><span class="number">2</span><div><h3>Leia e confira</h3><p>Leia o porquê de cada resposta. Se alguma estiver errada, clique em <strong>Tentar de novo!</strong> e responda outra vez, sem esperar.</p></div></div><div class="step"><span class="number">3</span><div><h3>Siga para a celebração</h3><p>Quando todas as respostas estiverem corretas, clique em <strong>Próxima parte</strong>. O vídeo e o certificado ficam na parte seguinte.</p></div></div><div class="note">Se quiser rever uma regra, volte ao seu jogo e aos passos deste mapa. A revisão ajuda a entender o jogo que você programou.</div>',
-    })
-  sheets.push({ ...page, theme, body, lit: page.id === 'p10' })
-  if (page.id === 'p7')
-    sheets.push({
-      id: 'blocos-porta',
-      theme: 'lesson-one',
-      kicker: 'Dia 3 · Confira a montagem',
-      title: 'A porta confere a chave',
-      subtitle: 'Este encontro é com o farol. Ele fica separado do encontro com a chave.',
-      body:
-        door +
-        '<div class="note">As ações da luz, do barco e da mensagem de chegada ficam em <strong>então</strong>. A mensagem de falta da chave fica em <strong>senão</strong>. Depois da montagem, teste os dois caminhos.</div>',
-    })
-}
-// A numeração acompanha as folhas ilustradas inseridas pelo gerador e a capa.
+const sheets: Sheet[] = pages.map((page) => ({
+  id: page.id,
+  theme: page.kicker.startsWith('Dia 2') ? 'lesson-two' : 'lesson-one',
+  kicker: page.kicker,
+  title: page.title,
+  subtitle: page.subtitle,
+  body: page.items.map(renderItem).join(''),
+  lit: page.lit === true,
+}))
+// A numeração conta a capa como página 1.
 function pageNumber(id: string): number {
   const index = sheets.findIndex((sheet) => sheet.id === id)
-  if (index < 0) throw new Error(`Página do índice ausente: ${id}`)
+  if (index < 0) throw new Error(`Página citada no caderno não existe: ${id}`)
   return index + 2
 }
-const courseIndex = renderItem({
-  kind: 'step',
-  title: 'Encontre seu passo',
-  text: `<b>Dia 1:</b> experiências, movimento e borda, páginas ${pageNumber('andar-experiencia')} a ${pageNumber('p3')}.<br><b>Dia 2:</b> experiência, coleta e memória, páginas ${pageNumber('memoria-experiencia')} a ${pageNumber('coleta-testes')}.<br><b>Dia 3:</b> experiência, duas respostas e testes, páginas ${pageNumber('porta-experiencia')} a ${pageNumber('p8')}.<br><b>A surpresa do final:</b> escolhas, galerias, avisos e posição da chave, páginas ${pageNumber('personalizar')} a ${pageNumber('posicionar-chave')}.<br><b>Publique no Mural:</b> página ${pageNumber('p9')}.<br><b>Revisão das regras:</b> página ${pageNumber('revisao-final')}.<br><b>Certificado e ajuda:</b> página ${pageNumber('p10')}.`,
-})
-for (const sheet of sheets) sheet.body = sheet.body.replace('<!-- course-index -->', courseIndex)
+const withPages = (text: string) =>
+  text.replace(/\{\{pagina:([a-z0-9-]+)\}\}/g, (_, id: string) => String(pageNumber(id)))
+for (const sheet of sheets) {
+  sheet.kicker = withPages(sheet.kicker)
+  sheet.title = withPages(sheet.title)
+  sheet.subtitle = withPages(sheet.subtitle)
+  sheet.body = withPages(sheet.body)
+}
 const total = sheets.length + 1
 const cover = `<section class="page cover" data-id="capa"><div class="cover-art"><img class="scene" src="${scene(true)}" alt="Ilustração da aventura com o farol aceso"></div><div class="cover-copy"><span class="badge">Mapa da Aventura</span><h1>A Chave<br>do <em>Farol</em></h1><p>Todos os passos para construir as regras da sua aventura.</p><div class="cover-bottom">Do primeiro movimento<br>à luz que guia o barco.</div></div><img class="zappy" src="${zappy}" alt="Zappy feliz"></section>`
 const body = sheets
@@ -288,13 +297,16 @@ const body = sheets
       `<section class="page ${sheet.theme}" data-id="${sheet.id}"><div class="inner"><div class="lesson-hero"><img class="scene" src="${scene(sheet.lit)}" alt="Ilustração do jogo A Chave do Farol"><div class="lesson-hero-text"><div class="kicker">${sheet.kicker}</div><h2>${sheet.title}</h2><p>${sheet.subtitle}</p></div></div><div class="content">${sheet.body}</div></div><div class="page-no"><span class="brand">A Chave do Farol | Mapa da Aventura</span><span>${index + 2} / ${total}</span></div></section>`,
   )
   .join('\n')
+// Estilo só do Farol. O CSS de referência (Cadê) não muda por causa dele.
 const extraCss = `
 .lesson-hero .scene { width: 35%; object-fit: contain; background: #e3f6ec; }
 .lesson-hero { min-height: 43mm; margin-bottom: 6mm; }
-.lesson-hero h2 { font-size: 22pt; }
+.lesson-hero h2 { font-size: 22pt; text-wrap: balance; }
 .lesson-hero .kicker { font-size: 9pt; letter-spacing: .06em; }
 .content { display: grid; gap: 4mm; font-size: 11pt; }
 .content p { font-size: 11pt; line-height: 1.5; }
+/* Sem palavra sozinha na última linha dos parágrafos e dos subtítulos. */
+.content p, .lesson-hero p { text-wrap: pretty; }
 .content h3 { margin-bottom: 2mm; }
 .step h3 { font-size: 13pt; line-height: 1.25; }
 .step .number { margin-top: 1px; }
@@ -310,6 +322,7 @@ const extraCss = `
 .text-value { display: block; border-radius: 8px; padding: 5px 8px; margin-top: 5px; }
 .text-field { display: block; background: #fff; border-radius: 8px; padding: 3px 9px; color: var(--ink); margin-top: 5px; line-height: 1.5; }
 .branch-label { color: var(--ink); font-size: 10pt; line-height: 1.5; }
+.empty-slot { border: 2px dashed #c9cde6; border-radius: 8px; padding: 4px 10px; color: var(--muted); font-size: 9pt; font-weight: 600; line-height: 1.5; }
 .prepared { color: var(--muted); background: #edf0f7; border-radius: 8px; padding: 6px 10px; font-size: 9pt; font-weight: 600; }
 .prepared span { color: var(--muted); font-weight: 400; }
 .check p { margin-top: 9px; }
@@ -323,18 +336,23 @@ const extraCss = `
 .farol-gallery { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4mm; }
 .farol-option { margin: 0; padding: 3mm 2mm; border: 1px solid #dce5f5; border-radius: 12px; background: #f8faff; text-align: center; }
 .farol-option img { width: 100%; height: 37mm; object-fit: contain; display: block; }
-.farol-option figcaption { margin-top: 2mm; font-size: 11pt; font-weight: 800; line-height: 1.3; }
+/* O nome da imagem nunca quebra: a criança procura esse nome exato na lista do Estúdio. */
+.nome { white-space: nowrap; }
+.farol-option figcaption { margin-top: 2mm; font-size: 11pt; font-weight: 800; line-height: 1.3; white-space: nowrap; }
+.farol-gallery--personagens { display: flex; flex-wrap: wrap; justify-content: center; }
+.farol-gallery--personagens .farol-option { flex: 0 0 calc((100% - 8mm) / 3); }
+.farol-gallery--personagens img { height: 33mm; }
 .farol-gallery--cenarios { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .farol-gallery--cenarios img { height: 54mm; }
 .farol-gallery--chaves { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .farol-gallery--chaves img { height: 22mm; }
-.farol-pairs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5mm; }
-.farol-pair { border: 1px solid #dce5f5; border-radius: 12px; padding: 3mm; }
+/* Um par por linha: o nome do modelo à esquerda, o apagado e o aceso lado a lado. */
+.farol-pairs { display: grid; grid-template-columns: minmax(0, 1fr); gap: 3mm; }
+.farol-pair { display: grid; grid-template-columns: 42mm minmax(0, 1fr); align-items: center; gap: 3mm; border: 1px solid #dce5f5; border-radius: 12px; padding: 2mm 3mm; }
 .farol-pair > div { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2mm; }
-.farol-pair h3 { text-align: center; }
+.content .farol-pair h3 { margin: 0; }
 .farol-pair .farol-option { border: 0; padding: 1mm; }
-.farol-pair img { height: 35mm; }
-.farol-pair figcaption { font-size: 10pt; }
+.farol-pair img { height: 27mm; }
 `
 const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Mapa da Aventura - A Chave do Farol</title><style>${css}\n${extraCss}</style></head><body>${cover}${body}</body></html>`
 if (html.includes('{{')) throw new Error('Campo do caderno sem preencher.')

@@ -4,8 +4,8 @@ O visual acompanha o caderno de Cadê Todo Mundo: capa com arte e painel escuro,
 
 Para a criança, o caderno se chama **Mapa da Aventura** desde 06/10/2026 (capa, título do PDF e rodapé), e o texto usa o vocabulário da aventura das [Diretrizes](../../DIRETRIZES-PEDAGOGICAS.md), seção 6: fase, parte, equipe e os botões novos (**Próxima parte**, **Verificar esta parte**, **Enviar meu projeto**, **Concluir fase**). Os nomes dos arquivos não mudaram.
 
-- `caderno-conteudo.json`: textos e passos das aulas, preservados da revisão pedagógica.
-- `gerar-caderno.ts`: composição das páginas, ilustrações com a arte local do jogo, encaixes e fontes. Identifica as partes preparadas; não apresenta os desenhos como screenshots.
+- `caderno-conteudo.json`: todo texto que a criança lê, inclusive o índice (com `{{pagina:<id>}}`, trocado pelo número da página), a revisão e os títulos dos desenhos (`kind: drawing`). Desde 13/10/2026, `qa/vocabulario-crianca.test.ts` confere este arquivo com a régua das palavras da escola.
+- `gerar-caderno.ts`: composição das páginas, ilustrações com a arte local do jogo, encaixes (com a palavra **fazer** dos eventos, como no Estúdio) e fontes. Identifica as partes preparadas; não apresenta os desenhos como screenshots. O estilo próprio do Farol fica no `extraCss`; o CSS de referência do Cadê não muda.
 - As cores de cada bloco, área e valor são importadas das definições finais do Estúdio, incluindo os tons das famílias de Jogo 2D e Programação. Não usar a cor genérica da categoria nem escolher outra cor para combinar com a página. O renderizador confere a cor aplicada no navegador contra essas definições.
 - `gerar-materiais.py`: prepara o HTML, confere fontes/imagens/limites no Chrome ou Edge e gera somente o PDF do aluno.
 
@@ -17,7 +17,7 @@ python docs/aulas-interativas/recursos/desafio-farol/gerar-materiais.py
 
 Requisitos: Bun, Python com `playwright` e Chrome ou Edge instalado. A geração usa arquivos locais, sem baixar fontes ou imagens. Saída: [desafio-farol-caderno.pdf](../../../../output/pdf/desafio-farol-caderno.pdf). HTML e relatório de limites ficam em `tmp/pdfs/desafio-farol/` para inspeção.
 
-O PDF atual tem 27 páginas e acompanha a personalização ampliada de 06/10/2026, com galerias e posição da chave. Após editar passos ou diagramas, conferir também a navegação por páginas e renderizar o PDF inteiro para revisão visual. A validação de limites complementa essa revisão, não substitui a leitura. Não reduzir fonte ou omitir instruções para caber na página.
+O PDF atual tem 29 páginas (revisão de 13/10/2026: duas páginas novas, o teste da parte 4 do Dia 1 e o desenho da resposta sem chave do Dia 3) e acompanha a personalização ampliada de 06/10/2026, com galerias e posição da chave. Os nomes das imagens não quebram no hífen. Após editar passos ou diagramas, conferir também a navegação por páginas e renderizar o PDF inteiro para revisão visual. A validação de limites complementa essa revisão, não substitui a leitura. Não reduzir fonte ou omitir instruções para caber na página.
 
 O mapa para responsáveis foi retirado por orientação de 03/10/2026. A revisão antes do certificado está implementada nos materiais locais. O caderno orienta responder na aula e corrigir com as explicações; não antecipa o gabarito.
 

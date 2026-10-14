@@ -1,0 +1,3 @@
+O teclado também participa dos testes.
+
+Quem cria pode ligar uma tecla a um movimento e conferir se o personagem reage como planejou.

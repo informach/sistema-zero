@@ -1,0 +1,5 @@
+Escolha uma parte e pergunte:
+
+“Para que serve isso aqui?”
+
+Se estiver difícil explicar, ele pode mostrar o efeito na tela. Num jogo, isso rende uma comparação.

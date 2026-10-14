@@ -1,0 +1,3 @@
+Criar jogos também oferece testes. Na Defesa da Torre, a regra deve encerrar a rodada quando um invasor toca o cristal.
+
+Quem cria provoca essa situação e confere a reação.

@@ -92,29 +92,29 @@ export const farol = {
       {
         id: 'q1',
         prompt:
-          'Seu personagem anda até a beirada da tela. Qual ordem você montou para ele continuar visível enquanto se move?',
+          'Seu personagem anda até a beirada da tela. Que ordem você montou para ele não sair da tela?',
         choices: [
           {
             id: 'a',
-            label: 'Conferir a borda e depois mover o personagem para qualquer posição.',
+            label: 'Primeiro conferir o limite da tela e depois mover o personagem.',
           },
           {
             id: 'b',
-            label: 'Mover o personagem e depois conferir o limite da tela.',
+            label: 'Primeiro mover o personagem e depois conferir o limite da tela.',
           },
           {
             id: 'c',
-            label: 'Conferir a borda só quando o jogo começa.',
+            label: 'Conferir o limite da tela uma vez só, quando o jogo começa.',
           },
         ],
         correctChoiceIds: ['b'],
         explanation:
-          'Dentro de A cada quadro do jogo, primeiro o jogo move o personagem e, logo depois, a regra da borda segura ele dentro da tela. Isso se repete em todo quadro.',
+          'Dentro de A cada quadro do jogo, primeiro o personagem anda e, logo depois, Manter o sprite personagem dentro da tela segura ele na borda. Se o limite viesse antes, o personagem andaria depois da conferência, e um pedacinho dele passaria da borda. E, conferido só no começo, o limite não seguraria nada depois. Por isso ele fica dentro de A cada quadro do jogo.',
       },
       {
         id: 'q-memoria-coleta',
         prompt:
-          'Você pegou a chave: ela sumiu do chão e o aviso mudou. Mas, no farol, o jogo disse que falta a chave. A pergunta da porta está certa. Qual bloco da coleta você deve conferir primeiro?',
+          'Você pegou a chave: ela sumiu do chão e o aviso mudou. Mas, no farol, o jogo disse que falta a chave. A pergunta do farol está certa. O que você deve conferir primeiro nos blocos da coleta?',
         choices: [
           {
             id: 'a',
@@ -126,12 +126,12 @@ export const farol = {
           },
           {
             id: 'c',
-            label: 'Se a velocidade do personagem está mais alta.',
+            label: 'Se o bloco Destruir o sprite tira a chave do chão.',
           },
         ],
         correctChoiceIds: ['b'],
         explanation:
-          'Destruir o sprite retira a chave do chão. Alterar aviso muda a mensagem para quem joga. Essas duas ações não guardam a coleta em temChave. Dentro do encontro com a chave, o bloco que altera temChave precisa guardar verdadeiro. É essa informação que a porta consulta depois.',
+          'Destruir o sprite já funcionou: a chave sumiu do chão. Alterar aviso também: a mensagem mudou. Essas duas ações não guardam a coleta em temChave. Dentro do encontro com a chave, o bloco que altera temChave precisa guardar verdadeiro. É essa informação que o farol consulta depois.',
       },
       {
         id: 'q3',
@@ -144,7 +144,7 @@ export const farol = {
           },
           {
             id: 'b',
-            label: 'Retirar a chave do chão, mesmo sem o personagem encostar nela.',
+            label: 'Não fazer nada, porque o personagem ainda não pegou a chave.',
           },
           {
             id: 'c',
@@ -153,7 +153,7 @@ export const farol = {
         ],
         correctChoiceIds: ['c'],
         explanation:
-          'A porta confere temChave. Se você não pegou a chave, temChave ainda é falso, e o jogo segue o senão: avisa que falta a chave. O então, que acende o farol e chama o barco, só acontece quando temChave é verdadeiro.',
+          'A porta confere temChave. Se você não pegou a chave, temChave ainda é falso, e o jogo segue o senão: avisa que falta a chave. Antes de você montar o senão, era isso que acontecia: nada. O então, que acende o farol e chama o barco, só acontece quando temChave é verdadeiro.',
       },
       {
         id: 'q4',
@@ -176,7 +176,7 @@ export const farol = {
         ],
         correctChoiceIds: ['b'],
         explanation:
-          'A porta tem duas respostas. Você já conferiu o caminho com a chave. Começar uma partida nova e ir direto ao farol permite conferir o caminho sem ela. Nesse teste, a luz deve continuar apagada e a mensagem deve explicar que falta a chave. Testar só o caminho que dá certo pode esconder uma regra montada no lugar errado.',
+          'A porta tem duas respostas, a do então e a do senão. Você já conferiu o caminho com a chave. Na mesma partida, temChave continua verdadeiro, por isso o farol escolheria o então de novo. Só numa partida nova temChave volta a ser falso: clique em Atualizar e vá direto até a porta do farol. A luz deve continuar apagada, e o aviso deve dizer que falta a chave. Testar só o caminho que dá certo pode esconder uma regra montada no lugar errado.',
       },
     ],
   },

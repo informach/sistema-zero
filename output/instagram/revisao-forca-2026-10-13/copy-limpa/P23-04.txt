@@ -1,0 +1,3 @@
+A aula gravada permite ajustar a pausa à tarefa.
+
+Ele pode ouvir a explicação outra vez enquanto monta a parte que ficou em dúvida.

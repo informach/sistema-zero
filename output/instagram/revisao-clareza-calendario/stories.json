@@ -1,0 +1,230 @@
+{
+  "ST01": {
+    "title": "Os pinos caíram. Quem mandou o jogo comemorar?",
+    "texts": [
+      "Os dez pinos caíram, apareceu STRIKE e a tela tremeu. Alguém precisou escolher essa comemoração.",
+      "No nosso exemplo de boliche, uma instrução manda mostrar o aviso e tremer a câmera quando todos os pinos caem.",
+      "Fizemos uma cópia e retiramos essa instrução. Os pinos continuam caindo, mas o aviso e o tremor deixam de aparecer.",
+      "Ao criar, seu filho pode escolher como o jogo responde. Ele poderia comemorar com uma mensagem, um som ou um efeito na tela."
+    ],
+    "stickers": {"2":"teste · ‘O que manda a câmera tremer neste exemplo?’ · ‘Uma instrução’ / ‘Só encostar nos pinos’ · certa: ‘Uma instrução’.","4":"caixinha · ‘Como seria a comemoração no jogo dele?’"},
+    "production": "Manter a captura real de Boliche na Praça e a cópia da equipe sem bowlingOnStrike. Conferir aviso e tremor nas duas versões; enquadrar sem o totem sem acento. A resposta do teste está explicada na tela dois. Não afirmar que a reação vem de uma frase em português comum. Preservar a distância editorial de P10 e MC07."
+  },
+  "ST02": {
+    "title": "Uma regra de jogo pode ser testada no papel.",
+    "texts": [
+      "Sua filha pode experimentar uma regra de jogo antes de abrir o computador. Um tabuleiro de papel já permite fazer alguns testes.",
+      "Desenhem um caminho. Cada pessoa joga o dado e anda o número de casas que saiu. Ganha quem chegar primeiro.",
+      "Agora combinem uma mudança: em cada jogada, todos andam uma casa a mais. Façam outra partida e comparem.",
+      "A partida ficou mais rápida? Vocês gostaram? Ao criar jogos, a criança também inventa regras, testa e escolhe o que quer manter."
+    ],
+    "stickers": {"2":"enquete · ‘Vocês já inventaram uma regra juntos?’ · ‘Já’ / ‘Ainda não’.","4":"caixinha · ‘Que mudança vocês testariam?’"},
+    "visuals": ["Menina e adulto fictícios desenhando um caminho de casas numa folha.","Tabuleiro simples com dado e duas peças, fotografado de cima.","Bilhete com a regra de andar uma casa extra para todos. Texto aplicado na edição.","Duas partidas representadas pelo mesmo tabuleiro em momentos diferentes, sem inventar um resultado preferido pela família."],
+    "production": "A atividade funciona como exemplo próprio, sem dado sobre quantos jogos comerciais começaram no papel. Não exigir reclamação prévia da criança nem apresentar tempo exato para descobrir se uma regra ficou boa. Apoia P34 e P51 com outra experiência."
+  },
+  "ST03": {
+    "title": "‘Trabalho final’ ou ‘trabalho final 2’? Qual é o certo?",
+    "texts": [
+      "Seu filho abriu a pasta e encontrou ‘trabalho final’, ‘trabalho final 2’ e ‘agora vai’. Qual arquivo ele queria entregar?",
+      "Um nome com assunto e versão ajuda a reconhecer o arquivo: ‘planetas-v1’ e ‘planetas-v2’. Combinem onde guardar cada um.",
+      "Para manter a versão anterior, é preciso salvar uma cópia com outro nome. Só renomear o mesmo arquivo não guarda as duas.",
+      "Façam isso num trabalho importante e abram as duas versões para conferir. O nome ajuda a encontrar; a cópia preserva o conteúdo anterior."
+    ],
+    "stickers": {"2":"enquete · ‘Já se confundiram entre versões?’ · ‘Já aconteceu’ / ‘Ainda não’"},
+    "production": "Usar arquivos fictícios locais de um trabalho escolar; demonstrar Salvar uma cópia no programa escolhido. Não apresentar esse processo como o salvamento da plataforma nem reduzir controle de versão de software a numeração manual. Manter a distinção de P04, que trata de localizar arquivos."
+  },
+  "ST04": {
+    "title": "Uma trilha de moedas também pode mostrar o caminho.",
+    "texts": [
+      "Uma trilha de moedas num jogo pode fazer duas coisas: dar pontos e chamar atenção para um caminho.",
+      "Quem cria escolhe onde colocar essas pistas. Uma porta iluminada, por exemplo, pode indicar um lugar que vale explorar.",
+      "Ao inventar uma fase, sua filha pode pensar: como o jogador vai descobrir para onde ir? Um detalhe no cenário pode ajudar.",
+      "Depois, ela pode pedir para alguém jogar e observar. A pessoa percebeu a pista ou passou direto? Essa resposta ajuda a decidir uma mudança."
+    ],
+    "stickers": {"2":"enquete · ‘Você já seguiu moedas num jogo?’ · ‘Já’ / ‘Nunca reparei’"},
+    "visuals": ["Fase editorial com moedas formando uma trilha, sem marca comercial.","Outra área da fase, com uma porta iluminada destacada.","Menina fictícia planejando duas posições possíveis para a pista.","Adulto fictício jogando enquanto a menina observa; caminho escolhido visível na tela."],
+    "production": "Apresentar possibilidades de orientar o jogador, sem afirmar que os melhores jogos dispensam instruções. Retirar a promessa de que deixar caderno aberto faz a criança começar sem ajuda. É uma reflexão sobre pensar em quem usa a criação."
+  },
+  "ST05": {
+    "title": "Ele disse ‘deu errado’. Peça para mostrar o que fez.",
+    "texts": [
+      "Seu filho disse ‘deu errado’. Antes de mudar o projeto, peça para ele repetir a tentativa e mostrar o que aconteceu.",
+      "Neste exemplo, o personagem pula, mas cai antes de alcançar a plataforma. Repetimos o mesmo pulo para observar o problema.",
+      "Nas três tentativas, ele cai no mesmo lugar. Como tínhamos afastado a plataforma, vamos aproximá-la e testar outra vez.",
+      "Ver a tentativa ajuda a entender a dúvida. Vocês podem conversar sobre o que a criança esperava e o que aconteceu na tela."
+    ],
+    "stickers": {"2":"enquete · ‘Como seu filho costuma explicar uma dúvida?’ · ‘Conta o que houve’ / ‘Mostra na tela’"},
+    "production": "Manter Salto nas Nuvens na variante do P07 e registrar o afastamento feito pela equipe. Repetir o pulo sob as mesmas condições. Três quedas não provam sozinhas a causa; por isso a copy informa a mudança conhecida e propõe testá-la. Retirar ‘meio resolvido’ e o teste com uma única conduta correta."
+  },
+  "ST06": {
+    "title": "Pedir ajuda também pode fazer parte de aprender.",
+    "texts": [
+      "Seu filho ficou preso numa parte da atividade. Ele pode tentar, consultar a explicação e pedir ajuda quando precisar.",
+      "Antes de chamar alguém, vale separar duas informações: o que queria fazer e o que já tentou.",
+      "Por exemplo: ‘Queria fazer o personagem pular. Apertei espaço, mas ele ficou parado.’ Agora existe uma tentativa para quem ajuda observar.",
+      "Você pode ajudar a organizar esse pedido. Saber explicar a dúvida também faz parte do caminho para continuar uma criação."
+    ],
+    "stickers": {"2":"enquete · ‘Quando pede ajuda, ele conta o que tentou?’ · ‘Costuma contar’ / ‘Precisa de ajuda nisso’"},
+    "visuals": ["Criança fictícia revendo um trecho da aula, sem cronômetro.","Papel com duas linhas: ‘O que eu queria’ e ‘O que tentei’, texto na edição.","Personagem parado e tecla de espaço destacada numa demonstração preparada.","Responsável fictício ouvindo a criança apontar a dúvida na tela."],
+    "production": "Retirar a regra dos quinze minutos e a sugestão de exigir cinco minutos de espera. A sequência ensina a descrever uma dúvida; o apoio deve acompanhar a necessidade da criança. Não prometer resposta instantânea."
+  },
+  "ST07": {
+    "title": "‘Só hoje’ pede pressa. Seu filho pode aprender a perceber isso.",
+    "texts": [
+      "Uma mensagem diz ‘só hoje’ e pede para agir rápido. Vale ensinar seu filho a perceber quando uma tela está tentando apressá-lo.",
+      "‘Ganhe moedas, mande sua senha agora.’ Nesse exemplo, há um pedido de senha junto da pressa. A criança deve mostrar a um responsável.",
+      "Combinem que pedidos de senha, dinheiro, foto ou dados precisam passar por vocês. Um prazo curto não muda esse combinado.",
+      "Vocês podem olhar uma mensagem fictícia juntos e perguntar: o que ela está pedindo? Quem vai receber essa informação?"
+    ],
+    "stickers": {"2":"teste · ‘O que essa mensagem pede?’ · ‘A senha’ / ‘Uma opinião’ · certa: ‘A senha’."},
+    "visuals": ["Adulto e criança observando mensagem fictícia com ‘só hoje’, sem logo.","Mensagem editorial falsa com pedido de senha; não reproduzir campo que possa receber dados.","Combinado familiar escrito com senha, dinheiro, foto e dados, aplicado na edição.","Adulto apontando o pedido na mensagem enquanto ouve a criança."],
+    "production": "Exemplo inventado, claramente tratado como mensagem fictícia. Manter a orientação de conversar com o responsável sem chamar todo anúncio com prazo de golpe. Base de segurança já consultada: Cartilha CERT.br, fascículos Golpes. A sequência amplia P05, sem promessa de proteção automática pela programação."
+  },
+  "ST08": {
+    "title": "O primeiro teste do jogo pode usar só formas simples.",
+    "texts": [
+      "Antes de caprichar no desenho do herói, sua filha pode testar o pulo com um quadrado. Assim, começa por uma parte pequena.",
+      "O teste responde uma pergunta: ele consegue alcançar a plataforma? Cores e detalhes podem ser escolhidos depois.",
+      "Na aventura com uma porta, o começo pode ser fazer o personagem chegar até ela. Depois entram outras partes da história.",
+      "Uma primeira versão simples permite descobrir o que funciona e escolher o próximo passo. Ela pode ganhar detalhes ao longo da criação."
+    ],
+    "stickers": {"2":"enquete · ‘Sua filha costuma querer começar por…’ · ‘Desenhar’ / ‘Fazer funcionar’"},
+    "production": "Manter formas simples e evolução da mesma ideia. É uma possibilidade de organização, não obrigação de começar todo jogo pelo código nem julgamento de que desenhar primeiro desperdiça trabalho. Aprofunda P11."
+  },
+  "ST09": {
+    "title": "O primeiro obstáculo pode ensinar a pular.",
+    "texts": [
+      "Ao criar uma fase, a criança pode colocar um obstáculo baixo antes de um mais alto. O jogador experimenta o pulo aos poucos.",
+      "Veja este percurso: primeiro um salto curto, depois um salto maior. Quem criou escolheu essa ordem.",
+      "Agora imagine os dois na ordem contrária. O jogador começaria pela parte que exige um salto maior.",
+      "Essa é uma decisão de quem cria: o que o jogador precisa experimentar primeiro para entender como a fase funciona?"
+    ],
+    "stickers": {"2":"teste · ‘Qual obstáculo aparece primeiro aqui?’ · ‘O mais baixo’ / ‘O mais alto’ · certa: ‘O mais baixo’."},
+    "visuals": ["Percurso editorial com dois obstáculos de alturas claramente diferentes.","Personagem passando pelo baixo e próximo do alto; usar sequência em vídeo.","Outra imagem com a ordem invertida, identificada como uma possibilidade para comparar.","Criança fictícia organizando os dois obstáculos num esboço de fase."],
+    "production": "A sequência compara uma escolha de criação. Retirar afirmações sobre todo bom jogo e recomendações sobre bicicleta, quedas ou risco físico. O teste pergunta sobre o percurso mostrado, não sobre uma regra universal de ensino."
+  },
+  "ST10": {
+    "title": "A lista inteira está difícil de começar. Escolham a primeira tarefa.",
+    "texts": [
+      "Seu filho olha a lista de tarefas e não sabe por onde começar. Escolher a primeira pode deixar o começo mais claro.",
+      "Escrevam as tarefas em ordem e destaquem só a que ele vai fazer agora. As outras continuam anotadas para depois.",
+      "Na criação de um jogo, pode ser assim: primeiro fazer o personagem andar. Quando funcionar, passar ao pulo.",
+      "Ao terminar uma parte, ele consulta a lista e encontra a próxima. Ajustem o tamanho das tarefas conforme a ajuda de que precisa."
+    ],
+    "stickers": {"2":"enquete · ‘Ele sabe por qual tarefa começar?’ · ‘Geralmente sabe’ / ‘Pede ajuda para escolher’"},
+    "visuals": ["Criança fictícia olhando três tarefas concretas numa folha.","Primeira tarefa marcada, com as duas seguintes visíveis, sem pilha dramática de vinte obrigações.","Personagem andando numa captura de demonstração e anotação do próximo passo: pular.","A própria criança marcando o que terminou e consultando a próxima linha."],
+    "production": "Manter a consulta da lista pela criança, com apoio quando necessário. Retirar o método de folha dobrada como única solução e a promessa de eliminar a participação do adulto."
+  },
+  "ST11": {
+    "title": "‘Sou ruim nisso.’ Pergunte qual parte ficou difícil.",
+    "texts": [
+      "Ao ouvir ‘sou ruim nisso’, pergunte qual parte ficou difícil. A frase sozinha não mostra o que seu filho precisa aprender.",
+      "Ele pode estar com dúvida para entender o pedido, começar ou conferir a resposta. Peça para mostrar uma tentativa.",
+      "Num jogo, também procuramos a parte que falhou. Esta torre encontra o inimigo, mira e atira. Qual dessas ações deixou de acontecer?",
+      "Identificar a parte ajuda a escolher o que rever ou testar. A dificuldade vira uma pergunta sobre algo que ele está tentando fazer."
+    ],
+    "stickers": {"1":"enquete · ‘Você já ouviu essa frase em casa?’ · ‘Já’ / ‘Ainda não’"},
+    "production": "Manter Defesa da Torre Profissional como exemplo de ações diferentes. Não diagnosticar o motivo da frase nem afirmar que mudar as palavras resolve a dificuldade. Mostrar a sequência da torre de forma legível."
+  },
+  "ST12": {
+    "title": "O slide já tem cor e letra bonita. O que ele vai explicar?",
+    "texts": [
+      "Seu filho escolheu a cor e a letra dos slides, mas ainda não sabe o que escrever. Vale começar escolhendo o que quer explicar.",
+      "Peça três ideias principais sobre o assunto. Elas ajudam a escolher os textos e as imagens da apresentação.",
+      "Criar jogos também traz tarefas com uma ordem. Nesta fazenda, primeiro se prepara a terra, depois se planta e se rega.",
+      "Algumas etapas dependem de outras. Perguntar ‘o que precisa estar pronto antes?’ ajuda a planejar a próxima ação."
+    ],
+    "stickers": {"3":"teste · ‘Neste jogo, o que vem antes da semente?’ · ‘Preparar a terra’ / ‘Colher a planta’ · certa: ‘Preparar a terra’."},
+    "production": "Manter exemplo real da fazenda e a ordem exigida pelo jogo. A orientação de apresentação é uma sugestão de planejamento, não uma regra que proíbe escolher cores antes. Retirar os quarenta minutos inventados."
+  },
+  "ST13": {
+    "title": "Ela quer parar sempre na mesma parte. Vale olhar o que acontece ali.",
+    "texts": [
+      "Sua filha quer parar sempre na mesma parte da atividade. Vale perguntar o que acontece naquele momento.",
+      "Pode haver uma dúvida, uma etapa repetitiva ou cansaço. Ouça o que ela conta antes de escolher como ajudar.",
+      "Ao testar um jogo que criou, ela também pode observar onde outra pessoa para. A instrução ficou clara? O desafio estava difícil?",
+      "Observar e conversar ajuda a entender o que precisa mudar. Na atividade dela, vocês podem rever uma explicação, ajustar o momento ou fazer uma pausa."
+    ],
+    "stickers": {"2":"enquete · ‘Quando ela quer parar, é…’ · ‘Na mesma parte’ / ‘Em partes diferentes’"},
+    "production": "Não transformar registro de comportamento em diagnóstico. Retirar o fato amplo sobre estúdios e a conclusão de que a fase sempre é o problema. O vínculo com criação está em observar a experiência e ouvir quem participa."
+  },
+  "ST14": {
+    "title": "Quem cria um jogo também inventa maneiras de testá-lo.",
+    "texts": [
+      "Imagine criar a última fase de um jogo e precisar jogar todas as anteriores a cada teste. Dá para preparar um começo mais perto.",
+      "Numa cópia de teste, quem cria pode colocar o personagem perto do desafio. Assim, confere aquela parte sem repetir o caminho inteiro.",
+      "Por exemplo: para testar se uma porta abre com a chave, é útil começar perto dela e conferir também a tentativa sem chave.",
+      "Criar envolve pensar em como testar. Seu filho pode escolher uma regra e explicar quais situações precisa conferir."
+    ],
+    "stickers": {"3":"teste · ‘Para conferir essa porta, falta testar…’ · ‘Com e sem chave’ / ‘Só a cor da porta’ · certa: ‘Com e sem chave’."},
+    "visuals": ["Mapa editorial de três fases, com atenção na última, sem marca.","Duas versões de um esboço: início normal e início perto da porta, identificado como teste.","Duas tentativas desenhadas ou demonstradas: personagem com chave e sem chave.","Criança fictícia explicando os dois testes num papel ao lado do projeto."],
+    "production": "Substituir a anedota histórica do código de trapaça por um exemplo próprio de preparação de testes. Porta e chave são exemplo genérico, sem mencionar a oferta do Farol. Não sugerir trapaça em partidas de terceiros; a cópia é do próprio projeto."
+  },
+  "ST15": {
+    "title": "Ele pediu ajuda. O mouse foi parar na sua mão.",
+    "texts": [
+      "Seu filho pediu ajuda e, quando você percebe, está fazendo a atividade por ele. Vale devolver o mouse e tentar orientar pela conversa.",
+      "Peça para mostrar onde parou. Depois, ajude a procurar a instrução ou a ferramenta de que ele precisa.",
+      "Se for necessário demonstrar, faça uma vez e deixe ele tentar em seguida. Assim, ele participa da ação que está aprendendo.",
+      "Na criação de jogos, isso permite que a criança monte, teste e conte o que aconteceu. Você acompanha e ajuda conforme a necessidade."
+    ],
+    "stickers": {"1":"enquete · ‘Já acabou fazendo a atividade por ele?’ · ‘Já aconteceu’ / ‘Costumo só orientar’"},
+    "production": "Retirar piloto, navegador e justificativa determinista sobre a mão aprender. Mostrar adulto orientando e devolvendo o controle após demonstração quando necessária. Não condenar apoio físico ou adaptações de acesso."
+  },
+  "ST16": {
+    "title": "Dá para testar uma ideia sem mudar a única versão do projeto.",
+    "texts": [
+      "Seu filho teve uma ideia para mudar o jogo. Antes de experimentar, uma cópia permite guardar a versão de que ele já gostou.",
+      "Na demonstração do balão, fizemos isso: aumentamos a força numa cópia e mantivemos o original para comparar.",
+      "Assim, dá para observar as duas versões. O balão subiu como imaginávamos? O que aconteceu com o combustível?",
+      "A comparação ajuda a decidir qual mudança manter. Na ferramenta que estiver usando, confiram como criar e guardar a cópia antes de alterar."
+    ],
+    "stickers": {"2":"enquete · ‘O que seu filho gostaria de testar?’ · ‘Mais velocidade’ / ‘Um salto mais alto’"},
+    "production": "Manter o teste do Balão de P45 numa cópia da equipe. Retirar sala secreta e a generalização sobre estúdios. Não inventar um botão de cópia disponível em todas as aulas; a orientação pede conferir o recurso da ferramenta usada."
+  },
+  "ST17": {
+    "title": "Caiu perto do fim. Precisa jogar tudo de novo?",
+    "texts": [
+      "O personagem caiu perto do fim da fase. Ele volta ao começo ou a um ponto mais próximo? Quem cria escolhe essa regra.",
+      "Veja duas possibilidades: numa, o jogador repete o caminho inteiro. Na outra, volta perto do obstáculo em que caiu.",
+      "A segunda permite tentar aquele obstáculo mais cedo. A primeira faz repetir também as partes anteriores. Essa diferença muda a experiência.",
+      "Pergunte ao seu filho como ele faria no próprio jogo e por quê. Ele pode comparar as opções pensando em quem vai jogar."
+    ],
+    "stickers": {"2":"enquete · ‘No seu jogo, você escolheria voltar…’ · ‘Ao começo’ / ‘Perto do obstáculo’"},
+    "visuals": ["Fase editorial com personagem caído próximo ao fim.","Mapa dividido em duas possibilidades, com ponto de retorno claramente marcado em cada uma.","Trajetos curto e longo destacados em cores distintas, sem rótulo de bom ou ruim.","Responsável e criança fictícios conversando sobre os dois mapas."],
+    "production": "As duas regras são possibilidades editoriais, não recursos presumidos em um exemplo existente. Retirar checkpoint como termo necessário, resposta universal de teste e instrução incorreta de usar foto como recuperação. Aprofunda P39."
+  },
+  "ST18": {
+    "title": "Ela usou um modelo da aula. Vale contar de onde veio a ideia.",
+    "texts": [
+      "Sua filha criou a partir de um modelo da aula. Ao mostrar o projeto, pode contar o que veio do exemplo e o que mudou.",
+      "Por exemplo: ‘Comecei com a fase da aula e escolhi outros personagens.’ Essa frase ajuda a mostrar a participação dela.",
+      "Depois, peça para explicar uma escolha: por que mudou aquele personagem? O que quis fazer diferente?",
+      "Reconhecer a ajuda recebida e contar as próprias escolhas podem fazer parte da apresentação de uma criação."
+    ],
+    "stickers": {"2":"enquete · ‘Ela costuma contar de onde veio a ideia?’ · ‘Costuma’ / ‘Ainda não conversamos’"},
+    "production": "A sequência trata de um modelo oferecido pela própria atividade para esse uso. Retirar afirmações sobre licenças de código aberto e a ideia de que dar crédito autoriza qualquer cópia. Não afirmar que o projeto inteiro foi criado do zero."
+  },
+  "ST19": {
+    "title": "O chefe do jogo muda de ataque. Alguém planejou essa surpresa.",
+    "texts": [
+      "A batalha parecia conhecida, até o chefe mudar de ataque. Essa mudança pode ser uma decisão de quem criou o jogo.",
+      "No nosso exemplo Chefão das Sombras, a luta tem três etapas. O comportamento do chefe muda ao longo da batalha.",
+      "Ao criar, a criança pode pensar no que o jogador já aprendeu e no próximo desafio que quer apresentar.",
+      "Peça para seu filho contar uma batalha de que gosta. O que muda durante a luta? Que mudança ele inventaria para um jogo próprio?"
+    ],
+    "stickers": {"3":"enquete · ‘Que mudança vocês experimentariam?’ · ‘Ataque mais rápido’ / ‘Um ataque diferente’"},
+    "production": "Manter Chefão das Sombras e mostrar as três etapas reais, sem usar ‘bravo’ como explicação técnica da mudança. A enquete pergunta sobre uma criação imaginada. Retirar a explicação única para durar uma semana ou um ano num jogo."
+  },
+  "ST20": {
+    "title": "A ideia nova chegou antes de terminar o jogo atual.",
+    "texts": [
+      "Seu filho está terminando um jogo e já teve outra ideia. Ele pode anotá-la para escolher depois, sem acrescentar tudo agora.",
+      "A lista pode ser simples: ‘outro personagem’, ‘uma fase na neve’, ‘uma porta secreta’. Basta escrever o suficiente para lembrar.",
+      "André contou que, depois do primeiro jogo, queria fazer um maior. Uma lista assim pode ajudar a organizar as próximas possibilidades.",
+      "Ao terminar uma parte, seu filho pode olhar as ideias e escolher qual quer explorar. Criar também envolve decidir o que fica para depois."
+    ],
+    "stickers": {"2":"enquete · ‘Ele já fala de uma próxima criação?’ · ‘Já tem ideias’ / ‘Ainda está nesta’"},
+    "production": "Preservar a referência ao relato real do André, sem colocar a lista como fato da experiência dele. Retirar backlog e afirmações sobre todos os criadores guardarem todas as ideias. Manter a escolha da criança sobre continuar ou mudar de atividade."
+  }
+}

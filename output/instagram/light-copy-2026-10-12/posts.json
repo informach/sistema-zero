@@ -1,0 +1,1140 @@
+[
+  {
+    "id": "P01",
+    "title": "Duas partidas. Só a chave mudou.",
+    "format": "Carrossel",
+    "goal": "Entregar uma descoberta visual e uma brincadeira que a família pode fazer no papel.",
+    "cta": "Comparar os caminhos e inventar uma terceira versão.",
+    "metric": "Compartilhamentos/alcance",
+    "proof": "Duas versões reais do Farol; mesmo personagem, cenário e ponto de partida. Só a posição da chave muda.",
+    "slides": [
+      [
+        "Duas partidas. Só a chave mudou.",
+        "O cenário e o personagem são iguais. Repare onde está a chave.",
+        "Duas capturas reais do Farol, A e B, com chave em posições diferentes e personagem no mesmo ponto."
+      ],
+      [
+        "Na primeira, ela está no caminho.",
+        "Dá para pegar a chave e seguir até o farol.",
+        "Versão A ampliada. Trajeto pontilhado passa pela chave e chega ao farol. A linha explica o percurso; não faz parte do jogo."
+      ],
+      [
+        "Na segunda, é preciso sair da trilha.",
+        "Quem joga faz outro percurso antes de chegar ao mesmo destino.",
+        "Versão B no mesmo enquadramento; percurso alcança a chave acima da trilha e retorna em direção ao farol."
+      ],
+      [
+        "Uma mudança pequena virou uma decisão.",
+        "Quem cria escolhe onde a chave fica. Quem joga precisa encontrar um caminho.",
+        "Detalhe da posição da chave seguido do personagem chegando a ela durante a partida."
+      ],
+      [
+        "Agora compare com seu filho.",
+        "Em qual versão ele começaria? Peça que mostre o caminho e conte o motivo.",
+        "Versões A e B lado a lado com os percursos visíveis. Rótulos: Caminho A; Caminho B."
+      ],
+      [
+        "Dá para inventar outra versão no papel.",
+        "Desenhem um começo, uma chave e um farol. Mudem só a chave e tracem o novo caminho.",
+        "Dois desenhos simples no papel: mesmo começo e farol, chave em posições diferentes e caminhos passando por ela.",
+        "Depois, troquem os papéis: um escolhe o lugar, o outro traça o caminho."
+      ]
+    ],
+    "caption": "A chave faz a mesma coisa nas duas partidas. O lugar onde ela está muda o percurso.\n\nMostre as duas versões ao seu filho e peça que acompanhe cada caminho com o dedo. Depois, vocês podem desenhar outro: um começo, uma chave e um farol. A regra é passar pela chave antes de chegar ao destino.\n\nQuando vocês mudam o lugar da chave, precisam pensar de novo no trajeto. É uma pequena decisão de quem cria um jogo, com um efeito que dá para ver.\n\nAs capturas são de duas versões que preparamos em A Chave do Farol, o projeto do Desafio do Primeiro Jogo. A brincadeira no papel pode ser feita agora, com os materiais que vocês já têm.",
+    "pillar": "Curiosidade",
+    "parent": "Ver que uma pequena escolha do filho muda o resultado.",
+    "dm": {
+      "word": "MAPA",
+      "cta": "Comente MAPA para receber pelo direct mais duas variações dessa brincadeira de caminhos."
+    }
+  },
+  {
+    "id": "P02",
+    "title": "O movimento aparece entre uma posição e outra.",
+    "format": "Reel",
+    "goal": "Tornar o movimento compreensível e oferecer uma experiência com desenho.",
+    "cta": "Experimentar três desenhos.",
+    "metric": "Retenção e compartilhamentos/alcance",
+    "proof": "Experiência real de movimento da aula do Farol; três desenhos próprios.",
+    "cover": "Ele se move um pouquinho de cada vez.",
+    "scenes": [
+      [
+        0,
+        7,
+        "Três posições do personagem, uma por vez; fundo imóvel.",
+        "Repare no lugar dele.",
+        "O personagem parece andar. Olhando devagar, dá para ver: ele muda um pouquinho de lugar."
+      ],
+      [
+        7,
+        17,
+        "Experiência real em passos; repetir a mesma sequência em velocidade maior.",
+        "Uma posição depois da outra.",
+        "Quando essas mudanças aparecem em sequência, vemos o movimento. Na aula, a criança pode observar isso antes de montar os comandos."
+      ],
+      [
+        17,
+        27,
+        "Mão desenha uma bolinha à esquerda, no meio e à direita, em três folhas pequenas.",
+        "Dá para experimentar no papel.",
+        "Vocês podem experimentar com três desenhos: uma bolinha à esquerda, outra no meio e outra à direita."
+      ],
+      [
+        27,
+        35,
+        "Trocar as folhas rapidamente mantendo as bordas alinhadas; repetir mais devagar.",
+        "Troque as folhas e observe.",
+        "Mostrem uma folha depois da outra. Depois, mudem a distância entre as bolinhas e vejam a diferença."
+      ]
+    ],
+    "caption": "Uma posição vem depois da outra. Quando a troca acontece depressa, percebemos movimento.\n\nPara experimentar, usem três folhas pequenas. Desenhem a mesma bolinha em lugares diferentes e mostrem as folhas em sequência, cobrindo a anterior. Depois, aproximem as posições e comparem.\n\nA gravação da tela mostra a experiência que usamos para explicar movimento na aula do Farol. O desenho ajuda a observar a mesma ideia fora do computador.",
+    "visual": "Personagem muda de posição com o cenário parado; três desenhos de bolinha são apresentados em sequência.",
+    "note": "Capturar a experiência real. Não sugerir que três folhas produzem animação fluida; a comparação é entre posições e distâncias.",
+    "pillar": "Curiosidade",
+    "parent": "Entender uma coisa que a criança vê todos os dias na tela."
+  },
+  {
+    "id": "P03",
+    "title": "O “olha o que eu fiz” merece uma pausa.",
+    "format": "Imagem única",
+    "goal": "Oferecer uma resposta concreta quando a criança mostra uma criação.",
+    "cta": "Ouvir e olhar uma escolha do filho.",
+    "metric": "Compartilhamentos/alcance",
+    "proof": "Cena cotidiana encenada por Helena ou Júlio, sem atribuir fala histórica a aluno.",
+    "text": [
+      "O “olha o que eu fiz” merece uma pausa.",
+      "“Me mostra a parte que você mais gostou de fazer.”"
+    ],
+    "visual": "Adulto se aproxima da tela enquanto a criança aponta um detalhe de sua criação. O projeto continua em destaque; a cena comunica atenção, sem texto duplicado na ilustração.",
+    "caption": "Seu filho chama para mostrar uma criação e você está no meio de outra coisa.\n\nSe puder, pare por um instante e olhe para a parte que ele quer mostrar. “Me mostra a parte que você mais gostou de fazer” dá espaço para ele escolher por onde começar.\n\nSe não puder naquele momento, combinem quando você vai olhar e retome a conversa depois. Você não precisa entender de programação para prestar atenção numa escolha dele.\n\nPode ser um personagem, uma regra ou um detalhe que levou várias tentativas. Deixe que ele conte.",
+    "pillar": "Desejo",
+    "parent": "Participar do que o filho gosta, mesmo com pouco tempo."
+  },
+  {
+    "id": "P04",
+    "title": "A chave sumiu. O jogo ainda precisa lembrar dela.",
+    "format": "Carrossel",
+    "goal": "Explicar a diferença entre uma imagem desaparecer e guardar uma informação.",
+    "cta": "Acompanhar as duas versões e explicar a diferença.",
+    "metric": "Salvamentos/alcance",
+    "proof": "Duas versões preparadas do jogo completo: uma só esconde a chave; outra também registra a coleta. Nunca simular esse resultado na experiência isolada de coleta.",
+    "slides": [
+      [
+        "A chave sumiu. O jogo ainda precisa lembrar dela.",
+        "Pegar o objeto na tela tem duas partes. Veja o que muda quando falta uma delas.",
+        "Chave sendo coletada; recorte seguinte mostra o personagem diante do farol apagado."
+      ],
+      [
+        "Nesta versão, a chave apenas desaparece.",
+        "A imagem some, mas o jogo continua sem a informação de que ela foi pega.",
+        "Captura da versão preparada sem o registro da coleta. Anotação fora da interface: A chave sumiu."
+      ],
+      [
+        "Na porta, essa informação faz falta.",
+        "O jogo confere se a chave foi pega. Como isso não ficou guardado, o farol continua apagado.",
+        "Mesma partida na porta do farol; mostrar o aviso real e o estado apagado."
+      ],
+      [
+        "Agora vamos guardar a coleta também.",
+        "Quando o personagem pega a chave, o jogo passa a lembrar: ele está com ela.",
+        "Trecho real dos blocos que registra a coleta; ao lado, chave desaparecendo na versão corrigida."
+      ],
+      [
+        "Desta vez, a porta encontra a resposta.",
+        "A chave foi pega. O jogo pode seguir e acender o farol.",
+        "Partida corrigida: personagem toca a porta após coletar e farol acende."
+      ],
+      [
+        "Sumir da tela e ficar na memória são duas ações.",
+        "Uma muda o que vemos. A outra guarda uma informação para usar depois.",
+        "Dois cartões visuais: chave desaparecendo; informação da coleta sendo consultada na porta."
+      ]
+    ],
+    "caption": "Imagine guardar uma peça na mochila. Ela saiu da sua mão, mas continua com você.\n\nNo jogo, precisamos dizer as duas coisas: a chave deixa de aparecer no cenário e a informação da coleta fica guardada. Mais tarde, a porta consulta essa informação.\n\nAs imagens mostram duas versões que preparamos para comparar esse comportamento no Farol. A primeira está sem uma das ações de propósito; a segunda guarda a coleta.\n\nDepois de ver a sequência, peça ao seu filho que explique por que apagar a imagem da chave não resolve tudo. A resposta pode vir apontando as cenas.",
+    "pillar": "Curiosidade",
+    "parent": "Descobrir por que uma ação visível não conta a história inteira."
+  },
+  {
+    "id": "P05",
+    "title": "Uma ideia de mudança, contada pelo pai.",
+    "format": "Reel",
+    "goal": "Mostrar autoria em um relato e ajudar a transformar muitas ideias em um primeiro teste.",
+    "cta": "Escolher uma pequena mudança para experimentar.",
+    "metric": "Retenção e compartilhamentos/alcance",
+    "proof": "Daniel, pai do Rafael; vídeo autorizado, recortes 25,26–27,92 e 28,58–30,22 s.",
+    "cover": "A ideia de mudar veio dele.",
+    "scenes": [
+      [
+        0,
+        5,
+        "Daniel no vídeo original; identificar Daniel · Pai do Rafael.",
+        "Uma escolha que o pai percebeu.",
+        "[ÁUDIO ORIGINAL] Vai criando, vai sendo mais criativo. “Eu quero mudar isso aqui no jogo.”"
+      ],
+      [
+        5,
+        14,
+        "Helena escreve três ideias em papéis: mudar o cenário, mudar o caminho, mudar a mensagem.",
+        "As ideias podem vir juntas.",
+        "Uma ideia pode puxar várias outras. Para começar, vale escolher uma mudança que dê para fazer e testar."
+      ],
+      [
+        14,
+        24,
+        "Selecionar o papel mudar o caminho; esboçar dois percursos.",
+        "Escolher uma. Testar. Comparar.",
+        "Depois, a criança joga e compara: ficou como ela imaginou? Assim, a próxima escolha parte do que ela acabou de observar."
+      ]
+    ],
+    "caption": "Daniel, pai do Rafael, conta que começou a ouvir ideias de mudança no jogo do filho.\n\nQuando aparecem várias ideias, uma lista ajuda a guardá-las. A criança escolhe uma para experimentar primeiro, testa e vê o que aconteceu. As outras continuam ali para depois.\n\nO trecho é um relato da experiência do Rafael criando jogos. Os papéis são uma sugestão nossa para organizar um primeiro teste; não representam um projeto específico dele.",
+    "visual": "Relato original do Daniel seguido de Helena organizando três ideias no papel e comparando dois caminhos.",
+    "note": "Preservar a fala literal e o sentido dos recortes. Não transformar o relato em resultado típico nem atribuí-lo ao Farol. Usar aspas gráficas equivalentes na abertura e no fechamento.",
+    "pillar": "Desejo",
+    "parent": "Ver o filho propor ideias próprias."
+  },
+  {
+    "id": "P06",
+    "title": "Ele pediu ajuda. Você não sabe programar.",
+    "format": "Carrossel",
+    "goal": "Dar um modo de localizar a dúvida e oferecer ajuda na medida necessária.",
+    "cta": "Guardar a sequência para uma dúvida real.",
+    "metric": "Salvamentos/alcance",
+    "proof": "Cena encenada de acompanhamento, com computador e aula reais.",
+    "slides": [
+      [
+        "Ele pediu ajuda. Você não sabe programar.",
+        "Vocês podem começar descobrindo onde ele parou. Essa primeira ajuda não exige conhecer os comandos.",
+        "Criança mantém a mão no mouse enquanto o adulto se senta ao lado."
+      ],
+      [
+        "Peça para ele mostrar onde parou.",
+        "“Me mostra o que você estava tentando fazer.” Assim, vocês olham para o mesmo problema.",
+        "Criança aponta um ponto específico na tela; adulto acompanha o gesto."
+      ],
+      [
+        "Voltem só ao trecho que explica esse passo.",
+        "Pausem depois da orientação e deixem a criança tentar. Não é preciso rever a aula inteira.",
+        "Trecho curto de uma aula sendo retomado e pausado antes da ação no Estúdio."
+      ],
+      [
+        "Se ainda estiver difícil, façam uma parte juntos.",
+        "Você pode ler a orientação ou ajudar a encontrar o bloco. Depois, devolva a vez para ela.",
+        "Adulto aponta um bloco sem operar o mouse; criança o arrasta."
+      ],
+      [
+        "A ajuda também pode ter um próximo passo.",
+        "Nas nossas aulas, a criança pode usar Preciso de ajuda e acompanhar a resposta em Recados.",
+        "Capturas reais do pedido de ajuda e de Recados, sem dados pessoais."
+      ]
+    ],
+    "caption": "A primeira ajuda pode ser descobrir qual é a dúvida. “Não consegui” pode significar que a criança não encontrou um botão, não entendeu uma orientação ou viu um resultado diferente do esperado.\n\nPeça que mostre onde parou. Retomem aquele trecho e tentem uma ação por vez. Se precisar, participe mais: acompanhar não exige deixar a criança resolver tudo sozinha.\n\nNa Comunidade, também existe o pedido Preciso de ajuda. A resposta chega em Recados; vocês podem voltar a ela depois. É uma conversa que continua pela plataforma, sem depender de um professor ao vivo naquela hora.",
+    "pillar": "Dor",
+    "parent": "Querer ajudar sem saber programar.",
+    "dm": {
+      "word": "APOIO",
+      "cta": "Comente APOIO para receber pelo direct um roteiro curto de ajuda quando seu filho disser que travou."
+    }
+  },
+  {
+    "id": "P07",
+    "title": "Uma seta está levando para o lugar errado.",
+    "format": "Imagem única",
+    "goal": "Entregar um desafio visual original com solução acessível.",
+    "cta": "Resolver juntos; solução completa na legenda.",
+    "metric": "Compartilhamentos/alcance",
+    "proof": "Grade autoral 4 × 4. Colunas A–D, linhas 1–4 de cima para baixo. Partida A4, estrela D2. Sequência → ↑ → ↓ → termina em D4.",
+    "text": [
+      "Uma seta está levando para o lugar errado.",
+      "Comece no círculo. Cada seta anda uma casa.",
+      "→ ↑ → ↓ →",
+      "Troque uma única seta para chegar à estrela.",
+      "A resposta está na legenda."
+    ],
+    "visual": "Grade 4 × 4 com círculo azul em A4 e estrela amarela em D2. Rótulos A–D no alto e 1–4 à esquerda. Cinco setas numeradas abaixo da grade. Nenhum outro obstáculo ou regra.",
+    "caption": "Percorram as setas com o dedo. Começando em A4, o caminho vai para B4, B3, C3, C4 e D4. A estrela está duas casas acima do final.\n\nA troca está na quarta seta: no lugar de descer, subam.\n\nA sequência fica → ↑ → ↑ →. Agora o caminho passa por B4, B3, C3, C2 e chega a D2, onde está a estrela.\n\nVocês acabaram de testar uma sequência de instruções e mudar uma parte para alcançar outro resultado. Para continuar a brincadeira, desenhem outra estrela e inventem um novo caminho.",
+    "note": "Não esconder a solução atrás de comentário ou mensagem. Preservar posição da estrela, ordem das setas e numeração na arte; validar antes de exportar.",
+    "pillar": "Dica",
+    "parent": "Encontrar uma brincadeira curta para pensar junto."
+  },
+  {
+    "id": "P08",
+    "title": "A lista de ideias ficou maior que o jogo.",
+    "format": "Reel",
+    "goal": "Criar identificação e ensinar a escolher uma primeira tarefa possível.",
+    "cta": "Separar a primeira ideia das que ficam para depois.",
+    "metric": "Retenção",
+    "proof": "Encenação própria de Helena ou Júlio com lista desenhada; não prometer recursos do catálogo.",
+    "cover": "Antes de colocar dragão, nave e castelo...",
+    "scenes": [
+      [
+        0,
+        6,
+        "Papel se desenrola com dragão, nave, castelo, corrida e tesouro desenhados.",
+        "A lista ficou maior que a mesa.",
+        "O jogo vai ter dragão, nave, castelo, corrida e tesouro. A lista já está maior que a mesa."
+      ],
+      [
+        6,
+        15,
+        "Júlio tenta acomodar o papel; separa três cartões.",
+        "Qual parte dá para testar primeiro?",
+        "Vale guardar todas essas ideias. Depois, escolher uma primeira tarefa: um personagem precisa chegar até um tesouro."
+      ],
+      [
+        15,
+        25,
+        "Desenhar começo, caminho e tesouro; mover um marcador sobre o papel.",
+        "Primeiro, fazer uma parte funcionar.",
+        "Com essa parte funcionando, dá para jogar e decidir o próximo passo. Talvez o caminho precise mudar antes de entrar o dragão."
+      ],
+      [
+        25,
+        31,
+        "Guardar cartão dragão num envelope escrito Depois; manter o jogo pequeno visível.",
+        "As outras ideias continuam guardadas.",
+        "A lista continua valendo. Só ganhou uma ordem para começar."
+      ]
+    ],
+    "caption": "Uma ideia puxa outra, e de repente o primeiro jogo já tem cinco mundos.\n\nGuardem a lista. Depois, escolham uma tarefa pequena que dê para experimentar: chegar ao tesouro, atravessar um caminho ou encontrar um objeto. Desenhem o começo e o objetivo, façam uma tentativa e conversem sobre o que falta.\n\nEssa brincadeira no papel ajuda a escolher por onde começar. Dragões, naves e castelos são ideias da encenação; não são uma lista de recursos prometidos para o primeiro curso.",
+    "visual": "Lista exageradamente comprida de ideias, gesto divertido de tentar caber na mesa e escolha de uma tarefa curta no papel.",
+    "note": "Humor com a quantidade de ideias, sem ridicularizar a criança. Usar desenho e gravação próprios, sem trecho de filme ou personagem licenciado.",
+    "pillar": "Dor",
+    "parent": "Ter muitas ideias e não conseguir escolher por onde começar.",
+    "dm": {
+      "word": "IDEIA",
+      "cta": "Comente IDEIA para receber pelo direct uma atividade para escolher a primeira parte de um jogo."
+    }
+  },
+  {
+    "id": "P09",
+    "title": "Ele assistiu. Agora precisa experimentar.",
+    "format": "Carrossel",
+    "goal": "Mostrar o benefício da aula gravada por meio do uso.",
+    "cta": "Experimentar um passo antes de seguir assistindo.",
+    "metric": "Salvamentos/alcance",
+    "proof": "Capturas atuais da aula e do Estúdio, sem interface simulada.",
+    "slides": [
+      [
+        "Ele assistiu. Agora precisa experimentar.",
+        "Depois de uma explicação, uma pequena tentativa mostra o que já ficou claro.",
+        "Vídeo pausado e criança começando uma ação no Estúdio."
+      ],
+      [
+        "Primeiro, ela acompanha um passo.",
+        "A explicação mostra o que fazer e o resultado que ela vai procurar no jogo.",
+        "Trecho real da professora mostrando uma ação e seu efeito."
+      ],
+      [
+        "Depois, pausa para fazer.",
+        "A criança tem tempo para encontrar as peças, montar e experimentar.",
+        "Criança diante do computador; player pausado e Estúdio em uso."
+      ],
+      [
+        "Se precisar, volta à mesma explicação.",
+        "Ela pode ouvir de novo e conferir o ponto em que ficou com dúvida.",
+        "Controle real de vídeo sendo usado para retomar um trecho."
+      ],
+      [
+        "Uma ação feita vale uma nova observação.",
+        "Depois de testar, ele compara: o jogo fez o que eu esperava? Essa resposta orienta a próxima tentativa.",
+        "Criança compara uma orientação da aula com o resultado real no jogo."
+      ]
+    ],
+    "caption": "Depois de assistir a uma explicação, a criança pode experimentar uma parte e olhar o que aconteceu.\n\nNa criação de jogos, essa comparação fica visível: o personagem andou, o objeto foi pego, a luz acendeu. Se algo foi diferente, dá para voltar ao trecho que explica aquele passo.\n\nEm casa, experimentem esse ritmo: acompanhar uma orientação, pausar para fazer e testar antes de seguir. A pausa dá espaço para a ação.\n\nAs telas mostram uma demonstração nossa de aula e criação no Estúdio.",
+    "pillar": "Dor",
+    "parent": "Assistir à explicação e ainda não saber fazer sozinho."
+  },
+  {
+    "id": "P10",
+    "title": "Três jeitos de mudar uma brincadeira.",
+    "format": "Carrossel",
+    "goal": "Experimentar escolhas diferentes com uma atividade completa fora da tela.",
+    "cta": "Criar e testar uma versão no papel.",
+    "metric": "Compartilhamentos/alcance",
+    "proof": "Brincadeira original com caminho de seis casas e marcador.",
+    "slides": [
+      [
+        "Três jeitos de mudar uma brincadeira.",
+        "Desenhem um caminho com seis casas, do começo até um tesouro. Usem uma tampinha como personagem.",
+        "Mãos desenham seis casas em linha; tampinha antes da primeira casa e tesouro depois da sexta."
+      ],
+      [
+        "Primeiro, mudem a aparência.",
+        "Decorem o caminho como quiserem. A regra continua igual: andar uma casa por vez.",
+        "Mesmo caminho recebe árvores e montanhas, sem mudar as seis casas."
+      ],
+      [
+        "Depois, mudem o percurso.",
+        "Façam as seis casas em curva. O caminho muda de forma; ainda são seis passos até o tesouro.",
+        "Linha de seis casas comparada com curva de seis casas."
+      ],
+      [
+        "Agora, mudem uma regra.",
+        "Marquem uma casa com uma estrela. Ao chegar nela, a tampinha pode avançar uma casa extra.",
+        "Estrela na terceira casa; marcador mostra o avanço extra até a quarta."
+      ],
+      [
+        "Joguem as versões e comparem.",
+        "O que mudou no desenho? O que mudou no caminho? O que mudou na maneira de jogar?",
+        "Três desenhos lado a lado: aparência, percurso e casa com avanço extra."
+      ]
+    ],
+    "caption": "Separem papel, lápis e uma tampinha. Desenhem seis casas entre o começo e um tesouro. A cada vez, avancem uma casa.\n\nExperimentem as mudanças do carrossel uma por vez. Na versão com estrela, coloquem apenas uma estrela na terceira casa: ao chegar nela, avancem mais uma. Assim, a regra tem um efeito fácil de acompanhar.\n\nDepois, deixem seu filho inventar uma mudança e explicar como vocês vão jogar. Ao criar um jogo, ele também faz escolhas de aparência, caminho e regras. Comparar as versões ajuda a perceber a diferença entre elas.",
+    "pillar": "Desejo",
+    "parent": "Dar espaço para escolhas e invenções do filho."
+  },
+  {
+    "id": "P11",
+    "title": "Foi assim que começamos com o André.",
+    "format": "Reel",
+    "goal": "Apresentar a origem da Comunidade com um fato vivido pela família.",
+    "cta": "Conhecer o destaque Sobre nós.",
+    "metric": "Visitas ao perfil/alcance",
+    "proof": "História confirmada pelo usuário: André gostava de jogar e assistir a jogos; parte desse tempo passou a incluir criação.",
+    "cover": "O André gostava de jogar. A gente começou por aí.",
+    "scenes": [
+      [
+        0,
+        8,
+        "Helena em cena; foto real autorizada do André junto ao computador.",
+        "A história começou em casa.",
+        "O André sempre gostou muito de jogar e assistir a jogos. Esse interesse já fazia parte da rotina dele."
+      ],
+      [
+        8,
+        17,
+        "Júlio mostra um jogo no computador; usar captação atual como apoio, sem apresentar como registro antigo.",
+        "Uma parte desse tempo ganhou outra atividade.",
+        "A gente começou a usar uma parte desse tempo para ensinar a fazer os próprios jogos. Ele podia experimentar as ideias dele."
+      ],
+      [
+        17,
+        27,
+        "Detalhe de uma escolha no jogo e teste; Helena retoma a história.",
+        "Criar também passou a fazer parte da rotina.",
+        "Com o tempo, percebemos mais interesse em aprender. Ele se envolvia mais nas aulas, e o aprendizado foi deixando de parecer só uma obrigação."
+      ],
+      [
+        27,
+        39,
+        "Helena e Júlio juntos; fotos familiares autorizadas e marca.",
+        "Conheça a nossa história em Sobre nós.",
+        "Essa experiência faz parte da origem da Comunidade dos Criadores. No destaque Sobre nós, contamos mais sobre a nossa família e o trabalho que construímos."
+      ]
+    ],
+    "caption": "A história da Comunidade começou com uma pergunta dentro de casa: como incluir criação no tempo que o André já gostava de passar com jogos?\n\nComeçamos ensinando a fazer os próprios jogos. Ao longo desse caminho, percebemos mais interesse dele em aprender e participar das aulas. É a experiência que vivemos com o nosso filho, e ela ajudou a dar origem ao nosso trabalho.\n\nNo destaque Sobre nós, apresentamos a nossa história e quem está por trás da Comunidade: Helena e Júlio.\n\nAs imagens atuais de criação ilustram a explicação; não são registros daquele primeiro momento.",
+    "visual": "Helena e Júlio contam a origem, com fotos familiares reais e detalhes atuais da criação de um jogo.",
+    "note": "Não encenar diálogo como lembrança literal. Não afirmar relação causal comprovada com notas ou prometer o mesmo resultado para outras crianças. Se usar medalhas, não transformá-las no argumento deste Reel.",
+    "pillar": "Desejo",
+    "parent": "Incluir criação no interesse que o filho já tem por jogos."
+  },
+  {
+    "id": "P12",
+    "title": "Jeffrey e as próprias ideias.",
+    "format": "Imagem única",
+    "goal": "Dar voz à criança sobre o significado de criar.",
+    "cta": "Conversar sobre uma ideia que a criança gostaria de experimentar.",
+    "metric": "Compartilhamentos/alcance",
+    "proof": "Vídeo autorizado de Jeffrey; trecho 101,42–109,34 s.",
+    "text": [
+      "“Eu gosto bastante de produzir os meus jogos, porque é uma forma de eu expressar as minhas ideias.”",
+      "Jeffrey · Aluno"
+    ],
+    "visual": "Fotograma real do Jeffrey com rosto legível e computador ao lado; espaço limpo para a fala. Aspas de abertura e fechamento com o mesmo desenho e peso.",
+    "caption": "Jeffrey conta que criar jogos é uma forma de expressar as próprias ideias.\n\nUma conversa pode começar por algo que seu filho já conhece: “Se você pudesse mudar uma coisa nesse jogo, o que escolheria?”. Ouçam a ideia antes de perguntar como fazer. Ela pode virar um desenho, uma regra escrita ou um pequeno teste.\n\nO depoimento é do Jeffrey sobre a experiência dele criando jogos. A pergunta é uma sugestão nossa para a conversa em família.",
+    "note": "Usar a fala completa sem colchetes ou reticências. Não atribuir a Jeffrey uma regra ou projeto que não aparece no relato.",
+    "pillar": "Desejo",
+    "parent": "Dar forma ao que o filho imagina."
+  },
+  {
+    "id": "P13",
+    "title": "Uma ideia boa também precisa ser entendida.",
+    "format": "Carrossel",
+    "goal": "Mostrar como uma mensagem pode ajudar quem está jogando.",
+    "cta": "Comparar dois avisos e escrever uma orientação útil.",
+    "metric": "Salvamentos/alcance",
+    "proof": "Duas mensagens configuradas pela equipe no mesmo Farol; estados e resultado reais.",
+    "slides": [
+      [
+        "Uma ideia boa também precisa ser entendida.",
+        "Ao criar um jogo, seu filho pensa também nas palavras que vão orientar outra pessoa.",
+        "Personagem diante do farol apagado, com mensagem Tente de novo configurada no jogo."
+      ],
+      [
+        "“Tente de novo” ainda deixa uma dúvida.",
+        "O jogo precisa de uma chave para abrir o farol. Quem acabou de chegar talvez ainda não saiba disso.",
+        "Personagem na porta e chave ainda no cenário; destacar os dois pontos."
+      ],
+      [
+        "Um aviso pode mostrar o próximo passo.",
+        "“Pegue a chave antes de abrir o farol.” Agora existe uma ação para experimentar.",
+        "Mesmo estado do jogo com a mensagem mais específica configurada."
+      ],
+      [
+        "A informação muda o caminho de quem joga.",
+        "A pessoa vai buscar a chave e volta para tentar abrir o farol.",
+        "Sequência da partida: buscar chave, retornar à porta, farol acender."
+      ],
+      [
+        "Seu filho também pode pensar em quem vai jogar.",
+        "Depois de ler a mensagem, a outra pessoa sabe o que tentar? Esse é um bom teste para o aviso.",
+        "Duas mensagens lado a lado com a ação seguinte ilustrada abaixo da segunda."
+      ]
+    ],
+    "caption": "Seu filho sabe o que quer que aconteça. A pessoa que vai jogar ainda precisa entender.\n\nCompare “Tente de novo” com “Pegue a chave antes de abrir o farol”. O segundo aviso explica o que falta e oferece uma ação para tentar.\n\nCriar jogos dá um motivo concreto para escolher palavras e observar se elas foram entendidas. Se o jogador continuar em dúvida, a criança pode ajustar a mensagem e testar novamente.\n\nPreparamos esses dois avisos no Farol para demonstrar a diferença. Vocês também podem experimentar explicando uma brincadeira no papel.",
+    "pillar": "Dor",
+    "parent": "Ter uma ideia na cabeça e dificuldade para explicá-la."
+  },
+  {
+    "id": "P14",
+    "title": "A aventura mudou de aparência.",
+    "format": "Reel",
+    "goal": "Distinguir personalização visual de mudança nas regras.",
+    "cta": "Identificar o que mudou e o que continuou igual.",
+    "metric": "Retenção",
+    "proof": "Capturas reais de duas personalizações disponíveis no Farol, mantendo as mesmas regras.",
+    "cover": "Outro cenário. A mesma missão.",
+    "scenes": [
+      [
+        0,
+        5,
+        "Cortar entre duas versões reais no mesmo momento da partida.",
+        "Repare no cenário.",
+        "A mesma aventura pode ganhar outra aparência. Repare no cenário."
+      ],
+      [
+        5,
+        13,
+        "Mostrar escolha de cenário e personagem na ferramenta real, seguida da partida.",
+        "A criança escolhe e depois joga.",
+        "Depois de fazer o jogo funcionar, a criança pode escolher entre cenários, personagens e itens para personalizar a aventura."
+      ],
+      [
+        13,
+        23,
+        "Duas partidas sincronizadas: coletar chave e tocar a porta.",
+        "O que continuou igual?",
+        "Nas duas versões, o personagem precisa pegar a chave e chegar ao farol. O visual mudou; essa regra continuou igual."
+      ],
+      [
+        23,
+        29,
+        "Congelar versões lado a lado com áreas de comparação livres.",
+        "Mostre uma diferença para alguém.",
+        "Mostre as duas cenas ao seu filho e peçam um ao outro para encontrar uma diferença."
+      ]
+    ],
+    "caption": "Mudar a aparência é uma das escolhas de quem cria.\n\nNeste exemplo, mantivemos a mesma missão e trocamos elementos visuais disponíveis na personalização do Farol. A criança faz a escolha, joga e vê como a aventura ficou.\n\nMostrem uma diferença nas imagens e depois procurem algo que continua igual. Comparar as duas coisas ajuda a separar aparência e regra.\n\nAs versões foram preparadas por nós para esta demonstração.",
+    "visual": "Alternância entre dois cenários reais do Farol; seleção no Estúdio e a mesma missão sendo cumprida nas duas versões.",
+    "note": "Não mostrar seleção que o aluno ainda não tem no estágio descrito. Não prometer desenhar do zero todo o catálogo nem enfatizar elementos prontos como defeito.",
+    "pillar": "Desejo",
+    "parent": "Ver a criança colocar uma escolha sua na criação."
+  },
+  {
+    "id": "P15",
+    "title": "A melhor pista está no jeito que outra pessoa joga.",
+    "format": "Carrossel",
+    "goal": "Ensinar um teste simples de clareza do jogo.",
+    "cta": "Observar uma primeira partida e escolher um ajuste.",
+    "metric": "Salvamentos/alcance",
+    "proof": "Teste encenado com adulto jogando uma versão feita para a demonstração.",
+    "slides": [
+      [
+        "A melhor pista está no jeito que outra pessoa joga.",
+        "Quem criou conhece o caminho. Uma pessoa que está chegando agora pode mostrar uma dúvida que passou despercebida.",
+        "Criança observa um adulto diante do jogo, sem apontar o caminho."
+      ],
+      [
+        "Convide alguém para uma primeira partida.",
+        "Explique apenas como começar e quais controles usar. Deixe a pessoa experimentar.",
+        "Cartão com controles ao lado do jogo; adulto inicia a partida."
+      ],
+      [
+        "Observe onde ela para ou tenta outra coisa.",
+        "Ela procurou a chave? Entendeu o aviso? Encontrou a entrada do farol?",
+        "Três momentos da partida: procurar objeto, ler aviso e tentar a porta."
+      ],
+      [
+        "Depois, ouça o que ficou confuso.",
+        "“Teve alguma parte em que você não sabia o que fazer?” A resposta ajuda a escolher um ajuste.",
+        "Conversa após a partida, com jogo ao fundo e anotação de uma dúvida."
+      ],
+      [
+        "Mudem uma coisa e façam outro teste.",
+        "Pode ser o lugar de um item ou uma mensagem. Comparem o que aconteceu antes e depois.",
+        "Duas versões com uma única mensagem alterada; novo jogador lê e segue."
+      ]
+    ],
+    "caption": "Quando já sabemos o caminho, é fácil esquecer o que precisa ser explicado a quem chega agora.\n\nPeça ao seu filho que convide alguém para jogar. Durante a tentativa, observem o que a pessoa procura e onde ela para. A proposta é conhecer o jogo pelo olhar dela; se pedir ajuda ou ficar frustrada, conversem.\n\nDepois, escolham uma dúvida para resolver e testem a mudança. Uma primeira partida pode revelar mais do que perguntar apenas se o jogo ficou bonito.\n\nA demonstração usa o Farol, mas o teste também funciona com uma brincadeira inventada no papel.",
+    "pillar": "Dica",
+    "parent": "Ajudar o filho a considerar o ponto de vista de outra pessoa."
+  },
+  {
+    "id": "P16",
+    "title": "Mexer em tudo esconde o que resolveu.",
+    "format": "Carrossel",
+    "goal": "Ensinar comparação mudando uma coisa por vez.",
+    "cta": "Fazer uma tentativa com uma mudança identificável.",
+    "metric": "Salvamentos/alcance",
+    "proof": "Exemplo próprio no papel com marcador e caminho; conexão com jogo sem tutorial técnico incompleto.",
+    "slides": [
+      [
+        "Mexer em tudo esconde o que resolveu.",
+        "Quando um jogo faz algo inesperado, mudar várias partes de uma vez pode aumentar a dúvida.",
+        "Três papéis sobrepostos com mudanças e uma mão hesitando; uma versão original permanece visível."
+      ],
+      [
+        "Primeiro, diga o que esperava ver.",
+        "“Eu queria que o personagem chegasse até a chave.” Isso dá um ponto para comparar.",
+        "Mapa simples com personagem e chave; dedo indica o destino esperado."
+      ],
+      [
+        "Depois, olhe o que aconteceu.",
+        "“Ele parou antes de chegar.” Agora vocês têm uma diferença concreta para investigar.",
+        "Mesmo mapa com percurso interrompido antes da chave."
+      ],
+      [
+        "Escolha uma coisa para testar.",
+        "Mudem só essa parte e repitam a tentativa. Assim, fica mais fácil perceber o efeito da mudança.",
+        "Uma instrução é alterada; demais papéis permanecem no mesmo lugar."
+      ],
+      [
+        "O teste ajuda a decidir a próxima tentativa.",
+        "Se resolveu, vocês sabem o que mudou. Se não resolveu, podem voltar e testar outra ideia.",
+        "Comparação antes e depois com o caminho completo e a instrução trocada marcada."
+      ]
+    ],
+    "caption": "Antes de mexer, parem em três pontos: o que deveria acontecer, o que aconteceu e qual mudança vocês querem testar.\n\nNo desafio de setas que mostramos aqui no perfil, por exemplo, o caminho terminava abaixo da estrela. Trocar uma seta permitiu comparar o resultado sem refazer tudo.\n\nA mesma organização ajuda na criação de um jogo. Ela não garante encontrar o problema na primeira tentativa, mas permite acompanhar o que cada mudança fez.\n\nSe a dúvida continuar, vale pedir ajuda mostrando essas duas informações: o resultado esperado e o que apareceu na tela.",
+    "pillar": "Dor",
+    "parent": "Mexer em tudo após um erro e perder o caminho da tentativa.",
+    "dm": {
+      "word": "TESTE",
+      "cta": "Comente TESTE para receber pelo direct um exemplo de como comparar uma tentativa antes e depois."
+    }
+  },
+  {
+    "id": "P17",
+    "title": "Antes de explicar, a gente testa o contrário.",
+    "format": "Reel",
+    "goal": "Mostrar autoridade por uma decisão concreta de preparação da aula.",
+    "cta": "Comparar uma regra em duas situações.",
+    "metric": "Retenção e visitas ao perfil/alcance",
+    "proof": "Captação atual de Helena ou Júlio preparando uma demonstração real com e sem chave.",
+    "cover": "O teste vem antes da gravação.",
+    "scenes": [
+      [
+        0,
+        7,
+        "Júlio chega à porta sem chave; farol segue apagado.",
+        "Primeiro, sem a chave.",
+        "Antes de gravar esta explicação, vamos até o farol sem pegar a chave. Ele precisa continuar apagado."
+      ],
+      [
+        7,
+        15,
+        "Nova tentativa: coletar chave, tocar porta, luz acender.",
+        "Depois, com a chave.",
+        "Depois, pegamos a chave e voltamos à porta. Agora a luz acende. As duas tentativas mostram a diferença."
+      ],
+      [
+        15,
+        25,
+        "Helena compara as gravações e marca o ponto da mudança.",
+        "A criança precisa conseguir enxergar a regra.",
+        "Ao preparar a aula, procuramos uma comparação que a criança consiga enxergar. Assim, a explicação fica ligada ao que aconteceu na tela."
+      ],
+      [
+        25,
+        34,
+        "Duas situações lado a lado; professora aponta a informação diferente.",
+        "Comparar ajuda a enxergar a regra.",
+        "Ao criar jogos, seu filho também pode fazer esse teste: repetir uma ação em duas situações e observar o que muda."
+      ]
+    ],
+    "caption": "Uma regra fica mais fácil de acompanhar quando dá para comparar duas situações.\n\nNo Farol, chegamos à porta sem a chave e voltamos depois de pegá-la. A resposta muda, e a diferença aparece na tela.\n\nNa criação, a criança pode prever o resultado, testar e conferir. Ela tem algo concreto para observar e explicar, em vez de apenas decorar o nome de um comando.\n\nEste bastidor mostra Helena e Júlio preparando uma demonstração para a aula.",
+    "visual": "Júlio ou Helena prepara duas tentativas no Farol; sem chave a luz fica apagada, com chave ela acende; comparação entra na preparação da explicação.",
+    "note": "Filmar a preparação de fato. Não apresentar ensaio publicitário como registro espontâneo nem declarar rotina não documentada de toda aula.",
+    "pillar": "Curiosidade",
+    "parent": "Entender uma regra por uma comparação que dá para ver."
+  },
+  {
+    "id": "P18",
+    "title": "Espaço para olhar e montar.",
+    "format": "Carrossel",
+    "goal": "Explicar a escolha do computador e dar uma preparação útil.",
+    "cta": "Preparar o equipamento.",
+    "metric": "Salvamentos/alcance",
+    "proof": "Aula e Estúdio reais em computador ou notebook com internet.",
+    "slides": [
+      [
+        "Espaço para olhar e montar.",
+        "Para criar os jogos das aulas, seu filho usa computador ou notebook. Veja como preparar esse momento.",
+        "Criança diante de notebook com mouse e espaço livre para movimentá-lo."
+      ],
+      [
+        "A tela ajuda a acompanhar as partes do jogo.",
+        "Ele precisa olhar o cenário, encontrar os comandos e conferir o que montou.",
+        "Recorte real do Estúdio destacando cenário, paleta e área de montagem, sem renomear a interface."
+      ],
+      [
+        "O mouse ajuda a escolher e mover as peças.",
+        "Deixem espaço na mesa para apoiar a mão e arrastar os blocos com calma.",
+        "Mão opera mouse com espaço livre; bloco real sendo encaixado na tela."
+      ],
+      [
+        "O teclado também faz parte da brincadeira.",
+        "Nas atividades que usam teclas, seu filho testa os movimentos enquanto vê o resultado na tela.",
+        "Mão nas teclas de direção e personagem se movendo no Farol."
+      ],
+      [
+        "Antes da primeira aula, confiram três coisas.",
+        "Internet funcionando, som que dê para ouvir e mouse e teclado à mão. Depois, abram a aula juntos.",
+        "Três pequenos registros reais: aula carregada, volume ajustado e teclado com mouse."
+      ]
+    ],
+    "caption": "O computador faz parte da atividade: seu filho precisa olhar o cenário, montar comandos e jogar para testar. A tela, o mouse e o teclado ajudam nessas ações.\n\nAntes de começar, abram a aula, confiram o som e deixem espaço para o mouse. Se o computador for compartilhado, combinem um período em que a criança poderá usá-lo.\n\nO celular pode ajudar o responsável a conhecer a proposta. Para fazer os projetos das aulas, preparem um computador ou notebook com internet.",
+    "pillar": "Dica",
+    "parent": "Preparar um espaço que facilite a atividade."
+  },
+  {
+    "id": "P19",
+    "title": "A segunda partida também precisa começar do começo.",
+    "format": "Carrossel",
+    "goal": "Explicar reinício por uma comparação observável no Corre Dino.",
+    "cta": "Testar também o recomeço de um jogo.",
+    "metric": "Salvamentos/alcance",
+    "proof": "Captura real do Corre Dino; confirmar os estados de pontuação e posição usados na demonstração.",
+    "slides": [
+      [
+        "A segunda partida também precisa começar do começo.",
+        "Depois de terminar um jogo, ainda existe uma parte para conferir: o recomeço.",
+        "Corre Dino em andamento seguido da opção real de jogar novamente."
+      ],
+      [
+        "Algumas coisas mudaram durante a partida.",
+        "O personagem se moveu e a pontuação aumentou. O jogo precisa preparar uma nova tentativa.",
+        "Dino em ação com placar real diferente do inicial."
+      ],
+      [
+        "Ao recomeçar, o placar volta ao valor inicial.",
+        "Assim, a próxima tentativa conta os pontos daquela partida.",
+        "Mesmo placar antes e depois do reinício, com valores reais legíveis."
+      ],
+      [
+        "O personagem também volta ao lugar de partida.",
+        "Quem joga precisa encontrar o começo preparado para tentar outra vez.",
+        "Posição real do Dino no início da nova rodada."
+      ],
+      [
+        "Por isso, o teste continua depois do final.",
+        "Joguem, terminem e comecem de novo. A segunda partida está pronta para funcionar também?",
+        "Sequência de três quadros reais: partida, fim e nova partida em andamento."
+      ]
+    ],
+    "caption": "Fazer a primeira partida funcionar é uma parte do trabalho. Quem cria também precisa conferir o que acontece quando a pessoa tenta de novo.\n\nNo Corre Dino, podemos observar o placar e a posição do personagem antes e depois do reinício. Eles precisam estar preparados para a nova tentativa.\n\nNa próxima vez que seu filho mostrar um jogo que criou, experimentem começar outra partida. É uma forma simples de descobrir uma parte que nem sempre aparece no primeiro teste.\n\nAs imagens são de uma demonstração nossa do Corre Dino, um dos projetos da Comunidade dos Criadores.",
+    "pillar": "Curiosidade",
+    "parent": "Descobrir o trabalho que existe por trás de tentar outra vez."
+  },
+  {
+    "id": "P20",
+    "title": "A Flávia passou a acompanhar menos.",
+    "format": "Reel",
+    "goal": "Apresentar experiência individual e sugerir uma combinação sobre ajuda.",
+    "cta": "Combinar como a criança pedirá ajuda.",
+    "metric": "Retenção",
+    "proof": "Flávia, mãe do Fernando; vídeo autorizado, 56,14–62,14 s.",
+    "cover": "A ajuda foi mudando ao longo do caminho.",
+    "scenes": [
+      [
+        0,
+        7,
+        "Flávia no vídeo original; identificação Flávia · Mãe do Fernando.",
+        "O que ela percebeu com o Fernando.",
+        "[ÁUDIO ORIGINAL] No início eu acompanhei mais, agora eu acompanho menos. Ele faz o curso com total independência no momento."
+      ],
+      [
+        7,
+        16,
+        "Helena ao lado de computador; criança mantém o mouse.",
+        "Acompanhar pode mudar de uma atividade para outra.",
+        "A ajuda de que uma criança precisa pode mudar. Em algumas partes, ela tenta sozinha. Em outras, chama alguém."
+      ],
+      [
+        16,
+        26,
+        "Adulto aponta o pedido real Preciso de ajuda; criança continua a ação.",
+        "Combinem o que fazer quando surgir uma dúvida.",
+        "Vocês podem combinar: primeiro, mostrar onde parou. Depois, decidir se vão rever a explicação juntos ou pedir ajuda pela plataforma."
+      ]
+    ],
+    "caption": "Flávia conta que, com o tempo, passou a acompanhar menos o Fernando nas atividades. É a percepção dela sobre a experiência do filho naquele momento.\n\nPara a sua família, vale combinar como pedir ajuda. A criança pode mostrar o ponto em que parou; vocês decidem se retomam a explicação juntos ou usam o pedido da plataforma.\n\nConseguir fazer uma parte sozinha não impede precisar de apoio na seguinte. O combinado deixa esse caminho mais claro.",
+    "visual": "Relato original da Flávia, seguido de demonstração atual de acompanhamento e pedido de ajuda.",
+    "note": "Manter a fala literal e o marcador temporal “no momento”. Não prometer total independência a toda criança nem retirar o apoio como meta.",
+    "pillar": "Desejo",
+    "parent": "Acompanhar com a ajuda de que o filho precisa em cada etapa."
+  },
+  {
+    "id": "P21",
+    "title": "Hoje, quem explica o jogo é seu filho.",
+    "format": "Imagem única",
+    "goal": "Dar ao adulto um modo de participar como aprendiz.",
+    "cta": "Jogar seguindo uma explicação da criança.",
+    "metric": "Compartilhamentos/alcance",
+    "proof": "Cena encenada; proposta aplicável a um jogo conhecido ou criado pela criança.",
+    "text": [
+      "Hoje, quem explica o jogo é seu filho.",
+      "“O que eu preciso fazer para começar?”",
+      "Ouça a regra, tente uma partida e conte onde ficou com dúvida."
+    ],
+    "visual": "Criança aponta o objetivo na tela enquanto o adulto usa o teclado. O enquadramento mostra a troca de papéis, sem medalhas ou promessa de desempenho.",
+    "caption": "Escolham um jogo que seu filho conheça. Pode ser um que ele criou ou um que goste de jogar.\n\nPeça que explique como começar e o que você precisa tentar. Jogue usando a orientação dele. Se ficar com dúvida, diga em qual parte: “Eu entendi como andar, mas ainda não sei onde preciso chegar”.\n\nIsso abre espaço para ele pensar em outra forma de explicar. Você participa sem precisar chegar sabendo tudo.\n\nA conversa começa pela curiosidade de entender o que ele quer mostrar.",
+    "pillar": "Desejo",
+    "parent": "Ouvir o filho explicar algo que conhece."
+  },
+  {
+    "id": "P22",
+    "title": "Ele seguiu um exemplo. Depois fez uma escolha sua.",
+    "format": "Carrossel",
+    "goal": "Mostrar a passagem entre acompanhar uma explicação e decidir uma mudança.",
+    "cta": "Conversar sobre uma escolha da criança.",
+    "metric": "Salvamentos/alcance e visitas ao perfil",
+    "proof": "Percurso real do Farol: observar, montar, testar e personalizar.",
+    "slides": [
+      [
+        "Ele seguiu um exemplo. Depois fez uma escolha sua.",
+        "Uma referência pode ajudar a entender como começar e abrir espaço para uma mudança.",
+        "Comparação entre experiência real da aula e ação correspondente no Farol."
+      ],
+      [
+        "Ela acompanha o passo e experimenta.",
+        "Monta os comandos, joga e confere se o resultado aconteceu.",
+        "Blocos reais montados e personagem respondendo na partida."
+      ],
+      [
+        "Depois, pode fazer uma escolha própria.",
+        "Trocar o cenário, escolher outro personagem ou mudar o lugar de um item dá uma nova cara à aventura.",
+        "Personalização real com duas opções visuais e posição da chave."
+      ],
+      [
+        "A escolha também passa por um teste.",
+        "Se a chave mudou de lugar, ainda dá para chegar até ela? A criança joga para conferir.",
+        "Personagem percorre a nova posição da chave em partida real."
+      ],
+      [
+        "Peça que ele mostre o que escolheu mudar.",
+        "Pode ser um detalhe pequeno. O interessante é ouvir a ideia e ver o efeito dela no jogo.",
+        "Duas versões do Farol com uma mudança identificável escolhida para a demonstração."
+      ]
+    ],
+    "caption": "Começar por um exemplo ajuda a criança a ter uma referência. Depois de entender uma parte, ela pode perguntar: o que eu gostaria de mudar aqui?\n\nCriar jogos dá espaço para experimentar essa escolha. Um cenário muda a aparência; o lugar da chave muda o caminho. Ao jogar, a criança vê o efeito da decisão.\n\nVocê pode acompanhar pedindo que mostre uma mudança e conte o motivo. A conversa fica ligada a algo que ela realmente fez.\n\nAs imagens são versões que preparamos em A Chave do Farol para esta comparação.",
+    "pillar": "Dor",
+    "parent": "Confundir seguir um exemplo com nunca criar por conta própria."
+  },
+  {
+    "id": "P23",
+    "title": "A porta recebeu o pedido. Faltava a chave.",
+    "format": "Reel",
+    "goal": "Explicar uma condição pelo efeito, sem exigir vocabulário técnico.",
+    "cta": "Observar as duas tentativas e dizer o que mudou.",
+    "metric": "Retenção",
+    "proof": "Jogo real do Farol, mesma porta, tentativa sem chave e depois com chave.",
+    "cover": "A mesma porta respondeu de dois jeitos.",
+    "scenes": [
+      [
+        0,
+        7,
+        "Tocar a porta sem chave; aviso real aparece e farol segue apagado.",
+        "Primeira tentativa: sem a chave.",
+        "O personagem chegou ao farol, mas a luz continuou apagada. Ainda faltava pegar a chave."
+      ],
+      [
+        7,
+        16,
+        "Coletar chave e retornar à mesma porta.",
+        "Segunda tentativa: com a chave.",
+        "Depois de pegar a chave, ele volta ao mesmo lugar. Agora a porta deixa a aventura continuar e o farol acende."
+      ],
+      [
+        16,
+        26,
+        "Repetir tentativas lado a lado com mesmo enquadramento.",
+        "A porta confere uma informação.",
+        "A ação foi a mesma: tocar a porta. A resposta mudou porque o jogo conferiu se a chave já tinha sido pega."
+      ],
+      [
+        26,
+        32,
+        "Manter os dois estados visíveis.",
+        "O que mudou de uma tentativa para a outra?",
+        "Mostre as duas tentativas ao seu filho. Peça que aponte a diferença."
+      ]
+    ],
+    "caption": "Algumas ações do jogo dependem de algo acontecer antes.\n\nNeste exemplo, tocar a porta só acende o farol depois que a chave foi pega. A regra liga uma informação guardada a uma resposta do jogo.\n\nNa primeira tentativa, o que faltava? Na segunda, o que mudou? Dá para conversar apontando as duas cenas, sem precisar decorar um nome de programação.\n\nA gravação mostra uma demonstração nossa em A Chave do Farol.",
+    "visual": "Duas tentativas reais de tocar a porta: sem chave, luz apagada; após coleta, luz acesa.",
+    "note": "Diferenciar de P04: aqui a montagem está correta nas duas tentativas. O foco é a condição, não uma falha no registro da coleta.",
+    "pillar": "Curiosidade",
+    "parent": "Entender por que a mesma ação pode ter respostas diferentes."
+  },
+  {
+    "id": "P24",
+    "title": "Uma ideia cabe em três desenhos.",
+    "format": "Imagem única",
+    "goal": "Entregar um primeiro planejamento de jogo sem computador.",
+    "cta": "Desenhar e explicar uma ideia em três partes.",
+    "metric": "Compartilhamentos/alcance",
+    "proof": "Composição original de três quadros no papel, sem personagem licenciado.",
+    "text": [
+      "Uma ideia cabe em três desenhos.",
+      "1. Onde começa.",
+      "2. O que o personagem precisa fazer.",
+      "3. Como a gente sabe que conseguiu.",
+      "Escolham uma ideia e desenhem juntos."
+    ],
+    "visual": "Três quadros grandes: explorador diante de uma ponte; explorador atravessa e busca um objeto; explorador chega à casa com o objeto. Setas ligam os quadros; detalhes deixam a ação clara sem depender de texto duplicado.",
+    "caption": "Dobrem uma folha em três partes e escolham uma ideia simples.\n\nNo primeiro espaço, desenhem onde o personagem começa. No segundo, o que ele precisa fazer. No terceiro, como vocês vão perceber que a tarefa terminou.\n\nUm exemplo: sair de uma margem, atravessar a ponte para buscar uma peça e levá-la até uma casa. Depois, seu filho pode inventar outro.\n\nPeça que ele conte a aventura seguindo os desenhos. Se faltar alguma parte para entender, vocês já têm uma boa pista do que acrescentar antes de começar a construir.",
+    "pillar": "Dica",
+    "parent": "Sair de uma ideia vaga para uma primeira versão visível."
+  },
+  {
+    "id": "P25",
+    "title": "Gostar de jogar pode ser o começo de outra descoberta.",
+    "format": "Carrossel",
+    "goal": "Dar uma atividade simples para observar interesse em criar, sem aplicar teste de aptidão.",
+    "cta": "Experimentar uma mudança em um jogo conhecido.",
+    "metric": "Salvamentos/alcance e pedidos da atividade complementar",
+    "proof": "Atividade autoral de papel; cena digital apenas como exemplo de continuidade.",
+    "slides": [
+      [
+        "Gostar de jogar pode ser o começo de outra descoberta.",
+        "Uma pequena brincadeira ajuda a perceber se seu filho também se interessa em inventar.",
+        "Criança olha um jogo conhecido e esboça uma mudança no papel."
+      ],
+      [
+        "Comecem por um jogo que ele conhece.",
+        "Peça que escolha uma coisa que gostaria de mudar: um caminho, um personagem ou uma regra.",
+        "Três cartões desenhados: caminho, personagem e regra."
+      ],
+      [
+        "Escolham uma mudança para experimentar.",
+        "Se a ideia for um novo caminho, desenhem onde começa e onde termina.",
+        "Mãos desenham começo, percurso e destino."
+      ],
+      [
+        "Joguem a versão de papel.",
+        "Usem um marcador para seguir o caminho. O que ficou divertido? O que vocês gostariam de ajustar?",
+        "Tampinha percorre o desenho; uma curva recebe anotação para ajuste."
+      ],
+      [
+        "Observe o que despertou a curiosidade dele.",
+        "Foi desenhar, inventar uma regra ou descobrir como fazer funcionar? Isso ajuda a escolher a próxima experiência.",
+        "Criança escolhe entre desenho, cartão de regra e teste do percurso."
+      ],
+      [
+        "Criar jogos reúne escolhas como essas.",
+        "A criança imagina, monta uma parte, experimenta e decide o que mudar. Vocês podem começar por uma ideia pequena.",
+        "Sequência visual própria: desenho, construção no computador e teste de partida."
+      ]
+    ],
+    "caption": "Gostar de jogar é um ponto de partida para uma conversa, não uma obrigação de gostar de criar.\n\nEscolham um jogo conhecido e inventem uma mudança no papel. Depois, experimentem a ideia com um marcador. Observe quais partes chamaram a atenção do seu filho e ouça o que ele gostaria de fazer depois.\n\nNa criação de jogos, essas escolhas podem ganhar forma na tela: a criança monta, testa e ajusta. Uma primeira experiência ajuda a conhecer esse outro lado dos jogos.\n\nA proposta é uma brincadeira para explorar um interesse. Ela não mede talento nem decide um futuro profissional.",
+    "pillar": "Dica",
+    "parent": "Perceber se o filho gosta também de criar jogos.",
+    "dm": {
+      "word": "COMECO",
+      "cta": "Comente COMECO para receber pelo direct três propostas para experimentar criação de jogos com seu filho."
+    }
+  },
+  {
+    "id": "P26",
+    "title": "Os números contam o que aconteceu na partida.",
+    "format": "Reel",
+    "goal": "Demonstrar pontuação com uma relação visível entre ação e resultado.",
+    "cta": "Experimentar uma contagem ligada a uma brincadeira.",
+    "metric": "Retenção e visitas ao perfil",
+    "proof": "Captura real de Nave Contra Asteroides com acerto e alteração correspondente do placar.",
+    "cover": "Repare no placar quando o asteroide é atingido.",
+    "scenes": [
+      [
+        0,
+        6,
+        "Nave acerta asteroide; recorte acompanha a mudança do placar.",
+        "Um acerto. Mais um ponto.",
+        "A nave acertou o asteroide. Repare no placar: ele ganhou um ponto."
+      ],
+      [
+        6,
+        15,
+        "Repetir devagar o mesmo acerto e mostrar bloco real correspondente.",
+        "O jogo liga uma ação a uma mudança.",
+        "Para isso acontecer, o jogo precisa reconhecer o acerto e aumentar a pontuação. São duas partes ligadas."
+      ],
+      [
+        15,
+        24,
+        "Novo acerto em tempo normal; manter nave e placar juntos no enquadramento.",
+        "O teste confere as duas partes.",
+        "Quem cria testa a partida e observa se cada acerto muda o placar como deveria. O número ajuda a acompanhar o resultado."
+      ],
+      [
+        24,
+        34,
+        "Partida real com placar; depois papel com marcas contando acertos.",
+        "Dá para testar também fora da tela.",
+        "Vocês podem fazer uma brincadeira de acertar um alvo de papel e marcar um ponto por acerto. Depois, confiram o total juntos."
+      ]
+    ],
+    "caption": "No jogo, o número tem uma função que a criança consegue acompanhar: registrar os acertos da partida.\n\nAo criar uma regra de pontuação, ela precisa decidir o que vale ponto, fazer o número mudar e testar se a contagem corresponde às ações. Contar está ligado a algo que acabou de acontecer.\n\nPara experimentar fora da tela, façam um alvo grande no papel e tentem acertá-lo com bolinhas de papel. Marquem um risco por acerto e contem juntos no final.\n\nA gravação é uma demonstração nossa de Nave Contra Asteroides.",
+    "visual": "Nave atinge asteroide, placar aumenta e a repetição lenta evidencia a ligação. Recorte de blocos reais acompanha a explicação.",
+    "note": "Conferir o valor real atribuído a cada acerto antes de gravar. A fala prevê aumento de um ponto; usar o projeto correspondente, sem editar um placar fictício. Este curso não está incluído no Desafio avulso.",
+    "pillar": "Curiosidade",
+    "parent": "Ver uma utilidade concreta para contar e guardar números."
+  },
+  {
+    "id": "P27",
+    "title": "Quem chega ao jogo precisa de um começo claro.",
+    "format": "Carrossel",
+    "goal": "Dar um modelo simples de apresentação de uma criação.",
+    "cta": "Escrever três orientações para acompanhar o jogo.",
+    "metric": "Salvamentos/alcance",
+    "proof": "Cartão de instruções próprio aplicado a demonstração real do Farol.",
+    "slides": [
+      [
+        "Quem chega ao jogo precisa de um começo claro.",
+        "Antes de compartilhar uma criação, seu filho pode preparar três orientações para quem vai jogar.",
+        "Jogo ao lado de cartão com três linhas ainda em branco."
+      ],
+      [
+        "Primeiro, conte o objetivo.",
+        "No Farol: “Pegue a chave e vá até o farol para acender a luz.”",
+        "Chave e farol destacados na partida com caminho visível."
+      ],
+      [
+        "Depois, diga quais controles usar.",
+        "“Use as setas do teclado para mover o personagem.” A pessoa já sabe como começar a agir.",
+        "Setas do teclado e personagem em movimento."
+      ],
+      [
+        "Por fim, indique a primeira tentativa.",
+        "“Procure a chave no cenário.” Agora o jogador tem algo para experimentar.",
+        "Chave no cenário com personagem no começo; não desenhar rota completa que resolva a exploração."
+      ],
+      [
+        "Leiam as três orientações e façam uma partida.",
+        "Faltou alguma informação para começar? Ajustem o texto antes de mostrar a mais alguém.",
+        "Cartão completo com objetivo, controles e primeira tentativa ao lado do jogo em andamento."
+      ]
+    ],
+    "caption": "Uma apresentação curta ajuda alguém que nunca viu o jogo.\n\nSeu filho pode escrever três coisas: o objetivo, os controles e uma primeira ação. Depois, vocês leem e testam se já dá para começar. Para outro jogo, as três respostas mudam, mas as perguntas continuam úteis.\n\nSe forem compartilhar uma captura, confiram também o que ficou visível: usem a imagem do jogo sem expor e-mail, mensagens ou outras informações da família.\n\nA demonstração usa o Farol. O modelo serve para apresentar outros jogos e brincadeiras.",
+    "pillar": "Dica",
+    "parent": "Ajudar o filho a apresentar uma criação com clareza."
+  },
+  {
+    "id": "P28",
+    "title": "Fernando quer ver o que vai dar.",
+    "format": "Imagem única",
+    "goal": "Mostrar a expectativa de uma criança ao criar.",
+    "cta": "Experimentar uma pequena parte de uma ideia.",
+    "metric": "Compartilhamentos/alcance",
+    "proof": "Fernando, vídeo autorizado, 0–8,14 s.",
+    "text": [
+      "“Eu me sinto criando meus próprios jogos muito feliz, animado, para ver depois o que que vai dar.”",
+      "Fernando · Aluno"
+    ],
+    "visual": "Fotograma real do Fernando junto ao computador. Fala em área limpa com aspas equivalentes; preservar expressão e fisionomia, sem recriar uma reação como prova.",
+    "caption": "Fernando conta a alegria de criar e a vontade de descobrir o resultado.\n\nEssa expectativa pode começar com uma ideia pequena: mudar um caminho, escolher uma aparência ou fazer uma ação acontecer. Depois vem o teste, quando dá para comparar o que ele imaginou com o que apareceu.\n\nSe seu filho tem uma ideia, peçam que escolha uma parte para experimentar primeiro. O resultado dessa tentativa pode sugerir a próxima.\n\nA fala é do Fernando sobre a experiência dele criando jogos; as sugestões são nossas.",
+    "pillar": "Desejo",
+    "parent": "Ver o filho animado para experimentar o resultado de uma ideia."
+  },
+  {
+    "id": "P29",
+    "title": "O computador é da família. O horário pode ser combinado.",
+    "format": "Reel",
+    "goal": "Resolver uma barreira de rotina antes de apresentar a oferta.",
+    "cta": "Combinar um período possível de criação no computador.",
+    "metric": "Retenção e sessões atribuíveis",
+    "proof": "Cena própria com computador compartilhado; aulas gravadas e salvamento real.",
+    "cover": "Um computador. Mais de uma pessoa querendo usar.",
+    "scenes": [
+      [
+        0,
+        7,
+        "Helena chega com trabalho e outra pessoa com caderno; ambos olham o mesmo notebook.",
+        "O computador é compartilhado.",
+        "Quando todo mundo usa o mesmo computador, a aula precisa encontrar um lugar na rotina."
+      ],
+      [
+        7,
+        17,
+        "Agenda simples: trabalho, criação, outro uso; escrever horários acordados sem duração universal.",
+        "Combinem quando ele estará disponível.",
+        "Escolham um período em que a criança possa usar o aparelho. Como as aulas são gravadas, vocês não precisam seguir um horário de turma."
+      ],
+      [
+        17,
+        28,
+        "Fim de uma atividade real; mostrar indicador Salvo e anotar onde continuar.",
+        "Antes de sair, confira o Salvo.",
+        "Antes de encerrar uma atividade no Estúdio, confiram se apareceu Salvo. Também ajuda combinar qual será o próximo momento para continuar."
+      ],
+      [
+        28,
+        38,
+        "Agenda com próximo momento combinado; jogo em andamento ao fundo.",
+        "Um horário possível para experimentar uma ideia.",
+        "Criar um jogo pode entrar nesse combinado: escolher uma parte, experimentar e guardar o próximo passo para quando voltar."
+      ]
+    ],
+    "caption": "Se o computador é compartilhado, vale combinar um período possível para cada uso.\n\nPara uma atividade de criação, escolham também uma tarefa pequena: experimentar um caminho, montar uma ação ou testar uma mudança. Antes de sair, anotem o próximo passo. Isso dá um ponto de partida para a volta.\n\nNa demonstração com o nosso Estúdio, esperamos o indicador Salvo antes de encerrar. Em outras ferramentas, confiram como guardar o trabalho.\n\nA cena foi preparada por nós para mostrar uma organização possível. O tempo de cada criança e a rotina de cada família variam.",
+    "visual": "Família organiza horários do mesmo computador; atividade é encerrada após indicador real Salvo; novo momento fica combinado.",
+    "note": "Conferir rótulo atual do salvamento na captação. Não afirmar que fechar antes de Salvo garante persistência. Não acrescentar promessa de acesso sem autorização do responsável.",
+    "pillar": "Dor",
+    "parent": "Dividir um computador entre trabalho, estudo e lazer.",
+    "dm": {
+      "word": "ROTINA",
+      "cta": "Comente ROTINA para receber pelo direct um combinado simples de começo, pausa e volta à criação."
+    }
+  },
+  {
+    "id": "P30",
+    "title": "O interesse por jogos pode virar uma primeira criação.",
+    "format": "Carrossel",
+    "goal": "Concluir o ciclo com uma primeira experiência prática que a família pode organizar.",
+    "cta": "Escolher uma ideia pequena para experimentar.",
+    "metric": "Compartilhamentos/alcance e salvamentos/alcance",
+    "proof": "Atividade autoral de planejamento e comparação com criação digital real.",
+    "slides": [
+      [
+        "O interesse por jogos pode virar uma primeira criação.",
+        "Vocês podem começar com uma ideia pequena e observar se ele gosta de experimentar esse outro lado.",
+        "Criança compara um jogo em andamento com um desenho próprio."
+      ],
+      [
+        "Escolham algo que ele gostaria de inventar.",
+        "Pode ser um caminho até um tesouro ou um objeto que precisa ser encontrado.",
+        "Duas ideias desenhadas, uma delas escolhida pela criança."
+      ],
+      [
+        "Deixem claro o que precisa acontecer.",
+        "Onde começa? Qual é a tarefa? Como vocês vão saber que conseguiram?",
+        "Três quadros com começo, ação e resultado."
+      ],
+      [
+        "Façam uma primeira versão.",
+        "No papel, dá para experimentar o caminho com um marcador e descobrir o que falta explicar.",
+        "Tampinha percorre o mapa desenhado."
+      ],
+      [
+        "No computador, os comandos dão ações ao jogo.",
+        "A criança monta uma parte, joga e compara o resultado com a ideia que imaginou.",
+        "Blocos reais do Farol seguidos de sua ação na partida."
+      ],
+      [
+        "Uma tentativa pode dar assunto para a próxima.",
+        "O que funcionou? O que ela quer mudar? Criar jogos dá espaço para essas escolhas aparecerem.",
+        "Criança anota uma mudança depois de testar, mantendo o primeiro desenho ao lado."
+      ]
+    ],
+    "caption": "Seu filho já tem referências dos jogos que conhece. Vocês podem usá-las para conversar sobre uma ideia que ele gostaria de inventar.\n\nComecem pequeno: um objetivo, uma ação e um jeito de perceber que deu certo. Experimentem no papel. Se ele quiser continuar na tela, os comandos permitem construir ações e testar o resultado.\n\nAo criar um jogo, a criança encontra situações para organizar uma ideia, explicar uma regra, observar uma tentativa e escolher uma mudança. São ações dentro da atividade, que você consegue acompanhar.\n\nEscolham um primeiro passo possível e ouçam o que ele quer experimentar. As imagens digitais mostram uma demonstração nossa.",
+    "pillar": "Desejo",
+    "parent": "Transformar o interesse por jogos em uma primeira experiência de criação."
+  }
+]

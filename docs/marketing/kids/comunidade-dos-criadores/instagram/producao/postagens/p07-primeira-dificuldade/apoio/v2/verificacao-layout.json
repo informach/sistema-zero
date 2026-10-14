@@ -1,0 +1,233 @@
+[
+  {
+    "id": "slide-1",
+    "copy": [
+      "“Nada funciona”, ele diz. E fecha o notebook.",
+      "O problema de verdade cabia em quatro palavras."
+    ],
+    "parts": [
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 126,
+        "w": 952,
+        "h": 177.59375
+      },
+      {
+        "class": "copy ",
+        "x": 64,
+        "y": 429.40625,
+        "w": 952,
+        "h": 48.796875
+      },
+      {
+        "class": "media photo",
+        "x": 64,
+        "y": 608,
+        "w": 952,
+        "h": 635
+      }
+    ],
+    "issues": [],
+    "missingImages": 0
+  },
+  {
+    "id": "slide-2",
+    "copy": [
+      "“Nada funciona” é um erro sem endereço.",
+      "Do jeito que ele falou, parece que o jogo inteiro quebrou. E consertar um jogo inteiro dá vontade de desistir."
+    ],
+    "parts": [
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 126,
+        "w": 952,
+        "h": 121.875
+      },
+      {
+        "class": "media photo",
+        "x": 64,
+        "y": 349.828125,
+        "w": 952,
+        "h": 635
+      },
+      {
+        "class": "copy ",
+        "x": 64,
+        "y": 1086.765625,
+        "w": 952,
+        "h": 156.234375
+      }
+    ],
+    "issues": [],
+    "missingImages": 0
+  },
+  {
+    "id": "slide-3",
+    "copy": [
+      "Para mostrar, a gente afastou uma plataforma neste jogo do nosso Estúdio. O herói pula e cai no vazio.",
+      "Agora, o mesmo problema com endereço: o salto ficou curto."
+    ],
+    "parts": [
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 126,
+        "w": 952,
+        "h": 158.671875
+      },
+      {
+        "class": "media game",
+        "x": 64,
+        "y": 312.671875,
+        "w": 952,
+        "h": 771.265625
+      },
+      {
+        "class": "copy quote",
+        "x": 64,
+        "y": 1111.9375,
+        "w": 952,
+        "h": 131.0625
+      }
+    ],
+    "issues": [],
+    "missingImages": 0
+  },
+  {
+    "id": "slide-4",
+    "copy": [
+      "Com endereço, o problema encolhe.",
+      "Sobram duas suspeitas: a força do pulo ou a distância até a plataforma. Uma mudança de cada vez."
+    ],
+    "parts": [
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 126,
+        "w": 952,
+        "h": 59.796875
+      },
+      {
+        "class": "with-block",
+        "x": 64,
+        "y": 213.796875,
+        "w": 952,
+        "h": 844.96875
+      },
+      {
+        "class": "copy ",
+        "x": 64,
+        "y": 1086.765625,
+        "w": 952,
+        "h": 156.234375
+      }
+    ],
+    "issues": [],
+    "missingImages": 0
+  },
+  {
+    "id": "slide-5",
+    "copy": [
+      "O pulo continua 11, escrito no bloco do herói. A plataforma chega mais perto.",
+      "Ele alcança e pega a moeda. Um número mudou. O resto do jogo estava certo o tempo todo."
+    ],
+    "parts": [
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 126,
+        "w": 952,
+        "h": 96.59375
+      },
+      {
+        "class": "media comparisons vertical",
+        "x": 64,
+        "y": 242.59375,
+        "w": 952,
+        "h": 658.546875
+      },
+      {
+        "class": "block",
+        "x": 64,
+        "y": 921.140625,
+        "w": 952,
+        "h": 148.765625
+      },
+      {
+        "class": "copy quote",
+        "x": 64,
+        "y": 1089.90625,
+        "w": 952,
+        "h": 153.09375
+      }
+    ],
+    "issues": [],
+    "missingImages": 0
+  },
+  {
+    "id": "slide-6",
+    "copy": [
+      "Da próxima vez que ouvir “nada funciona”, peça: “me mostra onde começa a dar errado”.",
+      "Se ele estiver cansado, o endereço pode esperar o lanche."
+    ],
+    "parts": [
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 126,
+        "w": 952,
+        "h": 165.5625
+      },
+      {
+        "class": "media photo",
+        "x": 64,
+        "y": 397.703125,
+        "w": 952,
+        "h": 635
+      },
+      {
+        "class": "copy ",
+        "x": 64,
+        "y": 1138.84375,
+        "w": 952,
+        "h": 104.15625
+      }
+    ],
+    "issues": [],
+    "missingImages": 0
+  },
+  {
+    "id": "slide-7",
+    "copy": [
+      "“Nada funciona” pede para desistir. “O salto ficou curto” pede só uma mudança.",
+      "Siga @criecomhelenaejulio para a próxima tradução de criança. A de hoje era “nada funciona”."
+    ],
+    "parts": [
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 126,
+        "w": 952,
+        "h": 208.3125
+      },
+      {
+        "class": "media photo",
+        "x": 64,
+        "y": 391.1875,
+        "w": 952,
+        "h": 635
+      },
+      {
+        "class": "copy last",
+        "x": 64,
+        "y": 1083.0625,
+        "w": 952,
+        "h": 159.9375
+      }
+    ],
+    "issues": [],
+    "missingImages": 0
+  }
+]

@@ -1,0 +1,316 @@
+## P01 · Seu filho sabe o nome de todos os youtubers de jogo. Mas nunca viu como um jogo é feito.
+**Necessidade:** D01 · Meu filho passa muito tempo vendo o que os outros fazem e quase não faz algo dele. **Base da pesquisa:** **R — F02.** Incômodo com consumo sem criação; não desvalorizar todo entretenimento.
+### Slide 1 · Capa
+> Seu filho sabe o nome de todos os youtubers de jogo.
+>
+> Mas nunca viu como um jogo é feito.
+### Slide 2
+> Esse interesse pelos jogos também pode ser usado para criar.
+>
+> Num jogo feito por ele, seu filho escolhe o cenário, os personagens e o que acontece quando alguém joga.
+### Slide 3
+> Na nossa ferramenta, a criança encaixa blocos com instruções para o jogo.
+>
+> Este manda o carrinho acelerar quando o jogador usa o turbo.
+### Slide 4
+> Enquanto ele assiste, pergunte: “O que faria esse carrinho andar mais rápido?”
+>
+> Essa pergunta convida seu filho a pensar numa mudança para o jogo.
+### Slide 5
+> A gente aumentou a força do turbo e testou o carrinho de novo.
+>
+> Com as mesmas teclas, a velocidade passou de 28 para 45. O carrinho ficou mais rápido.
+### Slide 6
+> Seu filho decide como quer o cenário: com árvores, com morros ou numa noite escura.
+>
+> Depois monta as instruções para fazer essas ideias aparecerem no jogo.
+### Slide 7
+> Ele pode continuar assistindo e também aprender a criar.
+>
+> Somos Helena e Júlio, pais e programadores. Siga @criecomhelenaejulio para ver como ensinamos crianças a criar os próprios jogos.
+### Legenda
+> Seu filho já gosta de jogos. Esse interesse também pode ajudá-lo a começar a criar.
+>
+> Enquanto ele assiste a um vídeo, você pode perguntar: “Se fosse você fazendo esse jogo, o que colocaria nele?” Deixe ele contar. Um personagem diferente, uma pista à noite, um carrinho mais rápido: são ideias para começar uma criação.
+>
+> Para fazer essas ideias funcionarem, ele aprende a dar instruções ao computador. Na nossa ferramenta, essas instruções aparecem em blocos com frases em português. A criança encaixa os blocos, testa o jogo e vê o resultado do que montou.
+>
+> Aí uma parte do tempo de tela ganha uma atividade nova: pensar no que quer fazer, montar e testar. E ele tem algo que pode mostrar a você no fim.
+>
+> Somos Helena e Júlio, pais e programadores. Siga @criecomhelenaejulio para ver como ensinamos crianças a criar os próprios jogos.
+
+## P02 · “Só mais uma partida” tem um autor. E não é o seu filho.
+**Necessidade:** D02 · Falar de tela aqui em casa acaba virando discussão. **Base da pesquisa:** **R — V09, V10.** Conflito familiar; curso não é tratamento para esse problema.
+**Capa do Reel:** “Só mais uma partida” tem um autor. E não é o seu filho.
+| 0–3 s | “Só mais uma partida” tem um autor. | “Só mais uma partida” tem um autor. | Helena para a câmera, na sala; ao fundo, a TV com uma tela genérica de fim de partida, desfocada. Pessoa real: fisionomia fiel ao retrato autorizado; comparar lado a lado antes de aprovar. Selo da série: Por trás do jogo. |
+| 3–6 s | E não é o seu filho. | E não é o seu filho. | Close da Helena, um passo mais perto. Pessoa real: fisionomia fiel ao retrato autorizado; comparar lado a lado antes de aprovar. |
+| 6–16 s | Quem faz o jogo decide onde a rodada acaba. | Quem faz o jogo decide quanto dura a rodada e deixa o recorde à vista. Aí a próxima sempre parece pouca coisa. | Ilustração simples, sem jogo comercial: um cronômetro curto, um recorde piscando, um dedo indo para o botão de jogar de novo. |
+| 16–26 s | Aqui, a rodada inteira é um número: duas voltas. | Numa corrida que a gente fez, a rodada inteira cabe num bloco, uma pecinha de encaixar com a regra escrita: duas voltas. | Corrida do Pôr do Sol vista de trás do carro, passando por um anel de checkpoint no deserto; recorte do bloco “Criar a corrida… 2 voltas”. |
+| 26–30 s | | | Sem fala: o carro passa pelo último anel da segunda volta, aparece o balão com o tempo, a câmera treme e o “Recorde: 37s” continua no canto. |
+| 30–39 s | “Mais duas corridas” no lugar de “mais dez minutos”. | Só que o relógio não sabe disso: “dez minutos” acaba no meio da corrida. Combine em corridas, porque corrida tem fim. | Helena no sofá, falando para a câmera com dois dedos levantados; corte para as mãos de uma criança fictícia segurando o controle, sem rosto. São duas tomadas: a criança fictícia não divide o quadro com a Helena. Pessoa real (Helena): fisionomia fiel ao retrato autorizado; comparar lado a lado antes de aprovar. |
+| 39–46 s | Quando ele escreve as voltas, o autor é ele. | Quando é ele quem escreve o número de voltas, o “só mais uma” muda de autor. | Só as mãos de uma criança fictícia no mouse, trocando o número de voltas no bloco de um projeto de corrida preparado pela equipe para a cena (não o exemplo). |
+| 46–51 s | Siga @criecomhelenaejulio | Siga a gente para mais combinados que funcionam com quem joga. | Helena para a câmera, em outro canto da sala. Pessoa real: fisionomia fiel ao retrato autorizado; comparar lado a lado antes de aprovar. |
+### Legenda
+> O tempo de tela que você combinou não sabe que a corrida está na última volta, e é por isso que parar vira discussão.
+>
+> A gente programa, e do lado de cá quase nada na tela de fim acontece por acaso. Quem faz o jogo decide quanto dura a rodada, mostra o seu tempo assim que você chega e deixa o recorde à vista. Aí a próxima sempre parece pouca coisa.
+>
+> Então combine o fim em rodadas: “Mais duas corridas e a gente janta”. A corrida tem fim, e os dois sabem quando ela acaba. Nos jogos que não têm rodada, combine um ponto de parada que dê para ver, como o próximo lugar de salvar ou o fim de uma construção.
+>
+> Numa corrida do nosso Estúdio, o tamanho da rodada ficou num bloco, uma pecinha de encaixar com a regra escrita: duas voltas. O recorde no canto da tela também está lá porque alguém escreveu. Quando seu filho escreve esses números, ele passa a decidir onde a partida acaba.
+>
+> Siga @criecomhelenaejulio para mais combinados que funcionam com quem joga.
+
+## P03 · Você liga a tela para conseguir trabalhar. E a culpa vem junto, de brinde.
+**Necessidade:** D03 · Uso a tela quando preciso trabalhar e depois fico me cobrando por isso. **Base da pesquisa:** **I — E02.** Sobrecarga e culpa são contexto; não presumir que toda família viva isso.
+### Arte
+> Você liga a tela para conseguir trabalhar.
+>
+> E a culpa vem junto, de brinde.
+### Legenda
+> O contador de tempo de tela soma as horas, mas não conta o que seu filho fez nelas. E boa parte da culpa vem justamente desse número.
+>
+> Tem dia em que a tela é o que deixa você terminar o trabalho, e tudo bem admitir isso.
+>
+> A gente gosta de separar a tela em dois tipos. Tem a da plateia, que é assistir, jogar e descansar, e tem a dos bastidores, que é fazer uma coisa que não existia antes. As duas cabem no dia.
+>
+> E os bastidores cabem em coisas simples: desenhar no papel a primeira fase de um jogo, inventar a regra de uma brincadeira nova ou montar um joguinho com blocos de encaixar. O que importa é sobrar alguma coisa para mostrar.
+>
+> Então, se der, troque um pedaço da plateia por bastidores e combine uma coisa só: às seis da tarde, cinco minutos para ele apresentar o que fez.
+>
+> Siga @criecomhelenaejulio para trocar um pouco da culpa por coisas que ele pode te mostrar no fim do dia.
+
+## P04 · Sua filha acha qualquer vídeo em dois toques. Mas não acha o trabalho da escola que salvou ontem.
+**Necessidade:** D04 · Ele usa aplicativos com facilidade, mas precisa de ajuda para coisas básicas no computador. **Base da pesquisa:** **R — V05.** Habilidades de computador precisam ser aprendidas; evitar rótulo de incapacidade.
+### Slide 1 · Capa
+> Sua filha acha qualquer vídeo em dois toques.
+>
+> Mas não acha o trabalho da escola que salvou ontem.
+### Slide 2
+> Tem um motivo para isso: o celular foi feito para guardar as coisas por ela.
+>
+> A foto vai sozinha para a galeria, e ninguém decide onde nada mora. Já no computador, quem decide é ela.
+### Slide 3
+> Dar nome, escolher a pasta e lembrar onde guardou: o celular sempre fez isso no lugar dela.
+>
+> E ninguém aprende o que nunca precisou fazer, mas isso se aprende como qualquer outra coisa.
+### Slide 4
+> Para ver onde ela trava, faça um teste de três minutos: ela salva um arquivo com nome, fecha tudo e acha de novo.
+>
+> O passo em que ela hesitar é o que falta aprender.
+### Slide 5
+> Depois do teste, combinem uma pasta só da escola e um nome que diga o que tem dentro.
+>
+> “sistema-solar” se acha em dois segundos. Já “trabalho final 2” vira caça ao tesouro.
+### Slide 6
+> E esse jeito vem mais rápido quando ela tem motivo para voltar ao computador.
+>
+> Criar um jogo é um deles: todo projeto precisa de um nome, e é por ele que ela acha o jogo.
+### Slide 7
+> O celular decide por ela, enquanto o computador pergunta. E, quando ela monta um jogo, é ela quem escreve as respostas.
+>
+> Siga @criecomhelenaejulio para descobrir o que as telas decidem pela sua filha.
+### Legenda
+> Quem já procurou o trabalho da escola às dez da noite conhece a cena: craque no celular, perdida no computador.
+>
+> Tem explicação: o celular foi feito para guardar tudo sozinho, e ninguém precisa decidir onde nada mora. Já o computador devolve essa decisão para quem usa: onde salvar, com que nome e em qual pasta.
+>
+> A boa notícia é que isso se aprende. Um teste de três minutos mostra o passo que ainda não ficou claro: salvar com nome, fechar tudo e procurar de novo. Depois, combinem uma pasta só para a escola e nomes que digam o que tem dentro.
+>
+> Fica ainda mais fácil quando existe um motivo para voltar ao computador. Criar jogos no computador é um dos bons, porque cada projeto precisa de um nome, e é por esse nome que sua filha acha o jogo de volta.
+>
+> Siga @criecomhelenaejulio para descobrir o que as telas decidem pela sua filha.
+
+## P05 · Da porta, você vê as costas dele e o monitor por trás.
+**Necessidade:** D05 · Nem sempre sei o que ele encontra ou com quem fala na internet. **Base da pesquisa:** **I — E01, E02.** Preocupação com orientação e ambiente; nenhuma promessa de risco zero.
+### Slide 1 · Capa
+> Da porta, você vê as costas dele e o monitor por trás.
+>
+> E dali ninguém sabe com quem ele está falando.
+### Slide 2
+> Perguntar do corredor “o que você está fazendo?” quase sempre rende um “nada”.
+>
+> Por isso o teste de hoje começa com três passos para dentro do quarto.
+### Slide 3
+> Puxe uma cadeira e diga: “Me mostra”.
+>
+> Uma tela mostrada conta mais do que dez perguntas feitas da porta, porque ele abre, explica, e você vê com os próprios olhos.
+### Slide 4
+> Enquanto ele mostra, faça três perguntas:
+>
+> Como isso funciona?
+> Em qual site ou aplicativo você está?
+> Quem consegue falar com você aqui?
+### Slide 5
+> Um combinado vale para qualquer tela:
+>
+> se alguém pedir senha, dinheiro, foto ou dados pessoais, ele fala com você antes de responder.
+### Slide 6
+> E tem uma pergunta que quem faz jogos responde fácil: quem está falando? Num jogo montado com blocos, cada fala de personagem foi escrita por alguém.
+>
+> No jogo dele, esse alguém é ele.
+### Slide 7
+> Numa vila do nosso Estúdio de criar jogos, a Guia pergunta: “O que você quer ser quando crescer?”
+>
+> A pergunta e os botões foram escritos em blocos pela nossa equipe.
+### Slide 8
+> Então, depois que ele escrever a fala de um personagem, aponte uma mensagem estranha no celular e pergunte: “E essa aqui, quem escreveu?”
+>
+> Siga @criecomhelenaejulio para mais testes que cabem numa cadeira puxada.
+### Legenda
+> “Ele está no computador” é a frase que mais tranquiliza e menos informa numa casa.
+>
+> Da porta, uma série, uma conversa com um desconhecido num jogo online e um jogo em construção parecem a mesma coisa. Por isso o jeito de saber é chegar perto e pedir: “Me mostra”.
+>
+> Enquanto ele mostra, pergunte como aquilo funciona, em qual site ou aplicativo ele está e quem consegue falar com ele ali. E combinem uma regra de segurança na internet: pedido de senha, dinheiro, foto ou dados pessoais passa por você antes de qualquer resposta. Salve este post para colar o combinado na geladeira.
+>
+> Para fechar, um teste que diverte. Num jogo montado com blocos, alguém escolhe cada fala dos personagens, e na nossa vila de exemplo a Guia faz uma pergunta com dois botões. No dia em que seu filho escrever a fala de um personagem, aponte uma mensagem estranha no celular e pergunte quem escreveu aquela.
+>
+> Siga @criecomhelenaejulio para mais testes que cabem numa cadeira puxada.
+
+## P06 · Você já disse “vai estudar” três vezes. E nenhum jogo precisa dizer “vai jogar”.
+**Necessidade:** D06 · Se eu não lembrar, a atividade não começa. **Base da pesquisa:** **R — V10.** Relato estrangeiro; frequência no público brasileiro desconhecida.
+**Capa do Reel:** Você já disse “vai estudar” três vezes. E nenhum jogo precisa dizer “vai jogar”.
+| 0–3 s | Você já disse “vai estudar” três vezes. | Você já disse “vai estudar” três vezes. | Helena ao lado de um caderno fechado na mesa da cozinha. Pessoa real: fisionomia fiel ao retrato autorizado; comparar lado a lado antes de aprovar. Selo da série: Por trás do jogo. |
+| 3–6 s | E nenhum jogo precisa dizer “vai jogar”. | E nenhum jogo precisa dizer “vai jogar”. | Close da Helena olhando para a câmera, com meio sorriso. Pessoa real: fisionomia fiel ao retrato autorizado; comparar lado a lado antes de aprovar. |
+| 6–16 s | O jogo começa com uma missão pequena. | Porque os jogos começam com uma missão do tamanho de um passo: ande até a placa, pegue a primeira moeda. | Ilustração simples, sem jogo comercial: um personagem e uma seta apontando para a primeira moeda. |
+| 16–25 s | “Vai estudar” é o nome de tudo. | Já “vai estudar” é o nome da tarefa inteira, e ninguém começa uma tarefa inteira. A gente começa pelo primeiro passo. | O caderno fechado; só a mão da Helena sobre ele. |
+| 25–34 s | Página 40. Exercício 1. | Então troque por uma missão: abre na página quarenta e faz o exercício um. Aí ele sabe onde pôr a mão. | Bilhete ao lado do caderno com a missão escrita; o caderno se abre na página 40. |
+| 34–42 s | Missão à vista, como a seta do jogo. | E deixe a missão escrita num papel do lado do caderno, como a seta que o jogo mostra. | Helena prende o bilhete na beira do caderno; no bilhete, uma seta desenhada à mão. Pessoa real: fisionomia fiel ao retrato autorizado; comparar lado a lado antes de aprovar. |
+| 42–45 s | | | Sem fala: só as mãos da criança fictícia pegando o bilhete e abrindo o caderno na página 40; o lápis começa o primeiro exercício. |
+| 45–51 s | Siga @criecomhelenaejulio | Siga a gente para trocar mais ordens grandes por missões pequenas. | Helena para a câmera, com o caderno aberto ao fundo. Pessoa real: fisionomia fiel ao retrato autorizado; comparar lado a lado antes de aprovar. |
+### Legenda
+> Ninguém começa uma tarefa inteira, e é por isso que os jogos abrem com uma missão do tamanho de um passo.
+>
+> Ande até a placa, pegue a primeira moeda: quem faz jogos deixa a primeira missão pequena e à vista justamente para ninguém ficar parado sem saber por onde ir.
+>
+> Já “vai estudar” é o nome da tarefa inteira. Experimente trocar por uma missão, como “abre na página 40 e faz o exercício 1”, e deixe escrita num papel ao lado do caderno, à vista, como a seta do jogo.
+>
+> Na criação de jogos, a primeira fase nasce dessa pergunta: o que a pessoa vai fazer primeiro? Com a lição de casa, dá para pensar igual. Feita a primeira missão, vem a próxima.
+>
+> Siga @criecomhelenaejulio para trocar mais ordens grandes por missões pequenas.
+
+## P07 · “Nada funciona”, ele diz, e fecha o notebook. Antes de pedir que tente de novo, ajude seu filho a descobrir o que deu errado.
+**Necessidade:** D07 · Ele começa animado, mas perde a vontade quando fica difícil. **Base da pesquisa:** **R — V07.** Investigar dificuldade, apoio e interesse antes de chamar de falta de persistência.
+### Slide 1 · Capa
+> “Nada funciona”, ele diz, e fecha o notebook.
+>
+> Antes de pedir que tente de novo, ajude seu filho a descobrir o que deu errado.
+### Slide 2
+> Quando ele diz “nada funciona”, você ainda não sabe onde ajudar.
+>
+> Peça: “Me mostra o que você queria fazer e o que aconteceu.”
+### Slide 3
+> Ao criar um jogo, seu filho pode praticar isso: olhar para o que falhou.
+>
+> Neste exemplo, o personagem pula, mas não chega à próxima plataforma.
+### Slide 4
+> Agora dá para pensar em duas mudanças: fazer o personagem pular mais longe ou deixar a plataforma mais perto.
+>
+> Vamos testar só uma delas.
+### Slide 5
+> A gente deixou a plataforma mais perto e testou o mesmo pulo.
+>
+> Dessa vez, o personagem chegou e pegou a moeda. Bastou mudar essa parte do jogo.
+### Slide 6
+> É isso que seu filho pratica ao criar jogos: entender o erro, escolher uma mudança e tentar de novo.
+>
+> Se estiver cansado, façam uma pausa e retomem depois.
+### Slide 7
+> Resolver um problema começa por entender o que deu errado.
+>
+> Siga @criecomhelenaejulio. Aqui mostramos como seu filho pode praticar isso criando os próprios jogos.
+### Legenda
+> “Tenta de novo” fica mais útil quando a criança sabe o que vai fazer diferente.
+>
+> Quando seu filho disser que nada funciona, peça para ele mostrar o que estava tentando fazer. Você pode perguntar: “Qual parte deu certo? E o que aconteceu depois?” Assim, vocês começam a entender onde ele precisa de ajuda.
+>
+> Criar jogos dá oportunidades de praticar esse cuidado. No exemplo que montamos, o personagem andava e pulava, mas não alcançava a plataforma seguinte. A gente aproximou a plataforma e repetiu o teste. Dessa vez, ele chegou.
+>
+> A próxima tentativa teve uma mudança escolhida por um motivo. É esse processo que a criança pratica: observar o erro, pensar numa solução e testar se ela funcionou. Você pode ajudá-la a explicar o que aconteceu, mesmo sem saber programar.
+>
+> Siga @criecomhelenaejulio. Aqui mostramos como seu filho pode praticar isso criando os próprios jogos.
+
+## P08 · Ele venceu metade da luta e disse “sou ruim nisso”.
+**Necessidade:** D08 · Uma dificuldade vira depressa a ideia de que ele não é capaz. **Base da pesquisa:** **H.** O corpus mostra frustração, mas não confirma a frequência dessa autodefinição entre nossas famílias.
+### Arte
+> Ele venceu metade da luta e disse “sou ruim nisso”.
+>
+> Mas a segunda metade foi escrita para ser outra luta.
+### Legenda
+> Quando ouvir “sou ruim nisso” depois de perder no jogo, pergunte em qual metade.
+>
+> A primeira ele venceu. A segunda pede outra estratégia, e trocar de estratégia é coisa que se aprende.
+>
+> Num chefão do nosso Estúdio de criar jogos, o dragão começa com 160 de vida e, quando fica abaixo de 80, vira fera e passa a acertar o time inteiro. Essa virada está escrita num bloco, uma pecinha de encaixar com a regra em português: passou da metade, o dragão muda o jeito de lutar.
+>
+> Por isso, na tela, parece que ficou difícil de repente. Nos bastidores, essa dificuldade foi escrita por alguém, num ponto exato, e quem perde, perde para essa segunda metade.
+>
+> E, criando um chefão, a criança descobre isso por dentro, porque é ela quem decide quando a luta muda.
+>
+> Siga @criecomhelenaejulio para ter mais respostas para um “sou ruim nisso”.
+
+## P09 · Um jogo da memória inteiro depende de 0,7 segundo.
+**Necessidade:** D09 · Às vezes ele termina a tarefa, mas não consegue explicar o que fez. **Base da pesquisa:** **H.** Distinguir conclusão de compreensão é pedagogicamente pertinente; a dor específica precisa de entrevista.
+### Slide 1 · Capa
+> Um jogo da memória inteiro depende de 0,7 segundo.
+>
+> Se você tirar esse número, o jogo deixa de existir.
+### Slide 2
+> É que, quando as duas cartas viradas são diferentes, o jogo espera 0,7 segundo antes de desvirar.
+>
+> Parece detalhe, até você ver o que acontece sem ele.
+### Slide 3
+> Sem a espera, a segunda carta desvira na mesma hora, e ninguém consegue ver o desenho.
+>
+> Aí o jogo da memória fica sem memória nenhuma.
+### Slide 4
+> Agora imagine duas crianças com o mesmo jogo pronto.
+>
+> Só uma sabe explicar o 0,7. É a dúvida do trabalho da escola: sua filha entendeu ou só seguiu o modelo?
+### Slide 5
+> E essa diferença só aparece na conversa.
+>
+> Então escolha um detalhe do trabalho e pergunte: “Para que serve isso aqui?”
+### Slide 6
+> Se as palavras não vierem, peça para ela imaginar o trabalho sem aquele detalhe.
+>
+> Num jogo, dá para tirar de verdade, e a resposta aparece em dez segundos, como na carta que desvirou cedo demais.
+### Slide 7
+> O trabalho pronto mostra o que ela fez, enquanto o motivo de um detalhe mostra o que ela entendeu.
+>
+> Siga @criecomhelenaejulio para ter mais perguntas como essa quando ela disser que terminou.
+### Legenda
+> Duas crianças entregam o mesmo jogo da memória, e só uma sabe dizer por que ele espera 0,7 segundo.
+>
+> E, quando o trabalho da escola chega pronto, fica aquela dúvida que muito pai conhece: sua filha entendeu ou só seguiu o modelo? Por fora, não dá para saber.
+>
+> No jogo da memória do nosso Estúdio, a pausa antes de desvirar as cartas é de 0,7 segundo. Sem ela, a segunda carta desvira antes de alguém ver o desenho, e o jogo deixa de ser jogo.
+>
+> Então, no próximo trabalho que ela terminar, escolha um detalhe e pergunte para que serve. Se a explicação travar, peça para ela imaginar o trabalho sem aquele detalhe, porque a conversa conta o que ela entendeu e o que ainda está descobrindo.
+>
+> Conte aqui o detalhe que você escolheu.
+>
+> Siga @criecomhelenaejulio para ter mais perguntas como essa quando ela disser que terminou.
+
+## P10 · A tarefa está aberta, e o celular também. E quem faz jogos sabe por que a tarefa perde.
+**Necessidade:** D10 · Ele se distrai antes de conseguir avançar numa atividade. **Base da pesquisa:** **H.** Não inferir diagnóstico nem anunciar programação como solução para atenção.
+**Capa do Reel:** A tarefa está aberta, e o celular também. E quem faz jogos sabe por que a tarefa perde.
+| 0–4 s | A tarefa está aberta, e o celular também. | A tarefa está aberta, e o celular também. | Mesa com o caderno aberto e o celular acendendo com notificação genérica; criança fictícia olhando para o celular. Selo da série: Por trás do jogo. |
+| 4–9 s | Quem faz jogos sabe por que a tarefa perde. | E quem faz jogos sabe por que a tarefa perde. | Close do celular acendendo de novo; o caderno parado. |
+| 9–17 s | O caderno só responde quando alguém corrige. | É que o celular responde a cada toque, e o caderno só responde quando alguém corrige. | Helena segurando o caderno ao lado da mesa; corte para o celular vibrando. Pessoa real: fisionomia fiel ao retrato autorizado; comparar lado a lado antes de aprovar. |
+| 17–25 s | Jogo é feito de resposta na hora. | Jogo é feito de resposta na hora, e um boliche do nosso Estúdio mostra bem isso. | Boliche na Praça: vista de trás do jipe acelerando pela praia na direção dos pinos. |
+| 25–33 s | Derrubou todos os pinos: STRIKE. | Quando o jipe derruba todos os pinos, a regra escrita num bloco manda mostrar STRIKE e tremer a câmera. | Vista lateral dos pinos caindo; o balão do strike e a câmera tremendo; recorte do bloco “Quando derrubar todos os pinos”. |
+| 33–37 s | | | Sem fala: close do placar “Pinos: 10/10”, logo depois do strike. |
+| 37–45 s | Confira o primeiro exercício na hora. | Então traga isso para a tarefa: celular em outro cômodo e o primeiro exercício conferido junto, na hora. | Helena leva o celular para outro móvel, sozinha no quadro; corte para as mãos de um adulto e de uma criança fictícia sobre o caderno, conferindo a primeira questão, sem o rosto da criança. Pessoa real (Helena): fisionomia fiel ao retrato autorizado; comparar lado a lado antes de aprovar. |
+| 45–50 s | Siga @criecomhelenaejulio | Siga a gente para mais truques de jogo na hora da tarefa. | Helena para a câmera, com a mesa ao fundo. Pessoa real: fisionomia fiel ao retrato autorizado; comparar lado a lado antes de aprovar. |
+### Legenda
+> Num jogo, cada ação ganha uma resposta na hora: um som, um brilho, um número subindo.
+>
+> Quem faz jogos coloca essas respostas de propósito, e o celular inteiro funciona do mesmo jeito, respondendo a cada toque. Já o caderno só responde quando alguém corrige, e é por isso que a tarefa perde.
+>
+> No boliche do nosso Estúdio, onde a gente monta os jogos de exemplo, essa resposta está num bloco, a pecinha de encaixar com a regra escrita: quando derrubar todos os pinos, mostrar STRIKE e tremer a câmera. E, ao escrever uma regra dessas, a criança passa a decidir quando o jogo comemora.
+>
+> Na lição de casa, dá para trazer um pouco dessa resposta rápida. Combinem onde o celular fica e confiram juntos o primeiro exercício assim que seu filho terminar, para ele saber na hora se está no caminho, e não na semana que vem.
+>
+> Siga @criecomhelenaejulio para mais truques de jogo na hora da tarefa.

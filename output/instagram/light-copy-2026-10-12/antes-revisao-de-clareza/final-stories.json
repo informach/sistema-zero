@@ -1,0 +1,442 @@
+[
+  [
+    "ST01",
+    "P01",
+    "Encontrar uma próxima tentativa",
+    [
+      [
+        "O “não consigo” veio antes de começar.",
+        "Peça que seu filho mostre qual parte da tarefa ele está olhando.",
+        "Criança aponta uma instrução no papel; adulto acompanha."
+      ],
+      [
+        "Agora escolham uma ação pequena.",
+        "Pode ser ler o pedido ou separar o material. Depois, olhem o que já ficou possível fazer.",
+        "Primeira ação destacada numa lista curta."
+      ],
+      [
+        "Criar jogos também começa por uma parte.",
+        "Montar uma ação e testar oferece um resultado para observar antes de seguir.",
+        "Só no final, comando real e efeito correspondente no jogo."
+      ]
+    ]
+  ],
+  [
+    "ST02",
+    "P03",
+    "Receber uma criação",
+    [
+      [
+        "Seu filho chamou para mostrar o que fez.",
+        "Uma conversa pode começar com: “Me mostra a parte de que você mais gostou.”",
+        "Criança mostra desenho ao adulto."
+      ],
+      [
+        "Deixe ele escolher o detalhe.",
+        "Talvez seja justamente uma parte que passou despercebida para você.",
+        "Mão aponta pequena mudança no desenho."
+      ],
+      [
+        "Uma criação digital também pode render essa conversa.",
+        "Ao inventar um jogo, ele passa a ter escolhas para mostrar e ideias para explicar.",
+        "Criança aponta uma escolha no jogo ao adulto, sem interface de oferta."
+      ]
+    ]
+  ],
+  [
+    "ST03",
+    "P04",
+    "Uma tarefa com começo visível",
+    [
+      [
+        "“Faça o trabalho” pode esconder vários passos.",
+        "Ler o pedido, separar o material e escolher uma ideia são ações diferentes.",
+        "Materiais escolares e pedido no papel."
+      ],
+      [
+        "Escolham qual vem primeiro.",
+        "Escrevam uma lista curta e deixem o passo de agora em destaque.",
+        "Três cartões em ordem."
+      ],
+      [
+        "A programação também pede ordem.",
+        "Ao criar um jogo, a criança organiza comandos e testa se aquela sequência produz o que imaginou.",
+        "Sequência real de comandos seguida de ação no jogo."
+      ]
+    ]
+  ],
+  [
+    "ST04",
+    "P06",
+    "Ajudar a mostrar a dúvida",
+    [
+      [
+        "Você não sabe fazer aquela atividade.",
+        "Ainda pode pedir que seu filho mostre o que tentou.",
+        "Adulto escuta criança diante de atividade manual."
+      ],
+      [
+        "A dúvida pode ficar mais específica.",
+        "“Você não encontrou a peça ou ainda não entendeu como encaixar?”",
+        "Detalhe de duas peças de papel; uma delas ainda fora da construção."
+      ],
+      [
+        "Mostrar o problema é uma parte da ajuda.",
+        "Na criação de jogos, comparar o resultado esperado com a tela dá um começo para investigar juntos.",
+        "Criança aponta o resultado de um teste no jogo."
+      ]
+    ]
+  ],
+  [
+    "ST05",
+    "P07",
+    "Mostrar o primeiro passo",
+    [
+      [
+        "Uma orientação veio com muitas coisas juntas.",
+        "“Pegue o material, abra a página e comece a atividade.”",
+        "Balão de fala editorial acima de mesa escolar."
+      ],
+      [
+        "Tentem uma ação por vez.",
+        "Peça que ele mostre o primeiro passo. Se houver dúvida, vocês descobrem onde ela está.",
+        "Criança separa apenas o material necessário."
+      ],
+      [
+        "Instruções claras também fazem jogos funcionar.",
+        "A criança pode montar uma sequência curta, testar e conferir cada ação.",
+        "Comandos reais em uma sequência curta e resultado visível."
+      ]
+    ]
+  ],
+  [
+    "ST06",
+    "P09",
+    "A pausa que vira atividade",
+    [
+      [
+        "O vídeo parou. A atividade pode ter começado.",
+        "Seu filho pode estar usando a explicação para fazer uma tentativa.",
+        "Vídeo de uma atividade manual pausado; mãos fazem a tarefa."
+      ],
+      [
+        "Olhe para o que ele está tentando.",
+        "Se travou num passo, voltem só àquele trecho da orientação.",
+        "Adulto e criança localizam uma instrução específica."
+      ],
+      [
+        "Ao criar um jogo, o teste mostra o resultado.",
+        "A criança monta uma parte, joga e observa se aconteceu o que esperava.",
+        "Demonstração real do jogo, sem venda ou tela de oferta."
+      ]
+    ]
+  ],
+  [
+    "ST07",
+    "P10",
+    "Uma regra inventada em casa",
+    [
+      [
+        "Uma brincadeira conhecida pode ganhar uma escolha sua.",
+        "Desenhem seis casas até um tesouro e andem uma casa por vez com uma tampinha.",
+        "Percurso original no papel com seis casas."
+      ],
+      [
+        "Agora mudem uma regra.",
+        "Coloquem uma estrela na terceira casa. Quem chegar nela avança uma casa extra.",
+        "Estrela na terceira casa; tampinha avança à quarta."
+      ],
+      [
+        "Vocês acabaram de experimentar uma regra.",
+        "Criar jogos na tela permite programar escolhas assim e conferir como elas mudam a partida.",
+        "Papel em primeiro plano e pequeno exemplo digital real ao lado."
+      ]
+    ]
+  ],
+  [
+    "ST08",
+    "P12",
+    "Dar espaço para uma ideia",
+    [
+      [
+        "A ideia ainda veio pela metade.",
+        "Em vez de pedir que explique tudo de uma vez, peça um desenho da primeira parte.",
+        "Criança esboça uma ideia em folha."
+      ],
+      [
+        "Um desenho pode dar assunto para continuar.",
+        "“O que acontece aqui?” Ouçam a resposta e acrescentem o próximo pedaço.",
+        "Adulto aponta um quadro; criança acrescenta outro."
+      ],
+      [
+        "A programação pode dar ações a essa ideia.",
+        "Ao criar jogos, a criança constrói uma versão que dá para experimentar e mostrar.",
+        "Desenho ao lado de uma ação real de jogo, sem atribuir ao aluno uma criação não confirmada."
+      ]
+    ]
+  ],
+  [
+    "ST09",
+    "P13",
+    "Explicar para quem está chegando",
+    [
+      [
+        "Seu filho sabe como a brincadeira funciona.",
+        "A pessoa que acabou de chegar ainda precisa de um começo.",
+        "Nova pessoa se aproxima de brincadeira de papel."
+      ],
+      [
+        "Peça uma orientação para a primeira ação.",
+        "“Onde eu começo e o que faço primeiro?” Depois, tentem seguir.",
+        "Marcador é colocado no ponto inicial indicado pela criança."
+      ],
+      [
+        "Um jogo também precisa conversar com quem chega.",
+        "Criar avisos claros dá à criança uma situação concreta para pensar nas palavras que usa.",
+        "Aviso real orientando a busca da chave no Farol."
+      ]
+    ]
+  ],
+  [
+    "ST10",
+    "P15",
+    "Uma opinião que ajuda",
+    [
+      [
+        "Uma pergunta específica pode fazer a conversa continuar.",
+        "Uma pergunta sobre uma parte dá à outra pessoa algo específico para olhar.",
+        "Desenho mostrado ao adulto."
+      ],
+      [
+        "Experimentem: “Você entendeu onde começa?”",
+        "Peçam que a pessoa aponte. Depois, comparem com o que a criança imaginou.",
+        "Duas mãos apontam possíveis inícios de uma sequência desenhada."
+      ],
+      [
+        "Na criação de jogos, observar alguém jogar dá esse retorno.",
+        "Uma dúvida do jogador pode virar uma ideia de melhoria para o projeto.",
+        "Adulto joga; criança observa sem antecipar a solução."
+      ]
+    ]
+  ],
+  [
+    "ST11",
+    "P16",
+    "Voltar depois de uma tentativa difícil",
+    [
+      [
+        "A tentativa não funcionou e ele quer parar.",
+        "Vocês podem fazer uma pausa antes de decidir o próximo passo.",
+        "Construção de papel guardada na mesa."
+      ],
+      [
+        "Na volta, olhem para uma diferença.",
+        "O que ele queria que acontecesse? O que aconteceu na tentativa?",
+        "Desenho planejado ao lado da construção real."
+      ],
+      [
+        "Programar jogos oferece esse tipo de comparação.",
+        "Uma mudança, um teste e uma observação ajudam a acompanhar a próxima tentativa.",
+        "Um comando real alterado e teste correspondente."
+      ]
+    ]
+  ],
+  [
+    "ST12",
+    "P18",
+    "Preparar o começo",
+    [
+      [
+        "A atividade ainda nem começou e faltou material.",
+        "Uma conferência curta pode evitar novas buscas no meio da tarefa.",
+        "Criança procura lápis junto do caderno."
+      ],
+      [
+        "Separem o necessário e deixem a primeira ação clara.",
+        "Façam essa preparação juntos, com os materiais que a família tem.",
+        "Mesa pronta com poucos materiais."
+      ],
+      [
+        "Para criar na tela, preparem também o computador.",
+        "Confiram internet, som, mouse e teclado. Depois, escolham uma parte para fazer e testar.",
+        "Computador preparado, sem lista de oferta ou link comercial."
+      ]
+    ]
+  ],
+  [
+    "ST13",
+    "P19",
+    "Um bilhete para a próxima tentativa",
+    [
+      [
+        "Chegou a hora de parar.",
+        "Antes de guardar, seu filho pode deixar um bilhete para ele mesmo.",
+        "Construção incompleta e papel pequeno."
+      ],
+      [
+        "“Já fiz a base. Depois vou montar a ponte.”",
+        "O bilhete guarda o que foi feito e uma próxima ação.",
+        "Bilhete literal junto dos materiais."
+      ],
+      [
+        "Projetos digitais também podem continuar depois.",
+        "Salvem o trabalho na ferramenta e registrem a próxima ideia. O bilhete ajuda a lembrar; o salvamento guarda o projeto.",
+        "Computador com projeto e anotação ao lado."
+      ]
+    ]
+  ],
+  [
+    "ST14",
+    "P21",
+    "Deixar o filho ensinar uma parte",
+    [
+      [
+        "Hoje, ele pode mostrar o caminho para você.",
+        "Escolham algo que seu filho conhece e peçam uma primeira orientação.",
+        "Criança explica uma dobradura ao adulto."
+      ],
+      [
+        "Tente seguir e conte onde ficou com dúvida.",
+        "Ele pode apontar, demonstrar ou explicar de outro jeito.",
+        "Adulto tenta a dobra; criança mostra o gesto."
+      ],
+      [
+        "Quando cria jogos, ele também pode ocupar esse lugar.",
+        "Mostrar o objetivo e orientar um primeiro jogador dá um motivo para organizar a explicação.",
+        "Criança orienta adulto diante de jogo real."
+      ]
+    ]
+  ],
+  [
+    "ST15",
+    "P22",
+    "Um exemplo e uma escolha",
+    [
+      [
+        "Um exemplo pode ajudar a sair da folha em branco.",
+        "A criança encontra uma referência para começar a experimentar.",
+        "Dobradura simples pronta e folha ao lado."
+      ],
+      [
+        "Depois, ela pode escolher uma diferença.",
+        "Peça que mostre o que mudou e conte o motivo da escolha.",
+        "Criança acrescenta detalhe próprio."
+      ],
+      [
+        "Na programação, essa diferença pode ser testada.",
+        "Ao criar jogos, ela adapta uma parte e observa como a nova versão funciona.",
+        "Duas versões reais de um detalhe no jogo."
+      ]
+    ]
+  ],
+  [
+    "ST16",
+    "P24",
+    "Três desenhos para contar uma ideia",
+    [
+      [
+        "A ideia ficou grande para explicar de uma vez.",
+        "Dobrem uma folha em três partes.",
+        "Folha dividida em três quadros."
+      ],
+      [
+        "Desenhem começo, ação e resultado.",
+        "Depois, contem a ideia seguindo os quadros. Se faltar uma parte, acrescentem.",
+        "Construção de ponte representada em três etapas."
+      ],
+      [
+        "Esse registro também ajuda a pensar num jogo.",
+        "A criança imagina o objetivo e as ações antes de começar a programar.",
+        "Três quadros próprios de uma aventura simples; sem oferta."
+      ]
+    ]
+  ],
+  [
+    "ST17",
+    "P25",
+    "Conhecer um interesse",
+    [
+      [
+        "Vale conhecer o que seu filho gosta de encontrar nos jogos.",
+        "Peça que ele escolha uma coisa para mostrar e conte por que gosta dela.",
+        "Adulto escuta com atenção; jogo ao fundo desfocado."
+      ],
+      [
+        "A resposta pode abrir uma ideia de criação.",
+        "“Se pudesse inventar uma parte sua, o que colocaria?” Guardem a ideia num desenho.",
+        "Criança desenha escolha própria."
+      ],
+      [
+        "Criar jogos é uma possibilidade para explorar esse interesse.",
+        "Programar permite transformar uma ideia em ações. Vale observar se ele gosta de construir e testar também.",
+        "Ideia no papel seguida de pequena ação digital real."
+      ]
+    ]
+  ],
+  [
+    "ST18",
+    "P27",
+    "Olhar além da tarefa pronta",
+    [
+      [
+        "A tarefa ficou pronta. Ainda há uma história para ouvir.",
+        "Peça que seu filho escolha uma parte para mostrar.",
+        "Criação pronta ao lado de rascunho."
+      ],
+      [
+        "“O que você mudou durante a tentativa?”",
+        "Ele pode explicar apontando ou comparando versões. Não precisa responder de memória.",
+        "Criança mostra diferença entre rascunho e resultado."
+      ],
+      [
+        "Num jogo criado por ele, dá para experimentar essa mudança.",
+        "Joguem a parte escolhida e conversem sobre o que aconteceu. São pistas para acompanhar o processo.",
+        "Pessoa experimenta uma ação no jogo enquanto criança observa."
+      ]
+    ]
+  ],
+  [
+    "ST19",
+    "P28",
+    "O resultado que dá vontade de mostrar",
+    [
+      [
+        "Uma ideia começou a funcionar.",
+        "O próximo gesto pode ser chamar alguém para ver.",
+        "Criança mostra construção de papel que ficou de pé."
+      ],
+      [
+        "Dê espaço para ele contar a tentativa.",
+        "“Como você fez esta parte?” Pode surgir uma escolha que não aparecia no resultado final.",
+        "Adulto observa detalhe e criança explica."
+      ],
+      [
+        "Criar jogos oferece resultados para mostrar e experimentar.",
+        "A programação transforma uma ideia em ações que outra pessoa pode jogar.",
+        "Pequena ação real de um jogo; foco no que foi construído."
+      ]
+    ]
+  ],
+  [
+    "ST20",
+    "P30",
+    "Conhecer a tecnologia pelo lado de quem cria",
+    [
+      [
+        "Seu filho vai encontrar ferramentas que ainda vão mudar.",
+        "Ele pode começar hoje a perguntar como as coisas funcionam e experimentar construir.",
+        "Criança explora materiais e desenha uma ideia, sem imagética de emprego futurista."
+      ],
+      [
+        "Uma criação oferece decisões para praticar.",
+        "Escolher um começo, testar uma parte, procurar ajuda e ajustar o que ainda falta.",
+        "Sequência de criação manual com decisão e teste."
+      ],
+      [
+        "Programar jogos reúne essas ações numa atividade.",
+        "Parte do tempo de tela pode incluir uma criação dele, junto dos outros interesses e momentos da vida.",
+        "Criança mostra criação digital ao adulto, encerramento sem venda."
+      ]
+    ]
+  ]
+]

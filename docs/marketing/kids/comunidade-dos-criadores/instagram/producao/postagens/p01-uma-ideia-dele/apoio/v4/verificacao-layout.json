@@ -1,0 +1,254 @@
+[
+  {
+    "id": "slide-1",
+    "copy": [
+      "Seu filho sabe o nome de todos os youtubers de jogo.",
+      "Mas nunca viu como um jogo é feito."
+    ],
+    "parts": [
+      {
+        "class": "series",
+        "x": 64,
+        "y": 122,
+        "w": 220.515625,
+        "h": 45.59375
+      },
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 191.59375,
+        "w": 952,
+        "h": 154.0625
+      },
+      {
+        "class": "copy tail",
+        "x": 64,
+        "y": 369.65625,
+        "w": 952,
+        "h": 53.8125
+      },
+      {
+        "class": "media photo ",
+        "x": 64,
+        "y": 447.46875,
+        "w": 952,
+        "h": 800.53125
+      }
+    ],
+    "issues": [],
+    "missing": 0
+  },
+  {
+    "id": "slide-2",
+    "copy": [
+      "Esse interesse pelos jogos também pode ser usado para criar.",
+      "Num jogo feito por ele, seu filho escolhe o cenário, os personagens e o que acontece quando alguém joga."
+    ],
+    "parts": [
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 941,
+        "w": 952,
+        "h": 117.5
+      },
+      {
+        "class": "media photo ",
+        "x": 64,
+        "y": 122,
+        "w": 952,
+        "h": 787
+      },
+      {
+        "class": "copy tail",
+        "x": 64,
+        "y": 1090.5,
+        "w": 952,
+        "h": 157.5
+      }
+    ],
+    "issues": [],
+    "missing": 0
+  },
+  {
+    "id": "slide-3",
+    "copy": [
+      "Na nossa ferramenta, a criança encaixa blocos com instruções para o jogo.",
+      "Este manda o carrinho acelerar quando o jogador usa o turbo."
+    ],
+    "parts": [
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 122,
+        "w": 952,
+        "h": 117.5
+      },
+      {
+        "class": "copy tail",
+        "x": 64,
+        "y": 267.5,
+        "w": 952,
+        "h": 107.5
+      },
+      {
+        "class": "media game ",
+        "x": 64,
+        "y": 403,
+        "w": 952,
+        "h": 655.015625
+      },
+      {
+        "class": "block",
+        "x": 64,
+        "y": 1086.015625,
+        "w": 952,
+        "h": 161.984375
+      }
+    ],
+    "issues": [],
+    "missing": 0
+  },
+  {
+    "id": "slide-4",
+    "copy": [
+      "Enquanto ele assiste, pergunte: “O que faria esse carrinho andar mais rápido?”",
+      "Essa pergunta convida seu filho a pensar numa mudança para o jogo."
+    ],
+    "parts": [
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 122,
+        "w": 952,
+        "h": 119.75
+      },
+      {
+        "class": "media photo ",
+        "x": 64,
+        "y": 269.75,
+        "w": 952,
+        "h": 845.25
+      },
+      {
+        "class": "copy tail",
+        "x": 64,
+        "y": 1143,
+        "w": 952,
+        "h": 105
+      }
+    ],
+    "issues": [],
+    "missing": 0
+  },
+  {
+    "id": "slide-5",
+    "copy": [
+      "A gente aumentou a força do turbo e testou o carrinho de novo.",
+      "Com as mesmas teclas, a velocidade passou de 28 para 45. O carrinho ficou mais rápido."
+    ],
+    "parts": [
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 122,
+        "w": 952,
+        "h": 122.03125
+      },
+      {
+        "class": "comparison turbo",
+        "x": 64,
+        "y": 272.03125,
+        "w": 952,
+        "h": 680.46875
+      },
+      {
+        "class": "block",
+        "x": 64,
+        "y": 980.5,
+        "w": 952,
+        "h": 132
+      },
+      {
+        "class": "copy tail",
+        "x": 64,
+        "y": 1140.5,
+        "w": 952,
+        "h": 107.5
+      }
+    ],
+    "issues": [],
+    "missing": 0
+  },
+  {
+    "id": "slide-6",
+    "copy": [
+      "Seu filho decide como quer o cenário: com árvores, com morros ou numa noite escura.",
+      "Depois monta as instruções para fazer essas ideias aparecerem no jogo."
+    ],
+    "parts": [
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 122,
+        "w": 952,
+        "h": 172.875
+      },
+      {
+        "class": "triptych",
+        "x": 64,
+        "y": 322.875,
+        "w": 952,
+        "h": 562.140625
+      },
+      {
+        "class": "block",
+        "x": 64,
+        "y": 913.015625,
+        "w": 952,
+        "h": 201.984375
+      },
+      {
+        "class": "copy tail",
+        "x": 64,
+        "y": 1143,
+        "w": 952,
+        "h": 105
+      }
+    ],
+    "issues": [],
+    "missing": 0
+  },
+  {
+    "id": "slide-7",
+    "copy": [
+      "Ele pode continuar assistindo e também aprender a criar.",
+      "Somos Helena e Júlio, pais e programadores. Siga @criecomhelenaejulio para ver como ensinamos crianças a criar os próprios jogos."
+    ],
+    "parts": [
+      {
+        "class": "copy lead",
+        "x": 64,
+        "y": 122,
+        "w": 952,
+        "h": 118.53125
+      },
+      {
+        "class": "media photo ",
+        "x": 64,
+        "y": 268.53125,
+        "w": 952,
+        "h": 797.71875
+      },
+      {
+        "class": "copy tail",
+        "x": 64,
+        "y": 1094.25,
+        "w": 952,
+        "h": 153.75
+      }
+    ],
+    "issues": [],
+    "missing": 0
+  }
+]
