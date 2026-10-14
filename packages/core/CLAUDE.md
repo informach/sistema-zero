@@ -44,6 +44,14 @@ entrega à equipe. Duas peças do core sustentam isso:
   prende por algo que o sistema não sabe. A pendência nova é `'submission-outdated'`.
 - Teste: `tests/submission-up-to-date.test.ts` (impressão, régua e autoria).
 
+## Cursos ao vivo: modalidade e anotações da professora (14/10/2026)
+
+`course/modality` (gravado ou ao vivo; só o gravado entra na Jornada) e
+`LessonSection.teacherNotes` (até `TEACHER_NOTES_MAX`). `isTeacherNotes` é a régua única: o
+`validateLessonSections` e o `isLearningManifest` a usam, e a mensagem fala em "parte" (o guarda
+de vocabulário do Kids varre o `core/src`). A view do aluno nunca leva o campo: quem garante é o
+members (ver o CLAUDE.md de lá).
+
 ## Oficinas ao vivo: contrato de 14/10/2026 (`src/live/`)
 
 Campos novos, todos opcionais para o cliente tolerar servidor antigo: `LiveLessonPlan.studio`
