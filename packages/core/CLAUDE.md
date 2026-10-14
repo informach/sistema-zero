@@ -44,6 +44,19 @@ entrega à equipe. Duas peças do core sustentam isso:
   prende por algo que o sistema não sabe. A pendência nova é `'submission-outdated'`.
 - Teste: `tests/submission-up-to-date.test.ts` (impressão, régua e autoria).
 
+## Oficinas ao vivo: contrato de 14/10/2026 (`src/live/`)
+
+Campos novos, todos opcionais para o cliente tolerar servidor antigo: `LiveLessonPlan.studio`
+(`LiveStudioConfig`, a curadoria do bloco Estúdio), controles `cancel`, `admit-all` e
+`lower-hands.before`, `LiveControlRequest.expectedVersion` opcional (só as transições o
+conferem), `LiveUpdateCohort`, `LiveCohort.teacherNames`, `LiveOccurrence.conductorId`,
+`LiveSessionSummary.occurrenceState`/`recordingPublished`, `LiveLessonAccessView.canEnterLobby`,
+`LiveRoomView.planRevision` só com plano, `LiveWorkspaceView.readOnly`,
+`LiveMediaPublication.displayName`, `LiveChatMessage.authorId: string | null` (colegas sem id na
+visão da criança) e os estados de gravação `empty` e `unavailable`. ⚠️ Estado novo em
+`LiveRecordingState` quebra quem indexa um objeto de rótulos pelo estado (o member-shell tem um).
+Regras e motivos: `packages/members/CLAUDE.md`, seção das oficinas.
+
 ## O que é
 
 **Lib compartilhada, sem framework**: as utilidades de baixo nível que TODOS os backends do

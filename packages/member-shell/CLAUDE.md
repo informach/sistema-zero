@@ -1,5 +1,10 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+> **Oficinas ao vivo (14/10/2026):** `createLiveRouteHandler` recebe `support` da sessão
+> (`isSupportSession`, qualquer `act`) e recusa toda chamada não-GET com `SUPPORT_SESSION`; a
+> prévia do Kids usa a mesma regra. O Members repete a recusa por `x-auth-impersonator-id`.
+> `live-recording-status.tsx` ganhou os rótulos de `empty` e `unavailable`.
+
 ## Falar em vez de escrever: a voz vira texto para a equipe (14/10/2026)
 
 Decisão dela: a criança FALA a mensagem para a equipe, o servidor transcreve na hora, ela CONFERE
