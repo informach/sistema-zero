@@ -8,10 +8,16 @@ import type {
 } from '@sistemazero/core/learning'
 import { createContext, type ReactNode, useContext } from 'react'
 import type { LessonDraftCloud } from '../lib/lesson-draft-cloud'
+import type { LiveLessonWorkspace } from '../lib/live/lesson-slot'
 import type { DialogueSpeech } from './dialogue-block'
 
 /** O que um player de vídeo da aula sabe fazer a pedido de fora (o flutuante e o aviso). */
-export type LessonVideoControls = { play: () => void; pause: () => void }
+export type LessonVideoControls = {
+  play: () => void
+  pause: () => void
+  /** Leva o vídeo a um instante (os capítulos da gravação ao vivo). Opcional por player. */
+  seek?: (seconds: number) => void
+}
 
 /**
  * Contexto provido pelo `LessonPlayer` aos blocos da aula (evita prop-drilling
@@ -93,6 +99,12 @@ export interface LessonPlayerContextValue {
    * falar com a nuvem o passa (hoje o Kids); sem ele os blocos ficam só com o rascunho local.
    */
   lessonDrafts?: LessonDraftCloud | null
+  /**
+   * Aula de curso AO VIVO na sala (14/10/2026): o bloco Estúdio abre o projeto ao vivo da criança
+   * (lease, revisões, ajuda da professora) em vez do rascunho local + "Enviar para a equipe". Só a
+   * sala passa; as aulas gravadas nunca.
+   */
+  liveWorkspace?: LiveLessonWorkspace | null
 }
 
 const LessonPlayerContext = createContext<LessonPlayerContextValue | null>(null)
