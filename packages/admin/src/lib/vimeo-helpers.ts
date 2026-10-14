@@ -43,3 +43,25 @@ export function parseSafeEmbedUrl(raw: string): URL | null {
     return null
   }
 }
+
+export type VimeoProcessingStatus = 'processing' | 'ready' | 'failed'
+
+/**
+ * Status cru do Vimeo → estado da aplicação (vídeos das aulas e gravações dos encontros).
+ * ⚠️ No envio por `pull` (gravação de encontro) o Vimeo pode falhar ao BAIXAR o arquivo
+ * (`uploading_error`): sem esse caso a gravação ficaria "processando" para sempre.
+ */
+export function mapVimeoStatus(status: string): VimeoProcessingStatus {
+  if (status === 'available') return 'ready'
+  if (
+    [
+      'transcoding_error',
+      'uploading_error',
+      'quota_exceeded',
+      'total_cap_exceeded',
+      'unavailable',
+    ].includes(status)
+  )
+    return 'failed'
+  return 'processing'
+}

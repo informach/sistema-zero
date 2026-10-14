@@ -131,6 +131,38 @@ export async function createUploadTicket(input: {
   }
 }
 
+/**
+ * Cria o vídeo por `pull`: o VIMEO baixa o arquivo do `link` (a URL GET temporária do MP4 da
+ * gravação no R2). O tamanho é obrigatório na API. Mesma privacidade dos vídeos das aulas:
+ * `view=disable` + `embed=whitelist` + sem download.
+ */
+export async function createPullUpload(input: {
+  link: string
+  sizeBytes: number
+  name: string
+}): Promise<{ vimeoVideoId: string; embedUrl: string }> {
+  const response = await vimeoFetch<VimeoCreateVideoResponse>('/me/videos', {
+    method: 'POST',
+    body: JSON.stringify({
+      upload: { approach: 'pull', size: String(input.sizeBytes), link: input.link },
+      name: input.name,
+      privacy: { view: 'disable', embed: 'whitelist', download: false },
+    }),
+  })
+  if (!response?.uri) throw new Error('Resposta do Vimeo sem uri')
+  const vimeoVideoId = parseVimeoIdFromUri(response.uri)
+  const hash = parsePlaybackHash(response.player_embed_url)
+  return {
+    vimeoVideoId,
+    embedUrl: response.player_embed_url ?? buildEmbedUrl(vimeoVideoId, hash),
+  }
+}
+
+/** Apaga um vídeo (a gravação que não chegou a ser registrada no members). */
+export async function deleteVideo(vimeoVideoId: string): Promise<void> {
+  await vimeoFetch(`/videos/${vimeoVideoId}`, { method: 'DELETE' }, { skipJsonParse: true })
+}
+
 /** Garante a whitelist de domínios de embed do vídeo. */
 export async function applyPrivacy(vimeoVideoId: string, domains: string[]): Promise<void> {
   await vimeoFetch(`/videos/${vimeoVideoId}`, {

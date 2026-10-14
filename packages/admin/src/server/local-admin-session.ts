@@ -12,6 +12,11 @@ import { type AccessVerdict, getAccessToken, getRefreshToken, verifyAccessToken 
  */
 export async function requireLocalAdminSession(
   forbiddenMessage = 'Sem permissão para realizar esta operação.',
+  /**
+   * `staff` também passa: a professora de uma turma pode ser da equipe sem ser admin (a gravação
+   * do encontro é publicada por ela). A autorização fina continua no members.
+   */
+  { allowStaff = false }: { allowStaff?: boolean } = {},
 ): Promise<SessionUser | NextResponse> {
   const requestHeaders = await headers()
   if (
@@ -43,7 +48,11 @@ export async function requireLocalAdminSession(
   }
 
   const session = verdict.user
-  if (session.role !== 'superadmin' && session.role !== 'admin') {
+  if (
+    session.role !== 'superadmin' &&
+    session.role !== 'admin' &&
+    !(allowStaff && session.role === 'staff')
+  ) {
     return NextResponse.json(
       { error: { code: 'FORBIDDEN', message: forbiddenMessage } },
       { status: 403 },

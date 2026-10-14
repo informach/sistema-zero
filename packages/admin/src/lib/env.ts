@@ -45,6 +45,10 @@ const EnvSchema = z
     R2_PRIVATE_BUCKET: z.string().optional(),
     // Bucket PRIVADO de UGC da comunidade (anexos de tópicos/comentários).
     R2_UGC_BUCKET: z.string().optional(),
+    // Bucket das GRAVAÇÕES dos encontros ao vivo (o `R2_BUCKET` do live-recorder), quando não é
+    // o `R2_PRIVATE_BUCKET`. O Admin assina nele a URL que o Vimeo baixa ao publicar a gravação;
+    // as credenciais R2 acima precisam ler esse bucket. Ausente = só o privado é aceito.
+    LIVE_RECORDING_BUCKET: z.string().optional(),
     // A voz do Zappy (ElevenLabs): geração do áudio das falas na AUTORIA.
     // ⚠⚠ A chave vive SÓ no admin. O community/kids nunca fala com o ElevenLabs: o que chega
     // na criança é MP3 no R2. Sem a chave, o botão de gerar responde 503 e a cena continua na
