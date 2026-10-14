@@ -11,7 +11,7 @@ import { liveDate, liveRequest } from '@sistemazero/member-shell/lib/live/client
 import { Badge, Button, Dialog, Input } from '@sistemazero/ui'
 import { CalendarDays, Plus, Radio, SquarePen } from 'lucide-react'
 import Link from 'next/link'
-import { useEffect, useId, useMemo, useState } from 'react'
+import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { usePlatform } from '@/components/admin/platform-provider'
 import { useConfirm } from '@/components/admin/use-confirm'
@@ -60,6 +60,8 @@ export function LiveAdmin({
   canWrite: boolean
 }) {
   const platform = usePlatform()
+  const platformRef = useRef(platform)
+  platformRef.current = platform
   const [catalog, setCatalog] = useState<LiveCatalogView | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
@@ -107,10 +109,13 @@ export function LiveAdmin({
   async function loadMore() {
     if (!catalog?.nextCursor || busy) return
     setBusy(true)
+    const requested = platform
     try {
       const next = await liveRequest<LiveCatalogView>(
-        `/api/admin/live/catalog?audience=${platform}&cursor=${catalog.nextCursor}`,
+        `/api/admin/live/catalog?audience=${requested}&cursor=${catalog.nextCursor}`,
       )
+      // A página que chegou depois de trocar a plataforma é da OUTRA lista.
+      if (platformRef.current !== requested) return
       setCatalog((previous) =>
         previous
           ? {

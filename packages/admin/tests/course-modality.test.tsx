@@ -29,6 +29,8 @@ const { isLiveCourse, modalityChangeWarning, modalityFilterParam, studentLessonL
   await import('../src/lib/course-modality')
 
 type Editing = Parameters<typeof CourseFormDialog>[0]['editing']
+/** As telas do curso são as mais pesadas: com a máquina ocupada passavam dos 5 s do bun. */
+const UI_TIMEOUT = 20_000
 
 let cleanup: (() => void) | null = null
 const originalFetch = globalThis.fetch
@@ -109,140 +111,158 @@ const live = {
 }
 
 describe('modalidade no formulário do curso', () => {
-  test('curso novo nasce gravado, com a explicação de uma linha e a Jornada à vista', async () => {
-    capture()
-    await mount(
-      <CourseFormDialog
-        open
-        editing={null}
-        prefill={{ audience: 'kids' }}
-        journeyCourses={[]}
-        onClose={() => {}}
-        onSaved={() => {}}
-      />,
-    )
-    expect(document.querySelector<HTMLSelectElement>('#cmodality')?.value).toBe('recorded')
-    expect(document.body.textContent).toContain(
-      'Ao vivo: os encontros acontecem em turmas e o curso só aparece em Oficinas.',
-    )
-    expect(document.querySelector('#journey-slot') !== null).toBe(true)
-    expect(document.querySelector('#csequentiallock') !== null).toBe(true)
-  })
+  test(
+    'curso novo nasce gravado, com a explicação de uma linha e a Jornada à vista',
+    async () => {
+      capture()
+      await mount(
+        <CourseFormDialog
+          open
+          editing={null}
+          prefill={{ audience: 'kids' }}
+          journeyCourses={[]}
+          onClose={() => {}}
+          onSaved={() => {}}
+        />,
+      )
+      expect(document.querySelector<HTMLSelectElement>('#cmodality')?.value).toBe('recorded')
+      expect(document.body.textContent).toContain(
+        'Ao vivo: os encontros acontecem em turmas e o curso só aparece em Oficinas.',
+      )
+      expect(document.querySelector('#journey-slot') !== null).toBe(true)
+      expect(document.querySelector('#csequentiallock') !== null).toBe(true)
+    },
+    UI_TIMEOUT,
+  )
 
-  test('ao vivo esconde a Jornada e vai ao servidor sem posição nem papel na Jornada', async () => {
-    const sent = capture()
-    await mount(
-      <CourseFormDialog
-        open
-        editing={null}
-        prefill={{ audience: 'kids', careerSlot: 3, level: 'iniciante', track: '2d' }}
-        journeyCourses={[]}
-        onClose={() => {}}
-        onSaved={() => {}}
-      />,
-    )
-    await act(async () => choose(document.querySelector<HTMLSelectElement>('#cmodality')!, 'live'))
-    expect(document.querySelector('#journey-slot') !== null).toBe(false)
-    expect(document.querySelector('#csequentiallock') !== null).toBe(false)
-    expect(document.querySelector('#cvideobeforeactivity') !== null).toBe(false)
-    await act(async () =>
-      type(document.querySelector<HTMLInputElement>('#title')!, 'Farol ao vivo'),
-    )
-    await act(async () => button('Salvar').click())
-    await settle()
-    const post = sent.find((call) => call.method === 'POST')
-    expect(post?.url).toBe('/api/members/courses')
-    expect(post?.body).toMatchObject({ modality: 'live', careerSlot: null, audience: 'kids' })
-    expect(post?.body).not.toHaveProperty('journeyRole')
-  })
+  test(
+    'ao vivo esconde a Jornada e vai ao servidor sem posição nem papel na Jornada',
+    async () => {
+      const sent = capture()
+      await mount(
+        <CourseFormDialog
+          open
+          editing={null}
+          prefill={{ audience: 'kids', careerSlot: 3, level: 'iniciante', track: '2d' }}
+          journeyCourses={[]}
+          onClose={() => {}}
+          onSaved={() => {}}
+        />,
+      )
+      await act(async () =>
+        choose(document.querySelector<HTMLSelectElement>('#cmodality')!, 'live'),
+      )
+      expect(document.querySelector('#journey-slot') !== null).toBe(false)
+      expect(document.querySelector('#csequentiallock') !== null).toBe(false)
+      expect(document.querySelector('#cvideobeforeactivity') !== null).toBe(false)
+      await act(async () =>
+        type(document.querySelector<HTMLInputElement>('#title')!, 'Farol ao vivo'),
+      )
+      await act(async () => button('Salvar').click())
+      await settle()
+      const post = sent.find((call) => call.method === 'POST')
+      expect(post?.url).toBe('/api/members/courses')
+      expect(post?.body).toMatchObject({ modality: 'live', careerSlot: null, audience: 'kids' })
+      expect(post?.body).not.toHaveProperty('journeyRole')
+    },
+    UI_TIMEOUT,
+  )
 
-  test('trocar a modalidade de um curso com turma mostra o recado do servidor', async () => {
-    const errors: string[] = []
-    toast.error = ((message: string) => {
-      errors.push(message)
-      return 0
-    }) as typeof toast.error
-    const sent = capture((method) =>
-      method === 'PATCH'
-        ? Response.json(
-            {
-              error: {
-                code: 'COURSE_MODALITY_LOCKED',
-                message: 'Este curso já tem turma: a modalidade não pode mudar.',
+  test(
+    'trocar a modalidade de um curso com turma mostra o recado do servidor',
+    async () => {
+      const errors: string[] = []
+      toast.error = ((message: string) => {
+        errors.push(message)
+        return 0
+      }) as typeof toast.error
+      const sent = capture((method) =>
+        method === 'PATCH'
+          ? Response.json(
+              {
+                error: {
+                  code: 'COURSE_MODALITY_LOCKED',
+                  message: 'Este curso já tem turma: a modalidade não pode mudar.',
+                },
               },
-            },
-            { status: 409 },
-          )
-        : null,
-    )
-    await mount(
-      <CourseFormDialog
-        open
-        editing={live as unknown as Editing}
-        journeyCourses={[]}
-        onClose={() => {}}
-        onSaved={() => {}}
-      />,
-    )
-    expect(document.querySelector<HTMLSelectElement>('#cmodality')?.value).toBe('live')
-    expect(document.body.textContent).toContain(
-      'Trocar depois só vale enquanto o curso não tem turma.',
-    )
-    await act(async () =>
-      choose(document.querySelector<HTMLSelectElement>('#cmodality')!, 'recorded'),
-    )
-    await act(async () => button('Salvar').click())
-    await settle()
-    // Antes de ir ao servidor, o aviso do que muda para quem já vê o curso.
-    expect(document.body.textContent).toContain('O curso passa a ser gravado')
-    await act(async () => button('Salvar mesmo assim').click())
-    await settle()
-    expect(sent.find((call) => call.method === 'PATCH')?.body).toMatchObject({
-      modality: 'recorded',
-      version: 2,
-    })
-    expect(errors).toEqual(['Este curso já tem turma: a modalidade não pode mudar.'])
-  })
+              { status: 409 },
+            )
+          : null,
+      )
+      await mount(
+        <CourseFormDialog
+          open
+          editing={live as unknown as Editing}
+          journeyCourses={[]}
+          onClose={() => {}}
+          onSaved={() => {}}
+        />,
+      )
+      expect(document.querySelector<HTMLSelectElement>('#cmodality')?.value).toBe('live')
+      expect(document.body.textContent).toContain(
+        'Trocar depois só vale enquanto o curso não tem turma.',
+      )
+      await act(async () =>
+        choose(document.querySelector<HTMLSelectElement>('#cmodality')!, 'recorded'),
+      )
+      await act(async () => button('Salvar').click())
+      await settle()
+      // Antes de ir ao servidor, o aviso do que muda para quem já vê o curso.
+      expect(document.body.textContent).toContain('O curso passa a ser gravado')
+      await act(async () => button('Salvar mesmo assim').click())
+      await settle()
+      expect(sent.find((call) => call.method === 'PATCH')?.body).toMatchObject({
+        modality: 'recorded',
+        version: 2,
+      })
+      expect(errors).toEqual(['Este curso já tem turma: a modalidade não pode mudar.'])
+    },
+    UI_TIMEOUT,
+  )
 })
 
 describe('lista de cursos: selo, filtro e a Jornada só com gravados', () => {
-  test('o selo "Ao vivo", o filtro repassado e o painel da Jornada sem o curso ao vivo', async () => {
-    setPlatform('kids')
-    const recorded = { ...live, id: '2', slug: 'cade', title: 'Cadê', modality: 'recorded' }
-    const sent = capture((method, url) => {
-      if (method !== 'GET' || !url.startsWith('/api/members/courses')) return null
-      const params = new URL(url, 'http://admin.local').searchParams
-      const items =
-        params.get('modality') === 'recorded'
-          ? [recorded]
-          : params.get('modality') === 'live'
-            ? [live]
-            : [live, recorded]
-      return Response.json({ items, total: items.length, limit: 100, offset: 0 })
-    })
-    const view = await mount(
-      <PlatformProvider initialPlatform="kids">
-        <CoursesClient currentRole="admin" />
-      </PlatformProvider>,
-    )
-    await act(async () => new Promise((resolve) => setTimeout(resolve, 300)))
-    await settle()
-    const liveRow = [...view.querySelectorAll('tr')].find((row) =>
-      row.textContent?.includes('Farol ao vivo'),
-    )
-    expect(liveRow?.textContent).toContain('Ao vivo')
-    expect(liveRow?.textContent).toContain('As turmas ficam em')
-    // A Jornada pede só gravados.
-    expect(sent.some((call) => call.url.includes('audience=kids&modality=recorded'))).toBe(true)
-    await act(async () =>
-      choose(view.querySelector<HTMLSelectElement>('select[aria-label="Modalidade"]')!, 'live'),
-    )
-    await act(async () => new Promise((resolve) => setTimeout(resolve, 300)))
-    await settle()
-    expect(sent.some((call) => /\/api\/members\/courses\?.*modality=live/.test(call.url))).toBe(
-      true,
-    )
-  })
+  test(
+    'o selo "Ao vivo", o filtro repassado e o painel da Jornada sem o curso ao vivo',
+    async () => {
+      setPlatform('kids')
+      const recorded = { ...live, id: '2', slug: 'cade', title: 'Cadê', modality: 'recorded' }
+      const sent = capture((method, url) => {
+        if (method !== 'GET' || !url.startsWith('/api/members/courses')) return null
+        const params = new URL(url, 'http://admin.local').searchParams
+        const items =
+          params.get('modality') === 'recorded'
+            ? [recorded]
+            : params.get('modality') === 'live'
+              ? [live]
+              : [live, recorded]
+        return Response.json({ items, total: items.length, limit: 100, offset: 0 })
+      })
+      const view = await mount(
+        <PlatformProvider initialPlatform="kids">
+          <CoursesClient currentRole="admin" />
+        </PlatformProvider>,
+      )
+      await act(async () => new Promise((resolve) => setTimeout(resolve, 300)))
+      await settle()
+      const liveRow = [...view.querySelectorAll('tr')].find((row) =>
+        row.textContent?.includes('Farol ao vivo'),
+      )
+      expect(liveRow?.textContent).toContain('Ao vivo')
+      expect(liveRow?.textContent).toContain('As turmas ficam em')
+      // A Jornada pede só gravados.
+      expect(sent.some((call) => call.url.includes('audience=kids&modality=recorded'))).toBe(true)
+      await act(async () =>
+        choose(view.querySelector<HTMLSelectElement>('select[aria-label="Modalidade"]')!, 'live'),
+      )
+      await act(async () => new Promise((resolve) => setTimeout(resolve, 300)))
+      await settle()
+      expect(sent.some((call) => /\/api\/members\/courses\?.*modality=live/.test(call.url))).toBe(
+        true,
+      )
+    },
+    UI_TIMEOUT,
+  )
 })
 
 describe('regras puras da modalidade', () => {

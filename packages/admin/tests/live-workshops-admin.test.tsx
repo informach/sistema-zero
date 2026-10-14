@@ -272,5 +272,7 @@ describe('Oficinas ao vivo: as turmas dos cursos ao vivo da plataforma', () => {
     expect(document.body.textContent).toContain(
       'Ao vivo: os encontros acontecem em turmas e o curso só aparece em Oficinas.',
     )
-  })
+    // Prazo próprio: o formulário do curso é a tela mais pesada daqui, e com a máquina ocupada
+    // (build ao lado, CI) passava dos 5 s de fábrica do bun. É tempo, não regra.
+  }, 20_000)
 })
