@@ -1165,6 +1165,9 @@ export class LiveService {
           } else if (!message.removed) message.pinned = !message.pinned
           break
         }
+        case 'open-section':
+          // Partes conduzidas (cursos ao vivo): implementado no lote dos cursos ao vivo.
+          throw new LiveConflictError('Esta parte ainda não pode ser aberta.')
         case 'admit-all':
           for (const participant of occurrence.participants)
             if (participant.admission === 'waiting') participant.admission = 'admitted'

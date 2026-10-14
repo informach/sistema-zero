@@ -12,6 +12,7 @@
     "./journey": "./src/journey/index.ts",
     "./help": "./src/help/index.ts",
     "./referrals": "./src/referrals/index.ts",
+    "./course/modality": "./src/course/modality.ts",
     "./course/module-rive": "./src/course/module-rive.ts",
     "./creations": "./src/creations/index.ts",
     "./security": "./src/security/index.ts",

@@ -63,7 +63,15 @@ export interface LessonSection {
   /** Authoring-only production requirements. A published lesson cannot contain these. */
   pendingMedia: string[]
   completion?: SectionCompletion
+  /**
+   * Anotações da professora para esta parte, nas aulas de curso AO VIVO ("mostrar o bloco de
+   * colisão, desenhar a seta no sprite"). Só a autoria e a sala da professora leem; a view do
+   * aluno NUNCA leva o campo. Até `TEACHER_NOTES_MAX` caracteres.
+   */
+  teacherNotes?: string
 }
+
+export const TEACHER_NOTES_MAX = 4000
 
 export interface LearningChoice {
   id: string

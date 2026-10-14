@@ -73,8 +73,25 @@ export interface LiveProgram {
   lessons: LiveLessonPlan[]
   createdAt: string
 }
+/**
+ * Curso AO VIVO de que a turma é feita (modalidade `live`, ver `core/course/modality`). Desde
+ * 14/10/2026 a oficina não tem roteiro próprio: cada aula PUBLICADA do curso é um encontro.
+ */
+export interface LiveCourseRef {
+  id: string
+  slug: string
+  title: string
+  audience: 'adult' | 'kids'
+}
+export interface LiveCourseSummary extends LiveCourseRef {
+  description: string
+  coverImageUrl: string | null
+  /** Aulas publicadas, na ordem do curso: uma por encontro. */
+  lessons: { id: string; title: string }[]
+}
 export interface LiveCohort {
   id: string
+  /** @deprecated Roteiro antigo (`LiveProgram`). Turma nova usa `courseId`. */
   programId: string
   title: string
   timeZone: string
@@ -85,11 +102,18 @@ export interface LiveCohort {
   teacherNames?: Record<string, string>
   status: 'draft' | 'open' | 'closed' | 'archived'
   createdAt: string
+  /** O curso ao vivo da turma. Ausente só em turma antiga do roteiro (`programId`). */
+  courseId?: string | null
+  /** Resumo do curso para listas e filtros (a plataforma vem do curso). */
+  course?: LiveCourseRef | null
 }
 export interface LiveSession {
   id: string
   cohortId: string
   order: number
+  /** A aula do curso ao vivo que este encontro dá. Ausente só em turma antiga do roteiro. */
+  lessonId?: string | null
+  /** @deprecated Roteiro antigo. O conteúdo do encontro é a aula `lessonId`. */
   plan: LiveLessonPlan
   startsAt: string
   endsAt: string
@@ -122,8 +146,13 @@ export interface LiveParticipation {
   activity?: LiveActivityReport & { reportedAt: string }
 }
 export interface LiveActivityReport {
+  /** @deprecated Etapas do roteiro antigo. Use `sectionId`. */
   stepId: string | null
   saveState: 'not-open' | 'saving' | 'saved' | 'offline'
+  /** Parte da aula em que a criança está. */
+  sectionId?: string | null
+  /** Partes que ela já concluiu (o progresso da aula), para os cartões da professora. Até 60. */
+  completedSectionIds?: string[]
 }
 export interface LiveChatMessage {
   id: string
@@ -153,12 +182,42 @@ export interface LiveOccurrence {
   suggestedStepId?: string | null
   /** Teacher who issued `start`; the recording follows this teacher. Null until started. */
   conductorId?: string | null
+  /**
+   * Partes da aula conduzidas pela professora (só enquanto `live`). O `start` abre a PRIMEIRA
+   * parte; `open-section` abre e torna atual. A criança navega só entre as abertas; fora do
+   * `live` (gravação, prazo) tudo fica livre.
+   */
+  sections?: LiveSectionControl | null
+  /** Instante de cada abertura de parte, para os capítulos da gravação. */
+  marks?: LiveSectionMark[]
   recording: {
     state: LiveRecordingState
     published: boolean
     version: number
     storageKey: string | null
+    /** A gravação publicada no Vimeo (o Admin envia). Ausente até a publicação. */
+    vimeo?: LiveRecordingVimeo | null
+    /** Capítulos por parte, em segundos da gravação (as pausas já descontadas). */
+    chapters?: LiveRecordingChapter[]
   }
+}
+export interface LiveSectionControl {
+  openedIds: string[]
+  currentId: string | null
+}
+export interface LiveSectionMark {
+  sectionId: string
+  at: string
+}
+export interface LiveRecordingVimeo {
+  videoId: string
+  /** `https://player.vimeo.com/video/<id>?h=…` (o mesmo formato dos blocos de vídeo). */
+  embedUrl: string
+  status: 'processing' | 'ready' | 'failed'
+}
+export interface LiveRecordingChapter {
+  sectionId: string
+  seconds: number
 }
 export interface LiveLessonAccessView {
   startsAt: string
@@ -176,6 +235,9 @@ export interface LiveLessonAccessView {
 export type LiveProgramSummary = Omit<LiveProgram, 'lessons'> & { lessonCount: number }
 export interface LiveCatalogView {
   nextCursor?: string | null
+  /** Os cursos ao vivo das turmas listadas (no Admin, filtrados pela plataforma pedida). */
+  courses?: LiveCourseSummary[]
+  /** @deprecated Roteiro antigo. */
   programs: LiveProgramSummary[]
   cohorts: LiveCohort[]
   sessions: LiveSessionSummary[]
@@ -199,6 +261,12 @@ export interface LiveRecordingSummary {
 export interface LiveRoomView {
   session: LiveSessionSummary
   cohort: LiveCohort
+  /**
+   * A aula do encontro, aberta pelo player de aula de sempre (rotas `/members/lessons/:id`).
+   * Null quando o acesso venceu (como o `plan`).
+   */
+  lesson?: { courseId: string; courseSlug: string; lessonId: string } | null
+  /** @deprecated Roteiro antigo: o conteúdo vem de `lesson`. */
   plan?: LiveLessonPlanView | null
   /** Present only when `plan` is non-null (or omitted because the client already has it). */
   planRevision?: string
@@ -212,6 +280,9 @@ export interface LiveRoomView {
   mediaReady: boolean
 }
 export type LiveControl =
+  /** Professora, só com o encontro `live`: abre a parte e a torna atual (marca o capítulo). */
+  | { kind: 'open-section'; sectionId: string }
+  /** @deprecated Etapas do roteiro antigo. */
   | { kind: 'suggest-step'; stepId: string | null }
   | { kind: 'guide'; target: LiveGuidance['target']; learnerId: string | null }
   /** State transitions: the only commands whose `expectedVersion` is checked. */
@@ -233,13 +304,15 @@ export interface LiveCreateProgram {
   lessons: LiveLessonPlan[]
 }
 export interface LiveCreateCohort {
+  /** O curso ao vivo (rota `POST /members/admin/live/courses/:courseId/cohorts`). */
+  courseId?: string
   title: string
   timeZone: string
   capacity: number
   accessDays: number
   teacherIds: string[]
   teacherNames?: Record<string, string>
-  /** One interval per program lesson, in its original order. */
+  /** Um intervalo por AULA PUBLICADA do curso, na ordem do curso. */
   schedule: { startsAt: string; endsAt: string }[]
 }
 /** Room control request. `expectedVersion` matters only for state transitions. */
