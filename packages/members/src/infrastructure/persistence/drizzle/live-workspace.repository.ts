@@ -7,9 +7,9 @@ import type {
   LiveWorkspaceRevision,
 } from '../../../domain/ports/live-workspace-repository.port'
 import type { Database } from './db'
+import { loadLiveCohort } from './live.repository'
 import {
   accountDeletionFences,
-  liveCohorts,
   liveProjectTemplates,
   liveSessions,
   liveWorkspaceRevisions,
@@ -101,11 +101,8 @@ export class DrizzleLiveWorkspaceRepository implements LiveWorkspaceRepository {
         .innerJoin(liveSessions, eq(liveSessions.id, liveWorkspaces.sessionId))
         .where(eq(liveWorkspaces.id, id))
       if (!parent) throw new LiveNotFoundError()
-      await tx
-        .select({ id: liveCohorts.id })
-        .from(liveCohorts)
-        .where(eq(liveCohorts.id, parent.cohortId))
-        .for('update')
+      // No cohort row lock: the account lock orders us against erasure and the workspace row
+      // lock against other writers. Authorization reads the cohort through this same `tx`.
       const [row] = await tx
         .select()
         .from(liveWorkspaces)
@@ -133,6 +130,7 @@ export class DrizzleLiveWorkspaceRepository implements LiveWorkspaceRepository {
             .insert(liveWorkspaceRevisions)
             .values({ ...revision, createdAt: new Date(revision.createdAt) })
         },
+        loadCohort: () => loadLiveCohort(tx, parent.cohortId),
         teacherHasActiveWorkspace: async (teacherId, now) => {
           // Only competing handoffs for this teacher serialize across cohorts.
           // Normal saves/cursors do not contend with unrelated rooms.

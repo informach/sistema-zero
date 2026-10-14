@@ -186,6 +186,97 @@ describe.skipIf(!databaseUrl)('Oficinas no PostgreSQL real', () => {
     ).toBeNull()
   })
 
+  test('S1: um pool de UMA conexão basta; a escrita do projeto não espera a trava da turma', async () => {
+    const block = {
+      id: randomUUID(),
+      revision: randomUUID(),
+      content: {
+        kind: 'interactive' as const,
+        title: 'Descoberta',
+        instructions: 'Experimente',
+        required: false,
+        hints: [],
+        activity: { type: 'html' as const, html: '<p>Experimente!</p>' },
+      },
+    }
+    const { service, actor, cohort, session } = await setup(1, [
+      { id: randomUUID(), title: 'Etapa', instructions: 'Crie algo', blocks: [block] },
+    ])
+    const child: LiveActor = {
+      id: randomUUID(),
+      accountId: randomUUID(),
+      name: 'Alice',
+      staff: false,
+    }
+    await service.enroll(actor, cohort.id, {
+      accountId: child.accountId,
+      learnerId: child.id,
+      learnerName: child.name,
+    })
+    // Any write that opened a second pool connection while holding its locks would wait
+    // forever here: the only connection is the one holding them.
+    const single = createDbConnection(databaseUrl as string, { max: 1 })
+    const bounded = <T>(work: Promise<T>) =>
+      Promise.race([
+        work,
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('pool esgotado: segunda conexão')), 8000),
+        ),
+      ])
+    try {
+      const clock = () => new Date('2026-11-07T17:00:00Z')
+      const live = new LiveService(
+        new DrizzleLiveRepository(single.db),
+        clock,
+        { assertOwnership: async () => ({ name: 'Criador' }) },
+        { mediaReady: true },
+      )
+      const learning = new LiveLearningService(live, new DrizzleLiveRepository(single.db), clock)
+      const workspaces = new LiveWorkspaceService(
+        new DrizzleLiveWorkspaceRepository(single.db),
+        live,
+        clock,
+      )
+      const deviceId = randomUUID()
+      const saved = await bounded(
+        (async () => {
+          const opened = await workspaces.open(child, session.id, child.id)
+          const claimed = await workspaces.claim(child, opened.id, deviceId, false)
+          await workspaces.renew(child, opened.id, deviceId, claimed.writerEpoch)
+          await learning.save(child, session.id, block.id, {
+            revision: block.revision,
+            answers: {},
+            hintsUsed: 0,
+            positionSeconds: null,
+          })
+          await learning.attempt(child, session.id, block.id, {
+            id: randomUUID(),
+            revision: block.revision,
+            answers: { participated: true },
+            hintsUsed: 0,
+          })
+          return claimed
+        })(),
+      )
+      // A room transaction holding the cohort row does not block the project save.
+      await connection.sql.begin(async (sql) => {
+        await sql`select id from members.live_cohorts where id = ${cohort.id} for update`
+        const committed = await bounded(
+          workspaces.commit(child, saved.id, {
+            deviceId,
+            writerEpoch: saved.writerEpoch,
+            expectedRevision: 0,
+            mutationId: randomUUID(),
+            project: saved.project,
+          }),
+        )
+        expect(committed.revision).toBe(1)
+      })
+    } finally {
+      await single.close()
+    }
+  }, 20_000)
+
   test('vagas pendentes permitem onboarding; Mural é por perfil e expira na janela da oficina', async () => {
     const { service, actor, cohort } = await setup(2)
     const accountId = randomUUID(),

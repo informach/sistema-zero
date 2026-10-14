@@ -657,6 +657,11 @@ export class LiveService {
     return { aggregate, session, occurrence, enrollment, grant, role: 'learner' }
   }
 
+  /** Unlocked snapshot read (one pool connection, no lock held by the caller). */
+  cohortForSession(sessionId: string): Promise<LiveCohortAggregate | null> {
+    return this.repository.findBySession(sessionId)
+  }
+
   async requireContext(actor: LiveActor, sessionId: string): Promise<LiveContext> {
     const aggregate = await this.repository.findBySession(sessionId)
     if (!aggregate) throw new LiveNotFoundError()
