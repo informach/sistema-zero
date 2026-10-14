@@ -122,18 +122,21 @@ export class CloudflareSfuMediaProvider {
 
   /**
    * What this receiver may subscribe to. The receiver and every publisher are authorized on
-   * ONE room snapshot (one load per poll, not one per publisher). Only a definitive denial
-   * retires a publisher; a failed snapshot read fails this poll and retires nobody.
+   * ONE room snapshot (one load per poll, not one per publisher). The poll only READS: an
+   * expired or definitively denied publisher is left out and the room sweep (`reconcile`,
+   * started in the background, serialized per room) retires it. A failed snapshot read fails
+   * this poll and retires nobody.
    */
   async publications(context: Context): Promise<LiveMediaPublication[]> {
     const candidates: LiveMediaConnection[] = []
+    let sweep = false
     for (const connection of await this.registry.list(context.occurrenceId)) {
       if (connection.status !== 'active' || connection.actor.id === context.actor.id) continue
       if (
         Date.parse(connection.leaseEndsAt) <= this.now() ||
         Date.parse(connection.hardEndsAt) <= this.now()
       ) {
-        await this.retire(connection.id)
+        sweep = true
         continue
       }
       candidates.push(connection)
@@ -151,7 +154,7 @@ export class CloudflareSfuMediaProvider {
     for (const [index, connection] of candidates.entries()) {
       const outcome = publishers[index]
       if (!outcome?.ok) {
-        if (outcome && isDefinitiveDenial(outcome.error)) await this.retire(connection.id)
+        if (outcome && isDefinitiveDenial(outcome.error)) sweep = true
         continue
       }
       const publisher = outcome.access
@@ -170,6 +173,8 @@ export class CloudflareSfuMediaProvider {
           )
       }
     }
+    // Retiring talks to the supervisor and the SFU: never inside the child's poll.
+    if (sweep) void this.reconcile(context.occurrenceId).catch(() => undefined)
     return results
   }
 

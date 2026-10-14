@@ -1,6 +1,7 @@
 import { assistanceRequestExpired, type LiveRecordingState } from '@sistemazero/core/live'
 import { and, eq, isNotNull, isNull, lte, ne, or, sql } from 'drizzle-orm'
 import type { LiveService } from '../../application/live/live.service'
+import { LiveConflictError } from '../../domain/live/live.errors'
 import {
   type LiveRecordingSegmentTime,
   recordingSegmentsOf,
@@ -163,7 +164,7 @@ export class OwnRecordingProvider {
   }
 
   async syncOccurrence(occurrenceId: string): Promise<void> {
-    const aggregate = await this.repository.findByOccurrence(occurrenceId)
+    const aggregate = await this.repository.findRoom({ occurrenceId })
     const occurrence = aggregate?.occurrences.find((item) => item.id === occurrenceId)
     if (!occurrence || !['live', 'ended', 'cancelled'].includes(occurrence.state)) return
     const existing = await this.findJob(occurrenceId)
@@ -318,7 +319,7 @@ export class OwnRecordingProvider {
     if (job.commandVersion === 0 && job.confirmedState !== 'review') return
     const lease = job.recordingLeaseEndsAt ?? job.leaseEndsAt
     if (lease.getTime() + LEASE_STOP_MARGIN_MS <= this.now()) {
-      const aggregate = await this.repository.findByOccurrence(occurrenceId)
+      const aggregate = await this.repository.findRoom({ occurrenceId })
       const shown = aggregate?.occurrences.find((item) => item.id === occurrenceId)?.recording
       if (shown && CAPTURING.includes(shown.state))
         await this.showState(occurrenceId, 'unavailable')
@@ -366,7 +367,7 @@ export class OwnRecordingProvider {
     sessionId: string,
     action: 'pause' | 'resume' | 'stop',
   ): Promise<void> {
-    const aggregate = await this.repository.findBySession(sessionId)
+    const aggregate = await this.repository.findRoom({ sessionId })
     const session = aggregate?.sessions.find((item) => item.id === sessionId)
     if (!aggregate || !session || !actor.staff || !aggregate.cohort.teacherIds.includes(actor.id))
       throw new LiveMediaError(
@@ -410,8 +411,13 @@ export class OwnRecordingProvider {
     await this.send(session.occurrenceId)
   }
 
+  /**
+   * The job row lock covers only the job (validation and the confirmed state, all fast). The
+   * room is updated AFTER the commit, from the job as it is then: two events racing still leave
+   * the room on the newest confirmed state, and no cohort work ever waits inside the job lock.
+   */
   async acceptEvent(event: RecordingEvent): Promise<void> {
-    await this.db.transaction(async (tx) => {
+    const accepted = await this.db.transaction(async (tx) => {
       const [job] = await tx
         .select()
         .from(liveRecordingJobs)
@@ -419,7 +425,8 @@ export class OwnRecordingProvider {
         .for('update')
       if (!job || job.jobId !== event.jobId || job.generation !== event.generation)
         throw new LiveMediaError('RECORDING_STALE_GENERATION', 'Geração de gravação inválida.', 409)
-      if (event.eventSequence <= job.version) return
+      // A replayed event (lost acknowledgement): the room is re-synced below, nothing else.
+      if (event.eventSequence <= job.version) return true
       const prefix = `live/recordings/${event.occurrenceId}/${event.jobId}/${event.generation}/`
       if (
         !event.manifestKey.startsWith(prefix) ||
@@ -428,11 +435,7 @@ export class OwnRecordingProvider {
         throw new LiveMediaError('RECORDING_INVALID_ARTIFACT', 'Artefato fora da gravação.', 400)
       if (event.state === 'paused' && !event.captureStopped)
         throw new LiveMediaError('RECORDING_PAUSE_UNCONFIRMED', 'Captura ainda ativa.', 409)
-      if (event.state === 'recording' && job.desiredState !== 'recording') return
-      await this.live.setRecordingState(event.occurrenceId, {
-        state: event.state,
-        storageKey: event.replayKey,
-      })
+      if (event.state === 'recording' && job.desiredState !== 'recording') return false
       await tx
         .update(liveRecordingJobs)
         .set({
@@ -447,7 +450,25 @@ export class OwnRecordingProvider {
           ...(event.state === 'review' ? { finishedAt: new Date(this.now()) } : {}),
         })
         .where(eq(liveRecordingJobs.occurrenceId, event.occurrenceId))
+      return true
     })
+    if (accepted) await this.syncRoomFromJob(event.occurrenceId)
+  }
+
+  /** The room shows the newest state the recorder confirmed (idempotent, outside any lock). */
+  private async syncRoomFromJob(occurrenceId: string) {
+    const job = await this.findJob(occurrenceId)
+    if (!job || job.confirmedState === 'not_started') return
+    try {
+      await this.live.setRecordingState(occurrenceId, {
+        state: job.confirmedState,
+        storageKey: job.replayKey,
+      })
+    } catch (error) {
+      // Published footage is immutable: a late event never rewrites what the teacher published.
+      if (error instanceof LiveConflictError) return
+      throw error
+    }
   }
 
   private async ensureJob(
@@ -488,7 +509,7 @@ export class OwnRecordingProvider {
   }
 
   private async send(occurrenceId: string): Promise<SendResult> {
-    const aggregate = await this.repository.findByOccurrence(occurrenceId)
+    const aggregate = await this.repository.findRoom({ occurrenceId })
     const occurrence = aggregate?.occurrences.find((item) => item.id === occurrenceId)
     if (!aggregate || !occurrence)
       throw new LiveMediaError('RECORDING_JOB_MISSING', 'Encontro não encontrado.', 404)

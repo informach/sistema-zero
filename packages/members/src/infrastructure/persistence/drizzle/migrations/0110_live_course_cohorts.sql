@@ -14,4 +14,20 @@ CREATE UNIQUE INDEX IF NOT EXISTS "live_workspace_session_learner_uq" ON "member
 CREATE UNIQUE INDEX IF NOT EXISTS "live_workspace_learner_key_uq" ON "members"."live_workspaces" USING btree ("learner_id","project_key") WHERE "members"."live_workspaces"."project_key" is not null;--> statement-breakpoint
 -- As oficinas nunca foram para produção: a turma antiga do roteiro vira arquivada (o serviço
 -- passa a ignorá-la). Nenhum dado de família real.
-UPDATE "members"."live_cohorts" SET "document" = jsonb_set("document", '{status}', '"archived"') WHERE "course_id" IS NULL AND jsonb_typeof("document") = 'object' AND "document"->>'status' IS DISTINCT FROM 'archived';
+UPDATE "members"."live_cohorts" SET "document" = jsonb_set("document", '{status}', '"archived"') WHERE "course_id" IS NULL AND jsonb_typeof("document") = 'object' AND "document"->>'status' IS DISTINCT FROM 'archived';--> statement-breakpoint
+-- Presença no encontro: o batimento grava esta linha pequena, nunca o documento da ocorrência.
+CREATE TABLE IF NOT EXISTS "members"."live_presence" (
+	"occurrence_id" uuid NOT NULL,
+	"actor_id" uuid NOT NULL,
+	"account_id" uuid NOT NULL,
+	"seen_at" timestamp with time zone NOT NULL,
+	"activity_at" timestamp with time zone,
+	CONSTRAINT "live_presence_occurrence_id_actor_id_pk" PRIMARY KEY("occurrence_id","actor_id")
+);
+--> statement-breakpoint
+DO $$ BEGIN
+	ALTER TABLE "members"."live_presence" ADD CONSTRAINT "live_presence_occurrence_id_live_occurrences_id_fk" FOREIGN KEY ("occurrence_id") REFERENCES "members"."live_occurrences"("id") ON DELETE cascade ON UPDATE no action;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "live_presence_account_idx" ON "members"."live_presence" USING btree ("account_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "live_presence_actor_idx" ON "members"."live_presence" USING btree ("actor_id");

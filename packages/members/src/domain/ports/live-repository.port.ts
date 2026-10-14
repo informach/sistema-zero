@@ -46,6 +46,16 @@ export interface LiveCohortAggregate {
   audit: LiveAuditEntry[]
   replayPositions?: LiveReplayPosition[]
 }
+/** One encounter, by its session or by one of its occurrences. */
+export type LiveRoomRef = { sessionId: string } | { occurrenceId: string }
+export interface LivePresenceTouch {
+  occurrenceId: string
+  actorId: string
+  accountId: string
+  at: Date
+  /** The child confirmed her activity (refreshes `activity.reportedAt`). */
+  activity?: boolean
+}
 /** What a room command needs before taking the cohort lock (one indexed read). */
 export interface LiveSessionRef {
   cohortId: string
@@ -64,6 +74,26 @@ export interface LiveRepository {
   findByEnrollment(id: string): Promise<LiveCohortAggregate | null>
   /** One indexed lookup; lets a mutation lock the cohort without loading it twice. */
   sessionRef(sessionId: string): Promise<LiveSessionRef | null>
+  /**
+   * The room of ONE encounter, in one consistent read and without a lock: the cohort document,
+   * this session, its occurrences, the seats and this session's grants, with presence overlaid.
+   * Never the other encounters of the cohort: the room must not grow with them.
+   */
+  findRoom(ref: LiveRoomRef): Promise<LiveCohortAggregate | null>
+  /**
+   * Writes of ONE encounter: the same slice under the cohort row lock (the same lock as every
+   * cohort write). Persisting a slice never touches the other encounters.
+   */
+  roomTransaction<T>(
+    ref: LiveRoomRef,
+    mutate: (aggregate: LiveCohortAggregate) => T | Promise<T>,
+    accountId?: string,
+  ): Promise<T>
+  /**
+   * Presence only (a heartbeat with nothing new): a small row, never the occurrence document.
+   * Under the account lock and the deletion fence, like every live write of a family.
+   */
+  touchPresence(input: LivePresenceTouch): Promise<void>
   readReplayPosition(sessionId: string, learnerId: string, version: number): Promise<number>
   transaction<T>(
     cohortId: string,

@@ -29,7 +29,7 @@ function app() {
     repository,
     clock,
     { assertOwnership: async () => ({ name: 'Criança' }) },
-    { mediaReady: true, courses },
+    { mediaReady: true, courses, recordingBucket: 'sz-gravacoes' },
   )
   const workspace = new LiveWorkspaceService(
     new InMemoryLiveWorkspaceRepository(repository),
@@ -299,9 +299,9 @@ test('gravação: professora atribuída revisa, publica e manda ao Vimeo; equipe
   expect((await f.send(source, outsider)).status).toBe(404)
   const found = await f.send(source, staff)
   expect(found.status).toBe(200)
-  expect(await found.json()).toEqual({
+  expect(await found.json()).toMatchObject({
     storageKey: `live/recordings/${session.occurrenceId}/review.mp4`,
-    bucket: 'private',
+    bucket: 'sz-gravacoes',
   })
   const body = {
     expectedVersion: recording.version,

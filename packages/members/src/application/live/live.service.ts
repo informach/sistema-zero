@@ -30,6 +30,7 @@ import {
   LiveUnavailableError,
 } from '../../domain/live/live.errors'
 import { LIVE_SECTIONS_MAX, liveVimeoRecording } from '../../domain/live/live-course-rules'
+import { presenceStale, sameActivity } from '../../domain/live/presence'
 import {
   type LiveRecordingSegmentTime,
   recordingChapters,
@@ -45,7 +46,6 @@ import type {
   LiveCohortAggregate,
   LiveProfileOwnershipPort,
   LiveRepository,
-  LiveSessionRef,
 } from '../../domain/ports/live-repository.port'
 import type { LiveRewardsPort } from '../../domain/ports/live-rewards.port'
 
@@ -72,6 +72,11 @@ export interface LiveServiceOptions {
   onRewardsError?: (error: unknown) => void
   /** The segment timeline the recorder confirmed (chapters are computed on publication). */
   recordingTimeline?: (occurrenceId: string) => Promise<LiveRecordingSegmentTime[] | null>
+  /**
+   * The REAL bucket where the recorder writes the MP4 (`R2_BUCKET` of the recorder). The Admin
+   * signs the temporary URL with its own credentials. Without it, the source is unavailable.
+   */
+  recordingBucket?: string
 }
 /** Media authorization computed from one cohort snapshot (one load, many publishers). */
 export interface LiveMediaAuthorization {
@@ -698,8 +703,9 @@ export class LiveService {
     return (await this.options.courses?.studioBlock(lessonId, blockId)) ?? null
   }
 
+  /** The room of ONE encounter (never the other encounters of the cohort). */
   async requireContext(actor: LiveActor, sessionId: string): Promise<LiveContext> {
-    const aggregate = await this.repository.findBySession(sessionId)
+    const aggregate = await this.repository.findRoom({ sessionId })
     if (!aggregate) throw new LiveNotFoundError()
     return this.contextFor(actor, aggregate, sessionId)
   }
@@ -848,9 +854,18 @@ export class LiveService {
   }
 
   private async endExpiredOccurrence(id: string): Promise<void> {
-    const cohortId = (await this.repository.findByOccurrence(id))?.cohort.id
-    if (!cohortId) return
-    const changed = await this.repository.transaction(cohortId, (aggregate) => {
+    let changed: boolean
+    try {
+      changed = await this.endExpired(id)
+    } catch (error) {
+      if (error instanceof LiveNotFoundError) return
+      throw error
+    }
+    if (changed) await this.options.onPermissionsChanged?.(id)
+  }
+
+  private endExpired(id: string): Promise<boolean> {
+    return this.repository.roomTransaction({ occurrenceId: id }, (aggregate) => {
       const occurrence = aggregate.occurrences.find((item) => item.id === id)
       if (!occurrence || !this.overdue(occurrence)) return false
       // An encounter that never happened is cancelled (and can get a replacement);
@@ -873,20 +888,19 @@ export class LiveService {
       })
       return true
     })
-    if (changed) await this.options.onPermissionsChanged?.(id)
   }
 
-  /** One indexed lookup, then the cohort lock; authorization happens on the locked snapshot. */
+  /**
+   * Writes of ONE encounter: the cohort lock, then only this encounter is loaded and persisted.
+   * Authorization happens on the locked snapshot.
+   */
   private async mutateRoom<T>(
     actor: LiveActor,
     sessionId: string,
     mutate: (context: LiveContext) => T | Promise<T>,
-    preloaded?: LiveSessionRef,
   ) {
-    const ref = preloaded ?? (await this.repository.sessionRef(sessionId))
-    if (!ref) throw new LiveNotFoundError()
-    return this.repository.transaction(
-      ref.cohortId,
+    return this.repository.roomTransaction(
+      { sessionId },
       async (aggregate) => mutate(this.contextFor(actor, aggregate, sessionId)),
       actor.accountId,
     )
@@ -981,61 +995,85 @@ export class LiveService {
     deviceId: string,
     activity?: LiveActivityReport,
   ) {
-    const ref = await this.requireRef(sessionId)
-    let report: Omit<LiveActivityReport, 'stepId'> & { stepId: null } = {
-      stepId: null,
-      saveState: 'not-open',
-    }
-    if (activity) {
-      if (!['not-open', 'saving', 'saved', 'offline'].includes(activity.saveState))
-        throw new ValidationError('Estado de salvamento inválido.')
-      // The old script steps are gone: a step id is never valid in a course encounter.
-      if (activity.stepId) throw new ValidationError('Etapa inválida para este encontro.')
-      const sectionId = activity.sectionId ?? null
-      const completed = activity.completedSectionIds
+    const report = activity ? this.activityReport(activity) : null
+    // One read of this encounter, no lock: most beats change nothing but presence.
+    const context = await this.requireContext(actor, sessionId)
+    this.operational(context, true)
+    if (report && (report.sectionId || report.completedSectionIds?.length)) {
+      const lessonId = context.session.lessonId
+      const known = new Set((lessonId ? await this.publishedSections(lessonId) : null) ?? [])
       if (
-        (sectionId !== null && (typeof sectionId !== 'string' || !UUID.test(sectionId))) ||
-        (completed !== undefined &&
-          (!Array.isArray(completed) ||
-            completed.length > LIVE_SECTIONS_MAX ||
-            new Set(completed).size !== completed.length ||
-            completed.some((id) => typeof id !== 'string' || !UUID.test(id))))
+        (report.sectionId && !known.has(report.sectionId)) ||
+        report.completedSectionIds?.some((id) => !known.has(id))
       )
         throw new ValidationError('Parte inválida para este encontro.')
-      if (sectionId !== null || completed?.length) {
-        const known = new Set(
-          (ref.lessonId ? await this.publishedSections(ref.lessonId) : null) ?? [],
-        )
-        if (
-          (sectionId !== null && !known.has(sectionId)) ||
-          completed?.some((id) => !known.has(id))
-        )
-          throw new ValidationError('Parte inválida para este encontro.')
-      }
-      report = {
-        stepId: null,
-        saveState: activity.saveState,
-        sectionId,
-        ...(completed !== undefined ? { completedSectionIds: [...completed] } : {}),
-      }
     }
-    return this.mutateRoom(
-      actor,
-      sessionId,
-      (context) => {
-        this.operational(context, true)
-        if (context.role === 'teacher')
-          context.occurrence.teachers[actor.id] = this.clock().toISOString()
-        else {
-          const participant = this.participation(actor, context, deviceId)
-          participant.seenAt = this.clock().toISOString()
-          if (activity && participant.admission === 'admitted')
-            participant.activity = { ...report, reportedAt: participant.seenAt }
-        }
-        return this.view(actor, context)
-      },
-      ref,
+    const now = this.clock()
+    const at = now.toISOString()
+    const { occurrence } = context
+    if (context.role === 'teacher') {
+      if (presenceStale(occurrence.teachers[actor.id], now))
+        await this.repository.touchPresence({
+          occurrenceId: occurrence.id,
+          actorId: actor.id,
+          accountId: actor.accountId,
+          at: now,
+        })
+      occurrence.teachers[actor.id] = at
+      return this.view(actor, context)
+    }
+    const participant = this.participation(actor, context, deviceId)
+    const reporting = report !== null && participant.admission === 'admitted'
+    if (reporting && !sameActivity(participant.activity, report))
+      // What the child is doing changed: the occurrence document, under the cohort lock.
+      return this.mutateRoom(actor, sessionId, (locked) => {
+        this.operational(locked, true)
+        const current = this.participation(actor, locked, deviceId)
+        current.seenAt = at
+        if (current.admission === 'admitted') current.activity = { ...report, reportedAt: at }
+        return this.view(actor, locked)
+      })
+    if (
+      presenceStale(participant.seenAt, now) ||
+      (reporting && presenceStale(participant.activity?.reportedAt, now))
     )
+      await this.repository.touchPresence({
+        occurrenceId: occurrence.id,
+        actorId: actor.id,
+        accountId: actor.accountId,
+        at: now,
+        activity: reporting,
+      })
+    participant.seenAt = at
+    if (reporting && participant.activity) participant.activity.reportedAt = at
+    return this.view(actor, context)
+  }
+
+  /** The child's report, validated in shape (no I/O): parts are checked against the lesson. */
+  private activityReport(
+    activity: LiveActivityReport,
+  ): Omit<LiveActivityReport, 'stepId'> & { stepId: null } {
+    if (!['not-open', 'saving', 'saved', 'offline'].includes(activity.saveState))
+      throw new ValidationError('Estado de salvamento inválido.')
+    // The old script steps are gone: a step id is never valid in a course encounter.
+    if (activity.stepId) throw new ValidationError('Etapa inválida para este encontro.')
+    const sectionId = activity.sectionId ?? null
+    const completed = activity.completedSectionIds
+    if (
+      (sectionId !== null && (typeof sectionId !== 'string' || !UUID.test(sectionId))) ||
+      (completed !== undefined &&
+        (!Array.isArray(completed) ||
+          completed.length > LIVE_SECTIONS_MAX ||
+          new Set(completed).size !== completed.length ||
+          completed.some((id) => typeof id !== 'string' || !UUID.test(id))))
+    )
+      throw new ValidationError('Parte inválida para este encontro.')
+    return {
+      stepId: null,
+      saveState: activity.saveState,
+      sectionId,
+      ...(completed !== undefined ? { completedSectionIds: [...completed] } : {}),
+    }
   }
 
   async request(
@@ -1121,18 +1159,13 @@ export class LiveService {
         ? await this.publishedSections(ref.lessonId, true)
         : null
     let rewards: RewardCandidate[] = []
-    const room = await this.mutateRoom(
-      actor,
-      sessionId,
-      (context) => {
-        if (context.role !== 'teacher')
-          throw new LiveAccessError('Somente a professora desta turma pode conduzir a sala.')
-        const result = this.applyControl(actor, context, expectedVersion, command, sections)
-        rewards = result.rewards
-        return result.room
-      },
-      ref,
-    )
+    const room = await this.mutateRoom(actor, sessionId, (context) => {
+      if (context.role !== 'teacher')
+        throw new LiveAccessError('Somente a professora desta turma pode conduzir a sala.')
+      const result = this.applyControl(actor, context, expectedVersion, command, sections)
+      rewards = result.rewards
+      return result.room
+    })
     await this.options.onPermissionsChanged?.(room.occurrence?.id ?? '')
     await this.grantRewards(rewards)
     return room
@@ -1420,7 +1453,7 @@ export class LiveService {
   }
 
   async authorizeMedia(actor: LiveActor, occurrenceId: string, deviceId: string) {
-    const aggregate = await this.repository.findByOccurrence(occurrenceId)
+    const aggregate = await this.repository.findRoom({ occurrenceId })
     if (!aggregate) throw new LiveNotFoundError()
     return this.mediaAccess(aggregate, actor, occurrenceId, deviceId)
   }
@@ -1434,7 +1467,7 @@ export class LiveService {
     occurrenceId: string,
     entries: { actor: LiveActor; deviceId: string }[],
   ): Promise<LiveMediaPublisherResult[]> {
-    const aggregate = await this.repository.findByOccurrence(occurrenceId)
+    const aggregate = await this.repository.findRoom({ occurrenceId })
     return entries.map(({ actor, deviceId }) => {
       try {
         if (!aggregate) throw new LiveNotFoundError()
@@ -1481,12 +1514,18 @@ export class LiveService {
     occurrenceId: string,
     update: { state: Exclude<LiveRecordingState, 'ready'>; storageKey?: string | null },
   ) {
-    const found = await this.repository.findByOccurrence(occurrenceId)
-    if (!found) throw new LiveNotFoundError()
-    return this.repository.transaction(found.cohort.id, (aggregate) => {
+    return this.repository.roomTransaction({ occurrenceId }, (aggregate) => {
       const occurrence = aggregate.occurrences.find((item) => item.id === occurrenceId)
       if (!occurrence) throw new LiveNotFoundError()
       const recording = occurrence.recording
+      // The same state again (a recorder event replayed, a re-sync): nothing changes, no new
+      // version (the children's replay positions are tied to it).
+      if (
+        recording.state === update.state &&
+        (update.storageKey === undefined || update.storageKey === recording.storageKey) &&
+        !recording.published
+      )
+        return { ...recording }
       // Published footage is immutable. New captures require a new occurrence/job.
       if (recording.published || recording.state === 'ready')
         throw new LiveConflictError('Esta gravação já foi revisada. Preserve a versão publicada.')
@@ -1533,45 +1572,40 @@ export class LiveService {
       } catch {
         segments = null
       }
-    return this.mutateRoom(
-      actor,
-      sessionId,
-      (context) => {
-        if (context.role !== 'teacher') throw new LiveAccessError()
-        const occurrence = occurrenceId
-          ? context.aggregate.occurrences.find(
-              (item) => item.id === occurrenceId && item.sessionId === sessionId,
-            )
-          : context.occurrence
-        if (!occurrence) throw new LiveNotFoundError()
-        const recording = occurrence.recording
-        if (recording.version !== expectedVersion) throw new LiveConflictError()
-        if (
-          published &&
-          (!['review', 'ready'].includes(recording.state) ||
-            !(recording.storageKey || recording.vimeo))
-        )
-          throw new LiveConflictError('A gravação ainda não está pronta para revisão e publicação.')
-        recording.published = published
-        if (published) recording.state = 'ready'
-        if (published && segments && occurrence.id === target)
-          recording.chapters = recordingChapters(occurrence.marks ?? [], segments)
-        recording.version =
-          Math.max(
-            ...context.aggregate.occurrences
-              .filter((item) => item.sessionId === sessionId)
-              .map((item) => item.recording.version),
-          ) + 1
-        this.audit(
-          context.aggregate,
-          actor,
-          published ? 'recording.published' : 'recording.withdrawn',
-          occurrence.id,
-        )
-        return this.view(actor, context)
-      },
-      ref,
-    )
+    return this.mutateRoom(actor, sessionId, (context) => {
+      if (context.role !== 'teacher') throw new LiveAccessError()
+      const occurrence = occurrenceId
+        ? context.aggregate.occurrences.find(
+            (item) => item.id === occurrenceId && item.sessionId === sessionId,
+          )
+        : context.occurrence
+      if (!occurrence) throw new LiveNotFoundError()
+      const recording = occurrence.recording
+      if (recording.version !== expectedVersion) throw new LiveConflictError()
+      if (
+        published &&
+        (!['review', 'ready'].includes(recording.state) ||
+          !(recording.storageKey || recording.vimeo))
+      )
+        throw new LiveConflictError('A gravação ainda não está pronta para revisão e publicação.')
+      recording.published = published
+      if (published) recording.state = 'ready'
+      if (published && segments && occurrence.id === target)
+        recording.chapters = recordingChapters(occurrence.marks ?? [], segments)
+      recording.version =
+        Math.max(
+          ...context.aggregate.occurrences
+            .filter((item) => item.sessionId === sessionId)
+            .map((item) => item.recording.version),
+        ) + 1
+      this.audit(
+        context.aggregate,
+        actor,
+        published ? 'recording.published' : 'recording.withdrawn',
+        occurrence.id,
+      )
+      return this.view(actor, context)
+    })
   }
 
   /** Who sends a recording to Vimeo: the administration or a teacher assigned to the cohort. */
@@ -1594,12 +1628,28 @@ export class LiveService {
 
   /** The reviewed MP4 for the Admin to sign a temporary URL with its own credentials. */
   async recordingSource(actor: LiveActor, occurrenceId: string): Promise<LiveRecordingSourceView> {
-    const aggregate = await this.repository.findByOccurrence(occurrenceId)
+    const aggregate = await this.repository.findRoom({ occurrenceId })
     const occurrence = aggregate?.occurrences.find((item) => item.id === occurrenceId)
     if (!aggregate || !occurrence) throw new LiveNotFoundError()
     this.assertRecordingManager(actor, aggregate)
     const recording = this.reviewedRecording(occurrence)
-    return { storageKey: recording.storageKey!, bucket: 'private' }
+    if (!this.options.recordingBucket)
+      throw new LiveUnavailableError('O armazenamento das gravações ainda não está configurado.')
+    const { cohort } = aggregate
+    const session = aggregate.sessions.find((item) => item.id === occurrence.sessionId)
+    // "<curso> · <aula> · <turma> · <data>": the name of the video on Vimeo.
+    const title = [
+      cohort.course?.title,
+      session?.plan.title,
+      cohort.title,
+      new Intl.DateTimeFormat('pt-BR', { timeZone: cohort.timeZone, dateStyle: 'short' }).format(
+        new Date(occurrence.startsAt),
+      ),
+    ]
+      .filter((part): part is string => Boolean(part?.trim()))
+      .join(' · ')
+      .slice(0, 200)
+    return { storageKey: recording.storageKey!, bucket: this.options.recordingBucket, title }
   }
 
   /**
@@ -1612,12 +1662,15 @@ export class LiveService {
     input: { videoId: string; embedUrl: string; status: string },
   ): Promise<LiveRecordingSummary> {
     const vimeo: LiveRecordingVimeo = liveVimeoRecording(input)
-    const found = await this.repository.findByOccurrence(occurrenceId)
-    if (!found) throw new LiveNotFoundError()
-    return this.repository.transaction(found.cohort.id, (aggregate) => {
+    return this.repository.roomTransaction({ occurrenceId }, (aggregate) => {
       const occurrence = aggregate.occurrences.find((item) => item.id === occurrenceId)
       if (!occurrence) throw new LiveNotFoundError()
       this.assertRecordingManager(actor, aggregate)
+      const current = occurrence.recording.vimeo
+      // A video being processed (or ready) is never swapped for another one: two publications
+      // racing would leave the children on a video nobody follows. A failed one may be replaced.
+      if (current && current.status !== 'failed' && current.videoId !== vimeo.videoId)
+        throw new LiveConflictError('Esta gravação já tem um vídeo no Vimeo.')
       // The platform MP4 may be deleted once Vimeo is ready; a later status update still counts.
       if (!occurrence.recording.vimeo) this.reviewedRecording(occurrence)
       else if (!['review', 'ready'].includes(occurrence.recording.state))

@@ -1987,6 +1987,30 @@ export const liveWorkspaces = members.table(
   ],
 )
 
+/**
+ * Presence in an encounter (0110): when the teacher and each child were last seen, and when the
+ * child last confirmed what she is doing. A heartbeat writes this small row, never the
+ * occurrence document; every read of the room overlays it on `teachers`, `seenAt` and
+ * `activity.reportedAt`.
+ */
+export const livePresence = members.table(
+  'live_presence',
+  {
+    occurrenceId: uuid('occurrence_id')
+      .notNull()
+      .references(() => liveOccurrences.id, { onDelete: 'cascade' }),
+    actorId: uuid('actor_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    seenAt: timestamp('seen_at', { withTimezone: true }).notNull(),
+    activityAt: timestamp('activity_at', { withTimezone: true }),
+  },
+  (t) => [
+    primaryKey({ columns: [t.occurrenceId, t.actorId] }),
+    index('live_presence_account_idx').on(t.accountId),
+    index('live_presence_actor_idx').on(t.actorId),
+  ],
+)
+
 export const liveWorkspaceRevisions = members.table(
   'live_workspace_revisions',
   {
@@ -2148,6 +2172,7 @@ export const schema = {
   liveMediaConnections,
   liveWorkspaces,
   liveWorkspaceRevisions,
+  livePresence,
   liveProjectTemplates,
   liveRecordingJobs,
   liveReplayPositions,

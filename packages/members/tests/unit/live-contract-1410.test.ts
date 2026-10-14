@@ -305,18 +305,21 @@ describe('contrato das oficinas (14/10)', () => {
     await f.live.join(caio, f.session.id, { deviceId: caioDevice, takeover: false })
     const occurrenceId = (await f.live.room(ana, f.session.id)).occurrence!.id
     let loads = 0
-    const original = f.repository.findByOccurrence.bind(f.repository)
-    f.repository.findByOccurrence = async (id) => {
+    const original = f.repository.findRoom.bind(f.repository)
+    f.repository.findRoom = async (ref) => {
       loads++
-      return original(id)
+      return original(ref)
     }
+    const cohortLoads = f.repository.reads.cohort
     const results = await f.live.authorizeMediaMany(occurrenceId, [
       { actor: bia, deviceId: biaDevice },
       { actor: ana, deviceId: randomUUID() },
       { actor: bruna, deviceId: randomUUID() },
       { actor: caio, deviceId: caioDevice },
     ])
+    // One read of THIS encounter, never the whole cohort.
     expect(loads).toBe(1)
+    expect(f.repository.reads.cohort).toBe(cohortLoads)
     expect(results.map((item) => (item.ok ? item.access.displayName : 'negado'))).toEqual([
       'Bia',
       'Ana',

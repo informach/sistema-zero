@@ -467,6 +467,7 @@ export async function createApplication(env: Env): Promise<Application> {
       },
       // Cohorts of LIVE courses: the course, its published lessons, parts and Studio blocks.
       courses: new DrizzleLiveCourseRepository(db),
+      recordingBucket: env.LIVE_RECORDING_BUCKET,
       // Chapters of a published recording come from the segment timeline of the recorder.
       async recordingTimeline(occurrenceId) {
         return (await liveRecording?.timeline(occurrenceId)) ?? null

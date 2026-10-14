@@ -181,6 +181,11 @@ describe('turma de curso ao vivo', () => {
       (await f.live.catalog(admin, 'admin', { audience: 'adult' })).cohorts.map((c) => c.courseId),
     ).toEqual([adult.id])
     expect((await f.live.catalog(admin, 'admin')).courses).toHaveLength(2)
+    // Every live course of the platform, even without a cohort or a published lesson yet.
+    const empty = f.courses.add({ lessons: 0, audience: 'kids', title: 'Ainda sem aula' }).course
+    const withEmpty = await f.live.catalog(admin, 'admin', { audience: 'kids' })
+    expect(withEmpty.courses?.find((item) => item.id === empty.id)?.lessons).toEqual([])
+    f.courses.courses.delete(empty.id)
     const child = await f.live.catalog(bia, 'learner', { audience: 'kids' })
     expect(child.courses?.map((item) => item.id)).toEqual([f.course.id])
     expect(child.courses?.[0]?.lessons.map((lesson) => lesson.id)).toEqual(
@@ -374,6 +379,7 @@ describe('gravação com Vimeo e capítulos', () => {
   async function recorded(segments: LiveRecordingSegmentTime[] | null | Error) {
     const asked: string[] = []
     const f = await setup({
+      recordingBucket: 'sz-gravacoes',
       async recordingTimeline(occurrenceId) {
         asked.push(occurrenceId)
         if (segments instanceof Error) throw segments
@@ -432,11 +438,13 @@ describe('gravação com Vimeo e capítulos', () => {
       { startsAt, endsAt: '2026-11-07T17:40:00.000Z', durationMs: 2_400_000 },
     ])
     const occurrenceId = f.session.occurrenceId
+    // The real bucket of the recorder and the video name for Vimeo.
     expect(await f.live.recordingSource(ana, occurrenceId)).toEqual({
       storageKey: `live/recordings/${occurrenceId}/replay.mp4`,
-      bucket: 'private',
+      bucket: 'sz-gravacoes',
+      title: 'Oficina de jogos · Encontro 1 · Turma de sábado · 07/11/2026',
     })
-    expect((await f.live.recordingSource(admin, occurrenceId)).bucket).toBe('private')
+    expect((await f.live.recordingSource(admin, occurrenceId)).bucket).toBe('sz-gravacoes')
     for (const actor of [outsider, bia])
       await expect(f.live.recordingSource(actor, occurrenceId)).rejects.toBeInstanceOf(
         LiveNotFoundError,
@@ -452,6 +460,18 @@ describe('gravação com Vimeo e capítulos', () => {
     expect(saved.recording).not.toHaveProperty('storageKey')
     await expect(f.live.setRecordingVimeo(outsider, occurrenceId, vimeo)).rejects.toBeInstanceOf(
       LiveNotFoundError,
+    )
+    // The same video again is idempotent; ANOTHER video never replaces one in progress.
+    expect(
+      (await f.live.setRecordingVimeo(ana, occurrenceId, vimeo)).recording.vimeo?.videoId,
+    ).toBe('76979871')
+    const other = {
+      videoId: '11111',
+      embedUrl: 'https://player.vimeo.com/video/11111',
+      status: 'processing',
+    }
+    await expect(f.live.setRecordingVimeo(ana, occurrenceId, other)).rejects.toBeInstanceOf(
+      LiveConflictError,
     )
     await expect(
       f.live.setRecordingVimeo(ana, occurrenceId, {

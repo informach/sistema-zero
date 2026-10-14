@@ -425,6 +425,108 @@ describe.skipIf(!databaseUrl)('Oficinas no PostgreSQL real', () => {
     expect(await repository.overdueOccurrences(after)).not.toContain(session.occurrenceId)
   })
 
+  test('sala de UM encontro: leitura só dele, escrita só dele, presença na linha pequena', async () => {
+    const repository = new DrizzleLiveRepository(connection.db)
+    const service = new LiveService(
+      repository,
+      () => new Date('2026-11-07T17:00:00Z'),
+      { assertOwnership: async () => ({ name: 'Criador' }) },
+      { mediaReady: true, courses },
+    )
+    const actor: LiveActor = { id: randomUUID(), accountId: randomUUID(), name: 'Ana', staff: true }
+    const child: LiveActor = {
+      id: randomUUID(),
+      accountId: randomUUID(),
+      name: 'Bia',
+      staff: false,
+    }
+    const { course } = courses.add({ lessons: 2 })
+    const { cohort, sessions } = await service.createCohort(actor, course.id, {
+      title: 'Turma de dois encontros',
+      timeZone: 'America/Sao_Paulo',
+      capacity: 2,
+      accessDays: 30,
+      teacherIds: [actor.id],
+      schedule: [
+        { startsAt: '2026-11-07T17:00:00Z', endsAt: '2026-11-07T18:00:00Z' },
+        { startsAt: '2026-11-14T17:00:00Z', endsAt: '2026-11-14T18:00:00Z' },
+      ],
+    })
+    await service.updateCohort({ ...actor, admin: true }, cohort.id, { status: 'open' })
+    await service.enroll(actor, cohort.id, {
+      accountId: child.accountId,
+      learnerId: child.id,
+      learnerName: 'Bia',
+    })
+    const [first, second] = sessions as [(typeof sessions)[number], (typeof sessions)[number]]
+    const room = (await repository.findRoom({ sessionId: first.id }))!
+    expect(room.sessions.map((session) => session.id)).toEqual([first.id])
+    expect(room.occurrences.map((occurrence) => occurrence.id)).toEqual([first.occurrenceId])
+    expect(room.grants.map((grant) => grant.sessionId)).toEqual([first.id])
+    expect(room.grants[0]?.endsAt).toBe('2026-12-07T17:00:00.000Z')
+    expect(
+      (await repository.findRoom({ occurrenceId: second.occurrenceId }))?.sessions[0]?.id,
+    ).toBe(second.id)
+    const xmin = async (id: string) =>
+      (
+        await connection.sql`select xmin::text as v from members.live_occurrences where id = ${id}`
+      )[0]?.v as string
+    const untouched = await xmin(second.occurrenceId)
+    await service.control(actor, first.id, undefined, { kind: 'start' })
+    const deviceId = randomUUID()
+    await service.join(child, first.id, { deviceId, takeover: false })
+    await service.control(actor, first.id, undefined, { kind: 'admit', learnerId: child.id })
+    expect(await xmin(second.occurrenceId)).toBe(untouched)
+    // Presence: the small row, overlaid on every read; the occurrence row stays as it was.
+    const written = await xmin(first.occurrenceId)
+    await repository.touchPresence({
+      occurrenceId: first.occurrenceId,
+      actorId: child.id,
+      accountId: child.accountId,
+      at: new Date('2026-11-07T17:00:30Z'),
+      activity: true,
+    })
+    expect(await xmin(first.occurrenceId)).toBe(written)
+    const seen = (await repository.findRoom({ sessionId: first.id }))!.occurrences[0]!
+    expect(seen.participants[0]?.seenAt).toBe('2026-11-07T17:00:30.000Z')
+    expect(
+      (await repository.findCohort(cohort.id))!.occurrences.find((o) => o.id === first.occurrenceId)
+        ?.participants[0]?.seenAt,
+    ).toBe('2026-11-07T17:00:30.000Z')
+    // An older presence never moves it back.
+    await repository.touchPresence({
+      occurrenceId: first.occurrenceId,
+      actorId: child.id,
+      accountId: child.accountId,
+      at: new Date('2026-11-07T17:00:10Z'),
+    })
+    expect(
+      (await repository.findRoom({ sessionId: first.id }))!.occurrences[0]!.participants[0]?.seenAt,
+    ).toBe('2026-11-07T17:00:30.000Z')
+    // Account erasure: no presence after the fence, and the purge removes it.
+    await connection.db.transaction(async (tx) => {
+      await tx
+        .insert(accountDeletionFences)
+        .values({ accountId: child.accountId, createdAt: new Date() })
+      await purgeLiveAccount(tx, child.accountId, [child.id])
+    })
+    const refused = await repository
+      .touchPresence({
+        occurrenceId: first.occurrenceId,
+        actorId: child.id,
+        accountId: child.accountId,
+        at: new Date('2026-11-07T17:01:00Z'),
+      })
+      .then(
+        () => null,
+        (error: Error) => error,
+      )
+    expect(refused?.message).toContain('exclusão')
+    const [left] =
+      await connection.sql`select count(*)::int as n from members.live_presence where actor_id = ${child.id}`
+    expect(left?.n).toBe(0)
+  })
+
   test('purga remove apenas a família alvo e a cerca impede matrícula tardia', async () => {
     const { service, actor, repository, cohort, session } = await setup(2)
     const child: LiveActor = {

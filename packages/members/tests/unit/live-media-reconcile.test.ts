@@ -195,10 +195,24 @@ describe('mídia da sala: uma autorização por consulta e reconcile serializado
       ['teacher', 'camera', 'Ana'],
       ['caio', 'camera', 'Caio'],
     ])
-    // A definitive denial (removed child) retires only that publisher.
+    // A definitive denial (removed child) leaves the poll at once; the room sweep, started in
+    // the background (never inside the poll), retires only that publisher.
     f.policy.set('caio', { ok: false, error: new LiveAccessError() })
     const after = await f.provider.publications(receiver)
     expect(after.map((item) => item.actorId)).toEqual(['teacher', 'teacher'])
+    await f.provider.reconcile(occurrenceId)
+    expect(['retired', 'closed']).toContain(f.state(caio).status)
+    expect(f.state(teacher).status).toBe('active')
+  })
+
+  test('a consulta só lê: conexão vencida sai da lista e a varredura a aposenta depois', async () => {
+    const f = fixture()
+    const expired = connection(caio, [resource(caio, '0', 'camera')])
+    expired.leaseEndsAt = new Date(Date.now() - 1_000).toISOString()
+    f.seed(connection(teacher, [resource(teacher, '0', 'microphone')]), expired)
+    const listed = await f.provider.publications(receiver)
+    expect(listed.map((item) => item.actorId)).toEqual(['teacher'])
+    await f.provider.reconcile(occurrenceId)
     expect(['retired', 'closed']).toContain(f.state(caio).status)
     expect(f.state(teacher).status).toBe('active')
   })

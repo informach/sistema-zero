@@ -9,6 +9,7 @@ import {
   liveLearningProgress,
   liveMediaConnections,
   liveOccurrences,
+  livePresence,
   liveReplayPositions,
   liveWorkspaceRevisions,
   liveWorkspaces,
@@ -88,6 +89,9 @@ export async function purgeLiveAccount(tx: Transaction, accountId: string, userI
       ),
     )
   await tx.delete(liveMediaConnections).where(inArray(liveMediaConnections.actorId, ids))
+  await tx
+    .delete(livePresence)
+    .where(or(eq(livePresence.accountId, accountId), inArray(livePresence.actorId, ids)))
   await tx
     .delete(liveReplayPositions)
     .where(
