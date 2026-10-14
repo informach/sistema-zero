@@ -70,6 +70,10 @@ export function createLiveRouteHandler(deps: {
     const planRevision = url.searchParams.get('planRevision')
     const sessionId = url.searchParams.get('sessionId')
     const occurrenceId = url.searchParams.get('occurrenceId')
+    // O projeto ao vivo do BLOCO Estúdio (`workspaces?sessionId=&blockId=`; a professora acompanha
+    // uma criança com `learnerId`).
+    const blockId = url.searchParams.get('blockId')
+    const learnerId = url.searchParams.get('learnerId')
     const cursor = url.searchParams.get('cursor'),
       limit = url.searchParams.get('limit')
     const query = {
@@ -84,6 +88,12 @@ export function createLiveRouteHandler(deps: {
       ...(planRevision && /^[a-f0-9]{64}$/.test(planRevision) ? { planRevision } : {}),
       ...(occurrenceId && /^[\da-f]{8}-(?:[\da-f]{4}-){3}[\da-f]{12}$/i.test(occurrenceId)
         ? { occurrenceId }
+        : {}),
+      ...(blockId && /^[\da-f]{8}-(?:[\da-f]{4}-){3}[\da-f]{12}$/i.test(blockId)
+        ? { blockId }
+        : {}),
+      ...(learnerId && /^[\da-f]{8}-(?:[\da-f]{4}-){3}[\da-f]{12}$/i.test(learnerId)
+        ? { learnerId }
         : {}),
     }
     try {

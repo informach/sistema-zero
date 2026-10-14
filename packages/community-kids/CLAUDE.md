@@ -13,6 +13,45 @@ oficinas não se divulgam fora delas). `tests/room-trophy-models.test.ts` reprov
 modelo próprio (a caixa neutra), além do `badge-conformance` e do `catalog-conformance` do
 members.
 
+## A sala da oficina ao vivo é a fase com a transmissão (cursos ao vivo, 14/10/2026)
+
+A oficina virou um CURSO ao vivo e a sala é o layout da fase gravada (o desenho e as regras estão
+no CLAUDE.md do member-shell, §"Cursos ao vivo"). Aqui moram a página e a pele:
+
+- **`/oficinas/aulas/[id]`**: a página (servidor) lê o perfil (marca d'água, fala, rascunho na
+  conta) e monta o `LiveRoomClient` (`live-room-client.tsx`), que passa ao `LiveClassroom` o slot
+  da fase: o `LessonSections` do Kids (`kids`, `immersive`, `KidsLessonBlocks`) com o
+  `LessonPlayerProvider` de sempre, a transmissão em `stage`, as partes conduzidas em
+  `sectionControl` e `liveWorkspace` com `publishToMural: true` (o bloco Estúdio é o projeto ao
+  vivo e publica no Mural). "Concluir fase" usa a mesma rota da fase gravada (XP, foguinho e missões
+  pela mesma régua) e avisa por toast, sem a celebração que navegaria por `<Link>`.
+  ⚠️⚠️ Nada aqui chama `router.refresh()`: atualizar a fase é RELER o JSON (`useLiveLesson`), senão
+  um deploy recarregaria a página e derrubaria a chamada.
+- **Primeiro quadro e espera**: a página lê a sala e a fase no servidor (`loadLiveRoomInitial` do
+  member-shell, só leitura) e passa `initialRoom`/`initialLesson`: entrar não mostra "Abrindo…" nem
+  esqueleto. Fase ainda fechada para a vaga (`LIVE_LESSON_CLOSED`) vira `LiveLessonClosed` (espera
+  gentil que abre sozinha), nunca erro. Os números de desempenho estão no CLAUDE.md do member-shell.
+- **`MainContainer`**: a sala (`isLiveRoomPath`, `lib/lesson-path.ts`) entra no regime da AULA
+  (`kids-aula`: o céu, as cartas e a reserva do rodapé), não no das faixas.
+- **`globals.css`** (fora de camada, junto do rodapé da aula): `--sz-lesson-stage-top` (4rem no
+  celular, abaixo da barra do topo; 0.75rem a partir do md), a barra da chamada
+  (`.sz-live-controls`) acima do rodapé da aula (no celular, acima também da barra de abas) e a
+  reserva das duas no `<main>` (`--sz-lesson-nav-height` + `--sz-live-bar-height`), e o céu em
+  volta da transmissão fixa (os cantos redondos deixariam ver o texto passando por trás).
+- **Oficinas** (`/oficinas`): a mesma `LiveCatalog`, agora com "Suas oficinas" (as turmas de
+  curso ao vivo da criança); nenhuma outra tela divulga os cursos ao vivo. Área dos pais: igual.
+- `next.config.ts` não mudou: a rota da sala já tinha câmera, microfone, tela e o `frame-src` do R2
+  (a entrada e a saída são por `<a>`, navegação completa).
+- Testes: `tests/live-lesson-room.test.tsx` (o `LessonSections` com a transmissão e as partes
+  conduzidas, o flutuante, os controles da professora e os cartões),
+  `tests/live-classroom-slot.test.ts` (o `LiveClassroom` pelo slot, em processo próprio:
+  `tests/fixtures/live-classroom-slot.tsx`). O `live-learning.test.tsx` saiu com as etapas.
+- **Ensaio visual** (fora do git): `tmp/sala-visual/` (`bun tmp/sala-visual/server.ts`, dados de
+  mentira e a câmera falsa do Chromium; `playwright test --config tmp/sala-visual/playwright.config.ts`
+  tira as fotos em 1366×768, 1920×1080 e 390×844 em `tmp/sala-visual/fotos`; `SPEC='perf\.spec'`
+  mede renders, tempo até a transmissão e deslocamento de layout, com contadores embrulhando o
+  Estúdio, o `LessonSections` e o palco; `SPEC='pulos\.spec'` diz de onde vem cada deslocamento).
+
 ## Falar em vez de escrever (14/10/2026)
 
 A criança fala a mensagem para a equipe e confere o texto antes de enviar; a voz não é guardada.

@@ -1863,6 +1863,48 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
     padding-bottom: calc(var(--sz-lesson-nav-height, 7rem) + 1.5rem);
   }
 }
+/* ── A SALA AO VIVO NA AULA (cursos ao vivo, 14/10/2026) ────────────────────────
+   A sala é a aula com a TRANSMISSÃO fixa no alto da coluna da esquerda (`sz-lesson-stage`) e a
+   barra da chamada (`sz-live-controls`) acima do rodapé da aula. A barra publica a altura dela em
+   `--sz-live-bar-height` (ResizeObserver, como o rodapé), e a página reserva as duas. No celular
+   o rodapé fica acima da barra de abas (3.5rem), e a barra da chamada acima dele. A transmissão
+   gruda abaixo da barra do topo do celular (h-14). Fora de camada, como o resto da aula. */
+.kids-aula {
+  --sz-lesson-stage-top: 4rem;
+}
+.kids-aula:has(.sz-live-controls) {
+  padding-bottom: calc(
+    var(--sz-lesson-nav-height, 7rem) +
+    var(--sz-live-bar-height, 5rem) +
+    3.5rem +
+    env(safe-area-inset-bottom) +
+    1.5rem
+  );
+}
+.kids-aula .sz-live-controls {
+  bottom: calc(var(--sz-lesson-nav-height, 0px) + 3.5rem + env(safe-area-inset-bottom) + 0.5rem);
+}
+@media (min-width: 768px) {
+  .kids-aula {
+    --sz-lesson-stage-top: 0.75rem;
+  }
+  .kids-aula:has(.sz-live-controls) {
+    padding-bottom: calc(
+      var(--sz-lesson-nav-height, 7rem) +
+      var(--sz-live-bar-height, 5rem) +
+      1.5rem
+    );
+  }
+  .kids-aula .sz-live-controls {
+    bottom: calc(var(--sz-lesson-nav-height, 0px) + 0.5rem);
+  }
+}
+/* A transmissão FIXA passa por cima da orientação ao rolar: o fundo do céu da aula em volta dela
+   (os cantos redondos da moldura deixariam ver o texto passando por trás). */
+.kids-aula .sz-lesson-stage.sticky {
+  background-color: var(--band-ceu);
+  box-shadow: 0 -0.75rem 0 var(--band-ceu);
+}
 .sz-lesson-sections .sz-lesson-status {
   margin-bottom: 0.625rem;
   padding: 0.25rem 0.875rem;

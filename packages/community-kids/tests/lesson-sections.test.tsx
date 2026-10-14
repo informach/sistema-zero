@@ -924,7 +924,8 @@ describe('aula por seções', () => {
 
   test('avisa a posição no percurso ao montar e a cada troca de seção', async () => {
     globalThis.fetch = (async () => Response.json({ ok: true })) as unknown as typeof fetch
-    const avisos: Array<{ index: number; total: number }> = []
+    // Desde 14/10/2026 o aviso leva também o `sectionId` (a sala ao vivo o relata à professora).
+    const avisos: Array<{ index: number; total: number; sectionId: string }> = []
     function Host() {
       const [, setPosicao] = useState<{ index: number; total: number } | null>(null)
       return (
@@ -945,7 +946,7 @@ describe('aula por seções', () => {
       )
     }
     const view = render(<Host />)
-    expect(avisos).toEqual([{ index: 0, total: 3 }])
+    expect(avisos).toEqual([{ index: 0, total: 3, sectionId: 'first' }])
     const input = screen.getByRole('textbox', { name: 'Meu projeto' })
 
     fireEvent.click(screen.getByRole('button', { name: 'Próxima seção' }))
@@ -955,8 +956,8 @@ describe('aula por seções', () => {
     // Assertar aqui direto passava na máquina rápida e falhava no CI.
     await waitFor(() =>
       expect(avisos).toEqual([
-        { index: 0, total: 3 },
-        { index: 1, total: 3 },
+        { index: 0, total: 3, sectionId: 'first' },
+        { index: 1, total: 3, sectionId: 'second' },
       ]),
     )
 

@@ -225,6 +225,30 @@
      com a faixa "o que falta para seguir" ele cresceu (review do lote 2). */
   padding-bottom: calc(var(--sz-lesson-nav-height, 7rem) + 1.5rem);
 }
+/* ── A SALA AO VIVO (cursos ao vivo, 14/10/2026) ──────────────────────────────────────────────
+   A sala é a aula com a TRANSMISSÃO fixa no alto da coluna da esquerda (`sz-lesson-stage`, que
+   gruda abaixo do cabeçalho fixo) e a barra da chamada (`sz-live-controls`) acima do rodapé
+   da aula; a barra publica a altura em `--sz-live-bar-height` e a página reserva as duas. */
+.sz-aula-adulto {
+  /* O cabeçalho fixo tem duas linhas no celular (a barra e os links) e uma a partir do md. */
+  --sz-lesson-stage-top: 6.75rem;
+}
+@media (min-width: 768px) {
+  .sz-aula-adulto {
+    --sz-lesson-stage-top: 4.25rem;
+  }
+}
+.sz-app:has(.sz-live-controls) > main {
+  padding-bottom: calc(
+    var(--sz-lesson-nav-height, 7rem) +
+    var(--sz-live-bar-height, 5rem) +
+    1.5rem
+  );
+}
+.sz-aula-adulto .sz-lesson-stage.sticky {
+  background-color: var(--background-alt);
+  box-shadow: 0 -0.75rem 0 var(--background-alt);
+}
 main:has(.sz-aula-adulto) {
   --lesson-outline-width: min(20rem, 90vw);
 }

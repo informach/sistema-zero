@@ -15,6 +15,7 @@ import {
   videoCoverageAnswers,
   videoWatchedFraction,
 } from '@sistemazero/core/learning'
+import type { LiveSectionControl } from '@sistemazero/core/live'
 import { Button } from '@sistemazero/ui/button'
 import { ArrowLeft, ArrowRight, Check, ExternalLink, List, Lock, MessageCircle } from 'lucide-react'
 import {
@@ -57,12 +58,14 @@ import { useLessonPreview } from './lesson-preview-context'
 import { LessonSectionStatus, textoDoItem } from './lesson-section-status'
 import {
   LessonVideoFloatContext,
+  LessonVideoFrame,
   LessonVideoToggleContext,
   type VideoFloatMode,
   type VideoFloatSlot,
   type VideoToggle,
 } from './lesson-video-float'
 import { LessonVideoGate, LessonVideoGateDone } from './lesson-video-gate'
+import { LIVE_SECTION_COPY } from './live/live-section-copy'
 import { VoiceInputButton } from './voice-input/voice-input-button'
 
 /**
@@ -336,12 +339,27 @@ export function LessonSections(props: {
   kids?: boolean
   /** Ver `LessonSectionsContent`: presente, o cabeçalho vira o `<h1>` da página. */
   lessonTitle?: string
-  /** Onde a criança está no percurso. Chamado na montagem e a cada troca de seção. */
-  onSectionChange?: (posicao: { index: number; total: number }) => void
+  /**
+   * Onde a criança está no percurso. Chamado na montagem e a cada troca de seção. O `sectionId`
+   * (14/10/2026) é o que a sala ao vivo relata à professora.
+   */
+  onSectionChange?: (posicao: { index: number; total: number; sectionId: string }) => void
   /** Player de aula: chrome mínimo e navegação contínua; a prévia do admin não usa. */
   immersive?: boolean
   completionAction?: ReactNode
   completionMessage?: ReactNode
+  /**
+   * Sala AO VIVO (14/10/2026): a transmissão (ou a gravação), FIXA no alto da coluna da esquerda e,
+   * empilhado, fixa no alto da parte. Com uma atividade ampliada ela vira o flutuante (o mesmo do
+   * vídeo da aula). Ausente: nada muda.
+   */
+  stage?: ReactNode
+  /**
+   * Partes conduzidas pela professora: a navegação vai só entre as ABERTAS (voltar pode, pular para
+   * a frente não) e mudar `currentId` leva a tela junto, com o aviso "A turma está na parte N".
+   * Ausente ou `null`: a navegação de sempre.
+   */
+  sectionControl?: LiveSectionControl | null
 }) {
   const player = useLessonPlayer()
   return <LessonSectionsContent key={`${player?.viewerId}:${props.lesson.id}`} {...props} />
@@ -356,6 +374,8 @@ function LessonSectionsContent({
   immersive = false,
   completionAction,
   completionMessage,
+  stage,
+  sectionControl = null,
 }: {
   lesson: LessonDetailView
   renderBlocks: (blocks: LessonBlockView[]) => ReactNode
@@ -368,10 +388,12 @@ function LessonSectionsContent({
    * o cabeçalho segue sendo o `<h2>` só com o nome da seção.
    */
   lessonTitle?: string
-  onSectionChange?: (posicao: { index: number; total: number }) => void
+  onSectionChange?: (posicao: { index: number; total: number; sectionId: string }) => void
   immersive?: boolean
   completionAction?: ReactNode
   completionMessage?: ReactNode
+  stage?: ReactNode
+  sectionControl?: LiveSectionControl | null
 }) {
   const player = useLessonPlayer()
   const copy = useLessonCopy()
@@ -410,16 +432,27 @@ function LessonSectionsContent({
     [lesson.id, lesson.title, lesson.sections, lesson.blocks, lesson.legacyLayout],
   )
   const state = lesson.sectionProgress
+  // ⭐ Sala ao vivo (14/10/2026): quem abre as partes é a professora. Com o controle presente, a
+  // trava é SÓ "a professora ainda não abriu" (a progressão por conclusão não vale no encontro);
+  // sem ele, a régua de sempre.
+  const controlled = sectionControl
   const locked = (id: string) =>
-    (!preview || rehearsal !== null) &&
-    state?.sections.some((s) => s.id === id && s.status === 'locked') === true
+    controlled
+      ? !controlled.openedIds.includes(id)
+      : (!preview || rehearsal !== null) &&
+        state?.sections.some((s) => s.id === id && s.status === 'locked') === true
+  const controlledFallback = controlled
+    ? (sections.find((s) => s.id === controlled.currentId)?.id ??
+      sections.find((s) => controlled.openedIds.includes(s.id))?.id)
+    : undefined
   const savedSection = lesson.learningProgress?.sectionId
   const linkedSection = useRef('')
-  const [selected, setSelected] = useState(
-    () =>
-      sections.find((s) => s.id === savedSection && !locked(s.id))?.id ??
-      state?.sections.find((s) => s.status === 'available')?.id ??
-      sections[0]?.id,
+  const [selected, setSelected] = useState(() =>
+    controlled
+      ? (controlledFallback ?? sections[0]?.id)
+      : (sections.find((s) => s.id === savedSection && !locked(s.id))?.id ??
+        state?.sections.find((s) => s.status === 'available')?.id ??
+        sections[0]?.id),
   )
   const index = Math.max(
     0,
@@ -427,7 +460,9 @@ function LessonSectionsContent({
       (s) =>
         s.id ===
         (locked(selected ?? '')
-          ? state?.sections.find((p) => p.status === 'available')?.id
+          ? controlled
+            ? controlledFallback
+            : state?.sections.find((p) => p.status === 'available')?.id
           : selected),
     ),
   )
@@ -524,9 +559,52 @@ function LessonSectionsContent({
   const avisarSecao = useRef(onSectionChange)
   avisarSecao.current = onSectionChange
   const totalSecoes = sections.length
+  const secaoAtualId = section?.id ?? ''
   useEffect(() => {
-    if (totalSecoes > 0) avisarSecao.current?.({ index, total: totalSecoes })
-  }, [index, totalSecoes])
+    if (totalSecoes > 0)
+      avisarSecao.current?.({ index, total: totalSecoes, sectionId: secaoAtualId })
+  }, [index, totalSecoes, secaoAtualId])
+  // ⭐ A professora abriu outra parte: a tela vai junto, com o aviso "A turma está na parte N".
+  // Só a MUDANÇA do `currentId` leva a criança: quem voltou para rever uma parte fica nela até a
+  // professora abrir a próxima. A troca é LOCAL e imediata (a navegação registrada no servidor vai
+  // em tentativa, em silêncio): o encontro não espera a rede para mostrar a parte da turma.
+  const parteDaTurma = controlled?.currentId ?? null
+  const ultimaParteSeguida = useRef(parteDaTurma)
+  const [avisoDaTurma, setAvisoDaTurma] = useState<{ numero: number; vez: number } | null>(null)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: o gatilho é só a parte da turma mudar.
+  useEffect(() => {
+    if (!parteDaTurma || parteDaTurma === ultimaParteSeguida.current) return
+    ultimaParteSeguida.current = parteDaTurma
+    const alvo = sections.findIndex((s) => s.id === parteDaTurma)
+    const proxima = sections[alvo]
+    if (!proxima) return
+    if (!preview)
+      void apiSend(
+        `/api/members/lessons/${encodeURIComponent(lesson.id)}/navigation`,
+        'POST',
+        { sectionId: proxima.id },
+        { 'x-sz-viewer': player?.viewerId ?? '' },
+        { keepalive: true },
+      ).catch(() => {})
+    setSelected(proxima.id)
+    setToolMode('example')
+    setHelpOpen(false)
+    setVisited(
+      (old) =>
+        new Set([
+          ...old,
+          ...proxima.blockIds,
+          ...(proxima.workspaceBlockId ? [proxima.workspaceBlockId] : []),
+        ]),
+    )
+    setDestination('heading')
+    setAvisoDaTurma((antes) => ({ numero: alvo + 1, vez: (antes?.vez ?? 0) + 1 }))
+  }, [parteDaTurma])
+  useEffect(() => {
+    if (!avisoDaTurma) return
+    const timer = setTimeout(() => setAvisoDaTurma(null), 6000)
+    return () => clearTimeout(timer)
+  }, [avisoDaTurma])
   // ⭐⭐ O VÍDEO FLUTUANTE (03/10/2026). Com uma atividade ampliada, o vídeo da seção sai de
   // baixo dela: tocando, flutua por cima; parado, fica escondido, e o interruptor "Vídeo" da
   // barra da atividade o liga (`LessonVideoToggleContext`). Os players avisam "tocando/parado"
@@ -555,7 +633,18 @@ function LessonSectionsContent({
   // ⚠️ DERIVADO no render (full review de 03/10/2026): fechar a tela ampliada devolve o vídeo e
   // esconde o painel do conteúdo no MESMO render, sem um quadro de layout trocado embaixo da
   // devolução do foco. Sem player (prévia e ensaio do admin) nada flutua.
-  const floatMode: VideoFloatMode = player && anyExpanded && floatVideoId ? floatChoice : null
+  // A sala ao vivo tem a TRANSMISSÃO no lugar do vídeo da seção: é ela que flutua (abaixo).
+  const hasStage = stage !== undefined && stage !== null
+  const floatMode: VideoFloatMode =
+    player && anyExpanded && floatVideoId && !hasStage ? floatChoice : null
+  // ⭐ A transmissão flutua sempre que uma atividade amplia (ela é ao vivo: não há "parada"); o
+  // "Minimizar" e o interruptor a escondem e mostram. Vale também na prévia da professora (Admin),
+  // que não tem player.
+  const [stageChoice, setStageChoice] = useState<VideoFloatMode>(null)
+  useEffect(() => {
+    setStageChoice(hasStage && anyExpanded ? 'floating' : null)
+  }, [hasStage, anyExpanded])
+  const stageMode: VideoFloatMode = hasStage && anyExpanded ? stageChoice : null
   const setVideoPlaying = useCallback((blockId: string, playing: boolean) => {
     setPlayingVideoId((current) => (playing ? blockId : current === blockId ? null : current))
   }, [])
@@ -591,22 +680,39 @@ function LessonSectionsContent({
   )
   // O interruptor da barra da atividade ampliada. Ligar abre o vídeo e dá play (o que a pílula
   // fazia); desligar o esconde, e ele segue tocando embaixo, como o Minimizar.
+  // Com as partes conduzidas é o encontro; sem elas, a gravação ocupa o lugar da transmissão.
+  const aoVivo = sectionControl !== null
+  const stageSlot = useMemo<VideoFloatSlot>(
+    () => ({
+      mode: stageMode,
+      viewerId,
+      label: aoVivo ? LIVE_SECTION_COPY.aoVivo : LIVE_SECTION_COPY.gravacao,
+      onMinimize: () => setStageChoice('hidden'),
+    }),
+    [stageMode, viewerId, aoVivo],
+  )
   const videoToggle = useMemo<VideoToggle | null>(
     () =>
-      floatMode && floatVideoId
+      stageMode
         ? {
-            on: floatMode === 'floating',
-            toggle: () => {
-              if (floatMode === 'floating') {
-                setFloatChoice('hidden')
-                return
-              }
-              setFloatChoice('floating')
-              videoControls.current.get(floatVideoId)?.play()
-            },
+            on: stageMode === 'floating',
+            label: aoVivo ? LIVE_SECTION_COPY.transmissao : LIVE_SECTION_COPY.gravacao,
+            toggle: () => setStageChoice((mode) => (mode === 'floating' ? 'hidden' : 'floating')),
           }
-        : null,
-    [floatMode, floatVideoId],
+        : floatMode && floatVideoId
+          ? {
+              on: floatMode === 'floating',
+              toggle: () => {
+                if (floatMode === 'floating') {
+                  setFloatChoice('hidden')
+                  return
+                }
+                setFloatChoice('floating')
+                videoControls.current.get(floatVideoId)?.play()
+              },
+            }
+          : null,
+    [stageMode, floatMode, floatVideoId, aoVivo],
   )
   if (!section) return null
   const blockById = new Map(lesson.blocks.map((b) => [b.id, b]))
@@ -634,12 +740,20 @@ function LessonSectionsContent({
   // A régua mora em `lib/lesson-split` (pura, testada): ela decide quem mora em cada coluna,
   // se há o que dividir, se o lado a lado vale a pena NESTA largura e até onde cada painel
   // encolhe. A divisória só é interativa onde ela APARECE — ver o comentário no handle.
-  const { contentIds, toolIds, podeDividir, temEditor } = partirSecao({
+  const partida = partirSecao({
     blocks: ativos.map(paraSplit),
     // A ação da plataforma e o atalho da ferramenta moram no painel da ESQUERDA: uma seção
-    // com eles tem conteúdo dos dois lados mesmo sem um bloco de texto.
-    extraContent: Boolean(section.completion?.platformAction || section.externalTool),
+    // com eles tem conteúdo dos dois lados mesmo sem um bloco de texto. A transmissão também.
+    extraContent: Boolean(section.completion?.platformAction || section.externalTool || hasStage),
   })
+  // ⭐ Na sala ao vivo a coluna da esquerda é da TRANSMISSÃO, em todas as partes: uma parte sem
+  // atividade leva o conteúdo dela para a direita, e a transmissão não muda de lugar nem de tamanho
+  // quando a professora abre a parte seguinte (pedido dela: nada de pulo ao trocar de parte).
+  const semFerramenta = hasStage && partida.toolIds.length === 0
+  const contentIds = semFerramenta ? [] : partida.contentIds
+  const toolIds = semFerramenta ? partida.contentIds : partida.toolIds
+  const podeDividir = hasStage ? toolIds.length > 0 : partida.podeDividir
+  const temEditor = partida.temEditor
   const { arrastavel, contentMinimum, toolMinimum } = resolveLessonSplit({
     contentWidth,
     handleWidth,
@@ -885,7 +999,9 @@ function LessonSectionsContent({
               {s.title}
               {locked(s.id) ? (
                 <span className="mt-1 block text-xs text-muted-foreground">
-                  Abre após concluir a anterior
+                  {controlled
+                    ? LIVE_SECTION_COPY.esperaAProfessora
+                    : 'Abre após concluir a anterior'}
                 </span>
               ) : (
                 pending.some((r) => r.sectionId === s.id) && (
@@ -982,17 +1098,20 @@ function LessonSectionsContent({
       Anterior
     </Button>
   )
-  const helpButton = !preview ? (
-    <Button
-      variant="ghost"
-      className="sz-lesson-nav-help"
-      onClick={() => setHelpOpen((open) => !open)}
-      aria-expanded={helpOpen}
-    >
-      <MessageCircle className="size-4" />
-      Preciso de ajuda
-    </Button>
-  ) : null
+  // Na sala ao vivo o pedido de ajuda é o da barra da chamada (a professora vê na hora): dois
+  // botões de ajuda na mesma tela confundiam.
+  const helpButton =
+    !preview && !controlled ? (
+      <Button
+        variant="ghost"
+        className="sz-lesson-nav-help"
+        onClick={() => setHelpOpen((open) => !open)}
+        aria-expanded={helpOpen}
+      >
+        <MessageCircle className="size-4" />
+        Preciso de ajuda
+      </Button>
+    ) : null
   /**
    * A faixa do rodapé: os itens tipados da seção ATUAL (`pendingItems`, do members), o estado
    * "pronto" quando ela fechou e, sem itens (aula legada, conta de equipe), a razão de o "Concluir
@@ -1012,30 +1131,45 @@ function LessonSectionsContent({
       : r.action
   }
   const secaoAtual = state?.sections.find((s) => s.id === section.id)
+  const secaoAtualPronta = secaoAtual?.status === 'completed'
+  const esperaAProfessoraAgora =
+    controlled !== null && index < sections.length - 1 && locked(sections[index + 1]?.id ?? '')
   // Aula CONCLUÍDA: toda seção está fechada e o botão já diz "Aula concluída"; a faixa verde em
   // cada parte seria ruído (review do lote 2, B3).
-  const statusDaSecao = lesson.completed ? null : (
-    <LessonSectionStatus
-      items={secaoAtual?.pendingItems ?? []}
-      completed={secaoAtual?.status === 'completed'}
-      fallback={index === sections.length - 1 ? completionMessage : undefined}
-      preview={preview}
-      className={immersive ? 'mx-auto w-full max-w-7xl' : undefined}
-      ultima={index === sections.length - 1}
-    />
-  )
+  // Esperando a professora abrir a próxima parte, o "Pode seguir!" contradiria o botão travado:
+  // quem explica é o "A professora abre já já" ao lado dele.
+  const statusDaSecao =
+    lesson.completed || (esperaAProfessoraAgora && secaoAtualPronta) ? null : (
+      <LessonSectionStatus
+        items={secaoAtual?.pendingItems ?? []}
+        completed={secaoAtual?.status === 'completed'}
+        fallback={index === sections.length - 1 ? completionMessage : undefined}
+        preview={preview}
+        className={immersive ? 'mx-auto w-full max-w-7xl' : undefined}
+        ultima={index === sections.length - 1}
+      />
+    )
+  // A próxima parte ainda não foi aberta pela professora: o botão fica travado E diz por quê.
+  const esperaAProfessora = esperaAProfessoraAgora
+  const esperaId = `${lesson.id}-espera-professora`
   const nextButton = (
     <Button
       className="sz-lesson-nav-next"
       disabled={
         index === sections.length - 1 || navigating || locked(sections[index + 1]?.id ?? '')
       }
+      aria-describedby={esperaAProfessora ? esperaId : undefined}
       onClick={() => navigate(index + 1)}
     >
       {copy.secoes.proxima}
       <ArrowRight className="size-4" />
     </Button>
   )
+  const avisoDeEspera = esperaAProfessora ? (
+    <span id={esperaId} className="sz-lesson-live-wait text-sm font-semibold text-muted-foreground">
+      {LIVE_SECTION_COPY.esperaAProfessora}
+    </span>
+  ) : null
   return (
     <LessonPlayerProvider
       value={
@@ -1205,6 +1339,20 @@ function LessonSectionsContent({
                 </Heading>
                 {!immersive && indiceDaAula}
               </header>
+              {controlled ? (
+                // O aviso de que a tela foi junto com a turma. Sempre montado (região viva), com o
+                // texto só enquanto vale: o leitor de tela anuncia a troca.
+                <p
+                  role="status"
+                  aria-live="polite"
+                  className={cn(
+                    'sz-lesson-live-notice pointer-events-none fixed top-4 left-1/2 z-[86] -translate-x-1/2 rounded-full bg-primary px-4 py-2 text-center font-semibold text-primary-foreground shadow-lg',
+                    !avisoDaTurma && 'sr-only',
+                  )}
+                >
+                  {avisoDaTurma ? LIVE_SECTION_COPY.turmaNaParte(avisoDaTurma.numero) : ''}
+                </p>
+              ) : null}
               {mostraAbas && (
                 <div className="flex gap-2" role="group" aria-label="Orientação e criação">
                   <Button
@@ -1266,37 +1414,87 @@ function LessonSectionsContent({
                     'min-w-0 space-y-6 overflow-visible!',
                     // ⚠️ Com o vídeo flutuando (ou na pílula) o painel do vídeo precisa existir: um
                     // `fixed` dentro de `display: none` não aparece. A tela ampliada cobre o resto.
-                    mostraAbas && toolMode === 'create' && floatMode === null && 'hidden!',
+                    !hasStage &&
+                      mostraAbas &&
+                      toolMode === 'create' &&
+                      floatMode === null &&
+                      'hidden!',
+                    // ⭐ Com a transmissão: lado a lado, a coluna estica até a altura da linha para
+                    // ela ficar fixa enquanto a criança rola a atividade; empilhado, o painel some
+                    // da caixa (`contents`) e a transmissão gruda no alto da PARTE inteira, por
+                    // cima do conteúdo e da atividade.
+                    hasStage && (arrastavel ? 'self-stretch' : 'contents!'),
                   )}
                 >
-                  {contentIds
-                    .map((id) => blockById.get(id))
-                    .filter((b): b is LessonBlockView => Boolean(b))
-                    .map(render)}
-                  {section.completion?.platformAction && (
-                    <SectionPlatformAction
-                      key={`${player?.viewerId}:${section.id}`}
-                      action={section.completion.platformAction}
-                      sectionId={section.id}
-                      revision={state?.revision ?? lesson.structureRevision ?? null}
-                      preview={preview}
-                      completed={
-                        state?.sections.find((s) => s.id === section.id)?.status === 'completed'
-                      }
-                    />
-                  )}
-                  {section.externalTool && (
-                    <a
-                      href={`/${section.externalTool}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex min-h-14 items-center justify-between gap-4 rounded-xl border border-primary/25 bg-primary/5 px-5 py-4 font-medium text-primary"
+                  {hasStage ? (
+                    <div
+                      // `sz-lesson-stage`: gancho do tema (invariante 8). Fixa (sticky) ao lado da
+                      // atividade e no celular; numa parte só de leitura no computador ela cobriria
+                      // o texto, então fica no fluxo e com a altura contida pela janela. Nunca
+                      // sticky enquanto flutua: com z-index ela viraria um contexto de
+                      // empilhamento e prenderia o flutuante embaixo da atividade ampliada.
+                      className={cn(
+                        'sz-lesson-stage mx-auto w-full max-w-[max(18rem,calc((100dvh-24rem)*16/9))]',
+                        stageMode === null &&
+                          (arrastavel || contentWidth < 768) &&
+                          'sticky top-[var(--sz-lesson-stage-top,0.5rem)] z-20',
+                      )}
                     >
-                      Abrir {section.externalTool === 'pinta' ? 'meu Pinta' : 'meu Estúdio'}
-                      <ExternalLink className="size-5" />
-                      <span className="sr-only">em outra aba</span>
-                    </a>
-                  )}
+                      <LessonVideoFloatContext.Provider value={stageSlot}>
+                        <LessonVideoFrame>{stage}</LessonVideoFrame>
+                      </LessonVideoFloatContext.Provider>
+                    </div>
+                  ) : null}
+                  {(() => {
+                    const conteudo = (
+                      <>
+                        {contentIds
+                          .map((id) => blockById.get(id))
+                          .filter((b): b is LessonBlockView => Boolean(b))
+                          .map(render)}
+                        {section.completion?.platformAction && (
+                          <SectionPlatformAction
+                            key={`${player?.viewerId}:${section.id}`}
+                            action={section.completion.platformAction}
+                            sectionId={section.id}
+                            revision={state?.revision ?? lesson.structureRevision ?? null}
+                            preview={preview}
+                            completed={
+                              state?.sections.find((s) => s.id === section.id)?.status ===
+                              'completed'
+                            }
+                          />
+                        )}
+                        {section.externalTool && (
+                          <a
+                            href={`/${section.externalTool}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex min-h-14 items-center justify-between gap-4 rounded-xl border border-primary/25 bg-primary/5 px-5 py-4 font-medium text-primary"
+                          >
+                            Abrir {section.externalTool === 'pinta' ? 'meu Pinta' : 'meu Estúdio'}
+                            <ExternalLink className="size-5" />
+                            <span className="sr-only">em outra aba</span>
+                          </a>
+                        )}
+                      </>
+                    )
+                    // Sem a transmissão a árvore é a de sempre (os apps juntam cabeçalho e bloco
+                    // pelo seletor de irmão). Com ela, a orientação da parte vai num invólucro que
+                    // some na aba "Criar" sem levar a transmissão junto.
+                    return hasStage ? (
+                      <div
+                        className={cn(
+                          'sz-lesson-stage-content space-y-6',
+                          mostraAbas && toolMode === 'create' && 'hidden!',
+                        )}
+                      >
+                        {conteudo}
+                      </div>
+                    ) : (
+                      conteudo
+                    )
+                  })()}
                 </Panel>
                 {/* SEMPRE montado, como os dois Panel: tirar e pôr um filho do PanelGroup
               reordena a árvore e REMONTA o editor da direita (Blockly caro, rascunho
@@ -1447,6 +1645,7 @@ function LessonSectionsContent({
                       </span>
                     </div>
                     <div className="ml-auto flex items-center gap-2">
+                      {avisoDeEspera}
                       {helpButton}
                       {index === sections.length - 1 && completionAction
                         ? completionAction
@@ -1457,6 +1656,7 @@ function LessonSectionsContent({
                   <>
                     {previousButton}
                     {helpButton}
+                    {avisoDeEspera}
                     {nextButton}
                   </>
                 )}
