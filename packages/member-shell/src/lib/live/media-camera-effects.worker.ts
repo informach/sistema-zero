@@ -13,6 +13,17 @@ const foreground = new OffscreenCanvas(640, 360)
 const foregroundContext = foreground.getContext('2d')!
 const maskCanvas = new OffscreenCanvas(256, 144)
 const maskContext = maskCanvas.getContext('2d')!
+/**
+ * O Safari não tem `filter` no contexto 2D: a atribuição vira uma propriedade solta, não dá erro
+ * e o fundo saía NÍTIDO (o cômodo da criança à vista da turma). Por isso a pergunta é ao
+ * PROTÓTIPO, nunca lendo o valor de volta, que "funcionaria" justamente onde não funciona.
+ */
+const canvasFilter =
+  typeof OffscreenCanvasRenderingContext2D !== 'undefined' &&
+  'filter' in OffscreenCanvasRenderingContext2D.prototype
+// Sem filtro, embaça reduzindo a imagem a uma miniatura e ampliando de volta com suavização.
+const tiny = new OffscreenCanvas(32, 18)
+const tinyContext = tiny.getContext('2d')!
 
 function usesModuleLoader(): boolean {
   // Turbopack can emit a classic worker even when the source requests type: 'module'.
@@ -28,10 +39,17 @@ function usesModuleLoader(): boolean {
 
 function background(frame: ImageBitmap) {
   outputContext.globalCompositeOperation = 'source-over'
-  if (effect === 'blur') {
+  if (effect === 'blur' && canvasFilter) {
     outputContext.filter = 'blur(16px)'
     outputContext.drawImage(frame, -32, -18, 704, 396)
     outputContext.filter = 'none'
+  } else if (effect === 'blur') {
+    tinyContext.imageSmoothingEnabled = true
+    tinyContext.imageSmoothingQuality = 'high'
+    tinyContext.drawImage(frame, 0, 0, 32, 18)
+    outputContext.imageSmoothingEnabled = true
+    outputContext.imageSmoothingQuality = 'high'
+    outputContext.drawImage(tiny, -32, -18, 704, 396)
   } else {
     const gradient = outputContext.createLinearGradient(0, 0, 640, 360)
     gradient.addColorStop(0, effect === 'space' ? '#312e81' : '#0f766e')

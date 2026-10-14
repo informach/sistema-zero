@@ -156,6 +156,8 @@ export function useLiveMedia({
   const muteEpoch = useRef<number | null>(null)
   const attempts = useRef(0)
   const [reconnecting, setReconnecting] = useState(false)
+  // A internet voltou: tenta de novo na hora, sem esperar o resto da espera crescente.
+  const [wake, setWake] = useState(0)
   const occurrenceId = room.occurrence?.id
   const self = room.occurrence?.participants.find(
     (participant) => participant.learnerId === room.actorId,
@@ -304,7 +306,17 @@ export function useLiveMedia({
     },
     [onError],
   )
+  useEffect(() => {
+    if (!autoConnect) return
+    const online = () => {
+      attempts.current = 0
+      setWake((value) => value + 1)
+    }
+    window.addEventListener('online', online)
+    return () => window.removeEventListener('online', online)
+  }, [autoConnect])
   // Recepção automática: ao ser recebida, e de novo depois de cada queda, com espera crescente.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `wake` reagenda quando a internet volta.
   useEffect(() => {
     if (!autoConnect || !available || sessionReady || busy || state === 'connecting') return
     const delay = [0, 2_000, 5_000, 10_000, 20_000][Math.min(attempts.current, 4)]!
@@ -314,7 +326,7 @@ export function useLiveMedia({
       void connect(true)
     }, delay)
     return () => clearTimeout(timer)
-  }, [autoConnect, available, sessionReady, busy, state, connect])
+  }, [autoConnect, available, sessionReady, busy, state, connect, wake])
   useEffect(() => {
     if (!available) setReconnecting(false)
   }, [available])

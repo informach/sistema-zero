@@ -21,6 +21,12 @@ export interface LiveMediaTransportOptions {
   onError(error: Error): void
   fetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
   createPeerConnection?: (configuration: RTCConfiguration) => RTCPeerConnection
+  /**
+   * Quanto esperar um `disconnected` virar `connected` de novo antes de desistir. Uma oscilação
+   * do Wi-Fi passa por esse estado e o navegador costuma se recuperar sozinho em segundos;
+   * derrubar a sala na hora fazia a turma inteira perder a professora a cada soluço.
+   */
+  disconnectGraceMs?: number
 }
 
 /** One queue owns SDP, API requests, answer application and the backend acknowledgement. */
@@ -54,6 +60,8 @@ export function createLiveMediaTransport(options: LiveMediaTransportOptions) {
   let lastServerAt = 0
   let retired = true
   let focusedPublication: string | null = null
+  let disconnectTimer: ReturnType<typeof setTimeout> | undefined
+  const disconnectGraceMs = options.disconnectGraceMs ?? 8_000
   const local = new Map<LiveMediaKind, RTCRtpTransceiver>()
   const subscriptions = new Map<
     string,
@@ -110,6 +118,8 @@ export function createLiveMediaTransport(options: LiveMediaTransportOptions) {
     peer = null
     clearInterval(heartbeatTimer)
     heartbeatTimer = undefined
+    clearTimeout(disconnectTimer)
+    disconnectTimer = undefined
   }
 
   async function closeAs(next: LiveMediaState): Promise<void> {
@@ -200,13 +210,25 @@ export function createLiveMediaTransport(options: LiveMediaTransportOptions) {
           stream: new MediaStream([event.track]),
         })
       })
+      const interrupted = () =>
+        void fail(new Error('A transmissão foi interrompida. Reconecte para continuar.')).catch(
+          () => undefined,
+        )
       peer.addEventListener('connectionstatechange', () => {
         if (attempt !== generation || retired) return
-        if (peer?.connectionState === 'connected') state('connected')
-        if (peer?.connectionState === 'failed' || peer?.connectionState === 'disconnected') {
-          void fail(new Error('A transmissão foi interrompida. Reconecte para continuar.')).catch(
-            () => undefined,
-          )
+        const current = peer?.connectionState
+        if (current === 'connected') {
+          clearTimeout(disconnectTimer)
+          disconnectTimer = undefined
+          state('connected')
+        } else if (current === 'failed') {
+          interrupted()
+        } else if (current === 'disconnected' && !disconnectTimer) {
+          disconnectTimer = setTimeout(() => {
+            disconnectTimer = undefined
+            if (attempt === generation && !retired && peer?.connectionState !== 'connected')
+              interrupted()
+          }, disconnectGraceMs)
         }
       })
       lastServerAt = Date.now()

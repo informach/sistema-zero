@@ -140,3 +140,91 @@ test('focusing a screen negotiates full quality and returns the previous screen 
     await transport.close()
   }
 })
+
+function oscillatingPeer() {
+  const target = new EventTarget()
+  const peer = Object.assign(target, {
+    connectionState: 'new' as RTCPeerConnectionState,
+    iceGatheringState: 'complete',
+    close() {},
+    set(next: RTCPeerConnectionState) {
+      peer.connectionState = next
+      target.dispatchEvent(new Event('connectionstatechange'))
+    },
+  })
+  return peer
+}
+
+function oscillationTransport(peer: ReturnType<typeof oscillatingPeer>, states: string[]) {
+  return createLiveMediaTransport({
+    baseUrl: '/api/media',
+    deviceId: 'device',
+    disconnectGraceMs: 40,
+    onTrack() {},
+    onState(state) {
+      states.push(state)
+    },
+    onError() {},
+    createPeerConnection: () => peer as unknown as RTCPeerConnection,
+    fetch: (async (url: string) => {
+      if (String(url).endsWith('/join'))
+        return Response.json({
+          connectionId: 'connection',
+          generation: 1,
+          iceServers: [],
+          controlLeaseMs: 60_000,
+        })
+      return Response.json({})
+    }) as typeof fetch,
+  })
+}
+
+test('a short Wi-Fi drop (disconnected, then connected) keeps the room', async () => {
+  const peer = oscillatingPeer()
+  const states: string[] = []
+  const transport = oscillationTransport(peer, states)
+  try {
+    await transport.join()
+    peer.set('connected')
+    peer.set('disconnected')
+    await Bun.sleep(10)
+    peer.set('connected')
+    await Bun.sleep(80)
+    expect(states).not.toContain('failed')
+    expect(states.at(-1)).toBe('connected')
+  } finally {
+    await transport.close()
+  }
+})
+
+test('a drop that does not come back within the grace closes the connection', async () => {
+  const peer = oscillatingPeer()
+  const states: string[] = []
+  const transport = oscillationTransport(peer, states)
+  try {
+    await transport.join()
+    peer.set('connected')
+    peer.set('disconnected')
+    await Bun.sleep(10)
+    expect(states).not.toContain('failed')
+    await Bun.sleep(80)
+    expect(states.at(-1)).toBe('failed')
+  } finally {
+    await transport.close()
+  }
+})
+
+test('failed ends the connection at once, without waiting for the grace', async () => {
+  const peer = oscillatingPeer()
+  const states: string[] = []
+  const transport = oscillationTransport(peer, states)
+  try {
+    await transport.join()
+    peer.set('connected')
+    peer.set('failed')
+    await Bun.sleep(5)
+    expect(states.at(-1)).toBe('failed')
+  } finally {
+    await transport.close()
+  }
+})
