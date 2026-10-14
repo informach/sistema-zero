@@ -20,7 +20,6 @@ import {
   Sparkles,
   X,
 } from 'lucide-react'
-import Link from 'next/link'
 import { type ReactNode, useEffect, useId, useRef, useState } from 'react'
 import { canShareLiveTab } from '../../lib/live/device-errors'
 import { LIVE_CAMERA_EFFECTS, type LiveCameraEffect } from '../../lib/live/media-camera-effects'
@@ -207,15 +206,20 @@ export function LiveLearnerRoom({
   )
 }
 
+/**
+ * Navegação COMPLETA de propósito: a câmera só é liberada pela política da rota da sala, e o
+ * cabeçalho vale para o documento carregado. Saindo por `<Link>` a aba seguiria com a câmera
+ * liberada nas outras telas.
+ */
 function BackLink() {
   return (
-    <Link
+    <a
       href="/oficinas"
       className="inline-flex min-h-11 items-center gap-2 rounded-full px-1 font-bold text-primary focus-visible:outline-2 focus-visible:outline-ring"
     >
       <ArrowLeft className="size-5" aria-hidden />
       Voltar às oficinas
-    </Link>
+    </a>
   )
 }
 
@@ -348,12 +352,12 @@ function ExpiredMeeting({ room }: { room: LiveRoomView }) {
         Dava para rever e continuar até {friendlyDay(room.access.endsAt, room.cohort.timeZone)}.
         Suas criações continuam guardadas em Criar.
       </p>
-      <Link
+      <a
         href="/criar"
         className="sz-btn-gradient mx-auto inline-flex min-h-11 items-center justify-center px-6"
       >
         Ir para Criar
-      </Link>
+      </a>
     </section>
   )
 }
