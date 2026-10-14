@@ -1,5 +1,57 @@
 # CLAUDE.md — @sistemazero/admin
 
+## Oficinas ao vivo: agenda, professoras e a sala (14/10/2026)
+
+Lote do full review das oficinas (`docs/plans/2026-10-14-oficinas-ao-vivo-full-review.md`, lado do
+adulto). O que é contrato daqui:
+
+- ⚠️⚠️ **A sala da professora (`/admin/professor/ao-vivo/<id>`) só se abre por navegação
+  COMPLETA: `<a href={roomHref(id)}>`, nunca `<Link>`.** O navegador aplica os cabeçalhos do
+  PRIMEIRO documento carregado e a navegação do Next mantém os dele. Quem chegava à sala pelo menu
+  ficava sem câmera, sem microfone (aula muda, gravação sem voz) e sem o frame do R2 da prévia (C1).
+  Duas travas: a `Permissions-Policy` GERAL do painel libera `camera`, `microphone` e
+  `display-capture` para `(self)` (o painel é só da equipe e nada fora da sala pede aparelho), e o
+  `frame-src` com o R2 continua POR ROTA (sala e `/ao-vivo/demonstracao/:id`), por isso o `<a href>`
+  segue obrigatório. `tests/live-room-navigation.test.ts` confere os cabeçalhos emitidos e varre
+  `src/` atrás de `<Link>` para a sala.
+- **Agenda** (`app/admin/professor/ao-vivo/agenda-client.tsx`, `LiveAgenda`): substituiu o
+  `LiveCatalog mode="teacher"` do member-shell (que tinha cara de Kids). Lê `/api/live/catalog`
+  (as turmas em que a pessoa é professora) e agrupa em Hoje, Próximos e Encerrados pela régua pura
+  `lib/live-agenda.ts` (`groupLiveAgenda`: "hoje" no fuso de quem olha; Hoje e Próximos por
+  horário, Encerrados do mais recente; "Marcado" que passou do fim vira "Não aconteceu"). O selo
+  "Gravação para revisar" e o estado vêm de `occurrenceState`/`recording` no resumo do encontro:
+  enquanto o servidor não os mandar, o estado é deduzido pelo horário e o selo não aparece (tipo
+  local `LiveAgendaSession`, com TODO).
+- **Professoras da turma** (`app/admin/oficinas/teacher-picker.tsx`): a lista é a equipe ativa
+  (`/api/admin/users`, uma consulta por papel: superadmin, admin e staff; uma recusa não derruba
+  as outras), de 1 a 4, nascendo com quem cria. O POST da turma e o PATCH ("Editar turma": status
+  e professoras, só admin) mandam `teacherIds` e `teacherNames` (id para o primeiro nome). Régua
+  pura em `lib/live-teachers.ts` (`teacherSelectionPayload`, `cohortPatch` manda só o que mudou).
+  Arquivar pede confirmação (não volta).
+- **Turma nova nasce rascunho**: o diálogo de criação vira "Turma criada como rascunho" com
+  "Abrir inscrições" ali mesmo. Nova turma, Editar turma e Inscrições são `Dialog`; o roteiro
+  continua no fim da página, mas "Editar roteiro" rola até ele e leva o foco ao título, e os erros
+  aparecem dentro do formulário.
+- ⚠️ **Conflito de versão do roteiro nunca descarta o rascunho**: o 409 relê a oficina, passa a
+  salvar sobre a versão nova e avisa (`REVISION_CONFLICT_MESSAGE`). Publicar a própria oficina
+  durante a edição atualiza a versão do rascunho sozinho. Trocar de roteiro ou cancelar com
+  mudanças sem salvar pede confirmação (`useConfirm`), como remover encontro, etapa, atividade e
+  revogar inscrição. Nenhum `window.confirm` nos arquivos das oficinas.
+- **Inscrições mostram a família**: `POST /api/admin/accounts/batch` (até 100 contas, devolve só
+  id, nome e e-mail via `batchGetUsers`). Vincular uma reserva já abre a busca com o e-mail da
+  família e escolhe a criança quando só há uma.
+- **Curadoria do Estúdio por encontro** (`app/admin/oficinas/live-studio-editor.tsx`, carregada
+  sob demanda): grava `plan.studio` (`level`, `allowedModes`, `allowLevelReveal`,
+  `allowCategories`, `allowBlocks`) com o `StudioBlocksPicker` e a área de transferência do bloco
+  Estúdio. Encontro novo nasce com só Blocos e sem revelar o avançado; encontro sem curadoria
+  mostra "Configurar o Estúdio". Tipo local `LiveStudioCuration` em `lib/live-studio-curation.ts`
+  até o core trazer o campo.
+- Etapas: a orientação tem teto de 10.000 caracteres (o do members) e a etapa nova abre
+  expandida com o foco no nome.
+- Testes: `live-agenda`, `live-teachers`, `live-studio-curation`, `live-room-navigation`,
+  `live-teacher-room` (controles da sala, cartões da turma e gravação do member-shell) e
+  `live-workshops-authoring` (conflito, turma nova, etapas).
+
 ## O selo "falado" (14/10/2026)
 
 Quando a criança FALOU a mensagem (a voz vira texto no Kids e não é guardada), a equipe vê o selo

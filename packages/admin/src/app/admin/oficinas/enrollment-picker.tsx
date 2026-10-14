@@ -14,9 +14,13 @@ export function EnrollmentPicker({
   busy,
   onEnroll,
   accountId,
+  accountEmail,
 }: {
   busy: boolean
+  /** Vincular uma reserva: só os perfis desta conta aparecem. */
   accountId?: string
+  /** E-mail do responsável da reserva: a busca já abre com a família certa. */
+  accountEmail?: string
   onEnroll(value: {
     accountId: string
     learnerId: string | null
@@ -24,7 +28,7 @@ export function EnrollmentPicker({
   }): Promise<boolean>
 }) {
   const [mode, setMode] = useState<'child' | 'reservation'>('child')
-  const [query, setQuery] = useState('')
+  const [query, setQuery] = useState(accountId && accountEmail ? accountEmail : '')
   const [choices, setChoices] = useState<Choice[]>([])
   const [selected, setSelected] = useState<Choice | null>(null)
   const [name, setName] = useState('')
@@ -55,18 +59,20 @@ export function EnrollmentPicker({
             'GET',
             controller.signal,
           )
-          if (!controller.signal.aborted)
-            setChoices(
-              response.items
-                .filter((item) => item.account && (!accountId || item.account.id === accountId))
-                .map((item) => ({
-                  id: item.profileId,
-                  accountId: item.account!.id,
-                  learnerId: item.profileId,
-                  name: item.name,
-                  description: `${item.account!.firstName} ${item.account!.lastName} · ${item.account!.email}`,
-                })),
-            )
+          if (!controller.signal.aborted) {
+            const found = response.items
+              .filter((item) => item.account && (!accountId || item.account.id === accountId))
+              .map((item) => ({
+                id: item.profileId,
+                accountId: item.account!.id,
+                learnerId: item.profileId,
+                name: item.name,
+                description: `${item.account!.firstName} ${item.account!.lastName} · ${item.account!.email}`,
+              }))
+            setChoices(found)
+            // Reserva de uma família com uma criança só: já vem escolhida (ainda é preciso confirmar).
+            if (accountId && found.length === 1) setSelected(found[0]!)
+          }
         } else {
           const response = await liveRequest<{
             items: { id: string; email: string; firstName: string; lastName: string }[]
