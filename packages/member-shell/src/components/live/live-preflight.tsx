@@ -79,7 +79,7 @@ export function LivePreflight() {
           <p className="rounded-xl border bg-muted/30 p-3 text-sm">
             {tabSharing
               ? 'Este navegador oferece acompanhamento da aba. Ao compartilhar, escolha somente a aba do Sistema Zero; o navegador ainda pedirá sua permissão.'
-              : 'Este navegador não oferece o acompanhamento seguro da aba. Para a professora ver sua criação enquanto você trabalha, use Chrome ou Edge atualizado em um computador. No celular e em navegadores sem esse recurso, você ainda pode acessar as atividades e a gravação disponível.'}
+              : 'Este navegador não oferece o acompanhamento seguro da aba. Para a professora ver sua criação enquanto você trabalha, use Chrome ou Edge atualizado em um computador. No celular e em navegadores sem esse recurso, você ainda pode acessar os desafios e a gravação disponível.'}
           </p>
         ) : null}
         <p role="status" className="text-sm text-muted-foreground">

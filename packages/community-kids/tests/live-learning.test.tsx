@@ -119,7 +119,7 @@ describe('atividades reutilizadas em encontros ao vivo', () => {
     ).toBe(true)
     expect(paths.every((path) => path.startsWith('/api/live/'))).toBe(true)
     expect(screen.queryByText('Outra descoberta.')).toBeNull()
-    fireEvent.click(screen.getByRole('button', { name: 'Ir para essa etapa' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Ir para esse passo' }))
     expect(screen.getByText('Outra descoberta.')).toBeTruthy()
   })
   test('ensaio docente usa o snapshot privado e não grava progresso de criança', async () => {

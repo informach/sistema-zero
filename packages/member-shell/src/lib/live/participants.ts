@@ -33,7 +33,7 @@ export function participantStatus(
             : 'Reconectando',
     step: fresh
       ? (steps.find((step) => step.id === participant.activity?.stepId)?.title ?? 'No Estúdio')
-      : 'Aguardando atualização da etapa',
+      : 'Aguardando atualização do passo',
     save: fresh
       ? {
           'not-open': 'Estúdio ainda não abriu',

@@ -35,7 +35,7 @@ export async function handleLivePreview(
   gatewayFetch: (path: string, options: CallOpts) => Promise<GatewayResponse>,
   storage: typeof previewStorage = previewStorage,
 ) {
-  if (!UUID.test(sessionId)) return reply(404, { error: { message: 'Aula não encontrada.' } })
+  if (!UUID.test(sessionId)) return reply(404, { error: { message: 'Encontro não encontrado.' } })
   const response = await gatewayFetch(`/members/live/sessions/${sessionId}`, { method: 'GET' })
   const room = response.status === 200 ? (response.body as LiveRoomView) : null
   let actorId: string
@@ -49,14 +49,16 @@ export async function handleLivePreview(
   } else {
     const workspaceId = request.headers.get('x-live-workspace-id')
     if (!workspaceId || !UUID.test(workspaceId))
-      return reply(403, { error: { message: 'O prazo desta aula não permite abrir o projeto.' } })
+      return reply(403, {
+        error: { message: 'O prazo deste encontro não permite abrir o projeto.' },
+      })
     const existing = await gatewayFetch(`/members/live/workspaces/${workspaceId}`, {
       method: 'GET',
     })
     if (existing.status !== 200) return reply(existing.status, existing.body)
     const workspace = existing.body as LiveWorkspaceView
     if (workspace.sessionId !== sessionId)
-      return reply(403, { error: { message: 'Este projeto não pertence à aula.' } })
+      return reply(403, { error: { message: 'Este projeto não pertence ao encontro.' } })
     // Members authorizes continuation of this canonical project through the subscription.
     // It does not reopen the lesson, recording, materials or live room.
     actorId = workspace.learnerId
@@ -92,7 +94,7 @@ export async function handleLivePreview(
   const id = randomUUID()
   const key = `${prefix}${id}.html`
   if (!Number.isFinite(ttl) || ttl <= 0)
-    return reply(403, { error: { message: 'O prazo da aula terminou.' } })
+    return reply(403, { error: { message: 'O prazo do encontro terminou.' } })
   await storage.put({
     key,
     body: bytes,

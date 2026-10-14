@@ -89,6 +89,19 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y ffmpeg
           bunx playwright install --with-deps chromium
+          # Ubuntu 24 restringe user namespaces de binários fora dos perfis do sistema.
+          # Autorizar somente o Chromium instalado pelo Playwright mantém seu sandbox ativo.
+          sudo tee /etc/apparmor.d/sistemazero-playwright >/dev/null <<EOF
+          abi <abi/4.0>,
+          include <tunables/global>
+          profile sistemazero-playwright "$HOME/.cache/ms-playwright/**/chrome" flags=(unconfined) {
+            userns,
+          }
+          profile sistemazero-playwright-headless "$HOME/.cache/ms-playwright/**/chrome-headless-shell" flags=(unconfined) {
+            userns,
+          }
+          EOF
+          sudo apparmor_parser -r /etc/apparmor.d/sistemazero-playwright
 
       # O molda voltou a rodar aqui (10/09/2026). Ele passou um dia num job Windows porque o Bun
       # 1.3.11 segfaultava neste runner dentro de `SceneWorkshop.test.tsx`: `terminate()` num

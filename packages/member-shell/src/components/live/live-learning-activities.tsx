@@ -170,9 +170,9 @@ export function LiveLearningActivities({
     </div>
   )
   return (
-    <section className="space-y-4 rounded-2xl border bg-card p-4" aria-label="Etapas da oficina">
+    <section className="space-y-4 rounded-2xl border bg-card p-4" aria-label="Passos da oficina">
       <h2 className="sz-display text-xl font-bold">Nosso caminho</h2>
-      <nav className="flex flex-wrap gap-2" aria-label="Etapas">
+      <nav className="flex flex-wrap gap-2" aria-label="Passos">
         {steps.map((step, index) => (
           <Button
             key={step.id}
@@ -202,12 +202,12 @@ export function LiveLearningActivities({
           disabled={disabled}
           onClick={() => void onControl({ kind: 'suggest-step', stepId: current.id })}
         >
-          Indicar esta etapa à turma
+          Indicar este passo à turma
         </Button>
       ) : suggestion && suggestion.id !== current.id ? (
         <div role="status" className="space-y-2 rounded-xl bg-primary/10 p-3">
           <p>A professora está em “{suggestion.title}”.</p>
-          <Button onClick={() => choose(suggestion.id)}>Ir para essa etapa</Button>
+          <Button onClick={() => choose(suggestion.id)}>Ir para esse passo</Button>
         </div>
       ) : null}
       {teacher ? (
@@ -223,7 +223,7 @@ export function LiveLearningActivities({
           </Button>
         </div>
       ) : !ready ? (
-        <p role="status">Preparando as atividades…</p>
+        <p role="status">Preparando os desafios…</p>
       ) : (
         <LessonCopyProvider value={KIDS_LESSON_COPY}>
           <LearningPresentationProvider value={presentation}>

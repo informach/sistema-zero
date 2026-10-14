@@ -258,10 +258,10 @@ export function LiveClassroom({
           </header>
           <p className="text-sm text-muted-foreground">
             {room.access.status === 'scheduled'
-              ? `As atividades abrem em ${liveDate(room.access.startsAt, room.cohort.timeZone)}.`
+              ? `Os desafios abrem em ${liveDate(room.access.startsAt, room.cohort.timeZone)}.`
               : room.access.status === 'expired' || room.access.status === 'revoked'
                 ? 'O acesso a este encontro terminou. As suas criações continuam no seu espaço, conforme o acesso da sua conta.'
-                : `Atividades e gravação disponíveis até ${liveDate(room.access.endsAt, room.cohort.timeZone)}.`}
+                : `Desafios e gravação disponíveis até ${liveDate(room.access.endsAt, room.cohort.timeZone)}.`}
           </p>
           {!joined ? (
             <div className="space-y-4">
@@ -326,7 +326,7 @@ export function LiveClassroom({
                     onClick={() => {
                       if (
                         window.confirm(
-                          'Encerrar a chamada para toda a turma? As atividades permanecem disponíveis pelo prazo de cada encontro.',
+                          'Encerrar a chamada para toda a turma? Os desafios permanecem disponíveis pelo prazo de cada encontro.',
                         )
                       )
                         void control({ kind: 'end' })
@@ -412,7 +412,7 @@ export function LiveClassroom({
             />
           ) : null}
           {room.plan && room.access.canOpen ? (
-            <section aria-label="Atividade do encontro" className="space-y-4">
+            <section aria-label="Desafio do encontro" className="space-y-4">
               <div
                 className="sticky top-0 z-20 flex gap-2 rounded-xl bg-background/95 p-2 lg:hidden"
                 role="group"
@@ -424,7 +424,7 @@ export function LiveClassroom({
                   aria-pressed={mobileView === 'lesson'}
                   onClick={() => setMobileView('lesson')}
                 >
-                  Ver professora e atividades
+                  Ver professora e desafios
                 </Button>
                 <Button
                   className="min-h-11 flex-1"
@@ -537,7 +537,7 @@ export function LiveClassroom({
                               </ul>
                             ) : (
                               <p className="text-sm text-muted-foreground">
-                                Tudo que você precisa está na atividade.
+                                Tudo que você precisa está no desafio.
                               </p>
                             )}
                           </section>

@@ -187,7 +187,7 @@ export function LiveWorkspace({
         <p className="rounded-2xl border bg-card p-6 text-muted-foreground">
           {teacher
             ? 'Escolha um projeto para acompanhar. O jogo da criança não será executado no seu painel.'
-            : 'Abrindo o projeto guardado desta aula…'}
+            : 'Abrindo o projeto guardado deste encontro…'}
         </p>
       )}
     </section>
