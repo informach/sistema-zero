@@ -12,8 +12,8 @@ import type {
   StudioShareAdapter,
 } from '@sistemazero/studio'
 import { createLocalPersistenceAdapter } from '@sistemazero/studio/local-persistence'
-import { Button } from '@sistemazero/ui'
-import { Save, Volume2, VolumeX } from 'lucide-react'
+import { Button, Dialog } from '@sistemazero/ui'
+import { Maximize2, Minimize2, Save, Volume2, VolumeX } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { dataUrlBase64ToBlob } from '../../lib/data-url'
@@ -37,6 +37,14 @@ const StudioEditor = dynamic(
   },
 )
 const SAVE_RETRY_MS = [2_000, 4_000, 8_000, 15_000]
+/** A curadoria do Estúdio que o roteiro da oficina define (mesmo formato do bloco das aulas). */
+export interface LiveStudioCuration {
+  level?: string
+  allowBlocks?: string[]
+  allowCategories?: string[]
+  allowedModes?: ('blocks' | 'bridge' | 'code')[]
+  allowLevelReveal?: boolean
+}
 type WorkspaceContext = Pick<LiveRoomView, 'actorId' | 'role'> & {
   session: { id: string }
   library?: boolean
@@ -94,6 +102,9 @@ export function LiveWorkspace({
   selectedLearnerId,
   onSelectedLearnerChange,
   onSaveStateChange,
+  wide,
+  onWideChange,
+  onNeedsAttention,
 }: {
   room: LiveRoomView
   deviceId: string
@@ -101,6 +112,11 @@ export function LiveWorkspace({
   selectedLearnerId?: string
   onSelectedLearnerChange?(id: string): void
   onSaveStateChange?(state: LiveActivityReport['saveState']): void
+  /** O Estúdio ampliado ocupa a largura da sala (blocos e jogo lado a lado). */
+  wide?: boolean
+  onWideChange?(wide: boolean): void
+  /** A professora pediu para ajudar: no celular a sala troca para "Criar". */
+  onNeedsAttention?(): void
 }) {
   const [ownSelected, setOwnSelected] = useState('')
   const selected = selectedLearnerId ?? ownSelected
@@ -185,6 +201,12 @@ export function LiveWorkspace({
           deviceId={deviceId}
           onError={onError}
           onSaveStateChange={onSaveStateChange}
+          curation={
+            (room.plan as { studio?: LiveStudioCuration | null } | null | undefined)?.studio
+          }
+          wide={wide}
+          onWideChange={onWideChange}
+          onNeedsAttention={onNeedsAttention}
         />
       ) : (
         <p className="rounded-2xl border bg-card p-6 text-muted-foreground">
@@ -202,12 +224,20 @@ function WorkspaceEditor({
   deviceId,
   onError,
   onSaveStateChange,
+  curation,
+  wide = false,
+  onWideChange,
+  onNeedsAttention,
 }: {
   initial: LiveWorkspaceView
   room: WorkspaceContext
   deviceId: string
   onError?: (message: string) => void
   onSaveStateChange?(state: LiveActivityReport['saveState']): void
+  curation?: LiveStudioCuration | null
+  wide?: boolean
+  onWideChange?(wide: boolean): void
+  onNeedsAttention?(): void
 }) {
   const [workspace, setWorkspace] = useState(initial)
   const latest = useRef(initial)
@@ -769,126 +799,173 @@ function WorkspaceEditor({
     assistance?.status === 'active' &&
     cursor &&
     Date.parse(cursor.expiresAt) > Date.now()
+  const learner = !teacher
+  const asking = learner && assistance?.status === 'requested'
+  const askingId = asking ? assistance?.id : null
+  // biome-ignore lint/correctness/useExhaustiveDependencies: avisa uma vez por pedido.
+  useEffect(() => {
+    if (askingId) onNeedsAttention?.()
+  }, [askingId])
+  const saving = status === 'Guardando o projeto…'
+  const offline = status.startsWith('Sem internet')
   return (
-    <div className="space-y-2">
-      <div className="flex flex-wrap items-center gap-2 rounded-xl border bg-card p-3">
-        <span className="mr-auto text-sm" role="status">
+    <div className="space-y-2.5">
+      <div className="flex flex-wrap items-center gap-2 rounded-2xl border bg-card p-2.5">
+        <span
+          className={`mr-auto inline-flex items-center gap-2 rounded-full px-3 py-1.5 font-bold text-sm ${offline || recovery ? 'bg-amber-100 text-amber-950' : 'text-muted-foreground'}`}
+          role="status"
+        >
           {assistance?.status === 'active'
-            ? `${assistance.teacherName} está ajudando no projeto`
-            : status}
+            ? learner
+              ? `${assistance.teacherName} está mexendo no seu projeto. Você acompanha aqui.`
+              : `${assistance.teacherName} está ajudando no projeto`
+            : recovery
+              ? 'Seu projeto está guardado neste computador'
+              : saving
+                ? 'Guardando…'
+                : offline
+                  ? status
+                  : learner
+                    ? 'Guardado na sua conta'
+                    : status}
         </span>
         <Button
-          size="sm"
           variant="outline"
+          className="min-h-11"
           onClick={() => setMuted((value) => !value)}
           aria-pressed={!muted}
         >
-          {muted ? <VolumeX size={16} /> : <Volume2 size={16} />} Som do projeto
+          {muted ? <VolumeX size={16} aria-hidden /> : <Volume2 size={16} aria-hidden />}
+          {muted ? 'Som do jogo desligado' : 'Som do jogo ligado'}
         </Button>
+        {onWideChange ? (
+          <Button
+            variant="outline"
+            className="hidden min-h-11 lg:inline-flex"
+            aria-pressed={wide}
+            onClick={() => onWideChange(!wide)}
+          >
+            {wide ? <Minimize2 size={16} aria-hidden /> : <Maximize2 size={16} aria-hidden />}
+            {wide ? 'Diminuir' : 'Ampliar'}
+          </Button>
+        ) : null}
         {teacher && !assistance && (
-          <Button disabled={busy} onClick={() => void act('request')}>
+          <Button className="min-h-11" disabled={busy} onClick={() => void act('request')}>
             Pedir para ajudar
           </Button>
         )}
-        {!teacher && assistance?.status === 'requested' && (
-          <>
-            <span className="text-sm">{assistance.teacherName} quer ajudar. Você permite?</span>
-            <Button disabled={busy} onClick={() => void act('accept')}>
-              Sim, pode ajudar
-            </Button>
-            <Button variant="outline" disabled={busy} onClick={() => void act('revoke')}>
-              Agora não
-            </Button>
-          </>
-        )}
         {teacher && assistance?.status === 'requested' && assistance.teacherId === room.actorId && (
-          <Button variant="outline" disabled={busy} onClick={() => void act('cancel')}>
+          <Button
+            variant="outline"
+            className="min-h-11"
+            disabled={busy}
+            onClick={() => void act('cancel')}
+          >
             Cancelar pedido de ajuda
           </Button>
         )}
-        {!teacher && assistance && assistance.status !== 'requested' && (
-          <Button variant="outline" disabled={busy} onClick={() => void act('revoke')}>
+        {learner && assistance && assistance.status !== 'requested' && (
+          <Button className="min-h-11" disabled={busy} onClick={() => void act('revoke')}>
             Parar ajuda
           </Button>
         )}
         {teacher && assistance?.teacherId === room.actorId && interruptedHelp && (
-          <Button variant="outline" disabled={busy} onClick={() => void act('cancel')}>
+          <Button
+            variant="outline"
+            className="min-h-11"
+            disabled={busy}
+            onClick={() => void act('cancel')}
+          >
             Encerrar ajuda interrompida
           </Button>
         )}
         {teacher && assistance?.status === 'active' && !interruptedHelp && (
-          <Button disabled={busy} onClick={() => void act('return')}>
+          <Button className="min-h-11" disabled={busy} onClick={() => void act('return')}>
             Devolver o projeto
-          </Button>
-        )}
-        {!teacher && !editing && !assistance && (
-          <Button disabled={busy || Boolean(recovery)} onClick={() => void act('claim')}>
-            Continuar aqui
           </Button>
         )}
         {editing && (
           <Button
             data-live-target="studio-save"
             variant="outline"
+            className="min-h-11"
             disabled={busy}
             onClick={() => void editor.current?.save().catch(fail)}
           >
-            <Save size={16} /> Guardar
+            <Save size={16} aria-hidden /> Guardar
           </Button>
         )}
       </div>
-      {assistance?.status === 'active' && (
+      {learner && !editing && !assistance && !recovery && ready ? (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border bg-amber-50 p-3.5">
+          <p className="font-semibold">Seu projeto está aberto em outro computador ou aba.</p>
+          <Button className="min-h-11" disabled={busy} onClick={() => void act('claim')}>
+            Continuar aqui
+          </Button>
+        </div>
+      ) : null}
+      {teacher && assistance?.status === 'active' && (
         <p className="text-sm text-muted-foreground">
           Fora da gravação · A turma continua ouvindo.
         </p>
       )}
-      {busy && (
+      {busy && teacher && (
         <p role="status" className="text-sm">
           Confirmando o salvamento e a autoria…
         </p>
       )}
-      {error && (
-        <p role="alert" className="rounded-xl border p-3 text-sm">
+      {error && !recovery && (
+        <p
+          role="alert"
+          className="rounded-2xl border border-destructive/30 bg-destructive/5 p-3 text-sm"
+        >
           {error}
         </p>
       )}
       {!recovery && drafts.length > 0 && (
-        <details className="rounded-xl border p-3 text-sm">
-          <summary className="cursor-pointer py-2 font-medium">
-            Rascunhos preservados neste aparelho ({drafts.length})
+        <details className="rounded-2xl border p-3 text-sm">
+          <summary className="min-h-11 cursor-pointer py-2 font-semibold">
+            Cópias guardadas neste computador ({drafts.length})
           </summary>
-          <p className="py-2">Estas versões continuam disponíveis para você baixar e comparar.</p>
+          <p className="py-2">Você pode baixar uma cópia para guardar.</p>
           {drafts.map((draft) => (
             <Button
               key={draft.id}
               variant="outline"
-              className="m-1"
+              className="m-1 min-h-11"
               onClick={() => {
                 const url = URL.createObjectURL(
                   new Blob([JSON.stringify(draft.project)], { type: 'application/json' }),
                 )
                 const anchor = document.createElement('a')
                 anchor.href = url
-                anchor.download = 'meu-rascunho.json'
+                anchor.download = 'meu-projeto.json'
                 anchor.click()
                 setTimeout(() => URL.revokeObjectURL(url), 1000)
               }}
             >
-              Baixar rascunho de {new Date(draft.savedAt).toLocaleString('pt-BR')}
+              Baixar a cópia de {new Date(draft.savedAt).toLocaleString('pt-BR')}
             </Button>
           ))}
         </details>
       )}
       {recovery && (
-        <div className="rounded-xl border p-3">
-          <p className="text-sm">
-            Há um rascunho preservado neste aparelho que ainda precisa ser guardado na conta.
+        <div className="space-y-3 rounded-2xl border-2 border-amber-300 bg-card p-4">
+          <p className="font-bold">
+            {learner
+              ? 'A internet caiu por um tempo, mas nada se perdeu: seu projeto ficou guardado neste computador.'
+              : 'Há um rascunho preservado neste aparelho que ainda precisa ser guardado na conta.'}
           </p>
+          {error ? (
+            <p role="alert" className="text-sm text-muted-foreground">
+              {error}
+            </p>
+          ) : null}
           {drafts.length > 1 && (
             <label className="block text-sm">
-              Rascunho para recuperar
+              Qual versão guardar
               <select
-                className="ml-2 rounded-lg border bg-background p-2"
+                className="ml-2 min-h-11 rounded-lg border bg-background p-2"
                 value={recoveryDraft.current?.id ?? ''}
                 onChange={(event) => {
                   const draft = drafts.find((item) => item.id === event.target.value)
@@ -907,53 +984,78 @@ function WorkspaceEditor({
               </select>
             </label>
           )}
-          {!teacher && (
-            <Button disabled={busy} onClick={() => void recoverConnection()}>
-              Recuperar conexão
+          <div className="flex flex-wrap gap-2">
+            {learner && (
+              <Button className="min-h-11" disabled={busy} onClick={() => void recoverConnection()}>
+                {busy ? 'Guardando…' : 'Guardar na minha conta'}
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              className="min-h-11"
+              disabled={busy}
+              onClick={async () => {
+                setBusy(true)
+                try {
+                  const current = await workspaceRequest<LiveWorkspaceView>(base)
+                  setDrafts((await journal?.list()) ?? [])
+                  writingBlocked.current = false
+                  autoRecover.current = false
+                  await apply(current)
+                  setRecovery(null)
+                  setError(null)
+                  setStatus('Projeto guardado na sua conta')
+                } catch (cause) {
+                  writingBlocked.current = true
+                  fail(cause)
+                } finally {
+                  setBusy(false)
+                }
+              }}
+            >
+              Usar a versão da conta
             </Button>
-          )}
-          <Button
-            variant="outline"
-            disabled={busy}
-            onClick={async () => {
-              setBusy(true)
-              try {
-                const current = await workspaceRequest<LiveWorkspaceView>(base)
-                setDrafts((await journal?.list()) ?? [])
-                writingBlocked.current = false
-                await apply(current)
-                setRecovery(null)
-                setError(null)
-                setStatus('Projeto guardado na sua conta')
-              } catch (cause) {
-                writingBlocked.current = true
-                fail(cause)
-              } finally {
-                setBusy(false)
-              }
-            }}
-          >
-            Continuar com a versão da conta
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => {
-              const url = URL.createObjectURL(
-                new Blob([JSON.stringify(recovery)], { type: 'application/json' }),
-              )
-              const anchor = document.createElement('a')
-              anchor.href = url
-              anchor.download = 'meu-projeto-recuperado.json'
-              anchor.click()
-              setTimeout(() => URL.revokeObjectURL(url), 1000)
-            }}
-          >
-            Baixar meu rascunho
-          </Button>
+            <Button
+              variant="ghost"
+              className="min-h-11"
+              onClick={() => {
+                const url = URL.createObjectURL(
+                  new Blob([JSON.stringify(recovery)], { type: 'application/json' }),
+                )
+                const anchor = document.createElement('a')
+                anchor.href = url
+                anchor.download = 'meu-projeto.json'
+                anchor.click()
+                setTimeout(() => URL.revokeObjectURL(url), 1000)
+              }}
+            >
+              Baixar uma cópia
+            </Button>
+          </div>
         </div>
       )}
+      <Dialog
+        open={Boolean(asking)}
+        onClose={() => {}}
+        title={`${assistance?.teacherName ? `A professora ${assistance.teacherName}` : 'A professora'} quer ajudar no seu projeto`}
+        description="Enquanto ela mexe, você acompanha aqui. Você pode parar a ajuda quando quiser."
+      >
+        <div className="flex flex-wrap justify-end gap-2">
+          <Button
+            variant="outline"
+            className="min-h-11"
+            disabled={busy}
+            onClick={() => void act('revoke')}
+          >
+            Agora não
+          </Button>
+          <Button className="min-h-11" disabled={busy} onClick={() => void act('accept')}>
+            Sim, pode ajudar
+          </Button>
+        </div>
+      </Dialog>
       <div
-        className="relative h-[min(70vh,760px)] min-h-[400px] overflow-hidden rounded-2xl border"
+        className={`relative overflow-hidden rounded-2xl border ${wide ? 'h-[calc(100dvh-13rem)] min-h-[480px]' : 'h-[min(72vh,820px)] min-h-[420px]'}`}
         ref={editorRoot}
         onPointerMove={(event) => {
           if (
@@ -999,7 +1101,14 @@ function WorkspaceEditor({
             }
             onReady={() => setReady(true)}
             onError={(cause) => fail(new Error(cause.message))}
-            features={{ terminal: false, ai: false }}
+            // A curadoria do roteiro (como no bloco do Estúdio das aulas). Sem ela, a criança
+            // via a paleta inteira, os modos Ponte e Código e instalava qualquer extensão.
+            level={curation?.level as never}
+            allowBlocks={curation?.allowBlocks}
+            allowCategories={curation?.allowCategories}
+            allowedModes={curation?.allowedModes ?? (teacher ? undefined : ['blocks'])}
+            allowLevelReveal={curation?.allowLevelReveal ?? false}
+            features={{ terminal: false, ai: false, extensions: teacher }}
           />
         ) : (
           <p role="status" className="p-6">

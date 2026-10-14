@@ -8,6 +8,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { classroomState, mergeLiveRoomPlan } from '../../lib/live/classroom-state'
 import { LiveRequestError, liveDate, liveRequest, resolveLiveDeviceId } from '../../lib/live/client'
 import { LiveGuidancePointer } from './live-guidance'
+import { LiveLearnerRoom } from './live-learner-room'
 import { LiveLearningActivities } from './live-learning-activities'
 import { LiveMediaPanel } from './live-media-panel'
 import { LiveParticipants } from './live-participants'
@@ -73,12 +74,17 @@ export function LiveClassroom({
     const controller = new AbortController()
     let timer: ReturnType<typeof setTimeout>
     let pending = false
+    let failures = 0
     async function poll() {
       if (pending) return
       pending = true
       try {
+        // Sem plano guardado (esperou antes da liberação), não informa revisão: o servidor
+        // omitiria o plano e a criança nunca receberia as partes sem recarregar a página.
         const known =
-          roomRef.current?.session.id === sessionId ? roomRef.current.planRevision : undefined
+          roomRef.current?.session.id === sessionId && roomRef.current.plan
+            ? roomRef.current.planRevision
+            : undefined
         const next = await liveRequest<LiveRoomView>(
           known ? `${endpoint}?planRevision=${encodeURIComponent(known)}` : endpoint,
           undefined,
@@ -86,15 +92,21 @@ export function LiveClassroom({
           controller.signal,
         )
         if (!controller.signal.aborted) {
+          failures = 0
           acceptRoom(next)
           setConnectionError(null)
         }
       } catch (cause) {
         if (!controller.signal.aborted) {
-          setStale(true)
-          setConnectionError(
-            cause instanceof Error ? cause.message : 'A conexão caiu. Seu projeto continua aqui.',
-          )
+          // Uma consulta perdida não derruba a sala: só a segunda falha seguida (ou 8 s sem
+          // resposta, pelo monitor abaixo) marca "Reconectando…" e desliga a mídia.
+          failures += 1
+          if (failures >= 2) {
+            setStale(true)
+            setConnectionError(
+              cause instanceof Error ? cause.message : 'A conexão caiu. Seu projeto continua aqui.',
+            )
+          }
         }
       } finally {
         pending = false
@@ -199,6 +211,26 @@ export function LiveClassroom({
     classroomState(room, deviceId, joined, stale)
   const back = teacher ? '/admin/professor/ao-vivo' : '/oficinas'
   const displayedError = error ?? connectionError
+  if (!teacher && (!room || room.role === 'learner'))
+    return (
+      <LiveLearnerRoom
+        room={room}
+        deviceId={deviceId}
+        joined={joined}
+        takeover={takeover}
+        stale={stale}
+        busy={busy}
+        error={error}
+        connectionError={connectionError}
+        onDismissError={() => setError(null)}
+        onRetry={() => setRefresh((value) => value + 1)}
+        onJoin={() => void join()}
+        perform={perform}
+        onError={setError}
+        onReportStep={reportStep}
+        onReportSave={reportSave}
+      />
+    )
   return (
     <div className="space-y-5 p-4 md:p-6">
       {room?.role === 'learner' ? (
