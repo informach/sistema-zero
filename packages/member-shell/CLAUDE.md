@@ -5,6 +5,53 @@
 > prévia do Kids usa a mesma regra. O Members repete a recusa por `x-auth-impersonator-id`.
 > `live-recording-status.tsx` ganhou os rótulos de `empty` e `unavailable`.
 
+## Desenho sobre a tela e quadro branco (14/10/2026)
+
+Na sala ao vivo, a PROFESSORA desenha sobre a demonstração que transmite (ou num quadro branco),
+como no modo de desenho dos programas de gravação de tela. O desenho entra na PRÓPRIA imagem
+publicada: a turma vê e ele fica na gravação (feita das trilhas publicadas). A criança não tem
+ferramentas de desenho.
+
+- **Compositor** (`lib/live/screen-annotation.ts`): um `<canvas>` que pinta a cada quadro a aba
+  capturada (ou o fundo do quadro, branco ou escuro) e por cima o desenho; `canvas.captureStream(15)`
+  é a trilha publicada como `demo` DESDE O COMEÇO do compartilhamento (sem desenho ele só repassa a
+  tela). O transporte não troca trilha no meio e não foi mexido: trocar entre tela e quadro, e
+  ligar a aba depois de começar pelo quadro, só muda a imagem do compositor. Tamanho = o da aba
+  (teto 1920x1080, par), 1600x900 para quem começa pelo quadro.
+- ⚠️⚠️ **O relógio do compositor mora num Worker** (`screen-annotation-clock.worker.ts`). A
+  professora opera a aba de demonstração e a da sala fica em segundo plano, onde o Chrome segura o
+  `setInterval` da página em 1 por segundo e para o `requestAnimationFrame`. Medido no Chrome do
+  sistema com a aba escondida: relógio na página = 1 quadro por segundo para a turma; Worker = 15
+  (o compositor de verdade, 25 s escondido). Sem Worker, cai no `setInterval`.
+  ⚠️ O mesmo defeito existe hoje no FUNDO DA CÂMERA (`media-camera-effects.ts`, `setInterval` de
+  100 ms na página): a câmera da professora com efeito congela para a turma enquanto ela está na
+  aba de demonstração. Não foi mexido neste lote.
+- **Modelo puro** (`lib/live/annotation.ts`): formas VETORIAIS (caneta, marca-texto, seta,
+  retângulo, círculo, texto), uma camada por superfície (tela e quadro guardam desenhos
+  separados), desfazer por versões (forma nova, uma passada inteira de borracha e "limpar tudo"
+  desfazem do mesmo jeito, teto de 100 passos), borracha que apaga a forma tocada (e interpola o
+  arrasto rápido), conversão da prévia para o quadro com as faixas do `object-fit: contain`, a luz
+  mágica que some em 1 s (efêmera, nunca vira forma) e os atalhos.
+- **Interface**: `components/live/live-annotation-toolbar.tsx` (barra, `LiveAnnotationSurfaceSwitch`
+  e `LiveAnnotationControls`, que fica no painel da professora) e `live-annotation-stage.tsx`, o
+  modo desenho: o próprio canvas do compositor numa camada de tela cheia (`useModalA11y`), com a
+  barra em cima. Atalhos: P caneta, M marca-texto, A seta, R retângulo, C círculo, T texto,
+  E borracha, L luz mágica, Q tela ⇄ quadro, Ctrl+Z desfazer, Esc sai (o desenho fica na
+  transmissão até ela limpar). Letras dentro do campo de texto não viram ferramenta, e o Esc do
+  campo desiste do texto sem fechar o modo desenho. Alvos de 44px.
+- **No hook** (`useLiveMedia`): `capture('demo')` embrulha a aba no compositor; `startBoard`
+  publica o quadro sem aba; `shareDemoScreen` põe a aba no compositor que já está no ar. Os dois
+  processadores (fundo da câmera e compositor) moram em `processors` e saem pelo `release`, em
+  toda saída (parar, recusa da sala, queda da conexão, desmontar). O "Parar de compartilhar" do
+  navegador (`track` `ended`) e a troca de aba (`capturehandlechange`) encerram a demonstração
+  inteira, quadro incluído. Sem canvas capturável, a aba vai crua como antes, sem as ferramentas.
+- Testes: `tests/live-annotation.test.ts` (modelo) e `tests/live-screen-annotation.test.ts`
+  (compositor com contexto 2D, vídeo, trilhas e relógio falsos, e o Worker de verdade); no admin,
+  `live-annotation-stage.test.tsx` (barra, atalhos, ponteiro, texto, luz) e
+  `live-annotation-media.test.tsx` (o hook publica a trilha composta e solta tudo). Provados por
+  mutação em cópia (42 mutantes; sobra um equivalente: o `release` do `publish` é coberto também
+  pelo `toggle`). Ensaio visual fora do git em `packages/admin/tmp/desenho-visual/`.
+
 ## Falar em vez de escrever: a voz vira texto para a equipe (14/10/2026)
 
 Decisão dela: a criança FALA a mensagem para a equipe, o servidor transcreve na hora, ela CONFERE
