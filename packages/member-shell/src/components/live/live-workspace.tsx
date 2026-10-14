@@ -2,6 +2,7 @@
 import type {
   LiveActivityReport,
   LiveRoomView,
+  LiveStudioConfig,
   LiveWorkspaceUpdate,
   LiveWorkspaceView,
 } from '@sistemazero/core/live'
@@ -37,13 +38,15 @@ const StudioEditor = dynamic(
   },
 )
 const SAVE_RETRY_MS = [2_000, 4_000, 8_000, 15_000]
-/** A curadoria do Estúdio que o roteiro da oficina define (mesmo formato do bloco das aulas). */
-export interface LiveStudioCuration {
-  level?: string
-  allowBlocks?: string[]
-  allowCategories?: string[]
-  allowedModes?: ('blocks' | 'bridge' | 'code')[]
-  allowLevelReveal?: boolean
+
+/** Uma cópia do projeto que a criança guarda no próprio computador. */
+function downloadProject(project: unknown) {
+  const url = URL.createObjectURL(new Blob([JSON.stringify(project)], { type: 'application/json' }))
+  const anchor = document.createElement('a')
+  anchor.href = url
+  anchor.download = 'meu-projeto.json'
+  anchor.click()
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 type WorkspaceContext = Pick<LiveRoomView, 'actorId' | 'role'> & {
   session: { id: string }
@@ -201,9 +204,7 @@ export function LiveWorkspace({
           deviceId={deviceId}
           onError={onError}
           onSaveStateChange={onSaveStateChange}
-          curation={
-            (room.plan as { studio?: LiveStudioCuration | null } | null | undefined)?.studio
-          }
+          curation={room.plan?.studio}
           wide={wide}
           onWideChange={onWideChange}
           onNeedsAttention={onNeedsAttention}
@@ -234,7 +235,8 @@ function WorkspaceEditor({
   deviceId: string
   onError?: (message: string) => void
   onSaveStateChange?(state: LiveActivityReport['saveState']): void
-  curation?: LiveStudioCuration | null
+  /** A curadoria do Estúdio que o roteiro da oficina define (mesmo formato do bloco das aulas). */
+  curation?: LiveStudioConfig | null
   wide?: boolean
   onWideChange?(wide: boolean): void
   onNeedsAttention?(): void
@@ -416,7 +418,9 @@ function WorkspaceEditor({
       const handle = editor.current
       if (!handle) return
       const previous = latest.current
+      // Prazo vencido sem continuação no Estúdio: só ver e baixar (o servidor recusa escritas).
       const own =
+        !next.readOnly &&
         next.writerId === room.actorId &&
         next.writerDeviceId === deviceId &&
         next.leaseExpiresAt !== null &&
@@ -896,7 +900,23 @@ function WorkspaceEditor({
           </Button>
         )}
       </div>
-      {learner && !editing && !assistance && !recovery && ready ? (
+      {workspace.readOnly && ready ? (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border bg-card p-3.5">
+          <p className="font-semibold">
+            {learner
+              ? 'O prazo para mexer neste projeto terminou. Você ainda pode ver e baixar uma cópia.'
+              : 'O prazo desta criança terminou: o projeto agora é só para ver.'}
+          </p>
+          <Button
+            variant="outline"
+            className="min-h-11"
+            onClick={() => downloadProject(editor.current?.getProject() ?? workspace.project)}
+          >
+            Baixar uma cópia
+          </Button>
+        </div>
+      ) : null}
+      {learner && !editing && !assistance && !recovery && ready && !workspace.readOnly ? (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border bg-amber-50 p-3.5">
           <p className="font-semibold">Seu projeto está aberto em outro computador ou aba.</p>
           <Button className="min-h-11" disabled={busy} onClick={() => void act('claim')}>
@@ -933,16 +953,7 @@ function WorkspaceEditor({
               key={draft.id}
               variant="outline"
               className="m-1 min-h-11"
-              onClick={() => {
-                const url = URL.createObjectURL(
-                  new Blob([JSON.stringify(draft.project)], { type: 'application/json' }),
-                )
-                const anchor = document.createElement('a')
-                anchor.href = url
-                anchor.download = 'meu-projeto.json'
-                anchor.click()
-                setTimeout(() => URL.revokeObjectURL(url), 1000)
-              }}
+              onClick={() => downloadProject(draft.project)}
             >
               Baixar a cópia de {new Date(draft.savedAt).toLocaleString('pt-BR')}
             </Button>
@@ -1015,20 +1026,7 @@ function WorkspaceEditor({
             >
               Usar a versão da conta
             </Button>
-            <Button
-              variant="ghost"
-              className="min-h-11"
-              onClick={() => {
-                const url = URL.createObjectURL(
-                  new Blob([JSON.stringify(recovery)], { type: 'application/json' }),
-                )
-                const anchor = document.createElement('a')
-                anchor.href = url
-                anchor.download = 'meu-projeto.json'
-                anchor.click()
-                setTimeout(() => URL.revokeObjectURL(url), 1000)
-              }}
-            >
+            <Button variant="ghost" className="min-h-11" onClick={() => downloadProject(recovery)}>
               Baixar uma cópia
             </Button>
           </div>

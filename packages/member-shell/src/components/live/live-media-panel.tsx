@@ -435,7 +435,7 @@ export function useLiveMedia({
     [capture, publish, stop, onError],
   )
   const label = useCallback(
-    (publication: LiveMediaPublication & { displayName?: string }) =>
+    (publication: LiveMediaPublication) =>
       publication.role === 'teacher'
         ? publication.kind === 'demo'
           ? 'Demonstração da professora'

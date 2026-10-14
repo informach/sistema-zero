@@ -15,17 +15,13 @@ import {
 } from '../../lib/live/schedule'
 import { LiveParentReservations } from './live-parent-reservations'
 
-/** Campos que o servidor passou a mandar (opcionais: o cliente tolera servidor antigo). */
-type Session = LiveSessionSummary & { occurrenceState?: string; recordingPublished?: boolean }
-type Cohort = LiveCohort & { teacherNames?: Record<string, string> }
-
-function teacherOf(cohort?: Cohort): string | null {
+function teacherOf(cohort?: LiveCohort): string | null {
   if (!cohort?.teacherNames) return null
   for (const id of cohort.teacherIds) if (cohort.teacherNames[id]) return cohort.teacherNames[id]!
   return null
 }
 
-function sortByStart(a: Session, b: Session) {
+function sortByStart(a: LiveSessionSummary, b: LiveSessionSummary) {
   return (
     Date.parse(a.occurrenceStartsAt ?? a.startsAt) - Date.parse(b.occurrenceStartsAt ?? b.startsAt)
   )
@@ -112,10 +108,10 @@ export function LiveCatalog({
         Buscando as oficinas…
       </p>
     )
-  const cohortOf = (session: Session) =>
-    data.cohorts.find((item) => item.id === session.cohortId) as Cohort | undefined
-  const zoneOf = (session: Session) => cohortOf(session)?.timeZone ?? 'America/Sao_Paulo'
-  const sessions = [...(data.sessions as Session[])].sort(sortByStart)
+  const cohortOf = (session: LiveSessionSummary) =>
+    data.cohorts.find((item) => item.id === session.cohortId)
+  const zoneOf = (session: LiveSessionSummary) => cohortOf(session)?.timeZone ?? 'America/Sao_Paulo'
+  const sessions = [...data.sessions].sort(sortByStart)
   const withState = sessions.map((session) => ({
     session,
     state: liveScheduleState(session, zoneOf(session)),
@@ -134,7 +130,7 @@ export function LiveCatalog({
   const explore = data.programs.filter((program) => !enrolledPrograms.has(program.id))
   const [next, ...upcoming] = ahead
   const parent = mode === 'parent'
-  const card = (session: Session, state: LiveScheduleState) => (
+  const card = (session: LiveSessionSummary, state: LiveScheduleState) => (
     <SessionCard
       key={session.id}
       session={session}
@@ -235,7 +231,7 @@ export function LiveCatalog({
   )
 }
 
-function roomHref(mode: 'learner' | 'parent' | 'teacher', session: Session) {
+function roomHref(mode: 'learner' | 'parent' | 'teacher', session: LiveSessionSummary) {
   return mode === 'teacher'
     ? `/admin/professor/ao-vivo/${session.id}`
     : `/oficinas/aulas/${session.id}`
@@ -248,8 +244,8 @@ function NextHero({
   state,
   mode,
 }: {
-  session: Session
-  cohort?: Cohort
+  session: LiveSessionSummary
+  cohort?: LiveCohort
   state: LiveScheduleState
   mode: 'learner' | 'parent' | 'teacher'
 }) {
@@ -307,8 +303,8 @@ function SessionCard({
   mode,
   learnerNames,
 }: {
-  session: Session
-  cohort?: Cohort
+  session: LiveSessionSummary
+  cohort?: LiveCohort
   state: LiveScheduleState
   mode: 'learner' | 'parent' | 'teacher'
   learnerNames: string[]

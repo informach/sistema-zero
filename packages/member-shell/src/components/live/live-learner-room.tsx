@@ -38,13 +38,8 @@ import { LivePreflight } from './live-preflight'
 import { LiveReplay } from './live-replay'
 import { LiveWorkspace } from './live-workspace'
 
-/** Campos que o servidor passou a mandar (opcionais: o cliente tolera servidor antigo). */
-type RoomExtras = {
-  cohort: { teacherNames?: Record<string, string> }
-}
-
 export function teacherNameOf(room: LiveRoomView): string | null {
-  const names = (room.cohort as RoomExtras['cohort']).teacherNames ?? {}
+  const names = room.cohort.teacherNames ?? {}
   for (const id of room.cohort.teacherIds) if (names[id]) return names[id]!
   const fromChat = room.occurrence?.messages.find((message) => message.role === 'teacher')
   return fromChat?.authorName ?? null
@@ -141,8 +136,22 @@ export function LiveLearnerRoom({
           ) : null}
         </div>
       ) : null}
-      {room.access.status === 'scheduled' ? (
+      {room.access.status === 'scheduled' && !room.access.canEnterLobby ? (
         <FutureMeeting room={room} teacherName={teacherName} />
+      ) : room.access.status === 'scheduled' ? (
+        // Os 15 minutos antes: só a recepção abre (o conteúdo e a câmera da turma, no horário).
+        joined ? (
+          <EarlyReception room={room} admitted={admitted} />
+        ) : (
+          <Door
+            room={room}
+            teacherName={teacherName}
+            takeover={takeover}
+            busy={busy || stale || !deviceId}
+            onJoin={onJoin}
+            early
+          />
+        )
       ) : !room.access.canOpen ? (
         <ExpiredMeeting room={room} />
       ) : (
@@ -369,16 +378,20 @@ function Door({
   takeover,
   busy,
   onJoin,
+  early = false,
 }: {
   room: LiveRoomView
   teacherName: string | null
   takeover: boolean
   busy: boolean
   onJoin(): void
+  /** Antes do horário: a criança só espera na recepção (nada para criar ainda). */
+  early?: boolean
 }) {
   const state = room.occurrence?.state
   const open = state === 'lobby' || state === 'live'
   const start = room.occurrence?.startsAt ?? room.session.startsAt
+  const hour = liveHour(new Date(start), room.cohort.timeZone)
   const [testing, setTesting] = useState(false)
   const professora = teacherName ? `A professora ${teacherName}` : 'A professora'
   return (
@@ -394,16 +407,20 @@ function Door({
               ? state === 'live'
                 ? `${professora} já está na sala!`
                 : `${professora} abriu a sala`
-              : Date.now() < Date.parse(start)
-                ? `A sala abre às ${liveHour(new Date(start), room.cohort.timeZone)}`
-                : `${professora} ainda vai abrir a sala`}
+              : early || Date.now() >= Date.parse(start)
+                ? `${professora} ainda vai abrir a sala`
+                : `A sala abre às ${hour}`}
         </h2>
         <p className="font-medium text-muted-foreground">
           {takeover
             ? 'Se continuar aqui, a outra janela sai da sala. Seu projeto continua o mesmo.'
             : open
-              ? 'Você entra com a câmera e o microfone desligados.'
-              : 'Enquanto isso, você já pode começar a criar aqui embaixo.'}
+              ? early
+                ? `Você entra com a câmera e o microfone desligados. O encontro começa às ${hour}.`
+                : 'Você entra com a câmera e o microfone desligados.'
+              : early
+                ? `O encontro começa às ${hour}. Quando ela abrir a sala, o botão para entrar aparece aqui.`
+                : 'Enquanto isso, você já pode começar a criar aqui embaixo.'}
         </p>
         {testing ? <LivePreflight open /> : null}
       </div>
@@ -424,6 +441,31 @@ function Door({
           </Button>
         ) : null}
       </div>
+    </section>
+  )
+}
+
+/** Já na recepção, antes do horário: o que acontece agora, em uma frase. */
+function EarlyReception({ room, admitted }: { room: LiveRoomView; admitted: boolean }) {
+  const self = room.occurrence?.participants.find((item) => item.learnerId === room.actorId)
+  const start = room.occurrence?.startsAt ?? room.session.startsAt
+  const hour = liveHour(new Date(start), room.cohort.timeZone)
+  return (
+    <section role="status" className="kids-carta space-y-2 p-6 md:p-7">
+      <h2 className="sz-display text-2xl md:text-[1.75rem]">
+        {self?.admission === 'removed'
+          ? 'A professora encerrou sua participação'
+          : admitted
+            ? 'Você já está na sala!'
+            : 'Você está na recepção'}
+      </h2>
+      <p className="font-medium text-muted-foreground">
+        {self?.admission === 'removed'
+          ? 'Ela precisa permitir para você voltar.'
+          : admitted
+            ? `O encontro começa às ${hour}. A professora e a turma aparecem aqui.`
+            : `A professora já vai chamar você. O encontro começa às ${hour}.`}
+      </p>
     </section>
   )
 }
