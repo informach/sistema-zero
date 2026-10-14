@@ -23,17 +23,6 @@ import {
 } from 'lucide-react'
 import { useId, useState } from 'react'
 
-/**
- * TODO contrato do servidor: estes três comandos entram no `LiveControl` de
- * `packages/core/src/live/contracts.ts` (cancelar, receber todos e o `before` do abaixar mãos).
- * Depois do merge, `LiveTeacherControl` passa a ser só `LiveControl` e este tipo some.
- */
-type PendingServerControl =
-  | { kind: 'cancel' }
-  | { kind: 'admit-all' }
-  | { kind: 'lower-hands'; learnerId: string | null; before?: string }
-export type LiveTeacherControl = LiveControl | PendingServerControl
-
 export const SPEAKING_MODES: readonly { value: LiveSpeakingMode; label: string; hint: string }[] = [
   {
     value: 'open',
@@ -102,7 +91,7 @@ export function teacherRoomSummary(room: LiveRoomView) {
  * Abaixa só as mãos que a professora VIU: as que subiram até o horário desta foto da sala.
  * Uma mão levantada depois do clique continua no ar.
  */
-export function lowerHandsCommand(room: LiveRoomView): LiveTeacherControl {
+export function lowerHandsCommand(room: LiveRoomView): LiveControl {
   return { kind: 'lower-hands', learnerId: null, before: room.serverTime }
 }
 
@@ -115,7 +104,7 @@ export function LiveTeacherControls({
   room: LiveRoomView
   busy: boolean
   stale: boolean
-  onControl(command: LiveTeacherControl): Promise<boolean>
+  onControl(command: LiveControl): Promise<boolean>
 }) {
   const [confirming, setConfirming] = useState<'end' | 'cancel' | null>(null)
   const headingId = useId()
@@ -128,7 +117,7 @@ export function LiveTeacherControls({
   const moderation = state === 'lobby' || state === 'live'
   const live = state === 'live'
   const mode = SPEAKING_MODES.find((item) => item.value === occurrence.speakingMode)
-  const run = (command: LiveTeacherControl) => void onControl(command)
+  const run = (command: LiveControl) => void onControl(command)
   const big = 'min-h-11 px-4'
   return (
     <section aria-labelledby={headingId} className="space-y-4 rounded-xl border bg-card p-4">

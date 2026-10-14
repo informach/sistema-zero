@@ -20,13 +20,9 @@ import { useId, useState } from 'react'
 import { liveDate, liveRequest } from '../../lib/live/client'
 import { LiveReplay } from './live-replay'
 
-/**
- * TODO contrato do servidor: a duração da gravação ainda não viaja no resumo. Quando vier
- * (`durationSeconds`), ela aparece sozinha; estados novos (como um "vazio") caem no ramo `empty`.
- */
+/** Um estado que este app ainda não conhece (servidor mais novo) cai no ramo `empty`. */
 type RecordingInfo = Omit<LiveRecordingSummary['recording'], 'state'> & {
   state: LiveRecordingState | (string & {})
-  durationSeconds?: number | null
 }
 type RecordingItem = Omit<LiveRecordingSummary, 'recording'> & { recording: RecordingInfo }
 
@@ -38,6 +34,7 @@ export type RecordingStatusKey =
   | 'review'
   | 'published'
   | 'failed'
+  | 'unavailable'
   | 'empty'
 
 export interface RecordingStatusView {
@@ -99,6 +96,22 @@ export function recordingStatusView(
         nextStep:
           'As crianças continuam com o passo a passo e o projeto. Se precisar, agende uma reposição e avise a equipe técnica.',
       }
+    case 'unavailable':
+      return {
+        key: 'unavailable',
+        label: 'Gravador sem resposta',
+        description:
+          'O gravador parou de confirmar o que está gravando. Este trecho pode ficar fora da gravação.',
+        nextStep:
+          'Continue o encontro normalmente. Se a gravação não voltar, avise a equipe técnica ao terminar.',
+      }
+    case 'empty':
+      return {
+        key: 'empty',
+        label: 'Sem gravação',
+        description: 'O encontro terminou sem nenhum trecho gravado.',
+        nextStep: 'Se o encontro não aconteceu como planejado, agende uma reposição.',
+      }
     case 'not_started':
       return finished
         ? {
@@ -126,15 +139,6 @@ export function recordingStatusView(
   }
 }
 
-/** "52 min", "1 h 05 min". Sem duração conhecida, nada. */
-export function recordingDuration(seconds: number | null | undefined): string | null {
-  if (typeof seconds !== 'number' || !Number.isFinite(seconds) || seconds <= 0) return null
-  const minutes = Math.max(1, Math.round(seconds / 60))
-  if (minutes < 60) return `${minutes} min`
-  const hours = Math.floor(minutes / 60)
-  return `${hours} h ${String(minutes % 60).padStart(2, '0')} min`
-}
-
 const STATUS_ICON = {
   waiting: Clock3,
   recording: Radio,
@@ -143,6 +147,7 @@ const STATUS_ICON = {
   review: Clapperboard,
   published: CircleCheck,
   failed: CircleAlert,
+  unavailable: CircleAlert,
   empty: Film,
 } as const
 
@@ -237,7 +242,6 @@ function RecordingReview({
   const recording = item.recording
   const view = recordingStatusView(recording, occurrenceState)
   const Icon = STATUS_ICON[view.key]
-  const duration = recordingDuration(recording.durationSeconds)
   const reviewable = view.key === 'review' || view.key === 'published'
   async function publish() {
     setBusy(true)
@@ -266,9 +270,6 @@ function RecordingReview({
           <Icon className="size-4" aria-hidden />
           {view.label}
         </span>
-        {duration ? (
-          <span className="text-sm text-muted-foreground">Duração: {duration}</span>
-        ) : null}
       </p>
       <p className="text-sm">{view.description}</p>
       {view.nextStep ? (

@@ -1,6 +1,6 @@
 'use client'
 
-import type { LiveActivityReport, LiveRoomView } from '@sistemazero/core/live'
+import type { LiveActivityReport, LiveControl, LiveRoomView } from '@sistemazero/core/live'
 import { Button } from '@sistemazero/ui'
 import { ArrowLeft, Download, Hand, LifeBuoy, MessageCircle, Send } from 'lucide-react'
 import Link from 'next/link'
@@ -17,7 +17,7 @@ import { LiveRecordingReview } from './live-recording-review'
 import { LiveRecordingStatus } from './live-recording-status'
 import { LiveReplacement } from './live-replacement'
 import { LiveReplay } from './live-replay'
-import { type LiveTeacherControl, LiveTeacherControls } from './live-teacher-controls'
+import { LiveTeacherControls } from './live-teacher-controls'
 import { LiveWorkspace } from './live-workspace'
 
 export function LiveClassroom({
@@ -206,7 +206,7 @@ export function LiveClassroom({
       setTakeover(false)
     }
   }
-  const control = (command: LiveTeacherControl) =>
+  const control = (command: LiveControl) =>
     perform('control', { expectedVersion: room?.occurrence?.version, command })
   const { self, isTeacher, admitted, live, supervised, canInteract, canEnter, canSendChat } =
     classroomState(room, deviceId, joined, stale)

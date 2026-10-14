@@ -12,7 +12,7 @@ const { LiveTeacherControls, lowerHandsCommand } = await import(
 const { LiveParticipants, participantPrimaryAction, participantSignals } = await import(
   '@sistemazero/member-shell/components/live/live-participants'
 )
-const { recordingDuration, recordingItems, recordingStatusView } = await import(
+const { recordingItems, recordingStatusView } = await import(
   '@sistemazero/member-shell/components/live/live-recording-review'
 )
 const { replacementError } = await import(
@@ -367,16 +367,18 @@ describe('gravação do encontro (professora)', () => {
     expect(recordingStatusView({ state: 'not_started', published: false }, 'scheduled').key).toBe(
       'waiting',
     )
-    // Um estado novo do servidor não quebra a tela.
     expect(recordingStatusView({ state: 'empty', published: false }, 'ended').key).toBe('empty')
+    expect(recordingStatusView({ state: 'unavailable', published: false }, 'live')).toMatchObject({
+      key: 'unavailable',
+      label: 'Gravador sem resposta',
+    })
+    // Um estado que este app ainda não conhece não quebra a tela.
+    expect(recordingStatusView({ state: 'arquivada', published: false }, 'ended').key).toBe('empty')
     for (const state of ['processing', 'review', 'failed', 'not_started'] as const)
       expect(recordingStatusView({ state, published: false }, 'ended').nextStep).toBeTruthy()
   })
 
-  test('duração legível e a gravação do encontro atual nunca some da vista', () => {
-    expect(recordingDuration(52 * 60)).toBe('52 min')
-    expect(recordingDuration(65 * 60)).toBe('1 h 05 min')
-    expect(recordingDuration(undefined)).toBeNull()
+  test('a gravação do encontro atual nunca some da vista', () => {
     const items = recordingItems(room('ended', [], { state: 'processing', version: 3 }))
     expect(items).toEqual([
       {
