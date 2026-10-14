@@ -158,6 +158,14 @@ export interface StudioTutorAdapter {
 }
 
 export interface StudioTutorConfig {
+  renderListen?: (projectId: string, messageId: string) => import('react').ReactNode
+  renderVoiceInput?: (input: {
+    value: string
+    onChange(value: string): void
+    onBusyChange(busy: boolean): void
+    textareaId: string
+    disabled: boolean
+  }) => import('react').ReactNode
   adapter: StudioTutorAdapter
   /** Navegação provida pelo host; o Studio não conhece as rotas da comunidade. */
   openLesson?: (reference: StudioTutorLessonReference) => void

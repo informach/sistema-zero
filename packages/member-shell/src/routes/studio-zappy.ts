@@ -6,6 +6,8 @@ import { isPrivilegedRole } from '../lib/studio-tier'
 import type { AiCreditsView } from '../lib/types'
 import { consumeAiQuotaStrict } from '../server/ai-quota'
 import type { MembersClient } from '../server/clients'
+import { studioTutorTask } from '../server/pensa-journey/missions'
+import { redactPensaText } from '../server/pensa-journey/privacy'
 import type { SessionModule } from '../server/session'
 import { earnedStudioTier } from '../server/studio-unlocks'
 import { isStudioZappyAllowed, isStudioZappyAllowedForRequest } from '../server/zappy-access'
@@ -23,6 +25,12 @@ const PROJECT_ID = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/
 const QuestionBody = z.object({
   projectId: z.string().regex(PROJECT_ID),
   clientMessageId: z.string().uuid(),
+  /**
+   * A missão do Pensa que a criança ABRIU (o `?tarefa=` do handoff), opcional. Só vale se for
+   * do plano deste projeto e do Estúdio; senão o servidor escolhe a primeira do Estúdio ainda não
+   * concluída. ⚠️ Declarada aqui de propósito: `z.object` descarta chave desconhecida em silêncio.
+   */
+  pensaTaskId: z.string().uuid().optional(),
   question: z.string().trim().min(1).max(1000),
   context: z.object({
     projectId: z.string().regex(PROJECT_ID),
@@ -332,10 +340,51 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
 
       let prepared: ReturnType<typeof prepareStudioZappyAnswer>
       try {
+        const pensaId =
+          /^pensa-([a-f0-9]{8})([a-f0-9]{4})([a-f0-9]{4})([a-f0-9]{4})([a-f0-9]{12})$/.exec(
+            parsed.data.projectId,
+          )
+        let pensaMission: ZappyContextInput['pensaMission']
+        if (pensaId) {
+          const journey = await members
+            .pensaJourneyGet(pensaId.slice(1).join('-'))
+            .catch((cause: unknown) => {
+              console.error('[studio-zappy] plano do Pensa indisponível', {
+                name: cause instanceof Error ? cause.name : typeof cause,
+              })
+              return null
+            })
+          if (journey?.status === 200 && journey.body) {
+            const path = await members
+              .pensaGetStage(journey.body.journey.cycleId, 'z')
+              .catch((cause: unknown) => {
+                console.error('[studio-zappy] missões do Pensa indisponíveis', {
+                  name: cause instanceof Error ? cause.name : typeof cause,
+                })
+                return null
+              })
+            // A missão ABERTA (se for deste plano e do Estúdio) ou a primeira do Estúdio ainda não
+            // concluída. Era a ÚLTIMA do Estúdio quando a próxima do plano era do Pinta.
+            const mission = studioTutorTask(path?.body?.tasks ?? [], parsed.data.pensaTaskId)
+            if (mission)
+              pensaMission = {
+                title: redactPensaText(mission.title).text,
+                expected: redactPensaText(mission.summary ?? '').text,
+                steps: mission.guide.steps
+                  .slice(0, 6)
+                  .map((step) =>
+                    redactPensaText(`${step.text}. ${step.hint ?? ''}`).text.slice(0, 400),
+                  ),
+                lastTest:
+                  redactPensaText(journey.body.journey.tests.at(-1)?.note ?? '').text || null,
+              }
+          }
+        }
         prepared = prepareStudioZappyAnswer({
           question: safeQuestion.text,
           context: {
             ...context,
+            ...(pensaMission ? { pensaMission } : {}),
             // Modo Blocos nunca aceita código, mesmo se o cliente forjado enviar.
             ...(context.mode === 'blocks' ? { code: undefined } : {}),
             selectedBlockId: context.blocks.some((block) => block.id === context.selectedBlockId)

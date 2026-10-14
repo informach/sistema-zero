@@ -37,6 +37,7 @@ import { StudioProRuntimeProvider } from './pro-runtime'
 import { disallowedProjectExtensions } from './project-access'
 import { StudioShareDisabledProvider, StudioShareProvider } from './share'
 import { TaskGuidePanel } from './TaskGuidePanel'
+import { withSaveBeforeTaskActions } from './taskSessionSave'
 import { StudioThemeProvider } from './theme'
 import { StudioTutorProvider } from './tutor'
 import type { StudioCoreProps, StudioHandle } from './types'
@@ -274,6 +275,13 @@ function StudioCoreBody({
   const projectStoreApi = useProjectStoreApi()
   const checksStoreApi = useChecksStoreApi()
   const persistence = useStudioPersistence()
+  // O guia v2 GRAVA o jogo antes de concluir, continuar e pedir ajuda (ver o módulo). Memoizado
+  // pela sessão: o `taskSession` NÃO é latchado (o `collapsed` do host precisa chegar vivo).
+  const sessaoDoGuia = useMemo(
+    () =>
+      taskSession ? withSaveBeforeTaskActions(taskSession, () => persistence.save()) : undefined,
+    [taskSession, persistence],
+  )
   const pendingEditorEdits = usePendingEditorEdits()
   const hydrateProject = useProjectStore((s) => s.hydrateProject)
   const unloadProject = useProjectStore((s) => s.unloadProject)
@@ -583,8 +591,8 @@ function StudioCoreBody({
                                         inert={isObserver}
                                         className="flex h-full min-h-0 flex-col lg:flex-row"
                                       >
-                                        {taskSession ? (
-                                          <TaskGuidePanel session={taskSession} />
+                                        {sessaoDoGuia ? (
+                                          <TaskGuidePanel session={sessaoDoGuia} />
                                         ) : null}
                                         <div className="min-h-0 min-w-0 flex-1">
                                           <Shell

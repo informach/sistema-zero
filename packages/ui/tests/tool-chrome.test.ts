@@ -465,3 +465,54 @@ describe('os três guias do Pensa vestem a MESMA casca', () => {
     })
   }
 })
+
+describe('os passos do guia v2 (PensaInstructions) vestem a receita da casa', () => {
+  /*
+   * 14/10/2026. O componente nasceu com `bg-sz-bg`, token do ESTÚDIO: fora da raiz dele a cor
+   * resolvia para o navy do menu do kids, e a tinta do cartão `.sz-tool-guide` ficava em cima
+   * dela com contraste 1,00:1 — os passos sumiam no Pinta e no Molda, sem teste nenhum vermelho.
+   * A trava tem duas metades: a receita existe NA camada, e o componente só fala as classes dela.
+   */
+  const RECEITA = [
+    '.sz-tool-guide__steps {',
+    '.sz-tool-guide__steps-count {',
+    '.sz-tool-guide__step {',
+    '.sz-tool-guide__step-hint {',
+    '.sz-tool-guide__steps-nav {',
+    '.sz-tool-guide__steps-all {',
+  ]
+  it('a receita dos passos existe dentro da camada components', () => {
+    const inicioDaCamada = semComentarios.indexOf('@layer components {')
+    for (const ancora of RECEITA) {
+      expect({ ancora, dentro: semComentarios.indexOf(ancora) > inicioDaCamada }).toEqual({
+        ancora,
+        dentro: true,
+      })
+    }
+    // O fundo é token da casa, e a TINTA é herdada do cartão (é ela que passa no contraste).
+    const caixa = bloco('.sz-tool-guide__steps {')
+    expect(caixa.corpo).toContain('background: var(--sz-tool-surface-2)')
+    expect(caixa.corpo).toContain('color: inherit')
+    expect(bloco('.sz-tool-guide__step {').corpo).toContain('color: inherit')
+    // O piso de 12px da casa no "Passo N de M".
+    expect(bloco('.sz-tool-guide__steps-count {').corpo).toContain('font-size: 0.75rem')
+    // O desabilitado visível das pílulas é o mesmo que os botões dos passos usam.
+    expect(semComentarios).toMatch(/\.sz-tool-pill:disabled[\s\S]*?opacity: 0\.5/)
+  })
+
+  it('o componente usa a receita e não fala nenhum token de app', async () => {
+    const texto = await Bun.file(join(HERE, '../src/components/ui/pensa-instructions.tsx')).text()
+    const codigo = texto.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1')
+    expect(codigo).toMatch(/\bsz-tool-guide__steps\b/)
+    expect(codigo).toMatch(/\bsz-tool-guide__step\b/)
+    expect(codigo).toMatch(/\bsz-tool-pill--outline\b/)
+    // ⚠️⚠️ A regressão a impedir: utilitária de token de APP (`bg-sz-bg`, `text-sz-fg-soft`,
+    // `bg-pin-bg`…) ou variável de tema crua dentro de um componente do ui.
+    expect(codigo).not.toMatch(/\b(bg|text|border|ring|fill|stroke|outline)-(sz|pin)-/)
+    expect(codigo).not.toMatch(/--sz-kids-|--sz-tool-/)
+    // Anti-vácuo: a regex morde a forma exata do defeito de 14/10/2026.
+    expect('className="grid gap-3 rounded-xl bg-sz-bg p-3"').toMatch(
+      /\b(bg|text|border|ring|fill|stroke|outline)-(sz|pin)-/,
+    )
+  })
+})

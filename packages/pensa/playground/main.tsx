@@ -36,6 +36,7 @@ import {
 } from '@sistemazero/pensa'
 import { type JSX, StrictMode, useState } from 'react'
 import { createRoot } from 'react-dom/client'
+import { createJourneyServer } from './journey'
 import './styles.css'
 
 type WorkStage = Exclude<PensaStage, 'done'>
@@ -47,6 +48,9 @@ const empty = params.get('vazio') === '1'
 // `?equipe=1`: o Runo é MEU com a Bia dentro (e um código ligado), e o Guardiões é da Bia (eu
 // entrei pelo código). E, 40 s depois de abrir, a Bia "mexe" no Runo para a faixa aparecer.
 const teamDemo = params.get('equipe') === '1'
+// A jornada (`JourneyApp`) é o Pensa desde 14/10/2026, com o servidor em memória de `journey.ts`;
+// `?v2=0` desliga o servidor dela (sobram só as rotas do plano clássico).
+const journeyDemo = params.get('v2') !== '0'
 
 const MINUTE = 60_000
 const DAY = 24 * 60 * MINUTE
@@ -471,6 +475,8 @@ function notSimulated(method: string, path: string): Error {
   return new Error(`O playground não simula ${method} ${path}.`)
 }
 
+const journey = createJourneyServer(task, empty)
+
 const transport: PensaHostAdapter['transport'] = {
   async request<T>(
     path: string,
@@ -479,6 +485,10 @@ const transport: PensaHostAdapter['transport'] = {
     const method = init?.method ?? 'GET'
     // Um tiquinho de latência: o "Preparando seu mapa…" aparece como no app de verdade.
     await pause(120)
+    if (journeyDemo) {
+      const handled = await journey.handle(method, path, init?.body)
+      if (handled !== undefined) return handled as T
+    }
     if (method === 'GET' && path === '/projects') {
       const projects = [...plans.values()]
         .map(listView)
@@ -657,10 +667,37 @@ function DemoHostChrome({ children }: { children: JSX.Element }): JSX.Element {
   return <PensaHostChromeProvider value={chrome}>{children}</PensaHostChromeProvider>
 }
 
+// As poses do Zappy são as do host (`/zappy/*.webp` do community-kids), sem copiar arquivo.
+const zappy = (pose: string) =>
+  new URL(`../../community-kids/public/zappy/${pose}.webp`, import.meta.url).href
+
 const adapter: PensaHostAdapter = {
   transport,
   mode: 'kids',
   theme,
+  ...(journeyDemo
+    ? {
+        viewerId: 'perfil-eu',
+        mascotImages: {
+          happy: zappy('happy'),
+          thinking: zappy('thinking'),
+          celebrating: zappy('celebrating'),
+          sleeping: zappy('sleeping'),
+        },
+        // Imitações dos botões do host (`VoiceInputButton` e `PrivateZappyVoice`), só para a
+        // tela ter o mesmo volume: nada grava nem toca.
+        renderVoiceInput: ({ disabled }) => (
+          <button type="button" className="playground-fake-voice" disabled={disabled}>
+            🎤 Falar
+          </button>
+        ),
+        renderListen: () => (
+          <button type="button" className="playground-fake-voice">
+            🔊 Ouvir o Zappy
+          </button>
+        ),
+      }
+    : {}),
   capabilities: { pintaOwned: true, studioOwned: true, moldaOwned: true },
   onOpenTask: ({ taskId, destination }) =>
     console.log('[playground] abrir o cartão', { taskId, destination }),

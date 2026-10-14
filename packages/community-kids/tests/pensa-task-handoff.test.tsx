@@ -1,6 +1,9 @@
 import { afterEach, describe, expect, it, mock } from 'bun:test'
 import { act, renderHook, waitFor } from '@testing-library/react'
-import { usePintaTaskHandoff } from '../src/components/kids/use-pensa-task-handoff'
+import {
+  usePintaTaskHandoff,
+  useStudioTaskHandoff,
+} from '../src/components/kids/use-pensa-task-handoff'
 
 const originalFetch = globalThis.fetch
 
@@ -120,5 +123,73 @@ describe('handoff de tarefa do Pensa', () => {
 
     await waitFor(() => expect(result.current.status).toBe('error'))
     expect(result.current.error).toBe('Esta tarefa não pertence ao Pinta.')
+  })
+})
+
+function studioHandoff(taskId: string) {
+  const base = validHandoff(taskId)
+  return {
+    ...base,
+    project: { id: 'plano-1', name: 'Meu jogo' },
+    task: {
+      ...base.task,
+      destination: 'studio',
+      guide: { contractVersion: 2, steps: [], criteria: [] },
+      context: {
+        kind: 'studio',
+        dimension: '2d',
+        visualAssetIds: [],
+        blockIds: [],
+        blocks: [],
+        mechanicDocumentIds: [],
+        extensionIds: [],
+      },
+    },
+  }
+}
+
+describe('M1: a troca de missão no MESMO editor', () => {
+  it('no Estúdio a missão anterior FICA até a nova chegar (o editor não desmonta)', async () => {
+    let resolveNext: ((response: Response) => void) | null = null
+    globalThis.fetch = Object.assign(
+      mock(async (url: RequestInfo | URL) => {
+        if (String(url).includes('task-1')) return Response.json(studioHandoff('task-1'))
+        return new Promise<Response>((resolve) => {
+          resolveNext = resolve
+        })
+      }),
+      { preconnect: originalFetch.preconnect },
+    )
+    const { result, rerender } = renderHook(({ id }) => useStudioTaskHandoff(id), {
+      initialProps: { id: 'task-1' },
+    })
+    await waitFor(() => expect(result.current.status).toBe('success'))
+    rerender({ id: 'task-2' })
+    // Carregando a próxima, com a anterior na mão.
+    await waitFor(() => expect(result.current.status).toBe('loading'))
+    expect(result.current.data?.task.id).toBe('task-1')
+    await act(async () => {
+      resolveNext?.(Response.json(studioHandoff('task-2')))
+    })
+    await waitFor(() => expect(result.current.data?.task.id).toBe('task-2'))
+    expect(result.current.status).toBe('success')
+  })
+
+  it('no Pinta (navegação de página) a espera segue sem a missão anterior', async () => {
+    globalThis.fetch = Object.assign(
+      mock(async (url: RequestInfo | URL) =>
+        String(url).includes('task-1')
+          ? Response.json(validHandoff('task-1'))
+          : new Promise<Response>(() => {}),
+      ),
+      { preconnect: originalFetch.preconnect },
+    )
+    const { result, rerender } = renderHook(({ id }) => usePintaTaskHandoff(id), {
+      initialProps: { id: 'task-1' },
+    })
+    await waitFor(() => expect(result.current.status).toBe('success'))
+    rerender({ id: 'task-2' })
+    await waitFor(() => expect(result.current.status).toBe('loading'))
+    expect(result.current.data).toBeNull()
   })
 })

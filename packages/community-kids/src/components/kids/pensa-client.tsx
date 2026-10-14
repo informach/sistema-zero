@@ -1,5 +1,7 @@
 'use client'
 
+import { PrivateZappyVoice } from '@sistemazero/member-shell/components/private-zappy-voice'
+import { VoiceInputButton } from '@sistemazero/member-shell/components/voice-input/voice-input-button'
 import { sessionFetch as fetch } from '@sistemazero/member-shell/lib/session-fetch'
 
 import type { PensaHostAdapter, PensaTransport } from '@sistemazero/pensa'
@@ -9,6 +11,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { EMBEDDED_APP_FRAME, EmbeddedAppLoadingBody } from '@/components/kids/embedded-app-loading'
 import { useFocusMode } from '@/components/kids/focus-mode'
 import { useHostChrome } from '@/components/kids/use-host-chrome'
+import { notePensaRestoreFromView } from '@/lib/pensa-restore-pending'
 
 type PensaModule = typeof import('@sistemazero/pensa')
 
@@ -18,11 +21,17 @@ export function PensaClient({
   studioAvailable,
   moldaAvailable = false,
   initialProjectId = null,
+  viewerId,
+  voiceEnabled = false,
+  narrationEnabled = false,
 }: {
   pintaOwned: boolean
   studioAvailable: boolean
   moldaAvailable?: boolean
   initialProjectId?: string | null
+  viewerId?: string
+  voiceEnabled?: boolean
+  narrationEnabled?: boolean
 }) {
   const [mod, setMod] = useState<PensaModule | null>(null)
   const [loadError, setLoadError] = useState(false)
@@ -62,10 +71,33 @@ export function PensaClient({
     }
   }, [])
 
-  const transport = useMemo(() => createPensaTransport(), [])
+  // O transporte VÊ as jornadas v2 que passam por ele: é assim que este aparelho fica sabendo
+  // de uma restauração (feita aqui ou em outro aparelho) antes de abrir o jogo no Estúdio.
+  const transport = useMemo(() => createPensaTransport(viewerId ?? null), [viewerId])
   const adapter = useMemo<PensaHostAdapter>(
     () => ({
       transport,
+      viewerId,
+      renderListen:
+        narrationEnabled && viewerId
+          ? (reference) => <PrivateZappyVoice reference={reference} viewerId={viewerId} />
+          : undefined,
+      renderVoiceInput:
+        voiceEnabled && viewerId
+          ? (input) => (
+              <VoiceInputButton
+                {...input}
+                viewerId={viewerId}
+                maxLength={4000}
+                // A ideia do Pensa cabe em 4000; o servidor só aceita além do teto padrão (1000)
+                // quando o formulário pede (`x-sz-voice-max-chars`).
+                transcriptMaxChars={4000}
+                context="Pensa: contar minha ideia de jogo"
+                preserveOverflow
+                onSpoken={() => {}}
+              />
+            )
+          : undefined,
       mode: 'kids',
       theme,
       // O pacote chama a capability de `studioOwned`, mas o host fornece a
@@ -83,7 +115,16 @@ export function PensaClient({
         ),
     }),
     // ⚠️ `theme` saiu do dep array: virou constante (sem tema escuro nesta plataforma).
-    [transport, pintaOwned, studioAvailable, moldaAvailable, router],
+    [
+      transport,
+      pintaOwned,
+      studioAvailable,
+      moldaAvailable,
+      router,
+      viewerId,
+      voiceEnabled,
+      narrationEnabled,
+    ],
   )
 
   // O Pensa persiste no servidor (sem selo de nuvem). O menu lateral pertence à alça
@@ -178,7 +219,15 @@ async function readSse(
   return false
 }
 
-function createPensaTransport(): PensaTransport {
+function createPensaTransport(viewerId: string | null): PensaTransport {
+  // Só as respostas de jornada v2 (`/v2/projects/<id>` e as ações dele) carregam a forma que
+  // revela uma restauração. Nunca lança: a marca é melhor esforço e o Pensa segue sem ela.
+  const observe = (path: string, data: unknown) => {
+    if (!path.startsWith('/v2/projects/')) return
+    try {
+      notePensaRestoreFromView(viewerId, data)
+    } catch {}
+  }
   return {
     async request<T>(
       path: string,
@@ -208,7 +257,10 @@ function createPensaTransport(): PensaTransport {
         if (!terminal)
           throw requestError('A conexão caiu no meio. Tente de novo.', 502, 'CONNECTION_LOST')
         const { event, data } = terminal as { event: string; data: unknown }
-        if (event === 'done') return data as T
+        if (event === 'done') {
+          observe(path, data)
+          return data as T
+        }
         const value = data as {
           status?: number
           code?: string
@@ -231,6 +283,7 @@ function createPensaTransport(): PensaTransport {
           body?.error?.code,
           body?.details?.scope,
         )
+      observe(path, body)
       return body as T
     },
     streamChat(input, handlers) {

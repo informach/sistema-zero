@@ -16,6 +16,7 @@ import type {
   LiveSession,
 } from '@sistemazero/core/live'
 import type { Palette } from '@sistemazero/core/palette'
+import type { PensaJourney, PensaOperationKind, PensaOperationStep } from '@sistemazero/core/pensa'
 import { isNull, sql } from 'drizzle-orm'
 import {
   type AnyPgColumn,
@@ -1152,6 +1153,147 @@ export const pensaCycles = members.table(
   (t) => [uniqueIndex('pensa_cycles_project_number_uq').on(t.projectId, t.number)],
 )
 
+/** Additive v2 state. Absence keeps the legacy ZERO artifact workflow unchanged. */
+export const pensaJourneys = members.table(
+  'pensa_journeys',
+  {
+    cycleId: uuid('cycle_id')
+      .primaryKey()
+      .references(() => pensaCycles.id, { onDelete: 'cascade' }),
+    projectId: uuid('project_id')
+      .notNull()
+      .references(() => pensaProjects.id, { onDelete: 'cascade' }),
+    active: boolean('active').notNull().default(true),
+    revision: integer('revision').notNull().default(0),
+    data: jsonb('data').$type<PensaJourney>().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [uniqueIndex('pensa_journeys_active_uq').on(t.projectId).where(sql`${t.active} = true`)],
+)
+
+/** Durable model steps, fenced by lease and input revision. Never return inputs to another profile. */
+export const pensaOperations = members.table(
+  'pensa_operations',
+  {
+    id: uuid('id').primaryKey(),
+    projectId: uuid('project_id')
+      .notNull()
+      .references(() => pensaProjects.id, { onDelete: 'cascade' }),
+    cycleId: uuid('cycle_id')
+      .notNull()
+      .references(() => pensaCycles.id, { onDelete: 'cascade' }),
+    profileId: uuid('profile_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    kind: varchar('kind', { length: 24 }).$type<PensaOperationKind>().notNull(),
+    step: varchar('step', { length: 24 }).$type<PensaOperationStep>().notNull(),
+    status: varchar('status', { length: 24 })
+      .$type<'queued' | 'running' | 'waiting' | 'succeeded' | 'failed' | 'cancelled'>()
+      .notNull(),
+    inputRevision: integer('input_revision').notNull(),
+    attempts: integer('attempts').notNull().default(0),
+    calls: integer('calls').notNull().default(0),
+    input: jsonb('input').$type<Record<string, unknown>>().notNull(),
+    output: jsonb('output').$type<Record<string, unknown>>().notNull().default({}),
+    leaseId: uuid('lease_id'),
+    leaseUntil: timestamp('lease_until', { withTimezone: true }),
+    error: text('error'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [index('pensa_operations_project_idx').on(t.projectId, t.status)],
+)
+
+/** Holds count against the shared account quota; only committed delivery increments usage. */
+export const aiUsageReservations = members.table(
+  'ai_usage_reservations',
+  {
+    id: uuid('id').primaryKey(),
+    accountId: uuid('account_id').notNull(),
+    profileId: uuid('profile_id').notNull(),
+    projectId: uuid('project_id').references(() => pensaProjects.id, { onDelete: 'cascade' }),
+    day: date('day').notNull(),
+    feature: varchar('feature', { length: 40 }).notNull(),
+    status: varchar('status', { length: 16 })
+      .$type<'reserved' | 'committed' | 'released'>()
+      .notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    privileged: boolean('privileged').notNull().default(false),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [index('ai_usage_reservations_account_idx').on(t.accountId, t.status, t.expiresAt)],
+)
+
+export const pensaCheckpoints = members.table(
+  'pensa_checkpoints',
+  {
+    id: uuid('id').primaryKey(),
+    projectId: uuid('project_id')
+      .notNull()
+      .references(() => pensaProjects.id, { onDelete: 'cascade' }),
+    cycleId: uuid('cycle_id')
+      .notNull()
+      .references(() => pensaCycles.id, { onDelete: 'cascade' }),
+    profileId: uuid('profile_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    creationId: varchar('creation_id', { length: 120 }).notNull(),
+    saveRevision: varchar('save_revision', { length: 120 }).notNull(),
+    journey: jsonb('journey').$type<PensaJourney>().notNull(),
+    manifest: jsonb('manifest').$type<Record<string, unknown>>().notNull(),
+    status: varchar('status', { length: 20 }).$type<'copying' | 'ready' | 'failed'>().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [index('pensa_checkpoints_project_idx').on(t.projectId)],
+)
+
+export const privateNarrations = members.table(
+  'private_narrations',
+  {
+    id: varchar('id', { length: 64 }).primaryKey(),
+    projectId: uuid('project_id'),
+    profileId: uuid('profile_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    chars: integer('chars').notNull(),
+    attempts: integer('attempts').notNull().default(1),
+    status: varchar('status', { length: 20 }).$type<'generating' | 'ready' | 'failed'>().notNull(),
+    leaseId: uuid('lease_id').notNull(),
+    leaseUntil: timestamp('lease_until', { withTimezone: true }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [index('private_narrations_account_date_idx').on(t.accountId, t.createdAt)],
+)
+
+/** Tombstone mínimo do plano + limpeza adiada: nenhuma narrativa permanece aqui. */
+export const pensaDeletionJobs = members.table(
+  'pensa_deletion_jobs',
+  {
+    id: uuid('id').primaryKey(),
+    accountId: uuid('account_id').notNull(),
+    profileId: uuid('profile_id').notNull(),
+    prefixes: jsonb('prefixes').$type<string[]>().notNull(),
+    notBefore: timestamp('not_before', { withTimezone: true }).notNull(),
+    attempts: integer('attempts').notNull().default(0),
+    lockedAt: timestamp('locked_at', { withTimezone: true }),
+    lastError: text('last_error'),
+    completedAt: timestamp('completed_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [index('pensa_deletion_jobs_due_idx').on(t.completedAt, t.notBefore)],
+)
+
+/** Custo externo tentado, separado dos créditos entregues; sobrevive ao cancelamento do plano. */
+export const pensaProviderUsage = members.table(
+  'pensa_provider_usage',
+  {
+    accountId: uuid('account_id').notNull(),
+    day: date('day').notNull(),
+    calls: integer('calls').notNull().default(0),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.accountId, t.day] })],
+)
+
 // 1 linha por (ciclo, etapa); upsert por turno. `message_count` é a contagem
 // TOTAL histórica (não encolhe quando o trim corta mensagens antigas).
 export const pensaConversations = members.table(
@@ -2133,6 +2275,11 @@ export const schema = {
   roomInventory,
   certificatesIssued,
   pensaProjects,
+  pensaJourneys,
+  pensaOperations,
+  pensaCheckpoints,
+  privateNarrations,
+  aiUsageReservations,
   pensaCycles,
   pensaConversations,
   pensaArtifacts,
@@ -2153,6 +2300,8 @@ export const schema = {
   creations,
   accountDeletionFences,
   creationCleanupJobs,
+  pensaDeletionJobs,
+  pensaProviderUsage,
   processedWebhooks,
 }
 

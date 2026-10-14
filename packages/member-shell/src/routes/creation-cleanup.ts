@@ -6,6 +6,7 @@ import type { GatewayModule } from '../server/gateway'
 import { r2DeleteUgcPrefixes } from '../server/r2'
 
 interface CleanupJob {
+  scope?: 'pensa'
   id: string
   accountId: string
   userIds: string[]
@@ -46,9 +47,12 @@ export function createCreationCleanupWorkerRoutes(deps: {
         let completed = 0
         let failed = 0
         for (let index = 0; index < 25; index += 1) {
+          // Declara que entende a limpeza de PLANO (`scope: 'pensa'`, que nunca finaliza a
+          // conta). Sem a declaração o members só entrega exclusão de conta: um worker antigo
+          // finalizaria a conta da família inteira a partir do job de um plano.
           const claimed = await deps.gateway.gatewayFetchHmac<{ job?: CleanupJob }>(
             '/members/internal/creation-cleanups/claim',
-            { method: 'POST' },
+            { method: 'POST', body: { scopes: ['pensa'] } },
           )
           if (claimed.status === 204) break
           const job = claimed.body?.job
@@ -61,10 +65,12 @@ export function createCreationCleanupWorkerRoutes(deps: {
           try {
             await (deps.deletePrefixes ?? r2DeleteUgcPrefixes)(job.prefixes)
             const finalizeBody = { accountId: job.accountId, userIds: job.userIds }
-            for (const path of [
-              '/hub/internal/account-deletion/finalize',
-              '/members/internal/account-deletion/finalize',
-            ]) {
+            for (const path of job.scope === 'pensa'
+              ? []
+              : [
+                  '/hub/internal/account-deletion/finalize',
+                  '/members/internal/account-deletion/finalize',
+                ]) {
               const finalized = await deps.gateway.gatewayFetchHmac(path, {
                 method: 'POST',
                 body: finalizeBody,

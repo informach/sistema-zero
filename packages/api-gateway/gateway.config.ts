@@ -1890,6 +1890,32 @@ const config: GatewayConfigInput = {
     // `/members/courses…`, `/members/profiles/:id/public` nem `/members/admin/*`.
     // A chamada de IA (chat SSE) NÃO passa por aqui — vive no BFF (member-shell).
     {
+      id: 'members-pensa-v2',
+      methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+      pathPattern: '/members/pensa/v2/*',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 180, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 16384,
+    },
+    {
+      id: 'members-pensa-v2-worker',
+      methods: ['POST'],
+      pathPattern: '/members/internal/pensa/v2/*',
+      service: 'members',
+      auth: {
+        required: true,
+        mode: 'any',
+        strategies: ['hmac'],
+        allowedConsumers: ['member-shell'],
+      },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 600, windowMs: 60_000, by: 'json-field', field: 'actor.profileId' },
+      maxBodyBytes: 1024 * 1024,
+    },
+    {
       id: 'members-pensa-projects',
       methods: ['GET', 'POST'],
       pathPattern: '/members/pensa/projects',

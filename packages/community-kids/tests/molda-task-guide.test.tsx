@@ -116,6 +116,68 @@ test('guia vincula uma criação já guardada e preserva os IDs do plano e do as
   expect(handoff.task.context.assetId).toBe('inventory-rock')
 })
 
+test('v2 confirma uma criação pronta sem iniciar a tarefa nem marcar passos', async () => {
+  const asset = createModelAsset({ name: 'Minha rocha pronta' })
+  const v2 = {
+    ...handoff,
+    task: {
+      ...handoff.task,
+      guide: {
+        ...handoff.task.guide,
+        contractVersion: 2 as const,
+        steps: handoff.task.guide.steps.map((step) => ({ ...step, required: false })),
+      },
+      progress: { ...handoff.task.progress, status: 'planned' as const },
+    },
+  }
+  const order: string[] = []
+  const sent: unknown[] = []
+  globalThis.fetch = Object.assign(
+    mock(async (_input: RequestInfo | URL, init?: RequestInit) => {
+      order.push('progress')
+      sent.push(JSON.parse(String(init?.body)))
+      return Response.json({ task: { progress: { ...v2.task.progress, status: 'completed' } } })
+    }),
+    { preconnect: originalFetch.preconnect },
+  )
+  render(
+    <MoldaTaskGuide
+      profileId="child-v2"
+      handoff={v2}
+      persistence={{
+        load: async () => asset,
+        loadAll: async () => [asset],
+        listSummaries: async () => [{ id: asset.id, name: asset.name, kind: asset.kind }],
+      }}
+      onProgress={() => {}}
+      onOpenAsset={() => {}}
+      onReturn={() => {}}
+      hasOpenCreation={async () => false}
+      onConfirmSaved={async () => {
+        order.push('saved')
+      }}
+      collapsed={false}
+      onCollapsedChange={() => {}}
+    />,
+  )
+  await screen.findByRole('option', { name: asset.name })
+  expect(screen.queryAllByRole('checkbox')).toHaveLength(0)
+  fireEvent.change(screen.getByRole('combobox'), { target: { value: asset.id } })
+  const complete = screen.getByRole('button', {
+    name: 'Experimentei e funcionou',
+  }) as HTMLButtonElement
+  expect(complete.disabled).toBe(false)
+  fireEvent.click(complete)
+  await waitFor(() => expect(sent).toHaveLength(1))
+  expect(order).toEqual(['saved', 'progress'])
+  expect(sent[0]).toMatchObject({
+    status: 'completed',
+    completedStepIds: [],
+    completedCriteriaIds: ['c'],
+    outputRef: { assetId: asset.id },
+  })
+})
+
 test('voltar ao plano aguarda o fechamento da criação pelo fluxo de salvamento do Molda', async () => {
   let returned = false
   render(
@@ -327,4 +389,96 @@ test('recolhido, um PROBLEMA continua na tela, e o quadro veste a casca comparti
   await waitFor(() =>
     expect(screen.getByRole('status').textContent).toContain('não está disponível nesta galeria'),
   )
+})
+
+test('M3: sem rede, voltar ao plano, abrir a criação e "Travei aqui" NÃO esperam a nuvem; o "Continuar" espera', async () => {
+  const asset = createModelAsset({ name: 'Rocha guardada' })
+  const v2: MoldaTaskHandoff = {
+    ...handoff,
+    task: {
+      ...handoff.task,
+      guide: { ...handoff.task.guide, contractVersion: 2 as const },
+      progress: {
+        ...handoff.task.progress,
+        status: 'completed',
+        outputRef: { kind: 'molda_asset', assetId: asset.id, assetKind: 'model' },
+      },
+    },
+  }
+  const confirmados: string[] = []
+  const caminho: string[] = []
+  render(
+    <MoldaTaskGuide
+      profileId="child-offline"
+      handoff={v2}
+      persistence={{
+        load: async () => asset,
+        loadAll: async () => [asset],
+        listSummaries: async () => [{ id: asset.id, name: asset.name, kind: asset.kind }],
+      }}
+      onProgress={() => {}}
+      onOpenAsset={() => caminho.push('abrir')}
+      onReturn={() => caminho.push('plano')}
+      hasOpenCreation={async () => false}
+      // Sem internet: a confirmação da conta nunca chega.
+      onConfirmSaved={async (id) => {
+        confirmados.push(id)
+        throw new Error('A versão ainda não foi guardada na conta')
+      }}
+      onNextMission={async () => {
+        caminho.push('próxima')
+      }}
+      nextMissionLabel="Continuar no Estúdio"
+      collapsed={false}
+      onCollapsedChange={() => {}}
+    />,
+  )
+  await screen.findByRole('button', { name: 'Abrir criação vinculada' })
+  fireEvent.click(screen.getByRole('button', { name: 'Voltar ao plano' }))
+  await waitFor(() => expect(caminho).toEqual(['plano']))
+  fireEvent.click(screen.getByRole('button', { name: 'Abrir criação vinculada' }))
+  await waitFor(() => expect(caminho).toEqual(['plano', 'abrir']))
+  fireEvent.click(screen.getByRole('button', { name: 'Travei aqui' }))
+  await waitFor(() => expect(caminho).toEqual(['plano', 'abrir', 'plano']))
+  expect(confirmados).toEqual([])
+  // O "Continuar" diz o destino e só segue com a criação na conta.
+  fireEvent.click(screen.getByRole('button', { name: 'Continuar no Estúdio' }))
+  await waitFor(() => expect(confirmados).toEqual([asset.id]))
+  expect(caminho).toEqual(['plano', 'abrir', 'plano'])
+  expect(await screen.findByRole('alert')).toBeTruthy()
+})
+
+test('o botão de continuar diz "meu caminho" no Molda também, sem rótulo de outra oficina', async () => {
+  const asset = createModelAsset({ name: 'Rocha pronta' })
+  render(
+    <MoldaTaskGuide
+      profileId="child-rotulo"
+      handoff={{
+        ...handoff,
+        task: {
+          ...handoff.task,
+          guide: { ...handoff.task.guide, contractVersion: 2 as const },
+          progress: {
+            ...handoff.task.progress,
+            status: 'completed',
+            outputRef: { kind: 'molda_asset', assetId: asset.id, assetKind: 'model' },
+          },
+        },
+      }}
+      persistence={{
+        load: async () => asset,
+        loadAll: async () => [asset],
+        listSummaries: async () => [{ id: asset.id, name: asset.name, kind: asset.kind }],
+      }}
+      onProgress={() => {}}
+      onOpenAsset={() => {}}
+      onReturn={() => {}}
+      hasOpenCreation={async () => false}
+      onNextMission={async () => {}}
+      collapsed={false}
+      onCollapsedChange={() => {}}
+    />,
+  )
+  expect(await screen.findByRole('button', { name: 'Continuar meu caminho' })).toBeTruthy()
+  expect(screen.queryByRole('button', { name: 'Continuar meu jogo' })).toBeNull()
 })

@@ -34,6 +34,10 @@ describe.skipIf(!testDatabaseUrl)('Quota de IA — atomicidade no Postgres real'
     // ZERADO; staging/prod aplicaram em deploys separados). Este teste só precisa
     // da `ai_usage_daily` — aplica o DDL espelho da migration 0041 direto.
     await conn.sql`create schema if not exists members`
+    await conn.sql.unsafe(`create table if not exists members.ai_usage_reservations (
+      id uuid primary key, account_id uuid not null, profile_id uuid not null, project_id uuid,
+      day date not null, feature varchar(40) not null, status varchar(16) not null, expires_at timestamptz not null,
+      privileged boolean not null default false, created_at timestamptz not null, updated_at timestamptz not null)`)
     await conn.sql`
       create table if not exists members.ai_usage_daily (
         account_id uuid not null,

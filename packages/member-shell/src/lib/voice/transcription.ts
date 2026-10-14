@@ -18,6 +18,23 @@ export const SPOKEN_AUDIO_MIN_BYTES = 1024
 /** Teto do texto devolvido: 60 s de fala dão ~900 caracteres. */
 export const SPOKEN_TEXT_MAX_CHARS = 1000
 
+/**
+ * Teto MAIOR, só para quem pede explicitamente: a ideia de jogo do Pensa (caixa de 4.000, e ela
+ * revisa antes de enviar). Recados, ajuda da fase e tutor ficam nos 1000 de sempre (full review de
+ * 14/10/2026: o servidor tinha tirado o teto de TODOS os formulários para servir só o Pensa).
+ */
+export const PENSA_SPOKEN_TEXT_MAX_CHARS = 4000
+
+/** O cabeçalho em que o formulário pede o teto maior (só `4000` vale; o resto é o padrão). */
+export const SPOKEN_MAX_CHARS_HEADER = 'x-sz-voice-max-chars'
+
+/** O teto pedido pelo formulário: o padrão, ou o do Pensa quando pedido EXATAMENTE. */
+export function spokenTextMaxChars(requested: string | null | undefined): number {
+  return requested?.trim() === String(PENSA_SPOKEN_TEXT_MAX_CHARS)
+    ? PENSA_SPOKEN_TEXT_MAX_CHARS
+    : SPOKEN_TEXT_MAX_CHARS
+}
+
 /** Teto do contexto da fase mandado pelo navegador. */
 export const SPOKEN_CONTEXT_MAX_CHARS = 200
 
@@ -143,8 +160,8 @@ export function isHallucinatedTranscript(texto: string): boolean {
   return ALUCINACOES.has(normal)
 }
 
-/** Espaços simples, sem bordas, cortado por caractere (um emoji não sai partido). */
-export function tidyTranscript(texto: string): string {
+/** Espaços simples, sem bordas, cortado por caractere (um emoji não sai partido) no teto pedido. */
+export function tidyTranscript(texto: string, maxChars: number = SPOKEN_TEXT_MAX_CHARS): string {
   const limpo = texto.replace(/\s+/g, ' ').trim()
-  return Array.from(limpo).slice(0, SPOKEN_TEXT_MAX_CHARS).join('').trim()
+  return Array.from(limpo).slice(0, maxChars).join('').trim()
 }

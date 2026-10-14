@@ -42,8 +42,23 @@ async function requireOk<T>(response: Response): Promise<T> {
   return body
 }
 
+export interface StudioZappyAdapterOptions {
+  /**
+   * A missão do Pensa aberta no Estúdio (o id da tarefa do handoff `?tarefa=`), ou uma função que
+   * a devolve na hora da pergunta (a missão muda sem recriar o adapter). Vai no corpo como
+   * `pensaTaskId`; o servidor só a usa se ela for do plano deste projeto e do Estúdio, e sem ela
+   * escolhe a primeira missão do Estúdio ainda não concluída.
+   */
+  pensaTaskId?: string | null | (() => string | null | undefined)
+}
+
 /** Adapter client-side do BFF. Não contém sessão, regras de rank nem chaves de IA. */
-export function createStudioZappyAdapter(baseUrl = '/api/studio/zappy'): StudioTutorAdapter {
+export function createStudioZappyAdapter(
+  baseUrl = '/api/studio/zappy',
+  options: StudioZappyAdapterOptions = {},
+): StudioTutorAdapter {
+  const currentTaskId = () =>
+    typeof options.pensaTaskId === 'function' ? options.pensaTaskId() : options.pensaTaskId
   return {
     async loadHistory(projectId, before) {
       const query = new URLSearchParams({ projectId })
@@ -64,10 +79,11 @@ export function createStudioZappyAdapter(baseUrl = '/api/studio/zappy'): StudioT
       await requireOk<{ ok: true }>(response)
     },
     async ask(input) {
+      const pensaTaskId = currentTaskId()
       const response = await fetch(`${baseUrl}/messages`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(input),
+        body: JSON.stringify(pensaTaskId ? { ...input, pensaTaskId } : input),
         signal: timeout(ASK_TIMEOUT_MS),
       })
       // O saldo vem AO LADO da resposta, não dentro dela (o `response` é o que o

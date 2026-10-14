@@ -1,5 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
+import { PurgeUserDataService } from '../../src/application/admin/purge-user-data/purge-user-data.service'
+import { InvalidStateTransitionError } from '../../src/domain/shared/errors'
 import {
   createDbConnection,
   type DbConnection,
@@ -55,6 +57,9 @@ describe.skipIf(!testDatabaseUrl)('Purga de dados do usuário no Postgres real',
         audience text, context_type text, last_message_at timestamptz, created_at timestamptz)`,
       'teacher_messages (id uuid primary key, thread_id uuid not null)',
       'pensa_projects (id uuid primary key, user_id uuid not null, account_id uuid)',
+      'private_narrations (id varchar(64) primary key, profile_id uuid not null, account_id uuid not null)',
+      'pensa_provider_usage (account_id uuid not null, day date not null, calls integer not null default 0, updated_at timestamptz not null, primary key(account_id,day))',
+      'pensa_deletion_jobs (id uuid primary key, account_id uuid not null, profile_id uuid not null, prefixes jsonb not null, not_before timestamptz not null, attempts integer not null default 0, locked_at timestamptz, last_error text, completed_at timestamptz, created_at timestamptz not null, updated_at timestamptz not null)',
       // O DDL aqui é escrito à mão, então tabela nova alcançada pela purga precisa
       // entrar nesta lista — senão o teste quebra com 42P01. Foi o caso do Zappy
       // (migration `0054`), que só aflorou quando o Postgres local voltou.
@@ -283,5 +288,43 @@ describe.skipIf(!testDatabaseUrl)('Purga de dados do usuário no Postgres real',
     await holder
     await purge
     expect(settled).toBe(true)
+  })
+
+  test('finalize sem a cerca de exclusão recusa sem apagar; com a cerca, purga o que chegou depois', async () => {
+    // ⚠️ É a defesa contra o worker antigo que trata a limpeza de um PLANO do Pensa como
+    // exclusão de conta: `{accountId: família, userIds: [perfil]}` apagaria tudo da família.
+    const accountId = randomUUID()
+    const profileId = randomUUID()
+    const service = new PurgeUserDataService(new DrizzleUserDataPurgeRepository(conn.db))
+    await conn.sql`insert into members.entitlements (id, user_id) values (${randomUUID()}, ${accountId})`
+    await conn.sql`insert into members.xp_events (user_id) values (${profileId})`
+
+    let refused: unknown = null
+    try {
+      await service.finalize({ userId: accountId, profileIds: [profileId] })
+    } catch (cause) {
+      refused = cause
+    }
+    expect(refused).toBeInstanceOf(InvalidStateTransitionError)
+    const count = async (table: string, column: string, id: string) =>
+      (
+        await conn.sql.unsafe<{ n: number }[]>(
+          `select count(*)::int as n from members.${table} where ${column} = $1`,
+          [id],
+        )
+      )[0]?.n
+    expect(await count('entitlements', 'user_id', accountId)).toBe(1)
+    expect(await count('xp_events', 'user_id', profileId)).toBe(1)
+    expect(await count('account_deletion_fences', 'account_id', accountId)).toBe(0)
+    expect(await count('creation_cleanup_jobs', 'account_id', accountId)).toBe(0)
+
+    // A exclusão de verdade: a 1ª purga instala a cerca junto com o job do worker.
+    await service.execute({ userId: accountId, profileIds: [profileId] })
+    expect(await count('account_deletion_fences', 'account_id', accountId)).toBe(1)
+    // Uma escrita que escapou antes da cerca some na segunda purga, pedida pelo worker.
+    await conn.sql`insert into members.xp_events (user_id) values (${profileId})`
+    await service.finalize({ userId: accountId, profileIds: [profileId] })
+    expect(await count('xp_events', 'user_id', profileId)).toBe(0)
+    expect(await count('entitlements', 'user_id', accountId)).toBe(0)
   })
 })

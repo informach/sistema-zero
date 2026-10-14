@@ -1,4 +1,5 @@
 import type { UserDataPurgeRepository } from '../../../domain/ports/user-data-purge-repository.port'
+import { InvalidStateTransitionError } from '../../../domain/shared/errors'
 
 export interface PurgeUserDataCommand {
   /** Conta (id do auth user) sendo excluída. */
@@ -35,5 +36,21 @@ export class PurgeUserDataService {
         createdAt,
       },
     })
+  }
+
+  /**
+   * Segunda purga pós-TTL, pedida pelo worker de limpeza (`/account-deletion/finalize`).
+   * ⚠️ Só purga conta que JÁ está em exclusão: a cerca nasce na mesma transação da 1ª purga
+   * (e do job que o worker recebe) e nunca é apagada. Sem cerca, o pedido não veio de uma
+   * exclusão de conta — ex.: um worker antigo tratando a limpeza de um PLANO do Pensa como
+   * exclusão — e apagar seria levar matrículas, progresso e XP da família inteira. → 409,
+   * nada apagado.
+   */
+  async finalize({ userId, profileIds }: PurgeUserDataCommand): Promise<void> {
+    if (!(await this.repo.isFenced(userId)))
+      throw new InvalidStateTransitionError(
+        'Esta conta não está em exclusão; a finalização foi recusada sem apagar nada.',
+      )
+    await this.execute({ userId, profileIds })
   }
 }

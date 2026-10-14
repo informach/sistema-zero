@@ -1,3 +1,4 @@
+import { getEnv } from '@sistemazero/member-shell/lib/env'
 import { isPrivilegedRole } from '@sistemazero/member-shell/lib/studio-tier'
 import { meetsThreeDCreationLevel } from '@sistemazero/member-shell/server/creative-apps-access'
 import { KidsJourneyLockedMolda } from '@/components/kids/kids-journey-locked-molda'
@@ -111,6 +112,7 @@ export default async function MoldaPage({
       viewerId={session?.id ?? null}
       studioAvailable={studioAvailable}
       toolAccess={toolAccess ?? null}
+      narrationEnabled={Boolean(getEnv().ELEVENLABS_API_KEY)}
     />
   )
 }

@@ -22,12 +22,31 @@ export interface StudioTaskGuideItem {
 }
 /** Guia de uma tarefa planejada no Pensa. É independente de LessonActivity. */
 export interface StudioTaskSession {
+  renderListen?: (stepId: string) => import('react').ReactNode
+  /**
+   * Abre a próxima missão do plano (guia v2). O Estúdio GUARDA o jogo antes de chamar.
+   *
+   * ⭐ Convenção de erro dos três callbacks do guia v2 (`onProgress`, `onNextMission`,
+   * `onNeedHelp`, 14/10/2026): a rejeição pode trazer `childMessage: string`, a frase escrita
+   * para a criança (dependência que falta, plano que mudou, "espere o jogo ficar guardado na
+   * conta"). Com ela o painel mostra a frase; SEM ela o painel entende falha de rede e mostra o
+   * genérico ("Confira a internet"). Nunca a `message` crua: ela pode ser técnica.
+   */
+  onNextMission?: () => Promise<void>
+  /**
+   * O rótulo do botão de continuar depois de concluir (guia v2). Ausente = "Continuar meu
+   * caminho". O host diz o destino quando a próxima missão é de OUTRA oficina ("Continuar no
+   * Pinta"), porque o clique troca de tela.
+   */
+  nextMissionLabel?: string
+  /** "Travei aqui" (guia v2): o Estúdio guarda o jogo e o host leva à ajuda. */
+  onNeedHelp?: () => void | Promise<void>
   taskId: string
   title: string
   summary: string | null
   project: { id: string; name: string }
   cycle: { id: string; number: number; goal: string | null }
-  guide: { steps: StudioTaskGuideItem[]; criteria: StudioTaskGuideItem[] }
+  guide: { contractVersion?: 2; steps: StudioTaskGuideItem[]; criteria: StudioTaskGuideItem[] }
   blocks: Array<{
     id: string
     label: string

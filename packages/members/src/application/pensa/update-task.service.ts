@@ -15,6 +15,7 @@ import type {
 } from '../../domain/ports/pensa-repository.port'
 import { ValidationError } from '../../domain/shared/errors'
 import { type PensaTaskView, toPensaTaskView } from '../mappers/pensa-views'
+import { legacyGuide } from './replace-tasks.service'
 
 export interface UpdatePensaTaskInput {
   title?: string
@@ -51,7 +52,7 @@ export class UpdatePensaTaskService {
       ...(input.estimatedMinutes !== undefined ? { estimatedMinutes: input.estimatedMinutes } : {}),
       ...(input.position !== undefined ? { position: input.position } : {}),
       ...(input.dependencies !== undefined ? { dependencies: input.dependencies } : {}),
-      ...(input.guide !== undefined ? { guide: input.guide } : {}),
+      ...(input.guide !== undefined ? { guide: legacyGuide(input.guide) } : {}),
       ...(input.context !== undefined ? { context: input.context } : {}),
     }
     const prospective = { ...found.task, ...patch }

@@ -25,6 +25,7 @@ import {
 import { EditorScreen } from './editor/EditorScreen'
 import { GalleryScreen } from './gallery/GalleryScreen'
 import { TaskBriefPanel } from './TaskBriefPanel'
+import { withSaveBeforeTaskActions } from './taskSessionSave'
 import { ToastProvider, useToast } from './ui/Toast'
 
 type PintaView = { screen: 'gallery' } | { screen: 'editor'; assetId: string }
@@ -202,6 +203,22 @@ export function PintaApp({
    * Falhou ao guardar? Lança, e o painel mostra o recado sem navegar — o desenho
    * da criança não pode ficar para trás numa troca de tela.
    */
+  /** Grava o desenho aberto (nada aberto = nada a gravar). `false` = a gravação falhou. */
+  const gravarDesenhoAberto = useCallback(async (): Promise<boolean> => {
+    const editor = editorRef.current
+    if (!editor) return true
+    const saved = await editor.getState().flush()
+    if (!saved.ok) console.error('[pinta] gravar antes do guia falhou', saved.error)
+    return saved.ok
+  }, [])
+  // O guia v2 GRAVA antes de concluir, continuar e pedir ajuda (ver `taskSessionSave`).
+  const sessaoDoGuia = useMemo(
+    () =>
+      resolvedAdapter.taskSession
+        ? withSaveBeforeTaskActions(resolvedAdapter.taskSession, gravarDesenhoAberto)
+        : undefined,
+    [resolvedAdapter.taskSession, gravarDesenhoAberto],
+  )
   const returnToPlan = async () => {
     const editor = editorRef.current
     if (editor) {
@@ -227,7 +244,7 @@ export function PintaApp({
           />
           {resolvedAdapter.taskSession ? (
             <TaskBriefPanel
-              session={resolvedAdapter.taskSession}
+              session={sessaoDoGuia ?? resolvedAdapter.taskSession}
               outputMissing={taskOutputMissing}
               onRecreate={recreateTaskAsset}
               onRelink={() => setView({ screen: 'gallery' })}

@@ -33,6 +33,7 @@ import { livePublicationRoutes } from './routes/live-publication.routes'
 import { liveWorkspaceRoutes } from './routes/live-workspaces.routes'
 import { type MembersRoutesDeps, membersRoutes } from './routes/members.routes'
 import { type PensaRoutesDeps, pensaRoutes } from './routes/pensa.routes'
+import { type PensaJourneyRoutesDeps, pensaJourneyRoutes } from './routes/pensa-journey.routes'
 import { type WebhooksRoutesDeps, webhooksRoutes } from './routes/webhooks.routes'
 
 export interface HttpDeps {
@@ -52,6 +53,7 @@ export interface HttpDeps {
   readiness: ReadinessProbe
   members: MembersRoutesDeps
   pensa: PensaRoutesDeps
+  pensaJourney?: PensaJourneyRoutesDeps
   creations: CreationsRoutesDeps
   webhooks: WebhooksRoutesDeps
   admin: AdminRoutesDeps
@@ -105,7 +107,9 @@ function bodyLimitForPath(pathname: string, env: Env): number {
   if (
     PENSA_CONVERSATION_PATH.test(pathname) ||
     PENSA_ARTIFACT_CREATE_PATH.test(pathname) ||
-    PENSA_TASKS_REPLACE_PATH.test(pathname)
+    PENSA_TASKS_REPLACE_PATH.test(pathname) ||
+    pathname.startsWith('/members/pensa/v2/') ||
+    pathname.startsWith('/members/internal/pensa/v2/')
   ) {
     return Math.max(MAX_PENSA_BODY_BYTES, env.MAX_REQUEST_BODY_BYTES)
   }
@@ -187,6 +191,7 @@ export function createServer(deps: HttpDeps) {
     .use(membersRoutes(deps.members))
     .use(learningRoutes(deps.learning))
     .use(pensaRoutes(deps.pensa))
+    .use(deps.pensaJourney ? pensaJourneyRoutes(deps.pensaJourney) : new Elysia())
     .use(creationsRoutes(deps.creations))
     .use(
       creationCleanupRoutes({

@@ -1,7 +1,6 @@
 'use client'
-
+import { PrivateZappyVoice } from '@sistemazero/member-shell/components/private-zappy-voice'
 import { sessionFetch as fetch } from '@sistemazero/member-shell/lib/session-fetch'
-
 // O CSS do Pinta (tokens + @theme que GERA as utilitárias pin-*) é carregado pelo
 // `@import` em `app/globals.css`, DENTRO do pipeline Tailwind — mesmo gotcha do
 // Estúdio/Pensa: um JS-import aqui só traria os tokens, sem gerar as utilitárias.
@@ -10,6 +9,8 @@ import { RefreshCw } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { type CreationsCloud, createCreationsCloud } from '@/lib/creations-cloud'
+import { cloudConfirmRefusal, guideError, progressRefusal } from '@/lib/pensa-guide-errors'
+import { resolveNextPensaMission } from '@/lib/pensa-next-mission'
 import {
   createCloudMirroredPintaPersistence,
   type PintaPersistenceLike,
@@ -17,6 +18,7 @@ import {
 import { EMBEDDED_APP_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
 import { useFocusMode } from './focus-mode'
 import { HostChromeAnnouncer, useHostChrome } from './use-host-chrome'
+import { useNextMissionLabel } from './use-next-mission-label'
 import { usePensaGuideCollapsed } from './use-pensa-guide-collapsed'
 import { usePintaTaskHandoff } from './use-pensa-task-handoff'
 
@@ -42,9 +44,11 @@ type PintaResyncResult =
 export function PintaClient({
   viewerId,
   studioAvailable,
+  narrationEnabled = false,
 }: {
   viewerId: string | null
   studioAvailable: boolean
+  narrationEnabled?: boolean
 }) {
   const [mod, setMod] = useState<PintaModule | null>(null)
   const [loadError, setLoadError] = useState(false)
@@ -74,6 +78,14 @@ export function PintaClient({
     retry: retryHandoff,
     updateProgress: updateHandoffProgress,
   } = usePintaTaskHandoff(taskId)
+  // "Continuar no Estúdio" quando a próxima missão é em outra oficina.
+  const proximaMissaoRotulo = useNextMissionLabel({
+    enabled:
+      handoff?.task.guide.contractVersion === 2 && handoff.task.progress.status === 'completed',
+    taskId: handoff?.task.id ?? null,
+    projectId: handoff?.project.id ?? null,
+    current: 'pinta',
+  })
   const [initialAssetId] = useState(() => searchParams.get('desenho'))
   useEffect(() => {
     if (initialAssetId && !taskId) router.replace('/pinta')
@@ -181,11 +193,47 @@ export function PintaClient({
           summary: handoff.task.summary,
           brief: handoff.task.context,
           guide: handoff.task.guide,
+          // Sem perfil não há voz: a rota recusaria (403) um dono vazio.
+          renderListen:
+            narrationEnabled && viewerId
+              ? (stepId) => (
+                  <PrivateZappyVoice
+                    viewerId={viewerId}
+                    reference={{
+                      origin: 'pensa_guide',
+                      taskId: handoff.task.id,
+                      revision: handoff.task.revision,
+                      stepId,
+                    }}
+                  />
+                )
+              : undefined,
+          nextMissionLabel: proximaMissaoRotulo,
+          onNextMission: async () => {
+            const assetId = handoff.task.progress.outputRef?.assetId
+            if (!cloud || !assetId) throw guideError('Espere seu desenho ficar guardado na conta.')
+            await cloud.confirm(assetId, { timeoutMs: 15000 }).catch((cause: unknown) => {
+              throw cloudConfirmRefusal(cause, 'Seu desenho')
+            })
+            const next = await resolveNextPensaMission(handoff.project.id).catch(() => {
+              throw guideError('Não consegui abrir a próxima missão. Tente de novo.')
+            })
+            router.push(next.path)
+          },
+          onNeedHelp: () => router.push(`/pensa?plano=${encodeURIComponent(handoff.project.id)}`),
           ...(handoff.task.context.requiresStudioUse && !studioAvailable
             ? { studioUseBlockedReason: 'O Estúdio ainda não foi liberado pela sua jornada.' }
             : {}),
           progress: handoff.task.progress,
           onProgress: async (input) => {
+            if (handoff.task.guide.contractVersion === 2 && input.status === 'completed') {
+              const assetId = input.outputRef?.assetId ?? handoff.task.progress.outputRef?.assetId
+              if (!cloud || !assetId)
+                throw guideError('Espere seu desenho ficar guardado na conta.')
+              await cloud.confirm(assetId, { timeoutMs: 15000 }).catch((cause: unknown) => {
+                throw cloudConfirmRefusal(cause, 'Seu desenho')
+              })
+            }
             const response = await fetch(
               `/api/pensa/tasks/${encodeURIComponent(handoff.task.id)}/progress`,
               {
@@ -199,14 +247,13 @@ export function PintaClient({
             )
             const body = (await response.json().catch(() => null)) as {
               task?: { progress: PintaTaskSession['progress'] }
-              error?: { message?: string }
+              error?: { code?: string; message?: string }
             } | null
             if (response.status === 409) {
               retryHandoff()
-              throw new Error('A tarefa mudou em outro lugar. Recarreguei o brief para você.')
+              throw guideError('A missão mudou em outro lugar. Recarreguei o brief para você.')
             }
-            if (!response.ok || !body?.task)
-              throw new Error(body?.error?.message ?? 'Não consegui sincronizar a tarefa.')
+            if (!response.ok || !body?.task) throw progressRefusal(response.status, body)
             updateHandoffProgress(body.task.progress)
           },
           // "Voltar ao plano" no painel do brief: o id do plano já veio no handoff
@@ -294,6 +341,8 @@ export function PintaClient({
     // ⚠️ `theme` saiu do dep array: virou constante (sem tema escuro nesta plataforma).
   }, [
     studioAvailable,
+    cloud,
+    narrationEnabled,
     viewerId,
     router,
     handoff,
@@ -302,6 +351,7 @@ export function PintaClient({
     initialAssetId,
     guiaRecolhido,
     setGuiaRecolhido,
+    proximaMissaoRotulo,
   ])
 
   // O selo "Guardado na sua conta" fica na barra do Pinta. O menu lateral pertence

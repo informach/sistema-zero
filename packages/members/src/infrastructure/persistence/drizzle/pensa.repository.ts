@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import { and, asc, count, desc, eq, exists, inArray, isNull, or, sql } from 'drizzle-orm'
+import { and, asc, count, desc, eq, exists, inArray, isNull, notExists, or, sql } from 'drizzle-orm'
 import type { CourseAudience } from '../../../domain/course/course'
 import type {
   PensaArtifact,
@@ -29,9 +29,11 @@ import type {
 } from '../../../domain/ports/pensa-repository.port'
 import type { Database } from './db'
 import {
+  creations,
   pensaArtifacts,
   pensaConversations,
   pensaCycles,
+  pensaJourneys,
   pensaProjectMembers,
   pensaProjects,
   pensaTasks,
@@ -44,6 +46,17 @@ type TaskRow = typeof pensaTasks.$inferSelect
 type Tx = Parameters<Parameters<Database['transaction']>[0]>[0]
 
 type MemberRow = typeof pensaProjectMembers.$inferSelect
+async function assertLegacyPensa(db: Pick<Database, 'select'>, projectId: string) {
+  const [journey] = await db
+    .select({ id: pensaJourneys.cycleId })
+    .from(pensaJourneys)
+    .where(eq(pensaJourneys.projectId, projectId))
+    .limit(1)
+  if (journey)
+    throw new PensaTaskProgressConflictError(
+      'Este jogo usa o novo caminho do Pensa. Abra a versão atual para continuar.',
+    )
+}
 
 const toProject = (row: ProjectRow): PensaProject => ({ ...row })
 const toMember = (row: MemberRow): PensaProjectMember => ({ ...row })
@@ -200,7 +213,7 @@ function accessColumns(userId: string) {
   }
 }
 
-const taskValues = (cycleId: string, task: NewPensaTask, now: Date) => ({
+export const pensaTaskValues = (cycleId: string, task: NewPensaTask, now: Date) => ({
   id: task.id,
   cycleId,
   title: task.title,
@@ -244,7 +257,18 @@ export class DrizzlePensaRepository implements PensaRepository {
     const projects = await this.db
       .select({ project: pensaProjects, ...accessColumns(userId) })
       .from(pensaProjects)
-      .where(and(accessibleProject(userId, audience), eq(pensaProjects.status, 'active')))
+      .where(
+        and(
+          accessibleProject(userId, audience),
+          eq(pensaProjects.status, 'active'),
+          notExists(
+            this.db
+              .select({ id: pensaJourneys.cycleId })
+              .from(pensaJourneys)
+              .where(eq(pensaJourneys.projectId, pensaProjects.id)),
+          ),
+        ),
+      )
       .orderBy(desc(pensaProjects.updatedAt))
     if (projects.length === 0) return []
     const currents = await this.db
@@ -296,6 +320,7 @@ export class DrizzlePensaRepository implements PensaRepository {
   }
 
   async setShareCode(projectId: string, code: string | null, now: Date): Promise<boolean> {
+    await assertLegacyPensa(this.db, projectId)
     try {
       await this.db
         .update(pensaProjects)
@@ -349,6 +374,7 @@ export class DrizzlePensaRepository implements PensaRepository {
     maxMembers: number,
     expectedCode: string,
   ): Promise<'added' | 'duplicate' | 'full' | 'invite_invalid'> {
+    await assertLegacyPensa(this.db, member.projectId)
     return this.db.transaction(async (tx) => {
       // Tranca a linha do projeto: conferir a vaga e gravar viram um passo só (dois convidados
       // no mesmo instante com 4 na equipe não viram 6).
@@ -407,12 +433,14 @@ export class DrizzlePensaRepository implements PensaRepository {
    * outra vitrine) não é alcançado nem com o id certo.
    */
   async deleteProject(projectId: string, userId: string, audience: CourseAudience): Promise<void> {
+    await assertLegacyPensa(this.db, projectId)
     await this.db
       .delete(pensaProjects)
       .where(and(eq(pensaProjects.id, projectId), ownedProject(userId, audience)))
   }
 
   async updateProject(projectId: string, patch: PensaProjectPatch, now: Date): Promise<void> {
+    await assertLegacyPensa(this.db, projectId)
     await this.db
       .update(pensaProjects)
       .set({
@@ -437,6 +465,7 @@ export class DrizzlePensaRepository implements PensaRepository {
     now: Date,
     inherit: InheritedPensaArtifact[] = [],
   ): Promise<void> {
+    await assertLegacyPensa(this.db, cycle.projectId)
     await this.db.transaction(async (tx) => {
       await tx.insert(pensaCycles).values({ ...cycle, createdAt: now, updatedAt: now })
       if (inherit.length > 0) {
@@ -477,6 +506,7 @@ export class DrizzlePensaRepository implements PensaRepository {
     to: PensaStage,
     now: Date,
   ): Promise<PensaCycle> {
+    await assertLegacyPensa(this.db, projectId)
     return this.db.transaction(async (tx) => {
       const [updated] = await tx
         .update(pensaCycles)
@@ -490,6 +520,7 @@ export class DrizzlePensaRepository implements PensaRepository {
   }
 
   async reopenCycleReview(projectId: string, cycleId: string, now: Date): Promise<PensaCycle> {
+    await assertLegacyPensa(this.db, projectId)
     return this.db.transaction(async (tx) => {
       const [updated] = await tx
         .update(pensaCycles)
@@ -517,6 +548,7 @@ export class DrizzlePensaRepository implements PensaRepository {
     data: PensaConversationUpsert,
     now: Date,
   ): Promise<void> {
+    await assertLegacyPensa(this.db, projectId)
     await this.db.transaction(async (tx) => {
       await tx
         .insert(pensaConversations)
@@ -571,6 +603,7 @@ export class DrizzlePensaRepository implements PensaRepository {
     artifact: NewPensaArtifact,
     now: Date,
   ): Promise<PensaArtifact> {
+    await assertLegacyPensa(this.db, projectId)
     return this.db.transaction(async (tx) => {
       const [inserted] = await tx
         .insert(pensaArtifacts)
@@ -588,6 +621,7 @@ export class DrizzlePensaRepository implements PensaRepository {
   }
 
   async validateArtifact(projectId: string, artifactId: string, now: Date): Promise<PensaArtifact> {
+    await assertLegacyPensa(this.db, projectId)
     return this.db.transaction(async (tx) => {
       const [updated] = await tx
         .update(pensaArtifacts)
@@ -623,10 +657,11 @@ export class DrizzlePensaRepository implements PensaRepository {
     tasks: NewPensaTask[],
     now: Date,
   ): Promise<void> {
+    await assertLegacyPensa(this.db, projectId)
     await this.db.transaction(async (tx) => {
       await tx.delete(pensaTasks).where(eq(pensaTasks.cycleId, cycleId))
       if (tasks.length > 0)
-        await tx.insert(pensaTasks).values(tasks.map((task) => taskValues(cycleId, task, now)))
+        await tx.insert(pensaTasks).values(tasks.map((task) => pensaTaskValues(cycleId, task, now)))
       await reconcileTaskArtifacts(tx, cycleId, now)
       await touchProject(tx, projectId, now)
     })
@@ -638,9 +673,10 @@ export class DrizzlePensaRepository implements PensaRepository {
     tasks: NewPensaTask[],
     now: Date,
   ): Promise<void> {
+    await assertLegacyPensa(this.db, projectId)
     if (tasks.length === 0) return
     await this.db.transaction(async (tx) => {
-      await tx.insert(pensaTasks).values(tasks.map((task) => taskValues(cycleId, task, now)))
+      await tx.insert(pensaTasks).values(tasks.map((task) => pensaTaskValues(cycleId, task, now)))
       await reconcileTaskArtifacts(tx, cycleId, now)
       await touchProject(tx, projectId, now)
     })
@@ -650,7 +686,12 @@ export class DrizzlePensaRepository implements PensaRepository {
     taskId: string,
     userId: string,
     audience: CourseAudience,
-  ): Promise<{ task: PensaTask; project: PensaProjectAccess; cycle: PensaCycle } | null> {
+  ): Promise<{
+    task: PensaTask
+    project: PensaProjectAccess
+    cycle: PensaCycle
+    journey: boolean
+  } | null> {
     const [row] = await this.db
       .select({
         task: pensaTasks,
@@ -669,13 +710,18 @@ export class DrizzlePensaRepository implements PensaRepository {
         ),
       )
       .limit(1)
-    return row
-      ? {
-          task: toTask(row.task),
-          project: toAccess(row.project, row.isOwner, row.memberCount),
-          cycle: toCycle(row.cycle),
-        }
-      : null
+    if (!row) return null
+    const [journey] = await this.db
+      .select()
+      .from(pensaJourneys)
+      .where(and(eq(pensaJourneys.projectId, row.project.id), eq(pensaJourneys.active, true)))
+    if (journey && journey.cycleId !== row.cycle.id) return null
+    return {
+      task: toTask(row.task),
+      project: toAccess(row.project, row.isOwner, row.memberCount),
+      cycle: toCycle(row.cycle),
+      journey: Boolean(journey),
+    }
   }
 
   async updateTaskPlan(
@@ -684,6 +730,7 @@ export class DrizzlePensaRepository implements PensaRepository {
     patch: PensaTaskPlanPatch,
     now: Date,
   ): Promise<PensaTask> {
+    await assertLegacyPensa(this.db, projectId)
     return this.db.transaction(async (tx) => {
       const [updated] = await tx
         .update(pensaTasks)
@@ -703,6 +750,7 @@ export class DrizzlePensaRepository implements PensaRepository {
     replacement: NewPensaTask,
     now: Date,
   ): Promise<PensaTask> {
+    await assertLegacyPensa(this.db, projectId)
     return this.db.transaction(async (tx) => {
       await tx
         .update(pensaTasks)
@@ -711,7 +759,7 @@ export class DrizzlePensaRepository implements PensaRepository {
       const [inserted] = await tx
         .insert(pensaTasks)
         .values(
-          taskValues(
+          pensaTaskValues(
             source.cycleId,
             {
               ...replacement,
@@ -753,7 +801,7 @@ export class DrizzlePensaRepository implements PensaRepository {
           .set({ archivedAt: now, updatedAt: now })
           .where(eq(pensaTasks.id, dependant.id))
         await tx.insert(pensaTasks).values(
-          taskValues(
+          pensaTaskValues(
             source.cycleId,
             {
               id: replacementId,
@@ -788,6 +836,72 @@ export class DrizzlePensaRepository implements PensaRepository {
     now: Date,
   ): Promise<PensaTask> {
     return this.db.transaction(async (tx) => {
+      // A jornada também trava projeto antes de ciclo. Manter a ordem evita deadlock
+      // entre concluir uma missão e proteger/revisar o plano em outra aba.
+      const [project] = await tx
+        .select()
+        .from(pensaProjects)
+        .where(eq(pensaProjects.id, projectId))
+        .for('update')
+      const [journey] = await tx
+        .select()
+        .from(pensaJourneys)
+        .where(and(eq(pensaJourneys.projectId, projectId), eq(pensaJourneys.active, true)))
+        .for('update')
+      if (journey) {
+        const [task] = await tx.select().from(pensaTasks).where(eq(pensaTasks.id, taskId))
+        if (
+          !task ||
+          !project ||
+          project.status !== 'active' ||
+          task.cycleId !== journey.cycleId ||
+          !['building', 'observing'].includes(journey.data.stage)
+        )
+          throw new PensaTaskProgressConflictError('Abra o caminho atual deste jogo.')
+        if (progress.status === 'completed') {
+          const dependencies = task.dependencies.length
+            ? await tx.select().from(pensaTasks).where(inArray(pensaTasks.id, task.dependencies))
+            : []
+          if (
+            dependencies.some((t) => t.progressStatus !== 'completed') ||
+            dependencies.length !== task.dependencies.length
+          )
+            throw new PensaTaskProgressConflictError(
+              'Conclua a missão anterior antes de conferir esta.',
+            )
+          const ref = progress.outputRef
+          const itemId = ref?.kind === 'studio_project' ? ref.projectId : ref?.assetId
+          if (
+            !itemId ||
+            (task.destination === 'studio' && itemId !== `pensa-${projectId.replaceAll('-', '')}`)
+          )
+            throw new PensaTaskProgressConflictError('Esta missão precisa do jogo certo.')
+          const [saved] = await tx
+            .select()
+            .from(creations)
+            .where(
+              and(
+                eq(creations.userId, project.userId),
+                eq(creations.accountId, project.accountId),
+                eq(creations.tool, task.destination),
+                eq(creations.itemId, itemId),
+                isNull(creations.deletedAt),
+              ),
+            )
+          if (!saved?.storageRef || saved.pendingRevision)
+            throw new PensaTaskProgressConflictError(
+              'Espere sua criação ficar Guardada na conta e tente de novo.',
+            )
+          if (task.context.kind !== 'studio' && saved.kind !== task.context.artKind)
+            throw new PensaTaskProgressConflictError(
+              'Escolha uma criação do tipo pedido nesta missão.',
+            )
+          if (ref?.kind === 'studio_project' && ref.saveRevision !== String(saved.revision))
+            throw new PensaTaskProgressConflictError(
+              'Seu jogo mudou. Espere ficar guardado na conta e experimente novamente.',
+            )
+        }
+      }
       const [updated] = await tx
         .update(pensaTasks)
         .set({
@@ -811,12 +925,26 @@ export class DrizzlePensaRepository implements PensaRepository {
         )
         .returning()
       if (!updated) throw new PensaTaskProgressConflictError()
+      if (journey)
+        await tx
+          .update(pensaJourneys)
+          .set({
+            revision: journey.revision + 1,
+            data: {
+              ...journey.data,
+              revision: journey.revision + 1,
+              lastInteractionAt: now.toISOString(),
+            },
+            updatedAt: now,
+          })
+          .where(eq(pensaJourneys.cycleId, journey.cycleId))
       await touchProject(tx, projectId, now)
       return toTask(updated)
     })
   }
 
   async deleteTask(projectId: string, taskId: string, now: Date): Promise<void> {
+    await assertLegacyPensa(this.db, projectId)
     await this.db.transaction(async (tx) => {
       const [task] = await tx
         .select({ cycleId: pensaTasks.cycleId })

@@ -1949,6 +1949,7 @@ export interface PensaGuideItem {
 }
 
 export interface PensaTaskGuide {
+  contractVersion?: 2
   steps: PensaGuideItem[]
   criteria: PensaGuideItem[]
 }

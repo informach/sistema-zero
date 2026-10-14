@@ -1795,6 +1795,23 @@ progresso `planned | in_progress | completed`.
     `listActiveProjects`, arquivado, `addMember` trancado, colisão do código, cascata; até aqui só
     o fake exercitava o SQL que decide a autorização).
 
+- **Pensa v2 — correções do full review (14/10/2026):**
+  - As rotas internas do worker (`/members/internal/pensa/v2/*`) conferem o consumer em
+    **`x-consumer-id`** (o que o gateway reinjeta para HMAC, como `gallery-delivery`); o
+    `x-auth-consumer-id` não existe e recusava o member-shell em staging/prod.
+  - **Reserva de IA renovada a cada uso** (`reservePensaUsage`): reserva `reserved` e viva ganha
+    `now + 30 min` no envio, no aceite e no claim, sem reconferir a cota (ela já conta no teto).
+    Antes o prazo era fixo desde a 1ª mensagem e o plano aceito tarde vencia no meio dos guias.
+  - **Operação `waiting` é retomada pelo mesmo tipo de pedido** (o planejamento como antes; a
+    ajuda/reparo pela próxima ajuda/reparo), com a mesma reserva. A que esperava e não é retomada
+    vira `cancelled` e solta SÓ a reserva dela (`releasePensaReservation`).
+  - **Concluir direto do `planned` depende da jornada v2 ATIVA do projeto**
+    (`findTaskWithProject().journey`, a régua do `updateTaskProgress`), nunca de
+    `guide.contractVersion`. O guia do plano LEGADO (replace/append/PATCH) não aceita nem grava
+    a marca (`legacyGuide`); o do worker v2 a exige (`PensaJourneyGuideSchema`). Testes:
+    `tests/integration/pensa.test.ts` (marca), `tests/db/pensa-journey.repository.test.ts`
+    (reserva com relógio injetado, ajuda retomada).
+
 Camadas: `domain/pensa/*`, port `pensa-repository.port.ts`, use cases em `application/pensa/*`,
 `DrizzlePensaRepository`, mappers e rotas HTTP. Contrato transversal:
 [`../../docs/pensa-planner.md`](../../docs/pensa-planner.md).
@@ -1947,6 +1964,17 @@ pending_kind/pending_item_updated_at/pending_thumb` e o contador `last_reserved_
   `tests/db/creations.repository.test.ts` (Postgres real: recria a tabela do zero, porque a
   `user-data-purge.test.ts` a cria com DDL mínimo) e `tests/db/user-data-purge.test.ts` (linha de
   `creations` somada).
+- ⚠️⚠️ **A fila do worker também leva a limpeza de PLANO do Pensa v2 (14/10/2026)**
+  (`pensa_deletion_jobs`, `scope: 'pensa'`), que NUNCA finaliza a conta. Duas travas, porque um
+  worker antigo (rollback do Kids) ignora `scope` e chamaria o finalize com a conta da família:
+  (a) `POST /members/internal/creation-cleanups/claim` aceita corpo OPCIONAL `{scopes?: string[]}`
+  e só entrega job de plano a quem declarou `'pensa'` (sem corpo = só exclusão de conta; escopo
+  desconhecido é ignorado, nunca 422); o worker do member-shell manda `{scopes: ['pensa']}`.
+  (b) `POST /members/internal/account-deletion/finalize` (`PurgeUserDataService.finalize`) só
+  purga conta com a cerca de `account_deletion_fences` (gravada na MESMA transação da 1ª purga e
+  do job; nunca apagada) — sem cerca, **409 sem apagar nada**. ⚠️ O finalize do HUB não tem a
+  segunda trava (e ainda INSTALA a cerca dele). Testes: `tests/db/creation-cleanup.repository.test.ts`,
+  `tests/db/user-data-purge.test.ts` e `tests/integration/creation-cleanup-routes.test.ts`.
 
 ## Admin (painel `@sistemazero/admin`)
 

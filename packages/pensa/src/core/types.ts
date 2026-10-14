@@ -1,4 +1,6 @@
 import type { AiCreditsView } from '@sistemazero/core/ai-credits'
+import type { PensaNarratableRef } from '@sistemazero/core/pensa'
+import type { ReactNode } from 'react'
 
 export type PensaStage = 'z' | 'e' | 'r' | 'o' | 'done'
 export type PensaWorkStage = Exclude<PensaStage, 'done'>
@@ -76,6 +78,7 @@ export interface PensaGuideItem {
   required: boolean
 }
 export interface PensaTaskGuide {
+  contractVersion?: 2
   steps: PensaGuideItem[]
   criteria: PensaGuideItem[]
 }
@@ -97,7 +100,7 @@ export interface PensaStudioBlockReference {
   label: string
   category: string
   subcategory: string
-  area: 'structure' | 'appearance' | 'start' | 'events' | 'loops' | 'value'
+  area: 'structure' | 'appearance' | 'molds' | 'start' | 'events' | 'loops' | 'value'
   extension: string | null
 }
 export interface PensaStudioTaskContext {
@@ -252,6 +255,15 @@ export type PensaMascotPose = 'happy' | 'thinking' | 'celebrating' | 'sleeping'
 
 /** Única integração do Pensa: abrir o Cartão de Criação na ferramenta de destino. */
 export interface PensaHostAdapter {
+  viewerId?: string
+  renderVoiceInput?: (input: {
+    value: string
+    onChange(value: string): void
+    onBusyChange(busy: boolean): void
+    disabled: boolean
+    textareaId: string
+  }) => ReactNode
+  renderListen?: (ref: PensaNarratableRef) => ReactNode
   transport: PensaTransport
   mode: 'kids'
   theme?: 'light' | 'dark'

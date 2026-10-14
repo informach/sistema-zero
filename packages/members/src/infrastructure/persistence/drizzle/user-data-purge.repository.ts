@@ -25,7 +25,10 @@ import {
   missionClaims,
   parentReportPrefs,
   parentReportsSent,
+  pensaDeletionJobs,
   pensaProjects,
+  pensaProviderUsage,
+  privateNarrations,
   profilePreferences,
   quizAttempts,
   renewalRemindersSent,
@@ -188,6 +191,14 @@ export class DrizzleUserDataPurgeRepository implements UserDataPurgeRepository {
         .delete(pensaProjects)
         .where(or(inArray(pensaProjects.userId, userIds), eq(pensaProjects.accountId, accountId)))
       await tx
+        .delete(privateNarrations)
+        .where(
+          or(
+            inArray(privateNarrations.profileId, userIds),
+            eq(privateNarrations.accountId, accountId),
+          ),
+        )
+      await tx
         .delete(teacherThreads)
         .where(or(inArray(teacherThreads.userId, userIds), eq(teacherThreads.accountId, accountId)))
       await tx
@@ -244,6 +255,8 @@ export class DrizzleUserDataPurgeRepository implements UserDataPurgeRepository {
       // Dados que pertencem exclusivamente à CONTA responsável (inclusive o uso
       // de IA compartilhado entre perfis e o opt-out/histórico dos relatórios).
       await tx.delete(aiUsageDaily).where(eq(aiUsageDaily.accountId, accountId))
+      await tx.delete(pensaProviderUsage).where(eq(pensaProviderUsage.accountId, accountId))
+      await tx.delete(pensaDeletionJobs).where(eq(pensaDeletionJobs.accountId, accountId))
       await tx.delete(parentReportsSent).where(eq(parentReportsSent.accountId, accountId))
       await tx.delete(parentReportPrefs).where(eq(parentReportPrefs.accountId, accountId))
     })

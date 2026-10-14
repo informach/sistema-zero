@@ -2,7 +2,7 @@ import { afterEach, describe, expect, mock, test } from 'bun:test'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import type { PensaHostAdapter, PensaHostChrome } from '../core/types'
 import { PensaHostChromeProvider } from './hostChrome'
-import { PensaApp } from './PensaApp'
+import { LegacyPensaApp as PensaApp } from './PensaApp'
 
 afterEach(cleanup)
 

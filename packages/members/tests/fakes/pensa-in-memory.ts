@@ -54,6 +54,8 @@ export class InMemoryPensaRepository implements PensaRepository {
   readonly conversations = new Map<string, PensaConversation>()
   readonly artifacts: PensaArtifact[] = []
   readonly tasks = new Map<string, PensaTask>()
+  /** Projetos com jornada v2 ativa (o Drizzle lê `pensa_journeys`; aqui o teste marca). */
+  readonly journeyProjects = new Set<string>()
 
   private touch(projectId: string, now: Date): void {
     const project = this.projects.get(projectId)
@@ -420,7 +422,7 @@ export class InMemoryPensaRepository implements PensaRepository {
     const cycle = this.cycles.get(task.cycleId)
     if (!cycle) return null
     const project = await this.findProject(cycle.projectId, userId, audience)
-    return project ? { task, project, cycle } : null
+    return project ? { task, project, cycle, journey: this.journeyProjects.has(project.id) } : null
   }
 
   async updateTaskPlan(projectId: string, taskId: string, patch: PensaTaskPlanPatch, now: Date) {

@@ -32,6 +32,9 @@ describe.skipIf(!testDatabaseUrl)('Drizzle da equipe do Pensa no Postgres real',
   beforeAll(async () => {
     conn = createDbConnection(testDatabaseUrl as string)
     await conn.sql`create schema if not exists members`
+    await conn.sql.unsafe(`create table if not exists members.pensa_journeys (
+      cycle_id uuid primary key, project_id uuid not null, active boolean not null default true,
+      revision integer not null default 0, data jsonb not null default '{}', updated_at timestamptz not null default now())`)
     // ⚠️ Banco COMPARTILHADO entre os arquivos de tests/db (o `user-data-purge` cria uma
     // `pensa_projects` enxuta): toda coluna aparece no `create` E no `add column if not exists`.
     await conn.sql.unsafe(`

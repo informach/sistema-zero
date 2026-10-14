@@ -1,3 +1,5 @@
+@import "./journey.css";
+
 .pensa-planner {
   /* Paleta da MARCA KIDS (embarcado): referencia os primitivos --sz-kids-*
      com FALLBACK LITERAL — sem depender do @sistemazero/ui. Dentro de um host

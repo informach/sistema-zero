@@ -14,10 +14,13 @@ import {
   createCloudMirroredMoldaPersistence,
   type MoldaPersistenceLike,
 } from '@/lib/molda-cloud-persistence'
+import { cloudConfirmRefusal, guideError } from '@/lib/pensa-guide-errors'
+import { openNextPensaMission } from '@/lib/pensa-next-mission'
 import { EMBEDDED_APP_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
 import { useFocusMode } from './focus-mode'
 import { type MoldaGuidePersistence, MoldaTaskGuide } from './molda-task-guide'
 import { HostChromeAnnouncer, useHostChrome } from './use-host-chrome'
+import { useNextMissionLabel } from './use-next-mission-label'
 import { usePensaGuideCollapsed } from './use-pensa-guide-collapsed'
 import { useMoldaTaskHandoff } from './use-pensa-task-handoff'
 
@@ -43,11 +46,13 @@ export function MoldaClient({
   viewerId,
   studioAvailable,
   toolAccess = null,
+  narrationEnabled = false,
 }: {
   viewerId: string | null
   studioAvailable: boolean
   /** As ferramentas do posto (`moldaToolAccessFor`); `null` = tudo liberado. */
   toolAccess?: MoldaToolAccess | null
+  narrationEnabled?: boolean
 }) {
   const [mod, setMod] = useState<MoldaModule | null>(null)
   const [loadError, setLoadError] = useState(false)
@@ -83,6 +88,15 @@ export function MoldaClient({
   // resolver tudo liberado no servidor e a oficina trocaria de ferramentas no meio.
   const [previewLevel] = useState(() => searchParams.get('nivel'))
   const handoff = useMoldaTaskHandoff(taskId)
+  // "Continuar no Estúdio" quando a próxima missão é em outra oficina.
+  const proximaMissaoRotulo = useNextMissionLabel({
+    enabled:
+      handoff.data?.task.guide.contractVersion === 2 &&
+      handoff.data.task.progress.status === 'completed',
+    taskId: handoff.data?.task.id ?? null,
+    projectId: handoff.data?.project.id ?? null,
+    current: 'molda',
+  })
   useEffect(() => {
     if (!initialAssetId) return
     const keep = new URLSearchParams()
@@ -296,11 +310,22 @@ export function MoldaClient({
         <>
           {handoff.data && persistence ? (
             <MoldaTaskGuide
+              narrationEnabled={narrationEnabled}
               key={`${viewerId}:${handoff.data.task.id}:${handoff.data.task.revision}`}
               profileId={viewerId}
               handoff={handoff.data}
               persistence={persistence}
               onProgress={handoff.updateProgress}
+              onNextMission={() =>
+                openNextPensaMission(handoff.data!.project.id, (path) => router.push(path))
+              }
+              nextMissionLabel={proximaMissaoRotulo}
+              onConfirmSaved={async (assetId) => {
+                if (!cloud) throw guideError('Espere sua criação ficar guardada na conta.')
+                await cloud.confirm(assetId, { timeoutMs: 15000 }).catch((cause: unknown) => {
+                  throw cloudConfirmRefusal(cause, 'Sua criação')
+                })
+              }}
               collapsed={guiaRecolhido}
               onCollapsedChange={setGuiaRecolhido}
               onOpenAsset={(assetId) =>

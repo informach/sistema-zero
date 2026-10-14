@@ -3,6 +3,7 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-libra
 import { COPY } from '../core/copy'
 import type { PintaTaskSession } from '../core/types'
 import { TaskBriefPanel } from './TaskBriefPanel'
+import { FRASE_DE_GRAVAR_NO_APARELHO, withSaveBeforeTaskActions } from './taskSessionSave'
 
 afterEach(cleanup)
 
@@ -439,5 +440,268 @@ describe('recolher esconde o brief, nunca um problema', () => {
     expect(screen.queryByRole('button', { name: COPY.task.back })).toBeNull()
     // Sobra a seta, e só ela: é a "uma linha" que ela pediu.
     expect(view.container.querySelectorAll('button').length).toBe(1)
+  })
+})
+
+/**
+ * O guia v2 do Pensa (14/10/2026). Sem checklist: os passos orientam e a conclusão é UMA
+ * confirmação ("Experimentei e funcionou") sobre um desenho salvo. Os ramos v2 do brief não
+ * tinham teste nenhum.
+ */
+describe('Brief do meu jogo — guia v2', () => {
+  function v2(over: Partial<PintaTaskSession> = {}, requiresStudioUse = false) {
+    const { value, onProgress } = session(
+      { completedStepIds: [], completedCriteriaIds: [] },
+      requiresStudioUse,
+    )
+    const sessao: PintaTaskSession = {
+      ...value,
+      guide: {
+        contractVersion: 2,
+        steps: [
+          { id: 'a', text: 'Escolha o lápis', hint: 'Fica na caixa da esquerda.', required: true },
+          { id: 'b', text: 'Desenhe a capa roxa', required: true },
+        ],
+        criteria: [
+          { id: 'ok', text: 'A heroína aparece inteira', required: true },
+          { id: 'cor', text: 'A capa é roxa', required: false },
+        ],
+      },
+      ...over,
+    }
+    return { sessao, onProgress: (over.onProgress as typeof onProgress | undefined) ?? onProgress }
+  }
+  const concluir = () => screen.getByRole('button', { name: 'Experimentei e funcionou' })
+
+  test('os passos aparecem um de cada vez, sem checkbox', () => {
+    render(<TaskBriefPanel session={v2().sessao} />)
+    expect(screen.getByText('Passo 1 de 2')).toBeTruthy()
+    expect(screen.getByText('Escolha o lápis')).toBeTruthy()
+    expect(screen.queryAllByRole('checkbox')).toEqual([])
+    fireEvent.click(screen.getByRole('button', { name: 'Próximo passo' }))
+    expect(screen.getByText('Desenhe a capa roxa')).toBeTruthy()
+    expect(
+      (screen.getByRole('button', { name: 'Próximo passo' }) as HTMLButtonElement).disabled,
+    ).toBe(true)
+  })
+
+  test('sem desenho pronto não dá para confirmar', () => {
+    const semDesenho = v2()
+    render(
+      <TaskBriefPanel
+        session={{
+          ...semDesenho.sessao,
+          progress: { ...semDesenho.sessao.progress, outputRef: null },
+        }}
+      />,
+    )
+    expect((concluir() as HTMLButtonElement).disabled).toBe(true)
+    cleanup()
+    // Desenho vinculado mas ausente neste aparelho também não conta.
+    render(<TaskBriefPanel session={v2().sessao} outputMissing />)
+    expect((concluir() as HTMLButtonElement).disabled).toBe(true)
+  })
+
+  test('confirmar manda "concluída" com TODOS os critérios, sem marcar passo', async () => {
+    const { sessao, onProgress } = v2()
+    render(<TaskBriefPanel session={sessao} />)
+    fireEvent.click(concluir())
+    await waitFor(() =>
+      expect(onProgress).toHaveBeenCalledWith({
+        status: 'completed',
+        completedCriteriaIds: ['ok', 'cor'],
+      }),
+    )
+  })
+
+  test('erro com a frase da criança mostra a frase; sem ela, é rede', async () => {
+    const comFrase = v2({
+      onProgress: mock(async () => {
+        throw Object.assign(new Error('PENSA_TASK_TRANSITION_INVALID raw'), {
+          childMessage: 'Seu plano mudou. Volte ao plano para ver esta missão de novo.',
+        })
+      }),
+    })
+    render(<TaskBriefPanel session={comFrase.sessao} />)
+    fireEvent.click(concluir())
+    await waitFor(() =>
+      expect(screen.getByRole('alert').textContent).toBe(
+        'Seu plano mudou. Volte ao plano para ver esta missão de novo.',
+      ),
+    )
+    expect(screen.queryByText(/raw/)).toBeNull()
+
+    cleanup()
+    const semFrase = v2({
+      onProgress: mock(async () => {
+        throw new TypeError('Failed to fetch')
+      }),
+    })
+    render(<TaskBriefPanel session={semFrase.sessao} />)
+    fireEvent.click(concluir())
+    await waitFor(() =>
+      expect(screen.getByRole('alert').textContent).toContain('Confira a internet'),
+    )
+  })
+
+  test('esperando, diz que está guardando; o botão segue focável e não repete o pedido', async () => {
+    let liberar: (() => void) | null = null
+    const lento = v2({
+      onProgress: mock(
+        () =>
+          new Promise<void>((resolve) => {
+            liberar = resolve
+          }),
+      ),
+    })
+    const view = render(<TaskBriefPanel session={lento.sessao} />)
+    const status = view.container.querySelector('[role="status"]')
+    expect(status?.textContent).toBe('')
+    const botao = concluir()
+    botao.focus()
+    fireEvent.click(botao)
+    await waitFor(() => expect(status?.textContent).toBe('Guardando seu desenho…'))
+    expect(botao.getAttribute('aria-busy')).toBe('true')
+    expect((botao as HTMLButtonElement).disabled).toBe(false)
+    fireEvent.click(botao)
+    expect(lento.sessao.onProgress).toHaveBeenCalledTimes(1)
+    await act(async () => {
+      liberar?.()
+      await Bun.sleep(0)
+    })
+    await waitFor(() => expect(status?.textContent).toBe('Missão concluída!'))
+  })
+
+  test('concluída, o foco vai ao "Continuar" com o destino do host', async () => {
+    const onNextMission = mock(async () => undefined)
+    const { sessao } = v2({ onNextMission, nextMissionLabel: 'Continuar no Estúdio' })
+    const view = render(<TaskBriefPanel session={sessao} />)
+    const botao = concluir()
+    botao.focus()
+    fireEvent.click(botao)
+    await waitFor(() => expect(sessao.onProgress).toHaveBeenCalled())
+    view.rerender(
+      <TaskBriefPanel
+        session={{ ...sessao, progress: { ...sessao.progress, status: 'completed' } }}
+      />,
+    )
+    const continuar = await waitFor(() =>
+      screen.getByRole('button', { name: 'Continuar no Estúdio' }),
+    )
+    await waitFor(() => expect(document.activeElement === continuar).toBe(true))
+    fireEvent.click(continuar)
+    await waitFor(() => expect(onNextMission).toHaveBeenCalledTimes(1))
+  })
+
+  test('concluída sem próxima missão, o foco vai ao aviso estável', async () => {
+    const { sessao } = v2()
+    const view = render(<TaskBriefPanel session={sessao} />)
+    const botao = concluir()
+    botao.focus()
+    fireEvent.click(botao)
+    await waitFor(() => expect(sessao.onProgress).toHaveBeenCalled())
+    view.rerender(
+      <TaskBriefPanel
+        session={{ ...sessao, progress: { ...sessao.progress, status: 'completed' } }}
+      />,
+    )
+    const status = view.container.querySelector('[role="status"]') as HTMLElement
+    await waitFor(() => expect(document.activeElement === status).toBe(true))
+    expect(status.getAttribute('tabindex')).toBe('-1')
+  })
+
+  test('"Travei aqui" mostra a frase do host; o continuar sem rótulo diz "meu caminho"', async () => {
+    const onNeedHelp = mock(async () => {
+      throw Object.assign(new Error('x'), { childMessage: FRASE_DE_GRAVAR_NO_APARELHO })
+    })
+    const { sessao } = v2({ onNeedHelp, onNextMission: async () => undefined })
+    render(
+      <TaskBriefPanel
+        session={{ ...sessao, progress: { ...sessao.progress, status: 'completed' } }}
+      />,
+    )
+    expect(screen.getByRole('button', { name: 'Continuar meu caminho' })).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: 'Travei aqui' }))
+    await waitFor(() => expect(onNeedHelp).toHaveBeenCalledTimes(1))
+    await waitFor(() =>
+      expect(screen.getByRole('alert').textContent).toBe(FRASE_DE_GRAVAR_NO_APARELHO),
+    )
+  })
+})
+
+/**
+ * O embrulho do `PintaApp` (14/10/2026): no guia v2 o desenho aberto é GRAVADO antes de
+ * concluir, continuar e pedir ajuda; gravação que falha não chama o host.
+ */
+describe('o Pinta grava antes das ações do guia v2', () => {
+  function sessaoComEventos(eventos: string[]): PintaTaskSession {
+    const { value } = session({}, false)
+    return {
+      ...value,
+      guide: { ...value.guide, contractVersion: 2 },
+      onProgress: mock(async (input: Parameters<PintaTaskSession['onProgress']>[0]) => {
+        eventos.push(`host:${input.status ?? 'passo'}`)
+      }),
+      onNextMission: mock(async () => {
+        eventos.push('host:proxima')
+      }),
+      onNeedHelp: mock(async () => {
+        eventos.push('host:ajuda')
+      }),
+    }
+  }
+
+  test('grava ANTES de concluir, continuar e pedir ajuda', async () => {
+    const eventos: string[] = []
+    const embrulhada = withSaveBeforeTaskActions(sessaoComEventos(eventos), async () => {
+      await Bun.sleep(2)
+      eventos.push('gravou')
+      return true
+    })
+    await embrulhada.onProgress({ status: 'completed' })
+    await embrulhada.onNextMission?.()
+    await embrulhada.onNeedHelp?.()
+    expect(eventos).toEqual([
+      'gravou',
+      'host:completed',
+      'gravou',
+      'host:proxima',
+      'gravou',
+      'host:ajuda',
+    ])
+    eventos.length = 0
+    await embrulhada.onProgress({ status: 'in_progress' })
+    expect(eventos).toEqual(['host:in_progress'])
+  })
+
+  test('gravação que FALHA (ou lança) não chama o host e rejeita com a frase', async () => {
+    for (const salvar of [
+      async () => false,
+      async (): Promise<boolean> => Promise.reject(new Error('x')),
+    ]) {
+      const eventos: string[] = []
+      const embrulhada = withSaveBeforeTaskActions(sessaoComEventos(eventos), salvar)
+      for (const acao of [
+        () => embrulhada.onProgress({ status: 'completed' }),
+        () => embrulhada.onNextMission?.(),
+        () => embrulhada.onNeedHelp?.(),
+      ]) {
+        const erro = await Promise.resolve()
+          .then(acao)
+          .then(
+            () => null,
+            (e: unknown) => e,
+          )
+        expect((erro as { childMessage?: string } | null)?.childMessage).toBe(
+          FRASE_DE_GRAVAR_NO_APARELHO,
+        )
+      }
+      expect(eventos).toEqual([])
+    }
+  })
+
+  test('o guia antigo passa pela MESMA referência', () => {
+    const antiga = session().value
+    expect(withSaveBeforeTaskActions(antiga, async () => true)).toBe(antiga)
   })
 })

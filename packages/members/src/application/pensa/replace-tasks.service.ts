@@ -29,6 +29,16 @@ export interface ReplacePensaTaskInput {
   context: PensaTaskContext
 }
 
+/**
+ * O guia que entra pelo plano LEGADO nunca carrega a marca da jornada v2: ela não decide
+ * mais nada no progresso (quem decide é a existência da jornada), mas guardada num plano
+ * antigo faria a tela tratá-lo como v2. A borda já a descarta; aqui é a mesma regra no serviço.
+ */
+export const legacyGuide = ({ steps, criteria }: PensaTaskGuide): PensaTaskGuide => ({
+  steps,
+  criteria,
+})
+
 export const plannedTask = (task: NewPensaTask, cycleId: string, now: Date) => ({
   ...task,
   cycleId,
@@ -103,7 +113,7 @@ export class ReplacePensaTasksService {
       estimatedMinutes: task.estimatedMinutes,
       position,
       dependencies: (task.dependencies ?? []).map((key) => ids.get(key) as string),
-      guide: task.guide,
+      guide: legacyGuide(task.guide),
       context: task.context,
     }))
     const now = this.clock()

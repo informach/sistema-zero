@@ -1,7 +1,10 @@
 import 'server-only'
+import { journeyLevelAtLeast, MOLDA_TOOL_BAND_LEVELS } from '@sistemazero/core/journey'
+import { MOLDA_TOOL_FAMILIES } from '@sistemazero/molda/tools'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { isReadonlyImpersonation } from '../lib/act'
+import { isPrivilegedRole } from '../lib/studio-tier'
 import type { PensaArtifactView, PensaStageView } from '../lib/types'
 import type { MembersClient } from '../server/clients'
 import { hasAiAppsLevel } from '../server/creative-apps-access'
@@ -63,6 +66,7 @@ const GuideItem = z.strictObject({
   required: z.boolean(),
 })
 const Guide = z.strictObject({
+  contractVersion: z.literal(2).optional(),
   steps: z.array(GuideItem).min(1).max(20),
   criteria: z.array(GuideItem).min(1).max(10),
 })
@@ -466,6 +470,86 @@ export function createPensaRoutes(deps: { members: MembersClient; session: Sessi
       const { taskId } = await ctx.params
       if (!parseId(taskId)) return notFound()
       const result = await members.pensaGetTaskHandoff(taskId)
+      if (result.status === 200 && result.body?.task.guide.contractVersion === 2) {
+        const user = await session.getSession()
+        if (!user)
+          return NextResponse.json(
+            { error: { code: 'UNAUTHENTICATED', message: 'Entre de novo para continuar.' } },
+            { status: 401 },
+          )
+        // ⚠️ Falha de LEITURA não é recusa (full review de 14/10/2026): sem gamificação ou sem as
+        // capacidades, a resposta era `owned:false` com "Os recursos desta missão mudaram", e um
+        // soluço de rede trancava o guia. Agora é 503 recuperável; só a recusa real tranca.
+        const unavailable = (cause?: unknown) => {
+          if (cause !== undefined)
+            console.error('[pensa-v2] conferência da missão falhou', {
+              taskId,
+              name: cause instanceof Error ? cause.name : typeof cause,
+            })
+          return NextResponse.json(
+            {
+              error: {
+                code: 'PENSA_CAPABILITIES_UNAVAILABLE',
+                message: 'Não consegui conferir seus recursos agora. Tente de novo em instantes.',
+              },
+            },
+            { status: 503, headers: { 'Retry-After': '5' } },
+          )
+        }
+        let level: string | undefined
+        let caps: Awaited<ReturnType<typeof getPensaCapabilities>>
+        try {
+          const gam = await members.getGamificationReadonly()
+          level = gam.status === 200 ? gam.body?.level?.slug : undefined
+          caps = level ? await getPensaCapabilities(members, level, user.role) : null
+        } catch (cause) {
+          return unavailable(cause)
+        }
+        if (!caps) return unavailable()
+        const task = result.body.task
+        const available =
+          task.destination === 'studio'
+            ? caps.studioAvailable
+            : task.destination === 'pinta'
+              ? caps.pintaAvailable
+              : caps.moldaAvailable
+        const catalog =
+          task.context.kind === 'studio'
+            ? availablePlannerCatalog(caps.tier, task.context.dimension)
+            : null
+        let blocked =
+          !available ||
+          (task.context.kind === 'studio' &&
+            (!catalog ||
+              task.context.blockIds.some((id) => !catalog.blocks.some((b) => b.type === id))))
+        if (task.destination === 'molda') {
+          let journey: Awaited<ReturnType<typeof members.pensaJourneyGet>>
+          try {
+            journey = await members.pensaJourneyGet(result.body.project.id)
+          } catch (cause) {
+            return unavailable(cause)
+          }
+          if (journey.status !== 200 || !journey.body) return unavailable()
+          const mission = journey.body.journey.proposal?.missions[task.position]
+          const availableTools: string[] = MOLDA_TOOL_FAMILIES.filter(
+            (tool) =>
+              isPrivilegedRole(user.role) ||
+              journeyLevelAtLeast(level, MOLDA_TOOL_BAND_LEVELS[tool.band]),
+          ).map((tool) => tool.id)
+          blocked ||=
+            mission?.destination !== 'molda' ||
+            mission.toolIds.some((id) => !availableTools.includes(id))
+        }
+        if (blocked)
+          return response(200, {
+            ...result.body,
+            capability: {
+              owned: false,
+              blockedReason:
+                'Os recursos desta missão mudaram. Volte ao Pensa para ajustar seu caminho.',
+            },
+          })
+      }
       return response(result.status, result.body)
     },
   }

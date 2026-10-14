@@ -169,6 +169,11 @@ const FORA_DA_VARREDURA: ForaDaVarredura[] = [
     motivo: 'instrução para o modelo de IA do Estúdio, nunca desenhada',
   },
   {
+    caminho: 'member-shell/src/server/pensa-journey/planner.ts',
+    motivo:
+      'o PROMPT do planejador do Pensa v2 e os motivos de recusa devolvidos ao MODELO (o "guia" de cada missão é a peça do contrato que ele escreve); a frase que a criança lê vai no 2º argumento do `JourneyOutputInvalid`. ⚠️ Texto de tela novo neste arquivo não é varrido: frase para a criança mora fora dele',
+  },
+  {
     caminho: /^studio\/src\/official-extensions\/[^/]+\/(?:ai|aiSummary)\.ts$/,
     motivo: 'o manual de cada extensão escrito para o modelo de IA (Zappy), nunca desenhado',
   },
@@ -442,8 +447,12 @@ function varrerAlcance() {
         if (!fora && CONCORDANCIA_ERRADA.test(literal.texto))
           concordancias.push(`${arquivo}:${literal.linha} → ${normalizar(literal.texto)}`)
         const daPlataforma = GUIA_DA_PLATAFORMA.some((pacote) => arquivo.startsWith(pacote))
-        if (!fora && daPlataforma && GUIA_PESSOA.test(literal.texto))
-          guias.push(`${arquivo}:${literal.linha} → ${normalizar(literal.texto)}`)
+        // ⚠️ Um arquivo fora da varredura também esconde o "guia" (o prompt do planejador do
+        // Pensa só tem esse): conta como uso da entrada, senão ela pareceria sobrando.
+        if (daPlataforma && GUIA_PESSOA.test(literal.texto)) {
+          if (fora) escondidosPor.set(fora, (escondidosPor.get(fora) ?? 0) + 1)
+          else guias.push(`${arquivo}:${literal.linha} → ${normalizar(literal.texto)}`)
+        }
         if (!PALAVRAS_DA_ESCOLA.test(literal.texto)) continue
         if (fora) {
           escondidosPor.set(fora, (escondidosPor.get(fora) ?? 0) + 1)

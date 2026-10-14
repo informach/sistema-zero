@@ -89,6 +89,7 @@ import { GetPensaProjectService } from './application/pensa/get-project.service'
 import { GetPensaStageService } from './application/pensa/get-stage.service'
 import { GetPensaTaskHandoffService } from './application/pensa/get-task-handoff.service'
 import { JoinPensaProjectService } from './application/pensa/join-project.service'
+import { PensaJourneyService } from './application/pensa/journey.service'
 import { ListPensaProjectMembersService } from './application/pensa/list-project-members.service'
 import { ListPensaProjectsService } from './application/pensa/list-projects.service'
 import { RemovePensaProjectMemberService } from './application/pensa/remove-project-member.service'
@@ -164,6 +165,7 @@ import { DrizzleLiveMaterialsRepository } from './infrastructure/persistence/dri
 import { DrizzleLiveWorkspaceRepository } from './infrastructure/persistence/drizzle/live-workspace.repository'
 import { DrizzleParentReportRepository } from './infrastructure/persistence/drizzle/parent-report.repository'
 import { DrizzlePensaRepository } from './infrastructure/persistence/drizzle/pensa.repository'
+import { DrizzlePensaJourneyRepository } from './infrastructure/persistence/drizzle/pensa-journey.repository'
 import { DrizzleProcessedWebhookRepository } from './infrastructure/persistence/drizzle/processed-webhook.repository'
 import { DrizzleProgressRepository } from './infrastructure/persistence/drizzle/progress.repository'
 import { DrizzleQuizAttemptRepository } from './infrastructure/persistence/drizzle/quiz-attempt.repository'
@@ -944,6 +946,18 @@ export async function createApplication(env: Env): Promise<Application> {
       joinProject: joinPensaProject,
       listProjectMembers: listPensaProjectMembers,
       removeProjectMember: removePensaProjectMember,
+      accessCheck,
+      getGamification,
+      internalToken: env.INTERNAL_API_TOKEN,
+    },
+    pensaJourney: {
+      service: new PensaJourneyService(
+        new DrizzlePensaJourneyRepository(db, {
+          dailyLimit: env.AI_LIMIT_DAILY,
+          monthlyLimit: env.AI_LIMIT_MONTHLY,
+        }),
+        clock,
+      ),
       accessCheck,
       getGamification,
       internalToken: env.INTERNAL_API_TOKEN,

@@ -36,6 +36,7 @@ import {
   TrashIcon,
   UsersIcon,
 } from './icons'
+import { JourneyApp } from './JourneyApp'
 import { TaskPlan } from './TaskPlan'
 import { TeamDialog } from './TeamDialog'
 import { DirtyContext, type DirtyRegistry, useUnsavedChanges } from './unsavedChanges'
@@ -107,7 +108,34 @@ function failure(cause: unknown): PensaFailure {
   return { kind: 'technical', text: errorMessage(cause) }
 }
 
-export function PensaApp({
+export function PensaApp(props: Parameters<typeof LegacyPensaApp>[0]) {
+  return <PensaWorkspace key={props.adapter.viewerId ?? 'session'} {...props} />
+}
+
+function PensaWorkspace(props: Parameters<typeof LegacyPensaApp>[0]) {
+  const [legacy, setLegacy] = useState<{ id?: string } | null>(null)
+  const openLegacy = useCallback((id?: string) => setLegacy({ id }), [])
+  if (legacy)
+    return (
+      <div className="pensa-legacy-container">
+        <div className="pensa-legacy-bar">
+          <button
+            className="sz-tool-pill sz-tool-pill--quiet"
+            type="button"
+            onClick={() => setLegacy(null)}
+          >
+            <ArrowLeftIcon size={16} />
+            Voltar aos meus jogos
+          </button>
+        </div>
+        <LegacyPensaApp {...props} initialProjectId={legacy.id} />
+      </div>
+    )
+  return <JourneyApp {...props} onLegacy={openLegacy} />
+}
+
+/** O plano clássico (até 14/10/2026): hoje só abre pelos planos anteriores e pelas equipes. */
+export function LegacyPensaApp({
   adapter,
   initialProjectId = null,
   onWorkspaceChange,

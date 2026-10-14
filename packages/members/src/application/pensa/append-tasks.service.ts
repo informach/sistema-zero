@@ -6,6 +6,7 @@ import type { NewPensaTask, PensaRepository } from '../../domain/ports/pensa-rep
 import { ValidationError } from '../../domain/shared/errors'
 import { type PensaTaskView, toPensaTaskView } from '../mappers/pensa-views'
 import {
+  legacyGuide,
   plannedTask,
   type ReplacePensaTaskInput,
   validatePensaTaskInputs,
@@ -51,7 +52,7 @@ export class AppendPensaTasksService {
         }
         return resolved
       }),
-      guide: task.guide,
+      guide: legacyGuide(task.guide),
       context: task.context,
     }))
     const now = this.clock()

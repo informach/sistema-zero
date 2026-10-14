@@ -1,8 +1,8 @@
 'use client'
-
+import { PrivateZappyVoice } from '@sistemazero/member-shell/components/private-zappy-voice'
 import { sessionFetch as fetch } from '@sistemazero/member-shell/lib/session-fetch'
-
 import type { MoldaAsset } from '@sistemazero/molda/assets'
+import { PensaInstructions } from '@sistemazero/ui/pensa-instructions'
 import { ChevronDown } from 'lucide-react'
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import { z } from 'zod'
@@ -14,6 +14,19 @@ import type { MoldaTaskHandoff, MoldaTaskProgressUpdate } from './use-pensa-task
 // do Pensa vestem as mesmas receitas do `@sistemazero/ui/tool-chrome.css`, e o alvo de toque vem
 // do `--sz-tool-hit` (40px no mouse, 44 no toque) em vez de um `min-h-11` só deste painel.
 const button = 'sz-tool-pill sz-tool-pill--outline'
+
+/**
+ * A frase do recado: a do host quando ela é para a criança (`childMessage`, a convenção dos
+ * guias), a do próprio guia (os `Error` em português que ele lança), e o recado padrão para o
+ * resto. ⚠️ O `TypeError` do `fetch` sem rede vinha em inglês ("Failed to fetch") e ia direto
+ * para a tela.
+ */
+function fraseParaACrianca(cause: unknown, padrao: string): string {
+  const child = (cause as { childMessage?: unknown } | null)?.childMessage
+  if (typeof child === 'string' && child.trim()) return child
+  if (cause instanceof TypeError) return 'Não consegui falar com o plano agora. Confira a internet.'
+  return cause instanceof Error && cause.message ? cause.message : padrao
+}
 type GuideAsset = Pick<MoldaAsset, 'id' | 'name' | 'kind'>
 export type MoldaGuidePersistence = Pick<MoldaPersistenceLike, 'load' | 'loadAll' | 'subscribe'> & {
   listSummaries?: () => Promise<GuideAsset[]>
@@ -26,16 +39,25 @@ export function MoldaTaskGuide({
   onOpenAsset,
   onReturn,
   hasOpenCreation,
+  onConfirmSaved,
+  onNextMission,
+  nextMissionLabel,
   collapsed,
   onCollapsedChange,
+  narrationEnabled = false,
 }: {
   profileId: string | null
+  narrationEnabled?: boolean
   handoff: MoldaTaskHandoff
   persistence: MoldaGuidePersistence
   onProgress: (progress: MoldaTaskProgressUpdate) => void
   onOpenAsset: (id: string) => void
   onReturn: () => void
   hasOpenCreation: () => Promise<boolean>
+  onConfirmSaved?: (assetId: string) => Promise<void>
+  onNextMission?: () => Promise<void>
+  /** "Continuar no Estúdio" quando a próxima missão é em outra oficina; ausente = "meu caminho". */
+  nextMissionLabel?: string
   /**
    * O guia recolhido, e o aviso de que a criança mexeu na seta.
    *
@@ -143,6 +165,8 @@ export function MoldaTaskGuide({
             assetKind: selected.kind,
           }
         : null
+      if (complete && task.guide.contractVersion === 2 && selected)
+        await onConfirmSaved?.(selected.id)
       const response = await fetch(`/api/pensa/tasks/${encodeURIComponent(task.id)}/progress`, {
         method: 'PATCH',
         headers: { 'content-type': 'application/json' },
@@ -153,7 +177,10 @@ export function MoldaTaskGuide({
               ? 'in_progress'
               : task.progress.status,
           completedStepIds: steps,
-          completedCriteriaIds: criteria,
+          completedCriteriaIds:
+            complete && task.guide.contractVersion === 2
+              ? task.guide.criteria.map((c) => c.id)
+              : criteria,
           outputRef,
           expectedUpdatedAt: task.progress.updatedAt,
         }),
@@ -181,7 +208,7 @@ export function MoldaTaskGuide({
       }
       return true
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Não conseguimos guardar o progresso.')
+      setError(fraseParaACrianca(cause, 'Não conseguimos guardar o progresso.'))
       return false
     } finally {
       saving.current = false
@@ -190,10 +217,21 @@ export function MoldaTaskGuide({
   }
   const ready =
     Boolean(assetId) &&
-    task.guide.steps.every((item) => !item.required || steps.includes(item.id)) &&
-    task.guide.criteria.every((item) => !item.required || criteria.includes(item.id))
+    (task.guide.contractVersion === 2 ||
+      task.guide.steps.every((item) => !item.required || steps.includes(item.id))) &&
+    (task.guide.contractVersion === 2 ||
+      task.guide.criteria.every((item) => !item.required || criteria.includes(item.id)))
   const done = task.progress.status === 'completed'
-  async function navigate(action: () => void) {
+  /**
+   * ⚠️ A confirmação da NUVEM (`onConfirmSaved`) só no "Continuar" (o "Experimentei e
+   * funcionou" confere dentro do `save`). Voltar ao plano, abrir a criação vinculada e "Travei
+   * aqui" não esperam a conta: sem internet a criança tem de conseguir voltar ao plano, e a
+   * criação segue guardada neste aparelho e sobe quando a rede voltar.
+   */
+  async function navigate(
+    action: () => void | Promise<void>,
+    { confirmarNuvem = false }: { confirmarNuvem?: boolean } = {},
+  ) {
     try {
       if (await hasOpenCreation()) {
         setError('Use Voltar na barra do Molda para guardar e fechar a criação antes de sair.')
@@ -204,9 +242,16 @@ export function MoldaTaskGuide({
         setError('Use Voltar na barra do Molda para guardar e fechar a criação antes de sair.')
         return
       }
-      action()
-    } catch {
-      setError('Não conseguimos conferir o salvamento. Volte à galeria do Molda e tente novamente.')
+      if (confirmarNuvem && task.guide.contractVersion === 2 && assetId)
+        await onConfirmSaved?.(assetId)
+      await action()
+    } catch (cause) {
+      setError(
+        fraseParaACrianca(
+          cause,
+          'Não conseguimos conferir o salvamento. Volte à galeria do Molda e tente novamente.',
+        ),
+      )
     }
   }
   const toggle = (values: string[], id: string) =>
@@ -263,6 +308,28 @@ export function MoldaTaskGuide({
             <strong>No jogo:</strong> {task.context.usage}
           </p>
           <div className="grid gap-4 md:grid-cols-2">
+            {task.guide.contractVersion === 2 ? (
+              <PensaInstructions
+                key={task.id}
+                steps={task.guide.steps}
+                renderListen={
+                  // Sem perfil não há voz: a rota recusaria (403) um dono vazio.
+                  narrationEnabled && profileId
+                    ? (stepId) => (
+                        <PrivateZappyVoice
+                          viewerId={profileId}
+                          reference={{
+                            origin: 'pensa_guide',
+                            taskId: task.id,
+                            revision: task.revision,
+                            stepId,
+                          }}
+                        />
+                      )
+                    : undefined
+                }
+              />
+            ) : null}
             {[
               {
                 title: 'Passos',
@@ -276,28 +343,32 @@ export function MoldaTaskGuide({
                 values: criteria,
                 update: (criteria: string[]) => updateForm({ criteria }),
               },
-            ].map((group) => (
-              <fieldset key={group.title} disabled={busy || done}>
-                <legend className="font-bold">{group.title}</legend>
-                {group.items.map((item) => (
-                  <label key={item.id} className="flex min-h-11 items-center gap-3 py-2 text-sm">
-                    <input
-                      type="checkbox"
-                      checked={group.values.includes(item.id)}
-                      onChange={() => group.update(toggle(group.values, item.id))}
-                      className="size-5 shrink-0 accent-primary"
-                    />
-                    <span>
-                      {item.text}
-                      {item.required ? '' : ' (opcional)'}
-                      {item.hint ? (
-                        <small className="block text-muted-foreground">{item.hint}</small>
+            ]
+              .filter((group) => task.guide.contractVersion !== 2 || group.title !== 'Passos')
+              .map((group) => (
+                <fieldset key={group.title} disabled={busy || done}>
+                  <legend className="font-bold">{group.title}</legend>
+                  {group.items.map((item) => (
+                    <label key={item.id} className="flex min-h-11 items-center gap-3 py-2 text-sm">
+                      {task.guide.contractVersion !== 2 ? (
+                        <input
+                          type="checkbox"
+                          checked={group.values.includes(item.id)}
+                          onChange={() => group.update(toggle(group.values, item.id))}
+                          className="size-5 shrink-0 accent-primary"
+                        />
                       ) : null}
-                    </span>
-                  </label>
-                ))}
-              </fieldset>
-            ))}
+                      <span>
+                        {item.text}
+                        {item.required ? '' : ' (opcional)'}
+                        {item.hint ? (
+                          <small className="block text-muted-foreground">{item.hint}</small>
+                        ) : null}
+                      </span>
+                    </label>
+                  ))}
+                </fieldset>
+              ))}
           </div>
           <label className="block text-sm font-bold" htmlFor="molda-task-asset">
             Criação que você guardou
@@ -371,12 +442,37 @@ export function MoldaTaskGuide({
                 <button
                   type="button"
                   className="sz-tool-pill sz-tool-pill--primary"
-                  disabled={busy || !ready || task.progress.status === 'planned'}
+                  disabled={
+                    busy ||
+                    !ready ||
+                    (task.guide.contractVersion !== 2 && task.progress.status === 'planned')
+                  }
                   onClick={() => save(true)}
                 >
-                  Concluir tarefa
+                  {task.guide.contractVersion === 2
+                    ? 'Experimentei e funcionou'
+                    : 'Concluir tarefa'}
                 </button>
               </>
+            ) : task.guide.contractVersion === 2 ? (
+              <button
+                type="button"
+                className="sz-tool-pill sz-tool-pill--primary"
+                disabled={busy}
+                onClick={() => void navigate(onNextMission ?? onReturn, { confirmarNuvem: true })}
+              >
+                {nextMissionLabel ?? 'Continuar meu caminho'}
+              </button>
+            ) : null}
+            {task.guide.contractVersion === 2 ? (
+              <button
+                type="button"
+                className={button}
+                disabled={busy}
+                onClick={() => void navigate(onReturn)}
+              >
+                Travei aqui
+              </button>
             ) : null}
             {assetId && assets.some((asset) => asset.id === assetId) ? (
               <button

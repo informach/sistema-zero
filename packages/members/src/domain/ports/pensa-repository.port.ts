@@ -182,11 +182,21 @@ export interface PensaRepository {
   listTasks(cycleId: string): Promise<PensaTask[]>
   replaceTasks(projectId: string, cycleId: string, tasks: NewPensaTask[], now: Date): Promise<void>
   appendTasks(projectId: string, cycleId: string, tasks: NewPensaTask[], now: Date): Promise<void>
+  /**
+   * `journey` = o projeto tem a jornada v2 ATIVA (a mesma régua que o `updateTaskProgress`
+   * usa para exigir a criação guardada). É ela, e não a marca do guia, que libera concluir
+   * uma missão direto do `planned`.
+   */
   findTaskWithProject(
     taskId: string,
     userId: string,
     audience: CourseAudience,
-  ): Promise<{ task: PensaTask; project: PensaProjectAccess; cycle: PensaCycle } | null>
+  ): Promise<{
+    task: PensaTask
+    project: PensaProjectAccess
+    cycle: PensaCycle
+    journey: boolean
+  } | null>
   updateTaskPlan(
     projectId: string,
     taskId: string,

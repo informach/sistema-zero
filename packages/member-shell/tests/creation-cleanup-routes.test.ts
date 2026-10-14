@@ -15,6 +15,45 @@ function request(secret = SECRET): Request {
 }
 
 describe('worker durável de limpeza das criações', () => {
+  test('limpeza de plano nunca chama finalização de exclusão da conta', async () => {
+    const paths: string[] = []
+    const claimBodies: unknown[] = []
+    let claimed = false
+    const gateway = {
+      gatewayFetchHmac: async (path: string, options?: { body?: unknown }) => {
+        paths.push(path)
+        if (path.endsWith('/claim')) {
+          claimBodies.push(options?.body)
+          if (claimed) return { status: 204, body: null }
+          claimed = true
+          return {
+            status: 200,
+            body: {
+              job: {
+                id: 'plan',
+                accountId: 'account',
+                userIds: ['child'],
+                prefixes: ['creations/child/pensa/plan/'],
+                attempts: 1,
+                scope: 'pensa',
+              },
+            },
+          }
+        }
+        return { status: 200, body: { completed: true } }
+      },
+    } as unknown as GatewayModule
+    const route = createCreationCleanupWorkerRoutes({
+      gateway,
+      deletePrefixes: async () => {},
+    }).creationCleanupWorker
+    expect((await route.POST(request())).status).toBe(200)
+    expect(paths.some((path) => path.includes('account-deletion'))).toBe(false)
+    expect(paths).toContain('/members/internal/creation-cleanups/plan/complete')
+    // Todo claim DECLARA que este worker entende a limpeza de plano: sem isso o members
+    // nunca entrega job de plano (um worker antigo finalizaria a conta da família).
+    expect(claimBodies).toEqual([{ scopes: ['pensa'] }, { scopes: ['pensa'] }])
+  })
   test('recusa chamada sem o bearer do scheduler', async () => {
     const gateway = {
       gatewayFetchHmac: async () => {

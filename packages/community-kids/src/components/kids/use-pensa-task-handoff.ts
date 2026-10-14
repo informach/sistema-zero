@@ -13,6 +13,7 @@ const guideItemSchema = z.object({
 })
 
 const guideSchema = z.object({
+  contractVersion: z.literal(2).optional(),
   steps: z.array(guideItemSchema),
   criteria: z.array(guideItemSchema),
 })
@@ -188,6 +189,9 @@ type Destination = 'pinta' | 'studio' | 'molda'
 type HandoffState<T> =
   | { status: 'idle'; data: null; error: null }
   | { status: 'loading'; data: null; error: null }
+  // Só na troca de missão com `keepPreviousWhileLoading`: a missão ANTERIOR, mantida até a nova
+  // chegar (ver `useStudioTaskHandoff`).
+  | { status: 'loading'; data: T; error: null }
   | { status: 'success'; data: T; error: null }
   | { status: 'error'; data: null; error: string }
 
@@ -263,6 +267,7 @@ export function useMoldaTaskHandoff(
 function useTaskHandoff<T, P>(
   taskId: string | null,
   config: HandoffConfig<T, P>,
+  keepPreviousWhileLoading = false,
 ): HandoffResult<T, P> {
   const [attempt, setAttempt] = useState(0)
   const [state, setState] = useState<HandoffState<T>>(
@@ -278,7 +283,14 @@ function useTaskHandoff<T, P>(
     }
 
     const controller = new AbortController()
-    setState({ status: 'loading', data: null, error: null })
+    // ⚠️ Na troca de missão (o "Continuar meu caminho" dentro do mesmo editor), a missão
+    // anterior FICA até a nova chegar: zerar o `data` aqui fazia o host trocar o editor pela
+    // tela de carregamento e o canvas, o desfazer e a posição eram perdidos.
+    setState((current) =>
+      keepPreviousWhileLoading && current.data !== null
+        ? { status: 'loading', data: current.data, error: null }
+        : { status: 'loading', data: null, error: null },
+    )
     void (async () => {
       try {
         const response = await fetch(`/api/pensa/tasks/${encodeURIComponent(taskId)}/handoff`, {
@@ -315,7 +327,7 @@ function useTaskHandoff<T, P>(
     })()
 
     return () => controller.abort()
-  }, [attempt, config, taskId])
+  }, [attempt, config, taskId, keepPreviousWhileLoading])
 
   const retry = useCallback(() => setAttempt((value) => value + 1), [])
   const updateProgress = useCallback(
@@ -339,8 +351,12 @@ export function usePintaTaskHandoff(
   return useTaskHandoff(taskId, pintaConfig)
 }
 
+/**
+ * No Estúdio a próxima missão do MESMO plano usa o MESMO arquivo (`pensa-<id>`): a missão
+ * anterior fica na tela enquanto a nova carrega, e o editor não é desmontado.
+ */
 export function useStudioTaskHandoff(
   taskId: string | null,
 ): HandoffResult<StudioTaskHandoff, StudioTaskProgressUpdate> {
-  return useTaskHandoff(taskId, studioConfig)
+  return useTaskHandoff(taskId, studioConfig, true)
 }

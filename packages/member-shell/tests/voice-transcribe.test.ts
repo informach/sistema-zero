@@ -8,7 +8,9 @@ import type { ProfileView, SessionUser } from '../src/lib/types'
 import {
   audioFormatFromBytes,
   isHallucinatedTranscript,
+  PENSA_SPOKEN_TEXT_MAX_CHARS,
   SPOKEN_AUDIO_MAX_BYTES,
+  SPOKEN_MAX_CHARS_HEADER,
   SPOKEN_TEXT_MAX_CHARS,
   sanitizeSpokenContext,
   TRANSCRIBE_KEYWORDS,
@@ -97,6 +99,7 @@ describe('regras puras da fala', () => {
     expect(tidyTranscript('  oi \n\n tudo   bem ')).toBe('oi tudo bem')
     const longo = tidyTranscript('🙂'.repeat(SPOKEN_TEXT_MAX_CHARS + 50))
     expect(Array.from(longo)).toHaveLength(SPOKEN_TEXT_MAX_CHARS)
+    expect(tidyTranscript('a'.repeat(1200), PENSA_SPOKEN_TEXT_MAX_CHARS)).toHaveLength(1200)
     expect(longo.endsWith('🙂')).toBe(true)
   })
 })
@@ -163,6 +166,22 @@ describe('o interruptor VOICE_INPUT_ENABLED', () => {
 })
 
 describe('transcribeSpeech (OpenRouter)', () => {
+  // Full review de 14/10/2026: o servidor tinha tirado o teto de TODOS os formulários para servir
+  // só o Pensa. O padrão volta a ser 1000; o teto maior só com o pedido explícito.
+  test('o teto de 1000 vale por padrão, e só o pedido explícito leva até 4000', async () => {
+    const fala = 'a'.repeat(1200)
+    const padrao = await transcribeSpeech(
+      { audio: gravacao(64), format: 'webm' },
+      deps(provedor([ok(fala)]).fetchFalso),
+    )
+    expect(padrao.text).toHaveLength(SPOKEN_TEXT_MAX_CHARS)
+    const pensa = await transcribeSpeech(
+      { audio: gravacao(64), format: 'webm', maxChars: PENSA_SPOKEN_TEXT_MAX_CHARS },
+      deps(provedor([ok(fala)]).fetchFalso),
+    )
+    expect(pensa.text).toHaveLength(1200)
+  })
+
   test('manda o áudio em base64 com idioma, temperatura, deny e o vocabulário da plataforma', async () => {
     const { chamadas, fetchFalso } = provedor([ok('  meu personagem   não pula ')])
     const audio = gravacao(64)
@@ -438,6 +457,19 @@ describe('POST /api/voice/transcribe', () => {
     expect(recebido.format).toBe('webm')
     expect(recebido.context).toBe('O Farol 🌊 · Andar')
     expect(recebido.audio.byteLength).toBe(4096)
+  })
+
+  test('o teto maior só vale para o formulário que pede EXATAMENTE o do Pensa', async () => {
+    const tetos: (number | undefined)[] = []
+    for (const header of [null, '4000', '9999', '1000', ' 4000 ', 'abc']) {
+      const { routes, recebidos } = montar()
+      const res = await routes.voiceTranscribe.POST(
+        pedido(gravacao(), header === null ? {} : { [SPOKEN_MAX_CHARS_HEADER]: header }),
+      )
+      expect(res.status).toBe(200)
+      tetos.push(recebidos[0]?.maxChars)
+    }
+    expect(tetos).toEqual([1000, 4000, 1000, 1000, 4000, 1000])
   })
 
   test('o MIME do Safari (audio/mp4) passa, e o formato vem dos bytes', async () => {

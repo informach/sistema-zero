@@ -214,13 +214,16 @@ function blockLevelAllowed(entry: ServerBlockCatalogEntry, tier: StudioTier): bo
   return BLOCK_LEVELS.indexOf(entry.level) <= BLOCK_LEVELS.indexOf(tier.level)
 }
 
-function dimensionAllows(entry: ServerBlockCatalogEntry, dimension: '2d' | '3d'): boolean {
+export function dimensionAllows(
+  entry: { extension: string | null; category?: string },
+  dimension: '2d' | '3d',
+): boolean {
   if (dimension === '3d') return true
   return (
     entry.extension !== 'game-3d' &&
     entry.extension !== 'game-3d-advanced' &&
     entry.extension !== 'world-3d' &&
-    !entry.category.includes('3D')
+    !entry.category?.includes('3D')
   )
 }
 

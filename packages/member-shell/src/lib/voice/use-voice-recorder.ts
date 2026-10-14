@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { registerLessonMedia, requestLessonMediaFocus } from '../lesson-media-focus'
 import { sessionFetch } from '../session-fetch'
+import { SPOKEN_MAX_CHARS_HEADER, SPOKEN_TEXT_MAX_CHARS } from './transcription'
 
 /**
  * O gravador da fala da criança (14/10/2026): grava no navegador, confere que houve voz, manda
@@ -136,11 +137,17 @@ export interface UseVoiceRecorder {
 export function useVoiceRecorder({
   viewerId,
   context,
+  maxChars,
   onText,
 }: {
   viewerId: string | null
   /** Onde a criança está (título da fase · parte), para o modelo acertar o vocabulário. */
   context?: string
+  /**
+   * Teto do texto que o servidor devolve. Só o Pensa pede mais que o padrão (`4000`); qualquer
+   * outro valor é ignorado pelo servidor.
+   */
+  maxChars?: number
   onText: (text: string) => void
 }): UseVoiceRecorder {
   const [supported, setSupported] = useState(false)
@@ -152,8 +159,8 @@ export function useVoiceRecorder({
   const upload = useRef<AbortController | null>(null)
   const owner = useRef(Symbol('voz-da-crianca'))
   // Refs para os callbacks lerem o valor de agora sem refazer os efeitos.
-  const live = useRef({ viewerId, context, onText })
-  live.current = { viewerId, context, onText }
+  const live = useRef({ viewerId, context, maxChars, onText })
+  live.current = { viewerId, context, maxChars, onText }
 
   useEffect(() => setSupported(voiceRecordingSupported()), [])
 
@@ -182,6 +189,8 @@ export function useVoiceRecorder({
         .slice(0, 200)
         .join('')
       if (lugar) headers['x-sz-voice-context'] = encodeURIComponent(lugar)
+      const teto = live.current.maxChars
+      if (teto && teto > SPOKEN_TEXT_MAX_CHARS) headers[SPOKEN_MAX_CHARS_HEADER] = String(teto)
       const res = await sessionFetch('/api/voice/transcribe', {
         method: 'POST',
         headers,

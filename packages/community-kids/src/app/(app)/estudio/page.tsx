@@ -1,4 +1,5 @@
 import { isPrivilegedRole } from '@sistemazero/member-shell/lib/studio-tier'
+import { isVoiceInputConfigured } from '@sistemazero/member-shell/server/openrouter-transcribe'
 import { isStudioZappyAllowed } from '@sistemazero/member-shell/server/zappy-access'
 import {
   KidsJourneyLockedStudio,
@@ -8,6 +9,7 @@ import { KidsLockedStudio } from '@/components/kids/kids-locked-studio'
 import { KidsStudioUnavailable } from '@/components/kids/kids-studio-unavailable'
 import { StudioFullClient } from '@/components/kids/studio-full-client'
 import { ToolRouteRecado } from '@/components/kids/tool-route-recado'
+import { getEnv } from '@/lib/env'
 import {
   checkChallengeAccessReadonly,
   checkCreativeToolsAccessReadonly,
@@ -17,6 +19,7 @@ import {
   getStudioUnlocksReadonly,
 } from '@/server/members'
 import { getSession } from '@/server/session'
+import { shell } from '@/server/shell'
 import { studioGate } from '@/server/studio-gate'
 
 export const dynamic = 'force-dynamic'
@@ -110,6 +113,15 @@ export default async function EstudioPage({
   // Falhou → `null` = "não sei" e o medidor some, nunca "0 restantes".
   const zappyEnabled = isStudioZappyAllowed(session, levelSlug)
   const creditsRes = zappyEnabled ? await creditosPendentes : null
+  // Ditado na pergunta ao tutor (14/10/2026): a MESMA régua da fase e dos Recados (criança, sem
+  // sessão de suporte, fala ligada no servidor, escolha dos pais relida no PRÓPRIO perfil), sem
+  // interruptor à parte para o texto que vai ao Zappy (decisão dela). Sem o tutor, nem pergunta
+  // ao perfil.
+  const voiceProfile =
+    zappyEnabled && session?.kids?.kind === 'student' && !session.act && isVoiceInputConfigured()
+      ? await shell.auth.getMyProfileReadonly().catch(() => null)
+      : null
+  const perfilDaFala = voiceProfile?.status === 200 ? voiceProfile.body?.profile : null
   return (
     <StudioFullClient
       viewerId={session?.id ?? null}
@@ -119,6 +131,10 @@ export default async function EstudioPage({
       // O tutor abre por MÉRITO: equipe sempre, aluno a partir do degrau mínimo
       // da jornada (Inventor). O rank já veio na gamificação acima.
       zappyEnabled={zappyEnabled}
+      narrationEnabled={Boolean(getEnv().ELEVENLABS_API_KEY)}
+      voiceInputEnabled={
+        perfilDaFala?.id === session?.id && perfilDaFala?.voiceInputEnabled === true
+      }
       aiCredits={creditsRes?.status === 200 ? (creditsRes.body ?? null) : null}
       taskId={tarefa ?? null}
       initialProjectId={projeto ?? null}

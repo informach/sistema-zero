@@ -53,6 +53,11 @@ import {
   sha256Hex,
 } from './creations-cloud'
 import { createStoredSyncedMarks, reconcileCreations, type SyncedMarks } from './creations-sync'
+import {
+  clearPensaRestore,
+  isPensaRestorePending,
+  pensaRestoreRevision,
+} from './pensa-restore-pending'
 import { perfSpanAsync } from './perf'
 
 /** O pedaço do módulo `@sistemazero/studio` que este adaptador usa. */
@@ -288,6 +293,12 @@ export function createStudioCloudSync(options: {
   onWarnings?: (itemId: string, warnings: string[]) => void
   /** Prazo de cada PÁGINA da lista da nuvem (testes). Default: `LIST_TIMEOUT_MS`. */
   listTimeoutMs?: number
+  /**
+   * A marca de restauração do Pensa v2 que este aparelho ainda não alcançou (ver
+   * `pensa-restore-pending.ts`): ler a revisão restaurada (`null` = nada) e apagar a marca.
+   * Default: a marca guardada por perfil no `localStorage`.
+   */
+  pensaRestore?: { revision(itemId: string): number | null; clear(itemId: string): void }
 }): {
   /** Liga o espelho (subidas automáticas). Devolve o desligar. */
   attach(): () => void
@@ -312,6 +323,10 @@ export function createStudioCloudSync(options: {
   const now = options.now ?? (() => Date.now())
   const marks =
     options.marks ?? createStoredSyncedMarks(`sz:creations-synced:studio:${options.viewerId}`)
+  const pensaRestore = options.pensaRestore ?? {
+    revision: (itemId: string) => pensaRestoreRevision(options.viewerId, itemId),
+    clear: (itemId: string) => clearPensaRestore(options.viewerId, itemId),
+  }
   const onWarnings =
     options.onWarnings ??
     ((itemId: string, warnings: string[]) => {
@@ -441,6 +456,16 @@ export function createStudioCloudSync(options: {
    * reserva aceita qualquer base numa linha apagada).
    */
   async function resolveStale(id: string): Promise<void> {
+    // ⚠️ SÓ a restauração do Pensa v2 inverte a regra. Restaurar troca o arquivo NA CONTA e o
+    // plano passa a apontar para a revisão restaurada: aqui a versão da nuvem é a que fica neste
+    // id, e a daqui precisa virar a cópia. Isso só a DESCIDA faz direito (com o editor fechado
+    // ela guarda o rascunho daqui como cópia e restaura a da nuvem no mesmo id), então o envio
+    // para e pede para reabrir. Qualquer outro conflito de um jogo do Pensa (o caso comum de
+    // dois aparelhos, ou um plano v1) segue a regra de sempre logo abaixo.
+    if (isPensaRestorePending(pensaRestore.revision(id), marks.revision(id)))
+      throw Object.assign(new Error('O jogo do Pensa precisa ser reaberto.'), {
+        code: 'CREATION_REOPEN_REQUIRED',
+      })
     const downloaded = await cloud.download(id)
     if (downloaded) {
       // A nuvem tem EXATAMENTE a versão que este aparelho já conhecia (outra aba deste perfil,
@@ -772,6 +797,24 @@ export function createStudioCloudSync(options: {
           )
         },
       })
+      // A base antiga foi recusada e a descida agora confirmou a versão atual.
+      // Reavalia o produtor para limpar o erro da fila; se nada mudou, ele devolve
+      // null sem upload. Enquanto o editor está aberto a marca não avança.
+      for (const summary of remote) {
+        // A restauração chegou a este aparelho: a marca de pendência cumpriu o papel dela.
+        const restoreRevision = pensaRestore.revision(summary.itemId)
+        if (
+          restoreRevision !== null &&
+          !isPensaRestorePending(restoreRevision, marks.revision(summary.itemId))
+        )
+          pensaRestore.clear(summary.itemId)
+        if (
+          cloud.getItemState(summary.itemId).code === 'CREATION_REOPEN_REQUIRED' &&
+          marks.revision(summary.itemId) === summary.revision &&
+          !summary.deletedAt
+        )
+          enqueue(summary.itemId)
+      }
       // As capas que a nuvem tem para jogos que JÁ estavam aqui sem capa (sincronizados antes
       // de a capa viajar, ou nunca abertos neste aparelho): sem baixar blob nenhum. Best-effort.
       if (studio.adoptCloudProjectThumbs && !pullAbort.signal.aborted) {

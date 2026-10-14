@@ -986,6 +986,64 @@
       border-inline-end: 1px solid var(--sz-tool-line);
     }
   }
+  /* ── OS PASSOS do guia v2 do Pensa (14/10/2026) ───────────────────────────────────────
+     O `PensaInstructions` (`@sistemazero/ui/pensa-instructions`) mora DENTRO dos três guias:
+     o do Estúdio, o do Pinta e o do Molda. Ele nasceu com `bg-sz-bg`, que é token do ESTÚDIO:
+     fora da raiz dele (`[data-sz-theme]`) a cor resolvia para o navy do menu do kids, e a tinta
+     do cartão ficava em cima dela com contraste 1,00:1 — os passos sumiam no Pinta e no Molda.
+     A régua do pacote é que nenhum componente do ui fala `--sz-tool-*`/`--sz-kids-*` por conta
+     própria: a cor vem SÓ destas classes, e a TINTA é herdada do `.sz-tool-guide` (é ela que
+     já passa no contraste nos dois temas). Os botões são as pílulas `--outline` da casa, que
+     já trazem o alvo `--sz-tool-hit`, o anel de foco e o desabilitado a meia opacidade. */
+  .sz-tool-guide__steps {
+    display: grid;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: var(--sz-tool-radius-control);
+    background: var(--sz-tool-surface-2);
+    color: inherit;
+  }
+  /* "Passo 1 de 3": o piso de 12px da casa, como o sobretítulo do guia. */
+  .sz-tool-guide__steps-count {
+    margin: 0;
+    font-family: var(--sz-tool-font-display);
+    font-size: 0.75rem;
+    font-weight: 800;
+    line-height: 1.2;
+    color: var(--sz-tool-muted);
+  }
+  .sz-tool-guide__step {
+    margin: 0;
+    font-weight: 700;
+    line-height: 1.4;
+    color: inherit;
+  }
+  .sz-tool-guide__step-hint {
+    margin: 0.5rem 0 0;
+    font-size: 0.875rem;
+    line-height: 1.45;
+    white-space: pre-line;
+    color: inherit;
+  }
+  .sz-tool-guide__steps-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  /* "Ver todos os passos" (§3.4 da proposta): a lista inteira, só para ler. Nada aqui marca
+     passo nenhum — orientação não é checklist. */
+  .sz-tool-guide__steps-all {
+    display: grid;
+    gap: 0.375rem;
+    margin: 0;
+    padding-inline-start: 1.25rem;
+    font-size: 0.875rem;
+    line-height: 1.45;
+    color: inherit;
+  }
+  .sz-tool-guide__steps-all > [aria-current="step"] {
+    font-weight: 800;
+  }
 
   /* ── O 3D DO BRILLIANT nas GALERIAS (11/09/2026, decisão dela) ─────────────────────────
      Dentro das faixas (`.sz-tool-bands`, ou seja, as galerias) os botões e o cartão "Novo

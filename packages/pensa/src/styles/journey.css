@@ -1,0 +1,999 @@
+/* ── PENSA v2: A JORNADA (14/10/2026) ─────────────────────────────────────────────────────────
+   A tela da jornada veste o MESMO desenho das galerias do Estúdio, do Pinta e do Molda: a pilha
+   de faixas (`.sz-tool-bands`, creme → céu → lilás), o cabeçalho `.sz-tool-header` com o quadrado
+   do menu e a seta, os títulos em Baloo 800, as pílulas e os cartões brancos de cantos largos.
+   Daqui só sai o que é do Pensa: o mapa Z·E·R·O, os cartões de cada momento (proposta, missão,
+   teste), a conversa com o Zappy e o caminho.
+   ⚠️ Regra sem camada vence as receitas `@layer components` do `tool-chrome.css`: nada aqui mira
+   `button`/`h1..h3` pelo ELEMENTO. Botão é sempre uma receita (`.sz-tool-pill`, `.sz-tool-chip`,
+   `.sz-tool-icon-btn`); ajuste de receita leva a classe da jornada na frente.
+   ⚠️ Piso de 12px para texto (régua da casa para criança); corpo em 15–16px. */
+
+.pensa-journey {
+  /* Teto das colunas de leitura: o cabeçalho, o mapa e os cartões terminam na MESMA borda. */
+  --pz-journey-max: 64rem;
+  height: 100%;
+  min-height: 0;
+  overflow: auto;
+}
+/* No claro a faixa creme e a céu têm a MESMA cor (o chão do Pen): somadas, as duas margens de
+   40px viravam um vão morto entre o cabeçalho e o cartão do momento. */
+.pensa-journey-top > .sz-tool-band__inner {
+  padding-bottom: 0.75rem;
+}
+.pensa-journey-now > .sz-tool-band__inner {
+  padding-top: 0.75rem;
+}
+.pensa-journey-top .sz-tool-header {
+  max-width: var(--pz-journey-max);
+}
+
+/* As colunas de leitura não esticam até a borda num monitor largo: a mesma margem esquerda do
+   cabeçalho, com um teto confortável para frases de criança. */
+.pensa-journey-stack {
+  display: grid;
+  /* `minmax(0, 1fr)`, nunca a trilha `auto`: com ela a grade de jogos (auto-fill) media pelo
+     conteúdo e a faixa inteira vazava para o lado num celular de 390px (medido). */
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+}
+.pensa-journey-stack > * {
+  max-width: var(--pz-journey-max);
+}
+
+.pensa-journey-zappy {
+  flex: none;
+  object-fit: contain;
+}
+
+/* ── Cabeçalho (faixa creme) ─────────────────────────────────────────────────────────────── */
+
+.pensa-journey-status .pensa-plan-status__dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* O mapa Z·E·R·O: quatro cartões brancos (o mesmo desenho do mapa do plano clássico). A etapa
+   vencida tem o visto no ladrilho verde, a atual o fio azul e a ação do momento, e a próxima
+   fica apagada. O estado nunca é só cor: o visto, o fio e a palavra embaixo dizem a mesma coisa. */
+.pensa-journey-zero {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  max-width: var(--pz-journey-max);
+  margin: 24px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.pensa-journey-zero li {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border: 2px solid var(--sz-tool-card-edge, transparent);
+  border-radius: var(--sz-tool-radius-card, 1rem);
+  background: var(--pz-surface);
+  color: var(--pz-muted);
+}
+.pensa-journey-zero__tile {
+  display: grid;
+  flex: 0 0 36px;
+  height: 36px;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--pz-surface-2);
+  color: var(--pz-muted);
+  font-family: var(--sz-tool-font-display, var(--font-display, "Baloo 2", sans-serif));
+  font-size: 1.125rem;
+  font-weight: 800;
+}
+.pensa-journey-zero__text {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+.pensa-journey-zero strong {
+  overflow: hidden;
+  color: var(--pz-ink);
+  font-family: var(--sz-tool-font-display, var(--font-display, "Baloo 2", sans-serif));
+  font-size: 0.9375rem;
+  font-weight: 800;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pensa-journey-zero small {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.pensa-journey-zero li.is-done .pensa-journey-zero__tile {
+  background: var(--sz-tool-ok-tint, color-mix(in oklab, var(--pz-green) 14%, var(--pz-surface)));
+  color: var(--sz-tool-ok, var(--pz-green));
+}
+.pensa-journey-zero li.is-current {
+  border-color: var(--pz-accent);
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--pz-accent) 14%, transparent);
+}
+.pensa-journey-zero li.is-current .pensa-journey-zero__tile {
+  background: var(--pz-accent);
+  color: var(--pz-on-fill);
+}
+.pensa-journey-zero li.is-current small {
+  color: var(--pz-accent);
+}
+.pensa-journey-zero li.is-next {
+  background: color-mix(in oklab, var(--pz-surface) 70%, transparent);
+}
+
+/* "Continuar de onde parou": o cartão de fechamento das páginas do kids (ladrilho, nome e a ação
+   à direita; embaixo no celular), logo sob o título, porque é o que quem volta veio fazer. */
+.pensa-journey-continue {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 20px;
+  max-width: var(--pz-journey-max);
+  margin-top: 24px;
+  padding: 20px 24px;
+  border: 1px solid var(--sz-tool-card-edge, transparent);
+  border-radius: var(--sz-tool-radius-card-lg, 1.5rem);
+  background: var(--pz-surface);
+}
+.pensa-journey-continue .sz-tool-tile {
+  font-family: var(--sz-tool-font-display, var(--font-display, "Baloo 2", sans-serif));
+  font-size: 1.375rem;
+  font-weight: 800;
+}
+.pensa-journey-continue__body {
+  flex: 1 1 16rem;
+  min-width: 0;
+}
+.pensa-journey-continue__name {
+  margin: 4px 0 0;
+  overflow-wrap: anywhere;
+  color: var(--pz-ink);
+  font-family: var(--sz-tool-font-display, var(--font-display, "Baloo 2", sans-serif));
+  font-size: 1.375rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+.pensa-journey-continue__text {
+  margin: 4px 0 0;
+  color: var(--pz-muted);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+/* ── Cartões do momento (faixa céu) ─────────────────────────────────────────────────────── */
+
+.pensa-journey-card {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+  padding: 24px;
+  border: 1px solid var(--sz-tool-card-edge, transparent);
+  border-radius: var(--sz-tool-radius-card-lg, 1.5rem);
+  background: var(--pz-surface);
+  color: var(--pz-ink);
+}
+/* O Zappy falando: ele à esquerda, o recado e as ações à direita. */
+.pensa-journey-card--talk {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 16px 20px;
+}
+.pensa-journey-card__body {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+.pensa-journey-card__body > p {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.55;
+}
+.pensa-journey-card__head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+.pensa-journey-card__head > div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.pensa-journey-card__title {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--pz-ink);
+  font-family: var(--sz-tool-font-display, var(--font-display, "Baloo 2", sans-serif));
+  font-size: clamp(1.25rem, 1.05rem + 0.8vw, 1.625rem);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+.pensa-journey-lead {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.pensa-journey-hint {
+  margin: 0;
+  color: var(--pz-muted);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+.pensa-journey-warn {
+  margin: 0;
+  color: color-mix(in oklab, var(--sz-tool-warn, oklch(0.52 0.14 58)) 85%, var(--pz-ink));
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+.pensa-journey-label {
+  color: var(--pz-ink);
+  font-size: 0.9375rem;
+  font-weight: 800;
+}
+.pensa-journey-subtitle {
+  margin: 0 0 8px;
+  color: var(--pz-muted);
+  font-family: var(--sz-tool-font-sans, inherit);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.pensa-journey-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+/* Ação terciária dentro de cartão branco: o "quieto" das faixas é branco e sumiria sobre o
+   cartão; aqui ele ganha o cinza-claro de superfície, abaixo do contorno na hierarquia. */
+.pensa-journey .pensa-journey-card .sz-tool-pill--quiet,
+.pensa-journey .pensa-journey-fold .sz-tool-pill--quiet {
+  border-color: transparent;
+  background: var(--pz-surface-2);
+}
+.pensa-journey .pensa-journey-card .sz-tool-pill--quiet:hover:not(:disabled),
+.pensa-journey .pensa-journey-fold .sz-tool-pill--quiet:hover:not(:disabled) {
+  background: color-mix(in oklab, var(--pz-surface-2) 88%, var(--pz-ink));
+}
+
+/* Os botões do host (ouvir e falar) vêm do member-shell com Tailwind; a regra de elemento do
+   `pensa.css` (`font: inherit`) apagaria o tamanho e o peso deles. */
+.pensa-journey .pensa-journey-listen button,
+.pensa-journey [data-sz-voice-input] button {
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+/* Esperando o Zappy: três pontinhos que respiram (parados com menos movimento). */
+.pensa-journey-dots {
+  display: inline-flex;
+  gap: 6px;
+}
+.pensa-journey-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--pz-accent);
+  animation: pensa-journey-dot 1.2s ease-in-out infinite;
+}
+.pensa-journey-dots span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.pensa-journey-dots span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+@keyframes pensa-journey-dot {
+  0%,
+  80%,
+  100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pensa-journey-dots span {
+    animation: none;
+    opacity: 0.6;
+  }
+}
+
+/* A proposta: o que veio da ideia da criança em pílulas com o visto (é DELA), o que o Zappy
+   sugeriu recolhido embaixo (é corrigível). */
+.pensa-journey-essentials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.pensa-journey-essentials li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: var(--sz-tool-radius-pill, 9999px);
+  background: color-mix(in oklab, var(--pz-accent) 10%, var(--pz-surface));
+  color: var(--pz-ink);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.pensa-journey-essentials svg {
+  flex: none;
+  color: var(--pz-accent);
+}
+.pensa-journey-suggestions {
+  margin: 0 0 8px;
+  padding-left: 20px;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+/* A missão: o ladrilho da oficina de destino (a assinatura de cada uma) e a régua do caminho. */
+.pensa-journey-mission .sz-tool-tile {
+  width: 3.25rem;
+  height: 3.25rem;
+}
+.pensa-journey-dots-path {
+  display: flex;
+  gap: 4px;
+  max-width: 28rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.pensa-journey-dots-path li {
+  flex: 1 1 0;
+  height: 8px;
+  border-radius: var(--sz-tool-radius-pill, 9999px);
+  background: var(--pz-surface-2);
+}
+.pensa-journey-dots-path li.is-done {
+  background: var(--sz-tool-ok, var(--pz-green));
+}
+.pensa-journey-dots-path li.is-now {
+  background: var(--pz-accent);
+}
+
+/* O teste da versão. */
+.pensa-journey-steps {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 22px;
+  font-size: 1rem;
+  line-height: 1.55;
+}
+.pensa-journey-results {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.pensa-journey-results legend {
+  float: left;
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 0;
+}
+.pensa-journey-done {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  padding: 14px 16px;
+  border-radius: var(--sz-tool-radius-card, 1rem);
+  background: var(--sz-tool-ok-tint, color-mix(in oklab, var(--pz-green) 14%, var(--pz-surface)));
+  color: var(--sz-tool-ok, var(--pz-green));
+}
+.pensa-journey-done p {
+  flex: 1 1 14rem;
+  margin: 0;
+  color: var(--pz-ink);
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+/* O recado de erro: a família do alerta do guia das oficinas (rosado, tinta misturada). */
+.pensa-journey-notice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  padding: 14px 16px;
+  border: 1px solid color-mix(in oklab, var(--pz-danger) 40%, var(--pz-surface));
+  border-radius: var(--sz-tool-radius-card, 1rem);
+  background: color-mix(in oklab, var(--pz-danger) 8%, var(--pz-surface));
+  color: color-mix(in oklab, var(--pz-danger) 80%, var(--pz-ink));
+  font-weight: 700;
+}
+.pensa-journey-notice p {
+  flex: 1 1 16rem;
+  margin: 0;
+  line-height: 1.45;
+}
+.pensa-journey .pensa-journey-chosen {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: var(--sz-tool-radius-card, 1rem);
+  background: color-mix(in oklab, var(--pz-accent) 8%, var(--pz-surface));
+  font-size: 0.9375rem;
+}
+.pensa-journey-chosen svg {
+  flex: none;
+  margin-top: 3px;
+  color: var(--pz-accent);
+}
+.pensa-journey-loading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  color: var(--pz-muted);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+/* ── A conversa e o campo de contar ─────────────────────────────────────────────────────── */
+
+.pensa-journey-compose__ask {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+/* A pergunta do Zappy é o RÓTULO do campo, desenhada como balão de fala. */
+.pensa-journey-bubble {
+  position: relative;
+  padding: 12px 16px;
+  border-radius: 18px 18px 18px 6px;
+  background: var(--pz-surface-2);
+  color: var(--pz-ink);
+  font-family: var(--sz-tool-font-display, var(--font-display, "Baloo 2", sans-serif));
+  font-size: 1.125rem;
+  font-weight: 800;
+  line-height: 1.3;
+}
+.pensa-journey-field {
+  width: 100%;
+  min-height: 3rem;
+  padding: 14px 16px;
+  border: 2px solid var(--pz-line);
+  border-radius: var(--sz-tool-radius-card, 1rem);
+  background: var(--pz-bg);
+  color: var(--pz-ink);
+  font-size: 1rem;
+  line-height: 1.55;
+  transition: border-color 0.12s ease;
+}
+textarea.pensa-journey-field {
+  min-height: 7rem;
+  resize: vertical;
+}
+.pensa-journey-field::placeholder {
+  color: var(--pz-muted);
+  opacity: 1;
+}
+.pensa-journey .pensa-journey-field:focus-visible {
+  border-color: var(--pz-accent);
+  outline: 3px solid color-mix(in oklab, var(--pz-accent) 25%, transparent);
+  outline-offset: 1px;
+}
+.pensa-journey-field:disabled {
+  opacity: 0.6;
+}
+.pensa-journey-compose__actions {
+  justify-content: space-between;
+}
+/* As ideias guardadas viram atalhos que PREENCHEM o campo (a criança revisa e envia): o mesmo
+   gesto dos chips do Zappy no plano clássico, que ela aprovou. */
+.pensa-journey-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.pensa-journey-chips legend {
+  float: left;
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 0;
+  color: var(--pz-muted);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+.pensa-journey .pensa-journey-chips .sz-tool-chip {
+  height: auto;
+  padding-block: 9px;
+  background: color-mix(in oklab, var(--pz-accent) 8%, var(--pz-surface));
+  line-height: 1.3;
+  text-align: left;
+  white-space: normal;
+}
+
+.pensa-journey-chat {
+  display: grid;
+  gap: 12px;
+}
+.pensa-journey-message {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+}
+.pensa-journey-message__bubble {
+  display: grid;
+  gap: 4px;
+  max-width: min(40rem, 100%);
+  padding: 12px 16px;
+  border-radius: 18px 18px 18px 6px;
+  background: var(--pz-surface-2);
+}
+.pensa-journey-message__bubble strong {
+  color: var(--pz-muted);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.pensa-journey-message__bubble p {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.pensa-journey-message--user {
+  justify-content: flex-end;
+}
+.pensa-journey-message--user .pensa-journey-message__bubble {
+  border-radius: 18px 18px 6px 18px;
+  background: color-mix(in oklab, var(--pz-accent) 14%, var(--pz-surface));
+}
+.pensa-journey-listen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ── Sanfonas (faixa lilás e dentro dos cartões) ─────────────────────────────────────────── */
+
+.pensa-journey-fold {
+  min-width: 0;
+  border: 1px solid var(--sz-tool-card-edge, transparent);
+  border-radius: var(--sz-tool-radius-card-md, 1.25rem);
+  background: var(--pz-surface);
+  color: var(--pz-ink);
+}
+.pensa-journey-fold > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 3.25rem;
+  padding: 12px 20px;
+  border-radius: inherit;
+  font-family: var(--sz-tool-font-display, var(--font-display, "Baloo 2", sans-serif));
+  font-size: 1.0625rem;
+  font-weight: 800;
+  line-height: 1.3;
+  list-style: none;
+  cursor: pointer;
+}
+.pensa-journey-fold > summary::-webkit-details-marker {
+  display: none;
+}
+/* A seta que gira: o estado aberto/fechado é dito também pelo próprio `details`. */
+.pensa-journey-fold > summary::after {
+  content: "";
+  flex: none;
+  width: 9px;
+  height: 9px;
+  margin-right: 4px;
+  border-right: 2.5px solid currentColor;
+  border-bottom: 2.5px solid currentColor;
+  color: var(--pz-muted);
+  transform: rotate(45deg) translateY(-2px);
+  transition: transform 0.15s ease;
+}
+.pensa-journey-fold[open] > summary::after {
+  transform: rotate(-135deg) translateY(-2px);
+}
+.pensa-journey-fold > summary:hover {
+  background: color-mix(in oklab, var(--pz-surface) 94%, var(--pz-ink));
+}
+.pensa-journey-fold[open] > summary {
+  border-end-start-radius: 0;
+  border-end-end-radius: 0;
+}
+.pensa-journey-fold__body {
+  display: grid;
+  gap: 12px;
+  padding: 4px 20px 20px;
+}
+/* Dentro de um cartão branco a sanfona é um quadro de fio, sem segunda superfície. */
+.pensa-journey-fold--inline {
+  border-color: var(--pz-line);
+  border-radius: var(--sz-tool-radius-card, 1rem);
+}
+.pensa-journey-fold--inline > summary {
+  min-height: 2.75rem;
+  padding: 8px 16px;
+  font-size: 0.9375rem;
+}
+.pensa-journey-fold--inline .pensa-journey-fold__body {
+  padding: 0 16px 14px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pensa-journey-fold > summary::after {
+    transition: none;
+  }
+}
+
+/* O caminho: uma linha por missão com o ladrilho da oficina, o número e o andamento. */
+.pensa-journey-path {
+  margin: 0;
+  list-style: none;
+}
+.pensa-journey-path li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 2px solid transparent;
+  border-radius: 14px;
+  background: var(--pz-bg);
+}
+.pensa-journey-path li.is-now {
+  border-color: var(--pz-accent);
+  background: var(--pz-surface);
+}
+.pensa-journey-path__tile {
+  display: grid;
+  flex: 0 0 32px;
+  height: 32px;
+  place-items: center;
+  border-radius: 9px;
+  color: var(--sz-tool-on-sig, #fff);
+  font-family: var(--sz-tool-font-display, var(--font-display, "Baloo 2", sans-serif));
+  font-size: 0.9375rem;
+  font-weight: 800;
+}
+.pensa-journey-path__tile--estudio {
+  background: var(--sz-tool-sig-estudio, oklch(0.52 0.15 252));
+}
+.pensa-journey-path__tile--pinta {
+  background: var(--sz-tool-sig-pinta, #e05353);
+}
+.pensa-journey-path__tile--molda {
+  background: var(--sz-tool-sig-molda, #8b5cf6);
+}
+.pensa-journey-path li.is-done .pensa-journey-path__tile {
+  background: var(--sz-tool-ok-tint, color-mix(in oklab, var(--pz-green) 14%, var(--pz-surface)));
+  color: var(--sz-tool-ok, var(--pz-green));
+}
+.pensa-journey-path__text {
+  display: grid;
+  flex: 1 1 auto;
+  min-width: 0;
+  gap: 2px;
+}
+.pensa-journey-path__text strong {
+  overflow-wrap: anywhere;
+  font-size: 0.9375rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+.pensa-journey-path__text small {
+  color: var(--pz-muted);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+.pensa-journey-path li.is-done .pensa-journey-path__text strong {
+  color: var(--pz-muted);
+}
+.pensa-journey .pensa-journey-path__review {
+  flex: none;
+}
+
+.pensa-journey-backlog,
+.pensa-journey-refs,
+.pensa-journey-care,
+.pensa-journey-legacy {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.pensa-journey-backlog li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+.pensa-journey-backlog svg {
+  flex: none;
+  margin-top: 3px;
+  color: color-mix(in oklab, var(--sz-tool-sig-pensa, oklch(0.8 0.15 70)) 70%, var(--pz-ink));
+}
+.pensa-journey-backlog small {
+  color: var(--pz-muted);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+.pensa-journey-refs a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--pz-accent);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.pensa-journey-care li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+}
+.pensa-journey-care small {
+  color: var(--pz-muted);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.pensa-journey-restore {
+  display: grid;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--pz-line);
+}
+.pensa-journey-restore select.pensa-journey-field {
+  max-width: 28rem;
+}
+.pensa-journey-legacy {
+  display: flex;
+  flex-wrap: wrap;
+}
+.pensa-journey .pensa-journey-remove {
+  color: color-mix(in oklab, var(--pz-danger) 85%, var(--pz-ink));
+}
+.pensa-journey-danger {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  margin: 0;
+  padding: 14px 16px;
+  border: 1px solid color-mix(in oklab, var(--pz-danger) 40%, var(--pz-surface));
+  border-radius: var(--sz-tool-radius-card, 1rem);
+  background: color-mix(in oklab, var(--pz-danger) 6%, var(--pz-surface));
+}
+.pensa-journey-danger p {
+  margin: 0;
+  font-weight: 700;
+  line-height: 1.5;
+}
+.pensa-journey .pensa-journey-delete {
+  background: var(--pz-danger);
+  color: #fff;
+}
+.pensa-journey .pensa-journey-delete:hover:not(:disabled) {
+  background: color-mix(in oklab, var(--pz-danger) 88%, var(--pz-ink));
+}
+
+/* ── A lista de jogos (home, faixa lilás) ───────────────────────────────────────────────── */
+
+.pensa-journey-games-head {
+  max-width: var(--pz-journey-max);
+}
+.pensa-journey-games {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.pensa-journey-game {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  min-width: 0;
+  padding: 18px 20px 20px;
+  border: 1px solid var(--sz-tool-card-edge, transparent);
+  border-radius: var(--sz-tool-radius-card-md, 1.25rem);
+  background: var(--pz-surface);
+}
+.pensa-journey-game__name {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--pz-ink);
+  font-family: var(--sz-tool-font-display, var(--font-display, "Baloo 2", sans-serif));
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+.pensa-journey-game .pensa-zero-track {
+  margin: 0;
+}
+.pensa-journey-game__status {
+  margin: 0;
+  color: var(--pz-muted);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+.pensa-journey-game .sz-tool-pill {
+  justify-self: start;
+}
+.pensa-journey-join {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  max-width: var(--pz-journey-max);
+  padding: 14px 18px;
+  border: 1px dashed color-mix(in oklab, var(--pz-ink) 18%, transparent);
+  border-radius: var(--sz-tool-radius-card-md, 1.25rem);
+  color: var(--pz-ink);
+}
+.pensa-journey-join > svg {
+  flex: none;
+  color: var(--pz-muted);
+}
+.pensa-journey-join p {
+  flex: 1 1 14rem;
+  margin: 0;
+  font-weight: 700;
+  line-height: 1.4;
+}
+.pensa-journey-empty {
+  margin: 0;
+  color: var(--pz-muted);
+  font-weight: 600;
+}
+/* O método em quatro cartões, para quem ainda não tem jogo: o que vai acontecer, sem formulário. */
+.pensa-journey-explainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12.5rem, 1fr));
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.pensa-journey-explainer li {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding: 18px 20px 20px;
+  border: 1px solid var(--sz-tool-card-edge, transparent);
+  border-radius: var(--sz-tool-radius-card-md, 1.25rem);
+  background: var(--pz-surface);
+}
+.pensa-journey-explainer .sz-tool-tile {
+  font-family: var(--sz-tool-font-display, var(--font-display, "Baloo 2", sans-serif));
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+.pensa-journey-explainer strong {
+  color: var(--pz-ink);
+  font-family: var(--sz-tool-font-display, var(--font-display, "Baloo 2", sans-serif));
+  font-size: 1.0625rem;
+  font-weight: 800;
+}
+.pensa-journey-explainer p {
+  margin: 0;
+  color: var(--pz-muted);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+/* ── O plano clássico aberto de dentro da jornada ───────────────────────────────────────── */
+
+.pensa-legacy-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
+.pensa-legacy-bar {
+  flex: none;
+  padding: 12px 16px 0;
+  background: var(--sz-tool-band-creme, var(--pz-bg));
+}
+
+/* ── Larguras estreitas (o planner é um container: vale também com o menu do host aberto) ── */
+
+@container (max-width: 720px) {
+  .pensa-journey-zero {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .pensa-journey-card {
+    padding: 20px;
+  }
+  .pensa-journey-card--talk {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .pensa-journey-card--talk > .pensa-journey-zappy {
+    width: 56px;
+    height: 56px;
+  }
+}
+@container (max-width: 480px) {
+  .pensa-journey-zero {
+    gap: 8px;
+  }
+  .pensa-journey-zero li {
+    gap: 8px;
+    padding: 10px;
+  }
+  .pensa-journey-zero__tile {
+    flex-basis: 30px;
+    height: 30px;
+    font-size: 1rem;
+  }
+  .pensa-journey-zero strong {
+    font-size: 0.8125rem;
+    white-space: normal;
+  }
+  .pensa-journey-zero small {
+    font-size: 0.75rem;
+  }
+  .pensa-journey-card,
+  .pensa-journey-continue {
+    padding: 16px;
+  }
+  .pensa-journey-card__head .sz-tool-tile,
+  .pensa-journey-card__head .pensa-journey-zappy {
+    width: 44px;
+    height: 44px;
+  }
+  .pensa-journey-actions > .sz-tool-pill,
+  .pensa-journey-continue > .sz-tool-pill {
+    flex: 1 1 100%;
+    white-space: normal;
+  }
+  .pensa-journey-bubble {
+    font-size: 1rem;
+  }
+  .pensa-journey-fold > summary {
+    padding-inline: 16px;
+  }
+  .pensa-journey-fold__body {
+    padding-inline: 16px;
+  }
+  .pensa-journey-path li {
+    flex-wrap: wrap;
+  }
+}

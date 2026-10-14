@@ -5,7 +5,9 @@ import {
   audioFormatFromBytes,
   SPOKEN_AUDIO_MAX_BYTES,
   SPOKEN_AUDIO_MIN_BYTES,
+  SPOKEN_MAX_CHARS_HEADER,
   sanitizeSpokenContext,
+  spokenTextMaxChars,
 } from '../lib/voice/transcription'
 import type { GatewayResponse } from '../server/gateway'
 import {
@@ -191,6 +193,8 @@ export function createVoiceRoutes({
           audio: read.bytes,
           format,
           context: readContext(req),
+          // O teto maior só vem quando o formulário o pede (a ideia do Pensa); o resto, 1000.
+          maxChars: spokenTextMaxChars(req.headers.get(SPOKEN_MAX_CHARS_HEADER)),
           signal: req.signal,
         })
         return NextResponse.json({ text }, { headers: { 'Cache-Control': 'private, no-store' } })

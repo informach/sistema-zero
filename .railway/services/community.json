@@ -7,6 +7,7 @@
       "/packages/core/**",
       "/packages/member-shell/**",
       "/packages/helpdesk-contracts/**",
+      "/packages/molda/**",
       "/packages/pinta/**",
       "/packages/studio/**",
       "/packages/ui/**",

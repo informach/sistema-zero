@@ -2,6 +2,8 @@
 
 import type { AiCreditsView } from '@sistemazero/core/ai-credits'
 import { STUDIO_PROJECT_FORMAT_VERSION } from '@sistemazero/core/studio'
+import { PrivateZappyVoice } from '@sistemazero/member-shell/components/private-zappy-voice'
+import { VoiceInputButton } from '@sistemazero/member-shell/components/voice-input/voice-input-button'
 // O CSS do Estúdio (tokens + @theme que GERA as utilitárias sz-*) é carregado pelo
 // `@import` em `app/globals.css`, DENTRO do pipeline Tailwind — um JS-import aqui só
 // traz os tokens, NÃO registra as cores p/ gerar as utilitárias (sem isso os modais e
@@ -20,8 +22,19 @@ import type {
   StudioTutorConfig,
 } from '@sistemazero/studio'
 import { RefreshCw } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { cloudConfirmRefusal, guideError, progressRefusal } from '@/lib/pensa-guide-errors'
+import { resolveNextPensaMission } from '@/lib/pensa-next-mission'
 import { type CreationsCloud, createCreationsCloud } from '../../lib/creations-cloud'
+import { createStoredSyncedMarks } from '../../lib/creations-sync'
+import {
+  clearPensaRestore,
+  isPensaRestorePending,
+  PensaOpenRefused,
+  pensaRestoreRevision,
+  reconcilePensaOpen,
+} from '../../lib/pensa-restore-pending'
 import { pensaStudioLinkKey, pensaStudioProjectId } from '../../lib/pensa-studio-link'
 import { resumeExistingCreation } from '../../lib/resume-creation'
 import { createStudioCloudSync } from '../../lib/studio-cloud'
@@ -29,6 +42,7 @@ import { openStudioZappyHelp, openStudioZappyLesson } from '../../lib/studio-zap
 import { EMBEDDED_STUDIO_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
 import { StudioFullEditor } from './studio-full-editor'
 import { HostChromeAnnouncer, useHostChrome } from './use-host-chrome'
+import { useNextMissionLabel } from './use-next-mission-label'
 import { usePensaGuideCollapsed } from './use-pensa-guide-collapsed'
 import { useStudioTaskHandoff } from './use-pensa-task-handoff'
 
@@ -57,6 +71,8 @@ export function StudioFullClient({
   initialProjectId = null,
   pintaOwned = false,
   moldaOwned = false,
+  narrationEnabled = false,
+  voiceInputEnabled = false,
 }: {
   viewerId: string | null
   /**
@@ -94,13 +110,19 @@ export function StudioFullClient({
    * posse, o adapter nem é criado e o Estúdio esconde o botão.
    */
   moldaOwned?: boolean
+  narrationEnabled?: boolean
+  voiceInputEnabled?: boolean
 }) {
+  const router = useRouter()
   const [mod, setMod] = useState<StudioModule | null>(null)
   const [loadError, setLoadError] = useState(false)
   const [view, setView] = useState<View>({ name: 'list' })
   const [openingProject, setOpeningProject] = useState<'loading' | 'error' | null>(
     initialProjectId && !taskId ? 'loading' : null,
   )
+  // A frase que explica por que o jogo não abriu, quando há uma melhor que o recado genérico
+  // (ex.: "Feche o jogo em outras abas"). `null` = o recado de sempre.
+  const [openingError, setOpeningError] = useState<string | null>(null)
   // "Guardado na sua conta": a fila da nuvem por perfil (o selo lê daqui) JUNTO do
   // desligar do espelho DELA — o par vive num estado só, para o cleanup de uma fila
   // nunca desligar o espelho da fila seguinte (era o que um ref compartilhado fazia).
@@ -120,15 +142,42 @@ export function StudioFullClient({
     cancelPull: () => void
   } | null>(null)
   const cloud = cloudSync?.cloud ?? null
+  /** Antes de abrir um jogo do Pensa: só age com uma restauração v2 pendente (ver o lib). */
+  const preparePensaOpen = useCallback(
+    async (projectId: string): Promise<void> => {
+      if (!viewerId) return
+      const marks = createStoredSyncedMarks(`sz:creations-synced:studio:${viewerId}`)
+      await reconcilePensaOpen({
+        restoreRevision: pensaRestoreRevision(viewerId, projectId),
+        syncedRevision: () => marks.revision(projectId),
+        clear: () => clearPensaRestore(viewerId, projectId),
+        pull: cloudSync ? () => cloudSync.pullMissing() : null,
+        peek: cloudSync ? () => cloudSync.cloud.peek(projectId) : null,
+      })
+    },
+    [cloudSync, viewerId],
+  )
+  const precisaPrepararAbertura = useCallback(
+    (projectId: string): boolean => {
+      if (!viewerId) return false
+      const restoreRevision = pensaRestoreRevision(viewerId, projectId)
+      if (restoreRevision === null) return false
+      const marks = createStoredSyncedMarks(`sz:creations-synced:studio:${viewerId}`)
+      return isPensaRestorePending(restoreRevision, marks.revision(projectId))
+    },
+    [viewerId],
+  )
   useEffect(() => {
     if (!mod || !initialProjectId || taskId) return
     let active = true
     setOpeningProject('loading')
+    setOpeningError(null)
     const persistence = mod.createLocalPersistenceAdapter({ namespace: viewerId ?? '' })
     void resumeExistingCreation(
       initialProjectId,
       (id) => persistence.load(id),
       cloudSync?.restoreProject ?? null,
+      () => preparePensaOpen(initialProjectId),
     )
       .then((project) => {
         if (!active) return
@@ -139,13 +188,15 @@ export function StudioFullClient({
         setView({ name: 'editor', projectId: initialProjectId })
         setOpeningProject(null)
       })
-      .catch(() => {
-        if (active) setOpeningProject('error')
+      .catch((error: unknown) => {
+        if (!active) return
+        setOpeningError(error instanceof PensaOpenRefused ? error.message : null)
+        setOpeningProject('error')
       })
     return () => {
       active = false
     }
-  }, [mod, initialProjectId, taskId, viewerId, cloudSync])
+  }, [mod, initialProjectId, taskId, viewerId, cloudSync, preparePensaOpen])
   const [taskError, setTaskError] = useState<string | null>(null)
   const [missingTaskProject, setMissingTaskProject] = useState<{
     projectId: string
@@ -273,6 +324,7 @@ export function StudioFullClient({
   const handoffStatus = taskHandoff?.task.progress.status ?? null
   const handoffProgressUpdatedAt = taskHandoff?.task.progress.updatedAt ?? null
   const handoffOutputProjectId = taskHandoff?.task.progress.outputRef?.projectId ?? null
+  const handoffV2 = taskHandoff?.task.guide.contractVersion === 2
 
   // O backup e o vínculo vivem no host do Estúdio. O id é determinístico e a
   // chave inclui viewer + projeto Pensa para irmãos/dispositivos não colidirem.
@@ -295,7 +347,9 @@ export function StudioFullClient({
       const mappingKey = pensaStudioLinkKey(viewerId, handoffProjectId)
       const deterministicId = pensaStudioProjectId(handoffProjectId)
       const projectId = deterministicId
-      const persistence = mod.createLocalPersistenceAdapter()
+      const persistence = mod.createLocalPersistenceAdapter({ namespace: viewerId ?? '' })
+      // Só faz rede com uma restauração v2 pendente neste aparelho (ver `preparePensaOpen`).
+      await preparePensaOpen(projectId)
       let project = await persistence.load(projectId)
       if (!project) {
         if (handoffOutputProjectId) {
@@ -343,9 +397,14 @@ export function StudioFullClient({
         }
       }
       if (active) setView({ name: 'editor', projectId })
-    })().catch(() => {
+    })().catch((error: unknown) => {
       openedTaskKeyRef.current = null
-      if (active) setTaskError('Não consegui criar ou restaurar o projeto desta tarefa.')
+      if (active)
+        setTaskError(
+          error instanceof PensaOpenRefused
+            ? error.message
+            : 'Não consegui criar ou restaurar o projeto desta tarefa.',
+        )
     })
     return () => {
       active = false
@@ -359,6 +418,7 @@ export function StudioFullClient({
     handoffStatus,
     handoffProgressUpdatedAt,
     handoffOutputProjectId,
+    preparePensaOpen,
     retryTaskHandoff,
     updateTaskProgress,
     viewerId,
@@ -411,6 +471,14 @@ export function StudioFullClient({
   const { collapsed: guiaRecolhido, setCollapsed: setGuiaRecolhido } =
     usePensaGuideCollapsed(viewerId)
 
+  // "Continuar no Pinta" quando a próxima missão é em outra oficina (ver o hook).
+  const proximaMissaoRotulo = useNextMissionLabel({
+    enabled: handoffV2 && handoffStatus === 'completed',
+    taskId: handoffTaskId,
+    projectId: handoffProjectId,
+    current: 'studio',
+  })
+
   const taskSession = useMemo<StudioTaskSession | undefined>(
     () =>
       taskHandoff
@@ -421,9 +489,56 @@ export function StudioFullClient({
             project: taskHandoff.project,
             cycle: taskHandoff.cycle,
             guide: taskHandoff.task.guide,
+            renderListen:
+              narrationEnabled && viewerId
+                ? (stepId) => (
+                    <PrivateZappyVoice
+                      viewerId={viewerId}
+                      reference={{
+                        origin: 'pensa_guide',
+                        taskId: taskHandoff.task.id,
+                        revision: taskHandoff.task.revision,
+                        stepId,
+                      }}
+                    />
+                  )
+                : undefined,
+            nextMissionLabel: proximaMissaoRotulo,
+            onNextMission: async () => {
+              if (!cloudSync) throw guideError('Espere seu jogo ficar guardado na conta.')
+              await cloudSync.cloud
+                .confirm(pensaStudioProjectId(taskHandoff.project.id), { timeoutMs: 15000 })
+                .catch((cause: unknown) => {
+                  throw cloudConfirmRefusal(cause, 'Seu jogo')
+                })
+              const next = await resolveNextPensaMission(taskHandoff.project.id).catch(() => {
+                throw guideError('Não consegui abrir a próxima missão. Tente de novo.')
+              })
+              router.push(next.path)
+            },
+            onNeedHelp: () =>
+              router.push(`/pensa?plano=${encodeURIComponent(taskHandoff.project.id)}`),
             blocks: taskHandoff.task.context.blocks,
             progress: taskHandoff.task.progress,
             onProgress: async (input) => {
+              if (taskHandoff.task.guide.contractVersion === 2 && input.status === 'completed') {
+                if (!cloudSync) throw guideError('Espere seu jogo ficar guardado na conta.')
+                const projectId = pensaStudioProjectId(taskHandoff.project.id)
+                await cloudSync.cloud.confirm(projectId, { timeoutMs: 15000 }).catch((cause) => {
+                  throw cloudConfirmRefusal(cause, 'Seu jogo')
+                })
+                // Falha de rede aqui segue sem frase: o guia mostra o recado da internet.
+                const saved = await cloudSync.cloud.peek(projectId)
+                if (!saved) throw guideError('Seu jogo ainda não foi guardado na conta.')
+                input = {
+                  ...input,
+                  outputRef: {
+                    kind: 'studio_project',
+                    projectId,
+                    saveRevision: String(saved.summary.revision),
+                  },
+                }
+              }
               const response = await fetch(
                 `/api/pensa/tasks/${encodeURIComponent(taskHandoff.task.id)}/progress`,
                 {
@@ -437,23 +552,33 @@ export function StudioFullClient({
               )
               const body = (await response.json().catch(() => null)) as {
                 task?: { progress: StudioTaskSession['progress'] }
-                error?: { message?: string }
+                error?: { code?: string; message?: string }
               } | null
               if (response.status === 409) {
                 retryTaskHandoff()
-                throw new Error(
-                  'A tarefa mudou em outro lugar. Recarreguei o Guia do Pensa para você.',
-                )
+                throw progressRefusal(409, {
+                  error: { code: body?.error?.code ?? 'PENSA_TASK_PROGRESS_CONFLICT' },
+                })
               }
-              if (!response.ok || !body?.task)
-                throw new Error(body?.error?.message ?? 'Não consegui sincronizar a tarefa.')
+              if (!response.ok || !body?.task) throw progressRefusal(response.status, body)
               updateTaskProgress(body.task.progress)
             },
             collapsed: guiaRecolhido,
             onCollapsedChange: setGuiaRecolhido,
           }
         : undefined,
-    [taskHandoff, updateTaskProgress, retryTaskHandoff, guiaRecolhido, setGuiaRecolhido],
+    [
+      taskHandoff,
+      updateTaskProgress,
+      retryTaskHandoff,
+      guiaRecolhido,
+      setGuiaRecolhido,
+      proximaMissaoRotulo,
+      narrationEnabled,
+      viewerId,
+      router,
+      cloudSync,
+    ],
   )
 
   // Adapter de COMPARTILHAR (Mural) — standalone (SEM aula): `describe` rascunha a
@@ -530,18 +655,50 @@ export function StudioFullClient({
     }),
     [challenge],
   )
+  // A missão do Pensa aberta (o `?tarefa=` v2) vai com cada pergunta ao tutor: sem ela o Zappy
+  // respondia pela primeira missão do Estúdio, que pode não ser a aberta. ⚠️ Por FUNÇÃO lida na
+  // hora da pergunta: o `StudioCore` congela o `tutor` na montagem (`useState`), e a troca de
+  // missão no MESMO editor não remonta nada.
+  const tutorPensaTaskRef = useRef<string | null>(null)
+  useEffect(() => {
+    tutorPensaTaskRef.current = handoffV2 ? handoffTaskId : null
+  }, [handoffV2, handoffTaskId])
   const tutor = useMemo<StudioTutorConfig | undefined>(
     () =>
       zappyEnabled
         ? {
-            adapter: createStudioZappyAdapter(),
+            adapter: createStudioZappyAdapter(undefined, {
+              pensaTaskId: () => tutorPensaTaskRef.current,
+            }),
+            renderListen:
+              narrationEnabled && viewerId
+                ? (projectId, messageId) => (
+                    <PrivateZappyVoice
+                      viewerId={viewerId}
+                      reference={{ origin: 'studio_message', projectId, messageId }}
+                    />
+                  )
+                : undefined,
+            renderVoiceInput:
+              voiceInputEnabled && viewerId
+                ? (input) => (
+                    <VoiceInputButton
+                      {...input}
+                      viewerId={viewerId}
+                      context="Estúdio: dúvida para o Zappy"
+                      maxLength={1000}
+                      preserveOverflow
+                      onSpoken={() => {}}
+                    />
+                  )
+                : undefined,
             openLesson: openStudioZappyLesson,
             openHelp: openStudioZappyHelp,
             cooldownMs: 1_500,
             credits: aiCredits,
           }
         : undefined,
-    [zappyEnabled, aiCredits],
+    [zappyEnabled, aiCredits, narrationEnabled, voiceInputEnabled, viewerId],
   )
 
   // "Trazer do Pinta" (fluxo pull): o Estúdio lista a galeria do Pinta e importa
@@ -713,7 +870,26 @@ export function StudioFullClient({
     }
   }, [moldaOwned, viewerId])
 
-  const openProject = useCallback((projectId: string) => setView({ name: 'editor', projectId }), [])
+  const openProject = useCallback(
+    async (projectId: string) => {
+      // O caminho de sempre abre NA HORA (sem tela de espera): só a restauração pendente espera.
+      if (!precisaPrepararAbertura(projectId)) {
+        setView({ name: 'editor', projectId })
+        return
+      }
+      setOpeningProject('loading')
+      setOpeningError(null)
+      try {
+        await preparePensaOpen(projectId)
+        setView({ name: 'editor', projectId })
+        setOpeningProject(null)
+      } catch (error) {
+        setOpeningError(error instanceof PensaOpenRefused ? error.message : null)
+        setOpeningProject('error')
+      }
+    },
+    [precisaPrepararAbertura, preparePensaOpen],
+  )
   const backToList = useCallback(() => {
     setView({ name: 'list' })
     // De volta à lista: uma descida de novo (single-flight, barata — a lista da nuvem e a
@@ -728,9 +904,13 @@ export function StudioFullClient({
     }
   }, [cloudSync])
   const exitEditor = useCallback(() => {
-    if (taskId) window.location.assign('/pensa')
+    // Volta ao PLANO desta missão (e não à lista de planos): `?plano=` abre o caminho dela.
+    if (taskId)
+      window.location.assign(
+        handoffProjectId ? `/pensa?plano=${encodeURIComponent(handoffProjectId)}` : '/pensa',
+      )
     else backToList()
-  }, [backToList, taskId])
+  }, [backToList, taskId, handoffProjectId])
 
   // O selo "Guardado na sua conta" fica na Topbar do editor e no cabeçalho da lista.
   // O menu lateral é controlado pela alça do shell Kids (`hostChrome.menu` é null).
@@ -812,8 +992,8 @@ export function StudioFullClient({
           <div className="flex max-w-md flex-col gap-3">
             <h2 className="sz-display text-xl">Não conseguimos abrir este jogo</h2>
             <p className="text-sm text-muted-foreground">
-              Ele pode estar em outro aparelho ou aguardando conexão. Tente novamente ou procure na
-              sua galeria.
+              {openingError ??
+                'Ele pode estar em outro aparelho ou aguardando conexão. Tente novamente ou procure na sua galeria.'}
             </p>
             <button
               type="button"
@@ -835,7 +1015,10 @@ export function StudioFullClient({
       ) : // Espera do guia da tarefa (deep link do Pensa) e espera do pacote viram
       // UMA só: os dois correm em paralelo, e mostrar dois textos diferentes em
       // sequência fazia `/estudio?tarefa=` ter uma tela a mais.
-      taskHandoffStatus === 'loading' || mod === null ? (
+      // ⚠️ Com a missão anterior ainda na mão (troca de missão no MESMO editor), a espera da
+      // nova NÃO troca o editor pela tela de carregamento: canvas, desfazer e posição ficam
+      // (ver `useStudioTaskHandoff`).
+      (taskHandoffStatus === 'loading' && !taskHandoff) || mod === null ? (
         <EmbeddedAppLoadingBody label="Carregando o Estúdio…" />
       ) : (
         // A moldura é BLOCO e a lista/o editor se dimensionam por `h-full`; o Provider

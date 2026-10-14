@@ -63,6 +63,7 @@
     "gen:game-ui-fonts": "bun scripts/gen-game-ui-fonts.ts"
   },
   "dependencies": {
+    "@sistemazero/ui": "workspace:*",
     "@babel/parser": "^7.29.7",
     "@babel/types": "^7.29.7",
     "@blockly/field-colour": "^6.0.12",

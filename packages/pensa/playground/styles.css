@@ -32,3 +32,15 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
+
+/* Imitação dos botões de voz do host no `?v2=1` (lá eles vêm do member-shell, com Tailwind). */
+.playground-fake-voice {
+  min-height: 44px;
+  padding: 8px 16px;
+  border: 1px solid #d5dbe5;
+  border-radius: 999px;
+  background: #fff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+}

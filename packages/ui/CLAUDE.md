@@ -109,6 +109,12 @@ tema). O design espelha o projeto de referência `C:\Users\tocha\projects\comuni
    classe no CORPO da regra do relevo (ela vive no seletor, e são quatro regras, não uma) e outro
    recortava o `@media` do `--aside` até o FIM do arquivo (esvaziar a media passava verde, e o
    fio do lado sumiria a partir de 1024px).
+   ⭐ **Os PASSOS do guia v2 (14/10/2026):** `.sz-tool-guide__steps` (`-count`, `__step`,
+   `__step-hint`, `__steps-nav`, `__steps-all`) vestem o `PensaInstructions`
+   (`@sistemazero/ui/pensa-instructions`, com "Ver todos os passos"). Ele nasceu com `bg-sz-bg`
+   (token do Estúdio, navy fora dele: 1,00:1 no Pinta e no Molda); hoje o fundo é
+   `--sz-tool-surface-2`, a tinta é HERDADA do cartão e os botões são `.sz-tool-pill--outline`.
+   O contrato varre o componente contra utilitária de token de app e `--sz-*` cru.
    Ficaram `--sz-tool-border`/`--sz-tool-radius-card` (o `.pin-panel` do Pinta lê) e o
    `--sz-tool-cta-gradient` (pinta.css e pensa.css leem).
    ⭐ **Paleta do Pen (11/09/2026):** `--sz-tool-accent`/`--sz-tool-cta` leem `--sz-kids-acao`

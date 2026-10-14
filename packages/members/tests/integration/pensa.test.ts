@@ -336,6 +336,84 @@ describe('Pensa planejador — HTTP', () => {
     expect(stage.nextTaskId).toBe(tasks[1].id)
   })
 
+  test('a marca `contractVersion` do cliente não vale no plano legado; quem libera concluir direto é a jornada v2', async () => {
+    const ctx = buildWithAccess()
+    grantLifetime(ctx.entitlements, { userId: USER, courseRef: 'pinta' })
+    grantLifetime(ctx.entitlements, { userId: USER, courseRef: 'estudio-completo' })
+    const foundation = seedSampleCourse(
+      ctx.courses,
+      'base-marca-v2',
+      'published',
+      'kids',
+      false,
+      'primeiros-passos',
+      '2d',
+      1,
+    )
+    await ctx.gamification.award({
+      userId: USER,
+      accountId: USER,
+      audience: 'kids',
+      events: [
+        { sourceType: 'course_complete', sourceId: foundation.courseId, amount: 0 },
+        { sourceType: 'course_showcased', sourceId: foundation.courseId, amount: 0 },
+      ],
+      today: '2026-06-02',
+      now: new Date('2026-06-02T12:00:00Z'),
+      privileged: false,
+    })
+    const project = await createProject(ctx)
+    const cycleId = project.currentCycle.id
+    const marked = {
+      tasks: tasksBody.tasks.map((task) => ({ ...task, guide: { ...guide, contractVersion: 2 } })),
+    }
+    const replaced = await req(
+      ctx.app,
+      'PUT',
+      `/members/pensa/cycles/${cycleId}/tasks?audience=kids`,
+      marked,
+    )
+    expect(replaced.status).toBe(200)
+    const tasks = (await json(replaced)).tasks
+    // O legado não guarda a marca, nem pelo PATCH do cartão.
+    expect(tasks[0].guide.contractVersion).toBeUndefined()
+    const edited = await req(
+      ctx.app,
+      'PATCH',
+      `/members/pensa/tasks/${tasks[1].id}?audience=kids`,
+      {
+        guide: { ...guide, contractVersion: 2 },
+      },
+    )
+    expect(edited.status).toBe(200)
+    expect([...ctx.pensa.tasks.values()].map((task) => task.guide.contractVersion)).not.toContain(2)
+
+    const progress = (taskId: string) =>
+      req(ctx.app, 'PATCH', `/members/pensa/tasks/${taskId}/progress?audience=kids`, {
+        status: 'completed',
+        completedStepIds: ['step-create'],
+        completedCriteriaIds: ['criterion-ready'],
+        outputRef: {
+          kind: 'pinta_asset',
+          assetId: 'asset-a',
+          usedInStudioAt: '2026-07-01T12:00:00.000Z',
+        },
+      })
+    const skip = await progress(tasks[0].id)
+    expect(skip.status).toBe(409)
+    expect((await json(skip)).error.code).toBe('PENSA_TASK_TRANSITION_INVALID')
+    // Nem uma marca já gravada (dado antigo) abre o atalho num plano sem jornada.
+    const stored = ctx.pensa.tasks.get(tasks[0].id)
+    if (!stored) throw new Error('tarefa sumiu')
+    ctx.pensa.tasks.set(stored.id, { ...stored, guide: { ...stored.guide, contractVersion: 2 } })
+    expect((await progress(tasks[0].id)).status).toBe(409)
+    // A jornada v2 do projeto é o que libera concluir direto do `planned` (Estúdio/Pinta/Molda).
+    ctx.pensa.journeyProjects.add(project.id)
+    const direct = await progress(tasks[0].id)
+    expect(direct.status).toBe(200)
+    expect((await json(direct)).task.progress.status).toBe('completed')
+  })
+
   test('remove explicitamente os endpoints legados de snapshot e checklist', async () => {
     const ctx = buildWithAccess()
     const project = await createProject(ctx)

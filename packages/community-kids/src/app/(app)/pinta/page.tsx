@@ -1,3 +1,4 @@
+import { getEnv } from '@sistemazero/member-shell/lib/env'
 import { meetsFreeCreationLevel } from '@sistemazero/member-shell/server/creative-apps-access'
 import { KidsJourneyLockedPinta } from '@/components/kids/kids-journey-locked-pinta'
 import { KidsLockedPinta } from '@/components/kids/kids-locked-pinta'
@@ -50,5 +51,11 @@ export default async function PintaPage() {
     role: session?.role,
     unlocks: unlocksRes,
   })
-  return <PintaClient viewerId={session?.id ?? null} studioAvailable={studioAvailable} />
+  return (
+    <PintaClient
+      viewerId={session?.id ?? null}
+      studioAvailable={studioAvailable}
+      narrationEnabled={Boolean(getEnv().ELEVENLABS_API_KEY)}
+    />
+  )
 }

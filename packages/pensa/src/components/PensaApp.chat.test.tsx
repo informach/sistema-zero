@@ -6,7 +6,7 @@ import type {
   PensaProjectDetailView,
   PensaStageView,
 } from '../core/types'
-import { PensaApp } from './PensaApp'
+import { LegacyPensaApp as PensaApp } from './PensaApp'
 
 afterEach(cleanup)
 

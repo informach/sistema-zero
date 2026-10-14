@@ -74,6 +74,8 @@ export function VoiceInputButton({
   textareaId,
   disabled = false,
   className,
+  preserveOverflow = false,
+  transcriptMaxChars,
 }: {
   viewerId: string | null
   /** Onde a criança está (título da fase · parte); ajuda a acertar o vocabulário. */
@@ -91,6 +93,13 @@ export function VoiceInputButton({
   textareaId?: string
   disabled?: boolean
   className?: string
+  /** O Pensa preserva a ideia inteira e pede para dividir antes de enviar. */
+  preserveOverflow?: boolean
+  /**
+   * Teto do texto que UMA fala pode trazer do servidor. Sem ele, 1000 (recados, ajuda da fase,
+   * tutor). O Pensa passa `PENSA_SPOKEN_TEXT_MAX_CHARS` (4000), e é o único que pode.
+   */
+  transcriptMaxChars?: number
 }) {
   const [ultimoFalado, setUltimoFalado] = useState('')
   const [cortado, setCortado] = useState(false)
@@ -100,8 +109,13 @@ export function VoiceInputButton({
   const voz = useVoiceRecorder({
     viewerId,
     context,
+    maxChars: transcriptMaxChars,
     onText: (falado) => {
-      const resultado = juntarFala(valueRef.current, falado, maxLength)
+      const resultado = juntarFala(
+        valueRef.current,
+        falado,
+        preserveOverflow ? Number.MAX_SAFE_INTEGER : maxLength,
+      )
       setCheio(!resultado.adicionou)
       if (!resultado.adicionou) {
         setUltimoFalado('')

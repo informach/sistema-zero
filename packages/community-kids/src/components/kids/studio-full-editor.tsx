@@ -106,7 +106,10 @@ export function StudioFullEditor({
   const handleActivity = useCallback(
     (project: Project, ctx?: { reason: 'autosave' | 'flush' }) => {
       if (ctx?.reason !== 'autosave') return
-      if (taskSession) {
+      if (
+        taskSession &&
+        !(taskSession.guide.contractVersion === 2 && taskSession.progress.status === 'completed')
+      ) {
         void taskSession
           .onProgress({
             outputRef: {

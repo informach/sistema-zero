@@ -58,8 +58,11 @@ export class UpdatePensaTaskProgressService {
       }
     }
 
+    // Concluir direto do `planned` é da jornada v2 (a missão é uma orientação e quem prova é a
+    // criação guardada, conferida no repositório). Decide a EXISTÊNCIA da jornada, nunca a marca
+    // `contractVersion` do guia, que um cliente punha num plano legado para pular etapa.
     const transitions: Record<PensaTaskStatus, readonly PensaTaskStatus[]> = {
-      planned: ['planned', 'in_progress'],
+      planned: found.journey ? ['planned', 'in_progress', 'completed'] : ['planned', 'in_progress'],
       in_progress: ['in_progress', 'completed'],
       completed: ['completed'],
     }

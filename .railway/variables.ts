@@ -333,6 +333,9 @@ const common: Record<string, string[]> = {
   'community-kids': [
     'APP_PUBLIC_URL',
     'CREATION_CLEANUP_CRON_SECRET',
+    // Voz do Zappy no Pensa v2 e no tutor (14/10/2026): a chave e a voz da ElevenLabs.
+    'ELEVENLABS_API_KEY',
+    'ELEVENLABS_VOICE_ID',
     'GATEWAY_HMAC_SECRET',
     'GATEWAY_URL',
     'JWT_AUDIENCE',

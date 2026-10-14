@@ -110,6 +110,7 @@ export function ZappyPanel(): JSX.Element | null {
   const { isNarrow } = useStudioLayout()
   const [messages, setMessages] = useState<StudioTutorHistoryMessage[]>([])
   const [question, setQuestion] = useState('')
+  const [voiceBusy, setVoiceBusy] = useState(false)
   const [busy, setBusy] = useState(false)
   const [loading, setLoading] = useState(false)
   const [loadingEarlier, setLoadingEarlier] = useState(false)
@@ -219,7 +220,14 @@ export function ZappyPanel(): JSX.Element | null {
 
   const cooldownSeconds = Math.max(0, Math.ceil((cooldownUntil - now) / 1_000))
   const canAsk = Boolean(
-    question.trim() && !loading && !busy && cooldownSeconds === 0 && project && config,
+    question.trim() &&
+      question.length <= MAX_QUESTION_CHARS &&
+      !voiceBusy &&
+      !loading &&
+      !busy &&
+      cooldownSeconds === 0 &&
+      project &&
+      config,
   )
 
   // Chips que PREENCHEM o campo (a criança revisa e envia — padrão do Pensa):
@@ -491,6 +499,9 @@ export function ZappyPanel(): JSX.Element | null {
               )}
             >
               <p className="whitespace-pre-wrap">{message.text}</p>
+              {message.role === 'assistant' && project
+                ? config?.renderListen?.(project.id, message.id)
+                : null}
               {!isQuota && project.kind !== 'pro' && message.response?.blockReferences?.length ? (
                 <div className="mt-3 flex flex-wrap gap-1.5">
                   {message.response.blockReferences.map((reference) => {
@@ -606,7 +617,6 @@ export function ZappyPanel(): JSX.Element | null {
           name="zappy-question"
           autoComplete="off"
           value={question}
-          maxLength={MAX_QUESTION_CHARS}
           rows={3}
           onChange={(event) => {
             const next = event.target.value
@@ -625,6 +635,16 @@ export function ZappyPanel(): JSX.Element | null {
           className="w-full resize-none rounded-xl border border-sz-border bg-sz-bg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-sz-accent/60"
         />
         <div className="mt-2 flex items-center justify-between gap-3">
+          {config?.renderVoiceInput?.({
+            value: question,
+            onChange: (value) => {
+              pendingAttemptRef.current = null
+              setQuestion(value)
+            },
+            onBusyChange: setVoiceBusy,
+            textareaId: 'sz-zappy-question',
+            disabled: busy || loading,
+          })}
           <span className="text-sz-fg-mute text-xs">
             {cooldownSeconds > 0
               ? `Respira… ${cooldownSeconds}s`
@@ -639,6 +659,11 @@ export function ZappyPanel(): JSX.Element | null {
             Perguntar
           </button>
         </div>
+        {question.length > MAX_QUESTION_CHARS ? (
+          <p role="alert" className="mt-2 text-sm">
+            A fala ficou longa. Divida em duas mensagens; seu texto continua inteiro aqui.
+          </p>
+        ) : null}
       </form>
     </aside>
   )

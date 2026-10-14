@@ -49,7 +49,7 @@ describe('formulário do perfil: a fala da criança', () => {
       name: /Falar em vez de escrever \(recomendado\)/,
     }) as HTMLInputElement
     expect(caixa.checked).toBe(false)
-    expect(container.textContent).toContain('Só a nossa equipe lê esse texto')
+    expect(container.textContent).toContain('ou o Zappy quando a dúvida é para ele')
     // O que garantimos é que NÓS não guardamos; e a fala vai a um serviço fora do Brasil.
     expect(container.textContent).toContain('nós não guardamos a gravação')
     expect(container.textContent).toContain('fora do Brasil')

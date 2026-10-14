@@ -1,8 +1,28 @@
+import { PensaInstructions } from '@sistemazero/ui/pensa-instructions'
 import type { JSX } from 'react'
-import { useId, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { COPY } from '../core/copy'
 import type { PintaTaskSession } from '../core/types'
 import { ChevronDown } from './ui/icons'
+
+/** Os genéricos são de FALHA DE REDE: só valem quando o erro não traz a frase da criança. */
+const GENERICO_CONCLUIR = 'Não consegui concluir agora. Confira a internet e tente de novo.'
+const GENERICO_PROXIMA = 'Não consegui abrir a próxima missão. Confira a internet e tente de novo.'
+const GENERICO_AJUDA = 'Não consegui abrir a ajuda agora. Confira a internet e tente de novo.'
+const AVISO_GUARDANDO = 'Guardando seu desenho…'
+const AVISO_PROXIMA = 'Abrindo a próxima missão…'
+const AVISO_CONCLUIDA = 'Missão concluída!'
+
+/**
+ * A frase que a criança lê quando um callback do guia rejeita (14/10/2026). Antes TODA falha
+ * virava "Confira a internet". A convenção (ver `PintaTaskSession`) é o host mandar
+ * `childMessage` quando a frase é para ela; sem ela, é rede, e vale o genérico. A `message`
+ * crua nunca vai à tela — ela pode ser técnica.
+ */
+function fraseDoErro(error: unknown, generico: string): string {
+  const frase = (error as { childMessage?: unknown } | null | undefined)?.childMessage
+  return typeof frase === 'string' && frase.trim() ? frase : generico
+}
 
 export function TaskBriefPanel({
   session,
@@ -28,6 +48,25 @@ export function TaskBriefPanel({
   // A trava é um REF, não o estado: dois cliques no mesmo turno leem o `returning`
   // do fecho anterior, e aí a criança guardaria e navegaria duas vezes.
   const returningRef = useRef(false)
+  const v2 = session.guide.contractVersion === 2
+  // A região viva do guia v2 (montada VAZIA: uma que nasce com o texto não é anunciada). Diz o
+  // que está acontecendo durante a espera, que pode levar até 15 s.
+  const [aviso, setAviso] = useState('')
+  // ⚠️ O foco não pode cair no `body` quando o "Experimentei e funcionou" some: ele vai ao
+  // "Continuar" (quando existe) ou ao próprio aviso, que é o alvo estável (`tabIndex=-1`).
+  const [focoPendente, setFocoPendente] = useState(false)
+  const avisoRef = useRef<HTMLParagraphElement | null>(null)
+  const continuarRef = useRef<HTMLButtonElement | null>(null)
+  const concluida = session.progress.status === 'completed'
+  useEffect(() => {
+    if (!focoPendente || !concluida) return
+    setFocoPendente(false)
+    const ativo = document.activeElement
+    // A criança já foi para outro lugar (o desenho, outro botão)? Não roubamos o foco dela.
+    if (ativo && ativo !== document.body && ativo.isConnected) return
+    const alvo = continuarRef.current ?? avisoRef.current
+    alvo?.focus()
+  }, [focoPendente, concluida])
   const toggle = async (kind: 'step' | 'criterion', id: string, checked: boolean) => {
     if (updating || session.progress.status === 'completed') return
     setUpdating(true)
@@ -39,19 +78,31 @@ export function TaskBriefPanel({
       await session.onProgress(
         kind === 'step' ? { completedStepIds: next } : { completedCriteriaIds: next },
       )
-    } catch {
-      setSyncError('Não consegui salvar agora. Confira a internet e tente de novo.')
+    } catch (error) {
+      setSyncError(
+        fraseDoErro(error, 'Não consegui salvar agora. Confira a internet e tente de novo.'),
+      )
     } finally {
       setUpdating(false)
     }
   }
   const complete = async () => {
+    if (updating) return
     setUpdating(true)
     setSyncError(null)
+    if (v2) setAviso(AVISO_GUARDANDO)
     try {
-      await session.onProgress({ status: 'completed' })
-    } catch {
-      setSyncError('Não consegui concluir agora. Confira a internet e tente de novo.')
+      await session.onProgress({
+        status: 'completed',
+        ...(v2 ? { completedCriteriaIds: session.guide.criteria.map((c) => c.id) } : {}),
+      })
+      if (v2) {
+        setAviso(AVISO_CONCLUIDA)
+        setFocoPendente(true)
+      }
+    } catch (error) {
+      setAviso('')
+      setSyncError(fraseDoErro(error, GENERICO_CONCLUIR))
     } finally {
       setUpdating(false)
     }
@@ -192,35 +243,52 @@ export function TaskBriefPanel({
             </div>
           </div>
           <div className="grid content-start gap-1">
-            {session.guide.steps.map((item) => (
-              <label key={item.id} className="flex min-h-11 items-start gap-2 py-1">
-                <input
-                  type="checkbox"
-                  name={`task-step-${item.id}`}
-                  className="mt-1"
-                  disabled={updating || session.progress.status === 'completed'}
-                  checked={session.progress.completedStepIds.includes(item.id)}
-                  onChange={(event) => void toggle('step', item.id, event.target.checked)}
-                />
-                <span>
-                  {item.text}
-                  {item.hint ? <small className="block text-pin-muted">{item.hint}</small> : null}
-                </span>
-              </label>
-            ))}
-            {session.guide.criteria.map((item) => (
-              <label key={item.id} className="flex min-h-11 items-start gap-2 py-1 font-bold">
-                <input
-                  type="checkbox"
-                  name={`task-criterion-${item.id}`}
-                  className="mt-1"
-                  disabled={updating || session.progress.status === 'completed'}
-                  checked={session.progress.completedCriteriaIds.includes(item.id)}
-                  onChange={(event) => void toggle('criterion', item.id, event.target.checked)}
-                />
-                <span>Pronto quando: {item.text}</span>
-              </label>
-            ))}
+            {session.guide.contractVersion === 2 ? (
+              <PensaInstructions
+                key={session.taskId}
+                steps={session.guide.steps}
+                renderListen={session.renderListen}
+              />
+            ) : (
+              session.guide.steps.map((item) => (
+                <label key={item.id} className="flex min-h-11 items-start gap-2 py-1">
+                  <input
+                    type="checkbox"
+                    name={`task-step-${item.id}`}
+                    className="mt-1"
+                    disabled={updating || session.progress.status === 'completed'}
+                    checked={session.progress.completedStepIds.includes(item.id)}
+                    onChange={(event) => void toggle('step', item.id, event.target.checked)}
+                  />
+                  <span>
+                    {item.text}
+                    {item.hint ? <small className="block text-pin-muted">{item.hint}</small> : null}
+                  </span>
+                </label>
+              ))
+            )}
+            {session.guide.contractVersion === 2
+              ? session.guide.criteria.map((item) => (
+                  <p key={item.id}>
+                    <strong>Experimente: </strong>
+                    {item.text}
+                    <br />
+                    {item.hint}
+                  </p>
+                ))
+              : session.guide.criteria.map((item) => (
+                  <label key={item.id} className="flex min-h-11 items-start gap-2 py-1 font-bold">
+                    <input
+                      type="checkbox"
+                      name={`task-criterion-${item.id}`}
+                      className="mt-1"
+                      disabled={updating || session.progress.status === 'completed'}
+                      checked={session.progress.completedCriteriaIds.includes(item.id)}
+                      onChange={(event) => void toggle('criterion', item.id, event.target.checked)}
+                    />
+                    <span>Pronto quando: {item.text}</span>
+                  </label>
+                ))}
           </div>
           <div className="flex min-w-40 flex-col justify-center gap-2">
             {session.progress.status !== 'completed' ? (
@@ -230,10 +298,55 @@ export function TaskBriefPanel({
                 // já traz o alvo de `--sz-tool-hit`, o anel de foco do acento e o estado
                 // desligado — antes isto era um botão só deste painel.
                 className="sz-tool-pill sz-tool-pill--primary"
-                disabled={updating || !requiredDone || !outputReady}
+                // ⚠️ Esperando o host (até 15 s) o botão fica `aria-disabled`, não `disabled`:
+                // desligar o botão focado manda o foco para o `body` no meio da espera.
+                disabled={v2 ? !outputReady : updating || !requiredDone || !outputReady}
+                aria-disabled={v2 && updating ? true : undefined}
+                aria-busy={v2 && updating ? true : undefined}
                 onClick={() => void complete()}
               >
-                Concluir tarefa
+                {v2 ? 'Experimentei e funcionou' : 'Concluir tarefa'}
+              </button>
+            ) : null}
+            {v2 && concluida && session.onNextMission ? (
+              <button
+                ref={continuarRef}
+                type="button"
+                className="sz-tool-pill sz-tool-pill--primary"
+                aria-disabled={updating ? true : undefined}
+                aria-busy={updating ? true : undefined}
+                onClick={() => {
+                  const abrir = session.onNextMission
+                  if (updating || !abrir) return
+                  setUpdating(true)
+                  setSyncError(null)
+                  setAviso(AVISO_PROXIMA)
+                  void abrir()
+                    .catch((error: unknown) => {
+                      setAviso('')
+                      setSyncError(fraseDoErro(error, GENERICO_PROXIMA))
+                    })
+                    .finally(() => setUpdating(false))
+                }}
+              >
+                {session.nextMissionLabel ?? 'Continuar meu caminho'}
+              </button>
+            ) : null}
+            {v2 && session.onNeedHelp ? (
+              <button
+                type="button"
+                className="sz-tool-pill sz-tool-pill--outline"
+                disabled={updating}
+                onClick={() => {
+                  setUpdating(true)
+                  setSyncError(null)
+                  void Promise.resolve()
+                    .then(() => session.onNeedHelp?.())
+                    .catch((error: unknown) => setSyncError(fraseDoErro(error, GENERICO_AJUDA)))
+                    .finally(() => setUpdating(false))
+                }}
+              >
+                Travei aqui
               </button>
             ) : null}
             {!session.progress.outputRef ? (
@@ -292,6 +405,22 @@ export function TaskBriefPanel({
       {syncError ? (
         <p className="sz-tool-guide__alert text-sm font-bold" role="alert">
           {syncError}
+        </p>
+      ) : null}
+      {/*
+       * O aviso do guia v2 (14/10/2026): fora do que recolhe, para o "Guardando…" seguir à vista
+       * com o guia recolhido. Monta VAZIO e sem respiro (`empty:p-0`), e é o alvo estável do
+       * foco depois de concluir quando não há "Continuar". Só no v2: o "Voltar ao plano" tem a
+       * região viva DELE no pé, e a do guia antigo não muda.
+       */}
+      {v2 ? (
+        <p
+          ref={avisoRef}
+          role="status"
+          tabIndex={-1}
+          className="px-[1.125rem] pb-3 font-bold text-xs empty:p-0"
+        >
+          {aviso}
         </p>
       ) : null}
       {/*

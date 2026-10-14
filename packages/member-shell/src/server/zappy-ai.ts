@@ -58,6 +58,8 @@ const LEVEL_RANK: Record<string, number> = {
 }
 
 export interface ZappyContextInput {
+  /** Resolvido no servidor pelo projeto Pensa pertencente ao perfil, nunca pelo cliente. */
+  pensaMission?: { title: string; expected: string; steps: string[]; lastTest: string | null }
   projectId: string
   mode: 'blocks' | 'bridge' | 'code'
   kind: 'classic' | 'pro'
@@ -795,6 +797,7 @@ function projectData(
       question,
       ...(conversaRecente.length > 0 ? { conversaRecente } : {}),
       project: {
+        ...(context.pensaMission ? { missaoDoPensa: context.pensaMission } : {}),
         mode: context.mode,
         kind: context.kind,
         ...(esboco ? { esboco } : {}),

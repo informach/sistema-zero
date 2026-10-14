@@ -234,6 +234,12 @@ export function createPensaAiRoutes(deps: {
       const parsed = ChatBody.safeParse(await req.json().catch(() => null))
       if (!parsed.success) return error('VALIDATION_ERROR', 400)
       const { projectId, cycleId, stage, message } = parsed.data
+      if (members.pensaJourneyGet && (await members.pensaJourneyGet(projectId)).status === 200)
+        return error(
+          'PENSA_V2_REQUIRED',
+          409,
+          'Abra o caminho atual do Pensa para conversar sobre este jogo.',
+        )
       const projectRes = await members.pensaGetProject(projectId)
       if (projectRes.status !== 200 || !projectRes.body)
         return error('PENSA_NOT_FOUND', projectRes.status === 200 ? 502 : projectRes.status)
@@ -357,6 +363,12 @@ export function createPensaAiRoutes(deps: {
       const parsed = GenerateBody.safeParse(await req.json().catch(() => null))
       if (!parsed.success) return error('VALIDATION_ERROR', 400)
       const body = parsed.data
+      if (members.pensaJourneyGet && (await members.pensaJourneyGet(body.projectId)).status === 200)
+        return error(
+          'PENSA_V2_REQUIRED',
+          409,
+          'Abra o caminho atual do Pensa para preparar este jogo.',
+        )
       const projectRes = await members.pensaGetProject(body.projectId)
       if (projectRes.status !== 200 || !projectRes.body)
         return error('PENSA_NOT_FOUND', projectRes.status === 200 ? 502 : projectRes.status)

@@ -10,6 +10,8 @@ import { createHubRoutes } from './routes/hub'
 import { createLiveRoutes } from './routes/live'
 import { createPensaRoutes } from './routes/pensa'
 import { createPensaAiRoutes } from './routes/pensa-ai'
+import { createPensaJourneyRoutes } from './routes/pensa-journey'
+import { createPrivateNarrationRoutes } from './routes/private-narration'
 import { createStudioRoutes } from './routes/studio'
 import { createStudioZappyRoutes } from './routes/studio-zappy'
 import { createStudyAccessRoutes } from './routes/study-access'
@@ -88,6 +90,8 @@ export function createShell(cfg: ShellConfig) {
     ...createCertificateRoutes({ members, session }),
     ...createPensaRoutes({ members, session }),
     ...createPensaAiRoutes({ members, session }),
+    ...createPensaJourneyRoutes({ members, session }),
+    ...createPrivateNarrationRoutes({ members, session }),
     ...createCreationsRoutes({ members, session }),
     ...createCreationCleanupWorkerRoutes({ gateway }),
     ...createVoiceRoutes({ session, auth }),

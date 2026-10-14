@@ -672,3 +672,120 @@ describe('PintaApp — Voltar ao plano', () => {
     expect(screen.queryByRole('button', { name: COPY.task.back })).toBeNull()
   })
 })
+
+/**
+ * O guia v2 no `PintaApp` (14/10/2026): "Experimentei e funcionou" GRAVA o desenho aberto antes
+ * de chamar o host, a mesma disciplina do "Voltar ao plano". A ordem é REGISTRADA numa lista
+ * compartilhada; a gravação que falha não chama o host e o painel mostra a frase dela (nunca
+ * "Confira a internet": a internet não tem nada a ver com o disco deste aparelho).
+ */
+describe('PintaApp — guia v2 grava antes de concluir', () => {
+  function tarefaV2(assetId: string, eventos: string[]): PintaTaskSession {
+    return {
+      taskId: 'tarefa-v2',
+      project: { id: 'plano-1', name: 'Bosque' },
+      cycle: { id: 'ciclo-1', number: 1, goal: null },
+      title: 'Desenhar a nave',
+      summary: null,
+      brief: {
+        assetId: 'nave',
+        artKind: 'sprite',
+        style: 'pixel',
+        palette: [],
+        appearance: 'Uma nave comprida',
+        animations: [],
+        states: [],
+        usage: 'Personagem principal',
+        requiresStudioUse: false,
+      },
+      guide: {
+        contractVersion: 2,
+        steps: [{ id: 'a', text: 'Desenhe a nave', required: true }],
+        criteria: [{ id: 'ok', text: 'A nave aparece', required: true }],
+      },
+      progress: {
+        status: 'in_progress',
+        completedStepIds: [],
+        completedCriteriaIds: [],
+        startedAt: null,
+        completedAt: null,
+        updatedAt: null,
+        outputRef: { kind: 'pinta_asset', assetId },
+      },
+      onProgress: async (input) => {
+        eventos.push(`concluiu:${input.status ?? ''}`)
+      },
+    }
+  }
+
+  async function abrirNave(): Promise<void> {
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Abrir nave/ })).toBeTruthy()
+    })
+    fireEvent.click(screen.getByRole('button', { name: /Abrir nave/ }))
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: COPY.editor.resize.button(32, 32) })).toBeTruthy()
+    })
+  }
+
+  function editarPendente(): void {
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.resize.button(32, 32) }))
+    fireEvent.change(screen.getByLabelText(COPY.newAsset.customSize.width), {
+      target: { value: '128' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.resize.apply }))
+  }
+
+  it('🚨 com uma edição pendente, GRAVA antes de concluir', async () => {
+    const { createMemoryPersistence } = await import('../state/memoryPersistence')
+    const { createPixelSpriteAsset } = await import('../core/project')
+    const nave = createPixelSpriteAsset({ name: 'nave', frameSize: 32 })
+    const eventos: string[] = []
+    const memoria = createMemoryPersistence([nave])
+    const persistence = {
+      ...memoria,
+      persistAssets: async (assets: Parameters<typeof memoria.persistAssets>[0]) => {
+        await Bun.sleep(5)
+        eventos.push('gravou')
+        await memoria.persistAssets(assets)
+      },
+    }
+    render(
+      <PintaApp adapter={{ taskSession: tarefaV2(nave.id, eventos) }} persistence={persistence} />,
+    )
+    await abrirNave()
+    editarPendente()
+    fireEvent.click(screen.getByRole('button', { name: 'Experimentei e funcionou' }))
+    await waitFor(() => expect(eventos).toEqual(['gravou', 'concluiu:completed']), {
+      timeout: 5000,
+    })
+  })
+
+  it('🚨 gravação que FALHA não conclui e mostra a frase da gravação', async () => {
+    const { createMemoryPersistence } = await import('../state/memoryPersistence')
+    const { createPixelSpriteAsset } = await import('../core/project')
+    const { FRASE_DE_GRAVAR_NO_APARELHO } = await import('./taskSessionSave')
+    const nave = createPixelSpriteAsset({ name: 'nave', frameSize: 32 })
+    const eventos: string[] = []
+    const persistence = {
+      ...createMemoryPersistence([nave]),
+      persistAssets: async () => {
+        throw new Error('sem espaço')
+      },
+    }
+    render(
+      <PintaApp adapter={{ taskSession: tarefaV2(nave.id, eventos) }} persistence={persistence} />,
+    )
+    await abrirNave()
+    editarPendente()
+    fireEvent.click(screen.getByRole('button', { name: 'Experimentei e funcionou' }))
+    await waitFor(
+      () => {
+        const alertas = screen.getAllByRole('alert').map((alerta) => alerta.textContent)
+        expect(alertas).toContain(FRASE_DE_GRAVAR_NO_APARELHO)
+      },
+      { timeout: 5000 },
+    )
+    expect(eventos).toEqual([])
+  })
+})

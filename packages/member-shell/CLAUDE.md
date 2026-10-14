@@ -12,7 +12,10 @@ tudo continua sendo texto, com uma marca de que veio da fala (o chip "falado" do
   fala), o filtro de alucinação (`isHallucinatedTranscript`: o texto INTEIRO igual a "Obrigado por
   assistir", "Legendas pela comunidade Amara.org" e afins, nunca remove pedaço; a assinatura
   "amara org" só conta como PALAVRAS inteiras, senão "a Samara organizou" caía) e os tetos (2 MB,
-  1 KB, 1000 caracteres, contexto de 200).
+  1 KB, contexto de 200 e o TEXTO: 1000 caracteres por padrão, `PENSA_SPOKEN_TEXT_MAX_CHARS` = 4000
+  só quando o formulário pede pelo cabeçalho `x-sz-voice-max-chars`, régua `spokenTextMaxChars`:
+  qualquer outro valor vira 1000). ⚠️ Em 14/10/2026 o servidor tinha tirado o teto de TODOS os
+  formulários para servir o Pensa; o full review devolveu o padrão.
 - **`server/openrouter-transcribe.ts`**: `openai/gpt-transcribe` pelo OpenRouter (a MESMA
   `OPENROUTER_API_KEY`), reserva `openai/gpt-4o-mini-transcribe` (vocabulário no TEXTO do prompt,
   ela não tem `keywords`). Corpo JSON com o áudio em base64, `language: 'pt'`, `temperature: 0` e
@@ -54,7 +57,9 @@ tudo continua sendo texto, com uma marca de que veio da fala (o chip "falado" do
 - **Onde aparece:** só com `LessonPlayerContextValue.voiceInput` (o Kids passa; o adulto e o Admin
   nunca) no pedido de ajuda (`lesson-sections.tsx`), no recado do Estúdio (`studio-block`), do
   Pinta (`pinta-block`) e da galeria (`lesson-gallery-delivery`); nos Recados o Kids passa
-  `voiceEnabled`. Cada formulário guarda um `*Spoken` que liga com a fala e volta a falso quando a
+  `voiceEnabled`. O teto maior da transcrição é opt-in do `VoiceInputButton`
+  (`transcriptMaxChars`, que o gravador manda no cabeçalho): só o Pensa passa 4000; recados, ajuda
+  da fase e o tutor ficam nos 1000 (a ajuda da fase tem caixa de 8000, e mesmo assim não pede). Cada formulário guarda um `*Spoken` que liga com a fala e volta a falso quando a
   caixa é esvaziada ou enviada. ⚠️⚠️ O `useCallback` do envio PRECISA ter o `messageSpoken` nas
   dependências: sem ele o Estúdio e o Pinta mandavam a marca antiga (o lint pegou, 14/10/2026).
   ⚠️⚠️ Todo formulário passa `onBusyChange` e segura o "Enviar" enquanto a fala vira texto:
@@ -74,6 +79,69 @@ tudo continua sendo texto, com uma marca de que veio da fala (o chip "falado" do
   `tests/voice-spoken-forwarding.test.ts` (a marca atravessa o BFF e os clients).
   O botão, os pais e os Recados são testados no Kids (DOM de verdade). Sondagem com gravações de
   ADULTOS: `scripts/sondar-transcricao.ts` (mesma configuração do servidor).
+
+## Pensa v2: a régua da narrativa e o teto do pedido (full review de 14/10/2026)
+
+O BFF do Pensa v2 mora em `server/pensa-journey/` e `routes/pensa-journey.ts`. O que o full review
+consertou, e que não pode voltar:
+
+- **A narrativa NÃO passa pelo filtro do tutor** (`pensa-journey/privacy.ts`). O tutor recusa
+  "fora de programação" e apaga a frase inteira depois de "meu nome é"; no Pensa isso devolvia 422
+  com frases do tutor para "Oi Zappy, meu nome é Pedro e quero um jogo de dragão", "placar até 9999
+  9999" (virava telefone) e o Bomberman ("fazer uma bomba"). Hoje: `redactPensaText` tira SÓ o dado
+  ("meu nome é [nome removido] e quero um jogo de dragão"; telefone só com DDD e dígitos variados;
+  CPF só pontuado), `pensaNarrativeRefusal` recusa só o inseguro de verdade (troca de contato,
+  segredo, foto, sexual, violência contra pessoa real, arma DE VERDADE) com frase do Pensa, e
+  `isSafePensaText` é a mesma régua na saída do modelo. Vale para o início, as ideias guardadas
+  (`keep_idea`), a nota do teste, a borda do provedor (`privateJourneyInput`), a voz das falas do
+  Pensa e a missão que o tutor recebe.
+- **Inventário com o tipo traduzido** (`context.ts`): o Pinta guarda `pixel-sprite`,
+  `vector-background`…; a proposta fala `sprite`, `background`… `PINTA_KIND_FAMILY`/
+  `MOLDA_KIND_FAMILY` são `Record` completos (tipo novo = erro de tipo) e `journeyInventory` tira a
+  biblioteca "Minhas paletas" (`classifyPintaPaletteLibraryCreation`), lápides e tipo desconhecido.
+  Antes, usar um desenho existente reprovava SEMPRE.
+- **O teto do pedido é contrato: 48 KB, sistema + usuário** (`prompt-context.ts`, mesmo teto do
+  tutor). Medido antes: ~330 KB por chamada (criança com o Jogo 2D) e ~844 KB (equipe), com o
+  contexto serializado duas vezes. Hoje o contexto é OBJETO (serializado uma vez, já redigido), os
+  blocos da missão vão sempre e o resto é ranqueado pela busca do tutor (`zappy-search.ts`), os
+  manuais vão em trechos, e `JOURNEY_PROMPT_LADDER` encolhe até caber; se nem o último degrau
+  cabe, `JourneyPromptTooLarge` (com o tamanho de cada campo no log). ⚠️ `latest(lista, 0)` e
+  nunca `slice(-0)`, que devolve a lista inteira. ⚠️ A missão tem no máximo 16 blocos
+  (`ProposalDraftSchema`): é o que deixa o guia de oito missões caber. Teste:
+  `tests/pensa-journey-budget.test.ts` (criança e equipe, os quatro passos, no pior caso).
+- **O que NÃO vai ao provedor:** o `profileId` e o `fingerprint` do snapshot (o members precisa
+  deles na proposta guardada; o modelo, não), a lista de todos os blocos, e o nome/chave dos
+  exemplos do Estúdio (`recipes.ts` manda só o roteiro de jogo, sem o nome, como o tutor; o sistema
+  proíbe "exemplo", "jogo pronto", "galeria" e "receita" e manda dizer fase e aventura).
+- **Guias que ensinam a instalar** (`interface-map.ts`): o projeto do plano nasce sem extensão, e
+  a PRIMEIRA missão do Estúdio que usa uma ganha o passo determinístico "Instale a extensão …" (⋯
+  Mais opções → Extensões → cartão → Instalar). O prompt leva `STUDIO_INTERFACE_MAP` com os rótulos
+  reais (▶ Reproduzir, 🎨 Trazer do Pinta, 🧊 Trazer do Molda, "Usar no Estúdio"), conferidos por
+  `tests/pensa-journey-interface-map.test.ts`, que lê o pt-BR do Estúdio, a pré-visualização, o
+  Pinta e os manifestos. A missão do Pinta nasce com `requiresStudioUse` ligado (toda arte tem
+  integração).
+- **Reparo com motivo, contado pelo members** (`planner.ts`): saída inválida (bloco fora da
+  paleta, missão faltando, JSON fora do contrato, texto inseguro) ganha UMA tentativa com o motivo
+  (`previousAnswerRejected`, que diz a missão pela chave e o id), por `fail` + novo `claim`: o
+  members conta a chamada e o teto (2 por passo, 10 por operação) recusa o claim. Rede e prazo não
+  repetem. Os motivos de `validateJourneyProposal` citam a missão e o id.
+- **Erros nunca mudos:** `[pensa-v2] passo falhou {operationId, step, name}` (só o NOME, nunca a
+  mensagem, que pode ter a fala ou o corpo do provedor). `JourneyChildError`/`JourneyOutputInvalid`
+  (`errors.ts`) carregam a frase da criança e ela chega ao `fail` ("Seus recursos mudaram…").
+- **A missão de agora** (`missions.ts`): a ajuda do Pensa recebe `currentMission` (régua
+  `nextPensaMission` do core) com os passos; o tutor do Estúdio usa o `pensaTaskId` de topo do
+  corpo (a missão aberta, se for do plano e do Estúdio) ou a PRIMEIRA do Estúdio não concluída
+  (era a ÚLTIMA quando a próxima era do Pinta). O adapter aceita `{ pensaTaskId }` (valor ou
+  função).
+- **Leitura que falha não tranca** (`routes/pensa.ts`, handoff): sem gamificação ou sem
+  capacidades, 503 recuperável; só a recusa real devolve `owned:false`.
+- **`command` com allowlist:** pause, resume, accept, observe, repair, keep_idea e remove_idea.
+  `close`, `revise` e `record_test` só pelas rotas próprias (que protegem a versão e conferem o
+  jogo salvo); `retry` pelo `/work`.
+- **A voz privada** (`lib/private-voice.ts`): a criança lê a frase da nossa rota
+  (`VOICE_UNAVAILABLE`) ou a gentil fixa, nunca "Failed to fetch" nem o erro do parser.
+- ⚠️ Pendência fora daqui (members): `PensaStudioBlockSchema.area` não aceita `molds`, que o
+  catálogo tem; um plano com bloco de molde seria recusado com 400 na publicação.
 
 ## A atualização da aula não derruba a atividade (11/10/2026)
 

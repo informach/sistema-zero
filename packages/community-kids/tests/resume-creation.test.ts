@@ -1,6 +1,19 @@
 import { expect, test } from 'bun:test'
 import { resumeExistingCreation } from '../src/lib/resume-creation'
 
+test('um jogo Pensa aguarda a reconciliação antes de ler a cópia local antiga', async () => {
+  let local = { id: 'pensa-game', name: 'Antes da restauração' }
+  const result = await resumeExistingCreation(
+    'pensa-game',
+    async () => local,
+    null,
+    async () => {
+      local = { id: 'pensa-game', name: 'Versão restaurada' }
+    },
+  )
+  expect(result?.name).toBe('Versão restaurada')
+})
+
 test('opening an existing creation keeps local edits and does not pull over them', async () => {
   const local = { id: 'same-id', name: 'Meus ajustes' }
   let restored = false

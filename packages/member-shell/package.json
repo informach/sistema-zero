@@ -35,6 +35,7 @@
     "@react-three/fiber": "^9",
     "@sistemazero/core": "workspace:*",
     "@sistemazero/helpdesk-contracts": "workspace:*",
+    "@sistemazero/molda": "workspace:*",
     "@sistemazero/pinta": "workspace:*",
     "@sistemazero/studio": "workspace:*",
     "@sistemazero/ui": "workspace:*",

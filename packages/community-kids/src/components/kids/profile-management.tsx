@@ -255,8 +255,8 @@ export function ProfileForm({
                 <span className="text-muted-foreground text-xs">
                   Para pedir ajuda, a criança pode falar em vez de digitar. Facilita muito para quem
                   ainda escreve devagar. A fala vai a um serviço de transcrição fora do Brasil e
-                  vira texto na hora; nós não guardamos a gravação. Só a nossa equipe lê esse texto:
-                  outras crianças não veem.
+                  vira texto na hora; nós não guardamos a gravação. Quem lê esse texto é a nossa
+                  equipe, ou o Zappy quando a dúvida é para ele: outras crianças não veem.
                 </span>
               </span>
             </label>

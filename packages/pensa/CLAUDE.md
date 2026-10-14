@@ -440,6 +440,55 @@ apontam para os primitivos `--sz-kids-*`; o que faltava era o resto da moldura:
 ⚠️ Mexer na largura interna (`width: calc(100% - 32px)`) desloca os `@container (max-width: 820px|560px)`
 — re-verifique os dois pontos de quebra em 1366 e 1920.
 
+## Pensa v2: a jornada (14/10/2026)
+
+O `<PensaApp>` monta SEMPRE o **`JourneyApp`** (`components/JourneyApp.tsx`). ⚠️ Não existe
+`PENSA_V2_ENABLED` nem `journeyEnabled`: decisão dela (14/10/2026) — nenhuma criança usou o Pensa em
+produção, então o v2 substitui o Pensa todo, sem piloto. O `LegacyPensaApp` segue exportado só para
+os planos anteriores e para os testes dele (que o importam pelo nome). O fluxo:
+ideia livre → proposta curta → missões no Estúdio/Pinta/Molda → teste → próxima versão, com o
+estado vindo de `/v2/projects/*` (contrato em `@sistemazero/core/pensa`). O plano clássico e as
+equipes continuam no `LegacyPensaApp` (aberto por "Meus planos anteriores e equipes", com a barra
+`.pensa-legacy-bar` e o "Voltar aos meus jogos"). Implementação e rollout:
+`docs/plans/2026-10-14-pensa-v2-entrega.md`.
+
+**Direção de arte (14/10/2026, mesmo dia, pedido dela):** a primeira versão do Codex era uma coluna
+de 820px com cabeçalho próprio ("Pensa" no meio, borda de 1px) e cartões de fio — destoava das
+galerias. Hoje a tela é a pilha de faixas das telas-modelo (`.sz-tool-bands`), em `styles/journey.css`:
+- **creme**: o `.sz-tool-header` com [menu][voltar] (quadrado `.sz-tool-icon-btn` "Voltar aos meus
+  jogos"; na home, a `HostBackLink` do host), o selo amarelo "Pensa · sua oficina de jogos" na home,
+  o h1 `.sz-tool-title`, a pílula `.sz-tool-status` só em estado especial (pausado, arquivado, Zappy
+  pensando, versão pronta), o **mapa Z·E·R·O** (`.pensa-journey-zero`: vencida = visto no ladrilho
+  verde, atual = fio azul + a ação do momento, próxima = "Depois"; `aria-current="step"`) e, na home,
+  o cartão **"Continuar de onde parou"**.
+- **céu**: o cartão do MOMENTO (`.pensa-journey-card`): proposta (o que veio da criança em pílulas
+  com o visto; o que o Zappy sugeriu recolhido), missão (ladrilho da oficina `.sz-tool-tile--*`,
+  "N de M" e a régua `.pensa-journey-dots-path`), teste, espera (texto por tipo de operação: ajuda
+  NÃO é "organizando sua ideia"; na preparação o começo escolhido fica à vista), falha, pausa e
+  encerrado (Zappy `celebrating`); a conversa em balões; e o campo de contar com a pergunta do Zappy
+  como RÓTULO em balão.
+- **lilás**: no jogo, "Meu caminho" em sanfonas brancas (caminho com o ladrilho da oficina por
+  missão, ideias para depois, referências, "Guardar e cuidar" com uma frase por ação); na home, a
+  grade "Meus jogos" (trilha Z-E-R-O de cada jogo) ou, sem jogo, "Como o Pensa ajuda" (o método em
+  quatro cartões). Embaixo, sempre (fora dos arquivados), o **"Entrar com um código"**: as
+  equipes moram no plano clássico, e sem esse atalho quem nunca teve plano antigo não tinha onde
+  digitar o código do colega (`onLegacy()` abre o `LegacyPensaApp`).
+- **Atalhos que só PREENCHEM o campo** (o gesto que ela aprovou nos chips do plano clássico): ao
+  travar, "Não sei por onde começar"/"Aconteceu uma coisa diferente"/"Não achei o bloco certo"; numa
+  versão nova, as ideias guardadas. Nada é enviado sozinho. O `placeholder` muda com o pedido.
+- ⚠️ Nenhuma regra mira `button`/`h1..h3` pelo ELEMENTO: botão é sempre uma receita (`.sz-tool-pill`,
+  `.sz-tool-chip`, `.sz-tool-icon-btn`). A regra de elemento do `pensa.css` (`font: inherit`) apagaria
+  o peso dos botões de voz do host, e por isso `journey.css` devolve tamanho e peso a eles.
+- ⚠️ `.pensa-journey-stack` usa `grid-template-columns: minmax(0, 1fr)`: com a trilha `auto` a grade
+  de jogos media pelo conteúdo e a faixa vazava para o lado no celular (medido a 390px).
+- ⚠️ No claro, creme e céu têm a MESMA cor; as margens entre as duas faixas foram reduzidas.
+- Medido no playground: 320/390/768/1172px sem rolagem lateral e sem texto abaixo de 12px.
+- **Playground**: `?v2=1` liga a jornada com o servidor em memória `playground/journey.ts` (máquina
+  de estados REAL do core; 4 jogos de partida; a preparação termina no 2º `work`, ~5s), o Zappy do
+  host e imitações dos botões de voz. `?v2=1&vazio=1` = primeira visita.
+- Testes: `components/JourneyApp.test.tsx` (fluxos do Codex + mapa, missão, atalhos de ajuda, ideias
+  guardadas, foco ao apagar).
+
 ## Verificação
 
 Execute `bun run typecheck`, `bun test src` e `bun run check`. Os testes devem cobrir o mapa ZERO, os cinco artefatos, ordem/dependências, próxima tarefa, entitlement e abertura da ferramenta de destino.

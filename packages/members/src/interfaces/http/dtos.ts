@@ -22,6 +22,17 @@ const SLUG = t.String({ minLength: 1, maxLength: 200, pattern: '^[a-z0-9]+(?:-[a
 
 // ── Params de rota com ids uuid (Elysia valida ANTES do handler → 400) ──────
 export const IdParams = t.Object({ id: UUID })
+/**
+ * Corpo OPCIONAL do claim: os tipos de job que o worker entende além da conta. Sem corpo
+ * (worker antigo) = só exclusão de conta. Strings livres e curtas: escopo desconhecido é
+ * ignorado no serviço, para um worker mais novo não virar 422 num members mais velho.
+ */
+export const CreationCleanupClaimBody = t.Optional(
+  t.Object({
+    scopes: t.Optional(t.Array(t.String({ minLength: 1, maxLength: 32 }), { maxItems: 8 })),
+  }),
+)
+
 export const CreationCleanupFailureBody = t.Object({
   error: t.String({ minLength: 1, maxLength: 1000 }),
   attempts: t.Integer({ minimum: 1, maximum: 1000 }),
@@ -760,7 +771,18 @@ const PensaGuideItemSchema = t.Object({
   hint: t.Optional(t.String({ maxLength: 500 })),
   required: t.Boolean(),
 })
+/**
+ * Guia do plano LEGADO: sem `contractVersion`. A marca 2 é do caminho novo (a jornada a
+ * publica pelo worker, `pensa-journey-dtos`); aceita aqui, o cliente a punha num plano antigo
+ * e pulava o `em andamento`. O normalize do Elysia descarta o campo, e os serviços também.
+ */
 const PensaTaskGuideSchema = t.Object({
+  steps: t.Array(PensaGuideItemSchema, { minItems: 1, maxItems: 20 }),
+  criteria: t.Array(PensaGuideItemSchema, { minItems: 1, maxItems: 10 }),
+})
+/** Guia que a jornada v2 publica: o mesmo formato, com a marca obrigatória. */
+export const PensaJourneyGuideSchema = t.Object({
+  contractVersion: t.Literal(2),
   steps: t.Array(PensaGuideItemSchema, { minItems: 1, maxItems: 20 }),
   criteria: t.Array(PensaGuideItemSchema, { minItems: 1, maxItems: 10 }),
 })
@@ -796,6 +818,7 @@ const PensaStudioBlockSchema = t.Object({
   area: t.Union([
     t.Literal('structure'),
     t.Literal('appearance'),
+    t.Literal('molds'),
     t.Literal('start'),
     t.Literal('events'),
     t.Literal('loops'),

@@ -311,6 +311,11 @@ export const CLOUD_MESSAGES = {
   generic: 'Não consegui guardar na sua conta agora. Vou tentar de novo.',
   staleFailed:
     'Esse jogo ou desenho também mudou em outro aparelho e não consegui juntar os dois agora. Vou tentar de novo.',
+  // Só aparece quando o jogo do plano voltou para uma versão guardada (restauração do Pensa
+  // v2) e este aparelho ainda tinha a versão de antes aberta. Conflito comum entre dois
+  // aparelhos NÃO cai aqui (ver `resolveStale` em `studio-cloud.ts`).
+  reopenRequired:
+    'Seu jogo voltou para uma versão guardada. Volte à lista do Estúdio e abra o jogo de novo. O que você fez neste aparelho ficará guardado em uma cópia.',
   unsupported: 'Este navegador não consegue guardar na conta.',
 } as const
 
@@ -992,10 +997,20 @@ export function createCreationsCloud(options: {
               // novo aqui daria sempre o mesmo erro. O recado pede a página nova.
               const outdated =
                 (cause as { code?: string } | null)?.code === 'CREATION_CLIENT_OUTDATED'
-              const message = outdated ? CLOUD_MESSAGES.clientOutdated : CLOUD_MESSAGES.staleFailed
+              const reopen =
+                (cause as { code?: string } | null)?.code === 'CREATION_REOPEN_REQUIRED'
+              const message = outdated
+                ? CLOUD_MESSAGES.clientOutdated
+                : reopen
+                  ? CLOUD_MESSAGES.reopenRequired
+                  : CLOUD_MESSAGES.staleFailed
               failedItems.set(itemId, {
                 message,
-                code: outdated ? 'CREATION_CLIENT_OUTDATED' : 'CREATION_STALE_BASE',
+                code: outdated
+                  ? 'CREATION_CLIENT_OUTDATED'
+                  : reopen
+                    ? 'CREATION_REOPEN_REQUIRED'
+                    : 'CREATION_STALE_BASE',
               })
               if (!disposed) setState({ status: 'error', lastError: message })
             })

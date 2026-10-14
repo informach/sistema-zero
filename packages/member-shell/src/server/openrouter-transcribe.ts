@@ -2,6 +2,7 @@ import 'server-only'
 import { getEnv } from '../lib/env'
 import {
   isHallucinatedTranscript,
+  SPOKEN_TEXT_MAX_CHARS,
   type SpokenAudioFormat,
   TRANSCRIBE_KEYWORDS,
   tidyTranscript,
@@ -56,6 +57,8 @@ export interface TranscribeInput {
   format: SpokenAudioFormat
   /** Onde a criança está (título da fase e da parte), já limpo. */
   context?: string
+  /** O teto do texto (`spokenTextMaxChars`); sem ele, os 1000 de sempre. */
+  maxChars?: number
   /** O pedido do navegador: se ele vai embora, a chamada ao OpenRouter para junto. */
   signal?: AbortSignal
 }
@@ -220,7 +223,8 @@ export async function transcribeSpeech(
       result.kind === 'aborted' ? 'aborted' : result.kind === 'timeout' ? 'timeout' : 'unavailable',
     )
   }
-  const text = tidyTranscript(result.text)
+  // Teto POR PADRÃO (1000); só o formulário que pediu o do Pensa recebe mais.
+  const text = tidyTranscript(result.text, input.maxChars ?? SPOKEN_TEXT_MAX_CHARS)
   if (!text || isHallucinatedTranscript(text)) throw new TranscribeError('empty')
   return { text, model: chamado }
 }

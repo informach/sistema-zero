@@ -92,6 +92,7 @@ import type {
   ZappyStoredResponseView,
 } from '../lib/types'
 import { clientForwardHeaders, type GatewayModule, type GatewayResponse } from './gateway'
+import { createPensaJourneyClient } from './pensa-journey-client'
 import type { AuthTokens } from './session'
 
 const enc = encodeURIComponent
@@ -487,6 +488,9 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     getMyCourse(slug: string): Promise<GatewayResponse<CourseDetailView>> {
       return gw.gatewayFetch(`/members/courses/${enc(slug)}`)
     },
+    getMyCourseReadonly(slug: string): Promise<GatewayResponse<CourseDetailView>> {
+      return gw.gatewayFetchReadonly(`/members/courses/${enc(slug)}`)
+    },
 
     /** Conteúdo da aula (blocos + anexos). Busca por ID da aula (não slug). */
     getLesson(slug: string, lessonId: string): Promise<GatewayResponse<LessonDetailView>> {
@@ -824,6 +828,7 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     pensaListProjects(): Promise<GatewayResponse<{ projects: PensaProjectListView[] }>> {
       return gw.gatewayFetch('/members/pensa/projects', { query: { audience } })
     },
+    ...createPensaJourneyClient(gw),
     pensaListProjectsReadonly(): Promise<GatewayResponse<{ projects: PensaProjectListView[] }>> {
       return gw.gatewayFetchReadonly('/members/pensa/projects', { query: { audience } })
     },

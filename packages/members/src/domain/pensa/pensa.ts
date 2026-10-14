@@ -133,6 +133,7 @@ export interface PensaGuideItem {
 }
 
 export interface PensaTaskGuide {
+  contractVersion?: 2
   steps: PensaGuideItem[]
   criteria: PensaGuideItem[]
 }
@@ -158,7 +159,8 @@ export interface PensaStudioBlockReference {
   label: string
   category: string
   subcategory: string
-  area: 'structure' | 'appearance' | 'start' | 'events' | 'loops' | 'value'
+  /** Espelha `ServerBlockCatalogEntry['area']` do Estúdio (inclui as gavetas de moldes). */
+  area: 'structure' | 'appearance' | 'molds' | 'start' | 'events' | 'loops' | 'value'
   extension: string | null
 }
 
