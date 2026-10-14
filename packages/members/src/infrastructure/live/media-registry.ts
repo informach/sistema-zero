@@ -1,3 +1,4 @@
+import { DomainError } from '@sistemazero/core/errors'
 import type {
   LiveMediaDescription,
   LiveMediaKind,
@@ -18,10 +19,35 @@ export interface LiveMediaAccess {
   canPublishVideo: boolean
   muteEpoch: number
   hardEndsAt: string
+  /** First name shown on classmates' tiles (child profile or teacher). */
+  displayName?: string
 }
+
+export type LiveMediaAuthorizationResult =
+  | { ok: true; access: LiveMediaAccess }
+  | { ok: false; error: unknown }
 
 export interface LiveMediaAuthorizationPort {
   authorize(actor: LiveMediaActor, occurrenceId: string, deviceId: string): Promise<LiveMediaAccess>
+  /**
+   * Many actors judged on ONE room snapshot (one cohort load per poll/reconcile). Rejects only
+   * when the snapshot cannot be read (transient); each denial is a real, definitive denial.
+   */
+  authorizeMany(
+    occurrenceId: string,
+    entries: { actor: LiveMediaActor; deviceId: string }[],
+  ): Promise<LiveMediaAuthorizationResult[]>
+}
+
+/**
+ * A policy denial (domain error or an explicit 4xx media refusal) retires media. Anything else
+ * (database or network trouble) is transient and must never retire a working connection.
+ */
+export function isDefinitiveDenial(error: unknown): boolean {
+  return (
+    error instanceof DomainError ||
+    (error instanceof LiveMediaError && error.status >= 400 && error.status < 500)
+  )
 }
 
 export interface LiveMediaResource {
@@ -67,6 +93,9 @@ export interface LiveMediaRegistryPort {
   get(id: string): Promise<LiveMediaConnection | null>
   list(occurrenceId: string): Promise<LiveMediaConnection[]>
   mutate<T>(id: string, update: (connection: LiveMediaConnection) => T): Promise<T>
+  /** Cross-replica exclusivity for one occurrence's reconcile; expired leases are taken over. */
+  tryLease(occurrenceId: string, holder: string, ttlMs: number): Promise<boolean>
+  releaseLease(occurrenceId: string, holder: string): Promise<void>
 }
 
 export class LiveMediaError extends Error {

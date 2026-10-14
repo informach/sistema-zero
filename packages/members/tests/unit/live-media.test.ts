@@ -29,6 +29,16 @@ class Registry implements LiveMediaRegistryPort {
   async mutate<T>(id: string, update: (connection: LiveMediaConnection) => T): Promise<T> {
     return update(this.entries.get(id)!)
   }
+  leases = new Map<string, { holder: string; until: number }>()
+  async tryLease(occurrenceId: string, holder: string, ttlMs: number) {
+    const current = this.leases.get(occurrenceId)
+    if (current && current.holder !== holder && current.until > Date.now()) return false
+    this.leases.set(occurrenceId, { holder, until: Date.now() + ttlMs })
+    return true
+  }
+  async releaseLease(occurrenceId: string, holder: string) {
+    if (this.leases.get(occurrenceId)?.holder === holder) this.leases.delete(occurrenceId)
+  }
 }
 
 const context = {
@@ -81,7 +91,11 @@ function fixture(options: { creation?: Promise<void>; timeoutMs?: number } = {})
   const provider = new CloudflareSfuMediaProvider(
     sfu,
     registry,
-    { authorize: async () => access },
+    {
+      authorize: async () => access,
+      authorizeMany: async (_occurrence, entries) =>
+        entries.map(() => ({ ok: true as const, access })),
+    },
     supervisor,
     async () => [{ urls: 'stun:stun.cloudflare.com:3478' }],
     Date.now,

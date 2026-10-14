@@ -1,10 +1,10 @@
-import type { LiveService } from '../../application/live/live.service'
+import type { LiveMediaAuthorization, LiveService } from '../../application/live/live.service'
 import type { Database } from '../persistence/drizzle/db'
 import { CloudflareSfuClient } from './cloudflare-sfu.client'
 import { CloudflareSfuMediaProvider } from './cloudflare-sfu.provider'
 import { DrizzleLiveMediaRegistry } from './drizzle-media-registry'
 import { HttpLiveMediaSupervisor } from './live-supervisor.client'
-import { LiveMediaError } from './media-registry'
+import { type LiveMediaAccess, LiveMediaError } from './media-registry'
 
 export interface LiveMediaConfiguration {
   appId: string
@@ -13,6 +13,26 @@ export interface LiveMediaConfiguration {
   supervisorToken: string
   turnKeyId: string
   turnApiToken: string
+}
+
+/** Room policy (who may publish what) from the authoritative occurrence snapshot. */
+export function toMediaAccess(access: LiveMediaAuthorization): LiveMediaAccess {
+  const teacher = access.role === 'teacher'
+  const participation = access.participation
+  return {
+    actorId: access.actorId,
+    role: access.role,
+    canPublishAudio:
+      teacher ||
+      (!!participation &&
+        !participation.microphoneLocked &&
+        (access.occurrence.speakingMode === 'open' ||
+          (access.occurrence.speakingMode === 'turns' && participation.turnGranted))),
+    canPublishVideo: teacher || (!!participation && !participation.cameraLocked),
+    muteEpoch: participation?.muteEpoch ?? 0,
+    hardEndsAt: access.occurrence.hardEndsAt,
+    displayName: access.displayName,
+  }
 }
 
 export function createLiveMediaInfrastructure(options: {
@@ -28,22 +48,12 @@ export function createLiveMediaInfrastructure(options: {
     new DrizzleLiveMediaRegistry(options.db),
     {
       async authorize(actor, occurrenceId, deviceId) {
-        const access = await live.authorizeMedia(actor, occurrenceId, deviceId)
-        const teacher = access.role === 'teacher'
-        const participation = access.participation
-        return {
-          actorId: actor.id,
-          role: access.role,
-          canPublishAudio:
-            teacher ||
-            (!!participation &&
-              !participation.microphoneLocked &&
-              (access.occurrence.speakingMode === 'open' ||
-                (access.occurrence.speakingMode === 'turns' && participation.turnGranted))),
-          canPublishVideo: teacher || (!!participation && !participation.cameraLocked),
-          muteEpoch: participation?.muteEpoch ?? 0,
-          hardEndsAt: access.occurrence.hardEndsAt,
-        }
+        return toMediaAccess(await live.authorizeMedia(actor, occurrenceId, deviceId))
+      },
+      async authorizeMany(occurrenceId, entries) {
+        return (await live.authorizeMediaMany(occurrenceId, entries)).map((result) =>
+          result.ok ? { ok: true as const, access: toMediaAccess(result.access) } : result,
+        )
       },
     },
     new HttpLiveMediaSupervisor({ url: config.supervisorUrl, token: config.supervisorToken }),

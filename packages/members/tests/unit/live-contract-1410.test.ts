@@ -342,6 +342,37 @@ describe('contrato das oficinas (14/10)', () => {
     expect((await f.live.enrollments(admin, f.cohort.id)).enrollments).toHaveLength(2)
   })
 
+  test('autorização de mídia em lote: uma leitura da sala e o primeiro nome de cada um', async () => {
+    const f = await setup()
+    f.setTime(startsAt)
+    await f.live.control(ana, f.session.id, undefined, { kind: 'start' })
+    await f.live.join(bia, f.session.id, { deviceId: biaDevice, takeover: false })
+    await f.live.control(ana, f.session.id, undefined, { kind: 'admit', learnerId: bia.id })
+    await f.live.join(caio, f.session.id, { deviceId: caioDevice, takeover: false })
+    const occurrenceId = (await f.live.room(ana, f.session.id)).occurrence!.id
+    let loads = 0
+    const original = f.repository.findByOccurrence.bind(f.repository)
+    f.repository.findByOccurrence = async (id) => {
+      loads++
+      return original(id)
+    }
+    const results = await f.live.authorizeMediaMany(occurrenceId, [
+      { actor: bia, deviceId: biaDevice },
+      { actor: ana, deviceId: randomUUID() },
+      { actor: bruna, deviceId: randomUUID() },
+      { actor: caio, deviceId: caioDevice },
+    ])
+    expect(loads).toBe(1)
+    expect(results.map((item) => (item.ok ? item.access.displayName : 'negado'))).toEqual([
+      'Bia',
+      'Ana',
+      'Bruna',
+      'negado',
+    ])
+    // Caio is still waiting: a real denial from the same snapshot.
+    expect(results[3]).toMatchObject({ ok: false })
+  })
+
   test('mensagens que chegam à criança não falam em aula', async () => {
     const f = await setup()
     f.setTime(startsAt)

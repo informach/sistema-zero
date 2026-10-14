@@ -1,6 +1,6 @@
 import { and, eq, sql } from 'drizzle-orm'
 import type { Database } from '../persistence/drizzle/db'
-import { liveMediaConnections } from '../persistence/drizzle/schema'
+import { liveMediaConnections, liveMediaReconcileLeases } from '../persistence/drizzle/schema'
 import {
   type LiveMediaConnection,
   LiveMediaError,
@@ -74,6 +74,32 @@ export class DrizzleLiveMediaRegistry implements LiveMediaRegistryPort {
       .from(liveMediaConnections)
       .where(eq(liveMediaConnections.occurrenceId, occurrenceId))
     return rows.map((row) => data(row.state))
+  }
+
+  /** Database clock on both sides: replicas with skewed clocks still agree on expiry. */
+  async tryLease(occurrenceId: string, holder: string, ttlMs: number): Promise<boolean> {
+    const expiresAt = sql`now() + (${Math.max(1, Math.round(ttlMs))} * interval '1 millisecond')`
+    const rows = await this.db
+      .insert(liveMediaReconcileLeases)
+      .values({ occurrenceId, holder, expiresAt })
+      .onConflictDoUpdate({
+        target: liveMediaReconcileLeases.occurrenceId,
+        set: { holder, expiresAt },
+        where: sql`${liveMediaReconcileLeases.expiresAt} <= now() or ${liveMediaReconcileLeases.holder} = ${holder}::uuid`,
+      })
+      .returning({ holder: liveMediaReconcileLeases.holder })
+    return rows.length > 0
+  }
+
+  async releaseLease(occurrenceId: string, holder: string): Promise<void> {
+    await this.db
+      .delete(liveMediaReconcileLeases)
+      .where(
+        and(
+          eq(liveMediaReconcileLeases.occurrenceId, occurrenceId),
+          eq(liveMediaReconcileLeases.holder, holder),
+        ),
+      )
   }
 
   async mutate<T>(id: string, update: (connection: LiveMediaConnection) => T): Promise<T> {

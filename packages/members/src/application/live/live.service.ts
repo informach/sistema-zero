@@ -1276,32 +1276,26 @@ export class LiveService {
   }
 
   /**
-   * One cohort load per media poll: the receiver is authorized (or the call fails) and each
-   * publisher gets its own result. A per-publisher denial comes from the same snapshot, so it
-   * is a real denial, never a transient database error.
+   * One cohort load per media poll or reconcile: every actor is judged on the same snapshot,
+   * so a per-actor denial is a real denial, never a transient database error (which rejects
+   * the whole call instead).
    */
   async authorizeMediaMany(
-    actor: LiveActor,
     occurrenceId: string,
-    deviceId: string,
-    publishers: { actor: LiveActor; deviceId: string }[],
-  ): Promise<{ receiver: LiveMediaAuthorization; publishers: LiveMediaPublisherResult[] }> {
+    entries: { actor: LiveActor; deviceId: string }[],
+  ): Promise<LiveMediaPublisherResult[]> {
     const aggregate = await this.repository.findByOccurrence(occurrenceId)
-    if (!aggregate) throw new LiveNotFoundError()
-    const receiver = this.mediaAccess(aggregate, actor, occurrenceId, deviceId)
-    return {
-      receiver,
-      publishers: publishers.map((publisher) => {
-        try {
-          return {
-            ok: true as const,
-            access: this.mediaAccess(aggregate, publisher.actor, occurrenceId, publisher.deviceId),
-          }
-        } catch (error) {
-          return { ok: false as const, error }
+    return entries.map(({ actor, deviceId }) => {
+      try {
+        if (!aggregate) throw new LiveNotFoundError()
+        return {
+          ok: true as const,
+          access: this.mediaAccess(aggregate, actor, occurrenceId, deviceId),
         }
-      }),
-    }
+      } catch (error) {
+        return { ok: false as const, error }
+      }
+    })
   }
 
   async material(actor: LiveActor, sessionId: string, materialId: string) {
