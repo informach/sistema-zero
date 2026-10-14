@@ -15,7 +15,7 @@ A adaptação permanece dentro da infraestrutura Railway/Cloudflare autorizada. 
 - Watchdog da VM encerra o navegador quando a autorização curta vence, stdin fecha ou o prazo máximo termina. A autorização nunca pode ultrapassar 30 segundos nem o fim da ocorrência.
 - Fechar a conexão Playwright não prova a parada. `close()` só confirma após ACK do processo que aguardou `BrowserServer.close()`, ou após o Railway confirmar que a VM foi destruída. Falha conserva `captureStopped:false` e impede assistência.
 - Criar recursos com credencial de projeto restrita ao ambiente. Não persistir token pessoal da CLI. Guardar identificação da VM para diagnóstico e destruir após a captura. Timeout de ociosidade limita recursos órfãos.
-- Falhas não ligam um fallback sem sandbox. Manter `LIVE_MEDIA_READY=false` até validar o conjunto em staging.
+- Falhas não ligam um fallback sem sandbox. Produção mantém `LIVE_MEDIA_READY=false` até a validação de staging; staging pode ser habilitado para o ensaio controlado após a prova técnica de mídia.
 
 ## Limites e custo
 
@@ -31,8 +31,8 @@ Referências: [Railway Sandboxes](https://docs.railway.com/sandboxes), [Playwrig
 - [x] Implementar adaptação do navegador e integrar seu ciclo ao `RecordingJob`; testar falhas de encerramento.
 - [x] Preparar base reproduzível e credenciais próprias em staging e produção, sem implantar a aplicação de produção.
 - [x] Executar teste real desde o serviço Railway: criação privada, recepção, segmento, pausa e remoção da VM.
-- [ ] Atualizar documentação, commit/push staging, CI e deploy de todos os serviços afetados pelo conjunto de commits.
-- [ ] Conferir migrações, healthchecks, isolamento dos ambientes e registrar o que continua dependente do ensaio humano.
+- [x] Atualizar documentação, commit/push staging, CI e deploy de todos os serviços afetados pelo conjunto de commits.
+- [x] Conferir migrações, healthchecks, isolamento dos ambientes e registrar o que continua dependente do ensaio humano.
 
 ## Verificação em 14/10
 
@@ -43,4 +43,6 @@ Referências: [Railway Sandboxes](https://docs.railway.com/sandboxes), [Playwrig
 - A sondagem no serviço staging usou código do gravador e Bun 1.4.3 em diretório temporário, como UID 1001, com credencial restrita e rede privada. Gerou dois segmentos e um MP4 H.264/AAC de 130.010 bytes, duração 12,14 s; pausa sem erro, captura encerrada e VMs removidas. Objetos sintéticos foram apagados. Isso ainda não testa a publicação pelo Members nem oito crianças.
 - O ensaio encontrou três falhas de integração: colisão de parâmetros no roteador do Members, handshake Playwright bloqueado no Bun 1.3.11 e espera indevida pela coleta completa de ICE. Foram reproduzidas antes dos consertos. O runtime do gravador foi fixado em 1.4.3; o CI testa a conexão real Bun → BrowserServer. A negociação segue o [exemplo oficial da Cloudflare](https://github.com/cloudflare/calls-examples/blob/main/echo/index.html), sem bloquear a resposta enquanto outros candidatos são coletados; o receptor exige mídia recebida antes de gravar.
 - Pausa agora descarrega os segmentos e fecha as trilhas SFU antes de destruir a conexão. O supervisor reconhece uma sessão encerrada pelo retorno específico GET 410/`session_error`, conserva o histórico e deixa de repetir limpeza indefinidamente após o prazo de inspeção. Outros erros continuam pendentes. [Semântica dos erros SFU](https://developers.cloudflare.com/realtime/sfu/observability/error-codes/).
-- CI e deploy do conjunto atualizado continuam pendentes. A execução anterior passou nos testes de mídia, mas falhou no limite de tempo de um teste do Pinta (542 ms para um teto de 500 ms); esse limite não foi relaxado.
+- A execução anterior passou nos testes de mídia, mas falhou no limite de tempo de um teste do Pinta (542 ms para um teto de 500 ms); esse limite não foi relaxado. A rodada seguinte passou.
+- O [CI `38616509787`](https://github.com/informach/sistema-zero/actions/runs/38616509787) concluiu com sucesso: suíte geral, bancos, checagem de tipos, Chromium, Firefox, WebKit, Community Kids e deploy. Members, live-recorder, Admin, Community Kids e Community implantados no commit `24a682820` passaram nos healthchecks. A turma técnica executou o transporte real do cliente no Chromium, com chamadas HTTP autenticadas ao Members: abertura da sala, entrada, gravação, callbacks, pausa, finalização, publicação e leitura de um MP4 de 105.811 bytes no R2. As turmas sintéticas foram arquivadas e as VMs removidas. Ainda falta o ensaio humano da interface e de oito dispositivos.
+- Dezesseis verificações HTTP passaram: saúde dos três frontends, recusa de acesso sem autenticação às APIs e páginas de oficinas e disponibilidade do modelo, JavaScript e WebAssembly da câmera no Admin e no Kids. Os headers globais implantados usam CORP `same-site`. Produção preservou seus 20 deployments e `main` permaneceu em `6f93dcbfe8f176017b7b1ace5114d480ad5853b1`.
