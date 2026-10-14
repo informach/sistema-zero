@@ -239,6 +239,8 @@ const PLATFORM_SCOPED_PREFIXES = [
   '/admin/professor',
   '/admin/comunidade/moderacao',
   '/admin/membros',
+  // Oficinas ao vivo: as turmas dos cursos ao vivo DA plataforma ativa (14/10/2026).
+  '/admin/oficinas',
 ] as const
 
 export function pathIsPlatformScoped(pathname: string): boolean {

@@ -3,23 +3,26 @@
 import type {
   LiveCatalogView,
   LiveCohort,
+  LiveCourseSummary,
   LiveCreateCohort,
   LiveEnrollment,
-  LiveLessonPlan,
-  LiveMaterial,
-  LiveProgram,
-  LiveStudioConfig,
 } from '@sistemazero/core/live'
-import { LiveRequestError, liveDate, liveRequest } from '@sistemazero/member-shell/lib/live/client'
-import { Badge, Button, Dialog, Input, Textarea } from '@sistemazero/ui'
-import { CalendarDays, Plus, Upload } from 'lucide-react'
-import dynamic from 'next/dynamic'
+import { liveDate, liveRequest } from '@sistemazero/member-shell/lib/live/client'
+import { Badge, Button, Dialog, Input } from '@sistemazero/ui'
+import { CalendarDays, Plus, Radio, SquarePen } from 'lucide-react'
 import Link from 'next/link'
-import { useEffect, useId, useRef, useState } from 'react'
+import { useEffect, useId, useMemo, useState } from 'react'
 import { AdminHeader } from '@/components/admin/admin-header'
+import { usePlatform } from '@/components/admin/platform-provider'
 import { useConfirm } from '@/components/admin/use-confirm'
 import { roomHref } from '@/lib/live-agenda'
-import { defaultLiveStudio } from '@/lib/live-studio-curation'
+import {
+  buildSchedule,
+  cohortsByCourse,
+  LIVE_TIME_ZONES,
+  mergeById,
+  timeZoneOptions,
+} from '@/lib/live-schedule'
 import {
   COHORT_STATUS_LABEL,
   cohortPatch,
@@ -28,54 +31,25 @@ import {
   teacherDisplayName,
   teacherSelectionPayload,
 } from '@/lib/live-teachers'
+import type { CourseView } from '@/lib/types'
+import { CourseFormDialog } from '../membros/cursos/course-form-dialog'
 import { EnrollmentPicker } from './enrollment-picker'
-import { LiveStepsEditor } from './live-steps-editor'
 import { type StaffDirectory, TeacherPicker, useStaffUsers } from './teacher-picker'
 
-// O catálogo de blocos do Estúdio puxa o Blockly: a curadoria só carrega quando o roteiro abre.
-const LiveStudioEditor = dynamic(
-  () => import('./live-studio-editor').then((module) => module.LiveStudioEditor),
-  { loading: () => <p className="text-sm text-muted-foreground">Carregando o Estúdio…</p> },
-)
-
-type AdminCatalog = Omit<LiveCatalogView, 'programs'> & { programs: LiveProgram[] }
-type DraftLesson = LiveLessonPlan & { editorId: string }
-const newLesson = (): DraftLesson => ({
-  editorId: crypto.randomUUID(),
-  title: '',
-  instructions: '',
-  starterProjectId: null,
-  materials: [],
-  studio: defaultLiveStudio(),
-})
 const field = 'flex flex-col gap-1.5 text-sm font-medium'
-
-/** A forma do rascunho que importa para "tem mudança sem salvar?" (sem os ids de tela). */
-export function draftSnapshot(
-  title: string,
-  description: string,
-  lessons: readonly DraftLesson[],
-): string {
-  return JSON.stringify({
-    title,
-    description,
-    lessons: lessons.map(({ editorId: _editorId, ...lesson }) => lesson),
-  })
-}
-
-export const REVISION_CONFLICT_MESSAGE =
-  'Alguém salvou ou publicou esta oficina enquanto você editava. O seu rascunho continua aqui, sem perder nada. Confira a versão nova na lista acima: ao salvar de novo, o seu rascunho vira a versão mais nova.'
+const PLATFORM_NAME = { kids: 'Kids', adult: 'Adultos' } as const
 
 const errorMessage = (cause: unknown, fallback: string) =>
   cause instanceof Error && cause.message ? cause.message : fallback
 
-const toDraft = (program: LiveProgram | null): DraftLesson[] =>
-  program?.lessons.map((lesson) => ({
-    ...lesson,
-    editorId: crypto.randomUUID(),
-    materials: [...lesson.materials],
-  })) ?? [newLesson()]
+const courseEditorHref = (courseId: string) => `/admin/membros/cursos/${courseId}`
 
+/**
+ * Oficinas ao vivo (14/10/2026): a gestão das TURMAS dos cursos ao vivo da plataforma ativa.
+ * O conteúdo de cada encontro é uma aula do curso, montada no editor de cursos e aulas de sempre
+ * (o roteiro próprio das oficinas saiu). Aqui: criar a turma (curso, datas por aula publicada,
+ * professoras, vagas, prazo), editar, inscrições e abrir as inscrições.
+ */
 export function LiveAdmin({
   teacherId,
   teacherName,
@@ -85,78 +59,66 @@ export function LiveAdmin({
   teacherName: string
   canWrite: boolean
 }) {
-  const [catalog, setCatalog] = useState<AdminCatalog | null>(null)
-  const [templates, setTemplates] = useState<{ id: string; title: string }[]>([])
+  const platform = usePlatform()
+  const [catalog, setCatalog] = useState<LiveCatalogView | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
-  const [formError, setFormError] = useState<string | null>(null)
-  const [formNotice, setFormNotice] = useState<string | null>(null)
-  const [editing, setEditing] = useState<LiveProgram | null>(null)
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [lessons, setLessons] = useState<DraftLesson[]>(() => [newLesson()])
-  const [baseline, setBaseline] = useState(() => draftSnapshot('', '', [newLesson()]))
+  const [createdCourse, setCreatedCourse] = useState<CourseView | null>(null)
   const [busy, setBusy] = useState(false)
-  const [creatingFor, setCreatingFor] = useState<LiveProgram | null>(null)
+  const [creatingFor, setCreatingFor] = useState<LiveCourseSummary | null>(null)
   const [settingsFor, setSettingsFor] = useState<LiveCohort | null>(null)
   const [enrollmentsFor, setEnrollmentsFor] = useState<LiveCohort | null>(null)
+  const [courseFormOpen, setCourseFormOpen] = useState(false)
   const [revision, setRevision] = useState(0)
-  const formId = useId()
-  const formHeading = useRef<HTMLHeadingElement>(null)
   const staff = useStaffUsers(canWrite)
-  const { confirm, confirmDialog } = useConfirm()
-  const dirty = draftSnapshot(title, description, lessons) !== baseline
-  // biome-ignore lint/correctness/useExhaustiveDependencies: A successful mutation invalidates the catalog explicitly.
+
+  // Trocar de plataforma troca a lista: diálogos e recados abertos eram da outra.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reinicia ao trocar de plataforma.
+  useEffect(() => {
+    setCatalog(null)
+    setCreatingFor(null)
+    setSettingsFor(null)
+    setEnrollmentsFor(null)
+    setCourseFormOpen(false)
+    setNotice(null)
+    setCreatedCourse(null)
+  }, [platform])
+  // ⚠️ Estável: o formulário do curso reinicia sempre que o `prefill` muda de identidade, e um
+  // objeto novo a cada render apagaria o que a autora digita.
+  const livePrefill = useMemo(() => ({ audience: platform, modality: 'live' as const }), [platform])
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: uma mutação invalida o catálogo.
   useEffect(() => {
     const controller = new AbortController()
-    liveRequest<AdminCatalog>('/api/admin/live/catalog', undefined, 'GET', controller.signal)
-      .then(setCatalog)
-      .catch((cause) => {
-        if (!controller.signal.aborted) setError(cause.message)
-      })
-    return () => controller.abort()
-  }, [revision])
-  // biome-ignore lint/correctness/useExhaustiveDependencies: Importing a template invalidates its selectable list.
-  useEffect(() => {
-    const controller = new AbortController()
-    liveRequest<{ id: string; title: string }[]>(
-      '/api/admin/live/templates',
+    setError(null)
+    liveRequest<LiveCatalogView>(
+      `/api/admin/live/catalog?audience=${platform}`,
       undefined,
       'GET',
       controller.signal,
     )
-      .then(setTemplates)
+      .then(setCatalog)
       .catch((cause) => {
-        if (!controller.signal.aborted) setError(cause.message)
+        if (!controller.signal.aborted) setError(errorMessage(cause, 'Não foi possível carregar.'))
       })
     return () => controller.abort()
-  }, [revision])
+  }, [revision, platform])
+
   async function loadMore() {
     if (!catalog?.nextCursor || busy) return
     setBusy(true)
     try {
-      const next = await liveRequest<AdminCatalog>(
-        `/api/admin/live/catalog?cursor=${catalog.nextCursor}`,
+      const next = await liveRequest<LiveCatalogView>(
+        `/api/admin/live/catalog?audience=${platform}&cursor=${catalog.nextCursor}`,
       )
       setCatalog((previous) =>
         previous
           ? {
               ...next,
-              cohorts: [
-                ...new Map(
-                  [...previous.cohorts, ...next.cohorts].map((item) => [item.id, item]),
-                ).values(),
-              ],
-              sessions: [
-                ...new Map(
-                  [...previous.sessions, ...next.sessions].map((item) => [item.id, item]),
-                ).values(),
-              ],
-              enrollments: [
-                ...new Map(
-                  [...previous.enrollments, ...next.enrollments].map((item) => [item.id, item]),
-                ).values(),
-              ],
+              courses: mergeById(previous.courses ?? [], next.courses ?? []),
+              cohorts: mergeById(previous.cohorts, next.cohorts),
+              sessions: mergeById(previous.sessions, next.sessions),
+              enrollments: mergeById(previous.enrollments, next.enrollments),
             }
           : next,
       )
@@ -166,207 +128,147 @@ export function LiveAdmin({
       setBusy(false)
     }
   }
-  /** Ações da LISTA: o recado aparece no topo, junto da lista. */
+
   async function listAction(callback: () => Promise<unknown>, success: string) {
     setBusy(true)
     setError(null)
     setNotice(null)
+    setCreatedCourse(null)
     try {
       await callback()
       setNotice(success)
       setRevision((value) => value + 1)
-      return true
     } catch (cause) {
       setError(errorMessage(cause, 'Não foi possível salvar.'))
-      return false
     } finally {
       setBusy(false)
     }
   }
-  /** Ações do ROTEIRO (envio de material, projeto inicial): o recado aparece no formulário. */
-  async function formAction(callback: () => Promise<unknown>, success: string) {
-    setBusy(true)
-    setFormError(null)
-    setFormNotice(null)
-    try {
-      await callback()
-      setFormNotice(success)
-      return true
-    } catch (cause) {
-      setFormError(errorMessage(cause, 'Não foi possível salvar.'))
-      return false
-    } finally {
-      setBusy(false)
-    }
-  }
-  function load(program: LiveProgram | null) {
-    const nextTitle = program?.title ?? ''
-    const nextDescription = program?.description ?? ''
-    const nextLessons = toDraft(program)
-    setEditing(program)
-    setTitle(nextTitle)
-    setDescription(nextDescription)
-    setLessons(nextLessons)
-    setBaseline(draftSnapshot(nextTitle, nextDescription, nextLessons))
-    setFormError(null)
-  }
-  /** O formulário fica no fim da página: abrir a edição rola até ele e leva o foco ao título. */
-  function revealForm() {
-    requestAnimationFrame(() => {
-      const heading = formHeading.current
-      heading?.scrollIntoView?.({ block: 'start', behavior: 'smooth' })
-      heading?.focus({ preventScroll: true })
-    })
-  }
-  /** Abrir outro roteiro (ou cancelar a edição) com mudanças sem salvar pede confirmação. */
-  function requestEdit(program: LiveProgram | null) {
-    if (program && editing?.id === program.id) {
-      revealForm()
-      return
-    }
-    const go = () => {
-      load(program)
-      setFormNotice(null)
-      if (program) revealForm()
-    }
-    if (!dirty) {
-      go()
-      return
-    }
-    confirm({
-      title: 'Descartar as mudanças sem salvar?',
-      message: editing
-        ? `As mudanças no roteiro de "${editing.title}" ainda não foram salvas e serão perdidas.`
-        : 'A oficina nova ainda não foi salva e será perdida.',
-      confirmText: 'Descartar mudanças',
-      cancelText: 'Continuar editando',
-      confirmVariant: 'destructive',
-      onConfirm: go,
-    })
-  }
-  const updateLesson = (index: number, patch: Partial<LiveLessonPlan>) =>
-    setLessons((previous) =>
-      previous.map((lesson, i) => (i === index ? { ...lesson, ...patch } : lesson)),
-    )
-  async function importProject(index: number, file: File) {
-    await formAction(async () => {
-      if (file.size > 1_900_000) throw new Error('O projeto inicial deve ter até 1,9 MB.')
-      const project = JSON.parse(await file.text())
-      const template = await liveRequest<{ id: string; title: string }>(
-        '/api/admin/live/templates',
-        { project },
-      )
-      setTemplates((previous) => [...previous, template])
-      updateLesson(index, { starterProjectId: template.id })
-    }, 'Projeto inicial importado. Salve o roteiro para usá-lo na oficina.')
-  }
-  async function upload(index: number, file: File) {
-    await formAction(async () => {
-      if (file.size > 8 * 1024 * 1024) throw new Error('O material deve ter até 8 MB.')
-      const body = new FormData()
-      body.set('file', file)
-      body.set('title', file.name)
-      const response = await fetch('/api/media/live-materials', {
-        method: 'POST',
-        body,
-        signal: AbortSignal.timeout(120_000),
-      })
-      const result = await response.json()
-      if (!response.ok)
-        throw new Error(result?.error?.message ?? 'O arquivo não foi enviado. Tente novamente.')
-      const material = result as LiveMaterial
-      setLessons((previous) =>
-        previous.map((lesson, i) =>
-          i === index ? { ...lesson, materials: [...lesson.materials, material] } : lesson,
-        ),
-      )
-    }, 'Material enviado. Salve a oficina para incluí-lo no roteiro.')
-  }
-  async function saveProgram() {
-    setBusy(true)
-    setFormError(null)
-    setFormNotice(null)
-    const current = editing
-    try {
-      await liveRequest(
-        current ? `/api/admin/live/programs/${current.id}` : '/api/admin/live/programs',
-        {
-          title,
-          description,
-          lessons: lessons.map(({ editorId: _editorId, ...lesson }) => lesson),
-          ...(current ? { expectedRevision: current.revision } : {}),
-        },
-        current ? 'PATCH' : 'POST',
-      )
-      load(null)
-      setFormNotice(
-        current
-          ? 'Nova versão do roteiro salva. Turmas existentes mantêm a versão delas.'
-          : 'Oficina criada como rascunho. Use Publicar oficina quando ela estiver pronta para o catálogo.',
-      )
-      setRevision((value) => value + 1)
-    } catch (cause) {
-      // ⚠️ Conflito de versão NUNCA descarta o rascunho: relê a versão nova da oficina, mantém o
-      // que está na tela e passa a salvar em cima dela. Antes, o rascunho ficava preso para sempre.
-      if (current && cause instanceof LiveRequestError && cause.status === 409) {
-        const fresh = await liveRequest<AdminCatalog>('/api/admin/live/catalog')
-          .then((result) => result.programs.find((program) => program.id === current.id) ?? null)
-          .catch(() => null)
-        if (fresh && fresh.revision !== current.revision) {
-          setEditing(fresh)
-          setFormError(REVISION_CONFLICT_MESSAGE)
-          setRevision((value) => value + 1)
-          return
-        }
-      }
-      setFormError(errorMessage(cause, 'Não foi possível salvar o roteiro.'))
-    } finally {
-      setBusy(false)
-    }
-  }
-  async function togglePublished(program: LiveProgram) {
-    await listAction(async () => {
-      const result = await liveRequest<Partial<LiveProgram> | null>(
-        `/api/admin/live/programs/${program.id}`,
-        {
-          expectedRevision: program.revision,
-          status: program.status === 'published' ? 'draft' : 'published',
-        },
-        'PATCH',
-      )
-      // Publicar só muda a visibilidade: o rascunho aberto passa a salvar sobre a versão nova.
-      if (typeof result?.revision === 'number') {
-        const nextRevision = result.revision
-        setEditing((previous) =>
-          previous && previous.id === program.id
-            ? { ...previous, revision: nextRevision, status: result.status ?? previous.status }
-            : previous,
-        )
-      }
-    }, 'Visibilidade atualizada.')
-  }
+
   const teacherNames = (cohort: LiveCohort) =>
     cohort.teacherIds
       .map((id) => {
         if (id === teacherId) return 'você'
+        const known = cohort.teacherNames?.[id]
+        if (known) return known
         const user = staff.users.find((item) => item.id === id)
         return user ? teacherDisplayName(user) : null
       })
       .filter(Boolean)
       .join(', ')
+
+  const courses = catalog?.courses ?? []
+  const { byCourse, others } = cohortsByCourse(courses, catalog?.cohorts ?? [])
+
+  function cohortCard(item: LiveCohort) {
+    const names = teacherNames(item)
+    return (
+      <div key={item.id} className="rounded-lg bg-muted/40 p-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="space-y-1">
+            <h3 className="flex flex-wrap items-center gap-2 font-medium">
+              {item.title}
+              <Badge variant={item.status === 'open' ? 'success' : 'muted'}>
+                {COHORT_STATUS_LABEL[item.status]}
+              </Badge>
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              Até {item.capacity} vagas · {item.accessDays} dias de acesso por encontro ·{' '}
+              {names ? `Professoras: ${names}` : `${item.teacherIds.length} professora(s)`}
+            </p>
+            {item.status === 'draft' ? (
+              <p className="text-xs text-muted-foreground">
+                Rascunho: as famílias só conseguem se inscrever depois de Abrir inscrições.
+              </p>
+            ) : null}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" onClick={() => setEnrollmentsFor(item)}>
+              Inscrições
+            </Button>
+            {canWrite ? (
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={busy}
+                onClick={() => setSettingsFor(item)}
+              >
+                Editar turma
+              </Button>
+            ) : null}
+            {canWrite && item.status !== 'archived' ? (
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={busy}
+                onClick={() =>
+                  void listAction(
+                    () =>
+                      liveRequest(
+                        `/api/admin/live/cohorts/${item.id}`,
+                        { status: item.status === 'open' ? 'closed' : 'open' },
+                        'PATCH',
+                      ),
+                    item.status === 'open'
+                      ? 'Inscrições encerradas.'
+                      : 'Inscrições abertas. As famílias já podem se inscrever.',
+                  )
+                }
+              >
+                {item.status === 'open' ? 'Encerrar inscrições' : 'Abrir inscrições'}
+              </Button>
+            ) : null}
+          </div>
+        </div>
+        <ul className="mt-3 space-y-2">
+          {(catalog?.sessions ?? [])
+            .filter((session) => session.cohortId === item.id)
+            .sort((a, b) => a.order - b.order)
+            .map((session) => (
+              <li
+                key={session.id}
+                className="flex flex-wrap items-center justify-between gap-2 text-sm"
+              >
+                <span>
+                  {session.title} ·{' '}
+                  {liveDate(session.occurrenceStartsAt ?? session.startsAt, item.timeZone)}
+                </span>
+                {/* ⚠️ `<a href>`, nunca `<Link>`: a sala precisa de navegação completa para
+                    receber os cabeçalhos dela (ver `roomHref`). */}
+                <a
+                  className="inline-flex min-h-10 items-center font-medium text-primary underline"
+                  href={roomHref(session.id)}
+                >
+                  Preparar encontro
+                </a>
+              </li>
+            ))}
+        </ul>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-8">
       <AdminHeader
         title="Oficinas ao vivo"
-        description="Cadastre o roteiro uma vez. Cada turma guarda suas datas, professoras, inscrições e histórico."
+        description={`As turmas dos cursos ao vivo de ${PLATFORM_NAME[platform]}. Cada aula publicada do curso vira um encontro da turma; o conteúdo se monta no editor de cursos e aulas.`}
         action={
-          <Link
-            href="/admin/professor/ao-vivo"
-            className="inline-flex min-h-10 items-center gap-2 rounded-lg border px-4 text-sm font-medium"
-          >
-            <CalendarDays className="size-4" aria-hidden />
-            Agenda ao vivo
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href="/admin/professor/ao-vivo"
+              className="inline-flex min-h-10 items-center gap-2 rounded-lg border px-4 text-sm font-medium"
+            >
+              <CalendarDays className="size-4" aria-hidden />
+              Agenda ao vivo
+            </Link>
+            {canWrite ? (
+              <Button onClick={() => setCourseFormOpen(true)}>
+                <Radio className="size-4" aria-hidden />
+                Criar curso ao vivo
+              </Button>
+            ) : null}
+          </div>
         }
       />
       {error ? (
@@ -376,7 +278,15 @@ export function LiveAdmin({
       ) : null}
       {notice ? (
         <p role="status" className="rounded-xl bg-success/15 p-4 text-sm text-success-foreground">
-          {notice}
+          {notice}{' '}
+          {createdCourse ? (
+            <Link
+              className="font-medium underline underline-offset-2"
+              href={courseEditorHref(createdCourse.id)}
+            >
+              Montar as aulas de {createdCourse.title}
+            </Link>
+          ) : null}
         </p>
       ) : null}
       {catalog?.nextCursor && (
@@ -385,406 +295,91 @@ export function LiveAdmin({
         </Button>
       )}
       {!catalog ? (
-        <p role="status">Carregando oficinas…</p>
+        error ? null : (
+          <p role="status">Carregando oficinas…</p>
+        )
       ) : (
-        <section className="space-y-3" aria-label="Oficinas cadastradas">
-          {catalog.programs.length === 0 ? (
-            <p className="rounded-xl border p-5 text-muted-foreground">
-              Crie a primeira oficina para organizar suas turmas.
-            </p>
+        <section className="space-y-3" aria-label="Cursos ao vivo">
+          {courses.length === 0 ? (
+            <div className="space-y-2 rounded-xl border p-5 text-sm text-muted-foreground">
+              <p>Ainda não há curso ao vivo em {PLATFORM_NAME[platform]}.</p>
+              <p>
+                Um curso ao vivo se monta como qualquer curso, no editor de cursos e aulas. Cada
+                aula publicada vira um encontro das turmas, e o curso só aparece para as famílias em
+                Oficinas.
+              </p>
+            </div>
           ) : (
-            catalog.programs.map((program) => (
-              <article key={program.id} className="space-y-4 rounded-xl border bg-card p-5">
+            courses.map((course) => (
+              <article key={course.id} className="space-y-4 rounded-xl border bg-card p-5">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <h2 className="text-lg font-semibold">{program.title}</h2>
+                    <h2 className="text-lg font-semibold">{course.title}</h2>
                     <p className="text-sm text-muted-foreground">
-                      {program.lessons.length} encontros ·{' '}
-                      {program.status === 'published'
-                        ? 'Publicada'
-                        : program.status === 'archived'
-                          ? 'Arquivada'
-                          : 'Rascunho'}{' '}
-                      · versão {program.revision}
-                      {editing?.id === program.id ? ' · em edição' : ''}
+                      {course.lessons.length === 0
+                        ? 'Nenhuma aula publicada ainda'
+                        : course.lessons.length === 1
+                          ? '1 aula publicada: 1 encontro por turma'
+                          : `${course.lessons.length} aulas publicadas: ${course.lessons.length} encontros por turma`}
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2">
+                    <Link
+                      href={courseEditorHref(course.id)}
+                      className="inline-flex min-h-9 items-center gap-2 rounded-lg border px-3 text-sm font-medium"
+                    >
+                      <SquarePen className="size-4" aria-hidden />
+                      Editar aulas
+                    </Link>
                     {canWrite ? (
-                      <>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled={busy}
-                          onClick={() => requestEdit(program)}
-                        >
-                          Editar roteiro
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled={busy}
-                          onClick={() => void togglePublished(program)}
-                        >
-                          {program.status === 'published'
-                            ? 'Retirar do catálogo'
-                            : 'Publicar oficina'}
-                        </Button>
-                        <Button size="sm" disabled={busy} onClick={() => setCreatingFor(program)}>
-                          <Plus className="size-4" aria-hidden />
-                          Nova turma
-                        </Button>
-                      </>
+                      <Button size="sm" disabled={busy} onClick={() => setCreatingFor(course)}>
+                        <Plus className="size-4" aria-hidden />
+                        Nova turma
+                      </Button>
                     ) : null}
                   </div>
                 </div>
-                {catalog.cohorts
-                  .filter((item) => item.programId === program.id)
-                  .map((item) => (
-                    <div key={item.id} className="rounded-lg bg-muted/40 p-4">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <div className="space-y-1">
-                          <h3 className="flex flex-wrap items-center gap-2 font-medium">
-                            {item.title}
-                            <Badge variant={item.status === 'open' ? 'success' : 'muted'}>
-                              {COHORT_STATUS_LABEL[item.status]}
-                            </Badge>
-                          </h3>
-                          <p className="text-xs text-muted-foreground">
-                            Até {item.capacity} crianças · {item.accessDays} dias por encontro ·{' '}
-                            {teacherNames(item)
-                              ? `Professoras: ${teacherNames(item)}`
-                              : `${item.teacherIds.length} professora(s)`}
-                          </p>
-                          {item.status === 'draft' ? (
-                            <p className="text-xs text-muted-foreground">
-                              Rascunho: as famílias só conseguem se inscrever depois de Abrir
-                              inscrições.
-                            </p>
-                          ) : null}
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setEnrollmentsFor(item)}
-                          >
-                            Inscrições
-                          </Button>
-                          {canWrite ? (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              disabled={busy}
-                              onClick={() => setSettingsFor(item)}
-                            >
-                              Editar turma
-                            </Button>
-                          ) : null}
-                          {canWrite && item.status !== 'archived' ? (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              disabled={busy}
-                              onClick={() =>
-                                void listAction(
-                                  () =>
-                                    liveRequest(
-                                      `/api/admin/live/cohorts/${item.id}`,
-                                      { status: item.status === 'open' ? 'closed' : 'open' },
-                                      'PATCH',
-                                    ),
-                                  item.status === 'open'
-                                    ? 'Inscrições encerradas.'
-                                    : 'Inscrições abertas. As famílias já podem se inscrever.',
-                                )
-                              }
-                            >
-                              {item.status === 'open' ? 'Encerrar inscrições' : 'Abrir inscrições'}
-                            </Button>
-                          ) : null}
-                        </div>
-                      </div>
-                      <ul className="mt-3 space-y-2">
-                        {catalog.sessions
-                          .filter((session) => session.cohortId === item.id)
-                          .sort((a, b) => a.order - b.order)
-                          .map((session) => (
-                            <li
-                              key={session.id}
-                              className="flex flex-wrap items-center justify-between gap-2 text-sm"
-                            >
-                              <span>
-                                {session.title} ·{' '}
-                                {liveDate(
-                                  session.occurrenceStartsAt ?? session.startsAt,
-                                  item.timeZone,
-                                )}
-                              </span>
-                              {/* ⚠️ `<a href>`, nunca `<Link>`: a sala precisa de navegação
-                                  completa para receber os cabeçalhos dela (ver `roomHref`). */}
-                              <a
-                                className="inline-flex min-h-10 items-center font-medium text-primary underline"
-                                href={roomHref(session.id)}
-                              >
-                                Preparar encontro
-                              </a>
-                            </li>
-                          ))}
-                      </ul>
-                    </div>
-                  ))}
+                {(byCourse.get(course.id) ?? []).length === 0 ? (
+                  <p className="text-sm text-muted-foreground">Nenhuma turma deste curso ainda.</p>
+                ) : (
+                  (byCourse.get(course.id) ?? []).map(cohortCard)
+                )}
               </article>
             ))
           )}
+          {others.length > 0 ? (
+            <article className="space-y-4 rounded-xl border bg-card p-5">
+              <div>
+                <h2 className="text-lg font-semibold">Outras turmas</h2>
+                <p className="text-sm text-muted-foreground">
+                  Turmas que não são de um curso ao vivo listado aqui (como as do roteiro antigo).
+                </p>
+              </div>
+              {others.map(cohortCard)}
+            </article>
+          ) : null}
         </section>
       )}
       {canWrite ? (
-        <form
-          className="space-y-4 rounded-xl border bg-card p-5"
-          aria-labelledby={`${formId}-heading`}
-          onSubmit={(event) => {
-            event.preventDefault()
-            void saveProgram()
+        <CourseFormDialog
+          open={courseFormOpen}
+          onClose={() => setCourseFormOpen(false)}
+          editing={null}
+          prefill={livePrefill}
+          onSaved={(saved) => {
+            setError(null)
+            setNotice(
+              'Curso ao vivo criado. Monte as aulas no editor: cada aula publicada vira um encontro da turma.',
+            )
+            setCreatedCourse(saved ?? null)
+            setRevision((value) => value + 1)
           }}
-        >
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2
-              id={`${formId}-heading`}
-              ref={formHeading}
-              tabIndex={-1}
-              className="text-lg font-semibold outline-none"
-            >
-              {editing ? `Editar: ${editing.title}` : 'Nova oficina'}
-            </h2>
-            {editing ? (
-              <Button variant="outline" type="button" onClick={() => requestEdit(null)}>
-                Cancelar edição
-              </Button>
-            ) : null}
-          </div>
-          {formError ? (
-            <p
-              role="alert"
-              className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm"
-            >
-              {formError}
-            </p>
-          ) : null}
-          {formNotice ? (
-            <p
-              role="status"
-              className="rounded-lg bg-success/15 p-3 text-sm text-success-foreground"
-            >
-              {formNotice}
-            </p>
-          ) : null}
-          <label className={field} htmlFor={`${formId}-title`}>
-            Nome da oficina
-            <Input
-              id={`${formId}-title`}
-              required
-              maxLength={160}
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-            />
-          </label>
-          <label className={field} htmlFor={`${formId}-description`}>
-            O que a criança vai criar
-            <Textarea
-              id={`${formId}-description`}
-              required
-              maxLength={4000}
-              value={description}
-              onChange={(event) => setDescription(event.target.value)}
-            />
-          </label>
-          {lessons.map((lesson, index) => (
-            <fieldset
-              key={lesson.editorId}
-              disabled={busy}
-              className="space-y-3 rounded-lg border p-4"
-            >
-              <legend className="px-2 font-medium">Encontro {index + 1}</legend>
-              <label className={field}>
-                Nome
-                <Input
-                  required
-                  maxLength={160}
-                  value={lesson.title}
-                  onChange={(event) => updateLesson(index, { title: event.target.value })}
-                />
-              </label>
-              <label className={field}>
-                Passo a passo para criar (também para quem faltar)
-                <Textarea
-                  required
-                  rows={5}
-                  maxLength={20000}
-                  value={lesson.instructions}
-                  onChange={(event) => updateLesson(index, { instructions: event.target.value })}
-                />
-              </label>
-              <label className={field}>
-                Projeto deste encontro
-                <select
-                  className="min-h-10 rounded-lg border bg-background p-2"
-                  value={lesson.continueProjectFrom ?? ''}
-                  onChange={(event) =>
-                    updateLesson(index, {
-                      continueProjectFrom:
-                        event.target.value === '' ? null : Number(event.target.value),
-                      starterProjectId: null,
-                    })
-                  }
-                >
-                  <option value="">Criar um projeto independente</option>
-                  {lessons.slice(0, index).map((previous, i) => (
-                    <option key={previous.editorId} value={i}>
-                      Continuar o projeto do encontro {i + 1}: {previous.title}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className={field}>
-                Projeto inicial (opcional)
-                <select
-                  className="min-h-10 rounded-lg border bg-background p-2"
-                  disabled={lesson.continueProjectFrom != null}
-                  value={lesson.starterProjectId ?? ''}
-                  onChange={(event) =>
-                    updateLesson(index, { starterProjectId: event.target.value.trim() || null })
-                  }
-                >
-                  <option value="">Começar com um projeto novo</option>
-                  {templates.map((template) => (
-                    <option key={template.id} value={template.id}>
-                      {template.title}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-lg border px-3 text-sm font-medium">
-                <Upload className="size-4" aria-hidden />
-                Importar projeto do Estúdio
-                <input
-                  className="sr-only"
-                  type="file"
-                  accept=".json,application/json"
-                  disabled={lesson.continueProjectFrom != null}
-                  onChange={(event) => {
-                    const file = event.currentTarget.files?.[0]
-                    if (file) void importProject(index, file)
-                    event.currentTarget.value = ''
-                  }}
-                />
-              </label>
-              <LiveStudioEditor
-                value={lesson.studio}
-                onChange={(studio: LiveStudioConfig) => updateLesson(index, { studio })}
-              />
-              <LiveStepsEditor
-                value={lesson.steps}
-                disabled={busy}
-                onChange={(steps) => updateLesson(index, { steps })}
-              />
-              <ul className="space-y-2">
-                {lesson.materials.map((material) => (
-                  <li
-                    key={material.id}
-                    className="flex items-center justify-between gap-3 rounded border p-2 text-sm"
-                  >
-                    <span>{material.title}</span>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      type="button"
-                      onClick={() =>
-                        updateLesson(index, {
-                          materials: lesson.materials.filter((item) => item.id !== material.id),
-                        })
-                      }
-                    >
-                      Remover do roteiro
-                    </Button>
-                  </li>
-                ))}
-              </ul>
-              <label className="inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-lg border px-3 text-sm font-medium">
-                <Upload className="size-4" aria-hidden />
-                Adicionar material
-                <input
-                  type="file"
-                  className="sr-only"
-                  disabled={busy}
-                  onChange={(event) => {
-                    const file = event.currentTarget.files?.[0]
-                    if (file) void upload(index, file)
-                    event.currentTarget.value = ''
-                  }}
-                />
-              </label>
-              {lessons.length > 1 ? (
-                <Button
-                  variant="outline"
-                  type="button"
-                  className="ml-2"
-                  onClick={() => {
-                    if (lessons.some((item) => item.continueProjectFrom === index)) {
-                      setFormError(
-                        'Altere os encontros que continuam este projeto antes de remover.',
-                      )
-                      return
-                    }
-                    confirm({
-                      title: `Remover o encontro ${index + 1}?`,
-                      message: `"${lesson.title || 'Encontro sem nome'}" sai do roteiro com as etapas, atividades e materiais dele. Turmas já criadas mantêm a cópia delas. A mudança só vale depois que você salvar o roteiro.`,
-                      confirmText: 'Remover encontro',
-                      confirmVariant: 'destructive',
-                      onConfirm: () =>
-                        setLessons((previous) =>
-                          previous
-                            .filter((_, i) => i !== index)
-                            .map((item) => ({
-                              ...item,
-                              continueProjectFrom:
-                                item.continueProjectFrom != null && item.continueProjectFrom > index
-                                  ? item.continueProjectFrom - 1
-                                  : item.continueProjectFrom,
-                            })),
-                        ),
-                    })
-                  }}
-                >
-                  Remover encontro
-                </Button>
-              ) : null}
-            </fieldset>
-          ))}
-          <div className="flex flex-wrap gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              disabled={busy || lessons.length >= 24}
-              onClick={() => setLessons((previous) => [...previous, newLesson()])}
-            >
-              Adicionar encontro
-            </Button>
-            <Button type="submit" disabled={busy}>
-              {busy ? 'Salvando…' : 'Salvar roteiro'}
-            </Button>
-            {dirty ? (
-              <span className="self-center text-sm text-muted-foreground">
-                Há mudanças sem salvar.
-              </span>
-            ) : null}
-          </div>
-        </form>
+        />
       ) : null}
       {creatingFor ? (
         <CohortCreateDialog
           key={creatingFor.id}
-          program={creatingFor}
+          course={creatingFor}
           currentUser={{ id: teacherId, name: teacherName }}
           staff={staff}
           onClose={() => setCreatingFor(null)}
@@ -801,6 +396,7 @@ export function LiveAdmin({
           onSaved={(message) => {
             setSettingsFor(null)
             setNotice(message)
+            setCreatedCourse(null)
             setRevision((value) => value + 1)
           }}
         />
@@ -812,25 +408,34 @@ export function LiveAdmin({
           onClose={() => setEnrollmentsFor(null)}
         />
       ) : null}
-      {confirmDialog}
     </div>
   )
 }
 
+/**
+ * Turma nova de um curso ao vivo: um par início/fim por AULA PUBLICADA, no fuso da turma. Curso
+ * sem aula publicada não tem encontro para marcar: o diálogo diz o que falta e leva ao editor.
+ */
 function CohortCreateDialog({
-  program,
+  course,
   currentUser,
   staff,
   onClose,
   onChanged,
 }: {
-  program: LiveProgram
+  course: LiveCourseSummary
   currentUser: { id: string; name: string }
   staff: StaffDirectory
   onClose(): void
   onChanged(): void
 }) {
-  const zone = Intl.DateTimeFormat().resolvedOptions().timeZone
+  const [zones] = useState(() => timeZoneOptions(Intl.DateTimeFormat().resolvedOptions().timeZone))
+  // O fuso do computador só vira o padrão quando é um do Brasil: a turma é de crianças daqui,
+  // e um computador em outro fuso marcaria os encontros fora de hora sem ninguém perceber.
+  const [timeZone, setTimeZone] = useState(() => {
+    const browser = Intl.DateTimeFormat().resolvedOptions().timeZone
+    return LIVE_TIME_ZONES.some((zone) => zone.value === browser) ? browser : 'America/Sao_Paulo'
+  })
   const formId = useId()
   const [teacherIds, setTeacherIds] = useState<string[]>(() =>
     currentUser.id ? [currentUser.id] : [],
@@ -839,9 +444,38 @@ function CohortCreateDialog({
   const [error, setError] = useState<string | null>(null)
   const [created, setCreated] = useState<LiveCohort | null>(null)
   const [opened, setOpened] = useState(false)
-  const [scheduleLessons] = useState(() =>
-    program.lessons.map((lesson) => ({ ...lesson, fieldId: crypto.randomUUID() })),
-  )
+
+  if (course.lessons.length === 0)
+    return (
+      <Dialog
+        open
+        onClose={onClose}
+        title={`Nova turma de ${course.title}`}
+        className="max-w-lg"
+        footer={
+          <>
+            <Button variant="outline" onClick={onClose}>
+              Fechar
+            </Button>
+            <Link
+              href={courseEditorHref(course.id)}
+              className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground"
+            >
+              Abrir o curso no editor
+            </Link>
+          </>
+        }
+      >
+        <div className="space-y-3 text-sm">
+          <p role="status">Este curso ainda não tem aula publicada.</p>
+          <p className="text-muted-foreground">
+            Cada aula publicada vira um encontro da turma, com a data e a hora que você marca aqui.
+            Monte e publique as aulas no editor do curso e volte para criar a turma.
+          </p>
+        </div>
+      </Dialog>
+    )
+
   async function submit(data: FormData) {
     const selection = teacherSelectionPayload(teacherIds, staff.users, {
       [currentUser.id]: currentUser.name,
@@ -850,29 +484,32 @@ function CohortCreateDialog({
       setError(selection.error)
       return
     }
-    const schedule = program.lessons.map((_, index) => ({
-      startsAt: new Date(String(data.get(`start-${index}`))).toISOString(),
-      endsAt: new Date(String(data.get(`end-${index}`))).toISOString(),
-    }))
-    const wrong = schedule.findIndex((item) => Date.parse(item.endsAt) <= Date.parse(item.startsAt))
-    if (wrong >= 0) {
-      setError(`No encontro ${wrong + 1}, o fim da chamada precisa ser depois do início.`)
+    const schedule = buildSchedule(
+      course.lessons.map((_, index) => ({
+        start: String(data.get(`start-${index}`) ?? ''),
+        end: String(data.get(`end-${index}`) ?? ''),
+      })),
+      timeZone,
+    )
+    if (!schedule.ok) {
+      setError(schedule.error)
       return
     }
-    const body: LiveCreateCohort = {
+    // Corpo `LiveCreateCohort` SEM `courseId`: o curso vai na rota.
+    const body: Omit<LiveCreateCohort, 'courseId'> = {
       title: String(data.get('title')),
-      timeZone: zone,
+      timeZone,
       capacity: Number(data.get('capacity')),
       accessDays: Number(data.get('days')),
       teacherIds: selection.teacherIds,
       teacherNames: selection.teacherNames,
-      schedule,
+      schedule: schedule.schedule,
     }
     setBusy(true)
     setError(null)
     try {
       const result = await liveRequest<{ cohort: LiveCohort }>(
-        `/api/admin/live/programs/${program.id}/cohorts`,
+        `/api/admin/live/courses/${course.id}/cohorts`,
         body,
       )
       setCreated(result.cohort)
@@ -928,7 +565,8 @@ function CohortCreateDialog({
           ) : (
             <>
               <p role="status">
-                A turma {created.title} foi criada com uma cópia do roteiro e ainda é um rascunho.
+                A turma {created.title} foi criada com um encontro para cada aula publicada do curso
+                e ainda é um rascunho.
               </p>
               <p className="text-muted-foreground">
                 Enquanto for rascunho, as famílias não conseguem se inscrever. Abra as inscrições
@@ -948,8 +586,8 @@ function CohortCreateDialog({
     <Dialog
       open
       onClose={onClose}
-      title={`Nova turma de ${program.title}`}
-      description={`Datas no fuso deste computador (${zone}). O prazo de acesso conta a partir de cada encontro.`}
+      title={`Nova turma de ${course.title}`}
+      description="Uma data e hora para cada aula publicada, no fuso da turma. O prazo de acesso conta a partir de cada encontro."
       className="max-w-2xl"
       footer={
         <>
@@ -982,6 +620,25 @@ function CohortCreateDialog({
           Nome da turma
           <Input name="title" required maxLength={160} />
         </label>
+        <label className={field}>
+          Fuso da turma
+          <select
+            name="timeZone"
+            className="min-h-10 rounded-lg border bg-background p-2"
+            value={timeZone}
+            disabled={busy}
+            onChange={(event) => setTimeZone(event.target.value)}
+          >
+            {zones.map((zone) => (
+              <option key={zone.value} value={zone.value}>
+                {zone.label}
+              </option>
+            ))}
+          </select>
+          <span className="text-xs font-normal text-muted-foreground">
+            As datas abaixo são lidas neste fuso.
+          </span>
+        </label>
         <div className="grid gap-3 sm:grid-cols-2">
           <label className={field}>
             Vagas
@@ -999,9 +656,9 @@ function CohortCreateDialog({
           currentUserId={currentUser.id}
           disabled={busy}
         />
-        {scheduleLessons.map((lesson, index) => (
+        {course.lessons.map((lesson, index) => (
           <fieldset
-            key={lesson.fieldId}
+            key={lesson.id}
             className="grid gap-3 rounded-lg border p-3 sm:grid-cols-2"
             disabled={busy}
           >
@@ -1046,6 +703,7 @@ function CohortSettingsDialog({
   async function save() {
     const selection = teacherSelectionPayload(teacherIds, staff.users, {
       [currentUser.id]: currentUser.name,
+      ...cohort.teacherNames,
     })
     if (!selection.ok) {
       setError(selection.error)
