@@ -13,7 +13,11 @@ import {
   liveRecordingJobs,
   liveWorkspaces,
 } from '../../src/infrastructure/persistence/drizzle/schema'
+import { InMemoryLiveCourses } from '../fakes/live-in-memory'
 import { prepareTestDatabase } from './test-database'
+
+/** The live course is read through the port; its SQL adapter has its own test. */
+const liveCourses = new InMemoryLiveCourses()
 
 const databaseUrl = await prepareTestDatabase('sistemazero_live_test')
 if (!databaseUrl)
@@ -37,7 +41,7 @@ describe.skipIf(!databaseUrl)('Coordenação do gravador no PostgreSQL', () => {
       repository,
       () => new Date('2026-11-07T17:00:00Z'),
       { assertOwnership: async () => ({ name: 'Criador' }) },
-      { mediaReady: true },
+      { mediaReady: true, courses: liveCourses },
     )
     const actor: LiveActor = {
       id: randomUUID(),
@@ -45,12 +49,8 @@ describe.skipIf(!databaseUrl)('Coordenação do gravador no PostgreSQL', () => {
       name: 'Professora',
       staff: true,
     }
-    const program = await service.createProgram(actor, {
-      title: 'Gravador teste',
-      description: 'Banco de teste',
-      lessons: [{ title: 'Projeto', instructions: 'Criar', starterProjectId: null, materials: [] }],
-    })
-    const { cohort, sessions } = await service.createCohort(actor, program.id, {
+    const { course } = liveCourses.add({ lessons: 1 })
+    const { cohort, sessions } = await service.createCohort(actor, course.id, {
       title: 'Turma teste',
       timeZone: 'America/Sao_Paulo',
       capacity: 2,

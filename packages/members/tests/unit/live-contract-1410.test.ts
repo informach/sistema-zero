@@ -8,7 +8,7 @@ import {
   LiveNotFoundError,
 } from '../../src/domain/live/live.errors'
 import type { LiveActor } from '../../src/domain/ports/live-repository.port'
-import { InMemoryLiveRepository } from '../fakes/live-in-memory'
+import { InMemoryLiveCourses, InMemoryLiveRepository } from '../fakes/live-in-memory'
 
 const admin: LiveActor = {
   id: randomUUID(),
@@ -37,6 +37,8 @@ async function setup() {
   const repository = new InMemoryLiveRepository()
   const changed: string[] = []
   const names: Record<string, string> = { [bia.id]: 'Bia Lima', [caio.id]: 'Caio Reis' }
+  const courses = new InMemoryLiveCourses()
+  const { course, lessons } = courses.add({ lessons: 2, title: 'Esconde-esconde' })
   const live = new LiveService(
     repository,
     () => now,
@@ -46,28 +48,10 @@ async function setup() {
       onPermissionsChanged: async (id) => {
         changed.push(id)
       },
+      courses,
     },
   )
-  const program = await live.createProgram(admin, {
-    title: 'Esconde-esconde',
-    description: 'Um jogo de procurar.',
-    lessons: [
-      {
-        title: 'O cenário',
-        instructions: 'Monte o cenário.',
-        starterProjectId: null,
-        materials: [],
-        studio: {
-          level: 'iniciante',
-          allowBlocks: ['when_flag_clicked', ' move_steps ', 'move_steps'],
-          allowedModes: ['blocks'],
-          allowLevelReveal: false,
-        },
-      },
-      { title: 'O jogo', instructions: 'Anime.', starterProjectId: null, materials: [] },
-    ],
-  })
-  const { cohort, sessions } = await live.createCohort(admin, program.id, {
+  const { cohort, sessions } = await live.createCohort(admin, course.id, {
     title: 'Turma de sábado',
     timeZone: 'America/Sao_Paulo',
     capacity: 8,
@@ -89,6 +73,8 @@ async function setup() {
   return {
     live,
     repository,
+    course,
+    lessons,
     cohort,
     session: sessions[0]!,
     later: sessions[1]!,
@@ -100,42 +86,6 @@ async function setup() {
 }
 
 describe('contrato das oficinas (14/10)', () => {
-  test('o roteiro leva a curadoria do Estúdio até a sala; configuração inválida é recusada', async () => {
-    const f = await setup()
-    f.setTime(startsAt)
-    const room = await f.live.room(bia, f.session.id)
-    expect(room.plan?.studio).toEqual({
-      level: 'iniciante',
-      allowBlocks: ['when_flag_clicked', 'move_steps'],
-      allowedModes: ['blocks'],
-      allowLevelReveal: false,
-    })
-    const lesson = { title: 'X', instructions: 'Y', starterProjectId: null, materials: [] }
-    for (const studio of [
-      { allowedModes: ['blocks', 'blocks'] },
-      { allowedModes: [] },
-      { allowedModes: ['html'] },
-      { level: 'x'.repeat(41) },
-      { allowBlocks: [''] },
-      { allowBlocks: Array.from({ length: 3001 }, (_, index) => `b${index}`) },
-      { allowCategories: Array.from({ length: 81 }, (_, index) => `c${index}`) },
-    ])
-      await expect(
-        f.live.createProgram(admin, {
-          title: 'Ruim',
-          description: 'Ruim',
-          lessons: [{ ...lesson, studio: studio as never }],
-        }),
-      ).rejects.toBeInstanceOf(ValidationError)
-    // `null` clears the curation explicitly.
-    const cleared = await f.live.createProgram(admin, {
-      title: 'Livre',
-      description: 'Sem curadoria',
-      lessons: [{ ...lesson, studio: null }],
-    })
-    expect(cleared.lessons[0]!.studio).toBeNull()
-  })
-
   test('a criança entra na recepção 15 minutos antes; conteúdo só abre no horário', async () => {
     const f = await setup()
     // 20 minutes before: nothing yet.
@@ -150,7 +100,7 @@ describe('contrato das oficinas (14/10)', () => {
     expect(waiting.occurrence?.state).toBe('scheduled')
     expect(waiting.access.canOpen).toBe(false)
     expect(waiting.access.canEnterLobby).toBe(false)
-    expect(waiting.plan).toBeNull()
+    expect(waiting.lesson).toBeNull()
     expect(waiting).not.toHaveProperty('planRevision')
     await expect(
       f.live.join(bia, f.session.id, { deviceId: biaDevice, takeover: false }),
@@ -160,7 +110,7 @@ describe('contrato das oficinas (14/10)', () => {
     const joined = await f.live.join(bia, f.session.id, { deviceId: biaDevice, takeover: false })
     expect(joined.occurrence?.state).toBe('lobby')
     expect(joined.occurrence?.participants[0]?.admission).toBe('waiting')
-    expect(joined.plan).toBeNull()
+    expect(joined.lesson).toBeNull()
     expect(joined.occurrence?.messages).toEqual([])
     await f.live.heartbeat(bia, f.session.id, biaDevice)
     await f.live.join(caio, f.session.id, { deviceId: caioDevice, takeover: false })
@@ -172,17 +122,21 @@ describe('contrato das oficinas (14/10)', () => {
     ])
     // Still no content or media before the start time.
     const early = await f.live.room(bia, f.session.id)
-    expect(early.plan).toBeNull()
+    expect(early.lesson).toBeNull()
     expect(early.access.canJoinMedia).toBe(false)
     await expect(
       f.live.authorizeMedia(bia, early.occurrence!.id, biaDevice),
     ).rejects.toBeInstanceOf(LiveAccessError)
-    // At the start time, the waiting page receives the plan (no stale revision to match).
+    // At the start time the waiting page receives the lesson address (the old script is gone).
     f.setTime(startsAt)
-    const opened = await f.live.room(bia, f.session.id, early.planRevision)
-    expect(opened.plan?.title).toBe('O cenário')
-    expect(opened.planRevision).toMatch(/^[a-f0-9]{64}$/)
-    expect((await f.live.room(bia, f.session.id, opened.planRevision)).plan).toBeUndefined()
+    const opened = await f.live.room(bia, f.session.id)
+    expect(opened.lesson).toEqual({
+      courseId: f.course.id,
+      courseSlug: f.course.slug,
+      lessonId: f.lessons[0]!.id,
+    })
+    expect(opened).not.toHaveProperty('plan')
+    expect(opened).not.toHaveProperty('planRevision')
   })
 
   test('cancelar encontro que não aconteceu permite reposição; admit-all respeita retirada', async () => {

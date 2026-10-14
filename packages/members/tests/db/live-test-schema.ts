@@ -19,16 +19,19 @@ export async function prepareLiveTestSchema(database: ReturnType<typeof postgres
       for (const statement of migration.split('--> statement-breakpoint'))
         if (statement.trim()) await sql.unsafe(statement)
     }
-    // 0108 is idempotent (IF NOT EXISTS): always applied, so an older test database that
-    // already had the live tables gains the recording columns and the reconcile lease table.
-    const terminal = await Bun.file(
-      new URL(
-        '../../src/infrastructure/persistence/drizzle/migrations/0108_live_recording_terminal_states.sql',
-        import.meta.url,
-      ),
-    ).text()
-    for (const statement of terminal.split('--> statement-breakpoint'))
-      if (statement.trim()) await sql.unsafe(statement)
+    // 0108 and 0110 are idempotent (IF NOT EXISTS): always applied, so an older test database
+    // that already had the live tables gains the recording columns, the reconcile lease table,
+    // the course cohort column and the per-block project key.
+    for (const file of [
+      '0108_live_recording_terminal_states.sql',
+      '0110_live_course_cohorts.sql',
+    ]) {
+      const migration = await Bun.file(
+        new URL(`../../src/infrastructure/persistence/drizzle/migrations/${file}`, import.meta.url),
+      ).text()
+      for (const statement of migration.split('--> statement-breakpoint'))
+        if (statement.trim()) await sql.unsafe(statement)
+    }
     await sql`create table if not exists members.account_deletion_fences (account_id uuid primary key, created_at timestamptz not null)`
   })
 }

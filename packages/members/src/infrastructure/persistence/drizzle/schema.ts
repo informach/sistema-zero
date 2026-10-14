@@ -39,6 +39,7 @@ import type { AvatarConfig } from '../../../domain/avatar/avatar-config'
 import type { LessonBlockContent } from '../../../domain/course/lesson-block'
 import type { QuizAnswers } from '../../../domain/course/quiz'
 import type { EntitlementSnapshot } from '../../../domain/entitlement/entitlement-snapshot'
+import type { LiveRecordingSegmentTime } from '../../../domain/live/recording-chapters'
 import type {
   PensaChatMessage,
   PensaTaskContext,
@@ -1830,12 +1831,20 @@ export const liveCohorts = members.table(
   'live_cohorts',
   {
     id: uuid('id').primaryKey(),
-    programId: uuid('program_id')
-      .notNull()
-      .references(() => livePrograms.id),
+    /** Roteiro antigo (`live_programs`). Turma de curso ao vivo (0110) não tem roteiro. */
+    programId: uuid('program_id').references(() => livePrograms.id),
+    /**
+     * O curso AO VIVO da turma (0110). Sem FK de propósito: o curso é lido pela porta
+     * `LiveCoursePort` e a turma guarda o resumo dele no documento. Nulo = turma antiga do
+     * roteiro, arquivada pela 0110 e ignorada pelo serviço.
+     */
+    courseId: uuid('course_id'),
     document: jsonb('document').$type<LiveCohort>().notNull(),
   },
-  (t) => [index('live_cohorts_program_idx').on(t.programId)],
+  (t) => [
+    index('live_cohorts_program_idx').on(t.programId),
+    index('live_cohorts_course_idx').on(t.courseId),
+  ],
 )
 
 export const liveSessions = members.table(
@@ -1959,9 +1968,21 @@ export const liveWorkspaces = members.table(
     project: jsonb('project').$type<Record<string, unknown>>().notNull(),
     assistance: jsonb('assistance').$type<LiveAssistanceView | null>(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+    /**
+     * Chave do projeto ao vivo por BLOCO (0110): curso + `chain` do bloco Estúdio, ou curso +
+     * id do bloco sem chain. Única por criança. Nula só nos projetos do roteiro antigo.
+     */
+    projectKey: text('project_key'),
+    /** Aulas do curso em que este projeto já abriu (o acesso vale nos encontros delas). */
+    lessonIds: jsonb('lesson_ids').$type<string[]>().notNull().default([]),
   },
   (t) => [
-    uniqueIndex('live_workspace_session_learner_uq').on(t.sessionId, t.learnerId),
+    uniqueIndex('live_workspace_session_learner_uq')
+      .on(t.sessionId, t.learnerId)
+      .where(sql`${t.projectKey} is null`),
+    uniqueIndex('live_workspace_learner_key_uq')
+      .on(t.learnerId, t.projectKey)
+      .where(sql`${t.projectKey} is not null`),
     index('live_workspaces_account_idx').on(t.accountId),
   ],
 )
@@ -2032,6 +2053,11 @@ export const liveRecordingJobs = members.table(
     recordingLeaseEndsAt: timestamp('recording_lease_ends_at', { withTimezone: true }),
     /** Terminal: review, empty (no segments) or failed after the retry budget. Never retried. */
     finishedAt: timestamp('finished_at', { withTimezone: true }),
+    /**
+     * Linha do tempo dos trechos que o gravador confirmou (0110): instantes de parede e duração
+     * de cada arquivo. É o que transforma a abertura de uma parte em capítulo do vídeo.
+     */
+    segments: jsonb('segments').$type<LiveRecordingSegmentTime[]>(),
   },
   (t) => [uniqueIndex('live_recording_job_uq').on(t.jobId)],
 )

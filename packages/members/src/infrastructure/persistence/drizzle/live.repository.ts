@@ -1,11 +1,9 @@
-import type { LiveProgram } from '@sistemazero/core/live'
-import { and, asc, eq, inArray, sql } from 'drizzle-orm'
+import { and, asc, eq, inArray, isNotNull, sql } from 'drizzle-orm'
 import { LiveAccessError, LiveNotFoundError } from '../../../domain/live/live.errors'
 import type {
   LiveCatalogQuery,
   LiveCohortAggregate,
   LiveRepository,
-  LiveTransactionReads,
 } from '../../../domain/ports/live-repository.port'
 import type { Database } from './db'
 import {
@@ -14,10 +12,7 @@ import {
   liveAudit,
   liveCohorts,
   liveEnrollments,
-  liveLearningAttempts,
-  liveLearningProgress,
   liveOccurrences,
-  livePrograms,
   liveReplayPositions,
   liveSessions,
 } from './schema'
@@ -63,56 +58,10 @@ export async function loadLiveCohort(db: Reader, id: string): Promise<LiveCohort
   return { cohort, sessions, enrollments, occurrences, grants, audit: [] }
 }
 
-function learningProgressOf(db: Reader, sessionId: string, learnerId: string, accountId: string) {
-  return db
-    .select()
-    .from(liveLearningProgress)
-    .where(
-      and(
-        eq(liveLearningProgress.sessionId, sessionId),
-        eq(liveLearningProgress.learnerId, learnerId),
-        eq(liveLearningProgress.accountId, accountId),
-      ),
-    )
-    .then((rows) => rows.map((row) => row.document))
-}
-function learningAttemptOf(
-  db: Reader,
-  sessionId: string,
-  learnerId: string,
-  accountId: string,
-  id: string,
-) {
-  return db
-    .select()
-    .from(liveLearningAttempts)
-    .where(
-      and(
-        eq(liveLearningAttempts.sessionId, sessionId),
-        eq(liveLearningAttempts.learnerId, learnerId),
-        eq(liveLearningAttempts.accountId, accountId),
-        eq(liveLearningAttempts.id, id),
-      ),
-    )
-    .then((rows) => rows[0]?.document ?? null)
-}
-
 /** All changes to a cohort take the same row lock, including seat allocation. */
 export class DrizzleLiveRepository implements LiveRepository {
   constructor(private readonly db: Database) {}
 
-  async listPrograms() {
-    return (await this.db.select().from(livePrograms)).map((row) => row.document)
-  }
-  async findProgram(id: string) {
-    return (
-      (await this.db.select().from(livePrograms).where(eq(livePrograms.id, id)))[0]?.document ??
-      null
-    )
-  }
-  async createProgram(document: LiveProgram) {
-    await this.db.insert(livePrograms).values({ id: document.id, document })
-  }
   async readReplayPosition(sessionId: string, learnerId: string, version: number) {
     const row = (
       await this.db
@@ -128,29 +77,12 @@ export class DrizzleLiveRepository implements LiveRepository {
     )[0]
     return row?.positionSeconds ?? 0
   }
-  async readLearningProgress(sessionId: string, learnerId: string, accountId: string) {
-    return learningProgressOf(this.db, sessionId, learnerId, accountId)
-  }
-  async findLearningAttempt(sessionId: string, learnerId: string, accountId: string, id: string) {
-    return learningAttemptOf(this.db, sessionId, learnerId, accountId, id)
-  }
-  async updateProgram(id: string, mutate: (program: LiveProgram) => void) {
-    return this.db.transaction(async (tx) => {
-      const row = (
-        await tx.select().from(livePrograms).where(eq(livePrograms.id, id)).for('update')
-      )[0]
-      if (!row) throw new LiveNotFoundError()
-      mutate(row.document)
-      await tx.update(livePrograms).set({ document: row.document }).where(eq(livePrograms.id, id))
-      return row.document
-    })
-  }
-
   async createCohort(aggregate: LiveCohortAggregate) {
     await this.db.transaction(async (tx) => {
       await tx.insert(liveCohorts).values({
         id: aggregate.cohort.id,
-        programId: aggregate.cohort.programId,
+        programId: aggregate.cohort.programId || null,
+        courseId: aggregate.cohort.courseId ?? null,
         document: aggregate.cohort,
       })
       await this.persist(tx, aggregate)
@@ -185,14 +117,20 @@ export class DrizzleLiveRepository implements LiveRepository {
     )[0]
     return row ? this.findCohort(row.cohortId) : null
   }
-  async cohortIdForSession(id: string) {
+  async sessionRef(id: string) {
     const row = (
       await this.db
-        .select({ cohortId: liveSessions.cohortId })
+        .select({
+          cohortId: liveSessions.cohortId,
+          lessonId: sql<string | null>`${liveSessions.document}->>'lessonId'`,
+          occurrenceId: sql<string>`${liveSessions.document}->>'occurrenceId'`,
+        })
         .from(liveSessions)
         .where(eq(liveSessions.id, id))
     )[0]
-    return row?.cohortId ?? null
+    return row
+      ? { cohortId: row.cohortId, lessonId: row.lessonId, occurrenceId: row.occurrenceId }
+      : null
   }
   async findByEnrollment(id: string) {
     const row = (
@@ -211,12 +149,15 @@ export class DrizzleLiveRepository implements LiveRepository {
           .from(liveCohorts)
           .where(
             and(
+              // Old script cohorts (no course) are archived by 0110 and never listed.
+              isNotNull(liveCohorts.courseId),
               query?.cursor ? sql`${liveCohorts.id} > ${query.cursor}::uuid` : undefined,
+              query?.audience
+                ? sql`${liveCohorts.document}->'course'->>'audience' = ${query.audience}`
+                : undefined,
               query && query.mode !== 'admin'
                 ? sql`(
-              (${liveCohorts.document}->>'status' = 'open' and exists (
-                select 1 from ${livePrograms} where ${livePrograms.id} = ${liveCohorts.programId} and ${livePrograms.document}->>'status' = 'published'
-              )) or exists (
+              (${liveCohorts.document}->>'status' = 'open' and ${liveCohorts.courseId} = any(${`{${(query.discoverableCourseIds ?? []).join(',')}}`}::uuid[])) or exists (
                 select 1 from ${liveEnrollments} where ${liveEnrollments.cohortId} = ${liveCohorts.id}
                   and ${liveEnrollments.accountId} = ${query.actor.accountId}::uuid
                   ${query.mode === 'parents' ? sql`` : sql`and ${liveEnrollments.learnerId} = ${query.actor.id}::uuid`}
@@ -255,7 +196,7 @@ export class DrizzleLiveRepository implements LiveRepository {
 
   async transaction<T>(
     id: string,
-    mutate: (aggregate: LiveCohortAggregate, reads: LiveTransactionReads) => T | Promise<T>,
+    mutate: (aggregate: LiveCohortAggregate) => T | Promise<T>,
     accountId?: string,
   ): Promise<T> {
     return this.db.transaction(async (tx) => {
@@ -285,12 +226,7 @@ export class DrizzleLiveRepository implements LiveRepository {
       const aggregate = await this.load(tx, id)
       if (!aggregate) throw new LiveNotFoundError()
       const before = structuredClone(aggregate)
-      const result = await mutate(aggregate, {
-        learningProgress: (sessionId, learnerId, owner) =>
-          learningProgressOf(tx, sessionId, learnerId, owner),
-        learningAttempt: (sessionId, learnerId, owner, attemptId) =>
-          learningAttemptOf(tx, sessionId, learnerId, owner, attemptId),
-      })
+      const result = await mutate(aggregate)
       await this.persist(tx, aggregate, before)
       return result
     })
@@ -388,32 +324,6 @@ export class DrizzleLiveRepository implements LiveRepository {
             liveReplayPositions.version,
           ],
           set: { positionSeconds: position.positionSeconds },
-        })
-    }
-    for (const write of aggregate.learningWrites ?? []) {
-      const { sessionId, learnerId, accountId, progress, attempt } = write
-      if (attempt)
-        await tx
-          .insert(liveLearningAttempts)
-          .values({ sessionId, learnerId, accountId, id: attempt.id, document: attempt })
-      await tx
-        .insert(liveLearningProgress)
-        .values({
-          sessionId,
-          learnerId,
-          accountId,
-          blockId: progress.blockId,
-          revision: progress.revision,
-          document: progress,
-        })
-        .onConflictDoUpdate({
-          target: [
-            liveLearningProgress.sessionId,
-            liveLearningProgress.learnerId,
-            liveLearningProgress.blockId,
-            liveLearningProgress.revision,
-          ],
-          set: { document: progress },
         })
     }
   }

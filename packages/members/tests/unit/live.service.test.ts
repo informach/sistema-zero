@@ -8,7 +8,7 @@ import {
   LiveUnavailableError,
 } from '../../src/domain/live/live.errors'
 import type { LiveActor } from '../../src/domain/ports/live-repository.port'
-import { InMemoryLiveRepository } from '../fakes/live-in-memory'
+import { InMemoryLiveCourses, InMemoryLiveRepository } from '../fakes/live-in-memory'
 
 const teacher: LiveActor = {
   id: randomUUID(),
@@ -55,27 +55,10 @@ async function fixture(capacity = 8, mediaReady = true) {
       return { name: learnerId === learner.id ? learner.name : 'Outro Criador' }
     },
   }
-  const service = new LiveService(repository, () => now, profiles, { mediaReady })
-  const program = await service.createProgram(teacher, {
-    title: 'Cadê todo mundo?',
-    description: 'Uma oficina para criar juntos.',
-    lessons: [
-      {
-        title: 'Meu primeiro cenário',
-        instructions: 'Crie o cenário e invente uma personagem.',
-        starterProjectId: null,
-        materials: [],
-      },
-      {
-        title: 'Meu jogo',
-        instructions: 'Vamos animar o personagem.',
-        starterProjectId: null,
-        materials: [],
-      },
-    ],
-  })
-  await service.updateProgram(teacher, program.id, { expectedRevision: 1, status: 'published' })
-  const { cohort, sessions } = await service.createCohort(teacher, program.id, {
+  const courses = new InMemoryLiveCourses()
+  const { course, lessons } = courses.add({ lessons: 2, title: 'Cadê todo mundo?' })
+  const service = new LiveService(repository, () => now, profiles, { mediaReady, courses })
+  const { cohort, sessions } = await service.createCohort(teacher, course.id, {
     title: 'Turma A',
     timeZone: 'America/Sao_Paulo',
     capacity,
@@ -106,7 +89,9 @@ async function fixture(capacity = 8, mediaReady = true) {
   return {
     repository,
     service,
-    program,
+    courses,
+    course,
+    lessons,
     cohort,
     session,
     sessions,
@@ -125,7 +110,7 @@ describe('Oficinas: acesso e consistência', () => {
     expect((await service.room(learner, session.id)).access.endsAt).toBe('2026-12-07T17:00:00.000Z')
     const future = await service.room(learner, sessions[1]!.id)
     expect(future.access.status).toBe('scheduled')
-    expect(future.plan).toBeNull()
+    expect(future.lesson).toBeNull()
     expect(future.occurrence).toBeNull()
     setTime('2026-12-07T17:00:00Z')
     expect((await service.room(learner, session.id)).access.status).toBe('expired')
@@ -142,31 +127,14 @@ describe('Oficinas: acesso e consistência', () => {
     )
     await expect(service.catalog(learner, 'parents')).rejects.toBeInstanceOf(LiveAccessError)
   })
-  test('catálogo não entrega instruções, materiais ou matrículas alheias', async () => {
-    const { service } = await fixture()
+  test('catálogo não entrega chaves privadas nem matrículas alheias', async () => {
+    const { service, course } = await fixture()
     const catalog = await service.catalog(other)
     expect(catalog.enrollments).toEqual([])
-    expect(JSON.stringify(catalog)).not.toContain('instructions')
     expect(JSON.stringify(catalog)).not.toContain('storageKey')
-    expect(catalog.programs[0]).toHaveProperty('lessonCount', 2)
-  })
-  test('roteiro congelado da turma não muda quando a oficina é editada', async () => {
-    const { service, program, session } = await fixture()
-    await service.updateProgram(teacher, program.id, {
-      expectedRevision: 2,
-      lessons: [
-        {
-          title: 'Novo roteiro',
-          instructions: 'Outra atividade.',
-          starterProjectId: null,
-          materials: [],
-        },
-      ],
-    })
-    expect((await service.room(learner, session.id)).plan?.title).toBe('Meu primeiro cenário')
-    await expect(
-      service.updateProgram(teacher, program.id, { expectedRevision: 2, title: 'Edição atrasada' }),
-    ).rejects.toBeInstanceOf(LiveConflictError)
+    expect(catalog.programs).toEqual([])
+    expect(catalog.courses?.map((item) => item.id)).toEqual([course.id])
+    expect(catalog.courses?.[0]?.lessons).toHaveLength(2)
   })
   test('duas inscrições simultâneas disputam uma única vaga; pendente também conta', async () => {
     const { service, cohort } = await fixture(2)
@@ -330,7 +298,7 @@ describe('Oficinas: supervisão e participação', () => {
     setTime('2026-11-07T17:00:31Z')
     const room = await service.room(learner, session.id)
     expect(room.supervision).toBe('unavailable')
-    expect(room.plan).not.toBeNull()
+    expect(room.lesson).not.toBeNull()
     expect(room.access.canJoinMedia).toBe(false)
     await expect(service.chat(learner, session.id, device, 'Olá')).rejects.toBeInstanceOf(
       LiveConflictError,
@@ -432,19 +400,28 @@ describe('Oficinas: supervisão e participação', () => {
   })
 })
 
-test('heartbeat reports only the active child device and valid lesson steps', async () => {
+test('heartbeat reports only the active child device and valid lesson parts', async () => {
   const f = await fixture()
   await f.start()
-  await f.service.heartbeat(learner, f.session.id, device, { stepId: null, saveState: 'saving' })
+  const [first, second] = f.lessons[0]!.sectionIds
+  await f.service.heartbeat(learner, f.session.id, device, {
+    stepId: null,
+    saveState: 'saving',
+    sectionId: second!,
+    completedSectionIds: [first!],
+  })
   const room = await f.service.room(teacher, f.session.id)
   expect(room.occurrence!.participants[0]!.activity).toEqual({
     stepId: null,
     saveState: 'saving',
+    sectionId: second!,
+    completedSectionIds: [first!],
     reportedAt: startsAt,
   })
   await expect(
     f.service.heartbeat(learner, f.session.id, randomUUID(), { stepId: null, saveState: 'saved' }),
   ).rejects.toThrow()
+  // The old script steps no longer exist.
   await expect(
     f.service.heartbeat(learner, f.session.id, device, {
       stepId: randomUUID(),
@@ -475,19 +452,4 @@ test('catalog filters before paginating and visits each visible cohort once', as
   expect(seen).toHaveLength(4)
   expect(new Set(seen).size).toBe(4)
   expect(seen).toContain(f.cohort.id)
-})
-
-test('project continuity rejects forward references and a replacement template', async () => {
-  const f = await fixture()
-  const lessons = structuredClone(f.program.lessons)
-  lessons[0]!.continueProjectFrom = 1
-  await expect(
-    f.service.createProgram(teacher, { title: 'Invalid', description: 'Invalid', lessons }),
-  ).rejects.toThrow()
-  lessons[0]!.continueProjectFrom = null
-  lessons[1]!.continueProjectFrom = 0
-  lessons[1]!.starterProjectId = randomUUID()
-  await expect(
-    f.service.createProgram(teacher, { title: 'Invalid', description: 'Invalid', lessons }),
-  ).rejects.toThrow()
 })

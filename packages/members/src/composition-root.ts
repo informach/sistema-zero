@@ -1,6 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import { createLogger, type Logger } from '@sistemazero/core/logging'
-import { eq } from 'drizzle-orm'
+import { createLogger, type Logger, serializeError } from '@sistemazero/core/logging'
 import { CheckAccessService } from './application/access/check-access.service'
 import { AccessCheckService } from './application/access-check/access-check.service'
 import { CreationCleanupService } from './application/admin/creation-cleanup/creation-cleanup.service'
@@ -70,7 +69,6 @@ import { ListMemberRatingsService } from './application/list-member-ratings/list
 import { ListMembersService } from './application/list-members/list-members.service'
 import { ListMyCoursesService } from './application/list-my-courses/list-my-courses.service'
 import { LiveService } from './application/live/live.service'
-import { LiveLearningService } from './application/live/live-learning.service'
 import { LiveMaterialsService } from './application/live/live-materials.service'
 import { LivePublicationService } from './application/live/live-publication.service'
 import { LiveWorkspaceService } from './application/live/live-workspace.service'
@@ -125,7 +123,6 @@ import {
 } from './application/validate-certificate/validate-certificate.service'
 import { ZappyHistoryService } from './application/zappy/zappy-history.service'
 import { ZappyKnowledgeService } from './application/zappy/zappy-knowledge.service'
-import { LiveNotFoundError } from './domain/live/live.errors'
 import type { Env } from './infrastructure/config/env'
 import { createAuthHttpGateway } from './infrastructure/gateways/auth-http.gateway'
 import { createCatalogHttpGateway } from './infrastructure/gateways/catalog-http.gateway'
@@ -160,6 +157,7 @@ import { DrizzleLearningRepository } from './infrastructure/persistence/drizzle/
 import { DrizzleLessonDraftRepository } from './infrastructure/persistence/drizzle/lesson-draft.repository'
 import { DrizzleLiveRepository } from './infrastructure/persistence/drizzle/live.repository'
 import { DrizzleLiveBenefitsRepository } from './infrastructure/persistence/drizzle/live-benefits.repository'
+import { DrizzleLiveCourseRepository } from './infrastructure/persistence/drizzle/live-course.repository'
 import { DrizzleLiveMaterialsRepository } from './infrastructure/persistence/drizzle/live-materials.repository'
 import { DrizzleLiveWorkspaceRepository } from './infrastructure/persistence/drizzle/live-workspace.repository'
 import { DrizzleParentReportRepository } from './infrastructure/persistence/drizzle/parent-report.repository'
@@ -169,7 +167,6 @@ import { DrizzleProgressRepository } from './infrastructure/persistence/drizzle/
 import { DrizzleQuizAttemptRepository } from './infrastructure/persistence/drizzle/quiz-attempt.repository'
 import { DrizzleRenewalReminderRepository } from './infrastructure/persistence/drizzle/renewal-reminder.repository'
 import { DrizzleRoomRepository } from './infrastructure/persistence/drizzle/room.repository'
-import { liveProjectTemplates } from './infrastructure/persistence/drizzle/schema'
 import { DrizzleStudioSubmissionRepository } from './infrastructure/persistence/drizzle/studio-submission.repository'
 import { DrizzleStudioUnlockRepository } from './infrastructure/persistence/drizzle/studio-unlock.repository'
 import { DrizzleTeacherBroadcastRepository } from './infrastructure/persistence/drizzle/teacher-broadcast.repository'
@@ -468,16 +465,15 @@ export async function createApplication(env: Env): Promise<Application> {
           .catch(() => logger.warn('live_recording.sync_deferred', { occurrenceId }))
         await liveMedia?.reconcile(occurrenceId)
       },
-      async validatePlanAssets(plan) {
-        if (plan.starterProjectId) {
-          const template = await db
-            .select({ id: liveProjectTemplates.id })
-            .from(liveProjectTemplates)
-            .where(eq(liveProjectTemplates.id, plan.starterProjectId))
-            .limit(1)
-          if (!template[0]) throw new LiveNotFoundError()
-        }
-        await liveMaterials.validate(plan.materials)
+      // Cohorts of LIVE courses: the course, its published lessons, parts and Studio blocks.
+      courses: new DrizzleLiveCourseRepository(db),
+      // Chapters of a published recording come from the segment timeline of the recorder.
+      async recordingTimeline(occurrenceId) {
+        return (await liveRecording?.timeline(occurrenceId)) ?? null
+      },
+      // `liveRewards` (achievements of the encounters) is wired with the course side.
+      onRewardsError(error) {
+        logger.warn('live.rewards_failed', { error: serializeError(error) })
       },
     },
   )
@@ -515,7 +511,6 @@ export async function createApplication(env: Env): Promise<Application> {
       },
     },
   )
-  const liveLearning = new LiveLearningService(liveService, liveRepository, clock)
   const livePublication = new LivePublicationService(liveWorkspace, env.INTERNAL_API_TOKEN, clock)
   const zappyKnowledge = new ZappyKnowledgeService(
     new DrizzleZappyKnowledgeRepository(db),
@@ -838,7 +833,6 @@ export async function createApplication(env: Env): Promise<Application> {
   }
 
   const server = createServer({
-    liveLearning,
     liveMaterials,
     livePublication,
     liveBenefits,

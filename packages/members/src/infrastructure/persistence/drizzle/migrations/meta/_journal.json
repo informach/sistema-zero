@@ -764,6 +764,13 @@
       "when": 1792007987481,
       "tag": "0108_live_recording_terminal_states",
       "breakpoints": true
+    },
+    {
+      "idx": 110,
+      "version": "7",
+      "when": 1792200000000,
+      "tag": "0110_live_course_cohorts",
+      "breakpoints": true
     }
   ]
 }

@@ -49,7 +49,7 @@ describe.skipIf(!db)('interrupted assistance recovery on PostgreSQL', () => {
       provider,
     )
     try {
-      const opened = await workspace.open(f.child, f.session.id, f.child.id)
+      const opened = await workspace.openForBlock(f.child, f.session.id, f.block.blockId)
       const claimed = await workspace.claim(f.child, opened.id, f.deviceId, false)
       const requested = await workspace.requestAssistance(f.teacher, opened.id)
       const accepted = await workspace.acceptAssistance(

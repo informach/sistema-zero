@@ -6,7 +6,6 @@ import {
   type LiveWorkspaceCommitRequest,
   type LiveWorkspaceView,
   lessonAccess,
-  liveProjectOrigin,
   occurrenceIsOpen,
   supervisionStatus,
 } from '@sistemazero/core/live'
@@ -16,7 +15,9 @@ import {
   LiveConflictError,
   LiveNotFoundError,
 } from '../../domain/live/live.errors'
+import { liveProjectKey } from '../../domain/live/live-course-rules'
 import { validateLiveSnapshot as validateSnapshot } from '../../domain/live/workspace-snapshot'
+import type { LiveStudioBlockRecord } from '../../domain/ports/live-course.port'
 import type { LiveActor, LiveCohortAggregate } from '../../domain/ports/live-repository.port'
 import type {
   LiveWorkspaceRecord,
@@ -32,8 +33,17 @@ const LEASE_MS = 30_000
  */
 const POLL_AUTHORIZATION_MS = 5_000
 const POLL_MEMO_LIMIT = 10_000
-const view = ({ accountId: _accountId, ...workspace }: LiveWorkspaceRecord): LiveWorkspaceView =>
-  structuredClone(workspace)
+const view = ({
+  accountId: _accountId,
+  projectKey: _projectKey,
+  lessonIds: _lessonIds,
+  ...workspace
+}: LiveWorkspaceRecord): LiveWorkspaceView => structuredClone(workspace)
+/** The encounters whose lesson already opened this project: access is judged in them. */
+const linkedSessions = (aggregate: LiveCohortAggregate, workspace: LiveWorkspaceRecord) =>
+  aggregate.sessions.filter(
+    (session) => session.lessonId != null && workspace.lessonIds.includes(session.lessonId),
+  )
 
 type Cohort = LiveCohortAggregate | null
 type Access = (LiveContext & { enrollment: NonNullable<LiveContext['enrollment']> }) | undefined
@@ -56,7 +66,7 @@ type PollMemo = Map<string, { until: number; readOnly: boolean; contextSessionId
 export class LiveWorkspaceService {
   constructor(
     private readonly repository: LiveWorkspaceRepository,
-    private readonly live: Pick<LiveService, 'contextFor' | 'cohortForSession'>,
+    private readonly live: Pick<LiveService, 'contextFor' | 'cohortForSession' | 'studioBlock'>,
     private readonly clock: () => Date = () => new Date(),
     private readonly recording?: { confirmPaused(occurrenceId: string): Promise<void> },
     private readonly continuation?: { canContinue(accountId: string): Promise<boolean> },
@@ -108,9 +118,7 @@ export class LiveWorkspaceService {
       }
       throw error
     }
-    const linked = aggregate.sessions.filter(
-      (session) => liveProjectOrigin(aggregate.sessions, session).id === workspace.sessionId,
-    )
+    const linked = linkedSessions(aggregate, workspace)
     const selected =
       this.contextSessionId ?? (requireRoom ? workspace.assistance?.sessionId : undefined)
     if (selected && !linked.some((session) => session.id === selected)) throw new LiveAccessError()
@@ -207,12 +215,6 @@ export class LiveWorkspaceService {
     return { ...context, enrollment }
   }
 
-  private async access(actor: LiveActor, sessionId: string, learnerId: string) {
-    const aggregate = await this.live.cohortForSession(sessionId)
-    if (!aggregate) throw new LiveNotFoundError()
-    return this.accessIn(actor, aggregate, sessionId, learnerId)
-  }
-
   /**
    * After the lesson window, without a Studio subscription, the project is still the child's:
    * the owner (library only) and an assigned teacher may view and export it. Never a write.
@@ -230,59 +232,87 @@ export class LiveWorkspaceService {
     if (!aggregate?.cohort.teacherIds.includes(actor.id)) return false
     return (
       !this.contextSessionId ||
-      aggregate.sessions.some(
-        (session) =>
-          session.id === this.contextSessionId &&
-          liveProjectOrigin(aggregate.sessions, session).id === workspace.sessionId,
-      )
+      linkedSessions(aggregate, workspace).some((session) => session.id === this.contextSessionId)
     )
   }
 
-  async open(actor: LiveActor, sessionId: string, learnerId: string): Promise<LiveWorkspaceView> {
-    const context = await this.access(actor, sessionId, learnerId)
-    const origin = liveProjectOrigin(context.aggregate.sessions, context.session)
-    const id = randomUUID()
-    const template = origin.plan.starterProjectId
-      ? await this.repository.findTemplate(origin.plan.starterProjectId)
-      : null
-    if (origin.plan.starterProjectId && !template) throw new LiveNotFoundError()
-    const project = template
-      ? { ...template, id }
-      : (JSON.parse(JSON.stringify(createEmptyProject(id, context.session.plan.title))) as Record<
+  /** The block's `initialProject` as this child's project (`id` is the workspace id). */
+  private seed(block: LiveStudioBlockRecord, id: string) {
+    const initial = block.initialProject
+    if (typeof initial !== 'object' || initial === null || Array.isArray(initial))
+      return validateSnapshot(
+        JSON.parse(JSON.stringify(createEmptyProject(id, 'Meu projeto'))) as Record<
           string,
           unknown
-        >)
-    const record = await this.repository.ensure({
-      id,
-      sessionId: origin.id,
-      learnerId,
-      accountId: context.enrollment.accountId,
-      revision: 0,
-      writerEpoch: 0,
-      writerId: learnerId,
-      writerDeviceId: null,
-      leaseExpiresAt: null,
-      project: validateSnapshot(project, id),
-      assistance: null,
-      updatedAt: this.clock().toISOString(),
-    })
-    return this.forSession(sessionId).get(actor, record.id)
+        >,
+        id,
+      )
+    return validateSnapshot({ ...(initial as Record<string, unknown>), id }, id)
   }
 
-  async demonstration(actor: LiveActor, sessionId: string) {
+  /**
+   * The child's project for a Studio BLOCK of the encounter's PUBLISHED lesson, opened or
+   * created: key = course + child + the block `chain` (one project across the chain lessons) or
+   * the block id. Seed = the block `initialProject`; the block curation goes in `studio`. A
+   * teacher of the cohort opens a child's project with `learnerId`. After the lesson deadline an
+   * existing project only opens to read (and export); none is created.
+   */
+  async openForBlock(
+    actor: LiveActor,
+    sessionId: string,
+    blockId: string,
+    learnerId: string = actor.id,
+  ): Promise<LiveWorkspaceView> {
     const aggregate = await this.live.cohortForSession(sessionId)
     if (!aggregate) throw new LiveNotFoundError()
     const context = this.live.contextFor(actor, aggregate, sessionId)
-    if (context.role !== 'teacher') throw new LiveAccessError()
-    const template = context.session.plan.starterProjectId
-      ? await this.repository.findTemplate(context.session.plan.starterProjectId)
-      : null
-    if (context.session.plan.starterProjectId && !template) throw new LiveNotFoundError()
-    return {
-      project: template
-        ? { ...template, id: sessionId }
-        : createEmptyProject(sessionId, context.session.plan.title),
+    if (context.role !== 'teacher' && learnerId !== actor.id) throw new LiveAccessError()
+    const courseId = aggregate.cohort.courseId
+    const lessonId = context.session.lessonId
+    if (!courseId || !lessonId) throw new LiveNotFoundError()
+    const block = await this.live.studioBlock(lessonId, blockId)
+    if (!block || block.courseId !== courseId) throw new LiveNotFoundError()
+    const projectKey = liveProjectKey(courseId, block)
+    let access: ReturnType<LiveWorkspaceService['accessIn']> | null = null
+    try {
+      access = this.accessIn(actor, aggregate, sessionId, learnerId)
+    } catch (error) {
+      if (!(error instanceof LiveAccessError)) throw error
     }
+    let record = await this.repository.findByKey(learnerId, projectKey)
+    if (!access) {
+      // This lesson is closed (deadline passed, not yet released, revoked): never a new project,
+      // and an existing one only to read here. The owner and the assigned teacher keep reading
+      // it (the library rules decide who); editing it is never reopened through this lesson.
+      if (!record) throw new LiveAccessError()
+      const readable = await this.forSession().get(actor, record.id)
+      return { ...readable, readOnly: true, studio: block.studio }
+    }
+    if (!record) {
+      const id = randomUUID()
+      record = await this.repository.ensureByKey({
+        id,
+        sessionId,
+        learnerId,
+        accountId: access.enrollment.accountId,
+        revision: 0,
+        writerEpoch: 0,
+        writerId: learnerId,
+        writerDeviceId: null,
+        leaseExpiresAt: null,
+        project: this.seed(block, id),
+        assistance: null,
+        updatedAt: this.clock().toISOString(),
+        projectKey,
+        lessonIds: [lessonId],
+      })
+    }
+    const anchor = record.sessionId
+    // Opened in a new lesson of the chain, or in an encounter of another cohort of the course.
+    const anchored = aggregate.sessions.some((session) => session.id === anchor)
+    if (!record.lessonIds.includes(lessonId) || !anchored)
+      record = await this.repository.linkLesson(record.id, { lessonId, sessionId })
+    return { ...(await this.forSession(sessionId).get(actor, record.id)), studio: block.studio }
   }
 
   private async read(actor: LiveActor, workspace: LiveWorkspaceRecord) {
@@ -698,23 +728,6 @@ export class LiveWorkspaceService {
       workspace.leaseExpiresAt = new Date(this.clock().getTime() + LEASE_MS).toISOString()
       return view(workspace)
     })
-  }
-
-  async createTemplate(actor: LiveActor, raw: Record<string, unknown>) {
-    if (!actor.staff) throw new LiveAccessError()
-    const id = randomUUID()
-    const project = validateSnapshot({ ...raw, id }, id)
-    await this.repository.createTemplate({
-      id,
-      project,
-      createdBy: actor.id,
-      createdAt: this.clock().toISOString(),
-    })
-    return { id, title: project.name }
-  }
-  async listTemplates(actor: LiveActor) {
-    if (!actor.staff) throw new LiveAccessError()
-    return this.repository.listTemplates()
   }
 
   async cursor(

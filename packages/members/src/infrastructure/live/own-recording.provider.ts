@@ -1,6 +1,10 @@
 import { assistanceRequestExpired, type LiveRecordingState } from '@sistemazero/core/live'
 import { and, eq, isNotNull, isNull, lte, ne, or, sql } from 'drizzle-orm'
 import type { LiveService } from '../../application/live/live.service'
+import {
+  type LiveRecordingSegmentTime,
+  recordingSegmentsOf,
+} from '../../domain/live/recording-chapters'
 import type { LiveActor, LiveRepository } from '../../domain/ports/live-repository.port'
 import type { Database } from '../persistence/drizzle/db'
 import { liveRecordingJobs, liveWorkspaces } from '../persistence/drizzle/schema'
@@ -183,6 +187,8 @@ export class OwnRecordingProvider {
       .update(liveRecordingJobs)
       .set({ attempts: 0, nextAttemptAt: null, confirmedAt: new Date(this.now()) })
       .where(eq(liveRecordingJobs.occurrenceId, occurrenceId))
+    // The acknowledgement carries the manifest: its segments are the chapters' timeline.
+    await this.keepSegments(occurrenceId, job, result.segments).catch(() => undefined)
     if (
       occurrence.recording.state === 'unavailable' &&
       result.state &&
@@ -254,6 +260,40 @@ export class OwnRecordingProvider {
     } catch {
       return null
     }
+  }
+
+  /**
+   * The segment timeline of a recording, for the chapters of the published video. The private
+   * recorder is asked first (its stored manifest is complete after the end); if it does not
+   * answer for this exact job, the last timeline confirmed during the class is used.
+   */
+  async timeline(occurrenceId: string): Promise<LiveRecordingSegmentTime[] | null> {
+    const job = await this.findJob(occurrenceId)
+    if (!job) return null
+    const status = await this.status(occurrenceId)
+    if (status && status.jobId === job.jobId && status.generation === job.generation) {
+      const fresh = await this.keepSegments(occurrenceId, job, status.segments)
+      if (fresh) return fresh
+    }
+    return recordingSegmentsOf(job.segments)
+  }
+
+  /** Stores a longer confirmed timeline (never a shorter one: segments only accumulate). */
+  private async keepSegments(occurrenceId: string, job: RecordingJobRow, raw: unknown) {
+    const segments = recordingSegmentsOf(raw)
+    if (!segments?.length) return null
+    if (segments.length > (recordingSegmentsOf(job.segments)?.length ?? 0))
+      await this.db
+        .update(liveRecordingJobs)
+        .set({ segments })
+        .where(
+          and(
+            eq(liveRecordingJobs.occurrenceId, occurrenceId),
+            eq(liveRecordingJobs.jobId, job.jobId),
+            eq(liveRecordingJobs.generation, job.generation),
+          ),
+        )
+    return segments
   }
 
   /**

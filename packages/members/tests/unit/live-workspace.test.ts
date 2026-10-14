@@ -2,6 +2,8 @@ import { describe, expect, test } from 'bun:test'
 import { createBlankProjectSnapshot as createEmptyProject } from '@sistemazero/studio/blank-project'
 import type { LiveContext } from '../../src/application/live/live.service'
 import { LiveWorkspaceService } from '../../src/application/live/live-workspace.service'
+import { LiveAccessError, LiveNotFoundError } from '../../src/domain/live/live.errors'
+import type { LiveStudioBlockRecord } from '../../src/domain/ports/live-course.port'
 import type { LiveActor } from '../../src/domain/ports/live-repository.port'
 import type {
   LiveWorkspaceRecord,
@@ -16,6 +18,9 @@ const ids = {
   account: '00000000-0000-4000-8000-000000000004',
   device: '00000000-0000-4000-8000-000000000005',
   teacherDevice: '00000000-0000-4000-8000-000000000006',
+  course: '00000000-0000-4000-8000-000000000007',
+  lesson: '00000000-0000-4000-8000-000000000008',
+  block: '00000000-0000-4000-8000-000000000009',
 }
 function setup(
   continuation = false,
@@ -39,6 +44,7 @@ function setup(
       id: ids.session,
       order: 0,
       cohortId: 'cohort',
+      lessonId: ids.lesson,
       plan: { title: 'Cadê, Todo Mundo?', starterProjectId: null },
     },
     occurrence: {
@@ -51,7 +57,7 @@ function setup(
       participants: [{ learnerId: ids.child, deviceId: ids.device, admission: 'admitted' }],
     },
     aggregate: {
-      cohort: { teacherIds: [ids.teacher] },
+      cohort: { teacherIds: [ids.teacher], courseId: ids.course },
       enrollments: [
         { id: 'enrollment', learnerId: ids.child, accountId: ids.account, status: 'active' },
       ],
@@ -68,19 +74,45 @@ function setup(
   } as unknown as LiveContext
   context.aggregate.occurrences = [context.occurrence]
   context.aggregate.sessions = [context.session]
+  /** Studio blocks of the published lessons (`lessonId:blockId`). */
+  const blocks = new Map<string, LiveStudioBlockRecord>([
+    [
+      `${ids.lesson}:${ids.block}`,
+      {
+        blockId: ids.block,
+        lessonId: ids.lesson,
+        courseId: ids.course,
+        chain: null,
+        initialProject: null,
+        studio: { level: 'iniciante', allowedModes: ['blocks'] },
+      },
+    ],
+  ])
   const repository: LiveWorkspaceRepository = {
     find: async (id) => structuredClone(records.get(id) ?? null),
     listOwned: async (accountId, learnerId) =>
       [...records.values()]
         .filter((record) => record.accountId === accountId && record.learnerId === learnerId)
         .map((record) => structuredClone(record)),
-    ensure: async (record) => {
+    findByKey: async (learnerId, projectKey) =>
+      structuredClone(
+        [...records.values()].find(
+          (record) => record.learnerId === learnerId && record.projectKey === projectKey,
+        ) ?? null,
+      ),
+    ensureByKey: async (record) => {
       const previous = [...records.values()].find(
-        (r) => r.sessionId === record.sessionId && r.learnerId === record.learnerId,
+        (r) => r.projectKey === record.projectKey && r.learnerId === record.learnerId,
       )
       if (previous) return structuredClone(previous)
       records.set(record.id, structuredClone(record))
-      return record
+      return structuredClone(record)
+    },
+    linkLesson: async (id, input) => {
+      const record = records.get(id)
+      if (!record) throw new Error('Missing workspace')
+      if (!record.lessonIds.includes(input.lessonId)) record.lessonIds.push(input.lessonId)
+      return structuredClone(record)
     },
     transaction: async (id, mutate) => {
       const record = records.get(id)
@@ -106,9 +138,6 @@ function setup(
       for (const revision of added) revisions.set(revision.mutationId, revision)
       return result
     },
-    createTemplate: async () => {},
-    findTemplate: async () => null,
-    listTemplates: async () => [],
   }
   const service = new LiveWorkspaceService(
     repository,
@@ -125,6 +154,8 @@ function setup(
         role: actor.id === ids.teacher ? 'teacher' : 'learner',
         grant: aggregate.grants.find((item) => item.sessionId === sessionId)!,
       }),
+      studioBlock: async (lessonId, blockId) =>
+        structuredClone(blocks.get(`${lessonId}:${blockId}`) ?? null),
     },
     () => now,
     recording,
@@ -143,6 +174,7 @@ function setup(
     records,
     revisions,
     context,
+    blocks,
     loads,
     advance: (ms: number) => {
       now = new Date(now.getTime() + ms)
@@ -154,7 +186,7 @@ function setup(
 describe('live project writer ownership', () => {
   test('declining a pending request preserves the child writer and pending commit epoch', async () => {
     const { service, child, teacher } = setup()
-    const opened = await service.open(child, ids.session, ids.child)
+    const opened = await service.openForBlock(child, ids.session, ids.block, ids.child)
     const claimed = await service.claim(child, opened.id, ids.device, false)
     await service.requestAssistance(teacher, opened.id)
     const declined = await service.revoke(child, opened.id, ids.device)
@@ -172,7 +204,7 @@ describe('live project writer ownership', () => {
   })
   test('the requesting teacher can cancel only the matching pending request', async () => {
     const { service, child, teacher } = setup()
-    const opened = await service.open(child, ids.session, ids.child)
+    const opened = await service.openForBlock(child, ids.session, ids.block, ids.child)
     const claimed = await service.claim(child, opened.id, ids.device, false)
     const requested = await service.requestAssistance(teacher, opened.id)
     await expect(
@@ -189,7 +221,7 @@ describe('live project writer ownership', () => {
   })
   test('unanswered requests expire without changing child authorship', async () => {
     const { service, child, teacher, advance } = setup()
-    const opened = await service.open(child, ids.session, ids.child)
+    const opened = await service.openForBlock(child, ids.session, ids.block, ids.child)
     const claimed = await service.claim(child, opened.id, ids.device, false)
     await service.requestAssistance(teacher, opened.id)
     advance(60_001)
@@ -199,7 +231,7 @@ describe('live project writer ownership', () => {
   })
   test('reopening on the same device fences pending commits from the earlier editor instance', async () => {
     const { service, child } = setup()
-    const workspace = await service.open(child, ids.session, ids.child)
+    const workspace = await service.openForBlock(child, ids.session, ids.block, ids.child)
     const first = await service.claim(child, workspace.id, ids.device, false)
     const reopened = await service.claim(child, workspace.id, ids.device, false)
     expect(reopened.writerEpoch).toBeGreaterThan(first.writerEpoch)
@@ -215,7 +247,7 @@ describe('live project writer ownership', () => {
   })
   test('after hard end an abandoned live state does not lock the replay project to its old device', async () => {
     const { service, child, advance, context } = setup()
-    const workspace = await service.open(child, ids.session, ids.child)
+    const workspace = await service.openForBlock(child, ids.session, ids.block, ids.child)
     await service.claim(child, workspace.id, ids.device, false)
     advance(2 * 60 * 60 * 1000)
     expect(context.occurrence.state).toBe('live')
@@ -224,7 +256,7 @@ describe('live project writer ownership', () => {
   })
   test('poll omits unchanged project assets but keeps authorization on every request', async () => {
     const { service, child } = setup()
-    const workspace = await service.open(child, ids.session, ids.child)
+    const workspace = await service.openForBlock(child, ids.session, ids.block, ids.child)
     const unchanged = await service.poll(child, workspace.id, 0)
     expect(unchanged.project).toBeUndefined()
     const claimed = await service.claim(child, workspace.id, ids.device, false)
@@ -242,7 +274,7 @@ describe('live project writer ownership', () => {
   })
   test('subscription continues the same expired workspace without reopening a lesson or another family', async () => {
     const { service, child, advance } = setup(true)
-    const workspace = await service.open(child, ids.session, ids.child)
+    const workspace = await service.openForBlock(child, ids.session, ids.block, ids.child)
     advance(31 * 24 * 60 * 60 * 1000)
     expect((await service.get(child, workspace.id)).id).toBe(workspace.id)
     expect((await service.listOwned(child)).workspaces[0]?.canEdit).toBe(true)
@@ -258,13 +290,16 @@ describe('live project writer ownership', () => {
         })
       ).revision,
     ).toBe(1)
-    await expect(service.open(child, ids.session, ids.child)).rejects.toThrow()
+    // Through the closed lesson the project only opens to read (the library keeps editing).
+    expect((await service.openForBlock(child, ids.session, ids.block, ids.child)).readOnly).toBe(
+      true,
+    )
     await expect(service.get({ ...child, accountId: ids.teacher }, workspace.id)).rejects.toThrow()
     expect((await service.listOwned({ ...child, accountId: ids.teacher })).workspaces).toEqual([])
   })
   test('without a subscription expiry keeps the project readable (view/export) but never writable', async () => {
     const { service, child, teacher, advance } = setup()
-    const workspace = await service.open(child, ids.session, ids.child)
+    const workspace = await service.openForBlock(child, ids.session, ids.block, ids.child)
     const claimed = await service.claim(child, workspace.id, ids.device, false)
     advance(31 * 24 * 60 * 60 * 1000)
     const readable = await service.get(child, workspace.id)
@@ -302,7 +337,7 @@ describe('live project writer ownership', () => {
   })
   test('writes read the cohort through their own transaction and ask the subscription outside it', async () => {
     const { service, child, advance, loads } = setup(true)
-    const workspace = await service.open(child, ids.session, ids.child)
+    const workspace = await service.openForBlock(child, ids.session, ids.block, ids.child)
     const before = { ...loads }
     const claimed = await service.claim(child, workspace.id, ids.device, false)
     await service.commit(child, workspace.id, {
@@ -324,7 +359,7 @@ describe('live project writer ownership', () => {
   })
   test('an unchanged poll reuses a recent authorization instead of reloading the cohort', async () => {
     const { service, child, advance, loads } = setup()
-    const workspace = await service.open(child, ids.session, ids.child)
+    const workspace = await service.openForBlock(child, ids.session, ids.block, ids.child)
     await service.poll(child, workspace.id, 0)
     const after = loads.pool
     await service.poll(child, workspace.id, 0)
@@ -340,7 +375,7 @@ describe('live project writer ownership', () => {
   })
   test('subscription does not bypass the active room device or publish another revision', async () => {
     const { service, child, teacher } = setup(true)
-    const workspace = await service.open(child, ids.session, ids.child)
+    const workspace = await service.openForBlock(child, ids.session, ids.block, ids.child)
     await expect(service.claim(child, workspace.id, ids.teacherDevice, true)).rejects.toThrow(
       'outro aparelho',
     )
@@ -363,7 +398,7 @@ describe('live project writer ownership', () => {
   })
   test('child consent commits a durable checkpoint and fences old autosave', async () => {
     const { service, child, teacher, revisions } = setup()
-    let workspace = await service.open(child, ids.session, ids.child)
+    let workspace = await service.openForBlock(child, ids.session, ids.block, ids.child)
     workspace = await service.claim(child, workspace.id, ids.device, false)
     const oldEpoch = workspace.writerEpoch
     workspace = await service.requestAssistance(teacher, workspace.id)
@@ -404,7 +439,7 @@ describe('live project writer ownership', () => {
   })
   test('failed recording does not authorize a handoff', async () => {
     const { service, child, teacher, context } = setup()
-    let workspace = await service.open(child, ids.session, ids.child)
+    let workspace = await service.openForBlock(child, ids.session, ids.block, ids.child)
     workspace = await service.claim(child, workspace.id, ids.device, false)
     workspace = await service.requestAssistance(teacher, workspace.id)
     context.occurrence.recording.state = 'failed'
@@ -429,7 +464,7 @@ describe('live project writer ownership', () => {
         if (!confirmed) throw new Error('Receiver unavailable')
       },
     })
-    let workspace = await service.open(child, ids.session, ids.child)
+    let workspace = await service.openForBlock(child, ids.session, ids.block, ids.child)
     workspace = await service.claim(child, workspace.id, ids.device, false)
     workspace = await service.requestAssistance(teacher, workspace.id)
     context.occurrence.recording.state = 'review'
@@ -458,7 +493,7 @@ describe('live project writer ownership', () => {
   })
   test('expired leases, cross-family access and stale revisions cannot write', async () => {
     const { service, child, advance } = setup()
-    let workspace = await service.open(child, ids.session, ids.child)
+    let workspace = await service.openForBlock(child, ids.session, ids.block, ids.child)
     await expect(service.get({ ...child, accountId: ids.teacher }, workspace.id)).rejects.toThrow()
     workspace = await service.claim(child, workspace.id, ids.device, false)
     const input = {
@@ -480,24 +515,77 @@ describe('live project writer ownership', () => {
   })
   test('self-contained starter projects stay isolated per learner', async () => {
     const { service, child } = setup()
-    const workspace = await service.open(child, ids.session, ids.child)
+    const workspace = await service.openForBlock(child, ids.session, ids.block, ids.child)
     expect(workspace.project.id).toBe(workspace.id)
     expect(workspace.project.formatVersion).toEqual(
       createEmptyProject(workspace.id, 'Example').formatVersion,
     )
-    expect((await service.open(child, ids.session, ids.child)).id).toBe(workspace.id)
+    expect((await service.openForBlock(child, ids.session, ids.block, ids.child)).id).toBe(
+      workspace.id,
+    )
   })
 })
 
-test('linked lessons share one canonical project but preserve independent access windows', async () => {
-  const { service, child, context, advance } = setup()
-  const opened = await service.open(child, ids.session, child.id)
-  const second = {
-    ...context.session,
-    id: crypto.randomUUID(),
-    order: 1,
-    plan: { ...context.session.plan, continueProjectFrom: 0 },
-  }
+describe('projeto ao vivo por bloco Estúdio da aula publicada', () => {
+  test('semente do bloco, curadoria na view, um projeto por bloco e nada fora da aula', async () => {
+    const { service, child, teacher, blocks, records } = setup()
+    const seed = createEmptyProject(crypto.randomUUID(), 'Cenário da fase')
+    const other = {
+      blockId: crypto.randomUUID(),
+      lessonId: ids.lesson,
+      courseId: ids.course,
+      chain: null,
+      initialProject: { ...seed, files: { ...seed.files, 'script.js': '// pronto' } },
+      studio: { allowBlocks: ['move_steps'] },
+    }
+    blocks.set(`${ids.lesson}:${other.blockId}`, other)
+    const first = await service.openForBlock(child, ids.session, ids.block)
+    expect(first.studio).toEqual({ level: 'iniciante', allowedModes: ['blocks'] })
+    const second = await service.openForBlock(child, ids.session, other.blockId)
+    expect(second.id).not.toBe(first.id)
+    expect(second.project.id).toBe(second.id)
+    expect(second.project.name).toBe('Cenário da fase')
+    expect((second.project.files as Record<string, string>)['script.js']).toBe('// pronto')
+    expect(second.studio).toEqual({ allowBlocks: ['move_steps'] })
+    // The wire view never carries the internal key nor the linked lessons.
+    expect(second).not.toHaveProperty('projectKey')
+    expect(second).not.toHaveProperty('lessonIds')
+    expect(records.get(second.id)?.projectKey).toBe(`course:${ids.course}:block:${other.blockId}`)
+    // A block that is not a Studio block of the published lesson does not open anything.
+    await expect(
+      service.openForBlock(child, ids.session, crypto.randomUUID()),
+    ).rejects.toBeInstanceOf(LiveNotFoundError)
+    // The teacher opens the child's project; a child never opens a classmate's.
+    expect((await service.openForBlock(teacher, ids.session, ids.block, ids.child)).id).toBe(
+      first.id,
+    )
+    await expect(
+      service.openForBlock(child, ids.session, ids.block, ids.teacher),
+    ).rejects.toBeInstanceOf(LiveAccessError)
+  })
+
+  test('depois do prazo: o projeto existente só para ver; nenhum projeto novo', async () => {
+    const { service, child, blocks, advance } = setup()
+    const opened = await service.openForBlock(child, ids.session, ids.block)
+    const later = { ...blocks.get(`${ids.lesson}:${ids.block}`)!, blockId: crypto.randomUUID() }
+    blocks.set(`${ids.lesson}:${later.blockId}`, later)
+    advance(31 * 24 * 60 * 60 * 1000)
+    const readable = await service.openForBlock(child, ids.session, ids.block)
+    expect(readable.id).toBe(opened.id)
+    expect(readable.readOnly).toBe(true)
+    expect(readable.studio).toEqual({ level: 'iniciante', allowedModes: ['blocks'] })
+    await expect(service.openForBlock(child, ids.session, later.blockId)).rejects.toBeInstanceOf(
+      LiveAccessError,
+    )
+  })
+})
+
+test('the chain of the block makes one project across lessons, each with its own window', async () => {
+  const { service, child, context, blocks, records, advance } = setup()
+  blocks.get(`${ids.lesson}:${ids.block}`)!.chain = 'meu-jogo'
+  const opened = await service.openForBlock(child, ids.session, ids.block)
+  const lesson = crypto.randomUUID()
+  const second = { ...context.session, id: crypto.randomUUID(), order: 1, lessonId: lesson }
   context.aggregate.sessions.push(second)
   context.aggregate.grants.push({
     ...context.aggregate.grants[0]!,
@@ -505,16 +593,25 @@ test('linked lessons share one canonical project but preserve independent access
     startsAt: '2026-12-08T17:00:00Z',
     endsAt: '2027-01-07T17:00:00Z',
   })
-  await expect(service.open(child, second.id, child.id)).rejects.toThrow()
+  const block = { ...blocks.get(`${ids.lesson}:${ids.block}`)!, blockId: crypto.randomUUID() }
+  block.lessonId = lesson
+  blocks.set(`${lesson}:${block.blockId}`, block)
+  // Before the second lesson opens, its encounter does not link (nor edit through) the project.
+  const early = await service.openForBlock(child, second.id, block.blockId)
+  expect(early.id).toBe(opened.id)
+  expect(early.readOnly).toBe(true)
+  expect(records.get(opened.id)?.lessonIds).toEqual([ids.lesson])
   await expect(service.forSession(second.id).get(child, opened.id)).rejects.toThrow()
   advance(31 * 86400_000)
-  const continued = await service.open(child, second.id, child.id)
+  const continued = await service.openForBlock(child, second.id, block.blockId)
   expect(continued.id).toBe(opened.id)
   expect(continued.contextSessionId).toBe(second.id)
-  expect((await service.get(child, opened.id)).id).toBe(opened.id)
+  expect(continued.readOnly).toBeUndefined()
+  expect(records.get(opened.id)?.lessonIds).toEqual([ids.lesson, lesson])
+  // The first lesson's window is over: its explicit context no longer edits the project.
   await expect(service.forSession(ids.session).get(child, opened.id)).rejects.toThrow()
   await expect(service.forSession(crypto.randomUUID()).get(child, opened.id)).rejects.toThrow()
   await expect(
-    service.open({ ...child, accountId: crypto.randomUUID() }, second.id, child.id),
+    service.openForBlock({ ...child, accountId: crypto.randomUUID() }, second.id, block.blockId),
   ).rejects.toThrow()
 })

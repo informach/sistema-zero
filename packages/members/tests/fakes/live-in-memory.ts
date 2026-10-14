@@ -1,46 +1,28 @@
-import type { LearningAttemptView, LearningBlockProgress } from '@sistemazero/core/learning'
-import type { LiveProgram } from '@sistemazero/core/live'
+import { randomUUID } from 'node:crypto'
+import type { CourseModality } from '@sistemazero/core/course/modality'
+import type { LiveStudioConfig } from '@sistemazero/core/live'
 import { LiveNotFoundError } from '../../src/domain/live/live.errors'
+import type {
+  LiveCoursePort,
+  LiveCourseRecord,
+  LiveLessonSections,
+  LiveStudioBlockRecord,
+} from '../../src/domain/ports/live-course.port'
 import type {
   LiveCatalogQuery,
   LiveCohortAggregate,
   LiveRepository,
-  LiveTransactionReads,
 } from '../../src/domain/ports/live-repository.port'
 
 export class InMemoryLiveRepository implements LiveRepository {
-  readonly programs = new Map<string, LiveProgram>()
   readonly cohorts = new Map<string, LiveCohortAggregate>()
   readonly positions = new Map<string, number>()
-  readonly learning = new Map<string, LearningBlockProgress>()
-  readonly attempts = new Map<string, LearningAttemptView>()
   /** Every audit entry appended by transactions, in order (the real repository inserts them). */
   readonly auditLog: LiveCohortAggregate['audit'] = []
-  async readLearningProgress(sessionId: string, learnerId: string, accountId: string) {
-    return structuredClone(
-      [...this.learning]
-        .filter(([key]) => key.startsWith(`${sessionId}:${learnerId}:${accountId}:`))
-        .map(([, value]) => value),
-    )
-  }
-  async findLearningAttempt(sessionId: string, learnerId: string, accountId: string, id: string) {
-    return structuredClone(
-      this.attempts.get(`${sessionId}:${learnerId}:${accountId}:${id}`) ?? null,
-    )
-  }
   async readReplayPosition(sessionId: string, learnerId: string, version: number) {
     return this.positions.get(`${sessionId}:${learnerId}:${version}`) ?? 0
   }
   private locks = new Map<string, Promise<void>>()
-  async listPrograms() {
-    return structuredClone([...this.programs.values()])
-  }
-  async findProgram(id: string) {
-    return structuredClone(this.programs.get(id) ?? null)
-  }
-  async createProgram(program: LiveProgram) {
-    this.programs.set(program.id, structuredClone(program))
-  }
   private async lock<T>(id: string, operation: () => Promise<T>): Promise<T> {
     const previous = this.locks.get(id) ?? Promise.resolve()
     let release!: () => void
@@ -56,15 +38,6 @@ export class InMemoryLiveRepository implements LiveRepository {
       if (this.locks.get(id) === current) this.locks.delete(id)
     }
   }
-  async updateProgram(id: string, mutate: (program: LiveProgram) => void) {
-    return this.lock(`program:${id}`, async () => {
-      const program = await this.findProgram(id)
-      if (!program) throw new LiveNotFoundError()
-      mutate(program)
-      this.programs.set(id, structuredClone(program))
-      return program
-    })
-  }
   async createCohort(aggregate: LiveCohortAggregate) {
     this.cohorts.set(aggregate.cohort.id, structuredClone(aggregate))
   }
@@ -73,17 +46,19 @@ export class InMemoryLiveRepository implements LiveRepository {
       [...this.cohorts.values()]
         .filter(
           (item) =>
-            !query ||
-            ((!query.cursor || item.cohort.id > query.cursor) &&
-              (query.mode === 'admin' ||
-                (item.cohort.status === 'open' &&
-                  this.programs.get(item.cohort.programId)?.status === 'published') ||
-                item.enrollments.some(
-                  (enrollment) =>
-                    enrollment.accountId === query.actor.accountId &&
-                    (query.mode === 'parents' || enrollment.learnerId === query.actor.id),
-                ) ||
-                (query.actor.staff && item.cohort.teacherIds.includes(query.actor.id)))),
+            item.cohort.courseId &&
+            (!query ||
+              ((!query.cursor || item.cohort.id > query.cursor) &&
+                (!query.audience || item.cohort.course?.audience === query.audience) &&
+                (query.mode === 'admin' ||
+                  (item.cohort.status === 'open' &&
+                    (query.discoverableCourseIds ?? []).includes(item.cohort.courseId)) ||
+                  item.enrollments.some(
+                    (enrollment) =>
+                      enrollment.accountId === query.actor.accountId &&
+                      (query.mode === 'parents' || enrollment.learnerId === query.actor.id),
+                  ) ||
+                  (query.actor.staff && item.cohort.teacherIds.includes(query.actor.id))))),
         )
         .sort((a, b) => a.cohort.id.localeCompare(b.cohort.id))
         .slice(0, query?.limit ?? 50),
@@ -117,11 +92,17 @@ export class InMemoryLiveRepository implements LiveRepository {
       ) ?? null,
     )
   }
-  async cohortIdForSession(id: string) {
-    return (
-      [...this.cohorts.values()].find((item) => item.sessions.some((session) => session.id === id))
-        ?.cohort.id ?? null
-    )
+  async sessionRef(id: string) {
+    for (const item of this.cohorts.values()) {
+      const session = item.sessions.find((entry) => entry.id === id)
+      if (session)
+        return {
+          cohortId: item.cohort.id,
+          lessonId: session.lessonId ?? null,
+          occurrenceId: session.occurrenceId,
+        }
+    }
+    return null
   }
   async findByEnrollment(id: string) {
     return structuredClone(
@@ -132,18 +113,13 @@ export class InMemoryLiveRepository implements LiveRepository {
   }
   async transaction<T>(
     id: string,
-    mutate: (aggregate: LiveCohortAggregate, reads: LiveTransactionReads) => T | Promise<T>,
+    mutate: (aggregate: LiveCohortAggregate) => T | Promise<T>,
   ): Promise<T> {
     return this.lock(id, async () => {
       const aggregate = await this.findCohort(id)
       if (!aggregate) throw new LiveNotFoundError()
       aggregate.audit = []
-      const result = await mutate(aggregate, {
-        learningProgress: (sessionId, learnerId, accountId) =>
-          this.readLearningProgress(sessionId, learnerId, accountId),
-        learningAttempt: (sessionId, learnerId, accountId, attemptId) =>
-          this.findLearningAttempt(sessionId, learnerId, accountId, attemptId),
-      })
+      const result = await mutate(aggregate)
       this.auditLog.push(...structuredClone(aggregate.audit))
       for (const position of aggregate.replayPositions ?? [])
         this.positions.set(
@@ -151,20 +127,102 @@ export class InMemoryLiveRepository implements LiveRepository {
           position.positionSeconds,
         )
       aggregate.replayPositions = []
-      for (const write of aggregate.learningWrites ?? []) {
-        this.learning.set(
-          `${write.sessionId}:${write.learnerId}:${write.accountId}:${write.progress.blockId}:${write.progress.revision}`,
-          structuredClone(write.progress),
-        )
-        if (write.attempt)
-          this.attempts.set(
-            `${write.sessionId}:${write.learnerId}:${write.accountId}:${write.attempt.id}`,
-            structuredClone(write.attempt),
-          )
-      }
-      aggregate.learningWrites = []
       this.cohorts.set(id, structuredClone(aggregate))
       return result
     })
+  }
+}
+
+export interface FakeLiveLesson {
+  id: string
+  title: string
+  sectionIds: string[]
+}
+
+/** Live courses for the tests: published lessons, their parts and Studio blocks. */
+export class InMemoryLiveCourses implements LiveCoursePort {
+  readonly courses = new Map<string, LiveCourseRecord>()
+  readonly sections = new Map<string, LiveLessonSections>()
+  readonly blocks = new Map<string, LiveStudioBlockRecord>()
+  /** Lesson lookups (the cache in the service must keep heartbeats from re-reading). */
+  sectionReads = 0
+
+  /** A live course with `lessons` published lessons, each with `sections` parts. */
+  add(
+    input: {
+      lessons?: number
+      sections?: number
+      audience?: 'adult' | 'kids'
+      modality?: CourseModality
+      status?: LiveCourseRecord['status']
+      title?: string
+    } = {},
+  ) {
+    const id = randomUUID()
+    const lessons: FakeLiveLesson[] = Array.from({ length: input.lessons ?? 2 }, (_, index) => ({
+      id: randomUUID(),
+      title: `Encontro ${index + 1}`,
+      sectionIds: Array.from({ length: input.sections ?? 3 }, () => randomUUID()),
+    }))
+    const course: LiveCourseRecord = {
+      id,
+      slug: `oficina-${id.slice(0, 8)}`,
+      title: input.title ?? 'Oficina de jogos',
+      audience: input.audience ?? 'kids',
+      description: 'Criar juntos ao vivo.',
+      coverImageUrl: null,
+      status: input.status ?? 'published',
+      modality: input.modality ?? 'live',
+      lessons: lessons.map(({ id: lessonId, title }) => ({ id: lessonId, title })),
+    }
+    this.courses.set(id, course)
+    for (const lesson of lessons)
+      this.sections.set(lesson.id, {
+        lessonId: lesson.id,
+        courseId: id,
+        published: true,
+        sectionIds: lesson.sectionIds,
+      })
+    return { course, lessons }
+  }
+
+  /** A Studio block in a lesson of the course; `chain` makes one project across lessons. */
+  addStudioBlock(
+    courseId: string,
+    lessonId: string,
+    input: { chain?: string; initialProject?: unknown; studio?: LiveStudioConfig } = {},
+  ) {
+    const block: LiveStudioBlockRecord = {
+      blockId: randomUUID(),
+      lessonId,
+      courseId,
+      chain: input.chain ?? null,
+      initialProject: input.initialProject ?? null,
+      studio: input.studio ?? {},
+    }
+    this.blocks.set(`${lessonId}:${block.blockId}`, block)
+    return block
+  }
+
+  async findCourse(courseId: string) {
+    return structuredClone(this.courses.get(courseId) ?? null)
+  }
+  async listLiveCourses(filter: { ids?: string[]; audience?: 'adult' | 'kids' }) {
+    return structuredClone(
+      [...this.courses.values()].filter(
+        (course) =>
+          course.modality === 'live' &&
+          course.status !== 'archived' &&
+          (!filter.ids || filter.ids.includes(course.id)) &&
+          (!filter.audience || course.audience === filter.audience),
+      ),
+    )
+  }
+  async lessonSections(lessonId: string) {
+    this.sectionReads++
+    return structuredClone(this.sections.get(lessonId) ?? null)
+  }
+  async studioBlock(lessonId: string, blockId: string) {
+    return structuredClone(this.blocks.get(`${lessonId}:${blockId}`) ?? null)
   }
 }
