@@ -145,6 +145,185 @@ describe.skipIf(!available)('Pensa v2: concorrência e publicação no Postgres'
     }
     await conn?.close()
   })
+  async function join(projectId: string, owner: PensaJourneyActor, member: PensaJourneyActor) {
+    const teams = new DrizzlePensaRepository(conn.db)
+    const code = randomUUID().replaceAll('-', '').slice(0, 6).toUpperCase()
+    await teams.setShareCode(projectId, code, now)
+    expect(
+      await teams.addMember(
+        {
+          projectId,
+          profileId: member.profileId,
+          accountId: member.accountId,
+          invitedBy: owner.profileId,
+        },
+        now,
+        5,
+        code,
+      ),
+    ).toBe('added')
+  }
+
+  test('uma colega retoma e publica a ajuda usando a reserva e o teto de quem pediu', async () => {
+    const owner = actor(),
+      member = actor(),
+      op = randomUUID(),
+      lease = randomUUID()
+    const project = await repo.create(owner, randomUUID(), now)
+    await join(project.project.id, owner, member)
+    await repo.start(
+      owner,
+      project.project.id,
+      { id: op, expectedRevision: 0, message: 'Como começo?', kind: 'help', context: {} },
+      now,
+    )
+    expect(await repo.claim(member, project.project.id, op, lease, now)).toMatchObject({
+      input: { requesterProfileId: owner.profileId },
+    })
+    await repo.publish(
+      member,
+      project.project.id,
+      op,
+      lease,
+      { type: 'answer', text: 'Abra o Estúdio.' },
+      now,
+    )
+    const usage =
+      await conn.sql`select account_id, used from members.ai_usage_daily where account_id in (${owner.accountId}, ${member.accountId})`
+    expect(usage.map((row) => ({ accountId: row.account_id, used: row.used }))).toEqual([
+      { accountId: owner.accountId, used: 1 },
+    ])
+    const calls =
+      await conn.sql`select account_id, calls from members.pensa_provider_usage where account_id in (${owner.accountId}, ${member.accountId})`
+    expect(calls.map((row) => ({ accountId: row.account_id, calls: row.calls }))).toEqual([
+      { accountId: owner.accountId, calls: 1 },
+    ])
+  })
+
+  test('uma colega responde à pergunta e aceita a proposta iniciada pela dona, até após a reserva vencer', async () => {
+    const owner = actor(),
+      member = actor(),
+      op = randomUUID()
+    const project = await repo.create(owner, randomUUID(), now)
+    const id = project.project.id
+    await join(id, owner, member)
+    await repo.start(
+      owner,
+      id,
+      { id: op, expectedRevision: 0, message: 'Gato', kind: 'planning', context: {} },
+      now,
+    )
+    let lease = randomUUID()
+    await repo.claim(owner, id, op, lease, now)
+    await repo.publish(owner, id, op, lease, { type: 'question', text: 'O gato vai andar?' }, now)
+    let view = await repo.get(member, id)
+    const later = new Date(now.getTime() + 31 * 60_000)
+    await repo.start(
+      member,
+      id,
+      {
+        id: randomUUID(),
+        expectedRevision: view.journey.revision,
+        message: 'Sim',
+        kind: 'planning',
+        context: {},
+      },
+      later,
+    )
+    lease = randomUUID()
+    expect(await repo.claim(member, id, op, lease, later)).toMatchObject({
+      input: { requesterProfileId: member.profileId },
+    })
+    await repo.publish(member, id, op, lease, { type: 'step', step: 'review', output: {} }, later)
+    lease = randomUUID()
+    await repo.claim(member, id, op, lease, later)
+    const card = proposal(member)
+    await repo.publish(member, id, op, lease, { type: 'proposal', proposal: card }, later)
+    view = await repo.get(member, id)
+    await repo.command(
+      member,
+      id,
+      view.journey.revision,
+      { type: 'accept', proposalId: card.id },
+      later,
+    )
+    lease = randomUUID()
+    await repo.claim(member, id, op, lease, later)
+    await repo.publish(member, id, op, lease, { type: 'plan', tasks: [studioTask()] }, later)
+    expect((await repo.get(owner, id)).journey.stage).toBe('building')
+    const [reservation] =
+      await conn.sql`select account_id, profile_id, status from members.ai_usage_reservations where id = ${op}`
+    expect(reservation).toMatchObject({
+      account_id: owner.accountId,
+      profile_id: owner.profileId,
+      status: 'committed',
+    })
+  })
+
+  test('retomar pela equipe respeita o teto de chamadas da conta original', async () => {
+    const owner = actor(),
+      member = actor(),
+      op = randomUUID()
+    const project = await repo.create(owner, randomUUID(), now)
+    await join(project.project.id, owner, member)
+    await repo.start(
+      owner,
+      project.project.id,
+      { id: op, expectedRevision: 0, message: 'Ajude', kind: 'help', context: {} },
+      now,
+    )
+    await conn.sql`insert into members.pensa_provider_usage (account_id,day,calls,updated_at) values (${owner.accountId},'2026-10-14',60,${now.toISOString()})`
+    expect(await repo.claim(member, project.project.id, op, randomUUID(), now)).toBeNull()
+    expect((await repo.get(member, project.project.id)).operation?.status).toBe('failed')
+  })
+
+  test('privilégio de quem retoma não aumenta a cota de uma reserva vencida da criança', async () => {
+    const owner = actor(),
+      member = { ...actor(), privileged: true },
+      op = randomUUID()
+    const project = await repo.create(owner, randomUUID(), now)
+    await join(project.project.id, owner, member)
+    await repo.start(
+      owner,
+      project.project.id,
+      { id: op, expectedRevision: 0, message: 'Ajude', kind: 'help', context: {} },
+      now,
+    )
+    await conn.sql`insert into members.ai_usage_daily (account_id, day, feature, used, privileged, updated_at) values (${owner.accountId}, '2026-10-14', 'describe', 2, false, ${now.toISOString()})`
+    const later = new Date(now.getTime() + 31 * 60_000)
+    expect(await repo.claim(member, project.project.id, op, randomUUID(), later)).toBeNull()
+    expect((await repo.get(member, project.project.id)).operation?.error).toContain(
+      'limite de ajuda',
+    )
+  })
+
+  test('duas contas retomam os pedidos uma da outra sem inverter a ordem das travas', async () => {
+    const a = actor(),
+      b = actor()
+    const pa = await repo.create(a, randomUUID(), now),
+      pb = await repo.create(b, randomUUID(), now)
+    await join(pa.project.id, a, b)
+    await join(pb.project.id, b, a)
+    const oa = randomUUID(),
+      ob = randomUUID()
+    await repo.start(
+      a,
+      pa.project.id,
+      { id: oa, expectedRevision: 0, message: 'A', kind: 'help', context: {} },
+      now,
+    )
+    await repo.start(
+      b,
+      pb.project.id,
+      { id: ob, expectedRevision: 0, message: 'B', kind: 'help', context: {} },
+      now,
+    )
+    const claimed = await Promise.all([
+      repo.claim(b, pa.project.id, oa, randomUUID(), now),
+      repo.claim(a, pb.project.id, ob, randomUUID(), now),
+    ])
+    expect(claimed.filter(Boolean)).toHaveLength(2)
+  })
   test('dois envios iguais criam uma mensagem, uma reserva e um único lease', async () => {
     const who = actor(),
       id = randomUUID()

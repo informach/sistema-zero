@@ -26,6 +26,7 @@ export const STUDIO_INTERFACE_MAP = `MAPA DA INTERFACE (rótulos reais que não 
 - Estúdio, extensões: botão "⋯" (Mais opções) no alto, "Extensões", e no cartão da extensão "Instalar". O sistema já coloca esse passo na primeira missão que precisa da extensão: não escreva passo de instalar.
 - Estúdio, desenho do Pinta: "⋯" (Mais opções), "Imagens", "🎨 Trazer do Pinta".
 - Estúdio, criação do Molda: "⋯" (Mais opções), "Modelos 3D", "🧊 Trazer do Molda".
+- Estúdio, arte de uma colega: "⋯" (Mais opções), "Imagens" ou "Modelos 3D", "Trazer da equipe". Só aparece para quem programa quando alguém da equipe terminou uma arte numa missão.
 - Pinta: no fim do desenho para o jogo, o foguete "Usar no Estúdio" leva o desenho para o Estúdio.`
 
 export interface InstallStep {

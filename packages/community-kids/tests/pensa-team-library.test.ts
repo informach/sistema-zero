@@ -147,7 +147,7 @@ describe('a lista da janela', () => {
     )
     expect(summaries[0]).toEqual({
       id: 'task-heroi',
-      assetId: 'bia-heroi',
+      assetId: 'equipe-task-heroi',
       name: 'heroi',
       kind: 'drawing',
       byName: 'Bia',
@@ -243,7 +243,7 @@ describe('trazer: baixar, descomprimir, converter e guardar', () => {
       result: {
         ok: true,
         asset: {
-          id: 'bia-heroi',
+          id: 'equipe-task-heroi',
           name: 'heroi-2',
           dataUrl: 'data:image/png;base64,AAAA',
           width: 8,
@@ -253,9 +253,24 @@ describe('trazer: baixar, descomprimir, converter e guardar', () => {
       },
     })
     expect(saved[0]?.asset.origin).toBe('pinta')
-    expect(saved[0]?.asset.id).toBe('bia-heroi')
+    expect(saved[0]?.asset.id).toBe('equipe-task-heroi')
     expect(saved[0]?.namespace).toBe('perfil-1')
     expect(calls).toContain(BLOB)
+  })
+
+  test('artes da equipe não sobrescrevem a arte pessoal nem a de outra missão com o mesmo id', async () => {
+    const items = [artItem(), artItem({ taskId: 'task-nave', byProfileId: LEO })]
+    const { library, saved } = setup({ items, blob: () => new Response('pinta-doc') })
+    const listed = await library.list()
+    await library.import('task-heroi')
+    await library.import('task-nave')
+    await library.import('task-heroi')
+    expect(saved[0]?.asset.id).not.toBe('bia-heroi')
+    expect(saved[1]?.asset.id).not.toBe(saved[0]?.asset.id)
+    expect(saved[2]?.asset.id).toBe(saved[0]?.asset.id)
+    expect(listed.map((item) => item.assetId)).toEqual(
+      saved.slice(0, 2).map((item) => item.asset.id as string | undefined),
+    )
   })
 
   test('criação do Molda: origem Molda, e a revisão e o consentimento chegam à conversão', async () => {
@@ -334,7 +349,7 @@ describe('trazer: baixar, descomprimir, converter e guardar', () => {
       [`${base}/team-art`]: () => Response.json({ items: [artItem()] }),
       [`${base}/team-art/task-heroi/download`]: () =>
         Response.json({ downloadUrl: BLOB, revision: 3 }),
-      [BLOB]: () => new Response(gz),
+      [BLOB]: () => new Response(new Blob([gz as BlobPart])),
     })
     const seen: string[] = []
     const library = createPensaTeamLibrary({

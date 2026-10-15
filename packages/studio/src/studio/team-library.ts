@@ -32,8 +32,10 @@ export interface StudioTeamArtSummary {
   /** O que o `import` recebe (o host usa o id da MISSÃO). */
   id: string
   /**
-   * O id da criação da colega, que vira o `libId personal:<id>` no projeto: é o que acende
-   * o "✓ no projeto". Ausente = a janela não sabe dizer se já está no jogo.
+   * O id com que a arte entra na biblioteca pessoal (e vira o `libId personal:<id>` no
+   * projeto): é o que acende o "✓ no projeto", e o `import` devolve o MESMO id. O host o
+   * escolhe (o kids usa uma cópia por missão). Ausente = a janela não sabe dizer se já está
+   * no jogo.
    */
   assetId?: string
   /** Nome da arte (o que aparece no cartão). */

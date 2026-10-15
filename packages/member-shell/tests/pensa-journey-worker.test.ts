@@ -511,6 +511,63 @@ function task(
   }
 }
 
+test('ajuda em equipe segue quem pediu, mesmo quando outra pessoa executa a retomada', async () => {
+  quietConsole()
+  const f = fixture('answer')
+  f.view.team = {
+    viewerProfileId: 'child',
+    ownerProfileId: 'child',
+    memberCount: 1,
+    shareEnabled: true,
+    roles: { code: 'child', art: ['artist'] },
+  }
+  f.work.input.requesterProfileId = 'artist'
+  f.view.journey.missionIds = ['programar', 'desenhar']
+  f.setTasks([
+    task('programar', 0, 'studio', 'in_progress'),
+    task('desenhar', 1, 'pinta', 'planned'),
+  ])
+  const complete = mock(async () => ({ text: 'Vamos desenhar.' }))
+  await run(f, complete)
+  const prompt = JSON.parse((complete.mock.calls[0] as unknown as [{ user: string }])[0].user)
+  expect(prompt.currentMission?.destination).toBe('pinta')
+  expect(prompt.team?.requester).toEqual({ programs: false, createsArt: true })
+  expect(JSON.stringify(prompt.team)).not.toContain('artist')
+})
+
+test('o guia em equipe conhece a ponte de arte compartilhada', async () => {
+  quietConsole()
+  const f = fixture('guides')
+  f.view.team = {
+    viewerProfileId: 'child',
+    ownerProfileId: 'child',
+    memberCount: 1,
+    shareEnabled: true,
+    roles: { code: 'child', art: ['artist'] },
+  }
+  f.view.journey.proposal = {
+    ...draft,
+    id: 'proposal',
+    capabilities: f.context.capabilities,
+    references: [],
+  }
+  f.view.journey.acceptedProposalId = 'proposal'
+  const complete = mock(async () => ({
+    missions: [
+      {
+        key: 'walk',
+        steps: [{ action: 'Ande', where: 'No Estúdio', effect: 'O gato anda' }],
+        testAction: 'Aperte a seta',
+        expected: 'O gato anda',
+      },
+    ],
+  }))
+  await run(f, complete)
+  const input = (complete.mock.calls[0] as unknown as [{ user: string; system: string }])[0]
+  expect(JSON.parse(input.user).team?.sharedArt).toBe(true)
+  expect(input.system).toContain('Trazer da equipe')
+})
+
 test('a ajuda conhece a missão de AGORA e os passos dela (M7)', async () => {
   quietConsole()
   const f = fixture('answer')

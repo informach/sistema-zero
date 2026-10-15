@@ -788,6 +788,10 @@ describe('o compasso do jogo em equipe', () => {
       expect(calls('GET /v2/projects/p1').length).toBeGreaterThan(2)
       expect(await screen.findByText('A Bia pensou numa nuvem de chuva')).toBeTruthy()
       expect(
+        screen.getByText('A Bia pensou numa nuvem de chuva').parentElement?.querySelector('strong')
+          ?.textContent,
+      ).toBe('Equipe')
+      expect(
         (screen.getByLabelText('Quer acrescentar ou mudar alguma coisa?') as HTMLTextAreaElement)
           .value,
       ).toBe('Um dragão que voa')

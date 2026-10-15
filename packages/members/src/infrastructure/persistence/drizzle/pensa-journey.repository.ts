@@ -44,6 +44,7 @@ import {
 } from './pensa-reservations'
 import {
   accountDeletionFences,
+  aiUsageReservations,
   creations,
   pensaCheckpoints,
   pensaCycles,
@@ -132,7 +133,19 @@ export class DrizzlePensaJourneyRepository implements PensaJourneyRepository {
   ) {}
 
   private async lock(tx: Tx, actor: PensaJourneyActor, projectId: string, active = true) {
-    await lockPensaAccount(tx, actor.accountId)
+    // Uma colega pode retomar o pedido, mas a reserva pertence a quem o iniciou.
+    // Trave ambas as contas ANTES do projeto, sempre na mesma ordem, inclusive quando
+    // duas equipes retomam pedidos uma da outra. Nunca adquira a segunda trava depois.
+    const [billing] = await tx
+      .select({ accountId: pensaOperations.accountId })
+      .from(pensaJourneys)
+      .innerJoin(
+        pensaOperations,
+        sql`${pensaOperations.id} = (${pensaJourneys.data}->>'operationId')::uuid`,
+      )
+      .where(and(eq(pensaJourneys.projectId, projectId), eq(pensaJourneys.active, true)))
+    const accounts = [...new Set([actor.accountId, ...(billing ? [billing.accountId] : [])])].sort()
+    for (const accountId of accounts) await lockPensaAccount(tx, accountId)
     const [project] = await tx
       .select()
       .from(pensaProjects)
@@ -147,10 +160,35 @@ export class DrizzlePensaJourneyRepository implements PensaJourneyRepository {
       .where(and(eq(pensaJourneys.projectId, projectId), eq(pensaJourneys.active, true)))
       .for('update')
     if (!journey) throw new PensaNotFoundError()
+    if (journey.data.operationId) {
+      const [current] = await tx
+        .select({ accountId: pensaOperations.accountId })
+        .from(pensaOperations)
+        .where(eq(pensaOperations.id, journey.data.operationId))
+      // O pedido pode ter mudado enquanto esperávamos. Recarregue em vez de adquirir
+      // uma conta nova fora da ordem (ou conferir cota sem a trava correspondente).
+      if (current && !accounts.includes(current.accountId)) throw conflict()
+    }
     // Os papéis lidos DEPOIS da trava do projeto: trocar as funções tranca a mesma linha.
     const { roles } = await loadPensaTeamRoles(tx, projectId, project.userId)
     const role = project.userId === actor.profileId ? ('owner' as const) : ('member' as const)
     return { project, row: journey, state: journey.data, role, roles }
+  }
+
+  private async operationPayer(tx: Tx, operation: OperationRow): Promise<PensaJourneyActor> {
+    const [hold] = await tx
+      .select()
+      .from(aiUsageReservations)
+      .where(eq(aiUsageReservations.id, operation.id))
+    if (
+      !hold ||
+      hold.projectId !== operation.projectId ||
+      hold.accountId !== operation.accountId ||
+      hold.profileId !== operation.profileId
+    )
+      throw conflict()
+    // O privilégio também é o da reserva, nunca o do participante que retoma.
+    return { accountId: hold.accountId, profileId: hold.profileId, privileged: hold.privileged }
   }
 
   /** Só quem PROGRAMA testa, conclui, guarda, restaura e adapta: o jogo mora no Estúdio dela. */
@@ -441,7 +479,7 @@ export class DrizzlePensaJourneyRepository implements PensaJourneyRepository {
           })
         next.operationId = operation.id
         await reservePensaUsage(tx, {
-          ...actor,
+          ...(existing ? await this.operationPayer(tx, existing) : actor),
           ...this.limits,
           id: operation.id,
           projectId,
@@ -665,7 +703,7 @@ export class DrizzlePensaJourneyRepository implements PensaJourneyRepository {
       }
       const id = reuse ? previous.id : input.id
       await reservePensaUsage(tx, {
-        ...actor,
+        ...(reuse ? await this.operationPayer(tx, previous) : actor),
         ...this.limits,
         id,
         projectId,
@@ -696,7 +734,12 @@ export class DrizzlePensaJourneyRepository implements PensaJourneyRepository {
           ? [...previous.input.requestIds, input.id]
           : [input.id]
       const values = {
-        input: { ...input.context, message: input.message, requestIds },
+        input: {
+          ...input.context,
+          message: input.message,
+          requestIds,
+          requesterProfileId: actor.profileId,
+        },
         output: {},
         status: 'queued' as const,
         step: input.kind === 'planning' ? ('propose' as const) : ('answer' as const),
@@ -754,7 +797,7 @@ export class DrizzlePensaJourneyRepository implements PensaJourneyRepository {
         .from(pensaProviderUsage)
         .where(
           and(
-            eq(pensaProviderUsage.accountId, actor.accountId),
+            eq(pensaProviderUsage.accountId, operation.accountId),
             sql`${pensaProviderUsage.day} >= ${`${day.slice(0, 7)}-01`}`,
           ),
         )
@@ -790,7 +833,7 @@ export class DrizzlePensaJourneyRepository implements PensaJourneyRepository {
       }
       try {
         await reservePensaUsage(tx, {
-          ...actor,
+          ...(await this.operationPayer(tx, operation)),
           ...this.limits,
           id: operation.id,
           projectId,
@@ -826,7 +869,7 @@ export class DrizzlePensaJourneyRepository implements PensaJourneyRepository {
         .where(eq(pensaOperations.id, operationId))
       await tx
         .insert(pensaProviderUsage)
-        .values({ accountId: actor.accountId, day, calls: 1, updatedAt: now })
+        .values({ accountId: operation.accountId, day, calls: 1, updatedAt: now })
         .onConflictDoUpdate({
           target: [pensaProviderUsage.accountId, pensaProviderUsage.day],
           set: { calls: sql`${pensaProviderUsage.calls} + 1`, updatedAt: now },
@@ -834,7 +877,10 @@ export class DrizzlePensaJourneyRepository implements PensaJourneyRepository {
       return {
         ...operationView(operation),
         status: 'running',
-        input: operation.input,
+        input: {
+          ...operation.input,
+          requesterProfileId: operation.input.requesterProfileId ?? operation.profileId,
+        },
         output: operation.output,
         leaseId,
       }
@@ -931,7 +977,7 @@ export class DrizzlePensaJourneyRepository implements PensaJourneyRepository {
             status = 'waiting'
             step = next.proposal ? 'choice' : 'propose'
           } else {
-            await commitPensaUsage(tx, operation.id, actor.accountId, now)
+            await commitPensaUsage(tx, operation.id, operation.accountId, now)
             next.operationId = null
           }
         }
@@ -992,7 +1038,7 @@ export class DrizzlePensaJourneyRepository implements PensaJourneyRepository {
         await tx
           .insert(pensaTasks)
           .values(result.tasks.map((task) => pensaTaskValues(state.cycleId, task, now)))
-        await commitPensaUsage(tx, operation.id, actor.accountId, now)
+        await commitPensaUsage(tx, operation.id, operation.accountId, now)
         next.missionIds = result.tasks.map((task) => task.id)
         next.stage = 'building'
         next.revising = false

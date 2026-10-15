@@ -1220,7 +1220,9 @@ export function JourneyApp({
                     className="pensa-journey-fold pensa-journey-conversation"
                     open={talking || (state.stage === 'idea' && !running)}
                   >
-                    <summary>Minha conversa com o Zappy</summary>
+                    <summary>
+                      {teamMode ? 'Conversa da equipe com o Zappy' : 'Minha conversa com o Zappy'}
+                    </summary>
                     <div className="pensa-journey-fold__body pensa-journey-chat" aria-live="polite">
                       {state.messages.map((m) => (
                         <div
@@ -1229,7 +1231,9 @@ export function JourneyApp({
                         >
                           {m.role === 'assistant' ? mascot(36, 'happy') : null}
                           <div className="pensa-journey-message__bubble">
-                            <strong>{m.role === 'user' ? 'Você' : 'Zappy'}</strong>
+                            <strong>
+                              {m.role === 'user' ? (teamMode ? 'Equipe' : 'Você') : 'Zappy'}
+                            </strong>
                             <p>{m.text}</p>
                             {m.role === 'assistant' && adapter.renderListen ? (
                               <div className="pensa-journey-listen">

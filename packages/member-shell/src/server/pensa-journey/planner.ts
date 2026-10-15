@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto'
 import type {
   PensaJourney,
   PensaJourneyActor,
+  PensaJourneyTeam,
   PensaJourneyView,
   PensaProposal,
 } from '@sistemazero/core/pensa'
@@ -62,6 +63,9 @@ Arte já existente em existingCreations entra numa missão de integração do Es
 Não gere ciclos futuros: guarde essas ideias em later com origem child (foi dito) ou zappy (sugestão sua).
 Se baseAlreadyBuilt estiver preenchida, o jogo já existe: planeje apenas o próximo passo pedido, no mesmo arquivo, sem mandar recriar o que já está pronto.
 Não imponha tutoria: capabilities.tutor=false exige guias autossuficientes e ajuda no Pensa.
+Quando team estiver presente, o Estúdio é de quem programa e as artes podem ser de outra pessoa.
+team.requester descreve quem PEDIU ajuda, mesmo quando uma colega retoma a resposta. Oriente só a missão dela; currentMission=null pode significar que está esperando a equipe. Não mande assumir a missão de outra pessoa.
+team.sharedArt=true: a arte feita por outra pessoa chega ao jogo por "Trazer da equipe", depois que ela guarda na conta e conclui a missão. "Trazer do Pinta" e "Trazer do Molda" mostram somente as criações pessoais de quem programa. Não prometa transferência automática entre contas.
 Não diga que o teste é automático; a criança experimenta e conta o resultado.
 Se previousAnswerRejected vier preenchida, sua resposta anterior foi recusada: corrija exatamente esses pontos e devolva a resposta inteira de novo.
 ${STUDIO_INTERFACE_MAP}`
@@ -350,8 +354,19 @@ async function produce(input: {
   context: JourneyContext
   complete: typeof completePensaJson
   repair: string | null
+  team?: PensaJourneyTeam
 }): Promise<StepResult> {
   const { work, state, tasks, context, complete, repair } = input
+  const team =
+    input.team && input.team.memberCount > 0
+      ? {
+          sharedArt: input.team.roles.art.some((id) => id !== input.team!.roles.code),
+          requester: {
+            programs: input.team.roles.code === input.team.viewerProfileId,
+            createsArt: input.team.roles.art.includes(input.team.viewerProfileId),
+          },
+        }
+      : null
   const previousAnswerRejected = repair ? clip(repair, 2_000) : null
   if (work.step === 'propose') {
     const lastUser = state.messages.filter((m) => m.role === 'user').at(-1)?.text ?? ''
@@ -368,6 +383,7 @@ suggestions são escolhas suas para ela poder discordar. As dependências só ap
 Criações existentes só podem ser usadas se constarem de existingCreations.`,
       (limits) => ({
         context: journeyModelContext(context, { focus }, limits),
+        team,
         ...talk(state, limits),
         ...memory(state, limits),
         missionsAlreadyAttempted: attempted(tasks),
@@ -416,6 +432,7 @@ Não substitua a intenção da criança. Devolva a proposta revisada inteira.`,
         ...memory(state, limits),
         currentProposal: proposalOutline(state.proposal),
         draft,
+        team,
         issues,
         previousAnswerRejected,
       }),
@@ -448,7 +465,8 @@ Não substitua a intenção da criança. Devolva a proposta revisada inteira.`,
 Prepare instruções para CADA missão aceita, sem mudar o resultado, quantidade ou dependências.
 Cada passo: action = o que fazer, where = onde clicar ou qual bloco e onde ele encaixa (pelo caminho na paleta), effect = o que aparecerá.
 Nomeie os blocos pelo label e os lugares exatos do catálogo e do mapa da interface. Não diga apenas "implemente a mecânica".
-Missão do Pinta termina com o foguete "Usar no Estúdio"; a missão do Estúdio que usa esse desenho começa por "🎨 Trazer do Pinta".
+Missão do Pinta termina com o foguete "Usar no Estúdio" e com guardar na conta e concluir a missão.
+Se team.sharedArt=true, a integração de uma arte da colega no Estúdio usa "Trazer da equipe"; se quem programa fez a própria arte, usa "🎨 Trazer do Pinta" ou "🧊 Trazer do Molda". O foguete do Pinta sozinho não envia nada para a conta da colega.
 Cada campo cabe em uma frase curta. Um teste curto por missão permite a criança conferir o resultado. Passos são orientações, nunca checklist obrigatório.
 Não forneça código completo. A criança deve tomar decisões e construir.`,
       (limits) => ({
@@ -462,6 +480,7 @@ Não forneça código completo. A criança deve tomar decisões e construir.`,
         ),
         ...talk(state, limits),
         proposal: proposalForModel(proposal),
+        team,
         previousAnswerRejected,
       }),
       GUIDE_TOKENS,
@@ -471,7 +490,7 @@ Não forneça código completo. A criança deve tomar decisões e construir.`,
   if (work.step === 'answer') {
     const request = typeof work.input.message === 'string' ? work.input.message : ''
     // A ajuda conhece a missão de AGORA e os passos dela (antes recebia só a lista de títulos).
-    const current = currentPensaTask(tasks)
+    const current = currentPensaTask(tasks, input.team)
     const answer = await json(
       complete,
       HelpReplySchema,
@@ -498,6 +517,7 @@ Quando não houver tutor no Estúdio, não prometa esse botão.`,
         currentProposal: proposalOutline(state.proposal),
         previousAnswerRejected,
         currentMission: current ? missionForModel(current) : null,
+        team,
         request: clip(request, 4_000),
       }),
       HELP_TOKENS,
@@ -601,7 +621,23 @@ export async function workJourney({
       let repair: string | null = null
       for (;;) {
         try {
-          result = await produce({ work, state, tasks, context, complete, repair })
+          result = await produce({
+            work,
+            state,
+            tasks,
+            context,
+            complete,
+            repair,
+            team: view.team
+              ? {
+                  ...view.team,
+                  viewerProfileId:
+                    typeof work.input.requesterProfileId === 'string'
+                      ? work.input.requesterProfileId
+                      : view.team.viewerProfileId,
+                }
+              : undefined,
+          })
           break
         } catch (cause) {
           if (!(cause instanceof JourneyOutputInvalid) || repair !== null) throw cause

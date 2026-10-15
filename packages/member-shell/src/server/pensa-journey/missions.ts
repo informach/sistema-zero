@@ -1,4 +1,8 @@
-import { nextPensaMission } from '@sistemazero/core/pensa'
+import {
+  nextPensaMission,
+  nextPensaMissionFor,
+  type PensaJourneyTeam,
+} from '@sistemazero/core/pensa'
 import type { PensaTaskView } from '../../lib/types'
 
 /**
@@ -9,7 +13,25 @@ import type { PensaTaskView } from '../../lib/types'
  */
 
 /** A próxima elegível, preferindo a que já está em andamento (régua do core). */
-export function currentPensaTask(tasks: readonly PensaTaskView[]): PensaTaskView | null {
+export function currentPensaTask(
+  tasks: readonly PensaTaskView[],
+  team?: PensaJourneyTeam,
+): PensaTaskView | null {
+  if (team && team.memberCount > 0) {
+    const next = nextPensaMissionFor(
+      tasks.map((task) => ({
+        id: task.id,
+        dependencies: task.dependencies,
+        status: task.progress.status,
+        evidenceCurrent: true,
+        destination: task.destination,
+        assigneeProfileId: task.assigneeProfileId ?? null,
+      })),
+      team.viewerProfileId,
+      team.roles,
+    )
+    return tasks.find((task) => task.id === next.mine) ?? null
+  }
   const id = nextPensaMission(
     tasks.map((task) => ({
       id: task.id,

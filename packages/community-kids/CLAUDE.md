@@ -2263,9 +2263,11 @@ puras moram em `@sistemazero/core/pensa`. O que mora neste app:
   botão não apareceu, a conferência se repete ao voltar à aba (15 s de folga) e a cada minuto com a
   aba à vista. Depois de aparecer, fica.
   - Trazer = `GET …/team-art/:taskId/download` (URL assinada) → blob gzip → `gunzipToText`
-    (`DecompressionStream`) → converte → `savePersonalAsset` com `origin` `'pinta'`/`'molda'` e o
-    id da criação da COLEGA (trazer de novo é upsert, e a `personalSync` do Estúdio leva a versão
-    nova aos jogos) → devolve o resultado do Pinta/Molda. Tudo por `sessionFetch`; o nome vem do
+    (`DecompressionStream`) → converte → `savePersonalAsset` com `origin` `'pinta'`/`'molda'` e um
+    id de CÓPIA POR MISSÃO (`equipe-<taskId>`, o mesmo do `assetId` da lista): duas contas podem
+    ter criações com o mesmo id, e a cópia nunca sobrescreve a arte pessoal nem a de outra missão.
+    Trazer de novo é upsert dessa cópia, e a `personalSync` do Estúdio leva a versão nova aos
+    jogos → devolve o resultado do Pinta/Molda. Tudo por `sessionFetch`; o nome vem do
     `GET …/team` (sem ele, "Colega"). Falhas viram `TEAM_ART_MESSAGES` (frase de criança, nunca a
     crua); 404 = `not-found` (a janela tira o cartão).
   - **Pinta**: `assetFromJson` (`/assets`) + `exportLoadedAssetForStudio` (`/studio-library`); mapa

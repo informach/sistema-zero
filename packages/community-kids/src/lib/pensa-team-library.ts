@@ -29,13 +29,16 @@ import {
  *
  * Trazer = baixar → descomprimir → converter (`pensa-team-art.ts`) → gravar na biblioteca
  * pessoal (`savePersonalAsset`, com a ORIGEM certa: Pinta ou Molda) → devolver ao Estúdio o
- * MESMO resultado do "Trazer do Pinta"/"Trazer do Molda". A gravação usa o id da criação da
- * colega: trazer de novo ATUALIZA o registro (upsert), e a sincronia do Estúdio leva a versão
- * nova aos jogos. Toda falha volta como frase de criança, nunca a mensagem crua.
+ * MESMO resultado do "Trazer do Pinta"/"Trazer do Molda". A cópia tem identidade por missão:
+ * duas contas podem ter desenhos com o MESMO id (por exemplo, após importar um arquivo).
+ * Trazer de novo atualiza só essa cópia, preservando as artes pessoais e de outras missões.
+ * Toda falha volta como frase de criança, nunca a mensagem crua.
  */
 
 const BASE = '/api/pensa/v2/projects'
 const FALLBACK_NAME = 'Colega'
+
+const teamCopyId = (taskId: string) => `equipe-${taskId}`
 
 type FetchLike = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
 
@@ -98,7 +101,7 @@ export function teamArtSummaries(
   const names = new Map((team?.people ?? []).map((person) => [person.profileId, person.firstName]))
   return items.map((item) => ({
     id: item.taskId,
-    assetId: item.assetId,
+    assetId: teamCopyId(item.taskId),
     name: item.assetName?.trim() || item.title,
     kind: teamArtKind(item),
     byName: names.get(item.byProfileId)?.trim() || FALLBACK_NAME,
@@ -251,7 +254,7 @@ export function createPensaTeamLibrary(input: {
           }
           const saved = await save(
             // A ORIGEM vai junto: é o Pinta quem fez (o "Editar" e a sincronia leem daqui).
-            { ...converted.asset, origin: 'pinta' },
+            { ...converted.asset, id: teamCopyId(taskId), origin: 'pinta' },
             { namespace },
           )
           if (!saved.ok) return refusal(tool, saved.error ?? TEAM_ART_MESSAGES.saveFailed)
@@ -261,6 +264,7 @@ export function createPensaTeamLibrary(input: {
               ok: true,
               asset: {
                 ...converted.asset,
+                id: teamCopyId(taskId),
                 // O upsert pode sufixar o nome (colisão com OUTRO desenho): vale o salvo.
                 name: saved.name ?? converted.asset.name,
                 ...(saved.updatedAt !== undefined ? { libRevision: saved.updatedAt } : {}),
@@ -279,7 +283,7 @@ export function createPensaTeamLibrary(input: {
         const asset = converted.asset
         const saved = await save(
           {
-            id: asset.id,
+            id: teamCopyId(taskId),
             name: asset.name,
             kind: asset.kind,
             // A textura é imagem, mas NÃO é desenho do Pinta: sem a origem o painel abriria
@@ -299,6 +303,7 @@ export function createPensaTeamLibrary(input: {
             ok: true,
             asset: {
               ...asset,
+              id: teamCopyId(taskId),
               name: saved.name ?? asset.name,
               ...(saved.updatedAt !== undefined ? { libRevision: saved.updatedAt } : {}),
             },
