@@ -117,6 +117,8 @@ const EnvSchema = z
     // Envio de e-mail via gateway → messaging (HMAC de borda, consumer `auth`).
     // Sem GATEWAY_URL + AUTH_HMAC_SECRET, o cliente vira no-op (envio desligado).
     GATEWAY_URL: z.string().url().optional(),
+    STUDIO_PRO_RUNTIME_URL: z.string().url().optional(),
+    STUDIO_PRO_RUNTIME_TOKEN: z.string().min(16).optional(),
     GATEWAY_REQUEST_TIMEOUT_MS: z.coerce.number().int().positive().default(10_000),
     AUTH_CONSUMER_ID: z.string().min(1).default('auth'),
     AUTH_HMAC_SECRET: z.string().min(16).optional(),

@@ -39,6 +39,7 @@ import { SelectProfileService } from './application/profiles/select-profile.serv
 import { UpdateProfileDetailsService } from './application/profiles/update-profile.service'
 import { RefreshService } from './application/refresh/refresh.service'
 import { RegisterService } from './application/register/register.service'
+import { StaffOperationsService } from './application/staff/staff-operations.service'
 import { StudyAccessService } from './application/study-access/study-access.service'
 import { AuthTokenService } from './application/tokens/auth-token.service'
 import type { Env } from './infrastructure/config/env'
@@ -47,6 +48,7 @@ import {
   createGatewayMessagingClient,
   createNullMessagingClient,
 } from './infrastructure/messaging/gateway-messaging-client'
+import { createStaffGateway } from './infrastructure/messaging/staff-gateway'
 import { withSentryMirror } from './infrastructure/observability/sentry'
 import { DrizzleAuditLogRepository } from './infrastructure/persistence/drizzle/audit-log.repository'
 import { createDbConnection, type DbConnection } from './infrastructure/persistence/drizzle/db'
@@ -347,6 +349,20 @@ export async function createApplication(env: Env): Promise<Application> {
   }
 
   const server = createServer({
+    staffOperations: new StaffOperationsService(
+      users,
+      refreshTokens,
+      tokenIssuer,
+      auditLogs,
+      createStaffGateway({
+        gatewayUrl: env.GATEWAY_URL,
+        consumerId: env.AUTH_CONSUMER_ID,
+        hmacSecret: env.AUTH_HMAC_SECRET,
+        studioUrl: env.STUDIO_PRO_RUNTIME_URL,
+        studioToken: env.STUDIO_PRO_RUNTIME_TOKEN,
+        timeoutMs: env.GATEWAY_REQUEST_TIMEOUT_MS,
+      }),
+    ),
     studyAccess,
     env,
     logger,

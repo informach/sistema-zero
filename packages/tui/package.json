@@ -1,18 +1,21 @@
 {
   "name": "@sistemazero/tui",
-  "module": "src/index.tsx",
+  "version": "0.1.0",
+  "module": "src/cli.ts",
   "type": "module",
   "private": true,
   "bin": {
-    "sistemazero": "./bin/sistemazero"
+    "sistemazero": "./src/cli.ts"
   },
   "scripts": {
-    "dev": "bun run --watch src/index.tsx",
-    "build": "bun build src/index.tsx --outdir dist --target bun",
+    "dev": "bun run src/cli.ts",
+    "build": "bun ../../scripts/tui-release/package.ts",
     "check": "biome check .",
     "check:fix": "biome check --write .",
     "format": "biome format --write .",
-    "lint": "biome lint ."
+    "lint": "biome lint .",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@types/bun": "latest",
@@ -22,6 +25,9 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@sistemazero/agent-core": "workspace:*",
+    "@sistemazero/agent-runtime": "workspace:*",
+    "zod": "4.3.6",
     "@opentui/core": "^0.3.0",
     "@opentui/react": "^0.3.0",
     "react": "^19.2.6"

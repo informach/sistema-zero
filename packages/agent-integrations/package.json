@@ -1,0 +1,32 @@
+{
+  "name": "@sistemazero/agent-integrations",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./github": "./src/github/client.ts",
+    "./telegram": "./src/notifications/telegram.ts",
+    "./sistemazero": "./src/sistemazero/index.ts",
+    "./browser": "./src/browser/index.ts",
+    "./network": "./src/network/address.ts",
+    "./mcp": "./src/mcp/index.ts"
+  },
+  "scripts": {
+    "test": "bun test",
+    "typecheck": "tsc --noEmit",
+    "check": "biome check ."
+  },
+  "dependencies": {
+    "@sistemazero/core": "workspace:*",
+    "@modelcontextprotocol/sdk": "1.29.0",
+    "@sistemazero/agent-core": "workspace:*",
+    "ajv": "8.20.0",
+    "ajv-formats": "3.0.1",
+    "playwright-core": "1.62.1",
+    "zod": "4.3.6"
+  },
+  "devDependencies": {
+    "@types/bun": "1.3.11",
+    "typescript": "5.9.3"
+  }
+}

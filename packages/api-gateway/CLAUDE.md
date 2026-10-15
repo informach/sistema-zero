@@ -1,5 +1,9 @@
 # @sistemazero/api-gateway — Guia do Agente
 
+## Fachada da equipe no TUI (15/10/2026)
+
+`auth-staff-operations` preserva Bearer somente para o auth, exige JWT staff+/active e permite até 2.032.768 bytes/65 s para builds tipados. O auth revalida a sessão e a permissão em banco. `messaging-staff-delegation` permanece HMAC e restringe allowedConsumers a auth; o messaging exige também o token interno e verifica o consumer. Não adicionar JWT às rotas S2S nem copiar segredos internos para o TUI.
+
 ## Cursos ao vivo (14/10/2026)
 
 `members-admin-live-teacher-notes` (`GET /members/admin/live/lessons/:lessonId/teacher-notes`,

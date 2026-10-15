@@ -9,6 +9,23 @@ const env = loadEnv({})
 const service = { name: 'p', upstreamGroups: { default: [{ url: 'http://p' }] } }
 
 describe('loadGatewayConfig', () => {
+  test('staff facade preserves user credentials only to auth; delegated messaging stays HMAC auth-only', () => {
+    const registry = new RouteRegistry(
+      realConfig.routes.map((route) => routeConfigSchema.parse(route)),
+    )
+    expect(registry.resolve('POST', '/auth/staff/operations', 'v1')?.route).toMatchObject({
+      auth: { strategies: ['jwt'] },
+      authorize: { statuses: ['active'], roles: ['superadmin', 'admin', 'staff'] },
+      upstreamAuth: 'passthrough',
+      timeoutMs: 65000,
+    })
+    expect(registry.resolve('POST', '/messaging/staff/send', 'v1')?.route).toMatchObject({
+      auth: { strategies: ['hmac'], allowedConsumers: ['auth'] },
+    })
+    expect(registry.resolve('POST', '/messaging/send', 'v1')?.route).toMatchObject({
+      auth: { strategies: ['hmac'] },
+    })
+  })
   test('live boundaries preserve actors and reserve material registration for the BFF', () => {
     const registry = new RouteRegistry(
       realConfig.routes.map((route) => routeConfigSchema.parse(route)),

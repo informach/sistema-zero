@@ -1,0 +1,48 @@
+{
+  "date": "2026-10-15",
+  "commits": {
+    "nightcode": "255883f130d350541e806f2431e7df32369f24bf",
+    "browser-automation-app": "7b7ae9755f239c60f33d1edcefbde0a251a3fb02",
+    "ai-teammates": "de32f461cc9e0ddf4c5087af07c65cf06df7d683",
+    "sendkit": "e4f47cb77bcd4dddcb1af483ec014e654740ee74"
+  },
+  "scope": "Original source functions with injected in-memory adapters. Schemas stubbed: these probes test execution semantics, not schema validation.",
+  "results": {
+    "nightcodeLiteralReplacement": {
+      "requested": "hello $&",
+      "actual": "hello WORLD"
+    },
+    "nightcodeReadBound": {
+      "bytesDeliveredByFsBeforeTruncation": 2000000,
+      "returnedCharacters": 10000
+    },
+    "browserMissingReference": {
+      "actual": "recipient=",
+      "throws": false
+    },
+    "browserFalseSuccess": {
+      "step": {
+        "nodeId": "agent",
+        "type": "agent",
+        "title": "Agent",
+        "status": "done",
+        "output": {
+          "success": false,
+          "message": "blocked in fixture",
+          "completed": false
+        },
+        "durationMs": 0
+      },
+      "limitation": "Original runner/executor; topological order and external SDK replaced. Does not test Trigger.dev or Stagehand itself."
+    },
+    "teammatesRecall": {
+      "storedCharacters": 20015,
+      "newNoteVisible": false,
+      "returnedCharacters": 20031
+    },
+    "sendkitCancellation": {
+      "abortSignalProvided": false,
+      "externalMessagesSent": 0
+    }
+  }
+}

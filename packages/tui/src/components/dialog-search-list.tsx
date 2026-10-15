@@ -70,7 +70,7 @@ export function DialogSearchList<T>({
       })
     } else if (key.name === 'down') {
       setSelectedIndex((i) => {
-        const newIndex = Math.min(filtered.length - 1, i + 1)
+        const newIndex = Math.max(0, Math.min(filtered.length - 1, i + 1))
         const sb = scrollRef.current
         if (sb) {
           const viewportHeight = sb.viewport.height

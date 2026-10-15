@@ -1,5 +1,9 @@
 # CLAUDE.md — @sistemazero/messaging
 
+## Delegação da equipe pelo auth (15/10/2026)
+
+`POST /messaging/staff/send` e `/status` recebem ator validado exclusivamente do consumer HMAC auth, com token interno obrigatório inclusive em desenvolvimento. AUTH_CONSUMER_ID deve coincidir com auth (gateway reserva auth). Mensagens usam consumerId staff:UUID para isolar recibos por usuário. A mesma intenção com payload diferente retorna IDEMPOTENCY_CONFLICT/409; a comparação vale também para consumidores S2S existentes e para a corrida da unique. Nenhuma alteração no transporte SendGrid/Evolution ou nas políticas do worker. O TUI jamais recebe segredo interno. Testes em staff-routes.test.ts e send-message.test.ts.
+
 > **⚠️ Antes de QUALQUER mudança, consulte a doc ATUALIZADA via MCP do Context7**
 > (`resolve-library-id` → `query-docs`) para toda lib/framework/API/CLI (Elysia, Drizzle, Zod, Bun,
 > **SendGrid**, **Evolution API**, etc.) — não confie só na memória; APIs mudam. Para **pesquisa,

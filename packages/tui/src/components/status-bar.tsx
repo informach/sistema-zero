@@ -1,13 +1,15 @@
 import { TextAttributes } from '@opentui/core'
+import { sanitize } from '@sistemazero/agent-core'
+import { useTheme } from '../providers/theme'
 
-export function StatusBar() {
+export function StatusBar({ status }: { status: string }) {
+  const { colors } = useTheme()
   return (
     <box flexDirection="row" gap={1}>
-      <text fg="cyan">Build</text>
-      <text attributes={TextAttributes.DIM} fg="gray">
+      <text fg={colors.primary}>{sanitize(status)}</text>
+      <text attributes={TextAttributes.DIM} fg={colors.dimSeparator}>
         &#8250;
       </text>
-      <text>opus-4-6</text>
     </box>
   )
 }
