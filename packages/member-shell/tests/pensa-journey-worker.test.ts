@@ -1015,6 +1015,25 @@ describe('uma extensão de jogo por projeto e passos precisos (15/10/2026)', () 
     expect(step.hint).toBe('Isso prepara o jogo para começar.')
   })
 
+  test('guia a mais e passo vago voltam juntos no reparo', async () => {
+    quietConsole()
+    const f = fixture('guides')
+    accepted(f)
+    const users: string[] = []
+    const complete = mock(async (input: { user: string }) => {
+      users.push(input.user)
+      if (users.length > 1) return guides(PRECISO)
+      // O guia da missão vem vago, e sobra um guia para uma missão que não existe.
+      const wrong = guides(VAGO)
+      return { ...wrong, missions: [...wrong.missions, { ...wrong.missions[0]!, key: 'outra' }] }
+    })
+    await run(f, complete)
+    const reason = String(JSON.parse(users[1] ?? '{}').previousAnswerRejected)
+    expect(reason).toContain('não são missões da proposta: outra')
+    expect(reason).toContain('as áreas são blocos')
+    expect(f.published.mock.calls.at(-1)?.[4]).toMatchObject({ type: 'plan' })
+  })
+
   test('na tentativa de reparo o guia passa mesmo vago (uma frase não trava o plano)', async () => {
     quietConsole()
     const f = fixture('guides')
@@ -1040,5 +1059,28 @@ describe('uma extensão de jogo por projeto e passos precisos (15/10/2026)', () 
     expect(STAGE.tooltip.length).toBeGreaterThan(10)
     expect(String(stage?.tip)).toStartWith(STAGE.tooltip.slice(0, 40))
     expect(stage?.path).toBe(STAGE.palettePath.join(' › '))
+  })
+
+  test('a dica guarda o "use a cada quadro" que passava do corte (o controle da nave)', async () => {
+    const { blockTip } = await import('../src/server/pensa-journey/prompt-context')
+    const thrust = SERVER_BLOCK_CATALOG.find((b) => b.type === 'sz_g2d_steer_thrust')!
+    expect(thrust.tooltip.indexOf('Use a cada quadro')).toBeGreaterThan(140)
+    expect(blockTip(thrust.tooltip)).toContain('Use a cada quadro.')
+    expect(blockTip(thrust.tooltip)).toStartWith(thrust.tooltip.slice(0, 60))
+    // Sem "cada quadro" na dica, só o começo dela, como antes.
+    expect(blockTip(STAGE.tooltip)).not.toContain('cada quadro')
+  })
+})
+
+describe('a arte própria é uma oferta da tela (15/10/2026)', () => {
+  // Decisão dela: o começo usa figuras prontas do Estúdio, e a missão do Pinta (ou do Molda) só
+  // entra quando a criança pede. A tela do Pensa oferece desenhar; aceitar manda o pedido.
+  test('o sistema só põe missão de arte quando a criança pediu', async () => {
+    const { JOURNEY_SYSTEM } = await import('../src/server/pensa-journey/planner')
+    expect(JOURNEY_SYSTEM).toContain(
+      'Missão do Pinta ou do Molda só entra quando a criança pediu para desenhar ou modelar',
+    )
+    expect(JOURNEY_SYSTEM).toContain('a tela oferece desenhar depois')
+    expect(JOURNEY_SYSTEM).not.toContain('Só proponha arte personalizada se faz parte da ideia')
   })
 })

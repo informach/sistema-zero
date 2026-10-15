@@ -100,7 +100,7 @@ describe('o mapa da interface do Pensa casa com as ferramentas', () => {
     expect(frames.length).toBeGreaterThan(0)
     for (const [area, name] of Object.entries(STUDIO_AREA_NAMES)) {
       const frame = frames.find((b) => b.area === area)
-      expect({ area, label: frame?.label.startsWith(name) }).toEqual({ area, label: true })
+      expect({ area, label: frame?.label }).toEqual({ area, label: name })
       expect(frame?.palettePath.join(' › ')).toBe('🗂️ Áreas do projeto')
       expect(STUDIO_INTERFACE_MAP).toContain(name)
     }

@@ -719,6 +719,8 @@ atrás de um jogo que ainda não existia. Decisão dela (opção A de três): um
 - O que fazer está escrito: enquanto nenhuma missão foi concluída, uma lista de três passos
   (`aria-label="Como fazer a missão"`: tocar no botão, seguir o Guia do Pensa, apertar ▶ Reproduzir
   e "Experimentei e funcionou", ou só o "Experimentei" fora do Estúdio); depois, uma linha só.
+  Com a oficina da missão trancada, só o aviso de por quê: os passos mandariam tocar num botão
+  desligado.
 - ⚠️ **Não existe mais botão que leve à etapa O.** Ela começa quando a criança CONTA o resultado do
   teste, e a tela de teste só aparece com as missões dela feitas. O BFF parou de aceitar `observe`
   pelo `command` (a rota `/test` observa e registra junto).
@@ -726,6 +728,34 @@ atrás de um jogo que ainda não existia. Decisão dela (opção A de três): um
   leitura do rascunho guardado não sobrescreve o que já foi digitado para o mesmo projeto (era a
   causa de um teste instável de troca de perfil).
 - Testes: `JourneyApp.test.tsx` ("etapa R: um caminho só…" e "missão começada diz Continuar…").
+
+## Desenhar a arte é uma oferta (15/10/2026)
+
+Pergunta dela: "em que momento as missões do Pinta e do Molda são definidas?" (o teste dela só
+teve Estúdio). Decisão dela (opção C de três): o Zappy OFERECE desenhar, e a missão de arte só
+entra se a criança aceitar.
+
+- O planejador começa com figuras prontas do Estúdio e só cria missão do Pinta ou do Molda quando
+  a criança pediu para desenhar ou modelar (regra do `JOURNEY_SYSTEM`, no member-shell).
+- O cartão do começo (`JourneyApp`, `artOffer`) mostra a oferta com o ladrilho do Pinta, ou do
+  Molda num jogo 3D. Aparece só na versão 1, com todas as missões do Estúdio e nenhuma usando arte
+  dela (`asset`), nenhuma missão de arte já feita no ciclo, a oficina no `capabilities` da
+  proposta, um uso do Zappy disponível, o campo fora do "guardar ideia" e o Zappy sem pergunta
+  esperando. Os textos moram em `ART_OFFERS`: `self` ("Quer desenhar o seu personagem?") e
+  `team`, para quem só programa numa equipe ("Quer o personagem desenhado no Pinta?", pedindo a
+  quem cuida das artes).
+- Aceitar é o gesto das respostas prontas: o pedido vai para a ÚLTIMA linha do campo, embaixo do
+  que ela já escreveu, e nada sai sozinho. O botão fica, com `aria-pressed` (o foco não se perde),
+  e tocar de novo tira o pedido; o texto do cartão (`aria-live`) troca para "Agora toque em
+  "Enviar para o Zappy"…", e a tela rola até o campo sem focar (no tablet o teclado cobriria o
+  envio). O envio é de planejamento e retoma o mesmo pedido do Zappy (não gasta uso novo).
+- Estilo: `.pensa-journey-offer` (`journey.css`), no fundo `--pz-surface-2`; o botão quebra a
+  linha (a pílula é `nowrap`) para caber num celular de 320px.
+- ⚠️ Limite conhecido: o planejamento inteiro de uma versão (perguntas, propostas, mudanças e
+  guias) divide o teto de 10 chamadas por operação do members; cada rodada de mudança gasta
+  algumas.
+- Testes: `JourneyApp.artOffer.test.tsx` e o caso do `JOURNEY_SYSTEM` em
+  `member-shell/tests/pensa-journey-worker.test.ts`.
 
 ## Verificação
 

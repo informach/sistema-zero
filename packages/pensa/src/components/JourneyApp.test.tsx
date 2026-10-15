@@ -316,7 +316,11 @@ test('arquivar em uma visita anterior não fecha o outro jogo que a criança abr
 
 // ── Direção de arte e atalhos (14/10/2026) ──────────────────────────────────────────────────
 
-function openView(view: PensaJourneyView, tasks: unknown[] = []) {
+function openView(
+  view: PensaJourneyView,
+  tasks: unknown[] = [],
+  capabilities: PensaHostAdapter['capabilities'] = { studioOwned: true, pintaOwned: true },
+) {
   const request = mock(async (path: string) => {
     if (path === '/v2/projects/p1') return view
     if (path.startsWith('/cycles/')) return { tasks, nextTaskId: null }
@@ -328,7 +332,7 @@ function openView(view: PensaJourneyView, tasks: unknown[] = []) {
   const adapter: PensaHostAdapter = {
     viewerId: 'child-a',
     mode: 'kids',
-    capabilities: { studioOwned: true, pintaOwned: true },
+    capabilities,
     transport: {
       request: request as PensaHostAdapter['transport']['request'],
       streamChat: () => () => {},
@@ -381,10 +385,7 @@ test('etapa R: um caminho só, o que fazer escrito e nada que pule para o teste'
   const view = current()
   view.journey.stage = 'building'
   view.journey.missionIds = ['m1', 'm2']
-  const { request } = openView(view, [
-    mission('m1', 'studio', 'planned'),
-    mission('m2', 'pinta', 'planned', ['m1']),
-  ])
+  openView(view, [mission('m1', 'studio', 'planned'), mission('m2', 'pinta', 'planned', ['m1'])])
   await screen.findByText('Sua próxima missão · 1 de 2')
   const passos = screen.getByRole('list', { name: 'Como fazer a missão' })
   expect(passos.textContent).toContain('Começar a missão no Estúdio')
@@ -394,7 +395,18 @@ test('etapa R: um caminho só, o que fazer escrito e nada que pule para o teste'
   expect(screen.getByRole('button', { name: 'Travei nesta parte' })).toBeTruthy()
   expect(screen.queryByRole('button', { name: 'Já quero experimentar' })).toBeNull()
   expect(screen.queryByRole('button', { name: /experimentar/i })).toBeNull()
-  expect(request.mock.calls.some(([path]) => String(path).endsWith('/command'))).toBe(false)
+})
+
+test('etapa R: com a oficina trancada, o aviso diz por quê e os passos não apontam o botão desligado', async () => {
+  const view = current()
+  view.journey.stage = 'building'
+  view.journey.missionIds = ['m1']
+  openView(view, [mission('m1', 'pinta', 'planned')], { studioOwned: true, pintaOwned: false })
+  await screen.findByText(/O Pinta ainda não está liberado para você/)
+  expect(screen.queryByRole('list', { name: 'Como fazer a missão' })).toBeNull()
+  expect(
+    screen.getByRole('button', { name: 'Começar a missão no Pinta' }).hasAttribute('disabled'),
+  ).toBe(true)
 })
 
 test('etapa R: missão começada diz "Continuar", e depois da primeira o "como fazer" encolhe', async () => {

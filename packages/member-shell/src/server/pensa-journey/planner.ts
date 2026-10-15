@@ -65,13 +65,13 @@ Cada jogo usa UMA extensão de jogo só (game-2d, game-2d-advanced, game-3d, gam
 knownMechanics são mecânicas do Estúdio que você conhece por dentro: use os blocos e o jeito de funcionar delas como conhecimento seu. Não diga de onde vieram. Combinar duas não prova que funcionam juntas; confira nos manuais. Se faltar evidência técnica, simplifique preservando a intenção.
 Sem fonte recuperada, use apenas os manuais. Uma fase encontrada não prova que a criança tem acesso nem que a fez.
 O primeiro resultado deve ser pequeno, jogável e testável: uma ação da criança provoca uma resposta visível do jogo.
-Jogo é julgado nos primeiros segundos: num jogo novo (baseAlreadyBuilt vazio e builtResults vazio), a primeira missão é no Estúdio e já deixa algo se mexendo que responde à criança no ▶ Reproduzir, com uma figura pronta do Estúdio. Se a ideia pede um personagem ou cenário desenhado por ela, a missão de desenhar vem depois, e uma missão do Estúdio depois dela troca a figura pronta pela arte dela.
+Jogo é julgado nos primeiros segundos: num jogo novo (baseAlreadyBuilt vazio e builtResults vazio), a primeira missão é no Estúdio e já deixa algo se mexendo que responde à criança no ▶ Reproduzir, com uma figura pronta do Estúdio. Se ela pediu para desenhar um personagem ou cenário, a missão de desenhar vem depois, e uma missão do Estúdio depois dela troca a figura pronta pela arte dela.
 O primeiro teste dá para passar na primeira tentativa. Sem menu, tela de instruções ou tela de título antes de jogar.
 Em later, inclua até 2 ideias suas (origin zappy) que deixam o jogo mais gostoso de jogar e cabem nos blocos dela, como: um som quando algo acontece, mostrar os pontos na tela, guardar o recorde, ficar mais difícil com o tempo, uma tela de fim com jogar de novo, mostrar as teclas no começo. Não repita o que já está nas missões nem em backlog.
 Exploração e brincadeira livre não precisam de vitória, derrota, pontuação ou inimigos.
-Planeje 2–6 missões curtas (máximo 8); cada missão tem um resultado observável. Evite enfeites antes do jogo funcionar.
+Planeje de 2 a 6 missões curtas (no máximo 8); cada missão tem um resultado observável. Evite enfeites antes do jogo funcionar.
 Separe criar arte, integrar arte no Estúdio e experimentar o jogo. Toda arte tem uma missão de integração no Estúdio que depende dela.
-Não exija Pinta/Molda para algo que pode começar com recursos nativos. Só proponha arte personalizada se faz parte da ideia.
+Missão do Pinta ou do Molda só entra quando a criança pediu para desenhar ou modelar (na ideia ou na conversa, inclusive pedindo a quem cuida das artes da equipe). Sem esse pedido, use figuras prontas do Estúdio e não crie missão de arte: a tela oferece desenhar depois, e ela escolhe.
 Arte já existente em existingCreations entra numa missão de integração do Estúdio (source existing, creationId e kind iguais aos do inventário); não crie uma tarefa para desenhá-la de novo. Não afirme conhecer sua aparência: você só recebeu nome e tipo.
 Não gere ciclos futuros: guarde essas ideias em later com origem child (foi dito) ou zappy (sugestão sua).
 Se baseAlreadyBuilt estiver preenchida, o jogo já existe: planeje apenas o próximo passo pedido, no mesmo arquivo, sem mandar recriar o que já está pronto.
@@ -84,7 +84,7 @@ Se previousAnswerRejected vier preenchida, sua resposta anterior foi recusada: c
 ${STUDIO_INTERFACE_MAP}`
 
 const PLAN_TOKENS = 8_000
-/** Oito missões com seis passos de três campos cabem com folga (medido: ~8 mil tokens no teto). */
+/** Oito missões com até oito passos (gesto e efeito) cabem com folga (medido: ~8 mil tokens no teto). */
 const GUIDE_TOKENS = 10_000
 const HELP_TOKENS = 900
 
@@ -548,7 +548,7 @@ action = o gesto inteiro, em uma ou duas frases curtas no imperativo: onde clica
 effect = uma frase que diz o que isso faz no jogo, começando por "Isso".
 Exemplo de passo: action = Clique em "🗂️ Áreas do projeto", pegue o bloco "⚙️ Ao iniciar" e arraste para o espaço de montar. effect = Isso prepara o jogo para começar.
 Exemplo de passo: action = Clique em "Jogo 2D" e em "Sprites", pegue o bloco "Criar sprite" e encaixe dentro do "⚙️ Ao iniciar". effect = Isso coloca o personagem na tela.
-Num jogo novo, as áreas ainda não existem: antes do primeiro bloco que vai numa área, um passo traz essa área. O campo area de cada bloco diz em qual área ele encaixa direto; tip é a dica do próprio bloco (por exemplo, quando ele vai dentro de "A cada quadro do jogo").
+Num jogo novo, as áreas ainda não existem: antes do primeiro bloco que vai numa área, um passo traz essa área. O campo area de cada bloco diz a área em que ele pode ficar solto; tip é a dica do próprio bloco e manda mais: quando ela diz para usar a cada quadro (ou dentro do "a cada quadro"), o bloco vai dentro do bloco "A cada quadro" da extensão do jogo, nunca solto em "⚙️ Ao iniciar".
 Nunca escreva "vá para a área", "abra a área", "abra o Estúdio" nem "implemente": o Guia do Pensa já aparece dentro do Estúdio, e as áreas são blocos que a criança pega e arrasta.
 Um bloco por passo. Até 8 passos por missão.
 Missão do Pinta termina com o foguete "Usar no Estúdio" e com guardar na conta e concluir a missão.
@@ -578,12 +578,22 @@ Não forneça código completo. A criança deve tomar decisões e construir.`,
       guides,
       new Set(proposal.missions.filter((m) => m.destination === 'studio').map((m) => m.key)),
     )
+    let resolved: ReturnType<typeof resolveGuides>
+    try {
+      resolved = resolveGuides(guides, proposal, context)
+    } catch (cause) {
+      // O defeito de forma (guia faltando, bloco fora da missão) e os passos vagos voltam JUNTOS:
+      // com só um dos motivos, o reparo consertava um e o outro derrubava o plano.
+      if (cause instanceof JourneyOutputInvalid && vague.length && !repair)
+        throw new JourneyOutputInvalid([cause.reason, ...vague].join('\n'), cause.message)
+      throw cause
+    }
     if (vague.length && !repair)
       throw new JourneyOutputInvalid(
         vague.join('\n'),
         'Não consegui preparar o caminho desta vez. Tente de novo.',
       )
-    return { type: 'plan', tasks: resolveGuides(guides, proposal, context) }
+    return { type: 'plan', tasks: resolved }
   }
   if (work.step === 'answer') {
     const request = typeof work.input.message === 'string' ? work.input.message : ''

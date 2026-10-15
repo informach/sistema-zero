@@ -138,6 +138,51 @@ describe('a ideia de jogo não passa pelo filtro do tutor (A2)', () => {
   })
 })
 
+describe('a etapa O começa pelo teste contado (15/10/2026)', () => {
+  // Sem o `observe` no `command`, o `/test` é o único caminho até a etapa O.
+  test('em construção, o teste observa e registra com a revisão nova e o jogo guardado', async () => {
+    const building = (revision = 3) => {
+      const v = view()
+      v.journey.stage = 'building'
+      v.journey.revision = revision
+      return v
+    }
+    const command = mock(async (_id: string, revision: number, cmd: { type: string }) => {
+      const v = building(revision + 1)
+      if (cmd.type === 'observe') v.journey.stage = 'observing'
+      return { status: 200, body: v }
+    })
+    const { call } = setup({
+      pensaJourneyGet: async () => ({ status: 200, body: building() }),
+      pensaJourneyCommand: command,
+      getCreationDownload: async () => ({
+        status: 200,
+        body: { summary: { itemId: 'pensa-jogo' }, revision: 7 },
+      }),
+    })
+    const res = await call('test', {
+      expectedRevision: 3,
+      id: '0f5c2a8e-7d3b-4c1a-9e6f-2b8d4a6c1e07',
+      result: 'met',
+      note: 'Meu nome é Ana e o dragão voou',
+    })
+    expect(res.status).toBe(200)
+    expect(command.mock.calls.map(([, revision, cmd]) => [revision, cmd.type])).toEqual([
+      [3, 'observe'],
+      [4, 'record_test'],
+    ])
+    expect(command.mock.calls[1]?.[2]).toMatchObject({
+      test: {
+        result: 'met',
+        source: 'child',
+        creationId: 'pensa-jogo',
+        saveRevision: '7',
+        note: 'Meu nome é [nome removido] e o dragão voou',
+      },
+    })
+  })
+})
+
 describe('command só aceita o que o JourneyApp manda (L1)', () => {
   test.each([
     [{ type: 'close', reason: 'met' }],

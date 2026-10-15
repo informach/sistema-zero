@@ -175,12 +175,19 @@ export function gameExtensionIssues(
   return []
 }
 
-/** A extensão de jogo da versão já construída (a da proposta guardada), se ela tem uma só. */
+/**
+ * A extensão de jogo da versão já construída (a da proposta guardada). Num plano antigo que
+ * misturava duas, o guia instalou só a PRIMEIRA (`installStepsByMission`), e é ela que o jogo tem.
+ */
 export function builtGameExtension(
   proposal: Pick<ProposalDraft, 'missions'> | null | undefined,
 ): string | null {
   const used = proposal ? gameExtensionsOf(proposal.missions) : []
-  return used.length === 1 ? (used[0] ?? null) : null
+  if (used.length <= 1 || !proposal) return used[0] ?? null
+  for (const mission of proposal.missions)
+    if (mission.destination === 'studio')
+      for (const id of mission.extensionIds) if (isGameRuntimeExtension(id)) return id
+  return used[0] ?? null
 }
 
 export const GuideDraftSchema = z.strictObject({
@@ -208,9 +215,12 @@ export const GuideDraftSchema = z.strictObject({
  */
 const VAGUE_STEPS: readonly { pattern: RegExp; fix: string; studioOnly?: boolean }[] = [
   {
+    // "entre a área X e a área Y" é "entre" de lugar: só "entre/entrar na área" é o passo vago.
     pattern:
-      /\b(?:ir|v[aá]|volte|voltar|entre|entrar|abra|abrir|acesse|acessar)\s+(?:para\s+|at[eé]\s+)?(?:a|na|à)\s+[aá]rea\b/iu,
+      /\b(?:(?:ir|v[aá]|volte|voltar|abra|abrir|acesse|acessar)\s+(?:para\s+|at[eé]\s+)?(?:a|na|à)|(?:entre|entrar)\s+na)\s+[aá]rea\b/iu,
     fix: 'as áreas são blocos: diga "clique em "🗂️ Áreas do projeto", pegue o bloco da área e arraste para o espaço de montar" ou "arraste para dentro da área X"',
+    // As áreas do projeto são do Estúdio; no Pinta "a área de desenho" é o próprio papel.
+    studioOnly: true,
   },
   {
     pattern:

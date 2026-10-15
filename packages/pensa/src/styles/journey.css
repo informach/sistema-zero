@@ -448,6 +448,52 @@
   line-height: 1.45;
 }
 
+/* A oferta de desenhar a arte (15/10/2026): o ladrilho da oficina e um convite, no fundo
+   suave da superfície. Não é o "tudo pronto" (verde) nem o aviso: é uma escolha dela. */
+.pensa-journey-offer {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px 14px;
+  padding: 14px 16px;
+  border-radius: var(--sz-tool-radius-card, 1rem);
+  background: var(--pz-surface-2);
+}
+.pensa-journey-offer__body {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  min-width: 0;
+}
+.pensa-journey-offer__title {
+  margin: 0;
+  color: var(--pz-ink);
+  font-family: var(--sz-tool-font-display, var(--font-display, "Baloo 2", sans-serif));
+  font-size: 1.0625rem;
+  font-weight: 800;
+  line-height: 1.3;
+}
+.pensa-journey-offer__text {
+  margin: 0;
+  color: var(--pz-ink);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+/* A pílula é `nowrap`: aqui ela quebra a linha, senão "Quero desenhar no Pinta" passa da coluna
+   num celular de 320px (o ladrilho e o cartão já comem metade da largura). */
+.pensa-journey .pensa-journey-offer__btn {
+  max-width: 100%;
+  padding-block: 0.5rem;
+  line-height: 1.25;
+  text-align: left;
+  white-space: normal;
+}
+/* Escolhida: o mesmo par das respostas prontas (o pedido está no campo). */
+.pensa-journey .pensa-journey-offer__btn[aria-pressed="true"] {
+  border-color: var(--pz-accent);
+  background: color-mix(in oklab, var(--pz-accent) 10%, var(--pz-surface));
+}
+
 /* O recado de erro: a família do alerta do guia das oficinas (rosado, tinta misturada). */
 .pensa-journey-notice {
   display: flex;

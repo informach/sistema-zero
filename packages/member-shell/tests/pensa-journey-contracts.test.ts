@@ -222,7 +222,9 @@ describe('uma extensão de jogo por projeto (15/10/2026)', () => {
 
   test('jogo já construído: a versão nova fica na extensão dele', () => {
     expect(builtGameExtension({ missions: [mission('anda')] })).toBe('game-2d')
-    expect(builtGameExtension({ missions: [mission('anda'), kit] })).toBeNull()
+    // Plano antigo que misturava: o guia instalou só a primeira, e é ela que o jogo tem.
+    expect(builtGameExtension({ missions: [mission('anda'), kit] })).toBe('game-2d')
+    expect(builtGameExtension({ missions: [kit, mission('anda')] })).toBe('game-2d-advanced')
     expect(builtGameExtension(null)).toBeNull()
     expect(gameExtensionIssues({ missions: [mission('anda')] }, 'game-2d')).toEqual([])
     expect(gameExtensionIssues({ missions: [kit] }, 'game-2d')[0]).toContain(
@@ -265,6 +267,17 @@ describe('o passo do guia é um gesto, não "vá para a área" (15/10/2026)', ()
     const pinta = guide('Toque no foguete "Usar no Estúdio" e vá para o Estúdio.')
     expect(guideIssues(pinta, new Set())).toEqual([])
     expect(guideIssues(pinta, new Set(['palco']))[0]).toContain('tire o passo de abrir')
+  })
+  test('"entre a área X e a área Y" é lugar, não o passo vago; "entre na área" é', () => {
+    expect(
+      guideIssues(guide('Encaixe o bloco entre a área ⚙️ Ao iniciar e a área ⚡ Quando acontecer.')),
+    ).toEqual([])
+    expect(guideIssues(guide('Entre na área ⚙️ Ao iniciar.'))[0]).toContain('as áreas são blocos')
+  })
+  test('"volte para a área" só conta no Estúdio (no Pinta é o papel de desenho)', () => {
+    const pinta = guide('Volte para a área de desenho e pinte as asas.')
+    expect(guideIssues(pinta, new Set())).toEqual([])
+    expect(guideIssues(pinta, new Set(['palco']))[0]).toContain('as áreas são blocos')
   })
   test('o gesto preciso passa, inclusive "arraste para o espaço de montar" e "Usar no Estúdio"', () => {
     expect(

@@ -305,7 +305,7 @@ regras e papéis efetivos no `@sistemazero/core/pensa` (`effectivePensaRoles` e 
 - **Só quem programa** testa, conclui, guarda versão, restaura e adapta (`test`, `close`,
   `increment`, `restore`, `revise`): com `view.team` e `team.roles.code` ≠ a sessão, 403
   `PENSA_NOT_PROGRAMMER` ("Quem testa e guarda as versões é quem programa o jogo.") ANTES de ler o
-  jogo salvo (que seria o da conta de quem pediu). O members recusa também; `observe`/`repair`
+  jogo salvo (que seria o da conta de quem pediu). O members recusa também; `repair`
   pelo `command` ficam só com a recusa de lá.
 - **O snapshot em equipe** (`pensa-journey/context.ts`): `loadJourneyContext(members, user, query,
   { projectId, view? })`. Com `team.memberCount > 0` ele lê `GET …/team-capabilities` e NÃO lê
@@ -425,8 +425,35 @@ o modelo escolhe a extensão (preferindo a mais simples) e aprende a escrever o 
 - Testes: `pensa-journey-contracts.test.ts` (as duas réguas), `pensa-journey-interface-map.test.ts`
   (espelho das extensões, nomes das áreas, instalar uma vez) e o bloco "uma extensão de jogo por
   projeto e passos precisos" de `pensa-journey-worker.test.ts`.
+- **Full review do lote (15/10/2026):**
+  - O passo vago "ir/voltar para a área" vale só nas missões do Estúdio (no Pinta, "a área de
+    desenho" é o papel), e "entre a área X e a área Y" (lugar) não conta: só "entre na área".
+  - O defeito de forma do guia (guia faltando ou a mais) e os passos vagos voltam JUNTOS no reparo;
+    com um motivo só, o reparo consertava um e o outro derrubava o plano.
+  - A `tip` guarda a frase do "use a cada quadro" quando ela passa dos 140 caracteres
+    (`blockTip`): o `area` é onde o bloco PODE ficar solto (`⚙️ Ao iniciar` para quase todo
+    comando), e o controle da nave solto no início nunca responde. O pedido do guia diz isso.
+  - O orçamento ganhou um degrau de EMERGÊNCIA (sem o caminho de cada bloco na paleta): com o mapa
+    da interface maior, a tentativa de reparo do pior caso (oito missões de 16 blocos, mais o
+    motivo da recusa) passava dos 48 KB e o passo falhava em vez de consertar. O teste do teto
+    mede também a tentativa de reparo.
+  - Os nomes das áreas são os rótulos exatos ("🧱 Estrutura: HTML", "🎨 Aparência: CSS"), e um
+    plano antigo que misturava duas extensões de jogo continua na primeira (a que o guia instalou).
+  - A rota `/test` tem teste: observa e registra o teste com a revisão nova e o jogo guardado.
+  - ⚠️ Limite que fica: numa versão 2 ou mais, depois da primeira proposta, `state.proposal` é a
+    proposta NOVA (ainda não construída); a extensão e o `baseAlreadyBuilt` passam a vir dela. Se
+    ela não usa extensão de jogo, uma rodada seguinte de mudança não conhece a do jogo.
 - O `command` do BFF parou de aceitar `observe` (ver o CLAUDE.md do pacote pensa, "Etapa R: um
   caminho só").
+
+## Pensa v2: a arte própria é uma oferta da tela (15/10/2026)
+
+Decisão dela: o começo do jogo usa figuras prontas do Estúdio, e a missão do Pinta ou do Molda só
+entra quando a criança pede. O `JOURNEY_SYSTEM` diz isso (substituiu "Só proponha arte
+personalizada se faz parte da ideia", que deixava o modelo decidir sozinho); a tela do Pensa
+oferece desenhar no cartão do começo, e aceitar manda o pedido como planejamento (ver o CLAUDE.md
+do pacote pensa). Arte que já existe no inventário segue entrando por missão de integração do
+Estúdio. Teste: "a arte própria é uma oferta da tela" em `tests/pensa-journey-worker.test.ts`.
 
 ## Pensa v2: a régua da narrativa e o teto do pedido (full review de 14/10/2026)
 
@@ -483,7 +510,8 @@ consertou, e que não pode voltar:
   função).
 - **Leitura que falha não tranca** (`routes/pensa.ts`, handoff): sem gamificação ou sem
   capacidades, 503 recuperável; só a recusa real devolve `owned:false`.
-- **`command` com allowlist:** pause, resume, accept, observe, repair, keep_idea e remove_idea.
+- **`command` com allowlist:** pause, resume, accept, repair, keep_idea e remove_idea (o `observe`
+  saiu em 15/10/2026: a etapa O começa pelo `/test`, que observa e registra junto).
   `close`, `revise` e `record_test` só pelas rotas próprias (que protegem a versão e conferem o
   jogo salvo); `retry` pelo `/work`.
 - **A voz privada** (`lib/private-voice.ts`): a criança lê a frase da nossa rota

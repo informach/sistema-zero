@@ -26,8 +26,8 @@ export const STUDIO_EXTENSION_NAMES: Readonly<Record<string, string>> = {
  * "🗂️ Áreas do projeto" (o teste confere contra o catálogo do Estúdio).
  */
 export const STUDIO_AREA_NAMES: Readonly<Record<string, string>> = {
-  structure: '🧱 Estrutura',
-  appearance: '🎨 Aparência',
+  structure: '🧱 Estrutura: HTML',
+  appearance: '🎨 Aparência: CSS',
   molds: '🧩 Meus moldes',
   start: '⚙️ Ao iniciar',
   events: '⚡ Quando acontecer',

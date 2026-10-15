@@ -833,6 +833,51 @@ export function JourneyApp({
   )
   const outOfUses =
     creditsMeter.state === 'exhausted' && conversationKind !== 'backlog' && !reusesHold
+  // Desenhar a arte do jogo é uma OFERTA (15/10/2026, decisão dela): a proposta começa com figuras
+  // prontas, e a missão do Pinta (ou do Molda, num jogo 3D) só entra se a criança aceitar. Aceitar
+  // é o gesto das respostas prontas: o pedido vai para o campo e ela toca em "Enviar para o Zappy",
+  // que refaz o começo com a missão de desenhar. Só no começo do jogo (versão 1, nenhuma arte no
+  // caminho, nem nas missões já feitas), com a oficina na proposta, um uso do Zappy sobrando e o
+  // campo fora do "guardar ideia" (lá o pedido viraria uma ideia guardada).
+  const offeredProposal =
+    state?.stage === 'proposal' &&
+    !questionWaiting &&
+    versionNumber === 1 &&
+    !outOfUses &&
+    !(talking && conversationKind === 'backlog') &&
+    !tasks.some((t) => t.destination !== 'studio')
+      ? (state.proposal ?? null)
+      : null
+  const artTool: 'pinta' | 'molda' | null =
+    offeredProposal && !offeredProposal.missions.some((m) => m.destination !== 'studio' || m.asset)
+      ? offeredProposal.dimension === '3d'
+        ? offeredProposal.capabilities.molda
+          ? 'molda'
+          : null
+        : offeredProposal.capabilities.pinta
+          ? 'pinta'
+          : null
+      : null
+  // Em equipe, a arte é de quem cuida das artes: quem só programa pede o desenho para a equipe.
+  const artForTeam = Boolean(team && teamMode && !team.roles.art.includes(team.viewerProfileId))
+  const artOffer = artTool
+    ? { tool: artTool, ...ART_OFFERS[artTool][artForTeam ? 'team' : 'self'] }
+    : null
+  const artOfferChosen = Boolean(artOffer && answerLines.at(-1)?.trim() === artOffer.request)
+  // Tocar de novo tira o pedido (como trocar de resposta pronta): o botão fica, com `aria-pressed`,
+  // e o foco fica nele. O campo aparece embaixo do cartão; a tela rola até ele sem focar (no
+  // tablet o teclado cobriria o "Enviar").
+  const toggleArtOffer = () => {
+    if (!artOffer) return
+    if (artOfferChosen) {
+      setText(answerLines.slice(0, -1).join('\n').trimEnd())
+      return
+    }
+    setConversationKind('planning')
+    setTalking(true)
+    setText(text.trim() ? `${text.trimEnd()}\n${artOffer.request}` : artOffer.request)
+    window.setTimeout(() => inputRef.current?.scrollIntoView?.({ block: 'nearest' }), 0)
+  }
   // As etapas de verdade do que o Zappy está fazendo (o sandbox mostra cada passo do agente).
   const operationStep = view?.operation?.step
   const waitingSteps: Array<{ label: string; state: 'done' | 'now' | 'next' }> | null =
@@ -1379,6 +1424,36 @@ export function JourneyApp({
                             </div>
                           </details>
                         ) : null}
+                        {artOffer ? (
+                          <div className="pensa-journey-offer">
+                            <span
+                              className={`sz-tool-tile sz-tool-tile--${DESTINATIONS[artOffer.tool].tile}`}
+                              aria-hidden="true"
+                            >
+                              {DESTINATIONS[artOffer.tool].icon}
+                            </span>
+                            <div className="pensa-journey-offer__body">
+                              <h3 className="pensa-journey-offer__title">{artOffer.title}</h3>
+                              <p className="pensa-journey-offer__text" aria-live="polite">
+                                {artOfferChosen ? artOffer.chosen : artOffer.text}
+                              </p>
+                              <button
+                                type="button"
+                                className="sz-tool-pill sz-tool-pill--outline pensa-journey-offer__btn"
+                                aria-pressed={artOfferChosen}
+                                disabled={busy || voiceBusy}
+                                onClick={toggleArtOffer}
+                              >
+                                {artOfferChosen ? (
+                                  <CheckIcon size={18} />
+                                ) : (
+                                  DESTINATIONS[artOffer.tool].icon
+                                )}
+                                {artOffer.button}
+                              </button>
+                            </div>
+                          </div>
+                        ) : null}
                         <div className="pensa-journey-actions">
                           <button
                             type="button"
@@ -1444,7 +1519,11 @@ export function JourneyApp({
                           dúvida). O que fazer está escrito; o botão principal abre a missão com o
                           guia; "Travei" é a ajuda. Experimentar o jogo inteiro vem sozinho quando
                           as missões acabam, nunca antes (o jogo nem existe no começo). */}
-                          {tasks.some((t) => t.progress.status === 'completed') ? (
+                          {/* Oficina trancada: o aviso diz por quê, e os passos apontariam para
+                          um botão desligado. */}
+                          {!toolOwned(nextTask.destination) ? null : tasks.some(
+                              (t) => t.progress.status === 'completed',
+                            ) ? (
                             <p className="pensa-journey-hint">
                               O Guia do Pensa abre junto, com os passos. No fim, toque em{' '}
                               <strong>Experimentei e funcionou</strong>.
@@ -1467,7 +1546,7 @@ export function JourneyApp({
                                 ) : (
                                   <>
                                     No fim, toque em <strong>Experimentei e funcionou</strong> no
-                                    guia.
+                                    Guia do Pensa.
                                   </>
                                 )}
                               </li>
@@ -2681,6 +2760,49 @@ const DESTINATIONS = {
   studio: { label: 'Estúdio', tile: 'estudio', icon: <BlocksIcon /> },
   pinta: { label: 'Pinta', tile: 'pinta', icon: <PaletteIcon /> },
   molda: { label: 'Molda', tile: 'molda', icon: <CubeIcon /> },
+} as const
+
+/**
+ * A oferta de desenhar a arte do jogo, por oficina (a do Molda só num jogo 3D). `team` é para quem
+ * só programa numa equipe: a arte é de quem cuida das artes, então o pedido é para a equipe.
+ */
+const ART_OFFERS = {
+  pinta: {
+    self: {
+      title: 'Quer desenhar o seu personagem?',
+      text: 'Este começo usa uma figura pronta do Estúdio. Se quiser, você desenha o personagem do seu jeito no Pinta, e ele entra no jogo logo depois.',
+      button: 'Quero desenhar no Pinta',
+      request: 'Quero desenhar o personagem do jogo no Pinta.',
+      chosen:
+        'Agora toque em "Enviar para o Zappy". Ele refaz o começo com a missão de desenhar no Pinta.',
+    },
+    team: {
+      title: 'Quer o personagem desenhado no Pinta?',
+      text: 'Este começo usa uma figura pronta do Estúdio. Se quiser, quem cuida das artes desenha o personagem no Pinta, e ele entra no jogo logo depois.',
+      button: 'Pedir o desenho no Pinta',
+      request: 'Quero que quem cuida das artes desenhe o personagem do jogo no Pinta.',
+      chosen:
+        'Agora toque em "Enviar para o Zappy". Ele refaz o começo com a missão de desenhar no Pinta para quem cuida das artes.',
+    },
+  },
+  molda: {
+    self: {
+      title: 'Quer modelar o seu personagem?',
+      text: 'Este começo usa uma peça pronta do Estúdio. Se quiser, você modela o personagem do seu jeito no Molda, e ele entra no jogo logo depois.',
+      button: 'Quero modelar no Molda',
+      request: 'Quero modelar o personagem do jogo no Molda.',
+      chosen:
+        'Agora toque em "Enviar para o Zappy". Ele refaz o começo com a missão de modelar no Molda.',
+    },
+    team: {
+      title: 'Quer o personagem modelado no Molda?',
+      text: 'Este começo usa uma peça pronta do Estúdio. Se quiser, quem cuida das artes modela o personagem no Molda, e ele entra no jogo logo depois.',
+      button: 'Pedir o modelo no Molda',
+      request: 'Quero que quem cuida das artes modele o personagem do jogo no Molda.',
+      chosen:
+        'Agora toque em "Enviar para o Zappy". Ele refaz o começo com a missão de modelar no Molda para quem cuida das artes.',
+    },
+  },
 } as const
 
 const ZERO_ORDER = ['z', 'e', 'r', 'o'] as const
