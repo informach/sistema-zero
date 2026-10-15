@@ -4,7 +4,7 @@ import { Button } from '@sistemazero/ui'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { liveDeviceId, liveRequest } from '../../lib/live/client'
+import { liveRequest, resolveLiveDeviceId } from '../../lib/live/client'
 import { LiveContinuedWorkspace } from './live-workspace'
 
 export function LiveContinuedCreation({ workspaceId }: { workspaceId: string }) {
@@ -13,7 +13,7 @@ export function LiveContinuedCreation({ workspaceId }: { workspaceId: string }) 
   const [error, setError] = useState<string | null>(null)
   const [retry, setRetry] = useState(0)
   useEffect(() => {
-    setDeviceId(liveDeviceId())
+    void resolveLiveDeviceId().then(setDeviceId)
   }, [])
   // biome-ignore lint/correctness/useExhaustiveDependencies: Retry deliberately reloads the saved workspace.
   useEffect(() => {

@@ -49,6 +49,7 @@ export class GetCertificateService {
       lesson.courseId,
       input.privileged,
       input.userId,
+      { lessonId: input.lessonId },
     )
 
     const existing = await this.certificates.findByUserAndCourse(input.userId, course.id)

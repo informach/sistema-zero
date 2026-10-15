@@ -9,6 +9,7 @@ import {
   Gift,
   MessageCircle,
   MessagesSquare,
+  Radio,
   Rocket,
   Send,
   Shirt,
@@ -59,6 +60,8 @@ function missionIcon(m: MissionView): ComponentType<{ className?: string }> {
       return MessagesSquare
     case 'studio_remix':
       return Shuffle
+    case 'live_encounter':
+      return Radio
     default:
       return Sparkles
   }
@@ -95,6 +98,9 @@ function missionLabel(m: MissionView): string {
       return n === 1 ? 'Lance um jogo seu no Mural' : `Lance ${n} jogos seus no Mural`
     case 'studio_remix':
       return n === 1 ? 'Faça sua versão de um jogo do Mural' : `Faça sua versão de ${n} jogos`
+    // Oficinas ao vivo (14/10/2026): só aparece para quem tem vaga numa turma.
+    case 'live_encounter':
+      return n === 1 ? 'Participe de um encontro ao vivo' : `Participe de ${n} encontros ao vivo`
     default:
       return 'Complete a missão'
   }

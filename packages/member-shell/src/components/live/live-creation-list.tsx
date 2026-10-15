@@ -1,7 +1,5 @@
 'use client'
-import { Button } from '@sistemazero/ui'
 import { ArrowRight, Blocks } from 'lucide-react'
-import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { liveRequest } from '../../lib/live/client'
 
@@ -13,11 +11,13 @@ type SavedCreation = {
   updatedAt: string
   canEdit: boolean
 }
+/**
+ * Os projetos que a criança fez numa oficina, em Criar. Só aparece para quem TEM projeto de
+ * oficina: carregando, sem nenhum ou com erro, não ocupa espaço (antes toda criança via o título e
+ * um "Buscando…" piscando, como uma propaganda das oficinas; decisão da dona, 14/10/2026).
+ */
 export function LiveCreationList({ membershipHref }: { membershipHref: string }) {
   const [creations, setCreations] = useState<SavedCreation[] | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [retry, setRetry] = useState(0)
-  // biome-ignore lint/correctness/useExhaustiveDependencies: Retry deliberately reloads the saved project list.
   useEffect(() => {
     const controller = new AbortController()
     liveRequest<{ workspaces: SavedCreation[] }>(
@@ -26,64 +26,51 @@ export function LiveCreationList({ membershipHref }: { membershipHref: string })
       'GET',
       controller.signal,
     )
-      .then((data) => {
-        setCreations(data.workspaces)
-        setError(null)
-      })
-      .catch((cause) => {
-        if (!controller.signal.aborted) setError(cause.message)
+      .then((data) => setCreations(data.workspaces))
+      .catch(() => {
+        /* Sem a lista agora: a seção simplesmente não aparece nesta visita. */
       })
     return () => controller.abort()
-  }, [retry])
-  if (creations?.length === 0) return null
+  }, [])
+  if (!creations?.length) return null
   return (
     <section className="mt-7 space-y-4" aria-labelledby="live-saved-creations">
       <h2 id="live-saved-creations" className="sz-display flex items-center gap-3 text-2xl">
         <Blocks className="size-6 text-primary" aria-hidden />
         Criações das oficinas ao vivo
       </h2>
-      {error ? (
-        <div role="alert" className="kids-carta p-4">
-          <p>{error}</p>
-          <Button variant="outline" className="mt-2" onClick={() => setRetry((value) => value + 1)}>
-            Tentar novamente
-          </Button>
-        </div>
-      ) : creations ? (
-        <ul className="grid gap-3 sm:grid-cols-2">
-          {creations.map((creation) => (
-            <li key={creation.id} className="kids-carta space-y-3 p-5">
-              <h3 className="sz-display text-xl">{creation.title}</h3>
-              {creation.canEdit ? (
-                <Link
-                  href={`/criar/oficinas/${creation.id}`}
-                  className="inline-flex min-h-11 items-center gap-2 font-bold text-primary"
+      <ul className="grid gap-3 sm:grid-cols-2">
+        {creations.map((creation) => (
+          <li key={creation.id} className="kids-carta space-y-3 p-5">
+            <h3 className="sz-display text-xl">{creation.title}</h3>
+            {creation.canEdit ? (
+              // Navegação COMPLETA (`<a>`, não `<Link>`): a página do projeto libera o quadro
+              // isolado do jogo pelos cabeçalhos DELA, e a navegação do Next manteria os da
+              // página atual, com o jogo bloqueado.
+              <a
+                href={`/criar/oficinas/${creation.id}`}
+                className="inline-flex min-h-11 items-center gap-2 font-bold text-primary"
+              >
+                Continuar meu projeto
+                <ArrowRight className="size-4" aria-hidden />
+              </a>
+            ) : (
+              <>
+                <p className="text-sm text-muted-foreground">
+                  Sua criação está guardada. Para continuar depois da oficina, conheça a Comunidade
+                  dos Criadores com seu responsável.
+                </p>
+                <a
+                  href={membershipHref}
+                  className="inline-flex min-h-11 items-center gap-2 font-bold text-primary underline"
                 >
-                  Continuar meu projeto
-                  <ArrowRight className="size-4" aria-hidden />
-                </Link>
-              ) : (
-                <>
-                  <p className="text-sm text-muted-foreground">
-                    Sua criação está guardada. Para continuar depois da oficina, conheça a
-                    Comunidade dos Criadores com seu responsável.
-                  </p>
-                  <a
-                    href={membershipHref}
-                    className="inline-flex min-h-11 items-center gap-2 font-bold text-primary underline"
-                  >
-                    Conhecer a Comunidade
-                  </a>
-                </>
-              )}
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p role="status" className="text-sm text-muted-foreground">
-          Buscando suas criações das oficinas…
-        </p>
-      )}
+                  Conhecer a Comunidade
+                </a>
+              </>
+            )}
+          </li>
+        ))}
+      </ul>
     </section>
   )
 }

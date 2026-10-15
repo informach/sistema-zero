@@ -132,6 +132,13 @@ export function VimeoPlayer({
       pause: () => {
         player.pause().catch(() => {})
       },
+      // Os capítulos da gravação ao vivo ("Ver este trecho"): leva ao instante e toca.
+      seek: (seconds: number) => {
+        player
+          .setCurrentTime(Math.max(0, seconds))
+          .then(() => player.play())
+          .catch(() => {})
+      },
     })
     let disposed = false
     let sampledAt = 0

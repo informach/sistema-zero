@@ -52,6 +52,7 @@ export class GalleryDeliveryService {
       lesson.courseId,
       actor.privileged,
       actor.userId,
+      { lessonId },
     )
     await assertLessonUnlocked(
       this.courses,

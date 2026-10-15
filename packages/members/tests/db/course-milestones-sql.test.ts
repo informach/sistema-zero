@@ -69,7 +69,13 @@ describe.skipIf(!testDatabaseUrl)('marcos de curso por curso (SQL real)', () => 
     await conn.sql.unsafe(`create table if not exists members.courses (
       id uuid primary key, level text, track text, career_slot smallint
     )`)
-    for (const column of ['level text', 'track text', 'career_slot smallint']) {
+    // `modality` (0113): o award descarta marco da Jornada de curso ao vivo.
+    for (const column of [
+      'level text',
+      'track text',
+      'career_slot smallint',
+      "modality text not null default 'recorded'",
+    ]) {
       await conn.sql.unsafe(`alter table members.courses add column if not exists ${column}`)
     }
 

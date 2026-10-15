@@ -44,6 +44,30 @@ entrega à equipe. Duas peças do core sustentam isso:
   prende por algo que o sistema não sabe. A pendência nova é `'submission-outdated'`.
 - Teste: `tests/submission-up-to-date.test.ts` (impressão, régua e autoria).
 
+## Cursos ao vivo: modalidade e anotações da professora (14/10/2026)
+
+`course/modality` (gravado ou ao vivo; só o gravado entra na Jornada) e
+`LessonSection.teacherNotes` (até `TEACHER_NOTES_MAX`). `isTeacherNotes` é a régua única: o
+`validateLessonSections` e o `isLearningManifest` a usam, e a mensagem fala em "parte" (o guarda
+de vocabulário do Kids varre o `core/src`). A view do aluno nunca leva o campo: quem garante é o
+members (ver o CLAUDE.md de lá).
+
+## Oficinas ao vivo: contrato de 14/10/2026 (`src/live/`)
+
+Campos novos, todos opcionais para o cliente tolerar servidor antigo: `LiveLessonPlan.studio`
+(`LiveStudioConfig`, a curadoria do bloco Estúdio), controles `cancel`, `admit-all` e
+`lower-hands.before`, `LiveControlRequest.expectedVersion` opcional (só as transições o
+conferem), `LiveUpdateCohort`, `LiveCohort.teacherNames`, `LiveOccurrence.conductorId`,
+`LiveSessionSummary.occurrenceState`/`recordingPublished`, `LiveLessonAccessView.canEnterLobby`,
+`LiveRoomView.planRevision` só com plano, `LiveWorkspaceView.readOnly`,
+`LiveMediaPublication.displayName`, `LiveChatMessage.authorId: string | null` (colegas sem id na
+visão da criança) e os estados de gravação `empty` e `unavailable`. ⚠️ Estado novo em
+`LiveRecordingState` quebra quem indexa um objeto de rótulos pelo estado (o member-shell tem um).
+Regras e motivos: `packages/members/CLAUDE.md`, seção das oficinas.
+Cursos ao vivo (lote de 14/10): `LiveRecordingSourceView` (`{ storageKey, bucket, title? }`, o
+bucket REAL do gravador) e `LiveWorkspaceView.studio` (a curadoria do bloco Estúdio da aula
+publicada, na abertura por bloco). Só acréscimos.
+
 ## O que é
 
 **Lib compartilhada, sem framework**: as utilidades de baixo nível que TODOS os backends do

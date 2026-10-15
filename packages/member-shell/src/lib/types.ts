@@ -780,6 +780,9 @@ export type BadgeSlug =
   | 'room-decorator-5'
   | 'avatar-style-5'
   | 'mural-commenter-10'
+  // Cursos ao vivo (14/10/2026): 1º encontro recebido e "Oficina completa" (com troféu).
+  | 'live-first-encounter'
+  | 'live-course-complete'
 
 /**
  * Delta de UMA ação (complete/quiz aprovado) — vem NA resposta da ação (a UI

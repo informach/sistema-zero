@@ -13,6 +13,7 @@ import {
   type LearningAnswers,
   publicInteractiveBlock,
   sectionCompletionIssues,
+  TEACHER_NOTES_MAX,
   validateLessonSections,
 } from '../src/learning'
 import {
@@ -217,6 +218,52 @@ describe('learning contracts', () => {
         [{ id: 'a', kind: 'rich_text' }],
       ),
     ).not.toBeNull()
+  })
+  test('as anotações da professora são opcionais e cabem em TEACHER_NOTES_MAX', () => {
+    const blocks = [{ id: 'a', kind: 'rich_text' }]
+    expect(validateLessonSections([{ ...section, teacherNotes: 'Mostre a seta.' }], blocks)).toBe(
+      null,
+    )
+    expect(
+      validateLessonSections([{ ...section, teacherNotes: 'x'.repeat(TEACHER_NOTES_MAX) }], blocks),
+    ).toBeNull()
+    expect(
+      validateLessonSections(
+        [{ ...section, teacherNotes: 'x'.repeat(TEACHER_NOTES_MAX + 1) }],
+        blocks,
+      ),
+    ).toContain(`${TEACHER_NOTES_MAX}`)
+    // O campo chega de JSON: tipo errado não passa como "texto".
+    expect(
+      validateLessonSections([{ ...section, teacherNotes: 42 as unknown as string }], blocks),
+    ).not.toBeNull()
+  })
+  test('o manifesto aceita `teacherNotes` por seção, com o mesmo teto', () => {
+    const manifesto = (teacherNotes?: unknown) => ({
+      version: 5,
+      courseSlug: 'oficina-ao-vivo',
+      lessonSlug: 'encontro-1',
+      title: 'Encontro 1',
+      blocks: [{ key: 'texto', content: { kind: 'rich_text', markdown: 'Olá' } }],
+      sections: [
+        {
+          key: 'abertura',
+          title: 'Abertura',
+          objective: '',
+          intent: 'presentation',
+          blockKeys: ['texto'],
+          workspaceKey: null,
+          externalTool: null,
+          pendingMedia: [],
+          completion: { version: 1, blockIds: [] },
+          ...(teacherNotes === undefined ? {} : { teacherNotes }),
+        },
+      ],
+    })
+    expect(isLearningManifest(manifesto())).toBe(true)
+    expect(isLearningManifest(manifesto('Desenhe a seta no sprite.'))).toBe(true)
+    expect(isLearningManifest(manifesto('x'.repeat(TEACHER_NOTES_MAX + 1)))).toBe(false)
+    expect(isLearningManifest(manifesto(['não é texto']))).toBe(false)
   })
 })
 

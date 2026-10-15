@@ -13,6 +13,8 @@ import {
   liveRecordingJobs,
   liveWorkspaces,
 } from '../../src/infrastructure/persistence/drizzle/schema'
+import { InMemoryLiveCourses } from '../fakes/live-in-memory'
+import { persistLiveCourse } from './live-course-rows'
 import { prepareTestDatabase } from './test-database'
 
 const databaseUrl = await prepareTestDatabase('sistemazero_live_test')
@@ -24,6 +26,8 @@ const token = 'private-recorder-test-token-at-least-32-characters'
 
 describe.skipIf(!databaseUrl)('Coordenação do gravador no PostgreSQL', () => {
   let connection: DbConnection
+  /** The live course is read through the port; its SQL adapter has its own test. */
+  const liveCourses = new InMemoryLiveCourses((course) => persistLiveCourse(connection, course))
   beforeAll(() => {
     connection = createDbConnection(databaseUrl!)
   })
@@ -37,7 +41,7 @@ describe.skipIf(!databaseUrl)('Coordenação do gravador no PostgreSQL', () => {
       repository,
       () => new Date('2026-11-07T17:00:00Z'),
       { assertOwnership: async () => ({ name: 'Criador' }) },
-      { mediaReady: true },
+      { mediaReady: true, courses: liveCourses },
     )
     const actor: LiveActor = {
       id: randomUUID(),
@@ -45,12 +49,8 @@ describe.skipIf(!databaseUrl)('Coordenação do gravador no PostgreSQL', () => {
       name: 'Professora',
       staff: true,
     }
-    const program = await service.createProgram(actor, {
-      title: 'Gravador teste',
-      description: 'Banco de teste',
-      lessons: [{ title: 'Projeto', instructions: 'Criar', starterProjectId: null, materials: [] }],
-    })
-    const { cohort, sessions } = await service.createCohort(actor, program.id, {
+    const { course } = liveCourses.add({ lessons: 1 })
+    const { cohort, sessions } = await service.createCohort(actor, course.id, {
       title: 'Turma teste',
       timeZone: 'America/Sao_Paulo',
       capacity: 2,
@@ -129,6 +129,64 @@ describe.skipIf(!databaseUrl)('Coordenação do gravador no PostgreSQL', () => {
       await server.stop(true)
     }
   })
+
+  test('evento do gravador: a trava do trabalho não segura a sala; eventos fora de ordem convergem', async () => {
+    const f = await setup()
+    const jobId = randomUUID()
+    await connection.db.insert(liveRecordingJobs).values({
+      occurrenceId: f.session.occurrenceId,
+      jobId,
+      generation: 1,
+      desiredState: 'recording',
+      leaseEndsAt: new Date(Date.now() + 20_000),
+    })
+    // ONE connection: a room update inside the job lock would wait for itself forever.
+    const single = createDbConnection(databaseUrl!, { max: 1 })
+    const bounded = <T>(work: Promise<T>) =>
+      Promise.race([
+        work,
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('trava do trabalho segurou a sala')), 8_000),
+        ),
+      ])
+    try {
+      const repository = new DrizzleLiveRepository(single.db)
+      const service = new LiveService(
+        repository,
+        () => new Date('2026-11-07T17:00:00Z'),
+        { assertOwnership: async () => ({ name: 'Criador' }) },
+        { mediaReady: true, courses: liveCourses },
+      )
+      const provider = new OwnRecordingProvider(single.db, repository, service, {
+        url: 'http://127.0.0.1:9',
+        token,
+      })
+      const prefix = `live/recordings/${f.session.occurrenceId}/${jobId}/1/`
+      const event = (eventSequence: number, state: 'recording' | 'paused') => ({
+        jobId,
+        occurrenceId: f.session.occurrenceId,
+        generation: 1,
+        eventSequence,
+        state,
+        manifestKey: `${prefix}manifest.json`,
+        replayKey: null,
+        error: null,
+        captureStopped: state === 'paused',
+      })
+      // The newer event arrives first; the older one never moves the room back.
+      await bounded(provider.acceptEvent(event(3, 'paused')))
+      const shown = (await service.room(f.actor, f.session.id)).occurrence!.recording
+      expect(shown.state).toBe('paused')
+      await bounded(provider.acceptEvent(event(2, 'recording')))
+      await bounded(provider.acceptEvent(event(3, 'paused')))
+      const after = (await service.room(f.actor, f.session.id)).occurrence!.recording
+      expect(after.state).toBe('paused')
+      // A replayed event re-syncs without a new recording version.
+      expect(after.version).toBe(shown.version)
+    } finally {
+      await single.close()
+    }
+  }, 30_000)
 
   test('ajuda após replay publicado exige prova privada exata e preserva estado e arquivo', async () => {
     const f = await setup(),

@@ -12,6 +12,7 @@ import type {
 import {
   CloneSameAudienceError,
   CourseConflictError,
+  CourseModalityLockedError,
   DuplicateSlugError,
   InvalidContentCommandError,
   JourneySlotConflictError,
@@ -39,6 +40,7 @@ import {
   lessonCompletions,
   lessonStructures,
   lessons,
+  liveCohorts,
   modules,
   quizAttempts,
   studioSubmissions,
@@ -63,6 +65,7 @@ const toCourse = (r: CourseRow): Course => ({
   audience: r.audience,
   sequentialLock: r.sequentialLock,
   videoBeforeActivity: r.videoBeforeActivity,
+  modality: r.modality,
   level: r.level,
   track: r.track,
   careerSlot: r.careerSlot,
@@ -274,6 +277,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
     }
     if (filter.status) clauses.push(eq(courses.status, filter.status))
     if (filter.audience) clauses.push(eq(courses.audience, filter.audience))
+    if (filter.modality) clauses.push(eq(courses.modality, filter.modality))
     const where = clauses.length > 0 ? and(...clauses) : undefined
 
     const [rows, [counted]] = await Promise.all([
@@ -332,6 +336,8 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
       track: fields.track ?? ('2d' as const),
       careerSlot: fields.careerSlot ?? null,
       journeyRole: fields.journeyRole ?? (fields.careerSlot == null ? 'reward' : 'positioned'),
+      // Idem: o service normaliza; `?? 'recorded'` cobre chamada direta.
+      modality: fields.modality ?? ('recorded' as const),
       // `salesPageUrl` e `studioUnlockBlocks` moram no metadata (jsonb) — as duas
       // chaves geridas pelo form do curso (a 2ª é o currículo do Estúdio livre).
       metadata: buildCourseMetadata(fields),
@@ -365,7 +371,8 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
       if (!src) return null
       // As validações que dependem da origem pertencem à mesma transação que
       // materializa o fork; validar só no service deixava uma janela TOCTOU.
-      if (src.audience === overrides.audience) throw new CloneSameAudienceError()
+      if (src.audience === overrides.audience && src.modality === overrides.modality)
+        throw new CloneSameAudienceError()
       if (
         src.version !== overrides.expectedSourceVersion ||
         src.audience !== overrides.expectedSourceAudience
@@ -398,6 +405,8 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
         // e a armadilha de um clone virar curso-base sem querer).
         careerSlot: null,
         journeyRole: 'reward' as const,
+        // A modalidade pedida (o service usa a da origem quando o pedido não diz).
+        modality: overrides.modality,
         metadata,
         createdAt: now,
         updatedAt: now,
@@ -539,10 +548,25 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
     try {
       return await this.db.transaction(async (tx) => {
         const [previous] = await tx
-          .select({ status: courses.status, audience: courses.audience, slot: courses.careerSlot })
+          .select({
+            status: courses.status,
+            audience: courses.audience,
+            slot: courses.careerSlot,
+            modality: courses.modality,
+          })
           .from(courses)
           .where(eq(courses.id, course.id))
           .for('update')
+        // Trocar a modalidade só sem turma: a turma das oficinas é feita das aulas do curso ao
+        // vivo. Conferido sob a trava do curso (a turma guarda o `courseId` no documento).
+        if (previous && previous.modality !== course.modality) {
+          const [cohort] = await tx
+            .select({ id: liveCohorts.id })
+            .from(liveCohorts)
+            .where(sql`${liveCohorts.document}->>'courseId' = ${course.id}`)
+            .limit(1)
+          if (cohort) throw new CourseModalityLockedError()
+        }
         const updated = await tx
           .update(courses)
           .set({
@@ -559,6 +583,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
             track: course.track,
             careerSlot: course.careerSlot,
             journeyRole: course.journeyRole,
+            modality: course.modality,
             metadata: course.metadata,
             updatedAt: new Date(),
             version: expectedVersion + 1,

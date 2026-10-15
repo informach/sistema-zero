@@ -12,7 +12,8 @@ import { ACCESS_COOKIE, PALETTE_COOKIE, REFRESH_COOKIE } from '@/lib/cookies'
 export const proxy = createMemberProxy({
   cookies: { accessCookie: ACCESS_COOKIE, refreshCookie: REFRESH_COOKIE },
   paletteCookie: PALETTE_COOKIE,
-  protectedPrefixes: ['/cursos', '/perfil', '/compras', '/comunidade', '/ajuda'],
+  // `/oficinas`: as oficinas ao vivo (cursos ao vivo, 14/10/2026) e a sala de cada encontro.
+  protectedPrefixes: ['/cursos', '/oficinas', '/perfil', '/compras', '/comunidade', '/ajuda'],
   isRootProtected: true,
 })
 

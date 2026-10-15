@@ -6,6 +6,14 @@ import { liveFixture } from '../../../members/tests/fakes/live-fixture'
 // Network/media capture is outside the classroom opening flow exercised here.
 mock.module('../../../member-shell/src/components/live/live-media-panel', () => ({
   LiveMediaPanel: () => null,
+  Stream: () => null,
+  useLiveMedia: () => ({
+    local: { microphone: false, camera: false, screen: false },
+    remote: [],
+    connecting: false,
+    toggle: async () => {},
+    stop: () => {},
+  }),
 }))
 const { LiveClassroom } = await import('../../../member-shell/src/components/live/live-classroom')
 const originalFetch = globalThis.fetch

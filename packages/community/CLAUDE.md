@@ -46,6 +46,34 @@ Gateway** (NUNCA os serviços direto). Visual na paleta do Pen, com os temas **P
 > `sz_member_*`). Dockerfile copia o `boot-check.mjs` DO member-shell; railway.json e ci.yml
 > incluem `/packages/member-shell/**` como gatilho de deploy deste app.
 
+## Oficinas ao vivo na comunidade adulta (cursos ao vivo, 14/10/2026)
+
+Os cursos ao vivo (`docs/plans/2026-10-14-cursos-ao-vivo-design.md`) valem nas duas plataformas,
+pelo `audience` do curso. A sala e as regras moram no member-shell (§"Cursos ao vivo" de lá); aqui
+estão as portas:
+
+- **Páginas**: `/oficinas` (`LiveCatalog skin="adult"`: as turmas em que a pessoa tem vaga; nada de
+  divulgação em outra tela) e `/oficinas/aulas/[id]` (`live-room-client.tsx`: o `LiveClassroom` com
+  a aula do encontro no slot, `LessonBlocks` de sempre, dentro de `sz-aula-adulto`). Atualizar a
+  aula é RELER o JSON (`useLiveLesson`), nunca `router.refresh()`. O bloco Estúdio é o projeto ao
+  vivo, SEM o Mural (`publishToMural` fica desligado). Item **Oficinas** no menu do topo (`nav.ts`).
+- A página lê a sala e a aula no servidor (`loadLiveRoomInitial`, só leitura: o primeiro quadro já
+  é a sala com a aula) e a aula ainda fechada para a vaga (`LIVE_LESSON_CLOSED`) vira a espera
+  gentil `LiveLessonClosed`, nunca erro.
+- **BFF**: `api/live/[...path]` (`shell.routes.live`, a mesma lista do Kids),
+  `api/live/sessions/[id]/preview` (o jogo do Estúdio da sala num documento temporário do R2
+  privado) e `api/live/camera-assets/[asset]` (os fundos da câmera). `/oficinas` nos
+  `protectedPrefixes` do `proxy.ts`.
+- ⚠️⚠️ **`next.config.ts`**: SÓ a rota `/oficinas/aulas/:id` libera `camera`, `microphone` e
+  `display-capture` para `(self)` e acrescenta `https://*.r2.cloudflarestorage.com` ao `frame-src`;
+  a regra vem DEPOIS da geral, e a chave repetida vence (doc do Next). O resto do app segue com a
+  câmera e o microfone fechados. Por isso a sala se abre e se deixa por navegação COMPLETA (`<a>`):
+  os cartões da agenda e o "Voltar às oficinas" já são `<a>`.
+- **`globals.css`**: `--sz-lesson-stage-top` (abaixo do cabeçalho fixo: 6.75rem no celular, que
+  tem duas linhas, e 4.25rem a partir do md), a reserva da barra da chamada no `<main>`
+  (`--sz-live-bar-height`) e o fundo alternativo em volta da transmissão fixa.
+- Teste: `tests/live-room.test.ts` (os cabeçalhos da sala e do resto, as rotas e a pele adulta).
+
 ## Tema: a paleta do Pen, e a COR escolhida pela pessoa (17/09/2026)
 
 O visual segue as telas-modelo do Pen (`esboço plataforma.pen`, quadro "Paleta"): **um fundo só por

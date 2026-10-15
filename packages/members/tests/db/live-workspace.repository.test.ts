@@ -10,6 +10,8 @@ import {
 import { DrizzleLiveRepository } from '../../src/infrastructure/persistence/drizzle/live.repository'
 import { DrizzleLiveWorkspaceRepository } from '../../src/infrastructure/persistence/drizzle/live-workspace.repository'
 import { accountDeletionFences } from '../../src/infrastructure/persistence/drizzle/schema'
+import { InMemoryLiveCourses } from '../fakes/live-in-memory'
+import { persistLiveCourse } from './live-course-rows'
 import { prepareTestDatabase } from './test-database'
 
 const databaseUrl = await prepareTestDatabase('sistemazero_live_workspace_test')
@@ -18,6 +20,8 @@ if (!databaseUrl)
 
 describe.skipIf(!databaseUrl)('Autoria da oficina no PostgreSQL real', () => {
   let connection: DbConnection
+  /** The live course is read through the port; its SQL adapter has its own test. */
+  const liveCourses = new InMemoryLiveCourses((course) => persistLiveCourse(connection, course))
   beforeAll(() => {
     connection = createDbConnection(databaseUrl as string)
   })
@@ -31,7 +35,7 @@ describe.skipIf(!databaseUrl)('Autoria da oficina no PostgreSQL real', () => {
       new DrizzleLiveRepository(connection.db),
       clock,
       { assertOwnership: async () => ({ name: 'Criador' }) },
-      { mediaReady: true },
+      { mediaReady: true, courses: liveCourses },
     )
     const teacher: LiveActor = {
       id: randomUUID(),
@@ -45,14 +49,9 @@ describe.skipIf(!databaseUrl)('Autoria da oficina no PostgreSQL real', () => {
       name: 'Alice',
       staff: false,
     }
-    const program = await live.createProgram(teacher, {
-      title: 'Oficina SQL',
-      description: 'Ensaio isolado de persistência',
-      lessons: [
-        { title: 'Meu jogo', instructions: 'Criar', starterProjectId: null, materials: [] },
-      ],
-    })
-    const { cohort, sessions } = await live.createCohort(teacher, program.id, {
+    const { course, lessons } = liveCourses.add({ lessons: 1 })
+    const block = liveCourses.addStudioBlock(course.id, lessons[0]!.id)
+    const { cohort, sessions } = await live.createCohort(teacher, course.id, {
       title: 'Turma SQL',
       capacity: 2,
       accessDays: 30,
@@ -60,7 +59,7 @@ describe.skipIf(!databaseUrl)('Autoria da oficina no PostgreSQL real', () => {
       teacherIds: [teacher.id],
       schedule: [{ startsAt: clock().toISOString(), endsAt: '2026-11-07T18:00:00Z' }],
     })
-    await live.updateCohort(teacher, cohort.id, 'open')
+    await live.updateCohort({ ...teacher, admin: true }, cohort.id, { status: 'open' })
     await live.enroll(teacher, cohort.id, {
       accountId: child.accountId,
       learnerId: child.id,
@@ -69,14 +68,24 @@ describe.skipIf(!databaseUrl)('Autoria da oficina no PostgreSQL real', () => {
     const session = sessions[0]!
     const repository = new DrizzleLiveWorkspaceRepository(connection.db)
     const service = new LiveWorkspaceService(repository, live, clock)
-    return { live, service, repository, teacher, child, session, deviceId: randomUUID() }
+    return {
+      live,
+      service,
+      repository,
+      teacher,
+      child,
+      session,
+      blockId: block.blockId,
+      deviceId: randomUUID(),
+    }
   }
 
   test('criação concorrente mantém um projeto e dois autores não gravam a mesma revisão', async () => {
-    const { service, repository, child, session } = await setup()
+    const { service, repository, child, session, blockId } = await setup()
+    // Concurrent opens of the same block keep ONE project (the per-block key is unique).
     const opened = await Promise.all([
-      service.open(child, session.id, child.id),
-      service.open(child, session.id, child.id),
+      service.openForBlock(child, session.id, blockId),
+      service.openForBlock(child, session.id, blockId),
     ])
     expect(opened[0]!.id).toBe(opened[1]!.id)
     const id = opened[0]!.id
@@ -116,8 +125,8 @@ describe.skipIf(!databaseUrl)('Autoria da oficina no PostgreSQL real', () => {
   test('an unrelated cohort can save while another workspace transaction is open', async () => {
     const a = await setup(),
       b = await setup()
-    const first = await a.service.open(a.child, a.session.id, a.child.id)
-    const second = await b.service.open(b.child, b.session.id, b.child.id)
+    const first = await a.service.openForBlock(a.child, a.session.id, a.blockId)
+    const second = await b.service.openForBlock(b.child, b.session.id, b.blockId)
     let release = () => {},
       entered = () => {}
     const gate = new Promise<void>((resolve) => {
@@ -143,8 +152,8 @@ describe.skipIf(!databaseUrl)('Autoria da oficina no PostgreSQL real', () => {
   test('teacher lock prevents simultaneous assistance across independent cohorts', async () => {
     const a = await setup(),
       b = await setup()
-    const first = await a.service.open(a.child, a.session.id, a.child.id)
-    const second = await b.service.open(b.child, b.session.id, b.child.id)
+    const first = await a.service.openForBlock(a.child, a.session.id, a.blockId)
+    const second = await b.service.openForBlock(b.child, b.session.id, b.blockId)
     const teacherId = randomUUID()
     const now = new Date('2026-11-07T17:00:00Z')
     const results = await Promise.all(
@@ -176,7 +185,7 @@ describe.skipIf(!databaseUrl)('Autoria da oficina no PostgreSQL real', () => {
       repository,
       () => now,
       { assertOwnership: async () => ({ name: 'Alice' }) },
-      { mediaReady: true },
+      { mediaReady: true, courses: liveCourses },
     )
     const teacher: LiveActor = {
       id: randomUUID(),
@@ -191,21 +200,12 @@ describe.skipIf(!databaseUrl)('Autoria da oficina no PostgreSQL real', () => {
       staff: false,
     }
     const deviceId = randomUUID()
-    const program = await live.createProgram(teacher, {
-      title: 'Continuar',
-      description: 'Dois encontros',
-      lessons: [
-        { title: 'Primeiro', instructions: 'Criar', starterProjectId: null, materials: [] },
-        {
-          title: 'Segundo',
-          instructions: 'Continuar',
-          starterProjectId: null,
-          continueProjectFrom: 0,
-          materials: [],
-        },
-      ],
-    })
-    const { cohort, sessions } = await live.createCohort(teacher, program.id, {
+    const { course, lessons } = liveCourses.add({ lessons: 2 })
+    // The same `chain` in both lessons: one project across the two encounters.
+    const blocks = lessons.map((lesson) =>
+      liveCourses.addStudioBlock(course.id, lesson.id, { chain: 'meu-jogo' }),
+    )
+    const { cohort, sessions } = await live.createCohort(teacher, course.id, {
       title: 'Turma',
       capacity: 2,
       accessDays: 1,
@@ -216,7 +216,7 @@ describe.skipIf(!databaseUrl)('Autoria da oficina no PostgreSQL real', () => {
         { startsAt: '2026-11-14T17:00:00Z', endsAt: '2026-11-14T18:00:00Z' },
       ],
     })
-    await live.updateCohort(teacher, cohort.id, 'open')
+    await live.updateCohort({ ...teacher, admin: true }, cohort.id, { status: 'open' })
     await live.enroll(teacher, cohort.id, {
       accountId: child.accountId,
       learnerId: child.id,
@@ -233,7 +233,7 @@ describe.skipIf(!databaseUrl)('Autoria da oficina no PostgreSQL real', () => {
         },
       },
     )
-    const first = await service.open(child, sessions[0]!.id, child.id)
+    const first = await service.openForBlock(child, sessions[0]!.id, blocks[0]!.blockId)
     let work = await service.claim(child, first.id, deviceId, false)
     work = await service.commit(child, work.id, {
       deviceId,
@@ -251,7 +251,7 @@ describe.skipIf(!databaseUrl)('Autoria da oficina no PostgreSQL real', () => {
       learnerId: child.id,
     })
     const current = service.forSession(second.id)
-    const opened = await current.open(child, second.id, child.id)
+    const opened = await current.openForBlock(child, second.id, blocks[1]!.blockId)
     expect(opened.id).toBe(first.id)
     expect(opened.project.name).toBe('Cenário pronto')
     work = await current.claim(child, opened.id, deviceId, false)
@@ -270,7 +270,7 @@ describe.skipIf(!databaseUrl)('Autoria da oficina no PostgreSQL real', () => {
   })
 
   test('checkpoint anterior à ajuda sobrevive à retenção e exclusão bloqueia novos commits', async () => {
-    const { live, service, repository, teacher, child, session, deviceId } = await setup()
+    const { live, service, repository, teacher, child, session, deviceId, blockId } = await setup()
     let room = await live.control(teacher, session.id, 1, { kind: 'start' })
     await live.join(teacher, session.id, { deviceId: randomUUID(), takeover: false })
     room = await live.join(child, session.id, { deviceId, takeover: false })
@@ -278,7 +278,7 @@ describe.skipIf(!databaseUrl)('Autoria da oficina no PostgreSQL real', () => {
       kind: 'admit',
       learnerId: child.id,
     })
-    let workspace = await service.open(child, session.id, child.id)
+    let workspace = await service.openForBlock(child, session.id, blockId)
     workspace = await service.claim(child, workspace.id, deviceId, false)
     workspace = await service.requestAssistance(teacher, workspace.id)
     workspace = await service.acceptAssistance(child, workspace.id, workspace.assistance!.id, {

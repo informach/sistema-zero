@@ -153,6 +153,12 @@ const EnvSchema = z
     LIVE_SUPERVISOR_TOKEN: z.string().min(32).optional(),
     LIVE_RECORDER_URL: z.string().url().optional(),
     LIVE_RECORDER_TOKEN: z.string().min(32).optional(),
+    // O bucket REAL onde o gravador grava o MP4 (o `R2_BUCKET` do live-recorder): o Admin assina
+    // a URL temporária da gravação revisada para mandá-la ao Vimeo. Vazio = ausente.
+    LIVE_RECORDING_BUCKET: z.preprocess(
+      (value) => (value === '' ? undefined : value),
+      z.string().min(1).max(63).optional(),
+    ),
     AUTH_INTERNAL_TOKEN: z
       .string()
       .min(16, 'AUTH_INTERNAL_TOKEN deve ter ao menos 16 caracteres')

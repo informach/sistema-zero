@@ -32,6 +32,7 @@ export class SaveCourseRatingService {
       courseSlug,
       privileged,
       userId,
+      'course',
     )
     // Defesa em profundidade — o DTO TypeBox já restringe aos 9 valores válidos.
     if (!isValidRatingHalf(fields.ratingHalf)) {

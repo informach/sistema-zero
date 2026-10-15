@@ -5,7 +5,11 @@ import { getEnv, isProd } from '@/lib/env'
 import { safeExtension, sanitizeFilename } from '@/lib/filenames'
 import { assertRivFile } from '@/lib/riv-file'
 import type { SessionUser } from '@/lib/types'
-import { pickTranscriptTrack } from '@/lib/vimeo-helpers'
+import {
+  mapVimeoStatus,
+  pickTranscriptTrack,
+  type VimeoProcessingStatus,
+} from '@/lib/vimeo-helpers'
 import { type ImagePreset, optimizeImage } from './image-optimizer'
 import { requireLocalAdminSession } from './local-admin-session'
 import { MediaNotConfiguredError, r2PresignPrivatePut, r2PutObject, r2PutObjectPrivate } from './r2'
@@ -286,40 +290,39 @@ export async function createVideoTicket(input: {
     sizeBytes: input.sizeBytes,
     name: sanitizeFilename(input.filename),
   })
+  await finishVimeoVideoSetup(ticket.vimeoVideoId)
+  return ticket
+}
+
+/**
+ * Whitelist de domínios do embed + pasta `VIMEO_FOLDER_ID`, a mesma régua para todo vídeo que o
+ * Admin cria (aula ou gravação de encontro). Best-effort: uma falha aqui fica no log e não
+ * desfaz o vídeo.
+ */
+export async function finishVimeoVideoSetup(vimeoVideoId: string): Promise<void> {
   const domains = getWhitelistDomains()
   if (domains.length > 0) {
     try {
-      await applyPrivacy(ticket.vimeoVideoId, domains)
+      await applyPrivacy(vimeoVideoId, domains)
     } catch (error) {
-      console.error('[media] applyPrivacy falhou (whitelist pendente)', {
-        vimeoVideoId: ticket.vimeoVideoId,
-        error,
-      })
+      console.error('[media] applyPrivacy falhou (whitelist pendente)', { vimeoVideoId, error })
     }
   }
   const folderId = getEnv().VIMEO_FOLDER_ID
   if (folderId) {
     try {
-      await addVideoToFolder(ticket.vimeoVideoId, folderId)
+      await addVideoToFolder(vimeoVideoId, folderId)
     } catch (error) {
       console.error('[media] addVideoToFolder falhou (vídeo fica fora da pasta)', {
-        vimeoVideoId: ticket.vimeoVideoId,
+        vimeoVideoId,
         folderId,
         error,
       })
     }
   }
-  return ticket
 }
 
-export type VideoProcessingStatus = 'processing' | 'ready' | 'failed'
-
-/** Mapeia o status cru do Vimeo p/ o estado da aplicação (mesma régua da referência). */
-function mapVimeoStatus(status: string): VideoProcessingStatus {
-  if (status === 'available') return 'ready'
-  if (['transcoding_error', 'quota_exceeded', 'unavailable'].includes(status)) return 'failed'
-  return 'processing'
-}
+export type VideoProcessingStatus = VimeoProcessingStatus
 
 export interface VideoStatus {
   status: VideoProcessingStatus

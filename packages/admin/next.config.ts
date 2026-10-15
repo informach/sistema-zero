@@ -68,7 +68,17 @@ const securityHeaders = [
   { key: 'X-Frame-Options', value: 'DENY' },
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-  { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+  // ⚠️ Câmera, microfone e compartilhamento de tela valem no painel INTEIRO (14/10/2026), não só
+  // na sala `/admin/professor/ao-vivo/:id`. O navegador aplica a Permissions-Policy do PRIMEIRO
+  // documento carregado, e a navegação do Next (`<Link>`) troca de página sem carregar outro:
+  // quem chegava à sala pelo menu ficava com `camera=()` e dava a aula muda (C1 do review das
+  // oficinas). O painel é só da equipe e nenhum código fora da sala pede esses aparelhos; por
+  // isso a política geral libera `(self)`. O `frame-src` com o R2 da prévia continua POR ROTA
+  // (abaixo), então todo link para a sala segue sendo `<a href>` (navegação completa).
+  {
+    key: 'Permissions-Policy',
+    value: 'camera=(self), microphone=(self), display-capture=(self), geolocation=()',
+  },
   // Espelha community/community-kids: COOP isola o browsing-context group (um
   // popup cross-origin não retém window.opener) e CORP impede outros sites de
   // carregarem respostas autenticadas do painel como subrecurso (sondagem por
@@ -114,15 +124,6 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       { source: '/:path*', headers: securityHeaders },
-      {
-        source: '/admin/professor/ao-vivo/:id',
-        headers: [
-          {
-            key: 'Permissions-Policy',
-            value: 'camera=(self), microphone=(self), display-capture=(self), geolocation=()',
-          },
-        ],
-      },
       ...['/admin/professor/ao-vivo/:id', '/ao-vivo/demonstracao/:id'].map((source) => ({
         source,
         headers: [

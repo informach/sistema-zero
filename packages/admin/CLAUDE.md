@@ -1,5 +1,97 @@
 # CLAUDE.md — @sistemazero/admin
 
+## Cursos ao vivo: a oficina é um curso de modalidade "ao vivo" (14/10/2026)
+
+Decisão da dona (`docs/plans/2026-10-14-cursos-ao-vivo-design.md`): o editor de roteiro das
+oficinas (encontros com instruções, etapas, materiais e "Projeto inicial" que só listava JSON
+importado) foi REPROVADO. Criar uma oficina agora é criar um CURSO, no editor de cursos e aulas de
+sempre, com a modalidade "Ao vivo". Contrato no core: `core/course/modality` e `core/live/contracts`.
+
+- **Modalidade no curso** (`cursos/course-form-dialog.tsx`): "Modalidade" (Gravado / Ao vivo),
+  padrão Gravado, com a linha `LIVE_MODALITY_HINT` (`lib/course-modality.ts`). O payload SEMPRE
+  leva `modality` (members antigo descarta). Ao vivo esconde a posição na Jornada, as ferramentas
+  que o curso libera no Estúdio, a trava sequencial e o "vídeo antes da atividade", e manda
+  `careerSlot: null` SEM `journeyRole` (o members recusa os dois no curso ao vivo). Trocar a
+  modalidade na edição passa pelo aviso `modalityChangeWarning` e, com turma, o members responde
+  409: o recado dele vai ao toast (cai no `default` do `courseSaveError`). `onSaved(saved?)`
+  recebe o curso salvo. `CourseView.modality?` é opcional (ausente = gravado, `courseModalityOf`).
+- **Lista de cursos**: selo "Ao vivo", filtro "Gravados e ao vivo / Só gravados / Só ao vivo"
+  (`?modality=`, o BFF `GET /api/members/courses` repassa só `recorded|live` por
+  `modalityFilterParam`). ⚠️ O painel da Jornada pede `modality=recorded` E filtra no cliente
+  (`isLiveCourse`): members antigo ignora o parâmetro. O clone manda `modality` junto (o clone
+  mantém a modalidade) e o diálogo diz que o clone também é ao vivo.
+- **Aula de curso ao vivo** (`lesson-editor-client.tsx`, `courseInfo.modality`): cartão fixo
+  `LiveBroadcastCard` ("Transmissão do encontro") no topo de todas as áreas; o catálogo de conteúdo
+  (`catalogKinds(audience, live)`) não oferece vídeo; as estruturas prontas não semeiam vídeo; bloco
+  de vídeo ANTIGO continua editável com aviso (no editor dele e no percurso); "Ver aula publicada"
+  some (`studentLessonLink` devolve `null`: a aula ao vivo abre pela sala do encontro);
+  `lessonEditorialWarnings(doc, { live })` não cobra vídeo. Em cada parte, "Anotações da
+  professora" (`TeacherNotesField`, `LessonSection.teacherNotes`, até `TEACHER_NOTES_MAX` 4000,
+  só ela vê na sala): o texto fica como digitado e vazio TIRA o campo (`teacherNotesValue`).
+  O manifesto exporta `teacherNotes` (recusa o longo demais com o nome da parte); a importação
+  avisa quando o arquivo traz `plannedVideo` numa aula ao vivo e mostra o recado do servidor.
+- **Oficinas ao vivo (`/admin/oficinas`, `workshops-admin.tsx`)** virou a gestão das TURMAS dos
+  cursos ao vivo da plataforma do seletor (`/admin/oficinas` entrou em
+  `PLATFORM_SCOPED_PREFIXES`; `GET /api/admin/live/catalog?audience=`, trocar a plataforma recarrega
+  e fecha os diálogos). Um cartão por curso de `catalog.courses` com as turmas dele
+  (`cohortsByCourse`; turma sem curso listado vai para "Outras turmas"). "Criar curso ao vivo" abre
+  o `CourseFormDialog` já em Ao vivo e na plataforma ativa (⚠️ o `prefill` é memorizado: objeto novo
+  a cada render reiniciava o formulário). **Nova turma** (`CohortCreateDialog`): título, fuso
+  (`LIVE_TIME_ZONES`; o do computador só vira padrão quando é do Brasil), vagas, dias de acesso,
+  professoras (`teacher-picker`) e um início/fim por AULA PUBLICADA, convertidos do fuso da turma
+  para UTC por `zonedLocalToUtcIso` (nunca `new Date(local)`, que lê o fuso do computador);
+  `buildSchedule` recusa fim antes do início e encontro que começa antes do fim do anterior.
+  `POST /api/admin/live/courses/:courseId/cohorts` com `LiveCreateCohort` SEM `courseId`. Curso sem
+  aula publicada: o diálogo explica e leva ao editor. Ficaram como estavam: turma nasce rascunho com
+  "Abrir inscrições" ali mesmo, "Editar turma" (status e professoras, só admin; arquivar pede
+  confirmação), Inscrições (com a família via `POST /api/admin/accounts/batch`), reposição e
+  agenda. SAÍRAM: o editor de roteiro, `live-steps-editor`, `live-studio-editor`,
+  `lib/live-studio-curation.ts`, a importação de projeto/templates e a rota
+  `/api/media/live-materials` (a curadoria do Estúdio é a do bloco Estúdio da aula; os materiais
+  são os da aula).
+- ⚠️ **O BFF `/api/admin/live/[...path]` é DO PAINEL** (`lib/live-admin-route-policy.ts` +
+  `server/live-admin-proxy.ts`), não mais o `createLiveRouteHandler` do member-shell com
+  `scope: 'admin'` (que segue lá, sem uso). Lista explícita: GET `catalog` (`audience`, `cursor`,
+  `limit` conferidos), `cohorts/:id/enrollments`, `lessons/:id/teacher-notes`; POST
+  `courses/:id/cohorts`, inscrições, gravação (publicar/pausar/retomar/parar), reposição e ajuda no
+  projeto; PATCH `cohorts/:id`. Corpo até 256 KB; 5xx vira "A oficina não respondeu", 4xx passa o
+  recado normalizado. ⚠️ `occurrences/:id/recording/source|vimeo` NÃO entram na lista: a chave do
+  arquivo e o registro do vídeo só passam pela rota dedicada abaixo.
+- **Gravação → Vimeo** (`app/api/admin/live/occurrences/[id]/recording/vimeo/route.ts` +
+  `server/live-recording-vimeo.ts`): POST pede ao members `GET …/recording/source`
+  (`{storageKey, bucket, title?}`), confere o bucket (`resolveRecordingBucket`: o
+  `LIVE_RECORDING_BUCKET` do Admin ou o `R2_PRIVATE_BUCKET`; bucket desconhecido = 503 dizendo a env
+  que falta, nunca assinatura às cegas), lê o tamanho (HEAD, obrigatório no `pull`), assina um GET
+  de 6 h no R2 e cria o vídeo por `upload.approach: 'pull'` com `view=disable, embed=whitelist`,
+  domínios e pasta (`finishVimeoVideoSetup`, a mesma régua dos vídeos das aulas), e grava
+  `PUT …/recording/vimeo` `{videoId, embedUrl, status: 'processing'}`; se o members não registrar,
+  o vídeo órfão é apagado do Vimeo. Dois cliques dividem UM envio (`globalThis`). GET
+  `?videoId=` reconcilia o status (`mapVimeoStatus`, agora com `uploading_error` do pull) e grava
+  `ready`/`failed` no members. Sessão ESTRITA (`requireLocalAdminSession(..., { allowStaff: true })`:
+  a professora pode ser staff; quem decide sobre a gravação é o members) com a mesma origem.
+  No member-shell, `live-recording-review.tsx` envia ao publicar (falha não desfaz a publicação),
+  mostra o passo do Vimeo (`vimeoStepView`), pergunta a cada 5 s e depois 15 s até 45 min
+  ("Conferir agora" depois disso) e chama `onUpdated` quando fica pronto. ⚠️ O último envio fica
+  num memo de módulo por encontro: a sala remonta ao publicar, e sem ele um envio ainda sem eco no
+  servidor oferecia mandar um segundo vídeo.
+- ⚠️⚠️ **A sala da professora (`/admin/professor/ao-vivo/<id>`) só se abre por navegação
+  COMPLETA: `<a href={roomHref(id)}>`, nunca `<Link>`.** O navegador aplica os cabeçalhos do
+  PRIMEIRO documento carregado e a navegação do Next mantém os dele (sem câmera, microfone e o
+  frame do R2 da prévia). A `Permissions-Policy` geral libera `camera`, `microphone` e
+  `display-capture` para `(self)`; o `frame-src` com o R2 é POR ROTA.
+  `tests/live-room-navigation.test.ts` confere os cabeçalhos e varre `src/` atrás de `<Link>`.
+- **Agenda** (`app/admin/professor/ao-vivo/agenda-client.tsx`): lê `/api/live/catalog` (as turmas
+  da professora) e agrupa em Hoje, Próximos e Encerrados (`lib/live-agenda.ts`).
+- Testes: `course-modality` (formulário, lista, Jornada, `studentLessonLink`),
+  `live-course-authoring` (catálogo sem vídeo, revisão, anotações, manifesto, importação),
+  `live-workshops-admin` (plataforma, turma nova no fuso, ordem das datas, curso sem aula, criar
+  curso ao vivo), `live-schedule`, `live-admin-route-policy` (lista e handler),
+  `live-recording-vimeo` (serviço com gateway, R2 e Vimeo falsos) e `live-recording-vimeo-review`
+  (a tela da gravação), mais `live-agenda`, `live-teachers`, `live-room-navigation` e
+  `live-teacher-room`. ⚠️ Nos testes de tela, asserção sobre ELEMENTO vira booleano
+  (`querySelector(...) !== null`): um elemento do happy-dom impresso na mensagem de falha estourou a
+  memória do bun (crash a 4,5 GB na prova por mutação).
+
 ## O selo "falado" (14/10/2026)
 
 Quando a criança FALOU a mensagem (a voz vira texto no Kids e não é guardada), a equipe vê o selo

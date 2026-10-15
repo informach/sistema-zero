@@ -1,5 +1,144 @@
 # CLAUDE.md — @sistemazero/members
 
+## Cursos ao vivo: a modalidade do curso (14/10/2026, migration `0113`)
+
+Decisão da dona: um curso é GRAVADO ou AO VIVO, nunca os dois (desenho em
+`docs/plans/2026-10-14-cursos-ao-vivo-design.md`). O ao vivo só existe em Oficinas: é "uma coisa a
+mais, para vender mais", então fica fora de tudo o que é da Jornada.
+
+- **Coluna** `courses.modality` (`text` + CHECK `courses_modality_check`, padrão `recorded`) e o
+  CHECK `courses_live_off_journey_check` (ao vivo nunca tem `career_slot`). Texto e não enum do
+  Postgres: valor de enum não pode ser usado na transação que o cria. A `0113` é idempotente (`IF NOT EXISTS` e os CHECKs em `DO … duplicate_object`) e também
+  acrescenta `live_encounter` e `live_course_complete` ao `xp_source_type`. Provada num banco
+  descartável simulando produção antes dela: o `db:migrate` aplicou só o que faltava.
+  ⚠️⚠️ **Renumeradas na integração (14/10/2026):** as três do lote nasceram como 0108 (gravação),
+  0109 (modalidade) e 0110 (turmas) e colidiram com as 0108–0111 do Pensa v2, commitadas antes na
+  staging. Viraram **0112** (`0112_live_recording_terminal_states`), **0113**
+  (`0113_course_modality`) e **0114** (`0114_live_course_cohorts`), com `when` do relógio REAL acima
+  da 0111 (as antigas 0109/0110 tinham sido carimbadas no FUTURO, 15/10 e 17/10: tudo o que outra
+  sessão gerasse antes disso seria pulado). Só a 0114 tem snapshot (o schema inteiro, `prevId` = o
+  da 0111), como as 0036–0038; o `db:generate` responde "No schema changes" e a diferença que ele
+  gerou contra a 0111 é exatamente a soma das três.
+- **Autoria**: `modality` no POST/PATCH (declarado no `CourseBody`: o `normalize` do Elysia
+  descarta o resto), `CourseView.modality` e `?modality=` na listagem do Admin. Ausente no PATCH
+  preserva; o Admin manda o valor em TODO PATCH, e o MESMO valor nunca é troca. Curso ao vivo
+  recusa posição (`careerSlot`) e papel ENVIADO na Jornada (`positioned`/`extra`); o papel antigo
+  GUARDADO é limpo para `reward` (o neutro que o CHECK da Jornada exige com posição vazia). Trocar
+  a modalidade só sem turma (`CourseModalityLockedError`, 409), conferido no `updateCourse` sob a
+  trava do curso, contando `live_cohorts` pelo `document->>'courseId'`. ⚠️ A frente das oficinas,
+  ao criar turma, deveria travar a mesma linha do curso para fechar a corrida.
+- **Clone**: o corpo aceita `modality` (ausente = a da origem). Vale para a OUTRA plataforma ou
+  para a OUTRA modalidade (a versão ao vivo do mesmo tema na mesma plataforma, slug
+  `<origem>-ao-vivo`); igual nos dois é só duplicar e segue recusado (`CLONE_SAME_AUDIENCE`, com
+  recado novo). Clone ao vivo não leva `studioUnlockBlocks`.
+- **Acesso** (`CheckAccessService.assertLive` + `LiveLessonAccessPort`, implementação
+  `DrizzleLiveLessonAccessRepository`): matrícula e chave-mestra NÃO abrem curso ao vivo. Abre para
+  a equipe (inclusive o curso em rascunho; a professora atribuída é equipe, o `LiveService` exige
+  `staff` para conduzir) e para a criança com grant ATIVO da sessão daquela aula (vaga ativa, grant
+  não revogado, `starts_at <= agora < ends_at`, turma fora de rascunho, aula ligada pelo
+  `live_sessions.document->>'lessonId'`). `requireById/BySlug` ganharam o 5º parâmetro
+  obrigatório `scope` (`{ lessonId }` ou `'course'`): toda rota de AULA passa o `lessonId`, senão
+  uma vaga aberta na aula 1 abriria a aula 2 por aquela rota. Aula fechada → `LIVE_LESSON_CLOSED`
+  (403). A trava sequencial (`usesSequentialLock`) e a da Jornada não valem no ao vivo; o detalhe
+  do curso marca como travada a aula que a vaga ainda não abriu. O prazo vai num entitlement
+  virtual (`EntitlementAggregate.virtualLiveSeat`, nunca persistido).
+- **Onde o ao vivo NÃO entra**: `listPublishedCourses` (catálogo, "meus cursos" pela chave-mestra,
+  painel dos pais), `findAccessibleCoursesBySlugs` ("meus cursos" por matrícula),
+  `hasPublishedFoundationCourse`, `eligibleStudioGrants` e a revisão dos blocos
+  (`publishedCourseSourceInAudience`), e a base do Zappy inteira (busca, reindexação, relatório,
+  a faxina do reconcile e a SINCRONIZAÇÃO: o Admin sincroniza ao publicar qualquer aula, e a fonte
+  de curso ao vivo responde 200 `{ status: 'skipped' }` e apaga o que já estivesse indexado). Marco da Jornada: o `award` DESCARTA `course_complete`/`course_showcased`
+  de curso ao vivo (régua única para a conclusão, o certificado e o webhook do Mural); a conclusão
+  do curso ao vivo vira `live_course_complete`. As consultas da Jornada seguem pelo snapshot do
+  ledger, de propósito: um curso que já foi gravado e virou ao vivo não tira posto de ninguém.
+  `grantByCourse` recusa curso ao vivo (a vaga é na turma). ⚠️ O resumo semanal dos pais
+  (`learning.repository`: `weeklyTopics` e afins) CONTA a oficina ao vivo de propósito: é atividade
+  real da criança, não listagem.
+- **Anotações da professora** (`LessonSection.teacherNotes`, até `TEACHER_NOTES_MAX`): o core valida
+  (seções e manifesto), o DTO declara, rascunho e publicação guardam. A view do aluno
+  (`GetLessonService`) monta as partes campo a campo e nunca as leva. Rota
+  `GET /members/admin/live/lessons/:lessonId/teacher-notes` → `{ notes: { [sectionId]: texto } }`
+  da versão publicada (`LiveTeacherNotesService`, `live-course.routes.ts`): administração ou staff
+  atribuída a uma turma do curso; aula de curso gravado → 404.
+- **Manifesto**: numa aula de curso ao vivo, `plannedVideo` e `pendingMedia` são recusados
+  ("Aula ao vivo não tem vídeo gravado: a transmissão do encontro faz esse papel.") e
+  `teacherNotes` por seção viaja ao rascunho.
+- **Recompensas** (`LiveRewardsPort` em `domain/ports/live-rewards.port.ts`, implementação
+  `LiveRewardsService` na gamificação): `encounterAttended` grava o marco `live_encounter` (amount
+  0, sourceId = ocorrência, idempotente) → conquista `live-first-encounter` e a missão semanal
+  `weekly-encontro-ao-vivo` (goal `live_encounter`, gate `LIVE_ACCESS_REF`, só para quem tem vaga
+  ATIVA na vitrine: `hasActiveSeat`, resolvido em `mission-access.ts` para leitura e resgate). Sem
+  XP de presença; o XP vem das rotas de aula. "Oficina completa" = `live-course-complete` com o
+  troféu `trofeu-oficina-completa`. ⚠️ A ligação no `LiveService` (`liveRewards`) é da integração.
+  Lockstep: `BADGE_SLUGS` + `BadgeSlug` (member-shell) + `BADGE_INFO`, `room-catalog` e
+  `furniture-models` (kids).
+- Testes: `tests/integration/live-course.test.ts` (HTTP com os fakes) e
+  `tests/db/live-course-modality.test.ts` (migrations reais, `LEARNING_QA_DATABASE_URL`).
+
+## Cursos ao vivo: a oficina vira turma de um curso (14/10/2026, migration `0114`)
+
+Desenho: `docs/plans/2026-10-14-cursos-ao-vivo-design.md`. O roteiro (`LiveProgram`, etapas,
+materiais do roteiro, modelos, demonstração, `LiveLearningService`, `/programs*`, `/templates`)
+SAIU do serviço; os tipos ficam no core até a limpeza final e as tabelas (`live_programs`,
+`live_project_templates`, `live_learning_*`, `live_materials`) ficam sem uso.
+
+- **Turma de curso**: `POST /members/admin/live/courses/:courseId/cohorts` (admin; curso ao vivo,
+  não arquivado, uma data por aula PUBLICADA na ordem do curso, até 24). A turma guarda `courseId`
+  e o resumo `course` no documento; cada sessão guarda `lessonId` (o `plan` vira só o título de
+  reserva; `programId: ''`). Criar trava a linha do curso (`for update`) e confere a modalidade de
+  novo: a troca de modalidade da frente curso confere "sem turma" sob a mesma trava.
+- **Modalidade**: lida num ponto só, `courseModality(row)` em `live-course.repository.ts` (coluna
+  `modality` quando existe, senão `metadata.modality`). O filtro de cursos ao vivo é em JS enquanto
+  a coluna pode faltar. A porta é `LiveCoursePort` (curso, aulas publicadas, partes, bloco Estúdio).
+- **Turma antiga do roteiro**: a 0114 a arquiva; `contextFor` e as listagens a ignoram (404).
+- **Catálogo**: Admin com `?audience=` (plataforma do curso, lida do resumo na turma) e TODOS os
+  cursos ao vivo dela (inclusive sem turma e sem aula); criança e pais com os cursos das turmas
+  visíveis. Descoberta (turma `open` sem vaga) só de curso ao vivo PUBLICADO
+  (`discoverableCourseIds`, filtrado no SQL antes da paginação). Títulos e resumo do curso vêm
+  frescos da porta.
+- **Sala**: `lesson: { courseId, courseSlug, lessonId }` no lugar de `plan`/`planRevision` (null
+  com o acesso fechado). A aula abre pelas rotas de aula de sempre (acesso: frente curso).
+- **Partes conduzidas**: `start` abre a PRIMEIRA parte da aula publicada (`lesson_structures`; sem
+  estrutura, a parte única com o id da aula) e marca; `open-section` (professora, só `live`, parte
+  da aula publicada) abre e torna atual; reabrir só muda a atual, sem marca nova. As partes são
+  lidas ANTES da trava da turma (frescas no comando; o batimento usa cache de 30 s).
+- **Relato**: o batimento aceita `sectionId` e `completedSectionIds` (até 60, sem repetir, só partes
+  da aula publicada); `stepId` só `null`.
+- **Gravação**: ao publicar, `recording.chapters` sai das `marks` sobre a linha do tempo dos
+  trechos (`domain/live/recording-chapters.ts`: marca na pausa cai no começo do trecho seguinte;
+  depois do último trecho fica de fora). A linha do tempo vem do gravador (`timeline()`: o
+  manifesto guardado nele, senão `live_recording_jobs.segments`, gravado a cada confirmação). Sem
+  linha do tempo, publica sem capítulos. `GET …/occurrences/:id/recording/source` →
+  `{ storageKey, bucket, title }` (equipe da turma; `LIVE_RECORDING_BUCKET` = o `R2_BUCKET` do
+  gravador; sem ele, 503) e `PUT …/recording/vimeo` (embed estrito do player, só o `h=`; trocar um
+  vídeo em processamento ou pronto por OUTRO id é 409; não muda a versão da gravação). A criança só
+  vê `vimeo`/`chapters` de gravação publicada, no prazo.
+- **Projeto por bloco**: `GET /members/live/workspaces?sessionId&blockId[&learnerId]` abre ou cria
+  o projeto do bloco Estúdio da aula PUBLICADA (`project_key` = curso + `chain`, ou curso + bloco;
+  único por criança). Semente = `initialProject`; `studio` (curadoria) vem na resposta. O acesso é
+  julgado nas sessões das aulas em `lesson_ids` (a aula entra quando o projeto abre nela). Aula
+  fechada: projeto existente só para ver (`readOnly`), nenhum projeto novo. Turma NOVA do mesmo curso
+  leva o projeto junto (nunca durante uma ajuda). Sem `blockId`, a rota lista a biblioteca.
+- **Recompensas**: `LiveServiceOptions.liveRewards` (`LiveRewardsPort`) é chamado depois do commit
+  para cada criança que passa a estar recebida num encontro `live` (start com quem já estava
+  recebido, ou receber depois); falha vai para `onRewardsError`, nunca derruba o comando. A ligação
+  no composition-root é da integração.
+- **Desempenho (medido)**: a sala, o batimento, a mídia e o gravador leem SÓ o encontro
+  (`findRoom`: uma consulta com a sessão, as ocorrências dela, as vagas, os grants dela e a
+  presença); as escritas da sala travam a turma mas carregam e gravam só o encontro
+  (`roomTransaction`). Presença é linha pequena (`live_presence`) sobreposta em toda leitura
+  (`overlayPresence`: professoras ainda atribuídas, `seenAt`, `activity.reportedAt`); o batimento
+  sem novidade grava só ela (e nada se a última tem menos de 4 s) e a ocorrência só é regravada
+  quando o relato muda. O gravador atualiza a sala DEPOIS do commit da trava do trabalho; a consulta
+  de publicações só lê e dispara a varredura. Medido em `tests/db/live-room-performance.test.ts`
+  (9 participantes): sala p50 ~27 ms → ~5 ms e, com 24 encontros, ~385 ms → ~5 ms; batimento p50
+  ~90 ms → ~5 ms e ~680 ms → ~5 ms. ⚠️ Não volte a usar `findBySession`/`transaction` (turma
+  inteira) em caminho de sala: o custo cresce com os encontros e com as conversas antigas.
+- ⚠️ `tests/db`: o porto de cursos em memória grava a linha do curso no primeiro uso
+  (`tests/db/live-course-rows.ts`, colunas aditivas sem padrão). Com o cliente do `createDbConnection`
+  o JSON vai como `${JSON.stringify(x)}::jsonb` (o drizzle deixa o serializador transparente);
+  num cliente `postgres` cru isso vira string escalar.
+
 ## Oficinas ao vivo (14/10/2026)
 
 `application/live` mantém oficinas reutilizáveis, snapshots das aulas por turma, matrículas
@@ -37,6 +176,71 @@ equipe ativa **e** estar atribuída à turma. O gateway continua responsável pe
 - Exclusão de conta usa a mesma cerca e ordem de locks, removendo matrículas, grants,
   mensagens, participações, posições e workspaces sem recriar dados após a purga.
   `LIVE_MEDIA_READY=false` mantém o início da transmissão fechado até a validação operacional.
+
+### Oficinas: contrato de 14/10 e correções da revisão (migration `0112`)
+
+Revisão: `docs/plans/2026-10-14-oficinas-ao-vivo-full-review.md`. Todo campo novo está declarado
+no schema da rota (o `normalize` do Elysia descarta o que não está).
+
+- **Contrato** (`@sistemazero/core/live`): `LiveLessonPlan.studio` (curadoria do Estúdio: `level`
+  até 40, `allowBlocks` até 3000 itens de 1 a 160, `allowCategories` até 80, `allowedModes` de 1
+  a 3 sem repetir, `allowLevelReveal`; vive no JSON do roteiro, sem migration; `null` limpa;
+  `sanitizeLiveStudio` repete a validação). Controles `cancel` (scheduled ou lobby para
+  cancelled, idempotente), `admit-all` (só quem está `waiting`) e `lower-hands.before` (ISO: só
+  mãos com `handAt <= before`). `expectedVersion` é opcional e só é conferido nas transições
+  (start, end, open-lobby, cancel); o resto é idempotente e vale também na recepção.
+- **Recepção antecipada**: `LIVE_LOBBY_EARLY_MS` (15 min antes de `occurrence.startsAt`). Com a
+  recepção aberta, a criança de grant ainda `scheduled` entra e manda batimento; a sala devolve a
+  ocorrência (sem chat) e `access.canEnterLobby`. Roteiro, chat, mãos e mídia seguem só no horário.
+  `planRevision` só acompanha um `plan` não nulo (antes a criança que esperava na página nunca
+  recebia o roteiro).
+- **Turma**: `teacherNames` (id para nome, 1 a 80, só ids de `teacherIds`; mescla e poda).
+  `PATCH /members/admin/live/cohorts/:id` aceita `{status?, teacherIds?, teacherNames?}`, só
+  admin (`LiveActor.admin` no serviço, guarda da borda e rota auditada no gateway). Professora
+  removida sai do mapa de batimentos (não "supervisiona" mais) e dispara `onPermissionsChanged`.
+  `LiveOccurrence.conductorId` = quem deu `start`; a gravação segue essa professora.
+  `LiveSessionSummary.occurrenceState`/`recordingPublished` para o catálogo.
+- **Projeto vencido**: `LiveWorkspaceView.readOnly`. Sem assinatura do Estúdio, a dona (pela
+  biblioteca, sem `sessionId`) e a professora atribuída leem e exportam; `listOwned` traz
+  `readOnly`; claim, renew, commit, ajuda e publicação continuam recusados.
+- **Privacidade**: na sala da criança, `messages[].authorId` é `null` nas mensagens de outras
+  crianças; `LiveMediaPublication.displayName` é o primeiro nome (participação da criança,
+  `teacherNames` ou o nome do header da professora). Equipe não atribuída não vê matrículas
+  (nomes e contas) de outras turmas no catálogo admin nem em `enrollments`; admin vê tudo.
+- **S1 (pool)**: nenhuma escrita abre segunda conexão segurando trava. Sala: `mutateRoom` acha a
+  turma por `cohortIdForSession` e autoriza no snapshot travado; atividades leem progresso e
+  tentativas por `LiveTransactionReads` do mesmo `tx`. Projeto: a transação trava conta e linha do
+  projeto, NÃO a turma, e lê a turma por `tx.loadCohort()` (uma vez por transação); a consulta da
+  assinatura roda fora das travas (`ContinuationCheckRequired` refaz a transação). Prova em
+  `tests/db/live.repository.test.ts`, com pool de UMA conexão.
+- **S2 (carga)**: publicações de mídia autorizam todos numa leitura (`authorizeMediaMany`); a
+  consulta de 1 s do projeto sem revisão nova reaproveita a autorização por 5 s; sala e batimento
+  carregam a turma uma vez. ⚠️ Pendente: a sala ainda relê a turma inteira (roteiros de até 2 MB)
+  a cada 3 s; o batimento regrava o JSON da ocorrência a cada 5 s; `acceptEvent` do gravador chama
+  `setRecordingState` com a linha do job travada (raro); `publications()` aposenta conexão vencida
+  dentro da consulta. Medir no ensaio com 8 aparelhos antes de mexer.
+- **Gravação (S3/A10)**: sem job para ocorrência que nunca foi ao vivo; `empty` quando encerra sem
+  trechos; depois do fim, falha espera de 5 s a 10 min e vira `failed` na 8ª; ao vivo, 30 s sem
+  confirmação mostram `unavailable`. Colunas `attempts`, `next_attempt_at`, `confirmed_at`,
+  `recording_lease_ends_at` e `finished_at` (0112). A ajuda aceita a confirmação do gravador OU o
+  contrato do lease: passado o último lease de `recording` mais 15 s, o gravador já se pausou; sem
+  job, sem comando enviado ou sem gravador configurado, nada grava. O sync do gravador não segura
+  comando da professora nem entrada da criança (sai do `await` do `onPermissionsChanged`).
+- **Prazos (A5)**: `reconcileDeadlines` roda em laço próprio de 5 s no composition-root,
+  independente do gravador e da config de mídia; cancela `scheduled` vencido
+  (`room.deadline-cancelled`, aceita reposição), do mais antigo, até 100 por ciclo.
+- **Mídia (A9)**: reconcile um por vez por encontro no processo (pedidos no meio viram uma rodada
+  a mais) e entre réplicas pelo lease `live_media_reconcile_leases` (relógio do banco, 60 s).
+  Negociação recente espera o próximo ciclo; silenciar fecha só a trilha proibida; só negação de
+  política (`isDefinitiveDenial`) aposenta, nunca erro transitório.
+- **Suporte (S4)**: `assertNoLiveSupportWrite` recusa toda escrita das oficinas (sala, pais,
+  admin, projeto, atividades, mídia, gravação e preparo do Mural) quando o gateway marca
+  `x-auth-impersonator-id`. Leitura segue livre. O BFF recusa antes (`SUPPORT_SESSION`).
+- **Reposição (S7)**: `extendAccessUntil` só para admin; a professora agenda dentro do prazo.
+  **Inscrição (S9)**: repetir a mesma criança (ou a mesma reserva pendente da conta, mesmo nome,
+  em até 10 min) devolve a vaga existente. Mensagens para a criança falam em encontro, não em aula.
+- ⚠️ `tests/db`: use try/catch em vez de `expect(...).rejects` (ver "Como fazer");
+  `live-test-schema.ts` aplica a 0108 sempre (é idempotente).
 
 > **Quiz antes do certificado (03/10/2026):** o rascunho pode publicar quiz obrigatório em seção anterior à emissão, com o quiz e o certificado selecionados nos respectivos critérios. `certificateLessonIssues` mantém a restrição para outros blocos obrigatórios e recusa quiz misturado, posterior ou sem critério. A primeira emissão verifica a seção no servidor; o GET informa `eligible: false` enquanto ela estiver trancada. Certificados já emitidos seguem acessíveis sem reavaliar requisitos novos. Quiz selecionado como critério permite corrigir imediatamente. O CRUD legado sem estrutura mantém a restrição antiga.
 

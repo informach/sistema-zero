@@ -1,4 +1,4 @@
-import type { LiveSession, LiveWriteGuard } from './contracts'
+import type { LiveSession, LiveStudioConfig, LiveWriteGuard } from './contracts'
 
 export function liveProjectOrigin(sessions: LiveSession[], session: LiveSession): LiveSession {
   let origin = session
@@ -59,6 +59,16 @@ export interface LiveWorkspaceView {
   project: Record<string, unknown>
   assistance: LiveAssistanceView | null
   updatedAt: string
+  /**
+   * The lesson grant expired without a Studio continuation: the owner (and an assigned
+   * teacher) can still view and export, but every write is refused.
+   */
+  readOnly?: boolean
+  /**
+   * Curadoria do bloco Estúdio da aula PUBLICADA (nível, bloquinhos, modos), para a sala
+   * aplicar no editor. Vem só na abertura por bloco (`GET /members/live/workspaces?blockId=`).
+   */
+  studio?: LiveStudioConfig | null
 }
 export interface LiveWorkspaceCommitRequest extends LiveWriteGuard {
   deviceId: string

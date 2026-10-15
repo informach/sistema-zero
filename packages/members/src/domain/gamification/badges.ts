@@ -51,6 +51,22 @@ export const BADGE_SLUGS = [
   'avatar-style-5',
   // 10 comentários APROVADOS no Mural (ledger `mural_comment` — bônus do Mural).
   'mural-commenter-10',
+  // Cursos AO VIVO (14/10/2026): 1º encontro em que a criança foi recebida (ledger
+  // `live_encounter`) e "Oficina completa" — todas as aulas publicadas de um curso ao vivo
+  // concluídas (ledger `live_course_complete`, dá o troféu `trofeu-oficina-completa`).
+  // Bônus de produto: só quem tem vaga numa turma alcança. Nenhuma das duas mexe na Jornada.
+  'live-first-encounter',
+  'live-course-complete',
 ] as const
 
 export type BadgeSlug = (typeof BADGE_SLUGS)[number]
+
+/**
+ * Conquistas que só aparecem DEPOIS de ganhas: as das oficinas ao vivo (14/10/2026). As oficinas
+ * não são divulgadas fora delas (decisão da dona), então a vitrine de conquistas e a bandeja de
+ * troféus do quarto não mostram a versão travada para quem nunca teve vaga.
+ */
+export const HIDDEN_UNTIL_UNLOCKED_BADGES: ReadonlySet<BadgeSlug> = new Set<BadgeSlug>([
+  'live-first-encounter',
+  'live-course-complete',
+])

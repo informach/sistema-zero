@@ -53,6 +53,8 @@ describe.skipIf(!testDatabaseUrl)('retrato do marco × etiqueta viva do curso (S
       'career_slot smallint',
       'version integer not null default 0',
       'updated_at timestamptz not null default now()',
+      // Cursos ao vivo (0113): as consultas da Jornada/Estúdio filtram a modalidade.
+      "modality text not null default 'recorded'",
     ]) {
       await conn.sql.unsafe(`alter table members.courses add column if not exists ${column}`)
     }

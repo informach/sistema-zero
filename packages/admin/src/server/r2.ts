@@ -257,6 +257,56 @@ export async function r2PresignPrivatePut(
   return { key, uploadUrl }
 }
 
+/** Credenciais da CONTA R2 (o bucket vem do chamador, já conferido contra a configuração). */
+function requireAccountConfig(): {
+  accountId: string
+  accessKeyId: string
+  secretAccessKey: string
+} {
+  const env = getEnv()
+  if (!env.R2_ACCOUNT_ID || !env.R2_ACCESS_KEY_ID || !env.R2_SECRET_ACCESS_KEY) {
+    throw new MediaNotConfiguredError(
+      'Envio ao Vimeo indisponível: configure R2_ACCOUNT_ID/R2_ACCESS_KEY_ID/R2_SECRET_ACCESS_KEY.',
+    )
+  }
+  return {
+    accountId: env.R2_ACCOUNT_ID,
+    accessKeyId: env.R2_ACCESS_KEY_ID,
+    secretAccessKey: env.R2_SECRET_ACCESS_KEY,
+  }
+}
+
+/**
+ * Tamanho de um objeto PRIVADO de um bucket conhecido (a gravação de um encontro). ⚠️ O bucket
+ * chega aqui já conferido por `resolveRecordingBucket`: esta função nunca recebe nome vindo do
+ * navegador.
+ */
+export async function r2HeadObjectIn(bucket: string, key: string): Promise<{ sizeBytes: number }> {
+  const cfg = requireAccountConfig()
+  try {
+    const result = await getClient(cfg).send(
+      new HeadObjectCommand({ Bucket: bucket, Key: normalizeKey(key) }),
+    )
+    return { sizeBytes: result.ContentLength ?? 0 }
+  } catch (error) {
+    throw new Error('Não foi possível ler a gravação no armazenamento.', { cause: error })
+  }
+}
+
+/** URL GET temporária de um objeto PRIVADO de um bucket conhecido (o Vimeo baixa por ela). */
+export async function r2PresignGetIn(
+  bucket: string,
+  key: string,
+  expiresInSeconds: number,
+): Promise<string> {
+  const cfg = requireAccountConfig()
+  return getSignedUrl(
+    getClient(cfg),
+    new GetObjectCommand({ Bucket: bucket, Key: normalizeKey(key) }),
+    { expiresIn: expiresInSeconds },
+  )
+}
+
 /** URL GET de curta duração para um anexo UGC já autorizado pelo Hub. */
 export async function r2PresignGetUgc(
   key: string,

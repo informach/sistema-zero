@@ -63,6 +63,22 @@ export interface LessonSection {
   /** Authoring-only production requirements. A published lesson cannot contain these. */
   pendingMedia: string[]
   completion?: SectionCompletion
+  /**
+   * Anotações da professora para esta parte, nas aulas de curso AO VIVO ("mostrar o bloco de
+   * colisão, desenhar a seta no sprite"). Só a autoria e a sala da professora leem; a view do
+   * aluno NUNCA leva o campo. Até `TEACHER_NOTES_MAX` caracteres.
+   */
+  teacherNotes?: string
+}
+
+export const TEACHER_NOTES_MAX = 4000
+
+/**
+ * As anotações são opcionais e cabem em `TEACHER_NOTES_MAX`. Texto em branco é aceito (o editor
+ * guarda o campo como a autora deixou); quem lê decide se há o que mostrar.
+ */
+export function isTeacherNotes(value: unknown): value is string | undefined {
+  return value === undefined || (typeof value === 'string' && value.length <= TEACHER_NOTES_MAX)
 }
 
 export interface LearningChoice {
@@ -878,6 +894,8 @@ export function validateLessonSections(
       return 'Critérios de conclusão inválidos.'
     if (!text(section.title, 200) || section.objective.length > 2000)
       return 'Informe um título e um objetivo válido para cada seção.'
+    if (!isTeacherNotes(section.teacherNotes))
+      return `As anotações de cada parte podem ter até ${TEACHER_NOTES_MAX} caracteres.`
     if (
       section.workspaceBlockId &&
       !blocks.some(
@@ -1084,6 +1102,7 @@ export function isLearningManifest(value: unknown): value is LearningManifest {
         (s.workspaceKey === null || key(s.workspaceKey)) &&
         (s.externalTool === null || s.externalTool === 'estudio' || s.externalTool === 'pinta') &&
         strings(s.pendingMedia, 20) &&
+        isTeacherNotes(s.teacherNotes) &&
         !(s.workspaceKey && s.externalTool) &&
         s.completion !== undefined &&
         isSectionCompletion(s.completion),

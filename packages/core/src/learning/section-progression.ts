@@ -512,6 +512,11 @@ export function sectionProgressView(
   completedIds: ReadonlySet<string>,
   /** Texto cru vira `kind: 'other'`; o members manda itens tipados. */
   pending: ReadonlyMap<string, readonly (string | SectionPendingItem)[]>,
+  /**
+   * Curso AO VIVO: nenhuma parte fica trancada pela anterior. Durante o encontro quem conduz é a
+   * professora (ela abre as partes na sala); depois, a criança vai no próprio ritmo.
+   */
+  options: { freeOrder?: boolean } = {},
 ): SectionProgressView {
   let available = true
   const states = sections.map((s) => {
@@ -524,7 +529,7 @@ export function sectionProgressView(
         pendingItems: [],
       }
     const status = available ? ('available' as const) : ('locked' as const)
-    available = false
+    available = Boolean(options.freeOrder)
     // ⚠️ Sem repetidos: `lessonCompletionRequirements` cria UM requisito por bloco, e uma seção com
     // três descobertas obrigatórias virava três "Termine o experimento" (review do lote 2).
     const itens: SectionPendingItem[] =

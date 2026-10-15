@@ -234,6 +234,45 @@ describe('ZappyKnowledgeService', () => {
     expect(captured?.blockRevision).toBe('revision-1')
   })
 
+  test('aula de curso AO VIVO nunca entra na base: a sincronização responde `skipped` e apaga a fonte', async () => {
+    let saved = false
+    const deleted: string[] = []
+    const repo = repository({
+      sourceAuthorityForRef: async () => ({
+        blockId: 'block-1',
+        courseId: 'course-1',
+        lessonId: 'lesson-1',
+        blockRevision: 'revision-1',
+        modality: 'live',
+      }),
+      upsert: async () => {
+        saved = true
+        return { id: 'source-1', changed: true }
+      },
+      deleteByRef: async (ref) => {
+        deleted.push(ref)
+      },
+    })
+    const service = new ZappyKnowledgeService(
+      repo,
+      {} as never,
+      {} as never,
+      () => new Date('2026-10-14T12:00:00Z'),
+    )
+    // O Admin sincroniza ao publicar QUALQUER aula: a recusa não pode virar erro lá.
+    await expect(
+      service.sync({
+        lessonId: 'lesson-1',
+        sourceType: 'rich-text',
+        sourceRef: 'block:block-1',
+        expectedBlockRevision: 'revision-1',
+        content: 'Hoje vamos criar juntos.',
+      }),
+    ).resolves.toEqual({ id: null, status: 'skipped', changed: false })
+    expect(saved).toBe(false)
+    expect(deleted).toEqual(['block:block-1'])
+  })
+
   test('recusa extração iniciada em uma revisão anterior do bloco', async () => {
     let saved = false
     const service = new ZappyKnowledgeService(

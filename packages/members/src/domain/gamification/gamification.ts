@@ -259,3 +259,13 @@ export function avatarStyleBadgeSlugs(partsBought: number): BadgeSlug[] {
 export function muralCommenterBadgeSlugs(approvedComments: number): BadgeSlug[] {
   return approvedComments >= 10 ? ['mural-commenter-10'] : []
 }
+
+/** Conquista do 1º encontro AO VIVO em que a criança foi recebida (ledger `live_encounter`). */
+export function liveEncounterBadgeSlugs(encounters: number): BadgeSlug[] {
+  return encounters >= 1 ? ['live-first-encounter'] : []
+}
+
+/** "Oficina completa": um curso ao vivo inteiro concluído (ledger `live_course_complete`). */
+export function liveCourseBadgeSlugs(completedLiveCourses: number): BadgeSlug[] {
+  return completedLiveCourses >= 1 ? ['live-course-complete'] : []
+}

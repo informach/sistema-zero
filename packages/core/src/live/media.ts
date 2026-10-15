@@ -14,6 +14,8 @@ export interface LiveMediaPublication {
   role: 'teacher' | 'learner'
   kind: LiveMediaKind
   simulcast: boolean
+  /** First name of the publisher (child profile or teacher), for the classmates' tiles. */
+  displayName?: string
 }
 
 export interface LiveMediaNegotiation {

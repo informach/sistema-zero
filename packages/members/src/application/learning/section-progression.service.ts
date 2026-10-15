@@ -1,4 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto'
+import type { CourseModality } from '@sistemazero/core/course/modality'
 import { ValidationError } from '@sistemazero/core/errors'
 import {
   hasSectionProgression,
@@ -55,6 +56,12 @@ export class SectionProgressionService {
     private readonly certificates: CertificateRepository,
     /** Os rascunhos da fase guardados na conta (o "envio em dia"). Sem eles, o critério deixa passar. */
     private readonly drafts?: Pick<CreationsRepository, 'getDraftStates'>,
+    /**
+     * A modalidade do curso da aula. No curso AO VIVO nenhuma parte tranca a seguinte: na sala
+     * quem abre as partes é a professora (uma parte aberta antes de a criança concluir a anterior
+     * não pode ser recusada com `SECTION_LOCKED`), e depois do encontro tudo fica livre.
+     */
+    private readonly courseModality?: (courseId: string) => Promise<CourseModality>,
   ) {}
 
   /** Impressão e hora do rascunho guardado de cada espaço de trabalho das partes marcadas. */
@@ -119,6 +126,7 @@ export class SectionProgressionService {
     if (hasComingSoonBlock(lesson.blocks)) return undefined
     const structure = playbackLessonStructure(lesson, await this.repository.getStructure(lesson.id))
     if (!hasSectionProgression(structure.sections)) return undefined
+    const freeOrder = (await this.courseModality?.(lesson.courseId)) === 'live'
     const hasCertificateCriterion = structure.sections.some((section) =>
       section.completion?.blockIds.some((id) =>
         lesson.blocks.some((block) => block.id === id && block.kind === 'certificate'),
@@ -294,7 +302,7 @@ export class SectionProgressionService {
             projectPassed: Boolean(criteria?.projectChecks?.length),
           })
         if (!settles) persist = false
-      } else reachable = false
+      } else if (!freeOrder) reachable = false
     }
     // Persist validated evidence, never the current navigation position. CAS prevents stale publication writes.
     if (!structure.legacyLayout && newlyComplete.length)
@@ -305,7 +313,9 @@ export class SectionProgressionService {
         newlyComplete,
         this.blockRevisions(lesson),
       )
-    return sectionProgressView(structure.revision, structure.sections, completed, pending)
+    return sectionProgressView(structure.revision, structure.sections, completed, pending, {
+      freeOrder,
+    })
   }
 
   async assertSection(

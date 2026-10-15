@@ -28,6 +28,7 @@ function makeCourse(over: Partial<Course> & { slug: string; title: string }): Co
     track: '2d',
     careerSlot: null,
     journeyRole: 'reward',
+    modality: 'recorded',
     metadata: null,
     createdAt: created,
     updatedAt: created,

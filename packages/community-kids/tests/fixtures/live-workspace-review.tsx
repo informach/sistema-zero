@@ -243,9 +243,9 @@ test.each([
   disconnected = false
   mount()
   await waitFor(() =>
-    expect(screen.getByRole('button', { name: 'Recuperar conexão' })).toBeTruthy(),
+    expect(screen.getByRole('button', { name: 'Guardar na minha conta' })).toBeTruthy(),
   )
-  fireEvent.click(screen.getByRole('button', { name: 'Recuperar conexão' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Guardar na minha conta' }))
   if (newerRevision) {
     await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('revisão'))
     expect(canonical.project.name).toBe('Revisão mais recente')
