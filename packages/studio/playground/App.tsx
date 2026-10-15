@@ -1,3 +1,4 @@
+import { STUDIO_PRO_TEMPLATE_IDS } from '@sistemazero/core/studio/pro-templates'
 import type {
   StudioMoldaLibraryAdapter,
   StudioPintaDrawingSummary,
@@ -349,7 +350,7 @@ function EditorScreen({
         showExamples
         // Experiência completa no playground (defaults embarcados: terminal/IA OFF).
         // Projeto profissional força terminal + allowedModes:['code'] via a flag.
-        features={isPro ? { professional: true, ai: true } : { terminal: true, ai: true }}
+        features={isPro ? { professional: true } : { terminal: true }}
         // Host fake: loga o fluxo híbrido p/ validação manual (DevTools).
         onChange={(project) => console.debug('[host] onChange', project.id, project.updatedAt)}
         onSave={(project) => console.debug('[host] onSave', project.id)}
@@ -477,6 +478,7 @@ export function App(): JSX.Element {
       <EditorScreen projectId={view.projectId} onExit={() => navigate({ name: 'list' })} />
     ) : (
       <ProjectList
+        proCreationTemplates={STUDIO_PRO_TEMPLATE_IDS}
         professional
         showExamples
         onOpenProject={(id) => navigate({ name: 'editor', projectId: id })}

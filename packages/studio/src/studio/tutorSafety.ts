@@ -1,3 +1,6 @@
+import type { StudioTutorCodeFile } from '@sistemazero/core/studio/pro-tutor'
+import { sha256Base64 } from '../preview/scriptIntegrity'
+
 const KEY_IDENTIFIER = '[A-Za-z_$][A-Za-z0-9_$.-]{0,127}'
 const ASSIGNMENT_PREFIX_RE = new RegExp(
   `(?<![A-Za-z0-9_$])(${KEY_IDENTIFIER})[ \\t]*=[ \\t]*`,
@@ -166,4 +169,57 @@ export function redactStudioTutorSecrets(value: string): {
       .join('')
   })
   return { text, hadSecret }
+}
+
+/** Synchronous, browser/server-identical digest. Never a permission or an execution hash. */
+export function studioTutorSourceHash(content: string): string {
+  return `sha256-${sha256Base64(content)}`
+}
+
+export function studioTutorLineCount(content: string): number {
+  return content.split(/\r\n|\r|\n/).length
+}
+
+/**
+ * Run after every redaction or budget cut. A sanitizer that removes a newline
+ * invalidates the original line mapping: retain the file reference only.
+ * The current sanitizers replace spans monotonically and never add newlines.
+ */
+export function sanitizeStudioTutorExcerpt(
+  file: StudioTutorCodeFile,
+  redact: (content: string) => string,
+  maxChars: number,
+): StudioTutorCodeFile {
+  const sanitized = redact(file.content).replace(/\r\n|\r/g, '\n')
+  const content = sanitized.slice(0, Math.max(0, maxChars))
+  if (!file.excerpt) return { path: file.path, content }
+  const original = file.excerpt
+  const originalLines = studioTutorLineCount(file.content)
+  const safeLines =
+    original.mapping === 'lines' &&
+    original.endLine - original.startLine + 1 === originalLines &&
+    studioTutorLineCount(sanitized) === originalLines
+  const excerpt = {
+    ...original,
+    endLine: original.startLine + studioTutorLineCount(content) - 1,
+    mapping: safeLines ? ('lines' as const) : ('file' as const),
+    truncated: original.truncated || content.length !== sanitized.length,
+  }
+  return {
+    path: file.path,
+    content,
+    excerpt: {
+      ...excerpt,
+      contextDigest: studioTutorSourceHash(
+        JSON.stringify([
+          file.path,
+          excerpt.sourceHash,
+          excerpt.startLine,
+          excerpt.endLine,
+          excerpt.mapping,
+          content,
+        ]),
+      ),
+    },
+  }
 }

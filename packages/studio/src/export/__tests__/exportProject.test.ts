@@ -53,7 +53,7 @@ describe('exportProject', () => {
   })
 
   it('pro: embarca a arvore Vite + Dockerfile multi-stage, sem warnings', async () => {
-    const project = createProProject('02', 'App Pro', 'vanilla-vite')
+    const project = await createProProject('02', 'App Pro', 'vanilla-vite')
     const result = await exportProject(project, { minifiers: identityMinifiers })
     expect(result.kind).toBe('pro')
     expect(result.warnings).toEqual([])
@@ -68,10 +68,30 @@ describe('exportProject', () => {
   })
 
   it('pro: nao sobrescreve um Dockerfile que ja existe na arvore', async () => {
-    const project = createProProject('03', 'App Pro', 'vanilla-vite')
+    const project = await createProProject('03', 'App Pro', 'vanilla-vite')
     project.tree = { ...project.tree, Dockerfile: { kind: 'file', content: 'FROM scratch' } }
     const result = await exportProject(project, { minifiers: identityMinifiers })
     const entries = await unzipBlob(result.blob)
     expect(new TextDecoder().decode(entries.Dockerfile)).toBe('FROM scratch')
+  })
+
+  it('pro: ZIP conserva lock e documentos autorais; guia novo reconhece lock', async () => {
+    const project = await createProProject('04', 'Com lock', 'vanilla-vite')
+    project.tree = {
+      ...project.tree,
+      'package-lock.json': { kind: 'file', content: '{"lockfileVersion":3}' },
+      'LEIA-ME.txt': { kind: 'file', content: 'Leia do autor' },
+      'CREDITS.md': { kind: 'file', content: 'Permissões do autor' },
+    }
+    const result = await exportProject(project, { minifiers: identityMinifiers })
+    const entries = await unzipBlob(result.blob)
+    const text = (name: string) => new TextDecoder().decode(entries[name])
+    expect(text('package-lock.json')).toBe('{"lockfileVersion":3}')
+    expect(text('LEIA-ME.txt')).toBe('Leia do autor')
+    expect(text('CREDITS.md')).toBe('Permissões do autor')
+    expect(text('README.md')).toContain('Railway roda `npm ci`')
+    project.tree['README.md'] = { kind: 'file', content: 'README do autor' }
+    const preserved = await unzipBlob((await exportProject(project)).blob)
+    expect(new TextDecoder().decode(preserved['README.md'])).toBe('README do autor')
   })
 })

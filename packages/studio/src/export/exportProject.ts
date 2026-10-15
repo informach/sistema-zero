@@ -42,11 +42,11 @@ export async function exportProject(
   const warnings: string[] = []
 
   if (isPro) {
-    const built = buildProFileMap(project)
+    const built = await buildProFileMap(project)
     files = built.files
     warnings.push(...built.warnings)
     // Não sobrescreve arquivos de deploy que o usuário já tenha na árvore.
-    const deploy = proDeployTemplates(project.name)
+    const deploy = proDeployTemplates(project.name, 'package-lock.json' in files)
     for (const [path, content] of Object.entries(deploy)) {
       if (!(path in files)) files[path] = content
     }

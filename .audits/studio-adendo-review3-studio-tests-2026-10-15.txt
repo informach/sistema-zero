@@ -1,0 +1,132 @@
+bun test v1.3.11 (af24e281)
+
+src\state\persistence.test.ts:
+(pass) setStorageNamespace — isolamento por perfil > a substituição com escopo da aula ignora o namespace global do Estúdio Completo
+(pass) setStorageNamespace — isolamento por perfil > namespace → DB próprio por perfil; vazio → DB histórico compartilhado [31.00ms]
+(pass) setStorageNamespace — isolamento por perfil > adapter capturado para A continua lendo A depois de o namespace global mudar para B [16.00ms]
+(pass) PersistenceService > persiste o projeto quando o debounce de autosave completa [219.00ms]
+(pass) PersistenceService > cada gravação do projeto é UMA transação: os put, o commit() explícito por último e nada depois [218.00ms]
+(pass) PersistenceService > mantém o snapshot pendente quando o projeto é descarregado antes do debounce [219.00ms]
+(pass) PersistenceService > cancela autosave pendente ao excluir o projeto carregado [266.00ms]
+(pass) PersistenceService > excluir num namespace não cancela o mesmo id aberto em outro namespace [218.00ms]
+(pass) PersistenceService > força gravação pendente quando a página está saindo [219.00ms]
+(pass) PersistenceService > materializa o buffer do editor antes do snapshot de pagehide [110.00ms]
+(pass) PersistenceService > flusha o autosave pendente no detach (unmount não perde a última edição) [218.00ms]
+(pass) PersistenceService > emite onChange no debounce com o snapshot completo, mesmo com persistence none [219.00ms]
+(pass) PersistenceService > onSave rejeitado marca erro no badge, notifica onError e propaga [125.00ms]
+(pass) PersistenceService > não marca como salvo se uma edição nova acontece enquanto a persistência anterior está em voo [219.00ms]
+(pass) PersistenceService > com o autosave EM VOO, o pagehide já PEDE a gravação do flush, que chega ao disco por último [219.00ms]
+(pass) PersistenceService > mantém o projeto sujo e registra erro quando o autosave falha [218.00ms]
+(pass) PersistenceService > um put que LANÇA (valor que não clona) falha o save sem gravar nada pela metade [219.00ms]
+(pass) PersistenceService > salvar manualmente cancela o autosave pendente [234.00ms]
+(pass) PersistenceService > salvar manualmente não marca salvo se outro snapshot entra enquanto persiste [141.00ms]
+(pass) PersistenceService > não re-persiste o projeto excluído quando o delete chega com o save em voo [219.00ms]
+(pass) PersistenceService > não agenda gravação ao hidratar/carregar um projeto (isDirty:false não escreve) [328.00ms]
+(pass) importProjectFromJSON > persiste o formato e as ferramentas usadas mesmo depois de apagar todos os blocos
+(pass) importProjectFromJSON > rejeita IR importada com complexidade excessiva [1078.00ms]
+(pass) importProjectFromJSON > preserva blocksState importado quando a estrutura usa blocos conhecidos [16.00ms]
+(pass) importProjectFromJSON > recusa importação com tipo desconhecido sem gravar uma cópia incompleta
+(pass) importProjectFromJSON > recusa imagens excedentes sem gravar; importa integralmente quando tudo cabe [15.00ms]
+(pass) importProjectFromJSON > preserva kind/tree/proMeta de um projeto profissional no export→import
+(pass) importProjectFromJSON > recusa projeto pro com árvore inválida sem rebaixar ou gravar
+(pass) importProjectFromJSON > rejeita blocksState importado com blocos demais antes de persistir [63.00ms]
+(pass) renameProjectMeta — serializado contra persistProject (mesmo id) > o rename lê o meta DEPOIS de um persistProject em voo do mesmo id, e grava por cima dele [31.00ms]
+(pass) renameProjectMeta — serializado contra persistProject (mesmo id) > renames concorrentes do mesmo id serializam: o 2º lê o que o 1º GRAVOU (último vence) [31.00ms]
+(pass) renameProjectMeta — serializado contra persistProject (mesmo id) > a gravação seguinte do mesmo projeto é PEDIDA sem esperar a anterior terminar, e o disco recebe na ordem
+(pass) renameProjectMeta — serializado contra persistProject (mesmo id) > quem LÊ para decidir (renomear) segura a fila até PEDIR a própria gravação [32.00ms]
+(pass) live project mutation limits > bloqueia edicao canonica maior que o limite por arquivo
+(pass) live project mutation limits > bloqueia edicao de arquivo extra que ultrapassa o limite total do projeto [15.00ms]
+(pass) live project mutation limits > normaliza renomeacao feita pela UI
+(pass) loadProject > rejeita projeto atual sem arquivos canônicos válidos [16.00ms]
+(pass) loadProject > recusa projeto persistido corrompido antes de entrar no store [15.00ms]
+(pass) loadProject > preserva kind/tree/proMeta de projeto profissional no roundtrip persist→load [16.00ms]
+(pass) loadProject > persiste blocksState fora do registro leve de state
+(pass) loadProject > substitui um rascunho local inteiro ao recomeçar uma aula
+(pass) loadProject > quando o código da Ponte está à frente, persiste a autoridade e apaga blocos antigos NA MESMA transação
+(pass) loadProject > falha de quota com blocos a apagar NÃO apaga a partição de blocos (a transação aborta inteira)
+(pass) loadProject > load rápido local não lê state/blocks pesados e preserva o modo salvo [16.00ms]
+(pass) loadProject > load rápido local não lê state mesmo no storage v2 [15.00ms]
+(pass) loadProject > restore atual não busca blocos antigos dentro da partição de IR [32.00ms]
+(pass) loadProject > adapter local restaura blocksState pela partição separada [46.00ms]
+(pass) loadProject > loads sobrepostos: o mais NOVO vence mesmo resolvendo por último (guard de geração) [32.00ms]
+(pass) loadProject > carrega projeto salvo em registros particionados antes do formato legado [15.00ms]
+(pass) listAllProjects > lista summaries indexados sem carregar projetos inteiros [47.00ms]
+(pass) listAllProjects > backups históricos não reaparecem na lista de projetos ativos [16.00ms]
+(pass) listAllProjects > a lista LEVE (`listProjectSummariesLight`) não lê as capas; `loadProjectSummaryById` relê meta + capa de UM projeto [78.00ms]
+(pass) listAllProjects > toda escrita/apagamento local avisa a página (`PROJECT_CHANGED_EVENT` com o id), inclusive o restauro silencioso [62.00ms]
+(pass) persistProject — assets só reescritos quando a referência muda > 1ª gravação SEMPRE materializa a partição de assets
+(pass) persistProject — assets só reescritos quando a referência muda > reescreve meta/files/state mas NÃO assets quando a referência de assets não mudou
+(pass) persistProject — assets só reescritos quando a referência muda > reescreve a partição de assets quando a referência muda (edição de imagem)
+(pass) persistProject — assets só reescritos quando a referência muda > reescreve a partição de assets na 1ª gravação após uma falha de write (ref não registrada)
+(pass) espelho da nuvem ("guardado na sua conta") > persistProjectAssets avisa o espelho E bumpa o `updatedAt` do meta (é a régua da nuvem), numa transação só com os assets [16.00ms]
+(pass) espelho da nuvem ("guardado na sua conta") > espelho `null` (aula, playground) não chama nada e não quebra [47.00ms]
+(pass) espelho da nuvem ("guardado na sua conta") > persistProjectAssets NÃO recria a partição de um projeto que já foi apagado (meta ausente): nada gravado, espelho não acordado [16.00ms]
+(pass) espelho da nuvem ("guardado na sua conta") > loadProjectSnapshotForCloud recusa recursos duplicados ou desconhecidos sem subir uma versão incompleta [125.00ms]
+(pass) espelho da nuvem ("guardado na sua conta") > loadProjectSummariesByIds lê os resumos de vários projetos num `getMany` só (meta + capa de cada) e devolve null para quem não existe [31.00ms]
+(pass) espelho da nuvem ("guardado na sua conta") > loadProjectAssetsSnapshotForCloud lê SÓ a partição de assets, no DB do perfil pedido (a descida em partes reaproveita o que já está aqui) [31.00ms]
+(pass) espelho da nuvem ("guardado na sua conta") > o restauro SUBSTITUI: apaga a partição de blocos quando o snapshot não traz blocos, e a capa antiga
+(pass) espelho da nuvem ("guardado na sua conta") > o restauro é ESTRITO: bloco que esta versão não reconhece RECUSA (nada gravado, partição de blocos intacta); canvas VAZIO da origem passa sem aviso e apaga a partição
+(pass) espelho da nuvem ("guardado na sua conta") > o restauro recusa projeto aberto em QUALQUER store (as por instância do editor, não só a default)
+(pass) espelho da nuvem ("guardado na sua conta") > o restauro recusa id inesperado ou inválido ANTES de gravar, e recusa projeto ABERTO
+(pass) espelho da nuvem ("guardado na sua conta") > persistProject/renameProjectMeta/deleteProject avisam o espelho; `silent` e o restauro não [78.00ms]
+(pass) espelho da nuvem ("guardado na sua conta") > um espelho que lança não derruba a gravação local [47.00ms]
+(pass) espelho da nuvem ("guardado na sua conta") > o import de .szproject.json continua mintando id NOVO e avisa o espelho
+
+src\state\projectOperations.test.ts:
+(pass) limites de snapshot do Pro > excluir o último arquivo pelo terminal sobrevive à reabertura como Pro
+(pass) limites de snapshot do Pro > save aguarda o filesystem e captura a versão reconciliada
+(pass) limites de snapshot do Pro > fila não cruza instâncias e projeto trocado não é exportado como se fosse o anterior
+(pass) limites de snapshot do Pro > falha de reconciliação impede confirmação de save e aparece no estado
+(pass) limites de snapshot do Pro > aplicação atômica rejeita revisão velha e árvore inválida
+
+src\state\proTree.test.ts:
+(pass) addProFile > cria arquivo e pastas-pai ausentes
+(pass) addProFile > rejeita duplicata e path inválido
+(pass) addProFile > rejeita quando um ancestral é arquivo
+(pass) addProFile > rejeita variante de CAIXA de um arquivo existente (FS case-insensível)
+(pass) addProDir > cria pasta
+(pass) addProDir > rejeita colisão
+(pass) addProDir > rejeita variante de caixa de pasta existente
+(pass) setProFileContent > atualiza conteúdo
+(pass) setProFileContent > no-op se igual ou inexistente
+(pass) renameProNode > renomeia arquivo
+(pass) renameProNode > renomeia pasta reescrevendo prefixos dos filhos
+(pass) renameProNode > recusa mover pasta para dentro dela mesma e colisões
+(pass) renameProNode > recusa renomear para variante de caixa de OUTRO nó, mas permite só trocar a caixa do próprio
+(pass) removeProNode > remove arquivo
+(pass) removeProNode > remove subárvore de uma pasta
+(pass) removeProNode > no-op se inexistente
+(pass) sanitizeProTree > aceita árvore válida e preenche pais ausentes
+(pass) sanitizeProTree > rejeita node_modules, traversal e formas inválidas
+(pass) sanitizeProTree > rejeita excesso de nós e tamanho [16.00ms]
+(pass) sanitizeProTree > rejeita árvore onde um arquivo é pai de outro path
+(pass) sanitizeProMeta > aceita meta válida e corta strings longas
+(pass) sanitizeProMeta > rejeita meta incompleta
+(pass) cotas do runtime Pro na store > bloqueia nova edição que ultrapassa a cota antes de persistir ou compilar
+(pass) cotas do runtime Pro na store > bloqueia edição cujo JSON serializado excederia o Worker
+
+src\studio\TaskGuidePanel.test.tsx:
+(pass) Guia da tarefa do Estúdio > não vira LessonActivity e conclui somente com guia e projeto vinculados [110.00ms]
+(pass) Guia da tarefa do Estúdio > mantém o guia visível quando a sincronização falha [62.00ms]
+(pass) Guia da tarefa do Estúdio > a seta recolhe o guia, e o host é quem lembra [31.00ms]
+(pass) Guia da tarefa do Estúdio > o guia tem respiro embaixo até `lg`, onde ele vira coluna lateral
+(pass) Guia da tarefa do Estúdio > o quadro veste a casca compartilhada das ferramentas [16.00ms]
+(pass) Guia da tarefa do Estúdio > recolhido, um recado de falha CONTINUA na tela [31.00ms]
+(pass) Guia do Pensa v2 no Estúdio > os passos aparecem um de cada vez, sem checkbox, e dá para ver todos [47.00ms]
+(pass) Guia do Pensa v2 no Estúdio > sem jogo vinculado não dá para confirmar [16.00ms]
+(pass) Guia do Pensa v2 no Estúdio > confirmar manda "concluída" com TODOS os critérios, e não precisa marcar passo [31.00ms]
+(pass) Guia do Pensa v2 no Estúdio > erro com a frase da criança mostra a frase; sem ela, é rede [94.00ms]
+(pass) Guia do Pensa v2 no Estúdio > esperando a nuvem diz que está guardando, e o botão segue focável [47.00ms]
+(pass) Guia do Pensa v2 no Estúdio > concluída, o foco vai ao "Continuar" (com o destino) e não cai no body [93.00ms]
+(pass) Guia do Pensa v2 no Estúdio > concluída sem próxima missão, o foco vai ao aviso estável [47.00ms]
+(pass) Guia do Pensa v2 no Estúdio > sem rótulo do host o botão diz "Continuar meu caminho"; e a falha de rede [31.00ms]
+(pass) Guia do Pensa v2 no Estúdio > "Travei aqui" chama a ajuda do host e mostra a frase da falha [47.00ms]
+(pass) o Estúdio grava antes das ações do guia v2 > grava ANTES de concluir, continuar e pedir ajuda [47.00ms]
+(pass) o Estúdio grava antes das ações do guia v2 > gravação que FALHA não chama o host e rejeita com a frase da criança
+(pass) o Estúdio grava antes das ações do guia v2 > no painel, a falha de gravar aparece como frase (nunca "Confira a internet") [31.00ms]
+(pass) o Estúdio grava antes das ações do guia v2 > o guia antigo passa pela MESMA referência, sem gravar nada
+
+ 118 pass
+ 0 fail
+ 394 expect() calls
+Ran 118 tests across 4 files. [7.62s]

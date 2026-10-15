@@ -11,28 +11,21 @@ import { VoiceInputButton } from '@sistemazero/member-shell/components/voice-inp
 import { dataUrlBase64ToBlob } from '@sistemazero/member-shell/lib/data-url'
 import { requestPersistentStorage } from '@sistemazero/member-shell/lib/persistent-storage'
 import { sessionFetch as fetch } from '@sistemazero/member-shell/lib/session-fetch'
+import { studioDescriptionInput } from '@sistemazero/member-shell/lib/studio-description-input'
+import { createStudioPublicationAdapter } from '@sistemazero/member-shell/lib/studio-publication-adapter'
 import type { StudioTier } from '@sistemazero/member-shell/lib/studio-tier'
 import { createStudioZappyAdapter } from '@sistemazero/member-shell/lib/studio-zappy-adapter'
 import { useIsDesktop } from '@sistemazero/member-shell/lib/use-is-desktop'
-import type {
-  StudioMoldaLibraryAdapter,
-  StudioPintaLibraryAdapter,
-  StudioShareAdapter,
-  StudioTaskSession,
-  StudioTutorConfig,
-} from '@sistemazero/studio'
+import type { StudioShareAdapter, StudioTaskSession, StudioTutorConfig } from '@sistemazero/studio'
 import { RefreshCw } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { cloudConfirmRefusal, guideError, progressRefusal } from '@/lib/pensa-guide-errors'
-import { resolveNextPensaMission } from '@/lib/pensa-next-mission'
 import { type CreationsCloud, createCreationsCloud } from '../../lib/creations-cloud'
 import { createStoredSyncedMarks } from '../../lib/creations-sync'
 import {
   editorExitPath,
   linkStudioMission,
   type MissionLinkRefusal,
-  withProvisionalGameLink,
 } from '../../lib/pensa-mission-link'
 import {
   clearPensaRestore,
@@ -53,10 +46,10 @@ import { EMBEDDED_STUDIO_FRAME, EmbeddedAppLoadingBody } from './embedded-app-lo
 import { PensaMissionBlocked } from './pensa-mission-blocked'
 import { StudioFullEditor } from './studio-full-editor'
 import { HostChromeAnnouncer, useHostChrome } from './use-host-chrome'
-import { useNextMissionLabel } from './use-next-mission-label'
-import { usePensaGuideCollapsed } from './use-pensa-guide-collapsed'
 import { useStudioTaskHandoff } from './use-pensa-task-handoff'
 import { usePensaTeamLibrary } from './use-pensa-team-library'
+import { useStudioCreationLibraries } from './use-studio-creation-libraries'
+import { useStudioTaskSession } from './use-studio-task-session'
 
 // O package do Estúdio é pesado (Monaco/Blockly/IndexedDB) e NÃO roda no SSR — por
 // isso carregamos o módulo inteiro DENTRO de um effect (igual ao public-player) e o
@@ -85,6 +78,7 @@ export function StudioFullClient({
   moldaOwned = false,
   narrationEnabled = false,
   voiceInputEnabled = false,
+  proCreationTemplates,
 }: {
   viewerId: string | null
   /**
@@ -124,6 +118,7 @@ export function StudioFullClient({
   moldaOwned?: boolean
   narrationEnabled?: boolean
   voiceInputEnabled?: boolean
+  proCreationTemplates?: readonly import('@sistemazero/core/studio').StudioProTemplateId[]
 }) {
   const router = useRouter()
   const [mod, setMod] = useState<StudioModule | null>(null)
@@ -496,139 +491,25 @@ export function StudioFullClient({
     }
   }, [cloudSync, handoffProjectId, missingTaskProject, mod, viewerId])
 
-  // O guia do Pensa recolhido, lembrado por CRIANÇA e valendo para as três oficinas. O painel
-  // vive no PACOTE e não conhece `viewerId` nem `localStorage`, então o par desce como DADO —
-  // o mesmo idioma do `menu.hidden`/`onToggle` do `hostChrome`.
-  const { collapsed: guiaRecolhido, setCollapsed: setGuiaRecolhido } =
-    usePensaGuideCollapsed(viewerId)
-
-  // "Continuar no Pinta" quando a próxima missão é em outra oficina (ver o hook).
-  const proximaMissaoRotulo = useNextMissionLabel({
-    enabled: handoffV2 && handoffStatus === 'completed',
-    taskId: handoffTaskId,
-    projectId: handoffProjectId,
-    current: 'studio',
+  const navigateTask = useCallback((path: string) => router.push(path), [router])
+  const taskSession = useStudioTaskSession({
+    handoff: taskHandoff,
+    projectId: view.name === 'editor' ? view.projectId : null,
+    viewerId,
+    cloud,
+    retry: retryTaskHandoff,
+    updateProgress: updateTaskProgress,
+    navigate: navigateTask,
+    narrationEnabled,
   })
-
-  const taskSession = useMemo<StudioTaskSession | undefined>(
-    () =>
-      taskHandoff
-        ? {
-            taskId: taskHandoff.task.id,
-            title: taskHandoff.task.title,
-            summary: taskHandoff.task.summary,
-            project: taskHandoff.project,
-            cycle: taskHandoff.cycle,
-            guide: taskHandoff.task.guide,
-            renderListen:
-              narrationEnabled && viewerId
-                ? (stepId) => (
-                    <PrivateZappyVoice
-                      viewerId={viewerId}
-                      reference={{
-                        origin: 'pensa_guide',
-                        taskId: taskHandoff.task.id,
-                        revision: taskHandoff.task.revision,
-                        stepId,
-                      }}
-                    />
-                  )
-                : undefined,
-            nextMissionLabel: proximaMissaoRotulo,
-            onNextMission: async () => {
-              if (!cloudSync) throw guideError('Espere seu jogo ficar guardado na conta.')
-              await cloudSync.cloud
-                .confirm(pensaStudioProjectId(taskHandoff.project.id), { timeoutMs: 15000 })
-                .catch((cause: unknown) => {
-                  throw cloudConfirmRefusal(cause, 'Seu jogo')
-                })
-              const next = await resolveNextPensaMission(taskHandoff.project.id).catch(() => {
-                throw guideError('Não consegui abrir a próxima missão. Tente de novo.')
-              })
-              router.push(next.path)
-            },
-            onNeedHelp: () =>
-              router.push(`/pensa?plano=${encodeURIComponent(taskHandoff.project.id)}`),
-            blocks: taskHandoff.task.context.blocks,
-            // No v2 a anotação feita ao abrir pode ter sido adiada (rede, servidor, corrida): o
-            // jogo abriu, mas o progresso voltou sem `outputRef` e o guia deixava "Experimentei e
-            // funcionou" desligado, sem motivo nem saída. Quem prova a missão é o jogo guardado
-            // (a conclusão monta o `outputRef` com a revisão confirmada logo abaixo), então o
-            // guia recebe o jogo aberto como vínculo provisório.
-            progress: withProvisionalGameLink(
-              taskHandoff.task.progress,
-              taskHandoff.task.guide.contractVersion === 2,
-              pensaStudioProjectId(taskHandoff.project.id),
-            ),
-            onProgress: async (input) => {
-              if (taskHandoff.task.guide.contractVersion === 2 && input.status === 'completed') {
-                if (!cloudSync) throw guideError('Espere seu jogo ficar guardado na conta.')
-                const projectId = pensaStudioProjectId(taskHandoff.project.id)
-                await cloudSync.cloud.confirm(projectId, { timeoutMs: 15000 }).catch((cause) => {
-                  throw cloudConfirmRefusal(cause, 'Seu jogo')
-                })
-                // Falha de rede aqui segue sem frase: o guia mostra o recado da internet.
-                const saved = await cloudSync.cloud.peek(projectId)
-                if (!saved) throw guideError('Seu jogo ainda não foi guardado na conta.')
-                input = {
-                  ...input,
-                  outputRef: {
-                    kind: 'studio_project',
-                    projectId,
-                    saveRevision: String(saved.summary.revision),
-                  },
-                }
-              }
-              const response = await fetch(
-                `/api/pensa/tasks/${encodeURIComponent(taskHandoff.task.id)}/progress`,
-                {
-                  method: 'PATCH',
-                  headers: { 'content-type': 'application/json' },
-                  body: JSON.stringify({
-                    ...input,
-                    expectedUpdatedAt: taskHandoff.task.progress.updatedAt,
-                  }),
-                },
-              )
-              const body = (await response.json().catch(() => null)) as {
-                task?: { progress: StudioTaskSession['progress'] }
-                error?: { code?: string; message?: string }
-              } | null
-              if (response.status === 409) {
-                retryTaskHandoff()
-                throw progressRefusal(409, {
-                  error: {
-                    code: body?.error?.code ?? 'PENSA_TASK_PROGRESS_CONFLICT',
-                    message: body?.error?.message,
-                  },
-                })
-              }
-              if (!response.ok || !body?.task) throw progressRefusal(response.status, body)
-              updateTaskProgress(body.task.progress)
-            },
-            collapsed: guiaRecolhido,
-            onCollapsedChange: setGuiaRecolhido,
-          }
-        : undefined,
-    [
-      taskHandoff,
-      updateTaskProgress,
-      retryTaskHandoff,
-      guiaRecolhido,
-      setGuiaRecolhido,
-      proximaMissaoRotulo,
-      narrationEnabled,
-      viewerId,
-      router,
-      cloudSync,
-    ],
-  )
 
   // Adapter de COMPARTILHAR (Mural) — standalone (SEM aula): `describe` rascunha a
   // descrição via IA no servidor (fail-soft) e `publish` sobe projeto + capa por
   // multipart à rota standalone, que devolve os links. Memoizado (o Studio o latcha).
   const share = useMemo<StudioShareAdapter>(
     () => ({
+      proVerifiedCover: true,
+      publication: createStudioPublicationAdapter(),
       // Desafio do mês: liga o checkbox no ShareDialog (posse checada na página).
       ...(challenge ? { challenge } : {}),
       async generateDescription({ project, title }) {
@@ -636,14 +517,7 @@ export function StudioFullClient({
           const res = await fetch('/api/studio/describe', {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({
-              files: {
-                html: project.files['index.html'],
-                css: project.files['style.css'],
-                js: project.files['script.js'],
-              },
-              title,
-            }),
+            body: JSON.stringify(studioDescriptionInput(project, title)),
           })
           if (!res.ok) return ''
           const body = (await res.json()) as {
@@ -668,11 +542,11 @@ export function StudioFullClient({
           return '' // fail-soft: a criança escreve do zero
         }
       },
-      async publish({ project, coverDataUrl, title, description, challengeKey }) {
+      async publish({ project, coverDataUrl, title, description, challengeKey, requestId }) {
         const form = new FormData()
         form.set('title', title)
         form.set('description', description)
-        form.set('clientIdempotencyKey', crypto.randomUUID())
+        form.set('clientIdempotencyKey', requestId ?? crypto.randomUUID())
         // Tag do desafio (checkbox marcado) — o hub valida posse+mês (drop silencioso).
         if (challengeKey) form.set('challengeKey', challengeKey)
         form.set(
@@ -688,12 +562,17 @@ export function StudioFullClient({
         const body = (await res.json().catch(() => null)) as {
           muralUrl?: string
           playUrl?: string
+          publicationId?: string
           error?: { message?: string }
         } | null
         if (!res.ok) {
           throw new Error(body?.error?.message ?? 'Não foi possível publicar agora.')
         }
-        return { muralUrl: body?.muralUrl, playUrl: body?.playUrl }
+        return {
+          muralUrl: body?.muralUrl,
+          playUrl: body?.playUrl,
+          publicationId: body?.publicationId,
+        }
       },
     }),
     [challenge],
@@ -744,174 +623,11 @@ export function StudioFullClient({
     [zappyEnabled, aiCredits, narrationEnabled, voiceInputEnabled, viewerId],
   )
 
-  // "Trazer do Pinta" (fluxo pull): o Estúdio lista a galeria do Pinta e importa
-  // um desenho por id. O import GRAVA em personal-assets antes de devolver — é o
-  // que liga o auto-update dos jogos (guard `getPersonalAsset` do resyncToStudio
-  // no pinta-client) e o botão "editar desenho". Import dinâmico do SUBPATH
-  // `studio-library` (⚠️ NUNCA a raiz `@sistemazero/pinta` — puxaria o app
-  // inteiro do Pinta pro bundle do /estudio); namespaces re-setados DENTRO de
-  // cada método (nunca confiar em "já setei" — StrictMode/trocas de perfil).
-  const pintaLibrary = useMemo<StudioPintaLibraryAdapter | undefined>(() => {
-    if (!pintaOwned) return undefined
-    return {
-      async list() {
-        const lib = await import('@sistemazero/pinta/studio-library')
-        lib.setPintaStorageNamespace(viewerId ?? '')
-        const drawings = await lib.listGalleryForStudio()
-        return drawings.map((d) => ({
-          id: d.id,
-          name: d.name,
-          role: d.role,
-          style: d.style ?? undefined,
-          updatedAt: d.updatedAt,
-          thumbDataUrl: d.thumbDataUrl,
-          ...(d.projectName ? { projectName: d.projectName } : {}),
-        }))
-      },
-      async import(drawingId) {
-        const lib = await import('@sistemazero/pinta/studio-library')
-        lib.setPintaStorageNamespace(viewerId ?? '')
-        const result = await lib.exportAssetForStudio(drawingId)
-        if (!result.ok) {
-          if (result.reason === 'not-found') {
-            return {
-              ok: false,
-              error: 'Esse desenho não está mais na galeria do Pinta.',
-              code: 'not-found',
-            }
-          }
-          if (result.reason === 'asset-too-big' || result.reason === 'sheet-too-big') {
-            return {
-              ok: false,
-              error: 'Esse desenho é grande demais para o Estúdio.',
-              code: 'too-big',
-            }
-          }
-          return {
-            ok: false,
-            error: 'Não consegui preparar esse desenho agora. Tente de novo.',
-            code: 'raster-failed',
-          }
-        }
-        const bridge = await import('@sistemazero/studio/personal-assets')
-        const saved = await bridge.savePersonalAsset(result.asset, { namespace: viewerId ?? '' })
-        if (!saved.ok) {
-          return {
-            ok: false,
-            error: saved.error ?? 'Não consegui trazer esse desenho agora. Tente de novo.',
-          }
-        }
-        // O upsert pode sufixar o nome (colisão com OUTRO desenho) — o Estúdio
-        // usa o nome salvo, senão os blocos referenciariam um nome divergente.
-        return {
-          ok: true,
-          asset: {
-            ...result.asset,
-            name: saved.name ?? result.asset.name,
-            libRevision: saved.updatedAt,
-          },
-        }
-      },
-    }
-  }, [pintaOwned, viewerId])
-
-  // "Trazer do Molda" (fluxo pull, irmão do de cima): lista a galeria 3D e importa uma
-  // criação por id. O `exportAssetForStudio` já devolve o binário validado pelos tetos
-  // do Estúdio (modelo .glb, textura .png, céu .hdr); o import GRAVA em personal-assets
-  // (com o `kind` e o nome do arquivo) antes de devolver, pelo selo "✓ no projeto".
-  // Import dinâmico do SUBPATH `studio-library` (⚠️ NUNCA a raiz `@sistemazero/molda`,
-  // que puxaria o app inteiro, com three.js, pro bundle do /estudio).
-  const moldaLibrary = useMemo<StudioMoldaLibraryAdapter | undefined>(() => {
-    if (!moldaOwned) return undefined
-    return {
-      async list() {
-        const lib = await import('@sistemazero/molda/studio-library')
-        lib.setMoldaStorageNamespace(viewerId ?? '')
-        const items = await lib.listGalleryForStudio()
-        return items.map((item) => ({
-          id: item.id,
-          name: item.name,
-          kind: item.kind,
-          updatedAt: item.updatedAt,
-          thumbDataUrl: item.thumbDataUrl,
-        }))
-      },
-      async import(creationId, options) {
-        const lib = await import('@sistemazero/molda/studio-library')
-        lib.setMoldaStorageNamespace(viewerId ?? '')
-        const result = await lib.exportAssetForStudio(creationId, {
-          namespace: viewerId ?? '',
-          ...options,
-        })
-        if (!result.ok) {
-          if (result.reason === 'needs-review') {
-            return {
-              ok: false,
-              code: 'needs-review',
-              error: 'Confira as mudanças nesta cópia.',
-              review: result.review,
-            }
-          }
-          if (result.reason === 'not-found') {
-            return {
-              ok: false,
-              error: 'Essa criação não está mais na galeria do Molda.',
-              code: 'not-found',
-            }
-          }
-          if (result.reason === 'asset-too-big') {
-            return {
-              ok: false,
-              error: 'Essa criação é grande demais para o Estúdio.',
-              code: 'too-big',
-            }
-          }
-          return {
-            ok: false,
-            error: 'Não consegui preparar essa criação agora. Tente de novo.',
-            code: 'encode-failed',
-          }
-        }
-        const bridge = await import('@sistemazero/studio/personal-assets')
-        const saved = await bridge.savePersonalAsset(
-          {
-            id: result.asset.id,
-            name: result.asset.name,
-            kind: result.asset.kind,
-            // A textura é imagem, mas NÃO é desenho do Pinta: sem a origem o painel
-            // ofereceria "editar desenho" e abriria o Pinta num id do Molda.
-            origin: 'molda',
-            dataUrl: result.asset.dataUrl,
-            originalFileName: result.asset.originalFileName,
-            ...(result.asset.width !== undefined ? { width: result.asset.width } : {}),
-            ...(result.asset.height !== undefined ? { height: result.asset.height } : {}),
-          },
-          { namespace: viewerId ?? '' },
-        )
-        if (!saved.ok) {
-          return {
-            ok: false,
-            error: saved.error ?? 'Não consegui trazer essa criação agora. Tente de novo.',
-          }
-        }
-        // O upsert pode sufixar o nome (colisão com OUTRA criação) — o Estúdio usa o
-        // nome salvo, senão os blocos referenciariam um nome divergente.
-        return {
-          ok: true,
-          asset: {
-            id: result.asset.id,
-            name: saved.name ?? result.asset.name,
-            kind: result.asset.kind,
-            dataUrl: result.asset.dataUrl,
-            originalFileName: result.asset.originalFileName,
-            ...(result.asset.width !== undefined ? { width: result.asset.width } : {}),
-            ...(result.asset.height !== undefined ? { height: result.asset.height } : {}),
-            ...(saved.updatedAt !== undefined ? { libRevision: saved.updatedAt } : {}),
-          },
-        }
-      },
-    }
-  }, [moldaOwned, viewerId])
+  const { pintaLibrary, moldaLibrary } = useStudioCreationLibraries(
+    viewerId,
+    pintaOwned,
+    moldaOwned,
+  )
 
   // "Trazer da equipe": só no jogo de um plano do Pensa em equipe, para quem programa, e só
   // quando já há arte entregue (o hook confere no servidor; o editor abre sem esperar).
@@ -1123,6 +839,7 @@ export function StudioFullClient({
               onOpenProject={openProject}
               theme={studioTheme}
               professional={proAvailable}
+              proCreationTemplates={proCreationTemplates}
               initialExtensions={tier.initialExtensions}
               allowedExtensions={tier.allowedExtensions}
               showExamples={showExamples}

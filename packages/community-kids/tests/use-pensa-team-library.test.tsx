@@ -74,6 +74,20 @@ test('jogo livre: nem pergunta ao servidor', async () => {
   expect(calls).toEqual([])
 })
 
+test('switching profiles immediately removes a previously granted team library', async () => {
+  serve({ viewer: 'leo', memberCount: 1, items: 2 })
+  const { result, rerender } = renderHook(
+    ({ viewerId }) => usePensaTeamLibrary({ projectId: pensaStudioProjectId(PLAN), viewerId }),
+    { initialProps: { viewerId: 'leo' } },
+  )
+  await waitFor(() => expect(result.current).toBeDefined())
+  const requests = serve({ viewer: 'bia', memberCount: 1, items: 2 })
+  rerender({ viewerId: 'bia' })
+  expect(result.current).toBeUndefined()
+  await waitFor(() => expect(requests.length).toBeGreaterThan(0))
+  expect(result.current).toBeUndefined()
+})
+
 test('plano solo, quem só desenha, ou nenhuma arte entregue: sem botão', async () => {
   for (const scenario of [
     { viewer: 'leo', memberCount: 0, items: 2 },

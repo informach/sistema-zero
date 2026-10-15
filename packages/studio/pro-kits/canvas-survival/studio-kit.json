@@ -1,0 +1,27 @@
+{
+  "id": "canvas-survival",
+  "version": 1,
+  "engine": "canvas",
+  "entry": "src/main.ts",
+  "config": "src/config.ts",
+  "controller": {
+    "module": "src/game.ts",
+    "factory": "createGame",
+    "contract": "src/contracts.ts"
+  },
+  "controls": ["keyboard", "touch", "gamepad"],
+  "actions": ["left", "right", "up", "down", "action"],
+  "objective": { "kind": "survival-or-defeats", "deathWinsTie": true },
+  "performance": {
+    "maxDpr": 1.5,
+    "maxFrameDeltaSeconds": 0.05,
+    "simulationHz": 60,
+    "maxSteps": 3,
+    "maxEnemies": 64,
+    "maxEffects": 256,
+    "targetFps": 60
+  },
+  "qualityProfiles": ["standard", "reduced"],
+  "progress": { "kind": "local-record", "score": "defeated", "version": 1 },
+  "assets": "public/studio-assets/manifest.json"
+}

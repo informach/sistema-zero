@@ -1,0 +1,700 @@
+{
+  "capturedAt": "2026-10-15T17:13:49.008Z",
+  "source": "C:\\Users\\tocha\\Downloads\\162_source_code\\JS Game Starter Kit P27\\JS Game Starter Kit P27",
+  "scope": "Inventário, microverificações dos módulos originais e navegador isolado. Não é validação de produção nem playtest integral.",
+  "inventory": [
+    {
+      "path": "audio/button_click.mp3",
+      "bytes": 18725,
+      "sha256": "21134291ef656ed005a69ca382a0561aa216d51714f65a6eecaa31a78097a0ba"
+    },
+    {
+      "path": "audio/button_hover.mp3",
+      "bytes": 11558,
+      "sha256": "6b09520631c4645f9a2c3fa93c575f09de8a4bef7d3a4f2fde6fa0659da0f1fe"
+    },
+    {
+      "path": "audio/enemy_drifter_death.mp3",
+      "bytes": 24156,
+      "sha256": "7bf593c1c5d554a55b55bda0d3c16f417d985d298c79a03200dc0cde9c4df548"
+    },
+    {
+      "path": "audio/enemy_drifter_hit.mp3",
+      "bytes": 17258,
+      "sha256": "7fe58f7f7d3edba4b57b0e74bd973e9ea7144c54ea08e43d01efb75b8aa93db0"
+    },
+    {
+      "path": "audio/enemy_seeker_death.mp3",
+      "bytes": 16674,
+      "sha256": "ac85f04e11ac56ee3d69ee25af1c48acb43d97122bb2bc89124c66b64044ce4b"
+    },
+    {
+      "path": "audio/enemy_seeker_hit.mp3",
+      "bytes": 15420,
+      "sha256": "f4ecab4991ad2afc64dd4f702925560df85e1a8605c27ae6dffbfec4cca433f3"
+    },
+    {
+      "path": "audio/game_over.mp3",
+      "bytes": 63804,
+      "sha256": "56950768e67f0cf86bed9415506681f87c340c90a766b1c0440148a60140b2b6"
+    },
+    {
+      "path": "audio/mission_complete.mp3",
+      "bytes": 45565,
+      "sha256": "d8fb9b09427320d27e8155601bea69d579342b51f07d2ed2cbc038a8319e0c2c"
+    },
+    {
+      "path": "audio/pause.mp3",
+      "bytes": 13887,
+      "sha256": "6d019492f637aec1de1447c97a16af5222ecb41b97312f663976fd02f791a92a"
+    },
+    {
+      "path": "audio/player_hurt.mp3",
+      "bytes": 17730,
+      "sha256": "500e9749ac8110647ff3c657291dfd73cbfdc89df7ff63dc82e7afebc0e99de8"
+    },
+    {
+      "path": "audio/unpause.mp3",
+      "bytes": 15372,
+      "sha256": "cd29a279103032cc174592fd85d25186779b655f832626ba04ae2d00f0de3e13"
+    },
+    {
+      "path": "css/styles.css",
+      "bytes": 2881,
+      "sha256": "14ffed2c2607b067cddf5cd9aea554608fa31833e4bf9bd3b1c51f96ea780056",
+      "lines": 138
+    },
+    {
+      "path": "images/enemy_drifter_sheet.png",
+      "bytes": 13593,
+      "sha256": "8ca61b71602f6eab015022feba20bd78c1769d589db48e29763302954d9af634",
+      "width": 512,
+      "height": 192,
+      "rgbaBytes": 393216
+    },
+    {
+      "path": "images/enemy_drifter_sheet2.png",
+      "bytes": 17532,
+      "sha256": "c2ffeebc4630a5638a17f2e3434df4b96785ab6fc6e7c3999f953b0af4db9200",
+      "width": 512,
+      "height": 192,
+      "rgbaBytes": 393216
+    },
+    {
+      "path": "images/enemy_drifter.png",
+      "bytes": 1272,
+      "sha256": "b38083230f9dbb31ddad036dd9deae418d0bfaae8a3a0b1ce246f1cd453e1af1",
+      "width": 48,
+      "height": 48,
+      "rgbaBytes": 9216
+    },
+    {
+      "path": "images/enemy_seeker_sheet.png",
+      "bytes": 8499,
+      "sha256": "e59550f3d4c9f35cad62975e4d1cdf37d8d7ba8b07dd2041085f46770c4c90e8",
+      "width": 704,
+      "height": 192,
+      "rgbaBytes": 540672
+    },
+    {
+      "path": "images/enemy_seeker_sheet2.png",
+      "bytes": 10709,
+      "sha256": "ef871ea5f77466028e71564e241841527f84c6fcd80874508fb34639575458e4",
+      "width": 704,
+      "height": 192,
+      "rgbaBytes": 540672
+    },
+    {
+      "path": "images/enemy_seeker.png",
+      "bytes": 727,
+      "sha256": "910e7d256d2ae6d0a593dfb4e3eb1b99b6e7f532fdb17a6826f1df15253c0c52",
+      "width": 38,
+      "height": 25,
+      "rgbaBytes": 3800
+    },
+    {
+      "path": "images/player_sheet.png",
+      "bytes": 330325,
+      "sha256": "f4158f8e4f1b4ca0fbe11601b0fc607145392c4d34bf3e040f289a3b0f3e140e",
+      "width": 832,
+      "height": 3456,
+      "rgbaBytes": 11501568
+    },
+    {
+      "path": "images/player_sheet2.png",
+      "bytes": 125357,
+      "sha256": "2e2188cea11d8c8062cca3e1fdcb631b7eb290d2614354e66ca25f587e4f387c",
+      "width": 832,
+      "height": 3456,
+      "rgbaBytes": 11501568
+    },
+    {
+      "path": "images/player.png",
+      "bytes": 1358,
+      "sha256": "11c147fc14aba06b03bd32d459173e1bf4f2ade138ee5890d631f48138dc8548",
+      "width": 64,
+      "height": 64,
+      "rgbaBytes": 16384
+    },
+    {
+      "path": "index.html",
+      "bytes": 1987,
+      "sha256": "16d18a58e2c38b6aba6184c29dd6f14e281a8db08dd6b3ef2c6cd50561b5764a",
+      "lines": 58
+    },
+    {
+      "path": "js/core/constants.js",
+      "bytes": 1111,
+      "sha256": "fc1fd94f136001acd02c74f2e556d5c43563285e7d3abf09a4c20fe1948bd221",
+      "lines": 40
+    },
+    {
+      "path": "js/core/EventEmitter.js",
+      "bytes": 409,
+      "sha256": "70643cd51aa7a86f5cd8c695b9e5b636ac66472e3a84cccea5294bcdddfd0c82",
+      "lines": 15
+    },
+    {
+      "path": "js/core/Game.js",
+      "bytes": 7851,
+      "sha256": "1b481c6b09dc7b017a53d3999cf30b19522497166281cde9a5daa7125c3f2353",
+      "lines": 210
+    },
+    {
+      "path": "js/data/audioData.js",
+      "bytes": 810,
+      "sha256": "dcfd10fe2c6db970e13c9df8db12a0b03e13bad9d080b8c5297efcd16faf9002",
+      "lines": 14
+    },
+    {
+      "path": "js/data/enemyData.js",
+      "bytes": 2394,
+      "sha256": "a92f10ff919f016fe95a4d5d0619fa175699031e302ecbf611b9e09c437b64da",
+      "lines": 67
+    },
+    {
+      "path": "js/data/particleData.js",
+      "bytes": 768,
+      "sha256": "e167ad6ebe65980a96e3dbf5a206b80b8d37bdba9c9e97f90d19aafe677e35e7",
+      "lines": 35
+    },
+    {
+      "path": "js/data/playerData.js",
+      "bytes": 1229,
+      "sha256": "8bec201290aff791099d9bebca78562e6e669e42972416eca97d54b0df4e948e",
+      "lines": 30
+    },
+    {
+      "path": "js/entities/behaviours/enemy/DriftBehaviour.js",
+      "bytes": 1476,
+      "sha256": "159591e4268e4c6f53ca252de8f85c80232cd60c5249bab5a81a27ede41afa4e",
+      "lines": 46
+    },
+    {
+      "path": "js/entities/behaviours/enemy/EnemyBehaviourFactory.js",
+      "bytes": 531,
+      "sha256": "b71bf271e0ff68ce0170f85de7a9d4da5e6be5836939893f3cd4c2cac7546f79",
+      "lines": 16
+    },
+    {
+      "path": "js/entities/behaviours/enemy/SeekBehaviour.js",
+      "bytes": 548,
+      "sha256": "ec5265e757510c3bbdf4fbc5cc35c898f344bacd0302ada037beec36d9a4b291",
+      "lines": 16
+    },
+    {
+      "path": "js/entities/behaviours/particle/ImplosionBehaviour.js",
+      "bytes": 1508,
+      "sha256": "34bc67e5207cec778a64ec0b7bcba8c5a968436ab3f2c5866423c89f3ea48317",
+      "lines": 41
+    },
+    {
+      "path": "js/entities/behaviours/particle/ParticleBehaviourFactory.js",
+      "bytes": 595,
+      "sha256": "35d9ab0fa26c1e05d7d9e5f25d0dd14d8170fb887d6a65c8566e7a3db4818c82",
+      "lines": 16
+    },
+    {
+      "path": "js/entities/behaviours/particle/RadialBehaviour.js",
+      "bytes": 247,
+      "sha256": "68de35615b27de661755b57d09e2527d1b998ace95dd80793d837b0c8a25a614",
+      "lines": 8
+    },
+    {
+      "path": "js/entities/Enemy.js",
+      "bytes": 3734,
+      "sha256": "dd1edfc3ecc29257a34628db5b0ac26479ffaae4a505e68d2e2f8a3470cff47e",
+      "lines": 116
+    },
+    {
+      "path": "js/entities/Particle.js",
+      "bytes": 897,
+      "sha256": "5e7d3a206c7441d584958502a896ed6614cc9878fb9689e4e2c23eb232a6a282",
+      "lines": 37
+    },
+    {
+      "path": "js/entities/Player.js",
+      "bytes": 4539,
+      "sha256": "94ab4436d0d6fc185b252f97c251c7876c7eed9e7d25626d64f8d85b9a391e5f",
+      "lines": 123
+    },
+    {
+      "path": "js/main.js",
+      "bytes": 66,
+      "sha256": "4ea84e8311afb501b4360a38da3d77d26f81bf112189ae2eaee2db2d9ce01329",
+      "lines": 3
+    },
+    {
+      "path": "js/managers/AudioManager.js",
+      "bytes": 1490,
+      "sha256": "31ad5716ff984be5cc38b54d95787b0fda678e46e01652badedc4d73da090bab",
+      "lines": 47
+    },
+    {
+      "path": "js/managers/CollisionManager.js",
+      "bytes": 1993,
+      "sha256": "d15502d2edc8133243ad3bdeb919b30f2e8d08e2a5cd0845940fc4cfeeec2a7d",
+      "lines": 49
+    },
+    {
+      "path": "js/managers/EnemyManager.js",
+      "bytes": 1488,
+      "sha256": "37752be798d5c7df50f625c3dc051062a35420aa72c403dc6a3d8deb61c07a02",
+      "lines": 47
+    },
+    {
+      "path": "js/managers/EnemySpawner.js",
+      "bytes": 1837,
+      "sha256": "3954a16bd7d14709304073062b85dd67ea17f8cedb351aecfc2e859d90fdbad9",
+      "lines": 55
+    },
+    {
+      "path": "js/managers/ImageManager.js",
+      "bytes": 1459,
+      "sha256": "fb0c3b42489de96dd42818add58601545c4c4ef6e6859e90f6192f0f103b5f32",
+      "lines": 46
+    },
+    {
+      "path": "js/managers/ParticleManager.js",
+      "bytes": 2500,
+      "sha256": "9cb8076fea24350acb92c38f66131d19004201a21ef1cd71d5d32be456c5fc99",
+      "lines": 65
+    },
+    {
+      "path": "js/managers/UIManager.js",
+      "bytes": 2357,
+      "sha256": "27b46bca0448e276897177c61577ee9bc1be07578e8f76193919755f60f7063c",
+      "lines": 52
+    },
+    {
+      "path": "js/systems/CollisionSystem.js",
+      "bytes": 441,
+      "sha256": "4b2dff894f2f52250c2f51f0b70d306d9dfdb3b59dc7ca7d78bc6bb06a0c4ac7",
+      "lines": 17
+    },
+    {
+      "path": "js/systems/RenderSystem.js",
+      "bytes": 5617,
+      "sha256": "2915966fbe6b2ac78e3a7787cb5c2fdc9d2c82c006785dd22d41244734b0b770",
+      "lines": 151
+    },
+    {
+      "path": "js/utils/AnimatorController.js",
+      "bytes": 2928,
+      "sha256": "19056c01699bc2b445fc84070c3247c9c1493f26c9718e789546cbcf0f10ab7e",
+      "lines": 87
+    },
+    {
+      "path": "js/utils/ObjectPooler.js",
+      "bytes": 1310,
+      "sha256": "221545045f1e4b17f59a02196888f4c7e594278cbbc703e901c596f0fe913d15",
+      "lines": 48
+    }
+  ],
+  "summary": {
+    "files": 50,
+    "bytes": 826522,
+    "jsFiles": 28,
+    "loadedSheetRgbaBytes": 24870912
+  },
+  "microchecks": {
+    "atlasChecks": [
+      {
+        "sheet": "player_sheet",
+        "state": "idle",
+        "valid": true
+      },
+      {
+        "sheet": "player_sheet",
+        "state": "moveDown",
+        "valid": true
+      },
+      {
+        "sheet": "player_sheet",
+        "state": "moveUp",
+        "valid": true
+      },
+      {
+        "sheet": "player_sheet",
+        "state": "moveLeft",
+        "valid": true
+      },
+      {
+        "sheet": "player_sheet",
+        "state": "moveRight",
+        "valid": true
+      },
+      {
+        "sheet": "player_sheet",
+        "state": "hit",
+        "valid": true
+      },
+      {
+        "sheet": "player_sheet",
+        "state": "death",
+        "valid": true
+      },
+      {
+        "sheet": "player_sheet2",
+        "state": "idle",
+        "valid": true
+      },
+      {
+        "sheet": "player_sheet2",
+        "state": "moveDown",
+        "valid": true
+      },
+      {
+        "sheet": "player_sheet2",
+        "state": "moveUp",
+        "valid": true
+      },
+      {
+        "sheet": "player_sheet2",
+        "state": "moveLeft",
+        "valid": true
+      },
+      {
+        "sheet": "player_sheet2",
+        "state": "moveRight",
+        "valid": true
+      },
+      {
+        "sheet": "player_sheet2",
+        "state": "hit",
+        "valid": true
+      },
+      {
+        "sheet": "player_sheet2",
+        "state": "death",
+        "valid": true
+      },
+      {
+        "sheet": "enemy_drifter_sheet",
+        "state": "idle",
+        "valid": true
+      },
+      {
+        "sheet": "enemy_drifter_sheet",
+        "state": "move",
+        "valid": true
+      },
+      {
+        "sheet": "enemy_drifter_sheet",
+        "state": "hit",
+        "valid": true
+      },
+      {
+        "sheet": "enemy_drifter_sheet",
+        "state": "death",
+        "valid": true
+      },
+      {
+        "sheet": "enemy_drifter_sheet2",
+        "state": "idle",
+        "valid": true
+      },
+      {
+        "sheet": "enemy_drifter_sheet2",
+        "state": "move",
+        "valid": true
+      },
+      {
+        "sheet": "enemy_drifter_sheet2",
+        "state": "hit",
+        "valid": true
+      },
+      {
+        "sheet": "enemy_drifter_sheet2",
+        "state": "death",
+        "valid": true
+      },
+      {
+        "sheet": "enemy_seeker_sheet",
+        "state": "move",
+        "valid": true
+      },
+      {
+        "sheet": "enemy_seeker_sheet",
+        "state": "hit",
+        "valid": true
+      },
+      {
+        "sheet": "enemy_seeker_sheet",
+        "state": "death",
+        "valid": true
+      },
+      {
+        "sheet": "enemy_seeker_sheet2",
+        "state": "move",
+        "valid": true
+      },
+      {
+        "sheet": "enemy_seeker_sheet2",
+        "state": "hit",
+        "valid": true
+      },
+      {
+        "sheet": "enemy_seeker_sheet2",
+        "state": "death",
+        "valid": true
+      }
+    ],
+    "audioChecks": [
+      {
+        "name": "pause",
+        "path": "./audio/pause.mp3",
+        "present": true
+      },
+      {
+        "name": "unpause",
+        "path": "./audio/unpause.mp3",
+        "present": true
+      },
+      {
+        "name": "button_hover",
+        "path": "./audio/button_hover.mp3",
+        "present": true
+      },
+      {
+        "name": "button_click",
+        "path": "./audio/button_click.mp3",
+        "present": true
+      },
+      {
+        "name": "player_hurt",
+        "path": "./audio/player_hurt.mp3",
+        "present": true
+      },
+      {
+        "name": "game_over",
+        "path": "./audio/game_over.mp3",
+        "present": true
+      },
+      {
+        "name": "mission_complete",
+        "path": "./audio/mission_complete.mp3",
+        "present": true
+      },
+      {
+        "name": "enemy_drifter_hit",
+        "path": "./audio/enemy_drifter_hit.mp3",
+        "present": true
+      },
+      {
+        "name": "enemy_drifter_death",
+        "path": "./audio/enemy_drifter_death.mp3",
+        "present": true
+      },
+      {
+        "name": "enemy_seeker_hit",
+        "path": "./audio/enemy_seeker_hit.mp3",
+        "present": true
+      },
+      {
+        "name": "enemy_seeker_death",
+        "path": "./audio/enemy_seeker_death.mp3",
+        "present": true
+      }
+    ],
+    "missionAfterDeath": {
+      "health": 0,
+      "dead": true,
+      "missionCompleted": true,
+      "events": [
+        "mission:complete"
+      ]
+    },
+    "knockback": [
+      {
+        "hz": 10,
+        "distance": 196
+      },
+      {
+        "hz": 30,
+        "distance": 177.7777777777777
+      },
+      {
+        "hz": 60,
+        "distance": 173.3333333333335
+      },
+      {
+        "hz": 120,
+        "distance": 171.1666666666664
+      }
+    ],
+    "customAnimation50fps": {
+      "dt": 0.1,
+      "advancedFrames": 1,
+      "expectedFrames": 5,
+      "caveat": "Configuração de extensão; presets originais usam intervalos >=0.1s."
+    },
+    "pool": {
+      "initialSize": 1,
+      "activeAfterThreeGets": 3,
+      "freeAfterThreeGets": 0
+    }
+  },
+  "browser": {
+    "engine": "Playwright Chromium headless",
+    "instrumentation": "Entrada main expõe instância original; contador envolve RAF sem mudar seu agendamento. Escape repeat e blur são eventos sintéticos dirigidos.",
+    "loaded": {
+      "smoothing": true,
+      "images": 6,
+      "sounds": 11
+    },
+    "pause": {
+      "before": {
+        "state": "paused",
+        "time": 2.2564999999992534,
+        "raf": 193
+      },
+      "after": {
+        "state": "paused",
+        "time": 2.2564999999992534,
+        "raf": 215
+      },
+      "callbacksWhilePaused": 22
+    },
+    "repeatedEscape": "playing",
+    "afterBlur": "playing",
+    "mobile": {
+      "canvas": {
+        "x": 15,
+        "y": 320.75,
+        "width": 360,
+        "height": 202.5
+      },
+      "buttons": [
+        {
+          "text": "Play",
+          "visible": false
+        },
+        {
+          "text": "RESUME",
+          "visible": false
+        },
+        {
+          "text": "QUIT TO MENU",
+          "visible": false
+        },
+        {
+          "text": "Play Again",
+          "visible": false
+        },
+        {
+          "text": "Main Menu",
+          "visible": false
+        },
+        {
+          "text": "Play Again",
+          "visible": false
+        },
+        {
+          "text": "Main Menu",
+          "visible": false
+        }
+      ]
+    },
+    "pageErrors": []
+  },
+  "studioSnapshot": [
+    {
+      "path": ".audits/studio-pro-proposta-v2-2026-10-15.md",
+      "sha256": "3d4685a9d0019a0cea082c839db8bcc8c34821c2f02887e0e89c1e8f6300dd8a",
+      "bytes": 47699
+    },
+    {
+      "path": ".audits/studio-gamedev-aproveitamento-v2-2026-10-15.md",
+      "sha256": "d827e23c33fd47d4a6da262d83b6a50a2d465a699432a48f70206c3161f79f3c",
+      "bytes": 22875
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-15-studio-pro-implementacao.md",
+      "sha256": "9a1c92b55c36125585e3470cee0e8fc330100f6c26b9fb0b5238c4a5a92c96f9",
+      "bytes": 29104
+    },
+    {
+      "path": "packages/core/src/studio/pro-templates.ts",
+      "sha256": "99d8a7d0e4e55b12c4c77a62175befa2703456741b72074c0b6bded3a3b03c23",
+      "bytes": 2741
+    },
+    {
+      "path": "packages/core/src/studio/pro-build.ts",
+      "sha256": "6215f4e6b8c060a8d12a028f2c653e843a8f02198cf7b493bf67453a3863cebb",
+      "bytes": 2249
+    },
+    {
+      "path": "packages/core/src/studio/pro-artifact.ts",
+      "sha256": "d49f55c1bed1dad1cbb5f714612b075280af512522495629fbf178cf8bf73ba3",
+      "bytes": 3807
+    },
+    {
+      "path": "packages/studio/src/components/code/pro-templates/games.ts",
+      "sha256": "25c23c2bb1d515acd5b8995f3278ce2f3737c1feaa584b74b6780767e9ca5028",
+      "bytes": 4907
+    },
+    {
+      "path": "packages/studio/src/components/code/pro-templates/games/shared.ts",
+      "sha256": "84c675d4820142d5fd4bb93c19833359126f5754756adbb13dba7f1f70ce3b79",
+      "bytes": 14035
+    },
+    {
+      "path": "packages/studio/src/core/project.ts",
+      "sha256": "d96ea68b53354ddad93dbd34e6a411ea5c418dc7e10be111ce167b13ec37da17",
+      "bytes": 32165
+    },
+    {
+      "path": "packages/studio/src/core/proAssets.ts",
+      "sha256": "d477d2a56c7d8ed6fdd611d13d8fb3647eca8035e98d758d1f35abb6ed062d33",
+      "bytes": 7383
+    },
+    {
+      "path": "packages/studio/src/core/proAssetPaths.ts",
+      "sha256": "fb57d7f5905e3a2c3811b297577c169a1a70c99fd7390fbb1eb7d77266c51f8d",
+      "bytes": 748
+    },
+    {
+      "path": "packages/studio/src/official-extensions/game-2d-advanced/runtime.ts",
+      "sha256": "3db94c58aeaeab5663b1e85b867aeac8c8116d2225ddebcc28f7a2870df125e3",
+      "bytes": 234850
+    }
+  ],
+  "sourceUnchanged": true,
+  "finalStudioReview": {
+    "capturedAt": "2026-10-15T17:23:34.885Z",
+    "changes": "Relidos games.ts/shared.ts após mudanças concorrentes: GameController/GameSnapshot, controller no manifesto e qualityProfiles/reducedQuality/onQuality. Proposta ajustada. Dispatch Canvas sem ID e manifesto public/assets ainda presentes.",
+    "files": [
+      {
+        "path": "packages/studio/src/components/code/pro-templates/games.ts",
+        "bytes": 5057,
+        "sha256": "a231f1976912941ee20a9cee06552ee978d2723fbea222751567f6917f77f53d"
+      },
+      {
+        "path": "packages/studio/src/components/code/pro-templates/games/shared.ts",
+        "bytes": 14994,
+        "sha256": "7da8962e38caa07ca8dd3c9d445e63bb52ff529de93837ebff20ad0066778fc9"
+      }
+    ]
+  }
+}

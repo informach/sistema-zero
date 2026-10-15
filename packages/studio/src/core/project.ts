@@ -1,6 +1,7 @@
 import type { SZIRInput } from '#ir'
 import { createBlankProjectSnapshot } from './blankProject'
 import type { IDEMode } from './modes'
+import { validProAssetPath } from './proAssetPaths'
 import type { ProjectKind, ProjectTree, ProProjectMeta } from './proProject'
 
 export interface ProjectFiles {
@@ -119,6 +120,10 @@ export interface ProjectTilemapMeta {
  * (retrocompatível: projetos legados não têm).
  */
 export interface ProjectAsset {
+  /** Optional preserved URL from conversion or an imported binary file. */
+  proPath?: string
+  /** Explicit provenance, never inferred from the file extension. */
+  license?: { name: string; attribution?: string; sourceUrl?: string }
   /** Estável (gerado no browser). Fallback de saneamento: o próprio `name`. */
   id: string
   /** Nome único amigável, kebab-case, referenciado pelos blocos (ex.: `heroi`). */
@@ -518,6 +523,25 @@ export function sanitizeProjectAssets(raw: unknown): ProjectAsset[] {
       kind,
       dataUrl: a.dataUrl,
       source,
+    }
+    if (validProAssetPath(a.proPath)) asset.proPath = a.proPath
+    if (a.license && typeof a.license === 'object' && !Array.isArray(a.license)) {
+      const license = a.license as Record<string, unknown>
+      if (
+        typeof license.name === 'string' &&
+        license.name.length > 0 &&
+        license.name.length <= 120
+      ) {
+        asset.license = { name: license.name }
+        if (typeof license.attribution === 'string' && license.attribution.length <= 600)
+          asset.license.attribution = license.attribution
+        if (
+          typeof license.sourceUrl === 'string' &&
+          license.sourceUrl.length <= 1000 &&
+          /^https?:\/\//.test(license.sourceUrl)
+        )
+          asset.license.sourceUrl = license.sourceUrl
+      }
     }
     if (fileName && isAsset3DKind(kind)) asset.originalFileName = fileName.slice(0, 128)
     if (typeof a.width === 'number' && Number.isFinite(a.width) && a.width > 0) {

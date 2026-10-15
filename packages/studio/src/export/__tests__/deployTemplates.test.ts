@@ -33,6 +33,21 @@ describe('proDeployTemplates', () => {
   it('README sem travessao', () => {
     expect(files['README.md']).not.toContain('—')
   })
+
+  it('copia o lock antes da instalação e seleciona ci ou install conforme presença', () => {
+    expect(files.Dockerfile).toContain('COPY package*.json ./')
+    expect(files.Dockerfile).toContain(
+      'if [ -f package-lock.json ]; then npm ci; else npm install; fi',
+    )
+    expect(files.Dockerfile!.indexOf('COPY package*.json')).toBeLessThan(
+      files.Dockerfile!.indexOf('RUN if'),
+    )
+    expect(files['README.md']).toContain('ainda nao inclui `package-lock.json`')
+    const locked = proDeployTemplates('Com lock', true)
+    expect(locked['README.md']).toContain('Railway roda `npm ci`')
+    expect(locked['README.md']).toContain('pacote inclui `package-lock.json`')
+    expect(locked['README.md']).not.toContain('ainda nao inclui')
+  })
 })
 
 describe('higiene do nome no titulo do README', () => {

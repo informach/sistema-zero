@@ -13,6 +13,7 @@ interface PublicStageProps {
   onRestart: () => void
   /** Console de fliperama (direcional + A/B + barra) em volta do jogo. */
   showControls: boolean
+  screenshotEnabled?: boolean
   /** O palco gira 90° para usar o lado comprido do aparelho. */
   rotated: boolean
   landscape: boolean
@@ -41,6 +42,7 @@ export function PublicStage({
   iframeRef,
   onRestart,
   showControls,
+  screenshotEnabled,
   rotated,
   landscape,
   stageAspect,
@@ -293,7 +295,12 @@ export function PublicStage({
             </div>
           ) : null}
           {showControls ? (
-            <CtrlBar iframeRef={iframeRef} fullscreenTargetRef={consoleRef} onRestart={onRestart} />
+            <CtrlBar
+              iframeRef={iframeRef}
+              fullscreenTargetRef={consoleRef}
+              onRestart={onRestart}
+              screenshotEnabled={screenshotEnabled}
+            />
           ) : null}
         </div>
       </div>

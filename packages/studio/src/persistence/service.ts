@@ -3,6 +3,7 @@ import type { Project } from '#core'
 // núcleo e não pode arrastar Blockly (workspaceState → buildIR → blockly/core).
 import { isBlocksStateEmpty } from '../blockly/blocksStateShape'
 import { snapshotProjectWithCurrentAuthority } from '../state/bridgeAuthority'
+import { flushProjectOperations, registerProjectPersistence } from '../state/projectOperations'
 import type { BlocksHydrationStatus, ProjectStoreApi } from '../state/projectStore'
 import type { StudioPersistenceAdapter } from './types'
 
@@ -68,6 +69,8 @@ export interface PersistenceService {
   hydrateAfterLoad(project: Project): void
   /** Salvar explícito (botão Salvar / handle.save()): cancela o debounce e persiste já. */
   save(): Promise<void>
+  /** Saves a complete original copy before activating the Pro document. */
+  promoteToPro(): Promise<void>
   /** Cancel pending autosaves while an external writer owns the project. */
   suspend(): void
   resume(): void
@@ -218,11 +221,12 @@ export function createPersistenceService(
     // rejeita (task captura tudo), mas blindamos com o 2º handler.
     const next = prev ? prev.then(task, task) : task()
     saveChains.set(projectId, next)
-    void next.finally(() => {
+    const cleanup = () => {
       // Só limpa se ESTA execução ainda for a cauda — uma nova edição já pode
       // ter encadeado outra task no mesmo id.
       if (saveChains.get(projectId) === next) saveChains.delete(projectId)
-    })
+    }
+    void next.then(cleanup, cleanup)
     return next
   }
 
@@ -291,6 +295,28 @@ export function createPersistenceService(
     attach,
     hydrateAfterLoad,
     save,
+    promoteToPro: async () => {
+      const currentId = store.getState().project?.id
+      if (!currentId || store.getState().project?.kind === 'pro') return
+      if (isFenced(serviceScopeIdentity, currentId))
+        throw new Error('Este projeto foi removido e não pode ser convertido.')
+      if (currentId && shouldStripBlocks(currentId))
+        throw new Error('Aguarde os blocos originais terminarem de carregar antes de converter.')
+      if (!adapter && !service.handlers.onSave)
+        throw new Error('É preciso guardar uma cópia original antes de converter este projeto.')
+      await save()
+      if (store.getState().project?.id !== currentId || isFenced(serviceScopeIdentity, currentId))
+        throw new Error('O projeto mudou durante o salvamento. A conversão foi cancelada.')
+      if (shouldStripBlocks(currentId))
+        throw new Error('Aguarde os blocos originais terminarem de carregar antes de converter.')
+      await store.getState().convertToPro(async (original) => {
+        await runSerialized(original.id, async () => {
+          if (adapter) await adapter.save(original)
+          await service.handlers.onSave?.(original)
+        })
+      })
+      await save()
+    },
     suspend: () => {
       suspended = true
       clearAllTimers()
@@ -476,7 +502,7 @@ export function createPersistenceService(
     pending.set(project.id, { timer, project, since })
   }
 
-  function flushPending(): void {
+  function flushPending(exiting = false): void {
     if (suspended) return
     // O editor pode ainda estar dentro do debounce próprio (ex.: Blockly, 120ms),
     // sem nenhuma mutação visível na store. Materializá-lo DEVE vir antes até do
@@ -502,11 +528,22 @@ export function createPersistenceService(
       // do adapter remoto será abortado pela navegação, então o host precisa
       // trocar para navigator.sendBeacon / fetch keepalive ao ver este reason.
       emitChange(snapshotForSave(project), 'flush')
-      void persistAndMark(project)
+      if (exiting && adapter?.flushOnExit && !isFenced(serviceScopeIdentity, project.id)) {
+        void adapter
+          .flushOnExit(snapshotForSave(project), {
+            incompleteBlocks: shouldStripBlocks(project.id),
+          })
+          .catch((error) => {
+            const message = formatPersistenceError(error)
+            if (store.getState().project === project) store.getState().markSaveFailed(message)
+            emitError(message)
+          })
+      } else void persistAndMark(project)
     }
   }
 
   function attach(): () => void {
+    const unregisterPersistence = registerProjectPersistence(store, adapter)
     attachedAutosaveDelay = autosaveDelay
     attachedAutosaveMaxWait = autosaveMaxWait
     const unsub = store.subscribe((state, prev) => {
@@ -519,14 +556,21 @@ export function createPersistenceService(
       if (!state.isDirty) return
       schedule(state.project)
     })
-    const flushOnPageExit = () => flushPending()
+    const flushOnPageExit = () => flushPending(true)
     // Aba ESCONDIDA (trocar de app ou bloquear a tela no iPad, trocar de aba): o
     // navegador pode descartar uma página em segundo plano sem `pagehide` nenhum (o
     // Safari do iPad faz isso), e o `visibilitychange` para `hidden` é o último evento
     // com que dá para contar. Grava o que estiver pendente, como na saída. Voltar para
     // a aba não faz nada: o dedupe do `flushed` só re-arma com uma edição nova.
     const flushWhenHidden = () => {
-      if (document.visibilityState === 'hidden') flushPending()
+      if (document.visibilityState === 'hidden') flushPending(true)
+      else {
+        const current = store.getState()
+        if (adapter?.flushOnExit && flushed && current.project && current.isDirty) {
+          flushed = false
+          void persistAndMark(current.project)
+        }
+      }
     }
     // `pagehide`/`beforeunload`/`visibilitychange` só existem no browser. O Studio é
     // browser-only (`ssr:false`), mas instanciar o serviço fora do DOM (SSR, testes sem
@@ -544,6 +588,7 @@ export function createPersistenceService(
       // Unmount também drena o que está pendente — fechar um modal com o
       // Studio não pode perder a última edição.
       flushPending()
+      unregisterPersistence()
       unsub()
       if (hasWindow) {
         window.removeEventListener('pagehide', flushOnPageExit)
@@ -560,6 +605,16 @@ export function createPersistenceService(
     // Salvar é um limite de snapshot tanto quanto pagehide/unmount. A store só é
     // lida depois que os editores materializam os buffers que ainda seguram.
     coordination.flushPendingEditorEdits?.()
+    if (store.getState().project?.kind === 'pro') {
+      try {
+        await flushProjectOperations(store)
+      } catch (error) {
+        const message = formatPersistenceError(error)
+        store.getState().markSaveFailed(message)
+        emitError(message)
+        throw error
+      }
+    }
     const project = store.getState().project
     if (!project) return
     stageLocally(project)

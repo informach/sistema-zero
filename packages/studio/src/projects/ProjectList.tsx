@@ -1,3 +1,7 @@
+import {
+  STUDIO_PRO_DEFAULT_CREATION_IDS,
+  type StudioProTemplateId,
+} from '@sistemazero/core/studio/pro-templates'
 import type { JSX } from 'react'
 import {
   lazy,
@@ -40,6 +44,7 @@ import {
   type ProjectChangedDetail,
   type ProjectSummary,
 } from '../state/persistence'
+import { captureProjectStorageScope } from '../state/projectStorageRuntime'
 import { type ProjectSortOrder, useSettingsStore } from '../state/settingsStore'
 import { type StudioHostChromeStatus, useStudioHostChrome } from '../studio/host-chrome'
 import { useT } from '../studio/i18n'
@@ -65,6 +70,8 @@ export interface ProjectListProps {
   onOpenProject: (projectId: string) => void
   /** Habilita a criação de projetos profissionais (host com COOP/COEP). */
   professional?: boolean
+  /** Explicit creation rollout. Omitted: web starters only; existing projects remain readable. */
+  proCreationTemplates?: readonly StudioProTemplateId[]
   /** Extensões instaladas automaticamente num projeto básico novo. */
   initialExtensions?: readonly string[]
   /** Extensões que a jornada permite; usadas também pelo aviso de importação. */
@@ -151,6 +158,7 @@ function HostStatusPill({ status }: { status: StudioHostChromeStatus }): JSX.Ele
 export function ProjectList({
   onOpenProject,
   professional = false,
+  proCreationTemplates = STUDIO_PRO_DEFAULT_CREATION_IDS,
   initialExtensions,
   allowedExtensions,
   theme: themeProp,
@@ -356,17 +364,51 @@ export function ProjectList({
 
   // Referência estável: inline, `listProTemplates()` novo a cada render entraria
   // nas deps do reset do modal e apagaria o nome enquanto a criança digita.
-  const templates = useMemo(() => (professional ? listProTemplates() : undefined), [professional])
+  const templates = useMemo(
+    () =>
+      professional
+        ? listProTemplates().filter((template) => proCreationTemplates.includes(template.id))
+        : undefined,
+    [professional, proCreationTemplates],
+  )
+  const creationTemplates = useRef(templates)
+  creationTemplates.current = templates
+
+  const creationSequence = useRef(0)
+  const creationMounted = useRef(true)
+  useEffect(() => {
+    creationMounted.current = true
+    return () => {
+      creationMounted.current = false
+      creationSequence.current++
+    }
+  }, [])
 
   const handleCreate = async (name: string, opts?: NewProjectCreateOptions) => {
-    const { useProjectStore } = await import('../state/projectStore')
-    const { createProject, createProProject } = useProjectStore.getState()
-    const created =
-      opts?.kind === 'pro'
-        ? await createProProject(name, opts.templateId)
-        : await createProject(name, initialExtensions)
-    setModalOpen(false)
-    onOpenProject(created.id)
+    // Antes até do import: um chunk lento não pode começar a criação no perfil seguinte.
+    const scope = captureProjectStorageScope()
+    const sequence = ++creationSequence.current
+    const current = () =>
+      creationMounted.current &&
+      creationSequence.current === sequence &&
+      captureProjectStorageScope() === scope &&
+      (opts?.kind !== 'pro' ||
+        Boolean(creationTemplates.current?.some((template) => template.id === opts.templateId)))
+    try {
+      const { useProjectStore } = await import('../state/projectStore')
+      if (!current()) return
+      const { createProject, createProProject } = useProjectStore.getState()
+      const created =
+        opts?.kind === 'pro'
+          ? await createProProject(name, opts.templateId, { isCurrent: current })
+          : await createProject(name, initialExtensions)
+      if (!current()) return
+      setModalOpen(false)
+      onOpenProject(created.id)
+    } catch (error) {
+      // Uma conclusão da tela anterior não apresenta erro nem fecha o modal da atual.
+      if (current()) throw error
+    }
   }
 
   const handleImported = (id: string) => {

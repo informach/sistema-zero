@@ -24,6 +24,9 @@ export type { ErrorEnvelope }
 
 /** Mapeia o `code` de domínio para o status HTTP apropriado. */
 const DOMAIN_STATUS: Record<string, number> = {
+  STUDIO_AI_UNAVAILABLE: 503,
+  STUDIO_AI_CONFLICT: 409,
+  STUDIO_BUILDER_CONFLICT: 409,
   LIVE_NOT_FOUND: 404,
   LIVE_ACCESS_DENIED: 403,
   LIVE_CONFLICT: 409,

@@ -1,0 +1,165 @@
+{
+  "version": 1,
+  "frameSize": 64,
+  "assets": [
+    {
+      "id": "canvas-survival-player-v1",
+      "role": "player",
+      "file": "player.png",
+      "width": 640,
+      "height": 64,
+      "bytes": 2381,
+      "sha256": "108abd7946d7c157e88721c5bffb3430b0d52f5b3e0bc9de2e15fa3c25f81cc4",
+      "sprite": {
+        "frameW": 64,
+        "frameH": 64,
+        "animations": [
+          {
+            "name": "idle",
+            "from": 0,
+            "to": 1,
+            "fps": 4,
+            "loop": true
+          },
+          {
+            "name": "walk",
+            "from": 2,
+            "to": 5,
+            "fps": 8,
+            "loop": true
+          },
+          {
+            "name": "hurt",
+            "from": 6,
+            "to": 6,
+            "fps": 10,
+            "loop": false
+          },
+          {
+            "name": "death",
+            "from": 7,
+            "to": 9,
+            "fps": 10,
+            "loop": false
+          }
+        ],
+        "hitbox": {
+          "x": 0.265625,
+          "y": 0.25,
+          "w": 0.46875,
+          "h": 0.5
+        }
+      },
+      "license": {
+        "name": "CC0-1.0",
+        "attribution": "Arte original procedural do Sistema Zero, 2026. Veja PACK-LICENSE.md."
+      }
+    },
+    {
+      "id": "canvas-survival-seeker-v1",
+      "role": "seeker",
+      "file": "seeker.png",
+      "width": 640,
+      "height": 64,
+      "bytes": 2468,
+      "sha256": "a984e7c9d51770d72bf7e5e187a497515f398ed33eefa059bce007272945d935",
+      "sprite": {
+        "frameW": 64,
+        "frameH": 64,
+        "animations": [
+          {
+            "name": "idle",
+            "from": 0,
+            "to": 1,
+            "fps": 4,
+            "loop": true
+          },
+          {
+            "name": "walk",
+            "from": 2,
+            "to": 5,
+            "fps": 8,
+            "loop": true
+          },
+          {
+            "name": "hurt",
+            "from": 6,
+            "to": 6,
+            "fps": 10,
+            "loop": false
+          },
+          {
+            "name": "death",
+            "from": 7,
+            "to": 9,
+            "fps": 10,
+            "loop": false
+          }
+        ],
+        "hitbox": {
+          "x": 0.1875,
+          "y": 0.1875,
+          "w": 0.625,
+          "h": 0.625
+        }
+      },
+      "license": {
+        "name": "CC0-1.0",
+        "attribution": "Arte original procedural do Sistema Zero, 2026. Veja PACK-LICENSE.md."
+      }
+    },
+    {
+      "id": "canvas-survival-drifter-v1",
+      "role": "drifter",
+      "file": "drifter.png",
+      "width": 640,
+      "height": 64,
+      "bytes": 1856,
+      "sha256": "91baa145322b74b9a78b9f9388e2cb1cf80582a43480cbed9166cb4bfafbdb93",
+      "sprite": {
+        "frameW": 64,
+        "frameH": 64,
+        "animations": [
+          {
+            "name": "idle",
+            "from": 0,
+            "to": 1,
+            "fps": 4,
+            "loop": true
+          },
+          {
+            "name": "walk",
+            "from": 2,
+            "to": 5,
+            "fps": 8,
+            "loop": true
+          },
+          {
+            "name": "hurt",
+            "from": 6,
+            "to": 6,
+            "fps": 10,
+            "loop": false
+          },
+          {
+            "name": "death",
+            "from": 7,
+            "to": 9,
+            "fps": 10,
+            "loop": false
+          }
+        ],
+        "hitbox": {
+          "x": 0.140625,
+          "y": 0.15625,
+          "w": 0.71875,
+          "h": 0.5625
+        }
+      },
+      "license": {
+        "name": "CC0-1.0",
+        "attribution": "Arte original procedural do Sistema Zero, 2026. Veja PACK-LICENSE.md."
+      }
+    }
+  ]
+}

@@ -9,6 +9,19 @@ const env = loadEnv({})
 const service = { name: 'p', upstreamGroups: { default: [{ url: 'http://p' }] } }
 
 describe('loadGatewayConfig', () => {
+  test('Studio credentials, usage and reconciliation require member-shell HMAC, never a browser JWT', () => {
+    const registry = new RouteRegistry(
+      realConfig.routes.map((route) => routeConfigSchema.parse(route)),
+    )
+    for (const endpoint of ['account', 'usage', 'reconcile']) {
+      const route = registry.resolve('POST', `/members/internal/studio-ai/${endpoint}`, 'v1')?.route
+      expect(route).toMatchObject({
+        auth: { strategies: ['hmac'], allowedConsumers: ['member-shell'] },
+        maxBodyBytes: 4096,
+      })
+      expect(route?.audit).toBeUndefined()
+    }
+  })
   test('live boundaries preserve actors and reserve material registration for the BFF', () => {
     const registry = new RouteRegistry(
       realConfig.routes.map((route) => routeConfigSchema.parse(route)),

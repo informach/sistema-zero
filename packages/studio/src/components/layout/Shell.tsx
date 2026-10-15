@@ -8,6 +8,7 @@ import { useProjectStore } from '../../state/projectStore'
 import { useUIStore } from '../../state/uiStore'
 import { useStudioConfig } from '../../studio/config'
 import { StudioLayoutProvider, useStudioWidth } from '../../studio/layoutContext'
+import { LegacyAIEntryPoints } from '../../studio/legacy-ai'
 import { DrawingSyncWatcher } from '../assets/DrawingSyncWatcher'
 import { useAssetsPanelWiring } from '../assets/useAssetsPanel'
 import { ZappyPanelBoundary } from '../tutor/ZappyPanelBoundary'
@@ -77,6 +78,7 @@ export function Shell({
 
   return (
     <StudioLayoutProvider value={layout}>
+      <LegacyAIEntryPoints />
       <div ref={rootRef} className="relative flex h-full flex-col bg-sz-bg text-sz-fg">
         {/* Só monta o layout DEPOIS de medir a largura. `width` começa em 0 (que
             cai no branch wide); pintar o wide e trocar para o narrow no frame
@@ -161,7 +163,7 @@ export function Shell({
                 </Suspense>
               </ErrorBoundary>
             )}
-            <ConvertLegacyPrompt />
+            <ConvertLegacyPrompt onPromoteToPro={onPromoteToPro} />
             <DrawingSyncWatcher />
             {/* ⚠️ O tutor vai SEMPRE embrulhado: um erro do Zappy não pode
                 derrubar o Estúdio (ver ZappyPanelBoundary.tsx). */}

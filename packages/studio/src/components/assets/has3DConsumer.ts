@@ -21,7 +21,7 @@ export const THREE_D_CONSUMER_EXTENSIONS: ReadonlySet<string> = new Set([
 
 export type ThreeDConsumerProjectLike = Pick<
   Project,
-  'installedExtensions' | 'files' | 'blocksState'
+  'installedExtensions' | 'files' | 'blocksState' | 'kind'
 >
 
 /**
@@ -51,6 +51,8 @@ export function projectHas3DConsumer(
   project: ThreeDConsumerProjectLike | null | undefined,
 ): boolean {
   if (!project) return false
+  // Pro imports engines through npm; block-extension installation is not its capability gate.
+  if (project.kind === 'pro') return true
   if ((project.installedExtensions ?? []).some((e) => THREE_D_CONSUMER_EXTENSIONS.has(e.id))) {
     return true
   }

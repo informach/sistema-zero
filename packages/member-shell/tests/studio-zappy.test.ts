@@ -22,6 +22,9 @@ const { SERVER_BLOCK_CATALOG } = await import('@sistemazero/studio/server-catalo
 const { isZappySelfHarmText, redactZappyPii, redactZappySensitiveText } = await import(
   '../src/server/zappy-safety'
 )
+const { buildStudioTutorRequest } = await import('../../studio/src/studio/tutor')
+const { buildProProject } = await import('../../studio/src/core/proProject')
+const { studioTutorSourceHash } = await import('@sistemazero/studio/tutor-safety')
 
 const PROJECT_ID = 'projeto-1'
 const MESSAGE_ID = '4fa0e474-1f0d-4a52-9a6a-3f2b8c85e001'
@@ -35,6 +38,553 @@ const STAFF = {
   role: 'staff',
   status: 'active',
 }
+
+describe('adendo Pro — seleção e intenção atravessam cliente, rota e resposta', () => {
+  test('recorte distante mantém linhas/hash e a resposta recebe somente referências validadas', async () => {
+    const path = 'src/player.ts'
+    const content = Array.from(
+      { length: 400 },
+      (_, index) => `const line${index + 1} = ${index};`,
+    ).join('\n')
+    const input = buildStudioTutorRequest({
+      project: buildProProject(
+        PROJECT_ID,
+        'Arena',
+        { [path]: { kind: 'file', content } },
+        'dev',
+        'canvas-survival',
+      ),
+      question: 'Por que este movimento atravessa o chão?',
+      intent: 'investigate',
+      selectedBlockId: null,
+      lastError: null,
+      proEditor: {
+        projectId: PROJECT_ID,
+        activeFile: path,
+        selection: {
+          path,
+          startLine: 301,
+          endLine: 301,
+          startColumn: 1,
+          endColumn: 15,
+          sourceHash: studioTutorSourceHash(content),
+          documentVersion: 7,
+        },
+        diagnostics: [
+          {
+            path,
+            line: 301,
+            code: 2322,
+            message: 'Tipo incompatível.',
+            source: 'typescript',
+            sourceHash: studioTutorSourceHash(content),
+            documentVersion: 7,
+          },
+        ],
+      },
+    })
+    let sent: Record<string, unknown> = {},
+      saved: unknown
+    const originalFetch = globalThis.fetch
+    globalThis.fetch = (async (_url: unknown, init?: RequestInit) => {
+      const transport = JSON.parse(String(init?.body ?? '{}'))
+      const prompt = JSON.parse(transport.messages[1].content)
+      sent = prompt
+      const file = prompt.project.code.find(
+        (entry: { excerpt: { startLine: number } }) => entry.excerpt.startLine > 1,
+      )
+      return Response.json({
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({
+                text: 'Observe como a posição é atualizada neste trecho.',
+                scope: 'error',
+                blockReferences: [],
+                lessonReferences: [],
+                suggestions: [],
+                fileReferences: [
+                  { path, startLine: 301, endLine: 301, excerptId: file.excerpt.id },
+                  { path, startLine: 1, endLine: 1, excerptId: file.excerpt.id },
+                  { path, startLine: 301, endLine: 301, excerptId: 'forged' },
+                  { path: 'invented.ts', startLine: 1, endLine: 1, excerptId: null },
+                ],
+              }),
+            },
+          },
+        ],
+      })
+    }) as typeof fetch
+    try {
+      const routes = createStudioZappyRoutes({
+        session: { getSession: async () => STAFF },
+        members: members({
+          zappyCompleteQuestion: async (_id: string, value: { response: unknown }) => {
+            saved = value.response
+            return { status: 200, body: value.response }
+          },
+        }),
+      } as never)
+      const response = await routes.studioZappyMessage.POST(
+        new Request('https://kids.test/api/studio/zappy/messages', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ projectId: PROJECT_ID, clientMessageId: MESSAGE_ID, ...input }),
+        }),
+      )
+      expect(response.status).toBe(200)
+      const body = await response.json()
+      expect(body.response.intent).toBe('investigate')
+      expect(body.response.fileReferences).toHaveLength(1)
+      expect(body.response.fileReferences[0]).toMatchObject({
+        path,
+        startLine: 301,
+        endLine: 301,
+        sourceHash: studioTutorSourceHash(content),
+      })
+      expect(body.response.fileReferences[0].contextDigest).toMatch(/^sha256-[A-Za-z0-9+/]{43}=$/)
+      expect(saved).toEqual(body.response)
+      expect(sent).toMatchObject({
+        project: {
+          editor: {
+            intent: 'investigate',
+            selection: { startLine: 301, documentVersion: 7 },
+            diagnostics: [
+              {
+                source: 'typescript',
+                sourceHash: studioTutorSourceHash(content),
+                documentVersion: 7,
+              },
+            ],
+          },
+        },
+      })
+      expect(JSON.stringify(sent)).toContain('const line301 = 300;')
+    } finally {
+      globalThis.fetch = originalFetch
+    }
+  })
+
+  test('a sanitização no BFF que remove uma linha devolve referência só ao arquivo', () => {
+    const content = '1199999\n9999\nconst score = 10'
+    const prompt = buildStudioZappyPrompt({
+      question: 'Me explique este trecho',
+      tier: resolveStudioTier('god', 'staff'),
+      context: {
+        projectId: PROJECT_ID,
+        kind: 'pro',
+        mode: 'code',
+        blocks: [],
+        installedExtensions: [],
+        selectedBlockId: null,
+        lastError: null,
+        pro: { revision: 123, intent: 'explain' },
+        code: [
+          {
+            path: 'src/data.ts',
+            content,
+            excerpt: {
+              id: 'excerpt-data',
+              sourceHash: studioTutorSourceHash(content),
+              startLine: 200,
+              endLine: 202,
+              mapping: 'lines',
+              truncated: true,
+              contextDigest: studioTutorSourceHash('forged digest'),
+            },
+          },
+        ],
+      },
+    })
+    const file = prompt.context.code?.[0]
+    expect(file?.excerpt?.mapping).toBe('file')
+    expect(file?.excerpt?.contextDigest).not.toBe(studioTutorSourceHash('forged digest'))
+    expect(prompt.user).not.toContain('1199999')
+    const response = validatedStudioZappyResponse(
+      {
+        text: 'Confira o arquivo.',
+        scope: 'concept',
+        blockReferences: [],
+        lessonReferences: [],
+        suggestions: [],
+        fileReferences: [
+          { path: 'src/data.ts', startLine: 202, endLine: 202, excerptId: 'excerpt-data' },
+        ],
+      },
+      'criador',
+      new Map(),
+      new Map(),
+      'code',
+      'pro',
+      [],
+      prompt.context.code,
+      123,
+    )
+    expect(response.fileReferences).toEqual([
+      {
+        path: 'src/data.ts',
+        sourceHash: file?.excerpt?.sourceHash,
+        contextDigest: file?.excerpt?.contextDigest,
+        excerptId: 'excerpt-data',
+      },
+    ])
+  })
+
+  test('seleção continua no prompt quando outros arquivos e metadados saturam o orçamento', () => {
+    const path = 'src/selected.ts'
+    const content = Array.from({ length: 400 }, (_, index) =>
+      index === 300 ? 'const SELECTED_TARGET = true;' : `// surrounding line ${index}`,
+    ).join('\n')
+    const project = buildProProject(
+      PROJECT_ID,
+      'Arena',
+      {
+        ...Object.fromEntries(
+          Array.from({ length: 24 }, (_, index) => [
+            `src/${index}.ts`,
+            { kind: 'file' as const, content: 'const other = "🚀";\n'.repeat(500) },
+          ]),
+        ),
+        [path]: { kind: 'file', content },
+      },
+      'dev',
+      'canvas-survival',
+    )
+    const input = buildStudioTutorRequest({
+      project,
+      question: 'Explique a seleção',
+      selectedBlockId: null,
+      lastError: null,
+      proEditor: {
+        projectId: PROJECT_ID,
+        activeFile: 'src/0.ts',
+        selection: {
+          path,
+          startLine: 301,
+          endLine: 301,
+          startColumn: 1,
+          endColumn: 20,
+          documentVersion: 1,
+          sourceHash: studioTutorSourceHash(content),
+        },
+        diagnostics: Array.from({ length: 20 }, (_, index) => ({
+          path: `src/${index}.ts`,
+          code: 2322,
+          line: 2,
+          message: 'diagnóstico longo 🚀 '.repeat(40),
+        })),
+        installedPackages: Array.from({ length: 40 }, (_, index) => ({
+          name: `package-${index}-${'a'.repeat(140)}`,
+          version: 'v'.repeat(80),
+        })),
+      },
+    })
+    const prompt = buildStudioZappyPrompt({
+      question: input.question,
+      context: input.context,
+      tier: resolveStudioTier('god', 'staff'),
+    })
+    expect(new TextEncoder().encode(prompt.user).length).toBeLessThanOrEqual(20_000)
+    expect(prompt.context.code?.[0]?.path).toBe(path)
+    expect(prompt.context.code?.[0]?.content).toContain('SELECTED_TARGET')
+    expect(prompt.context.code?.[0]?.excerpt).toMatchObject({
+      sourceHash: studioTutorSourceHash(content),
+      mapping: 'lines',
+    })
+  })
+
+  test('construção não é intenção válida da rota de leitura nem reserva uso', async () => {
+    let reserved = 0
+    const routes = createStudioZappyRoutes({
+      session: { getSession: async () => STAFF },
+      members: members({
+        zappyReserveQuestion: async () => {
+          reserved++
+          return { status: 500 }
+        },
+      }),
+    } as never)
+    const body = {
+      projectId: PROJECT_ID,
+      clientMessageId: MESSAGE_ID,
+      question: 'Faça um jogo',
+      context: {
+        projectId: PROJECT_ID,
+        kind: 'pro',
+        mode: 'code',
+        blocks: [],
+        installedExtensions: [],
+        selectedBlockId: null,
+        lastError: null,
+        pro: { revision: 1, intent: 'build' },
+      },
+    }
+    const response = await routes.studioZappyMessage.POST(
+      new Request('https://kids.test/api/studio/zappy/messages', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(body),
+      }),
+    )
+    expect(response.status).toBe(400)
+    expect(reserved).toBe(0)
+  })
+
+  test('planejamento técnico Pro fica aqui; pedido explícito de Pensa mantém redirecionamento', () => {
+    expect(deterministicZappyReply('Como planejar o movimento neste arquivo?', 'pro')).toBeNull()
+    expect(deterministicZappyReply('Faça um jogo inteiro de arena', 'pro')).toBeNull()
+    expect(deterministicZappyReply('Abra o Pensa', 'pro')?.scope).toBe('redirect-pensa')
+    expect(deterministicZappyReply('Quero planejar um jogo', 'classic')?.scope).toBe(
+      'redirect-pensa',
+    )
+  })
+})
+
+describe('política normal e Pro em todas as respostas', () => {
+  const proContext = {
+    projectId: PROJECT_ID,
+    kind: 'pro' as const,
+    mode: 'code' as const,
+    blocks: [{ id: 'antigo', type: 'sz_g2d_create_sprite', topLevel: true }],
+    installedExtensions: ['game-2d'],
+    selectedBlockId: 'antigo',
+    lastError: null,
+    code: [{ path: 'src/main.ts', content: 'import * as THREE from "three"' }],
+  }
+  const answer = (text: string) => ({
+    text,
+    scope: 'concept' as const,
+    blockReferences: [],
+    lessonReferences: [],
+    suggestions: [],
+  })
+  test('Pro não recebe instruções de blocos nem memória incompatível', () => {
+    const prompt = buildStudioZappyPrompt({
+      question: 'Como instalo Three?',
+      context: proContext,
+      tier: resolveStudioTier('god', 'staff'),
+      recentTurns: [
+        { role: 'assistant', text: 'Arraste o bloco de movimento.' },
+        { role: 'user', text: 'Meu personagem não aparece.' },
+      ],
+      knowledge: [
+        {
+          kind: 'help-tutorial',
+          slug: 'mover',
+          title: 'Mover',
+          collectionTitle: 'Studio',
+          content: 'Selecione um bloco na paleta de blocos.',
+        },
+      ],
+    })
+    expect(prompt.catalog).toEqual([])
+    expect(prompt.context.blocks).toEqual([])
+    expect(prompt.system).not.toContain('RECEITAS INTERNAS')
+    expect(prompt.system).not.toContain('Cite no texto somente blocos')
+    expect(prompt.user).not.toContain('Arraste o bloco')
+    expect(prompt.user).not.toContain('Selecione um bloco')
+    expect(prompt.user).toContain('Meu personagem não aparece')
+    expect(prompt.user).toContain('src/main.ts')
+  })
+  test('curadoria GameDev é específica do kit Pro e não entra no modo normal', () => {
+    const input = {
+      question: 'Como melhoro o salto?',
+      context: { ...proContext, pro: { revision: 1, templateId: 'phaser-platformer' } },
+      tier: resolveStudioTier('god', 'staff'),
+    }
+    const pro = JSON.parse(buildStudioZappyPrompt(input).user)
+    expect(pro.curadoriaGameDev.template).toBe('phaser-platformer')
+    expect(JSON.stringify(pro.curadoriaGameDev)).toContain('refreshBody')
+    expect(JSON.stringify(pro.curadoriaGameDev)).not.toContain('SkeletonUtils')
+    const classic = buildStudioZappyPrompt({
+      ...input,
+      context: { ...input.context, kind: 'classic', mode: 'blocks' },
+    })
+    expect(classic.user).not.toContain('curadoriaGameDev')
+    const unknown = JSON.parse(
+      buildStudioZappyPrompt({
+        ...input,
+        context: { ...input.context, pro: { revision: 1, templateId: '__proto__' } },
+      }).user,
+    )
+    expect(unknown.curadoriaGameDev).toBeUndefined()
+    expect(unknown.project.editor.templateId).toBeUndefined()
+  })
+  test('referências Pro só apontam para arquivos e linhas enviados, e nunca aparecem no clássico', () => {
+    const raw = {
+      ...answer('Abra o arquivo indicado.'),
+      fileReferences: [
+        { path: 'src/main.ts', startLine: 1, endLine: 2 },
+        { path: 'src/main.ts', startLine: 1, endLine: 999 },
+        { path: 'inventado.ts', startLine: 1, endLine: 1 },
+        { path: '.env', startLine: 1, endLine: 1 },
+      ],
+    }
+    const files = [
+      { path: 'src/main.ts', content: 'const a = 1\nconsole.log(a)' },
+      { path: '.env', content: 'SECRET=1' },
+    ]
+    const pro = validatedStudioZappyResponse(
+      raw,
+      'criador',
+      new Map(),
+      new Map(),
+      'code',
+      'pro',
+      [],
+      files,
+      123,
+    )
+    expect(pro.fileReferences).toEqual([{ path: 'src/main.ts', startLine: 1, endLine: 2 }])
+    expect(pro.sourceRevision).toBe(123)
+    const classic = validatedStudioZappyResponse(
+      raw,
+      'criador',
+      new Map(),
+      new Map(),
+      'blocks',
+      'classic',
+      [],
+      files,
+      123,
+    )
+    expect(classic.fileReferences).toBeUndefined()
+  })
+  test('contexto Pro limitado preserva metadados úteis sem mutar a entrada', () => {
+    const context = {
+      ...proContext,
+      pro: {
+        revision: 123,
+        activeFile: 'src/main.ts',
+        installation: 'ready' as const,
+        installedPackages: Array.from({ length: 40 }, (_, i) => ({
+          name: `package-${i}`,
+          version: '1.0.0',
+        })),
+        diagnostics: Array.from({ length: 20 }, () => ({
+          path: 'src/main.ts',
+          code: 2322,
+          line: 1,
+          message: 'erro '.repeat(120),
+        })),
+      },
+      code: Array.from({ length: 24 }, (_, i) => ({
+        path: i === 23 ? 'src/main.ts' : `src/${i}.ts`,
+        content: 'const x = "🚀";\n'.repeat(500),
+      })),
+    }
+    const before = JSON.stringify(context)
+    const prompt = buildStudioZappyPrompt({
+      question: 'Conserte meu arquivo',
+      context,
+      tier: resolveStudioTier('god', 'staff'),
+    })
+    expect(JSON.stringify(context)).toBe(before)
+    expect(new TextEncoder().encode(prompt.user).length).toBeLessThanOrEqual(20_000)
+    const sent = JSON.parse(prompt.user)
+    expect(sent.project.editor.activeFile).toBe('src/main.ts')
+    expect(sent.project.code[0].path).toBe('src/main.ts')
+    expect(sent.project.editor.installation).toBe('ready')
+  })
+  test.each([
+    'blocks',
+    'bridge',
+    'code',
+  ] as const)('clássico %s nunca recebe código nem recomenda programação textual', (mode) => {
+    const prompt = buildStudioZappyPrompt({
+      question: 'Me ensine JavaScript',
+      context: { ...proContext, kind: 'classic', mode },
+      tier: resolveStudioTier('god', 'staff'),
+    })
+    expect(prompt.user).not.toContain('import * as THREE')
+    expect(prompt.system).toContain('Nunca sugira programação textual')
+    expect(
+      invalidStudioZappyAnswerReason(
+        answer('Escreva JavaScript para mover o herói.'),
+        mode,
+        'classic',
+      ),
+    ).toBe('code-in-blocks')
+  })
+  test('install não é insta; privacidade real permanece protegida', () => {
+    expect(redactZappySensitiveText('npm install three @types/three').hadPii).toBe(false)
+    expect(redactZappySensitiveText('Meu insta: @nome_real').hadPii).toBe(true)
+    expect(
+      invalidStudioZappyAnswerReason(
+        answer('Execute npm install three no terminal.'),
+        'code',
+        'pro',
+      ),
+    ).toBeNull()
+    expect(
+      invalidStudioZappyAnswerReason(answer('Selecione um bloco para continuar.'), 'code', 'pro'),
+    ).toBe('blocks-in-pro')
+  })
+  test('respostas fixas, segurança e sugestões respeitam o Pro', () => {
+    expect(deterministicZappyReply('Pesquise notícias na web', 'pro')?.text).not.toContain('bloco')
+    expect(deterministicZappySafetyReply('pornografia', false, 'pro')?.text).not.toContain('bloco')
+    const result = validatedStudioZappyResponse(
+      {
+        ...answer('Abra src/main.ts.'),
+        suggestions: ['Como uso o bloco de colisão?', 'Como instalo Three?'],
+      },
+      'criador',
+      new Map(),
+      new Map(),
+      'code',
+      'pro',
+      [],
+    )
+    expect(result.suggestions).toEqual(['Como instalo Three?'])
+  })
+  test('a rota rejeita Pro com modo visual antes de reservar uso', async () => {
+    let reserved = false
+    const routes = createStudioZappyRoutes({
+      members: members({
+        zappyReserveQuestion: async () => {
+          reserved = true
+          throw new Error('não deve reservar')
+        },
+      }) as never,
+      session: { getSession: async () => STAFF } as never,
+    })
+    const response = await routes.studioZappyMessage.POST(
+      new Request('https://kids.test/api/studio/zappy/messages', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          projectId: PROJECT_ID,
+          clientMessageId: MESSAGE_ID,
+          question: 'ajuda',
+          context: { ...proContext, mode: 'blocks' },
+        }),
+      }),
+    )
+    expect(response.status).toBe(400)
+    expect(reserved).toBe(false)
+  })
+  test('falha na base de conhecimento do Pro pede arquivo, nunca bloco', async () => {
+    const routes = createStudioZappyRoutes({
+      members: members({ zappyKnowledgeSearch: async () => ({ status: 503 }) }) as never,
+      session: { getSession: async () => STAFF } as never,
+    })
+    const response = await routes.studioZappyMessage.POST(
+      new Request('https://kids.test/api/studio/zappy/messages', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          projectId: PROJECT_ID,
+          clientMessageId: MESSAGE_ID,
+          question: 'Meu jogo não abre',
+          context: proContext,
+        }),
+      }),
+    )
+    const body = (await response.json()) as { response: { text: string } }
+    expect(body.response.text).toContain('arquivo')
+    expect(body.response.text).not.toContain('bloco')
+  })
+})
 
 describe('Acesso ao Zappy', () => {
   const OPEN = { enabled: true } as const
@@ -104,10 +654,23 @@ function members(overrides: Record<string, unknown> = {}) {
       status: 200,
       body: { created: true, questionId: QUESTION_ID },
     }),
-    aiUsageConsume: async () => ({
+    studioAiUsage: async (_actor: unknown, action: { operation: string }) => ({
       status: 200,
-      body: { allowed: true, usedDay: 1, usedMonth: 1 },
+      body:
+        action.operation === 'reserve'
+          ? {
+              reservation: {
+                allowed: true,
+                source: 'platform',
+                priceCaps: { prompt: 1, completion: 4, request: 0 },
+                expiresAt: new Date(Date.now() + 300000).toISOString(),
+              },
+            }
+          : action.operation === 'dispatch'
+            ? { dispatch: { source: 'platform', apiKey: null } }
+            : { ok: true },
     }),
+    getAiCredits: async () => ({ status: 503, body: null }),
     zappyKnowledgeSearch: async () => ({ status: 200, body: { hits: [] } }),
     zappyCompleteQuestion: async (_id: string, body: { response: unknown }) => ({
       status: 200,
@@ -262,7 +825,8 @@ describe('Zappy do Studio — limites determinísticos', () => {
       },
       tier: resolveStudioTier('god', 'staff'),
     })
-    const entry = prompt.catalog[0]
+    expect(prompt.catalog).toEqual([])
+    const entry = SERVER_BLOCK_CATALOG[0]
     if (!entry) throw new Error('Catálogo de teste vazio')
 
     const response = validatedStudioZappyResponse(
@@ -459,8 +1023,9 @@ describe('Zappy do Studio — limites determinísticos', () => {
     const bytes = new TextEncoder().encode(`${prompt.system}\n${prompt.user}`).byteLength
 
     expect(bytes).toBeLessThanOrEqual(48_000)
-    expect(prompt.user).toContain(selectedId)
-    expect(prompt.catalog.some((entry) => entry.type === 'sz_g2d_jump_on_ground')).toBe(true)
+    expect(prompt.user).not.toContain(selectedId)
+    expect(prompt.catalog).toEqual([])
+    expect(prompt.user).toContain('src/arquivo-')
   })
 
   test('normaliza a busca localmente sem depender de configuração do provider', async () => {
@@ -752,7 +1317,7 @@ describe('BFF do Zappy', () => {
     const routes = createStudioZappyRoutes({
       session: { getSession: async () => STAFF },
       members: members({
-        aiUsageConsume: async () => {
+        studioAiUsage: async () => {
           quota += 1
           return { status: 200, body: { allowed: true } }
         },
@@ -774,7 +1339,7 @@ describe('BFF do Zappy', () => {
           status: 200,
           body: { created: false, questionId: QUESTION_ID, response: existing },
         }),
-        aiUsageConsume: async () => {
+        studioAiUsage: async () => {
           quota += 1
           return { status: 200, body: { allowed: true } }
         },
@@ -792,7 +1357,7 @@ describe('BFF do Zappy', () => {
     const routes = createStudioZappyRoutes({
       session: { getSession: async () => STAFF },
       members: members({
-        aiUsageConsume: async () => {
+        studioAiUsage: async () => {
           quota += 1
           return { status: 200, body: { allowed: true } }
         },
@@ -818,9 +1383,9 @@ describe('BFF do Zappy', () => {
     const routes = createStudioZappyRoutes({
       session: { getSession: async () => STAFF },
       members: members({
-        aiUsageConsume: async () => ({
+        studioAiUsage: async () => ({
           status: 200,
-          body: { allowed: false, scope: 'day', usedDay: 50, usedMonth: 50 },
+          body: { reservation: { allowed: false, scope: 'day', usedDay: 50, usedMonth: 50 } },
         }),
         zappyCompleteQuestion: async (_id: string, body: typeof saved) => {
           saved = body
@@ -849,9 +1414,11 @@ describe('BFF do Zappy', () => {
     const routes = createStudioZappyRoutes({
       session: { getSession: async () => STAFF },
       members: members({
-        aiUsageConsume: async () => ({
+        studioAiUsage: async () => ({
           status: 200,
-          body: { allowed: false, scope: 'day', usedDay: 50, usedMonth: 50, credits },
+          body: {
+            reservation: { allowed: false, scope: 'day', usedDay: 50, usedMonth: 50, credits },
+          },
         }),
         zappyCompleteQuestion: async (_id: string, body: Record<string, unknown>) => {
           persisted = body
@@ -904,7 +1471,7 @@ describe('BFF do Zappy', () => {
     const routes = createStudioZappyRoutes({
       session: { getSession: async () => STAFF },
       members: members({
-        aiUsageConsume: async () => ({ status: 503, body: null }),
+        studioAiUsage: async () => ({ status: 503, body: null }),
         zappyKnowledgeSearch: async () => {
           searched += 1
           return { status: 200, body: { hits: [] } }
@@ -933,7 +1500,7 @@ describe('BFF do Zappy', () => {
         zappyKnowledgeSearch: async () => {
           throw new Error('members indisponível')
         },
-        aiUsageConsume: async () => {
+        studioAiUsage: async () => {
           quota += 1
           return { status: 200, body: { allowed: true, usedDay: 1, usedMonth: 1 } }
         },
@@ -956,7 +1523,7 @@ describe('BFF do Zappy', () => {
           reservedQuestion = body.question
           return { status: 200, body: { created: true, questionId: QUESTION_ID } }
         },
-        aiUsageConsume: async () => {
+        studioAiUsage: async () => {
           quota += 1
           return { status: 200, body: { allowed: true, usedDay: 1, usedMonth: 1 } }
         },
@@ -1001,7 +1568,7 @@ describe('BFF do Zappy', () => {
     const routes = createStudioZappyRoutes({
       session: { getSession: async () => STAFF },
       members: members({
-        aiUsageConsume: async () => {
+        studioAiUsage: async () => {
           quota += 1
           return { status: 200, body: { allowed: true, usedDay: 1, usedMonth: 1 } }
         },
@@ -1029,7 +1596,7 @@ describe('BFF do Zappy', () => {
           searched += 1
           return { status: 200, body: { hits: [] } }
         },
-        aiUsageConsume: async () => {
+        studioAiUsage: async () => {
           quota += 1
           return { status: 200, body: { allowed: false, scope: 'day' } }
         },
@@ -1048,6 +1615,80 @@ describe('BFF do Zappy', () => {
 })
 
 describe('review: o contexto do projeto atravessa a borda da rota', () => {
+  test('Pro transporta diagnóstico e instalação até o modelo e devolve referência navegável', async () => {
+    let userPrompt = ''
+    const originalFetch = globalThis.fetch
+    globalThis.fetch = (async (_url: unknown, init?: RequestInit) => {
+      const body = JSON.parse(String(init?.body ?? '{}')) as { messages?: { content: string }[] }
+      userPrompt = body.messages?.[1]?.content ?? ''
+      return Response.json({
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({
+                text: 'Confira o tipo no arquivo indicado.',
+                scope: 'error',
+                blockReferences: [],
+                lessonReferences: [],
+                suggestions: [],
+                fileReferences: [{ path: 'src/main.ts', startLine: 1, endLine: 1 }],
+              }),
+            },
+          },
+        ],
+      })
+    }) as typeof fetch
+    try {
+      const routes = createStudioZappyRoutes({
+        session: { getSession: async () => STAFF },
+        members: members(),
+      } as never)
+      const response = await routes.studioZappyMessage.POST(
+        new Request('https://kids.test/api/studio/zappy/messages', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            projectId: PROJECT_ID,
+            clientMessageId: MESSAGE_ID,
+            question: 'Meu personagem tem um erro de tipo',
+            context: {
+              projectId: PROJECT_ID,
+              mode: 'code',
+              kind: 'pro',
+              blocks: [],
+              installedExtensions: [],
+              selectedBlockId: null,
+              lastError: null,
+              code: [{ path: 'src/main.ts', content: 'const x: number = "texto"' }],
+              pro: {
+                revision: 123,
+                activeFile: 'src/main.ts',
+                installation: 'ready',
+                installedPackages: [{ name: 'three', version: '0.180.0' }],
+                diagnostics: [
+                  { path: 'src/main.ts', code: 2322, line: 1, message: 'string não é number' },
+                ],
+              },
+            },
+          }),
+        }),
+      )
+      expect(response.status).toBe(200)
+      const value = (await response.json()) as {
+        response: { kind: string; sourceRevision: number; fileReferences: unknown[] }
+      }
+      expect(value.response.kind).toBe('pro')
+      expect(value.response.sourceRevision).toBe(123)
+      expect(value.response.fileReferences).toEqual([
+        { path: 'src/main.ts', startLine: 1, endLine: 1 },
+      ])
+      expect(userPrompt).toContain('2322')
+      expect(userPrompt).toContain('0.180.0')
+      expect(userPrompt).toContain('"installation":"ready"')
+    } finally {
+      globalThis.fetch = originalFetch
+    }
+  })
   /**
    * ⚠️ Este teste existe por um bug REAL encontrado no full review: `behavior`,
    * `draftBlockIds` e `semanticIssues` não estavam no schema Zod do corpo, e
@@ -1143,9 +1784,9 @@ describe('review 2: a recusa por limite chega marcada como aviso', () => {
     const routes = createStudioZappyRoutes({
       session: { getSession: async () => STAFF },
       members: members({
-        aiUsageConsume: async () => ({
+        studioAiUsage: async () => ({
           status: 200,
-          body: { allowed: false, scope: 'day', usedDay: 50, usedMonth: 50 },
+          body: { reservation: { allowed: false, scope: 'day', usedDay: 50, usedMonth: 50 } },
         }),
         zappyCompleteQuestion: async (_id: string, body: Record<string, unknown>) => {
           persisted = body as typeof persisted
@@ -1168,7 +1809,7 @@ describe('review 2: a recusa por limite chega marcada como aviso', () => {
   test('indisponibilidade NÃO vira quota (é erro, e a copy é outra)', async () => {
     const routes = createStudioZappyRoutes({
       session: { getSession: async () => STAFF },
-      members: members({ aiUsageConsume: async () => ({ status: 503, body: null }) }),
+      members: members({ studioAiUsage: async () => ({ status: 503, body: null }) }),
     } as never)
     const res = await routes.studioZappyMessage.POST(request('Como faço isso?'))
     const body = (await res.json()) as { response?: { scope?: string } }

@@ -1,5 +1,12 @@
 import 'server-only'
-import { randomUUID } from 'node:crypto'
+import { randomUUID, timingSafeEqual } from 'node:crypto'
+import {
+  InvalidJsonBodyError,
+  RequestBodyTooLargeError,
+  readJsonBodyWithLimit,
+} from '@sistemazero/core/http'
+import { isStudioProPublication, studioProPublicationUrl } from '@sistemazero/core/studio'
+import type { Project } from '@sistemazero/studio'
 import { ProjectDocumentError } from '@sistemazero/studio/project-document'
 import {
   prepareProjectForHost,
@@ -10,7 +17,6 @@ import { z } from 'zod'
 import { getEnv } from '../lib/env'
 import { UGC_IMAGE_INPUT_MIME } from '../lib/hub-attachments'
 import { coverKeyFromPublicUrl, verifyCleanupSignature } from '../lib/studio-cleanup'
-import { consumeAiQuota } from '../server/ai-quota'
 import type { HubClient, MembersClient } from '../server/clients'
 import { optimizeImage } from '../server/image-optimizer'
 import { type MediaModule, mediaErrorResponse, rejectOversizedRequest } from '../server/media'
@@ -18,13 +24,56 @@ import { generateProjectDescription } from '../server/openrouter'
 import {
   bufferFromStream,
   r2DeleteObjectPrivate,
-  r2DeleteObjects,
   r2GetObjectPrivate,
   r2PutObject,
   r2PutObjectPrivate,
 } from '../server/r2'
+import {
+  StudioProRuntimeInputError,
+  StudioProRuntimeUpstreamError,
+  studioProRuntimePublicStatus,
+} from '../server/studio-pro-runtime'
+import {
+  callStudioPublication,
+  publishStudioProRevision,
+  StudioPublicationError,
+  studioPublicationOwner,
+  studioPublicationPlayId,
+  studioPublicProject,
+} from '../server/studio-publication'
+
+import {
+  drainStudioPublicationCleanup,
+  enqueueStudioPublicationCleanup,
+  performStudioPublicationCleanup,
+} from '../server/studio-publication-cleanup'
 
 export type StudioRoutes = ReturnType<typeof createStudioRoutes>
+
+function publicationError(error: unknown): NextResponse {
+  if (error instanceof RequestBodyTooLargeError)
+    return NextResponse.json(
+      {
+        error: {
+          code: 'PAYLOAD_TOO_LARGE',
+          message: 'O projeto ficou grande demais para publicar.',
+        },
+      },
+      { status: 413 },
+    )
+  if (error instanceof InvalidJsonBodyError) return invalid()
+  if (error instanceof StudioPublicationError || error instanceof StudioProRuntimeInputError)
+    return NextResponse.json(
+      { error: { code: 'PRO_PUBLICATION_FAILED', message: error.message } },
+      { status: error.status },
+    )
+  if (error instanceof StudioProRuntimeUpstreamError)
+    return NextResponse.json(
+      { error: { code: 'PRO_PUBLICATION_FAILED', message: error.message } },
+      { status: studioProRuntimePublicStatus(error.status) },
+    )
+  return mediaErrorResponse(error)
+}
 
 const invalid = () => NextResponse.json({ error: { code: 'INVALID_INPUT' } }, { status: 400 })
 
@@ -39,14 +88,45 @@ const PUBLISH_MAX_BYTES = 8 * 1024 * 1024 // teto do multipart inteiro (cover + 
 const PLAY_KEY = (id: string) => `studio/play/${id}.json`
 
 // Descrição: só os 3 arquivos canônicos (clampados) — NÃO o projeto com assets.
-const DescribeBody = z.object({
-  files: z.object({
-    html: z.string().max(20_000).optional(),
-    css: z.string().max(20_000).optional(),
-    js: z.string().max(40_000).optional(),
-  }),
-  title: z.string().max(200).optional(),
-})
+const DescribeBody = z.union([
+  z
+    .object({
+      kind: z.literal('classic').optional(),
+      projectId: z
+        .string()
+        .regex(/^[A-Za-z0-9._:-]{1,128}$/)
+        .optional(),
+      files: z.object({
+        html: z.string().max(20000).optional(),
+        css: z.string().max(20000).optional(),
+        js: z.string().max(40000).optional(),
+      }),
+      title: z.string().max(200).optional(),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal('pro'),
+      projectId: z.string().regex(/^[A-Za-z0-9._:-]{1,128}$/),
+      sources: z
+        .array(
+          z
+            .object({
+              path: z
+                .string()
+                .max(240)
+                .regex(
+                  /^(?!.*(?:\.\.|node_modules|package-lock))[A-Za-z0-9_./-]+\.(?:[cm]?[jt]sx?|html|css|json)$/,
+                ),
+              content: z.string().max(4000),
+            })
+            .strict(),
+        )
+        .max(6),
+      title: z.string().max(200).optional(),
+    })
+    .strict(),
+])
 
 // Rate-limit in-process por sessão (réplica única do kids; estado em globalThis).
 const RL_KEY = Symbol.for('@sistemazero/member-shell/studio-describe-rl')
@@ -58,6 +138,10 @@ function describeRateLimited(key: string): boolean {
   const now = Date.now()
   const e = rlStore.get(key)
   if (!e || e.resetAt <= now) {
+    if (!e && rlStore.size >= 5000) {
+      for (const [id, entry] of rlStore) if (entry.resetAt <= now) rlStore.delete(id)
+      if (rlStore.size >= 5000) return true
+    }
     rlStore.set(key, { count: 1, resetAt: now + 60_000 })
     return false
   }
@@ -123,34 +207,18 @@ export function createStudioRoutes(deps: {
       }
       let json: unknown
       try {
-        json = await req.json()
+        json = await readJsonBodyWithLimit(req, 160000)
       } catch {
         return invalid()
       }
       const parsed = DescribeBody.safeParse(json)
       if (!parsed.success) return invalid()
-      const { files, title } = parsed.data
-      const total = (files.html?.length ?? 0) + (files.css?.length ?? 0) + (files.js?.length ?? 0)
-      if (total > 80_000) return invalid()
-      // Quota de IA da CONTA (diária + mensal). A recusa MANTÉM o contrato
-      // fail-soft do describe (200 + fallback) — o front esconde o "Gerar" e a
-      // criança escreve a descrição à mão; `quotaExceeded`/`scope` guiam a copy.
-      const quota = await consumeAiQuota(members, 'studio-describe')
-      if (!quota.allowed) {
-        return NextResponse.json(
-          {
-            description: '',
-            fallback: true,
-            quotaExceeded: true,
-            scope: quota.scope,
-            credits: quota.credits ?? null,
-          },
-          { status: 200 },
-        )
-      }
-      // Fail-soft: erro/sem chave → { description:'', fallback:true } (criança escreve).
-      const result = await generateProjectDescription({ files, title })
-      return NextResponse.json({ ...result, credits: quota.credits ?? null }, { status: 200 })
+      const result = await generateProjectDescription(parsed.data, {
+        members,
+        user: sess,
+        signal: req.signal,
+      })
+      return NextResponse.json(result, { status: 200, headers: { 'Cache-Control': 'no-store' } })
     },
   }
 
@@ -187,6 +255,7 @@ export function createStudioRoutes(deps: {
         return NextResponse.json({ error: { code: 'PROJECT_TOO_LARGE' } }, { status: 413 })
       }
       let projectBytes: Buffer
+      let publicationProject: Project | null = null
       // Metadado do projeto p/ o selo de nível do remix no card do Mural (derivado
       // do projeto JÁ saneado — cosmético; o gate real do remix é no clique).
       let studioMeta: { pro: boolean; extensions: string[] } | null = null
@@ -196,11 +265,12 @@ export function createStudioRoutes(deps: {
         )
         const project = sanitizeProjectForHost(rawProject)
         if (!project) return invalid()
+        publicationProject = studioPublicProject(project)
         studioMeta = {
           pro: project.kind === 'pro',
           extensions: project.installedExtensions.map((ext) => ext.id),
         }
-        projectBytes = Buffer.from(JSON.stringify(project), 'utf-8')
+        projectBytes = Buffer.from(JSON.stringify(publicationProject), 'utf-8')
         if (projectBytes.length > PROJECT_MAX_BYTES) {
           return NextResponse.json({ error: { code: 'PROJECT_TOO_LARGE' } }, { status: 413 })
         }
@@ -225,6 +295,28 @@ export function createStudioRoutes(deps: {
           },
           { status: 409 },
         )
+      }
+
+      const owner = studioPublicationOwner(sess.id, sess.activeProfile?.accountId ?? sess.id)
+      const playId =
+        publicationProject?.kind === 'pro'
+          ? studioPublicationPlayId(owner, `lesson:${lessonId}:${blockId}`, clientIdempotencyKey)
+          : randomUUID()
+      if (publicationProject?.kind === 'pro') {
+        try {
+          await publishStudioProRevision({
+            project: publicationProject,
+            source: projectBytes.toString('utf8'),
+            playId,
+            owner,
+            requestId: clientIdempotencyKey,
+            expectedVersion: 0,
+            parentOrigin: new URL(req.url).origin,
+            signal: req.signal,
+          })
+        } catch (error) {
+          return publicationError(error)
+        }
       }
 
       // 2. Capa: print/upload da criança → R2 PÚBLICO; OU a capa padrão do curso
@@ -253,8 +345,31 @@ export function createStudioRoutes(deps: {
         coverImageUrl = payload.body.defaultCoverUrl ?? null
       }
 
+      if (publicationProject?.kind === 'pro' && !coverImageUrl) {
+        try {
+          const capture = await callStudioPublication(
+            { operation: 'cover', playId, owner },
+            req.signal,
+          )
+          if (!capture || !('png' in capture))
+            throw new StudioPublicationError(502, 'Não foi possível recuperar a capa verificada.')
+          const optimized = await optimizeImage(
+            new Uint8Array(Buffer.from(capture.png, 'base64')).buffer,
+            'ugc',
+          )
+          coverImageUrl = (
+            await r2PutObject({
+              key: `studio/cover/${sess.id}/${playId}.${optimized.extension}`,
+              body: optimized.buffer,
+              contentType: optimized.contentType,
+            })
+          ).url
+        } catch (error) {
+          return publicationError(error)
+        }
+      }
+
       // 3. Projeto jogável → R2 PRIVADO (servido só via /api/studio/play/:id; sem URL pública).
-      const playId = randomUUID()
       try {
         await r2PutObjectPrivate({
           key: PLAY_KEY(playId),
@@ -284,10 +399,39 @@ export function createStudioRoutes(deps: {
       const threadId = r.body.thread.id
       // O playId real é o do post DEVOLVIDO (dedupe pode trazer um post anterior).
       const resolvedPlayId = r.body.thread.playId ?? playId
+      if (publicationProject?.kind === 'pro' && resolvedPlayId !== playId) {
+        try {
+          const canonical = await callStudioPublication(
+            { operation: 'get', playId: resolvedPlayId, owner },
+            req.signal,
+          )
+          // A legacy deduplicated post can predate compiled Pro publications.
+          // Preserve an existing canonical revision; only migrate a missing one.
+          if (!isStudioProPublication(canonical))
+            await publishStudioProRevision({
+              project: publicationProject,
+              source: projectBytes.toString('utf8'),
+              playId: resolvedPlayId,
+              owner,
+              requestId: clientIdempotencyKey,
+              expectedVersion: 0,
+              parentOrigin: new URL(req.url).origin,
+              signal: req.signal,
+            })
+          await r2PutObjectPrivate({
+            key: PLAY_KEY(resolvedPlayId),
+            body: projectBytes,
+            contentType: 'application/json',
+          })
+        } catch (error) {
+          return publicationError(error)
+        }
+      }
       return NextResponse.json(
         {
           muralUrl: `/${MURAL_SPACE_SLUG}?thread=${encodeURIComponent(threadId)}`,
           playUrl: `/jogar/${resolvedPlayId}`,
+          ...(publicationProject?.kind === 'pro' ? { publicationId: resolvedPlayId } : {}),
           deduped: r.body.deduped,
         },
         { status: 200 },
@@ -359,6 +503,7 @@ export function createStudioRoutes(deps: {
         return NextResponse.json({ error: { code: 'PROJECT_TOO_LARGE' } }, { status: 413 })
       }
       let projectBytes: Buffer
+      let publicationProject: Project | null = null
       // Metadado do projeto p/ o selo de nível do remix (cosmético; gate real no clique).
       let studioMeta: { pro: boolean; extensions: string[] } | null = null
       try {
@@ -369,16 +514,48 @@ export function createStudioRoutes(deps: {
             : null)
         const project = sanitizeProjectForHost(rawProject)
         if (!project) return invalid()
+        publicationProject = studioPublicProject(project)
         studioMeta = {
           pro: project.kind === 'pro',
           extensions: project.installedExtensions.map((ext) => ext.id),
         }
-        projectBytes = Buffer.from(JSON.stringify(project), 'utf-8')
+        projectBytes = Buffer.from(JSON.stringify(publicationProject), 'utf-8')
         if (projectBytes.length > PROJECT_MAX_BYTES) {
           return NextResponse.json({ error: { code: 'PROJECT_TOO_LARGE' } }, { status: 413 })
         }
       } catch {
         return invalid()
+      }
+
+      const owner = studioPublicationOwner(sess.id, sess.activeProfile?.accountId ?? sess.id)
+      const playId =
+        liveSnapshot?.playId ??
+        (publicationProject?.kind === 'pro'
+          ? studioPublicationPlayId(owner, 'standalone', clientIdempotencyKey)
+          : randomUUID())
+      if (publicationProject?.kind === 'pro') {
+        if (!liveSnapshot) {
+          const access = await members.checkStudioAccess()
+          if (access.status !== 200 || access.body?.access?.['estudio-completo'] !== true)
+            return NextResponse.json(
+              { error: { code: 'SHOWCASE_NOT_ELIGIBLE' } },
+              { status: access.status >= 500 ? 503 : 403 },
+            )
+        }
+        try {
+          await publishStudioProRevision({
+            project: publicationProject,
+            source: projectBytes.toString('utf8'),
+            playId,
+            owner,
+            requestId: clientIdempotencyKey,
+            expectedVersion: 0,
+            parentOrigin: new URL(req.url).origin,
+            signal: req.signal,
+          })
+        } catch (error) {
+          return publicationError(error)
+        }
       }
 
       // Capa (print) → R2 PÚBLICO (best-effort → null = sem capa).
@@ -403,8 +580,31 @@ export function createStudioRoutes(deps: {
         }
       }
 
+      if (publicationProject?.kind === 'pro' && !coverImageUrl) {
+        try {
+          const capture = await callStudioPublication(
+            { operation: 'cover', playId, owner },
+            req.signal,
+          )
+          if (!capture || !('png' in capture))
+            throw new StudioPublicationError(502, 'Não foi possível recuperar a capa verificada.')
+          const optimized = await optimizeImage(
+            new Uint8Array(Buffer.from(capture.png, 'base64')).buffer,
+            'ugc',
+          )
+          coverImageUrl = (
+            await r2PutObject({
+              key: `studio/cover/${sess.id}/${playId}.${optimized.extension}`,
+              body: optimized.buffer,
+              contentType: optimized.contentType,
+            })
+          ).url
+        } catch (error) {
+          return publicationError(error)
+        }
+      }
+
       // Projeto jogável → R2 PRIVADO (servido só via /api/studio/play/:id).
-      const playId = liveSnapshot?.playId ?? randomUUID()
       try {
         await r2PutObjectPrivate({
           key: PLAY_KEY(playId),
@@ -444,7 +644,35 @@ export function createStudioRoutes(deps: {
       }
       const threadId = r.body.thread.id
       const resolvedPlayId = r.body.thread.playId ?? playId
-      if (liveSnapshot && resolvedPlayId !== playId) {
+      if (publicationProject?.kind === 'pro' && resolvedPlayId !== playId) {
+        try {
+          const canonical = await callStudioPublication(
+            { operation: 'get', playId: resolvedPlayId, owner },
+            req.signal,
+          )
+          // A legacy deduplicated post can predate compiled Pro publications.
+          // Preserve an existing canonical revision; only migrate a missing one.
+          if (!isStudioProPublication(canonical))
+            await publishStudioProRevision({
+              project: publicationProject,
+              source: projectBytes.toString('utf8'),
+              playId: resolvedPlayId,
+              owner,
+              requestId: clientIdempotencyKey,
+              expectedVersion: 0,
+              parentOrigin: new URL(req.url).origin,
+              signal: req.signal,
+            })
+          await r2PutObjectPrivate({
+            key: PLAY_KEY(resolvedPlayId),
+            body: projectBytes,
+            contentType: 'application/json',
+          })
+        } catch (error) {
+          return publicationError(error)
+        }
+      }
+      if (liveSnapshot && publicationProject?.kind !== 'pro' && resolvedPlayId !== playId) {
         // Older attempts used random IDs. Hub identifies the canonical object
         // for this same author/workspace/revision/key: restore it before success.
         try {
@@ -462,6 +690,7 @@ export function createStudioRoutes(deps: {
         {
           muralUrl: `/${MURAL_SPACE_SLUG}?thread=${encodeURIComponent(threadId)}`,
           playUrl: `/jogar/${resolvedPlayId}`,
+          ...(publicationProject?.kind === 'pro' ? { publicationId: resolvedPlayId } : {}),
           deduped: r.body.deduped,
         },
         { status: 200 },
@@ -493,12 +722,35 @@ export function createStudioRoutes(deps: {
       try {
         const obj = await r2GetObjectPrivate(PLAY_KEY(id))
         const bytes = await bufferFromStream(obj.body, PROJECT_MAX_BYTES)
-        const project = await prepareProjectForHost(JSON.parse(bytes.toString('utf-8')))
+        let project = await prepareProjectForHost(JSON.parse(bytes.toString('utf-8')))
+        let compiledUrl: string | undefined
+        let compiledRevision: string | undefined
+        if (project?.kind === 'pro') {
+          const published = await callStudioPublication(
+            { operation: 'resolve', playId: id },
+            req.signal,
+          )
+          if (!published || !('source' in published))
+            return NextResponse.json({ error: { code: 'NOT_FOUND' } }, { status: 404 })
+          project = await prepareProjectForHost(JSON.parse(published.source))
+          if (project?.kind !== 'pro')
+            throw new ProjectDocumentError('invalid-document', 'Publicação Pro inválida.')
+          compiledRevision = published.publication.activeRevision
+          compiledUrl = studioProPublicationUrl(
+            new URL(getEnv().STUDIO_PRO_RUNTIME_URL!).origin,
+            id,
+            compiledRevision,
+          )
+        }
         if (!project) throw new ProjectDocumentError('invalid-document', 'Projeto inválido.')
         const headers: Record<string, string> = {
           'Content-Type': 'application/json; charset=utf-8',
           'Cache-Control': 'private, no-store',
           'X-Content-Type-Options': 'nosniff',
+        }
+        if (compiledUrl && compiledRevision) {
+          headers['X-Studio-Pro-Url'] = compiledUrl
+          headers['X-Studio-Pro-Revision'] = compiledRevision
         }
         // 1º nome do autor (snapshot do hub) p/ a página pública mostrar "feito por
         // {nome}". Header URI-encoded (só ASCII em header; acentos escapados) — a
@@ -509,6 +761,7 @@ export function createStudioRoutes(deps: {
         }
         return new NextResponse(JSON.stringify(project), { status: 200, headers })
       } catch (error) {
+        if (error instanceof StudioPublicationError) return publicationError(error)
         if (error instanceof ProjectDocumentError)
           return NextResponse.json(
             {
@@ -533,7 +786,12 @@ export function createStudioRoutes(deps: {
   const studioCleanup = {
     POST: async (req: Request) => {
       const secret = getEnv().GATEWAY_HMAC_SECRET
-      const raw = await req.text()
+      let raw: string
+      try {
+        raw = req.body ? (await bufferFromStream(req.body, 4096)).toString('utf8') : ''
+      } catch {
+        return invalid()
+      }
       // Sem segredo não há como autenticar o chamador → no-op (não apaga nada).
       if (!secret) return new NextResponse(null, { status: 204 })
       if (!verifyCleanupSignature(secret, raw, req.headers.get('x-signature'))) {
@@ -546,26 +804,154 @@ export function createStudioRoutes(deps: {
         return invalid()
       }
       const playId = typeof body.playId === 'string' ? body.playId : ''
-      if (UUID_RE.test(playId)) {
-        try {
-          await r2DeleteObjectPrivate(PLAY_KEY(playId))
-        } catch {
-          // best-effort: o objeto pode já não existir (moderação idempotente).
-        }
+      if (!UUID_RE.test(playId)) return invalid()
+      try {
+        await enqueueStudioPublicationCleanup(playId.toLowerCase(), body.coverUrl)
+      } catch {
+        // Hub retries 5xx; never acknowledge cleanup before its intent is durable.
+        return NextResponse.json({ error: { code: 'CLEANUP_UNAVAILABLE' } }, { status: 503 })
       }
-      if (typeof body.coverUrl === 'string' && body.coverUrl) {
-        const key = coverKeyFromPublicUrl(getEnv().R2_PUBLIC_URL, body.coverUrl)
-        if (key) {
-          try {
-            await r2DeleteObjects([key])
-          } catch {
-            // best-effort.
-          }
-        }
+      try {
+        await performStudioPublicationCleanup(
+          playId.toLowerCase(),
+          typeof body.coverUrl === 'string'
+            ? coverKeyFromPublicUrl(getEnv().R2_PUBLIC_URL, body.coverUrl)
+            : null,
+          AbortSignal.timeout(2500),
+        )
+      } catch {
+        console.info('[studio-publication] cleanup queued', { playId })
       }
       return new NextResponse(null, { status: 204 })
     },
   }
 
-  return { studioDescribe, studioPublish, studioPublishStandalone, studioPlay, studioCleanup }
+  const studioPublicationCleanup = {
+    POST: async (request: Request) => {
+      const token = getEnv().STUDIO_PRO_RUNTIME_TOKEN
+      const supplied = Buffer.from(request.headers.get('authorization') ?? '')
+      const expected = Buffer.from(`Bearer ${token ?? ''}`)
+      if (!token || supplied.length !== expected.length || !timingSafeEqual(supplied, expected))
+        return NextResponse.json({ error: { code: 'UNAUTHORIZED' } }, { status: 401 })
+      try {
+        return NextResponse.json(await drainStudioPublicationCleanup(), {
+          headers: { 'Cache-Control': 'no-store' },
+        })
+      } catch {
+        return NextResponse.json({ error: { code: 'CLEANUP_UNAVAILABLE' } }, { status: 503 })
+      }
+    },
+  }
+  const studioPublicationAuthorize = {
+    POST: async (request: Request) => {
+      const token = getEnv().STUDIO_PRO_RUNTIME_TOKEN
+      const supplied = Buffer.from(request.headers.get('authorization') ?? '')
+      const expected = Buffer.from(`Bearer ${token ?? ''}`)
+      if (!token || supplied.length !== expected.length || !timingSafeEqual(supplied, expected))
+        return NextResponse.json({ visible: false }, { status: 401 })
+      try {
+        const parsed = z
+          .object({ playId: z.string().uuid() })
+          .strict()
+          .safeParse(await readJsonBodyWithLimit(request, 1024))
+        if (!parsed.success) return invalid()
+        const result = await hub.resolveStudioPlay(parsed.data.playId, false)
+        return NextResponse.json(
+          { visible: result.status === 200 && result.body?.visible === true },
+          { status: result.status >= 500 ? 503 : 200, headers: { 'Cache-Control': 'no-store' } },
+        )
+      } catch {
+        return NextResponse.json(
+          { visible: false },
+          { status: 503, headers: { 'Cache-Control': 'no-store' } },
+        )
+      }
+    },
+  }
+  const studioPublication = {
+    POST: async (request: Request) => {
+      const user = await media.requireUploadSession(request)
+      if (user instanceof NextResponse) return user
+      try {
+        const parsed = z
+          .discriminatedUnion('operation', [
+            z.object({ operation: z.literal('get'), playId: z.string().uuid() }).strict(),
+            z
+              .object({
+                operation: z.literal('source'),
+                playId: z.string().uuid(),
+                revision: z.string().regex(/^[a-f0-9]{64}$/),
+              })
+              .strict(),
+            z
+              .object({
+                operation: z.literal('activate'),
+                playId: z.string().uuid(),
+                requestId: z.string().uuid(),
+                expectedVersion: z.number().int().positive(),
+                revision: z.string().regex(/^[a-f0-9]{64}$/),
+                disabled: z.boolean(),
+              })
+              .strict(),
+            z
+              .object({
+                operation: z.literal('update'),
+                playId: z.string().uuid(),
+                requestId: z.string().uuid(),
+                expectedVersion: z.number().int().positive(),
+                project: z.unknown(),
+              })
+              .strict(),
+          ])
+          .safeParse(await readJsonBodyWithLimit(request, PROJECT_MAX_BYTES + 32768))
+        if (!parsed.success) return invalid()
+        const input = parsed.data
+        const owner = studioPublicationOwner(user.id, user.activeProfile?.accountId ?? user.id)
+        if (input.operation === 'update') {
+          const access = await members.checkStudioAccess()
+          if (access.status !== 200 || access.body?.access?.['estudio-completo'] !== true)
+            return NextResponse.json({ error: { code: 'SHOWCASE_NOT_ELIGIBLE' } }, { status: 403 })
+          const visible = await hub.resolveStudioPlay(input.playId, false)
+          if (visible.status !== 200 || visible.body?.visible !== true)
+            return NextResponse.json({ error: { code: 'NOT_FOUND' } }, { status: 404 })
+          const previous = await callStudioPublication(
+            { operation: 'get', playId: input.playId, owner },
+            request.signal,
+          )
+          if (!isStudioProPublication(previous))
+            return NextResponse.json({ error: { code: 'NOT_FOUND' } }, { status: 404 })
+          const project = sanitizeProjectForHost(input.project)
+          if (project?.kind !== 'pro') return invalid()
+          return NextResponse.json(
+            await publishStudioProRevision({
+              project: studioPublicProject(project),
+              source: JSON.stringify(studioPublicProject(project)),
+              playId: input.playId,
+              owner,
+              requestId: input.requestId,
+              expectedVersion: input.expectedVersion,
+              parentOrigin: new URL(request.url).origin,
+              signal: request.signal,
+            }),
+            { headers: { 'Cache-Control': 'no-store' } },
+          )
+        }
+        return NextResponse.json(await callStudioPublication({ ...input, owner }, request.signal), {
+          headers: { 'Cache-Control': 'no-store' },
+        })
+      } catch (error) {
+        return publicationError(error)
+      }
+    },
+  }
+  return {
+    studioDescribe,
+    studioPublish,
+    studioPublishStandalone,
+    studioPlay,
+    studioCleanup,
+    studioPublicationAuthorize,
+    studioPublicationCleanup,
+    studioPublication,
+  }
 }

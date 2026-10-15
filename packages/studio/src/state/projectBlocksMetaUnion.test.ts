@@ -56,11 +56,11 @@ const game2d = { id: 'game-2d', version: '0.20.0', installedAt: 1 }
 describe('loadSanitizedProjectBlocksStateById — união com as extensões do META', () => {
   beforeEach(() => {
     db.clear()
-    db.set('sz:v2:project-blocks:p1', { id: 'p1', blocksState: g2dBlocksState })
+    db.set('sz:v3:project-blocks:p1', { id: 'p1', blocksState: g2dBlocksState })
   })
 
   it('caller com lista VAZIA: as extensões do meta persistido salvam o estado', async () => {
-    db.set('sz:v2:project-meta:p1', { id: 'p1', name: 'Jogo', installedExtensions: [game2d] })
+    db.set('sz:v3:project-meta:p1', { id: 'p1', name: 'Jogo', installedExtensions: [game2d] })
     // Regressão do "jogo abre sem blocos": uma lista defasada/vazia do chamador
     // avaliaria os blocos g2d contra a allowlist só-núcleo → descarte total.
     expect(await loadSanitizedProjectBlocksStateById('p1', [])).toEqual(g2dBlocksState)
@@ -68,7 +68,7 @@ describe('loadSanitizedProjectBlocksStateById — união com as extensões do ME
 
   it('sem extensão disponível, recusa os blocos sem apagá-los', async () => {
     await expect(loadSanitizedProjectBlocksStateById('p1', [])).rejects.toThrow()
-    expect(db.get('sz:v2:project-blocks:p1')).toEqual({ id: 'p1', blocksState: g2dBlocksState })
+    expect(db.get('sz:v3:project-blocks:p1')).toEqual({ id: 'p1', blocksState: g2dBlocksState })
   })
 
   it('extensões do caller continuam bastando sozinhas (meta ausente)', async () => {

@@ -243,6 +243,8 @@ const ACOES_DE_PAUSA = new Set(['pause', 'pausar'])
 const ACOES_DE_SELECIONAR = new Set(['select', 'voltar'])
 
 export interface ProjectComControles {
+  kind?: 'classic' | 'pro'
+  proMeta?: { templateId: string }
   ir?: unknown
   files?: Pick<ProjectFiles, 'script.js'> | ProjectFiles | undefined
 }
@@ -282,6 +284,13 @@ export function describeProjectControls(
 ): ProjectControls {
   const controles = defaultProjectControls()
   if (!projeto) return controles
+  if (projeto.kind === 'pro') {
+    controles.face.A = liga('Ação', 'space')
+    // Kits own their contextual controls inside the game; Pro never reads the
+    // dormant classic IR or classic generated script to infer their actions.
+    controles.strip.start = liga('Pausar', 'escape')
+    return controles
+  }
 
   const achados = varrer(projeto.ir)
   const arquivos = projeto.files as { 'script.js'?: unknown } | undefined

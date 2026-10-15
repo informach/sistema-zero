@@ -662,12 +662,16 @@ export function CtrlBar({
   iframeRef,
   fullscreenTargetRef,
   onRestart,
+  screenshotEnabled = true,
 }: {
   iframeRef: RefObject<HTMLIFrameElement | null>
   fullscreenTargetRef: RefObject<HTMLDivElement | null>
   onRestart: () => void
+  screenshotEnabled?: boolean
 }) {
   const [muted, setMuted] = useState(false)
+  const mutedRef = useRef(muted)
+  mutedRef.current = muted
   const [shooting, setShooting] = useState(false)
   const { fullscreen, alternar: alternarTelaCheia } = useFullscreen(fullscreenTargetRef)
   const screenshotPendingRef = useRef(false)
@@ -687,6 +691,12 @@ export function CtrlBar({
   useEffect(() => {
     function onMsg(e: MessageEvent) {
       if (e.source !== iframeRef.current?.contentWindow) return
+      if (e.data?.type === 'sz:stage' || e.data?.type === 'sz:pro-document-ready')
+        iframeRef.current?.contentWindow?.postMessage(
+          { type: 'sz:audio', muted: mutedRef.current },
+          '*',
+        )
+      if (e.data?.type !== 'sz:screenshot:result') return
       if (!screenshotPendingRef.current) return
       if (Date.now() > screenshotExpiresAtRef.current) {
         finishScreenshotRequest()
@@ -781,30 +791,32 @@ export function CtrlBar({
           icon: muted ? <VolumeX size={18} /> : <Volume2 size={18} />,
           onClick: toggleMute,
         },
-      ].map(({ id, label, icon, onClick }) => (
-        <button
-          key={id}
-          type="button"
-          aria-label={label}
-          onClick={onClick}
-          style={btnStyle}
-          onPointerDown={(e) => {
-            ;(e.currentTarget as HTMLButtonElement).style.background =
-              'color-mix(in oklab, var(--snes-cross) 34%, transparent)'
-            ;(e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.92)'
-          }}
-          onPointerUp={(e) => {
-            ;(e.currentTarget as HTMLButtonElement).style.background = C.ctrl
-            ;(e.currentTarget as HTMLButtonElement).style.transform = ''
-          }}
-          onPointerLeave={(e) => {
-            ;(e.currentTarget as HTMLButtonElement).style.background = C.ctrl
-            ;(e.currentTarget as HTMLButtonElement).style.transform = ''
-          }}
-        >
-          {icon}
-        </button>
-      ))}
+      ]
+        .filter((button) => button.id !== 'foto' || screenshotEnabled)
+        .map(({ id, label, icon, onClick }) => (
+          <button
+            key={id}
+            type="button"
+            aria-label={label}
+            onClick={onClick}
+            style={btnStyle}
+            onPointerDown={(e) => {
+              ;(e.currentTarget as HTMLButtonElement).style.background =
+                'color-mix(in oklab, var(--snes-cross) 34%, transparent)'
+              ;(e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.92)'
+            }}
+            onPointerUp={(e) => {
+              ;(e.currentTarget as HTMLButtonElement).style.background = C.ctrl
+              ;(e.currentTarget as HTMLButtonElement).style.transform = ''
+            }}
+            onPointerLeave={(e) => {
+              ;(e.currentTarget as HTMLButtonElement).style.background = C.ctrl
+              ;(e.currentTarget as HTMLButtonElement).style.transform = ''
+            }}
+          >
+            {icon}
+          </button>
+        ))}
     </div>
   )
 }

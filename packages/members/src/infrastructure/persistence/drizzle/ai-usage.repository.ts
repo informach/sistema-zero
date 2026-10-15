@@ -7,7 +7,7 @@ import type {
   ConsumeAiUsageOutcome,
 } from '../../../domain/ports/ai-usage-repository.port'
 import type { Database } from './db'
-import { aiUsageDaily, aiUsageReservations } from './schema'
+import { aiUsageDaily, aiUsageReservations, studioAiRuns } from './schema'
 
 /** Início do mês SEGUINTE a `YYYY-MM` (data sempre VÁLIDA — `${month}-31` não é). */
 function nextMonthStart(month: string): string {
@@ -58,9 +58,25 @@ export async function readAiUsageTotals(
         sql`${aiUsageReservations.day} >= ${`${input.month}-01`} and ${aiUsageReservations.day} < ${nextMonthStart(input.month)}`,
       ),
     )
+  const [studioHolds] = await db
+    .select({
+      day: sql<number>`count(*) filter (where ${studioAiRuns.day} = ${input.day})`.mapWith(Number),
+      month: sql<number>`count(*)`.mapWith(Number),
+    })
+    .from(studioAiRuns)
+    .where(
+      and(
+        eq(studioAiRuns.accountId, input.accountId),
+        eq(studioAiRuns.source, 'platform'),
+        eq(studioAiRuns.allowanceCharged, false),
+        sql`${studioAiRuns.finishedAt} is null`,
+        gt(studioAiRuns.expiresAt, input.now ?? new Date()),
+        sql`${studioAiRuns.day} >= ${`${input.month}-01`} and ${studioAiRuns.day} < ${nextMonthStart(input.month)}`,
+      ),
+    )
   return {
-    usedDay: (totals?.usedDay ?? 0) + (holds?.day ?? 0),
-    usedMonth: (totals?.usedMonth ?? 0) + (holds?.month ?? 0),
+    usedDay: (totals?.usedDay ?? 0) + (holds?.day ?? 0) + (studioHolds?.day ?? 0),
+    usedMonth: (totals?.usedMonth ?? 0) + (holds?.month ?? 0) + (studioHolds?.month ?? 0),
   }
 }
 

@@ -19,6 +19,8 @@
 import { PWA_HEAD_TAGS, PWA_REGISTRATION_SCRIPT } from './pwa'
 
 export interface BuildProductionHtmlInput {
+  /** Conversion is a source project, not an already published PWA. */
+  includePwa?: boolean
   /** index.html do projeto (já a fonte da verdade; pode vir minificado). */
   html: string
   /** True quando `style.css` foi emitido como arquivo externo (placement external). */
@@ -117,12 +119,19 @@ export function buildProductionIndexHtml(input: BuildProductionHtmlInput): strin
   const earlyHeadBlock = [HARDENING_META, fontCssTag, fontScriptTag, inputScriptTag, audioScriptTag]
     .filter(Boolean)
     .join('\n')
-  const headBlock = [PWA_HEAD_TAGS, assetsScriptTag, importmapTag, extScriptsTag, extraCssTags]
+  const headBlock = [
+    input.includePwa === false ? '' : PWA_HEAD_TAGS,
+    assetsScriptTag,
+    importmapTag,
+    extScriptsTag,
+    extraCssTags,
+  ]
     .filter(Boolean)
     .join('\n')
-  const bodyBlock = [...input.extraHtmlFragments.filter(Boolean), PWA_REGISTRATION_SCRIPT].join(
-    '\n',
-  )
+  const bodyBlock = [
+    ...input.extraHtmlFragments.filter(Boolean),
+    input.includePwa === false ? '' : PWA_REGISTRATION_SCRIPT,
+  ].join('\n')
 
   let out = input.html
   // Endurecimento e entrada vêm logo após `<head>`. Isso também cobre projetos

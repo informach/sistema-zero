@@ -1,0 +1,4 @@
+ALTER TABLE "members"."studio_ai_attempts" ADD COLUMN "reconcile_attempts" smallint DEFAULT 0 NOT NULL;--> statement-breakpoint
+ALTER TABLE "members"."studio_ai_attempts" ADD COLUMN "reconcile_claim_id" uuid;--> statement-breakpoint
+ALTER TABLE "members"."studio_ai_attempts" ADD COLUMN "reconcile_after" timestamp with time zone;--> statement-breakpoint
+CREATE INDEX "studio_ai_attempt_reconcile_idx" ON "members"."studio_ai_attempts" USING btree ("reconcile_after","created_at") WHERE "members"."studio_ai_attempts"."generation_id" is not null and "members"."studio_ai_attempts"."status" in ('dispatched', 'uncertain');

@@ -1,25 +1,36 @@
 import { type AiCreditsView, resolveAiCredits } from '@sistemazero/core/ai-credits'
 import type { FormEvent, JSX } from 'react'
-import { useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { cn, IconSparkles } from '#ui'
 import { useDiagnosticsStore } from '../../state/diagnosticsStore'
 import { glossErrorMessage } from '../../state/errorGloss'
 import { useHighlightStore } from '../../state/highlightStore'
 import { ERROR_LOG_KINDS, useLogsStore } from '../../state/logsStore'
-import { useProjectStore } from '../../state/projectStore'
+import { flushProjectOperations } from '../../state/projectOperations'
+import { captureProjectStorageScope } from '../../state/projectStorageRuntime'
+import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { useStudioLayout } from '../../studio/layoutContext'
 import {
-  buildStudioTutorContext,
+  buildStudioTutorRequest,
+  type StudioTutorAskInput,
   type StudioTutorBlockReference,
+  type StudioTutorFileReference,
   type StudioTutorHelpReference,
   type StudioTutorHistoryMessage,
+  type StudioTutorIntent,
   type StudioTutorLessonReference,
   type StudioTutorResponse,
+  type StudioTutorSelection,
   useStudioTutor,
 } from '../../studio/tutor'
+import { studioTutorContextHint, studioTutorModeViolation } from '../../studio/tutorMode'
+import { ProAssistancePanel } from './ProAssistancePanel'
+import type { ProBuilderDraft } from './ProBuilderPanel'
+import { ProLearningRecipes } from './ProLearningRecipes'
 import { ZappyCredits } from './ZappyCredits'
 
 const MAX_QUESTION_CHARS = 1_000
+const ProBuilderPanel = lazy(() => import('./ProBuilderPanel'))
 
 function friendlyError(error: unknown): string {
   const code =
@@ -54,6 +65,7 @@ function normalizeResponse(response: StudioTutorResponse): StudioTutorResponse {
   return {
     ...response,
     blockReferences: list<StudioTutorBlockReference>(response.blockReferences) ?? [],
+    fileReferences: list<StudioTutorFileReference>(response.fileReferences),
     // Opcionais seguem OPCIONAIS: presente-e-inválido vira ausente (a UI já sabe
     // lidar com ausente), em vez de virar um array vazio que mente "buscamos e
     // não achou".
@@ -84,7 +96,9 @@ function responseMessage(
 }
 
 export function ZappyPanel(): JSX.Element | null {
-  const { config, open, setOpen } = useStudioTutor()
+  const { config, open, setOpen, proEditor, proNavigate, proCapture, proRequest, clearProRequest } =
+    useStudioTutor()
+  const store = useProjectStoreApi()
   const project = useProjectStore((s) => s.project)
   const setMode = useProjectStore((s) => s.setMode)
   const selectedBlockId = useHighlightStore((s) => s.selectedBlockId)
@@ -112,6 +126,11 @@ export function ZappyPanel(): JSX.Element | null {
   const [question, setQuestion] = useState('')
   const [voiceBusy, setVoiceBusy] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [building, setBuilding] = useState(false)
+  const [builderOpened, setBuilderOpened] = useState(false)
+  const [intent, setIntent] = useState<StudioTutorIntent>('explain')
+  const [selection, setSelection] = useState<StudioTutorSelection | undefined>()
+  const [builderDraft, setBuilderDraft] = useState<ProBuilderDraft | undefined>()
   const [loading, setLoading] = useState(false)
   const [loadingEarlier, setLoadingEarlier] = useState(false)
   const [nextHistoryCursor, setNextHistoryCursor] = useState<string | null>(null)
@@ -126,7 +145,7 @@ export function ZappyPanel(): JSX.Element | null {
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const endRef = useRef<HTMLDivElement>(null)
   const panelRef = useRef<HTMLElement>(null)
-  const pendingAttemptRef = useRef<{ question: string; clientMessageId: string } | null>(null)
+  const pendingAttemptRef = useRef<StudioTutorAskInput | null>(null)
   const operationGenerationRef = useRef(0)
 
   const projectId = project?.id ?? null
@@ -144,9 +163,32 @@ export function ZappyPanel(): JSX.Element | null {
     }
   }, [projectId, open, config])
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: rascunhos pertencem ao projeto e ao adapter da sessão atual.
+  useEffect(() => {
+    setBuilding(false)
+    setBuilderOpened(false)
+    setBuilderDraft(undefined)
+    setIntent('explain')
+    setSelection(undefined)
+    setQuestion('')
+  }, [projectId, config])
+
+  useEffect(() => {
+    if (!proRequest || proRequest.projectId !== projectId || !open) return
+    setIntent(proRequest.intent)
+    setSelection(proRequest.selection)
+    setQuestion(proRequest.question)
+    setBuilding(false)
+    pendingAttemptRef.current = null
+    clearProRequest(proRequest.id)
+    inputRef.current?.focus()
+  }, [proRequest, projectId, open, clearProRequest])
+
   useEffect(() => {
     if (!open || !config || !projectId) return
     let active = true
+    const historyScope = captureProjectStorageScope()
+    const valid = () => active && captureProjectStorageScope() === historyScope
     setLoading(true)
     setError(null)
     setMessages([])
@@ -154,16 +196,16 @@ export function ZappyPanel(): JSX.Element | null {
     config.adapter
       .loadHistory(projectId)
       .then((page) => {
-        if (active) {
+        if (valid()) {
           setMessages(page.messages)
           setNextHistoryCursor(page.nextCursor)
         }
       })
       .catch(() => {
-        if (active) setError('Não consegui carregar a conversa agora.')
+        if (valid()) setError('Não consegui carregar a conversa agora.')
       })
       .finally(() => {
-        if (active) setLoading(false)
+        if (valid()) setLoading(false)
       })
     return () => {
       active = false
@@ -233,7 +275,7 @@ export function ZappyPanel(): JSX.Element | null {
   // Chips que PREENCHEM o campo (a criança revisa e envia — padrão do Pensa):
   // fixos no estado vazio, e as continuações sugeridas da ÚLTIMA resposta.
   const starterQuestions =
-    project?.mode === 'blocks'
+    project?.kind !== 'pro'
       ? [
           'Como faço meu personagem pular?',
           'Deu um erro no meu jogo',
@@ -248,11 +290,27 @@ export function ZappyPanel(): JSX.Element | null {
       break
     }
   }
-  const followUpSuggestions = busy || loading ? [] : (lastAssistantResponse?.suggestions ?? [])
+  const followUpSuggestions =
+    busy ||
+    loading ||
+    (lastAssistantResponse?.kind &&
+      lastAssistantResponse.kind !== (project?.kind === 'pro' ? 'pro' : 'classic'))
+      ? []
+      : (lastAssistantResponse?.suggestions ?? []).filter(
+          (suggestion) =>
+            !studioTutorModeViolation(suggestion, project?.kind === 'pro' ? 'pro' : 'classic'),
+        )
   const pickSuggestion = (suggestion: string) => {
     pendingAttemptRef.current = null
+    setBuilding(false)
     setQuestion(suggestion)
     inputRef.current?.focus()
+  }
+
+  const prepareChange = (draft?: ProBuilderDraft) => {
+    setBuilderDraft(draft)
+    setBuilderOpened(true)
+    setBuilding(true)
   }
 
   const handleAsk = async (event: FormEvent) => {
@@ -260,35 +318,68 @@ export function ZappyPanel(): JSX.Element | null {
     const text = question.trim()
     if (!canAsk || !project || !config) return
     const operationGeneration = operationGenerationRef.current
-    const pendingAttempt = pendingAttemptRef.current
-    const clientMessageId =
-      pendingAttempt?.question === text ? pendingAttempt.clientMessageId : crypto.randomUUID()
-    pendingAttemptRef.current = { question: text, clientMessageId }
-    const createdAt = new Date().toISOString()
-    const userMessage: StudioTutorHistoryMessage = {
-      id: clientMessageId,
-      role: 'user',
-      text,
-      createdAt,
-    }
-    setQuestion('')
+    const scope = captureProjectStorageScope()
+    const valid = () =>
+      operationGenerationRef.current === operationGeneration &&
+      captureProjectStorageScope() === scope &&
+      store.getState().project?.id === project.id
+    let clientMessageId: string | undefined
     setError(null)
     setBusy(true)
-    setMessages((current) => [...current, userMessage])
     try {
-      const result = await config.adapter.ask({
-        projectId: project.id,
-        clientMessageId,
-        question: text,
-        context: buildStudioTutorContext({
-          project,
+      const previous = pendingAttemptRef.current
+      let input =
+        previous?.question === text &&
+        previous.projectId === project.id &&
+        previous.context.kind === (project.kind === 'pro' ? 'pro' : 'classic') &&
+        (project.kind !== 'pro' || previous.context.pro?.intent === intent)
+          ? previous
+          : null
+      if (!input) {
+        let synchronization: 'ready' | 'conflict' = 'ready'
+        if (project.kind === 'pro') {
+          try {
+            await flushProjectOperations(store, project.id)
+          } catch {
+            synchronization = 'conflict'
+          }
+        }
+        if (!valid()) return
+        const fresh = store.getState().project!
+        const editor = proCapture.current?.() ?? proEditor.current
+        const request = buildStudioTutorRequest({
+          project: fresh,
+          question: text,
+          proEditor: editor
+            ? {
+                ...editor,
+                synchronization:
+                  synchronization === 'conflict' || editor.synchronization === 'conflict'
+                    ? 'conflict'
+                    : 'ready',
+              }
+            : synchronization === 'conflict'
+              ? { projectId: fresh.id, synchronization }
+              : undefined,
+          proSelection: selection,
+          intent,
           selectedBlockId,
           lastError,
           draftBlockIds,
           semanticIssues,
-        }),
-      })
-      if (operationGenerationRef.current !== operationGeneration) return
+        })
+        input = { projectId: fresh.id, clientMessageId: crypto.randomUUID(), ...request }
+      }
+      if (!valid()) return
+      clientMessageId = input.clientMessageId
+      pendingAttemptRef.current = input
+      setQuestion('')
+      setMessages((current) => [
+        ...current,
+        { id: input.clientMessageId, role: 'user', text, createdAt: new Date().toISOString() },
+      ])
+      const result = await config.adapter.ask(input)
+      if (!valid()) return
       pendingAttemptRef.current = null
       // Saldo ausente = nada foi consumido agora (resposta pronta, replay):
       // mantém o número que já estava na tela em vez de zerar.
@@ -298,66 +389,97 @@ export function ZappyPanel(): JSX.Element | null {
       setCooldownUntil(until)
       setNow(Date.now())
     } catch (cause) {
-      if (operationGenerationRef.current !== operationGeneration) return
+      if (!valid()) return
       setMessages((current) => current.filter((message) => message.id !== clientMessageId))
       setQuestion(text)
       setError(friendlyError(cause))
     } finally {
-      if (operationGenerationRef.current === operationGeneration) setBusy(false)
+      if (valid()) setBusy(false)
     }
   }
 
   const deleteHistory = async () => {
     if (!config || !projectId || busy) return
     const operationGeneration = operationGenerationRef.current + 1
+    const operationScope = captureProjectStorageScope()
     operationGenerationRef.current = operationGeneration
     setBusy(true)
     setLoadingEarlier(false)
     setError(null)
     try {
       await config.adapter.deleteHistory(projectId)
-      if (operationGenerationRef.current !== operationGeneration) return
+      if (
+        operationGenerationRef.current !== operationGeneration ||
+        captureProjectStorageScope() !== operationScope
+      )
+        return
       pendingAttemptRef.current = null
       setMessages([])
       setNextHistoryCursor(null)
       setConfirmingDelete(false)
     } catch {
-      if (operationGenerationRef.current !== operationGeneration) return
+      if (
+        operationGenerationRef.current !== operationGeneration ||
+        captureProjectStorageScope() !== operationScope
+      )
+        return
       setError('Não consegui apagar a conversa agora.')
     } finally {
-      if (operationGenerationRef.current === operationGeneration) setBusy(false)
+      if (
+        operationGenerationRef.current === operationGeneration &&
+        captureProjectStorageScope() === operationScope
+      )
+        setBusy(false)
     }
   }
 
   const loadEarlierHistory = async () => {
     if (!config || !projectId || !nextHistoryCursor || loadingEarlier) return
     const operationGeneration = operationGenerationRef.current
+    const operationScope = captureProjectStorageScope()
     const historyCursor = nextHistoryCursor
     setLoadingEarlier(true)
     setError(null)
     try {
       const page = await config.adapter.loadHistory(projectId, historyCursor)
-      if (operationGenerationRef.current !== operationGeneration) return
+      if (
+        operationGenerationRef.current !== operationGeneration ||
+        captureProjectStorageScope() !== operationScope
+      )
+        return
       setMessages((current) => {
         const existingIds = new Set(current.map((message) => message.id))
         return [...page.messages.filter((message) => !existingIds.has(message.id)), ...current]
       })
       setNextHistoryCursor(page.nextCursor)
     } catch {
-      if (operationGenerationRef.current !== operationGeneration) return
+      if (
+        operationGenerationRef.current !== operationGeneration ||
+        captureProjectStorageScope() !== operationScope
+      )
+        return
       setError('Não consegui carregar as mensagens anteriores agora.')
     } finally {
-      if (operationGenerationRef.current === operationGeneration) setLoadingEarlier(false)
+      if (
+        operationGenerationRef.current === operationGeneration &&
+        captureProjectStorageScope() === operationScope
+      )
+        setLoadingEarlier(false)
     }
   }
 
   const sendFeedback = async (responseId: string, useful: boolean) => {
     if (!config || !projectId) return
     const operationGeneration = operationGenerationRef.current
+    const operationScope = captureProjectStorageScope()
     try {
       await config.adapter.feedback({ projectId, responseId, useful })
     } catch {
-      if (operationGenerationRef.current !== operationGeneration) return
+      if (
+        operationGenerationRef.current !== operationGeneration ||
+        captureProjectStorageScope() !== operationScope
+      )
+        return
       setError('Não consegui registrar sua avaliação agora.')
     }
   }
@@ -398,10 +520,12 @@ export function ZappyPanel(): JSX.Element | null {
         </span>
         <div className="min-w-0 flex-1">
           <h2 id={titleId} className="font-bold text-base">
-            Zappy do Studio
+            {project.kind === 'pro' ? 'Zappy Pro' : 'Zappy'}
           </h2>
           <p className="truncate text-sz-fg-mute text-xs">
-            Uma dúvida por vez, sem mexer no projeto
+            {project.kind === 'pro' && building
+              ? 'Construir, testar e revisar juntos'
+              : 'Uma dúvida por vez, sem mexer no projeto'}
           </p>
         </div>
         {confirmingDelete ? (
@@ -448,13 +572,69 @@ export function ZappyPanel(): JSX.Element | null {
           criança de graça. O aviso explica; a recusa real vem do BFF. */}
       <ZappyCredits credits={credits} />
 
+      {project.kind === 'pro' && (
+        <fieldset className="flex gap-2 border-b border-sz-border p-2">
+          <legend className="sr-only">Ações do Zappy</legend>
+          <button
+            type="button"
+            aria-pressed={!building && intent === 'explain'}
+            onClick={() => {
+              setBuilding(false)
+              setIntent('explain')
+            }}
+            className="rounded-lg px-3 py-2 text-sm hover:bg-sz-bg"
+          >
+            Conversar
+          </button>
+          <button
+            type="button"
+            aria-pressed={!building && intent === 'investigate'}
+            onClick={() => {
+              setBuilding(false)
+              setIntent('investigate')
+            }}
+            className="rounded-lg px-3 py-2 text-sm hover:bg-sz-bg"
+          >
+            Investigar
+          </button>
+          {config.adapter.builder && (
+            <button
+              type="button"
+              aria-pressed={building}
+              onClick={() => prepareChange()}
+              className="rounded-lg px-3 py-2 text-sm hover:bg-sz-bg"
+            >
+              Construir
+            </button>
+          )}
+        </fieldset>
+      )}
+
       <div aria-live="polite" className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
+        {project.kind === 'pro' && (
+          <>
+            <ProAssistancePanel key={project.id} projectId={project.id} />
+            <ProLearningRecipes
+              templateId={project.proMeta?.templateId}
+              tree={project.tree}
+              onAsk={(value, nextIntent) => {
+                setIntent(nextIntent)
+                pickSuggestion(value)
+              }}
+              onBuild={
+                config.adapter.builder
+                  ? (objective) => prepareChange({ id: crypto.randomUUID(), objective })
+                  : undefined
+              }
+            />
+          </>
+        )}
         {loading ? (
           <p className="text-center text-sz-fg-mute text-sm">Carregando conversa…</p>
         ) : null}
         {!loading && messages.length === 0 ? (
           <div className="rounded-2xl bg-sz-bg p-4 text-sm leading-relaxed">
-            <p>Oi! Selecione um bloco ou rode o jogo e me conte onde você travou.</p>
+            <p>Oi! {studioTutorContextHint(project.kind === 'pro' ? 'pro' : 'classic')}</p>
             <div className="mt-3 flex flex-wrap gap-1.5">
               {starterQuestions.map((starter) => (
                 <button
@@ -486,6 +666,22 @@ export function ZappyPanel(): JSX.Element | null {
           // botões de avaliar — pedir "isso ajudou?" para "acabou a ajuda" é cruel,
           // e o polegar viraria feedback de qualidade sobre um aviso operacional.
           const isQuota = message.response?.scope === 'quota'
+          const incompatible =
+            message.role === 'assistant' &&
+            ((message.response?.kind &&
+              message.response.kind !== (project.kind === 'pro' ? 'pro' : 'classic')) ||
+              studioTutorModeViolation(message.text, project.kind === 'pro' ? 'pro' : 'classic'))
+          if (incompatible)
+            return (
+              <details
+                key={message.id}
+                className="rounded-2xl border border-sz-border p-3 text-sm text-sz-fg-mute"
+              >
+                <summary>Conversa anterior: orientação de outro modo</summary>
+                <p className="mt-2">Esta orientação não se aplica ao modo atual.</p>
+                <p className="mt-2 whitespace-pre-wrap">{message.text}</p>
+              </details>
+            )
           return (
             <article
               key={message.id}
@@ -502,6 +698,32 @@ export function ZappyPanel(): JSX.Element | null {
               {message.role === 'assistant' && project
                 ? config?.renderListen?.(project.id, message.id)
                 : null}
+              {!isQuota && project.kind === 'pro' && message.response?.fileReferences?.length ? (
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {message.response.sourceRevision !== undefined &&
+                  message.response.sourceRevision !== project.updatedAt ? (
+                    <p className="w-full text-xs text-sz-fg-mute">
+                      O projeto mudou desde esta resposta; as linhas podem ter mudado.
+                    </p>
+                  ) : null}
+                  {message.response.fileReferences.map((reference) => (
+                    <button
+                      key={`${reference.path}:${reference.startLine}:${reference.endLine}`}
+                      type="button"
+                      disabled={project.tree?.[reference.path]?.kind !== 'file'}
+                      onClick={() => proNavigate.current?.(reference)}
+                      className="rounded-lg border border-sz-accent/40 bg-sz-accent/10 px-2.5 py-1 text-xs text-sz-accent hover:bg-sz-accent/20 disabled:opacity-40"
+                    >
+                      {reference.path}
+                      {reference.startLine !== undefined ? `:${reference.startLine}` : ''}
+                      {reference.startLine !== undefined &&
+                      reference.endLine !== reference.startLine
+                        ? `–${reference.endLine}`
+                        : ''}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
               {!isQuota && project.kind !== 'pro' && message.response?.blockReferences?.length ? (
                 <div className="mt-3 flex flex-wrap gap-1.5">
                   {message.response.blockReferences.map((reference) => {
@@ -581,6 +803,44 @@ export function ZappyPanel(): JSX.Element | null {
                   </button>
                 </div>
               ) : null}
+              {message.role === 'assistant' &&
+                !isQuota &&
+                project.kind === 'pro' &&
+                config.adapter.builder &&
+                !incompatible && (
+                  <button
+                    type="button"
+                    className="mt-3 rounded-lg border border-sz-border px-3 py-2 text-xs"
+                    onClick={() => {
+                      const references = message.response?.fileReferences
+                      const origin = references?.length === 1 ? references[0] : undefined
+                      prepareChange({
+                        id: crypto.randomUUID(),
+                        objective: '',
+                        request: {
+                          version: 1,
+                          intent: 'change',
+                          scope: 'part',
+                          criteria: [],
+                          sourceMessageId: message.id,
+                          diagnostic: message.text.slice(0, 2000),
+                          ...(origin?.sourceHash && origin.startLine && origin.endLine
+                            ? {
+                                selection: {
+                                  path: origin.path,
+                                  startLine: origin.startLine,
+                                  endLine: origin.endLine,
+                                  sourceHash: origin.sourceHash,
+                                },
+                              }
+                            : {}),
+                        },
+                      })
+                    }}
+                  >
+                    Preparar alteração a partir desta resposta
+                  </button>
+                )}
             </article>
           )
         })}
@@ -588,10 +848,21 @@ export function ZappyPanel(): JSX.Element | null {
         {error ? (
           <p className="rounded-xl bg-sz-error/10 p-3 text-sz-error text-sm">{error}</p>
         ) : null}
+        {project.kind === 'pro' && builderOpened && config.adapter.builder && (
+          <Suspense fallback={<p role="status">Preparando o construtor…</p>}>
+            <ProBuilderPanel
+              key={project.id}
+              adapter={config.adapter.builder}
+              projectId={project.id}
+              draft={builderDraft}
+              draftOpen={building}
+            />
+          </Suspense>
+        )}
         <div ref={endRef} />
       </div>
 
-      {followUpSuggestions.length > 0 ? (
+      {!building && followUpSuggestions.length > 0 ? (
         <fieldset className="m-0 flex flex-wrap gap-1.5 border-0 border-sz-border border-t p-0 px-3 pt-2">
           <legend className="sr-only">Sugestões do Zappy</legend>
           {followUpSuggestions.map((suggestion) => (
@@ -607,10 +878,36 @@ export function ZappyPanel(): JSX.Element | null {
         </fieldset>
       ) : null}
 
-      <form onSubmit={(event) => void handleAsk(event)} className="border-t border-sz-border p-3">
+      <form
+        hidden={building}
+        onSubmit={(event) => void handleAsk(event)}
+        className="border-t border-sz-border p-3"
+      >
         <label htmlFor="sz-zappy-question" className="sr-only">
           Sua dúvida para o Zappy
         </label>
+        {pendingAttemptRef.current && !busy && (
+          <div className="mb-2 text-xs">
+            <p>
+              A última resposta não foi confirmada. Enviar novamente consulta a mesma pergunta com o
+              contexto original.
+            </p>
+            {project.kind === 'pro' && (
+              <button
+                type="button"
+                className="mt-1 rounded-lg border border-sz-border px-2 py-1"
+                onClick={() => {
+                  pendingAttemptRef.current = null
+                  setError(
+                    'O próximo envio será um novo pedido com o código atual e poderá usar mais IA.',
+                  )
+                }}
+              >
+                Usar código atual em um novo pedido
+              </button>
+            )}
+          </div>
+        )}
         <textarea
           ref={inputRef}
           id="sz-zappy-question"
@@ -631,7 +928,11 @@ export function ZappyPanel(): JSX.Element | null {
               event.currentTarget.form?.requestSubmit()
             }
           }}
-          placeholder="Qual é a sua dúvida?"
+          placeholder={
+            intent === 'investigate' && project.kind === 'pro'
+              ? 'O que deveria acontecer e o que aconteceu?'
+              : 'Qual é a sua dúvida?'
+          }
           className="w-full resize-none rounded-xl border border-sz-border bg-sz-bg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-sz-accent/60"
         />
         <div className="mt-2 flex items-center justify-between gap-3">
@@ -648,7 +949,9 @@ export function ZappyPanel(): JSX.Element | null {
           <span className="text-sz-fg-mute text-xs">
             {cooldownSeconds > 0
               ? `Respira… ${cooldownSeconds}s`
-              : (creditsMeter.state === 'exhausted' && creditsMeter.renews) ||
+              : (credits?.studioSource !== 'openrouter' &&
+                  creditsMeter.state === 'exhausted' &&
+                  creditsMeter.renews) ||
                 'Enter envia · Shift+Enter pula linha'}
           </span>
           <button

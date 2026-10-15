@@ -70,6 +70,14 @@ export function StudioEmbed({
   const [seed, setSeed] = useState<Project | null>(initialProject ?? null)
   const [templateId, setTemplateId] = useState(initialProject?.proMeta?.templateId ?? 'vanilla-js')
   const [pendingKind, setPendingKind] = useState<ProjectKindChoice | null>(null)
+  const [replacementError, setReplacementError] = useState<string | null>(null)
+  const replacement = useRef(0)
+  useEffect(
+    () => () => {
+      replacement.current++
+    },
+    [],
+  )
   const proRuntime = useMemo(() => createAdminProRuntimeAdapter(), [])
   const StudioLesson: StudioComponent | null = studioModule?.StudioLesson ?? null
   const seedKind: 'blocks' | 'pro' = seed?.kind === 'pro' ? 'pro' : 'blocks'
@@ -118,15 +126,23 @@ export function StudioEmbed({
     }
   }, [initialProject, defaultName, loadAttempt])
 
-  function replaceProject(kind: ProjectKindChoice) {
+  async function replaceProject(kind: ProjectKindChoice) {
     if (!studioModule || !seed) return
-    const next =
-      kind === 'pro'
-        ? studioModule.createProProject(seed.id, seed.name, templateId)
-        : studioModule.createEmptyProject(seed.id, seed.name)
-    setSeed(next)
-    handleRef.current?.replaceProject(next)
-    setPendingKind(null)
+    const request = ++replacement.current
+    setReplacementError(null)
+    try {
+      const next =
+        kind === 'pro'
+          ? await studioModule.createProProject(seed.id, seed.name, templateId)
+          : studioModule.createEmptyProject(seed.id, seed.name)
+      if (request !== replacement.current) return
+      setSeed(next)
+      handleRef.current?.replaceProject(next)
+      setPendingKind(null)
+    } catch {
+      if (request === replacement.current)
+        setReplacementError('Não foi possível carregar o modelo. Tente novamente.')
+    }
   }
 
   if (loadError) {
@@ -227,6 +243,7 @@ export function StudioEmbed({
       <ConfirmDialog
         open={pendingKind !== null}
         onClose={() => {
+          replacement.current++
           setPendingKind(null)
           // Cancelou a troca pedida pelo form → devolve o kind REAL (desfaz o seletor).
           onKindResolvedRef.current?.(seedKind)
@@ -235,9 +252,14 @@ export function StudioEmbed({
         message="O projeto inicial atual será substituído por um projeto novo. Esta troca não pode ser desfeita depois que o bloco for salvo."
         confirmText="Trocar projeto"
         onConfirm={() => {
-          if (pendingKind) replaceProject(pendingKind)
+          if (pendingKind) return replaceProject(pendingKind)
         }}
       />
+      {replacementError && (
+        <p role="alert" className="px-3 py-2 text-sm text-destructive">
+          {replacementError}
+        </p>
+      )}
     </div>
   )
 }

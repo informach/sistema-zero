@@ -23,9 +23,9 @@ const PRO_DOCKERFILE = `# App Vite gerado pelo Sistema Zero Studio.
 # Etapa 1: instala as dependencias e roda o build (gera a pasta dist/).
 FROM node:22-alpine AS build
 WORKDIR /app
-COPY package.json ./
-# Sem lockfile: o npm install resolve as versoes ja fixadas no package.json.
-RUN npm install
+COPY package*.json ./
+# Reproduz o lockfile quando presente; projetos antigos continuam instalaveis.
+RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
 COPY . .
 RUN npm run build
 
@@ -107,8 +107,9 @@ npx serve -s public
 `
 }
 
-function proReadme(rawName: string): string {
+function proReadme(rawName: string, hasLockfile: boolean): string {
   const name = safeMarkdownName(rawName)
+  const install = hasLockfile ? 'npm ci' : 'npm install'
   return `# ${name}
 
 Projeto Vite pronto para publicar. O build, com a minificacao incluida, roda no Railway durante o deploy.
@@ -116,20 +117,20 @@ Projeto Vite pronto para publicar. O build, com a minificacao incluida, roda no 
 ## Publicar no Railway
 
 1. Crie um projeto novo no Railway e escolha "Deploy from Dockerfile" (ou arraste esta pasta para o Railway).
-2. O Railway roda \`npm install\` e \`npm run build\`, e serve a pasta \`dist/\` na porta \`$PORT\`.
+2. O Railway roda \`${install}\` e \`npm run build\`, e serve a pasta \`dist/\` na porta \`$PORT\`.
 3. Quando o deploy terminar, abra a URL gerada.
 
 ## Rodar no seu computador (opcional)
 
 \`\`\`
-npm install
+${install}
 npm run build
 npx serve -s dist
 \`\`\`
 
 ## Observacoes
 
-- Este pacote nao traz \`package-lock.json\`. As versoes ja estao fixadas no \`package.json\`. Para um build 100% reproduzivel, rode \`npm install\` uma vez e versione o lockfile gerado.
+- ${hasLockfile ? 'Este pacote inclui `package-lock.json`. Use `npm ci` para instalar as versoes registradas e mantenha o lockfile junto do projeto.' : 'Este pacote ainda nao inclui `package-lock.json`. Rode `npm install` uma vez e versione o lockfile gerado; nas proximas instalacoes, use `npm ci`.'}
 - Para uma protecao extra, configure cabecalhos de seguranca no seu servidor (por exemplo um Content-Security-Policy mais forte, X-Content-Type-Options e Referrer-Policy).
 `
 }
@@ -143,11 +144,14 @@ export function classicDeployTemplates(projectName: string): Record<string, stri
   }
 }
 
-export function proDeployTemplates(projectName: string): Record<string, string> {
+export function proDeployTemplates(
+  projectName: string,
+  hasLockfile = false,
+): Record<string, string> {
   return {
     Dockerfile: PRO_DOCKERFILE,
     'railway.json': railwayJson(),
     '.dockerignore': PRO_DOCKERIGNORE,
-    'README.md': proReadme(projectName),
+    'README.md': proReadme(projectName, hasLockfile),
   }
 }

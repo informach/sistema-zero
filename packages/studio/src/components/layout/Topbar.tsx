@@ -1,5 +1,5 @@
 import type { JSX } from 'react'
-import { useContext, useState } from 'react'
+import { lazy, Suspense, useContext, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { modesForKind, type Project } from '#core'
 import {
@@ -28,9 +28,10 @@ import {
   Menu,
   type MenuItem,
   type MenuSection,
+  Modal,
 } from '#ui'
-import { exportProjectSource } from '../../export'
 import { downloadProjectAsJSON, triggerDownload } from '../../export/download'
+import { flushProjectOperations } from '../../state/projectOperations'
 import { useProjectStore } from '../../state/projectStore'
 import { useSettingsStore } from '../../state/settingsStore'
 import { StudioStoresContext } from '../../state/storesContext'
@@ -46,8 +47,8 @@ import { useStudioShare, useStudioShareDisabledReason } from '../../studio/share
 import { useStudioTheme } from '../../studio/theme'
 import { useStudioTutor } from '../../studio/tutor'
 import { projectHas3DMaterials } from '../assets/has3DConsumer'
-import { ExportDialog } from './ExportDialog'
 import { HostMenuButton } from './HostMenuButton'
+import { LoadingScreen } from './LoadingViews'
 import {
   STUDIO_BAR_COMPACT_MAX_PX,
   STUDIO_BAR_LABELS_MIN_PX,
@@ -63,6 +64,11 @@ import { STUDIO_MENU_LAYOUT, type StudioMenuItemId } from './topbar/menuLayout'
 import { ProjectNameField } from './topbar/ProjectNameField'
 import { SavePill, type SaveTone } from './topbar/SavePill'
 import { UndoRedo, undoRedoMenuItems, useUndoRedo } from './topbar/UndoRedo'
+
+// The compiler/export workflow loads only when requested.
+const ExportDialog = lazy(() =>
+  import('./ExportDialog').then((module) => ({ default: module.ExportDialog })),
+)
 
 /** O que cada item do menu "⋯" FAZ. O nome, o grupo e a ordem vêm da árvore editorial. */
 interface MenuItemBehavior {
@@ -113,7 +119,6 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
     })),
   )
   const isDirty = useProjectStore((s) => s.isDirty)
-  const convertToPro = useProjectStore((s) => s.convertToPro)
   const persistence = useStudioPersistence()
   const saveError = useProjectStore((s) => s.saveError)
   const setMode = useProjectStore((s) => s.setMode)
@@ -129,8 +134,6 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
   const setConsoleVisibilityOverride = useUIStore((s) => s.setConsoleVisibilityOverride)
   const showTerminal = useUIStore((s) => s.showTerminal)
   const setShowTerminal = useUIStore((s) => s.setShowTerminal)
-  const showAI = useUIStore((s) => s.showAI)
-  const setShowAI = useUIStore((s) => s.setShowAI)
   const config = useStudioConfig()
   const showConsole = resolveConsoleVisibility(projectMode, consoleVisibilityOverride)
   const { width, isNarrow, isCompact } = useStudioLayout()
@@ -164,6 +167,7 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
   const [showExport, setShowExport] = useState(false)
   const [showConvert, setShowConvert] = useState(false)
   const [converting, setConverting] = useState(false)
+  const [conversionError, setConversionError] = useState<string | null>(null)
 
   const availableModes = modesForKind(projectKind).filter(
     (m) => projectKind === 'pro' || config.allowedModes.includes(m),
@@ -173,7 +177,7 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
 
   const exitToProjects = async () => {
     if (!onExit) return
-    if (isDirty) {
+    if (isDirty || projectKind === 'pro') {
       try {
         await persistence.save()
       } catch {
@@ -203,10 +207,15 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
   // extra .ts que não compilou) vão ao console — o arquivo é baixado mesmo assim.
   const handleDownload = async () => {
     if (downloading) return
-    const project = stores ? stores.project.getState().project : useProjectStore.getState().project
-    if (!project) return
+    const store = stores?.project ?? useProjectStore
+    const projectId = store.getState().project?.id
+    if (!projectId) return
     setDownloading(true)
     try {
+      await flushProjectOperations(store, projectId)
+      const { exportProjectSource } = await import('../../export')
+      const project = store.getState().project
+      if (!project || project.id !== projectId) return
       const { blob, filename, warnings } = await exportProjectSource(project)
       triggerDownload(blob, filename)
       if (warnings.length > 0) console.warn('Baixar projeto:', ...warnings)
@@ -219,23 +228,33 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
 
   // Exporta o projeto ATUAL como `.szproject.json` (mesmo formato da listagem) p/
   // levar ao Estúdio Completo. Lê o projeto sob demanda (sem assinar re-render).
-  const handleExportStudio = () => {
-    const project = stores ? stores.project.getState().project : useProjectStore.getState().project
-    if (project) downloadProjectAsJSON(project)
+  const handleExportStudio = async () => {
+    const store = stores?.project ?? useProjectStore
+    const projectId = store.getState().project?.id
+    if (!projectId) return
+    try {
+      await flushProjectOperations(store, projectId)
+      const project = store.getState().project
+      if (project?.id === projectId) downloadProjectAsJSON(project)
+    } catch (error) {
+      store.getState().markSaveFailed(error instanceof Error ? error.message : String(error))
+    }
   }
 
   const handleConvert = async () => {
     setConverting(true)
+    setConversionError(null)
     try {
-      await convertToPro()
+      await persistence.promoteToPro()
       // O callback do host costuma fazer uma navegação completa para a rota
       // COOP/COEP. Salva antes para essa navegação nunca interromper a promoção.
-      await persistence.save()
       const promoted = stores
         ? stores.project.getState().project
         : useProjectStore.getState().project
       if (promoted?.kind === 'pro') await onPromoteToPro?.(promoted)
       setShowConvert(false)
+    } catch (error) {
+      setConversionError(error instanceof Error ? error.message : String(error))
     } finally {
       setConverting(false)
     }
@@ -326,9 +345,6 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
       active: showTerminal,
       onSelect: () => setShowTerminal(!showTerminal),
     }
-  }
-  if (projectMode === 'code' && config.ai) {
-    behaviors.ai = { icon: <IconSparkles />, active: showAI, onSelect: () => setShowAI(!showAI) }
   }
 
   // "Levar para o Estúdio" (.szproject.json) — SEM gate: vale no editor da aula E
@@ -490,7 +506,17 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
         </div>
       </header>
       <ShareDialog open={showShare} onClose={() => setShowShare(false)} adapter={share} />
-      <ExportDialog open={showExport} onClose={() => setShowExport(false)} />
+      {showExport && (
+        <Suspense
+          fallback={
+            <Modal open title={t('export.title')} onClose={() => setShowExport(false)}>
+              <LoadingScreen message={t('app.loading')} />
+            </Modal>
+          }
+        >
+          <ExportDialog open onClose={() => setShowExport(false)} />
+        </Suspense>
+      )}
       <ConfirmDialog
         open={showConvert}
         title={t('convert.title')}
@@ -501,6 +527,11 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
         onConfirm={handleConvert}
       >
         {t('convert.body')}
+        {conversionError ? (
+          <p role="alert" className="mt-3 text-sz-error">
+            {conversionError}
+          </p>
+        ) : null}
       </ConfirmDialog>
     </>
   )

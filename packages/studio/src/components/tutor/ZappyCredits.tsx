@@ -13,6 +13,12 @@ import { cn } from '#ui'
  * dizer "não consegui saber" — para a criança é a mesma coisa que "acabou".
  */
 export function ZappyCredits({ credits }: { credits?: AiCreditsView | null }): JSX.Element | null {
+  if (credits?.studioSource === 'openrouter')
+    return (
+      <div className="border-sz-border border-b px-4 py-1.5 text-xs text-sz-fg-mute">
+        Fonte escolhida: OpenRouter do responsável.
+      </div>
+    )
   const meter = resolveAiCredits(credits)
   if (meter.state === 'unknown') return null
   const alerta = meter.state === 'low' || meter.state === 'exhausted'

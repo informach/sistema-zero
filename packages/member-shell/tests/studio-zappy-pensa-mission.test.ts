@@ -140,7 +140,23 @@ async function askedPrompt(body: Record<string, unknown>) {
           status: 200,
           body: { created: true, questionId: '4fa0e474-1f0d-4a52-9a6a-3f2b8c85e002' },
         }),
-        aiUsageConsume: async () => ({ status: 200, body: { allowed: true } }),
+        studioAiUsage: async (_actor: unknown, action: { operation: string }) => ({
+          status: 200,
+          body:
+            action.operation === 'reserve'
+              ? {
+                  reservation: {
+                    allowed: true,
+                    source: 'platform',
+                    priceCaps: { prompt: 1, completion: 4, request: 0 },
+                    expiresAt: new Date(Date.now() + 300_000).toISOString(),
+                  },
+                }
+              : action.operation === 'dispatch'
+                ? { dispatch: { source: 'platform', apiKey: null } }
+                : { ok: true },
+        }),
+        getAiCredits: async () => ({ status: 503, body: null }),
         zappyKnowledgeSearch: async () => ({ status: 200, body: { hits: [] } }),
         zappyCompleteQuestion: async (_id: string, value: { response: unknown }) => ({
           status: 200,

@@ -147,6 +147,19 @@ export async function r2ListKeys(prefix: string): Promise<string[]> {
     .filter((k): k is string => typeof k === 'string' && k.length > 0)
 }
 
+/** Bounded first page for durable private maintenance queues. */
+export async function r2ListPrivateKeys(prefix: string, limit = 4): Promise<string[]> {
+  const cfg = requirePrivateR2Config()
+  const page = await getClient(cfg).send(
+    new ListObjectsV2Command({
+      Bucket: cfg.bucket,
+      Prefix: normalizeKey(prefix),
+      MaxKeys: Math.max(1, Math.min(100, limit)),
+    }),
+  )
+  return (page.Contents ?? []).flatMap((entry) => (entry.Key ? [entry.Key] : []))
+}
+
 /** Apaga objetos do bucket PÚBLICO em lote (limpeza de avatares antigos). */
 export async function r2DeleteObjects(keys: string[]): Promise<void> {
   if (keys.length === 0) return

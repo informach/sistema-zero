@@ -55,6 +55,7 @@ export async function POST(request: Request): Promise<Response> {
 
   try {
     const result = await buildStudioProProject({
+      parentOrigin: new URL(request.url).origin,
       project,
       templateId,
       executionId: await opaqueStudioRuntimeExecutionId('admin', session.id),

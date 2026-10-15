@@ -1,7 +1,9 @@
 import { afterAll, afterEach, describe, expect, it, mock } from 'bun:test'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { createEmptyProject } from '#core'
-import { useProjectStore } from '../../state/projectStore'
+import { registerProjectOperation } from '../../state/projectOperations'
+import { setProjectStorageNamespace } from '../../state/projectStorageRuntime'
+import { type ProjectStoreApi, useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import type { StudioShareAdapter } from '../../studio/share'
 
 // bun:test NÃO isola module mocks por arquivo — captura o real ANTES e restaura
@@ -41,6 +43,90 @@ describe('ShareDialog', () => {
   afterEach(() => {
     cleanup()
     useProjectStore.setState({ project: null, isDirty: false, saveError: null })
+    setProjectStorageNamespace('')
+  })
+
+  it('Pro flushes code, uses a verified cover and keeps one idempotency key after a lost response', async () => {
+    const project = {
+      ...createEmptyProject('pro-share', 'Arena'),
+      kind: 'pro' as const,
+      mode: 'code' as const,
+      tree: { 'src/main.ts': { kind: 'file' as const, content: 'old' } },
+      proMeta: {
+        templateId: 'canvas-grid-arena',
+        devScript: 'dev',
+        assistance: { version: 1 as const, briefing: 'Meu plano' },
+      },
+    }
+    useProjectStore.setState({ project, editingAccess: 'author' })
+    let release = () => {}
+    const publicationId = crypto.randomUUID()
+    const publish = mock(async () => {
+      if (publish.mock.calls.length === 1) throw new Error('Resposta perdida')
+      return { publicationId, playUrl: `/jogar/${publicationId}` }
+    })
+    const adapter = makeAdapter({
+      publish,
+      proVerifiedCover: true,
+      presetDescription: 'Proteja a arena.',
+    })
+    try {
+      let api!: ProjectStoreApi
+      function Instance() {
+        api = useProjectStoreApi()
+        return <ShareDialog open onClose={() => {}} adapter={adapter} />
+      }
+      render(<Instance />)
+      release = registerProjectOperation(api, {
+        projectId: project.id,
+        flush: async () => {
+          api.setState({
+            project: {
+              ...project,
+              tree: { 'src/main.ts': { kind: 'file', content: 'saved code' } },
+            },
+          })
+        },
+      })
+      await screen.findByDisplayValue('Proteja a arena.')
+      fireEvent.click(screen.getByRole('button', { name: 'Publicar' }))
+      await screen.findByText(/Resposta perdida/)
+      fireEvent.click(screen.getByRole('button', { name: 'Publicar' }))
+      await screen.findByText('Copiar link')
+      const calls = (adapter.publish as ReturnType<typeof mock>).mock.calls
+      expect(calls[0]?.[0].project.tree['src/main.ts'].content).toBe('saved code')
+      expect(calls[0]?.[0].coverDataUrl).toBeNull()
+      expect(calls[0]?.[0].requestId).toBe(calls[1]?.[0].requestId)
+      expect(useProjectStore.getState().project?.proMeta).toMatchObject({
+        publication: { playId: publicationId },
+        assistance: { briefing: 'Meu plano' },
+      })
+    } finally {
+      release()
+    }
+  })
+
+  it('ignores a late publication after a profile changes A→B→A', async () => {
+    seedProject()
+    setProjectStorageNamespace('share-a')
+    let complete!: (value: { playUrl: string }) => void
+    const adapter = makeAdapter({
+      presetDescription: 'Jogo',
+      presetCoverUrl: 'https://cover.test/a.png',
+      publish: () =>
+        new Promise((resolve) => {
+          complete = resolve
+        }),
+    })
+    render(<ShareDialog open onClose={() => {}} adapter={adapter} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Usar a capa da aventura' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Publicar' }))
+    await waitFor(() => expect(complete).toBeDefined())
+    setProjectStorageNamespace('share-b')
+    setProjectStorageNamespace('share-a')
+    complete({ playUrl: '/jogar/late' })
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    expect(screen.queryByText('Copiar link')).toBeNull()
   })
 
   it('não renderiza nada quando o adapter é null', () => {

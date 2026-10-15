@@ -1,3 +1,5 @@
+import type { StudioTutorFileReference, StudioTutorIntent } from '@sistemazero/core/studio'
+
 export type ZappyScope =
   | 'block'
   | 'mechanic'
@@ -18,6 +20,10 @@ export type ZappyScope =
 
 export interface ZappyStoredResponse {
   id: string
+  intent?: StudioTutorIntent
+  kind?: 'classic' | 'pro'
+  fileReferences?: StudioTutorFileReference[]
+  sourceRevision?: number
   text: string
   scope: ZappyScope
   blockReferences: Array<{
@@ -81,7 +87,7 @@ export interface ReserveZappyQuestionResult {
    * Últimos turnos da conversa (cronológico, ≤6) — memória do tutor no prompt.
    * Só no caminho de pergunta NOVA (reclaim de lease fica sem, aceito).
    */
-  recentMessages?: Array<{ role: 'user' | 'assistant'; text: string }>
+  recentMessages?: Array<{ role: 'user' | 'assistant'; text: string; kind?: 'classic' | 'pro' }>
 }
 
 export interface CompleteZappyQuestionInput {

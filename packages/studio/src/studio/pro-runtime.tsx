@@ -1,3 +1,4 @@
+import type { StudioProArtifact } from '@sistemazero/core/studio/pro-artifact'
 import { createContext, useContext } from 'react'
 import type { Project, StudioProBuildLimits } from '#core'
 
@@ -6,8 +7,10 @@ export interface StudioProRuntimeBuildInput {
   signal?: AbortSignal
 }
 
-export interface StudioProRuntimeBuildResult {
-  html: string
+export type StudioProRuntimeBuildResult = (
+  | { artifact: StudioProArtifact; html?: never }
+  | { html: string; artifact?: never }
+) & {
   output?: string
   durationMs?: number
 }
