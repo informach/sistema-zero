@@ -17,11 +17,12 @@ import { Button } from '../../ui/Button'
 import { Copy, Trash2 } from '../../ui/icons'
 import { focusWorkshopStage } from './focusStage'
 import { SceneAdjustmentForm } from './SceneAdjustmentForm'
+import { SceneArrangeTools } from './SceneArrangeTools'
 import { SceneCurveDetails } from './SceneCurveDetails'
 import { SceneMirrors } from './SceneMirrors'
 import { ScenePivotChoices } from './SceneModelGuideControls'
 import { ScenePathProperties } from './ScenePathProperties'
-import { SceneSkinTools } from './SceneSkinTools'
+import { ScenePieceCoordinates } from './ScenePieceCoordinates'
 import { SceneSurfaceStrip } from './SceneSurfaceStrip'
 import { SceneTransformCoordinates } from './SceneTransformCoordinates'
 import { SceneTransformSteps } from './SceneTransformSteps'
@@ -48,7 +49,7 @@ export function SceneNodeProperties({
   // `model.precise`. Trancado não aparece.
   const { can } = useMoldaToolAccess()
   const modes = (['move', 'rotate', 'scale', 'pivot'] as const).filter((name) =>
-    can(name === 'pivot' ? 'model.precise' : 'model.pieces'),
+    can(name === 'pivot' ? 'model.pivot' : 'model.pieces'),
   )
   const mode = modes.find((mode) => mode === chosenMode)
   const precise = can('model.precise')
@@ -75,8 +76,8 @@ export function SceneNodeProperties({
         : 'var(--mld-shape-special)'
   return (
     <div className="space-y-4 border-t border-mld-border pt-3">
-      <div className="space-y-2">
-        <div className="flex min-w-0 items-center gap-2">
+      <div className="mld-piece-heading">
+        <div className="flex min-w-0 flex-1 items-center gap-2">
           <p className="mld-display min-w-0 truncate text-[1.0625rem] text-mld-text">
             {primary?.name ?? copy.selection(selected.length)}
           </p>
@@ -126,7 +127,11 @@ export function SceneNodeProperties({
           )}
         </p>
       )}
-      {mode && (
+      {primary && can('model.coordinates') && <ScenePieceCoordinates workshop={workshop} />}
+      {primary && workshop.tool === 'pivot' && can('model.precise') && (
+        <ScenePivotChoices workshop={workshop} precision />
+      )}
+      {mode && !primary && (
         <div className="space-y-3">
           <h3 className="mld-kicker">
             {mode === 'pivot' ? 'Pivô — onde gira' : mode === 'scale' ? 'Tamanho' : copy[mode]}
@@ -159,6 +164,7 @@ export function SceneNodeProperties({
         </div>
       )}
       <SceneSurfaceStrip workshop={workshop} />
+      {precise && selected.length > 1 && <SceneArrangeTools workshop={workshop} />}
       {precise && primary && geometry && geometry.kind !== 'mesh' && geometry.kind !== 'path' && (
         <details className={DISCLOSURE}>
           <summary>{copy.dimensions}</summary>
@@ -199,13 +205,11 @@ export function SceneNodeProperties({
         />
       )}
       <SceneMirrors workshop={workshop} />
-      {primary?.kind === 'mesh' && geometry?.kind === 'mesh' && (
-        <SceneSkinTools key={`skin:${document.id}:${primary.id}`} workshop={workshop} />
-      )}
       {/* Com várias escolhidas sobra o grupo: colocar todas de uma vez num grupo continua aqui. */}
       <details className={DISCLOSURE}>
         <summary>{SCENE_SHELL_COPY.moreAboutPiece}</summary>
         <div className="space-y-3 px-1 pb-1">
+          {primary && can('model.pieces') && <SceneTransformSteps workshop={workshop} />}
           {primary && (
             <>
               <form

@@ -2,6 +2,7 @@ import type { SceneAnimationTrack } from '../scene/animation'
 import { requireScene } from '../scene/validation'
 import type { GlbBinary } from './GlbBinary'
 import type { prepareSceneGlbHierarchy } from './sceneGlbHierarchy'
+import { sceneGlbPivotTranslation } from './sceneGlbPivotTrack'
 import type { SceneGlbIssue } from './sceneGlbReport'
 import { prepareSceneGlbTrack, type SceneGlbAnimationBudget } from './sceneGlbTrack'
 
@@ -65,7 +66,22 @@ export function prepareSceneGlbAnimations(
         },
       },
     }
-    for (const track of clip.tracks) {
+    const positions = new Map<string, SceneAnimationTrack>()
+    for (const track of clip.tracks)
+      if (track.channel === 'rotation' && track.keys.some((key) => key.incomingPivot)) {
+        const position = sceneGlbPivotTranslation(
+          hierarchy.index.scene.nodes.get(track.nodeId)!,
+          clip,
+        )
+        if (position) positions.set(track.nodeId, position)
+      }
+    const tracks = [
+      ...clip.tracks.filter(
+        (track) => track.channel !== 'translation' || !positions.has(track.nodeId),
+      ),
+      ...positions.values(),
+    ]
+    for (const track of tracks) {
       const targets = hierarchy.targets.get(track.nodeId)
       if (!targets?.length) continue
       requireScene(
@@ -75,7 +91,7 @@ export function prepareSceneGlbAnimations(
       )
       budget.channels += targets.length
       const prepared = prepareSceneGlbTrack(track, clip.duration, budget)
-      if (prepared.resampled)
+      if (prepared.resampled || (track.channel === 'translation' && positions.has(track.nodeId)))
         issues.push({
           code: 'animation-resampled',
           sourceId: clip.id,

@@ -3,20 +3,26 @@ import { useStore } from 'zustand'
 import { COPY } from '../../../core/copy'
 import type { SceneAnimationTrack } from '../../../scene/animation'
 import {
+  editSceneAnimationPoses,
+  recordSceneAnimationChannelValue,
+  sceneKeyArrival,
+  setScenePoseArrival,
+} from '../../../scene/animationArrival'
+import {
   configureSceneAnimation,
-  removeSceneAnimationKeys,
   retimeSceneAnimation,
   reverseSceneAnimation,
-  setSceneAnimationKey,
 } from '../../../scene/animationCommands'
 import { sameSceneContent } from '../../../scene/documentContent'
 import { evaluateSceneNodeFlags } from '../../../scene/evaluate'
 import { requireScene } from '../../../scene/validation'
 import { useMoldaToolAccess } from '../../toolAccess'
 import { Button } from '../../ui/Button'
+import { SceneAnimationPoseCard } from './SceneAnimationPoseCard'
 import { SceneAnimationPoseSetTools } from './SceneAnimationPoseSetTools'
 import { SceneAnimationPoseTools } from './SceneAnimationPoseTools'
 import { ScenePivotChoices } from './SceneModelGuideControls'
+import { ScenePieceCoordinates } from './ScenePieceCoordinates'
 import { SceneTransformSteps } from './SceneTransformSteps'
 import { SceneTwoBoneControls } from './SceneTwoBoneControls'
 import {
@@ -38,6 +44,11 @@ export function SceneAnimationInspector({
     animation.getSnapshot,
     animation.getSnapshot,
   )
+  const editSnapshot = useSyncExternalStore(
+    workshop.animationEdit.subscribe,
+    workshop.animationEdit.getSnapshot,
+    workshop.animationEdit.getSnapshot,
+  )
   const revision = useStore(workshop.editor, (state) => state.contentRevision)
   const adjusting = useSyncExternalStore(
     workshop.animationPose.subscribe,
@@ -48,41 +59,43 @@ export function SceneAnimationInspector({
     () => false,
   )
   const [channel, setChannel] = useState<SceneAnimationTrack['channel']>('translation')
-  const poseSettings = useSyncExternalStore(
-    workshop.animationPose.subscribe,
-    workshop.animationPose.getSnapshot,
-    workshop.animationPose.getSnapshot,
-  )
   const assisting = useSyncExternalStore(
     workshop.animationPose.subscribe,
     () => workshop.animationPose.getSnapshot().reach !== null,
     () => false,
   )
   const flags = useMemo(() => evaluateSceneNodeFlags(index.scene), [index])
-  // O portão: gravar e apagar chave, ajustar o movimento e reutilizar uma pose são
-  // `animate.create`; a curva da chave, dobrar pela ponta e várias poses juntas, `animate.pro`.
+  // Poses individuais são básicas; conjuntos e ritmo são intermediários; articulações são avançadas.
   const { can } = useMoldaToolAccess()
   const create = can('animate.create')
   const pro = can('animate.pro')
   const copy = COPY.scene
-  if (workshop.tool === 'pivot' && can('model.precise'))
+  if (workshop.tool === 'pivot' && can('model.pivot'))
     return (
       <section className="space-y-3 border-t border-mld-border pt-3" aria-label="Pivô da peça">
         <h3 className="text-sm font-bold">Pivô — onde gira</h3>
         <p className="text-sm text-mld-muted">
-          Isso muda o ponto de giro da forma original. Não marca uma pose. Peças com movimentos
-          incompatíveis mantêm o pivô atual.
+          Isso muda o ponto de giro para os próximos ajustes. As poses já gravadas continuam iguais.
         </p>
-        <ScenePivotChoices workshop={workshop} />
+        <ScenePieceCoordinates workshop={workshop} onlyPivot />
+        {can('model.precise') && <ScenePivotChoices workshop={workshop} precision />}
       </section>
     )
   const clip = snapshot.source?.document === document ? snapshot.source.clip : null
   if (!clip) return <p className="text-sm text-mld-muted">{copy.animationEmpty}</p>
   if (snapshot.source?.preview)
     return (
-      <p role="status" className="text-sm text-mld-muted">
-        {copy.animationPresetEditingHint}
-      </p>
+      <section className="space-y-2" aria-label="Prévia dos ajustes do movimento">
+        <p role="status" className="text-sm text-mld-muted">
+          {copy.animationPresetEditingHint}
+        </p>
+        {editSnapshot.origin === 'settings' && editSnapshot.pending && (
+          <>
+            <Button onClick={workshop.animationEdit.confirm}>{copy.animationApply}</Button>
+            <Button onClick={workshop.animationEdit.cancel}>Cancelar ajustes</Button>
+          </>
+        )}
+      </section>
     )
   const locked = [...covered].some((id) => flags.get(id)?.locked)
   const compatible = clip.space !== 'local' || node?.transform.kind === 'trs'
@@ -90,17 +103,13 @@ export function SceneAnimationInspector({
     node && compatible && !snapshot.playing
       ? sceneAnimationFormValue(node, clip, channel, snapshot.time)
       : null
+  const ownTrack = clip.tracks.find(
+    (track) => track.nodeId === node?.id && track.channel === channel,
+  )
+  const arrival = ownTrack && initial?.exact ? sceneKeyArrival(ownTrack, snapshot.time) : 'smooth'
   return (
     <section className="space-y-3 border-t border-mld-border pt-3" aria-label={copy.animationMode}>
-      <div className="space-y-0.5">
-        <h3 className="mld-display text-[1.0625rem] text-mld-text">
-          Pose em {snapshot.time.toLocaleString('pt-BR', { maximumFractionDigits: 2 })} s
-        </h3>
-        <p className="text-sm font-semibold text-mld-muted">
-          {node ? node.name : 'Escolha uma peça para ajustar esta pose.'}
-        </p>
-      </div>
-      {create && !snapshot.playing && <SceneTransformSteps workshop={workshop} />}
+      <SceneAnimationPoseCard workshop={workshop} />
       {create && (
         <Button
           className="w-full text-sm"
@@ -127,35 +136,13 @@ export function SceneAnimationInspector({
         </Button>
       )}
       <details className="mld-disclosure">
-        <summary>Mais ajustes da animação</summary>
+        <summary>Valores e organização do movimento</summary>
         <div className="space-y-3">
-          <label className="flex min-h-11 items-center gap-2 text-sm">
-            <input
-              name="animationinspector-1"
-              type="checkbox"
-              checked={workshop.showPreviousPose}
-              onChange={(event) => workshop.setShowPreviousPose(event.target.checked)}
-            />
-            Ver pose anterior
-          </label>
+          {create && !snapshot.playing && <SceneTransformSteps workshop={workshop} />}
           {workshop.showPreviousPose && !workshop.previousPose && (
             <p role="status" className="text-xs text-mld-muted">
               Ainda não há uma pose anterior marcada para esta seleção.
             </p>
-          )}
-          {create && (
-            <label className="flex min-h-11 items-center gap-2 text-sm">
-              <input
-                name="animationinspector-2"
-                type="checkbox"
-                checked={poseSettings.autoKey}
-                onChange={(event) => {
-                  const enabled = event.target.checked
-                  workshop.requestTransition(() => workshop.animationPose.setAutoKey(enabled))
-                }}
-              />
-              {copy.animationPoseAutoKey}
-            </label>
           )}
           {pro && !snapshot.playing && (!adjusting || assisting) && (
             <SceneTwoBoneControls
@@ -166,7 +153,7 @@ export function SceneAnimationInspector({
             />
           )}
           {create && !adjusting && <SceneAnimationPoseTools workshop={workshop} />}
-          {pro && (
+          {can('animate.batch') && (
             <SceneAnimationPoseSetTools workshop={workshop} clipId={clip.id} time={snapshot.time} />
           )}
           {!create ? null : adjusting ? (
@@ -215,10 +202,19 @@ export function SceneAnimationInspector({
                         'source',
                         copy.animationChanged,
                       )
-                      return setSceneAnimationKey(
-                        source,
+                      const input = sceneAnimationFormKey(
+                        node.id,
+                        channel,
+                        snapshot.time,
+                        initial,
+                        data,
+                      )
+                      const next = recordSceneAnimationChannelValue(source, clip.id, input)
+                      return setScenePoseArrival(
+                        next,
                         clip.id,
-                        sceneAnimationFormKey(node.id, channel, snapshot.time, initial, data),
+                        { nodeId: node.id, channel, time: snapshot.time },
+                        input.key.interpolation,
                       )
                     })
                   }}
@@ -257,7 +253,7 @@ export function SceneAnimationInspector({
                           <select
                             name="interpolation"
                             className={field}
-                            defaultValue={initial.exact?.interpolation ?? 'linear'}
+                            defaultValue={arrival ?? 'smooth'}
                           >
                             {(['step', 'linear', 'smooth'] as const).map((value) => (
                               <option key={value} value={value}>
@@ -267,12 +263,8 @@ export function SceneAnimationInspector({
                           </select>
                         </label>
                       ) : (
-                        // Sem escolher a curva: a chave mantém a que já tinha, e a nova vai reta.
-                        <input
-                          type="hidden"
-                          name="interpolation"
-                          value={initial.exact?.interpolation ?? 'linear'}
-                        />
+                        // The same arrival contract applies to fields and direct manipulation.
+                        <input type="hidden" name="interpolation" value={arrival ?? 'smooth'} />
                       )}
                       <p className="text-xs text-mld-muted">
                         {initial.exact ? copy.animationKeyPresent : copy.animationKeyNew}
@@ -291,9 +283,12 @@ export function SceneAnimationInspector({
                             'source',
                             copy.animationChanged,
                           )
-                          return removeSceneAnimationKeys(source, clip.id, [
-                            { nodeId: node.id, channel, time: snapshot.time },
-                          ])
+                          return editSceneAnimationPoses(
+                            source,
+                            clip.id,
+                            [{ nodeId: node.id, channel, time: snapshot.time }],
+                            'remove',
+                          )
                         })
                       }
                     >
@@ -304,7 +299,7 @@ export function SceneAnimationInspector({
               </>
             )
           )}
-          {create && (
+          {can('animate.batch') && (
             <details
               className="rounded-lg border border-mld-border px-2"
               onToggle={(event) => {
@@ -319,22 +314,26 @@ export function SceneAnimationInspector({
                 onSubmit={(event) => {
                   event.preventDefault()
                   const data = new FormData(event.currentTarget)
-                  run((source) => {
-                    requireScene(
-                      sameSceneContent(source, document),
-                      'source',
-                      copy.animationChanged,
-                    )
-                    const duration = sceneAnimationFormNumber(data, 'duration')
-                    const base = data.has('retime')
-                      ? retimeSceneAnimation(source, clip.id, duration)
-                      : source
-                    return configureSceneAnimation(base, clip.id, {
-                      duration,
-                      fps: sceneAnimationFormNumber(data, 'fps'),
-                      loop: data.has('loop'),
-                    })
-                  })
+                  workshop.animationEdit.prepare(
+                    clip.id,
+                    (source) => {
+                      requireScene(
+                        sameSceneContent(source, document),
+                        'source',
+                        copy.animationChanged,
+                      )
+                      const duration = sceneAnimationFormNumber(data, 'duration')
+                      const base = data.has('retime')
+                        ? retimeSceneAnimation(source, clip.id, duration)
+                        : source
+                      return configureSceneAnimation(base, clip.id, {
+                        duration,
+                        fps: sceneAnimationFormNumber(data, 'fps'),
+                        loop: data.has('loop'),
+                      })
+                    },
+                    'settings',
+                  )
                 }}
               >
                 <div key={JSON.stringify([revision, clip.id])} className="space-y-3">
@@ -379,16 +378,27 @@ export function SceneAnimationInspector({
                   </label>
                 </div>
                 <Button type="submit" className="w-full text-sm">
-                  {copy.animationApply}
+                  Conferir ajustes
                 </Button>
               </form>
               <Button
                 className="w-full text-sm"
-                onClick={() => run((source) => reverseSceneAnimation(source, clip.id))}
+                onClick={() => {
+                  workshop.animationEdit.prepare(
+                    clip.id,
+                    (source) => reverseSceneAnimation(source, clip.id),
+                    'settings',
+                  )
+                }}
               >
                 {copy.animationReverse}
               </Button>
               <p className="py-2 text-xs text-mld-muted">{copy.animationReverseHint}</p>
+              {editSnapshot.origin === 'settings' && editSnapshot.error && (
+                <p role="alert" className="text-sm text-mld-danger">
+                  {editSnapshot.error}
+                </p>
+              )}
             </details>
           )}
         </div>

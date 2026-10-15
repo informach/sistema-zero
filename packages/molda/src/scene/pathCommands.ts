@@ -9,6 +9,7 @@ import {
 } from './commandContext'
 import type { MoldaSceneDocument, SceneMeshGeometry, ScenePathGeometry } from './document'
 import { meshComponentEdges } from './meshComponents'
+import { sceneGeometryMesh } from './parametricGeometry'
 import { PATH_LIMITS, readPathParameters } from './pathParameters'
 import { record, requireScene, text } from './validation'
 
@@ -86,12 +87,9 @@ export function createScenePath(
   requireEditableScene(selected)
   const node = selected.index.scene.nodes.get(nodeId)
   requireScene(node?.kind === 'mesh', 'node', 'Escolha as linhas de uma peça para criar o tubo.')
-  const mesh = selected.index.geometries.get(node.geometryId)
-  requireScene(
-    mesh?.kind === 'mesh',
-    'geometry',
-    'Transforme a forma em malha para escolher suas linhas.',
-  )
+  const geometry = selected.index.geometries.get(node.geometryId)
+  requireScene(geometry, 'geometry', 'A forma do caminho não existe mais.')
+  const mesh = sceneGeometryMesh(geometry)
   record(settings, 'settings', ['radius', 'around', 'endCaps', 'closed'])
   const parameters = readPathParameters({
     ...settings,

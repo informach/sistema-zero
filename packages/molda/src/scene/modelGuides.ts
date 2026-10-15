@@ -1,12 +1,10 @@
 import type { Vec3 } from '../core/model'
-import { sceneBounds } from './bounds'
-import { editSceneMesh, moveScenePivot } from './commands'
+import { editSceneMesh } from './commands'
 import type { MoldaSceneDocument } from './document'
 import { indexSceneDocument } from './documentIndex'
-import { selectSceneSubtrees } from './graph'
 import { affineInverse, transformPoint } from './matrix'
 import { cutMeshByPlane, type MeshCutPlane } from './meshPlaneCut'
-import { parametricMesh } from './parametricGeometry'
+import { sceneLocalBounds, setSceneAuthoringPivot } from './pivot'
 import { requireScene } from './validation'
 
 export function scenePivotTargets(document: MoldaSceneDocument, nodeId: string) {
@@ -20,40 +18,14 @@ export function scenePivotTargets(document: MoldaSceneDocument, nodeId: string) 
     'pivot',
     'Essa peça tem um eixo sem tamanho. Ajuste-o antes de mover o pivô.',
   )
-  const bounds = sceneBounds(index, {
-    nodeIds: selectSceneSubtrees(index.scene, [nodeId]).covered,
-    includeMirrors: false,
-  })
+  const bounds = sceneLocalBounds(document, nodeId)
   requireScene(bounds, 'pivot', 'Esse conjunto não tem peças para definir o pivô.')
-  const center = bounds.min.map((value, axis) => value / 2 + bounds.max[axis]! / 2) as Vec3
-  const bottom: Vec3 = [center[0], bounds.min[1], center[2]]
+  const center = transformPoint(world, bounds.center)
+  const bottom = transformPoint(world, bounds.base)
   const corners: Vec3[] = []
-  const targets: Vec3[] = []
   for (const x of [bounds.min[0], bounds.max[0]])
     for (const y of [bounds.min[1], bounds.max[1]])
-      for (const z of [bounds.min[2], bounds.max[2]]) targets.push([x, y, z])
-  const nearest = targets.map(() => ({ distance: Infinity, point: null as Vec3 | null }))
-  for (const id of selectSceneSubtrees(index.scene, [nodeId]).covered) {
-    const child = index.scene.nodes.get(id),
-      matrix = index.scene.worldMatrices.get(id)
-    const geometry = child?.kind === 'mesh' ? index.geometries.get(child.geometryId) : null
-    if (!geometry || !matrix) continue
-    const mesh = geometry.kind === 'mesh' ? geometry : parametricMesh(geometry).mesh
-    for (const local of Object.values(mesh.vertices)) {
-      const point = transformPoint(matrix, local)
-      for (let i = 0; i < targets.length; i++) {
-        const target = targets[i]!,
-          distance = Math.hypot(point[0] - target[0], point[1] - target[1], point[2] - target[2])
-        if (distance < nearest[i]!.distance) nearest[i] = { distance, point }
-      }
-    }
-  }
-  const seen = new Set<string>()
-  for (const { point } of nearest)
-    if (point && !seen.has(point.join(','))) {
-      seen.add(point.join(','))
-      corners.push(point)
-    }
+      for (const z of [bounds.min[2], bounds.max[2]]) corners.push(transformPoint(world, [x, y, z]))
   return {
     center,
     bottom,
@@ -64,7 +36,7 @@ export function scenePivotTargets(document: MoldaSceneDocument, nodeId: string) 
 }
 
 export function moveScenePivotToWorld(document: MoldaSceneDocument, nodeId: string, point: Vec3) {
-  return moveScenePivot(document, nodeId, scenePivotTargets(document, nodeId).local(point))
+  return setSceneAuthoringPivot(document, nodeId, scenePivotTargets(document, nodeId).local(point))
 }
 
 /** Extrude a two-point screen line along the orthographic view to obtain a real world plane. */

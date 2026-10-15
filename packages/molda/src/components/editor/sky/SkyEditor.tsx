@@ -6,7 +6,7 @@
  * arrasto). Mexer em qualquer controle põe o preset em "Do seu jeito".
  */
 import type { ChangeEvent, JSX } from 'react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { useStore } from 'zustand'
 import { normalizeHex } from '../../../core/color'
 import { COPY } from '../../../core/copy'
@@ -20,9 +20,8 @@ import {
 } from '../../../sky/params'
 import { renderSky, SKY_PREVIEW_SIZE } from '../../../sky/render'
 import type { EditorStore } from '../../../state/editorStore'
-import { prefersReducedMotion } from '../../../viewport/reducedMotion'
-import type { SkyPreviewLike } from '../../../viewport/SkyPreview'
 import { createSkyPreview } from '../../../viewport/skyPreviewFactory'
+import { usePreviewCanvas } from '../../../viewport/usePreviewCanvas'
 import { SkyThumb } from '../../gallery/thumbs'
 import { Button } from '../../ui/Button'
 import { Download, Sparkles } from '../../ui/icons'
@@ -148,33 +147,6 @@ function ColorField({
   )
 }
 
-function useSkyPreviewCanvas(): {
-  canvasRef: React.RefObject<HTMLCanvasElement | null>
-  preview: SkyPreviewLike | null
-  unsupported: boolean
-} {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [preview, setPreview] = useState<SkyPreviewLike | null>(null)
-  const [unsupported, setUnsupported] = useState(false)
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    let instance: SkyPreviewLike
-    try {
-      instance = createSkyPreview(canvas, { reducedMotion: prefersReducedMotion() })
-    } catch {
-      setUnsupported(true)
-      return
-    }
-    setPreview(instance)
-    return () => {
-      instance.dispose()
-      setPreview(null)
-    }
-  }, [])
-  return { canvasRef, preview, unsupported }
-}
-
 export function SkyEditor({
   editor,
   onBack,
@@ -187,8 +159,8 @@ export function SkyEditor({
   const current = useCallback(() => editor.getState().asset as MoldaSkyAsset, [editor])
   const gesture = useEditorGesture(editor, current)
   const wide = useMediaQuery('(min-width: 768px)')
-  const { canvasRef, preview, unsupported } = useSkyPreviewCanvas()
   const copy = COPY.editor.sky
+  const { containerRef, preview, unsupported } = usePreviewCanvas(createSkyPreview, copy.preview)
   const params = asset.params
   const downloadButton = useRef<HTMLButtonElement>(null)
   const restoreDownloadFocus = useRef(false)
@@ -475,11 +447,7 @@ export function SkyEditor({
                 <p className="p-3 text-center text-sm text-mld-text-soft">{copy.unsupported}</p>
               </div>
             ) : (
-              <canvas
-                ref={canvasRef}
-                aria-label={copy.preview}
-                className="mld-viewport block size-full"
-              />
+              <div ref={containerRef} className="size-full" />
             )}
           </div>
           {!wide ? (

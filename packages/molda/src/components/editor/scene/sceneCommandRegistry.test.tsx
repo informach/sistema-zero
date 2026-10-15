@@ -91,7 +91,7 @@ describe('registro de comandos da oficina', () => {
   })
 
   /** As teclas do Pintar do editor antigo, as mesmas que as crianças já sabem. */
-  test('na aba Pintar valem os atalhos do editor antigo, e só nela', () => {
+  test('atalhos respeitam o contexto: G preenche em Pintar e move em Modelar', () => {
     const tecla = (key: string) => ({
       key,
       ctrlKey: false,
@@ -100,7 +100,7 @@ describe('registro de comandos da oficina', () => {
       altKey: false,
     })
     const esperado = {
-      p: 'paint.pencil',
+      b: 'paint.pencil',
       e: 'paint.eraser',
       g: 'paint.fill',
       i: 'paint.picker',
@@ -113,7 +113,8 @@ describe('registro de comandos da oficina', () => {
     }
     for (const [key, id] of Object.entries(esperado)) {
       expect(sceneCommandForShortcut('paint', tecla(key)), key).toBe(id as never)
-      expect(sceneCommandForShortcut('model', tecla(key)), key).toBeNull()
+      const modelCommand = key === 'g' ? 'tool.move' : key === 'r' ? 'tool.rotate' : null
+      expect(sceneCommandForShortcut('model', tecla(key)), key).toBe(modelCommand)
     }
     // Com Ctrl, a tecla é do navegador (Ctrl+P imprime), não da oficina.
     expect(sceneCommandForShortcut('paint', { ...tecla('p'), ctrlKey: true })).toBeNull()

@@ -94,7 +94,7 @@ export function ScenePieceFinish({ workshop }: { workshop: ReturnType<typeof use
         </fieldset>
         <fieldset disabled={locked} className="flex min-w-0 flex-col gap-2">
           <legend className="mld-kicker mb-2">{SCENE_PAINT_COPY.pieceColor}</legend>
-          <div className="flex flex-wrap gap-1.5">
+          <div className="mld-paint-swatches">
             {scenePaletteSwatches(document).map(({ index: colorIndex, hex }) => {
               const active =
                 material.baseColor.kind === 'palette' && material.baseColor.index === colorIndex
@@ -111,7 +111,7 @@ export function ScenePieceFinish({ workshop }: { workshop: ReturnType<typeof use
                       }),
                     )
                   }
-                  className={swatchClass(active)}
+                  className={`${swatchClass(active, 'compact')} mld-paint-swatch`}
                   style={{ backgroundColor: hex }}
                 />
               )

@@ -113,7 +113,14 @@ test('criar pelo fluxo de sempre abre a oficina nova já promovida, e voltar tra
   // A foto do palco chega à galeria como imagem de verdade, não como o cubo de reserva.
   const photo = page.getByRole('img', { name: /robo-e2e/ })
   await expect(photo).toBeVisible({ timeout: 10_000 })
-  expect(await photo.getAttribute('src')).toMatch(/^data:image\//)
+  // The progressive placeholder has the same accessible name. Wait for the
+  // decoded image, not merely for that placeholder to become visible.
+  await expect(photo).toHaveAttribute('src', /^data:image\//)
+  await expect
+    .poll(() =>
+      photo.evaluate((element) => (element instanceof HTMLImageElement ? element.naturalWidth : 0)),
+    )
+    .toBeGreaterThan(0)
 
   // Recarregar mantém a criação na geração seguinte, sem voltar para o editor antigo.
   await page.reload()
@@ -400,7 +407,12 @@ test('pintar do jeito da criança: caixa, Pintar, uma cor, arrastar na peça; fo
   await page.getByRole('button', { name: COPY.editor.undo, exact: true }).click()
   expect(colorImageOf(await nativeProject(page), box)).toBeUndefined()
   await expect(page.getByRole('button', { name: COPY.editor.undo, exact: true })).toBeDisabled()
-  await expect(page.getByText(SCENE_PAINT_COPY.choosePiece)).toBeVisible()
+  // Undo removes the paint transaction; the explicit all-pieces scope remains active.
+  await expect(page.getByRole('button', { name: 'Todas as peças', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+  await expect(page.getByText(SCENE_PAINT_COPY.modelHint)).toBeVisible()
   await expect(page.getByRole('alert')).toHaveCount(0)
   expect(errors).toEqual([])
 })
@@ -414,13 +426,19 @@ test('pintura 2D e prévia 3D compartilham pixels, desfazer e reabertura; movime
   page.on('pageerror', (error) => errors.push(error.message))
   await restoreProject(page, source)
   await page.getByRole('button', { name: COPY.scene.select('corpo'), exact: true }).click()
-  // O caminho avançado mora na aba Pintar, em "Mais jeitos de pintar".
+  // Materiais chooses the explicit layer; the sheet shares that target with 3D.
   await page.getByRole('button', { name: SCENE_PAINT_COPY.tab, exact: true }).click()
-  await page.getByText(SCENE_PAINT_COPY.more, { exact: true }).click()
-  await page.getByText(COPY.scene.appearanceTitle, { exact: true }).click()
+  await page
+    .getByRole('navigation', { name: 'Áreas de trabalho' })
+    .getByRole('button', { name: 'Materiais', exact: true })
+    .click()
   const material = source.materials.find((entry) => entry.colorImageId === source.images[0]!.id)!
   await page.getByRole('combobox', { name: COPY.scene.materialChoose }).selectOption(material.id)
   await page.getByRole('button', { name: COPY.scene.paintLayer, exact: true }).click()
+  await page
+    .getByRole('navigation', { name: 'Áreas de trabalho' })
+    .getByRole('button', { name: 'Folha de pintura', exact: true })
+    .click()
   const before = await nativeProject(page)
   // A imagem de origem já usa a cor 2: escolha uma tinta diferente para provar a edição.
   const hex = resolvePaletteColors(source)[8]!
@@ -480,9 +498,11 @@ test('vincular uma malha aos apoios e desfazer usa a oficina pública e exporta 
   await page
     .getByRole('button', { name: COPY.scene.select(source.nodes[0]!.name), exact: true })
     .click()
-  await page.getByText('Mais ferramentas', { exact: true }).click()
-  await page.getByRole('button', { name: COPY.scene.skinBinding.open, exact: true }).click()
-  const modal = page.getByRole('dialog', { name: COPY.scene.skinBinding.title })
+  await page
+    .getByRole('navigation', { name: 'Áreas de trabalho' })
+    .getByRole('button', { name: 'Ossos e pesos', exact: true })
+    .click()
+  const modal = page.getByRole('region', { name: 'Área Ossos e pesos' })
   await modal.getByRole('checkbox', { name: `Braço ${COPY.scene.skinBinding.group}` }).check()
   await modal.getByRole('checkbox', { name: `Antebraço ${COPY.scene.skinBinding.locator}` }).check()
   await modal.getByRole('button', { name: COPY.scene.skinBinding.prepare, exact: true }).click()

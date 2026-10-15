@@ -60,6 +60,35 @@ async function ready(hook: ReturnType<typeof setup>['hook']) {
   expect(hook.result.current.view.stage.kind).toBe('ready')
 }
 
+test('revoking specialized options invalidates their review, keeps files and prevents stale callbacks from restoring them', async () => {
+  const { asset, editor, hook, close } = setup({ allowOptions: true })
+  try {
+    await ready(hook)
+    act(() => hook.result.current.setOptions({ animations: { loop: true } }))
+    await act(async () => {
+      await hook.result.current.prepare()
+    })
+    act(() => hook.result.current.accept(true))
+    const old = hook.result.current
+    hook.rerender({ editor, options: { allowOptions: false } })
+    expect(hook.result.current.view.options).toEqual({})
+    expect(hook.result.current.view.bundle).not.toBeNull()
+    expect(hook.result.current.view.stage.kind).toBe('choose')
+    act(() => {
+      expect(old.confirm()).toBe(false)
+      old.setOptions({ skinWeights: 'normalize' })
+    })
+    expect(hook.result.current.view.options).toEqual({})
+    expect(editor.getState().content).toBe(asset)
+    await act(async () => {
+      await hook.result.current.prepare()
+    })
+    expect(hook.result.current.view.stage.kind).toBe('ready')
+  } finally {
+    close()
+  }
+})
+
 test('real import requires a scene and fresh consent; one commit preserves identity and supports undo/redo', async () => {
   const { asset, editor, hook, saves, close } = setup()
   try {

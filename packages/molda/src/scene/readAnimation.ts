@@ -57,7 +57,7 @@ export function readSceneAnimationClip(
         size: 3 | 4,
       ): SceneAnimationKey<T> => {
         const keyPath = `${trackPath}.keys[${j}]`
-        const key = v.record(raw, keyPath, ['time', 'value', 'interpolation'])
+        const key = v.record(raw, keyPath, ['time', 'value', 'interpolation', 'incomingPivot'])
         const time = v.number(key.time, `${keyPath}.time`, 0, duration)
         v.requireScene(
           time > previous,
@@ -66,6 +66,11 @@ export function readSceneAnimationClip(
         )
         previous = time
         const value = v.tuple(key.value, size, `${keyPath}.value`) as T
+        v.requireScene(
+          key.incomingPivot === undefined || size === 4,
+          keyPath,
+          'O centro de giro pertence ao canal de rotação.',
+        )
         if (size === 4)
           v.requireScene(
             Math.abs(Math.hypot(...value) - 1) <= UNIT_QUATERNION_TOLERANCE,
@@ -75,6 +80,9 @@ export function readSceneAnimationClip(
         return {
           time,
           value,
+          ...(key.incomingPivot === undefined
+            ? {}
+            : { incomingPivot: v.tuple(key.incomingPivot, 3, `${keyPath}.incomingPivot`) as Vec3 }),
           interpolation: v.choice(
             key.interpolation,
             ['step', 'linear', 'smooth'],

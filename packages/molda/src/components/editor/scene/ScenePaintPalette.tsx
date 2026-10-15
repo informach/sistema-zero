@@ -4,16 +4,34 @@ import type { MoldaPaletteFields } from '../../../core/model'
 import { RESERVED_INDEX } from '../../../core/palette'
 import { resolvePaletteColors } from '../../../core/sanitize'
 import { SCENE_PAINT_COPY } from '../../../core/scenePaintCopy'
-import type { ScenePaintRgba } from '../../../scene/imagePaint'
 import { RequiresTool } from '../../toolAccess'
-import { Plus, Star } from '../../ui/icons'
+import { Button } from '../../ui/Button'
+import { Pipette, Plus } from '../../ui/icons'
 import { swatchClass } from '../../ui/interaction'
+import { SceneColorPicker } from './SceneColorPicker'
 import type { useScenePaint } from './useScenePaint'
 
 export function scenePaletteSwatches(palette: MoldaPaletteFields) {
   return resolvePaletteColors(palette).flatMap((hex, index) =>
     index === RESERVED_INDEX || !hex ? [] : [{ index, hex }],
   )
+}
+const NAMES: Readonly<Record<string, string>> = {
+  '#ffffff': 'Branco',
+  '#ff2121': 'Vermelho',
+  '#ff93c4': 'Rosa',
+  '#ff8135': 'Laranja',
+  '#fff609': 'Amarelo',
+  '#249ca3': 'Turquesa',
+  '#78dc52': 'Verde',
+  '#003fad': 'Azul',
+  '#87f2ff': 'Azul claro',
+  '#8e2ec4': 'Roxo',
+  '#a4839f': 'Malva',
+  '#5c406c': 'Roxo escuro',
+  '#e5cdc4': 'Bege',
+  '#91463d': 'Marrom',
+  '#000000': 'Preto',
 }
 
 export function ScenePaintPalette({
@@ -24,58 +42,101 @@ export function ScenePaintPalette({
   palette: MoldaPaletteFields
 }) {
   const busy = paint.drawing || paint.busy
-  const ink = paint.ink
-  const hex = rgbToHex(ink[0], ink[1], ink[2])
-  const favorite = paint.favorites.some((entry) => entry.every((value, i) => value === ink[i]))
-  const swatches = (colors: ScenePaintRgba[], label: string) =>
-    colors.length > 0 && (
-      <div>
-        <p className="mld-kicker mb-1.5">{label}</p>
-        <div className="flex flex-wrap gap-1">
-          {colors.map((entry) => {
-            const color = rgbToHex(entry[0], entry[1], entry[2])
-            return (
-              <button
-                key={entry.join(',')}
-                type="button"
-                aria-label={`${label}: ${color}`}
-                disabled={busy}
-                className={swatchClass(entry.every((value, i) => value === ink[i]))}
-                style={{ backgroundColor: color }}
-                onClick={() => paint.setColor(entry)}
-              />
-            )
-          })}
-        </div>
-      </div>
-    )
+  const hex = rgbToHex(paint.ink[0], paint.ink[1], paint.ink[2])
+  const base = scenePaletteSwatches(palette)
+  const colors = [
+    ...base,
+    ...paint.favorites.map((entry, index) => ({
+      index: base.length + index + 1,
+      hex: rgbToHex(entry[0], entry[1], entry[2]),
+    })),
+  ].filter((entry, index, all) => all.findIndex((other) => other.hex === entry.hex) === index)
+  const favorite = colors.some((entry) => entry.hex === hex)
   return (
     <RequiresTool family="paint.brush">
       <section
         aria-label={SCENE_PAINT_COPY.colors}
-        className="shrink-0 space-y-3 border-b border-mld-border py-3"
+        className="mld-paint-palette shrink-0 space-y-3 border-b border-mld-border py-3"
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <span
             aria-hidden="true"
-            className="size-12 shrink-0 rounded-2xl shadow-[inset_0_0_0_1px_color-mix(in_oklab,var(--color-mld-text)_14%,transparent)]"
-            style={{ backgroundColor: hex }}
+            className="size-12 shrink-0 rounded-xl border-2 border-mld-surface shadow-sm"
+            style={{ background: hex }}
           />
           <div className="min-w-0 flex-1">
-            <p className="mld-display text-base leading-tight">Sua cor</p>
-            <p className="text-xs font-semibold text-mld-muted uppercase tabular-nums">{hex}</p>
+            <p className="mld-display text-base leading-tight">{NAMES[hex] ?? 'Personalizada'}</p>
+            <p className="text-xs text-mld-muted uppercase tabular-nums">{hex}</p>
           </div>
           <button
             type="button"
-            className="sz-tool-icon-btn aria-pressed:text-mld-warn"
-            aria-label="Guardar cor favorita"
-            title="Guardar cor favorita"
-            aria-pressed={favorite}
+            className="sz-tool-icon-btn"
+            aria-label="Ativar Pegar cor"
+            title="Pegar cor (I)"
+            aria-pressed={paint.picker}
             disabled={busy}
+            onClick={paint.setPicker}
+          >
+            <Pipette aria-hidden="true" />
+          </button>
+        </div>
+        <SceneColorPicker ink={paint.ink} disabled={busy} change={paint.newColorStep} />
+        <div className="flex items-center justify-between gap-2 border-t border-mld-border pt-3">
+          <p className="mld-display text-sm">Minhas cores</p>
+          <Button
+            variant="ghost"
+            className="px-2 text-xs"
+            aria-label="Guardar cor favorita"
+            disabled={busy || favorite || paint.favoritesFull}
             onClick={paint.toggleFavorite}
           >
-            <Star aria-hidden="true" className={favorite ? 'fill-current' : undefined} />
-          </button>
+            <Plus aria-hidden="true" className="size-3" /> Guardar
+          </Button>
+        </div>
+        <div className="mld-paint-swatches">
+          {colors.map(({ index, hex: value }) => (
+            <button
+              key={value}
+              type="button"
+              aria-label={COPY.a11y.colorSwatch(index, value)}
+              aria-pressed={hex === value}
+              disabled={busy}
+              onClick={() => paint.setColor([...hexToRgb(value), 255])}
+              className={`${swatchClass(hex === value, 'compact')} mld-paint-swatch`}
+              style={{ backgroundColor: value }}
+            />
+          ))}
+        </div>
+        {paint.favoritesUnavailable && (
+          <p role="status" className="text-xs text-mld-muted">
+            As cores continuam disponíveis nesta sessão. Não foi possível guardar a paleta neste
+            navegador.
+          </p>
+        )}
+        {paint.favoritesFull && (
+          <p className="text-xs text-mld-muted">Sua paleta chegou a 256 cores guardadas.</p>
+        )}
+        <div>
+          <p className="mld-kicker mb-2">Usadas agora</p>
+          <div className="flex flex-wrap gap-2">
+            {paint.recentColors.map((entry) => {
+              const value = rgbToHex(entry[0], entry[1], entry[2])
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  aria-label={`Usadas agora: ${value}`}
+                  className={`${swatchClass(hex === value)} rounded-full!`}
+                  style={{ background: value }}
+                  disabled={busy}
+                  onClick={() => paint.setColor(entry)}
+                />
+              )
+            })}
+            {!paint.recentColors.length && (
+              <p className="text-xs text-mld-muted">As cores usadas na pintura aparecem aqui.</p>
+            )}
+          </div>
         </div>
         {paint.fill && (
           <fieldset className="space-y-1">
@@ -102,15 +163,10 @@ export function ScenePaintPalette({
                 </label>
               </RequiresTool>
             )}
-            <p className="text-xs text-mld-muted">
-              {paint.fillScope === 'base'
-                ? 'Os desenhos ficam por cima da nova cor.'
-                : 'Toque na área que quer preencher.'}
-            </p>
           </fieldset>
         )}
         {paint.eraser && (
-          <p className="text-sm text-mld-muted">
+          <p className="text-xs text-mld-muted">
             Apaga só o desenho
             {paint.data && paint.data.image.layers.length > 1
               ? ` da camada “${paint.data.layer.name}”`
@@ -118,49 +174,6 @@ export function ScenePaintPalette({
             . A cor de baixo aparece.
           </p>
         )}
-        <div className="flex flex-wrap gap-1">
-          {scenePaletteSwatches(palette).map(({ index, hex }) => {
-            const [r, g, b] = hexToRgb(hex)
-            const active =
-              !paint.eraser && ink[0] === r && ink[1] === g && ink[2] === b && ink[3] === 255
-            return (
-              <button
-                key={index}
-                type="button"
-                aria-label={COPY.a11y.colorSwatch(index, hex)}
-                aria-pressed={active}
-                disabled={busy}
-                onClick={() => paint.setColor([r, g, b, 255])}
-                className={swatchClass(active)}
-                style={{ backgroundColor: hex }}
-              />
-            )
-          })}
-          <label className="relative flex min-h-11 cursor-pointer items-center gap-1 rounded-md border-2 border-dashed border-mld-border px-2.5 text-[0.8125rem] font-bold text-mld-muted hover:border-mld-accent hover:text-mld-accent">
-            <Plus aria-hidden="true" className="size-4" />
-            Nova cor
-            <input
-              type="color"
-              name="molda-scene-new-color"
-              aria-label={COPY.editor.model.addColor}
-              disabled={busy}
-              value={hex}
-              className="absolute inset-0 size-full cursor-pointer opacity-0"
-              // O `change` NATIVO só chega quando o seletor fecha (o `onChange` do React é o
-              // `input` de cada passo): é ele que guarda a cor em "Recentes".
-              ref={(input) => {
-                if (!input) return
-                const end = () => paint.newColorEnd()
-                input.addEventListener('change', end)
-                return () => input.removeEventListener('change', end)
-              }}
-              onInput={(event) => paint.newColorStep(event.currentTarget.value)}
-              onChange={(event) => paint.newColorStep(event.target.value)}
-            />
-          </label>
-        </div>
-        {swatches(paint.favorites, 'Favoritas')}
-        {swatches(paint.recentColors, 'Recentes')}
       </section>
     </RequiresTool>
   )

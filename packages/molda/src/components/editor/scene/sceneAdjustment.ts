@@ -1,7 +1,7 @@
 import { COPY } from '../../../core/copy'
 import type { Vec3 } from '../../../core/model'
 import { sceneBounds } from '../../../scene/bounds'
-import { moveScenePivot, transformSceneNodes } from '../../../scene/commands'
+import { transformSceneNodes } from '../../../scene/commands'
 import type { MoldaSceneDocument } from '../../../scene/document'
 import { indexSceneDocument } from '../../../scene/documentIndex'
 import { selectSceneSubtrees } from '../../../scene/graph'
@@ -12,6 +12,7 @@ import {
   quaternionFromEulerXYZ,
   transformPoint,
 } from '../../../scene/matrix'
+import { sceneNodePivot, setSceneAuthoringPivot } from '../../../scene/pivot'
 import { requireScene } from '../../../scene/validation'
 
 export type SceneAdjustment = 'move' | 'rotate' | 'scale' | 'pivot'
@@ -26,7 +27,12 @@ export function adjustScene(
   requireScene(values.every(Number.isFinite), 'values', COPY.scene.invalidNumber)
   if (mode === 'pivot') {
     requireScene(ids.length === 1 && ids[0], 'selection', COPY.scene.choose)
-    return moveScenePivot(document, ids[0], values)
+    const node = indexSceneDocument(document).scene.nodes.get(ids[0])!
+    return setSceneAuthoringPivot(
+      document,
+      ids[0],
+      sceneNodePivot(node).map((n, axis) => n + values[axis]!) as Vec3,
+    )
   }
   if (mode === 'scale')
     requireScene(
@@ -48,7 +54,7 @@ export function adjustScene(
   })
   const singleWorld = ids.length === 1 ? index.scene.worldMatrices.get(ids[0] ?? '') : undefined
   const center: Vec3 = singleWorld
-    ? transformPoint(singleWorld, [0, 0, 0])
+    ? transformPoint(singleWorld, sceneNodePivot(index.scene.nodes.get(ids[0]!)!))
     : bounds
       ? [
           bounds.min[0] / 2 + bounds.max[0] / 2,

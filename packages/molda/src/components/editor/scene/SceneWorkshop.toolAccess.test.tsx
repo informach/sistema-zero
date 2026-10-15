@@ -12,7 +12,6 @@ import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { COPY } from '../../../core/copy'
-import { NATIVE_IMPORT_COPY } from '../../../core/nativeImportCopy'
 import { SCENE_PAINT_COPY } from '../../../core/scenePaintCopy'
 import { SCENE_SHELL_COPY } from '../../../core/sceneShellCopy'
 import { SCENE_TOOL_ACCESS_COPY } from '../../../core/sceneToolAccessCopy'
@@ -109,7 +108,7 @@ const withPiece = (): MoldaSceneDocument =>
 
 /** Escolher como a criança escolhe: pelo botão da peça na hierarquia. */
 function choosePiece(container: HTMLElement): void {
-  const button = container.querySelector<HTMLButtonElement>('button[aria-label^="Escolher "]')
+  const button = container.querySelector<HTMLButtonElement>('button.mld-piece')
   if (!button) throw new Error('a hierarquia não ofereceu nenhuma peça para escolher')
   act(() => {
     button.click()
@@ -149,7 +148,6 @@ function lockedLabels(): string[] {
     SCENE_PAINT_COPY.more,
     copy.animationCurve,
     copy.twoBone.title,
-    NATIVE_IMPORT_COPY.open,
     copy.glbExport.formats.gltf,
     copy.glbExport.formats.obj,
     copy.glbExport.destinationDownload,
@@ -187,17 +185,20 @@ describe('a oficina no nível de entrada', () => {
     const montadosVazio = controlInventory(vazio.view.container)
     const encaradosVazio = frontControls(vazio.view.container)
     // New project actions, tree visibility/lock and click-based camera navigation.
-    expect(montadosVazio.length, montadosVazio.join(' | ')).toBeLessThanOrEqual(52)
-    // Two fixture pieces now each expose the approved Show/Lock actions (+4 visible controls).
-    expect(encaradosVazio.length, encaradosVazio.join(' | ')).toBeLessThanOrEqual(34)
+    // The approved basic workshop adds cut, import, support and piece/face/point modes.
+    // One additional control dismisses the viewport hint without hiding essential decisions.
+    expect(montadosVazio.length, montadosVazio.join(' | ')).toBeLessThanOrEqual(59)
+    // Cut, import, pivot and component selection are now explicit basic authoring actions.
+    expect(encaradosVazio.length, encaradosVazio.join(' | ')).toBeLessThanOrEqual(40)
     cleanup()
 
     const comPeca = mount(withPiece())
     choosePiece(comPeca.view.container)
     const montadosPeca = controlInventory(comPeca.view.container)
     const encaradosPeca = frontControls(comPeca.view.container)
-    expect(montadosPeca.length, montadosPeca.join(' | ')).toBeLessThanOrEqual(83)
-    expect(encaradosPeca.length, encaradosPeca.join(' | ')).toBeLessThanOrEqual(59)
+    // Position, size, pivot and rotation contribute 12 inputs in the approved basic inspector.
+    expect(montadosPeca.length, montadosPeca.join(' | ')).toBeLessThanOrEqual(103)
+    expect(encaradosPeca.length, encaradosPeca.join(' | ')).toBeLessThanOrEqual(78)
   })
 
   test('nenhum controle de família trancada aparece, em nenhuma aba, nem abrindo tudo', async () => {

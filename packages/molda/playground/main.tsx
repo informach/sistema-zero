@@ -188,12 +188,22 @@ async function installPreviewTracking(): Promise<void> {
   })
 
   skyModule.setMoldaSkyPreviewFactory((canvas, options) => {
-    skyPreview = skyModule.defaultSkyPreviewFactory(canvas, options)
+    try {
+      skyPreview = skyModule.defaultSkyPreviewFactory(canvas, options)
+    } catch (error) {
+      debug.errors.push(String(error))
+      throw error
+    }
     return skyPreview
   })
 
   textureModule.setMoldaTexturePreviewFactory((canvas, options) => {
-    texturePreview = textureModule.defaultTexturePreviewFactory(canvas, options)
+    try {
+      texturePreview = textureModule.defaultTexturePreviewFactory(canvas, options)
+    } catch (error) {
+      debug.errors.push(String(error))
+      throw error
+    }
     return texturePreview
   })
 }

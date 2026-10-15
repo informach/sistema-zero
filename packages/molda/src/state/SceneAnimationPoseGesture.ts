@@ -13,6 +13,7 @@ import {
   type SceneAnimationPoseFrame,
 } from '../scene/animationPoseTransform'
 import type { MoldaSceneDocument } from '../scene/document'
+import { sameSceneContent } from '../scene/documentContent'
 import type { AffineMatrix } from '../scene/matrix'
 import { readSceneAnimationClip } from '../scene/readAnimation'
 import { prepareSceneAnimation, type SceneAnimationPose } from '../scene/sampleAnimation'
@@ -209,6 +210,7 @@ export class SceneAnimationPoseGesture {
   constructor(
     private readonly editor: EditorStore<MoldaSceneDocument>,
     private readonly player: SceneAnimationPlayer,
+    private readonly onRecorded?: (clipId: string, time: number) => void,
   ) {}
 
   getSnapshot = () => this.snapshot
@@ -763,6 +765,8 @@ export class SceneAnimationPoseGesture {
         if (state.asset.thumb) recorded.thumb = state.asset.thumb
         else delete recorded.thumb
         state.commit(recorded)
+        if (sameSceneContent(this.editor.getState().content, recorded))
+          this.onRecorded?.(owner.source.clip.id, owner.time)
       }
       return true
     } catch (error) {

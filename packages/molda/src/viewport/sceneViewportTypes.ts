@@ -1,11 +1,12 @@
 import type { Vec3 } from '../core/model'
 import type { MoldaSceneDocument, Vec2 } from '../scene/document'
-import type { ScenePaintRgba, ScenePaintSample, ScenePaintTarget } from '../scene/imagePaint'
+import type { ScenePaintInputSample, ScenePaintRgba, ScenePaintTarget } from '../scene/imagePaint'
 import type { AffineMatrix } from '../scene/matrix'
 import type { SceneComponentSelection } from '../scene/meshComponents'
 import type { MeshCutPlane } from '../scene/meshPlaneCut'
 import type { SceneAnimationPose } from '../scene/sampleAnimation'
 import type { SceneSkinPaintSample } from '../scene/skinPaint'
+import type { SceneCutPoint } from '../scene/solidCutPoints'
 import type { SceneSkinPaintPreview } from '../state/sceneSkinPaintGesture'
 import type { CapturedPaintActions } from './CapturedPaintInput'
 import type { SceneAreaTool } from './SceneAreaSelection'
@@ -15,6 +16,21 @@ import type { SceneDrawIssue } from './sceneRenderResource'
 import type { CameraView } from './types'
 
 export interface SceneGuideInput {
+  pivot?: {
+    nodeId: string
+    vertical?: boolean
+    snapVertex?: boolean
+    markVertex?(vertexId: string, point: Vec3): void
+    begin(world: Readonly<AffineMatrix>): boolean
+    preview(delta: Vec3): boolean
+    end(commit: boolean): void
+  }
+  cut?: {
+    nodeId: string
+    midpoint: boolean
+    mark(point: SceneCutPoint): void
+    hover(point: SceneCutPoint | null): void
+  }
   plane?: MeshCutPlane
   corners?: readonly Vec3[]
 }
@@ -24,6 +40,10 @@ export interface SceneGuideInput {
  * arrastar fora dela gira a câmera. `look`: só olhar, a pintura desligada. `off`: fora da aba.
  */
 export type ScenePaintMode = 'off' | 'look' | 'paint'
+export interface ScenePaintSurfaceScope {
+  mode: 'all' | 'selected'
+  nodeId: string | null
+}
 
 /** O que o toque escolheu além da peça: em Pintar, a face (a superfície da forma ou a da malha). */
 export interface SceneSelectDetail {
@@ -32,12 +52,14 @@ export interface SceneSelectDetail {
 
 export interface SceneViewportPort {
   setPreviewGuide?(guide: ScenePreviewGuideState | null): void
+  refreshGuideInput?(input: SceneGuideInput | null): void
   setDocument(document: MoldaSceneDocument): SceneDrawIssue[]
   setSelection(ids: readonly string[]): void
   setIsolation(ids: readonly string[] | null): void
   setView(view: CameraView): void
   setGridVisible?(visible: boolean): void
   setMovementStep?(step: number | null): void
+  setTransformSpace?(space: 'world' | 'local'): void
   frame(selectionOnly?: boolean): void
   zoom?(factor: number): void
   ensureVisible?(ids: readonly string[]): void
@@ -45,6 +67,8 @@ export interface SceneViewportPort {
   setAreaTool(tool: SceneAreaTool, through: boolean): void
   setComponentSelection(selection: SceneComponentSelection | null): void
   setPaintTarget(target: ScenePaintTarget | null): void
+  setPaintScope?(scope: ScenePaintSurfaceScope | null): void
+  setPaintGuides?(settings: import('./ScenePaintGuides').ScenePaintGuideSettings | null): void
   /** Opcional: sem ele, o palco deduz a pintura do alvo, como antes. */
   setPaintMode?(mode: ScenePaintMode): void
   /** Espelho de pintura: cada toque pinta também o ponto refletido no meio, na mesma peça. */
@@ -83,7 +107,7 @@ export interface SceneViewportCallbacks {
 }
 
 export type SceneTransformTool = 'select' | 'move' | 'rotate' | 'scale'
-export type ScenePaintActions = CapturedPaintActions<ScenePaintSample>
+export type ScenePaintActions = CapturedPaintActions<ScenePaintInputSample>
 export type SceneSkinPaintActions = CapturedPaintActions<SceneSkinPaintSample>
 export interface SceneTransformActions {
   begin(): boolean

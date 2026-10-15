@@ -185,15 +185,16 @@ export function SceneWorkshopBar({
       <div className="mld-workshop-tabs">{tabs}</div>
       <div className="mld-workshop-file-actions">
         {help}
-        <RequiresTool family="files.interop">
+        <RequiresTool family="files.import">
           <button
             ref={importTrigger}
             type="button"
             className="sz-tool-pill sz-tool-pill--outline text-sm"
+            aria-label={NATIVE_IMPORT_COPY.open}
             onClick={onImport}
           >
             <Upload aria-hidden="true" />
-            <span className="mld-bar-label">{NATIVE_IMPORT_COPY.open}</span>
+            <span className="mld-bar-label">Trazer 3D</span>
           </button>
         </RequiresTool>
         <details className="relative">

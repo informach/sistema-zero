@@ -31,7 +31,7 @@ import {
   identityMatrix,
   transformPoint,
 } from './matrix'
-import { parametricMesh } from './parametricGeometry'
+import { parametricMesh, sceneGeometryMesh } from './parametricGeometry'
 import { primitiveDetail, readPrimitiveDetail } from './primitiveDetail'
 import { duplicateSceneSkinTargets } from './skinTargets'
 import { triangulateFace } from './triangulate'
@@ -74,6 +74,7 @@ export function addScenePrimitive(
         materialId,
         hidden: false,
         locked: false,
+        pivot: [0, -1, 0],
         transform: {
           kind: 'trs',
           translation: [0, 1, 0],
@@ -289,8 +290,9 @@ export function editSceneMesh(
   editable(selected)
   const node = selected.index.scene.nodes.get(nodeId)
   requireScene(node?.kind === 'mesh', 'node', 'Escolha uma peça para editar.')
-  const source = selected.index.geometries.get(node.geometryId)
-  requireScene(source?.kind === 'mesh', 'geometry', 'Transforme a forma em malha primeiro.')
+  const geometry = selected.index.geometries.get(node.geometryId)
+  requireScene(geometry, 'geometry', 'A forma não existe mais.')
+  const source = sceneGeometryMesh(geometry)
   const result = edit(source)
   if (result === source) return document
   requireScene(result.id === source.id, 'geometry', 'A identidade da malha mudou durante a edição.')
@@ -580,6 +582,9 @@ export function moveScenePivot(
   let geometries = document.geometries
   let changed: ModelSceneNode = {
     ...node,
+    ...(node.pivot
+      ? { pivot: node.pivot.map((value, axis) => value - offset[axis]!) as Vec3 }
+      : {}),
     transform: {
       kind: 'affine',
       matrix: affineMultiply(composeTransform(node.transform), forward),
