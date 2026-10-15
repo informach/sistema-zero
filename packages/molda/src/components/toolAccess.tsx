@@ -12,7 +12,16 @@
  * `workers/` não conhecem o portão (há teste por texto): leitura, nuvem, exportação e a ponte
  * com o Estúdio tratam toda criação igual, use ela a família que usar.
  */
-import { createContext, type JSX, type ReactNode, useContext, useMemo } from 'react'
+import {
+  createContext,
+  type JSX,
+  type ReactNode,
+  useCallback,
+  useContext,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+} from 'react'
 import {
   type MoldaToolAccess,
   type MoldaToolAccessReader,
@@ -37,6 +46,21 @@ export function MoldaToolAccessProvider({
 
 export function useMoldaToolAccess(): MoldaToolAccessReader {
   return useContext(MoldaToolAccessContext)
+}
+
+/** A committed access cycle owns deferred confirmations. Regranting never revives an old action. */
+export function useMoldaToolGate(family: MoldaToolFamilyId) {
+  const allowed = useMoldaToolAccess().can(family)
+  const permission = useMemo(() => ({ allowed, family }), [allowed, family])
+  const live = useRef<typeof permission | null>(permission)
+  useLayoutEffect(() => {
+    live.current = permission
+    return () => {
+      live.current = null
+    }
+  }, [permission])
+  const canUse = useCallback(() => permission.allowed && live.current === permission, [permission])
+  return { allowed, canUse }
 }
 
 /** Desenha o bloco só com a família liberada. Fica dentro do componente-folha, para viajar junto. */

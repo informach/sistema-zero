@@ -9,6 +9,10 @@ export interface SceneAnimationKey<T extends Vec3 | Quaternion> {
   interpolation: 'step' | 'linear' | 'smooth'
   /** Rotation keys only: geometric center for the incoming interval. Absent in legacy clips. */
   incomingPivot?: Vec3
+  /** Reference-point chord used by origin compensation, independent of angular easing.
+   * Absent in older clips: use the incoming rotation interval's interpolation.
+   */
+  incomingPivotInterpolation?: SceneAnimationKey<T>['interpolation']
 }
 
 export type SceneAnimationTrack = { nodeId: string } & (

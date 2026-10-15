@@ -1,4 +1,4 @@
-import { useState, useSyncExternalStore } from 'react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
 import { COPY } from '../../../core/copy'
 import {
   createSceneAnimation,
@@ -6,7 +6,7 @@ import {
   duplicateSceneAnimation,
   renameSceneAnimation,
 } from '../../../scene/animationCommands'
-import { useMoldaToolAccess } from '../../toolAccess'
+import { useMoldaToolGate } from '../../toolAccess'
 import { Clapperboard, Copy, MoreHorizontal, Play, Plus, Repeat, Trash2 } from '../../ui/icons'
 import { SceneAnimationPresets } from './SceneAnimationPresets'
 import type { useSceneWorkshop } from './useSceneWorkshop'
@@ -24,8 +24,16 @@ export function SceneAnimationClips({
     () => null,
   )
   const [renaming, setRenaming] = useState<string | null>(null)
-  const create = useMoldaToolAccess().can('animate.create'),
-    copy = COPY.scene
+  const { allowed: create, canUse } = useMoldaToolGate('animate.create')
+  const copy = COPY.scene
+  useEffect(() => {
+    if (!create) setRenaming(null)
+  }, [create])
+  function rename(id: string) {
+    workshop.requestTransition(() => {
+      if (canUse()) setRenaming(id)
+    })
+  }
   function choose(id: string | null) {
     workshop.requestTransition(() => {
       try {
@@ -46,6 +54,7 @@ export function SceneAnimationClips({
             aria-label={copy.animationCreate}
             onClick={() =>
               workshop.requestTransition(() => {
+                if (!canUse()) return
                 const current = editor.getState().content
                 let number = 1
                 while (current.animations?.some((clip) => clip.name === `Movimento ${number}`))
@@ -65,11 +74,12 @@ export function SceneAnimationClips({
       <section className="space-y-1" aria-label={copy.animationChoose}>
         {document.animations?.map((clip) => (
           <div key={clip.id} className="mld-movement-row" data-active={source?.clip.id === clip.id}>
-            {renaming === clip.id ? (
+            {create && renaming === clip.id ? (
               <form
                 className="min-w-0 flex-1"
                 onSubmit={(event) => {
                   event.preventDefault()
+                  if (!canUse()) return
                   const name = String(new FormData(event.currentTarget).get('name') ?? '')
                   const next = run((source) => renameSceneAnimation(source, clip.id, name))
                   if (next) setRenaming(null)
@@ -102,7 +112,7 @@ export function SceneAnimationClips({
                 title={`${clip.tracks.reduce((sum, track) => sum + track.keys.length, 0)} poses${clip.loop ? ' · repetir' : ''}`}
                 onClick={() => choose(clip.id)}
                 onDoubleClick={() => {
-                  if (create) workshop.requestTransition(() => setRenaming(clip.id))
+                  if (create) rename(clip.id)
                 }}
               >
                 {source?.clip.id === clip.id ? (
@@ -128,16 +138,14 @@ export function SceneAnimationClips({
                   <MoreHorizontal aria-hidden="true" />
                 </summary>
                 <div className="mld-movement-menu">
-                  <button
-                    type="button"
-                    onClick={() => workshop.requestTransition(() => setRenaming(clip.id))}
-                  >
+                  <button type="button" onClick={() => rename(clip.id)}>
                     Renomear
                   </button>
                   <button
                     type="button"
                     onClick={() =>
                       workshop.requestTransition(() => {
+                        if (!canUse()) return
                         const next = run((source) =>
                           duplicateSceneAnimation(
                             source,
@@ -156,6 +164,7 @@ export function SceneAnimationClips({
                     type="button"
                     onClick={() =>
                       workshop.requestTransition(() => {
+                        if (!canUse()) return
                         const next = run((source) => deleteSceneAnimation(source, clip.id))
                         if (next && source?.clip.id === clip.id)
                           choose(next.animations?.[0]?.id ?? null)

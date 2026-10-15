@@ -127,8 +127,10 @@ export function SceneNodeProperties({
           )}
         </p>
       )}
-      {primary && can('model.coordinates') && <ScenePieceCoordinates workshop={workshop} />}
-      {primary && workshop.tool === 'pivot' && can('model.precise') && (
+      {primary && (can('model.coordinates') || can('model.pivot')) && (
+        <ScenePieceCoordinates workshop={workshop} />
+      )}
+      {primary && workshop.tool === 'pivot' && can('model.pivot') && can('model.precise') && (
         <ScenePivotChoices workshop={workshop} precision />
       )}
       {mode && !primary && (

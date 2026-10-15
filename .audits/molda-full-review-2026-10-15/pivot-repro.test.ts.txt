@@ -1,0 +1,37 @@
+import { expect, test } from 'bun:test'
+import { makeModel } from '../src/testing/fixtures'
+import { addScenePrimitive } from '../src/scene/commands'
+import { migrateLegacyModel } from '../src/scene/migrateLegacy'
+import { setSceneAuthoringPivot } from '../src/scene/pivot'
+import { createSceneAnimation, configureSceneAnimation, reverseSceneAnimation } from '../src/scene/animationCommands'
+import { recordSceneAnimationChannelValue, setScenePoseArrival } from '../src/scene/animationArrival'
+import { prepareSceneAnimation } from '../src/scene/sampleAnimation'
+import { quaternionFromEulerXYZ, transformPoint } from '../src/scene/matrix'
+
+function fixture() {
+  let document = addScenePrimitive(migrateLegacyModel(makeModel({ parts: [] })).document, 'box', 'Peça')
+  const id = document.nodes[0]!.id, pivot: [number, number, number] = [1,-1,1]
+  document = setSceneAuthoringPivot(document, id, pivot)
+  document = createSceneAnimation(document, 'Giro')
+  const clipId = document.animations![0]!.id
+  document = configureSceneAnimation(document, clipId, {duration:1,fps:24,loop:false})
+  document = recordSceneAnimationChannelValue(document, clipId, {nodeId:id,channel:'rotation',key:{time:1,value:quaternionFromEulerXYZ([0,90,0]),interpolation:'smooth'}})
+  return {document,id,pivot,clipId}
+}
+test('review: reversing pivot motion preserves the original geometric trajectory', () => {
+  const f=fixture(), sample=prepareSceneAnimation(f.document,f.clipId), back=prepareSceneAnimation(reverseSceneAnimation(f.document,f.clipId),f.clipId)
+  const expected=transformPoint(sample.sample(.5,false).worldMatrices.get(f.id)!,f.pivot)
+  const actual=transformPoint(back.sample(.5,false).worldMatrices.get(f.id)!,f.pivot)
+  const error=Math.hypot(...actual.map((n,i)=>n-expected[i]!))
+  console.log(JSON.stringify({case:'reverse',expected,actual,error}))
+  expect(error).toBeLessThan(1e-8)
+})
+test('review: arrival choice changes angular speed without moving a stationary pivot', () => {
+  const f=fixture(), next=setScenePoseArrival(f.document,f.clipId,{nodeId:f.id,channel:'rotation',time:1},'linear')
+  const sample=prepareSceneAnimation(next,f.clipId)
+  const start=transformPoint(sample.sample(0,false).worldMatrices.get(f.id)!,f.pivot)
+  const actual=transformPoint(sample.sample(.25,false).worldMatrices.get(f.id)!,f.pivot)
+  const error=Math.hypot(...actual.map((n,i)=>n-start[i]!))
+  console.log(JSON.stringify({case:'arrival',expected:start,actual,error}))
+  expect(error).toBeLessThan(1e-8)
+})

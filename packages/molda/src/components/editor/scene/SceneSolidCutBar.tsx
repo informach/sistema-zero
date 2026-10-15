@@ -5,7 +5,7 @@ import type { useSceneWorkshop } from './useSceneWorkshop'
 
 export function SceneSolidCutBar({ workshop }: { workshop: ReturnType<typeof useSceneWorkshop> }) {
   const { can } = useMoldaToolAccess()
-  if (workshop.tool !== 'cut') return null
+  if (workshop.tool !== 'cut' || !can('model.cut')) return null
   const cut = workshop.solidCut
   return (
     <section data-molda-theme="dark" className="mld-cut-bar" aria-label="Cortar a peça">

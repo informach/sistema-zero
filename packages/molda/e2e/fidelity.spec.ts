@@ -127,6 +127,9 @@ for (const theme of ['default', 'pink', 'dark'] as const) {
     await expect(
       page.getByRole('button', { name: 'Usadas agora: #f0352b', exact: true }),
     ).toBeVisible()
+    const legend = page.locator('.mld-axis-legend')
+    await expect(legend).toBeVisible()
+    await expect(legend.locator('.mld-axis')).toHaveText(['X', 'Y', 'Z'])
     await shot('04-pintar')
     await page.getByRole('button', { name: 'Fechar dica do palco', exact: true }).click()
     await expect(

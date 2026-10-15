@@ -6,6 +6,7 @@ import {
   scenePieceCoordinates,
   setScenePieceCoordinates,
 } from '../../../scene/pieceCoordinates'
+import { useMoldaToolGate } from '../../toolAccess'
 import type { useSceneWorkshop } from './useSceneWorkshop'
 
 const FIELDS: ReadonlyArray<{ field: SceneCoordinateField; label: string }> = [
@@ -24,6 +25,8 @@ export function ScenePieceCoordinates({
   onlyPivot?: boolean
 }) {
   const { document, primary, run, index } = workshop
+  const pivotGate = useMoldaToolGate('model.pivot')
+  const coordinatesGate = useMoldaToolGate('model.coordinates')
   const hint = useId()
   const result = useMemo(() => {
     if (!primary) return null
@@ -55,7 +58,11 @@ export function ScenePieceCoordinates({
         Referência: {parent?.name ?? 'mundo'}. Tamanho em unidades da peça; giro em graus. Enter ou
         sair do campo confirma. Escape cancela.
       </p>
-      {FIELDS.filter(({ field }) => !onlyPivot || field === 'pivot').map(({ field, label }) => (
+      {FIELDS.filter(
+        ({ field }) =>
+          (!onlyPivot || field === 'pivot') &&
+          (field === 'pivot' ? pivotGate.allowed : coordinatesGate.allowed),
+      ).map(({ field, label }) => (
         <fieldset
           key={field}
           className="min-w-0"
@@ -92,6 +99,7 @@ export function ScenePieceCoordinates({
                     }
                   }}
                   onBlur={(event) => {
+                    if (!(field === 'pivot' ? pivotGate : coordinatesGate).canUse()) return
                     const fieldInput = event.currentTarget
                     const displayValue = Number(coordinates[field][axis].toPrecision(12))
                     if (!fieldInput.value.trim() || !fieldInput.validity.valid) {
