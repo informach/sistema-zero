@@ -1,0 +1,11 @@
+
+typecheck agent-core
+typecheck agent-runtime
+typecheck agent-integrations
+typecheck tui
+typecheck core
+typecheck auth
+typecheck messaging
+typecheck api-gateway
+typecheck studio-runtime
+typecheck release scripts

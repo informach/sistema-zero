@@ -1,0 +1,118 @@
+{
+  "version": 1,
+  "name": "validate-journey",
+  "description": "Validar uma preview própria contra versão servida, texto esperado e diagnósticos independentes.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "serviceId": {
+        "type": "string"
+      },
+      "reporterPath": {
+        "type": "string",
+        "pattern": "^/[a-zA-Z0-9/_.-]+$"
+      },
+      "assertions": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "minItems": 1,
+        "maxItems": 20
+      }
+    },
+    "required": ["serviceId", "reporterPath", "assertions"],
+    "additionalProperties": false
+  },
+  "nodes": [
+    {
+      "id": "browser",
+      "kind": "capability",
+      "tool": "browser_open",
+      "input": {
+        "serviceId": {
+          "$ref": "inputs.serviceId"
+        },
+        "publicWeb": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "required": ["id"],
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "id": "revision",
+      "kind": "capability",
+      "dependsOn": ["browser"],
+      "tool": "preview_revision",
+      "input": {
+        "id": {
+          "$ref": "nodes.browser.id"
+        }
+      },
+      "outputSchema": {
+        "type": "object",
+        "required": ["digest"],
+        "properties": {
+          "digest": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "id": "verify",
+      "kind": "capability",
+      "dependsOn": ["browser", "revision"],
+      "tool": "preview_verify",
+      "input": {
+        "browserId": {
+          "$ref": "nodes.browser.id"
+        },
+        "sourceDigest": {
+          "$ref": "nodes.revision.digest"
+        },
+        "reporterPath": {
+          "$ref": "inputs.reporterPath"
+        },
+        "includes": {
+          "$ref": "inputs.assertions"
+        }
+      },
+      "outputSchema": {
+        "type": "object",
+        "required": ["state"],
+        "properties": {
+          "state": {
+            "const": "verified"
+          }
+        }
+      }
+    },
+    {
+      "id": "close",
+      "kind": "capability",
+      "dependsOn": ["verify", "browser"],
+      "tool": "browser_close",
+      "input": {
+        "id": {
+          "$ref": "nodes.browser.id"
+        }
+      },
+      "outputSchema": {
+        "type": "object",
+        "required": ["closed"],
+        "properties": {
+          "closed": {
+            "const": true
+          }
+        }
+      }
+    }
+  ]
+}

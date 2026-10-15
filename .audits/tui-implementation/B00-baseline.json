@@ -1,0 +1,34 @@
+{
+  "date": "2026-10-15T16:28:36.704Z",
+  "bun": "1.3.11",
+  "platform": "win32",
+  "os": "10.0.26200",
+  "cpu": "AMD Ryzen 5 5600G with Radeon Graphics         ",
+  "memoryBytes": 16962715648,
+  "sqlite": {
+    "reopen": true,
+    "transactions": 100,
+    "p50Ms": 0.47810000000001196,
+    "p95Ms": 0.8764000000000038,
+    "durability": "WAL/FULL"
+  },
+  "ipc": {
+    "roundTripMs": 7.451599999999985,
+    "transport": "named-pipe",
+    "authentication": "tested separately by runtime contract suite"
+  },
+  "vault": true,
+  "codex": {
+    "available": true,
+    "version": "codex-cli 0.162.1"
+  },
+  "docker": {
+    "available": true,
+    "version": "29.6.2"
+  },
+  "modelSmoke": "unverified: no billable request in primitive baseline",
+  "limitations": [
+    "Primitive measurements, not full application performance.",
+    "UI, process-tree, container, native protocols and load fixtures are gates of their producing lots."
+  ]
+}

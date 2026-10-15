@@ -1,3 +1,4 @@
+export * from './build-contract'
 export * from './pro-artifact'
 export * from './pro-assistance'
 export * from './pro-build'

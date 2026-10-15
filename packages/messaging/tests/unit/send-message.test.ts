@@ -60,6 +60,12 @@ describe('SendMessageService — corrida da idempotência (check-then-insert)', 
     // deve recuperar devolvendo a mensagem da 1ª — nunca um erro cru do banco.
     const [a, b] = await Promise.all([service.execute(input), service.execute(input)])
     expect(a.id).toBe(b.id)
+    await expect(
+      service.execute({ ...input, recipient: { name: 'Outro', phone: '5511888888888' } }),
+    ).rejects.toThrow('destinatário diferente')
+    await expect(service.execute({ ...input, variables: { nome: 'Outro' } })).rejects.toThrow(
+      'conteúdo',
+    )
   })
 })
 

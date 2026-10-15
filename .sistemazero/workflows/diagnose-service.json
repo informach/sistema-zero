@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "name": "diagnose-service",
+  "description": "Diagnosticar um serviço próprio com logs limitados e evidências, sem reiniciar ou substituir processos externos.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "serviceId": {
+        "type": "string"
+      },
+      "symptom": {
+        "type": "string"
+      }
+    },
+    "required": ["serviceId", "symptom"],
+    "additionalProperties": false
+  },
+  "nodes": [
+    {
+      "id": "status",
+      "kind": "capability",
+      "tool": "service_status",
+      "input": {
+        "id": {
+          "$ref": "inputs.serviceId"
+        }
+      },
+      "outputSchema": {
+        "type": "object",
+        "required": ["id", "state"],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "id": "diagnosis",
+      "kind": "agent",
+      "mode": "plan",
+      "prompt": {
+        "$ref": "inputs.symptom"
+      },
+      "dependsOn": ["status"],
+      "context": [
+        {
+          "$ref": "artifacts.status"
+        }
+      ],
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "summary": {
+            "type": "string"
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["summary", "evidence"],
+        "additionalProperties": false
+      }
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "name": "review-change",
+  "description": "Revisar alterações locais ou checkout de PR sem publicar comentários.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "focus": {
+        "type": "string"
+      }
+    },
+    "required": ["focus"],
+    "additionalProperties": false
+  },
+  "nodes": [
+    {
+      "id": "diff",
+      "kind": "capability",
+      "tool": "git_inspect",
+      "input": {
+        "operation": "diff"
+      },
+      "outputSchema": {
+        "type": "object",
+        "required": ["output"],
+        "properties": {
+          "output": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "id": "review",
+      "kind": "agent",
+      "mode": "plan",
+      "prompt": {
+        "$ref": "inputs.focus"
+      },
+      "dependsOn": ["diff"],
+      "context": [
+        {
+          "$ref": "artifacts.diff"
+        }
+      ],
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "summary": {
+            "type": "string"
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["summary", "evidence"],
+        "additionalProperties": false
+      }
+    }
+  ]
+}

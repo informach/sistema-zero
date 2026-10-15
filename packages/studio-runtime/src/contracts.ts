@@ -1,14 +1,13 @@
 import {
-  isStudioProBuildMaterialPath,
-  isStudioProTemplateId,
+  InvalidBuildRequestError,
   normalizeStudioProBuildPath,
+  parseStudioBuildSubmission,
   resolveStudioProRemoteDependencies,
   STUDIO_PRO_BUILD_LIMITS,
   STUDIO_PRO_RESERVED_BUILD_PATHS,
   STUDIO_PRO_TEMPLATE_IDS,
   type StudioProRemoteDependencies,
   type StudioProTemplateId,
-  studioProBuildFileLimitError,
   studioProTemplate,
 } from '@sistemazero/core/studio'
 import runtimeLock from '../runtime/package-lock.json' with { type: 'json' }
@@ -52,111 +51,31 @@ export interface ProBuildFailure {
 
 export type ProBuildResponse = ProBuildSuccess | ProBuildFailure
 
-const EXECUTION_ID = /^[a-z0-9][a-z0-9-]{15,95}$/
 const RESERVED_PATHS = new Set<string>(STUDIO_PRO_RESERVED_BUILD_PATHS)
 
 export const PRO_BUILD_LIMITS = STUDIO_PRO_BUILD_LIMITS
 
-export class InvalidBuildRequestError extends Error {
-  constructor(message: string) {
-    super(message)
-    this.name = 'InvalidBuildRequestError'
-  }
-}
+export { InvalidBuildRequestError } from '@sistemazero/core/studio'
 
 export function parseBuildRequest(value: unknown): ProBuildRequest {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
-    throw new InvalidBuildRequestError('O corpo da requisição precisa ser um objeto.')
-  }
-  const input = value as Record<string, unknown>
-  if (input.validate !== undefined && typeof input.validate !== 'boolean')
-    throw new InvalidBuildRequestError('Opção de validação inválida.')
-  if (typeof input.executionId !== 'string' || !EXECUTION_ID.test(input.executionId)) {
-    throw new InvalidBuildRequestError('Identificador de execução inválido.')
-  }
-  if (!isStudioProTemplateId(input.templateId)) {
-    throw new InvalidBuildRequestError('Template profissional inválido.')
-  }
-  if (!input.files || typeof input.files !== 'object' || Array.isArray(input.files)) {
-    throw new InvalidBuildRequestError('A árvore de arquivos é inválida.')
-  }
-
-  const entries = Object.entries(input.files as Record<string, unknown>)
-  const manifest = (input.files as Record<string, unknown>)['package.json']
-  const lock = (input.files as Record<string, unknown>)['package-lock.json']
+  const input = parseStudioBuildSubmission(value)
+  const manifest = input.files['package.json'] ?? trustedPackageJson(input.templateId)
+  const lock = input.files['package-lock.json']
   let dependencies: StudioProRemoteDependencies
   try {
-    if (manifest !== undefined && typeof manifest !== 'string')
-      throw new Error('package.json inválido.')
-    if (lock !== undefined && typeof lock !== 'string')
-      throw new Error('package-lock.json inválido.')
-    dependencies = resolveStudioProRemoteDependencies(
-      manifest ?? trustedPackageJson(input.templateId),
-      lock,
-    )
-    if (lock) verifyRemoteLock(lock, manifest ?? trustedPackageJson(input.templateId))
+    dependencies = resolveStudioProRemoteDependencies(manifest, lock)
+    if (lock) verifyRemoteLock(lock, manifest)
   } catch (error) {
     throw new InvalidBuildRequestError(
       error instanceof Error ? error.message : 'Dependências inválidas.',
     )
   }
-  const files: Record<string, string> = {}
-  const names: string[] = []
-  for (const [path, content] of entries) {
-    const normalized = normalizeBuildPath(path)
-    if (!normalized || normalized !== path)
-      throw new InvalidBuildRequestError(`Caminho de arquivo inválido: ${path}`)
-    if (RESERVED_PATHS.has(normalized.toLowerCase())) continue
-    const lower = normalized.toLowerCase()
-    if (
-      names.some(
-        (name) => name === lower || name.startsWith(`${lower}/`) || lower.startsWith(`${name}/`),
-      ) ||
-      [...RESERVED_PATHS].some((name) => lower.startsWith(`${name}/`))
-    )
-      throw new InvalidBuildRequestError('Caminhos de arquivos colidem.')
-    names.push(lower)
-    if (typeof content !== 'string')
-      throw new InvalidBuildRequestError(`Arquivo inválido: ${normalized}`)
-    files[normalized] = content
-  }
-
-  const limitError = studioProBuildFileLimitError(files)
-  if (limitError === 'EMPTY' || limitError === 'TOO_MANY_FILES') {
-    throw new InvalidBuildRequestError(
-      `O projeto precisa ter entre 1 e ${PRO_BUILD_LIMITS.maxFiles} arquivos.`,
-    )
-  }
-  if (limitError === 'FILE_TOO_LARGE') {
-    throw new InvalidBuildRequestError('Um arquivo do projeto ultrapassou o tamanho permitido.')
-  }
-  if (limitError === 'TOTAL_TOO_LARGE') {
-    throw new InvalidBuildRequestError('O projeto ultrapassou o tamanho permitido.')
-  }
-
-  if (!files['index.html']) {
-    throw new InvalidBuildRequestError('O projeto precisa ter um arquivo index.html.')
-  }
-
-  const binaries = parseBuildBinaries(input.binaries, files)
-  let parentOrigin: string
-  try {
-    const origin = new URL(String(input.parentOrigin))
-    if (origin.origin !== input.parentOrigin || !['https:', 'http:'].includes(origin.protocol))
-      throw new Error()
-    parentOrigin = origin.origin
-  } catch {
-    throw new InvalidBuildRequestError('Origem do editor inválida.')
-  }
-
   return {
-    executionId: input.executionId,
-    templateId: input.templateId,
-    files,
-    parentOrigin,
+    ...input,
+    files: Object.fromEntries(
+      Object.entries(input.files).filter(([path]) => !RESERVED_PATHS.has(path.toLowerCase())),
+    ),
     dependencies,
-    validate: input.validate === true,
-    ...(binaries ? { binaries } : {}),
   }
 }
 
@@ -217,50 +136,6 @@ function verifyRemoteLock(raw: string, packageJson: string): void {
         `O lock inclui uma versão de ${path.replace(/^node_modules\//, '')} diferente da imagem do compilador remoto. Execute pelo terminal local ou use as dependências compatíveis.`,
       )
   }
-}
-
-function parseBuildBinaries(
-  raw: unknown,
-  files: Record<string, string>,
-): ProBuildRequest['binaries'] {
-  if (raw === undefined) return undefined
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw))
-    throw new InvalidBuildRequestError('Materiais inválidos.')
-  const entries = Object.entries(raw)
-  if (entries.length > 258) throw new InvalidBuildRequestError('Materiais demais.')
-  const binaries: NonNullable<ProBuildRequest['binaries']> = {}
-  const names = Object.keys(files).map((path) => path.toLowerCase())
-  let total = 0
-  for (const [path, value] of entries) {
-    if (path.toLowerCase() === 'public/__studio-proof.png')
-      throw new InvalidBuildRequestError('O material usa um caminho reservado à verificação.')
-    if (!isStudioProBuildMaterialPath(path))
-      throw new InvalidBuildRequestError('Caminho de material inválido ou reservado.')
-    const lower = path.toLowerCase()
-    if (
-      names.some(
-        (name) => name === lower || name.startsWith(`${lower}/`) || lower.startsWith(`${name}/`),
-      )
-    )
-      throw new InvalidBuildRequestError('Caminhos de materiais e código colidem.')
-    names.push(lower)
-    if (!value || typeof value !== 'object' || Array.isArray(value))
-      throw new InvalidBuildRequestError('Material inválido.')
-    const entry = value as Record<string, unknown>
-    if (
-      typeof entry.base64 !== 'string' ||
-      typeof entry.sha256 !== 'string' ||
-      !/^[a-f0-9]{64}$/.test(entry.sha256) ||
-      entry.base64.length % 4 !== 0 ||
-      !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(entry.base64)
-    )
-      throw new InvalidBuildRequestError('Codificação de material inválida.')
-    total += entry.base64.length
-    if (total > PRO_BUILD_LIMITS.maxRequestBytes)
-      throw new InvalidBuildRequestError('Os materiais ultrapassam o limite remoto.')
-    binaries[path] = { base64: entry.base64, sha256: entry.sha256 }
-  }
-  return binaries
 }
 
 export async function verifyBuildBinaries(binaries: ProBuildRequest['binaries']): Promise<void> {

@@ -1,0 +1,61 @@
+{
+  "at": "2026-10-15T21:45:12.814Z",
+  "reports": [
+    {
+      "boundary": "prepared",
+      "recovery": {
+        "interrupted": 1,
+        "unknown": 0
+      },
+      "secondRecovery": {
+        "interrupted": 0,
+        "unknown": 0
+      },
+      "state": "prepared",
+      "receipts": 0,
+      "autoReplay": false
+    },
+    {
+      "boundary": "dispatched",
+      "recovery": {
+        "interrupted": 1,
+        "unknown": 1
+      },
+      "secondRecovery": {
+        "interrupted": 0,
+        "unknown": 0
+      },
+      "state": "unknown",
+      "receipts": 0,
+      "autoReplay": false
+    },
+    {
+      "boundary": "accepted",
+      "recovery": {
+        "interrupted": 1,
+        "unknown": 1
+      },
+      "secondRecovery": {
+        "interrupted": 0,
+        "unknown": 0
+      },
+      "state": "unknown",
+      "receipts": 1,
+      "autoReplay": false
+    },
+    {
+      "boundary": "confirmed",
+      "recovery": {
+        "interrupted": 1,
+        "unknown": 0
+      },
+      "secondRecovery": {
+        "interrupted": 0,
+        "unknown": 0
+      },
+      "state": "confirmed",
+      "receipts": 1,
+      "autoReplay": false
+    }
+  ]
+}

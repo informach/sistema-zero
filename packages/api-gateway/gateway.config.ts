@@ -765,6 +765,18 @@ const config: GatewayConfigInput = {
       upstreamAuth: 'passthrough',
       rateLimit: { max: 120, windowMs: 60_000, by: 'ip' },
     },
+    {
+      id: 'auth-staff-operations',
+      methods: ['POST'],
+      pathPattern: '/auth/staff/operations',
+      service: 'auth',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      upstreamAuth: 'passthrough',
+      maxBodyBytes: 2_032_768,
+      timeoutMs: 65_000,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+    },
     // "Esqueci minha senha": rate limit AGRESSIVO por IP (anti-enumeração/spam de
     // e-mail). O auth responde SEMPRE 200; o e-mail é enviado via messaging.
     {
@@ -3393,6 +3405,16 @@ const config: GatewayConfigInput = {
       auth: { required: true, mode: 'any', strategies: ['hmac'] },
       transforms: messagingInternalTransforms,
       rateLimit: { max: 600, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'messaging-staff-delegation',
+      methods: ['POST'],
+      pathPattern: '/messaging/staff/:operation',
+      service: 'messaging',
+      auth: { required: true, mode: 'any', strategies: ['hmac'], allowedConsumers: ['auth'] },
+      transforms: messagingInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
     },
     {
       id: 'messaging-message-get',

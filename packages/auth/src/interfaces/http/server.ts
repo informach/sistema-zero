@@ -31,6 +31,7 @@ import type { ForgotPasswordService } from '../../application/password-reset/for
 import type { ResetPasswordService } from '../../application/password-reset/reset-password.service'
 import type { RefreshService } from '../../application/refresh/refresh.service'
 import type { RegisterService } from '../../application/register/register.service'
+import type { StaffOperationsService } from '../../application/staff/staff-operations.service'
 import type { StudyAccessService } from '../../application/study-access/study-access.service'
 import type { ProfileRepository } from '../../domain/ports/profile-repository.port'
 import type { TokenIssuer } from '../../domain/ports/token-issuer.port'
@@ -45,9 +46,11 @@ import { healthRoutes, type ReadinessProbe } from './routes/health.routes'
 import { impersonationRoutes } from './routes/impersonation.routes'
 import { internalRoutes } from './routes/internal.routes'
 import { type ProfilesRoutesDeps, profilesRoutes } from './routes/profiles.routes'
+import { staffRoutes } from './routes/staff.routes'
 import { studyAccessRoutes } from './routes/study-access.routes'
 
 export interface HttpDeps {
+  staffOperations?: StaffOperationsService
   studyAccess?: StudyAccessService
   env: Env
   logger: Logger
@@ -98,10 +101,13 @@ export interface HttpDeps {
  */
 export function createServer(deps: HttpDeps) {
   const app = new Elysia({
-    serve: { maxRequestBodySize: deps.env.MAX_REQUEST_BODY_BYTES },
+    serve: { maxRequestBodySize: Math.max(deps.env.MAX_REQUEST_BODY_BYTES, 2_032_768) },
   })
     .onParse({ as: 'global' }, async ({ request, contentType }) => {
-      const maxBytes = deps.env.MAX_REQUEST_BODY_BYTES
+      const maxBytes =
+        new URL(request.url).pathname === '/auth/staff/operations'
+          ? 2_032_768
+          : deps.env.MAX_REQUEST_BODY_BYTES
       const declared = Number(request.headers.get('content-length') ?? '0')
       if (Number.isFinite(declared) && declared > maxBytes) {
         markOversizeBody(request)
@@ -156,6 +162,7 @@ export function createServer(deps: HttpDeps) {
         : new Elysia(),
     )
     .use(healthRoutes(deps.readiness))
+    .use(deps.staffOperations ? staffRoutes(deps.staffOperations) : new Elysia())
     .use(
       authRoutes({
         trustProxy: deps.env.TRUST_PROXY,
