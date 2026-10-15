@@ -249,6 +249,15 @@ serviços. Nunca recopie as regras.
   Renomeado pela criança, nada troca. Sem migration (tudo no JSON da jornada).
 - Testes: `tests/db/pensa-journey.repository.test.ts` (os dois "pergunta com escolhas…" e "o nome
   provisório…") e `tests/integration/pensa-journey-routes.test.ts` (as escolhas atravessam a rota).
+- **Onde as crianças param** (`GET /admin/pensa/funnel?days=1..365`, padrão 30, `requireAdmin`):
+  `GetPensaFunnelService` + `DrizzlePensaFunnelRepository`, UMA consulta sobre a primeira versão
+  (`pensa_cycles.number = 1`) dos projetos criados no período: contaram a ideia, receberam
+  pergunta, como responderam (a mensagem SEGUINTE à pergunta, se for da criança, comparada no banco
+  com os rótulos das respostas e com `PENSA_ANY_ANSWER`, que é o `ANY_ANSWER` do `JourneyApp`; o
+  texto nunca sai do banco), proposta, começo escolhido, primeira missão, teste e versão pronta.
+  ⚠️ Mudou a frase do "Tanto faz" na tela? Mude `PENSA_ANY_ANSWER` junto. Teste:
+  `tests/db/pensa-funnel.repository.test.ts`.
+
 ## Oficinas ao vivo (14/10/2026)
 
 `application/live` mantém oficinas reutilizáveis, snapshots das aulas por turma, matrículas

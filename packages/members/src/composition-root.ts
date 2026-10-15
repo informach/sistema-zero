@@ -92,6 +92,7 @@ import { JoinPensaProjectService } from './application/pensa/join-project.servic
 import { PensaJourneyService } from './application/pensa/journey.service'
 import { ListPensaProjectMembersService } from './application/pensa/list-project-members.service'
 import { ListPensaProjectsService } from './application/pensa/list-projects.service'
+import { GetPensaFunnelService } from './application/pensa/pensa-funnel.service'
 import { RemovePensaProjectMemberService } from './application/pensa/remove-project-member.service'
 import { ReplacePensaTasksService } from './application/pensa/replace-tasks.service'
 import { SavePensaArtifactService } from './application/pensa/save-artifact.service'
@@ -168,6 +169,7 @@ import { DrizzleLiveMaterialsRepository } from './infrastructure/persistence/dri
 import { DrizzleLiveWorkspaceRepository } from './infrastructure/persistence/drizzle/live-workspace.repository'
 import { DrizzleParentReportRepository } from './infrastructure/persistence/drizzle/parent-report.repository'
 import { DrizzlePensaRepository } from './infrastructure/persistence/drizzle/pensa.repository'
+import { DrizzlePensaFunnelRepository } from './infrastructure/persistence/drizzle/pensa-funnel.repository'
 import { DrizzlePensaJourneyRepository } from './infrastructure/persistence/drizzle/pensa-journey.repository'
 import { DrizzleProcessedWebhookRepository } from './infrastructure/persistence/drizzle/processed-webhook.repository'
 import { DrizzleProgressRepository } from './infrastructure/persistence/drizzle/progress.repository'
@@ -305,6 +307,7 @@ export async function createApplication(env: Env): Promise<Application> {
     clock,
   })
   const aiUsageStats = new GetAiUsageStatsService(aiUsageRepo, clock)
+  const pensaFunnel = new GetPensaFunnelService(new DrizzlePensaFunnelRepository(db), clock)
   const zappy = new ZappyHistoryService(new DrizzleZappyRepository(db), clock)
   // S2S: resumo de progresso dos filhos (consumido pelo BFF da área dos pais, kids).
   // O hub entra p/ os JOGOS da semana no Mural (best-effort — sem HUB_BASE_URL degrada).
@@ -1043,6 +1046,7 @@ export async function createApplication(env: Env): Promise<Application> {
       ranking,
       analytics,
       aiUsageStats,
+      pensaFunnel,
       grantManual,
       manageEntitlement,
       teacherThreads,

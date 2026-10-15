@@ -2869,6 +2869,18 @@ const config: GatewayConfigInput = {
       transforms: membersInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
+    // O funil do Pensa v2 (15/10/2026): onde as crianças param, só contagens. Literal
+    // `/members/admin/pensa/funnel` (4 seg), sem padrão `/members/admin/:x/:y` que o engula.
+    {
+      id: 'members-admin-pensa-funnel',
+      methods: ['GET'],
+      pathPattern: '/members/admin/pensa/funnel',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+    },
     {
       id: 'members-admin-zappy-knowledge-read',
       methods: ['GET'],

@@ -30,6 +30,7 @@ import {
 } from '@/lib/ai-usage-panels'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import type { AiUsageStatsView } from '@/lib/types'
+import { PensaFunnelCard } from './pensa-funnel-card'
 
 /** Rótulos amigáveis dos recursos que consomem IA (feature desconhecida = cru). */
 const FEATURE_LABELS: Record<string, string> = {
@@ -350,6 +351,8 @@ export function AiUsageClient() {
       </Card>
 
       <ZappyFailedQuestionsCard month={month} />
+
+      <PensaFunnelCard />
     </div>
   )
 }

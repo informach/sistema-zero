@@ -1195,7 +1195,12 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   listagem. **Uso de IA (07/2026):** página `/admin/ia` (grupo Gestão, ícone Sparkles) — cards
   mês/hoje/contas + breakdown por feature + top contas (badge "equipe") + seletor de mês; BFF
   `GET /api/members/ai-usage` (hidrata nomes via batchGetUsers) → gateway
-  `GET /members/admin/ai-usage`.
+  `GET /members/admin/ai-usage`. **Funil do Pensa (15/10/2026):** o card "Pensa: onde as crianças param"
+  (`admin/ia/pensa-funnel-card.tsx`, depois das perguntas que falharam) lê
+  `GET /api/members/pensa-funnel?days=7|30|90` → gateway `GET /members/admin/pensa/funnel`. As
+  contas (etapas com a parte dos jogos e quantos pararam antes; como as perguntas do Zappy foram
+  respondidas) são puras em `lib/pensa-funnel.ts` (`tests/pensa-funnel.test.ts`). Só números da
+  PRIMEIRA versão dos jogos criados no período, com as contas da equipe juntas.
 - Pagamentos (via gateway, JWT+RBAC): `GET /payments/admin/payments` (`?q&status&method&consumerId&from&to&limit&offset`)
   → `Paginated<PaymentView>`; `GET /payments/admin/payments/:id`; `GET /payments/admin/subscriptions`
   (`?q&status&consumerId&limit&offset`) → `Paginated<SubscriptionView>`; `GET /payments/admin/subscriptions/:id`;

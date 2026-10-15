@@ -111,6 +111,11 @@ export const AiUsageStatsQuery = t.Object({
   month: t.Optional(t.String({ minLength: 7, maxLength: 7 })),
 })
 
+/** `?days=` do funil do Pensa v2 (ausente → 30). */
+export const PensaFunnelQuery = t.Object({
+  days: t.Optional(t.Numeric({ minimum: 1, maximum: 365 })),
+})
+
 // ── Zappy do Studio ─────────────────────────────────────────────────────────
 const STUDIO_LOCAL_PROJECT_ID = t.String({
   minLength: 1,

@@ -41,6 +41,12 @@ describe('loadGatewayConfig', () => {
       authorize: { roles: ['superadmin', 'admin', 'staff'] },
       audit: {},
     })
+    // O funil do Pensa v2: leitura da equipe, sem cair em outro padrão de admin.
+    expect(registry.resolve('GET', '/members/admin/pensa/funnel', 'v1')?.route).toMatchObject({
+      id: 'members-admin-pensa-funnel',
+      authorize: { roles: ['superadmin', 'admin', 'staff'] },
+    })
+    expect(registry.resolve('POST', '/members/admin/pensa/funnel', 'v1')).toBeUndefined()
     // The child's project by block stays under the authenticated child routes.
     expect(registry.resolve('GET', '/members/live/workspaces', 'v1')?.route.id).toBe('members-live')
     expect(
