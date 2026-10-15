@@ -1,7 +1,7 @@
 import { type FSWatcher, watch } from 'node:fs'
 import { join } from 'node:path'
 import type { Processes } from '../process/manager'
-import { readBounded } from '../tools/paths'
+import { protectedName, readBounded } from '../tools/paths'
 export class ProjectIndex {
   private entries = new Map<
     string,
@@ -83,7 +83,7 @@ export class ProjectIndex {
       const files = (await readBounded(join(this.directory, 'logs', result.log), 2_000_000))
         .toString('utf8')
         .split(/\r?\n/)
-        .filter(Boolean)
+        .filter((path) => path && !path.split(/[\\/]/).some(protectedName))
       if (entry.generation !== generation) throw new Error('Project changed during indexing; retry')
       entry.files = files
     }

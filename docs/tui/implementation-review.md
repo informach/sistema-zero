@@ -1,5 +1,39 @@
 # Implementação e reviews do TUI
 
+## Full review posterior — 15/10/2026
+
+Revisão sobre `staging` local `8ea02d96e4`, em worktree isolada e branch `fix/tui-full-review`.
+Inventário de 251 arquivos e inspeção dos fluxos entre contratos, supervisor, journal, ferramentas,
+processos, ambientes, browser, equipes, workflows, integrações, UI e distribuição.
+
+Treze achados corrigidos: admissão recusada que permanecia executável, capacidade da fila sob
+concorrência, cancelamento transacional, shutdown que parava na primeira falha, revogação após
+falha do armazenamento, erro de coordenador invisível, aliases de caminhos protegidos no Windows,
+stdin bloqueando o watchdog, consulta de portas lenta/instável, estado inicial desatualizado na
+UI, cursor perdido em conversas longas, cleanup de perguntas e documentação/código de scaffold.
+O review das correções preservou a associação de recibos terminais a schedules/workflows sem replay.
+
+Validação final: **79 testes TUI, 475 asserções, 50 arquivos** e **458 testes backend, 1.643
+asserções, 54 arquivos**; total **537 testes, 2.118 asserções, zero falhas nas execuções finais**.
+Typecheck nos nove pacotes e nas configurações de testes Studio/release; Biome em 221 arquivos
+sem erros/avisos; build de 28 módulos; instalação fora do monorepo com sete smokes; upgrade
+interrompido, backup, rollback e launcher verificados.
+
+A execução final da suíte TUI usa explicitamente `ZERO_JOB_BINARY` apontando para o helper do
+pacote construído. A execução anterior com compilação por perfil teve 78 passes/1 falha:
+Code Integrity 3033/3077 bloqueou um executável sem assinatura aceita. A evidência reprovada foi
+preservada. O diagnóstico agora é explícito, sem retry ou mudança de política. **Assinatura por
+publicador confiável continua necessária para distribuir em máquinas que a exijam**; não existe
+certificado de code signing no cofre deste usuário. Os limites anteriores de B12 também permanecem
+documentados: RSS, quotas físicas, injeção de falhas e homologação/avaliação com contas reais.
+
+Na verificação de portas, p95 local caiu de 1.364,99 ms (consulta anterior) para 92,48 ms
+(verificação nativa completa), com dez amostras alternadas. Não é uma medição de inferência.
+
+[Relatório completo](../../.audits/architectural-analysis-2026-10-15-tui-review.md),
+[inventário e evidências](../../.audits/tui-full-review-2026-10-15/verification.json).
+Commit e merge são exclusivamente locais; sem push ou deploy.
+
 ## B11 — Integrações da equipe: revisão do núcleo
 
 Implementados OTP/refresh/logout no cofre, fachada auth com sessão vigente e RBAC atual, delegação HMAC restrita ao auth, recibos de mensagens por ator, leituras de helpdesk/KB/Studio e resposta com confirmação humana. O build Studio usa o contrato comum extraído para core, artefato imutável e segredo exclusivamente no servidor. GitHub lê PR/checks/runs e cria rascunho preso ao SHA revisado; Telegram envia somente a chats configurados. Ambos têm ledger persistente com reconciliação explícita.

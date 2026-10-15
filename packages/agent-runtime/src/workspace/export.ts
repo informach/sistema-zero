@@ -4,7 +4,7 @@ import { artifactSchema, canonical } from '@sistemazero/agent-core'
 import { z } from 'zod'
 import { Artifacts } from '../store/artifacts'
 import type { Store } from '../store/client'
-import { exists, hash, readBounded, workspacePath } from '../tools/paths'
+import { exists, hash, protectedName, readBounded, workspacePath } from '../tools/paths'
 import { snapshotSchema } from './snapshot'
 
 export const workspaceExportSchema = z.object({
@@ -62,8 +62,7 @@ export class WorkspaceExports {
       if (depth > 30) throw new Error('Export directory depth exceeds limit')
       for await (const entry of await opendir(directory)) {
         signal.throwIfAborted()
-        if (excluded.has(entry.name) || entry.name === '.env' || entry.name.startsWith('.env.'))
-          continue
+        if (excluded.has(entry.name) || protectedName(entry.name)) continue
         if (++visited > 30000) throw new Error('Export exceeds file limit')
         if (entry.isSymbolicLink()) throw new Error('Export requires an explicit symlink policy')
         const path = join(directory, entry.name)

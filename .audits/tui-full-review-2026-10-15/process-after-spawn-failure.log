@@ -1,0 +1,11 @@
+bun test v1.3.11 (af24e281)
+
+packages\agent-runtime\tests\process.test.ts:
+(pass) process preserves argv, strips inherited secrets and bounds output [1313.00ms]
+(pass) timeout terminates owned child and grandchild processes [2593.00ms]
+(pass) timeout revokes ownership even while a child refuses a full stdin pipe [1985.00ms]
+
+ 3 pass
+ 0 fail
+ 17 expect() calls
+Ran 3 tests across 1 file. [6.06s]

@@ -70,7 +70,7 @@ test('service verifies its real listener, rejects occupied foreign port and neve
       executable: process.execPath,
       args: [
         '-e',
-        'Bun.serve({hostname:process.env.HOST,port:Number(process.env.PORT),fetch:()=>new Response("owned")})',
+        `await Bun.spawn([process.execPath, '-e', 'Bun.serve({hostname:process.env.HOST,port:Number(process.env.PORT),fetch:()=>new Response("owned")})'], {stdout:'inherit',stderr:'inherit'}).exited`,
       ],
       port,
     })
@@ -99,3 +99,44 @@ test('service verifies its real listener, rejects occupied foreign port and neve
     foreign.stop(true)
   }
 }, 40000)
+
+test('native ownership verifies IPv6 listeners and rejects foreign or exited jobs', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'zero-ipv6-owner-'))
+  const processes = new Processes(directory)
+  const signal = AbortSignal.timeout(10000)
+  const foreign = Bun.serve({ hostname: '::1', port: 0, fetch: () => new Response('foreign') })
+  const owned = await processes.start(
+    {
+      executable: process.execPath,
+      args: [
+        '-e',
+        'const server=Bun.serve({hostname:"::1",port:0,fetch:()=>new Response("owned")});console.log(server.port)',
+      ],
+      cwd: directory,
+      timeoutMs: 10000,
+    },
+    signal,
+  )
+  try {
+    while (!owned.inspect().output.trim()) {
+      signal.throwIfAborted()
+      if (!owned.inspect().running) throw new Error('Listener exited before readiness')
+      await Bun.sleep(10)
+    }
+    const port = Number(owned.inspect().output.trim())
+    await assertOwnedPort(processes, directory, owned.pid, port, signal)
+    await expect(
+      assertOwnedPort(processes, directory, owned.pid, foreign.port ?? 0, signal),
+    ).rejects.toThrow('another process')
+    owned.cancel()
+    await owned.completion
+    await expect(assertOwnedPort(processes, directory, owned.pid, port, signal)).rejects.toThrow(
+      'no longer owned',
+    )
+    expect(await (await fetch(foreign.url)).text()).toBe('foreign')
+  } finally {
+    owned.cancel()
+    await owned.completion
+    foreign.stop(true)
+  }
+}, 15000)

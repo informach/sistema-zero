@@ -1,0 +1,208 @@
+$ bun test packages/agent-core/tests packages/agent-runtime/tests packages/agent-integrations/tests packages/tui/tests scripts/tui-release/manifest.test.ts
+bun test v1.3.11 (af24e281)
+
+scripts\tui-release\manifest.test.ts:
+(pass) release manifest rejects altered content, path escapes and oversized input [31.00ms]
+
+packages\agent-core\tests\contracts.test.ts:
+(pass) canonical identity and terminal transitions
+
+packages\agent-integrations\tests\browser-proxy.test.ts:
+(pass) browser proxy authenticates, scopes loopback and rechecks lease before forwarding [47.00ms]
+
+packages\agent-integrations\tests\github.test.ts:
+(pass) GitHub draft pins reviewed head, sends structured multiline body, and reports a post-create branch race [15.00ms]
+
+packages\agent-integrations\tests\mcp-auth.test.ts:
+(pass) MCP OAuth validates state, uses PKCE and consumes the callback once [16.00ms]
+
+packages\agent-integrations\tests\mcp-client.test.ts:
+(pass) MCP HTTP validates input before remote dispatch and rejects obsolete schema identity [172.00ms]
+(pass) costly untrusted patterns run outside the main thread and subsequent validation remains usable [578.00ms]
+
+packages\agent-integrations\tests\mcp-server.test.ts:
+(pass) MCP binding authenticates, rejects foreign origins and exposes only scoped capabilities [15.00ms]
+
+packages\agent-integrations\tests\service-http.test.ts:
+(pass) service retries only reads, opens a bounded circuit, and does not reveal tokens in errors [172.00ms]
+
+packages\agent-integrations\tests\staff-auth.test.ts:
+(pass) staff client serializes refresh, never exposes credentials and disconnects on revocation [31.00ms]
+
+packages\agent-runtime\tests\agent-loop.test.ts:
+(pass) agent reads a real file, journals effects and reaches a durable terminal result [234.00ms]
+(pass) a truncated generation retains its identity and budget without retrying inference [157.00ms]
+
+packages\agent-runtime\tests\browser-transfer.test.ts:
+(pass) browser transfers explicit files and extracts fields, while Plan blocks script POST and actions [4453.00ms]
+
+packages\agent-runtime\tests\browser-worker.test.ts:
+(pass) owned browser worker observes, acts, captures and blocks ungranted loopback [2204.00ms]
+
+packages\agent-runtime\tests\budget.test.ts:
+(pass) concurrent reservations cannot overspend and unknown usage remains charged [125.00ms]
+
+packages\agent-runtime\tests\capacity.test.ts:
+(pass) admission is bounded and cancellation removes a queued waiter without stealing a slot
+
+packages\agent-runtime\tests\catalog.test.ts:
+(pass) progressive schemas discover a deferred capability without exposing Plan mutations [250.00ms]
+
+packages\agent-runtime\tests\coding.test.ts:
+(pass) coding journey fixes a real bug, runs checks with approval and denies Plan writes [1656.00ms]
+
+packages\agent-runtime\tests\context.test.ts:
+(pass) nested rules change their revision and memory retrieval finds late records without crossing project scope [1672.00ms]
+
+packages\agent-runtime\tests\environment.test.ts:
+(pass) environment intent deduplicates, revisions revoke queued uses and local cleanup preserves user files [500.00ms]
+
+packages\agent-runtime\tests\history.test.ts:
+(pass) paged history, active child questions and frozen fork remain consistent [2296.00ms]
+
+packages\agent-runtime\tests\hooks.test.ts:
+(pass) hook discovery never executes, Plan refuses and changed manifest invalidates execution [1297.00ms]
+
+packages\agent-runtime\tests\ipc.test.ts:
+(pass) mutual authentication, independent clients, invalid proof rejected [1547.00ms]
+(pass) canceling a request reaches its handler and preserves the authenticated connection [1484.00ms]
+
+packages\agent-runtime\tests\mcp-parity.test.ts:
+(pass) stdio MCP uses the runtime dispatcher and exposes only Plan capabilities [2297.00ms]
+(pass) concurrent identical external effects stop at an uncertain outcome until explicit reconciliation [515.00ms]
+
+packages\agent-runtime\tests\migration.test.ts:
+(pass) schema upgrade backs up the previous database before adding memory index [282.00ms]
+
+packages\agent-runtime\tests\native-protocol.test.ts:
+(pass) bidirectional owned native process routes fragmented replies and concurrent approval without deadlock [1094.00ms]
+(pass) native process ending before its response rejects the call [1094.00ms]
+
+packages\agent-runtime\tests\outbound.test.ts:
+(pass) accepted notification with lost response remains uncertain across restart and never resends without reconciliation [172.00ms]
+
+packages\agent-runtime\tests\patch.test.ts:
+(pass) patch validates the entire set, preserves literal replacements and refuses external changes on restore [125.00ms]
+(pass) artifact integration restores binary data and creates nested parents without losing the checkpoint [125.00ms]
+
+packages\agent-runtime\tests\paths.test.ts:
+(pass) workspace path rejects credential aliases and special Windows file names
+
+packages\agent-runtime\tests\preview.test.ts:
+(pass) preview binds real browser evidence to source and reporter, stops no-progress and invalidates changed code [2500.00ms]
+(pass) viewer grants only explicit artifacts, authenticates content and separates its control origin [94.00ms]
+
+packages\agent-runtime\tests\process.test.ts:
+(pass) process preserves argv, strips inherited secrets and bounds output [1266.00ms]
+(pass) timeout terminates owned child and grandchild processes [2453.00ms]
+72 |     if (windows && !/\.exe$/i.test(executable))
+73 |       throw new Error('Invoke a Windows executable; scripts require an explicit shell')
+74 |     const env = processEnvironment(options.env)
+75 |     const command = windows ? await windowsHelper(directory) : executable
+76 |     const jobName = windows ? `Local\\SistemaZero-${randomUUID()}` : undefined
+77 |     const child = spawn(command, windows ? [] : options.args, {
+     ^
+EUNKNOWN: unknown error, uv_spawn
+ syscall: "uv_spawn",
+   errno: -134,
+    code: "EUNKNOWN"
+
+      at spawn (unknown:1:1)
+      at spawn (node:child_process:679:35)
+      at spawn (node:child_process:14:39)
+      at start (C:\Users\tocha\projects\sistema-zero-tui\packages\agent-runtime\src\process\owned.ts:77:19)
+      at processTicksAndRejections (unknown:7:39)
+(fail) timeout revokes ownership even while a child refuses a full stdin pipe [937.00ms]
+
+packages\agent-runtime\tests\provider.test.ts:
+(pass) SSE comments and fragmented multiline data
+(pass) truncated stream cannot yield executable tool calls
+(pass) completed stream records model, tool call and accounting
+(pass) generation identity is available before a truncated stream and reconciliation verifies the same finished generation
+
+packages\agent-runtime\tests\pty.test.ts:
+(pass) ConPTY owns input, resize and cancellation without losing the process tree [1235.00ms]
+
+packages\agent-runtime\tests\schedules.test.ts:
+(pass) schedule occurrence ledger deduplicates catch-up and disabling prevents future dispatch [625.00ms]
+
+packages\agent-runtime\tests\service.test.ts:
+(pass) service verifies its real listener, rejects occupied foreign port and never kills that server [1687.00ms]
+(pass) native ownership verifies IPv6 listeners and rejects foreign or exited jobs [1250.00ms]
+
+packages\agent-runtime\tests\spool.test.ts:
+(pass) aggregate spool quota includes retained logs and concurrent reservations
+
+packages\agent-runtime\tests\storage-recovery.test.ts:
+(pass) artifact quota is atomic, active owners survive retention and deletion is journaled before removing content [109.00ms]
+(pass) checkpoint recovery classifies writes around a crash and preserves external edits [188.00ms]
+(pass) an active nested workflow protects artifacts across its entire root task family [93.00ms]
+
+packages\agent-runtime\tests\store.test.ts:
+(pass) commits before ack, deduplicates and recovers dispatched effects [172.00ms]
+
+packages\agent-runtime\tests\studio-contract.test.ts:
+(pass) Studio snapshot preserves reviewed binary bytes and dependency declarations across the runtime contract [125.00ms]
+(pass) Studio response accepts expiring compiled artifacts and validation evidence, never legacy HTML or unsafe preview URLs [15.00ms]
+
+packages\agent-runtime\tests\supervisor.test.ts:
+(pass) waiting approval survives in journal and repeated cancel does not become success [172.00ms]
+(pass) concurrent submissions respect capacity and rejected admission cannot leave an executable run [297.00ms]
+(pass) shutdown cancels active and queued runs and closes every resource even if hooks fail [188.00ms]
+(pass) storage failure revokes active execution and rejects further admissions [93.00ms]
+Journal coordinator failed Error: Invalid durable record
+(pass) a failed coordinator becomes visible and cannot leave an apparently ready runtime stalled [125.00ms]
+(pass) concurrent repeated cancellation drains both starting executors and queued tasks [125.00ms]
+(pass) idempotent terminal receipts still associate with coordinators without executing again [94.00ms]
+
+packages\agent-runtime\tests\team-budget.test.ts:
+(pass) children inherit a reduced capability set and share atomic root reservations without double charging [110.00ms]
+(pass) read projections do not emit change loops and guarded handoffs refuse revoked generations [93.00ms]
+
+packages\agent-runtime\tests\team-recovery.test.ts:
+(pass) recovery revokes an unfinished integration and retains its handoff without rerunning children [156.00ms]
+
+packages\agent-runtime\tests\team.test.ts:
+(pass) team compiler rejects cycles and reviewers detached from writers
+(pass) team uses WIP forks, shared two-slot scheduler, integrated review and conflict-preserving apply [8500.00ms]
+
+packages\agent-runtime\tests\typescript.test.ts:
+(pass) language service diagnoses actual TS errors and invalidates after an edit [1297.00ms]
+
+packages\agent-runtime\tests\web.test.ts:
+(pass) research blocks localhost, mapped IPv6 and private addressing before a request
+
+packages\agent-runtime\tests\workflow-compile.test.ts:
+(pass) workflow compiler rejects unknown tools, cycles, missing refs, type mismatch and unsafe replay [157.00ms]
+(pass) IANA scheduling skips nonexistent time, chooses one repeated occurrence and bounds catch-up [15.00ms]
+
+packages\agent-runtime\tests\workflow.test.ts:
+(pass) workflow preserves confirmed steps across restart and runs condition, durable wait and bounded foreach on the shared dispatcher [1344.00ms]
+(pass) workflow holds uncertain external outcome until explicit reconciliation and rejects success:false [766.00ms]
+
+packages\agent-runtime\tests\workspace.test.ts:
+(pass) fork includes staged, unstaged and untracked WIP without changing source [3125.00ms]
+
+packages\tui\tests\cli.test.ts:
+(pass) help is usable without TTY or a supervisor [125.00ms]
+
+packages\tui\tests\runtime-state.test.ts:
+(pass) initial event tail supplies a terminal state newer than the run snapshot
+(pass) stream eviction preserves the cursor for retrieving the immediately preceding history [32.00ms]
+
+packages\tui\tests\session.test.tsx:
+(pass) terminal displays connection guidance and restores renderer [79.00ms]
+
+packages\tui\tests\terminal-ux.test.tsx:
+(pass) keyboard, Unicode draft and resize at 80x24 [391.00ms]
+(pass) keyboard, Unicode draft and resize at 120x40 [375.00ms]
+(pass) keyboard, Unicode draft and resize at 200x60 [375.00ms]
+
+1 tests failed:
+(fail) timeout revokes ownership even while a child refuses a full stdin pipe [937.00ms]
+
+ 78 pass
+ 1 fail
+ 471 expect() calls
+Ran 79 tests across 50 files. [56.33s]
+error: script "test:tui" exited with code 1

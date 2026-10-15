@@ -29,7 +29,10 @@ export interface ProcessHandle {
   inspect: () => { running: boolean; bytes: number; output: string; log: string }
 }
 export class Processes {
-  readonly active = new Map<string, { pid: number; executable: string; cancel: () => void }>()
+  readonly active = new Map<
+    string,
+    { pid: number; executable: string; jobName?: string; cancel: () => void }
+  >()
   constructor(private directory: string) {}
   collect() {
     return new Spool(this.directory).collect()
@@ -84,7 +87,12 @@ export class Processes {
       await log.close()
       throw new Error('Missing process identity')
     }
-    this.active.set(id, { pid, executable: request.executable, cancel: abort })
+    this.active.set(id, {
+      pid,
+      executable: request.executable,
+      jobName: process.jobName,
+      cancel: abort,
+    })
     try {
       if (request.input) process.send(request.input)
       if (!request.terminal) process.endInput()

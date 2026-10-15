@@ -1,7 +1,7 @@
 import { readdir } from 'node:fs/promises'
 import { z } from 'zod'
 import { tool } from './definition'
-import { hash, readBounded, workspacePath } from './paths'
+import { hash, protectedName, readBounded, workspacePath } from './paths'
 
 export const readTool = tool(
   'file_read',
@@ -39,7 +39,7 @@ export const listTool = tool(
     })
     return {
       entries: entries
-        .filter((entry) => !entry.name.startsWith('.env') && entry.name !== '.git')
+        .filter((entry) => !protectedName(entry.name))
         .slice(0, 500)
         .map((entry) => ({
           name: entry.name,

@@ -7,6 +7,7 @@ import {
   type RuntimeEvent,
   runSchema,
   sessionSchema,
+  terminalStates,
   transition,
 } from '@sistemazero/agent-core'
 import { z } from 'zod'
@@ -317,6 +318,15 @@ export class Journal {
           )
           .all(command.sessionId ?? null)
           .map((row) => runSchema.parse(JSON.parse(row.value)))
+      case 'run.cancel': {
+        const run = runSchema.parse(this.get('runs', command.id))
+        if (terminalStates.has(run.state)) return run
+        if (run.state !== 'canceling' && (command.active || run.state !== 'queued'))
+          this.apply({ op: 'run.state', id: run.id, state: 'canceling', error: command.error })
+        return command.active
+          ? this.get('runs', run.id)
+          : this.apply({ op: 'run.state', id: run.id, state: 'canceled', error: command.error })
+      }
       case 'run.state': {
         const run = runSchema.parse(this.get('runs', command.id))
         if (run.state === command.state) return run

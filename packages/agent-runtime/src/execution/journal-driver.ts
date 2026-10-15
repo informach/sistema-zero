@@ -45,6 +45,9 @@ export class JournalDriver {
         })
         .catch((error) => {
           console.error('Journal coordinator failed', String(error))
+          this.supervisor.fail(
+            new Error(`Journal coordinator failed: ${String(error)}`, { cause: error }),
+          )
         })
         .finally(() => {
           this.running = undefined

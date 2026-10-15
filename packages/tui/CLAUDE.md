@@ -5,16 +5,23 @@
 
 ## O que é
 
-**UI de terminal (TUI) de dev/ops** do monorepo, construída com **OpenTUI + React 19** (renderer de
-CLI, não DOM). Estágio **inicial/scaffold**: shell visual pronto (Header, InputBar, StatusBar,
-command menu, providers de tema/toast/camada de teclado), sem fluxo de negócio ligado ainda
-(`onSubmit` da barra é no-op). Sem porta, sem banco — é um binário de terminal.
+**Cliente de terminal do agente local do Sistema Zero**, construído com **OpenTUI + React 19**
+(renderer de CLI, não DOM). A interface e o CLI compartilham o supervisor de `agent-runtime`,
+com journal SQLite, IPC autenticado, execução de ferramentas e perguntas persistidas.
+`agent-core` contém os contratos; `agent-integrations` contém os adapters externos.
+
+A interface é uma projeção do supervisor. Fechar a UI preserva tarefas; `/cancel` cancela uma
+tarefa e `sistemazero rpc runtime.shutdown` encerra o supervisor. A UI não deve executar
+ferramentas de agente, guardar tokens ou manter um segundo estado autoritativo de execução.
 
 ## Estrutura (`src/`)
 
-- `index.tsx` — monta os providers + o layout raiz e chama `createCliRenderer` (targetFps 60).
-- `components/` — `header` · `input-bar` · `status-bar` · `border` · `dialog-search-list` ·
-  `command-menu/` (paleta de comandos: lista/filtro/hook).
+- `cli.ts` — entrada pública, help sem renderer, execução não interativa e controles locais.
+- `app.tsx` — layout, painéis, teclado, providers e renderer sob demanda.
+- `index.tsx` — entrada direta alternativa para a interface.
+- `state/runtime.ts` — projeção, stream cancelável, paginação e comandos da interface.
+- `state/editor.ts` — edição do rascunho em editor externo.
+- `components/` — `input-bar` · `status-bar` · `border` · `command-menu/`.
 - `providers/` — `theme` · `toast` · `keyboard-layer` (roteamento de teclado por camada).
 - `theme.ts` — paleta de cores (`ThemeColors`).
 
@@ -22,16 +29,24 @@ command menu, providers de tema/toast/camada de teclado), sem fluxo de negócio 
 
 | Comando | O quê |
 |---|---|
-| `bun run dev:tui` | roda em watch (`bun run --watch packages/tui/src/index.tsx`) |
-| `bun run build:tui` | build (`bun build … --outdir dist --target bun`) |
-| `bun run link:tui` | build + `bun link` (expõe o bin `sistemazero`) |
+| `bun run dev:tui` | executa `packages/tui/src/cli.ts` |
+| `bun run test:tui` | testa core, runtime, integrations, UI e manifest de release |
+| `bun run build:tui` | empacota CLI, workers, helpers nativos e manifesto verificado |
+| `bun run verify:tui` | instala fora do monorepo e verifica os componentes empacotados |
+| `bun run verify:tui:upgrade` | verifica upgrade interrompido, backup e rollback |
+| `bun run link:tui` | build, instalação congelada e `bun link` do pacote distribuível |
 
 De dentro do pacote: `bun run dev` / `build` / `check` / `check:fix`.
 
-> ⚠️ O `bin.sistemazero` está declarado no `package.json` mas o arquivo `bin/sistemazero` ainda
-> não existe — criar antes de depender do `link:tui` em produção.
+O bin de desenvolvimento aponta para `src/cli.ts`; o pacote distribuível fica em `dist/` e
+aponta para `cli.js`. Não importar arquivos de desenvolvimento por caminhos absolutos no build.
+Use `SISTEMAZERO_HOME` temporário para testes; preserve o perfil real e as credenciais oficiais.
+
+Leia `docs/tui/support.md`, `docs/tui/performance.md` e `docs/tui/implementation-review.md` na
+raiz para a matriz de suporte e as limitações medidas. Windows x64 é o alvo homologado.
+Não confundir fixtures locais com homologação de contas externas ou avaliação comparativa.
 
 ## Stack
 
-Bun · TS (ESM) · React 19 · `@opentui/core` + `@opentui/react` · Biome. Consome `@sistemazero/ui`
-NÃO (a UI aqui é de terminal, própria); pode consumir `@sistemazero/core` se precisar de utilidades.
+Bun · TS (ESM) · React 19 · `@opentui/core` + `@opentui/react` · Zod · Biome.
+A UI usa componentes próprios de terminal e os contratos de `agent-core`; não importa a UI web.

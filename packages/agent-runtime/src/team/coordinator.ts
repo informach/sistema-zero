@@ -179,7 +179,7 @@ export class Teams {
     })
   }
   private schedule() {
-    if (this.stopping) return
+    if (this.stopping || this.supervisor.readiness === 'failed') return
     this.dirty = true
     if (this.timer || this.pumpPromise) return
     this.timer = setTimeout(() => {
@@ -188,9 +188,12 @@ export class Teams {
         this.pumpPromise = undefined
         if (this.dirty) this.schedule()
       })
-      void this.pumpPromise.catch((error) =>
-        console.error('Team coordination failed', String(error)),
-      )
+      void this.pumpPromise.catch((error) => {
+        this.stopping = true
+        this.supervisor.fail(
+          new Error(`Team coordination failed: ${String(error)}`, { cause: error }),
+        )
+      })
     }, 20)
   }
   private async pump() {
