@@ -269,6 +269,46 @@ serviços. Nunca recopie as regras.
   `questionsAsked` e `workingTitle` (core `applyPensaCommand`): antes só uma proposta NOVA zerava, e
   o "Adaptar meu caminho" depois de aceitar a anterior nascia sem pergunta.
 
+## Pensa v2: cota de chamadas por rodada e o jogo construído à parte (15/10/2026)
+
+Os dois limites que ficaram do lote da oferta de arte; decisão dela (opção A nos dois).
+
+- **Cota por rodada** (`domain/pensa/operation-budget.ts`, `pensaCallsExhausted`): o planejamento
+  de uma versão inteira (perguntas, propostas, cada "Quero mudar uma coisa" e os guias) era UMA
+  operação com teto de 10 chamadas ao Zappy, e cinco rodadas de conversa (2 chamadas cada)
+  esgotavam o guia. Hoje cada rodada tem `PENSA_ROUND_CALLS` (6): a operação guarda no `input`
+  (jsonb, sem migration) `roundStartCalls`, as chamadas que ela já tinha quando a rodada começou.
+  O `start` que retoma a operação à espera marca `roundStartCalls = calls` (a operação nova nasce
+  com 0; a ajuda, `kind: 'help'`, também), e o `accept` marca de novo (na operação nova ou na que
+  continua para os guias): "escolher o começo" é uma rodada. O claim (e o `retry`) recusa com
+  `calls - roundStartCalls >= 6` OU, fora do passo `guides`, com o teto do pedido
+  `PENSA_OPERATION_CALLS` (24).
+  - ⚠️ **O teto do pedido nunca vale nos guias** (achado do full review): valendo, a conversa que
+    chegasse a 24 fazia o primeiro guia falhar logo depois do aceite, o mesmo defeito de antes, e
+    "Tentar de novo" voltava 409. O teto para a CONVERSA longa; os guias param na cota da rodada e
+    nas 2 tentativas.
+  - Na prática as 2 tentativas por passo já seguram uma rodada em 4 chamadas (proposta e revisão;
+    as tentativas só zeram na passagem da proposta para a revisão): a cota de 6 é a rede. O gasto
+    da conta segue preso aos tetos de 60 por dia e 600 por mês (`pensa_provider_usage`).
+  - Operação sem a marca (criada antes deste deploy) não tem rodada para contar: vale só o teto do
+    pedido, e um guia que parou nas 10 de antes volta com "Tentar de novo".
+- **O jogo construído fica guardado à parte** (`journey.built`, `PensaBuiltGame` do core): o
+  `increment` grava `built: pensaBuiltGame(state)` na jornada da versão nova (a proposta da versão
+  feita, ENXUTA, e as extensões das missões do Estúdio de TODAS as versões, na ordem em que
+  entraram). Motivo: a versão nova copia a `proposal` anterior, mas a primeira proposta nova toma o
+  lugar dela, e o member-shell lia a proposta ainda não construída como o jogo pronto (a extensão
+  de jogo e a base sumiam se ela não usasse extensão). O core faz o mesmo no `revise` quando a
+  versão estava em construção (ver o CLAUDE.md do core). O `increment` só acontece com a versão
+  concluída no teste (`closedReason: 'met'`, vinda de `observing`), então lá a proposta é sempre a
+  construída. Jornada anterior (sem o campo): o member-shell cai na proposta de agora.
+  ⚠️ `built.proposal` não leva o retrato dos recursos (`capabilities` chega a dezenas de KB com a
+  lista de blocos): inteira, ela ficaria duas vezes na jornada (teto de 256 KB) e em cada versão
+  guardada.
+- Testes: `tests/unit/pensa-operation-budget.test.ts` (a régua) e, em
+  `tests/db/pensa-journey.repository.test.ts` (Postgres), os dois "cota por rodada…" (o primeiro
+  leva o pedido ao teto, aceita, falha o guia e usa o "Tentar de novo") e "versão nova: a proposta
+  nova não apaga o jogo construído".
+
 ## Oficinas ao vivo (14/10/2026)
 
 `application/live` mantém oficinas reutilizáveis, snapshots das aulas por turma, matrículas

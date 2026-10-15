@@ -751,9 +751,10 @@ entra se a criança aceitar.
   envio). O envio é de planejamento e retoma o mesmo pedido do Zappy (não gasta uso novo).
 - Estilo: `.pensa-journey-offer` (`journey.css`), no fundo `--pz-surface-2`; o botão quebra a
   linha (a pílula é `nowrap`) para caber num celular de 320px.
-- ⚠️ Limite conhecido: o planejamento inteiro de uma versão (perguntas, propostas, mudanças e
-  guias) divide o teto de 10 chamadas por operação do members; cada rodada de mudança gasta
-  algumas.
+- O planejamento de uma versão é UMA operação do members, mas cada mensagem que abre ou retoma o
+  pedido (e o "Vamos construir esse começo") ganha a sua cota de 6 chamadas ao Zappy; a conversa
+  para em 24 no pedido, e os guias nunca param nesse teto (ver o CLAUDE.md do members). Antes eram
+  10 para tudo, e a ideia com quatro rodadas de "Quero mudar uma coisa" esgotava os guias.
 - Testes: `JourneyApp.artOffer.test.tsx` e o caso do `JOURNEY_SYSTEM` em
   `member-shell/tests/pensa-journey-worker.test.ts`.
 

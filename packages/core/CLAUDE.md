@@ -68,6 +68,23 @@ Cursos ao vivo (lote de 14/10): `LiveRecordingSourceView` (`{ storageKey, bucket
 bucket REAL do gravador) e `LiveWorkspaceView.studio` (a curadoria do bloco Estúdio da aula
 publicada, na abertura por bloco). Só acréscimos.
 
+## Pensa v2: o jogo construído à parte (15/10/2026)
+
+`PensaJourney.built?` (`PensaBuiltGame`: a proposta da versão construída, ENXUTA, e as
+`extensionIds` das missões do Estúdio de todas as versões, na ordem em que entraram) e
+`pensaBuiltGame(journey)`, que soma a proposta de agora ao que já estava guardado. Motivo: a versão
+nova e o "Adaptar meu caminho" trocam a `proposal` pela proposta nova ainda não construída, e quem
+planeja precisa saber o que já existe. O `increment` do members grava o campo, e o `revise` também
+quando o jogo já foi guardado (checkpoint ou `builtResults`) E a versão estava em construção
+(`building`/`observing`, também como `closedFrom`).
+- ⚠️ Encerrada na proposta (`closedFrom: 'proposal'`), a proposta de agora nunca foi aceita: o
+  `revise` mantém o `built` que havia (achado do full review; antes ela virava o "jogo construído").
+- ⚠️ `PensaBuiltProposal` não leva `capabilities`, `references`, `later`, `test` nem os blocos das
+  missões: a lista de blocos liberados chega a dezenas de KB e ficaria duas vezes na jornada e em
+  cada versão guardada. Quem planeja usa só o contorno e as extensões.
+- Campo opcional: jornada anterior não o tem. Testes: `tests/pensa.test.ts`, "o jogo construído
+  fica guardado à parte".
+
 ## O que é
 
 **Lib compartilhada, sem framework**: as utilidades de baixo nível que TODOS os backends do

@@ -440,9 +440,14 @@ o modelo escolhe a extensão (preferindo a mais simples) e aprende a escrever o 
   - Os nomes das áreas são os rótulos exatos ("🧱 Estrutura: HTML", "🎨 Aparência: CSS"), e um
     plano antigo que misturava duas extensões de jogo continua na primeira (a que o guia instalou).
   - A rota `/test` tem teste: observa e registra o teste com a revisão nova e o jogo guardado.
-  - ⚠️ Limite que fica: numa versão 2 ou mais, depois da primeira proposta, `state.proposal` é a
-    proposta NOVA (ainda não construída); a extensão e o `baseAlreadyBuilt` passam a vir dela. Se
-    ela não usa extensão de jogo, uma rodada seguinte de mudança não conhece a do jogo.
+  - Numa versão 2 ou mais, depois da primeira proposta, `state.proposal` é a proposta NOVA (ainda
+    não construída). O jogo construído vem de `state.built` (`builtGame` no `planner.ts`, desde o
+    lote seguinte de 15/10/2026): o `baseAlreadyBuilt`, o `fixedDimension` e a extensão de jogo
+    (a primeira de jogo em `built.extensionIds`, a que o guia instalou). Jornada anterior ao campo:
+    a proposta de agora. O `JOURNEY_SYSTEM` diz a diferença: `currentProposal` é a proposta desta
+    conversa (numa versão nova, ainda não construída) e o que já existe é `baseAlreadyBuilt` (até
+    aqui as duas eram iguais e o modelo nunca precisou separá-las). Teste: "versão nova já
+    proposta…" em `pensa-journey-worker.test.ts`.
 - O `command` do BFF parou de aceitar `observe` (ver o CLAUDE.md do pacote pensa, "Etapa R: um
   caminho só").
 
@@ -498,8 +503,9 @@ consertou, e que não pode voltar:
 - **Reparo com motivo, contado pelo members** (`planner.ts`): saída inválida (bloco fora da
   paleta, missão faltando, JSON fora do contrato, texto inseguro) ganha UMA tentativa com o motivo
   (`previousAnswerRejected`, que diz a missão pela chave e o id), por `fail` + novo `claim`: o
-  members conta a chamada e o teto (2 por passo, 10 por operação) recusa o claim. Rede e prazo não
-  repetem. Os motivos de `validateJourneyProposal` citam a missão e o id.
+  members conta a chamada e o teto (2 por passo; 6 por rodada, que é cada mensagem da criança e o
+  aceite do começo; 24 por pedido na conversa, nunca nos guias; ver o CLAUDE.md do members)
+  recusa o claim. Rede e prazo não repetem. Os motivos de `validateJourneyProposal` citam a missão e o id.
 - **Erros nunca mudos:** `[pensa-v2] passo falhou {operationId, step, name}` (só o NOME, nunca a
   mensagem, que pode ter a fala ou o corpo do provedor). `JourneyChildError`/`JourneyOutputInvalid`
   (`errors.ts`) carregam a frase da criança e ela chega ao `fail` ("Seus recursos mudaram…").

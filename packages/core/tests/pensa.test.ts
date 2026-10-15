@@ -8,6 +8,7 @@ import {
   nextPensaMissionFor,
   type PensaProposal,
   type PensaTeamMissionProgress,
+  pensaBuiltGame,
   pensaQuestionsLeft,
   pensaZeroStage,
 } from '../src/pensa'
@@ -304,5 +305,109 @@ describe('Pensa: o teto de perguntas do Zappy', () => {
     )
     expect(adaptado.questionsAsked).toBe(0)
     expect(adaptado.workingTitle).toBeNull()
+  })
+})
+
+describe('o jogo construído fica guardado à parte (15/10/2026)', () => {
+  const mission = (key: string, destination: 'studio' | 'pinta', extensionIds: string[]) =>
+    ({
+      key,
+      title: `Missão ${key}`,
+      destination,
+      extensionIds,
+      mechanicIds: [],
+      blockIds: ['pesado'],
+    }) as unknown as PensaProposal['missions'][number]
+  const v1 = {
+    id: 'v1',
+    title: 'Gato',
+    summary: 'O gato anda.',
+    firstResult: 'Andar',
+    essentials: ['Gato'],
+    dimension: '2d',
+    capabilities: { blockIds: ['pesado'] },
+    missions: [mission('a', 'studio', ['game-2d']), mission('arte', 'pinta', ['game-3d'])],
+  } as unknown as PensaProposal
+  const checkpoint = {
+    id: 'c',
+    creationId: 'g',
+    saveRevision: '1',
+    planRevision: 1,
+    cycleId: 'c1',
+    createdAt: now,
+  }
+
+  test('soma as extensões das missões do Estúdio, na ordem, sem as da arte', () => {
+    const first = pensaBuiltGame({ ...initial(), proposal: v1 })
+    expect(first?.extensionIds).toEqual(['game-2d'])
+    // Só o que diz o que o jogo tem: o retrato dos recursos e os blocos ficam de fora.
+    expect(first?.proposal).toEqual({
+      id: 'v1',
+      title: 'Gato',
+      summary: 'O gato anda.',
+      firstResult: 'Andar',
+      essentials: ['Gato'],
+      dimension: '2d',
+      missions: [
+        {
+          key: 'a',
+          title: 'Missão a',
+          destination: 'studio',
+          extensionIds: ['game-2d'],
+          mechanicIds: [],
+        },
+        {
+          key: 'arte',
+          title: 'Missão arte',
+          destination: 'pinta',
+          extensionIds: ['game-3d'],
+          mechanicIds: [],
+        },
+      ],
+    })
+    const v2 = {
+      ...v1,
+      id: 'v2',
+      missions: [mission('b', 'studio', ['sound', 'game-2d'])],
+    } as PensaProposal
+    expect(pensaBuiltGame({ ...initial(), proposal: v2, built: first })?.extensionIds).toEqual([
+      'game-2d',
+      'sound',
+    ])
+    // Sem proposta, o que já estava guardado fica.
+    expect(pensaBuiltGame({ ...initial(), built: first })).toEqual(first)
+    expect(pensaBuiltGame(initial())).toBeNull()
+  })
+
+  test('adaptar o caminho de um jogo guardado guarda o jogo; sem nada guardado, não mexe', () => {
+    const building = { ...initial(), stage: 'building' as const, proposal: v1 }
+    const kept = applyPensaCommand({ ...building, checkpoint }, 0, { type: 'revise' }, now)
+    expect(kept.built?.proposal.id).toBe('v1')
+    expect(applyPensaCommand(building, 0, { type: 'revise' }, now).built).toBeUndefined()
+    // Encerrada depois de construir, ela também é o jogo construído.
+    const closed = {
+      ...building,
+      checkpoint,
+      stage: 'closed' as const,
+      closedFrom: 'observing' as const,
+      closedReason: 'incomplete' as const,
+    }
+    expect(applyPensaCommand(closed, 0, { type: 'revise' }, now).built?.proposal.id).toBe('v1')
+  })
+
+  test('encerrada na proposta, a proposta nova nunca foi construída e não vira o jogo', () => {
+    // Versão 2: o Zappy propôs, a criança encerrou por enquanto e depois adaptou o caminho.
+    const built = pensaBuiltGame({ ...initial(), proposal: v1 })
+    const closed = {
+      ...initial(),
+      checkpoint,
+      builtResults: ['Andar'],
+      built,
+      proposal: { ...v1, id: 'nova', missions: [mission('b', 'studio', ['sound'])] },
+      stage: 'closed' as const,
+      closedFrom: 'proposal' as const,
+      closedReason: 'incomplete' as const,
+    }
+    expect(applyPensaCommand(closed, 0, { type: 'revise' }, now).built).toEqual(built)
   })
 })
