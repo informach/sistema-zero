@@ -219,14 +219,14 @@ describe('dentro do jogo', () => {
       await waitFor(() => expect(document.activeElement).toBe(titulo))
       expect(screen.getByText(/Você está revendo a etapa Enxergar o jogo/)).toBeTruthy()
       // A missão do momento sai de cena enquanto a criança revê.
-      expect(screen.queryByRole('button', { name: /^Continuar no/ })).toBeNull()
+      expect(screen.queryByRole('button', { name: /a missão no/ })).toBeNull()
       fireEvent.click(screen.getByRole('button', { name: /Zerar a bagunça/ }))
       expect(
         await screen.findByRole('heading', { level: 2, name: 'A ideia que você contou' }),
       ).toBeTruthy()
       expect(screen.getByText('Um dragão que leva ovos de volta para o ninho')).toBeTruthy()
       fireEvent.click(screen.getByRole('button', { name: /^Voltar para agora$/ }))
-      expect(await screen.findByRole('button', { name: /^Continuar no Estúdio/ })).toBeTruthy()
+      expect(await screen.findByRole('button', { name: /a missão no Estúdio/ })).toBeTruthy()
     },
     LENTO_NO_CI,
   )
@@ -274,7 +274,7 @@ describe('dentro do jogo', () => {
         capabilities: { studioOwned: false, pintaOwned: true, moldaOwned: true },
       })
       openGame(adapter)
-      const botao = await screen.findByRole('button', { name: /^Continuar no Estúdio/ })
+      const botao = await screen.findByRole('button', { name: /a missão no Estúdio/ })
       expect(botao.hasAttribute('disabled')).toBe(true)
       expect(screen.getByText(/O Estúdio ainda não está liberado para você/)).toBeTruthy()
     },
@@ -289,7 +289,7 @@ describe('dentro do jogo', () => {
       expect(await screen.findByRole('button', { name: 'Travei nesta parte' })).toBeTruthy()
       // Sem teste nesta rodada ainda, a volta diz para onde leva.
       fireEvent.click(screen.getByRole('button', { name: 'Voltar para as missões' }))
-      expect(await screen.findByRole('button', { name: /^Continuar no Estúdio/ })).toBeTruthy()
+      expect(await screen.findByRole('button', { name: /a missão no Estúdio/ })).toBeTruthy()
     },
     LENTO_NO_CI,
   )

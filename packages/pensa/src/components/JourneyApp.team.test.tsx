@@ -282,8 +282,9 @@ describe('o "Equipe · N" e a janela da equipe', () => {
     openGame(adapter)
     await screen.findByText('Sua próxima missão · 1 de 1')
     expect(screen.queryByRole('button', { name: /^Equipe/ })).toBeNull()
+    // "Já quero experimentar" saiu (15/10/2026): ele levava à etapa O sem missão feita.
+    expect(screen.queryByRole('button', { name: 'Já quero experimentar' })).toBeNull()
     for (const name of [
-      'Já quero experimentar',
       'Adaptar meu caminho…',
       'Encerrar por enquanto',
       'Guardar nos arquivados',
@@ -620,7 +621,7 @@ describe('as missões dizem de quem são', () => {
       expect(screen.getByText('Molda · Bia')).toBeTruthy()
       // A arte da Bia mora na conta dela: nada de "Rever" no meu Pinta.
       expect(screen.queryByRole('button', { name: 'Rever Missão m1' })).toBeNull()
-      fireEvent.click(screen.getByRole('button', { name: 'Continuar no Estúdio' }))
+      fireEvent.click(screen.getByRole('button', { name: 'Começar a missão no Estúdio' }))
       expect(onOpenTask).toHaveBeenCalledWith({ taskId: 'm2', destination: 'studio' })
     },
     LENTO_NO_CI,
@@ -643,7 +644,7 @@ describe('as missões dizem de quem são', () => {
       const cartao = within(titulo.closest('section') as HTMLElement)
       expect(cartao.getByText('Missão de Bia · 1 de 2')).toBeTruthy()
       expect(cartao.getByText('Missão m1')).toBeTruthy()
-      expect(screen.queryByRole('button', { name: /^Continuar no/ })).toBeNull()
+      expect(screen.queryByRole('button', { name: /a missão no/ })).toBeNull()
       fireEvent.click(screen.getByRole('button', { name: 'Ver o caminho' }))
       // "Meu caminho" está sempre à vista: o botão leva o foco ao título dele.
       expect(document.activeElement).toBe(

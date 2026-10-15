@@ -170,12 +170,16 @@ export function JourneyApp({
       ? `${workProjectId}|${team.memberCount}|${team.roles.code}|${team.roles.art.join(',')}`
       : null
 
+  // Lê o rascunho guardado quando o campo muda de dono, sem apagar o que a criança JÁ digitou para
+  // este dono (o jogo acabou de abrir e ela começou a escrever antes desta leitura).
   useEffect(() => {
+    let saved = ''
     try {
-      setDraft({ key: draftKey, value: sessionStorage.getItem(draftKey) ?? '' })
+      saved = sessionStorage.getItem(draftKey) ?? ''
     } catch {
-      setDraft({ key: draftKey, value: '' })
+      /* Sem armazenamento: começa vazio. */
     }
+    setDraft((current) => (current.key === draftKey ? current : { key: draftKey, value: saved }))
   }, [draftKey])
   useEffect(() => {
     if (draft.key !== draftKey) return
@@ -187,11 +191,13 @@ export function JourneyApp({
     }
   }, [text, draftKey, draft.key])
   useEffect(() => {
+    let saved = ''
     try {
-      setNoteDraft({ key: noteKey, value: sessionStorage.getItem(noteKey) ?? '' })
+      saved = sessionStorage.getItem(noteKey) ?? ''
     } catch {
-      setNoteDraft({ key: noteKey, value: '' })
+      /* Sem armazenamento: começa vazio. */
     }
+    setNoteDraft((current) => (current.key === noteKey ? current : { key: noteKey, value: saved }))
   }, [noteKey])
   useEffect(() => {
     if (noteDraft.key !== noteKey) return
@@ -717,6 +723,10 @@ export function JourneyApp({
   const missionsLeft = tasks.some((t) => t.progress.status !== 'completed')
   const activeGame = view?.project.status === 'active'
   const missionNumber = nextTask ? tasks.indexOf(nextTask) + 1 : 0
+  /** O que o botão da missão FAZ: começar a que ainda não começou, continuar a começada. */
+  const missionCta = nextTask
+    ? `${nextTask.progress.status === 'in_progress' ? 'Continuar' : 'Começar'} a missão no ${DESTINATIONS[nextTask.destination].label}`
+    : ''
   // Todas as etapas vencidas: a versão foi experimentada e guardada pronta.
   const allDone = state?.stage === 'closed' && state.closedReason === 'met'
   const pose: PensaMascotPose = running
@@ -1430,6 +1440,39 @@ export function JourneyApp({
                             <p className="pensa-journey-lead">{nextTask.summary}</p>
                           ) : null}
                           <MissionDots tasks={tasks} current={nextTask.id} />
+                          {/* Um caminho só (15/10/2026, relato dela: três botões e a criança na
+                          dúvida). O que fazer está escrito; o botão principal abre a missão com o
+                          guia; "Travei" é a ajuda. Experimentar o jogo inteiro vem sozinho quando
+                          as missões acabam, nunca antes (o jogo nem existe no começo). */}
+                          {tasks.some((t) => t.progress.status === 'completed') ? (
+                            <p className="pensa-journey-hint">
+                              O Guia do Pensa abre junto, com os passos. No fim, toque em{' '}
+                              <strong>Experimentei e funcionou</strong>.
+                            </p>
+                          ) : (
+                            <ol className="pensa-journey-steps" aria-label="Como fazer a missão">
+                              <li>
+                                Toque em <strong>{missionCta}</strong>. O Guia do Pensa abre junto,
+                                com os passos.
+                              </li>
+                              <li>
+                                Faça um passo de cada vez, do jeito que o Guia do Pensa mostra.
+                              </li>
+                              <li>
+                                {nextTask.destination === 'studio' ? (
+                                  <>
+                                    Aperte <strong>▶ Reproduzir</strong> para ver funcionando e
+                                    toque em <strong>Experimentei e funcionou</strong>.
+                                  </>
+                                ) : (
+                                  <>
+                                    No fim, toque em <strong>Experimentei e funcionou</strong> no
+                                    guia.
+                                  </>
+                                )}
+                              </li>
+                            </ol>
+                          )}
                           {toolOwned(nextTask.destination) ? null : (
                             <p className="pensa-journey-warn" id="pensa-tool-locked">
                               {toolLockedText(nextTask.destination)}
@@ -1450,25 +1493,16 @@ export function JourneyApp({
                                 })
                               }
                             >
-                              Continuar no {DESTINATIONS[nextTask.destination].label}
+                              {missionCta}
                               <ArrowRightIcon />
                             </button>
                             <button
                               type="button"
-                              className="sz-tool-pill sz-tool-pill--outline"
+                              className="sz-tool-pill sz-tool-pill--quiet"
                               onClick={() => focusChat('help')}
                             >
                               Travei nesta parte
                             </button>
-                            {canProgram ? (
-                              <button
-                                type="button"
-                                className="sz-tool-pill sz-tool-pill--quiet pensa-journey-try"
-                                onClick={() => void command({ type: 'observe' })}
-                              >
-                                Já quero experimentar
-                              </button>
-                            ) : null}
                           </div>
                         </section>
                       ) : state.stage === 'building' && waitingTask ? (

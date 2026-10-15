@@ -544,7 +544,7 @@ zero ou mais; sem ninguém, quem programa também desenha).
   dizem "alguém da equipe" (o "Colega" do `personName` é rótulo de lista). Nomes vêm de
   `GET …/team` (best-effort, relido quando muda quem está ou as funções).
 - **Quem pode o quê** (`canProgram` = `roles.code === viewer`; `isOwner` = `role !== 'member'`):
-  testar ("Já quero experimentar", o cartão do teste inteiro, "Voltar para ajustar"), guardar a
+  testar (o cartão do teste inteiro, "Voltar para ajustar"), guardar a
   versão pronta, "Escolher o próximo pedaço"/"Testar mudanças", "Adaptar meu caminho", "Encerrar
   por enquanto" e restaurar são de quem programa; no lugar, `.pensa-journey-team-note` "Quem testa e
   guarda as versões é Leo.". Arquivar, "Continuar este jogo" do arquivado e apagar são da dona (a
@@ -626,8 +626,8 @@ review achou defeitos de funcionamento. O que mudou, e que não pode voltar:
 ## "Abrir meu jogo" abre o JOGO, não uma missão (15/10/2026)
 
 Relato dela: "Abrir meu jogo", na hora de testar, levava ao Estúdio com "a tarefa mudou em outro
-lugar, recarreguei o guia do Pensa para você". A criança pode testar antes de terminar as missões
-("Já quero experimentar"), e o botão abria a ÚLTIMA missão do Estúdio, que ainda dependia das
+lugar, recarreguei o guia do Pensa para você". A criança podia testar antes de terminar as missões
+(o antigo "Já quero experimentar", que saiu em 15/10/2026), e o botão abria a ÚLTIMA missão do Estúdio, que ainda dependia das
 anteriores: o Estúdio tentava começá-la e o servidor recusava (409 de missão anterior pendente).
 
 - `PensaHostAdapter.onOpenGame?({ projectId })` (opcional): o botão chama ele quando o host sabe
@@ -705,6 +705,27 @@ respostas para tocar. O contrato da pergunta mora no core (`PENSA_QUESTION_TOPIC
   sobrescreviam a lista numerada de "Hora de testar" e da revisão da etapa E. A etapa de agora tem
   um ponto dentro, além da cor (com menos movimento ela não pisca).
 - "ou fale" só aparece quando o host passa `renderVoiceInput` (os pais ligam a fala por criança).
+
+## Etapa R: um caminho só (15/10/2026)
+
+Relato dela: o cartão da missão tinha três botões ("Continuar no Estúdio", "Travei nesta parte",
+"Já quero experimentar") e a criança ficava na dúvida; "Já quero experimentar" mandava o comando
+`observe`, que pulava para a etapa O sem missão feita, e o "Abrir meu jogo" de lá ia ao Estúdio
+atrás de um jogo que ainda não existia. Decisão dela (opção A de três): um caminho só.
+
+- O botão principal diz o que FAZ (`missionCta`): "Começar a missão no Estúdio" para a missão
+  planejada, "Continuar a missão no …" para a começada. "Travei nesta parte" ficou como botão
+  discreto (`sz-tool-pill--quiet`).
+- O que fazer está escrito: enquanto nenhuma missão foi concluída, uma lista de três passos
+  (`aria-label="Como fazer a missão"`: tocar no botão, seguir o Guia do Pensa, apertar ▶ Reproduzir
+  e "Experimentei e funcionou", ou só o "Experimentei" fora do Estúdio); depois, uma linha só.
+- ⚠️ **Não existe mais botão que leve à etapa O.** Ela começa quando a criança CONTA o resultado do
+  teste, e a tela de teste só aparece com as missões dela feitas. O BFF parou de aceitar `observe`
+  pelo `command` (a rota `/test` observa e registra junto).
+- O rascunho do campo não se perde mais se a criança digita no instante em que o jogo abre: a
+  leitura do rascunho guardado não sobrescreve o que já foi digitado para o mesmo projeto (era a
+  causa de um teste instável de troca de perfil).
+- Testes: `JourneyApp.test.tsx` ("etapa R: um caminho só…" e "missão começada diz Continuar…").
 
 ## Verificação
 
