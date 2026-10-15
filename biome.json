@@ -21,7 +21,8 @@
       "!docs/marketing/**/instagram/producao",
       "!docs/marketing/**/instagram/historico",
       "!**/.agents",
-      "!**/.claude"
+      "!**/.claude",
+      "!.audits"
     ]
   },
   "formatter": {
