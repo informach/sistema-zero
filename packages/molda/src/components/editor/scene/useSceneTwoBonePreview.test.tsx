@@ -47,6 +47,7 @@ test('the form reuses preparation across invalidations and revokes old closures 
       Object.defineProperty(source, 'geometries', geometry)
     }
     act(() => animation.seek(1))
+    act(() => view.result.current.workshop.resolveTransition('discard'))
     expect(old.preview([1, 1, 0])).toBe(false)
     view.rerender({ time: 1 })
     const current = view.result.current.input

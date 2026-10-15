@@ -15,7 +15,7 @@ import { createMemoryPersistence } from '../../../state/memoryPersistence'
 import { resetMoldaPersistenceForTests } from '../../../state/persistence'
 import { installFailingViewport, installFakeViewport } from '../../../testing/fakeViewport'
 import { makeModel } from '../../../testing/fixtures'
-import { MoldaApp } from '../../MoldaApp'
+import { LegacyModelEditorHarness } from '../../../testing/LegacyModelEditorHarness'
 
 let fake: ReturnType<typeof installFakeViewport>
 
@@ -79,7 +79,7 @@ async function openModel(
   asset: MoldaModelAsset = makeModel(),
 ): Promise<ReturnType<typeof createMemoryPersistence>> {
   const persistence = createMemoryPersistence([asset])
-  render(<MoldaApp persistence={persistence} adapter={{ initialAssetId: 'model-1' }} />)
+  render(<LegacyModelEditorHarness persistence={persistence} assetId="model-1" />)
   await screen.findByRole('complementary', { name: COPY.editor.model.toolbox })
   await waitFor(() => expect(lastModel().parts).toHaveLength(asset.parts.length))
   return persistence
@@ -430,9 +430,9 @@ describe('ModelEditor (bancada Montar)', () => {
     const uninstall = installFailingViewport()
     try {
       render(
-        <MoldaApp
+        <LegacyModelEditorHarness
           persistence={createMemoryPersistence([makeModel()])}
-          adapter={{ initialAssetId: 'model-1' }}
+          assetId="model-1"
         />,
       )
       await screen.findByText(COPY.editor.model.unsupported)
@@ -448,10 +448,7 @@ describe('ModelEditor (bancada Montar)', () => {
   test('sair do editor descarta o palco', async () => {
     await openModel()
     fireEvent.click(screen.getByRole('button', { name: COPY.editor.backToGallery }))
-    await screen.findByRole('heading', { level: 1, name: COPY.gallery.title })
-    // ⚠️ O `dispose()` mora na LIMPEZA de um efeito, que é passiva: a galeria já
-    // está no DOM enquanto a fila de efeitos ainda não andou. Assertar aqui
-    // direto passava na máquina rápida e falhava no CI.
+    // A saída desmonta o editor; o dispose mora na limpeza passiva do efeito.
     await waitFor(() => expect(fake.instances[0]?.disposed).toBe(true))
   })
 })

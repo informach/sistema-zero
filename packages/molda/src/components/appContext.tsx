@@ -30,18 +30,6 @@ export interface MoldaHostAdapter {
   /** A lista de criações mudou (criar, renomear, apagar, salvar, releitura). */
   onChange?: () => void
   /**
-   * PROMOVER modelos antigos para a oficina da geração seguinte. Desligada por padrão.
-   *
-   * ⚠️ Ela governa só a promoção, e não o acesso: uma criação JÁ promovida continua
-   * listada e continua abrindo na oficina mesmo com isto desligado. É o que torna
-   * desligar reversível — do contrário, voltar atrás deixaria o trabalho da criança
-   * inalcançável, porque o editor antigo não sabe ler o documento novo.
-   *
-   * Promover é escrever o formato novo no disco e na nuvem: só ligar depois que os
-   * leitores compatíveis (lote 230) estiverem implantados.
-   */
-  sceneWorkshop?: boolean
-  /**
    * As famílias de ferramentas que a criança pode USAR: o portão por nível de jornada, que o
    * host calcula (o Molda não conhece jornada). Ausente = tudo liberado. Trancar tira a
    * autoria, nunca a leitura: ver `core/toolFamilies.ts`.

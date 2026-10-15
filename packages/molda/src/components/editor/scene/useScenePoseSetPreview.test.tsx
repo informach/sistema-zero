@@ -78,6 +78,9 @@ test('mapped-pose forms revoke old scopes and do not steal a replacement on the 
     act(() => expect(old.preview(copied, pairs)).toBe(true))
     act(() => view.result.current.workshop.select('root', false))
     const selected = view.result.current.input
+    // Selection retains the completed adjustment; replacing it requires explicit resolution.
+    act(() => expect(selected.preview(copied, pairs)).toBe(false))
+    act(() => animationPose.cancel())
     act(() => expect(selected.preview(copied, pairs)).toBe(true))
     const pose = animationPose.getSnapshot().pose
     act(() => {
@@ -105,6 +108,7 @@ test('mapped-pose forms revoke old scopes and do not steal a replacement on the 
     expect(animationPose.getSnapshot().pose).toBeNull()
     act(() => expect(selected.preview(copied, pairs)).toBe(true))
     act(() => animation.seek(1))
+    act(() => view.result.current.workshop.resolveTransition('discard'))
     view.rerender({ time: 1 })
     const latest = view.result.current.input
     act(() => expect(latest.preview(copied, pairs)).toBe(true))

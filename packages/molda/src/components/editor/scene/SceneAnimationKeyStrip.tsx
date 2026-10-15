@@ -10,12 +10,14 @@ export function SceneAnimationKeyStrip({
   time,
   label,
   onSeek,
+  onSelect,
 }: {
   times: readonly number[]
   duration: number
   time: number
   label: string
   onSeek(time: number): void
+  onSelect?(): void
 }) {
   const canvas = useRef<HTMLCanvasElement>(null)
   useEffect(() => {
@@ -51,7 +53,18 @@ export function SceneAnimationKeyStrip({
   const nearest = nearestSceneAnimationKey(times, time)
   return (
     <div className="flex items-center gap-2">
-      <span className="w-24 shrink-0 text-xs font-bold">{label}</span>
+      {onSelect ? (
+        <button
+          type="button"
+          className="min-h-11 w-24 shrink-0 truncate text-left text-xs font-bold"
+          aria-label={`Escolher ${label} na linha do tempo`}
+          onClick={onSelect}
+        >
+          {label}
+        </button>
+      ) : (
+        <span className="w-24 shrink-0 text-xs font-bold">{label}</span>
+      )}
       <button
         type="button"
         disabled={!times.length}

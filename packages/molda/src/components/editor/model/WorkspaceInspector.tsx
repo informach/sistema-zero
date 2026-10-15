@@ -9,10 +9,12 @@ import { isTypingTarget } from '../../ui/interaction'
 /** A non-modal drawer on tablets; a collapsible dock on wide screens. */
 export function WorkspaceInspector({
   docked,
+  persistent = false,
   onBeforeClose,
   children,
 }: {
   docked: boolean
+  persistent?: boolean
   onBeforeClose(): void
   children: ReactNode
 }): JSX.Element {
@@ -61,7 +63,7 @@ export function WorkspaceInspector({
     <>
       <Button
         ref={trigger}
-        hidden={open}
+        hidden={open || (docked && persistent)}
         aria-expanded={open}
         aria-controls={panelId}
         onClick={() => {
@@ -77,10 +79,10 @@ export function WorkspaceInspector({
       <aside
         id={panelId}
         aria-labelledby={titleId}
-        hidden={!open}
+        hidden={!open && !(docked && persistent)}
         className={
           docked
-            ? 'flex w-68 shrink-0 flex-col border-l border-mld-border bg-mld-bg'
+            ? `flex shrink-0 flex-col border-l border-mld-border bg-mld-surface ${persistent ? 'mld-workshop-inspector' : 'w-68'}`
             : 'absolute inset-y-0 right-0 z-30 flex w-80 max-w-[calc(100%_-_3.5rem)] flex-col border-l border-mld-border bg-mld-surface shadow-lg'
         }
       >
@@ -93,9 +95,11 @@ export function WorkspaceInspector({
           >
             {copy.title}
           </h2>
-          <ToolButton icon={X} label={copy.close} onClick={close} />
+          {!(persistent && docked) && <ToolButton icon={X} label={copy.close} onClick={close} />}
         </div>
-        <div className="mld-scroll-y flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain p-2">
+        <div
+          className={`mld-scroll-y flex min-h-0 flex-1 flex-col gap-2 ${persistent ? 'overflow-hidden' : 'overflow-y-auto'} overscroll-contain p-2`}
+        >
           {children}
         </div>
       </aside>

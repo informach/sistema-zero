@@ -1,5 +1,10 @@
 # Evolução do Molda: oficina 3D para crianças de 9+
 
+> Registro histórico. Em 14/10/2026, a oficina passou a ser o único editor de modelos,
+> sem flag de host, parâmetro de ativação ou variável de ambiente de V2.
+> A [revisão atual](2026-10-14-molda-usabilidade-full-review.md) substitui as
+> instruções de ativação e rollout abaixo; versões de arquivo continuam sendo formatos de dados.
+
 Plano aprovado em 06/09/2026. Implementação nativa em TypeScript/React/Three.js;
 Blockbench é referência de capacidades, não uma fonte de código a incorporar.
 Referência estudada: `JannisX11/blockbench`, commit
@@ -40,11 +45,10 @@ ou migração foi executado nesta retomada; commits simultâneos da interface pe
 outra sessão, confirmada pelo usuário.
 
 Para experimentar o app integrado, rode `bun run dev` em `packages/molda` e abra
-`http://127.0.0.1:5198/?oficina=app`. E2E usa `bun run e2e` com build/preview estável;
-`E2E_PORT` permite usar outra porta sem interromper uma sessão de interface. No Kids,
-`sceneWorkshop: true` governa a promoção dos modelos antigos. Desligar a chave conserva
-acesso aos já promovidos. Ordem de publicação e rollback em
-[`2026-09-10-molda-rollout.md`](2026-09-10-molda-rollout.md).
+`http://127.0.0.1:5198/`. E2E usa `bun run e2e` com build/preview estável;
+`E2E_PORT` permite usar outra porta sem interromper uma sessão de interface.
+No Kids e no playground, todo modelo abre na mesma oficina; a leitura de arquivos
+antigos faz a conversão necessária sem configuração de interface.
 
 ## Decisões aprovadas
 

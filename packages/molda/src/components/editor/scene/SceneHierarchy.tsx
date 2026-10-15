@@ -12,6 +12,7 @@ import {
   EyeOff,
   Group,
   Lock,
+  LockOpen,
   type LucideIcon,
   Spline,
   TriangleRight,
@@ -53,12 +54,14 @@ export function SceneHierarchy({
   selected,
   onSelect,
   shapeOf,
+  onFlag,
 }: {
   index: SceneIndex<ModelSceneNode>
   selected: readonly string[]
   onSelect(id: string, additive: boolean): void
   /** A forma de cada peça, que só a oficina sabe (a geometria mora fora do grafo). */
   shapeOf?(node: ModelSceneNode): SceneHierarchyShape
+  onFlag?(id: string, flag: 'hidden' | 'locked', value: boolean): void
 }) {
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(() => new Set())
   const prefix = useId()
@@ -124,11 +127,39 @@ export function SceneHierarchy({
                       {node.locked ? ` · ${copy.lockedHint}` : ''}
                     </span>
                   </span>
-                  {node.locked && (
+                  {!onFlag && node.locked && (
                     <Lock aria-hidden="true" className="size-4 shrink-0 text-mld-muted" />
                   )}
-                  <Visibility aria-hidden="true" className="size-4 shrink-0 text-mld-muted" />
+                  {!onFlag && (
+                    <Visibility aria-hidden="true" className="size-4 shrink-0 text-mld-muted" />
+                  )}
                 </button>
+                {onFlag && (
+                  <>
+                    <button
+                      type="button"
+                      className="mld-tree-action"
+                      aria-label={(node.hidden ? 'Mostrar ' : 'Ocultar ') + node.name}
+                      aria-pressed={node.hidden}
+                      onClick={() => onFlag(id, 'hidden', !node.hidden)}
+                    >
+                      <Visibility aria-hidden="true" className="size-4" />
+                    </button>
+                    <button
+                      type="button"
+                      className="mld-tree-action"
+                      aria-label={(node.locked ? 'Destravar ' : 'Travar ') + node.name}
+                      aria-pressed={node.locked}
+                      onClick={() => onFlag(id, 'locked', !node.locked)}
+                    >
+                      {node.locked ? (
+                        <Lock aria-hidden="true" className="size-4" />
+                      ) : (
+                        <LockOpen aria-hidden="true" className="size-4" />
+                      )}
+                    </button>
+                  </>
+                )}
               </div>
               {children.length > 0 && (
                 <div

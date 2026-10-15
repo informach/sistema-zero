@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useRef, useState } from 'react'
+import { lazy, type ReactNode, Suspense, useEffect, useRef, useState } from 'react'
 import { COPY } from '../../../core/copy'
 import { useMoldaToolAccess } from '../../toolAccess'
 import { Button } from '../../ui/Button'
@@ -57,7 +57,7 @@ export type SceneComponentToolsProps = Pick<
   | 'remove'
   | 'removal'
   | 'weights'
->
+> & { visualCut?: ReactNode }
 
 /**
  * Contextual controls only; topology and history are owned by the scene commands.
@@ -91,6 +91,7 @@ export function SceneComponentTools({
   remove,
   removal,
   weights,
+  visualCut,
 }: SceneComponentToolsProps) {
   const triggers = useRef<Partial<Record<SceneFacePreviewTool, HTMLButtonElement | null>>>({})
   const previous = useRef(preview.tool)
@@ -278,7 +279,17 @@ export function SceneComponentTools({
             />
           </details>
         )}
-        {pro && <ScenePlaneCut onApply={cutPlane} />}
+        {pro && (
+          <>
+            {visualCut}
+            <details>
+              <summary className="min-h-11 cursor-pointer py-3 text-sm font-bold">
+                Divisão por valores
+              </summary>
+              <ScenePlaneCut onApply={cutPlane} />
+            </details>
+          </>
+        )}
         <div className="flex flex-col gap-2">
           <Button className="text-sm" onClick={() => choose('all')}>
             {selection.mode === 'face' ? copy.faceAll : copy.componentAll[selection.mode]}

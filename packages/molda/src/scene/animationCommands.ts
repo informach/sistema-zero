@@ -49,7 +49,7 @@ export function createSceneAnimation(document: MoldaSceneDocument, name: string,
     name: v.text(name.trim(), 'name', 48),
     duration: 2,
     fps: 24,
-    loop: true,
+    loop: false,
     space: 'local-delta',
     tracks: [],
   }

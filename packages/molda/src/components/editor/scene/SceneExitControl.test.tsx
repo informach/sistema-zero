@@ -64,7 +64,7 @@ test('saving locally keeps the workshop open when the Studio copy still needs re
   }
 })
 
-test('exit preserves previews on opening/cancel, waits for all writes and invalidates a cancelled pending navigation', async () => {
+test('exit starts saving directly, waits for all writes and invalidates a cancelled pending navigation', async () => {
   const { editor, writes } = fixture()
   const exits: SceneExitMode[] = []
   let cancelled = 0
@@ -83,12 +83,9 @@ test('exit preserves previews on opening/cancel, waits for all writes and invali
   try {
     const trigger = screen.getByRole('button', { name: copy.open })
     fireEvent.click(trigger)
-    expect(cancelled).toBe(0)
-    expect(writes).toHaveLength(0)
-    fireEvent.click(dialog().getByRole('button', { name: copy.stay }))
-    expect(document.activeElement === trigger).toBe(true)
+    expect(cancelled).toBe(1)
+    expect(writes).toHaveLength(1)
     expect(editor.getState().canUndo).toBe(true)
-    fireEvent.click(trigger)
     const save = dialog().getByRole('button', { name: copy.save })
     fireEvent.click(save)
     fireEvent.click(save)

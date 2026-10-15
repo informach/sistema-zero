@@ -125,6 +125,33 @@ const material = (document: MoldaSceneDocument, nodeId: string) => {
 }
 
 describe('a aba Pintar', () => {
+  test('visitar Pintar e salvar conserva o documento confirmado; o primeiro traço guarda a superfície', async () => {
+    const { document, door } = twoBoxes()
+    const { editor, view, stage, tap, drag } = mount(document)
+    try {
+      await waitFor(() => expect(stage.callbacks !== null).toBe(true))
+      tap(door)
+      fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+      expect(editor.getState().content.images.length).toBeGreaterThan(document.images.length)
+      await act(() => editor.getState().flush())
+      expect(editor.getState().saveSnapshot()).toBe(document)
+      expect(editor.getState().savedAsset).toBe(document)
+      expect(editor.getState().canUndo).toBe(false)
+      drag([
+        [1, 1],
+        [2, 1],
+      ])
+      await act(() => editor.getState().flush())
+      expect(editor.getState().savedAsset.images.length).toBeGreaterThan(document.images.length)
+      act(() => editor.getState().undo())
+      expect(editor.getState().content.images).toEqual(document.images)
+      expect(editor.getState().canUndo).toBe(false)
+    } finally {
+      view.unmount()
+      editor.getState().dispose()
+    }
+  })
+
   test('da oficina aberta ao primeiro traço: 3 interações à vista, nenhum painel aberto', async () => {
     const { document, door } = twoBoxes()
     const { editor, view, stage, tap, drag } = mount(document)
@@ -573,7 +600,7 @@ describe('atalhos do editor antigo na aba Pintar', () => {
 })
 
 describe('"+ Nova cor" na aba Pintar', () => {
-  test('N passos do seletor viram UMA cor, que vira a do lápis, e UM desfazer', async () => {
+  test('escolher tinta não altera o projeto; a cor entra com o primeiro traço e permanece escolhida após desfazer', async () => {
     const { document, door } = twoBoxes()
     const { editor, stage, tap, drag, view } = mount(document)
     await waitFor(() => expect(stage.callbacks).not.toBeNull())
@@ -587,8 +614,9 @@ describe('"+ Nova cor" na aba Pintar', () => {
     fireEvent.input(input, { target: { value: '#123456' } })
     fireEvent.input(input, { target: { value: '#234567' } })
     fireEvent.input(input, { target: { value: '#345678' } })
-    expect(editor.getState().asset.extraColors).toEqual(['#345678'])
-    expect(swatch(editor.getState().asset, colors).getAttribute('aria-pressed')).toBe('true')
+    expect(editor.getState().asset.extraColors).toBeUndefined()
+    expect(editor.getState().canUndo).toBe(false)
+    expect(input.value).toBe('#345678')
     fireEvent.change(input, { target: { value: '#345678' } })
     await act(async () => {
       await Promise.resolve()
@@ -599,18 +627,17 @@ describe('"+ Nova cor" na aba Pintar', () => {
     ])
     const painted = editor.getState().asset.images.at(-1)!.layers[0]!.pixels
     expect(painted.includes(colors)).toBe(true)
-    // Desfazer o traço, e depois a cor (que levou junto o preparo da tinta): um passo cada.
-    fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+    // O preparo, a cor e o traço pertencem ao mesmo passo de Desfazer.
     fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
     expect(editor.getState().asset.extraColors).toBeUndefined()
     expect(editor.getState().asset.images).toEqual(document.images)
     expect(editor.getState().canUndo).toBe(false)
-    // O lápis volta a uma cor que existe, e o traço pinta de verdade.
+    // A tinta continua escolhida mesmo quando o desfazer remove a cor da paleta do projeto.
     tap(door)
     drag([[9, 9]])
     const again = editor.getState().asset.images.at(-1)!
-    expect(again.layers[0]!.pixels.includes(colors)).toBe(false)
-    expect(again.layers[0]!.pixels[9 * again.width + 9]).toBe(7)
+    expect(again.layers[0]!.pixels.includes(colors)).toBe(true)
+    expect(again.layers[0]!.pixels[9 * again.width + 9]).toBe(colors)
     expect(screen.queryByRole('alert')).toBeNull()
     editor.getState().dispose()
   })

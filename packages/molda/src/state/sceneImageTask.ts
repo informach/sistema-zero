@@ -32,6 +32,7 @@ export function createSceneImageTask(
       source: MoldaSceneDocument,
       imageId: string,
       operation: SceneImageOperation | readonly SceneImageOperation[],
+      prepared: MoldaSceneDocument = source,
     ) {
       cancel()
       let current: NonNullable<typeof pending> | null = null
@@ -43,11 +44,11 @@ export function createSceneImageTask(
           'A criação mudou. Confira a imagem novamente.',
         )
         const revision = state.contentRevision
-        const usage = sceneAppearanceUsage(source)
+        const usage = sceneAppearanceUsage(prepared)
         const image = usage.index.images.get(imageId)
         requireScene(image, 'image', 'Essa imagem não existe mais.')
         requireEditableAppearance(usage, usage.images.get(imageId) ?? [])
-        const palette = scenePalette(source)
+        const palette = scenePalette(prepared)
         const operations = (
           Array.isArray(operation) ? operation : [operation]
         ) as readonly SceneImageOperation[]
@@ -84,11 +85,11 @@ export function createSceneImageTask(
         }
         pending = null
         current.unsubscribe()
-        if (result !== image)
+        if (result !== image || prepared !== source)
           editor.getState().commit(
             finishSceneCommand({
-              ...source,
-              images: source.images.map((entry) => (entry === image ? result : entry)),
+              ...prepared,
+              images: prepared.images.map((entry) => (entry === image ? result : entry)),
             }),
           )
         onState(false)

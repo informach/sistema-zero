@@ -36,6 +36,7 @@ export function SaveBadge({
     <span
       role="status"
       aria-label={COPY.a11y.editorStatus}
+      title={state === 'saved' ? 'Salvo neste computador' : text}
       className={clsx(
         'inline-flex min-h-8 items-center gap-1 rounded-full px-3 text-xs font-bold',
         state === 'error' ? 'bg-mld-danger/15 text-mld-danger' : 'bg-mld-ok/15 text-mld-ok',

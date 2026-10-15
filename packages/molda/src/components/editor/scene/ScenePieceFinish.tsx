@@ -2,9 +2,7 @@
  * A cor e o acabamento da peça no Modelar, à vista, como no editor antigo: tocar numa cor
  * pinta a peça inteira, e Fosco, Brilhante e Metal mudam como a luz aparece nela.
  *
- * Desde 11/09/2026 mora na FAIXA DE BAIXO do Modelar (a das telas-modelo, onde a imagem põe os
- * materiais): o acabamento em amostras grandes com o nome embaixo, que mostram a cor da peça
- * com aquele jeito de luz, e as cores numa fileira. Foi MOVIDO do painel da direita, não copiado.
+ * Mora no painel direito: amostras de acabamento com nome e paleta da cor de fundo.
  *
  * ⚠️ Pela peça (`patchScenePieceAppearance`), nunca pelo material: o material pode ser dividido,
  * e mudar a porta de azul não pode mudar junto toda peça que usa o mesmo material.
@@ -51,10 +49,17 @@ export function ScenePieceFinish({ workshop }: { workshop: ReturnType<typeof use
   const baseHex =
     material.baseColor.kind === 'palette'
       ? (resolvePaletteColors(document)[material.baseColor.index] ?? '#8a94a6')
-      : '#8a94a6'
+      : `#${material.baseColor.value
+          .slice(0, 3)
+          .map((value) =>
+            Math.round(value * 255)
+              .toString(16)
+              .padStart(2, '0'),
+          )
+          .join('')}`
   return (
     <RequiresTool family="model.finish">
-      <div className="flex min-w-max items-start gap-5">
+      <div className="flex min-w-0 flex-col gap-3">
         <fieldset disabled={locked} className="flex shrink-0 flex-col gap-2">
           <legend className="mld-kicker mb-2">{SCENE_PAINT_COPY.finish}</legend>
           <div className="flex gap-2">
@@ -85,10 +90,9 @@ export function ScenePieceFinish({ workshop }: { workshop: ReturnType<typeof use
             ))}
           </div>
         </fieldset>
-        <span aria-hidden="true" className="w-px self-stretch bg-mld-border" />
         <fieldset disabled={locked} className="flex min-w-0 flex-col gap-2">
           <legend className="mld-kicker mb-2">{SCENE_PAINT_COPY.pieceColor}</legend>
-          <div className="flex gap-1.5">
+          <div className="flex flex-wrap gap-1.5">
             {scenePaletteSwatches(document).map(({ index: colorIndex, hex }) => {
               const active =
                 material.baseColor.kind === 'palette' && material.baseColor.index === colorIndex

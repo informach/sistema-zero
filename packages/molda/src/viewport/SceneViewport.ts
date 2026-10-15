@@ -3,6 +3,8 @@ import {
   Box3,
   Box3Helper,
   GridHelper,
+  type Intersection,
+  Plane,
   Raycaster,
   Scene,
   Vector2,
@@ -16,11 +18,23 @@ import { ViewportThumbnail } from './viewportThumbnail'
 /** Mesmo papel claro do editor antigo: a galeria mostra as duas gerações lado a lado. */
 const SCENE_THUMB_BACKGROUND = '#e6f1ff'
 
+interface BodySample {
+  x: number
+  y: number
+  id?: string
+  hit?: Intersection
+  locked?: boolean
+  additive?: boolean
+  guide?: boolean
+  point?: [number, number, number]
+}
+
 import type { MoldaSceneDocument } from '../scene/document'
 import { sameSceneContent } from '../scene/documentContent'
 import { indexSceneDocument } from '../scene/documentIndex'
 import { evaluateSceneNodeFlags } from '../scene/evaluate'
 import { selectSceneSubtrees } from '../scene/graph'
+import { sceneFlipbookTexel } from '../scene/imageFlipbook'
 import type { ScenePaintTarget } from '../scene/imagePaint'
 import { transformPoint } from '../scene/matrix'
 import {
@@ -29,6 +43,7 @@ import {
   type SceneComponentSelection,
 } from '../scene/meshComponents'
 import { meshVertexCenter } from '../scene/meshVertices'
+import { sampleSceneInk } from '../scene/paintInk'
 import type { SceneAnimationPose } from '../scene/sampleAnimation'
 import type { SceneSkinPaintSample } from '../scene/skinPaint'
 import { requireScene } from '../scene/validation'
@@ -37,9 +52,11 @@ import { CapturedPaintInput } from './CapturedPaintInput'
 import { DemandRenderLoop } from './demandRenderLoop'
 import { paintPointerPath } from './paintPointerPath'
 import { SceneAreaSelection, type SceneAreaTool } from './SceneAreaSelection'
+import { SceneBodyMove } from './SceneBodyMove'
 import { SceneBrushCursor } from './SceneBrushCursor'
 import { SceneComponentOverlay } from './SceneComponentOverlay'
 import { ScenePaintInput } from './ScenePaintInput'
+import { ScenePreviewGuide, type ScenePreviewGuideState } from './ScenePreviewGuide'
 import { SceneSkinWeightOverlay, type SceneSkinWeightTarget } from './SceneSkinWeightOverlay'
 import { SceneSupportOverlay } from './SceneSupportOverlay'
 import { SceneTransformGizmo } from './SceneTransformGizmo'
@@ -49,6 +66,7 @@ import { SceneRenderResource } from './sceneRenderResource'
 import { pickSceneSkinPaint } from './sceneSkinPaintPick'
 import { sceneSkinPaintSpacing } from './sceneSkinPaintSpacing'
 import { prepareSceneSupports, type SceneSupportPoint } from './sceneSupports'
+import { sceneSurfaceHit } from './sceneSurfaceHit'
 import { prepareSceneTwoBoneGuide } from './sceneTwoBoneGuide'
 import type {
   ScenePaintMode,
@@ -80,6 +98,7 @@ export class SceneViewport implements SceneViewportPort {
   private readonly faces = new SceneComponentOverlay()
   private readonly supports = new SceneSupportOverlay()
   private readonly poseGuide = new SceneSupportOverlay(4)
+  private readonly previewGuide = new ScenePreviewGuide()
   private readonly weightPoints = new SceneSkinWeightOverlay()
   private readonly brushCursor = new SceneBrushCursor()
   private weightTarget: SceneSkinWeightTarget | null = null
@@ -94,6 +113,12 @@ export class SceneViewport implements SceneViewportPort {
   private area: SceneAreaSelection | null = null
   private paint: ScenePaintInput | null = null
   private paintTarget: ScenePaintTarget | null = null
+  private body: CapturedPaintInput<BodySample> | null = null
+  private bodyMove: SceneBodyMove | null = null
+  private bodyMoving = false
+  private bodySelection: { id: string; additive: boolean; faceId?: string } | null = null
+  private transformTool: SceneTransformTool = 'select'
+  private movementStep: number | null = null
   /** `null` = quem chama não conhece a aba Pintar: a pintura é deduzida do alvo, como antes. */
   private paintMode: ScenePaintMode | null = null
   private skinPaint: CapturedPaintInput<SceneSkinPaintSample> | null = null
@@ -142,6 +167,7 @@ export class SceneViewport implements SceneViewportPort {
         this.faces.root,
         this.supports.root,
         this.poseGuide.root,
+        this.previewGuide.root,
         this.weightPoints.root,
         this.brushCursor.root,
         this.grid,
@@ -232,6 +258,155 @@ export class SceneViewport implements SceneViewportPort {
           (from, to) =>
             paintPointerPath(from, to, canvas.getBoundingClientRect(), this.skinPaintSpacing),
         )
+      if (callbacks.transform)
+        this.bodyMove = new SceneBodyMove(canvas, () => this.rig.camera, callbacks.transform)
+      this.body = new CapturedPaintInput<BodySample>(
+        canvas,
+        (event) => {
+          const pointer = { x: event.clientX, y: event.clientY }
+          if (this.bodyMoving || this.bodySelection) return { ...pointer }
+          const guide = this.callbacks.guideInput?.()
+          if (guide && !this.contextLost && this.paintMode !== 'look') {
+            const rect = canvas.getBoundingClientRect()
+            let point: [number, number, number] | undefined
+            if (guide.corners) {
+              let closest = 24
+              for (const corner of guide.corners) {
+                const screen = new Vector3(...corner).project(this.rig.camera)
+                const distance = Math.hypot(
+                  rect.left + ((screen.x + 1) * rect.width) / 2 - event.clientX,
+                  rect.top + ((1 - screen.y) * rect.height) / 2 - event.clientY,
+                )
+                if (screen.z >= -1 && screen.z <= 1 && distance < closest) {
+                  closest = distance
+                  point = [...corner]
+                }
+              }
+            } else if (guide.plane) {
+              const ray = new Raycaster()
+              ray.setFromCamera(
+                new Vector2(
+                  ((event.clientX - rect.left) / rect.width) * 2 - 1,
+                  1 - ((event.clientY - rect.top) / rect.height) * 2,
+                ),
+                this.rig.camera,
+              )
+              const plane = new Plane().setFromNormalAndCoplanarPoint(
+                new Vector3(...guide.plane.normal).normalize(),
+                new Vector3(...guide.plane.origin),
+              )
+              if (Math.abs(ray.ray.direction.dot(plane.normal)) > 0.05) {
+                const hit = ray.ray.intersectPlane(plane, new Vector3())
+                if (hit) point = hit.toArray()
+              }
+            }
+            return { ...pointer, guide: true, point }
+          }
+          if (
+            this.contextLost ||
+            (this.pose && !this.animationEditing) ||
+            this.paintMode === 'look' ||
+            this.componentSelection ||
+            this.areaTool !== 'point' ||
+            this.skinPaintEnabled ||
+            this.gizmo?.hitAt(event.clientX, event.clientY)
+          )
+            return null
+          if (
+            !this.callbacks.samplingInk?.() &&
+            (this.transformTool !== 'move' || this.paintMode === 'paint')
+          )
+            return null
+          const hit = sceneSurfaceHit(canvas, this.rig.camera, this.resource, event)
+          const instance = hit && this.resource.instanceFor(hit.object)
+          if (!hit || !instance) return null
+          return {
+            ...pointer,
+            hit,
+            id: instance.sourceNodeId,
+            locked: instance.locked,
+            additive: !!(
+              (event as PointerEvent).shiftKey ||
+              (event as PointerEvent).ctrlKey ||
+              (event as PointerEvent).metaKey
+            ),
+          }
+        },
+        {
+          begin: (sample) => {
+            if (sample.guide) {
+              if (sample.point) this.callbacks.guidePoint?.(sample.point)
+              return false
+            }
+            if (!sample.id || !sample.hit) return false
+            const { hit, id } = sample
+            if (this.callbacks.samplingInk?.() && this.document && this.index) {
+              const materialId =
+                hit.faceIndex == null ? null : this.resource.materialFor(hit.object, hit.faceIndex)
+              const node = this.index.scene.nodes.get(id)
+              const material = this.index.materials.get(
+                materialId ?? (node?.kind === 'mesh' ? node.materialId : ''),
+              )
+              if (material) {
+                const image = material.colorImageId
+                  ? this.index.images.get(material.colorImageId)
+                  : undefined
+                const point =
+                  image && hit.uv
+                    ? sceneFlipbookTexel(
+                        image,
+                        [hit.uv.x, hit.uv.y],
+                        this.resource.frameForImage(image.id) ?? 0,
+                      )
+                    : null
+                this.callbacks.sampleInk?.(
+                  sampleSceneInk(
+                    this.document,
+                    material,
+                    point ? image : undefined,
+                    point ?? [0, 0],
+                  ),
+                )
+              }
+              return false
+            }
+            if (sample.additive || !this.covered(this.selected).has(id)) {
+              const faceId =
+                hit.faceIndex == null ? null : this.resource.faceFor(hit.object, hit.faceIndex)
+              this.bodySelection = {
+                id,
+                additive: !!sample.additive,
+                ...(faceId ? { faceId } : {}),
+              }
+              return true
+            }
+            if (sample.locked || this.paintMode === 'paint' || this.transformTool !== 'move')
+              return false
+            this.bodyMoving =
+              this.bodyMove?.begin(hit.point, sample.x, sample.y, this.rig.view) ?? false
+            return this.bodyMoving
+          },
+          move: (sample) => {
+            if (sample && this.bodyMoving)
+              this.bodyMove?.move(sample.x, sample.y, this.movementStep)
+          },
+          end: (commit) => {
+            const selection = this.bodySelection
+            this.bodySelection = null
+            this.bodyMoving = false
+            this.bodyMove?.end(commit)
+            if (commit && selection)
+              this.callbacks.select(
+                selection.id,
+                selection.additive,
+                selection.faceId ? { faceId: selection.faceId } : undefined,
+              )
+          },
+        },
+        undefined,
+        { claimMisses: false },
+      )
+      this.body.setEnabled(true)
       canvas.addEventListener('pointerdown', this.onDown)
       canvas.addEventListener('pointermove', this.onMove)
       canvas.addEventListener('pointermove', this.onSkinPaintHover)
@@ -252,6 +427,12 @@ export class SceneViewport implements SceneViewportPort {
 
   setDocument(document: MoldaSceneDocument) {
     if (this.disposed) return []
+    const added =
+      this.document && document.id === this.document.id
+        ? document.nodes
+            .filter((node) => !this.index?.scene.nodes.has(node.id))
+            .map((node) => node.id)
+        : []
     const index = indexSceneDocument(document)
     const boundsCache = prepareSceneBounds(index)
     const supports = this.supportGuides ? this.prepareSupports(index) : undefined
@@ -276,6 +457,7 @@ export class SceneViewport implements SceneViewportPort {
     this.updateEditingEnabled()
     this.updateVisibility(supports, weights)
     if (first) this.frame()
+    else if (added.length) this.ensureVisible(added)
     this.request()
     return issues
   }
@@ -621,6 +803,7 @@ export class SceneViewport implements SceneViewportPort {
         this.poseGuide.root,
         this.weightPoints.root,
         this.brushCursor.root,
+        this.previewGuide.root,
         ...(this.gizmo ? [this.gizmo.root] : []),
       ],
       capture,
@@ -635,6 +818,42 @@ export class SceneViewport implements SceneViewportPort {
     this.request()
   }
 
+  setPreviewGuide(guide: ScenePreviewGuideState | null): void {
+    if (this.disposed) return
+    this.previewGuide.update(guide)
+    this.request()
+  }
+
+  ensureVisible(ids: readonly string[]): void {
+    if (!this.index || !ids.length) return
+    const bounds = sceneBounds(
+      this.index,
+      { nodeIds: this.covered(ids), includeHidden: false },
+      this.boundsCache ?? undefined,
+    )
+    if (!bounds) return
+    this.rig.camera.updateWorldMatrix(true, false)
+    for (const x of [bounds.min[0], bounds.max[0]])
+      for (const y of [bounds.min[1], bounds.max[1]])
+        for (const z of [bounds.min[2], bounds.max[2]]) {
+          const point = new Vector3(x, y, z).project(this.rig.camera)
+          if (Math.abs(point.x) > 0.9 || Math.abs(point.y) > 0.9 || Math.abs(point.z) > 1) {
+            this.frame()
+            return
+          }
+        }
+  }
+
+  zoom(factor: number): void {
+    if (this.disposed || this.contextLost || !Number.isFinite(factor) || factor <= 0) return
+    this.cancelGesture()
+    const camera = this.rig.camera
+    camera.zoom = Math.max(0.1, Math.min(30, camera.zoom * factor))
+    camera.updateProjectionMatrix()
+    this.orbit?.update()
+    this.request()
+  }
+
   setGridVisible(visible: boolean): void {
     if (this.disposed || visible === this.grid.visible) return
     this.grid.visible = visible
@@ -642,6 +861,7 @@ export class SceneViewport implements SceneViewportPort {
   }
 
   setMovementStep(step: number | null): void {
+    this.movementStep = step
     if (!this.disposed) this.gizmo?.setMovementStep(step)
   }
 
@@ -651,6 +871,8 @@ export class SceneViewport implements SceneViewportPort {
   setTransformTool(tool: SceneTransformTool): void {
     if (this.disposed) return
     if (tool !== 'select') this.setSkinPaintEnabled(false)
+    if (this.transformTool !== tool) this.body?.cancel()
+    this.transformTool = tool
     this.gizmo?.setTool(tool)
   }
   setAreaTool(tool: SceneAreaTool, through: boolean): void {
@@ -704,6 +926,7 @@ export class SceneViewport implements SceneViewportPort {
   }
   private updateEditingEnabled() {
     const enabled = !this.contextLost && !this.pose
+    this.body?.setEnabled(!this.contextLost && (!this.pose || this.animationEditing))
     this.gizmo?.setEnabled(
       !this.contextLost &&
         (!this.pose || this.animationEditing) &&
@@ -797,6 +1020,7 @@ export class SceneViewport implements SceneViewportPort {
     if (this.resource.setImageFrame(imageId, frame)) this.request()
   }
   cancelGesture(): void {
+    this.body?.cancel()
     if (this.disposed) return
     this.gizmo?.cancel()
     this.area?.cancel()
@@ -824,6 +1048,34 @@ export class SceneViewport implements SceneViewportPort {
   }
   private readonly onMove = (event: PointerEvent) => {
     if (
+      !event.buttons &&
+      this.callbacks.hover &&
+      (this.callbacks.hoverEnabled?.() ?? true) &&
+      !this.contextLost &&
+      !this.disposed
+    ) {
+      const rect = this.canvas.getBoundingClientRect()
+      if (rect.width > 0 && rect.height > 0) {
+        this.rig.camera.updateWorldMatrix(true, false)
+        const ray = new Raycaster()
+        ray.setFromCamera(
+          new Vector2(
+            ((event.clientX - rect.left) / rect.width) * 2 - 1,
+            1 - ((event.clientY - rect.top) / rect.height) * 2,
+          ),
+          this.rig.camera,
+        )
+        const covered = this.covered(this.selected)
+        const hit = ray.intersectObjects(this.resource.root.children, false).find((hit) => {
+          const instance = this.resource.instanceFor(hit.object)
+          return hit.object.visible && instance && !covered.has(instance.sourceNodeId)
+        })
+        this.callbacks.hover(
+          hit ? (this.resource.instanceFor(hit.object)?.sourceNodeId ?? null) : null,
+        )
+      }
+    }
+    if (
       this.pointer?.id === event.pointerId &&
       Math.hypot(event.clientX - this.pointer.x, event.clientY - this.pointer.y) > 6
     )
@@ -837,6 +1089,7 @@ export class SceneViewport implements SceneViewportPort {
     const pointer = this.pointer
     this.pointers.delete(event.pointerId)
     this.pointer = null
+    if (this.paintMode === 'look') return
     if (
       !pointer ||
       pointer.id !== event.pointerId ||
@@ -885,7 +1138,7 @@ export class SceneViewport implements SceneViewportPort {
       )
       return
     }
-    if (this.paintMode === 'paint' || this.paintMode === 'look') {
+    if (this.paintMode === 'paint') {
       // Na aba Pintar, tocar numa peça a escolhe, com a face; tocar no vazio ou numa peça
       // travada não muda nada (quem arrastou girou a câmera). A peça travada à frente encobre.
       const hit = ray
@@ -927,6 +1180,7 @@ export class SceneViewport implements SceneViewportPort {
     this.area?.setEnabled(false)
     this.paint?.setEnabled(false)
     this.skinPaint?.setEnabled(false)
+    this.body?.setEnabled(false)
     this.clearBrushCursor()
     this.weightPoints.preview(null)
     this.orbit?.dispose()
@@ -950,6 +1204,7 @@ export class SceneViewport implements SceneViewportPort {
     if (this.poseGuide.hide()) this.request()
     this.cancelGesture()
     this.paint?.forget()
+    this.body?.forget()
     this.skinPaint?.forget()
     this.gizmo?.setEnabled(false)
     this.area?.setEnabled(false)
@@ -970,6 +1225,7 @@ export class SceneViewport implements SceneViewportPort {
     this.gizmo?.dispose()
     this.area?.dispose()
     this.paint?.dispose()
+    this.body?.dispose()
     this.skinPaint?.dispose()
     this.orbit?.dispose()
     this.canvas.removeEventListener('pointerdown', this.onDown)
@@ -988,6 +1244,7 @@ export class SceneViewport implements SceneViewportPort {
     this.faces.dispose()
     this.supports.dispose()
     this.poseGuide.dispose()
+    this.previewGuide.dispose()
     this.weightPoints.dispose()
     this.brushCursor.dispose()
     this.weightTarget = null

@@ -25,7 +25,7 @@ import type { useScenePaint } from './useScenePaint'
  * quebra linha (tem a largura do traço e os avisos da ferramenta): em duas fileiras de
  * ladrilhos o palco de um celular em pé caía para 190px.
  */
-const PAINT_TILES = `${SCENE_TILE_GRID} mld-scroll-x max-lg:overflow-x-auto`
+const PAINT_TILES = SCENE_TILE_GRID
 
 const WIDTHS = [
   [1, 'paint.width-1'],
@@ -45,12 +45,9 @@ export function ScenePaintToolbox({
   const pencil = !eraser && !fill && !shape && !picker && !rotate && !closeupTool
   const tools: Array<[ScenePaintActionId, boolean]> = [
     ['paint.pencil', pencil],
-    ['paint.eraser', eraser],
     ['paint.fill', fill],
+    ['paint.eraser', eraser],
     ['paint.picker', picker],
-    ['paint.rotate', rotate],
-    ['paint.closeup', closeupTool],
-    ['paint.mirror', paint.mirror],
   ]
   const dress = sceneCommand('paint.dress')
   return (
@@ -77,14 +74,6 @@ export function ScenePaintToolbox({
               />
             )
           })}
-          {onDress && (
-            <SceneTile
-              icon={dress.icon}
-              label={dress.label}
-              aria-haspopup="dialog"
-              onClick={onDress}
-            />
-          )}
         </div>
       </fieldset>
       {picker && <p className="text-xs text-mld-muted">{SCENE_PAINT_COPY.pickerHint}</p>}
@@ -98,7 +87,7 @@ export function ScenePaintToolbox({
         >
           <legend className="mld-kicker mb-2">{SCENE_PAINT_COPY.widths}</legend>
           {/* Três de largura igual numa linha: soltos, o "Grosso" caía sozinho na de baixo. */}
-          <div className="grid grid-cols-3 gap-1">
+          <div className="grid grid-cols-1 gap-1">
             {WIDTHS.map(([size, id]) => {
               const command = sceneCommand(id)
               const key = command.shortcut?.display
@@ -119,6 +108,42 @@ export function ScenePaintToolbox({
           </div>
         </fieldset>
       )}
+      <Button
+        className="w-full px-1 text-xs"
+        aria-label={SCENE_PAINT_COPY.mirror}
+        aria-pressed={paint.mirror}
+        onClick={() => paint.setMirror(!paint.mirror)}
+      >
+        Espelho
+      </Button>
+      <details className="rounded-xl border border-mld-border p-1">
+        <summary className="min-h-11 cursor-pointer py-2 text-center text-xs font-bold">
+          Mais pincéis
+        </summary>
+        <div className={PAINT_TILES}>
+          {(['paint.rotate', 'paint.closeup'] as const).map((id) => {
+            const command = sceneCommand(id)
+            return (
+              <SceneTile
+                key={id}
+                data-paint-tool={id}
+                icon={command.icon}
+                label={command.label}
+                pressed={id === 'paint.rotate' ? rotate : closeupTool}
+                onClick={() => SCENE_PAINT_ACTIONS[id](paint)}
+              />
+            )
+          })}
+          {onDress && (
+            <SceneTile
+              icon={dress.icon}
+              label={dress.label}
+              aria-haspopup="dialog"
+              onClick={onDress}
+            />
+          )}
+        </div>
+      </details>
     </RequiresTool>
   )
 }

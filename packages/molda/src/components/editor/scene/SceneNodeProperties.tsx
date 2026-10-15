@@ -1,7 +1,8 @@
-import { useId, useState } from 'react'
+import { useId } from 'react'
 import { COPY } from '../../../core/copy'
 import { SCENE_SHELL_COPY } from '../../../core/sceneShellCopy'
 import {
+  deleteSceneNodes,
   renameSceneNode,
   reparentSceneNodes,
   resizeScenePrimitive,
@@ -9,16 +10,22 @@ import {
   setScenePrimitiveDetail,
 } from '../../../scene/commands'
 import { editScenePath } from '../../../scene/pathCommands'
+import { duplicateSceneNodesNearby } from '../../../scene/placement'
 import { primitiveDetail } from '../../../scene/primitiveDetail'
 import { RequiresTool, useMoldaToolAccess } from '../../toolAccess'
 import { Button } from '../../ui/Button'
+import { Copy, Trash2 } from '../../ui/icons'
 import { SceneAdjustmentForm } from './SceneAdjustmentForm'
 import { SceneCurveDetails } from './SceneCurveDetails'
 import { SceneMirrors } from './SceneMirrors'
+import { ScenePivotChoices } from './SceneModelGuideControls'
 import { ScenePathProperties } from './ScenePathProperties'
 import { SceneSkinTools } from './SceneSkinTools'
+import { SceneSurfaceStrip } from './SceneSurfaceStrip'
+import { SceneTransformCoordinates } from './SceneTransformCoordinates'
+import { SceneTransformSteps } from './SceneTransformSteps'
 import { SceneVectorForm } from './SceneVectorForm'
-import { adjustScene, type SceneAdjustment } from './sceneAdjustment'
+import { adjustScene } from './sceneAdjustment'
 import type { useSceneWorkshop } from './useSceneWorkshop'
 
 /** O `<details>` do painel: cartão claro, o resumo em negrito com 44px de alvo. */
@@ -26,10 +33,8 @@ const DISCLOSURE = 'rounded-xl bg-mld-bg p-2'
 const SUMMARY = 'flex min-h-11 cursor-pointer items-center px-1 text-sm font-bold text-mld-text'
 
 /**
- * O painel da peça escolhida, no desenho da tela-modelo (11/09/2026): à vista o que se usa todo
- * dia (o ajuste de mover, girar, mudar tamanho e o ponto de giro, com X, Y e Z lado a lado), e
- * recolhido o resto. A cor e o acabamento SAÍRAM daqui para a faixa de baixo do Modelar; o nome,
- * mostrar, travar e o grupo moram em "Mais sobre a peça".
+ * Cartão contextual da peça: apenas o ajuste da ferramenta ativa, seguido da aparência.
+ * Medidas, organização e operações avançadas ficam em detalhes com seus respectivos acessos.
  */
 export function SceneNodeProperties({
   workshop,
@@ -38,14 +43,14 @@ export function SceneNodeProperties({
 }) {
   const copy = COPY.scene
   const nameId = useId()
-  const [chosenMode, setMode] = useState<SceneAdjustment>('move')
+  const chosenMode = workshop.tool
   // O portão: mover, girar e mudar tamanho são `model.pieces`; o ponto de giro e as medidas,
   // `model.precise`. Trancado não aparece.
   const { can } = useMoldaToolAccess()
   const modes = (['move', 'rotate', 'scale', 'pivot'] as const).filter((name) =>
     can(name === 'pivot' ? 'model.precise' : 'model.pieces'),
   )
-  const mode = modes.includes(chosenMode) ? chosenMode : modes[0]
+  const mode = modes.find((mode) => mode === chosenMode)
   const precise = can('model.precise')
   const { primary, selected, run, document, index, covered } = workshop
   const groups = document.nodes.filter((node) => node.kind === 'group' && !covered.has(node.id))
@@ -53,7 +58,27 @@ export function SceneNodeProperties({
   if (!selected.length) return <p className="p-2 text-sm text-mld-muted">{copy.choose}</p>
   return (
     <div className="space-y-4 border-t border-mld-border pt-3">
-      <p className="text-sm font-bold text-mld-text">{copy.selection(selected.length)}</p>
+      <div className="flex min-w-0 items-center gap-1">
+        <p className="min-w-0 flex-1 truncate text-sm font-bold text-mld-text">
+          {primary?.name ?? copy.selection(selected.length)}
+        </p>
+        <RequiresTool family="model.pieces">
+          <Button
+            className="px-2"
+            aria-label={copy.duplicate}
+            onClick={() => run((source) => duplicateSceneNodesNearby(source, selected), 'created')}
+          >
+            <Copy aria-hidden="true" className="size-4" />
+          </Button>
+          <Button
+            className="px-2"
+            aria-label={copy.remove}
+            onClick={() => run((source) => deleteSceneNodes(source, selected), 'clear')}
+          >
+            <Trash2 aria-hidden="true" className="size-4" />
+          </Button>
+        </RequiresTool>
+      </div>
       {geometry?.kind === 'mesh' && (
         <p className="text-sm text-mld-muted">
           {copy.meshCounts(
@@ -64,28 +89,37 @@ export function SceneNodeProperties({
       )}
       {mode && (
         <div className="space-y-3">
-          <div className="grid grid-cols-2 gap-1 rounded-2xl bg-mld-bg p-1">
-            {modes.map((name) => (
-              <button
-                key={name}
-                type="button"
-                className="min-h-11 rounded-xl px-2 text-sm font-bold text-mld-muted transition hover:text-mld-text focus-visible:outline-2 focus-visible:outline-mld-accent disabled:cursor-not-allowed disabled:opacity-50 aria-pressed:bg-mld-accent aria-pressed:text-mld-accent-fg"
-                aria-pressed={mode === name}
-                disabled={name === 'pivot' && selected.length !== 1}
-                onClick={() => setMode(name)}
-              >
-                {copy[name]}
-              </button>
-            ))}
-          </div>
-          <SceneAdjustmentForm
-            key={`${mode}-${selected.join(',')}-${document.updatedAt}`}
-            mode={mode}
-            disabled={mode === 'pivot' && selected.length !== 1}
-            onApply={(values) => run((source) => adjustScene(source, selected, mode, values))}
-          />
+          <h3 className="font-bold">
+            {mode === 'pivot' ? 'Pivô — onde gira' : mode === 'scale' ? 'Tamanho' : copy[mode]}
+          </h3>
+          {mode === 'pivot' ? (
+            <>
+              <ScenePivotChoices workshop={workshop} />
+              <details className={DISCLOSURE}>
+                <summary className={SUMMARY}>Valores do pivô</summary>
+                <SceneAdjustmentForm
+                  mode="pivot"
+                  disabled={selected.length !== 1}
+                  onApply={(values) =>
+                    run((source) => adjustScene(source, selected, 'pivot', values))
+                  }
+                />
+              </details>
+            </>
+          ) : (
+            <>
+              <SceneTransformSteps workshop={workshop} />
+              {precise && (
+                <details className={DISCLOSURE}>
+                  <summary className={SUMMARY}>Medidas e valores</summary>
+                  <SceneTransformCoordinates workshop={workshop} />
+                </details>
+              )}
+            </>
+          )}
         </div>
       )}
+      <SceneSurfaceStrip workshop={workshop} />
       {precise && primary && geometry && geometry.kind !== 'mesh' && geometry.kind !== 'path' && (
         <details className={DISCLOSURE}>
           <summary className={SUMMARY}>{copy.dimensions}</summary>

@@ -1,4 +1,4 @@
-/** Internal v2 persistence. Public writer activation still belongs to the rollout gate. */
+/** Persistência do formato de cena usado pela oficina padrão. */
 import type { UseStore } from 'idb-keyval'
 import { MoldaUnsupportedVersionError } from '../core/documentVersion'
 import { isMoldaAssetId } from '../core/id'

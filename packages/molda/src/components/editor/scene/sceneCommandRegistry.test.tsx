@@ -121,7 +121,10 @@ describe('registro de comandos da oficina', () => {
 
   /** A invariante do CLAUDE.md deixa de ser prosa: quem filtra é o próprio registro. */
   test('Animar esconde os destrutivos de modelagem, inclusive o Apagar', () => {
-    const modelar = contextualSceneCommands('model', 'rail').map((c) => c.id)
+    const modelar = [
+      ...contextualSceneCommands('model', 'rail'),
+      ...contextualSceneCommands('model', 'dock'),
+    ].map((c) => c.id)
     const animar = contextualSceneCommands('animate', 'rail').map((c) => c.id)
     expect(modelar).toContain('node.remove')
     expect(animar).not.toContain('node.remove')

@@ -49,6 +49,256 @@
   --color-mld-kind-sky: oklch(0.55 0.21 300); /* roxo    · Céu */
 }
 
+/* Approved workshop regions; sidebars scroll independently of the creation. */
+@layer components {
+  .mld-timeline {
+    height: var(--mld-timeline-height, 200px);
+  }
+  .mld-timeline[data-roomy="true"] {
+    height: min(calc(var(--mld-timeline-height, 200px) + 96px), 42%);
+  }
+  .mld-inspector-overview {
+    max-height: 50%;
+  }
+  @media (min-width: 1101px) {
+    .mld-inspector-pieces {
+      flex: 0 1 auto;
+      min-height: 60px;
+      max-height: 30%;
+    }
+    .mld-inspector-sections[data-activity="paint"] .mld-inspector-pieces {
+      flex: 1 1 auto;
+      max-height: none;
+    }
+    .mld-inspector-sections[data-activity="paint"] .mld-inspector-properties {
+      flex: 0 1 auto;
+      max-height: 35%;
+    }
+    /* Ao abrir a pintura de perto/camadas, reservar espaço para trabalhar na imagem. */
+    .mld-inspector-sections[data-activity="paint"]:has(.mld-inspector-properties details[open]) {
+      .mld-inspector-overview {
+        max-height: 30%;
+      }
+      .mld-inspector-pieces {
+        flex: 0 1 auto;
+        max-height: 20%;
+      }
+      .mld-inspector-properties {
+        flex: 1 1 0;
+        max-height: none;
+      }
+    }
+  }
+  [data-molda-theme].mld-workshop {
+    --mld-rail-width: 104px;
+    --mld-inspector-width: 320px;
+    --mld-timeline-height: 200px;
+    min-width: 0;
+  }
+  .mld-workshop-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: 8px;
+    min-height: 64px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--color-mld-border);
+    flex-shrink: 0;
+    z-index: 35;
+  }
+  .mld-workshop-project,
+  .mld-workshop-file-actions {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 4px;
+  }
+  .mld-workshop-project h1 {
+    max-width: 150px;
+  }
+  .mld-workshop-file-actions {
+    justify-content: end;
+  }
+  .mld-save-status {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 44px;
+    padding: 0 8px;
+    border-radius: 12px;
+    font-size: 13px;
+    color: var(--sz-tool-ok, #26745d);
+    cursor: pointer;
+    list-style: none;
+  }
+  .mld-menu-action {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 8px;
+    border-radius: 8px;
+    font-size: 14px;
+    text-align: left;
+  }
+  .mld-menu-action:hover {
+    background: var(--color-mld-bg);
+  }
+  .mld-menu-action svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+  }
+  .mld-workshop-rail {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    flex: 0 0 var(--mld-rail-width);
+    width: var(--mld-rail-width);
+    min-height: 0;
+    padding: 8px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    border-right: 1px solid var(--color-mld-border);
+  }
+  .mld-workshop-rail .mld-tile {
+    min-height: 60px;
+    width: 100%;
+    font-size: 12px;
+  }
+  .mld-workshop-rail summary {
+    padding: 4px;
+    font-size: 12px;
+  }
+  .mld-workshop-inspector {
+    width: var(--mld-inspector-width);
+    min-height: 0;
+  }
+  .mld-stage-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+    height: 48px;
+    flex-shrink: 0;
+    padding: 2px 8px;
+    z-index: 25;
+    background: var(--color-mld-bg);
+  }
+  .mld-stage-context {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    height: 48px;
+    flex-shrink: 0;
+    overflow: auto;
+    background: var(--color-mld-bg);
+  }
+  .mld-stage-context .mld-stage-card {
+    box-shadow: none;
+    border: 0;
+    padding: 2px 8px;
+  }
+  .mld-stage-context p {
+    font-size: 13px;
+  }
+  .mld-workshop-stage {
+    position: relative;
+  }
+  .mld-placement-notice {
+    position: absolute;
+    bottom: 48px;
+    left: 8px;
+    right: 8px;
+    z-index: 25;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px;
+    background: var(--color-mld-surface);
+    border-radius: 12px;
+    font-size: 14px;
+  }
+  .mld-tree-action {
+    display: grid;
+    place-items: center;
+    min-width: 44px;
+    min-height: 44px;
+    border-radius: 8px;
+    color: var(--color-mld-muted);
+  }
+  .mld-tree-action:hover {
+    background: var(--color-mld-bg);
+  }
+  @media (max-width: 1399px) {
+    [data-molda-theme].mld-workshop {
+      --mld-rail-width: 96px;
+      --mld-inspector-width: 296px;
+      --mld-timeline-height: 160px;
+    }
+    .mld-save-short {
+      display: none;
+    }
+  }
+  @media (max-width: 1100px) {
+    .mld-inspector-sections[data-activity="animation"] .mld-inspector-overview {
+      flex: 1 1 auto;
+      min-height: 0;
+      max-height: none;
+    }
+    [data-molda-theme].mld-workshop {
+      --mld-rail-width: 88px;
+      --mld-inspector-width: 256px;
+      --mld-timeline-height: 132px;
+    }
+    .mld-workshop-header {
+      grid-template-columns: 1fr 1fr;
+      grid-template-areas: "project files" "tabs tabs";
+      min-height: 104px;
+      padding-block: 4px;
+      gap: 4px;
+    }
+    .mld-workshop-project {
+      grid-area: project;
+    }
+    .mld-workshop-file-actions {
+      grid-area: files;
+    }
+    .mld-workshop-tabs {
+      grid-area: tabs;
+      justify-self: center;
+    }
+  }
+  @media (max-width: 899px) {
+    .mld-workshop-header {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas: "project" "tabs" "files";
+    }
+    .mld-workshop-file-actions {
+      justify-content: center;
+    }
+  }
+  @media (max-width: 599px) {
+    .mld-stage-toolbar {
+      height: auto;
+      min-height: 48px;
+      flex-wrap: wrap;
+    }
+    .mld-workshop-rail {
+      --mld-rail-width: 76px;
+    }
+  }
+  /* Browser zoom can make a desktop layout narrower than the normal 1024px target. */
+  @media (max-width: 899px) {
+    .mld-workshop-body .mld-workshop-inspector {
+      flex: none;
+      width: 100%;
+      height: 420px;
+      border-top: 1px solid var(--color-mld-border);
+    }
+  }
+}
+
 /* Tema escuro — override por atributo data-molda-theme="dark" no root. */
 [data-molda-theme="dark"] {
   --color-mld-bg: var(--sz-tool-bg, var(--sz-kids-navy, oklch(0.17 0.014 262)));
@@ -315,13 +565,19 @@
     margin: 0;
     font-size: 0.6875rem;
     font-weight: 800;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.025em;
     line-height: 1.2;
     text-transform: uppercase;
     color: var(--color-mld-muted);
   }
 
   /* O SEGMENTADO das abas: trilho claro e a aba escolhida em pílula azul cheia. */
+  [data-molda-theme] .mld-workshop-rail .mld-kicker {
+    font-size: 10px;
+    letter-spacing: 0;
+    text-transform: none;
+    overflow-wrap: normal;
+  }
   [data-molda-theme] .mld-seg {
     display: inline-flex;
     flex: none;

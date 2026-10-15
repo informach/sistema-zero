@@ -7,7 +7,7 @@ import { COPY } from './copy'
 export const SCENE_PAINT_COPY = {
   tab: 'Pintar',
   tools: 'Ferramentas de pintura',
-  widths: 'Largura do traço',
+  widths: 'Pincel',
   width: { 1: 'Fino', 2: 'Médio', 3: 'Grosso' } as Record<1 | 2 | 3, string>,
   colors: 'Cores',
   rotate: 'Girar a pintura da face',
@@ -31,7 +31,7 @@ export const SCENE_PAINT_COPY = {
     'A pintura desta peça está escondida, e mostrar ela abre num nível mais para frente. Escolha outra peça para pintar.',
   /** As dicas do caminho da criança: uma face por vez, sem camada nem pixel. */
   fillHint: 'Toque numa face para encher a parte dela que tem a mesma cor.',
-  pickerHint: 'Toque na peça para pegar a cor de lá e voltar ao lápis.',
+  pickerHint: 'Clique na cor que quer usar. Depois, continue com o Pincel.',
   choosePiece: 'Toque numa peça para pintar.',
   modelHint: `Arraste na peça para pintar. Para girar a câmera, arraste fora dela ou escolha “${COPY.scene.paintLook}”.`,
   more: 'Mais jeitos de pintar',

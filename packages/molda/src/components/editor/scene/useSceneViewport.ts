@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { COPY } from '../../../core/copy'
 import type { MoldaSceneDocument, Vec2 } from '../../../scene/document'
-import type { ScenePaintTarget } from '../../../scene/imagePaint'
+import type { ScenePaintRgba, ScenePaintTarget } from '../../../scene/imagePaint'
 import type { SceneComponentSelection } from '../../../scene/meshComponents'
 import type { SceneSkinPaintSettings } from '../../../scene/skinPaint'
 import { SceneValidationError } from '../../../scene/validation'
@@ -12,6 +12,7 @@ import type { SceneSkinPaintSession } from '../../../state/sceneSkinPaintSession
 import type { SceneAreaTool } from '../../../viewport/SceneAreaSelection'
 import type { SceneSkinWeightTarget } from '../../../viewport/SceneSkinWeightOverlay'
 import type {
+  SceneGuideInput,
   ScenePaintActions,
   ScenePaintMode,
   SceneSelectDetail,
@@ -30,6 +31,10 @@ export function useSceneViewport({
   selection,
   isolation,
   select,
+  hover,
+  sampleInk,
+  guideInput,
+  guidePoint,
   selectMany,
   factory,
   transform,
@@ -58,6 +63,10 @@ export function useSceneViewport({
   isolation: readonly string[] | null
   /** Em Pintar, `detail.faceId` diz em que face a peça foi tocada. */
   select(id: string | null, additive: boolean, detail?: SceneSelectDetail): void
+  hover?(id: string | null): void
+  sampleInk?(color: ScenePaintRgba): void
+  guideInput?: SceneGuideInput | null
+  guidePoint?(point: import('../../../core/model').Vec3): void
   selectMany?(ids: readonly string[], additive: boolean): void
   factory?: SceneViewportFactory
   transform?: SceneTransformActions
@@ -87,6 +96,12 @@ export function useSceneViewport({
   const canvas = useRef<HTMLCanvasElement>(null)
   const onSelect = useRef(select)
   onSelect.current = select
+  const onHover = useRef(hover)
+  onHover.current = hover
+  const inkSample = useRef(sampleInk)
+  inkSample.current = sampleInk
+  const guide = useRef({ input: guideInput, point: guidePoint })
+  guide.current = { input: guideInput, point: guidePoint }
   const onSelectMany = useRef(selectMany)
   onSelectMany.current = selectMany
   const onSelectComponent = useRef(selectComponent)
@@ -141,6 +156,12 @@ export function useSceneViewport({
       }
       if (cancelled) return
       const callbacks = {
+        sampleInk: (color: ScenePaintRgba) => inkSample.current?.(color),
+        samplingInk: () => !!inkSample.current,
+        hover: (id: string | null) => onHover.current?.(id),
+        hoverEnabled: () => !!onHover.current,
+        guideInput: () => guide.current.input ?? null,
+        guidePoint: (point: import('../../../core/model').Vec3) => guide.current.point?.(point),
         select: (id: string | null, additive: boolean, detail?: SceneSelectDetail) => {
           if (cancelled) return
           if (detail) onSelect.current(id, additive, detail)
@@ -392,8 +413,7 @@ export function useSceneViewport({
     return () => {
       unsubscribe()
       unsubscribePose?.()
-      animationPose?.cancel()
-      animation.pause()
+      animationPose?.interrupt()
       viewport.setAnimationEditing(false)
       viewport.setPose(null)
     }

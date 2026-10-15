@@ -22,7 +22,8 @@ const SIZES = [
 
 async function createModel(page: Page, name: string): Promise<void> {
   await page.getByRole('button', { name: 'Criar novo' }).click()
-  await page.getByRole('button', { name: 'Criar modelo' }).click()
+  await page.getByText('Mais opções para começar', { exact: true }).click()
+  await page.getByRole('button', { name: 'Configurar modelo' }).click()
   await page.getByRole('button', { name: 'Continuar' }).click()
   await page.getByLabel('Nome', { exact: true }).fill(name)
   await page.getByRole('button', { name: 'Criar', exact: true }).click()
@@ -84,11 +85,6 @@ async function coveredControls(page: Page): Promise<string[]> {
 async function checkEverySize(page: Page, label: string) {
   for (const size of SIZES) {
     await page.setViewportSize(size)
-    // Abaixo de 1024 o painel vira gaveta. Aberta, ela cobre o palco por desenho (é uma
-    // gaveta); o repouso do tablet é com ela fechada. Veio aberta porque o modelo nasceu em
-    // tela larga, onde o painel fica encaixado e aberto.
-    const collapse = page.getByRole('button', { name: 'Recolher peças e propriedades' })
-    if (size.width < 1024 && (await collapse.isVisible())) await collapse.click()
     const canvas = page.locator('canvas').first()
     await expect(canvas).toBeVisible()
     // O palco assenta depois do resize; a conta só vale com o layout parado.
@@ -106,7 +102,7 @@ async function checkEverySize(page: Page, label: string) {
 }
 
 async function openFreshModel(page: Page, name: string, query = '') {
-  await page.goto(`/?oficina=app${query}`)
+  await page.goto(`/?${query}`)
   await createModel(page, name)
   await expect(page.getByRole('button', { name: 'Meus projetos' })).toBeVisible()
   // O aviso "… criado!" some sozinho em segundos; enquanto dura, a pílula dele recebe clique.
@@ -135,7 +131,7 @@ test('na aba Pintar, a coluna de ferramentas e a faixa de cores não cobrem nada
   await page.getByText('Adicionar forma ou ponto').click()
   await page.getByRole('button', { name: 'Caixa', exact: true }).click()
   await page.getByRole('button', { name: 'Pintar', exact: true }).click()
-  await expect(page.getByRole('region', { name: 'Cores' })).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Cores', exact: true })).toBeVisible()
   await checkEverySize(page, 'Pintar')
   expect(pageErrors).toEqual([])
 })
@@ -149,13 +145,14 @@ test('na aba Animar, os movimentos, a vista e a pose cabem sem cobrir nada', asy
   const pageErrors: string[] = []
   page.on('pageerror', (error) => pageErrors.push(error.message))
   await openFreshModel(page, 'layout-anima-e2e')
-  await page.getByRole('button', { name: 'Caixa', exact: true }).click()
   await page.getByRole('button', { name: 'Animar', exact: true }).click()
-  await expect(page.getByRole('button', { name: 'Criar movimento' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Criar movimento', exact: true })).toBeVisible()
   await checkEverySize(page, 'Animar')
   for (const size of SIZES) {
     await page.setViewportSize(size)
-    const create = await page.getByRole('button', { name: 'Criar movimento' }).boundingBox()
+    const create = await page
+      .getByRole('button', { name: 'Criar movimento', exact: true })
+      .boundingBox()
     expect(create, `Animar ${size.width}px: "Criar movimento" na tela`).not.toBeNull()
     expect(
       (create?.x ?? 0) + (create?.width ?? 0),
@@ -170,18 +167,18 @@ test('na aba Animar, os movimentos, a vista e a pose cabem sem cobrir nada', asy
  * Somem a malha, o laço, o ponto de giro, os ossos e o "Trazer arquivo 3D", e entra a linha
  * "Ferramentas que vêm por aí". Nada coberto, em nenhum tamanho, nas duas abas.
  */
-test('no nível de entrada, a oficina com o portão ligado não cobre nada', async ({ page }) => {
+test('no nível de entrada, a oficina padrão não cobre nada', async ({ page }) => {
   const pageErrors: string[] = []
   page.on('pageerror', (error) => pageErrors.push(error.message))
   await openFreshModel(page, 'layout-explorador-e2e', '&nivel=explorer')
   await expect(page.getByText('Ferramentas que vêm por aí')).toBeVisible()
   await expect(page.getByRole('button', { name: 'Trazer arquivo 3D' })).toHaveCount(0)
-  await expect(page.getByRole('button', { name: 'Editar malha' })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Editar malha', exact: true })).toHaveCount(0)
   await checkEverySize(page, 'Modelar no básico')
   await page.getByText('Adicionar forma').click()
   await page.getByRole('button', { name: 'Caixa', exact: true }).click()
   await page.getByRole('button', { name: 'Pintar', exact: true }).click()
-  await expect(page.getByRole('region', { name: 'Cores' })).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Cores', exact: true })).toBeVisible()
   await checkEverySize(page, 'Pintar no básico')
   expect(pageErrors).toEqual([])
 })

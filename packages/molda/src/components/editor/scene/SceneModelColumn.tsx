@@ -1,30 +1,23 @@
 /**
- * A coluna da ESQUERDA do Modelar, no desenho da tela-modelo (11/09/2026): "Ferramentas" em
- * ladrilhos de duas colunas, "Mais ferramentas" recolhido, as formas à vista e a linha do que
- * vem por aí.
- *
- * Escolher, Mover, Girar e Mudar tamanho (e, recolhidos, a caixa e o laço) são do PALCO: é ele
- * o dono da ferramenta ligada, e ele os desenha aqui por portal, nos dois lugares marcados com
- * `display: contents` (os ladrilhos entram na grade como se fossem daqui).
+ * Trilho vertical comum: ferramentas nomeadas, formas e detalhes conforme o acesso.
+ * A oficina controla a ferramenta; os controles do palco chegam por portais.
  */
 import { type RefObject, useId } from 'react'
 import { COPY } from '../../../core/copy'
 import { SCENE_SHELL_COPY } from '../../../core/sceneShellCopy'
 import {
   convertSceneNodesToMesh,
-  deleteSceneNodes,
-  duplicateSceneNodes,
   groupSceneNodes,
   ungroupSceneNodes,
 } from '../../../scene/commands'
 import { RequiresTool } from '../../toolAccess'
+import { Button } from '../../ui/Button'
 import {
   ChevronDown,
-  Copy,
+  Crosshair,
   Group,
   ListChecks,
   Shapes,
-  Trash2,
   Ungroup,
   Waypoints,
 } from '../../ui/icons'
@@ -52,53 +45,41 @@ export function SceneModelColumn({
   const headingId = useId()
   const { selected, run, components, index } = workshop
   return (
-    // Abaixo de `lg` a coluna deita: uma fileira que rola de lado, cada grupo com os ladrilhos
-    // numa linha só (o palco precisa da altura no tablet e no celular).
-    <div className="mld-bar mld-scroll-x mld-scroll-y flex shrink-0 items-start gap-4 overflow-x-auto border-b p-3 lg:w-60 lg:flex-col lg:items-stretch lg:overflow-x-hidden lg:overflow-y-auto lg:border-r lg:border-b-0">
+    // O trilho rola sem deslocar o palco e mantém o retorno da edição de componentes.
+    <div className="mld-workshop-rail mld-bar">
+      {components.selection && (
+        <Button
+          className="sticky top-0 z-10 shrink-0 bg-mld-surface px-1 text-xs"
+          onClick={onToggleFaces}
+        >
+          {copy.finishFaces}
+        </Button>
+      )}
       <section aria-labelledby={headingId} className="shrink-0 space-y-2">
         <h3 id={headingId} className="mld-kicker">
           {SCENE_SHELL_COPY.tools}
         </h3>
         <div className={TILES}>
           <div ref={toolsSlot} className="contents" />
-          <RequiresTool family="model.pieces">
-            <SceneTile
-              icon={Copy}
-              label={copy.duplicate}
-              disabled={!selected.length}
-              onClick={() => run((source) => duplicateSceneNodes(source, selected), 'created')}
-            />
-            <SceneTile
-              icon={Trash2}
-              label={copy.remove}
-              disabled={!selected.length || components.selection !== null}
-              onClick={() => run((source) => deleteSceneNodes(source, selected), 'clear')}
-            />
-          </RequiresTool>
-          <RequiresTool family="model.mesh">
-            <SceneTile
-              ref={faceToggle}
-              icon={Waypoints}
-              label={
-                components.selection
-                  ? copy.finishFaces
-                  : selected.length === 1 && index.skinsByNode.has(selected[0]!)
-                    ? copy.editSkinBase
-                    : copy.editFaces
-              }
-              pressed={components.selection !== null}
-              disabled={!components.canEdit}
-              onClick={onToggleFaces}
-            />
-          </RequiresTool>
+          {selected.length === 1 && !components.selection && (
+            <RequiresTool family="model.precise">
+              <SceneTile
+                icon={Crosshair}
+                label="Pivô"
+                title="Onde gira"
+                pressed={workshop.tool === 'pivot'}
+                onClick={() => workshop.setTool('pivot')}
+              />
+            </RequiresTool>
+          )}
         </div>
       </section>
       {/*
        * O que se usa menos, recolhido: a caixa e o laço, escolher várias, os grupos e a malha.
-       * É ele que paga as formas à vista (a catraca dos controles encarados não sobe).
+       * As ferramentas básicas permanecem na mesma ordem ao abrir os detalhes.
        */}
       <details className="group shrink-0 rounded-xl border border-mld-border">
-        <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 px-3 text-sm font-bold text-mld-text [&::-webkit-details-marker]:hidden">
+        <summary className="flex min-h-11 cursor-pointer list-none flex-col items-center justify-center gap-1 px-1 text-center text-xs font-bold text-mld-text [&::-webkit-details-marker]:hidden">
           {SCENE_SHELL_COPY.moreTools}
           <ChevronDown
             aria-hidden="true"
@@ -106,6 +87,24 @@ export function SceneModelColumn({
           />
         </summary>
         <div className={`${TILES} p-1.5 pt-0`}>
+          <RequiresTool family="model.mesh">
+            {!components.selection && (
+              <SceneTile
+                ref={faceToggle}
+                icon={Waypoints}
+                label={
+                  components.selection
+                    ? copy.finishFaces
+                    : selected.length === 1 && index.skinsByNode.has(selected[0]!)
+                      ? copy.editSkinBase
+                      : copy.editFaces
+                }
+                pressed={components.selection !== null}
+                disabled={!components.canEdit}
+                onClick={onToggleFaces}
+              />
+            )}
+          </RequiresTool>
           <div ref={areaToolsSlot} className="contents" />
           <SceneTile
             icon={ListChecks}
@@ -147,9 +146,9 @@ export function SceneModelColumn({
         </div>
       </details>
       <div className="shrink-0">
-        <SceneCreateMenu run={run} />
+        <SceneCreateMenu run={run} document={workshop.document} selected={selected} />
       </div>
-      <div className="shrink-0 max-lg:w-56">
+      <div className="min-w-0 shrink-0">
         <SceneUpcomingTools tabs={['model', 'files']} />
       </div>
     </div>

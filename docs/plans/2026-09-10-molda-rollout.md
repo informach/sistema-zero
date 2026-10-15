@@ -1,5 +1,11 @@
 # Rollout da oficina 3D nova do Molda
 
+> **Documento histórico, substituído em 14/10/2026.** O responsável confirmou que não há
+> crianças usando o Molda em produção e determinou uma única oficina padrão, sem ativação
+> de V2 por flag, variável de ambiente ou adapter. A ordem de ativação e a chave descritas
+> abaixo não se aplicam à implementação atual. Ver a
+> [revisão da refatoração](2026-10-14-molda-usabilidade-full-review.md).
+
 Escrito em 10/09/2026, com a implementação pronta na `staging`. Este documento é a ordem
 de implantação e o que fazer se algo der errado. Nada aqui foi implantado por mim.
 
