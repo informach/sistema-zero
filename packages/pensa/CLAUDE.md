@@ -635,6 +635,10 @@ anteriores: o Estúdio tentava começá-la e o servidor recusava (409 de missão
   que existe e nunca mexe em missão). Sem ele, cai na missão do Estúdio mais adiantada que JÁ
   começou (`gameTask`), nunca na que ainda espera.
 - Testes: `JourneyApp.team.test.tsx`, describe "Abrir meu jogo" na hora de testar.
+- **Full review (15/10/2026):** com `onOpenGame` o botão vale mesmo numa versão sem missão do
+  Estúdio; sem ele, o reserva (`gameTask`) nunca é uma missão que ainda depende de outra (sem
+  nenhuma que possa abrir, o botão some). E o botão só aparece com o Estúdio liberado
+  (`toolOwned('studio')`), como os outros atalhos: sem ele, a criança caía numa tela trancada.
 
 ## O que veio do sandbox: perguntas com respostas, ideias e usos (15/10/2026)
 
@@ -674,6 +678,33 @@ respostas para tocar. O contrato da pergunta mora no core (`PENSA_QUESTION_TOPIC
 - **Playground:** ideia curta (menos de 40 letras) recebe UMA pergunta com respostas e o nome
   provisório "O voo do dragão"; a espera passa por `review`; `/v2/credits` responde 13 ideias.
 - Testes: `components/JourneyApp.questions.test.tsx`.
+
+### Full review do lote acima (15/10/2026)
+
+- ⚠️⚠️ **Responder ao Zappy não gasta uso novo, e a tela não pode barrar.** Quando o Zappy
+  pergunta, a operação fica `waiting` e a reserva dela continua contando no saldo; a resposta
+  RETOMA o mesmo pedido (a régua do `start` no members). Com a última ideia do dia, a tela dizia
+  "acabou" e desligava o "Enviar" justo na resposta que o servidor aceitaria. `reusesHold` (a mesma
+  conta do members: planejamento por planejamento ou na proposta, ajuda por ajuda) tira o bloqueio
+  e diz "Responder ao Zappy não gasta uma ideia nova."; o `send()` aplica a mesma regra (o
+  Ctrl/Cmd+Enter também chega lá).
+- ⚠️⚠️ **A pergunta feita na proposta volta ao reabrir.** `questionWaiting` (a última mensagem é
+  pergunta do Zappy e nada roda) abre o campo sozinho, sem depender de `talking`; antes a pergunta
+  do "Quero mudar uma coisa" sumia ao sair e voltar, e "Vamos construir esse começo" era recusado
+  pelo servidor (o aceite exige a operação no passo `choice`) num laço de "A tarefa mudou". Com
+  pergunta esperando, o aceite fica desligado com "Responda a pergunta do Zappy antes de escolher
+  esse começo."
+- **A resposta pronta é a ÚLTIMA linha do campo** (`chosenAnswer`): tocar outra a troca, o texto
+  da criança acima fica, "Contar do meu jeito" tira só ela e o `aria-pressed` compara com ela.
+  Antes as respostas se somavam a cada toque. Tocar não leva o foco ao campo (no tablet o teclado
+  cobria as respostas e o "Enviar"); só o "Contar do meu jeito" leva.
+- **O selo de usos relê** depois de toda ação (`creditsTick` no `finally` do `run`), ao entrar num
+  jogo e ao voltar para a aba (`visibilitychange`); antes só quando o Zappy terminava, e um
+  "acabou" ficava preso até recarregar a página.
+- ⚠️ As etapas da espera usam `.pensa-journey-progress`: com o nome `.pensa-journey-steps` elas
+  sobrescreviam a lista numerada de "Hora de testar" e da revisão da etapa E. A etapa de agora tem
+  um ponto dentro, além da cor (com menos movimento ela não pisca).
+- "ou fale" só aparece quando o host passa `renderVoiceInput` (os pais ligam a fala por criança).
 
 ## Verificação
 

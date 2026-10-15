@@ -429,7 +429,10 @@ export function JourneyApp({
       }
       // O conflito genérico vira o que de fato aconteceu: a tela já releu a versão nova.
       setError(
-        status === 409 && message.includes('mudou em outra tela')
+        status === 409 &&
+          // A do BFF e a padrão do members (adulta: "Recarregue o guia…"), que chegava crua.
+          (message.includes('mudou em outra tela') ||
+            message.startsWith('A tarefa mudou em outro aparelho'))
           ? teamMode
             ? 'Alguém da equipe mexeu no jogo. Já mostrei como ele está agora: confira e tente de novo.'
             : 'O jogo mudou em outra tela. Já mostrei como ele está agora: confira e tente de novo.'
@@ -441,6 +444,8 @@ export function JourneyApp({
     } finally {
       busyRef.current = false
       setBusy(false)
+      // Toda ação pode ter gasto, devolvido ou sido recusada por falta de usos: o selo relê.
+      setCreditsTick((tick) => tick + 1)
     }
   }
   const command = (command: PensaJourneyCommand) =>
@@ -473,7 +478,8 @@ export function JourneyApp({
     })
   }
   async function send() {
-    if (!text.trim() || text.length > 4000 || voiceBusy) return
+    // O mesmo bloqueio do botão (o Ctrl/Cmd+Enter também chega aqui).
+    if (!text.trim() || text.length > 4000 || voiceBusy || outOfUses) return
     const sent = text.trim()
     const visit = navigation.current
     await run(async () => {
@@ -558,8 +564,23 @@ export function JourneyApp({
   // O selo de usos do Zappy (o do plano clássico): relido ao abrir e quando o Zappy termina.
   // Sem dado, `null`, e o selo some: "não sei" nunca vira "acabou".
   const [credits, setCredits] = useState<AiCreditsView | null>(null)
+  // Relê o saldo depois de cada ação, ao entrar num jogo e quando a criança volta para a aba
+  // (um irmão pode ter gastado em outro aparelho, a reserva vence, o dia vira). Sem isso, um
+  // "acabou" ficava preso até recarregar a página, porque o envio bloqueado não relia nada.
+  const [creditsTick, setCreditsTick] = useState(0)
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') setCreditsTick((tick) => tick + 1)
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
+  }, [])
+  const creditsGame = view?.project.id ?? null
   useEffect(() => {
     if (running) return
+    // As dependências que só disparam a releitura (o valor não é usado aqui dentro).
+    void creditsTick
+    void creditsGame
     let alive = true
     api
       .request<{ credits: AiCreditsView | null }>('/v2/credits')
@@ -572,7 +593,7 @@ export function JourneyApp({
     return () => {
       alive = false
     }
-  }, [api, running])
+  }, [api, running, creditsTick, creditsGame])
   // Em equipe, cada criança vê a SUA próxima missão (régua do core); sem nenhuma, a missão que
   // está na frente do caminho e quem pode fazê-la ("Esperando a arte de Bia").
   const teamNext =
@@ -595,7 +616,12 @@ export function JourneyApp({
   const gameTask =
     [...studioTasks].reverse().find((t) => t.progress.status !== 'planned') ??
     (nextTask?.destination === 'studio' ? nextTask : undefined) ??
-    studioTasks[0]
+    // Nunca uma missão que ainda depende de outra: o servidor recusaria abrir por ela.
+    studioTasks.find((t) =>
+      t.dependencies.every((id) =>
+        tasks.some((d) => d.id === id && d.progress.status === 'completed'),
+      ),
+    )
   const waitingOn = teamNext?.waitingOn ?? null
   const waitingTask = waitingOn ? tasks.find((t) => t.id === waitingOn.missionId) : undefined
   /** 1º nome de alguém da equipe, ou `null` (a frase então diz "alguém da equipe"). */
@@ -667,6 +693,12 @@ export function JourneyApp({
   const homeComposer = !view && !archived && (newGame || !hasGames)
   // No jogo: enquanto a ideia é contada, quando a criança pede para mudar ou trava, e na
   // proposta só se já existe um texto guardado (senão "Envie sua mudança" ficaria sem campo).
+  // O Zappy perguntou e espera a resposta (só o planejamento pergunta com respostas prontas).
+  // Vale também na proposta ("Quero mudar uma coisa" pode virar pergunta) e depois de reabrir o
+  // jogo: o campo abre sozinho, senão a pergunta sumia e o aceite da proposta antiga era recusado.
+  const lastMessage = state?.messages.at(-1)
+  const questionWaiting =
+    !running && lastMessage?.role === 'assistant' && Boolean(lastMessage.choices)
   const gameComposer =
     Boolean(state) &&
     view?.project.status !== 'archived' &&
@@ -674,6 +706,7 @@ export function JourneyApp({
     ((talking && conversationKind === 'backlog') ||
       ((state?.stage === 'idea' ||
         talking ||
+        questionWaiting ||
         (state?.stage === 'proposal' && Boolean(text.trim()))) &&
         !state?.paused &&
         state?.stage !== 'closed'))
@@ -738,13 +771,8 @@ export function JourneyApp({
     composer && talking && conversationKind === 'help' && !text.trim() ? HELP_STARTERS : []
   // A pergunta do Zappy que espera resposta: as respostas viram botões que PREENCHEM o campo (o
   // gesto dos chips que ela aprovou; nada sai sozinho), mais "Tanto faz" e "Contar do meu jeito".
-  const lastMessage = state?.messages.at(-1)
   const pendingQuestion =
-    composer &&
-    conversationKind === 'planning' &&
-    !running &&
-    lastMessage?.role === 'assistant' &&
-    lastMessage.choices
+    composer && conversationKind === 'planning' && questionWaiting && lastMessage?.choices
       ? { text: lastMessage.text, ...lastMessage.choices }
       : null
   // As ideias para depois (as da criança e os caprichos que o Zappy guardou) ajudam a começar a
@@ -760,18 +788,41 @@ export function JourneyApp({
   const answerTexts = pendingQuestion
     ? [...pendingQuestion.options.map((option) => option.label), ANY_ANSWER]
     : []
-  /** Uma resposta troca a outra; o que a criança escreveu do jeito dela fica, com a resposta embaixo. */
+  // A resposta pronta escolhida é a ÚLTIMA linha do campo; o que vem antes é o que a criança
+  // escreveu do jeito dela, e fica.
+  const answerLines = text.trimEnd().split('\n')
+  const chosenAnswer = answerTexts.includes(answerLines.at(-1)?.trim() ?? '')
+    ? (answerLines.at(-1)?.trim() ?? null)
+    : null
+  const ownText = (chosenAnswer ? answerLines.slice(0, -1).join('\n') : text).trimEnd()
+  /** Uma resposta troca a outra; o texto dela fica, com a resposta embaixo. */
   const answer = (value: string) => {
-    const current = text.trim()
-    setText(!current || answerTexts.includes(current) ? value : `${text.trimEnd()}\n${value}`)
-    window.setTimeout(() => inputRef.current?.focus(), 0)
+    // Sem foco no campo: no tablet ele abriria o teclado por cima das respostas e do "Enviar"
+    // (tocar existe para não precisar digitar). O foco fica no botão tocado.
+    setText(ownText ? `${ownText}\n${value}` : value)
   }
   // Sem ideia: sugestões COMPLETAS que só preenchem o campo do jogo novo (o `suggestions.ts` do
   // sandbox). Somem quando há texto, e voltam se ela apagar.
   const ideaStarters = homeComposer && !text.trim() ? IDEA_STARTERS : []
   // Os usos do Zappy acabaram: o campo avisa ANTES de ela escrever (guardar ideia não gasta).
   const creditsMeter = resolveAiCredits(credits)
-  const outOfUses = creditsMeter.state === 'exhausted' && conversationKind !== 'backlog'
+  // O que o envio vai pedir ao servidor (a mesma conta do `send`).
+  const sendKind: 'planning' | 'help' =
+    state && (['building', 'observing'].includes(state.stage) || conversationKind === 'help')
+      ? 'help'
+      : 'planning'
+  // Responder ao Zappy que está esperando não gasta uso novo: o servidor retoma o MESMO pedido
+  // (a mesma reserva, a mesma régua do members). Bloquear aqui deixava a criança sem responder a
+  // pergunta com o servidor pronto para aceitar.
+  const operation = view?.operation
+  const reusesHold = Boolean(
+    operation?.status === 'waiting' &&
+      (operation.kind === 'planning'
+        ? sendKind === 'planning' || state?.stage === 'proposal'
+        : operation.kind === sendKind),
+  )
+  const outOfUses =
+    creditsMeter.state === 'exhausted' && conversationKind !== 'backlog' && !reusesHold
   // As etapas de verdade do que o Zappy está fazendo (o sandbox mostra cada passo do agente).
   const operationStep = view?.operation?.step
   const waitingSteps: Array<{ label: string; state: 'done' | 'now' | 'next' }> | null =
@@ -1163,10 +1214,10 @@ export function JourneyApp({
                             </p>
                           ) : null}
                           {waitingSteps ? (
-                            <ol className="pensa-journey-steps">
+                            <ol className="pensa-journey-progress">
                               {waitingSteps.map((step) => (
                                 <li key={step.label} className={`is-${step.state}`}>
-                                  <span className="pensa-journey-steps__mark" aria-hidden="true">
+                                  <span className="pensa-journey-progress__mark" aria-hidden="true">
                                     {step.state === 'done' ? <CheckIcon size={14} /> : null}
                                   </span>
                                   {step.label}
@@ -1322,7 +1373,7 @@ export function JourneyApp({
                           <button
                             type="button"
                             className="sz-tool-pill sz-tool-pill--primary"
-                            disabled={busy || voiceBusy || Boolean(text.trim())}
+                            disabled={busy || voiceBusy || Boolean(text.trim()) || questionWaiting}
                             onClick={() =>
                               void command({ type: 'accept', proposalId: state.proposal!.id })
                             }
@@ -1337,7 +1388,13 @@ export function JourneyApp({
                             Quero mudar uma coisa
                           </button>
                         </div>
-                        {text.trim() ? (
+                        {questionWaiting ? (
+                          // O Zappy perguntou algo sobre a mudança: o servidor só aceita escolher
+                          // este começo depois da resposta (antes, o aceite voltava como conflito).
+                          <p className="pensa-journey-hint">
+                            Responda a pergunta do Zappy antes de escolher esse começo.
+                          </p>
+                        ) : text.trim() ? (
                           <p className="pensa-journey-hint">
                             Envie sua mudança antes de escolher esse começo.
                           </p>
@@ -1490,7 +1547,7 @@ export function JourneyApp({
                           )}
                           {canProgram ? (
                             <>
-                              {gameTask && view ? (
+                              {view && toolOwned('studio') && (adapter.onOpenGame || gameTask) ? (
                                 <div className="pensa-journey-actions">
                                   <button
                                     type="button"
@@ -1498,7 +1555,8 @@ export function JourneyApp({
                                     onClick={() =>
                                       adapter.onOpenGame
                                         ? adapter.onOpenGame({ projectId: view.project.id })
-                                        : adapter.onOpenTask({
+                                        : gameTask &&
+                                          adapter.onOpenTask({
                                             taskId: gameTask.id,
                                             destination: 'studio',
                                           })
@@ -1807,7 +1865,7 @@ export function JourneyApp({
                               type="button"
                               className="pensa-journey-answer"
                               key={option.label}
-                              aria-pressed={text.trim() === option.label}
+                              aria-pressed={chosenAnswer === option.label}
                               disabled={busy}
                               onClick={() => answer(option.label)}
                             >
@@ -1820,7 +1878,7 @@ export function JourneyApp({
                           <button
                             type="button"
                             className="pensa-journey-answer pensa-journey-answer--any"
-                            aria-pressed={text.trim() === ANY_ANSWER}
+                            aria-pressed={chosenAnswer === ANY_ANSWER}
                             disabled={busy}
                             onClick={() => answer(ANY_ANSWER)}
                           >
@@ -1832,12 +1890,17 @@ export function JourneyApp({
                             className="pensa-journey-answer pensa-journey-answer--own"
                             disabled={busy}
                             onClick={() => {
-                              if (answerTexts.includes(text.trim())) setText('')
+                              // Tira a resposta pronta e deixa o que ela já escreveu.
+                              if (chosenAnswer) setText(ownText)
                               window.setTimeout(() => inputRef.current?.focus(), 0)
                             }}
                           >
                             <strong>Contar do meu jeito</strong>
-                            <span>Escreva ou fale a sua resposta.</span>
+                            <span>
+                              {adapter.renderVoiceInput
+                                ? 'Escreva ou fale a sua resposta.'
+                                : 'Escreva a sua resposta.'}
+                            </span>
                           </button>
                         </div>
                       </fieldset>
@@ -1975,9 +2038,17 @@ export function JourneyApp({
                         Sua ideia ficou grande para uma mensagem. Divida em duas partes; seu texto
                         continua inteiro aqui.
                       </p>
+                    ) : creditsMeter.state === 'exhausted' &&
+                      reusesHold &&
+                      conversationKind !== 'backlog' ? (
+                      <p className="pensa-journey-hint">
+                        Responder ao Zappy não gasta uma ideia nova.
+                      </p>
                     ) : (
                       <p className="pensa-journey-hint">
-                        Você pode falar ou escrever. Confira o texto antes de enviar.
+                        {adapter.renderVoiceInput
+                          ? 'Você pode falar ou escrever. Confira o texto antes de enviar.'
+                          : 'Confira o texto antes de enviar.'}
                       </p>
                     )}
                   </form>

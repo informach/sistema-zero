@@ -687,14 +687,14 @@ textarea.pensa-journey-field {
 }
 
 /* As etapas de verdade do que o Zappy está fazendo (o sandbox mostra cada passo do agente). */
-.pensa-journey-steps {
+.pensa-journey-progress {
   display: grid;
   gap: 8px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
-.pensa-journey-steps li {
+.pensa-journey-progress li {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -703,10 +703,10 @@ textarea.pensa-journey-field {
   font-weight: 700;
   line-height: 1.35;
 }
-.pensa-journey-steps li.is-now {
+.pensa-journey-progress li.is-now {
   color: var(--pz-ink);
 }
-.pensa-journey-steps__mark {
+.pensa-journey-progress__mark {
   display: inline-grid;
   flex: none;
   place-items: center;
@@ -715,15 +715,24 @@ textarea.pensa-journey-field {
   border: 2px solid var(--pz-line);
   border-radius: 50%;
 }
-.pensa-journey-steps li.is-done .pensa-journey-steps__mark {
+.pensa-journey-progress li.is-done .pensa-journey-progress__mark {
   border-color: var(--pz-green);
   background: var(--pz-green);
   color: var(--pz-surface);
 }
-.pensa-journey-steps li.is-now .pensa-journey-steps__mark {
+.pensa-journey-progress li.is-now .pensa-journey-progress__mark {
   border-color: var(--pz-accent);
   background: color-mix(in oklab, var(--pz-accent) 18%, var(--pz-surface));
   animation: pensa-journey-step 1.2s ease-in-out infinite;
+}
+/* A etapa de agora tem um ponto dentro, além da cor: com menos movimento ela não pisca, e
+   "agora" × "depois" não pode depender só do tom. */
+.pensa-journey-progress li.is-now .pensa-journey-progress__mark::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--pz-accent);
 }
 @keyframes pensa-journey-step {
   0%,
@@ -735,7 +744,7 @@ textarea.pensa-journey-field {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .pensa-journey-steps li.is-now .pensa-journey-steps__mark {
+  .pensa-journey-progress li.is-now .pensa-journey-progress__mark {
     animation: none;
   }
 }

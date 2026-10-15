@@ -859,4 +859,44 @@ describe('"Abrir meu jogo" na hora de testar (15/10/2026)', () => {
     },
     LENTO_NO_CI,
   )
+
+  test(
+    'sem o host abrir o jogo e sem missão do Estúdio que possa abrir, o botão não aparece',
+    async () => {
+      // A única missão do Estúdio ainda depende da do Pinta: abrir por ela seria recusado.
+      const { adapter } = server({
+        noTeam: true,
+        stage: 'observing',
+        tasks: [task('m1', 'pinta', 'planned'), task('m2', 'studio', 'planned', ['m1'])],
+      })
+      openGame(adapter)
+      await screen.findByRole('heading', { level: 2, name: 'Vamos experimentar seu jogo' })
+      expect(screen.queryByRole('button', { name: 'Abrir meu jogo' })).toBeNull()
+    },
+    LENTO_NO_CI,
+  )
+
+  test(
+    'com o host abrindo o jogo, o botão vale mesmo sem missão do Estúdio; sem o Estúdio, some',
+    async () => {
+      const { adapter } = server({
+        noTeam: true,
+        stage: 'observing',
+        tasks: [task('m1', 'pinta', 'completed')],
+      })
+      const onOpenGame = mock()
+      const view = openGame({ ...adapter, onOpenGame })
+      fireEvent.click(await screen.findByRole('button', { name: 'Abrir meu jogo' }))
+      expect(onOpenGame).toHaveBeenCalledWith({ projectId: 'p1' })
+      view.unmount()
+      openGame({
+        ...adapter,
+        onOpenGame,
+        capabilities: { ...adapter.capabilities, studioOwned: false },
+      })
+      await screen.findByRole('heading', { level: 2, name: 'Vamos experimentar seu jogo' })
+      expect(screen.queryByRole('button', { name: 'Abrir meu jogo' })).toBeNull()
+    },
+    LENTO_NO_CI,
+  )
 })
