@@ -1,0 +1,235 @@
+{
+  "states": [
+    {
+      "name": "03-segurando",
+      "holdMs": 384,
+      "pontos": 0,
+      "phase": "stretching",
+      "w": 360,
+      "h": 480,
+      "offset": 0,
+      "platforms": [
+        {
+          "x": 43,
+          "w": 47
+        },
+        {
+          "x": 154,
+          "w": 46
+        },
+        {
+          "x": 249,
+          "w": 23
+        },
+        {
+          "x": 330,
+          "w": 80
+        },
+        {
+          "x": 484,
+          "w": 46
+        }
+      ],
+      "sticks": [
+        {
+          "x": 90,
+          "length": 112.608,
+          "rotation": 0
+        }
+      ],
+      "hero": {
+        "x": 76,
+        "y": 300
+      },
+      "pointer": true
+    },
+    {
+      "name": "03-soltou",
+      "holdMs": 384,
+      "releaseMs": 144,
+      "pontos": 0,
+      "phase": "turning",
+      "w": 360,
+      "h": 480,
+      "offset": 0,
+      "platforms": [
+        {
+          "x": 43,
+          "w": 47
+        },
+        {
+          "x": 154,
+          "w": 46
+        },
+        {
+          "x": 249,
+          "w": 23
+        },
+        {
+          "x": 330,
+          "w": 80
+        },
+        {
+          "x": 484,
+          "w": 46
+        }
+      ],
+      "sticks": [
+        {
+          "x": 90,
+          "length": 112.608,
+          "rotation": 46.08
+        }
+      ],
+      "hero": {
+        "x": 76,
+        "y": 300
+      },
+      "pointer": false
+    },
+    {
+      "name": "04-menos-tempo",
+      "holdMs": 192,
+      "pontos": 0,
+      "phase": "stretching",
+      "w": 360,
+      "h": 480,
+      "offset": 0,
+      "platforms": [
+        {
+          "x": 43,
+          "w": 47
+        },
+        {
+          "x": 154,
+          "w": 52
+        },
+        {
+          "x": 333,
+          "w": 25
+        },
+        {
+          "x": 493,
+          "w": 64
+        },
+        {
+          "x": 680,
+          "w": 41
+        }
+      ],
+      "sticks": [
+        {
+          "x": 90,
+          "length": 53.856,
+          "rotation": 0
+        }
+      ],
+      "hero": {
+        "x": 76,
+        "y": 300
+      },
+      "pointer": true
+    },
+    {
+      "name": "04-mais-tempo",
+      "holdMs": 576,
+      "pontos": 0,
+      "phase": "stretching",
+      "w": 360,
+      "h": 480,
+      "offset": 0,
+      "platforms": [
+        {
+          "x": 43,
+          "w": 47
+        },
+        {
+          "x": 154,
+          "w": 52
+        },
+        {
+          "x": 333,
+          "w": 25
+        },
+        {
+          "x": 493,
+          "w": 64
+        },
+        {
+          "x": 680,
+          "w": 41
+        }
+      ],
+      "sticks": [
+        {
+          "x": 90,
+          "length": 171.3599999999999,
+          "rotation": 0
+        }
+      ],
+      "hero": {
+        "x": 76,
+        "y": 300
+      },
+      "pointer": true
+    },
+    {
+      "name": "02-mostrando-o-jogo",
+      "pontos": 0,
+      "phase": "walking",
+      "w": 360,
+      "h": 480,
+      "offset": 0,
+      "platforms": [
+        {
+          "x": 43,
+          "w": 47
+        },
+        {
+          "x": 154,
+          "w": 40
+        },
+        {
+          "x": 279,
+          "w": 85
+        },
+        {
+          "x": 460,
+          "w": 32
+        },
+        {
+          "x": 631,
+          "w": 52
+        },
+        {
+          "x": 823,
+          "w": 35
+        }
+      ],
+      "sticks": [
+        {
+          "x": 90,
+          "length": 93.024,
+          "rotation": 90
+        }
+      ],
+      "hero": {
+        "x": 95.584,
+        "y": 300
+      },
+      "pointer": false
+    }
+  ],
+  "checks": [
+    {
+      "name": "Segurar cresce; soltar tomba sem mudar comprimento",
+      "pass": true
+    },
+    {
+      "name": "Mesmo campo; mais tempo produz bastão maior",
+      "pass": true
+    }
+  ],
+  "errors": [],
+  "method": "Jogo original exportado. Mouse real com duração controlada por relógio do navegador. Estado observado apenas para leitura. Nenhuma pontuação ou dimensão forçada."
+}

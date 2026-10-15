@@ -1,3 +1,0 @@
-“Me mostra o que você está fazendo” dá um ponto concreto para a conversa.
-
-Ele abre a tela, explica a atividade e você consegue perguntar sobre aquilo que está vendo.

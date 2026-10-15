@@ -1,0 +1,53 @@
+{
+  "status": "conferido",
+  "slides": [
+    {
+      "file": "01-p31.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 1045655
+    },
+    {
+      "file": "02-p31.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 1196598
+    },
+    {
+      "file": "03-p31.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 1072552
+    },
+    {
+      "file": "04-p31.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 488853
+    },
+    {
+      "file": "05-p31.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 419838
+    },
+    {
+      "file": "06-p31.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 512287
+    },
+    {
+      "file": "07-p31.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 943289
+    }
+  ],
+  "copyPreserved": true,
+  "fontsLoaded": true,
+  "localLinks": 35,
+  "errors": [],
+  "artDirection": "Leitura visual de capa, sete slides, continuidade do pai e do filho, esboços distintos, captura de manhã e procura à noite e prévia móvel; imagens independentes por slide.",
+  "scope": "P31 produzido, índices atualizados. Sem publicar, agendar, commit ou deploy."
+}

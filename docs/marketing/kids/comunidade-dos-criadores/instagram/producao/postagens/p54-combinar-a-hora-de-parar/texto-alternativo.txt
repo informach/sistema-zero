@@ -1,0 +1,44 @@
+SLIDE 1
+Curto (85 caracteres): Mãe e filho combinam o uso do computador; o notebook ainda está fechado sobre a mesa.
+
+Longo: Mãe e filho combinam o uso do computador; o notebook ainda está fechado sobre a mesa. Texto da arte: O combinado para parar fica mais claro quando vem antes de ligar a tela. Criar jogos também entra nessa conversa.
+
+SLIDE 2
+Curto (90 caracteres): Agenda da família com terça e quinta às 17h marcadas, ao lado do computador compartilhado.
+
+Longo: Agenda da família com terça e quinta às 17h marcadas, ao lado do computador compartilhado. Texto da arte: Escolham os dias e o horário que cabem na rotina. Incluam o uso do computador, principalmente se outras pessoas também precisam dele.
+
+SLIDE 3
+Curto (93 caracteres): Mãe avisa com calma; o filho olha para ela enquanto o projeto permanece aberto no computador.
+
+Longo: Mãe avisa com calma; o filho olha para ela enquanto o projeto permanece aberto no computador. Texto da arte: Combinem como avisar que o tempo está terminando. O aviso ajuda a criança a se preparar para encerrar a parte em que está.
+
+SLIDE 4
+Curto (85 caracteres): Cabeçalho da atividade e aviso original Guardado na sua conta, ampliado para leitura.
+
+Longo: Cabeçalho da atividade e aviso original Guardado na sua conta, ampliado para leitura. Texto da arte: Na criação de um jogo, parar inclui conferir o salvamento. Na atividade do Estúdio, esperem aparecer ‘Guardado na sua conta’, no cabeçalho, antes de fechar.
+
+SLIDE 5
+Curto (77 caracteres): A criança escreve: O personagem já anda. Vou continuar o pulo na próxima vez.
+
+Longo: A criança escreve: O personagem já anda. Vou continuar o pulo na próxima vez. Texto da arte: Depois, ela pode anotar o próximo passo. Por exemplo: ‘O personagem já anda. Vou continuar o pulo na próxima vez.’
+
+SLIDE 6
+Curto (82 caracteres): Com o notebook fechado na mesa, o menino pega uma bola e vai para outra atividade.
+
+Longo: Com o notebook fechado na mesa, o menino pega uma bola e vai para outra atividade. Texto da arte: O projeto pode continuar em outro momento. Criar na tela faz parte de uma rotina que também tem descanso, escola, movimento e outras brincadeiras.
+
+SLIDE 7
+Curto (86 caracteres): Mãe e filho observam juntos o projeto na plataforma; o menino aponta para os comandos.
+
+Longo: Mãe e filho observam juntos o projeto na plataforma; o menino aponta para os comandos. Texto da arte: Aqui falamos de criação de jogos e de como acompanhar esse aprendizado em casa. Siga o perfil para ver mais ideias.
+
+ORIGEM E CONTEXTO
+Slides 1, 2, 3, 5, 6 e 7: fotografias geradas. Família fictícia, com mãe de pele morena, cabelo escuro cacheado e blusa azul; filho de cerca de 11 anos, pele morena, cabelo preto curto e cacheado e camiseta amarela. Mesma aparência e ambiente ao longo da sequência, sem identificação como alunos reais ou relato de resultado.
+Slide 1: mãe e filho conversam à mesa. Ela aponta para uma agenda; o notebook permanece fechado.
+Slide 2: agenda de papel com colunas de segunda a sexta. Terça e quinta têm 17h circulado. Uma mão segura o lápis, e o computador está fechado ao lado. Os dias e horários são um exemplo de combinado familiar, não uma grade de aulas ou duração recomendada.
+Slide 3: mãe faz um gesto tranquilo e o menino olha para ela, com o projeto aberto. A imagem da tela usa como referência a captura real do Estúdio com o exemplo Herói que anda, da extensão Jogo 2D. A cena com pessoas é gerada, não um registro de aluno.
+Slide 4: o título Seu projeto no Estúdio aparece ao lado do ícone de nuvem e do aviso Guardado na sua conta. Um contorno amarelo destaca o aviso e uma seta aponta para sua ampliação abaixo. O aviso vem do componente original LessonDraftStatus com a copy Kids, renderizado em estado de demonstração saved. Não é imagem gerada por IA, captura de conta conectada ou teste de gravação real na nuvem. O fundo azul claro, a borda e a seta são recursos editoriais de ampliação.
+Slide 5: mão da criança com lápis ao lado do notebook. No papel: “O personagem já anda. Vou continuar o pulo na próxima vez.” Um desenho simples do herói amarelo acompanha o texto. O projeto de referência mostra o personagem andando com as setas; o pulo é uma ideia para continuar, não uma função demonstrada nesta cena.
+Slide 6: notebook fechado sobre a mesa. O menino carrega uma bola e se dirige à porta para outra atividade.
+Slide 7: mãe e filho olham o projeto juntos. O menino aponta para os comandos na tela e a mãe acompanha. Captura real do Estúdio fornecida como referência ao gerador, sem atribuição de autoria do exemplo a uma criança real.

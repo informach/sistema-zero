@@ -1,0 +1,8 @@
+{
+  "type": "sz_js_if_else",
+  "text": "Se a tecla espaço (pular) está apertada? então Se valor da variável recarga = 0 então Soltar cópia de moldeTiro no enxame tiros em x valor da variável naveX y posição y do objeto nave z -1 adicionar senão se senão se adicionar senão senão adicionar senão se senão se adicionar senão senão",
+  "key": {
+    "type": "sz_g3d_key_down",
+    "text": "a tecla espaço (pular) está apertada?"
+  }
+}

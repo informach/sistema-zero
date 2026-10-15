@@ -1,3 +1,0 @@
-O pulo continua o mesmo: 11, escrito no bloco do herói. O que muda é o número que diz onde a plataforma fica. Ela chega mais perto.
-
-Agora ele alcança e pega a moeda.

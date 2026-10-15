@@ -1,3 +1,0 @@
-Enfraquecer o fogo também muda a escolha de quem joga: ele perde parte da vantagem contra a planta.
-
-Uma mudança pequena precisa ser testada pelos dois lados.

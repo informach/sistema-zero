@@ -6,11 +6,11 @@ import { KIDS_LESSON_COPY } from '@sistemazero/member-shell/lib/lesson-copy-kids
 import { resolveLessonSplit } from '@sistemazero/member-shell/lib/lesson-split'
 import { createRoot } from 'react-dom/client'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
-import farolDia1 from '../../../../docs/aulas-interativas/aulas/desafio-dia-1.manifesto.json'
-import farolDia2 from '../../../../docs/aulas-interativas/aulas/desafio-dia-2.manifesto.json'
-import farolDia3 from '../../../../docs/aulas-interativas/aulas/desafio-dia-3.manifesto.json'
-import naveDia1 from '../../../../docs/aulas-interativas/aulas/nave-contra-asteroides-dia-1.manifesto.json'
-import navePrimeira from '../../../../docs/aulas-interativas/aulas/nave-contra-asteroides-primeira-nave.manifesto.json'
+import farolDia1 from '../../../../docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-1.manifesto.json'
+import farolDia2 from '../../../../docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-2.manifesto.json'
+import farolDia3 from '../../../../docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-3.manifesto.json'
+import naveDia1 from '../../../../docs/aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-dia-1.manifesto.json'
+import navePrimeira from '../../../../docs/aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-primeira-nave.manifesto.json'
 
 const params = new URLSearchParams(location.search)
 // Desde a reestruturação da Nave (05/10/2026), as experiências do antigo Dia 1 ficaram em

@@ -39,6 +39,9 @@ export type PensaStepResult =
   | { type: 'answer'; text: string }
   | { type: 'plan'; tasks: NewPensaTask[] }
 
+/** Um item da lista com a dona (o serviço resolve o 1º nome dela e tira o id da resposta). */
+export type PensaJourneyListRow = PensaJourneyListItem & { ownerProfileId: string }
+
 export interface PensaJourneyRepository {
   delete(actor: PensaJourneyActor, projectId: string, now: Date): Promise<void>
   voice(actor: PensaJourneyActor, request: PensaVoiceRequest, now: Date): Promise<PensaVoiceResult>
@@ -48,7 +51,7 @@ export interface PensaJourneyRepository {
     action: PensaProtectionAction,
     now: Date,
   ): Promise<PensaJourneyView | PensaFileTicket>
-  list(actor: PensaJourneyActor, status: 'active' | 'archived'): Promise<PensaJourneyListItem[]>
+  list(actor: PensaJourneyActor, status: 'active' | 'archived'): Promise<PensaJourneyListRow[]>
   create(actor: PensaJourneyActor, projectId: string, now: Date): Promise<PensaJourneyView>
   get(actor: PensaJourneyActor, projectId: string): Promise<PensaJourneyView>
   command(

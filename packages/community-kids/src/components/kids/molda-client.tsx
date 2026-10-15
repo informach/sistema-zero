@@ -19,6 +19,7 @@ import { openNextPensaMission } from '@/lib/pensa-next-mission'
 import { EMBEDDED_APP_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
 import { useFocusMode } from './focus-mode'
 import { type MoldaGuidePersistence, MoldaTaskGuide } from './molda-task-guide'
+import { PensaMissionBlocked } from './pensa-mission-blocked'
 import { HostChromeAnnouncer, useHostChrome } from './use-host-chrome'
 import { useNextMissionLabel } from './use-next-mission-label'
 import { usePensaGuideCollapsed } from './use-pensa-guide-collapsed'
@@ -293,9 +294,14 @@ export function MoldaClient({
           ) : null}
         </div>
       ) : handoff.data && !handoff.data.capability.owned ? (
-        <p role="status" className="p-6">
-          {handoff.data.capability.blockedReason}
-        </p>
+        // A missão é de quem programa (ou de outra artista que já começou): sem o guia e sem
+        // concluir, com o caminho de volta ao plano.
+        <PensaMissionBlocked
+          reason={handoff.data.capability.blockedReason}
+          onBackToPlan={() =>
+            router.push(`/pensa?plano=${encodeURIComponent(handoff.data!.project.id)}`)
+          }
+        />
       ) : (
         <>
           {handoff.data && persistence ? (

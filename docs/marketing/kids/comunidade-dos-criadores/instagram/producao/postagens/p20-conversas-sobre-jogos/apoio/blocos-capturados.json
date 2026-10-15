@@ -1,0 +1,38 @@
+{
+  "type": "sz_js_if_else",
+  "text": "Se a posição y de ela > 2.2 e ela está no chão ? então Tocar o som pronto vitória adicionar senão se senão se adicionar senão senão",
+  "children": [
+    {
+      "type": "sz_js_if_else",
+      "text": "Se a posição y de ela > 2.2 e ela está no chão ? então Tocar o som pronto vitória adicionar senão se senão se adicionar senão senão"
+    },
+    {
+      "type": "sz_val_logic",
+      "text": "a posição y de ela > 2.2 e ela está no chão ?"
+    },
+    {
+      "type": "sz_val_compare",
+      "text": "a posição y de ela > 2.2"
+    },
+    {
+      "type": "sz_g3k_pos_of",
+      "text": "a posição y de ela"
+    },
+    {
+      "type": "sz_val_number",
+      "text": "2.2"
+    },
+    {
+      "type": "sz_g3k_on_ground",
+      "text": "ela está no chão ?"
+    },
+    {
+      "type": "sz_g3k_play_effect",
+      "text": "Tocar o som pronto vitória"
+    },
+    {
+      "type": "sz_g3k_set_state",
+      "text": "Mudar o estado do jogo para vitoria"
+    }
+  ]
+}

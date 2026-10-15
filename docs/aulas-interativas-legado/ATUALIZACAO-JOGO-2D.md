@@ -29,14 +29,14 @@ Antes de publicar cada aula, grave com o perfil de aluno e confira: localizaçã
 Na raiz do repositório, informe as pastas dos roteiros originais como argumento dos respectivos geradores e validadores:
 
 ```powershell
-bun docs/aulas-interativas/qa/gerar-candidatos-v6.ts <roteiros-corre-dino>
-bun docs/aulas-interativas/qa/gerar-desafio-v6.ts <roteiros-desafio>
-bun docs/aulas-interativas/qa/gerar-meu-jeito-v6.ts <roteiros-meu-jeito>
-bun docs/aulas-interativas/qa/gerar-blocos-cursos.ts
-bun docs/aulas-interativas/qa/validar-revisao-completa.ts <roteiros-corre-dino>
-bun docs/aulas-interativas/qa/validar-desafio-v6.ts <roteiros-desafio>
-bun docs/aulas-interativas/qa/validar-meu-jeito-v6.ts <roteiros-meu-jeito>
-bun docs/aulas-interativas/qa/gerar-blocos-cursos.ts --check
+bun docs/aulas-interativas-tecnico/qa/gerar-candidatos-v6.ts <roteiros-corre-dino>
+bun docs/aulas-interativas-tecnico/qa/gerar-desafio-v6.ts <roteiros-desafio>
+bun docs/aulas-interativas-tecnico/qa/gerar-meu-jeito-v6.ts <roteiros-meu-jeito>
+bun docs/aulas-interativas-tecnico/qa/gerar-blocos-cursos.ts
+bun docs/aulas-interativas-tecnico/qa/validar-revisao-completa.ts <roteiros-corre-dino>
+bun docs/aulas-interativas-tecnico/qa/validar-desafio-v6.ts <roteiros-desafio>
+bun docs/aulas-interativas-tecnico/qa/validar-meu-jeito-v6.ts <roteiros-meu-jeito>
+bun docs/aulas-interativas-tecnico/qa/gerar-blocos-cursos.ts --check
 ```
 
 Os testes `correDinoEditorial`, `desafioEditorial` e `meuJeitoEditorial` no pacote Studio compilam os blocos reais e exercitam o motor. Os validadores editoriais conferem fontes, hashes, âncoras, manifestos e reprodução dos arquivos. Os geradores não escrevem no banco nem publicam cursos.

@@ -1,0 +1,42 @@
+SLIDE 1
+Curto (77 caracteres): Menina observa o Pinta no computador; o desenho aberto é um quadrado laranja.
+
+Longo: Menina observa o Pinta no computador; o desenho aberto é um quadrado laranja. Texto da arte: Os botões mudam de lugar. Surgem programas novos. Seu filho também pode aprender como começar a explorar uma ferramenta.
+
+SLIDE 2
+Curto (86 caracteres): Quadrado laranja selecionado no Pinta, com alças ao redor e a paleta de cores ao lado.
+
+Longo: Quadrado laranja selecionado no Pinta, com alças ao redor e a paleta de cores ao lado. Texto da arte: Quando tudo parece novo, ajuda escolher uma tarefa pequena. Por exemplo: abrir um desenho e mudar a cor de uma parte.
+
+SLIDE 3
+Curto (85 caracteres): Menina consulta as Dicas rápidas do Pinta enquanto o pai acompanha, sem usar o mouse.
+
+Longo: Menina consulta as Dicas rápidas do Pinta enquanto o pai acompanha, sem usar o mouse. Texto da arte: Ele pode procurar a ferramenta, testar e ver o resultado. Se não encontrar, consultar a explicação ou pedir ajuda também faz parte de aprender.
+
+SLIDE 4
+Curto (90 caracteres): Quadrado verde antes e depois de andar para a direita, acima do comando real de movimento.
+
+Longo: Quadrado verde antes e depois de andar para a direita, acima do comando real de movimento. Texto da arte: Na criação de jogos, isso acontece ao experimentar novas possibilidades. A criança escolhe uma coisa para fazer e aprende os comandos necessários para ela.
+
+SLIDE 5
+Curto (98 caracteres): Mini plataforma em execução: quadrado verde no ar e instrução de usar as setas para andar e pular.
+
+Longo: Mini plataforma em execução: quadrado verde no ar e instrução de usar as setas para andar e pular. Texto da arte: Num jogo visto de lado, o personagem pode andar e pular sobre o chão. Quem cria aprende a montar e testar esses movimentos.
+
+SLIDE 6
+Curto (87 caracteres): Salto nas Nuvens: herói em um pulo entre plataformas, com uma moeda brilhante à frente.
+
+Longo: Salto nas Nuvens: herói em um pulo entre plataformas, com uma moeda brilhante à frente. Texto da arte: Num jogo em 3D, também é preciso pensar na profundidade e na posição da câmera. O objetivo passa a ser alcançar outras plataformas, e surgem novas coisas para aprender.
+
+SLIDE 7
+Curto (85 caracteres): A menina sorri ao ver o quadrado azul no Pinta; o pai acompanha a descoberta ao lado.
+
+Longo: A menina sorri ao ver o quadrado azul no Pinta; o pai acompanha a descoberta ao lado. Texto da arte: Criar jogos oferece oportunidades de usar o que já sabe e buscar o que ainda falta. Siga o perfil para conhecer esse processo.
+
+ORIGEM E CONTEXTO
+Slides 1, 3 e 7: fotografias geradas de menina e pai fictícios, com a mesma aparência ao longo da sequência. Capturas reais do Pinta foram fornecidas para compor o monitor: desenho laranja na abertura, painel Dicas rápidas na consulta e quadrado azul no encerramento. Não são alunos reais ou depoentes.
+Slide 2: captura real do Pinta com quadrado laranja selecionado. A forma tem alças brancas e azuis, e a paleta de cores aparece ao lado. Desenho de demonstração preparado pela equipe.
+Slide 3: a dica nativa ampliada abaixo da foto diz: “Selecionar” deixa mover, girar e trocar a cor. O pai acompanha, enquanto a menina mantém o mouse.
+Slide 4: o quadrado verde da Mini plataforma aparece no chão, antes e depois de apertar a seta para a direita. As imagens mostram a mesma faixa inferior do palco; a instrução fixa foi ocultada para não cobrir o personagem. Abaixo aparece o comando nativo de mover o sprite heroi estilo plataforma, com velocidade 4 e pulo 11.
+Slide 5: captura real da Mini plataforma, com o quadrado verde no ar. O fundo é azul escuro, com borda verde. A instrução nativa diz: Use as setas ← → para andar · ↑ para pular. A borda inferior funciona como chão; não há plataformas separadas.
+Slide 6: captura real do Salto nas Nuvens. Herói com corpo azul e cabeça redonda clara, visto por trás, no ar entre blocos escuros. Uma moeda amarela brilha à frente, outra aparece no primeiro plano. O placar mostra Moedas: 0 e Faltam: 3. As capturas dos jogos são demonstrações da equipe.

@@ -470,9 +470,9 @@ galerias. Hoje a tela é a pilha de faixas das telas-modelo (`.sz-tool-bands`), 
 - **lilás**: no jogo, "Meu caminho" em sanfonas brancas (caminho com o ladrilho da oficina por
   missão, ideias para depois, referências, "Guardar e cuidar" com uma frase por ação); na home, a
   grade "Meus jogos" (trilha Z-E-R-O de cada jogo) ou, sem jogo, "Como o Pensa ajuda" (o método em
-  quatro cartões). Embaixo, sempre (fora dos arquivados), o **"Entrar com um código"**: as
-  equipes moram no plano clássico, e sem esse atalho quem nunca teve plano antigo não tinha onde
-  digitar o código do colega (`onLegacy()` abre o `LegacyPensaApp`).
+  quatro cartões). Embaixo, sempre (fora dos arquivados), o **"Entrar com um código"**, que desde a
+  equipe no v2 entra DIRETO no jogo v2 (ver "Pensa v2 em equipe"; até 14/10/2026 ele abria o
+  `LegacyPensaApp` via `onLegacy()`).
 - **Atalhos que só PREENCHEM o campo** (o gesto que ela aprovou nos chips do plano clássico): ao
   travar, "Não sei por onde começar"/"Aconteceu uma coisa diferente"/"Não achei o bloco certo"; numa
   versão nova, as ideias guardadas. Nada é enviado sozinho. O `placeholder` muda com o pedido.
@@ -488,6 +488,86 @@ galerias. Hoje a tela é a pilha de faixas das telas-modelo (`.sz-tool-bands`), 
   host e imitações dos botões de voz. `?v2=1&vazio=1` = primeira visita.
 - Testes: `components/JourneyApp.test.tsx` (fluxos do Codex + mapa, missão, atalhos de ajuda, ideias
   guardadas, foco ao apagar).
+
+## Pensa v2 em equipe (14/10/2026)
+
+Pedido dela: planejar juntos e dividir funções (uma no Estúdio, outra nas artes do Pinta/Molda).
+Especificação: `docs/plans/2026-10-14-pensa-v2-equipe.md` (este pacote é a seção 4). As REGRAS
+moram no core (`effectivePensaRoles`, `canWorkOnPensaMission`, `pensaMissionWorkers`,
+`nextPensaMissionFor`); o pacote não as reescreve. Duas funções: **quem programa** (o Estúdio, UMA
+pessoa, a dona por padrão; o jogo mora no Estúdio dela) e **quem faz as artes** (Pinta e Molda,
+zero ou mais; sem ninguém, quem programa também desenha).
+
+- **Servidor anterior à equipe** (view sem `team`/`role`): tudo como antes, a dona faz tudo e não
+  há "Equipe". `teamMode` = `team.memberCount > 0`; sozinha, a dona segue com o texto de sempre
+  ("Sua próxima missão") e sem compasso.
+- **"Equipe · N"** no `.sz-tool-header__actions` do jogo (N = quem entrou; a dona vê com 0, quem
+  entrou sempre; some no arquivado). O nome acessível é "Equipe, N na equipe" (o "·" fica em
+  `aria-hidden`, como no plano clássico). Abre a **`JourneyTeamDialog`**
+  (`components/JourneyTeamDialog.tsx`), molde da `TeamDialog`: `useDialogFocus`, token de pedido,
+  o código da dona (criar, copiar sem `window.prompt`, gerar outro, desligar), as pessoas com
+  "Tirar"/"Sair da equipe" em DOIS passos na linha (o foco dos dois passos é o mesmo efeito), erro
+  em `role="alert"` que não fecha. Rotas: `/v2/projects/:id/team|share|members/:id|roles`.
+  - **Funções**: só a dona edita. Rádio "Quem programa (Estúdio)" e caixas "Quem faz as artes
+    (Pinta e Molda)" (pílulas de 44px com o rótulo envolvendo o campo); "Guardar as funções" →
+    `PUT …/roles {code, art}` → a resposta é a VIEW, que vai para o `setView` (a tela muda na
+    hora: "Quem testa… é Leo"). Com `codeLocked` o `disabled` vai em CADA rádio (o do fieldset não
+    muda o `.disabled` do campo) e a frase do servidor fica no lugar da dica; um 409 relê a equipe
+    sem perder as caixas marcadas. Quem entrou lê um `<dl>` e "Só quem criou o plano escolhe as
+    funções.". Sozinha, a dona lê "Quando alguém entrar, você escolhe…".
+  - ⚠️ **As caixas mostram `editableArt(roles)`** (`core/journeyTeam.ts`): o papel efetivo sem
+    artistas é `[quem programa]`, e a janela o mostra como "ninguém marcado". Senão trocar quem
+    programa transformava a pessoa anterior em artista sem querer.
+  - Tirar quem programa avisa "O jogo está no Estúdio de X. Se X sair, o jogo fica com X."; quem
+    programa e sai lê "O jogo está no seu Estúdio. Se você sair, o jogo fica com você.". Mexer na
+    equipe espelha `memberCount`/`shareEnabled` no cabeçalho e relê o jogo (as funções voltam para
+    a dona quando quem programava sai). Sair → a lista, com o FOCO no h1 (`focusTitle` +
+    `titleRef`, `tabIndex=-1`); entrar por código faz o mesmo no título do jogo.
+- **"Entrar com um código"** (`JourneyJoin`, no fim do `JourneyApp.tsx`): abre o campo no quadro
+  tracejado (`aria-expanded`/`aria-controls`), `POST /v2/projects/join {code}` → `{projectId}` →
+  `open(projectId)` (código de plano clássico também entra: sem v2, o 404 do `open` cai no
+  `LegacyPensaApp`). Erro ao lado do campo (`role="alert"`, ligado por `aria-describedby`), Esc no
+  FORMULÁRIO e "Cancelar" devolvem o foco ao botão. "Meus planos anteriores" segue para o clássico.
+- **Lista**: chip `.pensa-chip.is-team` "Em equipe · N" (meu) ou "De <dona>" (entrei). A lista v2
+  não tem lixeira; dentro do jogo, quem entrou não vê arquivar nem apagar.
+- **Missões**: com equipe, a próxima missão é a MINHA (`nextPensaMissionFor` sobre
+  `teamMissionProgress(tasks)`: `evidenceCurrent: true`, a régua que a jornada já usa); o cartão diz
+  "Sua missão · N de M". Sem missão minha, o cartão **`.pensa-journey-waiting`**: "Missão de Bia ·
+  1 de 3", "Esperando a arte de Bia" / "a programação de Leo" / "as artes da equipe" (duas ou mais
+  artistas e a missão livre), a missão da frente, e "Ver o caminho" (abre a sanfona, rola e foca o
+  `summary`) e "Guardar uma ideia". "Meu caminho" diz quem faz cada uma (`missionPeople`: quem
+  concluiu, senão quem começou, senão quem tem a função): "Pinta · Bia · feita", "Estúdio · você ·
+  agora". "Rever" só na missão que eu posso fazer e que não foi feita por outra pessoa (a arte da
+  colega mora na conta dela).
+  ⚠️⚠️ **"de Bia", nunca "da Bia"/"do Leo"** (desvio deliberado da spec, que escreve com artigo):
+  a tela não sabe se é menina ou menino, e o artigo errado é pior que nenhum. Sem nome, as frases
+  dizem "alguém da equipe" (o "Colega" do `personName` é rótulo de lista). Nomes vêm de
+  `GET …/team` (best-effort, relido quando muda quem está ou as funções).
+- **Quem pode o quê** (`canProgram` = `roles.code === viewer`; `isOwner` = `role !== 'member'`):
+  testar ("Já quero experimentar", o cartão do teste inteiro, "Voltar para ajustar"), guardar a
+  versão pronta, "Escolher o próximo pedaço"/"Testar mudanças", "Adaptar meu caminho", "Encerrar
+  por enquanto" e restaurar são de quem programa; no lugar, `.pensa-journey-team-note` "Quem testa e
+  guarda as versões é Leo.". Arquivar, "Continuar este jogo" do arquivado e apagar são da dona (a
+  frase de apagar, em equipe, diz que some para toda a equipe e onde cada parte continua). Pausar,
+  retomar, conversar, aceitar a proposta e guardar ideias são de todas.
+- **O compasso** (`teamPollMs`, 20 s; a prop existe para o teste, `0` desliga): com `teamMode`, aba
+  visível, nada em voo (`busyRef`) e sem preparação andando (aí o `work` de 5 s já relê), chama o
+  MESMO `load` (jogo + etapa). O campo de texto mora no rascunho (`draft`, fora da view): reler
+  nunca o apaga. Sem faixa de "alguém mexeu": a view nova entra por cima (o `setView` só recusa
+  revisão MENOR).
+- **CSS** (seção "EQUIPE NO v2" do `journey.css`): só classes (nenhuma regra de elemento nova: `dt`,
+  `dd`, `strong` e o ícone ganharam classe), nenhum `cursor`, `color-mix(in oklab)`.
+- **Playground** `?v2=1&equipe=1` (`playground/journey.ts`, `createJourneyServer(task, empty,
+  withTeam)`): o "ninho" é meu com a Bia nas artes (código ZAP-AAAAAB; 25 s depois a Bia COMEÇA o
+  ovo no Molda, para o compasso mostrar), "A torre da Bia" é dela com eu nas artes (a espera
+  "Esperando a programação de Bia"), e ZAP-CCCCCC entra no "O castelo do Leo". O servidor aplica
+  as réguas (403 de quem programa e da dona, 409 da trava, 404 fora da equipe). Sem `equipe=1` ele
+  é o servidor ANTERIOR à equipe. Medido a 390 e 1172 px (claro e escuro): sem rolagem lateral,
+  sem texto abaixo de 12 px, alvos ≥ 40 px no mouse.
+- Testes: `components/JourneyApp.team.test.tsx` (o "Equipe" e o servidor antigo; a janela da dona,
+  as Funções, a trava e o 409, a leitura de quem entrou, tirar quem programa, sair com o foco no
+  título, Esc; entrar com código e o erro; os chips; "Sua missão", o caminho com nomes, as três
+  esperas; quem pode o quê; o compasso e a aba escondida).
 
 ## Verificação
 

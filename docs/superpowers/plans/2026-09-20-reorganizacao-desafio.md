@@ -2,7 +2,7 @@
 
 **Objetivo:** preparar um script único para ensaiar em staging e depois repetir em produção, preservando os IDs das sete aulas que permanecem.
 
-**Fonte curricular:** `docs/aulas-interativas/modulos-desafio-primeiro-jogo.md` e os slugs dos sete manifestos. O curso pode ter três módulos ou um quarto módulo antigo de encerramento contendo apenas certificado e “Continue criando”. Módulos ou aulas inesperados fazem o script parar antes de escrever.
+**Fonte curricular:** `docs/aulas-interativas-tecnico/modulos-desafio-primeiro-jogo.md` e os slugs dos sete manifestos. O curso pode ter três módulos ou um quarto módulo antigo de encerramento contendo apenas certificado e “Continue criando”. Módulos ou aulas inesperados fazem o script parar antes de escrever.
 
 ## Planejamento
 

@@ -139,6 +139,91 @@ SAIU do serviço; os tipos ficam no core até a limpeza final e as tabelas (`liv
   o JSON vai como `${JSON.stringify(x)}::jsonb` (o drizzle deixa o serializador transparente);
   num cliente `postgres` cru isso vira string escalar.
 
+## Pensa v2 em equipe (14/10/2026)
+
+Especificação: [`docs/plans/2026-10-14-pensa-v2-equipe.md`](../../docs/plans/2026-10-14-pensa-v2-equipe.md)
+(seções 2 e 2.7). As REGRAS das funções moram no core (`effectivePensaRoles`,
+`canWorkOnPensaMission`, `nextPensaMissionFor`); aqui só a ponte com o banco, em
+`domain/pensa/team.ts` (`pensaTeamRoles`, `pensaJourneyTeam`, `pensaMissionBlock`,
+`assertPensaMissionWorker`, `pensaMissionOwnership`), usada pelo Drizzle, pelo fake e pelos
+serviços. Nunca recopie as regras.
+
+- **Banco.** Tabela `pensa_project_roles` (PK `project_id, profile_id, role`; CHECK `role in
+  ('code','art')`; índice único PARCIAL `pensa_project_roles_code_uq` em `project_id where role =
+  'code'`; índice por perfil; FK cascade no projeto) e `pensa_tasks.assignee_profile_id` /
+  `completed_by_profile_id`. Linhas CRUAS: `code` igual à dona = sem linha, `art` vazio = sem
+  linhas; quem lê passa por `pensaTeamRoles` (quem saiu cai fora; sem programação válida, a dona;
+  sem artes, quem programa). ⚠️ **A migration (`pensa_v2_team`) ainda NÃO está no repositório**:
+  ela entra depois do lote das oficinas ao vivo (0112 a 0114), como 0115 ou depois.
+  `db:generate --name pensa_v2_team` gera exatamente esse DDL; deixe-o idempotente (`IF NOT
+  EXISTS`, a FK dentro do `CREATE TABLE`) e confira o `when` acima da marca d'água. O DDL de
+  referência dos testes é o `applyPensaTeamDdl` de `tests/db/pensa-v2-schema.ts`.
+- **Acesso no v2** (`pensa-journey.repository.ts`). `accessible(actor)` = a dona (qualquer status)
+  OU quem está em `pensa_project_members` num plano ATIVO, conferindo perfil E conta nos dois
+  ramos; `ownerOnly(actor)` para a cota, o `create` e o `delete`. O `lock()` devolve `role` e os
+  papéis EFETIVOS lidos depois da trava do projeto. `list`/`get` trazem `role` e `team` (na view,
+  `PensaJourneyTeam`; na lista, `{memberCount, ownerFirstName}`, com o 1º nome da dona via
+  `AuthGateway.getProfileIdentities` só nos planos em que a criança entrou, best-effort). Os
+  `checkpoints` da view são os de quem PROGRAMA. Membro em `archive`/`delete`: 403
+  `PENSA_NOT_OWNER`. `observe`, `record_test`, `repair`, `close`, `revise` e todo `protect`
+  (versão, restauração, próxima versão): 403 `PENSA_NOT_PROGRAMMER` ("Quem testa e guarda as
+  versões é quem programa o jogo."). Conversar, aceitar, pausar, ideias, `retry`, cancelar, voz:
+  a equipe toda (a operação e a cota são do ATOR). O `delete` agenda a limpeza de
+  `creations/<perfil>/pensa/<id>/` da dona, de quem está na equipe e de todo perfil com checkpoint
+  ou fala do plano (inclusive quem já saiu).
+- **Equipe.** `setShareCode` e `addMember` não têm mais `assertLegacyPensa`: as rotas clássicas
+  (`POST /members/pensa/projects/join`, `POST|DELETE …/:projectId/share`, `GET …/members`,
+  `DELETE …/members/:profileId`) valem para o v2, e o `join` devolve `{project: {id, …}}`.
+  `removeMember` tranca o projeto, apaga as funções da pessoa, solta as missões não concluídas que
+  ela começou e sobe a revisão da jornada. Quem programava e saiu devolve a função à dona (o jogo
+  fica no Estúdio de quem saiu).
+- **Rotas novas** (`routes/pensa-team.routes.ts` + `PensaTeamService`, prefixo
+  `/members/pensa/v2/projects`; acesso = `findProject` do plano clássico, quem é de fora = 404;
+  gateway: `members-pensa-v2` ganhou `PUT`):
+  - `GET /:projectId/team` → `PensaJourneyTeamView` (pessoas com 1º nome e foto best-effort, a dona
+    primeiro; `shareCode` cru só para a dona; `maxMembers`; `roles` efetivos; `codeLocked`).
+  - `PUT /:projectId/roles` `{code: uuid, art: uuid[] (≤ 6)}`: só a dona (403
+    `PENSA_NOT_OWNER`); id fora da equipe = 400; plano sem jornada = 409; regra 5 = 409
+    `PENSA_CODE_LOCKED`. `setRoles` tranca o projeto (`for update`), troca as linhas de uma vez,
+    solta as missões de quem perdeu a função, sobe a revisão e a rota devolve a
+    `PensaJourneyView` relida.
+  - `GET /:projectId/team-capabilities` (só o BFF) → `{code: {profileId, level, blocks, access:
+    {studio, pinta, molda}, creations: {pinta, molda}}, art: [{profileId, level, access: {pinta,
+    molda}}]}`. `access` = posse pela CONTA de cada pessoa (refs `estudio-completo`, `pinta`,
+    `molda`; a chave-mestra não conta); `level` = slug do posto ou `null`; `creations` = até 200
+    vivas, no formato de `GET /members/creations/:tool`.
+  - `GET /:projectId/team-art` → `{items: PensaTeamArtItem[]}` (missões não arquivadas de todos os
+    ciclos, concluídas, `outputRef` do Pinta ou do Molda, `completed_by` diferente de quem pede,
+    criação viva e confirmada no perfil de quem concluiu; mais recente primeiro, até 100).
+  - `GET /:projectId/team-art/:taskId/download` → o formato do `GetCreationDownloadService`
+    (`{storageKey, revision, bytes, summary, parts}`) lido no perfil de quem CONCLUIU. Missão de
+    fora do plano, não concluída ou sem arte = 404.
+- **Missões.** `PensaTaskView` ganhou `assigneeProfileId`/`completedByProfileId` (etapa e
+  handoff). No `PATCH /tasks/:taskId/progress` de uma jornada v2: a função (403
+  `PENSA_NOT_YOUR_MISSION`, "Essa missão é de outra pessoa da equipe.") e a missão pega (409
+  `PENSA_MISSION_TAKEN`) vêm antes da posse da ferramenta e são conferidas de novo no repositório,
+  sob a trava do projeto. "Pega" = começada por OUTRA pessoa que ainda tem a função. Sair de
+  `planned` grava o `assignee`; concluir grava `completed_by`; fora de `completed` ele volta a
+  `null`. ⚠️ A evidência (a criação guardada) é conferida no perfil e na CONTA do ator:
+  `UpdatePensaTaskProgressService.execute(actor: {profileId, accountId}, audience, taskId,
+  input)`. No handoff, a missão da outra função vem com `capability: {owned: false,
+  blockedReason}` ("Essa missão é de quem programa o jogo." / "… de quem cuida das artes." /
+  "Outra pessoa da equipe já está fazendo essa missão."). O ajuste do `repair` nasce sem
+  `assignee`; restaurar uma versão devolve `assignee`/`completed_by` da cópia.
+- **Regra 5** (`pensaCodeLocked`): quem programa só muda enquanto nenhuma missão do Estúdio do
+  ciclo ativo saiu de `planned` (arquivadas contam) e o plano não tem checkpoint (qualquer status).
+- **Testes.** Integração sobre o fake (`tests/integration/pensa-team-v2.test.ts`: Ana, Bia e Leo
+  com contas distintas, a Eva de fora); o fake espelha funções, missão pega, `assignee`/
+  `completed_by`, regra 5 (`checkpointProjects`) e artes (consulta o fake de criações) e tem um
+  `journeyView` mínimo para o `PUT …/roles`. ⚠️ A evidência continua só no Drizzle. Postgres:
+  `tests/db/pensa-team-v2.test.ts` (banco próprio `sistemazero_pensa_team_v2_test`: accessible,
+  travas de dona e de quem programa, `for update` e regra 5, evidência pelo ator, `team-art`,
+  limpeza do R2), mais `pensa-team-repository.test.ts` (sair apaga funções e solta missões; código
+  e entrada em plano v2) e `pensa-journey.repository.test.ts`, que passou a montar o schema por
+  `tests/db/pensa-v2-schema.ts`.
+- ⚠️ Pendente (lacuna anterior, da equipe de 26/09): a purga de conta não apaga a participação
+  (`pensa_project_members`) nem as funções de um perfil apagado em plano de OUTRA família.
+
 ## Oficinas ao vivo (14/10/2026)
 
 `application/live` mantém oficinas reutilizáveis, snapshots das aulas por turma, matrículas

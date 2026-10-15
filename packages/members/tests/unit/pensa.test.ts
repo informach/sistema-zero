@@ -49,6 +49,8 @@ const task = (id: string, position: number, dependencies: string[] = []): PensaT
     completedAt: null,
     updatedAt: null,
   },
+  assigneeProfileId: null,
+  completedByProfileId: null,
   revision: 1,
   supersedesTaskId: null,
   archivedAt: null,

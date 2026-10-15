@@ -1,0 +1,53 @@
+{
+  "status": "conferido",
+  "slides": [
+    {
+      "file": "01-p37.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 987424
+    },
+    {
+      "file": "02-p37.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 929518
+    },
+    {
+      "file": "03-p37.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 967962
+    },
+    {
+      "file": "04-p37.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 974100
+    },
+    {
+      "file": "05-p37.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 125964
+    },
+    {
+      "file": "06-p37.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 140574
+    },
+    {
+      "file": "07-p37.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 974130
+    }
+  ],
+  "copyPreserved": true,
+  "fontsLoaded": true,
+  "localLinks": 37,
+  "errors": [],
+  "artDirection": "Leitura visual de capa, sete slides, continuidade da folha em três partes e prévia móvel; imagens independentes por slide.",
+  "scope": "P37 produzido, índices atualizados. Sem publicar, agendar, commit ou deploy."
+}

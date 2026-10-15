@@ -3,7 +3,7 @@
 O commit desta data subiu a troca de vocabulário da área da criança: curso → aventura, aula → fase,
 seção → parte, unidade → Mundo, caderno → Mapa da Aventura, professor → guia (à noite, → equipe;
 ver "A equipe no lugar do guia", abaixo). O menu "Aprender"
-virou "Explorar". A regra está em `docs/aulas-interativas/DIRETRIZES-PEDAGOGICAS.md`, seção 6.
+virou "Explorar". A regra está em `docs/aulas-interativas-tecnico/DIRETRIZES-PEDAGOGICAS.md`, seção 6.
 O envio foi feito às pressas, a pedido da dona; esta nota diz o que ficou sem conferir.
 
 No fim do dia, o full review do vocabulário resolveu parte da lista e trouxe decisões da dona
@@ -28,12 +28,12 @@ marcados com ✅.
 - Typecheck de `studio`, `pinta`, `core` e `community` (adulto); de novo em `community-kids` e
   `member-shell` depois das últimas edições.
 - Testes de `community` (adulto), `core`, `studio` e `pinta`.
-- `python3 docs/aulas-interativas/validar-roteiros.py` (todos os 37 roteiros).
+- `python3 docs/aulas-interativas-tecnico/validar-roteiros.py` (todos os 37 roteiros).
   - Com a régua única (abaixo), ele chegou a acusar `corre-dino-aula-13.roteiro.md/video-entrega`:
     "um cacto uma unidade mais rápido" (unidade de medida, mas a régua não distingue). A frase saiu
     na reescrita do agente do Corre, e na última rodada o validador passou nos 37 roteiros.
-- `bun docs/aulas-interativas/qa/validar-manifestos.ts`.
-- `bun test docs/aulas-interativas/qa` (inclui `vocabulario-crianca.test.ts`).
+- `bun docs/aulas-interativas-tecnico/qa/validar-manifestos.ts`.
+- `bun test docs/aulas-interativas-tecnico/qa` (inclui `vocabulario-crianca.test.ts`).
   - ✅ Agora roda no CI, no passo "Testes dos cursos e guardas de vocabulário", junto com o passo
     "Tutoriais do Como Fazer" (`bun docs/como-fazer/validar.ts`). Antes, o
     `bun run --filter '*' test` só cobria `packages/*`. Os testes não usam banco nem navegador
@@ -44,7 +44,7 @@ marcados com ✅.
   - O agente do Farol depois regenerou os manifestos, então deve estar resolvido. Conferir.
   - ✅ No full review do fim do dia, `diretrizes-pedagogicas.test.ts` passou (5 testes) e
     `vocabulario-crianca.test.ts` também (5 testes, com a régua única e a concordância). O resto de
-    `docs/aulas-interativas/qa` (testes de cada curso) não foi rodado nessa sessão.
+    `docs/aulas-interativas-tecnico/qa` (testes de cada curso) não foi rodado nessa sessão.
 - `bun run build:kids` e `bun run build:community`.
 - Varredura de travessão (`copy-sem-travessao`) já está no `bun test` do Kids.
 
@@ -72,9 +72,9 @@ marcados com ✅.
   - Recados da equipe, com o autor "Equipe" (era "Recados do guia" até a noite de 06/10);
   - Dúvida na fase / Seu projeto (rótulos dos recados).
 - ✅ Conferir as citações de botões em:
-  - `docs/aulas-interativas/ESPEC-ROTEIRO.md` (Próxima parte, Concluir fase, Enviar meu projeto,
+  - `docs/aulas-interativas-tecnico/ESPEC-ROTEIRO.md` (Próxima parte, Concluir fase, Enviar meu projeto,
     a fala do Mapa da Aventura e "clique no jogo e segure a seta");
-  - `docs/aulas-interativas/README.md`;
+  - `docs/aulas-interativas-tecnico/historico-organizacao.md`;
   - `REFERENCIA-PLATAFORMA.md` (menu Explorar e Minhas criações, a setinha da lista de fases e a
     seção 9 nova, com os rótulos da fase no Kids);
   - `qa/novo-modelo.ts` (não cita botão; nada a mudar).
@@ -140,7 +140,7 @@ envia, e quem recebe e responde os recados passou a ser a equipe. "Guia" ficou s
   envio, trocar os PDFs anexados, capturar os prints da galeria e gravar os vídeos com os botões novos.
 
 ## Guardas novos do full review
-- ✅ Régua única das palavras da escola em `docs/aulas-interativas/qa/palavras-da-escola.ts`,
+- ✅ Régua única das palavras da escola em `docs/aulas-interativas-tecnico/qa/palavras-da-escola.ts`,
   agora com unidade, atividade, entrega, estudar, trabalho, devolutiva, lição, formatura e
   diploma. Usada pelo `vocabulario-crianca.test.ts`, pelo `validar-roteiros.py` (que lê o literal
   do arquivo) e pelo `docs/como-fazer/validar.ts`.

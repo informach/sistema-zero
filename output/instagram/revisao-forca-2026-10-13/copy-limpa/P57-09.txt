@@ -1,9 +1,0 @@
-Você pode ajudar a esclarecer a dúvida antes de saber como resolvê-la.
-
-Peça que ele mostre o que esperava e o que apareceu. Depois procurem a explicação daquela parte.
-
-Na Arena dos Goblins, exemplo do nosso Estúdio, um golpe tira 10 de vida de um inimigo que tem 20. Se ele continua de pé, isso pode ser exatamente o comportamento programado. Conferir os valores revela uma escolha: manter dois golpes ou mudar a regra.
-
-Nas nossas aulas, vídeo, instrução com Ouvir, pistas e verificação da etapa oferecem referências para consultar durante a construção.
-
-Siga @criecomhelenaejulio para aprender a acompanhar essas investigações com seu filho.

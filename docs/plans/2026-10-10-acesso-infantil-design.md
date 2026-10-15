@@ -304,7 +304,7 @@ A mudança precisa ser entregue com as orientações que ensinam o fluxo. O leva
 | Ajuda antes de entrar | Disponibilizar orientações de acesso mesmo sem sessão. Hoje o “Como fazer” exige login | Login, páginas de ajuda de entrada e configuração do proxy |
 | Zappy | Fazer as respostas e referências usarem os tutoriais atualizados | Conteúdo publicado do “Como fazer”, consultado por `packages/member-shell/src/server/zappy-ai.ts` |
 | Mensagens de primeiro acesso | Revisar os destinos e as orientações para o responsável preparar o acesso do filho | `packages/messaging/scripts/seed-templates.ts` e os modelos publicados |
-| Guias, prints e vídeos de ajuda | Atualizar rótulos, imagens e trechos que mostram o login antigo ou uma troca de perfil sem autorização | `docs/aulas-interativas/REFERENCIA-PLATAFORMA.md`, materiais de ajuda e mídias associadas |
+| Guias, prints e vídeos de ajuda | Atualizar rótulos, imagens e trechos que mostram o login antigo ou uma troca de perfil sem autorização | `docs/aulas-interativas-tecnico/REFERENCIA-PLATAFORMA.md`, materiais de ajuda e mídias associadas |
 | Testes e acompanhamento | Conferir ambos os públicos, retomada do onboarding e uso diário sem nova ajuda | Testes de onboarding, login e eventos de `community-kids` |
 
 O onboarding dos pais atualmente termina orientando a clicar no perfil. Ele precisa passar a orientar a autorização do aparelho antes da entrega para a criança. Para famílias que já usam a plataforma, apresentar somente o novo passo necessário, sem obrigar a criar outro perfil. A versão do guia de acesso deve ser tratada separadamente para não reiniciar as etapas de avatar e primeira fase que a criança já concluiu.

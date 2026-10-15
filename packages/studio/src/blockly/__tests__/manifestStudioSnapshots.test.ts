@@ -1,14 +1,16 @@
 import { expect, test } from 'bun:test'
-import { readdirSync, readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { readFileSync } from 'node:fs'
 import { isLearningManifest } from '@sistemazero/core/learning'
+import {
+  caminhoAula,
+  listarArquivosAulas,
+} from '../../../../../docs/aulas-interativas-tecnico/qa/caminhos'
 import { sanitizeProjectForHost } from '../../state/projectValidation'
 
 test('every Studio project declared by the lessons opens with its initial blocks and Jogo 2D extension', () => {
-  const root = resolve(import.meta.dir, '../../../../../docs/aulas-interativas/aulas')
   let checked = 0
-  for (const file of readdirSync(root).filter((name) => name.endsWith('.manifesto.json'))) {
-    const source: unknown = JSON.parse(readFileSync(resolve(root, file), 'utf8'))
+  for (const file of listarArquivosAulas().filter((name) => name.endsWith('.manifesto.json'))) {
+    const source: unknown = JSON.parse(readFileSync(caminhoAula(file), 'utf8'))
     if (!isLearningManifest(source)) throw new Error(`Manifesto inválido: ${file}`)
     for (const block of source.blocks) {
       if (!('content' in block) || block.content.kind !== 'studio') continue

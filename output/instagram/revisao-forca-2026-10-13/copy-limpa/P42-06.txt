@@ -1,3 +1,0 @@
-Quem monta o jogo escreve essa linha de chegada: abater 10 naves antes que os 3 escudos acabem.
-
-Chegou a 10, vem a tela de vitória. Perdeu o último escudo, a nave cai.

@@ -10,11 +10,11 @@ A criança precisa saber o que fazer agora. Uma fala acolhedora pode ser direta 
 
 ## Fontes atuais
 
-- Leia docs/aulas-interativas/DIRETRIZES-PEDAGOGICAS.md inteiro antes de criar, revisar ou
+- Leia docs/aulas-interativas-tecnico/DIRETRIZES-PEDAGOGICAS.md inteiro antes de criar, revisar ou
   adaptar qualquer curso. Ele é a referência única e prevalece sobre esta lista.
-- Leia docs/aulas-interativas/BRIEFING.md e ESPEC-ROTEIRO.md.
+- Leia docs/aulas-interativas-tecnico/BRIEFING.md e ESPEC-ROTEIRO.md.
 - Para uma aula existente, leia o trio de proposta, manifesto e roteiro em
-  docs/aulas-interativas/aulas/. Confira se há gerador em docs/aulas-interativas/qa/.
+  docs/aulas-interativas/<curso>/. Confira se há gerador em docs/aulas-interativas-tecnico/qa/.
 - Confira rótulos e comportamento no código. REFERENCIA-PLATAFORMA.md e
   REFERENCIA-BLOCOS-JOGO-2D.json são apoio.
 - Cadê Todo Mundo? é a primeira aplicação desta revisão. Não copie a voz dos roteiros

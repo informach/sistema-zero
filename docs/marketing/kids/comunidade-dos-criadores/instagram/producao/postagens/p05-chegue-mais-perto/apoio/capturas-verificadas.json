@@ -1,0 +1,53 @@
+{
+  "source": "Vila das Vocações · Mundo 3D",
+  "errors": [],
+  "states": [
+    {
+      "name": "primeiro-e",
+      "text": "Meu Mundo 3D\n\nWASD ou setas dirigem · espaço pula\n\nComeçar o passeio\nAperte E nas portas e converse com a Guia!\n⭐ Missão: Converse com a Guia da vila\nE: falar\nBem-vindo à Vila das Vocações!"
+    },
+    {
+      "name": "segundo-e",
+      "text": "Meu Mundo 3D\n\nWASD ou setas dirigem · espaço pula\n\nComeçar o passeio\nAperte E nas portas e converse com a Guia!\n⭐ Missão: Converse com a Guia da vila\nE: falar\nO que você quer ser quando crescer?\n1· Padeiro\n2· Mecânico",
+      "choices": [
+        "Começar o passeio",
+        "1· Padeiro",
+        "2· Mecânico"
+      ],
+      "visible": [
+        {
+          "text": "O que você quer ser quando crescer?",
+          "x": 472.7421875,
+          "y": 361.265625,
+          "width": 254.515625,
+          "height": 38
+        },
+        {
+          "text": "1· Padeiro",
+          "x": 509.5859375,
+          "y": 409.265625,
+          "width": 80.4375,
+          "height": 33
+        },
+        {
+          "text": "2· Mecânico",
+          "x": 598.0234375,
+          "y": 409.265625,
+          "width": 92.390625,
+          "height": 33
+        }
+      ],
+      "npc": [
+        {
+          "name": "Guia",
+          "x": 4,
+          "z": 6
+        }
+      ]
+    },
+    {
+      "name": "escolheu-padeiro",
+      "text": "Meu Mundo 3D\n\nWASD ou setas dirigem · espaço pula\n\nComeçar o passeio\nAperte E nas portas e converse com a Guia!\n🏆 Todas as missões completas!\nE: falar\nA padaria fica na entrada leste. Vá conhecer!\n🏆 Conquista: Cidadão da Vila"
+    }
+  ]
+}

@@ -1,9 +1,0 @@
-O placar executa uma regra. Entender essa regra explica o que o número está contando.
-
-Na Mina de Cristais, do nosso Estúdio, cavar cristal soma 1; cavar pedra não soma. Quem cria monta a condição e testa as duas situações. Se o resultado divergir, tem um comportamento específico para investigar.
-
-Outra escolha está na chance de aparecer cristal: 3 em cada 10 possibilidades de sorteio. O jogo também depende dessa decisão.
-
-Na próxima partida, escolham um número da tela e procurem entender o que entrou na conta.
-
-Siga @criecomhelenaejulio para abrir outros jogos por dentro e conhecer suas regras.

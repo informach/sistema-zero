@@ -1,5 +1,21 @@
 import { randomUUID } from 'node:crypto'
-import { and, asc, count, desc, eq, exists, inArray, isNull, notExists, or, sql } from 'drizzle-orm'
+import type { PensaTeamArtItem, PensaTeamRoles } from '@sistemazero/core/pensa'
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  exists,
+  inArray,
+  isNotNull,
+  isNull,
+  ne,
+  notExists,
+  notInArray,
+  or,
+  sql,
+} from 'drizzle-orm'
 import type { CourseAudience } from '../../../domain/course/course'
 import type {
   PensaArtifact,
@@ -15,6 +31,12 @@ import type {
   PensaWorkStage,
 } from '../../../domain/pensa/pensa'
 import { PensaTaskProgressConflictError } from '../../../domain/pensa/pensa.errors'
+import {
+  assertPensaMissionWorker,
+  type PensaRoleRow,
+  pensaMissionOwnership,
+  pensaTeamRoles,
+} from '../../../domain/pensa/team'
 import type {
   InheritedPensaArtifact,
   NewPensaArtifact,
@@ -25,16 +47,21 @@ import type {
   PensaConversationUpsert,
   PensaProjectPatch,
   PensaRepository,
+  PensaSetRolesOutcome,
+  PensaTaskActor,
   PensaTaskPlanPatch,
+  PensaTeamArtTask,
 } from '../../../domain/ports/pensa-repository.port'
 import type { Database } from './db'
 import {
   creations,
   pensaArtifacts,
+  pensaCheckpoints,
   pensaConversations,
   pensaCycles,
   pensaJourneys,
   pensaProjectMembers,
+  pensaProjectRoles,
   pensaProjects,
   pensaTasks,
 } from './schema'
@@ -89,6 +116,8 @@ const toTask = (row: TaskRow): PensaTask => ({
     completedAt: row.completedAt,
     updatedAt: row.progressUpdatedAt,
   },
+  assigneeProfileId: row.assigneeProfileId,
+  completedByProfileId: row.completedByProfileId,
   revision: row.revision,
   supersedesTaskId: row.supersedesTaskId,
   archivedAt: row.archivedAt,
@@ -105,6 +134,116 @@ function completedAtPatch(from: PensaWorkStage, now: Date): Partial<CycleRow> {
 
 async function touchProject(tx: Tx | Database, projectId: string, now: Date): Promise<void> {
   await tx.update(pensaProjects).set({ updatedAt: now }).where(eq(pensaProjects.id, projectId))
+}
+
+/**
+ * Equipe no v2: os papéis EFETIVOS do plano (dona + quem entrou + as linhas cruas). Dentro da
+ * transação que já trancou o projeto, para a régua valer no mesmo instante da gravação.
+ */
+export async function loadPensaTeamRoles(
+  tx: Tx | Database,
+  projectId: string,
+  ownerProfileId: string,
+): Promise<{ memberProfileIds: string[]; rows: PensaRoleRow[]; roles: PensaTeamRoles }> {
+  const members = await tx
+    .select({ profileId: pensaProjectMembers.profileId })
+    .from(pensaProjectMembers)
+    .where(eq(pensaProjectMembers.projectId, projectId))
+  const rows = await tx
+    .select({ profileId: pensaProjectRoles.profileId, role: pensaProjectRoles.role })
+    .from(pensaProjectRoles)
+    .where(eq(pensaProjectRoles.projectId, projectId))
+  const memberProfileIds = members.map((member) => member.profileId)
+  return { memberProfileIds, rows, roles: pensaTeamRoles(ownerProfileId, memberProfileIds, rows) }
+}
+
+/**
+ * Regra 5 da equipe: o jogo já começou no Estúdio de quem programa quando alguma missão do
+ * Estúdio do ciclo ATUAL (inclusive as arquivadas: o jogo existe do mesmo jeito) saiu de
+ * `planned`, ou quando o plano já tem uma versão guardada (qualquer checkpoint, até o que
+ * ainda está copiando).
+ */
+export async function pensaCodeLocked(tx: Tx | Database, projectId: string): Promise<boolean> {
+  const [started] = await tx
+    .select({ id: pensaTasks.id })
+    .from(pensaTasks)
+    .innerJoin(
+      pensaJourneys,
+      and(eq(pensaJourneys.cycleId, pensaTasks.cycleId), eq(pensaJourneys.active, true)),
+    )
+    .where(
+      and(
+        eq(pensaJourneys.projectId, projectId),
+        eq(pensaTasks.destination, 'studio'),
+        ne(pensaTasks.progressStatus, 'planned'),
+      ),
+    )
+    .limit(1)
+  if (started) return true
+  const [saved] = await tx
+    .select({ id: pensaCheckpoints.id })
+    .from(pensaCheckpoints)
+    .where(eq(pensaCheckpoints.projectId, projectId))
+    .limit(1)
+  return Boolean(saved)
+}
+
+/** As tarefas de TODOS os ciclos do plano (subconsulta para os UPDATEs da equipe). */
+function projectCycleIds(tx: Tx, projectId: string) {
+  return tx
+    .select({ id: pensaCycles.id })
+    .from(pensaCycles)
+    .where(eq(pensaCycles.projectId, projectId))
+}
+
+/**
+ * Solta as missões NÃO concluídas cujo `assignee` não pode mais fazê-las (saiu da equipe ou
+ * perdeu a função): voltam a ser de quem tem a função agora (`nextPensaMissionFor` as oferece).
+ */
+async function releasePensaMissions(
+  tx: Tx,
+  projectId: string,
+  roles: PensaTeamRoles,
+): Promise<void> {
+  await tx
+    .update(pensaTasks)
+    .set({ assigneeProfileId: null })
+    .where(
+      and(
+        inArray(pensaTasks.cycleId, projectCycleIds(tx, projectId)),
+        ne(pensaTasks.progressStatus, 'completed'),
+        isNotNull(pensaTasks.assigneeProfileId),
+        or(
+          and(eq(pensaTasks.destination, 'studio'), ne(pensaTasks.assigneeProfileId, roles.code)),
+          and(
+            ne(pensaTasks.destination, 'studio'),
+            notInArray(pensaTasks.assigneeProfileId, roles.art),
+          ),
+        ),
+      ),
+    )
+}
+
+/** Sobe a revisão da jornada ativa (as telas da equipe percebem a mudança). Sem jornada: nada. */
+async function bumpPensaJourney(tx: Tx, projectId: string, now: Date): Promise<void> {
+  const [journey] = await tx
+    .select()
+    .from(pensaJourneys)
+    .where(and(eq(pensaJourneys.projectId, projectId), eq(pensaJourneys.active, true)))
+    .for('update')
+  if (!journey) return
+  await tx
+    .update(pensaJourneys)
+    .set({
+      revision: journey.revision + 1,
+      data: {
+        ...journey.data,
+        revision: journey.revision + 1,
+        lastInteractionAt: now.toISOString(),
+      },
+      updatedAt: now,
+    })
+    .where(eq(pensaJourneys.cycleId, journey.cycleId))
 }
 
 async function draftLatestPlanReview(tx: Tx, cycleId: string): Promise<void> {
@@ -232,6 +371,8 @@ export const pensaTaskValues = (cycleId: string, task: NewPensaTask, now: Date) 
   startedAt: null,
   completedAt: null,
   progressUpdatedAt: null,
+  assigneeProfileId: null,
+  completedByProfileId: null,
   revision: task.revision ?? 1,
   supersedesTaskId: task.supersedesTaskId ?? null,
   archivedAt: null,
@@ -320,7 +461,7 @@ export class DrizzlePensaRepository implements PensaRepository {
   }
 
   async setShareCode(projectId: string, code: string | null, now: Date): Promise<boolean> {
-    await assertLegacyPensa(this.db, projectId)
+    // O código vale para o plano clássico E para o v2 (14/10/2026): é o mesmo convite.
     try {
       await this.db
         .update(pensaProjects)
@@ -374,7 +515,7 @@ export class DrizzlePensaRepository implements PensaRepository {
     maxMembers: number,
     expectedCode: string,
   ): Promise<'added' | 'duplicate' | 'full' | 'invite_invalid'> {
-    await assertLegacyPensa(this.db, member.projectId)
+    // Entrar vale para o plano clássico E para o v2 (14/10/2026).
     return this.db.transaction(async (tx) => {
       // Tranca a linha do projeto: conferir a vaga e gravar viram um passo só (dois convidados
       // no mesmo instante com 4 na equipe não viram 6).
@@ -411,6 +552,13 @@ export class DrizzlePensaRepository implements PensaRepository {
 
   async removeMember(projectId: string, profileId: string, now: Date): Promise<boolean> {
     return this.db.transaction(async (tx) => {
+      // Projeto antes da jornada (a mesma ordem do resto do Pensa): sem isto, tirar alguém
+      // enquanto outra aba conclui uma missão podia travar em deadlock.
+      await tx
+        .select({ id: pensaProjects.id })
+        .from(pensaProjects)
+        .where(eq(pensaProjects.id, projectId))
+        .for('update')
       const removed = await tx
         .delete(pensaProjectMembers)
         .where(
@@ -421,9 +569,171 @@ export class DrizzlePensaRepository implements PensaRepository {
         )
         .returning({ profileId: pensaProjectMembers.profileId })
       if (removed.length === 0) return false
+      // As funções da pessoa saem junto; quem programava devolve a função à dona (o jogo fica
+      // no Estúdio de quem saiu) e as missões não concluídas que ela começou ficam livres.
+      await tx
+        .delete(pensaProjectRoles)
+        .where(
+          and(
+            eq(pensaProjectRoles.projectId, projectId),
+            eq(pensaProjectRoles.profileId, profileId),
+          ),
+        )
+      await tx
+        .update(pensaTasks)
+        .set({ assigneeProfileId: null })
+        .where(
+          and(
+            inArray(pensaTasks.cycleId, projectCycleIds(tx, projectId)),
+            ne(pensaTasks.progressStatus, 'completed'),
+            eq(pensaTasks.assigneeProfileId, profileId),
+          ),
+        )
+      await bumpPensaJourney(tx, projectId, now)
       await touchProject(tx, projectId, now)
       return true
     })
+  }
+
+  async listRoles(projectId: string): Promise<PensaRoleRow[]> {
+    return this.db
+      .select({ profileId: pensaProjectRoles.profileId, role: pensaProjectRoles.role })
+      .from(pensaProjectRoles)
+      .where(eq(pensaProjectRoles.projectId, projectId))
+      .orderBy(asc(pensaProjectRoles.createdAt), asc(pensaProjectRoles.profileId))
+  }
+
+  async setRoles(
+    projectId: string,
+    input: { code: string; art: readonly string[] },
+    assignedBy: string,
+    now: Date,
+  ): Promise<PensaSetRolesOutcome> {
+    return this.db.transaction(async (tx) => {
+      // A linha do projeto TRANCADA: dois `PUT` (ou um `PUT` e alguém saindo) não se cruzam.
+      const [project] = await tx
+        .select()
+        .from(pensaProjects)
+        .where(eq(pensaProjects.id, projectId))
+        .for('update')
+      if (!project) return 'not_found'
+      const [journey] = await tx
+        .select({ cycleId: pensaJourneys.cycleId })
+        .from(pensaJourneys)
+        .where(and(eq(pensaJourneys.projectId, projectId), eq(pensaJourneys.active, true)))
+      if (!journey) return 'legacy'
+      const current = await loadPensaTeamRoles(tx, projectId, project.userId)
+      const team = new Set([project.userId, ...current.memberProfileIds])
+      const art = [...new Set(input.art)]
+      if (!team.has(input.code) || art.some((id) => !team.has(id))) return 'not_in_team'
+      const rows: PensaRoleRow[] = [
+        ...(input.code === project.userId
+          ? []
+          : [{ profileId: input.code, role: 'code' as const }]),
+        ...art.map((profileId) => ({ profileId, role: 'art' as const })),
+      ]
+      const next = pensaTeamRoles(project.userId, current.memberProfileIds, rows)
+      if (next.code !== current.roles.code && (await pensaCodeLocked(tx, projectId)))
+        return 'code_locked'
+      await tx.delete(pensaProjectRoles).where(eq(pensaProjectRoles.projectId, projectId))
+      if (rows.length > 0)
+        await tx
+          .insert(pensaProjectRoles)
+          .values(rows.map((row) => ({ projectId, ...row, assignedBy, createdAt: now })))
+      await releasePensaMissions(tx, projectId, next)
+      await bumpPensaJourney(tx, projectId, now)
+      await touchProject(tx, projectId, now)
+      return 'updated'
+    })
+  }
+
+  isCodeLocked(projectId: string): Promise<boolean> {
+    return pensaCodeLocked(this.db, projectId)
+  }
+
+  async listTeamArt(
+    projectId: string,
+    viewerProfileId: string,
+    limit: number,
+  ): Promise<PensaTeamArtItem[]> {
+    const rows = await this.db
+      .select({
+        taskId: pensaTasks.id,
+        title: pensaTasks.title,
+        outputRef: pensaTasks.outputRef,
+        completedBy: pensaTasks.completedByProfileId,
+        completedAt: pensaTasks.completedAt,
+        name: creations.name,
+        kind: creations.kind,
+        itemUpdatedAt: creations.itemUpdatedAt,
+        revision: creations.revision,
+      })
+      .from(pensaTasks)
+      .innerJoin(pensaCycles, eq(pensaCycles.id, pensaTasks.cycleId))
+      // A criação ainda viva e confirmada no perfil de quem concluiu (ferramenta + item).
+      .innerJoin(
+        creations,
+        and(
+          eq(creations.userId, pensaTasks.completedByProfileId),
+          sql`${creations.tool}::text = (case ${pensaTasks.outputRef}->>'kind' when 'pinta_asset' then 'pinta' else 'molda' end)`,
+          sql`${creations.itemId} = ${pensaTasks.outputRef}->>'assetId'`,
+          isNull(creations.deletedAt),
+          isNotNull(creations.storageRef),
+        ),
+      )
+      .where(
+        and(
+          eq(pensaCycles.projectId, projectId),
+          isNull(pensaTasks.archivedAt),
+          eq(pensaTasks.progressStatus, 'completed'),
+          sql`${pensaTasks.outputRef}->>'kind' in ('pinta_asset', 'molda_asset')`,
+          isNotNull(pensaTasks.completedByProfileId),
+          ne(pensaTasks.completedByProfileId, viewerProfileId),
+        ),
+      )
+      .orderBy(desc(pensaTasks.completedAt), asc(pensaTasks.id))
+      .limit(limit)
+    return rows.flatMap((row) => {
+      const ref = row.outputRef
+      if (!ref || ref.kind === 'studio_project' || !row.completedBy || !row.completedAt) return []
+      return [
+        {
+          taskId: row.taskId,
+          title: row.title,
+          tool: ref.kind === 'pinta_asset' ? ('pinta' as const) : ('molda' as const),
+          assetId: ref.assetId,
+          assetName: row.name || ref.assetName || null,
+          assetKind: row.kind || null,
+          byProfileId: row.completedBy,
+          completedAt: row.completedAt.toISOString(),
+          updatedAt: row.itemUpdatedAt.toISOString(),
+          revision: row.revision,
+        },
+      ]
+    })
+  }
+
+  async findTeamArtTask(projectId: string, taskId: string): Promise<PensaTeamArtTask | null> {
+    const [row] = await this.db
+      .select({ outputRef: pensaTasks.outputRef, completedBy: pensaTasks.completedByProfileId })
+      .from(pensaTasks)
+      .innerJoin(pensaCycles, eq(pensaCycles.id, pensaTasks.cycleId))
+      .where(
+        and(
+          eq(pensaTasks.id, taskId),
+          eq(pensaCycles.projectId, projectId),
+          isNull(pensaTasks.archivedAt),
+          eq(pensaTasks.progressStatus, 'completed'),
+        ),
+      )
+      .limit(1)
+    const ref = row?.outputRef
+    if (!row?.completedBy || !ref || ref.kind === 'studio_project') return null
+    return {
+      completedByProfileId: row.completedBy,
+      tool: ref.kind === 'pinta_asset' ? 'pinta' : 'molda',
+      assetId: ref.assetId,
+    }
   }
 
   /**
@@ -834,6 +1144,7 @@ export class DrizzlePensaRepository implements PensaRepository {
     progress: PensaTaskProgress,
     expectedUpdatedAt: Date | null,
     now: Date,
+    actor: PensaTaskActor,
   ): Promise<PensaTask> {
     return this.db.transaction(async (tx) => {
       // A jornada também trava projeto antes de ciclo. Manter a ordem evita deadlock
@@ -848,6 +1159,7 @@ export class DrizzlePensaRepository implements PensaRepository {
         .from(pensaJourneys)
         .where(and(eq(pensaJourneys.projectId, projectId), eq(pensaJourneys.active, true)))
         .for('update')
+      let ownership: ReturnType<typeof pensaMissionOwnership> | null = null
       if (journey) {
         const [task] = await tx.select().from(pensaTasks).where(eq(pensaTasks.id, taskId))
         if (
@@ -858,6 +1170,19 @@ export class DrizzlePensaRepository implements PensaRepository {
           !['building', 'observing'].includes(journey.data.stage)
         )
           throw new PensaTaskProgressConflictError('Abra o caminho atual deste jogo.')
+        // Equipe (14/10/2026): a função e a missão pega conferidas SOB a trava do projeto, que
+        // serializa todo progresso do plano (duas artistas começando a mesma missão: uma ganha).
+        const { roles } = await loadPensaTeamRoles(tx, projectId, project.userId)
+        assertPensaMissionWorker(
+          {
+            destination: task.destination,
+            status: task.progressStatus,
+            assigneeProfileId: task.assigneeProfileId,
+          },
+          actor.profileId,
+          roles,
+        )
+        ownership = pensaMissionOwnership(task, progress.status, actor.profileId)
         if (progress.status === 'completed') {
           const dependencies = task.dependencies.length
             ? await tx.select().from(pensaTasks).where(inArray(pensaTasks.id, task.dependencies))
@@ -876,13 +1201,15 @@ export class DrizzlePensaRepository implements PensaRepository {
             (task.destination === 'studio' && itemId !== `pensa-${projectId.replaceAll('-', '')}`)
           )
             throw new PensaTaskProgressConflictError('Esta missão precisa do jogo certo.')
+          // A evidência é a criação guardada no perfil e na conta de quem MEXE (o ator), não da
+          // dona: em equipe a arte e o jogo moram no Pinta/Molda/Estúdio de quem fez.
           const [saved] = await tx
             .select()
             .from(creations)
             .where(
               and(
-                eq(creations.userId, project.userId),
-                eq(creations.accountId, project.accountId),
+                eq(creations.userId, actor.profileId),
+                eq(creations.accountId, actor.accountId),
                 eq(creations.tool, task.destination),
                 eq(creations.itemId, itemId),
                 isNull(creations.deletedAt),
@@ -912,6 +1239,7 @@ export class DrizzlePensaRepository implements PensaRepository {
           startedAt: progress.startedAt,
           completedAt: progress.completedAt,
           progressUpdatedAt: progress.updatedAt,
+          ...(ownership ?? {}),
           updatedAt: now,
         })
         .where(

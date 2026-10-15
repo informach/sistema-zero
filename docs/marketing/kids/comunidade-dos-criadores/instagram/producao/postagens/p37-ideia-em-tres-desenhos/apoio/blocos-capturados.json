@@ -1,0 +1,42 @@
+{
+  "region": {
+    "type": "sz_gk_define_region",
+    "text": "Criar a região fim em x 1560 y 250 , largura 90 altura 100",
+    "x": 56,
+    "y": 56,
+    "width": 1180.1201171875,
+    "height": 130
+  },
+  "victory": {
+    "type": "sz_js_if_else",
+    "text": "Se heroi está dentro da região fim ? então Tocar o som pronto vitória adicionar senão se senão se adicionar senão senão",
+    "x": 56,
+    "y": 56,
+    "width": 746.0481567382812,
+    "height": 438
+  },
+  "enemy": {
+    "type": "sz_js_if_else",
+    "text": "Se a posição x do personagem heroi > a posição x do personagem bicho então Definir a velocidade de bicho : x 70 y 0 senão Definir a velocidade de bicho : x 0 − 70 y 0 adicionar senão se senão se remover o último",
+    "x": 56,
+    "y": 56,
+    "width": 1421.9090576171875,
+    "height": 526
+  },
+  "enemyMove": {
+    "type": "sz_gk_set_velocity",
+    "text": "Definir a velocidade de bicho : x 0 − 70 y 0",
+    "x": 56,
+    "y": 56,
+    "width": 1011.961181640625,
+    "height": 130
+  },
+  "cannon": {
+    "type": "sz_gk_spawn_named",
+    "text": "Nascer 1 do molde perola em x 1240 y 306 e chamar de bala",
+    "x": 56,
+    "y": 56,
+    "width": 1142.86865234375,
+    "height": 130
+  }
+}

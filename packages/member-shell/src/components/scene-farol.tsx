@@ -3,7 +3,7 @@ import { Texto } from './scene-canvas'
 
 /**
  * As frases do `aviso` do jogo do Farol, as MESMAS do projeto que a criança monta
- * (`docs/aulas-interativas/qa/desafio-farol-projeto.ts`). A cena mostra o que o jogo dela vai mostrar.
+ * (`docs/aulas-interativas-tecnico/qa/desafio-farol-projeto.ts`). A cena mostra o que o jogo dela vai mostrar.
  */
 export const AVISOS_DO_FAROL = {
   inicio: 'Encontre a chave e vá ao farol.',

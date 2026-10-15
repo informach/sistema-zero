@@ -1,3 +1,0 @@
-“Arrumar a mochila” pode vir com uma lista: caderno, estojo e garrafa.
-
-Ele compara a lista com o que colocou. Você observa onde ainda precisa de apoio.

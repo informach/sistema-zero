@@ -1,0 +1,7 @@
+feat(molda): simplifica a oficina para criar, pintar e animar
+
+Implementa a proposta de usabilidade para crianças de 9–12 anos, com ferramentas laterais, contexto progressivo e poses compostas.
+
+Torna a oficina padrão sem ativação de V2 e corrige persistência de pintura, transições de prévias, recuperação por perfil e layouts compactos.
+
+Verificação: 3.097 testes Molda, 72 testes Kids, 39 cenários de navegador, tipos, lint e build. Relatório em docs/plans/2026-10-14-molda-usabilidade-full-review.md.

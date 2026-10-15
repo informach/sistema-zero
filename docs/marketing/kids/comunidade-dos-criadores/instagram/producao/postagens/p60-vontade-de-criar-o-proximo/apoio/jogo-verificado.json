@@ -1,0 +1,139 @@
+{
+  "states": [
+    {
+      "name": "03-tabuleiro-inicio",
+      "blue": {
+        "x": 120,
+        "y": 480,
+        "space": 0,
+        "score": 0
+      },
+      "red": {
+        "x": 120,
+        "y": 480,
+        "space": 0,
+        "score": 0
+      },
+      "turn": 1
+    },
+    {
+      "name": "04-casa-premiada",
+      "blue": {
+        "x": 362,
+        "y": 132,
+        "space": 7,
+        "score": 10
+      },
+      "red": {
+        "x": 662,
+        "y": 182,
+        "space": 5,
+        "score": 0
+      },
+      "turn": 2
+    }
+  ],
+  "inputs": [
+    {
+      "click": 1,
+      "before": {
+        "blue": {
+          "x": 120,
+          "y": 480,
+          "space": 0,
+          "score": 0
+        },
+        "red": {
+          "x": 120,
+          "y": 480,
+          "space": 0,
+          "score": 0
+        },
+        "turn": 1
+      },
+      "after": {
+        "blue": {
+          "x": 662,
+          "y": 322,
+          "space": 4,
+          "score": 0
+        },
+        "red": {
+          "x": 120,
+          "y": 480,
+          "space": 0,
+          "score": 0
+        },
+        "turn": 2
+      }
+    },
+    {
+      "click": 2,
+      "before": {
+        "blue": {
+          "x": 662,
+          "y": 322,
+          "space": 4,
+          "score": 0
+        },
+        "red": {
+          "x": 120,
+          "y": 480,
+          "space": 0,
+          "score": 0
+        },
+        "turn": 2
+      },
+      "after": {
+        "blue": {
+          "x": 662,
+          "y": 322,
+          "space": 4,
+          "score": 0
+        },
+        "red": {
+          "x": 662,
+          "y": 182,
+          "space": 5,
+          "score": 0
+        },
+        "turn": 1
+      }
+    },
+    {
+      "click": 3,
+      "before": {
+        "blue": {
+          "x": 662,
+          "y": 322,
+          "space": 4,
+          "score": 0
+        },
+        "red": {
+          "x": 662,
+          "y": 182,
+          "space": 5,
+          "score": 0
+        },
+        "turn": 1
+      },
+      "after": {
+        "blue": {
+          "x": 362,
+          "y": 132,
+          "space": 7,
+          "score": 10
+        },
+        "red": {
+          "x": 662,
+          "y": 182,
+          "space": 5,
+          "score": 0
+        },
+        "turn": 2
+      }
+    }
+  ],
+  "errors": [],
+  "method": "Cliques reais no canvas; somente desenho da trilha acrescentado. Sorteio com semente, relógio controlado e observador de leitura."
+}

@@ -1,0 +1,571 @@
+import { describe, expect, test } from 'bun:test'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+import {
+  blockCheckpoint,
+  blockPrediction,
+  isLearningManifest,
+  type LearningManifest,
+} from '../../../packages/core/src/learning'
+import { sceneDefaultGoalIds } from '../../../packages/core/src/learning/scene/catalog'
+import {
+  type SectionProjectCheck,
+  sectionCompletionIssues,
+} from '../../../packages/core/src/learning/section-progression'
+import { FAROL_FAROIS } from '../../../packages/studio/src/arte/farol-assets'
+import { resolveBlockLevel } from '../../../packages/studio/src/blockly/blockLevels'
+import {
+  evaluateStudioSectionProject,
+  projectCheckAuthoring,
+} from '../../../packages/studio/src/blockly/projectCheckAuthoring'
+import { buildCoreToolbox } from '../../../packages/studio/src/blockly/toolbox'
+import { buildWorkspaceStateFromIR } from '../../../packages/studio/src/blockly/workspaceState'
+import type { SZIRV2 } from '../../../packages/studio/src/ir/schema'
+import { gameTwoDToolboxCategory } from '../../../packages/studio/src/official-extensions/game-2d/blocks'
+import { montarProjetoFarol } from './desafio-farol-projeto'
+
+function manifesto(name: string): LearningManifest {
+  const value = JSON.parse(
+    readFileSync(
+      resolve(
+        import.meta.dir,
+        `../../aulas-interativas/desafio-primeiro-jogo/desafio-${name}.manifesto.json`,
+      ),
+      'utf8',
+    ),
+  )
+  if (!isLearningManifest(value)) throw new Error(`Manifesto inválido: ${name}`)
+  return value
+}
+
+function checks(name: string): SectionProjectCheck[] {
+  // A decisão continua verificada antes das escolhas; desde 11/10 o envio é posterior.
+  const sectionKey = name === 'dia-3' ? 'decisao' : name === 'dia-2' ? 'programar-chave' : 'borda'
+  return (
+    manifesto(name).sections.find((section) => section.key === sectionKey)?.completion
+      ?.projectChecks ?? []
+  )
+}
+
+describe('Desafio do Primeiro Jogo — A Chave do Farol', () => {
+  test('todos os quatro manifestos têm conclusões coerentes', () => {
+    for (const name of ['dia-1', 'dia-2', 'dia-3', 'certificado']) {
+      const m = manifesto(name)
+      const sections = m.sections.map((section) => ({
+        ...section,
+        id: section.key,
+        blockIds: section.blockKeys,
+        workspaceBlockId: section.workspaceKey,
+      }))
+      const blocks = m.blocks.map((block) => ({
+        id: block.key,
+        content: 'content' in block ? block.content : { kind: 'video' },
+      }))
+      expect(sectionCompletionIssues(sections, blocks), name).toEqual([])
+      expect(m.courseSlug).toBe('desafio-primeiro-jogo')
+    }
+  })
+
+  test('cada seção comum tem um vídeo; a atividade exige vídeo e ação da criança', () => {
+    for (const name of ['dia-1', 'dia-2', 'dia-3', 'certificado']) {
+      const m = manifesto(name)
+      const byKey = new Map(m.blocks.map((block) => [block.key, block]))
+      for (const section of m.sections) {
+        if (section.blockKeys.some((key) => byKey.get(key)?.content?.kind === 'quiz')) {
+          expect(section.blockKeys.map((key) => byKey.get(key)?.content?.kind)).toEqual([
+            'dialogue',
+            'quiz',
+          ])
+          expect(section.completion?.blockIds).toEqual(['quiz-revisao-final'])
+          continue
+        }
+        const videos = section.blockKeys.filter((key) => {
+          const block = byKey.get(key)
+          return block && 'plannedVideo' in block
+        })
+        expect(videos, `${name}/${section.key}`).toHaveLength(1)
+        expect(section.completion?.blockIds).toContain(videos[0]!)
+        const dialogues = section.blockKeys.filter(
+          (key) => byKey.get(key)?.content?.kind === 'dialogue',
+        )
+        expect(dialogues, `${name}/${section.key}: ponte do Zappy`).toHaveLength(1)
+        expect(section.blockKeys[section.blockKeys.indexOf(videos[0]!) + 1]).toBe(dialogues[0])
+        expect(section.completion?.blockIds).not.toContain(dialogues[0]!)
+        const activities = section.blockKeys.filter((key) => {
+          const block = byKey.get(key)
+          return block?.content?.kind === 'interactive' || block?.content?.kind === 'studio'
+        })
+        for (const activity of activities) expect(section.completion?.blockIds).toContain(activity)
+      }
+      expect(m.blocks.filter((block) => block.content?.kind === 'quiz')).toHaveLength(
+        name === 'certificado' ? 1 : 0,
+      )
+    }
+  })
+
+  test('as três montagens oferecem somente Programação e Jogo 2D', () => {
+    const { blocks } = JSON.parse(
+      readFileSync(
+        resolve(import.meta.dir, '../../aulas-interativas/desafio-primeiro-jogo/blocos.json'),
+        'utf8',
+      ),
+    ) as { blocks: string[] }
+    expect(
+      blocks.filter(
+        (type) => !type.startsWith('sz_g2d_') && resolveBlockLevel(type) !== 'iniciante-2d',
+      ),
+    ).toEqual([])
+    for (const day of ['dia-1', 'dia-2', 'dia-3'] as const) {
+      const studio = manifesto(day).blocks.find((block) => block.key === 'projeto')?.content
+      if (studio?.kind !== 'studio') throw new Error(`Estúdio ausente: ${day}`)
+      expect([...(studio.allowBlocks ?? [])].sort()).toEqual(blocks)
+      const palette = buildCoreToolbox([gameTwoDToolboxCategory], {
+        level: 'iniciante-2d',
+        allowBlocks: studio.allowBlocks,
+      })
+      const categories = palette.contents
+        .filter((entry) => entry.kind === 'category')
+        .map((entry) => entry.name)
+      // Áreas contém só os recipientes de Programação: Ao iniciar, Quando acontecer
+      // e Enquanto estiver rodando. Não é outra linguagem liberada ao aluno.
+      expect([...categories].sort()).toEqual(['Jogo 2D', 'Programação', '🗂️ Áreas do projeto'])
+      expect(JSON.stringify(palette)).not.toMatch(
+        /sz_(?:html|css|canvas|frame_structure|frame_appearance)/,
+      )
+      const project = studio.initialProject as ReturnType<typeof montarProjetoFarol>
+      expect(project).toEqual(montarProjetoFarol(day))
+      // Todas as peças da versão final precisam estar disponíveis durante a montagem.
+      const completedTypes = [
+        ...JSON.stringify(montarProjetoFarol('concluido').blocksState).matchAll(
+          /"type":"(sz_[^"]+)"/g,
+        ),
+      ].map((match) => match[1]!)
+      for (const type of completedTypes) expect(studio.allowBlocks).toContain(type)
+      expect(project.ir.html).toEqual([])
+      expect(project.ir.css).toEqual([])
+      expect(JSON.stringify(project.blocksState)).not.toMatch(
+        /sz_(?:html|css|canvas|frame_structure|frame_appearance)/,
+      )
+    }
+  })
+
+  test('o jogo pronto exige participação, sem exigir vitória ou alimentar a cadeia de criação', () => {
+    const m = manifesto('dia-1')
+    const content = m.blocks.find((block) => block.key === 'jogo-pronto')?.content
+    if (content?.kind !== 'interactive' || content.activity.type !== 'project-play')
+      throw new Error('Jogo pronto ausente')
+    expect(content.activity.completion).toBe('participation')
+    expect(content.activity.targets).toEqual([])
+    expect(content.activity.project).toEqual(montarProjetoFarol('concluido'))
+    expect(content.activity.stage).toEqual({ width: 480, height: 360 })
+    const apresentacao = m.sections[0]
+    expect(apresentacao?.key).toBe('apresentacao')
+    expect(apresentacao?.workspaceKey).toBeNull()
+    expect(apresentacao?.blockKeys).not.toContain('projeto')
+    expect(apresentacao?.completion?.blockIds).toEqual(['video-intro-farol', 'jogo-pronto'])
+    expect(JSON.stringify(montarProjetoFarol('dia-1').ir)).not.toContain('g2d:topDown')
+  })
+
+  test('o caderno tem leitor opcional sem um mapa adicional que não faz parte das aulas', () => {
+    const m = manifesto('dia-1')
+    const section = m.sections[1]
+    expect(section?.key).toBe('caderno')
+    expect(section?.completion?.blockIds).toEqual(['video-intro-caderno'])
+    const materiais = m.blocks.find((block) => block.key === 'materiais-farol')?.content
+    expect(materiais).toMatchObject({ kind: 'materials', bookPreview: true })
+    // O PDF do Mapa entra pelo Admin (a importação o mantém à frente); no manifesto ficam só o
+    // recado e os links do Como Fazer, no MESMO bloco (um bloco de materiais por fase, 07/10/2026).
+    if (materiais?.kind !== 'materials') throw new Error('materiais-farol ausente')
+    expect(materiais.items.map((item) => item.kind)).toEqual([
+      'text',
+      'link',
+      'link',
+      'link',
+      'link',
+      'link',
+      'link',
+    ])
+    expect(m.blocks.filter((block) => block.content?.kind === 'materials')).toHaveLength(1)
+    expect(m.blocks.find((block) => block.key === 'mapa-familia')).toBeUndefined()
+  })
+
+  test('o Dia 1 abre com o jogo pronto e o caderno e alterna experiência e montagem', () => {
+    const m = manifesto('dia-1')
+    expect(m.sections.map((section) => section.key)).toEqual([
+      'apresentacao',
+      'caderno',
+      'quadro',
+      'andar',
+      'limite',
+      'borda',
+    ])
+    // Uma ideia por seção: cada experiência vem antes da montagem que aplica o conceito.
+    expect(m.sections.map((section) => section.intent)).toEqual([
+      'presentation',
+      'material',
+      'exploration',
+      'application',
+      'exploration',
+      'delivery',
+    ])
+    for (const section of m.sections.filter((item) => item.intent === 'application')) {
+      expect(section.workspaceKey).toBe('projeto')
+      expect(section.blockKeys).not.toContain('projeto')
+    }
+    // O movimento é verificado antes do limite; a escolha de velocidade saiu do curso.
+    for (const key of ['andar']) {
+      const section = m.sections.find((item) => item.key === key)
+      expect(section?.completion?.projectChecks?.length, key).toBe(2)
+    }
+    // Nenhum critério do curso exige um número de velocidade.
+    for (const name of ['dia-1', 'dia-2', 'dia-3']) {
+      for (const section of manifesto(name).sections) {
+        expect(JSON.stringify(section.completion ?? {}).includes('SPEED'), section.key).toBe(false)
+      }
+    }
+    const borda = m.sections.at(-1)!
+    expect(borda.key).toBe('borda')
+    expect(borda.workspaceKey).toBe('projeto')
+    expect(borda.completion?.blockIds).toContain('projeto')
+    expect(m.retireBlockKeys).toEqual([
+      'video-d1-chegada',
+      'video-d1-movimento',
+      'video-d1-tanto',
+      'ponte-d1-tanto',
+      'experiencia-velocidade',
+      'video-d1-velocidade',
+      'ponte-d1-velocidade',
+      'ajuda-como-fazer-intro',
+      'ajuda-d1',
+    ])
+    for (const name of ['dia-1', 'dia-2', 'dia-3', 'certificado']) {
+      const current = manifesto(name)
+      for (const retired of current.retireBlockKeys ?? []) {
+        expect(current.blocks.some((block) => block.key === retired)).toBe(false)
+        expect(current.sections.some((section) => section.blockKeys.includes(retired))).toBe(false)
+      }
+    }
+  })
+
+  test('a experiência compara a porta com e sem chave antes da prática, sem pergunta redundante', () => {
+    const m = manifesto('dia-3')
+    expect(m.sections.findIndex((section) => section.key === 'condicao')).toBeLessThan(
+      m.sections.findIndex((section) => section.key === 'decisao'),
+    )
+    const activity = m.blocks.find((block) => block.key === 'experiencia-porta')
+    expect(activity?.content?.kind).toBe('interactive')
+    if (activity?.content?.kind !== 'interactive') throw new Error('Experiência ausente')
+    expect(activity.content.activity.scene).toBe('lighthouse-key')
+    expect(activity.content.semPerguntaFinal).toBe(true)
+    expect(m.sections.find((section) => section.key === 'condicao')?.completion?.blockIds).toEqual([
+      'video-d3-condicao',
+      'experiencia-porta',
+    ])
+  })
+
+  test('a memória é experimentada antes da construção, com quatro descobertas e sem outra pergunta', () => {
+    const m = manifesto('dia-2')
+    expect(m.sections.map((section) => section.key)).toEqual([
+      'contexto',
+      'recolher',
+      'guardar',
+      'programar-chave',
+    ])
+    expect(m.sections.map((section) => section.completion?.projectChecks?.length ?? 0)).toEqual([
+      0, 4, 7, 8,
+    ])
+    const activity = m.blocks.find((block) => block.key === 'experiencia-memoria')?.content
+    if (activity?.kind !== 'interactive') throw new Error('Experiência de memória ausente')
+    expect(activity.activity.scene).toBe('collect-and-remember')
+    expect(sceneDefaultGoalIds('collect-and-remember')).toEqual([
+      'collected-without-memory',
+      'collected-with-memory',
+      'remembered-after-leaving',
+      'reset-after-remembering',
+    ])
+    expect(blockPrediction(activity)).toBeUndefined()
+    expect(blockCheckpoint(activity)).toBeUndefined()
+    expect(m.sections[0]?.completion?.blockIds).toEqual([
+      'video-d2-contexto',
+      'experiencia-memoria',
+    ])
+    expect(m.sections[0]?.workspaceKey).toBeNull()
+  })
+
+  test('as respostas da porta são etapas do mesmo projeto, com uma entrega só no fim', () => {
+    const m = manifesto('dia-3')
+    expect(m.sections.map((section) => section.key)).toEqual([
+      'condicao',
+      'sem-chave',
+      'decisao',
+      'personalizar',
+      'farol-mensagens',
+      'posicao',
+      'posicionar-chave',
+      'fecho',
+    ])
+    // O mexa e veja do curso: aplicação antes da entrega, no mesmo projeto. Uma ideia só
+    // (decisão da dona, 06/10/2026): todas as trocas de imagem, o par do farol incluído. A única
+    // conferência é a do farol aceso, que aceita qualquer modelo: nenhuma escolha vira critério.
+    const mexa = m.sections[3]!
+    expect(mexa.intent).toBe('application')
+    expect(mexa.workspaceKey).toBe('projeto')
+    expect(mexa.completion?.blockIds).toEqual(['video-d3-personalizar'])
+    expect(mexa.completion?.projectChecks?.map((check) => check.id)).toEqual(['acender'])
+    const acesos = [...FAROL_FAROIS.map(({ aceso }) => aceso), 'farol-aceso']
+    expect(JSON.stringify(mexa.completion?.projectChecks)).toContain(JSON.stringify(acesos))
+    const decisaoAcender = m.sections[2]?.completion?.projectChecks?.find((c) => c.id === 'acender')
+    expect(mexa.completion?.projectChecks?.[0]?.rule).toEqual(decisaoAcender?.rule)
+    const avisos = m.sections[4]!
+    expect(avisos.title).toBe('Escreva seus avisos')
+    expect(avisos.blockKeys).toEqual(['video-d3-farol-mensagens', 'ponte-d3-farol-mensagens'])
+    for (const key of ['farol-mensagens', 'posicionar-chave']) {
+      const choice = m.sections.find((section) => section.key === key)!
+      expect(choice.intent).toBe(key === 'posicionar-chave' ? 'delivery' : 'closing')
+      expect(choice.workspaceKey).toBe('projeto')
+      expect(choice.completion?.projectChecks).toBeUndefined()
+    }
+    // Envio em dia (10/10/2026): a última parte que muda o jogo antes de "Publique".
+    expect(m.sections.filter((s) => s.completion?.submissionUpToDate).map((s) => s.key)).toEqual([
+      'posicionar-chave',
+    ])
+    const position = m.blocks.find((block) => block.key === 'experiencia-posicao')?.content
+    if (position?.kind !== 'interactive' || position.activity.type !== 'experimentation') {
+      throw new Error('Experiência de posição ausente')
+    }
+    expect(position.activity.scene).toBe('lighthouse-position')
+    expect(position.activity.setup?.goals).toEqual(['mover-horizontal', 'mover-vertical'])
+    expect(m.sections.find((section) => section.key === 'posicao')?.completion?.blockIds).toEqual([
+      'video-d3-posicao',
+      'experiencia-posicao',
+    ])
+    const intermediate = m.sections[1]!
+    const decision = m.sections[2]!
+    const delivery = m.sections[6]!
+    expect(intermediate.workspaceKey).toBe('projeto')
+    expect(delivery.workspaceKey).toBe(intermediate.workspaceKey)
+    expect(intermediate.blockKeys).not.toContain('projeto')
+    expect(intermediate.completion?.blockIds).toEqual(['video-d3-sem-chave'])
+    expect(intermediate.completion?.projectChecks).toHaveLength(10)
+    expect(decision.intent).toBe('application')
+    expect(decision.blockKeys).not.toContain('projeto')
+    expect(decision.completion?.blockIds).toEqual(['video-d3-decisao'])
+    expect(decision.completion?.projectChecks).toHaveLength(14)
+    expect(delivery.completion?.blockIds).toEqual(['video-d3-posicionar-chave', 'projeto'])
+    expect(delivery.blockKeys).toContain('projeto')
+    expect(m.sections[5]?.intent).toBe('exploration')
+    expect(
+      m.sections
+        .filter((section) => section.completion?.blockIds.includes('projeto'))
+        .map((section) => section.key),
+    ).toEqual(['posicionar-chave'])
+    expect(m.blocks.filter((block) => block.content?.kind === 'studio')).toHaveLength(1)
+  })
+
+  test('a pergunta nova não herda a resposta da antiga memória e conserva as outras três', () => {
+    const quiz = manifesto('certificado').blocks.find(
+      (block) => block.key === 'quiz-revisao-final',
+    )?.content
+    if (quiz?.kind !== 'quiz') throw new Error('Revisão final ausente')
+    expect(quiz.questions.map((question) => question.id)).toEqual([
+      'q1',
+      'q-memoria-coleta',
+      'q3',
+      'q4',
+    ])
+    expect(quiz.questions[1]?.correctChoiceIds).toEqual(['b'])
+    expect(quiz.passingScore).toBe(100)
+  })
+
+  test('a publicação retoma o mesmo projeto enviado e não bloqueia a conclusão por publicar', () => {
+    for (const day of ['dia-1', 'dia-2', 'dia-3']) {
+      const content = manifesto(day).blocks.find((block) => block.key === 'projeto')?.content
+      if (content?.kind !== 'studio') throw new Error(`Estúdio ausente: ${day}`)
+      expect(content.chain).toBe('desafio-primeiro-jogo')
+      expect(content.showcase?.enabled === true).toBe(day === 'dia-3')
+    }
+    const m = manifesto('dia-3')
+    const delivery = m.sections.find((section) => section.key === 'posicionar-chave')
+    const publication = m.sections.find((section) => section.key === 'fecho')
+    expect(publication?.workspaceKey).toBe(delivery?.workspaceKey)
+    expect(publication?.workspaceKey).toBe('projeto')
+    expect(publication?.completion?.blockIds).toEqual(['video-d3-fecho'])
+    expect(publication?.blockKeys).not.toContain('projeto')
+    expect(m.blocks.filter((block) => block.content?.kind === 'studio')).toHaveLength(1)
+  })
+
+  test('a celebração mantém a emissão do certificado e aposenta a apresentação comercial', () => {
+    const m = manifesto('certificado')
+    expect(m.sections.map((s) => s.key)).toEqual(['revisao-final', 'certificado'])
+    expect(m.sections[1]?.completion?.blockIds).toEqual(['video-certificado-farol', 'certificado'])
+    expect(m.blocks.find((block) => block.key === 'certificado')?.content?.kind).toBe('certificate')
+    // Vocabulário da aventura (06/10/2026): a criança recebe um certificado de criador.
+    expect(m.blocks.find((block) => block.key === 'certificado')?.content).toMatchObject({
+      title: 'Certificado de Criador',
+      coursePhrase: 'completou o Desafio do Primeiro Jogo',
+    })
+    expect(m.retireBlockKeys).toContain('video-pitch-farol')
+    expect(m.retireBlockKeys).toContain('link-comunidade')
+    expect(m.blocks.some((block) => block.key.includes('pitch'))).toBe(false)
+  })
+
+  test('os critérios de Estúdio não aprovam as retomadas antes da criança programar', () => {
+    for (const day of ['dia-1', 'dia-2', 'dia-3'] as const) {
+      const m = manifesto(day)
+      const studio = m.blocks.find((block) => block.key === 'projeto')?.content
+      const rules = checks(day)
+      expect(rules.length).toBeGreaterThan(0)
+      for (const item of rules)
+        expect(projectCheckAuthoring(studio).issues(item.rule), `${day}/${item.id}`).toEqual([])
+      const before = montarProjetoFarol(day)
+      expect(
+        evaluateStudioSectionProject(rules, before).some((result) => !result.passed),
+        day,
+      ).toBe(true)
+      const next = day === 'dia-1' ? 'dia-2' : day === 'dia-2' ? 'dia-3' : 'concluido'
+      const after = montarProjetoFarol(next)
+      expect(
+        evaluateStudioSectionProject(rules, after).every((result) => result.passed),
+        day,
+      ).toBe(true)
+    }
+  })
+
+  test('a meta da porta recusa uma condição que não consulta temChave', () => {
+    const project = montarProjetoFarol('concluido')
+    const ir = structuredClone(project.ir) as SZIRV2
+    const event = ir.behavior.events.find(
+      (item) => item.type === 'g2d:onOverlap' && item.bVar === 'farol',
+    )
+    if (event?.type !== 'g2d:onOverlap') throw new Error('Evento do farol ausente')
+    const condition = event.body.find((item) => item.type === 'if')
+    if (condition?.type !== 'if') throw new Error('Condição da porta ausente')
+    condition.cond = { type: 'bool', value: false }
+    const wrong = { ...project, ir, blocksState: buildWorkspaceStateFromIR(ir) }
+    const result = evaluateStudioSectionProject(checks('dia-3'), wrong)
+    expect(result.find((item) => item.checkId === 'encontro-farol')?.passed).toBe(false)
+    expect(result.find((item) => item.checkId === 'condicao')?.passed).toBe(false)
+  })
+
+  test('a coleta não passa se temChave só muda no encontro com o farol', () => {
+    const project = montarProjetoFarol('dia-3')
+    const ir = structuredClone(project.ir) as SZIRV2
+    const event = ir.behavior.events.find((item) => item.type === 'g2d:onOverlap')
+    if (event?.type !== 'g2d:onOverlap') throw new Error('Coleta ausente')
+    const remember = event.body.find((item) => item.type === 'assign' && item.name === 'temChave')
+    if (!remember) throw new Error('Memória ausente')
+    event.body = event.body.filter((item) => item !== remember)
+    ir.behavior.events.push({
+      type: 'g2d:onOverlap',
+      aVar: 'personagem',
+      bVar: 'farol',
+      body: [remember],
+    })
+    const wrong = { ...project, ir, blocksState: buildWorkspaceStateFromIR(ir) }
+    expect(
+      evaluateStudioSectionProject(checks('dia-2'), wrong).every((result) => result.passed),
+    ).toBe(false)
+  })
+
+  test('a coleta precisa atualizar o aviso dentro do encontro com a chave', () => {
+    const project = montarProjetoFarol('dia-3')
+    const ir = structuredClone(project.ir) as SZIRV2
+    const event = ir.behavior.events.find((item) => item.type === 'g2d:onOverlap')
+    if (event?.type !== 'g2d:onOverlap') throw new Error('Coleta ausente')
+    event.body = event.body.filter((item) => item.type !== 'assign' || item.name !== 'aviso')
+    const wrong = { ...project, ir, blocksState: buildWorkspaceStateFromIR(ir) }
+    expect(
+      evaluateStudioSectionProject(checks('dia-2'), wrong).every((result) => result.passed),
+    ).toBe(false)
+  })
+
+  test.each(['then', 'else'] as const)('a decisão precisa do aviso no ramo %s', (branch) => {
+    const project = montarProjetoFarol('concluido')
+    const ir = structuredClone(project.ir) as SZIRV2
+    const event = ir.behavior.events.find(
+      (item) => item.type === 'g2d:onOverlap' && item.bVar === 'farol',
+    )
+    if (event?.type !== 'g2d:onOverlap') throw new Error('Porta ausente')
+    const condition = event.body.find((item) => item.type === 'if')
+    if (condition?.type !== 'if') throw new Error('Condição ausente')
+    condition[branch] = (condition[branch] ?? []).filter(
+      (item) => item.type !== 'assign' || item.name !== 'aviso',
+    )
+    const wrong = { ...project, ir, blocksState: buildWorkspaceStateFromIR(ir) }
+    expect(
+      evaluateStudioSectionProject(checks('dia-3'), wrong).every((result) => result.passed),
+    ).toBe(false)
+  })
+
+  test('avisos com palavras próprias não são reprovados por copiar um texto diferente', () => {
+    const project = montarProjetoFarol('concluido')
+    const ir = structuredClone(project.ir) as SZIRV2
+    for (const event of ir.behavior.events) {
+      if (event.type !== 'g2d:onOverlap') continue
+      for (const command of event.body) {
+        if (command.type === 'assign' && command.name === 'aviso')
+          command.value = { type: 'str', value: 'Achei! Vou levar a chave ao farol.' }
+        if (command.type === 'if') {
+          for (const [branch, message] of [
+            ['then', 'O farol acendeu!'],
+            ['else', 'Preciso buscar a chave.'],
+          ] as const) {
+            const statement = command[branch]?.find(
+              (item) => item.type === 'assign' && item.name === 'aviso',
+            )
+            if (statement?.type === 'assign') statement.value = { type: 'str', value: message }
+          }
+        }
+      }
+    }
+    const changed = { ...project, ir, blocksState: buildWorkspaceStateFromIR(ir) }
+    for (const day of ['dia-2', 'dia-3'])
+      expect(
+        evaluateStudioSectionProject(checks(day), changed).every((result) => result.passed),
+      ).toBe(true)
+  })
+
+  test('cada roteiro cobre as seções e gravações do manifesto na mesma ordem', () => {
+    for (const name of ['dia-1', 'dia-2', 'dia-3', 'certificado']) {
+      const m = manifesto(name)
+      const script = readFileSync(
+        resolve(
+          import.meta.dir,
+          `../../aulas-interativas/desafio-primeiro-jogo/desafio-${name}.roteiro.md`,
+        ),
+        'utf8',
+      )
+      const sectionTitles = [...script.matchAll(/^## Seção \d+\. (.+)$/gm)].map((match) => match[1])
+      expect(sectionTitles, name).toEqual(m.sections.map((section) => section.title))
+      const videoKeys = [...script.matchAll(/^### Vídeo `([^`]+)`/gm)].map((match) => match[1])
+      expect(videoKeys, name).toEqual(
+        m.blocks.filter((block) => 'plannedVideo' in block).map((block) => block.key),
+      )
+    }
+  })
+
+  test('a ajuda opcional aponta para tutoriais existentes, sem exigir sua leitura', () => {
+    const library = JSON.parse(
+      readFileSync(resolve(import.meta.dir, '../../como-fazer/como-fazer.json'), 'utf8'),
+    ) as { tutorials: Array<{ slug: string }> }
+    const slugs = new Set(library.tutorials.map((tutorial) => tutorial.slug))
+    let links = 0
+    for (const name of ['dia-1', 'dia-2', 'dia-3', 'certificado']) {
+      const m = manifesto(name)
+      for (const block of m.blocks) {
+        if (block.content?.kind !== 'materials') continue
+        for (const item of block.content.items) {
+          if (item.kind !== 'link') continue
+          expect(item.url.startsWith('/como-fazer/')).toBe(true)
+          expect(slugs.has(item.url.slice('/como-fazer/'.length)), item.url).toBe(true)
+          expect(
+            m.sections.some((section) => section.completion?.blockIds.includes(block.key)),
+          ).toBe(false)
+          links++
+        }
+      }
+    }
+    // 6 no bloco do Mapa do Dia 1 e 1 na publicação do Dia 3 (os 2 do "andar" saíram em 07/10).
+    expect(links).toBe(7)
+  })
+})

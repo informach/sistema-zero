@@ -1,7 +1,0 @@
-Desenhe três quadros:
-
-onde o herói começa;
-o que encontra no caminho;
-onde precisa chegar.
-
-Essa sequência ajuda a escolher o que construir primeiro.

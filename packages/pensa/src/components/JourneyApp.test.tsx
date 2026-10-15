@@ -399,7 +399,9 @@ test('abrir a confirmação de apagar leva o foco ao botão de manter o plano', 
   )
 })
 
-test('sem plano antigo, a home ainda leva ao código de um plano em equipe', async () => {
+// Equipe no v2 (14/10/2026): o código abre o campo AQUI e entra direto no jogo v2; o plano
+// clássico deixou de ser o caminho (o fluxo inteiro está em `JourneyApp.team.test.tsx`).
+test('sem plano antigo, a home abre o campo do código sem passar pelo plano clássico', async () => {
   const onLegacy = mock()
   const request = mock(async (path: string) => {
     if (path.startsWith('/v2/projects?')) return []
@@ -422,5 +424,6 @@ test('sem plano antigo, a home ainda leva ao código de um plano em equipe', asy
     />,
   )
   fireEvent.click(await screen.findByRole('button', { name: 'Entrar com um código' }))
-  expect(onLegacy).toHaveBeenCalledTimes(1)
+  expect(screen.getByLabelText('Código do plano de um colega')).toBeTruthy()
+  expect(onLegacy).not.toHaveBeenCalled()
 })

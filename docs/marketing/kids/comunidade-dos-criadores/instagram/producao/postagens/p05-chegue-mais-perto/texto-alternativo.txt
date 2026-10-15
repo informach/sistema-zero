@@ -1,0 +1,44 @@
+SLIDE 1
+Curto (87 caracteres): Cena encenada: menino visto da porta, de costas; o ângulo esconde a tela do computador.
+
+Longo: Cena encenada: menino visto da porta, de costas; o ângulo esconde a tela do computador. Texto da arte: Da porta, você vê as costas dele e o monitor por trás. Para saber o que acontece na tela, chegue mais perto.
+
+SLIDE 2
+Curto (91 caracteres): Cena encenada: mãe senta ao lado do filho e observa com interesse o que ele mostra na tela.
+
+Longo: Cena encenada: mãe senta ao lado do filho e observa com interesse o que ele mostra na tela. Texto da arte: Reserve um momento para sentar ao lado do seu filho. Peça: “Me mostra o que você gosta de fazer aqui.”
+
+SLIDE 3
+Curto (92 caracteres): Cena encenada: mãe aproxima a cadeira enquanto o filho vira o monitor para mostrar a página.
+
+Longo: Cena encenada: mãe aproxima a cadeira enquanto o filho vira o monitor para mostrar a página. Texto da arte: Deixe ele mostrar e explicar. Você consegue ver o aplicativo, o jogo e as conversas que uma olhada rápida da porta não mostra.
+
+SLIDE 4
+Curto (82 caracteres): Cena encenada: menino aponta o ícone de mensagens numa página genérica, sem marca.
+
+Longo: Cena encenada: menino aponta o ícone de mensagens numa página genérica, sem marca. Texto da arte: Durante a conversa, pergunte: Como isso funciona? Em qual site ou aplicativo você está? Quem consegue falar com você aqui?
+
+SLIDE 5
+Curto (93 caracteres): Bilhete na geladeira: pedidos de senha, dinheiro, fotos ou dados devem ser conversados antes.
+
+Longo: Bilhete na geladeira: pedidos de senha, dinheiro, fotos ou dados devem ser conversados antes. Texto da arte: Combinem que pedidos de senha, dinheiro, fotos ou dados pessoais devem passar por você. Seu filho pode chamar você antes de responder.
+
+SLIDE 6
+Curto (83 caracteres): Bloco real com uma fala sendo editada e captura da Guia dizendo essa frase na vila.
+
+Longo: Bloco real com uma fala sendo editada e captura da Guia dizendo essa frase na vila. Texto da arte: Criar jogos também permite conversar sobre quem escreve o que aparece na tela. Ao montar um diálogo, a criança escolhe a fala do personagem.
+
+SLIDE 7
+Curto (97 caracteres): Captura real da Guia com a pergunta e os botões Padeiro e Mecânico, junto dos blocos da pergunta.
+
+Longo: Captura real da Guia com a pergunta e os botões Padeiro e Mecânico, junto dos blocos da pergunta. Texto da arte: Nesta vila que montamos, a pergunta da personagem foi escrita pela nossa equipe. É uma fala programada. Uma conversa com outra pessoa funciona de outro jeito.
+
+SLIDE 8
+Curto (92 caracteres): Cena encenada: mãe e filho olham juntos o celular e conversam, sem expor mensagens pessoais.
+
+Longo: Cena encenada: mãe e filho olham juntos o celular e conversam, sem expor mensagens pessoais. Texto da arte: Ajudem seu filho a perceber quando está lendo uma fala do jogo e quando alguém está falando com ele. Siga @criecomhelenaejulio para acompanhar mais de perto suas atividades com tecnologia.
+
+ORIGEM E CONTEXTO
+Slides 1, 2, 3, 4 e 8: cenas geradas com o mesmo menino e a mesma mãe fictícios. Não são alunos reais ou depoentes. A página de jogos e a área de mensagens dos slides 2 a 4 são genéricas e ilustrativas; não representam recursos da nossa plataforma. No slide 1, a porta e o ângulo escondem o conteúdo do monitor. No slide 8, o telefone fica voltado à família, sem expor uma conversa.
+Slide 5: fotografia gerada de bilhete. Texto do bilhete: “Nosso combinado. Pediram senha, dinheiro, fotos ou dados pessoais? Vamos conversar antes de responder.”
+Slides 6 e 7: blocos nativos do Estúdio e capturas diretas da Vila das Vocações. Na cópia, os acentos foram corrigidos. O bloco da fala aparece com o campo de texto em edição. A pergunta é “O que você quer ser quando crescer?”, com respostas Padeiro e Mecânico. Abaixo da cena, três recortes do mesmo bloco mostram a pergunta e os campos das respostas; os comandos que vêm depois de cada resposta ficam fora do recorte. A câmera da captura foi ajustada para mostrar a Guia e o jogador juntos, sem mudar as regras ou os diálogos.

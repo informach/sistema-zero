@@ -1,0 +1,51 @@
+[
+  {
+    "slide": 1,
+    "file": "01-terminou.png",
+    "source": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-2bead075-3499-41de-a933-4cb71890e447.png",
+    "tool": "image_gen.imagegen (nativa)",
+    "references": [],
+    "sha256": "9a30c27b0bc6dc0a256b1f864e8b5373c01e796430946e8c6a0969f414fa5acc",
+    "sourceSha256": "9a30c27b0bc6dc0a256b1f864e8b5373c01e796430946e8c6a0969f414fa5acc"
+  },
+  {
+    "slide": 2,
+    "file": "02-caderno-fora.png",
+    "source": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-6e173388-7635-41bd-814c-0a0866282f2d.png",
+    "tool": "image_gen.imagegen (nativa)",
+    "references": [],
+    "sha256": "600b07e0e532e1e75327a25a590ec216f43f90f42bb9b3b6f679ddaaae4d67f1",
+    "sourceSha256": "600b07e0e532e1e75327a25a590ec216f43f90f42bb9b3b6f679ddaaae4d67f1"
+  },
+  {
+    "slide": 3,
+    "file": "03-combinar-antes.png",
+    "source": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-2d0b99b8-8317-462b-b6d4-9bb921097bd2.png",
+    "tool": "image_gen.imagegen (nativa)",
+    "references": [
+      "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-2bead075-3499-41de-a933-4cb71890e447.png"
+    ],
+    "sha256": "b056169a6dd50a0c3d08107d9638e686ef9b83f9f0135a563315b54b1b591ada",
+    "sourceSha256": "b056169a6dd50a0c3d08107d9638e686ef9b83f9f0135a563315b54b1b591ada"
+  },
+  {
+    "slide": 4,
+    "file": "04-lista.png",
+    "source": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-2189c39b-4ffd-4b01-a5db-712df5f7c2e3.png",
+    "tool": "image_gen.imagegen (nativa)",
+    "references": [],
+    "sha256": "a4c380b4a641acf333d09f0fe0158e3eba0c810aae3daf9f4351b110d61fc0f7",
+    "sourceSha256": "a4c380b4a641acf333d09f0fe0158e3eba0c810aae3daf9f4351b110d61fc0f7"
+  },
+  {
+    "slide": 7,
+    "file": "07-conferir-lista.png",
+    "source": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-669e9db3-6755-47d9-9dc8-466ed7570bd2.png",
+    "tool": "image_gen.imagegen (nativa)",
+    "references": [
+      "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-2bead075-3499-41de-a933-4cb71890e447.png"
+    ],
+    "sha256": "2e29d63d4773c37e873e613887d4a4b7a351b53c4939a4105cfa30419fb80279",
+    "sourceSha256": "2e29d63d4773c37e873e613887d4a4b7a351b53c4939a4105cfa30419fb80279"
+  }
+]

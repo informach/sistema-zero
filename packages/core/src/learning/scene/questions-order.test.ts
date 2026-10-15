@@ -1,6 +1,9 @@
 import { describe, expect, test } from 'bun:test'
-import { readdirSync, readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { readFileSync } from 'node:fs'
+import {
+  caminhoAula,
+  listarArquivosAulas,
+} from '../../../../../docs/aulas-interativas-tecnico/qa/caminhos'
 import { SCENE_IDS, type SceneId } from './actions'
 import { castText, type SceneCast } from './cast'
 import { sceneGoalIds } from './catalog'
@@ -167,7 +170,6 @@ describe('a retomada do palpite', () => {
  * na explicação, sempre em segundo na previsão — um padrão igualmente adivinhável).
  */
 describe('as perguntas dos manifestos atuais', () => {
-  const docs = resolve(import.meta.dir, '../../../../../docs/aulas-interativas/aulas')
   type Bloco = {
     kind?: string
     activity?: { type?: string; scene?: SceneId }
@@ -189,8 +191,8 @@ describe('as perguntas dos manifestos atuais', () => {
       for (const v of Object.values(valor)) andar(v, onde)
     }
   }
-  for (const nome of readdirSync(docs).filter((name) => name.endsWith('.manifesto.json')))
-    andar(JSON.parse(readFileSync(resolve(docs, nome), 'utf8')), nome)
+  for (const nome of listarArquivosAulas().filter((name) => name.endsWith('.manifesto.json')))
+    andar(JSON.parse(readFileSync(caminhoAula(nome), 'utf8')), nome)
 
   test('a varredura LEU os blocos de cena (laço vazio aprova tudo)', () => {
     expect(

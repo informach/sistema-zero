@@ -10,7 +10,7 @@ import {
 import { textoDoItem } from '@sistemazero/member-shell/components/lesson-section-status'
 import { ADULT_LESSON_COPY } from '@sistemazero/member-shell/lib/lesson-copy'
 // Só LEITURA: a régua de concordância é dos roteiros (outro dono); a tela segue a mesma.
-import { CONCORDANCIA_ERRADA } from '../../../docs/aulas-interativas/qa/palavras-da-escola'
+import { CONCORDANCIA_ERRADA } from '../../../docs/aulas-interativas-tecnico/qa/palavras-da-escola'
 import { conclusaoRecusada, KIDS_LESSON_COPY, PALAVRAS_DA_ESCOLA } from '../src/lib/lesson-copy'
 import {
   linhasVisiveis,

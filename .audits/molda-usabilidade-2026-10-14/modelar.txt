@@ -1,0 +1,58 @@
+Oficina em desenvolvimento. A sincronização com o Estúdio ainda não está ligada aqui.
+
+Meus projetos
+estudo-de-usabilidade
+Mudanças por salvar
+Guardar agora
+Baixar projeto
+Exportar GLB
+Modelar
+Pintar
+Animar
+Mostrar grade
+Mais ajustes do palco
+Vista: Livre
+Enquadrar seleção
+FERRAMENTAS
+Escolher
+Mover
+Girar
+Mudar tamanho
+Duplicar
+Apagar seleção
+Mais ferramentas
+ADICIONAR FORMA
+Caixa
+Rampa
+Cilindro
+Bola
+Ferramentas que vêm por aí
+
+Arraste uma alça. Esc cancela o ajuste.
+
+Peças e propriedades
+PEÇAS E GRUPOS
+caixa
+Peça
+Caixa
+Peça
+
+1 item escolhido
+
+Mover
+Girar
+Mudar tamanho
+
+X: lados. Y: altura. Z: frente e trás.
+
+X
+Y
+Z
+Aplicar ajuste
+Espelhos
+Mais sobre a peça
+ACABAMENTO
+Fosco
+Brilhante
+Metal
+COR DA PEÇA

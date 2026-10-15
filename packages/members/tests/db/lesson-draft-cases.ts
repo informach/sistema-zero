@@ -12,6 +12,7 @@ import {
 } from '@sistemazero/core/learning'
 import { createLessonAsset, pintaAssetToWire } from '@sistemazero/pinta/assets'
 import { eq, sql } from 'drizzle-orm'
+import { caminhoAula, PASTA_CURSOS } from '../../../../docs/aulas-interativas-tecnico/qa/caminhos'
 import { LearningImportService } from '../../src/application/learning/learning-import.service'
 import { importedLearningId } from '../../src/domain/learning/learning-import'
 import { DrizzleContentAdminRepository } from '../../src/infrastructure/persistence/drizzle/content-admin.repository'
@@ -712,7 +713,7 @@ export function lessonDraftCases(getDb: () => Database) {
       expect((await f.reader.findLessonWithContent(second.id))?.blocks).toHaveLength(0)
     })
     test('every current manifest imports into drafts; retry and reimport retain linked videos and required work', async () => {
-      const root = resolve(import.meta.dir, '../../../../docs/aulas-interativas/aulas')
+      const root = PASTA_CURSOS
       // A importação exercita todos os manifestos atuais, copiados do fluxo criativo.
       const paths = [...new Bun.Glob('*.manifesto.json').scanSync(root)]
       // Piso anti-vácuo: um glob que deixasse de achar as aulas reprovaria.
@@ -725,7 +726,7 @@ export function lessonDraftCases(getDb: () => Database) {
       // isso continua sendo uma comparação entre dois lados independentes.
       let plannedEsperado = 0
       for (const path of paths) {
-        const manifest: unknown = await Bun.file(resolve(root, path)).json()
+        const manifest: unknown = await Bun.file(caminhoAula(path)).json()
         if (!isLearningManifest(manifest)) throw new Error(`Invalid ${path}`)
         plannedEsperado += manifest.blocks.filter(
           (block) => typeof (block as { plannedVideo?: unknown }).plannedVideo === 'string',

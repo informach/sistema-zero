@@ -1,1 +1,0 @@
-Neste parkour do nosso Estúdio, o trampolim lança o herói. Uma anotação útil seria: “testar se o quique alcança a próxima plataforma”.

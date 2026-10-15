@@ -1,0 +1,3158 @@
+{
+  "source": "Caça Estelar básico (Jogo 3D), demonstração com aparência adaptada em visual.ts",
+  "method": "Jogada real com setas e espaço; observador somente de leitura; renderização dos frames intermediários suprimida sem interromper a lógica. Modelos nativos de nave, piso quadriculado e iluminação adaptados; regras, placar, escudos e meta originais.",
+  "states": [
+    {
+      "pontos": 4,
+      "escudo": 3,
+      "rodando": true,
+      "naveX": -0.7200000000000006,
+      "naveZ": 6.479999999999998,
+      "enemies": [
+        {
+          "x": -5.565125658228101,
+          "z": 6.57168823678475
+        }
+      ],
+      "score": "Naves: 4 de 10",
+      "resultVisible": false,
+      "title": "Fim da patrulha"
+    },
+    {
+      "pontos": 9,
+      "escudo": 3,
+      "rodando": true,
+      "naveX": 2.8799999999999994,
+      "naveZ": 1.8000000000000003,
+      "enemies": [
+        {
+          "x": 5.743614706151815,
+          "z": 5.491473590730405
+        }
+      ],
+      "score": "Naves: 9 de 10",
+      "resultVisible": false,
+      "title": "Fim da patrulha"
+    },
+    {
+      "pontos": 10,
+      "escudo": 3,
+      "rodando": false,
+      "naveX": 3.2399999999999998,
+      "naveZ": 2.16,
+      "enemies": [],
+      "score": "Naves: 10 de 10",
+      "resultVisible": true,
+      "title": "Ás dos céus!"
+    }
+  ],
+  "inputs": [
+    {
+      "frame": 0,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 1,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 2,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 3,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 4,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 5,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 6,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 7,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 8,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 9,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 10,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 11,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 12,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 13,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 14,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 15,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 16,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 17,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 18,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 19,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 20,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 21,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 22,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 23,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 24,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 25,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 26,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 27,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 28,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 29,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 30,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 31,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 32,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 33,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 34,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 35,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 36,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 37,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 38,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 39,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 40,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 41,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 42,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 43,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 44,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 45,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 46,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 47,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 48,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 49,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 50,
+      "pontos": 0,
+      "keys": [
+        "Space",
+        "ArrowLeft",
+        "ArrowDown"
+      ]
+    },
+    {
+      "frame": 51,
+      "pontos": 0,
+      "keys": [
+        "Space",
+        "ArrowLeft",
+        "ArrowDown"
+      ]
+    },
+    {
+      "frame": 52,
+      "pontos": 0,
+      "keys": [
+        "Space",
+        "ArrowLeft",
+        "ArrowDown"
+      ]
+    },
+    {
+      "frame": 53,
+      "pontos": 0,
+      "keys": [
+        "Space",
+        "ArrowLeft",
+        "ArrowDown"
+      ]
+    },
+    {
+      "frame": 54,
+      "pontos": 0,
+      "keys": [
+        "Space",
+        "ArrowLeft",
+        "ArrowDown"
+      ]
+    },
+    {
+      "frame": 55,
+      "pontos": 0,
+      "keys": [
+        "Space",
+        "ArrowLeft",
+        "ArrowDown"
+      ]
+    },
+    {
+      "frame": 56,
+      "pontos": 0,
+      "keys": [
+        "Space",
+        "ArrowLeft",
+        "ArrowDown"
+      ]
+    },
+    {
+      "frame": 57,
+      "pontos": 0,
+      "keys": [
+        "Space",
+        "ArrowLeft",
+        "ArrowDown"
+      ]
+    },
+    {
+      "frame": 58,
+      "pontos": 0,
+      "keys": [
+        "Space",
+        "ArrowLeft",
+        "ArrowDown"
+      ]
+    },
+    {
+      "frame": 59,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 60,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 61,
+      "pontos": 0,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 62,
+      "pontos": 1,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 63,
+      "pontos": 1,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 64,
+      "pontos": 1,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 65,
+      "pontos": 1,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 66,
+      "pontos": 1,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 67,
+      "pontos": 1,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 68,
+      "pontos": 1,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 69,
+      "pontos": 1,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 70,
+      "pontos": 1,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 71,
+      "pontos": 1,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 72,
+      "pontos": 1,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 73,
+      "pontos": 1,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 74,
+      "pontos": 1,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 75,
+      "pontos": 1,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 76,
+      "pontos": 1,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 77,
+      "pontos": 1,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 78,
+      "pontos": 1,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 79,
+      "pontos": 1,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 80,
+      "pontos": 1,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 81,
+      "pontos": 1,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 82,
+      "pontos": 1,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 83,
+      "pontos": 1,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 84,
+      "pontos": 1,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 85,
+      "pontos": 1,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 86,
+      "pontos": 1,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 87,
+      "pontos": 1,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 88,
+      "pontos": 1,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 89,
+      "pontos": 1,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 90,
+      "pontos": 1,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 91,
+      "pontos": 1,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 92,
+      "pontos": 1,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 93,
+      "pontos": 1,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 94,
+      "pontos": 1,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 95,
+      "pontos": 1,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 96,
+      "pontos": 1,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 97,
+      "pontos": 1,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 98,
+      "pontos": 1,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 99,
+      "pontos": 1,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 100,
+      "pontos": 1,
+      "keys": [
+        "Space",
+        "ArrowLeft",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 101,
+      "pontos": 1,
+      "keys": [
+        "Space",
+        "ArrowLeft",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 102,
+      "pontos": 1,
+      "keys": [
+        "Space",
+        "ArrowLeft",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 103,
+      "pontos": 1,
+      "keys": [
+        "Space",
+        "ArrowLeft"
+      ]
+    },
+    {
+      "frame": 104,
+      "pontos": 1,
+      "keys": [
+        "Space",
+        "ArrowLeft"
+      ]
+    },
+    {
+      "frame": 105,
+      "pontos": 1,
+      "keys": [
+        "Space",
+        "ArrowLeft"
+      ]
+    },
+    {
+      "frame": 106,
+      "pontos": 1,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 107,
+      "pontos": 1,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 108,
+      "pontos": 1,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 109,
+      "pontos": 2,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 110,
+      "pontos": 2,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 111,
+      "pontos": 2,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 112,
+      "pontos": 2,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 113,
+      "pontos": 2,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 114,
+      "pontos": 2,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 115,
+      "pontos": 2,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 116,
+      "pontos": 2,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 117,
+      "pontos": 2,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 118,
+      "pontos": 2,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 119,
+      "pontos": 2,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 120,
+      "pontos": 2,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 121,
+      "pontos": 2,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 122,
+      "pontos": 2,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 123,
+      "pontos": 2,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 124,
+      "pontos": 2,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 125,
+      "pontos": 2,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 126,
+      "pontos": 2,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 127,
+      "pontos": 2,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 128,
+      "pontos": 2,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 129,
+      "pontos": 2,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 130,
+      "pontos": 2,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 131,
+      "pontos": 2,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 132,
+      "pontos": 2,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 133,
+      "pontos": 2,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 134,
+      "pontos": 2,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 135,
+      "pontos": 2,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 136,
+      "pontos": 2,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 137,
+      "pontos": 2,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 138,
+      "pontos": 2,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 139,
+      "pontos": 2,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 140,
+      "pontos": 2,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 141,
+      "pontos": 2,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 142,
+      "pontos": 2,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 143,
+      "pontos": 2,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 144,
+      "pontos": 2,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 145,
+      "pontos": 2,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 146,
+      "pontos": 2,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 147,
+      "pontos": 2,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 148,
+      "pontos": 2,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 149,
+      "pontos": 2,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 150,
+      "pontos": 2,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowDown"
+      ]
+    },
+    {
+      "frame": 151,
+      "pontos": 2,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowDown"
+      ]
+    },
+    {
+      "frame": 152,
+      "pontos": 2,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowDown"
+      ]
+    },
+    {
+      "frame": 153,
+      "pontos": 2,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowDown"
+      ]
+    },
+    {
+      "frame": 154,
+      "pontos": 2,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowDown"
+      ]
+    },
+    {
+      "frame": 155,
+      "pontos": 2,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowDown"
+      ]
+    },
+    {
+      "frame": 156,
+      "pontos": 2,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowDown"
+      ]
+    },
+    {
+      "frame": 157,
+      "pontos": 2,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowDown"
+      ]
+    },
+    {
+      "frame": 158,
+      "pontos": 2,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowDown"
+      ]
+    },
+    {
+      "frame": 159,
+      "pontos": 2,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowDown"
+      ]
+    },
+    {
+      "frame": 160,
+      "pontos": 2,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowDown"
+      ]
+    },
+    {
+      "frame": 161,
+      "pontos": 2,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowDown"
+      ]
+    },
+    {
+      "frame": 162,
+      "pontos": 2,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowDown"
+      ]
+    },
+    {
+      "frame": 163,
+      "pontos": 2,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 164,
+      "pontos": 2,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 165,
+      "pontos": 2,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 166,
+      "pontos": 3,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 167,
+      "pontos": 3,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 168,
+      "pontos": 3,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 169,
+      "pontos": 3,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 170,
+      "pontos": 3,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 171,
+      "pontos": 3,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 172,
+      "pontos": 3,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 173,
+      "pontos": 3,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 174,
+      "pontos": 3,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 175,
+      "pontos": 3,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 176,
+      "pontos": 3,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 177,
+      "pontos": 3,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 178,
+      "pontos": 3,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 179,
+      "pontos": 3,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 180,
+      "pontos": 3,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 181,
+      "pontos": 3,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 182,
+      "pontos": 3,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 183,
+      "pontos": 3,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 184,
+      "pontos": 3,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 185,
+      "pontos": 3,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 186,
+      "pontos": 3,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 187,
+      "pontos": 3,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 188,
+      "pontos": 3,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 189,
+      "pontos": 3,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 190,
+      "pontos": 3,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 191,
+      "pontos": 3,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 192,
+      "pontos": 3,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 193,
+      "pontos": 3,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 194,
+      "pontos": 3,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 195,
+      "pontos": 3,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 196,
+      "pontos": 3,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 197,
+      "pontos": 3,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 198,
+      "pontos": 3,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 199,
+      "pontos": 3,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 200,
+      "pontos": 3,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 201,
+      "pontos": 3,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 202,
+      "pontos": 3,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 203,
+      "pontos": 3,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 204,
+      "pontos": 3,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 205,
+      "pontos": 3,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 206,
+      "pontos": 3,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 207,
+      "pontos": 3,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 208,
+      "pontos": 3,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 209,
+      "pontos": 3,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 210,
+      "pontos": 3,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 211,
+      "pontos": 3,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 212,
+      "pontos": 3,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 213,
+      "pontos": 3,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 214,
+      "pontos": 3,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 215,
+      "pontos": 3,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 216,
+      "pontos": 3,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 217,
+      "pontos": 3,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 218,
+      "pontos": 3,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 219,
+      "pontos": 3,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 220,
+      "pontos": 3,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 221,
+      "pontos": 4,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 222,
+      "pontos": 4,
+      "keys": [
+        "Space",
+        "ArrowLeft"
+      ]
+    },
+    {
+      "frame": 223,
+      "pontos": 4,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 224,
+      "pontos": 4,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 225,
+      "pontos": 4,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 226,
+      "pontos": 5,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 227,
+      "pontos": 5,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 228,
+      "pontos": 5,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 229,
+      "pontos": 5,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 230,
+      "pontos": 5,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 231,
+      "pontos": 5,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 232,
+      "pontos": 5,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 233,
+      "pontos": 5,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 234,
+      "pontos": 5,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 235,
+      "pontos": 5,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 236,
+      "pontos": 5,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 237,
+      "pontos": 5,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 238,
+      "pontos": 5,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 239,
+      "pontos": 5,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 240,
+      "pontos": 5,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 241,
+      "pontos": 5,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 242,
+      "pontos": 5,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 243,
+      "pontos": 5,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 244,
+      "pontos": 5,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 245,
+      "pontos": 5,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 246,
+      "pontos": 5,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 247,
+      "pontos": 5,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 248,
+      "pontos": 5,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 249,
+      "pontos": 5,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 250,
+      "pontos": 5,
+      "keys": [
+        "Space",
+        "ArrowLeft",
+        "ArrowDown"
+      ]
+    },
+    {
+      "frame": 251,
+      "pontos": 5,
+      "keys": [
+        "Space",
+        "ArrowLeft",
+        "ArrowDown"
+      ]
+    },
+    {
+      "frame": 252,
+      "pontos": 5,
+      "keys": [
+        "Space",
+        "ArrowLeft",
+        "ArrowDown"
+      ]
+    },
+    {
+      "frame": 253,
+      "pontos": 5,
+      "keys": [
+        "Space",
+        "ArrowLeft",
+        "ArrowDown"
+      ]
+    },
+    {
+      "frame": 254,
+      "pontos": 5,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 255,
+      "pontos": 5,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 256,
+      "pontos": 5,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 257,
+      "pontos": 6,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 258,
+      "pontos": 6,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 259,
+      "pontos": 6,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 260,
+      "pontos": 6,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 261,
+      "pontos": 6,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 262,
+      "pontos": 6,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 263,
+      "pontos": 6,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 264,
+      "pontos": 6,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 265,
+      "pontos": 6,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 266,
+      "pontos": 6,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 267,
+      "pontos": 6,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 268,
+      "pontos": 6,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 269,
+      "pontos": 6,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 270,
+      "pontos": 6,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 271,
+      "pontos": 6,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 272,
+      "pontos": 6,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 273,
+      "pontos": 6,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 274,
+      "pontos": 6,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 275,
+      "pontos": 6,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 276,
+      "pontos": 6,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 277,
+      "pontos": 6,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 278,
+      "pontos": 6,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 279,
+      "pontos": 6,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 280,
+      "pontos": 6,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 281,
+      "pontos": 6,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 282,
+      "pontos": 6,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 283,
+      "pontos": 6,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 284,
+      "pontos": 6,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 285,
+      "pontos": 6,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 286,
+      "pontos": 6,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 287,
+      "pontos": 6,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 288,
+      "pontos": 6,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 289,
+      "pontos": 6,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 290,
+      "pontos": 6,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 291,
+      "pontos": 6,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 292,
+      "pontos": 6,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 293,
+      "pontos": 6,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 294,
+      "pontos": 6,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 295,
+      "pontos": 6,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 296,
+      "pontos": 6,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 297,
+      "pontos": 6,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 298,
+      "pontos": 6,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 299,
+      "pontos": 6,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 300,
+      "pontos": 6,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 301,
+      "pontos": 6,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 302,
+      "pontos": 6,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 303,
+      "pontos": 6,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 304,
+      "pontos": 6,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 305,
+      "pontos": 6,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 306,
+      "pontos": 6,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 307,
+      "pontos": 6,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 308,
+      "pontos": 6,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 309,
+      "pontos": 6,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 310,
+      "pontos": 6,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 311,
+      "pontos": 6,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 312,
+      "pontos": 6,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 313,
+      "pontos": 6,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 314,
+      "pontos": 6,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 315,
+      "pontos": 6,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 316,
+      "pontos": 6,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 317,
+      "pontos": 6,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 318,
+      "pontos": 6,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 319,
+      "pontos": 6,
+      "keys": [
+        "Space",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 320,
+      "pontos": 6,
+      "keys": [
+        "Space",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 321,
+      "pontos": 6,
+      "keys": [
+        "Space",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 322,
+      "pontos": 6,
+      "keys": [
+        "Space",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 323,
+      "pontos": 6,
+      "keys": [
+        "Space",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 324,
+      "pontos": 6,
+      "keys": [
+        "Space",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 325,
+      "pontos": 6,
+      "keys": [
+        "Space",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 326,
+      "pontos": 6,
+      "keys": [
+        "Space",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 327,
+      "pontos": 6,
+      "keys": [
+        "Space",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 328,
+      "pontos": 6,
+      "keys": [
+        "Space",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 329,
+      "pontos": 6,
+      "keys": [
+        "Space",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 330,
+      "pontos": 6,
+      "keys": [
+        "Space",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 331,
+      "pontos": 6,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 332,
+      "pontos": 6,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 333,
+      "pontos": 7,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 334,
+      "pontos": 7,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 335,
+      "pontos": 7,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 336,
+      "pontos": 7,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 337,
+      "pontos": 7,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 338,
+      "pontos": 7,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 339,
+      "pontos": 7,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 340,
+      "pontos": 7,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 341,
+      "pontos": 7,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 342,
+      "pontos": 7,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 343,
+      "pontos": 7,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 344,
+      "pontos": 7,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 345,
+      "pontos": 7,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 346,
+      "pontos": 7,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 347,
+      "pontos": 7,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 348,
+      "pontos": 7,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 349,
+      "pontos": 7,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 350,
+      "pontos": 7,
+      "keys": [
+        "Space",
+        "ArrowLeft",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 351,
+      "pontos": 7,
+      "keys": [
+        "Space",
+        "ArrowLeft",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 352,
+      "pontos": 7,
+      "keys": [
+        "Space",
+        "ArrowLeft",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 353,
+      "pontos": 7,
+      "keys": [
+        "Space",
+        "ArrowLeft",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 354,
+      "pontos": 7,
+      "keys": [
+        "Space",
+        "ArrowLeft",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 355,
+      "pontos": 7,
+      "keys": [
+        "Space",
+        "ArrowLeft",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 356,
+      "pontos": 7,
+      "keys": [
+        "Space",
+        "ArrowLeft",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 357,
+      "pontos": 7,
+      "keys": [
+        "Space",
+        "ArrowLeft",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 358,
+      "pontos": 7,
+      "keys": [
+        "Space",
+        "ArrowLeft",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 359,
+      "pontos": 7,
+      "keys": [
+        "Space",
+        "ArrowLeft",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 360,
+      "pontos": 7,
+      "keys": [
+        "Space",
+        "ArrowLeft",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 361,
+      "pontos": 7,
+      "keys": [
+        "Space",
+        "ArrowLeft",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 362,
+      "pontos": 7,
+      "keys": [
+        "Space",
+        "ArrowLeft",
+        "ArrowUp"
+      ]
+    },
+    {
+      "frame": 363,
+      "pontos": 7,
+      "keys": [
+        "Space",
+        "ArrowLeft"
+      ]
+    },
+    {
+      "frame": 364,
+      "pontos": 7,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 365,
+      "pontos": 7,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 366,
+      "pontos": 8,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 367,
+      "pontos": 8,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 368,
+      "pontos": 8,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 369,
+      "pontos": 8,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 370,
+      "pontos": 8,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 371,
+      "pontos": 8,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 372,
+      "pontos": 8,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 373,
+      "pontos": 8,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 374,
+      "pontos": 8,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 375,
+      "pontos": 8,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 376,
+      "pontos": 8,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 377,
+      "pontos": 8,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 378,
+      "pontos": 8,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 379,
+      "pontos": 8,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 380,
+      "pontos": 8,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 381,
+      "pontos": 8,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 382,
+      "pontos": 8,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 383,
+      "pontos": 8,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 384,
+      "pontos": 8,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 385,
+      "pontos": 8,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 386,
+      "pontos": 8,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 387,
+      "pontos": 8,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 388,
+      "pontos": 8,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 389,
+      "pontos": 8,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 390,
+      "pontos": 8,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 391,
+      "pontos": 8,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 392,
+      "pontos": 8,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 393,
+      "pontos": 8,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 394,
+      "pontos": 8,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 395,
+      "pontos": 8,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 396,
+      "pontos": 8,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 397,
+      "pontos": 8,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 398,
+      "pontos": 8,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 399,
+      "pontos": 8,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 400,
+      "pontos": 8,
+      "keys": [
+        "Space",
+        "ArrowLeft",
+        "ArrowDown"
+      ]
+    },
+    {
+      "frame": 401,
+      "pontos": 8,
+      "keys": [
+        "Space",
+        "ArrowLeft",
+        "ArrowDown"
+      ]
+    },
+    {
+      "frame": 402,
+      "pontos": 8,
+      "keys": [
+        "Space",
+        "ArrowLeft",
+        "ArrowDown"
+      ]
+    },
+    {
+      "frame": 403,
+      "pontos": 8,
+      "keys": [
+        "Space",
+        "ArrowLeft",
+        "ArrowDown"
+      ]
+    },
+    {
+      "frame": 404,
+      "pontos": 8,
+      "keys": [
+        "Space",
+        "ArrowLeft",
+        "ArrowDown"
+      ]
+    },
+    {
+      "frame": 405,
+      "pontos": 8,
+      "keys": [
+        "Space",
+        "ArrowLeft",
+        "ArrowDown"
+      ]
+    },
+    {
+      "frame": 406,
+      "pontos": 8,
+      "keys": [
+        "Space",
+        "ArrowLeft",
+        "ArrowDown"
+      ]
+    },
+    {
+      "frame": 407,
+      "pontos": 8,
+      "keys": [
+        "Space",
+        "ArrowLeft",
+        "ArrowDown"
+      ]
+    },
+    {
+      "frame": 408,
+      "pontos": 8,
+      "keys": [
+        "Space",
+        "ArrowLeft"
+      ]
+    },
+    {
+      "frame": 409,
+      "pontos": 8,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 410,
+      "pontos": 8,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 411,
+      "pontos": 9,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 412,
+      "pontos": 9,
+      "keys": [
+        "Space",
+        "ArrowRight",
+        "ArrowDown"
+      ]
+    },
+    {
+      "frame": 413,
+      "pontos": 9,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 414,
+      "pontos": 9,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 415,
+      "pontos": 9,
+      "keys": [
+        "Space"
+      ]
+    }
+  ],
+  "errors": []
+}

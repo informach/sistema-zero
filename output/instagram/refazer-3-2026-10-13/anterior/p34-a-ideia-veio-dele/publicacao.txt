@@ -1,9 +1,0 @@
-P34 · “Eu quero mudar isso aqui no jogo.” A ideia veio dele.
-Produzido em 13/10/2026. Segundo carrossel na ordem do calendário, primeira publicação da semana 2. P33 (imagem única) e P16 (Reel) continuam antes dele na fila geral, ainda sem nova mídia.
-Seis PNGs 1080 × 1350, 4:5. Publicar 01-p34.png a 06-p34.png, nessa ordem. previa.png é apenas para conferência.
-O sexto slide acrescenta o convite para seguir o perfil; o quinto preserva a conclusão do conteúdo. Sem ManyChat neste post.
-Fotografias reais: Daniel (quadros 12s e 45s do vídeo fornecido), Rafael (retrato já usado na oferta). Não foram geradas ou alteradas identidades.
-Fala da capa: AV11/I03, 28,58–30,22s. Daniel conta uma fala do Rafael. Fonte em apoio/fontes.md.
-Demonstração real de Quebra-blocos captada em partida, com o runtime oficial. Segunda versão reduz a velocidade inicial à metade; não representa projeto do Rafael. Rastros gráficos sobrepostos pela equipe representam posições registradas, não um recurso da interface. Fontes, projetos e medições em apoio/.
-Uma ilustração de rascunho gerada pelo image_gen incorporado, usada nos slides 3 e 6. Prompt em apoio/prompts.md. Sem autoria atribuída a aluno.
-Legenda, texto alternativo e montagem editável acompanham os arquivos. Não agendado nem publicado.

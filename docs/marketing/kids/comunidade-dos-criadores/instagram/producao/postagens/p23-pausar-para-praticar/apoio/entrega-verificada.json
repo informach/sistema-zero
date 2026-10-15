@@ -1,0 +1,529 @@
+{
+  "id": "P23",
+  "checkedAt": "2026-10-14T23:52:20.603Z",
+  "errors": [],
+  "files": [
+    {
+      "file": "01-p23.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 696107,
+      "sha256": "c6c6ad2064c638d2ec02dd42d3305d15be13c432d368c4d41bc4a00fd7fda5ba"
+    },
+    {
+      "file": "02-p23.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 830680,
+      "sha256": "97643dafad553bcecf01361d277f046bbbbdecb1ad85370fb0cf577bbe5081e7"
+    },
+    {
+      "file": "03-p23.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 1078518,
+      "sha256": "29bd463fbb95d312e36eeb4c6d3cb0068e5a5a5f2d96ae6f0cfd661829f06583"
+    },
+    {
+      "file": "04-p23.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 120336,
+      "sha256": "e5d0a7fa8e7990b0f8b0f914edd785bb583cd60cfce58641c702896edf4172be"
+    },
+    {
+      "file": "05-p23.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 797400,
+      "sha256": "c2b32df92a88335267e7a5f3e12dff0b09bdb9c4d4f51217e13dce18d456b002"
+    },
+    {
+      "file": "06-p23.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 151535,
+      "sha256": "35cb4ba3fb8bc4c0108211302fdc606858e1d88d361cd9ac7cca2c12e32cde3b"
+    },
+    {
+      "file": "07-p23.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 934100,
+      "sha256": "a12590cceca857b191ef2a21cc4ab5ff45c80ee2e1fb8b573683bd7528c6648c"
+    },
+    {
+      "file": "08-p23.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 904773,
+      "sha256": "55fa8c4bbca39b632edd56eb64e2a071d33364631df4e4bde523a4b26967343a"
+    }
+  ],
+  "links": [
+    {
+      "from": "index.html",
+      "to": "legenda.txt",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "texto-alternativo.txt",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "montagem.html",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "apoio/fontes-e-producao.md",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "../index.html",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "01-p23.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "01-p23.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "02-p23.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "02-p23.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "03-p23.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "03-p23.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "04-p23.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "04-p23.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "05-p23.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "05-p23.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "06-p23.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "06-p23.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "07-p23.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "07-p23.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "08-p23.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "08-p23.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/01-pausou-para-fazer.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/01-aula-pausada-player.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/02-pausa-para-montar.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/02-aula-montagem.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/03-esboco-da-nave.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/04-tecla-espaco.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/04-disparo-em-acao.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/04-disparo-em-acao.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/05-voltar-e-procurar-ajuda.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/05-aula-ajuda.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/05-botao-ajuda.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/06-aula-rever-player.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/07-conferir-a-atividade.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/07-aula-escolha.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/08-pausa-com-autonomia.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/08-aula-pratica.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../../../../postagens/03-p21-a-p30.md#p23",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../../../../postagens/05-direcao-visual-e-producao.md",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "copy.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../legenda.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "prompts.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "imagens-geradas.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "LICENSE-Nunito",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "Caveat-OFL.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../texto-alternativo.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../publicacao.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "interface-origem.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "aula-verificada.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "origem.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "patrulha-original.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "patrulha-original.js",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "jogo-verificado.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "04-disparo-em-acao.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "04-depois-do-acerto.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "04-regra-completa.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "04-tecla-espaco.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "blocos-capturados.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../index.html",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../montagem.html",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "verificacao.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "entrega-verificada.json",
+      "exists": true
+    }
+  ],
+  "visualReview": "Oito slides conferidos individualmente. Fotos inéditas com continuidade de pessoas fictícias, cinco telas em perspectiva, esboço, botão de ajuda ampliado, player original e disparo real. Ajustado enquadramento para mostrar a nave inteira e removida duplicação do player. Copy e legenda preservadas.",
+  "demo": {
+    "gameStates": 2,
+    "spaceKey": true,
+    "scoreBefore": 0,
+    "scoreAfter": 2,
+    "removedMeteor": "588e8698-e3a3-4c7e-b21d-c475b54a0e48",
+    "removedShot": "163f3d59-8951-4d54-a013-73114b9578dd",
+    "lessonTimes": [
+      28,
+      32,
+      14,
+      38,
+      20,
+      42
+    ],
+    "rewind": {
+      "time": 33,
+      "paused": true
+    }
+  },
+  "copyLinter": [
+    {
+      "file": "output\\instagram\\p23-2026-10-14\\copy-limpa\\1.txt",
+      "issues": [],
+      "scope": "Regras mecânicas; exige revisão editorial e de provas."
+    },
+    {
+      "file": "output\\instagram\\p23-2026-10-14\\copy-limpa\\2.txt",
+      "issues": [],
+      "scope": "Regras mecânicas; exige revisão editorial e de provas."
+    },
+    {
+      "file": "output\\instagram\\p23-2026-10-14\\copy-limpa\\3.txt",
+      "issues": [],
+      "scope": "Regras mecânicas; exige revisão editorial e de provas."
+    },
+    {
+      "file": "output\\instagram\\p23-2026-10-14\\copy-limpa\\4.txt",
+      "issues": [],
+      "scope": "Regras mecânicas; exige revisão editorial e de provas."
+    },
+    {
+      "file": "output\\instagram\\p23-2026-10-14\\copy-limpa\\5.txt",
+      "issues": [],
+      "scope": "Regras mecânicas; exige revisão editorial e de provas."
+    },
+    {
+      "file": "output\\instagram\\p23-2026-10-14\\copy-limpa\\6.txt",
+      "issues": [],
+      "scope": "Regras mecânicas; exige revisão editorial e de provas."
+    },
+    {
+      "file": "output\\instagram\\p23-2026-10-14\\copy-limpa\\7.txt",
+      "issues": [
+        {
+          "rule": 3,
+          "label": "Pergunta no gancho",
+          "fix": "A primeira frase não pode ser pergunta. Vire uma afirmação direta."
+        }
+      ],
+      "scope": "Regras mecânicas; exige revisão editorial e de provas."
+    },
+    {
+      "file": "output\\instagram\\p23-2026-10-14\\copy-limpa\\8.txt",
+      "issues": [],
+      "scope": "Regras mecânicas; exige revisão editorial e de provas."
+    },
+    {
+      "file": "output\\instagram\\p23-2026-10-14\\copy-limpa\\legenda.txt",
+      "issues": [],
+      "scope": "Regras mecânicas; exige revisão editorial e de provas."
+    }
+  ],
+  "copyLinterReview": "Uma ocorrência de Pergunta no gancho no slide 7: são perguntas úteis para avaliar uma atividade, dentro do desenvolvimento. A capa é afirmativa. Falso positivo revisado; copy aprovada mantida.",
+  "carouselCount": 28,
+  "pngCount": 205,
+  "textBounds": [
+    {
+      "text": "Pausar a aula pode fazer parte de aprender.",
+      "within": true
+    },
+    {
+      "text": "O importante é o que seu filho faz depois da pausa.",
+      "within": true
+    },
+    {
+      "text": "Numa atividade de criação, a criança precisa de tempo para colocar a explicação em prática.",
+      "within": true
+    },
+    {
+      "text": "Só assistir não mostra se ela conseguiu fazer.",
+      "within": true
+    },
+    {
+      "text": "Imagine uma aula que ensina a fazer uma nave disparar.",
+      "within": true
+    },
+    {
+      "text": "Seu filho assiste à explicação, pausa e monta essa parte do jogo.",
+      "within": true
+    },
+    {
+      "text": "Depois, aperta a tecla de espaço para testar.",
+      "within": true
+    },
+    {
+      "text": "Se o disparo aparece, ele vê o resultado da instrução que montou.",
+      "within": true
+    },
+    {
+      "text": "Se não aparece, ele pode rever a explicação e comparar os passos.",
+      "within": true
+    },
+    {
+      "text": "Se continuar com dúvida, precisa saber onde encontrar ajuda.",
+      "within": true
+    },
+    {
+      "text": "Uma aula gravada permite fazer essa pausa e voltar ao trecho que faltou entender.",
+      "within": true
+    },
+    {
+      "text": "Isso dá espaço para a criança tentar no ritmo dela.",
+      "within": true
+    },
+    {
+      "text": "Antes de escolher uma atividade, confira: há tempo para fazer? Dá para rever? Existe orientação quando algo não funciona?",
+      "within": true
+    },
+    {
+      "text": "Essas respostas ajudam mais do que saber só a duração do vídeo.",
+      "within": true
+    },
+    {
+      "text": "Aqui mostramos como acompanhar o aprendizado de quem está criando jogos.",
+      "within": true
+    },
+    {
+      "text": "Siga o perfil para ver mais.",
+      "within": true
+    }
+  ],
+  "nativeInserts": 3,
+  "mobileNoOverflow": true,
+  "browserImageDecode": true,
+  "sourceSectionHash": "9d2379dcfa51d2f1f7c8b46cb1f5b71de43af822b95d40dbed4d2e489e44a4bc",
+  "copyEqual": true,
+  "fonts": {
+    "normal": true,
+    "bold": true
+  },
+  "nextCarousel": "P57",
+  "published": false
+}

@@ -1,0 +1,1 @@
+var e=`min-h-11 w-full rounded-lg border border-mld-border bg-mld-bg px-2 text-mld-text focus-visible:outline-2 focus-visible:outline-mld-accent`;export{e as t};

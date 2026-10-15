@@ -1,0 +1,171 @@
+{
+  "html": [],
+  "css": [],
+  "extensions": [
+    {
+      "extensionId": "world-3d"
+    }
+  ],
+  "version": 2,
+  "behavior": {
+    "start": [
+      {
+        "type": "w3d:setup",
+        "style": "lua",
+        "world": {
+          "type": "num",
+          "value": 180
+        }
+      },
+      {
+        "type": "w3d:person",
+        "color": "#e8e8f0",
+        "hat": "capacete"
+      },
+      {
+        "type": "w3d:personAccessory",
+        "acc": "jetpack"
+      },
+      {
+        "type": "w3d:rocket",
+        "x": {
+          "type": "num",
+          "value": 8
+        },
+        "z": {
+          "type": "num",
+          "value": -10
+        }
+      },
+      {
+        "type": "w3d:flag",
+        "x": {
+          "type": "num",
+          "value": 0
+        },
+        "z": {
+          "type": "num",
+          "value": -10
+        },
+        "color": "#ef4444"
+      },
+      {
+        "type": "w3d:crater",
+        "x": {
+          "type": "num",
+          "value": 30
+        },
+        "z": {
+          "type": "num",
+          "value": 30
+        },
+        "r": {
+          "type": "num",
+          "value": 10
+        }
+      },
+      {
+        "type": "w3d:coinsRing",
+        "n": {
+          "type": "num",
+          "value": 12
+        },
+        "x": {
+          "type": "num",
+          "value": 30
+        },
+        "z": {
+          "type": "num",
+          "value": 30
+        },
+        "r": {
+          "type": "num",
+          "value": 8
+        }
+      },
+      {
+        "type": "w3d:quest",
+        "name": "moedas",
+        "desc": "Pegue 12 moedas na cratera"
+      },
+      {
+        "type": "w3d:marker",
+        "icon": "estrela",
+        "x": {
+          "type": "num",
+          "value": 30
+        },
+        "z": {
+          "type": "num",
+          "value": 30
+        }
+      },
+      {
+        "type": "w3d:guideArrow",
+        "x": {
+          "type": "num",
+          "value": 30
+        },
+        "z": {
+          "type": "num",
+          "value": 30
+        },
+        "on": true
+      },
+      {
+        "type": "w3d:totemText",
+        "x": {
+          "type": "num",
+          "value": 0
+        },
+        "z": {
+          "type": "num",
+          "value": 6
+        },
+        "title": "Base da Lua",
+        "body": "Pulos flutuantes! Segure espaco com o jetpack para voar."
+      }
+    ],
+    "events": [
+      {
+        "type": "w3d:onCollect",
+        "body": [
+          {
+            "type": "if",
+            "cond": {
+              "type": "binop",
+              "op": ">=",
+              "left": {
+                "type": "w3d:coinCount"
+              },
+              "right": {
+                "type": "num",
+                "value": 12
+              }
+            },
+            "then": [
+              {
+                "type": "w3d:questDone",
+                "name": "moedas"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "w3d:onQuestDone",
+        "name": "moedas",
+        "body": [
+          {
+            "type": "w3d:fireworks"
+          },
+          {
+            "type": "w3d:achievement",
+            "name": "Astronauta"
+          }
+        ]
+      }
+    ],
+    "loops": []
+  }
+}

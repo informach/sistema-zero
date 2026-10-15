@@ -1,0 +1,364 @@
+{
+  "source": "docs/marketing/kids/comunidade-dos-criadores/instagram/postagens/11-p51-a-p60.md",
+  "sourceSectionHash": "fce57bcef4ad7376a380707434b56312568789153f7efe3c2beba91ee46df799",
+  "copyEqual": true,
+  "slides": [
+    {
+      "number": 1,
+      "file": "01-p57.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "series",
+          "top": 0,
+          "bottom": 45.59375,
+          "height": 45.59375,
+          "left": 0,
+          "right": 241.53125
+        },
+        {
+          "kind": "copy lead",
+          "top": 104.734375,
+          "bottom": 250.765625,
+          "height": 146.03125,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 309.890625,
+          "bottom": 422.203125,
+          "height": 112.3125,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo",
+          "top": 481.34375,
+          "bottom": 1116,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 48
+    },
+    {
+      "number": 2,
+      "file": "02-p57.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 141.5,
+          "height": 141.5,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo",
+          "top": 249.421875,
+          "bottom": 884.078125,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 992,
+          "bottom": 1116,
+          "height": 124,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 50
+    },
+    {
+      "number": 3,
+      "file": "03-p57.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 201.796875,
+          "height": 201.796875,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "fight",
+          "top": 278.171875,
+          "bottom": 913.171875,
+          "height": 635,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 989.53125,
+          "bottom": 1116,
+          "height": 126.46875,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 51
+    },
+    {
+      "number": 4,
+      "file": "04-p57.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 132.21875,
+          "height": 132.21875,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "rule",
+          "top": 265.84375,
+          "bottom": 865.84375,
+          "height": 600,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 999.46875,
+          "bottom": 1116,
+          "height": 116.53125,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 47
+    },
+    {
+      "number": 5,
+      "file": "05-p57.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 210.421875,
+          "height": 210.421875,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo",
+          "top": 287.625,
+          "bottom": 922.28125,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 999.46875,
+          "bottom": 1116,
+          "height": 116.53125,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 47
+    },
+    {
+      "number": 6,
+      "file": "06-p57.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 144.875,
+          "height": 144.875,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "listen",
+          "top": 195.34375,
+          "bottom": 950.34375,
+          "height": 755,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 1000.8125,
+          "bottom": 1116,
+          "height": 115.1875,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 48
+    },
+    {
+      "number": 7,
+      "file": "07-p57.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 232,
+          "height": 232,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "help-grid",
+          "top": 278.90625,
+          "bottom": 953.90625,
+          "height": 675,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 1000.8125,
+          "bottom": 1116,
+          "height": 115.1875,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 48
+    },
+    {
+      "number": 8,
+      "file": "08-p57.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 207,
+          "height": 207,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo",
+          "top": 283.34375,
+          "bottom": 918,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 994.34375,
+          "bottom": 1116,
+          "height": 121.65625,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 52
+    }
+  ],
+  "images": [
+    {
+      "src": "apoio/01-pediu-ajuda.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "src": "apoio/02-mostrando-a-duvida.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "src": "apoio/05-escolhendo-com-cuidado.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "src": "apoio/06-video-pausado.png",
+      "loaded": true,
+      "width": 1432,
+      "height": 806
+    },
+    {
+      "src": "apoio/07-botao-pista.png",
+      "loaded": true,
+      "width": 230,
+      "height": 90
+    },
+    {
+      "src": "apoio/07-pista-estreita.png",
+      "loaded": true,
+      "width": 422,
+      "height": 280
+    },
+    {
+      "src": "apoio/07-resultado-estreito.png",
+      "loaded": true,
+      "width": 420,
+      "height": 344
+    },
+    {
+      "src": "apoio/07-para-seguir-estreito.png",
+      "loaded": true,
+      "width": 420,
+      "height": 188
+    },
+    {
+      "src": "apoio/08-entendendo-juntos.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    }
+  ],
+  "errors": [],
+  "fonts": {
+    "normal": true,
+    "bold": true
+  }
+}

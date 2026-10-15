@@ -260,6 +260,51 @@ test('retoma a revisão persistida sem refazer a extração da ideia', async () 
   expect(f.failed).not.toHaveBeenCalled()
 })
 
+test('o contexto recebe o plano: a view lida no passo e, na conferência final, a releitura', async () => {
+  quietConsole()
+  const f = fixture('review')
+  f.work.output.draft = draft
+  const loadContext = mock(async (..._args: unknown[]) => f.context)
+  await workJourney({
+    members: f.members,
+    user,
+    actor,
+    projectId: 'project',
+    complete: (async () => draft) as unknown as typeof completePensaJson,
+    loadContext,
+  })
+  expect(f.published).toHaveBeenCalledTimes(1)
+  // Em equipe é o `projectId` que troca os recursos pelos da equipe; a conferência final relê
+  // a equipe (as funções podem ter mudado enquanto o modelo trabalhava).
+  expect(loadContext.mock.calls.map((call) => call[3])).toEqual([
+    { projectId: 'project', view: f.view },
+    { projectId: 'project' },
+  ])
+})
+
+test('em equipe, a falha de "sem Estúdio" fala de quem programa', async () => {
+  quietConsole()
+  const f = fixture()
+  const context = {
+    ...f.context,
+    capabilities: { ...f.context.capabilities, studio: false },
+    team: true,
+  } as JourneyContext
+  const complete = mock(async () => ({}))
+  await workJourney({
+    members: f.members,
+    user,
+    actor,
+    projectId: 'project',
+    complete: complete as unknown as typeof completePensaJson,
+    loadContext: async () => context,
+  })
+  expect(complete).not.toHaveBeenCalled()
+  expect(String(f.failed.mock.calls[0]?.[4])).toContain(
+    'quem programa precisa abrir o Estúdio e conquistar blocos',
+  )
+})
+
 test('uma falha do provedor não abre tentativas em cascata', async () => {
   quietConsole()
   const f = fixture(),

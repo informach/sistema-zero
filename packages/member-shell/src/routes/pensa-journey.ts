@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { isReadonlyImpersonation } from '../lib/act'
 import { isPrivilegedRole } from '../lib/studio-tier'
 import type { MembersClient } from '../server/clients'
+import { signCreationDownload } from '../server/creation-download'
 import { hasAiAppsLevel } from '../server/creative-apps-access'
 import { loadJourneyContext } from '../server/pensa-journey/context'
 import { validateJourneyProposal } from '../server/pensa-journey/contracts'
@@ -13,9 +14,19 @@ import { workJourney } from '../server/pensa-journey/planner'
 import { pensaNarrativeRefusal, redactPensaText } from '../server/pensa-journey/privacy'
 import { protectJourney, restoreJourney } from '../server/pensa-journey/protection'
 import { pensaLlmAvailable } from '../server/pensa-llm'
+import { r2PresignGetUgc } from '../server/r2'
 import type { SessionModule } from '../server/session'
 
 const uuid = z.uuid()
+/** O código como a criança digitou (quem normaliza é o members, como no plano clássico). */
+const Join = z.strictObject({ code: z.string().trim().min(4).max(16) })
+/** As funções do plano: UMA pessoa programa; as artes são zero ou mais (até a equipe inteira). */
+const Roles = z.strictObject({ code: uuid, art: z.array(uuid).max(6) })
+/** As rotas da EQUIPE debaixo de `projects/:id` (14/10/2026). */
+const TEAM_ACTIONS = new Set(['team', 'roles', 'share', 'members', 'team-art'])
+/** Testar, concluir, guardar versão, restaurar e adaptar usam o jogo do Estúdio de quem programa. */
+const PROGRAMMER_ACTIONS = ['test', 'close', 'increment', 'restore', 'revise']
+const NOT_PROGRAMMER = 'Quem testa e guarda as versões é quem programa o jogo.'
 const Start = z.strictObject({
   id: uuid,
   expectedRevision: z.number().int().min(0),
@@ -61,15 +72,113 @@ const reply = (res: { status: number; body: unknown }) =>
 export function createPensaJourneyRoutes({
   members,
   session,
+  storage = { presignGet: r2PresignGetUgc },
 }: {
   members: MembersClient
   session: SessionModule
+  /** Só testes: onde a descida da arte da equipe é assinada (padrão: o R2 UGC). */
+  storage?: { presignGet: typeof r2PresignGetUgc }
 }) {
+  /** Entrar num plano v2 pelo código `ZAP-…` (a rota CLÁSSICA do members) e abrir o jogo direto. */
+  async function join(role: string, body: unknown) {
+    const parsed = Join.safeParse(body)
+    if (!parsed.success) return error(400, 'Confira o código e tente de novo.', 'VALIDATION_ERROR')
+    if (!(await hasAiAppsLevel(members, role)))
+      return error(403, 'O Pensa abre no nível Inventor(a).', 'CAREER_LEVEL_REQUIRED')
+    const res = await members.pensaJoinProject(parsed.data)
+    // Os 403/404/409 do members atravessam inteiros: é a frase que fica ao lado do campo.
+    if (res.status !== 200) return reply(res)
+    const projectId = res.body?.project?.id
+    if (!projectId || !uuid.safeParse(projectId).success) {
+      console.error('[pensa-v2] entrada sem o plano na resposta', { status: res.status })
+      return error(502, 'Não consegui abrir este plano agora. Tente de novo.')
+    }
+    return reply({ status: 200, body: { projectId } })
+  }
+
+  /** "Trazer da equipe": o members autoriza e diz onde está a criação; só então o R2 é assinado. */
+  async function teamArtDownload(projectId: string, taskId: string) {
+    const ticket = await members.pensaJourneyTeamArtDownload(projectId, taskId)
+    if (ticket.status !== 200) return reply(ticket)
+    if (!ticket.body)
+      return error(502, 'Não consegui trazer essa arte agora. Tente de novo.', 'UPSTREAM_EMPTY')
+    try {
+      return reply({
+        status: 200,
+        body: await signCreationDownload(storage.presignGet, ticket.body),
+      })
+    } catch (cause) {
+      console.error('[pensa-v2] a arte da equipe não desceu', {
+        projectId,
+        taskId,
+        name: errorName(cause),
+      })
+      return error(503, 'Não consegui trazer essa arte agora. Tente de novo.')
+    }
+  }
+
+  /**
+   * A equipe de um plano v2. Código, saída e tirar alguém seguem nas rotas CLÁSSICAS do members
+   * (o mesmo convite e os mesmos tetos do plano clássico); equipe, funções e artes, nas do v2.
+   * Quem pode o quê é regra do members (dona, quem programa, a equipe toda).
+   */
+  async function team(
+    method: string,
+    projectId: string,
+    action: string,
+    rest: string[],
+    body: unknown,
+  ) {
+    const [item, leaf] = rest
+    const method405 = () => error(405, 'Ação indisponível.')
+    if (rest.length === 0) {
+      if (action === 'team')
+        return method === 'GET' ? reply(await members.pensaJourneyTeam(projectId)) : method405()
+      if (action === 'team-art')
+        return method === 'GET' ? reply(await members.pensaJourneyTeamArt(projectId)) : method405()
+      if (action === 'share') {
+        if (method === 'POST') return reply(await members.pensaShareProject(projectId))
+        if (method === 'DELETE') return reply(await members.pensaUnshareProject(projectId))
+        return method405()
+      }
+      if (action === 'roles') {
+        if (method !== 'PUT') return method405()
+        const parsed = Roles.safeParse(body)
+        if (!parsed.success)
+          return error(400, 'Escolha quem programa e quem faz as artes.', 'VALIDATION_ERROR')
+        return reply(await members.pensaJourneyRoles(projectId, parsed.data))
+      }
+    }
+    // `me` = sair da equipe (o app não precisa saber o próprio perfil).
+    if (
+      action === 'members' &&
+      rest.length === 1 &&
+      item &&
+      (item === 'me' || uuid.safeParse(item).success)
+    )
+      return method === 'DELETE'
+        ? reply(await members.pensaRemoveProjectMember(projectId, item))
+        : method405()
+    if (
+      action === 'team-art' &&
+      rest.length === 2 &&
+      leaf === 'download' &&
+      item &&
+      uuid.safeParse(item).success
+    )
+      return method === 'GET' ? teamArtDownload(projectId, item) : method405()
+    return error(404, 'Ação não encontrada.')
+  }
+
   async function handle(req: Request, ctx: { params: Promise<{ path?: string[] }> }) {
     const user = await session.getSession()
     if (!user) return error(401, 'Entre de novo para continuar.', 'UNAUTHENTICATED')
     if (!user.kids && !isPrivilegedRole(user.role))
       return error(403, 'Abra seu perfil na Comunidade Kids.')
+    // A aba que enfileirou o pedido é de OUTRO perfil (irmão que entrou no meio): nada passa.
+    const viewer = req.headers.get('x-sz-viewer')
+    if (viewer && viewer !== user.id)
+      return error(409, 'A sessão trocou de perfil.', 'VIEWER_MISMATCH')
     if (isReadonlyImpersonation(user) && req.method !== 'GET')
       return error(403, 'Sessão de suporte é só leitura.', 'IMPERSONATION_READONLY')
     const actor: PensaJourneyActor = {
@@ -79,13 +188,14 @@ export function createPensaJourneyRoutes({
     }
     const { path = [] } = await ctx.params
     const [resource, projectId, action] = path
-    if (
-      resource !== 'projects' ||
-      path.length > 3 ||
-      (projectId && !uuid.safeParse(projectId).success)
-    )
-      return error(404, 'Plano não encontrado.')
+    if (resource !== 'projects' || path.length > 5) return error(404, 'Plano não encontrado.')
     const body = req.method === 'GET' ? null : await req.json().catch(() => null)
+    if (projectId === 'join' && path.length === 2)
+      return req.method === 'POST' ? join(user.role, body) : error(405, 'Ação indisponível.')
+    if (projectId && !uuid.safeParse(projectId).success) return error(404, 'Plano não encontrado.')
+    if (projectId && action && TEAM_ACTIONS.has(action))
+      return team(req.method, projectId, action, path.slice(3), body)
+    if (path.length > 3) return error(404, 'Plano não encontrado.')
     const queue = (id: string, retry = false) =>
       after(() => workJourney({ members, user, actor, projectId: id, retry }))
     if (!projectId) {
@@ -110,7 +220,7 @@ export function createPensaJourneyRoutes({
     }
     if (req.method !== 'POST') return error(405, 'Ação indisponível.')
     if (action === 'cancel') return reply(await members.pensaJourneyCancel(projectId))
-    if (['test', 'close', 'increment', 'restore', 'revise'].includes(action ?? '')) {
+    if (PROGRAMMER_ACTIONS.includes(action ?? '')) {
       const parsed = z
         .object({
           expectedRevision: z.number().int().min(0),
@@ -126,6 +236,11 @@ export function createPensaJourneyRoutes({
       const current = await members.pensaJourneyGet(projectId)
       if (current.status !== 200 || !current.body) return reply(current)
       let view = current.body
+      // Em equipe, o jogo mora no Estúdio de quem PROGRAMA: só ela testa e guarda as versões. O
+      // members recusa também (`PENSA_NOT_PROGRAMMER`); aqui a recusa vem antes de ler o jogo
+      // salvo, que seria o da conta de quem pediu, não o do plano.
+      if (view.team && view.team.roles.code !== actor.profileId)
+        return error(403, NOT_PROGRAMMER, 'PENSA_NOT_PROGRAMMER')
       if (view.journey.revision !== parsed.data.expectedRevision)
         return error(409, 'Seu jogo mudou em outra tela. Atualize antes de continuar.')
       if (action === 'increment')
@@ -226,7 +341,11 @@ export function createPensaJourneyRoutes({
         const current = await members.pensaJourneyGet(projectId)
         if (current.status !== 200 || !current.body) return reply(current)
         try {
-          const context = await loadJourneyContext(members, user, current.body.journey.intent)
+          // Em equipe, a proposta é conferida contra os recursos da EQUIPE (a view acabou de vir).
+          const context = await loadJourneyContext(members, user, current.body.journey.intent, {
+            projectId,
+            view: current.body,
+          })
           const proposal = current.body.journey.proposal
           if (
             !proposal ||
@@ -299,5 +418,5 @@ export function createPensaJourneyRoutes({
     }
     return error(404, 'Ação não encontrada.')
   }
-  return { pensaJourney: { GET: handle, POST: handle, PATCH: handle, DELETE: handle } }
+  return { pensaJourney: { GET: handle, POST: handle, PUT: handle, PATCH: handle, DELETE: handle } }
 }

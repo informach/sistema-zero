@@ -1,0 +1,41 @@
+[
+  {
+    "slide": 1,
+    "file": "01-contar-a-historia.png",
+    "references": [],
+    "tool": "image_gen.imagegen (nativo)",
+    "prompt": "Use case: photorealistic-natural. Asset: landscape 3:2 editorial photo for an Instagram carousel aimed at Brazilian parents.\nA fictional Brazilian boy about 12 years old, warm light brown skin, straight thick dark brown hair with a natural side fringe, youthful face, wearing a plain cobalt-blue short-sleeved shirt, excitedly telling his own adventure story to his mother at home. Mother about 38, warm olive skin, dark wavy shoulder-length hair, cream cotton blouse and blue jeans, seated at his level, listening with interest. Both fictional people, no celebrities, no actual student testimonial.\nA new, natural composition in a cozy modest living room: mother on the edge of a sofa, boy on a low stool beside a coffee table. The boy holds a large open sketchbook toward his mother, one hand supporting it, the other indicating a hand-drawn map. View from three-quarter front, both faces and the map visible, not looking at camera. Map includes green fields upper left, a sandy beach and blue sea upper right, forest lower left, a tiny village lower right, a winding path and a small wooden bridge; colored pencil, genuinely uneven, made-up, age-appropriate notebook sketch, not sophisticated professional cartography. No need to write labels on it.\nTheir expressions convey the enjoyment of imagining a place together. Natural hand anatomy. Soft daylight, tactile paper, small blue/yellow details in the room, warm cream palette, real skin and hair texture. Photograph must tell the story by itself. Do not include screens or computers, floating game characters, fantasy overlays or thought bubbles. No typeset headline, logo, caption, watermark or frame. Full photographic scene.",
+    "selected": true
+  },
+  {
+    "slide": 2,
+    "file": "02-mapa-imaginado.png",
+    "references": [
+      "01-contar-a-historia.png"
+    ],
+    "tool": "image_gen.imagegen (nativo)",
+    "prompt": "Use case: illustration-story. Asset: landscape 3:2 editorial illustration for slide 2 of a parenting carousel about imagining a world that can become a game.\nInput reference is a scene reference ONLY: zoom into the idea of the map held by the boy, not the photograph, not the people. Create a new full-frame drawing on warm cream sketchbook paper, with charming age-appropriate colored pencil and fine felt-tip lines, as a clear simple map a child aged 10–12 might plan.\nFour connected places: green open meadow in upper left, sandy beach with blue waves and a small fisherman's hut in upper right, a cluster of trees in lower left, and a little village of three houses with warm roofs in lower right. A narrow winding stream separates some areas; a simple wooden bridge crosses it near the center. A dotted walking trail links the village, bridge, field and beach. One tiny friendly traveler in a blue shirt stands near the village. A tiny fisherman by the beach. Each feature should be easy to name at a glance, uncluttered and readable at phone size. Rich blue, warm yellow, earthy green accents, visible pencil grain, uneven hand-drawn contour. Sparse white space around features gives it a child's sketch feeling.\nThis is an illustrative imagined map, not a screenshot, not a real child's work and not a polished commercial fantasy game. No computer, no UI, no floating icons, no decorative frame, no watermarks, no printed text or legend. Entire canvas is the map on lightly textured cream paper. Do not make it photorealistic or 3D.",
+    "selected": true
+  },
+  {
+    "slide": 3,
+    "file": "03-escolher-um-caminho.png",
+    "references": [
+      "02-mapa-imaginado.png"
+    ],
+    "tool": "image_gen.imagegen (nativo)",
+    "prompt": "Use case: illustration-story. Landscape 3:2 editorial illustration for slide 3 of the same Brazilian parenting carousel.\nThe input is a style and story-world reference, not a target to reproduce unchanged. Create a new closer eye-level storybook scene in the same hand-drawn colored-pencil language: a small adventurer wearing a cobalt-blue shirt, shorts and brown backpack has reached a wooden footbridge over a narrow gentle stream. A section of wooden planks in the middle of the bridge is missing, visibly leaving a gap. The child-sized fictional traveler stands safely on the near grassy bank, looking and listening, not stepping into danger. On the same bank a friendly adult villager with a straw hat and cream shirt points down a clear alternative path along the river toward a small cluster of trees. Two loose wooden boards rest near a bush on that bank, a potential object to look for. The image represents a simple invented story in which someone can choose a path, ask a character or look for a missing object.\nFocus on the interaction: traveler in foreground left, villager slightly right pointing along the trail, broken bridge clearly visible behind them and gentle blue water. Villager looks at traveler; pointing arm anatomy correct. Warm green field, yellow path, calm blue stream, red-roof cottages hinted far away. Clear silhouette, expressive but not babyish, suited to children 9–14 and their parents. Rich colored pencil on cream textured paper, soft uneven outlines and simple details, coherent with the reference.\nNo text, no speech bubbles, no button, no cursor, no screen border, no logo. It must clearly look like a drawn editorial story, not a screenshot from our actual platform. Do not add platform interfaces. Full drawing filling the canvas, no photo or photographic hands.",
+    "selected": true
+  },
+  {
+    "slide": 7,
+    "file": "07-criar-juntos.png",
+    "references": [
+      "01-contar-a-historia.png"
+    ],
+    "tool": "image_gen.imagegen (nativo)",
+    "prompt": "Use case: photorealistic-natural. New landscape 3:2 editorial photograph for the closing slide of the same carousel.\nReference 1 is ONLY for the exact identities of the fictional boy and his mother, clothes and room. Preserve the boy's face, 12-year-old proportions, warm light brown skin, straight thick dark side-fringe hair, cobalt-blue t-shirt, and the mother's olive skin, dark wavy shoulder-length hair and cream blouse. Create an entirely NEW moment and viewpoint; do not crop or reuse the previous photograph.\nThey now sit side by side at a wooden table in that living room, actively shaping his idea. The boy leans forward drawing a new dotted walking route on an open sketchbook with a blue colored pencil; his mother points gently to a place on the map with one index finger, asking where that path should lead, while looking at the drawing. Both faces in three-quarter view are visible, and their attention goes to the SAME map, genuine relaxed collaboration.\nTake the photo from the other end of the table at a slightly higher diagonal angle so hands, map and engaged faces are equally clear. The boy is right of the mother in this composition. Map has a green field, blue beach, patch of forest, small red-roof village and a little bridge, like reference 1. His pencil touches the dotted path between two places. There should be clear blank room on the paper for his new line. Realistic handwriting-like marks but NO readable labels required. Colored pencils nearby, two or three only, tidy desk. Correct natural hands, physically plausible pencil grip, no extra fingers, no disembodied hands.\nNatural warm daylight, lived-in modest Brazilian home, cream/blue colors and small yellow accent, real skin texture, candid magazine photography. No computer or screen, no fantasy overlays, no brand, no headline, no caption or watermark, full photograph.",
+    "selected": true
+  }
+]
+

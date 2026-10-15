@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'bun:test'
-import { readdirSync, readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { readFileSync } from 'node:fs'
 import type { LearningProfile } from '#core'
+import {
+  caminhoAula,
+  listarArquivosAulas,
+} from '../../../../../docs/aulas-interativas-tecnico/qa/caminhos'
 import { projectBlockTypes } from '../../core/projectDocument'
 import { gameTwoDToolboxCategory } from '../../official-extensions/game-2d/blocks'
 import { BLOCK_CATALOG } from '../blockCatalog'
@@ -49,7 +52,6 @@ function fakeJogo2D(): ToolboxCategory {
 }
 
 describe('buildCoreToolbox — lista de blocos da aula (allowBlocks restritivo)', () => {
-  const aulas = resolve(import.meta.dir, '../../../../../docs/aulas-interativas/aulas')
   it.each([
     'corre-dino',
     'desafio-primeiro-jogo',
@@ -60,7 +62,7 @@ describe('buildCoreToolbox — lista de blocos da aula (allowBlocks restritivo)'
         : course === 'desafio-primeiro-jogo'
           ? 'desafio-'
           : 'meu-jeito-'
-    const files = readdirSync(aulas).filter(
+    const files = listarArquivosAulas().filter(
       (name) => name.startsWith(prefix) && name.endsWith('.manifesto.json'),
     )
     // O Desafio tem quatro aulas desde 05/10/2026: a introdução passou a abrir o Dia 1.
@@ -68,7 +70,7 @@ describe('buildCoreToolbox — lista de blocos da aula (allowBlocks restritivo)'
     const blocks = [
       ...new Set(
         files.flatMap((name) => {
-          const manifest = JSON.parse(readFileSync(resolve(aulas, name), 'utf8')) as {
+          const manifest = JSON.parse(readFileSync(caminhoAula(name), 'utf8')) as {
             sections: Array<{
               completion?: { projectChecks?: Array<{ rule: { type: string; blockType?: string } }> }
             }>
@@ -93,12 +95,12 @@ describe('buildCoreToolbox — lista de blocos da aula (allowBlocks restritivo)'
     expect(offered.some((type) => type.startsWith('sz_gk_'))).toBe(false)
   })
   it('Meu Jeito termina com galeria, sem checagens estruturais do Estúdio', () => {
-    const files = readdirSync(aulas).filter(
+    const files = listarArquivosAulas().filter(
       (name) => name.startsWith('meu-jeito-') && name.endsWith('.manifesto.json'),
     )
     expect(files).toHaveLength(8)
     for (const name of files) {
-      const manifest = JSON.parse(readFileSync(resolve(aulas, name), 'utf8')) as {
+      const manifest = JSON.parse(readFileSync(caminhoAula(name), 'utf8')) as {
         sections: Array<{ completion?: { projectChecks?: unknown[] } }>
       }
       expect(

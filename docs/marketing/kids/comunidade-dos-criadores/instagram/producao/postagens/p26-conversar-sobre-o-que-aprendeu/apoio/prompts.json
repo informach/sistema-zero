@@ -1,0 +1,40 @@
+[
+  {
+    "id": 1,
+    "file": "01-conversa-na-tela.png",
+    "prompt": "Use case: photorealistic-natural. Asset: landscape editorial photograph for slide 1 of a Brazilian family educational Instagram carousel. Create a NEW fictional Brazilian mother (about 39, warm medium brown skin, shoulder-length dark curly hair, simple teal blouse) and her fictional 11-year-old son (similar skin, short dark curly hair, mustard cotton T-shirt). Natural lived-in bright home desk, warm cream walls, plants and books softly blurred. Mother leans slightly over son's shoulder with a curious attentive expression, one eyebrow subtly raised as she looks at the monitor, not a caricature of confusion. Boy sits at keyboard with right hand on mouse, proud small smile, looking between mother and screen. Show faces in three-quarter profile. Large flat computer monitor on the RIGHT of composition, viewed at a shallow oblique angle so its whole screen is visible and usable for insertion. Display must be a flat uniform light neutral gray, completely BLANK, no text, no content, no reflections, no icons. Faces on left and center, monitor right. Plausible anatomy, one mother and one boy only, five fingers per visible hand, no intersecting limbs. Candid premium editorial photography, soft daylight, realistic skin, no glamour, not stock-photo exaggeration. Landscape 1536x1024, compose all important elements inside safe frame. No logos, text, watermarks or speech bubbles. The display will receive an authentic screenshot separately in an editable layout.",
+    "references": [],
+    "source": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-135734f5-1e31-4f84-91d2-6ef2686bc3cc.png",
+    "tool": "image_gen.imagegen"
+  },
+  {
+    "id": 2,
+    "file": "02-ele-mostra.png",
+    "prompt": "Use case: photorealistic-natural. NEW landscape editorial photograph 1536x1024 for Brazilian parent education carousel. Input reference is ONLY for the identities of fictional mother and son: keep same faces, medium brown skin, curly dark hair, age39 and11, teal mother's blouse and mustard boy T-shirt. Keep same plausible cozy cream-wall home. Rebuild entire scene, camera, poses and lighting from scratch; do not repeat or crop reference composition. Realistic natural anatomy, candid not exaggerated, premium soft daylight. Any visible monitor screen MUST be uniform BLANK light gray, no text, UI, graphics or reflections. No words, logos, watermarks, dialogue bubbles. Camera on the opposite side of the desk, medium-wide view. Boy at LEFT of frame, mother seated beside him CENTER, large computer monitor RIGHT, its entire blank display visible facing camera at a gentle angle. Boy points toward the lower left of the monitor with one index finger, arm below screen area so he does not cover display; his other hand remains near mouse. Mother looks attentively where he points, mouth relaxed, listening. He speaks and explains with a small smile. Both faces visible. Scene emphasizes child leading explanation, mother does not operate keyboard. Leave enough margin around all corners of screen.",
+    "references": [
+      "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-135734f5-1e31-4f84-91d2-6ef2686bc3cc.png"
+    ],
+    "source": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-6034e972-747f-4aa4-aab1-766942d35e03.png",
+    "tool": "image_gen.imagegen"
+  },
+  {
+    "id": 6,
+    "file": "06-procuram-juntos.png",
+    "prompt": "Use case: photorealistic-natural. NEW landscape editorial photograph 1536x1024 for Brazilian parent education carousel. Input reference is ONLY for the identities of fictional mother and son: keep same faces, medium brown skin, curly dark hair, age39 and11, teal mother's blouse and mustard boy T-shirt. Keep same plausible cozy cream-wall home. Rebuild entire scene, camera, poses and lighting from scratch; do not repeat or crop reference composition. Realistic natural anatomy, candid not exaggerated, premium soft daylight. Any visible monitor screen MUST be uniform BLANK light gray, no text, UI, graphics or reflections. No words, logos, watermarks, dialogue bubbles. Closer intimate three-quarter front-side view of desk. Mother and son sitting side by side looking down together at a small open notebook in front of them; boy indicates a small blank area of page with pencil, mother listens thoughtfully, relaxed expression, no anxiety, no failure. This represents checking what to understand before trying again. Notebook pages completely blank for editorial diagram insertion. Desktop monitor seen only FROM BEHIND at LEFT edge, no screen visible. The faces and their collaborative attention are the focus. Portraits must match the reference. No written words on paper.",
+    "references": [
+      "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-135734f5-1e31-4f84-91d2-6ef2686bc3cc.png"
+    ],
+    "source": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-4e1f4295-295d-4179-8526-0af656c2d34e.png",
+    "tool": "image_gen.imagegen"
+  },
+  {
+    "id": 7,
+    "file": "07-gesto-da-ponte.png",
+    "prompt": "Use case: photorealistic-natural. NEW landscape editorial photograph 1536x1024 for Brazilian parent education carousel. Input reference is ONLY for the identities of fictional mother and son: keep same faces, medium brown skin, curly dark hair, age39 and11, teal mother's blouse and mustard boy T-shirt. Keep same plausible cozy cream-wall home. Rebuild entire scene, camera, poses and lighting from scratch; do not repeat or crop reference composition. Realistic natural anatomy, candid not exaggerated, premium soft daylight. Any visible monitor screen MUST be uniform BLANK light gray, no text, UI, graphics or reflections. No words, logos, watermarks, dialogue bubbles. Wide two-shot from front in the home study, computer monitor back visible at far left edge, no screen. Boy is turned toward his mother, using one forearm and open flat hand held DIAGONALLY upward as if showing a stick tipping over to become a bridge, and his other hand lower near elbow as a pivot. Simple natural gesture, exactly two hands with five fingers each, no crossed or merged limbs. Mother turned toward him laughing softly with warm engaged expression, her hands resting naturally in lap. Both faces clearly recognizable as same reference family. Moment of relaxed conversation after demonstrating a game. Spacious background, new camera perspective.",
+    "references": [
+      "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-135734f5-1e31-4f84-91d2-6ef2686bc3cc.png"
+    ],
+    "source": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-b4daa261-4f76-48aa-b966-e208b05f8f3e.png",
+    "tool": "image_gen.imagegen"
+  }
+]

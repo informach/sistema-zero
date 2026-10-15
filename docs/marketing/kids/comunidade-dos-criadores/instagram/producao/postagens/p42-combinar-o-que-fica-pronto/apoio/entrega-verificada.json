@@ -1,0 +1,394 @@
+{
+  "id": "P42",
+  "checkedAt": "2026-10-14T19:28:38.871Z",
+  "errors": [],
+  "files": [
+    {
+      "file": "01-p42.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 961012,
+      "sha256": "c2e81c0026a7598fadaf77b3327d4bc0f369e7dbcd53a7cfe0368227aa33d34b"
+    },
+    {
+      "file": "02-p42.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 930463,
+      "sha256": "6a88b1addbdc9067935cf96ad962b801c7f3c372abc74e880341c2b84f67dffb"
+    },
+    {
+      "file": "03-p42.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 957620,
+      "sha256": "b2c07bda899cbf19af7bafe3d2ffa65068c60a4ce629fcfb82c68be229ad93aa"
+    },
+    {
+      "file": "04-p42.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 1077561,
+      "sha256": "681c85405930dfc80fe3c17e757a37139d7cf7d128ac99f7eb5c971fa62f7940"
+    },
+    {
+      "file": "05-p42.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 161787,
+      "sha256": "aa275cfa1b20e7bab0a49e07f901b071f3df48c56d0424a4c3a7cf641964b98d"
+    },
+    {
+      "file": "06-p42.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 150757,
+      "sha256": "490618022a7f6ceac21ac4d42dfb2520611cb4d156822e2f6f15e5b91679a833"
+    },
+    {
+      "file": "07-p42.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 982185,
+      "sha256": "27571e57794313aaf35c2ac524f5cb3cfa7f1b3ba42c87d609ffc8bbabef93ed"
+    }
+  ],
+  "links": [
+    {
+      "from": "index.html",
+      "to": "legenda.txt",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "texto-alternativo.txt",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "montagem.html",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "apoio/fontes-e-producao.md",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "../index.html",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "01-p42.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "01-p42.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "02-p42.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "02-p42.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "03-p42.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "03-p42.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "04-p42.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "04-p42.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "05-p42.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "05-p42.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "06-p42.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "06-p42.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "07-p42.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "07-p42.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/01-terminou.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/02-caderno-fora.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/03-combinar-antes.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/04-lista.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/naves-4.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/naves-4.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/naves-9.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/naves-9.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/naves-10.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/naves-10.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/07-conferir-lista.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../../../../postagens/10-p41-a-p50.md#p42",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../../../../postagens/05-direcao-visual-e-producao.md",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "copy.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../legenda.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "verificacao.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "prompts.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "imagens-geradas.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "LICENSE-Nunito",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "Caveat-OFL.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../texto-alternativo.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "caca-original.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "caca-original.js",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "caca-demonstracao.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "caca-demonstracao.js",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "adaptacao-visual.js",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "capturas-verificadas.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../index.html",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../montagem.html",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../publicacao.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "entrega-verificada.json",
+      "exists": true
+    }
+  ],
+  "copyLinter": {
+    "slides": "Sete slides sem achados mecânicos.",
+    "caption": "Sem achados mecânicos."
+  },
+  "visualReview": "Sete slides conferidos na grade; capa, comparativo de naves, bilhete e cena final individualmente. Família fictícia consistente; cinco imagens distintas. Papéis com texto aplicado na edição. Capturas reais ampliadas; comparação legível. Regras originais preservadas na adaptação visual.",
+  "game": {
+    "rulesIdentical": true,
+    "appearance": "Modelos, piso e luz adaptados com recursos nativos",
+    "score4": "Naves: 4 de 10",
+    "score9": "Naves: 9 de 10",
+    "score10": "Naves: 10 de 10",
+    "ongoingAt9": true,
+    "winAt10": true,
+    "captures": 3
+  },
+  "carouselCount": 21,
+  "pngCount": 153,
+  "textBounds": [
+    {
+      "text": "Seu filho diz ‘terminei’. Você ainda vê coisa por fazer.",
+      "within": true
+    },
+    {
+      "text": "Vocês combinaram o que precisava estar pronto?",
+      "within": true
+    },
+    {
+      "text": "Às vezes, a criança pensa só em responder o exercício.",
+      "within": true
+    },
+    {
+      "text": "Você também espera que ela confira as respostas e guarde o material.",
+      "within": true
+    },
+    {
+      "text": "Antes de começar, deixem o combinado claro.",
+      "within": true
+    },
+    {
+      "text": "Uma lista curta pode ajudar: responder, conferir e colocar o caderno na mochila.",
+      "within": true
+    },
+    {
+      "text": "Ao terminar, ele pode olhar a lista e ver se falta alguma parte.",
+      "within": true
+    },
+    {
+      "text": "Isso dá uma referência para conferir a própria tarefa.",
+      "within": true
+    },
+    {
+      "text": "Criar jogos também dá espaço para definir e conferir um objetivo.",
+      "within": true
+    },
+    {
+      "text": "Neste jogo de naves, a vitória acontece quando o jogador derruba dez naves.",
+      "within": true
+    },
+    {
+      "text": "Quem cria precisa montar essa regra e testar.",
+      "within": true
+    },
+    {
+      "text": "Com nove, o jogo continua? Ao chegar a dez, aparece a vitória?",
+      "within": true
+    },
+    {
+      "text": "A criança pode praticar esse cuidado: decidir o resultado esperado e conferir se ele aconteceu.",
+      "within": true
+    },
+    {
+      "text": "Siga o perfil para conhecer mais exemplos de criação.",
+      "within": true
+    }
+  ],
+  "nativeInserts": 6,
+  "mobileNoOverflow": true,
+  "browserImageDecode": true,
+  "sourceSectionHash": "6b65550d3ffa9586a8ce964bff7e883e83aabda74743a66a7b9b2a0fae193b7c",
+  "copyEqual": true,
+  "fonts": {
+    "normal": true,
+    "bold": true
+  },
+  "nextCarousel": "P25",
+  "published": false
+}

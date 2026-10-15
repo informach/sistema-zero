@@ -1,0 +1,6 @@
+{
+  "type": "sz_g2d_platformer",
+  "text": "Mover o sprite heroi estilo plataforma na tela (a borda é chão), velocidade 4 pulo 11",
+  "parentType": "sz_frame_loops",
+  "parentText": "🔁 Enquanto estiver rodando A cada quadro do jogo fazer Limpar a tela"
+}

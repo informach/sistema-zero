@@ -1,0 +1,38 @@
+/** Historical reproduction before correction. Current acceptance lives in community-kids/tests. */
+import { afterEach, expect, mock, test } from 'bun:test'
+import { createElement } from '../../packages/community-kids/node_modules/react'
+import { cleanup, fireEvent, render, screen, waitFor } from '../../packages/community-kids/node_modules/@testing-library/react'
+import { fixture } from './fixture'
+
+mock.module('../../packages/member-shell/src/components/live/live-workspace', () => ({ LiveWorkspace: () => null }))
+mock.module('../../packages/member-shell/src/components/live/live-learning-activities', () => ({ LiveLearningActivities: () => null }))
+mock.module('../../packages/member-shell/src/components/live/live-media-panel', () => ({ LiveMediaPanel: () => null }))
+const { LiveClassroom } = await import('../../packages/member-shell/src/components/live/live-classroom')
+const originalFetch = globalThis.fetch
+afterEach(() => { cleanup(); globalThis.fetch = originalFetch })
+
+test('R1 UI: scheduled room exposes join but no way to open reception/start', async () => {
+  const f = await fixture()
+  let joinedAttempts = 0
+  globalThis.fetch = (async (input: any, init: any) => {
+    const path = String(input).split('?')[0]!
+    if (path.endsWith('/join')) {
+      joinedAttempts++
+      try {
+        return Response.json(await f.live.join(f.teacher, f.session.id, JSON.parse(init.body)))
+      } catch (error) {
+        return Response.json({ error: { code: 'LIVE_CONFLICT', message: (error as Error).message } }, { status: 409 })
+      }
+    }
+    return Response.json(await f.live.room(f.teacher, f.session.id))
+  }) as typeof fetch
+  render(createElement(LiveClassroom, { sessionId: f.session.id, teacher: true }))
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Entrar como professora' })).toBeTruthy())
+  expect(screen.queryByRole('button', { name: 'Abrir recepção' })).toBeNull()
+  expect(screen.queryByRole('button', { name: 'Começar encontro' })).toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: 'Entrar como professora' }))
+  await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('A professora ainda não abriu a sala.'))
+  expect(joinedAttempts).toBe(1)
+  expect(screen.queryByRole('button', { name: 'Abrir recepção' })).toBeNull()
+  expect((await f.live.room(f.teacher, f.session.id)).occurrence!.state).toBe('scheduled')
+})

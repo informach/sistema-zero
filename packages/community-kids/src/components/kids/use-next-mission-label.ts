@@ -5,7 +5,8 @@ import { nextMissionLabel, resolveNextPensaMission } from '@/lib/pensa-next-miss
 
 /**
  * O rótulo do "Continuar" do Guia do Pensa quando a PRÓXIMA missão é em outra oficina
- * ("Continuar no Pinta"), descoberto depois de concluir, que é quando o botão aparece.
+ * ("Continuar no Pinta"), descoberto depois de concluir, que é quando o botão aparece. Em
+ * EQUIPE só conta a próxima missão que é DESTA criança; sem nenhuma, "Voltar ao plano".
  * Melhor esforço: sem resposta, `undefined` e o guia fica com "Continuar meu caminho"; o clique
  * descobre o destino de novo de qualquer jeito (o plano pode ter mudado).
  */
@@ -22,7 +23,11 @@ export function useNextMissionLabel(input: {
     let active = true
     void resolveNextPensaMission(projectId)
       .then((next) => {
-        if (active) setFound({ taskId, label: nextMissionLabel(next.destination, current) })
+        if (active)
+          setFound({
+            taskId,
+            label: nextMissionLabel(next.destination, current, { backToPlan: next.backToPlan }),
+          })
       })
       .catch(() => {})
     return () => {

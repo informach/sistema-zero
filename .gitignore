@@ -84,3 +84,6 @@ tmp/
 
 # Páginas de referência coletadas pelo Firecrawl (dados externos, não código).
 .firecrawl/
+
+# Saídas geradas (artes do Instagram, PDFs, projetos exportados): ficam só no disco.
+output/

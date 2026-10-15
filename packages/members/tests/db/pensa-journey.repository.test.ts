@@ -1,6 +1,5 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
-import { readFile } from 'node:fs/promises'
 import type { PensaJourneyActor, PensaProposal } from '@sistemazero/core/pensa'
 import { eq } from 'drizzle-orm'
 import postgres from 'postgres'
@@ -19,6 +18,7 @@ import {
   pensaJourneys,
   pensaTasks,
 } from '../../src/infrastructure/persistence/drizzle/schema'
+import { applyPensaV2Schema } from './pensa-v2-schema'
 
 // Banco próprio: os fixtures legados são propositalmente esparsos e não suportam os FKs novos.
 const base =
@@ -131,48 +131,8 @@ describe.skipIf(!available)('Pensa v2: concorrência e publicação no Postgres'
   beforeAll(async () => {
     conn = createDbConnection(target.toString(), { max: 12 })
     repo = new DrizzlePensaJourneyRepository(conn.db, { dailyLimit: 2, monthlyLimit: 20 })
-    await conn.sql`create schema if not exists members`
-    await conn.sql.unsafe(
-      `do $$ begin create type members.course_audience as enum ('kids','adult'); exception when duplicate_object then null; end $$`,
-    )
-    const files = [
-      '0060_pensa_planner_v2.sql',
-      '0067_creations.sql',
-      '0068_account_deletion_cleanup.sql',
-      '0070_creation_parts.sql',
-      '0075_creation-format-version.sql',
-      '0077_pensa_molda_destination.sql',
-      '0098_pensa_project_members.sql',
-      '0108_pensa_journey_v2.sql',
-      '0109_private_zappy_narrations.sql',
-      '0110_pensa_lifecycle_cleanup.sql',
-      '0111_pensa_provider_budget.sql',
-    ]
-    for (const file of files) {
-      const ddl = await readFile(
-        new URL(`../../src/infrastructure/persistence/drizzle/migrations/${file}`, import.meta.url),
-        'utf8',
-      )
-      for (const raw of ddl.split('--> statement-breakpoint')) {
-        const statement = raw.replace(/^--.*$/gm, '').trim()
-        // O fixture aproveita apenas a criação do contrato de 0060, jamais sua troca destrutiva.
-        if (!statement || /^DROP /i.test(statement)) continue
-        try {
-          await conn.sql.unsafe(statement)
-        } catch (cause) {
-          if (!['42P07', '42710', '42701'].includes((cause as { code: string }).code)) throw cause
-        }
-      }
-    }
-    await conn.sql.unsafe(
-      'alter table members.creations add column if not exists content_fingerprint varchar(70), add column if not exists pending_content_fingerprint varchar(70)',
-    )
-    await conn.sql.unsafe(
-      "alter table members.creation_cleanup_jobs add column if not exists user_ids jsonb not null default '[]'::jsonb",
-    )
-    await conn.sql.unsafe(
-      `create table if not exists members.ai_usage_daily (account_id uuid not null, day date not null, feature varchar(40) not null, used integer not null default 0, privileged boolean not null default false, updated_at timestamptz not null default now(), primary key(account_id, day, feature))`,
-    )
+    // As migrations da jornada + o DDL à mão da equipe (14/10/2026), num banco próprio.
+    await applyPensaV2Schema(conn.sql)
   }, 30000)
   afterAll(async () => {
     for (const who of actors) {
@@ -624,13 +584,13 @@ describe.skipIf(!available)('Pensa v2: concorrência e publicação no Postgres'
       () => now,
     )
     await expect(
-      service.execute(who.profileId, 'kids', taskId, {
+      service.execute(who, 'kids', taskId, {
         status: 'completed',
         completedCriteriaIds: ['test'],
         outputRef: { kind: 'studio_project', projectId: itemId, saveRevision: '0' },
       }),
     ).rejects.toThrow('Seu jogo mudou')
-    const result = await service.execute(who.profileId, 'kids', taskId, {
+    const result = await service.execute(who, 'kids', taskId, {
       status: 'completed',
       completedCriteriaIds: ['test'],
       outputRef: { kind: 'studio_project', projectId: itemId, saveRevision: '1' },

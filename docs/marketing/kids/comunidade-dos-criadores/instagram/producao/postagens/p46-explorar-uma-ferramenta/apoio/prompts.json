@@ -1,0 +1,36 @@
+[
+  {
+    "slide": 1,
+    "file": "01-explorar.png",
+    "references": [
+      "01-pinta-aberto.png"
+    ],
+    "tool": "image_gen.imagegen (nativo)",
+    "prompt": "Use case: photorealistic-natural. Asset: landscape 3:2 editorial photograph for a Brazilian parenting Instagram carousel, Crie com Helena e Júlio.\nThe input is supporting SCREEN CONTENT, not a photograph to reproduce. Create a completely new photograph: a fictional Brazilian girl around 12 with dark brown skin, dark curly hair in a high ponytail, cobalt blue cotton t-shirt, seated at a light wooden desk in a modest warm Brazilian home, looking attentively at a new drawing tool on her desktop computer. She is curious, calm, trying to understand the options. No frustration, no dramatic surprise, not posing for the camera. One hand lightly on a mouse; other resting on desk.\nThe monitor must clearly display the supplied REAL Pinta editor screenshot: white/light blue interface, vertical tools on left, single large orange square on transparent checkerboard in center, color swatches on right, frame strip below. Faithfully integrate its contents as the entire monitor display with natural perspective, do not invent a generic coding screen. Orient monitor toward girl and camera plausibly.\nMedium wide three-quarter view: girl's recognizable face in left half and monitor in right half. Full hands in natural positions. Soft daylight from the side, cream wall, a plant, a small yellow desk accessory, warm lived-in home, premium natural photography with real skin and fabric textures. No adult in this image.\nNo overlaid words, no logo, no watermark, no slide text, no border. Strong clear scene with face and tool both visually prominent.",
+    "selected": true
+  },
+  {
+    "slide": 3,
+    "file": "03-procurar-ajuda.png",
+    "references": [
+      "01-explorar.png",
+      "03-pinta-dicas.png"
+    ],
+    "tool": "image_gen.imagegen (nativo)",
+    "prompt": "Use case: photorealistic-natural. Asset: new landscape 3:2 editorial photograph, same fictional girl's learning story.\nInput 1 is IDENTITY AND HOME REFERENCE ONLY. Preserve exactly the girl's face, dark brown skin, curly high ponytail, cobalt blue shirt and apparent age about 12. Create a different composition and moment, not a reused crop.\nInput 2 is EXACT REAL SCREEN CONTENT: Pinta drawing tool with the 'Dicas rápidas' guidance panel across the upper part, orange square on checkerboard and palette. Integrate that actual screen into the monitor, keeping its layout; no invented UI.\nScene: the girl is reading guidance on the monitor, finger of her LEFT hand lightly pointing toward the guidance area, her RIGHT hand stays on the mouse. Her fictional father, about 40, dark brown skin, short black curly hair with a little gray, neat short beard, cream cotton shirt, sits beside her slightly behind. He listens, looks toward the same guidance; both his hands rest together in his lap, away from keyboard/mouse. The girl remains the one operating the computer.\nDifferent camera angle from image 1: medium view across the desk from her right side so we see the monitor on LEFT and girl and father on RIGHT in three-quarter profile, not just the backs of their heads. The screen faces them plausibly. Girl thoughtful and engaged, father calm, neither looking at camera. Same warm home and daylight, natural anatomy, credible age and proportions, real photographic skin texture. Consultation is ordinary, not failure or frustration.\nNo overlays, no slide copy, no watermarks or invented logos. The scene should make asking for help and reading guidance visible.",
+    "selected": true
+  },
+  {
+    "slide": 7,
+    "file": "07-resultado.png",
+    "references": [
+      "01-explorar.png",
+      "03-procurar-ajuda.png",
+      "07-pinta-azul.png"
+    ],
+    "tool": "image_gen.imagegen (nativo)",
+    "prompt": "Use case: photorealistic-natural. Asset: new landscape 3:2 photograph for closing slide, Brazilian parent education carousel.\nInputs 1 and 2 are IDENTITY REFERENCES: keep exactly the same fictional 12-year-old girl with dark brown skin, curly high ponytail and cobalt blue t-shirt, and her father with dark brown skin, short slightly graying curly hair, neat beard and cream t-shirt. Same warm simple home and wooden desk, but create a new composition and action.\nInput 3 is EXACT REAL SCREEN CONTENT: Pinta editor with the large BLUE square on checkerboard, left tool bar and right color palette. Faithfully integrate it into the computer monitor. Orange square from earlier references has now become blue. No fabricated app or different drawing.\nGirl has just changed the square's color and has a small satisfied smile, looking at her work. Her hand still controls the mouse. Father beside her looks at the screen, relaxed and encouraging; his hands stay on his knees, not touching mouse/keyboard. No applause, no exaggerated success poses, not looking into camera.\nCamera from slightly farther back and a lower side angle than the reference, girl in left foreground in three-quarter profile, monitor on right, father between/behind her with face visible. Show the screen and the blue square clearly, anatomically natural hands, screen facing the girl, credible perspective. Same plants, books, soft daylight, cream and cobalt color accents. Rich natural photo textures. Not a duplicated crop of either reference.\nNo overlay, no slide copy, no logo, no watermark, no border.",
+    "selected": true
+  }
+]
+

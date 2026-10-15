@@ -1,0 +1,10 @@
+{
+  "checks": [
+    "base fill changes only the piece background",
+    "real brush, eraser, undo and composite picker",
+    "whole-model preset commits group plus clip together",
+    "reload recovers a revision-owned pose without changing the saved model",
+    "saved exit returns directly to gallery"
+  ],
+  "errors": []
+}

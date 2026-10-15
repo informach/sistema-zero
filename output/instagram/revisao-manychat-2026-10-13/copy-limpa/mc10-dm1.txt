@@ -1,1 +1,0 @@
-Oi, esta é uma resposta automática. O primeiro projeto ensina a dar comandos a um personagem e fazer a aventura funcionar. Veja como ele começa.

@@ -1,0 +1,298 @@
+{
+  "source": "docs/marketing/kids/comunidade-dos-criadores/instagram/postagens/10-p41-a-p50.md",
+  "sourceSectionHash": "09db3b742b203d966a5305b5f807621dec69cce4d91976b6c0c7217a6513287f",
+  "copyEqual": true,
+  "slides": [
+    {
+      "number": 1,
+      "file": "01-p48.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "series",
+          "top": 0,
+          "bottom": 45.59375,
+          "height": 45.59375,
+          "left": 0,
+          "right": 220.515625
+        },
+        {
+          "kind": "copy lead",
+          "top": 121.546875,
+          "bottom": 269.765625,
+          "height": 148.21875,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 345.734375,
+          "bottom": 405.390625,
+          "height": 59.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo",
+          "top": 481.34375,
+          "bottom": 1116,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 51
+    },
+    {
+      "number": 2,
+      "file": "02-p48.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 212.25,
+          "height": 212.25,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "mine-intro",
+          "top": 283.375,
+          "bottom": 923.375,
+          "height": 640,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 994.5,
+          "bottom": 1116,
+          "height": 121.5,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 49
+    },
+    {
+      "number": 3,
+      "file": "03-p48.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 153.09375,
+          "height": 153.09375,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "actions",
+          "top": 273.796875,
+          "bottom": 873.796875,
+          "height": 600,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 994.5,
+          "bottom": 1116,
+          "height": 121.5,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 49
+    },
+    {
+      "number": 4,
+      "file": "04-p48.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 219.234375,
+          "height": 219.234375,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "rule",
+          "top": 334.390625,
+          "bottom": 874.390625,
+          "height": 540,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 989.53125,
+          "bottom": 1116,
+          "height": 126.46875,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 51
+    },
+    {
+      "number": 5,
+      "file": "05-p48.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 143.8125,
+          "height": 143.8125,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "comparison",
+          "top": 252.90625,
+          "bottom": 882.90625,
+          "height": 630,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 992,
+          "bottom": 1116,
+          "height": 124,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 50
+    },
+    {
+      "number": 6,
+      "file": "06-p48.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 172.5,
+          "height": 172.5,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo",
+          "top": 243.4375,
+          "bottom": 878.09375,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 949.03125,
+          "bottom": 1116,
+          "height": 166.96875,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 46
+    },
+    {
+      "number": 7,
+      "file": "07-p48.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 213.890625,
+          "height": 213.890625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "victory",
+          "top": 290.703125,
+          "bottom": 910.703125,
+          "height": 620,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 987.5,
+          "bottom": 1116,
+          "height": 128.5,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 54
+    }
+  ],
+  "images": [
+    {
+      "src": "apoio/01-placar-e-curtidas.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "src": "apoio/04-regra-do-ponto.png",
+      "loaded": true,
+      "width": 560,
+      "height": 130
+    },
+    {
+      "src": "apoio/06-conversa-no-sofa.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "src": "apoio/06-conversa.png",
+      "loaded": true,
+      "width": 2400,
+      "height": 1600
+    }
+  ],
+  "errors": [],
+  "fonts": {
+    "normal": true,
+    "bold": true
+  }
+}

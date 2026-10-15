@@ -229,6 +229,13 @@ export interface PensaTask {
   guide: PensaTaskGuide
   context: PensaTaskContext
   progress: PensaTaskProgress
+  /**
+   * Equipe no v2 (14/10/2026): quem COMEÇOU a missão (gravado ao sair de `planned`; com duas
+   * artistas, quem começa fica com ela) e quem a CONCLUIU (a arte entregue que "Trazer da
+   * equipe" busca na conta dela). `null` no plano clássico e enquanto ninguém começou.
+   */
+  assigneeProfileId: string | null
+  completedByProfileId: string | null
   revision: number
   supersedesTaskId: string | null
   archivedAt: Date | null

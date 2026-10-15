@@ -1,0 +1,34 @@
+{
+  "type": "sz_w3d_on_point",
+  "text": "Quando apertar E no ponto segredo fazer Mostrar o balão texto Você achou o tesouro escondido! por 3 s",
+  "children": [
+    {
+      "type": "sz_w3d_on_point",
+      "text": "Quando apertar E no ponto segredo fazer Mostrar o balão texto Você achou o tesouro escondido! por 3 s"
+    },
+    {
+      "type": "sz_w3d_say",
+      "text": "Mostrar o balão texto Você achou o tesouro escondido! por 3 s"
+    },
+    {
+      "type": "sz_val_text",
+      "text": "texto Você achou o tesouro escondido!"
+    },
+    {
+      "type": "sz_val_number",
+      "text": "3"
+    },
+    {
+      "type": "sz_w3d_camera_shake",
+      "text": "Tremer a câmera com força 0.6 por 0.4 s"
+    },
+    {
+      "type": "sz_val_number",
+      "text": "0.6"
+    },
+    {
+      "type": "sz_val_number",
+      "text": "0.4"
+    }
+  ]
+}

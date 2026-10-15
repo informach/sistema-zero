@@ -1,1 +1,0 @@
-“Abre a aula e faz a primeira parte” indica onde começar. Depois, a orientação dessa parte precisa mostrar a ação para executar.

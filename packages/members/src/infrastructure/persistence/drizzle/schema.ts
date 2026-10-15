@@ -1150,6 +1150,33 @@ export const pensaProjectMembers = members.table(
   ],
 )
 
+/**
+ * As FUNÇÕES da equipe no Pensa v2 (14/10/2026): `code` = quem programa (o Estúdio, UMA pessoa
+ * por plano, o índice parcial garante) e `art` = quem faz as artes (Pinta e Molda, zero ou
+ * mais). Sem linha `code`, programa a dona; sem linhas `art`, quem programa também desenha.
+ * São linhas CRUAS: quem lê passa por `effectivePensaRoles` (`@sistemazero/core/pensa`), que
+ * descarta quem já saiu da equipe. Sair ou ser tirada apaga as linhas da pessoa.
+ */
+export const pensaProjectRoles = members.table(
+  'pensa_project_roles',
+  {
+    projectId: uuid('project_id')
+      .notNull()
+      .references(() => pensaProjects.id, { onDelete: 'cascade' }),
+    profileId: uuid('profile_id').notNull(),
+    role: varchar('role', { length: 8 }).$type<'code' | 'art'>().notNull(),
+    // Quem definiu (a dona): auditoria.
+    assignedBy: uuid('assigned_by').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.projectId, t.profileId, t.role] }),
+    uniqueIndex('pensa_project_roles_code_uq').on(t.projectId).where(sql`${t.role} = 'code'`),
+    index('pensa_project_roles_profile_idx').on(t.profileId),
+    check('pensa_project_roles_role_check', sql`${t.role} in ('code', 'art')`),
+  ],
+)
+
 export const pensaCycles = members.table(
   'pensa_cycles',
   {
@@ -1381,6 +1408,10 @@ export const pensaTasks = members.table(
     startedAt: timestamp('started_at', { withTimezone: true }),
     completedAt: timestamp('completed_at', { withTimezone: true }),
     progressUpdatedAt: timestamp('progress_updated_at', { withTimezone: true }),
+    // Equipe no v2 (14/10/2026): quem COMEÇOU a missão (com duas artistas, quem começa fica com
+    // ela) e quem a CONCLUIU (a arte entregue que "Trazer da equipe" busca na conta dela).
+    assigneeProfileId: uuid('assignee_profile_id'),
+    completedByProfileId: uuid('completed_by_profile_id'),
     revision: integer('revision').notNull().default(1),
     supersedesTaskId: uuid('supersedes_task_id').references((): AnyPgColumn => pensaTasks.id, {
       onDelete: 'set null',

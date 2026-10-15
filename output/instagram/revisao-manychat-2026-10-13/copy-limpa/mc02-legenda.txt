@@ -1,9 +1,0 @@
-Até uma máquina que acerta precisa de alguém que decida o que pedir a ela.
-
-Em 29 de março de 2026, a Bachiana Filarmônica SESI-SP tocou Mozart na Avenida Paulista: um robô iniciou a regência e João Carlos Martins assumiu depois. A apresentação propôs uma reflexão sobre técnica e interpretação humana.
-
-Essa reflexão também cabe num projeto da criança. Se o adversário automático ganha toda partida, por exemplo, quem cria precisa avaliar se a disputa ficou interessante. O computador executou a regra; ainda cabe a uma pessoa avaliar o resultado.
-
-Na criação de jogos, seu filho pode experimentar os dois lados: escrever uma instrução e observar o que ela produz. Há uma decisão dele por trás da ação na tela.
-
-Comente MAESTRO e conheça no direct um primeiro projeto para ele começar a criar jogos.

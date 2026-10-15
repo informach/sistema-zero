@@ -21,6 +21,8 @@ export interface Models3DTabProps extends AssetsTabCommon {
   onUpload: () => void
   /** "Trazer do Molda" — ausente quando o host não passa o adapter. */
   onOpenMolda: (() => void) | null
+  /** "Trazer da equipe" (Pensa em equipe) — ausente sem o adapter do host. */
+  onOpenTeam?: (() => void) | null
   editTargetOf: (asset: ProjectAsset) => EditTarget | null
   onOpenInOrigin: (asset: ProjectAsset, target: EditTarget) => void
 }
@@ -40,6 +42,7 @@ export function Models3DTab({
   has3DExtension,
   onUpload,
   onOpenMolda,
+  onOpenTeam = null,
   onRename,
   onDelete,
   editTargetOf,
@@ -48,16 +51,26 @@ export function Models3DTab({
   const t = useT()
   return (
     <div className="flex flex-col gap-4">
-      {onOpenMolda || (allowUpload && has3DExtension) ? (
+      {onOpenMolda || onOpenTeam || (allowUpload && has3DExtension) ? (
         <div className="flex flex-wrap items-center gap-3">
           {onOpenMolda ? (
             <Button variant="primary" size="sm" onClick={onOpenMolda}>
               {t('moldaImport.button')}
             </Button>
           ) : null}
-          {allowUpload && has3DExtension ? (
+          {onOpenTeam ? (
             <Button
               variant={onOpenMolda ? 'subtle' : 'primary'}
+              size="sm"
+              className="min-h-11"
+              onClick={onOpenTeam}
+            >
+              {t('teamImport.button')}
+            </Button>
+          ) : null}
+          {allowUpload && has3DExtension ? (
+            <Button
+              variant={onOpenMolda || onOpenTeam ? 'subtle' : 'primary'}
               size="sm"
               disabled={busy}
               title="Modelo 3D (.glb) ou céu 360° (.hdr) para Jogo 3D, Jogo 3D Avançado, Mundo 3D e Canvas 3D"

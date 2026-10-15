@@ -1,3 +1,4 @@
+import type { PensaTeamArtItem } from '@sistemazero/core/pensa'
 import type { CourseAudience } from '../course/course'
 import type {
   PensaArtifact,
@@ -20,6 +21,7 @@ import type {
   PensaTaskStatus,
   PensaWorkStage,
 } from '../pensa/pensa'
+import type { PensaRoleRow } from '../pensa/team'
 
 export interface NewPensaProject {
   id: string
@@ -103,6 +105,31 @@ export interface PensaTaskProgressPatch {
 
 export type NewPensaProjectMember = Omit<PensaProjectMember, 'joinedAt'>
 
+/** Quem mexe numa missão: o perfil e a CONTA dele (a evidência é conferida na conta do ator). */
+export interface PensaTaskActor {
+  profileId: string
+  accountId: string
+}
+
+/**
+ * Resultado de `setRoles`: `updated`; `code_locked` = trocar quem programa depois de o jogo
+ * começar (regra 5); `not_in_team` = algum id não está mais na equipe (alguém saiu entre a
+ * leitura e a trava); `legacy` = plano sem jornada v2; `not_found` = o plano sumiu.
+ */
+export type PensaSetRolesOutcome =
+  | 'updated'
+  | 'code_locked'
+  | 'not_in_team'
+  | 'legacy'
+  | 'not_found'
+
+/** Uma missão concluída com arte entregue (o download de "Trazer da equipe"). */
+export interface PensaTeamArtTask {
+  completedByProfileId: string
+  tool: 'pinta' | 'molda'
+  assetId: string
+}
+
 export interface PensaRepository {
   /** Só os projetos PRÓPRIOS (a cota de criar é do dono; equipes não contam). */
   countActiveProjects(userId: string, audience: CourseAudience): Promise<number>
@@ -143,8 +170,43 @@ export interface PensaRepository {
     maxMembers: number,
     expectedCode: string,
   ): Promise<'added' | 'duplicate' | 'full' | 'invite_invalid'>
-  /** `false` = não estava na equipe. Toca o `updated_at` quando tira alguém. */
+  /**
+   * `false` = não estava na equipe. Toca o `updated_at` quando tira alguém. Na MESMA transação
+   * apaga as funções da pessoa (v2) e solta as missões não concluídas que ela tinha começado.
+   */
   removeMember(projectId: string, profileId: string, now: Date): Promise<boolean>
+  // ── Funções da equipe no v2 (14/10/2026) ──
+  /** As linhas CRUAS de `pensa_project_roles` (quem lê passa por `pensaTeamRoles`). */
+  listRoles(projectId: string): Promise<PensaRoleRow[]>
+  /**
+   * Troca as funções de uma vez, com a linha do projeto TRANCADA (`for update`): confere a
+   * equipe, a regra 5 (quem programa só muda antes de o jogo começar), regrava as linhas
+   * (`code` igual à dona = sem linha; `art` vazio = sem linhas), solta as missões não
+   * concluídas de quem perdeu a função e sobe a revisão da jornada (as colegas percebem).
+   */
+  setRoles(
+    projectId: string,
+    roles: { code: string; art: readonly string[] },
+    assignedBy: string,
+    now: Date,
+  ): Promise<PensaSetRolesOutcome>
+  /**
+   * O jogo já começou no Estúdio de quem programa: alguma missão do Estúdio do ciclo atual saiu
+   * de `planned` ou existe uma versão guardada (checkpoint) do plano.
+   */
+  isCodeLocked(projectId: string): Promise<boolean>
+  /**
+   * As artes ENTREGUES no plano por OUTRA pessoa (`completed_by` ≠ `viewerProfileId`): missões
+   * não arquivadas de todos os ciclos, concluídas, com `outputRef` do Pinta ou do Molda, cuja
+   * criação segue viva e confirmada na conta de quem concluiu. Mais recente primeiro.
+   */
+  listTeamArt(
+    projectId: string,
+    viewerProfileId: string,
+    limit: number,
+  ): Promise<PensaTeamArtItem[]>
+  /** A missão de arte entregue (não arquivada, concluída, com `outputRef` de arte) ou `null`. */
+  findTeamArtTask(projectId: string, taskId: string): Promise<PensaTeamArtTask | null>
   /**
    * Apaga o plano INTEIRO do dono (ciclos, conversas, artefatos e cartões vão junto
    * pelas FKs `on delete cascade`). O ledger de XP/badges NÃO é tocado: `xp_events`
@@ -209,12 +271,18 @@ export interface PensaRepository {
     replacement: NewPensaTask,
     now: Date,
   ): Promise<PensaTask>
+  /**
+   * Na jornada v2 confere, sob a trava do projeto, a função do ATOR e a missão pega por outra
+   * pessoa (`assertPensaMissionWorker`), a evidência na conta do ATOR e grava `assignee` e
+   * `completed_by` (`pensaMissionOwnership`).
+   */
   updateTaskProgress(
     projectId: string,
     taskId: string,
     progress: PensaTaskProgress,
     expectedUpdatedAt: Date | null,
     now: Date,
+    actor: PensaTaskActor,
   ): Promise<PensaTask>
   deleteTask(projectId: string, taskId: string, now: Date): Promise<void>
 }

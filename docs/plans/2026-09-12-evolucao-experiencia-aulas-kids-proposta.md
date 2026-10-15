@@ -292,7 +292,7 @@ Condições de qualidade para expandir: nenhuma etapa de aprendizagem composta a
 
 | Fonte | O que foi verificado |
 | --- | --- |
-| [README das aulas](../aulas-interativas/README.md) e [revisão pedagógica](../aulas-interativas/qa/revisao-pedagogica-2026-09-12.md) | Estado do pacote, revisão anterior, produção pendente, continuidade e limites declarados. |
+| [README das aulas](../aulas-interativas-tecnico/historico-organizacao.md) e [revisão pedagógica](../aulas-interativas-tecnico/qa/revisao-pedagogica-2026-09-12.md) | Estado do pacote, revisão anterior, produção pendente, continuidade e limites declarados. |
 | [Roteiro da animação](../aulas-interativas/o-jogo-do-meu-jeito/aula-03/roteiro.md) | Etapas atuais, perguntas, vídeos técnicos e uso do Pinta externo. |
 | [Quadros HTML](../aulas-interativas/interacoes/quadros.html) | Experiência atual de limpeza/rastros, sem montagem e reprodução automática de imagens diferentes. |
 | [Manifesto Dia 1](../aulas-interativas/desafio-primeiro-jogo/dia-1/manifesto.json) e [Dino 3](../aulas-interativas/corre-dino/aula-03/manifesto.json) | Composição das descobertas, posição de vídeos, textos e critérios. |
@@ -305,4 +305,4 @@ Condições de qualidade para expandir: nenhuma etapa de aprendizagem composta a
 | [Isolamento de HTML](../../packages/member-shell/src/components/learning-html.tsx) e [painel docente](../../packages/admin/src/components/professor/lesson-learning-panel.tsx) | Protocolo de participação, persistência e apresentação da evidência. |
 | [Executor de atividades do Estúdio](../../packages/studio/src/activity/run.ts) | Verificações estruturais e execução em sandbox no cliente; não confirma por si só a instrumentação necessária ao piloto. |
 
-Inventário realizado por leitura dos JSONs, agrupando tipos, modelos interativos e referências de ferramentas. Verificação executada nesta análise: `bun docs/aulas-interativas/qa/validar-manifestos.ts`, com saída de 27 aulas, 96 seções, 118 vídeos planejados, 16 etapas com 19 objetivos estruturais, sem erro. Código de produto e manifestos permaneceram inalterados; este arquivo registra a proposta.
+Inventário realizado por leitura dos JSONs, agrupando tipos, modelos interativos e referências de ferramentas. Verificação executada nesta análise: `bun docs/aulas-interativas-tecnico/qa/validar-manifestos.ts`, com saída de 27 aulas, 96 seções, 118 vídeos planejados, 16 etapas com 19 objetivos estruturais, sem erro. Código de produto e manifestos permaneceram inalterados; este arquivo registra a proposta.

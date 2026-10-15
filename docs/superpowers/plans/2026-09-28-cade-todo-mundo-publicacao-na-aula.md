@@ -22,12 +22,12 @@ O gerador permanece a fonte do manifesto; projeto e conclusão mantêm os mesmos
 ### Task 1: Alinhar a aula, a ajuda e as diretrizes
 
 **Files:**
-- Modificar `docs/aulas-interativas/aulas/cade-todo-mundo-aula-2.md` e `.roteiro.md`.
-- Modificar `docs/aulas-interativas/qa/gerar-cade-todo-mundo.ts` e regenerar o manifesto da Aula 2.
+- Modificar `docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-2.md` e `.roteiro.md`.
+- Modificar `docs/aulas-interativas-tecnico/qa/gerar-cade-todo-mundo.ts` e regenerar o manifesto da Aula 2.
 - Modificar `docs/como-fazer/como-fazer.json`, tutorial `plataforma-publicar-no-mural`.
-- Modificar `docs/aulas-interativas/BRIEFING.md`, `ESPEC-ROTEIRO.md` e `docs/orientacao-cursos-jogos.md`.
-- Registrar o complemento em `docs/aulas-interativas/REVISAO-LINGUAGEM-CADE-TODO-MUNDO-2026-09-27.md`.
-- Ajustar as expectativas estruturais existentes em `docs/aulas-interativas/qa/cade-todo-mundo-manifestos.test.ts`.
+- Modificar `docs/aulas-interativas-tecnico/BRIEFING.md`, `ESPEC-ROTEIRO.md` e `docs/orientacao-cursos-jogos.md`.
+- Registrar o complemento em `docs/aulas-interativas-tecnico/REVISAO-LINGUAGEM-CADE-TODO-MUNDO-2026-09-27.md`.
+- Ajustar as expectativas estruturais existentes em `docs/aulas-interativas-tecnico/qa/cade-todo-mundo-manifestos.test.ts`.
 
 **Interfaces:** mantém `conclusao`, `video-a2-fecho`, `workspaceKey: projeto` e conclusão pelo vídeo.
 Acrescenta `ajuda-a2-publicar`, rich_text sem requisito de leitura, com link
@@ -35,11 +35,11 @@ Acrescenta `ajuda-a2-publicar`, rich_text sem requisito de leitura, com link
 
 - [x] Aplicar a fala aprovada com o gesto Fechar da confirmação, conferido no componente MuralCelebration.
 - [x] Inserir a ajuda escrita, alinhar o tutorial e as diretrizes, atualizar as expectativas do teste existente.
-- [x] Executar `bun docs/aulas-interativas/qa/gerar-cade-todo-mundo.ts` e revisar o diff gerado.
-- [x] Executar `bun docs/aulas-interativas/qa/validar-manifestos.ts cade-todo-mundo`.
-- [x] Executar `python docs/aulas-interativas/validar-roteiros.py cade-todo-mundo`.
+- [x] Executar `bun docs/aulas-interativas-tecnico/qa/gerar-cade-todo-mundo.ts` e revisar o diff gerado.
+- [x] Executar `bun docs/aulas-interativas-tecnico/qa/validar-manifestos.ts cade-todo-mundo`.
+- [x] Executar `python docs/aulas-interativas-tecnico/validar-roteiros.py cade-todo-mundo`.
 - [x] Executar `bun docs/como-fazer/validar.ts`.
-- [x] Executar `bun test docs/aulas-interativas/qa/cade-todo-mundo-manifestos.test.ts docs/aulas-interativas/qa/cade-todo-mundo-projeto.test.ts`.
+- [x] Executar `bun test docs/aulas-interativas-tecnico/qa/cade-todo-mundo-manifestos.test.ts docs/aulas-interativas-tecnico/qa/cade-todo-mundo-projeto.test.ts`.
 - [x] Conferir formatação, diff, preservação dos projetos e conclusão; registrar resultados.
 
 A revisão é editorial e usa os validadores e testes existentes, sem criar testes de cópia de fala.

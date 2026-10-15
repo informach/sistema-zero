@@ -1,0 +1,44 @@
+[
+  {
+    "id": 1,
+    "file": "01-pediu-ajuda.png",
+    "prompt": "Use case: photorealistic-natural. Create a NEW landscape editorial photograph 1536x1024 for a Brazilian parent education Instagram carousel. Fictional Brazilian mother age 38, medium brown skin, dark curly shoulder-length hair tied back loosely, mustard yellow plain blouse and blue jeans. Fictional son age 11, medium brown skin, short tightly curled black hair, teal cotton t-shirt. Warm realistic home, white walls, light oak furniture, afternoon natural light. Story: boy sits at computer desk in foreground, turns his head and upper body back to call his mother for help, one hand remains close to the mouse. Mother arrives from an open kitchen doorway in background, holding a small folded dish towel, mildly uncertain but attentive expression, not distressed. Both faces visible and natural. Desktop monitor on RIGHT side, angled enough that display surface is visible, entirely uniform light gray BLANK; all display corners visible, no person or object overlaps the display. Desk realistic with keyboard and mouse. Medium-wide candid camera at child's eye level. Correct anatomy, believable age, warm everyday family moment, premium natural photography, no stock-photo posing. No text, speech bubbles, logos, watermarks, clocks, generated interface or decorative diagrams. Leave all screens blank for insertion of real platform captures. Family fictional, no resemblance requested to any named real person.",
+    "references": [],
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-7974ff84-fe62-4370-84b2-1c8001725ac0.png",
+    "tool": "image_gen.imagegen",
+    "sha256": "647417375e98ad56994fddf55455aa3f59633ff08a63dc1f848e9dcac3383d3f"
+  },
+  {
+    "id": 2,
+    "file": "02-mostrando-a-duvida.png",
+    "prompt": "Use case: photorealistic-natural. NEW landscape editorial photograph 1536x1024. Reference establishes same fictional Brazilian mother (mustard blouse, loosely tied dark curly hair, medium brown skin) and son age 11 (teal shirt, short curly black hair), and warm oak home environment. Preserve their identity, clothing and realistic ages but create an entirely new scene, pose, camera framing. Correct anatomy, natural hands, soft realistic light. No text, logos, watermark, speech bubbles, generated interface or clocks. Mother now seated beside her son on LEFT, leaning slightly forward and listening. Boy in CENTER seen from side, pointing toward the RIGHT desktop monitor with his right index finger. Finger points close to screen but remains BELOW display so the display is unobstructed. Mother and boy gaze at screen with curiosity, boy explaining. Large monitor on RIGHT with all four display corners within frame, entire screen plain light gray blank for authentic game insertion. Child's other hand rests near mouse, mother does not touch keyboard. Medium-wide side angle, beautiful natural afternoon light. New composition, both faces visible, no exaggerated happiness.",
+    "references": [
+      "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-7974ff84-fe62-4370-84b2-1c8001725ac0.png"
+    ],
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-7e9dcc3f-3aaa-4781-8815-3e13d014843b.png",
+    "tool": "image_gen.imagegen",
+    "sha256": "a8d5683c6c5614fc92e19e471231190be1c6969774065a788688df82bc839244"
+  },
+  {
+    "id": 5,
+    "file": "05-escolhendo-com-cuidado.png",
+    "prompt": "Use case: photorealistic-natural. NEW landscape editorial photograph 1536x1024. Reference establishes same fictional Brazilian mother (mustard blouse, loosely tied dark curly hair, medium brown skin) and son age 11 (teal shirt, short curly black hair), and warm oak home environment. Preserve their identity, clothing and realistic ages but create an entirely new scene, pose, camera framing. Correct anatomy, natural hands, soft realistic light. No text, logos, watermark, speech bubbles, generated interface or clocks. Night scene: mother alone sitting on cozy light beige sofa, thoughtful, relaxed, examining a smartphone held at chest level. Camera is front-left, phone's back faces camera, screen faces mother and is NOT visible. A simple blank cream notepad lies flat on small oak side table beside her, fully visible, alongside a pen. Warm floor lamp illumination, subdued blue evening visible through window. No boy in this scene, no notebook computer. Notepad has NO writing; text will be applied in layout. Scene communicates mother checking how a children's activity provides guidance, not messaging live teacher. Natural candid medium-wide view.",
+    "references": [
+      "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-7974ff84-fe62-4370-84b2-1c8001725ac0.png"
+    ],
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-1471aa76-9700-40a3-9f4f-f8efb87be724.png",
+    "tool": "image_gen.imagegen",
+    "sha256": "a1eb85b19bfb2f1fde822ea862d9b8d6f243a2e6b212765508a696c3da211055"
+  },
+  {
+    "id": 8,
+    "file": "08-entendendo-juntos.png",
+    "prompt": "Use case: photorealistic-natural. NEW landscape editorial photograph 1536x1024. Reference establishes same fictional Brazilian mother (mustard blouse, loosely tied dark curly hair, medium brown skin) and son age 11 (teal shirt, short curly black hair), and warm oak home environment. Preserve their identity, clothing and realistic ages but create an entirely new scene, pose, camera framing. Correct anatomy, natural hands, soft realistic light. No text, logos, watermark, speech bubbles, generated interface or clocks. Afternoon home study scene, closer intimate two-shot from opposite side of desk. Son on RIGHT explaining with two open hands, face visible in three-quarter profile, mother on LEFT listening attentively with chin resting on one hand. Both seated at child's eye level, relaxed thoughtful expressions, eye contact. Desk edge and mouse at bottom, only BACK edge of monitor at far left of image, screen not visible. Child keeps ownership of activity, mother listens. Warm window light, bookshelf soft background. Distinct pose and angle from reference, no pointing at camera, no text or illustration.",
+    "references": [
+      "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-7974ff84-fe62-4370-84b2-1c8001725ac0.png"
+    ],
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-e677990e-6ee7-4c02-ba0f-074cd8643916.png",
+    "tool": "image_gen.imagegen",
+    "sha256": "fc6b1dffa32238f2225a81094c84adff4111817b1586e531388f78ae3d9e9e4d"
+  }
+]

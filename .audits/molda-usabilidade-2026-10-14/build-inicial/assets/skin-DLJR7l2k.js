@@ -1,0 +1,1 @@
+import{t as e}from"./limits-Ck7XMQh7.js";var t={bindings:e.renderedParts,joints:256,influences:4,weightedVertices:e.vertices},n=1e-8;export{n,t};

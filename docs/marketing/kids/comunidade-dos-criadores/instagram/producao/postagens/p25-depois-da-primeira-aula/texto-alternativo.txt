@@ -1,0 +1,39 @@
+SLIDE 1
+Curto (99 caracteres): Cena encenada: menino comemora a primeira aula diante do computador; calendário tem um dia marcado.
+
+Longo: Fotografia gerada de menino fictício, de cerca de 11 anos, cabelo castanho e camiseta azul petróleo. Ele comemora diante do computador com os braços erguidos. A tela recebeu uma captura real da primeira fase de Nave Contra Asteroides, com a nave aparecendo no fundo azul. No calendário, a montagem acrescenta Primeira aula e um número 1 circulado. Não é registro de aluno real. Texto da arte: Seu filho adorou a primeira aula. Antes de contratar, veja também o que vem depois.
+
+SLIDE 2
+Curto (83 caracteres): Cena encenada: mãe e filho conversam; o Mapa da Aventura está aberto no computador.
+
+Longo: Nova fotografia gerada da mesma criança fictícia conversando com a mãe, de blusa clara e óculos redondos. A tela recebeu a página Seu percurso do Mapa da Aventura de Nave Contra Asteroides, com a sequência real das nove fases. A mãe escuta o filho. Texto da arte: A novidade chama atenção. Para conhecer melhor a proposta, procure entender como a criança continua o projeto e recebe ajuda.
+
+SLIDE 3
+Curto (98 caracteres): Captura da plataforma: primeiras fases de Nave Contra Asteroides mostram a continuação do projeto.
+
+Longo: Recortes do componente real CourseTrail renderizado localmente com conteúdo de Nave Contra Asteroides. Sob o título do curso, Primeiro identifica Faça a nave aparecer, e Depois identifica Mova a nave pelo espaço. Uma seta editorial liga as fases. O progresso é inicial e demonstrativo, sem conta de aluno: a primeira fase pode começar e a seguinte está bloqueada. Não representa um curso de Base da Lua. Texto da arte: Pergunte o que ela vai construir primeiro e o que poderá acrescentar depois. Assim, você consegue enxergar o caminho da atividade.
+
+SLIDE 4
+Curto (93 caracteres): Capturas do Estúdio: astronauta recolhe moedas na Lua e fogos aparecem ao completar a missão.
+
+Longo: Duas capturas diferentes do exemplo Base da Lua em execução. À esquerda, astronauta perto das moedas; à direita, fogos e confetes após recolher as 12 moedas. O contador original de 12 foi ampliado. Recolher as moedas e Missão completa! são rótulos editoriais. O exemplo não é atribuído à criança das fotos. Texto da arte: Neste jogo, um astronauta recolhe moedas na Lua. Ao juntar todas, aparecem fogos para comemorar.
+
+SLIDE 5
+Curto (90 caracteres): Capturas do Estúdio: astronauta anda, recolhe uma moeda e o contador registra três moedas.
+
+Longo: Três capturas da mesma partida, em momentos distintos, com rótulos editoriais Andar, Recolher e Contar. O primeiro recorte mostra o astronauta em movimento antes da coleta. O segundo tem uma moeda já recolhida e contador nativo 1. O terceiro tem contador nativo 3. Os contadores foram ampliados sem reescrever os números. Texto da arte: A criação pode ser dividida em partes: fazer o astronauta andar, recolher uma moeda e contar as que ele pegou. Cada teste mostra o que já está funcionando.
+
+SLIDE 6
+Curto (92 caracteres): Capturas do Estúdio: moedas em lugares diferentes e a conquista Astronauta no fim da missão.
+
+Longo: Vista superior real da Base da Lua mostra quatro moedas ainda em lugares diferentes, depois de oito recolhidas. Abaixo, outro momento da conclusão mostra a mensagem nativa Conquista: Astronauta. As perguntas Onde ficam as moedas? e O que acontece no final? são editoriais. A imagem apresenta possibilidades de criação, não anuncia novas fases automáticas. Texto da arte: Depois, entram outras escolhas: onde colocar as moedas e o que acontece quando o jogador termina. A criança tem novas partes para construir e experimentar.
+
+SLIDE 7
+Curto (81 caracteres): Cena encenada: mãe e filho consultam os blocos do Mapa da Aventura no computador.
+
+Longo: Nova cena gerada da família fictícia consultando uma explicação. O menino aponta para a tela, com a mãe ao lado. Foi inserida a página 6 do Mapa da Aventura real de Nave Contra Asteroides, com o título Faça a nave aparecer e os blocos correspondentes. A imagem não é um atendimento ao vivo nem registro de aula real. Texto da arte: Ao avaliar um curso, veja essa continuação e a orientação disponível quando seu filho precisa de ajuda. Converse também com ele sobre o que gostaria de criar.
+
+SLIDE 8
+Curto (80 caracteres): Cena encenada: mãe e filho, vistos de costas, olham a Base da Lua no computador.
+
+Longo: Nova fotografia gerada dos mesmos personagens, agora de costas. O menino usa o mouse e a mãe se inclina para ver a tela. O monitor recebeu uma captura real distinta da Base da Lua, com o astronauta perto da bandeira e do foguete. A demonstração não é atribuída a aluno. Texto da arte: Aqui mostramos o que acontece ao aprender criando jogos. Siga o perfil para conhecer mais exemplos.

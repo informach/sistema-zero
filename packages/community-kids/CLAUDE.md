@@ -602,7 +602,7 @@ aula e professor, que é a língua dos adultos.
   (`literaisVisiveis` em `tests/helpers/copy-scan.ts`: literais, crases, texto de JSX e rótulos; comentário
   não é nó da árvore) e reprova qualquer palavra da régua `PALAVRAS_DA_ESCOLA`, e também a CONCORDÂNCIA que
   a troca palavra por palavra deixa ("o fase", "no parte", "próximo parte"; a régua `CONCORDANCIA_ERRADA`
-  é importada, só leitura, de `docs/aulas-interativas/qa/palavras-da-escola.ts`). O alcance: o `src/` do
+  é importada, só leitura, de `docs/aulas-interativas-tecnico/qa/palavras-da-escola.ts`). O alcance: o `src/` do
   app (a área dos pais fica fora por ARQUIVO, e a grade `perfis-client.tsx`, que a criança também lê, é
   varrida com exceções pontuais), o member-shell que roda aqui (`components`, `lib`, `routes`, `server`),
   o `core/src` inteiro, o `studio/src`, o `pinta/src`, o `molda/src` e o `ui/src`, cada raiz com um
@@ -639,7 +639,7 @@ aula e professor, que é a língua dos adultos.
   "meu-desenho" (o `PintaLesson` troca o "desenho-da-aula" antigo ao carregar, sem mexer no banco), e
   nos manuais do Estúdio "das engines de verdade" no lugar de "do curso".
 - ⚠️ A régua da tela cobre tudo o que a régua dos roteiros e manifestos cobre
-  (`docs/aulas-interativas/qa/palavras-da-escola.ts`): o que a narração não pode dizer, a tela também não.
+  (`docs/aulas-interativas-tecnico/qa/palavras-da-escola.ts`): o que a narração não pode dizer, a tela também não.
 
 ## A regra de ouro: quase tudo vem do member-shell
 

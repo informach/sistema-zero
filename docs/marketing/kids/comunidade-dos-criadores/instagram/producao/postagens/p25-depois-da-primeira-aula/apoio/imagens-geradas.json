@@ -1,0 +1,44 @@
+[
+  {
+    "slide": 1,
+    "file": "01-primeira-aula.png",
+    "source": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-b4d5ead7-49ab-4c1d-8f83-6585127297e2.png",
+    "tool": "image_gen.imagegen (nativa)",
+    "references": [],
+    "sha256": "b750244f5fa16df770f52398f091e1fd1510de7c6d5ca99c043667450584d4b0",
+    "sourceSha256": "b750244f5fa16df770f52398f091e1fd1510de7c6d5ca99c043667450584d4b0"
+  },
+  {
+    "slide": 2,
+    "file": "02-conversar.png",
+    "source": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-9b200ad7-09ed-4d07-b98f-bb14495866f7.png",
+    "tool": "image_gen.imagegen (nativa)",
+    "references": [
+      "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-b4d5ead7-49ab-4c1d-8f83-6585127297e2.png"
+    ],
+    "sha256": "5406405b0983b6af2c9b06a4d564ca2265cf1614b75769879c7ee0a2a73f141a",
+    "sourceSha256": "5406405b0983b6af2c9b06a4d564ca2265cf1614b75769879c7ee0a2a73f141a"
+  },
+  {
+    "slide": 7,
+    "file": "07-orientacao.png",
+    "source": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-2f74f8a6-06db-4ba6-9814-981a25062023.png",
+    "tool": "image_gen.imagegen (nativa)",
+    "references": [
+      "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-9b200ad7-09ed-4d07-b98f-bb14495866f7.png"
+    ],
+    "sha256": "d4d9982ea1f778b93a36bab2111e08d7828ff2b03fbff7c0dbe8d406cac4edae",
+    "sourceSha256": "d4d9982ea1f778b93a36bab2111e08d7828ff2b03fbff7c0dbe8d406cac4edae"
+  },
+  {
+    "slide": 8,
+    "file": "08-mostrar.png",
+    "source": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-4a04d66f-8a8a-4847-8b14-3072eb9fe5ed.png",
+    "tool": "image_gen.imagegen (nativa)",
+    "references": [
+      "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-b4d5ead7-49ab-4c1d-8f83-6585127297e2.png"
+    ],
+    "sha256": "75f5042fe3a8d57eec13b71884fd538f2201b0c6987ad2c6cd50385c3fa3314c",
+    "sourceSha256": "75f5042fe3a8d57eec13b71884fd538f2201b0c6987ad2c6cd50385c3fa3314c"
+  }
+]

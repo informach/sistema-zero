@@ -1,1 +1,0 @@
-Neste exemplo do nosso Estúdio, o chefão muda de fase e recupera parte da vida. Quem cria escolhe os valores e confere o efeito na luta.

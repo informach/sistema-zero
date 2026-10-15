@@ -1,0 +1,54 @@
+[
+  {
+    "slide": 1,
+    "file": "01-pedido.png",
+    "prompt": "Use case: photorealistic-natural. Create ONE landscape1536x1024 photograph to be used as the background of an editorial Instagram carousel for Brazilian parents. No text, letters, numbers, logos or watermark anywhere.\nTop-down overhead view of a pale wooden study table in warm daylight. A large rectangular sheet of warm white paper lies completely FLAT and aligned horizontally with the image, occupying roughly x=9% to60%, y=12% to89%. Keep the CENTRAL TOP TWO THIRDS of this sheet completely BLANK so a fictional school assignment can be typeset later. At the lower right corner of the paper rests a real magnifying glass with a dark navy handle, with the glass over blank paper, not over any writing. A blue spiral notebook is partially visible on the right side of the image; open empty ruled pages. A yellow pencil beside it. At lower left, a small relaxed hand belonging to a fictional 11-year-old girl with medium brown skin and a burgundy long sleeve rests at the edge of the table, NOT covering the central blank sheet.\nThe image should look like the start of an ordinary school task at home, tactile paper, realistic desk and human hand. Not an official certificate, no teacher name, grade, stamps or fabricated school logos. Editorial composition, straight overhead view to allow accurate text overlay in editing. No perspective distortion of the main paper. Blank paper is deliberate.",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-521d0de0-218e-449e-ac8d-62a6b0d8a2df.png",
+    "references": [],
+    "tool": "image_gen.imagegen"
+  },
+  {
+    "slide": 2,
+    "file": "02-bilhetes.png",
+    "prompt": "Use case: photorealistic-natural. Create ONE new landscape1536x1024 top-down editorial photograph, no text or marks of any kind.\nReference1 is just the pale wood table, warm daylight and study materials from the previous shot. Do NOT repeat the composition. New close-up: exactly FIVE large square blank sticky notes arranged as a clear reading sequence on the same pale wooden table. THREE notes in the upper row, TWO notes centered in the lower row. Top row note centers at 21%,50%,79% of image width and 27% of height; lower row note centers at36%,65% of width and73% of height. Each note roughly25% of image width and35% of image height. All notes completely BLANK, no lines or symbols; text will be applied later in editing. Colors pale butter yellow, pale blue, warm cream, pale yellow, pale blue. Their edges aligned nearly horizontal, no overlapping notes. Real paper with slight lifted lower edges and subtle natural shadows.\nTiny edge of a blue spiral notebook at far left, a yellow pencil diagonally at the far right edge. Nothing covering the notes. No hands or magnifying glass. Flat overhead camera without perspective distortion. Enough empty blank paper in every note for three short handwritten lines to be added later. No AI writing, numbers, ticks, arrows, stamps or logos.",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-d10064a4-547e-416a-b2f7-36377bb320a0.png",
+    "references": [
+      "C:/Users/tocha/projects/sistema-zero/docs/marketing/kids/comunidade-dos-criadores/instagram/producao/postagens/p13-uma-tarefa-de-cada-vez/apoio/01-pedido.png"
+    ],
+    "tool": "image_gen.imagegen"
+  },
+  {
+    "slide": 3,
+    "file": "03-esbocos.png",
+    "prompt": "Use case: illustration-story. Create ONE landscape1536x1024 editorial illustration of two distinct small game design sketches placed side by side on warm off-white graph paper. No written words, letters, numbers, logos, badges or interface.\nArt: charming handmade pencil outlines with restrained colored-pencil fills in cobalt blue, golden yellow, muted green, some graphite grey. It should look like two clear prototype ideas drawn on paper by an aspiring game creator, NOT a screenshot, not finished advanced gameplay.\nLEFT sketch: a simple friendly tiny round-headed explorer with a blue cap and yellow backpack WALKING right on a horizontal green ground line. Two faint pencil ghost poses behind him and a large clean blue rightward arrow clarify walking. No obstacles in this left scene.\nRIGHT sketch: the SAME explorer at the same ground level, now stopped before ONE low rectangular grey stone obstacle on the path. A hand-drawn yellow circle around the stone emphasizes that this is a separate addition. No ghost poses or arrow crossing the rock, no jumping. One short graphite baseline under each scene.\nSeparate the two sketches clearly with generous white gutter and a thin subtle vertical pencil divider. Top of each panel has a blank strip for labels to be applied in editing, do not write any labels. Two distinct tasks, one movement, one obstacle. Big readable forms, lots of clean paper around them, no decorative scenery, no text-filled placeholder.",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-ad292866-bd63-4c29-8701-adce31bd5325.png",
+    "references": [],
+    "tool": "image_gen.imagegen"
+  },
+  {
+    "slide": 4,
+    "file": "04-perguntas.png",
+    "prompt": "Use case: photorealistic-natural. ONE landscape1536x1024 photograph, overhead flat-lay, NO text, letters, numbers or watermarks.\nA large warm cream rectangular index card rests ON TOP OF an open blue spiral notebook with blank ruled pages, on a pale wood desk in soft daylight. The blank card occupies x=13% to87% and y=12% to88% of the image, edges aligned horizontally with the frame, truly flat, not tilted in perspective. All its central area is COMPLETELY EMPTY so three handwritten questions can be added in editing. The card should feel like a practical reminder placed in a notebook. Real paper fibers, soft shadow at its bottom edge, blue notebook cover peeking around it and a capped blue pen on the outer right edge. A small portion of the fictional girl's medium brown hand in a burgundy sleeve rests below the lower left edge of the notebook, not over the card. No magnifying glass, no extra notes, no decorative lettering, no computers. Keep the card readable in a phone crop. Editorial photograph with natural colors, warm paper, restrained blue accents.",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-9061ee50-e775-46de-b7b3-89ba843ad61a.png",
+    "references": [],
+    "tool": "image_gen.imagegen"
+  },
+  {
+    "slide": 5,
+    "file": "05-pesquisa.png",
+    "prompt": "Use case: photorealistic-natural. ONE landscape1536x1024 overhead photograph of TWO large blank paper cards side by side on a pale wood study table. No text, letters, numbers, checks, crossing-out or watermark — all writing will be applied later.\nLeft card is warm white, from x=6% to47%, y=14% to86%; right card is soft butter yellow, x=53% to94%, y=14% to86%. Both completely flat, perfectly near-horizontal rectangular index cards. All central and upper areas stay completely blank. Natural paper fibers and slight shadows.\nAt the bottom right of the yellow card, include one SMALL loose colored-pencil sketch of a giant anteater: long narrow snout, furry long tail, grey/brown body, four legs, occupying no more than the lower quarter of the card. It should look like a simple notebook animal doodle, not a photo, with the rest of the card blank for handwriting. A green colored pencil rests on the wood at lower center between the two cards, not covering either card.\nThis editorial image illustrates changing a broad research task into a specific first question. The future text should be the main thing on the cards. Authentic ordinary school materials at home, warm daylight, clean composition, no school logos or official document styling, no computer or people.",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-991e30af-9b98-4029-a777-e02466567dfd.png",
+    "references": [],
+    "tool": "image_gen.imagegen"
+  },
+  {
+    "slide": 8,
+    "file": "08-primeira-tarefa.png",
+    "prompt": "Use case: photorealistic-natural. ONE new landscape1536x1024 overhead editorial photograph.\nReference1 establishes the pale wooden desk, blue notebook and the fictional 11-year-old girl's medium brown hand and burgundy sleeve. New composition: open blue spiral notebook nearly filling the image, its pages flat and nearly horizontal, spiral running vertically near the center. On the LEFT page, a small simple colored-pencil sketch of a giant anteater in the lower half (long narrow snout, grey brown furry body and long tail), with its entire upper half BLANK. The notebook has very light ruled lines.\nOne LARGE square pale yellow sticky note attached to the OUTER TOP RIGHT margin of the right page, occupying aboutx=67–91%, y=14–49%, completely BLANK. The rest of the right page is blank too. The girl's two small hands at the lower right, in burgundy long sleeves, are putting the cap on a blue pen, relaxed and anatomically correct, no hand covering the upper blank pages or note. No face visible.\nThis is the moment after completing the first small task of a school project, choosing the animal. All writing and check mark will be added later in editing. Do NOT generate words, letters, numbers, writing-like squiggles, checkmarks, signatures, brands or watermark anywhere. Soft warm daylight, ordinary real school materials, distinguish this scene from the earlier magnifying glass shot.",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-567658b2-d164-4af4-91ec-f58a6e15622c.png",
+    "references": [
+      "C:/Users/tocha/projects/sistema-zero/docs/marketing/kids/comunidade-dos-criadores/instagram/producao/postagens/p13-uma-tarefa-de-cada-vez/apoio/01-pedido.png"
+    ],
+    "tool": "image_gen.imagegen"
+  }
+]

@@ -171,7 +171,7 @@ Esses achados são problemas de coerência a resolver; não foram corrigidos em 
 | --- | --- |
 | [Política de bolsa](../../../../packages/referrals/src/domain/gift-policy.ts) e [regras do serviço de indicações](../../../../packages/referrals/CLAUDE.md) | Prazo dos novos resgates e separação da visita ao Mural; condições históricas. |
 | [Resgate da bolsa](../../../../packages/referrals/src/application/redeem-scholarship/redeem-scholarship.service.ts) | Concessões separadas e aproveitamento da conta existente. |
-| [Roteiro do Cadê Todo Mundo](../../../aulas-interativas/modulos-cade-todo-mundo.md) | Conteúdo, curso extra e publicação opcional; roteiro não comprova que toda revisão já foi publicada. |
+| [Roteiro do Cadê Todo Mundo](../../../aulas-interativas-tecnico/modulos-cade-todo-mundo.md) | Conteúdo, curso extra e publicação opcional; roteiro não comprova que toda revisão já foi publicada. |
 | [Teste de acesso dos cursos na Jornada](../../../../packages/members/tests/integration/journey-course-access.test.ts) | Matrícula no curso extra pode dar acesso sem conclusão da entrada obrigatória; arquivo inspecionado, não reexecutado nesta etapa documental. |
 | [Estado da Jornada](../../../../packages/core/src/journey/state.ts) e [catálogo de marcos](../../../../packages/core/src/journey/catalog.ts) | Direito de acesso, requisitos, publicação e disponibilidade são dimensões distintas. |
 | [Catálogo inicial versionado](../../../../packages/catalog/scripts/seed.ts) | Composição prevista da assinatura; não é inventário confirmado do catálogo ativo. |

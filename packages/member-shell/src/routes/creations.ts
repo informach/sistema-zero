@@ -6,6 +6,7 @@ import { after, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { isReadonlyImpersonation } from '../lib/act'
 import type { MembersClient } from '../server/clients'
+import { CREATION_BLOB_CONTENT_TYPE, signCreationDownload } from '../server/creation-download'
 import { mediaErrorResponse } from '../server/media'
 import {
   r2DeleteObjectsUgc,
@@ -29,13 +30,11 @@ interface CreationsStorage {
   headObject?: typeof r2HeadObjectUgc
 }
 
-/** O blob comprimido (gzip do JSON). O `Content-Type` é ASSINADO no PUT: o navegador manda igual. */
-export const CREATION_BLOB_CONTENT_TYPE = 'application/gzip'
-/** TTL curto das URLs (o upload de 40 MB numa conexão ruim cabe em 10 min; o GET em 5). */
+/** O tipo do blob e os TTLs do GET moram em `server/creation-download.ts` (o Pensa v2 assina igual). */
+export { CREATION_BLOB_CONTENT_TYPE }
+
+/** TTL curto do PUT (o upload de 40 MB numa conexão ruim cabe em 10 min). */
 const PUT_TTL_SECONDS = 600
-const GET_TTL_SECONDS = 300
-/** As partes de um projeto grande (até 33 MB) numa conexão lenta: 10 min. */
-const PARTS_GET_TTL_SECONDS = 600
 /**
  * Tetos do members (`CREATION_LIMITS`). Nome e kind são CORTADOS aqui, não recusados: o
  * Estúdio aceita nomes de até 200 caracteres, e recusar com 400 deixava o jogo sem
@@ -505,32 +504,7 @@ export function createCreationsRoutes(deps: {
       const ticket = await members.getCreationDownload(item.tool, item.itemId)
       if (ticket.status !== 200 || !ticket.body) return response(ticket.status, ticket.body)
       try {
-        const downloadUrl = await storage.presignGet(ticket.body.storageKey, {
-          expiresInSeconds: GET_TTL_SECONDS,
-          responseContentType: CREATION_BLOB_CONTENT_TYPE,
-        })
-        // Um GET assinado por PARTE (o cliente baixa só as que não tem localmente). TTL maior:
-        // 33 MB de partes numa conexão de 1 Mbps levam minutos.
-        const parts = await Promise.all(
-          (ticket.body.parts ?? []).map(async (part) => ({
-            hash: part.hash,
-            bytes: part.bytes,
-            url: await storage.presignGet(part.storageKey, {
-              expiresInSeconds: PARTS_GET_TTL_SECONDS,
-              responseContentType: CREATION_BLOB_CONTENT_TYPE,
-            }),
-          })),
-        )
-        return NextResponse.json({
-          downloadUrl,
-          revision: ticket.body.revision,
-          bytes: ticket.body.bytes,
-          item: ticket.body.summary,
-          parts,
-          // O relógio do servidor agora: corrige o do aparelho quando o rascunho da fase decide
-          // qual versão é a mais nova (a da conta tem `syncedAt` do servidor).
-          serverNow: new Date().toISOString(),
-        })
+        return NextResponse.json(await signCreationDownload(storage.presignGet, ticket.body))
       } catch (error) {
         return mediaErrorResponse(error)
       }

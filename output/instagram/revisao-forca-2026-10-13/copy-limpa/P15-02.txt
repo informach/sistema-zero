@@ -1,3 +1,0 @@
-Pedir um modelo pode ajudar a entender a tarefa. Depois de entender, ele precisa saber quais escolhas pode fazer.
-
-O cenário precisa ser igual ou pode ter a cara dele?

@@ -281,7 +281,7 @@
       }
     },
     {
-      "includes": ["docs/aulas-interativas/qa/*-projeto.ts"],
+      "includes": ["docs/aulas-interativas-tecnico/qa/*-projeto.ts"],
       "linter": {
         "rules": {
           "suspicious": {

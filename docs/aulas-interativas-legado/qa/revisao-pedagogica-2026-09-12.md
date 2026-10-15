@@ -82,7 +82,7 @@ Perguntas sobre ferramentas externas comprovam compreensão, não inspeção aut
 
 ## Verificação local
 
-- `bun docs/aulas-interativas/qa/validar-manifestos.ts`: 27 manifestos válidos, 96 seções, 118 vídeos planejados, 16 etapas com 19 objetivos estruturais; correspondência de textos, perguntas e regras com os roteiros. Os critérios são conferidos contra o catálogo real, com Jogo 2D disponível. A configuração real de cada aula continua dependendo do cadastro em staging.
+- `bun docs/aulas-interativas-tecnico/qa/validar-manifestos.ts`: 27 manifestos válidos, 96 seções, 118 vídeos planejados, 16 etapas com 19 objetivos estruturais; correspondência de textos, perguntas e regras com os roteiros. Os critérios são conferidos contra o catálogo real, com Jogo 2D disponível. A configuração real de cada aula continua dependendo do cadastro em staging.
 - `bun test packages/core/tests/learning.test.ts packages/core/tests/section-progression.test.ts packages/members/tests/integration/learning-import.test.ts`: 41 testes aprovados. Exercita respostas, gabaritos, critérios, formato dos 27 manifestos e importação HTTP. As duas contagens antigas de seções com Estúdio foram atualizadas para o percurso agrupado.
 - `bun .audits/kids-flows-2026-09-11/run-db.ts tests/db/learning-migrations.test.ts`: 21 testes aprovados em PostgreSQL local descartável, incluindo importação dos 27 manifestos, reimportação, preservação dos vídeos vinculados, projetos, evidências e versão publicada.
 - Comparação com os arquivos anteriores: 118 chaves/instruções de vídeo e referências de Estúdio preservadas, 118 passos com os valores numéricos e sequências de tela preservados, 143 cartões retirados com suas chaves registradas nos roteiros. Links locais conferidos.

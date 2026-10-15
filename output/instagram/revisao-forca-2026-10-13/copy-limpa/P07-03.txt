@@ -1,3 +1,0 @@
-Este jogo de plataformas nas nuvens foi feito no nosso Estúdio. Para mostrar, afastamos uma das plataformas. O herói pula e cai no vazio.
-
-Com endereço, o problema fica assim: o salto ficou curto.

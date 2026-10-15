@@ -94,9 +94,9 @@ Não dizer “clicou, portanto aprendeu”. Uma formulação mais sólida é: �
 
 | Fonte | Confirmação | Limite |
 | --- | --- | --- |
-| [Briefing pedagógico](../../../../../aulas-interativas/BRIEFING.md) | Jogo de referência, vídeo e experiência, prática e construção do projeto | Experiências específicas são usadas quando ajudam o conceito; nem toda operação de interface exige bancada separada |
-| [Cadê Todo Mundo, aula 1](../../../../../aulas-interativas/aulas/cade-todo-mundo-aula-1.md) | Jogar; comparar reação ao toque desligada/ligada; programar visibilidade no esconderijo | Cenário, personagens e partes do projeto vêm preparados |
-| [Cadê Todo Mundo, aula 2](../../../../../aulas-interativas/aulas/cade-todo-mundo-aula-2.md) | Experimentar contagem; somar encontrados; testar; salvar e publicar no Mural | A publicação e a ajuda humana têm funções diferentes da verificação automática de uma etapa |
+| [Briefing pedagógico](../../../../../aulas-interativas-tecnico/BRIEFING.md) | Jogo de referência, vídeo e experiência, prática e construção do projeto | Experiências específicas são usadas quando ajudam o conceito; nem toda operação de interface exige bancada separada |
+| [Cadê Todo Mundo, aula 1](../../../../../aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-1.md) | Jogar; comparar reação ao toque desligada/ligada; programar visibilidade no esconderijo | Cenário, personagens e partes do projeto vêm preparados |
+| [Cadê Todo Mundo, aula 2](../../../../../aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-2.md) | Experimentar contagem; somar encontrados; testar; salvar e publicar no Mural | A publicação e a ajuda humana têm funções diferentes da verificação automática de uma etapa |
 | [Inventário da plataforma](../../inventario-plataforma.md) | Recursos de criação, comunidade, apoio e acompanhamento | Inventário estático; disponibilidade depende de publicação, conta e liberações |
 | [Catálogo da Jornada](../../../../../../packages/core/src/journey/catalog.ts) | Liberações progressivas de ferramentas e blocos | Não equivale a uma ferramenta inteira nova a cada curso |
 | [Catálogo de experiências](../../../../../../packages/core/src/learning/scene/catalog.ts) | Experimentos para conceitos como eventos, posição, movimento e contagem | Número de modelos no código não é número de cursos publicados |

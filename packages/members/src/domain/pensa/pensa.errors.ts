@@ -123,6 +123,43 @@ export class PensaOwnerCannotLeaveError extends DomainError {
   }
 }
 
+/**
+ * Equipe no v2 (14/10/2026): testar, concluir, guardar e restaurar versões e adaptar o caminho
+ * são de QUEM PROGRAMA (o jogo mora no Estúdio dela). → 403.
+ */
+export class PensaNotProgrammerError extends DomainError {
+  readonly code = 'PENSA_NOT_PROGRAMMER'
+  constructor(message = 'Quem testa e guarda as versões é quem programa o jogo.') {
+    super(message)
+  }
+}
+
+/** A missão é da outra função (Estúdio de quem programa; Pinta e Molda de quem faz as artes). → 403. */
+export class PensaNotYourMissionError extends DomainError {
+  readonly code = 'PENSA_NOT_YOUR_MISSION'
+  constructor(message = 'Essa missão é de outra pessoa da equipe.') {
+    super(message)
+  }
+}
+
+/** Com duas ou mais artistas, quem começa a missão fica com ela. → 409. */
+export class PensaMissionTakenError extends DomainError {
+  readonly code = 'PENSA_MISSION_TAKEN'
+  constructor(message = 'Outra pessoa da equipe já está fazendo essa missão.') {
+    super(message)
+  }
+}
+
+/** Trocar quem programa depois de o jogo começar no Estúdio dela. → 409. */
+export class PensaCodeLockedError extends DomainError {
+  readonly code = 'PENSA_CODE_LOCKED'
+  constructor(
+    message = 'O jogo já começou no Estúdio de quem programa. Essa função não muda mais neste plano.',
+  ) {
+    super(message)
+  }
+}
+
 export class PensaTaskProgressConflictError extends DomainError {
   readonly code = 'PENSA_TASK_PROGRESS_CONFLICT'
   constructor(message = 'A tarefa mudou em outro aparelho. Recarregue o guia e tente novamente.') {

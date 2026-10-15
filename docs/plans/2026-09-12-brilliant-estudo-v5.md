@@ -101,7 +101,7 @@ A progressão estrutural pode continuar onde corresponde ao objetivo. Instrument
 ## Fontes locais
 
 - [Proposta original](2026-09-12-evolucao-experiencia-aulas-kids-proposta.md) e [plano da implementação](2026-09-12-piloto-corre-dino-implementacao.md).
-- [Guia de autoria vigente](../aulas-interativas/guia-de-autoria.md) e [validação anterior](../aulas-interativas/qa/piloto-v4-2026-09-12.md).
+- [Guia de autoria vigente](../aulas-interativas/guia-de-autoria.md) e [validação anterior](../aulas-interativas-tecnico/qa/piloto-v4-2026-09-12.md).
 - [Interface das simulações](../../packages/member-shell/src/components/learning-simulation.tsx), [cena](../../packages/member-shell/src/components/learning-simulation-scene.tsx), [modelos e critérios](../../packages/core/src/learning/simulation.ts).
 - [Player das seções](../../packages/member-shell/src/components/lesson-sections.tsx), [autoria dos blocos](../../packages/admin/src/components/editor/learning-builder.tsx), [critérios](../../packages/admin/src/components/editor/section-completion-editor.tsx).
 - [Painel do professor](../../packages/admin/src/components/professor/lesson-learning-panel.tsx), [integração do Estúdio](../../packages/member-shell/src/components/studio/studio-block.tsx), [física do Jogo 2D](../../packages/studio/src/official-extensions/game-2d/runtime/physics.ts).

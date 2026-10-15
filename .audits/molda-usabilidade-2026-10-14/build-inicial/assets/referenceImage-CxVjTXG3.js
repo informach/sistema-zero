@@ -1,0 +1,1 @@
+import{t as e}from"./decodeLocalRaster-BcngcGYi.js";async function t(t,n){let{image:r,...i}=await e(t,n);try{return n.throwIfAborted(),i}catch(e){throw i.dispose(),e}finally{r.removeAttribute(`src`)}}export{t as loadReferenceImage};

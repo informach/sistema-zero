@@ -16,6 +16,7 @@ import { InMemoryPensaRepository } from '../fakes/pensa-in-memory'
 const USER = '11111111-1111-1111-1111-111111111111'
 const OTHER = '22222222-2222-2222-2222-222222222222'
 const ACCOUNT = '33333333-3333-3333-3333-333333333333'
+const ACTOR = { profileId: USER, accountId: ACCOUNT }
 
 const guide = {
   steps: [{ id: 'step-create', text: 'Criar o resultado', required: true }],
@@ -131,34 +132,34 @@ describe('Pensa planejador — aplicação', () => {
     const first = tasks[0]!
     const second = tasks[1]!
     await expect(
-      s.progress.execute(USER, 'kids', second.id, { status: 'in_progress' }),
+      s.progress.execute(ACTOR, 'kids', second.id, { status: 'in_progress' }),
     ).rejects.toMatchObject({
       code: 'PENSA_TASK_DEPENDENCY_PENDING',
     })
-    await s.progress.execute(USER, 'kids', first.id, { status: 'in_progress' })
+    await s.progress.execute(ACTOR, 'kids', first.id, { status: 'in_progress' })
     await expect(
-      s.progress.execute(USER, 'kids', first.id, {
+      s.progress.execute(ACTOR, 'kids', first.id, {
         outputRef: { kind: 'pinta_asset', assetId: 'arte-errada' },
       }),
     ).rejects.toMatchObject({ code: 'PENSA_TASK_TRANSITION_INVALID' })
     await expect(
-      s.progress.execute(USER, 'kids', first.id, {
+      s.progress.execute(ACTOR, 'kids', first.id, {
         outputRef: { kind: 'studio_project', projectId: 'projeto-forjado' },
       }),
     ).rejects.toMatchObject({ code: 'PENSA_TASK_TRANSITION_INVALID' })
     await expect(
-      s.progress.execute(USER, 'kids', first.id, { status: 'completed' }),
+      s.progress.execute(ACTOR, 'kids', first.id, { status: 'completed' }),
     ).rejects.toMatchObject({
       code: 'PENSA_TASK_TRANSITION_INVALID',
     })
-    await s.progress.execute(USER, 'kids', first.id, {
+    await s.progress.execute(ACTOR, 'kids', first.id, {
       status: 'completed',
       completedStepIds: ['step-create'],
       completedCriteriaIds: ['criterion-ready'],
       outputRef: { kind: 'studio_project', projectId: studioProjectId(project.id) },
     })
     expect(
-      (await s.progress.execute(USER, 'kids', second.id, { status: 'in_progress' })).progress
+      (await s.progress.execute(ACTOR, 'kids', second.id, { status: 'in_progress' })).progress
         .status,
     ).toBe('in_progress')
   })
@@ -169,7 +170,7 @@ describe('Pensa planejador — aplicação', () => {
     const [created] = await s.replace.execute(USER, 'kids', project.currentCycle.id, [
       studioTask('uma'),
     ])
-    await s.progress.execute(USER, 'kids', created!.id, { status: 'in_progress' })
+    await s.progress.execute(ACTOR, 'kids', created!.id, { status: 'in_progress' })
     const revised = await s.update.execute(USER, 'kids', created!.id, { title: 'Tarefa revisada' })
     expect(revised).toMatchObject({
       title: 'Tarefa revisada',
@@ -262,14 +263,14 @@ describe('Pensa planejador — aplicação', () => {
       studioTask('primeira'),
       studioTask('segunda', ['primeira']),
     ])
-    await s.progress.execute(USER, 'kids', first!.id, { status: 'in_progress' })
-    await s.progress.execute(USER, 'kids', first!.id, {
+    await s.progress.execute(ACTOR, 'kids', first!.id, { status: 'in_progress' })
+    await s.progress.execute(ACTOR, 'kids', first!.id, {
       status: 'completed',
       completedStepIds: ['step-create'],
       completedCriteriaIds: ['criterion-ready'],
       outputRef: { kind: 'studio_project', projectId: studioProjectId(project.id) },
     })
-    await s.progress.execute(USER, 'kids', second!.id, { status: 'in_progress' })
+    await s.progress.execute(ACTOR, 'kids', second!.id, { status: 'in_progress' })
 
     const revisedFirst = await s.update.execute(USER, 'kids', first!.id, {
       title: 'Primeira refeita',
@@ -318,16 +319,16 @@ describe('Pensa planejador — aplicação', () => {
     const [created] = await s.replace.execute(USER, 'kids', project.currentCycle.id, [
       studioTask('uma'),
     ])
-    const started = await s.progress.execute(USER, 'kids', created!.id, { status: 'in_progress' })
+    const started = await s.progress.execute(ACTOR, 'kids', created!.id, { status: 'in_progress' })
     const staleVersion = started.progress.updatedAt
 
-    await s.progress.execute(USER, 'kids', created!.id, {
+    await s.progress.execute(ACTOR, 'kids', created!.id, {
       completedStepIds: ['step-create'],
       expectedUpdatedAt: staleVersion,
     } as Parameters<typeof s.progress.execute>[3])
 
     await expect(
-      s.progress.execute(USER, 'kids', created!.id, {
+      s.progress.execute(ACTOR, 'kids', created!.id, {
         completedCriteriaIds: ['criterion-ready'],
         expectedUpdatedAt: staleVersion,
       } as Parameters<typeof s.progress.execute>[3]),
@@ -371,21 +372,21 @@ describe('Pensa planejador — aplicação', () => {
         },
       },
     ])
-    await s.progress.execute(USER, 'kids', created!.id, { status: 'in_progress' })
+    await s.progress.execute(ACTOR, 'kids', created!.id, { status: 'in_progress' })
     const base = {
       status: 'completed' as const,
       completedStepIds: ['step-create'],
       completedCriteriaIds: ['criterion-ready'],
     }
     await expect(
-      s.progress.execute(USER, 'kids', created!.id, {
+      s.progress.execute(ACTOR, 'kids', created!.id, {
         ...base,
         outputRef: { kind: 'pinta_asset', assetId: 'asset-a' },
       }),
     ).rejects.toMatchObject({ code: 'PENSA_TASK_TRANSITION_INVALID' })
     expect(
       (
-        await s.progress.execute(USER, 'kids', created!.id, {
+        await s.progress.execute(ACTOR, 'kids', created!.id, {
           ...base,
           outputRef: {
             kind: 'pinta_asset',

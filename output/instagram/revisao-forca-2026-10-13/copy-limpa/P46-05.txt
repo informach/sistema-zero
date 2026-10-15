@@ -1,3 +1,0 @@
-Para alcançar uma moeda, ele pode mudar a posição de uma plataforma e testar o salto.
-
-O objetivo ajuda a escolher onde mexer. O teste mostra o efeito da mudança.

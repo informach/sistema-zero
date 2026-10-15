@@ -1,0 +1,10 @@
+{
+  "camera": {
+    "type": "sz_g3k_camera_orbit",
+    "text": "Câmera: girar em volta do mundo (arraste o mouse), a 26 de distância"
+  },
+  "teclas": {
+    "type": "sz_g3k_platformer_keys",
+    "text": "Mover ela como plataforma: WASD a 7 , pulo (espaço) 10"
+  }
+}

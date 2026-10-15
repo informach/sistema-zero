@@ -1,9 +1,0 @@
-Ao voltar a um projeto, lembrar a próxima ação já é uma tarefa. Uma anotação antes de fechar pode guardar essa decisão.
-
-Escreva o que vai testar ou montar. “Testar se o regador molha o canteiro” é mais útil do que “continuar a fazenda”. Confirme também que o projeto ficou salvo.
-
-Na Fazenda Feliz Profissional, exemplo do nosso Estúdio, rega e passagem da noite entram na regra de crescimento. Dá para construir uma condição por vez e deixar anotado o teste seguinte.
-
-Não é preciso terminar o jogo para encerrar o horário. Guardar o trabalho e o próximo passo prepara a volta.
-
-Siga @criecomhelenaejulio para acompanhar a criação de jogos em etapas que fazem sentido.

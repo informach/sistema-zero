@@ -4,13 +4,20 @@ import type {
   PensaJourneyActor,
   PensaJourneyCommand,
   PensaJourneyListItem,
+  PensaJourneyTeamView,
   PensaJourneyView,
   PensaOperation,
   PensaOperationStep,
   PensaProtectionAction,
+  PensaTeamRoles,
   PensaVoiceRequest,
   PensaVoiceResult,
 } from '@sistemazero/core/pensa'
+import type {
+  CreationDownloadTicketView,
+  PensaTeamArtListView,
+  PensaTeamCapabilitiesView,
+} from '../lib/types'
 import type { GatewayModule } from './gateway'
 
 export interface PensaWork extends PensaOperation {
@@ -86,6 +93,33 @@ export function createPensaJourneyClient(gw: GatewayModule) {
     },
     pensaJourneyCancel(id: string) {
       return gw.gatewayFetch<PensaJourneyView>(`${project(id)}/cancel`, { method: 'POST' })
+    },
+    // ── Equipe do v2 (14/10/2026). Código, entrada, saída e tirar alguém seguem nas rotas
+    // CLÁSSICAS (`pensaShareProject`, `pensaJoinProject`, `pensaRemoveProjectMember`…). ──
+    /** Pessoas, papéis efetivos, `codeLocked` e o código cru (só para a dona). */
+    pensaJourneyTeam(id: string) {
+      return gw.gatewayFetch<PensaJourneyTeamView>(`${project(id)}/team`)
+    },
+    /** A dona define quem programa e quem faz as artes; devolve a view atualizada. */
+    pensaJourneyRoles(id: string, roles: PensaTeamRoles) {
+      return gw.gatewayFetch<PensaJourneyView>(`${project(id)}/roles`, {
+        method: 'PUT',
+        body: roles,
+      })
+    },
+    /** Os recursos de cada pessoa da equipe: SÓ o BFF lê (o snapshot do plano em equipe). */
+    pensaJourneyTeamCapabilities(id: string) {
+      return gw.gatewayFetch<PensaTeamCapabilitiesView>(`${project(id)}/team-capabilities`)
+    },
+    /** As artes que outra pessoa entregou nas missões do plano ("Trazer da equipe"). */
+    pensaJourneyTeamArt(id: string) {
+      return gw.gatewayFetch<PensaTeamArtListView>(`${project(id)}/team-art`)
+    },
+    /** O bilhete da criação de quem concluiu a missão de arte (o BFF assina o GET no R2). */
+    pensaJourneyTeamArtDownload(id: string, taskId: string) {
+      return gw.gatewayFetch<CreationDownloadTicketView>(
+        `${project(id)}/team-art/${encodeURIComponent(taskId)}/download`,
+      )
     },
     pensaJourneyClaim(
       actor: PensaJourneyActor,

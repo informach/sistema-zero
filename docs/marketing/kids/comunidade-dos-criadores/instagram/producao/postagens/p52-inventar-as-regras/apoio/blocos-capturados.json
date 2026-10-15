@@ -1,0 +1,10 @@
+[
+  {
+    "type": "sz_gk_pkm_move",
+    "text": "Ensinar o golpe Brasa para Fogoso : tipo fogo , dano 20 , acerto 90 %, efeito bola na cor #f80"
+  },
+  {
+    "type": "sz_gk_pkm_move",
+    "text": "Ensinar o golpe Investida para Fogoso : tipo normal , dano 12 , acerto 100 %, efeito investida na cor #999"
+  }
+]

@@ -1,0 +1,245 @@
+{
+  "source": "Reino Aberto · exemplo original atual",
+  "errors": [],
+  "states": [
+    {
+      "name": "campo",
+      "file": "04-campo.png",
+      "saved": {
+        "flags": {},
+        "items": [],
+        "map": "campo",
+        "hx": 2,
+        "hy": 2,
+        "hp": 30,
+        "max": 30,
+        "str": 7,
+        "def": 0,
+        "lvl": 1,
+        "xp": 0,
+        "maxXp": 20,
+        "potions": [],
+        "energy": 10,
+        "poison": 0,
+        "special": null,
+        "pkmTeam": [],
+        "pkmBalls": []
+      },
+      "state": "jogando",
+      "texts": [
+        {
+          "text": "Mapa: campo",
+          "x": 20,
+          "y": 36
+        }
+      ]
+    },
+    {
+      "name": "fim-do-campo",
+      "file": "05-antes.png",
+      "saved": {
+        "flags": {},
+        "items": [],
+        "map": "campo",
+        "hx": 14,
+        "hy": 2,
+        "hp": 30,
+        "max": 30,
+        "str": 7,
+        "def": 0,
+        "lvl": 1,
+        "xp": 0,
+        "maxXp": 20,
+        "potions": [],
+        "energy": 10,
+        "poison": 0,
+        "special": null,
+        "pkmTeam": [],
+        "pkmBalls": []
+      },
+      "state": "jogando",
+      "texts": [
+        {
+          "text": "Mapa: campo",
+          "x": 20,
+          "y": 36
+        }
+      ]
+    },
+    {
+      "name": "chegou-a-praia",
+      "file": "05-depois.png",
+      "saved": {
+        "flags": {},
+        "items": [],
+        "map": "praia",
+        "hx": 1,
+        "hy": 2,
+        "hp": 30,
+        "max": 30,
+        "str": 7,
+        "def": 0,
+        "lvl": 1,
+        "xp": 0,
+        "maxXp": 20,
+        "potions": [],
+        "energy": 10,
+        "poison": 0,
+        "special": null,
+        "pkmTeam": [],
+        "pkmBalls": []
+      },
+      "state": "jogando",
+      "texts": [
+        {
+          "text": "Mapa: praia",
+          "x": 20,
+          "y": 36
+        }
+      ]
+    },
+    {
+      "name": "praia",
+      "file": "04-praia.png",
+      "saved": {
+        "flags": {},
+        "items": [],
+        "map": "praia",
+        "hx": 6,
+        "hy": 3,
+        "hp": 30,
+        "max": 30,
+        "str": 7,
+        "def": 0,
+        "lvl": 1,
+        "xp": 0,
+        "maxXp": 20,
+        "potions": [],
+        "energy": 10,
+        "poison": 0,
+        "special": null,
+        "pkmTeam": [],
+        "pkmBalls": []
+      },
+      "state": "jogando",
+      "texts": [
+        {
+          "text": "Mapa: praia",
+          "x": 20,
+          "y": 36
+        }
+      ]
+    },
+    {
+      "name": "pescador",
+      "file": "06-pescador.png",
+      "saved": {
+        "flags": {},
+        "items": [],
+        "map": "praia",
+        "hx": 6,
+        "hy": 3,
+        "hp": 30,
+        "max": 30,
+        "str": 7,
+        "def": 0,
+        "lvl": 1,
+        "xp": 0,
+        "maxXp": 20,
+        "potions": [],
+        "energy": 10,
+        "poison": 0,
+        "special": null,
+        "pkmTeam": [],
+        "pkmBalls": []
+      },
+      "state": "jogando",
+      "texts": [
+        {
+          "text": "Mapa: praia",
+          "x": 20,
+          "y": 36
+        },
+        {
+          "text": "Pescador",
+          "x": 36,
+          "y": 540
+        },
+        {
+          "text": "O mar termina aqui, mas o reino continua pro sul!",
+          "x": 36,
+          "y": 566
+        },
+        {
+          "text": "[espaço]",
+          "x": 830,
+          "y": 608
+        }
+      ]
+    },
+    {
+      "name": "vila",
+      "file": "04-vila.png",
+      "saved": {
+        "flags": {},
+        "items": [],
+        "map": "vila",
+        "hx": 6,
+        "hy": 1,
+        "hp": 30,
+        "max": 30,
+        "str": 7,
+        "def": 0,
+        "lvl": 1,
+        "xp": 0,
+        "maxXp": 20,
+        "potions": [],
+        "energy": 10,
+        "poison": 0,
+        "special": null,
+        "pkmTeam": [],
+        "pkmBalls": []
+      },
+      "state": "jogando",
+      "texts": [
+        {
+          "text": "Mapa: vila",
+          "x": 20,
+          "y": 36
+        }
+      ]
+    },
+    {
+      "name": "bosque",
+      "file": "04-bosque.png",
+      "saved": {
+        "flags": {},
+        "items": [],
+        "map": "bosque",
+        "hx": 13,
+        "hy": 1,
+        "hp": 30,
+        "max": 30,
+        "str": 7,
+        "def": 0,
+        "lvl": 1,
+        "xp": 0,
+        "maxXp": 20,
+        "potions": [],
+        "energy": 10,
+        "poison": 0,
+        "special": null,
+        "pkmTeam": [],
+        "pkmBalls": []
+      },
+      "state": "jogando",
+      "texts": [
+        {
+          "text": "Mapa: bosque",
+          "x": 20,
+          "y": 36
+        }
+      ]
+    }
+  ]
+}

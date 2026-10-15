@@ -1,0 +1,56 @@
+/** Review evidence: the real LiveWorkspace host, with the Studio imperative boundary replaced. */
+import { afterEach, expect, mock, test } from 'bun:test'
+import { createElement, forwardRef, useEffect, useImperativeHandle } from '../../packages/community-kids/node_modules/react/index.js'
+import { cleanup, fireEvent, render, screen, waitFor } from '../../packages/community-kids/node_modules/@testing-library/react/dist/index.js'
+
+let localProject: any
+const observed: string[] = []
+const FakeStudio = forwardRef((props: any, ref: any) => {
+  useImperativeHandle(ref, () => ({
+    prepareHandoff: async () => structuredClone(localProject),
+    applyObservedRevision: async (project: any) => {
+      localProject = structuredClone(project)
+      observed.push(project.name)
+    },
+    resumeAuthorship: () => {},
+    getProject: () => localProject,
+    save: async () => props.onSave(localProject),
+  }))
+  useEffect(() => { props.onReady() }, [])
+  return createElement('div', { 'data-testid': 'studio-boundary' })
+})
+mock.module('../../packages/member-shell/node_modules/next/dynamic.js', () => ({ default: () => FakeStudio }))
+const { LiveWorkspace } = await import('../../packages/member-shell/src/components/live/live-workspace')
+const originalFetch = globalThis.fetch
+afterEach(() => { cleanup(); globalThis.fetch = originalFetch })
+
+test('declining assistance replaces an unflushed local edit with the last server snapshot', async () => {
+  const child = crypto.randomUUID(), deviceId = crypto.randomUUID(), session = crypto.randomUUID()
+  let canonical = {
+    id: crypto.randomUUID(), sessionId: session, learnerId: child, revision: 1,
+    writerEpoch: 1, writerId: child, writerDeviceId: deviceId,
+    leaseExpiresAt: new Date(Date.now() + 60_000).toISOString(),
+    project: { id: crypto.randomUUID(), name: 'Revisão salva' },
+    assistance: { id: crypto.randomUUID(), teacherId: crypto.randomUUID(), teacherName: 'Ana', status: 'requested' },
+  }
+  localProject = structuredClone(canonical.project)
+  const requests: string[] = []
+  globalThis.fetch = (async (input: any, init: any) => {
+    const path = String(input)
+    requests.push(`${init?.method ?? 'GET'} ${path}`)
+    if (path.endsWith('/revoke')) canonical = { ...canonical, writerEpoch: 2, assistance: null as any }
+    return Response.json(canonical)
+  }) as typeof fetch
+  render(createElement(LiveWorkspace, {
+    room: { session: { id: session }, actorId: child, role: 'learner', access: { canOpen: true } } as any,
+    deviceId,
+  }))
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Guardar' })).toBeTruthy())
+  localProject = { ...localProject, name: 'Edição ainda no debounce' }
+  fireEvent.click(screen.getByRole('button', { name: 'Agora não' }))
+  await waitFor(() => expect(requests.some(path => path.endsWith('/revoke'))).toBe(true))
+  await waitFor(() => expect(screen.queryByRole('button', { name: 'Agora não' })).toBeNull())
+  expect(localProject.name).toBe('Revisão salva')
+  expect(requests.some(path => path.endsWith('/commits'))).toBe(false)
+  expect(observed.at(-1)).toBe('Revisão salva')
+})

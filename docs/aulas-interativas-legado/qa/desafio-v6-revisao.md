@@ -39,7 +39,7 @@ O ensaio HTTP usa o importador real com repositórios em memória: exige prepara
 
 Passaram também:
 
-- `bun docs/aulas-interativas/qa/validar-desafio-v6.ts '<pasta original>'`.
+- `bun docs/aulas-interativas-tecnico/qa/validar-desafio-v6.ts '<pasta original>'`.
 - `bun run typecheck` em `packages/community-kids`.
 - `bun run typecheck --project ../../docs/aulas-interativas/qa/tsconfig.desafio.json` em `packages/studio`, incluindo os arquivos de autoria e validação.
 - Biome nos 14 arquivos novos de TypeScript/TSX/configuração e `git diff --check`.

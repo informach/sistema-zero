@@ -50,7 +50,7 @@ function itemPendente(item: SectionPendingItem): string {
  * `tests/copy-vocabulario.test.ts` do Kids e da troca das frases do servidor abaixo.
  *
  * ⚠️ Cobre tudo o que a régua dos roteiros e manifestos cobre
- * (`docs/aulas-interativas/qa/palavras-da-escola.ts`): uma palavra que o roteiro não pode dizer
+ * (`docs/aulas-interativas-tecnico/qa/palavras-da-escola.ts`): uma palavra que o roteiro não pode dizer
  * também não pode aparecer na tela. "Estudar" entra pelas formas do verbo e de "estudo", e não
  * por prefixo, para não pegar "Estúdio" escrito sem acento.
  */

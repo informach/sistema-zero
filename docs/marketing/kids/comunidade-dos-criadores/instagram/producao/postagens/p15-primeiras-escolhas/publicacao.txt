@@ -1,0 +1,11 @@
+P15 · Primeiras escolhas
+Calendário comum: primeiro post da semana 18 · Série Teste em casa · Dor D15
+
+Publicar os sete PNGs em ordem, de 01-p15.png a 07-p15.png. Formato 1080 × 1350, 4:5, sRGB.
+Legenda completa em legenda.txt. Textos alternativos curtos e longos em texto-alternativo.txt.
+Convite para seguir @criecomhelenaejulio no último slide e na legenda. Sem palavra-chave ou ManyChat.
+
+Ativar Rótulo de IA conforme a direção vigente. As pessoas e as fotografias são fictícias, geradas para ilustrar a situação. Os desenhos também foram preparados para a demonstração. Não atribuir as cenas ou desenhos a alunos reais. Não adicionar rodapé Cena ilustrativa.
+O slide 2 é um diagrama editorial, não captura da interface. Os slides 5 e 6 mostram o jogo executando no runtime original. O fundo original foi substituído por castelo ou rua; herói, setas e limite da tela continuam iguais. Não anunciar curso deste exemplo nem prometer ganho de criatividade.
+
+Não publicado nem agendado. Próximo carrossel: P48, segundo post da semana 18.

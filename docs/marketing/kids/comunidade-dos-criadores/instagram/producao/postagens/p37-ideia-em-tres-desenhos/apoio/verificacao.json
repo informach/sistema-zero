@@ -1,0 +1,328 @@
+{
+  "source": "docs/marketing/kids/comunidade-dos-criadores/instagram/postagens/09-p31-a-p40.md",
+  "sourceSectionHash": "967d673da842b5a974092b20e907c9aed303093ce89ffdd221e429135c2fed7f",
+  "copyEqual": true,
+  "slides": [
+    {
+      "number": 1,
+      "file": "01-p37.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "series",
+          "top": 0,
+          "bottom": 45.59375,
+          "height": 45.59375,
+          "left": 0,
+          "right": 220.515625
+        },
+        {
+          "kind": "copy lead",
+          "top": 69.59375,
+          "bottom": 225.8125,
+          "height": 156.21875,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 249.8125,
+          "bottom": 359.78125,
+          "height": 109.96875,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo",
+          "top": 383.78125,
+          "bottom": 1126,
+          "height": 742.21875,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 47
+    },
+    {
+      "number": 2,
+      "file": "02-p37.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1127,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 62.625,
+          "height": 62.625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo",
+          "top": 223.234375,
+          "bottom": 857.890625,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 1018.5,
+          "bottom": 1126,
+          "height": 107.5,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 43
+    },
+    {
+      "number": 3,
+      "file": "03-p37.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1127,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 125.25,
+          "height": 125.25,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo",
+          "top": 227.671875,
+          "bottom": 862.328125,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 964.75,
+          "bottom": 1126,
+          "height": 161.25,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 43
+    },
+    {
+      "number": 4,
+      "file": "04-p37.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1127,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 62.625,
+          "height": 62.625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo",
+          "top": 223.234375,
+          "bottom": 857.890625,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 1018.5,
+          "bottom": 1126,
+          "height": 107.5,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 43
+    },
+    {
+      "number": 5,
+      "file": "05-p37.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 64.953125,
+          "height": 64.953125,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 87.953125,
+          "bottom": 249.203125,
+          "height": 161.25,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "demos",
+          "top": 272.203125,
+          "bottom": 1126,
+          "height": 853.796875,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 43
+    },
+    {
+      "number": 6,
+      "file": "06-p37.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 125.25,
+          "height": 125.25,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 145.25,
+          "bottom": 246.90625,
+          "height": 101.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "ending",
+          "top": 266.90625,
+          "bottom": 1126,
+          "height": 859.09375,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 41
+    },
+    {
+      "number": 7,
+      "file": "07-p37.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 127.65625,
+          "height": 127.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo",
+          "top": 247.171875,
+          "bottom": 881.828125,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 1001.34375,
+          "bottom": 1116,
+          "height": 114.65625,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 47
+    }
+  ],
+  "images": [
+    {
+      "src": "apoio/01-capa-foto.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "src": "apoio/02-comeco-foto.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "src": "apoio/03-caminho-foto.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "src": "apoio/04-chegada-foto.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "src": "apoio/blocos-enemyMove.png",
+      "loaded": true,
+      "width": 2024,
+      "height": 260
+    },
+    {
+      "src": "apoio/blocos-cannon.png",
+      "loaded": true,
+      "width": 2286,
+      "height": 260
+    },
+    {
+      "src": "apoio/blocos-region.png",
+      "loaded": true,
+      "width": 2362,
+      "height": 260
+    },
+    {
+      "src": "apoio/blocos-victory.png",
+      "loaded": true,
+      "width": 1494,
+      "height": 876
+    },
+    {
+      "src": "apoio/07-plano-foto.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    }
+  ],
+  "errors": [],
+  "fonts": {
+    "normal": true,
+    "bold": true
+  }
+}

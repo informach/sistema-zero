@@ -14,23 +14,27 @@ import {
   type PensaVoiceResult,
   pensaZeroStage,
 } from '@sistemazero/core/pensa'
-import { and, asc, count, eq, inArray, isNull, sql } from 'drizzle-orm'
+import { and, asc, count, eq, exists, inArray, isNull, or, sql } from 'drizzle-orm'
 import { CREATION_LIMITS } from '../../../domain/creations/creation'
 import { MAX_ACTIVE_PROJECTS } from '../../../domain/pensa/pensa'
 import {
   PensaNotFoundError,
+  PensaNotOwnerError,
+  PensaNotProgrammerError,
   PensaQuotaExceededError,
   PensaTaskProgressConflictError,
 } from '../../../domain/pensa/pensa.errors'
+import { pensaJourneyTeam } from '../../../domain/pensa/team'
 import type {
   PensaGenerationStart,
   PensaJourneyActor,
+  PensaJourneyListRow,
   PensaJourneyRepository,
   PensaOperationWork,
   PensaStepResult,
 } from '../../../domain/ports/pensa-journey-repository.port'
 import type { Database } from './db'
-import { pensaTaskValues } from './pensa.repository'
+import { loadPensaTeamRoles, pensaTaskValues } from './pensa.repository'
 import {
   commitPensaUsage,
   lockPensaAccount,
@@ -46,6 +50,7 @@ import {
   pensaDeletionJobs,
   pensaJourneys,
   pensaOperations,
+  pensaProjectMembers,
   pensaProjects,
   pensaProviderUsage,
   pensaTasks,
@@ -85,12 +90,39 @@ const operationView = (row: OperationRow): PensaOperation => ({
   createdAt: row.createdAt.toISOString(),
   updatedAt: row.updatedAt.toISOString(),
 })
-const owned = (actor: PensaJourneyActor) =>
+/** Só a DONA: renomear/arquivar, apagar, a cota de planos e o `create` idempotente. */
+const ownerOnly = (actor: PensaJourneyActor) =>
   and(
     eq(pensaProjects.userId, actor.profileId),
     eq(pensaProjects.accountId, actor.accountId),
     eq(pensaProjects.audience, 'kids'),
   )
+/**
+ * A EQUIPE (14/10/2026): a dona (qualquer status) OU quem entrou pelo código, só em plano
+ * ativo (a mesma régua do `accessibleProject` do plano clássico; arquivar "fecha" o plano para
+ * a equipe). O perfil E a conta conferem nos dois ramos.
+ */
+const accessible = (actor: PensaJourneyActor) =>
+  and(
+    eq(pensaProjects.audience, 'kids'),
+    or(
+      and(eq(pensaProjects.userId, actor.profileId), eq(pensaProjects.accountId, actor.accountId)),
+      and(
+        eq(pensaProjects.status, 'active'),
+        exists(
+          sql`(select 1 from ${pensaProjectMembers} where ${pensaProjectMembers.projectId} = ${pensaProjects.id} and ${pensaProjectMembers.profileId} = ${actor.profileId}::uuid and ${pensaProjectMembers.accountId} = ${actor.accountId}::uuid)`,
+        ),
+      ),
+    ),
+  )
+/** Comandos que usam o jogo salvo no Estúdio de quem PROGRAMA: só ela os dispara. */
+const PROGRAMMER_COMMANDS: ReadonlySet<PensaJourneyCommand['type']> = new Set([
+  'observe',
+  'record_test',
+  'repair',
+  'close',
+  'revise',
+])
 const conflict = (message?: string) => new PensaTaskProgressConflictError(message)
 
 export class DrizzlePensaJourneyRepository implements PensaJourneyRepository {
@@ -104,7 +136,7 @@ export class DrizzlePensaJourneyRepository implements PensaJourneyRepository {
     const [project] = await tx
       .select()
       .from(pensaProjects)
-      .where(and(owned(actor), eq(pensaProjects.id, projectId)))
+      .where(and(accessible(actor), eq(pensaProjects.id, projectId)))
       .for('update')
     if (!project) throw new PensaNotFoundError()
     if (active && project.status !== 'active')
@@ -115,7 +147,15 @@ export class DrizzlePensaJourneyRepository implements PensaJourneyRepository {
       .where(and(eq(pensaJourneys.projectId, projectId), eq(pensaJourneys.active, true)))
       .for('update')
     if (!journey) throw new PensaNotFoundError()
-    return { project, row: journey, state: journey.data }
+    // Os papéis lidos DEPOIS da trava do projeto: trocar as funções tranca a mesma linha.
+    const { roles } = await loadPensaTeamRoles(tx, projectId, project.userId)
+    const role = project.userId === actor.profileId ? ('owner' as const) : ('member' as const)
+    return { project, row: journey, state: journey.data, role, roles }
+  }
+
+  /** Só quem PROGRAMA testa, conclui, guarda, restaura e adapta: o jogo mora no Estúdio dela. */
+  private assertProgrammer(actor: PensaJourneyActor, roles: { code: string }) {
+    if (roles.code !== actor.profileId) throw new PensaNotProgrammerError()
   }
 
   private async save(tx: Tx, state: PensaJourney, now: Date) {
@@ -137,25 +177,37 @@ export class DrizzlePensaJourneyRepository implements PensaJourneyRepository {
     const [total] = await tx
       .select({ n: count() })
       .from(pensaProjects)
-      .where(and(owned(actor), eq(pensaProjects.status, 'active')))
+      .where(and(ownerOnly(actor), eq(pensaProjects.status, 'active')))
     if ((total?.n ?? 0) >= MAX_ACTIVE_PROJECTS)
       throw new PensaQuotaExceededError(
         'Você já tem 20 jogos em andamento. Continue um deles ou arquive um plano para abrir espaço.',
       )
   }
 
-  async list(actor: PensaJourneyActor, status: 'active' | 'archived') {
+  /**
+   * Os planos v2 da dona E os em que o perfil entrou (o membro só vê os ativos). O 1º nome da
+   * dona (`team.ownerFirstName`) é preenchido pelo serviço, a partir do `ownerProfileId`.
+   */
+  async list(
+    actor: PensaJourneyActor,
+    status: 'active' | 'archived',
+  ): Promise<PensaJourneyListRow[]> {
     const rows = await this.db
-      .select({ project: pensaProjects, journey: pensaJourneys, cycle: pensaCycles })
+      .select({
+        project: pensaProjects,
+        journey: pensaJourneys,
+        cycle: pensaCycles,
+        memberCount: sql<number>`(select count(*)::int from ${pensaProjectMembers} where ${pensaProjectMembers.projectId} = ${pensaProjects.id})`,
+      })
       .from(pensaProjects)
       .innerJoin(
         pensaJourneys,
         and(eq(pensaJourneys.projectId, pensaProjects.id), eq(pensaJourneys.active, true)),
       )
       .innerJoin(pensaCycles, eq(pensaCycles.id, pensaJourneys.cycleId))
-      .where(and(owned(actor), eq(pensaProjects.status, status)))
+      .where(and(accessible(actor), eq(pensaProjects.status, status)))
     return rows
-      .map(({ project, journey, cycle }) => ({
+      .map(({ project, journey, cycle, memberCount }) => ({
         id: project.id,
         name: project.name,
         status: project.status,
@@ -163,6 +215,9 @@ export class DrizzlePensaJourneyRepository implements PensaJourneyRepository {
         stage: pensaZeroStage(journey.data),
         lastInteractionAt: journey.data.lastInteractionAt,
         paused: journey.data.paused,
+        role: project.userId === actor.profileId ? ('owner' as const) : ('member' as const),
+        team: { memberCount: Number(memberCount), ownerFirstName: null },
+        ownerProfileId: project.userId,
       }))
       .sort((a, b) => b.lastInteractionAt.localeCompare(a.lastInteractionAt))
   }
@@ -234,8 +289,20 @@ export class DrizzlePensaJourneyRepository implements PensaJourneyRepository {
         pensaJourneys,
         and(eq(pensaJourneys.projectId, pensaProjects.id), eq(pensaJourneys.active, true)),
       )
-      .where(and(owned(actor), eq(pensaProjects.id, projectId)))
+      .where(and(accessible(actor), eq(pensaProjects.id, projectId)))
     if (!row) throw new PensaNotFoundError()
+    const { memberProfileIds, rows: roleRows } = await loadPensaTeamRoles(
+      this.db,
+      projectId,
+      row.project.userId,
+    )
+    const team = pensaJourneyTeam({
+      viewerProfileId: actor.profileId,
+      ownerProfileId: row.project.userId,
+      memberProfileIds,
+      shareCode: row.project.shareCode,
+      rows: roleRows,
+    })
     const [operation] = row.state.operationId
       ? await this.db
           .select()
@@ -265,7 +332,8 @@ export class DrizzlePensaJourneyRepository implements PensaJourneyRepository {
       .where(
         and(
           eq(pensaCheckpoints.projectId, projectId),
-          eq(pensaCheckpoints.profileId, actor.profileId),
+          // As versões guardadas são as de quem PROGRAMA (o jogo mora no Estúdio dela).
+          eq(pensaCheckpoints.profileId, team.roles.code),
           eq(pensaCheckpoints.status, 'ready'),
         ),
       )
@@ -280,6 +348,8 @@ export class DrizzlePensaJourneyRepository implements PensaJourneyRepository {
         planRevision: journey.revision,
         createdAt: createdAt.toISOString(),
       })),
+      role: row.project.userId === actor.profileId ? 'owner' : 'member',
+      team,
     }
   }
 
@@ -291,7 +361,8 @@ export class DrizzlePensaJourneyRepository implements PensaJourneyRepository {
     now: Date,
   ) {
     await this.db.transaction(async (tx) => {
-      const { state } = await this.lock(tx, actor, projectId)
+      const { state, roles } = await this.lock(tx, actor, projectId)
+      if (PROGRAMMER_COMMANDS.has(command.type)) this.assertProgrammer(actor, roles)
       if (command.type === 'record_test') {
         const [creation] = await tx
           .select()
@@ -440,6 +511,9 @@ export class DrizzlePensaJourneyRepository implements PensaJourneyRepository {
             startedAt: null,
             completedAt: null,
             progressUpdatedAt: null,
+            // O ajuste nasce livre: quem programa o começa (a missão de origem guarda o histórico).
+            assigneeProfileId: null,
+            completedByProfileId: null,
             revision: 1,
             createdAt: now,
             updatedAt: now,
@@ -473,7 +547,8 @@ export class DrizzlePensaJourneyRepository implements PensaJourneyRepository {
     now: Date,
   ) {
     await this.db.transaction(async (tx) => {
-      const { state, project } = await this.lock(tx, actor, projectId, false)
+      const { state, project, role } = await this.lock(tx, actor, projectId, false)
+      if (role !== 'owner') throw new PensaNotOwnerError()
       if (project.status === status) return
       if (status === 'active') await this.activeCount(tx, actor)
       await this.cancelWithin(tx, state, now)
@@ -487,7 +562,8 @@ export class DrizzlePensaJourneyRepository implements PensaJourneyRepository {
 
   async delete(actor: PensaJourneyActor, projectId: string, now: Date): Promise<void> {
     await this.db.transaction(async (tx) => {
-      const { state } = await this.lock(tx, actor, projectId, false)
+      const { state, role } = await this.lock(tx, actor, projectId, false)
+      if (role !== 'owner') throw new PensaNotOwnerError()
       await this.cancelWithin(tx, state, now)
       const operations = await tx
         .select()
@@ -501,18 +577,40 @@ export class DrizzlePensaJourneyRepository implements PensaJourneyRepository {
               (file) => file.destination,
             ) ?? [],
         )
+      // Equipe (14/10/2026): o plano deixa dado no R2 de TODO perfil que mexeu nele (as versões
+      // guardadas de quem programa, as falas do Zappy de cada um). A limpeza cobre a dona, quem
+      // está na equipe e quem tem checkpoint ou fala do plano (inclusive quem já saiu).
+      const people = new Set<string>([actor.profileId])
+      for (const { profileId } of await tx
+        .select({ profileId: pensaProjectMembers.profileId })
+        .from(pensaProjectMembers)
+        .where(eq(pensaProjectMembers.projectId, projectId)))
+        people.add(profileId)
+      for (const { profileId } of await tx
+        .selectDistinct({ profileId: pensaCheckpoints.profileId })
+        .from(pensaCheckpoints)
+        .where(eq(pensaCheckpoints.projectId, projectId)))
+        people.add(profileId)
+      for (const { profileId } of await tx
+        .selectDistinct({ profileId: privateNarrations.profileId })
+        .from(privateNarrations)
+        .where(eq(privateNarrations.projectId, projectId)))
+        people.add(profileId)
       await tx.insert(pensaDeletionJobs).values({
         id: projectId,
         accountId: actor.accountId,
         profileId: actor.profileId,
-        prefixes: [`creations/${actor.profileId}/pensa/${projectId}/`, ...abandonedFiles],
+        prefixes: [
+          ...[...people].map((profileId) => `creations/${profileId}/pensa/${projectId}/`),
+          ...abandonedFiles,
+        ],
         notBefore: new Date(now.getTime() + 10 * 60_000),
         createdAt: now,
         updatedAt: now,
       })
       // Metadados sem texto mantêm o teto financeiro mesmo após apagar o plano.
       // A resolução da origem e o prefixo removido invalidam o áudio imediatamente.
-      await tx.delete(pensaProjects).where(and(owned(actor), eq(pensaProjects.id, projectId)))
+      await tx.delete(pensaProjects).where(and(ownerOnly(actor), eq(pensaProjects.id, projectId)))
     })
   }
 
@@ -1090,7 +1188,9 @@ export class DrizzlePensaJourneyRepository implements PensaJourneyRepository {
     now: Date,
   ): Promise<PensaJourneyView | PensaFileTicket> {
     const ticket = await this.db.transaction(async (tx): Promise<PensaFileTicket | null> => {
-      const { state } = await this.lock(tx, actor, projectId)
+      const { state, roles } = await this.lock(tx, actor, projectId)
+      // Guardar, restaurar e começar a próxima versão usam o jogo do Estúdio de quem programa.
+      this.assertProgrammer(actor, roles)
       const [fence] = await tx
         .select()
         .from(accountDeletionFences)
@@ -1473,6 +1573,9 @@ export class DrizzlePensaJourneyRepository implements PensaJourneyRepository {
             archivedAt: task.archivedAt ? new Date(task.archivedAt) : null,
             revision: sql`${pensaTasks.revision} + 1`,
             progressStatus: task.progressStatus,
+            // Quem começou e quem concluiu voltam com o progresso (cópia anterior à equipe: null).
+            assigneeProfileId: task.assigneeProfileId ?? null,
+            completedByProfileId: task.completedByProfileId ?? null,
             completedStepIds: task.completedStepIds,
             completedCriteriaIds: task.completedCriteriaIds,
             outputRef:

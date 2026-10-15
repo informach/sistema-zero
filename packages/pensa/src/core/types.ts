@@ -157,6 +157,12 @@ export interface PensaTaskView {
   }
   revision: number
   supersedesTaskId: string | null
+  /**
+   * Equipe do Pensa v2 (14/10/2026): quem COMEÇOU a missão (com duas artistas, quem começa fica
+   * com ela) e quem a concluiu. Opcionais: ausentes = servidor anterior à equipe.
+   */
+  assigneeProfileId?: string | null
+  completedByProfileId?: string | null
 }
 
 export interface PensaChatMessage {
@@ -218,6 +224,11 @@ export interface PensaProjectMembersView {
 export interface PensaShareView {
   code: string
   display: string
+}
+
+/** `POST /v2/projects/join`: o jogo em que a criança acabou de entrar. */
+export interface PensaJourneyJoinView {
+  projectId: string
 }
 
 export class PensaApiError extends Error {

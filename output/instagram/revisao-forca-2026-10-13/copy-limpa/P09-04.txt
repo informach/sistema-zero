@@ -1,5 +1,0 @@
-Este jogo da memória foi feito no nosso Estúdio. Uma das regras:
-
-se as duas cartas viradas forem diferentes, espere 0,7 segundo e desvire as duas.
-
-Parece detalhe. Agora tente explicar o 0,7.

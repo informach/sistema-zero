@@ -1,0 +1,47 @@
+/** Review evidence: Studio's host-owned autosave clears dirty before the host confirms. */
+import { expect, mock, test } from 'bun:test'
+import { fakeUseStore } from '../../packages/studio/src/testing/fakeIdbStore'
+
+mock.module('../../packages/studio/node_modules/idb-keyval/dist/index.js', () => ({
+  createStore: mock((name: string) => fakeUseStore(name)),
+  del: mock(async () => undefined),
+  delMany: mock(async () => undefined),
+  get: mock(async () => undefined),
+  getMany: mock(async () => []),
+  keys: mock(async () => []),
+  set: mock(async () => undefined),
+  setMany: mock(async () => undefined),
+  update: mock(async () => undefined),
+}))
+
+const { createEmptyProject } = await import('../../packages/studio/src/core/index')
+const { createProjectStore } = await import('../../packages/studio/src/state/projectStore')
+const { createPersistenceService, setAutosaveDelayForTests } = await import('../../packages/studio/src/persistence/service')
+
+test('with persistence none, dirty clears while the remote host save is still pending', async () => {
+  setAutosaveDelayForTests(10)
+  const store = createProjectStore()
+  const service = createPersistenceService(store, null)
+  let received = false
+  let confirmed = false
+  let release = () => {}
+  const pending = new Promise<void>((resolve) => { release = resolve })
+  service.handlers.onChange = () => {
+    received = true
+    void pending.then(() => { confirmed = true })
+  }
+  const detach = service.attach()
+  try {
+    store.getState().setProject(createEmptyProject(crypto.randomUUID(), 'Unsaved host draft'))
+    expect(store.getState().isDirty).toBe(true)
+    await Bun.sleep(100)
+    expect(received).toBe(true)
+    expect(confirmed).toBe(false)
+    expect(service.hasAdapter).toBe(false)
+    expect(store.getState().isDirty).toBe(false)
+  } finally {
+    release()
+    detach()
+    setAutosaveDelayForTests(null)
+  }
+})

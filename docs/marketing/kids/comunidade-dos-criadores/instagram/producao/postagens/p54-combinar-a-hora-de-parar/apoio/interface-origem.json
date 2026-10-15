@@ -1,0 +1,10 @@
+{
+  "component": "packages/member-shell/src/components/lesson-draft-status.tsx",
+  "copy": "packages/member-shell/src/lib/lesson-copy-kids.ts",
+  "container": "Cabeçalho esquerdo de StudioBlockView, mesmas classes e título",
+  "mode": "Renderização do componente original em estado de demonstração controlado. Não é captura de uma conta conectada nem teste de gravação na nuvem.",
+  "states": [
+    "saving",
+    "saved"
+  ]
+}

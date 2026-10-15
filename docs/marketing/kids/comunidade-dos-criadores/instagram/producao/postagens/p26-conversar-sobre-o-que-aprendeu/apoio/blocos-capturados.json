@@ -1,0 +1,312 @@
+{
+  "all": [
+    {
+      "type": "sz_frame_appearance",
+      "text": "🎨 Aparência: CSS Pintar o fundo da página de #dff0d0"
+    },
+    {
+      "type": "sz_frame_start",
+      "text": "⚙️ Ao iniciar Preparar o jogo em tela cheia, tela 360 × 480 , fundo #11172a"
+    },
+    {
+      "type": "sz_frame_events",
+      "text": "⚡ Quando acontecer Quando apertar a tecla Enter fazer Se o estado do jogo é inicio ? então Mudar o estado do jogo para jogando adicionar senão se senão se adicionar senão senão"
+    },
+    {
+      "type": "sz_frame_loops",
+      "text": "🔁 Enquanto estiver rodando A cada quadro do jogo fazer Limpar a tela"
+    },
+    {
+      "type": "sz_css_body_background",
+      "text": "Pintar o fundo da página de #dff0d0"
+    },
+    {
+      "type": "sz_g2d_setup_stage",
+      "text": "Preparar o jogo em tela cheia, tela 360 × 480 , fundo #11172a"
+    },
+    {
+      "type": "sz_g2d_on_key",
+      "text": "Quando apertar a tecla Enter fazer Se o estado do jogo é inicio ? então Mudar o estado do jogo para jogando adicionar senão se senão se adicionar senão senão"
+    },
+    {
+      "type": "sz_g2d_update_each_frame",
+      "text": "A cada quadro do jogo fazer Limpar a tela"
+    },
+    {
+      "type": "sz_css_justify",
+      "text": "eixo principal de body arrumar no centro"
+    },
+    {
+      "type": "sz_val_number",
+      "text": "360"
+    },
+    {
+      "type": "sz_val_number",
+      "text": "480"
+    },
+    {
+      "type": "sz_g2d_set_stage_description",
+      "text": "Descrever o jogo para leitor de tela Estica o bastão segurando o mouse/dedo e atravessa as plataformas (estilo Stick Hero). A regra do mouse é um se/senão: segurado cresce o bastão, solto derruba. Enter começa e recomeça."
+    },
+    {
+      "type": "sz_js_if_else",
+      "text": "Se o estado do jogo é inicio ? então Mudar o estado do jogo para jogando adicionar senão se senão se adicionar senão senão"
+    },
+    {
+      "type": "sz_g2d_stickpath_on_cross",
+      "text": "Quando o equilibrista atravessar uma plataforma do caminho caminho fazer Tocar efeito pulo"
+    },
+    {
+      "type": "sz_g2d_clear",
+      "text": "Limpar a tela"
+    },
+    {
+      "type": "sz_css_align",
+      "text": "eixo transversal de body arrumar como centro"
+    },
+    {
+      "type": "sz_g2d_fit_screen",
+      "text": "Fazer a tela preencher 100 % da janela (mantendo a proporção)"
+    },
+    {
+      "type": "sz_g2d_set_scene",
+      "text": "Mudar o estado do jogo para jogando"
+    },
+    {
+      "type": "sz_g2d_scene_is",
+      "text": "o estado do jogo é inicio ?"
+    },
+    {
+      "type": "sz_js_if_else",
+      "text": "Se o estado do jogo é perdeu ? então Reiniciar o jogo adicionar senão se senão se adicionar senão senão"
+    },
+    {
+      "type": "sz_g2d_play_fx",
+      "text": "Tocar efeito pulo"
+    },
+    {
+      "type": "sz_g2d_stickpath_on_perfect",
+      "text": "Quando o equilibrista acertar bem no meio no caminho caminho fazer Tocar efeito coletar"
+    },
+    {
+      "type": "sz_g2d_stickpath_scenery",
+      "text": "Desenhar o cenário do caminho caminho (céu, colinas e árvores)"
+    },
+    {
+      "type": "sz_css_cursor",
+      "text": "Ponteiro do mouse sobre body mostrar mãozinha (clicável)"
+    },
+    {
+      "type": "sz_val_number",
+      "text": "100"
+    },
+    {
+      "type": "sz_g2d_stickhero_sprite",
+      "text": "Criar equilibrista equilibrista largura 18 altura 36 cor #d6455d"
+    },
+    {
+      "type": "sz_g2d_restart",
+      "text": "Reiniciar o jogo"
+    },
+    {
+      "type": "sz_g2d_scene_is",
+      "text": "o estado do jogo é perdeu ?"
+    },
+    {
+      "type": "sz_js_var_increment",
+      "text": "Somar 1 em variável pontos"
+    },
+    {
+      "type": "sz_g2d_play_fx",
+      "text": "Tocar efeito coletar"
+    },
+    {
+      "type": "sz_js_if_else",
+      "text": "Se o estado do jogo é inicio ? então Mostrar tela com título texto Equilibrista subtítulo texto Segure para esticar o bastão e solte para atravessar! dica texto Aperte Enter para começar fundo #1b2330 adicionar senão se senão se adicionar senão senão"
+    },
+    {
+      "type": "sz_css_rule",
+      "text": "Regra de estilo para body estilos display : flex"
+    },
+    {
+      "type": "sz_val_number",
+      "text": "18"
+    },
+    {
+      "type": "sz_val_number",
+      "text": "36"
+    },
+    {
+      "type": "sz_g2d_stickpath_create",
+      "text": "Criar o caminho de plataformas caminho com plataformas cor #0ea5a0 e bastão cor #1b2330"
+    },
+    {
+      "type": "sz_g2d_flash",
+      "text": "Dar um clarão de cor #ffe066"
+    },
+    {
+      "type": "sz_g2d_show_screen",
+      "text": "Mostrar tela com título texto Equilibrista subtítulo texto Segure para esticar o bastão e solte para atravessar! dica texto Aperte Enter para começar fundo #1b2330"
+    },
+    {
+      "type": "sz_g2d_scene_is",
+      "text": "o estado do jogo é inicio ?"
+    },
+    {
+      "type": "sz_js_if_else",
+      "text": "Se o estado do jogo é jogando ? então Se o mouse ou dedo está segurado ? então Crescer o bastão do caminho caminho (rapidez 1) senão Derrubar o bastão do caminho caminho adicionar senão se senão se remover o último adicionar senão se senão se adicionar senão senão"
+    },
+    {
+      "type": "sz_css_decl",
+      "text": "display : flex"
+    },
+    {
+      "type": "sz_css_rule",
+      "text": "Regra de estilo para canvas estilos border : 2px solid #1b2330"
+    },
+    {
+      "type": "sz_js_var_create",
+      "text": "Criar variável pontos com valor 0"
+    },
+    {
+      "type": "sz_js_var_increment",
+      "text": "Somar 2 em variável pontos"
+    },
+    {
+      "type": "sz_val_text",
+      "text": "texto Equilibrista"
+    },
+    {
+      "type": "sz_val_text",
+      "text": "texto Segure para esticar o bastão e solte para atravessar!"
+    },
+    {
+      "type": "sz_val_text",
+      "text": "texto Aperte Enter para começar"
+    },
+    {
+      "type": "sz_js_if_else",
+      "text": "Se o mouse ou dedo está segurado ? então Crescer o bastão do caminho caminho (rapidez 1) senão Derrubar o bastão do caminho caminho adicionar senão se senão se remover o último"
+    },
+    {
+      "type": "sz_g2d_scene_is",
+      "text": "o estado do jogo é jogando ?"
+    },
+    {
+      "type": "sz_js_if_else",
+      "text": "Se o estado do jogo é perdeu ? então Mostrar tela com título texto Caiu! subtítulo texto O bastão não alcançou a plataforma. dica texto Aperte Enter para jogar de novo fundo #1b2330 adicionar senão se senão se adicionar senão senão"
+    },
+    {
+      "type": "sz_css_decl",
+      "text": "min-height : 100vh"
+    },
+    {
+      "type": "sz_css_decl",
+      "text": "border : 2px solid #1b2330"
+    },
+    {
+      "type": "sz_val_number",
+      "text": "0"
+    },
+    {
+      "type": "sz_g2d_set_scene",
+      "text": "Mudar o estado do jogo para inicio"
+    },
+    {
+      "type": "sz_g2d_stickpath_grow",
+      "text": "Crescer o bastão do caminho caminho (rapidez 1)"
+    },
+    {
+      "type": "sz_g2d_stickpath_drop",
+      "text": "Derrubar o bastão do caminho caminho"
+    },
+    {
+      "type": "sz_g2d_pointer_down",
+      "text": "o mouse ou dedo está segurado ?"
+    },
+    {
+      "type": "sz_g2d_stickpath_walk",
+      "text": "Fazer o equilibrista equilibrista andar pelo caminho caminho (rapidez 1)"
+    },
+    {
+      "type": "sz_g2d_show_screen",
+      "text": "Mostrar tela com título texto Caiu! subtítulo texto O bastão não alcançou a plataforma. dica texto Aperte Enter para jogar de novo fundo #1b2330"
+    },
+    {
+      "type": "sz_g2d_scene_is",
+      "text": "o estado do jogo é perdeu ?"
+    },
+    {
+      "type": "sz_css_decl",
+      "text": "margin : 0"
+    },
+    {
+      "type": "sz_css_decl",
+      "text": "border-radius : 12px"
+    },
+    {
+      "type": "sz_val_number",
+      "text": "1"
+    },
+    {
+      "type": "sz_val_number",
+      "text": "1"
+    },
+    {
+      "type": "sz_g2d_stickpath_draw",
+      "text": "Desenhar as plataformas e o bastão do caminho caminho"
+    },
+    {
+      "type": "sz_val_text",
+      "text": "texto Caiu!"
+    },
+    {
+      "type": "sz_val_text",
+      "text": "texto O bastão não alcançou a plataforma."
+    },
+    {
+      "type": "sz_val_text",
+      "text": "texto Aperte Enter para jogar de novo"
+    },
+    {
+      "type": "sz_g2d_draw_sprite",
+      "text": "Desenhar o sprite equilibrista"
+    },
+    {
+      "type": "sz_g2d_draw_score",
+      "text": "Mostrar placar Pontos: valor valor da variável pontos em x 12 y 26 cor #1b2330 tamanho 22"
+    },
+    {
+      "type": "sz_val_variable",
+      "text": "valor da variável pontos"
+    },
+    {
+      "type": "sz_val_number",
+      "text": "12"
+    },
+    {
+      "type": "sz_val_number",
+      "text": "26"
+    },
+    {
+      "type": "sz_val_number",
+      "text": "22"
+    },
+    {
+      "type": "sz_js_if_else",
+      "text": "Se o equilibrista caiu no caminho caminho ? então Mudar o estado do jogo para perdeu adicionar senão se senão se adicionar senão senão"
+    },
+    {
+      "type": "sz_g2d_set_scene",
+      "text": "Mudar o estado do jogo para perdeu"
+    },
+    {
+      "type": "sz_g2d_stickpath_fell",
+      "text": "o equilibrista caiu no caminho caminho ?"
+    }
+  ],
+  "rule": {
+    "type": "sz_js_if_else",
+    "text": "Se o mouse ou dedo está segurado ? então Crescer o bastão do caminho caminho (rapidez 1) senão Derrubar o bastão do caminho caminho adicionar senão se senão se remover o último"
+  }
+}

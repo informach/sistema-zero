@@ -83,8 +83,8 @@ Avatar, quarto, moedas e ranking foram reservados para ambientação opcional, s
 Na raiz do repositório:
 
 ```powershell
-bun docs/aulas-interativas/qa/gerar-desafio-v6.ts 'CAMINHO_DOS_ROTEIROS'
-bun docs/aulas-interativas/qa/validar-desafio-v6.ts 'CAMINHO_DOS_ROTEIROS'
+bun docs/aulas-interativas-tecnico/qa/gerar-desafio-v6.ts 'CAMINHO_DOS_ROTEIROS'
+bun docs/aulas-interativas-tecnico/qa/validar-desafio-v6.ts 'CAMINHO_DOS_ROTEIROS'
 bun packages/community-kids/tests/visual/serve-desafio-preview.ts
 ```
 

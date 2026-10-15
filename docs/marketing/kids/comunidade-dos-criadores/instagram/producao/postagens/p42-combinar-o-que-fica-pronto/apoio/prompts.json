@@ -1,0 +1,46 @@
+[
+  {
+    "slide": 1,
+    "file": "01-terminou.png",
+    "source": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-2bead075-3499-41de-a933-4cb71890e447.png",
+    "tool": "image_gen.imagegen (nativa)",
+    "prompt": "Use case photorealistic-natural. New editorial photograph for a Brazilian family educational Instagram carousel, landscape 3:2. A fictional father around 38, dark brown skin, short tightly curled black hair and neatly trimmed short beard, wearing a muted blue casual shirt, stands at a wooden study desk holding his son's open school exercise notebook in both hands and calmly checking it. Notebook faces the father, its cover/back is mainly visible to camera, no readable text. His fictional son age 11–12, dark brown skin and short curly hair, wearing a mustard-yellow T-shirt and a cobalt-blue backpack already over both shoulders, waits beside him as if he thought the task was finished. Father looks curious and thoughtful, not angry, not stern; boy relaxed, no guilt, no exaggerated disappointed expression. Both figures visible from waist up, at same eye level in a normal bright home, a pencil and school material still on desk. Warm natural daylight, genuine everyday moment with friendly warmth, realistic anatomy. Faces completely fictional, not real students. No computer screen, no logos, no text overlays, no readable writing, no certificates, no watermark.",
+    "references": []
+  },
+  {
+    "slide": 2,
+    "file": "02-caderno-fora.png",
+    "source": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-6e173388-7635-41bd-814c-0a0866282f2d.png",
+    "tool": "image_gen.imagegen (nativa)",
+    "prompt": "Use case photorealistic-natural. Landscape 3:2 editorial photo, close top-down view of a real wooden study desk in warm daylight. Open pale ruled school notebook lies outside an open cobalt blue school backpack; yellow pencil and zipped blue pencil case nearby. Notebook pages completely BLANK with only faint horizontal ruling, no printed margins, no text, no scribbles; will receive precise educational lettering in later layout. Notebook is flat, central-left, nearly face-on, its full rectangle unobscured and occupying at least 60% of width. Backpack at right, clearly empty enough for notebook, no brand. Everyday Brazilian family home, realistic stationery, paper texture, no people needed, no computer. No overlaid lettering, no numbers, no logos, no watermark.",
+    "references": []
+  },
+  {
+    "slide": 3,
+    "file": "03-combinar-antes.png",
+    "source": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-2d0b99b8-8317-462b-b6d4-9bb921097bd2.png",
+    "tool": "image_gen.imagegen (nativa)",
+    "prompt": "Use case photorealistic-natural. Generate a NEW landscape 3:2 editorial photograph of exactly the same fictional father and boy as the reference, preserving their faces, hair, skin tone and blue shirt/mustard T-shirt. In the same warm home, both seated at the wooden desk BEFORE a homework session, boy without backpack. Father calmly helps boy decide a short list of tasks, the boy holds a pencil above a small completely BLANK cream note on the desk and looks at his father with an engaged thoughtful expression. Father looks at boy, hand relaxed pointing toward note. A CLOSED navy school notebook is on the desk so exercises haven't begun. Medium photograph from across table, two faces clearly visible, gentle cheerful natural daylight, exactly two people, realistic hands. No text, no UI, no brand, no watermark. This is a fictional scene, not a real student testimonial.",
+    "references": [
+      "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-2bead075-3499-41de-a933-4cb71890e447.png"
+    ]
+  },
+  {
+    "slide": 4,
+    "file": "04-lista.png",
+    "source": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-2189c39b-4ffd-4b01-a5db-712df5f7c2e3.png",
+    "tool": "image_gen.imagegen (nativa)",
+    "prompt": "Use case photorealistic-natural. NEW close-up overhead landscape 3:2 photograph of a single large BLANK pale-yellow rectangular note taped with two short pieces of blue masking tape to a wooden study desk. Paper rectangle axis-aligned and nearly front-on, centered, 65% of image width and 80% of image height, absolutely no writing, no checkboxes, no marks; precise handwritten list added later. At far left edge a corner of a navy school notebook, at right edge one yellow pencil, warm natural daylight and lovely paper texture, realistic editorial photography. No people, no text, no logo, no watermark.",
+    "references": []
+  },
+  {
+    "slide": 7,
+    "file": "07-conferir-lista.png",
+    "source": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-669e9db3-6755-47d9-9dc8-466ed7570bd2.png",
+    "tool": "image_gen.imagegen (nativa)",
+    "prompt": "Use case photorealistic-natural. New landscape 3:2 photograph, SAME fictional father and 11-year-old boy as the reference, exact face/hair/skin identity, father blue shirt, boy mustard T-shirt. DIFFERENT camera angle: diagonal three-quarter view from boy's side, slightly above wooden homework desk. Boy at left, father at right. They have finished homework and packed the cobalt blue backpack, standing on chair behind them. The boy is using his right hand to mark the last task on a LARGE pale yellow rectangular note resting on the near edge of the desk, father gently watching beside him, both look down at the note. The note itself is COMPLETELY BLANK, no text, no checkmarks or lines, lettering and checks will be applied afterwards; pencil tip touches near lower left of note, most of paper stays unobscured, flat and visible to camera. No other notebook on table (already in backpack). Warm natural daylight, calm content expressions, no exaggerated celebration. Realistic anatomy, correct hands, no text, no logos or watermark. Two fictional people only, not actual students.",
+    "references": [
+      "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-2bead075-3499-41de-a933-4cb71890e447.png"
+    ]
+  }
+]

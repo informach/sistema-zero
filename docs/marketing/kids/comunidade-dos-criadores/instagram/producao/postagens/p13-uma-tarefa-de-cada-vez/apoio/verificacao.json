@@ -1,0 +1,371 @@
+{
+  "source": "docs/marketing/kids/comunidade-dos-criadores/instagram/postagens/02-p11-a-p20.md",
+  "sourceSectionHash": "c19b230024e81d9d346f3f0199f22811a1e6004e9409241854db6fb56316f3dc",
+  "copyEqual": true,
+  "slides": [
+    {
+      "number": 1,
+      "file": "01-p13.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "series",
+          "top": 0,
+          "bottom": 45.59375,
+          "height": 45.59375,
+          "left": 0,
+          "right": 195.953125
+        },
+        {
+          "kind": "copy lead",
+          "top": 102.546875,
+          "bottom": 255.140625,
+          "height": 152.59375,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 312.078125,
+          "bottom": 424.390625,
+          "height": 112.3125,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo ",
+          "top": 481.34375,
+          "bottom": 1116,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 48
+    },
+    {
+      "number": 2,
+      "file": "02-p13.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 184.40625,
+          "height": 184.40625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo ",
+          "top": 278.328125,
+          "bottom": 912.984375,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 1006.90625,
+          "bottom": 1116,
+          "height": 109.09375,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 44
+    },
+    {
+      "number": 3,
+      "file": "03-p13.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 127.59375,
+          "height": 127.59375,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo ",
+          "top": 249.921875,
+          "bottom": 884.578125,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 1006.90625,
+          "bottom": 1116,
+          "height": 109.09375,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 44
+    },
+    {
+      "number": 4,
+      "file": "04-p13.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 153.09375,
+          "height": 153.09375,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo ",
+          "top": 271.21875,
+          "bottom": 905.875,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "question-decoration",
+          "top": 1024,
+          "bottom": 1116,
+          "height": 92,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 56
+    },
+    {
+      "number": 5,
+      "file": "05-p13.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 127.59375,
+          "height": 127.59375,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo ",
+          "top": 249.921875,
+          "bottom": 884.578125,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 1006.90625,
+          "bottom": 1116,
+          "height": 109.09375,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 44
+    },
+    {
+      "number": 6,
+      "file": "06-p13.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 191.390625,
+          "height": 191.390625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "wide-game",
+          "top": 281.15625,
+          "bottom": 917.15625,
+          "height": 636,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 1006.90625,
+          "bottom": 1116,
+          "height": 109.09375,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 44
+    },
+    {
+      "number": 7,
+      "file": "07-p13.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 168.46875,
+          "height": 168.46875,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "stages",
+          "top": 274.46875,
+          "bottom": 955.46875,
+          "height": 681,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 1061.453125,
+          "bottom": 1116,
+          "height": 54.546875,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 44
+    },
+    {
+      "number": 8,
+      "file": "08-p13.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 131.09375,
+          "height": 131.09375,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo ",
+          "top": 221.28125,
+          "bottom": 855.9375,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 946.125,
+          "bottom": 1116,
+          "height": 169.875,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 48
+    }
+  ],
+  "images": [
+    {
+      "src": "apoio/01-pedido.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "src": "apoio/02-bilhetes.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "src": "apoio/03-esbocos.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "src": "apoio/04-perguntas.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "src": "apoio/05-pesquisa.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "src": "apoio/06-defesa-aberta.png",
+      "loaded": true,
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "src": "apoio/07-alvo.png",
+      "loaded": true,
+      "width": 740,
+      "height": 520
+    },
+    {
+      "src": "apoio/07-tiro.png",
+      "loaded": true,
+      "width": 740,
+      "height": 520
+    },
+    {
+      "src": "apoio/07-recompensa.png",
+      "loaded": true,
+      "width": 740,
+      "height": 520
+    },
+    {
+      "src": "apoio/08-primeira-tarefa.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    }
+  ],
+  "errors": [],
+  "fonts": {
+    "normal": true,
+    "bold": true,
+    "hand": true
+  }
+}

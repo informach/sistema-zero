@@ -1,0 +1,55 @@
+{
+  "errors": [],
+  "scenes": {
+    "placed": {
+      "x": 0,
+      "y": 0,
+      "z": 6,
+      "grounded": true,
+      "state": "jogando",
+      "blocks": [
+        {
+          "x": 0,
+          "y": 0,
+          "z": 8
+        }
+      ]
+    },
+    "onBlock": {
+      "x": 0,
+      "y": 1.2000000000000004,
+      "z": 8,
+      "grounded": true,
+      "state": "jogando",
+      "blocks": [
+        {
+          "x": 0,
+          "y": 0,
+          "z": 8
+        }
+      ]
+    },
+    "top": {
+      "x": 1.1563300956837084,
+      "y": 2.4,
+      "z": 9.6514105212866,
+      "grounded": true,
+      "state": "vitoria",
+      "blocks": [
+        {
+          "x": 0,
+          "y": 0,
+          "z": 8
+        }
+      ]
+    }
+  },
+  "pointer": {
+    "x": 720,
+    "y": 490,
+    "gx": 0.042665361917405775,
+    "gz": 7.92610142543573,
+    "dist": 0.007281332430174153
+  },
+  "victoryVisible": true
+}

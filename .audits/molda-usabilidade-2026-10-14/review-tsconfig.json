@@ -1,0 +1,5 @@
+{
+  "extends": "../../packages/molda/tsconfig.json",
+  "compilerOptions": { "typeRoots": ["../../packages/molda/node_modules/@types"] },
+  "include": ["../../packages/molda/src", "../../packages/molda/playground", "../../packages/molda/e2e", "../../packages/molda/test-setup.ts"]
+}

@@ -1,6 +1,5 @@
 import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
 import {
   actorFigure,
   cenarioTemChao,
@@ -22,8 +21,11 @@ import {
   sceneNativeCast,
   stepScene,
 } from '@sistemazero/core/learning/scene'
-import { Glob } from 'bun'
 import { renderToStaticMarkup } from 'react-dom/server'
+import {
+  caminhoAula,
+  listarArquivosAulas,
+} from '../../../docs/aulas-interativas-tecnico/qa/caminhos'
 import { scenePaths } from '../../core/tests/fixtures/exploration-paths'
 import { ExplorationPieces } from '../src/components/exploration-pieces'
 import { ExplorationStage } from '../src/components/exploration-stage'
@@ -49,11 +51,9 @@ import { ActorFigure } from '../src/components/scene-figures'
  * O `describe` final roda o conferente contra HTML adulterado: sem ele, um conferente que não
  * reprovasse nada deixaria todo o resto verde.
  *
- * ⚠️ Os elencos são os dos manifestos atuais (`docs/aulas-interativas/aulas`), lidos pelo
+ * ⚠️ Os elencos são os dos manifestos atuais (`docs/aulas-interativas/<curso>`), lidos pelo
  * caminho, mais as BORDAS que o editor deixa montar (um papel só, a pedra com o Dino declarado).
  */
-
-const DOCS = join(import.meta.dir, '../../../docs/aulas-interativas/aulas')
 
 type Uso = { arquivo: string; activity: SceneActivity }
 
@@ -69,8 +69,8 @@ function usosComElenco(): Uso[] {
       for (const valor of Object.values(registro)) visitar(valor, arquivo)
     }
   }
-  for (const arquivo of new Glob('*.manifesto.json').scanSync(DOCS))
-    visitar(JSON.parse(readFileSync(join(DOCS, arquivo), 'utf8')), arquivo)
+  for (const arquivo of listarArquivosAulas().filter((nome) => nome.endsWith('.manifesto.json')))
+    visitar(JSON.parse(readFileSync(caminhoAula(arquivo), 'utf8')), arquivo)
   return usos
 }
 

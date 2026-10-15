@@ -106,3 +106,126 @@ test('M1: o destino da próxima missão sai sem navegar, e o rótulo diz a OUTRA
   expect(nextMissionLabel('studio', 'molda')).toBe('Continuar no Estúdio')
   expect(nextMissionLabel('molda', 'studio')).toBe('Continuar no Molda')
 })
+
+/** Uma missão da etapa com o andamento que a régua da equipe lê. */
+function missao(
+  id: string,
+  destination: 'studio' | 'pinta' | 'molda',
+  extra: {
+    status?: 'planned' | 'in_progress' | 'completed'
+    dependencies?: string[]
+    assigneeProfileId?: string | null
+  } = {},
+) {
+  return {
+    id,
+    destination,
+    dependencies: extra.dependencies ?? [],
+    progress: { status: extra.status ?? 'planned' },
+    ...(extra.assigneeProfileId !== undefined
+      ? { assigneeProfileId: extra.assigneeProfileId }
+      : {}),
+  }
+}
+
+function planoEmEquipe(viewer: string, tasks: ReturnType<typeof missao>[], art = ['bia']) {
+  const journey = createPensaJourney('p1', 'c1', '')
+  journey.stage = 'building'
+  journey.missionIds = tasks.map((t) => t.id)
+  const view: PensaJourneyView = {
+    project: { id: 'p1', name: 'Jogo', status: 'active' },
+    journey,
+    cycles: [],
+    operation: null,
+    role: viewer === 'leo' ? 'owner' : 'member',
+    team: {
+      viewerProfileId: viewer,
+      ownerProfileId: 'leo',
+      memberCount: 1,
+      shareEnabled: true,
+      roles: { code: 'leo', art },
+    },
+  }
+  globalThis.fetch = Object.assign(
+    mock(async (url: RequestInfo | URL) =>
+      Response.json(
+        String(url).includes('/v2/')
+          ? view
+          : // O `nextTaskId` do servidor aponta a próxima do PLANO (a do Estúdio), não a da Bia.
+            { nextTaskId: tasks[0]?.id ?? null, tasks },
+      ),
+    ),
+    { preconnect: originalFetch.preconnect },
+  )
+}
+
+test('em EQUIPE: a artista vai à próxima missão DELA, não à do Estúdio de quem programa', async () => {
+  planoEmEquipe('bia', [missao('m-estudio', 'studio'), missao('m-arte', 'pinta')])
+  const next = await resolveNextPensaMission('p1')
+  expect(next).toEqual({ path: '/pinta?tarefa=m-arte', destination: 'pinta' })
+  // Concluiu no Molda e a próxima dela é no Pinta: "Continuar no Pinta".
+  expect(nextMissionLabel(next.destination, 'molda', { backToPlan: next.backToPlan })).toBe(
+    'Continuar no Pinta',
+  )
+})
+
+test('em EQUIPE: quem programa segue para o Estúdio mesmo com arte na frente', async () => {
+  planoEmEquipe('leo', [missao('m-arte', 'pinta'), missao('m-estudio', 'studio')])
+  expect(await resolveNextPensaMission('p1')).toEqual({
+    path: '/estudio?tarefa=m-estudio',
+    destination: 'studio',
+  })
+})
+
+test('em EQUIPE sem missão minha: volta ao plano, com o rótulo "Voltar ao plano"', async () => {
+  // A única arte já foi começada pela OUTRA artista, e o Estúdio depende dela.
+  planoEmEquipe(
+    'bia',
+    [
+      missao('m-arte', 'pinta', { status: 'in_progress', assigneeProfileId: 'ana' }),
+      missao('m-estudio', 'studio', { dependencies: ['m-arte'] }),
+    ],
+    ['bia', 'ana'],
+  )
+  const next = await resolveNextPensaMission('p1')
+  expect(next).toEqual({ path: '/pensa?plano=p1', destination: null, backToPlan: true })
+  expect(nextMissionLabel(next.destination, 'pinta', { backToPlan: next.backToPlan })).toBe(
+    'Voltar ao plano',
+  )
+})
+
+test('plano solo (team sem ninguém que entrou): segue a régua de sempre do servidor', async () => {
+  const journey = createPensaJourney('p1', 'c1', '')
+  journey.stage = 'building'
+  journey.missionIds = ['m-estudio', 'm-arte']
+  const view: PensaJourneyView = {
+    project: { id: 'p1', name: 'Jogo', status: 'active' },
+    journey,
+    cycles: [],
+    operation: null,
+    team: {
+      viewerProfileId: 'leo',
+      ownerProfileId: 'leo',
+      memberCount: 0,
+      shareEnabled: false,
+      roles: { code: 'leo', art: ['leo'] },
+    },
+  }
+  globalThis.fetch = Object.assign(
+    mock(async (url: RequestInfo | URL) =>
+      Response.json(
+        String(url).includes('/v2/')
+          ? view
+          : {
+              nextTaskId: 'm-arte',
+              tasks: [missao('m-estudio', 'studio'), missao('m-arte', 'pinta')],
+            },
+      ),
+    ),
+    { preconnect: originalFetch.preconnect },
+  )
+  expect(await resolveNextPensaMission('p1')).toEqual({
+    path: '/pinta?tarefa=m-arte',
+    destination: 'pinta',
+  })
+})

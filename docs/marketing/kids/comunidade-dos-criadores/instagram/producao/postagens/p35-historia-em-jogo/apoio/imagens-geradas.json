@@ -1,0 +1,41 @@
+[
+  {
+    "slide": 1,
+    "file": "01-contar-a-historia.png",
+    "references": [],
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-b3ad3aed-d123-46f0-847e-6febee56a00d.png",
+    "tool": "image_gen.imagegen (nativo)",
+    "selected": true
+  },
+  {
+    "slide": 2,
+    "file": "02-mapa-imaginado.png",
+    "references": [
+      "01-contar-a-historia.png"
+    ],
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-dd3f47c7-2d4d-4d38-b256-350036f5dec4.png",
+    "tool": "image_gen.imagegen (nativo)",
+    "selected": true
+  },
+  {
+    "slide": 3,
+    "file": "03-escolher-um-caminho.png",
+    "references": [
+      "02-mapa-imaginado.png"
+    ],
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-0389e02f-5ab2-4a6e-8643-65cc96980779.png",
+    "tool": "image_gen.imagegen (nativo)",
+    "selected": true
+  },
+  {
+    "slide": 7,
+    "file": "07-criar-juntos.png",
+    "references": [
+      "01-contar-a-historia.png"
+    ],
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-93e06963-9987-42bc-b50f-bfa048ada046.png",
+    "tool": "image_gen.imagegen (nativo)",
+    "selected": true
+  }
+]
+

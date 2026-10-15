@@ -1,0 +1,56 @@
+/** Historical reproduction before correction. Current acceptance lives in member-shell/tests. */
+import { expect, mock, test } from 'bun:test'
+import { randomUUID } from 'node:crypto'
+import { createBlankProjectSnapshot } from '../../packages/studio/src/core/blankProject'
+
+mock.module('server-only', () => ({}))
+const actualStorage = await import('../../packages/member-shell/src/server/r2')
+const objects = new Map<string, unknown>()
+mock.module('../../packages/member-shell/src/server/r2', () => ({
+  ...actualStorage,
+  r2PutObjectPrivate: async (input: { key: string; body: unknown }) => { objects.set(input.key, input.body) },
+  r2DeleteObjectPrivate: async (key: string) => { objects.delete(key) },
+  r2PutObject: async () => {}, r2DeleteObjects: async () => {},
+  r2GetObjectPrivate: async () => null, bufferFromStream: async () => Buffer.alloc(0),
+}))
+const { createStudioRoutes } = await import('../../packages/member-shell/src/routes/studio')
+
+test('R4: a committed Mural post loses its playable file after a timeout and retry', async () => {
+  const workspaceId = randomUUID(), requestId = randomUUID()
+  let canonicalThread: { id: string; playId: string } | undefined
+  let calls = 0
+  const routes = createStudioRoutes({
+    media: { requireUploadSession: async () => ({ id: randomUUID() }) },
+    members: { getLiveShowcasePayload: async () => ({ status: 200, body: {
+      eligible: true, project: createBlankProjectSnapshot(workspaceId, 'Jogo'),
+      playId: randomUUID(), publicationToken: 'signed-token-from-members',
+    } }) },
+    hub: { createShowcaseThreadStudioStandalone: async (input: { playId: string }) => {
+      canonicalThread ??= { id: randomUUID(), playId: input.playId }
+      calls++
+      // Models the real gateway contract: Hub commits, then the HTTP reply is lost.
+      return calls === 1
+        ? { status: 503, body: { error: { code: 'SERVICE_UNAVAILABLE' } } }
+        : { status: 200, body: { thread: canonicalThread, deduped: true } }
+    } },
+  } as any)
+  async function request() {
+    const form = new FormData()
+    form.set('liveWorkspaceId', workspaceId)
+    form.set('liveRevision', '1')
+    form.set('clientIdempotencyKey', requestId)
+    form.set('title', 'Jogo')
+    form.set('description', 'Minha criação')
+    const req = new Request('https://kids.example/api/studio/publish-standalone', { method: 'POST', body: form })
+    req.headers.set('content-length', String((await req.clone().arrayBuffer()).byteLength))
+    return req
+  }
+  const failed = await routes.studioPublishStandalone.POST(await request())
+  expect(failed.status).toBe(503)
+  expect(canonicalThread).toBeDefined()
+  expect(objects.has(`studio/play/${canonicalThread!.playId}.json`)).toBe(false)
+  const retry = await routes.studioPublishStandalone.POST(await request())
+  expect(retry.status).toBe(200)
+  expect(objects.has(`studio/play/${canonicalThread!.playId}.json`)).toBe(false)
+  expect(objects.size).toBe(0)
+})

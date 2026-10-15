@@ -1953,9 +1953,12 @@ const config: GatewayConfigInput = {
     // são ownership por user_id. Literal `pensa` no 2º segmento — não colide com
     // `/members/courses…`, `/members/profiles/:id/public` nem `/members/admin/*`.
     // A chamada de IA (chat SSE) NÃO passa por aqui — vive no BFF (member-shell).
+    // Equipe no v2 (14/10/2026): o `PUT …/projects/:projectId/roles` (só a dona define quem
+    // programa e quem faz as artes) cabe no mesmo wildcard; `team`, `team-capabilities`,
+    // `team-art` e o download da arte são GET.
     {
       id: 'members-pensa-v2',
-      methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
       pathPattern: '/members/pensa/v2/*',
       service: 'members',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },

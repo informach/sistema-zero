@@ -58,8 +58,8 @@ Os testes de API usam os repositórios de teste existentes, sem banco de produç
 Na raiz, passando a pasta dos roteiros originais:
 
 ```powershell
-bun docs/aulas-interativas/qa/gerar-meu-jeito-v6.ts 'CAMINHO_DOS_ROTEIROS_ORIGINAIS'
-bun docs/aulas-interativas/qa/validar-meu-jeito-v6.ts 'CAMINHO_DOS_ROTEIROS_ORIGINAIS'
+bun docs/aulas-interativas-tecnico/qa/gerar-meu-jeito-v6.ts 'CAMINHO_DOS_ROTEIROS_ORIGINAIS'
+bun docs/aulas-interativas-tecnico/qa/validar-meu-jeito-v6.ts 'CAMINHO_DOS_ROTEIROS_ORIGINAIS'
 bun packages/community-kids/tests/visual/serve-meu-jeito-preview.ts
 ```
 

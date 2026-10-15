@@ -1,0 +1,27 @@
+P20 · Conversas sobre jogos
+Produção: 14/10/2026
+Estado: produzido, disponível para revisão. Não publicado e não agendado.
+
+FORMATO E ORDEM
+Carrossel com 7 PNGs em 1080 × 1350, proporção 4:5.
+Selecionar 01-p20.png a 07-p20.png em ordem numérica.
+Usar legenda.txt integralmente e o texto alternativo curto de cada slide.
+
+ARQUIVOS
+index.html: prévia e links para os demais arquivos.
+previa.png: visão conjunta dos sete slides.
+montagem.html: composição editável, com texto, tipografia e imagens locais.
+apoio: fotografias, capturas reais, fontes, prompts e verificações.
+
+ORIGEM DAS IMAGENS
+Mãe e filha fictícias, em cinco fotografias geradas. Seguir a orientação editorial vigente de identificação de mídia gerada na publicação manual. Não inserir rodapés nas artes e não apresentar as pessoas como alunas ou depoentes reais.
+As telas dos notebooks foram compostas a partir da captura do nosso jogo. Os slides 5 e 6 usam capturas diretas do Mundo de Blocos Profissional e dos blocos reais do Estúdio.
+O desenho no papel é uma ilustração da conversa. O jogo de exemplo é da equipe, sem atribuição de autoria à menina.
+
+CONVITE
+Seguir @criecomhelenaejulio para descobrir mais conversas sobre a criação de jogos.
+Esta peça não aciona ManyChat nem direciona a uma oferta.
+
+CALENDÁRIO
+Terceira publicação da semana 4. Próximo carrossel previsto: P31, na semana 5.
+Esta entrega mantém a ordem e o estado dos demais formatos do calendário.
