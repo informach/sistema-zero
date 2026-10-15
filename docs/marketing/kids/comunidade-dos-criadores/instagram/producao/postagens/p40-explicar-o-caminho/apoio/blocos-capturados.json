@@ -1,0 +1,26 @@
+[
+  {
+    "type": "sz_w3d_race_create",
+    "text": "Criar a corrida: largada em x 0 z 0 (virada 0 graus, 2 voltas)"
+  },
+  {
+    "type": "sz_w3d_race_checkpoint",
+    "text": "Pôr um checkpoint em x 60 z 40 (girado 0 graus)"
+  },
+  {
+    "type": "sz_w3d_race_checkpoint",
+    "text": "Pôr um checkpoint em x 40 z 0 (girado 90 graus)"
+  },
+  {
+    "type": "sz_w3d_race_checkpoint",
+    "text": "Pôr um checkpoint em x 20 z -60 (girado 0 graus)"
+  },
+  {
+    "type": "sz_w3d_race_checkpoint",
+    "text": "Pôr um checkpoint em x -20 z -20 (girado 45 graus)"
+  },
+  {
+    "type": "sz_w3d_race_checkpoint",
+    "text": "Pôr um checkpoint em x -10 z 30 (girado 90 graus)"
+  }
+]

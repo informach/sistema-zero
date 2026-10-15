@@ -1,0 +1,63 @@
+{
+  "status": "conferido",
+  "slides": [
+    {
+      "file": "01-p28.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 984148
+    },
+    {
+      "file": "02-p28.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 870533
+    },
+    {
+      "file": "03-p28.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 931682
+    },
+    {
+      "file": "04-p28.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 280438
+    },
+    {
+      "file": "05-p28.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 722261
+    },
+    {
+      "file": "06-p28.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 850899
+    },
+    {
+      "file": "07-p28.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 987840
+    }
+  ],
+  "copyMatchesCurrentSource": true,
+  "copyAdjustment": null,
+  "fontsLoaded": true,
+  "localLinks": 66,
+  "demonstrations": {
+    "quadraRunningWithFiveBalls": true,
+    "keyboardMovesHero": true,
+    "mouseRotatesCamera": true,
+    "movementFollowsCamera": true,
+    "nativeBlocks": true,
+    "editorPreviewRunning": true
+  },
+  "artDirection": "Cinco fotografias novas com menina fictícia e ambiente familiar; uma ilustração de equipamento. Capturas diretas da Quadra Maluca e de dois comandos do Blockly. Inspeção visual das sete artes, com preservação da copy e dos elementos da demonstração.",
+  "generatedTool": "image_gen.imagegen",
+  "errors": [],
+  "scope": "Produção local do P28. Sem publicação, agendamento, commit ou deploy."
+}

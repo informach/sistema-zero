@@ -3,7 +3,7 @@
 Em 06/10/2026 a área Kids trocou o vocabulário da escola pelo da aventura no que a criança lê:
 aula virou fase, seção virou parte, curso virou aventura, professor virou equipe, Caderno do Aluno
 virou Mapa da Aventura e o item Aprender do menu virou Explorar
-([Diretrizes pedagógicas](../aulas-interativas/DIRETRIZES-PEDAGOGICAS.md), seção 6). No fim do
+([Diretrizes pedagógicas](../aulas-interativas-tecnico/DIRETRIZES-PEDAGOGICAS.md), seção 6). No fim do
 mesmo dia, a grade de perfis passou a perguntar **Quem vai criar hoje?**, e o tutorial do
 certificado passou a mostrar a fase **Seu certificado** do Cadê Todo Mundo?. Os textos e
 os textos alternativos dos 42 tutoriais já estão com os nomes novos em
@@ -32,7 +32,7 @@ novos a capturar (seção "Prints novos").
 A entrada mudou: a criança entra pelo próprio perfil num navegador que o responsável autorizou, e
 a gestão foi para a **Área dos pais** (`/pais`). Os textos de sete tutoriais já estão em
 [como-fazer.json](como-fazer.json) (rótulos e fontes na
-[referência da plataforma](../aulas-interativas/REFERENCIA-PLATAFORMA.md), seção "A entrada").
+[referência da plataforma](../aulas-interativas-tecnico/REFERENCIA-PLATAFORMA.md), seção "A entrada").
 Os prints antigos de `plataforma-trocar-de-perfil/escolher` (a grade mista) e `/selecionar` (o
 menu da conta antigo) saíram do rascunho, e os cinco tutoriais novos ainda não têm imagem.
 

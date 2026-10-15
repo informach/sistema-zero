@@ -1,0 +1,10 @@
+[
+  {
+    "type": "sz_gk_define_mold",
+    "text": "Criar o molde goblin : tamanho 40 × 40 , vida 20 , velocidade 120 , dano 10 , cor #e94f4f , imagem  , aparência goblin , caixa quadrada"
+  },
+  {
+    "type": "sz_gk_hurt",
+    "text": "Machucar item tirando 10 de vida (invencível por 0.2 s)"
+  }
+]

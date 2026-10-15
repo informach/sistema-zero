@@ -1,0 +1,38 @@
+[
+  {
+    "slide": 1,
+    "file": "01-celular.png",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-3d493c3b-6039-411a-a3d7-af37a66e38f1.png",
+    "tool": "image_gen.imagegen"
+  },
+  {
+    "slide": 2,
+    "file": "02-mouse.png",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-027faabf-d05f-4be8-b1dd-5b0729946ca1.png",
+    "tool": "image_gen.imagegen"
+  },
+  {
+    "slide": 3,
+    "file": "03-teclado.png",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-17096605-06b8-411f-a6aa-d3fbe5abc111.png",
+    "tool": "image_gen.imagegen"
+  },
+  {
+    "slide": 5,
+    "file": "05-equipamento.png",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-d33d4d7d-0612-4e22-9d86-6223da52e001.png",
+    "tool": "image_gen.imagegen"
+  },
+  {
+    "slide": 6,
+    "file": "06-horario.png",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-c73c34a5-51c3-4c06-abc5-48ebc0880c87.png",
+    "tool": "image_gen.imagegen"
+  },
+  {
+    "slide": 7,
+    "file": "07-criar.png",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-c3cfcb82-78ee-4497-bd23-a56c07f98991.png",
+    "tool": "image_gen.imagegen"
+  }
+]

@@ -91,6 +91,7 @@ import {
   SharePensaProjectService,
   UnsharePensaProjectService,
 } from '../src/application/pensa/share-project.service'
+import { PensaTeamService } from '../src/application/pensa/team.service'
 import { UpdatePensaProjectService } from '../src/application/pensa/update-project.service'
 import { UpdatePensaTaskService } from '../src/application/pensa/update-task.service'
 import { UpdatePensaTaskProgressService } from '../src/application/pensa/update-task-progress.service'
@@ -201,7 +202,9 @@ export function buildApp(
   const parentReports = new InMemoryParentReportRepository()
   const processed = new InMemoryProcessedWebhookRepository()
   const catalog = new FakeCatalogGateway()
-  const pensa = new InMemoryPensaRepository()
+  const creations = new InMemoryCreationsRepository()
+  // As artes da equipe (Pensa v2) consultam o índice das criações.
+  const pensa = new InMemoryPensaRepository(creations)
   // Códigos de plano DETERMINÍSTICOS (a sequência é previsível nos testes; o índice único
   // do fake continua valendo).
   let shareCodeSeq = 0
@@ -210,7 +213,6 @@ export function buildApp(
     const a = SHARE_CODE_ALPHABET
     return `AAAA${a[Math.floor(shareCodeSeq / a.length) % a.length]}${a[shareCodeSeq % a.length]}`
   }
-  const creations = new InMemoryCreationsRepository()
   const teacherThreadsRepo = new InMemoryTeacherThreadRepository(courses)
   const teacherThreads = new TeacherThreadsService(teacherThreadsRepo, clock)
   const aiUsage = new InMemoryAiUsageRepository()
@@ -565,6 +567,21 @@ export function buildApp(
       removeProjectMember: new RemovePensaProjectMemberService(pensa, clock),
       accessCheck: new AccessCheckService(entitlements, clock),
       getGamification: new GetGamificationService(gamification, clock),
+      internalToken: opts.internalToken,
+    },
+    pensaTeam: {
+      team: new PensaTeamService({
+        repo: pensa,
+        journey: { get: (actor, projectId) => pensa.journeyView(actor, projectId) },
+        authGateway,
+        avatars: avatarsByProfiles,
+        accessCheck,
+        gamification: new GetGamificationService(gamification, clock),
+        studioUnlocks: new GetStudioUnlocksService(gamification, studioUnlocks, silentLogger),
+        creations,
+        creationDownload: new GetCreationDownloadService(creations),
+        clock,
+      }),
       internalToken: opts.internalToken,
     },
     creations: {

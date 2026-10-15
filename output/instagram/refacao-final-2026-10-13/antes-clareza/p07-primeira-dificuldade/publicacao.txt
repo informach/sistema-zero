@@ -1,7 +1,0 @@
-P07 — versão atual, revisão 4 de copy e nova produção
-
-Arquivos de publicação: somente os 7 PNGs numerados, em ordem. 1080 × 1350, 4:5. Legenda integral: legenda.txt. Textos alternativos curtos e longos: texto-alternativo.txt.
-
-Estado: mídias produzidas e verificadas localmente; não publicadas ou agendadas. A montagem e as fontes são internas. Conferir a prévia manual antes de publicar. Aplicar o rótulo de IA da plataforma às cenas fotorrealistas geradas, conforme a direção vigente. 
-
-As direções de arte e a copy atuais substituem as artes da tarde. Arquivos de apoio/v2 são fontes históricas, não slides finais. Prompts da ferramenta image_gen integrada e fontes em apoio/v3.

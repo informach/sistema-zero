@@ -25,7 +25,7 @@
 
 ## 3. Contrato, revisão e entrega
 
-- [x] Atualizar `docs/aulas-interativas/BRIEFING.md` e `packages/member-shell/CLAUDE.md` para distinguir adaptação automática e ampliação opcional.
+- [x] Atualizar `docs/aulas-interativas-tecnico/BRIEFING.md` e `packages/member-shell/CLAUDE.md` para distinguir adaptação automática e ampliação opcional.
 - [x] Rodar testes de member-shell, Kids e Community, typecheck dos três hosts e member-shell, Biome e `git diff --check`.
 - [x] Revisar o diff inteiro: estado, acessibilidade, containment/posição fixa, palpite, CSS nos três hosts, regressões em telas estreitas/baixas.
 - [ ] Registrar evidências, commitar e integrar staging. Push/deploy apenas em staging conforme autorização vigente; verificar revisão implantada e saúde dos hosts.

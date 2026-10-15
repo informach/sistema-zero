@@ -1,0 +1,40 @@
+[
+  {
+    "slide": 1,
+    "file": "01-primeira-aula.png",
+    "source": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-b4d5ead7-49ab-4c1d-8f83-6585127297e2.png",
+    "tool": "image_gen.imagegen (nativa)",
+    "prompt": "Use case photorealistic-natural. NEW landscape 3:2 editorial photograph for Brazilian family educational Instagram carousel. Fictional boy age 11–12, light olive skin, straight medium brown hair slightly messy over forehead, wearing a teal blue T-shirt. Sitting at wooden desk in a bright cozy home after his first creative computer lesson, happy with both arms raised a little at shoulder level, natural excitement, not exaggerated. Framed from front-left, boy on left, desktop monitor on right with entire screen visible as a clean flat DARK GRAY BLANK display (real platform capture will be composited later). Screen unobscured, plausible perspective, no hand across display. One keyboard and mouse on desk. Small BLANK cream paper calendar on wall at upper left with absolutely no writing or numbers; dates added in editing. Warm natural daylight, realistic skin, hands and anatomy, ordinary family home, 50mm editorial photography. Child is fictional, not a real named student. No text, no logos, no watermark, no invented app UI, no other people.",
+    "references": []
+  },
+  {
+    "slide": 2,
+    "file": "02-conversar.png",
+    "source": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-9b200ad7-09ed-4d07-b98f-bb14495866f7.png",
+    "tool": "image_gen.imagegen (nativa)",
+    "prompt": "Use case photorealistic-natural. Create NEW landscape 3:2 editorial photograph with the EXACT same fictional 11-year-old boy as reference, preserve face, medium tousled brown hair, light olive skin, teal T-shirt. After his first lesson, he sits on right at same wooden desk, speaking thoughtfully with his fictional mother seated on left: woman around 38, shoulder-length dark brown wavy hair, round thin bronze glasses, cream linen blouse, light olive skin. Boy looks at mother and she listens warmly. Desktop monitor at far left angled toward camera, full entire flat blank dark gray screen clearly visible, no objects or hands obscuring display; it will receive a real course sequence later. Camera new angle from other side of desk, not reference pose. Warm natural Brazilian home daylight, ordinary genuine quiet conversation, correct anatomy. No text, no logos, no app UI, no watermark.",
+    "references": [
+      "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-b4d5ead7-49ab-4c1d-8f83-6585127297e2.png"
+    ]
+  },
+  {
+    "slide": 7,
+    "file": "07-orientacao.png",
+    "source": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-2f74f8a6-06db-4ba6-9814-981a25062023.png",
+    "tool": "image_gen.imagegen (nativa)",
+    "prompt": "Use case photorealistic-natural. New landscape 3:2 editorial photo, using same fictional mother and son from reference, exact faces, skin tones, hairstyles, thin bronze round glasses for mother, cream blouse and boy teal T-shirt. Different quiet moment at wooden study desk: boy seated on LEFT with hand on mouse, mother beside him on RIGHT, both facing the monitor, looking thoughtfully at an explanation, mother listening while boy points gently toward screen with left hand staying BELOW display. Camera from opposite side of desk, three-quarter view. Desktop monitor toward left foreground, entire dark gray BLANK screen unobscured, flat clean area for a real course guide page to be composited in editing. Show both faces in profile and large monitor. No celebration. Warm natural daylight, ordinary Brazilian home, calm engaged expressions, realistic hands and anatomy. No invented UI, no text, no logo, no watermark.",
+    "references": [
+      "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-9b200ad7-09ed-4d07-b98f-bb14495866f7.png"
+    ]
+  },
+  {
+    "slide": 8,
+    "file": "08-mostrar.png",
+    "source": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-4a04d66f-8a8a-4847-8b14-3072eb9fe5ed.png",
+    "tool": "image_gen.imagegen (nativa)",
+    "prompt": "Use case photorealistic-natural. NEW landscape 3:2 photograph. Same fictional brown-haired boy age 11 in teal shirt from reference, seen FROM BEHIND seated at same wooden desk. His fictional mother, shoulder-length dark brown wavy hair and cream linen blouse, is also FROM BEHIND leaning slightly to see his desktop monitor. Boy's hand rests on mouse, he is showing the screen to her. Wide over-shoulder composition, both heads in foreground left and right frame, fully unobscured monitor screen in center with flat blank dark gray panel for later real screenshot insertion. Screen large enough to show creation, at least 45% of photo width. Distinct moment, not celebrating, interested warm family exchange. Natural daylight, correct hands, no text, no logos, no generated UI, no watermark.",
+    "references": [
+      "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-b4d5ead7-49ab-4c1d-8f83-6585127297e2.png"
+    ]
+  }
+]

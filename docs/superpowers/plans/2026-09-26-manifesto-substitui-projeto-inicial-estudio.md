@@ -37,7 +37,7 @@
 
 **Files:**
 - Modify: `packages/admin/src/components/editor/lesson-manifest-import.tsx`
-- Modify: `docs/aulas-interativas/ESPEC-MANIFESTO.md`
+- Modify: `docs/aulas-interativas-tecnico/ESPEC-MANIFESTO.md`
 - Modify: `packages/admin/CLAUDE.md`
 - Modify: `packages/members/CLAUDE.md`
 
@@ -52,13 +52,13 @@
 ### Task 3: Regressão do curso piloto
 
 **Files:**
-- Test: `docs/aulas-interativas/qa/cade-todo-mundo-manifestos.test.ts`
-- Test: `docs/aulas-interativas/qa/cade-todo-mundo-projeto.test.ts`
+- Test: `docs/aulas-interativas-tecnico/qa/cade-todo-mundo-manifestos.test.ts`
+- Test: `docs/aulas-interativas-tecnico/qa/cade-todo-mundo-projeto.test.ts`
 
 **Interfaces:**
 - Consumes: manifestos das Aulas 1 e 2 de Cadê Todo Mundo?.
 - Produces: evidência de que a lista de blocos e o projeto inicial preparado seguem válidos.
 
-- [x] **Step 1: Rodar os testes do curso.** `bun test docs/aulas-interativas/qa/cade-todo-mundo-manifestos.test.ts docs/aulas-interativas/qa/cade-todo-mundo-projeto.test.ts` deve passar.
-- [x] **Step 2: Validar os manifestos.** `bun docs/aulas-interativas/qa/validar-manifestos.ts cade-todo-mundo` deve retornar três válidos, sem avisos.
+- [x] **Step 1: Rodar os testes do curso.** `bun test docs/aulas-interativas-tecnico/qa/cade-todo-mundo-manifestos.test.ts docs/aulas-interativas-tecnico/qa/cade-todo-mundo-projeto.test.ts` deve passar.
+- [x] **Step 2: Validar os manifestos.** `bun docs/aulas-interativas-tecnico/qa/validar-manifestos.ts cade-todo-mundo` deve retornar três válidos, sem avisos.
 - [x] **Step 3: Revisar o diff final.** Conferir que não há mudança no catálogo, funil, matrículas, publicações ou entregas.

@@ -1,0 +1,66 @@
+{
+  "status": "conferido",
+  "slides": [
+    {
+      "file": "01-p54.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 991510
+    },
+    {
+      "file": "02-p54.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 976287
+    },
+    {
+      "file": "03-p54.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 974472
+    },
+    {
+      "file": "04-p54.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 123588
+    },
+    {
+      "file": "05-p54.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 995983
+    },
+    {
+      "file": "06-p54.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 947113
+    },
+    {
+      "file": "07-p54.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 978661
+    }
+  ],
+  "copyMatchesCurrentSource": true,
+  "copyAdjustment": null,
+  "fontsLoaded": true,
+  "localLinks": 69,
+  "demonstrations": {
+    "nativeStatusComponent": true,
+    "currentKidsLabels": true,
+    "controlledSavedState": true,
+    "cloudSaveTested": false,
+    "authenticatedAccountCapture": false,
+    "actualStudioReference": true
+  },
+  "artDirection": "Seis fotografias geradas com família fictícia e mesma aparência. Aviso do componente original em estado de demonstração, com zoom editorial. Sete artes inspecionadas visualmente.",
+  "generatedTool": "image_gen.imagegen",
+  "limitations": [
+    "O aviso foi renderizado do componente original com estado controlado. Não houve captura de conta conectada nem teste de salvamento na nuvem."
+  ],
+  "errors": [],
+  "scope": "Produção local do P54. Sem publicação, agendamento, commit ou deploy."
+}

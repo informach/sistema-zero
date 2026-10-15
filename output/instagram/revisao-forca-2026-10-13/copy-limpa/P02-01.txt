@@ -1,7 +1,0 @@
-A chegada mostra o recorde. O botão de repetir fica logo ao lado. Há decisões de criação nessa tela.
-
-Na Corrida do Pôr do Sol, quem programa define a ordem dos pontos do percurso e quando a volta termina. Testar inclui cortar caminho e conferir se o jogo percebe.
-
-Em casa, combinem o horário e uma forma de encerrar a atividade perto dele. Criar também tem pausa: salvar e deixar uma anotação preserva o ponto de retomada.
-
-Siga @criecomhelenaejulio para ver o que uma criança aprende ao construir as regras dos jogos.

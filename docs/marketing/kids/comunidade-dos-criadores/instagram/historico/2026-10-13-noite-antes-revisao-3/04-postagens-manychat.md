@@ -566,7 +566,7 @@ https://sistemazero.com.br/kids/desafio-primeiro-jogo/oferta?utm_source=instagra
 - **Regra da nave** (`game-3d-advanced/__gen_cacaEstelarProfissional.ts`): os estados são vagando, perseguindo e fugindo. A nave persegue a menos de 14 unidades e desiste a partir de 22; foge por 1,5 s ao levar dano e depois volta a perseguir.
 - **O “20” do slide 6:** fica abaixo do limite de 22. Com 30, a nave alternaria entre perseguir e vagar quadro a quadro, por isso o texto não usa 30. É uma hipótese falada, no condicional. Se a arte mostrar a variante com 20, preparar uma cópia, executar e declarar a adaptação.
 - **Enquadramento:** a fuga e a perseguição, sem foco em explosão.
-- **Ajuda:** existem o botão Verificar esta parte nas partes de construção do Desafio (`docs/aulas-interativas/modulos-desafio-primeiro-jogo.md`) e o “Preciso de ajuda”, com resposta por mensagem e possível espera (`offer-copy.ts`, seção ajuda).
+- **Ajuda:** existem o botão Verificar esta parte nas partes de construção do Desafio (`docs/aulas-interativas-tecnico/modulos-desafio-primeiro-jogo.md`) e o “Preciso de ajuda”, com resposta por mensagem e possível espera (`offer-copy.ts`, seção ajuda).
 - **Fala da Flávia:** saiu desta peça, porque é a base do P41.
 - **Mesma semana:** não publicar na semana do P36, do P41, do P42 ou do P46 (mudar várias coisas juntas, a mesma família, a Caça Estelar e programas novos).
 
@@ -675,7 +675,7 @@ https://sistemazero.com.br/kids/desafio-primeiro-jogo/oferta?utm_source=instagra
 
 **Produção:**
 - **Regra do jogo** (`game-2d-advanced/examples/bichinhosDoQuintalExample.ts`): as criaturas são Fogoso, Folhinha e Gotinha, e há três blocos “Tabela de tipos … causa 2 × de dano”, com fogo sobre planta, planta sobre água e água sobre fogo.
-- **Personalização do Farol:** escolher personagens e cenário entre os desenhos preparados e escrever os avisos vem de `docs/aulas-interativas/modulos-desafio-primeiro-jogo.md` e do destaque Dúvidas. A página da oferta só diz que os desenhos vêm preparados.
+- **Personalização do Farol:** escolher personagens e cenário entre os desenhos preparados e escrever os avisos vem de `docs/aulas-interativas-tecnico/modulos-desafio-primeiro-jogo.md` e do destaque Dúvidas. A página da oferta só diz que os desenhos vêm preparados.
 - **O que fica fora:** perfil, teste de aptidão, bolsa ou seleção. As pistas descrevem vontades, não classificam a criança.
 - **Mesma semana:** não publicar na semana do P34, do P44 ou do P52 (a tabela de tipos e o mesmo jogo de criaturas).
 

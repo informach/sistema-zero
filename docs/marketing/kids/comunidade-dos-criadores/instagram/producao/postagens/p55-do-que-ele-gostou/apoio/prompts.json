@@ -1,0 +1,103 @@
+[
+  {
+    "slide": 1,
+    "variant": "1",
+    "file": "01-observar.png",
+    "prompt": "Use case: photorealistic-natural.\nCreate ONE new editorial lifestyle photograph, landscape 1536 x 1024, for an Instagram carousel for Brazilian parents. No typography, headlines, captions, logos or watermark.\nA fictional Brazilian boy of about 12, warm olive skin, dark brown slightly wavy hair in a short natural cut, navy rectangular glasses, mustard yellow plain T-shirt, sitting at a wooden desk in a real modest comfortable Brazilian home, concentrating on making a simple game on a desktop computer. His right hand uses the mouse and his posture is comfortable. View his face from the side, no looking at camera.\nHis fictional father, about 40, similar warm olive skin, short brown hair, light short beard, blue linen overshirt over cream T-shirt, watches quietly from the open doorway in the background. Father is fully visible but secondary, a natural interested expression, no inspecting or judging.\nReference image 1 is ONLY the actual computer screen content: use the supplied original Studio interface with colored command blocks and the green square game on the dark blue preview. Match the interface faithfully on the monitor, perspective correct; do not substitute a commercial game, programming code editor or generic dashboard. The green square is a simple game prototype, not advanced artwork.\nNew composition from eye level beside the child: boy fills left-center, desk and visible screen at right, father in doorway behind. Warm daylight, off-white walls, pale wood, modest lived-in details, healthy realistic proportions and hands. Candid texture, a real family moment, not stock advertising poses. Keep all three story elements identifiable even at small size. No exaggerated smiles or promotional gestures.",
+    "references": [
+      "01-estudio-inicial.png"
+    ],
+    "selected": true,
+    "tool": "image_gen.imagegen",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-d3dcf4aa-ebd8-48d8-9565-9f7e34b57dd0.png"
+  },
+  {
+    "slide": 2,
+    "variant": "2",
+    "file": "02-mostrar-um-exemplo.png",
+    "prompt": "Use case: photorealistic-natural. Generate ONE NEW landscape 1536x1024 editorial photograph, no overlaid text, no logo, no watermark.\nReference 1: identity, clothing and room only. Preserve the same FICTIONAL 12-year-old boy with navy rectangular glasses, wavy brown hair, olive skin and mustard yellow T-shirt, and his father with brown hair, short beard, cream tee and blue overshirt. Reference 2: exact screen content from the real Studio, pink blocks on the left and simple green square airborne in the dark blue game on the right. Use reference 2 on the computer monitor, no invented UI.\nThe story moment is different from reference 1: the father now sits beside the boy at the desk, leaning slightly forward to look at something the child wants to show. The boy points with one index finger at the green character in the right-hand preview and explains, a small interested natural smile, his other hand relaxed on the desk. The father looks at that same part of the screen, listening and curious, not taking the mouse.\nCamera from over and beside the father's left shoulder, three-quarter profile of both faces, medium horizontal composition including their heads, boy's pointing arm and the entire monitor. Keep the actual block editor and game recognizable in perspective and the reference screenshot contents coherent. Warm daylight, realistic home textures. No thumbs up, no pointing at viewer, no certificate, no educational success claim. Anatomically correct hands, warm ordinary family interaction. This image illustrates 'show me a part you liked', not an award.",
+    "references": [
+      "01-observar.png",
+      "02-estudio-teste.png"
+    ],
+    "selected": true,
+    "tool": "image_gen.imagegen",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-dec91a63-7738-43ef-8c95-0b7addc1ef1f.png"
+  },
+  {
+    "slide": 3,
+    "variant": "3",
+    "file": "03-testar-outra-vez.png",
+    "prompt": "Use case: photorealistic-natural. ONE landscape 1536x1024 NEW close-up photograph for an Instagram carousel, no editorial text, logos or watermark.\nReference 1 establishes the fictional boy's skin tone, mustard T-shirt, glasses and home desk. Reference 2 is the exact monitor content: original Studio interface, a pink block currently separated below the orange frame with a yellow selection outline, and the green square game in the right preview.\nNew camera composition from close over the child's RIGHT shoulder, looking down at the desk and monitor; his right hand on the mouse fills the lower right foreground, thumb and fingers correctly resting on an ordinary computer mouse, sleeve and forearm visible. Only a little of his cheek and navy glasses at edge. The mouse movement and screen are the subjects; no father in frame, no repeated wide shot.\nThe boy is adjusting a block and trying again; keep the original Studio screen from reference 2 accurate and legible enough to recognize blocks and result, without adding instructions or replacing it with code or another platform. On-screen cursor near the selected pink block, suggesting moving it back to the command stack. Warm daylight, tactile wood and realistic hand anatomy. No dramatized failure, tears, angry face, red error banners or made-up achievement badges. This is a quiet hands-on moment of experimenting.",
+    "references": [
+      "01-observar.png",
+      "03-estudio-bloco.png"
+    ],
+    "selected": true,
+    "tool": "image_gen.imagegen",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-6f4ed3e5-ad59-41ec-ad1e-71d104469410.png"
+  },
+  {
+    "slide": 5,
+    "variant": "5",
+    "file": "05-chamar-o-pai-v1.png",
+    "prompt": "Use case: photorealistic-natural. ONE NEW landscape editorial photograph 1536x1024, without captions, text overlays, badges or watermark.\nReference 1 locks identity and home: same fictional boy about12, mustard yellow tee, wavy brown hair, navy rectangular glasses, olive skin; same father about40, brown hair and short beard, blue overshirt and cream tee. Reference 2 is the exact screen from the real Studio, now showing a LILAC square character in the game and lilac swatch on its pink command block.\nThe narrative moment: the seated boy has just discovered he can change something in his game. He turns his head and upper body BACK toward his father in the doorway while one hand points toward the computer. He is calling the father over, mouth slightly open, visibly sharing an observation, no shouted celebration. Father is walking into the doorway and makes eye contact with the child. Boy and father look AT EACH OTHER, not both at the monitor and not at the viewer.\nCreate a fresh wide angle from the front corner of the desk, at child's eye level, with the boy's face seen more frontally while turned toward father at far left, computer angled at right, desk and room grounded naturally. Preserve real reference screen accurately, especially lilac character and command color, no new controls or words. A small relaxed smile is fine. Warm daylight and natural skin detail, ordinary home setting, realistic hands and pointing gesture. Distinct from the earlier image of him silently concentrating; the turn and invitation to his father must be obvious.",
+    "references": [
+      "01-observar.png",
+      "05-estudio-descoberta.png"
+    ],
+    "selected": false,
+    "tool": "image_gen.imagegen",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-bcb528e1-0a9c-4927-9e4f-4fe387544feb.png"
+  },
+  {
+    "slide": 6,
+    "variant": "6",
+    "file": "06-conversa-na-cozinha.png",
+    "prompt": "Use case: photorealistic-natural. ONE new landscape 1536x1024 editorial photograph without text or watermark, for a carousel addressed to parents.\nReference 1 establishes the FICTIONAL father and son: preserve exactly the boy's face, navy rectangular glasses, wavy dark brown hair, warm olive skin, mustard yellow T-shirt; preserve the father's short brown hair, short beard, blue overshirt and cream tee. Do not repeat the room or camera angle.\nNew scene: in their modest sunny Brazilian kitchen, child and father sit across the corner of a small pale wood kitchen table. The child is explaining something that he found difficult in an activity, thoughtful and calm, one hand making a small natural explanatory gesture. His father listens attentively at the child's eye level, relaxed mouth and eyebrows, without scolding or doing the task for him. Both faces clearly visible in three-quarter views, authentic skin texture and anatomically correct hands. Two glasses of water and a small fruit bowl, pale cabinets, lived-in clean kitchen.\nMedium-wide eye-level composition, father at left and boy at right. Warm but gentle daytime light, no drama, no distressed acting. Absolutely NO computers, phones, television, notebooks, writing, calendars or screen visible in this scene. The image must convey an ordinary two-way conversation, not assessment, not therapy, not an advertisement pose.",
+    "references": [
+      "01-observar.png"
+    ],
+    "selected": true,
+    "tool": "image_gen.imagegen",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-742f15bf-49a4-4ba5-bd09-9eab0cd0e732.png"
+  },
+  {
+    "slide": 7,
+    "variant": "7",
+    "file": "07-escolher-juntos.png",
+    "prompt": "Use case: photorealistic-natural. Make ONE NEW landscape1536x1024 editorial lifestyle photograph, no text overlays, watermark or brand logos.\nReference image preserves the identities of this FICTIONAL father and son: father short wavy brown hair and neat short beard, olive skin, blue casual overshirt and cream tee; boy about12, wavy brown hair, navy rectangular glasses, mustard yellow T-shirt. Same recognizable faces, ages and clothing, no resemblance to a named real family.\nNew final scene in their living room, distinct from the kitchen and computer desk. The boy and father sit side by side on a light neutral sofa, angled toward each other, at equal eye level. The boy talks about whether he'd like to continue an activity, with an easy open hand gesture; father gives him space to speak, listening with a natural subtle smile. Frame both faces clearly in a wider composition that includes their relaxed body language. A closed notebook without writing sits untouched on the low wooden table, a houseplant and warm off-white background. No electronic screens, no checklist, no certificates, no promotional poses or big celebrations. Warm daylight from left, realistic lived-in Brazilian family home, candid photographic detail. Convey being heard and choosing together, not proving success or buying something.",
+    "references": [
+      "06-conversa-na-cozinha.png"
+    ],
+    "selected": true,
+    "tool": "image_gen.imagegen",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-33a7016c-21db-4a00-b393-23a93de666d3.png"
+  },
+  {
+    "slide": 5,
+    "variant": "5edit",
+    "file": null,
+    "prompt": "Use case: precise-object-edit. Edit reference 1 only, preserving the entire photograph exactly: father and son identities, faces, expressions, body poses, clothes, hands, furniture, lighting, crop, monitor and all other pixels/composition. ONE correction on the monitor: the tiny color swatch on the far RIGHT END of the BOTTOM pink command block must be LILAC (#a78bfa), the same lilac color as the square character in the game preview. It is incorrectly green in reference 1. The square character already is correctly lilac; leave it unchanged. Reference 2 shows the actual Studio screen and correct lilac swatch for fidelity. Do not recolor the game's green border. Do not change anything else or add text. Output the same landscape1536x1024 photo.",
+    "references": [
+      "05-chamar-o-pai-v1.png",
+      "05-estudio-descoberta.png"
+    ],
+    "selected": false,
+    "tool": "image_gen.imagegen",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-81f2c25c-2a76-4bc2-b981-aa52d89618a7.png"
+  },
+  {
+    "slide": 5,
+    "variant": "5final",
+    "file": "05-chamar-o-pai.png",
+    "prompt": "Use case: compositing. Edit photograph reference 1. Keep the father, child, their exact faces, clothes, gestures, expressions, furniture, room, lighting, camera and dimensions UNCHANGED.\nReplace the CONTENTS OF THE WHOLE COMPUTER DISPLAY with reference 2, edge to edge inside the monitor black bezel, matched to its perspective. Reference 2 is the actual running game canvas, dark navy background, green fine border, LILAC square character and white arrow-key instruction along the bottom. This is a view of the game preview expanded to full screen. Put that exact game canvas on the display. The monitor must now show ONLY the running game. REMOVE ALL editor chrome, all pink command blocks, all sidebars and header controls from the monitor. There must be NO visible pink blocks or color swatches in the finished photograph, ONLY the game in reference 2 filling the display. Preserve its proportions using dark navy letterboxing if needed. Do not invent extra characters, scenery, texts or interface. No changes elsewhere. Landscape1536x1024.",
+    "references": [
+      "05-chamar-o-pai-v1.png",
+      "04-jogo-cor-nova.png"
+    ],
+    "selected": true,
+    "tool": "image_gen.imagegen",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-c42514ff-19da-4713-aea5-ef8582a7421c.png"
+  }
+]

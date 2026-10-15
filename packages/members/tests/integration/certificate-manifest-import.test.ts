@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
-import { resolve } from 'node:path'
+import { caminhoAula } from '../../../../docs/aulas-interativas-tecnico/qa/caminhos'
 import { changeDraft, publishDraft, readDraft } from '../draft-authoring-helpers'
 import { buildApp, seedSampleCourse } from '../helpers'
 
@@ -25,12 +25,7 @@ test.each([
     block: { id: certificateId, content: original },
   })
   expect(added.status, await added.clone().text()).toBe(200)
-  const manifest = await Bun.file(
-    resolve(
-      import.meta.dir,
-      `../../../../docs/aulas-interativas/aulas/${prefix}-certificado.manifesto.json`,
-    ),
-  ).json()
+  const manifest = await Bun.file(caminhoAula(`${prefix}-certificado.manifesto.json`)).json()
   const request = (action: string, body: unknown) =>
     env.app.handle(
       new Request(`http://localhost/members/admin/lessons/${lessonId}/${action}`, {

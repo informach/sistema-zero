@@ -1,0 +1,50 @@
+{
+  "component": "packages/community-kids/src/components/kids/course-trail.tsx",
+  "moduleSource": "docs/aulas-interativas/nave-contra-asteroides/modulos.md",
+  "lessonSource": "docs/aulas-interativas-tecnico/qa/nave-contra-asteroides.conteudo.json",
+  "mode": "Componente real renderizado com conteúdo do curso e progresso inicial de demonstração. Não é conta real; não comprova publicação no servidor.",
+  "course": {
+    "slug": "nave-contra-asteroides",
+    "title": "Nave Contra Asteroides",
+    "progress": {
+      "completedLessons": 0,
+      "totalLessons": 9,
+      "percent": 0
+    },
+    "modules": [
+      {
+        "id": "demo-modulo1",
+        "title": "A nave e seus controles",
+        "summary": "Faça a nave aparecer, mova com as setas e programe os tiros para sair dela.",
+        "lessons": [
+          {
+            "id": "primeira-nave",
+            "title": "Faça a nave aparecer",
+            "slug": "primeira-nave",
+            "completed": false,
+            "locked": false,
+            "estimatedMinutes": null
+          },
+          {
+            "id": "dia-1",
+            "title": "Mova a nave pelo espaço",
+            "slug": "dia-1",
+            "completed": false,
+            "locked": true,
+            "estimatedMinutes": null
+          },
+          {
+            "id": "dia-2",
+            "title": "Faça a nave atirar",
+            "slug": "dia-2",
+            "completed": false,
+            "locked": true,
+            "estimatedMinutes": null
+          }
+        ],
+        "chest": null,
+        "riveUrl": null
+      }
+    ]
+  }
+}

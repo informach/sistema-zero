@@ -7,7 +7,7 @@ import { normalizeSearchText } from '../../core/searchText'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { useT } from '../../studio/i18n'
 import { type StudioMoldaCreationSummary, useStudioMoldaLibrary } from '../../studio/molda-library'
-import { uniqueAssetName } from './assetNames'
+import { addMoldaCreationToProject } from './addCreationToProject'
 import { projectHas3DConsumer } from './has3DConsumer'
 
 /**
@@ -73,7 +73,6 @@ export function MoldaImportDialog({ onClose, onImported }: MoldaImportDialogProp
       has3D: projectHas3DConsumer(s.project),
     })),
   )
-  const addAsset = useProjectStore((s) => s.addAsset)
 
   const [load, setLoad] = useState<LoadState>({ phase: 'loading' })
   const [reloadKey, setReloadKey] = useState(0)
@@ -153,24 +152,9 @@ export function MoldaImportDialog({ onClose, onImported }: MoldaImportDialogProp
         }
         return
       }
-      const taken = new Set((owner.storeApi.getState().project?.assets ?? []).map((a) => a.name))
-      const err = addAsset({
-        name: uniqueAssetName(result.asset.name, taken),
-        dataUrl: result.asset.dataUrl,
-        kind: result.asset.kind,
-        // O nome do arquivo vai junto: a validação do store cruza a extensão com o
-        // MIME e a assinatura binária (mesmo caminho do upload de .glb/.hdr).
-        originalFileName: result.asset.originalFileName,
-        ...(result.asset.width !== undefined ? { width: result.asset.width } : {}),
-        ...(result.asset.height !== undefined ? { height: result.asset.height } : {}),
-        source: 'library',
-        libId: `personal:${result.asset.id}`,
-        // Quem edita esta criação é o Molda (a textura é imagem, mas não é desenho do Pinta).
-        libOrigin: 'molda',
-        ...(result.asset.libRevision !== undefined
-          ? { libRevision: result.asset.libRevision }
-          : {}),
-      })
+      // O MESMO "adicionar ao projeto" do Pinta e da equipe (o elo `personal:<id>` + a origem
+      // Molda, e a validação do store cruzando extensão × MIME × assinatura).
+      const err = addMoldaCreationToProject(owner.storeApi.getState(), result.asset)
       if (err) {
         setError(err)
         return

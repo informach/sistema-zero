@@ -1,0 +1,34 @@
+SLIDE 1
+Curto (77 caracteres): Cena encenada: mãe observa os blocos na tela enquanto o filho segura o mouse.
+
+Longo: Fotografia gerada de mãe e filho fictícios, com continuidade de rosto, cabelo e roupa nas quatro cenas. A mãe observa com curiosidade a tela, enquanto o menino mantém a mão no mouse. No monitor foi inserida uma captura nativa dos blocos do Equilibrista, com perspectiva. A cena não registra uma aula real nem comprova aprendizagem. Texto da arte: Você pode conversar sobre o que seu filho aprendeu, mesmo sem saber programar. Comece pedindo para ele mostrar o que fez.
+
+SLIDE 2
+Curto (77 caracteres): Cena encenada: menino aponta uma ponte no jogo e a mãe escuta sua explicação.
+
+Longo: Nova fotografia da mesma família fictícia. O menino aponta a tela enquanto a mãe escuta. O monitor recebeu uma captura real e exclusiva do Equilibrista: bastão deitado a noventa graus, personagem em movimento sobre a ponte e placar zero. A mão permanece na frente da tela; a composição respeita essa sobreposição. O projeto é demonstração da equipe, não trabalho de um aluno real. Texto da arte: Pergunte: ‘O que acontece nessa parte?’ Deixe ele explicar e depois mostrar o jogo funcionando.
+
+SLIDE 3
+Curto (77 caracteres): Captura do Estúdio: ponte cresce com o botão pressionado e inclina ao soltar.
+
+Longo: Duas capturas consecutivas do jogo original. À esquerda, botão do mouse pressionado: bastão vertical, comprimento lógico de 112,608. À direita, 144 milissegundos depois de soltar: o mesmo bastão tem o mesmo comprimento e está inclinado em 46,08 graus. Os rótulos são explicações editoriais fora da interface. O recorte aproxima o personagem, a ponte e a próxima plataforma. Texto da arte: Neste exemplo, segurar o botão do mouse faz uma ponte crescer. Ao soltar, ela cai em direção à próxima plataforma.
+
+SLIDE 4
+Curto (78 caracteres): Captura do Estúdio: duas tentativas mostram pontes de comprimentos diferentes.
+
+Longo: Duas tentativas reais no mesmo campo e com a mesma semente aleatória. Na primeira, o mouse ficou pressionado por 192 milissegundos; na segunda, por 576. O bastão mede respectivamente 53,856 e 171,36 unidades lógicas, sem alterar a rapidez original. Ambas as capturas mostram o botão ainda pressionado. Menos tempo e Mais tempo são rótulos editoriais. Texto da arte: Agora pergunte: ‘O que acontece se você segurar por mais tempo?’ Ele pode contar o que espera e fazer o teste com você.
+
+SLIDE 5
+Curto (84 caracteres): Captura do Estúdio: blocos ligam o botão do mouse ao crescimento e à queda da ponte.
+
+Longo: Recorte ampliado do Blockly nativo, com a regra original: quando o mouse ou dedo está segurado, crescer o bastão; caso contrário, derrubar. Os nomes, controles e a rapidez um são os mesmos do exemplo. As frases Segurar para crescer e Soltar para tombar resumem a regra fora da captura, sem substituir os comandos reais. Texto da arte: Outra pergunta é: ‘Como você fez essa parte?’ Ele pode mostrar a instrução que liga o mouse ao tamanho da ponte.
+
+SLIDE 6
+Curto (74 caracteres): Cena encenada: mãe e filho conferem juntos um desenho da ponte no caderno.
+
+Longo: Nova fotografia gerada da mãe e do filho fictícios conferindo um caderno juntos. Um pequeno desenho editorial mostra duas plataformas e o movimento de uma ponte; foi aplicado em perspectiva na página. Não é anotação ou evidência de aprendizagem de aluno. A cena representa procurar juntos o ponto da dúvida. Texto da arte: Essas perguntas ajudam a acompanhar o raciocínio dele. Se ele não souber explicar alguma coisa, vocês podem procurar juntos onde ficou a dúvida.
+
+SLIDE 7
+Curto (76 caracteres): Cena encenada: menino mostra o movimento da ponte com as mãos e a mãe sorri.
+
+Longo: Nova fotografia gerada da mesma família. O menino usa as duas mãos para mostrar o movimento de tombar a ponte e olha para a mãe, que sorri. Não há tela de jogo repetida nem resultado pedagógico atribuído à cena. A chamada para seguir fecha a peça. Texto da arte: Aqui mostramos formas simples de acompanhar a criação de jogos. Siga o perfil para participar desse aprendizado.

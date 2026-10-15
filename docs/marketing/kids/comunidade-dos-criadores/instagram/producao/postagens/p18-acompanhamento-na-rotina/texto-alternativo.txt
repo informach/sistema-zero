@@ -1,0 +1,39 @@
+SLIDE 1
+Curto (84 caracteres): Cena encenada: mãe anota compromissos; o filho olha para ela, sentado ao computador.
+
+Longo: Nova fotografia gerada de família fictícia: mãe de pele morena, cabelos pretos cacheados presos e blusa azul escreve na agenda; menino de cerca de 11 anos, cabelos curtos cacheados e camiseta amarela, olha para ela de sua mesa com computador. Na página da agenda foram acrescentados compromissos editoriais: reunião, buscar na escola e mercado. Não são pessoas ou alunos reais. Texto da arte: A aula é para seu filho. Antes de contratar, descubra quanto do seu tempo ela vai pedir.
+
+SLIDE 2
+Curto (87 caracteres): Cena encenada: folheto de oficina, estojo e relógio mostram o preparo de uma atividade.
+
+Longo: Nova fotografia gerada vista de cima: papel pautado, estojo azul e relógio de pulso. A montagem acrescenta um folheto fictício de oficina de desenho, com material para levar, atividade para terminar em casa e indicação de perguntar à professora. É uma cena sobre a logística de uma atividade, sem nome ou crítica a concorrentes. Texto da arte: Além do horário da aula, pode haver material para separar, tarefas para acompanhar e dúvidas para resolver. Pergunte sobre essa rotina antes de escolher.
+
+SLIDE 3
+Curto (80 caracteres): Cena encenada: menino para diante da aula no computador para pensar numa dúvida.
+
+Longo: Nova fotografia gerada do mesmo menino fictício de costas, com uma mão no mouse e a outra no queixo. O monitor recebe uma captura da interface original da aula Prepare a tela do jogo, de Corre, Dino!, com vídeo aos 12 segundos e Estúdio ainda sem blocos. A interface foi renderizada localmente para demonstração, sem conta real. Texto da arte: Num curso online, uma pergunta ajuda muito: “O que meu filho pode fazer quando tem uma dúvida?”
+
+SLIDE 4
+Curto (84 caracteres): Cena encenada: mãe conhece a aula; a tela mostra o formulário real para pedir ajuda.
+
+Longo: Nova fotografia gerada da mãe fictícia sozinha conhecendo a aula. No monitor está a interface nativa com vídeo aos 18 segundos e o formulário aberto pela opção Preciso de ajuda. Nenhuma mensagem foi enviada. A fotografia não anuncia atendimento ao vivo ou aula gratuita. Texto da arte: Peça para conhecer uma aula. Veja se ele consegue rever a explicação, conferir uma tentativa e encontrar onde pedir ajuda.
+
+SLIDE 5
+Curto (79 caracteres): Verificação real: Ao iniciar foi colocado; ainda falta preparar a tela do jogo.
+
+Longo: Recortes ampliados de uma captura nativa do Estúdio da aula: a área Ao iniciar está vazia. Os objetivos marcam Cumprido para colocar essa área e Falta para preparar a tela de 480 por 270. Abaixo do botão Verificar esta parte aparece Confira os blocos pedidos nesta parte e tente novamente. O avaliador original produziu esse resultado a partir do projeto demonstrado; as mensagens não foram redesenhadas. Texto da arte: Nas etapas que têm “Verificar esta parte”, a criança pode conferir os blocos pedidos na atividade. O resultado ajuda a perceber o que falta ajustar.
+
+SLIDE 6
+Curto (90 caracteres): Vídeo real pausado e bloco Ao iniciar no Estúdio mostram a alternância entre ver e montar.
+
+Longo: Captura do vídeo original da aula, pausado aos 24 segundos, com controles nativos de reprodução visíveis. Um segundo recorte da mesma tela amplia a área Ao iniciar que está sendo montada no Estúdio. Vídeo pausado → hora de montar é uma anotação editorial. Trata-se de gravação existente da professora, não de professora gerada para esta peça. Texto da arte: A explicação gravada também fica disponível para rever um passo. Ele pausa o vídeo, monta essa parte do jogo e volta quando precisar.
+
+SLIDE 7
+Curto (70 caracteres): Cena encenada: à noite, mãe e filho olham juntos a aula no computador.
+
+Longo: Nova fotografia gerada da mãe fictícia ao lado do filho no computador, à noite, com bolsa e abajur na cena. Os dois olham para o monitor. A tela recebe captura distinta da aula, aos 30 segundos, depois de adicionar o bloco de preparar a tela de 480 por 270 e executar a verificação com resultado Objetivo cumprido. A cena não documenta resultado de aluno real. Texto da arte: Ainda pode haver momentos em que ele precise de você. Uma primeira aula acompanhada ajuda a descobrir qual apoio faz diferença.
+
+SLIDE 8
+Curto (78 caracteres): Cena encenada: mãe anota perguntas sobre o apoio de que o filho pode precisar.
+
+Longo: Nova fotografia gerada da mãe fictícia anotando em um caderno. A página recebeu perguntas editoriais: Antes de escolher; Como começa?; Onde pede ajuda?; Em que precisa de mim? A composição não promete ausência de acompanhamento ou tempo livre garantido. Texto da arte: Escolha sabendo como serão as dúvidas e o acompanhamento. Siga @criecomhelenaejulio para entender o que observar numa atividade de criação de jogos.

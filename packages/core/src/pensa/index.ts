@@ -166,12 +166,99 @@ export interface PensaOperation {
   updatedAt: string
 }
 
+/**
+ * EQUIPE no v2 (14/10/2026). Duas funções: `code` (Programação, o Estúdio: UMA pessoa, a dona
+ * por padrão; o jogo mora no Estúdio dela) e `art` (Artes, Pinta e Molda: zero ou mais). Sem
+ * ninguém nas artes, quem programa também desenha. Os papéis que viajam são sempre os EFETIVOS
+ * (`effectivePensaRoles`), nunca as linhas cruas do banco.
+ */
+export type PensaTeamRole = 'code' | 'art'
+export interface PensaTeamRoles {
+  code: string
+  art: string[]
+}
+export interface PensaJourneyTeam {
+  viewerProfileId: string
+  ownerProfileId: string
+  /** Quem ENTROU (a dona não conta): 0 = plano só da dona. */
+  memberCount: number
+  shareEnabled: boolean
+  roles: PensaTeamRoles
+}
+export interface PensaTeamPerson {
+  profileId: string
+  /** 1º nome best-effort (sem nome = "Colega" na tela). */
+  firstName: string | null
+  photoUrl: string | null
+  owner: boolean
+  /** `null` para a dona (ela não "entrou"). */
+  joinedAt: string | null
+}
+export interface PensaJourneyTeamView {
+  viewerProfileId: string
+  role: 'owner' | 'member'
+  /** CRU (`AAAAAB`), só para a dona; `null` para membro ou com o convite desligado. */
+  shareCode: string | null
+  maxMembers: number
+  roles: PensaTeamRoles
+  people: PensaTeamPerson[]
+  /** O jogo já começou no Estúdio de quem programa: trocar essa função não é mais possível. */
+  codeLocked: boolean
+}
+/** Uma arte ENTREGUE numa missão do plano por outra pessoa da equipe ("Trazer da equipe"). */
+export interface PensaTeamArtItem {
+  taskId: string
+  title: string
+  tool: 'pinta' | 'molda'
+  assetId: string
+  assetName: string | null
+  /** O kind GUARDADO na conta (`pixel-sprite`, `model`…), ou `null` se a nuvem não disse. */
+  assetKind: string | null
+  byProfileId: string
+  completedAt: string
+  /** Carimbo e revisão da criação na conta da artista: mudou = tem versão nova para trazer. */
+  updatedAt: string
+  revision: number
+}
+
+/** Papéis efetivos: ids fora da equipe caem; sem programação válida, a dona; sem artes, quem programa. */
+export function effectivePensaRoles(input: {
+  ownerProfileId: string
+  memberProfileIds: readonly string[]
+  code?: string | null
+  art?: readonly string[]
+}): PensaTeamRoles {
+  const team = new Set([input.ownerProfileId, ...input.memberProfileIds])
+  const code = input.code && team.has(input.code) ? input.code : input.ownerProfileId
+  const art = [...new Set((input.art ?? []).filter((id) => team.has(id)))]
+  return { code, art: art.length ? art : [code] }
+}
+
+/** Quem pode trabalhar numa missão: o Estúdio é de quem programa; Pinta e Molda, das artes. */
+export function pensaMissionWorkers(
+  destination: PensaDestination,
+  roles: PensaTeamRoles,
+): string[] {
+  return destination === 'studio' ? [roles.code] : roles.art
+}
+
+export function canWorkOnPensaMission(
+  destination: PensaDestination,
+  profileId: string,
+  roles: PensaTeamRoles,
+): boolean {
+  return pensaMissionWorkers(destination, roles).includes(profileId)
+}
+
 export interface PensaJourneyView {
   project: { id: string; name: string; status: 'active' | 'archived' }
   journey: PensaJourney
   operation: PensaOperation | null
   cycles: Array<{ id: string; number: number }>
   checkpoints?: PensaCheckpointRef[]
+  /** Ausentes = servidor anterior à equipe: plano só da dona, e ela faz tudo. */
+  role?: 'owner' | 'member'
+  team?: PensaJourneyTeam
 }
 
 export interface PensaJourneyListItem {
@@ -182,6 +269,8 @@ export interface PensaJourneyListItem {
   stage: PensaZeroStage
   lastInteractionAt: string
   paused: boolean
+  role?: 'owner' | 'member'
+  team?: { memberCount: number; ownerFirstName: string | null }
 }
 
 export interface PensaFileTicket {
@@ -370,6 +459,50 @@ export function nextPensaMission(missions: readonly PensaMissionProgress[]): str
     (m) => m.status !== 'completed' && m.dependencies.every((id) => completed.has(id)),
   )
   return (eligible.find((m) => m.status === 'in_progress') ?? eligible[0])?.id ?? null
+}
+
+export interface PensaTeamMissionProgress extends PensaMissionProgress {
+  destination: PensaDestination
+  /** Quem começou a missão (com mais de uma artista, quem começa fica com ela). */
+  assigneeProfileId: string | null
+}
+
+/**
+ * A próxima missão DE UMA PESSOA da equipe. `mine` = a dela (mesma régua do `nextPensaMission`,
+ * só entre as que ela pode fazer e que ninguém mais começou). Sem nenhuma, `waitingOn` diz qual
+ * missão do caminho está na frente e quem pode fazê-la ("Esperando a arte da Bia").
+ */
+export function nextPensaMissionFor(
+  missions: readonly PensaTeamMissionProgress[],
+  profileId: string,
+  roles: PensaTeamRoles,
+): { mine: string | null; waitingOn: { missionId: string; workers: string[] } | null } {
+  const completed = new Set(
+    missions.filter((m) => m.status === 'completed' && m.evidenceCurrent).map((m) => m.id),
+  )
+  const eligible = missions.filter(
+    (m) => m.status !== 'completed' && m.dependencies.every((id) => completed.has(id)),
+  )
+  const mineList = eligible.filter(
+    (m) =>
+      canWorkOnPensaMission(m.destination, profileId, roles) &&
+      (!m.assigneeProfileId || m.assigneeProfileId === profileId || m.status === 'planned'),
+  )
+  const mine = (mineList.find((m) => m.status === 'in_progress') ?? mineList[0])?.id ?? null
+  if (mine) return { mine, waitingOn: null }
+  const next = nextPensaMission(missions)
+  const blocking = missions.find((m) => m.id === next)
+  if (!blocking) return { mine: null, waitingOn: null }
+  return {
+    mine: null,
+    waitingOn: {
+      missionId: blocking.id,
+      workers:
+        blocking.assigneeProfileId && blocking.status !== 'planned'
+          ? [blocking.assigneeProfileId]
+          : pensaMissionWorkers(blocking.destination, roles),
+    },
+  }
 }
 
 export const PENSA_ZERO_LABELS: Record<PensaZeroStage, { title: string; action: string }> = {

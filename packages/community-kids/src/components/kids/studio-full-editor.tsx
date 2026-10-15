@@ -9,6 +9,7 @@ import type {
   StudioPintaLibraryAdapter,
   StudioShareAdapter,
   StudioTaskSession,
+  StudioTeamLibraryAdapter,
   StudioTutorConfig,
 } from '@sistemazero/studio'
 import { useRouter } from 'next/navigation'
@@ -70,6 +71,7 @@ export function StudioFullEditor({
   taskSession,
   pintaLibrary,
   moldaLibrary,
+  teamLibrary,
 }: {
   mod: StudioModule
   projectId: string
@@ -83,6 +85,11 @@ export function StudioFullEditor({
   taskSession: StudioTaskSession | undefined
   pintaLibrary: StudioPintaLibraryAdapter | undefined
   moldaLibrary: StudioMoldaLibraryAdapter | undefined
+  /**
+   * "Trazer da equipe" (Pensa em equipe): chega DEPOIS de o jogo abrir, quando o servidor
+   * confirma a equipe e a arte entregue. O Estúdio não o latcha, então o botão aparece sozinho.
+   */
+  teamLibrary?: StudioTeamLibraryAdapter | undefined
 }) {
   const adapter = useMemo(() => mod.createLocalPersistenceAdapter(), [mod])
   const [state, setState] = useState<EditorState>({ status: 'loading' })
@@ -235,6 +242,7 @@ export function StudioFullEditor({
       {...(moldaLibrary ? { onEditCreation: openCreationInMolda } : {})}
       pintaLibrary={pintaLibrary}
       moldaLibrary={moldaLibrary}
+      teamLibrary={teamLibrary}
       showExamples={showExamples}
       taskSession={taskSession}
     />

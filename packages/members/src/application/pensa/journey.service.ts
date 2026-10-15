@@ -1,10 +1,12 @@
 import type {
   PensaJourneyCommand,
+  PensaJourneyListItem,
   PensaProposal,
   PensaProtectionAction,
   PensaVoiceRequest,
 } from '@sistemazero/core/pensa'
 import { validateTaskPlan } from '../../domain/pensa/task-plan'
+import type { AuthGateway } from '../../domain/ports/auth-gateway.port'
 import type {
   PensaGenerationStart,
   PensaJourneyActor,
@@ -40,9 +42,32 @@ export class PensaJourneyService {
   constructor(
     private readonly repo: PensaJourneyRepository,
     private readonly clock: () => Date,
+    /** O 1º nome da dona nos planos em que a criança entrou (best-effort: sem ele, `null`). */
+    private readonly authGateway: AuthGateway | null = null,
   ) {}
-  list(actor: PensaJourneyActor, status: 'active' | 'archived') {
-    return this.repo.list(actor, status)
+  async list(
+    actor: PensaJourneyActor,
+    status: 'active' | 'archived',
+  ): Promise<PensaJourneyListItem[]> {
+    const rows = await this.repo.list(actor, status)
+    const ownerIds = [
+      ...new Set(rows.filter((row) => row.role === 'member').map((row) => row.ownerProfileId)),
+    ]
+    const names =
+      ownerIds.length > 0 && this.authGateway
+        ? await this.authGateway.getProfileIdentities(ownerIds).catch((error: unknown) => {
+            console.warn('[pensa] nome da dona do plano indisponível (segue como "Colega")', error)
+            return new Map<string, { firstName: string }>()
+          })
+        : new Map<string, { firstName: string }>()
+    return rows.map(({ ownerProfileId, ...item }) => ({
+      ...item,
+      team: {
+        memberCount: item.team?.memberCount ?? 0,
+        ownerFirstName:
+          item.role === 'member' ? (names.get(ownerProfileId)?.firstName ?? null) : null,
+      },
+    }))
   }
   delete(actor: PensaJourneyActor, projectId: string) {
     return this.repo.delete(actor, projectId, this.clock())
@@ -92,6 +117,8 @@ export class PensaJourneyService {
           cycleId: '',
           revision: 1,
           supersedesTaskId: null,
+          assigneeProfileId: null,
+          completedByProfileId: null,
           archivedAt: null,
           createdAt: now,
           updatedAt: now,

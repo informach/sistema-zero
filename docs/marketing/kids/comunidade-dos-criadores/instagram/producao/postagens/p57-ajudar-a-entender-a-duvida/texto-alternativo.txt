@@ -1,0 +1,39 @@
+SLIDE 1
+Curto (84 caracteres): Cena encenada: menino chama a mãe da cozinha para ajudá-lo com o jogo no computador.
+
+Longo: Fotografia gerada de mãe e menino fictícios. O menino se vira na cadeira para chamar a mãe, que chega da cozinha com um pano nas mãos. O monitor recebeu, em perspectiva, um recorte real da Arena dos Goblins no início da partida. Não é registro de uma família real nem evidência de aprendizagem. Texto da arte: Seu filho pediu ajuda no jogo. Você não sabe programar. Comece entendendo o que ele estava tentando fazer.
+
+SLIDE 2
+Curto (84 caracteres): Cena encenada: menino aponta o goblin que resistiu ao ataque, enquanto a mãe escuta.
+
+Longo: Nova fotografia da mesma família fictícia. O menino aponta a tela enquanto a mãe escuta. O monitor recebeu uma captura distinta do jogo, após o primeiro golpe, com o goblin ainda ativo e dez pontos de vida. A máscara da composição mantém o dedo na frente do monitor. Texto da arte: Pergunte: ‘O que você queria que acontecesse? E o que aconteceu?’ Ele pode explicar apontando a parte do jogo.
+
+SLIDE 3
+Curto (88 caracteres): Captura do Estúdio: goblin vermelho continua na arena depois do primeiro golpe do herói.
+
+Longo: Captura do jogo original após o primeiro golpe. Herói azul e goblin vermelho continuam na arena. Os rótulos Herói, Monstrinho e Depois do primeiro golpe são explicações editoriais sobrepostas. A barra sobre o herói é a vida do herói; não representa os vinte pontos de vida do goblin. O registro de execução confirma a vida do goblin passando de vinte para dez. Texto da arte: Veja este exemplo: a criança esperava vencer o monstrinho com um golpe. Mas ele continua na tela depois do primeiro ataque.
+
+SLIDE 4
+Curto (97 caracteres): Captura do Estúdio: molde com 20 de vida e golpe que tira 10; conta editorial mostra dois golpes.
+
+Longo: Recortes do Blockly original: início do molde goblin, incluindo vida vinte, e bloco Machucar item tirando dez de vida. A conta editorial vinte, menos dez, dez, menos dez, zero resume os dois golpes. Os blocos mantêm palavras e valores originais. O molde foi recortado depois da vida, omitindo os parâmetros restantes para ampliar o que interessa. Texto da arte: A regra dá vinte pontos de vida ao monstrinho, e cada golpe tira dez. São necessários dois golpes. Entender a regra explica o que aconteceu.
+
+SLIDE 5
+Curto (89 caracteres): Cena encenada: mãe consulta o celular à noite, com perguntas anotadas no caderno ao lado.
+
+Longo: Nova fotografia da mãe fictícia no sofá, à noite, consultando o celular. O verso do aparelho está voltado à câmera; nenhuma página ou conversa foi inventada. O caderno recebeu em perspectiva as perguntas Dá para rever? e Onde pede ajuda?, aplicadas na edição. Texto da arte: Para outras dúvidas, a criança precisa de orientação sobre a atividade. Antes de escolher um curso, confira onde ela encontra essa ajuda.
+
+SLIDE 6
+Curto (90 caracteres): Captura do Estúdio: vídeo pausado e recorte da instrução da experiência com o botão Ouvir.
+
+Longo: Montagem de dois recortes nativos do Corre, Dino!: vídeo original pausado aos dezoito segundos e trecho final da instrução da experiência Escolha o tamanho da tela, com botão Ouvir. São recursos de duas partes, reunidos verticalmente na arte; não é uma captura integral de uma única seção. O botão aparece pelo recurso nativo de voz do navegador, sem áudio fictício. Texto da arte: Nas nossas aulas, dá para pausar e rever o vídeo. As instruções com o botão ‘Ouvir’ também podem ser escutadas.
+
+SLIDE 7
+Curto (90 caracteres): Captura do Estúdio: pista da experiência e resultado da verificação, em painéis separados.
+
+Longo: Dois painéis separados. Na experiência, botão Uma pista e a primeira pista orientando a ligar a borda. No Estúdio, resultado real da checagem: Ao iniciar cumprido e falta preparar a tela de 480 por 270. Abaixo aparece a faixa nativa Para seguir. Os componentes foram capturados com largura reduzida para que o texto quebre em linhas legíveis, sem reescrever suas mensagens. Texto da arte: Algumas atividades trazem ‘Uma pista’. Nas partes do Estúdio que têm verificação, ‘Verificar esta parte’ confere os blocos pedidos. Esses recursos ajudam a procurar o próximo passo.
+
+SLIDE 8
+Curto (75 caracteres): Cena encenada: menino explica com as mãos; a mãe ouve com o queixo apoiado.
+
+Longo: Nova fotografia da mesma família fictícia. O menino explica com as mãos, enquanto a mãe escuta com o queixo apoiado. Não há tomada do mouse pelo adulto nem promessa de que ele nunca precisará ajudar. A chamada para seguir encerra o carrossel. Texto da arte: Você pode ajudar seu filho a entender a dúvida e encontrar a orientação disponível. Siga o perfil para conhecer melhor esse aprendizado.

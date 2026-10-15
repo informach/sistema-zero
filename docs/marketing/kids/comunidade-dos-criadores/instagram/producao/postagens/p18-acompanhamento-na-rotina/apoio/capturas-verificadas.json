@@ -1,0 +1,49 @@
+{
+  "captures": [
+    {
+      "name": "03-aula-duvida",
+      "videoTime": 12,
+      "paused": true,
+      "blocks": [],
+      "text": "Prepare a tela e crie o Dino · \n,\nPrepare a tela do jogo\nSeu projeto no Estúdio\nRecomeçar\nExpandir\nCorre, Dino!\nSalvo\nModo de edição\nBlocos\nBlocos\nPré-visualização\n🔎 Pesquisar\n🗂️ Áreas do projeto\nProgramação\nJogo 2D\n⏹ Parar\n⟳ Atualizar\nCorre, Dino!\nExecutando\n• Coloque a área Ao iniciar no projeto.\n• Prepare a tela de 480 por 270 dentro de Ao iniciar.\nVerificar esta parte\n\nContinue construindo. Você envia o projeto no fim da fase.\n\nAnterior\nPrepare a tela do jogo\nPreciso de ajuda\nPróxima parte"
+    },
+    {
+      "name": "04-aula-ajuda",
+      "videoTime": 18,
+      "paused": true,
+      "blocks": [],
+      "text": "Prepare a tela e crie o Dino · \n,\nPrepare a tela do jogo\nSeu projeto no Estúdio\nRecomeçar\nExpandir\nCorre, Dino!\nSalvo\nModo de edição\nBlocos\nBlocos\nPré-visualização\n🔎 Pesquisar\n🗂️ Áreas do projeto\nProgramação\nJogo 2D\n⏹ Parar\n⟳ Atualizar\nCorre, Dino!\nExecutando\n• Coloque a área Ao iniciar no projeto.\n• Prepare a tela de 480 por 270 dentro de Ao iniciar.\nVerificar esta parte\n\nContinue construindo. Você envia o projeto no fim da fase.\n\nEm que ponto desta parte você ficou com dúvida?\nEnviar para a equipe\nAnterior\nPrepare a tela do jogo\nPreciso de ajuda\nPróxima parte"
+    },
+    {
+      "name": "05-falta-preparar-tela",
+      "videoTime": 18,
+      "paused": true,
+      "blocks": [
+        "sz_frame_start"
+      ],
+      "text": "Prepare a tela e crie o Dino · \n,\nPrepare a tela do jogo\nSeu projeto no Estúdio\nRecomeçar\nExpandir\nCorre, Dino!\nSalvo\nModo de edição\nBlocos\nBlocos\nPré-visualização\n🔎 Pesquisar\n🗂️ Áreas do projeto\n🧰 Blocos deste jogo\nProgramação\nJogo 2D\n⚙️ Ao iniciar\n⏹ Parar\n⟳ Atualizar\nCorre, Dino!\nExecutando\n✓ Cumprido: Coloque a área Ao iniciar no projeto.\nFalta: Prepare a tela de 480 por 270 dentro de Ao iniciar.\nVerificar esta parte\n\nConfira os blocos pedidos nesta parte e tente novamente.\n\nContinue construindo. Você envia o projeto no fim da fase.\n\nAnterior\nPrepare a tela do jogo\nPreciso de ajuda\nPróxima parte"
+    },
+    {
+      "name": "06-video-pausado",
+      "videoTime": 24,
+      "paused": true,
+      "blocks": [
+        "sz_frame_start"
+      ],
+      "text": "Prepare a tela e crie o Dino · \n,\nPrepare a tela do jogo\nSeu projeto no Estúdio\nRecomeçar\nExpandir\nCorre, Dino!\nSalvo\nModo de edição\nBlocos\nBlocos\nPré-visualização\n🔎 Pesquisar\n🗂️ Áreas do projeto\n🧰 Blocos deste jogo\nProgramação\nJogo 2D\n⚙️ Ao iniciar\n⏹ Parar\n⟳ Atualizar\nCorre, Dino!\nExecutando\n✓ Cumprido: Coloque a área Ao iniciar no projeto.\nFalta: Prepare a tela de 480 por 270 dentro de Ao iniciar.\nVerificar esta parte\n\nConfira os blocos pedidos nesta parte e tente novamente.\n\nContinue construindo. Você envia o projeto no fim da fase.\n\nAnterior\nPrepare a tela do jogo\nPreciso de ajuda\nPróxima parte"
+    },
+    {
+      "name": "07-aula-acompanhada",
+      "videoTime": 30,
+      "paused": true,
+      "blocks": [
+        "sz_frame_start",
+        "sz_g2d_setup_stage",
+        "sz_val_number",
+        "sz_val_number"
+      ],
+      "text": "Prepare a tela e crie o Dino · \n,\nPrepare a tela do jogo\nSeu projeto no Estúdio\nRecomeçar\nExpandir\nCorre, Dino!\nSalvo\nModo de edição\nBlocos\nBlocos\nPré-visualização\n🔎 Pesquisar\n🗂️ Áreas do projeto\n🧰 Blocos deste jogo\nProgramação\nJogo 2D\n⚙️ Ao iniciar\nPreparar o jogo em tela cheia, tela\n×\n, fundo\n480\n270\n⏹ Parar\n⟳ Atualizar\nCorre, Dino!\nExecutando\n✓ Cumprido: Coloque a área Ao iniciar no projeto.\n✓ Cumprido: Prepare a tela de 480 por 270 dentro de Ao iniciar.\nVerificar esta parte\n\nObjetivo cumprido!\n\nContinue construindo. Você envia o projeto no fim da fase.\n\nAnterior\nPrepare a tela do jogo\nPreciso de ajuda\nPróxima parte"
+    }
+  ],
+  "errors": []
+}

@@ -1,0 +1,50 @@
+[
+  {
+    "file": "01-modelo-para-comecar.png",
+    "prompt": "Use case: photorealistic-natural. Asset: landscape 3:2 editorial photograph for a parent-facing educational carousel. Fictional Brazilian boy age 11, warm medium brown skin, short loose curly dark hair, plain cobalt blue T-shirt, seated at light wooden desk in a bright ordinary home. His pencil is paused above a nearly blank large sheet containing only one faint small rectangle. Beside it a printed landscape drawing of a simple gray castle with blue pointed roofs on a green lawn under a light blue sky. Camera slightly above from his left, his face in three quarter view and BOTH sheets clearly visible. Curious thoughtful expression, not sad. Natural hands, pencil held correctly, daylight, uncluttered scene. No words, no letters, no logos or watermark. The printed castle is a model for drawing, not a screen. No computers in this scene.",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-2ebba1da-7597-4491-b1e6-653f1edef4ef.png",
+    "references": [],
+    "tool": "image_gen.imagegen (nativa)"
+  },
+  {
+    "file": "cenario-castelo.png",
+    "prompt": "Use case: illustration-story. Asset: full-bleed 4:3 raster background for a simple 2D game. A cheerful hand-drawn castle scene made with broad colored pencils and wax crayons on faintly textured white paper: simple gray castle in upper middle with three blue conical roofs, arched entrance, two flags, sunny pale-blue sky, rolling green hills. Bottom 40 percent is a broad flat light-green open lawn, very few tiny flower details. Straight-on view of facade, no depth perspective needed in game movement. Friendly drawing approachable for a 10-year-old, visible pencil strokes, charming imperfections. No character, no orange shapes, no moving objects, no text, no logos, no border, no paper sheet edges, no desk. Entire image is the drawing, no surrounding objects.",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-69ecd750-b591-453f-b8de-8dc49a56526f.png",
+    "references": [],
+    "tool": "image_gen.imagegen (nativa)"
+  },
+  {
+    "file": "cenario-rua.png",
+    "prompt": "Use case: illustration-story. Asset: full-bleed 4:3 raster background for a simple 2D game. Cheerful hand-drawn neighborhood street made with broad colored pencils and wax crayons on faint paper texture. Two small pastel houses, one mint green one pale pink, trees, blue sky, drawn simply with charming hand-drawn imperfections. Facades occupy upper 55 percent. Lower 40 percent is broad uninterrupted light-gray street and pavement, simple white lane marks, completely flat open space for a separate game character. Friendly drawing approachable for a 10-year-old. No cars, no people, no orange objects, no text, no logo, no border, no paper edges, no desk. Entire image is the drawing.",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-90d57eb7-9ce2-426e-a824-094d5579b2d6.png",
+    "references": [],
+    "tool": "image_gen.imagegen (nativa)"
+  },
+  {
+    "file": "03-uma-escolha.png",
+    "references": [
+      "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-2ebba1da-7597-4491-b1e6-653f1edef4ef.png"
+    ],
+    "prompt": "Use case: photorealistic-natural. Create a NEW landscape 3:2 close-up editorial photograph. Reference image is only for continuity of the printed castle and wooden desk, not a photo to paste. Top-down close detail of the printed blue-roof gray castle model on a wide white paper sheet on the same wooden desk. A hand-drawn graphite pencil oval clearly circles one BLUE TOWER ROOF, an arrow goes to a generous empty white right margin. The margin must stay blank for handwritten text added later. A blue pencil and purple pencil beside the page show choosing another roof color. No person visible except a small child hand resting at bottom edge if needed. Natural sunlight. No words, no letters, no logos. Photo of a paper model with an intentional mark, not a finished new drawing.",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-b22c3713-747a-4f80-80ff-61d87ccb16d7.png",
+    "tool": "image_gen.imagegen (nativa)"
+  },
+  {
+    "file": "04-combinar-escolhas.png",
+    "references": [
+      "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-2ebba1da-7597-4491-b1e6-653f1edef4ef.png"
+    ],
+    "prompt": "Use case: photorealistic-natural. NEW landscape 3:2 photograph, use boy in reference ONLY for exact fictional face identity: same age11, warm medium brown skin, loose curly dark hair, cobalt-blue T-shirt. New camera angle from front right, farther back. Fictional Brazilian mother in her late30s with medium brown skin, dark curly shoulder-length hair, cream shirt, sits beside him at wooden table. They look at the SAME large sheet. Mother gently points with one fingertip to a small orange square with four simple direction arrows drawn around it at LEFT of page. Boy points with his pencil at a simple castle outline on RIGHT of page, showing a choice of background. Warm attentive conversation, child holding pencil and doing the work. Hands realistic and uncrowded. No text or labels on the paper; just orange square/arrows and a castle sketch. No computer. No brands. Both faces visible, scene illustrates agreeing what stays and what can change.",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-de7869a7-fc94-4284-885a-1adac3a6f3de.png",
+    "tool": "image_gen.imagegen (nativa)"
+  },
+  {
+    "file": "07-ideia-propria.png",
+    "references": [
+      "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-2ebba1da-7597-4491-b1e6-653f1edef4ef.png"
+    ],
+    "prompt": "Use case: photorealistic-natural. NEW landscape3:2 overhead photograph on same pale wooden desk as reference. Two paper sheets beside each other, DIFFERENT composition from reference. LEFT a small printed model of gray castle with blue pointed roofs as in reference. RIGHT much larger a clearly handmade colored-pencil drawing inspired by the model but with personal choices: purple roofs, a simple rainbow over castle, flowers along a winding path and a friendly sun; imperfect lines suitable for age11, no impossibly refined art. Child brown-skinned hand with blue sleeve places purple pencil beside the completed page, no face. The two drawings must be clearly distinct, model smaller, new drawing dominant. Warm natural daylight. No words, no labels, no logos, no watermark. Intended to illustrate fictional choices, not real student work.",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-2648d84f-23a2-4dc7-a768-c9aa94b7f83c.png",
+    "tool": "image_gen.imagegen (nativa)"
+  }
+]

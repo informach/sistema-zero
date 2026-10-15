@@ -1,0 +1,10 @@
+[
+  {
+    "type": "sz_gk_cards_energy_per_turn",
+    "text": "A cada turno, começar com 2 de energia"
+  },
+  {
+    "type": "sz_js_if_else",
+    "text": "Se a minha energia ≥ 1 então Gastar 1 de energia adicionar senão se senão se adicionar senão senão"
+  }
+]

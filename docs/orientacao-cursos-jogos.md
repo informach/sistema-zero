@@ -2,7 +2,7 @@
 
 > Referência de progressão técnica dos cursos de jogos (Estúdio, aulas e exemplos).
 > Para autoria e regras pedagógicas vigentes de todos os cursos, comece pelas
-> [Diretrizes Pedagógicas](aulas-interativas/DIRETRIZES-PEDAGOGICAS.md), que prevalecem sobre os modelos históricos abaixo. Destilada do estudo (26/07/2026) do curso profissional do Clear Code
+> [Diretrizes Pedagógicas](aulas-interativas-tecnico/DIRETRIZES-PEDAGOGICAS.md), que prevalecem sobre os modelos históricos abaixo. Destilada do estudo (26/07/2026) do curso profissional do Clear Code
 > ("Python Game Development Full Course – Build 2D & 3D Games with Raylib") e do código
 > dos 6 jogos dele, cruzado com o que o `@sistemazero/studio` já oferece. Cobre o "como
 > ensinar" (modelo mental, ordem dos conceitos, metodologia de aula) e o "com o quê"
@@ -266,7 +266,7 @@ Terminar na ação de saída da seção atual, sem antecipar certificado ou tare
 Apresentar o Como fazer como área de ajuda com link direto, sem exigir a leitura do tutorial.
 
 Esta direção prevalece sobre os moldes antigos. A especificação de fala está em
-[ESPEC-ROTEIRO.md](aulas-interativas/ESPEC-ROTEIRO.md). Cadê Todo Mundo? é o primeiro curso
+[ESPEC-ROTEIRO.md](aulas-interativas-tecnico/ESPEC-ROTEIRO.md). Cadê Todo Mundo? é o primeiro curso
 revisto após o ensaio com duas crianças; os demais cursos serão tratados depois.
 
 ### 6.1 Dor → solução (a regra número 1)

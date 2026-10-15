@@ -1,0 +1,9 @@
+{
+  "source": "packages/studio/src/official-extensions/game-3d/examples.ts",
+  "sha256": "28ca5027a3e8f3c23dbe450f7173be0c69fa78426a13f4422a8f46afee1ea106",
+  "example": "minaDeCristaisBasicoExample",
+  "runtime": "packages/studio/src/official-extensions/game-3d/runtime.ts",
+  "camera": "Isométrica fixa original; recortes editoriais posteriores.",
+  "original": "Pedra não soma, cristal soma 1. Meta 10 cristais. Tempo 50 segundos.",
+  "change": "Na cópia demonstrativa, acrescentar 1 ponto e atualizar o placar quando uma pedra é removida."
+}

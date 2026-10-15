@@ -2,7 +2,7 @@ import { expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import { resolve } from 'node:path'
 import { isLearningManifest } from '@sistemazero/core/learning'
-import { studioSettings } from '../../../../docs/aulas-interativas/qa/nave-contra-asteroides-configuracao'
+import { studioSettings } from '../../../../docs/aulas-interativas-tecnico/qa/nave-contra-asteroides-configuracao'
 import { importedLearningId } from '../../src/domain/learning/learning-import'
 import { changeDraft, readDraft } from '../draft-authoring-helpers'
 import { buildApp, seedSampleCourse } from '../helpers'
@@ -16,7 +16,7 @@ test.each([
   const document: unknown = await Bun.file(
     resolve(
       import.meta.dir,
-      `../../../../docs/aulas-interativas/aulas/nave-contra-asteroides-dia-${day}.manifesto.json`,
+      `../../../../docs/aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-dia-${day}.manifesto.json`,
     ),
   ).json()
   if (!isLearningManifest(document)) throw new Error('Invalid manifest')
@@ -99,7 +99,7 @@ test('Desafio Dia 1 imports and reimports keeping the notebook in the Farol mate
   const document: unknown = await Bun.file(
     resolve(
       import.meta.dir,
-      '../../../../docs/aulas-interativas/aulas/desafio-dia-1.manifesto.json',
+      '../../../../docs/aulas-interativas/desafio-primeiro-jogo/desafio-dia-1.manifesto.json',
     ),
   ).json()
   if (!isLearningManifest(document)) throw new Error('Invalid manifest')

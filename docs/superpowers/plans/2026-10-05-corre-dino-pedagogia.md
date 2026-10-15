@@ -4,7 +4,7 @@
 
 **Arquitetura:** uma fonte editorial gera proposta, roteiro, manifesto e conteúdo do caderno. Os projetos originais de `qa/corre-dino-projetos-qa.ts` continuam independentes dos critérios; um adaptador converte cada marco para o documento atual do Estúdio, com IDs determinísticos. As experiências existentes são reaproveitadas, com instruções conferidas nos controles e no motor.
 
-**Referências:** `docs/aulas-interativas/DIRETRIZES-PEDAGOGICAS.md`, `ESPEC-ROTEIRO.md` e a aplicação concluída em `modulos-nave-contra-asteroides.md`.
+**Referências:** `docs/aulas-interativas-tecnico/DIRETRIZES-PEDAGOGICAS.md`, `ESPEC-ROTEIRO.md` e a aplicação concluída em `modulos-nave-contra-asteroides.md`.
 
 ## Decisões
 
@@ -23,9 +23,9 @@
 - [x] Executar a referência anterior: 24 testes do Estúdio aprovados.
 - [x] Criar `qa/corre-dino.conteudo.json`, `qa/corre-dino-etapas.ts` e `qa/gerar-corre-dino.ts`; gerar os 39 arquivos das aulas.
 - [x] Incluir o curso nos validadores das diretrizes atuais e testar continuidade, critérios, quizzes e instruções executáveis das experiências em `qa/corre-dino.test.ts`.
-- [x] Gerar e inspecionar `output/pdf/corre-dino-caderno.pdf` com os fontes em `recursos/corre-dino/`.
+- [x] Gerar e inspecionar `docs/aulas-interativas/corre-dino/mapa-da-aventura.pdf` com os fontes em `recursos/corre-dino/`.
 - [x] Atualizar o mapa do curso, índice e registro de revisão; executar validadores, testes editoriais e de execução do jogo, tipagem e conferência visual.
 
-Resultado: 13 aulas, 81 seções, 76 vídeos planejados, 24 experiências e cinco quizzes; caderno de 52 páginas. Verificações do escopo: 185 testes editoriais/aprendizagem, 24 de execução do jogo e dois de renderização aprovados. A varredura ampliada das cenas conserva uma falha de distribuição de alternativas em Meu Jeito; a tipagem completa do member-shell conserva cinco diagnósticos externos. Evidências e produção pendente em `docs/aulas-interativas/qa/revisao-corre-dino-2026-10-05.md`.
+Resultado: 13 aulas, 81 seções, 76 vídeos planejados, 24 experiências e cinco quizzes; caderno de 52 páginas. Verificações do escopo: 185 testes editoriais/aprendizagem, 24 de execução do jogo e dois de renderização aprovados. A varredura ampliada das cenas conserva uma falha de distribuição de alternativas em Meu Jeito; a tipagem completa do member-shell conserva cinco diagnósticos externos. Evidências e produção pendente em `docs/aulas-interativas-tecnico/qa/revisao-corre-dino-2026-10-05.md`.
 
-Comandos principais: `bun docs/aulas-interativas/qa/gerar-corre-dino.ts`; `bun docs/aulas-interativas/qa/validar-manifestos.ts corre-dino`; `python -X utf8 docs/aulas-interativas/validar-roteiros.py corre-dino`; `bun test docs/aulas-interativas/qa packages/core/tests/learning.test.ts`; em `packages/studio`, `bun test src/blockly/__tests__/correDinoEditorial.test.ts`.
+Comandos principais: `bun docs/aulas-interativas-tecnico/qa/gerar-corre-dino.ts`; `bun docs/aulas-interativas-tecnico/qa/validar-manifestos.ts corre-dino`; `python -X utf8 docs/aulas-interativas-tecnico/validar-roteiros.py corre-dino`; `bun test docs/aulas-interativas-tecnico/qa packages/core/tests/learning.test.ts`; em `packages/studio`, `bun test src/blockly/__tests__/correDinoEditorial.test.ts`.

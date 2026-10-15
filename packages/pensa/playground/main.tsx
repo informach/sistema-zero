@@ -10,6 +10,9 @@
  *   seta "Voltar para Criar", que loga no console em vez de navegar).
  * - `?theme=dark`: o tema escuro.
  * - `?vazio=1`: começa sem planos (o primeiro uso).
+ * - `?equipe=1`: a equipe. No plano clássico, o Runo com a Bia e o Guardiões da Bia; na jornada
+ *   v2 (`?v2=1&equipe=1`), o "ninho" com a Bia nas artes, "A torre da Bia" em que eu entrei e o
+ *   código ZAP-CCCCCC do castelo do Leo para o "Entrar com um código" (detalhes em `journey.ts`).
  *
  * O que o servidor não simula (gerar artefato, avançar etapa, editar cartão) responde com um
  * erro legível, que a tela mostra no alerta dela.
@@ -475,7 +478,8 @@ function notSimulated(method: string, path: string): Error {
   return new Error(`O playground não simula ${method} ${path}.`)
 }
 
-const journey = createJourneyServer(task, empty)
+// `?equipe=1` também liga a EQUIPE do v2 no servidor da jornada (ver `journey.ts`).
+const journey = createJourneyServer(task, empty, teamDemo)
 
 const transport: PensaHostAdapter['transport'] = {
   async request<T>(

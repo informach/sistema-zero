@@ -1,0 +1,352 @@
+{
+  "source": "docs/marketing/kids/comunidade-dos-criadores/instagram/postagens/01-p01-a-p10.md",
+  "sourceSectionHash": "8f464cc586268f480800b3761d9da0f0ce4b77839e6cf75cc4c016fa80f349b9",
+  "copyEqual": true,
+  "slides": [
+    {
+      "number": 1,
+      "file": "01-p05.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "series",
+          "top": 0,
+          "bottom": 45.59375,
+          "height": 45.59375,
+          "left": 0,
+          "right": 195.953125
+        },
+        {
+          "kind": "copy lead",
+          "top": 101.140625,
+          "bottom": 260.953125,
+          "height": 159.8125,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 316.484375,
+          "bottom": 428.796875,
+          "height": 112.3125,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo",
+          "top": 484.34375,
+          "bottom": 1119,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 48
+    },
+    {
+      "number": 2,
+      "file": "02-p05.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 125.25,
+          "height": 125.25,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo",
+          "top": 275.421875,
+          "bottom": 910.078125,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 1060.25,
+          "bottom": 1114,
+          "height": 53.75,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 43
+    },
+    {
+      "number": 3,
+      "file": "03-p05.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 74.234375,
+          "height": 74.234375,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo",
+          "top": 196.171875,
+          "bottom": 830.828125,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 952.75,
+          "bottom": 1114,
+          "height": 161.25,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 43
+    },
+    {
+      "number": 4,
+      "file": "04-p05.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 62.625,
+          "height": 62.625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo",
+          "top": 174.75,
+          "bottom": 751.71875,
+          "height": 576.96875,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "questions",
+          "top": 863.84375,
+          "bottom": 1116,
+          "height": 252.15625,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 42
+    },
+    {
+      "number": 5,
+      "file": "05-p05.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 180.515625,
+          "height": 180.515625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo",
+          "top": 303.0625,
+          "bottom": 937.71875,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 1060.25,
+          "bottom": 1114,
+          "height": 53.75,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 43
+    },
+    {
+      "number": 6,
+      "file": "06-p05.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 184.40625,
+          "height": 184.40625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "say-demo",
+          "top": 239.34375,
+          "bottom": 953.5625,
+          "height": 714.21875,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 1008.5,
+          "bottom": 1116,
+          "height": 107.5,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 43
+    },
+    {
+      "number": 7,
+      "file": "07-p05.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 113.65625,
+          "height": 113.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "ask-demo",
+          "top": 151.21875,
+          "bottom": 977.59375,
+          "height": 826.375,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 1015.15625,
+          "bottom": 1116,
+          "height": 100.84375,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 41
+    },
+    {
+      "number": 8,
+      "file": "08-p05.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 180.515625,
+          "height": 180.515625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo",
+          "top": 249.9375,
+          "bottom": 884.59375,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 954,
+          "bottom": 1116,
+          "height": 162,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 45
+    }
+  ],
+  "images": [
+    {
+      "src": "apoio/01-da-porta.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "src": "apoio/02-sentar-ao-lado.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "src": "apoio/03-deixar-mostrar.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "src": "apoio/04-perguntas.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "src": "apoio/05-combinado.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "src": "apoio/06-bloco-editando.png",
+      "loaded": true,
+      "width": 1204,
+      "height": 190
+    },
+    {
+      "src": "apoio/08-conversa-no-celular.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    }
+  ],
+  "errors": [],
+  "fonts": {
+    "normal": true,
+    "bold": true
+  }
+}

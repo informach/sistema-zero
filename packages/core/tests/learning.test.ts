@@ -1,6 +1,9 @@
 import { describe, expect, test } from 'bun:test'
-import { readdirSync, readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { readFileSync } from 'node:fs'
+import {
+  caminhoAula,
+  listarArquivosAulas,
+} from '../../../docs/aulas-interativas-tecnico/qa/caminhos'
 import {
   blockCheckpoint,
   evaluateLearning,
@@ -220,8 +223,7 @@ describe('learning contracts', () => {
   })
 })
 
-const directory = resolve(import.meta.dir, '../../../docs/aulas-interativas/aulas')
-const MANIFESTOS = readdirSync(directory)
+const MANIFESTOS = listarArquivosAulas()
   .filter((name) => name.endsWith('.manifesto.json'))
   .sort()
 describe('os manifestos atuais das aulas', () => {
@@ -236,7 +238,7 @@ describe('os manifestos atuais das aulas', () => {
   test('os cinco identificadores anteriores de Nave preservam a identidade; o certificado fica no Desafio', () => {
     for (const day of [1, 2, 3, 4, 5]) {
       const name = `nave-contra-asteroides-dia-${day}.manifesto.json`
-      const manifest: unknown = JSON.parse(readFileSync(resolve(directory, name), 'utf8'))
+      const manifest: unknown = JSON.parse(readFileSync(caminhoAula(name), 'utf8'))
       expect(isLearningManifest(manifest), name).toBe(true)
       if (!isLearningManifest(manifest)) continue
       expect(manifest.courseSlug, name).toBe('nave-contra-asteroides')
@@ -252,7 +254,7 @@ describe('os manifestos atuais das aulas', () => {
       ).toBe('nave-contra-asteroides')
     }
     for (const name of ['desafio-certificado.manifesto.json']) {
-      const manifest: unknown = JSON.parse(readFileSync(resolve(directory, name), 'utf8'))
+      const manifest: unknown = JSON.parse(readFileSync(caminhoAula(name), 'utf8'))
       expect(isLearningManifest(manifest), name).toBe(true)
       if (isLearningManifest(manifest))
         expect(manifest.courseSlug, name).toBe('desafio-primeiro-jogo')
@@ -261,7 +263,7 @@ describe('os manifestos atuais das aulas', () => {
   test('Nave Contra Asteroides dos dias 2 a 5 não herda uma pergunta final redundante após experimentar', () => {
     for (const dia of [2, 3, 4, 5]) {
       const arquivo = `nave-contra-asteroides-dia-${dia}.manifesto.json`
-      const manifest = JSON.parse(readFileSync(resolve(directory, arquivo), 'utf8')) as {
+      const manifest = JSON.parse(readFileSync(caminhoAula(arquivo), 'utf8')) as {
         blocks: Array<{ key: string; content?: InteractiveBlock }>
       }
       for (const entry of manifest.blocks) {
@@ -273,7 +275,7 @@ describe('os manifestos atuais das aulas', () => {
   })
   test('a aula de movimento prepara setas, limite e camadas em experiências sem pergunta redundante', () => {
     const arquivo = 'nave-contra-asteroides-dia-1.manifesto.json'
-    const manifest = JSON.parse(readFileSync(resolve(directory, arquivo), 'utf8')) as {
+    const manifest = JSON.parse(readFileSync(caminhoAula(arquivo), 'utf8')) as {
       blocks: Array<{ key: string; content?: InteractiveBlock }>
     }
     const experiments = manifest.blocks.flatMap((entry) =>
@@ -286,10 +288,7 @@ describe('os manifestos atuais das aulas', () => {
     ).toEqual(['lighthouse-walk', 'lighthouse-walk', 'layers'])
     for (const experiment of experiments) expect(blockCheckpoint(experiment)).toBeUndefined()
     const source = JSON.parse(
-      readFileSync(
-        resolve(directory, 'nave-contra-asteroides-primeira-nave.manifesto.json'),
-        'utf8',
-      ),
+      readFileSync(caminhoAula('nave-contra-asteroides-primeira-nave.manifesto.json'), 'utf8'),
     )
     const coordinates = source.blocks.find(
       (entry: { content?: InteractiveBlock }) =>
@@ -302,7 +301,7 @@ describe('os manifestos atuais das aulas', () => {
   })
   for (const arquivo of MANIFESTOS)
     test(arquivo, () => {
-      const manifest: unknown = JSON.parse(readFileSync(resolve(directory, arquivo), 'utf8'))
+      const manifest: unknown = JSON.parse(readFileSync(caminhoAula(arquivo), 'utf8'))
       expect(isLearningManifest(manifest)).toBe(true)
       if (!isLearningManifest(manifest)) throw new Error('Manifesto inválido')
       expect(manifest.sections.length).toBeGreaterThan(0)
@@ -366,7 +365,7 @@ const segundos = (count: number): SceneAction[] =>
 describe('progressão inicial de Nave Contra Asteroides', () => {
   const read = (slug: string) => {
     const m: unknown = JSON.parse(
-      readFileSync(resolve(directory, `nave-contra-asteroides-${slug}.manifesto.json`), 'utf8'),
+      readFileSync(caminhoAula(`nave-contra-asteroides-${slug}.manifesto.json`), 'utf8'),
     )
     if (!isLearningManifest(m)) throw new Error(slug)
     return m
@@ -554,7 +553,7 @@ describe('o cenário das cenas dos cursos', () => {
   const cenasDosCursos = () => {
     const achadas: { aula: string; chave: string; curso: string; cenario?: string }[] = []
     for (const arquivo of MANIFESTOS) {
-      const manifest: unknown = JSON.parse(readFileSync(resolve(directory, arquivo), 'utf8'))
+      const manifest: unknown = JSON.parse(readFileSync(caminhoAula(arquivo), 'utf8'))
       if (!isLearningManifest(manifest)) continue
       for (const bloco of manifest.blocks) {
         const conteudo = (bloco as { content?: { activity?: unknown } }).content

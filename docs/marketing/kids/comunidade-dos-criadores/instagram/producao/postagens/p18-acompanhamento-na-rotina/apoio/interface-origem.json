@@ -1,0 +1,42 @@
+{
+  "mode": "Componentes originais renderizados localmente; perfil e progresso demonstrativos, sem conta real.",
+  "sources": [
+    {
+      "source": "packages/member-shell/src/components/lesson-sections.tsx",
+      "sha256": "ddacc50b378d0bc15a9fca92bbd873ab4eed8db551522cb07878eea0e55bf68b"
+    },
+    {
+      "source": "packages/member-shell/src/components/studio/studio-block.tsx",
+      "sha256": "98365df9ff9200623e5a842c7c378ea72164779edf54972210b2073300d51899"
+    },
+    {
+      "source": "packages/member-shell/src/components/studio/section-project-check.tsx",
+      "sha256": "2c3efca41076a67ef7620d3dc9840575adc8c9ec2513fce6337d9db4df419188"
+    },
+    {
+      "source": "packages/member-shell/src/components/lesson-native-video.tsx",
+      "sha256": "d7b8facf597c449422aa08be9d14dfd38e6ddc8bff4edd2f51f4ab63e6980083"
+    },
+    {
+      "source": "packages/member-shell/src/lib/lesson-copy-kids.ts",
+      "sha256": "4cf667bc3be87f37cdadad1116d3d2f3506a5d6650ff9dc10033f0bc745657ad"
+    },
+    {
+      "source": "packages/core/src/learning/project-structure.ts",
+      "sha256": "82666fa205945723be9e5c7aab5e8b2d1621e60abed2356befbe7ed73b5a0a9d"
+    },
+    {
+      "source": "docs/aulas-interativas/corre-dino/corre-dino-aula-01.manifesto.json",
+      "sha256": "3c6be84d8b719711fcc2ef8d5854810bf2b2ecac431a47f5998a5ed2bfe05398"
+    },
+    {
+      "source": "C:/Users/tocha/Downloads/Aula01-Seção02-AreaIniciar.mp4",
+      "sha256": "52b2af834efe812b0bf5de830c4cecc5750b1838ca3116c548f6ecdef5ea0454"
+    }
+  ],
+  "lesson": "Prepare a tela do jogo",
+  "course": "Corre, Dino!",
+  "video": "Gravação local original da área Ao iniciar, usada sem alterar seu conteúdo.",
+  "checks": "Avaliador evaluateSectionProject original aplicado aos blocos enviados pelo componente SectionProjectCheck.",
+  "api": "Serviço local para persistência demonstrativa e verificação. Nenhuma conexão ao backend real."
+}

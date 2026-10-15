@@ -1,0 +1,60 @@
+[
+  {
+    "slide": 1,
+    "file": "01-pedido.png",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-521d0de0-218e-449e-ac8d-62a6b0d8a2df.png",
+    "tool": "image_gen.imagegen",
+    "references": [],
+    "sha256": "4367b9804eeb26e25494250b595d00e32a03e904c0c0d01809214aa6b3ebe907",
+    "sourceSha256": "4367b9804eeb26e25494250b595d00e32a03e904c0c0d01809214aa6b3ebe907"
+  },
+  {
+    "slide": 2,
+    "file": "02-bilhetes.png",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-d10064a4-547e-416a-b2f7-36377bb320a0.png",
+    "tool": "image_gen.imagegen",
+    "references": [
+      "C:/Users/tocha/projects/sistema-zero/docs/marketing/kids/comunidade-dos-criadores/instagram/producao/postagens/p13-uma-tarefa-de-cada-vez/apoio/01-pedido.png"
+    ],
+    "sha256": "9bae69d781d8fe31e98e5529b85e5c99182bc680a4318eb1ef81888bc5693d35",
+    "sourceSha256": "9bae69d781d8fe31e98e5529b85e5c99182bc680a4318eb1ef81888bc5693d35"
+  },
+  {
+    "slide": 3,
+    "file": "03-esbocos.png",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-ad292866-bd63-4c29-8701-adce31bd5325.png",
+    "tool": "image_gen.imagegen",
+    "references": [],
+    "sha256": "35d11220ffa8f73ce3d9036d421d1a3d2730746206ce0316cac547657cfcada5",
+    "sourceSha256": "35d11220ffa8f73ce3d9036d421d1a3d2730746206ce0316cac547657cfcada5"
+  },
+  {
+    "slide": 4,
+    "file": "04-perguntas.png",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-9061ee50-e775-46de-b7b3-89ba843ad61a.png",
+    "tool": "image_gen.imagegen",
+    "references": [],
+    "sha256": "440a26d0f30c6f60f7c5a91f8b1923095f4b3c15ff65e130afdd7a53592965e9",
+    "sourceSha256": "440a26d0f30c6f60f7c5a91f8b1923095f4b3c15ff65e130afdd7a53592965e9"
+  },
+  {
+    "slide": 5,
+    "file": "05-pesquisa.png",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-991e30af-9b98-4029-a777-e02466567dfd.png",
+    "tool": "image_gen.imagegen",
+    "references": [],
+    "sha256": "c993ffbb4875ab9c2b83cbc317a73a7c26bbbffd2057261e64d9390da600d970",
+    "sourceSha256": "c993ffbb4875ab9c2b83cbc317a73a7c26bbbffd2057261e64d9390da600d970"
+  },
+  {
+    "slide": 8,
+    "file": "08-primeira-tarefa.png",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-567658b2-d164-4af4-91ec-f58a6e15622c.png",
+    "tool": "image_gen.imagegen",
+    "references": [
+      "C:/Users/tocha/projects/sistema-zero/docs/marketing/kids/comunidade-dos-criadores/instagram/producao/postagens/p13-uma-tarefa-de-cada-vez/apoio/01-pedido.png"
+    ],
+    "sha256": "05c1f4561d184e65df8f4123fa206ed854a4372f8b827218d2f7de567d3ceec5",
+    "sourceSha256": "05c1f4561d184e65df8f4123fa206ed854a4372f8b827218d2f7de567d3ceec5"
+  }
+]

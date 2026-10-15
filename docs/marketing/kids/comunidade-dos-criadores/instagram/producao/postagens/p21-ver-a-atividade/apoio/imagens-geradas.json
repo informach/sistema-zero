@@ -1,0 +1,46 @@
+[
+  {
+    "slide": 1,
+    "file": "01-comparar-cursos.png",
+    "prompt": "Use case: photorealistic-natural. Asset: editorial photo for an Instagram carousel aimed at parents comparing activities. NEW landscape 3:2 photograph. Fictional Brazilian father, about 42, medium brown skin, short dark wavy hair with a little gray at temples, short neatly trimmed beard, thin rectangular glasses, plain dark teal cotton T-shirt. He sits on a beige sofa at night with an open laptop on his lap, one hand resting on trackpad and other hand touching his temple, mild tiredness while comparing courses, calm expression not exaggerated. Camera from left slightly behind shoulder so profile and laptop screen are clearly visible. Laptop screen entirely blank soft dark gray, unobstructed for real content insertion later. Cozy ordinary living room, warm floor lamp and deep blue evening window. Natural anatomy, believable hands, realistic textures. No text, no logos, no generated UI, no watermark. Keep laptop screen large and reasonably frontal, avoid plants or hands covering screen.",
+    "references": [],
+    "source": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-a28b0a3c-705c-4544-9c71-2b9c391e4d3e.png",
+    "tool": "image_gen.imagegen (nativa)",
+    "sha256": "3a1bee1119e9a111317d623f0fbcec2cc7011cea8799965094c21660f1ea4782",
+    "sourceSha256": "3a1bee1119e9a111317d623f0fbcec2cc7011cea8799965094c21660f1ea4782"
+  },
+  {
+    "slide": 2,
+    "file": "02-palavras-no-papel.png",
+    "prompt": "Use case: photorealistic-natural. Editorial object photograph, landscape 3:2. Top-down desk scene: large cream unlined paper lying flat at a very slight angle, dark blue pen on right edge, three small colored paper tabs along left edge in blue yellow white. Paper blank and clean, no writing at all; precise Portuguese handwritten words will be typeset in editing. Simple light oak table, warm natural light, high paper texture, uncluttered composition, no faces, no logo, no UI, no watermark. Paper fills most image, enough area for three short handwritten lines.",
+    "references": [],
+    "source": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-63a16b24-6454-459e-ba49-00c7c4c6da67.png",
+    "tool": "image_gen.imagegen (nativa)",
+    "sha256": "68c8102abaf9df1d10c19fd7d6a28b4a3948b1de87e64e31aee76a245e1a9386",
+    "sourceSha256": "68c8102abaf9df1d10c19fd7d6a28b4a3948b1de87e64e31aee76a245e1a9386"
+  },
+  {
+    "slide": 3,
+    "file": "03-ver-demonstracao.png",
+    "references": [
+      "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-a28b0a3c-705c-4544-9c71-2b9c391e4d3e.png"
+    ],
+    "prompt": "Use case: photorealistic-natural. Create a NEW landscape 3:2 editorial photograph of the EXACT SAME fictional father in reference (medium brown skin, short dark slightly graying curly hair, short salt-and-pepper beard, thin rectangular glasses, dark teal shirt). Father at a wooden table studying a game activity demonstration on laptop. Three-quarter view, his face on left in profile, open laptop on right with large unobstructed blank dark gray screen, one hand near trackpad below screen. A cream rectangular blank sheet of paper in front of laptop on table, large and fully visible for adding three handwritten questions during editing; no hands on the sheet. Evening warm lamp, modest Brazilian home, attentive curious expression. Distinct scene and angle from reference sofa shot, match identity only. No text, logos, generated UI, watermark. Realistic hands, no plants overlapping monitor.",
+    "source": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-3373a285-ba2c-4701-9e88-f46101024e00.png",
+    "tool": "image_gen.imagegen (nativa)",
+    "sha256": "77b695f4492e4a7195292c1ba9f237f7ef90c8b9a33a17d9a63c2a1769f55f1c",
+    "sourceSha256": "77b695f4492e4a7195292c1ba9f237f7ef90c8b9a33a17d9a63c2a1769f55f1c"
+  },
+  {
+    "slide": 7,
+    "file": "07-escolher-exemplo.png",
+    "references": [
+      "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-a28b0a3c-705c-4544-9c71-2b9c391e4d3e.png"
+    ],
+    "prompt": "Use case: photorealistic-natural. NEW landscape 3:2 editorial photograph, exact same fictional father from reference, medium brown skin, dark short wavy hair with gray temples, trimmed salt-and-pepper beard, thin rectangular glasses, dark teal cotton T-shirt. Closer side view from his RIGHT on the sofa, unlike the over-left-shoulder reference: his face in profile on RIGHT of image and laptop on LEFT on low coffee table. He leans slightly forward, one hand on trackpad, looking attentively at the display with a calm interested expression. Monitor has completely blank dark gray screen large and visible, unobstructed for actual activity video capture to be added. Warm night living room, floor lamp and blue window softly blurred, candid realistic skin and hands. No text, logos, generated UI, watermark. Do not recreate the original composition; new shot with same person.",
+    "source": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-77b46736-240b-4992-a602-268debd33be7.png",
+    "tool": "image_gen.imagegen (nativa)",
+    "sha256": "c94d31dd45cb55f195a209a1a62f854974d72145d0b344a86f7c19384d2299a9",
+    "sourceSha256": "c94d31dd45cb55f195a209a1a62f854974d72145d0b344a86f7c19384d2299a9"
+  }
+]

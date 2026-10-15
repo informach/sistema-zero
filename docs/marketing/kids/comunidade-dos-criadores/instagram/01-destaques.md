@@ -209,7 +209,7 @@ No segundo story, explicar a habilidade pelo que acontece no jogo. Por exemplo: 
 
 Usar os próximos IDs PJ disponíveis e acrescentar o bloco ao calendário e aos links. Indicar o acesso correspondente. O Farol continua identificado como primeiro projeto, mesmo quando o destaque recebe novas telas; não é necessário republicá-lo para alterar a posição do destaque no perfil.
 
-Fontes: [Farol](../../../../aulas-interativas/modulos-desafio-primeiro-jogo.md), [Cadê Todo Mundo?](../../../../aulas-interativas/modulos-cade-todo-mundo.md), [Nave Contra Asteroides](../../../../aulas-interativas/modulos-nave-contra-asteroides.md) e [Corre Dino](../../../../aulas-interativas/modulos-corre-dino.md). A lista de projetos existentes e a direção visual foram confirmadas pelo responsável nesta conversa.
+Fontes: [Farol](../../../../aulas-interativas-tecnico/modulos-desafio-primeiro-jogo.md), [Cadê Todo Mundo?](../../../../aulas-interativas-tecnico/modulos-cade-todo-mundo.md), [Nave Contra Asteroides](../../../../aulas-interativas-tecnico/modulos-nave-contra-asteroides.md) e [Corre Dino](../../../../aulas-interativas-tecnico/modulos-corre-dino.md). A lista de projetos existentes e a direção visual foram confirmadas pelo responsável nesta conversa.
 
 ## Alunos
 
@@ -505,6 +505,6 @@ O certificado disponível registra uma dessas conquistas: primeiro lugar na turm
 
 Conferir oferta e interface publicadas antes de gravar. Se uma condição mudar, revisar CF07 a CF09, Dúvidas e F03. A abertura AV01 não fixa nomes, quantidade ou idade de quem dá o relato, para continuar válida com novos participantes. Novos relatos podem ampliar a seleção com sua origem e contexto. Manter as citações literais; ao escolher um trecho, preservar o sentido da fala. Novos vídeos de crianças em atividade ampliam Alunos; novos relatos de crianças, adultos e responsáveis ampliam Avaliações. São funções diferentes, com copy final para cada entrada.
 
-Fonte do curso: [módulos](../../../../aulas-interativas/modulos-desafio-primeiro-jogo.md), [movimento](../../../../aulas-interativas/aulas/desafio-dia-1.roteiro.md), [coleta e memória](../../../../aulas-interativas/aulas/desafio-dia-2.roteiro.md) e [condição e personalização](../../../../aulas-interativas/aulas/desafio-dia-3.roteiro.md). Captação e acesso em [Demonstração do Farol](apoio/valor-e-demonstracao-2026-10-03.md).
+Fonte do curso: [módulos](../../../../aulas-interativas-tecnico/modulos-desafio-primeiro-jogo.md), [movimento](../../../../aulas-interativas/desafio-primeiro-jogo/desafio-dia-1.roteiro.md), [coleta e memória](../../../../aulas-interativas/desafio-primeiro-jogo/desafio-dia-2.roteiro.md) e [condição e personalização](../../../../aulas-interativas/desafio-primeiro-jogo/desafio-dia-3.roteiro.md). Captação e acesso em [Demonstração do Farol](apoio/valor-e-demonstracao-2026-10-03.md).
 
 [Guia e bio](README.md) · [Fixados](02-fixados.md) · [Calendário e stories do ciclo](03-postagens.md)

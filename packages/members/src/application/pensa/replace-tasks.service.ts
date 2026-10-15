@@ -51,6 +51,8 @@ export const plannedTask = (task: NewPensaTask, cycleId: string, now: Date) => (
     completedAt: null,
     updatedAt: null,
   },
+  assigneeProfileId: null,
+  completedByProfileId: null,
   revision: task.revision ?? 1,
   supersedesTaskId: task.supersedesTaskId ?? null,
   archivedAt: null,

@@ -1,0 +1,26 @@
+{
+  "mode": "image_gen nativo",
+  "date": "2026-10-14",
+  "assets": [
+    {
+      "slide": "01",
+      "hint": "Generated images are saved to C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced as C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-1cdae2fa-4f62-48a1-b6c9-2f4b7799996d.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link."
+    },
+    {
+      "slide": "02",
+      "hint": "Generated images are saved to C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced as C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-17ba8f85-5f78-42eb-81de-2cc0a5fa8408.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link."
+    },
+    {
+      "slide": "03",
+      "hint": "Generated images are saved to C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced as C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-7e163978-a2fc-4923-bef6-afc143a67ea6.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link."
+    },
+    {
+      "slide": "04",
+      "hint": "Generated images are saved to C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced as C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-1d398049-85e9-4de8-b836-82a76cb23f4f.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link."
+    },
+    {
+      "slide": "07",
+      "hint": "Generated images are saved to C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced as C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-d51547ff-f90c-45c7-b26c-214fcc24897c.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link."
+    }
+  ]
+}

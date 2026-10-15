@@ -1,0 +1,257 @@
+{
+  "started": "2026-10-15T00:18:31.785Z",
+  "status": "failed",
+  "files": 139,
+  "passed": 1079,
+  "failed": 0,
+  "batches": [
+    {
+      "partition": 1,
+      "label": "part-1-01",
+      "files": [
+        "src/export/affineTrsChain.test.ts",
+        "src/export/assetJson.test.ts",
+        "src/export/backupFile.test.ts",
+        "src/export/backupProjects.test.ts",
+        "src/export/glb.test.ts",
+        "src/export/meshGlb.test.ts",
+        "src/export/recoveryJson.test.ts",
+        "src/export/rgbe.test.ts",
+        "src/export/sceneFile.test.ts",
+        "src/export/sceneGlb.test.ts",
+        "src/export/sceneGlbAnimations.test.ts",
+        "src/export/sceneGlbClips.test.ts"
+      ],
+      "passed": 61,
+      "failed": 0,
+      "exitCode": 0
+    },
+    {
+      "partition": 1,
+      "label": "part-1-02",
+      "files": [
+        "src/export/sceneGlbFlipbook.test.ts",
+        "src/export/sceneGlbHierarchy.test.ts",
+        "src/export/sceneGlbSkin.test.ts",
+        "src/export/sceneStudioCompatibility.test.ts",
+        "src/export/studioLibrary.test.ts",
+        "src/export/zip.test.ts",
+        "src/import/animationSampleTimes.test.ts",
+        "src/import/bbmodelAnimatedDocument.test.ts",
+        "src/import/bbmodelAnimationBindings.test.ts",
+        "src/import/bbmodelAnimationBounds.integration.test.ts",
+        "src/import/bbmodelAnimationBounds.test.ts",
+        "src/import/bbmodelAnimationConstant.test.ts"
+      ],
+      "passed": 101,
+      "failed": 0,
+      "exitCode": 0
+    },
+    {
+      "partition": 1,
+      "label": "part-1-03",
+      "files": [
+        "src/import/bbmodelAnimationKeyframes.test.ts",
+        "src/import/bbmodelAnimationPose.test.ts",
+        "src/import/bbmodelAnimationSample.test.ts",
+        "src/import/bbmodelAnimationSchedule.test.ts",
+        "src/import/bbmodelAnimationStructure.test.ts",
+        "src/import/bbmodelAnimationTrack.test.ts",
+        "src/import/bbmodelAppearance.test.ts",
+        "src/import/bbmodelClipPlan.test.ts",
+        "src/import/bbmodelEnvelope.test.ts",
+        "src/import/bbmodelFaceUvs.test.ts",
+        "src/import/bbmodelGeometries.test.ts",
+        "src/import/bbmodelGeometry.test.ts"
+      ],
+      "passed": 147,
+      "failed": 0,
+      "exitCode": 0
+    },
+    {
+      "partition": 1,
+      "label": "part-1-04",
+      "files": [
+        "src/import/bbmodelGraph.test.ts",
+        "src/import/bbmodelHierarchy.test.ts",
+        "src/import/bbmodelImageDataUri.test.ts",
+        "src/import/bbmodelImages.test.ts",
+        "src/import/bbmodelLocalBundle.test.ts",
+        "src/import/bbmodelNativeClips.test.ts",
+        "src/import/bbmodelNativeDocument.test.ts",
+        "src/import/bbmodelNativeGeometryPlan.test.ts",
+        "src/import/bbmodelNativeUvs.test.ts",
+        "src/import/bbmodelNodeMaterials.test.ts",
+        "src/import/bbmodelNodeMetadata.test.ts",
+        "src/import/bbmodelPaintBudgets.test.ts"
+      ],
+      "passed": 107,
+      "failed": 0,
+      "exitCode": 0
+    },
+    {
+      "partition": 1,
+      "label": "part-1-05",
+      "files": [
+        "src/import/bbmodelPaintDocument.test.ts",
+        "src/import/bbmodelPositions.test.ts",
+        "src/import/bbmodelRasters.test.ts",
+        "src/import/bbmodelResourcePath.test.ts",
+        "src/import/bbmodelResources.test.ts",
+        "src/import/bbmodelSelection.test.ts",
+        "src/import/bbmodelSurfaceMetadata.test.ts",
+        "src/import/bbmodelSurfaces.test.ts",
+        "src/import/bbmodelTextureBinding.test.ts",
+        "src/import/bbmodelTextureLayouts.test.ts",
+        "src/import/bbmodelTextureMaterials.test.ts",
+        "src/import/bbmodelTransforms.test.ts"
+      ],
+      "passed": 92,
+      "failed": 0,
+      "exitCode": 0
+    },
+    {
+      "partition": 1,
+      "label": "part-1-06",
+      "files": [
+        "src/import/gltfAccessors.test.ts",
+        "src/import/gltfAnimationGlb.test.ts",
+        "src/import/gltfAnimationSample.test.ts",
+        "src/import/gltfAnimations.test.ts",
+        "src/import/gltfAppearance.test.ts",
+        "src/import/gltfBuffers.test.ts",
+        "src/import/gltfCameras.test.ts",
+        "src/import/gltfDocument.test.ts",
+        "src/import/gltfEnvelope.test.ts",
+        "src/import/gltfExtensions.test.ts",
+        "src/import/gltfGeometries.test.ts",
+        "src/import/gltfGraph.test.ts"
+      ],
+      "passed": 120,
+      "failed": 0,
+      "exitCode": 0
+    },
+    {
+      "partition": 1,
+      "label": "part-1-07",
+      "files": [
+        "src/import/gltfHierarchy.test.ts",
+        "src/import/gltfJpeg.test.ts",
+        "src/import/gltfLocalBundle.test.ts",
+        "src/import/gltfMeshes.test.ts",
+        "src/import/gltfNativeClips.test.ts",
+        "src/import/gltfNativeDocument.test.ts",
+        "src/import/gltfNativeMaterials.test.ts",
+        "src/import/gltfPng.test.ts",
+        "src/import/gltfRasters.test.ts",
+        "src/import/gltfResources.test.ts",
+        "src/import/gltfSelection.test.ts",
+        "src/import/gltfSkinBindings.test.ts"
+      ],
+      "passed": 111,
+      "failed": 0,
+      "exitCode": 0
+    },
+    {
+      "partition": 1,
+      "label": "part-1-08",
+      "files": [
+        "src/import/gltfSkinWeights.test.ts",
+        "src/import/gltfSkins.test.ts",
+        "src/import/mtlBase.test.ts",
+        "src/import/mtlDocument.test.ts",
+        "src/import/mtlTextures.test.ts",
+        "src/import/objAppearance.test.ts",
+        "src/import/objBundle.test.ts",
+        "src/import/objDocument.test.ts",
+        "src/import/objGeometries.test.ts",
+        "src/import/objHierarchy.test.ts",
+        "src/import/objLocalBundle.test.ts",
+        "src/import/objMaterialSelection.test.ts"
+      ],
+      "passed": 109,
+      "failed": 0,
+      "exitCode": 0
+    },
+    {
+      "partition": 1,
+      "label": "part-1-09",
+      "files": [
+        "src/import/objNativeDocument.test.ts",
+        "src/import/objNativeMaterials.test.ts",
+        "src/import/objRasters.test.ts",
+        "src/import/objReportText.test.ts",
+        "src/import/objUvTransform.test.ts",
+        "src/import/rasterHeader.test.ts",
+        "src/import/referenceImage.test.ts",
+        "src/import/sceneProjectFile.test.ts",
+        "src/import/sceneRaster.test.ts",
+        "src/import/textureOrientation.test.tsx",
+        "src/workers/bbmodelImport.test.ts",
+        "src/workers/bbmodelImportAnimationReport.test.ts"
+      ],
+      "passed": 75,
+      "failed": 0,
+      "exitCode": 0
+    },
+    {
+      "partition": 1,
+      "label": "part-1-10",
+      "files": [
+        "src/workers/bbmodelImportPaintReport.test.ts",
+        "src/workers/bbmodelImportReport.test.ts",
+        "src/workers/bbmodelImportRequest.test.ts",
+        "src/workers/gltfImport.test.ts",
+        "src/workers/objImport.test.ts",
+        "src/workers/objImportReport.test.ts",
+        "src/workers/sceneAtlas.test.ts",
+        "src/workers/sceneGlb.test.ts",
+        "src/workers/sceneGlbRequest.test.ts",
+        "src/workers/sceneImage.test.ts",
+        "src/workers/sceneMeshCheck.test.ts",
+        "src/workers/sceneMeshPacket.test.ts"
+      ],
+      "passed": 95,
+      "failed": 0,
+      "exitCode": 0
+    },
+    {
+      "partition": 1,
+      "label": "part-1-11",
+      "files": [
+        "src/workers/sceneProjectFile.test.ts",
+        "src/workers/sceneSkinSuggestion.test.ts",
+        "src/workers/sceneSurfaceSession.test.ts",
+        "src/workers/sceneUv.test.ts",
+        "src/workers/skyExport.test.ts",
+        "src/workers/workerHandshake.test.ts",
+        "src/workers/workerTask.test.ts"
+      ],
+      "passed": 61,
+      "failed": 0,
+      "exitCode": 0
+    },
+    {
+      "partition": 2,
+      "label": "part-2-01",
+      "files": [
+        "src/components/MoldaApp.hostChrome.test.tsx",
+        "src/components/MoldaApp.scene.test.tsx",
+        "src/components/MoldaApp.test.tsx",
+        "src/components/editor/DeferredEditor.test.tsx",
+        "src/components/editor/model/ApplyTextureDialog.test.tsx",
+        "src/components/editor/model/ModelEditor.mesh.test.tsx",
+        "src/components/editor/model/ModelEditor.paint.test.tsx",
+        "src/components/editor/model/ModelEditor.test.tsx",
+        "src/components/editor/model/ReferenceImageGuide.test.tsx",
+        "src/components/editor/model/WorkspaceInspector.test.tsx",
+        "src/components/editor/model/commandRegistry.test.ts",
+        "src/components/editor/scene/SceneAnimationKeyStrip.test.tsx"
+      ],
+      "passed": 0,
+      "failed": 0,
+      "exitCode": 1
+    }
+  ],
+  "finished": "2026-10-15T00:20:49.145Z"
+}

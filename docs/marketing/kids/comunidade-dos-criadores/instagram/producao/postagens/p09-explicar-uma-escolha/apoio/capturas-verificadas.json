@@ -1,0 +1,397 @@
+{
+  "source": "Jogo da Memória",
+  "changes": "Variação remove só gk:waitThen 0.7 e preserva os três comandos do corpo. Mesma semente aleatória nas duas versões para comparar a mesma jogada.",
+  "states": [
+    {
+      "version": "original",
+      "name": "04-duas-cartas-abertas",
+      "cartas": [
+        {
+          "front": "🍎",
+          "back": "?",
+          "faceUp": true
+        },
+        {
+          "front": "🍇",
+          "back": "?",
+          "faceUp": false
+        },
+        {
+          "front": "🍌",
+          "back": "?",
+          "faceUp": true
+        },
+        {
+          "front": "🍎",
+          "back": "?",
+          "faceUp": false
+        },
+        {
+          "front": "🍌",
+          "back": "?",
+          "faceUp": false
+        },
+        {
+          "front": "🍇",
+          "back": "?",
+          "faceUp": false
+        }
+      ],
+      "primeira": 0,
+      "segunda": 2,
+      "pares": 0
+    },
+    {
+      "version": "original",
+      "name": "05-original-primeira",
+      "cartas": [
+        {
+          "front": "🍎",
+          "back": "?",
+          "faceUp": false
+        },
+        {
+          "front": "🍇",
+          "back": "?",
+          "faceUp": false
+        },
+        {
+          "front": "🍌",
+          "back": "?",
+          "faceUp": true
+        },
+        {
+          "front": "🍎",
+          "back": "?",
+          "faceUp": false
+        },
+        {
+          "front": "🍌",
+          "back": "?",
+          "faceUp": false
+        },
+        {
+          "front": "🍇",
+          "back": "?",
+          "faceUp": false
+        }
+      ],
+      "primeira": 2,
+      "segunda": 2,
+      "pares": 0
+    },
+    {
+      "version": "original",
+      "name": "05-original-segunda",
+      "cartas": [
+        {
+          "front": "🍎",
+          "back": "?",
+          "faceUp": false
+        },
+        {
+          "front": "🍇",
+          "back": "?",
+          "faceUp": true
+        },
+        {
+          "front": "🍌",
+          "back": "?",
+          "faceUp": true
+        },
+        {
+          "front": "🍎",
+          "back": "?",
+          "faceUp": false
+        },
+        {
+          "front": "🍌",
+          "back": "?",
+          "faceUp": false
+        },
+        {
+          "front": "🍇",
+          "back": "?",
+          "faceUp": false
+        }
+      ],
+      "primeira": 2,
+      "segunda": 1,
+      "pares": 0
+    },
+    {
+      "version": "original",
+      "name": "05-original-depois",
+      "cartas": [
+        {
+          "front": "🍎",
+          "back": "?",
+          "faceUp": false
+        },
+        {
+          "front": "🍇",
+          "back": "?",
+          "faceUp": false
+        },
+        {
+          "front": "🍌",
+          "back": "?",
+          "faceUp": false
+        },
+        {
+          "front": "🍎",
+          "back": "?",
+          "faceUp": false
+        },
+        {
+          "front": "🍌",
+          "back": "?",
+          "faceUp": false
+        },
+        {
+          "front": "🍇",
+          "back": "?",
+          "faceUp": false
+        }
+      ],
+      "primeira": -1,
+      "segunda": 1,
+      "pares": 0
+    },
+    {
+      "version": "original",
+      "name": "01-dois-pares",
+      "cartas": [
+        {
+          "front": "🍎",
+          "back": "?",
+          "faceUp": true
+        },
+        {
+          "front": "🍇",
+          "back": "?",
+          "faceUp": false
+        },
+        {
+          "front": "🍌",
+          "back": "?",
+          "faceUp": true
+        },
+        {
+          "front": "🍎",
+          "back": "?",
+          "faceUp": true
+        },
+        {
+          "front": "🍌",
+          "back": "?",
+          "faceUp": true
+        },
+        {
+          "front": "🍇",
+          "back": "?",
+          "faceUp": false
+        }
+      ],
+      "primeira": -1,
+      "segunda": 4,
+      "pares": 2
+    },
+    {
+      "version": "original",
+      "name": "06-original-momento",
+      "cartas": [
+        {
+          "front": "🍎",
+          "back": "?",
+          "faceUp": true
+        },
+        {
+          "front": "🍇",
+          "back": "?",
+          "faceUp": true
+        },
+        {
+          "front": "🍌",
+          "back": "?",
+          "faceUp": false
+        },
+        {
+          "front": "🍎",
+          "back": "?",
+          "faceUp": false
+        },
+        {
+          "front": "🍌",
+          "back": "?",
+          "faceUp": false
+        },
+        {
+          "front": "🍇",
+          "back": "?",
+          "faceUp": false
+        }
+      ],
+      "primeira": 0,
+      "segunda": 1,
+      "pares": 0
+    },
+    {
+      "version": "sem-espera",
+      "name": "05-sem-espera-primeira",
+      "cartas": [
+        {
+          "front": "🍎",
+          "back": "?",
+          "faceUp": false
+        },
+        {
+          "front": "🍇",
+          "back": "?",
+          "faceUp": false
+        },
+        {
+          "front": "🍌",
+          "back": "?",
+          "faceUp": true
+        },
+        {
+          "front": "🍎",
+          "back": "?",
+          "faceUp": false
+        },
+        {
+          "front": "🍌",
+          "back": "?",
+          "faceUp": false
+        },
+        {
+          "front": "🍇",
+          "back": "?",
+          "faceUp": false
+        }
+      ],
+      "primeira": 2,
+      "segunda": -1,
+      "pares": 0
+    },
+    {
+      "version": "sem-espera",
+      "name": "05-sem-espera-segunda",
+      "cartas": [
+        {
+          "front": "🍎",
+          "back": "?",
+          "faceUp": false
+        },
+        {
+          "front": "🍇",
+          "back": "?",
+          "faceUp": false
+        },
+        {
+          "front": "🍌",
+          "back": "?",
+          "faceUp": false
+        },
+        {
+          "front": "🍎",
+          "back": "?",
+          "faceUp": false
+        },
+        {
+          "front": "🍌",
+          "back": "?",
+          "faceUp": false
+        },
+        {
+          "front": "🍇",
+          "back": "?",
+          "faceUp": false
+        }
+      ],
+      "primeira": -1,
+      "segunda": 1,
+      "pares": 0
+    },
+    {
+      "version": "sem-espera",
+      "name": "05-sem-espera-depois",
+      "cartas": [
+        {
+          "front": "🍎",
+          "back": "?",
+          "faceUp": false
+        },
+        {
+          "front": "🍇",
+          "back": "?",
+          "faceUp": false
+        },
+        {
+          "front": "🍌",
+          "back": "?",
+          "faceUp": false
+        },
+        {
+          "front": "🍎",
+          "back": "?",
+          "faceUp": false
+        },
+        {
+          "front": "🍌",
+          "back": "?",
+          "faceUp": false
+        },
+        {
+          "front": "🍇",
+          "back": "?",
+          "faceUp": false
+        }
+      ],
+      "primeira": -1,
+      "segunda": 1,
+      "pares": 0
+    },
+    {
+      "version": "sem-espera",
+      "name": "06-sem-espera-momento",
+      "cartas": [
+        {
+          "front": "🍎",
+          "back": "?",
+          "faceUp": false
+        },
+        {
+          "front": "🍇",
+          "back": "?",
+          "faceUp": false
+        },
+        {
+          "front": "🍌",
+          "back": "?",
+          "faceUp": false
+        },
+        {
+          "front": "🍎",
+          "back": "?",
+          "faceUp": false
+        },
+        {
+          "front": "🍌",
+          "back": "?",
+          "faceUp": false
+        },
+        {
+          "front": "🍇",
+          "back": "?",
+          "faceUp": false
+        }
+      ],
+      "primeira": -1,
+      "segunda": 1,
+      "pares": 0
+    }
+  ],
+  "errors": []
+}

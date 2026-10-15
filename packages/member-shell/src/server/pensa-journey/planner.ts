@@ -558,10 +558,13 @@ export async function workJourney({
       if (claimed.status !== 200 || !claimed.body?.work) return
       let work = claimed.body.work
       timing = { step: work.step, startedAt: Date.now() }
+      // Em equipe, os recursos são os da EQUIPE (o Estúdio de quem programa, as artes de quem
+      // desenha). A view acabou de ser lida: ela vai junto e poupa a releitura.
       const context = await loadContext(
         members,
         user,
         `${view.journey.intent}\n${view.journey.messages.filter((m) => m.role === 'user').at(-1)?.text ?? ''}`,
+        { projectId, view },
       )
       if (!context.capabilities.studio || !context.blocks.length) {
         await members.pensaJourneyFail(
@@ -569,7 +572,9 @@ export async function workJourney({
           projectId,
           operationId,
           leaseId,
-          'Sua ideia está guardada. Para construir esse jogo, você precisa abrir o Estúdio e conquistar blocos nas fases das aventuras. Ainda não vou preparar missões que você não pode fazer.',
+          context.team
+            ? 'Sua ideia está guardada. Para construir esse jogo, quem programa precisa abrir o Estúdio e conquistar blocos nas fases das aventuras. Ainda não vou preparar missões que a equipe não pode fazer.'
+            : 'Sua ideia está guardada. Para construir esse jogo, você precisa abrir o Estúdio e conquistar blocos nas fases das aventuras. Ainda não vou preparar missões que você não pode fazer.',
         )
         console.info('[pensa-v2] step', {
           operationId,
@@ -637,7 +642,8 @@ export async function workJourney({
         }
       }
       if (result.type === 'proposal' || result.type === 'plan') {
-        const fresh = await loadContext(members, user, state.intent)
+        // Sem a view: relê a equipe (as funções podem ter mudado enquanto o modelo trabalhava).
+        const fresh = await loadContext(members, user, state.intent, { projectId })
         const candidate =
           result.type === 'proposal' ? (result.proposal as PensaProposal) : state.proposal
         if (

@@ -1,0 +1,57 @@
+[
+  {
+    "slide": 1,
+    "file": "01-combinado.png",
+    "prompt": "Use case: photorealistic-natural. Create ONE original landscape editorial photograph1536x1024 for a Brazilian parenting Instagram carousel about agreeing when to stop before using the computer.\nScene: ordinary warm Brazilian home, small wooden study table near living room, soft daylight, cream wall, blue accents, small plant. A fictional Brazilian mother about38, medium-brown skin, naturally curly dark shoulder-length hair, blue cotton blouse, sits beside her fictional son about11, medium-brown skin, short curly black hair, mustard yellow t-shirt. Mother and child are talking BEFORE opening their silver laptop: laptop clearly CLOSED in the foreground, one small weekly planner and pencil on table. Mother gently points to the planner while child looks at her, listening and participating. Both relaxed engaged faces, natural gentle expressions, no scolding, no finger pointed at child, no exaggerated grins. Child's hands resting naturally on table, not using any device. Half-body candid view at eye level, both faces clearly visible, closed laptop and planner visible within central90% of frame. Distinct authentic identities, not celebrity, not real student testimony. Natural anatomy, realistic five-finger hands, realistic family proportions. Warm attractive photography, clear visual action, blue and yellow accents. Planner may show simple empty weekly grid with no readable words or dates. No text, captions, logo, branding, watermark, floating icons or graphic overlays. Single image, no panels. Landscape3:2 composition intended for a4:5 carousel layout with text added separately.",
+    "references": [],
+    "selected": true
+  },
+  {
+    "slide": 2,
+    "file": "02-horarios.png",
+    "prompt": "Use case: photorealistic-natural. Create ONE new landscape photograph1536x1024, a close detail of a family's weekly plan next to a shared computer. Reference image only defines the warm home, wood table, cream/blue palette and physical silver laptop; do NOT repeat the family portraits.\nNew composition: view from above of a simple paper WEEKLY PLANNER in foreground, silver laptop CLOSED in upper right, a blue mouse and two closed notebooks implying different family members share the desk. The planner is large and clearly readable, with exactly five columns headed \"SEG\", \"TER\", \"QUA\", \"QUI\", \"SEX\". Under TER and QUI, neat handwritten blue \"17h\" circled in yellow marker. All other cells blank. No dates, no ending time, no duration prescription. Mother's hand (medium-brown skin, blue sleeve) holds a blue pencil pointing toward TER17h, with natural fingers. Simple real planning at home, not a decorative quote or floating calendar UI. Laptop must be closed so this is planning before the activity. Soft daylight, thoughtful tidy but lived-in desk, small green plant out-of-focus at side. High-end candid editorial detail, realistic materials, all key objects centered with generous cropping safety. NO editorial captions or text beyond the exact planner headings and times. No logos, brand, watermarks, phone, holograms or stock-photo graphics. A single photograph, no panels.",
+    "references": [
+      "01-combinado.png"
+    ],
+    "selected": true
+  },
+  {
+    "slide": 3,
+    "file": "03-aviso.png",
+    "prompt": "Use case: photorealistic-natural. ONE new landscape photograph1536x1024, slide3 of a Brazilian parent carousel: mother calmly gives an advance reminder that computer time is coming to an end.\nReference1 defines EXACT same fictional mother and11-year-old son: mother medium-brown skin, shoulder-length curly black hair, blue blouse; son medium-brown skin, short curly black hair, mustard tshirt. Same faces, ages, warm wood/cream/blue home. Reference2 is the actual proprietary creation platform UI: reproduce that design and content faithfully on laptop screen, turquoise frame and pink game blocks left, dark game with small yellow walking character on right, real blue controls. No generic code or other platform.\nNew scene: boy seated at wood desk finishing a small action in the game editor, right hand on separate blue mouse, left near laptop keyboard; mother stands beside him, leans slightly at eye level with a calm open hand gesture, speaking softly. Boy briefly turns his head toward mother with relaxed acknowledgment, not tantrum, fear, guilt, argument or raised finger. The game remains open. Laptop display visible to viewer at credible diagonal, screen must face boy. Medium candid side-view, both faces in upper half and computer and hands in lower half, clear action. No clock or arbitrary duration, no speech bubbles, no words outside platform screen, no captions, logos, watermark. Natural daylight, ordinary lived-in house, realistic hands and device geometry, no extra limbs. All faces, hand and screen inside central90% for3:2 crop.",
+    "references": [
+      "01-combinado.png",
+      "03-estudio.png"
+    ],
+    "selected": true
+  },
+  {
+    "slide": 5,
+    "file": "05-bilhete.png",
+    "prompt": "Use case: photorealistic-natural. Create ONE new close editorial photograph1536x1024 for a Brazilian carousel about writing the next step before leaving a game project. Reference1 supplies exact same fictional boy, medium-brown skin, short curly hair, mustard t-shirt, and warm wood desk/home. Reference2 supplies exact real platform layout for a partially visible silver notebook in upper-right background: turquoise frame and pink game blocks left, small yellow walking character on dark game right.\nPrimary subject: a REAL LARGE cream paper note on wood desk, seen nearly from above, filling central lower two thirds and in tack sharp focus. A child's right hand, medium-brown skin and mustard sleeve, holds a blue pencil at end of a handwritten reminder. Exact clear naturally childlike blue handwriting in four lines:\n\"O personagem já anda.\"\n\"Vou continuar o pulo\"\n\"na próxima vez.\"\nThree lines, not four; use these exact3 lines. Preserve accents and words; no spelling mistakes, no other text. Show a small simple pencil drawing of a yellow stick character below/right if there is spare space, not necessary. Notebook open in upper-right, enough visible screen to recognize real reference UI but not competing with note. Do not show a face; this is a fresh detail shot with hand, note, corner of notebook keyboard and mouse. Correct five-finger hand holding pencil naturally, no extra hands or fingers. Warm daylight, natural paper grain and wood textures, blue and yellow palette touches. No editorial title, floating labels, watermark, brands, generic code or UI invented. Note fully visible and easy to read when scaled. Landscape3:2 single photographic scene.",
+    "references": [
+      "01-combinado.png",
+      "03-estudio.png"
+    ],
+    "selected": true
+  },
+  {
+    "slide": 6,
+    "file": "06-outra-atividade.png",
+    "prompt": "Use case: photorealistic-natural. Create ONE new landscape editorial photograph1536x1024 for slide6, showing a child leaving the computer for an ordinary offline activity. The reference defines EXACT same fictional11-year-old boy (medium-brown skin, short curly black hair, mustard yellow tshirt) and mother's home (wood desk, cream sofa, blue textiles, plants). Maintain boy's identity, natural age and face. New WIDE candid composition in this same family living room: the silver laptop is clearly CLOSED on wood desk in left foreground, blue mouse beside it and a small note turned away with no readable words. The boy is now standing a few steps away, on right half, in three-quarter profile, carrying an ordinary worn football tucked under one arm and moving toward the open doorway to a small home courtyard. Relaxed small smile, looking in direction of doorway, not camera. Show both closed notebook and full upper body and legs of boy so action is unmistakable. Mother is not necessary in this image. Everyday modest home, warm late-afternoon daylight through door, no staged trophy or goal achievement, no sports uniform. Realistic correct proportions and hands, casual shorts and sneakers. The moment is about a normal change of activity, not instant health or behavior transformation. Keep key objects inside central90% framing, no cropped head or feet. No text, logos, watermarks, arrows, labels, floating icons, duplicate child, extra hands or screens. Single photographic scene, landscape3:2.",
+    "references": [
+      "01-combinado.png"
+    ],
+    "selected": true
+  },
+  {
+    "slide": 7,
+    "file": "07-acompanhar.png",
+    "prompt": "Use case: photorealistic-natural. ONE fresh landscape editorial photograph1536x1024, closing frame for a Brazilian family carousel about supporting game creation at home. First reference: preserve EXACT fictional mother and son identities, medium-brown skin, mother about38 naturally curly dark shoulder-length hair and blue blouse, boy11 short curly black hair and mustard t-shirt. Same warm ordinary wood/cream/blue living room. Second reference: our exact platform screen, preserve real turquoise frame and pink native blocks on left, small yellow walking character on dark background right, real blue header. No other software or invented interface.\nNEW composition: warm medium-wide three-quarter view from the OTHER SIDE of table compared with reference1. Mother and boy seated side-by-side calmly LOOKING AT THE PROJECT on the open silver notebook, mother listening to boy as he points gently with one finger toward the yellow character on screen, his other hand resting beside blue mouse. Both faces seen in profile/three-quarter, comfortable expressions, not facing camera or celebrating. Notebook screen faces both people, and camera sees its front at a credible oblique angle. Simple note and blue pencil lie on desk near keyboard, no readable note text needed, no clutter or extra screens. Natural afternoon light, plant and cream sofa blurred. Keep people, laptop and mouse clearly visible in central90% landscape3:2, healthy anatomy correct five-finger hands, no extra limbs or inverted devices. Photograph should feel like everyday participation and conversation about what child is doing. No testimony, achievement badge, titles, captions, watermark, logos, phone/tablet, floating graphics, exaggerated stock smiles.",
+    "references": [
+      "01-combinado.png",
+      "03-estudio.png"
+    ],
+    "selected": true
+  }
+]

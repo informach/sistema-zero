@@ -1,0 +1,492 @@
+{
+  "id": "P25",
+  "checkedAt": "2026-10-14T20:24:38.810Z",
+  "errors": [],
+  "files": [
+    {
+      "file": "01-p25.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 775294,
+      "sha256": "7000a7e8372766c50ef72ac8a328308fc61af0792f95b71811d685f3ee014997"
+    },
+    {
+      "file": "02-p25.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 919376,
+      "sha256": "77d1fd0c595a417437912032b74c56737b6960b0cab321ba9c078f54583e4eae"
+    },
+    {
+      "file": "03-p25.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 161186,
+      "sha256": "39194c5fec10b3f1105ffbae139439f7334de4cb2b83f160d57e3ec4177ab83e"
+    },
+    {
+      "file": "04-p25.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 176563,
+      "sha256": "42684107b7f8dea7ece9ae978f19b3f4105820ab41bfc369a6c636320607c0b3"
+    },
+    {
+      "file": "05-p25.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 189430,
+      "sha256": "7a1a124ab0f2e720783dde65c15c416d49aa61742faef4e8b6919e691acc3d24"
+    },
+    {
+      "file": "06-p25.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 163182,
+      "sha256": "27488955eb9db95900d66872105752e8688ca97ebd70d376771c141fef79efd6"
+    },
+    {
+      "file": "07-p25.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 943733,
+      "sha256": "156627874a70af9599fa957c06f2042bc0830f7d530c829e81817684c9db8a4f"
+    },
+    {
+      "file": "08-p25.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 887004,
+      "sha256": "b4be52948d77db5a2223ac6c14a4cedf5eb514189dd104b44a19384bae9ac09e"
+    }
+  ],
+  "links": [
+    {
+      "from": "index.html",
+      "to": "legenda.txt",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "texto-alternativo.txt",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "montagem.html",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "apoio/fontes-e-producao.md",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "../index.html",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "01-p25.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "01-p25.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "02-p25.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "02-p25.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "03-p25.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "03-p25.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "04-p25.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "04-p25.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "05-p25.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "05-p25.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "06-p25.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "06-p25.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "07-p25.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "07-p25.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "08-p25.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "08-p25.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/01-primeira-aula.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/01-nave-primeira-fase.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/02-conversar.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/02-percurso-real.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/03-trilha.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/03-trilha.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/03-trilha.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/04-recolhendo.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/04-fogos.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/04-fogos.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/05-andar.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/05-recolher.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/05-recolher.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/05-contar.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/05-contar.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/06-lugares.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/06-resposta-final.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/07-orientacao.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/07-mapa-blocos.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/08-mostrar.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/08-base-e-foguete.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../../../../postagens/03-p21-a-p30.md#p25",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../../../../postagens/05-direcao-visual-e-producao.md",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "copy.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../legenda.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "verificacao.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "prompts.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "imagens-geradas.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "LICENSE-Nunito",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "Caveat-OFL.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../texto-alternativo.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "nave-primeira-fase.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "nave-primeira-fase.js",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "interface-origem.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "03-trilha.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "trilha-verificada.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "mapa-origem.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "lua-original.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "lua-original.js",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "capturas-verificadas.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../index.html",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../montagem.html",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../publicacao.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "entrega-verificada.json",
+      "exists": true
+    }
+  ],
+  "copyLinter": {
+    "slides": "Oito slides sem achados mecânicos.",
+    "caption": "Sem achados mecânicos."
+  },
+  "visualReview": "Oito slides conferidos individualmente. Quatro cenas distintas da mesma família fictícia. Capturas reais em perspectiva; dois nós da trilha legíveis. Movimento, contagem, quatro moedas restantes e comemoração conferidos. Texto e legenda preservados.",
+  "game": {
+    "source": "Base da Lua original",
+    "states": {
+      "08-base-e-foguete": 0,
+      "05-andar": 0,
+      "05-recolher": 1,
+      "05-contar": 3,
+      "04-recolhendo": 5,
+      "06-lugares": 8,
+      "06-resposta-final": 12,
+      "04-fogos": 12
+    },
+    "questDone": true,
+    "particles": 262,
+    "walkSpeed": 4,
+    "remainingAt8": 4,
+    "changes": "Horário manhã e enquadramentos de captura; regras originais preservadas"
+  },
+  "carouselCount": 22,
+  "pngCount": 161,
+  "textBounds": [
+    {
+      "text": "Seu filho adorou a primeira aula.",
+      "within": true
+    },
+    {
+      "text": "Antes de contratar, veja também o que vem depois.",
+      "within": true
+    },
+    {
+      "text": "A novidade chama atenção.",
+      "within": true
+    },
+    {
+      "text": "Para conhecer melhor a proposta, procure entender como a criança continua o projeto e recebe ajuda.",
+      "within": true
+    },
+    {
+      "text": "Pergunte o que ela vai construir primeiro e o que poderá acrescentar depois.",
+      "within": true
+    },
+    {
+      "text": "Assim, você consegue enxergar o caminho da atividade.",
+      "within": true
+    },
+    {
+      "text": "Neste jogo, um astronauta recolhe moedas na Lua.",
+      "within": true
+    },
+    {
+      "text": "Ao juntar todas, aparecem fogos para comemorar.",
+      "within": true
+    },
+    {
+      "text": "A criação pode ser dividida em partes: fazer o astronauta andar, recolher uma moeda e contar as que ele pegou.",
+      "within": true
+    },
+    {
+      "text": "Cada teste mostra o que já está funcionando.",
+      "within": true
+    },
+    {
+      "text": "Depois, entram outras escolhas: onde colocar as moedas e o que acontece quando o jogador termina.",
+      "within": true
+    },
+    {
+      "text": "A criança tem novas partes para construir e experimentar.",
+      "within": true
+    },
+    {
+      "text": "Ao avaliar um curso, veja essa continuação e a orientação disponível quando seu filho precisa de ajuda.",
+      "within": true
+    },
+    {
+      "text": "Converse também com ele sobre o que gostaria de criar.",
+      "within": true
+    },
+    {
+      "text": "Aqui mostramos o que acontece ao aprender criando jogos.",
+      "within": true
+    },
+    {
+      "text": "Siga o perfil para conhecer mais exemplos.",
+      "within": true
+    }
+  ],
+  "nativeInserts": 16,
+  "mobileNoOverflow": true,
+  "browserImageDecode": true,
+  "sourceSectionHash": "70f26a1cae60a09fe70848e07ea5ded598f2790054b178951ace5daac30d44f3",
+  "copyEqual": true,
+  "fonts": {
+    "normal": true,
+    "bold": true
+  },
+  "nextCarousel": "P18",
+  "published": false
+}

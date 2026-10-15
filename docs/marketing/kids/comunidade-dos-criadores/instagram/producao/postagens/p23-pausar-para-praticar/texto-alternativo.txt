@@ -1,0 +1,39 @@
+SLIDE 1
+Curto (89 caracteres): Cena encenada: menino usa o mouse diante do player real pausado, visto em primeiro plano.
+
+Longo: Fotografia gerada de um menino fictício com a mão no mouse. O monitor em primeiro plano recebeu uma captura do player original pausado aos 28 segundos, aplicada em perspectiva. A gravação mostra a área Ao iniciar. A cena representa pausar para fazer; não documenta um aluno real. Texto da arte: Pausar a aula pode fazer parte de aprender. O importante é o que seu filho faz depois da pausa.
+
+SLIDE 2
+Curto (83 caracteres): Cena encenada: menino monta os blocos no Estúdio com uma aula real pausada ao lado.
+
+Longo: Nova fotografia do mesmo menino fictício, visto de outro ângulo. A tela mostra os componentes originais da aula Prepare a tela do jogo, do Corre, Dino!, renderizados localmente: vídeo pausado aos 32 segundos e área Ao iniciar colocada no projeto. Perfil e progresso são demonstrativos. Texto da arte: Numa atividade de criação, a criança precisa de tempo para colocar a explicação em prática. Só assistir não mostra se ela conseguiu fazer.
+
+SLIDE 3
+Curto (82 caracteres): Ilustração: esboço de nave azul disparando um laser verde em direção a um meteoro.
+
+Longo: Ilustração gerada de uma página de caderno com uma nave azul, um disparo verde e um meteoro laranja. É o esboço de uma situação imaginada, coerente com o texto Imagine uma aula. Não representa um curso publicado da Patrulha Espacial nem desenho feito por aluno. Texto da arte: Imagine uma aula que ensina a fazer uma nave disparar. Seu filho assiste à explicação, pausa e monta essa parte do jogo.
+
+SLIDE 4
+Curto (86 caracteres): Captura real: comando da tecla espaço e nave disparando um laser na Patrulha Espacial.
+
+Longo: Montagem de recortes nativos do exemplo Patrulha Espacial. Acima aparece a condição da tecla espaço, preservando inclusive o rótulo genérico espaço (pular) do menu original. Abaixo, a nave inteira dispara um laser verde em direção ao meteoro laranja. A instrução original do jogo esclarece Espaço: atirar laser. Não há player de aula. O enquadramento vertical permite ler a condição e enxergar o disparo no celular. Texto da arte: Depois, aperta a tecla de espaço para testar. Se o disparo aparece, ele vê o resultado da instrução que montou.
+
+SLIDE 5
+Curto (78 caracteres): Cena encenada: menino revê a aula; a tela real mostra também onde pedir ajuda.
+
+Longo: Nova fotografia do menino fictício revendo a explicação. A tela original foi capturada aos 14 segundos com o formulário de dúvida aberto. Uma ampliação do botão nativo Preciso de ajuda aparece no canto da imagem. Nenhuma pergunta foi enviada à equipe. Texto da arte: Se não aparece, ele pode rever a explicação e comparar os passos. Se continuar com dúvida, precisa saber onde encontrar ajuda.
+
+SLIDE 6
+Curto (85 caracteres): Vídeo real pausado aos 38 segundos, com os controles e a barra de progresso visíveis.
+
+Longo: Close do player nativo com a gravação original pausada aos 38 segundos de um vídeo de 56 segundos. O triângulo de reprodução e a barra de progresso permanecem visíveis. A possibilidade de voltar foi conferida de 38 para 33 segundos. O conteúdo dentro do vídeo é a gravação original, sem alteração de interface ou falas. Texto da arte: Uma aula gravada permite fazer essa pausa e voltar ao trecho que faltou entender. Isso dá espaço para a criança tentar no ritmo dela.
+
+SLIDE 7
+Curto (80 caracteres): Cena encenada: pai vê uma aula e confere o cartão Fazer, Rever e Procurar ajuda.
+
+Longo: Fotografia gerada de um pai fictício olhando o notebook. A tela recebeu a aula real em renderização local, pausada aos 20 segundos. O cartão sobre a mesa recebeu as palavras Fazer, Rever e Procurar ajuda em perspectiva. O pai não é uma pessoa real nem um responsável dando depoimento. Texto da arte: Antes de escolher uma atividade, confira: há tempo para fazer? Dá para rever? Existe orientação quando algo não funciona? Essas respostas ajudam mais do que saber só a duração do vídeo.
+
+SLIDE 8
+Curto (85 caracteres): Cena encenada: menino pratica no computador com a aula pausada; o pai passa ao fundo.
+
+Longo: Nova fotografia em plano aberto da mesma família fictícia: o menino usa o computador e o pai passa ao fundo. Na tela, a aula está pausada aos 42 segundos e o projeto contém Ao iniciar e Preparar o jogo, com tela de 480 por 270. É uma cena de prática, sem atribuir resultados pedagógicos à imagem. Texto da arte: Aqui mostramos como acompanhar o aprendizado de quem está criando jogos. Siga o perfil para ver mais.

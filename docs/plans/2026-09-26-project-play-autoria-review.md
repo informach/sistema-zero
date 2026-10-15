@@ -37,7 +37,7 @@ Comandos executados dentro de cada pacote quando indicado:
 - Admin: `learning-builder`, `scene-authoring-rules`, `project-play-authoring`,
   `project-play-editor`, `project-play-preview` — 30 passaram.
 - `bun run typecheck` em core, members, member-shell, studio, admin e community-kids — passaram.
-- `bun docs/aulas-interativas/qa/validar-manifestos.ts` — 34 válidos, nenhum aviso ou reprovação.
+- `bun docs/aulas-interativas-tecnico/qa/validar-manifestos.ts` — 34 válidos, nenhum aviso ou reprovação.
 - Biome nos 20 arquivos TypeScript alterados e `git diff --check` — sem problemas.
 
 Navegador real, usando os componentes reais em uma página local isolada:

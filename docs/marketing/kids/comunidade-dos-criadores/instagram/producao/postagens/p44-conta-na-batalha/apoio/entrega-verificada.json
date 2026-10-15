@@ -1,0 +1,66 @@
+{
+  "status": "conferido",
+  "slides": [
+    {
+      "file": "01-p44.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 912389
+    },
+    {
+      "file": "02-p44.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 129853
+    },
+    {
+      "file": "03-p44.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 90876
+    },
+    {
+      "file": "04-p44.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 166177
+    },
+    {
+      "file": "05-p44.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 93825
+    },
+    {
+      "file": "06-p44.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 956086
+    },
+    {
+      "file": "07-p44.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 916164
+    }
+  ],
+  "copyPreserved": true,
+  "fontsLoaded": true,
+  "localLinks": 41,
+  "statesVerified": {
+    "attack8": [
+      20,
+      12,
+      4,
+      0
+    ],
+    "attack10": [
+      20,
+      10,
+      0
+    ]
+  },
+  "artDirection": "Cenas novas com a mesma menina fictícia, capturas do jogo 2D básico, barras e valores conferidos, leitura visual das sete peças e prévia móvel.",
+  "errors": [],
+  "scope": "Produção local do P44. Sem publicação, agendamento, commit ou deploy."
+}

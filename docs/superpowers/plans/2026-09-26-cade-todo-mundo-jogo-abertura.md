@@ -23,7 +23,7 @@
 
 ### Task 1: Real game and preview interaction bridge
 
-**Files:** `docs/aulas-interativas/qa/cade-todo-mundo-projeto.ts`, `packages/studio/src/official-extensions/game-2d/runtime/textSprites.ts`, `packages/studio/src/preview/inputBridge.ts`, related tests.
+**Files:** `docs/aulas-interativas-tecnico/qa/cade-todo-mundo-projeto.ts`, `packages/studio/src/official-extensions/game-2d/runtime/textSprites.ts`, `packages/studio/src/preview/inputBridge.ts`, related tests.
 
 **Interfaces:** Produce `montarProjetoCadeTodoMundoCompleto(): Project`; preview messages `sz:g2d:group-click` carrying hit coordinates and `sz:pointer-at` carrying logical stage coordinates.
 
@@ -56,7 +56,7 @@
 
 ### Task 4: Opening content and review
 
-**Files:** `docs/aulas-interativas/qa/gerar-cade-todo-mundo.ts`, Aula 1 manifesto and roteiro, manifest QA tests.
+**Files:** `docs/aulas-interativas-tecnico/qa/gerar-cade-todo-mundo.ts`, Aula 1 manifesto and roteiro, manifest QA tests.
 
 **Interfaces:** Section `apresentacao` contains `video-a1-abertura` and required project-play block; completed demo snapshot is separate from `projeto` starter block.
 

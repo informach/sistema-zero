@@ -1,0 +1,10 @@
+{
+  "source": "packages/studio/src/official-extensions/game-2d-advanced/examples/dueloDeCartasExample.ts",
+  "sha256": "4e70f06cc6423db66289dd68d2f7a79a12c6cd76b7569e3806773229a3e03f77",
+  "runtime": "packages/studio/src/official-extensions/game-2d-advanced/runtime.ts",
+  "original": "duelo-original.json",
+  "adapted": "duelo-dois-pontos.json",
+  "change": "gk:cardsEnergyPerTurn.n.value: 3 → 2",
+  "retained": "Custo 1, dano 6, defesa 5, compra de 3 cartas por turno e conservação da mão.",
+  "method": "Runtime e blocos originais, execução local e cliques reais. Semente aleatória fixa para reprodução. Observador somente de leitura. Sem alteração das regras para acionar resultados."
+}

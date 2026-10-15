@@ -1,0 +1,42 @@
+Oficina em desenvolvimento. A sincronização com o Estúdio ainda não está ligada aqui.
+
+Meus projetos
+estudo-de-usabilidade
+Mudanças por salvar
+Guardar agora
+Baixar projeto
+Exportar GLB
+Modelar
+Pintar
+Animar
+Mostrar grade
+Mais ajustes do palco
+Vista: Livre
+Enquadrar seleção
+FERRAMENTAS DE PINTURA
+Lápis
+Borracha
+Balde
+Conta-gotas
+Girar a pintura da face
+Pintar de perto
+Espelho de pintura
+Vestir com textura
+LARGURA DO TRAÇO
+Fino
+Médio
+Grosso
+Ferramentas que vêm por aí
+Pintar no modelo
+Olhar o modelo
+
+Arraste na peça para pintar. Para girar a câmera, arraste fora dela ou escolha “Olhar o modelo”.
+
+Peças e propriedades
+PEÇAS E GRUPOS
+caixa
+Peça
+Caixa
+Peça
+Caixa
+Peça

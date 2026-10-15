@@ -2,9 +2,9 @@
 
 Proposta aprovada: [exploração direta e composição livre](2026-09-12-exploracao-direta-aulas-kids-proposta-v5.md). A sequência abaixo organiza o trabalho técnico; não determina a ordem das seções de uma aula.
 
-Código e roteiros implementados localmente. [Relatório de verificação e limites](../aulas-interativas/qa/piloto-v5-2026-09-12.md). Mídias, homologação com alunos e publicação permanecem na etapa externa abaixo.
+Código e roteiros implementados localmente. [Relatório de verificação e limites](../aulas-interativas-tecnico/qa/piloto-v5-2026-09-12.md). Mídias, homologação com alunos e publicação permanecem na etapa externa abaixo.
 
-Revisão completa posterior: [seis achados corrigidos e verificações adicionais](../aulas-interativas/qa/revisao-completa-v5-2026-09-12.md).
+Revisão completa posterior: [seis achados corrigidos e verificações adicionais](../aulas-interativas-tecnico/qa/revisao-completa-v5-2026-09-12.md).
 
 ## Código e conteúdo
 

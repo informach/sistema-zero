@@ -1,0 +1,1167 @@
+{
+  "scope": "Live-workshop changes and shared integrations; excludes unrelated marketing and product proposals.",
+  "method": "Prior review inventory plus current package diff and untracked package files. Inclusion is not a claim of line-by-line review or external deployment validation.",
+  "files": 228,
+  "packages": {
+    "admin": 20,
+    "api-gateway": 2,
+    "auth": 3,
+    "community-kids": 26,
+    "core": 7,
+    "hub": 10,
+    "live-recorder": 16,
+    "live-supervisor": 6,
+    "member-shell": 54,
+    "members": 68,
+    "studio": 16
+  },
+  "categories": {
+    "source/configuration": 169,
+    "test/support": 45,
+    "documentation": 6,
+    "binary/runtime asset": 2,
+    "generated migration snapshot": 6
+  },
+  "items": [
+    {
+      "path": "packages/admin/.env.example",
+      "bytes": 4448,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/admin/.gitignore",
+      "bytes": 653,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/admin/next.config.ts",
+      "bytes": 8301,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/admin/package.json",
+      "bytes": 2304,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/admin/src/app/admin/oficinas/enrollment-picker.tsx",
+      "bytes": 6650,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/admin/src/app/admin/oficinas/live-steps-editor.tsx",
+      "bytes": 8283,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/admin/src/app/admin/oficinas/page.tsx",
+      "bytes": 322,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/admin/src/app/admin/oficinas/workshops-admin.tsx",
+      "bytes": 31287,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/admin/src/app/admin/professor/ao-vivo/[id]/page.tsx",
+      "bytes": 264,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/admin/src/app/admin/professor/ao-vivo/page.tsx",
+      "bytes": 176,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/admin/src/app/ao-vivo/demonstracao/[id]/demonstration-gate.tsx",
+      "bytes": 1249,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/admin/src/app/ao-vivo/demonstracao/[id]/page.tsx",
+      "bytes": 562,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/admin/src/app/api/admin/live/[...path]/route.ts",
+      "bytes": 536,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/admin/src/app/api/live/[...path]/route.ts",
+      "bytes": 536,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/admin/src/app/api/live/camera-assets/[asset]/route.ts",
+      "bytes": 249,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/admin/src/app/api/live/sessions/[id]/preview/route.ts",
+      "bytes": 848,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/admin/src/app/api/media/live-materials/route.ts",
+      "bytes": 1353,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/admin/src/components/admin/nav.ts",
+      "bytes": 8606,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/admin/src/lib/env.ts",
+      "bytes": 5023,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/admin/src/server/r2.ts",
+      "bytes": 12115,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/api-gateway/gateway.config.ts",
+      "bytes": 176193,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/api-gateway/tests/unit/config.test.ts",
+      "bytes": 24896,
+      "category": "test/support"
+    },
+    {
+      "path": "packages/auth/CLAUDE.md",
+      "bytes": 42620,
+      "category": "documentation"
+    },
+    {
+      "path": "packages/auth/src/interfaces/http/routes/internal.routes.ts",
+      "bytes": 8039,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/auth/tests/integration/http-server.test.ts",
+      "bytes": 109982,
+      "category": "test/support"
+    },
+    {
+      "path": "packages/community-kids/.gitignore",
+      "bytes": 618,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/community-kids/next.config.ts",
+      "bytes": 13624,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/community-kids/package.json",
+      "bytes": 2806,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/community-kids/src/app/(app)/criar/oficinas/[workspaceId]/page.tsx",
+      "bytes": 304,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/community-kids/src/app/(app)/criar/page.tsx",
+      "bytes": 8416,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/community-kids/src/app/(app)/cursos/page.tsx",
+      "bytes": 9246,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/community-kids/src/app/(app)/oficinas/aulas/[id]/page.tsx",
+      "bytes": 244,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/community-kids/src/app/(app)/oficinas/page.tsx",
+      "bytes": 265,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/community-kids/src/app/(app)/page.tsx",
+      "bytes": 11398,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/community-kids/src/app/api/live/[...path]/route.ts",
+      "bytes": 151,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/community-kids/src/app/api/live/camera-assets/[asset]/route.ts",
+      "bytes": 249,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/community-kids/src/app/api/live/sessions/[id]/preview/route.ts",
+      "bytes": 847,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/community-kids/src/app/api/parents/live/[...path]/route.ts",
+      "bytes": 254,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/community-kids/src/app/pais/_components/parent-shell.tsx",
+      "bytes": 5453,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/community-kids/src/app/pais/oficinas/page.tsx",
+      "bytes": 607,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/community-kids/src/app/pais/parent-routes.ts",
+      "bytes": 2146,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/community-kids/src/components/kids/live-workshop-shortcut.tsx",
+      "bytes": 866,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/community-kids/src/components/kids/nav.ts",
+      "bytes": 7803,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/community-kids/src/lib/focus-route.ts",
+      "bytes": 1866,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/community-kids/src/proxy.ts",
+      "bytes": 3594,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/community-kids/tests/live-cursor.test.tsx",
+      "bytes": 1419,
+      "category": "test/support"
+    },
+    {
+      "path": "packages/community-kids/tests/live-learning.test.tsx",
+      "bytes": 5104,
+      "category": "test/support"
+    },
+    {
+      "path": "packages/community-kids/tests/live-navigation.test.ts",
+      "bytes": 1149,
+      "category": "test/support"
+    },
+    {
+      "path": "packages/community-kids/tests/live-participants.test.tsx",
+      "bytes": 2009,
+      "category": "test/support"
+    },
+    {
+      "path": "packages/community-kids/tests/live-workspace-review.test.tsx",
+      "bytes": 6000,
+      "category": "test/support"
+    },
+    {
+      "path": "packages/community-kids/tests/nav-back.test.ts",
+      "bytes": 4240,
+      "category": "test/support"
+    },
+    {
+      "path": "packages/core/package.json",
+      "bytes": 1434,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/core/src/live/contracts.ts",
+      "bytes": 6249,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/core/src/live/index.ts",
+      "bytes": 105,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/core/src/live/media.ts",
+      "bytes": 1023,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/core/src/live/policy.ts",
+      "bytes": 2989,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/core/src/live/workspace.ts",
+      "bytes": 2079,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/core/tests/live.test.ts",
+      "bytes": 1334,
+      "category": "test/support"
+    },
+    {
+      "path": "packages/hub/CLAUDE.md",
+      "bytes": 53774,
+      "category": "documentation"
+    },
+    {
+      "path": "packages/hub/src/application/access/access-resolution.service.ts",
+      "bytes": 12862,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/hub/src/application/showcase/showcase.service.ts",
+      "bytes": 26886,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/hub/src/domain/ports/members-gateway.port.ts",
+      "bytes": 8603,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/hub/src/infrastructure/gateways/members-http.gateway.ts",
+      "bytes": 12222,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/hub/src/interfaces/http/dtos.ts",
+      "bytes": 15990,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/hub/src/interfaces/http/routes/showcase.routes.ts",
+      "bytes": 4673,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/hub/tests/fakes/in-memory.ts",
+      "bytes": 40026,
+      "category": "test/support"
+    },
+    {
+      "path": "packages/hub/tests/integration/access-read.test.ts",
+      "bytes": 15533,
+      "category": "test/support"
+    },
+    {
+      "path": "packages/hub/tests/integration/showcase.test.ts",
+      "bytes": 40320,
+      "category": "test/support"
+    },
+    {
+      "path": "packages/live-recorder/Dockerfile",
+      "bytes": 750,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/live-recorder/README.md",
+      "bytes": 12179,
+      "category": "documentation"
+    },
+    {
+      "path": "packages/live-recorder/package.json",
+      "bytes": 469,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/live-recorder/railway.json",
+      "bytes": 393,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/live-recorder/scripts/check-camera-csp.ts",
+      "bytes": 2018,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/live-recorder/src/contracts.ts",
+      "bytes": 1451,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/live-recorder/src/receiver-page.ts",
+      "bytes": 8874,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/live-recorder/src/recording-job.ts",
+      "bytes": 13405,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/live-recorder/src/segment-store.ts",
+      "bytes": 9442,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/live-recorder/src/server.ts",
+      "bytes": 10089,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/live-recorder/tests/camera-csp-check.ts",
+      "bytes": 8223,
+      "category": "test/support"
+    },
+    {
+      "path": "packages/live-recorder/tests/camera-effects-check.ts",
+      "bytes": 4602,
+      "category": "test/support"
+    },
+    {
+      "path": "packages/live-recorder/tests/commands.test.ts",
+      "bytes": 5117,
+      "category": "test/support"
+    },
+    {
+      "path": "packages/live-recorder/tests/receiver-check.ts",
+      "bytes": 5031,
+      "category": "test/support"
+    },
+    {
+      "path": "packages/live-recorder/tests/receiver.test.ts",
+      "bytes": 2682,
+      "category": "test/support"
+    },
+    {
+      "path": "packages/live-recorder/tsconfig.json",
+      "bytes": 155,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/live-supervisor/README.md",
+      "bytes": 4880,
+      "category": "documentation"
+    },
+    {
+      "path": "packages/live-supervisor/package.json",
+      "bytes": 273,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/live-supervisor/src/index.ts",
+      "bytes": 8806,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/live-supervisor/tests/supervisor.test.ts",
+      "bytes": 4034,
+      "category": "test/support"
+    },
+    {
+      "path": "packages/live-supervisor/tsconfig.json",
+      "bytes": 144,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/live-supervisor/wrangler.jsonc",
+      "bytes": 472,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/member-shell/assets/live-camera/LICENSE-2.0.txt",
+      "bytes": 11358,
+      "category": "binary/runtime asset"
+    },
+    {
+      "path": "packages/member-shell/assets/live-camera/NOTICE.md",
+      "bytes": 1051,
+      "category": "documentation"
+    },
+    {
+      "path": "packages/member-shell/assets/live-camera/selfie_segmenter_landscape.tflite",
+      "bytes": 250177,
+      "category": "binary/runtime asset"
+    },
+    {
+      "path": "packages/member-shell/package.json",
+      "bytes": 2546,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/member-shell/scripts/sync-live-camera-assets.mjs",
+      "bytes": 2077,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/member-shell/src/components/learning-activity.tsx",
+      "bytes": 15965,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/member-shell/src/components/learning-execution-context.tsx",
+      "bytes": 2788,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/member-shell/src/components/live/live-assistance-cursor.tsx",
+      "bytes": 1410,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/member-shell/src/components/live/live-catalog.tsx",
+      "bytes": 9426,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/member-shell/src/components/live/live-classroom.tsx",
+      "bytes": 32020,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/member-shell/src/components/live/live-continued-creation.tsx",
+      "bytes": 2337,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/member-shell/src/components/live/live-creation-list.tsx",
+      "bytes": 3195,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/member-shell/src/components/live/live-guidance.tsx",
+      "bytes": 4313,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/member-shell/src/components/live/live-learning-activities.tsx",
+      "bytes": 8655,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/member-shell/src/components/live/live-media-panel.tsx",
+      "bytes": 17385,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/member-shell/src/components/live/live-parent-reservations.tsx",
+      "bytes": 3439,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/member-shell/src/components/live/live-participants.tsx",
+      "bytes": 6567,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/member-shell/src/components/live/live-preflight.tsx",
+      "bytes": 4520,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/member-shell/src/components/live/live-recording-review.tsx",
+      "bytes": 3852,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/member-shell/src/components/live/live-recording-status.tsx",
+      "bytes": 3039,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/member-shell/src/components/live/live-replacement.tsx",
+      "bytes": 2575,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/member-shell/src/components/live/live-replay.tsx",
+      "bytes": 5424,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/member-shell/src/components/live/live-workspace.tsx",
+      "bytes": 36865,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/member-shell/src/components/project-play-activity.tsx",
+      "bytes": 9987,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/member-shell/src/components/scene-activity.tsx",
+      "bytes": 80888,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/member-shell/src/components/scene-workspace.tsx",
+      "bytes": 3346,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/member-shell/src/index.ts",
+      "bytes": 4538,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/member-shell/src/lib/live-route-policy.ts",
+      "bytes": 2527,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/member-shell/src/lib/live/classroom-state.ts",
+      "bytes": 1523,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/member-shell/src/lib/live/client.ts",
+      "bytes": 1664,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/member-shell/src/lib/live/cursor.ts",
+      "bytes": 1993,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/member-shell/src/lib/live/media-camera-effects.ts",
+      "bytes": 4870,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/member-shell/src/lib/live/media-camera-effects.worker.ts",
+      "bytes": 4576,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/member-shell/src/lib/live/media-devices.ts",
+      "bytes": 3277,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/member-shell/src/lib/live/media-transport.ts",
+      "bytes": 13264,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/member-shell/src/lib/live/participants.ts",
+      "bytes": 1613,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/member-shell/src/lib/live/preview.ts",
+      "bytes": 1269,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/member-shell/src/lib/live/workspace-drafts.ts",
+      "bytes": 3613,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/member-shell/src/lib/study-access.ts",
+      "bytes": 3032,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/member-shell/src/routes/live-materials.ts",
+      "bytes": 5177,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/member-shell/src/routes/live-preview.ts",
+      "bytes": 4506,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/member-shell/src/routes/live.ts",
+      "bytes": 6753,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/member-shell/src/routes/studio.ts",
+      "bytes": 23177,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/member-shell/src/server/clients.ts",
+      "bytes": 69328,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/member-shell/src/server/live-camera-assets.ts",
+      "bytes": 1346,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/member-shell/tests/live-classroom-state.test.ts",
+      "bytes": 3516,
+      "category": "test/support"
+    },
+    {
+      "path": "packages/member-shell/tests/live-client.test.ts",
+      "bytes": 2072,
+      "category": "test/support"
+    },
+    {
+      "path": "packages/member-shell/tests/live-materials.test.ts",
+      "bytes": 2250,
+      "category": "test/support"
+    },
+    {
+      "path": "packages/member-shell/tests/live-media.test.ts",
+      "bytes": 4526,
+      "category": "test/support"
+    },
+    {
+      "path": "packages/member-shell/tests/live-participants.test.ts",
+      "bytes": 1532,
+      "category": "test/support"
+    },
+    {
+      "path": "packages/member-shell/tests/live-preview.test.ts",
+      "bytes": 4088,
+      "category": "test/support"
+    },
+    {
+      "path": "packages/member-shell/tests/live-route-policy.test.ts",
+      "bytes": 2494,
+      "category": "test/support"
+    },
+    {
+      "path": "packages/member-shell/tests/live-routes.test.ts",
+      "bytes": 4961,
+      "category": "test/support"
+    },
+    {
+      "path": "packages/member-shell/tests/live-workspace-drafts.test.ts",
+      "bytes": 2284,
+      "category": "test/support"
+    },
+    {
+      "path": "packages/members/.env.example",
+      "bytes": 7333,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/members/CLAUDE.md",
+      "bytes": 218577,
+      "category": "documentation"
+    },
+    {
+      "path": "packages/members/src/application/learning/learning.service.ts",
+      "bytes": 23024,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/members/src/application/live/live-learning.service.ts",
+      "bytes": 8435,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/members/src/application/live/live-materials.service.ts",
+      "bytes": 2327,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/members/src/application/live/live-publication.service.ts",
+      "bytes": 3146,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/members/src/application/live/live-workspace.service.ts",
+      "bytes": 22669,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/members/src/application/live/live.service.ts",
+      "bytes": 47639,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/members/src/application/profile-allowance/get-profile-allowance.service.ts",
+      "bytes": 2146,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/members/src/composition-root.ts",
+      "bytes": 50721,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/members/src/domain/live/learning-plan.ts",
+      "bytes": 2743,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/members/src/domain/live/live.errors.ts",
+      "bytes": 774,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/members/src/domain/live/workspace-snapshot.ts",
+      "bytes": 3987,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/members/src/domain/ports/live-benefits.port.ts",
+      "bytes": 177,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/members/src/domain/ports/live-materials.port.ts",
+      "bytes": 366,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/members/src/domain/ports/live-repository.port.ts",
+      "bytes": 2955,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/members/src/domain/ports/live-workspace-repository.port.ts",
+      "bytes": 1236,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/members/src/infrastructure/config/env.ts",
+      "bytes": 13807,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/members/src/infrastructure/gateways/live-profile-ownership.gateway.ts",
+      "bytes": 1613,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/members/src/infrastructure/live/cloudflare-sfu.client.ts",
+      "bytes": 3533,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/members/src/infrastructure/live/cloudflare-sfu.provider.ts",
+      "bytes": 24353,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/members/src/infrastructure/live/create-live-media.ts",
+      "bytes": 3253,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/members/src/infrastructure/live/drizzle-media-registry.ts",
+      "bytes": 3572,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/members/src/infrastructure/live/live-media.routes.ts",
+      "bytes": 4680,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/members/src/infrastructure/live/live-recording.routes.ts",
+      "bytes": 2892,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/members/src/infrastructure/live/live-supervisor.client.ts",
+      "bytes": 2232,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/members/src/infrastructure/live/media-registry.ts",
+      "bytes": 2849,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/members/src/infrastructure/live/own-recording.provider.ts",
+      "bytes": 15071,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/members/src/infrastructure/persistence/drizzle/live-benefits.repository.ts",
+      "bytes": 1996,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/members/src/infrastructure/persistence/drizzle/live-materials.repository.ts",
+      "bytes": 728,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/members/src/infrastructure/persistence/drizzle/live-purge.ts",
+      "bytes": 3660,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/members/src/infrastructure/persistence/drizzle/live-workspace.repository.ts",
+      "bytes": 7958,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/members/src/infrastructure/persistence/drizzle/live.repository.ts",
+      "bytes": 12841,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/members/src/infrastructure/persistence/drizzle/migrations/0102_live_workshops.sql",
+      "bytes": 7636,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/members/src/infrastructure/persistence/drizzle/migrations/0103_live_recording_jobs.sql",
+      "bytes": 782,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/members/src/infrastructure/persistence/drizzle/migrations/0104_live_replay_positions.sql",
+      "bytes": 713,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/members/src/infrastructure/persistence/drizzle/migrations/0105_live_materials_recording_commands.sql",
+      "bytes": 522,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/members/src/infrastructure/persistence/drizzle/migrations/0106_live_learning.sql",
+      "bytes": 1472,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/members/src/infrastructure/persistence/drizzle/migrations/meta/0102_snapshot.json",
+      "bytes": 212621,
+      "category": "generated migration snapshot"
+    },
+    {
+      "path": "packages/members/src/infrastructure/persistence/drizzle/migrations/meta/0103_snapshot.json",
+      "bytes": 215448,
+      "category": "generated migration snapshot"
+    },
+    {
+      "path": "packages/members/src/infrastructure/persistence/drizzle/migrations/meta/0104_snapshot.json",
+      "bytes": 217706,
+      "category": "generated migration snapshot"
+    },
+    {
+      "path": "packages/members/src/infrastructure/persistence/drizzle/migrations/meta/0105_snapshot.json",
+      "bytes": 219770,
+      "category": "generated migration snapshot"
+    },
+    {
+      "path": "packages/members/src/infrastructure/persistence/drizzle/migrations/meta/0106_snapshot.json",
+      "bytes": 224430,
+      "category": "generated migration snapshot"
+    },
+    {
+      "path": "packages/members/src/infrastructure/persistence/drizzle/migrations/meta/_journal.json",
+      "bytes": 15815,
+      "category": "generated migration snapshot"
+    },
+    {
+      "path": "packages/members/src/infrastructure/persistence/drizzle/schema.ts",
+      "bytes": 96491,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/members/src/infrastructure/persistence/drizzle/user-data-purge.repository.ts",
+      "bytes": 9208,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/members/src/interfaces/http/error-handler.ts",
+      "bytes": 9179,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/members/src/interfaces/http/routes/live-learning.routes.ts",
+      "bytes": 1967,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/members/src/interfaces/http/routes/live-materials.routes.ts",
+      "bytes": 1315,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/members/src/interfaces/http/routes/live-publication.routes.ts",
+      "bytes": 1754,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/members/src/interfaces/http/routes/live-workspaces.routes.ts",
+      "bytes": 6611,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/members/src/interfaces/http/routes/live.routes.ts",
+      "bytes": 13044,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/members/src/interfaces/http/server.ts",
+      "bytes": 10560,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/members/tests/db/live-recording.test.ts",
+      "bytes": 6880,
+      "category": "test/support"
+    },
+    {
+      "path": "packages/members/tests/db/live-review-regressions.test.ts",
+      "bytes": 9733,
+      "category": "test/support"
+    },
+    {
+      "path": "packages/members/tests/db/live-test-schema.ts",
+      "bytes": 1232,
+      "category": "test/support"
+    },
+    {
+      "path": "packages/members/tests/db/live-workspace.repository.test.ts",
+      "bytes": 12857,
+      "category": "test/support"
+    },
+    {
+      "path": "packages/members/tests/db/live.repository.test.ts",
+      "bytes": 16329,
+      "category": "test/support"
+    },
+    {
+      "path": "packages/members/tests/db/test-database.ts",
+      "bytes": 3335,
+      "category": "test/support"
+    },
+    {
+      "path": "packages/members/tests/fakes/live-in-memory.ts",
+      "bytes": 5704,
+      "category": "test/support"
+    },
+    {
+      "path": "packages/members/tests/integration/live-materials.test.ts",
+      "bytes": 2081,
+      "category": "test/support"
+    },
+    {
+      "path": "packages/members/tests/integration/live.test.ts",
+      "bytes": 8916,
+      "category": "test/support"
+    },
+    {
+      "path": "packages/members/tests/unit/live-learning.test.ts",
+      "bytes": 10843,
+      "category": "test/support"
+    },
+    {
+      "path": "packages/members/tests/unit/live-media.test.ts",
+      "bytes": 7889,
+      "category": "test/support"
+    },
+    {
+      "path": "packages/members/tests/unit/live-publication.test.ts",
+      "bytes": 3522,
+      "category": "test/support"
+    },
+    {
+      "path": "packages/members/tests/unit/live-workspace.test.ts",
+      "bytes": 18739,
+      "category": "test/support"
+    },
+    {
+      "path": "packages/members/tests/unit/live.service.test.ts",
+      "bytes": 19678,
+      "category": "test/support"
+    },
+    {
+      "path": "packages/members/tests/unit/profile-allowance.test.ts",
+      "bytes": 3783,
+      "category": "test/support"
+    },
+    {
+      "path": "packages/studio/package.json",
+      "bytes": 4632,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/studio/src/components/layout/ShareDialog.tsx",
+      "bytes": 18975,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/studio/src/components/layout/topbar/ModeSegment.tsx",
+      "bytes": 1623,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/studio/src/components/preview/PreviewIframe.tsx",
+      "bytes": 42225,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/studio/src/core/blankProject.ts",
+      "bytes": 1159,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/studio/src/core/project.ts",
+      "bytes": 31104,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/studio/src/cover/__tests__/coverCaptureIsolation.test.ts",
+      "bytes": 3717,
+      "category": "test/support"
+    },
+    {
+      "path": "packages/studio/src/cover/coverCapture.ts",
+      "bytes": 17139,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/studio/src/persistence/service.test.ts",
+      "bytes": 32086,
+      "category": "test/support"
+    },
+    {
+      "path": "packages/studio/src/persistence/service.ts",
+      "bytes": 28680,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/studio/src/persistence/types.ts",
+      "bytes": 2330,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/studio/src/state/projectStore.ts",
+      "bytes": 53150,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/studio/src/studio/StudioCore.tsx",
+      "bytes": 30141,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/studio/src/studio/observation.test.ts",
+      "bytes": 2067,
+      "category": "test/support"
+    },
+    {
+      "path": "packages/studio/src/studio/observation.tsx",
+      "bytes": 666,
+      "category": "source/configuration"
+    },
+    {
+      "path": "packages/studio/src/studio/types.ts",
+      "bytes": 15753,
+      "category": "source/configuration"
+    }
+  ]
+}

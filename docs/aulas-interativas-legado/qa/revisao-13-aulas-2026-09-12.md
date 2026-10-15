@@ -25,9 +25,9 @@ Os casos negativos incluem floresta depois do Dino, evento de tecla provisório 
 Na raiz, passando o diretório original como argumento:
 
 ```powershell
-bun docs/aulas-interativas/qa/gerar-candidatos-v6.ts 'CAMINHO_DOS_ROTEIROS'
-bun docs/aulas-interativas/qa/validar-revisao-completa.ts 'CAMINHO_DOS_ROTEIROS'
-bun docs/aulas-interativas/qa/validar-revisao-aula-01.ts 'CAMINHO_DOS_ROTEIROS'
+bun docs/aulas-interativas-tecnico/qa/gerar-candidatos-v6.ts 'CAMINHO_DOS_ROTEIROS'
+bun docs/aulas-interativas-tecnico/qa/validar-revisao-completa.ts 'CAMINHO_DOS_ROTEIROS'
+bun docs/aulas-interativas-tecnico/qa/validar-revisao-aula-01.ts 'CAMINHO_DOS_ROTEIROS'
 bun test packages/core/tests/project-structure.test.ts packages/core/tests/project-relationships.test.ts packages/core/tests/section-progression.test.ts packages/core/src/learning/exploration.test.ts packages/core/src/learning/experience.test.ts packages/admin/tests/project-pattern-editor.test.tsx packages/admin/tests/section-completion-editor.test.tsx
 ```
 

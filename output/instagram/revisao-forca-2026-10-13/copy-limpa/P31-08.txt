@@ -1,9 +1,0 @@
-Esconder um tesouro dá trabalho antes da primeira busca. É preciso escolher o lugar, permitir o acesso e decidir como o jogador percebe que encontrou.
-
-No Meu Mundo, exemplo do nosso Estúdio, um marcador fica num canto da floresta. A regra verifica se o jogador chegou perto e apertou E. Então aparece a mensagem e a câmera treme.
-
-Quem cria pode mudar a posição ou a pista e observar outra pessoa procurando. A reação do jogador oferece uma informação para a próxima versão.
-
-Ao olhar o projeto do seu filho, pergunte qual escolha ele fez e o que queria que acontecesse. A autoria também aparece numa pequena decisão.
-
-Siga @criecomhelenaejulio para descobrir as escolhas escondidas nos jogos.

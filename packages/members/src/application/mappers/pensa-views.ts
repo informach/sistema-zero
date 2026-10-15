@@ -119,6 +119,9 @@ export interface PensaTaskView {
     completedAt: string | null
     updatedAt: string | null
   }
+  /** Equipe no v2: quem começou a missão e quem a concluiu (`null` = ninguém ainda). */
+  assigneeProfileId: string | null
+  completedByProfileId: string | null
   revision: number
   supersedesTaskId: string | null
 }
@@ -226,6 +229,8 @@ export function toPensaTaskView(task: PensaTask): PensaTaskView {
       completedAt: iso(task.progress.completedAt),
       updatedAt: iso(task.progress.updatedAt),
     },
+    assigneeProfileId: task.assigneeProfileId,
+    completedByProfileId: task.completedByProfileId,
     revision: task.revision,
     supersedesTaskId: task.supersedesTaskId,
   }

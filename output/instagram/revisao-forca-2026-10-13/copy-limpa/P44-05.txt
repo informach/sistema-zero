@@ -1,3 +1,0 @@
-Quem monta a batalha escreve essa tabela em blocos: dano igual a força vezes 2.
-
-Depois joga e confere: três Faíscas derrubam os 20 de vida. Se derrubaram com duas, tem conta errada para achar.

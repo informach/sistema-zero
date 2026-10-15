@@ -1,8 +1,0 @@
-Um caminho para experimentar:
-
-escolher o que fazer;
-localizar o comando;
-mudar uma coisa;
-conferir o efeito.
-
-A orientação da ferramenta ajuda a encontrar cada passo.

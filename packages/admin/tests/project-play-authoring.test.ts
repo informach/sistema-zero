@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { montarProjetoCadeTodoMundoCompleto } from '../../../docs/aulas-interativas/qa/cade-todo-mundo-projeto'
+import { montarProjetoCadeTodoMundoCompleto } from '../../../docs/aulas-interativas-tecnico/qa/cade-todo-mundo-projeto'
 import { readProjectPlayFile } from '../src/lib/project-play-authoring'
 
 test('importa projeto exportado preservando programa, blocos e recursos', async () => {

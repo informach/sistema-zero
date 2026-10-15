@@ -1,0 +1,21 @@
+{
+  "text": "Nave Contra Asteroides\n\nMUNDO 1\n\nA nave e seus controles\n0/3 fases\n\nFaça a nave aparecer, mova com as setas e programe os tiros para sair dela.\n\nCOMEÇAR\nFaça a nave aparecer\nMova a nave pelo espaço\nFaça a nave atirar\nBaú do Mundo",
+  "labels": [
+    {
+      "text": "ComeçarFaça a nave aparecer",
+      "aria": "Faça a nave aparecer (fase atual)"
+    },
+    {
+      "text": "Mova a nave pelo espaço",
+      "aria": "Mova a nave pelo espaço (trancada, abre quando a anterior for concluída)"
+    },
+    {
+      "text": "Faça a nave atirar",
+      "aria": "Faça a nave atirar (trancada, abre quando a anterior for concluída)"
+    },
+    {
+      "text": "Baú do Mundo",
+      "aria": "Baú do Mundo 1, fechado. Ele abre quando você concluir todas as fases deste Mundo."
+    }
+  ]
+}

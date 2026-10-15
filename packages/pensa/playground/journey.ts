@@ -11,15 +11,30 @@
  * - "Robô de lata": pausado na ideia.
  * - "Corrida do Bolt": arquivado.
  * `?vazio=1` começa sem jogos (a primeira visita).
+ *
+ * `?equipe=1` (14/10/2026) simula a EQUIPE do v2 (as rotas novas do BFF: `…/team`, `…/roles`,
+ * `…/share`, `…/members/:id`, `POST /v2/projects/join`) com as regras do core
+ * (`effectivePensaRoles`, `canWorkOnPensaMission`):
+ * - "O ninho nas nuvens" é MEU, com a Bia nas artes (eu programo) e o código ZAP-AAAAAB ligado.
+ *   A Bia já desenhou o dragão; a minha missão é a do Estúdio. 25 s depois de abrir, a Bia COMEÇA
+ *   o ovo no Molda (o compasso de 20 s da tela mostra).
+ * - "A torre da Bia" é DELA e eu entrei: ela programa, eu faço as artes, e a minha missão espera
+ *   a programação dela ("Esperando a programação de Bia").
+ * - "O castelo do Leo" é do Leo e está FORA da minha lista: digite ZAP-CCCCCC em "Entrar com um
+ *   código" para entrar.
+ * Sem `?equipe=1` o servidor é o anterior à equipe (sem `role`/`team`): a tela fica como antes.
  */
 import {
   applyPensaCommand,
   createPensaJourney,
+  effectivePensaRoles,
   type PensaJourney,
   type PensaJourneyCommand,
   type PensaJourneyListItem,
+  type PensaJourneyTeamView,
   type PensaJourneyView,
   type PensaProposal,
+  type PensaTeamPerson,
   pensaZeroStage,
 } from '@sistemazero/core/pensa'
 import type { PensaTaskDestination, PensaTaskView } from '@sistemazero/pensa'
@@ -33,14 +48,41 @@ type TaskBuilder = (
   status?: PensaTaskView['progress']['status'],
 ) => PensaTaskView
 
+/** A equipe de um jogo: quem é a dona, quem entrou, as funções CRUAS e o código. */
+interface TeamRecord {
+  owner: PensaTeamPerson
+  members: PensaTeamPerson[]
+  /** `code: null` = a dona programa; `art: []` = quem programa também desenha. */
+  roles: { code: string | null; art: string[] }
+  shareCode: string | null
+}
+
 interface GameRecord {
   view: PensaJourneyView
   tasks: PensaTaskView[]
   /** Quantos `work` faltam para a operação em andamento terminar. */
   ticks: number
+  team?: TeamRecord
 }
 
+const ME = 'perfil-eu'
 const iso = () => new Date().toISOString()
+const person = (profileId: string, firstName: string, owner: boolean): PensaTeamPerson => ({
+  profileId,
+  firstName,
+  photoUrl: null,
+  owner,
+  joinedAt: owner ? null : iso(),
+})
+const EU = person(ME, 'Helena', true)
+const BIA = person('perfil-bia', 'Bia', true)
+const LEO = person('perfil-leo', 'Leo', true)
+
+/** Um erro com `status`, como o transporte do host entrega (o `run` da tela relê no 409). */
+function refuse(status: number, message: string): never {
+  throw Object.assign(new Error(message), { status })
+}
+
 const capabilities: PensaProposal['capabilities'] = {
   profileId: 'eu',
   rank: 'explorador',
@@ -116,7 +158,7 @@ function message(role: 'user' | 'assistant', text: string, revision: number) {
   return { id: crypto.randomUUID(), role, text, at: iso(), revision, final: true }
 }
 
-export function createJourneyServer(task: TaskBuilder, empty: boolean) {
+export function createJourneyServer(task: TaskBuilder, empty: boolean, withTeam = false) {
   const games = new Map<string, GameRecord>()
 
   function seed(
@@ -205,10 +247,137 @@ export function createJourneyServer(task: TaskBuilder, empty: boolean) {
     })
     const bolt = seed('bolt', 'Corrida do Bolt', { stage: 'building', revision: 4 })
     bolt.view.project.status = 'archived'
+
+    if (withTeam) seedTeam(ninho)
+  }
+
+  /** A equipe do `?equipe=1`: o ninho com a Bia, a torre da Bia e o castelo do Leo. */
+  function seedTeam(ninho: GameRecord): void {
+    const bia = { ...BIA, owner: false, joinedAt: iso() }
+    ninho.team = {
+      owner: EU,
+      members: [bia],
+      roles: { code: null, art: [bia.profileId] },
+      shareCode: 'AAAAAB',
+    }
+    // A Bia (artes) já desenhou o dragão; a missão do Estúdio é minha.
+    ninho.tasks = ninho.tasks.map((t) =>
+      t.progress.status === 'completed'
+        ? { ...t, assigneeProfileId: bia.profileId, completedByProfileId: bia.profileId }
+        : t,
+    )
+
+    const torreIntent = 'Uma torre de cubos que a gente sobe pulando antes que a lava chegue.'
+    const torreTasks = [
+      task('torre-m1', 1, 'studio', 'Faça o herói pular com o espaço', [], 'in_progress'),
+      task('torre-m2', 2, 'pinta', 'Desenhe a lava que sobe', ['torre-m1']),
+      task('torre-m3', 3, 'studio', 'Faça a lava subir devagar', ['torre-m2']),
+    ].map((t) =>
+      t.progress.status === 'in_progress' ? { ...t, assigneeProfileId: BIA.profileId } : t,
+    )
+    const torre = seed(
+      'torre',
+      'A torre da Bia',
+      {
+        stage: 'building',
+        intent: torreIntent,
+        revision: 5,
+        messages: [
+          message('user', torreIntent, 1),
+          message(
+            'assistant',
+            'Que torre boa! Primeiro o herói pula; depois a lava sobe. A lava é com quem desenha.',
+            2,
+          ),
+        ],
+        missionIds: torreTasks.map((t) => t.id),
+      },
+      { tasks: torreTasks },
+    )
+    const torreProposal = {
+      ...proposalFor(torreIntent),
+      title: 'A torre da Bia',
+      firstResult: 'O herói pula de cubo em cubo',
+    }
+    torre.view.journey.proposal = torreProposal
+    torre.view.journey.acceptedProposalId = torreProposal.id
+    torre.team = {
+      owner: BIA,
+      members: [{ ...EU, owner: false, joinedAt: iso() }],
+      roles: { code: null, art: [ME] },
+      shareCode: 'BIATOR',
+    }
+
+    const castelo = seed('castelo', 'O castelo do Leo', {
+      stage: 'idea',
+      intent: 'Um castelo de areia que a onda tenta derrubar.',
+      revision: 1,
+      messages: [message('user', 'Um castelo de areia que a onda tenta derrubar.', 1)],
+    })
+    castelo.team = { owner: LEO, members: [], roles: { code: null, art: [] }, shareCode: 'CCCCCC' }
+
+    // A Bia COMEÇA o ovo no Molda: o compasso de 20 s da tela mostra a mudança no caminho.
+    setTimeout(() => {
+      ninho.tasks = ninho.tasks.map((t) =>
+        t.destination === 'molda' && t.progress.status === 'planned'
+          ? {
+              ...t,
+              assigneeProfileId: bia.profileId,
+              progress: {
+                ...t.progress,
+                status: 'in_progress',
+                startedAt: iso(),
+                updatedAt: iso(),
+              },
+            }
+          : t,
+      )
+    }, 25_000)
+  }
+
+  /** Papéis EFETIVOS (a regra do core), nunca as linhas cruas. */
+  function rolesOf(team: TeamRecord) {
+    return effectivePensaRoles({
+      ownerProfileId: team.owner.profileId,
+      memberProfileIds: team.members.map((m) => m.profileId),
+      code: team.roles.code,
+      art: team.roles.art,
+    })
+  }
+  /** Sem `?equipe=1` todo jogo é só meu e sem equipe; com ele, o jogo ganha uma equipe vazia. */
+  function teamOf(record: GameRecord): TeamRecord | undefined {
+    if (!withTeam) return undefined
+    record.team ??= { owner: EU, members: [], roles: { code: null, art: [] }, shareCode: null }
+    return record.team
+  }
+  const inTeam = (team: TeamRecord) =>
+    team.owner.profileId === ME || team.members.some((m) => m.profileId === ME)
+  /** O jogo começou no Estúdio de quem programa: missão do Estúdio andando ou versão guardada. */
+  const codeLocked = (record: GameRecord) =>
+    Boolean(record.view.checkpoints?.length) ||
+    record.tasks.some((t) => t.destination === 'studio' && t.progress.status !== 'planned')
+
+  /** A view como o servidor novo a entrega: com `role` e `team` (papéis efetivos, sem nomes). */
+  function decorate(view: PensaJourneyView): PensaJourneyView {
+    const record = games.get(view.project.id)
+    const team = record ? teamOf(record) : undefined
+    if (!team) return view
+    return {
+      ...view,
+      role: team.owner.profileId === ME ? 'owner' : 'member',
+      team: {
+        viewerProfileId: ME,
+        ownerProfileId: team.owner.profileId,
+        memberCount: team.members.length,
+        shareEnabled: team.shareCode !== null,
+        roles: rolesOf(team),
+      },
+    }
   }
 
   function listItem(record: GameRecord): PensaJourneyListItem {
     const { view } = record
+    const team = teamOf(record)
     return {
       id: view.project.id,
       name: view.project.name,
@@ -217,16 +386,23 @@ export function createJourneyServer(task: TaskBuilder, empty: boolean) {
       stage: pensaZeroStage(view.journey),
       lastInteractionAt: view.journey.lastInteractionAt,
       paused: view.journey.paused,
+      ...(team
+        ? {
+            role: team.owner.profileId === ME ? ('owner' as const) : ('member' as const),
+            team: {
+              memberCount: team.members.length,
+              ownerFirstName: team.owner.profileId === ME ? null : team.owner.firstName,
+            },
+          }
+        : {}),
     }
   }
 
+  /** Quem não está na equipe não vê o jogo (404, como o `accessible` do members). */
   function get(id: string): GameRecord {
     const record = games.get(id)
-    if (!record) {
-      const error = new Error('Esse jogo não existe mais.') as Error & { status: number }
-      error.status = 404
-      throw error
-    }
+    const team = record ? teamOf(record) : undefined
+    if (!record || (team && !inTeam(team))) refuse(404, 'Esse jogo não existe mais.')
     return record
   }
 
@@ -301,16 +477,116 @@ export function createJourneyServer(task: TaskBuilder, empty: boolean) {
     record.view = { ...record.view, operation: { ...operation, status: 'succeeded' } }
   }
 
+  /** As réguas de quem pode o quê (spec §1.4): só a dona; só quem programa. */
+  function ownerOnly(record: GameRecord): void {
+    const team = teamOf(record)
+    if (team && team.owner.profileId !== ME) refuse(403, 'Só quem criou o plano pode fazer isso.')
+  }
+  function programmerOnly(record: GameRecord): void {
+    const team = teamOf(record)
+    if (team && rolesOf(team).code !== ME)
+      refuse(403, 'Quem testa e guarda as versões é quem programa o jogo.')
+  }
+
+  /** As rotas da EQUIPE (`?equipe=1`). `undefined` = não é rota de equipe. */
+  function handleTeam(method: string, path: string, body: unknown): unknown {
+    if (method === 'POST' && path === '/v2/projects/join') {
+      const typed = String((body as { code?: unknown })?.code ?? '')
+        .toUpperCase()
+        .replace(/[^A-Z0-9]/g, '')
+        .replace(/^ZAP/, '')
+      const found = [...games.values()].find((g) => g.team?.shareCode === typed)
+      if (!found?.team)
+        refuse(404, 'Esse código não abriu nenhum jogo. Confira com quem te chamou.')
+      if (found.team.owner.profileId === ME) refuse(409, 'Esse jogo já é seu.')
+      if (!found.team.members.some((m) => m.profileId === ME)) {
+        if (found.team.members.length >= 5) refuse(409, 'Essa equipe já está cheia.')
+        found.team.members = [...found.team.members, { ...EU, owner: false, joinedAt: iso() }]
+      }
+      return { projectId: found.view.project.id }
+    }
+    const match = /^\/v2\/projects\/([^/?]+)\/(team|roles|share|members)(?:\/([^/]+))?$/.exec(path)
+    if (!match) return undefined
+    const record = get(decodeURIComponent(match[1] ?? ''))
+    const team = teamOf(record)
+    if (!team) return undefined
+    const route = match[2]
+    if (route === 'team' && method === 'GET') {
+      const view: PensaJourneyTeamView = {
+        viewerProfileId: ME,
+        role: team.owner.profileId === ME ? 'owner' : 'member',
+        shareCode: team.owner.profileId === ME ? team.shareCode : null,
+        maxMembers: 5,
+        roles: rolesOf(team),
+        people: [team.owner, ...team.members],
+        codeLocked: codeLocked(record),
+      }
+      return view
+    }
+    if (route === 'roles' && method === 'PUT') {
+      ownerOnly(record)
+      const input = body as { code: string; art: string[] }
+      const ids = new Set([team.owner.profileId, ...team.members.map((m) => m.profileId)])
+      if (!ids.has(input.code) || input.art.some((id) => !ids.has(id)))
+        refuse(400, 'Escolha só pessoas da equipe.')
+      if (codeLocked(record) && input.code !== rolesOf(team).code)
+        refuse(
+          409,
+          'O jogo já começou no Estúdio de quem programa. Essa função não muda mais neste plano.',
+        )
+      team.roles = {
+        code: input.code === team.owner.profileId ? null : input.code,
+        art: [...input.art],
+      }
+      return decorate(bump(record, {}))
+    }
+    if (route === 'share') {
+      ownerOnly(record)
+      if (method === 'POST') {
+        team.shareCode = Array.from(
+          { length: 6 },
+          () => 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'[Math.floor(Math.random() * 31)],
+        ).join('')
+        return { code: team.shareCode, display: `ZAP-${team.shareCode}` }
+      }
+      if (method === 'DELETE') {
+        team.shareCode = null
+        return { ok: true }
+      }
+    }
+    if (route === 'members' && method === 'DELETE' && match[3]) {
+      const who = match[3] === 'me' ? ME : decodeURIComponent(match[3])
+      if (who === team.owner.profileId) refuse(409, 'Quem criou o plano não sai dele: pode apagar.')
+      if (who !== ME) ownerOnly(record)
+      // Sair ou ser tirada apaga as funções da pessoa; quem programava devolve à dona.
+      team.members = team.members.filter((m) => m.profileId !== who)
+      team.roles = {
+        code: team.roles.code === who ? null : team.roles.code,
+        art: team.roles.art.filter((id) => id !== who),
+      }
+      return { ok: true }
+    }
+    return undefined
+  }
+
   /** `undefined` = rota que não é da jornada (o servidor do legado responde). */
-  async function handle(method: string, path: string, body: unknown): Promise<unknown> {
+  async function handleJourney(method: string, path: string, body: unknown): Promise<unknown> {
     const list = /^\/v2\/projects\?status=(active|archived)$/.exec(path)
     if (method === 'GET' && list) {
       return [...games.values()]
         .filter((g) => g.view.project.status === list[1])
+        .filter((g) => {
+          const team = teamOf(g)
+          return !team || inTeam(team)
+        })
         .sort((a, b) =>
           b.view.journey.lastInteractionAt.localeCompare(a.view.journey.lastInteractionAt),
         )
         .map(listItem)
+    }
+    if (withTeam) {
+      const handled = handleTeam(method, path, body)
+      if (handled !== undefined) return handled
     }
     if (method === 'POST' && path === '/v2/projects') {
       const id = String((body as { id?: string })?.id ?? crypto.randomUUID())
@@ -338,6 +614,7 @@ export function createJourneyServer(task: TaskBuilder, empty: boolean) {
     const input = (body ?? {}) as Record<string, unknown>
     if (!action && method === 'GET') return record.view
     if (!action && method === 'PATCH') {
+      ownerOnly(record)
       record.view = {
         ...record.view,
         project: { ...record.view.project, status: input.status as 'active' | 'archived' },
@@ -345,6 +622,7 @@ export function createJourneyServer(task: TaskBuilder, empty: boolean) {
       return record.view
     }
     if (!action && method === 'DELETE') {
+      ownerOnly(record)
       games.delete(record.view.project.id)
       return { ok: true }
     }
@@ -376,6 +654,8 @@ export function createJourneyServer(task: TaskBuilder, empty: boolean) {
     }
     if (action === 'command') {
       const command = input.command as PensaJourneyCommand
+      if (['observe', 'record_test', 'repair', 'close', 'revise'].includes(command.type))
+        programmerOnly(record)
       const next = applyPensaCommand(
         record.view.journey,
         Number(input.expectedRevision),
@@ -386,6 +666,8 @@ export function createJourneyServer(task: TaskBuilder, empty: boolean) {
       if (command.type === 'accept') operate(record, 'planning', 'guides')
       return record.view
     }
+    if (['test', 'close', 'revise', 'increment', 'restore'].includes(action ?? ''))
+      programmerOnly(record)
     if (action === 'test') {
       const journey = record.view.journey
       const test = {
@@ -458,6 +740,14 @@ export function createJourneyServer(task: TaskBuilder, empty: boolean) {
     }
     if (action === 'restore') return bump(record, {})
     throw new Error(`O playground não simula ${method} ${path}.`)
+  }
+
+  /** Toda view que sai passa pelo `decorate` (o servidor novo manda `role`/`team` sempre). */
+  async function handle(method: string, path: string, body: unknown): Promise<unknown> {
+    const result = await handleJourney(method, path, body)
+    if (result && typeof result === 'object' && 'journey' in result && 'project' in result)
+      return decorate(result as PensaJourneyView)
+    return result
   }
 
   return { handle }

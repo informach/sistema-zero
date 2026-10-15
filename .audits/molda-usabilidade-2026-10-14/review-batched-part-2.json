@@ -1,0 +1,318 @@
+{
+  "started": "2026-10-15T00:23:55.292Z",
+  "status": "passed",
+  "files": 164,
+  "passed": 957,
+  "failed": 0,
+  "batches": [
+    {
+      "partition": 2,
+      "label": "part-2-01",
+      "files": [
+        "src/components/MoldaApp.hostChrome.test.tsx",
+        "src/components/MoldaApp.scene.test.tsx",
+        "src/components/MoldaApp.test.tsx",
+        "src/components/editor/DeferredEditor.test.tsx",
+        "src/components/editor/model/ApplyTextureDialog.test.tsx",
+        "src/components/editor/model/ModelEditor.mesh.test.tsx",
+        "src/components/editor/model/ModelEditor.paint.test.tsx",
+        "src/components/editor/model/ModelEditor.test.tsx",
+        "src/components/editor/model/ReferenceImageGuide.test.tsx",
+        "src/components/editor/model/WorkspaceInspector.test.tsx",
+        "src/components/editor/model/commandRegistry.test.ts",
+        "src/components/editor/scene/SceneAnimationKeyStrip.test.tsx"
+      ],
+      "passed": 123,
+      "failed": 0,
+      "exitCode": 0
+    },
+    {
+      "partition": 2,
+      "label": "part-2-02",
+      "files": [
+        "src/components/editor/scene/SceneBbmodelAnimationReview.test.tsx",
+        "src/components/editor/scene/SceneBbmodelImportOptions.test.tsx",
+        "src/components/editor/scene/SceneBbmodelImportPanel.test.tsx",
+        "src/components/editor/scene/SceneBbmodelPaintReview.test.tsx",
+        "src/components/editor/scene/SceneCanvas.animation.test.tsx",
+        "src/components/editor/scene/SceneExitControl.test.tsx",
+        "src/components/editor/scene/SceneFirstSteps.test.tsx",
+        "src/components/editor/scene/SceneGlbExportPanel.test.tsx",
+        "src/components/editor/scene/SceneGltfImportPanel.test.tsx",
+        "src/components/editor/scene/SceneImageImport.test.tsx",
+        "src/components/editor/scene/SceneImagePreview.test.tsx",
+        "src/components/editor/scene/SceneMaterialMaskSettings.test.tsx"
+      ],
+      "passed": 37,
+      "failed": 0,
+      "exitCode": 0
+    },
+    {
+      "partition": 2,
+      "label": "part-2-03",
+      "files": [
+        "src/components/editor/scene/SceneMeshCheck.test.tsx",
+        "src/components/editor/scene/SceneObjImportPanel.test.tsx",
+        "src/components/editor/scene/ScenePaintCanvas.test.tsx",
+        "src/components/editor/scene/SceneProjectRestore.test.tsx",
+        "src/components/editor/scene/SceneStart.test.tsx",
+        "src/components/editor/scene/SceneStorageNotice.test.tsx",
+        "src/components/editor/scene/SceneStudioExit.test.tsx",
+        "src/components/editor/scene/SceneUvAutoPreview.test.tsx",
+        "src/components/editor/scene/SceneUvCanvas.test.tsx",
+        "src/components/editor/scene/SceneUvCutPicker.test.tsx",
+        "src/components/editor/scene/SceneWorkshop.contract.test.tsx",
+        "src/components/editor/scene/SceneWorkshop.paint.test.tsx"
+      ],
+      "passed": 49,
+      "failed": 0,
+      "exitCode": 0
+    },
+    {
+      "partition": 2,
+      "label": "part-2-04",
+      "files": [
+        "src/components/editor/scene/SceneWorkshop.skinPaint.test.tsx"
+      ],
+      "passed": 19,
+      "failed": 0,
+      "exitCode": 0
+    },
+    {
+      "partition": 2,
+      "label": "part-2-05",
+      "files": [
+        "src/components/editor/scene/SceneWorkshop.test.tsx"
+      ],
+      "passed": 99,
+      "failed": 0,
+      "exitCode": 0
+    },
+    {
+      "partition": 2,
+      "label": "part-2-06",
+      "files": [
+        "src/components/editor/scene/SceneWorkshop.toolAccess.test.tsx",
+        "src/components/editor/scene/SceneWorkshopHost.test.tsx",
+        "src/components/editor/scene/sceneAdjustment.test.ts",
+        "src/components/editor/scene/sceneAnimationForm.test.ts",
+        "src/components/editor/scene/sceneCommandAccess.test.ts",
+        "src/components/editor/scene/sceneCommandRegistry.test.tsx",
+        "src/components/editor/scene/sceneFlipbookForm.test.ts",
+        "src/components/editor/scene/sceneSkinWeightDraft.test.ts",
+        "src/components/editor/scene/useSceneAnimationPlayer.test.tsx",
+        "src/components/editor/scene/useSceneBbmodelImport.test.tsx",
+        "src/components/editor/scene/useSceneComponentWeights.test.tsx",
+        "src/components/editor/scene/useSceneContextTransition.test.tsx"
+      ],
+      "passed": 55,
+      "failed": 0,
+      "exitCode": 0
+    },
+    {
+      "partition": 2,
+      "label": "part-2-07",
+      "files": [
+        "src/components/editor/scene/useSceneFacePreview.test.tsx",
+        "src/components/editor/scene/useSceneFlipbookPlayer.test.tsx",
+        "src/components/editor/scene/useSceneGlbExport.test.tsx",
+        "src/components/editor/scene/useSceneGltfImport.test.tsx",
+        "src/components/editor/scene/useSceneObjImport.test.tsx",
+        "src/components/editor/scene/useScenePaint.test.ts",
+        "src/components/editor/scene/useScenePoseRecovery.test.tsx",
+        "src/components/editor/scene/useScenePoseSetPreview.test.tsx",
+        "src/components/editor/scene/useSceneProjectList.test.tsx",
+        "src/components/editor/scene/useSceneSkinBinding.test.tsx",
+        "src/components/editor/scene/useSceneTwoBonePreview.test.tsx",
+        "src/components/editor/scene/useSceneUvPreview.test.tsx"
+      ],
+      "passed": 46,
+      "failed": 0,
+      "exitCode": 0
+    },
+    {
+      "partition": 2,
+      "label": "part-2-08",
+      "files": [
+        "src/components/editor/sky/SkyEditor.test.tsx",
+        "src/components/editor/texture/IndexedPixelStage.test.ts",
+        "src/components/editor/texture/TextureEditor.test.tsx",
+        "src/components/editor/useAssetDocument.test.tsx",
+        "src/components/editor/useStudioResync.test.tsx",
+        "src/components/gallery/ProgressiveThumb.test.tsx",
+        "src/components/gallery/RecoveryNotice.test.tsx",
+        "src/components/toolAccess.test.tsx",
+        "src/components/ui/Dialog.test.tsx",
+        "src/components/ui/Panel.test.tsx",
+        "src/components/ui/Toast.test.tsx",
+        "src/scene/SceneRasterWindow.test.ts"
+      ],
+      "passed": 68,
+      "failed": 0,
+      "exitCode": 0
+    },
+    {
+      "partition": 2,
+      "label": "part-2-09",
+      "files": [
+        "src/scene/alphaMask.test.ts",
+        "src/scene/animationCommands.test.ts",
+        "src/scene/animationIntegration.test.ts",
+        "src/scene/animationKeyEdits.test.ts",
+        "src/scene/animationPose.test.ts",
+        "src/scene/animationPoseSet.test.ts",
+        "src/scene/animationPoseTransform.test.ts",
+        "src/scene/animationPresets.test.ts",
+        "src/scene/animationRotationPreview.test.ts",
+        "src/scene/animationTarget.test.ts",
+        "src/scene/animationTrs.test.ts",
+        "src/scene/appearanceCommands.test.ts"
+      ],
+      "passed": 68,
+      "failed": 0,
+      "exitCode": 0
+    },
+    {
+      "partition": 2,
+      "label": "part-2-10",
+      "files": [
+        "src/scene/bendLimit.test.ts",
+        "src/scene/bounds.test.ts",
+        "src/scene/commands.test.ts",
+        "src/scene/composite.test.ts",
+        "src/scene/createProject.test.ts",
+        "src/scene/documentContent.test.ts",
+        "src/scene/evaluate.test.ts",
+        "src/scene/geometry.test.ts",
+        "src/scene/geometryUv.test.ts",
+        "src/scene/graph.test.ts",
+        "src/scene/imageAtlas.test.ts",
+        "src/scene/imageFlipbook.test.ts"
+      ],
+      "passed": 66,
+      "failed": 0,
+      "exitCode": 0
+    },
+    {
+      "partition": 2,
+      "label": "part-2-11",
+      "files": [
+        "src/scene/imageGradient.test.ts",
+        "src/scene/imageImport.test.ts",
+        "src/scene/imageOperations.test.ts",
+        "src/scene/imagePaint.test.ts",
+        "src/scene/imageRaster.test.ts",
+        "src/scene/imageShapes.test.ts",
+        "src/scene/imageStamp.test.ts",
+        "src/scene/materialImages.test.ts",
+        "src/scene/matrix.test.ts",
+        "src/scene/meshBevel.test.ts",
+        "src/scene/meshComponents.test.ts",
+        "src/scene/meshConversion.test.ts"
+      ],
+      "passed": 57,
+      "failed": 0,
+      "exitCode": 0
+    },
+    {
+      "partition": 2,
+      "label": "part-2-12",
+      "files": [
+        "src/scene/meshCut.test.ts",
+        "src/scene/meshDiagnosis.test.ts",
+        "src/scene/meshDistanceField.test.ts",
+        "src/scene/meshEdges.test.ts",
+        "src/scene/meshFaces.test.ts",
+        "src/scene/meshMerge.test.ts",
+        "src/scene/meshPlaneCut.test.ts",
+        "src/scene/meshRemoval.test.ts",
+        "src/scene/meshRingCut.test.ts",
+        "src/scene/meshSoftMovement.test.ts",
+        "src/scene/meshSubdivide.test.ts",
+        "src/scene/meshSurfaceTools.test.ts"
+      ],
+      "passed": 55,
+      "failed": 0,
+      "exitCode": 0
+    },
+    {
+      "partition": 2,
+      "label": "part-2-13",
+      "files": [
+        "src/scene/meshThickness.test.ts",
+        "src/scene/meshUv.test.ts",
+        "src/scene/meshUvAuto.test.ts",
+        "src/scene/meshUvCorners.test.ts",
+        "src/scene/meshUvUnfold.test.ts",
+        "src/scene/meshVertices.test.ts",
+        "src/scene/meshWeld.test.ts",
+        "src/scene/migrateLegacy.test.ts",
+        "src/scene/modelGuides.test.ts",
+        "src/scene/paintFaceView.test.ts",
+        "src/scene/paintInk.test.ts",
+        "src/scene/paintRegionRotate.test.ts"
+      ],
+      "passed": 59,
+      "failed": 0,
+      "exitCode": 0
+    },
+    {
+      "partition": 2,
+      "label": "part-2-14",
+      "files": [
+        "src/scene/paintSurface.test.ts",
+        "src/scene/paintSurfaceBounds.test.ts",
+        "src/scene/paletteCommands.test.ts",
+        "src/scene/pathCommands.test.ts",
+        "src/scene/pathMesh.test.ts",
+        "src/scene/pieceAppearance.test.ts",
+        "src/scene/pieceTexture.test.ts",
+        "src/scene/placement.test.ts",
+        "src/scene/primitiveDetail.test.ts",
+        "src/scene/primitiveMesh.test.ts",
+        "src/scene/primitives.test.ts",
+        "src/scene/readAnimation.test.ts"
+      ],
+      "passed": 71,
+      "failed": 0,
+      "exitCode": 0
+    },
+    {
+      "partition": 2,
+      "label": "part-2-15",
+      "files": [
+        "src/scene/readDocument.test.ts",
+        "src/scene/regionSelection.test.ts",
+        "src/scene/rotationBetweenDirections.test.ts",
+        "src/scene/sampleAnimation.test.ts",
+        "src/scene/skinBinding.test.ts",
+        "src/scene/skinDraw.test.ts",
+        "src/scene/skinIndex.test.ts",
+        "src/scene/skinIntegration.test.ts",
+        "src/scene/skinJoints.test.ts",
+        "src/scene/skinPaint.test.ts",
+        "src/scene/skinPaintCommit.test.ts",
+        "src/scene/skinPaintWeights.test.ts"
+      ],
+      "passed": 57,
+      "failed": 0,
+      "exitCode": 0
+    },
+    {
+      "partition": 2,
+      "label": "part-2-16",
+      "files": [
+        "src/scene/skinPose.test.ts",
+        "src/scene/skinSuggestion.test.ts",
+        "src/scene/skinWeights.test.ts",
+        "src/scene/twoBonePose.test.ts",
+        "src/scene/twoBoneReach.test.ts",
+        "src/scene/twoBoneTargetDrag.test.ts"
+      ],
+      "passed": 28,
+      "failed": 0,
+      "exitCode": 0
+    }
+  ],
+  "finished": "2026-10-15T00:27:25.573Z"
+}

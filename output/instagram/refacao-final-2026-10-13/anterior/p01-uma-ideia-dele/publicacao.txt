@@ -1,7 +1,0 @@
-P01 · Ele sabe o nome de todos os youtubers de jogo.
-
-Publicar somente os 7 arquivos PNG numerados, na ordem. Proporção 4:5, 1080 × 1350. Legenda completa: legenda.txt. Textos alternativos: texto-alternativo.txt.
-
-As fotos são cenas recriadas com referências de fisionomia, por solicitação da Helena. Não são frames dos depoimentos nem registros das situações narradas. As falas literais permanecem atribuídas às fontes. Capturas de jogo e blocos vêm da ferramenta real. Ver apoio/v2/fontes-e-producao.md.
-
-Prévia, montagem e pasta apoio não fazem parte do carrossel. Nada agendado ou publicado.

@@ -1,3 +1,0 @@
-Peça que ele explique uma regra do jogo na ordem em que acontece. O teste mostra se algum passo ficou faltando.
-
-Siga @criecomhelenaejulio para entender o que seu filho aprende quando programa.

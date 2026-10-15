@@ -1,0 +1,91 @@
+/** Historical review evidence, before correction. See live-round2-corrections-2026-10-14.md. */
+import { afterAll, expect, test } from 'bun:test'
+import { randomUUID } from 'node:crypto'
+import { eq } from '../../packages/members/node_modules/drizzle-orm'
+import { LiveWorkspaceService } from '../../packages/members/src/application/live/live-workspace.service'
+import { OwnRecordingProvider } from '../../packages/members/src/infrastructure/live/own-recording.provider'
+import { createDbConnection } from '../../packages/members/src/infrastructure/persistence/drizzle/db'
+import { DrizzleLiveRepository } from '../../packages/members/src/infrastructure/persistence/drizzle/live.repository'
+import { DrizzleLiveWorkspaceRepository } from '../../packages/members/src/infrastructure/persistence/drizzle/live-workspace.repository'
+import { liveRecordingJobs } from '../../packages/members/src/infrastructure/persistence/drizzle/schema'
+import { prepareTestDatabase } from '../../packages/members/tests/db/test-database'
+import { fixture } from './fixture'
+
+test('R1: a teacher cannot enter the scheduled room to reveal the controls', async () => {
+  const f = await fixture()
+  const error = await f.live.join(f.teacher, f.session.id, { deviceId: randomUUID(), takeover: false }).catch(e => e)
+  expect(error).toBeInstanceOf(Error)
+  expect(error.message).toBe('A professora ainda não abriu a sala.')
+  expect((await f.live.room(f.teacher, f.session.id)).occurrence!.state).toBe('scheduled')
+})
+
+test('R3: a delayed lower-hands command erases a request newer than its snapshot', async () => {
+  const f = await fixture()
+  await f.start()
+  const oldView = await f.live.room(f.teacher, f.session.id)
+  expect(oldView.occurrence!.participants[0]!.handAt).toBeNull()
+  f.advance(100)
+  await f.live.request(f.child, f.session.id, f.deviceId, 'hand', true)
+  const raised = await f.live.room(f.teacher, f.session.id)
+  expect(raised.occurrence!.participants[0]!.handAt).not.toBeNull()
+  expect(raised.occurrence!.version).toBe(oldView.occurrence!.version)
+  const result = await f.live.control(f.teacher, f.session.id, oldView.occurrence!.version,
+    { kind: 'lower-hands', learnerId: null })
+  expect(result.occurrence!.participants[0]!.handAt).toBeNull()
+})
+
+test('R5: the catalog agenda lists a public workshop the learner cannot open', async () => {
+  const f = await fixture()
+  await f.live.updateProgram(f.teacher, f.cohort.programId, { expectedRevision: 1, status: 'published' })
+  const visitor = { id: randomUUID(), accountId: randomUUID(), name: 'Sem inscrição', staff: false }
+  const catalog = await f.live.catalog(visitor)
+  expect(catalog.enrollments).toHaveLength(0)
+  expect(catalog.sessions.some(item => item.id === f.session.id)).toBe(true)
+  const room = await f.live.room(visitor, f.session.id).catch(e => e)
+  expect(room).toBeInstanceOf(Error)
+})
+
+const url = await prepareTestDatabase('sistemazero_live_corrections_test')
+const db = url ? createDbConnection(url) : null
+afterAll(async () => { await db?.close() })
+
+test.skipIf(!db)('R2: expired accepted assistance cannot be ended by the teacher and blocks recording', async () => {
+  const f = await fixture(new DrizzleLiveRepository(db!.db))
+  await f.start()
+  const server = Bun.serve({ port: 0, hostname: '127.0.0.1', async fetch(request) {
+    const command = await request.json() as object
+    return Response.json({ ...command, state: 'paused', captureStopped: true })
+  } })
+  const provider = new OwnRecordingProvider(db!.db, f.repository, f.live, {
+    url: `http://127.0.0.1:${server.port}`, token: 'review-token-at-least-32-characters-long',
+  })
+  const workspace = new LiveWorkspaceService(new DrizzleLiveWorkspaceRepository(db!.db), f.live, f.clock, provider)
+  try {
+    const opened = await workspace.open(f.child, f.session.id, f.child.id)
+    const claimed = await workspace.claim(f.child, opened.id, f.deviceId, false)
+    const requested = await workspace.requestAssistance(f.teacher, opened.id)
+    const accepted = await workspace.acceptAssistance(f.child, opened.id, requested.assistance!.id, {
+      deviceId: f.deviceId, expectedRevision: claimed.revision, writerEpoch: claimed.writerEpoch,
+      project: claimed.project, mutationId: randomUUID(),
+    })
+    const teacherDevice = randomUUID()
+    await workspace.attachTeacher(f.teacher, opened.id, teacherDevice)
+    f.advance(31_000)
+    await f.live.heartbeat(f.teacher, f.session.id, teacherDevice)
+    const attached = await workspace.attachTeacher(f.teacher, opened.id, teacherDevice).catch(e => e)
+    expect(attached).toBeInstanceOf(Error)
+    const returned = await workspace.returnAuthorship(f.teacher, opened.id, {
+      deviceId: teacherDevice, expectedRevision: accepted.revision, writerEpoch: accepted.writerEpoch,
+      project: accepted.project, mutationId: randomUUID(),
+    }).catch(e => e)
+    expect(returned).toBeInstanceOf(Error)
+    const cancelled = await workspace.cancelAssistance(f.teacher, opened.id, requested.assistance!.id).catch(e => e)
+    expect(cancelled).toBeInstanceOf(Error)
+    expect((await workspace.get(f.teacher, opened.id)).assistance!.status).toBe('active')
+    const resumed = await provider.command(f.teacher, f.session.id, 'resume').catch(e => e)
+    expect(resumed.code).toBe('RECORDING_ASSISTANCE_ACTIVE')
+  } finally {
+    await db!.db.delete(liveRecordingJobs).where(eq(liveRecordingJobs.occurrenceId, f.session.occurrenceId))
+    await server.stop(true)
+  }
+}, 15_000)

@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import type { ProjectPlayActivity } from '@sistemazero/core/learning'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { montarProjetoCadeTodoMundoCompleto } from '../../../docs/aulas-interativas/qa/cade-todo-mundo-projeto'
+import { montarProjetoCadeTodoMundoCompleto } from '../../../docs/aulas-interativas-tecnico/qa/cade-todo-mundo-projeto'
 import {
   clickedProjectPlayTarget,
   ProjectPlayActivityView,

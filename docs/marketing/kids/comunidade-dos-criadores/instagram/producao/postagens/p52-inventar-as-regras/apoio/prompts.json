@@ -1,0 +1,54 @@
+[
+  {
+    "slide": 1,
+    "file": "01-futebol-e-ideia.png",
+    "prompt": "Use case: photorealistic-natural. Create one landscape 1536x1024 editorial photograph for a parent-facing Instagram carousel about turning a child's interest in football into invented game rules. A FICTIONAL Brazilian girl around 11 years old with warm medium-brown skin, dark curly hair gathered in a ponytail with a plain blue band, plain mustard yellow football-style T-shirt with narrow blue collar and no logos, sitting at a warm wooden table at home. A classic black-and-white soccer ball tucked against her left side on the chair, fully identifiable. She looks down at an open sheet on the desk with a happy thoughtful expression, holding a blue pencil. The sheet shows a simple childish top-down football pitch sketch, two goals, tiny circle players, clearly her invented game concept. No writing or words on paper. Camera three-quarter front medium shot, show face, ball and paper all clearly. Natural afternoon window light, soft home background, authentic textured photo, energetic but unstaged. No abandoned schoolbook, no marks or brands, no adult, no screen, no text, no captions, no watermark. Do not recreate any real person.",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-756fac30-e160-4036-b881-08ca72a9f50d.png",
+    "tool": "image_gen.imagegen — native",
+    "references": []
+  },
+  {
+    "slide": 2,
+    "file": "02-explicar-a-ideia.png",
+    "prompt": "Use case: photorealistic-natural. New 1536x1024 landscape editorial photograph. Input image 1 is identity reference ONLY for the fictional 11-year-old girl: medium brown skin, curly dark ponytail with blue band, mustard yellow T-shirt with blue collar. Preserve her appearance. New viewpoint and scene at same home: camera from the end of the wooden table looking across, child seated on left actively explaining her drawn football game on a big sheet, pointing one tiny player circle toward a goal with her index finger. A fictional mother around 38 with medium-brown skin, dark shoulder-length wavy hair and plain light blue shirt sits to the right, leaning slightly to listen, eyes on the drawing, hands relaxed away from the pencil. Warm engaged natural expressions. Both faces visible in three-quarter profile. Sheet clearly shows a rough hand-drawn football pitch, circles and arrows, no words or text. Soccer ball now on floor partly visible beside chair. Natural home afternoon light, photographic details. No computers, no specific real people, no schoolbook abandoned, no logos, no text, no watermark. Do not reuse reference pose or framing; the new image is a conversation about the child's own idea.",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-928c2ed2-a00a-4aa2-bd53-7d4927642b73.png",
+    "tool": "image_gen.imagegen — native",
+    "references": [
+      "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-756fac30-e160-4036-b881-08ca72a9f50d.png"
+    ]
+  },
+  {
+    "slide": 3,
+    "file": "03-ideia-do-chute.png",
+    "prompt": "Use case: photorealistic-natural. Create a landscape 1536x1024 overhead close-up photograph of a child's football game planning materials. Large landscape sheet of lightly textured ivory drawing paper perfectly flat and straight, occupying x10% to90%, y10% to88%, on a warm wooden desk. Its central surface is entirely BLANK and clean for a football diagram to be applied in editing. One blue wooden pencil and eraser near right outside edge, corner of a black-and-white soccer ball slightly visible at upper left outside the paper, fingertips of a medium brown child very subtly at bottom margin, not covering paper. Bright natural light, realistic fibers and gentle shadows. Child aged about11 implied only through hand, no face, no actual person identity. No drawing, no text, no words, no letters, no arrows, no watermarks. Perfectly top-down so later hand-drawn lines and arrows can be applied accurately. A distinctive close-up composition, not a recreation of any earlier photo.",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-94b2dc71-d74c-4050-99ac-55bf6efe9ccd.png",
+    "tool": "image_gen.imagegen — native",
+    "references": []
+  },
+  {
+    "slide": 4,
+    "file": "04-duas-escolhas.png",
+    "prompt": "Create a photorealistic overhead editorial photograph for a Brazilian educational Instagram carousel. Entire landscape 3:2 frame. A warm wooden home table holds TWO separate blank ivory paper cards side by side with a small gap, slightly differing natural angles, occupying most of image (left card approximately x8–46%, y13–88%; right card x52–90%, y13–88%). The two paper cards are completely BLANK, no drawing no print no text. They will receive football shot sketches during precise editing. A blue colored pencil lies along the bottom edge, a yellow pencil near upper right. The crop is close on paper texture and hands of a fictional 11 year old medium-brown skinned girl near the bottom corners, not covering the cards. Soccer ball partly seen beyond table upper left. Bright warm daylight, authentic tactile paper, real wood, beautiful photographic composition, restrained yellow and blue accents. No lettering, logos, graphics, symbols, watermarks. Blank paper is intentional.",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-d578cd85-cab7-41f4-85fe-6f5676e4e1b2.png",
+    "tool": "image_gen.imagegen — native",
+    "references": []
+  },
+  {
+    "slide": 8,
+    "file": "08-plano-do-campo.png",
+    "prompt": "A photorealistic editorial overhead photograph, landscape 3:2, close crop of an OPEN spiral sketchbook on a light warm wooden desk. The notebook has one large completely BLANK ivory landscape drawing page occupying x12–87%, y8–89% of the whole image, with spiral binding along left edge. No lines, no drawings, no text whatsoever on the paper; precise football pitch and annotations will be added later. At the upper right edge a fictional medium-brown skinned eleven year old girl's small hand with a blue pencil touches just the corner of the blank paper, not obscuring it. A mustard yellow sleeve, two tiny green paper pieces on table and a small eraser add context. Distinct composition from loose paper comparison, gentle daylight, tactile paper, natural home setting, crisp and thoughtfully styled but authentic. No lettering, no watermark, no brand or graphics.",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-b2bf934a-cdf6-4065-bf8a-b8e5add46322.png",
+    "tool": "image_gen.imagegen — native",
+    "references": []
+  },
+  {
+    "slide": 9,
+    "file": "09-mais-uma-ideia.png",
+    "prompt": "Create a new photorealistic editorial lifestyle photograph in landscape 3:2. Use the provided photo ONLY as visual identity reference for the same FICTIONAL eleven year old girl: medium brown skin, curly dark ponytail with blue hair tie, mustard yellow T-shirt and blue collar, same face and age. NEW SCENE and framing: three-quarter view from behind her RIGHT shoulder at home wooden desk, we see her right cheek in profile as she looks down and actively draws with a blue colored pencil. Her shoulders and head occupy the right third, while a big sketchbook on the left and center clearly shows a hand drawn green football pitch and TWO simple blue chalky arrow choices from ball toward goal, one long arrow and one short arrow. There are no written words, scores or numbers on the page. She has a small engaged smile, concentrating while adding one small new pencil line to the drawing; her left hand holds the bottom corner of the page. Soccer ball now barely visible on the floor at far left, window daylight soft, friendly natural home, no computer. This is inventing her own game rules on paper. Make visibly different composition from reference: photographed from behind her shoulder, paper main subject, not front portrait or same hand-to-cheek pose. No logos, no watermark, no typography. Correct natural hands, anatomy and single pencil.",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-f250a133-325f-4899-95c3-43a6bf1ce5b7.png",
+    "tool": "image_gen.imagegen — native",
+    "references": [
+      "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-756fac30-e160-4036-b881-08ca72a9f50d.png"
+    ]
+  }
+]

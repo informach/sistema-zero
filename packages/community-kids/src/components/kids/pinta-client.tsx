@@ -17,6 +17,7 @@ import {
 } from '@/lib/pinta-cloud-persistence'
 import { EMBEDDED_APP_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
 import { useFocusMode } from './focus-mode'
+import { PensaMissionBlocked } from './pensa-mission-blocked'
 import { HostChromeAnnouncer, useHostChrome } from './use-host-chrome'
 import { useNextMissionLabel } from './use-next-mission-label'
 import { usePensaGuideCollapsed } from './use-pensa-guide-collapsed'
@@ -378,9 +379,12 @@ export function PintaClient({
           </div>
         </div>
       ) : handoff && !handoff.capability.owned ? (
-        <div className="grid flex-1 place-items-center p-6 text-center">
-          <p className="max-w-sm font-semibold">{handoff.capability.blockedReason}</p>
-        </div>
+        // A missão é de quem programa (ou de outra artista que já começou): sem o brief e
+        // sem concluir, com o caminho de volta ao plano.
+        <PensaMissionBlocked
+          reason={handoff.capability.blockedReason}
+          onBackToPlan={() => router.push(`/pensa?plano=${encodeURIComponent(handoff.project.id)}`)}
+        />
       ) : loadError ? (
         <div className="grid flex-1 place-items-center p-6 text-center">
           <div className="flex max-w-sm flex-col items-center gap-3">

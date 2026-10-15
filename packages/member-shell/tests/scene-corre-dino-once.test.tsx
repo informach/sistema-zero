@@ -1,9 +1,9 @@
 import { expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
 import { isLearningManifest } from '@sistemazero/core/learning'
 import { openScene, sceneStart } from '@sistemazero/core/learning/scene'
 import { renderToStaticMarkup } from 'react-dom/server'
+import { caminhoAula } from '../../../docs/aulas-interativas-tecnico/qa/caminhos'
 import { SceneCenarioProvider } from '../src/components/scene-cenario-context'
 import { OnceVsAlwaysStage } from '../src/components/scene-once-vs-always'
 
@@ -13,10 +13,7 @@ for (const [file, figure, description] of [
 ])
   test(`${file}: a mesma comparação de movimento respeita a figura e a descrição`, () => {
     const manifest: unknown = JSON.parse(
-      readFileSync(
-        resolve(import.meta.dir, `../../../docs/aulas-interativas/aulas/${file}.manifesto.json`),
-        'utf8',
-      ),
+      readFileSync(caminhoAula(`${file}.manifesto.json`), 'utf8'),
     )
     if (!isLearningManifest(manifest)) throw new Error('Manifesto inválido')
     const entry = manifest.blocks.find(

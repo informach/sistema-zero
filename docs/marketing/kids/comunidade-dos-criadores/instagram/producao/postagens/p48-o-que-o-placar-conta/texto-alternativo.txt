@@ -1,0 +1,34 @@
+SLIDE 1
+Curto (87 caracteres): Ilustração: um placar de jogo e um celular com um coração mostram contagens diferentes.
+
+Longo: Ilustração editorial gerada, dividida entre um placar de jogo e um celular genérico com coração. Os números quatro e vinte e quatro foram aplicados na montagem: são exemplos ilustrativos, não métricas de conta ou captura da plataforma. Não há marca de rede social. Texto da arte: O placar não mostra tudo o que aconteceu no jogo. Ele conta o que alguém escolheu contar.
+
+SLIDE 2
+Curto (71 caracteres): Mina de Cristais no início: blocos cinza e azuis, com o placar em zero.
+
+Longo: Captura real do início da Mina de Cristais básica, com 35 pedras cinza e 14 cristais azuis. O placar nativo em zero aparece ampliado. O quadro do jogo foi aproximado por recorte; câmera, cores e iluminação originais não mudaram. Texto da arte: Um jogo pode dar pontos por moedas, tempo ou inimigos derrotados. Quem cria decide qual ação faz o número subir.
+
+SLIDE 3
+Curto (89 caracteres): Cliques reais: pedra desaparece sem pontuar; cristal retirado faz o placar subir para um.
+
+Longo: Duas capturas reais consecutivas. A primeira mostra o buraco deixado pela pedra e o placar ainda em zero. A segunda mostra o espaço do cristal retirado e o placar em um. Os círculos amarelos são anotações editoriais sobre a posição de cada clique real. As imagens mostram o resultado depois do clique. Texto da arte: Veja esta mina da nossa plataforma. Cavar uma pedra abre caminho. Encontrar um cristal também acrescenta um ponto.
+
+SLIDE 4
+Curto (84 caracteres): Bloco real ampliado: Somar 1 em variável pontos, usado quando um cristal é retirado.
+
+Longo: Recorte do Blockly nativo, com a instrução Somar 1 em variável pontos, retirada da condição que detecta a remoção de um cristal. O ícone de cristal e as frases Quando retira um cristal e O placar soma 1 são explicações editoriais, fora da interface. Texto da arte: As duas ações fazem parte da partida, mas só uma muda o placar. Essa diferença foi definida numa instrução do jogo.
+
+SLIDE 5
+Curto (76 caracteres): Mesma pedra: original fica em zero; cópia em que pedra vale ponto mostra um.
+
+Longo: Comparação do original e de uma cópia declarada, com a mesma disposição de objetos, a mesma pedra e o mesmo tempo. No original, a pedra retirada mantém Cristais: 0. Na cópia, retirar a pedra soma um e o rótulo foi ajustado para Pontos: 1. Os círculos indicam o clique. Cópia usada apenas para demonstrar a regra; não é novo curso. Texto da arte: Ao criar, a criança pode escolher outra regra e testar. O que mudaria se cada pedra também valesse um ponto?
+
+SLIDE 6
+Curto (95 caracteres): Cena fictícia: pai aponta o jogo na TV enquanto o filho segura celular com contador de coração.
+
+Longo: Fotografia gerada de pai e filho fictícios no sofá. O pai aponta a televisão, onde foi aplicada uma captura real de outro momento da partida, com três cristais. O celular na mão do filho recebeu um coração e o número ilustrativo vinte e quatro, sem marca ou interface de rede social. Não são métricas, depoentes ou alunos reais. Texto da arte: Essa conversa ajuda a fazer uma pergunta sobre os números da tela: ‘O que está sendo contado aqui?’ Curtidas, por exemplo, contam reações a uma publicação. Não contam tudo sobre quem a fez.
+
+SLIDE 7
+Curto (84 caracteres): Mina de Cristais: fim real da partida, com dez cristais coletados e tela de vitória.
+
+Longo: Captura real da vitória da Mina de Cristais básica após dez cliques em cristais. A caixa original mostra Filão lendário! e Cristais coletados: 10. O placar nativo também foi ampliado abaixo. A chamada para seguir aparece separada da captura. Texto da arte: Criar um placar permite ver de perto como uma regra produz um número. Siga o perfil para conhecer mais descobertas da criação de jogos.

@@ -1,0 +1,13 @@
+{
+  "checks": [
+    "visible camera drag and wheel navigation preserve authoring and return to the selected tool",
+    "pivot preview and cancel preserve source; apply and undo are atomic",
+    "division preview, cancellation and undo preserve source and keep both sides",
+    "preset speed and intensity preview cancel without adding a group or animation",
+    "leaving pivot and preset previews asks once, preserves Continue and resumes the requested activity after Apply",
+    "pivot in animation blocks an unsupported animated target with explanation and preserves the clip",
+    "compact animation keeps movements, pieces and pose separately reachable",
+    "reflow at 683x384 and 512x300 keeps stage and inspector reachable without page overflow"
+  ],
+  "errors": []
+}

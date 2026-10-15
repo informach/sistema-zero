@@ -1,0 +1,34 @@
+SLIDE 1
+Curto (81 caracteres): Cena fictícia: menino para o lápis sobre a folha e consulta um modelo de castelo.
+
+Longo: Fotografia gerada de menino fictício de cerca de onze anos, cabelo escuro cacheado e camiseta azul, com o lápis parado sobre uma folha quase vazia. Ao lado está um modelo impresso de castelo com telhados azuis. A cena abre a situação da família sem atribuir o comportamento a um aluno real. Texto da arte: Um modelo pode ajudar seu filho a começar. As escolhas dele podem vir depois.
+
+SLIDE 2
+Curto (82 caracteres): Diagrama editorial: uma sequência de blocos passa do exemplo para um novo projeto.
+
+Longo: Diagrama editorial, sem marca, de duas janelas nomeadas Exemplo e Seu projeto. Formas coloridas de blocos e uma seta entre as janelas representam aprender com um exemplo. É um esquema, não uma captura ou demonstração de arrastar entre projetos na interface da plataforma. Texto da arte: Quem programa também usa exemplos para aprender. Ver uma parte funcionando ajuda a entender como ela foi feita.
+
+SLIDE 3
+Curto (69 caracteres): Modelo de castelo com um telhado circulado e a anotação do meu jeito.
+
+Longo: Nova fotografia gerada em close do modelo de castelo, com um telhado circulado a lápis e seta para a margem. A anotação do meu jeito foi aplicada na montagem com a fonte manuscrita Caveat. Lápis azul e roxo sugerem uma escolha de cor. Não é trabalho de aluno. Texto da arte: Depois de seguir o exemplo, a criança pode experimentar uma mudança. O que ela gostaria de fazer de outro jeito?
+
+SLIDE 4
+Curto (85 caracteres): Cena fictícia: mãe e filho combinam o movimento do personagem e a escolha do cenário.
+
+Longo: Nova fotografia gerada do mesmo menino e de uma mãe fictícia. Na folha, ela aponta um quadrado laranja com setas; ele aponta o desenho de um castelo com seu lápis. A conversa representa combinar o movimento que será mantido e a escolha de um cenário. Texto da arte: Na atividade, deixem claro o que precisa seguir a orientação e o que ela pode escolher. Por exemplo: manter o personagem andando e inventar um novo cenário.
+
+SLIDE 5
+Curto (66 caracteres): Jogo real: o quadrado laranja anda diante de um castelo desenhado.
+
+Longo: Captura real do exemplo Cenário do meu desenho executado localmente com um novo fundo de castelo. O personagem original é um quadrado laranja de 24 por 24, aqui na posição 200,177. O desenho foi preparado para esta demonstração com geração de imagem. O título, Exemplo da plataforma e a orientação das setas são rótulos editoriais fora da captura. Texto da arte: Neste jogo que montamos, o personagem anda com as setas. O fundo pode receber um desenho escolhido por quem está criando.
+
+SLIDE 6
+Curto (83 caracteres): Bloco real do fundo e o mesmo quadrado laranja andando diante de uma rua desenhada.
+
+Longo: Bloco nativo ampliado Pôr o cenário cenario atrás de tudo, seguido por captura real da segunda versão, com uma rua desenhada. O mesmo quadrado laranja está em outro ponto, posição 77,174. Só o arquivo de fundo mudou; comandos de movimento e limite da tela permaneceram iguais. O jogo aceita o desenho como imagem, sem criar colisões automaticamente nas casas. Texto da arte: O personagem continua andando, mas agora pode passear num castelo, numa rua ou num quarto desenhado pela criança. Ela testa como sua escolha ficou no jogo.
+
+SLIDE 7
+Curto (90 caracteres): Cena fictícia: desenho com telhados roxos e arco-íris ao lado do modelo de telhados azuis.
+
+Longo: Nova fotografia gerada de dois papéis: um modelo impresso pequeno com telhados azuis e um desenho maior inspirado nele, com telhados roxos, arco-íris e flores. A mão da criança segura o lápis roxo. É uma cena fictícia; não representa progresso ou resultado documentado de um aluno. Texto da arte: O exemplo ajuda a começar. Mudar e testar abre espaço para as ideias dele. Siga @criecomhelenaejulio para ver como orientamos essas primeiras escolhas na criação de jogos.

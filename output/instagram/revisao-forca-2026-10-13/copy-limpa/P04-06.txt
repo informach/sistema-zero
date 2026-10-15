@@ -1,3 +1,0 @@
-O teste tem duas partes: arrastar pouco e arrastar mais.
-
-A banana muda de alcance? Conferir as duas tentativas mostra se o comando responde como ele planejou.

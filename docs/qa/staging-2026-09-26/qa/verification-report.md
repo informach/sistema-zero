@@ -18,9 +18,9 @@ O conjunto local de alterações foi revisado antes do commit. Lint, tipagem, su
 | Banco real: Auth | `cd packages/auth && bun test tests/db/repositories.test.ts` | 11 PASS, 0 FAIL |
 | Grant do Mural | `cd packages/members && bun test tests/application/grant.test.ts` | 26 PASS, 0 FAIL |
 | Importação de manifestos | `cd packages/members && bun test tests/integration/learning-import.test.ts tests/integration/nave-e-desafio-import.test.ts` | 10 PASS, 0 FAIL |
-| Curso Cadê Todo Mundo? | `bun test docs/aulas-interativas/qa/cade-todo-mundo-manifestos.test.ts docs/aulas-interativas/qa/cade-todo-mundo-projeto.test.ts` | 16 PASS, 0 FAIL |
-| Manifestos | `bun docs/aulas-interativas/qa/validar-manifestos.ts` | 34 válidos, 0 reprovados |
-| Roteiros | `python docs/aulas-interativas/validar-roteiros.py` | 195 sessões validadas; notas de tempo antigas não bloqueantes |
+| Curso Cadê Todo Mundo? | `bun test docs/aulas-interativas-tecnico/qa/cade-todo-mundo-manifestos.test.ts docs/aulas-interativas-tecnico/qa/cade-todo-mundo-projeto.test.ts` | 16 PASS, 0 FAIL |
+| Manifestos | `bun docs/aulas-interativas-tecnico/qa/validar-manifestos.ts` | 34 válidos, 0 reprovados |
+| Roteiros | `python docs/aulas-interativas-tecnico/validar-roteiros.py` | 195 sessões validadas; notas de tempo antigas não bloqueantes |
 | Alcance Kids | `bun run --filter @sistemazero/community-kids test:reachability` | PASS; todos os módulos críticos alcançados |
 | Runtime Studio | `bun run --filter @sistemazero/studio-runtime audit:image` e `build:image` | PASS; 0 vulnerabilidades e imagem construída |
 | Exemplos 3D | `bun run --filter @sistemazero/studio check:game-3d-examples` | PASS; 28 exemplos atualizados |

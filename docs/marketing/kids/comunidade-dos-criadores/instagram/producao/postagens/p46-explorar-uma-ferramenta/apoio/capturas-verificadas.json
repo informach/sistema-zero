@@ -1,0 +1,38 @@
+{
+  "errors": [],
+  "mini": {
+    "before": {
+      "x": 20,
+      "y": 164,
+      "grounded": true
+    },
+    "after": {
+      "x": 92,
+      "y": 164,
+      "grounded": true
+    },
+    "jump": {
+      "x": 92,
+      "y": 61.99999999999995,
+      "grounded": false
+    }
+  },
+  "nuvens": {
+    "before": {
+      "x": 0,
+      "y": 0.3,
+      "z": 0,
+      "grounded": true,
+      "state": "jogando",
+      "coins": 3
+    },
+    "jump": {
+      "x": -3.9621866387905316,
+      "y": 3.1767999999999983,
+      "z": 2.1815736667959755,
+      "grounded": false,
+      "state": "jogando",
+      "coins": 3
+    }
+  }
+}

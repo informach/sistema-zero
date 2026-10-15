@@ -1904,6 +1904,51 @@ export interface PensaShareView {
   display: string
 }
 
+/**
+ * Pensa v2 em EQUIPE (14/10/2026): os recursos de cada pessoa, como o members devolve em
+ * `GET /members/pensa/v2/projects/:projectId/team-capabilities`. Só o BFF lê (é com isso que
+ * `pensa-journey/context.ts` monta o snapshot do plano em equipe); nunca vai ao navegador.
+ */
+export interface PensaTeamCapabilitiesView {
+  /** Quem PROGRAMA: o jogo mora no Estúdio dela, então a paleta e o inventário são os dela. */
+  code: {
+    profileId: string
+    /** Slug do posto; `null` = o members não conseguiu calcular. */
+    level: string | null
+    /** Os blocos que ela conquistou nos cursos (a paleta do Estúdio livre dela). */
+    blocks: string[]
+    /** Posse pela CONTA dela (a chave-mestra não conta). */
+    access: { studio: boolean; pinta: boolean; molda: boolean }
+    /** As criações vivas dela (até 200 por ferramenta), no formato de `GET /members/creations/:tool`. */
+    creations: { pinta: CreationIndexView[]; molda: CreationIndexView[] }
+  }
+  /** Quem cuida das ARTES (os papéis efetivos: sem ninguém, quem programa). */
+  art: Array<{
+    profileId: string
+    level: string | null
+    access: { pinta: boolean; molda: boolean }
+  }>
+}
+
+/** `GET …/team-art`: as artes que OUTRA pessoa da equipe entregou nas missões do plano. */
+export interface PensaTeamArtListView {
+  items: import('@sistemazero/core/pensa').PensaTeamArtItem[]
+}
+
+/**
+ * A descida ASSINADA de uma criação, como o BFF a entrega: `GET /api/creations/:tool/:itemId/download`
+ * e `GET /api/pensa/v2/projects/:id/team-art/:taskId/download` (o "Trazer da equipe"). Blob gzip
+ * em `downloadUrl` (5 min) e um GET por parte (10 min); `serverNow` é o relógio do servidor.
+ */
+export interface CreationDownloadUrlView {
+  downloadUrl: string
+  revision: number
+  bytes: number
+  item: CreationSummaryView
+  parts: Array<{ hash: string; bytes: number; url: string }>
+  serverNow: string
+}
+
 export interface PensaChatMessage {
   role: 'user' | 'assistant'
   content: string
@@ -2035,6 +2080,12 @@ export interface PensaTaskView {
   }
   revision: number
   supersedesTaskId: string | null
+  /**
+   * Equipe do v2 (14/10/2026): quem começou a missão e quem a concluiu. Opcionais: o members
+   * anterior à equipe não os manda (vale como `null`).
+   */
+  assigneeProfileId?: string | null
+  completedByProfileId?: string | null
 }
 
 export interface PensaTaskHandoffView {

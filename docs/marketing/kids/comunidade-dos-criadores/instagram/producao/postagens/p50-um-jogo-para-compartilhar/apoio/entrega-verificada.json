@@ -1,0 +1,385 @@
+{
+  "id": "P50",
+  "checkedAt": "2026-10-14T18:37:55.268Z",
+  "errors": [],
+  "files": [
+    {
+      "file": "01-p50.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 1015809,
+      "sha256": "6420d6fa8c7855318c162ce35388ae826fe21548c0730bf1eab322c635fd9bdd"
+    },
+    {
+      "file": "02-p50.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 110970,
+      "sha256": "df5251b69506be05d35dfb9f90d2ca8e42379b1690a8af4b72801443392be633"
+    },
+    {
+      "file": "03-p50.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 1242844,
+      "sha256": "4068af9de5a764ff2dac0dfa3c2d776c1587a08c682aa524e0bfca5c81769c13"
+    },
+    {
+      "file": "04-p50.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 914163,
+      "sha256": "cba5e5bfef5fba27e8f230cbf71471b0f2a2b654fa8f222a68f0e88174b7018a"
+    },
+    {
+      "file": "05-p50.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 146466,
+      "sha256": "f1a3284b2036f1c83f22d6fb4632faa7f334a3f4a5e2550da9bac876e0f20a87"
+    },
+    {
+      "file": "06-p50.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 205737,
+      "sha256": "98e3c2a7a41590b3d0d6a1d5383fba0b7d1bb89a6b5f18770fd252f73886ceac"
+    },
+    {
+      "file": "07-p50.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 1014237,
+      "sha256": "a9efd725285c6fbd33133a4ede47948ff2ae7c2ef8eb51ab554a883b6e8301a4"
+    }
+  ],
+  "links": [
+    {
+      "from": "index.html",
+      "to": "legenda.txt",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "texto-alternativo.txt",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "montagem.html",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "apoio/fontes-e-producao.md",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "../index.html",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "01-p50.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "01-p50.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "02-p50.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "02-p50.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "03-p50.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "03-p50.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "04-p50.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "04-p50.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "05-p50.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "05-p50.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "06-p50.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "06-p50.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "07-p50.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "07-p50.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/01-link.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/rafael.webp",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/03-convite-para-jogar.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/04-jogando-juntos.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/05-corrida-64s.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/mural-original.webp",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/mural-original.webp",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/mural-original.webp",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/07-compartilhar-na-escola.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../../../../postagens/10-p41-a-p50.md#p50",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "copy.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "verificacao.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../../../../postagens/05-direcao-visual-e-producao.md",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../../../destaques/avaliacoes/fontes-dos-relatos.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "rafael.webp",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "prompts.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "imagens-geradas.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "corrida-original.js",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "corrida-original.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "capturas-verificadas.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "mural-original.webp",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../index.html",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../montagem.html",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../legenda.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../texto-alternativo.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../publicacao.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "entrega-verificada.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "LICENSE-Nunito",
+      "exists": true
+    }
+  ],
+  "copyLinter": "Legenda e sete slides: zero achados mecânicos.",
+  "visualReview": "Sete slides conferidos. Aspas simétricas, início No fim integralmente visível, retrato real a 160 px. Captura de corrida com tempo destacado. Nomes e dados de conta do Mural fora dos recortes. Quatro imagens geradas distintas; meninos fictícios consistentes nos slides 4 e 7.",
+  "portraitIdentical": true,
+  "muralIdentical": true,
+  "game": {
+    "startSpeed": 0.14,
+    "time": 64,
+    "speed": 0.4600000000000003,
+    "alive": true,
+    "boxes": 3,
+    "score": "64",
+    "keyboardInputs": 20
+  },
+  "carouselCount": 18,
+  "pngCount": 130,
+  "textBounds": [
+    {
+      "text": "Rafael criou um jogo e convidou um amigo para jogar.",
+      "within": true
+    },
+    {
+      "text": "A ideia dele virou uma experiência que podia compartilhar.",
+      "within": true
+    },
+    {
+      "text": "‘No fim eu peguei o link e mandei pro meu amigo jogar.’",
+      "within": true
+    },
+    {
+      "text": "Rafael · aluno",
+      "within": true
+    },
+    {
+      "text": "Mostrar uma criação pode abrir uma conversa sobre algo que a criança gosta.",
+      "within": true
+    },
+    {
+      "text": "Ela conta o que inventou e vê outra pessoa experimentar.",
+      "within": true
+    },
+    {
+      "text": "Depois, pode ouvir o que o amigo achou.",
+      "within": true
+    },
+    {
+      "text": "Qual parte ele entendeu? Onde ficou difícil? O que foi mais divertido?",
+      "within": true
+    },
+    {
+      "text": "Neste exemplo da nossa plataforma, o jogador desvia de caixas que ficam mais rápidas.",
+      "within": true
+    },
+    {
+      "text": "Quem criou pode observar a partida e decidir se quer ajustar a dificuldade.",
+      "within": true
+    },
+    {
+      "text": "Na Comunidade, um projeto publicado pode ser compartilhado por link e aparecer no Mural dos Criadores.",
+      "within": true
+    },
+    {
+      "text": "Ali, os alunos podem conhecer criações e comentar, com moderação.",
+      "within": true
+    },
+    {
+      "text": "Criar jogos também pode ser uma forma de compartilhar ideias e conversar sobre elas.",
+      "within": true
+    },
+    {
+      "text": "Siga o perfil para conhecer mais experiências.",
+      "within": true
+    }
+  ],
+  "visibleQuote": "No fim eu peguei o link e mandei pro meu amigo jogar.",
+  "quoteStyle": {
+    "firstLetter": "74px",
+    "opening": "Georgia, serif",
+    "closing": "Georgia, serif",
+    "portraitWidth": 160,
+    "portraitHeight": 160
+  },
+  "svgImages": 3,
+  "mobileNoOverflow": true,
+  "browserImageDecode": true,
+  "sourceSectionHash": "093f24251b800ddb75519fb48c2cc50dbe24b7ad3c1410df500671f1ec2d4368",
+  "copyEqual": true,
+  "fonts": {
+    "normal": true,
+    "bold": true
+  },
+  "nextCarousel": "P52",
+  "published": false
+}

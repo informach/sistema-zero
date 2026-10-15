@@ -1,18 +1,25 @@
 import {
+  canWorkOnPensaMission,
+  nextPensaMissionFor,
   PENSA_ZERO_LABELS,
   type PensaJourneyCommand,
   type PensaJourneyListItem,
+  type PensaJourneyTeamView,
   type PensaJourneyView,
   type PensaZeroStage,
   pensaZeroStage,
 } from '@sistemazero/core/pensa'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useId, useRef, useState } from 'react'
+import { joinNames, missionPeople, teamMissionProgress } from '../core/journeyTeam'
+import { JOURNEY_TEAM_COPY, personName, TEAM_COPY } from '../core/teamCopy'
 import type {
   PensaHostAdapter,
+  PensaJourneyJoinView,
   PensaMascotPose,
   PensaProjectListView,
   PensaStageView,
   PensaTaskView,
+  PensaTransport,
 } from '../core/types'
 import { HostBackLink, HostMenuButton, usePensaHostChrome } from './hostChrome'
 import {
@@ -28,6 +35,7 @@ import {
   TrashIcon,
   UsersIcon,
 } from './icons'
+import { JourneyTeamDialog } from './JourneyTeamDialog'
 
 const errorText = (cause: unknown) =>
   cause instanceof Error ? cause.message : 'Não consegui fazer isso agora. Tente de novo.'
@@ -36,11 +44,14 @@ export function JourneyApp({
   initialProjectId,
   onWorkspaceChange,
   onLegacy,
+  teamPollMs = 20_000,
 }: {
   adapter: PensaHostAdapter
   initialProjectId?: string | null
   onWorkspaceChange?: (active: boolean) => void
   onLegacy(id?: string): void
+  /** O compasso de um jogo EM EQUIPE (o teste injeta um curto; 0 desliga). */
+  teamPollMs?: number
 }) {
   const chrome = usePensaHostChrome()
   const api = adapter.transport
@@ -71,6 +82,16 @@ export function JourneyApp({
   const request = useRef<{ text: string; id: string; key: string } | null>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const keepRef = useRef<HTMLButtonElement>(null)
+  // Equipe (14/10/2026): os nomes e fotos (`GET …/team`), a janela e quem a abriu.
+  const [teamView, setTeamView] = useState<PensaJourneyTeamView | null>(null)
+  const [teamOpen, setTeamOpen] = useState(false)
+  const teamOpenerRef = useRef<HTMLButtonElement | null>(null)
+  const teamSequence = useRef(0)
+  // "Ver o caminho" do cartão de espera abre a sanfona e leva o foco até ela.
+  const pathRef = useRef<HTMLDetailsElement>(null)
+  // Entrar por código e sair da equipe trocam a tela inteira: o foco pousa no título novo.
+  const titleRef = useRef<HTMLHeadingElement>(null)
+  const focusTitle = useRef(false)
   const state = view?.journey
   const tasks = loadedTasks.filter((task) => state?.missionIds.includes(task.id))
   const setView = useCallback((next: PensaJourneyView) => {
@@ -88,6 +109,16 @@ export function JourneyApp({
   const workProjectId = view?.project.id
   const operationId = view?.operation?.id
   const operationStatus = view?.operation?.status
+  // Sem `team` (servidor anterior à equipe): a dona faz tudo, como antes.
+  const team = view?.team ?? null
+  const isOwner = view?.role !== 'member'
+  const canProgram = !team || team.roles.code === team.viewerProfileId
+  const teamMode = Boolean(team && team.memberCount > 0)
+  // Os nomes só servem com gente na equipe; a chave muda quando entra/sai alguém ou as funções.
+  const teamKey =
+    team && workProjectId && teamMode
+      ? `${workProjectId}|${team.memberCount}|${team.roles.code}|${team.roles.art.join(',')}`
+      : null
 
   useEffect(() => {
     try {
@@ -165,6 +196,8 @@ export function JourneyApp({
       setConversationKind('planning')
       setRestoreTarget('')
       setConfirmDelete(false)
+      setTeamOpen(false)
+      setTeamView(null)
       try {
         await load(id)
       } catch (cause) {
@@ -214,6 +247,46 @@ export function JourneyApp({
       window.clearInterval(timer)
     }
   }, [api, load, workProjectId, operationId, operationStatus])
+  // Os nomes da equipe ("Missão de Bia", "Quem testa… é Leo"). Best-effort: sem eles a tela usa
+  // "alguém da equipe", nunca trava.
+  useEffect(() => {
+    const sequence = ++teamSequence.current
+    if (!teamKey || !workProjectId) {
+      setTeamView(null)
+      return
+    }
+    api
+      .request<PensaJourneyTeamView>(`/v2/projects/${workProjectId}/team`)
+      .then((next) => {
+        if (sequence === teamSequence.current && active.current === workProjectId) setTeamView(next)
+      })
+      .catch(() => undefined)
+  }, [api, teamKey, workProjectId])
+  // O compasso do jogo EM EQUIPE: a cada 20 s (aba visível, nada em voo) relê o jogo e a etapa.
+  // O texto do campo mora no rascunho (`draft`), fora da view: reler nunca o apaga.
+  const operationRunning = Boolean(
+    operationStatus && ['queued', 'running'].includes(operationStatus),
+  )
+  useEffect(() => {
+    const id = workProjectId
+    if (!id || !teamMode || teamPollMs <= 0 || operationRunning) return
+    let inFlight = false
+    const timer = window.setInterval(() => {
+      if (document.hidden || inFlight || busyRef.current || active.current !== id) return
+      inFlight = true
+      void load(id)
+        .catch(() => undefined)
+        .finally(() => {
+          inFlight = false
+        })
+    }, teamPollMs)
+    return () => window.clearInterval(timer)
+  }, [load, workProjectId, teamMode, teamPollMs, operationRunning])
+  useEffect(() => {
+    if (!focusTitle.current || loading) return
+    focusTitle.current = false
+    titleRef.current?.focus()
+  })
 
   async function run(action: (isCurrent: () => boolean) => Promise<void>) {
     if (busyRef.current) return
@@ -253,6 +326,8 @@ export function JourneyApp({
     setTalking(false)
     setConversationKind('planning')
     setError(null)
+    setTeamOpen(false)
+    setTeamView(null)
     const visit = navigation.current
     void loadList(archived).catch((c) => {
       if (navigation.current === visit) setError(errorText(c))
@@ -325,15 +400,64 @@ export function JourneyApp({
     })
   }
   const running = Boolean(view?.operation && ['queued', 'running'].includes(view.operation.status))
-  const nextTask =
-    tasks.find((t) => t.id === nextTaskId) ??
-    tasks.find(
-      (t) =>
-        t.progress.status !== 'completed' &&
-        t.dependencies.every((id) =>
-          tasks.some((d) => d.id === id && d.progress.status === 'completed'),
-        ),
-    )
+  // Em equipe, cada criança vê a SUA próxima missão (régua do core); sem nenhuma, a missão que
+  // está na frente do caminho e quem pode fazê-la ("Esperando a arte de Bia").
+  const teamNext =
+    team && teamMode
+      ? nextPensaMissionFor(teamMissionProgress(tasks), team.viewerProfileId, team.roles)
+      : null
+  const nextTask = teamNext
+    ? tasks.find((t) => t.id === teamNext.mine)
+    : (tasks.find((t) => t.id === nextTaskId) ??
+      tasks.find(
+        (t) =>
+          t.progress.status !== 'completed' &&
+          t.dependencies.every((id) =>
+            tasks.some((d) => d.id === id && d.progress.status === 'completed'),
+          ),
+      ))
+  const waitingOn = teamNext?.waitingOn ?? null
+  const waitingTask = waitingOn ? tasks.find((t) => t.id === waitingOn.missionId) : undefined
+  /** 1º nome de alguém da equipe, ou `null` (a frase então diz "alguém da equipe"). */
+  const firstNameOf = (profileId: string) =>
+    teamView?.people.find((p) => p.profileId === profileId)?.firstName?.trim() || null
+  /** Rótulo curto do "Meu caminho": "você" ou o 1º nome ("Colega" sem nome). */
+  const shortName = (profileId: string) =>
+    profileId === team?.viewerProfileId ? JOURNEY_TEAM_COPY.you : personName(firstNameOf(profileId))
+  const programmerName = team ? firstNameOf(team.roles.code) : null
+  const waitingTitle = waitingTask
+    ? waitingTask.destination === 'studio'
+      ? JOURNEY_TEAM_COPY.waitingCode(firstNameOf(waitingOn?.workers[0] ?? ''))
+      : (waitingOn?.workers.length ?? 0) > 1
+        ? JOURNEY_TEAM_COPY.waitingArtTeam
+        : JOURNEY_TEAM_COPY.waitingArt(firstNameOf(waitingOn?.workers[0] ?? ''))
+    : ''
+  const waitingKicker = waitingTask
+    ? (waitingOn?.workers.length ?? 0) > 1
+      ? JOURNEY_TEAM_COPY.missionOfArtTeam
+      : JOURNEY_TEAM_COPY.missionOf(firstNameOf(waitingOn?.workers[0] ?? ''))
+    : ''
+  // A dona vê o "Equipe" mesmo sozinha (é por ele que ela convida); quem entrou, sempre.
+  const showTeamButton = Boolean(
+    team && view?.project.status === 'active' && (team.memberCount > 0 || isOwner),
+  )
+  /** Quem NÃO programa: no lugar dos botões de testar e guardar, quem faz isso. */
+  const programmerNote = canProgram ? null : (
+    <p className="pensa-journey-team-note">
+      <span className="pensa-journey-team-note__icon" aria-hidden="true">
+        <UsersIcon size={16} />
+      </span>
+      <span>{JOURNEY_TEAM_COPY.programmerOnly(programmerName)}</span>
+    </p>
+  )
+  const seePath = () => {
+    const details = pathRef.current
+    if (!details) return
+    details.open = true
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    details.scrollIntoView?.({ behavior: reduce ? 'auto' : 'smooth', block: 'start' })
+    details.querySelector('summary')?.focus({ preventScroll: true })
+  }
   const focusChat = (kind: 'planning' | 'help' | 'backlog' = 'help') => {
     setConversationKind(kind)
     setTalking(true)
@@ -445,7 +569,7 @@ export function JourneyApp({
                       Pensa · sua oficina de jogos
                     </p>
                   )}
-                  <h1 className="sz-tool-title">
+                  <h1 className="sz-tool-title" ref={titleRef} tabIndex={-1}>
                     {view?.project.name ??
                       (continueGame
                         ? 'Vamos continuar seu jogo?'
@@ -458,13 +582,36 @@ export function JourneyApp({
                   ) : null}
                 </div>
               </div>
-              {headerStatus ? (
-                <p
-                  className={`sz-tool-status pensa-journey-status${headerStatus.tone === 'ok' ? ' sz-tool-status--ok' : headerStatus.tone === 'warn' ? ' sz-tool-status--warn' : ''}`}
-                >
-                  <span className="pensa-plan-status__dot" aria-hidden="true" />
-                  {headerStatus.text}
-                </p>
+              {headerStatus || showTeamButton ? (
+                <div className="sz-tool-header__actions">
+                  {showTeamButton && team ? (
+                    // "Equipe · N" (N = quem entrou). O "·" é desenho: o nome acessível vem
+                    // inteiro do texto invisível ("Equipe, N na equipe"), como no plano clássico.
+                    <button
+                      ref={teamOpenerRef}
+                      type="button"
+                      className="sz-tool-pill sz-tool-pill--outline pensa-team-button"
+                      aria-haspopup="dialog"
+                      onClick={() => setTeamOpen(true)}
+                    >
+                      <UsersIcon size={16} />
+                      <span aria-hidden="true">
+                        {TEAM_COPY.button} · {team.memberCount}
+                      </span>
+                      <span className="pensa-sr-only">
+                        {TEAM_COPY.button}, {team.memberCount} na equipe
+                      </span>
+                    </button>
+                  ) : null}
+                  {headerStatus ? (
+                    <p
+                      className={`sz-tool-status pensa-journey-status${headerStatus.tone === 'ok' ? ' sz-tool-status--ok' : headerStatus.tone === 'warn' ? ' sz-tool-status--warn' : ''}`}
+                    >
+                      <span className="pensa-plan-status__dot" aria-hidden="true" />
+                      {headerStatus.text}
+                    </p>
+                  ) : null}
+                </div>
               ) : null}
             </div>
             {state ? <ZeroMap current={stage} allDone={allDone} /> : null}
@@ -527,25 +674,27 @@ export function JourneyApp({
                     <div className="pensa-journey-card__body">
                       <h2 className="pensa-journey-card__title">Este jogo está guardado</h2>
                       <p>Você pode continuar de onde parou.</p>
-                      <div className="pensa-journey-actions">
-                        <button
-                          type="button"
-                          className="sz-tool-pill sz-tool-pill--primary"
-                          disabled={busy}
-                          onClick={() =>
-                            void run(async () => {
-                              setView(
-                                await api.request(`/v2/projects/${view.project.id}`, {
-                                  method: 'PATCH',
-                                  body: { status: 'active' },
-                                }),
-                              )
-                            })
-                          }
-                        >
-                          Continuar este jogo
-                        </button>
-                      </div>
+                      {isOwner ? (
+                        <div className="pensa-journey-actions">
+                          <button
+                            type="button"
+                            className="sz-tool-pill sz-tool-pill--primary"
+                            disabled={busy}
+                            onClick={() =>
+                              void run(async () => {
+                                setView(
+                                  await api.request(`/v2/projects/${view.project.id}`, {
+                                    method: 'PATCH',
+                                    body: { status: 'active' },
+                                  }),
+                                )
+                              })
+                            }
+                          >
+                            Continuar este jogo
+                          </button>
+                        </div>
+                      ) : null}
                     </div>
                   </section>
                 ) : state?.paused ? (
@@ -759,7 +908,8 @@ export function JourneyApp({
                         </span>
                         <div>
                           <p className="sz-tool-kicker">
-                            Sua próxima missão · {missionNumber} de {tasks.length}
+                            {teamMode ? JOURNEY_TEAM_COPY.yourMission : 'Sua próxima missão'} ·{' '}
+                            {missionNumber} de {tasks.length}
                           </p>
                           <h2 className="pensa-journey-card__title">{nextTask.title}</h2>
                         </div>
@@ -789,12 +939,62 @@ export function JourneyApp({
                         >
                           Travei nesta parte
                         </button>
+                        {canProgram ? (
+                          <button
+                            type="button"
+                            className="sz-tool-pill sz-tool-pill--quiet pensa-journey-try"
+                            onClick={() => void command({ type: 'observe' })}
+                          >
+                            Já quero experimentar
+                          </button>
+                        ) : null}
+                      </div>
+                    </section>
+                  ) : state.stage === 'building' && waitingTask ? (
+                    // Em equipe, sem missão MINHA: a missão da frente, de quem é, e o que dá para
+                    // fazer enquanto isso (ver o caminho, guardar ideias). Nada de botão morto.
+                    <section className="pensa-journey-card pensa-journey-mission pensa-journey-waiting">
+                      <div className="pensa-journey-card__head">
+                        <span
+                          className={`sz-tool-tile sz-tool-tile--${DESTINATIONS[waitingTask.destination].tile}`}
+                          aria-hidden="true"
+                        >
+                          {DESTINATIONS[waitingTask.destination].icon}
+                        </span>
+                        <div>
+                          <p className="sz-tool-kicker">
+                            {waitingKicker} · {tasks.indexOf(waitingTask) + 1} de {tasks.length}
+                          </p>
+                          <h2 className="pensa-journey-card__title">{waitingTitle}</h2>
+                        </div>
+                      </div>
+                      <p className="pensa-journey-waiting__mission">
+                        <strong className="pensa-journey-waiting__title">
+                          {waitingTask.title}
+                        </strong>
+                        {waitingTask.summary ? (
+                          <span className="pensa-journey-waiting__summary">
+                            {waitingTask.summary}
+                          </span>
+                        ) : null}
+                      </p>
+                      <MissionDots tasks={tasks} current={waitingTask.id} />
+                      <p className="pensa-journey-hint">{JOURNEY_TEAM_COPY.waitingLead}</p>
+                      <div className="pensa-journey-actions">
                         <button
                           type="button"
-                          className="sz-tool-pill sz-tool-pill--quiet pensa-journey-try"
-                          onClick={() => void command({ type: 'observe' })}
+                          className="sz-tool-pill sz-tool-pill--primary"
+                          onClick={seePath}
                         >
-                          Já quero experimentar
+                          {JOURNEY_TEAM_COPY.seePath}
+                        </button>
+                        <button
+                          type="button"
+                          className="sz-tool-pill sz-tool-pill--outline"
+                          onClick={() => focusChat('backlog')}
+                        >
+                          <LightbulbIcon size={16} />
+                          {JOURNEY_TEAM_COPY.keepIdea}
                         </button>
                       </div>
                     </section>
@@ -814,135 +1014,142 @@ export function JourneyApp({
                         <li>
                           <strong>Veja se:</strong> {state.proposal?.test.expected}
                         </li>
-                        <li>Abra o jogo, experimente e salve antes de contar o resultado.</li>
+                        {canProgram ? (
+                          <li>Abra o jogo, experimente e salve antes de contar o resultado.</li>
+                        ) : null}
                       </ol>
-                      {tasks
-                        .filter((t) => t.destination === 'studio')
-                        .slice(-1)
-                        .map((t) => (
-                          <div className="pensa-journey-actions" key={t.id}>
-                            <button
-                              type="button"
-                              className="sz-tool-pill sz-tool-pill--outline"
-                              onClick={() =>
-                                adapter.onOpenTask({ taskId: t.id, destination: 'studio' })
-                              }
-                            >
-                              <BlocksIcon />
-                              Abrir meu jogo
-                            </button>
-                          </div>
-                        ))}
-                      <label className="pensa-journey-label" htmlFor="pensa-test-note">
-                        O que aconteceu? (se quiser contar)
-                      </label>
-                      <textarea
-                        className="pensa-journey-field"
-                        id="pensa-test-note"
-                        value={note}
-                        onChange={(e) => setNote(e.target.value)}
-                        rows={2}
-                      />
-                      {adapter.renderVoiceInput ? (
-                        <div className="pensa-journey-actions">
-                          {adapter.renderVoiceInput({
-                            value: note,
-                            onChange: setNote,
-                            onBusyChange: setVoiceBusy,
-                            disabled: busy,
-                            textareaId: 'pensa-test-note',
-                          })}
-                        </div>
-                      ) : null}
-                      {note.length > 2000 ? (
-                        <p className="pensa-journey-warn" role="alert">
-                          Divida seu relato em uma parte menor para este teste. Seu texto continua
-                          inteiro aqui.
-                        </p>
-                      ) : null}
-                      <fieldset className="pensa-journey-results">
-                        <legend className="pensa-journey-label">Como foi?</legend>
-                        {(
-                          [
-                            ['met', 'Funcionou!'],
-                            ['needs_adjustment', 'Quero ajustar'],
-                            ['inconclusive', 'Não sei ainda'],
-                          ] as const
-                        ).map(([result, label]) => (
-                          <button
-                            type="button"
-                            className={`sz-tool-pill ${result === 'met' ? 'sz-tool-pill--primary' : 'sz-tool-pill--outline'}`}
-                            key={result}
-                            disabled={busy || voiceBusy || note.length > 2000}
-                            onClick={() =>
-                              void run(async (isCurrent) => {
-                                const next = await api.request<PensaJourneyView>(
-                                  `/v2/projects/${state.projectId}/test`,
-                                  {
-                                    method: 'POST',
-                                    body: {
-                                      expectedRevision: state.revision,
-                                      id: crypto.randomUUID(),
-                                      result,
-                                      note,
-                                    },
-                                  },
-                                )
-                                setView(next)
-                                if (isCurrent()) setNote('')
-                              })
-                            }
-                          >
-                            {label}
-                          </button>
-                        ))}
-                      </fieldset>
-                      {state.stage === 'observing' &&
-                      state.tests.length > (state.testSessionStart ?? 0) &&
-                      state.tests.at(-1)?.result === 'met' ? (
-                        <div className="pensa-journey-done">
-                          <CircleCheckIcon />
-                          <p>Funcionou! Guarde esta versão para não perder o que você fez.</p>
-                          <button
-                            type="button"
-                            className="sz-tool-pill sz-tool-pill--primary"
-                            disabled={busy}
-                            onClick={() =>
-                              void run(async () => {
-                                setView(
-                                  await api.request(`/v2/projects/${state.projectId}/close`, {
-                                    method: 'POST',
-                                    body: { expectedRevision: state.revision, reason: 'met' },
-                                  }),
-                                )
-                              })
-                            }
-                          >
-                            Guardar esta versão pronta
-                          </button>
-                        </div>
-                      ) : state.stage === 'observing' &&
-                        state.tests.length > (state.testSessionStart ?? 0) ? (
-                        <div className="pensa-journey-actions">
-                          <button
-                            type="button"
-                            className="sz-tool-pill sz-tool-pill--outline"
-                            onClick={() => {
-                              void run(async () => {
-                                await api.request(`/v2/projects/${state.projectId}/command`, {
-                                  method: 'POST',
-                                  body: {
-                                    expectedRevision: state.revision,
-                                    command: { type: 'repair' },
-                                  },
-                                })
-                                await load(state.projectId)
-                              })
-                            }}
-                          >
-                            Voltar para ajustar
-                          </button>
-                        </div>
+                      {programmerNote}
+                      {canProgram ? (
+                        <>
+                          {tasks
+                            .filter((t) => t.destination === 'studio')
+                            .slice(-1)
+                            .map((t) => (
+                              <div className="pensa-journey-actions" key={t.id}>
+                                <button
+                                  type="button"
+                                  className="sz-tool-pill sz-tool-pill--outline"
+                                  onClick={() =>
+                                    adapter.onOpenTask({ taskId: t.id, destination: 'studio' })
+                                  }
+                                >
+                                  <BlocksIcon />
+                                  Abrir meu jogo
+                                </button>
+                              </div>
+                            ))}
+                          <label className="pensa-journey-label" htmlFor="pensa-test-note">
+                            O que aconteceu? (se quiser contar)
+                          </label>
+                          <textarea
+                            className="pensa-journey-field"
+                            id="pensa-test-note"
+                            value={note}
+                            onChange={(e) => setNote(e.target.value)}
+                            rows={2}
+                          />
+                          {adapter.renderVoiceInput ? (
+                            <div className="pensa-journey-actions">
+                              {adapter.renderVoiceInput({
+                                value: note,
+                                onChange: setNote,
+                                onBusyChange: setVoiceBusy,
+                                disabled: busy,
+                                textareaId: 'pensa-test-note',
+                              })}
+                            </div>
+                          ) : null}
+                          {note.length > 2000 ? (
+                            <p className="pensa-journey-warn" role="alert">
+                              Divida seu relato em uma parte menor para este teste. Seu texto
+                              continua inteiro aqui.
+                            </p>
+                          ) : null}
+                          <fieldset className="pensa-journey-results">
+                            <legend className="pensa-journey-label">Como foi?</legend>
+                            {(
+                              [
+                                ['met', 'Funcionou!'],
+                                ['needs_adjustment', 'Quero ajustar'],
+                                ['inconclusive', 'Não sei ainda'],
+                              ] as const
+                            ).map(([result, label]) => (
+                              <button
+                                type="button"
+                                className={`sz-tool-pill ${result === 'met' ? 'sz-tool-pill--primary' : 'sz-tool-pill--outline'}`}
+                                key={result}
+                                disabled={busy || voiceBusy || note.length > 2000}
+                                onClick={() =>
+                                  void run(async (isCurrent) => {
+                                    const next = await api.request<PensaJourneyView>(
+                                      `/v2/projects/${state.projectId}/test`,
+                                      {
+                                        method: 'POST',
+                                        body: {
+                                          expectedRevision: state.revision,
+                                          id: crypto.randomUUID(),
+                                          result,
+                                          note,
+                                        },
+                                      },
+                                    )
+                                    setView(next)
+                                    if (isCurrent()) setNote('')
+                                  })
+                                }
+                              >
+                                {label}
+                              </button>
+                            ))}
+                          </fieldset>
+                          {state.stage === 'observing' &&
+                          state.tests.length > (state.testSessionStart ?? 0) &&
+                          state.tests.at(-1)?.result === 'met' ? (
+                            <div className="pensa-journey-done">
+                              <CircleCheckIcon />
+                              <p>Funcionou! Guarde esta versão para não perder o que você fez.</p>
+                              <button
+                                type="button"
+                                className="sz-tool-pill sz-tool-pill--primary"
+                                disabled={busy}
+                                onClick={() =>
+                                  void run(async () => {
+                                    setView(
+                                      await api.request(`/v2/projects/${state.projectId}/close`, {
+                                        method: 'POST',
+                                        body: { expectedRevision: state.revision, reason: 'met' },
+                                      }),
+                                    )
+                                  })
+                                }
+                              >
+                                Guardar esta versão pronta
+                              </button>
+                            </div>
+                          ) : state.stage === 'observing' &&
+                            state.tests.length > (state.testSessionStart ?? 0) ? (
+                            <div className="pensa-journey-actions">
+                              <button
+                                type="button"
+                                className="sz-tool-pill sz-tool-pill--outline"
+                                onClick={() => {
+                                  void run(async () => {
+                                    await api.request(`/v2/projects/${state.projectId}/command`, {
+                                      method: 'POST',
+                                      body: {
+                                        expectedRevision: state.revision,
+                                        command: { type: 'repair' },
+                                      },
+                                    })
+                                    await load(state.projectId)
+                                  })
+                                }}
+                              >
+                                Voltar para ajustar
+                              </button>
+                            </div>
+                          ) : null}
+                        </>
                       ) : null}
                     </section>
                   )
@@ -962,39 +1169,48 @@ export function JourneyApp({
                           ? 'Você pode brincar com ele ou escolher o próximo pedaço.'
                           : 'Dá para continuar esta mesma versão quando quiser.'}
                       </p>
-                      <div className="pensa-journey-actions">
-                        <button
-                          type="button"
-                          className="sz-tool-pill sz-tool-pill--primary"
-                          disabled={busy}
-                          onClick={() =>
-                            state.closedReason === 'incomplete'
-                              ? void command({ type: 'resume' })
-                              : void run(async () => {
-                                  setView(
-                                    await api.request(`/v2/projects/${state.projectId}/increment`, {
-                                      method: 'POST',
-                                      body: { expectedRevision: state.revision },
-                                    }),
-                                  )
-                                })
-                          }
-                        >
-                          {state.closedReason === 'met'
-                            ? 'Escolher o próximo pedaço'
-                            : 'Continuar esta versão'}
-                        </button>
-                        {state.closedReason === 'met' ? (
+                      {/* Retomar é de toda a equipe; a versão seguinte e testar de novo são de quem
+                          programa (o jogo mora no Estúdio dela). */}
+                      {state.closedReason === 'met' && !canProgram ? (
+                        programmerNote
+                      ) : (
+                        <div className="pensa-journey-actions">
                           <button
                             type="button"
-                            className="sz-tool-pill sz-tool-pill--outline"
+                            className="sz-tool-pill sz-tool-pill--primary"
                             disabled={busy}
-                            onClick={() => void command({ type: 'resume' })}
+                            onClick={() =>
+                              state.closedReason === 'incomplete'
+                                ? void command({ type: 'resume' })
+                                : void run(async () => {
+                                    setView(
+                                      await api.request(
+                                        `/v2/projects/${state.projectId}/increment`,
+                                        {
+                                          method: 'POST',
+                                          body: { expectedRevision: state.revision },
+                                        },
+                                      ),
+                                    )
+                                  })
+                            }
                           >
-                            Testar mudanças
+                            {state.closedReason === 'met'
+                              ? 'Escolher o próximo pedaço'
+                              : 'Continuar esta versão'}
                           </button>
-                        ) : null}
-                      </div>
+                          {state.closedReason === 'met' ? (
+                            <button
+                              type="button"
+                              className="sz-tool-pill sz-tool-pill--outline"
+                              disabled={busy}
+                              onClick={() => void command({ type: 'resume' })}
+                            >
+                              Testar mudanças
+                            </button>
+                          ) : null}
+                        </div>
+                      )}
                     </div>
                   </section>
                 ) : null}
@@ -1150,18 +1366,34 @@ export function JourneyApp({
                     Meu caminho
                   </h2>
                   {tasks.length ? (
-                    <details className="pensa-journey-fold">
+                    <details className="pensa-journey-fold" ref={pathRef}>
                       <summary>
                         Ver meu caminho ({doneCount} de {tasks.length})
                       </summary>
                       <ol className="pensa-journey-fold__body pensa-journey-path">
                         {tasks.map((t, index) => {
                           const done = t.progress.status === 'completed'
+                          // "Agora" é a missão da frente: a minha ou a que a equipe espera.
+                          const now = t.id === (nextTask ?? waitingTask)?.id
+                          // Em equipe, quem faz cada missão ("você" / 1º nome).
+                          const who =
+                            team && teamMode
+                              ? joinNames(missionPeople(t, team.roles).map(shortName))
+                              : null
+                          // Rever abre a missão na MINHA oficina: só a que eu posso fazer e que
+                          // não foi feita por outra pessoa (a arte da colega mora na conta dela).
+                          const reviewable =
+                            !team ||
+                            !teamMode ||
+                            (canWorkOnPensaMission(
+                              t.destination,
+                              team.viewerProfileId,
+                              team.roles,
+                            ) &&
+                              (!t.completedByProfileId ||
+                                t.completedByProfileId === team.viewerProfileId))
                           return (
-                            <li
-                              key={t.id}
-                              className={done ? 'is-done' : t.id === nextTask?.id ? 'is-now' : ''}
-                            >
+                            <li key={t.id} className={done ? 'is-done' : now ? 'is-now' : ''}>
                               <span
                                 className={`pensa-journey-path__tile pensa-journey-path__tile--${DESTINATIONS[t.destination].tile}`}
                                 aria-hidden="true"
@@ -1172,10 +1404,11 @@ export function JourneyApp({
                                 <strong>{t.title}</strong>
                                 <small>
                                   {DESTINATIONS[t.destination].label}
-                                  {done ? ' · feita' : t.id === nextTask?.id ? ' · agora' : ''}
+                                  {who ? ` · ${who}` : ''}
+                                  {done ? ' · feita' : now ? ' · agora' : ''}
                                 </small>
                               </span>
-                              {done ? (
+                              {done && reviewable ? (
                                 <button
                                   type="button"
                                   className="sz-tool-pill sz-tool-pill--outline pensa-journey-path__review"
@@ -1260,8 +1493,10 @@ export function JourneyApp({
                   <details className="pensa-journey-fold">
                     <summary>Guardar e cuidar deste jogo</summary>
                     <div className="pensa-journey-fold__body">
+                      {/* Em equipe: adaptar, encerrar e restaurar são de quem programa (usam o jogo
+                          salvo no Estúdio dela); arquivar e apagar são da dona. */}
                       <ul className="pensa-journey-care">
-                        {['building', 'observing', 'closed'].includes(state.stage) ? (
+                        {canProgram && ['building', 'observing', 'closed'].includes(state.stage) ? (
                           <li>
                             <button
                               type="button"
@@ -1295,7 +1530,7 @@ export function JourneyApp({
                           </button>
                           <small>Fica tudo guardado do jeito que está.</small>
                         </li>
-                        {state.stage !== 'closed' ? (
+                        {canProgram && state.stage !== 'closed' ? (
                           <li>
                             <button
                               type="button"
@@ -1320,29 +1555,32 @@ export function JourneyApp({
                             <small>Guarda uma cópia do seu jogo como ele está agora.</small>
                           </li>
                         ) : null}
-                        <li>
-                          <button
-                            type="button"
-                            className="sz-tool-pill sz-tool-pill--outline"
-                            disabled={busy}
-                            onClick={() =>
-                              void run(async (isCurrent) => {
-                                await api.request(`/v2/projects/${state.projectId}`, {
-                                  method: 'PATCH',
-                                  body: { status: 'archived' },
+                        {isOwner ? (
+                          <li>
+                            <button
+                              type="button"
+                              className="sz-tool-pill sz-tool-pill--outline"
+                              disabled={busy}
+                              onClick={() =>
+                                void run(async (isCurrent) => {
+                                  await api.request(`/v2/projects/${state.projectId}`, {
+                                    method: 'PATCH',
+                                    body: { status: 'archived' },
+                                  })
+                                  if (isCurrent()) home()
                                 })
-                                if (isCurrent()) home()
-                              })
-                            }
-                          >
-                            Guardar nos arquivados
-                          </button>
-                          <small>
-                            Sai da lista de jogos em andamento. Dá para trazer de volta.
-                          </small>
-                        </li>
+                              }
+                            >
+                              Guardar nos arquivados
+                            </button>
+                            <small>
+                              Sai da lista de jogos em andamento. Dá para trazer de volta.
+                            </small>
+                          </li>
+                        ) : null}
                       </ul>
-                      {state.checkpoint ? (
+                      {programmerNote}
+                      {canProgram && state.checkpoint ? (
                         <div className="pensa-journey-restore">
                           <label className="pensa-journey-label" htmlFor="pensa-version">
                             Versão guardada
@@ -1391,14 +1629,17 @@ export function JourneyApp({
                           </div>
                         </div>
                       ) : null}
-                      {confirmDelete ? (
+                      {!isOwner ? null : confirmDelete ? (
                         <fieldset
                           className="pensa-journey-danger"
                           aria-label="Confirmar exclusão do plano"
                         >
+                          {/* Em equipe, a dona apaga para TODAS, e o jogo não é só dela: a frase diz
+                              onde cada parte continua. */}
                           <p>
-                            Apagar este plano remove a conversa, as missões e as cópias guardadas
-                            aqui. Seu jogo no Estúdio e suas artes continuam nos editores.
+                            {teamMode
+                              ? 'Apagar este plano remove a conversa, as missões e as cópias guardadas aqui, para toda a equipe. O jogo no Estúdio de quem programa e as artes de cada pessoa continuam nos editores.'
+                              : 'Apagar este plano remove a conversa, as missões e as cópias guardadas aqui. Seu jogo no Estúdio e suas artes continuam nos editores.'}
                           </p>
                           <div className="pensa-journey-actions">
                             <button
@@ -1471,6 +1712,17 @@ export function JourneyApp({
                       {projects.map((p) => (
                         <li key={p.id} className="pensa-journey-game">
                           <h3 className="pensa-journey-game__name">{p.name}</h3>
+                          {/* Equipe: "De <dona>" no jogo em que entrei; "Em equipe · N" no meu
+                              com gente dentro. Sem `role` (servidor antigo) = só meu. */}
+                          {p.role === 'member' ? (
+                            <span className="pensa-chip is-team pensa-journey-game__chip">
+                              {TEAM_COPY.chipFrom(personName(p.team?.ownerFirstName ?? null))}
+                            </span>
+                          ) : (p.team?.memberCount ?? 0) > 0 ? (
+                            <span className="pensa-chip is-team pensa-journey-game__chip">
+                              {TEAM_COPY.chipTeam(p.team?.memberCount ?? 0)}
+                            </span>
+                          ) : null}
                           <ZeroTrack current={p.stage} />
                           <p className="pensa-journey-game__status">
                             {p.paused
@@ -1523,20 +1775,16 @@ export function JourneyApp({
                       </div>
                     </details>
                   ) : null}
-                  {/* As equipes moram no plano clássico: sem este atalho, quem nunca teve um plano
-                      antigo não tinha por onde digitar o código que o colega passou. */}
+                  {/* O código do colega entra DIRETO no jogo v2 (14/10/2026). Um código de plano
+                      clássico também entra: o jogo abre e, sem v2, o `open` cai no plano clássico. */}
                   {!archived ? (
-                    <div className="pensa-journey-join">
-                      <UsersIcon />
-                      <p>Um colega te passou o código de um plano em equipe?</p>
-                      <button
-                        type="button"
-                        className="sz-tool-pill sz-tool-pill--outline"
-                        onClick={() => onLegacy()}
-                      >
-                        Entrar com um código
-                      </button>
-                    </div>
+                    <JourneyJoin
+                      transport={api}
+                      onJoined={(id) => {
+                        focusTitle.current = true
+                        void open(id)
+                      }}
+                    />
                   ) : null}
                 </>
               )}
@@ -1544,6 +1792,159 @@ export function JourneyApp({
           </section>
         ) : null}
       </div>
+      {/* A janela fica FORA das faixas (o mesmo motivo das janelas do plano clássico: lá dentro
+          as pílulas ganhariam o relevo das galerias). */}
+      {view && team ? (
+        <JourneyTeamDialog
+          open={teamOpen}
+          projectId={view.project.id}
+          projectName={view.project.name}
+          transport={api}
+          onClose={() => setTeamOpen(false)}
+          onLeft={() => {
+            setTeamOpen(false)
+            focusTitle.current = true
+            home()
+          }}
+          onTeamChanged={(next) => {
+            // O espelho otimista (o "Equipe · N" acompanha na hora) e, atrás dele, o jogo do
+            // servidor (as funções voltam para a dona quando quem programava sai).
+            const id = view.project.id
+            updateView((now) =>
+              now?.project.id === id && now.team ? { ...now, team: { ...now.team, ...next } } : now,
+            )
+            void load(id).catch(() => undefined)
+          }}
+          onRolesSaved={(next) => setView(next)}
+          onLoaded={setTeamView}
+          returnFocusTo={teamOpenerRef}
+        />
+      ) : null}
+    </div>
+  )
+}
+
+/**
+ * "Entrar com um código" (14/10/2026): entra DIRETO no v2 (`POST /v2/projects/join` →
+ * `{projectId}`) e abre o jogo. O erro do servidor fica ao lado do campo (`role="alert"`, a frase
+ * dele); Esc no FORMULÁRIO (vale com o foco nos botões) e "Cancelar" fecham e devolvem o foco ao
+ * botão. O código vai como a criança digitou: quem normaliza é o members.
+ */
+function JourneyJoin({
+  transport,
+  onJoined,
+}: {
+  transport: PensaTransport
+  onJoined(projectId: string): void
+}) {
+  const [open, setOpen] = useState(false)
+  const [code, setCode] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const formId = useId()
+  const inputId = useId()
+  const errorId = useId()
+  useEffect(() => {
+    if (open) inputRef.current?.focus()
+  }, [open])
+  const close = () => {
+    setOpen(false)
+    setCode('')
+    setError(null)
+    buttonRef.current?.focus()
+  }
+  const submit = async () => {
+    const typed = code.trim()
+    if (typed.length < 4 || busy) return
+    setBusy(true)
+    setError(null)
+    try {
+      const joined = await transport.request<PensaJourneyJoinView>('/v2/projects/join', {
+        method: 'POST',
+        body: { code: typed },
+      })
+      setOpen(false)
+      setCode('')
+      onJoined(joined.projectId)
+    } catch (cause) {
+      setError(errorText(cause))
+      inputRef.current?.focus()
+    } finally {
+      setBusy(false)
+    }
+  }
+  return (
+    <div className="pensa-journey-join">
+      <UsersIcon />
+      <p>Um colega te passou o código de um jogo em equipe?</p>
+      <button
+        ref={buttonRef}
+        type="button"
+        className="sz-tool-pill sz-tool-pill--outline"
+        aria-expanded={open}
+        aria-controls={formId}
+        onClick={() => (open ? close() : setOpen(true))}
+      >
+        {TEAM_COPY.joinButton}
+      </button>
+      {open ? (
+        <form
+          id={formId}
+          className="pensa-journey-join__form"
+          onSubmit={(event) => {
+            event.preventDefault()
+            void submit()
+          }}
+          onKeyDown={(event) => {
+            if (event.key === 'Escape' && !busy) {
+              event.preventDefault()
+              close()
+            }
+          }}
+        >
+          <label className="pensa-journey-label" htmlFor={inputId}>
+            {TEAM_COPY.joinLabel}
+          </label>
+          <div className="pensa-journey-join__row">
+            <input
+              ref={inputRef}
+              id={inputId}
+              className="pensa-journey-field pensa-journey-join__input"
+              value={code}
+              maxLength={16}
+              autoComplete="off"
+              autoCapitalize="characters"
+              spellCheck={false}
+              placeholder={TEAM_COPY.joinPlaceholder}
+              aria-invalid={error ? true : undefined}
+              aria-describedby={error ? errorId : undefined}
+              onChange={(event) => setCode(event.target.value)}
+            />
+            <button
+              type="submit"
+              className="sz-tool-pill sz-tool-pill--primary"
+              disabled={busy || code.trim().length < 4}
+            >
+              {busy ? TEAM_COPY.joinBusy : TEAM_COPY.joinSubmit}
+            </button>
+            <button
+              type="button"
+              className="sz-tool-pill sz-tool-pill--quiet"
+              disabled={busy}
+              onClick={close}
+            >
+              Cancelar
+            </button>
+          </div>
+          {error ? (
+            <p id={errorId} className="pensa-inline-error" role="alert">
+              {error}
+            </p>
+          ) : null}
+        </form>
+      ) : null}
     </div>
   )
 }

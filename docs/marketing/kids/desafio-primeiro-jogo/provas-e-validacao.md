@@ -130,7 +130,7 @@ Registrar a pergunta/tela que causou a dúvida e revisar antes de testar mais tr
 
 Quando o responsável concordar, observar também a conversa com a criança e uma tentativa real no curso: o convite faz sentido para ela, reconhece o que vai construir, encontra o bloco após a explicação e sabe pedir ajuda? Participação infantil e decisão de compra adulta são observações diferentes. Quem já recebeu acesso gratuito pode ajudar a encontrar problemas de uso; sua participação não demonstra disposição a pagar nem conversão de tráfego frio.
 
-Na demonstração da autoria, pedir ao aluno que mostre uma regra e seu efeito, sem responder por ele. Não usar somente jogo publicado, certificado ou acerto no quiz pedagógico como evidência de compreensão. O [quiz de encerramento dos cursos curtos](../../../aulas-interativas/proposta-quizzes-cursos-curtos-2026-10-03.md) foi implementado nos materiais locais em 03/10. A divulgação depende de aplicar e conferir a versão publicada; os arquivos locais não comprovam disponibilidade no ambiente de venda.
+Na demonstração da autoria, pedir ao aluno que mostre uma regra e seu efeito, sem responder por ele. Não usar somente jogo publicado, certificado ou acerto no quiz pedagógico como evidência de compreensão. O [quiz de encerramento dos cursos curtos](../../../aulas-interativas-tecnico/proposta-quizzes-cursos-curtos-2026-10-03.md) foi implementado nos materiais locais em 03/10. A divulgação depende de aplicar e conferir a versão publicada; os arquivos locais não comprovam disponibilidade no ambiente de venda.
 
 ### Verificação funcional na implementação
 

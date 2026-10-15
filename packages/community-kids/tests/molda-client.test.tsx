@@ -307,3 +307,58 @@ test('limpar o deep link mantém a prévia da equipe (`?nivel=`) e a tarefa', as
   render(<MoldaClient viewerId={null} studioAvailable={false} />)
   await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/molda'))
 })
+
+test('missão de outra pessoa da equipe: a frase, "Voltar ao plano" e nada do guia nem do Molda', async () => {
+  query = new URLSearchParams({ tarefa: 'task-b' })
+  globalThis.fetch = Object.assign(
+    mock(async () =>
+      Response.json({
+        project: { id: 'plan-b', name: 'Lua' },
+        cycle: { id: 'cycle-b', number: 1, goal: null },
+        capability: {
+          owned: false,
+          blockedReason: 'Outra pessoa da equipe já está fazendo essa missão.',
+        },
+        task: {
+          id: 'task-b',
+          title: 'Rocha',
+          summary: null,
+          destination: 'molda',
+          category: 'art',
+          estimatedMinutes: 10,
+          position: 0,
+          dependencies: [],
+          revision: 1,
+          supersedesTaskId: null,
+          guide: { steps: [], criteria: [] },
+          context: {
+            kind: 'molda',
+            assetId: 'inventory-rock',
+            artKind: 'model',
+            appearance: 'Azul',
+            usage: 'Cenário',
+            palette: [],
+          },
+          progress: {
+            status: 'in_progress',
+            completedStepIds: [],
+            completedCriteriaIds: [],
+            startedAt: null,
+            completedAt: null,
+            updatedAt: null,
+            outputRef: null,
+          },
+        },
+      }),
+    ),
+    { preconnect: originalFetch.preconnect },
+  )
+  render(<MoldaClient viewerId={null} studioAvailable />)
+  expect(
+    await screen.findByText('Outra pessoa da equipe já está fazendo essa missão.'),
+  ).not.toBeNull()
+  expect(screen.queryByTestId('molda-opened')).toBeNull()
+  router.push.mockClear()
+  fireEvent.click(screen.getByRole('button', { name: 'Voltar ao plano' }))
+  expect(router.push).toHaveBeenCalledWith('/pensa?plano=plan-b')
+})

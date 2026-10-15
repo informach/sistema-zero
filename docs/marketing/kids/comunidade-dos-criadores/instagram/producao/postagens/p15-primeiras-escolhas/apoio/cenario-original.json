@@ -1,0 +1,84 @@
+{
+  "html": [],
+  "css": [
+    {
+      "selector": "body",
+      "declarations": {
+        "background": "#0b1020",
+        "display": "flex",
+        "align-items": "center",
+        "justify-content": "center",
+        "min-height": "100vh",
+        "margin": "0"
+      }
+    },
+    {
+      "selector": "canvas",
+      "declarations": {
+        "border": "2px solid #38bdf8"
+      }
+    }
+  ],
+  "version": 2,
+  "behavior": {
+    "molds": [],
+    "start": [
+      {
+        "type": "g2d:setupStage",
+        "width": 320,
+        "height": 240,
+        "bg": "#11172a",
+        "__id": "exemplo-cen-rio-do-meu-desenho"
+      },
+      {
+        "type": "g2d:setStageDescription",
+        "description": "O seu desenho vira o fundo do jogo. Use as setas para andar na frente dele.",
+        "__id": "exemplo-cen-rio-do-meu-desenho-descricao"
+      },
+      {
+        "type": "g2d:setBackdrop",
+        "image": "cenario"
+      },
+      {
+        "type": "g2d:createSprite",
+        "varName": "heroi",
+        "x": 148,
+        "y": 150,
+        "w": 24,
+        "h": 24,
+        "color": "#f97316"
+      }
+    ],
+    "events": [],
+    "loops": [
+      {
+        "type": "g2d:updateEachFrame",
+        "body": [
+          {
+            "type": "g2d:clear"
+          },
+          {
+            "type": "g2d:topDown",
+            "spriteVar": "heroi",
+            "speed": 3
+          },
+          {
+            "type": "g2d:clampToScreen",
+            "spriteVar": "heroi",
+            "ctxVar": "ctx"
+          },
+          {
+            "type": "g2d:drawSprite",
+            "ctxVar": "ctx",
+            "spriteVar": "heroi"
+          }
+        ]
+      }
+    ]
+  },
+  "extensions": [
+    {
+      "extensionId": "game-2d"
+    }
+  ]
+}

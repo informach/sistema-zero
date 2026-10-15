@@ -29,4 +29,4 @@ Plano aprovado: simplificar a experiência da aula e unificar a autoria.
 - [x] Tipos, lint, testes afetados e builds admin/Kids/Adult.
 - [ ] Commit e push somente deste trabalho; acompanhar CI/staging e registrar limites de validação manual.
 
-Evidências locais e limites de aceite: [relatório de autoria e rascunhos](../aulas-interativas/qa/autoria-rascunhos.md). A última etapa depende do resultado remoto do commit que contém este registro.
+Evidências locais e limites de aceite: [relatório de autoria e rascunhos](../aulas-interativas-tecnico/qa/autoria-rascunhos.md). A última etapa depende do resultado remoto do commit que contém este registro.

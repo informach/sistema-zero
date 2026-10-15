@@ -1,7 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
-import { readdirSync, readFileSync, statSync } from 'node:fs'
-import { join, resolve } from 'node:path'
+import { readFileSync } from 'node:fs'
 import {
   blockCheckpoint,
   type InteractiveBlock,
@@ -9,6 +8,10 @@ import {
   type LearningAnswers,
 } from '@sistemazero/core/learning'
 import { readExperimentSession, sceneSegmentAnswers } from '@sistemazero/core/learning/scene'
+import {
+  caminhoAula,
+  listarArquivosAulas,
+} from '../../../../docs/aulas-interativas-tecnico/qa/caminhos'
 import { buildApp, grantLifetime, seedSampleCourse } from '../helpers'
 
 /**
@@ -22,11 +25,10 @@ import { buildApp, grantLifetime, seedSampleCourse } from '../helpers'
 
 const USER = '11111111-1111-1111-1111-111111111111'
 const REVISION = '12345678901234567890123456789012'
-const DOCS = resolve(import.meta.dir, '../../../../docs/aulas-interativas/aulas')
 
 type Json = Record<string, unknown>
 function blocoDoManifesto(caminho: string, chave: string): InteractiveBlock {
-  const doc = JSON.parse(readFileSync(resolve(DOCS, caminho), 'utf8')) as { blocks: Json[] }
+  const doc = JSON.parse(readFileSync(caminhoAula(caminho), 'utf8')) as { blocks: Json[] }
   const bloco = doc.blocks.find((b) => b.key === chave)
   if (!bloco?.content) throw new Error(`Bloco ${chave} não encontrado em ${caminho}`)
   return bloco.content as unknown as InteractiveBlock
@@ -34,15 +36,9 @@ function blocoDoManifesto(caminho: string, chave: string): InteractiveBlock {
 
 /** Todos os blocos de cena com caso (`setup`) nos manifestos atuais. */
 function _blocosComCaso(): { onde: string; content: InteractiveBlock }[] {
-  const arquivos: string[] = []
-  const varrer = (dir: string) => {
-    for (const nome of readdirSync(dir)) {
-      const p = join(dir, nome)
-      if (statSync(p).isDirectory()) varrer(p)
-      else if (nome.endsWith('.json')) arquivos.push(p)
-    }
-  }
-  varrer(DOCS)
+  const arquivos = listarArquivosAulas()
+    .filter((nome) => nome.endsWith('.manifesto.json'))
+    .map(caminhoAula)
   const achados: { onde: string; content: InteractiveBlock }[] = []
   const procurar = (valor: unknown, onde: string) => {
     if (!valor || typeof valor !== 'object') return

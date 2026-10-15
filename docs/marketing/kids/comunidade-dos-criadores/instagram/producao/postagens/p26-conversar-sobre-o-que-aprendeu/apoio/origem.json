@@ -1,0 +1,8 @@
+{
+  "source": "packages/studio/src/official-extensions/game-2d/examples/arcade.ts",
+  "sha256": "a57f41a6f6ad66d26c3e4cd048f4d649805ba3b1ec7d1483a1ffde7d79c00e73",
+  "example": "stickHeroExample",
+  "runtime": "packages/studio/src/official-extensions/game-2d/runtime.ts",
+  "change": "Nenhuma regra, geometria ou aparência alterada. Capturas com cliques reais, semente e relógio controlados.",
+  "controls": "Enter começa. Segurar mouse cresce o bastão. Soltar faz tombar."
+}

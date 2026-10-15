@@ -1,0 +1,60 @@
+{
+  "status": "conferido",
+  "slides": [
+    {
+      "file": "01-p46.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 930745
+    },
+    {
+      "file": "02-p46.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 121797
+    },
+    {
+      "file": "03-p46.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 919278
+    },
+    {
+      "file": "04-p46.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 104357
+    },
+    {
+      "file": "05-p46.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 98119
+    },
+    {
+      "file": "06-p46.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 203060
+    },
+    {
+      "file": "07-p46.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 995471
+    }
+  ],
+  "copyMatchesCurrentSource": true,
+  "copyAdjustment": "Slide 6: alcançar outras plataformas passa a ser uma nova tarefa, pois a Mini plataforma só possui o chão da tela.",
+  "fontsLoaded": true,
+  "localLinks": 66,
+  "demonstrations": {
+    "pintaColorChangedThroughUI": true,
+    "miniWalksAndJumps": true,
+    "nuvensAirborneWithFollowingCamera": true,
+    "nativeMovementBlock": true
+  },
+  "artDirection": "Três fotografias novas com menina e pai fictícios. Capturas reais do Pinta, Mini plataforma, Salto nas Nuvens e Blockly. Inspeção visual das sete artes; corrigido o recorte do personagem no slide 4.",
+  "errors": [],
+  "scope": "Produção local do P46. Sem publicação, agendamento, commit ou deploy."
+}

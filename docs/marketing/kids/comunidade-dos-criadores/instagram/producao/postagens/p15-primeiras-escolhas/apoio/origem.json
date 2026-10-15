@@ -1,0 +1,20 @@
+{
+  "source": "packages/studio/src/official-extensions/game-2d/examples/foundations.ts",
+  "sha256": "d8089f724333e995231a56fdaa610a43e5aa3ed0c65ba1803fb4418d23abec6f",
+  "runtime": "packages/studio/src/official-extensions/game-2d/runtime.ts",
+  "change": "Somente o asset cenario: imagem original trocada por desenho de castelo ou rua. IR, código e todas as regras preservados.",
+  "stage": {
+    "width": 320,
+    "height": 240
+  },
+  "hero": {
+    "x": 148,
+    "y": 150,
+    "w": 24,
+    "h": 24,
+    "color": "#f97316"
+  },
+  "speed": 3,
+  "controls": "Setas; posição limitada à tela",
+  "fictitious": true
+}

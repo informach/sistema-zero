@@ -107,6 +107,11 @@ const DOMAIN_STATUS: Record<string, number> = {
   PENSA_TEAM_FULL: 409,
   PENSA_JOIN_LIMIT: 409,
   PENSA_OWNER_CANNOT_LEAVE: 409,
+  // Equipe no v2 (14/10/2026): as funções (quem programa × quem faz as artes).
+  PENSA_NOT_PROGRAMMER: 403,
+  PENSA_NOT_YOUR_MISSION: 403,
+  PENSA_MISSION_TAKEN: 409,
+  PENSA_CODE_LOCKED: 409,
   // "Guardado na sua conta" (criações do Estúdio Completo/Pinta). NOT_FOUND cobre
   // ownership mismatch; quota e revisão vencida são conflitos.
   CREATION_NOT_FOUND: 404,

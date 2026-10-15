@@ -1,7 +1,9 @@
 import type { CourseAudience } from '../../domain/course/course'
 import type { PensaTaskOutputRef, PensaTaskStatus } from '../../domain/pensa/pensa'
 import {
+  PensaMissionTakenError,
   PensaNotFoundError,
+  PensaNotYourMissionError,
   PensaTaskDependencyError,
   PensaTaskProgressConflictError,
   PensaTaskTransitionError,
@@ -11,8 +13,9 @@ import {
   outputBelongsToContext,
   validateProgressIds,
 } from '../../domain/pensa/task-plan'
-import type { PensaRepository } from '../../domain/ports/pensa-repository.port'
+import type { PensaRepository, PensaTaskActor } from '../../domain/ports/pensa-repository.port'
 import { type PensaTaskView, toPensaTaskView } from '../mappers/pensa-views'
+import { pensaTaskTeamBlock } from './team-roles'
 
 export interface UpdatePensaTaskProgressInput {
   status?: PensaTaskStatus
@@ -28,14 +31,23 @@ export class UpdatePensaTaskProgressService {
     private readonly clock: () => Date,
   ) {}
 
+  /**
+   * `actor` = o perfil que mexe E a conta dele: na jornada v2 a evidência (a criação guardada)
+   * é conferida no perfil e na conta de quem conclui, não da dona do plano.
+   */
   async execute(
-    userId: string,
+    actor: PensaTaskActor,
     audience: CourseAudience,
     taskId: string,
     input: UpdatePensaTaskProgressInput,
   ): Promise<PensaTaskView> {
-    const found = await this.repo.findTaskWithProject(taskId, userId, audience)
+    const found = await this.repo.findTaskWithProject(taskId, actor.profileId, audience)
     if (!found) throw new PensaNotFoundError()
+    // Equipe no v2: a função e a missão pega vêm ANTES das outras réguas (a criança que abriu a
+    // missão da colega lê "Essa missão é de outra pessoa da equipe.", nunca um erro de passo).
+    const block = await pensaTaskTeamBlock(this.repo, found, actor.profileId)
+    if (block?.kind === 'role') throw new PensaNotYourMissionError()
+    if (block?.kind === 'taken') throw new PensaMissionTakenError()
     const current = found.task.progress
     if (input.expectedUpdatedAt !== undefined) {
       const actualVersion = current.updatedAt?.toISOString() ?? null
@@ -99,6 +111,7 @@ export class UpdatePensaTaskProgressService {
         progress,
         current.updatedAt,
         now,
+        actor,
       ),
     )
   }

@@ -1,0 +1,20 @@
+[
+  {
+    "type": "sz_w3d_npc_say",
+    "text": "O amigo Guia fala: Bem-vindo à Vila das Vocações!",
+    "name": "Guia",
+    "speech": "Bem-vindo à Vila das Vocações!",
+    "question": null,
+    "a": null,
+    "b": null
+  },
+  {
+    "type": "sz_w3d_npc_ask",
+    "text": "O amigo Guia pergunta: O que você quer ser quando crescer? se responder Padeiro O amigo Guia fala: A padaria fica na entrada leste. Vá conhecer! se responder Mecânico O amigo Guia fala: A oficina fica na entrada oeste. Boa visita!",
+    "name": "Guia",
+    "speech": null,
+    "question": "O que você quer ser quando crescer?",
+    "a": "Padeiro",
+    "b": "Mecânico"
+  }
+]

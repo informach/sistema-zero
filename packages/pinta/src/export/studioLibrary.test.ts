@@ -6,7 +6,7 @@ import {
   createVectorBackgroundAsset,
   createVectorTilesetAsset,
 } from '../core/project'
-import { clearIdbMock } from '../testing/idbMock'
+import { clearIdbMock, idbMockStats, resetIdbMockStats } from '../testing/idbMock'
 import { makeEllipse, makeRect } from '../vector/shapes'
 import type { StudioPayload } from './studioBridge'
 import { validateStudioPayloadSize } from './studioBridge'
@@ -14,7 +14,12 @@ import { validateStudioPayloadSize } from './studioBridge'
 const { persistAsset, persistAssets, setPintaStorageNamespace } = await import(
   '../state/persistence'
 )
-const { exportAssetForStudio, listGalleryForStudio } = await import('./studioLibrary')
+const {
+  exportAssetForStudio,
+  exportLoadedAssetForStudio,
+  listGalleryForStudio,
+  NEEDS_TILESET_MESSAGE,
+} = await import('./studioLibrary')
 
 beforeEach(() => {
   clearIdbMock()
@@ -164,6 +169,60 @@ describe('exportAssetForStudio', () => {
     const mapa = createTilemapAsset({ name: 'fase', tilesetId: 'sumiu', cols: 2, rows: 2 })
     await persistAsset(mapa)
     expect(await exportAssetForStudio(mapa.id)).toEqual({ ok: false, reason: 'raster-failed' })
+  })
+})
+
+// "Trazer da equipe" (14/10/2026): o desenho é da COLEGA e chega como `.pinta.json`, sem nunca
+// passar pela galeria deste perfil. O export tem que ser o MESMO, sem ler o IndexedDB.
+describe('exportLoadedAssetForStudio', () => {
+  it('exporta um desenho que NÃO está na galeria, sem tocar o IndexedDB', async () => {
+    const vetor = createVectorBackgroundAsset({ name: 'ceu-da-bia', width: 20, height: 10 })
+    vetor.shapes.push(redRect())
+    resetIdbMockStats()
+    const exported = await exportLoadedAssetForStudio(vetor)
+    expect(exported.ok).toBe(true)
+    if (exported.ok) {
+      expect(exported.asset.id).toBe(vetor.id)
+      expect(exported.asset.name).toBe('ceu-da-bia')
+      expect(exported.asset.dataUrl).toStartWith('data:image/svg+xml')
+      expect(exported.asset.width).toBe(20)
+    }
+    // Nenhuma leitura nem gravação: a galeria deste perfil não tem nada a ver com o desenho.
+    expect(idbMockStats()).toEqual({
+      get: 0,
+      getMany: 0,
+      getManyKeys: 0,
+      set: 0,
+      setMany: 0,
+      keys: 0,
+      del: 0,
+    })
+  })
+
+  it('o payload é o MESMO do caminho pela galeria (exportAssetForStudio)', async () => {
+    const vetor = createVectorBackgroundAsset({ name: 'mesmo', width: 20, height: 10 })
+    vetor.shapes.push(redRect())
+    await persistAssets([vetor])
+    expect(await exportLoadedAssetForStudio(vetor)).toEqual(await exportAssetForStudio(vetor.id))
+  })
+
+  it('mapa de peças sem o conjunto → needs-tileset com a frase (mesmo com as peças na galeria)', async () => {
+    const pecas = createTilesetAsset({ name: 'pecas', tileSize: 16 })
+    const mapa = createTilemapAsset({ name: 'fase', tilesetId: pecas.id, cols: 2, rows: 2 })
+    // As peças até existem AQUI, mas um documento só não as traz: a função não pode ir
+    // buscá-las na galeria deste perfil (seria um desenho de outra pessoa com o mesmo id).
+    await persistAssets([pecas])
+    const result = await exportLoadedAssetForStudio(mapa)
+    expect(result).toEqual({ ok: false, reason: 'needs-tileset', message: NEEDS_TILESET_MESSAGE })
+    expect(NEEDS_TILESET_MESSAGE).toContain('conjunto de peças')
+  })
+
+  it('pixel sem canvas falha como o caminho da galeria (raster-failed)', async () => {
+    const sprite = createPixelSpriteAsset({ name: 'heroi', frameSize: 8 })
+    expect(await exportLoadedAssetForStudio(sprite)).toEqual({
+      ok: false,
+      reason: 'raster-failed',
+    })
   })
 })
 

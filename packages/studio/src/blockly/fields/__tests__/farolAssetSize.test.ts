@@ -1,7 +1,7 @@
 import * as Blockly from 'blockly/core'
 import 'blockly/blocks'
 import { beforeAll, describe, expect, test } from 'bun:test'
-import { montarProjetoFarol } from '../../../../../../docs/aulas-interativas/qa/desafio-farol-projeto'
+import { montarProjetoFarol } from '../../../../../../docs/aulas-interativas-tecnico/qa/desafio-farol-projeto'
 import {
   FAROL_BARCOS,
   FAROL_CHAVES,

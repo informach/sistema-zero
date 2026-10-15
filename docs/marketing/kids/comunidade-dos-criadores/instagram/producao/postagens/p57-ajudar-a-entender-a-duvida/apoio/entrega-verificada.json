@@ -1,0 +1,555 @@
+{
+  "id": "P57",
+  "checkedAt": "2026-10-15T00:08:59.236Z",
+  "errors": [],
+  "files": [
+    {
+      "file": "01-p57.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 865467,
+      "sha256": "79db6bc2d9d306398b50283292e351acd7dc159ca71b99a12627e8484b32dc42"
+    },
+    {
+      "file": "02-p57.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 931049,
+      "sha256": "715b29dc8f8a79433435a55d05bc7b4bbcafc426d57b64cac9db8e99fa479764"
+    },
+    {
+      "file": "03-p57.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 91573,
+      "sha256": "bbfc178cf219357790261c34aeac25a3ed4f67c05124f472ee20ff359502c54f"
+    },
+    {
+      "file": "04-p57.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 125247,
+      "sha256": "394e61bf51121a678154a8e365915c8ec031484e3b59995923b012762224a25e"
+    },
+    {
+      "file": "05-p57.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 995871,
+      "sha256": "b897b0da4ee81b11227922173a80e7763491a6fdcd95d2fbf46da2a500ee7dab"
+    },
+    {
+      "file": "06-p57.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 173598,
+      "sha256": "e72aa27fc99c67cc42da39c9cea4ceb5b3419687c83a2c418a994966cdf5c02e"
+    },
+    {
+      "file": "07-p57.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 197223,
+      "sha256": "7280d95a3907c91b12ac8cb02c7bc48ef73943a10db37f2a6730e83910776993"
+    },
+    {
+      "file": "08-p57.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 946905,
+      "sha256": "9bdf56579a14d28a92c9f16cce67fe5503892f2b730e4e1fbfe8dd49b7e56192"
+    }
+  ],
+  "links": [
+    {
+      "from": "index.html",
+      "to": "legenda.txt",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "texto-alternativo.txt",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "montagem.html",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "apoio/fontes-e-producao.md",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "../index.html",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "01-p57.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "01-p57.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "02-p57.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "02-p57.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "03-p57.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "03-p57.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "04-p57.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "04-p57.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "05-p57.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "05-p57.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "06-p57.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "06-p57.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "07-p57.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "07-p57.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "08-p57.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "08-p57.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/01-pediu-ajuda.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/01-arena-inicial.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/02-mostrando-a-duvida.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/02-goblin-resistiu.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/03-primeiro-golpe.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/04-molde-vida.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/04-golpe-dano.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/05-escolhendo-com-cuidado.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/06-video-pausado.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/06-instrucao-ouvir.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/07-botao-pista.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/07-pista-estreita.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/07-resultado-estreito.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/07-para-seguir-estreito.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/08-entendendo-juntos.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../../../../postagens/11-p51-a-p60.md#p57",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../../../../postagens/05-direcao-visual-e-producao.md",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "copy.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../legenda.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "prompts.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "imagens-geradas.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "LICENSE-Nunito",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "Caveat-OFL.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../texto-alternativo.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../publicacao.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "origem.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "arena-original.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "arena-original.js",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "jogo-verificado.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "01-arena-inicial.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "03-primeiro-golpe.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "02-goblin-resistiu.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "03-segundo-golpe.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "04-molde-vida.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "04-golpe-dano.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "blocos-capturados.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "interface-origem.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "interface-verificada.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "checagem-executada.jsonl",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../index.html",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../montagem.html",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "verificacao.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "copy-linter.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "entrega-verificada.json",
+      "exists": true
+    }
+  ],
+  "visualReview": "Oito slides conferidos individualmente. Quatro fotografias novas, capturas reais da Arena dos Goblins, blocos nativos e recursos originais de orientação. Ajustada identificação dos personagens e altura do painel para mostrar Para seguir inteiro. Copy e legenda preservadas.",
+  "demo": {
+    "gameStates": 4,
+    "initialHealth": 20,
+    "afterFirstHit": 10,
+    "afterSecondHit": "Goblin 1 removido",
+    "video": {
+      "time": 18,
+      "duration": 56.766667,
+      "paused": true
+    },
+    "voice": {
+      "available": true,
+      "buttonVisible": true,
+      "mode": "Fallback nativo da experiência para voz do navegador; não foi injetado áudio fictício."
+    },
+    "hint": "Pista 1 de 3. Tela de 800 por 480, com a borda escondida. Aperte o botão da borda.",
+    "check": "✓ Cumprido: Coloque a área Ao iniciar no projeto.\nFalta: Prepare a tela de 480 por 270 dentro de Ao iniciar.\nVerificar esta parte\n\nConfira os blocos pedidos nesta parte e tente novamente.",
+    "pending": "Para seguir: Confira o objetivo desta parte no seu projeto"
+  },
+  "copyLinter": [
+    {
+      "file": "output\\instagram\\p57-2026-10-14\\copy-limpa\\1.txt",
+      "issues": [],
+      "scope": "Regras mecânicas; exige revisão editorial e de provas."
+    },
+    {
+      "file": "output\\instagram\\p57-2026-10-14\\copy-limpa\\2.txt",
+      "issues": [
+        {
+          "rule": 3,
+          "label": "Pergunta no gancho",
+          "fix": "A primeira frase não pode ser pergunta. Vire uma afirmação direta."
+        }
+      ],
+      "scope": "Regras mecânicas; exige revisão editorial e de provas."
+    },
+    {
+      "file": "output\\instagram\\p57-2026-10-14\\copy-limpa\\3.txt",
+      "issues": [],
+      "scope": "Regras mecânicas; exige revisão editorial e de provas."
+    },
+    {
+      "file": "output\\instagram\\p57-2026-10-14\\copy-limpa\\4.txt",
+      "issues": [],
+      "scope": "Regras mecânicas; exige revisão editorial e de provas."
+    },
+    {
+      "file": "output\\instagram\\p57-2026-10-14\\copy-limpa\\5.txt",
+      "issues": [],
+      "scope": "Regras mecânicas; exige revisão editorial e de provas."
+    },
+    {
+      "file": "output\\instagram\\p57-2026-10-14\\copy-limpa\\6.txt",
+      "issues": [],
+      "scope": "Regras mecânicas; exige revisão editorial e de provas."
+    },
+    {
+      "file": "output\\instagram\\p57-2026-10-14\\copy-limpa\\7.txt",
+      "issues": [],
+      "scope": "Regras mecânicas; exige revisão editorial e de provas."
+    },
+    {
+      "file": "output\\instagram\\p57-2026-10-14\\copy-limpa\\8.txt",
+      "issues": [],
+      "scope": "Regras mecânicas; exige revisão editorial e de provas."
+    },
+    {
+      "file": "output\\instagram\\p57-2026-10-14\\copy-limpa\\legenda.txt",
+      "issues": [],
+      "scope": "Regras mecânicas; exige revisão editorial e de provas."
+    }
+  ],
+  "copyLinterReview": "Uma ocorrência de Pergunta no gancho no slide 2: são perguntas citadas para a conversa entre adulto e criança, dentro do desenvolvimento. A capa é afirmativa. Falso positivo revisado; copy aprovada mantida.",
+  "carouselCount": 29,
+  "pngCount": 213,
+  "textBounds": [
+    {
+      "text": "Seu filho pediu ajuda no jogo. Você não sabe programar.",
+      "within": true
+    },
+    {
+      "text": "Comece entendendo o que ele estava tentando fazer.",
+      "within": true
+    },
+    {
+      "text": "Pergunte: ‘O que você queria que acontecesse? E o que aconteceu?’",
+      "within": true
+    },
+    {
+      "text": "Ele pode explicar apontando a parte do jogo.",
+      "within": true
+    },
+    {
+      "text": "Veja este exemplo: a criança esperava vencer o monstrinho com um golpe.",
+      "within": true
+    },
+    {
+      "text": "Mas ele continua na tela depois do primeiro ataque.",
+      "within": true
+    },
+    {
+      "text": "A regra dá vinte pontos de vida ao monstrinho, e cada golpe tira dez.",
+      "within": true
+    },
+    {
+      "text": "São necessários dois golpes. Entender a regra explica o que aconteceu.",
+      "within": true
+    },
+    {
+      "text": "Para outras dúvidas, a criança precisa de orientação sobre a atividade.",
+      "within": true
+    },
+    {
+      "text": "Antes de escolher um curso, confira onde ela encontra essa ajuda.",
+      "within": true
+    },
+    {
+      "text": "Nas nossas aulas, dá para pausar e rever o vídeo.",
+      "within": true
+    },
+    {
+      "text": "As instruções com o botão ‘Ouvir’ também podem ser escutadas.",
+      "within": true
+    },
+    {
+      "text": "Algumas atividades trazem ‘Uma pista’. Nas partes do Estúdio que têm verificação, ‘Verificar esta parte’ confere os blocos pedidos.",
+      "within": true
+    },
+    {
+      "text": "Esses recursos ajudam a procurar o próximo passo.",
+      "within": true
+    },
+    {
+      "text": "Você pode ajudar seu filho a entender a dúvida e encontrar a orientação disponível.",
+      "within": true
+    },
+    {
+      "text": "Siga o perfil para conhecer melhor esse aprendizado.",
+      "within": true
+    }
+  ],
+  "helpPanels": [
+    {
+      "height": 675,
+      "scrollHeight": 675,
+      "childrenFit": true
+    },
+    {
+      "height": 675,
+      "scrollHeight": 675,
+      "childrenFit": true
+    }
+  ],
+  "nativeInserts": 6,
+  "mobileNoOverflow": true,
+  "browserImageDecode": true,
+  "sourceSectionHash": "fce57bcef4ad7376a380707434b56312568789153f7efe3c2beba91ee46df799",
+  "copyEqual": true,
+  "fonts": {
+    "normal": true,
+    "bold": true
+  },
+  "nextCarousel": "P60",
+  "published": false
+}

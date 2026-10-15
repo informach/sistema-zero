@@ -40,11 +40,13 @@ import { resumeExistingCreation } from '../../lib/resume-creation'
 import { createStudioCloudSync } from '../../lib/studio-cloud'
 import { openStudioZappyHelp, openStudioZappyLesson } from '../../lib/studio-zappy-navigation'
 import { EMBEDDED_STUDIO_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
+import { PensaMissionBlocked } from './pensa-mission-blocked'
 import { StudioFullEditor } from './studio-full-editor'
 import { HostChromeAnnouncer, useHostChrome } from './use-host-chrome'
 import { useNextMissionLabel } from './use-next-mission-label'
 import { usePensaGuideCollapsed } from './use-pensa-guide-collapsed'
 import { useStudioTaskHandoff } from './use-pensa-task-handoff'
+import { usePensaTeamLibrary } from './use-pensa-team-library'
 
 // O package do Estúdio é pesado (Monaco/Blockly/IndexedDB) e NÃO roda no SSR — por
 // isso carregamos o módulo inteiro DENTRO de um effect (igual ao public-player) e o
@@ -870,6 +872,13 @@ export function StudioFullClient({
     }
   }, [moldaOwned, viewerId])
 
+  // "Trazer da equipe": só no jogo de um plano do Pensa em equipe, para quem programa, e só
+  // quando já há arte entregue (o hook confere no servidor; o editor abre sem esperar).
+  const teamLibrary = usePensaTeamLibrary({
+    projectId: view.name === 'editor' ? view.projectId : null,
+    viewerId,
+  })
+
   const openProject = useCallback(
     async (projectId: string) => {
       // O caminho de sempre abre NA HORA (sem tela de espera): só a restauração pendente espera.
@@ -947,9 +956,14 @@ export function StudioFullClient({
           </div>
         </div>
       ) : taskHandoff && !taskHandoff.capability.owned ? (
-        <div className="grid h-full place-items-center p-6 text-center">
-          <p className="max-w-sm font-semibold">{taskHandoff.capability.blockedReason}</p>
-        </div>
+        // A missão é de outra pessoa da equipe (ou a conta não tem o Estúdio): sem guia, sem
+        // concluir, e com o caminho de volta ao plano.
+        <PensaMissionBlocked
+          reason={taskHandoff.capability.blockedReason}
+          onBackToPlan={() =>
+            router.push(`/pensa?plano=${encodeURIComponent(taskHandoff.project.id)}`)
+          }
+        />
       ) : missingTaskProject ? (
         <div className="grid h-full place-items-center p-6 text-center">
           <div className="flex max-w-md flex-col items-center gap-3">
@@ -1049,6 +1063,7 @@ export function StudioFullClient({
               taskSession={taskSession}
               pintaLibrary={pintaLibrary}
               moldaLibrary={moldaLibrary}
+              teamLibrary={teamLibrary}
             />
           )}
         </mod.StudioHostChromeProvider>

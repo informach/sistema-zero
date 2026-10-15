@@ -7,7 +7,7 @@ import {
 import { KIDS_LESSON_COPY } from '@sistemazero/member-shell/lib/lesson-copy-kids'
 import type { LessonDetailView } from '@sistemazero/member-shell/lib/types'
 import { createRoot } from 'react-dom/client'
-import manifesto from '../../../../docs/aulas-interativas/aulas/cade-todo-mundo-certificado.manifesto.json'
+import manifesto from '../../../../docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-certificado.manifesto.json'
 import { KidsLessonBlocks } from '../../src/components/kids/kids-lesson-blocks'
 
 /**

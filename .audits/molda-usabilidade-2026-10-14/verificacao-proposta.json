@@ -1,0 +1,70 @@
+{
+  "checkedAt": "2026-10-14T20:15:26.057Z",
+  "scope": "Somente consistência documental; nenhum teste de produto ou com crianças.",
+  "status": "passed",
+  "documents": [
+    {
+      "name": "docs/plans/2026-10-14-molda-usabilidade-proposta.md",
+      "words": 9335
+    },
+    {
+      "name": "docs/plans/2026-10-14-molda-usabilidade-fluxos.md",
+      "words": 6456
+    },
+    {
+      "name": "docs/plans/2026-10-14-molda-usabilidade-revisao.md",
+      "words": 2982
+    }
+  ],
+  "families": 23,
+  "commands": 45,
+  "screens": 45,
+  "flows": 50,
+  "findings": 33,
+  "localLinks": 44,
+  "layouts": [
+    {
+      "width": 1440,
+      "height": 900,
+      "header": 64,
+      "rail": 104,
+      "panel": 320,
+      "timeline": 200,
+      "modelWidth": 1016,
+      "modelHeight": 836,
+      "animationWidth": 1016,
+      "animationHeight": 636,
+      "modelClearHeight": 740,
+      "animationClearHeight": 540
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "header": 64,
+      "rail": 96,
+      "panel": 296,
+      "timeline": 160,
+      "modelWidth": 974,
+      "modelHeight": 704,
+      "animationWidth": 974,
+      "animationHeight": 544,
+      "modelClearHeight": 608,
+      "animationClearHeight": 448
+    },
+    {
+      "width": 1024,
+      "height": 600,
+      "header": 104,
+      "rail": 88,
+      "panel": 256,
+      "timeline": 132,
+      "modelWidth": 680,
+      "modelHeight": 496,
+      "animationWidth": 680,
+      "animationHeight": 364,
+      "modelClearHeight": 400,
+      "animationClearHeight": 268
+    }
+  ],
+  "errors": []
+}

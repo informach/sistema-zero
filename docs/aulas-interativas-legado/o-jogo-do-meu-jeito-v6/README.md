@@ -83,8 +83,8 @@ Não foi necessário alterar o código de produção nesta adaptação: vídeo p
 Na raiz do repositório:
 
 ```powershell
-bun docs/aulas-interativas/qa/gerar-meu-jeito-v6.ts 'CAMINHO_DOS_ROTEIROS_ORIGINAIS'
-bun docs/aulas-interativas/qa/validar-meu-jeito-v6.ts 'CAMINHO_DOS_ROTEIROS_ORIGINAIS'
+bun docs/aulas-interativas-tecnico/qa/gerar-meu-jeito-v6.ts 'CAMINHO_DOS_ROTEIROS_ORIGINAIS'
+bun docs/aulas-interativas-tecnico/qa/validar-meu-jeito-v6.ts 'CAMINHO_DOS_ROTEIROS_ORIGINAIS'
 bun packages/community-kids/tests/visual/serve-meu-jeito-preview.ts
 ```
 

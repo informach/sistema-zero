@@ -9,6 +9,7 @@ import type { StudioMoldaLibraryAdapter } from './molda-library'
 import type { StudioPintaLibraryAdapter } from './pinta-library'
 import type { StudioProRuntimeAdapter } from './pro-runtime'
 import type { StudioShareAdapter } from './share'
+import type { StudioTeamLibraryAdapter } from './team-library'
 import type { StudioTheme } from './theme'
 import type { StudioTutorConfig } from './tutor'
 
@@ -275,6 +276,15 @@ export interface StudioCommonProps {
    * (latchado, igual à `share`).
    */
   moldaLibrary?: StudioMoldaLibraryAdapter
+  /**
+   * Adapter OPCIONAL "Trazer da equipe" (Pensa em equipe, 14/10/2026): quando presente, a
+   * janela dos materiais ganha o botão "👥 Trazer da equipe", que lista as artes entregues
+   * pelas colegas nas missões do plano e as traz para o jogo pelo MESMO caminho do Pinta e
+   * do Molda. ⚠️ NÃO é latchado (diferente dos outros adapters): o host só descobre a
+   * equipe depois de abrir o jogo, então o botão aparece quando ele passa o adapter. O host
+   * mantém a referência ESTÁVEL. Ausente (default) → sem botão.
+   */
+  teamLibrary?: StudioTeamLibraryAdapter
   /**
    * Mostra os EXEMPLOS prontos (CORE_EXAMPLES + os `examples` das extensões) no
    * painel de Extensões. Default `false` — os exemplos são material de TESTE do

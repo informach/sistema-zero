@@ -1,0 +1,40 @@
+[
+  {
+    "slide": 1,
+    "file": "01-link.png",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-10dfc4bf-9571-4cb5-900c-d4b4f02a5b6d.png",
+    "tool": "image_gen.imagegen",
+    "references": [],
+    "sha256": "1624ff1394ba4697eaac87a7a393704169cbc0311cf69a78aa5e397111d7cf66",
+    "sourceSha256": "1624ff1394ba4697eaac87a7a393704169cbc0311cf69a78aa5e397111d7cf66"
+  },
+  {
+    "slide": 3,
+    "file": "03-convite-para-jogar.png",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-c9a08e0c-7fca-4efd-825f-a907ae043c1e.png",
+    "tool": "image_gen.imagegen",
+    "references": [],
+    "sha256": "e4bc0a67d1b1653ebcb45d708184825d1131e4e0c2d10bbe379122ffbd0eacbd",
+    "sourceSha256": "e4bc0a67d1b1653ebcb45d708184825d1131e4e0c2d10bbe379122ffbd0eacbd"
+  },
+  {
+    "slide": 4,
+    "file": "04-jogando-juntos.png",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-fef1c2c1-7aee-4425-82dd-d041685ab0eb.png",
+    "tool": "image_gen.imagegen",
+    "references": [],
+    "sha256": "1463b58852f4ce821b2358cbae70f422990b555153716d33e968b63a1d957c55",
+    "sourceSha256": "1463b58852f4ce821b2358cbae70f422990b555153716d33e968b63a1d957c55"
+  },
+  {
+    "slide": 7,
+    "file": "07-compartilhar-na-escola.png",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-3ae73819-5215-4109-8260-f2c09e94d088.png",
+    "tool": "image_gen.imagegen",
+    "references": [
+      "C:/Users/tocha/projects/sistema-zero/docs/marketing/kids/comunidade-dos-criadores/instagram/producao/postagens/p50-um-jogo-para-compartilhar/apoio/04-jogando-juntos.png"
+    ],
+    "sha256": "8f7a15b494f9cf16d864a7a62fbcc357c0a599a03c05d91266a3380fdd7a294e",
+    "sourceSha256": "8f7a15b494f9cf16d864a7a62fbcc357c0a599a03c05d91266a3380fdd7a294e"
+  }
+]

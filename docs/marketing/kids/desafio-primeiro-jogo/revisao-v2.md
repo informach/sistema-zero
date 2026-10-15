@@ -41,7 +41,7 @@ No Sistema Zero, a pergunta deve ter função identificável, a resposta precisa
 
 ## Ajustes pedagógicos feitos em paralelo
 
-Por solicitação do responsável, foram corrigidos nos materiais locais o resumo do módulo, as pontes do Zappy após vídeos e os projetos/paletas do Farol, agora restritos a Programação e Jogo 2D. Essas correções não implantam o novo funil nem atualizam automaticamente aulas publicadas. O [quiz único de encerramento](../../../aulas-interativas/proposta-quizzes-cursos-curtos-2026-10-03.md) foi desenvolvido como proposta separada. Não anunciar essa inclusão como entregue antes da implementação pedagógica.
+Por solicitação do responsável, foram corrigidos nos materiais locais o resumo do módulo, as pontes do Zappy após vídeos e os projetos/paletas do Farol, agora restritos a Programação e Jogo 2D. Essas correções não implantam o novo funil nem atualizam automaticamente aulas publicadas. O [quiz único de encerramento](../../../aulas-interativas-tecnico/proposta-quizzes-cursos-curtos-2026-10-03.md) foi desenvolvido como proposta separada. Não anunciar essa inclusão como entregue antes da implementação pedagógica.
 
 ## Validação desta entrega
 

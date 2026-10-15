@@ -364,7 +364,7 @@ A copy desenvolvida foi consolidada no arquivo de leitura. Os trechos antigos de
 
 O exemplo de pontuação distingue reconhecer um acerto, somar um ponto e mostrar o total. Assim, o responsável consegue entender por que organizar essas relações trabalha lógica e por que investigar uma falha pratica resolução de problemas. A possibilidade de alterar o desafio dá lugar à criatividade e à melhoria de uma versão. A demonstração ensina esse raciocínio, em vez de apenas afirmar que a atividade desenvolve seis habilidades.
 
-O roteiro local de [Nave Contra Asteroides, Dia 4](../aulas-interativas/aulas/nave-contra-asteroides-dia-4.roteiro.md) documenta a diferença entre guardar e mostrar pontos. Isso aproxima a proposta da pedagogia real do projeto, mas o roteiro não comprova que sua versão revisada esteja publicada. A captura final deve vir de uma atividade disponível ou ser identificada como demonstração.
+O roteiro local de [Nave Contra Asteroides, Dia 4](../aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-dia-4.roteiro.md) documenta a diferença entre guardar e mostrar pontos. Isso aproxima a proposta da pedagogia real do projeto, mas o roteiro não comprova que sua versão revisada esteja publicada. A captura final deve vir de uma atividade disponível ou ser identificada como demonstração.
 
 ### Aprender programação e escolher esta assinatura são decisões diferentes
 

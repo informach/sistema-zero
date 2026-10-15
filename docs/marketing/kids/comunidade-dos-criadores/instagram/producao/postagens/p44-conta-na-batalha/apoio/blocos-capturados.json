@@ -1,0 +1,14 @@
+[
+  {
+    "type": "sz_js_var_create",
+    "text": "Criar variável forca com valor 4"
+  },
+  {
+    "type": "sz_js_var_assign",
+    "text": "Alterar variável dano para valor da variável forca × 2"
+  },
+  {
+    "type": "sz_g2d_change_health",
+    "text": "Mudar a vida do sprite rival em 0 − valor da variável dano"
+  }
+]

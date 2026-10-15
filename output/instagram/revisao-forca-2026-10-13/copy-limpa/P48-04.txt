@@ -1,3 +1,0 @@
-Na Mina de Cristais, feita no nosso Estúdio, quem cria testa duas situações: cavar uma pedra e cavar um cristal.
-
-O placar deve subir apenas com o cristal. Subiu com a pedra? Vale investigar.

@@ -1,0 +1,482 @@
+{
+  "id": "P48",
+  "checkedAt": "2026-10-14T22:03:04.846Z",
+  "errors": [],
+  "files": [
+    {
+      "file": "01-p48.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 802165,
+      "sha256": "c6ef6d9c99d8c4db1c47a1807f1fdc0c025d11e20eddb074b0f188f2a83f74b3"
+    },
+    {
+      "file": "02-p48.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 135530,
+      "sha256": "c09f95c594779e45777debf0fdab518a1ee8424f9065f971f8fa1432f35cc42d"
+    },
+    {
+      "file": "03-p48.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 124660,
+      "sha256": "4f4516932fd383ee7c21fdcb1e423420edddffa6896d7591d3533938846da3fe"
+    },
+    {
+      "file": "04-p48.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 116696,
+      "sha256": "969070f36ad052e8894e2b42f628fdd158a7b139adff10f3b8c900a44836aa13"
+    },
+    {
+      "file": "05-p48.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 130974,
+      "sha256": "440249c1b0982ebfbb93182cce113b7f2ee00dd9ecb3920f17e69acbd6853107"
+    },
+    {
+      "file": "06-p48.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 900819,
+      "sha256": "6cb1549d9526fa1bf8bd7d63dc165ab7301aab6dfe7d128049f392d64e41ba02"
+    },
+    {
+      "file": "07-p48.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 110487,
+      "sha256": "3be774aa70e741439e219eb0897e2eced964f28f6866093979ed9e19836bc579"
+    }
+  ],
+  "links": [
+    {
+      "from": "index.html",
+      "to": "legenda.txt",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "texto-alternativo.txt",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "montagem.html",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "apoio/fontes-e-producao.md",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "../index.html",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "01-p48.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "01-p48.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "02-p48.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "02-p48.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "03-p48.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "03-p48.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "04-p48.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "04-p48.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "05-p48.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "05-p48.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "06-p48.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "06-p48.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "07-p48.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "07-p48.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/01-placar-e-curtidas.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/02-inicio.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/02-inicio.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/03-pedra.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/03-pedra.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/03-cristal.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/03-cristal.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/04-regra-do-ponto.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/05-original.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/05-original.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/05-adaptada.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/05-adaptada.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/06-conversa-no-sofa.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/06-conversa.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/07-final.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/07-final.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../../../../postagens/10-p41-a-p50.md#p48",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../../../../postagens/05-direcao-visual-e-producao.md",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "copy.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../legenda.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "prompts.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "imagens-geradas.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../publicacao.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../texto-alternativo.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "LICENSE-Nunito",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "origem.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "mina-original.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "mina-original.js",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "02-inicio.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "03-pedra.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "03-cristal.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "06-conversa.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "07-final.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "04-regra-do-ponto.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "04-regra-completa.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "blocos-capturados.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "mina-pedra-vale-um.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "mina-pedra-vale-um.js",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "05-original.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "05-adaptada.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "capturas-verificadas.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../index.html",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../montagem.html",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "verificacao.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "entrega-verificada.json",
+      "exists": true
+    }
+  ],
+  "copyLinter": "Sete slides e legenda verificados. Um falso positivo da regra Pergunta no gancho no slide 6: a pergunta citada está no desenvolvimento, não na capa. Demais slides e legenda sem achados.",
+  "visualReview": "Sete slides conferidos individualmente. Duas imagens novas, perspectivas conferidas, regra e estados nativos legíveis. Copy pública e legenda preservadas.",
+  "ruleChanges": [
+    [
+      {
+        "type": "assign",
+        "name": "pontos",
+        "value": {
+          "type": "binop",
+          "op": "+",
+          "left": {
+            "type": "var",
+            "name": "pontos"
+          },
+          "right": {
+            "type": "num",
+            "value": 1
+          }
+        }
+      },
+      {
+        "type": "callFunction",
+        "name": "atualizarHud",
+        "args": []
+      }
+    ]
+  ],
+  "demo": {
+    "captures": 7,
+    "clicks": 13,
+    "sameStoneComparison": true,
+    "nativeVictory": true
+  },
+  "carouselCount": 26,
+  "pngCount": 190,
+  "textBounds": [
+    {
+      "text": "O placar não mostra tudo o que aconteceu no jogo.",
+      "within": true
+    },
+    {
+      "text": "Ele conta o que alguém escolheu contar.",
+      "within": true
+    },
+    {
+      "text": "Um jogo pode dar pontos por moedas, tempo ou inimigos derrotados.",
+      "within": true
+    },
+    {
+      "text": "Quem cria decide qual ação faz o número subir.",
+      "within": true
+    },
+    {
+      "text": "Veja esta mina da nossa plataforma.",
+      "within": true
+    },
+    {
+      "text": "Cavar uma pedra abre caminho. Encontrar um cristal também acrescenta um ponto.",
+      "within": true
+    },
+    {
+      "text": "As duas ações fazem parte da partida, mas só uma muda o placar.",
+      "within": true
+    },
+    {
+      "text": "Essa diferença foi definida numa instrução do jogo.",
+      "within": true
+    },
+    {
+      "text": "Ao criar, a criança pode escolher outra regra e testar.",
+      "within": true
+    },
+    {
+      "text": "O que mudaria se cada pedra também valesse um ponto?",
+      "within": true
+    },
+    {
+      "text": "Essa conversa ajuda a fazer uma pergunta sobre os números da tela: ‘O que está sendo contado aqui?’",
+      "within": true
+    },
+    {
+      "text": "Curtidas, por exemplo, contam reações a uma publicação. Não contam tudo sobre quem a fez.",
+      "within": true
+    },
+    {
+      "text": "Criar um placar permite ver de perto como uma regra produz um número.",
+      "within": true
+    },
+    {
+      "text": "Siga o perfil para conhecer mais descobertas da criação de jogos.",
+      "within": true
+    }
+  ],
+  "nativeInserts": 12,
+  "mobileNoOverflow": true,
+  "browserImageDecode": true,
+  "sourceSectionHash": "09db3b742b203d966a5305b5f807621dec69cce4d91976b6c0c7217a6513287f",
+  "copyEqual": true,
+  "fonts": {
+    "normal": true,
+    "bold": true
+  },
+  "nextCarousel": "P26",
+  "published": false
+}

@@ -5,6 +5,7 @@ import {
   type DbConnection,
 } from '../../src/infrastructure/persistence/drizzle/db'
 import { DrizzlePensaRepository } from '../../src/infrastructure/persistence/drizzle/pensa.repository'
+import { applyPensaTeamDdl } from './pensa-v2-schema'
 import { prepareTestDatabase } from './test-database'
 
 const TEST_DB_NAME = 'sistemazero_pensa_team_test'
@@ -88,6 +89,37 @@ describe.skipIf(!testDatabaseUrl)('Drizzle da equipe do Pensa no Postgres real',
         created_at timestamptz not null default now(),
         updated_at timestamptz not null default now()
       )`)
+    // Equipe no v2 (14/10/2026): tirar alguém apaga as funções e solta as missões dela, então
+    // `pensa_tasks` e `pensa_project_roles` entram aqui também (enums como texto: banco esparso).
+    await conn.sql.unsafe(`
+      create table if not exists members.pensa_tasks (
+        id uuid primary key,
+        cycle_id uuid not null references members.pensa_cycles(id) on delete cascade,
+        title varchar(200) not null default '',
+        summary text,
+        destination text not null default 'studio',
+        category text not null default 'gameplay',
+        estimated_minutes integer not null default 10,
+        position integer not null default 0,
+        dependencies jsonb not null default '[]',
+        guide jsonb not null default '{}',
+        context jsonb not null default '{}',
+        progress_status text not null default 'planned',
+        completed_step_ids jsonb not null default '[]',
+        completed_criteria_ids jsonb not null default '[]',
+        output_ref jsonb,
+        started_at timestamptz,
+        completed_at timestamptz,
+        progress_updated_at timestamptz,
+        assignee_profile_id uuid,
+        completed_by_profile_id uuid,
+        revision integer not null default 1,
+        supersedes_task_id uuid,
+        archived_at timestamptz,
+        created_at timestamptz not null default now(),
+        updated_at timestamptz not null default now()
+      )`)
+    await applyPensaTeamDdl(conn.sql)
     repo = new DrizzlePensaRepository(conn.db)
   })
 
@@ -191,6 +223,65 @@ describe.skipIf(!testDatabaseUrl)('Drizzle da equipe do Pensa no Postgres real',
     expect(await repo.removeMember(id, first, now)).toBe(true)
     expect(await repo.removeMember(id, first, now)).toBe(false)
     expect((await repo.findProject(id, owner, 'kids'))?.memberCount).toBe(1)
+  })
+
+  test('removeMember (v2): apaga as funções da pessoa e solta as missões não concluídas dela', async () => {
+    const owner = randomUUID()
+    const { id, cycleId } = await plan(owner)
+    const code = await enableShare(id)
+    const bia = randomUUID()
+    await repo.addMember(
+      { projectId: id, profileId: bia, accountId: randomUUID(), invitedBy: owner },
+      now,
+      5,
+      code,
+    )
+    await conn.sql`insert into members.pensa_project_roles (project_id, profile_id, role, assigned_by) values (${id}, ${bia}, 'art', ${owner}), (${id}, ${bia}, 'code', ${owner})`
+    const started = randomUUID()
+    const done = randomUUID()
+    await conn.sql`insert into members.pensa_tasks (id, cycle_id, destination, progress_status, assignee_profile_id, completed_by_profile_id) values
+      (${started}, ${cycleId}, 'pinta', 'in_progress', ${bia}, null),
+      (${done}, ${cycleId}, 'pinta', 'completed', ${bia}, ${bia})`
+    expect(await repo.listRoles(id)).toHaveLength(2)
+    expect(await repo.removeMember(id, bia, now)).toBe(true)
+    expect(await repo.listRoles(id)).toEqual([])
+    const tasks = await conn.sql<
+      Array<{
+        id: string
+        assignee_profile_id: string | null
+        completed_by_profile_id: string | null
+      }>
+    >`select id, assignee_profile_id, completed_by_profile_id from members.pensa_tasks where cycle_id = ${cycleId}`
+    // A missão começada fica livre; a concluída guarda quem fez (é a arte entregue).
+    expect(tasks.find((t) => t.id === started)?.assignee_profile_id).toBeNull()
+    expect(tasks.find((t) => t.id === done)).toMatchObject({
+      assignee_profile_id: bia,
+      completed_by_profile_id: bia,
+    })
+  })
+
+  test('código e entrada valem para plano v2 (sem a trava do plano clássico)', async () => {
+    const owner = randomUUID()
+    const { id, cycleId } = await plan(owner)
+    await conn.sql`insert into members.pensa_journeys (cycle_id, project_id, active, revision, data) values (${cycleId}, ${id}, true, 0, '{"revision":0}'::jsonb)`
+    const code = await enableShare(id)
+    const member = randomUUID()
+    expect(
+      await repo.addMember(
+        { projectId: id, profileId: member, accountId: randomUUID(), invitedBy: owner },
+        now,
+        5,
+        code,
+      ),
+    ).toBe('added')
+    expect((await repo.findProject(id, member, 'kids'))?.role).toBe('member')
+    // Sair sobe a revisão da jornada: as telas da equipe percebem.
+    expect(await repo.removeMember(id, member, now)).toBe(true)
+    const [journey] = await conn.sql<
+      Array<{ revision: number; data: { revision: number } }>
+    >`select revision, data from members.pensa_journeys where cycle_id = ${cycleId}`
+    expect(journey?.revision).toBe(1)
+    expect(journey?.data.revision).toBe(1)
   })
 
   test('um convite revogado ou um plano arquivado não aceita ingresso após a leitura inicial', async () => {

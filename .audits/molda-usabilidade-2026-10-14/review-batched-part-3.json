@@ -1,0 +1,231 @@
+{
+  "started": "2026-10-15T00:27:25.760Z",
+  "status": "passed",
+  "files": 122,
+  "passed": 1061,
+  "failed": 0,
+  "batches": [
+    {
+      "partition": 3,
+      "label": "part-3-01",
+      "files": [
+        "src/accessibility-contract.test.ts",
+        "src/assets/purity.test.ts",
+        "src/core/byteLru.test.ts",
+        "src/core/colorTransfer.test.ts",
+        "src/core/documentReader.test.ts",
+        "src/core/galleryPreview.test.ts",
+        "src/core/gesture.test.ts",
+        "src/core/history.test.ts",
+        "src/core/names.test.ts",
+        "src/core/rgbaRows.test.ts",
+        "src/core/sanitize.test.ts",
+        "src/core/snapshotDelta.test.ts"
+      ],
+      "passed": 198,
+      "failed": 0,
+      "exitCode": 0
+    },
+    {
+      "partition": 3,
+      "label": "part-3-02",
+      "files": [
+        "src/core/toolFamilies.test.ts",
+        "src/host-conformance.test.ts",
+        "src/model/arrange.test.ts",
+        "src/model/atlas.test.ts",
+        "src/model/frame.test.ts",
+        "src/model/geometry.test.ts",
+        "src/model/isoThumb.test.ts",
+        "src/model/mesh.test.ts",
+        "src/model/meshFrame.test.ts",
+        "src/model/meshOps.test.ts",
+        "src/model/meshSelection.test.ts",
+        "src/model/meshSelectionGraph.test.ts"
+      ],
+      "passed": 99,
+      "failed": 0,
+      "exitCode": 0
+    },
+    {
+      "partition": 3,
+      "label": "part-3-03",
+      "files": [
+        "src/model/meshTools.test.ts",
+        "src/model/partOps.paint.test.ts",
+        "src/model/partOps.test.ts",
+        "src/model/pick.test.ts",
+        "src/model/shapes.test.ts",
+        "src/model/snap.test.ts",
+        "src/model/transform.test.ts",
+        "src/model/twins.test.ts",
+        "src/model/vertexOverlap.test.ts",
+        "src/paint/facePaint.test.ts",
+        "src/paint/stroke.test.ts",
+        "src/sky/params.test.ts"
+      ],
+      "passed": 130,
+      "failed": 0,
+      "exitCode": 0
+    },
+    {
+      "partition": 3,
+      "label": "part-3-04",
+      "files": [
+        "src/sky/render.test.ts",
+        "src/state/SceneAnimationPlayer.test.ts",
+        "src/state/SceneAnimationPoseGesture.test.ts",
+        "src/state/SceneAnimationPoseSetGesture.test.ts",
+        "src/state/SceneAnimationTwoBoneGesture.test.ts",
+        "src/state/SceneFlipbookPlayer.test.ts",
+        "src/state/documentEditorStore.test.ts",
+        "src/state/editorStore.test.ts",
+        "src/state/galleryPreviews.test.ts",
+        "src/state/gallerySceneSource.test.ts",
+        "src/state/galleryStore.test.ts",
+        "src/state/guardedWrite.test.ts"
+      ],
+      "passed": 140,
+      "failed": 0,
+      "exitCode": 0
+    },
+    {
+      "partition": 3,
+      "label": "part-3-05",
+      "files": [
+        "src/state/guardedWriteQuota.test.ts",
+        "src/state/memoryPersistence.test.ts",
+        "src/state/persistence.test.ts",
+        "src/state/promoteScene.test.ts",
+        "src/state/sceneBlob.test.ts",
+        "src/state/sceneBlobPreflight.test.ts",
+        "src/state/sceneBlobStorage.test.ts",
+        "src/state/sceneBlobWrite.test.ts",
+        "src/state/sceneCloudSource.test.ts",
+        "src/state/sceneCloudTransitions.test.ts",
+        "src/state/sceneComponentTransformGesture.test.ts",
+        "src/state/sceneEditorStore.test.ts"
+      ],
+      "passed": 137,
+      "failed": 0,
+      "exitCode": 0
+    },
+    {
+      "partition": 3,
+      "label": "part-3-06",
+      "files": [
+        "src/state/sceneImageTask.test.ts",
+        "src/state/sceneIndexRevision.test.ts",
+        "src/state/sceneMeshGesture.test.ts",
+        "src/state/sceneMetadata.test.ts",
+        "src/state/scenePaintGesture.test.ts",
+        "src/state/scenePaintShapeGesture.test.ts",
+        "src/state/scenePaletteGesture.test.ts",
+        "src/state/scenePersistence.test.ts",
+        "src/state/scenePixelEquality.test.ts",
+        "src/state/sceneSkinPaintGesture.test.ts",
+        "src/state/sceneSkinPaintSession.test.ts",
+        "src/state/sceneStorageChannel.test.ts"
+      ],
+      "passed": 58,
+      "failed": 0,
+      "exitCode": 0
+    },
+    {
+      "partition": 3,
+      "label": "part-3-07",
+      "files": [
+        "src/state/sceneStorageCompare.test.ts",
+        "src/state/sceneStorageDocument.test.ts",
+        "src/state/sceneStorageObserver.test.ts",
+        "src/state/sceneTransformGesture.test.ts",
+        "src/state/sessionStore.test.ts",
+        "src/styles/cssSources.test.ts",
+        "src/templates/catalog.test.ts",
+        "src/testing/domContract.test.ts",
+        "src/testing/referenceImageRuntime.test.ts",
+        "src/testing/sceneStudioContract.test.ts",
+        "src/texture/ops.test.ts",
+        "src/texture/shapes.test.ts"
+      ],
+      "passed": 93,
+      "failed": 0,
+      "exitCode": 0
+    },
+    {
+      "partition": 3,
+      "label": "part-3-08",
+      "files": [
+        "src/viewport/CapturedPaintInput.test.ts",
+        "src/viewport/SceneAreaSelection.test.ts",
+        "src/viewport/SceneBodyMove.test.ts",
+        "src/viewport/SceneBrushCursor.test.ts",
+        "src/viewport/SceneComponentOverlay.test.ts",
+        "src/viewport/ScenePaintInput.test.ts",
+        "src/viewport/SceneSkinResource.test.ts",
+        "src/viewport/SceneSkinWeightOverlay.test.ts",
+        "src/viewport/SceneSupportOverlay.test.ts",
+        "src/viewport/SceneSurfaceQuery.test.ts",
+        "src/viewport/SceneViewport.test.ts",
+        "src/viewport/SnapOverlay.test.ts"
+      ],
+      "passed": 103,
+      "failed": 0,
+      "exitCode": 0
+    },
+    {
+      "partition": 3,
+      "label": "part-3-09",
+      "files": [
+        "src/viewport/atlasTexture.test.ts",
+        "src/viewport/cameraFit.test.ts",
+        "src/viewport/demandRenderLoop.test.ts",
+        "src/viewport/meshEditOverlay.test.ts",
+        "src/viewport/modelAtlasResource.test.ts",
+        "src/viewport/paintPointerPath.test.ts",
+        "src/viewport/partGeometryResource.test.ts",
+        "src/viewport/sceneAlphaMask.test.ts",
+        "src/viewport/sceneAnimation.test.ts",
+        "src/viewport/sceneComponentPicking.test.ts",
+        "src/viewport/sceneDetailMaps.test.ts",
+        "src/viewport/sceneFlipbook.test.ts"
+      ],
+      "passed": 51,
+      "failed": 0,
+      "exitCode": 0
+    },
+    {
+      "partition": 3,
+      "label": "part-3-10",
+      "files": [
+        "src/viewport/sceneOcclusionQuery.test.ts",
+        "src/viewport/sceneRegionPicking.test.ts",
+        "src/viewport/sceneRenderResource.test.ts",
+        "src/viewport/sceneRenderUv.test.ts",
+        "src/viewport/sceneSharedPaint.test.ts",
+        "src/viewport/sceneSkin.test.ts",
+        "src/viewport/sceneSkinPaintPick.test.ts",
+        "src/viewport/sceneSkinPaintSpacing.test.ts",
+        "src/viewport/sceneSurfacePicking.test.ts",
+        "src/viewport/sceneTwoBoneGuide.test.ts",
+        "src/viewport/snapPicking.test.ts",
+        "src/viewport/viewVisibility.test.ts"
+      ],
+      "passed": 44,
+      "failed": 0,
+      "exitCode": 0
+    },
+    {
+      "partition": 3,
+      "label": "part-3-11",
+      "files": [
+        "src/viewport/viewportCamera.test.ts",
+        "src/viewport/viewportNavigation.test.ts"
+      ],
+      "passed": 8,
+      "failed": 0,
+      "exitCode": 0
+    }
+  ],
+  "finished": "2026-10-15T00:27:47.482Z"
+}

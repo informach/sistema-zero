@@ -1,6 +1,9 @@
 import { describe, expect, test } from 'bun:test'
-import { readdirSync, readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { readFileSync } from 'node:fs'
+import {
+  caminhoAula,
+  listarArquivosAulas,
+} from '../../../../../docs/aulas-interativas-tecnico/qa/caminhos'
 import { blockPrediction, type InteractiveBlock } from '../index'
 import { SCENE_IDS, SCENE_LIMITS, type SceneAction, type SceneId, sceneFrameRate } from './actions'
 import { sceneDefaultGoalIds, sceneModel } from './catalog'
@@ -2303,7 +2306,6 @@ describe('a meta que responde a previsão, olhada no instante em que cai', () =>
  * pelo −9, o Dia 3 pelo y da pedra) e as que o bloco herda do modelo.
  */
 describe('as previsões das aulas atuais, no motor', () => {
-  const docs = resolve(import.meta.dir, '../../../../../docs/aulas-interativas/aulas')
   // Estas perguntas são sobre a última comparação: Enter após a troca e tiro no laço.
   // Revelá-las antes responderia sem a criança ter feito o gesto perguntado.
   const REVELA_AO_FINAL = new Set([
@@ -2320,8 +2322,8 @@ describe('as previsões das aulas atuais, no motor', () => {
       for (const v of Object.values(valor)) andar(v, onde)
     }
   }
-  for (const nome of readdirSync(docs).filter((name) => name.endsWith('.manifesto.json')))
-    andar(JSON.parse(readFileSync(resolve(docs, nome), 'utf8')), nome)
+  for (const nome of listarArquivosAulas().filter((name) => name.endsWith('.manifesto.json')))
+    andar(JSON.parse(readFileSync(caminhoAula(nome), 'utf8')), nome)
 
   test('a varredura LEU os blocos (laço vazio aprova tudo)', () => {
     expect(blocos.length).toBeGreaterThan(25)

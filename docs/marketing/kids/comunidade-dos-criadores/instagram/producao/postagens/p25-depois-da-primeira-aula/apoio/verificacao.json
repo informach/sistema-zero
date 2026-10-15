@@ -1,0 +1,340 @@
+{
+  "source": "docs/marketing/kids/comunidade-dos-criadores/instagram/postagens/03-p21-a-p30.md",
+  "sourceSectionHash": "70f26a1cae60a09fe70848e07ea5ded598f2790054b178951ace5daac30d44f3",
+  "copyEqual": true,
+  "slides": [
+    {
+      "number": 1,
+      "file": "01-p25.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "series",
+          "top": 0,
+          "bottom": 45.59375,
+          "height": 45.59375,
+          "left": 0,
+          "right": 241.53125
+        },
+        {
+          "kind": "copy lead",
+          "top": 101.09375,
+          "bottom": 258.03125,
+          "height": 156.9375,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 313.53125,
+          "bottom": 425.84375,
+          "height": 112.3125,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo",
+          "top": 481.34375,
+          "bottom": 1116,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 48
+    },
+    {
+      "number": 2,
+      "file": "02-p25.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 64.953125,
+          "height": 64.953125,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo",
+          "top": 191.328125,
+          "bottom": 825.984375,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 952.359375,
+          "bottom": 1116,
+          "height": 163.640625,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 44
+    },
+    {
+      "number": 3,
+      "file": "03-p25.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 194.859375,
+          "height": 194.859375,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "trail",
+          "top": 300.890625,
+          "bottom": 900.890625,
+          "height": 600,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 1006.90625,
+          "bottom": 1116,
+          "height": 109.09375,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 44
+    },
+    {
+      "number": 4,
+      "file": "04-p25.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 129.90625,
+          "height": 129.90625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "lunar",
+          "top": 298.40625,
+          "bottom": 838.40625,
+          "height": 540,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 1006.90625,
+          "bottom": 1116,
+          "height": 109.09375,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 44
+    },
+    {
+      "number": 5,
+      "file": "05-p25.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 180.9375,
+          "height": 180.9375,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "tasks",
+          "top": 321.203125,
+          "bottom": 921.203125,
+          "height": 600,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 1061.453125,
+          "bottom": 1116,
+          "height": 54.546875,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 44
+    },
+    {
+      "number": 6,
+      "file": "06-p25.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 180.9375,
+          "height": 180.9375,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "choices",
+          "top": 303.921875,
+          "bottom": 883.921875,
+          "height": 580,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 1006.90625,
+          "bottom": 1116,
+          "height": 109.09375,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 44
+    },
+    {
+      "number": 7,
+      "file": "07-p25.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 180.9375,
+          "height": 180.9375,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo",
+          "top": 276.59375,
+          "bottom": 911.25,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 1006.90625,
+          "bottom": 1116,
+          "height": 109.09375,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 44
+    },
+    {
+      "number": 8,
+      "file": "08-p25.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 138,
+          "height": 138,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo",
+          "top": 281.125,
+          "bottom": 915.78125,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 1058.890625,
+          "bottom": 1116,
+          "height": 57.109375,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 48
+    }
+  ],
+  "images": [
+    {
+      "src": "apoio/01-primeira-aula.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "src": "apoio/01-nave-primeira-fase.png",
+      "loaded": true,
+      "width": 1600,
+      "height": 960
+    },
+    {
+      "src": "apoio/02-conversar.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "src": "apoio/07-orientacao.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "src": "apoio/08-mostrar.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    }
+  ],
+  "errors": [],
+  "fonts": {
+    "normal": true,
+    "bold": true
+  }
+}

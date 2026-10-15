@@ -1,0 +1,68 @@
+{
+  "status": "conferido",
+  "slides": [
+    {
+      "file": "01-p05.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 780974
+    },
+    {
+      "file": "02-p05.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 939973
+    },
+    {
+      "file": "03-p05.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 982690
+    },
+    {
+      "file": "04-p05.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 716009
+    },
+    {
+      "file": "05-p05.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 845618
+    },
+    {
+      "file": "06-p05.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 305335
+    },
+    {
+      "file": "07-p05.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 347301
+    },
+    {
+      "file": "08-p05.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 985185
+    }
+  ],
+  "copyPreserved": true,
+  "fontsLoaded": true,
+  "localLinks": 66,
+  "nativeDialogueVerified": {
+    "greeting": "Bem-vindo à Vila das Vocações!",
+    "question": "O que você quer ser quando crescer?",
+    "answers": [
+      "Padeiro",
+      "Mecânico"
+    ],
+    "padeiroCompletesQuest": true
+  },
+  "artDirection": "Seis cenas novas com mãe e filho fictícios; blocos nativos e capturas reais da Vila das Vocações. Leitura visual das oito peças, bilhete e diálogos.",
+  "errors": [],
+  "scope": "Produção local do P05. Sem publicação, agendamento, commit ou deploy."
+}

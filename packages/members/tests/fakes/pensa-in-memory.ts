@@ -1,4 +1,10 @@
 import { randomUUID } from 'node:crypto'
+import {
+  createPensaJourney,
+  type PensaJourneyView,
+  type PensaTeamArtItem,
+  type PensaTeamRoles,
+} from '@sistemazero/core/pensa'
 import type { CourseAudience } from '../../src/domain/course/course'
 import type {
   PensaArtifact,
@@ -13,7 +19,18 @@ import type {
   PensaTaskProgress,
   PensaWorkStage,
 } from '../../src/domain/pensa/pensa'
-import { PensaTaskProgressConflictError } from '../../src/domain/pensa/pensa.errors'
+import {
+  PensaNotFoundError,
+  PensaTaskProgressConflictError,
+} from '../../src/domain/pensa/pensa.errors'
+import {
+  assertPensaMissionWorker,
+  type PensaRoleRow,
+  pensaJourneyTeam,
+  pensaMissionOwnership,
+  pensaTeamRoles,
+} from '../../src/domain/pensa/team'
+import type { CreationsRepository } from '../../src/domain/ports/creations-repository.port'
 import type {
   InheritedPensaArtifact,
   NewPensaArtifact,
@@ -24,7 +41,10 @@ import type {
   PensaConversationUpsert,
   PensaProjectPatch,
   PensaRepository,
+  PensaSetRolesOutcome,
+  PensaTaskActor,
   PensaTaskPlanPatch,
+  PensaTeamArtTask,
 } from '../../src/domain/ports/pensa-repository.port'
 
 const taskFromNew = (cycleId: string, task: NewPensaTask, now: Date): PensaTask => ({
@@ -39,6 +59,8 @@ const taskFromNew = (cycleId: string, task: NewPensaTask, now: Date): PensaTask 
     completedAt: null,
     updatedAt: null,
   },
+  assigneeProfileId: null,
+  completedByProfileId: null,
   revision: task.revision ?? 1,
   supersedesTaskId: task.supersedesTaskId ?? null,
   archivedAt: null,
@@ -46,7 +68,16 @@ const taskFromNew = (cycleId: string, task: NewPensaTask, now: Date): PensaTask 
   updatedAt: now,
 })
 
+/**
+ * Espelho em memória do `DrizzlePensaRepository`. Equipe no v2 (14/10/2026): as funções, a missão
+ * pega, `assignee`/`completed_by`, a regra 5 e as artes da equipe seguem as MESMAS réguas do
+ * domínio (`domain/pensa/team.ts`). ⚠️ A evidência (a criação guardada que conclui a missão) só é
+ * conferida no Drizzle, como antes; quem a cobre é `tests/db/pensa-team-v2.test.ts`.
+ * `creations` (opcional) é o índice das criações que as artes da equipe consultam.
+ */
 export class InMemoryPensaRepository implements PensaRepository {
+  constructor(private readonly creations: CreationsRepository | null = null) {}
+
   readonly projects = new Map<string, PensaProject>()
   /** A equipe: chave `${projectId}:${profileId}`. */
   readonly members = new Map<string, PensaProjectMember>()
@@ -56,6 +87,93 @@ export class InMemoryPensaRepository implements PensaRepository {
   readonly tasks = new Map<string, PensaTask>()
   /** Projetos com jornada v2 ativa (o Drizzle lê `pensa_journeys`; aqui o teste marca). */
   readonly journeyProjects = new Set<string>()
+  /** As funções da equipe (`pensa_project_roles`), linhas cruas. */
+  readonly roles: Array<PensaRoleRow & { projectId: string; assignedBy: string }> = []
+  /** Projetos com versão guardada (`pensa_checkpoints`): trancam quem programa (regra 5). */
+  readonly checkpointProjects = new Set<string>()
+  /** Quantas vezes a jornada do projeto subiu de revisão por mudança na equipe. */
+  readonly journeyBumps = new Map<string, number>()
+
+  /**
+   * Leitura mínima da jornada v2 (o que o `PUT …/roles` devolve nos testes de integração): o
+   * projeto, os ciclos, o papel e a `team` com os papéis efetivos. A revisão é a contagem de
+   * mudanças na equipe (o Drizzle sobe a `pensa_journeys.revision` nos mesmos pontos).
+   */
+  async journeyView(actor: { profileId: string }, projectId: string): Promise<PensaJourneyView> {
+    const project = await this.findProject(projectId, actor.profileId, 'kids')
+    const cycles = await this.listCycles(projectId)
+    const current = cycles.at(-1)
+    if (!project || !current || !this.journeyProjects.has(projectId)) throw new PensaNotFoundError()
+    const memberProfileIds = (await this.listMembers(projectId)).map((member) => member.profileId)
+    return {
+      project: { id: project.id, name: project.name, status: project.status },
+      journey: {
+        ...createPensaJourney(projectId, current.id, project.createdAt.toISOString()),
+        revision: this.journeyBumps.get(projectId) ?? 0,
+      },
+      operation: null,
+      cycles: cycles.map((cycle) => ({ id: cycle.id, number: cycle.number })),
+      checkpoints: [],
+      role: project.role,
+      team: pensaJourneyTeam({
+        viewerProfileId: actor.profileId,
+        ownerProfileId: project.userId,
+        memberProfileIds,
+        shareCode: project.shareCode,
+        rows: this.rowsOf(projectId),
+      }),
+    }
+  }
+
+  private bumpJourney(projectId: string): void {
+    if (this.journeyProjects.has(projectId))
+      this.journeyBumps.set(projectId, (this.journeyBumps.get(projectId) ?? 0) + 1)
+  }
+
+  private projectTasks(projectId: string): PensaTask[] {
+    const cycleIds = new Set(
+      [...this.cycles.values()]
+        .filter((cycle) => cycle.projectId === projectId)
+        .map((cycle) => cycle.id),
+    )
+    return [...this.tasks.values()].filter((task) => cycleIds.has(task.cycleId))
+  }
+
+  /** O ciclo da jornada ativa: aqui, o de maior número. */
+  private currentCycleId(projectId: string): string | null {
+    return (
+      [...this.cycles.values()]
+        .filter((cycle) => cycle.projectId === projectId)
+        .sort((a, b) => b.number - a.number)[0]?.id ?? null
+    )
+  }
+
+  private teamRoles(projectId: string): PensaTeamRoles | null {
+    const project = this.projects.get(projectId)
+    if (!project) return null
+    const memberIds = [...this.members.values()]
+      .filter((member) => member.projectId === projectId)
+      .map((member) => member.profileId)
+    return pensaTeamRoles(project.userId, memberIds, this.rowsOf(projectId))
+  }
+
+  private rowsOf(projectId: string): PensaRoleRow[] {
+    return this.roles
+      .filter((row) => row.projectId === projectId)
+      .map(({ profileId, role }) => ({ profileId, role }))
+  }
+
+  /** O mesmo `releasePensaMissions` do Drizzle. */
+  private releaseMissions(projectId: string, roles: PensaTeamRoles): void {
+    for (const task of this.projectTasks(projectId)) {
+      if (task.progress.status === 'completed' || !task.assigneeProfileId) continue
+      const keeps =
+        task.destination === 'studio'
+          ? task.assigneeProfileId === roles.code
+          : roles.art.includes(task.assigneeProfileId)
+      if (!keeps) this.tasks.set(task.id, { ...task, assigneeProfileId: null })
+    }
+  }
 
   private touch(projectId: string, now: Date): void {
     const project = this.projects.get(projectId)
@@ -222,8 +340,123 @@ export class InMemoryPensaRepository implements PensaRepository {
 
   async removeMember(projectId: string, profileId: string, now: Date): Promise<boolean> {
     const removed = this.members.delete(`${projectId}:${profileId}`)
-    if (removed) this.touch(projectId, now)
-    return removed
+    if (!removed) return false
+    for (let index = this.roles.length - 1; index >= 0; index -= 1) {
+      const row = this.roles[index]
+      if (row?.projectId === projectId && row.profileId === profileId) this.roles.splice(index, 1)
+    }
+    for (const task of this.projectTasks(projectId))
+      if (task.progress.status !== 'completed' && task.assigneeProfileId === profileId)
+        this.tasks.set(task.id, { ...task, assigneeProfileId: null })
+    this.bumpJourney(projectId)
+    this.touch(projectId, now)
+    return true
+  }
+
+  async listRoles(projectId: string): Promise<PensaRoleRow[]> {
+    return this.rowsOf(projectId)
+  }
+
+  async setRoles(
+    projectId: string,
+    input: { code: string; art: readonly string[] },
+    assignedBy: string,
+    now: Date,
+  ): Promise<PensaSetRolesOutcome> {
+    const project = this.projects.get(projectId)
+    if (!project) return 'not_found'
+    if (!this.journeyProjects.has(projectId)) return 'legacy'
+    const memberIds = [...this.members.values()]
+      .filter((member) => member.projectId === projectId)
+      .map((member) => member.profileId)
+    const team = new Set([project.userId, ...memberIds])
+    const art = [...new Set(input.art)]
+    if (!team.has(input.code) || art.some((id) => !team.has(id))) return 'not_in_team'
+    const rows: PensaRoleRow[] = [
+      ...(input.code === project.userId ? [] : [{ profileId: input.code, role: 'code' as const }]),
+      ...art.map((profileId) => ({ profileId, role: 'art' as const })),
+    ]
+    const current = pensaTeamRoles(project.userId, memberIds, this.rowsOf(projectId))
+    const next = pensaTeamRoles(project.userId, memberIds, rows)
+    if (next.code !== current.code && (await this.isCodeLocked(projectId))) return 'code_locked'
+    for (let index = this.roles.length - 1; index >= 0; index -= 1)
+      if (this.roles[index]?.projectId === projectId) this.roles.splice(index, 1)
+    for (const row of rows) this.roles.push({ ...row, projectId, assignedBy })
+    this.releaseMissions(projectId, next)
+    this.bumpJourney(projectId)
+    this.touch(projectId, now)
+    return 'updated'
+  }
+
+  async isCodeLocked(projectId: string): Promise<boolean> {
+    if (this.checkpointProjects.has(projectId)) return true
+    const cycleId = this.currentCycleId(projectId)
+    return [...this.tasks.values()].some(
+      (task) =>
+        task.cycleId === cycleId &&
+        task.destination === 'studio' &&
+        task.progress.status !== 'planned',
+    )
+  }
+
+  async listTeamArt(
+    projectId: string,
+    viewerProfileId: string,
+    limit: number,
+  ): Promise<PensaTeamArtItem[]> {
+    const items: PensaTeamArtItem[] = []
+    for (const task of this.projectTasks(projectId)) {
+      const ref = task.progress.outputRef
+      if (
+        task.archivedAt !== null ||
+        task.progress.status !== 'completed' ||
+        !task.progress.completedAt ||
+        !ref ||
+        ref.kind === 'studio_project' ||
+        !task.completedByProfileId ||
+        task.completedByProfileId === viewerProfileId
+      )
+        continue
+      const tool = ref.kind === 'pinta_asset' ? ('pinta' as const) : ('molda' as const)
+      const creation = await this.creations?.get(task.completedByProfileId, tool, ref.assetId)
+      if (!creation || creation.deletedAt !== null || !creation.storageRef) continue
+      items.push({
+        taskId: task.id,
+        title: task.title,
+        tool,
+        assetId: ref.assetId,
+        assetName: creation.name || ref.assetName || null,
+        assetKind: creation.kind || null,
+        byProfileId: task.completedByProfileId,
+        completedAt: task.progress.completedAt.toISOString(),
+        updatedAt: creation.itemUpdatedAt.toISOString(),
+        revision: creation.revision,
+      })
+    }
+    return items
+      .sort(
+        (a, b) => b.completedAt.localeCompare(a.completedAt) || a.taskId.localeCompare(b.taskId),
+      )
+      .slice(0, limit)
+  }
+
+  async findTeamArtTask(projectId: string, taskId: string): Promise<PensaTeamArtTask | null> {
+    const task = this.projectTasks(projectId).find((candidate) => candidate.id === taskId)
+    const ref = task?.progress.outputRef
+    if (
+      !task ||
+      task.archivedAt !== null ||
+      task.progress.status !== 'completed' ||
+      !task.completedByProfileId ||
+      !ref ||
+      ref.kind === 'studio_project'
+    )
+      return null
+    return {
+      completedByProfileId: task.completedByProfileId,
+      tool: ref.kind === 'pinta_asset' ? 'pinta' : 'molda',
+      assetId: ref.assetId,
+    }
   }
 
   async updateProject(projectId: string, patch: PensaProjectPatch, now: Date): Promise<void> {
@@ -238,6 +471,8 @@ export class InMemoryPensaRepository implements PensaRepository {
     for (const key of [...this.members.keys()]) {
       if (key.startsWith(`${projectId}:`)) this.members.delete(key)
     }
+    for (let index = this.roles.length - 1; index >= 0; index -= 1)
+      if (this.roles[index]?.projectId === projectId) this.roles.splice(index, 1)
     const cycleIds = new Set(
       [...this.cycles.values()]
         .filter((cycle) => cycle.projectId === projectId)
@@ -497,13 +732,31 @@ export class InMemoryPensaRepository implements PensaRepository {
     progress: PensaTaskProgress,
     expectedUpdatedAt: Date | null,
     now: Date,
+    actor: PensaTaskActor,
   ) {
     const task = this.tasks.get(taskId)
     if (!task) throw new Error('task not found')
+    // Equipe no v2: a mesma régua do Drizzle (função + missão pega), conferida antes de gravar.
+    const roles = this.journeyProjects.has(projectId) ? this.teamRoles(projectId) : null
+    if (roles)
+      assertPensaMissionWorker(
+        {
+          destination: task.destination,
+          status: task.progress.status,
+          assigneeProfileId: task.assigneeProfileId,
+        },
+        actor.profileId,
+        roles,
+      )
     if ((task.progress.updatedAt?.getTime() ?? null) !== (expectedUpdatedAt?.getTime() ?? null)) {
       throw new PensaTaskProgressConflictError()
     }
-    const updated = { ...task, progress, updatedAt: now }
+    const updated = {
+      ...task,
+      ...(roles ? pensaMissionOwnership(task, progress.status, actor.profileId) : {}),
+      progress,
+      updatedAt: now,
+    }
     this.tasks.set(taskId, updated)
     this.touch(projectId, now)
     return updated

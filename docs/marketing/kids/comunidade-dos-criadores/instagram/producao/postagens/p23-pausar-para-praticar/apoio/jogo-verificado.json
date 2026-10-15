@@ -1,0 +1,1079 @@
+{
+  "states": [
+    {
+      "name": "04-disparo-em-acao",
+      "naveX": 0,
+      "pontos": 0,
+      "tempo": 3,
+      "rodando": true,
+      "recarga": 10,
+      "meteoros": [
+        {
+          "id": "062d39f5-b906-46dd-9066-c530fb71d567",
+          "x": -3.85374453663826,
+          "y": 1,
+          "z": -43.64479999999996
+        },
+        {
+          "id": "bc05dd56-f78b-4645-b6de-a049e9af8fd8",
+          "x": 2.6364361736923456,
+          "y": 1,
+          "z": -37.055359999999936
+        },
+        {
+          "id": "021be007-8584-4e90-ac12-9f31a7cd25e9",
+          "x": -5.010040249675512,
+          "y": 1,
+          "z": -30.757759999999934
+        }
+      ],
+      "rapidos": [
+        {
+          "id": "588e8698-e3a3-4c7e-b21d-c475b54a0e48",
+          "x": -0.09367884881794453,
+          "y": 1,
+          "z": -9.443455999999873
+        }
+      ],
+      "tiros": [
+        {
+          "id": "163f3d59-8951-4d54-a013-73114b9578dd",
+          "x": 0,
+          "y": 0.8860450146701921,
+          "z": -6.183999999999999
+        }
+      ]
+    },
+    {
+      "name": "04-depois-do-acerto",
+      "naveX": 0,
+      "pontos": 2,
+      "tempo": 3,
+      "rodando": true,
+      "recarga": 7,
+      "meteoros": [
+        {
+          "id": "062d39f5-b906-46dd-9066-c530fb71d567",
+          "x": -3.85374453663826,
+          "y": 1,
+          "z": -43.17247999999996
+        },
+        {
+          "id": "bc05dd56-f78b-4645-b6de-a049e9af8fd8",
+          "x": 2.6364361736923456,
+          "y": 1,
+          "z": -36.58303999999993
+        },
+        {
+          "id": "021be007-8584-4e90-ac12-9f31a7cd25e9",
+          "x": -5.010040249675512,
+          "y": 1,
+          "z": -30.28543999999993
+        }
+      ],
+      "rapidos": [
+        {
+          "id": "8ce30d89-87af-42f3-860d-1a31f9e9fa67",
+          "x": -1.3830385264009237,
+          "y": 1,
+          "z": -50
+        }
+      ],
+      "tiros": []
+    }
+  ],
+  "inputs": [
+    {
+      "frame": 0,
+      "keys": []
+    },
+    {
+      "frame": 1,
+      "keys": []
+    },
+    {
+      "frame": 2,
+      "keys": []
+    },
+    {
+      "frame": 3,
+      "keys": []
+    },
+    {
+      "frame": 4,
+      "keys": []
+    },
+    {
+      "frame": 5,
+      "keys": []
+    },
+    {
+      "frame": 6,
+      "keys": []
+    },
+    {
+      "frame": 7,
+      "keys": []
+    },
+    {
+      "frame": 8,
+      "keys": []
+    },
+    {
+      "frame": 9,
+      "keys": []
+    },
+    {
+      "frame": 10,
+      "keys": []
+    },
+    {
+      "frame": 11,
+      "keys": []
+    },
+    {
+      "frame": 12,
+      "keys": []
+    },
+    {
+      "frame": 13,
+      "keys": []
+    },
+    {
+      "frame": 14,
+      "keys": []
+    },
+    {
+      "frame": 15,
+      "keys": []
+    },
+    {
+      "frame": 16,
+      "keys": []
+    },
+    {
+      "frame": 17,
+      "keys": []
+    },
+    {
+      "frame": 18,
+      "keys": []
+    },
+    {
+      "frame": 19,
+      "keys": []
+    },
+    {
+      "frame": 20,
+      "keys": []
+    },
+    {
+      "frame": 21,
+      "keys": []
+    },
+    {
+      "frame": 22,
+      "keys": []
+    },
+    {
+      "frame": 23,
+      "keys": []
+    },
+    {
+      "frame": 24,
+      "keys": []
+    },
+    {
+      "frame": 25,
+      "keys": []
+    },
+    {
+      "frame": 26,
+      "keys": []
+    },
+    {
+      "frame": 27,
+      "keys": []
+    },
+    {
+      "frame": 28,
+      "keys": []
+    },
+    {
+      "frame": 29,
+      "keys": []
+    },
+    {
+      "frame": 30,
+      "keys": []
+    },
+    {
+      "frame": 31,
+      "keys": []
+    },
+    {
+      "frame": 32,
+      "keys": []
+    },
+    {
+      "frame": 33,
+      "keys": []
+    },
+    {
+      "frame": 34,
+      "keys": []
+    },
+    {
+      "frame": 35,
+      "keys": []
+    },
+    {
+      "frame": 36,
+      "keys": []
+    },
+    {
+      "frame": 37,
+      "keys": []
+    },
+    {
+      "frame": 38,
+      "keys": []
+    },
+    {
+      "frame": 39,
+      "keys": []
+    },
+    {
+      "frame": 40,
+      "keys": []
+    },
+    {
+      "frame": 41,
+      "keys": []
+    },
+    {
+      "frame": 42,
+      "keys": []
+    },
+    {
+      "frame": 43,
+      "keys": []
+    },
+    {
+      "frame": 44,
+      "keys": []
+    },
+    {
+      "frame": 45,
+      "keys": []
+    },
+    {
+      "frame": 46,
+      "keys": []
+    },
+    {
+      "frame": 47,
+      "keys": []
+    },
+    {
+      "frame": 48,
+      "keys": []
+    },
+    {
+      "frame": 49,
+      "keys": []
+    },
+    {
+      "frame": 50,
+      "keys": []
+    },
+    {
+      "frame": 51,
+      "keys": []
+    },
+    {
+      "frame": 52,
+      "keys": []
+    },
+    {
+      "frame": 53,
+      "keys": []
+    },
+    {
+      "frame": 54,
+      "keys": []
+    },
+    {
+      "frame": 55,
+      "keys": []
+    },
+    {
+      "frame": 56,
+      "keys": []
+    },
+    {
+      "frame": 57,
+      "keys": []
+    },
+    {
+      "frame": 58,
+      "keys": []
+    },
+    {
+      "frame": 59,
+      "keys": []
+    },
+    {
+      "frame": 60,
+      "keys": []
+    },
+    {
+      "frame": 61,
+      "keys": []
+    },
+    {
+      "frame": 62,
+      "keys": []
+    },
+    {
+      "frame": 63,
+      "keys": []
+    },
+    {
+      "frame": 64,
+      "keys": []
+    },
+    {
+      "frame": 65,
+      "keys": []
+    },
+    {
+      "frame": 66,
+      "keys": []
+    },
+    {
+      "frame": 67,
+      "keys": []
+    },
+    {
+      "frame": 68,
+      "keys": []
+    },
+    {
+      "frame": 69,
+      "keys": []
+    },
+    {
+      "frame": 70,
+      "keys": []
+    },
+    {
+      "frame": 71,
+      "keys": []
+    },
+    {
+      "frame": 72,
+      "keys": []
+    },
+    {
+      "frame": 73,
+      "keys": []
+    },
+    {
+      "frame": 74,
+      "keys": []
+    },
+    {
+      "frame": 75,
+      "keys": []
+    },
+    {
+      "frame": 76,
+      "keys": []
+    },
+    {
+      "frame": 77,
+      "keys": []
+    },
+    {
+      "frame": 78,
+      "keys": []
+    },
+    {
+      "frame": 79,
+      "keys": []
+    },
+    {
+      "frame": 80,
+      "keys": []
+    },
+    {
+      "frame": 81,
+      "keys": []
+    },
+    {
+      "frame": 82,
+      "keys": []
+    },
+    {
+      "frame": 83,
+      "keys": []
+    },
+    {
+      "frame": 84,
+      "keys": []
+    },
+    {
+      "frame": 85,
+      "keys": []
+    },
+    {
+      "frame": 86,
+      "keys": []
+    },
+    {
+      "frame": 87,
+      "keys": []
+    },
+    {
+      "frame": 88,
+      "keys": []
+    },
+    {
+      "frame": 89,
+      "keys": []
+    },
+    {
+      "frame": 90,
+      "keys": []
+    },
+    {
+      "frame": 91,
+      "keys": []
+    },
+    {
+      "frame": 92,
+      "keys": []
+    },
+    {
+      "frame": 93,
+      "keys": []
+    },
+    {
+      "frame": 94,
+      "keys": []
+    },
+    {
+      "frame": 95,
+      "keys": []
+    },
+    {
+      "frame": 96,
+      "keys": []
+    },
+    {
+      "frame": 97,
+      "keys": []
+    },
+    {
+      "frame": 98,
+      "keys": []
+    },
+    {
+      "frame": 99,
+      "keys": []
+    },
+    {
+      "frame": 100,
+      "keys": []
+    },
+    {
+      "frame": 101,
+      "keys": []
+    },
+    {
+      "frame": 102,
+      "keys": []
+    },
+    {
+      "frame": 103,
+      "keys": []
+    },
+    {
+      "frame": 104,
+      "keys": []
+    },
+    {
+      "frame": 105,
+      "keys": []
+    },
+    {
+      "frame": 106,
+      "keys": []
+    },
+    {
+      "frame": 107,
+      "keys": []
+    },
+    {
+      "frame": 108,
+      "keys": []
+    },
+    {
+      "frame": 109,
+      "keys": []
+    },
+    {
+      "frame": 110,
+      "keys": []
+    },
+    {
+      "frame": 111,
+      "keys": []
+    },
+    {
+      "frame": 112,
+      "keys": []
+    },
+    {
+      "frame": 113,
+      "keys": []
+    },
+    {
+      "frame": 114,
+      "keys": []
+    },
+    {
+      "frame": 115,
+      "keys": []
+    },
+    {
+      "frame": 116,
+      "keys": []
+    },
+    {
+      "frame": 117,
+      "keys": []
+    },
+    {
+      "frame": 118,
+      "keys": []
+    },
+    {
+      "frame": 119,
+      "keys": []
+    },
+    {
+      "frame": 120,
+      "keys": []
+    },
+    {
+      "frame": 121,
+      "keys": []
+    },
+    {
+      "frame": 122,
+      "keys": []
+    },
+    {
+      "frame": 123,
+      "keys": []
+    },
+    {
+      "frame": 124,
+      "keys": []
+    },
+    {
+      "frame": 125,
+      "keys": []
+    },
+    {
+      "frame": 126,
+      "keys": []
+    },
+    {
+      "frame": 127,
+      "keys": []
+    },
+    {
+      "frame": 128,
+      "keys": []
+    },
+    {
+      "frame": 129,
+      "keys": []
+    },
+    {
+      "frame": 130,
+      "keys": []
+    },
+    {
+      "frame": 131,
+      "keys": []
+    },
+    {
+      "frame": 132,
+      "keys": []
+    },
+    {
+      "frame": 133,
+      "keys": []
+    },
+    {
+      "frame": 134,
+      "keys": []
+    },
+    {
+      "frame": 135,
+      "keys": []
+    },
+    {
+      "frame": 136,
+      "keys": []
+    },
+    {
+      "frame": 137,
+      "keys": []
+    },
+    {
+      "frame": 138,
+      "keys": []
+    },
+    {
+      "frame": 139,
+      "keys": []
+    },
+    {
+      "frame": 140,
+      "keys": []
+    },
+    {
+      "frame": 141,
+      "keys": []
+    },
+    {
+      "frame": 142,
+      "keys": []
+    },
+    {
+      "frame": 143,
+      "keys": []
+    },
+    {
+      "frame": 144,
+      "keys": []
+    },
+    {
+      "frame": 145,
+      "keys": []
+    },
+    {
+      "frame": 146,
+      "keys": []
+    },
+    {
+      "frame": 147,
+      "keys": []
+    },
+    {
+      "frame": 148,
+      "keys": []
+    },
+    {
+      "frame": 149,
+      "keys": []
+    },
+    {
+      "frame": 150,
+      "keys": []
+    },
+    {
+      "frame": 151,
+      "keys": []
+    },
+    {
+      "frame": 152,
+      "keys": []
+    },
+    {
+      "frame": 153,
+      "keys": []
+    },
+    {
+      "frame": 154,
+      "keys": []
+    },
+    {
+      "frame": 155,
+      "keys": []
+    },
+    {
+      "frame": 156,
+      "keys": []
+    },
+    {
+      "frame": 157,
+      "keys": []
+    },
+    {
+      "frame": 158,
+      "keys": []
+    },
+    {
+      "frame": 159,
+      "keys": []
+    },
+    {
+      "frame": 160,
+      "keys": []
+    },
+    {
+      "frame": 161,
+      "keys": []
+    },
+    {
+      "frame": 162,
+      "keys": []
+    },
+    {
+      "frame": 163,
+      "keys": []
+    },
+    {
+      "frame": 164,
+      "keys": []
+    },
+    {
+      "frame": 165,
+      "keys": []
+    },
+    {
+      "frame": 166,
+      "keys": []
+    },
+    {
+      "frame": 167,
+      "keys": []
+    },
+    {
+      "frame": 168,
+      "keys": []
+    },
+    {
+      "frame": 169,
+      "keys": []
+    },
+    {
+      "frame": 170,
+      "keys": []
+    },
+    {
+      "frame": 171,
+      "keys": []
+    },
+    {
+      "frame": 172,
+      "keys": []
+    },
+    {
+      "frame": 173,
+      "keys": []
+    },
+    {
+      "frame": 174,
+      "keys": []
+    },
+    {
+      "frame": 175,
+      "keys": []
+    },
+    {
+      "frame": 176,
+      "keys": []
+    },
+    {
+      "frame": 177,
+      "keys": []
+    },
+    {
+      "frame": 178,
+      "keys": []
+    },
+    {
+      "frame": 179,
+      "keys": []
+    },
+    {
+      "frame": 180,
+      "keys": []
+    },
+    {
+      "frame": 181,
+      "keys": []
+    },
+    {
+      "frame": 182,
+      "keys": []
+    },
+    {
+      "frame": 183,
+      "keys": []
+    },
+    {
+      "frame": 184,
+      "keys": []
+    },
+    {
+      "frame": 185,
+      "keys": []
+    },
+    {
+      "frame": 186,
+      "keys": []
+    },
+    {
+      "frame": 187,
+      "keys": []
+    },
+    {
+      "frame": 188,
+      "keys": []
+    },
+    {
+      "frame": 189,
+      "keys": []
+    },
+    {
+      "frame": 190,
+      "keys": []
+    },
+    {
+      "frame": 191,
+      "keys": []
+    },
+    {
+      "frame": 192,
+      "keys": []
+    },
+    {
+      "frame": 193,
+      "keys": []
+    },
+    {
+      "frame": 194,
+      "keys": []
+    },
+    {
+      "frame": 195,
+      "keys": []
+    },
+    {
+      "frame": 196,
+      "keys": []
+    },
+    {
+      "frame": 197,
+      "keys": []
+    },
+    {
+      "frame": 198,
+      "keys": []
+    },
+    {
+      "frame": 199,
+      "keys": []
+    },
+    {
+      "frame": 200,
+      "keys": []
+    },
+    {
+      "frame": 201,
+      "keys": []
+    },
+    {
+      "frame": 202,
+      "keys": []
+    },
+    {
+      "frame": 203,
+      "keys": []
+    },
+    {
+      "frame": 204,
+      "keys": []
+    },
+    {
+      "frame": 205,
+      "keys": []
+    },
+    {
+      "frame": 206,
+      "keys": []
+    },
+    {
+      "frame": 207,
+      "keys": []
+    },
+    {
+      "frame": 208,
+      "keys": []
+    },
+    {
+      "frame": 209,
+      "keys": []
+    },
+    {
+      "frame": 210,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 211,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 212,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 213,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 214,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 215,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 216,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 217,
+      "keys": [
+        "Space"
+      ]
+    },
+    {
+      "frame": 218,
+      "keys": [
+        "Space"
+      ]
+    }
+  ],
+  "errors": [],
+  "method": "Código original. Semente e relógio controlados. Teclas reais para alinhar a nave e disparar. Observador somente lê. Renderização intermediária suprimida; capturas renderizadas pelo motor original.",
+  "approach": {
+    "d": 3.262792497437211,
+    "t": {
+      "id": "163f3d59-8951-4d54-a013-73114b9578dd",
+      "x": 0,
+      "y": 0.8860450146701921,
+      "z": -6.183999999999999
+    },
+    "m": {
+      "id": "588e8698-e3a3-4c7e-b21d-c475b54a0e48",
+      "x": -0.09367884881794453,
+      "y": 1,
+      "z": -9.443455999999873
+    }
+  },
+  "collision": {
+    "before": {
+      "naveX": 0,
+      "pontos": 0,
+      "tempo": 3,
+      "rodando": true,
+      "recarga": 8,
+      "meteoros": [
+        {
+          "id": "062d39f5-b906-46dd-9066-c530fb71d567",
+          "x": -3.85374453663826,
+          "y": 1,
+          "z": -43.32991999999996
+        },
+        {
+          "id": "bc05dd56-f78b-4645-b6de-a049e9af8fd8",
+          "x": 2.6364361736923456,
+          "y": 1,
+          "z": -36.740479999999934
+        },
+        {
+          "id": "021be007-8584-4e90-ac12-9f31a7cd25e9",
+          "x": -5.010040249675512,
+          "y": 1,
+          "z": -30.44287999999993
+        }
+      ],
+      "rapidos": [
+        {
+          "id": "588e8698-e3a3-4c7e-b21d-c475b54a0e48",
+          "x": -0.09367884881794453,
+          "y": 1,
+          "z": -8.939647999999874
+        }
+      ],
+      "tiros": [
+        {
+          "id": "163f3d59-8951-4d54-a013-73114b9578dd",
+          "x": 0,
+          "y": 0.8860450146701921,
+          "z": -7.911999999999999
+        }
+      ]
+    },
+    "after": {
+      "naveX": 0,
+      "pontos": 2,
+      "tempo": 3,
+      "rodando": true,
+      "recarga": 7,
+      "meteoros": [
+        {
+          "id": "062d39f5-b906-46dd-9066-c530fb71d567",
+          "x": -3.85374453663826,
+          "y": 1,
+          "z": -43.17247999999996
+        },
+        {
+          "id": "bc05dd56-f78b-4645-b6de-a049e9af8fd8",
+          "x": 2.6364361736923456,
+          "y": 1,
+          "z": -36.58303999999993
+        },
+        {
+          "id": "021be007-8584-4e90-ac12-9f31a7cd25e9",
+          "x": -5.010040249675512,
+          "y": 1,
+          "z": -30.28543999999993
+        }
+      ],
+      "rapidos": [
+        {
+          "id": "8ce30d89-87af-42f3-860d-1a31f9e9fa67",
+          "x": -1.3830385264009237,
+          "y": 1,
+          "z": -50
+        }
+      ],
+      "tiros": []
+    }
+  }
+}

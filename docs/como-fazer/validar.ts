@@ -24,7 +24,7 @@ import {
   concordanciasErradas,
   guiasPessoa,
   palavrasDaEscola,
-} from '../aulas-interativas/qa/palavras-da-escola'
+} from '../aulas-interativas-tecnico/qa/palavras-da-escola'
 
 /**
  * O vocabulário da aventura nos textos que a criança lê: título, resumo, título e corpo de cada

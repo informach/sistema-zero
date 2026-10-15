@@ -170,6 +170,12 @@ export type {
   StudioSharePublishInput,
   StudioShareResult,
 } from './studio/share'
+export type {
+  StudioTeamArtKind,
+  StudioTeamArtSummary,
+  StudioTeamImportResult,
+  StudioTeamLibraryAdapter,
+} from './studio/team-library'
 export type { StudioTheme } from './studio/theme'
 export type {
   StudioTutorAdapter,

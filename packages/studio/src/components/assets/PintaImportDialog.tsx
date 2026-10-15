@@ -4,10 +4,10 @@ import type { ProjectAsset } from '#core'
 import { Button, Modal } from '#ui'
 import { personalIdOf } from '../../asset-library/personalSync'
 import { normalizeSearchText } from '../../core/searchText'
-import { useProjectStore } from '../../state/projectStore'
+import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { useT } from '../../studio/i18n'
 import { type StudioPintaDrawingSummary, useStudioPintaLibrary } from '../../studio/pinta-library'
-import { uniqueAssetName } from './assetNames'
+import { addPintaCreationToProject, projectAssetFromCreation } from './addCreationToProject'
 
 /**
  * Modal "Trazer do Pinta" — o fluxo PULL de imagens: lista TODOS os desenhos
@@ -61,8 +61,7 @@ export function PintaImportDialog({ onClose, onImported }: PintaImportDialogProp
   const t = useT()
   const adapter = useStudioPintaLibrary()
   const assets = useProjectStore(useShallow((s) => s.project?.assets ?? EMPTY_ASSETS))
-  const addAsset = useProjectStore((s) => s.addAsset)
-  const updateAssetImage = useProjectStore((s) => s.updateAssetImage)
+  const storeApi = useProjectStoreApi()
 
   const [load, setLoad] = useState<LoadState>({ phase: 'loading' })
   const [reloadKey, setReloadKey] = useState(0)
@@ -107,41 +106,17 @@ export function PintaImportDialog({ onClose, onImported }: PintaImportDialogProp
         }
         return
       }
-      const existing = assets.find((asset) => personalIdOf(asset) === drawing.id)
-      if (existing) {
-        if (!result.asset.dataUrl.startsWith('data:image/svg+xml')) {
-          setError(t('pintaImport.vectorTooLarge'))
-          return
-        }
-        const err = updateAssetImage(existing.id, {
-          dataUrl: result.asset.dataUrl,
-          width: result.asset.width,
-          height: result.asset.height,
-          sprite: result.asset.sprite,
-          tileset: result.asset.tileset,
-          tilemap: result.asset.tilemap,
-          libRevision: result.asset.libRevision,
-        })
-        if (err) setError(err)
-        else onImported?.()
+      const state = storeApi.getState()
+      // Já no projeto, este botão é o "Atualizar vetor": só faz sentido se o Pinta mandou SVG.
+      if (
+        projectAssetFromCreation(state, result.asset.id) &&
+        !result.asset.dataUrl.startsWith('data:image/svg+xml')
+      ) {
+        setError(t('pintaImport.vectorTooLarge'))
         return
       }
-      const taken = new Set(assets.map((a) => a.name))
-      const err = addAsset({
-        name: uniqueAssetName(result.asset.name, taken),
-        dataUrl: result.asset.dataUrl,
-        width: result.asset.width,
-        height: result.asset.height,
-        source: 'library',
-        libId: `personal:${result.asset.id}`,
-        libOrigin: 'pinta',
-        libRevision: result.asset.libRevision,
-        // Animações/tiles/mapa viajam junto (re-sanitizados no store), como no
-        // caminho "Meus desenhos".
-        sprite: result.asset.sprite,
-        tileset: result.asset.tileset,
-        tilemap: result.asset.tilemap,
-      })
+      // O MESMO "adicionar ao projeto" do Molda e da equipe (atualiza se já estiver lá).
+      const err = addPintaCreationToProject(state, result.asset)
       if (err) {
         setError(err)
         return

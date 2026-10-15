@@ -1,6 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { readdirSync, readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { readFileSync } from 'node:fs'
 import { type InteractiveBlock, isInteractiveBlock } from '@sistemazero/core/learning'
 import {
   isSceneAction,
@@ -10,6 +9,10 @@ import {
   type SceneId,
 } from '@sistemazero/core/learning/scene'
 import { Elysia, getSchemaValidator, t } from 'elysia'
+import {
+  caminhoAula,
+  listarArquivosAulas,
+} from '../../../../docs/aulas-interativas-tecnico/qa/caminhos'
 import { scenePaths } from '../../../core/tests/fixtures/exploration-paths'
 import { InteractiveBlockSchema } from '../../src/interfaces/http/learning.dtos'
 
@@ -72,9 +75,8 @@ function acoesConhecidas(): Map<SceneId, SceneAction[]> {
     for (const port of SCENE_PORTS)
       for (const enabled of [true, false]) somar(scene, { type: 'connect', port, enabled })
   }
-  const docs = resolve(import.meta.dir, '../../../../docs/aulas-interativas/aulas')
-  for (const nome of readdirSync(docs).filter((name) => name.endsWith('.manifesto.json'))) {
-    const texto = readFileSync(resolve(docs, nome), 'utf8')
+  for (const nome of listarArquivosAulas().filter((name) => name.endsWith('.manifesto.json'))) {
+    const texto = readFileSync(caminhoAula(nome), 'utf8')
     const visitar = (valor: unknown): void => {
       if (Array.isArray(valor)) {
         for (const item of valor) visitar(item)

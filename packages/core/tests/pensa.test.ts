@@ -1,9 +1,13 @@
 import { describe, expect, test } from 'bun:test'
 import {
   applyPensaCommand,
+  canWorkOnPensaMission,
   createPensaJourney,
+  effectivePensaRoles,
   nextPensaMission,
+  nextPensaMissionFor,
   type PensaProposal,
+  type PensaTeamMissionProgress,
   pensaZeroStage,
 } from '../src/pensa'
 
@@ -146,5 +150,94 @@ describe('Pensa: autoria, evidência e retomada', () => {
     expect(
       nextPensaMission([{ ...missions[0]!, evidenceCurrent: true }, ...missions.slice(1)]),
     ).toBe('rescue')
+  })
+})
+
+describe('Pensa: equipe (papéis e próxima missão de cada pessoa)', () => {
+  const owner = 'dona'
+  const bia = 'bia'
+  const leo = 'leo'
+
+  test('sem papéis, a dona programa e faz as artes; ids fora da equipe caem', () => {
+    expect(effectivePensaRoles({ ownerProfileId: owner, memberProfileIds: [bia] })).toEqual({
+      code: owner,
+      art: [owner],
+    })
+    expect(
+      effectivePensaRoles({
+        ownerProfileId: owner,
+        memberProfileIds: [bia],
+        code: 'estranho',
+        art: ['estranho', bia, bia],
+      }),
+    ).toEqual({ code: owner, art: [bia] })
+  })
+
+  test('quem programa faz o Estúdio; as artes fazem Pinta e Molda', () => {
+    const roles = effectivePensaRoles({
+      ownerProfileId: owner,
+      memberProfileIds: [bia, leo],
+      code: leo,
+      art: [owner, bia],
+    })
+    expect(canWorkOnPensaMission('studio', leo, roles)).toBe(true)
+    expect(canWorkOnPensaMission('studio', owner, roles)).toBe(false)
+    expect(canWorkOnPensaMission('pinta', bia, roles)).toBe(true)
+    expect(canWorkOnPensaMission('molda', leo, roles)).toBe(false)
+  })
+
+  test('cada pessoa vê a SUA próxima missão, ou quem ela está esperando', () => {
+    const roles = effectivePensaRoles({
+      ownerProfileId: owner,
+      memberProfileIds: [bia],
+      code: owner,
+      art: [bia],
+    })
+    const missions: PensaTeamMissionProgress[] = [
+      {
+        id: 'arte',
+        dependencies: [],
+        status: 'planned',
+        evidenceCurrent: true,
+        destination: 'pinta',
+        assigneeProfileId: null,
+      },
+      {
+        id: 'jogo',
+        dependencies: ['arte'],
+        status: 'planned',
+        evidenceCurrent: true,
+        destination: 'studio',
+        assigneeProfileId: null,
+      },
+    ]
+    expect(nextPensaMissionFor(missions, bia, roles)).toEqual({ mine: 'arte', waitingOn: null })
+    expect(nextPensaMissionFor(missions, owner, roles)).toEqual({
+      mine: null,
+      waitingOn: { missionId: 'arte', workers: [bia] },
+    })
+  })
+
+  test('com duas artistas, quem começou a missão fica com ela', () => {
+    const roles = effectivePensaRoles({
+      ownerProfileId: owner,
+      memberProfileIds: [bia, leo],
+      art: [bia, leo],
+    })
+    const missions: PensaTeamMissionProgress[] = [
+      {
+        id: 'nave',
+        dependencies: [],
+        status: 'in_progress',
+        evidenceCurrent: true,
+        destination: 'pinta',
+        assigneeProfileId: bia,
+      },
+    ]
+    expect(nextPensaMissionFor(missions, bia, roles).mine).toBe('nave')
+    expect(nextPensaMissionFor(missions, leo, roles)).toEqual({
+      mine: null,
+      waitingOn: { missionId: 'nave', workers: [bia] },
+    })
   })
 })

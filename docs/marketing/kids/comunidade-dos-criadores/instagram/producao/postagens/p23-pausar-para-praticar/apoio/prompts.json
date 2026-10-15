@@ -1,0 +1,70 @@
+[
+  {
+    "id": 1,
+    "file": "01-pausou-para-fazer.png",
+    "prompt": "Edit this exact photograph. Remove ONLY the small foreground potted plant and all its leaves that overlap the computer monitor at the lower LEFT. Fill that area naturally with the existing plain blank gray monitor display and oak desk. Keep the same boy's exact identity, face, hair, pose and clothing. Keep monitor geometry, all screen corner coordinates, camera perspective, furniture, keyboard, lighting and remaining background unchanged. Keep monitor completely blank, uniform light gray. Do not add any text, UI, logo or watermark. Preserve landscape 1536x1024 composition. This is a precise cleanup for an authentic screen insertion.",
+    "references": [
+      "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-b16aaa4b-7fea-4bca-8ecb-2aed4c9961f3.png"
+    ],
+    "tool": "image_gen.imagegen",
+    "source": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-ffdeb706-a219-496d-a5c7-6ffe39608d38.png",
+    "originalGeneration": {
+      "prompt": "Use case: photorealistic-natural. Landscape editorial photograph 1536x1024 for Brazilian parent education carousel. Fictional boy age 12, medium tan skin, straight short dark brown hair, wearing a cobalt blue cotton t-shirt. Bright cozy home study, white walls and warm oak desk, a bookshelf and small plants, natural soft afternoon daylight, premium realistic candid photography. Correct anatomy and realistic computer desk. No logos, words, generated UI, watermark or speech bubbles. Every visible monitor screen completely uniform light gray BLANK, no reflection; authentic platform screens will be inserted separately. Reference image is for same fictional boy's identity, hair, blue shirt and home decor only. Create an entirely NEW photograph with different camera and action; do not crop or repeat reference. Focus on a large desktop monitor occupying the LEFT two-thirds in foreground, blank screen nearly frontal with gentle perspective. On the RIGHT slightly behind monitor, same boy seated in three-quarter view, softly out of focus but recognizable, hand on mouse, engaged in working. Compose so monitor does not hide face or hand. Camera close to screen corner and at desk level, screen sharp and boy subtly blurred. All four corners of screen within image. Authentic home scene, no extra person.",
+      "references": [
+        "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-230181bc-44b2-45ba-8baa-4bbe24057d9e.png"
+      ],
+      "source": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-b16aaa4b-7fea-4bca-8ecb-2aed4c9961f3.png"
+    }
+  },
+  {
+    "id": 2,
+    "file": "02-pausa-para-montar.png",
+    "prompt": "Use case: photorealistic-natural. Landscape editorial photograph 1536x1024 for Brazilian parent education carousel. Fictional boy age 12, medium tan skin, straight short dark brown hair, wearing a cobalt blue cotton t-shirt. Bright cozy home study, white walls and warm oak desk, a bookshelf and small plants, natural soft afternoon daylight, premium realistic candid photography. Correct anatomy and realistic computer desk. No logos, words, generated UI, watermark or speech bubbles. Every visible monitor screen completely uniform light gray BLANK, no reflection; authentic platform screens will be inserted separately. Medium over-shoulder three-quarter view showing boy's face in profile on left, looking focused at his desktop monitor at right. Whole monitor screen clearly visible from camera, at a gentle perspective, not crossed by hands or objects. Both hands in frame, one on mouse and other relaxed by keyboard. Boy is actively operating the mouse, relaxed engaged concentration, not posing for camera. Screen occupies about 45 percent of frame, boy about 35 percent. Keep monitor entirely inside image, landscape monitor with thin black bezel.",
+    "references": [],
+    "tool": "image_gen.imagegen",
+    "source": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-230181bc-44b2-45ba-8baa-4bbe24057d9e.png"
+  },
+  {
+    "id": 3,
+    "file": "03-esboco-da-nave.png",
+    "prompt": "Use case: illustration-story. A fresh premium editorial illustration for a Brazilian educational carousel. Landscape 1536x1024. Close overhead view of a cream squared sketchbook page on a warm oak desk, a blue pencil lying outside the page near right edge. On the page a simple expressive hand-drawn concept sketch of a small spaceship made from a central rectangular body with two symmetrical wing blocks, one triangular cyan nose, seen from above. One vivid green dash in front of the nose represents a laser shot, and farther up the page a roughly spherical orange meteor drawn in colored pencil. A few light exploratory pencil strokes, sketch appears intentionally simple and child-accessible, not detailed technical blueprints. Blue/cyan ship, one green laser, orange rock, warm paper. Clear relation: ship nose points at laser and meteor above it. No text, no numbers, no arrows, no labels, no hands, no logos or watermark. This is an imagined game idea sketch, not a screenshot.",
+    "references": [],
+    "tool": "image_gen.imagegen",
+    "source": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-a5d47c71-0a65-4b1b-87a8-e027b9285c10.png"
+  },
+  {
+    "id": 5,
+    "file": "05-voltar-e-procurar-ajuda.png",
+    "prompt": "Edit this exact photograph. Remove ONLY the small foreground potted plant and all its leaves that overlap the computer monitor at the lower LEFT. Fill that area naturally with the existing plain blank gray monitor display and oak desk. Keep the same boy's exact identity, face, hair, pose and clothing. Keep monitor geometry, all screen corner coordinates, camera perspective, furniture, keyboard, lighting and remaining background unchanged. Keep monitor completely blank, uniform light gray. Do not add any text, UI, logo or watermark. Preserve landscape 1536x1024 composition. This is a precise cleanup for an authentic screen insertion.",
+    "references": [
+      "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-501b9dab-848b-4a95-a9f1-e882bd1fdfe6.png"
+    ],
+    "tool": "image_gen.imagegen",
+    "source": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-3a20ba39-8839-4136-b926-f27a1f8faae2.png",
+    "originalGeneration": {
+      "prompt": "Use case: photorealistic-natural. Landscape editorial photograph 1536x1024 for Brazilian parent education carousel. Fictional boy age 12, medium tan skin, straight short dark brown hair, wearing a cobalt blue cotton t-shirt. Bright cozy home study, white walls and warm oak desk, a bookshelf and small plants, natural soft afternoon daylight, premium realistic candid photography. Correct anatomy and realistic computer desk. No logos, words, generated UI, watermark or speech bubbles. Every visible monitor screen completely uniform light gray BLANK, no reflection; authentic platform screens will be inserted separately. Reference image is for same fictional boy's identity, hair, blue shirt and home decor only. Create an entirely NEW photograph with different camera and action; do not crop or repeat reference. Close side view with boy on RIGHT and computer monitor on LEFT, monitor display angled gently toward camera and fully visible inside frame. Boy is looking carefully at the screen while actively clicking mouse to revisit an explanation, slightly thoughtful expression but no distress. One hand on mouse, the other rests on keyboard. Closer framing than the reference, show face profile and fingers. Monitor occupies left half and is blank uniform gray. No pointing at camera, no raised hands.",
+      "references": [
+        "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-230181bc-44b2-45ba-8baa-4bbe24057d9e.png"
+      ],
+      "source": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-501b9dab-848b-4a95-a9f1-e882bd1fdfe6.png"
+    }
+  },
+  {
+    "id": 7,
+    "file": "07-conferir-a-atividade.png",
+    "prompt": "Use case: photorealistic-natural. Landscape 1536x1024 editorial photograph in a Brazilian home, oak desk, soft daylight, cream wall and simple bookcase. Fictional father age40 with medium tan skin, short dark hair and light beard, wearing a soft gray polo, sitting at LEFT of the desk and looking attentively at open laptop on RIGHT. Laptop screen fully visible at gentle perspective, completely BLANK uniform gray with no text or icons or reflection. A SMALL blank cream index card beside the laptop in lower foreground, flat on desk, with a blue pen nearby; card fully visible, no fingers covering it, will receive editorial writing. No child, no text, no watermark, no logos. Calm candid expression, lifelike hands, composition about taking time to understand an activity before choosing it, not a sales image.",
+    "references": [],
+    "tool": "image_gen.imagegen",
+    "source": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-4030499a-09b3-4c03-9c8e-535fae6303cc.png"
+  },
+  {
+    "id": 8,
+    "file": "08-pausa-com-autonomia.png",
+    "prompt": "Use case: photorealistic-natural. Landscape editorial photograph 1536x1024 for Brazilian parent education carousel. Fictional boy age 12, medium tan skin, straight short dark brown hair, wearing a cobalt blue cotton t-shirt. Bright cozy home study, white walls and warm oak desk, a bookshelf and small plants, natural soft afternoon daylight, premium realistic candid photography. Correct anatomy and realistic computer desk. No logos, words, generated UI, watermark or speech bubbles. Every visible monitor screen completely uniform light gray BLANK, no reflection; authentic platform screens will be inserted separately. Reference image is for same fictional boy's identity, hair, blue shirt and home decor only. Create an entirely NEW photograph with different camera and action; do not crop or repeat reference. WIDE view from doorway of same home study. Boy in blue shirt seated at desk on LEFT/MIDDLE, actively working with mouse, profile face visible, desktop monitor on RIGHT with entire blank light gray screen visible and usable for authentic insert. Farther in background a fictional adult father with medium tan skin, short dark hair and gray polo walks past the open doorway, seen mostly from back, softly out of focus, not looking at camera and not interrupting. The boy and monitor are main focus, father small in background. Wide calm domestic scene, a different camera position from reference, balanced light. All important screen corners visible, no limbs blocking screen.",
+    "references": [
+      "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-230181bc-44b2-45ba-8baa-4bbe24057d9e.png"
+    ],
+    "tool": "image_gen.imagegen",
+    "source": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-6006d168-fdb5-4d97-b8a8-4a519b85dde3.png"
+  }
+]

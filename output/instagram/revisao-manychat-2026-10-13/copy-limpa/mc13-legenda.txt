@@ -1,9 +1,0 @@
-Um mapa bonito ganha outro desafio quando alguém precisa usá-lo.
-
-Ao mostrar uma criação, vale deixar a outra pessoa explorar antes de explicar tudo. Ela encontrou o caminho? Percebeu o aviso? Entendeu o objetivo?
-
-As respostas dão ideias para melhorar o projeto. Quem cria pode mudar uma passagem ou a posição de uma pista e pedir outro teste.
-
-O caso das escolas vem do programa Schools Reinventing Cities, documentado pelo Minecraft Education em 2023. Nosso exemplo é o Meu Mundo, criado no Estúdio do Sistema Zero. Cada um mostra uma forma de transformar uma ideia em algo que outras pessoas podem explorar.
-
-Comente APRENDER e conheça no direct um primeiro projeto para ele aprender a criar jogos.

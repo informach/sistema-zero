@@ -1,0 +1,417 @@
+{
+  "mode": "Captura do Estúdio local em perfil isolado, sem conta de aluno.",
+  "errors": [],
+  "blocks": [
+    {
+      "id": "a.gB`r4x*j_aKC|^e#v|",
+      "type": "sz_frame_appearance",
+      "text": "🎨 Aparência: CSS Pintar o fundo da página de #0b1020",
+      "fields": []
+    },
+    {
+      "id": "h2Xa,o,[PO(p)3=f`y_i",
+      "type": "sz_frame_start",
+      "text": "⚙️ Ao iniciar Preparar o jogo em tela cheia, tela 320 × 200 , fundo #11172a",
+      "fields": []
+    },
+    {
+      "id": "DK1hOMV)WUfk:,-!XGXf",
+      "type": "sz_frame_loops",
+      "text": "🔁 Enquanto estiver rodando A cada quadro do jogo fazer Limpar a tela",
+      "fields": []
+    },
+    {
+      "id": "T,u)Nmv3Y%khSsmWeMia",
+      "type": "sz_css_body_background",
+      "text": "Pintar o fundo da página de #0b1020",
+      "fields": [
+        {
+          "name": "COLOR",
+          "value": "#0b1020"
+        }
+      ]
+    },
+    {
+      "id": "exemplo-mini-plataforma",
+      "type": "sz_g2d_setup_stage",
+      "text": "Preparar o jogo em tela cheia, tela 320 × 200 , fundo #11172a",
+      "fields": [
+        {
+          "name": "BG",
+          "value": "#11172a"
+        }
+      ]
+    },
+    {
+      "id": "(^[_)rZU^$5FMEIQBx28",
+      "type": "sz_g2d_update_each_frame",
+      "text": "A cada quadro do jogo fazer Limpar a tela",
+      "fields": []
+    },
+    {
+      "id": "EzJKvjURBIOdjL8)76)O",
+      "type": "sz_css_justify",
+      "text": "eixo principal de body arrumar no centro",
+      "fields": [
+        {
+          "name": "SELECTOR",
+          "value": "body"
+        },
+        {
+          "name": "VALUE",
+          "value": "center"
+        }
+      ]
+    },
+    {
+      "id": "jjLC$8O`J2qFcsiQPDrO",
+      "type": "sz_val_number",
+      "text": "320",
+      "fields": [
+        {
+          "name": "NUM",
+          "value": 320
+        }
+      ]
+    },
+    {
+      "id": "T?VCvmkH6.V8Lw5#w1[~",
+      "type": "sz_val_number",
+      "text": "200",
+      "fields": [
+        {
+          "name": "NUM",
+          "value": 200
+        }
+      ]
+    },
+    {
+      "id": "exemplo-mini-plataforma-descricao",
+      "type": "sz_g2d_set_stage_description",
+      "text": "Descrever o jogo para leitor de tela Herói que anda, pula com gravidade e fica preso na tela (setas).",
+      "fields": [
+        {
+          "name": "DESCRIPTION",
+          "value": "Herói que anda, pula com gravidade e fica preso na tela (setas)."
+        }
+      ]
+    },
+    {
+      "id": "b4[ngW;((f_TC?1/yQSm",
+      "type": "sz_g2d_clear",
+      "text": "Limpar a tela",
+      "fields": []
+    },
+    {
+      "id": "!]mA3/|[bnYGi|Bf`3}@",
+      "type": "sz_css_align",
+      "text": "eixo transversal de body arrumar como centro",
+      "fields": [
+        {
+          "name": "SELECTOR",
+          "value": "body"
+        },
+        {
+          "name": "VALUE",
+          "value": "center"
+        }
+      ]
+    },
+    {
+      "id": "S%74!vEC^2C_?d=zB`TT",
+      "type": "sz_g2d_create_sprite",
+      "text": "Criar sprite heroi em x 20 y 120 largura 36 altura 36 cor #4ade80",
+      "fields": [
+        {
+          "name": "NAME",
+          "value": "heroi"
+        },
+        {
+          "name": "COLOR",
+          "value": "#4ade80"
+        }
+      ]
+    },
+    {
+      "id": "v!g|K8c%g43h?6%y6t*R",
+      "type": "sz_g2d_apply_gravity",
+      "text": "Aplicar a gravidade do mundo ao sprite heroi",
+      "fields": [
+        {
+          "name": "SPRITE",
+          "value": "heroi"
+        }
+      ]
+    },
+    {
+      "id": ".b/hj^k2eD9TO?@0j.Hr",
+      "type": "sz_css_rule",
+      "text": "Regra de estilo para body estilos display : flex",
+      "fields": [
+        {
+          "name": "SELECTOR",
+          "value": "body"
+        }
+      ]
+    },
+    {
+      "id": "0Cl4Oa^/XybR.1`h1=Qa",
+      "type": "sz_val_number",
+      "text": "20",
+      "fields": [
+        {
+          "name": "NUM",
+          "value": 20
+        }
+      ]
+    },
+    {
+      "id": "S|;KEWa~1CImcV0Ku)3)",
+      "type": "sz_val_number",
+      "text": "120",
+      "fields": [
+        {
+          "name": "NUM",
+          "value": 120
+        }
+      ]
+    },
+    {
+      "id": "3b!Z=B;zN-aK9.G{I#c%",
+      "type": "sz_val_number",
+      "text": "36",
+      "fields": [
+        {
+          "name": "NUM",
+          "value": 36
+        }
+      ]
+    },
+    {
+      "id": "h6o)SEBt/40`3v0E(%Uj",
+      "type": "sz_val_number",
+      "text": "36",
+      "fields": [
+        {
+          "name": "NUM",
+          "value": 36
+        }
+      ]
+    },
+    {
+      "id": "F|EQUp!iHntIJ0hNDg$U",
+      "type": "sz_g2d_platformer",
+      "text": "Mover o sprite heroi estilo plataforma na tela (a borda é chão), velocidade 4 pulo 11",
+      "fields": [
+        {
+          "name": "SPRITE",
+          "value": "heroi"
+        }
+      ]
+    },
+    {
+      "id": "Ojs_$zi[VIssEGUS]Uc8",
+      "type": "sz_css_decl",
+      "text": "display : flex",
+      "fields": [
+        {
+          "name": "PROP",
+          "value": "display"
+        },
+        {
+          "name": "VALUE",
+          "value": "flex"
+        }
+      ]
+    },
+    {
+      "id": "d3:2!cN2thPyOW*Z,./m",
+      "type": "sz_css_border",
+      "text": "Contorno de canvas com 2 px na cor #4ade80",
+      "fields": [
+        {
+          "name": "SELECTOR",
+          "value": "canvas"
+        },
+        {
+          "name": "WIDTH",
+          "value": 2
+        },
+        {
+          "name": "COLOR",
+          "value": "#4ade80"
+        }
+      ]
+    },
+    {
+      "id": "#?)^!p2xDUtx,%j~G*AH",
+      "type": "sz_val_number",
+      "text": "4",
+      "fields": [
+        {
+          "name": "NUM",
+          "value": 4
+        }
+      ]
+    },
+    {
+      "id": "T1:iGd73eIM@%LV:)ojq",
+      "type": "sz_val_number",
+      "text": "11",
+      "fields": [
+        {
+          "name": "NUM",
+          "value": 11
+        }
+      ]
+    },
+    {
+      "id": "Kq!(8pp]OGVOiO%K}1a!",
+      "type": "sz_g2d_clamp_to_screen",
+      "text": "Manter o sprite heroi dentro da tela",
+      "fields": [
+        {
+          "name": "SPRITE",
+          "value": "heroi"
+        }
+      ]
+    },
+    {
+      "id": "0/n_1],=8w-,|~6qx$w7",
+      "type": "sz_css_decl",
+      "text": "min-height : 100vh",
+      "fields": [
+        {
+          "name": "PROP",
+          "value": "min-height"
+        },
+        {
+          "name": "VALUE",
+          "value": "100vh"
+        }
+      ]
+    },
+    {
+      "id": "NCDefJ(T3Fm=PH%~]0[K",
+      "type": "sz_css_rule",
+      "text": "Regra de estilo para canvas estilos background : #11172a",
+      "fields": [
+        {
+          "name": "SELECTOR",
+          "value": "canvas"
+        }
+      ]
+    },
+    {
+      "id": "Q6!M+|b0x6M%wv3;|lJk",
+      "type": "sz_g2d_draw_sprite",
+      "text": "Desenhar o sprite heroi",
+      "fields": [
+        {
+          "name": "SPRITE",
+          "value": "heroi"
+        }
+      ]
+    },
+    {
+      "id": "[G(o.^Q$sZVg4|!aF5EG",
+      "type": "sz_css_decl",
+      "text": "margin : 0",
+      "fields": [
+        {
+          "name": "PROP",
+          "value": "margin"
+        },
+        {
+          "name": "VALUE",
+          "value": "0"
+        }
+      ]
+    },
+    {
+      "id": "~b--ZOhMc?-q6LeDy_:8",
+      "type": "sz_css_decl",
+      "text": "background : #11172a",
+      "fields": [
+        {
+          "name": "PROP",
+          "value": "background"
+        },
+        {
+          "name": "VALUE",
+          "value": "#11172a"
+        }
+      ]
+    },
+    {
+      "id": "UPt7y/E-UOi-cq2(unnG",
+      "type": "sz_g2d_draw_label",
+      "text": "Escrever texto Use as setas ← → para andar · ↑ para pular em x 160 y 190 cor #e2e8f0 tamanho 14 alinhado no centro",
+      "fields": [
+        {
+          "name": "COLOR",
+          "value": "#e2e8f0"
+        },
+        {
+          "name": "ALIGN",
+          "value": "center"
+        }
+      ]
+    },
+    {
+      "id": ",m@+5x(6K@y41_hO.c%F",
+      "type": "sz_val_text",
+      "text": "texto Use as setas ← → para andar · ↑ para pular",
+      "fields": [
+        {
+          "name": "TEXT",
+          "value": "Use as setas ← → para andar · ↑ para pular"
+        }
+      ]
+    },
+    {
+      "id": "{UreQS0#bk?a3-DqB5ps",
+      "type": "sz_val_number",
+      "text": "160",
+      "fields": [
+        {
+          "name": "NUM",
+          "value": 160
+        }
+      ]
+    },
+    {
+      "id": "w0aq@?o.l^LW%5]ARQ7t",
+      "type": "sz_val_number",
+      "text": "190",
+      "fields": [
+        {
+          "name": "NUM",
+          "value": 190
+        }
+      ]
+    },
+    {
+      "id": "QH{K2sX~jt2#g0A8G;dr",
+      "type": "sz_val_number",
+      "text": "14",
+      "fields": [
+        {
+          "name": "NUM",
+          "value": 14
+        }
+      ]
+    }
+  ],
+  "color": "#a78bfa",
+  "game": {
+    "purplePixels": 28394,
+    "left": 301,
+    "top": 278,
+    "right": 470,
+    "bottom": 446,
+    "width": 1506,
+    "height": 941
+  },
+  "deviceScaleFactor": 3
+}

@@ -1,0 +1,14 @@
+{
+  "rule": {
+    "type": "sz_js_if_else",
+    "text": "Se já aconteceu missao-pronta ? e não tenho o item chave ? então Ganhar o item chave com imagem  adicionar senão se senão se adicionar senão senão"
+  },
+  "give": {
+    "type": "sz_gk_rpg_give_item",
+    "text": "Ganhar o item chave com imagem"
+  },
+  "door": {
+    "type": "sz_gk_rpg_create_door",
+    "text": "Criar a porta na célula 9 , 6 para o mapa caverna"
+  }
+}

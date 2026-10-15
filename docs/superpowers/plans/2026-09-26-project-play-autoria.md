@@ -58,7 +58,7 @@ const novo: ProjectPlayActivity = {
 
 ### Task 3: Revisão e documentação
 
-**Files:** `docs/aulas-interativas/ESPEC-MANIFESTO.md`, `BRIEFING.md`, este plano e relatório de revisão.
+**Files:** `docs/aulas-interativas-tecnico/ESPEC-MANIFESTO.md`, `BRIEFING.md`, este plano e relatório de revisão.
 
 - [x] Documentar os dois critérios e a paridade manual/manifesto, sem instruir dependência exclusiva do manifesto.
 - [x] Conferir no navegador criação manual, arquivo inválido sem perda, preview, entrada real e reinício; conferir também modo estreito.

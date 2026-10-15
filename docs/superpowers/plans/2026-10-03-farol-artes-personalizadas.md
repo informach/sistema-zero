@@ -20,7 +20,7 @@
 ## Execução
 
 - [x] Versionar os sete SVGs em `packages/studio/src/arte/assets/farol/`; gerar `farol-assets.generated.ts` e o fundo Canvas a partir do cenário limpo.
-- [x] Compartilhar palco, posições e hitboxes em `farol-assets.ts`; atualizar `docs/aulas-interativas/qa/desafio-farol-projeto.ts`, o gerador dos manifestos e os testes de jogo real.
+- [x] Compartilhar palco, posições e hitboxes em `farol-assets.ts`; atualizar `docs/aulas-interativas-tecnico/qa/desafio-farol-projeto.ts`, o gerador dos manifestos e os testes de jogo real.
 - [x] Atualizar `scene-lighthouse-key.tsx`, figuras genéricas e o gerador do caderno com a mesma composição.
 - [x] Regenerar manifestos, PDF e imagens do funil, mantendo proporções; conferir o jogo no navegador e o PDF renderizado.
 - [x] Executar testes relevantes, tipos, verificações e builds dos consumidores; registrar evidências e instruções de regeneração.
@@ -35,4 +35,4 @@
 - Oferta conferida em 1440 e 390 px com a fixture local do catálogo: imagens carregadas e sem overflow. A fixture não foi usada no servidor habitual.
 - PDF: 15 páginas renderizadas e revisadas; fontes, cores dos blocos, imagens e limites passaram no verificador.
 - Os sete SVGs foram comparados byte a byte com a pasta fornecida. Comparação Canvas × SVG original em 480 × 360 e 560 × 300: diferença média inferior a 0,02 por canal (escala 0–255).
-- [Fontes, comandos e limites da atualização](../../aulas-interativas/recursos/desafio-farol/README.md). [Jogo concluído](../../aulas-interativas/recursos/desafio-farol/evidencias/jogo-personalizado.png). Nenhum manifesto foi importado no catálogo, PDF remoto substituído ou projeto de aluno alterado.
+- [Fontes, comandos e limites da atualização](../../aulas-interativas-tecnico/recursos/desafio-farol/README.md). [Jogo concluído](../../aulas-interativas-tecnico/recursos/desafio-farol/evidencias/jogo-personalizado.png). Nenhum manifesto foi importado no catálogo, PDF remoto substituído ou projeto de aluno alterado.

@@ -24,6 +24,7 @@ import { useStudioEditDrawing } from '../../studio/edit-drawing'
 import { useT } from '../../studio/i18n'
 import { useStudioMoldaLibrary } from '../../studio/molda-library'
 import { useStudioPintaLibrary } from '../../studio/pinta-library'
+import { useStudioTeamLibrary } from '../../studio/team-library'
 import { uniqueAssetName } from './assetNames'
 import {
   type CreationOrigin,
@@ -40,6 +41,7 @@ import {
 } from './imageProcessing'
 import { MoldaImportDialog } from './MoldaImportDialog'
 import { PintaImportDialog } from './PintaImportDialog'
+import { TeamImportDialog } from './TeamImportDialog'
 import { TileConfigDialog, type TileConfigDialogProps } from './TileConfigDialog'
 import { type AssetsTabItem, AssetsTabStrip } from './tabs/common'
 import { ImagesTab } from './tabs/ImagesTab'
@@ -181,6 +183,10 @@ export function AssetsPanel({
   // re-listagem abaixo serve aos dois.
   const moldaLibrary = useStudioMoldaLibrary()
   const [moldaOpen, setMoldaOpen] = useState(false)
+  // "Trazer da equipe" (Pensa em equipe): as artes que as colegas entregaram nas missões
+  // do plano. Sem o adapter (jogo fora do Pensa, plano solo, aula, admin) nem o botão existe.
+  const teamLibrary = useStudioTeamLibrary()
+  const [teamOpen, setTeamOpen] = useState(false)
   // "Editar a criação no Molda" (o gêmeo do `onEditDrawing`).
   const onEditCreation = useStudioEditCreation()
   const [personalTick, setPersonalTick] = useState(0)
@@ -697,6 +703,7 @@ export function AssetsPanel({
                 busy={busy}
                 onUpload={() => fileRef.current?.click()}
                 onOpenPinta={pintaLibrary ? () => setPintaOpen(true) : null}
+                onOpenTeam={teamLibrary ? () => setTeamOpen(true) : null}
                 onConfigureTiles={(asset, mode) => setTileConfig({ asset, mode })}
                 onRename={handleRename}
                 onDelete={deleteFromProject}
@@ -732,6 +739,7 @@ export function AssetsPanel({
                 has3DExtension={has3DExtension}
                 onUpload={() => modelRef.current?.click()}
                 onOpenMolda={moldaLibrary ? () => setMoldaOpen(true) : null}
+                onOpenTeam={teamLibrary ? () => setTeamOpen(true) : null}
                 onRename={handleRename}
                 onDelete={deleteFromProject}
                 editTargetOf={editTargetOf}
@@ -757,6 +765,12 @@ export function AssetsPanel({
       {moldaOpen && moldaLibrary ? (
         <MoldaImportDialog
           onClose={() => setMoldaOpen(false)}
+          onImported={() => setPersonalTick((tick) => tick + 1)}
+        />
+      ) : null}
+      {teamOpen && teamLibrary ? (
+        <TeamImportDialog
+          onClose={() => setTeamOpen(false)}
           onImported={() => setPersonalTick((tick) => tick + 1)}
         />
       ) : null}

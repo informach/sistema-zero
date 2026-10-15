@@ -1,0 +1,16 @@
+[
+  {
+    "file": "01-placar-e-curtidas.png",
+    "prompt": "Use case: illustration-story. Asset: landscape 3:2 editorial illustration for Instagram, premium playful clay 3D mixed with clean editorial geometry. A split composition: LEFT a chunky dark navy game scoreboard in a friendly faceted cave environment with small cyan crystal and gray stone at base. The scoreboard has ONE large EMPTY pale cream rectangular display, completely blank for a number added later, and one small cyan diamond icon above it. RIGHT an upright generic unbranded smartphone, very front facing, soft blue case, clean cream screen, one large coral heart icon above a LARGE EMPTY count area. Both objects big and entirely visible, balanced at same scale. Background split pale blue and warm yellow, soft studio shadows, tactile matte materials, blue white yellow palette with cyan and coral accents. NO text, NO digits, NO labels, NO logos, NO real social-network interface, NO extra symbols. This is visibly an editorial illustration, not a screenshot.",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-902f203f-4a9f-4d56-8591-42193688d1a7.png",
+    "references": [],
+    "tool": "image_gen.imagegen (nativa)"
+  },
+  {
+    "file": "06-conversa-no-sofa.png",
+    "prompt": "Use case: photorealistic-natural. Asset: NEW landscape 3:2 editorial photograph of fictional Brazilian father and son talking about numbers on screens. Boy age12, light brown skin, short wavy black hair, mustard yellow T-shirt. Father around40, medium brown skin, short dark hair, short beard, plain navy blue shirt. Cozy ordinary living room, light beige sofa left side. Camera from front-left at eye level so both faces in profile/three-quarter are visible while they look toward a large television on RIGHT. Father points one finger toward television, child holds upright smartphone in right hand angled toward father and viewer, with LARGE completely blank light gray screen, unobstructed for a generic heart counter added later. TV occupies upper right third of image, screen rectangular and nearly frontal, completely blank dark slate for insertion of real game screenshot. Natural casual conversation, thoughtful engaged expressions, no alarm or shame, no games controller. Hands anatomically correct. Screen edges clear, no fingers across phone screen. Warm daylight, realistic home and skin. No text, no logos, no UI, no letters, no digits, no watermark.",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-0fc012ad-9983-4936-9461-a46eb563ebef.png",
+    "references": [],
+    "tool": "image_gen.imagegen (nativa)"
+  }
+]

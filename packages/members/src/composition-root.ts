@@ -99,6 +99,7 @@ import {
   SharePensaProjectService,
   UnsharePensaProjectService,
 } from './application/pensa/share-project.service'
+import { PensaTeamService } from './application/pensa/team.service'
 import { UpdatePensaProjectService } from './application/pensa/update-project.service'
 import { UpdatePensaTaskService } from './application/pensa/update-task.service'
 import { UpdatePensaTaskProgressService } from './application/pensa/update-task-progress.service'
@@ -772,6 +773,27 @@ export async function createApplication(env: Env): Promise<Application> {
   const commitCreationUpload = new CommitCreationUploadService(creationsRepo, clock)
   const getCreationDownload = new GetCreationDownloadService(creationsRepo)
   const deleteCreation = new DeleteCreationService(creationsRepo, clock)
+  // Pensa v2: a jornada e a EQUIPE (14/10/2026). O `PUT …/roles` devolve a jornada relida.
+  const pensaJourneyService = new PensaJourneyService(
+    new DrizzlePensaJourneyRepository(db, {
+      dailyLimit: env.AI_LIMIT_DAILY,
+      monthlyLimit: env.AI_LIMIT_MONTHLY,
+    }),
+    clock,
+    authGateway,
+  )
+  const pensaTeam = new PensaTeamService({
+    repo: pensaRepo,
+    journey: pensaJourneyService,
+    authGateway,
+    avatars: getAvatarsByProfiles,
+    accessCheck,
+    gamification: getGamification,
+    studioUnlocks: getStudioUnlocks,
+    creations: creationsRepo,
+    creationDownload: getCreationDownload,
+    clock,
+  })
   const compactCreationTombstones = new CompactCreationTombstonesService(creationsRepo, clock)
 
   // Motor de acesso (webhooks)
@@ -951,17 +973,12 @@ export async function createApplication(env: Env): Promise<Application> {
       internalToken: env.INTERNAL_API_TOKEN,
     },
     pensaJourney: {
-      service: new PensaJourneyService(
-        new DrizzlePensaJourneyRepository(db, {
-          dailyLimit: env.AI_LIMIT_DAILY,
-          monthlyLimit: env.AI_LIMIT_MONTHLY,
-        }),
-        clock,
-      ),
+      service: pensaJourneyService,
       accessCheck,
       getGamification,
       internalToken: env.INTERNAL_API_TOKEN,
     },
+    pensaTeam: { team: pensaTeam, internalToken: env.INTERNAL_API_TOKEN },
     creations: {
       list: listCreations,
       reserveUpload: reserveCreationUpload,

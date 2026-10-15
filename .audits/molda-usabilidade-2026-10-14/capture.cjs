@@ -1,0 +1,51 @@
+const { chromium } = require('../../packages/molda/node_modules/@playwright/test');
+const fs = require('node:fs');
+const path = require('node:path');
+
+(async () => {
+  const browser = await chromium.launch({ headless: true });
+  try {
+    const page = await browser.newPage({ viewport: { width: 1366, height: 768 } });
+    const errors = [];
+    page.on('pageerror', error => errors.push(error.message));
+    await page.goto('http://127.0.0.1:5216/?oficina=app&nivel=explorer');
+    await page.getByRole('button', { name: 'Criar novo' }).waitFor();
+    await page.screenshot({ path: path.join(__dirname, '01-galeria.png') });
+    await page.getByRole('button', { name: 'Criar novo' }).click();
+    await page.getByRole('button', { name: 'Criar modelo' }).click();
+    await page.getByRole('button', { name: 'Continuar' }).click();
+    await page.getByLabel('Nome', { exact: true }).fill('Estudo de usabilidade');
+    await page.getByRole('button', { name: 'Criar', exact: true }).click();
+    await page.getByRole('button', { name: 'Caixa', exact: true }).waitFor();
+    await page.getByText('"estudo-de-usabilidade" criado!', { exact: true }).waitFor({ state: 'hidden' });
+    await page.screenshot({ path: path.join(__dirname, '02-modelar-vazio.png') });
+    await page.getByRole('button', { name: /^Escolher caixa/ }).click();
+    await page.getByRole('button', { name: 'Girar', exact: true }).first().click();
+    await page.screenshot({ path: path.join(__dirname, '02b-girar-e-painel-mover.png') });
+    fs.writeFileSync(path.join(__dirname, 'girar-painel.txt'), await page.locator('body').innerText());
+    await page.getByRole('button', { name: 'Caixa', exact: true }).click();
+    await page.getByRole('button', { name: 'Mover', exact: true }).first().waitFor();
+    await page.screenshot({ path: path.join(__dirname, '03-modelar-peca.png') });
+    fs.writeFileSync(path.join(__dirname, 'modelar.txt'), await page.locator('body').innerText());
+    await page.getByRole('button', { name: 'Caixa', exact: true }).click();
+    await page.screenshot({ path: path.join(__dirname, '04-duas-pecas.png') });
+    fs.writeFileSync(path.join(__dirname, 'duas-pecas.txt'), await page.locator('body').innerText());
+    await page.getByRole('button', { name: 'Pintar', exact: true }).click();
+    await page.screenshot({ path: path.join(__dirname, '05-pintar.png') });
+    fs.writeFileSync(path.join(__dirname, 'pintar.txt'), await page.locator('body').innerText());
+    await page.getByRole('button', { name: 'Animar', exact: true }).click();
+    await page.getByRole('button', { name: 'Criar movimento', exact: true }).waitFor();
+    await page.screenshot({ path: path.join(__dirname, '06-animar-vazio.png') });
+    await page.getByRole('button', { name: 'Criar movimento', exact: true }).click();
+    await page.getByRole('slider').first().waitFor();
+    await page.getByText('Gravar cria uma chave deste tipo no momento escolhido.', { exact: true }).waitFor();
+    await page.screenshot({ path: path.join(__dirname, '07-animar-movimento.png') });
+    fs.writeFileSync(path.join(__dirname, 'animar.txt'), await page.locator('body').innerText());
+    console.log('Canvas em Animar, 1366x768:', await page.locator('canvas').first().boundingBox());
+    await page.setViewportSize({ width: 1024, height: 600 });
+    await page.screenshot({ path: path.join(__dirname, '08-animar-1024.png') });
+    fs.writeFileSync(path.join(__dirname, 'runtime-errors.json'), JSON.stringify(errors, null, 2));
+    console.log('Canvas em Animar, 1024x600:', await page.locator('canvas').first().boundingBox());
+    console.log('Capturas concluídas em ' + __dirname + '; erros de página: ' + errors.length);
+  } finally { await browser.close(); }
+})().catch(error => { console.error(error); process.exitCode = 1; });

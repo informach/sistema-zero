@@ -2,7 +2,7 @@ import { expect, test } from 'bun:test'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
 import { type InteractiveBlock, isInteractiveBlock } from '@sistemazero/core/learning'
 import { SCENE_MODELS, SCENE_QUESTIONS } from '@sistemazero/core/learning/scene'
-import { montarProjetoCadeTodoMundoCompleto } from '../../../docs/aulas-interativas/qa/cade-todo-mundo-projeto'
+import { montarProjetoCadeTodoMundoCompleto } from '../../../docs/aulas-interativas-tecnico/qa/cade-todo-mundo-projeto'
 
 if (typeof document === 'undefined') GlobalRegistrator.register()
 ;(globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true

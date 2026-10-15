@@ -1,6 +1,6 @@
 # Arquivo histórico das aulas interativas
 
-Esta pasta guarda a versão anterior para consulta histórica e para ferramentas de captura que ainda usam o material v6. As 27 aulas atuais, com proposta, manifesto e roteiro, estão em [docs/aulas-interativas](../aulas-interativas/README.md). O CI e os testes de manifestos leem essa cópia atual.
+Esta pasta guarda a versão anterior para consulta histórica e para ferramentas de captura que ainda usam o material v6. As 27 aulas atuais, com proposta, manifesto e roteiro, estão em [docs/aulas-interativas](../aulas-interativas-tecnico/historico-organizacao.md). O CI e os testes de manifestos leem essa cópia atual.
 
 Os pacotes históricos estão em [Desafio do Primeiro Jogo — introdução e 5 dias](desafio-primeiro-jogo-v6/README.md), [Corre Dino — 13 aulas](corre-dino-v6/README.md) e [O jogo do meu jeito — 8 aulas](o-jogo-do-meu-jeito-v6/README.md). Não importe um pacote v6 supondo que ele seja o redesenho atual.
 
@@ -10,7 +10,7 @@ O texto abaixo e o catálogo desta pasta registram o **pacote inicial**. Suas co
 
 ⚠️ **`catalogo.json` desta pasta é o índice do pacote HISTÓRICO, não do que está em produção.** Cada revisão atual tem o catálogo dela dentro da própria pasta (`corre-dino-v6/catalogo.json` e irmãos). Quem for importar uma aula usa os de lá.
 
-Os 27 manifestos v6 contêm 26 experimentações de cena, 3 experiências em HTML e 53 quizzes. Os 27 manifestos atuais do redesenho didático contêm 53 experimentações e são validados em `docs/aulas-interativas/qa/validar-manifestos.ts`.
+Os 27 manifestos v6 contêm 26 experimentações de cena, 3 experiências em HTML e 53 quizzes. Os 27 manifestos atuais do redesenho didático contêm 53 experimentações e são validados em `docs/aulas-interativas-tecnico/qa/validar-manifestos.ts`.
 
 ## Histórico do pacote inicial
 

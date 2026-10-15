@@ -241,3 +241,30 @@ test('sem ?tarefa= não há brief nenhum (quem abre o Pinta pelo menu não tem p
   expect(lastAdapter?.taskSession).toBeUndefined()
   view.unmount()
 })
+
+test('missão de outra pessoa da equipe: a frase do servidor, "Voltar ao plano" e NADA do Pinta', async () => {
+  searchParams = new URLSearchParams('tarefa=tarefa-1')
+  const fetchOriginal = globalThis.fetch
+  globalThis.fetch = (async (_input: RequestInfo | URL) =>
+    new Response(
+      JSON.stringify({
+        ...handoffDeArte,
+        capability: { owned: false, blockedReason: 'Essa missão é de quem cuida das artes.' },
+      }),
+      { status: 200, headers: { 'content-type': 'application/json' } },
+    )) as typeof fetch
+
+  try {
+    const view = render(<PintaClient viewerId="perfil-e" studioAvailable />)
+    expect(await screen.findByText('Essa missão é de quem cuida das artes.')).not.toBeNull()
+    // Sem o app (nada de brief para marcar nem concluir).
+    expect(screen.queryByTestId('pinta-app')).toBeNull()
+    router.push.mockClear()
+    fireEvent.click(screen.getByRole('button', { name: 'Voltar ao plano' }))
+    expect(router.push).toHaveBeenCalledWith('/pensa?plano=plano-1')
+    view.unmount()
+  } finally {
+    globalThis.fetch = fetchOriginal
+    searchParams = new URLSearchParams()
+  }
+})

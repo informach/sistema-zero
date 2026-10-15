@@ -34,6 +34,7 @@ import { liveWorkspaceRoutes } from './routes/live-workspaces.routes'
 import { type MembersRoutesDeps, membersRoutes } from './routes/members.routes'
 import { type PensaRoutesDeps, pensaRoutes } from './routes/pensa.routes'
 import { type PensaJourneyRoutesDeps, pensaJourneyRoutes } from './routes/pensa-journey.routes'
+import { type PensaTeamRoutesDeps, pensaTeamRoutes } from './routes/pensa-team.routes'
 import { type WebhooksRoutesDeps, webhooksRoutes } from './routes/webhooks.routes'
 
 export interface HttpDeps {
@@ -54,6 +55,8 @@ export interface HttpDeps {
   members: MembersRoutesDeps
   pensa: PensaRoutesDeps
   pensaJourney?: PensaJourneyRoutesDeps
+  /** Equipe no Pensa v2 (14/10/2026): equipe, funções, recursos e artes da equipe. */
+  pensaTeam: PensaTeamRoutesDeps
   creations: CreationsRoutesDeps
   webhooks: WebhooksRoutesDeps
   admin: AdminRoutesDeps
@@ -192,6 +195,7 @@ export function createServer(deps: HttpDeps) {
     .use(learningRoutes(deps.learning))
     .use(pensaRoutes(deps.pensa))
     .use(deps.pensaJourney ? pensaJourneyRoutes(deps.pensaJourney) : new Elysia())
+    .use(pensaTeamRoutes(deps.pensaTeam))
     .use(creationsRoutes(deps.creations))
     .use(
       creationCleanupRoutes({

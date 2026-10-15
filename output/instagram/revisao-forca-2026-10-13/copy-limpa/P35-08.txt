@@ -1,9 +1,0 @@
-Um reino inventado precisa de caminhos para quem vai explorá-lo. A floresta leva aonde? Quem conta o que há depois da praia?
-
-No Reino Aberto, feito pela nossa equipe, quatro mapas se conectam: campo, praia, bosque e vila. Um comando liga a borda de um mapa ao próximo. Na praia, a fala do pescador indica que o reino continua para o sul.
-
-Construir essa aventura pede organizar a sequência, escrever pistas e testar se o jogador consegue seguir. A história ganha uma forma que outra pessoa percorre.
-
-Jeffrey, aluno, contou que produzir jogos é uma forma de expressar as próprias ideias. O exemplo mostra uma das possibilidades de criação na ferramenta.
-
-Siga @criecomhelenaejulio para ver histórias virando mapas, personagens e caminhos.

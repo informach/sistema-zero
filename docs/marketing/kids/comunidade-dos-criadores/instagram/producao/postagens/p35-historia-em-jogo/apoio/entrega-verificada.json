@@ -1,0 +1,60 @@
+{
+  "status": "conferido",
+  "slides": [
+    {
+      "file": "01-p35.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 1032265
+    },
+    {
+      "file": "02-p35.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 1495322
+    },
+    {
+      "file": "03-p35.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 1561500
+    },
+    {
+      "file": "04-p35.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 119233
+    },
+    {
+      "file": "05-p35.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 105694
+    },
+    {
+      "file": "06-p35.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 99166
+    },
+    {
+      "file": "07-p35.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 1078155
+    }
+  ],
+  "copyPreserved": true,
+  "fontsLoaded": true,
+  "localLinks": 66,
+  "playthrough": {
+    "originalUnchanged": true,
+    "fourMapsVisited": true,
+    "fieldToBeach": true,
+    "fishermanDialogue": "O mar termina aqui, mas o reino continua pro sul!",
+    "nativeConnectionBlock": true
+  },
+  "artDirection": "Quatro imagens novas: mãe e menino fictícios e duas ilustrações. Capturas nativas do Reino Aberto e do comando que liga campo e praia. Inspeção visual das sete artes e dos recortes finais.",
+  "errors": [],
+  "scope": "Produção local do P35. Sem publicação, agendamento, commit ou deploy."
+}

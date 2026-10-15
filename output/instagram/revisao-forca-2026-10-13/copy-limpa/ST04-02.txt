@@ -1,1 +1,0 @@
-Um desenho registra os lugares. Um jogo permite construir o caminho e as reações que a pessoa encontra ao explorar.

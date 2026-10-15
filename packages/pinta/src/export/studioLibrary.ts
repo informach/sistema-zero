@@ -55,6 +55,15 @@ export interface PintaGallerySummary {
 export type ExportForStudioResult =
   | { ok: true; asset: PintaExportedAsset }
   | { ok: false; reason: 'not-found' | 'raster-failed' | 'asset-too-big' | 'sheet-too-big' }
+  /** Só do `exportLoadedAssetForStudio`: o mapa chegou SEM o conjunto de peças dele. */
+  | { ok: false; reason: 'needs-tileset'; message: string }
+
+/**
+ * A frase do mapa que chegou sozinho (o "Trazer da equipe" baixa UM desenho por vez, e o
+ * mapa só se desenha com as peças que ele aponta). Pronta para a tela da criança.
+ */
+export const NEEDS_TILESET_MESSAGE =
+  'Este mapa de peças precisa do conjunto de peças dele, e o conjunto não veio junto.'
 
 function svgDataUrl(svg: string): string {
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`
@@ -186,6 +195,29 @@ export async function exportAssetForStudio(id: string): Promise<ExportForStudioR
   // buildStudioPayload só resolve OUTRO asset no caso tilemap→tileset; carregar
   // a galeria inteira aqui seria desperdício.
   const linked = asset.kind === 'tilemap' ? await loadAssetById(asset.tilesetId) : null
+  return exportResolvedForStudio(asset, linked)
+}
+
+/**
+ * O MESMO payload do `exportAssetForStudio`, a partir de um desenho JÁ carregado e sem
+ * tocar o IndexedDB (14/10/2026, "Trazer da equipe"): o desenho é da COLEGA, desceu da
+ * conta dela como `.pinta.json` e nunca passou pela galeria deste perfil. O mapa é o único
+ * que precisa de outro desenho (as peças), e um documento só não o traz: sem ele a resposta
+ * é `needs-tileset` com a frase, em vez do `raster-failed` mudo do caminho da galeria.
+ */
+export async function exportLoadedAssetForStudio(
+  asset: PintaAsset,
+): Promise<ExportForStudioResult> {
+  if (asset.kind === 'tilemap') {
+    return { ok: false, reason: 'needs-tileset', message: NEEDS_TILESET_MESSAGE }
+  }
+  return exportResolvedForStudio(asset, null)
+}
+
+async function exportResolvedForStudio(
+  asset: PintaAsset,
+  linked: PintaAsset | null,
+): Promise<ExportForStudioResult> {
   const payload = await buildStudioPayload(
     asset,
     (assetId) => (linked && linked.id === assetId ? linked : null),

@@ -1,8 +1,0 @@
-P07 · A vontade de desistir apareceu junto com a primeira dificuldade.
-Produzido em 13/10/2026. Terceiro carrossel na ordem do calendário, depois de P01 e P34. Segunda publicação da semana 2. A ordem geral inclui outros formatos ainda a produzir.
-Sete PNGs 1080 × 1350, proporção 4:5. Publicar 01-p07.png a 07-p07.png, nessa ordem. previa.png é apenas para conferência.
-Os seis primeiros slides desenvolvem e concluem a ideia. O sétimo acrescenta o convite para seguir o perfil. Sem ManyChat neste post.
-Quatro ilustrações produzidas com o image_gen incorporado; a cena do slide 3 também aparece no slide 7. Pai e filha são fictícios. Não representam alunos, depoentes ou fundadores.
-Demonstração real de Mini plataforma, adaptada pela equipe com duas plataformas e o personagem da biblioteca oficial. Duas capturas usam as mesmas teclas, o mesmo salto e 38 passos de física. Só a plataforma de destino passa de x=240 para x=180. No primeiro caso o personagem cai; no segundo pousa. Não é uma entrega de aluno.
-Rastros tracejados são anotações gráficas acrescentadas à composição a partir das posições medidas, não um recurso da interface do jogo.
-Arquivos de projeto, medições, fontes, prompts, legenda, texto alternativo e montagem editável acompanham a entrega. Não agendado nem publicado.

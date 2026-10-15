@@ -1,0 +1,63 @@
+{
+  "source": "Meu Mundo · Mundo 3D",
+  "errors": [],
+  "captures": [
+    {
+      "name": "04-floresta-manha",
+      "state": {
+        "x": 32,
+        "z": -44,
+        "speed": 0,
+        "text": "Meu Mundo 3D\n\nWASD ou setas dirigem · espaço pula\n\nComeçar o passeio\nVelocidade: 0"
+      }
+    },
+    {
+      "name": "05-antes-e",
+      "state": {
+        "x": 35,
+        "z": -38,
+        "speed": 0,
+        "text": "Meu Mundo 3D\n\nWASD ou setas dirigem · espaço pula\n\nComeçar o passeio\nVelocidade: 0\nE"
+      }
+    },
+    {
+      "name": "05-tesouro-encontrado",
+      "state": {
+        "x": 35,
+        "z": -38,
+        "speed": 0,
+        "text": "Meu Mundo 3D\n\nWASD ou setas dirigem · espaço pula\n\nComeçar o passeio\nVelocidade: 0\nE\nVocê achou o tesouro escondido!"
+      }
+    },
+    {
+      "name": "06-passando-a-noite",
+      "state": {
+        "x": 29.043008,
+        "z": -33.92550795886808,
+        "speed": 1.536,
+        "text": "Meu Mundo 3D\n\nWASD ou setas dirigem · espaço pula\n\nComeçar o passeio\nVelocidade: 2"
+      }
+    },
+    {
+      "name": "06-descoberta-noite",
+      "state": {
+        "x": 35,
+        "z": -38,
+        "speed": 0,
+        "text": "Meu Mundo 3D\n\nWASD ou setas dirigem · espaço pula\n\nComeçar o passeio\nVelocidade: 0\nE\nVocê achou o tesouro escondido!"
+      }
+    }
+  ],
+  "interaction": {
+    "text": "Meu Mundo 3D\n\nWASD ou setas dirigem · espaço pula\n\nComeçar o passeio\nVelocidade: 0\nE\nVocê achou o tesouro escondido!",
+    "effects": [
+      {
+        "effect": "cameraShake",
+        "args": [
+          0.6,
+          0.4
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,424 @@
+{
+  "id": "P13",
+  "checkedAt": "2026-10-14T18:20:21.253Z",
+  "errors": [],
+  "files": [
+    {
+      "file": "01-p13.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 920488,
+      "sha256": "db2bca908068fdf1eb360e0ed9d2b3fc889faa531e69892435c06434d512c807"
+    },
+    {
+      "file": "02-p13.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 968293,
+      "sha256": "eb7e4a474c6cb7ab4d70e90d172d61aa677af9d427493d4b1c36a19f86416acd"
+    },
+    {
+      "file": "03-p13.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 903652,
+      "sha256": "991b15ed7a3e5e14e2b8f2268e9fae9c725107c2456af81ae151aaf08d09da7b"
+    },
+    {
+      "file": "04-p13.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 901074,
+      "sha256": "186c0c2282c6764d1fd4549930c8a94e5c2a37674fe982e5c79aae436a8a4da5"
+    },
+    {
+      "file": "05-p13.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 969048,
+      "sha256": "8fd61993948a9299da3553623a3bff008653d2b2942bae82dc858d76ace327df"
+    },
+    {
+      "file": "06-p13.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 119416,
+      "sha256": "4b72574f9468afb5eb07262dd1a9bd85d176809c4342550136fdaf837d86b343"
+    },
+    {
+      "file": "07-p13.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 145498,
+      "sha256": "a94dbe5c44cdfd150a83b5cff5745a331ba2230eec38c7160b24788b1cdbfc0d"
+    },
+    {
+      "file": "08-p13.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 940881,
+      "sha256": "7aec53f84c47662cff9df4a9d52d266122cecf2e94ea2a82424321c62f8857ab"
+    }
+  ],
+  "links": [
+    {
+      "from": "index.html",
+      "to": "legenda.txt",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "texto-alternativo.txt",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "montagem.html",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "apoio/fontes-e-producao.md",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "../index.html",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "01-p13.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "01-p13.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "02-p13.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "02-p13.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "03-p13.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "03-p13.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "04-p13.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "04-p13.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "05-p13.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "05-p13.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "06-p13.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "06-p13.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "07-p13.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "07-p13.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "08-p13.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "08-p13.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/01-pedido.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/02-bilhetes.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/03-esbocos.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/04-perguntas.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/05-pesquisa.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/06-defesa-aberta.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/07-alvo.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/07-comando-alvo.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/07-tiro.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/07-comando-tiro.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/07-recompensa.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/07-comando-recompensa.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/08-primeira-tarefa.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../../../../postagens/02-p11-a-p20.md#p13",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "copy.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "verificacao.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../../../../postagens/05-direcao-visual-e-producao.md",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "prompts.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "imagens-geradas.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "capturas-verificadas.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "jogo-original.js",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "blocos-capturados.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "Caveat-OFL.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../index.html",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../montagem.html",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../legenda.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../texto-alternativo.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../publicacao.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "entrega-verificada.json",
+      "exists": true
+    }
+  ],
+  "notes": [
+    "As perguntas dos slides internos 4 e 7 acionaram a regra mecânica Pergunta no gancho. São perguntas orientadoras dentro da sequência; a capa é afirmativa. Não exigem alteração da copy aprovada.",
+    "O exame visual conferiu os oito slides e corrigiu o limite do cartão do slide 4 e os recortes dos comandos do slide 7."
+  ],
+  "copyLinter": {
+    "caption": "sem achados",
+    "cover": "sem achados",
+    "internalSlides": {
+      "4": "perguntas orientadoras; falso positivo de gancho",
+      "7": "checagens do exemplo; falso positivo de gancho"
+    },
+    "otherSlides": "sem achados"
+  },
+  "game": {
+    "shots": 2,
+    "hits": 2,
+    "damagePerHit": 15,
+    "reward": 10,
+    "finalCoins": 60
+  },
+  "carouselCount": 17,
+  "pngCount": 123,
+  "textBounds": [
+    {
+      "text": "“Faça uma apresentação sobre um animal.”",
+      "within": true
+    },
+    {
+      "text": "Esse pedido tem várias tarefas dentro dele.",
+      "within": true
+    },
+    {
+      "text": "Escolher o animal, pesquisar, separar as informações, montar os slides e ensaiar.",
+      "within": true
+    },
+    {
+      "text": "Sua filha pode precisar de ajuda para escolher a primeira dessas ações.",
+      "within": true
+    },
+    {
+      "text": "Ao criar jogos, ela também aprende a separar um projeto em partes.",
+      "within": true
+    },
+    {
+      "text": "Fazer o personagem andar é uma tarefa. Colocar um obstáculo é outra.",
+      "within": true
+    },
+    {
+      "text": "Para organizar a atividade, perguntem:",
+      "within": true
+    },
+    {
+      "text": "O que precisa ficar pronto?",
+      "within": true
+    },
+    {
+      "text": "O que ela já sabe?",
+      "within": true
+    },
+    {
+      "text": "O que precisa descobrir primeiro?",
+      "within": true
+    },
+    {
+      "text": "Escolham uma pergunta específica para pesquisar.",
+      "within": true
+    },
+    {
+      "text": "Se o animal é o tamanduá, podem começar por onde ele vive. Depois, procurar o que come.",
+      "within": true
+    },
+    {
+      "text": "Neste jogo de defender um castelo, a torre precisa encontrar o invasor antes de atacar.",
+      "within": true
+    },
+    {
+      "text": "A recompensa vem depois que o invasor é derrotado.",
+      "within": true
+    },
+    {
+      "text": "Na construção, conferimos uma parte de cada vez: a torre encontrou o invasor? Conseguiu atacar? Somou a recompensa?",
+      "within": true
+    },
+    {
+      "text": "Assim fica claro o que ainda falta fazer.",
+      "within": true
+    },
+    {
+      "text": "Com as partes organizadas, sua filha sabe qual ação vem agora.",
+      "within": true
+    },
+    {
+      "text": "Siga @criecomhelenaejulio para ver como criar jogos permite praticar esse planejamento.",
+      "within": true
+    }
+  ],
+  "cardBounds": true,
+  "svgImages": 3,
+  "mobileNoOverflow": true,
+  "browserImageDecode": true,
+  "sourceSectionHash": "c19b230024e81d9d346f3f0199f22811a1e6004e9409241854db6fb56316f3dc",
+  "copyEqual": true,
+  "fonts": {
+    "normal": true,
+    "bold": true,
+    "hand": true
+  },
+  "nextCarousel": "P50",
+  "published": false
+}

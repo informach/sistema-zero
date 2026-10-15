@@ -7,7 +7,7 @@ import { isLearningManifest } from '@sistemazero/core/learning'
 import {
   type Block,
   courseProjects,
-} from '../../../../../docs/aulas-interativas/qa/corre-dino-projetos-qa'
+} from '../../../../../docs/aulas-interativas-tecnico/qa/corre-dino-projetos-qa'
 import { compileStatements } from '../../generators'
 import { behaviorStatements } from '../../ir'
 import { exampleHarness } from '../../official-extensions/game-2d/__tests__/examplePlaythroughHarness'
@@ -158,7 +158,7 @@ test.each(mistakes)('rejects a plausible learner mistake: $name', ({ lesson, edi
     readFileSync(
       resolve(
         import.meta.dir,
-        `../../../../../docs/aulas-interativas/aulas/corre-dino-${slug}.manifesto.json`,
+        `../../../../../docs/aulas-interativas/corre-dino/corre-dino-${slug}.manifesto.json`,
       ),
       'utf8',
     ),
@@ -177,7 +177,7 @@ test.each(
     readFileSync(
       resolve(
         import.meta.dir,
-        `../../../../../docs/aulas-interativas/aulas/corre-dino-${slug}.manifesto.json`,
+        `../../../../../docs/aulas-interativas/corre-dino/corre-dino-${slug}.manifesto.json`,
       ),
       'utf8',
     ),

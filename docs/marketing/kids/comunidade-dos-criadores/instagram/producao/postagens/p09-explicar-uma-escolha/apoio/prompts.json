@@ -1,0 +1,56 @@
+[
+  {
+    "slide": 1,
+    "file": "01-atividade-pronta-v2.png",
+    "prompt": "Use case: photorealistic-natural, new editorial photograph for Brazilian educational Instagram carousel. Landscape 3:2. At a modest bright home study desk, a FICTIONAL girl aged 11–12, light-medium warm skin, straight chestnut shoulder-length hair with a small yellow hair clip, wearing a cobalt-blue T-shirt, turns her smiling face toward her FICTIONAL mother and invites her to see a finished computer activity. Mother approximately 38, similar warm complexion, dark wavy shoulder-length hair, cream linen blouse, leans in with sincere curious attentive expression, no judgment or amazement. Girl and mother together occupy LEFT half of photo, with the girl seated and mother approaching behind her. The girl gestures with one open palm toward the desktop monitor on the RIGHT, her other hand resting near a mouse. The monitor is large, straight-on to the camera, vertical rectangular display with an approximately 16:9 screen, nearly no perspective skew, occupying right half x52–96%, y24–69%. Screen is plain uniform warm-gray BLANK with no reflections or icons, for compositing an actual platform screenshot later. Black slim bezel, physical stand, keyboard at bottom. Natural warm daylight, lived-in desk with a closed yellow notebook, realistic hands, authentic soft smile, candid moment rather than posed stock-photo. No text, lettering, logos, charts, certificates or watermarks. Screen must be blank. Photographic, not illustration.",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-116400b3-579e-4c8a-9bf3-86ab67dae9be.png",
+    "tool": "image_gen.imagegen — native",
+    "references": [
+      "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-0dbb5148-8dea-40db-9adb-d030f84be6ff.png"
+    ],
+    "correctionPrompt": "Edit this fictional family educational photo with one precise change only: lower the girl's raised left forearm and open hand so that she gestures toward the KEYBOARD beneath the computer monitor, with the entire hand and arm below the bottom edge of the monitor. The gray monitor display must be completely unobstructed by any body part, still blank gray. Keep both people's faces, facial expressions, identity, hair, clothing, other hand on the mouse, furniture, framing, lighting, monitor position and perspective unchanged. Natural correct anatomy. Do not add text or graphics. It remains a friendly ordinary scene of a daughter showing a computer activity to her mother.",
+    "firstGenerationSource": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-0dbb5148-8dea-40db-9adb-d030f84be6ff.png"
+  },
+  {
+    "slide": 2,
+    "file": "02-uma-escolha.png",
+    "prompt": "Use case: photorealistic-natural. Generate a NEW landscape 3:2 close-up editorial photo at the same wooden home desk as the reference. Reference is ONLY for the fictional girl's blue T-shirt and skin tone and the fictional mother's cream blouse. No faces necessary in this frame. Camera looks down diagonally at the girl's small right hand pointing with index finger at a specific blue river she drew on a sheet of paper: a simple colored-pencil game-map drawing of grassy green islands linked by a curved BLUE river, little bridge and one yellow destination flag, clearly handmade. The drawing fills the center of frame. A second hand of the girl rests on the edge of paper. At the top-left edge the mother's forearm in cream sleeve rests on the table, open relaxed hand, listening, not touching mouse, not correcting anything. A mouse and part of a keyboard near top-right establish this as design for a computer game. Girl points to the river as her chosen design detail. This image must explain a choice, not repeat the previous full portrait. Warm natural daylight, realistic hands and fingers, clear colorful pencil marks, no text, letters, captions, logos, scores, UI or watermark. No monitor needed.",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-7e669a51-8bbd-48b1-aa96-f253f1efcb47.png",
+    "tool": "image_gen.imagegen — native",
+    "references": [
+      "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-0dbb5148-8dea-40db-9adb-d030f84be6ff.png"
+    ]
+  },
+  {
+    "slide": 3,
+    "file": "03-comparar-versoes.png",
+    "prompt": "Use case illustration-story. Create a sophisticated warm editorial illustration for parents and children, landscape 3:2, textured gouache and colored pencil, cobalt blue, cream, yellow accents, clean uncluttered. A fictional 11-year-old girl with straight chestnut shoulder-length hair, small yellow hair clip, blue T-shirt, sits in the bottom center seen from three-quarter back, thoughtfully comparing TWO big floating imaginary game panels above her desk. Panels are VISUAL IDEAS not actual software windows, with NO UI chrome, menus, logos, controls, labels or lettering. Both depict the exact same simple little green island, blue river dividing it, a friendly small yellow round game character on left bank and yellow triangular destination flag on right bank. In the LEFT panel the wooden bridge connects both banks and the character can get across toward the flag. In the RIGHT panel the bridge is missing, the river is wider open between banks, and the same character remains at the near bank looking toward the unreachable flag. The ONLY difference between panels is presence or absence of bridge; keep positions and scenery otherwise consistent. A small curved blue double-ended arrow connects the two panels as a visual comparison. The girl looks at both, one open hand near each panel, thoughtful not distressed. The point is testing what one choice changes, no moralizing. Crisp large forms understandable at phone size. No typography, numbers, captions, fake screenshot or watermark.",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-dc595d7f-467e-43fe-999d-bd688e280eb0.png",
+    "tool": "image_gen.imagegen — native",
+    "references": [
+      "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-abe1bbc4-c177-45d3-8fef-43b5b28ce0f7.png"
+    ],
+    "correctionPrompt": "Edit this illustration with one precise anatomical correction. The girl currently has an extra third hand beneath her chin. REMOVE the hand beneath her chin completely and replace that small region naturally with her blue T-shirt neckline and clean neck/face silhouette, preserving her head, cheek and hair. Keep ONLY her TWO existing arms: left arm raised toward the left scene, right arm raised toward the right scene, each with ONE open hand. Exactly two arms and two hands total. Preserve everything else unchanged: the two bridge comparison worlds, yellow character, yellow flag, double arrow, desk, cat, painterly texture, colors, girl identity, overall framing. Do not add text.",
+    "firstGenerationSource": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-abe1bbc4-c177-45d3-8fef-43b5b28ce0f7.png"
+  },
+  {
+    "slide": 6,
+    "file": "06-mostrar-a-diferenca.png",
+    "prompt": "New photorealistic-natural editorial photograph, landscape 3:2. Reference is ONLY the identity of the FICTIONAL mother and girl (same straight chestnut long shoulder-length hair, yellow clip, blue T-shirt; same mother dark wavy hair and cream blouse). New camera angle, not the reference pose: mother and girl seated together on the RIGHT side of frame, both looking toward a computer monitor on LEFT, the girl engaged explaining with a subtle hand gesture below monitor, mother leaning slightly forward and listening attentively, gentle smile. The monitor screen is nearly frontal, plain uniform warm-gray and completely BLANK, with no text/icons/reflections, ready for compositing the actual platform. Screen occupies approximately x4–47%, y20–67%, 16:9 or 4:3 landscape rectangle, thin black bezel and stand. Both persons' hands and all objects stay ENTIRELY OUTSIDE display area; no finger/hand/pencil/plant overlaps the screen or bezel. Girl's right hand on mouse at right-bottom, left hand gesturing below edge of screen. Warm wooden desk, same home, sunlight from window, yellow notebook now closed behind keyboard. Girl appears 11–12, not younger. Distinct composition from cover, without looking at camera. Realistic natural anatomy and two arms per person. No lettering, logo, captions or watermark.",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-f428fc38-4781-460d-8fd9-c14f43f93d80.png",
+    "tool": "image_gen.imagegen — native",
+    "references": [
+      "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-0dbb5148-8dea-40db-9adb-d030f84be6ff.png"
+    ]
+  },
+  {
+    "slide": 7,
+    "file": "07-ouvir-a-explicacao.png",
+    "prompt": "Create a wholesome educational editorial photograph of a fictional mother listening to her school-age daughter explain a computer activity at their home study desk. Landscape 3:2. Match the fictional people in the reference: girl with straight chestnut hair, yellow hair clip and blue T-shirt, mother with dark wavy hair and cream blouse. New composition: view from the computer side, showing both people seated side by side, mother on left and girl on right. Girl turns toward mother and talks with a small natural hand gesture; mother listens with a friendly curious expression. Ordinary fully clothed family setting, a notebook on the desk and natural daylight. The back edge of the monitor is visible in the foreground, and its screen is facing away from the camera. No text, logos or watermark. Keep a candid realistic photographic style and normal anatomy.",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-66fd6cf1-a1f7-43d5-a9a0-917674159235.png",
+    "tool": "image_gen.imagegen — native",
+    "references": [
+      "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-0dbb5148-8dea-40db-9adb-d030f84be6ff.png"
+    ]
+  }
+]

@@ -1,0 +1,310 @@
+{
+  "source": "docs/marketing/kids/comunidade-dos-criadores/instagram/postagens/09-p31-a-p40.md",
+  "sourceSectionHash": "cda600861fbe2d4ee8bad99a4bc41ff96dc3a1ab3eea02cb1103a0343d88aead",
+  "copyEqual": true,
+  "slides": [
+    {
+      "number": 1,
+      "file": "01-p40.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "series",
+          "top": 0,
+          "bottom": 45.59375,
+          "height": 45.59375,
+          "left": 0,
+          "right": 195.953125
+        },
+        {
+          "kind": "copy lead",
+          "top": 125.515625,
+          "bottom": 206.828125,
+          "height": 81.3125,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 286.765625,
+          "bottom": 401.421875,
+          "height": 114.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo",
+          "top": 481.34375,
+          "bottom": 1116,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 49
+    },
+    {
+      "number": 2,
+      "file": "02-p40.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 184.40625,
+          "height": 184.40625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media map",
+          "top": 279.125,
+          "bottom": 913.78125,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 1008.5,
+          "bottom": 1116,
+          "height": 107.5,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 43
+    },
+    {
+      "number": 3,
+      "file": "03-p40.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 125.25,
+          "height": 125.25,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo",
+          "top": 249.546875,
+          "bottom": 884.203125,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 1008.5,
+          "bottom": 1116,
+          "height": 107.5,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 43
+    },
+    {
+      "number": 4,
+      "file": "04-p40.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 125.25,
+          "height": 125.25,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "transition",
+          "top": 145.25,
+          "bottom": 988.5,
+          "height": 843.25,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 1008.5,
+          "bottom": 1116,
+          "height": 107.5,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 43
+    },
+    {
+      "number": 5,
+      "file": "05-p40.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 125.25,
+          "height": 125.25,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media overview",
+          "top": 149.25,
+          "bottom": 984.5,
+          "height": 835.25,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 1008.5,
+          "bottom": 1116,
+          "height": 107.5,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 43
+    },
+    {
+      "number": 6,
+      "file": "06-p40.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 125.25,
+          "height": 125.25,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "incomplete",
+          "top": 153.25,
+          "bottom": 980.5,
+          "height": 827.25,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 1008.5,
+          "bottom": 1116,
+          "height": 107.5,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 43
+    },
+    {
+      "number": 7,
+      "file": "07-p40.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 189.75,
+          "height": 189.75,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo",
+          "top": 307.265625,
+          "bottom": 941.921875,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 1059.421875,
+          "bottom": 1116,
+          "height": 56.578125,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 46
+    }
+  ],
+  "images": [
+    {
+      "src": "apoio/01-explicando-foto.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "src": "apoio/02-mapa-base.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "src": "apoio/03-duvida-foto.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "src": "apoio/04-desenhando-foto.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "src": "apoio/06-indicador-real.png",
+      "loaded": true,
+      "width": 870,
+      "height": 114
+    },
+    {
+      "src": "apoio/07-testando-foto.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    }
+  ],
+  "errors": [],
+  "fonts": {
+    "normal": true,
+    "bold": true
+  }
+}

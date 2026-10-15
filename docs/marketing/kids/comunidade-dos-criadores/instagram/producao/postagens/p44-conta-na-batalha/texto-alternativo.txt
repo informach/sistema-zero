@@ -1,0 +1,38 @@
+SLIDE 1
+Curto (96 caracteres): Cena encenada: menina faz uma conta no papel ao observar a batalha de monstrinhos no computador.
+
+Longo: Cena encenada: menina faz uma conta no papel ao observar a batalha de monstrinhos no computador. Texto da arte: Uma conta pode decidir quanto dura a batalha de um jogo. Seu filho pode escolher os números e testar o resultado.
+
+SLIDE 2
+Curto (83 caracteres): Captura do Estúdio: Brasinha e Folhito começam a luta com as barras de vida cheias.
+
+Longo: Captura do Estúdio: Brasinha e Folhito começam a luta com as barras de vida cheias. Texto da arte: Imagine um monstrinho com vinte pontos de vida. Cada ataque tira oito. Quantos ataques são necessários para vencer?
+
+SLIDE 3
+Curto (86 caracteres): Capturas reais: a vida de Folhito cai de 20 para 12 e depois para 4, com ataques de 8.
+
+Longo: Capturas reais: a vida de Folhito cai de 20 para 12 e depois para 4, com ataques de 8. Texto da arte: Depois do primeiro, restam doze. Depois do segundo, restam quatro. É preciso um terceiro ataque para terminar a batalha.
+
+SLIDE 4
+Curto (88 caracteres): Blocos reais definem o dano; captura do jogo mostra a mensagem de um ataque de 8 pontos.
+
+Longo: Blocos reais definem o dano; captura do jogo mostra a mensagem de um ataque de 8 pontos. Texto da arte: Ao criar o jogo, a criança escolhe a força do ataque. Na nossa demonstração, uma instrução faz o ataque tirar oito pontos de vida.
+
+SLIDE 5
+Curto (92 caracteres): Teste da equipe: com ataques de 10, a vida passa de 20 para 10 e chega à vitória no segundo.
+
+Longo: Teste da equipe: com ataques de 10, a vida passa de 20 para 10 e chega à vitória no segundo. Texto da arte: Agora imagine que cada ataque tire dez. Dois ataques já acabam com os vinte pontos. A batalha ficou mais curta.
+
+SLIDE 6
+Curto (90 caracteres): Cena encenada: menina compara duas subtrações no papel com o resultado da batalha na tela.
+
+Longo: Cena encenada: menina compara duas subtrações no papel com o resultado da batalha na tela. Texto da arte: Quem cria pode fazer essa conta antes de testar. Depois joga para ver se a luta ficou como imaginou.
+
+SLIDE 7
+Curto (90 caracteres): Cena encenada: menina calcula no papel; o Estúdio exibe um protótipo com dois personagens.
+
+Longo: Cena encenada: menina calcula no papel; o Estúdio exibe um protótipo com dois personagens. Texto da arte: Assim, os números ajudam a tomar uma decisão sobre o jogo. Siga o perfil para ver mais coisas que as crianças podem aprender criando.
+
+ORIGEM E CONTEXTO
+Slides 1, 6 e 7: fotos geradas da mesma menina fictícia. Não é uma aluna real ou depoente. A tela do slide 1 usa a captura do início da batalha; no slide 6, a vitória após dois ataques de dez. A imagem final usa o Estúdio real com um protótipo original da produção, sem atribuir sua autoria à menina.
+Slides 2 a 5: capturas reais da Batalha de Monstrinhos, jogo 2D básico. Os números de vida são anotações editoriais sobre estados verificados. Slide 3: três recortes mostram a barra cheia, com 12 e com 4. Slide 4: blocos nativos isolados para leitura, com força quatro, dano vezes dois e retirada desse dano da vida do rival. Slide 5: a força foi alterada para cinco na cópia, produzindo ataque dez; a sequência termina na tela real de vitória. O zero vem do estado registrado, não de uma barra sobreposta.

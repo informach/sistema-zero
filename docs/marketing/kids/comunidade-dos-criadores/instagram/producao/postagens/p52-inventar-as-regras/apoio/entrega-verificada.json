@@ -1,0 +1,441 @@
+{
+  "id": "P52",
+  "checkedAt": "2026-10-14T18:52:50.345Z",
+  "errors": [],
+  "files": [
+    {
+      "file": "01-p52.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 963349,
+      "sha256": "c7ec94812fae7052c148dd22f8caa07afaabc3d5a344d029372e510c848ae4e0"
+    },
+    {
+      "file": "02-p52.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 982161,
+      "sha256": "b12f7c1e1427827164b72c94c65158e520b7f0583d97d4c723cd5c0db5f43865"
+    },
+    {
+      "file": "03-p52.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 989756,
+      "sha256": "bbbc7037ae7f96475bf16f6f1802a4795956b94d5b9c7392a5f44992dcd874fd"
+    },
+    {
+      "file": "04-p52.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 1016509,
+      "sha256": "89849cda6e6a33b102aa95a9ff82bead423cebda4762669f18d235afed4df804"
+    },
+    {
+      "file": "05-p52.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 95023,
+      "sha256": "d5ad5236f8715979d4637b068b2aa41908935e5724fad804d14d6ceb00e09a50"
+    },
+    {
+      "file": "06-p52.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 92607,
+      "sha256": "e071c039cd1c231beaded1f60b14449fba97d0af28c9dfb2e1e4f2709516aba3"
+    },
+    {
+      "file": "07-p52.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 137961,
+      "sha256": "d80e723badce6ba46523cb89ed5257aca56eb2b43d6e0c0a7243eccb395ffc50"
+    },
+    {
+      "file": "08-p52.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 991776,
+      "sha256": "a6b3130f1a229435b6235ae0d6077786eb1bb61c92e8c50a05bbc3d9a2e5cf3f"
+    },
+    {
+      "file": "09-p52.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 1033596,
+      "sha256": "218233fe9cc494926f26ec6be04bcdbf99cebc475051d4e8ad612986053c2b77"
+    }
+  ],
+  "links": [
+    {
+      "from": "index.html",
+      "to": "legenda.txt",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "texto-alternativo.txt",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "montagem.html",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "apoio/fontes-e-producao.md",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "../index.html",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "01-p52.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "01-p52.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "02-p52.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "02-p52.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "03-p52.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "03-p52.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "04-p52.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "04-p52.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "05-p52.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "05-p52.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "06-p52.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "06-p52.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "07-p52.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "07-p52.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "08-p52.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "08-p52.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "09-p52.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "09-p52.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/01-futebol-e-ideia.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/02-explicar-a-ideia.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/03-ideia-do-chute.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/04-duas-escolhas.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/05-batalha.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/06-escolha-do-golpe.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/07-brasa.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/07-investida.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/08-plano-do-campo.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/09-mais-uma-ideia.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../../../../postagens/11-p51-a-p60.md#p52",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "copy.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "verificacao.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../../../../postagens/05-direcao-visual-e-producao.md",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "prompts.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "imagens-geradas.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "jogo-original.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "jogo-original.js",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "batalha-capturada.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "blocos-capturados.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "07-brasa.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "07-investida.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../index.html",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../montagem.html",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../legenda.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../texto-alternativo.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../publicacao.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "entrega-verificada.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "LICENSE-Nunito",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "Caveat-OFL.txt",
+      "exists": true
+    }
+  ],
+  "copyLinter": "Legenda e nove slides: zero achados mecânicos.",
+  "visualReview": "Nove slides conferidos na prévia. Slides 3, 4, 6, 7 e 8 também conferidos individualmente: desenhos dentro do papel, menu com os dois golpes, valores originais dos blocos. As seis imagens geradas são distintas. Menina fictícia com aparência consistente nas cenas 1, 2 e 9. Futebol como esboço e jogo de bichinhos como captura real.",
+  "game": {
+    "moves": {
+      "Brasa": {
+        "damage": 20,
+        "accuracy": 90
+      },
+      "Investida": {
+        "damage": 12,
+        "accuracy": 100
+      }
+    },
+    "enemyHpBefore": 74,
+    "enemyHpAfter": 61,
+    "originalRules": true
+  },
+  "carouselCount": 19,
+  "pngCount": 139,
+  "textBounds": [
+    {
+      "text": "Seu filho adora futebol.",
+      "within": true
+    },
+    {
+      "text": "Imagine ele inventando as regras de um jogo de futebol próprio.",
+      "within": true
+    },
+    {
+      "text": "O interesse dele pode dar ideias para criar.",
+      "within": true
+    },
+    {
+      "text": "Vale perguntar: como seria a partida? O que o jogador poderia fazer?",
+      "within": true
+    },
+    {
+      "text": "Talvez ele queira um chute muito forte de longe.",
+      "within": true
+    },
+    {
+      "text": "Depois precisa pensar: esse chute vai acertar sempre ou será mais difícil de usar?",
+      "within": true
+    },
+    {
+      "text": "Essa escolha muda a partida.",
+      "within": true
+    },
+    {
+      "text": "Se uma opção é melhor em tudo, talvez as outras deixem de ter utilidade.",
+      "within": true
+    },
+    {
+      "text": "Veja uma decisão parecida neste jogo de bichinhos da nossa plataforma.",
+      "within": true
+    },
+    {
+      "text": "Um personagem tem dois ataques diferentes.",
+      "within": true
+    },
+    {
+      "text": "Um ataque tira mais vida, mas às vezes erra.",
+      "within": true
+    },
+    {
+      "text": "O outro tira menos vida e sempre acerta. O jogador escolhe qual usar.",
+      "within": true
+    },
+    {
+      "text": "Quem cria precisa definir esses valores e testar a batalha.",
+      "within": true
+    },
+    {
+      "text": "As opções ficaram interessantes? Há motivo para usar as duas?",
+      "within": true
+    },
+    {
+      "text": "Seu filho pode fazer perguntas assim sobre o jogo que imaginar.",
+      "within": true
+    },
+    {
+      "text": "O assunto de que gosta vira uma oportunidade de inventar regras e experimentar escolhas.",
+      "within": true
+    },
+    {
+      "text": "Aqui mostramos o que as crianças podem criar a partir dos próprios interesses.",
+      "within": true
+    },
+    {
+      "text": "Siga o perfil para conhecer mais possibilidades.",
+      "within": true
+    }
+  ],
+  "mobileNoOverflow": true,
+  "browserImageDecode": true,
+  "sourceSectionHash": "d5b1c8ec0470b15d4231fecc1ed14f2012e409b5c0f4d566bc3251d4d05fd104",
+  "copyEqual": true,
+  "fonts": {
+    "normal": true,
+    "bold": true,
+    "handwriting": true
+  },
+  "nextCarousel": "P09",
+  "published": false
+}

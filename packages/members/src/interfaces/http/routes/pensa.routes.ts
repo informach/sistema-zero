@@ -35,6 +35,10 @@ import {
   PENSA_STUDIO_ACCESS_REF,
   type PensaTaskDestination,
 } from '../../../domain/pensa/pensa'
+import {
+  PensaMissionTakenError,
+  PensaNotYourMissionError,
+} from '../../../domain/pensa/pensa.errors'
 import { assertInternalCaller, isPrivilegedActor, resolveAccountId, resolveUserId } from '../auth'
 import {
   AudienceQuery,
@@ -435,16 +439,24 @@ export function pensaRoutes(deps: PensaRoutesDeps) {
           const accountId = resolveAccountId(headers)
           const audience = query.audience ?? 'adult'
           const privileged = isPrivilegedActor(headers)
-          const handoff = await deps.getTaskHandoff.execute(userId, audience, params.taskId)
+          const { teamBlock, ...handoff } = await deps.getTaskHandoff.execute(
+            userId,
+            audience,
+            params.taskId,
+          )
           return {
             ...handoff,
-            capability: await destinationCapability(
-              userId,
-              accountId,
-              audience,
-              handoff.task.destination,
-              privileged,
-            ),
+            // Equipe no v2: a missão da outra função (ou pega por outra artista) aparece
+            // bloqueada com a frase de quem é, antes de qualquer conferência de posse.
+            capability: teamBlock
+              ? { owned: false, blockedReason: teamBlock.reason }
+              : await destinationCapability(
+                  userId,
+                  accountId,
+                  audience,
+                  handoff.task.destination,
+                  privileged,
+                ),
           }
         },
         { params: PensaTaskParams, query: AudienceQuery },
@@ -457,6 +469,9 @@ export function pensaRoutes(deps: PensaRoutesDeps) {
             accountId = resolveAccountId(headers),
             audience = query.audience ?? 'adult'
           const handoff = await deps.getTaskHandoff.execute(userId, audience, params.taskId)
+          // Equipe no v2: a função vem antes da posse da ferramenta (403/409 com a frase certa).
+          if (handoff.teamBlock?.kind === 'role') throw new PensaNotYourMissionError()
+          if (handoff.teamBlock?.kind === 'taken') throw new PensaMissionTakenError()
           const capability = await destinationCapability(
             userId,
             accountId,
@@ -467,7 +482,12 @@ export function pensaRoutes(deps: PensaRoutesDeps) {
           if (!capability.owned)
             throw new AccessDeniedError(capability.blockedReason ?? 'Ferramenta indisponível.')
           return {
-            task: await deps.updateTaskProgress.execute(userId, audience, params.taskId, body),
+            task: await deps.updateTaskProgress.execute(
+              { profileId: userId, accountId },
+              audience,
+              params.taskId,
+              body,
+            ),
           }
         },
         { body: PensaTaskProgressBody, params: PensaTaskParams, query: AudienceQuery },

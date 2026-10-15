@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
 import type { ProjectPlayActivity } from '@sistemazero/core/learning'
-import { montarProjetoCadeTodoMundoCompleto } from '../../../docs/aulas-interativas/qa/cade-todo-mundo-projeto'
+import { montarProjetoCadeTodoMundoCompleto } from '../../../docs/aulas-interativas-tecnico/qa/cade-todo-mundo-projeto'
 import { newProjectPlayActivity } from '../src/lib/project-play-authoring'
 
 if (typeof document === 'undefined')

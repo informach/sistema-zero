@@ -1,0 +1,7 @@
+{
+  "source": "packages/studio/src/official-extensions/game-3d/examples.ts",
+  "sha256": "28ca5027a3e8f3c23dbe450f7173be0c69fa78426a13f4422a8f46afee1ea106",
+  "example": "patrulhaEspacialExample",
+  "runtime": "packages/studio/src/official-extensions/game-3d/runtime.ts",
+  "change": "Nenhuma regra ou aparência alterada. Entradas reais e observador somente de leitura."
+}

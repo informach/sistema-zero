@@ -80,6 +80,50 @@ tudo continua sendo texto, com uma marca de que veio da fala (o chip "falado" do
   O botão, os pais e os Recados são testados no Kids (DOM de verdade). Sondagem com gravações de
   ADULTOS: `scripts/sondar-transcricao.ts` (mesma configuração do servidor).
 
+## Pensa v2 em equipe (14/10/2026)
+
+Pedido dela: planejar juntos e dividir as funções na hora de construir (uma programa no Estúdio, a
+outra faz as artes no Pinta ou no Molda). Especificação: `docs/plans/2026-10-14-pensa-v2-equipe.md`;
+regras e papéis efetivos no `@sistemazero/core/pensa` (`effectivePensaRoles` e cia.). O que mora aqui:
+
+- **Rotas novas na superfície única** (`routes/pensa-journey.ts`, agora com `PUT` e até 5
+  segmentos; uuid conferido em CADA id, `me` só no `members/:profileId`): `POST projects/join`
+  `{code}` → rota CLÁSSICA do members (mesmo convite e tetos; o BFF exige Inventor(a) como o
+  `pensaJoin` clássico) e devolve SÓ `{projectId}`; `GET :id/team`; `PUT :id/roles` (`{code: uuid,
+  art: uuid[] ≤ 6}`, estrito); `POST|DELETE :id/share` e `DELETE :id/members/:profileId` → clientes
+  clássicos; `GET :id/team-art`; `GET :id/team-art/:taskId/download` → o bilhete do members e SÓ
+  ENTÃO as URLs do R2 UGC, pela MESMA régua do "Guardado na sua conta"
+  (`server/creation-download.ts`, `signCreationDownload`: gzip, 300 s o blob e 600 s cada parte;
+  o `creationsDownloadUrl` usa a mesma função). Resposta `CreationDownloadUrlView`. Os 4xx do
+  members atravessam com a frase. A superfície inteira recusa `x-sz-viewer` de outro perfil (409
+  `VIEWER_MISMATCH`, só quando o cabeçalho vem) e a impersonação somente leitura segue barrando
+  toda escrita. ⚠️ O shim do kids (`app/api/pensa/v2/[...path]`) exporta `PUT`.
+- **Só quem programa** testa, conclui, guarda versão, restaura e adapta (`test`, `close`,
+  `increment`, `restore`, `revise`): com `view.team` e `team.roles.code` ≠ a sessão, 403
+  `PENSA_NOT_PROGRAMMER` ("Quem testa e guarda as versões é quem programa o jogo.") ANTES de ler o
+  jogo salvo (que seria o da conta de quem pediu). O members recusa também; `observe`/`repair`
+  pelo `command` ficam só com a recusa de lá.
+- **O snapshot em equipe** (`pensa-journey/context.ts`): `loadJourneyContext(members, user, query,
+  { projectId, view? })`. Com `team.memberCount > 0` ele lê `GET …/team-capabilities` e NÃO lê
+  posto, blocos, posse nem inventário da sessão: posto, paleta (`earnedStudioTier` com os blocos
+  DE QUEM PROGRAMA), extensões, dimensões, Estúdio e tutor são de quem programa; Pinta/Molda valem
+  se ALGUÉM das artes os tem (`creativeToolAvailability` com o posto e a posse de cada uma);
+  `moldaTools` é a união das faixas dos postos das artistas com o Molda; o inventário é o de quem
+  programa, com a posse DELA (sem o Molda dela, o modelo guardado fica de fora). ⚠️ O passe da
+  equipe (`role`) só vale para a PRÓPRIA sessão. `profileId` do snapshot é sempre a sessão. Sem
+  posto de quem programa ou falha ao ler: `JourneyChildError('Não consegui conferir os recursos da
+  equipe. Tente de novo.')` (no log, só o nome). Plano solo e servidor sem `team`: igual a antes.
+  O contexto devolve `team: boolean` (a frase de "sem Estúdio" passa a falar de quem programa).
+- **Quem passa o plano:** o `accept` (com a view que acabou de ler) e o `workJourney` (a view do
+  passo; a conferência final antes de publicar relê a equipe só com o `projectId`).
+- Tipos: `PensaTeamCapabilitiesView`, `PensaTeamArtListView`, `CreationDownloadUrlView` e
+  `assigneeProfileId?`/`completedByProfileId?` no `PensaTaskView`; clientes `pensaJourneyTeam`,
+  `pensaJourneyRoles`, `pensaJourneyTeamCapabilities`, `pensaJourneyTeamArt`,
+  `pensaJourneyTeamArtDownload` (`pensa-journey-client.ts`).
+- Testes: `tests/pensa-journey-team.test.ts` (rotas, 403 por função, join, descida assinada,
+  snapshot das duas pessoas, solo inalterado, aceite em equipe) e dois em
+  `pensa-journey-worker.test.ts` (o `projectId` chega ao contexto).
+
 ## Pensa v2: a régua da narrativa e o teto do pedido (full review de 14/10/2026)
 
 O BFF do Pensa v2 mora em `server/pensa-journey/` e `routes/pensa-journey.ts`. O que o full review
@@ -3023,7 +3067,7 @@ experiência nova. O que ficou de pé:
   são os ladrilhos (`sceneReadout` do core).
 - **`AvisoDoFarol` (`scene-farol.tsx`) é a faixa `fundoAviso` do projeto da criança** (8, 8,
   464 × 28, `#143d35`, texto branco à esquerda), com as MESMAS frases (`AVISOS_DO_FAROL`, espelho de
-  `docs/aulas-interativas/qa/desafio-farol-projeto.ts`). Na porta, o aviso depois da tentativa é o
+  `docs/aulas-interativas-tecnico/qa/desafio-farol-projeto.ts`). Na porta, o aviso depois da tentativa é o
   do ramo escolhido ("Você acendeu o farol!…" / "A porta não abriu. Falta a chave.").
   ⚠️ O texto leva `data-sem-halo`: o halo claro do `scene.css` borrava o branco sobre o verde-escuro.
 - **`RegraDoJogo` mora na BANCADA**: a regra que a cena executa, montada como os blocos do Estúdio
