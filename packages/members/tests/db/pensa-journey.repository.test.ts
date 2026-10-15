@@ -230,6 +230,112 @@ describe.skipIf(!available)('Pensa v2: concorrência e publicação no Postgres'
     expect((await repo.get(owner, id)).project.name).toBe('Meu gatinho')
   })
 
+  test('pergunta com escolhas: guarda as respostas, conta o teto e dá um nome provisório que a proposta troca (15/10/2026)', async () => {
+    const who = actor()
+    const id = (await repo.create(who, randomUUID(), now)).project.id
+    const op = randomUUID()
+    await repo.start(
+      who,
+      id,
+      {
+        id: op,
+        expectedRevision: 0,
+        message: 'Quero um jogo de dragão',
+        kind: 'planning',
+        context: {},
+      },
+      now,
+    )
+    let lease = randomUUID()
+    await repo.claim(who, id, op, lease, now)
+    const choices = {
+      about: 'action' as const,
+      options: [
+        { label: 'Voa desviando das pedras', description: 'O jogo é não bater em nada.' },
+        { label: 'Pega ovos pelo caminho', description: 'Cada ovo vale um ponto.' },
+      ],
+    }
+    await repo.publish(
+      who,
+      id,
+      op,
+      lease,
+      {
+        type: 'question',
+        text: 'O que o seu dragão faz?',
+        choices,
+        workingTitle: 'O voo do dragão',
+      },
+      now,
+    )
+    let view = await repo.get(who, id)
+    expect(view.journey.messages.at(-1)).toMatchObject({ role: 'assistant', choices })
+    expect(view.journey.questionsAsked).toBe(1)
+    // A lista deixa de mostrar "Meu novo jogo" antes mesmo da proposta.
+    expect(view.project.name).toBe('O voo do dragão')
+    await repo.start(
+      who,
+      id,
+      {
+        id: randomUUID(),
+        expectedRevision: view.journey.revision,
+        message: 'Pega ovos pelo caminho',
+        kind: 'planning',
+        context: {},
+      },
+      now,
+    )
+    lease = randomUUID()
+    await repo.claim(who, id, op, lease, now)
+    await repo.publish(who, id, op, lease, { type: 'step', step: 'review', output: {} }, now)
+    lease = randomUUID()
+    await repo.claim(who, id, op, lease, now)
+    await repo.publish(
+      who,
+      id,
+      op,
+      lease,
+      { type: 'proposal', proposal: { ...proposal(who), title: 'Dragão dos ovos' } },
+      now,
+    )
+    view = await repo.get(who, id)
+    // O nome provisório era do sistema: a proposta o troca, e o teto volta a zero.
+    expect(view.project.name).toBe('Dragão dos ovos')
+    expect(view.journey.questionsAsked).toBe(0)
+    expect(view.journey.workingTitle).toBeNull()
+  })
+
+  test('o nome provisório não troca um nome que a criança já deu', async () => {
+    const who = actor()
+    const id = (await repo.create(who, randomUUID(), now)).project.id
+    await repo.rename(who, id, 'Meu dragão', now)
+    const op = randomUUID()
+    const view = await repo.get(who, id)
+    await repo.start(
+      who,
+      id,
+      {
+        id: op,
+        expectedRevision: view.journey.revision,
+        message: 'Dragão',
+        kind: 'planning',
+        context: {},
+      },
+      now,
+    )
+    const lease = randomUUID()
+    await repo.claim(who, id, op, lease, now)
+    await repo.publish(
+      who,
+      id,
+      op,
+      lease,
+      { type: 'question', text: 'O que ele faz?', workingTitle: 'O voo do dragão' },
+      now,
+    )
+    expect((await repo.get(who, id)).project.name).toBe('Meu dragão')
+  })
+
   test('uma colega retoma e publica a ajuda usando a reserva e o teto de quem pediu', async () => {
     const owner = actor(),
       member = actor(),

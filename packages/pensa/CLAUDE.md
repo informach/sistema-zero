@@ -623,6 +623,45 @@ review achou defeitos de funcionamento. O que mudou, e que não pode voltar:
   lentas nesta árvore no happy-dom (dezenas de segundos sob carga): em teste novo, prefira rótulo e
   texto.
 
+## O que veio do sandbox: perguntas com respostas, ideias e usos (15/10/2026)
+
+Pedido dela, depois da análise do repositório `code-with-antonio/sandbox` (o `ask_player`, as
+sugestões da home e o "jogo é julgado nos primeiros dez segundos"). A criança continua contando a
+ideia do jeito dela; o Zappy só pergunta o que muda a primeira missão, e quando pergunta, oferece
+respostas para tocar. O contrato da pergunta mora no core (`PENSA_QUESTION_TOPICS`,
+`PensaQuestionChoices`, `pensaQuestionsLeft`); as regras do modelo, no member-shell.
+
+- **A pergunta com respostas** (`pendingQuestion` no `JourneyApp`): a última mensagem do Zappy com
+  `choices`, com a conversa no planejamento e nada rodando. O rótulo do campo vira o assunto
+  ("Sobre: o que você faz no jogo", `QUESTION_TOPIC`) e a pergunta; embaixo, as respostas em
+  cartões (`.pensa-journey-answer`, o nome e o que muda no jogo) e, na linha de baixo, "Tanto faz,
+  escolhe você" (`ANY_ANSWER`, o prompt sabe ler) e "Contar do meu jeito" (limpa a resposta pronta
+  e foca o campo). ⚠️ **Tocar só PREENCHE o campo** (o gesto dos chips que ela aprovou; o sandbox
+  envia direto e aqui não): uma resposta troca a outra, e o que a criança escreveu do jeito dela
+  fica, com a resposta embaixo. A escolhida tem `aria-pressed`. O placeholder vira "Ou conte do seu
+  jeito.". Na conversa, o assunto aparece só nas perguntas já respondidas (a da vez está no campo).
+- **Ideias para começar** (`IDEA_STARTERS`, o `suggestions.ts` do sandbox): seis botões na home
+  do jogo novo, só com o campo vazio. O texto é a ideia INTEIRA na voz da criança (o que ela faz, o
+  que acontece e como termina), para o Zappy ir direto à proposta sem perguntar; só o começo do
+  Jogo 2D, e nada de 2D ou 3D no texto (quem decide é o que ela tem liberado).
+- **O selo de usos do Zappy voltou** (`AiCreditsBadge`, o do plano clássico, que o v2 tinha
+  perdido): `GET /v2/credits` (sempre 200; `null` = "não sei" e o selo some), relido ao abrir e
+  quando o Zappy termina. Acabou: o campo mostra o `AiCreditsNotice` e o "Enviar" fica desligado
+  ANTES de ela escrever (guardar ideia não gasta e segue valendo).
+- **A espera diz a etapa de verdade** (`waitingSteps`, como o sandbox mostra cada passo):
+  planejamento = "Entendendo a sua ideia" (`propose`) → "Conferindo com os seus blocos e montando
+  o começo" (`review`); preparação = "Você escolheu o começo" ✓ → "Escrevendo o passo a passo de
+  cada missão". A ajuda mantém os pontinhos.
+- **As ideias para depois ajudam a próxima versão**: os chips do campo dizem "Ou comece por uma
+  ideia para depois" (o Zappy agora guarda até 2 caprichos dele em `later`, que entram no backlog)
+  e somem enquanto uma pergunta espera resposta.
+- ⚠️ **Conserto do lote anterior:** o primeiro envio da home copia o texto para o rascunho do jogo
+  novo; depois do sucesso esse rascunho agora é apagado também, senão a ideia voltava para o campo
+  do jogo (medido no playground; o teste espera a recarga do rascunho e falha sem o conserto).
+- **Playground:** ideia curta (menos de 40 letras) recebe UMA pergunta com respostas e o nome
+  provisório "O voo do dragão"; a espera passa por `review`; `/v2/credits` responde 13 ideias.
+- Testes: `components/JourneyApp.questions.test.tsx`.
+
 ## Verificação
 
 Execute `bun run typecheck`, `bun test src` e `bun run check`. Os testes devem cobrir o mapa ZERO, os cinco artefatos, ordem/dependências, próxima tarefa, entitlement e abertura da ferramenta de destino.

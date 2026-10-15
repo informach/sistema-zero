@@ -245,3 +245,41 @@ describe('renomear o jogo (15/10/2026)', () => {
     expect(rename).not.toHaveBeenCalled()
   })
 })
+
+describe('o selo de usos do Zappy (15/10/2026)', () => {
+  const get = (members: Record<string, unknown>) =>
+    createPensaJourneyRoutes({
+      members: members as unknown as MembersClient,
+      session: { getSession: async () => STAFF as unknown as SessionUser } as SessionModule,
+    }).pensaJourney.GET(new Request('https://kids.test/api/pensa/v2/credits'), {
+      params: Promise.resolve({ path: ['credits'] }),
+    })
+  const credits = {
+    dayLimit: 50,
+    dayRemaining: 12,
+    monthLimit: 500,
+    monthRemaining: 300,
+    monthRenewsOn: '2026-11-01',
+  }
+
+  test('entrega o saldo da conta', async () => {
+    const res = await get({ getAiCredits: async () => ({ status: 200, body: credits }) })
+    expect(res.status).toBe(200)
+    expect(await res.json()).toEqual({ credits })
+  })
+
+  test('sem dado vira "não sei" (null), nunca erro nem zero', async () => {
+    const quiet = spyOn(console, 'error').mockImplementation(() => undefined)
+    restorers.push(() => quiet.mockRestore())
+    for (const getAiCredits of [
+      async () => ({ status: 503, body: null }),
+      async () => {
+        throw new Error('rede')
+      },
+    ]) {
+      const res = await get({ getAiCredits })
+      expect(res.status).toBe(200)
+      expect(await res.json()).toEqual({ credits: null })
+    }
+  })
+})

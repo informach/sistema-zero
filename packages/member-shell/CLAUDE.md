@@ -341,6 +341,38 @@ regras e papéis efetivos no `@sistemazero/core/pensa` (`effectivePensaRoles` e 
   `{status}`; o nome passa pela `pensaNarrativeRefusal` (422 `PENSA_MESSAGE_REVIEW`, a equipe lê o
   nome) e vai a `pensaJourneyRename`. Testes em `tests/pensa-journey-routes.test.ts`.
 
+## Pensa v2: perguntas com respostas e o jogo que começa jogando (15/10/2026)
+
+O que veio da análise do sandbox (`code-with-antonio/sandbox`), no planejador
+(`server/pensa-journey/planner.ts` e `contracts.ts`):
+
+- **A pergunta tem forma** (`PlanningQuestionSchema`): `about` (um de `PENSA_QUESTION_TOPICS` do
+  core: action, goal, challenge, controls, world, dimension), `text`, de 2 a 4 `options`
+  (`label` curto como botão e `description` do que muda no jogo) e `workingTitle` (o nome
+  provisório do jogo). O passo devolve `{type: 'question', text, choices, workingTitle}`.
+  `label` e `workingTitle` entraram nos `PROSE_KEYS` (passam pela régua do travessão e pela de
+  texto seguro).
+- **As regras de conversa** (prompt do `propose`): só perguntar quando a criança não disse, não dá
+  para deduzir e a resposta muda a primeira missão; nunca cor, som, cenário, nome, visual ou ritmo
+  (vão em suggestions); nunca o que já está na ideia, na conversa, no backlog, no inventário ou no
+  jogo construído; com o jogo construído, pedido vago se resolve propondo; respostas no mesmo
+  assunto, todas possíveis com os recursos dela, nenhuma de enfeite; "tanto faz" = o Zappy decide.
+  A conversa que vai ao modelo leva `asked` (o assunto de cada pergunta já feita).
+- **O teto é do servidor** (`questionsLeft` = `pensaQuestionsLeft` do core: 2 na primeira versão,
+  1 com o jogo construído). `questionIssues` recusa (pelo reparo de sempre, com o motivo) pergunta
+  com o teto esgotado, 2D/3D para quem só tem um deles e duas respostas com o mesmo rótulo.
+- **Jogo novo começa jogando** (`playFirstIssues`): sem checkpoint e sem `builtResults`, a
+  primeira missão é do Estúdio. Entra nos `issues` da revisão e, se a revisão insistir, vira o
+  reparo. ⚠️ Fica FORA do `validateJourneyProposal`: aquela régua é de RECURSOS e roda também nos
+  guias de propostas já aceitas, que não podem passar a falhar por uma regra de desenho nova.
+- **Caprichos em `later`**: o sistema pede até 2 ideias do Zappy que deixam o jogo mais gostoso
+  (som, pontos na tela, recorde, ficar mais difícil, tela de fim com jogar de novo, mostrar as
+  teclas), nos blocos dela. O members as soma ao backlog e a tela as oferece na próxima versão.
+- **`GET /api/pensa/v2/credits`** (`routes/pensa-journey.ts`): o saldo de IA da conta para o selo
+  de usos (`members.getAiCredits`). SEMPRE 200; members fora = `{credits: null}`.
+- Testes: os de "perguntas com respostas…" em `tests/pensa-journey-worker.test.ts`,
+  `tests/pensa-journey-contracts.test.ts` e o selo em `tests/pensa-journey-routes.test.ts`.
+
 ## Pensa v2: a régua da narrativa e o teto do pedido (full review de 14/10/2026)
 
 O BFF do Pensa v2 mora em `server/pensa-journey/` e `routes/pensa-journey.ts`. O que o full review

@@ -188,6 +188,18 @@ export function createPensaJourneyRoutes({
     }
     const { path = [] } = await ctx.params
     const [resource, projectId, action] = path
+    // O selo de usos do Zappy (o mesmo do plano clássico, 15/10/2026). SEMPRE 200: sem dado,
+    // `credits: null` e a tela esconde o selo; "não sei" nunca pode virar "acabou".
+    if (resource === 'credits' && path.length === 1) {
+      if (req.method !== 'GET') return error(405, 'Ação indisponível.')
+      const res = await members.getAiCredits().catch((cause: unknown) => {
+        console.error('[pensa-v2] usos indisponíveis', { name: errorName(cause) })
+        return null
+      })
+      const credits =
+        res?.status === 200 && typeof res.body?.dayRemaining === 'number' ? res.body : null
+      return reply({ status: 200, body: { credits } })
+    }
     if (resource !== 'projects' || path.length > 5) return error(404, 'Plano não encontrado.')
     const body = req.method === 'GET' ? null : await req.json().catch(() => null)
     if (projectId === 'join' && path.length === 2)

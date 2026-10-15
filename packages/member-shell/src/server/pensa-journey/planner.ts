@@ -1,11 +1,12 @@
 import 'server-only'
 import { randomUUID } from 'node:crypto'
-import type {
-  PensaJourney,
-  PensaJourneyActor,
-  PensaJourneyTeam,
-  PensaJourneyView,
-  PensaProposal,
+import {
+  type PensaJourney,
+  type PensaJourneyActor,
+  type PensaJourneyTeam,
+  type PensaJourneyView,
+  type PensaProposal,
+  pensaQuestionsLeft,
 } from '@sistemazero/core/pensa'
 import { z } from 'zod'
 import { semTravessaoNosCampos } from '../../lib/kid-text'
@@ -20,6 +21,8 @@ import {
   PlanningReplySchema,
   type ProposalDraft,
   ProposalDraftSchema,
+  playFirstIssues,
+  questionIssues,
   validateJourneyProposal,
 } from './contracts'
 import { JourneyChildError, JourneyOutputInvalid } from './errors'
@@ -57,6 +60,9 @@ Use apenas os blocos (campo blocks, pelo id), extensões e ferramentas do Molda 
 knownMechanics são mecânicas do Estúdio que você conhece por dentro: use os blocos e o jeito de funcionar delas como conhecimento seu. Não diga de onde vieram. Combinar duas não prova que funcionam juntas; confira nos manuais. Se faltar evidência técnica, simplifique preservando a intenção.
 Sem fonte recuperada, use apenas os manuais. Uma fase encontrada não prova que a criança tem acesso nem que a fez.
 O primeiro resultado deve ser pequeno, jogável e testável: uma ação da criança provoca uma resposta visível do jogo.
+Jogo é julgado nos primeiros segundos: num jogo novo (baseAlreadyBuilt vazio e builtResults vazio), a primeira missão é no Estúdio e já deixa algo se mexendo que responde à criança no ▶ Reproduzir, com uma figura pronta do Estúdio. Se a ideia pede um personagem ou cenário desenhado por ela, a missão de desenhar vem depois, e uma missão do Estúdio depois dela troca a figura pronta pela arte dela.
+O primeiro teste dá para passar na primeira tentativa. Sem menu, tela de instruções ou tela de título antes de jogar.
+Em later, inclua até 2 ideias suas (origin zappy) que deixam o jogo mais gostoso de jogar e cabem nos blocos dela, como: um som quando algo acontece, mostrar os pontos na tela, guardar o recorde, ficar mais difícil com o tempo, uma tela de fim com jogar de novo, mostrar as teclas no começo. Não repita o que já está nas missões nem em backlog.
 Exploração e brincadeira livre não precisam de vitória, derrota, pontuação ou inimigos.
 Planeje 2–6 missões curtas (máximo 8); cada missão tem um resultado observável. Evite enfeites antes do jogo funcionar.
 Separe criar arte, integrar arte no Estúdio e experimentar o jogo. Toda arte tem uma missão de integração no Estúdio que depende dela.
@@ -93,6 +99,8 @@ const PROSE_KEYS = new Set([
   'expected',
   'question',
   'testAction',
+  'label',
+  'workingTitle',
 ])
 function prose(value: unknown, key = ''): string[] {
   if (typeof value === 'string') return PROSE_KEYS.has(key) ? [value] : []
@@ -317,6 +325,8 @@ function talk(state: PensaJourney, limits: JourneyPromptLimits) {
     conversation: latest(state.messages, limits.messages).map((m) => ({
       role: m.role,
       text: clip(m.text, limits.messageChars),
+      // O assunto de cada pergunta já feita: as respostas se somam e nada se pergunta duas vezes.
+      ...(m.choices ? { asked: m.choices.about } : {}),
     })),
   }
 }
@@ -372,7 +382,10 @@ async function produce(input: {
         }
       : null
   const previousAnswerRejected = repair ? clip(repair, 2_000) : null
+  // Jogo novo = nada construído ainda: a régua do "primeiro jogando" vale só nele.
+  const gameExists = Boolean(state.checkpoint) || Boolean(state.builtResults?.length)
   if (work.step === 'propose') {
+    const questionsLeft = pensaQuestionsLeft(state)
     const lastUser = state.messages.filter((m) => m.role === 'user').at(-1)?.text ?? ''
     const focus = `${state.intent}\n${lastUser}\n${state.proposal?.missions.map((m) => m.title).join('\n') ?? ''}`
     const reply = await json(
@@ -380,8 +393,17 @@ async function produce(input: {
       PlanningReplySchema,
       'pensa_idea',
       `${JOURNEY_SYSTEM}
-Transforme a narrativa em uma proposta. Não faça entrevista nem exija cinco respostas.
-Se uma ambiguidade impedir escolher o primeiro resultado, devolva UMA pergunta curta e proposal=null.
+Transforme a narrativa em uma proposta. Não faça entrevista.
+Só pergunte quando as três coisas forem verdade: a criança não disse; não dá para deduzir do que ela disse; a resposta muda a primeira missão. Na maioria das vezes, a única dúvida que vale pergunta é o que a criança faz no jogo.
+Nunca pergunte cor, som, cenário, nome de personagem, visual ou ritmo: decida você e ponha em suggestions.
+Nunca pergunte o que já está em idea, conversation, backlog, existingCreations, baseAlreadyBuilt ou builtResults.
+Com o jogo já construído, um pedido curto e vago (como "deixa mais difícil") é normal: escolha a leitura que dá o melhor jogo e proponha.
+questionsLeft diz quantas perguntas ainda cabem. Com questionsLeft=0, não pergunte: proponha e decida o que falta em suggestions.
+Se a criança respondeu que tanto faz e pediu para você escolher, decida você e ponha a escolha em suggestions.
+Uma pergunta tem um assunto (about): action = o que ela faz no jogo; goal = como ganha ou termina; challenge = o que atrapalha; controls = como controla; world = onde acontece; dimension = 2D ou 3D (só se a ideia servir aos dois e capabilities.dimensions tiver os dois).
+Não repita um assunto já perguntado (conversation[].asked). Deixe as respostas anteriores mudarem as opções novas.
+text é uma frase curta, nas palavras da criança. options tem de 2 a 4 respostas, todas sobre o mesmo assunto e todas possíveis com os blocos, extensões e ferramentas dela; nenhuma de enfeite, nenhuma que você preferiria que ela não escolhesse, nenhuma que peça para ela escrever. label tem poucas palavras, como um botão; description diz em uma frase o que muda no jogo.
+workingTitle é um nome curto para o jogo (até 4 palavras), tirado da ideia dela.
 Se há informação suficiente, question=null e uma proposta completa. essentials contém só características pedidas pela criança;
 suggestions são escolhas suas para ela poder discordar. As dependências só apontam para missões anteriores.
 Criações existentes só podem ser usadas se constarem de existingCreations.`,
@@ -392,11 +414,21 @@ Criações existentes só podem ser usadas se constarem de existingCreations.`,
         ...memory(state, limits),
         missionsAlreadyAttempted: attempted(tasks),
         currentProposal: proposalOutline(state.proposal),
+        questionsLeft,
         previousAnswerRejected,
       }),
       PLAN_TOKENS,
     )
-    if (reply.question && !reply.proposal) return { type: 'question', text: reply.question }
+    if (reply.question && !reply.proposal) {
+      const issues = questionIssues(reply.question, context.capabilities, questionsLeft)
+      if (issues.length)
+        throw new JourneyOutputInvalid(
+          issues.join('\n'),
+          'Não consegui organizar a ideia desta vez. Ela continua guardada.',
+        )
+      const { about, text, options, workingTitle } = reply.question
+      return { type: 'question', text, choices: { about, options }, workingTitle }
+    }
     if (reply.proposal && !reply.question)
       return { type: 'step', step: 'review', output: { draft: reply.proposal } }
     throw new JourneyOutputInvalid(
@@ -414,6 +446,7 @@ Criações existentes só podem ser usadas se constarem de existingCreations.`,
       context.existingCreations,
       context.blocks,
     )
+    issues.push(...playFirstIssues(draft, gameExists))
     const reviewed = await json(
       complete,
       ProposalDraftSchema,
@@ -442,6 +475,12 @@ Não substitua a intenção da criança. Devolva a proposta revisada inteira.`,
       }),
       PLAN_TOKENS,
     )
+    const design = playFirstIssues(reviewed, gameExists)
+    if (design.length)
+      throw new JourneyOutputInvalid(
+        design.join('\n'),
+        'Não consegui organizar o caminho desta vez. Sua ideia está guardada. Tente de novo.',
+      )
     return { type: 'proposal', proposal: resolveProposal(reviewed, context) }
   }
   if (work.step === 'guides') {

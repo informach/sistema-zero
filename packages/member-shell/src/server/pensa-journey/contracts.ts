@@ -1,4 +1,8 @@
-import type { PensaCapabilitySnapshot, PensaProposal } from '@sistemazero/core/pensa'
+import {
+  PENSA_QUESTION_TOPICS,
+  type PensaCapabilitySnapshot,
+  type PensaProposal,
+} from '@sistemazero/core/pensa'
 import { z } from 'zod'
 import { dimensionAllows } from '../pensa-agents/planner-contract'
 
@@ -43,10 +47,66 @@ export const ProposalDraftSchema = z.strictObject({
   referenceIds: ids(6),
 })
 export type ProposalDraft = z.infer<typeof ProposalDraftSchema>
+/**
+ * A pergunta do Zappy com respostas para tocar (15/10/2026, inspirada no `ask_player` do
+ * sandbox): um assunto, uma frase e de 2 a 4 respostas no mesmo eixo, todas possíveis.
+ * `workingTitle` é o nome provisório do jogo enquanto a proposta não chega.
+ */
+export const PlanningQuestionSchema = z.strictObject({
+  about: z.enum(PENSA_QUESTION_TOPICS),
+  text: short(300),
+  options: z
+    .array(z.strictObject({ label: short(80), description: short(200) }))
+    .min(2)
+    .max(4),
+  workingTitle: short(100).nullable(),
+})
 export const PlanningReplySchema = z.strictObject({
-  question: short(500).nullable(),
+  question: PlanningQuestionSchema.nullable(),
   proposal: ProposalDraftSchema.nullable(),
 })
+
+/**
+ * O que a pergunta não pode ser, por regra (o resto é do prompt): perguntar com o teto esgotado,
+ * oferecer 2D ou 3D a quem só tem um deles, e duas respostas iguais.
+ */
+export function questionIssues(
+  question: z.infer<typeof PlanningQuestionSchema>,
+  caps: Pick<PensaCapabilitySnapshot, 'dimensions'>,
+  questionsLeft: number,
+): string[] {
+  const issues: string[] = []
+  if (questionsLeft <= 0)
+    issues.push(
+      'Você já fez as perguntas que cabiam. Devolva a proposta (question=null) e decida o que falta em suggestions.',
+    )
+  if (question.about === 'dimension' && caps.dimensions.length < 2)
+    issues.push(
+      `A criança só tem o Estúdio ${caps.dimensions.join(' e ').toUpperCase()}: 2D ou 3D não é escolha dela. Pergunte outra coisa ou proponha.`,
+    )
+  const labels = question.options.map((o) => o.label.trim().toLocaleLowerCase('pt-BR'))
+  if (new Set(labels).size !== labels.length)
+    issues.push('Duas respostas da pergunta têm o mesmo rótulo. Cada resposta é um jogo diferente.')
+  return issues
+}
+
+/**
+ * Jogo novo começa JOGANDO (o "julgado nos primeiros dez segundos" do sandbox): a primeira missão é
+ * no Estúdio e já mexe com uma figura pronta; a arte da criança vem depois e troca a figura. Com o
+ * jogo já construído (uma versão guardada ou resultados prontos), a regra não vale.
+ * ⚠️ Fica FORA do `validateJourneyProposal`: aquela régua é de RECURSOS e roda também nos guias de
+ * propostas já aceitas, que não podem passar a falhar por uma regra de desenho nova.
+ */
+export function playFirstIssues(
+  draft: Pick<ProposalDraft, 'missions'>,
+  gameExists: boolean,
+): string[] {
+  const first = draft.missions[0]
+  if (gameExists || !first || first.destination === 'studio') return []
+  return [
+    `Missão "${first.key}": a primeira missão de um jogo novo é no Estúdio e já deixa algo se mexendo no ▶ Reproduzir com uma figura pronta. Coloque a missão de arte depois dela e faça uma missão do Estúdio, depois da arte, trocar a figura pronta pela arte da criança.`,
+  ]
+}
 export const GuideDraftSchema = z.strictObject({
   missions: z
     .array(

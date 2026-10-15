@@ -1,7 +1,12 @@
 import { describe, expect, test } from 'bun:test'
 import type { PensaCapabilitySnapshot } from '@sistemazero/core/pensa'
 import { SERVER_EXAMPLES_INDEX } from '@sistemazero/studio/server-examples'
-import { type ProposalDraft, validateJourneyProposal } from '../src/server/pensa-journey/contracts'
+import {
+  type ProposalDraft,
+  playFirstIssues,
+  questionIssues,
+  validateJourneyProposal,
+} from '../src/server/pensa-journey/contracts'
 import { journeyRecipes } from '../src/server/pensa-journey/recipes'
 
 const caps: PensaCapabilitySnapshot = {
@@ -168,5 +173,31 @@ describe('Pensa: o plano só usa recursos executáveis do perfil', () => {
       recipes.every((recipe) => recipe.blocos.every((id) => allowed.blockIds.includes(id))),
     ).toBe(true)
     expect(journeyRecipes('jogo', { ...allowed, blockIds: [] })).toEqual([])
+  })
+})
+
+describe('a pergunta do Zappy e o jogo que começa jogando', () => {
+  const ask = (about: 'action' | 'dimension', labels = ['Voa', 'Pega ovos']) => ({
+    about,
+    text: 'O que o seu dragão faz?',
+    options: labels.map((label) => ({ label, description: 'Muda o jogo.' })),
+    workingTitle: null,
+  })
+
+  test('pergunta boa passa; teto esgotado, 2D/3D sem escolha e respostas repetidas não', () => {
+    expect(questionIssues(ask('action'), caps, 2)).toEqual([])
+    expect(questionIssues(ask('action'), caps, 0)[0]).toContain('perguntas que cabiam')
+    expect(questionIssues(ask('dimension'), caps, 2)[0]).toContain('2D ou 3D não é escolha')
+    expect(questionIssues(ask('dimension'), { dimensions: ['2d', '3d'] }, 2)).toEqual([])
+    expect(questionIssues(ask('action', ['Voa', ' voa ']), caps, 2)[0]).toContain('mesmo rótulo')
+  })
+
+  test('jogo novo começa no Estúdio; com jogo construído a arte pode vir antes', () => {
+    const art = { ...mission('arte'), destination: 'pinta' as const }
+    expect(playFirstIssues({ missions: [mission('anda')] }, false)).toEqual([])
+    expect(playFirstIssues({ missions: [art, mission('anda', ['arte'])] }, false)[0]).toContain(
+      'Missão "arte"',
+    )
+    expect(playFirstIssues({ missions: [art, mission('anda', ['arte'])] }, true)).toEqual([])
   })
 })

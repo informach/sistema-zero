@@ -8,6 +8,7 @@ import {
   nextPensaMissionFor,
   type PensaProposal,
   type PensaTeamMissionProgress,
+  pensaQuestionsLeft,
   pensaZeroStage,
 } from '../src/pensa'
 
@@ -250,5 +251,27 @@ describe('Pensa: equipe (papéis e próxima missão de cada pessoa)', () => {
       mine: null,
       waitingOn: { missionId: 'nave', workers: [bia] },
     })
+  })
+})
+
+describe('Pensa: o teto de perguntas do Zappy', () => {
+  test('na primeira versão são duas perguntas antes de propor', () => {
+    expect(pensaQuestionsLeft(initial())).toBe(2)
+    expect(pensaQuestionsLeft({ ...initial(), questionsAsked: 1 })).toBe(1)
+    expect(pensaQuestionsLeft({ ...initial(), questionsAsked: 2 })).toBe(0)
+    expect(pensaQuestionsLeft({ ...initial(), questionsAsked: 5 })).toBe(0)
+  })
+
+  test('com o jogo já construído sobra uma: o jogo responde quase tudo', () => {
+    expect(pensaQuestionsLeft({ ...initial(), builtResults: ['O gato pula'] })).toBe(1)
+    const checkpoint = {
+      id: 'c',
+      creationId: 'jogo',
+      saveRevision: '1',
+      planRevision: 1,
+      cycleId: 'cycle',
+      createdAt: now,
+    }
+    expect(pensaQuestionsLeft({ ...initial(), checkpoint, questionsAsked: 1 })).toBe(0)
   })
 })

@@ -7,6 +7,7 @@ import type {
   PensaOperationStep,
   PensaProposal,
   PensaProtectionAction,
+  PensaQuestionChoices,
   PensaVoiceRequest,
   PensaVoiceResult,
 } from '@sistemazero/core/pensa'
@@ -35,7 +36,13 @@ export interface PensaOperationWork extends PensaOperation {
 export type PensaStepResult =
   | { type: 'step'; step: PensaOperationStep; output: Record<string, unknown> }
   | { type: 'proposal'; proposal: PensaProposal }
-  | { type: 'question'; text: string }
+  /** A pergunta do Zappy, com as respostas para tocar e o nome provisório do jogo (opcionais). */
+  | {
+      type: 'question'
+      text: string
+      choices?: PensaQuestionChoices
+      workingTitle?: string | null
+    }
   | { type: 'answer'; text: string }
   | { type: 'plan'; tasks: NewPensaTask[] }
 

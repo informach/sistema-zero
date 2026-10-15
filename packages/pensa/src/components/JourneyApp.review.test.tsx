@@ -22,7 +22,7 @@ afterEach(() => {
  * guardada, a oficina não liberada, a volta do teste para as missões e o fim do cartão de
  * referências (que é coisa interna).
  */
-const LENTO_NO_CI = 30_000
+const LENTO_NO_CI = 60_000
 
 const proposal: PensaProposal = {
   id: 'prop',

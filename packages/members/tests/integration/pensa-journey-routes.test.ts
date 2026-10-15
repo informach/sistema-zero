@@ -206,3 +206,40 @@ test('todas as rotas internas aceitam o member-shell com os headers do gateway',
     expect(call).toHaveBeenCalledTimes(1)
   expect(calls.voice).toHaveBeenCalledTimes(1)
 })
+
+test('a pergunta com escolhas atravessa a rota inteira (o normalize não apaga as respostas)', async () => {
+  const { handler, calls } = app(),
+    projectId = randomUUID(),
+    operationId = randomUUID()
+  const actor = { profileId: randomUUID(), accountId: randomUUID(), privileged: false }
+  const result = {
+    type: 'question',
+    text: 'O que o seu dragão faz?',
+    choices: {
+      about: 'action',
+      options: [
+        { label: 'Voa desviando', description: 'O jogo é não bater em nada.' },
+        { label: 'Pega ovos', description: 'Cada ovo vale um ponto.' },
+      ],
+    },
+    workingTitle: 'O voo do dragão',
+  }
+  const response = await handler.handle(
+    internal(`/projects/${projectId}/operations/${operationId}/publish`, {
+      actor,
+      leaseId: randomUUID(),
+      result,
+    }),
+  )
+  expect(response.status).toBe(200)
+  expect(calls.publish.mock.calls[0] as unknown[]).toContainEqual(result)
+  // Assunto fora da lista é pedido mal formado.
+  const bad = await handler.handle(
+    internal(`/projects/${projectId}/operations/${operationId}/publish`, {
+      actor,
+      leaseId: randomUUID(),
+      result: { ...result, choices: { ...result.choices, about: 'look' } },
+    }),
+  )
+  expect(bad.status).toBe(400)
+})

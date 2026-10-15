@@ -670,3 +670,162 @@ test('a fala do Zappy chega à criança sem travessão (15/10/2026)', async () =
   expect(published.type).toBe('answer')
   expect(published.text).toBe('Boa ideia, agora teste o pulo, e conte o que aconteceu.')
 })
+
+describe('perguntas com respostas para tocar e o jogo que começa jogando (15/10/2026)', () => {
+  const question = (overrides: Record<string, unknown> = {}) => ({
+    question: {
+      about: 'action',
+      text: 'O que o seu dragão faz?',
+      options: [
+        { label: 'Voa desviando — das pedras', description: 'O jogo é não bater em nada.' },
+        { label: 'Pega ovos', description: 'Cada ovo vale um ponto.' },
+      ],
+      workingTitle: 'O voo do dragão',
+      ...overrides,
+    },
+    proposal: null,
+  })
+
+  test('a pergunta sai com o assunto, as respostas (sem travessão) e o nome provisório', async () => {
+    quietConsole()
+    const f = fixture()
+    let sent: Record<string, unknown> = {}
+    const complete = mock(async (input: { user: string; schemaName: string }) => {
+      expect(input.schemaName).toBe('pensa_idea')
+      sent = JSON.parse(input.user)
+      return question()
+    })
+    await run(f, complete)
+    expect(sent.questionsLeft).toBe(2)
+    expect(f.published.mock.calls[0]?.[4] as unknown).toEqual({
+      type: 'question',
+      text: 'O que o seu dragão faz?',
+      choices: {
+        about: 'action',
+        options: [
+          { label: 'Voa desviando, das pedras', description: 'O jogo é não bater em nada.' },
+          { label: 'Pega ovos', description: 'Cada ovo vale um ponto.' },
+        ],
+      },
+      workingTitle: 'O voo do dragão',
+    })
+  })
+
+  test('o modelo vê o assunto das perguntas já feitas e quantas ainda cabem', async () => {
+    quietConsole()
+    const f = fixture()
+    f.view.journey.questionsAsked = 1
+    f.view.journey.messages = [
+      {
+        id: 'm1',
+        role: 'assistant',
+        text: 'O que o seu dragão faz?',
+        at: '',
+        revision: 1,
+        final: true,
+        choices: question().question as never,
+      },
+      { id: 'm2', role: 'user', text: 'Pega ovos', at: '', revision: 1, final: true },
+    ]
+    let sent: { questionsLeft?: number; conversation?: Array<{ asked?: string }> } = {}
+    await run(
+      f,
+      mock(async (input: { user: string }) => {
+        sent = JSON.parse(input.user)
+        return { question: null, proposal: draft }
+      }),
+    )
+    expect(sent.questionsLeft).toBe(1)
+    expect(sent.conversation?.[0]?.asked).toBe('action')
+    expect(f.published.mock.calls[0]?.[4]).toMatchObject({ type: 'step', step: 'review' })
+  })
+
+  test('com o teto esgotado, perguntar de novo volta ao modelo com o motivo', async () => {
+    quietConsole()
+    const f = fixture()
+    f.view.journey.questionsAsked = 2
+    const users: string[] = []
+    const complete = mock(async (input: { user: string }) => {
+      users.push(input.user)
+      return users.length === 1 ? question() : { question: null, proposal: draft }
+    })
+    await run(f, complete)
+    expect(complete).toHaveBeenCalledTimes(2)
+    expect(JSON.parse(users[1] ?? '{}').previousAnswerRejected).toContain(
+      'Você já fez as perguntas que cabiam',
+    )
+    expect(f.published.mock.calls.at(-1)?.[4]).toMatchObject({ type: 'step', step: 'review' })
+  })
+
+  test('2D ou 3D só vira pergunta para quem tem os dois', async () => {
+    quietConsole()
+    const f = fixture()
+    const users: string[] = []
+    const complete = mock(async (input: { user: string }) => {
+      users.push(input.user)
+      return users.length === 1 ? question({ about: 'dimension' }) : question()
+    })
+    await run(f, complete)
+    expect(JSON.parse(users[1] ?? '{}').previousAnswerRejected).toContain('2D ou 3D não é escolha')
+    expect(f.published.mock.calls.at(-1)?.[4]).toMatchObject({ type: 'question' })
+  })
+
+  const artFirst = {
+    ...draft,
+    missions: [
+      {
+        key: 'desenho',
+        destination: 'pinta' as const,
+        title: 'Desenhar o dragão',
+        result: 'O dragão desenhado',
+        dependencies: [],
+        blockIds: [],
+        extensionIds: [],
+        mechanicIds: [],
+        toolIds: [],
+        asset: {
+          id: 'dragao',
+          kind: 'sprite' as const,
+          source: 'new' as const,
+          creationId: null,
+          description: 'Um dragão',
+        },
+      },
+      studioMission('integra', ['desenho']),
+    ],
+  }
+
+  test('jogo novo: a revisão recebe o motivo e não publica um caminho que começa desenhando', async () => {
+    quietConsole()
+    const f = fixture('review')
+    f.work.output.draft = artFirst
+    const users: string[] = []
+    const complete = mock(async (input: { user: string }) => {
+      users.push(input.user)
+      return users.length === 1 ? artFirst : draft
+    })
+    await run(f, complete)
+    expect(JSON.parse(users[0] ?? '{}').issues.join(' ')).toContain(
+      'a primeira missão de um jogo novo é no Estúdio',
+    )
+    // A revisão insistiu na arte primeiro: volta UMA vez com o motivo, e a segunda passa.
+    expect(JSON.parse(users[1] ?? '{}').previousAnswerRejected).toContain('figura pronta')
+    expect(f.published.mock.calls.at(-1)?.[4]).toMatchObject({ type: 'proposal' })
+  })
+
+  test('com o jogo já construído, a versão nova pode começar pela arte', async () => {
+    quietConsole()
+    const f = fixture('review')
+    f.view.journey.builtResults = ['O dragão voa']
+    f.work.output.draft = artFirst
+    let sent: { issues?: string[] } = {}
+    const complete = mock(async (input: { user: string }) => {
+      sent = JSON.parse(input.user)
+      return artFirst
+    })
+    await run(f, complete)
+    expect(complete).toHaveBeenCalledTimes(1)
+    expect(sent.issues ?? []).toEqual([])
+    expect(f.published.mock.calls.at(-1)?.[4]).toMatchObject({ type: 'proposal' })
+  })
+})

@@ -1,3 +1,4 @@
+import { type AiCreditsView, resolveAiCredits } from '@sistemazero/core/ai-credits'
 import {
   canWorkOnPensaMission,
   nextPensaMissionFor,
@@ -7,6 +8,7 @@ import {
   type PensaJourneyListItem,
   type PensaJourneyTeamView,
   type PensaJourneyView,
+  type PensaQuestionTopic,
   type PensaZeroStage,
   pensaZeroStage,
 } from '@sistemazero/core/pensa'
@@ -31,6 +33,7 @@ import type {
   PensaTaskView,
   PensaTransport,
 } from '../core/types'
+import { AiCreditsBadge, AiCreditsNotice } from './AiCredits'
 import { ConfirmDialog } from './ConfirmDialog'
 import { HostBackLink, HostMenuButton, usePensaHostChrome } from './hostChrome'
 import {
@@ -536,6 +539,11 @@ export function JourneyApp({
       )
       try {
         sessionStorage.removeItem(draftKey)
+        // O primeiro envio copiou o texto para o rascunho do jogo novo (para não se perder se
+        // falhasse). Deu certo: sai de lá também, senão a ideia voltava para o campo do jogo.
+        sessionStorage.removeItem(
+          `sz:pensa-v2:draft:${adapter.viewerId ?? 'session'}:${current.project.id}`,
+        )
       } catch {
         /* Nada a limpar. */
       }
@@ -547,6 +555,24 @@ export function JourneyApp({
     })
   }
   const running = Boolean(view?.operation && ['queued', 'running'].includes(view.operation.status))
+  // O selo de usos do Zappy (o do plano clássico): relido ao abrir e quando o Zappy termina.
+  // Sem dado, `null`, e o selo some: "não sei" nunca vira "acabou".
+  const [credits, setCredits] = useState<AiCreditsView | null>(null)
+  useEffect(() => {
+    if (running) return
+    let alive = true
+    api
+      .request<{ credits: AiCreditsView | null }>('/v2/credits')
+      .then((res) => {
+        if (alive) setCredits(res?.credits ?? null)
+      })
+      .catch(() => {
+        if (alive) setCredits(null)
+      })
+    return () => {
+      alive = false
+    }
+  }, [api, running])
   // Em equipe, cada criança vê a SUA próxima missão (régua do core); sem nenhuma, a missão que
   // está na frente do caminho e quem pode fazê-la ("Esperando a arte de Bia").
   const teamNext =
@@ -697,23 +723,77 @@ export function JourneyApp({
           : allDone
             ? { tone: 'ok', text: 'Versão pronta' }
             : null
-  const ideaChips =
-    composer && state?.stage === 'idea' && conversationKind !== 'backlog' && state.backlog.length
-      ? state.backlog.slice(-4)
-      : []
   const continueGame = !view && !archived ? projects[0] : undefined
   // "+ Novo jogo" só na home de quem já tem jogo (no primeiro, o campo já está aberto).
   const showNewGame = !view && !archived && hasGames && !loading
   // Pedir ajuda começa por um atalho que a criança reconhece; ela revisa e envia (nada sai sozinho).
   const helpChips =
     composer && talking && conversationKind === 'help' && !text.trim() ? HELP_STARTERS : []
+  // A pergunta do Zappy que espera resposta: as respostas viram botões que PREENCHEM o campo (o
+  // gesto dos chips que ela aprovou; nada sai sozinho), mais "Tanto faz" e "Contar do meu jeito".
+  const lastMessage = state?.messages.at(-1)
+  const pendingQuestion =
+    composer &&
+    conversationKind === 'planning' &&
+    !running &&
+    lastMessage?.role === 'assistant' &&
+    lastMessage.choices
+      ? { text: lastMessage.text, ...lastMessage.choices }
+      : null
+  // As ideias para depois (as da criança e os caprichos que o Zappy guardou) ajudam a começar a
+  // versão nova; com uma pergunta esperando, a resposta vem antes.
+  const ideaChips =
+    composer &&
+    state?.stage === 'idea' &&
+    conversationKind !== 'backlog' &&
+    !pendingQuestion &&
+    state.backlog.length
+      ? state.backlog.slice(-4)
+      : []
+  const answerTexts = pendingQuestion
+    ? [...pendingQuestion.options.map((option) => option.label), ANY_ANSWER]
+    : []
+  /** Uma resposta troca a outra; o que a criança escreveu do jeito dela fica, com a resposta embaixo. */
+  const answer = (value: string) => {
+    const current = text.trim()
+    setText(!current || answerTexts.includes(current) ? value : `${text.trimEnd()}\n${value}`)
+    window.setTimeout(() => inputRef.current?.focus(), 0)
+  }
+  // Sem ideia: sugestões COMPLETAS que só preenchem o campo do jogo novo (o `suggestions.ts` do
+  // sandbox). Somem quando há texto, e voltam se ela apagar.
+  const ideaStarters = homeComposer && !text.trim() ? IDEA_STARTERS : []
+  // Os usos do Zappy acabaram: o campo avisa ANTES de ela escrever (guardar ideia não gasta).
+  const creditsMeter = resolveAiCredits(credits)
+  const outOfUses = creditsMeter.state === 'exhausted' && conversationKind !== 'backlog'
+  // As etapas de verdade do que o Zappy está fazendo (o sandbox mostra cada passo do agente).
+  const operationStep = view?.operation?.step
+  const waitingSteps: Array<{ label: string; state: 'done' | 'now' | 'next' }> | null =
+    view?.operation?.kind !== 'planning'
+      ? null
+      : state?.stage === 'preparing'
+        ? [
+            { label: 'Você escolheu o começo', state: 'done' },
+            { label: 'Escrevendo o passo a passo de cada missão', state: 'now' },
+          ]
+        : [
+            {
+              label: 'Entendendo a sua ideia',
+              state: operationStep === 'propose' ? 'now' : 'done',
+            },
+            {
+              label: 'Conferindo com os seus blocos e montando o começo',
+              state: operationStep === 'propose' ? 'next' : 'now',
+            },
+          ]
   const placeholder = !state
     ? 'Pode ser uma ideia bem pequena. Não precisa saber como fazer ainda.'
-    : conversationKind === 'backlog'
-      ? 'Ex.: uma fase de neve para depois.'
-      : conversationKind === 'help'
-        ? 'Ex.: apertei a seta e nada aconteceu.'
-        : 'Ex.: em vez de queijos, o gato pega estrelas.'
+    : pendingQuestion
+      ? 'Ou conte do seu jeito.'
+      : conversationKind === 'backlog'
+        ? 'Ex.: uma fase de neve para depois.'
+        : conversationKind === 'help'
+          ? 'Ex.: apertei a seta e nada aconteceu.'
+          : 'Ex.: em vez de queijos, o gato pega estrelas.'
 
   /** Renomear (o lápis do plano clássico): troca na hora e desfaz se o servidor recusar. */
   const renameGame = async (name: string) => {
@@ -1075,11 +1155,31 @@ export function JourneyApp({
                               </span>
                             </p>
                           ) : null}
-                          <span className="pensa-journey-dots" aria-hidden="true">
-                            <span />
-                            <span />
-                            <span />
-                          </span>
+                          {waitingSteps ? (
+                            <ol className="pensa-journey-steps">
+                              {waitingSteps.map((step) => (
+                                <li key={step.label} className={`is-${step.state}`}>
+                                  <span className="pensa-journey-steps__mark" aria-hidden="true">
+                                    {step.state === 'done' ? <CheckIcon size={14} /> : null}
+                                  </span>
+                                  {step.label}
+                                  <span className="pensa-sr-only">
+                                    {step.state === 'done'
+                                      ? ' (feito)'
+                                      : step.state === 'now'
+                                        ? ' (agora)'
+                                        : ' (depois)'}
+                                  </span>
+                                </li>
+                              ))}
+                            </ol>
+                          ) : (
+                            <span className="pensa-journey-dots" aria-hidden="true">
+                              <span />
+                              <span />
+                              <span />
+                            </span>
+                          )}
                           <div className="pensa-journey-actions">
                             <button
                               type="button"
@@ -1618,6 +1718,11 @@ export function JourneyApp({
                             <strong>
                               {m.role === 'user' ? (teamMode ? 'Equipe' : 'Você') : 'Zappy'}
                             </strong>
+                            {m.choices && !(pendingQuestion && m === lastMessage) ? (
+                              <span className="pensa-journey-message__topic">
+                                Sobre: {QUESTION_TOPIC[m.choices.about]}
+                              </span>
+                            ) : null}
                             <p>{m.text}</p>
                             {m.role === 'assistant' && adapter.renderListen ? (
                               <div className="pensa-journey-listen">
@@ -1660,17 +1765,92 @@ export function JourneyApp({
                     <div className="pensa-journey-compose__ask">
                       {mascot(state ? 48 : 72, 'happy')}
                       <label className="pensa-journey-bubble" htmlFor="pensa-idea">
-                        {state
-                          ? conversationKind === 'backlog'
-                            ? 'Que ideia você quer guardar para depois?'
-                            : talking
-                              ? 'Conte o que você quer mudar ou onde travou'
-                              : 'Quer acrescentar ou mudar alguma coisa?'
-                          : hasGames
-                            ? 'Como é o seu jogo novo?'
-                            : 'Como é o jogo que está na sua cabeça?'}
+                        {pendingQuestion ? (
+                          <>
+                            <span className="pensa-journey-bubble__topic">
+                              Sobre: {QUESTION_TOPIC[pendingQuestion.about]}
+                            </span>{' '}
+                            {pendingQuestion.text}
+                          </>
+                        ) : state ? (
+                          conversationKind === 'backlog' ? (
+                            'Que ideia você quer guardar para depois?'
+                          ) : talking ? (
+                            'Conte o que você quer mudar ou onde travou'
+                          ) : (
+                            'Quer acrescentar ou mudar alguma coisa?'
+                          )
+                        ) : hasGames ? (
+                          'Como é o seu jogo novo?'
+                        ) : (
+                          'Como é o jogo que está na sua cabeça?'
+                        )}
                       </label>
                     </div>
+                    {pendingQuestion ? (
+                      <fieldset className="pensa-journey-answers">
+                        <legend className="pensa-sr-only">
+                          Respostas prontas para a pergunta do Zappy
+                        </legend>
+                        <div className="pensa-journey-answers__row">
+                          {pendingQuestion.options.map((option) => (
+                            <button
+                              type="button"
+                              className="pensa-journey-answer"
+                              key={option.label}
+                              aria-pressed={text.trim() === option.label}
+                              disabled={busy}
+                              onClick={() => answer(option.label)}
+                            >
+                              <strong>{option.label}</strong>
+                              <span>{option.description}</span>
+                            </button>
+                          ))}
+                        </div>
+                        <div className="pensa-journey-answers__row">
+                          <button
+                            type="button"
+                            className="pensa-journey-answer pensa-journey-answer--any"
+                            aria-pressed={text.trim() === ANY_ANSWER}
+                            disabled={busy}
+                            onClick={() => answer(ANY_ANSWER)}
+                          >
+                            <strong>Tanto faz, escolhe você</strong>
+                            <span>O Zappy decide e mostra como sugestão dele.</span>
+                          </button>
+                          <button
+                            type="button"
+                            className="pensa-journey-answer pensa-journey-answer--own"
+                            disabled={busy}
+                            onClick={() => {
+                              if (answerTexts.includes(text.trim())) setText('')
+                              window.setTimeout(() => inputRef.current?.focus(), 0)
+                            }}
+                          >
+                            <strong>Contar do meu jeito</strong>
+                            <span>Escreva ou fale a sua resposta.</span>
+                          </button>
+                        </div>
+                      </fieldset>
+                    ) : null}
+                    {ideaStarters.length ? (
+                      <fieldset className="pensa-journey-chips">
+                        <legend>Sem ideia? Comece por uma destas:</legend>
+                        {ideaStarters.map((starter) => (
+                          <button
+                            type="button"
+                            className="sz-tool-chip"
+                            key={starter.label}
+                            onClick={() => {
+                              setText(starter.text)
+                              window.setTimeout(() => inputRef.current?.focus(), 0)
+                            }}
+                          >
+                            {starter.label}
+                          </button>
+                        ))}
+                      </fieldset>
+                    ) : null}
                     {helpChips.length ? (
                       <fieldset className="pensa-journey-chips">
                         <legend>Pode começar por aqui:</legend>
@@ -1691,7 +1871,7 @@ export function JourneyApp({
                     ) : null}
                     {ideaChips.length ? (
                       <fieldset className="pensa-journey-chips">
-                        <legend>Ou comece por uma ideia que você guardou:</legend>
+                        <legend>Ou comece por uma ideia para depois:</legend>
                         {ideaChips.map((idea) => (
                           <button
                             type="button"
@@ -1752,6 +1932,7 @@ export function JourneyApp({
                           Cancelar
                         </button>
                       ) : null}
+                      {conversationKind !== 'backlog' ? <AiCreditsBadge credits={credits} /> : null}
                       {adapter.renderVoiceInput?.({
                         value: text,
                         onChange: setText,
@@ -1763,7 +1944,12 @@ export function JourneyApp({
                         type="submit"
                         className="sz-tool-pill sz-tool-pill--primary"
                         disabled={
-                          busy || running || voiceBusy || !text.trim() || text.length > 4000
+                          busy ||
+                          running ||
+                          voiceBusy ||
+                          outOfUses ||
+                          !text.trim() ||
+                          text.length > 4000
                         }
                       >
                         {state
@@ -1773,7 +1959,9 @@ export function JourneyApp({
                           : 'Encontrar um começo'}
                       </button>
                     </div>
-                    {text.length > 4000 ? (
+                    {outOfUses ? (
+                      <AiCreditsNotice>{creditsMeter.exhausted}</AiCreditsNotice>
+                    ) : text.length > 4000 ? (
                       <p className="pensa-journey-warn" role="alert">
                         Sua ideia ficou grande para uma mensagem. Divida em duas partes; seu texto
                         continua inteiro aqui.
@@ -2387,6 +2575,52 @@ const HELP_STARTERS = [
   'Não sei por onde começar',
   'Aconteceu uma coisa diferente',
   'Não achei o bloco certo',
+]
+
+/** Do que trata a pergunta do Zappy, nas palavras da criança (o selo em cima dela). */
+const QUESTION_TOPIC: Record<PensaQuestionTopic, string> = {
+  action: 'o que você faz no jogo',
+  goal: 'o objetivo do jogo',
+  challenge: 'o que atrapalha',
+  controls: 'como você controla',
+  world: 'onde o jogo acontece',
+  dimension: '2D ou 3D',
+}
+
+/** "Tanto faz": o Zappy decide e põe a escolha nas sugestões dele (o prompt sabe ler esta frase). */
+const ANY_ANSWER = 'Tanto faz, escolhe você.'
+
+/**
+ * Ideias para começar (15/10/2026, o `suggestions.ts` do sandbox): o rótulo é curto e o texto é a
+ * ideia INTEIRA na voz da criança (o que ela faz, o que acontece e como termina), para o Zappy ir
+ * direto à proposta, sem pergunta. Só blocos do começo do Jogo 2D (andar com as setas, pegar,
+ * desviar, pontos, vidas); nada de 2D ou 3D no texto: quem decide é o que ela tem liberado.
+ */
+const IDEA_STARTERS = [
+  {
+    label: 'Gato nos telhados',
+    text: 'Um gato que anda pelos telhados com as setas pegando peixes. Cada peixe vale um ponto. Se encostar no cachorro, perde uma vida.',
+  },
+  {
+    label: 'Nave e asteroides',
+    text: 'Uma nave que desvia dos asteroides com as setas. Cada segundo sem bater vale um ponto. Se bater três vezes, o jogo acaba.',
+  },
+  {
+    label: 'Dragão e o ninho',
+    text: 'Um dragão que voa pegando ovos pelo caminho e leva até o ninho. Ganha quando juntar 10 ovos no ninho.',
+  },
+  {
+    label: 'Robô e as moedas',
+    text: 'Um robô que anda de um lado para o outro pegando as moedas que caem do céu. Se deixar cair cinco moedas, o jogo acaba.',
+  },
+  {
+    label: 'Peixe no fundo do mar',
+    text: 'Um peixe que nada com as setas comendo bolhas e fugindo do tubarão. Ganha quando comer 20 bolhas.',
+  },
+  {
+    label: 'Sapo na estrada',
+    text: 'Um sapo que pula com as setas para atravessar a rua sem encostar nos carros. Cada vez que chega do outro lado, ganha um ponto.',
+  },
 ]
 
 /**

@@ -1,3 +1,4 @@
+import { PENSA_QUESTION_TOPICS } from '@sistemazero/core/pensa'
 import { t } from 'elysia'
 import { PensaJourneyGuideSchema, PensaTasksReplaceBody } from './dtos'
 
@@ -127,7 +128,21 @@ export const PensaStepResultDto = t.Union([
     output: t.Record(t.String(), t.Unknown()),
   }),
   t.Object({ type: t.Literal('proposal'), proposal: PensaProposalDto }),
-  t.Object({ type: t.Literal('question'), text: text(6000) }),
+  t.Object({
+    type: t.Literal('question'),
+    text: text(6000),
+    // Declarados: o `normalize` do Elysia apagaria as escolhas e o nome em silêncio.
+    choices: t.Optional(
+      t.Object({
+        about: t.Union(PENSA_QUESTION_TOPICS.map((topic) => t.Literal(topic))),
+        options: t.Array(t.Object({ label: text(80), description: text(200) }), {
+          minItems: 2,
+          maxItems: 4,
+        }),
+      }),
+    ),
+    workingTitle: t.Optional(t.Union([text(100), t.Null()])),
+  }),
   t.Object({ type: t.Literal('answer'), text: text(6000) }),
   t.Object({ type: t.Literal('plan'), tasks: t.Array(newTask, { minItems: 1, maxItems: 12 }) }),
 ])

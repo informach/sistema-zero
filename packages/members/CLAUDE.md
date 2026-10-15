@@ -237,6 +237,18 @@ serviços. Nunca recopie as regras.
 - Testes: `tests/db/pensa-journey.repository.test.ts` ("renomear…", Postgres real) e
   `tests/integration/pensa-journey-routes.test.ts`.
 
+## Pensa v2: pergunta com respostas e nome provisório (15/10/2026)
+
+- O resultado `question` do worker aceita `choices` (`{about, options[2..4]}` com o assunto de
+  `PENSA_QUESTION_TOPICS` do core) e `workingTitle`, DECLARADOS no `PensaStepResultDto` (o
+  `normalize` do Elysia os apagaria). A mensagem do Zappy guarda `choices`.
+- `questionsAsked` (jornada): +1 a cada pergunta do PLANEJAMENTO (a da ajuda não conta), zera na
+  proposta. É o que alimenta o teto `pensaQuestionsLeft` do member-shell.
+- `workingTitle`: com a pergunta, o jogo ganha o nome provisório enquanto o nome ainda é do sistema
+  (`aiGivenName` ganhou o 3º argumento); a proposta o troca pelo título dela e zera o campo.
+  Renomeado pela criança, nada troca. Sem migration (tudo no JSON da jornada).
+- Testes: `tests/db/pensa-journey.repository.test.ts` (os dois "pergunta com escolhas…" e "o nome
+  provisório…") e `tests/integration/pensa-journey-routes.test.ts` (as escolhas atravessam a rota).
 ## Oficinas ao vivo (14/10/2026)
 
 `application/live` mantém oficinas reutilizáveis, snapshots das aulas por turma, matrículas
