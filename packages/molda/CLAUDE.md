@@ -1,5 +1,21 @@
 # CLAUDE.md — @sistemazero/molda
 
+## Oficina padrão — 14/10/2026
+
+Modelos sempre abrem na oficina com Modelar, Pintar e Animar. Não existe flag de V2,
+variável de ambiente, opção de adapter ou parâmetro de URL para ativá-la. O playground
+usa o mesmo caminho do app. `formatVersion` continua sendo a versão do arquivo, necessária
+à leitura, importação e recuperação; não escolhe uma experiência alternativa.
+
+A decisão do responsável substitui as orientações históricas de ativação gradual abaixo:
+nenhuma criança usa o Molda em produção ainda. A refatoração e a revisão estão em
+`docs/plans/2026-10-14-molda-usabilidade-entrega.md` e
+`docs/plans/2026-10-14-molda-usabilidade-full-review.md`.
+
+Prévia de pintura usa `editor.stage`: autosave, flush e backup leem `saveSnapshot`, sem
+persistir a preparação antes da ação confirmada. `commit`/`commitGesture` encerram a prévia
+em um passo de desfazer. Rascunhos de pose são separados por perfil e criação.
+
 ## ⚠️⚠️ `content-visibility: auto` num cartão que recebe o ponteiro faz o cursor PISCAR (13/09/2026)
 
 Relato dela: "quando passo o mouse em cima de um card de um projeto em andamento, o mouse fica
@@ -778,8 +794,8 @@ código do Blockbench. Primeiro lote: guardas de formato, recuperação e benchm
   (fachada quadrada compatível). Material usa branco quando o fundo já foi composto
   na imagem; sRGB não deve ser interpretado como linear. Recursos saem das caches
   quando a última instância deixa de usá-los, com dispose idempotente.
-- Oficina interna em `components/editor/scene`, montada lazy apenas pelo playground
-  `?oficina=nova`; nenhuma ativação do escritor público/cloud. `openSceneWorkshop`
+- Oficina padrão em `components/editor/scene`, montada lazy para todos os modelos
+  no app e no playground, sem opção de ativação. `openSceneWorkshop`
   promove explicitamente no store recebido e nunca abre legado por baixo de v2
   inválido/futuro. `createSceneEditorStore` possui o token CAS e só o avança após
   escrita bem-sucedida; conflito permanece exportável e não adota token de outra aba.
@@ -1495,20 +1511,18 @@ código do Blockbench. Primeiro lote: guardas de formato, recuperação e benchm
   `ModelEditor.test.tsx` assere a PROPRIEDADE (nada gravado passado o tempo), não o log.
 - Volta da ponte e backup (lote 234): `useStudioResync` recebe `exportAsset` e não conhece
   formato; a oficina passa `exportLoadedSceneForStudio`, com o snapshot já salvo e seu perfil.
-  O aviso `COPY.scene.development` só aparece SEM `resyncToStudio` (host interno).
+  A ponte com o Estúdio é opcional; sua ausência não muda o editor nem indica uma versão experimental.
   ⚠️ `exportAssetForStudio` precisa tolerar falha na leitura v1: sem isso a exceção subia e
   a geração seguinte, dona da criação promovida, nunca era consultada. "Baixar tudo" leva a
   geração nova em `projetos/<nome>.molda.json` (o arquivo do "Baixar projeto"); o envelope
   `galeria.molda.json` continua SÓ v1 e não muda de forma.
-- Virada pública (lote 233): `MoldaHostAdapter.sceneWorkshop` governa a PROMOÇÃO, não o
-  acesso. ⚠️⚠️ Criação já na geração seguinte é listada e aberta na oficina SEMPRE, com a
-  chave ligada ou não: é isso que torna desligar reversível, senão voltar atrás deixaria o
-  trabalho da criança preso num editor que não sabe lê-lo. Modelo antigo só vai para a
-  oficina com a chave ligada. ⚠️ `MOLDA_DOCUMENT_WRITE_VERSION` continua 1 PARA SEMPRE: é o
+- Oficina padrão (atualizado em 14/10/2026): todo modelo abre na mesma oficina, inclusive
+  arquivos antigos, convertidos na abertura. Não há chave de ativação.
+  `MOLDA_DOCUMENT_WRITE_VERSION` continua 1: é o
   carimbo do escritor v1 (`assertMoldaDocumentWritable`), e virá-lo faria toda gravação v1
   lançar. Quem escreve o formato novo é a persistência de cena, que não passa por ele.
   ⚠️ Falha ao listar o inventário da geração seguinte NÃO pode derrubar a galeria v1.
-  Rollout e volta atrás: `docs/plans/2026-09-10-molda-rollout.md`.
+  O antigo plano de rollout foi substituído pela decisão de oficina única.
 - Retomada da nuvem (lote 239, 10/09): `MoldaSceneCloudSource.owns` inclui lápides; o
   espelho escolhe a geração dona local mesmo quando desce um documento v1. `saveIfUnchanged`
   converte esse v1 pelo migrador existente, restaura cenas apagadas pela revisão da lápide e
@@ -1534,11 +1548,9 @@ código do Blockbench. Primeiro lote: guardas de formato, recuperação e benchm
   ⚠️ Com isolamento ativo devolve `null`: foto velha e inteira vale mais que uma nova pela
   metade. A foto é derivada (`setThumb`): nenhum passo de desfazer, nenhuma revisão de
   conteúdo. Criação que ficou para trás só ganha foto quando a criança a abre.
-- Oficina seguinte no app (lote 228): `MoldaHostAdapter.sceneWorkshop`, DESLIGADA por
-  padrão. Ligada, a galeria lista as duas gerações numa lista só (`GallerySceneSource` no
-  `createGalleryStore`) e a oficina É o editor de MODELOS: abrir um modelo antigo o PROMOVE.
-  ⚠️ O discriminador é `summary.formatVersion === 2` (a GERAÇÃO), nunca o `kind`: o
-  documento seguinte é sempre `kind: 'model'`. ⚠️ As duas gerações vivem no MESMO banco
+- Oficina no app (atualizado em 14/10/2026): a galeria lista os formatos suportados numa
+  lista só (`GallerySceneSource` no `createGalleryStore`). `kind: 'model'` sempre abre
+  a oficina 3D; textura e céu abrem seus editores próprios. Os formatos vivem no MESMO banco
   (`getMoldaGenerationStore`), porque `storedDocumentKey` resolve as duas na mesma chave.
   ⚠️ `unlistedReadIssues`: criação que a galeria lista NÃO é arquivo ilegível, senão ela
   aparece como cartão e como aviso de recuperação ao mesmo tempo. ⚠️ A inscrição de
@@ -1546,8 +1558,7 @@ código do Blockbench. Primeiro lote: guardas de formato, recuperação e benchm
   tratada. ⚠️⚠️ `three-mesh-bvh` tem DUAS cópias no monorepo (o drei do kids fixa a 0.8,
   o Molda usa a 0.9) e cada uma aumenta `BufferGeometry` com o seu `boundsTree`: escrever
   o campo direto reprova o typecheck do KIDS, não o do Molda. Use `setBoundsTree`.
-  Pendem antes de ligar: miniatura da geração nova, ramo v2 da nuvem, "Baixar tudo" e
-  a ponte do Estúdio.
+  Miniaturas, nuvem, "Baixar tudo" e ponte do Estúdio estão integrados à oficina.
 - Destino da cópia (lote 227): o painel de exportação escolhe entre "Para outros programas"
   (padrão, GLB portátil) e "Para o Estúdio" (`animatedPaint`). ⚠️ O destino faz parte da
   IDENTIDADE do pedido: entrou no `SceneGlbToken` e `readSceneGlbReply` recusa a resposta

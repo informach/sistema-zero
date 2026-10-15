@@ -1,5 +1,6 @@
 import { expect, test } from 'bun:test'
 import { structuredBytes } from '../core/structuredBytes'
+import { groupSceneNodes } from '../scene/commands'
 import type { MoldaSceneDocument } from '../scene/document'
 import { identityMatrix } from '../scene/matrix'
 import { prepareSceneAnimation } from '../scene/sampleAnimation'
@@ -9,9 +10,8 @@ import { createDocumentEditorStore } from './editorStore'
 import { SceneAnimationPlayer } from './SceneAnimationPlayer'
 import { SceneAnimationPoseGesture } from './SceneAnimationPoseGesture'
 
-function setup() {
-  const source = animatedScene(),
-    saves: MoldaSceneDocument[] = []
+function setup(source: MoldaSceneDocument = animatedScene()) {
+  const saves: MoldaSceneDocument[] = []
   const editor = createDocumentEditorStore<MoldaSceneDocument>({
     asset: source,
     sizeOf: structuredBytes,
@@ -193,20 +193,18 @@ test.each([
   }
 })
 
-test('changing selection begins from the new piece; invalid selection/preview/render error refuse edits; remount is usable', () => {
+test('changing selection keeps the earlier piece in the same draft; invalid inputs refuse edits', () => {
   const f = setup()
   try {
     f.gesture.begin(['body'])
     f.gesture.preview(move(2))
     f.gesture.end(true)
     expect(f.gesture.begin(['wing'])).toBe(true)
-    expect(f.gesture.getSnapshot().pending).toBe(false)
+    expect(f.gesture.getSnapshot().pending).toBe(true)
     f.gesture.preview(move(3))
     f.gesture.end(true)
     expect(f.gesture.record()).toBe(true)
-    expect(f.editor.getState().asset.animations![0]!.tracks[0]).toBe(
-      f.source.animations[0]!.tracks[0],
-    )
+    expect(f.editor.getState().asset.animations![0]!.tracks[0]!.keys[0]!.value).toEqual([2, 0, 0])
     f.player.setClip(f.editor.getState().asset, 'clip')
     expect(f.gesture.begin(['missing'])).toBe(false)
     expect(f.gesture.getSnapshot().error).not.toBeNull()
@@ -221,6 +219,103 @@ test('changing selection begins from the new piece; invalid selection/preview/re
     expect(f.gesture.getSnapshot().error).toBe('Fora da precisão de desenho.')
     expect(f.gesture.record()).toBe(false)
     off()
+  } finally {
+    f.close()
+  }
+})
+
+test('local undo/redo crosses selected pieces, Escape retains finished gestures and recording is one undo', () => {
+  const f = setup()
+  try {
+    f.player.seek(2)
+    f.gesture.begin(['body'])
+    f.gesture.preview(move(2))
+    f.gesture.end(true)
+    const first = f.gesture.getSnapshot().pose
+    f.gesture.begin(['wing'])
+    f.gesture.preview(move(3))
+    f.gesture.end(true)
+    const compound = f.gesture.getSnapshot().pose!
+    expect(f.gesture.undo()).toBe(true)
+    expect(f.gesture.getSnapshot().pose).toBe(first)
+    expect(f.gesture.redo()).toBe(true)
+    expect(f.gesture.getSnapshot().pose).toBe(compound)
+    f.gesture.begin(['body'])
+    f.gesture.preview(move(9))
+    f.gesture.interrupt()
+    expect(f.gesture.getSnapshot().pose).toBe(compound)
+    expect(f.gesture.record()).toBe(true)
+    const next = f.editor.getState().content
+    expect(prepareSceneAnimation(next, 'clip').sample(2, false).worldMatrices).toEqual(
+      compound.worldMatrices,
+    )
+    const wing = next.animations![0]!.tracks.find((track) => track.nodeId === 'wing')!
+    expect(wing.keys.map((key) => key.time)).toEqual([0, 2])
+    expect(wing.keys[0]!.value).toEqual([0, 0, 0])
+    f.editor.getState().undo()
+    expect(f.editor.getState().content.animations).toEqual(f.source.animations)
+    expect(f.editor.getState().canUndo).toBe(false)
+  } finally {
+    f.close()
+  }
+})
+
+test('a recovered compound draft remains separate from the document until marking', () => {
+  const f = setup()
+  try {
+    f.player.seek(2)
+    f.gesture.begin(['body'])
+    f.gesture.preview(move(2))
+    f.gesture.end(true)
+    f.gesture.begin(['wing'])
+    f.gesture.preview(move(3))
+    f.gesture.end(true)
+    const expected = f.gesture.getSnapshot().pose!.worldMatrices
+    const recovery = f.gesture.recoveryDraft()!
+    f.gesture.cancel()
+    expect(f.gesture.restoreDraft(recovery.clip, recovery.time)).toBe(true)
+    expect(f.editor.getState().content).toBe(f.source)
+    expect(f.gesture.getSnapshot().pose!.worldMatrices).toEqual(expected)
+    expect(f.gesture.record()).toBe(true)
+  } finally {
+    f.close()
+  }
+})
+
+test('group then child uses the staged parent once, and local undo keeps the group adjustment', () => {
+  const grouped = groupSceneNodes(animatedScene(), ['body', 'wing'], { name: 'Bichinho' })
+  const group = grouped.nodes.find((node) => node.kind === 'group')!.id
+  const f = setup(grouped)
+  try {
+    f.player.seek(2)
+    const initial = f.player.getSnapshot().pose!.worldMatrices.get('body')![12]
+    expect(f.gesture.begin([group, 'body'])).toBe(true)
+    f.gesture.preview(move(2))
+    f.gesture.end(true)
+    const parentPose = f.gesture.getSnapshot().pose!
+    expect(parentPose.worldMatrices.get('body')![12]).toBeCloseTo(initial + 2)
+    expect(f.gesture.begin(['body'])).toBe(true)
+    f.gesture.preview(move(3))
+    f.gesture.end(true)
+    const combined = f.gesture.getSnapshot().pose!
+    expect(combined.worldMatrices.get('body')![12]).toBeCloseTo(initial + 5)
+    f.gesture.undo()
+    expect(f.gesture.getSnapshot().pose!.worldMatrices).toEqual(parentPose.worldMatrices)
+    f.gesture.redo()
+    expect(f.gesture.record()).toBe(true)
+    const next = f.editor.getState().content
+    expect(prepareSceneAnimation(next, 'clip').sample(2, false).worldMatrices).toEqual(
+      combined.worldMatrices,
+    )
+    expect(
+      next
+        .animations![0]!.tracks.find(
+          (track) => track.nodeId === 'body' && track.channel === 'translation',
+        )!
+        .keys.at(-1)!.value,
+    ).toEqual([3, 0, 0])
+    f.editor.getState().undo()
+    expect(f.editor.getState().content.animations).toEqual(grouped.animations)
   } finally {
     f.close()
   }

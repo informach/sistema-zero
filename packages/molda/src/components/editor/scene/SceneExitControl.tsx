@@ -15,12 +15,14 @@ export function SceneExitControl({
   backup,
   onExit,
   beforeExit,
+  requestTransition = (action) => action(),
 }: {
   editor: EditorStore<MoldaSceneDocument>
   cancelPreview(): void
   backup(): boolean
   onExit(mode: SceneExitMode): void
   beforeExit?(): Promise<boolean>
+  requestTransition?(action: () => void): void
 }) {
   const copy = COPY.scene.exit
   const trigger = useRef<HTMLButtonElement>(null)
@@ -92,7 +94,9 @@ export function SceneExitControl({
         type="button"
         className="sz-tool-pill sz-tool-pill--quiet shrink-0 px-3.5 text-sm max-sm:w-(--sz-tool-hit) max-sm:px-0"
         onClick={() => {
-          setState({ session, open: true, pending: false, error: null })
+          requestTransition(() => {
+            void saveAndLeave()
+          })
         }}
       >
         <ArrowLeft aria-hidden="true" />

@@ -32,12 +32,10 @@ async function withGeneration() {
   return { db, scene }
 }
 
-test('com a oficina seguinte ligada, a galeria mostra as duas gerações numa lista só', async () => {
+test('a galeria padrão mostra modelos dos dois formatos numa lista só', async () => {
   const { db, scene } = await withGeneration()
   const legacy = { ...makeModel(), id: 'antigo', name: 'carro', updatedAt: 1 }
-  const view = render(
-    <MoldaApp persistence={createMemoryPersistence([legacy])} adapter={{ sceneWorkshop: true }} />,
-  )
+  const view = render(<MoldaApp persistence={createMemoryPersistence([legacy])} />)
   try {
     const card = await screen.findByRole('button', { name: COPY.a11y.assetCard('nave', 'Modelo') })
     expect(
@@ -45,7 +43,7 @@ test('com a oficina seguinte ligada, a galeria mostra as duas gerações numa li
     ).toBe(true)
     // Abrir a criação da geração seguinte monta a OFICINA, não o editor antigo.
     fireEvent.click(card)
-    await waitFor(() => expect(screen.queryByText(COPY.scene.development) !== null).toBe(true))
+    await screen.findByRole('region', { name: COPY.scene.title })
     await settle()
     expect(screen.queryByRole('heading', { name: COPY.gallery.title })).toBe(null)
     expect(scene.formatVersion).toBe(2)
@@ -55,55 +53,51 @@ test('com a oficina seguinte ligada, a galeria mostra as duas gerações numa li
   }
 })
 
-test('sem a capacidade, o modelo antigo NÃO é promovido: abre no editor de sempre', async () => {
+test('um deep link sem configuração de versão abre o modelo antigo na oficina', async () => {
   const { db } = await withGeneration()
   const legacy = { ...makeModel(), id: 'antigo', name: 'carro', updatedAt: 1 }
+  await db.seed(`${DOCUMENT_KEY_PREFIX}${legacy.id}`, { ...legacy, formatVersion: 1 })
+  const view = render(
+    <MoldaApp
+      persistence={createMemoryPersistence([legacy])}
+      adapter={{ initialAssetId: legacy.id }}
+    />,
+  )
+  try {
+    await screen.findByRole('region', { name: COPY.scene.title })
+    await settle()
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('carro')
+    expect((await createScenePersistence(db.store).read(legacy.id)).status).toBe('active')
+  } finally {
+    view.unmount()
+    db.close()
+  }
+})
+
+test('um modelo no formato atual abre na mesma oficina sem configuração adicional', async () => {
+  const { db } = await withGeneration()
+  const view = render(<MoldaApp persistence={createMemoryPersistence([])} />)
+  try {
+    const card = await screen.findByRole('button', { name: COPY.a11y.assetCard('nave', 'Modelo') })
+    fireEvent.click(card)
+    await screen.findByRole('region', { name: COPY.scene.title })
+    await settle()
+  } finally {
+    view.unmount()
+    db.close()
+  }
+})
+
+test('abrir um modelo antigo converte a criação e abre na oficina padrão', async () => {
+  const { db } = await withGeneration()
+  const legacy = { ...makeModel(), id: 'antigo', name: 'carro', updatedAt: 1 }
+  // O app real tem UM banco: a galeria v1 e a oficina seguinte leem o mesmo registro.
   await db.seed(`${DOCUMENT_KEY_PREFIX}${legacy.id}`, { ...legacy, formatVersion: 1 })
   const view = render(<MoldaApp persistence={createMemoryPersistence([legacy])} />)
   try {
     const card = await screen.findByRole('button', { name: COPY.a11y.assetCard('carro', 'Modelo') })
     fireEvent.click(card)
-    await waitFor(() =>
-      expect(screen.queryByRole('heading', { level: 1 })?.textContent).toBe('carro'),
-    )
-    await settle()
-    expect(screen.queryByText(COPY.scene.development)).toBe(null)
-    // Nada foi promovido: o registro v1 continua no lugar dele.
-    expect(await db.read(`${DOCUMENT_KEY_PREFIX}${legacy.id}`)).toBeTruthy()
-  } finally {
-    view.unmount()
-    db.close()
-  }
-})
-
-test('desligar a capacidade NÃO esconde o que já foi promovido: continua listado e abrindo', async () => {
-  const { db } = await withGeneration()
-  // Sem `sceneWorkshop`: quem já está na geração seguinte precisa continuar alcançável,
-  // senão voltar atrás deixaria o trabalho da criança preso num editor que não o lê.
-  const view = render(<MoldaApp persistence={createMemoryPersistence([])} />)
-  try {
-    const card = await screen.findByRole('button', { name: COPY.a11y.assetCard('nave', 'Modelo') })
-    fireEvent.click(card)
-    await waitFor(() => expect(screen.queryByText(COPY.scene.development) !== null).toBe(true))
-    await settle()
-  } finally {
-    view.unmount()
-    db.close()
-  }
-})
-
-test('abrir um modelo antigo com a oficina ligada promove a criação e abre na oficina', async () => {
-  const { db } = await withGeneration()
-  const legacy = { ...makeModel(), id: 'antigo', name: 'carro', updatedAt: 1 }
-  // O app real tem UM banco: a galeria v1 e a oficina seguinte leem o mesmo registro.
-  await db.seed(`${DOCUMENT_KEY_PREFIX}${legacy.id}`, { ...legacy, formatVersion: 1 })
-  const view = render(
-    <MoldaApp persistence={createMemoryPersistence([legacy])} adapter={{ sceneWorkshop: true }} />,
-  )
-  try {
-    const card = await screen.findByRole('button', { name: COPY.a11y.assetCard('carro', 'Modelo') })
-    fireEvent.click(card)
-    await waitFor(() => expect(screen.queryByText(COPY.scene.development) !== null).toBe(true))
+    await screen.findByRole('region', { name: COPY.scene.title })
     await settle()
     // Promover é gravar o formato novo: o registro antigo sai e o da cena entra.
     // ⚠️ A promoção é uma transação do IndexedDB: uma rodada de `settle()` não
@@ -123,12 +117,10 @@ test('abrir um modelo antigo com a oficina ligada promove a criação e abre na 
   }
 })
 
-test('textura e céu continuam nos editores deles, mesmo com a oficina ligada', async () => {
+test('textura usa seu editor de pintura 2D', async () => {
   const { db } = await withGeneration()
   const texture = { ...makeTexture(), id: 'folha', name: 'pele', updatedAt: 5 }
-  const view = render(
-    <MoldaApp persistence={createMemoryPersistence([texture])} adapter={{ sceneWorkshop: true }} />,
-  )
+  const view = render(<MoldaApp persistence={createMemoryPersistence([texture])} />)
   try {
     const card = await screen.findByRole('button', { name: COPY.a11y.assetCard('pele', 'Textura') })
     fireEvent.click(card)
@@ -136,7 +128,7 @@ test('textura e céu continuam nos editores deles, mesmo com a oficina ligada', 
       expect(screen.queryByRole('heading', { level: 1 })?.textContent).toBe('pele'),
     )
     await settle()
-    expect(screen.queryByText(COPY.scene.development)).toBe(null)
+    expect(screen.queryByRole('region', { name: COPY.scene.title }) === null).toBe(true)
   } finally {
     view.unmount()
     db.close()
@@ -146,9 +138,7 @@ test('textura e céu continuam nos editores deles, mesmo com a oficina ligada', 
 test('o pacote "Baixar tudo" leva a criação da oficina nova no arquivo nativo dela', async () => {
   const { db } = await withGeneration()
   const legacy = { ...makeModel(), id: 'antigo', name: 'carro', updatedAt: 1 }
-  const view = render(
-    <MoldaApp persistence={createMemoryPersistence([legacy])} adapter={{ sceneWorkshop: true }} />,
-  )
+  const view = render(<MoldaApp persistence={createMemoryPersistence([legacy])} />)
   try {
     await screen.findByRole('button', { name: COPY.a11y.assetCard('nave', 'Modelo') })
     fireEvent.click(screen.getByRole('button', { name: COPY.gallery.downloadAll }))

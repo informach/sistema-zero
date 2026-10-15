@@ -1,15 +1,23 @@
+import type { Vec3 } from '../core/model'
 import type { MoldaSceneDocument, Vec2 } from '../scene/document'
-import type { ScenePaintSample, ScenePaintTarget } from '../scene/imagePaint'
+import type { ScenePaintRgba, ScenePaintSample, ScenePaintTarget } from '../scene/imagePaint'
 import type { AffineMatrix } from '../scene/matrix'
 import type { SceneComponentSelection } from '../scene/meshComponents'
+import type { MeshCutPlane } from '../scene/meshPlaneCut'
 import type { SceneAnimationPose } from '../scene/sampleAnimation'
 import type { SceneSkinPaintSample } from '../scene/skinPaint'
 import type { SceneSkinPaintPreview } from '../state/sceneSkinPaintGesture'
 import type { CapturedPaintActions } from './CapturedPaintInput'
 import type { SceneAreaTool } from './SceneAreaSelection'
+import type { ScenePreviewGuideState } from './ScenePreviewGuide'
 import type { SceneSkinWeightTarget } from './SceneSkinWeightOverlay'
 import type { SceneDrawIssue } from './sceneRenderResource'
 import type { CameraView } from './types'
+
+export interface SceneGuideInput {
+  plane?: MeshCutPlane
+  corners?: readonly Vec3[]
+}
 
 /**
  * A aba Pintar no palco. `paint`: tocar na peça escolhida pinta, tocar em outra peça a escolhe e
@@ -23,6 +31,7 @@ export interface SceneSelectDetail {
 }
 
 export interface SceneViewportPort {
+  setPreviewGuide?(guide: ScenePreviewGuideState | null): void
   setDocument(document: MoldaSceneDocument): SceneDrawIssue[]
   setSelection(ids: readonly string[]): void
   setIsolation(ids: readonly string[] | null): void
@@ -30,6 +39,8 @@ export interface SceneViewportPort {
   setGridVisible?(visible: boolean): void
   setMovementStep?(step: number | null): void
   frame(selectionOnly?: boolean): void
+  zoom?(factor: number): void
+  ensureVisible?(ids: readonly string[]): void
   setTransformTool(tool: SceneTransformTool): void
   setAreaTool(tool: SceneAreaTool, through: boolean): void
   setComponentSelection(selection: SceneComponentSelection | null): void
@@ -54,6 +65,12 @@ export interface SceneViewportPort {
 }
 
 export interface SceneViewportCallbacks {
+  guideInput?(): SceneGuideInput | null
+  guidePoint?(point: Vec3): void
+  sampleInk?(color: ScenePaintRgba): void
+  samplingInk?(): boolean
+  hover?(id: string | null): void
+  hoverEnabled?(): boolean
   select(id: string | null, additive: boolean, detail?: SceneSelectDetail): void
   contextLost(lost: boolean): void
   transform?: SceneTransformActions

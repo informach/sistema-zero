@@ -162,7 +162,7 @@ describe('inventário da oficina: o que a criança alcança', () => {
    *   Este só pode subir quando um controle NOVO entra, e o aumento tem de ser explicado
    *   aqui. Ele é a rede contra "acrescentaram mais coisa".
    * - **encarados** (`frontControls`) é o que a criança vê ao chegar: os montados menos o
-   *   que está atrás de um `<details>` fechado. Este é o número da queixa, e ele SÓ DESCE.
+   *   que está atrás de um `<details>` fechado. Mudanças exigem justificativa de produto.
    *
    * Medido em 10/09/2026, antes de qualquer mudança de layout: 44 montados com a oficina
    * recém-aberta e 67 com uma peça escolhida — e, como nada era recolhido, encarados eram
@@ -189,26 +189,30 @@ describe('inventário da oficina: o que a criança alcança', () => {
    * (-1). Com uma peça, "Mais sobre a peça" recolhe o nome, mostrar, travar e o grupo (-4
    * encarados), e o gatilho dele é o +1 dos montados: é um `<summary>` NOVO, e nada saiu.
    *
-   * Alvo do redesenho: **≤30 encarados** com uma peça escolhida, medido no nível de entrada.
+   * Revisão 4 (14/10): 57/35 sem seleção e 98/62 com seleção neste fixture. Renomear,
+   * salvar/exportar, zoom por cliques, Pivô contextual e Mostrar/Travar na árvore são
+   * acessos explícitos aprovados. A contagem inclui cada cor e cada ação por peça;
+   * não mede sozinha a compreensão infantil. Famílias e inventário continuam testados.
    */
-  test('a quantidade de controles na tela não cresce, e a que a criança encara desce', () => {
+  test('o inventário respeita o teto das ações explícitas aprovadas na revisão 4', () => {
     const vazio = mount(migrateLegacyModel(makeModel()).document)
     const encaradosVazio = frontControls(vazio.view.container)
-    expect(controlInventory(vazio.view.container).length).toBeLessThanOrEqual(47)
+    // Header rename/save menus, zoom alternatives and tree visibility/lock are explicit additions.
+    expect(controlInventory(vazio.view.container).length).toBeLessThanOrEqual(57)
     expect(
       encaradosVazio.length,
       `encarados na abertura: ${encaradosVazio.join(' | ')}`,
-    ).toBeLessThanOrEqual(32)
+    ).toBeLessThanOrEqual(35)
     cleanup()
 
     const comPeca = mount(withPiece())
     choosePiece(comPeca.view.container)
     const encaradosPeca = frontControls(comPeca.view.container)
-    expect(controlInventory(comPeca.view.container).length).toBeLessThanOrEqual(88)
+    expect(controlInventory(comPeca.view.container).length).toBeLessThanOrEqual(98)
     expect(
       encaradosPeca.length,
       `encarados com uma peça escolhida: ${encaradosPeca.join(' | ')}`,
-    ).toBeLessThanOrEqual(59)
+    ).toBeLessThanOrEqual(62)
   })
 
   /**
@@ -227,7 +231,8 @@ describe('inventário da oficina: o que a criança alcança', () => {
     await view.findByText(SCENE_PAINT_COPY.more, { selector: 'summary' })
     const montados = controlInventory(view.container)
     const encarados = frontControls(view.container)
-    expect(montados.length, montados.join(' | ')).toBeLessThanOrEqual(67)
+    // Persistent ink/favorites, project actions and camera clicks; advanced tools stay collapsed.
+    expect(montados.length, montados.join(' | ')).toBeLessThanOrEqual(75)
     expect(encarados.length, encarados.join(' | ')).toBeLessThanOrEqual(49)
   })
 

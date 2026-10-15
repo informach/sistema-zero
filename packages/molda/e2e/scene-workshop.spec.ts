@@ -2,8 +2,7 @@
  * A oficina da geração seguinte DENTRO do app, em navegador real: criar pelo fluxo de
  * sempre, promover ao abrir, modelar, voltar com miniatura e sobreviver ao recarregar.
  *
- * O playground liga a capacidade com `?oficina=app`; ligá-la de verdade para a criança é
- * decisão de rollout, não deste teste.
+ * A mesma oficina abre por padrão em todos os hosts.
  */
 import { readFile, writeFile } from 'node:fs/promises'
 import { expect, type Page, test } from '@playwright/test'
@@ -70,7 +69,8 @@ async function waitForThumb(page: Page, id: string): Promise<void> {
 
 async function createModel(page: Page, name: string): Promise<void> {
   await page.getByRole('button', { name: 'Criar novo' }).click()
-  await page.getByRole('button', { name: 'Criar modelo' }).click()
+  await page.getByText('Mais opções para começar', { exact: true }).click()
+  await page.getByRole('button', { name: 'Configurar modelo' }).click()
   await page.getByRole('button', { name: 'Continuar' }).click()
   // Pelo RÓTULO: se o campo perder a associação, este teste reprova junto.
   await page.getByLabel('Nome', { exact: true }).fill(name)
@@ -80,8 +80,6 @@ async function createModel(page: Page, name: string): Promise<void> {
 /** Sai da oficina guardando: a volta é para a galeria do APP, não para a lista da oficina. */
 async function backToGallery(page: Page): Promise<void> {
   await page.getByRole('button', { name: 'Meus projetos' }).click()
-  const save = page.getByRole('button', { name: 'Guardar e voltar' })
-  if (await save.isVisible().catch(() => false)) await save.click()
   await expect(page.getByRole('heading', { name: 'Minhas criações 3D' })).toBeVisible()
 }
 
@@ -90,13 +88,13 @@ test('criar pelo fluxo de sempre abre a oficina nova já promovida, e voltar tra
 }) => {
   const pageErrors: string[] = []
   page.on('pageerror', (error) => pageErrors.push(error.message))
-  await page.goto('/?oficina=app')
+  await page.goto('/?')
   await expect(page.getByRole('heading', { name: 'Minhas criações 3D' })).toBeVisible()
 
   await createModel(page, 'robo-e2e')
   // A oficina montou: estes controles não existem no editor antigo.
-  await expect(page.getByRole('button', { name: 'Editar malha' })).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Baixar projeto' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Mover', exact: true })).toBeVisible()
+  await expect(page.getByText('Salvar e exportar', { exact: true })).toBeVisible()
   await expect(page.locator('canvas').first()).toBeVisible()
 
   const keys = await storageKeys(page)
@@ -121,14 +119,14 @@ test('criar pelo fluxo de sempre abre a oficina nova já promovida, e voltar tra
   await page.reload()
   await expect(page.getByRole('button', { name: 'Modelo robo-e2e' })).toBeVisible()
   await page.getByRole('button', { name: 'Modelo robo-e2e' }).click()
-  await expect(page.getByRole('button', { name: 'Editar malha' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Mover', exact: true })).toBeVisible()
   expect(pageErrors).toEqual([])
 })
 
 test('modelar e desfazer valem um passo cada, com o palco 3D vivo', async ({ page }) => {
   const pageErrors: string[] = []
   page.on('pageerror', (error) => pageErrors.push(error.message))
-  await page.goto('/?oficina=app')
+  await page.goto('/?')
   await createModel(page, 'peca-e2e')
   const undo = page.getByRole('button', { name: 'Desfazer' })
   await expect(undo).toBeDisabled()
@@ -144,9 +142,9 @@ test('modelar e desfazer valem um passo cada, com o palco 3D vivo', async ({ pag
 test('a oficina cabe em tablet e em celular sem esconder as ferramentas', async ({ page }) => {
   const pageErrors: string[] = []
   page.on('pageerror', (error) => pageErrors.push(error.message))
-  await page.goto('/?oficina=app')
+  await page.goto('/?')
   await createModel(page, 'toque-e2e')
-  await expect(page.getByRole('button', { name: 'Editar malha' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Mover', exact: true })).toBeVisible()
 
   for (const size of [
     { width: 768, height: 1024 },
@@ -170,12 +168,17 @@ test('a oficina cabe em tablet e em celular sem esconder as ferramentas', async 
 })
 
 async function downloaded(page: Page, button: string) {
+  const menu = page.locator('summary').filter({ hasText: 'Salvar e exportar' })
+  const backup = button === 'Baixar projeto'
+  if (backup && !(await menu.evaluate((element) => element.parentElement!.hasAttribute('open'))))
+    await menu.click()
   const [file] = await Promise.all([
     page.waitForEvent('download'),
     page.getByRole('button', { name: button, exact: true }).click(),
   ])
   const path = await file.path()
   if (!path) throw new Error('Download missing')
+  if (backup) await menu.click()
   return { name: file.suggestedFilename(), bytes: await readFile(path) }
 }
 
@@ -186,9 +189,10 @@ test('exporta glTF, OBJ com materiais, PNG limpo e apresentação que gira sem i
   test.setTimeout(90_000)
   const errors: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))
-  await page.goto('/?oficina=app')
+  await page.goto('/?')
   await createModel(page, 'exportacoes-e2e')
   await expect(page.getByRole('button', { name: 'Imagem de apoio', exact: true })).toBeEnabled()
+  await page.getByText('Salvar e exportar', { exact: true }).click()
   await page.getByRole('button', { name: 'Exportar GLB', exact: true }).click()
   const format = page.getByLabel('Formato da cópia')
   await format.selectOption('gltf')
@@ -240,7 +244,7 @@ test('exporta glTF, OBJ com materiais, PNG limpo e apresentação que gira sem i
 test('grade, passo e imagem de apoio são da sessão; o ZIP restaura a oficina nova na galeria', async ({
   page,
 }) => {
-  await page.goto('/?oficina=app')
+  await page.goto('/?')
   await createModel(page, 'backup-e2e')
   const reference = await sharp({
     create: { width: 20, height: 20, channels: 4, background: '#ef2244' },
@@ -255,7 +259,7 @@ test('grade, passo e imagem de apoio são da sessão; o ZIP restaura a oficina n
   await page.getByRole('button', { name: 'Voltar ao modelo', exact: true }).click()
   await page.getByRole('button', { name: 'Mostrar grade', exact: true }).click()
   // O passo mora recolhido em "Mais ajustes do palco" desde o lote 7a: abrir faz parte do caminho.
-  await page.getByText('Mais ajustes do palco', { exact: true }).click()
+  await page.locator('summary').filter({ hasText: 'Mais ajustes do palco' }).click()
   await page.getByRole('combobox', { name: 'Passo do movimento', exact: true }).selectOption('0.5')
   await expect(page.getByRole('button', { name: 'Desfazer', exact: true })).toBeDisabled()
   await backToGallery(page)
@@ -265,13 +269,13 @@ test('grade, passo e imagem de apoio são da sessão; o ZIP restaura a oficina n
     .setInputFiles({ name: backup.name, mimeType: 'application/zip', buffer: backup.bytes })
   await expect(page.getByRole('button', { name: 'Modelo backup-e2e-2', exact: true })).toBeVisible()
   await page.getByRole('button', { name: 'Modelo backup-e2e-2', exact: true }).click()
-  await expect(page.getByRole('button', { name: 'Editar malha' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Mover', exact: true })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Mostrar grade', exact: true })).toHaveAttribute(
     'aria-pressed',
     'true',
   )
   // A oficina reaberta nasce com "Mais ajustes do palco" recolhido de novo.
-  await page.getByText('Mais ajustes do palco', { exact: true }).click()
+  await page.locator('summary').filter({ hasText: 'Mais ajustes do palco' }).click()
   await expect(page.getByRole('combobox', { name: 'Passo do movimento', exact: true })).toHaveValue(
     'free',
   )
@@ -290,7 +294,7 @@ test('falha ao carregar a oficina preserva a criação e oferece recuperação p
       await route.abort()
     } else await route.continue()
   })
-  await page.goto('/?oficina=app')
+  await page.goto('/?')
   await createModel(page, 'recuperar-e2e')
   await expect(page.getByRole('button', { name: 'Recarregar página', exact: true })).toBeVisible()
   expect(failed).toBe(true)
@@ -299,11 +303,11 @@ test('falha ao carregar a oficina preserva a criação e oferece recuperação p
     page.getByRole('button', { name: 'Modelo recuperar-e2e', exact: true }),
   ).toBeVisible()
   await page.getByRole('button', { name: 'Modelo recuperar-e2e', exact: true }).click()
-  await expect(page.getByRole('button', { name: 'Editar malha' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Mover', exact: true })).toBeVisible()
 })
 
 async function restoreProject(page: Page, source: MoldaSceneDocument) {
-  await page.goto('/?oficina=app')
+  await page.goto('/?')
   await expect(page.getByRole('heading', { name: 'Minhas criações 3D' })).toBeVisible()
   await page.locator('input[name="molda-backup"]').setInputFiles({
     name: 'projeto.molda.json',
@@ -336,11 +340,11 @@ test('pintar do jeito da criança: caixa, Pintar, uma cor, arrastar na peça; fo
   test.setTimeout(60_000)
   const errors: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))
-  await page.goto('/?oficina=app')
+  await page.goto('/?')
   // O modelo novo já nasce com uma caixa: é nela que a criança pinta primeiro.
   await createModel(page, 'pinta-e2e')
   await page.getByRole('button', { name: COPY.scene.select('caixa'), exact: true }).click()
-  await page.getByRole('button', { name: COPY.editor.model.views.selection, exact: true }).click()
+  await page.getByRole('button', { name: COPY.editor.model.views.frame, exact: true }).click()
   const box = (await nativeProject(page)).nodes.find(
     (node: { name: string }) => node.name === 'caixa',
   )!.id as string
@@ -348,11 +352,7 @@ test('pintar do jeito da criança: caixa, Pintar, uma cor, arrastar na peça; fo
   // A peça escolhida já está pronta para a tinta, sem mudar de cor: nenhum painel aberto.
   const prepared = await nativeProject(page)
   const sheet = colorImageOf(prepared, box)
-  expect(sheet).toBeDefined()
-  // No JSON do projeto a camada vai em base64; zero em tudo = a cor da peça aparece igual.
-  const pixels = Buffer.from(sheet!.layers[0]!.pixels as unknown as string, 'base64')
-  expect(pixels.length).toBeGreaterThan(0)
-  expect(pixels.every((value) => value === 0)).toBe(true)
+  expect(sheet).toBeUndefined() // A preparação sem traço não entra no arquivo.
   await expect(page.getByText(SCENE_PAINT_COPY.modelHint)).toBeVisible()
   const hex = resolvePaletteColors(prepared)[5]!
   await page.getByRole('button', { name: COPY.a11y.colorSwatch(5, hex), exact: true }).click()
@@ -364,7 +364,7 @@ test('pintar do jeito da criança: caixa, Pintar, uma cor, arrastar na peça; fo
   await page.mouse.move(center.x + 6, center.y + 4, { steps: 6 })
   await page.mouse.up()
   const painted = await nativeProject(page)
-  expect(colorImageOf(painted, box)!.layers).not.toEqual(sheet!.layers)
+  expect(colorImageOf(painted, box)!.layers.length).toBeGreaterThan(0)
   // Arrastar a partir do vazio: a câmera gira e a tinta fica como estava. O ponto de partida é
   // conferido: tem de ser o próprio palco (e não um cartão flutuante por cima dele), e a imagem
   // do palco tem de mudar, senão "a câmera gira" não estaria provado.
@@ -375,7 +375,7 @@ test('pintar do jeito da criança: caixa, Pintar, uma cor, arrastar na peça; fo
         [0.85, 0.9],
         [0.9, 0.6],
         [0.6, 0.9],
-      ]) {
+      ] as const) {
         const px = x + width * fx
         const py = y + height * fy
         const hit = document.elementFromPoint(px, py)
@@ -422,11 +422,25 @@ test('pintura 2D e prévia 3D compartilham pixels, desfazer e reabertura; movime
   await page.getByRole('combobox', { name: COPY.scene.materialChoose }).selectOption(material.id)
   await page.getByRole('button', { name: COPY.scene.paintLayer, exact: true }).click()
   const before = await nativeProject(page)
-  const hex = resolvePaletteColors(source)[2]!
-  await page.getByRole('button', { name: COPY.a11y.colorSwatch(2, hex), exact: true }).click()
+  // A imagem de origem já usa a cor 2: escolha uma tinta diferente para provar a edição.
+  const hex = resolvePaletteColors(source)[8]!
+  await page.getByRole('button', { name: COPY.a11y.colorSwatch(8, hex), exact: true }).click()
   const canvas = page.getByRole('button', { name: COPY.scene.paintCanvas, exact: true })
   await canvas.scrollIntoViewIfNeeded()
-  const box = (await canvas.boundingBox())!
+  const box = (await canvas.locator('canvas').boundingBox())!
+  expect(
+    await canvas.evaluate((element) => {
+      const rect = element.querySelector('canvas')!.getBoundingClientRect()
+      return [0.25, 0.7].every((fraction) =>
+        element.contains(
+          document.elementFromPoint(
+            rect.x + rect.width * fraction,
+            rect.y + rect.height * fraction,
+          ),
+        ),
+      )
+    }),
+  ).toBe(true)
   await page.mouse.move(box.x + box.width * 0.25, box.y + box.height * 0.25)
   await page.mouse.down()
   await page.mouse.move(box.x + box.width * 0.7, box.y + box.height * 0.7, { steps: 5 })
@@ -439,7 +453,7 @@ test('pintura 2D e prévia 3D compartilham pixels, desfazer e reabertura; movime
   expect((await nativeProject(page)).images).toEqual(painted.images)
   await page.getByRole('button', { name: COPY.scene.animationMode, exact: true }).click()
   await page.getByText(COPY.scene.animationPresetTitle, { exact: true }).click()
-  await page.getByRole('button', { name: COPY.scene.animationPresetPrepare, exact: true }).click()
+  await page.getByRole('button', { name: 'Pular', exact: true }).click()
   await page.getByRole('button', { name: COPY.scene.animationPresetConfirm, exact: true }).click()
   const animated = await nativeProject(page)
   expect(animated.animations).toHaveLength(1)
@@ -466,6 +480,7 @@ test('vincular uma malha aos apoios e desfazer usa a oficina pública e exporta 
   await page
     .getByRole('button', { name: COPY.scene.select(source.nodes[0]!.name), exact: true })
     .click()
+  await page.getByText('Mais ferramentas', { exact: true }).click()
   await page.getByRole('button', { name: COPY.scene.skinBinding.open, exact: true }).click()
   const modal = page.getByRole('dialog', { name: COPY.scene.skinBinding.title })
   await modal.getByRole('checkbox', { name: `Braço ${COPY.scene.skinBinding.group}` }).check()
@@ -479,6 +494,7 @@ test('vincular uma malha aos apoios e desfazer usa a oficina pública e exporta 
   expect((await nativeProject(page)).skins).toBeUndefined()
   await page.getByRole('button', { name: COPY.editor.redo, exact: true }).click()
   expect((await nativeProject(page)).skins).toEqual(bound.skins)
+  await page.getByText('Salvar e exportar', { exact: true }).click()
   await page.getByRole('button', { name: COPY.scene.glbExport.open, exact: true }).click()
   await page.getByRole('button', { name: COPY.scene.glbExport.prepare, exact: true }).click()
   await page.getByLabel(COPY.scene.glbExport.accept).check()
@@ -491,19 +507,19 @@ test('duas abas detectam revisão externa e preservam a cópia local para recupe
   page,
   context,
 }) => {
-  await page.goto('/?oficina=app')
+  await page.goto('/?')
   await createModel(page, 'abas-e2e')
   const original = await nativeProject(page)
   const second = await context.newPage()
-  await second.goto('/?oficina=app')
+  await second.goto('/?')
   await second.getByRole('button', { name: 'Modelo abas-e2e', exact: true }).click()
   await expect(second.getByRole('button', { name: 'Imagem de apoio', exact: true })).toBeEnabled()
   await page.bringToFront()
   await page.getByText('Adicionar forma ou ponto', { exact: true }).click()
   await page.getByRole('button', { name: 'Caixa', exact: true }).click()
-  await page.getByRole('button', { name: COPY.scene.save, exact: true }).click()
+  await expect(page.getByTitle('Salvo neste computador', { exact: true })).toBeVisible()
   await second.bringToFront()
-  await expect(second.getByText(COPY.scene.conflict, { exact: true })).toBeVisible({
+  await expect(second.getByRole('alert').filter({ hasText: COPY.scene.conflict })).toBeVisible({
     timeout: 15_000,
   })
   expect((await nativeProject(second)).nodes).toEqual(original.nodes)
@@ -548,7 +564,7 @@ test('vinte aberturas liberam o contexto gráfico e mantêm a memória limitada'
   })
   const cdp = await context.newCDPSession(page)
   const samples: Array<{ cycle: number; heap: number; nodes: number }> = []
-  await page.goto('/?oficina=app')
+  await page.goto('/?')
   await createModel(page, 'memoria-e2e')
   for (let cycle = 1; cycle <= 20; cycle++) {
     if (cycle > 1)

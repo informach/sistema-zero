@@ -8,6 +8,7 @@ import { resetMoldaPersistenceForTests } from '../../../state/persistence'
 import { installFakeTexturePreview } from '../../../testing/fakeTexturePreview'
 import { installFakeViewport } from '../../../testing/fakeViewport'
 import { makeModel, makeTexture } from '../../../testing/fixtures'
+import { LegacyModelEditorHarness } from '../../../testing/LegacyModelEditorHarness'
 import { MoldaApp } from '../../MoldaApp'
 
 let fake: ReturnType<typeof installFakeTexturePreview>
@@ -33,6 +34,9 @@ async function openTexture(
   render(<MoldaApp persistence={persistence} adapter={{ initialAssetId: 'texture-1' }} />)
   await screen.findByRole('img', { name: COPY.editor.texture.stage })
   await waitFor(() => expect(fake.instances[0]?.textures.length ?? 0).toBeGreaterThan(0))
+  // Pixel-exact legacy fixtures use the fine brush; the child's initial brush is medium.
+  expect(screen.getByRole('button', { name: /: Médio$/ }).getAttribute('aria-pressed')).toBe('true')
+  fireEvent.click(screen.getByRole('button', { name: /: Fino$/ }))
   return persistence
 }
 
@@ -302,7 +306,7 @@ describe('vestir a peça (editor do modelo)', () => {
     const viewport = installFakeViewport()
     try {
       const persistence = createMemoryPersistence([makeModel(), makeTexture()])
-      render(<MoldaApp persistence={persistence} adapter={{ initialAssetId: 'model-1' }} />)
+      render(<LegacyModelEditorHarness persistence={persistence} assetId="model-1" />)
       await screen.findByRole('complementary', { name: COPY.editor.model.toolbox })
       fireEvent.click(screen.getByRole('button', { name: COPY.editor.model.mode.paint }))
       fireEvent.click(

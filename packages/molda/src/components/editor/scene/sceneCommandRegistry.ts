@@ -303,7 +303,7 @@ const COMMAND_DEFINITIONS = [
     label: scene.duplicate,
     icon: Copy,
     contexts: model,
-    slot: 'rail',
+    slot: 'dock',
     tier: 1,
     group: 'piece',
     shortcut: primary('Ctrl+D', 'd'),
@@ -313,7 +313,7 @@ const COMMAND_DEFINITIONS = [
     label: scene.remove,
     icon: Trash2,
     contexts: model,
-    slot: 'rail',
+    slot: 'dock',
     tier: 1,
     group: 'piece',
     destructive: true,
@@ -384,7 +384,7 @@ const COMMAND_DEFINITIONS = [
   // ── palco ───────────────────────────────────────────────────────────────────
   {
     id: 'view.frame',
-    label: COPY.editor.model.views.selection,
+    label: 'Enquadrar',
     icon: Focus,
     contexts: anyEdit,
     slot: 'stage',

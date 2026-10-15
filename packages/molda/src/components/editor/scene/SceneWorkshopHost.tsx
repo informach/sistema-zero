@@ -14,7 +14,7 @@ import type { RestoreSceneProject } from './SceneProjectRestore'
 import { SceneStart } from './SceneStart'
 import { SceneWorkshop } from './SceneWorkshop'
 
-/** Internal host only. Public v1 writer/cloud rollout is deliberately not activated here. */
+/** Abre a oficina 3D no banco do perfil, com leitura compatível dos arquivos existentes. */
 export function SceneWorkshopHost({
   store,
   initialId = null,
@@ -29,7 +29,7 @@ export function SceneWorkshopHost({
   onRouteChange?: (id: string | null) => void
   viewportFactory?: SceneViewportFactory
   theme?: 'light' | 'dark'
-  /** Ausente = host interno sem ponte; é o que decide o aviso de oficina em desenvolvimento. */
+  /** Ponte opcional para atualizar uma criação já levada ao Estúdio. */
   resyncToStudio?: ResyncToStudio
   canResyncToStudio?: (id: string) => Promise<boolean>
 }) {
@@ -130,13 +130,6 @@ export function SceneWorkshopHost({
       data-molda-theme={theme}
       className="flex min-h-0 flex-1 flex-col bg-mld-bg text-mld-text"
     >
-      {/* Sem ponte com o Estúdio, isto é o host interno: o aviso continua verdadeiro.
-          Com ela, a oficina é o editor de verdade da criança e o aviso mentiria. */}
-      {resyncToStudio ? null : (
-        <p className="border-b border-mld-border px-4 py-2 text-sm text-mld-muted">
-          {COPY.scene.development}
-        </p>
-      )}
       {id === null ? (
         <SceneStart
           persistence={scope.persistence}

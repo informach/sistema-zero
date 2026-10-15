@@ -30,7 +30,7 @@ import { paintTextureShape, type TextureShape } from '../../../texture/shapes'
 import { prefersReducedMotion } from '../../../viewport/reducedMotion'
 import type { TexturePreviewLike } from '../../../viewport/TexturePreview'
 import { createTexturePreview } from '../../../viewport/texturePreviewFactory'
-import { Button, ToolButton } from '../../ui/Button'
+import { Button } from '../../ui/Button'
 import { isMoldaDialogOpen } from '../../ui/Dialog'
 import {
   Circle,
@@ -51,6 +51,7 @@ import { useToast } from '../../ui/Toast'
 import { useMediaQuery } from '../../ui/useMediaQuery'
 import { EditorTopBar } from '../EditorTopBar'
 import { ColorsPanel } from '../model/ColorsPanel'
+import { SceneTile } from '../scene/SceneTile'
 import { useEditorGesture } from '../useEditorGesture'
 import { PixelStage, TiledPreview } from './PixelStage'
 
@@ -118,7 +119,7 @@ export function TextureEditor({
   const wide = useMediaQuery('(min-width: 768px)')
   const copy = COPY.editor.texture
   const [tool, setTool] = useState<TextureTool>('pencil')
-  const [brush, setBrush] = useState<BrushSize>(1)
+  const [brush, setBrush] = useState<BrushSize>(2)
   const [color, setColor] = useState(1)
   const [shifted, setShifted] = useState(false)
   const [filled, setFilled] = useState(false)
@@ -387,38 +388,55 @@ export function TextureEditor({
             <legend className="mld-display px-1 text-[0.65rem] uppercase tracking-wide text-mld-muted">
               {COPY.editor.model.toolbox}
             </legend>
-            <div className="grid grid-cols-2 gap-1">
-              {TOOLS.map((item) => (
-                <ToolButton
+            <div className="grid grid-cols-1 gap-1">
+              {(['pencil', 'fill', 'eraser', 'picker'] as const).map((item) => (
+                <SceneTile
                   key={item}
                   icon={TOOL_ICONS[item]}
                   label={copy.tools[item]}
-                  shortcut={TOOL_SHORTCUTS[item]}
-                  active={tool === item}
+                  title={`${copy.tools[item]} (${TOOL_SHORTCUTS[item]})`}
+                  pressed={tool === item}
                   onClick={() => setTool(item)}
                 />
               ))}
-              <ToolButton
-                icon={Grid3x3}
-                label={copy.seamless}
-                shortcut="S"
-                active={asset.seamless}
-                onClick={() => commit({ ...current(), seamless: !current().seamless })}
-              />
-              <ToolButton
-                icon={Move}
-                label={copy.shiftHalf}
-                shortcut="D"
-                active={shifted}
-                onClick={toggleShifted}
-              />
             </div>
+            <details>
+              <summary className="min-h-11 cursor-pointer py-3 text-center text-xs font-bold">
+                Mais jeitos de pintar
+              </summary>
+              <div className="grid grid-cols-1 gap-1">
+                {(['line', 'rectangle', 'ellipse'] as const).map((item) => (
+                  <SceneTile
+                    key={item}
+                    icon={TOOL_ICONS[item]}
+                    label={copy.tools[item]}
+                    title={`${copy.tools[item]} (${TOOL_SHORTCUTS[item]})`}
+                    pressed={tool === item}
+                    onClick={() => setTool(item)}
+                  />
+                ))}
+                <SceneTile
+                  icon={Grid3x3}
+                  label={copy.seamless}
+                  title="O traço continua no outro lado da folha."
+                  pressed={asset.seamless}
+                  onClick={() => commit({ ...current(), seamless: !current().seamless })}
+                />
+                <SceneTile
+                  icon={Move}
+                  label={copy.shiftHalf}
+                  title="Ajuda a ver as emendas sem mudar os pixels."
+                  pressed={shifted}
+                  onClick={toggleShifted}
+                />
+              </div>
+            </details>
           </fieldset>
           <fieldset className="flex flex-col gap-1">
             <legend className="mld-display px-1 text-[0.65rem] uppercase tracking-wide text-mld-muted">
               {COPY.editor.model.paint.sizeLabel}
             </legend>
-            <div className="grid grid-cols-3 gap-1">
+            <div className="grid grid-cols-1 gap-1">
               {SIZES.map((item) => (
                 <button
                   key={item}
@@ -428,7 +446,7 @@ export function TextureEditor({
                   onClick={() => setBrush(item)}
                   className={interactiveChipClass(brush === item)}
                 >
-                  {item}
+                  {COPY.editor.model.paint.sizes[item]}
                 </button>
               ))}
             </div>

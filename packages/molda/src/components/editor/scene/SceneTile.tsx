@@ -10,8 +10,7 @@ import type { ButtonHTMLAttributes, CSSProperties, JSX, Ref } from 'react'
 import type { LucideIcon } from '../../ui/icons'
 
 /** A grade dos ladrilhos: duas colunas na coluna; uma fileira só quando ela deita (abaixo de `lg`). */
-export const SCENE_TILE_GRID =
-  'grid gap-1.5 max-lg:auto-cols-[4.75rem] max-lg:grid-flow-col lg:grid-cols-2'
+export const SCENE_TILE_GRID = 'mld-tool-tiles grid grid-cols-1 gap-1.5'
 
 export function SceneTile({
   icon: Icon,

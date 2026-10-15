@@ -4,7 +4,7 @@
  *
  * O valor vem de `MoldaHostAdapter.toolAccess` e atravessa a árvore por contexto, então a
  * oficina carregada sob demanda (`DeferredModule`) enxerga o mesmo portão sem ganhar prop.
- * Sem provedor, tudo liberado: o playground `?oficina=nova`, os testes e outros hosts.
+ * Sem provedor, tudo liberado: o playground, os testes e outros hosts.
  *
  * ⚠️ Trancado NÃO é renderizado, nunca fica `disabled`: desligado diz "agora não, mas você
  * pode", e a criança não pode. As abas nunca somem; o que é portado é o conteúdo delas.

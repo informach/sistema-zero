@@ -7,9 +7,14 @@ import type { MoldaAsset } from '../core/model'
 import { galleryToJsonText } from '../export/projectJson'
 import { zipGallery } from '../export/zip'
 import { createMemoryPersistence } from '../state/memoryPersistence'
-import { isMoldaAssetOpen, resetMoldaPersistenceForTests } from '../state/persistence'
-import { installFakeViewport } from '../testing/fakeViewport'
+import {
+  isMoldaAssetOpen,
+  resetMoldaPersistenceForTests,
+  setMoldaGenerationStoreFactory,
+} from '../state/persistence'
+import { DOCUMENT_KEY_PREFIX } from '../state/storageKeys'
 import { makeModel, makeSky, makeTexture } from '../testing/fixtures'
+import { nativeDatabase } from '../testing/nativeDatabase'
 import { MoldaApp } from './MoldaApp'
 
 beforeEach(() => {
@@ -40,6 +45,32 @@ function creations(grid: HTMLElement): HTMLElement[] {
 }
 
 describe('MoldaApp', () => {
+  test('fechar Criar novo durante a gravação não abre uma oficina atrasada', async () => {
+    const persistence = createMemoryPersistence()
+    const originalSave = persistence.save
+    let release!: () => void
+    const pending = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    persistence.save = async (asset) => {
+      await pending
+      await originalSave(asset)
+    }
+    render(<MoldaApp persistence={persistence} />)
+    await screen.findByRole('heading', { name: COPY.gallery.title })
+    fireEvent.click(screen.getByRole('button', { name: COPY.gallery.create }))
+    const dialog = await screen.findByRole('dialog')
+    fireEvent.click(within(dialog).getByRole('button', { name: COPY.a11y.newAssetKind('Modelo') }))
+    fireEvent.keyDown(dialog, { key: 'Escape' })
+    await act(async () => {
+      release()
+      await pending
+    })
+    await waitFor(() => expect(persistence.snapshot()).toHaveLength(1))
+    expect(screen.queryByRole('heading', { name: COPY.gallery.title }) !== null).toBe(true)
+    expect(screen.queryByRole('region', { name: COPY.scene.title }) === null).toBe(true)
+  })
+
   test('galeria vazia mostra o convite e o tema no root', async () => {
     const { container } = render(
       <MoldaApp persistence={createMemoryPersistence()} adapter={{ theme: 'dark' }} />,
@@ -144,7 +175,7 @@ describe('MoldaApp', () => {
     await screen.findByRole('list', { name: COPY.a11y.galleryGrid })
     fireEvent.click(screen.getByRole('button', { name: COPY.gallery.create }))
     const dialog = await screen.findByRole('dialog')
-    fireEvent.click(within(dialog).getByRole('button', { name: COPY.a11y.newAssetKind('Modelo') }))
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Configurar modelo' }))
     fireEvent.click(within(dialog).getByRole('button', { name: COPY.newAsset.next }))
     const input = within(dialog).getByRole('textbox')
     fireEvent.change(input, { target: { value: 'fim de tarde' } })
@@ -410,11 +441,19 @@ describe('MoldaApp', () => {
   })
 
   test('Modelos prontos: escolher a nave sugere um nome livre e abre o modelo já montado', async () => {
-    const fake = installFakeViewport()
+    const db = await nativeDatabase()
+    setMoldaGenerationStoreFactory(() => db.store)
+    let view: ReturnType<typeof render> | undefined
     try {
       // A galeria JÁ tem uma "nave" (o fixture): a sugestão vira "nave-2".
       const persistence = createMemoryPersistence([makeModel()])
-      render(<MoldaApp persistence={persistence} />)
+      // A galeria e a oficina leem o mesmo armazenamento no host real.
+      const save = persistence.save
+      persistence.save = async (asset) => {
+        await save(asset)
+        await db.seed(`${DOCUMENT_KEY_PREFIX}${asset.id}`, { ...asset, formatVersion: 1 })
+      }
+      view = render(<MoldaApp persistence={persistence} />)
       await screen.findByRole('list', { name: COPY.a11y.galleryGrid })
       fireEvent.click(screen.getByRole('button', { name: COPY.gallery.create }))
       const dialog = await screen.findByRole('dialog')
@@ -438,7 +477,9 @@ describe('MoldaApp', () => {
       expect(created?.kind).toBe('model')
       expect(created?.kind === 'model' ? created.parts.length : 0).toBe(8)
     } finally {
-      fake.uninstall()
+      view?.unmount()
+      db.close()
+      setMoldaGenerationStoreFactory(null)
     }
   })
 

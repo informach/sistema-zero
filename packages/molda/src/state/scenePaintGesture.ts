@@ -11,6 +11,7 @@ import {
   validateScenePaintColor,
 } from '../scene/imagePaint'
 import { intersectImageRegions, readImageRegion } from '../scene/imageRegion'
+import { prepareSceneInk } from '../scene/paintInk'
 import { requireScene, SceneValidationError } from '../scene/validation'
 import type { EditorStore } from './editorStore'
 
@@ -32,6 +33,7 @@ export function createScenePaintGesture(
     color: ScenePaintColor
     brush: BrushSize
     revision: number
+    prepared: MoldaSceneDocument
     region?: ScenePixelRegion
   } | null = null
   function cancel() {
@@ -56,17 +58,19 @@ export function createScenePaintGesture(
           'paint',
           'A imagem mudou. Escolha a camada novamente.',
         )
+        const prepared = prepareSceneInk(document, image.id, color)
         validateScenePaintColor(
-          image,
-          color,
+          resolveScenePaintTarget(prepared.document, target).image,
+          prepared.color,
           brush,
-          PALETTE_SIZE + (document.extraColors?.length ?? 0),
+          PALETTE_SIZE + (prepared.document.extraColors?.length ?? 0),
         )
         const selectedRegion = region ? readImageRegion(region, image) : undefined
         active = {
           token: gestures.begin(),
           target: { ...target },
-          color: typeof color === 'number' ? color : [...color],
+          color: prepared.color,
+          prepared: prepared.document,
           brush,
           revision: editor.getState().contentRevision,
           ...(selectedRegion ? { region: selectedRegion } : {}),
@@ -101,7 +105,7 @@ export function createScenePaintGesture(
       // Pedaço fora da área escolhida: nada a pintar, e o traço segue.
       if (clip && !region) return true
       try {
-        const next = paintSceneImage(editor.getState().asset, active.target, {
+        const next = paintSceneImage(active.prepared, active.target, {
           from,
           to,
           color: active.color,
@@ -113,6 +117,7 @@ export function createScenePaintGesture(
           return false
         }
         active.revision = editor.getState().contentRevision
+        active.prepared = next
         return true
       } catch (error) {
         cancel()

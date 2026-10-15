@@ -16,6 +16,51 @@ function presetOf(asset: MoldaAsset | undefined): string | null {
 }
 
 describe('editorStore', () => {
+  test('uma preparação temporária não entra no autosave, flush, miniatura ou backup', async () => {
+    const initial = makeSky()
+    const persistence = createMemoryPersistence([initial])
+    const editor = createEditorStore({ asset: initial, persistence, autosaveMs: 5 })
+    editor.getState().commit({ ...initial, name: 'confirmado' })
+    const before = editor.getState().asset as MoldaSkyAsset
+    editor.getState().stage(withPreset(before, 'noite'))
+    editor.getState().setThumb('foto-da-previa')
+    await Bun.sleep(20)
+    await editor.getState().flush()
+    expect(persistence.snapshot()[0]?.name).toBe('confirmado')
+    expect(presetOf(persistence.snapshot()[0])).toBe(initial.params.preset)
+    expect(editor.getState().savedAsset.thumb).toBeUndefined()
+    expect(editor.getState().saveSnapshot()).toBe(before)
+    expect(editor.getState().saveState).toBe('saved')
+    const prepared = editor.getState().asset as MoldaSkyAsset
+    editor.getState().replace({ ...prepared, name: 'gesto-na-previa' })
+    await editor.getState().flush()
+    expect(persistence.snapshot()[0]?.name).toBe('confirmado')
+    editor.getState().cancelGesture(prepared)
+    expect(editor.getState().saveSnapshot()).toBe(before)
+    editor.getState().cancelGesture(before)
+    expect(editor.getState().asset).toBe(before)
+    editor.getState().dispose()
+  })
+
+  test('confirmar uma preparação e o gesto guarda ambos em um único desfazer', async () => {
+    const initial = makeSky()
+    const persistence = createMemoryPersistence([initial])
+    const editor = createEditorStore({ asset: initial, persistence })
+    const prepared = withPreset(initial, 'noite')
+    editor.getState().stage(prepared)
+    editor.getState().replace({ ...prepared, name: 'pintado' })
+    editor.getState().commitGesture(prepared, editor.getState().asset)
+    await editor.getState().flush()
+    expect(presetOf(persistence.snapshot()[0])).toBe('noite')
+    expect(persistence.snapshot()[0]?.name).toBe('pintado')
+    editor.getState().undo()
+    expect(presetOf(editor.getState().asset)).toBe(initial.params.preset)
+    expect(editor.getState().canUndo).toBe(false)
+    editor.getState().redo()
+    expect(editor.getState().asset.name).toBe('pintado')
+    editor.getState().dispose()
+  })
+
   test('a command interrupting a live preview keeps every undo delta on its committed base', () => {
     const initial = makeSky()
     const store = createEditorStore({ asset: initial, persistence: createMemoryPersistence() })

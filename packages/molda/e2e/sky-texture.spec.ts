@@ -31,7 +31,7 @@ test('a prévia do céu recria o ambiente PMREM depois de perder o contexto', as
   await expect.poll(() => page.evaluate(() => window.__molda?.skyEnvironmentId())).not.toBeNull()
   const before = await page.evaluate(() => window.__molda?.skyEnvironmentId())
 
-  const supported = await canvas.evaluate(async (element) => {
+  const supported = await canvas.evaluate(async (element: HTMLCanvasElement) => {
     const gl = element.getContext('webgl2')
     const extension = gl?.getExtension('WEBGL_lose_context')
     if (!extension) return false

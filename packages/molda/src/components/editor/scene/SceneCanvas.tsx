@@ -4,7 +4,7 @@ import { COPY } from '../../../core/copy'
 import { SCENE_PAINT_COPY } from '../../../core/scenePaintCopy'
 import { SCENE_SHELL_COPY } from '../../../core/sceneShellCopy'
 import type { MoldaSceneDocument } from '../../../scene/document'
-import type { ScenePaintTarget } from '../../../scene/imagePaint'
+import type { ScenePaintRgba, ScenePaintTarget } from '../../../scene/imagePaint'
 import type { SceneComponentSelection } from '../../../scene/meshComponents'
 import type { SceneSkinPaintSettings } from '../../../scene/skinPaint'
 import type { SceneAnimationPlayer } from '../../../state/SceneAnimationPlayer'
@@ -13,6 +13,7 @@ import type { SceneFlipbookPlayer } from '../../../state/SceneFlipbookPlayer'
 import type { SceneSkinPaintSession } from '../../../state/sceneSkinPaintSession'
 import type { SceneSkinWeightTarget } from '../../../viewport/SceneSkinWeightOverlay'
 import type {
+  SceneGuideInput,
   ScenePaintActions,
   SceneTransformActions,
   SceneTransformTool,
@@ -46,6 +47,7 @@ import { type SceneSkinBrushMode, SceneSkinPaintControls } from './SceneSkinPain
 import { SceneSkinWeightMapControls } from './SceneSkinWeightMapControls'
 import { SceneTile } from './SceneTile'
 import { useSceneViewport } from './useSceneViewport'
+import type { SceneWorkshopTool } from './useSceneWorkshop'
 
 type SceneCanvasTool = SceneTransformTool | 'box' | 'lasso'
 
@@ -69,9 +71,21 @@ export interface SceneCanvasSlots {
   toggles?: HTMLElement | null
   /** "Vista" e "Enquadrar seleção". */
   view?: HTMLElement | null
+  context?: HTMLElement | null
 }
 
 interface Props {
+  guideInput?: SceneGuideInput | null
+  guidePoint?(point: import('../../../core/model').Vec3): void
+  previewGuide?: import('../../../viewport/ScenePreviewGuide').ScenePreviewGuideState | null
+  cameraRequest?: { view: CameraView } | null
+  reveal?: readonly string[]
+  tool?: SceneWorkshopTool
+  onToolChange?(tool: SceneWorkshopTool): void
+  looking?: boolean
+  onLookingChange?(looking: boolean): void
+  onHover?(id: string | null): void
+  onSampleInk?(color: ScenePaintRgba): void
   document: MoldaSceneDocument
   selection: readonly string[]
   isolation: readonly string[] | null
@@ -166,10 +180,25 @@ function SceneCanvasAttempt({
   onViewport,
   slots,
   viewExtras = null,
+  tool: controlledTool,
+  onToolChange,
+  looking,
+  onLookingChange,
+  onHover,
+  onSampleInk,
+  reveal,
+  guideInput,
+  guidePoint,
+  previewGuide,
+  cameraRequest,
 }: Props & { onRetry(): void }) {
-  const [tool, setTool] = useState<SceneCanvasTool>('select')
+  const [localTool, setLocalTool] = useState<SceneWorkshopTool>('select')
+  const tool = controlledTool ?? localTool
+  const setTool = onToolChange ?? setLocalTool
   const [through, setThrough] = useState(false)
-  const [look, setLook] = useState(false)
+  const [localLook, setLocalLook] = useState(false)
+  const look = looking ?? localLook
+  const setLook = onLookingChange ?? setLocalLook
   const [supportGuides, setSupportGuides] = useState(false)
   const [brushMode, setBrushMode] = useState<SceneSkinBrushMode>('off')
   const [brushRadius, setBrushRadius] = useState('1')
@@ -231,6 +260,11 @@ function SceneCanvasAttempt({
     () => canAnimate && !!animationPose?.getSnapshot().pose?.twoBoneGuide,
     () => false,
   )
+  const pendingPose = useSyncExternalStore(
+    animationPose?.subscribe ?? inactiveSubscription,
+    () => !!animationPose?.getSnapshot().pending,
+    () => false,
+  )
   const reviewingSet = useSyncExternalStore(
     animationPose?.subscribe ?? inactiveSubscription,
     () => canAnimate && animationPose?.getSnapshot().kind === 'pose-set',
@@ -246,6 +280,8 @@ function SceneCanvasAttempt({
       ? can('model.area-select')
       : can(mode === 'animation' ? 'animate.create' : 'model.pieces'))
   const activeTool =
+    look ||
+    tool === 'pivot' ||
     mode === 'paint' ||
     !allowedTool(tool) ||
     reviewingSet ||
@@ -265,6 +301,10 @@ function SceneCanvasAttempt({
     selection,
     isolation,
     select: onSelect,
+    hover: onHover,
+    guideInput,
+    guidePoint,
+    sampleInk: !look && mode === 'paint' ? onSampleInk : undefined,
     selectMany: onSelectMany,
     factory,
     transform,
@@ -279,8 +319,8 @@ function SceneCanvasAttempt({
     flipbook,
     animation,
     animationPose: mode === 'animation' ? animationPose : undefined,
-    paintTarget: look ? null : paintTarget,
-    paintMode: mode === 'paint' ? (look ? 'look' : 'paint') : 'off',
+    paintTarget: look || onSampleInk ? null : paintTarget,
+    paintMode: look ? 'look' : mode === 'paint' ? 'paint' : 'off',
     paintMirror: mode === 'paint' && paintMirror,
     supportGuides: supportGuides && mode !== 'paint' && !paintTarget && !componentSelection,
     weightTarget,
@@ -292,6 +332,9 @@ function SceneCanvasAttempt({
     onViewport?.(view.viewport)
     return () => onViewport?.(null)
   }, [view.viewport, onViewport])
+  useEffect(() => {
+    if (reveal?.length) view.viewport?.ensureVisible?.(reveal)
+  }, [view.viewport, reveal])
   const cancelPaint = () => {
     skinPaint?.cancel()
     view.viewport?.cancelGesture()
@@ -299,6 +342,15 @@ function SceneCanvasAttempt({
   const [gridVisible, setGridVisible] = useState(true)
   const [movementStep, setMovementStep] = useState<number | null>(null)
   const [camera, setCamera] = useState<CameraView>('free')
+  useEffect(() => {
+    view.viewport?.setPreviewGuide?.(previewGuide ?? null)
+  }, [view.viewport, previewGuide])
+  useEffect(() => {
+    if (cameraRequest) {
+      view.viewport?.setView(cameraRequest.view)
+      setCamera(cameraRequest.view)
+    }
+  }, [view.viewport, cameraRequest])
   const copy = COPY.scene
   useEffect(() => {
     view.viewport?.setGridVisible?.(gridVisible)
@@ -332,6 +384,7 @@ function SceneCanvasAttempt({
     ((name === 'move' || name === 'rotate' || name === 'scale') && !selection.length)
   const chooseTool = (name: SceneCanvasTool) => {
     cancelPaint()
+    setLook(false)
     setBrushMode('off')
     setTool(name)
   }
@@ -340,7 +393,7 @@ function SceneCanvasAttempt({
       key={name}
       icon={TOOL_ICONS[name]}
       label={toolLabel(name)}
-      pressed={!skinPaintSettings && activeTool === name}
+      pressed={!skinPaintSettings && tool !== 'pivot' && !look && activeTool === name}
       disabled={toolDisabled(name)}
       onClick={() => chooseTool(name)}
     />
@@ -350,7 +403,7 @@ function SceneCanvasAttempt({
       key={name}
       variant="ghost"
       className="px-3 text-sm"
-      aria-pressed={!skinPaintSettings && activeTool === name}
+      aria-pressed={!skinPaintSettings && tool !== 'pivot' && !look && activeTool === name}
       disabled={toolDisabled(name)}
       onClick={() => chooseTool(name)}
     >
@@ -397,31 +450,22 @@ function SceneCanvasAttempt({
           : copy.selectThrough}
     </label>
   )
-  const paintModes = paintTarget && (
-    <>
-      <Button
-        className="text-sm"
-        aria-pressed={!look}
-        disabled={!view.viewport}
-        onClick={() => {
-          view.viewport?.cancelGesture()
-          setLook(false)
-        }}
-      >
-        {copy.paintOnModel}
-      </Button>
-      <Button
-        className="text-sm"
-        aria-pressed={look}
-        disabled={!view.viewport}
-        onClick={() => {
-          view.viewport?.cancelGesture()
-          setLook(true)
-        }}
-      >
-        {copy.paintLook}
-      </Button>
-    </>
+  const paintModes = look && (
+    <Button
+      className="text-sm"
+      aria-pressed={!look}
+      disabled={!view.viewport}
+      onClick={() => {
+        view.viewport?.cancelGesture()
+        setLook(false)
+      }}
+    >
+      {mode === 'paint'
+        ? 'Voltar a pintar'
+        : mode === 'animation'
+          ? 'Voltar à pose'
+          : 'Voltar a modelar'}
+    </Button>
   )
 
   // ── olhar o modelo: grade, ajustes, vista, enquadrar ─────────────────────────────────────
@@ -437,7 +481,7 @@ function SceneCanvasAttempt({
       onClick={() => setGridVisible((visible) => !visible)}
     >
       <Grid3x3 aria-hidden="true" />
-      {copy.showGrid}
+      <span className="sr-only">{copy.showGrid}</span>
     </button>
   ) : (
     <Button
@@ -452,7 +496,7 @@ function SceneCanvasAttempt({
   )
   const frame = () => {
     skinPaint?.cancel()
-    view.viewport?.frame(true)
+    view.viewport?.frame(false)
   }
   const frameButton = shell ? (
     <button
@@ -462,7 +506,7 @@ function SceneCanvasAttempt({
       onClick={frame}
     >
       <Scan aria-hidden="true" />
-      {COPY.editor.model.views.selection}
+      Enquadrar
     </button>
   ) : (
     <Button variant="ghost" className="px-3 text-sm" disabled={!view.viewport} onClick={frame}>
@@ -498,6 +542,9 @@ function SceneCanvasAttempt({
       </summary>
       {/* Flutuando no palco (o Animar) o grupo fica à ESQUERDA: o menu abre para a direita. */}
       <div className={dropClass(shell && slots.view === undefined ? 'stage' : 'right')}>
+        <Button variant="ghost" className="text-sm" onClick={() => view.viewport?.frame(true)}>
+          Enquadrar só a escolhida
+        </Button>
         {CAMERA_VIEWS.map((name) => (
           <Button
             key={name}
@@ -523,7 +570,7 @@ function SceneCanvasAttempt({
     <details className="relative">
       <summary className={summaryClass}>
         {shell && <SlidersHorizontal aria-hidden="true" className="size-4" />}
-        {SCENE_SHELL_COPY.stageSettings}
+        <span className={shell ? 'sr-only' : undefined}>{SCENE_SHELL_COPY.stageSettings}</span>
         {shell && <ChevronDown aria-hidden="true" className="size-4" />}
       </summary>
       <div className={dropClass('left')}>
@@ -593,6 +640,19 @@ function SceneCanvasAttempt({
     </section>
   )
 
+  const lookButton = (
+    <Button
+      variant="ghost"
+      className="px-3 text-sm"
+      aria-pressed={look}
+      onClick={() => {
+        cancelPaint()
+        setLook(!look)
+      }}
+    >
+      Olhar
+    </Button>
+  )
   const hintCard = (
     <div className="mld-stage-card pointer-events-auto flex max-w-full flex-wrap items-center gap-x-2 gap-y-1 px-3 py-2">
       {mode === 'paint' && !paintTarget && (
@@ -606,15 +666,19 @@ function SceneCanvasAttempt({
       {paintTarget && (
         // No celular a dica ocuparia o palco: ela mora nos Primeiros passos também.
         <p className="hidden text-xs text-mld-muted md:block">
+          {!!document.animations?.length && 'Editando a forma inicial. '}
           {look ? copy.paintLookHint : SCENE_PAINT_COPY.modelHint}
         </p>
       )}
       {/* A casca que não preparou lugar para as ferramentas recebe-as aqui, no palco. */}
       {showTools && shell && slots.tools === undefined && tools.map(toolButton)}
-      {showTools && (
+      {showTools && !look && (
         <p className="flex items-center gap-2 text-sm text-mld-text">
           <Info aria-hidden="true" className="size-4 shrink-0 text-mld-accent" />
-          <span>{hint}</span>
+          <span role={mode === 'animation' && pendingPose ? 'status' : undefined}>
+            {mode === 'model' && !!document.animations?.length && 'Editando a forma inicial. '}
+            {mode === 'animation' && pendingPose ? copy.animationPosePending : hint}
+          </span>
         </p>
       )}
       {throughBox}
@@ -670,7 +734,7 @@ function SceneCanvasAttempt({
       )}
     </>
   )
-  const poseCard = mode === 'animation' && animationPose && (
+  const poseCard = !shell && mode === 'animation' && animationPose && (
     <SceneAnimationPoseControls gesture={animationPose} enabled={canAnimate} />
   )
 
@@ -683,10 +747,16 @@ function SceneCanvasAttempt({
         // O Esc de um diálogo aberto por cima do palco (a "Imagem de apoio") é do diálogo, e o de
         // um campo (o "Passo do movimento") é do campo: soltar a peça atrás deles é surpresa.
         if (isMoldaDialogOpen() || isTypingTarget(event.target)) return
+        if (look) {
+          cancelPaint()
+          setLook(false)
+          event.preventDefault()
+          return
+        }
         let handled = false
         if (mode === 'animation') {
           animation?.pause()
-          animationPose?.cancel()
+          animationPose?.interrupt()
           handled = true
         }
         cancelPaint()
@@ -713,11 +783,13 @@ function SceneCanvasAttempt({
       {place(
         slots?.view,
         <>
+          {lookButton}
           {cameraMenu}
           {frameButton}
         </>,
         () => null,
       )}
+      {slots?.context !== undefined && place(slots.context, hintCard, () => null)}
       {shell ? (
         <>
           {/*
@@ -733,7 +805,7 @@ function SceneCanvasAttempt({
             <div className="flex min-h-0 max-w-full flex-col items-start gap-2">
               {floatingView}
               <div className="flex min-h-0 max-w-full flex-col items-start gap-2 overflow-y-auto">
-                {hintCard}
+                {slots.context === undefined && hintCard}
                 {stageCards}
               </div>
             </div>
@@ -781,12 +853,30 @@ function SceneCanvasAttempt({
         </p>
       )}
       <div className="relative flex min-h-0 flex-1">
+        <div className="absolute bottom-3 right-3 z-20 flex flex-col gap-1 rounded-xl bg-mld-surface p-1 shadow-sm">
+          <Button
+            aria-label="Aproximar"
+            className="min-w-11 px-2"
+            disabled={!view.viewport?.zoom}
+            onClick={() => view.viewport?.zoom?.(1.2)}
+          >
+            +
+          </Button>
+          <Button
+            aria-label="Afastar"
+            className="min-w-11 px-2"
+            disabled={!view.viewport?.zoom}
+            onClick={() => view.viewport?.zoom?.(1 / 1.2)}
+          >
+            −
+          </Button>
+        </div>
         <ReferenceImageGuide
           view={camera}
           disabled={!view.viewport || !!view.error || view.lost}
           available={can('model.reference')}
           // O canto de cima é das ferramentas flutuantes (no desenho antigo) e da dica (na casca).
-          triggerPlacement={shell ? 'right-3 bottom-17' : 'bottom-16 left-3'}
+          triggerPlacement={shell ? 'left-3 bottom-3' : 'bottom-16 left-3'}
           compactTrigger={shell}
         >
           <canvas
@@ -842,20 +932,22 @@ function SceneCanvasAttempt({
             </p>
           )}
           {overlay}
-          <SceneFirstSteps
-            key={document.id}
-            side={shell ? 'right' : 'left'}
-            compact={shell}
-            context={
-              mode === 'animation'
-                ? 'animation'
-                : mode === 'paint' || paintTarget
-                  ? 'paint'
-                  : weightTarget
-                    ? 'skin'
-                    : 'model'
-            }
-          />
+          {!shell && (
+            <SceneFirstSteps
+              key={document.id}
+              side={shell ? 'right' : 'left'}
+              compact={shell}
+              context={
+                mode === 'animation'
+                  ? 'animation'
+                  : mode === 'paint' || paintTarget
+                    ? 'paint'
+                    : weightTarget
+                      ? 'skin'
+                      : 'model'
+              }
+            />
+          )}
         </ReferenceImageGuide>
       </div>
     </section>

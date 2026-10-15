@@ -15,6 +15,8 @@ import { useMoldaToolAccess } from '../../toolAccess'
 import { Button } from '../../ui/Button'
 import { SceneAnimationPoseSetTools } from './SceneAnimationPoseSetTools'
 import { SceneAnimationPoseTools } from './SceneAnimationPoseTools'
+import { ScenePivotChoices } from './SceneModelGuideControls'
+import { SceneTransformSteps } from './SceneTransformSteps'
 import { SceneTwoBoneControls } from './SceneTwoBoneControls'
 import {
   sceneAnimationFormKey,
@@ -45,6 +47,11 @@ export function SceneAnimationInspector({
     () => false,
   )
   const [channel, setChannel] = useState<SceneAnimationTrack['channel']>('translation')
+  const poseSettings = useSyncExternalStore(
+    workshop.animationPose.subscribe,
+    workshop.animationPose.getSnapshot,
+    workshop.animationPose.getSnapshot,
+  )
   const assisting = useSyncExternalStore(
     workshop.animationPose.subscribe,
     () => workshop.animationPose.getSnapshot().reach !== null,
@@ -57,6 +64,17 @@ export function SceneAnimationInspector({
   const create = can('animate.create')
   const pro = can('animate.pro')
   const copy = COPY.scene
+  if (workshop.tool === 'pivot' && can('model.precise'))
+    return (
+      <section className="space-y-3 border-t border-mld-border pt-3" aria-label="Pivô da peça">
+        <h3 className="text-sm font-bold">Pivô — onde gira</h3>
+        <p className="text-sm text-mld-muted">
+          Isso muda o ponto de giro da forma original. Não marca uma pose. Peças com movimentos
+          incompatíveis mantêm o pivô atual.
+        </p>
+        <ScenePivotChoices workshop={workshop} />
+      </section>
+    )
   const clip = snapshot.source?.document === document ? snapshot.source.clip : null
   if (!clip) return <p className="text-sm text-mld-muted">{copy.animationEmpty}</p>
   if (snapshot.source?.preview)
@@ -73,229 +91,295 @@ export function SceneAnimationInspector({
       : null
   return (
     <section className="space-y-3 border-t border-mld-border pt-3" aria-label={copy.animationMode}>
-      <p className="text-sm text-mld-muted">{copy.animationHint}</p>
-      {pro && !snapshot.playing && (!adjusting || assisting) && (
-        <SceneTwoBoneControls
-          key={JSON.stringify([revision, clip.id, node?.id, snapshot.time])}
-          workshop={workshop}
-          clipId={clip.id}
-          time={snapshot.time}
-        />
+      <h3 className="text-sm font-bold">
+        Pose em {snapshot.time.toLocaleString('pt-BR', { maximumFractionDigits: 2 })} s
+      </h3>
+      <p className="text-sm text-mld-muted">
+        {node ? node.name : 'Escolha uma peça para ajustar esta pose.'}
+      </p>
+      {create && !snapshot.playing && <SceneTransformSteps workshop={workshop} />}
+      {create && (
+        <Button
+          className="w-full text-sm"
+          disabled={clip.duration > 598}
+          onClick={() =>
+            workshop.requestTransition(() => {
+              const latest = workshop.editor
+                .getState()
+                .content.animations?.find((entry) => entry.id === clip.id)
+              if (!latest) return
+              const duration = latest.duration + 2
+              const next = run((source) =>
+                configureSceneAnimation(source, clip.id, {
+                  duration,
+                  fps: latest.fps,
+                  loop: latest.loop,
+                }),
+              )
+              if (next) animation.seek(duration)
+            })
+          }
+        >
+          Mais tempo · +2 s
+        </Button>
       )}
-      {create && !adjusting && <SceneAnimationPoseTools workshop={workshop} />}
-      {pro && (
-        <SceneAnimationPoseSetTools workshop={workshop} clipId={clip.id} time={snapshot.time} />
-      )}
-      {!create ? null : adjusting ? (
-        <p className="text-sm text-mld-muted">{copy.animationPoseFieldsHint}</p>
-      ) : snapshot.playing ? (
-        <p role="status" className="text-sm">
-          {copy.animationPauseHint}
-        </p>
-      ) : !node ? (
-        <p className="text-sm text-mld-muted">{copy.animationPickHint}</p>
-      ) : !compatible ? (
-        <p className="text-sm text-mld-warn">{copy.animationAffineHint}</p>
-      ) : (
-        initial && (
-          <>
-            <h4 className="text-sm font-bold">{node.name}</h4>
-            {locked && <p className="text-sm text-mld-warn">{copy.animationLocked}</p>}
-            {clip.space === 'local' && (
-              <p className="text-xs text-mld-muted">{copy.animationLocalHint}</p>
-            )}
-            <label className="block space-y-1 text-sm">
-              <span>{copy.animationChannel}</span>
-              <select
-                name="animationChannel"
-                className={field}
-                value={channel}
-                onChange={(event) =>
-                  setChannel(event.target.value as SceneAnimationTrack['channel'])
-                }
-              >
-                {(['translation', 'rotation', 'scale'] as const).map((channel) => (
-                  <option key={channel} value={channel}>
-                    {copy.animationChannels[channel]}
-                  </option>
-                ))}
-              </select>
+      <details className="rounded-lg border border-mld-border p-2">
+        <summary className="min-h-11 cursor-pointer py-3 text-sm font-bold">
+          Mais ajustes da animação
+        </summary>
+        <div className="space-y-3">
+          <label className="flex min-h-11 items-center gap-2 text-sm">
+            <input
+              name="animationinspector-1"
+              type="checkbox"
+              checked={workshop.showPreviousPose}
+              onChange={(event) => workshop.setShowPreviousPose(event.target.checked)}
+            />
+            Ver pose anterior
+          </label>
+          {workshop.showPreviousPose && !workshop.previousPose && (
+            <p role="status" className="text-xs text-mld-muted">
+              Ainda não há uma pose anterior marcada para esta seleção.
+            </p>
+          )}
+          {create && (
+            <label className="flex min-h-11 items-center gap-2 text-sm">
+              <input
+                name="animationinspector-2"
+                type="checkbox"
+                checked={poseSettings.autoKey}
+                onChange={(event) => {
+                  const enabled = event.target.checked
+                  workshop.requestTransition(() => workshop.animationPose.setAutoKey(enabled))
+                }}
+              />
+              {copy.animationPoseAutoKey}
             </label>
-            <form
-              className="space-y-3"
-              onSubmit={(event) => {
-                event.preventDefault()
-                const data = new FormData(event.currentTarget)
-                run((source) => {
-                  requireScene(source === document, 'source', copy.animationChanged)
-                  return setSceneAnimationKey(
-                    source,
-                    clip.id,
-                    sceneAnimationFormKey(node.id, channel, snapshot.time, initial, data),
-                  )
-                })
-              }}
-            >
-              <fieldset disabled={locked} className="space-y-3">
-                <legend className="sr-only">{copy.animationChannels[channel]}</legend>
-                <div
-                  key={JSON.stringify([revision, clip.id, node.id, channel, snapshot.time])}
-                  className="space-y-3"
-                >
-                  <div className="grid grid-cols-3 gap-2">
-                    {copy.animationAxes[channel].map((label, i) => (
-                      <label key={label} className="space-y-1 text-xs">
-                        <span>{label}</span>
-                        <input
-                          name={`axis${i}`}
-                          type="number"
-                          step="any"
-                          required
-                          className={field}
-                          defaultValue={initial.display[i]}
-                        />
-                      </label>
+          )}
+          {pro && !snapshot.playing && (!adjusting || assisting) && (
+            <SceneTwoBoneControls
+              key={JSON.stringify([revision, clip.id, node?.id, snapshot.time])}
+              workshop={workshop}
+              clipId={clip.id}
+              time={snapshot.time}
+            />
+          )}
+          {create && !adjusting && <SceneAnimationPoseTools workshop={workshop} />}
+          {pro && (
+            <SceneAnimationPoseSetTools workshop={workshop} clipId={clip.id} time={snapshot.time} />
+          )}
+          {!create ? null : adjusting ? (
+            <p className="text-sm text-mld-muted">{copy.animationPoseFieldsHint}</p>
+          ) : snapshot.playing ? (
+            <p role="status" className="text-sm">
+              {copy.animationPauseHint}
+            </p>
+          ) : !node ? (
+            <p className="text-sm text-mld-muted">{copy.animationPickHint}</p>
+          ) : !compatible ? (
+            <p className="text-sm text-mld-warn">{copy.animationAffineHint}</p>
+          ) : (
+            initial && (
+              <>
+                <h4 className="text-sm font-bold">{node.name}</h4>
+                {locked && <p className="text-sm text-mld-warn">{copy.animationLocked}</p>}
+                {clip.space === 'local' && (
+                  <p className="text-xs text-mld-muted">{copy.animationLocalHint}</p>
+                )}
+                <label className="block space-y-1 text-sm">
+                  <span>{copy.animationChannel}</span>
+                  <select
+                    name="animationChannel"
+                    className={field}
+                    value={channel}
+                    onChange={(event) =>
+                      setChannel(event.target.value as SceneAnimationTrack['channel'])
+                    }
+                  >
+                    {(['translation', 'rotation', 'scale'] as const).map((channel) => (
+                      <option key={channel} value={channel}>
+                        {copy.animationChannels[channel]}
+                      </option>
                     ))}
-                  </div>
-                  {channel !== 'translation' && (
-                    <p className="text-xs text-mld-muted">
-                      {channel === 'rotation'
-                        ? copy.animationRotationHint
-                        : copy.animationScaleHint}
-                    </p>
-                  )}
-                  {pro ? (
-                    <label className="block space-y-1 text-sm">
-                      <span>{copy.animationCurve}</span>
-                      <select
-                        name="interpolation"
-                        className={field}
-                        defaultValue={initial.exact?.interpolation ?? 'linear'}
-                      >
-                        {(['step', 'linear', 'smooth'] as const).map((value) => (
-                          <option key={value} value={value}>
-                            {copy.animationCurves[value]}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                  ) : (
-                    // Sem escolher a curva: a chave mantém a que já tinha, e a nova vai reta.
-                    <input
-                      type="hidden"
-                      name="interpolation"
-                      value={initial.exact?.interpolation ?? 'linear'}
-                    />
-                  )}
-                  <p className="text-xs text-mld-muted">
-                    {initial.exact ? copy.animationKeyPresent : copy.animationKeyNew}
-                  </p>
-                </div>
-                <Button type="submit" variant="primary" className="w-full text-sm">
-                  {copy.animationRecord}
-                </Button>
-                <Button
-                  className="w-full text-sm"
-                  disabled={!initial.exact}
-                  onClick={() =>
+                  </select>
+                </label>
+                <form
+                  className="space-y-3"
+                  onSubmit={(event) => {
+                    event.preventDefault()
+                    const data = new FormData(event.currentTarget)
                     run((source) => {
                       requireScene(source === document, 'source', copy.animationChanged)
-                      return removeSceneAnimationKeys(source, clip.id, [
-                        { nodeId: node.id, channel, time: snapshot.time },
-                      ])
+                      return setSceneAnimationKey(
+                        source,
+                        clip.id,
+                        sceneAnimationFormKey(node.id, channel, snapshot.time, initial, data),
+                      )
                     })
-                  }
+                  }}
                 >
-                  {copy.animationRemoveKey}
+                  <fieldset disabled={locked} className="space-y-3">
+                    <legend className="sr-only">{copy.animationChannels[channel]}</legend>
+                    <div
+                      key={JSON.stringify([revision, clip.id, node.id, channel, snapshot.time])}
+                      className="space-y-3"
+                    >
+                      <div className="grid grid-cols-3 gap-2">
+                        {copy.animationAxes[channel].map((label, i) => (
+                          <label key={label} className="space-y-1 text-xs">
+                            <span>{label}</span>
+                            <input
+                              name={`axis${i}`}
+                              type="number"
+                              step="any"
+                              required
+                              className={field}
+                              defaultValue={initial.display[i]}
+                            />
+                          </label>
+                        ))}
+                      </div>
+                      {channel !== 'translation' && (
+                        <p className="text-xs text-mld-muted">
+                          {channel === 'rotation'
+                            ? copy.animationRotationHint
+                            : copy.animationScaleHint}
+                        </p>
+                      )}
+                      {pro ? (
+                        <label className="block space-y-1 text-sm">
+                          <span>{copy.animationCurve}</span>
+                          <select
+                            name="interpolation"
+                            className={field}
+                            defaultValue={initial.exact?.interpolation ?? 'linear'}
+                          >
+                            {(['step', 'linear', 'smooth'] as const).map((value) => (
+                              <option key={value} value={value}>
+                                {copy.animationCurves[value]}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                      ) : (
+                        // Sem escolher a curva: a chave mantém a que já tinha, e a nova vai reta.
+                        <input
+                          type="hidden"
+                          name="interpolation"
+                          value={initial.exact?.interpolation ?? 'linear'}
+                        />
+                      )}
+                      <p className="text-xs text-mld-muted">
+                        {initial.exact ? copy.animationKeyPresent : copy.animationKeyNew}
+                      </p>
+                    </div>
+                    <Button type="submit" variant="primary" className="w-full text-sm">
+                      {copy.animationRecord}
+                    </Button>
+                    <Button
+                      className="w-full text-sm"
+                      disabled={!initial.exact}
+                      onClick={() =>
+                        run((source) => {
+                          requireScene(source === document, 'source', copy.animationChanged)
+                          return removeSceneAnimationKeys(source, clip.id, [
+                            { nodeId: node.id, channel, time: snapshot.time },
+                          ])
+                        })
+                      }
+                    >
+                      {copy.animationRemoveKey}
+                    </Button>
+                  </fieldset>
+                </form>
+              </>
+            )
+          )}
+          {create && (
+            <details
+              className="rounded-lg border border-mld-border px-2"
+              onToggle={(event) => {
+                if (event.currentTarget.open) animation.pause()
+              }}
+            >
+              <summary className="flex min-h-11 cursor-pointer items-center text-sm font-bold">
+                {copy.animationSettings}
+              </summary>
+              <form
+                className="space-y-3 pb-3"
+                onSubmit={(event) => {
+                  event.preventDefault()
+                  const data = new FormData(event.currentTarget)
+                  run((source) => {
+                    requireScene(source === document, 'source', copy.animationChanged)
+                    const duration = sceneAnimationFormNumber(data, 'duration')
+                    const base = data.has('retime')
+                      ? retimeSceneAnimation(source, clip.id, duration)
+                      : source
+                    return configureSceneAnimation(base, clip.id, {
+                      duration,
+                      fps: sceneAnimationFormNumber(data, 'fps'),
+                      loop: data.has('loop'),
+                    })
+                  })
+                }}
+              >
+                <div key={JSON.stringify([revision, clip.id])} className="space-y-3">
+                  <label className="block space-y-1 text-sm">
+                    <span>{copy.animationDuration}</span>
+                    <input
+                      name="duration"
+                      type="number"
+                      min={Number.MIN_VALUE}
+                      max={600}
+                      step="any"
+                      defaultValue={clip.duration}
+                      required
+                      className={field}
+                    />
+                  </label>
+                  <label className="flex min-h-11 items-center gap-2 text-sm">
+                    <input name="retime" type="checkbox" className="size-5 accent-mld-accent" />
+                    {copy.animationRetime}
+                  </label>
+                  <label className="block space-y-1 text-sm">
+                    <span>{copy.animationFps}</span>
+                    <input
+                      name="fps"
+                      type="number"
+                      min={1}
+                      max={120}
+                      step={1}
+                      defaultValue={clip.fps}
+                      required
+                      className={field}
+                    />
+                  </label>
+                  <label className="flex min-h-11 items-center gap-2 text-sm">
+                    <input
+                      name="loop"
+                      type="checkbox"
+                      className="size-5 accent-mld-accent"
+                      defaultChecked={clip.loop}
+                    />
+                    {copy.animationLoop}
+                  </label>
+                </div>
+                <Button type="submit" className="w-full text-sm">
+                  {copy.animationApply}
                 </Button>
-              </fieldset>
-            </form>
-          </>
-        )
-      )}
-      {create && (
-        <details
-          className="rounded-lg border border-mld-border px-2"
-          onToggle={(event) => {
-            if (event.currentTarget.open) animation.pause()
-          }}
-        >
-          <summary className="flex min-h-11 cursor-pointer items-center text-sm font-bold">
-            {copy.animationSettings}
-          </summary>
-          <form
-            className="space-y-3 pb-3"
-            onSubmit={(event) => {
-              event.preventDefault()
-              const data = new FormData(event.currentTarget)
-              run((source) => {
-                requireScene(source === document, 'source', copy.animationChanged)
-                const duration = sceneAnimationFormNumber(data, 'duration')
-                const base = data.has('retime')
-                  ? retimeSceneAnimation(source, clip.id, duration)
-                  : source
-                return configureSceneAnimation(base, clip.id, {
-                  duration,
-                  fps: sceneAnimationFormNumber(data, 'fps'),
-                  loop: data.has('loop'),
-                })
-              })
-            }}
-          >
-            <div key={JSON.stringify([revision, clip.id])} className="space-y-3">
-              <label className="block space-y-1 text-sm">
-                <span>{copy.animationDuration}</span>
-                <input
-                  name="duration"
-                  type="number"
-                  min={Number.MIN_VALUE}
-                  max={600}
-                  step="any"
-                  defaultValue={clip.duration}
-                  required
-                  className={field}
-                />
-              </label>
-              <label className="flex min-h-11 items-center gap-2 text-sm">
-                <input name="retime" type="checkbox" className="size-5 accent-mld-accent" />
-                {copy.animationRetime}
-              </label>
-              <label className="block space-y-1 text-sm">
-                <span>{copy.animationFps}</span>
-                <input
-                  name="fps"
-                  type="number"
-                  min={1}
-                  max={120}
-                  step={1}
-                  defaultValue={clip.fps}
-                  required
-                  className={field}
-                />
-              </label>
-              <label className="flex min-h-11 items-center gap-2 text-sm">
-                <input
-                  name="loop"
-                  type="checkbox"
-                  className="size-5 accent-mld-accent"
-                  defaultChecked={clip.loop}
-                />
-                {copy.animationLoop}
-              </label>
-            </div>
-            <Button type="submit" className="w-full text-sm">
-              {copy.animationApply}
-            </Button>
-          </form>
-          <Button
-            className="w-full text-sm"
-            onClick={() => run((source) => reverseSceneAnimation(source, clip.id))}
-          >
-            {copy.animationReverse}
-          </Button>
-          <p className="py-2 text-xs text-mld-muted">{copy.animationReverseHint}</p>
-        </details>
-      )}
+              </form>
+              <Button
+                className="w-full text-sm"
+                onClick={() => run((source) => reverseSceneAnimation(source, clip.id))}
+              >
+                {copy.animationReverse}
+              </Button>
+              <p className="py-2 text-xs text-mld-muted">{copy.animationReverseHint}</p>
+            </details>
+          )}
+        </div>
+      </details>
     </section>
   )
 }

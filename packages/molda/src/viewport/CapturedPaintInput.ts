@@ -78,7 +78,7 @@ export class CapturedPaintInput<Sample> {
     }
     // Picking and begin can both reenter: reserve ownership before either callback.
     this.owner = owner
-    const sample = this.pick(owner.previous)
+    const sample = this.pick(event)
     if (this.owner !== owner) return
     if (!sample) {
       this.owner = null

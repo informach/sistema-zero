@@ -54,6 +54,19 @@ export class SceneTransformGizmo {
   get hit() {
     return this.controls.enabled && this.controls.axis !== null
   }
+  hitAt(clientX: number, clientY: number) {
+    if (!this.controls.enabled) return false
+    if (!this.dragging) {
+      const rect = this.canvas.getBoundingClientRect()
+      // TransformControls.pointerHover consumes normalized x/y, despite its DOM event type.
+      this.controls.pointerHover({
+        x: ((clientX - rect.left) / rect.width) * 2 - 1,
+        y: 1 - ((clientY - rect.top) / rect.height) * 2,
+        button: 0,
+      } as PointerEvent)
+    }
+    return this.hit
+  }
 
   setCamera(camera: Camera) {
     if (this.disposed) return

@@ -32,7 +32,7 @@ describe('animation authoring commands', () => {
       name: 'Saltar',
       duration: 2,
       fps: 24,
-      loop: true,
+      loop: false,
       space: 'local-delta',
       tracks: [],
     })

@@ -7,8 +7,8 @@ import { createMemoryPersistence } from '../../../state/memoryPersistence'
 import { resetMoldaPersistenceForTests } from '../../../state/persistence'
 import { installFakeViewport } from '../../../testing/fakeViewport'
 import { makeModel } from '../../../testing/fixtures'
+import { LegacyModelEditorHarness } from '../../../testing/LegacyModelEditorHarness'
 import type { ViewportCallbacks } from '../../../viewport/types'
-import { MoldaApp } from '../../MoldaApp'
 
 /**
  * O sub-modo EDITAR MALHA na bancada (palco falso): transformar, escolher por
@@ -39,9 +39,9 @@ function lastModel(): MoldaModelAsset {
 
 async function openAndConvert(): Promise<ViewportCallbacks> {
   render(
-    <MoldaApp
+    <LegacyModelEditorHarness
       persistence={createMemoryPersistence([makeModel()])}
-      adapter={{ initialAssetId: 'model-1' }}
+      assetId="model-1"
     />,
   )
   await screen.findByRole('complementary', { name: COPY.editor.model.toolbox })
@@ -188,9 +188,9 @@ describe('Editar malha (M2)', () => {
 
   test('a 5ª forma "Malha" coloca uma caixa já convertida', async () => {
     render(
-      <MoldaApp
+      <LegacyModelEditorHarness
         persistence={createMemoryPersistence([makeModel()])}
-        adapter={{ initialAssetId: 'model-1' }}
+        assetId="model-1"
       />,
     )
     await screen.findByRole('complementary', { name: COPY.editor.model.toolbox })
@@ -454,10 +454,7 @@ describe('review 06/09: toast preso ao estado, E fecha, Ctrl+A escolhe tudo', ()
     body.mesh = boxMesh(body.from, body.to)
     body.locked = true
     render(
-      <MoldaApp
-        persistence={createMemoryPersistence([model])}
-        adapter={{ initialAssetId: 'model-1' }}
-      />,
+      <LegacyModelEditorHarness persistence={createMemoryPersistence([model])} assetId="model-1" />,
     )
     await screen.findByRole('complementary', { name: COPY.editor.model.toolbox })
     fireEvent.click(screen.getByRole('button', { name: 'corpo, malha' }))
@@ -478,10 +475,7 @@ describe('review 06/09: toast preso ao estado, E fecha, Ctrl+A escolhe tudo', ()
     body.shape = 'mesh'
     body.mesh = boxMesh(body.from, body.to)
     render(
-      <MoldaApp
-        persistence={createMemoryPersistence([model])}
-        adapter={{ initialAssetId: 'model-1' }}
-      />,
+      <LegacyModelEditorHarness persistence={createMemoryPersistence([model])} assetId="model-1" />,
     )
     await screen.findByRole('complementary', { name: COPY.editor.model.toolbox })
     fireEvent.click(screen.getByRole('button', { name: 'corpo, malha' }))

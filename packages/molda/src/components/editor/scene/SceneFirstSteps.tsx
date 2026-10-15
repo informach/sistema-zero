@@ -31,11 +31,13 @@ export function SceneFirstSteps({
   context,
   side = 'left',
   compact = false,
+  inline = false,
 }: {
   context: SceneFirstStepsTopic
   side?: 'left' | 'right'
   /** O gatilho redondo, só com o ícone (o nome segue em `aria-label`). */
   compact?: boolean
+  inline?: boolean
 }) {
   const [open, setOpen] = useState(false)
   const [chosen, setTopic] = useState(context)
@@ -77,7 +79,7 @@ export function SceneFirstSteps({
     <aside
       aria-label={copy.open}
       className={[
-        'absolute bottom-3 z-20 flex max-h-[calc(100%-1.5rem)]',
+        inline ? 'relative z-40 flex' : 'absolute bottom-3 z-20 flex max-h-[calc(100%-1.5rem)]',
         side === 'right'
           ? 'right-3 max-w-[calc(100%-1.5rem)] flex-col-reverse items-end gap-2'
           : 'left-3 max-w-[calc(100%-1.5rem)] flex-col items-start gap-2',
@@ -137,6 +139,7 @@ export function SceneFirstSteps({
           id={panelId}
           aria-labelledby={titleId}
           className={[
+            inline ? 'absolute right-0 top-full mt-2 max-h-[70vh]' : '',
             'min-h-0 w-88 max-w-full space-y-3 overflow-auto overscroll-contain',
             'rounded-xl border border-mld-border bg-mld-surface p-4 text-mld-text',
           ].join(' ')}

@@ -21,6 +21,7 @@ export function adjustScene(
   ids: readonly string[],
   mode: SceneAdjustment,
   values: Vec3,
+  keepBase = false,
 ): MoldaSceneDocument {
   requireScene(values.every(Number.isFinite), 'values', COPY.scene.invalidNumber)
   if (mode === 'pivot') {
@@ -61,9 +62,19 @@ export function adjustScene(
     forward[12 + axis] = center[axis] ?? 0
     backward[12 + axis] = -(center[axis] ?? 0)
   }
-  return transformSceneNodes(
+  const next = transformSceneNodes(
     document,
     ids,
     affineMultiply(forward, affineMultiply(delta, backward)),
   )
+  if (mode !== 'scale' || !keepBase || !bounds) return next
+  const nextIndex = indexSceneDocument(next)
+  const after = sceneBounds(nextIndex, {
+    nodeIds: selectSceneSubtrees(nextIndex.scene, ids).covered,
+    includeMirrors: false,
+  })
+  if (!after) return next
+  const correction = identityMatrix()
+  correction[13] = bounds.min[1] - after.min[1]
+  return transformSceneNodes(next, ids, correction)
 }

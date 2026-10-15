@@ -34,14 +34,15 @@ function setup() {
     ) : (
       <button
         type="button"
-        onClick={() =>
+        onClick={() => {
+          paint.setBrush(1)
           paint.open({
             nodeId: 'body',
             materialId: material.id,
             imageId: image.id,
             layerId: image.layers[0]!.id,
           })
-        }
+        }}
       >
         Open
       </button>

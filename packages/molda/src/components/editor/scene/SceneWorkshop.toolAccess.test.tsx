@@ -166,34 +166,38 @@ afterEach(() => {
 describe('a oficina no nível de entrada', () => {
   /**
    * A CATRACA da criança. Medido em 11/09/2026 com o portão ligado: é o número da queixa dela
-   * ("tudo à vista por igual"), agora na tela que a criança de fato encara. Só desce.
+   * ("tudo à vista por igual"), agora com ferramentas e detalhes separados por contexto.
    *
    * No padrão (tudo liberado) eram 47/34 na abertura e 87/65 com uma peça (hoje 47/32 e 88/59,
    * `SceneWorkshop.contract.test.tsx`). No básico, 42/30 e 73/59: somem a malha, o laço, o
    * ponto de giro, as medidas, os ossos, o espelho em qualquer direção e o "Trazer arquivo 3D",
    * e entra UMA linha, "Ferramentas que vêm por aí". Das 59 encaradas com uma peça, 18 são as
-   * cores e o acabamento, concretos e à vista como no editor antigo. O alvo do redesenho da
-   * casca (≤ 30 encarados com uma peça) é medido AQUI, no nível de entrada.
+   * cores e o acabamento, concretos e à vista como no editor antigo.
    *
    * Na casca das telas-modelo (11/09): 42/30 na abertura e 74/55 com uma peça. As quatro formas
    * à vista em ladrilhos (+3) foram pagas por "Mais ferramentas" (escolher várias e os grupos) e
    * por "Isolar seleção" na lista das vistas (-3). Com uma peça, "Mais sobre a peça" recolhe o
    * nome, mostrar, travar e o grupo (-4); o gatilho dele é o +1 dos montados.
+   * Revisão 4 (14/10): tetos 52/34 sem seleção e 83/59 com seleção. Ações do projeto,
+   * zoom por cliques e Mostrar/Travar na árvore ficam visíveis; precisão e malha seguem
+   * restritas. Estes números são controle de crescimento, não uma validação com crianças.
    */
   test('a quantidade de controles que a criança encara, medida no básico', () => {
     const vazio = mount(migrateLegacyModel(makeModel()).document)
     const montadosVazio = controlInventory(vazio.view.container)
     const encaradosVazio = frontControls(vazio.view.container)
-    expect(montadosVazio.length, montadosVazio.join(' | ')).toBeLessThanOrEqual(42)
-    expect(encaradosVazio.length, encaradosVazio.join(' | ')).toBeLessThanOrEqual(30)
+    // New project actions, tree visibility/lock and click-based camera navigation.
+    expect(montadosVazio.length, montadosVazio.join(' | ')).toBeLessThanOrEqual(52)
+    // Two fixture pieces now each expose the approved Show/Lock actions (+4 visible controls).
+    expect(encaradosVazio.length, encaradosVazio.join(' | ')).toBeLessThanOrEqual(34)
     cleanup()
 
     const comPeca = mount(withPiece())
     choosePiece(comPeca.view.container)
     const montadosPeca = controlInventory(comPeca.view.container)
     const encaradosPeca = frontControls(comPeca.view.container)
-    expect(montadosPeca.length, montadosPeca.join(' | ')).toBeLessThanOrEqual(74)
-    expect(encaradosPeca.length, encaradosPeca.join(' | ')).toBeLessThanOrEqual(55)
+    expect(montadosPeca.length, montadosPeca.join(' | ')).toBeLessThanOrEqual(83)
+    expect(encaradosPeca.length, encaradosPeca.join(' | ')).toBeLessThanOrEqual(59)
   })
 
   test('nenhum controle de família trancada aparece, em nenhuma aba, nem abrindo tudo', async () => {

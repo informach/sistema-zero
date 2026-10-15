@@ -12,12 +12,12 @@ export function useSceneAnimationPoseGesture(
   useEffect(() => {
     const disconnect = gesture.connect()
     const hidden = () => {
-      if (document.hidden) gesture.cancel()
+      if (document.hidden) gesture.interrupt()
     }
-    window.addEventListener('blur', gesture.cancel)
+    window.addEventListener('blur', gesture.interrupt)
     document.addEventListener('visibilitychange', hidden)
     return () => {
-      window.removeEventListener('blur', gesture.cancel)
+      window.removeEventListener('blur', gesture.interrupt)
       document.removeEventListener('visibilitychange', hidden)
       disconnect()
     }

@@ -1,13 +1,12 @@
 /**
- * "Criar novo" em três passos: o TIPO (modelo, textura, céu) → as opções do
- * tipo (texels por bloco / tamanho da folha / céu de partida) → o NOME.
- * O 4º cartão do primeiro passo, "Modelos prontos", troca as opções pela grade
- * de templates (`TemplatePicker`) e chega ao nome já com uma sugestão.
+ * "Criar novo" abre um modelo com um clique e nome automático. Textura, céu e
+ * "Mais opções para começar" usam tipo → opções → nome. Modelos prontos passam
+ * pela grade de templates (`TemplatePicker`) e sugerem o nome.
  * O nome é validado ao vivo com a régua do Estúdio (kebab-case, ≤ 48).
  */
 import { clsx } from 'clsx'
 import type { FormEvent, JSX } from 'react'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { COPY } from '../../core/copy'
 import { MOLDA_LIMITS, type TexelsPerUnit, type TextureSize } from '../../core/limits'
 import {
@@ -18,6 +17,7 @@ import {
 } from '../../core/model'
 import { normalizeAssetName, uniqueAssetName } from '../../core/names'
 import { SKY_PRESET_IDS, type SkyPresetId, skyPreset } from '../../sky/params'
+import { newModelIntent } from '../../state/newModelIntent'
 import type { MoldaTemplateId } from '../../templates/catalog'
 import { useGallery, useMoldaApp } from '../appContext'
 import { Button } from '../ui/Button'
@@ -93,6 +93,14 @@ export function NewAssetDialog({
   const [name, setName] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const creating = useRef(false)
+  const operation = useRef(0)
+  useEffect(
+    () => () => {
+      operation.current++
+    },
+    [],
+  )
 
   function reset(): void {
     setStep('kind')
@@ -104,6 +112,8 @@ export function NewAssetDialog({
   }
 
   function close(): void {
+    operation.current++
+    creating.current = false
     reset()
     onClose()
   }
@@ -115,9 +125,49 @@ export function NewAssetDialog({
   const stepIndex = STEPS.indexOf(step)
 
   function pickKind(next: MoldaAssetKind): void {
+    if (next === 'model') {
+      void createModel()
+      return
+    }
     setTemplateId(null)
     setKind(next)
     setStep('options')
+  }
+
+  async function createModel() {
+    if (creating.current) return
+    const name = uniqueAssetName(
+      'minha-criacao',
+      new Set(gallery.getState().assets.map((asset) => asset.name)),
+    )
+    if (!name) {
+      setError(COPY.newAsset.nameTaken)
+      return
+    }
+    creating.current = true
+    const ticket = ++operation.current
+    setBusy(true)
+    setError(null)
+    try {
+      const result = await gallery.getState().create({ kind: 'model', name, texelsPerUnit: 4 })
+      if (ticket !== operation.current) return
+      if (!result.ok) {
+        setError(
+          result.reason === 'storage-budget' ? COPY.gallery.storageBudget : COPY.toast.saveFailed,
+        )
+        return
+      }
+      newModelIntent.mark(result.asset.id)
+      reset()
+      onCreated(result.asset)
+    } catch {
+      if (ticket === operation.current) setError(COPY.toast.saveFailed)
+    } finally {
+      if (ticket === operation.current) {
+        creating.current = false
+        setBusy(false)
+      }
+    }
   }
 
   function openTemplates(): void {
@@ -128,7 +178,7 @@ export function NewAssetDialog({
 
   async function submit(event: FormEvent): Promise<void> {
     event.preventDefault()
-    if (!kind || busy) return
+    if (!kind || creating.current) return
     if (!normalized) {
       setError(COPY.newAsset.nameInvalid)
       return
@@ -143,42 +193,58 @@ export function NewAssetDialog({
         : kind === 'texture'
           ? { kind, name: normalized, size }
           : { kind, name: normalized, preset }
+    creating.current = true
+    const ticket = ++operation.current
     setBusy(true)
-    const result = templateId
-      ? await gallery.getState().createFromTemplate({ templateId, name: normalized })
-      : await gallery.getState().create(input)
-    setBusy(false)
-    if (!result.ok) {
-      setError(
-        result.reason === 'storage-budget'
-          ? COPY.gallery.storageBudget
-          : result.reason === 'invalid-name'
-            ? COPY.newAsset.nameInvalid
-            : COPY.toast.saveFailed,
-      )
-      return
+    try {
+      const result = templateId
+        ? await gallery.getState().createFromTemplate({ templateId, name: normalized })
+        : await gallery.getState().create(input)
+      if (ticket !== operation.current) return
+      if (!result.ok) {
+        setError(
+          result.reason === 'storage-budget'
+            ? COPY.gallery.storageBudget
+            : result.reason === 'invalid-name'
+              ? COPY.newAsset.nameInvalid
+              : COPY.toast.saveFailed,
+        )
+        return
+      }
+      showToast(COPY.toast.created(result.asset.name))
+      if (result.asset.kind === 'model') newModelIntent.mark(result.asset.id)
+      reset()
+      onCreated(result.asset)
+    } catch {
+      if (ticket === operation.current) setError(COPY.toast.saveFailed)
+    } finally {
+      if (ticket === operation.current) {
+        creating.current = false
+        setBusy(false)
+      }
     }
-    showToast(COPY.toast.created(result.asset.name))
-    reset()
-    onCreated(result.asset)
   }
 
   return (
     <Dialog open={open} onClose={close} title={COPY.newAsset.title} wide>
-      <div className="flex items-center gap-2" aria-hidden="true">
-        {STEPS.map((item, index) => (
-          <span
-            key={item}
-            className={clsx(
-              'h-2 flex-1 rounded-full',
-              index <= stepIndex ? 'bg-mld-accent' : 'bg-mld-border',
-            )}
-          />
-        ))}
-      </div>
-      <p className="mt-2 text-xs font-bold uppercase tracking-wide text-mld-muted">
-        {COPY.newAsset.progress(stepIndex + 1, STEPS.length)}
-      </p>
+      {step !== 'kind' && (
+        <>
+          <div className="flex items-center gap-2" aria-hidden="true">
+            {STEPS.map((item, index) => (
+              <span
+                key={item}
+                className={clsx(
+                  'h-2 flex-1 rounded-full',
+                  index <= stepIndex ? 'bg-mld-accent' : 'bg-mld-border',
+                )}
+              />
+            ))}
+          </div>
+          <p className="mt-2 text-xs font-bold uppercase tracking-wide text-mld-muted">
+            {COPY.newAsset.progress(stepIndex + 1, STEPS.length)}
+          </p>
+        </>
+      )}
       <h3 className="mld-display mt-1 text-lg text-mld-text">{STEP_TITLES[step]}</h3>
 
       {step === 'kind' ? (
@@ -187,6 +253,7 @@ export function NewAssetDialog({
             <button
               key={item}
               type="button"
+              disabled={busy}
               onClick={() => pickKind(item)}
               aria-label={COPY.a11y.newAssetKind(COPY.kinds[item].title)}
               className={clsx(
@@ -242,6 +309,24 @@ export function NewAssetDialog({
           }}
         />
       ) : null}
+
+      {step === 'kind' && (
+        <details className="mt-3 text-sm">
+          <summary className="min-h-11 cursor-pointer py-3 font-bold">
+            Mais opções para começar
+          </summary>
+          <Button
+            disabled={busy}
+            onClick={() => {
+              setKind('model')
+              setTemplateId(null)
+              setStep('options')
+            }}
+          >
+            Configurar modelo
+          </Button>
+        </details>
+      )}
 
       {step === 'options' && kind === 'model' ? (
         <fieldset className="mt-4">
@@ -332,6 +417,16 @@ export function NewAssetDialog({
         </form>
       ) : null}
 
+      {error && step !== 'name' && (
+        <p role="alert" className="mt-3 text-sm text-mld-danger">
+          {error}
+        </p>
+      )}
+      {busy && (
+        <p role="status" className="mt-3 text-sm">
+          Preparando sua criação…
+        </p>
+      )}
       <div className="mt-6 flex items-center justify-between gap-2">
         <Button
           variant="ghost"

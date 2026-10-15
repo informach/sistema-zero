@@ -171,6 +171,50 @@ function setup(
 }
 
 describe('scene viewport lifecycle and picking', () => {
+  test('dragging an unselected body only selects it; the next gesture moves it and cancellation never selects', () => {
+    const deltas: AffineMatrix[] = [],
+      ends: boolean[] = []
+    let begins = 0
+    const f = setup({
+      begin: () => {
+        begins++
+        return true
+      },
+      preview: (delta) => {
+        deltas.push(delta)
+        return true
+      },
+      end: (commit) => ends.push(commit),
+    })
+    try {
+      f.viewport.setTransformTool('move')
+      const point = new Vector3(-0.6, 1.6, 0).project(f.count().camera!)
+      const at = { clientX: (point.x + 1) * 160, clientY: (1 - point.y) * 90 }
+      f.pointer('pointerdown', 1, at)
+      f.pointer('pointermove', 1, { ...at, clientX: at.clientX + 12, buttons: 1 })
+      f.pointer('pointerup', 1, { ...at, clientX: at.clientX + 12 })
+      expect(f.picks).toEqual([f.source.nodes[0]!.id])
+      expect(begins).toBe(0)
+      f.viewport.setSelection([f.source.nodes[0]!.id])
+      f.tick()
+      f.pointer('pointerdown', 2, at)
+      f.pointer('pointermove', 2, { ...at, clientX: at.clientX + 12, buttons: 1 })
+      f.pointer('pointerup', 2, { ...at, clientX: at.clientX + 12 })
+      expect(begins).toBe(1)
+      expect(deltas.at(-1)![12]).toBeGreaterThan(0)
+      expect(deltas.at(-1)![14]).toBe(0)
+      expect(ends).toEqual([true])
+      f.viewport.setSelection([])
+      f.tick()
+      f.pointer('pointerdown', 3, at)
+      f.pointer('pointercancel', 3, at)
+      f.pointer('pointerup', 3, at)
+      expect(f.picks).toHaveLength(1)
+      expect(begins).toBe(1)
+    } finally {
+      f.close()
+    }
+  })
   test('thumbnail capture works at rest and refuses a transient animation pose until it is cleared', () => {
     const capture = spyOn(ViewportThumbnail.prototype, 'render').mockReturnValue(
       'data:image/jpeg;base64,AAAA',
