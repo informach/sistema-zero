@@ -8,4 +8,3 @@ typecheck auth
 typecheck messaging
 typecheck api-gateway
 typecheck studio-runtime
-typecheck release scripts
