@@ -2247,6 +2247,27 @@ O host remove chaves locais do fluxo anterior e mantém apenas os deep links de 
 matcher do proxy, sem gate próprio (posse do Pensa e dono/membro são do members). Ordem de deploy:
 members (migration `0098`) → gateway → member-shell → kids.
 
+## O jogo do Pensa no Estúdio: abrir sem tropeçar e a faixa própria (15/10/2026)
+
+Dois relatos dela sobre o Pensa v2: "Abrir meu jogo" mostrava "a tarefa mudou em outro lugar" (e o
+"Tentar de novo" não refazia nada), e o jogo do plano aparecia no meio dos jogos livres do Estúdio,
+como um projeto qualquer.
+
+- **"Abrir meu jogo" abre o jogo** (`pensa-client.tsx`, `onOpenGame`): `/estudio?projeto=pensa-<id>`,
+  o caminho que só retoma o que existe (aqui ou na conta) e nunca mexe em missão. Sem o jogo em
+  lugar nenhum (a criança foi testar antes da primeira missão do Estúdio), o recado diz isso e a
+  saída é "Voltar ao meu plano".
+- **A anotação da missão não tranca o jogo** (`lib/pensa-mission-link.ts`, `linkStudioMission`):
+  no v2, abrir por uma missão anota a missão sem a versão da página, e uma recusa de agora (missão
+  anterior pendente, caminho mudado, servidor fora, rede caída) abre o jogo e relê o guia. Só barra
+  abrir o que o jogo não resolve: missão de outra pessoa da equipe ou que saiu do plano. O plano
+  anterior ao v2 segue estrito. O "Tentar de novo" refaz a abertura de verdade (`openAttempt`).
+- **O conflito com motivo chega inteiro** (`progressRefusal`): o 409 `PENSA_TASK_PROGRESS_CONFLICT`
+  da jornada v2 diz o motivo em voz de criança ("Seu jogo mudou. Espere ficar guardado na conta…");
+  só a frase padrão (a versão velha da página) vira a do host. Vale no Estúdio e no Pinta.
+- Testes: `tests/pensa-mission-link.test.ts`, `tests/pensa-guide-errors.test.ts` (o conflito com
+  motivo).
+
 ## Pensa em equipe nas oficinas (14/10/2026)
 
 O plano v2 em equipe tem duas funções (`code` = quem programa no Estúdio; `art` = Pinta e Molda);

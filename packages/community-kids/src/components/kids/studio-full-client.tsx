@@ -28,6 +28,7 @@ import { cloudConfirmRefusal, guideError, progressRefusal } from '@/lib/pensa-gu
 import { resolveNextPensaMission } from '@/lib/pensa-next-mission'
 import { type CreationsCloud, createCreationsCloud } from '../../lib/creations-cloud'
 import { createStoredSyncedMarks } from '../../lib/creations-sync'
+import { linkStudioMission, type MissionLinkRefusal } from '../../lib/pensa-mission-link'
 import {
   clearPensaRestore,
   isPensaRestorePending,
@@ -35,7 +36,11 @@ import {
   pensaRestoreRevision,
   reconcilePensaOpen,
 } from '../../lib/pensa-restore-pending'
-import { pensaStudioLinkKey, pensaStudioProjectId } from '../../lib/pensa-studio-link'
+import {
+  pensaPlanIdFromStudioProjectId,
+  pensaStudioLinkKey,
+  pensaStudioProjectId,
+} from '../../lib/pensa-studio-link'
 import { resumeExistingCreation } from '../../lib/resume-creation'
 import { createStudioCloudSync } from '../../lib/studio-cloud'
 import { openStudioZappyHelp, openStudioZappyLesson } from '../../lib/studio-zappy-navigation'
@@ -125,6 +130,8 @@ export function StudioFullClient({
   // A frase que explica por que o jogo não abriu, quando há uma melhor que o recado genérico
   // (ex.: "Feche o jogo em outras abas"). `null` = o recado de sempre.
   const [openingError, setOpeningError] = useState<string | null>(null)
+  /** O jogo aberto por `?projeto=` é de um plano do Pensa: a saída do erro volta ao plano. */
+  const openingPlanId = initialProjectId ? pensaPlanIdFromStudioProjectId(initialProjectId) : null
   // "Guardado na sua conta": a fila da nuvem por perfil (o selo lê daqui) JUNTO do
   // desligar do espelho DELA — o par vive num estado só, para o cleanup de uma fila
   // nunca desligar o espelho da fila seguinte (era o que um ref compartilhado fazia).
@@ -184,6 +191,12 @@ export function StudioFullClient({
       .then((project) => {
         if (!active) return
         if (!project) {
+          // O jogo de um plano do Pensa que ainda não começou no Estúdio (a criança foi testar
+          // antes da primeira missão): dizer onde ele nasce, em vez de "outro aparelho".
+          if (pensaPlanIdFromStudioProjectId(initialProjectId))
+            setOpeningError(
+              'Seu jogo ainda não começou no Estúdio. Volte ao plano e abra a missão do Estúdio para começar.',
+            )
           setOpeningProject('error')
           return
         }
@@ -205,6 +218,9 @@ export function StudioFullClient({
     projectName: string
   } | null>(null)
   const openedTaskKeyRef = useRef<string | null>(null)
+  // "Tentar de novo" depois de uma abertura recusada: o efeito da abertura só roda de novo quando
+  // algo muda, e reler o guia com o MESMO progresso não mudava nada (a tela caía na lista).
+  const [openAttempt, setOpenAttempt] = useState(0)
   // O Estúdio SEGUE a plataforma (hoje só claro) — sem toggle próprio e sem
   // destoar do app ao redor. `resolvedTheme` é undefined no 1º render → cai em claro.
   // ⚠️ O tema escuro não existe nesta plataforma desde 11/09/2026: este valor era uma
@@ -341,7 +357,7 @@ export function StudioFullClient({
       if (!handoffTaskId) openedTaskKeyRef.current = null
       return
     }
-    const openKey = `${handoffTaskId}:${handoffProjectId}`
+    const openKey = `${handoffTaskId}:${handoffProjectId}:${openAttempt}`
     if (openedTaskKeyRef.current === openKey) return
     openedTaskKeyRef.current = openKey
     let active = true
@@ -366,46 +382,31 @@ export function StudioFullClient({
       } catch {}
       if (!active) return
       setMissingTaskProject(null)
-      if (handoffStatus !== 'completed') {
-        const response = await fetch(
-          `/api/pensa/tasks/${encodeURIComponent(handoffTaskId)}/progress`,
-          {
-            method: 'PATCH',
-            headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({
-              expectedUpdatedAt: handoffProgressUpdatedAt,
-              ...(handoffStatus === 'planned' ? { status: 'in_progress' } : {}),
-              outputRef: {
-                kind: 'studio_project',
-                projectId,
-                saveRevision: String(project.updatedAt),
-              },
-            }),
-          },
-        )
-        const updated = (await response.json().catch(() => null)) as {
-          task?: { progress: StudioTaskSession['progress'] }
-        } | null
-        if (response.status === 409) {
-          openedTaskKeyRef.current = null
-          retryTaskHandoff()
-          if (active)
-            setTaskError('A tarefa mudou em outro lugar. Recarreguei o Guia do Pensa para você.')
-          return
-        } else if (active && response.ok && updated?.task) {
-          updateTaskProgress(updated.task.progress)
-        } else if (!response.ok || !updated?.task) {
-          throw new Error('Não consegui vincular o projeto a esta tarefa.')
-        }
+      if (handoffStatus && handoffStatus !== 'completed') {
+        // Anotar a missão (começada, ligada ao jogo) não tranca o jogo no v2: ver o lib.
+        const link = await linkStudioMission<StudioTaskSession['progress']>({
+          fetch,
+          taskId: handoffTaskId,
+          v2: handoffV2,
+          status: handoffStatus,
+          expectedUpdatedAt: handoffProgressUpdatedAt,
+          projectId,
+          saveRevision: String(project.updatedAt),
+        })
+        if (link.kind === 'linked') {
+          if (active) updateTaskProgress(link.progress)
+        } else if (link.reread) retryTaskHandoff()
       }
       if (active) setView({ name: 'editor', projectId })
     })().catch((error: unknown) => {
       openedTaskKeyRef.current = null
+      const refusal = error as MissionLinkRefusal | null
+      if (refusal?.reread) retryTaskHandoff()
       if (active)
         setTaskError(
           error instanceof PensaOpenRefused
             ? error.message
-            : 'Não consegui criar ou restaurar o projeto desta tarefa.',
+            : (refusal?.childMessage ?? 'Não consegui criar ou restaurar o projeto desta tarefa.'),
         )
     })
     return () => {
@@ -420,6 +421,8 @@ export function StudioFullClient({
     handoffStatus,
     handoffProgressUpdatedAt,
     handoffOutputProjectId,
+    handoffV2,
+    openAttempt,
     preparePensaOpen,
     retryTaskHandoff,
     updateTaskProgress,
@@ -559,7 +562,10 @@ export function StudioFullClient({
               if (response.status === 409) {
                 retryTaskHandoff()
                 throw progressRefusal(409, {
-                  error: { code: body?.error?.code ?? 'PENSA_TASK_PROGRESS_CONFLICT' },
+                  error: {
+                    code: body?.error?.code ?? 'PENSA_TASK_PROGRESS_CONFLICT',
+                    message: body?.error?.message,
+                  },
                 })
               }
               if (!response.ok || !body?.task) throw progressRefusal(response.status, body)
@@ -947,7 +953,8 @@ export function StudioFullClient({
               onClick={() => {
                 setTaskError(null)
                 openedTaskKeyRef.current = null
-                retryTaskHandoff()
+                if (taskHandoffStatus === 'error') retryTaskHandoff()
+                else setOpenAttempt((n) => n + 1)
               }}
               className="inline-flex min-h-11 items-center gap-2 rounded-full bg-primary px-4 font-bold text-primary-foreground"
             >
@@ -1016,12 +1023,21 @@ export function StudioFullClient({
             >
               Tentar novamente
             </button>
-            <a
-              href="/estudio"
-              className="inline-flex min-h-11 items-center justify-center font-bold text-primary"
-            >
-              Voltar à galeria
-            </a>
+            {openingPlanId ? (
+              <a
+                href={`/pensa?plano=${encodeURIComponent(openingPlanId)}`}
+                className="inline-flex min-h-11 items-center justify-center font-bold text-primary"
+              >
+                Voltar ao meu plano
+              </a>
+            ) : (
+              <a
+                href="/estudio"
+                className="inline-flex min-h-11 items-center justify-center font-bold text-primary"
+              >
+                Voltar à galeria
+              </a>
+            )}
           </div>
         </div>
       ) : openingProject === 'loading' ? (

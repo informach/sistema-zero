@@ -281,6 +281,13 @@ export interface PensaHostAdapter {
   capabilities: { pintaOwned: boolean; studioOwned: boolean; moldaOwned?: boolean }
   mascotImages?: Partial<Record<PensaMascotPose, string>>
   onOpenTask(args: { taskId: string; destination: PensaTaskDestination }): void
+  /**
+   * "Abrir meu jogo" na hora de testar (15/10/2026): abre o JOGO do plano no Estúdio, sem abrir
+   * missão nenhuma. Abrir pela missão marcava a última missão do Estúdio como começada, e ela
+   * quase sempre ainda depende das anteriores (a criança pode testar antes de terminar tudo), o
+   * que o servidor recusava. Sem ele, o Pensa cai na missão do Estúdio mais adiantada.
+   */
+  onOpenGame?(args: { projectId: string }): void
 }
 
 /**

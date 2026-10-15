@@ -623,6 +623,19 @@ review achou defeitos de funcionamento. O que mudou, e que não pode voltar:
   lentas nesta árvore no happy-dom (dezenas de segundos sob carga): em teste novo, prefira rótulo e
   texto.
 
+## "Abrir meu jogo" abre o JOGO, não uma missão (15/10/2026)
+
+Relato dela: "Abrir meu jogo", na hora de testar, levava ao Estúdio com "a tarefa mudou em outro
+lugar, recarreguei o guia do Pensa para você". A criança pode testar antes de terminar as missões
+("Já quero experimentar"), e o botão abria a ÚLTIMA missão do Estúdio, que ainda dependia das
+anteriores: o Estúdio tentava começá-la e o servidor recusava (409 de missão anterior pendente).
+
+- `PensaHostAdapter.onOpenGame?({ projectId })` (opcional): o botão chama ele quando o host sabe
+  abrir o jogo do plano direto (o kids manda para `/estudio?projeto=pensa-<id>`, que só retoma o
+  que existe e nunca mexe em missão). Sem ele, cai na missão do Estúdio mais adiantada que JÁ
+  começou (`gameTask`), nunca na que ainda espera.
+- Testes: `JourneyApp.team.test.tsx`, describe "Abrir meu jogo" na hora de testar.
+
 ## O que veio do sandbox: perguntas com respostas, ideias e usos (15/10/2026)
 
 Pedido dela, depois da análise do repositório `code-with-antonio/sandbox` (o `ask_player`, as

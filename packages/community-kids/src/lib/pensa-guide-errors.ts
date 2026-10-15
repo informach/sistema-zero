@@ -25,6 +25,15 @@ export function guideError(message: string, code?: string): GuideError {
  */
 const FRASE_DO_SERVIDOR = new Set(['PENSA_TASK_DEPENDENCY_PENDING'])
 
+/**
+ * O conflito do progresso tem DOIS sentidos no servidor (15/10/2026): a versão que a página tinha
+ * ficou velha (a frase padrão, adulta, que o host troca) ou a jornada v2 recusou por um motivo que
+ * ela diz em voz de criança ("Seu jogo mudou. Espere ficar guardado na conta…", "Conclua a missão
+ * anterior…", "Abra o caminho atual deste jogo."). Antes as duas viravam "A missão mudou em outro
+ * lugar", e a criança que só precisava esperar o jogo subir lia que alguém tinha mexido no plano.
+ */
+const CONFLITO_PADRAO = /^A tarefa mudou em outro aparelho/
+
 /** Frases do host para as recusas que o servidor diz em voz técnica ou adulta. */
 const FRASE_DO_HOST: Record<string, string> = {
   PENSA_TASK_DEPENDENCY_PENDING: 'Termine antes as missões que vêm antes desta no seu plano.',
@@ -51,6 +60,13 @@ export function progressRefusal(
   const code = body?.error?.code
   const message = body?.error?.message?.trim()
   if (code && FRASE_DO_SERVIDOR.has(code) && message && !PALAVRAS_DA_ESCOLA.test(message))
+    return guideError(message, code)
+  if (
+    code === 'PENSA_TASK_PROGRESS_CONFLICT' &&
+    message &&
+    !CONFLITO_PADRAO.test(message) &&
+    !PALAVRAS_DA_ESCOLA.test(message)
+  )
     return guideError(message, code)
   if (code && FRASE_DO_HOST[code]) return guideError(FRASE_DO_HOST[code], code)
   if (status === 404) return guideError(FRASE_DO_HOST.PENSA_NOT_FOUND!, 'PENSA_NOT_FOUND')

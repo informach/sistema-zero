@@ -12,6 +12,7 @@ import { EMBEDDED_APP_FRAME, EmbeddedAppLoadingBody } from '@/components/kids/em
 import { useFocusMode } from '@/components/kids/focus-mode'
 import { useHostChrome } from '@/components/kids/use-host-chrome'
 import { notePensaRestoreFromView } from '@/lib/pensa-restore-pending'
+import { pensaStudioProjectId } from '@/lib/pensa-studio-link'
 
 type PensaModule = typeof import('@sistemazero/pensa')
 
@@ -113,6 +114,10 @@ export function PensaClient({
         router.push(
           `/${destination === 'studio' ? 'estudio' : destination}?tarefa=${encodeURIComponent(taskId)}`,
         ),
+      // "Abrir meu jogo" na hora de testar: o jogo do plano, sem abrir missão (o `?projeto=` só
+      // retoma o que existe, aqui ou na conta, e nunca mexe no progresso das missões).
+      onOpenGame: ({ projectId }) =>
+        router.push(`/estudio?projeto=${encodeURIComponent(pensaStudioProjectId(projectId))}`),
     }),
     // ⚠️ `theme` saiu do dep array: virou constante (sem tema escuro nesta plataforma).
     [

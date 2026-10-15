@@ -341,6 +341,13 @@ regras e papéis efetivos no `@sistemazero/core/pensa` (`effectivePensaRoles` e 
   `{status}`; o nome passa pela `pensaNarrativeRefusal` (422 `PENSA_MESSAGE_REVIEW`, a equipe lê o
   nome) e vai a `pensaJourneyRename`. Testes em `tests/pensa-journey-routes.test.ts`.
 
+## Pensa v2: a anotação da missão sem a versão da página (15/10/2026)
+
+`ProgressBody.expectedUpdatedAt` (`routes/pensa.ts`) virou OPCIONAL: o Estúdio do kids anota a
+missão do v2 ao abrir o jogo sem a versão do progresso que a página tinha (o members junta com o
+que sabe e protege a escrita pela versão que ele mesmo leu). O guia segue mandando a versão,
+inclusive `null`. Teste: `tests/pensa-team-routes.test.ts`, "progresso da missão no BFF".
+
 ## Pensa v2: perguntas com respostas e o jogo que começa jogando (15/10/2026)
 
 O que veio da análise do sandbox (`code-with-antonio/sandbox`), no planejador

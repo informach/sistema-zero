@@ -85,3 +85,41 @@ test('equipe: missão de outra função e missão já começada por outra artist
     'Outra pessoa da equipe já está fazendo essa missão.',
   )
 })
+
+describe('o conflito do progresso com motivo (15/10/2026)', () => {
+  test('a jornada v2 diz o motivo em voz de criança: a frase dela chega inteira', () => {
+    for (const message of [
+      'Seu jogo mudou. Espere ficar guardado na conta e experimente novamente.',
+      'Conclua a missão anterior antes de conferir esta.',
+      'Espere sua criação ficar Guardada na conta e tente de novo.',
+    ]) {
+      const error = progressRefusal(409, {
+        error: { code: 'PENSA_TASK_PROGRESS_CONFLICT', message },
+      })
+      expect(error.childMessage).toBe(message)
+    }
+  })
+
+  test('a versão velha da página (a frase padrão, adulta) segue com a frase do host', () => {
+    const error = progressRefusal(409, {
+      error: {
+        code: 'PENSA_TASK_PROGRESS_CONFLICT',
+        message: 'A tarefa mudou em outro aparelho. Recarregue o guia e tente novamente.',
+      },
+    })
+    expect(error.childMessage).toBe(
+      'A missão mudou em outro lugar. Recarreguei o Guia do Pensa para você.',
+    )
+  })
+
+  test('sem frase, ou com palavra de escola, também cai na do host', () => {
+    expect(
+      progressRefusal(409, { error: { code: 'PENSA_TASK_PROGRESS_CONFLICT' } }).childMessage,
+    ).toBe('A missão mudou em outro lugar. Recarreguei o Guia do Pensa para você.')
+    expect(
+      progressRefusal(409, {
+        error: { code: 'PENSA_TASK_PROGRESS_CONFLICT', message: 'Conclua a aula anterior.' },
+      }).childMessage,
+    ).toBe('A missão mudou em outro lugar. Recarreguei o Guia do Pensa para você.')
+  })
+})

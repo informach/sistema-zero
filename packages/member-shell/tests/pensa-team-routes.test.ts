@@ -193,3 +193,40 @@ describe('equipe do Pensa no BFF', () => {
     expect(mutated).toBe(false)
   })
 })
+
+describe('progresso da missão no BFF (15/10/2026)', () => {
+  test('a versão da página é opcional: o Estúdio anota a missão do v2 sem ela', async () => {
+    const seen: unknown[] = []
+    const routes = createPensaRoutes(
+      deps({
+        pensaUpdateTaskProgress: async (_id: string, body: unknown) => {
+          seen.push(body)
+          return { status: 200, body: { task: { id: OTHER } } }
+        },
+      }),
+    )
+    const outputRef = {
+      kind: 'studio_project',
+      projectId: `pensa-${PROJECT.replaceAll('-', '')}`,
+      saveRevision: '1',
+    }
+    const semVersao = await routes.pensaTaskProgress.PATCH(
+      new Request(`https://kids.test/api/pensa/tasks/${OTHER}/progress`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: 'in_progress', outputRef }),
+      }),
+      params({ taskId: OTHER }),
+    )
+    expect(semVersao.status).toBe(200)
+    expect(seen).toEqual([{ status: 'in_progress', outputRef }])
+    // A versão segue indo quando o guia manda (inclusive `null`, a missão nunca mexida).
+    await routes.pensaTaskProgress.PATCH(
+      new Request(`https://kids.test/api/pensa/tasks/${OTHER}/progress`, {
+        method: 'PATCH',
+        body: JSON.stringify({ completedStepIds: ['a'], expectedUpdatedAt: null }),
+      }),
+      params({ taskId: OTHER }),
+    )
+    expect(seen[1]).toEqual({ completedStepIds: ['a'], expectedUpdatedAt: null })
+  })
+})

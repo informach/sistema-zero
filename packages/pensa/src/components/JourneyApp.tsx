@@ -589,6 +589,13 @@ export function JourneyApp({
             tasks.some((d) => d.id === id && d.progress.status === 'completed'),
           ),
       ))
+  // "Abrir meu jogo" sem o host saber abrir o jogo direto: a missão do Estúdio mais adiantada que
+  // já começou (abrir a ÚLTIMA, que ainda depende das anteriores, fazia o servidor recusar).
+  const studioTasks = tasks.filter((t) => t.destination === 'studio')
+  const gameTask =
+    [...studioTasks].reverse().find((t) => t.progress.status !== 'planned') ??
+    (nextTask?.destination === 'studio' ? nextTask : undefined) ??
+    studioTasks[0]
   const waitingOn = teamNext?.waitingOn ?? null
   const waitingTask = waitingOn ? tasks.find((t) => t.id === waitingOn.missionId) : undefined
   /** 1º nome de alguém da equipe, ou `null` (a frase então diz "alguém da equipe"). */
@@ -1483,23 +1490,25 @@ export function JourneyApp({
                           )}
                           {canProgram ? (
                             <>
-                              {tasks
-                                .filter((t) => t.destination === 'studio')
-                                .slice(-1)
-                                .map((t) => (
-                                  <div className="pensa-journey-actions" key={t.id}>
-                                    <button
-                                      type="button"
-                                      className="sz-tool-pill sz-tool-pill--outline"
-                                      onClick={() =>
-                                        adapter.onOpenTask({ taskId: t.id, destination: 'studio' })
-                                      }
-                                    >
-                                      <BlocksIcon />
-                                      Abrir meu jogo
-                                    </button>
-                                  </div>
-                                ))}
+                              {gameTask && view ? (
+                                <div className="pensa-journey-actions">
+                                  <button
+                                    type="button"
+                                    className="sz-tool-pill sz-tool-pill--outline"
+                                    onClick={() =>
+                                      adapter.onOpenGame
+                                        ? adapter.onOpenGame({ projectId: view.project.id })
+                                        : adapter.onOpenTask({
+                                            taskId: gameTask.id,
+                                            destination: 'studio',
+                                          })
+                                    }
+                                  >
+                                    <BlocksIcon />
+                                    Abrir meu jogo
+                                  </button>
+                                </div>
+                              ) : null}
                               <label className="pensa-journey-label" htmlFor="pensa-test-note">
                                 O que aconteceu? (se quiser contar)
                               </label>

@@ -827,3 +827,36 @@ describe('o compasso do jogo em equipe', () => {
     LENTO_NO_CI,
   )
 })
+
+describe('"Abrir meu jogo" na hora de testar (15/10/2026)', () => {
+  // Testar antes de terminar: a última missão do Estúdio ainda depende da missão do Pinta.
+  const missoes = [
+    task('m1', 'studio', 'completed'),
+    task('m2', 'pinta', 'in_progress', ['m1']),
+    task('m3', 'studio', 'planned', ['m2']),
+  ]
+
+  test(
+    'abre o JOGO do plano, sem abrir missão nenhuma',
+    async () => {
+      const { adapter } = server({ noTeam: true, stage: 'observing', tasks: missoes })
+      const onOpenGame = mock()
+      openGame({ ...adapter, onOpenGame })
+      fireEvent.click(await screen.findByRole('button', { name: 'Abrir meu jogo' }))
+      expect(onOpenGame).toHaveBeenCalledWith({ projectId: 'p1' })
+      expect(adapter.onOpenTask).not.toHaveBeenCalled()
+    },
+    LENTO_NO_CI,
+  )
+
+  test(
+    'sem o host abrir o jogo, cai na missão do Estúdio que já começou, nunca na que ainda espera',
+    async () => {
+      const { adapter } = server({ noTeam: true, stage: 'observing', tasks: missoes })
+      openGame(adapter)
+      fireEvent.click(await screen.findByRole('button', { name: 'Abrir meu jogo' }))
+      expect(adapter.onOpenTask).toHaveBeenCalledWith({ taskId: 'm1', destination: 'studio' })
+    },
+    LENTO_NO_CI,
+  )
+})
