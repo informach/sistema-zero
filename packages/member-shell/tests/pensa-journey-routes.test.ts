@@ -211,3 +211,37 @@ test('a falha ao conferir recursos no aceite vai ao log com o nome, e a frase é
   expect(logged).toContain('"name":"TypeError"')
   expect(logged).not.toContain('dragão')
 })
+
+describe('renomear o jogo (15/10/2026)', () => {
+  const patch = (rename: ReturnType<typeof mock>, body: unknown) => {
+    const routes = createPensaJourneyRoutes({
+      members: {
+        pensaJourneyRename: rename,
+        pensaJourneyArchive: mock(async () => ({ status: 200, body: view() })),
+      } as unknown as MembersClient,
+      session: { getSession: async () => STAFF as unknown as SessionUser } as SessionModule,
+    })
+    return routes.pensaJourney.PATCH(
+      new Request(`https://kids.test/api/pensa/v2/projects/${PROJECT}`, {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(body),
+      }),
+      { params: Promise.resolve({ path: ['projects', PROJECT] }) },
+    )
+  }
+
+  test('o nome vai ao members aparado', async () => {
+    const rename = mock(async () => ({ status: 200, body: view() }))
+    const res = await patch(rename, { name: '  Meu dragão  ' })
+    expect(res.status).toBe(200)
+    expect(rename).toHaveBeenCalledWith(PROJECT, 'Meu dragão')
+  })
+
+  test('nome que troca contato é recusado com a frase do Pensa, sem ir ao members', async () => {
+    const rename = mock(async () => ({ status: 200, body: view() }))
+    const res = await patch(rename, { name: 'me passa seu zap' })
+    expect(res.status).toBe(422)
+    expect(rename).not.toHaveBeenCalled()
+  })
+})

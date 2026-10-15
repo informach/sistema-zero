@@ -328,6 +328,19 @@ regras e papéis efetivos no `@sistemazero/core/pensa` (`effectivePensaRoles` e 
   snapshot das duas pessoas, solo inalterado, aceite em equipe) e dois em
   `pensa-journey-worker.test.ts` (o `projectId` chega ao contexto).
 
+## Pensa v2: sem travessão e renomear o jogo (15/10/2026)
+
+- **A criança nunca lê travessão** (pedido dela: "linguagem humanizada, sem travessões"). O
+  sistema pede no `JOURNEY_SYSTEM`, mas o modelo escreve "—"/"–" assim mesmo, então a régua roda
+  em TODA saída do modelo no `json()` do `planner.ts`: `semTravessaoNosCampos(result, PROSE_KEYS)`
+  (`lib/kid-text.ts`, puro). Travessão no meio vira vírgula, o que abre a linha sai, intervalo de
+  números vira "a" ("8–13" → "8 a 13"), e o hífen solto entre palavras conta como travessão; o
+  hífen das palavras e a conta entre números ficam. Só campos de texto (`PROSE_KEYS`), nunca ids.
+  Testes: `tests/kid-text.test.ts` e o caso da ajuda em `pensa-journey-worker.test.ts`.
+- **Renomear:** o `PATCH /api/pensa/v2/projects/:id` aceita `{name}` (2..120, aparado) além de
+  `{status}`; o nome passa pela `pensaNarrativeRefusal` (422 `PENSA_MESSAGE_REVIEW`, a equipe lê o
+  nome) e vai a `pensaJourneyRename`. Testes em `tests/pensa-journey-routes.test.ts`.
+
 ## Pensa v2: a régua da narrativa e o teto do pedido (full review de 14/10/2026)
 
 O BFF do Pensa v2 mora em `server/pensa-journey/` e `routes/pensa-journey.ts`. O que o full review

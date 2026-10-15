@@ -569,6 +569,60 @@ zero ou mais; sem ninguém, quem programa também desenha).
   título, Esc; entrar com código e o erro; os chips; "Sua missão", o caminho com nomes, as três
   esperas; quem pode o quê; o compasso e a aba escondida).
 
+## Full review do v2 (15/10/2026)
+
+Pedido dela: "melhorar e não regredir". O v2 tinha perdido coisas boas do plano clássico, e o
+review achou defeitos de funcionamento. O que mudou, e que não pode voltar:
+
+- **A coluna fica no MEIO** (`.pensa-journey .sz-tool-band__inner`: teto `--pz-journey-max` + o
+  respiro das faixas, `margin-inline: auto`). Presa à esquerda, num monitor largo sobrava um vão
+  vazio à direita. As faixas seguem de borda a borda.
+- **Home:** com jogos, o campo do jogo NOVO fica atrás do **"+ Novo jogo"** (`aria-expanded`,
+  `aria-controls="pensa-new-game"`, "Cancelar" e Esc devolvem o foco ao botão); aberto sempre,
+  parecia o lugar de mexer no jogo de cima. No primeiro jogo ele nasce aberto. O cartão do jogo é
+  o do plano clássico (`.pensa-project-grid`/`.pensa-project-card` no `GameCard`): versão, etapa ou
+  "Pausado", equipe, trilha Z·E·R·O, "Editado há…", a **lixeira** (só de quem criou, com o
+  `ConfirmDialog`, foco de volta ao h1) e "Continuar". O nome acessível do botão continua "Abrir o
+  jogo <nome>".
+- **Rever uma etapa** (o "peek" do clássico): no `ZeroMap` a etapa feita é botão
+  (`aria-pressed`, "Feito. Ver de novo"); revendo, a atual vira "Voltar para agora". O
+  `StageReview` troca os cartões do momento (e esconde o campo): Z = a ideia contada (`intent`),
+  E = a proposta (o que veio da criança, o que o Zappy sugeriu, como testar), R = as missões com o
+  que cada uma faz, O = os testes guardados. Aviso `role="status"`, foco no título da revisão.
+- **"Meu caminho" fica à vista** (era uma sanfona "Ver meu caminho" dentro da seção de mesmo nome):
+  o h2 com "Missões feitas: N de M" e a lista num cartão branco. O "Ver o caminho" do cartão de
+  espera rola até ela e foca o h2.
+- **O cartão "O que ajudou a montar este caminho" SAIU** (decisão dela: é coisa interna). As
+  referências continuam na proposta, fora da tela.
+- **Renomear** com o lápis (`GameNameTitle`, molde do `ProjectNameTitle` do clássico): só a dona,
+  com o jogo ativo; otimista e desfeito se o servidor recusar. `PATCH /v2/projects/:id {name}`.
+- **A oficina precisa estar liberada:** "Continuar no X" fica desligado com a frase do porquê
+  (`toolOwned`, pelas `capabilities` do adapter) e o "Rever" some. Antes abria uma tela trancada.
+- **Ideias guardadas:** a lixeira de cada ideia (`remove_idea`), e guardar vale em qualquer momento
+  (pausado, versão pronta). Depois de guardar, o campo volta a ser a conversa (`planning`); antes
+  ficava preso em "guardar ideia" e o Zappy nunca respondia.
+- **O teste tem volta:** "Voltar para as missões" (antes de testar, com missão faltando) ou "Voltar
+  para ajustar" (depois de um teste), e "Travei nesta parte". Em equipe, quem faz as artes continua
+  vendo a SUA missão enquanto quem programa testa.
+- **Arquivado** só oferece apagar (dona); o cartão de encerrado e os cuidados que sempre falhariam
+  saíram. Pausar não aparece numa versão pronta, e no core retomar um jogo pausado E encerrado só
+  tira a pausa (antes desfazia a conclusão).
+- **"Adaptar meu caminho…"** pede confirmação na linha ("Sim, adaptar meu caminho"/"Deixar como
+  está"): refaz as próximas missões, e em equipe as de todos.
+- **Texto da criança não se perde:** o relato do teste mora no rascunho da aba (como o campo), os
+  chips de ideia somam ao texto em vez de trocar, e o primeiro envio leva o texto para o rascunho
+  do jogo recém-criado (se o envio falhar, "Atualizar" o traz de volta). Ctrl/Cmd+Enter envia.
+- **Recados:** rede caída vira frase ("Não consegui falar com o Pensa agora…"), o conflito genérico
+  diz o que houve ("Alguém da equipe mexeu no jogo. Já mostrei como ele está agora…"), o recado
+  rola para a vista, e um 404 de jogo v2 (apagado, ou a criança saiu da equipe) volta à lista com
+  "Esse jogo não está mais aqui…" em vez de cair no planejador clássico (só cai lá se o id for de um
+  plano clássico). Depois de uma ação que desmonta o botão, o foco vai ao título do cartão novo.
+- **Travessão:** a régua mora no BFF (`member-shell/src/lib/kid-text.ts`, `semTravessao`), aplicada
+  em toda saída do modelo; aqui, nenhum texto fixo usa travessão.
+- Testes: `components/JourneyApp.review.test.tsx`. ⚠️ Consultas por papel (`getByRole`) ficam MUITO
+  lentas nesta árvore no happy-dom (dezenas de segundos sob carga): em teste novo, prefira rótulo e
+  texto.
+
 ## Verificação
 
 Execute `bun run typecheck`, `bun test src` e `bun run check`. Os testes devem cobrir o mapa ZERO, os cinco artefatos, ordem/dependências, próxima tarefa, entitlement e abertura da ferramenta de destino.

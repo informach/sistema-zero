@@ -284,7 +284,7 @@ describe('o "Equipe · N" e a janela da equipe', () => {
     expect(screen.queryByRole('button', { name: /^Equipe/ })).toBeNull()
     for (const name of [
       'Já quero experimentar',
-      'Adaptar meu caminho',
+      'Adaptar meu caminho…',
       'Encerrar por enquanto',
       'Guardar nos arquivados',
       'Voltar à versão guardada',
@@ -591,7 +591,8 @@ describe('a lista "Meus jogos"', () => {
       (await screen.findByRole('heading', { level: 3, name })).closest('li') as HTMLElement
     expect(within(await cartao('Meu com gente')).getByText('Em equipe · 2')).toBeTruthy()
     expect(within(await cartao('Da Bia')).getByText('De Bia')).toBeTruthy()
-    expect((await cartao('Só meu')).querySelector('.pensa-chip')).toBeNull()
+    // O cartão tem os selos de versão e de etapa; o de equipe só aparece com gente.
+    expect((await cartao('Só meu')).querySelector('.pensa-chip.is-team')).toBeNull()
   })
 })
 
@@ -644,9 +645,10 @@ describe('as missões dizem de quem são', () => {
       expect(cartao.getByText('Missão m1')).toBeTruthy()
       expect(screen.queryByRole('button', { name: /^Continuar no/ })).toBeNull()
       fireEvent.click(screen.getByRole('button', { name: 'Ver o caminho' }))
-      const caminho = screen.getByText(/^Ver meu caminho/).closest('details') as HTMLDetailsElement
-      expect(caminho.open).toBe(true)
-      expect(document.activeElement).toBe(caminho.querySelector('summary'))
+      // "Meu caminho" está sempre à vista: o botão leva o foco ao título dele.
+      expect(document.activeElement).toBe(
+        screen.getByRole('heading', { level: 2, name: 'Meu caminho' }),
+      )
       fireEvent.click(screen.getByRole('button', { name: 'Guardar uma ideia' }))
       expect(screen.getByLabelText('Que ideia você quer guardar para depois?')).toBeTruthy()
     },
@@ -713,7 +715,7 @@ describe('quem pode o quê', () => {
         'Funcionou!',
         'Quero ajustar',
         'Abrir meu jogo',
-        'Adaptar meu caminho',
+        'Adaptar meu caminho…',
         'Encerrar por enquanto',
         'Voltar à versão guardada',
       ])
@@ -743,7 +745,7 @@ describe('quem pode o quê', () => {
       openGame(adapter)
       expect(await screen.findByRole('button', { name: 'Funcionou!' })).toBeTruthy()
       expect(screen.getByRole('button', { name: 'Voltar à versão guardada' })).toBeTruthy()
-      expect(screen.getByRole('button', { name: 'Adaptar meu caminho' })).toBeTruthy()
+      expect(screen.getByRole('button', { name: 'Adaptar meu caminho…' })).toBeTruthy()
       expect(screen.queryByRole('button', { name: 'Guardar nos arquivados' })).toBeNull()
       expect(screen.queryByRole('button', { name: 'Apagar este plano…' })).toBeNull()
       expect(screen.queryByText(/Quem testa e guarda as versões/)).toBeNull()

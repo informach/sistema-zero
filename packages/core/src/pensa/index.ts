@@ -360,7 +360,9 @@ export function applyPensaCommand(
       break
     case 'resume':
       next.paused = false
-      if (current.stage === 'closed') {
+      // Pausado e encerrado: retomar só tira a pausa. Sem isto, "Continuar de onde parei" numa
+      // versão pronta a levava de volta para a construção e a conclusão se perdia.
+      if (current.stage === 'closed' && !current.paused) {
         next.stage = current.closedReason === 'met' ? 'building' : (current.closedFrom ?? 'idea')
         next.closedReason = null
         next.closedFrom = null

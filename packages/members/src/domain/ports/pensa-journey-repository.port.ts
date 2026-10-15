@@ -67,6 +67,13 @@ export interface PensaJourneyRepository {
     status: 'active' | 'archived',
     now: Date,
   ): Promise<PensaJourneyView>
+  /** O nome que a criança deu ao jogo (só quem criou); daí em diante a IA não o troca mais. */
+  rename(
+    actor: PensaJourneyActor,
+    projectId: string,
+    name: string,
+    now: Date,
+  ): Promise<PensaJourneyView>
   start(
     actor: PensaJourneyActor,
     projectId: string,

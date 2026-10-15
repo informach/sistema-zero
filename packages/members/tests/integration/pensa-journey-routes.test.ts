@@ -18,6 +18,8 @@ function app() {
     fail: mock(async () => {}),
     protect: mock(async () => ({ ok: true })),
     voice: mock(async () => ({ status: 'generate', key: 'k' })),
+    rename: mock(async () => ({ renamed: true })),
+    archive: mock(async () => ({ archived: true })),
   }
   const routes = pensaJourneyRoutes({
     service: calls,
@@ -78,6 +80,37 @@ test('leitura usa o perfil autenticado e não a identidade inventada na URL', as
   )
   expect(response.status).toBe(200)
   expect(calls.get).toHaveBeenCalledWith({ profileId, accountId, privileged: false }, projectId)
+})
+test('renomear o jogo: o nome vai ao serviço com quem pede, e um PATCH vazio é recusado', async () => {
+  const { handler, calls } = app(),
+    profileId = randomUUID(),
+    accountId = randomUUID(),
+    projectId = randomUUID()
+  const patch = (body: unknown) =>
+    handler.handle(
+      new Request(`http://localhost/members/pensa/v2/projects/${projectId}`, {
+        method: 'PATCH',
+        headers: {
+          'content-type': 'application/json',
+          'x-internal-token': 'trusted-gateway',
+          'x-auth-user-id': profileId,
+          'x-auth-account-id': accountId,
+          'x-auth-user-role': 'student',
+          'x-auth-user-status': 'active',
+        },
+        body: JSON.stringify(body),
+      }),
+    )
+  expect((await patch({ name: 'Meu gatinho' })).status).toBe(200)
+  expect(calls.rename).toHaveBeenCalledWith(
+    { profileId, accountId, privileged: false },
+    projectId,
+    'Meu gatinho',
+  )
+  expect(calls.archive).not.toHaveBeenCalled()
+  expect((await patch({ status: 'archived' })).status).toBe(200)
+  expect(calls.archive).toHaveBeenCalledTimes(1)
+  expect((await patch({})).status).toBe(400)
 })
 test('worker recusa consumidor diferente e chamada pública sem o gateway', async () => {
   const { handler, calls } = app(),

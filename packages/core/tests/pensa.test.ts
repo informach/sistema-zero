@@ -65,6 +65,17 @@ describe('Pensa: autoria, evidência e retomada', () => {
     expect(resumed.closedReason).toBeNull()
   })
 
+  test('retomar uma versão encerrada e pausada só tira a pausa (a conclusão não se perde)', () => {
+    const closed = applyPensaCommand(initial(), 0, { type: 'close', reason: 'incomplete' }, now)
+    const paused = applyPensaCommand(closed, 1, { type: 'pause' }, now)
+    const resumed = applyPensaCommand(paused, 2, { type: 'resume' }, now)
+    expect(resumed.paused).toBe(false)
+    expect(resumed.stage).toBe('closed')
+    expect(resumed.closedReason).toBe('incomplete')
+    // Sem pausa, retomar continua reabrindo a versão, como antes.
+    expect(applyPensaCommand(resumed, 3, { type: 'resume' }, now).stage).toBe('idea')
+  })
+
   test('aceitação antiga e escrita concorrente são recusadas', () => {
     const state = {
       ...initial(),

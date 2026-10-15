@@ -24,12 +24,20 @@
 .pensa-journey-now > .sz-tool-band__inner {
   padding-top: 0.75rem;
 }
+/* A coluna da jornada fica no MEIO da página (15/10/2026, pedido dela): presa à esquerda, num
+   monitor largo ou com o menu escondido sobrava um vão vazio à direita. As faixas continuam de
+   borda a borda; quem centraliza é o miolo delas, com o mesmo respiro lateral das galerias. */
+.pensa-journey .sz-tool-band__inner {
+  width: 100%;
+  max-width: calc(var(--pz-journey-max) + 8rem);
+  margin-inline: auto;
+}
 .pensa-journey-top .sz-tool-header {
   max-width: var(--pz-journey-max);
 }
 
-/* As colunas de leitura não esticam até a borda num monitor largo: a mesma margem esquerda do
-   cabeçalho, com um teto confortável para frases de criança. */
+/* As colunas de leitura não esticam até a borda num monitor largo: o teto confortável para frases
+   de criança, na mesma borda do cabeçalho. */
 .pensa-journey-stack {
   display: grid;
   /* `minmax(0, 1fr)`, nunca a trilha `auto`: com ela a grade de jogos (auto-fill) media pelo
@@ -71,13 +79,33 @@
 .pensa-journey-zero li {
   display: flex;
   min-width: 0;
-  align-items: center;
-  gap: 12px;
-  padding: 14px;
   border: 2px solid var(--sz-tool-card-edge, transparent);
   border-radius: var(--sz-tool-radius-card, 1rem);
   background: var(--pz-surface);
   color: var(--pz-muted);
+}
+/* O miolo de cada etapa: um botão na etapa feita (rever) e na atual durante a revisão (voltar). */
+.pensa-journey-zero__item,
+.pensa-planner .pensa-journey-zero__btn {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  padding: 14px;
+  border: 0;
+  border-radius: calc(var(--sz-tool-radius-card, 1rem) - 2px);
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+.pensa-journey-zero__btn:hover {
+  background: color-mix(in oklab, var(--pz-accent) 6%, var(--pz-surface));
+}
+.pensa-journey-zero li.is-reviewing {
+  border-color: var(--pz-accent);
+  background: color-mix(in oklab, var(--pz-accent) 8%, var(--pz-surface));
 }
 .pensa-journey-zero__tile {
   display: grid;
@@ -123,6 +151,8 @@
   background: var(--pz-accent);
   color: var(--pz-on-fill);
 }
+/* A etapa feita convida a rever: o "Feito. Ver de novo" na tinta do acento. */
+.pensa-journey-zero li.is-done small,
 .pensa-journey-zero li.is-current small {
   color: var(--pz-accent);
 }
@@ -658,10 +688,43 @@ textarea.pensa-journey-field {
   }
 }
 
+/* "Meu caminho" fica à vista (era uma sanfona fechada dentro de outra seção de mesmo nome): o
+   título com a contagem e as missões num cartão branco. */
+.pensa-journey-path-card {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+.pensa-journey-path-card__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 16px;
+}
+.pensa-journey-path-card__head .sz-tool-section-title {
+  margin: 0;
+}
+.pensa-journey-path-card__count {
+  margin: 0;
+  color: var(--pz-muted);
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
 /* O caminho: uma linha por missão com o ladrilho da oficina, o número e o andamento. */
 .pensa-journey-path {
+  display: grid;
+  gap: 10px;
   margin: 0;
+  padding: 0;
   list-style: none;
+}
+.pensa-journey-path-card > .pensa-journey-path,
+.pensa-journey-path-card > .pensa-journey-hint {
+  padding: 16px;
+  border: 1px solid var(--sz-tool-card-edge, transparent);
+  border-radius: var(--sz-tool-radius-card-md, 1.25rem);
+  background: var(--pz-surface);
 }
 .pensa-journey-path li {
   display: flex;
@@ -713,6 +776,13 @@ textarea.pensa-journey-field {
   font-weight: 800;
   line-height: 1.35;
 }
+.pensa-journey-path__summary {
+  color: var(--pz-ink);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
 .pensa-journey-path__text small {
   color: var(--pz-muted);
   font-size: 0.8125rem;
@@ -726,7 +796,6 @@ textarea.pensa-journey-field {
 }
 
 .pensa-journey-backlog,
-.pensa-journey-refs,
 .pensa-journey-care,
 .pensa-journey-legacy {
   display: grid;
@@ -737,14 +806,13 @@ textarea.pensa-journey-field {
 }
 .pensa-journey-backlog li {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 10px;
   font-size: 0.9375rem;
   line-height: 1.5;
 }
-.pensa-journey-backlog svg {
+.pensa-journey-backlog li > svg {
   flex: none;
-  margin-top: 3px;
   color: color-mix(in oklab, var(--sz-tool-sig-pensa, oklch(0.8 0.15 70)) 70%, var(--pz-ink));
 }
 .pensa-journey-backlog small {
@@ -752,14 +820,34 @@ textarea.pensa-journey-field {
   font-size: 0.8125rem;
   font-weight: 700;
 }
-.pensa-journey-refs a {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--pz-accent);
-  font-weight: 700;
-  text-decoration: underline;
-  text-underline-offset: 3px;
+.pensa-journey-backlog__text {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+/* Tirar uma ideia guardada (o comando `remove_idea` existia, a tela não o oferecia). */
+.pensa-planner .pensa-journey-backlog__remove {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: var(--sz-tool-hit, 40px);
+  height: var(--sz-tool-hit, 40px);
+  min-height: var(--sz-tool-hit, 40px);
+  margin: -8px 0;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  color: var(--pz-muted);
+  background: transparent;
+}
+.pensa-journey-backlog__remove:hover:not(:disabled) {
+  border-color: color-mix(in oklab, var(--pz-danger) 40%, transparent);
+  color: var(--pz-danger);
+  background: color-mix(in oklab, var(--pz-danger) 10%, var(--pz-surface));
+}
+/* O pé do cartão do jogo quebra em duas linhas na grade de 3: as ações ficam à direita. */
+.pensa-journey-game .pensa-project-card__actions {
+  margin-left: auto;
 }
 .pensa-journey-care li {
   display: flex;
@@ -817,44 +905,21 @@ textarea.pensa-journey-field {
 .pensa-journey-games-head {
   max-width: var(--pz-journey-max);
 }
+/* "Meus jogos": a grade e o cartão do plano clássico (`.pensa-project-grid`/`.pensa-project-card`,
+   3 colunas, 2 no tablet e 1 no celular), que ela aprovou e que o v2 tinha trocado por um cartão
+   sem lixeira nem "Editado há…". A lista é `<ul>`: cada `<li>` estica o cartão até a altura da
+   fileira, para os pés ficarem alinhados. */
 .pensa-journey-games {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
-  gap: 16px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
-.pensa-journey-game {
-  display: grid;
-  align-content: start;
-  gap: 12px;
+.pensa-journey-games > li {
+  display: flex;
   min-width: 0;
-  padding: 18px 20px 20px;
-  border: 1px solid var(--sz-tool-card-edge, transparent);
-  border-radius: var(--sz-tool-radius-card-md, 1.25rem);
-  background: var(--pz-surface);
 }
-.pensa-journey-game__name {
-  margin: 0;
-  overflow-wrap: anywhere;
-  color: var(--pz-ink);
-  font-family: var(--sz-tool-font-display, var(--font-display, "Baloo 2", sans-serif));
-  font-size: 1.25rem;
-  font-weight: 800;
-  line-height: 1.2;
-}
-.pensa-journey-game .pensa-zero-track {
-  margin: 0;
-}
-.pensa-journey-game__status {
-  margin: 0;
-  color: var(--pz-muted);
-  font-size: 0.875rem;
-  font-weight: 700;
-}
-.pensa-journey-game .sz-tool-pill {
-  justify-self: start;
+.pensa-journey-games > li > .pensa-project-card {
+  flex: 1 1 auto;
 }
 .pensa-journey-join {
   display: flex;
@@ -919,15 +984,79 @@ textarea.pensa-journey-field {
   line-height: 1.45;
 }
 
+/* ── Rever uma etapa (15/10/2026) ─────────────────────────────────────────────────────────
+   O cartão de leitura de uma etapa vencida: o aviso de "revendo" no topo (a mesma família do aviso
+   do plano clássico) e o que foi decidido ali. */
+.pensa-journey-review__banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  padding: 12px 16px;
+  border-radius: var(--sz-tool-radius-card, 1rem);
+  background: color-mix(in oklab, var(--pz-accent) 8%, var(--pz-surface));
+  color: var(--pz-ink);
+  font-weight: 700;
+  line-height: 1.4;
+}
+.pensa-journey-review__banner > svg {
+  flex: none;
+  color: var(--pz-accent);
+}
+.pensa-journey-review__banner > span {
+  flex: 1 1 14rem;
+}
+.pensa-journey-review__tile {
+  font-family: var(--sz-tool-font-display, var(--font-display, "Baloo 2", sans-serif));
+  font-size: 1.375rem;
+  font-weight: 800;
+}
+.pensa-journey-review__quote {
+  margin: 0;
+  padding: 14px 18px;
+  border-left: 4px solid var(--pz-accent);
+  border-radius: 0 var(--sz-tool-radius-card, 1rem) var(--sz-tool-radius-card, 1rem) 0;
+  background: var(--pz-surface-2);
+  color: var(--pz-ink);
+  font-size: 1rem;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.pensa-journey-review__tests {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.pensa-journey-review__tests li {
+  display: grid;
+  gap: 2px;
+  padding: 12px 16px;
+  border-radius: var(--sz-tool-radius-card, 1rem);
+  background: var(--pz-surface-2);
+}
+.pensa-journey-review__tests strong {
+  font-size: 1rem;
+  font-weight: 800;
+}
+.pensa-journey-review__tests span {
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.pensa-journey-review__tests small {
+  color: var(--pz-muted);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
 /* ── EQUIPE NO v2 (14/10/2026) ─────────────────────────────────────────────────────────────
    O "Equipe · N" do cabeçalho (a pílula de contorno, a mesma do plano clássico), o chip do jogo
    na lista, o "Entrar com um código" que abre o campo, o cartão de espera ("Esperando a arte de
    Bia"), a frase de quem testa e a seção Funções da janela. Só classes: nenhuma regra de
    elemento nova, e nenhum `cursor` (a mãozinha é das receitas de botão). */
-
-.pensa-journey-game .pensa-journey-game__chip {
-  justify-self: start;
-}
 
 /* O campo do código mora no mesmo quadro tracejado do convite, numa linha só dele. */
 .pensa-journey-join__form {
@@ -1132,7 +1261,8 @@ textarea.pensa-journey-field {
   .pensa-journey-zero {
     gap: 8px;
   }
-  .pensa-journey-zero li {
+  .pensa-journey-zero__item,
+  .pensa-planner .pensa-journey-zero__btn {
     gap: 8px;
     padding: 10px;
   }

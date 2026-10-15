@@ -217,6 +217,14 @@ export function createPensaJourneyRoutes({
       const parsed = z.strictObject({ status: z.enum(['active', 'archived']) }).safeParse(body)
       if (parsed.success)
         return reply(await members.pensaJourneyArchive(projectId, parsed.data.status))
+      // Renomear o jogo (15/10/2026): o nome aparece para a equipe, então passa pela régua da
+      // narrativa (nada de contato, segredo ou o que não é para criança).
+      const renamed = z.strictObject({ name: z.string().trim().min(2).max(120) }).safeParse(body)
+      if (renamed.success) {
+        const refusal = pensaNarrativeRefusal(renamed.data.name)
+        if (refusal) return error(422, refusal, 'PENSA_MESSAGE_REVIEW')
+        return reply(await members.pensaJourneyRename(projectId, renamed.data.name))
+      }
     }
     if (req.method !== 'POST') return error(405, 'Ação indisponível.')
     if (action === 'cancel') return reply(await members.pensaJourneyCancel(projectId))

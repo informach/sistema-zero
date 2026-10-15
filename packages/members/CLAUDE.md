@@ -224,6 +224,19 @@ serviços. Nunca recopie as regras.
 - ⚠️ Pendente (lacuna anterior, da equipe de 26/09): a purga de conta não apaga a participação
   (`pensa_project_members`) nem as funções de um perfil apagado em plano de OUTRA família.
 
+## Pensa v2: renomear o jogo (15/10/2026)
+
+- `PATCH /members/pensa/v2/projects/:projectId` aceita `{name?, status?}` (pelo menos um; vazio
+  é 400). `name` → `PensaJourneyService.rename` → `rename` do repositório: só a dona (403
+  `PENSA_NOT_OWNER`), aparado e com os espaços juntados, 2..120 (`ValidationError`), arquivado
+  também. Sem migration.
+- **O nome da criança não é trocado pela IA:** o `publish` da proposta só grava o título como
+  nome enquanto `aiGivenName(nome, título da proposta anterior)` (o de fábrica
+  `DEFAULT_JOURNEY_NAME` = "Meu novo jogo", ou o título da proposta anterior). Renomeado, fica.
+- No core, `resume` de um jogo pausado E encerrado só tira a pausa (antes reabria a versão pronta).
+- Testes: `tests/db/pensa-journey.repository.test.ts` ("renomear…", Postgres real) e
+  `tests/integration/pensa-journey-routes.test.ts`.
+
 ## Oficinas ao vivo (14/10/2026)
 
 `application/live` mantém oficinas reutilizáveis, snapshots das aulas por turma, matrículas

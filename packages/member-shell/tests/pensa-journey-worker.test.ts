@@ -658,3 +658,15 @@ describe('o guia ensina a instalar a extensão e liga a ponte do Pinta (A3)', ()
     expect(tasks.map((t) => t.position)).toEqual([0, 1, 2, 3])
   })
 })
+
+test('a fala do Zappy chega à criança sem travessão (15/10/2026)', async () => {
+  quietConsole()
+  const f = fixture('answer')
+  await run(
+    f,
+    mock(async () => ({ text: 'Boa ideia — agora teste o pulo – e conte o que aconteceu.' })),
+  )
+  const published = f.published.mock.calls.at(-1)?.[4] as { type: string; text: string }
+  expect(published.type).toBe('answer')
+  expect(published.text).toBe('Boa ideia, agora teste o pulo, e conte o que aconteceu.')
+})

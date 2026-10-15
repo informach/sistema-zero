@@ -5,6 +5,7 @@ import { eq } from 'drizzle-orm'
 import postgres from 'postgres'
 import { PensaJourneyService } from '../../src/application/pensa/journey.service'
 import { UpdatePensaTaskProgressService } from '../../src/application/pensa/update-task-progress.service'
+import { PensaNotOwnerError } from '../../src/domain/pensa/pensa.errors'
 import { DrizzleAiUsageRepository } from '../../src/infrastructure/persistence/drizzle/ai-usage.repository'
 import { DrizzleCreationCleanupRepository } from '../../src/infrastructure/persistence/drizzle/creation-cleanup.repository'
 import {
@@ -163,6 +164,71 @@ describe.skipIf(!available)('Pensa v2: concorrência e publicação no Postgres'
       ),
     ).toBe('added')
   }
+
+  test('renomear: só a dona, e a proposta seguinte não troca o nome que a criança deu (15/10/2026)', async () => {
+    const owner = actor(),
+      member = actor()
+    const project = await repo.create(owner, randomUUID(), now)
+    const id = project.project.id
+    await join(id, owner, member)
+    // Quem entrou não renomeia.
+    let refused: unknown = null
+    try {
+      await repo.rename(member, id, 'Nome da colega', now)
+    } catch (cause) {
+      refused = cause
+    }
+    expect(refused).toBeInstanceOf(PensaNotOwnerError)
+    // Sem nome dado pela criança, a primeira proposta dá o nome.
+    const publishProposal = async (title: string) => {
+      const view = await repo.get(owner, id)
+      const op = randomUUID()
+      await repo.start(
+        owner,
+        id,
+        {
+          id: op,
+          expectedRevision: view.journey.revision,
+          message: 'Gato',
+          kind: 'planning',
+          context: {},
+        },
+        now,
+      )
+      // A operação que espera a escolha é retomada pelo pedido seguinte: vale o id dela.
+      const opened = (await repo.get(owner, id)).operation?.id ?? op
+      let lease = randomUUID()
+      await repo.claim(owner, id, opened, lease, now)
+      await repo.publish(
+        owner,
+        id,
+        opened,
+        lease,
+        { type: 'step', step: 'review', output: {} },
+        now,
+      )
+      lease = randomUUID()
+      await repo.claim(owner, id, opened, lease, now)
+      await repo.publish(
+        owner,
+        id,
+        opened,
+        lease,
+        { type: 'proposal', proposal: { ...proposal(owner), title } },
+        now,
+      )
+    }
+    await publishProposal('Gato na lua')
+    expect((await repo.get(owner, id)).project.name).toBe('Gato na lua')
+    // Uma proposta nova troca o nome que veio da proposta anterior.
+    await publishProposal('Gato nas estrelas')
+    expect((await repo.get(owner, id)).project.name).toBe('Gato nas estrelas')
+    // Renomeado pela criança, o nome é dela e a próxima proposta não o troca.
+    const renamed = await repo.rename(owner, id, '  Meu   gatinho  ', now)
+    expect(renamed.project.name).toBe('Meu gatinho')
+    await publishProposal('Gato espacial')
+    expect((await repo.get(owner, id)).project.name).toBe('Meu gatinho')
+  })
 
   test('uma colega retoma e publica a ajuda usando a reserva e o teto de quem pediu', async () => {
     const owner = actor(),

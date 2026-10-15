@@ -75,6 +75,9 @@ export function createPensaJourneyClient(gw: GatewayModule) {
     pensaJourneyArchive(id: string, status: 'active' | 'archived') {
       return gw.gatewayFetch<PensaJourneyView>(project(id), { method: 'PATCH', body: { status } })
     },
+    pensaJourneyRename(id: string, name: string) {
+      return gw.gatewayFetch<PensaJourneyView>(project(id), { method: 'PATCH', body: { name } })
+    },
     pensaJourneyStart(
       actor: PensaJourneyActor,
       projectId: string,

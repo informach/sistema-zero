@@ -615,9 +615,14 @@ export function createJourneyServer(task: TaskBuilder, empty: boolean, withTeam 
     if (!action && method === 'GET') return record.view
     if (!action && method === 'PATCH') {
       ownerOnly(record)
+      // Renomear (15/10/2026) ou arquivar/trazer de volta.
       record.view = {
         ...record.view,
-        project: { ...record.view.project, status: input.status as 'active' | 'archived' },
+        project: {
+          ...record.view.project,
+          ...(typeof input.name === 'string' ? { name: input.name.trim() } : {}),
+          ...(input.status ? { status: input.status as 'active' | 'archived' } : {}),
+        },
       }
       return record.view
     }
