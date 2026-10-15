@@ -1,8 +1,8 @@
 {
-  "recordedAt": "2026-10-15T22:56:56.546Z",
+  "recordedAt": "2026-10-15T23:01:19.140Z",
   "implementationCommit": "fcd6f11773e4b552b38a3e474fea46248f58d12f",
-  "testedCodeCommit": "0908f2b36f69f9f5b8582f073de03a06e0ac2db5",
-  "integratedStaging": "95aad63db4b5caf21525adbb27248c96ed54e763",
+  "testedCodeCommit": "d24838a5fa06f0f24ba7df401f07dd4aec05cc7f",
+  "integratedStaging": "9d542db02",
   "tests": [
     {
       "command": "bun run test:tui",
@@ -10,9 +10,9 @@
       "fail": 0,
       "assertions": 421,
       "files": 48,
-      "seconds": 58.49,
-      "log": "tui-final.log",
-      "sha256": "7ee7b7c1d6bba78e910f641e4085e2f23dcf74f1651460c8244d50dc35f20c11"
+      "seconds": 53.4,
+      "log": "tui-after-staging.log",
+      "sha256": "5985dcb1fc43df70f434c966304e135d9c9557878b8214a9829fd3013240ccaa"
     },
     {
       "command": "bun test packages/auth/tests/unit packages/auth/tests/integration packages/messaging/tests/unit packages/api-gateway/tests/unit/config.test.ts packages/studio-runtime/tests packages/core/src/staff packages/core/src/studio",
@@ -20,9 +20,9 @@
       "fail": 0,
       "assertions": 1643,
       "files": 54,
-      "seconds": 56.24,
-      "log": "backend-final.log",
-      "sha256": "26a43c582252562e8e3bafed108370d1942e93a9af468ceef54c29450f7b40d7"
+      "seconds": 36.23,
+      "log": "backend-after-staging.log",
+      "sha256": "992ce51ca159bc09d69525a174b6df43841db56c546a24b04e8c444de21c0879"
     }
   ],
   "typechecks": {
@@ -40,11 +40,12 @@
     "releaseScripts": true,
     "command": "bunx tsc --noEmit -p <package>/tsconfig.json",
     "log": "typecheck-final.log",
-    "exitCode": 0
+    "exitCode": 0,
+    "studioRuntimeTests": true
   },
   "release": {
-    "verifiedAt": "2026-10-15T22:49:12.508Z",
-    "manifestSha256": "a6b58f9cc6aa9886096d41a16ff7943ea9026c5f5f0f1446c78fade69700cfe2",
+    "verifiedAt": "2026-10-15T23:00:41.516Z",
+    "manifestSha256": "332259559f1c75b21c642b62a5fb5689b150ab05d62a0059da7d40c5eff17a80",
     "checks": [
       "manifest",
       "sqlite-worker",
@@ -69,7 +70,8 @@
     "warmupsPerScenario": 3,
     "idleWindowMs": 60099.59910000001,
     "rss": 309579776,
-    "cpuPercentOfMachine": 0
+    "cpuPercentOfMachine": 0,
+    "note": "Measured at sourceCommit, before the final Studio release-flag cleanup and validation fingerprint regeneration; not a newly measured distribution startup after those changes."
   },
   "benchmarks": {
     "beforeStagingIntegration": true,
@@ -92,5 +94,12 @@
     "Controlled 30-task adoption comparison with independent evaluation pending",
     "OpenRouter paid inference and external business account certification pending",
     "Windows x64 exercised; other OS not certified"
-  ]
+  ],
+  "localMerge": "ea52a502886e391b4a17c08e119e75533f599b2e",
+  "studioValidationProfile": {
+    "profileVersion": 1,
+    "runtimeFingerprint": "6a7fe8025aaa36d9aab86c1f13706485548b6b9943b9c6cd73bbdbed07c43caf",
+    "checkCommand": "bun scripts/validation-profile.ts --check",
+    "exitCode": 0
+  }
 }
