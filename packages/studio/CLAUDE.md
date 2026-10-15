@@ -1695,6 +1695,38 @@ ganha os blocos que a usam.
   `blocksPedagogy`/`templateGuard`/`runtimeTypecheck` de sempre.
 - ⚠️ Fora do lote, registrado: `export/fileMap.ts` ainda deixa os assets 3D fora do ZIP exportado.
 
+## "Trazer da equipe" (Pensa em equipe, 14/10/2026)
+
+Quem PROGRAMA um plano do Pensa em equipe traz para o jogo as artes que as colegas entregaram nas
+missões do plano (Pinta e Molda). Especificação: `docs/plans/2026-10-14-pensa-v2-equipe.md` §5.
+
+- **Adapter de host `teamLibrary?: StudioTeamLibraryAdapter`** (`studio/team-library.ts`, molde do
+  `pintaLibrary`: contexto + Provider + prop em `types.ts`/`StudioCore`; tipos ESPELHO, exportados no
+  index). `list()` devolve `{id, assetId?, name, kind ('drawing'|'model'|'texture'|'sky'), byName,
+  missionTitle, thumbDataUrl}`; `import(id, {acceptedReview?})` devolve `{tool: 'pinta', result}` ou
+  `{tool: 'molda', result}` com o MESMO resultado do "Trazer do Pinta"/"Trazer do Molda" (inclusive o
+  `needs-review`). ⚠️ **NÃO é latchado** (o único dos adapters): o host só descobre a equipe DEPOIS de
+  abrir o jogo, e o botão aparece quando ele passa o adapter. O host mantém a referência estável.
+- **Botão "👥 Trazer da equipe"** nas abas Imagens e Modelos 3D (`onOpenTeam`, só com o adapter) →
+  **`TeamImportDialog`** (busca por arte/missão/quem fez, tipo + "Feita por X" + "Missão: Y", gate 3D
+  de modelo e céu pela mesma régua do Molda, consentimento do `needs-review`, guarda de import que
+  termina com outro jogo aberto). Cartão já no jogo = "✓ no projeto" + **"Trazer de novo"** (a colega
+  pode ter mudado a arte: atualiza no lugar, mesmo nome, e avisa no `role="status"`).
+- ⭐ **Um "adicionar ao projeto" só para as três janelas**: `components/assets/addCreationToProject.ts`
+  (`addPintaCreationToProject`/`addMoldaCreationToProject`): `libId personal:<id>` + `libOrigin`, nome
+  único pelo estado ATUAL do store, e a criação que já está no jogo é ATUALIZADA (`updateAssetImage`)
+  em vez de duplicada. `PintaImportDialog` e `MoldaImportDialog` passaram a usá-lo (o Pinta mantém só a
+  guarda do "Atualizar vetor"). Mexeu no adicionar? É aqui, e vale para as três.
+- ⚠️ A arte da colega entra com `libOrigin` da ferramenta dela: com o Pinta/Molda do perfil, o
+  "✏️ Editar" aparece e abre a ferramenta num id que não está na galeria DESTE perfil (o recado de
+  "sumiu" de lá). Aceito nesta fase.
+- Copy: `teamImport.*` (pt-BR e en). ⚠️ "entregar"/"entrega" é palavra da escola no guarda
+  `copy-vocabulario` do kids: a tela diz "fez"/"terminou".
+- Testes: `components/assets/TeamImportDialog.test.tsx` (botão com e sem adapter, lista, desenho pelo
+  caminho do Pinta com animações, "Trazer de novo" no lugar, gate 3D, textura e modelo pelo caminho do
+  Molda, consentimento, not-found, lista que falha/vazia, import atrasado com outro jogo, colisão de
+  nome na instância, réguas puras).
+
 ## Biblioteca pessoal "Meus desenhos" (ponte Pinta → Estúdio, 07/2026)
 
 `src/asset-library/personal.ts` (subpath **`@sistemazero/studio/personal-assets`**) — o Studio é o

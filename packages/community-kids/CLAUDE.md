@@ -2195,6 +2195,59 @@ O host remove chaves locais do fluxo anterior e mantém apenas os deep links de 
 matcher do proxy, sem gate próprio (posse do Pensa e dono/membro são do members). Ordem de deploy:
 members (migration `0098`) → gateway → member-shell → kids.
 
+## Pensa em equipe nas oficinas (14/10/2026)
+
+O plano v2 em equipe tem duas funções (`code` = quem programa no Estúdio; `art` = Pinta e Molda);
+a especificação é `docs/plans/2026-10-14-pensa-v2-equipe.md` (§5 é a parte daqui) e as regras
+puras moram em `@sistemazero/core/pensa`. O que mora neste app:
+
+- **"Trazer da equipe" no Estúdio Completo** (`components/kids/use-pensa-team-library.ts` +
+  `lib/pensa-team-library.ts` + `lib/pensa-team-art.ts`). Com um jogo `pensa-<32 hex>` aberto, o
+  plano sai do id re-inserindo os hífens 8-4-4-4-12 (`pensaPlanIdFromStudioProjectId`, inverso do
+  `pensaStudioProjectId`). O adapter só chega ao `<StudioEditor teamLibrary>` quando
+  `pensaTeamArtAvailable` confirma: plano com `team.memberCount > 0`, a criança é `roles.code` e
+  `GET …/team-art` tem item. Plano solo, quem só desenha, jogo livre, sem arte ou servidor fora =
+  sem botão. ⚠️ O editor abre SEM esperar a rede (o Estúdio não latcha esse adapter); enquanto o
+  botão não apareceu, a conferência se repete ao voltar à aba (15 s de folga) e a cada minuto com a
+  aba à vista. Depois de aparecer, fica.
+  - Trazer = `GET …/team-art/:taskId/download` (URL assinada) → blob gzip → `gunzipToText`
+    (`DecompressionStream`) → converte → `savePersonalAsset` com `origin` `'pinta'`/`'molda'` e o
+    id da criação da COLEGA (trazer de novo é upsert, e a `personalSync` do Estúdio leva a versão
+    nova aos jogos) → devolve o resultado do Pinta/Molda. Tudo por `sessionFetch`; o nome vem do
+    `GET …/team` (sem ele, "Colega"). Falhas viram `TEAM_ART_MESSAGES` (frase de criança, nunca a
+    crua); 404 = `not-found` (a janela tira o cartão).
+  - **Pinta**: `assetFromJson` (`/assets`) + `exportLoadedAssetForStudio` (`/studio-library`); mapa
+    sem as peças = a frase `needs-tileset` do próprio Pinta.
+  - **Molda (sem tocar `packages/molda`, que outra sessão edita)**: v1 por `readMoldaDocument` +
+    `exportLoadedAssetForStudio(asset, {namespace: perfil})`. v2 (cena) não tem exportação a partir
+    de JSON no público, então grava a cena num namespace TEMPORÁRIO (`<perfil>-equipe`) pela
+    `createMoldaSceneCloudSource` (o namespace global troca, a fonte nasce e ele VOLTA no mesmo
+    instante), exporta com `exportAssetForStudio(id, {namespace, persistence: memória vazia})` e
+    apaga em seguida (`removeIfUnchanged` deixa só a lápide). Qualquer passo que falhe: "Esse modelo
+    ainda não viaja pela equipe.". O consentimento das perdas usa o token NOSSO
+    `equipe:<missão>:<revisão>` (o do Molda inclui a revisão do armazenamento temporário, que muda a
+    cada importação); aceito, a conversão repassa o token do Molda na mesma ida. ⚠️ Só a cena importa
+    a RAIZ `@sistemazero/molda` (dinâmico), o resto fica nos subpaths.
+- **Missão de outra pessoa** (`capability.owned === false` no handoff): Estúdio, Pinta e Molda
+  mostram `PensaMissionBlocked` (`components/kids/pensa-mission-blocked.tsx`): a frase do servidor
+  ("Essa missão é de quem cuida das artes.", "Outra pessoa da equipe já está fazendo essa missão.")
+  e "Voltar ao plano" (`/pensa?plano=<id do handoff>`), sem guia, sem app e sem concluir. Antes era
+  só a frase, sem saída. Se a recusa só vem no PATCH do progresso (a outra artista começou no meio),
+  `PENSA_NOT_YOUR_MISSION`/`PENSA_MISSION_TAKEN` viram frase no `pensa-guide-errors.ts` (Estúdio e
+  Pinta) e no guia do Molda, em vez de "tente de novo" ou "o plano mudou em outra aba".
+- **"Continuar no …"** (`lib/pensa-next-mission.ts`): em equipe (`team.memberCount > 0`) a próxima
+  missão é a próxima que é DESTA criança (`nextPensaMissionFor` com os papéis da view; o
+  `assigneeProfileId` da etapa é lido com tolerância, ausente = ninguém começou). Sem nenhuma, o
+  caminho é o plano e o rótulo diz "Voltar ao plano" (`backToPlan` → `nextMissionLabel(…, {backToPlan})`).
+  Plano solo segue o `nextTaskId` do servidor.
+- Testes: `tests/pensa-team-library.test.ts` (id do plano, quem vê o botão, a lista, trazer com
+  gzip real, origem e frases, Pinta de verdade, Molda v1 com o leitor público e v2 com módulos
+  falsos, consentimento), `tests/use-pensa-team-library.test.tsx` (o hook e o bloqueio),
+  `tests/pensa-next-mission.test.ts` (equipe), `tests/pinta-client.test.tsx`,
+  `tests/molda-client.test.tsx` (missão bloqueada), `tests/molda-task-guide.test.tsx` e
+  `tests/pensa-guide-errors.test.ts` (as recusas da equipe) e `tests/studio-full-editor.test.tsx`.
+  ⚠️ Pende QA em navegador com a equipe real (BFF dos agentes A/B), inclusive a cena v2 do Molda.
+
 ## Pinta (editor de assets de jogos — produto vendável, 07/2026)
 
 O **Pinta** (`@sistemazero/pinta`) é o ateliê onde a criança DESENHA os assets dos jogos: pixel

@@ -53,9 +53,12 @@ Na publicação manual, aplicar as orientações vigentes de identificação de 
 
 **P14 produzido em 14/10/2026:** segunda imagem estática do calendário, primeira publicação da semana 4. Retrato real do Jeffrey, fala autorizada, pequenos desenhos editoriais, legenda completa, texto alternativo, prévia e montagem editável.
 
+**P33 produzido em 14/10/2026:** terceira imagem estática do calendário, primeira publicação da semana 6. Retrato real do Fernando, fala integral da ficha, abertura separada, legenda completa, texto alternativo, prévia e montagem editável.
+
 | Peça | Arquivos | Prévia |
 | --- | --- | --- |
 | P03 · Tela na rotina de trabalho | 1 PNG, 1080 × 1350, legenda e texto alternativo | [Abrir](p03-tela-na-rotina-de-trabalho/index.html) |
 | P14 · Ideias em um jogo | 1 PNG, 1080 × 1350, legenda e texto alternativo | [Abrir](p14-ideias-em-um-jogo/index.html) |
+| P33 · Alegria de criar | 1 PNG, 1080 × 1350, legenda e texto alternativo | [Abrir](p33-alegria-de-criar/index.html) |
 
-O conjunto produzido tem **30 carrosséis e 2 imagens únicas, totalizando 222 PNGs**. A próxima imagem única é **P33**, primeira publicação da semana 6. As outras 10 imagens únicas, os Reels, extras, stories e ManyChat mantêm seus estados anteriores.
+O conjunto produzido tem **30 carrosséis e 3 imagens únicas, totalizando 223 PNGs**. A próxima imagem única é **P38**, terceira publicação da semana 7. As outras 9 imagens únicas, os Reels, extras, stories e ManyChat mantêm seus estados anteriores.

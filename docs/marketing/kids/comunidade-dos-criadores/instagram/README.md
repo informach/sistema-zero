@@ -176,4 +176,6 @@ Editar a copy no documento que a contém. Ao mudar uma condição, conferir Dest
 
 **P14 produzido em 14/10/2026:** [Ideias em um jogo](producao/postagens/p14-ideias-em-um-jogo/index.html), segunda imagem estática do calendário, primeira publicação da semana 4. Retrato real do Jeffrey e fala autorizada na série Diário de criador, com legenda completa e arquivos para publicação.
 
-Estado: **30 carrosséis e 2 imagens únicas, totalizando 222 PNGs**. Próxima imagem única: **P33**, primeira publicação da semana 6. Nenhum material publicado ou agendado.
+**P33 produzido em 14/10/2026:** [Alegria de criar](producao/postagens/p33-alegria-de-criar/index.html), terceira imagem estática do calendário, primeira publicação da semana 6. Retrato real do Fernando e depoimento completo da ficha, com o convite imaginado separado da fala, legenda e arquivos para publicação.
+
+Estado: **30 carrosséis e 3 imagens únicas, totalizando 223 PNGs**. Próxima imagem única: **P38**, terceira publicação da semana 7. Nenhum material publicado ou agendado.

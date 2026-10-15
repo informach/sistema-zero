@@ -482,3 +482,46 @@ test('o botão de continuar diz "meu caminho" no Molda também, sem rótulo de o
   expect(await screen.findByRole('button', { name: 'Continuar meu caminho' })).toBeTruthy()
   expect(screen.queryByRole('button', { name: 'Continuar meu jogo' })).toBeNull()
 })
+
+test('equipe: outra artista já começou a missão, e o guia diz isso (não "o plano mudou em outra aba")', async () => {
+  const asset = createModelAsset({ name: 'Rocha da equipe' })
+  globalThis.fetch = Object.assign(
+    mock(async () =>
+      Response.json(
+        {
+          error: {
+            code: 'PENSA_MISSION_TAKEN',
+            message: 'Outra pessoa da equipe já está fazendo essa missão.',
+          },
+        },
+        { status: 409 },
+      ),
+    ),
+    { preconnect: originalFetch.preconnect },
+  )
+  render(
+    <MoldaTaskGuide
+      profileId="child-a"
+      handoff={handoff}
+      persistence={{
+        load: async () => asset,
+        loadAll: async () => [asset],
+        listSummaries: async () => [{ id: asset.id, name: asset.name, kind: asset.kind }],
+      }}
+      onProgress={() => {}}
+      onOpenAsset={() => {}}
+      onReturn={() => {}}
+      hasOpenCreation={async () => false}
+      collapsed={false}
+      onCollapsedChange={() => {}}
+    />,
+  )
+  await waitFor(() => expect(screen.getByRole('option', { name: asset.name })).toBeTruthy())
+  fireEvent.click(screen.getByRole('checkbox', { name: 'Modele a rocha' }))
+  fireEvent.click(screen.getByRole('checkbox', { name: 'Confira a forma' }))
+  fireEvent.change(screen.getByRole('combobox'), { target: { value: asset.id } })
+  fireEvent.click(screen.getByRole('button', { name: 'Concluir tarefa' }))
+  expect(
+    await screen.findByText('Outra pessoa da equipe já está fazendo essa missão.'),
+  ).toBeTruthy()
+})

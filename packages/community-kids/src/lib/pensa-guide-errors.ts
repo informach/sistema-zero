@@ -33,6 +33,9 @@ const FRASE_DO_HOST: Record<string, string> = {
   PENSA_NOT_FOUND: 'Esta missão não está mais no seu plano. Volte ao plano para ver o caminho.',
   PENSA_TASK_PROGRESS_CONFLICT:
     'A missão mudou em outro lugar. Recarreguei o Guia do Pensa para você.',
+  // Pensa em equipe (14/10/2026): a missão é de outra função, ou outra artista já começou.
+  PENSA_NOT_YOUR_MISSION: 'Essa missão é de outra pessoa da equipe. Volte ao plano para ver a sua.',
+  PENSA_MISSION_TAKEN: 'Outra pessoa da equipe já está fazendo essa missão.',
 }
 
 const RECUSA_DESCONHECIDA = 'Não consegui concluir agora. Tente de novo daqui a pouco.'

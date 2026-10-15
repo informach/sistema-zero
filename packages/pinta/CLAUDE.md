@@ -42,6 +42,16 @@ planeja → **Pinta desenha** → Estúdio constrói. Biblioteca INTERNA do mono
 > pelos tetos — `ExportForStudioResult` com `reason` tipada). Zero React lá
 > dentro (o import dinâmico do host não puxa o app); o host seta o namespace
 > pelo `setPintaStorageNamespace` RE-EXPORTADO no próprio subpath.
+>
+> ⭐ **`exportLoadedAssetForStudio(asset)`** (14/10/2026, "Trazer da equipe" do Pensa em
+> equipe): o MESMO payload do `exportAssetForStudio(id)`, a partir de um desenho JÁ carregado e
+> **sem tocar o IndexedDB** (o desenho é da COLEGA: desceu da conta dela como `.pinta.json` e o
+> host o lê com `assetFromJson`). Os dois passam pelo mesmo `exportResolvedForStudio`. O MAPA
+> sozinho não tem as peças que aponta: volta `{ok:false, reason:'needs-tileset', message}` com
+> `NEEDS_TILESET_MESSAGE` (frase de criança, exportada), e NUNCA vai buscar as peças na galeria
+> deste perfil (seria um desenho de outra pessoa com o mesmo id). Testes em
+> `export/studioLibrary.test.ts` (zero leitura/gravação no IDB pelo `idbMockStats`, payload
+> idêntico ao do caminho da galeria, mapa sem peças, pixel sem canvas).
 
 - **`setPintaStorageNamespace(viewerId)`** — o host chama ANTES de montar (isola a galeria por
   PERFIL no IndexedDB; vazio = store default `sistema-zero-pinta`; mesmo contrato do studio).

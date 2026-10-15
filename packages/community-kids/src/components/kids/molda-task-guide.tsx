@@ -7,6 +7,7 @@ import { ChevronDown } from 'lucide-react'
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import { z } from 'zod'
 import type { MoldaPersistenceLike } from '@/lib/molda-cloud-persistence'
+import { progressRefusal } from '@/lib/pensa-guide-errors'
 import { type MoldaGuideForm, moldaDraftKey, readMoldaGuideDraft } from './molda-task-draft'
 import type { MoldaTaskHandoff, MoldaTaskProgressUpdate } from './use-pensa-task-handoff'
 
@@ -185,12 +186,21 @@ export function MoldaTaskGuide({
           expectedUpdatedAt: task.progress.updatedAt,
         }),
       })
-      if (!response.ok)
+      if (!response.ok) {
+        const refused = (await response.json().catch(() => null)) as {
+          error?: { code?: string; message?: string }
+        } | null
+        const code = refused?.error?.code
+        // Pensa em equipe: a missão é de outra função, ou outra artista já começou. A frase diz
+        // o porquê, em vez de "o plano mudou em outra aba".
+        if (code === 'PENSA_NOT_YOUR_MISSION' || code === 'PENSA_MISSION_TAKEN')
+          throw progressRefusal(response.status, refused)
         throw new Error(
           response.status === 409
             ? 'O plano mudou em outra aba. Volte ao Pensa para consultar a versão atual.'
             : 'Não conseguimos guardar o progresso no plano. Tente novamente.',
         )
+      }
       const raw: unknown = await response.json()
       const parsed = moldaProgressResponseSchema.safeParse(raw)
       if (!parsed.success)

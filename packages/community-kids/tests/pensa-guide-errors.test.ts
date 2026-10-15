@@ -71,3 +71,17 @@ describe('as recusas do Guia do Pensa falam com a criança', () => {
     expect(CLOUD_MESSAGES.reopenRequired).toContain('versão guardada')
   })
 })
+
+test('equipe: missão de outra função e missão já começada por outra artista têm frase própria', () => {
+  expect(
+    progressRefusal(403, {
+      error: {
+        code: 'PENSA_NOT_YOUR_MISSION',
+        message: 'Essa missão é de outra pessoa da equipe.',
+      },
+    }).childMessage,
+  ).toBe('Essa missão é de outra pessoa da equipe. Volte ao plano para ver a sua.')
+  expect(progressRefusal(409, { error: { code: 'PENSA_MISSION_TAKEN' } }).childMessage).toBe(
+    'Outra pessoa da equipe já está fazendo essa missão.',
+  )
+})
