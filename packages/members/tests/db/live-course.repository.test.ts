@@ -201,7 +201,7 @@ describe.skipIf(!databaseUrl)('cursos ao vivo no PostgreSQL real', () => {
     const hidden = await block(
       live.lessons[0]!,
       { kind: 'studio', initialProject: seed },
-      { archived: true },
+      { archived: true, sortOrder: 2 },
     )
     const draft = await block(live.draft, { kind: 'studio', initialProject: seed })
     for (const [lessonId, blockId] of [
