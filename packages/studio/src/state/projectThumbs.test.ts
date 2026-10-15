@@ -20,13 +20,13 @@ mock.module('idb-keyval', () => ({
   getMany: mock(async (ks: string[]) => ks.map((k) => db.get(k))),
   keys: mock(async () => [...db.keys()]),
   set: mock(async (k: string, v: unknown) => {
-    if (failThumbWrite && k.startsWith('sz:v2:project-thumb:')) throw new Error('quota cheia')
+    if (failThumbWrite && k.startsWith('sz:v3:project-thumb:')) throw new Error('quota cheia')
     db.set(k, v)
   }),
   // A capa é gravada por uma transação do próprio store, que aplica pelo `setMany` (ver
   // `testing/fakeIdbStore.ts`): é aqui que o "disco cheio" recusa a capa.
   setMany: mock(async (pairs: Array<[string, unknown]>) => {
-    if (failThumbWrite && pairs.some(([k]) => k.startsWith('sz:v2:project-thumb:'))) {
+    if (failThumbWrite && pairs.some(([k]) => k.startsWith('sz:v3:project-thumb:'))) {
       throw new Error('quota cheia')
     }
     for (const [k, v] of pairs) db.set(k, v)
@@ -68,14 +68,14 @@ const meta = (id: string, name: string) => ({
   mode: 'blocks',
 })
 
-describe('miniaturas de projeto (partição sz:v2:project-thumb:)', () => {
+describe('miniaturas de projeto (partição sz:v3:project-thumb:)', () => {
   it('só grava com o meta existente (delete concorrente não ressuscita órfão) e a lista anexa', async () => {
     db.clear()
     failThumbWrite = false
     expect(await writeProjectThumb('p1', 'data:image/jpeg;base64,AAA')).toBe(false)
-    expect(db.has('sz:v2:project-thumb:p1')).toBe(false)
+    expect(db.has('sz:v3:project-thumb:p1')).toBe(false)
 
-    db.set('sz:v2:project-meta:p1', meta('p1', 'Jogo'))
+    db.set('sz:v3:project-meta:p1', meta('p1', 'Jogo'))
     expect(await writeProjectThumb('p1', 'data:image/jpeg;base64,AAA')).toBe(true)
     const list = await listAllProjects()
     expect(list[0]?.thumbDataUrl).toBe('data:image/jpeg;base64,AAA')
@@ -84,23 +84,23 @@ describe('miniaturas de projeto (partição sz:v2:project-thumb:)', () => {
   it('recusa data URL que não é imagem ou acima do teto', async () => {
     db.clear()
     failThumbWrite = false
-    db.set('sz:v2:project-meta:p2', meta('p2', 'Jogo 2'))
+    db.set('sz:v3:project-meta:p2', meta('p2', 'Jogo 2'))
     expect(await writeProjectThumb('p2', 'data:text/html;base64,AAA')).toBe(false)
     expect(
       await writeProjectThumb('p2', `data:image/png;base64,${'A'.repeat(MAX_PROJECT_THUMB_CHARS)}`),
     ).toBe(false)
-    expect(db.has('sz:v2:project-thumb:p2')).toBe(false)
+    expect(db.has('sz:v3:project-thumb:p2')).toBe(false)
     const list = await listAllProjects()
     expect(list[0]?.thumbDataUrl).toBeUndefined()
   })
 
   it('informa falha de persistência sem lançar nem criar uma miniatura fantasma', async () => {
     db.clear()
-    db.set('sz:v2:project-meta:p3', meta('p3', 'Jogo 3'))
+    db.set('sz:v3:project-meta:p3', meta('p3', 'Jogo 3'))
     failThumbWrite = true
 
     expect(await writeProjectThumb('p3', 'data:image/jpeg;base64,AAA')).toBe(false)
-    expect(db.has('sz:v2:project-thumb:p3')).toBe(false)
+    expect(db.has('sz:v3:project-thumb:p3')).toBe(false)
 
     failThumbWrite = false
   })
@@ -125,9 +125,9 @@ describe('a capa viaja: restauro com miniatura, adoção e o aviso ao espelho', 
   it('adoptProjectThumbs grava só em quem NÃO tem capa, exige o meta e devolve quantas adotou', async () => {
     db.clear()
     failThumbWrite = false
-    db.set('sz:v2:project-meta:semcapa', meta('semcapa', 'A'))
-    db.set('sz:v2:project-meta:comcapa', meta('comcapa', 'B'))
-    db.set('sz:v2:project-thumb:comcapa', {
+    db.set('sz:v3:project-meta:semcapa', meta('semcapa', 'A'))
+    db.set('sz:v3:project-meta:comcapa', meta('comcapa', 'B'))
+    db.set('sz:v3:project-thumb:comcapa', {
       id: 'comcapa',
       dataUrl: 'data:image/jpeg;base64,MINHA',
     })
@@ -139,7 +139,7 @@ describe('a capa viaja: restauro com miniatura, adoção e o aviso ao espelho', 
     expect(adopted).toBe(1)
     expect(await loadProjectThumb('semcapa')).toBe(THUMB)
     expect(await loadProjectThumb('comcapa')).toBe('data:image/jpeg;base64,MINHA')
-    expect(db.has('sz:v2:project-thumb:inexistente')).toBe(false)
+    expect(db.has('sz:v3:project-thumb:inexistente')).toBe(false)
   })
 
   it('writeProjectThumb avisa o espelho por `onThumbChanged` (não por `onChanged`); `silent` e a adoção não avisam', async () => {
@@ -153,13 +153,13 @@ describe('a capa viaja: restauro com miniatura, adoção e o aviso ao espelho', 
       onThumbChanged: (id) => thumbs.push(id),
     })
     try {
-      db.set('sz:v2:project-meta:p9', meta('p9', 'Nave'))
+      db.set('sz:v3:project-meta:p9', meta('p9', 'Nave'))
       expect(await writeProjectThumb('p9', THUMB)).toBe(true)
       expect(thumbs).toEqual(['p9'])
       expect(changed).toEqual([])
       expect(await writeProjectThumb('p9', THUMB, { silent: true })).toBe(true)
       expect(thumbs).toEqual(['p9'])
-      db.delete('sz:v2:project-thumb:p9')
+      db.delete('sz:v3:project-thumb:p9')
       await adoptProjectThumbs([{ id: 'p9', thumb: THUMB }])
       expect(thumbs).toEqual(['p9'])
       // Sem o meta a gravação é recusada e ninguém é avisado.
@@ -178,9 +178,9 @@ describe('full review da capa (26/09/2026): a adoção lê CHAVES, e a cópia de
     db.clear()
     failThumbWrite = false
     resetFakeIdb()
-    db.set('sz:v2:project-meta:semcapa', meta('semcapa', 'A'))
-    db.set('sz:v2:project-meta:comcapa', meta('comcapa', 'B'))
-    db.set('sz:v2:project-thumb:comcapa', {
+    db.set('sz:v3:project-meta:semcapa', meta('semcapa', 'A'))
+    db.set('sz:v3:project-meta:comcapa', meta('comcapa', 'B'))
+    db.set('sz:v3:project-thumb:comcapa', {
       id: 'comcapa',
       dataUrl: 'data:image/jpeg;base64,MINHA',
     })
@@ -195,7 +195,7 @@ describe('full review da capa (26/09/2026): a adoção lê CHAVES, e a cópia de
       t.steps.flatMap((s) => (s.type === 'get' ? [String(s.key)] : [])),
     )
     // Nenhuma capa local foi LIDA por valor (nem a que existe, nem a que não existe).
-    expect(chavesLidas.filter((k) => k.startsWith('sz:v2:project-thumb:'))).toEqual([])
+    expect(chavesLidas.filter((k) => k.startsWith('sz:v3:project-thumb:'))).toEqual([])
     expect(leituras.some((t) => t.steps.some((s) => s.type === 'getAllKeys'))).toBe(true)
     expect(await loadProjectThumb('comcapa')).toBe('data:image/jpeg;base64,MINHA')
     expect(await loadProjectThumb('semcapa')).toBe(THUMB)

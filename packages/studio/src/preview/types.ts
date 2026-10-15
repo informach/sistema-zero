@@ -1,3 +1,4 @@
+import { PRO_STORAGE_LIMITS } from '@sistemazero/core/studio/pro-limits'
 export type LogKind =
   | 'log'
   | 'warn'
@@ -49,10 +50,10 @@ export const PREVIEW_MAX_ERROR_CHARS = 8_000
 // (src/preview/storageBridge.ts) shima a API e espelha o store `local` ao parent
 // por postMessage. Como é código do ALUNO (não confiável), o parent valida e
 // CLAMPA o payload antes de persistir — nunca confia no tamanho/forma recebidos.
-export const PREVIEW_STORAGE_MAX_KEYS = 500
-export const PREVIEW_STORAGE_MAX_KEY_CHARS = 256
-export const PREVIEW_STORAGE_MAX_VALUE_CHARS = 100_000
-export const PREVIEW_STORAGE_MAX_TOTAL_CHARS = 1_000_000
+export const PREVIEW_STORAGE_MAX_KEYS = PRO_STORAGE_LIMITS.maxKeys
+export const PREVIEW_STORAGE_MAX_KEY_CHARS = PRO_STORAGE_LIMITS.maxKeyChars
+export const PREVIEW_STORAGE_MAX_VALUE_CHARS = PRO_STORAGE_LIMITS.maxValueChars
+export const PREVIEW_STORAGE_MAX_TOTAL_CHARS = PRO_STORAGE_LIMITS.maxTotalChars
 
 /**
  * Mensagem de escrita no armazenamento persistente, enviada pelo bridge dentro do

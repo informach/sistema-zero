@@ -16,7 +16,7 @@ export function BottomPanel(): JSX.Element {
     if (!items.some((i) => i.id === tab)) setTab((items[0]?.id as BottomTab) ?? 'console')
   }, [tab, items, setTab])
 
-  // Terminal e IA ficam MONTADOS enquanto visíveis (Tabs mantém todos os painéis
+  // Terminal fica MONTADO enquanto visível (Tabs mantém todos os painéis
   // montados e só alterna `hidden`) — desmontar a cada troca de aba mataria o jsh
   // e o buffer do xterm.
   return (

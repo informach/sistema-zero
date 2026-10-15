@@ -288,10 +288,10 @@ export const en: Record<string, string> = {
   'export.error': 'Could not export: {reason}',
   'convert.title': 'Go professional?',
   'convert.body':
-    'A professional project lets you work like professional developers: several files and folders, all edited in Code mode. Blocks are left behind. This action cannot be undone.',
+    'Pro mode uses code, files, folders and libraries. Before converting, we will save a complete Blocks copy of this game in your project list.',
   'convert.legacyTitle': 'This project needs to become professional',
   'convert.legacyBody':
-    'This project has {count} file(s) beyond the three basic files, which Blocks and Bridge cannot edit. Convert it into a professional Vite project to work with all of them? This action cannot be undone.',
+    'This project has {count} file(s) beyond the three basic files. Pro mode lets you edit all of them. We will save a complete Blocks copy of the original before converting.',
   'convert.confirm': 'Go professional',
   'convert.cancel': 'Cancel',
   'convert.later': 'Not now',

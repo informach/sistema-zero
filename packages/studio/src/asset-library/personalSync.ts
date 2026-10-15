@@ -365,7 +365,7 @@ async function sweepUnmeasured(
         return merged
       })
       if (!changed) continue
-      await persistProjectAssets(summary.id, next, context.storageScope)
+      await persistProjectAssets(summary.id, next, context.storageScope, assets)
       result.updatedInOtherProjects += 1
     } catch {
       // Um projeto ilegível não pode derrubar a varredura dos outros.

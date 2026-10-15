@@ -1,3 +1,4 @@
+import { isStudioPublicationId } from '@sistemazero/core/studio/project-format'
 import {
   normalizeProPath,
   type ProjectTree,
@@ -5,6 +6,7 @@ import {
   type ProProjectMeta,
   studioProBuildRequestByteLength,
 } from '#core'
+import { parseProAssistance } from '../core/proAssistance'
 
 /**
  * Manipulação PURA da árvore de arquivos do modo profissional (`ProjectTree`
@@ -190,7 +192,7 @@ const MAX_PRO_TREE_TOTAL = 8_000_000
 
 /**
  * Valida/normaliza uma `tree` vinda de JSON não confiável (disco/host). Retorna
- * `null` (rebaixa para classic) se: vazia, qualquer path inválido/`node_modules`,
+ * `null` se: qualquer path inválido/`node_modules`,
  * estoura nós/profundidade/tamanho, ou um arquivo é pai de outro path.
  */
 export function sanitizeProTree(raw: unknown, limits: ProTreeLimits = {}): ProjectTree | null {
@@ -201,7 +203,6 @@ export function sanitizeProTree(raw: unknown, limits: ProTreeLimits = {}): Proje
   const maxTotal = limits.maxTotalChars ?? MAX_PRO_TREE_TOTAL
 
   const entries = Object.entries(raw as Record<string, unknown>)
-  if (entries.length === 0) return null
 
   const out: ProjectTree = {}
   let total = 0
@@ -264,7 +265,9 @@ export function sanitizeProTree(raw: unknown, limits: ProTreeLimits = {}): Proje
     if (studioProBuildRequestByteLength(files) > limits.maxRequestBytes) return null
   }
 
-  return Object.keys(out).length > 0 ? out : null
+  // Deleting the last file is a valid editing state. Build validates its own
+  // entrypoint; reopening an empty Pro project must not convert it to classic.
+  return out
 }
 
 /** Sanitiza `proMeta` do disco/host (strings curtas obrigatórias). */
@@ -274,7 +277,31 @@ export function sanitizeProMeta(raw: unknown): ProProjectMeta | null {
   const devScript = typeof r.devScript === 'string' ? r.devScript.trim().slice(0, 80) : ''
   const templateId = typeof r.templateId === 'string' ? r.templateId.trim().slice(0, 80) : ''
   if (!devScript || !templateId) return null
-  return { devScript, templateId }
+  const meta: ProProjectMeta = { devScript, templateId }
+  if (r.assistance !== undefined) meta.assistance = parseProAssistance(r.assistance)
+  if (r.publication !== undefined) {
+    if (
+      !r.publication ||
+      typeof r.publication !== 'object' ||
+      !('playId' in r.publication) ||
+      !isStudioPublicationId(r.publication.playId)
+    )
+      return null
+    meta.publication = { playId: r.publication.playId }
+  }
+  if (r.origin && typeof r.origin === 'object' && !Array.isArray(r.origin)) {
+    const origin = r.origin as Record<string, unknown>
+    if (
+      typeof origin.projectId !== 'string' ||
+      !/^[A-Za-z0-9_-]{1,160}$/.test(origin.projectId) ||
+      typeof origin.revision !== 'number' ||
+      !Number.isSafeInteger(origin.revision) ||
+      origin.revision < 0
+    )
+      return null
+    meta.origin = { projectId: origin.projectId, revision: origin.revision }
+  }
+  return meta
 }
 
 export type { ProNode }

@@ -39,7 +39,35 @@ export type ProjectTree = Record<string, ProNode>
 
 export type ProjectKind = 'classic' | 'pro'
 
+export interface ProAssistanceDecision {
+  id: string
+  text: string
+  provenance: 'learner' | 'pensa' | 'kit' | 'suggestion'
+  confirmed: boolean
+}
+
+export interface ProAssistanceQuestion {
+  id: string
+  text: string
+  status: 'pending' | 'answered' | 'cancelled'
+  answer?: string
+  revisionHash?: string
+}
+
+/** Learner-owned context. Never contains provider prompts, credentials or undo patches. */
+export interface ProAssistanceMeta {
+  version: 1
+  briefing?: string
+  decisions?: ProAssistanceDecision[]
+  questions?: ProAssistanceQuestion[]
+}
+
 export interface ProProjectMeta {
+  /** Reference only; the server independently verifies publication ownership. */
+  publication?: { playId: string }
+  assistance?: ProAssistanceMeta
+  /** Original preserved before conversion; active ID remains bound to Pensa/cloud. */
+  origin?: { projectId: string; revision: number }
   /** Script npm a rodar no dev-server (ex.: 'dev'). */
   devScript: string
   /** id do template de origem. */
@@ -50,11 +78,14 @@ export interface ProProjectMeta {
 const PRO_FILE_EXTENSIONS = new Set([
   'ts',
   'tsx',
+  'mts',
+  'cts',
   'js',
   'jsx',
   'mjs',
   'cjs',
   'json',
+  'webmanifest',
   'html',
   'css',
   'svg',
@@ -99,7 +130,7 @@ export function inferProLanguage(path: string): ProFileLanguage {
   const lower = path.toLowerCase()
   if (lower.endsWith('.tsx')) return 'tsx'
   if (lower.endsWith('.jsx')) return 'jsx'
-  if (lower.endsWith('.ts')) return 'typescript'
+  if (/\.(?:ts|mts|cts)$/.test(lower)) return 'typescript'
   if (lower.endsWith('.json')) return 'json'
   if (lower.endsWith('.html')) return 'html'
   if (lower.endsWith('.css')) return 'css'

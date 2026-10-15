@@ -12,6 +12,7 @@ import { monthBoundsUtc } from '../gamification/missions'
  * "amanhã de manhã".
  */
 export interface AiCreditsView {
+  studioSource?: 'platform' | 'openrouter'
   dayLimit: number
   dayRemaining: number
   monthLimit: number

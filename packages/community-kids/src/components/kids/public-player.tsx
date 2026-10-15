@@ -92,6 +92,7 @@ export function PublicPlayer({ id }: { id: string }) {
 function PublicPlayerForProject({ id }: { id: string }) {
   const [Player, setPlayer] = useState<PlayerComponent | null>(null)
   const [project, setProject] = useState<Project | null>(null)
+  const [published, setPublished] = useState<StudioProjectPlayerProps['published']>()
   const [author, setAuthor] = useState<string | null>(null)
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
   const [reloadKey, setReloadKey] = useState(0)
@@ -110,7 +111,9 @@ function PublicPlayerForProject({ id }: { id: string }) {
       try {
         const [mod, res] = await Promise.all([
           import('@sistemazero/studio/player'),
-          fetch(`/api/studio/play/${encodeURIComponent(id)}`),
+          fetch(`/api/studio/play/${encodeURIComponent(id)}?reload=${reloadKey}`, {
+            cache: 'no-store',
+          }),
         ])
         if (!active) return
         if (!res.ok) {
@@ -129,6 +132,17 @@ function PublicPlayerForProject({ id }: { id: string }) {
           }
         }
         setPlayer(() => mod.StudioProjectPlayer)
+        const compiledUrl = res.headers.get('X-Studio-Pro-Url')
+        const compiledRevision = res.headers.get('X-Studio-Pro-Revision')
+        if (proj.kind === 'pro' && (!compiledUrl || !compiledRevision)) {
+          setStatus('error')
+          return
+        }
+        setPublished(
+          compiledUrl && compiledRevision
+            ? { playId: id, revision: compiledRevision, url: compiledUrl }
+            : undefined,
+        )
         setProject(proj)
         setStatus('ready')
       } catch {
@@ -138,7 +152,7 @@ function PublicPlayerForProject({ id }: { id: string }) {
     return () => {
       active = false
     }
-  }, [id])
+  }, [id, reloadKey])
 
   // ⚠️ No desktop o teclado É o controle, e ele não chegava ao jogo: o foco nasce
   // na página de fora, então a criança abria o link, apertava a seta e não
@@ -208,6 +222,8 @@ function PublicPlayerForProject({ id }: { id: string }) {
       }
       const next = sanitizeStageAspect(data)
       if (next === null) return
+      if (project?.kind === 'pro' && (data as { responsive?: unknown }).responsive === true)
+        known = true
       if (next !== STAGE_FILL) known = true
       setStageAspect(next)
     }
@@ -353,13 +369,20 @@ function PublicPlayerForProject({ id }: { id: string }) {
           iframeRef={iframeRef}
           onRestart={handleRestart}
           showControls={gamepadVisible}
+          screenshotEnabled={project.kind !== 'pro'}
           rotated={rotated}
           landscape={landscape}
           stageAspect={stageAspect}
           controls={controls}
           header={header}
         >
-          <Player key={reloadKey} ref={iframeRef} project={project} title={title} />
+          <Player
+            key={reloadKey}
+            ref={iframeRef}
+            project={project}
+            published={published}
+            title={title}
+          />
         </PublicStage>
       ) : (
         <>

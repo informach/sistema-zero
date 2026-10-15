@@ -53,6 +53,63 @@ function post(
 }
 
 describe('persistência privada do Zappy', () => {
+  test('modo, referências Pro e revisão atravessam a validação HTTP', async () => {
+    let saved: unknown
+    const zappy = {
+      complete: async (input: unknown) => {
+        saved = input
+        return { id: QUESTION_ID }
+      },
+    } as unknown as ZappyHistoryService
+    const { app } = buildApp({ internalToken: TOKEN, zappy })
+    const answer = {
+      id: MESSAGE_ID,
+      kind: 'pro',
+      intent: 'investigate',
+      text: 'Confira o arquivo.',
+      scope: 'error',
+      blockReferences: [],
+      fileReferences: [
+        { path: 'src/main.ts', startLine: 2, endLine: 4 },
+        {
+          path: 'src/player.ts',
+          startLine: 301,
+          endLine: 301,
+          sourceHash: `sha256-${'a'.repeat(43)}=`,
+          contextDigest: `sha256-${'b'.repeat(43)}=`,
+          excerptId: 'excerpt-selected',
+        },
+        {
+          path: 'src/config.ts',
+          sourceHash: `sha256-${'c'.repeat(43)}=`,
+          contextDigest: `sha256-${'d'.repeat(43)}=`,
+          excerptId: 'excerpt-file-only',
+        },
+      ],
+      sourceRevision: 123,
+      createdAt: new Date().toISOString(),
+    }
+    const response = await put(
+      app,
+      `/members/internal/zappy/questions/${QUESTION_ID}/response`,
+      {
+        actor: { userId: USER_ID, accountId: ACCOUNT_ID, privileged: true },
+        projectId: 'projeto-1',
+        latencyMs: 120,
+        response: answer,
+      },
+      'member-shell',
+    )
+    expect(response.status).toBe(200)
+    expect(saved).toMatchObject({
+      response: {
+        kind: 'pro',
+        intent: 'investigate',
+        fileReferences: answer.fileReferences,
+        sourceRevision: 123,
+      },
+    })
+  })
   test('remove o endpoint JWT antigo e aceita a identidade somente no corpo do consumer HMAC', async () => {
     let reserved: Record<string, unknown> | null = null
     const zappy = {

@@ -1,0 +1,485 @@
+{
+  "capturedAt": "2026-10-15T19:53:12.009Z",
+  "workspace": "C:\\Users\\tocha\\projects\\sistema-zero",
+  "branch": "feat/studio-pro-completo",
+  "head": "7981caf7a4fb6773ebb804405bf7ad6f6551814f",
+  "scope": "Documentation review, selected existing tests and isolated probes; no product mutation.",
+  "snapshotLimit": "Files captured after the recorded test runs, while another session is actively implementing. Not an atomic Git snapshot or proof that all changed source files were exercised by these selected tests.",
+  "baseline": [
+    ".audits/studio-pro-proposta-v2-2026-10-15.md",
+    ".audits/studio-pro-lote8-review-2026-10-15.md",
+    ".audits/studio-pro-canvas-implementacao-2026-10-15.md",
+    "docs/superpowers/plans/2026-10-15-studio-pro-implementacao.md",
+    "docs/superpowers/plans/2026-10-15-studio-pro-lote8.md",
+    "docs/superpowers/plans/2026-10-15-studio-canvas-coordenacao.md"
+  ],
+  "sources": [
+    "packages/core/src/studio/pro-artifact.ts",
+    "packages/core/src/studio/pro-build.ts",
+    "packages/core/src/studio/pro-builder.ts",
+    "packages/core/src/studio/pro-game-knowledge.ts",
+    "packages/core/src/studio/pro-templates.ts",
+    "packages/core/src/studio/pro-runtime-capabilities.ts",
+    "packages/studio/src/components/tutor/ProBuilderPanel.tsx",
+    "packages/studio/src/components/tutor/ZappyPanel.tsx",
+    "packages/studio/src/core/projectDocument.ts",
+    "packages/studio/src/state/proTree.ts",
+    "packages/studio/src/state/proRevision.ts",
+    "packages/studio/src/state/projectOperations.ts",
+    "packages/studio/src/state/projectValidation.ts",
+    "packages/studio/src/state/projectStorageRecords.ts",
+    "packages/studio/src/state/projectStorageRuntime.ts",
+    "packages/studio/src/state/persistence.ts",
+    "packages/studio/src/studio/types.ts",
+    "packages/studio/src/studio/taskSessionSave.ts",
+    "packages/studio/src/modes/pro/RemoteProPreview.tsx",
+    "packages/studio/playground/App.tsx",
+    "packages/community-kids/src/components/kids/studio-pro-client.tsx",
+    "packages/member-shell/src/lib/studio-zappy-adapter.ts",
+    "packages/member-shell/src/routes/studio-builder.ts",
+    "packages/member-shell/src/routes/studio-zappy.ts",
+    "packages/member-shell/src/server/studio-builder.ts",
+    "packages/member-shell/src/server/studio-builder-tools.ts",
+    "packages/member-shell/src/server/studio-pro-runtime.ts",
+    "packages/member-shell/src/server/zappy-ai.ts",
+    "packages/members/src/infrastructure/persistence/drizzle/studio-builder.repository.ts",
+    "packages/studio-runtime/src/artifacts.ts"
+  ],
+  "documents": [
+    ".audits/studio-pro-sandbox-adendo-2026-10-15.md",
+    ".audits/studio-pro-sandbox-adendo-review-2026-10-15.md",
+    ".audits/architectural-analysis-studio-pro-sandbox-2026-10-15.md"
+  ],
+  "hashes": [
+    {
+      "path": ".audits/studio-pro-proposta-v2-2026-10-15.md",
+      "bytes": 47699,
+      "sha256": "3d4685a9d0019a0cea082c839db8bcc8c34821c2f02887e0e89c1e8f6300dd8a",
+      "modifiedAt": "2026-10-15T15:57:25.600Z"
+    },
+    {
+      "path": ".audits/studio-pro-lote8-review-2026-10-15.md",
+      "bytes": 8607,
+      "sha256": "8d5bff343b1aa59eccbc38d24233ee82cd89989abee0fea34f209bf017ec70eb",
+      "modifiedAt": "2026-10-15T19:38:39.769Z"
+    },
+    {
+      "path": ".audits/studio-pro-canvas-implementacao-2026-10-15.md",
+      "bytes": 9088,
+      "sha256": "4efa7bbf46bfdb3a9d72c19af7cdb17c97cb2c0a0a28fc8c55042e856ba31be7",
+      "modifiedAt": "2026-10-15T18:30:30.106Z"
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-15-studio-pro-implementacao.md",
+      "bytes": 37253,
+      "sha256": "224d42c3728f3943fabe8df7e32f20e8b9d2445301666be028c27067baaf01ed",
+      "modifiedAt": "2026-10-15T19:35:15.613Z"
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-15-studio-pro-lote8.md",
+      "bytes": 3774,
+      "sha256": "3f58979764eef655a89d62825fb0a4b580eafbd274e66c78bbb6bd11c6872146",
+      "modifiedAt": "2026-10-15T18:55:56.163Z"
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-15-studio-canvas-coordenacao.md",
+      "bytes": 10513,
+      "sha256": "11e01967d8320ac9544967d7171bc577a32fd8fd905b6fd15098d7c50e2bcdd3",
+      "modifiedAt": "2026-10-15T18:31:28.958Z"
+    },
+    {
+      "path": "packages/core/src/studio/pro-artifact.ts",
+      "bytes": 3807,
+      "sha256": "d49f55c1bed1dad1cbb5f714612b075280af512522495629fbf178cf8bf73ba3",
+      "modifiedAt": "2026-10-15T16:32:53.078Z"
+    },
+    {
+      "path": "packages/core/src/studio/pro-build.ts",
+      "bytes": 2249,
+      "sha256": "6215f4e6b8c060a8d12a028f2c653e843a8f02198cf7b493bf67453a3863cebb",
+      "modifiedAt": "2026-10-15T16:32:53.078Z"
+    },
+    {
+      "path": "packages/core/src/studio/pro-builder.ts",
+      "bytes": 4818,
+      "sha256": "10df0be35905c10afe2a4a744ff336a3754fc3ce945cb89249c4953869ed93f3",
+      "modifiedAt": "2026-10-15T19:53:06.187Z"
+    },
+    {
+      "path": "packages/core/src/studio/pro-game-knowledge.ts",
+      "bytes": 10852,
+      "sha256": "3fbf7fff61b8fc30fedeb93159345a729747f2aeb4b8227075f8602c7c958375",
+      "modifiedAt": "2026-10-15T19:25:07.154Z"
+    },
+    {
+      "path": "packages/core/src/studio/pro-templates.ts",
+      "bytes": 4270,
+      "sha256": "9ae7a9a73e3de1d815195962a9ba1c30f047581c5f2034f9da013997da310c53",
+      "modifiedAt": "2026-10-15T19:53:06.184Z"
+    },
+    {
+      "path": "packages/core/src/studio/pro-runtime-capabilities.ts",
+      "bytes": 4064,
+      "sha256": "e5cc90bc8fd7127ba6d59df9cc4f8c360c8bc9368ca321a27fe475a21f9b20b7",
+      "modifiedAt": "2026-10-15T19:53:06.185Z"
+    },
+    {
+      "path": "packages/studio/src/components/tutor/ProBuilderPanel.tsx",
+      "bytes": 18141,
+      "sha256": "bbb9b168c4b566fdad4d47d586fd6401d209f054132ae2738a1688334c844f81",
+      "modifiedAt": "2026-10-15T19:53:06.231Z"
+    },
+    {
+      "path": "packages/studio/src/components/tutor/ZappyPanel.tsx",
+      "bytes": 33709,
+      "sha256": "84e932100ef36ca250bcdc23d2c3b2a3c32140665c70dfc77a129a004421f434",
+      "modifiedAt": "2026-10-15T18:23:34.199Z"
+    },
+    {
+      "path": "packages/studio/src/core/projectDocument.ts",
+      "bytes": 10542,
+      "sha256": "88f2ddb7363c47078722f8990d977d39495e1e282f865ab3987d3ca29f30ebbf",
+      "modifiedAt": "2026-10-03T00:27:38.057Z"
+    },
+    {
+      "path": "packages/studio/src/state/proTree.ts",
+      "bytes": 11608,
+      "sha256": "ad3486354b803deb9e738a4ff451733e85e81abfc342a5c80be93fa69b64df82",
+      "modifiedAt": "2026-10-15T14:28:04.070Z"
+    },
+    {
+      "path": "packages/studio/src/state/proRevision.ts",
+      "bytes": 3663,
+      "sha256": "e4bef13f1ab3c41633c23f2068f24733d831a532ea37141641cde191fe45fb16",
+      "modifiedAt": "2026-10-15T18:38:03.617Z"
+    },
+    {
+      "path": "packages/studio/src/state/projectOperations.ts",
+      "bytes": 1209,
+      "sha256": "745d5a1d4113aca385d650320a53ccf45a0afc2d17c90c3877b603bcfb1b255a",
+      "modifiedAt": "2026-10-15T12:29:06.333Z"
+    },
+    {
+      "path": "packages/studio/src/state/projectValidation.ts",
+      "bytes": 61710,
+      "sha256": "6b4ec5f2a04d8e651a631ee038603e9767dba2b65e274d8c7db87bddbb3c8240",
+      "modifiedAt": "2026-10-06T17:58:53.071Z"
+    },
+    {
+      "path": "packages/studio/src/state/projectStorageRecords.ts",
+      "bytes": 3639,
+      "sha256": "3b2a9d60caf8e94c8fda66d28637177a7b25bf70dd9f9086969da0a2c61ddfe3",
+      "modifiedAt": "2026-09-26T14:12:50.987Z"
+    },
+    {
+      "path": "packages/studio/src/state/projectStorageRuntime.ts",
+      "bytes": 5516,
+      "sha256": "03d586422359d459fd9a51e9e6e70a6cdf5030c2aa6b133dc2ab8db9d29d57c3",
+      "modifiedAt": "2026-09-11T21:59:04.692Z"
+    },
+    {
+      "path": "packages/studio/src/state/persistence.ts",
+      "bytes": 34701,
+      "sha256": "5d82ae4d8a6f8df16332c3dc607d21650bd3ed851676fab20afaa4dbe57cf599",
+      "modifiedAt": "2026-09-26T16:22:45.639Z"
+    },
+    {
+      "path": "packages/studio/src/studio/types.ts",
+      "bytes": 17506,
+      "sha256": "368beb632dbca90c3f5526132976a16e317c38efc38db7511d900c4a70e692cf",
+      "modifiedAt": "2026-10-15T00:16:55.360Z"
+    },
+    {
+      "path": "packages/studio/src/studio/taskSessionSave.ts",
+      "bytes": 2020,
+      "sha256": "9cda1adc9f3269338b0e903b2e0708687fefa3c55c19e9448743f0c5ebee4292",
+      "modifiedAt": "2026-10-14T22:41:32.352Z"
+    },
+    {
+      "path": "packages/studio/src/modes/pro/RemoteProPreview.tsx",
+      "bytes": 8129,
+      "sha256": "d0d5c177fc89fc70c6bf2e3facf26d31c5cc72c7ac0107dc4cac9a53ca5dd0da",
+      "modifiedAt": "2026-10-15T16:45:55.634Z"
+    },
+    {
+      "path": "packages/studio/playground/App.tsx",
+      "bytes": 18550,
+      "sha256": "3884eb36e067554e4dfe491787435fcfb243d1cc45ad5383701c253ae1954c5f",
+      "modifiedAt": "2026-10-15T19:53:06.223Z"
+    },
+    {
+      "path": "packages/community-kids/src/components/kids/studio-pro-client.tsx",
+      "bytes": 10600,
+      "sha256": "ef482c812c73d5a84b96bebb60e3c8607fb0c9f655147ff55a4a8804abbb50a5",
+      "modifiedAt": "2026-10-15T14:28:03.797Z"
+    },
+    {
+      "path": "packages/member-shell/src/lib/studio-zappy-adapter.ts",
+      "bytes": 5736,
+      "sha256": "ca71023d2160d33d6337b8965fd4f34ae83031cfcc7d12621f218b16272d643c",
+      "modifiedAt": "2026-10-15T19:53:06.186Z"
+    },
+    {
+      "path": "packages/member-shell/src/routes/studio-builder.ts",
+      "bytes": 11555,
+      "sha256": "6920813b4c61e5dda91f204bfe72b56e3ee01bac3fb2950178c624f53e954cb2",
+      "modifiedAt": "2026-10-15T19:53:06.191Z"
+    },
+    {
+      "path": "packages/member-shell/src/routes/studio-zappy.ts",
+      "bytes": 22758,
+      "sha256": "ef1a67f456431c3bf436c79e50836b246fd32fc31714dae4da01288ad567ef88",
+      "modifiedAt": "2026-10-15T16:27:45.185Z"
+    },
+    {
+      "path": "packages/member-shell/src/server/studio-builder.ts",
+      "bytes": 8378,
+      "sha256": "4246e8bf9c6b45fd8f3b4e6a0a5d2df2e21100a49b3a7cab6018ca3f36af69ec",
+      "modifiedAt": "2026-10-15T18:42:25.128Z"
+    },
+    {
+      "path": "packages/member-shell/src/server/studio-builder-tools.ts",
+      "bytes": 15219,
+      "sha256": "fb4093edba8fa84f47056d5e44a281ce2fc09499fbb3379924aa7d47c35a6428",
+      "modifiedAt": "2026-10-15T19:19:17.849Z"
+    },
+    {
+      "path": "packages/member-shell/src/server/studio-pro-runtime.ts",
+      "bytes": 11835,
+      "sha256": "23401229c5ead68a7b22d6bd2b4b8a731ad68b9e43a6e5e14b93fb6cd845ee30",
+      "modifiedAt": "2026-10-15T19:53:06.192Z"
+    },
+    {
+      "path": "packages/member-shell/src/server/zappy-ai.ts",
+      "bytes": 61417,
+      "sha256": "27a185ceabc91716d6b7dbfea67a12ec6c1995f7791259fca8798633b7c5a918",
+      "modifiedAt": "2026-10-15T19:19:17.849Z"
+    },
+    {
+      "path": "packages/members/src/infrastructure/persistence/drizzle/studio-builder.repository.ts",
+      "bytes": 11833,
+      "sha256": "3c99c1d6ae2eecf60c4370675bb926bc17266b7468dfc8101cf3f3e514f5329c",
+      "modifiedAt": "2026-10-15T18:38:12.606Z"
+    },
+    {
+      "path": "packages/studio-runtime/src/artifacts.ts",
+      "bytes": 6732,
+      "sha256": "58d5db1e2baed094503b9a7ade5613260c9bb12ed4f13629b8949dc4f0b7a594",
+      "modifiedAt": "2026-10-15T15:03:34.069Z"
+    },
+    {
+      "path": ".audits/studio-pro-sandbox-adendo-2026-10-15.md",
+      "bytes": 57894,
+      "sha256": "f4e5ec692097428587db0de964ba46047f5ed73392802127ab85407b1140e305",
+      "modifiedAt": "2026-10-15T19:53:11.601Z"
+    },
+    {
+      "path": ".audits/studio-pro-sandbox-adendo-review-2026-10-15.md",
+      "bytes": 14568,
+      "sha256": "89a88a021097e361cd356c1982127eaa6469a2122fedcc1075d62933e193dd9b",
+      "modifiedAt": "2026-10-15T19:53:11.602Z"
+    },
+    {
+      "path": ".audits/architectural-analysis-studio-pro-sandbox-2026-10-15.md",
+      "bytes": 35432,
+      "sha256": "228f0ae7c35ce5c4f3542b27931a4da91c15b7c786909d96a4d503b35185ce77",
+      "modifiedAt": "2026-10-15T19:51:19.008Z"
+    },
+    {
+      "path": ".audits/studio-adendo-review3-studio-tests-2026-10-15.txt",
+      "bytes": 13477,
+      "sha256": "f8d509110ef11379477d1506bef13ff887d48446167af38bfa088b3645ae7151",
+      "modifiedAt": "2026-10-15T19:36:24.403Z"
+    },
+    {
+      "path": "packages/studio/src/state/proTree.test.ts",
+      "bytes": 9269,
+      "sha256": "7cc458938c7234fddecfb4cff8c6a416cfe4e11ed3ada9caac57feac33141084",
+      "modifiedAt": "2026-10-15T13:01:06.904Z"
+    },
+    {
+      "path": "packages/studio/src/state/projectOperations.test.ts",
+      "bytes": 4290,
+      "sha256": "32b2f06dda1733f45bfacdd73d439a9e8b753e018ad330933e3ba4c4911a0b98",
+      "modifiedAt": "2026-10-15T13:01:06.904Z"
+    },
+    {
+      "path": "packages/studio/src/state/persistence.test.ts",
+      "bytes": 72096,
+      "sha256": "1424ba23c0b071e3a3443ff6f33c6a9c53a2bf821767c8fee6e15e1976a9dcb6",
+      "modifiedAt": "2026-10-10T23:12:12.229Z"
+    },
+    {
+      "path": "packages/studio/src/studio/TaskGuidePanel.test.tsx",
+      "bytes": 19037,
+      "sha256": "e5b010784ed2510e850720613453382e33d0ecf75ef37c6bdf2da842d2eba7ef",
+      "modifiedAt": "2026-10-14T22:54:39.986Z"
+    },
+    {
+      "path": ".audits/studio-adendo-review3-server-final-2026-10-15.txt",
+      "bytes": 1813,
+      "sha256": "6291c7109d1acf0b427de885570c7980f11d592a3f12326176ab73f61944f665",
+      "modifiedAt": "2026-10-15T19:52:31.274Z"
+    },
+    {
+      "path": "packages/member-shell/tests/studio-builder-route.test.ts",
+      "bytes": 9182,
+      "sha256": "b6b5fed7e671a8a5c9c7f420561b83e86e93a5e3621044ade0cde4f5cbdfe4f6",
+      "modifiedAt": "2026-10-15T19:53:06.186Z"
+    },
+    {
+      "path": "packages/member-shell/tests/studio-pro-runtime.test.ts",
+      "bytes": 4330,
+      "sha256": "8e17bdc8d55e76e8edc4944933e59ee9a998151cba29e6cfe7554c7392dd9bbf",
+      "modifiedAt": "2026-10-15T19:53:06.197Z"
+    },
+    {
+      "path": "packages/member-shell/tests/studio-game-knowledge.test.ts",
+      "bytes": 1236,
+      "sha256": "7e08dee058a844bc9a5d0ea45ce7ac68d2315fe9f8e359b77c2a8a310fc27643",
+      "modifiedAt": "2026-10-15T19:25:07.164Z"
+    },
+    {
+      "path": ".audits/studio-adendo-review3-core-tests-2026-10-15.txt",
+      "bytes": 469,
+      "sha256": "e41a7c74c9c0470f8810a7c08cf123999f4b940fcfa5c797b728bb4d47e1342f",
+      "modifiedAt": "2026-10-15T19:36:17.035Z"
+    },
+    {
+      "path": "packages/core/src/studio/pro-build.test.ts",
+      "bytes": 1405,
+      "sha256": "1f51a927b10bfef8657c3b45133c4e6a4687a02bda6ebb53898934abfc0f1e46",
+      "modifiedAt": "2026-07-24T10:53:00.473Z"
+    },
+    {
+      "path": ".audits/studio-adendo-review3-runtime-tests-2026-10-15.txt",
+      "bytes": 369,
+      "sha256": "1ba9a4dca19fb3c43fe424d8aab0cc70b93bef74d1bde00a60fe003a657a2f3b",
+      "modifiedAt": "2026-10-15T19:47:31.958Z"
+    },
+    {
+      "path": "packages/studio-runtime/tests/capabilities.test.ts",
+      "bytes": 2013,
+      "sha256": "736e6ba057f047b4996b99b433004fd40092421b61736f999697a4dd92612de6",
+      "modifiedAt": "2026-10-15T19:53:06.231Z"
+    },
+    {
+      "path": ".audits/studio-adendo-review3-server-tests-2026-10-15.txt",
+      "bytes": 1343,
+      "sha256": "f52564cf66cfe3d86e1cf7be634845ad9ff1529a21d6e58d069a8576acba9418",
+      "modifiedAt": "2026-10-15T19:36:17.276Z"
+    },
+    {
+      "path": ".audits/studio-adendo-review3-server-recheck-2026-10-15.txt",
+      "bytes": 1734,
+      "sha256": "88064188745776365258539f263f6bcb91e28b50130a60657ba7757e410c3b82",
+      "modifiedAt": "2026-10-15T19:47:32.347Z"
+    },
+    {
+      "path": ".audits/review-studio-adendo-integracao-2026-10-15.mjs",
+      "bytes": 4947,
+      "sha256": "b9bf3c9104d31bbc851c966b54ea3c679e74be443d8b386be241ba8e7272b780",
+      "modifiedAt": "2026-10-15T19:48:09.039Z"
+    },
+    {
+      "path": ".audits/review-studio-adendo-evidence-2026-10-15.mjs",
+      "bytes": 7717,
+      "sha256": "8beb74b179817d97a93d4f7b37643faac3bb62654a80433f087acce7125f07cc",
+      "modifiedAt": "2026-10-15T19:53:11.602Z"
+    },
+    {
+      "path": ".audits/studio-adendo-review3-probes-2026-10-15.json",
+      "bytes": 1494,
+      "sha256": "6b308de65fb48190ad10412ebc1977c08a78f172278388d9d52634ed804c5be1",
+      "modifiedAt": "2026-10-15T19:48:09.687Z"
+    }
+  ],
+  "tests": {
+    "passedAcrossLatestSuiteRuns": 137,
+    "failed": 0,
+    "assertions": 515,
+    "suites": [
+      {
+        "cwd": "packages/studio",
+        "command": "bun test src/state/proTree.test.ts src/state/projectOperations.test.ts src/state/persistence.test.ts src/studio/TaskGuidePanel.test.tsx",
+        "log": ".audits/studio-adendo-review3-studio-tests-2026-10-15.txt",
+        "passed": 118,
+        "assertions": 394,
+        "files": [
+          "src/state/proTree.test.ts",
+          "src/state/projectOperations.test.ts",
+          "src/state/persistence.test.ts",
+          "src/studio/TaskGuidePanel.test.tsx"
+        ],
+        "failed": 0,
+        "exitCodeObserved": 0,
+        "logModifiedAt": "2026-10-15T19:36:24.403Z"
+      },
+      {
+        "cwd": "packages/member-shell",
+        "command": "bun test tests/studio-builder-route.test.ts tests/studio-pro-runtime.test.ts tests/studio-game-knowledge.test.ts",
+        "log": ".audits/studio-adendo-review3-server-final-2026-10-15.txt",
+        "passed": 14,
+        "assertions": 108,
+        "files": [
+          "tests/studio-builder-route.test.ts",
+          "tests/studio-pro-runtime.test.ts",
+          "tests/studio-game-knowledge.test.ts"
+        ],
+        "failed": 0,
+        "exitCodeObserved": 0,
+        "logModifiedAt": "2026-10-15T19:52:31.274Z"
+      },
+      {
+        "cwd": "packages/core",
+        "command": "bun test src/studio/pro-build.test.ts",
+        "log": ".audits/studio-adendo-review3-core-tests-2026-10-15.txt",
+        "passed": 3,
+        "assertions": 5,
+        "files": [
+          "src/studio/pro-build.test.ts"
+        ],
+        "failed": 0,
+        "exitCodeObserved": 0,
+        "logModifiedAt": "2026-10-15T19:36:17.035Z"
+      },
+      {
+        "cwd": "packages/studio-runtime",
+        "command": "bun test tests/capabilities.test.ts",
+        "log": ".audits/studio-adendo-review3-runtime-tests-2026-10-15.txt",
+        "passed": 2,
+        "assertions": 8,
+        "files": [
+          "tests/capabilities.test.ts"
+        ],
+        "failed": 0,
+        "exitCodeObserved": 0,
+        "logModifiedAt": "2026-10-15T19:47:31.958Z"
+      }
+    ],
+    "supersededMemberShellRuns": [
+      ".audits/studio-adendo-review3-server-tests-2026-10-15.txt",
+      ".audits/studio-adendo-review3-server-recheck-2026-10-15.txt"
+    ],
+    "countsNotAddedToPriorReviews": true
+  },
+  "probes": {
+    "command": "bun .audits/review-studio-adendo-integracao-2026-10-15.mjs",
+    "report": ".audits/studio-adendo-review3-probes-2026-10-15.json",
+    "confirmed": 4
+  },
+  "documentChecks": {
+    "relativeLinks": 29,
+    "brokenLinks": 0,
+    "trailingWhitespace": false,
+    "encodingReplacement": false
+  },
+  "limitations": [
+    "No paid model calls",
+    "No Sandbox app execution",
+    "No production credentials, migrations or deploy",
+    "No global typecheck or new browser/physical-device verification",
+    "No proof of future addendum functionality",
+    "Other session test evidence is referenced, not claimed as executed here"
+  ]
+}

@@ -1,0 +1,1306 @@
+{
+  "date": "2026-10-15",
+  "status": "local-code-review; external-acceptance-pending",
+  "review": ".audits/studio-pro-full-review-2026-10-15.md",
+  "testCountsAreOverlapping": true,
+  "testRuns": [
+    {
+      "scope": "Studio full",
+      "command": "bun test src --timeout 15000",
+      "cwd": "packages/studio",
+      "passed": 9041,
+      "failed": 0,
+      "assertions": 137628,
+      "files": 590,
+      "seconds": 218.41,
+      "note": "Sequential; no product/test-file budgets changed. Prior concurrent run hit default 5s timeout in two existing tests."
+    },
+    {
+      "scope": "Members full",
+      "passed": 1412,
+      "skipped": 338,
+      "failed": 0,
+      "assertions": 10867,
+      "files": 196
+    },
+    {
+      "scope": "Members dedicated real PostgreSQL",
+      "passed": 20,
+      "failed": 0,
+      "assertions": 96,
+      "migrations": "0116-0124",
+      "database": "local disposable studio_pro_review"
+    },
+    {
+      "scope": "BFF publication/preflight/description/AI",
+      "passed": 126,
+      "failed": 0,
+      "assertions": 642,
+      "files": 10,
+      "provider": "controlled transport"
+    },
+    {
+      "scope": "Runtime tests",
+      "passed": 64,
+      "failed": 0,
+      "assertions": 435,
+      "files": 12,
+      "note": "All 14 template sources compile; fake R2 CAS, real local tools/browser."
+    },
+    {
+      "scope": "Gateway configuration",
+      "passed": 35,
+      "failed": 0,
+      "assertions": 158
+    },
+    {
+      "scope": "Canvas dedicated regression",
+      "passed": 53,
+      "failed": 0,
+      "assertions": 607
+    },
+    {
+      "scope": "CI scripts",
+      "passed": 24,
+      "failed": 0,
+      "assertions": 41
+    },
+    {
+      "scope": "Biome scoped",
+      "files": 434,
+      "errors": 0,
+      "warnings": 0,
+      "infos": 13
+    }
+  ],
+  "browser": {
+    "storage": {
+      "engines": [
+        "Chromium",
+        "WebKit"
+      ],
+      "reloadsPerEngine": 12,
+      "chromiumCPUThrottle": 6,
+      "independentConcurrentTabsPerEngine": 2,
+      "passed": true,
+      "backend": "real IndexedDB"
+    },
+    "publication": {
+      "passed": true,
+      "scope": "React/Chromium with controlled BFF and in-memory R2 contract",
+      "cases": [
+        "permanent promotion survives temporary preview deletion",
+        "two revisions and rollback",
+        "stable published progress namespace",
+        "Enter and host mute",
+        "moderation and 404",
+        "360px viewport"
+      ]
+    },
+    "finalPerformanceAndAudio": {
+      "passed": 3,
+      "failed": 0,
+      "secondsApprox": 258,
+      "tests": [
+        "canvas-survival 2x60s and 20 restart cycles per profile",
+        "three-tactics 2x60s and 20 restart cycles per profile",
+        "opaque iframe local audio: opt-in, host mute/resume, pause and dispose"
+      ]
+    }
+  },
+  "performance": {
+    "canvas-grid-arena": {
+      "template": "canvas-grid-arena",
+      "measuredAt": "2026-10-15T19:27:16.602Z",
+      "scope": "compiled isolated iframe; host editor not loaded; real time; includes bounded synthetic input and restarts",
+      "samples": [
+        {
+          "reduced": false,
+          "intervals": {
+            "count": 2267,
+            "p50": 16.69999999999709,
+            "p95": 16.700000000004366,
+            "max": 16.80000000000291
+          },
+          "cpuFrameWork": {
+            "count": 2298,
+            "p50": 0.20000000298023224,
+            "p95": 0.3999999985098839,
+            "max": 1.7000000029802322
+          },
+          "environment": {
+            "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36",
+            "logicalProcessors": 12,
+            "viewport": [
+              1024,
+              640
+            ],
+            "dpr": 1,
+            "renderer": "Canvas2D or unavailable"
+          }
+        },
+        {
+          "reduced": true,
+          "intervals": {
+            "count": 2274,
+            "p50": 16.69999999999709,
+            "p95": 16.79999999998836,
+            "max": 16.80000000000291
+          },
+          "cpuFrameWork": {
+            "count": 2306,
+            "p50": 0.20000000298023224,
+            "p95": 0.3999999985098839,
+            "max": 2.100000001490116
+          },
+          "environment": {
+            "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36",
+            "logicalProcessors": 12,
+            "viewport": [
+              1024,
+              640
+            ],
+            "dpr": 1,
+            "renderer": "Canvas2D or unavailable"
+          }
+        }
+      ]
+    },
+    "canvas-puzzle": {
+      "template": "canvas-puzzle",
+      "measuredAt": "2026-10-15T17:39:34.894Z",
+      "scope": "compiled isolated iframe; host editor not loaded; real time; includes bounded synthetic input and restarts",
+      "samples": [
+        {
+          "reduced": false,
+          "intervals": {
+            "count": 3600,
+            "p50": 16.69999999999709,
+            "p95": 16.700000000004366,
+            "max": 16.80000000000291
+          },
+          "cpuFrameWork": {
+            "count": 3601,
+            "p50": 0.19999999925494194,
+            "p95": 0.30000000074505806,
+            "max": 0.8999999985098839
+          },
+          "environment": {
+            "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36",
+            "logicalProcessors": 12,
+            "viewport": [
+              1024,
+              640
+            ],
+            "dpr": 1,
+            "renderer": "Canvas2D or unavailable"
+          }
+        },
+        {
+          "reduced": true,
+          "intervals": {
+            "count": 3600,
+            "p50": 16.69999999999709,
+            "p95": 16.70000000001164,
+            "max": 16.80000000000291
+          },
+          "cpuFrameWork": {
+            "count": 3601,
+            "p50": 0.10000000149011612,
+            "p95": 0.29999999701976776,
+            "max": 0.8000000007450581
+          },
+          "environment": {
+            "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36",
+            "logicalProcessors": 12,
+            "viewport": [
+              1024,
+              640
+            ],
+            "dpr": 1,
+            "renderer": "Canvas2D or unavailable"
+          }
+        }
+      ]
+    },
+    "canvas-survival-soak": {
+      "scope": "Real thirty minute isolated compiled Canvas iframe; synthetic input; no authenticated host or physical device claim",
+      "measuredAt": "2026-10-15T21:01:48.898Z",
+      "rows": [
+        {
+          "minute": 0,
+          "nodes": 33,
+          "canvases": 1,
+          "targets": 0,
+          "phase": "playing",
+          "readiness": "ready"
+        },
+        {
+          "minute": 1,
+          "nodes": 33,
+          "canvases": 1,
+          "targets": 4,
+          "phase": "playing",
+          "readiness": "ready"
+        },
+        {
+          "minute": 2,
+          "nodes": 33,
+          "canvases": 1,
+          "targets": 4,
+          "phase": "playing",
+          "readiness": "ready"
+        },
+        {
+          "minute": 3,
+          "nodes": 33,
+          "canvases": 1,
+          "targets": 3,
+          "phase": "playing",
+          "readiness": "ready"
+        },
+        {
+          "minute": 4,
+          "nodes": 33,
+          "canvases": 1,
+          "targets": 4,
+          "phase": "playing",
+          "readiness": "ready"
+        },
+        {
+          "minute": 5,
+          "nodes": 33,
+          "canvases": 1,
+          "targets": 2,
+          "phase": "playing",
+          "readiness": "ready"
+        },
+        {
+          "minute": 6,
+          "nodes": 33,
+          "canvases": 1,
+          "targets": 1,
+          "phase": "playing",
+          "readiness": "ready"
+        },
+        {
+          "minute": 7,
+          "nodes": 33,
+          "canvases": 1,
+          "targets": 1,
+          "phase": "playing",
+          "readiness": "ready"
+        },
+        {
+          "minute": 8,
+          "nodes": 33,
+          "canvases": 1,
+          "targets": 12,
+          "phase": "playing",
+          "readiness": "ready"
+        },
+        {
+          "minute": 9,
+          "nodes": 33,
+          "canvases": 1,
+          "targets": 10,
+          "phase": "won",
+          "readiness": "ready"
+        },
+        {
+          "minute": 10,
+          "nodes": 33,
+          "canvases": 1,
+          "targets": 5,
+          "phase": "playing",
+          "readiness": "ready"
+        },
+        {
+          "minute": 11,
+          "nodes": 33,
+          "canvases": 1,
+          "targets": 9,
+          "phase": "playing",
+          "readiness": "ready"
+        },
+        {
+          "minute": 12,
+          "nodes": 33,
+          "canvases": 1,
+          "targets": 9,
+          "phase": "playing",
+          "readiness": "ready"
+        },
+        {
+          "minute": 13,
+          "nodes": 33,
+          "canvases": 1,
+          "targets": 11,
+          "phase": "playing",
+          "readiness": "ready"
+        },
+        {
+          "minute": 14,
+          "nodes": 33,
+          "canvases": 1,
+          "targets": 9,
+          "phase": "playing",
+          "readiness": "ready"
+        },
+        {
+          "minute": 15,
+          "nodes": 33,
+          "canvases": 1,
+          "targets": 11,
+          "phase": "playing",
+          "readiness": "ready"
+        },
+        {
+          "minute": 16,
+          "nodes": 33,
+          "canvases": 1,
+          "targets": 10,
+          "phase": "playing",
+          "readiness": "ready"
+        },
+        {
+          "minute": 17,
+          "nodes": 33,
+          "canvases": 1,
+          "targets": 10,
+          "phase": "playing",
+          "readiness": "ready"
+        },
+        {
+          "minute": 18,
+          "nodes": 33,
+          "canvases": 1,
+          "targets": 9,
+          "phase": "playing",
+          "readiness": "ready"
+        },
+        {
+          "minute": 19,
+          "nodes": 33,
+          "canvases": 1,
+          "targets": 11,
+          "phase": "playing",
+          "readiness": "ready"
+        },
+        {
+          "minute": 20,
+          "nodes": 33,
+          "canvases": 1,
+          "targets": 9,
+          "phase": "playing",
+          "readiness": "ready"
+        },
+        {
+          "minute": 21,
+          "nodes": 33,
+          "canvases": 1,
+          "targets": 7,
+          "phase": "playing",
+          "readiness": "ready"
+        },
+        {
+          "minute": 22,
+          "nodes": 33,
+          "canvases": 1,
+          "targets": 2,
+          "phase": "playing",
+          "readiness": "ready"
+        },
+        {
+          "minute": 23,
+          "nodes": 33,
+          "canvases": 1,
+          "targets": 2,
+          "phase": "playing",
+          "readiness": "ready"
+        },
+        {
+          "minute": 24,
+          "nodes": 33,
+          "canvases": 1,
+          "targets": 1,
+          "phase": "playing",
+          "readiness": "ready"
+        },
+        {
+          "minute": 25,
+          "nodes": 33,
+          "canvases": 1,
+          "targets": 2,
+          "phase": "playing",
+          "readiness": "ready"
+        },
+        {
+          "minute": 26,
+          "nodes": 33,
+          "canvases": 1,
+          "targets": 6,
+          "phase": "playing",
+          "readiness": "ready"
+        },
+        {
+          "minute": 27,
+          "nodes": 33,
+          "canvases": 1,
+          "targets": 8,
+          "phase": "playing",
+          "readiness": "ready"
+        },
+        {
+          "minute": 28,
+          "nodes": 33,
+          "canvases": 1,
+          "targets": 8,
+          "phase": "playing",
+          "readiness": "ready"
+        },
+        {
+          "minute": 29,
+          "nodes": 33,
+          "canvases": 1,
+          "targets": 2,
+          "phase": "playing",
+          "readiness": "ready"
+        }
+      ],
+      "restarts": 60,
+      "elapsedMs": 1800698.5,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36",
+      "logicalProcessors": 12
+    },
+    "canvas-survival": {
+      "template": "canvas-survival",
+      "measuredAt": "2026-10-15T21:38:17.190Z",
+      "scope": "compiled isolated iframe; host editor not loaded; real time; includes bounded synthetic input and restarts",
+      "samples": [
+        {
+          "reduced": false,
+          "intervals": {
+            "count": 3359,
+            "p50": 16.69999999999709,
+            "p95": 16.700000000004366,
+            "max": 33.400000000001455
+          },
+          "cpuFrameWork": {
+            "count": 3366,
+            "p50": 0.20000000298023224,
+            "p95": 0.3999999985098839,
+            "max": 1.2999999970197678
+          },
+          "resourcesBefore": {
+            "drawCalls": 1,
+            "triangles": 0,
+            "geometries": 0,
+            "textures": 3
+          },
+          "resourcesAfter": {
+            "drawCalls": 1,
+            "triangles": 0,
+            "geometries": 0,
+            "textures": 3
+          },
+          "environment": {
+            "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36",
+            "logicalProcessors": 12,
+            "viewport": [
+              1024,
+              640
+            ],
+            "dpr": 1,
+            "renderer": "Canvas2D or unavailable"
+          }
+        },
+        {
+          "reduced": true,
+          "intervals": {
+            "count": 3359,
+            "p50": 16.69999999999709,
+            "p95": 16.79999999998836,
+            "max": 50
+          },
+          "cpuFrameWork": {
+            "count": 3366,
+            "p50": 0.19999999552965164,
+            "p95": 0.30000000447034836,
+            "max": 1.1000000014901161
+          },
+          "resourcesBefore": {
+            "drawCalls": 3,
+            "triangles": 0,
+            "geometries": 0,
+            "textures": 3
+          },
+          "resourcesAfter": {
+            "drawCalls": 1,
+            "triangles": 0,
+            "geometries": 0,
+            "textures": 3
+          },
+          "environment": {
+            "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36",
+            "logicalProcessors": 12,
+            "viewport": [
+              1024,
+              640
+            ],
+            "dpr": 1,
+            "renderer": "Canvas2D or unavailable"
+          }
+        }
+      ]
+    },
+    "phaser-arcade": {
+      "template": "phaser-arcade",
+      "measuredAt": "2026-10-15T17:41:44.919Z",
+      "scope": "compiled isolated iframe; host editor not loaded; real time; includes bounded synthetic input and restarts",
+      "samples": [
+        {
+          "reduced": false,
+          "intervals": {
+            "count": 3527,
+            "p50": 16.69999999999709,
+            "p95": 16.700000000004366,
+            "max": 433.3999999999978
+          },
+          "cpuFrameWork": {
+            "count": 3528,
+            "p50": 0.5,
+            "p95": 1,
+            "max": 2.5
+          },
+          "environment": {
+            "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36",
+            "logicalProcessors": 12,
+            "viewport": [
+              1024,
+              640
+            ],
+            "dpr": 1,
+            "renderer": "Canvas2D or unavailable"
+          }
+        },
+        {
+          "reduced": true,
+          "intervals": {
+            "count": 3546,
+            "p50": 16.69999999999709,
+            "p95": 16.79999999998836,
+            "max": 616.6420000000071
+          },
+          "cpuFrameWork": {
+            "count": 3547,
+            "p50": 0.20000000298023224,
+            "p95": 0.5,
+            "max": 1.199999999254942
+          },
+          "environment": {
+            "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36",
+            "logicalProcessors": 12,
+            "viewport": [
+              1024,
+              640
+            ],
+            "dpr": 1,
+            "renderer": "Canvas2D or unavailable"
+          }
+        }
+      ]
+    },
+    "phaser-platformer": {
+      "template": "phaser-platformer",
+      "measuredAt": "2026-10-15T17:43:54.345Z",
+      "scope": "compiled isolated iframe; host editor not loaded; real time; includes bounded synthetic input and restarts",
+      "samples": [
+        {
+          "reduced": false,
+          "intervals": {
+            "count": 3590,
+            "p50": 16.69999999999709,
+            "p95": 16.700000000004366,
+            "max": 33.400000000001455
+          },
+          "cpuFrameWork": {
+            "count": 3591,
+            "p50": 0.3999999985098839,
+            "p95": 0.8000000007450581,
+            "max": 2.2000000029802322
+          },
+          "environment": {
+            "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36",
+            "logicalProcessors": 12,
+            "viewport": [
+              1024,
+              640
+            ],
+            "dpr": 1,
+            "renderer": "Canvas2D or unavailable"
+          }
+        },
+        {
+          "reduced": true,
+          "intervals": {
+            "count": 3598,
+            "p50": 16.69999999999709,
+            "p95": 16.70000000001164,
+            "max": 33.29999999998836
+          },
+          "cpuFrameWork": {
+            "count": 3599,
+            "p50": 0.20000000298023224,
+            "p95": 0.5,
+            "max": 1.4000000022351742
+          },
+          "environment": {
+            "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36",
+            "logicalProcessors": 12,
+            "viewport": [
+              1024,
+              640
+            ],
+            "dpr": 1,
+            "renderer": "Canvas2D or unavailable"
+          }
+        }
+      ]
+    },
+    "phaser-tactics": {
+      "template": "phaser-tactics",
+      "measuredAt": "2026-10-15T19:29:26.347Z",
+      "scope": "compiled isolated iframe; host editor not loaded; real time; includes bounded synthetic input and restarts",
+      "samples": [
+        {
+          "reduced": false,
+          "intervals": {
+            "count": 3564,
+            "p50": 16.69999999999709,
+            "p95": 16.799999999995634,
+            "max": 66.59999999999854
+          },
+          "cpuFrameWork": {
+            "count": 3565,
+            "p50": 0.09999999403953552,
+            "p95": 0.20000000298023224,
+            "max": 18.399999998509884
+          },
+          "environment": {
+            "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36",
+            "logicalProcessors": 12,
+            "viewport": [
+              1024,
+              640
+            ],
+            "dpr": 1,
+            "renderer": "Canvas2D or unavailable"
+          }
+        },
+        {
+          "reduced": true,
+          "intervals": {
+            "count": 3528,
+            "p50": 16.69999999999709,
+            "p95": 16.80000000000291,
+            "max": 66.69999999999709
+          },
+          "cpuFrameWork": {
+            "count": 3529,
+            "p50": 0.10000000149011612,
+            "p95": 0.20000000298023224,
+            "max": 48.30000000447035
+          },
+          "environment": {
+            "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36",
+            "logicalProcessors": 12,
+            "viewport": [
+              1024,
+              640
+            ],
+            "dpr": 1,
+            "renderer": "Canvas2D or unavailable"
+          }
+        }
+      ]
+    },
+    "three-action": {
+      "template": "three-action",
+      "measuredAt": "2026-10-15T17:48:14.977Z",
+      "scope": "compiled isolated iframe; host editor not loaded; real time; includes bounded synthetic input and restarts",
+      "samples": [
+        {
+          "reduced": false,
+          "intervals": {
+            "count": 3260,
+            "p50": 16.69999999999709,
+            "p95": 33.30000000000291,
+            "max": 50.10000000000218
+          },
+          "cpuFrameWork": {
+            "count": 3261,
+            "p50": 0.5,
+            "p95": 0.8999999985098839,
+            "max": 33.79999999701977
+          },
+          "resourcesBefore": {
+            "drawCalls": 17,
+            "triangles": 748,
+            "geometries": 6,
+            "textures": 0
+          },
+          "resourcesAfter": {
+            "drawCalls": 12,
+            "triangles": 348,
+            "geometries": 6,
+            "textures": 0
+          },
+          "environment": {
+            "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36",
+            "logicalProcessors": 12,
+            "viewport": [
+              1024,
+              640
+            ],
+            "dpr": 1,
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+          }
+        },
+        {
+          "reduced": true,
+          "intervals": {
+            "count": 3520,
+            "p50": 16.69999999999709,
+            "p95": 16.80000000000291,
+            "max": 33.40000000000873
+          },
+          "cpuFrameWork": {
+            "count": 3521,
+            "p50": 0.30000000074505806,
+            "p95": 0.6999999992549419,
+            "max": 1.5
+          },
+          "resourcesBefore": {
+            "drawCalls": 17,
+            "triangles": 748,
+            "geometries": 6,
+            "textures": 0
+          },
+          "resourcesAfter": {
+            "drawCalls": 12,
+            "triangles": 348,
+            "geometries": 6,
+            "textures": 0
+          },
+          "environment": {
+            "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36",
+            "logicalProcessors": 12,
+            "viewport": [
+              1024,
+              640
+            ],
+            "dpr": 1,
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+          }
+        }
+      ]
+    },
+    "three-exploration": {
+      "template": "three-exploration",
+      "measuredAt": "2026-10-15T17:46:04.916Z",
+      "scope": "compiled isolated iframe; host editor not loaded; real time; includes bounded synthetic input and restarts",
+      "samples": [
+        {
+          "reduced": false,
+          "intervals": {
+            "count": 3117,
+            "p50": 16.69999999999891,
+            "p95": 33.399999999999636,
+            "max": 50
+          },
+          "cpuFrameWork": {
+            "count": 3118,
+            "p50": 0.5,
+            "p95": 0.8000000007450581,
+            "max": 14.900000002235174
+          },
+          "resourcesBefore": {
+            "drawCalls": 12,
+            "triangles": 348,
+            "geometries": 5,
+            "textures": 0
+          },
+          "resourcesAfter": {
+            "drawCalls": 12,
+            "triangles": 348,
+            "geometries": 5,
+            "textures": 0
+          },
+          "environment": {
+            "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36",
+            "logicalProcessors": 12,
+            "viewport": [
+              1024,
+              640
+            ],
+            "dpr": 1,
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+          }
+        },
+        {
+          "reduced": true,
+          "intervals": {
+            "count": 3128,
+            "p50": 16.69999999999709,
+            "p95": 33.39999999999418,
+            "max": 166.6999999999971
+          },
+          "cpuFrameWork": {
+            "count": 3129,
+            "p50": 0.4000000022351742,
+            "p95": 0.6999999992549419,
+            "max": 2
+          },
+          "resourcesBefore": {
+            "drawCalls": 12,
+            "triangles": 348,
+            "geometries": 5,
+            "textures": 0
+          },
+          "resourcesAfter": {
+            "drawCalls": 12,
+            "triangles": 348,
+            "geometries": 5,
+            "textures": 0
+          },
+          "environment": {
+            "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36",
+            "logicalProcessors": 12,
+            "viewport": [
+              1024,
+              640
+            ],
+            "dpr": 1,
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+          }
+        }
+      ]
+    },
+    "three-tactics": {
+      "template": "three-tactics",
+      "measuredAt": "2026-10-15T21:40:25.497Z",
+      "scope": "compiled isolated iframe; host editor not loaded; real time; includes bounded synthetic input and restarts",
+      "samples": [
+        {
+          "reduced": false,
+          "intervals": {
+            "count": 3600,
+            "p50": 16.69999999999709,
+            "p95": 16.700000000004366,
+            "max": 16.80000000000291
+          },
+          "cpuFrameWork": {
+            "count": 3601,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "max": 1.3000000044703484
+          },
+          "resourcesBefore": {
+            "drawCalls": 63,
+            "triangles": 892,
+            "geometries": 5,
+            "textures": 0
+          },
+          "resourcesAfter": {
+            "drawCalls": 72,
+            "triangles": 1324,
+            "geometries": 5,
+            "textures": 0
+          },
+          "environment": {
+            "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36",
+            "logicalProcessors": 12,
+            "viewport": [
+              1024,
+              640
+            ],
+            "dpr": 1,
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+          }
+        },
+        {
+          "reduced": true,
+          "intervals": {
+            "count": 3600,
+            "p50": 16.69999999999709,
+            "p95": 16.70000000001164,
+            "max": 16.80000000000291
+          },
+          "cpuFrameWork": {
+            "count": 3601,
+            "p50": 0,
+            "p95": 0.10000000149011612,
+            "max": 1
+          },
+          "resourcesBefore": {
+            "drawCalls": 63,
+            "triangles": 892,
+            "geometries": 5,
+            "textures": 0
+          },
+          "resourcesAfter": {
+            "drawCalls": 72,
+            "triangles": 1324,
+            "geometries": 5,
+            "textures": 0
+          },
+          "environment": {
+            "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7778.96 Safari/537.36",
+            "logicalProcessors": 12,
+            "viewport": [
+              1024,
+              640
+            ],
+            "dpr": 1,
+            "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+          }
+        }
+      ]
+    }
+  },
+  "runtime": {
+    "identity": {
+      "profileVersion": 1,
+      "runtimeFingerprint": "bb020619c5ac200b53c3258effd01525a24af1db7c432ac251dba54b2d038106"
+    },
+    "imageConfigDigest": "sha256:acf2ed3c56b67a0957bf2adc1d93d232a8a281462c70cbddeb95f62b42748b07",
+    "imageManifest": "sha256:5f2ff4918bffc4519f01afcdacaf79b65b0519dfba12ceb5c2ad11cacaaf2bc2",
+    "dockerBuildPassed": true,
+    "imageSmoke": {
+      "ok": true,
+      "uid": 1000,
+      "files": 4,
+      "bytes": 2250,
+      "protectedDependencies": true
+    },
+    "validationSmoke": [
+      {
+        "kit": "canvas-puzzle",
+        "ok": true,
+        "uid": 1000,
+        "durationMs": 12478,
+        "bytes": 67819,
+        "captureBytes": 44358,
+        "evidence": [
+          {
+            "kind": "playtest",
+            "status": "passed",
+            "detail": "Boot, pausa, entrada, objetivo e reinício; derrota quando prevista pelo kit. Driver de regras do kit original."
+          },
+          {
+            "kind": "capture",
+            "status": "passed",
+            "detail": "Frame real capturado em 1024 × 640. Revise enquadramento, contraste e HUD antes de aplicar."
+          }
+        ]
+      },
+      {
+        "kit": "canvas-survival",
+        "ok": true,
+        "uid": 1000,
+        "durationMs": 31011,
+        "bytes": 114558,
+        "captureBytes": 55903,
+        "evidence": [
+          {
+            "kind": "playtest",
+            "status": "passed",
+            "detail": "Boot, pausa, entrada, objetivo e reinício; derrota quando prevista pelo kit. Driver de regras do kit original."
+          },
+          {
+            "kind": "capture",
+            "status": "passed",
+            "detail": "Frame real capturado em 1024 × 640. Revise enquadramento, contraste e HUD antes de aplicar."
+          }
+        ]
+      },
+      {
+        "kit": "three-exploration",
+        "ok": true,
+        "uid": 1000,
+        "durationMs": 35792,
+        "bytes": 652276,
+        "captureBytes": 41161,
+        "evidence": [
+          {
+            "kind": "playtest",
+            "status": "passed",
+            "detail": "Boot, pausa, entrada, objetivo e reinício; derrota quando prevista pelo kit. Driver de regras do kit original."
+          },
+          {
+            "kind": "capture",
+            "status": "passed",
+            "detail": "Frame real capturado em 1024 × 640. Revise enquadramento, contraste e HUD antes de aplicar."
+          }
+        ]
+      },
+      {
+        "kit": "canvas-grid-arena",
+        "ok": true,
+        "uid": 1000,
+        "durationMs": 15687,
+        "bytes": 66653,
+        "captureBytes": 39719,
+        "evidence": [
+          {
+            "kind": "playtest",
+            "status": "passed",
+            "detail": "Boot, pausa, entrada, objetivo e reinício; derrota quando prevista pelo kit. Driver de regras do kit original."
+          },
+          {
+            "kind": "capture",
+            "status": "passed",
+            "detail": "Frame real capturado em 1024 × 640. Revise enquadramento, contraste e HUD antes de aplicar."
+          }
+        ]
+      },
+      {
+        "kit": "phaser-tactics",
+        "ok": true,
+        "uid": 1000,
+        "durationMs": 41484,
+        "bytes": 1282093,
+        "captureBytes": 51110,
+        "evidence": [
+          {
+            "kind": "playtest",
+            "status": "passed",
+            "detail": "Boot, pausa, entrada, objetivo e reinício; derrota quando prevista pelo kit. Driver de regras do kit original."
+          },
+          {
+            "kind": "capture",
+            "status": "passed",
+            "detail": "Frame real capturado em 1024 × 640. Revise enquadramento, contraste e HUD antes de aplicar."
+          }
+        ]
+      },
+      {
+        "kit": "three-tactics",
+        "ok": true,
+        "uid": 1000,
+        "durationMs": 14889,
+        "bytes": 583539,
+        "captureBytes": 64294,
+        "evidence": [
+          {
+            "kind": "playtest",
+            "status": "passed",
+            "detail": "Boot, pausa, entrada, objetivo e reinício; derrota quando prevista pelo kit. Driver de regras do kit original."
+          },
+          {
+            "kind": "capture",
+            "status": "passed",
+            "detail": "Frame real capturado em 1024 × 640. Revise enquadramento, contraste e HUD antes de aplicar."
+          }
+        ]
+      }
+    ],
+    "sandbox": {
+      "uid": 1000,
+      "network": "none",
+      "cpus": 1,
+      "memory": "1g",
+      "pidsLimit": 256,
+      "exitCode": 0
+    }
+  },
+  "exports": {
+    "canvas": {
+      "measuredAt": "2026-10-15T18:23:56.148Z",
+      "destination": "C:\\Users\\tocha\\AppData\\Local\\Temp\\studio-canvas-export-lUIkHH",
+      "commands": [
+        "npm ci --no-audit --no-fund",
+        "npm ls --all",
+        "npm run typecheck",
+        "npm run build",
+        "Chromium: dist em caminho aninhado"
+      ],
+      "sourceFiles": 29,
+      "assetFiles": 4,
+      "envelopeBytes": 147286,
+      "zipBytes": 53487,
+      "artifactBytes": 51606,
+      "artifactFiles": {
+        "assets/index-Bu2fMx90.css": 1298,
+        "assets/index-C0pqE76V.js": 38563,
+        "index.html": 453,
+        "studio-assets/000477c8bb8510a5f7f6a6f5ebaea93975dffcecfc9b0fd0dd5e324dc3e3e172.png": 2381,
+        "studio-assets/57f0e6cc631b29b1d35e2f61f384a037be8702b04fe8aa1457f090db708e1aaa.png": 1856,
+        "studio-assets/ef3ad9461e41b0de3a47b918f8e98c31bb44bb2e3796038786b7a43e443f9d47.png": 2468,
+        "studio-assets/manifest.json": 4587
+      },
+      "browserEvidence": {
+        "captureBytes": 53455,
+        "tick": 109,
+        "health": 5,
+        "nestedPath": true,
+        "errors": []
+      },
+      "artifactWithCaptureBytes": 105061,
+      "parsedDependencies": {
+        "dependencies": {},
+        "devDependencies": {
+          "typescript": "5.9.3",
+          "vite": "8.0.16"
+        }
+      },
+      "lockUnchanged": true
+    },
+    "gridGames": {
+      "measuredAt": "2026-10-15T19:33:34.596Z",
+      "evidence": [
+        {
+          "id": "canvas-grid-arena",
+          "envelopeBytes": 90760,
+          "zipBytes": 30968,
+          "sources": 23,
+          "assets": 1,
+          "artifactBytes": 20020,
+          "captureBytes": 26632,
+          "independentNpmCi": true,
+          "lockUnchanged": true,
+          "playtest": {
+            "evidence": [
+              {
+                "kind": "playtest",
+                "status": "passed",
+                "detail": "Boot, pausa, entrada, objetivo e reinício; derrota quando prevista pelo kit. Driver de regras do kit original."
+              },
+              {
+                "kind": "capture",
+                "status": "passed",
+                "detail": "Frame real capturado em 1024 × 640. Revise enquadramento, contraste e HUD antes de aplicar."
+              }
+            ],
+            "screenshot": "__studio-proof.png"
+          }
+        },
+        {
+          "id": "phaser-tactics",
+          "envelopeBytes": 101572,
+          "zipBytes": 34369,
+          "sources": 24,
+          "assets": 1,
+          "artifactBytes": 1224069,
+          "captureBytes": 33752,
+          "independentNpmCi": true,
+          "lockUnchanged": true,
+          "playtest": {
+            "evidence": [
+              {
+                "kind": "playtest",
+                "status": "passed",
+                "detail": "Boot, pausa, entrada, objetivo e reinício; derrota quando prevista pelo kit. Driver de regras do kit original."
+              },
+              {
+                "kind": "capture",
+                "status": "passed",
+                "detail": "Frame real capturado em 1024 × 640. Revise enquadramento, contraste e HUD antes de aplicar."
+              }
+            ],
+            "screenshot": "__studio-proof.png"
+          }
+        },
+        {
+          "id": "three-tactics",
+          "envelopeBytes": 107386,
+          "zipBytes": 36077,
+          "sources": 24,
+          "assets": 1,
+          "artifactBytes": 512329,
+          "captureBytes": 46530,
+          "independentNpmCi": true,
+          "lockUnchanged": true,
+          "playtest": {
+            "evidence": [
+              {
+                "kind": "playtest",
+                "status": "passed",
+                "detail": "Boot, pausa, entrada, objetivo e reinício; derrota quando prevista pelo kit. Driver de regras do kit original."
+              },
+              {
+                "kind": "capture",
+                "status": "passed",
+                "detail": "Frame real capturado em 1024 × 640. Revise enquadramento, contraste e HUD antes de aplicar."
+              }
+            ],
+            "screenshot": "__studio-proof.png"
+          }
+        }
+      ]
+    }
+  },
+  "generation": {
+    "typescript": "5.9.3",
+    "libraries": 99,
+    "licenseTextPreservedWithWhitespaceNormalization": true,
+    "canvasPackAndSourcesAndKitLocks": "passed",
+    "runtimeFingerprint": "passed"
+  },
+  "notAttested": [
+    "authenticated Pinta/Molda/Pensa across profiles/devices",
+    "paid OpenRouter/BYOK end-to-end",
+    "deployed Cloudflare Sandbox/DO/R2/SDK",
+    "physical GPU/mobile hardware",
+    "full host performance: typing/INP/CLS/cold-warm targets",
+    "semantic reliability of external paid AI"
+  ],
+  "defaultRollout": "new kits closed; separate M1/M2/M3 allowlists; five starters remain",
+  "knownOperationalLimits": [
+    "ambiguous first Hub post after permanent promotion may need manual reconciliation; no public visibility without Hub authorization",
+    "webhook never accepted after delivery retries requires operational replay"
+  ],
+  "git": "scoped local commit/merge authorized; no push or deploy",
+  "bundleGuard": {
+    "passed": true,
+    "assertions": 27,
+    "thresholdsUnchanged": true,
+    "maxInitialRawBytes": 350000,
+    "maxInitialGzipBytes": 120000,
+    "maxInitialChunks": 10,
+    "maxEditorRouteRawBytes": 5000000,
+    "maxEditorRouteGzipBytes": 1600000,
+    "maxEditorRouteChunks": 20,
+    "note": "Actual production Vite build in full Studio test suite, including original per-mode budgets."
+  },
+  "typechecks": [
+    {
+      "package": "studio",
+      "finishedAt": "2026-10-15T18:42:24.9356678-03:00",
+      "exitCode": 0
+    },
+    {
+      "package": "admin",
+      "finishedAt": "2026-10-15T18:44:53.3868813-03:00",
+      "exitCode": 0
+    },
+    {
+      "package": "member-shell",
+      "finishedAt": "2026-10-15T18:47:15.9797151-03:00",
+      "exitCode": 0
+    },
+    {
+      "package": "studio-runtime",
+      "finishedAt": "2026-10-15T18:47:37.0429183-03:00",
+      "exitCode": 0
+    },
+    {
+      "package": "community-kids",
+      "finishedAt": "2026-10-15T18:50:24.6055299-03:00",
+      "exitCode": 0
+    }
+  ],
+  "gitDiffCheckPassed": true,
+  "isolatedFrozenLockPassed": true
+}

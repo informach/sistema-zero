@@ -1,0 +1,2 @@
+ALTER TABLE "members"."studio_builder_jobs" ADD COLUMN "assistance" jsonb;--> statement-breakpoint
+ALTER TABLE "members"."studio_builder_jobs" ADD CONSTRAINT "studio_builder_assistance_bounds" CHECK ("members"."studio_builder_jobs"."assistance" is null or (octet_length("members"."studio_builder_jobs"."assistance"::text) <= 150000 and jsonb_array_length("members"."studio_builder_jobs"."assistance"->'events') <= 128));

@@ -11,6 +11,7 @@
       "!**/dist",
       "!**/migrations",
       "!bun.lock",
+      "!packages/studio/src/monaco/pro/defaultLibraries.json",
       "!**/.astro",
       "!**/.next",
       "!**/next-env.d.ts",

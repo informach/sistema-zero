@@ -4,7 +4,8 @@ import type { Translator } from '#core'
 import { Button, Modal } from '#ui'
 import { type ExportStep, exportProject } from '../../export'
 import { triggerDownload } from '../../export/download'
-import { useProjectStore } from '../../state/projectStore'
+import { flushProjectOperations } from '../../state/projectOperations'
+import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { useT } from '../../studio/i18n'
 import { Spinner } from './LoadingViews'
 
@@ -30,6 +31,7 @@ export function ExportDialog({ open, onClose }: ExportDialogProps): JSX.Element 
   const t = useT()
   // Lê o projeto da store POR INSTÂNCIA (hook com seletor) — não a estática.
   const project = useProjectStore((s) => s.project)
+  const store = useProjectStoreApi()
   const isPro = project?.kind === 'pro'
 
   const [minify, setMinify] = useState(true)
@@ -50,7 +52,11 @@ export function ExportDialog({ open, onClose }: ExportDialogProps): JSX.Element 
     setWarnings([])
     setLabel(t('export.working'))
     try {
-      const result = await exportProject(project, {
+      await flushProjectOperations(store)
+      const current = store.getState().project
+      if (!current || current.id !== project.id)
+        throw new Error('O projeto mudou. Abra a exportação novamente.')
+      const result = await exportProject(current, {
         minify: isPro ? undefined : minify,
         onProgress: (step) => setLabel(stepLabel(step, t)),
       })

@@ -159,9 +159,13 @@ export function StudioFullEditor({
     }
   }, [])
 
-  const handlePromoteToPro = useCallback((project: Project) => {
-    window.location.assign(`/estudio/pro/${encodeURIComponent(project.id)}`)
-  }, [])
+  const handlePromoteToPro = useCallback(
+    (project: Project) => {
+      const query = taskSession ? `?tarefa=${encodeURIComponent(taskSession.taskId)}` : ''
+      window.location.assign(`/estudio/pro/${encodeURIComponent(project.id)}${query}`)
+    },
+    [taskSession],
+  )
 
   useEffect(() => {
     let active = true
@@ -189,9 +193,9 @@ export function StudioFullEditor({
   // O modo Pro precisa de uma navegação de documento completa para receber COOP/COEP.
   useEffect(() => {
     if (state.status === 'ready' && state.project.kind === 'pro') {
-      window.location.assign(`/estudio/pro/${state.project.id}`)
+      handlePromoteToPro(state.project)
     }
-  }, [state])
+  }, [state, handlePromoteToPro])
 
   if (state.status === 'loading') {
     return (

@@ -1,6 +1,10 @@
 import { afterAll, afterEach, describe, expect, it, mock } from 'bun:test'
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import type { JSX } from 'react'
+import {
+  StudioProCandidatePreviewProvider,
+  useProCandidatePreview,
+} from '../../studio/pro-candidate-preview'
 
 // mock.module NÃO é isolado por arquivo: captura o módulo real do provider e
 // restaura no afterAll para não vazar o stub do useProWebContainer.
@@ -9,6 +13,9 @@ const realProvider = { ...(await import('./ProWebContainerProvider')) }
 // Controle do `npm install` falso: `exit` é um deferred (resolvemos à mão DEPOIS
 // do unmount, encenando a corrida que termina com a instância já cancelada).
 let installSpawned = false
+let mountError: string | null = null
+let failMount = false
+let mountAttempts = 0
 let resolveInstallExit: (code: number) => void = () => {}
 const installKill = mock(() => undefined)
 // Dispara o `server-ready` do container falso (capturado no wc.on) — leva o
@@ -47,12 +54,15 @@ function makeFakeContainer() {
 // com useCallback): é dep do efeito do ProPreview, então uma nova referência a
 // cada render re-dispara o efeito → setState → re-render → loop infinito
 // ("Maximum update depth exceeded").
-const stableEnsureMounted = async () => makeFakeContainer()
+const stableEnsureMounted = async () => {
+  mountAttempts++
+  return failMount ? null : makeFakeContainer()
+}
 mock.module('./ProWebContainerProvider', () => ({
   ...realProvider,
   useProWebContainer: () => ({
     ensureMounted: stableEnsureMounted,
-    error: null,
+    error: mountError,
   }),
 }))
 
@@ -88,10 +98,76 @@ describe('ProPreview — install órfão no cancelamento', () => {
     installKill.mockClear()
     setPreviewScript.mockClear()
     installSpawned = false
+    failMount = false
+    mountError = null
+    mountAttempts = 0
     resolveInstallExit = () => {}
     fireServerReady = () => {}
     useProjectStore.setState({ project: null })
     useLogsStore.getState().clear()
+  })
+
+  it('switches only the game document while retaining the local dev-server and mounted controller', async () => {
+    useProjectStore.setState({
+      project: { id: 'local-candidate', name: 'Atual', kind: 'pro', mode: 'code' } as never,
+    })
+    let api!: ReturnType<typeof useProCandidatePreview>
+    function Probe() {
+      api = useProCandidatePreview()
+      return null
+    }
+    const view = render(
+      <StudioProCandidatePreviewProvider>
+        <Probe />
+        <Harness />
+      </StudioProCandidatePreviewProvider>,
+    )
+    await waitFor(() => expect(installSpawned).toBe(true))
+    act(() => resolveInstallExit(0))
+    await waitFor(() => expect(screen.getByText(/Subindo o servidor/)).toBeTruthy())
+    act(() => fireServerReady('http://fake.webcontainer.dev/'))
+    const currentFrame = view.container.querySelector('iframe')!
+    act(() => {
+      api.show({
+        projectId: 'local-candidate',
+        jobId: 'job',
+        revisionHash: 'c'.repeat(64),
+        artifact: {
+          id: 'a'.repeat(64),
+          sha256: 'b'.repeat(64),
+          url: `https://runtime.test/v1/artifacts/${'a'.repeat(64)}/index.html`,
+          expiresAt: Date.now() + 60_000,
+        },
+      })
+    })
+    expect(view.container.querySelectorAll('iframe')).toHaveLength(1)
+    expect(currentFrame.isConnected).toBe(false)
+    expect(installKill).toHaveBeenCalledTimes(0)
+    expect(mountAttempts).toBe(1)
+    fireEvent.click(screen.getByRole('button', { name: 'Jogo atual' }))
+    expect(view.container.querySelector('iframe')?.src).toBe('http://fake.webcontainer.dev/')
+    expect(installKill).toHaveBeenCalledTimes(0)
+    expect(mountAttempts).toBe(1)
+    view.unmount()
+    expect(installKill).toHaveBeenCalledTimes(1)
+  })
+
+  it('keeps a mount error visible until an explicit retry, without remounting in a loop', async () => {
+    useProjectStore.setState({
+      project: { id: 'mount-error', name: 'Pro', kind: 'pro', mode: 'code' } as never,
+    })
+    failMount = true
+    const view = render(<Harness />)
+    await screen.findByText('Não foi possível iniciar o ambiente.')
+    mountError = 'ENOENT: serialized filesystem error'
+    view.rerender(<Harness />)
+    await act(async () => {
+      await Promise.resolve()
+    })
+    expect(mountAttempts).toBe(1)
+    expect(installSpawned).toBe(false)
+    fireEvent.click(screen.getByRole('button', { name: /Tentar de novo/ }))
+    await waitFor(() => expect(mountAttempts).toBe(2))
   })
 
   it('fase ready: cabeçalho com o nome do projeto + Atualizar que REMONTA o iframe', async () => {

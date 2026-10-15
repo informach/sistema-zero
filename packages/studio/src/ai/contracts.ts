@@ -35,6 +35,7 @@ export interface AIRequestOptions {
   maxTokens?: number
 }
 
+/** @deprecated Library compatibility only. Studio UI uses the host's StudioTutorAdapter. */
 export interface AIProvider {
   explainSelectedBlock(
     blockJson: object,

@@ -4,19 +4,22 @@ import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { useShallow } from 'zustand/react/shallow'
 import type { ProjectTree } from '#core'
 import { FontSizeControls } from '../../components/code/FontSizeControls'
-import { MonacoTabs } from '../../components/code/LazyMonacoTabs'
 import { ProFileTree } from '../../components/code/ProFileTree'
 import { useCodeHistory } from '../../components/code/useCodeHistory'
 import { useFormatIssueLogger } from '../../components/code/useFormatIssueLogger'
 import { EditorSkeleton } from '../../components/layout/LoadingViews'
 import { NarrowPanels } from '../../components/layout/NarrowPanels'
+import type { MonacoHighlight } from '../../monaco/MonacoTabs'
 import { useProjectStore } from '../../state/projectStore'
 import { CODE_FONT_SIZE_DEFAULT, useSettingsStore } from '../../state/settingsStore'
 import { useUIStore } from '../../state/uiStore'
 import { useStudioConfig } from '../../studio/config'
 import { useT } from '../../studio/i18n'
 import { useStudioLayout } from '../../studio/layoutContext'
+import { useProCandidatePreview } from '../../studio/pro-candidate-preview'
 import { useStudioTheme } from '../../studio/theme'
+import { useStudioTutor } from '../../studio/tutor'
+import { ProCodeEditor } from './ProCodeEditor'
 import { ProPreview } from './ProPreview'
 import { ProWebContainerProvider } from './ProWebContainerProvider'
 
@@ -41,6 +44,7 @@ export function ProCodeMode(): JSX.Element {
   )
   const setProFileContent = useProjectStore((s) => s.setProFileContent)
   const studioConfig = useStudioConfig()
+  const { focusNonce } = useProCandidatePreview()
   const showPreview = useUIStore((s) => s.showPreview) && studioConfig.preview
   // No ESTREITO (abas) o olhinho da Topbar não é renderizado, então `showPreview`
   // ali é só uma preferência velha de desktop. Se ela apagasse a aba, quem
@@ -53,6 +57,47 @@ export function ProCodeMode(): JSX.Element {
 
   const [openFiles, setOpenFiles] = useState<string[]>([])
   const [activeFile, setActiveFile] = useState<string>('')
+  const { proEditor, proNavigate, proValidateReference } = useStudioTutor()
+  const [tutorHighlight, setTutorHighlight] = useState<MonacoHighlight | null>(null)
+  useEffect(() => {
+    proNavigate.current = (requested) => {
+      const reference = proValidateReference.current?.(requested)
+      if (!reference) return
+      if (tree[reference.path]?.kind !== 'file') return
+      setOpenFiles((previous) =>
+        previous.includes(reference.path) ? previous : [...previous, reference.path],
+      )
+      setActiveFile(reference.path)
+      const { startLine, endLine } = reference
+      setTutorHighlight((previous) =>
+        startLine !== undefined && endLine !== undefined
+          ? {
+              file: reference.path,
+              startLine,
+              endLine,
+              nonce: (previous?.nonce ?? 0) + 1,
+            }
+          : null,
+      )
+    }
+    return () => {
+      proNavigate.current = null
+    }
+  }, [tree, proNavigate, proValidateReference])
+  useEffect(() => {
+    if (!projectId) return
+    proEditor.current = {
+      ...(proEditor.current?.projectId === projectId ? proEditor.current : {}),
+      projectId,
+      activeFile,
+    }
+  }, [projectId, activeFile, proEditor])
+  useEffect(
+    () => () => {
+      proEditor.current = null
+    },
+    [proEditor],
+  )
   const onFormatIssue = useFormatIssueLogger()
   // Desfazer/refazer da barra: aqui o alvo é sempre o código.
   const onCodeEditorReady = useCodeHistory()
@@ -101,6 +146,7 @@ export function ProCodeMode(): JSX.Element {
   const handleSelectFile = (path: string) => {
     const node = tree[path]
     if (node?.kind !== 'file') return
+    setTutorHighlight(null)
     setOpenFiles((prev) => (prev.includes(path) ? prev : [...prev, path]))
     setActiveFile(path)
   }
@@ -116,11 +162,13 @@ export function ProCodeMode(): JSX.Element {
 
   const codeEditor = (
     <Suspense fallback={<EditorSkeleton message="Carregando editor de código…" />}>
-      <MonacoTabs
+      <ProCodeEditor
+        key={projectId}
         files={filesArray}
         modelPathPrefix={projectId}
         activeFile={activeFile}
-        onActiveFileChange={setActiveFile}
+        highlight={tutorHighlight}
+        onActiveFileChange={handleSelectFile}
         onChange={(name, value) => setProFileContent(name, value)}
         theme={studioTheme === 'light' ? 'light' : 'vs-dark'}
         fontSize={codeFontSize || CODE_FONT_SIZE_DEFAULT}
@@ -140,6 +188,7 @@ export function ProCodeMode(): JSX.Element {
         <NarrowPanels
           editorPanes={[{ id: 'code', label: t('tab.code'), content: codeEditor }]}
           preview={previewAvailable ? <ProPreview /> : undefined}
+          previewRequest={focusNonce}
           filesDrawer={(close) => (
             <ProFileTree
               activeFile={activeFile}

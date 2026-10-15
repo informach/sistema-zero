@@ -73,13 +73,32 @@ describe('buildSourceFiles (fonte para o VSCode)', () => {
   })
 
   it('pro: árvore Vite (fonte) + LEIA-ME, sem Dockerfile', async () => {
-    const project = createProProject('02', 'App Pro', 'vanilla-vite')
+    const project = await createProProject('02', 'App Pro', 'vanilla-vite')
     const { files } = await buildSourceFiles(project)
     expect(files['package.json']).toBeDefined()
     expect(files['vite.config.ts']).toBeDefined()
     expect(files['src/main.ts']).toBeDefined()
     expect(files['LEIA-ME.txt']).toBeDefined()
     expect(files.Dockerfile).toBeUndefined()
+    expect(String(files['LEIA-ME.txt'])).toContain('npm install')
+    expect(String(files['LEIA-ME.txt'])).toContain('npm run dev')
+    expect(String(files['LEIA-ME.txt'])).not.toContain('Open with Live Server')
+  })
+
+  it('pro: guia usa npm ci com lockfile e preserva a documentação do autor', async () => {
+    const project = await createProProject('04', 'Com lock', 'vanilla-vite')
+    project.tree = {
+      ...project.tree,
+      'package-lock.json': { kind: 'file', content: '{"lockfileVersion":3}' },
+      'README.md': { kind: 'file', content: 'Manual do autor' },
+      'CREDITS.md': { kind: 'file', content: 'Créditos e permissões' },
+    }
+    const generated = await buildSourceFiles(project)
+    expect(String(generated.files['LEIA-ME.txt'])).toContain('dependências: npm ci')
+    expect(generated.files['README.md']).toBe('Manual do autor')
+    expect(generated.files['CREDITS.md']).toBe('Créditos e permissões')
+    project.tree['LEIA-ME.txt'] = { kind: 'file', content: 'Instruções do autor' }
+    expect((await buildSourceFiles(project)).files['LEIA-ME.txt']).toBe('Instruções do autor')
   })
 })
 

@@ -97,7 +97,17 @@ describe('POST /api/studio/pro-runtime/build', () => {
     const originalToken = process.env.STUDIO_PRO_RUNTIME_TOKEN
     const runtimeFetch = Object.assign(
       async () =>
-        Response.json({ ok: true, html: '<main>Pronto</main>', output: '', durationMs: 12 }),
+        Response.json({
+          ok: true,
+          artifact: {
+            id: 'a'.repeat(64),
+            url: `https://runtime.test/v1/artifacts/${'a'.repeat(64)}/index.html`,
+            sha256: 'b'.repeat(64),
+            expiresAt: Date.now() + 60_000,
+          },
+          output: '',
+          durationMs: 12,
+        }),
       {
         preconnect: (
           _url: string | URL,

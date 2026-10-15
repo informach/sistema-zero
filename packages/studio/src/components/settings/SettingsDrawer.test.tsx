@@ -1,25 +1,9 @@
-import { afterEach, beforeAll, beforeEach, describe, expect, it, mock } from 'bun:test'
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
-import {
-  CODE_FONT_SIZE_DEFAULT,
-  DEFAULT_AI_MODEL,
-  useSettingsStore,
-} from '../../state/settingsStore'
-import {
-  resolveLearning,
-  resolvePreviewSecurity,
-  resolveStudioConfig,
-  StudioConfigProvider,
-} from '../../studio/config'
+import { afterEach, beforeAll, describe, expect, it, mock } from 'bun:test'
+import { cleanup, render, screen } from '@testing-library/react'
+import { useSettingsStore } from '../../state/settingsStore'
+import { STANDALONE_CONFIG, StudioConfigProvider } from '../../studio/config'
+import { type StudioTutorConfig, StudioTutorProvider, useStudioTutor } from '../../studio/tutor'
 import { SettingsDrawer } from './SettingsDrawer'
-
-function apiKeyInput(): HTMLInputElement {
-  const input = document.querySelector('input[name="openrouter-api-key"]')
-  if (!(input instanceof HTMLInputElement)) {
-    throw new Error('Campo de chave OpenRouter não encontrado.')
-  }
-  return input
-}
 
 describe('SettingsDrawer', () => {
   beforeAll(() => {
@@ -30,95 +14,54 @@ describe('SettingsDrawer', () => {
       this.open = false
     })
   })
-
-  beforeEach(() => {
-    useSettingsStore.setState({
-      aiApiKey: '',
-      aiApiKeyStorage: 'persistent',
-      aiModel: DEFAULT_AI_MODEL,
-      theme: 'dark',
-      codeFontSize: CODE_FONT_SIZE_DEFAULT,
-      loaded: true,
-    })
-  })
-
-  afterEach(() => {
-    cleanup()
-  })
-
-  it('sincroniza o rascunho da chave quando settings carregam com o modal aberto', () => {
-    render(<SettingsDrawer open onClose={() => undefined} />)
-
-    expect(apiKeyInput().value).toBe('')
-
-    act(() => {
-      useSettingsStore.setState({ aiApiKey: 'sk-or-v1-loaded' })
-    })
-
-    expect(apiKeyInput().value).toBe('sk-or-v1-loaded')
-  })
-
-  it('reabre na secao inicial e descarta rascunho antigo', () => {
-    const { rerender } = render(
-      <SettingsDrawer open={false} onClose={() => undefined} initialSection="appearance" />,
-    )
-
-    act(() => {
-      useSettingsStore.setState({ aiApiKey: 'sk-or-v1-existing' })
-    })
-    rerender(<SettingsDrawer open onClose={() => undefined} initialSection="ai" />)
-
-    expect(apiKeyInput().value).toBe('sk-or-v1-existing')
-    expect(document.body.textContent).toContain('Assistente de IA')
-    expect(document.body.textContent).toContain('Chave de API')
-  })
-
-  it('mostra o modo sessão quando a chave não é persistente', () => {
-    useSettingsStore.setState({ aiApiKeyStorage: 'session' })
-
-    render(<SettingsDrawer open onClose={() => undefined} />)
-
-    const checkbox = document.querySelector('input[type="checkbox"]')
-    expect(checkbox).toBeInstanceOf(HTMLInputElement)
-    expect((checkbox as HTMLInputElement).checked).toBe(false)
-    expect(document.body.textContent).toContain('Modo sessão')
-  })
-
-  it('expõe navegação e chave de API com semântica acessível', () => {
-    render(<SettingsDrawer open onClose={() => undefined} />)
-
-    const aiTab = screen.getByRole('tab', { name: 'Assistente de IA' })
-    const appearanceTab = screen.getByRole('tab', { name: 'Aparência' })
-    expect(aiTab.getAttribute('aria-selected')).toBe('true')
-    expect(appearanceTab.getAttribute('aria-selected')).toBe('false')
-
-    const key = screen.getByLabelText('Chave de API')
-    expect(key).toBeInstanceOf(HTMLInputElement)
-    expect(key.getAttribute('spellcheck')).toBe('false')
-
-    fireEvent.keyDown(aiTab, { key: 'ArrowRight' })
-    expect(appearanceTab.getAttribute('aria-selected')).toBe('true')
-    expect(document.activeElement).toBe(appearanceTab)
-  })
-
-  it('abre na Aparência (e não vazio) quando a aba de IA não existe', () => {
-    // Host fixa o modelo e não permite chave do aluno: sem seção de chave nem de
-    // modelo, a aba de IA some. O initialSection default 'ai' não pode deixar o
-    // corpo vazio — o efeito de abertura precisa clampar em 'appearance'.
-    const config = {
-      ...resolveStudioConfig({ ai: { model: 'openrouter/auto', allowUserKey: false } }, undefined),
-      previewSecurity: resolvePreviewSecurity(),
-      learning: resolveLearning(),
-    }
-
-    render(
-      <StudioConfigProvider value={config}>
-        <SettingsDrawer open onClose={() => undefined} />
+  afterEach(cleanup)
+  it('keeps appearance settings and never exposes local keys/models even with legacy AI enabled', () => {
+    useSettingsStore.setState({ aiApiKey: 'old-private-value', aiModel: 'old/model', loaded: true })
+    const { container } = render(
+      <StudioConfigProvider
+        value={{ ...STANDALONE_CONFIG, ai: true, aiConfig: { allowUserKey: true } }}
+      >
+        <SettingsDrawer open onClose={() => {}} />
       </StudioConfigProvider>,
     )
-
-    expect(document.body.textContent).toContain('Aparência')
-    expect(document.body.textContent).toContain('Tema')
-    expect(document.body.textContent).not.toContain('Assistente de IA')
+    expect(screen.getByRole('region', { name: 'Aparência' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Escuro' })).toBeTruthy()
+    expect(container.querySelector('input[name="openrouter-api-key"]')).toBeNull()
+    expect(container.querySelector('select[name="ai-model"]')).toBeNull()
+    expect(document.body.textContent).not.toContain('old-private-value')
+    expect(useSettingsStore.getState().aiApiKey).toBe('old-private-value')
+  })
+  it('legacy AI settings redirects to the same host tutor without reading credentials or requesting inference', () => {
+    const ask = mock(async () => {
+      throw new Error('Unexpected inference')
+    })
+    const config: StudioTutorConfig = {
+      adapter: {
+        ask,
+        loadHistory: async () => ({ messages: [], nextCursor: null }),
+        deleteHistory: async () => {},
+        feedback: async () => {},
+      },
+    }
+    const close = mock(() => {})
+    function Probe() {
+      return <output aria-label="tutor-open">{String(useStudioTutor().open)}</output>
+    }
+    render(
+      <StudioTutorProvider value={config}>
+        <SettingsDrawer open onClose={close} initialSection="ai" />
+        <Probe />
+      </StudioTutorProvider>,
+    )
+    expect(screen.getByLabelText('tutor-open').textContent).toBe('true')
+    expect(close).toHaveBeenCalled()
+    expect(ask).toHaveBeenCalledTimes(0)
+    expect(screen.queryByLabelText('Chave de API')).toBeNull()
+  })
+  it('without a tutor legacy settings explains unavailability and keeps appearance accessible', () => {
+    render(<SettingsDrawer open onClose={() => {}} initialSection="ai" />)
+    expect(screen.getByRole('status').textContent).toContain('não está disponível')
+    expect(screen.getByRole('region', { name: 'Aparência' })).toBeTruthy()
+    expect(screen.queryByLabelText('Chave de API')).toBeNull()
   })
 })

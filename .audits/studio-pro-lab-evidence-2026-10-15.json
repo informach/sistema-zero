@@ -1,0 +1,62 @@
+{
+  "date": "2026-10-15",
+  "scope": "Playground local do Studio; navegador isolado; sem conta real, alterações de produto ou chamadas pagas de IA",
+  "build": {
+    "command": "bun scripts/serve-e2e.ts",
+    "cwd": "packages/studio",
+    "port": 5197,
+    "outputDirectory": ".cache/audit-v2-dist-20261015",
+    "vite": "8.0.16",
+    "modules": 1935,
+    "durationSeconds": 4.75,
+    "result": "success"
+  },
+  "galleryTrace": {
+    "surface": "playground project list with example gallery enabled",
+    "navigation": "reload after first visit; warm cache",
+    "cpuThrottling": "none",
+    "networkThrottling": "none",
+    "lcpMs": 1523,
+    "ttfbMs": 13,
+    "lcpRenderDelayMs": 1509,
+    "cls": 0.1816,
+    "observedDecodedJsBytes": 4343385,
+    "heapUsedBytesSingleSample": 61995268,
+    "limitations": [
+      "Not a cold navigation",
+      "Not production Kids/Next host",
+      "Production host defaults showExamples to false",
+      "Decoded resource bytes are not compressed network transfer",
+      "No gameplay FPS, memory leak or production latency conclusion"
+    ]
+  },
+  "dependencyReproduction": {
+    "template": "three-ts",
+    "three": "0.180.0",
+    "threeTypes": "0.180.0",
+    "typescriptTemplate": "5.9.3",
+    "monaco": "0.52.2",
+    "typescriptEmbeddedWorker": "5.4.5",
+    "initialState": "Preview dev-server opened; Vite connected; Monaco reported TS2792 for import three",
+    "initialDiagnostic": "Cannot find module 'three'. Did you mean to set the 'moduleResolution' option to 'nodenext', or to add aliases to the 'paths' option?",
+    "terminalInstallCommand": "npm install mitt@3.0.1 --save-exact --ignore-scripts --no-audit --no-fund",
+    "terminalInstallOutput": "added 5 packages in 2s",
+    "filesystemDependenciesAfterInstall": { "mitt": "3.0.1", "three": "0.180.0" },
+    "editorDependenciesAfterInstall": { "three": "0.180.0" },
+    "filesystemHasPackageLock": true,
+    "terminalCreateCommand": "echo 'export const terminalProbe = 1' > src/terminal-probe.ts",
+    "createdFileContent": "export const terminalProbe = 1\n",
+    "createdFileVisibleInTree": false,
+    "limitations": [
+      "No real-account persistence-loss test",
+      "Later direct Monaco instrumentation of an inactive model altered the wrong audit document; downstream preview errors from that experiment are excluded from product findings",
+      "Installation and initial dependency/editor mismatch were observed before that instrumentation",
+      "Shell file creation and absence in UI were independently checked"
+    ]
+  },
+  "freshTests": [
+    { "scope": "Studio Terminal, terminalProjectFiles, MonacoTabs, tutor", "files": 4, "passed": 37, "failed": 0, "assertions": 106 },
+    { "scope": "member-shell studio-zappy", "files": 1, "passed": 61, "failed": 0, "assertions": 277 }
+  ],
+  "cleanup": { "auditBrowserPageClosed": true, "previewServerStopped": true }
+}

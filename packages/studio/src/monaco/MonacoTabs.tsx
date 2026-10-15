@@ -11,6 +11,12 @@ import {
   isModelInPathPrefix,
   resolveModelPathPrefix,
 } from './modelPaths'
+import { proLanguage } from './pro/languages'
+import type {
+  attachProLanguageService,
+  ProEditorDiagnostic,
+  ProProjectLanguageInput,
+} from './pro/session'
 import {
   configureMonacoWorkers,
   getMonacoModelRegistry,
@@ -96,6 +102,8 @@ const FORMATTABLE_LANGUAGES: ReadonlySet<string> = new Set([
   'css',
   'javascript',
   'typescript',
+  'sz-pro-typescript',
+  'sz-pro-javascript',
   'json',
 ])
 
@@ -120,6 +128,9 @@ export interface MonacoHighlight {
 }
 
 export interface MonacoTabsProps {
+  /** Isolated Pro service; includes closed source files and actual installed declarations. */
+  proProject?: ProProjectLanguageInput
+  onProDiagnostics?: (items: ProEditorDiagnostic[]) => void
   files: MonacoTabsFile[]
   activeFile?: string
   onChange: (fileName: string, value: string) => void
@@ -264,6 +275,8 @@ function scheduleLanguageServicesLoad(): () => void {
 }
 
 export function MonacoTabs({
+  proProject,
+  onProDiagnostics,
   files,
   activeFile,
   onChange,
@@ -335,7 +348,56 @@ export function MonacoTabs({
     null,
   )
 
-  useEffect(() => scheduleLanguageServicesLoad(), [])
+  const proMode = proProject !== undefined
+  const proInput = useRef(proProject)
+  proInput.current = proProject
+  const proNavigate = useRef(onActiveFileChange)
+  proNavigate.current = onActiveFileChange
+  const proDiagnostics = useRef(onProDiagnostics)
+  proDiagnostics.current = onProDiagnostics
+  const proSession = useRef<ReturnType<typeof attachProLanguageService> | null>(null)
+  const [languageIssue, setLanguageIssue] = useState<string | null>(null)
+  const [languageAttempt, setLanguageAttempt] = useState(0)
+  useEffect(() => (proMode ? undefined : scheduleLanguageServicesLoad()), [proMode])
+  // biome-ignore lint/correctness/useExhaustiveDependencies: retry creates a fresh worker and resends the complete project.
+  useEffect(() => {
+    if (!proMode || !mountedEditor) return
+    let active = true
+    let dispose: (() => void) | undefined
+    setLanguageIssue('Conferindo código e bibliotecas…')
+    void Promise.all([import('./pro/session'), import('monaco-editor/esm/vs/editor/editor.api.js')])
+      .then(([module, monaco]) => {
+        if (!active) return
+        const session = module.attachProLanguageService(
+          monaco,
+          saltedPrefix,
+          () => proInput.current ?? { tree: {}, dependencies: {} },
+          (message) => {
+            if (active) setLanguageIssue(message)
+          },
+          {
+            editor: mountedEditor,
+            openFile: (path) => proNavigate.current?.(path),
+            diagnostics: (items) => proDiagnostics.current?.(items),
+          },
+        )
+        proSession.current = session
+        dispose = () => {
+          session.dispose()
+          if (proSession.current === session) proSession.current = null
+        }
+      })
+      .catch((error: unknown) => {
+        if (active) setLanguageIssue(error instanceof Error ? error.message : String(error))
+      })
+    return () => {
+      active = false
+      dispose?.()
+    }
+  }, [proMode, mountedEditor, saltedPrefix, languageAttempt])
+  useEffect(() => {
+    if (proProject) proSession.current?.update()
+  }, [proProject])
 
   // Pré-cria os models das DEMAIS abas assim que o editor monta (a ativa já foi
   // criada pelo @monaco-editor/react). Sem isto, a 1ª visita a cada aba criava o
@@ -349,9 +411,13 @@ export function MonacoTabs({
     prewarmedRef.current = true
     prewarmEditorModels(
       saltedPrefix,
-      files.map((f) => ({ name: f.name, language: inferLanguage(f.name), value: f.value })),
+      files.map((f) => ({
+        name: f.name,
+        language: proMode ? proLanguage(inferLanguage(f.name)) : inferLanguage(f.name),
+        value: f.value,
+      })),
     )
-  }, [mountedEditor, saltedPrefix])
+  }, [mountedEditor, saltedPrefix, proMode])
 
   useEffect(() => {
     const prefix = saltedPrefix
@@ -451,7 +517,7 @@ export function MonacoTabs({
       // As contribuições de linguagem são estáticas (ver ./workers); o aguardo
       // fica como cinto de segurança barato e ponto de injeção dos testes.
       try {
-        await loadLanguageServices()
+        if (!editor.getModel()?.getLanguageId().startsWith('sz-pro-')) await loadLanguageServices()
       } catch (err) {
         console.warn('[studio] Formatar: serviços de linguagem não carregaram', err)
         onFormatIssueRef.current?.('services-failed')
@@ -804,12 +870,28 @@ export function MonacoTabs({
           <div className="flex items-center border-l border-sz-border px-2">{tabsRightSlot}</div>
         )}
       </div>
+      {languageIssue && (
+        <div role="status" className="shrink-0 px-3 py-1 text-xs">
+          {languageIssue}
+          {languageIssue !== 'Conferindo código e bibliotecas…' && (
+            <button
+              type="button"
+              className="ml-2 underline"
+              onClick={() => setLanguageAttempt((attempt) => attempt + 1)}
+            >
+              Reiniciar análise
+            </button>
+          )}
+        </div>
+      )}
       <div className="min-h-0 flex-1">
         <Editor
           height="100%"
           theme={monacoThemeName(theme)}
           path={buildMonacoModelPath(saltedPrefix, file.name)}
-          defaultLanguage={inferLanguage(file.name)}
+          defaultLanguage={
+            proMode ? proLanguage(inferLanguage(file.name)) : inferLanguage(file.name)
+          }
           defaultValue={file.value}
           onChange={handleChange}
           onMount={handleMount}

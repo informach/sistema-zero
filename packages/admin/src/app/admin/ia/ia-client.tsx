@@ -37,6 +37,7 @@ const FEATURE_LABELS: Record<string, string> = {
   'pensa-synthesis': 'Pensa — gerações (carta/desenho/missões)',
   'studio-describe': 'Mural — descrição do jogo',
   'studio-zappy': 'Zappy do Studio',
+  'studio-builder': 'Construção no Studio Pro',
 }
 
 interface PanelErrors {
@@ -155,7 +156,7 @@ export function AiUsageClient() {
     <div className="space-y-6">
       <AdminHeader
         title="Uso de IA"
-        description="Consumo da quota de IA por conta (50/dia + 500/mês) — Pensa, descrição do Mural e Zappy do Studio."
+        description="Interações por família e custos registrados das chamadas de IA do Estúdio."
         action={
           <div className="flex items-center gap-2">
             <input
@@ -178,7 +179,7 @@ export function AiUsageClient() {
         <OverviewCard
           title="Interações no mês"
           value={fmt(stats?.monthUsed)}
-          description="Chamadas de IA pagas pelo servidor"
+          description="Interações da franquia incluída"
         />
         <OverviewCard title="Hoje" value={fmt(stats?.todayUsed)} description="Interações do dia" />
         <OverviewCard
@@ -188,6 +189,61 @@ export function AiUsageClient() {
         />
       </div>
 
+      {stats?.studioCosts && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Custo de IA do Estúdio</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="mb-3 text-muted-foreground text-sm">
+              Inclui reparos internos. Valores não confirmados preservam a estimativa da chamada;
+              reservas são liberadas ao encerrar ou expirar a operação. Os demais produtos ainda
+              aparecem somente nos contadores de interações.
+            </p>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Fonte / modelo</TableHead>
+                  <TableHead>Uso</TableHead>
+                  <TableHead>Chamadas</TableHead>
+                  <TableHead>Confirmado (US$)</TableHead>
+                  <TableHead>Não confirmado (US$)</TableHead>
+                  <TableHead>Reservado (US$)</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {stats.studioCosts.map((row) => (
+                  <TableRow key={`${row.source}:${row.model}:${row.purpose}:${row.privileged}`}>
+                    <TableCell>
+                      {row.source === 'platform' ? 'Sistema Zero' : 'OpenRouter do responsável'}
+                      <br />
+                      {row.model}
+                    </TableCell>
+                    <TableCell>
+                      {row.purpose === 'tutor' ? 'Tutor' : 'Construtor'}
+                      {row.privileged ? ' · equipe' : ''}
+                    </TableCell>
+                    <TableCell>{row.calls}</TableCell>
+                    {[row.confirmedMicroUsd, row.uncertainMicroUsd, row.reservedMicroUsd].map(
+                      (value, index) => (
+                        <TableCell
+                          key={['confirmed', 'uncertain', 'reserved'][index]}
+                          className="tabular-nums"
+                        >
+                          {(value / 1_000_000).toLocaleString('pt-BR', {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 6,
+                          })}
+                        </TableCell>
+                      ),
+                    )}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>

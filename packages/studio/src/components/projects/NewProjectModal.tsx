@@ -36,6 +36,8 @@ export function NewProjectModal({
   const [kind, setKind] = useState<'basic' | 'pro'>('basic')
   const [templateId, setTemplateId] = useState(templates[0]?.id ?? '')
   const [submitting, setSubmitting] = useState(false)
+  const [creationError, setCreationError] = useState<string | null>(null)
+  const creating = useRef(false)
   const inputRef = useRef<HTMLInputElement | null>(null)
 
   // Reseta os campos SÓ na transição fechado→aberto. `defaultName`/`templates`
@@ -47,6 +49,7 @@ export function NewProjectModal({
       setName(defaultName)
       setKind('basic')
       setTemplateId(templates[0]?.id ?? '')
+      setCreationError(null)
     }
     openedRef.current = open
   })
@@ -61,24 +64,33 @@ export function NewProjectModal({
 
   const submit = async () => {
     // Guard também aqui: o Enter no input chama submit() sem passar pelo botão.
-    if (submitting || !canSubmit) return
+    if (creating.current || !canSubmit) return
+    creating.current = true
     setSubmitting(true)
+    setCreationError(null)
     try {
       const opts = kind === 'pro' && templateId ? { kind: 'pro' as const, templateId } : undefined
       await onCreate(name.trim() || defaultName, opts)
+    } catch {
+      setCreationError('Não foi possível criar o projeto. Confira a conexão e tente novamente.')
     } finally {
+      creating.current = false
       setSubmitting(false)
     }
   }
 
   const trimmed = name.trim()
   const duplicate = Boolean(trimmed) && (existingNames?.includes(trimmed) ?? false)
-  const canSubmit = trimmed && !duplicate && (kind === 'basic' || Boolean(templateId))
+  const selectedAvailable =
+    professionalAvailable && templates.some((template) => template.id === templateId)
+  const canSubmit = trimmed && !duplicate && (kind === 'basic' || selectedAvailable)
 
   return (
     <Modal
       open={open}
-      onClose={onClose}
+      onClose={() => {
+        if (!creating.current) onClose()
+      }}
       title={t('projects.newModal.title')}
       footer={
         <>
@@ -101,6 +113,7 @@ export function NewProjectModal({
         <input
           ref={inputRef}
           name="new-project-name"
+          disabled={submitting}
           autoComplete="off"
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -117,9 +130,20 @@ export function NewProjectModal({
           {t('projects.newModal.duplicate')}
         </p>
       )}
+      {creationError && (
+        <p role="alert" className="mt-2 text-sm text-sz-error">
+          {creationError}
+        </p>
+      )}
+      {kind === 'pro' && !selectedAvailable && (
+        <p role="status" className="mt-2 text-sm text-sz-fg-soft">
+          Este modelo deixou de estar disponível para novos projetos. Seu nome foi preservado;
+          escolha outro modelo ou reabra esta janela.
+        </p>
+      )}
 
       {professionalAvailable && (
-        <fieldset className="mt-4 space-y-2">
+        <fieldset className="mt-4 space-y-2" disabled={submitting}>
           <legend className="text-xs font-semibold uppercase text-sz-fg-mute">
             Tipo de projeto
           </legend>
@@ -134,7 +158,7 @@ export function NewProjectModal({
             <span>
               <span className="font-medium text-sz-fg">Básico</span>
               <span className="block text-xs text-sz-fg-mute">
-                Crie com blocos e código, vendo o resultado na hora. Perfeito para começar.
+                Crie com blocos, vendo o resultado na hora. Perfeito para começar.
               </span>
             </span>
           </label>
@@ -149,7 +173,7 @@ export function NewProjectModal({
             <span>
               <span className="font-medium text-sz-fg">Profissional</span>
               <span className="block text-xs text-sz-fg-mute">
-                Programe como os profissionais, com vários arquivos e só código (sem blocos).
+                Crie jogos 2D, mundos 3D e aplicativos com código, materiais e ajuda do Zappy.
               </span>
             </span>
           </label>
@@ -163,6 +187,11 @@ export function NewProjectModal({
                 onChange={(e) => setTemplateId(e.target.value)}
                 className="mt-1 w-full rounded border border-sz-border bg-sz-bg px-3 py-2 text-sm text-sz-fg outline-none focus:border-sz-accent"
               >
+                {!selectedAvailable && (
+                  <option value={templateId} disabled>
+                    Modelo indisponível
+                  </option>
+                )}
                 {templates.map((tpl) => (
                   <option key={tpl.id} value={tpl.id}>
                     {tpl.name}

@@ -1,4 +1,4 @@
-import { STUDIO_PROJECT_FORMAT_VERSION } from '@sistemazero/core/studio'
+import { STUDIO_PROJECT_FORMAT_VERSION } from '@sistemazero/core/studio/project-format'
 
 /** Browser-independent document factory, also used by the live workspace service. */
 export function createBlankProjectSnapshot(id: string, name: string) {

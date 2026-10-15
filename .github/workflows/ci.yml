@@ -36,11 +36,10 @@ concurrency:
 jobs:
   ci:
     name: ci
-    # 30min: o typecheck do studio ficou pesado (~16min) com o volume de IR dos
-    # exemplos de jogo (trilogias Clear Code + jogos 3D); antes 20min estourava e
-    # o job era CANCELADO (GitHub marca timeout como "cancelled", não "failure").
+    # Typecheck do Studio (~16 min) + imagem/playtests isolados + exports com npm ci.
+    # O limite do job inclui essas provas reais; não altera orçamentos do produto.
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     services:
       fiscal-postgres:
         image: postgres:16
@@ -75,6 +74,12 @@ jobs:
       - name: Construir imagem do Studio Pro
         working-directory: packages/studio-runtime
         run: bun run build:image
+
+      - name: Verificar imagem e objetivos dos kits no sandbox sem rede
+        working-directory: packages/studio-runtime
+        run: |
+          bun tests/image-smoke.ts
+          bun tests/validation-smoke.ts
 
       - name: Lint (biome ci)
         run: bun run ci
@@ -116,12 +121,26 @@ jobs:
       # Worker cujo módulo ainda transpilava no pool de threads (oven-sh/bun#33936, corrigido no
       # Bun 1.4.0). O conserto no código é o aperto de mão de `packages/molda/src/workers/
       # workerHandshake.ts` (nenhum worker é encerrado antes de anunciar que carregou).
+      - name: Preparar navegadores das provas de persistência do Studio
+        working-directory: packages/studio
+        run: bunx playwright install --with-deps chromium webkit
+
       - name: Testes (todos os pacotes)
         run: bun run --filter '*' test
 
       - name: Verificar IR gerada dos exemplos 3D
         working-directory: packages/studio
         run: bun run check:game-3d-examples
+
+      - name: Verificar fontes, regras e exports dos kits de jogos
+        working-directory: packages/studio
+        run: |
+          bun run check:pro-kits
+          bun run check:pro-typescript-libs
+          bun run test:canvas-survival
+          bun run test:grid-games
+          bun run verify:canvas-export
+          bun run verify:grid-export
 
       # ⚠️ Este portão nunca rodou no CI: ele só era encadeado pelo `test:coverage` do
       # pacote, e o passo global chama `test`. Ele reprova quando um módulo declarado
@@ -160,11 +179,15 @@ jobs:
       - name: Criar banco descartável para upgrade das aulas
         run: PGPASSWORD=postgres psql -h localhost -p 55432 -U postgres -d postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE sz_aulas_qa_ci"
 
+      - name: Criar banco descartável para ledger e revisões do Studio
+        run: PGPASSWORD=postgres psql -h localhost -p 55432 -U postgres -d postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE studio_pro_review"
+
       - name: Testes DB members (Postgres real)
         run: cd packages/members && bun test tests/db
         env:
           TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/sistemazero
           LEARNING_QA_DATABASE_URL: postgres://postgres:postgres@localhost:55432/sz_aulas_qa_ci
+          STUDIO_REVIEW_DATABASE_URL: postgres://postgres:postgres@localhost:55432/studio_pro_review
 
       - name: Testes DB referrals (Postgres real)
         run: cd packages/referrals && bun test tests/db

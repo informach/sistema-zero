@@ -1,6 +1,8 @@
 'use client'
 
+import { isStudioProArtifact } from '@sistemazero/core/studio'
 import { sessionFetch as fetch } from '../../lib/session-fetch'
+import { createStudioPublicationAdapter } from '../../lib/studio-publication-adapter'
 
 import '@sistemazero/studio/styles.css'
 import type {
@@ -291,27 +293,30 @@ function LessonStudioBlockView({
             courseSlug: player.courseSlug,
             lessonId,
             blockId,
-            // O BFF só precisa da árvore para compilar. Não envie assets, estado
-            // clássico nem metadados fora do runtime; isso mantém o envelope sob
-            // a cota que o editor e o Worker validam.
-            project: { kind: 'pro', tree: project.tree },
+            // Assets seguem como materiais; o BFF valida e materializa os bytes.
+            project: {
+              kind: 'pro',
+              tree: project.tree,
+              assets: project.assets,
+              proMeta: project.proMeta,
+            },
           }),
           signal,
         })
         const body = (await res.json().catch(() => null)) as {
-          html?: string
+          artifact?: unknown
           output?: string
           durationMs?: number
           error?: { message?: string; output?: string }
         } | null
-        if (!res.ok || !body?.html) {
+        if (!res.ok || !body || !isStudioProArtifact(body.artifact)) {
           const error = new Error(body?.error?.message ?? 'Não foi possível compilar o projeto.') as
             | (Error & { output?: string })
             | Error
           if (body?.error?.output) (error as Error & { output?: string }).output = body.error.output
           throw error
         }
-        return { html: body.html, output: body.output, durationMs: body.durationMs }
+        return { artifact: body.artifact, output: body.output, durationMs: body.durationMs }
       },
     }
   }, [isProLesson, player?.courseSlug, lessonId, blockId])
@@ -685,13 +690,15 @@ function LessonStudioBlockView({
       titleEditable: false,
       presetDescription,
       presetCoverUrl,
-      async publish({ project, coverDataUrl, useAdminCover, title, description }) {
+      proVerifiedCover: true,
+      publication: createStudioPublicationAdapter(),
+      async publish({ project, coverDataUrl, useAdminCover, title, description, requestId }) {
         const form = new FormData()
         form.set('lessonId', lessonId)
         form.set('blockId', blockId)
         form.set('description', description)
         form.set('title', title)
-        form.set('clientIdempotencyKey', crypto.randomUUID())
+        form.set('clientIdempotencyKey', requestId ?? crypto.randomUUID())
         form.set(
           'project',
           new File([JSON.stringify(project)], 'project.json', { type: 'application/json' }),
@@ -708,12 +715,17 @@ function LessonStudioBlockView({
         const body = (await res.json().catch(() => null)) as {
           muralUrl?: string
           playUrl?: string
+          publicationId?: string
           error?: { message?: string }
         } | null
         if (!res.ok) {
           throw new Error(body?.error?.message ?? 'Não foi possível publicar agora.')
         }
-        return { muralUrl: body?.muralUrl, playUrl: body?.playUrl }
+        return {
+          muralUrl: body?.muralUrl,
+          playUrl: body?.playUrl,
+          publicationId: body?.publicationId,
+        }
       },
       // Publicou: TRAVA o compartilhar da aula (1 vez só, persistido local) e entrega os
       // links ao host (kids abre a celebração); o ShareDialog fecha sozinho.

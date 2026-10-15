@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+tests\studio-builder-route.test.ts:
+(pass) Studio builder browser boundary > session, active status, support, entitlement, level and origin are checked before creating work [16.00ms]
+(pass) Studio builder browser boundary > rejects classic mode, forged model, worker operations, malformed revisions and oversized payloads [15.00ms]
+(pass) Studio builder browser boundary > pins the server model and actor, returns only the public view
+(pass) Studio builder browser boundary > durable cancellation is returned even if ledger finishing temporarily fails
+(pass) Studio builder browser boundary > a Pensa project cannot create a builder job without the authorized journey
+
+tests\studio-game-knowledge.test.ts:
+(pass) every game kit has engineering guidance and bounded task-specific provenance
+(pass) selection only adds pertinent patterns and never executes request instructions
+
+tests\studio-pro-runtime.test.ts:
+(pass) opaqueStudioRuntimeExecutionId > é estável para a mesma autorização e não expõe os identificadores
+(pass) studioProRuntimePublicStatus > preserva erros acionáveis de contrato, tamanho e compilação
+(pass) buildStudioProProject > recusa a cota de arquivos antes de chamar o runtime externo
+
+ 10 pass
+ 0 fail
+ 85 expect() calls
+Ran 10 tests across 3 files. [476.00ms]

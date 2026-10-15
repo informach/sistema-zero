@@ -16,7 +16,10 @@ export class InvalidJsonBodyError extends Error {
  * Lê JSON contando bytes do stream. O Content-Length só permite falhar cedo:
  * requests podem omiti-lo ou fornecê-lo incorretamente.
  */
-export async function readJsonBodyWithLimit(request: Request, maxBytes: number): Promise<unknown> {
+export async function readJsonBodyWithLimit(
+  request: Pick<Request, 'headers' | 'body'>,
+  maxBytes: number,
+): Promise<unknown> {
   const declaredLength = Number(request.headers.get('content-length'))
   if (Number.isFinite(declaredLength) && declaredLength > maxBytes) {
     throw new RequestBodyTooLargeError(maxBytes)

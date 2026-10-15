@@ -1,3 +1,4 @@
+import type { StudioProBuilderPage, StudioProBuilderView } from '@sistemazero/core/studio'
 import type {
   StudioTutorAdapter,
   StudioTutorAskResult,
@@ -59,7 +60,81 @@ export function createStudioZappyAdapter(
 ): StudioTutorAdapter {
   const currentTaskId = () =>
     typeof options.pensaTaskId === 'function' ? options.pensaTaskId() : options.pensaTaskId
+  const build = async (command: unknown, signal?: AbortSignal) => {
+    const response = await fetch(`${baseUrl}/build`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(command),
+      cache: 'no-store',
+      signal: signal
+        ? AbortSignal.any([signal, AbortSignal.timeout(170_000)])
+        : AbortSignal.timeout(170_000),
+    })
+    return (await requireOk<{ job: StudioProBuilderView | null }>(response)).job
+  }
   return {
+    builder: {
+      async availability(templateId, signal) {
+        const response = await fetch(`${baseUrl}/build`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ operation: 'availability', templateId }),
+          cache: 'no-store',
+          signal: signal
+            ? AbortSignal.any([signal, AbortSignal.timeout(QUICK_TIMEOUT_MS)])
+            : timeout(QUICK_TIMEOUT_MS),
+        })
+        return requireOk<{ available: boolean; reason?: string }>(response)
+      },
+      async create(input, signal) {
+        const pensaTaskId = currentTaskId()
+        const job = await build(
+          {
+            operation: 'create',
+            kind: 'pro',
+            mode: 'code',
+            ...input,
+            ...(pensaTaskId ? { pensaTaskId } : {}),
+          },
+          signal,
+        )
+        if (!job) throw new Error('A construção não foi registrada.')
+        return job
+      },
+      latest: (projectId, signal) => build({ operation: 'latest', projectId }, signal),
+      get: (input, signal) => build({ operation: 'get', ...input }, signal),
+      discard: (input) => build({ operation: 'discard', ...input }),
+      refreshPreview: (input, signal) => build({ operation: 'refresh-preview', ...input }, signal),
+      async checkApplication(input, signal) {
+        const response = await fetch(`${baseUrl}/build`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ operation: 'check-application', ...input }),
+          cache: 'no-store',
+          signal: signal
+            ? AbortSignal.any([signal, AbortSignal.timeout(QUICK_TIMEOUT_MS)])
+            : timeout(QUICK_TIMEOUT_MS),
+        })
+        return requireOk<{ allowed: boolean; reason?: string }>(response)
+      },
+      async list(input, signal) {
+        const response = await fetch(`${baseUrl}/build`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ operation: 'list', ...input }),
+          cache: 'no-store',
+          signal: signal
+            ? AbortSignal.any([signal, AbortSignal.timeout(QUICK_TIMEOUT_MS)])
+            : timeout(QUICK_TIMEOUT_MS),
+        })
+        return requireOk<StudioProBuilderPage>(response)
+      },
+      advance: (input, signal) => build({ operation: 'advance', ...input }, signal),
+      cancel: (input) => build({ operation: 'cancel', ...input }),
+      async removeProject(projectId, signal) {
+        await build({ operation: 'remove-project', projectId }, signal)
+      },
+    },
     async loadHistory(projectId, before) {
       const query = new URLSearchParams({ projectId })
       if (before) query.set('before', before)

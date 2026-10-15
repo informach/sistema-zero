@@ -13,6 +13,9 @@ import { createPensaAiRoutes } from './routes/pensa-ai'
 import { createPensaJourneyRoutes } from './routes/pensa-journey'
 import { createPrivateNarrationRoutes } from './routes/private-narration'
 import { createStudioRoutes } from './routes/studio'
+import { createStudioAiReconcileRoutes } from './routes/studio-ai-reconcile'
+import { createStudioBuilderRoutes } from './routes/studio-builder'
+import { createStudioOpenRouterRoutes } from './routes/studio-openrouter'
 import { createStudioZappyRoutes } from './routes/studio-zappy'
 import { createStudyAccessRoutes } from './routes/study-access'
 import { createVoiceRoutes } from './routes/voice'
@@ -87,6 +90,9 @@ export function createShell(cfg: ShellConfig) {
     ...createHelpdeskRoutes({ gateway, session, audience: cfg.audience }),
     ...createStudioRoutes({ hub, members, media }),
     ...createStudioZappyRoutes({ members, session }),
+    ...createStudioBuilderRoutes({ members, session }),
+    ...createStudioOpenRouterRoutes({ members, session, cookieBase: cfg.cookieBase }),
+    ...createStudioAiReconcileRoutes({ members }),
     ...createCertificateRoutes({ members, session }),
     ...createPensaRoutes({ members, session }),
     ...createPensaAiRoutes({ members, session }),

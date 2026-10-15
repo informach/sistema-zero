@@ -54,7 +54,6 @@ export const STUDIO_MENU_LAYOUT = [
     items: [
       { id: 'console', labelKey: 'panel.console' },
       { id: 'terminal', labelKey: 'panel.terminal' },
-      { id: 'ai', labelKey: 'panel.ai' },
     ],
   },
   {

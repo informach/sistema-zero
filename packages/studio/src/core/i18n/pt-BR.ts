@@ -328,10 +328,10 @@ export const ptBR: Record<string, string> = {
 
   'convert.title': 'Virar profissional?',
   'convert.body':
-    'No projeto profissional você programa como os profissionais de verdade: vários arquivos e pastas, editando tudo pelo Código. Os blocos ficam para trás. Esta ação não pode ser desfeita.',
+    'No modo Pro você trabalha com código, arquivos, pastas e bibliotecas. Antes de converter, vamos guardar uma cópia completa deste jogo em Blocos na sua lista de projetos.',
   'convert.legacyTitle': 'Este projeto precisa virar profissional',
   'convert.legacyBody':
-    'Este projeto tem {count} arquivo(s) além dos três básicos, que o modo Blocos e Ponte não edita. Quer transformá-lo num projeto profissional (Vite) para trabalhar com todos eles? Esta ação não pode ser desfeita.',
+    'Este projeto tem {count} arquivo(s) além dos três básicos. No modo Pro você pode editar todos eles. Vamos guardar uma cópia completa do original em Blocos antes de converter.',
   'convert.confirm': 'Virar profissional',
   'convert.cancel': 'Cancelar',
   'convert.later': 'Agora não',

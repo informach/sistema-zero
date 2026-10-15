@@ -39,6 +39,13 @@ export const EnvSchema = z
       .optional(),
     // Bearer enviado pelo scheduler ao worker de limpeza R2 pós-TTL.
     CREATION_CLEANUP_CRON_SECRET: z.string().min(24).optional(),
+    STUDIO_AI_RECONCILE_CRON_SECRET: z.string().min(24).optional(),
+    STUDIO_PRO_RUNTIME_URL: z.string().url().optional(),
+    STUDIO_PRO_RUNTIME_TOKEN: z.string().min(16).optional(),
+    STUDIO_PRO_KITS_CREATE: z.string().default(''),
+    STUDIO_PRO_KITS_BUILDER: z.string().default(''),
+    STUDIO_PRO_KITS_PUBLISH: z.string().default(''),
+    OPENROUTER_STUDIO_BUILDER_MODEL: z.string().optional(),
     // Chave estável do cookie temporário da Área dos Pais do community-kids. Em
     // produção aquele app a exige no boot; aqui permanece opcional porque o shell
     // também serve apps que não possuem esse portão.

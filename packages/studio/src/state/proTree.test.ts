@@ -144,7 +144,7 @@ describe('sanitizeProTree', () => {
     expect(sanitizeProTree({ '../x': { kind: 'file', content: '' } })).toBeNull()
     expect(sanitizeProTree({ 'a.ts': { kind: 'weird' } })).toBeNull()
     expect(sanitizeProTree({ 'a.ts': { kind: 'file' } })).toBeNull()
-    expect(sanitizeProTree({})).toBeNull()
+    expect(sanitizeProTree({})).toEqual({})
     expect(sanitizeProTree(null)).toBeNull()
     expect(sanitizeProTree([])).toBeNull()
   })
