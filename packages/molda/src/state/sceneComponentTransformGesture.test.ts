@@ -18,10 +18,56 @@ import { meshComponentEdges } from '../scene/meshComponents'
 import { meshMovementWeights } from '../scene/meshSoftMovement'
 import { verticesOfMeshFaces } from '../scene/meshVertices'
 import { migrateLegacyModel } from '../scene/migrateLegacy'
+import { sceneGeometryMesh } from '../scene/parametricGeometry'
 import { readSceneDocument } from '../scene/readDocument'
 import { makeModel } from '../testing/fixtures'
 import { createDocumentEditorStore } from './editorStore'
 import { createSceneComponentTransformGesture } from './sceneComponentTransformGesture'
+
+test('selecting primitive topology never converts it; the first component drag converts and transforms in one undo', () => {
+  const source = migrateLegacyModel(makeModel()).document
+  const node = source.nodes.find((node) => node.id === 'body')!
+  if (node.kind !== 'mesh') throw new Error('Missing mesh node')
+  const geometry = source.geometries.find((geometry) => geometry.id === node.geometryId)!
+  expect(geometry.kind).not.toBe('mesh')
+  const mesh = sceneGeometryMesh(geometry)
+  const editor = createDocumentEditorStore({
+    asset: source,
+    sizeOf: structuredBytes,
+    persistence: { save: async () => {} },
+    autosaveMs: 60_000,
+  })
+  const errors: unknown[] = []
+  const gesture = createSceneComponentTransformGesture(editor, (error) => errors.push(error))
+  try {
+    expect(
+      gesture.begin(
+        { nodeId: node.id, mode: 'vertex', ids: [Object.keys(mesh.vertices)[0]!] },
+        mesh,
+      ),
+    ).toBe(true)
+    expect(editor.getState().asset).toBe(source)
+    expect(gesture.preview(identityMatrix())).toBe(true)
+    expect(editor.getState().asset).toBe(source)
+    const delta = identityMatrix()
+    delta[12] = 0.5
+    expect(gesture.preview(delta)).toBe(true)
+    expect(gesture.end(true)).toBe(true)
+    const changed = editor.getState().asset.geometries.find((entry) => entry.id === geometry.id)!
+    expect(changed.kind).toBe('mesh')
+    if (changed.kind === 'mesh')
+      for (const [id, face] of Object.entries(changed.faces))
+        expect(face.corners.map((corner) => corner.uv)).toEqual(
+          mesh.faces[id]!.corners.map((corner) => corner.uv),
+        )
+    editor.getState().undo()
+    expect({ ...editor.getState().asset, updatedAt: source.updatedAt }).toEqual(source)
+    expect(errors).toEqual([])
+  } finally {
+    gesture.cancel()
+    editor.getState().dispose()
+  }
+})
 
 function setup() {
   const matrix = identityMatrix()

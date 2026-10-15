@@ -7,5 +7,5 @@ export function workshopLights() {
   sun.position.set(12, 24, 10)
   const fill = new DirectionalLight(0xffffff, 0.5)
   fill.position.set(-14, 8, -12)
-  return [hemisphere, sun, fill]
+  return [hemisphere, sun, fill] as const
 }

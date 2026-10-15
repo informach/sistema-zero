@@ -2,20 +2,23 @@ import { useSyncExternalStore } from 'react'
 import { COPY } from '../../../core/copy'
 import type { SceneAnimationPoseGesture } from '../../../state/SceneAnimationPoseGesture'
 import { useMoldaToolAccess } from '../../toolAccess'
-import { CircleDot, X } from '../../ui/icons'
+import { DiamondPlus, X } from '../../ui/icons'
 
-/**
- * O cartão da POSE, no pé do palco do Animar (a tela-modelo, 11/09/2026): gravar ao soltar as
- * alças, "Gravar pose ajustada" em pílula azul e "Cancelar ajuste da pose" em contorno.
- */
+/** The transport and standalone canvas share the same pose owner and auto-key setting. */
 export function SceneAnimationPoseControls({
   gesture,
   enabled,
   compact = false,
+  onRecord,
+  onAutoKey,
+  canMark = false,
 }: {
   gesture: SceneAnimationPoseGesture
   enabled: boolean
   compact?: boolean
+  onRecord?(): void
+  onAutoKey?(enabled: boolean): void
+  canMark?: boolean
 }) {
   const snapshot = useSyncExternalStore(gesture.subscribe, gesture.getSnapshot, gesture.getSnapshot)
   const copy = COPY.scene
@@ -26,19 +29,23 @@ export function SceneAnimationPoseControls({
       aria-label={copy.animationPoseAdjust}
       className={compact ? 'contents' : 'mld-stage-card pointer-events-auto space-y-2 px-4 py-3'}
     >
-      {!compact && (
-        <label className="flex min-h-11 items-center gap-2 text-sm font-bold text-mld-text">
+      {
+        <label className="mld-auto-key" data-enabled={snapshot.autoKey}>
+          <span aria-hidden="true" className="mld-record-dot" />
+          <span>{copy.animationPoseAutoKey}</span>
           <input
             name="animationPoseAutoKey"
             type="checkbox"
-            className="size-5 accent-mld-accent"
+            className="sr-only"
             checked={snapshot.autoKey}
-            disabled={!enabled || snapshot.pending || snapshot.dragging}
-            onChange={(event) => gesture.setAutoKey(event.target.checked)}
+            disabled={!enabled || snapshot.dragging || (!onAutoKey && snapshot.pending)}
+            onChange={(event) =>
+              onAutoKey ? onAutoKey(event.target.checked) : gesture.setAutoKey(event.target.checked)
+            }
           />
-          {copy.animationPoseAutoKey}
+          <span aria-hidden="true" className="mld-auto-switch" />
         </label>
-      )}
+      }
       <div
         className={
           compact ? 'flex shrink-0 items-center gap-1' : 'flex flex-wrap items-center gap-2'
@@ -48,10 +55,12 @@ export function SceneAnimationPoseControls({
         <button
           type="button"
           className={`sz-tool-pill ${compact ? 'mld-pill-sun' : 'sz-tool-pill--primary'} text-sm disabled:cursor-not-allowed disabled:opacity-50`}
-          disabled={!enabled || !snapshot.pending || snapshot.dragging || !!snapshot.error}
-          onClick={gesture.record}
+          disabled={
+            !enabled || (!snapshot.pending && !canMark) || snapshot.dragging || !!snapshot.error
+          }
+          onClick={onRecord ?? gesture.record}
         >
-          <CircleDot aria-hidden="true" />
+          <DiamondPlus aria-hidden="true" />
           {copy.animationPoseRecord}
         </button>
         {(!compact || snapshot.pending) && (

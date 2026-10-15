@@ -545,6 +545,8 @@ export class SceneRenderResource {
     }
     if (!mesh) {
       mesh = skin ? skin.createMesh(materials) : new Mesh(geometry.geometry, materials)
+      mesh.castShadow = true
+      mesh.receiveShadow = true
       if (skin) this.skinOwners.set(mesh, skin)
       mesh.matrixAutoUpdate = false
       this.meshes.set(instance.id, mesh)

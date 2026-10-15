@@ -1,0 +1,201 @@
+import { expect, test } from 'bun:test'
+import { act, fireEvent, render, screen, within } from '@testing-library/react'
+import { StrictMode } from 'react'
+import { COPY } from '../../../core/copy'
+import { structuredBytes } from '../../../core/structuredBytes'
+import { setSceneAnimationKey } from '../../../scene/animationCommands'
+import type { MoldaSceneDocument } from '../../../scene/document'
+import { identityMatrix } from '../../../scene/matrix'
+import { createDocumentEditorStore } from '../../../state/editorStore'
+import { moldaPreferenceKey } from '../../../state/interfacePreferences'
+import { animatedScene } from '../../../testing/sceneAnimation'
+import { sceneViewportProbe } from '../../../testing/sceneViewportProbe'
+import { SceneWorkshop } from './SceneWorkshop'
+import { TIMELINE_STORAGE } from './timelineLayout'
+
+function setup(source: MoldaSceneDocument = animatedScene()) {
+  const editor = createDocumentEditorStore({
+    asset: source,
+    sizeOf: structuredBytes,
+    persistence: { save: async () => undefined },
+    autosaveMs: 60_000,
+  })
+  const probe = sceneViewportProbe()
+  const view = render(
+    <StrictMode>
+      <SceneWorkshop editor={editor} viewportFactory={probe.factory} />
+    </StrictMode>,
+  )
+  return {
+    editor,
+    probe,
+    close: () => {
+      view.unmount()
+      editor.getState().dispose()
+    },
+  }
+}
+
+test('native control activation keeps Space and Enter while the canvas retains playback shortcuts', async () => {
+  const f = setup()
+  try {
+    fireEvent.click(screen.getByRole('button', { name: COPY.scene.animationMode }))
+    const play = await screen.findByRole('button', { name: COPY.scene.animationPlay })
+    const previous = screen.getByRole('checkbox', { name: 'Ver pose anterior' })
+    expect(fireEvent.keyDown(previous, { key: ' ' })).toBe(true)
+    expect(fireEvent.keyDown(play, { key: ' ' })).toBe(true)
+    expect(fireEvent.keyDown(play, { key: 'Enter' })).toBe(true)
+    expect(screen.queryByRole('button', { name: COPY.scene.animationPause })).toBeNull()
+    const workshop = screen.getByRole('region', { name: COPY.scene.title })
+    expect(fireEvent.keyDown(workshop, { key: ' ' })).toBe(false)
+    expect(screen.getByRole('button', { name: COPY.scene.animationPause })).toBeTruthy()
+    expect(fireEvent.keyDown(workshop, { key: ' ' })).toBe(false)
+    expect(screen.getByRole('button', { name: COPY.scene.animationPlay })).toBeTruthy()
+    expect(f.editor.getState().canUndo).toBe(false)
+  } finally {
+    f.close()
+  }
+})
+
+test('New creates an empty two-second movement without selection, grouping, or implicit keys', async () => {
+  const source = { ...animatedScene(), animations: [] }
+  const f = setup(source)
+  try {
+    fireEvent.click(screen.getByRole('button', { name: COPY.scene.animationMode }))
+    fireEvent.click(await screen.findByRole('button', { name: COPY.scene.animationCreate }))
+    const next = f.editor.getState().content
+    expect(next.nodes).toBe(source.nodes)
+    expect(next.animations).toHaveLength(1)
+    expect(next.animations![0]).toMatchObject({ duration: 2, loop: false, tracks: [] })
+    expect(f.editor.getState().contentRevision).toBe(1)
+    act(() => f.editor.getState().undo())
+    expect(f.editor.getState().content.animations).toEqual([])
+    expect(f.editor.getState().canUndo).toBe(false)
+  } finally {
+    f.close()
+  }
+})
+
+test('eight channel keys remain five summary times; copying previews a free destination and commits one undo', async () => {
+  const original = animatedScene()
+  let source: MoldaSceneDocument = {
+    ...original,
+    animations: [{ ...original.animations[0]!, tracks: [] }],
+  }
+  for (const time of [0, 0.5, 2])
+    source = setSceneAnimationKey(source, 'clip', {
+      nodeId: 'body',
+      channel: 'translation',
+      key: { time, value: [0, time, 0], interpolation: 'linear' },
+    })
+  for (const time of [0, 1])
+    source = setSceneAnimationKey(source, 'clip', {
+      nodeId: 'body',
+      channel: 'rotation',
+      key: { time, value: [0, 0, 0, 1], interpolation: 'linear' },
+    })
+  for (const time of [0, 0.5, 1.5])
+    source = setSceneAnimationKey(source, 'clip', {
+      nodeId: 'body',
+      channel: 'scale',
+      key: { time, value: [1, 1, 1], interpolation: 'linear' },
+    })
+  const f = setup(source)
+  try {
+    fireEvent.click(screen.getByRole('button', { name: COPY.scene.animationMode }))
+    await screen.findByRole('button', { name: 'Canais de corpo' })
+    expect(screen.getByRole('button', { name: COPY.scene.select('corpo') }).textContent).toContain(
+      '8 poses',
+    )
+    expect(screen.getByRole('button', { name: COPY.scene.animationStrip('corpo', 5) })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Canais de asa' })).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: 'Canais de corpo' }))
+    const strip = screen.getByRole('button', {
+      name: COPY.scene.animationStrip(COPY.scene.animationChannels.translation, 3),
+    })
+    fireEvent.keyDown(strip, { key: 'Home' })
+    fireEvent.keyDown(strip, { key: 'ArrowRight' })
+    const card = within(screen.getByRole('region', { name: 'Pose escolhida' }))
+    expect((card.getByLabelText('Tempo da pose escolhida') as HTMLInputElement).value).toBe('0.5')
+    fireEvent.click(card.getByRole('button', { name: 'Copiar pose' }))
+    expect(f.editor.getState().content).toBe(source)
+    expect(
+      (card.getByRole('button', { name: 'Confirmar cópia' }) as HTMLButtonElement).disabled,
+    ).toBe(true)
+    fireEvent.change(card.getByLabelText('Tempo da cópia'), { target: { value: '.75' } })
+    expect(f.editor.getState().canUndo).toBe(false)
+    fireEvent.click(card.getByRole('button', { name: 'Confirmar cópia' }))
+    expect(f.editor.getState().contentRevision).toBe(1)
+    const tracks = f.editor.getState().content.animations![0]!.tracks
+    expect(
+      tracks.find((track) => track.channel === 'translation')!.keys.map((key) => key.time),
+    ).toEqual([0, 0.5, 0.75, 2])
+    expect(tracks.filter((track) => track.channel !== 'translation')).toEqual(
+      source.animations![0]!.tracks.filter((track) => track.channel !== 'translation'),
+    )
+    expect((card.getByLabelText('Tempo da pose escolhida') as HTMLInputElement).value).toBe('0.75')
+    act(() => f.editor.getState().undo())
+    expect(f.editor.getState().content.animations).toEqual(source.animations)
+    expect(f.editor.getState().canUndo).toBe(false)
+    const before = f.editor.getState().content
+    fireEvent.keyDown(screen.getByRole('region', { name: COPY.scene.title }), { key: 'Delete' })
+    expect(f.editor.getState().content).toBe(before)
+  } finally {
+    f.close()
+  }
+})
+
+test('timeline height is a recoverable preference and never document history', async () => {
+  localStorage.removeItem(moldaPreferenceKey(TIMELINE_STORAGE))
+  const f = setup()
+  try {
+    fireEvent.click(screen.getByRole('button', { name: COPY.scene.animationMode }))
+    const separator = await screen.findByRole('separator', { name: 'Altura da linha do tempo' })
+    const before = f.editor.getState().content
+    expect(separator.getAttribute('aria-valuenow')).toBe('306')
+    fireEvent.keyDown(separator, { key: 'ArrowUp' })
+    expect(separator.getAttribute('aria-valuenow')).toBe('342')
+    expect(localStorage.getItem(moldaPreferenceKey(TIMELINE_STORAGE))).toBe('342')
+    fireEvent.doubleClick(separator)
+    expect(separator.getAttribute('aria-valuenow')).toBe('306')
+    fireEvent.doubleClick(separator)
+    expect(separator.getAttribute('aria-valuenow')).toBe('60')
+    fireEvent.keyDown(separator, { key: 'Enter' })
+    expect(separator.getAttribute('aria-valuenow')).toBe('306')
+    expect(f.editor.getState().content).toBe(before)
+    expect(f.editor.getState().canUndo).toBe(false)
+  } finally {
+    f.close()
+    localStorage.removeItem(moldaPreferenceKey(TIMELINE_STORAGE))
+  }
+})
+
+test.each([
+  false,
+  true,
+])('recording a transformed pose selects its channel immediately (automatic=%s)', async (automatic) => {
+  const f = setup()
+  try {
+    fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('corpo') }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.scene.animationMode }))
+    await screen.findByRole('button', { name: 'Marcar pose' })
+    fireEvent.click(screen.getByRole('button', { name: 'Mover' }))
+    if (automatic) fireEvent.click(screen.getByRole('checkbox', { name: 'Marcar sozinho' }))
+    const transform = f.probe.ports.at(-1)!.callbacks.transform!
+    const move = identityMatrix()
+    move[12] = 2
+    act(() => {
+      expect(transform.begin()).toBe(true)
+      expect(transform.preview(move)).toBe(true)
+      transform.end(true)
+    })
+    if (!automatic) fireEvent.click(screen.getByRole('button', { name: 'Marcar pose' }))
+    const card = within(screen.getByRole('region', { name: 'Pose escolhida' }))
+    expect((card.getByLabelText('Tempo da pose escolhida') as HTMLInputElement).value).toBe('0')
+    expect(card.getByText('Mover · corpo')).toBeTruthy()
+    act(() => f.editor.getState().undo())
+    expect(f.editor.getState().canUndo).toBe(false)
+  } finally {
+    f.close()
+  }
+})

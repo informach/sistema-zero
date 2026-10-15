@@ -4,14 +4,12 @@ import type { MoldaSceneDocument } from '../../../scene/document'
 import type { MeshCutPlane } from '../../../scene/meshPlaneCut'
 import {
   divideSceneByWorldPlane,
-  moveScenePivotToWorld,
   sceneDivisionPlane,
   scenePivotTargets,
 } from '../../../scene/modelGuides'
 import type { EditorStore } from '../../../state/editorStore'
 import type { ScenePreviewGuideState } from '../../../viewport/ScenePreviewGuide'
 import type { CameraView } from '../../../viewport/types'
-import { adjustScene } from './sceneAdjustment'
 
 type CutView = 'front' | 'left' | 'top'
 const directions: Record<CutView, Vec3> = { front: [0, 0, 1], left: [1, 0, 0], top: [0, 1, 0] }
@@ -19,12 +17,10 @@ interface Owner {
   source: MoldaSceneDocument
   revision: number
   nodeId: string
-  kind: 'pivot' | 'cut'
   points: Vec3[]
   view: CutView
   candidate: MoldaSceneDocument | null
   guide: ScenePreviewGuideState
-  pickingCorners: boolean
   center: Vec3
 }
 
@@ -59,41 +55,19 @@ export function useSceneModelGuides(
       }),
     [editor],
   )
-  function begin(nodeId: string, kind: Owner['kind'], view: CutView = 'front') {
+  function begin(nodeId: string, view: CutView) {
     const source = editor.getState().content,
       targets = scenePivotTargets(source, nodeId)
     return {
       source,
       revision: editor.getState().contentRevision,
       nodeId,
-      kind,
       view,
       points: [],
       candidate: null,
       guide: { size: targets.size },
       center: targets.center,
-      pickingCorners: false,
     } satisfies Owner
-  }
-  function pivot(nodeId: string, point: Vec3) {
-    try {
-      const current = begin(nodeId, 'pivot')
-      const candidate = moveScenePivotToWorld(current.source, nodeId, point)
-      const ghost = adjustScene(candidate, [nodeId], 'rotate', [0, 25, 0])
-      show({
-        ...current,
-        candidate,
-        points: [point],
-        guide: {
-          size: current.guide.size,
-          points: [point],
-          ghost: { document: ghost, ids: [nodeId] },
-        },
-      })
-      setError(null)
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'Não foi possível mudar o pivô.')
-    }
   }
   function division(current: Owner, plane: MeshCutPlane, points: Vec3[]) {
     try {
@@ -120,30 +94,9 @@ export function useSceneModelGuides(
     document: owner?.candidate ?? null,
     guide: owner?.guide ?? null,
     cancel,
-    preset: (nodeId: string, preset: 'center' | 'bottom') => {
-      try {
-        pivot(nodeId, scenePivotTargets(editor.getState().content, nodeId)[preset])
-      } catch (error) {
-        setError(error instanceof Error ? error.message : 'Escolha uma peça.')
-      }
-    },
-    corners: (nodeId: string) => {
-      try {
-        const current = begin(nodeId, 'pivot'),
-          targets = scenePivotTargets(current.source, nodeId)
-        show({
-          ...current,
-          pickingCorners: true,
-          guide: { size: targets.size, points: targets.corners },
-        })
-        setError(null)
-      } catch (error) {
-        setError(error instanceof Error ? error.message : 'Escolha uma peça.')
-      }
-    },
     cut: (nodeId: string, view: CutView) => {
       try {
-        show(begin(nodeId, 'cut', view))
+        show(begin(nodeId, view))
         setCameraRequest({ view })
         setError(null)
       } catch (error) {
@@ -152,7 +105,7 @@ export function useSceneModelGuides(
     },
     centerCut: () => {
       const current = live.current
-      if (current?.kind !== 'cut') return
+      if (!current) return
       const { center, size } = scenePivotTargets(current.source, current.nodeId)
       const axis = current.view === 'top' ? 2 : 1
       const a: Vec3 = [...center],
@@ -163,17 +116,15 @@ export function useSceneModelGuides(
     },
     correctPoint: () => {
       const current = live.current
-      if (current?.kind !== 'cut') return
+      if (!current) return
       const points = current.points.slice(0, -1)
       show({ ...current, points, candidate: null, guide: { size: current.guide.size, points } })
       setError(null)
     },
     input:
-      owner?.kind === 'cut' && owner.points.length < 2
+      owner && owner.points.length < 2
         ? { plane: { origin: owner.center, normal: directions[owner.view] } }
-        : owner?.pickingCorners
-          ? { corners: owner.guide.points }
-          : null,
+        : null,
     point: (point: Vec3) => {
       const current = live.current
       if (
@@ -182,10 +133,6 @@ export function useSceneModelGuides(
         editor.getState().contentRevision !== current.revision
       )
         return
-      if (current.kind === 'pivot') {
-        pivot(current.nodeId, point)
-        return
-      }
       const points = [...current.points, point].slice(-2)
       if (points.length === 2) {
         try {

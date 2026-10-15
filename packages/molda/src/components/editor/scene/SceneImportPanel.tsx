@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { COPY } from '../../../core/copy'
 import { NATIVE_IMPORT_COPY as copy } from '../../../core/nativeImportCopy'
+import { useMoldaToolAccess } from '../../toolAccess'
 import { DeferredModule } from '../DeferredEditor'
 import type { SceneImportPanelProps } from './sceneImportPanelTypes'
 import { importChoice } from './sceneImportStyles'
@@ -15,7 +16,17 @@ const formats = { gltf: copy.gltfFormat, obj: copy.objFormat, bbmodel: copy.bbmo
 
 /** Switching formats unmounts the old revision-owned task; no files/consent leak across formats. */
 export function SceneImportPanel(props: SceneImportPanelProps) {
+  const interop = useMoldaToolAccess().can('files.interop')
   const [format, setFormat] = useState<keyof typeof formats>('gltf')
+  if (!interop)
+    return (
+      <DeferredModule
+        load={loaders.gltf}
+        props={props}
+        onBack={props.onClose}
+        backLabel={COPY.scene.glbExport.close}
+      />
+    )
   return (
     <div className="space-y-4">
       <fieldset className="rounded-xl border border-mld-border p-3">

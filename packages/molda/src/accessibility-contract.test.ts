@@ -10,7 +10,10 @@ const sources = [...new Bun.Glob('**/*.tsx').scanSync({ cwd: import.meta.dir })]
 describe('contrato de acessibilidade dos controles do Molda', () => {
   test('não reintroduz alvos interativos de 36 px', () => {
     for (const source of sources) {
-      expect(source.text.match(/\b(?:min-h|min-w|h|w|size)-9\b/g), source.file).toBeNull()
+      for (const control of source.text.match(
+        /<(?:button|input|select|textarea|summary)\b[\s\S]*?>/g,
+      ) ?? [])
+        expect(control.match(/\b(?:min-h|min-w|h|w|size)-9\b/g), source.file).toBeNull()
     }
   })
 

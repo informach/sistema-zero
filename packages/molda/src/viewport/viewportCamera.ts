@@ -84,14 +84,22 @@ export class ViewportCamera {
   aspect = 1
   view: CameraView = 'free'
 
-  constructor() {
+  constructor(readonly freeProjection: 'perspective' | 'orthographic' = 'perspective') {
     this.perspective.position.set(16, 12, 20)
     this.perspective.lookAt(this.target)
     this.perspective.updateMatrixWorld(true)
+    if (freeProjection === 'orthographic') {
+      this.freeDirection.set(1, 1, 1).normalize()
+      this.orthographic.position.copy(this.target).addScaledVector(this.freeDirection, 24)
+      this.orthographic.lookAt(this.target)
+      this.orthographic.updateMatrixWorld(true)
+    }
   }
 
   get camera(): PerspectiveCamera | OrthographicCamera {
-    return this.view === 'free' ? this.perspective : this.orthographic
+    return this.view === 'free' && this.freeProjection === 'perspective'
+      ? this.perspective
+      : this.orthographic
   }
 
   /** Public projection port consumed by the demand loop on a real resize. */
@@ -106,7 +114,7 @@ export class ViewportCamera {
   setView(view: CameraView, bounds: Bounds | null): void {
     const freeDirection =
       this.view === 'free'
-        ? this.perspective.position.clone().sub(this.target).normalize()
+        ? this.camera.position.clone().sub(this.target).normalize()
         : this.freeDirection.clone()
     if (freeDirection.lengthSq() === 0) freeDirection.copy(this.freeDirection)
     const direction = view === 'free' ? freeDirection : new Vector3(...VIEW_DIRECTIONS[view])
@@ -141,7 +149,7 @@ export class ViewportCamera {
     )
     const perspective = this.perspective.clone(),
       orthographic = this.orthographic.clone(),
-      camera = view === 'free' ? perspective : orthographic
+      camera = view === 'free' && this.freeProjection === 'perspective' ? perspective : orthographic
     if (changeView) camera.up.set(0, view === 'top' ? 0 : 1, view === 'top' ? -1 : 0)
     const distance =
       camera instanceof PerspectiveCamera

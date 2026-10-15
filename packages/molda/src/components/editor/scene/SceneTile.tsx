@@ -42,6 +42,7 @@ export function SceneTile({
   return (
     <button
       type={type ?? 'button'}
+      aria-label={label}
       aria-pressed={pressed}
       data-tint={tint && ink ? '' : undefined}
       className={clsx('mld-tile', className)}
@@ -49,7 +50,7 @@ export function SceneTile({
       {...props}
     >
       <Icon aria-hidden="true" />
-      <span>{label}</span>
+      <span className="mld-tile-label">{label}</span>
       {keyHint && (
         <span aria-hidden="true" className="mld-tile-key">
           {keyHint}

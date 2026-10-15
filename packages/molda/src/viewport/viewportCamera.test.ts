@@ -5,6 +5,27 @@ import { makeModel } from '../testing/fixtures'
 import { framingBounds, ViewportCamera } from './viewportCamera'
 import { VIEW_DIRECTIONS } from './viewportMath'
 
+test('the workshop free camera is orthographic, initially isometric, and retains an orbited direction across named views', () => {
+  const rig = new ViewportCamera('orthographic')
+  expect(rig.camera).toBeInstanceOf(OrthographicCamera)
+  expect(
+    rig.camera.position
+      .clone()
+      .sub(rig.target)
+      .normalize()
+      .distanceTo(new Vector3(1, 1, 1).normalize()),
+  ).toBeLessThan(1e-12)
+  rig.camera.position.copy(rig.target.clone().add(new Vector3(10, 5, -8)))
+  rig.camera.lookAt(rig.target)
+  const direction = rig.camera.position.clone().sub(rig.target).normalize()
+  rig.setView('front', null)
+  rig.setView('free', null)
+  expect(rig.camera).toBeInstanceOf(OrthographicCamera)
+  expect(
+    rig.camera.position.clone().sub(rig.target).normalize().distanceTo(direction),
+  ).toBeLessThan(1e-12)
+})
+
 test('unrepresentable bounds cannot corrupt either camera or change the selected view', () => {
   const snapshot = (rig: ViewportCamera) => ({
     perspective: rig.perspective.toJSON(),

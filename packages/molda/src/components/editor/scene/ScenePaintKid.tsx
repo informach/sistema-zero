@@ -15,7 +15,6 @@ import { Button } from '../../ui/Button'
 import { ApplyTextureDialog } from '../model/ApplyTextureDialog'
 import { SceneFlipbookPreview } from './SceneFlipbookPreview'
 import { ScenePaintToolbox } from './ScenePaintToolbox'
-import { SceneUpcomingTools } from './SceneUpcomingTools'
 import type { useSceneWorkshop } from './useSceneWorkshop'
 
 export function ScenePaintColumn({ workshop }: { workshop: ReturnType<typeof useSceneWorkshop> }) {
@@ -114,8 +113,6 @@ export function ScenePaintColumn({ workshop }: { workshop: ReturnType<typeof use
           </Button>
         </div>
       )}
-      {/* No celular a coluna vira faixa em cima do palco; mais uma fileira cobriria os controles. */}
-      <SceneUpcomingTools tabs={['paint']} className="hidden md:block" />
     </>
   )
 }

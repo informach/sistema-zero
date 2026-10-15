@@ -1,0 +1,110 @@
+[
+  {
+    "variant": "baseline",
+    "parts": 4,
+    "documentSha256": "2004c6f51b163b75a5574d44c0bc321447729ccfc22d8f0b0e8c19b3e8899e08",
+    "cpuPreviewMs": {
+      "samples": 60,
+      "p50": 0.091,
+      "p95": 0.158
+    },
+    "cpuConfirmMs": {
+      "samples": 30,
+      "p50": 0.036,
+      "p95": 0.082
+    },
+    "cpuCancelMs": {
+      "samples": 30,
+      "p50": 0.003,
+      "p95": 0.012
+    },
+    "browser": "148.0.7778.96",
+    "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+    "frameIntervalMs": {
+      "samples": 328,
+      "p50": 16.7,
+      "p95": 16.8
+    }
+  },
+  {
+    "variant": "current",
+    "parts": 4,
+    "documentSha256": "2004c6f51b163b75a5574d44c0bc321447729ccfc22d8f0b0e8c19b3e8899e08",
+    "cpuPreviewMs": {
+      "samples": 60,
+      "p50": 0.062,
+      "p95": 0.083
+    },
+    "cpuConfirmMs": {
+      "samples": 30,
+      "p50": 0.021,
+      "p95": 0.04
+    },
+    "cpuCancelMs": {
+      "samples": 30,
+      "p50": 0.002,
+      "p95": 0.014
+    },
+    "browser": "148.0.7778.96",
+    "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+    "frameIntervalMs": {
+      "samples": 343,
+      "p50": 16.7,
+      "p95": 33.4
+    }
+  },
+  {
+    "variant": "baseline",
+    "parts": 128,
+    "documentSha256": "bb1d7f63ee0884f3cd889625ea97b924f76ce503f672cd866aad4309d022ae3f",
+    "cpuPreviewMs": {
+      "samples": 60,
+      "p50": 0.738,
+      "p95": 1.481
+    },
+    "cpuConfirmMs": {
+      "samples": 30,
+      "p50": 0.297,
+      "p95": 0.61
+    },
+    "cpuCancelMs": {
+      "samples": 30,
+      "p50": 0.003,
+      "p95": 0.009
+    },
+    "browser": "148.0.7778.96",
+    "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+    "frameIntervalMs": {
+      "samples": 329,
+      "p50": 16.7,
+      "p95": 16.8
+    }
+  },
+  {
+    "variant": "current",
+    "parts": 128,
+    "documentSha256": "bb1d7f63ee0884f3cd889625ea97b924f76ce503f672cd866aad4309d022ae3f",
+    "cpuPreviewMs": {
+      "samples": 60,
+      "p50": 0.734,
+      "p95": 0.964
+    },
+    "cpuConfirmMs": {
+      "samples": 30,
+      "p50": 0.274,
+      "p95": 0.533
+    },
+    "cpuCancelMs": {
+      "samples": 30,
+      "p50": 0.003,
+      "p95": 0.006
+    },
+    "browser": "148.0.7778.96",
+    "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+    "frameIntervalMs": {
+      "samples": 340,
+      "p50": 16.8,
+      "p95": 33.4
+    }
+  }
+]
