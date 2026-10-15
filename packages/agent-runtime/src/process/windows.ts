@@ -7,6 +7,54 @@ import { processEnvironment } from './environment'
 declare const ZERO_JOB_HELPER: string | undefined
 declare const ZERO_JOB_BINARY: string | undefined
 const compiling = new Map<string, Promise<string>>()
+export function windowsLaunchError(error: unknown, executable: string): Error {
+  if (!(error instanceof Error)) return new Error('Windows process launch failed', { cause: error })
+  if (!('code' in error) || error.code !== 'EUNKNOWN') return error
+  return new Error(
+    `Windows rejected native helper ${executable} (EUNKNOWN). Inspect Code Integrity events 3033/3077. If this binary is blocked by signing policy, use a release signed by a publisher trusted by this machine. The operation was not retried.`,
+    { cause: error },
+  )
+}
+export async function verifyWindowsPort(
+  directory: string,
+  jobName: string,
+  port: number,
+  signal: AbortSignal,
+) {
+  signal.throwIfAborted()
+  const executable = await windowsHelper(directory)
+  signal.throwIfAborted()
+  const child = Bun.spawn([executable], {
+    env: {
+      ...processEnvironment(),
+      ZERO_PROCESS_REQUEST: Buffer.from(JSON.stringify({ jobName, portProbe: port })).toString(
+        'base64',
+      ),
+    },
+    stdin: 'ignore',
+    stdout: 'pipe',
+    stderr: 'pipe',
+    windowsHide: true,
+  })
+  const deadline = AbortSignal.any([signal, AbortSignal.timeout(5000)])
+  const abort = () => {
+    child.kill()
+  }
+  deadline.addEventListener('abort', abort, { once: true })
+  if (deadline.aborted) abort()
+  try {
+    const [output, errors, code] = await Promise.all([
+      new Response(child.stdout).text(),
+      new Response(child.stderr).text(),
+      child.exited,
+    ])
+    deadline.throwIfAborted()
+    if (code !== 0 || output.trim() !== 'OWNED')
+      throw new Error(`Could not establish port ownership (exit ${code}): ${errors.slice(-4000)}`)
+  } finally {
+    deadline.removeEventListener('abort', abort)
+  }
+}
 export function windowsHelper(directory: string): Promise<string> {
   if (typeof ZERO_JOB_BINARY !== 'undefined')
     return Promise.resolve(fileURLToPath(new URL(ZERO_JOB_BINARY, import.meta.url)))

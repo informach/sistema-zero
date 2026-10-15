@@ -41,15 +41,20 @@ try {
   })
   ready()
 } catch (error) {
-  await host.close()
-  throw error
+  const cleanup = await Promise.allSettled([supervisor?.shutdown(), host.close()])
+  const errors = cleanup.flatMap((result) => (result.status === 'rejected' ? [result.reason] : []))
+  throw new AggregateError([error, ...errors], 'Supervisor initialization failed')
 }
-let stopping = false
-async function stop() {
-  if (stopping) return
-  stopping = true
-  await supervisor?.shutdown()
-  await host.close()
+let stopping: Promise<void> | undefined
+function stop() {
+  stopping ??= (async () => {
+    try {
+      await supervisor?.shutdown()
+    } finally {
+      await host.close()
+    }
+  })()
+  return stopping
 }
 process.once('SIGINT', () => void stop().catch(console.error))
 process.once('SIGTERM', () => void stop().catch(console.error))

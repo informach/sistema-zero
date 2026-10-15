@@ -30,6 +30,8 @@ export class Supervisor {
   private queue: Run[] = []
   private idleWaiters = new Set<() => void>()
   private stopping = false
+  private closing?: Promise<void>
+  private admission = new Locks()
   private projectionRevision = 0
   readiness: 'recovering' | 'ready' | 'failed' = 'ready'
   recoveryError: string | undefined
@@ -40,10 +42,18 @@ export class Supervisor {
     readonly directory: string,
     readonly store: Store,
   ) {
+    store.on('failure', (error: Error) => this.fail(error))
     store.on('changed', (mutation: StoreMutation) => {
       this.changes.emit('changed', mutation)
       if (
-        ['run.put', 'run.state', 'question.put', 'question.answer', 'recover'].includes(mutation.op)
+        [
+          'run.put',
+          'run.state',
+          'run.cancel',
+          'question.put',
+          'question.answer',
+          'recover',
+        ].includes(mutation.op)
       ) {
         this.projectionRevision++
         this.changes.emit('projection')
@@ -53,6 +63,13 @@ export class Supervisor {
   async initialize() {
     this.settings = await readSettings(this.directory)
     await this.store.call({ op: 'recover' })
+  }
+  fail(error: Error) {
+    this.stopping = true
+    if (this.readiness !== 'failed') this.recoveryError = error.message
+    this.readiness = 'failed'
+    for (const controller of this.active.values()) controller.abort(error)
+    this.notifyProjection()
   }
   notifyProjection() {
     this.projectionRevision++
@@ -109,16 +126,20 @@ export class Supervisor {
     while (true) {
       signal?.throwIfAborted()
       const changed = this.waitForChange(signal, 'projection')
-      const questions = z
-        .array(questionSchema)
-        .parse(await this.store.call({ op: 'question.list', runId: run.id }))
-      const answered = questions.find((item) => item.id === question.id)?.answer
-      if (answered !== undefined) {
+      try {
+        const questions = z
+          .array(questionSchema)
+          .parse(await this.store.call({ op: 'question.list', runId: run.id }))
+        const answered = questions.find((item) => item.id === question.id)?.answer
+        if (answered !== undefined) {
+          signal?.throwIfAborted()
+          await this.setState(run.id, 'running')
+          return answered
+        }
+        await changed.promise
+      } finally {
         changed.cancel()
-        await this.setState(run.id, 'running')
-        return answered
       }
-      await changed.promise
     }
   }
   private waitForChange(signal?: AbortSignal, event = 'changed') {
@@ -147,6 +168,9 @@ export class Supervisor {
     return { promise, cancel: cleanup }
   }
   async submit(raw: unknown, beforeQueue?: (run: Run) => Promise<void>) {
+    return this.admission.with('submit', () => this.admit(raw, beforeQueue))
+  }
+  private async admit(raw: unknown, beforeQueue?: (run: Run) => Promise<void>) {
     if (this.readiness !== 'ready')
       throw new Error(this.recoveryError ?? 'Runtime recovering; retry when ready')
     if (this.stopping || !this.executor) throw new Error('Agent executor unavailable')
@@ -177,12 +201,25 @@ export class Supervisor {
         digest: createHash('sha256').update(canonical(input)).digest('hex'),
       }),
     )
-    await beforeQueue?.(saved)
-    if (
+    const enqueue =
       saved.state === 'queued' &&
       !this.queue.some((item) => item.id === saved.id) &&
       !this.active.has(saved.id)
-    ) {
+    try {
+      // Coordinators must also associate an already terminal receipt after crash recovery.
+      await beforeQueue?.(saved)
+      if (enqueue && this.stopping) throw new Error('Supervisor shutting down')
+    } catch (error) {
+      if (enqueue)
+        await this.store.call({
+          op: 'run.cancel',
+          id: saved.id,
+          active: false,
+          error: error instanceof Error ? error.message : 'Admission failed',
+        })
+      throw error
+    }
+    if (enqueue) {
       this.queue.push(saved)
       this.pump()
     }
@@ -311,17 +348,13 @@ export class Supervisor {
         })
       case 'run.cancel': {
         const { id } = z.object({ id: z.string() }).parse(command.params)
-        const run = runSchema.parse(await this.store.call({ op: 'run.get', id }))
-        if (terminalStates.has(run.state)) return run
-        if (run.state === 'queued' || !this.active.has(id)) {
-          this.queue = this.queue.filter((item) => item.id !== id)
-          if (run.state !== 'queued' && run.state !== 'canceling')
-            await this.setState(id, 'canceling')
-          return this.setState(id, 'canceled')
+        const controller = this.active.get(id)
+        this.queue = this.queue.filter((item) => item.id !== id)
+        try {
+          return await this.store.call({ op: 'run.cancel', id, active: Boolean(controller) })
+        } finally {
+          controller?.abort(new Error('Cancelado pelo usuário'))
         }
-        if (run.state !== 'canceling') await this.setState(id, 'canceling')
-        this.active.get(id)?.abort(new Error('Cancelado pelo usuário'))
-        return { id, state: 'canceling' }
       }
       case 'events': {
         const args = z
@@ -404,6 +437,7 @@ export class Supervisor {
         await this.store.call({ op: 'session.get', id: run.sessionId }),
       )
       const running = await this.setState(run.id, 'running')
+      controller.signal.throwIfAborted()
       if (!this.executor) throw new Error('Executor unavailable')
       await Artifacts.owned(run.id, () =>
         this.executor?.(running, session.workspace, controller.signal),
@@ -417,29 +451,52 @@ export class Supervisor {
       await this.setState(run.id, 'succeeded')
     } catch (error) {
       const current = runSchema.parse(await this.store.call({ op: 'run.get', id: run.id }))
-      if (!terminalStates.has(current.state))
-        await this.setState(
-          run.id,
-          controller.signal.aborted ? 'canceled' : 'failed',
-          error instanceof Error ? error.message : 'Execution failed',
-        )
+      if (!terminalStates.has(current.state)) {
+        const message = error instanceof Error ? error.message : 'Execution failed'
+        if (controller.signal.aborted)
+          await this.store.call({ op: 'run.cancel', id: run.id, active: false, error: message })
+        else await this.setState(run.id, 'failed', message)
+      }
     }
   }
-  async shutdown() {
+  shutdown() {
+    this.closing ??= this.finishShutdown()
+    return this.closing
+  }
+  private async finishShutdown() {
     this.stopping = true
-    for (const stop of this.beforeShutdown) await stop()
+    const errors: unknown[] = []
+    const attempt = async (operation: () => unknown | Promise<unknown>) => {
+      try {
+        await operation()
+      } catch (error) {
+        errors.push(error)
+      }
+    }
+    // Finish in-flight admission before closing its journal or its scheduler.
+    await attempt(() => this.admission.with('submit', async () => {}))
+    for (const stop of this.beforeShutdown) await attempt(stop)
+    for (const run of this.queue)
+      await attempt(() => this.setState(run.id, 'canceled', 'Supervisor shutting down'))
+    this.queue = []
     for (const [id, controller] of this.active) {
       if (controller.signal.aborted) continue
-      const run = runSchema.parse(await this.store.call({ op: 'run.get', id }))
-      if (terminalStates.has(run.state)) continue
-      await this.setState(id, 'canceling')
+      await attempt(() =>
+        this.store.call({ op: 'run.cancel', id, active: true, error: 'Supervisor shutting down' }),
+      )
+      // Cancellation must reach owned processes even when journal writes fail.
       controller.abort(new Error('Supervisor shutting down'))
     }
     if (this.active.size)
       await new Promise<void>((resolve) => {
-        this.idleWaiters.add(resolve)
+        const done = () => {
+          this.idleWaiters.delete(done)
+          resolve()
+        }
+        this.idleWaiters.add(done)
       })
-    for (const cleanup of this.cleanup) await cleanup()
-    await this.store.close()
+    for (const cleanup of this.cleanup) await attempt(cleanup)
+    await attempt(() => this.store.close())
+    if (errors.length) throw new AggregateError(errors, 'Supervisor shutdown encountered failures')
   }
 }

@@ -17,9 +17,16 @@ Esta é uma entrega local 0.1 com capacidades funcionais verificadas e critério
 | Receitas/agendas | DSL de 100 nós, foreach limitado, espera durável, IANA/DST | Supervisor precisa estar ligado; sem finally genérico ou daemon instalado |
 | Sistema Zero | Fachada por sessão/RBAC, messaging idempotente, helpdesk e Studio | Backend precisa ser implantado/configurado; nenhum envio/build remoto foi realizado |
 | GitHub/Telegram | Leituras, PR rascunho por SHA, destinos explícitos e reconciliação | Provas HTTP locais; contas externas não homologadas; não faz push/merge |
-| Release | Manifesto, lockfile, instalação externa, upgrade interrompido e rollback | Integridade local, sem assinatura/canal de atualização hospedado |
+| Release | Manifesto, lockfile, instalação externa, upgrade interrompido e rollback | Sem assinatura/canal hospedado; política Windows que exige publicador confiável pode bloquear o helper |
 | Desempenho | F1–F7, índices SQL, carga, cancelamento e ciclo de tarefas | RSS combinado excede meta; comparação de adoção não executada |
 
 O núcleo implementa as capacidades pertinentes dos cinco repositórios sobre contratos comuns. SaaS/billing próprio, Daytona/Browserbase remoto, desktop isolado e canvas entre máquinas pertencem às extensões E01–E03 do plano, não a recursos disponíveis nesta distribuição.
+
+Na revisão posterior, um helper compilado em perfil de teste foi bloqueado por Code Integrity
+(eventos 3033/3077, erro Bun `EUNKNOWN`). O pacote usa um helper pré-compilado e verificado pelo
+manifesto, mas isso não substitui Authenticode. Em máquinas com exigência de assinatura, o
+binário precisa ser assinado por publicador confiável antes da distribuição. Não desabilitar
+essa política para executar o TUI. Evidência e condições da validação estão no
+[full review](../../.audits/architectural-analysis-2026-10-15-tui-review.md).
 
 Critérios abertos não foram silenciosamente relaxados. A meta original de memória continua 300 MiB; o resultado observado está em [performance.md](performance.md). Antes de afirmar substituição superior ao fluxo atual, executar as 30 tarefas de adoção com repetições, conjunto final separado, revisão independente e custo por resultado aceito. Latência de uma fixture sintética não mede qualidade de raciocínio.

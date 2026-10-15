@@ -5,7 +5,7 @@ import { z } from 'zod'
 import type { Processes } from '../process/manager'
 import { Artifacts } from '../store/artifacts'
 import type { Store } from '../store/client'
-import { exists, hash, readBounded, workspacePath } from '../tools/paths'
+import { exists, hash, protectedName, readBounded, workspacePath } from '../tools/paths'
 
 export const snapshotSchema = z.object({
   id: z.string(),
@@ -65,15 +65,7 @@ export class Workspaces {
     let total = 0
     for (const name of names) {
       signal.throwIfAborted()
-      if (
-        name
-          .split('/')
-          .some(
-            (part) =>
-              part === '.env' || part.startsWith('.env.') || part === '.ssh' || part === '.aws',
-          )
-      )
-        continue
+      if (name.split('/').some(protectedName)) continue
       const path = await workspacePath(workspace, name, true)
       if (!(await exists(path))) {
         files.push({ path: name, artifact: null, mode: 0o644 })

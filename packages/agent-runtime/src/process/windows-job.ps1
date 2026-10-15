@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Runtime.InteropServices;
 public static class ZeroJob {
+  struct InputPacket { public byte[] bytes; public bool eof; }
   [StructLayout(LayoutKind.Sequential)] struct SECURITY_ATTRIBUTES {public int length;public IntPtr descriptor;public int inherit;}
   [DllImport("kernel32.dll",SetLastError=true)] static extern bool CreatePipe(out IntPtr read,out IntPtr write,ref SECURITY_ATTRIBUTES attributes,uint size);
   [DllImport("kernel32.dll",SetLastError=true)] static extern bool SetHandleInformation(IntPtr handle,uint mask,uint flags);
@@ -15,9 +16,10 @@ public static class ZeroJob {
       string encoded=Environment.GetEnvironmentVariable("ZERO_PROCESS_REQUEST");Environment.SetEnvironmentVariable("ZERO_PROCESS_REQUEST",null);
       var request=new System.Web.Script.Serialization.JavaScriptSerializer().Deserialize<System.Collections.Generic.Dictionary<string,object>>(Encoding.UTF8.GetString(Convert.FromBase64String(encoded)));
       if(request.ContainsKey("lock"))return HoldLock((string)request["lock"]);
+      if(request.ContainsKey("portProbe"))return VerifyPort((string)request["jobName"],Convert.ToInt32(request["portProbe"]));
       var list=(System.Collections.ArrayList)request["arguments"];string[] args=new string[list.Count];for(int i=0;i<list.Count;i++)args[i]=(string)list[i];
       var terminal=request.ContainsKey("terminal")?request["terminal"] as System.Collections.Generic.Dictionary<string,object>:null;
-      return Run((string)request["executable"],args,(string)request["cwd"],Convert.ToUInt64(request["memoryMb"]),Convert.ToUInt32(request["pids"]),terminal);
+      return Run((string)request["executable"],args,(string)request["cwd"],Convert.ToUInt64(request["memoryMb"]),Convert.ToUInt32(request["pids"]),terminal,(string)request["jobName"]);
     } catch(Exception error) {Console.Error.WriteLine(error.ToString());return 125;}
   }
   static int HoldLock(string identity) {
@@ -58,11 +60,58 @@ public static class ZeroJob {
   [DllImport("kernel32.dll")] static extern bool TerminateProcess(IntPtr process,uint code);
   [DllImport("kernel32.dll")] static extern IntPtr GetStdHandle(int handle);
   [DllImport("kernel32.dll")] static extern bool CloseHandle(IntPtr handle);
+  [DllImport("iphlpapi.dll")] static extern uint GetExtendedTcpTable(IntPtr table,ref int size,bool ordered,uint family,int tableClass,uint reserved);
+  [DllImport("kernel32.dll",CharSet=CharSet.Unicode,SetLastError=true)] static extern IntPtr OpenJobObject(uint access,bool inherit,string name);
+  [DllImport("kernel32.dll",SetLastError=true)] static extern IntPtr OpenProcess(uint access,bool inherit,uint pid);
+  [DllImport("kernel32.dll",SetLastError=true)] static extern bool IsProcessInJob(IntPtr process,IntPtr job,out bool member);
+  static void ValidateJobName(string name) {
+    if(!System.Text.RegularExpressions.Regex.IsMatch(name,@"^Local\\SistemaZero-[a-f0-9-]{36}$"))throw new ArgumentException("Invalid job identity");
+  }
+  static int VerifyPort(string jobName,int port) {
+    ValidateJobName(jobName);if(port<1||port>65535)throw new ArgumentException("Invalid port");
+    IntPtr job=OpenJobObject(4,false,jobName);if(job==IntPtr.Zero)throw new System.ComponentModel.Win32Exception();
+    int found=0;
+    try {
+      foreach(uint family in new uint[]{2,23}) {
+        int size=0;uint status=GetExtendedTcpTable(IntPtr.Zero,ref size,false,family,3,0);
+        if(status!=122)throw new System.ComponentModel.Win32Exception((int)status);
+        // The table can grow between sizing and reading; retry allocation, never relax ownership.
+        for(int attempt=0;;attempt++) {
+          if(size<4||size>16*1024*1024||attempt>=4)throw new InvalidOperationException("TCP table exceeded limits or kept changing");
+          IntPtr table=Marshal.AllocHGlobal(size);int allocated=size;
+          try {
+            status=GetExtendedTcpTable(table,ref size,false,family,3,0);
+            if(status==122)continue;
+            if(status!=0)throw new System.ComponentModel.Win32Exception((int)status);
+            int count=Marshal.ReadInt32(table);int rowSize=family==2?24:56,portOffset=family==2?8:20,pidOffset=family==2?20:52;
+            if(count<0||count>(allocated-4)/rowSize)throw new InvalidOperationException("Invalid TCP table");
+            for(int index=0;index<count;index++) {
+              IntPtr row=IntPtr.Add(table,4+index*rowSize);
+              int localPort=(Marshal.ReadByte(row,portOffset)<<8)|Marshal.ReadByte(row,portOffset+1);
+              if(localPort!=port)continue;
+              IntPtr process=OpenProcess(0x1000,false,unchecked((uint)Marshal.ReadInt32(row,pidOffset)));
+              if(process==IntPtr.Zero)throw new System.ComponentModel.Win32Exception();
+              try {
+                bool member;if(!IsProcessInJob(process,job,out member))throw new System.ComponentModel.Win32Exception();
+                if(!member)throw new InvalidOperationException("Port belongs to another process; it cannot be accepted as this preview");
+                found++;
+              } finally {CloseHandle(process);}
+            }
+            break;
+          } finally {Marshal.FreeHGlobal(table);}
+        }
+      }
+      if(found==0)throw new InvalidOperationException("Port has no listener");
+      Console.WriteLine("OWNED");return 0;
+    } finally {CloseHandle(job);}
+  }
   static string Quote(string value) { return "\"" + System.Text.RegularExpressions.Regex.Replace(value, "(\\\\*)\"", "$1$1\\\"") .TrimEnd('\0') + new string('\\', Trailing(value)) + "\""; }
   static int Trailing(string value) { int n=0; for(int i=value.Length-1;i>=0 && value[i]=='\\';i--)n++; return n; }
-  public static int Run(string executable,string[] args,string cwd,ulong memoryMb,uint pids,System.Collections.Generic.Dictionary<string,object> terminal) {
+  public static int Run(string executable,string[] args,string cwd,ulong memoryMb,uint pids,System.Collections.Generic.Dictionary<string,object> terminal,string jobName) {
     if(memoryMb<64||memoryMb>16384||pids<1||pids>256)throw new ArgumentException("Invalid job quota");
-    IntPtr job=CreateJobObject(IntPtr.Zero,null); if(job==IntPtr.Zero)throw new System.ComponentModel.Win32Exception();
+    ValidateJobName(jobName);
+    IntPtr job=CreateJobObject(IntPtr.Zero,jobName); if(job==IntPtr.Zero)throw new System.ComponentModel.Win32Exception();
+    if(Marshal.GetLastWin32Error()==183){CloseHandle(job);throw new InvalidOperationException("Job identity already exists");}
     PROCESS_INFORMATION pi=new PROCESS_INFORMATION(); bool created=false;IntPtr inputRead=IntPtr.Zero,inputWrite=IntPtr.Zero,outputRead=IntPtr.Zero,outputWrite=IntPtr.Zero,pseudo=IntPtr.Zero,attributesList=IntPtr.Zero;bool attributesInitialized=false;Thread outputPump=null;System.IO.FileStream terminalOutput=null;
     try {
       EXTENDED_LIMIT limits=new EXTENDED_LIMIT();limits.basic.flags=0x2000|0x200|0x8;limits.basic.activeProcesses=pids;limits.jobMemory=new UIntPtr(memoryMb*1024*1024);if(!SetInformationJobObject(job,9,ref limits,(uint)Marshal.SizeOf(limits)))throw new System.ComponentModel.Win32Exception();
@@ -90,7 +139,35 @@ public static class ZeroJob {
       if(!AssignProcessToJobObject(job,pi.process))throw new System.ComponentModel.Win32Exception();
       CloseHandle(inputRead);inputRead=IntPtr.Zero;
       var childInput=new System.IO.FileStream(new Microsoft.Win32.SafeHandles.SafeFileHandle(inputWrite,true),System.IO.FileAccess.Write);inputWrite=IntPtr.Zero;
-      Thread watchdog=new Thread(()=>{try{string line;while((line=Console.ReadLine())!=null){var message=new System.Web.Script.Serialization.JavaScriptSerializer().Deserialize<System.Collections.Generic.Dictionary<string,object>>(line);string type=(string)message["type"];if(type=="write"){byte[] bytes=Convert.FromBase64String((string)message["data"]);childInput.Write(bytes,0,bytes.Length);childInput.Flush();}else if(type=="eof")childInput.Dispose();else if(type=="resize"&&pseudo!=IntPtr.Zero){int hr=ResizePseudoConsole(pseudo,new COORD(Convert.ToInt32(message["columns"]),Convert.ToInt32(message["rows"])));if(hr!=0)Marshal.ThrowExceptionForHR(hr);}else throw new InvalidOperationException("Unknown process control message");}}catch(Exception error){Console.Error.WriteLine(error.Message);}finally{childInput.Dispose();TerminateJobObject(job,130);}});watchdog.IsBackground=true;watchdog.Start();
+      // Keep ownership revocation independent of a child that refuses to read stdin.
+      var inputQueue=new System.Collections.Concurrent.BlockingCollection<InputPacket>(8);
+      int revoking=0;
+      Thread writer=new Thread(()=>{
+        try {
+          foreach(var packet in inputQueue.GetConsumingEnumerable()) {
+            if(packet.eof){childInput.Dispose();break;}
+            childInput.Write(packet.bytes,0,packet.bytes.Length);childInput.Flush();
+          }
+        } catch(Exception error){if(Interlocked.CompareExchange(ref revoking,0,0)==0){Console.Error.WriteLine(error.Message);TerminateJobObject(job,130);}}
+        finally {childInput.Dispose();}
+      });writer.IsBackground=true;writer.Start();
+      Thread watchdog=new Thread(()=>{
+        try {
+          string line;while((line=Console.ReadLine())!=null) {
+            if(line.Length>1500000)throw new InvalidOperationException("Process input frame exceeds limit");
+            var message=new System.Web.Script.Serialization.JavaScriptSerializer().Deserialize<System.Collections.Generic.Dictionary<string,object>>(line);
+            string type=(string)message["type"];
+            if(type=="write"||type=="eof") {
+              var packet=new InputPacket();packet.eof=type=="eof";packet.bytes=packet.eof?null:Convert.FromBase64String((string)message["data"]);
+              if(packet.bytes!=null&&packet.bytes.Length>1000000)throw new InvalidOperationException("Process input exceeds limit");
+              if(!inputQueue.TryAdd(packet))throw new InvalidOperationException("Process input backpressure limit reached");
+            } else if(type=="resize"&&pseudo!=IntPtr.Zero) {
+              int hr=ResizePseudoConsole(pseudo,new COORD(Convert.ToInt32(message["columns"]),Convert.ToInt32(message["rows"])));if(hr!=0)Marshal.ThrowExceptionForHR(hr);
+            } else throw new InvalidOperationException("Unknown process control message");
+          }
+        } catch(Exception error){Console.Error.WriteLine(error.Message);}
+        finally {Interlocked.Exchange(ref revoking,1);TerminateJobObject(job,130);inputQueue.CompleteAdding();}
+      });watchdog.IsBackground=true;watchdog.Start();
       if(ResumeThread(pi.thread)==0xffffffff)throw new System.ComponentModel.Win32Exception();
       WaitForSingleObject(pi.process,0xffffffff);uint code;if(!GetExitCodeProcess(pi.process,out code))throw new System.ComponentModel.Win32Exception();return (int)code;
     } finally {

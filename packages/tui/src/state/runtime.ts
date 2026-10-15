@@ -232,7 +232,14 @@ export class RuntimeState extends EventEmitter {
     if (generation !== this.generation || signal.aborted) return
     this.events = tail.events
     this.previousCursor = tail.previousCursor
+    const applyState = (events: RuntimeEvent[]) => {
+      for (const event of events)
+        if (event.type === 'run.state' || event.type === 'run.created')
+          this.run = { ...runSchema.parse(event.payload), input: run.input, task: run.task }
+    }
+    applyState(tail.events)
     this.update()
+    if (terminalStates.has(this.run?.state ?? 'running')) return
     void (async () => {
       let cursor = tail.events.at(-1)?.sequence ?? 0
       while (!this.closed && !signal.aborted) {
@@ -248,12 +255,11 @@ export class RuntimeState extends EventEmitter {
           ),
         )
         if (generation !== this.generation || signal.aborted) return
-        for (const event of batch) {
-          cursor = event.sequence
-          if (event.type === 'run.state' || event.type === 'run.created')
-            this.run = { ...runSchema.parse(event.payload), input: run.input, task: run.task }
-        }
-        this.events = [...this.events, ...batch].slice(-300)
+        cursor = batch.at(-1)?.sequence ?? cursor
+        applyState(batch)
+        const combined = [...this.events, ...batch]
+        this.events = combined.slice(-300)
+        if (combined.length > 300) this.previousCursor = this.events[0]?.sequence
         this.update()
         if (!batch.length && terminalStates.has(this.run?.state ?? 'running')) return
       }

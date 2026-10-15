@@ -1,0 +1,40 @@
+{
+  "recordedAt": "2026-10-15T23:21:21.728Z",
+  "platform": "win32",
+  "bun": "1.3.11",
+  "iterations": 10,
+  "warmups": 1,
+  "methodology": "Alternating on the same live owned service. Baseline measures the old PowerShell/WMI query plus log read/JSON parse, excluding its JS ancestry check; native measures the full current ownership assertion. No inference or browser.",
+  "baselineQuery": {
+    "samples": [
+      1354.1404000000002,
+      1262.4261999999999,
+      1292.3805999999995,
+      1364.9852,
+      1282.9141,
+      1228.8672000000006,
+      1276.1139999999996,
+      1241.9447,
+      1240.9237000000012,
+      1217.343499999999
+    ],
+    "p50": 1262.4261999999999,
+    "p95": 1364.9852
+  },
+  "nativeOwnership": {
+    "samples": [
+      85.36400000000049,
+      84.73440000000028,
+      92.47809999999936,
+      88.96910000000025,
+      82.61119999999937,
+      85.60159999999996,
+      81.59979999999996,
+      82.04809999999998,
+      84.4398999999994,
+      83.93900000000212
+    ],
+    "p50": 84.4398999999994,
+    "p95": 92.47809999999936
+  }
+}

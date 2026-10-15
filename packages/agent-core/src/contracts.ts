@@ -190,7 +190,7 @@ export function canonical(value: unknown): string {
 }
 export function transition(from: RunState, to: RunState) {
   const allowed: Record<RunState, readonly RunState[]> = {
-    queued: ['running', 'canceled', 'blocked', 'interrupted'],
+    queued: ['running', 'canceling', 'canceled', 'blocked', 'interrupted'],
     running: [
       'waiting_input',
       'waiting_approval',

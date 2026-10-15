@@ -1,6 +1,7 @@
 import { type ChildProcessWithoutNullStreams, spawn } from 'node:child_process'
+import { randomUUID } from 'node:crypto'
 import { processEnvironment } from './environment'
-import { windowsHelper } from './windows'
+import { windowsHelper, windowsLaunchError } from './windows'
 export interface ProcessOptions {
   executable: string
   args: string[]
@@ -20,11 +21,12 @@ export class OwnedProcess {
     readonly child: ChildProcessWithoutNullStreams,
     private windows: boolean,
     private terminal: boolean,
+    readonly jobName: string | undefined,
   ) {
     this.exited = new Promise((resolve, reject) => {
       child.once('error', (error) => {
-        this.failure = error
-        reject(error)
+        this.failure = windows ? windowsLaunchError(error, child.spawnfile) : error
+        reject(this.failure)
       })
       child.once('close', (code, signal) => {
         this.closed = true
@@ -71,28 +73,35 @@ export class OwnedProcess {
       throw new Error('Invoke a Windows executable; scripts require an explicit shell')
     const env = processEnvironment(options.env)
     const command = windows ? await windowsHelper(directory) : executable
-    const child = spawn(command, windows ? [] : options.args, {
-      cwd: options.cwd,
-      env: windows
-        ? {
-            ...env,
-            ZERO_PROCESS_REQUEST: Buffer.from(
-              JSON.stringify({
-                executable,
-                arguments: options.args,
-                cwd: options.cwd,
-                memoryMb,
-                pids,
-                terminal: options.terminal,
-              }),
-            ).toString('base64'),
-          }
-        : env,
-      windowsHide: true,
-      detached: !windows,
-      stdio: 'pipe',
-    })
-    return new OwnedProcess(child, windows, Boolean(options.terminal))
+    const jobName = windows ? `Local\\SistemaZero-${randomUUID()}` : undefined
+    let child: ChildProcessWithoutNullStreams
+    try {
+      child = spawn(command, windows ? [] : options.args, {
+        cwd: options.cwd,
+        env: windows
+          ? {
+              ...env,
+              ZERO_PROCESS_REQUEST: Buffer.from(
+                JSON.stringify({
+                  executable,
+                  arguments: options.args,
+                  cwd: options.cwd,
+                  memoryMb,
+                  pids,
+                  terminal: options.terminal,
+                  jobName,
+                }),
+              ).toString('base64'),
+            }
+          : env,
+        windowsHide: true,
+        detached: !windows,
+        stdio: 'pipe',
+      })
+    } catch (error) {
+      throw windows ? windowsLaunchError(error, command) : error
+    }
+    return new OwnedProcess(child, windows, Boolean(options.terminal), jobName)
   }
   get stdout() {
     return this.child.stdout

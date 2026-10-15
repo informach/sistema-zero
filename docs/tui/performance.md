@@ -32,3 +32,15 @@ Experimento de uma variável: `--smol` manteve o golden e p95 ~49,7 ms no fixtur
 Ainda faltam para o aceite integral B12: RSS combinado na meta, quota física do workspace Docker, injeção real de ENOSPC e de cada fronteira de patch, além da avaliação de adoção com 30 tarefas e modelos reais. Não há resultado comparativo de qualidade/custo inventado a partir desses benchmarks.
 
 O [registro de proveniência](../../.audits/tui-bench/working-tree/win32/verification-provenance.json) associa o commit integrado, logs de testes, hash do manifesto distribuído e artefatos. F1–F7 foram executados antes da integração com staging; o startup final e a verificação da distribuição foram repetidos sobre o código integrado.
+
+## Revisão posterior: ownership de portas
+
+A consulta WMI anterior foi substituída por leitura TCP nativa e confirmação do listener no
+Job Object próprio, com identidade aleatória. Em dez amostras alternadas no mesmo serviço
+(uma rodada de aquecimento), a consulta anterior teve p50 1.262,43 ms/p95 1.364,99 ms; a
+verificação nativa completa teve p50 84,44 ms/p95 92,48 ms. A baseline inclui processo,
+consulta, leitura e parse, mas exclui a checagem JS de ancestralidade. Os testes exercitam
+IPv4, IPv6, descendentes, porta alheia e job encerrado.
+
+[Script e amostras](../../.audits/tui-full-review-2026-10-15/ports.json). Esse ganho é específico
+da verificação de portas e não altera o resultado anterior do aceite de RSS ou de inferência.

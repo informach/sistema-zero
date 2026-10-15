@@ -7,10 +7,35 @@ export function inside(root: string, target: string) {
   const path = relative(root, target)
   return path === '' || (!isAbsolute(path) && path !== '..' && !path.startsWith(`..${sep}`))
 }
+export function protectedName(name: string) {
+  const part = process.platform === 'win32' ? name.toLowerCase().replace(/[ .]+$/, '') : name
+  return (
+    part === '.git' ||
+    part === '.env' ||
+    part.startsWith('.env.') ||
+    part === '.ssh' ||
+    part === '.aws'
+  )
+}
+function checkSegments(root: string, target: string) {
+  for (const part of relative(root, target).split(sep)) {
+    if (protectedName(part))
+      throw new Error('Protected path; use a dedicated credential or Git operation')
+    if (
+      process.platform === 'win32' &&
+      (/[:<>"|?*]/.test(part) ||
+        [...part].some((character) => character.charCodeAt(0) < 32) ||
+        /[ .]$/.test(part) ||
+        /^(con|prn|aux|nul|com[1-9¹²³]|lpt[1-9¹²³])(?:\.|$)/i.test(part))
+    )
+      throw new Error('Unsupported Windows device, stream or path alias')
+  }
+}
 export async function workspacePath(workspace: string, input: string, create = false) {
   const root = await realpath(workspace)
   const candidate = resolve(root, input)
   if (!inside(root, candidate)) throw new Error('Path escapes workspace')
+  checkSegments(root, candidate)
   let actual: string
   try {
     actual = await realpath(candidate)
@@ -26,18 +51,7 @@ export async function workspacePath(workspace: string, input: string, create = f
     actual = resolve(await realpath(parent), relative(parent, candidate))
   }
   if (!inside(root, actual)) throw new Error('Symbolic link escapes workspace')
-  const parts = relative(root, actual).split(sep)
-  if (
-    parts.some(
-      (part) =>
-        part === '.git' ||
-        part === '.env' ||
-        part.startsWith('.env.') ||
-        part === '.ssh' ||
-        part === '.aws',
-    )
-  )
-    throw new Error('Protected path; use a dedicated credential or Git operation')
+  checkSegments(root, actual)
   return actual
 }
 export async function readBounded(path: string, maxBytes = 1_000_000): Promise<Buffer> {

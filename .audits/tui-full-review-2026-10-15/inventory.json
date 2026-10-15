@@ -1,0 +1,5160 @@
+{
+  "base": "8ea02d96e48f447762ee070e8334d8a6c515c437",
+  "generatedAt": "2026-10-15T23:33:32.378Z",
+  "methodology": "Inventory and AST triage of all scoped files; candidates require manual confirmation. Type-only imports, dynamic imports and worker URLs are reviewed separately. This is not proof of absence of defects.",
+  "totals": {
+    "files": 251,
+    "lines": 36166
+  },
+  "cycles": [],
+  "unreferencedExportCandidates": [
+    {
+      "file": "packages/agent-core/src/context.ts",
+      "name": "Memory"
+    },
+    {
+      "file": "packages/agent-core/src/contracts.ts",
+      "name": "ResponseMessage"
+    },
+    {
+      "file": "packages/agent-core/src/environment.ts",
+      "name": "EnvironmentTemplate"
+    },
+    {
+      "file": "packages/agent-core/src/workflow.ts",
+      "name": "WorkflowDocument"
+    },
+    {
+      "file": "packages/auth/src/composition-root.ts",
+      "name": "createApplication"
+    },
+    {
+      "file": "packages/studio-runtime/src/contracts.ts",
+      "name": "PRO_TEMPLATE_IDS"
+    },
+    {
+      "file": "packages/studio-runtime/src/contracts.ts",
+      "name": "ProBuildResponse"
+    },
+    {
+      "file": "packages/studio-runtime/src/contracts.ts",
+      "name": "trustedViteConfig"
+    }
+  ],
+  "entries": [
+    {
+      "file": "packages/agent-core/package.json",
+      "lines": 20,
+      "sha256": "edb79df89be7c16052e614fd8a10fb3620707485b9f91fbf307be895b2464506",
+      "exports": [],
+      "imports": [],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-core/src/context.ts",
+      "lines": 28,
+      "sha256": "2180197b60d1b1740359d8d12c3d32d4719f4ffaf7a0db1d7e0503f1e0af5760",
+      "exports": [
+        "memorySchema",
+        "Memory",
+        "ContextItem",
+        "ContextBundle"
+      ],
+      "imports": [
+        "zod"
+      ],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-core/src/contracts.ts",
+      "lines": 243,
+      "sha256": "2110df057b64f29c3e659552f83ba24bb94ed75a8e29d9fa5126af85e542a2fa",
+      "exports": [
+        "id",
+        "modeSchema",
+        "backendSchema",
+        "stateSchema",
+        "RunState",
+        "terminalStates",
+        "sessionSchema",
+        "taskSchema",
+        "runSchema",
+        "Run",
+        "runSummarySchema",
+        "RunSummary",
+        "eventSchema",
+        "RuntimeEvent",
+        "artifactSchema",
+        "ArtifactRef",
+        "outcomeSchema",
+        "ToolOutcome",
+        "effectSchema",
+        "questionSchema",
+        "settingsSchema",
+        "Settings",
+        "startRunSchema",
+        "capabilitySchema",
+        "Capability",
+        "ToolContext",
+        "ToolDefinition",
+        "ToolRejected",
+        "commandSchema",
+        "Command",
+        "responseSchema",
+        "ResponseMessage",
+        "canonical",
+        "transition",
+        "sanitize"
+      ],
+      "imports": [
+        "zod"
+      ],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-core/src/environment.ts",
+      "lines": 64,
+      "sha256": "721aba1b880f1ff767693106a8bb5b29a47b503985d1f3fbaf6572f38e44e850",
+      "exports": [
+        "environmentTemplateSchema",
+        "EnvironmentTemplate",
+        "environmentRequestSchema",
+        "EnvironmentRequest",
+        "leaseRefSchema",
+        "environmentLeaseSchema",
+        "EnvironmentLease"
+      ],
+      "imports": [
+        "zod",
+        "./contracts"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-core/src/contracts.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-core/src/graph.ts",
+      "lines": 29,
+      "sha256": "fd8bfdbfccc09cecf42b659d253184df1dfadbc1c92de28037823bb9cf4535dc",
+      "exports": [
+        "DependencyNode",
+        "orderGraph"
+      ],
+      "imports": [],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-core/src/index.ts",
+      "lines": 8,
+      "sha256": "90b43521ed402464cf9db21f3efb35604db4913a8b80fc1d9e518480d96a3058",
+      "exports": [],
+      "imports": [],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-core/src/policy.ts",
+      "lines": 14,
+      "sha256": "8b11b52125c55aae4ccb01f2ade4324c3aa164da3eb15d7d0f570b2915f6c049",
+      "exports": [
+        "PolicyDecision",
+        "authorize"
+      ],
+      "imports": [
+        "./contracts"
+      ],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-core/src/team.ts",
+      "lines": 54,
+      "sha256": "1eca5fe29cd4ef8959914dd79f3fb9156a4d0fa542ab693681145a048909cb44",
+      "exports": [
+        "teamNodeSchema",
+        "teamPlanSchema",
+        "compileTeam",
+        "teamHandoffSchema"
+      ],
+      "imports": [
+        "zod",
+        "./contracts",
+        "./graph"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-core/src/contracts.ts",
+        "packages/agent-core/src/graph.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-core/src/workflow.ts",
+      "lines": 89,
+      "sha256": "bf60b1822e4a0efbc91f36675a5e969688977dea85a9bc3bcc813b65011bd510",
+      "exports": [
+        "workflowNodeSchema",
+        "workflowDocumentSchema",
+        "WorkflowDocument",
+        "WorkflowNode",
+        "compiledWorkflowSchema",
+        "CompiledWorkflow",
+        "scheduleSpecSchema",
+        "ScheduleSpec"
+      ],
+      "imports": [
+        "zod"
+      ],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-core/tests/contracts.test.ts",
+      "lines": 9,
+      "sha256": "564090e2ee5f2f85f8656146ccecf79ee333e8229a60f5a0d5c7c5b39694acff",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "../src/contracts"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-core/src/contracts.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-core/tsconfig.json",
+      "lines": 6,
+      "sha256": "6505ab3afc16223a8c16d20c8e68c382824734a5a053c82a0cb3e2d65b409448",
+      "exports": [],
+      "imports": [],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-integrations/package.json",
+      "lines": 33,
+      "sha256": "c98d3d611bf6d895fa1358542a0dba70b8938c23c465cb96d9fe64d2a84fbce2",
+      "exports": [],
+      "imports": [],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-integrations/src/browser/browser-worker.ts",
+      "lines": 184,
+      "sha256": "f7b4039f197939769ba785edcafa4a67535a6b22c4ed9c264307b1e1d58d5fb3",
+      "exports": [],
+      "imports": [
+        "node:fs/promises",
+        "@sistemazero/agent-core",
+        "zod",
+        "../mcp/stdio",
+        "./schema",
+        "./session"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-integrations/src/mcp/stdio.ts",
+        "packages/agent-integrations/src/browser/schema.ts",
+        "packages/agent-integrations/src/browser/session.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-integrations/src/browser/index.ts",
+      "lines": 10,
+      "sha256": "74d6d1e0eb7ffa04c6905a6135ea4fc20bf80a6505582ecde799e5f6527e4490",
+      "exports": [
+        "browserWorkerUrl"
+      ],
+      "imports": [],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-integrations/src/browser/proxy.ts",
+      "lines": 253,
+      "sha256": "6360ad89bd25bef9768519e1874175456ea162abbc08ada77148b798ee65ac98",
+      "exports": [
+        "BrowserNetwork",
+        "browserProxy"
+      ],
+      "imports": [
+        "node:crypto",
+        "node:http",
+        "node:net",
+        "node:stream",
+        "../network/address"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-integrations/src/network/address.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-integrations/src/browser/schema.ts",
+      "lines": 101,
+      "sha256": "24812c1e39cef8f2e82fd7548eb2924bbd4e4106ddfadb7ab4b42895691acac5",
+      "exports": [
+        "browserOpenSchema",
+        "browserTargetSchema",
+        "browserActionSchema",
+        "browserExtractSchema",
+        "browserSnapshotSchema",
+        "BrowserSnapshot",
+        "redactUrl",
+        "redactText"
+      ],
+      "imports": [
+        "zod"
+      ],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-integrations/src/browser/session.ts",
+      "lines": 368,
+      "sha256": "68d42c3d5b5a52ee38dfc7659c2b06a4c3947406cbd7689d47f204aec4002db4",
+      "exports": [
+        "BrowserSession"
+      ],
+      "imports": [
+        "node:crypto",
+        "node:fs/promises",
+        "node:path",
+        "@sistemazero/agent-core",
+        "playwright-core",
+        "zod",
+        "./proxy",
+        "./schema"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-integrations/src/browser/proxy.ts",
+        "packages/agent-integrations/src/browser/schema.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-integrations/src/github/client.ts",
+      "lines": 123,
+      "sha256": "f17108ed7d9f3a24752b8cb18afbaccb72dc76cb06de306bfda1aeb762dc8650",
+      "exports": [
+        "githubReadSchema",
+        "githubDraftSchema",
+        "repositorySchema",
+        "GitHub"
+      ],
+      "imports": [
+        "@sistemazero/agent-core",
+        "zod",
+        "../sistemazero/http"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-integrations/src/sistemazero/http.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-integrations/src/mcp/auth.ts",
+      "lines": 188,
+      "sha256": "1375f421114f4e8241cf7affaa47fe3300ad4a16c7acff5d8998321f7eb2b99c",
+      "exports": [
+        "OAuthStorage",
+        "McpOAuth"
+      ],
+      "imports": [
+        "node:crypto",
+        "@modelcontextprotocol/sdk/client/auth.js",
+        "@modelcontextprotocol/sdk/shared/auth.js",
+        "zod",
+        "./http"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-integrations/src/mcp/http.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-integrations/src/mcp/client.ts",
+      "lines": 173,
+      "sha256": "2d778163ce72c24b5a3618ace59c88f3d01684f486d3140dae9c6ce8fc74f80d",
+      "exports": [
+        "toolDigest",
+        "McpConnection"
+      ],
+      "imports": [
+        "node:crypto",
+        "@modelcontextprotocol/sdk/client/auth.js",
+        "@modelcontextprotocol/sdk/client/index.js",
+        "@modelcontextprotocol/sdk/client/streamableHttp.js",
+        "@modelcontextprotocol/sdk/shared/transport.js",
+        "@modelcontextprotocol/sdk/types.js",
+        "@sistemazero/agent-core",
+        "./http",
+        "./schema",
+        "./stdio"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-integrations/src/mcp/http.ts",
+        "packages/agent-integrations/src/mcp/schema.ts",
+        "packages/agent-integrations/src/mcp/stdio.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-integrations/src/mcp/http.ts",
+      "lines": 57,
+      "sha256": "ed6e8b0e2c45af9144873970b213e40e12d521ecbdd7cb4f3a3a898248af30f6",
+      "exports": [
+        "endpointUrl",
+        "boundedFetch"
+      ],
+      "imports": [
+        "@modelcontextprotocol/sdk/shared/transport.js"
+      ],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-integrations/src/mcp/index.ts",
+      "lines": 8,
+      "sha256": "7af0c5bbc94440fae777fa5b726a97fb54fea521c274ee7cee6ef9a27606f55a",
+      "exports": [],
+      "imports": [],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-integrations/src/mcp/schema-worker.ts",
+      "lines": 63,
+      "sha256": "97d7dc71c5d139bb9b53a19d52af609ef671ab600d2ec275f144f3ff1614fb11",
+      "exports": [],
+      "imports": [
+        "@sistemazero/agent-core",
+        "ajv",
+        "ajv",
+        "ajv/dist/2019",
+        "ajv/dist/2020",
+        "ajv-formats",
+        "zod"
+      ],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-integrations/src/mcp/schema.ts",
+      "lines": 60,
+      "sha256": "6bd68c57810f8d5322efcb4c45d6d352d272eef0471cdb4e60a18ec86982c05e",
+      "exports": [
+        "SchemaValidator"
+      ],
+      "imports": [
+        "zod"
+      ],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-integrations/src/mcp/server.ts",
+      "lines": 150,
+      "sha256": "e12931c9bdc8d5fbddacc905f9c63a09add8cee82d53d4831d9cae51b5bc0362",
+      "exports": [
+        "McpBinding",
+        "startMcpServer"
+      ],
+      "imports": [
+        "node:crypto",
+        "@modelcontextprotocol/sdk/server/index.js",
+        "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js",
+        "@modelcontextprotocol/sdk/types.js",
+        "@sistemazero/agent-core"
+      ],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-integrations/src/mcp/stdio-server.ts",
+      "lines": 108,
+      "sha256": "0304d66a826d8b413accc447b73a0802affb33f1bfb64bc35549d5bf8071ce57",
+      "exports": [
+        "StdioInvocation",
+        "serveMcpStdio"
+      ],
+      "imports": [
+        "@modelcontextprotocol/sdk/server/index.js",
+        "@modelcontextprotocol/sdk/types.js",
+        "@sistemazero/agent-core",
+        "./stdio"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-integrations/src/mcp/stdio.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-integrations/src/mcp/stdio.ts",
+      "lines": 81,
+      "sha256": "68a1fa3a03b81207511c43b5d50ead15cae8b960c026d761fe55cd16a9bd37bc",
+      "exports": [
+        "ManagedProcess",
+        "JsonLineStreams",
+        "JsonLineTransport",
+        "ManagedStdioTransport"
+      ],
+      "imports": [
+        "node:string_decoder",
+        "@modelcontextprotocol/sdk/shared/transport.js",
+        "@modelcontextprotocol/sdk/types.js"
+      ],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-integrations/src/network/address.ts",
+      "lines": 46,
+      "sha256": "287e942bdfe8be922de6e8fe30e66a7baee8f575bbe0fd38cacd40f29aba22f4",
+      "exports": [
+        "publicAddress",
+        "publicAddresses"
+      ],
+      "imports": [
+        "node:dns/promises",
+        "node:net"
+      ],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-integrations/src/notifications/telegram.ts",
+      "lines": 48,
+      "sha256": "c91f990715f6c6a55b0a68f113550c73df9b99f2383bc46ecb6f299a0e06f747",
+      "exports": [
+        "telegramMessageSchema",
+        "Telegram"
+      ],
+      "imports": [
+        "zod",
+        "../sistemazero/http"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-integrations/src/sistemazero/http.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-integrations/src/sistemazero/auth.ts",
+      "lines": 163,
+      "sha256": "1eb225033988eacd08379642aa0c12310a7ca7ce742c4a29785686d8816e1fae",
+      "exports": [
+        "CredentialVault",
+        "StaffClient"
+      ],
+      "imports": [
+        "node:crypto",
+        "@sistemazero/core/staff",
+        "zod",
+        "./http"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-integrations/src/sistemazero/http.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-integrations/src/sistemazero/http.ts",
+      "lines": 141,
+      "sha256": "eefc4ba8dd4118a56ce54d7f9cd357bb05fc84a1ae38e5552a009b0da8dc42c5",
+      "exports": [
+        "ApiError",
+        "serviceOrigin",
+        "JsonService"
+      ],
+      "imports": [
+        "zod"
+      ],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-integrations/src/sistemazero/index.ts",
+      "lines": 16,
+      "sha256": "5bcc84f77f5fddf7212cb4627f1afd2c878d7642c5374789cf9add4daaee6637",
+      "exports": [],
+      "imports": [],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-integrations/tests/browser-launch-probe.ts",
+      "lines": 11,
+      "sha256": "2fab78cc17d14f05c5fc9ac6b3fa53fcabded11302332115d83162c0629869f3",
+      "exports": [],
+      "imports": [
+        "playwright-core"
+      ],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-integrations/tests/browser-proxy.test.ts",
+      "lines": 61,
+      "sha256": "7b29f17dd3cd280cfb69801983cd73d41d29bcedfcdf24d82af1bc8dbfa468a9",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "node:http",
+        "../src/browser/proxy"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-integrations/src/browser/proxy.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-integrations/tests/github.test.ts",
+      "lines": 50,
+      "sha256": "c8df6de9c7cc78dc4a87ee2e294b03638d7ed4769e643f214613bcba0032b7d7",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "../src/github/client"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-integrations/src/github/client.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-integrations/tests/mcp-auth.test.ts",
+      "lines": 80,
+      "sha256": "2ab340a8f30b566a238604f6fbf1fa3fd61e2b8685b09d4985322a8c25b289d2",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "node:crypto",
+        "../src/mcp/auth"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-integrations/src/mcp/auth.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-integrations/tests/mcp-client.test.ts",
+      "lines": 64,
+      "sha256": "40c026c219e4da5613a4dfeb285b3fd506b2f228183a75ca20493ac21a95a767",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "../src/mcp/client",
+        "../src/mcp/schema",
+        "../src/mcp/server"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-integrations/src/mcp/client.ts",
+        "packages/agent-integrations/src/mcp/schema.ts",
+        "packages/agent-integrations/src/mcp/server.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-integrations/tests/mcp-server.test.ts",
+      "lines": 67,
+      "sha256": "b4e741345405ead6c849be6933fe808f8819795bd799ba97989047cf891f7c9d",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "@modelcontextprotocol/sdk/client/index.js",
+        "@modelcontextprotocol/sdk/client/streamableHttp.js",
+        "../src/mcp/server"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-integrations/src/mcp/server.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-integrations/tests/service-http.test.ts",
+      "lines": 32,
+      "sha256": "9eac308b69cb1696357dafa63864076a06a2a719b217858a5eba1cc3e86dd027",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "../src/sistemazero/http"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-integrations/src/sistemazero/http.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-integrations/tests/staff-auth.test.ts",
+      "lines": 87,
+      "sha256": "b20d541c21585fe018086598a62bcccc43f336b00a7c9ae140ab37399563611d",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "../src/sistemazero/auth"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-integrations/src/sistemazero/auth.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-integrations/tsconfig.json",
+      "lines": 6,
+      "sha256": "24a091475d27f192d94d3a4127adb6311bb45d20304d5b4d3d27500689d2a566",
+      "exports": [],
+      "imports": [],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/bench/crash-child.ts",
+      "lines": 51,
+      "sha256": "3088625bb034c1285b6c13c6e5da89dfa64c1d15154f51b4259ccefe1b52d3d5",
+      "exports": [],
+      "imports": [
+        "node:fs/promises",
+        "node:path",
+        "@sistemazero/agent-core",
+        "../src/store/client"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/store/client.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/bench/environment-crash-child.ts",
+      "lines": 42,
+      "sha256": "f180c6dab408bf9edc52547b3fd737b81d879ff050a94f8d9273db889f1ecd91",
+      "exports": [],
+      "imports": [
+        "node:fs/promises",
+        "node:path",
+        "@sistemazero/agent-core",
+        "zod",
+        "../src/environments/manager",
+        "../src/process/manager",
+        "../src/store/client"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/environments/manager.ts",
+        "packages/agent-runtime/src/process/manager.ts",
+        "packages/agent-runtime/src/store/client.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/bench/environment-crash.ts",
+      "lines": 86,
+      "sha256": "670cf0c638a2ba4610dd5f30241b562c6848fc45c260c76d7d8980e2c5e00e07",
+      "exports": [],
+      "imports": [
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "zod",
+        "../src/environments/manager",
+        "../src/environments/templates",
+        "../src/process/manager",
+        "../src/store/client",
+        "../src/workspace/snapshot"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/environments/manager.ts",
+        "packages/agent-runtime/src/environments/templates.ts",
+        "packages/agent-runtime/src/process/manager.ts",
+        "packages/agent-runtime/src/store/client.ts",
+        "packages/agent-runtime/src/workspace/snapshot.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/bench/environment.ts",
+      "lines": 164,
+      "sha256": "fbc5a71f7d508ee6602cd4f719d88da32511cc2f6498daddce2aa3cd604798c0",
+      "exports": [],
+      "imports": [
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "@sistemazero/agent-core",
+        "../src/environments/manager",
+        "../src/environments/templates",
+        "../src/process/manager",
+        "../src/services/registry",
+        "../src/store/client",
+        "../src/workspace/snapshot"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/environments/manager.ts",
+        "packages/agent-runtime/src/environments/templates.ts",
+        "packages/agent-runtime/src/process/manager.ts",
+        "packages/agent-runtime/src/services/registry.ts",
+        "packages/agent-runtime/src/store/client.ts",
+        "packages/agent-runtime/src/workspace/snapshot.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/bench/faults.ts",
+      "lines": 84,
+      "sha256": "e314e3eeee610bf70d22e2fa3f9eb1dc965ac1cfc77ca8acdc1aa597d3d19aab",
+      "exports": [],
+      "imports": [
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "@sistemazero/agent-core",
+        "../src/process/owned",
+        "../src/store/client"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/process/owned.ts",
+        "packages/agent-runtime/src/store/client.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/bench/history.ts",
+      "lines": 172,
+      "sha256": "07e76fbc74e01aae4e4861778c842f196395785fc23ada0061455342f3c42d68",
+      "exports": [],
+      "imports": [
+        "node:crypto",
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "@sistemazero/agent-core",
+        "../src/client",
+        "../src/credentials",
+        "../src/ipc/server",
+        "../src/store/client",
+        "../src/store/database",
+        "../src/supervisor"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/client.ts",
+        "packages/agent-runtime/src/credentials.ts",
+        "packages/agent-runtime/src/ipc/server.ts",
+        "packages/agent-runtime/src/store/client.ts",
+        "packages/agent-runtime/src/store/database.ts",
+        "packages/agent-runtime/src/supervisor.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/bench/lifecycle.ts",
+      "lines": 142,
+      "sha256": "0d1325cb012c9f94796d95bcb0f5afd03c5adedfa40411a6a442ced8099316dc",
+      "exports": [],
+      "imports": [
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "@sistemazero/agent-core",
+        "zod",
+        "../src/application",
+        "../src/store/client",
+        "../src/supervisor"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/application.ts",
+        "packages/agent-runtime/src/store/client.ts",
+        "packages/agent-runtime/src/supervisor.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/bench/load.ts",
+      "lines": 251,
+      "sha256": "b1fc2de13c539eecf5d3cdef9739a2da93c2a416e791a06c9f153552754bc130",
+      "exports": [],
+      "imports": [
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "@sistemazero/agent-core",
+        "@sistemazero/agent-integrations/browser",
+        "zod",
+        "../src/application",
+        "../src/browser/worker",
+        "../src/client",
+        "../src/credentials",
+        "../src/ipc/server",
+        "../src/process/rpc",
+        "../src/store/client",
+        "../src/supervisor",
+        "../src/tools/paths"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-integrations/src/browser/index.ts",
+        "packages/agent-runtime/src/application.ts",
+        "packages/agent-runtime/src/browser/worker.ts",
+        "packages/agent-runtime/src/client.ts",
+        "packages/agent-runtime/src/credentials.ts",
+        "packages/agent-runtime/src/ipc/server.ts",
+        "packages/agent-runtime/src/process/rpc.ts",
+        "packages/agent-runtime/src/store/client.ts",
+        "packages/agent-runtime/src/supervisor.ts",
+        "packages/agent-runtime/src/tools/paths.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/bench/mcp-native-probe.ts",
+      "lines": 65,
+      "sha256": "3dfd9cb989ae2f9d754d515c5638828bee495f99e3fd0ab52012f8a029a8608e",
+      "exports": [],
+      "imports": [
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "@sistemazero/agent-integrations/mcp",
+        "zod",
+        "../src/backends/codex",
+        "../src/process/manager"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-integrations/src/mcp/index.ts",
+        "packages/agent-runtime/src/backends/codex.ts",
+        "packages/agent-runtime/src/process/manager.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/bench/model-catalog.ts",
+      "lines": 16,
+      "sha256": "3a320e5c0c38c27bbfdc4f1c45bc256da93f32f472a9ee10d10d77ba9b9e19b4",
+      "exports": [],
+      "imports": [
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "../src/backends/claude",
+        "../src/backends/codex",
+        "../src/process/manager"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/backends/claude.ts",
+        "packages/agent-runtime/src/backends/codex.ts",
+        "packages/agent-runtime/src/process/manager.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/bench/native-coding.ts",
+      "lines": 100,
+      "sha256": "befb6bf6552290ac0071f23540c21479d936ff9a9da9831704f6026cb78b5a58",
+      "exports": [],
+      "imports": [
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "@sistemazero/agent-core",
+        "zod",
+        "../src/application",
+        "../src/backends/service",
+        "../src/process/manager",
+        "../src/store/client",
+        "../src/supervisor"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/application.ts",
+        "packages/agent-runtime/src/backends/service.ts",
+        "packages/agent-runtime/src/process/manager.ts",
+        "packages/agent-runtime/src/store/client.ts",
+        "packages/agent-runtime/src/supervisor.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/bench/native-interrupt.ts",
+      "lines": 118,
+      "sha256": "010b5bf43edc7a0bb72a8638e3995a71b0d3d1e6fabc5b8244792d918b785d39",
+      "exports": [],
+      "imports": [
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "@sistemazero/agent-core",
+        "zod",
+        "../src/application",
+        "../src/backends/service",
+        "../src/process/manager",
+        "../src/store/client",
+        "../src/supervisor"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/application.ts",
+        "packages/agent-runtime/src/backends/service.ts",
+        "packages/agent-runtime/src/process/manager.ts",
+        "packages/agent-runtime/src/store/client.ts",
+        "packages/agent-runtime/src/supervisor.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/bench/startup.ts",
+      "lines": 121,
+      "sha256": "ae8637b0d885bd5e21e7385492911540583f7f637f161e7b7ffa3a38921570dd",
+      "exports": [],
+      "imports": [
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "zod",
+        "../src/client",
+        "../src/credentials",
+        "../src/process/owned"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/client.ts",
+        "packages/agent-runtime/src/credentials.ts",
+        "packages/agent-runtime/src/process/owned.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/bench/workflow.ts",
+      "lines": 97,
+      "sha256": "5edf98d6335d58fa6b43d85a7c3689125e434d41f03a0da25b126df5af5ff846",
+      "exports": [],
+      "imports": [
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "@sistemazero/agent-core",
+        "zod",
+        "../src/application",
+        "../src/store/client",
+        "../src/supervisor",
+        "../src/tools/definition"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/application.ts",
+        "packages/agent-runtime/src/store/client.ts",
+        "packages/agent-runtime/src/supervisor.ts",
+        "packages/agent-runtime/src/tools/definition.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/bench/workspaces.ts",
+      "lines": 199,
+      "sha256": "e248a883f89ebb7d1a9aa8e92c3c981e0d00ddfa66b72f5616b8bcce641d495d",
+      "exports": [],
+      "imports": [
+        "node:crypto",
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "@sistemazero/agent-core",
+        "../src/context/index",
+        "../src/process/manager",
+        "../src/tools/read",
+        "../src/tools/search"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/context/index.ts",
+        "packages/agent-runtime/src/process/manager.ts",
+        "packages/agent-runtime/src/tools/read.ts",
+        "packages/agent-runtime/src/tools/search.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/package.json",
+      "lines": 31,
+      "sha256": "ab4eeda5ee255aa88536aec8c19fe5db94144126815829836e7126f0bc778a61",
+      "exports": [],
+      "imports": [],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/application.ts",
+      "lines": 305,
+      "sha256": "1fb9bd182fc4464500862300ec6a1ad269b2fd9732e6e9c9f0ba5037bcea21d9",
+      "exports": [
+        "configure"
+      ],
+      "imports": [
+        "@sistemazero/agent-core",
+        "zod",
+        "./backends/service",
+        "./browser/setup",
+        "./context/setup",
+        "./credentials",
+        "./environments/setup",
+        "./execution/dispatcher",
+        "./integrations/mcp",
+        "./integrations/notifications",
+        "./integrations/staff",
+        "./models/loop",
+        "./models/openrouter",
+        "./process/manager",
+        "./services/setup",
+        "./sessions",
+        "./store/artifacts",
+        "./supervisor",
+        "./team/setup",
+        "./tools/catalog",
+        "./tools/checks",
+        "./tools/coding",
+        "./tools/context",
+        "./tools/definition",
+        "./tools/read",
+        "./tools/search",
+        "./workflows/setup",
+        "./workspace/patch",
+        "./workspace/snapshot"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/backends/service.ts",
+        "packages/agent-runtime/src/browser/setup.ts",
+        "packages/agent-runtime/src/context/setup.ts",
+        "packages/agent-runtime/src/credentials.ts",
+        "packages/agent-runtime/src/environments/setup.ts",
+        "packages/agent-runtime/src/execution/dispatcher.ts",
+        "packages/agent-runtime/src/integrations/mcp.ts",
+        "packages/agent-runtime/src/integrations/notifications.ts",
+        "packages/agent-runtime/src/integrations/staff.ts",
+        "packages/agent-runtime/src/models/loop.ts",
+        "packages/agent-runtime/src/models/openrouter.ts",
+        "packages/agent-runtime/src/process/manager.ts",
+        "packages/agent-runtime/src/services/setup.ts",
+        "packages/agent-runtime/src/sessions.ts",
+        "packages/agent-runtime/src/store/artifacts.ts",
+        "packages/agent-runtime/src/team/setup.ts",
+        "packages/agent-runtime/src/tools/catalog.ts",
+        "packages/agent-runtime/src/tools/checks.ts",
+        "packages/agent-runtime/src/tools/coding.ts",
+        "packages/agent-runtime/src/tools/context.ts",
+        "packages/agent-runtime/src/tools/definition.ts",
+        "packages/agent-runtime/src/tools/read.ts",
+        "packages/agent-runtime/src/tools/search.ts",
+        "packages/agent-runtime/src/workflows/setup.ts",
+        "packages/agent-runtime/src/workspace/patch.ts",
+        "packages/agent-runtime/src/workspace/snapshot.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/backends/auth.ts",
+      "lines": 40,
+      "sha256": "f67e909b76a54c1a4c4af509b316645d21f00cf1d6ea290c1203f73aaf02a485",
+      "exports": [
+        "nativeAuth"
+      ],
+      "imports": [
+        "../config",
+        "../process/manager",
+        "./native-process"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/config.ts",
+        "packages/agent-runtime/src/process/manager.ts",
+        "packages/agent-runtime/src/backends/native-process.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/backends/claude.ts",
+      "lines": 236,
+      "sha256": "1bd1d6cf794873e10af1f6a3ac8ff7bcc8c977d545ffbb9a241c7f5662e41230",
+      "exports": [
+        "ClaudeBackend"
+      ],
+      "imports": [
+        "@anthropic-ai/claude-agent-sdk",
+        "../process/environment",
+        "../process/manager",
+        "./contract",
+        "./native-process",
+        "./protocol/sdk-process"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/process/environment.ts",
+        "packages/agent-runtime/src/backends/native-process.ts",
+        "packages/agent-runtime/src/backends/protocol/sdk-process.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/backends/codex.ts",
+      "lines": 352,
+      "sha256": "59a71d763e2991df6193e169de27191f82f351a45860245f8903bf3553dd6658",
+      "exports": [
+        "CodexBackend"
+      ],
+      "imports": [
+        "zod",
+        "../process/manager",
+        "../process/rpc",
+        "./contract",
+        "./native-process"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/process/rpc.ts",
+        "packages/agent-runtime/src/backends/contract.ts",
+        "packages/agent-runtime/src/backends/native-process.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/backends/contract.ts",
+      "lines": 82,
+      "sha256": "0f3c18c50c6d818cb8545a4d204a51f7445be5a8df908eaa7b8fa3ec042fec13",
+      "exports": [
+        "backendEventSchema",
+        "BackendEvent",
+        "BackendRequest",
+        "InterruptReceipt",
+        "AgentBackend",
+        "Mailbox"
+      ],
+      "imports": [
+        "@sistemazero/agent-core",
+        "zod"
+      ],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/backends/native-process.ts",
+      "lines": 94,
+      "sha256": "5acffe46115a3e138a5f6be51d4563a836ff55fd699862a84266f137d2f28b8b",
+      "exports": [
+        "NativeName",
+        "certifiedVersions",
+        "nativeExecutable",
+        "nativeVersion",
+        "claudeAccount"
+      ],
+      "imports": [
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "zod",
+        "../process/manager",
+        "../tools/paths"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/tools/paths.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/backends/protocol/sdk-process.ts",
+      "lines": 98,
+      "sha256": "99d4a887ca79f8350c0ebb97c5544749e13858674e0dccf5e13d85554cfd76c9",
+      "exports": [
+        "SdkProcess"
+      ],
+      "imports": [
+        "node:events",
+        "node:stream",
+        "@anthropic-ai/claude-agent-sdk",
+        "../../process/manager",
+        "../../process/owned"
+      ],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/backends/service.ts",
+      "lines": 198,
+      "sha256": "81b81a6c7b1f49d490022efe3e7f14b98949f4e3e3fd1fd7504051cd22fc6730",
+      "exports": [
+        "NativeBackends"
+      ],
+      "imports": [
+        "@sistemazero/agent-core",
+        "zod",
+        "../context/builder",
+        "../execution/dispatcher",
+        "../execution/locks",
+        "../process/manager",
+        "../supervisor",
+        "../tools/paths",
+        "./claude",
+        "./codex",
+        "./contract",
+        "./native-process"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/context/builder.ts",
+        "packages/agent-runtime/src/execution/locks.ts",
+        "packages/agent-runtime/src/tools/paths.ts",
+        "packages/agent-runtime/src/backends/claude.ts",
+        "packages/agent-runtime/src/backends/codex.ts",
+        "packages/agent-runtime/src/backends/contract.ts",
+        "packages/agent-runtime/src/backends/native-process.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/browser/manager.ts",
+      "lines": 396,
+      "sha256": "73e2bcffa8c9dc5dc59dc8b6517e7999899519126ff61e5f52f8ffe0d72d629a",
+      "exports": [
+        "Browsers"
+      ],
+      "imports": [
+        "node:fs/promises",
+        "node:path",
+        "@sistemazero/agent-core",
+        "@sistemazero/agent-integrations/browser",
+        "zod",
+        "../execution/locks",
+        "../process/manager",
+        "../process/rpc",
+        "../services/registry",
+        "../store/artifacts",
+        "../supervisor",
+        "../tools/paths",
+        "./worker"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-integrations/src/browser/index.ts",
+        "packages/agent-runtime/src/execution/locks.ts",
+        "packages/agent-runtime/src/process/rpc.ts",
+        "packages/agent-runtime/src/store/artifacts.ts",
+        "packages/agent-runtime/src/tools/paths.ts",
+        "packages/agent-runtime/src/browser/worker.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/browser/setup.ts",
+      "lines": 193,
+      "sha256": "10459b24fb09ef4ad9960e4f94861d0107ef4f47a2d22651be08b96c1ef17a30",
+      "exports": [
+        "setupBrowser"
+      ],
+      "imports": [
+        "@sistemazero/agent-integrations/browser",
+        "zod",
+        "../execution/dispatcher",
+        "../preview/manager",
+        "../preview/viewer",
+        "../process/manager",
+        "../services/registry",
+        "../supervisor",
+        "../tools/definition",
+        "./manager"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-integrations/src/browser/index.ts",
+        "packages/agent-runtime/src/preview/manager.ts",
+        "packages/agent-runtime/src/preview/viewer.ts",
+        "packages/agent-runtime/src/tools/definition.ts",
+        "packages/agent-runtime/src/browser/manager.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/browser/worker.ts",
+      "lines": 67,
+      "sha256": "91ab40cf3927b647503b8cb20f6449fc2134f1f96721a921889163919560c6b6",
+      "exports": [
+        "startBrowserWorker"
+      ],
+      "imports": [
+        "node:fs/promises",
+        "node:path",
+        "node:url",
+        "@sistemazero/agent-integrations/browser",
+        "../process/manager",
+        "../tools/paths"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-integrations/src/browser/index.ts",
+        "packages/agent-runtime/src/tools/paths.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/client.ts",
+      "lines": 182,
+      "sha256": "2a49d0e2916f08a4c0c1a390e3eb241a9eee3090ef8e54087d2721a0264684ed",
+      "exports": [
+        "RuntimeClient",
+        "connectRuntime"
+      ],
+      "imports": [
+        "node:child_process",
+        "node:net",
+        "node:url",
+        "@sistemazero/agent-core",
+        "zod",
+        "./config",
+        "./credentials",
+        "./ipc/server",
+        "./ipc/transport",
+        "./process/environment"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/config.ts",
+        "packages/agent-runtime/src/credentials.ts",
+        "packages/agent-runtime/src/ipc/server.ts",
+        "packages/agent-runtime/src/ipc/transport.ts",
+        "packages/agent-runtime/src/process/environment.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/config.ts",
+      "lines": 49,
+      "sha256": "304bb39a838d77ada4bc68b51c9b0d087212dc26e0b0d9f890162b80bb390a1d",
+      "exports": [
+        "profileDirectory",
+        "isMissing",
+        "ensureProfile",
+        "readSettings",
+        "writeSettings"
+      ],
+      "imports": [
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "@sistemazero/agent-core",
+        "./process/security",
+        "./profile-identity"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/process/security.ts",
+        "packages/agent-runtime/src/profile-identity.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/context/builder.ts",
+      "lines": 171,
+      "sha256": "dc265eeb2bb86ad95b1e2205c7be7731f04e78a15b31e7de43769ce1e39ddc71",
+      "exports": [
+        "ContextBuilder"
+      ],
+      "imports": [
+        "node:fs/promises",
+        "node:path",
+        "@sistemazero/agent-core",
+        "yaml",
+        "zod",
+        "../store/client",
+        "../tools/paths"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/tools/paths.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/context/compaction.ts",
+      "lines": 23,
+      "sha256": "795637edbb29d13841f7ddfa92f2501792d426bf07dda780a7622dd87da955e9",
+      "exports": [
+        "compact"
+      ],
+      "imports": [
+        "../models/openrouter",
+        "../store/artifacts"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/store/artifacts.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/context/hooks.ts",
+      "lines": 62,
+      "sha256": "c8333db60a9436baeaf71afed99182e5dd4b9c5a75f83d29910edaf6ccdbe41b",
+      "exports": [
+        "setupHooks"
+      ],
+      "imports": [
+        "zod",
+        "../execution/dispatcher",
+        "../tools/definition",
+        "../tools/paths"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/tools/definition.ts",
+        "packages/agent-runtime/src/tools/paths.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/context/index.ts",
+      "lines": 103,
+      "sha256": "c81a55d5abf7830f37c3631058f572a817e746ccc6cab7b44748cd7484f89b27",
+      "exports": [
+        "ProjectIndex"
+      ],
+      "imports": [
+        "node:fs",
+        "node:path",
+        "../process/manager",
+        "../tools/paths"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/tools/paths.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/context/setup.ts",
+      "lines": 112,
+      "sha256": "35421b6116b0b2e383368df0e362d20e2e497ddff1105e0a640576051384c163",
+      "exports": [
+        "setupContext"
+      ],
+      "imports": [
+        "@sistemazero/agent-core",
+        "zod",
+        "../execution/dispatcher",
+        "../process/manager",
+        "../store/artifacts",
+        "../supervisor",
+        "../tools/definition",
+        "../tools/web",
+        "../tools/web-search",
+        "./builder",
+        "./hooks",
+        "./index",
+        "./typescript"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/store/artifacts.ts",
+        "packages/agent-runtime/src/tools/definition.ts",
+        "packages/agent-runtime/src/tools/web.ts",
+        "packages/agent-runtime/src/tools/web-search.ts",
+        "packages/agent-runtime/src/context/builder.ts",
+        "packages/agent-runtime/src/context/hooks.ts",
+        "packages/agent-runtime/src/context/index.ts",
+        "packages/agent-runtime/src/context/typescript.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/context/typescript-worker.ts",
+      "lines": 108,
+      "sha256": "cc5185916e7fb2e0ca5c64c053f9724c7b41f80d2d3c7bdf14d4a89eca7e1c91",
+      "exports": [],
+      "imports": [
+        "node:crypto",
+        "node:fs",
+        "node:path",
+        "typescript",
+        "zod"
+      ],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/context/typescript.ts",
+      "lines": 78,
+      "sha256": "c6c384a845db03694618e201a5b8fa7d63be09065c5eb626061145ba58373da1",
+      "exports": [
+        "TypeScriptService"
+      ],
+      "imports": [
+        "zod",
+        "../tools/paths",
+        "./index"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/tools/paths.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/credentials.ts",
+      "lines": 19,
+      "sha256": "e48dfbff44e5e3338f4ceca83285438f0f37a01c7bd75a4cf69ec36d90f9c915",
+      "exports": [
+        "Credentials"
+      ],
+      "imports": [
+        "node:crypto",
+        "./profile-identity"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/profile-identity.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/environments/container.ts",
+      "lines": 150,
+      "sha256": "9c7da81e14a5b8e7faf37115ea3e346dc7ec08d994b71c4b1567de0f4d64a8de",
+      "exports": [
+        "Containers"
+      ],
+      "imports": [
+        "node:path",
+        "@sistemazero/agent-core",
+        "zod",
+        "../process/manager",
+        "../tools/paths"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/tools/paths.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/environments/manager.ts",
+      "lines": 414,
+      "sha256": "4968c6d1ced690a5237a3b236199e62fa71abad3ab0fe110ca6ac80c8feac6d0",
+      "exports": [
+        "Environments"
+      ],
+      "imports": [
+        "node:fs/promises",
+        "node:path",
+        "@sistemazero/agent-core",
+        "zod",
+        "../execution/locks",
+        "../process/manager",
+        "../profile-identity",
+        "../store/client",
+        "../tools/paths",
+        "../workspace/export",
+        "../workspace/snapshot",
+        "./container"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/execution/locks.ts",
+        "packages/agent-runtime/src/profile-identity.ts",
+        "packages/agent-runtime/src/tools/paths.ts",
+        "packages/agent-runtime/src/workspace/export.ts",
+        "packages/agent-runtime/src/workspace/snapshot.ts",
+        "packages/agent-runtime/src/environments/container.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/environments/setup.ts",
+      "lines": 108,
+      "sha256": "02e7462ef4d15e11ed4c46980ab7b4ee030ef2dcd14a463f1a65177b3239afd0",
+      "exports": [
+        "setupEnvironments"
+      ],
+      "imports": [
+        "@sistemazero/agent-core",
+        "zod",
+        "../execution/dispatcher",
+        "../process/manager",
+        "../supervisor",
+        "../tools/definition",
+        "./manager",
+        "./templates"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/tools/definition.ts",
+        "packages/agent-runtime/src/environments/manager.ts",
+        "packages/agent-runtime/src/environments/templates.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/environments/templates.ts",
+      "lines": 89,
+      "sha256": "cdb983c41d307db0f29b0fb4496bf111e533cc0f816aea4ffe7dca1ae45bee5d",
+      "exports": [
+        "inspectImage",
+        "discoverTemplates"
+      ],
+      "imports": [
+        "@sistemazero/agent-core",
+        "zod",
+        "../../templates/bun-linux.json",
+        "../process/manager",
+        "../tools/paths"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/templates/bun-linux.json",
+        "packages/agent-runtime/src/tools/paths.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/execution/capacity.ts",
+      "lines": 42,
+      "sha256": "a7d50861fc9f9abbe9a90e4df7b699059cea6640d8b69ff18e9103ab4061e0fa",
+      "exports": [
+        "Capacity"
+      ],
+      "imports": [],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/execution/dispatcher.ts",
+      "lines": 263,
+      "sha256": "ad8065fc982e1cedb62e5bafc19c8a0ef69ee76b7b9492a61d2c84f0b8202cc8",
+      "exports": [
+        "Dispatcher"
+      ],
+      "imports": [
+        "node:crypto",
+        "node:fs/promises",
+        "@sistemazero/agent-core",
+        "../store/artifacts",
+        "../supervisor",
+        "./capacity",
+        "./grants",
+        "./locks"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/store/artifacts.ts",
+        "packages/agent-runtime/src/execution/capacity.ts",
+        "packages/agent-runtime/src/execution/grants.ts",
+        "packages/agent-runtime/src/execution/locks.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/execution/grants.ts",
+      "lines": 56,
+      "sha256": "e739c86d06167ad93876801ebbd5315e9234d5597fb866980db7ffdae49de972",
+      "exports": [
+        "Grants"
+      ],
+      "imports": [
+        "@sistemazero/agent-core",
+        "zod",
+        "../store/client",
+        "../tools/paths"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/tools/paths.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/execution/journal-driver.ts",
+      "lines": 66,
+      "sha256": "7e776d277ac25a6b227e4bf2b9a46c17d0d99b08a304f91561e084efde2e8122",
+      "exports": [
+        "JournalDriver"
+      ],
+      "imports": [
+        "../store/client",
+        "../supervisor"
+      ],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/execution/locks.ts",
+      "lines": 19,
+      "sha256": "1a9411f068f8eaad63f3ea1f06a397cadf4231cefafdf2e2533c39601ad034aa",
+      "exports": [
+        "Locks"
+      ],
+      "imports": [],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/extension.ts",
+      "lines": 7,
+      "sha256": "c80f6e6e3e2fc7049f5f0218ec8cb359c1bfa34f56d6434c94cd8e181146db2c",
+      "exports": [],
+      "imports": [],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/integrations/mcp.ts",
+      "lines": 409,
+      "sha256": "27966fa158968f0ba18bbaf6a7b7a51bd779055cbed1f0bb82a2d82b896aa6a9",
+      "exports": [
+        "McpRegistry"
+      ],
+      "imports": [
+        "@sistemazero/agent-core",
+        "@sistemazero/agent-integrations/mcp",
+        "zod",
+        "../credentials",
+        "../execution/dispatcher",
+        "../execution/locks",
+        "../process/manager",
+        "../supervisor",
+        "../tools/paths"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/credentials.ts",
+        "packages/agent-runtime/src/execution/locks.ts",
+        "packages/agent-runtime/src/tools/paths.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/integrations/notifications.ts",
+      "lines": 235,
+      "sha256": "ccd88e90de5983698c41eb854cba54e8a60edce55f9eda10c34655879bdb2f2e",
+      "exports": [
+        "setupNotifications"
+      ],
+      "imports": [
+        "@sistemazero/agent-core",
+        "@sistemazero/agent-integrations/github",
+        "@sistemazero/agent-integrations/telegram",
+        "zod",
+        "../credentials",
+        "../execution/dispatcher",
+        "../execution/locks",
+        "../supervisor",
+        "../tools/definition",
+        "../tools/paths",
+        "./outbound"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-integrations/src/github/client.ts",
+        "packages/agent-integrations/src/notifications/telegram.ts",
+        "packages/agent-runtime/src/credentials.ts",
+        "packages/agent-runtime/src/execution/locks.ts",
+        "packages/agent-runtime/src/tools/definition.ts",
+        "packages/agent-runtime/src/tools/paths.ts",
+        "packages/agent-runtime/src/integrations/outbound.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/integrations/outbound.ts",
+      "lines": 123,
+      "sha256": "281f3cca184eba38d78aaef66bdac95ae6263d91e24d003294734c690b27a6c9",
+      "exports": [
+        "receiptSchema",
+        "Outbound"
+      ],
+      "imports": [
+        "@sistemazero/agent-core",
+        "@sistemazero/agent-integrations/sistemazero",
+        "zod",
+        "../execution/locks",
+        "../store/client",
+        "../tools/paths"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-integrations/src/sistemazero/index.ts",
+        "packages/agent-runtime/src/execution/locks.ts",
+        "packages/agent-runtime/src/tools/paths.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/integrations/staff.ts",
+      "lines": 267,
+      "sha256": "049d0a08444d743eac4aadcfc379a0004e796cb648eb10d2ebd4cacd0358fa8b",
+      "exports": [
+        "setupStaff"
+      ],
+      "imports": [
+        "@sistemazero/agent-core",
+        "@sistemazero/agent-integrations/sistemazero",
+        "zod",
+        "../credentials",
+        "../execution/dispatcher",
+        "../store/artifacts",
+        "../supervisor",
+        "../tools/definition",
+        "../tools/paths"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-integrations/src/sistemazero/index.ts",
+        "packages/agent-runtime/src/credentials.ts",
+        "packages/agent-runtime/src/store/artifacts.ts",
+        "packages/agent-runtime/src/tools/definition.ts",
+        "packages/agent-runtime/src/tools/paths.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/integrations/stdio.ts",
+      "lines": 86,
+      "sha256": "e0c499cf498440bd718eda33a8b01808194be625bfc99e18b5ce6b388ccad099",
+      "exports": [
+        "serveTools"
+      ],
+      "imports": [
+        "node:fs/promises",
+        "@sistemazero/agent-core",
+        "@sistemazero/agent-integrations/mcp",
+        "zod",
+        "../client"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-integrations/src/mcp/index.ts",
+        "packages/agent-runtime/src/client.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/ipc/server.ts",
+      "lines": 154,
+      "sha256": "9c1257ed6890d09d4db606f67bebfb8dc48d701fc6e6c2044ee66f0d08b35274",
+      "exports": [
+        "endpoint",
+        "listen"
+      ],
+      "imports": [
+        "node:crypto",
+        "node:fs/promises",
+        "node:net",
+        "node:path",
+        "@sistemazero/agent-core",
+        "zod",
+        "../credentials",
+        "../process/profile-lock",
+        "../process/security",
+        "../profile-identity",
+        "./transport"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/credentials.ts",
+        "packages/agent-runtime/src/process/profile-lock.ts",
+        "packages/agent-runtime/src/process/security.ts",
+        "packages/agent-runtime/src/profile-identity.ts",
+        "packages/agent-runtime/src/ipc/transport.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/ipc/transport.ts",
+      "lines": 44,
+      "sha256": "6d660977329daf99999d622df8cecacc411ae2c04e0e993923088f1dc487b257",
+      "exports": [
+        "MAX_FRAME",
+        "proof",
+        "verify",
+        "Frames"
+      ],
+      "imports": [
+        "node:crypto",
+        "node:events",
+        "node:net"
+      ],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/main.ts",
+      "lines": 61,
+      "sha256": "9c6e87c241ba4bce7c1d69e41580cf62064e4d8dd2b4f8cf0aecd5e200b74295",
+      "exports": [],
+      "imports": [
+        "node:path",
+        "./application",
+        "./config",
+        "./ipc/server",
+        "./store/client",
+        "./supervisor"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/application.ts",
+        "packages/agent-runtime/src/config.ts",
+        "packages/agent-runtime/src/ipc/server.ts",
+        "packages/agent-runtime/src/store/client.ts",
+        "packages/agent-runtime/src/supervisor.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/models/http.ts",
+      "lines": 24,
+      "sha256": "9266c24696df1d905df9bd384ac9340915c5f7cbe88b07fd13c3906d19e3f0a3",
+      "exports": [
+        "boundedJson"
+      ],
+      "imports": [],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/models/loop.ts",
+      "lines": 266,
+      "sha256": "81e3fa776bc8f101e77d0ef6d2d17b851b2fc7156afddebc7564e618c9c3c472",
+      "exports": [
+        "AgentLoop"
+      ],
+      "imports": [
+        "@sistemazero/agent-core",
+        "zod",
+        "../context/builder",
+        "../context/compaction",
+        "../execution/dispatcher",
+        "../supervisor",
+        "../tools/catalog",
+        "./openrouter"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/context/builder.ts",
+        "packages/agent-runtime/src/context/compaction.ts",
+        "packages/agent-runtime/src/tools/catalog.ts",
+        "packages/agent-runtime/src/models/openrouter.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/models/openrouter.ts",
+      "lines": 250,
+      "sha256": "a3713bbfc2cb2ee118a6cc8bb9d74544a889a3aa4ed73eeb5a32a2f522ccd9d0",
+      "exports": [
+        "ModelMessage",
+        "ToolCall",
+        "ModelEvent",
+        "ModelRequest",
+        "ModelProvider",
+        "sse",
+        "OpenRouter",
+        "modelSchema",
+        "modelCatalog"
+      ],
+      "imports": [
+        "zod",
+        "./http"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/models/http.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/preview/manager.ts",
+      "lines": 202,
+      "sha256": "62565b3731c717c035e43b03db3a0322746a2ef018d2d12448ade0530eaced2c",
+      "exports": [
+        "verificationSchema",
+        "Previews"
+      ],
+      "imports": [
+        "@sistemazero/agent-core",
+        "zod",
+        "../browser/manager",
+        "../execution/locks",
+        "../services/registry",
+        "../store/artifacts",
+        "../supervisor",
+        "../tools/paths",
+        "./revision"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/execution/locks.ts",
+        "packages/agent-runtime/src/store/artifacts.ts",
+        "packages/agent-runtime/src/tools/paths.ts",
+        "packages/agent-runtime/src/preview/revision.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/preview/revision.ts",
+      "lines": 53,
+      "sha256": "c9e555804d2ee03859a4174001a0a37f09edd854a4afa9adae02674344c6d64f",
+      "exports": [
+        "sourceRevision"
+      ],
+      "imports": [
+        "node:fs/promises",
+        "node:path",
+        "@sistemazero/agent-core",
+        "../tools/paths"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/tools/paths.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/preview/viewer.ts",
+      "lines": 148,
+      "sha256": "99c34aa115f6a13f2763e97044ad74dadb89a543a495e8fa83133ee09d81a350",
+      "exports": [
+        "createViewer",
+        "setupViewer"
+      ],
+      "imports": [
+        "node:crypto",
+        "@sistemazero/agent-core",
+        "zod",
+        "../store/artifacts",
+        "../supervisor"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/store/artifacts.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/process/environment.ts",
+      "lines": 24,
+      "sha256": "363a2f90ff368965f3086e3b189d69f5f641b036c3111bc7a2286c8f693c419b",
+      "exports": [
+        "processEnvironment"
+      ],
+      "imports": [],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/process/manager.ts",
+      "lines": 166,
+      "sha256": "515dfa6968c8c5ae48da4a192b623298f6eb8f46130d7ef39b10c9d9da0840b1",
+      "exports": [
+        "ProcessRequest",
+        "ProcessResult",
+        "ProcessHandle",
+        "Processes"
+      ],
+      "imports": [
+        "node:crypto",
+        "node:fs/promises",
+        "node:path",
+        "../execution/locks",
+        "./owned",
+        "./spool"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/execution/locks.ts",
+        "packages/agent-runtime/src/process/owned.ts",
+        "packages/agent-runtime/src/process/spool.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/process/owned.ts",
+      "lines": 154,
+      "sha256": "4a8c3944322218e9032a1c6f3c4fa447539655a69be3b92822a25dc2280e615d",
+      "exports": [
+        "ProcessOptions",
+        "OwnedProcess"
+      ],
+      "imports": [
+        "node:child_process",
+        "node:crypto",
+        "./environment",
+        "./windows"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/process/environment.ts",
+        "packages/agent-runtime/src/process/windows.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/process/profile-lock.ts",
+      "lines": 89,
+      "sha256": "cb81c09ebfdd690df8d76a87e220bf4f40dbbd41f752f56e2d85fccf657a7acc",
+      "exports": [
+        "lockProfile"
+      ],
+      "imports": [
+        "node:child_process",
+        "node:crypto",
+        "../profile-identity",
+        "./environment",
+        "./windows"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/profile-identity.ts",
+        "packages/agent-runtime/src/process/environment.ts",
+        "packages/agent-runtime/src/process/windows.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/process/rpc.ts",
+      "lines": 164,
+      "sha256": "b574a4da5f00aaa5248f4a4a41bf8e991b2ad87629c173d016b77bab6093f3fe",
+      "exports": [
+        "ProcessRpcError",
+        "ProcessRpc"
+      ],
+      "imports": [
+        "node:string_decoder",
+        "@sistemazero/agent-core",
+        "zod",
+        "./owned"
+      ],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/process/security.ts",
+      "lines": 57,
+      "sha256": "60c80617a49c062452af447e70fd68f9dc81de95b6eb14ff824293dfea5d140c",
+      "exports": [
+        "protectWindows"
+      ],
+      "imports": [
+        "node:path",
+        "node:url",
+        "zod",
+        "./environment"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/process/environment.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/process/spool.ts",
+      "lines": 75,
+      "sha256": "f3e18ee644b46ff24cac7dd427d903dbd534debeb8bd7752916ff42e9440406c",
+      "exports": [
+        "Spool"
+      ],
+      "imports": [
+        "node:fs/promises",
+        "node:path",
+        "../execution/locks"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/execution/locks.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/process/windows-job.ps1",
+      "lines": 183,
+      "sha256": "9fa673208b27f34f9eb841871da30780cfe5bb2cb76ef16473e4c623fd384790",
+      "exports": [],
+      "imports": [],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/process/windows-security.ps1",
+      "lines": 38,
+      "sha256": "514409bb8f00d5c30288a4a9dba32bc0acff67fbf50b3d022231e0b7de7ad479",
+      "exports": [],
+      "imports": [],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/process/windows.ts",
+      "lines": 126,
+      "sha256": "5bb77d2f776e390a96d893ea7c5c124aea6ac0afb970de742113dcf24cb4b689",
+      "exports": [
+        "windowsLaunchError",
+        "verifyWindowsPort",
+        "windowsHelper"
+      ],
+      "imports": [
+        "node:crypto",
+        "node:fs/promises",
+        "node:path",
+        "node:url",
+        "./environment"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/process/environment.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/profile-identity.ts",
+      "lines": 14,
+      "sha256": "49c99e724ffd2ab710d753dae56591c40dd915d953b3eb95091496a7820065d0",
+      "exports": [
+        "profileIdentity"
+      ],
+      "imports": [
+        "node:fs",
+        "node:path"
+      ],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/services/ports.ts",
+      "lines": 32,
+      "sha256": "1a6a33476cec4ab14d1b7142a4b6254f20acb70f6544fae162b198a6dd0f2165",
+      "exports": [
+        "assertFreePort",
+        "assertOwnedPort"
+      ],
+      "imports": [
+        "node:net",
+        "zod",
+        "../process/manager",
+        "../process/windows"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/process/windows.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/services/registry.ts",
+      "lines": 290,
+      "sha256": "41283e00614b590af9a4573622c2a917daddb827c01c99d9e0523becf62cc0e8",
+      "exports": [
+        "serviceRequestSchema",
+        "Service",
+        "Services"
+      ],
+      "imports": [
+        "@sistemazero/agent-core",
+        "zod",
+        "../environments/manager",
+        "../execution/locks",
+        "../process/manager",
+        "../tools/paths",
+        "./ports"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/execution/locks.ts",
+        "packages/agent-runtime/src/tools/paths.ts",
+        "packages/agent-runtime/src/services/ports.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/services/setup.ts",
+      "lines": 47,
+      "sha256": "337c8579c4e0e3dde5888fbd6bed7d640611ec5f510e4f49efffb0b15c9095e9",
+      "exports": [
+        "setupServices"
+      ],
+      "imports": [
+        "zod",
+        "../environments/manager",
+        "../execution/dispatcher",
+        "../supervisor",
+        "../tools/definition",
+        "./registry"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/tools/definition.ts",
+        "packages/agent-runtime/src/services/registry.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/sessions.ts",
+      "lines": 197,
+      "sha256": "843d39303a058f6b7d2d5ffe4b5c2b5ae03260ad242cb16677e17e659552fea5",
+      "exports": [
+        "setupSessions"
+      ],
+      "imports": [
+        "@sistemazero/agent-core",
+        "zod",
+        "./store/artifacts",
+        "./supervisor",
+        "./tools/paths"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/store/artifacts.ts",
+        "packages/agent-runtime/src/tools/paths.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/store/artifact-journal.ts",
+      "lines": 142,
+      "sha256": "7d398b73c9dcd4b6a4db8eead47e68bf2295350e6b957cfd7d0df938d67082df",
+      "exports": [
+        "ArtifactJournal"
+      ],
+      "imports": [
+        "bun:sqlite",
+        "@sistemazero/agent-core",
+        "./artifact-schema"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/store/artifact-schema.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/store/artifact-schema.ts",
+      "lines": 28,
+      "sha256": "02fcf32d4368800bdf685f9a2169061267602160b997b96c5d4f3b5646f75d7b",
+      "exports": [
+        "artifactRecordSchema",
+        "artifactCommand",
+        "ArtifactCommand"
+      ],
+      "imports": [
+        "@sistemazero/agent-core",
+        "zod"
+      ],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/store/artifacts.ts",
+      "lines": 280,
+      "sha256": "31474bac90f8f157e478dbb752b38034f6060ae68a48cefdc9a1095ec91a7e6a",
+      "exports": [
+        "Artifacts"
+      ],
+      "imports": [
+        "node:async_hooks",
+        "node:crypto",
+        "node:fs/promises",
+        "node:path",
+        "@sistemazero/agent-core",
+        "zod",
+        "../execution/locks",
+        "../tools/paths",
+        "./artifact-schema",
+        "./client"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/execution/locks.ts",
+        "packages/agent-runtime/src/tools/paths.ts",
+        "packages/agent-runtime/src/store/artifact-schema.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/store/client.ts",
+      "lines": 126,
+      "sha256": "8dab37fe360cedd8351f041999a9560d7216678f19c1481ab5452314039a8e5d",
+      "exports": [
+        "StoreMutation",
+        "Store"
+      ],
+      "imports": [
+        "node:events",
+        "node:path",
+        "zod",
+        "./artifacts",
+        "./schema"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/store/artifacts.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/store/database.ts",
+      "lines": 690,
+      "sha256": "fa9046376435c5b62f11039e4c99edeae09254e10de486e651ea51a646e0ea74",
+      "exports": [
+        "Journal"
+      ],
+      "imports": [
+        "bun:sqlite",
+        "node:crypto",
+        "@sistemazero/agent-core",
+        "zod",
+        "./artifact-journal",
+        "./schema"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/store/artifact-journal.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/store/schema.ts",
+      "lines": 151,
+      "sha256": "2c873a9f3869466647cb02c795d3db0479de946ad9854f85e3b3b6b58abb9b33",
+      "exports": [
+        "storeCommand",
+        "StoreCommand"
+      ],
+      "imports": [
+        "@sistemazero/agent-core",
+        "zod",
+        "./artifact-schema"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/store/artifact-schema.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/store/worker.ts",
+      "lines": 37,
+      "sha256": "411a87b51e930a776f4a986d92ce7f373829af5d6a3f1f77e70b46dcbc3183e8",
+      "exports": [],
+      "imports": [
+        "zod",
+        "./database",
+        "./schema"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/store/database.ts",
+        "packages/agent-runtime/src/store/schema.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/supervisor.ts",
+      "lines": 503,
+      "sha256": "8265b4d71049655d8dabe13d62c757f72e8c67429fec74dcc0dd59454d707c69",
+      "exports": [
+        "RunExecutor",
+        "Supervisor"
+      ],
+      "imports": [
+        "node:crypto",
+        "node:events",
+        "node:fs/promises",
+        "@sistemazero/agent-core",
+        "zod",
+        "./config",
+        "./execution/locks",
+        "./store/artifacts",
+        "./store/client",
+        "./store/schema"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/config.ts",
+        "packages/agent-runtime/src/execution/locks.ts",
+        "packages/agent-runtime/src/store/artifacts.ts",
+        "packages/agent-runtime/src/store/schema.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/team/coordinator.ts",
+      "lines": 612,
+      "sha256": "fe06fb6033e575ee1e2e8e35f29668a597eac54cb552bfda925141f50f45adde",
+      "exports": [
+        "Teams"
+      ],
+      "imports": [
+        "@sistemazero/agent-core",
+        "zod",
+        "../environments/manager",
+        "../execution/dispatcher",
+        "../execution/locks",
+        "../preview/revision",
+        "../store/artifacts",
+        "../store/client",
+        "../supervisor",
+        "../tools/paths",
+        "../workspace/patch",
+        "../workspace/snapshot",
+        "./integrator",
+        "./schema"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/execution/locks.ts",
+        "packages/agent-runtime/src/preview/revision.ts",
+        "packages/agent-runtime/src/store/artifacts.ts",
+        "packages/agent-runtime/src/tools/paths.ts",
+        "packages/agent-runtime/src/workspace/snapshot.ts",
+        "packages/agent-runtime/src/team/integrator.ts",
+        "packages/agent-runtime/src/team/schema.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/team/integrator.ts",
+      "lines": 35,
+      "sha256": "d806601a962f76f9d1849956bfaa88ddb25e3b4c85b7049a911cca137deab161",
+      "exports": [
+        "Integrator"
+      ],
+      "imports": [
+        "@sistemazero/agent-core",
+        "zod",
+        "../store/artifacts",
+        "../workspace/export",
+        "../workspace/patch"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/store/artifacts.ts",
+        "packages/agent-runtime/src/workspace/export.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/team/schema.ts",
+      "lines": 60,
+      "sha256": "e358746e0299724622d863ee210bcbc47ee5db564e8de9bb93934f29b7f48e0e",
+      "exports": [
+        "teamRecordSchema",
+        "TeamRecord"
+      ],
+      "imports": [
+        "@sistemazero/agent-core",
+        "zod"
+      ],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/team/setup.ts",
+      "lines": 116,
+      "sha256": "4f2082e629726c446371717885ec5e6eabaa6a614913303b034fd31f65f9dda5",
+      "exports": [
+        "setupTeams"
+      ],
+      "imports": [
+        "@sistemazero/agent-core",
+        "zod",
+        "../environments/manager",
+        "../execution/dispatcher",
+        "../preview/revision",
+        "../supervisor",
+        "../tools/definition",
+        "../workspace/patch",
+        "./coordinator"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/preview/revision.ts",
+        "packages/agent-runtime/src/tools/definition.ts",
+        "packages/agent-runtime/src/team/coordinator.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/tools/catalog.ts",
+      "lines": 87,
+      "sha256": "9407075a1cf28fd962e342c0c15e189d71d936b0f3667130a5a4c9d69097d8cf",
+      "exports": [
+        "availableTools",
+        "selectTools",
+        "registerCatalog"
+      ],
+      "imports": [
+        "@sistemazero/agent-core",
+        "zod",
+        "../execution/dispatcher",
+        "./definition"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/tools/definition.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/tools/checks.ts",
+      "lines": 70,
+      "sha256": "86f08db118c9dd13e1219bb736dbdf7c92c523904ca00f9c6866f27b2904cee6",
+      "exports": [
+        "checkTools"
+      ],
+      "imports": [
+        "@sistemazero/agent-core",
+        "zod",
+        "../process/manager",
+        "./definition",
+        "./paths"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/tools/definition.ts",
+        "packages/agent-runtime/src/tools/paths.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/tools/coding.ts",
+      "lines": 86,
+      "sha256": "566310312bfccaea40643edbec302c7dbc7709fd8dd5db4b6f9f77a6f42fd33a",
+      "exports": [
+        "codingTools"
+      ],
+      "imports": [
+        "zod",
+        "../process/manager",
+        "../workspace/patch",
+        "../workspace/patch",
+        "./definition",
+        "./paths"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/workspace/patch.ts",
+        "packages/agent-runtime/src/tools/definition.ts",
+        "packages/agent-runtime/src/tools/paths.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/tools/context.ts",
+      "lines": 91,
+      "sha256": "5990533a2fb958696a9019592124d4155bd2fae4a1c5c96f2804ace81ff592f3",
+      "exports": [
+        "contextTools"
+      ],
+      "imports": [
+        "@sistemazero/agent-core",
+        "zod",
+        "../context/builder",
+        "../store/artifacts",
+        "../store/client",
+        "./definition"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/context/builder.ts",
+        "packages/agent-runtime/src/store/artifacts.ts",
+        "packages/agent-runtime/src/tools/definition.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/tools/definition.ts",
+      "lines": 28,
+      "sha256": "20e2258a39fc5d089fe6e86b3172d92cd825b1f57f9fda8f8f9698f715d96ab7",
+      "exports": [
+        "tool"
+      ],
+      "imports": [
+        "@sistemazero/agent-core",
+        "zod"
+      ],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/tools/paths.ts",
+      "lines": 86,
+      "sha256": "e5b0cb9eb5e27352ddb9d1407be421f7da83e2a550c9fb62e3a8d5f9d547d20f",
+      "exports": [
+        "hash",
+        "inside",
+        "protectedName",
+        "workspacePath",
+        "readBounded",
+        "exists"
+      ],
+      "imports": [
+        "node:crypto",
+        "node:fs/promises",
+        "node:path"
+      ],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/tools/read.ts",
+      "lines": 63,
+      "sha256": "044dfa2c2c1a1f0ef021d78e63659bb83b54db94b309f9b1608d5b6ff6a4b806",
+      "exports": [
+        "readTool",
+        "listTool",
+        "questionTool"
+      ],
+      "imports": [
+        "node:fs/promises",
+        "zod",
+        "./definition",
+        "./paths"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/tools/definition.ts",
+        "packages/agent-runtime/src/tools/paths.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/tools/search.ts",
+      "lines": 47,
+      "sha256": "2cf9c2df6a228ea1799617f78a6a425395a9e87a3390c94e84d04676a6b78a86",
+      "exports": [
+        "searchTool"
+      ],
+      "imports": [
+        "zod",
+        "../process/manager",
+        "./definition",
+        "./paths"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/tools/definition.ts",
+        "packages/agent-runtime/src/tools/paths.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/tools/web-search.ts",
+      "lines": 50,
+      "sha256": "f73cf970721a33ad797ab5ccb447bab96c40263b5ac48cb507257e8e43ec34e7",
+      "exports": [
+        "webSearch"
+      ],
+      "imports": [
+        "zod",
+        "../credentials",
+        "../models/http",
+        "./definition"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/credentials.ts",
+        "packages/agent-runtime/src/models/http.ts",
+        "packages/agent-runtime/src/tools/definition.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/tools/web.ts",
+      "lines": 108,
+      "sha256": "52d23a825b8b1816b3bad51ae9794beae133f7bd28f6b9d7a644c41aac6641e9",
+      "exports": [
+        "publicFetch",
+        "fetchTool"
+      ],
+      "imports": [
+        "node:https",
+        "@sistemazero/agent-integrations/network",
+        "zod",
+        "./definition",
+        "./paths"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-integrations/src/network/address.ts",
+        "packages/agent-runtime/src/tools/definition.ts",
+        "packages/agent-runtime/src/tools/paths.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/workflows/compiler.ts",
+      "lines": 265,
+      "sha256": "2a263c64105aa459173207a08bbabaacb54be816127a9473939f42378b81d92a",
+      "exports": [
+        "nodeOutput",
+        "WorkflowCompiler"
+      ],
+      "imports": [
+        "@sistemazero/agent-core",
+        "@sistemazero/agent-integrations/mcp",
+        "zod",
+        "../tools/paths",
+        "./expressions"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-integrations/src/mcp/index.ts",
+        "packages/agent-runtime/src/tools/paths.ts",
+        "packages/agent-runtime/src/workflows/expressions.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/workflows/expressions.ts",
+      "lines": 46,
+      "sha256": "71d19068493d372058ce54274816569bc5f2a08a3dec45f30e7381232d67210b",
+      "exports": [
+        "referenceSchema",
+        "referencePath",
+        "references",
+        "resolveTemplate"
+      ],
+      "imports": [
+        "zod"
+      ],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/workflows/recipes.ts",
+      "lines": 10,
+      "sha256": "4107685662927b7d201ec2ad58a1681ff03eaf9465adcb85f243afbf70d98279",
+      "exports": [
+        "recipes"
+      ],
+      "imports": [
+        "@sistemazero/agent-core",
+        "../../../../.sistemazero/workflows/diagnose-service.json",
+        "../../../../.sistemazero/workflows/fix-bug.json",
+        "../../../../.sistemazero/workflows/review-change.json",
+        "../../../../.sistemazero/workflows/validate-journey.json"
+      ],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/workflows/record.ts",
+      "lines": 45,
+      "sha256": "f5625f36536dec0179c2f025bc62ffc760574fdcfd80966a60ea2e1abb58fb3d",
+      "exports": [
+        "workflowRecordSchema",
+        "WorkflowRecord",
+        "WorkflowStep"
+      ],
+      "imports": [
+        "@sistemazero/agent-core",
+        "zod"
+      ],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/workflows/runner.ts",
+      "lines": 712,
+      "sha256": "27aefa346858f84bf59ee98fa498df1a7f200964a95f74e323eb03f7116fa810",
+      "exports": [
+        "Workflows"
+      ],
+      "imports": [
+        "@sistemazero/agent-core",
+        "zod",
+        "../execution/dispatcher",
+        "../execution/journal-driver",
+        "../execution/locks",
+        "../store/artifacts",
+        "../supervisor",
+        "../tools/paths",
+        "./compiler",
+        "./expressions",
+        "./record"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/execution/journal-driver.ts",
+        "packages/agent-runtime/src/execution/locks.ts",
+        "packages/agent-runtime/src/store/artifacts.ts",
+        "packages/agent-runtime/src/tools/paths.ts",
+        "packages/agent-runtime/src/workflows/compiler.ts",
+        "packages/agent-runtime/src/workflows/expressions.ts",
+        "packages/agent-runtime/src/workflows/record.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/workflows/schedule.ts",
+      "lines": 82,
+      "sha256": "7a36f8148a3f6cfba16a2bd2e3ad1fed398bc758258b5d12f3f61d0a260d9f2c",
+      "exports": [
+        "validateSchedule",
+        "Occurrence",
+        "dueOccurrences",
+        "nextOccurrence"
+      ],
+      "imports": [
+        "@js-temporal/polyfill",
+        "@sistemazero/agent-core"
+      ],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/workflows/schedules.ts",
+      "lines": 390,
+      "sha256": "7887227e0d1ca3f27d46760438f6f1560ba79c001d07bd55cba4ce16464f774a",
+      "exports": [
+        "Schedules"
+      ],
+      "imports": [
+        "@sistemazero/agent-core",
+        "zod",
+        "../execution/journal-driver",
+        "../execution/locks",
+        "../store/artifacts",
+        "../supervisor",
+        "../tools/paths",
+        "./runner"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/execution/journal-driver.ts",
+        "packages/agent-runtime/src/execution/locks.ts",
+        "packages/agent-runtime/src/store/artifacts.ts",
+        "packages/agent-runtime/src/tools/paths.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/workflows/setup.ts",
+      "lines": 165,
+      "sha256": "68adad79cb20c71d809a241d4487f50cdc746ab8deb8b0a1c7c87e72a7ef94dc",
+      "exports": [
+        "setupWorkflows"
+      ],
+      "imports": [
+        "@sistemazero/agent-core",
+        "zod",
+        "../execution/dispatcher",
+        "../supervisor",
+        "../tools/definition",
+        "./recipes",
+        "./runner",
+        "./schedules"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/tools/definition.ts",
+        "packages/agent-runtime/src/workflows/recipes.ts",
+        "packages/agent-runtime/src/workflows/runner.ts",
+        "packages/agent-runtime/src/workflows/schedules.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/workspace/export.ts",
+      "lines": 107,
+      "sha256": "a2b35d88862a8f29cc8d680fa274b0270836db1a6d05fd5f6175263ce788adf1",
+      "exports": [
+        "workspaceExportSchema",
+        "WorkspaceExports"
+      ],
+      "imports": [
+        "node:fs/promises",
+        "node:path",
+        "@sistemazero/agent-core",
+        "zod",
+        "../store/artifacts",
+        "../store/client",
+        "../tools/paths",
+        "./snapshot"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/store/artifacts.ts",
+        "packages/agent-runtime/src/tools/paths.ts",
+        "packages/agent-runtime/src/workspace/snapshot.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/workspace/patch.ts",
+      "lines": 316,
+      "sha256": "624f8e22d3314df369749bc120d5f19cfacb196c31ea2c6eaef6a4622135804b",
+      "exports": [
+        "patchSchema",
+        "checkpointSchema",
+        "Patches"
+      ],
+      "imports": [
+        "node:fs/promises",
+        "node:path",
+        "@sistemazero/agent-core",
+        "zod",
+        "../execution/locks",
+        "../store/artifacts",
+        "../store/client",
+        "../tools/paths"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/execution/locks.ts",
+        "packages/agent-runtime/src/store/artifacts.ts",
+        "packages/agent-runtime/src/tools/paths.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/src/workspace/snapshot.ts",
+      "lines": 170,
+      "sha256": "f3d0e26903c3b583b5170d463d72c45f17e2f680f53c44f3b617dcdf71bff7c8",
+      "exports": [
+        "snapshotSchema",
+        "Workspaces"
+      ],
+      "imports": [
+        "node:fs/promises",
+        "node:path",
+        "@sistemazero/agent-core",
+        "zod",
+        "../process/manager",
+        "../store/artifacts",
+        "../store/client",
+        "../tools/paths"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/store/artifacts.ts",
+        "packages/agent-runtime/src/tools/paths.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/templates/bun-linux.json",
+      "lines": 13,
+      "sha256": "6fa552cc04b3c5fc3f3304cf3853ee4c8a85bb901f89f14ffa0b8035070ebe28",
+      "exports": [],
+      "imports": [],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/tests/agent-loop.test.ts",
+      "lines": 166,
+      "sha256": "caec8ce3ce1670a040e3de754b1e4005feb1a4ce478137bd4ae91f69a9d9cc17",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "@sistemazero/agent-core",
+        "zod",
+        "../src/execution/dispatcher",
+        "../src/models/loop",
+        "../src/models/openrouter",
+        "../src/store/client",
+        "../src/supervisor",
+        "../src/tools/read"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/execution/dispatcher.ts",
+        "packages/agent-runtime/src/models/loop.ts",
+        "packages/agent-runtime/src/store/client.ts",
+        "packages/agent-runtime/src/supervisor.ts",
+        "packages/agent-runtime/src/tools/read.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/tests/browser-transfer.test.ts",
+      "lines": 96,
+      "sha256": "2cbc3b7d59c5db9e83f2477779198165202b65e62ca224d772adb077fa049ce5",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "@sistemazero/agent-integrations/browser",
+        "zod",
+        "../src/browser/worker",
+        "../src/process/manager",
+        "../src/process/rpc"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-integrations/src/browser/index.ts",
+        "packages/agent-runtime/src/browser/worker.ts",
+        "packages/agent-runtime/src/process/manager.ts",
+        "packages/agent-runtime/src/process/rpc.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/tests/browser-worker.test.ts",
+      "lines": 92,
+      "sha256": "af828cfc5f0e313e2678771eba32b43efab4a56712ace4ba57fd9b2432ed7d75",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "@sistemazero/agent-integrations/browser",
+        "zod",
+        "../src/browser/worker",
+        "../src/process/manager",
+        "../src/process/rpc"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-integrations/src/browser/index.ts",
+        "packages/agent-runtime/src/browser/worker.ts",
+        "packages/agent-runtime/src/process/manager.ts",
+        "packages/agent-runtime/src/process/rpc.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/tests/budget.test.ts",
+      "lines": 42,
+      "sha256": "b08a95062ee1b612e097180fadb6364b9ee74062eab1735da0f61a43e1d19053",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "../src/store/client"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/store/client.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/tests/capacity.test.ts",
+      "lines": 27,
+      "sha256": "c31e7188007533a17330a9e5bc6a875818d3739db0574db337d0ef944cb72480",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "../src/execution/capacity"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/execution/capacity.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/tests/catalog.test.ts",
+      "lines": 102,
+      "sha256": "213dcab011410c329ed4fa84bdb14d63c0eb4002b90b1ab77a0ede9b65954568",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "@sistemazero/agent-core",
+        "zod",
+        "../src/execution/dispatcher",
+        "../src/models/loop",
+        "../src/models/openrouter",
+        "../src/store/client",
+        "../src/supervisor",
+        "../src/tools/catalog",
+        "../src/tools/definition"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/execution/dispatcher.ts",
+        "packages/agent-runtime/src/models/loop.ts",
+        "packages/agent-runtime/src/store/client.ts",
+        "packages/agent-runtime/src/supervisor.ts",
+        "packages/agent-runtime/src/tools/catalog.ts",
+        "packages/agent-runtime/src/tools/definition.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/tests/coding.test.ts",
+      "lines": 113,
+      "sha256": "e519d441d32c1eef9d72739979219802224847f44bb0edee5f9bdf634a76d3a7",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "@sistemazero/agent-core",
+        "zod",
+        "../src/execution/dispatcher",
+        "../src/process/manager",
+        "../src/store/client",
+        "../src/supervisor",
+        "../src/tools/coding",
+        "../src/tools/paths",
+        "../src/workspace/patch"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/execution/dispatcher.ts",
+        "packages/agent-runtime/src/process/manager.ts",
+        "packages/agent-runtime/src/store/client.ts",
+        "packages/agent-runtime/src/supervisor.ts",
+        "packages/agent-runtime/src/tools/coding.ts",
+        "packages/agent-runtime/src/tools/paths.ts",
+        "packages/agent-runtime/src/workspace/patch.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/tests/context.test.ts",
+      "lines": 98,
+      "sha256": "8803c6c9f91eb06a12ae010c4baf6d79530f2e633cb3709cb6db5f2f7af0e1a2",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "@sistemazero/agent-core",
+        "zod",
+        "../src/context/builder",
+        "../src/context/compaction",
+        "../src/store/client"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/context/builder.ts",
+        "packages/agent-runtime/src/context/compaction.ts",
+        "packages/agent-runtime/src/store/client.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/tests/environment.test.ts",
+      "lines": 69,
+      "sha256": "f06ba53699effe16feef70079b93153f0f3a3d246129e033153495f714af05e0",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "@sistemazero/agent-core",
+        "../src/environments/manager",
+        "../src/process/manager",
+        "../src/store/client"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/environments/manager.ts",
+        "packages/agent-runtime/src/process/manager.ts",
+        "packages/agent-runtime/src/store/client.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/tests/history.test.ts",
+      "lines": 157,
+      "sha256": "efe581027833c052fc975b04932411e7e5248bf87a2210b1ae716b9d5fffeda1",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "@sistemazero/agent-core",
+        "zod",
+        "../src/context/builder",
+        "../src/sessions",
+        "../src/store/artifacts",
+        "../src/store/client",
+        "../src/supervisor"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/context/builder.ts",
+        "packages/agent-runtime/src/sessions.ts",
+        "packages/agent-runtime/src/store/artifacts.ts",
+        "packages/agent-runtime/src/store/client.ts",
+        "packages/agent-runtime/src/supervisor.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/tests/hooks.test.ts",
+      "lines": 92,
+      "sha256": "4d7df4c0493199659b12d9f3bcbe5253e6aeda4bd2282884cfe4bbeb54bcb127",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "@sistemazero/agent-core",
+        "zod",
+        "../src/context/hooks",
+        "../src/execution/dispatcher",
+        "../src/process/manager",
+        "../src/store/client",
+        "../src/supervisor",
+        "../src/tools/coding",
+        "../src/workspace/patch"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/context/hooks.ts",
+        "packages/agent-runtime/src/execution/dispatcher.ts",
+        "packages/agent-runtime/src/process/manager.ts",
+        "packages/agent-runtime/src/store/client.ts",
+        "packages/agent-runtime/src/supervisor.ts",
+        "packages/agent-runtime/src/tools/coding.ts",
+        "packages/agent-runtime/src/workspace/patch.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/tests/ipc.test.ts",
+      "lines": 85,
+      "sha256": "e8929a1bbedad8b97297c7d3313fea8d87e471dc27f07ca242d4cf2666d87ace",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "node:fs/promises",
+        "node:net",
+        "node:os",
+        "node:path",
+        "../src/client",
+        "../src/credentials",
+        "../src/ipc/server",
+        "../src/ipc/transport"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/client.ts",
+        "packages/agent-runtime/src/credentials.ts",
+        "packages/agent-runtime/src/ipc/server.ts",
+        "packages/agent-runtime/src/ipc/transport.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/tests/mcp-parity.test.ts",
+      "lines": 133,
+      "sha256": "5890a7bb2287841186b579b3e756414dd990ea382f78a050a3fbb04b118dfd46",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "@sistemazero/agent-core",
+        "@sistemazero/agent-integrations/mcp",
+        "zod",
+        "../src/application",
+        "../src/credentials",
+        "../src/ipc/server",
+        "../src/store/client",
+        "../src/supervisor",
+        "../src/tools/definition"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-integrations/src/mcp/index.ts",
+        "packages/agent-runtime/src/application.ts",
+        "packages/agent-runtime/src/credentials.ts",
+        "packages/agent-runtime/src/ipc/server.ts",
+        "packages/agent-runtime/src/store/client.ts",
+        "packages/agent-runtime/src/supervisor.ts",
+        "packages/agent-runtime/src/tools/definition.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/tests/migration.test.ts",
+      "lines": 43,
+      "sha256": "094441569764957d52e576ec2883bbb9a0985cbb8ddad680cc792b5b3e8a6d9d",
+      "exports": [],
+      "imports": [
+        "bun:sqlite",
+        "bun:test",
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "../src/store/client"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/store/client.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/tests/native-protocol.test.ts",
+      "lines": 48,
+      "sha256": "313c932bf4a8f121d855b28e1657e734ecee360d10fb2faddabbc0efeb2e2001",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "../src/backends/contract",
+        "../src/process/manager",
+        "../src/process/rpc"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/backends/contract.ts",
+        "packages/agent-runtime/src/process/manager.ts",
+        "packages/agent-runtime/src/process/rpc.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/tests/outbound.test.ts",
+      "lines": 68,
+      "sha256": "2a5b2b6d0fbbb8e8914c7df343ebb7a84f26bb386305d655a224d51c81324318",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "@sistemazero/agent-integrations/telegram",
+        "zod",
+        "../src/integrations/outbound",
+        "../src/store/client"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-integrations/src/notifications/telegram.ts",
+        "packages/agent-runtime/src/integrations/outbound.ts",
+        "packages/agent-runtime/src/store/client.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/tests/patch.test.ts",
+      "lines": 99,
+      "sha256": "ae9b1f5562124ecbbf8e561e5fb827d514aabcd31ed6e9c05779ae048c623139",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "../src/store/artifacts",
+        "../src/store/client",
+        "../src/tools/paths",
+        "../src/workspace/patch"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/store/artifacts.ts",
+        "packages/agent-runtime/src/store/client.ts",
+        "packages/agent-runtime/src/tools/paths.ts",
+        "packages/agent-runtime/src/workspace/patch.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/tests/paths.test.ts",
+      "lines": 30,
+      "sha256": "12157005ae73db8d9a614ee28d0fc53eba32ac35c8a9fc4e550840e2b8d29566",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "../src/tools/paths"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/tools/paths.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/tests/preview.test.ts",
+      "lines": 148,
+      "sha256": "a251000013e7f25acaf4fcfe0cfd2e32bb09d048df50515367bcde39705cf451",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "@sistemazero/agent-core",
+        "../src/browser/manager",
+        "../src/environments/manager",
+        "../src/preview/manager",
+        "../src/preview/revision",
+        "../src/preview/viewer",
+        "../src/process/manager",
+        "../src/services/registry",
+        "../src/store/artifacts",
+        "../src/store/client",
+        "../src/supervisor"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/browser/manager.ts",
+        "packages/agent-runtime/src/environments/manager.ts",
+        "packages/agent-runtime/src/preview/manager.ts",
+        "packages/agent-runtime/src/preview/revision.ts",
+        "packages/agent-runtime/src/preview/viewer.ts",
+        "packages/agent-runtime/src/process/manager.ts",
+        "packages/agent-runtime/src/services/registry.ts",
+        "packages/agent-runtime/src/store/artifacts.ts",
+        "packages/agent-runtime/src/store/client.ts",
+        "packages/agent-runtime/src/supervisor.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/tests/process.test.ts",
+      "lines": 81,
+      "sha256": "f81129eb79019c10ba9d44258030088257af128e0411b8b47d507da877995cde",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "../src/process/manager"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/process/manager.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/tests/provider.test.ts",
+      "lines": 102,
+      "sha256": "84cbbddb688b5c3b773e27944b46d96c123a48bcdf37e1bcf4f6dda82200d6e4",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "../src/models/openrouter"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/models/openrouter.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/tests/pty.test.ts",
+      "lines": 49,
+      "sha256": "af39abf6621efe329fb21493436f7988ceff14fa32f26059eff9519bd88d2f36",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "../src/process/owned"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/process/owned.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/tests/schedules.test.ts",
+      "lines": 117,
+      "sha256": "aa501d18330505509d5c27302f5e9fbc65615897ff5954abf7b670e72d144e76",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "@sistemazero/agent-core",
+        "zod",
+        "../src/application",
+        "../src/store/client",
+        "../src/supervisor",
+        "../src/tools/definition",
+        "../src/workflows/schedules"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/application.ts",
+        "packages/agent-runtime/src/store/client.ts",
+        "packages/agent-runtime/src/supervisor.ts",
+        "packages/agent-runtime/src/tools/definition.ts",
+        "packages/agent-runtime/src/workflows/schedules.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/tests/service.test.ts",
+      "lines": 143,
+      "sha256": "9ba1470fccfd9a40171eaa12a773847ad962160c908437daa88abbf4ce0eab97",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "@sistemazero/agent-core",
+        "../src/environments/manager",
+        "../src/process/manager",
+        "../src/services/ports",
+        "../src/services/registry",
+        "../src/store/client"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/environments/manager.ts",
+        "packages/agent-runtime/src/process/manager.ts",
+        "packages/agent-runtime/src/services/ports.ts",
+        "packages/agent-runtime/src/services/registry.ts",
+        "packages/agent-runtime/src/store/client.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/tests/spool.test.ts",
+      "lines": 36,
+      "sha256": "74413b36a3cebfe7f61f62ce2c9e619b4aba38a666c8aa16d5a023f568842529",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "../src/process/spool"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/process/spool.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/tests/storage-recovery.test.ts",
+      "lines": 174,
+      "sha256": "db01971cdee8e0ff60cf3f252b5a0b16e3b6522aa01dfc8ac3241ffbdd50bb18",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "@sistemazero/agent-core",
+        "zod",
+        "../src/store/artifacts",
+        "../src/store/client",
+        "../src/tools/paths",
+        "../src/workspace/patch"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/store/artifacts.ts",
+        "packages/agent-runtime/src/store/client.ts",
+        "packages/agent-runtime/src/tools/paths.ts",
+        "packages/agent-runtime/src/workspace/patch.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/tests/store.test.ts",
+      "lines": 72,
+      "sha256": "8665292ab2c92146806ef9cf613e94ef49a787b7a1a5c22b9eced3cfbfd0f13f",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "@sistemazero/agent-core",
+        "../src/store/client"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/store/client.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/tests/studio-contract.test.ts",
+      "lines": 144,
+      "sha256": "08691ef75e8c5671f33fd3b67a62ebd463bf226b855a25d7f87eaef7cd87695e",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "@sistemazero/agent-core",
+        "@sistemazero/agent-integrations/sistemazero",
+        "zod",
+        "../../studio-runtime/src/contracts",
+        "../src/execution/dispatcher",
+        "../src/integrations/staff",
+        "../src/store/artifacts",
+        "../src/store/client",
+        "../src/supervisor",
+        "../src/tools/paths"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-integrations/src/sistemazero/index.ts",
+        "packages/studio-runtime/src/contracts.ts",
+        "packages/agent-runtime/src/execution/dispatcher.ts",
+        "packages/agent-runtime/src/integrations/staff.ts",
+        "packages/agent-runtime/src/store/artifacts.ts",
+        "packages/agent-runtime/src/store/client.ts",
+        "packages/agent-runtime/src/supervisor.ts",
+        "packages/agent-runtime/src/tools/paths.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/tests/supervisor.test.ts",
+      "lines": 258,
+      "sha256": "cfb730d308506dc0f9f05a9dcf8c39adf63226516b25b5ff03ecdd8abf662cc4",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "@sistemazero/agent-core",
+        "zod",
+        "../src/execution/journal-driver",
+        "../src/store/client",
+        "../src/supervisor"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/execution/journal-driver.ts",
+        "packages/agent-runtime/src/store/client.ts",
+        "packages/agent-runtime/src/supervisor.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/tests/team-budget.test.ts",
+      "lines": 130,
+      "sha256": "bdd1a87d07d8064390604f341ffd74602ec431d58322fd131d98826981ad62db",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "@sistemazero/agent-core",
+        "../src/store/client"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/store/client.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/tests/team-recovery.test.ts",
+      "lines": 81,
+      "sha256": "a28fef487d9f0aa0ddba61a09e2b28d7671e1b09f0cd0f1e468f746414ad8557",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "../src/environments/manager",
+        "../src/execution/dispatcher",
+        "../src/process/manager",
+        "../src/store/client",
+        "../src/supervisor",
+        "../src/team/coordinator",
+        "../src/team/schema",
+        "../src/workspace/patch"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/environments/manager.ts",
+        "packages/agent-runtime/src/execution/dispatcher.ts",
+        "packages/agent-runtime/src/process/manager.ts",
+        "packages/agent-runtime/src/store/client.ts",
+        "packages/agent-runtime/src/supervisor.ts",
+        "packages/agent-runtime/src/team/coordinator.ts",
+        "packages/agent-runtime/src/team/schema.ts",
+        "packages/agent-runtime/src/workspace/patch.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/tests/team.test.ts",
+      "lines": 286,
+      "sha256": "77405b1af70fd610585e53c90249636073b28ef038534c3f0ea4026a659e8473",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "@sistemazero/agent-core",
+        "../src/environments/manager",
+        "../src/execution/dispatcher",
+        "../src/preview/revision",
+        "../src/process/manager",
+        "../src/store/client",
+        "../src/supervisor",
+        "../src/team/coordinator",
+        "../src/tools/paths",
+        "../src/workspace/patch",
+        "../src/workspace/snapshot"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/environments/manager.ts",
+        "packages/agent-runtime/src/execution/dispatcher.ts",
+        "packages/agent-runtime/src/preview/revision.ts",
+        "packages/agent-runtime/src/process/manager.ts",
+        "packages/agent-runtime/src/store/client.ts",
+        "packages/agent-runtime/src/supervisor.ts",
+        "packages/agent-runtime/src/team/coordinator.ts",
+        "packages/agent-runtime/src/tools/paths.ts",
+        "packages/agent-runtime/src/workspace/patch.ts",
+        "packages/agent-runtime/src/workspace/snapshot.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/tests/typescript.test.ts",
+      "lines": 44,
+      "sha256": "573ea0a0c5f957a6cab9917a91c9510645229802d1dffc96f11a764aa71cdaa1",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "../src/context/index",
+        "../src/context/typescript",
+        "../src/process/manager"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/context/index.ts",
+        "packages/agent-runtime/src/context/typescript.ts",
+        "packages/agent-runtime/src/process/manager.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/tests/web.test.ts",
+      "lines": 24,
+      "sha256": "0dcd70513ba05e7788b77f2b99949110ae49938eb34147ebec5541cd19ae1865",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "../src/tools/web"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/tools/web.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/tests/workflow-compile.test.ts",
+      "lines": 122,
+      "sha256": "b71eeadbff5d82db756c5d3b57837aaf976005bd43a67340b0cc56d90c45be27",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "../src/workflows/compiler",
+        "../src/workflows/expressions",
+        "../src/workflows/schedule"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/workflows/compiler.ts",
+        "packages/agent-runtime/src/workflows/expressions.ts",
+        "packages/agent-runtime/src/workflows/schedule.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/tests/workflow.test.ts",
+      "lines": 382,
+      "sha256": "c1b98a3742e58ccb446ff3bda7a0cbff2dda2f08f42e13f45cdfd663b59e5dcc",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "@sistemazero/agent-core",
+        "zod",
+        "../src/application",
+        "../src/store/client",
+        "../src/supervisor",
+        "../src/tools/definition",
+        "../src/tools/paths",
+        "../src/workflows/recipes"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/application.ts",
+        "packages/agent-runtime/src/store/client.ts",
+        "packages/agent-runtime/src/supervisor.ts",
+        "packages/agent-runtime/src/tools/definition.ts",
+        "packages/agent-runtime/src/tools/paths.ts",
+        "packages/agent-runtime/src/workflows/recipes.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/tests/workspace.test.ts",
+      "lines": 38,
+      "sha256": "01b4efc0e7c039e6dd84b6ba326614f0ed8ff89f9e788f9067338dec42e3966e",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "../src/process/manager",
+        "../src/store/client",
+        "../src/workspace/snapshot"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/process/manager.ts",
+        "packages/agent-runtime/src/store/client.ts",
+        "packages/agent-runtime/src/workspace/snapshot.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/agent-runtime/tsconfig.json",
+      "lines": 6,
+      "sha256": "5e4d166c21f88fd5232288e3227dc78f44a2ab17701ccc62e6041ffdf9a3c4bd",
+      "exports": [],
+      "imports": [],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/api-gateway/CLAUDE.md",
+      "lines": 396,
+      "sha256": "0c1a1f1dd7b95a7c01d8d9388fdedc34c559311ca62e871ab9d6cfaa75b6f563",
+      "exports": [],
+      "imports": [],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/api-gateway/gateway.config.ts",
+      "lines": 4277,
+      "sha256": "0d48f5e4321948577ca45369ec63f67423cd8b315dc74b8c4d798fc1b5f3f1f5",
+      "exports": [],
+      "imports": [
+        "@sistemazero/core/zappy",
+        "./src/infrastructure/config/gateway-config.schema"
+      ],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/api-gateway/tests/unit/config.test.ts",
+      "lines": 716,
+      "sha256": "9f61653fc0a877351cc44cd07f5dec8ce70b93f2a3495e80d1acd57199d2dedf",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "../../gateway.config",
+        "../../src/infrastructure/config/env",
+        "../../src/infrastructure/config/gateway-config.schema",
+        "../../src/infrastructure/config/load-gateway-config",
+        "../../src/infrastructure/routing/route-registry"
+      ],
+      "runtimeDependencies": [
+        "packages/api-gateway/gateway.config.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/auth/CLAUDE.md",
+      "lines": 611,
+      "sha256": "474ef78077a678fdab744a4719140a9ac8cc4ed36b90a3dc0f066f0a1a3f410d",
+      "exports": [],
+      "imports": [],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/auth/src/application/staff/staff-operations.service.ts",
+      "lines": 76,
+      "sha256": "11ec048de58b716b24c64d0353efc50a45935c67f81ceeb2a64288d713a3e01c",
+      "exports": [
+        "StaffGateway",
+        "StaffOperationsService"
+      ],
+      "imports": [
+        "@sistemazero/core/security",
+        "@sistemazero/core/staff",
+        "../../domain/ports/audit-log-repository.port",
+        "../../domain/ports/refresh-token-repository.port",
+        "../../domain/ports/token-issuer.port",
+        "../../domain/ports/user-repository.port",
+        "../../interfaces/http/errors",
+        "../mappers/user-view"
+      ],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/auth/src/composition-root.ts",
+      "lines": 473,
+      "sha256": "38a756fa6240ffba38c89b2a82d06afe9aa0e258983c02803c4149b1e0086c9f",
+      "exports": [
+        "Application",
+        "createApplication"
+      ],
+      "imports": [
+        "node:crypto",
+        "@sistemazero/core/logging",
+        "./application/admin/batch-get-profiles/batch-get-profiles.service",
+        "./application/admin/batch-get-users/batch-get-users.service",
+        "./application/admin/create-user/create-user.service",
+        "./application/admin/delete-user/delete-user.service",
+        "./application/admin/get-user/get-user.service",
+        "./application/admin/list-users/list-users.service",
+        "./application/admin/read-audit-log/read-audit-log.service",
+        "./application/admin/resend-invite/resend-invite.service",
+        "./application/admin/search-profiles/search-profiles.service",
+        "./application/admin/set-password/set-user-password.service",
+        "./application/admin/update-user/update-user.service",
+        "./application/ensure-buyer/ensure-buyer.service",
+        "./application/get-me/get-me.service",
+        "./application/get-me/get-own-profile.service",
+        "./application/impersonation/change-impersonation-mode.service",
+        "./application/impersonation/create-impersonation-token.service",
+        "./application/impersonation/exchange-impersonation-token.service",
+        "./application/impersonation/impersonation-session-validator",
+        "./application/internal/write-audit-log/write-audit-log.service",
+        "./application/login/login.service",
+        "./application/logout/logout.service",
+        "./application/maintenance/purge-expired",
+        "./application/me/change-password.service",
+        "./application/me/update-profile.service",
+        "./application/otp/request-otp.service",
+        "./application/otp/reset-password-otp.service",
+        "./application/otp/verify-otp.service",
+        "./application/password-reset/create-password-token.service",
+        "./application/password-reset/forgot-password.service",
+        "./application/password-reset/reset-password.service",
+        "./application/profiles/archive-profile.service",
+        "./application/profiles/create-profile.service",
+        "./application/profiles/exit-profile-session.service",
+        "./application/profiles/get-public-profile.service",
+        "./application/profiles/list-profiles.service",
+        "./application/profiles/select-profile.service",
+        "./application/profiles/update-profile.service",
+        "./application/refresh/refresh.service",
+        "./application/register/register.service",
+        "./application/staff/staff-operations.service",
+        "./application/study-access/study-access.service",
+        "./application/tokens/auth-token.service",
+        "./infrastructure/config/env",
+        "./infrastructure/gateways/members-allowance.gateway",
+        "./infrastructure/messaging/gateway-messaging-client",
+        "./infrastructure/messaging/staff-gateway",
+        "./infrastructure/observability/sentry",
+        "./infrastructure/persistence/drizzle/audit-log.repository",
+        "./infrastructure/persistence/drizzle/db",
+        "./infrastructure/persistence/drizzle/impersonation-token.repository",
+        "./infrastructure/persistence/drizzle/otp-code.repository",
+        "./infrastructure/persistence/drizzle/password-reset-token.repository",
+        "./infrastructure/persistence/drizzle/profile.repository",
+        "./infrastructure/persistence/drizzle/refresh-token.repository",
+        "./infrastructure/persistence/drizzle/study-access.repository",
+        "./infrastructure/persistence/drizzle/user.repository",
+        "./infrastructure/security/bun-password-hasher",
+        "./infrastructure/security/jose-token-issuer",
+        "./infrastructure/security/keys",
+        "./interfaces/http/server"
+      ],
+      "runtimeDependencies": [
+        "packages/auth/src/application/staff/staff-operations.service.ts",
+        "packages/auth/src/infrastructure/messaging/staff-gateway.ts",
+        "packages/auth/src/interfaces/http/server.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/auth/src/infrastructure/config/env.ts",
+      "lines": 222,
+      "sha256": "f1dba39e3ea8983f03f56c5427eed08d5dd0f030df44adb4e80069bfb5bf6ae5",
+      "exports": [
+        "Env",
+        "loadEnv"
+      ],
+      "imports": [
+        "zod"
+      ],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/auth/src/infrastructure/messaging/staff-gateway.ts",
+      "lines": 159,
+      "sha256": "87fd4412ce599f08d50546ef25dddefb93398e282a1f00d7dc3d521f70aab658",
+      "exports": [
+        "createStaffGateway"
+      ],
+      "imports": [
+        "@sistemazero/core/security",
+        "@sistemazero/core/staff",
+        "@sistemazero/core/studio",
+        "zod",
+        "../../application/staff/staff-operations.service"
+      ],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/auth/src/interfaces/http/routes/staff.routes.ts",
+      "lines": 25,
+      "sha256": "71e3904bc0f8286dfba56c0c901942c9d07369e9e5b7a14253b1d1ac7177b1d7",
+      "exports": [
+        "staffRoutes"
+      ],
+      "imports": [
+        "@sistemazero/core/staff",
+        "elysia",
+        "../../../application/staff/staff-operations.service",
+        "../errors"
+      ],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/auth/src/interfaces/http/server.ts",
+      "lines": 226,
+      "sha256": "3f0ff7e99473b6660fc2d1258c21c68047bde961cdae614d0b2006d30e559b07",
+      "exports": [
+        "HttpDeps",
+        "createServer"
+      ],
+      "imports": [
+        "@elysiajs/swagger",
+        "@sistemazero/core/logging",
+        "elysia",
+        "../../application/admin/batch-get-profiles/batch-get-profiles.service",
+        "../../application/admin/batch-get-users/batch-get-users.service",
+        "../../application/admin/create-user/create-user.service",
+        "../../application/admin/delete-user/delete-user.service",
+        "../../application/admin/get-user/get-user.service",
+        "../../application/admin/list-users/list-users.service",
+        "../../application/admin/read-audit-log/read-audit-log.service",
+        "../../application/admin/resend-invite/resend-invite.service",
+        "../../application/admin/search-profiles/search-profiles.service",
+        "../../application/admin/set-password/set-user-password.service",
+        "../../application/admin/update-user/update-user.service",
+        "../../application/ensure-buyer/ensure-buyer.service",
+        "../../application/get-me/get-me.service",
+        "../../application/get-me/get-own-profile.service",
+        "../../application/impersonation/change-impersonation-mode.service",
+        "../../application/impersonation/create-impersonation-token.service",
+        "../../application/impersonation/exchange-impersonation-token.service",
+        "../../application/internal/write-audit-log/write-audit-log.service",
+        "../../application/login/login.service",
+        "../../application/logout/logout.service",
+        "../../application/me/change-password.service",
+        "../../application/me/update-profile.service",
+        "../../application/otp/request-otp.service",
+        "../../application/otp/reset-password-otp.service",
+        "../../application/otp/verify-otp.service",
+        "../../application/password-reset/create-password-token.service",
+        "../../application/password-reset/forgot-password.service",
+        "../../application/password-reset/reset-password.service",
+        "../../application/refresh/refresh.service",
+        "../../application/register/register.service",
+        "../../application/staff/staff-operations.service",
+        "../../application/study-access/study-access.service",
+        "../../domain/ports/profile-repository.port",
+        "../../domain/ports/token-issuer.port",
+        "../../domain/ports/user-repository.port",
+        "../../infrastructure/config/env",
+        "./error-handler",
+        "./errors",
+        "./raw-body",
+        "./routes/admin.routes",
+        "./routes/auth.routes",
+        "./routes/health.routes",
+        "./routes/impersonation.routes",
+        "./routes/internal.routes",
+        "./routes/profiles.routes",
+        "./routes/staff.routes",
+        "./routes/study-access.routes"
+      ],
+      "runtimeDependencies": [
+        "packages/auth/src/interfaces/http/routes/staff.routes.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/auth/tests/unit/staff-gateway.test.ts",
+      "lines": 102,
+      "sha256": "f579a8010438a13c7055035a2aa87b90a7c14895caaf3014ce0650da6eed0ec0",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "../../src/infrastructure/messaging/staff-gateway"
+      ],
+      "runtimeDependencies": [
+        "packages/auth/src/infrastructure/messaging/staff-gateway.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/auth/tests/unit/staff-operations.test.ts",
+      "lines": 85,
+      "sha256": "fd78236747b3d9420e9f206ef587deff5919bc7673f68421c11a75055cdfa23f",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "../../src/application/logout/logout.service",
+        "../../src/application/staff/staff-operations.service",
+        "../../src/application/tokens/auth-token.service",
+        "../../src/domain/user/user.aggregate",
+        "../../src/domain/value-objects/email",
+        "../fakes/in-memory",
+        "../helpers"
+      ],
+      "runtimeDependencies": [
+        "packages/auth/src/application/staff/staff-operations.service.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/core/package.json",
+      "lines": 51,
+      "sha256": "12fe17c8db03dfd8deb6ff512a5274b15c4ce66743f343e733aeebe405ff976f",
+      "exports": [],
+      "imports": [],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/core/src/staff/index.ts",
+      "lines": 106,
+      "sha256": "35ac0654d9affee8b4f5afa0bcc90ffcb9dd167d046076a3525d7adc6da094d9",
+      "exports": [
+        "staffMessageSchema",
+        "staffOperationSchema",
+        "StaffOperation",
+        "staffRequestSchema",
+        "staffMutation",
+        "staffRoles",
+        "staffCanonical"
+      ],
+      "imports": [
+        "zod",
+        "../studio/build-contract"
+      ],
+      "runtimeDependencies": [
+        "packages/core/src/studio/build-contract.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/core/src/studio/build-contract.ts",
+      "lines": 211,
+      "sha256": "5ebf6178e0a85dcc23a9b35138ad52ca17e38367243ec00a3e6fb68b8940dad2",
+      "exports": [
+        "StudioBuildSubmission",
+        "InvalidBuildRequestError",
+        "studioBuildSchema",
+        "studioBuildResponseSchema",
+        "parseStudioBuildSubmission"
+      ],
+      "imports": [
+        "zod",
+        "./pro-artifact",
+        "./pro-build",
+        "./pro-builder",
+        "./pro-runtime-capabilities",
+        "./pro-templates"
+      ],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/core/src/studio/index.ts",
+      "lines": 17,
+      "sha256": "7ce31fce9ad87be1b6db00a167d14141ff1ed2e0378bef08bb10e9e304dc1f2b",
+      "exports": [],
+      "imports": [],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/messaging/CLAUDE.md",
+      "lines": 346,
+      "sha256": "3db3fc0e3e598047275e83cfadd3ee345735e669f13eab34a958e64987b73ebc",
+      "exports": [],
+      "imports": [],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/messaging/src/application/get-message/get-message.service.ts",
+      "lines": 22,
+      "sha256": "83b58c3f8ae04e1cd20c855b2e9c331052abc2fa3ca23588389c62bffb3eb2de",
+      "exports": [
+        "GetMessageService"
+      ],
+      "imports": [
+        "../../domain/message/message.errors",
+        "../../domain/ports/message-repository.port",
+        "../mappers/message-view"
+      ],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/messaging/src/application/send-message/send-message.service.ts",
+      "lines": 162,
+      "sha256": "eba4792a6987d23b424ce8ed01bc95ffa98b33b5219e1aa7b58b802063a6a1cf",
+      "exports": [
+        "SendMessageInput",
+        "SendMessageService"
+      ],
+      "imports": [
+        "@sistemazero/core/staff",
+        "../../domain/message/message.aggregate",
+        "../../domain/message/message.aggregate",
+        "../../domain/message/message.errors",
+        "../../domain/ports/clock.port",
+        "../../domain/ports/message-repository.port",
+        "../../domain/ports/sender-repository.port",
+        "../../domain/ports/suppression-repository.port",
+        "../../domain/ports/template-repository.port",
+        "../../domain/sender/sender.errors",
+        "../../domain/services/address",
+        "../../domain/services/render-template",
+        "../../domain/shared/channel",
+        "../../domain/template/template.errors",
+        "../mappers/message-view"
+      ],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/messaging/src/infrastructure/config/env.ts",
+      "lines": 196,
+      "sha256": "dd15bcc27420297b1fc512a620c3db1c426601ec015179af4de17bc9d2d35fe5",
+      "exports": [
+        "Env",
+        "loadEnv"
+      ],
+      "imports": [
+        "zod"
+      ],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/messaging/src/interfaces/http/error-handler.ts",
+      "lines": 84,
+      "sha256": "d7265a0dbc42747933f35ae18382286f71a906160359180d63aa5f45cd9b7746",
+      "exports": [
+        "buildErrorResponse"
+      ],
+      "imports": [
+        "@sistemazero/core/errors",
+        "@sistemazero/core/http",
+        "@sistemazero/core/logging",
+        "../../domain/ports/concurrency.error",
+        "../../infrastructure/observability/sentry"
+      ],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/messaging/src/interfaces/http/routes/staff.routes.ts",
+      "lines": 63,
+      "sha256": "70614b6b988d1963a1255f252994868f66e22cf5f1011b736aeeb151cf45aa0c",
+      "exports": [
+        "staffRoutes"
+      ],
+      "imports": [
+        "@sistemazero/core/http",
+        "@sistemazero/core/staff",
+        "elysia",
+        "zod",
+        "../../../application/get-message/get-message.service",
+        "../../../application/send-message/send-message.service",
+        "../auth"
+      ],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/messaging/src/interfaces/http/server.ts",
+      "lines": 195,
+      "sha256": "933e61d038d0dcf41a2636a0b399d6856691d5ad66f7ecb6b8648bd45fd90b3b",
+      "exports": [
+        "HttpDeps",
+        "createServer"
+      ],
+      "imports": [
+        "@elysiajs/swagger",
+        "@sistemazero/core/http",
+        "elysia",
+        "../../application/apply-delivery-status/apply-delivery-status.service",
+        "../../application/get-message/get-message.service",
+        "../../application/instances/instance-admin.service",
+        "../../application/list-messages/list-messages.service",
+        "../../application/send-message/send-message.service",
+        "../../application/senders/sender-admin.service",
+        "../../application/templates/template-admin.service",
+        "../../domain/ports/clock.port",
+        "../../infrastructure/config/env",
+        "../../infrastructure/logging/logger",
+        "../../infrastructure/persistence/drizzle/metrics.repository",
+        "./error-handler",
+        "./raw-body",
+        "./routes/admin.routes",
+        "./routes/health.routes",
+        "./routes/metrics.routes",
+        "./routes/send.routes",
+        "./routes/staff.routes",
+        "./routes/webhooks.routes"
+      ],
+      "runtimeDependencies": [
+        "packages/messaging/src/interfaces/http/error-handler.ts",
+        "packages/messaging/src/interfaces/http/routes/staff.routes.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/messaging/tests/unit/send-message.test.ts",
+      "lines": 101,
+      "sha256": "ae7022510f91b35c5d82a862309c76f2ff8c29f81e5136623dd498bd5af25114",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "../../src/application/send-message/send-message.service",
+        "../../src/application/senders/sender-admin.service",
+        "../../src/domain/ports/clock.port",
+        "../../src/domain/template/template.aggregate",
+        "../fakes/in-memory"
+      ],
+      "runtimeDependencies": [
+        "packages/messaging/src/application/send-message/send-message.service.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/messaging/tests/unit/staff-routes.test.ts",
+      "lines": 99,
+      "sha256": "e158bdcd71d0f68a8bc40a1d62d8e404d6294b242298ca8e67231205908c20b8",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "elysia",
+        "zod",
+        "../../src/application/get-message/get-message.service",
+        "../../src/application/send-message/send-message.service",
+        "../../src/domain/template/template.aggregate",
+        "../../src/interfaces/http/error-handler",
+        "../../src/interfaces/http/routes/staff.routes",
+        "../fakes/in-memory"
+      ],
+      "runtimeDependencies": [
+        "packages/messaging/src/application/get-message/get-message.service.ts",
+        "packages/messaging/src/application/send-message/send-message.service.ts",
+        "packages/messaging/src/interfaces/http/error-handler.ts",
+        "packages/messaging/src/interfaces/http/routes/staff.routes.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/studio-runtime/src/contracts.ts",
+      "lines": 210,
+      "sha256": "046e0581ab2d8ec1f75cae89150ebc25fcb4dd8e6fd25d41a39e9a985214ae0e",
+      "exports": [
+        "PRO_TEMPLATE_IDS",
+        "ProTemplateId",
+        "ProBuildRequest",
+        "ProBuildSuccess",
+        "ProBuildFailure",
+        "ProBuildResponse",
+        "PRO_BUILD_LIMITS",
+        "parseBuildRequest",
+        "verifyBuildBinaries",
+        "normalizeBuildPath",
+        "trustedPackageJson",
+        "trustedViteConfig"
+      ],
+      "imports": [
+        "@sistemazero/core/studio",
+        "../runtime/package-lock.json",
+        "./dependency-lock"
+      ],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/tui/CLAUDE.md",
+      "lines": 53,
+      "sha256": "e5f5a505a7d6486187967f5b60b18eca07fb6cce11c2babadef41a1b49e121e5",
+      "exports": [],
+      "imports": [],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/tui/README.md",
+      "lines": 17,
+      "sha256": "fc60a0918c3d1fcbefdc1a3a1e1ada9ec6477b294a044df0508906b141ee6901",
+      "exports": [],
+      "imports": [],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/tui/bench/interaction.tsx",
+      "lines": 132,
+      "sha256": "9ce3eeb87cbf4158d195d9faa162b6270725e8e28dc518e2d5b1cef5942ac111",
+      "exports": [],
+      "imports": [
+        "node:crypto",
+        "node:fs/promises",
+        "node:path",
+        "@opentui/core/testing",
+        "@opentui/react",
+        "react",
+        "../src/app",
+        "../src/providers/keyboard-layer",
+        "../src/providers/theme",
+        "../src/providers/toast",
+        "../src/state/runtime"
+      ],
+      "runtimeDependencies": [
+        "packages/tui/src/app.tsx",
+        "packages/tui/src/providers/keyboard-layer/index.tsx",
+        "packages/tui/src/providers/theme/index.tsx",
+        "packages/tui/src/providers/toast/index.tsx",
+        "packages/tui/src/state/runtime.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/tui/package.json",
+      "lines": 36,
+      "sha256": "0adb0246e39a6a5f104ecc80e0ee3c75297ce8d12fcfc1ca9d492fb6ab969b74",
+      "exports": [],
+      "imports": [],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/tui/src/app.tsx",
+      "lines": 394,
+      "sha256": "de122f624eac9458fecd631b112e693e5364a09bec464fffbc8b0a68c2b56fb6",
+      "exports": [
+        "SessionView",
+        "start"
+      ],
+      "imports": [
+        "@opentui/core",
+        "@opentui/react",
+        "@sistemazero/agent-core",
+        "react",
+        "./components/input-bar",
+        "./providers/keyboard-layer",
+        "./providers/theme",
+        "./providers/toast",
+        "./state/editor",
+        "./state/runtime"
+      ],
+      "runtimeDependencies": [
+        "packages/tui/src/components/input-bar.tsx",
+        "packages/tui/src/providers/keyboard-layer/index.tsx",
+        "packages/tui/src/providers/theme/index.tsx",
+        "packages/tui/src/providers/toast/index.tsx",
+        "packages/tui/src/state/editor.ts",
+        "packages/tui/src/state/runtime.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/tui/src/cli.ts",
+      "lines": 231,
+      "sha256": "c34b2c2fa1e7cddfad40805296b5d86aa4943de1e902d0c47faba4ddc59a9beb",
+      "exports": [
+        "cli"
+      ],
+      "imports": [
+        "node:fs/promises",
+        "@sistemazero/agent-core",
+        "@sistemazero/agent-runtime",
+        "zod"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/client.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/tui/src/components/border.tsx",
+      "lines": 19,
+      "sha256": "0031bcc55f36639b5b8121e922e7d22ef7876a9e64268a4a45aa660a7ce79c76",
+      "exports": [
+        "EmptyBorder",
+        "SplitBorderChars"
+      ],
+      "imports": [],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/tui/src/components/command-menu/commands.tsx",
+      "lines": 56,
+      "sha256": "71775b24067d93db44585a981be85ba73baffba6c9c8a19f0b2213d4ae182c89",
+      "exports": [
+        "COMMANDS"
+      ],
+      "imports": [
+        "./types"
+      ],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/tui/src/components/command-menu/filter-commands.ts",
+      "lines": 8,
+      "sha256": "536ff10cdfe52377ca21d7ca5683dc5cc95d49e02d48c2a0336bf07671e3610b",
+      "exports": [
+        "getFilteredCommands"
+      ],
+      "imports": [
+        "./commands",
+        "./types"
+      ],
+      "runtimeDependencies": [
+        "packages/tui/src/components/command-menu/commands.tsx"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/tui/src/components/command-menu/index.tsx",
+      "lines": 73,
+      "sha256": "47791ea799ed5e1f2280d25946c542ec620efd1edc5c42f104b979ec40b69383",
+      "exports": [
+        "CommandMenu"
+      ],
+      "imports": [
+        "@opentui/core",
+        "react",
+        "../../providers/theme",
+        "./commands",
+        "./filter-commands"
+      ],
+      "runtimeDependencies": [
+        "packages/tui/src/providers/theme/index.tsx",
+        "packages/tui/src/components/command-menu/commands.tsx",
+        "packages/tui/src/components/command-menu/filter-commands.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/tui/src/components/command-menu/types.ts",
+      "lines": 14,
+      "sha256": "c92aa44c9d425d2c960108a390e6b5e6aaf59bb9b79631730477f269d4e39353",
+      "exports": [
+        "CommandContext",
+        "Command"
+      ],
+      "imports": [
+        "../../providers/toast"
+      ],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/tui/src/components/command-menu/use-command-menu.ts",
+      "lines": 114,
+      "sha256": "569287080eb86365e0bdb3a6f6b8c54d9536f666a43151f2e95d8a4c667e763d",
+      "exports": [
+        "useCommandMenu"
+      ],
+      "imports": [
+        "@opentui/core",
+        "@opentui/react",
+        "react",
+        "../../providers/keyboard-layer",
+        "./filter-commands",
+        "./types"
+      ],
+      "runtimeDependencies": [
+        "packages/tui/src/providers/keyboard-layer/index.tsx",
+        "packages/tui/src/components/command-menu/filter-commands.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/tui/src/components/input-bar.tsx",
+      "lines": 179,
+      "sha256": "40ffe1439087e97cca74207d09be13551043ce10712bd43d3fa3627759bcbb79",
+      "exports": [
+        "TEXTAREA_KEY_BINDINGS",
+        "InputBar"
+      ],
+      "imports": [
+        "@opentui/core",
+        "@opentui/react",
+        "react",
+        "../providers/theme",
+        "../providers/toast",
+        "./border",
+        "./command-menu",
+        "./command-menu/types",
+        "./command-menu/use-command-menu",
+        "./status-bar"
+      ],
+      "runtimeDependencies": [
+        "packages/tui/src/providers/theme/index.tsx",
+        "packages/tui/src/providers/toast/index.tsx",
+        "packages/tui/src/components/border.tsx",
+        "packages/tui/src/components/command-menu/index.tsx",
+        "packages/tui/src/components/command-menu/use-command-menu.ts",
+        "packages/tui/src/components/status-bar.tsx"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/tui/src/components/status-bar.tsx",
+      "lines": 16,
+      "sha256": "9cb02778f5a00b330200fdfa4c80652febed52f9a90e25b80778fe6acc1a82cf",
+      "exports": [
+        "StatusBar"
+      ],
+      "imports": [
+        "@opentui/core",
+        "@sistemazero/agent-core",
+        "../providers/theme"
+      ],
+      "runtimeDependencies": [
+        "packages/tui/src/providers/theme/index.tsx"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/tui/src/index.tsx",
+      "lines": 4,
+      "sha256": "ba2e59fa6819292c182c91bd4e68fa0fc1a6f32d8ed1e7d8b78f72d206ae7282",
+      "exports": [],
+      "imports": [
+        "./app"
+      ],
+      "runtimeDependencies": [
+        "packages/tui/src/app.tsx"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/tui/src/providers/keyboard-layer/index.tsx",
+      "lines": 90,
+      "sha256": "702c5f91a4e8c9a3b2928eb7f6aa42d15013c887a3ab9a2c5e0806a90e370d5e",
+      "exports": [
+        "KeyboardLayerProvider",
+        "useKeyboardLayer"
+      ],
+      "imports": [
+        "@opentui/react",
+        "react",
+        "react"
+      ],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/tui/src/providers/theme/index.tsx",
+      "lines": 61,
+      "sha256": "ee988b759153427e47cb89e74a7f790c3ae2e4fd7fdcb2de807e76b9bd22ffe5",
+      "exports": [
+        "useTheme",
+        "ThemeProvider"
+      ],
+      "imports": [
+        "react",
+        "../../theme"
+      ],
+      "runtimeDependencies": [
+        "packages/tui/src/theme.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/tui/src/providers/toast/index.tsx",
+      "lines": 115,
+      "sha256": "517dae45de59f10a8afeabf7f102d5d3558d341241d0dd55c6f781c7fc8c7e88",
+      "exports": [
+        "ToastContextValue",
+        "useToast",
+        "ToastProvider"
+      ],
+      "imports": [
+        "@opentui/react",
+        "react",
+        "react",
+        "../../components/border",
+        "../theme",
+        "./types",
+        "./types"
+      ],
+      "runtimeDependencies": [
+        "packages/tui/src/components/border.tsx",
+        "packages/tui/src/providers/theme/index.tsx",
+        "packages/tui/src/providers/toast/types.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/tui/src/providers/toast/types.ts",
+      "lines": 10,
+      "sha256": "9d484b068d6db06f65c859801da684d16c836894b05640ec5434ecb98de49e41",
+      "exports": [
+        "ToastVariant",
+        "ToastOptions",
+        "DEFAULT_DURATION"
+      ],
+      "imports": [],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/tui/src/state/editor.ts",
+      "lines": 53,
+      "sha256": "3b32ca8b341206ea8df3e44a195b1871d6a6f7f17fc17dc1a4d74adb2840cee1",
+      "exports": [
+        "editDraft"
+      ],
+      "imports": [
+        "node:child_process",
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "zod"
+      ],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/tui/src/state/runtime.ts",
+      "lines": 632,
+      "sha256": "48b95cd4100d438fb40bc3dd3708e8278a13d89dfa02e372b4ea7de52497eb24",
+      "exports": [
+        "PANELS",
+        "Panel",
+        "PanelRow",
+        "rowsFrom",
+        "RuntimeState"
+      ],
+      "imports": [
+        "node:events",
+        "@sistemazero/agent-core",
+        "@sistemazero/agent-runtime",
+        "zod",
+        "../theme"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/client.ts",
+        "packages/tui/src/theme.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/tui/src/theme.ts",
+      "lines": 569,
+      "sha256": "0cb88b5540596e5f5ce0a4062635294cb2fe7412366d0108347c092244d5d23e",
+      "exports": [
+        "ThemeColors",
+        "Theme",
+        "THEMES",
+        "DEFAULT_THEME"
+      ],
+      "imports": [],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/tui/tests/cli.test.ts",
+      "lines": 15,
+      "sha256": "3167f6a4ac62639cc1c8826bc0d7afd210dd758b643832356eb76896d3990c2c",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "node:path"
+      ],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/tui/tests/runtime-state.test.ts",
+      "lines": 75,
+      "sha256": "b5e164546bdfd1ab7449ebc75898910a70dbcc6b6d94a265d494b5b7ba6807a0",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "@sistemazero/agent-core",
+        "../src/state/runtime"
+      ],
+      "runtimeDependencies": [
+        "packages/tui/src/state/runtime.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/tui/tests/session.test.tsx",
+      "lines": 35,
+      "sha256": "47f2082b6b6fed860bd8e0b5c45496f55dcb912c1d0550257579ada4d6b89670",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "@opentui/react/test-utils",
+        "react",
+        "../src/app",
+        "../src/providers/keyboard-layer",
+        "../src/providers/theme",
+        "../src/providers/toast",
+        "../src/state/runtime"
+      ],
+      "runtimeDependencies": [
+        "packages/tui/src/app.tsx",
+        "packages/tui/src/providers/keyboard-layer/index.tsx",
+        "packages/tui/src/providers/theme/index.tsx",
+        "packages/tui/src/providers/toast/index.tsx",
+        "packages/tui/src/state/runtime.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/tui/tests/terminal-ux.test.tsx",
+      "lines": 71,
+      "sha256": "b11ac8db14d0994c233ba6ceb9e5757a5579f60d58e087adadef98645ad935d4",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "@opentui/react/test-utils",
+        "react",
+        "../src/app",
+        "../src/providers/keyboard-layer",
+        "../src/providers/theme",
+        "../src/providers/toast",
+        "../src/state/runtime"
+      ],
+      "runtimeDependencies": [
+        "packages/tui/src/app.tsx",
+        "packages/tui/src/providers/keyboard-layer/index.tsx",
+        "packages/tui/src/providers/theme/index.tsx",
+        "packages/tui/src/providers/toast/index.tsx",
+        "packages/tui/src/state/runtime.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "packages/tui/tsconfig.json",
+      "lines": 9,
+      "sha256": "33ccfff890cf8d44ae502c8b2700729064d7acd5631024f816e7c72275e0fdf4",
+      "exports": [],
+      "imports": [],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "scripts/tui-release/install.ts",
+      "lines": 180,
+      "sha256": "18f61b3904e9d87672f0136fcc71502a0f3c406e20d78b76a7fed3162cf46517",
+      "exports": [
+        "install"
+      ],
+      "imports": [
+        "bun:sqlite",
+        "node:fs/promises",
+        "node:path",
+        "zod",
+        "../../packages/agent-runtime/src/config",
+        "../../packages/agent-runtime/src/ipc/server",
+        "./manifest"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/config.ts",
+        "packages/agent-runtime/src/ipc/server.ts",
+        "scripts/tui-release/manifest.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "scripts/tui-release/launcher.ts",
+      "lines": 24,
+      "sha256": "cbdef53cfa060bc4431dd6ef91c783b05b43405b7517d0aa144e52019ffbaba5",
+      "exports": [],
+      "imports": [
+        "node:fs/promises",
+        "node:path",
+        "zod",
+        "./manifest"
+      ],
+      "runtimeDependencies": [
+        "scripts/tui-release/manifest.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "scripts/tui-release/manifest.test.ts",
+      "lines": 41,
+      "sha256": "e7909f9714b5212ed4b986aff2b23f43bcfe1cd448ab967beb9203cebfc9868c",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "./manifest"
+      ],
+      "runtimeDependencies": [
+        "scripts/tui-release/manifest.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "scripts/tui-release/manifest.ts",
+      "lines": 100,
+      "sha256": "4785c46b4dc7336d1a518c20c98065ebed026ac774d1c9196c67fbd7706216c0",
+      "exports": [
+        "manifestSchema",
+        "sha256",
+        "manifest",
+        "verify"
+      ],
+      "imports": [
+        "node:crypto",
+        "node:fs/promises",
+        "node:path",
+        "zod"
+      ],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "scripts/tui-release/package.ts",
+      "lines": 141,
+      "sha256": "0358ec5346e0d73b242cd26a62ebeffc9f106aee4143bc02b6db0fb4045910f7",
+      "exports": [],
+      "imports": [
+        "node:fs/promises",
+        "node:path",
+        "../../packages/agent-runtime/src/process/windows",
+        "./manifest"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/process/windows.ts",
+        "scripts/tui-release/manifest.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "scripts/tui-release/smoke.ts",
+      "lines": 84,
+      "sha256": "5b9bedeead8fef6b01f8b2e5d494533d82eab8d0a1353d681343feac3c6dcdcc",
+      "exports": [],
+      "imports": [
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "@opentui/core/testing",
+        "../../packages/agent-integrations/src/browser/schema",
+        "../../packages/agent-integrations/src/mcp/schema",
+        "../../packages/agent-runtime/src/browser/worker",
+        "../../packages/agent-runtime/src/context/index",
+        "../../packages/agent-runtime/src/context/typescript",
+        "../../packages/agent-runtime/src/process/manager",
+        "../../packages/agent-runtime/src/process/rpc",
+        "../../packages/agent-runtime/src/store/client",
+        "./manifest"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-integrations/src/browser/schema.ts",
+        "packages/agent-integrations/src/mcp/schema.ts",
+        "packages/agent-runtime/src/browser/worker.ts",
+        "packages/agent-runtime/src/context/index.ts",
+        "packages/agent-runtime/src/context/typescript.ts",
+        "packages/agent-runtime/src/process/manager.ts",
+        "packages/agent-runtime/src/process/rpc.ts",
+        "packages/agent-runtime/src/store/client.ts",
+        "scripts/tui-release/manifest.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "scripts/tui-release/tsconfig.json",
+      "lines": 6,
+      "sha256": "5ff030f3a47ae5812b498e2914b301c0d050962cf16aa589e6a09ac69161783a",
+      "exports": [],
+      "imports": [],
+      "runtimeDependencies": [],
+      "typeEscapes": []
+    },
+    {
+      "file": "scripts/tui-release/upgrade.ts",
+      "lines": 93,
+      "sha256": "c008b9cc4625fc54a3811fca09cca6a694765a66f33e89fa362ee4c1b5d04803",
+      "exports": [],
+      "imports": [
+        "bun:sqlite",
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "../../packages/agent-runtime/src/process/owned",
+        "./install",
+        "./manifest"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/process/owned.ts",
+        "scripts/tui-release/install.ts",
+        "scripts/tui-release/manifest.ts"
+      ],
+      "typeEscapes": []
+    },
+    {
+      "file": "scripts/tui-release/verify.ts",
+      "lines": 76,
+      "sha256": "c05eb3e15d191e8bb54aa65a1e98d35f0eb0f83c59935ead7b4aecf2f7d5f49c",
+      "exports": [],
+      "imports": [
+        "node:fs/promises",
+        "node:os",
+        "node:path",
+        "../../packages/agent-runtime/src/client",
+        "../../packages/agent-runtime/src/credentials",
+        "./manifest"
+      ],
+      "runtimeDependencies": [
+        "packages/agent-runtime/src/client.ts",
+        "packages/agent-runtime/src/credentials.ts",
+        "scripts/tui-release/manifest.ts"
+      ],
+      "typeEscapes": []
+    }
+  ]
+}

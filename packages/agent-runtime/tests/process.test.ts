@@ -58,3 +58,23 @@ test('timeout terminates owned child and grandchild processes', async () => {
     expect(() => process.kill(pid, 0)).toThrow()
   }
 }, 15000)
+
+test('timeout revokes ownership even while a child refuses a full stdin pipe', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'zero-blocked-stdin-'))
+  const manager = new Processes(directory)
+  const result = await manager.run(
+    {
+      executable: process.execPath,
+      args: ['-e', 'console.log(process.pid);setInterval(()=>{},1000)'],
+      cwd: directory,
+      input: 'x'.repeat(128000),
+      timeoutMs: 1000,
+    },
+    new AbortController().signal,
+  )
+  expect(result.reason).toBe('timeout')
+  const pid = Number(result.output.trim())
+  expect(pid).toBeGreaterThan(0)
+  expect(() => process.kill(pid, 0)).toThrow()
+  expect(manager.active.size).toBe(0)
+}, 15000)

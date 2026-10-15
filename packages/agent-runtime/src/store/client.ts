@@ -97,7 +97,7 @@ export class Store extends EventEmitter {
       )
     )
       this.emit('changed', {
-        op: command.op,
+        op: command.op === 'run.cancel' ? 'run.state' : command.op,
         namespaces:
           'namespace' in command
             ? [command.namespace]

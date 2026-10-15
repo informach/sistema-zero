@@ -49,6 +49,7 @@ export const storeCommand = z.discriminatedUnion('op', [
   z.object({ op: z.literal('session.list'), offset: z.number().int().min(0).default(0) }),
   z.object({ op: z.literal('run.put'), value: runSchema, requestId: id, digest: z.string() }),
   z.object({ op: z.literal('run.get'), id }),
+  z.object({ op: z.literal('run.cancel'), id, active: z.boolean(), error: z.string().optional() }),
   z.object({ op: z.literal('run.cursor'), id }),
   z.object({ op: z.literal('run.list'), sessionId: id.optional() }),
   z.object({
