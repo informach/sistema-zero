@@ -1,15 +1,1768 @@
 {
   "errors": [],
-  "turns": [],
-  "attacks": [],
+  "turns": [
+    {
+      "round": 1,
+      "move": "Investida",
+      "state": {
+        "state": "batalha",
+        "dialog": true,
+        "menu": null,
+        "battle": {
+          "phase": "anima",
+          "message": "Você usou Investida e causou 20 em Lacaio!",
+          "allies": [
+            {
+              "name": "Você",
+              "hp": 80,
+              "max": 80,
+              "energy": 7,
+              "x": 444,
+              "y": 386.40000000000003,
+              "w": 72,
+              "h": 72
+            }
+          ],
+          "foes": [
+            {
+              "name": "Lacaio",
+              "hp": 4,
+              "max": 24,
+              "x": 374,
+              "y": 156,
+              "w": 72,
+              "h": 72
+            },
+            {
+              "name": "Dragao",
+              "hp": 160,
+              "max": 160,
+              "x": 474,
+              "y": 136,
+              "w": 112,
+              "h": 112
+            }
+          ]
+        }
+      }
+    },
+    {
+      "round": 2,
+      "move": "Investida",
+      "state": {
+        "state": "batalha",
+        "dialog": true,
+        "menu": null,
+        "battle": {
+          "phase": "anima",
+          "message": "Você usou Investida e causou 20 em Lacaio! Lacaio caiu!",
+          "allies": [
+            {
+              "name": "Você",
+              "hp": 63,
+              "max": 80,
+              "energy": 6,
+              "x": 444,
+              "y": 386.40000000000003,
+              "w": 72,
+              "h": 72
+            }
+          ],
+          "foes": [
+            {
+              "name": "Lacaio",
+              "hp": 0,
+              "max": 24,
+              "x": 374,
+              "y": 156,
+              "w": 72,
+              "h": 72
+            },
+            {
+              "name": "Dragao",
+              "hp": 160,
+              "max": 160,
+              "x": 474,
+              "y": 136,
+              "w": 112,
+              "h": 112
+            }
+          ]
+        }
+      }
+    },
+    {
+      "round": 3,
+      "move": "Investida",
+      "state": {
+        "state": "batalha",
+        "dialog": true,
+        "menu": null,
+        "battle": {
+          "phase": "anima",
+          "message": "Você usou Investida e causou 19 em Dragao!",
+          "allies": [
+            {
+              "name": "Você",
+              "hp": 49,
+              "max": 80,
+              "energy": 5,
+              "x": 444,
+              "y": 386.40000000000003,
+              "w": 72,
+              "h": 72
+            }
+          ],
+          "foes": [
+            {
+              "name": "Lacaio",
+              "hp": 0,
+              "max": 24,
+              "x": 374,
+              "y": 156,
+              "w": 72,
+              "h": 72
+            },
+            {
+              "name": "Dragao",
+              "hp": 141,
+              "max": 160,
+              "x": 474,
+              "y": 136,
+              "w": 112,
+              "h": 112
+            }
+          ]
+        }
+      }
+    },
+    {
+      "round": 4,
+      "move": "Curar",
+      "state": {
+        "state": "batalha",
+        "dialog": true,
+        "menu": null,
+        "battle": {
+          "phase": "anima",
+          "message": "Você usou Curar (+22 de vida).",
+          "allies": [
+            {
+              "name": "Você",
+              "hp": 57,
+              "max": 80,
+              "energy": 3,
+              "x": 444,
+              "y": 386.40000000000003,
+              "w": 72,
+              "h": 72
+            }
+          ],
+          "foes": [
+            {
+              "name": "Lacaio",
+              "hp": 0,
+              "max": 24,
+              "x": 374,
+              "y": 156,
+              "w": 72,
+              "h": 72
+            },
+            {
+              "name": "Dragao",
+              "hp": 141,
+              "max": 160,
+              "x": 474,
+              "y": 136,
+              "w": 112,
+              "h": 112
+            }
+          ]
+        }
+      }
+    },
+    {
+      "round": 5,
+      "move": "Investida",
+      "state": {
+        "state": "batalha",
+        "dialog": true,
+        "menu": null,
+        "battle": {
+          "phase": "anima",
+          "message": "Você usou Investida e causou 19 em Dragao!",
+          "allies": [
+            {
+              "name": "Você",
+              "hp": 43,
+              "max": 80,
+              "energy": 2,
+              "x": 444,
+              "y": 386.40000000000003,
+              "w": 72,
+              "h": 72
+            }
+          ],
+          "foes": [
+            {
+              "name": "Lacaio",
+              "hp": 0,
+              "max": 24,
+              "x": 374,
+              "y": 156,
+              "w": 72,
+              "h": 72
+            },
+            {
+              "name": "Dragao",
+              "hp": 122,
+              "max": 160,
+              "x": 474,
+              "y": 136,
+              "w": 112,
+              "h": 112
+            }
+          ]
+        }
+      }
+    },
+    {
+      "round": 6,
+      "move": "Curar",
+      "state": {
+        "state": "batalha",
+        "dialog": true,
+        "menu": null,
+        "battle": {
+          "phase": "anima",
+          "message": "Você usou Curar (+22 de vida).",
+          "allies": [
+            {
+              "name": "Você",
+              "hp": 51,
+              "max": 80,
+              "energy": 0,
+              "x": 444,
+              "y": 386.40000000000003,
+              "w": 72,
+              "h": 72
+            }
+          ],
+          "foes": [
+            {
+              "name": "Lacaio",
+              "hp": 0,
+              "max": 24,
+              "x": 374,
+              "y": 156,
+              "w": 72,
+              "h": 72
+            },
+            {
+              "name": "Dragao",
+              "hp": 122,
+              "max": 160,
+              "x": 474,
+              "y": 136,
+              "w": 112,
+              "h": 112
+            }
+          ]
+        }
+      }
+    },
+    {
+      "round": 7,
+      "move": "Atacar",
+      "state": {
+        "state": "batalha",
+        "dialog": true,
+        "menu": null,
+        "battle": {
+          "phase": "anima",
+          "message": "Você causou 13 em Dragao!",
+          "allies": [
+            {
+              "name": "Você",
+              "hp": 37,
+              "max": 80,
+              "energy": 2,
+              "x": 444,
+              "y": 386.40000000000003,
+              "w": 72,
+              "h": 72
+            }
+          ],
+          "foes": [
+            {
+              "name": "Lacaio",
+              "hp": 0,
+              "max": 24,
+              "x": 374,
+              "y": 156,
+              "w": 72,
+              "h": 72
+            },
+            {
+              "name": "Dragao",
+              "hp": 109,
+              "max": 160,
+              "x": 474,
+              "y": 136,
+              "w": 112,
+              "h": 112
+            }
+          ]
+        }
+      }
+    },
+    {
+      "round": 8,
+      "move": "Curar",
+      "state": {
+        "state": "batalha",
+        "dialog": true,
+        "menu": null,
+        "battle": {
+          "phase": "anima",
+          "message": "Você usou Curar (+22 de vida).",
+          "allies": [
+            {
+              "name": "Você",
+              "hp": 45,
+              "max": 80,
+              "energy": 0,
+              "x": 444,
+              "y": 386.40000000000003,
+              "w": 72,
+              "h": 72
+            }
+          ],
+          "foes": [
+            {
+              "name": "Lacaio",
+              "hp": 0,
+              "max": 24,
+              "x": 374,
+              "y": 156,
+              "w": 72,
+              "h": 72
+            },
+            {
+              "name": "Dragao",
+              "hp": 109,
+              "max": 160,
+              "x": 474,
+              "y": 136,
+              "w": 112,
+              "h": 112
+            }
+          ]
+        }
+      }
+    },
+    {
+      "round": 9,
+      "move": "Atacar",
+      "state": {
+        "state": "batalha",
+        "dialog": true,
+        "menu": null,
+        "battle": {
+          "phase": "anima",
+          "message": "Você causou 13 em Dragao!",
+          "allies": [
+            {
+              "name": "Você",
+              "hp": 31,
+              "max": 80,
+              "energy": 2,
+              "x": 444,
+              "y": 386.40000000000003,
+              "w": 72,
+              "h": 72
+            }
+          ],
+          "foes": [
+            {
+              "name": "Lacaio",
+              "hp": 0,
+              "max": 24,
+              "x": 374,
+              "y": 156,
+              "w": 72,
+              "h": 72
+            },
+            {
+              "name": "Dragao",
+              "hp": 96,
+              "max": 160,
+              "x": 474,
+              "y": 136,
+              "w": 112,
+              "h": 112
+            }
+          ]
+        }
+      }
+    },
+    {
+      "round": 10,
+      "move": "Curar",
+      "state": {
+        "state": "batalha",
+        "dialog": true,
+        "menu": null,
+        "battle": {
+          "phase": "anima",
+          "message": "Você usou Curar (+22 de vida).",
+          "allies": [
+            {
+              "name": "Você",
+              "hp": 39,
+              "max": 80,
+              "energy": 0,
+              "x": 444,
+              "y": 386.40000000000003,
+              "w": 72,
+              "h": 72
+            }
+          ],
+          "foes": [
+            {
+              "name": "Lacaio",
+              "hp": 0,
+              "max": 24,
+              "x": 374,
+              "y": 156,
+              "w": 72,
+              "h": 72
+            },
+            {
+              "name": "Dragao",
+              "hp": 96,
+              "max": 160,
+              "x": 474,
+              "y": 136,
+              "w": 112,
+              "h": 112
+            }
+          ]
+        }
+      }
+    },
+    {
+      "round": 11,
+      "move": "Atacar",
+      "state": {
+        "state": "batalha",
+        "dialog": true,
+        "menu": null,
+        "battle": {
+          "phase": "anima",
+          "message": "Você causou 13 em Dragao!",
+          "allies": [
+            {
+              "name": "Você",
+              "hp": 25,
+              "max": 80,
+              "energy": 2,
+              "x": 444,
+              "y": 386.40000000000003,
+              "w": 72,
+              "h": 72
+            }
+          ],
+          "foes": [
+            {
+              "name": "Lacaio",
+              "hp": 0,
+              "max": 24,
+              "x": 374,
+              "y": 156,
+              "w": 72,
+              "h": 72
+            },
+            {
+              "name": "Dragao",
+              "hp": 83,
+              "max": 160,
+              "x": 474,
+              "y": 136,
+              "w": 112,
+              "h": 112
+            }
+          ]
+        }
+      }
+    },
+    {
+      "round": 12,
+      "move": "Curar",
+      "state": {
+        "state": "batalha",
+        "dialog": true,
+        "menu": null,
+        "battle": {
+          "phase": "anima",
+          "message": "Você usou Curar (+22 de vida).",
+          "allies": [
+            {
+              "name": "Você",
+              "hp": 33,
+              "max": 80,
+              "energy": 0,
+              "x": 444,
+              "y": 386.40000000000003,
+              "w": 72,
+              "h": 72
+            }
+          ],
+          "foes": [
+            {
+              "name": "Lacaio",
+              "hp": 0,
+              "max": 24,
+              "x": 374,
+              "y": 156,
+              "w": 72,
+              "h": 72
+            },
+            {
+              "name": "Dragao",
+              "hp": 83,
+              "max": 160,
+              "x": 474,
+              "y": 136,
+              "w": 112,
+              "h": 112
+            }
+          ]
+        }
+      }
+    },
+    {
+      "round": 13,
+      "move": "Atacar",
+      "state": {
+        "state": "batalha",
+        "dialog": true,
+        "menu": null,
+        "battle": {
+          "phase": "anima",
+          "message": "Você causou 13 em Dragao!",
+          "allies": [
+            {
+              "name": "Você",
+              "hp": 19,
+              "max": 80,
+              "energy": 2,
+              "x": 444,
+              "y": 386.40000000000003,
+              "w": 72,
+              "h": 72
+            }
+          ],
+          "foes": [
+            {
+              "name": "Lacaio",
+              "hp": 0,
+              "max": 24,
+              "x": 374,
+              "y": 156,
+              "w": 72,
+              "h": 72
+            },
+            {
+              "name": "Dragao",
+              "hp": 70,
+              "max": 160,
+              "x": 474,
+              "y": 136,
+              "w": 112,
+              "h": 112
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "attacks": [
+    {
+      "method": "rpgFoeUse",
+      "args": [
+        "Dragao",
+        "Garra"
+      ],
+      "before": {
+        "state": "batalha",
+        "dialog": true,
+        "menu": null,
+        "battle": {
+          "phase": "foes",
+          "message": "Lacaio atacou Você (3).",
+          "allies": [
+            {
+              "name": "Você",
+              "hp": 77,
+              "max": 80,
+              "energy": 7,
+              "x": 444,
+              "y": 386.40000000000003,
+              "w": 72,
+              "h": 72
+            }
+          ],
+          "foes": [
+            {
+              "name": "Lacaio",
+              "hp": 4,
+              "max": 24,
+              "x": 374,
+              "y": 156,
+              "w": 72,
+              "h": 72
+            },
+            {
+              "name": "Dragao",
+              "hp": 160,
+              "max": 160,
+              "x": 474,
+              "y": 136,
+              "w": 112,
+              "h": 112
+            }
+          ]
+        }
+      },
+      "after": {
+        "state": "batalha",
+        "dialog": true,
+        "menu": null,
+        "battle": {
+          "phase": "foes",
+          "message": "Dragao usou Garra e causou 14 em Você!",
+          "allies": [
+            {
+              "name": "Você",
+              "hp": 63,
+              "max": 80,
+              "energy": 7,
+              "x": 444,
+              "y": 386.40000000000003,
+              "w": 72,
+              "h": 72
+            }
+          ],
+          "foes": [
+            {
+              "name": "Lacaio",
+              "hp": 4,
+              "max": 24,
+              "x": 374,
+              "y": 156,
+              "w": 72,
+              "h": 72
+            },
+            {
+              "name": "Dragao",
+              "hp": 160,
+              "max": 160,
+              "x": 474,
+              "y": 136,
+              "w": 112,
+              "h": 112
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "rpgFoeUse",
+      "args": [
+        "Dragao",
+        "Garra"
+      ],
+      "before": {
+        "state": "batalha",
+        "dialog": true,
+        "menu": null,
+        "battle": {
+          "phase": "foes",
+          "message": "Vez dos inimigos...",
+          "allies": [
+            {
+              "name": "Você",
+              "hp": 63,
+              "max": 80,
+              "energy": 6,
+              "x": 444,
+              "y": 386.40000000000003,
+              "w": 72,
+              "h": 72
+            }
+          ],
+          "foes": [
+            {
+              "name": "Lacaio",
+              "hp": 0,
+              "max": 24,
+              "x": 374,
+              "y": 156,
+              "w": 72,
+              "h": 72
+            },
+            {
+              "name": "Dragao",
+              "hp": 160,
+              "max": 160,
+              "x": 474,
+              "y": 136,
+              "w": 112,
+              "h": 112
+            }
+          ]
+        }
+      },
+      "after": {
+        "state": "batalha",
+        "dialog": true,
+        "menu": null,
+        "battle": {
+          "phase": "foes",
+          "message": "Dragao usou Garra e causou 14 em Você!",
+          "allies": [
+            {
+              "name": "Você",
+              "hp": 49,
+              "max": 80,
+              "energy": 6,
+              "x": 444,
+              "y": 386.40000000000003,
+              "w": 72,
+              "h": 72
+            }
+          ],
+          "foes": [
+            {
+              "name": "Lacaio",
+              "hp": 0,
+              "max": 24,
+              "x": 374,
+              "y": 156,
+              "w": 72,
+              "h": 72
+            },
+            {
+              "name": "Dragao",
+              "hp": 160,
+              "max": 160,
+              "x": 474,
+              "y": 136,
+              "w": 112,
+              "h": 112
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "rpgFoeUse",
+      "args": [
+        "Dragao",
+        "Garra"
+      ],
+      "before": {
+        "state": "batalha",
+        "dialog": true,
+        "menu": null,
+        "battle": {
+          "phase": "foes",
+          "message": "Vez dos inimigos...",
+          "allies": [
+            {
+              "name": "Você",
+              "hp": 49,
+              "max": 80,
+              "energy": 5,
+              "x": 444,
+              "y": 386.40000000000003,
+              "w": 72,
+              "h": 72
+            }
+          ],
+          "foes": [
+            {
+              "name": "Lacaio",
+              "hp": 0,
+              "max": 24,
+              "x": 374,
+              "y": 156,
+              "w": 72,
+              "h": 72
+            },
+            {
+              "name": "Dragao",
+              "hp": 141,
+              "max": 160,
+              "x": 474,
+              "y": 136,
+              "w": 112,
+              "h": 112
+            }
+          ]
+        }
+      },
+      "after": {
+        "state": "batalha",
+        "dialog": true,
+        "menu": null,
+        "battle": {
+          "phase": "foes",
+          "message": "Dragao usou Garra e causou 14 em Você!",
+          "allies": [
+            {
+              "name": "Você",
+              "hp": 35,
+              "max": 80,
+              "energy": 5,
+              "x": 444,
+              "y": 386.40000000000003,
+              "w": 72,
+              "h": 72
+            }
+          ],
+          "foes": [
+            {
+              "name": "Lacaio",
+              "hp": 0,
+              "max": 24,
+              "x": 374,
+              "y": 156,
+              "w": 72,
+              "h": 72
+            },
+            {
+              "name": "Dragao",
+              "hp": 141,
+              "max": 160,
+              "x": 474,
+              "y": 136,
+              "w": 112,
+              "h": 112
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "rpgFoeUse",
+      "args": [
+        "Dragao",
+        "Garra"
+      ],
+      "before": {
+        "state": "batalha",
+        "dialog": true,
+        "menu": null,
+        "battle": {
+          "phase": "foes",
+          "message": "Vez dos inimigos...",
+          "allies": [
+            {
+              "name": "Você",
+              "hp": 57,
+              "max": 80,
+              "energy": 3,
+              "x": 444,
+              "y": 386.40000000000003,
+              "w": 72,
+              "h": 72
+            }
+          ],
+          "foes": [
+            {
+              "name": "Lacaio",
+              "hp": 0,
+              "max": 24,
+              "x": 374,
+              "y": 156,
+              "w": 72,
+              "h": 72
+            },
+            {
+              "name": "Dragao",
+              "hp": 141,
+              "max": 160,
+              "x": 474,
+              "y": 136,
+              "w": 112,
+              "h": 112
+            }
+          ]
+        }
+      },
+      "after": {
+        "state": "batalha",
+        "dialog": true,
+        "menu": null,
+        "battle": {
+          "phase": "foes",
+          "message": "Dragao usou Garra e causou 14 em Você!",
+          "allies": [
+            {
+              "name": "Você",
+              "hp": 43,
+              "max": 80,
+              "energy": 3,
+              "x": 444,
+              "y": 386.40000000000003,
+              "w": 72,
+              "h": 72
+            }
+          ],
+          "foes": [
+            {
+              "name": "Lacaio",
+              "hp": 0,
+              "max": 24,
+              "x": 374,
+              "y": 156,
+              "w": 72,
+              "h": 72
+            },
+            {
+              "name": "Dragao",
+              "hp": 141,
+              "max": 160,
+              "x": 474,
+              "y": 136,
+              "w": 112,
+              "h": 112
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "rpgFoeUse",
+      "args": [
+        "Dragao",
+        "Garra"
+      ],
+      "before": {
+        "state": "batalha",
+        "dialog": true,
+        "menu": null,
+        "battle": {
+          "phase": "foes",
+          "message": "Vez dos inimigos...",
+          "allies": [
+            {
+              "name": "Você",
+              "hp": 43,
+              "max": 80,
+              "energy": 2,
+              "x": 444,
+              "y": 386.40000000000003,
+              "w": 72,
+              "h": 72
+            }
+          ],
+          "foes": [
+            {
+              "name": "Lacaio",
+              "hp": 0,
+              "max": 24,
+              "x": 374,
+              "y": 156,
+              "w": 72,
+              "h": 72
+            },
+            {
+              "name": "Dragao",
+              "hp": 122,
+              "max": 160,
+              "x": 474,
+              "y": 136,
+              "w": 112,
+              "h": 112
+            }
+          ]
+        }
+      },
+      "after": {
+        "state": "batalha",
+        "dialog": true,
+        "menu": null,
+        "battle": {
+          "phase": "foes",
+          "message": "Dragao usou Garra e causou 14 em Você!",
+          "allies": [
+            {
+              "name": "Você",
+              "hp": 29,
+              "max": 80,
+              "energy": 2,
+              "x": 444,
+              "y": 386.40000000000003,
+              "w": 72,
+              "h": 72
+            }
+          ],
+          "foes": [
+            {
+              "name": "Lacaio",
+              "hp": 0,
+              "max": 24,
+              "x": 374,
+              "y": 156,
+              "w": 72,
+              "h": 72
+            },
+            {
+              "name": "Dragao",
+              "hp": 122,
+              "max": 160,
+              "x": 474,
+              "y": 136,
+              "w": 112,
+              "h": 112
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "rpgFoeUse",
+      "args": [
+        "Dragao",
+        "Garra"
+      ],
+      "before": {
+        "state": "batalha",
+        "dialog": true,
+        "menu": null,
+        "battle": {
+          "phase": "foes",
+          "message": "Vez dos inimigos...",
+          "allies": [
+            {
+              "name": "Você",
+              "hp": 51,
+              "max": 80,
+              "energy": 0,
+              "x": 444,
+              "y": 386.40000000000003,
+              "w": 72,
+              "h": 72
+            }
+          ],
+          "foes": [
+            {
+              "name": "Lacaio",
+              "hp": 0,
+              "max": 24,
+              "x": 374,
+              "y": 156,
+              "w": 72,
+              "h": 72
+            },
+            {
+              "name": "Dragao",
+              "hp": 122,
+              "max": 160,
+              "x": 474,
+              "y": 136,
+              "w": 112,
+              "h": 112
+            }
+          ]
+        }
+      },
+      "after": {
+        "state": "batalha",
+        "dialog": true,
+        "menu": null,
+        "battle": {
+          "phase": "foes",
+          "message": "Dragao usou Garra e causou 14 em Você!",
+          "allies": [
+            {
+              "name": "Você",
+              "hp": 37,
+              "max": 80,
+              "energy": 0,
+              "x": 444,
+              "y": 386.40000000000003,
+              "w": 72,
+              "h": 72
+            }
+          ],
+          "foes": [
+            {
+              "name": "Lacaio",
+              "hp": 0,
+              "max": 24,
+              "x": 374,
+              "y": 156,
+              "w": 72,
+              "h": 72
+            },
+            {
+              "name": "Dragao",
+              "hp": 122,
+              "max": 160,
+              "x": 474,
+              "y": 136,
+              "w": 112,
+              "h": 112
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "rpgFoeUse",
+      "args": [
+        "Dragao",
+        "Garra"
+      ],
+      "before": {
+        "state": "batalha",
+        "dialog": true,
+        "menu": null,
+        "battle": {
+          "phase": "foes",
+          "message": "Vez dos inimigos...",
+          "allies": [
+            {
+              "name": "Você",
+              "hp": 37,
+              "max": 80,
+              "energy": 2,
+              "x": 444,
+              "y": 386.40000000000003,
+              "w": 72,
+              "h": 72
+            }
+          ],
+          "foes": [
+            {
+              "name": "Lacaio",
+              "hp": 0,
+              "max": 24,
+              "x": 374,
+              "y": 156,
+              "w": 72,
+              "h": 72
+            },
+            {
+              "name": "Dragao",
+              "hp": 109,
+              "max": 160,
+              "x": 474,
+              "y": 136,
+              "w": 112,
+              "h": 112
+            }
+          ]
+        }
+      },
+      "after": {
+        "state": "batalha",
+        "dialog": true,
+        "menu": null,
+        "battle": {
+          "phase": "foes",
+          "message": "Dragao usou Garra e causou 14 em Você!",
+          "allies": [
+            {
+              "name": "Você",
+              "hp": 23,
+              "max": 80,
+              "energy": 2,
+              "x": 444,
+              "y": 386.40000000000003,
+              "w": 72,
+              "h": 72
+            }
+          ],
+          "foes": [
+            {
+              "name": "Lacaio",
+              "hp": 0,
+              "max": 24,
+              "x": 374,
+              "y": 156,
+              "w": 72,
+              "h": 72
+            },
+            {
+              "name": "Dragao",
+              "hp": 109,
+              "max": 160,
+              "x": 474,
+              "y": 136,
+              "w": 112,
+              "h": 112
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "rpgFoeUse",
+      "args": [
+        "Dragao",
+        "Garra"
+      ],
+      "before": {
+        "state": "batalha",
+        "dialog": true,
+        "menu": null,
+        "battle": {
+          "phase": "foes",
+          "message": "Vez dos inimigos...",
+          "allies": [
+            {
+              "name": "Você",
+              "hp": 45,
+              "max": 80,
+              "energy": 0,
+              "x": 444,
+              "y": 386.40000000000003,
+              "w": 72,
+              "h": 72
+            }
+          ],
+          "foes": [
+            {
+              "name": "Lacaio",
+              "hp": 0,
+              "max": 24,
+              "x": 374,
+              "y": 156,
+              "w": 72,
+              "h": 72
+            },
+            {
+              "name": "Dragao",
+              "hp": 109,
+              "max": 160,
+              "x": 474,
+              "y": 136,
+              "w": 112,
+              "h": 112
+            }
+          ]
+        }
+      },
+      "after": {
+        "state": "batalha",
+        "dialog": true,
+        "menu": null,
+        "battle": {
+          "phase": "foes",
+          "message": "Dragao usou Garra e causou 14 em Você!",
+          "allies": [
+            {
+              "name": "Você",
+              "hp": 31,
+              "max": 80,
+              "energy": 0,
+              "x": 444,
+              "y": 386.40000000000003,
+              "w": 72,
+              "h": 72
+            }
+          ],
+          "foes": [
+            {
+              "name": "Lacaio",
+              "hp": 0,
+              "max": 24,
+              "x": 374,
+              "y": 156,
+              "w": 72,
+              "h": 72
+            },
+            {
+              "name": "Dragao",
+              "hp": 109,
+              "max": 160,
+              "x": 474,
+              "y": 136,
+              "w": 112,
+              "h": 112
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "rpgFoeUse",
+      "args": [
+        "Dragao",
+        "Garra"
+      ],
+      "before": {
+        "state": "batalha",
+        "dialog": true,
+        "menu": null,
+        "battle": {
+          "phase": "foes",
+          "message": "Vez dos inimigos...",
+          "allies": [
+            {
+              "name": "Você",
+              "hp": 31,
+              "max": 80,
+              "energy": 2,
+              "x": 444,
+              "y": 386.40000000000003,
+              "w": 72,
+              "h": 72
+            }
+          ],
+          "foes": [
+            {
+              "name": "Lacaio",
+              "hp": 0,
+              "max": 24,
+              "x": 374,
+              "y": 156,
+              "w": 72,
+              "h": 72
+            },
+            {
+              "name": "Dragao",
+              "hp": 96,
+              "max": 160,
+              "x": 474,
+              "y": 136,
+              "w": 112,
+              "h": 112
+            }
+          ]
+        }
+      },
+      "after": {
+        "state": "batalha",
+        "dialog": true,
+        "menu": null,
+        "battle": {
+          "phase": "foes",
+          "message": "Dragao usou Garra e causou 14 em Você!",
+          "allies": [
+            {
+              "name": "Você",
+              "hp": 17,
+              "max": 80,
+              "energy": 2,
+              "x": 444,
+              "y": 386.40000000000003,
+              "w": 72,
+              "h": 72
+            }
+          ],
+          "foes": [
+            {
+              "name": "Lacaio",
+              "hp": 0,
+              "max": 24,
+              "x": 374,
+              "y": 156,
+              "w": 72,
+              "h": 72
+            },
+            {
+              "name": "Dragao",
+              "hp": 96,
+              "max": 160,
+              "x": 474,
+              "y": 136,
+              "w": 112,
+              "h": 112
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "rpgFoeUse",
+      "args": [
+        "Dragao",
+        "Garra"
+      ],
+      "before": {
+        "state": "batalha",
+        "dialog": true,
+        "menu": null,
+        "battle": {
+          "phase": "foes",
+          "message": "Vez dos inimigos...",
+          "allies": [
+            {
+              "name": "Você",
+              "hp": 39,
+              "max": 80,
+              "energy": 0,
+              "x": 444,
+              "y": 386.40000000000003,
+              "w": 72,
+              "h": 72
+            }
+          ],
+          "foes": [
+            {
+              "name": "Lacaio",
+              "hp": 0,
+              "max": 24,
+              "x": 374,
+              "y": 156,
+              "w": 72,
+              "h": 72
+            },
+            {
+              "name": "Dragao",
+              "hp": 96,
+              "max": 160,
+              "x": 474,
+              "y": 136,
+              "w": 112,
+              "h": 112
+            }
+          ]
+        }
+      },
+      "after": {
+        "state": "batalha",
+        "dialog": true,
+        "menu": null,
+        "battle": {
+          "phase": "foes",
+          "message": "Dragao usou Garra e causou 14 em Você!",
+          "allies": [
+            {
+              "name": "Você",
+              "hp": 25,
+              "max": 80,
+              "energy": 0,
+              "x": 444,
+              "y": 386.40000000000003,
+              "w": 72,
+              "h": 72
+            }
+          ],
+          "foes": [
+            {
+              "name": "Lacaio",
+              "hp": 0,
+              "max": 24,
+              "x": 374,
+              "y": 156,
+              "w": 72,
+              "h": 72
+            },
+            {
+              "name": "Dragao",
+              "hp": 96,
+              "max": 160,
+              "x": 474,
+              "y": 136,
+              "w": 112,
+              "h": 112
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "rpgFoeUse",
+      "args": [
+        "Dragao",
+        "Garra"
+      ],
+      "before": {
+        "state": "batalha",
+        "dialog": true,
+        "menu": null,
+        "battle": {
+          "phase": "foes",
+          "message": "Vez dos inimigos...",
+          "allies": [
+            {
+              "name": "Você",
+              "hp": 25,
+              "max": 80,
+              "energy": 2,
+              "x": 444,
+              "y": 386.40000000000003,
+              "w": 72,
+              "h": 72
+            }
+          ],
+          "foes": [
+            {
+              "name": "Lacaio",
+              "hp": 0,
+              "max": 24,
+              "x": 374,
+              "y": 156,
+              "w": 72,
+              "h": 72
+            },
+            {
+              "name": "Dragao",
+              "hp": 83,
+              "max": 160,
+              "x": 474,
+              "y": 136,
+              "w": 112,
+              "h": 112
+            }
+          ]
+        }
+      },
+      "after": {
+        "state": "batalha",
+        "dialog": true,
+        "menu": null,
+        "battle": {
+          "phase": "foes",
+          "message": "Dragao usou Garra e causou 14 em Você!",
+          "allies": [
+            {
+              "name": "Você",
+              "hp": 11,
+              "max": 80,
+              "energy": 2,
+              "x": 444,
+              "y": 386.40000000000003,
+              "w": 72,
+              "h": 72
+            }
+          ],
+          "foes": [
+            {
+              "name": "Lacaio",
+              "hp": 0,
+              "max": 24,
+              "x": 374,
+              "y": 156,
+              "w": 72,
+              "h": 72
+            },
+            {
+              "name": "Dragao",
+              "hp": 83,
+              "max": 160,
+              "x": 474,
+              "y": 136,
+              "w": 112,
+              "h": 112
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "rpgFoeUse",
+      "args": [
+        "Dragao",
+        "Garra"
+      ],
+      "before": {
+        "state": "batalha",
+        "dialog": true,
+        "menu": null,
+        "battle": {
+          "phase": "foes",
+          "message": "Vez dos inimigos...",
+          "allies": [
+            {
+              "name": "Você",
+              "hp": 33,
+              "max": 80,
+              "energy": 0,
+              "x": 444,
+              "y": 386.40000000000003,
+              "w": 72,
+              "h": 72
+            }
+          ],
+          "foes": [
+            {
+              "name": "Lacaio",
+              "hp": 0,
+              "max": 24,
+              "x": 374,
+              "y": 156,
+              "w": 72,
+              "h": 72
+            },
+            {
+              "name": "Dragao",
+              "hp": 83,
+              "max": 160,
+              "x": 474,
+              "y": 136,
+              "w": 112,
+              "h": 112
+            }
+          ]
+        }
+      },
+      "after": {
+        "state": "batalha",
+        "dialog": true,
+        "menu": null,
+        "battle": {
+          "phase": "foes",
+          "message": "Dragao usou Garra e causou 14 em Você!",
+          "allies": [
+            {
+              "name": "Você",
+              "hp": 19,
+              "max": 80,
+              "energy": 0,
+              "x": 444,
+              "y": 386.40000000000003,
+              "w": 72,
+              "h": 72
+            }
+          ],
+          "foes": [
+            {
+              "name": "Lacaio",
+              "hp": 0,
+              "max": 24,
+              "x": 374,
+              "y": 156,
+              "w": 72,
+              "h": 72
+            },
+            {
+              "name": "Dragao",
+              "hp": 83,
+              "max": 160,
+              "x": 474,
+              "y": 136,
+              "w": 112,
+              "h": 112
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "rpgFoeHitAll",
+      "args": [
+        "Dragao",
+        22
+      ],
+      "before": {
+        "state": "batalha",
+        "dialog": true,
+        "menu": null,
+        "battle": {
+          "phase": "foes",
+          "message": "Vez dos inimigos...",
+          "allies": [
+            {
+              "name": "Você",
+              "hp": 19,
+              "max": 80,
+              "energy": 2,
+              "x": 444,
+              "y": 386.40000000000003,
+              "w": 72,
+              "h": 72
+            }
+          ],
+          "foes": [
+            {
+              "name": "Lacaio",
+              "hp": 0,
+              "max": 24,
+              "x": 374,
+              "y": 156,
+              "w": 72,
+              "h": 72
+            },
+            {
+              "name": "Dragao",
+              "hp": 70,
+              "max": 160,
+              "x": 474,
+              "y": 136,
+              "w": 112,
+              "h": 112
+            }
+          ]
+        }
+      },
+      "after": {
+        "state": "batalha",
+        "dialog": true,
+        "menu": null,
+        "battle": {
+          "phase": "foes",
+          "message": "Dragao atingiu TODO o time!",
+          "allies": [
+            {
+              "name": "Você",
+              "hp": 0,
+              "max": 80,
+              "energy": 2,
+              "x": 444,
+              "y": 386.40000000000003,
+              "w": 72,
+              "h": 72
+            }
+          ],
+          "foes": [
+            {
+              "name": "Lacaio",
+              "hp": 0,
+              "max": 24,
+              "x": 374,
+              "y": 156,
+              "w": 72,
+              "h": 72
+            },
+            {
+              "name": "Dragao",
+              "hp": 70,
+              "max": 160,
+              "x": 474,
+              "y": 136,
+              "w": 112,
+              "h": 112
+            }
+          ]
+        }
+      }
+    }
+  ],
   "method": "Execução do projeto exportado com regras originais; automação usa teclas e cliques. Sonda somente leitura. Sorteios fixados no ponto médio para reprodução.",
   "initial": {
     "state": "batalha",
     "dialog": true,
-    "menu": null,
+    "menu": {
+      "index": 0,
+      "options": [
+        "Atacar (força)",
+        "Investida (dano 20, energia 3)",
+        "Curar (cura 22, energia 4)",
+        "Defender (dano pela metade)",
+        "Fugir"
+      ]
+    },
     "battle": {
-      "phase": "mira",
-      "message": "Você: escolha o alvo (clique num inimigo ou aperte espaço).",
+      "phase": "escolha",
+      "message": "Batalha! Seu time contra Lacaio, Dragao.",
       "allies": [
         {
           "name": "Você",
@@ -44,19 +1797,19 @@
       ]
     }
   },
-  "final": {
+  "capture": {
     "state": "batalha",
     "dialog": true,
     "menu": null,
     "battle": {
-      "phase": "mira",
-      "message": "Você: escolha o alvo (clique num inimigo ou aperte espaço).",
+      "phase": "foes",
+      "message": "Vez dos inimigos...",
       "allies": [
         {
           "name": "Você",
-          "hp": 80,
+          "hp": 19,
           "max": 80,
-          "energy": 10,
+          "energy": 2,
           "x": 444,
           "y": 386.40000000000003,
           "w": 72,
@@ -66,7 +1819,7 @@
       "foes": [
         {
           "name": "Lacaio",
-          "hp": 24,
+          "hp": 0,
           "max": 24,
           "x": 374,
           "y": 156,
@@ -75,7 +1828,7 @@
         },
         {
           "name": "Dragao",
-          "hp": 160,
+          "hp": 70,
           "max": 160,
           "x": 474,
           "y": 136,
@@ -85,5 +1838,27 @@
       ]
     }
   },
-  "passed": false
+  "canvas": {
+    "x": 22.5,
+    "y": 15,
+    "width": 915,
+    "height": 610
+  },
+  "scale": {
+    "x": 0.953125,
+    "y": 0.953125
+  },
+  "clip": {
+    "x": 457.125,
+    "y": 108.40625,
+    "width": 141.0625,
+    "height": 167.75
+  },
+  "final": {
+    "state": "fim",
+    "dialog": true,
+    "menu": null,
+    "battle": null
+  },
+  "passed": true
 }

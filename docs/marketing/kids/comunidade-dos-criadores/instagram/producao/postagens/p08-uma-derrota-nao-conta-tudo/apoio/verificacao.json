@@ -1,0 +1,57 @@
+{
+  "id": "P08",
+  "source": "docs/marketing/kids/comunidade-dos-criadores/instagram/postagens/01-p01-a-p10.md",
+  "sectionHash": "b8ea70b30d9a97eb2d25536e58b7e72b0fd3c26147b5c5e3f65f932a5248e7bd",
+  "errors": [],
+  "checkedAt": "2026-10-15T09:03:59.994Z",
+  "copyEqual": true,
+  "fonts": {
+    "normal": true,
+    "bold": true
+  },
+  "layout": {
+    "title": {
+      "left": 64,
+      "right": 1016,
+      "top": 198,
+      "bottom": 308,
+      "height": 110
+    },
+    "tail": {
+      "left": 64,
+      "right": 1016,
+      "top": 358,
+      "bottom": 513.4375,
+      "height": 155.4375
+    },
+    "demo": {
+      "left": 64,
+      "right": 1016,
+      "top": 580,
+      "bottom": 1244,
+      "height": 664
+    },
+    "game": {
+      "left": 340,
+      "right": 740,
+      "top": 596,
+      "bottom": 1069.75,
+      "height": 473.75
+    },
+    "block": {
+      "left": 80,
+      "right": 1000,
+      "top": 1097.828125,
+      "bottom": 1226,
+      "height": 128.171875
+    },
+    "footer": {
+      "left": 64,
+      "right": 1016,
+      "top": 1286,
+      "bottom": 1316,
+      "height": 30
+    }
+  },
+  "mobileNoOverflow": true
+}

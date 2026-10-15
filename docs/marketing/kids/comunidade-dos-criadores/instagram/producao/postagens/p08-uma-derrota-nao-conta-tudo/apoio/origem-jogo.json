@@ -4,7 +4,11 @@
   "runtime": "packages/studio/src/official-extensions/game-2d-advanced/runtime.ts",
   "runtimeSha256": "2fdc684622909c47822fc35efba5a95951e3d2d645cd1398b2c5c8e5bbf3b9b4",
   "runtimeHashScope": "JavaScript exportado por gameKitRuntime, salvo em output/instagram/p08-2026-10-15/game-runtime.js",
-  "adaptation": "Somente imagem do Dragao; vida 160, limiar <80, dano 22, composição do time e todas as regras preservados.",
+  "adaptations": [
+    "Imagem do Dragao acrescentada ao bloco existente.",
+    "Alvo dos golpes Investida e Curar normalizado de Voce para Você, o nome usado pelo runtime; assim os golpes já definidos no exemplo aparecem no menu do herói.",
+    "Vida 160, limiar <80, dano 22, atributos, demais regras e composição do time preservados."
+  ],
   "author": "Equipe",
   "hypotheticalChildQuote": true
 }

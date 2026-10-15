@@ -184,4 +184,6 @@ Editar a copy no documento que a contém. Ao mudar uma condição, conferir Dest
 
 **P53 produzido em 15/10/2026:** [Mostrar o jogo para a mãe](producao/postagens/p53-mostrar-o-jogo-para-a-mae/index.html), sexta imagem estática do calendário, segunda publicação da semana 10. Retrato real da Débora e depoimento literal, com legenda completa e arquivos para publicação.
 
-Estado: **30 carrosséis e 6 imagens únicas, totalizando 226 PNGs**. Próxima imagem única: **P08**, segunda publicação da semana 11. Nenhum material publicado ou agendado.
+**P08 produzido em 15/10/2026:** [Uma derrota não conta tudo](producao/postagens/p08-uma-derrota-nao-conta-tudo/index.html), sétima imagem estática do calendário, segunda publicação da semana 11. Captura real de O Chefão com vida abaixo da metade, bloco original da regra, legenda e arquivos para publicação.
+
+Estado: **30 carrosséis e 7 imagens únicas, totalizando 227 PNGs**. Próxima imagem única: **P29**, terceira publicação da semana 12. Nenhum material publicado ou agendado.

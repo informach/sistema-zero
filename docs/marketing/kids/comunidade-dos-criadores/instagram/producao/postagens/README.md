@@ -61,6 +61,8 @@ Na publicação manual, aplicar as orientações vigentes de identificação de 
 
 **P53 produzido em 15/10/2026:** sexta imagem estática do calendário, segunda publicação da semana 10. Retrato real da Débora e fala sobre mostrar o jogo à mãe, com legenda completa, texto alternativo, prévia e montagem editável.
 
+**P08 produzido em 15/10/2026:** sétima imagem estática do calendário, segunda publicação da semana 11. Frase hipotética e captura real do Dragão com vida abaixo da metade, acompanhada do bloco que muda o ataque. Inclui legenda completa, texto alternativo, prévia e montagem editável.
+
 | Peça | Arquivos | Prévia |
 | --- | --- | --- |
 | P03 · Tela na rotina de trabalho | 1 PNG, 1080 × 1350, legenda e texto alternativo | [Abrir](p03-tela-na-rotina-de-trabalho/index.html) |
@@ -69,5 +71,6 @@ Na publicação manual, aplicar as orientações vigentes de identificação de 
 | P38 · Explicar uma preferência | 1 PNG, 1080 × 1350, legenda e texto alternativo | [Abrir](p38-explicar-uma-preferencia/index.html) |
 | P49 · Guardar a primeira tentativa | 1 PNG, 1080 × 1350, legenda e texto alternativo | [Abrir](p49-guardar-a-primeira-tentativa/index.html) |
 | P53 · Mostrar o jogo para a mãe | 1 PNG, 1080 × 1350, legenda e texto alternativo | [Abrir](p53-mostrar-o-jogo-para-a-mae/index.html) |
+| P08 · Uma derrota não conta tudo | 1 PNG, 1080 × 1350, legenda e texto alternativo | [Abrir](p08-uma-derrota-nao-conta-tudo/index.html) |
 
-O conjunto produzido tem **30 carrosséis e 6 imagens únicas, totalizando 226 PNGs**. A próxima imagem única é **P08**, segunda publicação da semana 11. As outras 6 imagens únicas, os Reels, extras, stories e ManyChat mantêm seus estados anteriores.
+O conjunto produzido tem **30 carrosséis e 7 imagens únicas, totalizando 227 PNGs**. A próxima imagem única é **P29**, terceira publicação da semana 12. As outras 5 imagens únicas, os Reels, extras, stories e ManyChat mantêm seus estados anteriores.

@@ -89,7 +89,7 @@
       },
       {
         "type": "gk:rpgTeachMove",
-        "who": "Voce",
+        "who": "Você",
         "move": "Investida",
         "dmg": {
           "type": "num",
@@ -102,7 +102,7 @@
       },
       {
         "type": "gk:rpgTeachHeal",
-        "who": "Voce",
+        "who": "Você",
         "move": "Curar",
         "amount": {
           "type": "num",

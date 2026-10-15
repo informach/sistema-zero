@@ -6,8 +6,8 @@ SZGameKit.runProject(function __szProjectRun() {
   SZGameKit.setScreenText("vitoria", "Voce venceu o Dragao!", "O reino esta salvo.", "Jogar de novo");
   const heroi = SZGameKit.createCharacter({ image: "", w: 48, h: 48, speed: 320, color: "#4a9eff" });
   SZGameKit.rpgBattleStats(80, 14, 4);
-  SZGameKit.rpgTeachMove("Voce", "Investida", 20, 3);
-  SZGameKit.rpgTeachHeal("Voce", "Curar", 22, 4);
+  SZGameKit.rpgTeachMove("Você", "Investida", 20, 3);
+  SZGameKit.rpgTeachHeal("Você", "Curar", 22, 4);
   SZGameKit.rpgTeachMove("Dragao", "Garra", 16, 0);
   SZGameKit.rpgTeachMove("Dragao", "Baforada", 30, 0);
   SZGameKit.rpgSetStartMap("caverna");
