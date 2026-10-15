@@ -1,0 +1,4 @@
+IMAGEM ÚNICA
+Curto (86 caracteres): Demonstração da equipe: antes, a raposa anda; depois, pula uma caixa no mesmo cenário.
+
+Longo: Duas capturas reais de um jogo demonstrativo criado pela equipe no Estúdio. Na primeira, sob o rótulo Antes, uma raposa laranja com mochila anda em direção a uma caixa. Na segunda, sob Depois, a mesma raposa aparece no ar, sobre a caixa. O cenário de floresta, a caixa, o personagem e as regras anteriores são iguais; a segunda versão acrescenta o comando de pular. Linhas pontilhadas mostram os caminhos medidos em cada execução. O cenário e a raposa são assets originais gerados por IA e usados no jogo real. Texto da arte: Guarde um registro da primeira tentativa. Seu filho pode se surpreender ao ver o que já aprendeu.

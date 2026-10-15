@@ -1,0 +1,18 @@
+{
+  "source": "packages/studio/src/official-extensions/game-2d/examples/foundations.ts",
+  "sourceSha256": "d8089f724333e995231a56fdaa610a43e5aa3ed0c65ba1803fb4418d23abec6f",
+  "runtime": "packages/studio/src/official-extensions/game-2d/runtime.ts",
+  "runtimeSha256": "b408a0919d83d8f97635a987b010aeb17db405dcf3e9748fa797c9698cc2df50",
+  "base": "Mini plataforma",
+  "demonstrationAuthor": "Equipe",
+  "adaptations": [
+    "Mesmo cenário, posição inicial e personagem oficial nas duas versões",
+    "Duas plataformas e um teto sólido adicionados à demonstração",
+    "Entre versões, só o parâmetro jump muda: 9 e 15",
+    "Mesmas teclas, duração e velocidade horizontal"
+  ],
+  "stage": {
+    "width": 320,
+    "height": 200
+  }
+}

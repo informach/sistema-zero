@@ -1,0 +1,89 @@
+{
+  "errors": [],
+  "turns": [],
+  "attacks": [],
+  "method": "Execução do projeto exportado com regras originais; automação usa teclas e cliques. Sonda somente leitura. Sorteios fixados no ponto médio para reprodução.",
+  "initial": {
+    "state": "batalha",
+    "dialog": true,
+    "menu": null,
+    "battle": {
+      "phase": "mira",
+      "message": "Você: escolha o alvo (clique num inimigo ou aperte espaço).",
+      "allies": [
+        {
+          "name": "Você",
+          "hp": 80,
+          "max": 80,
+          "energy": 10,
+          "x": 444,
+          "y": 386.40000000000003,
+          "w": 72,
+          "h": 72
+        }
+      ],
+      "foes": [
+        {
+          "name": "Lacaio",
+          "hp": 24,
+          "max": 24,
+          "x": 374,
+          "y": 156,
+          "w": 72,
+          "h": 72
+        },
+        {
+          "name": "Dragao",
+          "hp": 160,
+          "max": 160,
+          "x": 474,
+          "y": 136,
+          "w": 112,
+          "h": 112
+        }
+      ]
+    }
+  },
+  "final": {
+    "state": "batalha",
+    "dialog": true,
+    "menu": null,
+    "battle": {
+      "phase": "mira",
+      "message": "Você: escolha o alvo (clique num inimigo ou aperte espaço).",
+      "allies": [
+        {
+          "name": "Você",
+          "hp": 80,
+          "max": 80,
+          "energy": 10,
+          "x": 444,
+          "y": 386.40000000000003,
+          "w": 72,
+          "h": 72
+        }
+      ],
+      "foes": [
+        {
+          "name": "Lacaio",
+          "hp": 24,
+          "max": 24,
+          "x": 374,
+          "y": 156,
+          "w": 72,
+          "h": 72
+        },
+        {
+          "name": "Dragao",
+          "hp": 160,
+          "max": 160,
+          "x": 474,
+          "y": 136,
+          "w": 112,
+          "h": 112
+        }
+      ]
+    }
+  },
+  "passed": false
+}

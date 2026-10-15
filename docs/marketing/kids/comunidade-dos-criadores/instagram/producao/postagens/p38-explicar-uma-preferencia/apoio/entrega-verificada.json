@@ -1,0 +1,269 @@
+{
+  "id": "P38",
+  "checkedAt": "2026-10-15T00:53:39.380Z",
+  "errors": [],
+  "links": [
+    {
+      "from": "index.html",
+      "to": "01-p38.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "legenda.txt",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "texto-alternativo.txt",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "montagem.html",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "apoio/fontes-e-producao.md",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "../index.html",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "01-p38.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "01-p38.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/01-pai-e-filho-comparando.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/salto-curto.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/salto-alto.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../../../../postagens/09-p31-a-p40.md#p38",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../../../../03-postagens.md",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../../../../postagens/05-direcao-visual-e-producao.md",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "copy.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../legenda.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "copy-linter.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "prompts.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "imagens-geradas.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "01-pai-e-filho-comparando.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "composicao.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "LICENSE-Nunito",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "origem-jogo.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "salto-curto.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "salto-alto.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "salto-curto.js",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "salto-alto.js",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "jogo-verificado.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "salto-curto.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "salto-alto.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../01-p38.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../index.html",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../previa.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../montagem.html",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../texto-alternativo.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../publicacao.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "verificacao.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "entrega-verificada.json",
+      "exists": true
+    }
+  ],
+  "published": false,
+  "visualReview": "Arte e prévia móvel inspecionadas. Pai e filho fictícios observam as comparações, gesto coerente, capturas inteiras dentro dos papéis e rosto do menino preservado. Mesmos elementos nos dois testes, trajetórias legíveis e resultados identificados em linguagem simples. Copy principal e legenda preservadas; rótulos registrados na direção visual da ficha.",
+  "wordCount": 19,
+  "png": {
+    "width": 1080,
+    "height": 1350,
+    "sha256": "2dc783b341de2840a216a17453256bc6f4aae02d292f77293dadf62abe4c8f09",
+    "bytes": 917432
+  },
+  "game": {
+    "frames": [
+      40,
+      40
+    ],
+    "events": [
+      {
+        "variant": "curto",
+        "frame": 26,
+        "state": {
+          "x": 168,
+          "y": 96,
+          "vy": 0,
+          "onGround": true,
+          "onDestination": true,
+          "ceilingHit": false
+        }
+      },
+      {
+        "variant": "alto",
+        "frame": 7,
+        "state": {
+          "x": 92,
+          "y": 56,
+          "vy": 0,
+          "onGround": false,
+          "onDestination": false,
+          "ceilingHit": true
+        }
+      }
+    ],
+    "onlyJumpChanged": true
+  },
+  "captureHashes": [
+    {
+      "file": "salto-curto.png",
+      "sha256": "0c90ab0208bb099cca45ea5226ce56606642881defe88920fbf5833f4d53e2c9"
+    },
+    {
+      "file": "salto-alto.png",
+      "sha256": "5ca9a40abca55bfab63ca6b5761b04d2b5f13f244c42946997417593320c78fe"
+    }
+  ],
+  "staticOrder": [
+    "P03",
+    "P14",
+    "P33",
+    "P38",
+    "P49",
+    "P53",
+    "P08",
+    "P29",
+    "P19",
+    "P58",
+    "P45",
+    "P27"
+  ],
+  "nextStaticPost": "P49",
+  "carouselCount": 30,
+  "staticCount": 4,
+  "totalPngs": 224,
+  "previewReadable": true,
+  "galleryNoOverflow": true
+}

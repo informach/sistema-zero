@@ -178,4 +178,10 @@ Editar a copy no documento que a contém. Ao mudar uma condição, conferir Dest
 
 **P33 produzido em 14/10/2026:** [Alegria de criar](producao/postagens/p33-alegria-de-criar/index.html), terceira imagem estática do calendário, primeira publicação da semana 6. Retrato real do Fernando e depoimento completo da ficha, com o convite imaginado separado da fala, legenda e arquivos para publicação.
 
-Estado: **30 carrosséis e 3 imagens únicas, totalizando 223 PNGs**. Próxima imagem única: **P38**, terceira publicação da semana 7. Nenhum material publicado ou agendado.
+**P38 produzido em 14/10/2026:** [Explicar uma preferência](producao/postagens/p38-explicar-uma-preferencia/index.html), quarta imagem estática do calendário, terceira publicação da semana 7. Pai e filho fictícios comparando capturas reais de dois saltos, com a mudança e os resultados verificados no Jogo 2D, legenda e arquivos para publicação.
+
+**P49 produzido em 14/10/2026:** [Guardar a primeira tentativa](producao/postagens/p49-guardar-a-primeira-tentativa/index.html), quinta imagem estática do calendário, segunda publicação da semana 8. Duas versões do mesmo jogo executadas no Estúdio mostram a raposa andando e pulando, com legenda completa e arquivos para publicação.
+
+**P53 produzido em 15/10/2026:** [Mostrar o jogo para a mãe](producao/postagens/p53-mostrar-o-jogo-para-a-mae/index.html), sexta imagem estática do calendário, segunda publicação da semana 10. Retrato real da Débora e depoimento literal, com legenda completa e arquivos para publicação.
+
+Estado: **30 carrosséis e 6 imagens únicas, totalizando 226 PNGs**. Próxima imagem única: **P08**, segunda publicação da semana 11. Nenhum material publicado ou agendado.

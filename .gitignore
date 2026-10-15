@@ -87,3 +87,6 @@ tmp/
 
 # Saídas geradas (artes do Instagram, PDFs, projetos exportados): ficam só no disco.
 output/
+
+# Repositório git de rascunho usado como prova numa auditoria (não pode entrar como submódulo).
+.audits/molda-usabilidade-2026-10-14/merge-index-proof/

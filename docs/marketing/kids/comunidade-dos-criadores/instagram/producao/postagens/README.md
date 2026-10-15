@@ -55,10 +55,19 @@ Na publicação manual, aplicar as orientações vigentes de identificação de 
 
 **P33 produzido em 14/10/2026:** terceira imagem estática do calendário, primeira publicação da semana 6. Retrato real do Fernando, fala integral da ficha, abertura separada, legenda completa, texto alternativo, prévia e montagem editável.
 
+**P38 produzido em 14/10/2026:** quarta imagem estática do calendário, terceira publicação da semana 7. Cena nova de pai e filho comparando dois saltos reais do Jogo 2D, com trajetórias medidas, legenda completa, texto alternativo, prévia e montagem editável.
+
+**P49 produzido em 14/10/2026:** quinta imagem estática do calendário, segunda publicação da semana 8. Comparação de duas versões reais do mesmo jogo: a raposa anda e, depois de acrescentar um comando, também pula. Inclui legenda completa, texto alternativo, prévia e montagem editável.
+
+**P53 produzido em 15/10/2026:** sexta imagem estática do calendário, segunda publicação da semana 10. Retrato real da Débora e fala sobre mostrar o jogo à mãe, com legenda completa, texto alternativo, prévia e montagem editável.
+
 | Peça | Arquivos | Prévia |
 | --- | --- | --- |
 | P03 · Tela na rotina de trabalho | 1 PNG, 1080 × 1350, legenda e texto alternativo | [Abrir](p03-tela-na-rotina-de-trabalho/index.html) |
 | P14 · Ideias em um jogo | 1 PNG, 1080 × 1350, legenda e texto alternativo | [Abrir](p14-ideias-em-um-jogo/index.html) |
 | P33 · Alegria de criar | 1 PNG, 1080 × 1350, legenda e texto alternativo | [Abrir](p33-alegria-de-criar/index.html) |
+| P38 · Explicar uma preferência | 1 PNG, 1080 × 1350, legenda e texto alternativo | [Abrir](p38-explicar-uma-preferencia/index.html) |
+| P49 · Guardar a primeira tentativa | 1 PNG, 1080 × 1350, legenda e texto alternativo | [Abrir](p49-guardar-a-primeira-tentativa/index.html) |
+| P53 · Mostrar o jogo para a mãe | 1 PNG, 1080 × 1350, legenda e texto alternativo | [Abrir](p53-mostrar-o-jogo-para-a-mae/index.html) |
 
-O conjunto produzido tem **30 carrosséis e 3 imagens únicas, totalizando 223 PNGs**. A próxima imagem única é **P38**, terceira publicação da semana 7. As outras 9 imagens únicas, os Reels, extras, stories e ManyChat mantêm seus estados anteriores.
+O conjunto produzido tem **30 carrosséis e 6 imagens únicas, totalizando 226 PNGs**. A próxima imagem única é **P08**, segunda publicação da semana 11. As outras 6 imagens únicas, os Reels, extras, stories e ManyChat mantêm seus estados anteriores.

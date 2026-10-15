@@ -1,0 +1,59 @@
+{
+  "photo": {
+    "width": 1448,
+    "height": 1086
+  },
+  "capture": {
+    "width": 1280,
+    "height": 800
+  },
+  "placements": [
+    {
+      "file": "salto-curto.png",
+      "quad": [
+        [
+          118,
+          609
+        ],
+        [
+          667,
+          606
+        ],
+        [
+          665,
+          926
+        ],
+        [
+          89,
+          928
+        ]
+      ]
+    },
+    {
+      "file": "salto-alto.png",
+      "quad": [
+        [
+          751,
+          609
+        ],
+        [
+          1288,
+          607
+        ],
+        [
+          1311,
+          927
+        ],
+        [
+          750,
+          928
+        ]
+      ]
+    }
+  ],
+  "labels": [
+    "Alcança a plataforma",
+    "Bate no teto"
+  ],
+  "method": "Capturas completas aplicadas por transformação projetiva em HTML/CSS; não regeneradas por IA."
+}

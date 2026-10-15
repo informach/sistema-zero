@@ -1,0 +1,20 @@
+[
+  {
+    "file": "cenario-floresta.png",
+    "transparent": false,
+    "prompt": "Create a new original 2D side-scrolling videogame background, a cheerful woodland clearing in polished hand-painted storybook game art, landscape VERY WIDE 16:5 composition, intended game canvas 640x200 pixels. Soft sunny blue sky, layered pale blue hills in far distance, rounded green deciduous trees clustered toward far left and far right, a couple soft white clouds, warm afternoon sunlight. The middle sixty percent of the image must be bright, calm and open with few details so a small orange fox player can be read clearly. Lower eighteen percent is a continuous simple horizontal sandy-earth ground band with a narrow dark grass rim at its top; this ground line runs perfectly horizontal, a side-view platformer level with NO perspective floor. No obstacles, no characters, no animals, no castle, no buildings, no platforms floating in air, no text, no interface, no logo, no border. Gentle textured 2D brushwork and crisp silhouette shapes, friendly educational game for 9–14 year olds, sophisticated color harmony rather than preschool clipart. This is a reusable background asset, not an image of a computer or a poster.",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-17364297-bb7a-4308-8fde-daf8961010b1.png",
+    "tool": "image_gen__imagegen (nativa)",
+    "references": [],
+    "sha256": "e7aabfab733c043e86ca2a018b6290cdad36fe697fee4dd79e17d04075a9b6df"
+  },
+  {
+    "file": "raposa.png",
+    "transparent": true,
+    "prompt": "Create ONE original 2D game character sprite on a genuinely transparent background: a small orange fox adventurer in side profile facing RIGHT, full body, head ears paws and large fluffy tail entirely visible. Polished hand-painted storybook videogame style, clean strong readable silhouette, orange fur, white muzzle and white tail tip, dark tiny boots or dark paws, a small teal-blue backpack. Warm confident curious face with one large visible eye, not babyish. Dynamic running pose with front paws slightly raised and rear paws apart; the same sprite should also read clearly while airborne. Center the fox tightly with at most 6 percent transparent margin, broad approximately square silhouette with tail to left, no clipping. Soft shaded 2D shapes, clear outlines, easy to read when scaled to 48 pixels. No ground, no floor, no drop shadow, no text, no logo, no framing, no other figures, no animation strip, no multiple poses. Brand-new fictional game character, no resemblance to any licensed character.",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-d72bf5ec-48be-4a90-886d-0a3c1be6b856.png",
+    "tool": "image_gen__imagegen (nativa)",
+    "references": [],
+    "sha256": "80ad4dfee4f5cfb5a4ae6b20ab63248b90cd77df39f53a3e1d8899b010d24861"
+  }
+]

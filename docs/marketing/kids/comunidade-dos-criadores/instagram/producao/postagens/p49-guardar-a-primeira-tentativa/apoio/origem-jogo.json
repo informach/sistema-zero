@@ -1,0 +1,49 @@
+{
+  "source": "packages/studio/src/official-extensions/game-2d/examples/foundations.ts",
+  "sourceSha256": "d8089f724333e995231a56fdaa610a43e5aa3ed0c65ba1803fb4418d23abec6f",
+  "runtime": "packages/studio/src/official-extensions/game-2d/runtime.ts",
+  "runtimeSha256": "b408a0919d83d8f97635a987b010aeb17db405dcf3e9748fa797c9698cc2df50",
+  "base": "Mini plataforma, adaptada pela equipe",
+  "demonstrationAuthor": "Equipe",
+  "addition": {
+    "type": "g2d:onKey",
+    "key": "ArrowUp",
+    "body": [
+      {
+        "type": "if",
+        "cond": {
+          "type": "memberGet",
+          "object": {
+            "type": "var",
+            "name": "heroi"
+          },
+          "name": "onGround"
+        },
+        "then": [
+          {
+            "type": "memberSet",
+            "object": {
+              "type": "var",
+              "name": "heroi"
+            },
+            "name": "vy",
+            "value": {
+              "type": "num",
+              "value": -10
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "adaptations": [
+    "Cenário e raposa novos, gerados por IA e usados como assets do jogo real",
+    "Caixa vetorial com colisão sólida, mesmo cenário e personagem nas duas versões",
+    "Movimento horizontal pelas setas, gravidade e colisão iguais",
+    "A segunda versão acrescenta somente: ao apertar a seta para cima, se estiver no chão, definir velocidade vertical -10"
+  ],
+  "stage": {
+    "width": 640,
+    "height": 200
+  }
+}

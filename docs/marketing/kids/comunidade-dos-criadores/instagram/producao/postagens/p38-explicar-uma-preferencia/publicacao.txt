@@ -1,0 +1,12 @@
+P38 · Explicar uma preferência
+Imagem única · Terceira publicação da semana 7 · W08 · Tradução de criança
+
+Arquivo: 01-p38.png, 1080 × 1350, proporção 4:5, sRGB.
+Legenda: legenda.txt. Texto alternativo: texto-alternativo.txt.
+CTA na legenda: seguir o perfil. Sem palavra-chave ou ManyChat.
+
+Pai e filho fictícios, gerados pela ferramenta nativa de imagens. Ativar Rótulo de IA na publicação. A cena não é depoimento de aluno. Não acrescentar rodapé Cena ilustrativa à arte.
+As duas capturas vêm de uma demonstração própria, executada com o runtime do Jogo 2D do Estúdio. As regras e o personagem são reais. A linha pontilhada é uma anotação editorial calculada a partir da trajetória medida. Os papéis da foto receberam as capturas completas por transformação de perspectiva; o jogo não foi recriado por IA.
+Apenas a força de pulo muda entre as versões, mantendo cenário, personagem, posição inicial e comandos. Os quadros mostram o primeiro pouso no destino e o primeiro contato com o teto. Bater no teto não significa que seja impossível concluir o salto: a peça mostra uma diferença observável para a conversa.
+
+Não publicado nem agendado. Próxima imagem única: P49, segunda publicação da semana 8. Os 30 carrosséis continuam concluídos; os outros formatos mantêm seus estados anteriores.

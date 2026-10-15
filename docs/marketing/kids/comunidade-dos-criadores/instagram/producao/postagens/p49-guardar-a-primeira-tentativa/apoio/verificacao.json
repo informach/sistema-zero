@@ -1,0 +1,57 @@
+{
+  "id": "P49",
+  "format": "Imagem única",
+  "source": "docs/marketing/kids/comunidade-dos-criadores/instagram/postagens/10-p41-a-p50.md",
+  "sectionHash": "170a97fe022a2059a383d1edab273edc3c1e14cb65137cc09071ba1b60d21318",
+  "errors": [],
+  "checkedAt": "2026-10-15T01:12:31.731Z",
+  "copyEqual": true,
+  "labelsEqual": true,
+  "fonts": {
+    "normal": true,
+    "bold": true
+  },
+  "layout": {
+    "title": {
+      "left": 64,
+      "right": 1016,
+      "top": 177,
+      "bottom": 333.9375,
+      "height": 156.9375
+    },
+    "tail": {
+      "left": 64,
+      "right": 1016,
+      "top": 1121,
+      "bottom": 1238,
+      "height": 117
+    },
+    "comparison": {
+      "left": 64,
+      "right": 1016,
+      "top": 376,
+      "bottom": 1103,
+      "height": 727
+    },
+    "footer": {
+      "left": 64,
+      "right": 1016,
+      "top": 1286,
+      "bottom": 1316,
+      "height": 30
+    },
+    "images": [
+      {
+        "src": "apoio/jogo-antes.png",
+        "width": 1920,
+        "height": 600
+      },
+      {
+        "src": "apoio/jogo-depois.png",
+        "width": 1920,
+        "height": 600
+      }
+    ]
+  },
+  "mobileNoOverflow": true
+}
