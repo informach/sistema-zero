@@ -68,26 +68,51 @@ export const PlanningReplySchema = z.strictObject({
 
 /**
  * O que a pergunta não pode ser, por regra (o resto é do prompt): perguntar com o teto esgotado,
- * oferecer 2D ou 3D a quem só tem um deles, e duas respostas iguais.
+ * oferecer 2D ou 3D a quem só tem um deles ou num jogo que já tem formato, duas respostas iguais e
+ * uma resposta que repete o "Tanto faz" (a tela já oferece esse botão).
+ * `fixedDimension` é o formato do jogo já construído (`null` num jogo novo).
  */
 export function questionIssues(
   question: z.infer<typeof PlanningQuestionSchema>,
   caps: Pick<PensaCapabilitySnapshot, 'dimensions'>,
   questionsLeft: number,
+  fixedDimension: '2d' | '3d' | null = null,
 ): string[] {
   const issues: string[] = []
   if (questionsLeft <= 0)
     issues.push(
       'Você já fez as perguntas que cabiam. Devolva a proposta (question=null) e decida o que falta em suggestions.',
     )
-  if (question.about === 'dimension' && caps.dimensions.length < 2)
+  if (question.about === 'dimension' && fixedDimension)
+    issues.push(
+      `O jogo já é ${fixedDimension.toUpperCase()} e o formato não muda numa versão nova. Pergunte outra coisa ou proponha.`,
+    )
+  else if (question.about === 'dimension' && caps.dimensions.length < 2)
     issues.push(
       `A criança só tem o Estúdio ${caps.dimensions.join(' e ').toUpperCase()}: 2D ou 3D não é escolha dela. Pergunte outra coisa ou proponha.`,
     )
   const labels = question.options.map((o) => o.label.trim().toLocaleLowerCase('pt-BR'))
   if (new Set(labels).size !== labels.length)
     issues.push('Duas respostas da pergunta têm o mesmo rótulo. Cada resposta é um jogo diferente.')
+  if (labels.some((label) => label.startsWith('tanto faz')))
+    issues.push(
+      'A tela já oferece "Tanto faz, escolhe você". As respostas são escolhas de jogo, nunca "tanto faz".',
+    )
   return issues
+}
+
+/**
+ * Num jogo já construído o formato é fixo (o members recusa trocar com 409 "Este jogo já tem um
+ * formato"): a proposta da versão nova mantém a `dimension` dele.
+ */
+export function fixedDimensionIssues(
+  draft: Pick<ProposalDraft, 'dimension'>,
+  fixedDimension: '2d' | '3d' | null,
+): string[] {
+  if (!fixedDimension || draft.dimension === fixedDimension) return []
+  return [
+    `O jogo já é ${fixedDimension.toUpperCase()}: a proposta mantém dimension="${fixedDimension}" (o formato não muda numa versão nova).`,
+  ]
 }
 
 /**

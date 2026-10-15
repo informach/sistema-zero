@@ -16,6 +16,7 @@ import { completePensaJson, PensaLlmError } from '../pensa-llm'
 import type { JourneyContext } from './context'
 import { loadJourneyContext } from './context'
 import {
+  fixedDimensionIssues,
   GuideDraftSchema,
   HelpReplySchema,
   PlanningReplySchema,
@@ -151,7 +152,14 @@ async function json<T>(
     throw cause
   }
   // A criança nunca lê travessão: o pedido está no sistema, mas o modelo escreve assim mesmo.
-  result = semTravessaoNosCampos(result, PROSE_KEYS)
+  // A troca pode ALONGAR o texto ("1–3" vira "1 a 3") e os tetos do schema são os do members,
+  // sem folga: confere de novo, senão um rótulo no limite voltava 400 na publicação.
+  const cleaned = schema.safeParse(semTravessaoNosCampos(result, PROSE_KEYS))
+  if (!cleaned.success)
+    throw new JourneyOutputInvalid(
+      'Um texto ficou maior que o limite do campo. Escreva os textos mais curtos e sem travessão.',
+    )
+  result = cleaned.data
   if (!prose(result).every(isSafePensaText))
     throw new JourneyOutputInvalid(
       'Um texto da resposta parece dado pessoal ou não é adequado para crianças. Reescreva esse texto sem isso.',
@@ -308,6 +316,7 @@ function proposalOutline(proposal: PensaProposal | null) {
   if (!proposal) return null
   return {
     title: proposal.title,
+    dimension: proposal.dimension,
     firstResult: proposal.firstResult,
     essentials: proposal.essentials,
     missions: proposal.missions.map((m) => ({
@@ -384,6 +393,8 @@ async function produce(input: {
   const previousAnswerRejected = repair ? clip(repair, 2_000) : null
   // Jogo novo = nada construído ainda: a régua do "primeiro jogando" vale só nele.
   const gameExists = Boolean(state.checkpoint) || Boolean(state.builtResults?.length)
+  // Jogo já construído tem formato: nem pergunta de 2D ou 3D nem proposta no outro formato.
+  const fixedDimension = gameExists ? (state.proposal?.dimension ?? null) : null
   if (work.step === 'propose') {
     const questionsLeft = pensaQuestionsLeft(state)
     const lastUser = state.messages.filter((m) => m.role === 'user').at(-1)?.text ?? ''
@@ -400,7 +411,7 @@ Nunca pergunte o que já está em idea, conversation, backlog, existingCreations
 Com o jogo já construído, um pedido curto e vago (como "deixa mais difícil") é normal: escolha a leitura que dá o melhor jogo e proponha.
 questionsLeft diz quantas perguntas ainda cabem. Com questionsLeft=0, não pergunte: proponha e decida o que falta em suggestions.
 Se a criança respondeu que tanto faz e pediu para você escolher, decida você e ponha a escolha em suggestions.
-Uma pergunta tem um assunto (about): action = o que ela faz no jogo; goal = como ganha ou termina; challenge = o que atrapalha; controls = como controla; world = onde acontece; dimension = 2D ou 3D (só se a ideia servir aos dois e capabilities.dimensions tiver os dois).
+Uma pergunta tem um assunto (about): action = o que ela faz no jogo; goal = como ganha ou termina; challenge = o que atrapalha; controls = como controla; world = onde acontece; dimension = 2D ou 3D (só num jogo novo, se a ideia servir aos dois e capabilities.dimensions tiver os dois). Com baseAlreadyBuilt ou builtResults o formato do jogo é fixo: nunca pergunte 2D ou 3D e mantenha a mesma dimension.
 Não repita um assunto já perguntado (conversation[].asked). Deixe as respostas anteriores mudarem as opções novas.
 text é uma frase curta, nas palavras da criança. options tem de 2 a 4 respostas, todas sobre o mesmo assunto e todas possíveis com os blocos, extensões e ferramentas dela; nenhuma de enfeite, nenhuma que você preferiria que ela não escolhesse, nenhuma que peça para ela escrever. label tem poucas palavras, como um botão; description diz em uma frase o que muda no jogo.
 workingTitle é um nome curto para o jogo (até 4 palavras), tirado da ideia dela.
@@ -420,7 +431,12 @@ Criações existentes só podem ser usadas se constarem de existingCreations.`,
       PLAN_TOKENS,
     )
     if (reply.question && !reply.proposal) {
-      const issues = questionIssues(reply.question, context.capabilities, questionsLeft)
+      const issues = questionIssues(
+        reply.question,
+        context.capabilities,
+        questionsLeft,
+        fixedDimension,
+      )
       if (issues.length)
         throw new JourneyOutputInvalid(
           issues.join('\n'),
@@ -446,7 +462,10 @@ Criações existentes só podem ser usadas se constarem de existingCreations.`,
       context.existingCreations,
       context.blocks,
     )
-    issues.push(...playFirstIssues(draft, gameExists))
+    issues.push(
+      ...playFirstIssues(draft, gameExists),
+      ...fixedDimensionIssues(draft, fixedDimension),
+    )
     const reviewed = await json(
       complete,
       ProposalDraftSchema,
@@ -475,7 +494,10 @@ Não substitua a intenção da criança. Devolva a proposta revisada inteira.`,
       }),
       PLAN_TOKENS,
     )
-    const design = playFirstIssues(reviewed, gameExists)
+    const design = [
+      ...playFirstIssues(reviewed, gameExists),
+      ...fixedDimensionIssues(reviewed, fixedDimension),
+    ]
     if (design.length)
       throw new JourneyOutputInvalid(
         design.join('\n'),

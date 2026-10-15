@@ -770,6 +770,89 @@ describe('perguntas com respostas para tocar e o jogo que começa jogando (15/10
     expect(f.published.mock.calls.at(-1)?.[4]).toMatchObject({ type: 'question' })
   })
 
+  test('jogo já construído: 2D ou 3D não vira pergunta, e a proposta mantém o formato', async () => {
+    // A versão nova de um jogo 2D, de quem tem os dois formatos: antes o Zappy podia perguntar,
+    // a criança tocava "3D" e o members recusava a proposta com 409 (o formato não muda).
+    quietConsole()
+    const f = fixture()
+    ;(f.context.capabilities as { dimensions: string[] }).dimensions = ['2d', '3d']
+    f.view.journey.builtResults = ['O gato anda']
+    f.view.journey.proposal = { ...draft, id: 'antes', dimension: '2d' } as never
+    const users: string[] = []
+    const complete = mock(async (input: { user: string }) => {
+      users.push(input.user)
+      return users.length === 1
+        ? question({ about: 'dimension' })
+        : { question: null, proposal: { ...draft, dimension: '3d' } }
+    })
+    await run(f, complete)
+    const first = JSON.parse(users[0] ?? '{}')
+    expect(first.baseAlreadyBuilt ?? first.currentProposal).toMatchObject({ dimension: '2d' })
+    expect(JSON.parse(users[1] ?? '{}').previousAnswerRejected).toContain('O jogo já é 2D')
+  })
+
+  test('a revisão que troca o formato de um jogo já construído volta com o motivo', async () => {
+    quietConsole()
+    const f = fixture('review')
+    f.view.journey.builtResults = ['O gato anda']
+    f.view.journey.proposal = { ...draft, id: 'antes', dimension: '2d' } as never
+    f.work.output.draft = draft
+    const users: string[] = []
+    const complete = mock(async (input: { user: string }) => {
+      users.push(input.user)
+      return users.length === 1 ? { ...draft, dimension: '3d' } : draft
+    })
+    await run(f, complete)
+    expect(JSON.parse(users[1] ?? '{}').previousAnswerRejected).toContain('O jogo já é 2D')
+    expect(f.published.mock.calls.at(-1)?.[4]).toMatchObject({ type: 'proposal' })
+  })
+
+  test('"tanto faz" como resposta pronta volta ao modelo (a tela já tem o botão)', async () => {
+    quietConsole()
+    const f = fixture()
+    const users: string[] = []
+    const complete = mock(async (input: { user: string }) => {
+      users.push(input.user)
+      return users.length === 1
+        ? question({
+            options: [
+              { label: 'Voa', description: 'Não bater em nada.' },
+              { label: 'Tanto faz, escolhe você.', description: 'O Zappy decide.' },
+            ],
+          })
+        : question()
+    })
+    await run(f, complete)
+    expect(JSON.parse(users[1] ?? '{}').previousAnswerRejected).toContain('Tanto faz')
+  })
+
+  test('a troca do travessão que estoura o limite do campo volta ao modelo (não à publicação)', async () => {
+    // "1–3" vira "1 a 3": um rótulo de 79 caracteres passava a 81, e o members recusava com 400.
+    quietConsole()
+    const f = fixture()
+    const longo = `${'a'.repeat(76)}1–3`
+    expect(longo).toHaveLength(79)
+    const users: string[] = []
+    const complete = mock(async (input: { user: string }) => {
+      users.push(input.user)
+      return users.length === 1
+        ? question({
+            options: [
+              { label: longo, description: 'Não bater em nada.' },
+              { label: 'Pega ovos', description: 'Cada ovo vale um ponto.' },
+            ],
+          })
+        : question()
+    })
+    await run(f, complete)
+    expect(JSON.parse(users[1] ?? '{}').previousAnswerRejected).toContain('maior que o limite')
+    const published = f.published.mock.calls.at(-1)?.[4] as {
+      choices?: { options: Array<{ label: string }> }
+    }
+    for (const option of published.choices?.options ?? [])
+      expect(option.label.length).toBeLessThanOrEqual(80)
+  })
+
   const artFirst = {
     ...draft,
     missions: [

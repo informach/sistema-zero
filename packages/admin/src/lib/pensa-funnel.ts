@@ -43,8 +43,9 @@ const STAGES: ReadonlyArray<{ key: PensaFunnelStage['key']; label: string }> = [
   { key: 'told', label: 'Contaram a ideia' },
   { key: 'proposal', label: 'Receberam um começo' },
   { key: 'accepted', label: 'Escolheram o começo' },
-  { key: 'firstMission', label: 'Concluíram a primeira missão' },
-  { key: 'tested', label: 'Testaram o jogo' },
+  // As etapas contam "chegou aqui ou além" (o members): testar não exige missão concluída.
+  { key: 'firstMission', label: 'Concluíram uma missão ou foram além' },
+  { key: 'tested', label: 'Testaram o jogo ou foram além' },
   { key: 'versionDone', label: 'Guardaram a versão pronta' },
 ]
 

@@ -20,8 +20,9 @@ export class GetPensaFunnelService {
   async execute(days = 30): Promise<PensaFunnelView> {
     if (!Number.isInteger(days) || days < 1 || days > 365)
       throw new ValidationError('Período inválido (de 1 a 365 dias)')
-    const since = new Date(this.clock().getTime() - days * DAY_MS)
-    const counts = await this.reader.funnel(since)
+    const now = this.clock()
+    const since = new Date(now.getTime() - days * DAY_MS)
+    const counts = await this.reader.funnel(since, now)
     return {
       ...counts,
       days,

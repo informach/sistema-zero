@@ -303,6 +303,34 @@ describe.skipIf(!available)('Pensa v2: concorrência e publicação no Postgres'
     expect(view.project.name).toBe('Dragão dos ovos')
     expect(view.journey.questionsAsked).toBe(0)
     expect(view.journey.workingTitle).toBeNull()
+    // "Quero mudar uma coisa" virou pergunta: com uma proposta, o nome provisório dela não
+    // renomeia o jogo (antes ele virava "A nave veloz" com o plano ainda sendo o dos ovos).
+    await repo.start(
+      who,
+      id,
+      {
+        id: randomUUID(),
+        expectedRevision: view.journey.revision,
+        message: 'Quero que seja uma nave',
+        kind: 'planning',
+        context: {},
+      },
+      now,
+    )
+    lease = randomUUID()
+    await repo.claim(who, id, op, lease, now)
+    await repo.publish(
+      who,
+      id,
+      op,
+      lease,
+      { type: 'question', text: 'A nave atira?', choices, workingTitle: 'A nave veloz' },
+      now,
+    )
+    view = await repo.get(who, id)
+    expect(view.project.name).toBe('Dragão dos ovos')
+    expect(view.journey.questionsAsked).toBe(1)
+    expect(view.journey.workingTitle ?? null).toBeNull()
   })
 
   test('o nome provisório não troca um nome que a criança já deu', async () => {

@@ -69,9 +69,9 @@ describe.skipIf(!available)('Pensa v2: o funil do painel no Postgres', () => {
   })
 
   /** Um jogo novo com a primeira versão no estado pedido. */
-  async function game(patch: Partial<PensaJourney>, missionDone = false) {
+  async function game(patch: Partial<PensaJourney>, missionDone = false, at = created) {
     const who = actor()
-    const view = await repo.create(who, randomUUID(), created)
+    const view = await repo.create(who, randomUUID(), at)
     // Com o cliente do `createDbConnection`, o JSON vai como texto + `::jsonb`.
     const data = { ...view.journey, ...patch }
     await conn.sql`update members.pensa_journeys set data = ${JSON.stringify(data)}::jsonb
@@ -165,5 +165,72 @@ describe.skipIf(!available)('Pensa v2: o funil do painel no Postgres', () => {
       () => new Date('2031-01-20T12:00:00Z'),
     ).execute(1)
     expect(lastDay.games).toBe(0)
+  })
+
+  test('as etapas ficam encaixadas: quem testou sem concluir missão conta nas duas', async () => {
+    // Um ano depois dos jogos do caso de cima (a janela termina no "agora" do relógio, então um
+    // não entra na conta do outro).
+    const later = new Date('2032-03-10T12:00:00Z')
+    // 1: escolheu o começo e testou ("Já quero experimentar") sem concluir missão.
+    await game(
+      {
+        intent: 'Nave',
+        proposal: { id: 'p' } as never,
+        acceptedProposalId: 'p',
+        missionIds: ['m'],
+        tests: [{ id: 't' }] as never,
+      },
+      false,
+      later,
+    )
+    // 2: guardou a versão pronta sem teste nem missão concluída.
+    await game(
+      {
+        intent: 'Gato',
+        proposal: { id: 'q' } as never,
+        acceptedProposalId: 'q',
+        missionIds: ['n'],
+        stage: 'closed',
+        closedReason: 'met',
+      },
+      false,
+      later,
+    )
+    // 3: concluiu missão e parou ali.
+    await game(
+      {
+        intent: 'Peixe',
+        proposal: { id: 'r' } as never,
+        acceptedProposalId: 'r',
+        missionIds: ['o'],
+      },
+      true,
+      later,
+    )
+    const funnel = await new GetPensaFunnelService(
+      new DrizzlePensaFunnelRepository(conn.db),
+      () => new Date('2032-03-20T12:00:00Z'),
+    ).execute(30)
+    expect(funnel).toMatchObject({
+      games: 3,
+      told: 3,
+      proposal: 3,
+      accepted: 3,
+      firstMission: 3,
+      tested: 2,
+      versionDone: 1,
+    })
+    // Cada etapa cabe na anterior.
+    const order = [
+      funnel.games,
+      funnel.told,
+      funnel.proposal,
+      funnel.accepted,
+      funnel.firstMission,
+      funnel.tested,
+      funnel.versionDone,
+    ]
+    for (let i = 1; i < order.length; i++)
+      expect(order[i] ?? 0).toBeLessThanOrEqual(order[i - 1] ?? 0)
   })
 })

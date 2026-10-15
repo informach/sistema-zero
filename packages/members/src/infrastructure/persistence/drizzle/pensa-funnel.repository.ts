@@ -13,7 +13,7 @@ export const PENSA_ANY_ANSWER = 'Tanto faz, escolhe você.'
 export class DrizzlePensaFunnelRepository implements PensaFunnelReader {
   constructor(private readonly db: Database) {}
 
-  async funnel(since: Date): Promise<PensaFunnelCounts> {
+  async funnel(since: Date, until: Date): Promise<PensaFunnelCounts> {
     const rows = await this.db.execute<Record<keyof PensaFunnelCounts, string | number>>(sql`
       with g as (
         select j.cycle_id, j.data
@@ -21,6 +21,7 @@ export class DrizzlePensaFunnelRepository implements PensaFunnelReader {
         join members.pensa_cycles c on c.project_id = p.id and c.number = 1
         join members.pensa_journeys j on j.cycle_id = c.id
         where p.created_at >= ${since.toISOString()}::timestamptz
+          and p.created_at <= ${until.toISOString()}::timestamptz
       ),
       q as (
         select g.cycle_id, m.value as question,
@@ -35,27 +36,42 @@ export class DrizzlePensaFunnelRepository implements PensaFunnelReader {
         select q.*,
           case when q.next->>'role' = 'user' then btrim(q.next->>'text') end as reply
         from q
+      ),
+      -- Até onde cada jogo CHEGOU: a etapa mais adiantada (0 = só começou). Contar cada etapa
+      -- "chegou aqui ou além" mantém o funil encaixado: testar não exige missão concluída, e
+      -- guardar a versão não exige nenhuma das duas. Contadas soltas, uma etapa podia ter mais
+      -- jogos que a anterior e "quantos ficaram" saía trocado entre as duas.
+      s as (
+        select g.cycle_id,
+          case
+            when g.data->>'stage' = 'closed' and g.data->>'closedReason' = 'met' then 6
+            when jsonb_array_length(coalesce(g.data->'tests', '[]'::jsonb)) > 0 then 5
+            when exists (
+              select 1 from members.pensa_tasks t
+              where t.cycle_id = g.cycle_id and t.progress_status = 'completed') then 4
+            when g.data->>'acceptedProposalId' is not null
+              or jsonb_array_length(coalesce(g.data->'missionIds', '[]'::jsonb)) > 0 then 3
+            when jsonb_typeof(g.data->'proposal') = 'object' then 2
+            when coalesce(g.data->>'intent', '') <> '' then 1
+            else 0
+          end as reached
+        from g
       )
       select
         (select count(*) from g) as "games",
-        (select count(*) from g where coalesce(g.data->>'intent', '') <> '') as "told",
+        (select count(*) from s where reached >= 1) as "told",
         (select count(distinct cycle_id) from a) as "asked",
         (select count(*) from a) as "questions",
         (select count(*) from a where reply = ${PENSA_ANY_ANSWER}) as "answeredAny",
-        (select count(*) from a where reply is not null and exists (
+        (select count(*) from a where reply is not null and reply <> ${PENSA_ANY_ANSWER} and exists (
           select 1 from jsonb_array_elements(a.question->'choices'->'options') o
           where btrim(o->>'label') = a.reply)) as "answeredByChoice",
         (select count(*) from a where a.next is null) as "waitingOnQuestion",
-        (select count(*) from g where jsonb_typeof(g.data->'proposal') = 'object') as "proposal",
-        (select count(*) from g where g.data->>'acceptedProposalId' is not null
-          or jsonb_array_length(coalesce(g.data->'missionIds', '[]'::jsonb)) > 0) as "accepted",
-        (select count(*) from g where exists (
-          select 1 from members.pensa_tasks t
-          where t.cycle_id = g.cycle_id and t.progress_status = 'completed')) as "firstMission",
-        (select count(*) from g
-          where jsonb_array_length(coalesce(g.data->'tests', '[]'::jsonb)) > 0) as "tested",
-        (select count(*) from g
-          where g.data->>'stage' = 'closed' and g.data->>'closedReason' = 'met') as "versionDone"
+        (select count(*) from s where reached >= 2) as "proposal",
+        (select count(*) from s where reached >= 3) as "accepted",
+        (select count(*) from s where reached >= 4) as "firstMission",
+        (select count(*) from s where reached >= 5) as "tested",
+        (select count(*) from s where reached >= 6) as "versionDone"
     `)
     const row = (rows as unknown as Array<Record<string, string | number>>)[0] ?? {}
     const n = (key: keyof PensaFunnelCounts) => Number(row[key] ?? 0)

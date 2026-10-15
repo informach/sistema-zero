@@ -379,6 +379,14 @@ O que veio da análise do sandbox (`code-with-antonio/sandbox`), no planejador
   de usos (`members.getAiCredits`). SEMPRE 200; members fora = `{credits: null}`.
 - Testes: os de "perguntas com respostas…" em `tests/pensa-journey-worker.test.ts`,
   `tests/pensa-journey-contracts.test.ts` e o selo em `tests/pensa-journey-routes.test.ts`.
+- **Full review (15/10/2026):** num jogo já construído o formato é fixo (`fixedDimension` = a
+  `dimension` da proposta, com checkpoint ou `builtResults`): `questionIssues` recusa a pergunta de
+  2D ou 3D e `fixedDimensionIssues` recusa a proposta no outro formato, na revisão e depois dela
+  (antes a criança tocava "3D" e o members recusava com 409 em laço). `proposalOutline` leva a
+  `dimension` ao modelo. Resposta pronta "tanto faz" também volta (a tela já tem o botão).
+  ⚠️ O `json()` CONFERE o schema de novo depois de tirar o travessão: a troca alonga o texto
+  ("1–3" vira "1 a 3") e os tetos do schema são os do members, sem folga; um rótulo no limite
+  voltava 400 na publicação, sem reparo. Agora vira `JourneyOutputInvalid` e passa pelo reparo.
 
 ## Pensa v2: a régua da narrativa e o teto do pedido (full review de 14/10/2026)
 

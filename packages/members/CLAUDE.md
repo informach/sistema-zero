@@ -257,6 +257,17 @@ serviços. Nunca recopie as regras.
   texto nunca sai do banco), proposta, começo escolhido, primeira missão, teste e versão pronta.
   ⚠️ Mudou a frase do "Tanto faz" na tela? Mude `PENSA_ANY_ANSWER` junto. Teste:
   `tests/db/pensa-funnel.repository.test.ts`.
+- **Full review (15/10/2026):** as etapas contam "chegou aqui OU ALÉM" (a CTE `s` dá a etapa mais
+  adiantada de cada jogo): testar não exige missão concluída e guardar a versão não exige nenhuma
+  das duas, e contadas soltas uma etapa podia ter mais jogos que a anterior ("quantos pararam"
+  saía trocado). A janela é `[since, agora]` (o leitor recebe o `until`), o "Tanto faz" não conta
+  em "tocou numa resposta" mesmo repetido num rótulo, e jogos APAGADOS somem do funil (limite
+  conhecido: a cascata leva a jornada junto).
+- **O nome provisório só vale antes da primeira proposta** (`!state.proposal`): a pergunta do
+  "Quero mudar uma coisa" (ou a da versão 2, que copia a proposta anterior) renomeava o jogo para
+  algo que o plano não era. E escolher o começo (`accept`) e adaptar o caminho (`revise`) zeram
+  `questionsAsked` e `workingTitle` (core `applyPensaCommand`): antes só uma proposta NOVA zerava, e
+  o "Adaptar meu caminho" depois de aceitar a anterior nascia sem pergunta.
 
 ## Oficinas ao vivo (14/10/2026)
 

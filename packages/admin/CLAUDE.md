@@ -1200,7 +1200,9 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   `GET /api/members/pensa-funnel?days=7|30|90` → gateway `GET /members/admin/pensa/funnel`. As
   contas (etapas com a parte dos jogos e quantos pararam antes; como as perguntas do Zappy foram
   respondidas) são puras em `lib/pensa-funnel.ts` (`tests/pensa-funnel.test.ts`). Só números da
-  PRIMEIRA versão dos jogos criados no período, com as contas da equipe juntas.
+  PRIMEIRA versão dos jogos criados no período, com as contas da equipe juntas. As etapas contam
+  "chegou aqui ou além" (o members), por isso dizem "Concluíram uma missão ou foram além" e
+  "Testaram o jogo ou foram além": testar não exige missão concluída.
 - Pagamentos (via gateway, JWT+RBAC): `GET /payments/admin/payments` (`?q&status&method&consumerId&from&to&limit&offset`)
   → `Paginated<PaymentView>`; `GET /payments/admin/payments/:id`; `GET /payments/admin/subscriptions`
   (`?q&status&consumerId&limit&offset`) → `Paginated<SubscriptionView>`; `GET /payments/admin/subscriptions/:id`;

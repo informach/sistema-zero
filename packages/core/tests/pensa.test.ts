@@ -274,4 +274,35 @@ describe('Pensa: o teto de perguntas do Zappy', () => {
     }
     expect(pensaQuestionsLeft({ ...initial(), checkpoint, questionsAsked: 1 })).toBe(0)
   })
+
+  test('escolher o começo e adaptar o caminho zeram as perguntas e o nome provisório', () => {
+    // Antes só uma proposta NOVA zerava: aceitar a anterior depois de uma pergunta levava o
+    // contador para a construção, e o "Adaptar meu caminho" seguinte nascia sem pergunta.
+    const proposta = {
+      ...initial(),
+      stage: 'proposal' as const,
+      proposal: { id: 'p' } as PensaProposal,
+      questionsAsked: 1,
+      workingTitle: 'A nave veloz',
+    }
+    const aceito = applyPensaCommand(
+      proposta,
+      proposta.revision,
+      {
+        type: 'accept',
+        proposalId: 'p',
+      },
+      now,
+    )
+    expect(aceito.questionsAsked).toBe(0)
+    expect(aceito.workingTitle).toBeNull()
+    const adaptado = applyPensaCommand(
+      { ...aceito, stage: 'building', questionsAsked: 1, workingTitle: 'Outro' },
+      aceito.revision,
+      { type: 'revise' },
+      now,
+    )
+    expect(adaptado.questionsAsked).toBe(0)
+    expect(adaptado.workingTitle).toBeNull()
+  })
 })

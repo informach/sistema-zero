@@ -1019,10 +1019,14 @@ export class DrizzlePensaJourneyRepository implements PensaJourneyRepository {
           // O nome provisório só entra enquanto o jogo ainda tem um nome dado pelo sistema: a
           // lista deixa de mostrar vários "Meu novo jogo" quando a criança sai antes da proposta.
           const title = result.workingTitle?.trim().slice(0, 120)
+          // Só antes da primeira proposta: com uma proposta (inclusive a copiada da versão
+          // anterior), o jogo já tem o nome dela, e a pergunta do "Quero mudar uma coisa" não
+          // pode renomeá-lo para algo que o plano não é.
           if (
             title &&
+            !state.proposal &&
             title !== project.name &&
-            aiGivenName(project.name, state.proposal?.title ?? null, state.workingTitle ?? null)
+            aiGivenName(project.name, null, state.workingTitle ?? null)
           ) {
             await tx
               .update(pensaProjects)

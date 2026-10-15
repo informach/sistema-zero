@@ -421,6 +421,10 @@ export function applyPensaCommand(
       next.acceptedProposalId = command.proposalId
       next.stage = 'preparing'
       next.paused = false
+      // As perguntas e o nome provisório eram da conversa que acabou: a próxima (um "Adaptar meu
+      // caminho") começa com o teto inteiro, mesmo quando a proposta escolhida é a anterior.
+      next.questionsAsked = 0
+      next.workingTitle = null
       break
     case 'observe':
       if (!['building', 'observing'].includes(current.stage) || !current.missionIds.length)
@@ -449,6 +453,8 @@ export function applyPensaCommand(
       next.closedFrom = null
       next.closedReason = null
       next.acceptedProposalId = null
+      next.questionsAsked = 0
+      next.workingTitle = null
       break
     case 'close':
       if (current.operationId || current.stage === 'preparing' || current.stage === 'closed')
