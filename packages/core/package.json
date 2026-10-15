@@ -23,6 +23,7 @@
     "./http": "./src/http/index.ts",
     "./studio": "./src/studio/index.ts",
     "./staff": "./src/staff/index.ts",
+    "./studio/*": "./src/studio/*.ts",
     "./time": "./src/time/index.ts",
     "./zappy": "./src/zappy/index.ts",
     "./learning": "./src/learning/index.ts",

@@ -240,7 +240,8 @@ const COMMAND_DEFINITIONS = [
     id: 'tool.select',
     label: scene.selectTool,
     icon: MousePointer2,
-    contexts: [...model, ...allMesh],
+    contexts: [...model, ...allMesh, 'animate'],
+    shortcut: key('V', 'v'),
     slot: 'rail',
     tier: 1,
     group: 'tools',
@@ -268,6 +269,7 @@ const COMMAND_DEFINITIONS = [
   },
   {
     id: 'tool.move',
+    shortcut: key('G', 'g'),
     label: scene.move,
     icon: Move,
     contexts: [...model, ...allMesh, 'animate'],
@@ -278,6 +280,7 @@ const COMMAND_DEFINITIONS = [
   },
   {
     id: 'tool.rotate',
+    shortcut: key('R', 'r'),
     label: scene.rotate,
     icon: RotateCw,
     contexts: [...model, ...allMesh, 'animate'],
@@ -288,6 +291,7 @@ const COMMAND_DEFINITIONS = [
   },
   {
     id: 'tool.scale',
+    shortcut: key('S', 's'),
     label: scene.scale,
     icon: Scaling,
     contexts: [...model, ...allMesh, 'animate'],
@@ -463,7 +467,7 @@ const COMMAND_DEFINITIONS = [
     tier: 1,
     group: 'tools',
     toggle: true,
-    shortcut: key('P', 'p'),
+    shortcut: key('B', 'b'),
   },
   {
     id: 'paint.eraser',

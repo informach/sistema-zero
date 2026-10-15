@@ -12,7 +12,7 @@ Documentação: integrations.md. Pendente de B12: comandos de conexão no fluxo 
 
 Base: staging `7981caf7a4fb6773ebb804405bf7ad6f6551814f`. Worktree isolada: `sistema-zero-tui`; branch `feat/tui-integrado`.
 
-O trabalho de outras iniciativas foi preservado em suas worktrees. Durante esta implementação, staging recebeu commits de Molda e Studio Pro; a integração local deve preservar esses commits e validar novamente os contratos compartilhados.
+O trabalho de outras iniciativas foi preservado em suas worktrees. A integração incorpora staging `95aad63db4b5caf21525adbb27248c96ed54e763`, incluindo Molda e Studio Pro. O merge preserva as novas rotas e contratos; detalhes da reconciliação estão no fechamento abaixo.
 
 ## B00 — Fundação de compatibilidade
 
@@ -176,3 +176,15 @@ Regressão intermediária consolidada: 63 testes/392 asserções/46 arquivos, ze
 F1–F7, ciclo de 100 tarefas e 1.000 amostras de cancelamento/dispatch produziram artefatos reproduzíveis; veja [desempenho](performance.md). F5 usa executores sintéticos sobre infraestrutura real, sem alegar comparação de raciocínio de modelos. O perfil de CPU/heap e a tentativa de `--smol` não demonstraram redução suficiente de RSS; a opção não foi adotada.
 
 Critérios ainda não encerrados: RSS combinado de UI+supervisor ≤300 MiB; quota física do workspace em container; fault injection real de disco cheio e de cada fronteira de patch; comparação controlada de 30 tarefas com repetições/avaliação independente; inferência OpenRouter e integrações de negócio externas quando configuradas. São limitações de aceite, não testes fictícios ou autorização para anunciá-las como prontas. E01–E03 permanecem extensões fora do núcleo local.
+
+## Revisão final da integração local
+
+O contrato Studio foi reconciliado com a versão atual de staging. TUI, fachada staff e runtime usam o mesmo parser de submissão, incluindo origem exata, materiais binários, colisões de caminhos e limite do envelope UTF-8. Manifesto e lock preservam a intenção de dependências; a comparação com a imagem instalada permanece exclusivamente no runtime. O resultado mudou para referência remota com expiração, evidências e identidade da validação; metadados/logs locais não são apresentados como HTML permanente. O teste percorre dispatcher, filesystem real, snapshot, contrato staff e parser do runtime, e recusa bytes alterados após revisão.
+
+Regressão após o merge: **68 testes / 421 asserções / 48 arquivos** no TUI/runtime/adapters e **458 testes / 1.643 asserções / 54 arquivos** no backend/core/Studio. Os templates do Studio passaram por typecheck/build reais após instalação isolada pelo npm lock. Typechecks dos nove pacotes envolvidos e dos scripts de release passaram. Biome verificou 207 arquivos, sem erros/avisos; sugestões informativas de estilo não alteram o resultado. Dois fixtures de Studio receberam `satisfies` para preservar literais sem enfraquecer tipos.
+
+Uma execução concorrente com empacotamento/instalação falhou ao consultar ownership da porta Windows (log da consulta vazio). Preview/serviço passaram isoladamente e a suíte completa repetida passou em 58,49 s. Não se atribui uma causa definitiva sem evidência: a guarda continua fechada em caso de falha e agora informa reason, exit e referência do log. O ensaio concorrente foi preservado, sem mascarar o resultado com retry automático ou retirada da checagem.
+
+A distribuição final foi reconstruída e verificada fora do repositório, com manifestos, SQLite/AJV/TypeScript em workers, OpenTUI/WASM, ConPTY e Chromium. Upgrade interrompido preservou a versão anterior; backup, rollback e launcher passaram. Não houve push, deploy ou envio de mensagens externas. O benchmark F5 repetido usou o scheduler real sob demanda: p95 32,55 ms e p99 40,80 ms até o frame durante cinco minutos de carga.
+
+O aceite integral continua aberto nos critérios já enumerados. Workers Bun de análise/schema têm limites de entrada e prazo, mas não quota rígida de RAM por worker; os limites de Job Object aplicam-se aos processos próprios configurados. Esta entrega é funcional localmente e possui evidência reproduzível, mas não é uma certificação de substituição superior ao Claude Code. A matriz de suporte delimita exatamente o que foi exercitado.

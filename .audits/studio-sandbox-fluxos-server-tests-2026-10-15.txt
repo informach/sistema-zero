@@ -1,0 +1,115 @@
+bun test v1.3.11 (af24e281)
+
+tests\studio-builder-tools.test.ts:
+(pass) bounded builder tools > manifest edits acquire a system lock and cannot add install hooks or forge lock contents [16.00ms]
+(pass) bounded builder tools > one exact replacement preserves untouched text; repairs consolidate against the original revision
+(pass) bounded builder tools > ambiguous replacements, stale hashes, traversal, duplicates and mixed operations cannot write
+(pass) bounded builder tools > private sources are not exposed or rewritten; source instructions remain data, not tools
+(pass) bounded builder tools > read/search have explicit bounds and hashes remain exact
+
+tests\studio-zappy.test.ts:
+(pass) política normal e Pro em todas as respostas > Pro não recebe instruções de blocos nem memória incompatível
+(pass) política normal e Pro em todas as respostas > curadoria GameDev é específica do kit Pro e não entra no modo normal [32.00ms]
+(pass) política normal e Pro em todas as respostas > referências Pro só apontam para arquivos e linhas enviados, e nunca aparecem no clássico [15.00ms]
+(pass) política normal e Pro em todas as respostas > contexto Pro limitado preserva metadados úteis sem mutar a entrada [63.00ms]
+(pass) política normal e Pro em todas as respostas > clássico blocks nunca recebe código nem recomenda programação textual [31.00ms]
+(pass) política normal e Pro em todas as respostas > clássico bridge nunca recebe código nem recomenda programação textual [31.00ms]
+(pass) política normal e Pro em todas as respostas > clássico code nunca recebe código nem recomenda programação textual [16.00ms]
+(pass) política normal e Pro em todas as respostas > install não é insta; privacidade real permanece protegida [15.00ms]
+(pass) política normal e Pro em todas as respostas > respostas fixas, segurança e sugestões respeitam o Pro
+(pass) política normal e Pro em todas as respostas > a rota rejeita Pro com modo visual antes de reservar uso
+[studio-zappy] falha ao recuperar conhecimento {
+  cause: 317 |       let knowledge: Awaited<ReturnType<typeof members.zappyKnowledgeSearch>>['body']
+318 |       try {
+319 |         const searchQuery = await normalizeZappySearchQuery(safeQuestion.text)
+320 |         const knowledgeResult = await members.zappyKnowledgeSearch(searchQuery, 5)
+321 |         if (knowledgeResult.status !== 200 || !knowledgeResult.body) {
+322 |           throw new Error(`Base do Zappy indisponível (${knowledgeResult.status})`)
+                          ^
+error: Base do Zappy indisponível (503)
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero\packages\member-shell\src\routes\studio-zappy.ts:322:21)
+      at async <anonymous> (C:\Users\tocha\projects\sistema-zero\packages\member-shell\tests\studio-zappy.test.ts:267:54)
+,
+}
+(pass) política normal e Pro em todas as respostas > falha na base de conhecimento do Pro pede arquivo, nunca bloco
+(pass) Acesso ao Zappy > equipe entra para QA mesmo com o interruptor desligado e sem rank
+(pass) Acesso ao Zappy > flag desligada barra o aluno mesmo no topo da jornada
+(pass) Acesso ao Zappy > abaixo de Inventor não entra; de Inventor para cima, entra
+(pass) Acesso ao Zappy > sem rank (members fora) ou slug desconhecido REPROVA — fail-closed
+(pass) Acesso ao Zappy > não existe escotilha por conta nem degrau configurável
+(pass) Zappy do Studio — limites determinísticos > remove formas comuns de PII infantil antes do histórico
+(pass) Zappy do Studio — limites determinísticos > preserva linhas de código e remove credenciais antes do prompt
+(pass) Zappy do Studio — limites determinísticos > preserva whitespace externo e remove chave privada multilinha
+(pass) Zappy do Studio — limites determinísticos > remove todo o valor multilinha quando a própria variável é sensível
+(pass) Zappy do Studio — limites determinísticos > remove arquivos sensíveis e credenciais de URL mesmo em chamadas forjadas ao BFF
+(pass) Zappy do Studio — limites determinísticos > reconhece variante de crise: estou pensando em suicídio
+(pass) Zappy do Studio — limites determinísticos > reconhece variante de crise: quero me suicidar
+(pass) Zappy do Studio — limites determinísticos > reconhece variante de crise: vou tirar a minha vida
+(pass) Zappy do Studio — limites determinísticos > reconhece variante de crise: quero acabar com a minha vida
+(pass) Zappy do Studio — limites determinísticos > reconhece variante de crise: não aguento mais viver
+(pass) Zappy do Studio — limites determinísticos > remove segredo de chave prefixada AWS_SECRET_ACCESS_KEY
+(pass) Zappy do Studio — limites determinísticos > remove segredo de chave prefixada SUPABASE_SERVICE_ROLE_KEY
+(pass) Zappy do Studio — limites determinísticos > remove segredo de chave prefixada NEXT_PUBLIC_API_KEY
+(pass) Zappy do Studio — limites determinísticos > remove segredo de chave prefixada awsSecretAccessKey
+(pass) Zappy do Studio — limites determinísticos > crise tem precedência sobre o aviso genérico de PII
+(pass) Zappy do Studio — limites determinísticos > descarta referências de bloco devolvidas pelo provedor no modo Pro
+(pass) Zappy do Studio — limites determinísticos > redireciona Pensa, jogo inteiro e assunto externo sem oferecer conteúdo
+(pass) Zappy do Studio — limites determinísticos > só o pedido EXPLÍCITO da ferramenta redireciona ao Pinta [16.00ms]
+(pass) Zappy do Studio — limites determinísticos > isola prompt injection e não envia código no modo Blocos [47.00ms]
+(pass) Zappy do Studio — limites determinísticos > mantém no Studio dúvidas sobre recursos existentes e jogos de futebol
+(pass) Zappy do Studio — limites determinísticos > o catálogo do tutor é o que os cursos deram, sem corte pelo nível do posto [16.00ms]
+(pass) Zappy do Studio — limites determinísticos > o manual não leva ao tutor o NOME de um bloco que a criança ainda não tem
+(pass) Zappy do Studio — limites determinísticos > o maior tier mantém o prompt completo dentro de 48 kB [46.00ms]
+(pass) Zappy do Studio — limites determinísticos > o contexto máximo aceito também respeita o orçamento total [110.00ms]
+(pass) Zappy do Studio — limites determinísticos > normaliza a busca localmente sem depender de configuração do provider
+(pass) Validação da resposta do modelo (invalidStudioZappyAnswerReason) > aceita a trilha real de categoria e subcategoria em texto corrido (com emoji)
+(pass) Validação da resposta do modelo (invalidStudioZappyAnswerReason) > nome de bloco ou categoria em crase inline não é código — desembrulha e aceita
+(pass) Validação da resposta do modelo (invalidStudioZappyAnswerReason) > código de verdade continua reprovado no modo Blocos
+(pass) Validação da resposta do modelo (invalidStudioZappyAnswerReason) > citar tag HTML ou palavras comuns não reprova mais (falso positivo)
+(pass) Validação da resposta do modelo (invalidStudioZappyAnswerReason) > referência inválida é FILTRADA sem derrubar a resposta
+(pass) Validação da resposta do modelo (invalidStudioZappyAnswerReason) > "Como fazer": só o slug que ESTAVA nos hits vira helpReferences; o resto cai
+(pass) Validação da resposta do modelo (invalidStudioZappyAnswerReason) > a regra do prompt pede o CAMINHO da paleta em texto corrido, sem crases
+(pass) Validação da resposta do modelo (invalidStudioZappyAnswerReason) > o catálogo do prompt manda o caminho real da paleta, sem repetir nível
+(pass) Validação da resposta do modelo (invalidStudioZappyAnswerReason) > o prompt proíbe citar bloco fora do catálogo e amarra citação a blockReferences
+(pass) Validação da resposta do modelo (invalidStudioZappyAnswerReason) > unknownBlockNamesInText acusa bloco inventado e aceita os do catálogo
+(pass) BFF do Zappy > impersonação bloqueia conversa antes de tocar members/quota
+(pass) BFF do Zappy > extensão conquistada acima do nível do posto é aceita (a mesma régua da paleta) [15.00ms]
+(pass) BFF do Zappy > sem bloco conquistado o tutor não abre; blocos indisponíveis = tente de novo
+(pass) BFF do Zappy > revalida posse do Estúdio antes de reservar pergunta
+(pass) BFF do Zappy > extensão forjada é recusada antes de quota/modelo
+(pass) BFF do Zappy > repetição idempotente devolve resposta existente sem consumir quota
+(pass) BFF do Zappy > resposta determinística nova é persistida sem consumir quota
+(pass) BFF do Zappy > quota recusada gera resposta infantil persistida com outcome quota
+(pass) BFF do Zappy > o saldo vai no envelope da resposta, NUNCA no objeto persistido
+(pass) BFF do Zappy > resposta repetida (replay) não zera o medidor
+(pass) BFF do Zappy > quota indisponível falha fechada depois de preparar o conhecimento [32.00ms]
+[studio-zappy] falha ao recuperar conhecimento {
+  cause: 1192 |     let quota = 0
+1193 |     const routes = createStudioZappyRoutes({
+1194 |       session: { getSession: async () => STAFF },
+1195 |       members: members({
+1196 |         zappyKnowledgeSearch: async () => {
+1197 |           throw new Error('members indisponível')
+                           ^
+error: members indisponível
+      at zappyKnowledgeSearch (C:\Users\tocha\projects\sistema-zero\packages\member-shell\tests\studio-zappy.test.ts:1197:21)
+      at <anonymous> (C:\Users\tocha\projects\sistema-zero\packages\member-shell\src\routes\studio-zappy.ts:320:47)
+      at async <anonymous> (C:\Users\tocha\projects\sistema-zero\packages\member-shell\tests\studio-zappy.test.ts:1206:54)
+,
+}
+(pass) BFF do Zappy > falha ao recuperar conhecimento não consome quota nem chama o modelo
+(pass) BFF do Zappy > remove PII antes de reservar e responde localmente sem consumir quota
+(pass) BFF do Zappy > rejeita body acima de 1 MiB antes de reservar a pergunta
+(pass) BFF do Zappy > conteúdo impróprio recebe resposta infantil local antes da quota
+(pass) BFF do Zappy > pedido de ajuda em crise recebe orientação protetiva antes de conhecimento e quota: quero morrer
+(pass) BFF do Zappy > pedido de ajuda em crise recebe orientação protetiva antes de conhecimento e quota: não quero mais viver
+(pass) BFF do Zappy > pedido de ajuda em crise recebe orientação protetiva antes de conhecimento e quota: quero me suicidar e meu e-mail é aluno@example.com [15.00ms]
+(pass) review: o contexto do projeto atravessa a borda da rota > Pro transporta diagnóstico e instalação até o modelo e devolve referência navegável
+(pass) review: o contexto do projeto atravessa a borda da rota > comportamento, rascunhos soltos e avisos do editor chegam ao modelo [16.00ms]
+(pass) review 2: a recusa por limite chega marcada como aviso > o scope da resposta vira quota, e é isso que o painel lê
+(pass) review 2: a recusa por limite chega marcada como aviso > indisponibilidade NÃO vira quota (é erro, e a copy é outra) [16.00ms]
+
+ 78 pass
+ 0 fail
+ 355 expect() calls
+Ran 78 tests across 2 files. [1047.00ms]

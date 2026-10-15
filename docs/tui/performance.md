@@ -8,7 +8,7 @@ Hardware: AMD Ryzen 5 5600G, 12 processadores lógicos, 16.96 GB RAM, Windows 10
 | F2: 50.000 arquivos / 1 GiB | índice inicial 266 ms; busca em conteúdo p95 1.519 ms; busca no índice p95 3,71 ms | Dados determinísticos; cache de SO não controlado; invalidações registradas |
 | F3: 500 sessões / 10 mil mensagens / 100 mil eventos | histórico p95 1,64 ms; snapshot 6,66 ms; tail 0,61 ms; reconexão 7,49 ms | 1.000 consultas, 30 reconexões, índices/EXPLAIN registrados; não inclui render de todas as linhas |
 | F4: 4 processos, 5 MiB/s oferecidos | cada árvore encerrada em 4 MB; IPC p95 0,38 ms | Política de quota encerra produção; não armazena cinco minutos de saída |
-| F5: cinco minutos | 16.320 leituras, 91 builds de CPU, 298 observações Chromium | Dois executores sintéticos no scheduler real; oito leitores e um build |
+| F5: cinco minutos | 16.360 leituras, 91 builds de CPU, 298 observações Chromium | Dois executores sintéticos no scheduler real; oito leitores e um build |
 | F6: crash de processo | prepared/dispatched/accepted/confirmed preservados; efeito aceito não repetido | Inclui aceitação seguida de perda de resposta; não equivale a disco físico cheio |
 | F7: 100 nós | 4,95 s; registro de controle 32.890 bytes | Outputs de 60 KB por referência/deduplicação; definição fixada, outputs com owner |
 | Ciclo de 100 tarefas | heap retido +1,51 MB; RSS +15,65 MB | GC diagnóstico antes/depois; não confundir com política de GC em produção |
@@ -19,7 +19,9 @@ Renderer: 1.000 entradas observadas até o frame, sem forçar `renderOnce`. No s
 
 Startup é medido em ConPTY real, até runtime pronto e primeiro texto visível, com 3 warmups e 30 processos por cenário. A primeira medição concorria com o scan de 1 GiB e ficou em arquivo separado. A repetição isolada, antes de pré-compilar o helper Windows, deu help p95 107,5 ms, prompt com supervisor existente 619,6 ms e perfil novo 3.031,5 ms. Compilando o mesmo helper no build, a repetição deu **help 103,8 ms, prompt com supervisor 602,9 ms e perfil novo 1.929,7 ms** (`startup.json`), atendendo as três metas de abertura. Não se chama processo novo de cache de disco frio.
 
-Memória continua fora do aceite: supervisor ocioso ~299 MiB e renderer ~290 MiB, medidos separadamente; a soma de RSS excede 300 MiB e inclui páginas compartilhadas contadas por processo. Não foi substituída por outra métrica para declarar aprovação. O supervisor usou 0,0022% da capacidade total da máquina na janela de 60 segundos; browser/clientes oficiais ficam fora desse repouso.
+Na repetição F5 com o scheduler sob demanda, input até frame teve p95 **32,55 ms** e p99 **40,80 ms**. Os arquivos de render contínuo permanecem identificados separadamente. A prova durou 301,3 segundos e não fez chamadas pagas a modelos.
+
+Memória continua fora do aceite: supervisor ocioso ~296,5 MiB e renderer ~290 MiB, medidos separadamente; a soma de RSS excede 300 MiB e inclui páginas compartilhadas contadas por processo. No F5 foram 238,6 MiB no supervisor e 317,6 MiB no processo de UI. Não foi substituída por outra métrica para declarar aprovação. O supervisor usou 0,0021% da capacidade total da máquina na janela de 60 segundos; browser/clientes oficiais ficam fora desse repouso.
 
 O perfil de heap reteve 29,9 MiB: aproximadamente 16 MiB de ArrayBuffer/WASM, 4,5 MiB de code blocks e 3 MiB de módulos; estado do renderer ~192 KB e textarea ~49 KB. O perfil de CPU concentrou amostras em operações nativas de edição/texto/desenho, não em reconstruir o histórico SQLite. O dump bruto de heap permanece local/ignorado; os números acima são a síntese, e o CPU profile está versionado.
 

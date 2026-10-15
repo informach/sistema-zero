@@ -3,6 +3,7 @@ import {
   type ExtraFile,
   isReservedProjectFileName,
   normalizeExtraFileName,
+  type ProjectAsset,
   type ProjectFiles,
   type ProjectTree,
 } from '#core'
@@ -21,6 +22,7 @@ export interface TerminalProjectSnapshot {
   /** Modo profissional (árvore real). Ausente = projeto classic. */
   kind?: 'pro'
   tree?: ProjectTree
+  assets?: ProjectAsset[]
 }
 
 /**

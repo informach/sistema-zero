@@ -6,7 +6,7 @@ Esta é uma entrega local 0.1 com capacidades funcionais verificadas e critério
 |---|---|---|
 | Plataforma | Windows x64, Bun 1.3.11, OpenTUI 0.3.0, React 19.2.6 | Linux/macOS não homologados; release rejeita plataforma diferente |
 | Coding | Leitura/busca/patch, hashes, checks, WIP, checkpoints, processos, ConPTY | Processo local tem permissões do usuário; não é sandbox de SO |
-| Contexto | Regras hierárquicas, skills, memória por escopo, índice invalidável, TS/JS | Sem embeddings obrigatórios ou LSP universal |
+| Contexto | Regras hierárquicas, skills, memória por escopo, índice invalidável, TS/JS | Sem LSP universal; workers têm entrada/prazo limitados, sem quota rígida de RAM por worker |
 | OpenRouter | SSE, tools progressivas, orçamento, ID de geração e reconciliação | Inferência paga real pendente de chave; nenhum fallback pago silencioso |
 | Claude/Codex | Login oficial, coding, retomada, cancelamento e MCP gerenciado | Versões fixadas; custo de assinatura não tem teto monetário API |
 | MCP | HTTP/stdio, schemas, OAuth PKCE, entrada/saída pelo dispatcher | Servidores OAuth externos precisam de homologação própria |

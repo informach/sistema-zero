@@ -1,17 +1,11 @@
+import { STUDIO_PRO_BUILD_LIMITS } from './pro-limits'
+import { STUDIO_PRO_TEMPLATE_IDS } from './pro-templates'
+
 /**
  * Contrato de recursos do compilador Pro remoto. Fica no core para que editor,
  * BFF e Worker não aceitem projetos de tamanhos diferentes.
  */
-export const STUDIO_PRO_BUILD_LIMITS = {
-  maxFiles: 80,
-  maxFileChars: 256_000,
-  maxTotalChars: 1_500_000,
-  maxRequestBytes: 2_000_000,
-  // A chamada navegador → BFF contém ids da aula e nós da árvore; o Worker
-  // recebe o payload canônico menor ({ executionId, templateId, files }).
-  maxBffRequestBytes: 2_032_768,
-  maxOutputChars: 2_500_000,
-} as const
+export { STUDIO_PRO_BUILD_LIMITS } from './pro-limits'
 
 export interface StudioProBuildLimits {
   maxFiles: number
@@ -28,7 +22,9 @@ export type StudioProBuildFileLimitError =
   | 'REQUEST_TOO_LARGE'
 
 const MAX_EXECUTION_ID_FOR_SIZE_CHECK = 'x'.repeat(96)
-const MAX_TEMPLATE_ID_FOR_SIZE_CHECK = 'three-ts'
+const MAX_TEMPLATE_ID_FOR_SIZE_CHECK = STUDIO_PRO_TEMPLATE_IDS.reduce((longest, id) =>
+  id.length > longest.length ? id : longest,
+)
 
 /** Bytes UTF-8 do exato envelope que o BFF envia ao Worker. */
 export function studioProBuildRequestByteLength(files: Readonly<Record<string, string>>): number {

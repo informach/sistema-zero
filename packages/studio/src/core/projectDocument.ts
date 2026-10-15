@@ -1,4 +1,4 @@
-import { STUDIO_PROJECT_FORMAT_VERSION } from '@sistemazero/core/studio'
+import { STUDIO_PROJECT_FORMAT_VERSION } from '@sistemazero/core/studio/project-format'
 import type { Project } from './project'
 
 /** Versão do documento, independente da revisão de gravação e da paleta. */

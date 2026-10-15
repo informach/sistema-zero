@@ -224,6 +224,51 @@ serviços. Nunca recopie as regras.
 - ⚠️ Pendente (lacuna anterior, da equipe de 26/09): a purga de conta não apaga a participação
   (`pensa_project_members`) nem as funções de um perfil apagado em plano de OUTRA família.
 
+## Pensa v2: renomear o jogo (15/10/2026)
+
+- `PATCH /members/pensa/v2/projects/:projectId` aceita `{name?, status?}` (pelo menos um; vazio
+  é 400). `name` → `PensaJourneyService.rename` → `rename` do repositório: só a dona (403
+  `PENSA_NOT_OWNER`), aparado e com os espaços juntados, 2..120 (`ValidationError`), arquivado
+  também. Sem migration.
+- **O nome da criança não é trocado pela IA:** o `publish` da proposta só grava o título como
+  nome enquanto `aiGivenName(nome, título da proposta anterior)` (o de fábrica
+  `DEFAULT_JOURNEY_NAME` = "Meu novo jogo", ou o título da proposta anterior). Renomeado, fica.
+- No core, `resume` de um jogo pausado E encerrado só tira a pausa (antes reabria a versão pronta).
+- Testes: `tests/db/pensa-journey.repository.test.ts` ("renomear…", Postgres real) e
+  `tests/integration/pensa-journey-routes.test.ts`.
+
+## Pensa v2: pergunta com respostas e nome provisório (15/10/2026)
+
+- O resultado `question` do worker aceita `choices` (`{about, options[2..4]}` com o assunto de
+  `PENSA_QUESTION_TOPICS` do core) e `workingTitle`, DECLARADOS no `PensaStepResultDto` (o
+  `normalize` do Elysia os apagaria). A mensagem do Zappy guarda `choices`.
+- `questionsAsked` (jornada): +1 a cada pergunta do PLANEJAMENTO (a da ajuda não conta), zera na
+  proposta. É o que alimenta o teto `pensaQuestionsLeft` do member-shell.
+- `workingTitle`: com a pergunta, o jogo ganha o nome provisório enquanto o nome ainda é do sistema
+  (`aiGivenName` ganhou o 3º argumento); a proposta o troca pelo título dela e zera o campo.
+  Renomeado pela criança, nada troca. Sem migration (tudo no JSON da jornada).
+- Testes: `tests/db/pensa-journey.repository.test.ts` (os dois "pergunta com escolhas…" e "o nome
+  provisório…") e `tests/integration/pensa-journey-routes.test.ts` (as escolhas atravessam a rota).
+- **Onde as crianças param** (`GET /admin/pensa/funnel?days=1..365`, padrão 30, `requireAdmin`):
+  `GetPensaFunnelService` + `DrizzlePensaFunnelRepository`, UMA consulta sobre a primeira versão
+  (`pensa_cycles.number = 1`) dos projetos criados no período: contaram a ideia, receberam
+  pergunta, como responderam (a mensagem SEGUINTE à pergunta, se for da criança, comparada no banco
+  com os rótulos das respostas e com `PENSA_ANY_ANSWER`, que é o `ANY_ANSWER` do `JourneyApp`; o
+  texto nunca sai do banco), proposta, começo escolhido, primeira missão, teste e versão pronta.
+  ⚠️ Mudou a frase do "Tanto faz" na tela? Mude `PENSA_ANY_ANSWER` junto. Teste:
+  `tests/db/pensa-funnel.repository.test.ts`.
+- **Full review (15/10/2026):** as etapas contam "chegou aqui OU ALÉM" (a CTE `s` dá a etapa mais
+  adiantada de cada jogo): testar não exige missão concluída e guardar a versão não exige nenhuma
+  das duas, e contadas soltas uma etapa podia ter mais jogos que a anterior ("quantos pararam"
+  saía trocado). A janela é `[since, agora]` (o leitor recebe o `until`), o "Tanto faz" não conta
+  em "tocou numa resposta" mesmo repetido num rótulo, e jogos APAGADOS somem do funil (limite
+  conhecido: a cascata leva a jornada junto).
+- **O nome provisório só vale antes da primeira proposta** (`!state.proposal`): a pergunta do
+  "Quero mudar uma coisa" (ou a da versão 2, que copia a proposta anterior) renomeava o jogo para
+  algo que o plano não era. E escolher o começo (`accept`) e adaptar o caminho (`revise`) zeram
+  `questionsAsked` e `workingTitle` (core `applyPensaCommand`): antes só uma proposta NOVA zerava, e
+  o "Adaptar meu caminho" depois de aceitar a anterior nascia sem pergunta.
+
 ## Oficinas ao vivo (14/10/2026)
 
 `application/live` mantém oficinas reutilizáveis, snapshots das aulas por turma, matrículas

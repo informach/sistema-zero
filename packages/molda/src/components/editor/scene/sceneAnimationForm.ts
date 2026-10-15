@@ -5,7 +5,10 @@ import type { SceneAnimationClip, SceneAnimationTrack } from '../../../scene/ani
 import type { SceneAnimationKeyInput } from '../../../scene/animationCommands'
 import type { ModelSceneNode } from '../../../scene/document'
 import { type Quaternion, quaternionFromEulerXYZ } from '../../../scene/matrix'
-import { sampleSceneAnimationTrack } from '../../../scene/sampleAnimation'
+import {
+  sampleSceneAnimationTrack,
+  sampleSceneAnimationTransform,
+} from '../../../scene/sampleAnimation'
 import { number, requireScene } from '../../../scene/validation'
 
 export function sceneAnimationFormValue(
@@ -24,7 +27,15 @@ export function sceneAnimationFormValue(
         : channel === 'scale'
           ? ([1, 1, 1] as Vec3)
           : ([0, 0, 0] as Vec3)
-  const value = exact?.value ?? (track ? sampleSceneAnimationTrack(track, time) : fallback)
+  const value =
+    channel === 'translation'
+      ? sampleSceneAnimationTransform(
+          node,
+          clip.space,
+          clip.tracks.filter((entry) => entry.nodeId === node.id),
+          time,
+        ).translation
+      : (exact?.value ?? (track ? sampleSceneAnimationTrack(track, time) : fallback))
   const angles =
     channel === 'rotation'
       ? new Euler().setFromQuaternion(new ThreeQuaternion().fromArray(value).normalize(), 'XYZ')

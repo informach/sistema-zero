@@ -9,14 +9,10 @@ import { useUIStore } from '../../state/uiStore'
 // bun:test NÃO isola module mocks por arquivo — captura os exports reais ANTES
 // de mockar e restaura no afterAll (ver BottomPanel.test.tsx).
 const realTerminal = { ...(await import('../terminal/Terminal')) }
-const realAIPanel = { ...(await import('../ai/AIPanel')) }
 const realConsolePanel = { ...(await import('../console/ConsolePanel')) }
 
 mock.module('../terminal/Terminal', () => ({
   Terminal: (): JSX.Element => <div data-testid="terminal-probe">terminal</div>,
-}))
-mock.module('../ai/AIPanel', () => ({
-  AIPanel: (): JSX.Element => <div data-testid="ai-probe">ia</div>,
 }))
 mock.module('../console/ConsolePanel', () => ({
   ConsolePanel: (): JSX.Element => <div data-testid="console-probe">console</div>,
@@ -24,7 +20,6 @@ mock.module('../console/ConsolePanel', () => ({
 
 afterAll(() => {
   mock.module('../terminal/Terminal', () => realTerminal)
-  mock.module('../ai/AIPanel', () => realAIPanel)
   mock.module('../console/ConsolePanel', () => realConsolePanel)
 })
 
@@ -71,8 +66,8 @@ describe('NarrowPanels', () => {
     )
     expect(getByRole('tablist')).toBeTruthy()
     const tabs = getAllByRole('tab')
-    // Código + Pré-visualização + Console + Terminal + IA
-    expect(tabs.length).toBe(5)
+    // Código + Pré-visualização + Console + Terminal (Zappy has its own panel)
+    expect(tabs.length).toBe(4)
     // O editor é a aba ativa por padrão.
     expect(tabs[0]?.getAttribute('aria-selected')).toBe('true')
     expect(tabs[0]?.textContent).toContain('Código')
@@ -106,10 +101,10 @@ describe('NarrowPanels', () => {
 
   it('uma escolha manual pode esconder o Console no modo Código', () => {
     const { getAllByRole } = render(<NarrowPanels editorPanes={oneEditor} preview={<div>p</div>} />)
-    expect(getAllByRole('tab').length).toBe(5)
+    expect(getAllByRole('tab').length).toBe(4)
     act(() => useUIStore.setState({ consoleVisibilityOverride: false }))
     const labels = getAllByRole('tab').map((t) => t.textContent)
-    expect(labels.length).toBe(4)
+    expect(labels.length).toBe(3)
     expect(labels.some((l) => l?.includes('Console'))).toBe(false)
   })
 
@@ -185,5 +180,25 @@ describe('NarrowPanels', () => {
   it('sem filesDrawer, não há botão "Arquivos"', () => {
     const { queryByRole } = render(<NarrowPanels editorPanes={oneEditor} />)
     expect(queryByRole('button', { name: 'Arquivos' })).toBeNull()
+  })
+
+  it('an explicit preview request focuses the existing panel without remounting the editor or preview', () => {
+    const preview = <div data-testid="requested-preview">preview</div>
+    const view = render(<NarrowPanels editorPanes={oneEditor} preview={preview} />)
+    const editor = view.getByTestId('ed-code'),
+      game = view.getByTestId('requested-preview')
+    view.rerender(<NarrowPanels editorPanes={oneEditor} preview={preview} previewRequest={1} />)
+    expect(view.getByRole('tab', { name: 'Pré-visualização' }).getAttribute('aria-selected')).toBe(
+      'true',
+    )
+    expect(view.getByTestId('ed-code')).toBe(editor)
+    expect(view.getByTestId('requested-preview')).toBe(game)
+    fireEvent.click(view.getByRole('tab', { name: 'Código' }))
+    view.rerender(<NarrowPanels editorPanes={oneEditor} preview={preview} previewRequest={1} />)
+    expect(view.getByRole('tab', { name: 'Código' }).getAttribute('aria-selected')).toBe('true')
+    view.rerender(<NarrowPanels editorPanes={oneEditor} preview={preview} previewRequest={2} />)
+    expect(view.getByRole('tab', { name: 'Pré-visualização' }).getAttribute('aria-selected')).toBe(
+      'true',
+    )
   })
 })

@@ -18,6 +18,15 @@
 @source "../components";
 @source not "../components/**/*.test.{ts,tsx}";
 
+[data-molda-theme] {
+  --mld-grid-ink: #a8b7cc;
+  --mld-grid-opacity: 0.5;
+}
+[data-molda-theme="dark"] {
+  --mld-grid-ink: #53647e;
+  --mld-grid-opacity: 0.36;
+}
+
 @theme {
   /* SUPERFÍCIES: o Molda é uma SEÇÃO da comunidade kids, não um app à parte —
      fundo, painel, borda e texto vêm dos primitivos do host (o fundo é o mesmo
@@ -51,11 +60,93 @@
 
 /* Approved workshop regions; sidebars scroll independently of the creation. */
 @layer components {
+  [data-molda-theme] .mld-color-picker {
+    display: grid;
+    gap: 10px;
+  }
+  [data-molda-theme] .mld-color-sv {
+    position: relative;
+    height: 150px;
+    border-radius: 12px;
+    touch-action: none;
+    cursor: crosshair;
+    background-image:
+      linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, transparent);
+  }
+  [data-molda-theme] .mld-color-sv-marker {
+    position: absolute;
+    width: 21px;
+    height: 21px;
+    border: 3px solid #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px #0006;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+  [data-molda-theme] .mld-color-hue {
+    appearance: none;
+    width: 100%;
+    height: 18px;
+    border-radius: 12px;
+    background: linear-gradient(to right, red, #ff0, #0f0, #0ff, #00f, #f0f, red);
+    cursor: pointer;
+  }
+  [data-molda-theme] .mld-color-hue::-webkit-slider-thumb {
+    appearance: none;
+    width: 23px;
+    height: 23px;
+    border: 3px solid white;
+    background: transparent;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px #0006;
+  }
+  [data-molda-theme] .mld-color-hue::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border: 3px solid white;
+    background: transparent;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px #0006;
+  }
+  [data-molda-theme] .mld-paint-swatches {
+    display: grid;
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    gap: 5px;
+  }
+  [data-molda-theme] .mld-paint-swatches > .mld-paint-swatch {
+    width: 100%;
+    min-width: 0;
+    min-height: 30px;
+    height: 32px;
+  }
+  @media (any-pointer: coarse) {
+    [data-molda-theme] .mld-paint-swatches {
+      grid-template-columns: repeat(auto-fit, minmax(44px, 1fr));
+    }
+    [data-molda-theme] .mld-paint-swatches > .mld-paint-swatch {
+      min-height: 44px;
+      height: auto;
+    }
+  }
+  [data-molda-theme] .mld-tile[data-toggle] > .mld-tile-label {
+    font-size: 11px;
+    overflow-wrap: normal;
+  }
+  [data-molda-theme] .mld-paint-scope :where(button) {
+    min-height: 36px;
+    white-space: nowrap;
+  }
+  @media (max-width: 599px) {
+    [data-molda-theme] .mld-paint-scope > :where(span) {
+      display: none;
+    }
+    [data-molda-theme] .mld-paint-scope :where(button) {
+      padding-inline: 6px;
+      font-size: 10px;
+    }
+  }
   .mld-timeline {
     height: var(--mld-timeline-height, 200px);
-  }
-  .mld-timeline[data-roomy="true"] {
-    height: min(calc(var(--mld-timeline-height, 200px) + 96px), 42%);
   }
   .mld-inspector-overview {
     max-height: 50%;
@@ -69,6 +160,10 @@
     .mld-inspector-sections[data-activity="paint"] .mld-inspector-pieces {
       flex: 1 1 auto;
       max-height: none;
+    }
+    .mld-inspector-sections[data-activity="paint"] .mld-inspector-overview {
+      flex: 0 1 auto;
+      max-height: 66%;
     }
     .mld-inspector-sections[data-activity="paint"] .mld-inspector-properties {
       flex: 0 1 auto;
@@ -92,7 +187,7 @@
   [data-molda-theme].mld-workshop {
     --mld-rail-width: 104px;
     --mld-inspector-width: 320px;
-    --mld-timeline-height: 200px;
+    --mld-timeline-height: 306px;
     min-width: 0;
   }
   .mld-workshop-header {
@@ -100,8 +195,8 @@
     grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     align-items: center;
     gap: 8px;
-    min-height: 64px;
-    padding: 8px 12px;
+    min-height: 60px;
+    padding: 4px 12px;
     border-bottom: 1px solid var(--color-mld-border);
     flex-shrink: 0;
     z-index: 35;
@@ -326,12 +421,158 @@
     position: relative;
     background: var(--mld-stage-bg);
   }
+  .mld-workspace-areas {
+    display: flex;
+    flex: none;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 4px 12px;
+    border-bottom: 1px solid var(--color-mld-border);
+    background: var(--color-mld-surface);
+  }
+  .mld-stage-workbench {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+  }
+  .mld-stage-viewport {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    container: molda-viewport / size;
+  }
+  .mld-workspace-panel {
+    flex: 0 0 45%;
+    min-width: 280px;
+    max-width: 560px;
+    padding: 16px;
+    overflow: auto;
+    border-left: 1px solid var(--color-mld-border);
+    background: var(--color-mld-surface);
+  }
+  .mld-curves {
+    min-height: 0;
+    padding: 8px 16px 12px;
+    overflow: auto;
+  }
+  .mld-curves input[type="number"],
+  .mld-curves select {
+    display: block;
+    min-height: 36px;
+    max-width: 140px;
+    padding: 4px 8px;
+    border: 1px solid var(--color-mld-border);
+    border-radius: 8px;
+    background: var(--color-mld-surface);
+    color: var(--color-mld-text);
+  }
+  .mld-curve-plot {
+    position: relative;
+    height: 180px;
+    margin: 8px 12px;
+    color: var(--mld-axis-x);
+  }
+  .mld-curves[data-axis="y"] .mld-curve-plot {
+    color: var(--mld-axis-y);
+  }
+  .mld-curves[data-axis="z"] .mld-curve-plot {
+    color: var(--mld-axis-z);
+  }
+  .mld-curve-plot svg {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+  .mld-curve-grid {
+    fill: none;
+    stroke: var(--color-mld-border);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+  .mld-curve-time {
+    fill: none;
+    stroke: var(--color-mld-accent);
+    stroke-width: 2;
+    vector-effect: non-scaling-stroke;
+  }
+  .mld-curve-high,
+  .mld-curve-low {
+    position: absolute;
+    left: 4px;
+    font-size: 10px;
+    color: var(--color-mld-muted);
+    pointer-events: none;
+  }
+  .mld-curve-high {
+    top: 2px;
+  }
+  .mld-curve-low {
+    bottom: 2px;
+  }
+  .mld-curve-handle {
+    position: absolute;
+    width: 36px;
+    height: 36px;
+    transform: translate(-50%, -50%);
+    cursor: move;
+    touch-action: none;
+  }
+  .mld-curve-handle::after {
+    content: "";
+    position: absolute;
+    inset: 12px;
+    border: 2px solid var(--color-mld-surface);
+    background: currentColor;
+    transform: rotate(45deg);
+    box-shadow: 0 0 0 1px currentColor;
+  }
+  .mld-curve-handle:focus-visible {
+    outline: 2px solid var(--color-mld-accent);
+    border-radius: 8px;
+  }
+  @media (pointer: coarse) {
+    .mld-curve-handle {
+      width: 44px;
+      height: 44px;
+    }
+    .mld-curve-handle::after {
+      inset: 16px;
+    }
+    .mld-curves input[type="number"],
+    .mld-curves select {
+      min-height: 44px;
+    }
+  }
+  @media (max-width: 1199px) {
+    .mld-stage-workbench[data-specialized="true"] {
+      flex-direction: column;
+      overflow: auto;
+    }
+    .mld-stage-workbench[data-specialized="true"] .mld-stage-viewport {
+      flex: 0 0 300px;
+    }
+    .mld-workspace-panel {
+      flex: none;
+      min-width: 0;
+      max-width: none;
+      border-top: 1px solid var(--color-mld-border);
+      border-left: 0;
+    }
+  }
   .mld-stage-toolbar {
+    position: absolute;
+    inset: 0 0 auto;
+    pointer-events: none;
     display: flex;
     align-items: center;
     gap: 8px;
     min-width: 0;
-    height: 56px;
+    min-height: 56px;
+    flex-wrap: wrap;
     flex-shrink: 0;
     padding: 8px 12px 0;
     z-index: 25;
@@ -347,6 +588,13 @@
     border-radius: 16px;
     background: var(--color-mld-surface);
     box-shadow: var(--mld-float-shadow);
+  }
+  .mld-stage-toolbar > .mld-float {
+    flex-shrink: 0;
+    max-width: 100%;
+  }
+  .mld-stage-toolbar > * {
+    pointer-events: auto;
   }
   .mld-float:empty {
     display: none;
@@ -370,31 +618,94 @@
     color: var(--color-mld-accent);
   }
   .mld-stage-context {
+    position: absolute;
+    inset: auto 0 68px;
+    z-index: 24;
+    pointer-events: none;
     display: flex;
     min-width: 0;
     align-items: center;
     justify-content: center;
-    height: 56px;
+    min-height: 50px;
     flex-shrink: 0;
-    padding: 0 12px 8px;
-    overflow: auto;
+    padding: 0 12px;
   }
   /* A DICA do momento: a pílula escura do pé do palco (a âncora navy da casa), com a lâmpada
      amarela. Os botões e caixas que moram nela herdam o tema escuro por `data-molda-theme`. */
   .mld-stage-context .mld-stage-card {
+    pointer-events: auto;
+    max-width: 100%;
     min-height: 40px;
     padding: 4px 16px;
-    border-radius: 9999px;
+    border-radius: 14px;
     box-shadow: var(--mld-float-shadow);
   }
   .mld-stage-context p {
     font-size: 13px;
+  }
+  .mld-stage-card[data-dismissible="true"] {
+    flex-wrap: nowrap;
+  }
+  .mld-stage-card[data-dismissible="true"] > p {
+    min-width: 0;
+    flex: 1;
+  }
+  @container molda-viewport (height < 300px) {
+    .mld-stage-context:not([data-essential="true"]) {
+      display: none;
+    }
+    .mld-stage-context[data-essential="true"] {
+      position: static;
+    }
+  }
+  .mld-stage-viewport:is([data-mode="animation"], [data-mode="paint"]) .mld-stage-context,
+  .mld-stage-viewport[data-mode="model"] .mld-stage-context[data-essential="false"] {
+    bottom: 16px;
+    left: 316px;
+    right: 76px;
+    padding-inline: 0;
+  }
+  .mld-stage-viewport:is([data-mode="animation"], [data-mode="paint"]) .mld-stage-card {
+    max-width: 500px;
+  }
+  @container molda-viewport (width < 900px) {
+    /* Narrow stages reserve a row for guidance, leaving camera/image controls on the canvas. */
+    .mld-stage-context {
+      position: static;
+      padding: 6px 8px;
+      max-height: 120px;
+      overflow: auto;
+    }
+  }
+  @container molda-viewport (width < 900px) and (height < 360px) {
+    .mld-stage-context:not([data-essential="true"]) {
+      display: none;
+    }
   }
   .mld-hint-bulb {
     flex: none;
     width: 16px;
     height: 16px;
     color: var(--sz-tool-new, #ffce3a);
+  }
+  .mld-dismiss-hint {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    color: var(--color-mld-muted);
+  }
+  .mld-dismiss-hint:focus-visible {
+    outline: 2px solid var(--color-mld-accent);
+    outline-offset: 2px;
+  }
+  @media (pointer: coarse) {
+    .mld-dismiss-hint {
+      width: 44px;
+      height: 44px;
+    }
   }
   .mld-placement-notice {
     position: absolute;
@@ -700,6 +1011,11 @@
     }
   }
   @media (max-width: 1100px) {
+    [data-molda-theme] .mld-inspector-content > .mld-inspector-overview,
+    [data-molda-theme] .mld-inspector-content > .mld-inspector-properties {
+      max-height: none;
+      overflow-y: visible;
+    }
     .mld-inspector-sections[data-activity="animation"] .mld-inspector-overview {
       flex: 1 1 auto;
       min-height: 0;
@@ -1038,6 +1354,15 @@
   --mld-axis-x: oklch(0.56 0.19 25);
   --mld-axis-y: oklch(0.54 0.14 152);
   --mld-axis-z: oklch(0.53 0.19 262);
+  --mld-pivot: #8b3fd9;
+  --mld-pivot-text: #8b3fd9;
+  --mld-pivot-bg: #f2eafc;
+  --mld-cut-ink: #e8336f;
+  --mld-cut-text: #c31952;
+  --mld-cut-bg: #fde6ee;
+  --mld-channel-move: #1b5cf3;
+  --mld-channel-rotate: #d48116;
+  --mld-channel-size: #00895b;
   /* O palco: o céu diluído com um clarão no alto, do topo das ferramentas ao pé da dica. */
   --mld-stage-bg: radial-gradient(
     120% 90% at 50% 18%,
@@ -1046,6 +1371,13 @@
   );
 }
 [data-molda-theme="dark"] {
+  --mld-pivot-bg: #2f2044;
+  --mld-pivot-text: #c99af7;
+  --mld-cut-bg: #3b1b2c;
+  --mld-cut-text: #ff85ad;
+  --mld-channel-move: #6e9bff;
+  --mld-channel-rotate: #f0a43c;
+  --mld-channel-size: #49d98f;
   --mld-float-shadow: 0 1px 2px oklch(0 0 0 / 0.4), 0 6px 16px -8px oklch(0 0 0 / 0.7);
   --mld-stage-bg: radial-gradient(
     120% 90% at 50% 18%,
@@ -1285,6 +1617,7 @@
     border: 1px solid var(--sz-tool-card-edge, transparent);
     border-radius: 1rem;
     background: var(--color-mld-surface);
+    color: var(--color-mld-text);
     box-shadow: var(--mld-stage-shadow);
   }
 
@@ -1417,4 +1750,795 @@
    do `.mld-workshop-stage` (sem camada: vence as utilitárias `bg-*` dos dois). */
 [data-molda-theme] .mld-workshop-stage .mld-stage-surface {
   background: transparent;
+}
+
+@layer components {
+  .mld-piece-coordinates {
+    display: grid;
+    gap: 10px;
+  }
+  .mld-piece-coordinates legend {
+    margin-bottom: 5px;
+    font-size: 11px;
+    font-weight: 650;
+    color: var(--color-mld-muted);
+  }
+  .mld-axis-fields {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .mld-axis-fields label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    min-height: 38px;
+    padding: 5px 6px;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    background: var(--color-mld-bg);
+  }
+  .mld-axis-fields label:focus-within {
+    border-color: var(--color-mld-accent);
+    outline: 2px solid color-mix(in srgb, var(--color-mld-accent) 20%, transparent);
+  }
+  .mld-axis-fields label > span {
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 750;
+    color: white;
+  }
+  .mld-axis-fields [data-axis="0"] > span {
+    background: var(--mld-axis-x, #e5484d);
+  }
+  .mld-axis-fields [data-axis="1"] > span {
+    background: var(--mld-axis-y, #30a46c);
+  }
+  .mld-axis-fields [data-axis="2"] > span {
+    background: var(--mld-axis-z, #3e63dd);
+  }
+  .mld-axis-fields input {
+    width: 100%;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--color-mld-text);
+    font-size: 13px;
+    font-weight: 650;
+    font-variant-numeric: tabular-nums;
+    appearance: textfield;
+  }
+  .mld-axis-fields input::-webkit-inner-spin-button,
+  .mld-axis-fields input::-webkit-outer-spin-button {
+    appearance: none;
+    margin: 0;
+  }
+  .mld-axis-fields small {
+    color: var(--color-mld-muted);
+  }
+  .mld-selection-modes {
+    gap: 4px;
+  }
+  .mld-selection-modes button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 36px;
+    padding: 6px 10px;
+    border-radius: 9px;
+    font-size: 12px;
+    font-weight: 650;
+    color: var(--color-mld-muted);
+  }
+  .mld-selection-modes button[aria-pressed="true"] {
+    color: var(--color-mld-accent-fg);
+    background: var(--color-mld-text);
+  }
+  .mld-selection-modes button svg {
+    width: 15px;
+    height: 15px;
+  }
+  .mld-selection-modes button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .mld-selection-modes button:focus-visible {
+    outline: 2px solid var(--color-mld-accent);
+    outline-offset: 2px;
+  }
+  .mld-cut-bar {
+    position: absolute;
+    z-index: 25;
+    left: 50%;
+    bottom: 68px;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: max-content;
+    max-width: calc(100% - 32px);
+    padding: 10px 12px;
+    border-radius: 14px;
+    color: var(--color-mld-text);
+    background: var(--color-mld-surface);
+    box-shadow: var(--mld-float-shadow);
+    font-size: 13px;
+  }
+  .mld-cut-status {
+    min-width: 120px;
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .mld-cut-bar label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+  }
+  .mld-cut-bar input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--mld-cut-ink, #e84297);
+  }
+  .mld-cut-bar button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 34px;
+    padding: 5px 10px;
+    border-radius: 8px;
+    background: color-mix(in srgb, currentColor 13%, transparent);
+    font-weight: 650;
+    white-space: nowrap;
+  }
+  .mld-cut-bar button[data-confirm] {
+    background: var(--mld-cut-ink, #e84297);
+    color: white;
+  }
+  .mld-cut-bar button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .mld-cut-bar button:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
+  }
+  @media (max-width: 1100px) {
+    .mld-cut-bar {
+      flex-wrap: wrap;
+      width: calc(100% - 32px);
+    }
+    .mld-cut-status {
+      flex: 1 1 100%;
+    }
+  }
+  @media (pointer: coarse) {
+    .mld-axis-fields label,
+    .mld-selection-modes button {
+      min-height: 44px;
+    }
+  }
+}
+
+/* Shared pixel geometry for the ruler, per-channel keys and playhead. */
+[data-molda-theme] .mld-cut-canvas {
+  cursor: none;
+}
+[data-molda-theme] .mld-axis-handles {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 2;
+}
+[data-molda-theme] .mld-axis-handles [role="button"] {
+  cursor: grab;
+}
+[data-molda-theme] .mld-axis-hit-line {
+  stroke-width: 18;
+}
+[data-molda-theme] .mld-axis-hit-tip {
+  pointer-events: none;
+}
+@media (pointer: coarse) {
+  [data-molda-theme] .mld-axis-hit-line {
+    stroke-width: 44;
+  }
+  [data-molda-theme] .mld-axis-hit-tip {
+    pointer-events: all;
+  }
+}
+[data-molda-theme] .mld-axis-handles [role="button"]:active {
+  cursor: grabbing;
+}
+[data-molda-theme] .mld-axis-handles [role="button"]:focus-visible {
+  outline: 2px solid var(--color-mld-accent);
+}
+[data-molda-theme] .mld-piece-coordinates [data-pivot-active="true"] {
+  padding: 6px;
+  margin-inline: -6px;
+  border-radius: 10px;
+  background: var(--mld-pivot-bg, #f2eafc);
+  color: var(--mld-pivot-text, #8b3fd9);
+}
+[data-molda-theme] .mld-piece-coordinates [data-pivot-active="true"] legend {
+  color: var(--mld-pivot-text);
+}
+[data-molda-theme] .mld-piece-coordinates [data-pivot-active="true"] .mld-axis-fields > label {
+  border: 1.5px solid var(--mld-pivot);
+  background: var(--mld-pivot-bg);
+}
+[data-molda-theme] .mld-cut-precision {
+  position: relative;
+  font-size: 0.75rem;
+}
+[data-molda-theme] .mld-cut-point-count {
+  position: absolute;
+  pointer-events: none;
+  z-index: 15;
+  width: 138px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--mld-cut-bg);
+  color: var(--mld-cut-text);
+  border: 1px solid color-mix(in srgb, var(--mld-cut-ink) 25%, transparent);
+  box-shadow: var(--mld-float-shadow);
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 26px;
+  text-align: center;
+}
+[data-molda-theme] .mld-cut-cursor {
+  position: absolute;
+  width: 34px;
+  height: 34px;
+  pointer-events: none;
+  z-index: 16;
+  color: white;
+  background: var(--mld-cut-ink);
+  border-radius: 8px;
+  padding: 7px;
+  filter: drop-shadow(0 3px 4px #5a0b2a44);
+}
+[data-molda-theme] .mld-cut-bar input.mld-cut-switch {
+  appearance: none;
+  position: relative;
+  width: 34px;
+  height: 20px;
+  border-radius: 999px;
+  background: #737887;
+}
+[data-molda-theme] .mld-cut-bar input.mld-cut-switch:checked {
+  background: var(--mld-cut-ink);
+}
+[data-molda-theme] .mld-cut-switch::after {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: white;
+}
+[data-molda-theme] .mld-cut-switch:checked::after {
+  transform: translateX(14px);
+}
+[data-molda-theme] .mld-cut-switch:focus-visible {
+  outline: 2px solid white;
+  outline-offset: 3px;
+}
+[data-molda-theme] .mld-pivot-ghost-label {
+  position: absolute;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 155px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--mld-pivot-bg);
+  color: var(--mld-pivot-text);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 28px;
+  text-align: center;
+  pointer-events: none;
+  z-index: 3;
+}
+[data-molda-theme] .mld-pivot-ghost-label:not([hidden]) {
+  display: flex;
+}
+[data-molda-theme] .mld-cut-precision summary {
+  cursor: pointer;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  font-weight: 700;
+}
+[data-molda-theme] .mld-cut-precision-panel {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  width: min(360px, calc(100vw - 32px));
+  max-height: min(480px, 65vh);
+  overflow: auto;
+  padding: 16px;
+  border: 1px solid var(--color-mld-border);
+  border-radius: 12px;
+  background: var(--color-mld-surface);
+  box-shadow: var(--mld-float-shadow);
+  color: var(--color-mld-text);
+  z-index: 40;
+}
+[data-molda-theme] .mld-cut-precision-panel > label {
+  display: grid;
+  grid-template-columns: 1fr 80px;
+  margin: 8px 0;
+}
+[data-molda-theme] .mld-cut-precision-panel input[type="number"] {
+  width: 100%;
+  height: 36px;
+  min-width: 0;
+  border: 1px solid var(--color-mld-border);
+  border-radius: 6px;
+  background: var(--color-mld-bg);
+  color: var(--color-mld-text);
+  padding: 4px;
+}
+[data-molda-theme] .mld-cut-precision-panel fieldset {
+  min-width: 0;
+  margin: 10px 0;
+}
+[data-molda-theme] .mld-cut-precision-panel p {
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+[data-molda-theme] .mld-pivot-presets button[aria-pressed="true"] {
+  background: var(--mld-pivot);
+  border-color: var(--mld-pivot);
+  color: white;
+}
+[data-molda-theme] .mld-pivot-presets button {
+  min-height: 30px;
+  padding: 5px 10px;
+  font-size: 13px;
+}
+@media (any-pointer: coarse) {
+  [data-molda-theme] .mld-pivot-presets button {
+    min-height: 44px;
+  }
+}
+[data-molda-theme] .mld-timeline {
+  --mld-timeline-label-width: 180px;
+  overflow: visible;
+}
+[data-molda-theme] .mld-auto-key {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 6px 10px;
+  border: 1px solid var(--color-mld-border);
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+[data-molda-theme] .mld-auto-key:focus-within {
+  outline: 2px solid var(--color-mld-accent);
+  outline-offset: 2px;
+}
+[data-molda-theme] .mld-previous-pose {
+  min-height: 36px;
+  padding: 8px 12px;
+  border: 0;
+  font-size: 14px;
+}
+@media (any-pointer: coarse) {
+  [data-molda-theme] .mld-previous-pose {
+    min-height: 44px;
+  }
+}
+[data-molda-theme] .mld-record-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--color-mld-danger);
+}
+[data-molda-theme] .mld-auto-switch {
+  position: relative;
+  width: 34px;
+  height: 20px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-mld-muted) 30%, var(--color-mld-surface));
+}
+[data-molda-theme] .mld-auto-switch::after {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px #0003;
+}
+[data-molda-theme] .mld-auto-key[data-enabled="true"] .mld-auto-switch {
+  background: var(--color-mld-accent);
+}
+[data-molda-theme] .mld-auto-key[data-enabled="true"] .mld-auto-switch::after {
+  left: 16px;
+}
+[data-molda-theme] .mld-arrival-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 6px;
+}
+[data-molda-theme] .mld-arrival-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 64px;
+  padding: 5px 2px;
+  border: 1.5px solid transparent;
+  border-radius: 12px;
+  background: var(--color-mld-bg);
+  color: var(--color-mld-text);
+  font-size: 12px;
+  font-weight: 800;
+}
+[data-molda-theme] .mld-arrival-option[aria-pressed="true"] {
+  border-color: var(--color-mld-accent);
+  background: color-mix(in srgb, var(--color-mld-accent) 10%, var(--color-mld-surface));
+  color: var(--color-mld-accent);
+}
+[data-molda-theme] .mld-arrival-option:focus-visible {
+  outline: 2px solid var(--color-mld-accent);
+  outline-offset: 2px;
+}
+[data-molda-theme] .mld-pose-channel {
+  display: flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 4px;
+  padding: 3px 6px;
+  border-radius: 6px;
+  background: color-mix(in srgb, currentColor 10%, var(--color-mld-surface));
+  color: var(--mld-channel-color, var(--color-mld-accent));
+  font-size: 11px;
+  font-weight: 800;
+}
+@media (max-width: 599px) {
+  [data-molda-theme] .mld-timeline {
+    --mld-timeline-label-width: 104px;
+  }
+}
+[data-molda-theme] .mld-timeline-transport {
+  height: 60px;
+  min-height: 60px;
+}
+[data-molda-theme] .mld-time-seconds {
+  width: 4ch;
+  min-height: 36px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: 20px;
+  font-weight: 900;
+  text-align: right;
+  appearance: textfield;
+}
+[data-molda-theme] .mld-time-readout {
+  position: relative;
+  display: inline-grid;
+  font-size: 20px;
+  font-weight: 900;
+}
+[data-molda-theme] .mld-time-readout > span {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+[data-molda-theme] .mld-time-readout:focus-within > span {
+  display: none;
+}
+[data-molda-theme] .mld-time-seconds:not(:focus) {
+  color: transparent;
+}
+[data-molda-theme] .mld-time-seconds:focus {
+  width: 16ch;
+}
+[data-molda-theme] .mld-time-seconds::-webkit-inner-spin-button,
+[data-molda-theme] .mld-time-seconds::-webkit-outer-spin-button {
+  appearance: none;
+  margin: 0;
+}
+[data-molda-theme] .mld-duration-label {
+  position: absolute;
+  left: 12px;
+  top: 63px;
+  max-width: calc(var(--mld-timeline-label-width) - 20px);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 7px;
+  padding: 0 6px;
+  background: var(--color-mld-bg);
+  color: var(--color-mld-muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+[data-molda-theme] .mld-duration-select {
+  min-width: 0;
+  height: 24px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+[data-molda-theme] .mld-timeline-resizer {
+  border: 0;
+  margin: 0;
+  position: absolute;
+  z-index: 12;
+  top: -4px;
+  left: 0;
+  right: 0;
+  height: 8px;
+  cursor: row-resize;
+  touch-action: none;
+}
+[data-molda-theme] .mld-timeline-resizer::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: calc(50% - 18px);
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: transparent;
+}
+[data-molda-theme] .mld-timeline-resizer:hover::after,
+[data-molda-theme] .mld-timeline-resizer:focus-visible::after {
+  background: var(--color-mld-muted);
+}
+[data-molda-theme] .mld-timeline-row {
+  display: grid;
+  grid-template-columns: var(--mld-timeline-label-width) minmax(0, 1fr);
+  height: 36px;
+  padding-right: 24px;
+  border-bottom: 1px solid var(--color-mld-border);
+}
+[data-molda-theme] .mld-key-strip {
+  position: relative;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  min-height: 0;
+  height: 36px;
+  padding: 0;
+  color: var(--color-mld-muted);
+  touch-action: none;
+}
+[data-molda-theme] .mld-timeline-leading {
+  width: 28px;
+  height: 36px;
+}
+@media (any-pointer: coarse) {
+  [data-molda-theme] .mld-timeline-row,
+  [data-molda-theme] .mld-key-strip,
+  [data-molda-theme] .mld-timeline-leading {
+    height: 44px;
+  }
+  [data-molda-theme] .mld-timeline-leading {
+    width: 44px;
+  }
+}
+[data-molda-theme] [data-channel="translation"] {
+  --mld-channel-color: var(--mld-channel-move);
+}
+[data-molda-theme] [data-channel="rotation"] {
+  --mld-channel-color: var(--mld-channel-rotate);
+}
+[data-molda-theme] [data-channel="scale"] {
+  --mld-channel-color: var(--mld-channel-size);
+}
+[data-molda-theme]
+  [data-channel]:not([data-channel="summary"])
+  :is(.mld-key-strip, .mld-channel-icon) {
+  color: var(--mld-channel-color);
+}
+[data-molda-theme] .mld-key-strip:focus-visible {
+  outline: 2px solid var(--color-mld-accent);
+  outline-offset: -2px;
+}
+[data-molda-theme] .mld-key-playhead {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  pointer-events: none;
+  background: var(--color-mld-text);
+}
+[data-molda-theme] .mld-timeline-ruler {
+  position: relative;
+  height: 30px;
+  min-height: 30px;
+  margin-left: var(--mld-timeline-label-width);
+  margin-right: 24px;
+}
+[data-molda-theme] .mld-timeline-ruler input {
+  margin: 0;
+}
+[data-molda-theme] .mld-movement-row {
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+  border: 1px solid var(--color-mld-border);
+  border-radius: 9px;
+}
+[data-molda-theme] .mld-movement-choice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  min-height: 38px;
+  flex: 1;
+  padding: 4px 8px;
+  text-align: left;
+}
+[data-molda-theme] .mld-movement-options {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+[data-molda-theme] .mld-movement-options svg {
+  width: 18px;
+  height: 18px;
+}
+[data-molda-theme] .mld-movement-options:focus-visible {
+  outline: 2px solid var(--color-mld-accent);
+}
+[data-molda-theme] .mld-piece-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+@media (pointer: coarse) {
+  [data-molda-theme] .mld-movement-choice {
+    min-height: 44px;
+  }
+  [data-molda-theme] .mld-movement-options {
+    width: 44px;
+    height: 44px;
+  }
+}
+[data-molda-theme] .mld-movement-row[data-active="true"] {
+  border-color: var(--color-mld-accent);
+  background: color-mix(in srgb, var(--color-mld-accent) 8%, var(--color-mld-surface));
+}
+[data-molda-theme] .mld-movement-menu {
+  position: absolute;
+  z-index: 15;
+  right: 0;
+  min-width: 140px;
+  padding: 4px;
+  border: 1px solid var(--color-mld-border);
+  border-radius: 9px;
+  background: var(--color-mld-surface);
+  box-shadow: 0 3px 10px #0002;
+}
+[data-molda-theme] .mld-movement-menu button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  width: 100%;
+  padding: 4px 8px;
+  font-size: 12px;
+}
+[data-molda-theme] .mld-movement-menu svg {
+  width: 15px;
+  height: 15px;
+}
+[data-molda-theme] .mld-pose-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 205px;
+}
+@media (min-width: 1101px) {
+  [data-molda-theme] .mld-inspector-sections[data-activity="animation"] .mld-inspector-overview {
+    flex: 0 1 244px;
+    max-height: 244px;
+    min-height: 100px;
+  }
+  [data-molda-theme] .mld-inspector-sections[data-activity="animation"] .mld-inspector-pieces {
+    flex: 0 1 240px;
+    max-height: 240px;
+    min-height: 80px;
+  }
+  [data-molda-theme] .mld-inspector-sections[data-activity="animation"] .mld-inspector-properties {
+    flex: 1 1 205px;
+    min-height: 120px;
+  }
+}
+[data-molda-theme] .mld-ruler-tick {
+  position: absolute;
+  top: 0;
+  height: 30px;
+  width: 1px;
+  border-bottom: 5px solid var(--color-mld-border);
+}
+[data-molda-theme] .mld-ruler-tick[data-major="true"] {
+  border-bottom-width: 10px;
+}
+[data-molda-theme] .mld-ruler-tick > span {
+  position: absolute;
+  top: 1px;
+  white-space: nowrap;
+  color: var(--color-mld-muted);
+  font-size: 10px;
+}
+[data-molda-theme] .mld-timeline-playhead-area {
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+  top: 60px;
+  bottom: 0;
+  left: var(--mld-timeline-label-width);
+  right: 24px;
+  overflow: hidden;
+}
+[data-molda-theme] .mld-timeline-playhead {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 14px;
+  transform: translateX(-50%);
+  padding: 0;
+  pointer-events: none;
+  cursor: ew-resize;
+  touch-action: none;
+}
+[data-molda-theme] .mld-timeline-playhead::after {
+  content: "";
+  position: absolute;
+  top: 18px;
+  bottom: 0;
+  width: 2px;
+  left: 6px;
+  background: var(--color-mld-accent);
+}
+[data-molda-theme] .mld-timeline-playhead > span {
+  position: absolute;
+  pointer-events: auto;
+  top: 2px;
+  left: 0;
+  width: 14px;
+  height: 18px;
+  background: var(--color-mld-accent);
+  border-radius: 4px;
+}
+[data-molda-theme] .mld-timeline .mld-key-playhead {
+  display: none;
 }

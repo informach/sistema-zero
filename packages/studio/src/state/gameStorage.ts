@@ -128,7 +128,24 @@ export function createGameStorageRepository(
     }))
   }
 
-  return Object.freeze({ load, write, delete: remove })
+  /** Pro awaits a confirmed write. Capture the profile scope once, before async work. */
+  function session(projectId: string) {
+    const scope = getScope()
+    return {
+      async load(): Promise<Record<string, string>> {
+        if (!scope || !projectId) throw new Error('Armazenamento indisponível.')
+        return sanitizePreviewStorageData(await persistence.get(gameStorageKey(projectId), scope))
+      },
+      async write(data: Record<string, string>): Promise<void> {
+        if (!scope || !projectId) throw new Error('Armazenamento indisponível.')
+        await runSerializedProjectWrite(scope, projectId, async () => {
+          if (isGameStorageDeleted(scope, projectId)) throw new Error('Projeto excluído.')
+          return { done: pickWrite(projectId, data, scope) }
+        })
+      },
+    }
+  }
+  return Object.freeze({ load, write, delete: remove, session })
 }
 
 const gameStorageRepository = createGameStorageRepository()
@@ -141,3 +158,4 @@ export const writeGameStorage = gameStorageRepository.write
 
 /** Remove o armazenamento do projeto no mesmo mutex das demais escritas. */
 export const deleteGameStorage = gameStorageRepository.delete
+export const createGameStorageSession = gameStorageRepository.session

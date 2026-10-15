@@ -45,7 +45,9 @@ export async function assertOwnedPort(
     signal,
   )
   if (result.code !== 0 || result.reason !== 'exited')
-    throw new Error('Could not establish port ownership')
+    throw new Error(
+      `Could not establish port ownership (${result.reason}, exit ${result.code}; log ${result.log})`,
+    )
   const report = z
     .object({
       listeners: z.array(z.number().int()),

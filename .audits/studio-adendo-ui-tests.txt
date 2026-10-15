@@ -1,0 +1,59 @@
+bun test v1.3.11 (af24e281)
+
+src\state\proBuilderDeletion.test.ts:
+(pass) offline deletion survives retry; only an acknowledged remote removal clears its record [15.00ms]
+(pass) profile A → B → A invalidates both dispatch and a late acknowledgment [16.00ms]
+
+src\components\tutor\ProBuilderPanel.recovery.test.tsx:
+(pass) builder persistence recovery > finishes availability after Consultar estado while the initial check is pending [328.00ms]
+(pass) builder persistence recovery > keeps a retry action for a pending undo and saves its existing inverse exactly once [1109.00ms]
+(pass) builder persistence recovery > reconciles a pending receipt when the real autosave confirms, without another panel action [1359.00ms]
+
+src\components\tutor\ProBuilderPanel.test.tsx:
+(pass) builder review interface > queries status and history without authorizing an inference; only explicit continuation advances [359.00ms]
+(pass) builder review interface > keeps the review mounted while the learner returns to the conversation [188.00ms]
+(pass) builder review interface > preserves the accepted scope and criteria in a request, then blocks a changed mission before applying [344.00ms]
+(pass) builder review interface > restores a session application after reopening and never reapplies the proposal [281.00ms]
+(pass) builder review interface > keeps unavailable construction disabled without hiding a saved proposal [125.00ms]
+(pass) builder review interface > restores a proposal in StrictMode, only applies explicitly, then undoes the exact change [250.00ms]
+(pass) builder review interface > does not overwrite an edit made before the user accepts the proposal [109.00ms]
+(pass) builder review interface > cancellation wins over an in-flight advance and its late proposal never replaces the cancelled state [234.00ms]
+(pass) builder review interface > recovers a lost create response using the same idempotency key and base revision [188.00ms]
+(pass) builder review interface > does not act through a stale panel after profile A → B → A [172.00ms]
+
+src\components\tutor\ZappyPanel.test.tsx:
+(pass) ZappyPanel > keeps diagnosis and construction in the same conversation without starting a job on transfer [750.00ms]
+(pass) ZappyPanel > flushes the Pro editor once and freezes the entire uncertain request across retries [172.00ms]
+(pass) ZappyPanel > does not send a request if profile A changes to B and back while the editor flushes [93.00ms]
+(pass) ZappyPanel > oferece Construir somente no Pro e carrega o painel apenas depois da escolha [157.00ms]
+(pass) ZappyPanel > abre referência Pro existente e avisa quando a revisão mudou [78.00ms]
+(pass) ZappyPanel > não envia pergunta antes de concluir o carregamento inicial do histórico [78.00ms]
+(pass) ZappyPanel > reutiliza o clientMessageId quando a mesma tentativa é reenviada [109.00ms]
+(pass) ZappyPanel > não mantém intervalo ativo depois que o cooldown termina [110.00ms]
+(pass) ZappyPanel > abre referência de aula navegável pelo callback do host [62.00ms]
+(pass) ZappyPanel > abre o tutorial do "Como fazer" pelo callback do host, em chip próprio [47.00ms]
+(pass) ZappyPanel > não mostra referência Blockly histórica em projeto Pro [94.00ms]
+(pass) ZappyPanel > saudação e sugestões iniciais no Pro orientam por arquivo [62.00ms]
+(pass) ZappyPanel > mostra a categoria e a subcategoria do bloco citado [47.00ms]
+(pass) ZappyPanel > não repete a categoria quando a subcategoria é igual [63.00ms]
+(pass) ZappyPanel > exige confirmação antes de apagar todo o histórico [78.00ms]
+(pass) ZappyPanel > carrega mensagens anteriores usando o cursor devolvido pelo host [62.00ms]
+(pass) ZappyPanel > ignora resposta da pergunta quando o projeto troca durante a chamada [157.00ms]
+(pass) ZappyPanel > ignora página antiga quando o projeto troca durante a paginação [78.00ms]
+(pass) ZappyPanel > chips de sugestão PREENCHEM o campo sem enviar (e só a última resposta mostra) [62.00ms]
+(pass) ZappyPanel > estado vazio oferece perguntas iniciais que preenchem o campo [63.00ms]
+(pass) ZappyPanel > mostra quanta ajuda resta, FORA da região que é anunciada a cada resposta [31.00ms]
+(pass) ZappyPanel > sem saber o saldo, o medidor some (nunca mostra zero) [16.00ms]
+(pass) ZappyPanel > a fonte OpenRouter aparece sem confundir a franquia incluída esgotada com o saldo externo [31.00ms]
+(pass) ZappyPanel > equipe vê "sem limite" em vez de número [31.00ms]
+(pass) ZappyPanel > uma resposta sem saldo novo NÃO zera o medidor [63.00ms]
+(pass) ZappyPanel > aviso de limite não é aula: sem polegares e com cara de recado [62.00ms]
+(pass) ZappyPanel > esgotado, o rodapé diz quando volta e o botão CONTINUA habilitado [47.00ms]
+(pass) ZappyPanel sob rede ruim > a pergunta volta para o campo quando a ida ao servidor falha [94.00ms]
+(pass) ZappyPanel sob rede ruim > resposta SEM blockReferences não derruba o painel [93.00ms]
+(pass) ZappyPanel sob rede ruim > campos de lista inválidos viram ausência, não quebram a conversa [141.00ms]
+
+ 45 pass
+ 0 fail
+ 148 expect() calls
+Ran 45 tests across 4 files. [10.54s]

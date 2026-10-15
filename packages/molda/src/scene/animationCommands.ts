@@ -281,12 +281,19 @@ export function reverseSceneAnimation(document: MoldaSceneDocument, clipId: stri
       (track) =>
         ({
           ...track,
-          keys: [...track.keys].reverse().map((key, i) => ({
-            ...key,
-            time: clip.duration - key.time,
-            interpolation:
-              track.keys[track.keys.length - 2 - i]?.interpolation ?? key.interpolation,
-          })),
+          keys: [...track.keys].reverse().map((key, i) => {
+            const next = track.keys[track.keys.length - i]
+            const reversed = { ...key, time: clip.duration - key.time }
+            // The incoming interval changes destination when time is reversed.
+            delete reversed.incomingPivot
+            delete reversed.incomingPivotInterpolation
+            if (next?.incomingPivot) reversed.incomingPivot = [...next.incomingPivot]
+            if (next?.incomingPivotInterpolation)
+              reversed.incomingPivotInterpolation = next.incomingPivotInterpolation
+            reversed.interpolation =
+              track.keys[track.keys.length - 2 - i]?.interpolation ?? key.interpolation
+            return reversed
+          }),
         }) as SceneAnimationTrack,
     ),
   }

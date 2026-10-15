@@ -1,3 +1,4 @@
+import type { StudioProPublication } from '@sistemazero/core/studio/pro-publication'
 import { createContext, useContext } from 'react'
 import type { Project } from '#core'
 
@@ -22,6 +23,7 @@ import type { Project } from '#core'
 
 /** Links devolvidos pela publicação (o que a tela de sucesso mostra). */
 export interface StudioShareResult {
+  publicationId?: string
   /** Página do Mural onde o projeto aparece (fechado, só comunidade). Opcional. */
   muralUrl?: string
   /** Página PÚBLICA de jogar (sem login), só o jogo + título. Opcional. */
@@ -37,6 +39,8 @@ export interface StudioShareGenerateInput {
 
 /** Entrada de {@link StudioShareAdapter.publish}. */
 export interface StudioSharePublishInput {
+  /** Stable for an exact publish request, including a retry after a lost response. */
+  requestId?: string
   project: Project
   /**
    * Imagem da capa (data URL) — print automático do jogo OU upload da criança.
@@ -64,6 +68,25 @@ export interface StudioSharePublishInput {
  * precisa saber) como elas funcionam por dentro.
  */
 export interface StudioShareAdapter {
+  /** The host captures the verified compiled game as cover when no image is supplied. */
+  proVerifiedCover?: boolean
+  publication?: {
+    get(playId: string, signal?: AbortSignal): Promise<StudioProPublication | null>
+    update(
+      input: { playId: string; requestId: string; expectedVersion: number; project: Project },
+      signal?: AbortSignal,
+    ): Promise<StudioProPublication>
+    activate(
+      input: {
+        playId: string
+        requestId: string
+        expectedVersion: number
+        revision: string
+        disabled: boolean
+      },
+      signal?: AbortSignal,
+    ): Promise<StudioProPublication>
+  }
   /**
    * DESAFIO do mês (game jam): presente → o ShareDialog mostra o checkbox
    * "🏆 Participar do Desafio: <title>"; marcado, o publish leva `challengeKey`.
@@ -92,7 +115,7 @@ export interface StudioShareAdapter {
   presetCoverUrl?: string
   /**
    * Gera um rascunho CURTO (≤1 parágrafo, PT) via SERVIDOR (chave no servidor).
-   * NUNCA usa a BYOK do painel de IA do aluno. Pode rejeitar/voltar vazio — o
+   * A política da família e a conexão opcional do responsável são resolvidas no servidor. Pode rejeitar/voltar vazio — o
    * dialog cai no modo "escreva você mesmo" sem travar a publicação.
    *
    * **OPCIONAL**: ausente → o dialog NÃO mostra o botão "Gerar/Regerar" nem gera

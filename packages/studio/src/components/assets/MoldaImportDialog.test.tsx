@@ -416,6 +416,7 @@ describe('régua pura', () => {
   it('projectHas3DConsumer: o kit Jogo 3D conta (desde os blocos do Molda), como o Avançado, o Mundo 3D e o Canvas 3D', () => {
     const empty = createEmptyProject('p', 'x')
     expect(projectHas3DConsumer(empty)).toBe(false)
+    expect(projectHas3DConsumer({ ...empty, kind: 'pro' })).toBe(true)
     for (const id of ['game-3d', 'game-3d-advanced', 'world-3d']) {
       const p = createEmptyProject('p', 'x')
       p.installedExtensions = [{ id, version: '1.0.0', installedAt: 0 }]

@@ -57,6 +57,8 @@ export function useSceneViewport({
   onThumb,
   paintMode,
   paintMirror = false,
+  paintScope = null,
+  paintGuides = null,
 }: {
   document: MoldaSceneDocument
   selection: readonly string[]
@@ -92,6 +94,8 @@ export function useSceneViewport({
   paintMode?: ScenePaintMode
   /** Espelho de pintura, ligado pela criança na caixa de ferramentas. */
   paintMirror?: boolean
+  paintScope?: import('../../../viewport/sceneViewportTypes').ScenePaintSurfaceScope | null
+  paintGuides?: import('../../../viewport/ScenePaintGuides').ScenePaintGuideSettings | null
 }) {
   const canvas = useRef<HTMLCanvasElement>(null)
   const onSelect = useRef(select)
@@ -117,12 +121,16 @@ export function useSceneViewport({
   interrupt.current = onInterrupt
   onTransform.current = transform
   const [viewport, setViewport] = useState<SceneViewportPort | null>(null)
+  useEffect(() => {
+    viewport?.refreshGuideInput?.(guideInput ?? null)
+  }, [viewport, guideInput])
   const [error, setError] = useState<string | null>(null)
   const [selectionError, setSelectionError] = useState<string | null>(null)
   const [lost, setLost] = useState(false)
   const [issueCount, setIssueCount] = useState(0)
   const [area, setArea] = useState<readonly Vec2[]>([])
   const displayed = useRef<MoldaSceneDocument | null>(null)
+  const refreshAnimation = useRef<(() => void) | null>(null)
   const skinActions = useRef<SceneSkinPaintActions | null>(null)
   useEffect(() => {
     let cancelled = false
@@ -252,6 +260,7 @@ export function useSceneViewport({
     try {
       setIssueCount(viewport.setDocument(document).length)
       displayed.current = document
+      refreshAnimation.current?.()
       const { source, step } = flipbook.getSnapshot()
       if (
         source &&
@@ -309,6 +318,12 @@ export function useSceneViewport({
   useEffect(() => {
     viewport?.setPaintTarget(paintTarget)
   }, [viewport, paintTarget])
+  useEffect(() => {
+    viewport?.setPaintScope?.(paintScope)
+  }, [viewport, paintScope])
+  useEffect(() => {
+    viewport?.setPaintGuides?.(paintGuides)
+  }, [viewport, paintGuides])
   const paintSkinId = weightTarget
     ? document.skins?.find((skin) => skin.nodeId === weightTarget.nodeId)?.id
     : undefined
@@ -376,6 +391,7 @@ export function useSceneViewport({
     if (!viewport || !animation || lost) return
     let failed = false
     const update = () => {
+      const document = displayed.current
       const snapshot = animation.getSnapshot()
       const draft = animationPose?.getSnapshot().pose
       const editing =
@@ -407,17 +423,19 @@ export function useSceneViewport({
         else animation.reportError(error)
       }
     }
+    refreshAnimation.current = update
     update()
     const unsubscribe = animation.subscribe(update)
     const unsubscribePose = animationPose?.subscribe(update)
     return () => {
+      if (refreshAnimation.current === update) refreshAnimation.current = null
       unsubscribe()
       unsubscribePose?.()
       animationPose?.interrupt()
       viewport.setAnimationEditing(false)
       viewport.setPose(null)
     }
-  }, [viewport, animation, animationPose, document, lost])
+  }, [viewport, animation, animationPose, lost])
   return {
     canvas,
     viewport,

@@ -41,6 +41,7 @@ import {
 } from './imageProcessing'
 import { MoldaImportDialog } from './MoldaImportDialog'
 import { PintaImportDialog } from './PintaImportDialog'
+import { ProAssetPaths } from './ProAssetPaths'
 import { TeamImportDialog } from './TeamImportDialog'
 import { TileConfigDialog, type TileConfigDialogProps } from './TileConfigDialog'
 import { type AssetsTabItem, AssetsTabStrip } from './tabs/common'
@@ -100,6 +101,7 @@ export function AssetsPanel({
   captureThumb = captureAndStoreProjectThumb,
 }: AssetsPanelProps): JSX.Element {
   const t = useT()
+  const isPro = useProjectStore((s) => s.project?.kind === 'pro')
   const { hasProject, assets, has3DExtension, has3DMaterials, coverAssetName } = useProjectStore(
     useShallow((s) => ({
       hasProject: Boolean(s.project),
@@ -682,6 +684,7 @@ export function AssetsPanel({
             </span>
           </div>
 
+          {isPro && <ProAssetPaths assets={assets} />}
           {error && (
             <p
               role="alert"

@@ -26,6 +26,19 @@ describe('loadGatewayConfig', () => {
       auth: { strategies: ['hmac'] },
     })
   })
+  test('Studio credentials, usage and reconciliation require member-shell HMAC, never a browser JWT', () => {
+    const registry = new RouteRegistry(
+      realConfig.routes.map((route) => routeConfigSchema.parse(route)),
+    )
+    for (const endpoint of ['account', 'usage', 'reconcile']) {
+      const route = registry.resolve('POST', `/members/internal/studio-ai/${endpoint}`, 'v1')?.route
+      expect(route).toMatchObject({
+        auth: { strategies: ['hmac'], allowedConsumers: ['member-shell'] },
+        maxBodyBytes: 4096,
+      })
+      expect(route?.audit).toBeUndefined()
+    }
+  })
   test('live boundaries preserve actors and reserve material registration for the BFF', () => {
     const registry = new RouteRegistry(
       realConfig.routes.map((route) => routeConfigSchema.parse(route)),
@@ -58,6 +71,12 @@ describe('loadGatewayConfig', () => {
       authorize: { roles: ['superadmin', 'admin', 'staff'] },
       audit: {},
     })
+    // O funil do Pensa v2: leitura da equipe, sem cair em outro padrão de admin.
+    expect(registry.resolve('GET', '/members/admin/pensa/funnel', 'v1')?.route).toMatchObject({
+      id: 'members-admin-pensa-funnel',
+      authorize: { roles: ['superadmin', 'admin', 'staff'] },
+    })
+    expect(registry.resolve('POST', '/members/admin/pensa/funnel', 'v1')).toBeUndefined()
     // The child's project by block stays under the authenticated child routes.
     expect(registry.resolve('GET', '/members/live/workspaces', 'v1')?.route.id).toBe('members-live')
     expect(

@@ -1,3 +1,7 @@
+import {
+  STUDIO_PRO_DEFAULT_CREATION_IDS,
+  type StudioProTemplateId,
+} from '@sistemazero/core/studio/pro-templates'
 import type { JSX } from 'react'
 import {
   lazy,
@@ -40,6 +44,7 @@ import {
   type ProjectChangedDetail,
   type ProjectSummary,
 } from '../state/persistence'
+import { captureProjectStorageScope } from '../state/projectStorageRuntime'
 import { type ProjectSortOrder, useSettingsStore } from '../state/settingsStore'
 import { type StudioHostChromeStatus, useStudioHostChrome } from '../studio/host-chrome'
 import { useT } from '../studio/i18n'
@@ -65,6 +70,8 @@ export interface ProjectListProps {
   onOpenProject: (projectId: string) => void
   /** Habilita a criação de projetos profissionais (host com COOP/COEP). */
   professional?: boolean
+  /** Explicit creation rollout. Omitted: web starters only; existing projects remain readable. */
+  proCreationTemplates?: readonly StudioProTemplateId[]
   /** Extensões instaladas automaticamente num projeto básico novo. */
   initialExtensions?: readonly string[]
   /** Extensões que a jornada permite; usadas também pelo aviso de importação. */
@@ -85,6 +92,28 @@ export interface ProjectListProps {
    * mantém o "criar do zero".
    */
   showExamples?: boolean
+  /**
+   * Seções da galeria definidas pelo HOST (15/10/2026): os projetos que `includes` aceita saem da
+   * grade principal e ganham uma faixa própria, com título, frase e um atalho. O Estúdio não sabe
+   * quem cria esses jogos (no kids, o Pensa): só agrupa. A busca e o filtro de modo valem para
+   * todas as seções, e o contador segue contando tudo. Sem seções, a galeria é a de sempre.
+   */
+  sections?: readonly ProjectListSection[]
+}
+
+/** Uma seção da galeria (ver `ProjectListProps.sections`). */
+export interface ProjectListSection {
+  /** Chave estável: vira o id do título no DOM. */
+  key: string
+  title: string
+  description?: string
+  /** O projeto pertence a esta seção? (o primeiro `includes` que aceitar vence) */
+  includes: (project: { id: string; name: string }) => boolean
+  /**
+   * Atalho no cabeçalho da seção. É um LINK de verdade: o clique simples chama `onNavigate`
+   * (a navegação do host, sem recarregar) e Ctrl/Cmd/botão do meio ficam com o navegador.
+   */
+  action?: { label: string; href: string; onNavigate?: () => void }
 }
 
 /** Um comparador por módulo (o `localeCompare(.., 'pt-BR')` criava um Collator por comparação). */
@@ -129,10 +158,12 @@ function HostStatusPill({ status }: { status: StudioHostChromeStatus }): JSX.Ele
 export function ProjectList({
   onOpenProject,
   professional = false,
+  proCreationTemplates = STUDIO_PRO_DEFAULT_CREATION_IDS,
   initialExtensions,
   allowedExtensions,
   theme: themeProp,
   showExamples = false,
+  sections,
 }: ProjectListProps): JSX.Element {
   const t = useT()
   const [projects, setProjects] = useState<ProjectSummary[] | null>(null)
@@ -286,6 +317,20 @@ export function ProjectList({
     else base.sort((a, b) => b.updatedAt - a.updatedAt)
     return base
   }, [projects, searchIndex, searchTerms, modeFilter, projectSort])
+  // As seções do host: cada projeto vai para a primeira seção que o aceitar; o resto fica na grade
+  // principal. Seção sem projeto (depois do filtro) não aparece.
+  const grouped = useMemo(() => {
+    if (!filtered) return null
+    if (!sections?.length) return { main: filtered, groups: [] }
+    const groups = sections.map((section) => ({ section, items: [] as ProjectSummary[] }))
+    const main: ProjectSummary[] = []
+    for (const project of filtered) {
+      const group = groups.find(({ section }) => section.includes(project))
+      if (group) group.items.push(project)
+      else main.push(project)
+    }
+    return { main, groups: groups.filter((group) => group.items.length > 0) }
+  }, [filtered, sections])
   // Filtro ATIVO = há termos de busca de verdade (só símbolos, "!!!", normalizam para nada e
   // casam tudo — não é filtro) ou um modo escolhido.
   const filtering = searchTerms.length > 0 || modeFilter !== 'all'
@@ -319,17 +364,51 @@ export function ProjectList({
 
   // Referência estável: inline, `listProTemplates()` novo a cada render entraria
   // nas deps do reset do modal e apagaria o nome enquanto a criança digita.
-  const templates = useMemo(() => (professional ? listProTemplates() : undefined), [professional])
+  const templates = useMemo(
+    () =>
+      professional
+        ? listProTemplates().filter((template) => proCreationTemplates.includes(template.id))
+        : undefined,
+    [professional, proCreationTemplates],
+  )
+  const creationTemplates = useRef(templates)
+  creationTemplates.current = templates
+
+  const creationSequence = useRef(0)
+  const creationMounted = useRef(true)
+  useEffect(() => {
+    creationMounted.current = true
+    return () => {
+      creationMounted.current = false
+      creationSequence.current++
+    }
+  }, [])
 
   const handleCreate = async (name: string, opts?: NewProjectCreateOptions) => {
-    const { useProjectStore } = await import('../state/projectStore')
-    const { createProject, createProProject } = useProjectStore.getState()
-    const created =
-      opts?.kind === 'pro'
-        ? await createProProject(name, opts.templateId)
-        : await createProject(name, initialExtensions)
-    setModalOpen(false)
-    onOpenProject(created.id)
+    // Antes até do import: um chunk lento não pode começar a criação no perfil seguinte.
+    const scope = captureProjectStorageScope()
+    const sequence = ++creationSequence.current
+    const current = () =>
+      creationMounted.current &&
+      creationSequence.current === sequence &&
+      captureProjectStorageScope() === scope &&
+      (opts?.kind !== 'pro' ||
+        Boolean(creationTemplates.current?.some((template) => template.id === opts.templateId)))
+    try {
+      const { useProjectStore } = await import('../state/projectStore')
+      if (!current()) return
+      const { createProject, createProProject } = useProjectStore.getState()
+      const created =
+        opts?.kind === 'pro'
+          ? await createProProject(name, opts.templateId, { isCurrent: current })
+          : await createProject(name, initialExtensions)
+      if (!current()) return
+      setModalOpen(false)
+      onOpenProject(created.id)
+    } catch (error) {
+      // Uma conclusão da tela anterior não apresenta erro nem fecha o modal da atual.
+      if (current()) throw error
+    }
   }
 
   const handleImported = (id: string) => {
@@ -604,18 +683,57 @@ export function ProjectList({
                     </button>
                   </div>
                 ) : (
-                  <div className="sz-tool-grid">
-                    {filtering ? null : newCard}
-                    {filtered.map((summary) => (
-                      <ProjectCard
-                        key={summary.id}
-                        summary={summary}
-                        takenNames={takenNames}
-                        onChanged={refreshProject}
-                        onOpen={onOpenProject}
-                      />
+                  <>
+                    {/* A grade principal: os projetos sem seção (com o "Novo projeto" na frente
+                        quando não há filtro). Com filtro e nenhum projeto aqui, ela some. */}
+                    {!filtering || grouped?.main.length ? (
+                      <div className="sz-tool-grid">
+                        {filtering ? null : newCard}
+                        {grouped?.main.map((summary) => (
+                          <ProjectCard
+                            key={summary.id}
+                            summary={summary}
+                            takenNames={takenNames}
+                            onChanged={refreshProject}
+                            onOpen={onOpenProject}
+                          />
+                        ))}
+                      </div>
+                    ) : null}
+                    {grouped?.groups.map(({ section, items }, index) => (
+                      <section
+                        key={section.key}
+                        aria-labelledby={`sz-projects-section-${section.key}`}
+                        className={index === 0 && filtering && !grouped.main.length ? '' : 'mt-10'}
+                      >
+                        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+                          <div className="min-w-0">
+                            <h3
+                              id={`sz-projects-section-${section.key}`}
+                              className="sz-tool-section-title"
+                            >
+                              {section.title}
+                            </h3>
+                            {section.description ? (
+                              <p className="sz-tool-section-text">{section.description}</p>
+                            ) : null}
+                          </div>
+                          {section.action ? <SectionAction action={section.action} /> : null}
+                        </div>
+                        <div className="sz-tool-grid">
+                          {items.map((summary) => (
+                            <ProjectCard
+                              key={summary.id}
+                              summary={summary}
+                              takenNames={takenNames}
+                              onChanged={refreshProject}
+                              onOpen={onOpenProject}
+                            />
+                          ))}
+                        </div>
+                      </section>
                     ))}
-                  </div>
+                  </>
                 )}
 
                 {/* Rodapé: o contador (frase permanente; `role="status"` só ao filtrar) e a
@@ -681,5 +799,35 @@ export function ProjectList({
         />
       </div>
     </StudioThemeProvider>
+  )
+}
+
+/** O atalho do cabeçalho de uma seção: link de verdade, com a navegação do host no clique simples. */
+function SectionAction({
+  action,
+}: {
+  action: NonNullable<ProjectListSection['action']>
+}): JSX.Element {
+  return (
+    <a
+      href={action.href}
+      className="sz-tool-pill sz-tool-pill--quiet"
+      onClick={(event) => {
+        if (
+          !action.onNavigate ||
+          event.button !== 0 ||
+          event.defaultPrevented ||
+          event.metaKey ||
+          event.ctrlKey ||
+          event.shiftKey ||
+          event.altKey
+        )
+          return
+        event.preventDefault()
+        action.onNavigate()
+      }}
+    >
+      {action.label}
+    </a>
   )
 }

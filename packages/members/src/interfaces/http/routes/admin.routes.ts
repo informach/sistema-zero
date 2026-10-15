@@ -16,11 +16,13 @@ import type { ListMemberCertificatesService } from '../../../application/list-me
 import type { ListMemberRatingsService } from '../../../application/list-member-ratings/list-member-ratings.service'
 import type { ListMembersService } from '../../../application/list-members/list-members.service'
 import type { ManageEntitlementService } from '../../../application/manage-entitlement/manage-entitlement.service'
+import type { GetPensaFunnelService } from '../../../application/pensa/pensa-funnel.service'
 import type { GetProfilesOverviewService } from '../../../application/profiles-overview/get-profiles-overview.service'
 import type { TeacherBroadcastsService } from '../../../application/teacher-threads/teacher-broadcasts.service'
 import type { TeacherThreadsService } from '../../../application/teacher-threads/teacher-threads.service'
 import type { GetMemberToolUsageService } from '../../../application/tool-usage/get-member-tool-usage.service'
 import type { RevokeCertificateService } from '../../../application/validate-certificate/validate-certificate.service'
+import { ContentNotFoundError } from '../../../domain/course/course.errors'
 import { InvalidEntitlementCommandError } from '../../../domain/entitlement/entitlement.errors'
 import type { HubGateway } from '../../../domain/ports/hub-gateway.port'
 import {
@@ -52,6 +54,7 @@ import {
   ListMembersQuery,
   ManageEntitlementBody,
   MemberDetailQuery,
+  PensaFunnelQuery,
   ProfilesOverviewQuery,
   parseProfileIds,
   parseRankingUserIds,
@@ -83,6 +86,8 @@ export interface AdminRoutesDeps {
   analytics: GetCourseAnalyticsService
   /** Agregados de uso de IA (quota por conta) p/ o painel acompanhar o custo. */
   aiUsageStats: GetAiUsageStatsService
+  /** Onde as crianças param no Pensa v2 (contagens, sem texto). Opcional nos testes. */
+  pensaFunnel?: GetPensaFunnelService
   grantManual: GrantManualEntitlementService
   manageEntitlement: ManageEntitlementService
   /** Canal de retorno professor↔aluno (caixa de entrada + responder). */
@@ -252,6 +257,17 @@ export function adminRoutes(deps: AdminRoutesDeps) {
           return deps.aiUsageStats.execute(query.month)
         },
         { query: AiUsageStatsQuery },
+      )
+      // O funil do Pensa v2 (15/10/2026): jogos criados no período e onde param (perguntas
+      // respondidas por toque ou do jeito delas, proposta, começo escolhido, missão, teste).
+      .get(
+        '/pensa/funnel',
+        async ({ query, headers }) => {
+          requireAdmin(headers, deps.requireAdminEnabled)
+          if (!deps.pensaFunnel) throw new ContentNotFoundError('Funil do Pensa indisponível.')
+          return deps.pensaFunnel.execute(query.days)
+        },
+        { query: PensaFunnelQuery },
       )
       // ── Conversas com o aluno (canal de retorno) ─────────────────────────────
       // Caixa de entrada do professor (todas as conversas, filtros) + abrir/responder

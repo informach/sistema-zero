@@ -14,7 +14,11 @@ O auth delega envios por HMAC ao gateway. As novas rotas `/messaging/staff/{send
 
 ## Studio
 
-`studio_build_prepare` captura arquivos e hashes em um artefato imutável e devolve manifesto. `studio_build` envia esse artefato pela fachada autenticada. O contrato de paths, templates, limites e configs reservadas agora é compartilhado em core/studio e reutilizado pelo runtime existente. Não recebe comandos livres. HTML e logs retornam como artefatos; build com erro é success:false e mantém o diagnóstico.
+`studio_build_prepare` captura arquivos e materiais binários selecionados, exige hashes atuais, `templateId` e `parentOrigin` e devolve um snapshot imutável com manifesto. A opção `validate` vem habilitada por padrão. O limite de 2 MB considera o envelope UTF-8 completo, inclusive base64. `studio_build` envia exatamente esse snapshot pela fachada autenticada.
+
+O contrato de caminhos, templates, limites, colisões e configs reservadas é compartilhado em core/studio e reutilizado pelo runtime. `package.json` e `package-lock.json` atravessam a fachada para validação das dependências efetivas; só o runtime conhece o lock instalado e verifica versões, integridade e grafo transitivo antes de gerar configuração confiável. Scripts/configuração enviados não são executados pelo compilador.
+
+O resultado inclui referência remota de preview com expiração, identidade da validação e evidências, quando fornecidas pelo runtime. Metadados e logs ficam em artefatos locais; o conteúdo compilado permanece no serviço remoto e não vira um preview local permanente. Falhas de build, tipos ou playtest retornam `success:false` com diagnóstico. Não há publicação automática.
 
 Configure STUDIO_PRO_RUNTIME_URL e STUDIO_PRO_RUNTIME_TOKEN no auth para habilitar o build remoto existente. O token permanece no servidor. O TUI não instala nem publica esse serviço; a homologação remota depende de seu ambiente. Leituras de entregas usam as rotas administrativas existentes do members.
 

@@ -49,6 +49,7 @@ export interface AiUsageAccountTotal {
 }
 
 export interface AiUsageMonthStats {
+  studioCosts?: import('@sistemazero/core/ai-credits').StudioAiCostGroup[]
   /** `YYYY-MM` consultado. */
   month: string
   monthUsed: number

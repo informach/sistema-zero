@@ -1,6 +1,7 @@
 import { afterAll, afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { useEffect, useRef } from 'react'
+import { inferLanguage } from '../languages'
 import type { DisposableMonacoModel, MonacoModelRegistry } from '../modelPaths'
 
 // bun:test NÃO isola module mocks por arquivo: captura os exports reais ANTES de
@@ -24,6 +25,7 @@ interface FakeModel extends DisposableMonacoModel {
   disposed: boolean
   value: string
   getValue: () => string
+  getLanguageId: () => string
   setValue: (value: string) => void
   getLineCount: () => number
   getLineMaxColumn: (line: number) => number
@@ -44,6 +46,7 @@ function makeModel(path: string, initialValue = ''): FakeModel {
     value: initialValue,
     uri: { path, toString: () => path },
     getValue: () => model.value,
+    getLanguageId: () => inferLanguage(path),
     setValue: (value) => {
       model.value = value
     },

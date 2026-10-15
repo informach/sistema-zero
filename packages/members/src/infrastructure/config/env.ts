@@ -112,6 +112,22 @@ const EnvSchema = z
     // (grava mas nunca recusa).
     AI_LIMIT_DAILY: z.coerce.number().int().positive().default(50),
     AI_LIMIT_MONTHLY: z.coerce.number().int().positive().default(500),
+    // Independent AES-256 keys ({version: 64 hex chars}); retain old versions during rotation.
+    STUDIO_AI_VAULT_KEYS: z.string().optional(),
+    STUDIO_AI_VAULT_ACTIVE_ID: z.string().optional(),
+    STUDIO_AI_CALLBACK_ORIGINS: z.string().optional(),
+    // Technical ceilings for Studio inference; subscription interaction quotas remain separate.
+    STUDIO_AI_DAILY_MICRO_USD: z.coerce.number().int().min(1).max(1_000_000_000).default(1_000_000),
+    STUDIO_AI_MONTHLY_MICRO_USD: z.coerce
+      .number()
+      .int()
+      .min(1)
+      .max(1_000_000_000)
+      .default(10_000_000),
+    STUDIO_AI_MAX_CONCURRENT: z.coerce.number().int().min(1).max(4).default(2),
+    STUDIO_AI_EXTERNAL_DAILY_RUNS: z.coerce.number().int().min(1).max(2000).default(200),
+    STUDIO_AI_MAX_PROMPT_PRICE: z.coerce.number().positive().max(100).default(1),
+    STUDIO_AI_MAX_COMPLETION_PRICE: z.coerce.number().positive().max(500).default(4),
 
     // Retenção do dedupe de webhooks (`processed_webhooks`): linhas mais antigas
     // que isto são apagadas pelo ciclo periódico de limpeza (fora do hot path;

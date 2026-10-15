@@ -40,8 +40,7 @@ import type { UseStore } from 'idb-keyval'
  *   `writeInOneTransaction` evita, e o teste dele prova que este fake a enxerga.
  *
  * Para saber o que foi pedido, leia o registro (`fakeIdbTransactions`, `fakeIdbWrites`), não o
- * `setMany`. ⚠️ Uma mesma transação não mistura leitura e escrita aqui (o fake recusa): o
- * Estúdio nunca faz isso, e é de propósito (ver `idbTransaction.ts`).
+ * `setMany`. CAS permite pedidos adicionais dentro do evento success de leitura, como IDB.
  */
 
 export type FakeIdbOp =
@@ -269,6 +268,14 @@ function runTransaction<T>(
     void finish(store, record, transaction, reads, {
       ...scheduling,
       abortCalled: () => abortCalled,
+      deliverWhileActive: (deliver: () => void) => {
+        active = true
+        try {
+          deliver()
+        } finally {
+          active = false
+        }
+      },
     })
   }
 }
@@ -278,7 +285,10 @@ async function finish(
   record: MutableTransaction,
   transaction: { error: unknown; oncomplete: (() => void) | null; onabort: (() => void) | null },
   reads: readonly PendingRead[],
-  pending: Scheduling & { abortCalled: () => boolean },
+  pending: Scheduling & {
+    abortCalled: () => boolean
+    deliverWhileActive: (deliver: () => void) => void
+  },
 ): Promise<void> {
   try {
     // Os eventos chegam DEPOIS do callback, como no navegador, e a transação só COMEÇA
@@ -302,14 +312,7 @@ async function finish(
     }
     let answers: unknown[]
     try {
-      if (
-        reads.length > 0 &&
-        record.steps.some((step) => step.type === 'put' || step.type === 'delete')
-      ) {
-        throw new Error('o fake não mistura leitura e escrita na mesma transação')
-      }
       answers = await fetchAnswers(store, reads)
-      await applyOps(store, record.steps)
     } catch (error) {
       abort(error)
       return
@@ -326,6 +329,12 @@ async function finish(
     // especificação: `success` primeiro.
     const committed = record.steps.some((step) => step.type === 'commit')
     if (reads.length > 0 && committed) {
+      try {
+        await applyOps(store, record.steps)
+      } catch (error) {
+        abort(error)
+        return
+      }
       record.outcome = 'complete'
       transaction.oncomplete?.()
       // O `success` é uma TAREFA separada no navegador, e não uma microtask: quem encadeia
@@ -334,7 +343,17 @@ async function finish(
       deliverAll()
       return
     }
-    deliverAll()
+    pending.deliverWhileActive(deliverAll)
+    if (pending.abortCalled()) {
+      abort(null)
+      return
+    }
+    try {
+      await applyOps(store, record.steps)
+    } catch (error) {
+      abort(error)
+      return
+    }
     record.outcome = 'complete'
     transaction.oncomplete?.()
   } finally {

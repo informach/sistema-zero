@@ -39,9 +39,12 @@ import 'monaco-editor/esm/vs/editor/contrib/snippet/browser/snippetController2.j
 import 'monaco-editor/esm/vs/editor/contrib/format/browser/formatActions.js'
 import 'monaco-editor/esm/vs/editor/contrib/parameterHints/browser/parameterHints.js'
 import 'monaco-editor/esm/vs/editor/contrib/hover/browser/hoverContribution.js'
+import 'monaco-editor/esm/vs/editor/contrib/gotoSymbol/browser/goToCommands.js'
+import 'monaco-editor/esm/vs/editor/contrib/gotoSymbol/browser/link/goToDefinitionAtPosition.js'
 import 'monaco-editor/esm/vs/editor/contrib/bracketMatching/browser/bracketMatching.js'
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import { buildMonacoModelPath, type MonacoModelRegistry } from './modelPaths'
+import { registerProLanguages } from './pro/languages'
 
 let configured = false
 
@@ -119,6 +122,7 @@ export function configureMonacoWorkers(): void {
   loader.config({ monaco })
   defineMonacoThemes()
   configureLanguageDefaults()
+  registerProLanguages(monaco)
   ;(self as unknown as { MonacoEnvironment: unknown }).MonacoEnvironment = {
     getWorker(_workerId: string, label: string) {
       if (label === 'css' || label === 'scss' || label === 'less')

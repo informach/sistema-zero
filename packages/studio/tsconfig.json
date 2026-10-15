@@ -28,6 +28,9 @@
     "playground",
     "e2e",
     "scripts/project-migrations",
+    "scripts/gen-pro-kit-*.ts",
+    "scripts/verify-canvas-*.ts",
+    "scripts/verify-pro-*.ts",
     "test-setup.ts",
     "playwright.config.ts"
   ],

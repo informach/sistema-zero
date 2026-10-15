@@ -1,4 +1,9 @@
-import { PREVIEW_MESSAGE_SOURCE, sanitizePreviewStorageData } from './types'
+import {
+  PREVIEW_MESSAGE_SOURCE,
+  PREVIEW_STORAGE_MAX_KEYS,
+  PREVIEW_STORAGE_MAX_TOTAL_CHARS,
+  sanitizePreviewStorageData,
+} from './types'
 
 /**
  * Runtime injetado no `<head>` do iframe (ANTES de qualquer script de extensão e
@@ -70,8 +75,8 @@ export function buildStorageBridgeRuntime(options: StorageBridgeOptions = {}): s
   // string pura (sem imports). Mantê-los em SINCRONIA com types.ts: o parent clampa
   // o mirror com os mesmos números; aqui dentro lançamos QuotaExceededError ao
   // estourar (semântica do localStorage real — também didático).
-  var MAX_KEYS = 500;
-  var MAX_TOTAL_CHARS = 1000000;
+  var MAX_KEYS = ${PREVIEW_STORAGE_MAX_KEYS};
+  var MAX_TOTAL_CHARS = ${PREVIEW_STORAGE_MAX_TOTAL_CHARS};
   // Canal de reload: window.name é o ÚNICO armazenamento síncrono que sobrevive a
   // um location.reload() DENTRO deste iframe de origem opaca (o mesmo
   // browsing-context é reusado; localStorage/sessionStorage reais lançam). O jogo

@@ -2,7 +2,6 @@
  * A aba Pintar e a cor da peça no Modelar. Os nomes das ferramentas (Lápis, Borracha, Balde,
  * Conta-gotas) continuam os de `COPY.scene`: são os mesmos da pintura de sempre.
  */
-import { COPY } from './copy'
 
 export const SCENE_PAINT_COPY = {
   tab: 'Pintar',
@@ -21,9 +20,9 @@ export const SCENE_PAINT_COPY = {
   mirrorShort: 'Espelhar',
   moreBrushes: 'Mais pincéis',
   mirrorHint:
-    'Pinta também o outro lado da mesma peça. Duas peças soltas não se espelham: para isso, use o “Criar espelho” do Modelar.',
+    'Reflete no eixo X local, pelo meio de cada peça, independentemente do pivô. Duas peças soltas não se espelham: para isso, use o “Criar espelho” do Modelar.',
   /** A linha que aparece com o espelho ligado (a dica do botão só aparece com o mouse). */
-  mirrorOn: 'Espelho ligado: pinta também o outro lado desta peça.',
+  mirrorOn: 'Espelho em X, pelo meio de cada peça.',
   mirrorCloseUp: 'De perto, o espelho não vale: ele pinta o outro lado no palco.',
   faceOnly: 'Toque numa face da peça, no palco.',
   rotateOnlyRect: 'Só dá para girar a pintura de faces de quatro cantos.',
@@ -36,8 +35,8 @@ export const SCENE_PAINT_COPY = {
   fillHint: 'Toque numa face para encher a parte dela que tem a mesma cor.',
   pickerHint: 'Clique na cor que quer usar. Depois, continue com o Pincel.',
   choosePiece: 'Toque numa peça para pintar.',
-  modelHint: `Arraste na peça para pintar. Para girar a câmera, arraste fora dela ou escolha “${COPY.scene.paintLook}”.`,
-  more: 'Mais jeitos de pintar',
+  modelHint: 'Clique e arraste para pintar. Shift: linha reta. Alt: pegar cor.',
+  more: 'Camadas e ferramentas de pintura',
   /** "Mais jeitos de pintar" sem peça escolhida: o painel não fica vazio e mudo. */
   moreChoose: 'Toque numa peça para ver os outros jeitos de pintar nela.',
   crooked: (count: number) =>

@@ -95,6 +95,9 @@ export class PensaJourneyService {
   archive(actor: PensaJourneyActor, projectId: string, status: 'active' | 'archived') {
     return this.repo.archive(actor, projectId, status, this.clock())
   }
+  rename(actor: PensaJourneyActor, projectId: string, name: string) {
+    return this.repo.rename(actor, projectId, name, this.clock())
+  }
   start(actor: PensaJourneyActor, projectId: string, input: PensaGenerationStart) {
     return this.repo.start(actor, projectId, input, this.clock())
   }

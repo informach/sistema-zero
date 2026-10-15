@@ -154,7 +154,11 @@ describe('a aba Pintar', () => {
 
   test('da oficina aberta ao primeiro traço: 3 interações à vista, nenhum painel aberto', async () => {
     const { document, door } = twoBoxes()
-    const { editor, view, stage, tap, drag } = mount(document)
+    const { editor, view, stage, tap, drag } = mount(document, (children) => (
+      <MoldaToolAccessProvider access={{ allow: moldaToolFamilyIds(['basic']) }}>
+        {children}
+      </MoldaToolAccessProvider>
+    ))
     await waitFor(() => expect(stage.callbacks).not.toBeNull())
     // 1. Tocar na peça, no palco.
     tap(door)
@@ -187,7 +191,9 @@ describe('a aba Pintar', () => {
     expect(editor.getState().canUndo).toBe(false)
     await waitFor(() => expect(stage.target).toBeNull())
     expect(screen.queryByRole('alert')).toBeNull()
-    expect(screen.getByText(SCENE_PAINT_COPY.choosePiece)).toBeDefined()
+    expect(
+      screen.getByRole('button', { name: 'Todas as peças' }).getAttribute('aria-pressed'),
+    ).toBe('true')
     editor.getState().dispose()
   })
 
@@ -226,7 +232,9 @@ describe('a aba Pintar', () => {
     await waitFor(() => expect(stage.callbacks).not.toBeNull())
     fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
     expect(stage.target).toBeNull()
-    expect(screen.getByText(SCENE_PAINT_COPY.choosePiece)).toBeDefined()
+    expect(
+      screen.getByRole('button', { name: 'Todas as peças' }).getAttribute('aria-pressed'),
+    ).toBe('true')
     tap(door)
     expect(stage.target?.nodeId).toBe(door)
     fireEvent.click(swatch(editor.getState().asset, 5))
@@ -266,7 +274,9 @@ describe('a aba Pintar', () => {
     fireEvent.keyDown(shell, { key: 'Escape' })
     await waitFor(() => expect(stage.target).toBeNull())
     expect(stage.mode).toBe('paint')
-    expect(screen.getByText(SCENE_PAINT_COPY.choosePiece)).toBeDefined()
+    expect(
+      screen.getByRole('button', { name: 'Todas as peças' }).getAttribute('aria-pressed'),
+    ).toBe('true')
     // Soltar a peça sem pintar devolve a criação como estava, sem passo de desfazer.
     expect(editor.getState().asset).toBe(document)
     expect(editor.getState().canUndo).toBe(false)
@@ -526,7 +536,7 @@ describe('atalhos do editor antigo na aba Pintar', () => {
   const pressed = (name: string) =>
     screen.getByRole('button', { name }).getAttribute('aria-pressed') === 'true'
 
-  test('P, E, G, I, 1 a 3, M, R e F trocam a ferramenta; a dica mostra a tecla', async () => {
+  test('B, E, G, I, 1 a 3, M, R e F trocam a ferramenta; a dica mostra a tecla', async () => {
     const { document, door } = twoBoxes()
     const { editor, stage, tap, view } = mount(document)
     await waitFor(() => expect(stage.callbacks).not.toBeNull())
@@ -534,14 +544,14 @@ describe('atalhos do editor antigo na aba Pintar', () => {
     fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
     const shell = view.getByRole('region', { name: COPY.scene.title })
     const press = (key: string) => fireEvent.keyDown(shell, { key })
-    expect(screen.getByRole('button', { name: COPY.scene.paintPencil }).title).toContain('(P)')
+    expect(screen.getByRole('button', { name: COPY.scene.paintPencil }).title).toContain('(B)')
     expect(press('e')).toBe(false)
     expect(pressed(COPY.scene.paintEraser)).toBe(true)
     press('g')
     expect(pressed(COPY.scene.paintFill)).toBe(true)
     press('i')
     expect(pressed(COPY.scene.paintPicker)).toBe(true)
-    press('p')
+    press('b')
     expect(pressed(COPY.scene.paintPencil)).toBe(true)
     press('3')
     expect(pressed(SCENE_PAINT_COPY.width[3])).toBe(true)
@@ -602,22 +612,20 @@ describe('atalhos do editor antigo na aba Pintar', () => {
 describe('"+ Nova cor" na aba Pintar', () => {
   test('escolher tinta não altera o projeto; a cor entra com o primeiro traço e permanece escolhida após desfazer', async () => {
     const { document, door } = twoBoxes()
-    const { editor, stage, tap, drag, view } = mount(document)
+    const { editor, stage, tap, drag } = mount(document)
     await waitFor(() => expect(stage.callbacks).not.toBeNull())
     tap(door)
     fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
     const colors = resolvePaletteColors(editor.getState().asset).length
-    const input = view.container.querySelector<HTMLInputElement>(
-      'input[name="molda-scene-new-color"]',
-    )!
+    const input = screen.getByLabelText('Cor hexadecimal') as HTMLInputElement
     // O seletor nativo dispara `input` a cada passo do arrasto e `change` só ao fechar.
-    fireEvent.input(input, { target: { value: '#123456' } })
-    fireEvent.input(input, { target: { value: '#234567' } })
-    fireEvent.input(input, { target: { value: '#345678' } })
+    fireEvent.change(input, { target: { value: '#123456' } })
+    fireEvent.change(input, { target: { value: '#234567' } })
+    fireEvent.change(input, { target: { value: '#345678' } })
     expect(editor.getState().asset.extraColors).toBeUndefined()
     expect(editor.getState().canUndo).toBe(false)
     expect(input.value).toBe('#345678')
-    fireEvent.change(input, { target: { value: '#345678' } })
+    fireEvent.blur(input)
     await act(async () => {
       await Promise.resolve()
     })
@@ -737,20 +745,18 @@ describe('o review da aba Pintar', () => {
     editor.getState().dispose()
   })
 
-  test('com o foco no seletor de cor escondido, os atalhos continuam valendo', async () => {
+  test('digitar no hexadecimal não aciona atalhos de pintura', async () => {
     const { document, door } = twoBoxes()
-    const { editor, stage, tap, view } = mount(document)
+    const { editor, stage, tap } = mount(document)
     await waitFor(() => expect(stage.callbacks).not.toBeNull())
     tap(door)
     fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
-    const input = view.container.querySelector<HTMLInputElement>(
-      'input[name="molda-scene-new-color"]',
-    )!
+    const input = screen.getByLabelText('Cor hexadecimal') as HTMLInputElement
     input.focus()
     fireEvent.keyDown(input, { key: 'e' })
     expect(
       screen.getByRole('button', { name: COPY.scene.paintEraser }).getAttribute('aria-pressed'),
-    ).toBe('true')
+    ).toBe('false')
     editor.getState().dispose()
   })
 

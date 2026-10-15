@@ -342,7 +342,7 @@ describe('syncDrawingsIntoProjects', () => {
     askedKeys.length = 0
     const result = await syncDrawingsIntoProjects(useProjectStore)
     expect(result.updatedInOtherProjects).toBe(6)
-    expect(askedKeys.some((key) => key.startsWith('sz:v2:project-thumb:'))).toBe(false)
+    expect(askedKeys.some((key) => key.startsWith('sz:v3:project-thumb:'))).toBe(false)
   })
 
   it('alcança TAMBÉM os jogos fechados (a decisão dela)', async () => {

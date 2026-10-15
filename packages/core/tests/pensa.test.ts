@@ -8,6 +8,7 @@ import {
   nextPensaMissionFor,
   type PensaProposal,
   type PensaTeamMissionProgress,
+  pensaQuestionsLeft,
   pensaZeroStage,
 } from '../src/pensa'
 
@@ -63,6 +64,17 @@ describe('Pensa: autoria, evidência e retomada', () => {
     const resumed = applyPensaCommand(closed, 1, { type: 'resume' }, now)
     expect(resumed.stage).toBe('idea')
     expect(resumed.closedReason).toBeNull()
+  })
+
+  test('retomar uma versão encerrada e pausada só tira a pausa (a conclusão não se perde)', () => {
+    const closed = applyPensaCommand(initial(), 0, { type: 'close', reason: 'incomplete' }, now)
+    const paused = applyPensaCommand(closed, 1, { type: 'pause' }, now)
+    const resumed = applyPensaCommand(paused, 2, { type: 'resume' }, now)
+    expect(resumed.paused).toBe(false)
+    expect(resumed.stage).toBe('closed')
+    expect(resumed.closedReason).toBe('incomplete')
+    // Sem pausa, retomar continua reabrindo a versão, como antes.
+    expect(applyPensaCommand(resumed, 3, { type: 'resume' }, now).stage).toBe('idea')
   })
 
   test('aceitação antiga e escrita concorrente são recusadas', () => {
@@ -239,5 +251,58 @@ describe('Pensa: equipe (papéis e próxima missão de cada pessoa)', () => {
       mine: null,
       waitingOn: { missionId: 'nave', workers: [bia] },
     })
+  })
+})
+
+describe('Pensa: o teto de perguntas do Zappy', () => {
+  test('na primeira versão são duas perguntas antes de propor', () => {
+    expect(pensaQuestionsLeft(initial())).toBe(2)
+    expect(pensaQuestionsLeft({ ...initial(), questionsAsked: 1 })).toBe(1)
+    expect(pensaQuestionsLeft({ ...initial(), questionsAsked: 2 })).toBe(0)
+    expect(pensaQuestionsLeft({ ...initial(), questionsAsked: 5 })).toBe(0)
+  })
+
+  test('com o jogo já construído sobra uma: o jogo responde quase tudo', () => {
+    expect(pensaQuestionsLeft({ ...initial(), builtResults: ['O gato pula'] })).toBe(1)
+    const checkpoint = {
+      id: 'c',
+      creationId: 'jogo',
+      saveRevision: '1',
+      planRevision: 1,
+      cycleId: 'cycle',
+      createdAt: now,
+    }
+    expect(pensaQuestionsLeft({ ...initial(), checkpoint, questionsAsked: 1 })).toBe(0)
+  })
+
+  test('escolher o começo e adaptar o caminho zeram as perguntas e o nome provisório', () => {
+    // Antes só uma proposta NOVA zerava: aceitar a anterior depois de uma pergunta levava o
+    // contador para a construção, e o "Adaptar meu caminho" seguinte nascia sem pergunta.
+    const proposta = {
+      ...initial(),
+      stage: 'proposal' as const,
+      proposal: { id: 'p' } as PensaProposal,
+      questionsAsked: 1,
+      workingTitle: 'A nave veloz',
+    }
+    const aceito = applyPensaCommand(
+      proposta,
+      proposta.revision,
+      {
+        type: 'accept',
+        proposalId: 'p',
+      },
+      now,
+    )
+    expect(aceito.questionsAsked).toBe(0)
+    expect(aceito.workingTitle).toBeNull()
+    const adaptado = applyPensaCommand(
+      { ...aceito, stage: 'building', questionsAsked: 1, workingTitle: 'Outro' },
+      aceito.revision,
+      { type: 'revise' },
+      now,
+    )
+    expect(adaptado.questionsAsked).toBe(0)
+    expect(adaptado.workingTitle).toBeNull()
   })
 })

@@ -1,6 +1,6 @@
 import { canonicalHmacMessage, signHmac } from '@sistemazero/core/security'
 import type { StaffOperation } from '@sistemazero/core/staff'
-import { parseBuildRequest } from '@sistemazero/core/studio'
+import { parseStudioBuildSubmission } from '@sistemazero/core/studio'
 import { z } from 'zod'
 import type { StaffGateway } from '../../application/staff/staff-operations.service'
 
@@ -18,7 +18,11 @@ export function createStaffGateway(options: {
       if (!options.gatewayUrl) throw new Error('Staff gateway is not configured')
       const route =
         operation.action === 'studio.build'
-          ? { method: 'POST' as const, path: '/v1/build', body: parseBuildRequest(operation.build) }
+          ? {
+              method: 'POST' as const,
+              path: '/v1/build',
+              body: parseStudioBuildSubmission(operation.build),
+            }
           : staffRoute(operation, actorId)
       const body = route.body ? JSON.stringify(route.body) : undefined
       const headers = new Headers({ accept: 'application/json' })
@@ -75,7 +79,13 @@ export function createStaffGateway(options: {
         const failure = z
           .object({
             ok: z.literal(false),
-            code: z.enum(['BUILD_FAILED', 'OUTPUT_TOO_LARGE']),
+            code: z.enum([
+              'INVALID_REQUEST',
+              'BUILD_FAILED',
+              'TYPECHECK_FAILED',
+              'PLAYTEST_FAILED',
+              'OUTPUT_TOO_LARGE',
+            ]),
             message: z.string(),
             output: z.string().optional(),
           })

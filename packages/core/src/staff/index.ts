@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { parseBuildRequest, studioBuildSchema } from '../studio/build-contract'
+import { parseStudioBuildSubmission, studioBuildSchema } from '../studio/build-contract'
 
 const id = z.string().uuid()
 const page = {
@@ -74,7 +74,7 @@ export const staffOperationSchema = z.discriminatedUnion('action', [
       action: z.literal('studio.build'),
       build: studioBuildSchema.superRefine((value, ctx) => {
         try {
-          parseBuildRequest(value)
+          parseStudioBuildSubmission(value)
         } catch {
           ctx.addIssue({ code: 'custom', message: 'Invalid Studio build contract' })
         }

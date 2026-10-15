@@ -7,6 +7,8 @@ import { PurgeUserDataService } from './application/admin/purge-user-data/purge-
 import { ConsumeAiUsageService } from './application/ai-usage/consume-ai-usage.service'
 import { GetAiCreditsService } from './application/ai-usage/get-ai-credits.service'
 import { GetAiUsageStatsService } from './application/ai-usage/get-ai-usage-stats.service'
+import { StudioAiAccountService } from './application/ai-usage/studio-ai-account.service'
+import { StudioAiUsageService } from './application/ai-usage/studio-ai-usage.service'
 import { GetCourseAnalyticsService } from './application/analytics/get-course-analytics.service'
 import { BuyAvatarPartService } from './application/avatar/buy-avatar-part.service'
 import { EquipAvatarService } from './application/avatar/equip-avatar.service'
@@ -92,6 +94,7 @@ import { JoinPensaProjectService } from './application/pensa/join-project.servic
 import { PensaJourneyService } from './application/pensa/journey.service'
 import { ListPensaProjectMembersService } from './application/pensa/list-project-members.service'
 import { ListPensaProjectsService } from './application/pensa/list-projects.service'
+import { GetPensaFunnelService } from './application/pensa/pensa-funnel.service'
 import { RemovePensaProjectMemberService } from './application/pensa/remove-project-member.service'
 import { ReplacePensaTasksService } from './application/pensa/replace-tasks.service'
 import { SavePensaArtifactService } from './application/pensa/save-artifact.service'
@@ -114,6 +117,7 @@ import { GetRoomService } from './application/room/get-room.service'
 import { SaveRoomService } from './application/room/save-room.service'
 import { SaveCourseRatingService } from './application/save-course-rating/save-course-rating.service'
 import { SaveVideoPositionService } from './application/save-video-position/save-video-position.service'
+import { StudioBuilderService } from './application/studio-pro/studio-builder.service'
 import { StudioSubmissionsAdminService } from './application/studio-submissions-admin/studio-submissions-admin.service'
 import { GetStudioUnlocksService } from './application/studio-unlocks/get-studio-unlocks.service'
 import { SubmitQuizAttemptService } from './application/submit-quiz-attempt/submit-quiz-attempt.service'
@@ -135,6 +139,7 @@ import { FunnelChallengeAnalyticsGateway } from './infrastructure/gateways/funne
 import { createGatewayMessagingClient } from './infrastructure/gateways/gateway-messaging-client'
 import { createHubHttpGateway, noopHubGateway } from './infrastructure/gateways/hub-http.gateway'
 import { LiveProfileOwnershipGateway } from './infrastructure/gateways/live-profile-ownership.gateway'
+import { OpenRouterOAuthGateway } from './infrastructure/gateways/openrouter-oauth'
 import { teacherRecipientDirectory } from './infrastructure/gateways/teacher-recipient-http.gateway'
 import type { CloudflareSfuMediaProvider } from './infrastructure/live/cloudflare-sfu.provider'
 import { createLiveMediaInfrastructure } from './infrastructure/live/create-live-media'
@@ -168,12 +173,16 @@ import { DrizzleLiveMaterialsRepository } from './infrastructure/persistence/dri
 import { DrizzleLiveWorkspaceRepository } from './infrastructure/persistence/drizzle/live-workspace.repository'
 import { DrizzleParentReportRepository } from './infrastructure/persistence/drizzle/parent-report.repository'
 import { DrizzlePensaRepository } from './infrastructure/persistence/drizzle/pensa.repository'
+import { DrizzlePensaFunnelRepository } from './infrastructure/persistence/drizzle/pensa-funnel.repository'
 import { DrizzlePensaJourneyRepository } from './infrastructure/persistence/drizzle/pensa-journey.repository'
 import { DrizzleProcessedWebhookRepository } from './infrastructure/persistence/drizzle/processed-webhook.repository'
 import { DrizzleProgressRepository } from './infrastructure/persistence/drizzle/progress.repository'
 import { DrizzleQuizAttemptRepository } from './infrastructure/persistence/drizzle/quiz-attempt.repository'
 import { DrizzleRenewalReminderRepository } from './infrastructure/persistence/drizzle/renewal-reminder.repository'
 import { DrizzleRoomRepository } from './infrastructure/persistence/drizzle/room.repository'
+import { DrizzleStudioAiAccountRepository } from './infrastructure/persistence/drizzle/studio-ai-account.repository'
+import { DrizzleStudioAiUsageRepository } from './infrastructure/persistence/drizzle/studio-ai-usage.repository'
+import { DrizzleStudioBuilderRepository } from './infrastructure/persistence/drizzle/studio-builder.repository'
 import { DrizzleStudioSubmissionRepository } from './infrastructure/persistence/drizzle/studio-submission.repository'
 import { DrizzleStudioUnlockRepository } from './infrastructure/persistence/drizzle/studio-unlock.repository'
 import { DrizzleTeacherBroadcastRepository } from './infrastructure/persistence/drizzle/teacher-broadcast.repository'
@@ -184,6 +193,7 @@ import { DrizzleVideoPositionRepository } from './infrastructure/persistence/dri
 import { DrizzleZappyRepository } from './infrastructure/persistence/drizzle/zappy.repository'
 import { DrizzleZappyKnowledgeRepository } from './infrastructure/persistence/drizzle/zappy-knowledge.repository'
 import { EncryptedRankingCursorCodec } from './infrastructure/security/ranking-cursor.codec'
+import { studioAiVaultConfig } from './infrastructure/security/studio-ai-vault-config'
 import { parsePublishedLessonBlock } from './interfaces/http/lesson-draft.dtos'
 import { createServer } from './interfaces/http/server'
 
@@ -290,6 +300,33 @@ export async function createApplication(env: Env): Promise<Application> {
   )
   // Quota de IA por conta (o BFF consome 1 crédito antes de cada ida ao LLM).
   const aiUsageRepo = new DrizzleAiUsageRepository(db)
+  const studioAiSecrets = studioAiVaultConfig(env)
+  const studioAiAccountsRepo = new DrizzleStudioAiAccountRepository(db)
+  const studioAiAccount = new StudioAiAccountService({
+    accounts: studioAiAccountsRepo,
+    oauth: new OpenRouterOAuthGateway(),
+    ...studioAiSecrets,
+  })
+  const studioAiUsageRepo = new DrizzleStudioAiUsageRepository(db)
+  const studioBuilder = new StudioBuilderService(new DrizzleStudioBuilderRepository(db))
+  const studioAiUsage = new StudioAiUsageService({
+    repository: studioAiUsageRepo,
+    vault: studioAiSecrets.vault,
+    clock,
+    limits: {
+      dailyLimit: env.AI_LIMIT_DAILY,
+      monthlyLimit: env.AI_LIMIT_MONTHLY,
+      dailyMicroUsd: env.STUDIO_AI_DAILY_MICRO_USD,
+      monthlyMicroUsd: env.STUDIO_AI_MONTHLY_MICRO_USD,
+      maxConcurrent: env.STUDIO_AI_MAX_CONCURRENT,
+      externalDailyRuns: env.STUDIO_AI_EXTERNAL_DAILY_RUNS,
+      priceCaps: {
+        prompt: env.STUDIO_AI_MAX_PROMPT_PRICE,
+        completion: env.STUDIO_AI_MAX_COMPLETION_PRICE,
+        request: 0,
+      },
+    },
+  })
   const consumeAiUsage = new ConsumeAiUsageService({
     aiUsage: aiUsageRepo,
     dailyLimit: env.AI_LIMIT_DAILY,
@@ -299,12 +336,14 @@ export async function createApplication(env: Env): Promise<Application> {
   // Leitura do saldo (medidor da criança + painel dos pais). MESMO repo e MESMAS
   // envs do consume: os tetos vivem num lugar só.
   const aiCredits = new GetAiCreditsService({
+    studioAccounts: studioAiAccountsRepo,
     aiUsage: aiUsageRepo,
     dailyLimit: env.AI_LIMIT_DAILY,
     monthlyLimit: env.AI_LIMIT_MONTHLY,
     clock,
   })
-  const aiUsageStats = new GetAiUsageStatsService(aiUsageRepo, clock)
+  const aiUsageStats = new GetAiUsageStatsService(aiUsageRepo, clock, studioAiUsageRepo)
+  const pensaFunnel = new GetPensaFunnelService(new DrizzlePensaFunnelRepository(db), clock)
   const zappy = new ZappyHistoryService(new DrizzleZappyRepository(db), clock)
   // S2S: resumo de progresso dos filhos (consumido pelo BFF da área dos pais, kids).
   // O hub entra p/ os JOGOS da semana no Mural (best-effort — sem HUB_BASE_URL degrada).
@@ -967,6 +1006,9 @@ export async function createApplication(env: Env): Promise<Application> {
       buyRoomItem,
       profileAllowance,
       consumeAiUsage,
+      studioAiAccount,
+      studioAiUsage,
+      studioBuilder,
       aiCredits,
       zappy,
       zappyKnowledge,
@@ -1043,6 +1085,7 @@ export async function createApplication(env: Env): Promise<Application> {
       ranking,
       analytics,
       aiUsageStats,
+      pensaFunnel,
       grantManual,
       manageEntitlement,
       teacherThreads,

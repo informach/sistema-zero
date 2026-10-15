@@ -1,0 +1,75 @@
+bun test v1.3.11 (af24e281)
+
+src\components\assets\MoldaImportDialog.test.tsx:
+An update to AssetsPanel inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to AssetsPanel inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+(pass) AssetsPanel — botão "Trazer do Molda" > sem o adapter (aula/admin): nem o botão, nem a aba que só ele justificava [141.00ms]
+(pass) AssetsPanel — botão "Trazer do Molda" > com o adapter: botão na aba dos modelos 3D, que o próprio adapter faz existir [125.00ms]
+(pass) MoldaImportDialog > does not deliver a pending import after changing project [172.00ms]
+(pass) MoldaImportDialog > does not deliver a pending import after changing close [141.00ms]
+(pass) MoldaImportDialog > lista a galeria com o selo do tipo e a busca filtra sem acento/caixa [109.00ms]
+(pass) MoldaImportDialog > SEM consumidor 3D: modelo e céu ficam desabilitados com a dica; a textura entra como imagem [172.00ms]
+(pass) MoldaImportDialog > requires the reported consent before importing and preserves the project link [156.00ms]
+(pass) MoldaImportDialog > COM o Jogo 3D instalado: o modelo entra como model3d (com o nome do arquivo) e o céu como environment3d [188.00ms]
+(pass) MoldaImportDialog > erro do adapter aparece na modal; criação apagada (not-found) sai da lista [140.00ms]
+(pass) MoldaImportDialog > lista rejeitada mostra erro com "Tentar de novo" [125.00ms]
+(pass) importa e resolve colisão de nome na instância montada, preservando a store global [63.00ms]
+(pass) régua pura > filterMoldaCreations: vazio devolve tudo; acento/caixa não importam
+(pass) régua pura > moldaCreationNeeds3D: só a textura dispensa consumidor 3D
+(pass) régua pura > projectHas3DConsumer: o kit Jogo 3D conta (desde os blocos do Molda), como o Avançado, o Mundo 3D e o Canvas 3D
+
+src\official-extensions\game-3d-advanced\__tests__\moldaArticulated.test.ts:
+(pass) Molda hierarchy, affine groups, mirrors and two local/delta clips keep native poses in independent Studio instances [94.00ms]
+(pass) pause, recycling, stale handles and teardown preserve the other native character and release shared resources once [62.00ms]
+
+src\official-extensions\game-3d-advanced\__tests__\moldaFlipbook.test.ts:
+THREE.GLTFLoader: Couldn't load texture blob:0dfa448c-6897-417e-9663-c3d9c77c33f0
+(pass) o contrato do Molda chega inteiro ao runtime, pelo userData do material [47.00ms]
+THREE.GLTFLoader: Couldn't load texture blob:088dc310-54ca-437c-bbdf-a2cb1701f1b2
+(pass) a sequência anda no tempo do jogo e mostra a célula que o Molda gravou [47.00ms]
+THREE.GLTFLoader: Couldn't load texture blob:d3bc575c-5d6b-492a-8d5d-f7e68529e649
+(pass) a pausa congela a pintura e continuar retoma de onde parou [31.00ms]
+THREE.GLTFLoader: Couldn't load texture blob:90d3b54d-dcc6-4424-83c9-3ed5a296e6e2
+(pass) "Jogar de novo" recomeça a pintura do primeiro quadro [31.00ms]
+THREE.GLTFLoader: Couldn't load texture blob:812d1a93-b892-4b36-bb2e-4f3be4f81841
+(pass) todas as cópias do molde compartilham a mesma folha e a mesma linha do tempo [47.00ms]
+THREE.GLTFLoader: Couldn't load texture blob:d6c828ba-b8a1-4134-bbe9-90567ccfe6fd
+(pass) contrato de uma versão futura deixa a pintura parada, sem adivinhação [31.00ms]
+THREE.GLTFLoader: Couldn't load texture blob:18f37752-7227-4853-b1c9-74d1a3955fa8
+(pass) invalid or excessive flipbook metadata stays static without coercion: {"frames":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]} [32.00ms]
+THREE.GLTFLoader: Couldn't load texture blob:37897c64-31ca-4479-afbe-65245aad7fc6
+(pass) invalid or excessive flipbook metadata stays static without coercion: {"frames":[0.5,1.5]} [47.00ms]
+THREE.GLTFLoader: Couldn't load texture blob:f375e84b-a52f-4eb8-b741-9940bfb31ba2
+(pass) invalid or excessive flipbook metadata stays static without coercion: {"columns":1.5} [46.00ms]
+THREE.GLTFLoader: Couldn't load texture blob:677cb772-fd0e-4d03-ad3f-a3265adb1e24
+(pass) invalid or excessive flipbook metadata stays static without coercion: {"fps":61} [32.00ms]
+THREE.GLTFLoader: Couldn't load texture blob:5c56c6c0-5586-4d5e-a36f-d056c6349fde
+(pass) invalid or excessive flipbook metadata stays static without coercion: {"frames":["1","0"]} [31.00ms]
+
+src\official-extensions\game-3d-advanced\__tests__\moldaSkinned.test.ts:
+(pass) native weighted GLB deforms in independent Studio entities with affine bones, hidden helpers, mirrors and local/delta clips [62.00ms]
+(pass) pause and recycling retain owned skin resources, while teardown releases active and pooled bone textures and mixer bindings exactly once [47.00ms]
+(pass) rebuilding the project frees pooled skeleton textures and old mixer actions without releasing cached geometry or material [32.00ms]
+
+ 30 pass
+ 0 fail
+ 2192 expect() calls
+Ran 30 tests across 4 files. [4.26s]

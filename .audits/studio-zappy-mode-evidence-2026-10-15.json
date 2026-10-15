@@ -1,0 +1,14 @@
+{
+  "proRulePresent": true,
+  "contradictoryRules": [
+    "selecionar o bloco",
+    "apontando o bloco",
+    "Cite no texto somente blocos",
+    "RECEITAS INTERNAS DE MECÂNICAS"
+  ],
+  "proBlockSuggestionRejected": null,
+  "normalTerminalSuggestionRejected": "unsafe-text",
+  "normalTextualProgrammingSuggestionRejected": null,
+  "proInstallCommandRejected": "unsafe-text",
+  "fixedReply": "Eu cuido só das dúvidas do projeto aberto no Studio. Selecione um bloco, rode o jogo ou me conte uma mecânica que não funcionou."
+}

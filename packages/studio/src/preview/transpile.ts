@@ -13,7 +13,11 @@ import { transform } from 'sucrase'
  * Erro de transpile NÃO quebra o preview: vira um `throw` legível no console do
  * iframe (capturado pelo interceptor como runtimeError).
  */
-export function transpileExtra(fileName: string, code: string): string {
+export function transpileExtra(
+  fileName: string,
+  code: string,
+  options: { throwOnError?: boolean } = {},
+): string {
   const lower = fileName.toLowerCase()
   const isTs = lower.endsWith('.ts')
   const isTsx = lower.endsWith('.tsx')
@@ -26,6 +30,8 @@ export function transpileExtra(fileName: string, code: string): string {
   // emitimos um `throw` legível (mesmo padrão do erro de transpile abaixo), que
   // o interceptor captura como runtimeError visível no console do aluno.
   if (isTsx || isJsx) {
+    if (options.throwOnError)
+      throw new Error(`JSX/TSX não é suportado neste projeto (${fileName}).`)
     return `throw new Error(${JSON.stringify(
       `JSX/TSX não é suportado no preview (${fileName}). Não há React no ambiente de aprendizado.`,
     )});`
@@ -36,6 +42,7 @@ export function transpileExtra(fileName: string, code: string): string {
     // tipos do TypeScript, sem JSX.
     return transform(code, { transforms: ['typescript'] }).code
   } catch (error) {
+    if (options.throwOnError) throw error
     const message = error instanceof Error ? error.message : String(error)
     return `throw new Error(${JSON.stringify(`Erro ao compilar ${fileName}: ${message}`)});`
   }

@@ -2,6 +2,8 @@ import { Elysia, t } from 'elysia'
 import type { AccessCheckService } from '../../../application/access-check/access-check.service'
 import type { ConsumeAiUsageService } from '../../../application/ai-usage/consume-ai-usage.service'
 import type { GetAiCreditsService } from '../../../application/ai-usage/get-ai-credits.service'
+import type { StudioAiAccountService } from '../../../application/ai-usage/studio-ai-account.service'
+import type { StudioAiUsageService } from '../../../application/ai-usage/studio-ai-usage.service'
 import type { BuyAvatarPartService } from '../../../application/avatar/buy-avatar-part.service'
 import type { EquipAvatarService } from '../../../application/avatar/equip-avatar.service'
 import type { GetAvatarService } from '../../../application/avatar/get-avatar.service'
@@ -42,6 +44,7 @@ import type { GetRoomService } from '../../../application/room/get-room.service'
 import type { SaveRoomService } from '../../../application/room/save-room.service'
 import type { SaveCourseRatingService } from '../../../application/save-course-rating/save-course-rating.service'
 import type { SaveVideoPositionService } from '../../../application/save-video-position/save-video-position.service'
+import type { StudioBuilderService } from '../../../application/studio-pro/studio-builder.service'
 import type { GetStudioUnlocksService } from '../../../application/studio-unlocks/get-studio-unlocks.service'
 import type { SubmitQuizAttemptService } from '../../../application/submit-quiz-attempt/submit-quiz-attempt.service'
 import type { SubmitStudioProjectService } from '../../../application/submit-studio-project/submit-studio-project.service'
@@ -113,6 +116,9 @@ function idempotencyKey(headers: Record<string, string | undefined>): string | u
 }
 
 export interface MembersRoutesDeps {
+  studioAiAccount?: StudioAiAccountService
+  studioAiUsage?: StudioAiUsageService
+  studioBuilder?: StudioBuilderService
   listMyCourses: ListMyCoursesService
   listCatalog: ListCatalogService
   accessCheck: AccessCheckService

@@ -78,6 +78,29 @@ export interface PensaProposal {
   capabilities: PensaCapabilitySnapshot
 }
 
+/**
+ * Do que trata a pergunta do Zappy (o selo em cima dela). Só o que muda a primeira missão vira
+ * pergunta: cor, som, cenário e nomes o Zappy decide e mostra como sugestão dele.
+ */
+export const PENSA_QUESTION_TOPICS = [
+  'action',
+  'goal',
+  'challenge',
+  'controls',
+  'world',
+  'dimension',
+] as const
+export type PensaQuestionTopic = (typeof PENSA_QUESTION_TOPICS)[number]
+/** Uma resposta pronta: o rótulo vai para o campo; a descrição diz o que muda no jogo. */
+export interface PensaQuestionOption {
+  label: string
+  description: string
+}
+export interface PensaQuestionChoices {
+  about: PensaQuestionTopic
+  options: PensaQuestionOption[]
+}
+
 export interface PensaJourneyMessage {
   id: string
   role: 'user' | 'assistant'
@@ -85,6 +108,18 @@ export interface PensaJourneyMessage {
   at: string
   revision: number
   final: boolean
+  /** Só nas perguntas do Zappy (15/10/2026): as respostas para tocar. Mensagens antigas não têm. */
+  choices?: PensaQuestionChoices
+}
+
+/**
+ * Quantas perguntas o Zappy ainda pode fazer antes de propor. Na primeira versão são duas; com o
+ * jogo já construído (uma versão guardada ou resultados prontos) o jogo responde quase tudo e
+ * sobra uma. Passado o teto, o planejador é obrigado a propor e completar o resto como sugestão.
+ */
+export function pensaQuestionsLeft(journey: PensaJourney): number {
+  const limit = journey.checkpoint || journey.builtResults?.length ? 1 : 2
+  return Math.max(0, limit - (journey.questionsAsked ?? 0))
 }
 
 export interface PensaObservedTest {
@@ -117,6 +152,13 @@ export interface PensaJourney {
   intent: string
   builtResults?: string[]
   revising?: boolean
+  /** Perguntas do Zappy desde a última proposta (a régua é `pensaQuestionsLeft`). */
+  questionsAsked?: number
+  /**
+   * O nome que o Zappy deu ao jogo junto com a primeira pergunta, antes da proposta. Enquanto o
+   * jogo ainda se chamar assim, o título da proposta pode trocá-lo; renomeado, o nome é da criança.
+   */
+  workingTitle?: string | null
   messages: PensaJourneyMessage[]
   proposal: PensaProposal | null
   acceptedProposalId: string | null
@@ -360,7 +402,9 @@ export function applyPensaCommand(
       break
     case 'resume':
       next.paused = false
-      if (current.stage === 'closed') {
+      // Pausado e encerrado: retomar só tira a pausa. Sem isto, "Continuar de onde parei" numa
+      // versão pronta a levava de volta para a construção e a conclusão se perdia.
+      if (current.stage === 'closed' && !current.paused) {
         next.stage = current.closedReason === 'met' ? 'building' : (current.closedFrom ?? 'idea')
         next.closedReason = null
         next.closedFrom = null
@@ -377,6 +421,10 @@ export function applyPensaCommand(
       next.acceptedProposalId = command.proposalId
       next.stage = 'preparing'
       next.paused = false
+      // As perguntas e o nome provisório eram da conversa que acabou: a próxima (um "Adaptar meu
+      // caminho") começa com o teto inteiro, mesmo quando a proposta escolhida é a anterior.
+      next.questionsAsked = 0
+      next.workingTitle = null
       break
     case 'observe':
       if (!['building', 'observing'].includes(current.stage) || !current.missionIds.length)
@@ -405,6 +453,8 @@ export function applyPensaCommand(
       next.closedFrom = null
       next.closedReason = null
       next.acceptedProposalId = null
+      next.questionsAsked = 0
+      next.workingTitle = null
       break
     case 'close':
       if (current.operationId || current.stage === 'preparing' || current.stage === 'closed')

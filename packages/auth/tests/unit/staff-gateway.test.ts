@@ -65,7 +65,13 @@ test('staff gateway keeps HMAC and Studio credentials server-side and preserves 
         build: {
           executionId: crypto.randomUUID(),
           templateId: 'react-ts',
-          files: { 'index.html': '<main/>', 'package.json': '{"scripts":{"malicious":"bad"}}' },
+          parentOrigin: 'https://kids.test',
+          validate: true,
+          files: {
+            'index.html': '<main/>',
+            'package.json': '{"dependencies":{"react":"19.2.0"}}',
+            'vite.config.ts': 'malicious()',
+          },
         },
       },
       actorId,
@@ -82,7 +88,11 @@ test('staff gateway keeps HMAC and Studio credentials server-side and preserves 
     })
     expect(calls[1]?.authorization).toBe('Bearer studio-server-secret')
     expect(calls[1]?.signature).toBeNull()
-    expect(calls[1]?.body).toMatchObject({ files: { 'index.html': '<main/>' } })
+    expect(calls[1]?.body).toMatchObject({
+      parentOrigin: 'https://kids.test',
+      validate: true,
+      files: { 'index.html': '<main/>', 'package.json': '{"dependencies":{"react":"19.2.0"}}' },
+    })
     expect(JSON.stringify(calls[1]?.body)).not.toContain('malicious')
     expect(JSON.stringify(build)).not.toContain('secret')
   } finally {

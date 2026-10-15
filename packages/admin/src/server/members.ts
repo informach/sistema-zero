@@ -1,4 +1,5 @@
 import 'server-only'
+import type { PensaFunnelView } from '@/lib/pensa-funnel'
 import type { MemberToolUsageView } from '@/lib/tool-usage'
 import type {
   AdminEntitlementView,
@@ -29,6 +30,11 @@ export function getAiUsageStats(
   month?: string,
 ): Promise<GatewayResponse<Omit<AiUsageStatsView, 'topAccounts'> & AiUsageStatsRaw>> {
   return gatewayFetch('/members/admin/ai-usage', { query: { month } })
+}
+
+/** Onde as crianças param no Pensa v2 (primeira versão dos jogos dos últimos `days` dias). */
+export function getPensaFunnel(days: number): Promise<GatewayResponse<PensaFunnelView>> {
+  return gatewayFetch('/members/admin/pensa/funnel', { query: { days } })
 }
 
 interface AiUsageStatsRaw {

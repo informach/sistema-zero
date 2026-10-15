@@ -556,7 +556,7 @@ test('o guia em equipe conhece a ponte de arte compartilhada', async () => {
     missions: [
       {
         key: 'walk',
-        steps: [{ action: 'Ande', where: 'No Estúdio', effect: 'O gato anda' }],
+        steps: [{ action: 'Ande', effect: 'O gato anda' }],
         testAction: 'Aperte a seta',
         expected: 'O gato anda',
       },
@@ -626,7 +626,7 @@ describe('o guia ensina a instalar a extensão e liga a ponte do Pinta (A3)', ()
   } as PensaProposal
   const guide = (key: string) => ({
     key,
-    steps: [{ action: 'Faça', where: 'Na paleta', effect: 'Aparece' }],
+    steps: [{ action: 'Faça', effect: 'Aparece' }],
     testAction: 'Teste',
     expected: 'Funciona',
   })
@@ -640,13 +640,21 @@ describe('o guia ensina a instalar a extensão e liga a ponte do Pinta (A3)', ()
     const steps = tasks.map((t) => t.guide.steps.map((s) => s.id))
     expect(steps[0]).toEqual(['install-game-2d', 'step-1'])
     expect(steps[2]).toEqual(['step-1'])
-    expect(steps[3]).toEqual(['install-game-2d-advanced', 'step-1'])
+    // Um plano antigo que mistura duas extensões de JOGO nunca manda instalar a segunda: o
+    // Estúdio recusaria (cada jogo usa uma só, 15/10/2026).
+    expect(steps[3]).toEqual(['step-1'])
     const install = tasks[0]!.guide.steps[0]!
-    expect(install.text).toBe('Instale a extensão Jogo 2D')
-    expect(install.hint).toContain('⋯ (Mais opções)')
-    expect(install.hint).toContain('"Extensões"')
-    expect(install.hint).toContain('"Instalar"')
+    // O passo é o GESTO inteiro; a dica diz o porquê (15/10/2026).
+    expect(install.text).toBe(
+      'Clique no botão ⋯ (Mais opções), no alto do Estúdio, escolha "Extensões" e, no cartão Jogo 2D, aperte "Instalar".',
+    )
+    expect(install.hint).toContain('Isso coloca os blocos do Jogo 2D na paleta')
     expect(install.required).toBe(false)
+  })
+
+  test('o passo do guia é o gesto (texto) e o porquê (dica), sem o "onde" solto', () => {
+    const step = tasks[0]!.guide.steps[1]!
+    expect(step).toEqual({ id: 'step-1', text: 'Faça', hint: 'Aparece', required: false })
   })
 
   test('a arte do Pinta é para o jogo: a ponte "Usar no Estúdio" fica ligada', () => {
@@ -656,5 +664,423 @@ describe('o guia ensina a instalar a extensão e liga a ponte do Pinta (A3)', ()
   test('as missões e o contexto do Estúdio não mudam (o members confere contra a proposta)', () => {
     expect(tasks[0]!.context).toMatchObject({ kind: 'studio', extensionIds: ['game-2d'] })
     expect(tasks.map((t) => t.position)).toEqual([0, 1, 2, 3])
+  })
+})
+
+test('a fala do Zappy chega à criança sem travessão (15/10/2026)', async () => {
+  quietConsole()
+  const f = fixture('answer')
+  await run(
+    f,
+    mock(async () => ({ text: 'Boa ideia — agora teste o pulo – e conte o que aconteceu.' })),
+  )
+  const published = f.published.mock.calls.at(-1)?.[4] as { type: string; text: string }
+  expect(published.type).toBe('answer')
+  expect(published.text).toBe('Boa ideia, agora teste o pulo, e conte o que aconteceu.')
+})
+
+describe('perguntas com respostas para tocar e o jogo que começa jogando (15/10/2026)', () => {
+  const question = (overrides: Record<string, unknown> = {}) => ({
+    question: {
+      about: 'action',
+      text: 'O que o seu dragão faz?',
+      options: [
+        { label: 'Voa desviando — das pedras', description: 'O jogo é não bater em nada.' },
+        { label: 'Pega ovos', description: 'Cada ovo vale um ponto.' },
+      ],
+      workingTitle: 'O voo do dragão',
+      ...overrides,
+    },
+    proposal: null,
+  })
+
+  test('a pergunta sai com o assunto, as respostas (sem travessão) e o nome provisório', async () => {
+    quietConsole()
+    const f = fixture()
+    let sent: Record<string, unknown> = {}
+    const complete = mock(async (input: { user: string; schemaName: string }) => {
+      expect(input.schemaName).toBe('pensa_idea')
+      sent = JSON.parse(input.user)
+      return question()
+    })
+    await run(f, complete)
+    expect(sent.questionsLeft).toBe(2)
+    expect(f.published.mock.calls[0]?.[4] as unknown).toEqual({
+      type: 'question',
+      text: 'O que o seu dragão faz?',
+      choices: {
+        about: 'action',
+        options: [
+          { label: 'Voa desviando, das pedras', description: 'O jogo é não bater em nada.' },
+          { label: 'Pega ovos', description: 'Cada ovo vale um ponto.' },
+        ],
+      },
+      workingTitle: 'O voo do dragão',
+    })
+  })
+
+  test('o modelo vê o assunto das perguntas já feitas e quantas ainda cabem', async () => {
+    quietConsole()
+    const f = fixture()
+    f.view.journey.questionsAsked = 1
+    f.view.journey.messages = [
+      {
+        id: 'm1',
+        role: 'assistant',
+        text: 'O que o seu dragão faz?',
+        at: '',
+        revision: 1,
+        final: true,
+        choices: question().question as never,
+      },
+      { id: 'm2', role: 'user', text: 'Pega ovos', at: '', revision: 1, final: true },
+    ]
+    let sent: { questionsLeft?: number; conversation?: Array<{ asked?: string }> } = {}
+    await run(
+      f,
+      mock(async (input: { user: string }) => {
+        sent = JSON.parse(input.user)
+        return { question: null, proposal: draft }
+      }),
+    )
+    expect(sent.questionsLeft).toBe(1)
+    expect(sent.conversation?.[0]?.asked).toBe('action')
+    expect(f.published.mock.calls[0]?.[4]).toMatchObject({ type: 'step', step: 'review' })
+  })
+
+  test('com o teto esgotado, perguntar de novo volta ao modelo com o motivo', async () => {
+    quietConsole()
+    const f = fixture()
+    f.view.journey.questionsAsked = 2
+    const users: string[] = []
+    const complete = mock(async (input: { user: string }) => {
+      users.push(input.user)
+      return users.length === 1 ? question() : { question: null, proposal: draft }
+    })
+    await run(f, complete)
+    expect(complete).toHaveBeenCalledTimes(2)
+    expect(JSON.parse(users[1] ?? '{}').previousAnswerRejected).toContain(
+      'Você já fez as perguntas que cabiam',
+    )
+    expect(f.published.mock.calls.at(-1)?.[4]).toMatchObject({ type: 'step', step: 'review' })
+  })
+
+  test('2D ou 3D só vira pergunta para quem tem os dois', async () => {
+    quietConsole()
+    const f = fixture()
+    const users: string[] = []
+    const complete = mock(async (input: { user: string }) => {
+      users.push(input.user)
+      return users.length === 1 ? question({ about: 'dimension' }) : question()
+    })
+    await run(f, complete)
+    expect(JSON.parse(users[1] ?? '{}').previousAnswerRejected).toContain('2D ou 3D não é escolha')
+    expect(f.published.mock.calls.at(-1)?.[4]).toMatchObject({ type: 'question' })
+  })
+
+  test('jogo já construído: 2D ou 3D não vira pergunta, e a proposta mantém o formato', async () => {
+    // A versão nova de um jogo 2D, de quem tem os dois formatos: antes o Zappy podia perguntar,
+    // a criança tocava "3D" e o members recusava a proposta com 409 (o formato não muda).
+    quietConsole()
+    const f = fixture()
+    ;(f.context.capabilities as { dimensions: string[] }).dimensions = ['2d', '3d']
+    f.view.journey.builtResults = ['O gato anda']
+    f.view.journey.proposal = { ...draft, id: 'antes', dimension: '2d' } as never
+    const users: string[] = []
+    const complete = mock(async (input: { user: string }) => {
+      users.push(input.user)
+      return users.length === 1
+        ? question({ about: 'dimension' })
+        : { question: null, proposal: { ...draft, dimension: '3d' } }
+    })
+    await run(f, complete)
+    const first = JSON.parse(users[0] ?? '{}')
+    expect(first.baseAlreadyBuilt ?? first.currentProposal).toMatchObject({ dimension: '2d' })
+    expect(JSON.parse(users[1] ?? '{}').previousAnswerRejected).toContain('O jogo já é 2D')
+  })
+
+  test('a revisão que troca o formato de um jogo já construído volta com o motivo', async () => {
+    quietConsole()
+    const f = fixture('review')
+    f.view.journey.builtResults = ['O gato anda']
+    f.view.journey.proposal = { ...draft, id: 'antes', dimension: '2d' } as never
+    f.work.output.draft = draft
+    const users: string[] = []
+    const complete = mock(async (input: { user: string }) => {
+      users.push(input.user)
+      return users.length === 1 ? { ...draft, dimension: '3d' } : draft
+    })
+    await run(f, complete)
+    expect(JSON.parse(users[1] ?? '{}').previousAnswerRejected).toContain('O jogo já é 2D')
+    expect(f.published.mock.calls.at(-1)?.[4]).toMatchObject({ type: 'proposal' })
+  })
+
+  test('"tanto faz" como resposta pronta volta ao modelo (a tela já tem o botão)', async () => {
+    quietConsole()
+    const f = fixture()
+    const users: string[] = []
+    const complete = mock(async (input: { user: string }) => {
+      users.push(input.user)
+      return users.length === 1
+        ? question({
+            options: [
+              { label: 'Voa', description: 'Não bater em nada.' },
+              { label: 'Tanto faz, escolhe você.', description: 'O Zappy decide.' },
+            ],
+          })
+        : question()
+    })
+    await run(f, complete)
+    expect(JSON.parse(users[1] ?? '{}').previousAnswerRejected).toContain('Tanto faz')
+  })
+
+  test('a troca do travessão que estoura o limite do campo volta ao modelo (não à publicação)', async () => {
+    // "1–3" vira "1 a 3": um rótulo de 79 caracteres passava a 81, e o members recusava com 400.
+    quietConsole()
+    const f = fixture()
+    const longo = `${'a'.repeat(76)}1–3`
+    expect(longo).toHaveLength(79)
+    const users: string[] = []
+    const complete = mock(async (input: { user: string }) => {
+      users.push(input.user)
+      return users.length === 1
+        ? question({
+            options: [
+              { label: longo, description: 'Não bater em nada.' },
+              { label: 'Pega ovos', description: 'Cada ovo vale um ponto.' },
+            ],
+          })
+        : question()
+    })
+    await run(f, complete)
+    expect(JSON.parse(users[1] ?? '{}').previousAnswerRejected).toContain('maior que o limite')
+    const published = f.published.mock.calls.at(-1)?.[4] as {
+      choices?: { options: Array<{ label: string }> }
+    }
+    for (const option of published.choices?.options ?? [])
+      expect(option.label.length).toBeLessThanOrEqual(80)
+  })
+
+  const artFirst = {
+    ...draft,
+    missions: [
+      {
+        key: 'desenho',
+        destination: 'pinta' as const,
+        title: 'Desenhar o dragão',
+        result: 'O dragão desenhado',
+        dependencies: [],
+        blockIds: [],
+        extensionIds: [],
+        mechanicIds: [],
+        toolIds: [],
+        asset: {
+          id: 'dragao',
+          kind: 'sprite' as const,
+          source: 'new' as const,
+          creationId: null,
+          description: 'Um dragão',
+        },
+      },
+      studioMission('integra', ['desenho']),
+    ],
+  }
+
+  test('jogo novo: a revisão recebe o motivo e não publica um caminho que começa desenhando', async () => {
+    quietConsole()
+    const f = fixture('review')
+    f.work.output.draft = artFirst
+    const users: string[] = []
+    const complete = mock(async (input: { user: string }) => {
+      users.push(input.user)
+      return users.length === 1 ? artFirst : draft
+    })
+    await run(f, complete)
+    expect(JSON.parse(users[0] ?? '{}').issues.join(' ')).toContain(
+      'a primeira missão de um jogo novo é no Estúdio',
+    )
+    // A revisão insistiu na arte primeiro: volta UMA vez com o motivo, e a segunda passa.
+    expect(JSON.parse(users[1] ?? '{}').previousAnswerRejected).toContain('figura pronta')
+    expect(f.published.mock.calls.at(-1)?.[4]).toMatchObject({ type: 'proposal' })
+  })
+
+  test('com o jogo já construído, a versão nova pode começar pela arte', async () => {
+    quietConsole()
+    const f = fixture('review')
+    f.view.journey.builtResults = ['O dragão voa']
+    f.work.output.draft = artFirst
+    let sent: { issues?: string[] } = {}
+    const complete = mock(async (input: { user: string }) => {
+      sent = JSON.parse(input.user)
+      return artFirst
+    })
+    await run(f, complete)
+    expect(complete).toHaveBeenCalledTimes(1)
+    expect(sent.issues ?? []).toEqual([])
+    expect(f.published.mock.calls.at(-1)?.[4]).toMatchObject({ type: 'proposal' })
+  })
+})
+
+describe('uma extensão de jogo por projeto e passos precisos (15/10/2026)', () => {
+  // Relato dela: o passo 1 instalava o Jogo 2D e o passo 2 o Jogo 2D Avançado ("não posso ter mais
+  // de uma extensão no mesmo projeto"), e o passo 3 dizia "Abrir o Estúdio e ir para a área ⚙️ Ao
+  // iniciar" (as áreas são blocos que a criança pega e arrasta).
+  const mixed = {
+    ...draft,
+    missions: [studioMission('walk'), studioMission('kit', ['walk'], [KIT.type])],
+  }
+
+  test('a revisão recebe o motivo e não publica um plano que mistura duas extensões de jogo', async () => {
+    quietConsole()
+    const f = fixture('review')
+    f.work.output.draft = mixed
+    const users: string[] = []
+    const complete = mock(async (input: { user: string; system: string }) => {
+      users.push(input.user)
+      expect(input.system).toContain('UMA extensão de jogo só')
+      return users.length === 1 ? mixed : draft
+    })
+    await run(f, complete)
+    expect(JSON.parse(users[0] ?? '{}').issues.join(' ')).toContain('game-2d e game-2d-advanced')
+    expect(JSON.parse(users[1] ?? '{}').previousAnswerRejected).toContain('UMA extensão de jogo só')
+    const published = f.published.mock.calls.at(-1)?.[4] as {
+      type: string
+      proposal: { missions: Array<{ extensionIds: string[] }> }
+    }
+    expect(published.type).toBe('proposal')
+    expect(published.proposal.missions.flatMap((m) => m.extensionIds)).toEqual(['game-2d'])
+  })
+
+  test('com o jogo já construído, a versão nova continua na extensão dele', async () => {
+    quietConsole()
+    const f = fixture('review')
+    f.view.journey.builtResults = ['O gato anda']
+    f.view.journey.proposal = { ...draft, id: 'antes' } as never
+    const advanced = { ...draft, missions: [studioMission('kit', [], [KIT.type])] }
+    f.work.output.draft = advanced
+    const users: string[] = []
+    const complete = mock(async (input: { user: string }) => {
+      users.push(input.user)
+      return users.length === 1 ? advanced : draft
+    })
+    await run(f, complete)
+    const first = JSON.parse(users[0] ?? '{}')
+    expect(first.gameExtension).toBe('game-2d')
+    expect(first.issues.join(' ')).toContain('O jogo já usa a extensão Jogo 2D')
+    expect(f.published.mock.calls.at(-1)?.[4]).toMatchObject({ type: 'proposal' })
+  })
+
+  const accepted = (f: ReturnType<typeof fixture>) => {
+    f.view.journey.proposal = {
+      ...draft,
+      id: 'proposal',
+      capabilities: f.context.capabilities,
+      references: [],
+    } as PensaProposal
+    f.view.journey.acceptedProposalId = 'proposal'
+  }
+  const guides = (action: string) => ({
+    missions: [
+      {
+        key: 'walk',
+        steps: [{ action, effect: 'Isso prepara o jogo para começar.' }],
+        testAction: 'Aperte ▶ Reproduzir',
+        expected: 'O palco aparece',
+      },
+    ],
+  })
+  const VAGO = 'Abrir o Estúdio e ir para a área ⚙️ Ao iniciar.'
+  const PRECISO =
+    'Clique em "🗂️ Áreas do projeto", pegue o bloco "⚙️ Ao iniciar" e arraste para o espaço de montar.'
+
+  test('passo vago ("ir para a área") volta UMA vez com o conserto; o preciso vira o passo', async () => {
+    quietConsole()
+    const f = fixture('guides')
+    accepted(f)
+    const users: string[] = []
+    const complete = mock(async (input: { user: string; system: string }) => {
+      users.push(input.user)
+      expect(input.system).toContain('as áreas são blocos que a criança pega e arrasta')
+      return guides(users.length === 1 ? VAGO : PRECISO)
+    })
+    await run(f, complete)
+    expect(JSON.parse(users[1] ?? '{}').previousAnswerRejected).toContain('as áreas são blocos')
+    const published = f.published.mock.calls.at(-1)?.[4] as {
+      type: string
+      tasks: Array<{ guide: { steps: Array<{ text: string; hint: string }> } }>
+    }
+    expect(published.type).toBe('plan')
+    const step = published.tasks[0]!.guide.steps.at(-1)!
+    expect(step.text).toBe(PRECISO)
+    expect(step.hint).toBe('Isso prepara o jogo para começar.')
+  })
+
+  test('guia a mais e passo vago voltam juntos no reparo', async () => {
+    quietConsole()
+    const f = fixture('guides')
+    accepted(f)
+    const users: string[] = []
+    const complete = mock(async (input: { user: string }) => {
+      users.push(input.user)
+      if (users.length > 1) return guides(PRECISO)
+      // O guia da missão vem vago, e sobra um guia para uma missão que não existe.
+      const wrong = guides(VAGO)
+      return { ...wrong, missions: [...wrong.missions, { ...wrong.missions[0]!, key: 'outra' }] }
+    })
+    await run(f, complete)
+    const reason = String(JSON.parse(users[1] ?? '{}').previousAnswerRejected)
+    expect(reason).toContain('não são missões da proposta: outra')
+    expect(reason).toContain('as áreas são blocos')
+    expect(f.published.mock.calls.at(-1)?.[4]).toMatchObject({ type: 'plan' })
+  })
+
+  test('na tentativa de reparo o guia passa mesmo vago (uma frase não trava o plano)', async () => {
+    quietConsole()
+    const f = fixture('guides')
+    accepted(f)
+    const complete = mock(async () => guides(VAGO))
+    await run(f, complete)
+    expect(complete).toHaveBeenCalledTimes(2)
+    expect(f.published.mock.calls.at(-1)?.[4]).toMatchObject({ type: 'plan' })
+  })
+
+  test('os blocos da missão vão ao guia com a área em que encaixam e a dica do bloco', async () => {
+    quietConsole()
+    const f = fixture('guides')
+    accepted(f)
+    let sent: { context?: { blocks: Array<Record<string, unknown>> } } = {}
+    const complete = mock(async (input: { user: string }) => {
+      sent = JSON.parse(input.user)
+      return guides(PRECISO)
+    })
+    await run(f, complete)
+    const stage = sent.context?.blocks.find((b) => b.id === STAGE.type)
+    expect(stage?.area).toBe('⚙️ Ao iniciar')
+    expect(STAGE.tooltip.length).toBeGreaterThan(10)
+    expect(String(stage?.tip)).toStartWith(STAGE.tooltip.slice(0, 40))
+    expect(stage?.path).toBe(STAGE.palettePath.join(' › '))
+  })
+
+  test('a dica guarda o "use a cada quadro" que passava do corte (o controle da nave)', async () => {
+    const { blockTip } = await import('../src/server/pensa-journey/prompt-context')
+    const thrust = SERVER_BLOCK_CATALOG.find((b) => b.type === 'sz_g2d_steer_thrust')!
+    expect(thrust.tooltip.indexOf('Use a cada quadro')).toBeGreaterThan(140)
+    expect(blockTip(thrust.tooltip)).toContain('Use a cada quadro.')
+    expect(blockTip(thrust.tooltip)).toStartWith(thrust.tooltip.slice(0, 60))
+    // Sem "cada quadro" na dica, só o começo dela, como antes.
+    expect(blockTip(STAGE.tooltip)).not.toContain('cada quadro')
+  })
+})
+
+describe('a arte própria é uma oferta da tela (15/10/2026)', () => {
+  // Decisão dela: o começo usa figuras prontas do Estúdio, e a missão do Pinta (ou do Molda) só
+  // entra quando a criança pede. A tela do Pensa oferece desenhar; aceitar manda o pedido.
+  test('o sistema só põe missão de arte quando a criança pediu', async () => {
+    const { JOURNEY_SYSTEM } = await import('../src/server/pensa-journey/planner')
+    expect(JOURNEY_SYSTEM).toContain(
+      'Missão do Pinta ou do Molda só entra quando a criança pediu para desenhar ou modelar',
+    )
+    expect(JOURNEY_SYSTEM).toContain('a tela oferece desenhar depois')
+    expect(JOURNEY_SYSTEM).not.toContain('Só proponha arte personalizada se faz parte da ideia')
   })
 })

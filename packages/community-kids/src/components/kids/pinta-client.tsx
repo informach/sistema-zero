@@ -252,7 +252,12 @@ export function PintaClient({
             } | null
             if (response.status === 409) {
               retryHandoff()
-              throw guideError('A missão mudou em outro lugar. Recarreguei o brief para você.')
+              throw progressRefusal(409, {
+                error: {
+                  code: body?.error?.code ?? 'PENSA_TASK_PROGRESS_CONFLICT',
+                  message: body?.error?.message,
+                },
+              })
             }
             if (!response.ok || !body?.task) throw progressRefusal(response.status, body)
             updateHandoffProgress(body.task.progress)

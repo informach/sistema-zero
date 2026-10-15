@@ -13,7 +13,7 @@
  */
 import { SCENE_PAINT_COPY } from '../../../core/scenePaintCopy'
 import { RequiresTool } from '../../toolAccess'
-import { ChevronDown, FlipHorizontal2 } from '../../ui/icons'
+import { ChevronDown, FlipHorizontal2, Grid3x3 } from '../../ui/icons'
 import { SCENE_TILE_GRID, SceneTile } from './SceneTile'
 import { sceneCommand } from './sceneCommandRegistry'
 import { SCENE_PAINT_ACTIONS, type ScenePaintActionId } from './scenePaintShortcuts'
@@ -123,6 +123,14 @@ export function ScenePaintToolbox({
         title={SCENE_PAINT_COPY.mirrorHint}
         pressed={paint.mirror}
         onClick={() => paint.setMirror(!paint.mirror)}
+      />
+      <SceneTile
+        data-toggle=""
+        icon={Grid3x3}
+        label="Quadradinhos"
+        title="Mostrar a grade da pintura sobre a superfície"
+        pressed={paint.grid}
+        onClick={() => paint.setGrid(!paint.grid)}
       />
       <details className="mld-rail-more">
         <summary>

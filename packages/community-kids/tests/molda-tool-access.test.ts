@@ -25,6 +25,27 @@ const intermediate = moldaToolFamilyIds(['intermediate'])
 const professional = moldaToolFamilyIds(['professional'])
 
 describe('moldaToolAccessFor', () => {
+  test('a oficina básica inclui autoria dos prints, sem liberar precisão ou opções avançadas', () => {
+    const access = moldaToolAccessFor({ levelSlug: 'explorer', role: 'student', horizon: 'god' })!
+    for (const family of [
+      'model.coordinates',
+      'model.pivot',
+      'model.components',
+      'model.cut',
+      'model.locator',
+      'model.reference',
+      'files.import',
+    ])
+      expect(access.allow).toContain(family)
+    for (const family of [
+      'model.precise',
+      'files.interop',
+      'animate.batch',
+      'model.skin',
+      'paint.uv',
+    ])
+      expect(access.allow).not.toContain(family)
+  })
   test('as faixas do pacote são as do core, na mesma ordem', () => {
     expect(Object.keys(MOLDA_TOOL_BAND_LEVELS)).toEqual([...MOLDA_TOOL_BANDS])
     // Toda família do pacote cai em exatamente uma faixa.

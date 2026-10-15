@@ -7,6 +7,7 @@ import { AmbassadorCard } from '../_components/ambassador-card'
 import { ParentShell } from '../_components/parent-shell'
 import { ParentPageTitle, ParentSection } from '../_components/parent-ui'
 import { ParentSubscriptions, PasswordCard, PurchaseHistory } from '../_components/purchase-history'
+import { StudioOpenRouterCard } from '../_components/studio-openrouter-card'
 
 /**
  * A Conta (11/10/2026): assinatura, uso da IA, compras, senha e indicação num lugar só. Antes
@@ -31,6 +32,7 @@ export function AccountClient({ parentName }: { parentName?: string }) {
         </ParentSection>
         <aside className="flex flex-col gap-6">
           <FamilyAiCredits />
+          <StudioOpenRouterCard />
           <PasswordCard onChange={() => setPassword(true)} />
         </aside>
       </div>

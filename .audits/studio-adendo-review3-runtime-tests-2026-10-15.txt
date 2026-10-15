@@ -1,0 +1,10 @@
+bun test v1.3.11 (af24e281)
+
+tests\capabilities.test.ts:
+(pass) Canvas manual creation uses the complete source/material envelope within the same contract at every layer [47.00ms]
+(pass) Oversized material profiles and unsupported paths cannot enter a paid remote builder run [16.00ms]
+
+ 2 pass
+ 0 fail
+ 8 expect() calls
+Ran 2 tests across 1 file. [167.00ms]

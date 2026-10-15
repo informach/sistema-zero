@@ -1,10 +1,64 @@
 import { afterEach, describe, expect, it } from 'bun:test'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { createEmptyProject } from '#core'
+import { buildProProject, createEmptyProject } from '#core'
 import { StudioProjectPlayer } from './StudioProjectPlayer'
 
 describe('StudioProjectPlayer', () => {
   afterEach(() => cleanup())
+
+  it('uses only the permanent compiled Pro revision, with no classic renderer or build adapter', async () => {
+    const project = buildProProject(
+      'pro',
+      'Pro',
+      { 'src/main.ts': { kind: 'file', content: 'not executable in the host' } },
+      'dev',
+      'three-ts',
+    )
+    let classicCalls = 0
+    const playId = crypto.randomUUID(),
+      revision = 'a'.repeat(64)
+    const url = `https://runtime.test/v1/published/${playId}/${revision}/index.html`
+    const view = render(
+      <StudioProjectPlayer
+        project={project}
+        parentOrigin="https://kids.test"
+        published={{ playId, revision, url }}
+        originAdapter={{
+          createPreviewUrl: async () => {
+            classicCalls++
+            throw new Error('Classic path called')
+          },
+        }}
+      />,
+    )
+    await waitFor(() =>
+      expect(view.container.querySelector('iframe')?.getAttribute('src')).toBe(url),
+    )
+    const frame = view.container.querySelector('iframe')!
+    expect(frame.hasAttribute('srcdoc')).toBe(false)
+    expect(frame.getAttribute('sandbox')).not.toContain('allow-same-origin')
+    expect(frame.name).toContain('studioStorage')
+    expect(classicCalls).toBe(0)
+  })
+
+  it('refuses missing and temporary Pro artifacts instead of rendering classic files', async () => {
+    const project = buildProProject('pro', 'Pro', {}, 'dev', 'three-ts')
+    for (const published of [
+      undefined,
+      {
+        playId: crypto.randomUUID(),
+        revision: 'a'.repeat(64),
+        url: `https://runtime.test/v1/artifacts/${'a'.repeat(64)}/index.html`,
+      },
+    ]) {
+      const view = render(<StudioProjectPlayer project={project} published={published} />)
+      await waitFor(() =>
+        expect(screen.getByRole('status').textContent).toContain('Não foi possível'),
+      )
+      expect(view.container.querySelector('iframe')?.hasAttribute('src')).toBe(false)
+      view.unmount()
+    }
+  })
 
   it('onReady só informa o carregamento do documento jogável', async () => {
     let ready = 0

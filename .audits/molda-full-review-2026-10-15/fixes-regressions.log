@@ -1,0 +1,20 @@
+bun test v1.3.11 (af24e281)
+
+packages\molda\.tmp\molda-review-pivot.test.ts:
+{"case":"reverse","expected":[1,0,0.9999999999999999],"actual":[1,0,0.9999999999999999],"error":0}
+(pass) review: reversing pivot motion preserves the original geometric trajectory [16.00ms]
+(pass) review: arrival choice changes angular speed without moving a stationary pivot
+{"case":"arrival","expected":[1,0,1],"actual":[1,0,1],"error":0}
+
+packages\molda\.tmp\molda-review-permissions.test.tsx:
+{"renameRetained":false,"before":"Acenar","after":"Acenar","revision":0}
+(pass) review: revoked animation creation cannot retain rename form [515.00ms]
+{"case":"cut-revocation","retained":false,"before":["corpo","asa"],"after":["corpo","asa"]}
+(pass) review: revoking cut cancels the existing cutting session [344.00ms]
+{"case":"pivot-family","field":false}
+(pass) review: coordinates alone must not grant the independently denied pivot capability [156.00ms]
+
+ 5 pass
+ 0 fail
+ 5 expect() calls
+Ran 5 tests across 2 files. [1.99s]

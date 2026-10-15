@@ -34,6 +34,9 @@ import {
   renewalRemindersSent,
   roomInventory,
   roomState,
+  studioAiAccounts,
+  studioBuilderJobs,
+  studioBuilderProjectDeletions,
   studioSubmissions,
   teacherBroadcastRecipients,
   teacherThreads,
@@ -79,6 +82,12 @@ export class DrizzleUserDataPurgeRepository implements UserDataPurgeRepository {
         sql`select pg_advisory_xact_lock(hashtextextended(${`members-account:${accountId}`}, 0))`,
       )
       await purgeLiveAccount(tx, accountId, userIds)
+      // OAuth states cascade; no provider credential survives an account deletion.
+      await tx.delete(studioAiAccounts).where(eq(studioAiAccounts.accountId, accountId))
+      await tx.delete(studioBuilderJobs).where(eq(studioBuilderJobs.accountId, accountId))
+      await tx
+        .delete(studioBuilderProjectDeletions)
+        .where(eq(studioBuilderProjectDeletions.accountId, accountId))
       await tx
         .delete(teacherBroadcastRecipients)
         .where(

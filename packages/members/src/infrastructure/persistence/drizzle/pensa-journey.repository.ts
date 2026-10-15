@@ -33,6 +33,7 @@ import type {
   PensaOperationWork,
   PensaStepResult,
 } from '../../../domain/ports/pensa-journey-repository.port'
+import { ValidationError } from '../../../domain/shared/errors'
 import type { Database } from './db'
 import { loadPensaTeamRoles, pensaTaskValues } from './pensa.repository'
 import {
@@ -125,6 +126,24 @@ const PROGRAMMER_COMMANDS: ReadonlySet<PensaJourneyCommand['type']> = new Set([
   'revise',
 ])
 const conflict = (message?: string) => new PensaTaskProgressConflictError(message)
+
+/** O nome de um jogo novo, antes de a criança ou a primeira proposta darem outro. */
+export const DEFAULT_JOURNEY_NAME = 'Meu novo jogo'
+/**
+ * O nome atual ainda é o que o sistema deu (de fábrica, o provisório da primeira pergunta ou o
+ * título da proposta anterior)? Renomeado pela criança, o nome é dela e a IA não o troca mais.
+ */
+export function aiGivenName(
+  current: string,
+  previousProposalTitle: string | null,
+  workingTitle: string | null = null,
+): boolean {
+  return (
+    current === DEFAULT_JOURNEY_NAME ||
+    (previousProposalTitle !== null && current === previousProposalTitle.slice(0, 120)) ||
+    (workingTitle !== null && current === workingTitle.slice(0, 120))
+  )
+}
 
 export class DrizzlePensaJourneyRepository implements PensaJourneyRepository {
   constructor(
@@ -300,7 +319,7 @@ export class DrizzlePensaJourneyRepository implements PensaJourneyRepository {
         accountId: actor.accountId,
         audience: 'kids',
         kind: 'game',
-        name: 'Meu novo jogo',
+        name: DEFAULT_JOURNEY_NAME,
         status: 'active',
         createdAt: now,
         updatedAt: now,
@@ -593,6 +612,21 @@ export class DrizzlePensaJourneyRepository implements PensaJourneyRepository {
       await tx
         .update(pensaProjects)
         .set({ status, updatedAt: now })
+        .where(eq(pensaProjects.id, projectId))
+    })
+    return this.get(actor, projectId)
+  }
+
+  async rename(actor: PensaJourneyActor, projectId: string, name: string, now: Date) {
+    const clean = name.trim().replace(/\s+/g, ' ')
+    if (clean.length < 2 || clean.length > 120)
+      throw new ValidationError('Dê ao jogo um nome de 2 a 120 letras.')
+    await this.db.transaction(async (tx) => {
+      const { role } = await this.lock(tx, actor, projectId, false)
+      if (role !== 'owner') throw new PensaNotOwnerError()
+      await tx
+        .update(pensaProjects)
+        .set({ name: clean, updatedAt: now })
         .where(eq(pensaProjects.id, projectId))
     })
     return this.get(actor, projectId)
@@ -896,7 +930,7 @@ export class DrizzlePensaJourneyRepository implements PensaJourneyRepository {
     now: Date,
   ) {
     await this.db.transaction(async (tx) => {
-      const { state } = await this.lock(tx, actor, projectId)
+      const { state, project } = await this.lock(tx, actor, projectId)
       const [operation] = await tx
         .select()
         .from(pensaOperations)
@@ -951,15 +985,22 @@ export class DrizzlePensaJourneyRepository implements PensaJourneyRepository {
             final: true,
           },
         ]
-        await tx
-          .update(pensaProjects)
-          .set({ name: result.proposal.title.slice(0, 120) })
-          .where(eq(pensaProjects.id, projectId))
+        // O título da proposta só vira o nome enquanto o jogo não tem um nome dado pela criança
+        // (o de fábrica, ou o da proposta anterior). Renomeado, o nome é dela e fica.
+        if (aiGivenName(project.name, state.proposal?.title ?? null, state.workingTitle ?? null))
+          await tx
+            .update(pensaProjects)
+            .set({ name: result.proposal.title.slice(0, 120) })
+            .where(eq(pensaProjects.id, projectId))
+        // A proposta zera o teto de perguntas: a próxima conversa já parte dela.
+        next.questionsAsked = 0
+        next.workingTitle = null
         status = 'waiting'
         step = 'choice'
       }
       if (result.type === 'question' || result.type === 'answer') {
         if (!result.text.trim() || result.text.length > 6000) throw conflict()
+        const choices = result.type === 'question' ? result.choices : undefined
         next.messages = [
           ...state.messages,
           {
@@ -969,8 +1010,31 @@ export class DrizzlePensaJourneyRepository implements PensaJourneyRepository {
             at: now.toISOString(),
             revision: 1,
             final: true,
+            ...(choices ? { choices } : {}),
           },
         ]
+        // Só a pergunta do PLANEJAMENTO conta no teto (a ajuda conversa à parte).
+        if (result.type === 'question' && operation.kind === 'planning') {
+          next.questionsAsked = (state.questionsAsked ?? 0) + 1
+          // O nome provisório só entra enquanto o jogo ainda tem um nome dado pelo sistema: a
+          // lista deixa de mostrar vários "Meu novo jogo" quando a criança sai antes da proposta.
+          const title = result.workingTitle?.trim().slice(0, 120)
+          // Só antes da primeira proposta: com uma proposta (inclusive a copiada da versão
+          // anterior), o jogo já tem o nome dela, e a pergunta do "Quero mudar uma coisa" não
+          // pode renomeá-lo para algo que o plano não é.
+          if (
+            title &&
+            !state.proposal &&
+            title !== project.name &&
+            aiGivenName(project.name, null, state.workingTitle ?? null)
+          ) {
+            await tx
+              .update(pensaProjects)
+              .set({ name: title })
+              .where(eq(pensaProjects.id, projectId))
+            next.workingTitle = title
+          }
+        }
         status = result.type === 'question' ? 'waiting' : 'succeeded'
         if (result.type === 'answer') {
           if (operation.kind === 'planning') {

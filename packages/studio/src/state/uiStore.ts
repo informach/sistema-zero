@@ -58,6 +58,7 @@ interface UIStore {
   setConsoleVisibilityOverride: (value: ConsoleVisibilityOverride) => void
   showTerminal: boolean
   setShowTerminal: (b: boolean) => void
+  /** @deprecated No separate AI panel. Legacy open commands are redirected to the configured tutor. */
   showAI: boolean
   setShowAI: (b: boolean) => void
   /** Quando `true`, o preview executa e atualiza automaticamente (Play). Quando `false`, para de renderizar e esvazia o iframe (Parar). */

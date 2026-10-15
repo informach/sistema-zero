@@ -165,7 +165,9 @@ const ProgressBody = z
     completedStepIds: z.array(z.string().min(1).max(100)).max(20).optional(),
     completedCriteriaIds: z.array(z.string().min(1).max(100)).max(10).optional(),
     outputRef: OutputRef.nullable().optional(),
-    expectedUpdatedAt: z.iso.datetime().nullable(),
+    // Opcional (15/10/2026): no Pensa v2 o Estúdio anota a missão ao abrir o jogo SEM a versão
+    // da página (o members junta com o que sabe e protege a escrita); o guia segue mandando.
+    expectedUpdatedAt: z.iso.datetime().nullable().optional(),
   })
   .refine((body) => Object.values(body).some((value) => value !== undefined))
 

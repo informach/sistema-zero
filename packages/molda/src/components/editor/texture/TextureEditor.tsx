@@ -27,9 +27,8 @@ import {
   updateTextureColor,
 } from '../../../texture/ops'
 import { paintTextureShape, type TextureShape } from '../../../texture/shapes'
-import { prefersReducedMotion } from '../../../viewport/reducedMotion'
-import type { TexturePreviewLike } from '../../../viewport/TexturePreview'
 import { createTexturePreview } from '../../../viewport/texturePreviewFactory'
+import { usePreviewCanvas } from '../../../viewport/usePreviewCanvas'
 import { Button } from '../../ui/Button'
 import { isMoldaDialogOpen } from '../../ui/Dialog'
 import {
@@ -80,33 +79,6 @@ const isShapeTool = (tool: TextureTool): tool is TextureShape =>
   tool === 'line' || tool === 'rectangle' || tool === 'ellipse'
 const SIZES: BrushSize[] = [1, 2, 3]
 
-function useTexturePreviewCanvas(): {
-  canvasRef: React.RefObject<HTMLCanvasElement | null>
-  preview: TexturePreviewLike | null
-  unsupported: boolean
-} {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [preview, setPreview] = useState<TexturePreviewLike | null>(null)
-  const [unsupported, setUnsupported] = useState(false)
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    let instance: TexturePreviewLike
-    try {
-      instance = createTexturePreview(canvas, { reducedMotion: prefersReducedMotion() })
-    } catch {
-      setUnsupported(true)
-      return
-    }
-    setPreview(instance)
-    return () => {
-      instance.dispose()
-      setPreview(null)
-    }
-  }, [])
-  return { canvasRef, preview, unsupported }
-}
-
 export function TextureEditor({
   editor,
   onBack,
@@ -139,7 +111,10 @@ export function TextureEditor({
     filled: boolean
     offset: [number, number]
   } | null>(null)
-  const { canvasRef, preview, unsupported } = useTexturePreviewCanvas()
+  const { containerRef, preview, unsupported } = usePreviewCanvas(
+    createTexturePreview,
+    copy.preview3d,
+  )
   const size = asset.bitmap.width
   const offset: [number, number] = shifted ? [size / 2, size / 2] : [0, 0]
 
@@ -502,11 +477,7 @@ export function TextureEditor({
                   {unsupported ? (
                     <p className="p-3 text-center text-xs text-mld-text-soft">{copy.unsupported}</p>
                   ) : (
-                    <canvas
-                      ref={canvasRef}
-                      aria-label={copy.preview3d}
-                      className="mld-viewport block size-full"
-                    />
+                    <div ref={containerRef} className="size-full" />
                   )}
                 </div>
               </Panel>

@@ -55,14 +55,17 @@ describe('renameProject (escrita só-metadado, #4)', () => {
   it('renomeia sem reescrever files/state e preserva edições não salvas do editor aberto', async () => {
     // Registro de meta NO DISCO (snapshot antigo). O editor aberto já avançou os
     // arquivos para "edição em voo" — que NÃO pode ser sobrescrita pelo rename.
-    idb.get.mockResolvedValueOnce({
-      id: 'p-rename',
-      name: 'Nome antigo',
-      createdAt: 100,
-      updatedAt: 200,
-      mode: 'code',
-      installedExtensions: [],
-    })
+    idb.getMany.mockResolvedValueOnce([
+      {
+        id: 'p-rename',
+        name: 'Nome antigo',
+        createdAt: 100,
+        updatedAt: 200,
+        mode: 'code',
+        installedExtensions: [],
+      },
+      undefined,
+    ])
 
     const live: Project = {
       id: 'p-rename',
@@ -89,8 +92,8 @@ describe('renameProject (escrita só-metadado, #4)', () => {
     //    inteiro (que reescreveria meta+files+state a partir do snapshot estale do disco).
     expect(fakeIdbWrites()).toHaveLength(1)
     const puts = fakeIdbPuts(fakeIdbWrites()[0])
-    expect([...puts.keys()]).toEqual(['sz:v2:project-meta:p-rename'])
-    const value = puts.get('sz:v2:project-meta:p-rename') as Record<string, unknown>
+    expect([...puts.keys()]).toEqual(['sz:v3:project-meta:p-rename', 'sz:v3:project-head:p-rename'])
+    const value = puts.get('sz:v3:project-meta:p-rename') as Record<string, unknown>
     expect(value.name).toBe('Nome novo')
     // O registro de meta NÃO carrega files/state — eles ficam intocados no disco.
     expect(value).not.toHaveProperty('files')
@@ -110,7 +113,7 @@ describe('renameProject (escrita só-metadado, #4)', () => {
     await useProjectStore.getState().renameProject('inexistente', 'Qualquer')
 
     expect(idb.set).not.toHaveBeenCalled()
-    expect(fakeIdbWrites()).toHaveLength(0)
+    expect(fakeIdbWrites().flatMap((write) => [...fakeIdbPuts(write)])).toHaveLength(0)
   })
 })
 

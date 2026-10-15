@@ -274,6 +274,35 @@ describe('a cruz atende UM dedo por vez', () => {
 })
 
 describe('o botão de tela cheia vira botão de VOLTAR', () => {
+  it('restores mute after a Pro document reload and hides an unavailable capture action', () => {
+    const { iframeRef } = palcoDeTeste()
+    const messages: unknown[] = []
+    const target = iframeRef.current!.contentWindow!
+    target.postMessage = ((message: unknown) => {
+      messages.push(message)
+    }) as typeof target.postMessage
+    render(
+      <CtrlBar
+        iframeRef={iframeRef}
+        fullscreenTargetRef={createRef<HTMLDivElement>()}
+        onRestart={() => {}}
+        screenshotEnabled={false}
+      />,
+    )
+    expect(screen.queryByRole('button', { name: 'Screenshot' })).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Silenciar' }))
+    messages.length = 0
+    act(() =>
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          source: target,
+          origin: 'null',
+          data: { type: 'sz:pro-document-ready', version: 1 },
+        }),
+      ),
+    )
+    expect(messages).toEqual([{ type: 'sz:audio', muted: true }])
+  })
   function fingirTelaCheia(elemento: Element | null) {
     Object.defineProperty(document, 'fullscreenElement', { configurable: true, value: elemento })
     act(() => {

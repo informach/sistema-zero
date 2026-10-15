@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto'
+import { parseStudioTutorFileReference } from '@sistemazero/core/studio'
 import { and, desc, eq, gt, gte, inArray, isNotNull, isNull, lt, lte, or, sql } from 'drizzle-orm'
 import { alias } from 'drizzle-orm/pg-core'
 import type {
@@ -17,6 +18,10 @@ import type { Database } from './db'
 import { zappyConversations, zappyMessages } from './schema'
 
 interface StoredResponseJson extends Record<string, unknown> {
+  intent?: ZappyStoredResponse['intent']
+  kind?: 'classic' | 'pro'
+  fileReferences?: ZappyStoredResponse['fileReferences']
+  sourceRevision?: number
   text: string
   scope: ZappyStoredResponse['scope']
   blockReferences: ZappyStoredResponse['blockReferences']
@@ -27,7 +32,39 @@ interface StoredResponseJson extends Record<string, unknown> {
   rejection?: string
 }
 
-function toResponse(row: {
+/** The exact JSON persisted in the existing response column, without changing its schema. */
+export function serializeZappyResponse(
+  response: ZappyStoredResponse,
+  rejection?: string,
+): StoredResponseJson {
+  return {
+    ...(response.kind ? { kind: response.kind } : {}),
+    ...(response.kind === 'pro' &&
+    (response.intent === 'explain' || response.intent === 'investigate')
+      ? { intent: response.intent }
+      : {}),
+    ...(response.kind === 'pro' && response.fileReferences
+      ? {
+          fileReferences: response.fileReferences
+            .flatMap((item) => {
+              const reference = parseStudioTutorFileReference(item)
+              return reference ? [reference] : []
+            })
+            .slice(0, 5),
+        }
+      : {}),
+    ...(response.sourceRevision !== undefined ? { sourceRevision: response.sourceRevision } : {}),
+    text: response.text,
+    scope: response.scope,
+    blockReferences: response.blockReferences,
+    ...(response.lessonReferences ? { lessonReferences: response.lessonReferences } : {}),
+    ...(response.helpReferences ? { helpReferences: response.helpReferences } : {}),
+    ...(response.suggestions ? { suggestions: response.suggestions } : {}),
+    ...(rejection ? { rejection } : {}),
+  }
+}
+
+export function toResponse(row: {
   id: string
   response: unknown
   createdAt: Date
@@ -38,6 +75,23 @@ function toResponse(row: {
   if (typeof value.text !== 'string' || typeof value.scope !== 'string') return undefined
   return {
     id: row.id,
+    ...(value.kind === 'classic' || value.kind === 'pro' ? { kind: value.kind } : {}),
+    ...(value.kind === 'pro' && (value.intent === 'explain' || value.intent === 'investigate')
+      ? { intent: value.intent }
+      : {}),
+    ...(value.kind === 'pro' && Array.isArray(value.fileReferences)
+      ? {
+          fileReferences: value.fileReferences
+            .flatMap((item) => {
+              const reference = parseStudioTutorFileReference(item)
+              return reference ? [reference] : []
+            })
+            .slice(0, 5),
+        }
+      : {}),
+    ...(Number.isSafeInteger(value.sourceRevision) && (value.sourceRevision ?? -1) >= 0
+      ? { sourceRevision: value.sourceRevision }
+      : {}),
     text: value.text,
     scope: value.scope,
     blockReferences: Array.isArray(value.blockReferences) ? value.blockReferences : [],
@@ -246,14 +300,24 @@ export class DrizzleZappyRepository implements ZappyRepository {
       // Memória do tutor: últimos turnos ANTES da pergunta nova (cronológico).
       // Vem na MESMA transação da reserva — zero roundtrip extra para o BFF.
       const recentRows = await tx
-        .select({ role: zappyMessages.role, content: zappyMessages.content })
+        .select({
+          role: zappyMessages.role,
+          content: zappyMessages.content,
+          response: zappyMessages.response,
+        })
         .from(zappyMessages)
         .where(eq(zappyMessages.conversationId, conversation.id))
         .orderBy(desc(zappyMessages.createdAt), desc(zappyMessages.id))
         .limit(6)
-      const recentMessages = recentRows
-        .reverse()
-        .map((row) => ({ role: row.role as 'user' | 'assistant', text: row.content }))
+      const recentMessages = recentRows.reverse().map((row) => {
+        const source = row.response as StoredResponseJson | null
+        const kind = source?.kind
+        return {
+          role: row.role as 'user' | 'assistant',
+          text: row.content,
+          ...(kind === 'pro' || kind === 'classic' ? { kind } : {}),
+        }
+      })
 
       const questionId = randomUUID()
       await tx.insert(zappyMessages).values({
@@ -306,17 +370,7 @@ export class DrizzleZappyRepository implements ZappyRepository {
       }
 
       const id = input.response.id || randomUUID()
-      const responseJson: StoredResponseJson = {
-        text: input.response.text,
-        scope: input.response.scope,
-        blockReferences: input.response.blockReferences,
-        ...(input.response.lessonReferences
-          ? { lessonReferences: input.response.lessonReferences }
-          : {}),
-        ...(input.response.helpReferences ? { helpReferences: input.response.helpReferences } : {}),
-        ...(input.response.suggestions ? { suggestions: input.response.suggestions } : {}),
-        ...(input.rejection ? { rejection: input.rejection } : {}),
-      }
+      const responseJson = serializeZappyResponse(input.response, input.rejection)
       const [answer] = await tx
         .insert(zappyMessages)
         .values({

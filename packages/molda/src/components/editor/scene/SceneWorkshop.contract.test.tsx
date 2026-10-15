@@ -66,7 +66,7 @@ function inventory(container: HTMLElement): { rendered: string[]; expanded: stri
 
 /** Escolher como a criança escolhe: pelo botão da peça na hierarquia. */
 function choosePiece(container: HTMLElement): void {
-  const button = container.querySelector<HTMLButtonElement>('button[aria-label^="Escolher "]')
+  const button = container.querySelector<HTMLButtonElement>('button.mld-piece')
   if (!button) throw new Error('a hierarquia não ofereceu nenhuma peça para escolher')
   act(() => {
     button.click()
@@ -189,30 +189,34 @@ describe('inventário da oficina: o que a criança alcança', () => {
    * (-1). Com uma peça, "Mais sobre a peça" recolhe o nome, mostrar, travar e o grupo (-4
    * encarados), e o gatilho dele é o +1 dos montados: é um `<summary>` NOVO, e nada saiu.
    *
-   * Revisão 4 (14/10): 57/35 sem seleção e 98/62 com seleção neste fixture. Renomear,
-   * salvar/exportar, zoom por cliques, Pivô contextual e Mostrar/Travar na árvore são
-   * acessos explícitos aprovados. A contagem inclui cada cor e cada ação por peça;
+   * Fidelidade (15/10): 62/41 sem seleção e teto 115/80 com seleção neste fixture sem portão.
+   * Duas entradas de área substituem a antiga entrada de malha escondida no trilho.
+   * Campos básicos, pivô, componentes e importação simples são acessos explícitos da proposta.
+   * A contagem inclui cada cor e cada ação por peça;
    * não mede sozinha a compreensão infantil. Famílias e inventário continuam testados.
    */
-  test('o inventário respeita o teto das ações explícitas aprovadas na revisão 4', () => {
+  test('o inventário respeita as ações explícitas da proposta de fidelidade', () => {
     const vazio = mount(migrateLegacyModel(makeModel()).document)
     const encaradosVazio = frontControls(vazio.view.container)
     // Header rename/save menus, zoom alternatives and tree visibility/lock are explicit additions.
-    expect(controlInventory(vazio.view.container).length).toBeLessThanOrEqual(57)
+    // One local/world selector in stage settings, only from the intermediate tier.
+    // The reference's dismissible canvas hint adds one named button in Modelar too.
+    expect(controlInventory(vazio.view.container).length).toBeLessThanOrEqual(64)
     expect(
       encaradosVazio.length,
       `encarados na abertura: ${encaradosVazio.join(' | ')}`,
-    ).toBeLessThanOrEqual(35)
+    ).toBeLessThanOrEqual(42)
     cleanup()
 
     const comPeca = mount(withPiece())
     choosePiece(comPeca.view.container)
     const encaradosPeca = frontControls(comPeca.view.container)
-    expect(controlInventory(comPeca.view.container).length).toBeLessThanOrEqual(98)
+    // 12 coordinate inputs are now available directly, with pivot and component tools.
+    expect(controlInventory(comPeca.view.container).length).toBeLessThanOrEqual(117)
     expect(
       encaradosPeca.length,
       `encarados com uma peça escolhida: ${encaradosPeca.join(' | ')}`,
-    ).toBeLessThanOrEqual(62)
+    ).toBeLessThanOrEqual(81)
   })
 
   /**
@@ -231,9 +235,13 @@ describe('inventário da oficina: o que a criança alcança', () => {
     await view.findByText(SCENE_PAINT_COPY.more, { selector: 'summary' })
     const montados = controlInventory(view.container)
     const encarados = frontControls(view.container)
-    // Persistent ink/favorites, project actions and camera clicks; advanced tools stay collapsed.
-    expect(montados.length, montados.join(' | ')).toBeLessThanOrEqual(75)
-    expect(encarados.length, encarados.join(' | ')).toBeLessThanOrEqual(49)
+    // A real tree selection also mounts the isolated view and image actions. Scope, UV grid,
+    // favorites, HSV/hex and a palette picker are the approved additions to the paint workflow.
+    // One dismiss button persists the contextual hint preference, as in the reference.
+    expect(montados.length, montados.join(' | ')).toBeLessThanOrEqual(82)
+    // Scope (2), UV grid and hue/hex replace the native picker; saved swatches stay bounded.
+    // Named UV/material/sheet areas and the visible contextual brush section add four controls.
+    expect(encarados.length, encarados.join(' | ')).toBeLessThanOrEqual(59)
   })
 
   test('todo controle tem nome: sem nome, a criança não acha e o leitor de tela não fala', () => {

@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore
 import { useStore } from 'zustand'
 import { COPY } from '../../../core/copy'
 import { SCENE_PAINT_COPY } from '../../../core/scenePaintCopy'
+import { editSceneAnimationPoses, markSceneAnimationChannel } from '../../../scene/animationArrival'
+import type { SceneAnimationKeyRef } from '../../../scene/animationCommands'
 import type { SceneAnimationTarget } from '../../../scene/animationTarget'
 import type { MoldaSceneDocument } from '../../../scene/document'
 import { sameSceneContent } from '../../../scene/documentContent'
@@ -15,9 +17,11 @@ import { prepareSceneAnimation } from '../../../scene/sampleAnimation'
 import { SceneValidationError } from '../../../scene/validation'
 import type { EditorStore } from '../../../state/editorStore'
 import { newModelIntent } from '../../../state/newModelIntent'
+import { createScenePivotGesture } from '../../../state/scenePivotGesture'
 import { createSceneTransformGesture } from '../../../state/sceneTransformGesture'
 import type { SceneTransformTool } from '../../../viewport/sceneViewportTypes'
-import { useMoldaToolAccess } from '../../toolAccess'
+import { useMoldaToolAccess, useMoldaToolGate } from '../../toolAccess'
+import { useSceneAnimationEditPreview } from './useSceneAnimationEditPreview'
 import { useSceneAnimationPlayer } from './useSceneAnimationPlayer'
 import { useSceneAnimationPoseGesture } from './useSceneAnimationPoseGesture'
 import { useSceneComponents } from './useSceneComponents'
@@ -25,12 +29,15 @@ import { useSceneContextTransition } from './useSceneContextTransition'
 import { useSceneFlipbookPlayer } from './useSceneFlipbookPlayer'
 import { useSceneModelGuides } from './useSceneModelGuides'
 import { useScenePaint } from './useScenePaint'
+import { useScenePaintIndicators } from './useScenePaintIndicators'
 import { useScenePoseRecovery } from './useScenePoseRecovery'
 import { useSceneSkinPaint } from './useSceneSkinPaint'
+import { useSceneSolidCut } from './useSceneSolidCut'
+import { SCENE_WORKSPACE_AREAS, type SceneWorkspaceArea } from './workspaceAreaRegistry'
 
 /** As três abas. O modo mora aqui para Pintar poder escolher a peça e preparar a tinta. */
 export type SceneWorkshopMode = 'model' | 'paint' | 'animation'
-export type SceneWorkshopTool = SceneTransformTool | 'box' | 'lasso' | 'pivot'
+export type SceneWorkshopTool = SceneTransformTool | 'box' | 'lasso' | 'pivot' | 'cut'
 
 /** A peça tem faces tortas: pintar pede o consentimento de dividi-las em triângulos. */
 export interface ScenePaintIssue {
@@ -66,9 +73,12 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
   const [isolation, setIsolation] = useState<readonly string[] | null>(null)
   const [message, setMessage] = useState<string | null>(null)
   const [mode, setMode] = useState<SceneWorkshopMode>('model')
+  const [workspaceArea, setWorkspaceArea] = useState<SceneWorkspaceArea | null>(null)
   const [tool, setTool] = useState<SceneWorkshopTool>(() => (fresh ? 'move' : 'select'))
   const [looking, setLooking] = useState(false)
   const [placing, setPlacing] = useState(false)
+  const [pivotVertical, setPivotVertical] = useState(false)
+  const [pivotSnap, setPivotSnap] = useState(false)
   const [reveal, setReveal] = useState<readonly string[]>([])
   const [animationTarget, setAnimationTarget] = useState<SceneAnimationTarget>('piece')
   const [animationPreviewDocument, setAnimationPreviewDocument] =
@@ -92,17 +102,89 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
     setPlacementPreview(null)
   }, [placing, document])
   const [paintIssue, setPaintIssue] = useState<ScenePaintIssue | null>(null)
-  const paint = useScenePaint(editor)
+  const paint = useScenePaint(editor, mode === 'paint')
+  const committedPaint = editor.getState().saveSnapshot()
+  const paintIndicators = useScenePaintIndicators(mode === 'paint' ? committedPaint : null)
   const skinPaint = useSceneSkinPaint(editor)
   const flipbook = useSceneFlipbookPlayer(editor)
   const animation = useSceneAnimationPlayer(editor)
-  const [showPreviousPose, setShowPreviousPose] = useState(false)
+  const [showPreviousPose, setShowPreviousPose] = useState(true)
+  const [poseSelection, setPoseSelection] = useState<
+    (SceneAnimationKeyRef & { clipId: string }) | null
+  >(null)
+  const [poseCopy, setPoseCopy] = useState<{
+    source: MoldaSceneDocument
+    clipId: string
+    ref: SceneAnimationKeyRef
+    target: number
+  } | null>(null)
   const animationSnapshot = useSyncExternalStore(
     animation.subscribe,
     animation.getSnapshot,
     animation.getSnapshot,
   )
-  const animationPose = useSceneAnimationPoseGesture(editor, animation)
+  const poseCounts = useMemo(() => {
+    const counts = new Map<string, number>()
+    for (const track of animationSnapshot.source?.clip.tracks ?? [])
+      counts.set(track.nodeId, (counts.get(track.nodeId) ?? 0) + track.keys.length)
+    return counts
+  }, [animationSnapshot.source?.clip])
+  const animationPose = useSceneAnimationPoseGesture(editor, animation, (clipId, time) => {
+    const nodeId = chosenRef.current.length === 1 ? chosenRef.current[0] : null
+    if (!nodeId) return
+    const clip = editor.getState().content.animations?.find((entry) => entry.id === clipId)
+    const tracks =
+      clip?.tracks.filter(
+        (track) => track.nodeId === nodeId && track.keys.some((key) => key.time === time),
+      ) ?? []
+    const preferred = tool === 'rotate' ? 'rotation' : tool === 'scale' ? 'scale' : 'translation'
+    const track = tracks.find((track) => track.channel === preferred) ?? tracks[0]
+    if (track) setPoseSelection({ clipId, nodeId, time, channel: track.channel })
+  })
+  const poseRef = useMemo(
+    () =>
+      poseSelection
+        ? {
+            nodeId: poseSelection.nodeId,
+            channel: poseSelection.channel,
+            time: poseSelection.time,
+          }
+        : null,
+    [poseSelection],
+  )
+  const selectedPose =
+    poseSelection &&
+    chosen.length === 1 &&
+    chosen[0] === poseSelection.nodeId &&
+    animationSnapshot.source?.clip.id === poseSelection.clipId &&
+    animationSnapshot.time === poseSelection.time &&
+    animationSnapshot.source.clip.tracks.some(
+      (track) =>
+        track.nodeId === poseSelection.nodeId &&
+        track.channel === poseSelection.channel &&
+        track.keys.some((key) => key.time === poseSelection.time),
+    )
+      ? poseRef
+      : null
+  useEffect(() => {
+    if (
+      poseSelection &&
+      (animationSnapshot.source?.clip.id !== poseSelection.clipId ||
+        animationSnapshot.time !== poseSelection.time)
+    )
+      setPoseSelection(null)
+  }, [poseSelection, animationSnapshot.source?.clip.id, animationSnapshot.time])
+  useEffect(() => {
+    if (
+      poseCopy &&
+      (poseCopy.source !== document ||
+        mode !== 'animation' ||
+        poseCopy.clipId !== animationSnapshot.source?.clip.id ||
+        chosen.length !== 1 ||
+        chosen[0] !== poseCopy.ref.nodeId)
+    )
+      setPoseCopy(null)
+  }, [poseCopy, document, mode, animationSnapshot.source?.clip.id, chosen])
   const poseRecovery = useScenePoseRecovery(editor, animationPose)
   const contextTransition = useSceneContextTransition()
   const { queue: queueContext, register: registerContext } = contextTransition
@@ -125,9 +207,15 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
     [animation, animationPose, editor],
   )
   useEffect(() => {
-    animation.setTransitionGuard(queueTransition)
+    animation.setTransitionGuard((action, reason) => {
+      if (reason === 'navigation') {
+        animationPose.cancel()
+        return false
+      }
+      return queueTransition(action)
+    })
     return () => animation.setTransitionGuard(null)
-  }, [animation, queueTransition])
+  }, [animation, animationPose, queueTransition])
   const requestTransition = (action: () => void) => {
     if (!queueTransition(action) && !queueContext(action)) action()
   }
@@ -145,6 +233,18 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
   // Sem o pincel liberado (`paint.brush`), escolher a peça em Pintar só escolhe: nada de preparar
   // a tinta, que muda o documento.
   const { can } = useMoldaToolAccess()
+  const pivotGate = useMoldaToolGate('model.pivot')
+  const areaAllowed = !workspaceArea || can(SCENE_WORKSPACE_AREAS[workspaceArea].family)
+  const area =
+    workspaceArea && areaAllowed && SCENE_WORKSPACE_AREAS[workspaceArea].mode === mode
+      ? workspaceArea
+      : null
+  const animationEdit = useSceneAnimationEditPreview(
+    editor,
+    animation,
+    contextTransition,
+    can('animate.batch') || can('animate.pro'),
+  )
   const brush = can('paint.brush')
   const gesture = useMemo(
     () =>
@@ -156,6 +256,20 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
     [editor],
   )
   useEffect(() => () => gesture.cancel(), [gesture])
+  const pivotGesture = useMemo(
+    () =>
+      createScenePivotGesture(editor, (error) =>
+        setMessage(error instanceof Error ? error.message : COPY.scene.commandFailed),
+      ),
+    [editor],
+  )
+  useEffect(() => () => pivotGesture.cancel(), [pivotGesture])
+  useEffect(() => {
+    if (!pivotGate.allowed) {
+      pivotGesture.cancel()
+      if (tool === 'pivot') setTool('select')
+    }
+  }, [pivotGate.allowed, pivotGesture, tool])
   const index = useMemo(() => indexSceneDocument(document), [document])
   const selected = useMemo(() => chosen.filter((id) => index.scene.nodes.has(id)), [chosen, index])
   const covered = useMemo(
@@ -271,7 +385,7 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
   )
   const select = useCallback(
     (id: string | null, add: boolean, faceId?: string) => {
-      if (mode === 'paint') {
+      if (mode === 'paint' && area !== 'uv' && area !== 'materials') {
         choosePaint(id, faceId)
         return
       }
@@ -303,6 +417,7 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
       animationPose,
       skinPaint,
       mode,
+      area,
       choosePaint,
       setChosen,
     ],
@@ -408,6 +523,33 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
     run,
   })
   const modelGuides = useSceneModelGuides(editor, (next) => !!run(() => next))
+  const solidCut = useSceneSolidCut(editor, (next) => !!run(() => next))
+  const cutAllowed = can('model.cut')
+  const cutLive = useRef(solidCut)
+  cutLive.current = solidCut
+  useEffect(() => {
+    const cut = cutLive.current
+    if (!cutAllowed) {
+      cut.cancel()
+      if (tool === 'cut') setTool('select')
+      return
+    }
+    if (
+      cut.owner &&
+      (mode !== 'model' ||
+        tool !== 'cut' ||
+        selected.length !== 1 ||
+        selected[0] !== cut.owner.nodeId)
+    )
+      cut.cancel()
+    if (
+      mode === 'model' &&
+      tool === 'cut' &&
+      selected.length === 1 &&
+      cut.owner?.nodeId !== selected[0]
+    )
+      cut.start(selected[0]!)
+  }, [mode, tool, selected, cutAllowed])
   const currentModelGuides = useRef(modelGuides)
   currentModelGuides.current = modelGuides
   useEffect(
@@ -417,11 +559,8 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
         const owner = guide.pending()
         if (!owner) return null
         return {
-          title:
-            owner.kind === 'pivot'
-              ? 'O pivô ainda está em prévia'
-              : 'A divisão ainda está em prévia',
-          applyLabel: owner.kind === 'pivot' ? 'Aplicar pivô' : 'Criar divisão',
+          title: 'A divisão ainda está em prévia',
+          applyLabel: 'Criar divisão',
           canApply: !!owner.candidate && owner.candidate !== owner.source && !guide.error,
           apply: guide.confirm,
           discard: guide.cancel,
@@ -450,7 +589,14 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
       }
     }
     const times = source.clip.tracks
-      .filter((track) => influences.has(track.nodeId))
+      .filter(
+        (track) =>
+          influences.has(track.nodeId) &&
+          (selectedPose
+            ? track.nodeId === selectedPose.nodeId && track.channel === selectedPose.channel
+            : track.channel ===
+              (tool === 'rotate' ? 'rotation' : tool === 'scale' ? 'scale' : 'translation')),
+      )
       .flatMap((track) => track.keys.map((key) => key.time))
       .filter((time) => time < animationSnapshot.time)
     if (!times.length) return null
@@ -469,6 +615,8 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
     selected,
     covered,
     index,
+    selectedPose,
+    tool,
   ])
   cancelModelGuide.current = modelGuides.cancel
   const guideContext = JSON.stringify([selected, mode, tool])
@@ -479,14 +627,21 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
   }, [guideContext])
   // O portão pode fechar com a oficina aberta (a prévia da equipe, um posto que muda): o modo de
   // malha trancado fecha, em vez de continuar aberto sem os botões dele.
-  const meshAllowed = can('model.mesh')
+  const meshAllowed = can('model.components') || can('model.mesh')
   const componentsOpen = components.selection !== null
   const closeComponents = useRef(components.close)
   closeComponents.current = components.close
   useEffect(() => {
-    if (!meshAllowed && componentsOpen) closeComponents.current()
-  }, [meshAllowed, componentsOpen])
+    if ((!meshAllowed || !areaAllowed) && componentsOpen) closeComponents.current()
+  }, [meshAllowed, areaAllowed, componentsOpen])
+  useEffect(() => {
+    if (areaAllowed) return
+    animationEdit.cancel()
+    cancelPaint()
+    setWorkspaceArea(null)
+  }, [areaAllowed, animationEdit, cancelPaint])
   function cancelGesture() {
+    pivotGesture.cancel()
     skinPaint.cancel()
     animationPose.interrupt()
     animation.cancelPreview()
@@ -533,6 +688,7 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
     } catch (error) {
       animation.reportError(error)
     }
+    setWorkspaceArea(null)
     setMode(next)
     if (next !== 'paint') return
     // Entrar em Pintar com UMA peça escolhida já deixa pintar nela; com várias, a criança escolhe.
@@ -543,7 +699,40 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
   }
   return {
     editor,
+    area,
+    openArea: (next: SceneWorkspaceArea | null) => {
+      if (next && !can(SCENE_WORKSPACE_AREAS[next].family)) return
+      requestTransition(() => {
+        if (next) changeMode(SCENE_WORKSPACE_AREAS[next].mode)
+        cancelGesture()
+        setLooking(false)
+        setTool('select')
+        if (next === 'mesh' || next === 'uv' || next === 'skin') {
+          closePaint()
+          releasePrep()
+          const componentMode = next === 'skin' ? 'vertex' : 'face'
+          components.open(
+            componentMode,
+            components.selection?.mode === componentMode ? components.selection.ids : [],
+          )
+        } else {
+          components.close()
+          if (next === 'materials') {
+            closePaint()
+            releasePrep()
+          }
+        }
+        setWorkspaceArea(next)
+        if (!next && mode === 'paint' && chosenRef.current.length === 1)
+          choosePaint(chosenRef.current[0]!)
+      })
+    },
     modelGuides,
+    pivotGesture,
+    pivotVertical: can('model.precise') && pivotVertical,
+    setPivotVertical,
+    pivotSnap: can('model.precise') && pivotSnap,
+    setPivotSnap,
     showPreviousPose,
     setShowPreviousPose,
     previousPose,
@@ -555,6 +744,7 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
         poseRecovery.restore()
       }),
     animationTarget,
+    animationEdit,
     setAnimationTarget: (target: SceneAnimationTarget) =>
       requestTransition(() => {
         animation.cancelPreview()
@@ -597,12 +787,25 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
     tool,
     setTool: (next: SceneWorkshopTool) => {
       const choose = () => {
+        if (next === 'pivot' && !pivotGate.canUse()) return
+        pivotGesture.cancel()
+        setPivotSnap(false)
         cancelModelGuide.current()
+        solidCut.cancel()
+        if (next === 'cut') {
+          components.close()
+          if (chosenRef.current.length === 1) solidCut.start(chosenRef.current[0]!)
+        }
         gesture.cancel()
         setLooking(false)
         setTool(next)
       }
-      if (!queueContext(choose)) choose()
+      if (next === 'pivot')
+        requestTransition(() => {
+          animation.pause()
+          choose()
+        })
+      else if (!queueContext(choose)) choose()
     },
     looking,
     setLooking,
@@ -668,12 +871,82 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
     /** Sair da oficina: o preparo que ninguém usou não vai para o disco. */
     releasePaintPreparation: () => releasePrep(),
     paint,
+    paintColors: paintIndicators.colors,
+    paintColorsStatus: paintIndicators.status,
+    solidCut,
     skinPaint,
     flipbook,
     animation,
     animationPose,
+    selectedPose,
+    poseCopy,
+    poseCounts,
+    beginPoseCopy: () => {
+      if (selectedPose && poseSelection)
+        requestTransition(() =>
+          setPoseCopy({
+            source: editor.getState().content,
+            clipId: poseSelection.clipId,
+            ref: selectedPose,
+            target: selectedPose.time,
+          }),
+        )
+    },
+    setPoseCopyTime: (target: number) =>
+      setPoseCopy((before) => (before ? { ...before, target } : null)),
+    cancelPoseCopy: () => setPoseCopy(null),
+    confirmPoseCopy: () => {
+      if (!poseCopy || poseCopy.source !== editor.getState().content) return
+      const next = run((source) =>
+        editSceneAnimationPoses(
+          source,
+          poseCopy.clipId,
+          [poseCopy.ref],
+          'copy',
+          poseCopy.target - poseCopy.ref.time,
+        ),
+      )
+      if (next) {
+        animation.seek(poseCopy.target)
+        setPoseSelection({ ...poseCopy.ref, clipId: poseCopy.clipId, time: poseCopy.target })
+        setPoseCopy(null)
+      }
+    },
+    removeSelectedPose: () => {
+      if (selectedPose && poseSelection)
+        requestTransition(() => {
+          const next = run((source) =>
+            editSceneAnimationPoses(source, poseSelection.clipId, [selectedPose], 'remove'),
+          )
+          if (next) setPoseSelection(null)
+        })
+    },
+    selectAnimationPose: (ref: SceneAnimationKeyRef | null) => {
+      setPoseCopy(null)
+      const source = animation.getSnapshot().source
+      if (!ref || !source) {
+        setPoseSelection(null)
+        return
+      }
+      animation.seek(ref.time)
+      setChosen([ref.nodeId])
+      setPoseSelection({ ...ref, clipId: source.clip.id })
+    },
+    recordAnimationPose: () => {
+      if (animationPose.getSnapshot().pending) return animationPose.record()
+      const snapshot = animation.getSnapshot()
+      const id = chosenRef.current.length === 1 ? chosenRef.current[0] : null
+      if (!id || !snapshot.source || snapshot.source.preview || snapshot.playing) return false
+      if (tool !== 'move' && tool !== 'rotate' && tool !== 'scale') return false
+      const channel = tool === 'rotate' ? 'rotation' : tool === 'scale' ? 'scale' : 'translation'
+      const ref: SceneAnimationKeyRef = { nodeId: id, channel, time: snapshot.time }
+      const next = run((source) => markSceneAnimationChannel(source, snapshot.source!.clip.id, ref))
+      if (next) setPoseSelection({ ...ref, clipId: snapshot.source.clip.id })
+      return !!next
+    },
     /** "Pintar nesta camada", o caminho avançado: abre a aba Pintar com aquele alvo exato. */
     openPaint: (target: ScenePaintTarget) => {
+      setWorkspaceArea(null)
       skinPaint.cancel()
       animation.pause()
       flipbook.pause()

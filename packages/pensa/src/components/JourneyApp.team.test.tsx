@@ -282,9 +282,10 @@ describe('o "Equipe · N" e a janela da equipe', () => {
     openGame(adapter)
     await screen.findByText('Sua próxima missão · 1 de 1')
     expect(screen.queryByRole('button', { name: /^Equipe/ })).toBeNull()
+    // "Já quero experimentar" saiu (15/10/2026): ele levava à etapa O sem missão feita.
+    expect(screen.queryByRole('button', { name: 'Já quero experimentar' })).toBeNull()
     for (const name of [
-      'Já quero experimentar',
-      'Adaptar meu caminho',
+      'Adaptar meu caminho…',
       'Encerrar por enquanto',
       'Guardar nos arquivados',
       'Voltar à versão guardada',
@@ -591,7 +592,8 @@ describe('a lista "Meus jogos"', () => {
       (await screen.findByRole('heading', { level: 3, name })).closest('li') as HTMLElement
     expect(within(await cartao('Meu com gente')).getByText('Em equipe · 2')).toBeTruthy()
     expect(within(await cartao('Da Bia')).getByText('De Bia')).toBeTruthy()
-    expect((await cartao('Só meu')).querySelector('.pensa-chip')).toBeNull()
+    // O cartão tem os selos de versão e de etapa; o de equipe só aparece com gente.
+    expect((await cartao('Só meu')).querySelector('.pensa-chip.is-team')).toBeNull()
   })
 })
 
@@ -619,7 +621,7 @@ describe('as missões dizem de quem são', () => {
       expect(screen.getByText('Molda · Bia')).toBeTruthy()
       // A arte da Bia mora na conta dela: nada de "Rever" no meu Pinta.
       expect(screen.queryByRole('button', { name: 'Rever Missão m1' })).toBeNull()
-      fireEvent.click(screen.getByRole('button', { name: 'Continuar no Estúdio' }))
+      fireEvent.click(screen.getByRole('button', { name: 'Começar a missão no Estúdio' }))
       expect(onOpenTask).toHaveBeenCalledWith({ taskId: 'm2', destination: 'studio' })
     },
     LENTO_NO_CI,
@@ -642,11 +644,12 @@ describe('as missões dizem de quem são', () => {
       const cartao = within(titulo.closest('section') as HTMLElement)
       expect(cartao.getByText('Missão de Bia · 1 de 2')).toBeTruthy()
       expect(cartao.getByText('Missão m1')).toBeTruthy()
-      expect(screen.queryByRole('button', { name: /^Continuar no/ })).toBeNull()
+      expect(screen.queryByRole('button', { name: /a missão no/ })).toBeNull()
       fireEvent.click(screen.getByRole('button', { name: 'Ver o caminho' }))
-      const caminho = screen.getByText(/^Ver meu caminho/).closest('details') as HTMLDetailsElement
-      expect(caminho.open).toBe(true)
-      expect(document.activeElement).toBe(caminho.querySelector('summary'))
+      // "Meu caminho" está sempre à vista: o botão leva o foco ao título dele.
+      expect(document.activeElement).toBe(
+        screen.getByRole('heading', { level: 2, name: 'Meu caminho' }),
+      )
       fireEvent.click(screen.getByRole('button', { name: 'Guardar uma ideia' }))
       expect(screen.getByLabelText('Que ideia você quer guardar para depois?')).toBeTruthy()
     },
@@ -713,7 +716,7 @@ describe('quem pode o quê', () => {
         'Funcionou!',
         'Quero ajustar',
         'Abrir meu jogo',
-        'Adaptar meu caminho',
+        'Adaptar meu caminho…',
         'Encerrar por enquanto',
         'Voltar à versão guardada',
       ])
@@ -743,7 +746,7 @@ describe('quem pode o quê', () => {
       openGame(adapter)
       expect(await screen.findByRole('button', { name: 'Funcionou!' })).toBeTruthy()
       expect(screen.getByRole('button', { name: 'Voltar à versão guardada' })).toBeTruthy()
-      expect(screen.getByRole('button', { name: 'Adaptar meu caminho' })).toBeTruthy()
+      expect(screen.getByRole('button', { name: 'Adaptar meu caminho…' })).toBeTruthy()
       expect(screen.queryByRole('button', { name: 'Guardar nos arquivados' })).toBeNull()
       expect(screen.queryByRole('button', { name: 'Apagar este plano…' })).toBeNull()
       expect(screen.queryByText(/Quem testa e guarda as versões/)).toBeNull()
@@ -821,6 +824,79 @@ describe('o compasso do jogo em equipe', () => {
         if (original) Object.defineProperty(document, 'hidden', original)
         else Reflect.deleteProperty(document, 'hidden')
       }
+    },
+    LENTO_NO_CI,
+  )
+})
+
+describe('"Abrir meu jogo" na hora de testar (15/10/2026)', () => {
+  // Testar antes de terminar: a última missão do Estúdio ainda depende da missão do Pinta.
+  const missoes = [
+    task('m1', 'studio', 'completed'),
+    task('m2', 'pinta', 'in_progress', ['m1']),
+    task('m3', 'studio', 'planned', ['m2']),
+  ]
+
+  test(
+    'abre o JOGO do plano, sem abrir missão nenhuma',
+    async () => {
+      const { adapter } = server({ noTeam: true, stage: 'observing', tasks: missoes })
+      const onOpenGame = mock()
+      openGame({ ...adapter, onOpenGame })
+      fireEvent.click(await screen.findByRole('button', { name: 'Abrir meu jogo' }))
+      expect(onOpenGame).toHaveBeenCalledWith({ projectId: 'p1' })
+      expect(adapter.onOpenTask).not.toHaveBeenCalled()
+    },
+    LENTO_NO_CI,
+  )
+
+  test(
+    'sem o host abrir o jogo, cai na missão do Estúdio que já começou, nunca na que ainda espera',
+    async () => {
+      const { adapter } = server({ noTeam: true, stage: 'observing', tasks: missoes })
+      openGame(adapter)
+      fireEvent.click(await screen.findByRole('button', { name: 'Abrir meu jogo' }))
+      expect(adapter.onOpenTask).toHaveBeenCalledWith({ taskId: 'm1', destination: 'studio' })
+    },
+    LENTO_NO_CI,
+  )
+
+  test(
+    'sem o host abrir o jogo e sem missão do Estúdio que possa abrir, o botão não aparece',
+    async () => {
+      // A única missão do Estúdio ainda depende da do Pinta: abrir por ela seria recusado.
+      const { adapter } = server({
+        noTeam: true,
+        stage: 'observing',
+        tasks: [task('m1', 'pinta', 'planned'), task('m2', 'studio', 'planned', ['m1'])],
+      })
+      openGame(adapter)
+      await screen.findByRole('heading', { level: 2, name: 'Vamos experimentar seu jogo' })
+      expect(screen.queryByRole('button', { name: 'Abrir meu jogo' })).toBeNull()
+    },
+    LENTO_NO_CI,
+  )
+
+  test(
+    'com o host abrindo o jogo, o botão vale mesmo sem missão do Estúdio; sem o Estúdio, some',
+    async () => {
+      const { adapter } = server({
+        noTeam: true,
+        stage: 'observing',
+        tasks: [task('m1', 'pinta', 'completed')],
+      })
+      const onOpenGame = mock()
+      const view = openGame({ ...adapter, onOpenGame })
+      fireEvent.click(await screen.findByRole('button', { name: 'Abrir meu jogo' }))
+      expect(onOpenGame).toHaveBeenCalledWith({ projectId: 'p1' })
+      view.unmount()
+      openGame({
+        ...adapter,
+        onOpenGame,
+        capabilities: { ...adapter.capabilities, studioOwned: false },
+      })
+      await screen.findByRole('heading', { level: 2, name: 'Vamos experimentar seu jogo' })
+      expect(screen.queryByRole('button', { name: 'Abrir meu jogo' })).toBeNull()
     },
     LENTO_NO_CI,
   )

@@ -16,7 +16,77 @@ import {
   Vector2,
   Vector3,
 } from 'three'
+import type { Vec3 } from '../core/model'
 import { SceneOcclusionQuery } from './sceneOcclusionQuery'
+
+test.each([
+  false,
+  true,
+])('visible line fragments agree with ray occlusion, including a partial blocker and orbit (perspective=%s)', (perspective) => {
+  const geometry = new BoxGeometry(2, 2, 2),
+    material = new MeshBasicMaterial()
+  const object = new Mesh(geometry, material)
+  object.updateMatrixWorld(true)
+  const camera = perspective
+    ? new PerspectiveCamera(60, 1, 0.1, 100)
+    : new OrthographicCamera(-5, 5, 5, -5, 0.1, 100)
+  camera.position.set(0, 0, 10)
+  camera.updateMatrixWorld(true)
+  const query = new SceneOcclusionQuery([object], camera)
+  try {
+    const start: Vec3 = [-3, 0, -1],
+      end: Vec3 = [3, 0, -1]
+    const parts = query.visibleSegments([[start, end]])
+    expect(parts.length).toBe(2)
+    expect(parts[0]![0]).toEqual(start)
+    expect(parts.at(-1)![1]).toEqual(end)
+    for (let i = 0; i <= 120; i++) {
+      const x = -3 + i / 20
+      const drawn = parts.some(([a, b]) => x >= a[0] + 1e-6 && x <= b[0] - 1e-6)
+      if (parts.some(([a, b]) => Math.abs(x - a[0]) < 1e-5 || Math.abs(x - b[0]) < 1e-5)) continue
+      expect(drawn).toBe(query.visible(new Vector3(x, 0, -1)))
+    }
+    expect(
+      query.visibleSegments([
+        [
+          [-1, 0, 1],
+          [1, 0, 1],
+        ],
+      ]),
+    ).toHaveLength(1)
+    expect(
+      query.visibleSegments([
+        [
+          [-1, 0, -1],
+          [1, 0, -1],
+        ],
+      ]),
+    ).toHaveLength(0)
+    camera.position.set(0, 0, -10)
+    camera.lookAt(0, 0, 0)
+    camera.updateMatrixWorld(true)
+    expect(
+      query.visibleSegments([
+        [
+          [-1, 0, -1],
+          [1, 0, -1],
+        ],
+      ]),
+    ).toHaveLength(1)
+    expect(
+      query.visibleSegments([
+        [
+          [-1, 0, 1],
+          [1, 0, 1],
+        ],
+      ]),
+    ).toHaveLength(0)
+  } finally {
+    query.dispose()
+    geometry.dispose()
+    material.dispose()
+  }
+})
 
 test('occlusion snapshots the current deformation and never merges distinct skeletons sharing one geometry', () => {
   const geometry = new PlaneGeometry(2, 2),

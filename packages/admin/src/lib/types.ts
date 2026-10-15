@@ -203,6 +203,7 @@ export interface AiUsageTopAccountView {
 
 /** Agregados do mês (mirror do members + identidades hidratadas). */
 export interface AiUsageStatsView {
+  studioCosts?: import('@sistemazero/core/ai-credits').StudioAiCostGroup[]
   month: string
   monthUsed: number
   todayUsed: number

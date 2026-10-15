@@ -4,6 +4,7 @@ import { inferProLanguage, normalizeProPath, slugifyProjectName } from '../proPr
 describe('normalizeProPath', () => {
   it('aceita arquivos e pastas válidos', () => {
     expect(normalizeProPath('src/main.ts', { expectFile: true })).toBe('src/main.ts')
+    expect(normalizeProPath('src/main.mts', { expectFile: true })).toBe('src/main.mts')
     expect(normalizeProPath('src')).toBe('src')
     expect(normalizeProPath('package.json', { expectFile: true })).toBe('package.json')
     expect(normalizeProPath('src/components/App.tsx', { expectFile: true })).toBe(
@@ -36,6 +37,8 @@ describe('normalizeProPath', () => {
 describe('inferProLanguage', () => {
   it('mapeia extensões para linguagens', () => {
     expect(inferProLanguage('src/main.ts')).toBe('typescript')
+    expect(inferProLanguage('src/main.mts')).toBe('typescript')
+    expect(inferProLanguage('src/main.cts')).toBe('typescript')
     expect(inferProLanguage('src/App.tsx')).toBe('tsx')
     expect(inferProLanguage('a.jsx')).toBe('jsx')
     expect(inferProLanguage('a.js')).toBe('javascript')

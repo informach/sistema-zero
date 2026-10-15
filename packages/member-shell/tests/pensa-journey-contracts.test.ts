@@ -1,7 +1,15 @@
 import { describe, expect, test } from 'bun:test'
 import type { PensaCapabilitySnapshot } from '@sistemazero/core/pensa'
 import { SERVER_EXAMPLES_INDEX } from '@sistemazero/studio/server-examples'
-import { type ProposalDraft, validateJourneyProposal } from '../src/server/pensa-journey/contracts'
+import {
+  builtGameExtension,
+  gameExtensionIssues,
+  guideIssues,
+  type ProposalDraft,
+  playFirstIssues,
+  questionIssues,
+  validateJourneyProposal,
+} from '../src/server/pensa-journey/contracts'
 import { journeyRecipes } from '../src/server/pensa-journey/recipes'
 
 const caps: PensaCapabilitySnapshot = {
@@ -168,5 +176,119 @@ describe('Pensa: o plano só usa recursos executáveis do perfil', () => {
       recipes.every((recipe) => recipe.blocos.every((id) => allowed.blockIds.includes(id))),
     ).toBe(true)
     expect(journeyRecipes('jogo', { ...allowed, blockIds: [] })).toEqual([])
+  })
+})
+
+describe('a pergunta do Zappy e o jogo que começa jogando', () => {
+  const ask = (about: 'action' | 'dimension', labels = ['Voa', 'Pega ovos']) => ({
+    about,
+    text: 'O que o seu dragão faz?',
+    options: labels.map((label) => ({ label, description: 'Muda o jogo.' })),
+    workingTitle: null,
+  })
+
+  test('pergunta boa passa; teto esgotado, 2D/3D sem escolha e respostas repetidas não', () => {
+    expect(questionIssues(ask('action'), caps, 2)).toEqual([])
+    expect(questionIssues(ask('action'), caps, 0)[0]).toContain('perguntas que cabiam')
+    expect(questionIssues(ask('dimension'), caps, 2)[0]).toContain('2D ou 3D não é escolha')
+    expect(questionIssues(ask('dimension'), { dimensions: ['2d', '3d'] }, 2)).toEqual([])
+    expect(questionIssues(ask('action', ['Voa', ' voa ']), caps, 2)[0]).toContain('mesmo rótulo')
+  })
+
+  test('jogo novo começa no Estúdio; com jogo construído a arte pode vir antes', () => {
+    const art = { ...mission('arte'), destination: 'pinta' as const }
+    expect(playFirstIssues({ missions: [mission('anda')] }, false)).toEqual([])
+    expect(playFirstIssues({ missions: [art, mission('anda', ['arte'])] }, false)[0]).toContain(
+      'Missão "arte"',
+    )
+    expect(playFirstIssues({ missions: [art, mission('anda', ['arte'])] }, true)).toEqual([])
+  })
+})
+
+describe('uma extensão de jogo por projeto (15/10/2026)', () => {
+  const kit = { ...mission('kit'), extensionIds: ['game-2d-advanced'], mechanicIds: [] }
+  test('duas extensões de jogo nas missões do Estúdio voltam com o motivo', () => {
+    expect(gameExtensionIssues({ missions: [mission('anda')] }, null)).toEqual([])
+    expect(gameExtensionIssues({ missions: [mission('anda'), kit] }, null)[0]).toContain(
+      'game-2d e game-2d-advanced',
+    )
+    // O MANUAL de outra extensão de jogo também conta: o guia falaria dos blocos dela.
+    const manual = { ...mission('anda'), mechanicIds: ['game-3d'] }
+    expect(gameExtensionIssues({ missions: [manual] }, null)[0]).toContain('UMA extensão')
+    // Missão de arte não instala nada no jogo.
+    const art = { ...mission('arte'), destination: 'pinta' as const, extensionIds: ['game-3d'] }
+    expect(gameExtensionIssues({ missions: [mission('anda'), art] }, null)).toEqual([])
+  })
+
+  test('jogo já construído: a versão nova fica na extensão dele', () => {
+    expect(builtGameExtension({ missions: [mission('anda')] })).toBe('game-2d')
+    // Plano antigo que misturava: o guia instalou só a primeira, e é ela que o jogo tem.
+    expect(builtGameExtension({ missions: [mission('anda'), kit] })).toBe('game-2d')
+    expect(builtGameExtension({ missions: [kit, mission('anda')] })).toBe('game-2d-advanced')
+    expect(builtGameExtension(null)).toBeNull()
+    expect(gameExtensionIssues({ missions: [mission('anda')] }, 'game-2d')).toEqual([])
+    expect(gameExtensionIssues({ missions: [kit] }, 'game-2d')[0]).toContain(
+      'O jogo já usa a extensão Jogo 2D',
+    )
+  })
+})
+
+describe('o passo do guia é um gesto, não "vá para a área" (15/10/2026)', () => {
+  const guide = (...actions: string[]) => ({
+    missions: [
+      {
+        key: 'palco',
+        steps: actions.map((action) => ({ action, effect: 'Isso prepara o jogo.' })),
+        testAction: 'Aperte ▶ Reproduzir',
+        expected: 'O palco aparece',
+      },
+    ],
+  })
+  test('os vagos voltam com o conserto e citam missão e passo', () => {
+    const issues = guideIssues(
+      guide(
+        'Abrir o Estúdio e ir para a área ⚙️ Ao iniciar.',
+        'Vá na área ⚡ Quando acontecer.',
+        'Implemente o pulo.',
+      ),
+    )
+    expect(issues.some((i) => i.includes('passo 1') && i.includes('as áreas são blocos'))).toBe(
+      true,
+    )
+    expect(issues.some((i) => i.includes('passo 1') && i.includes('tire o passo de abrir'))).toBe(
+      true,
+    )
+    expect(issues.some((i) => i.includes('passo 2') && i.includes('as áreas são blocos'))).toBe(
+      true,
+    )
+    expect(issues.some((i) => i.includes('passo 3') && i.includes('implementar'))).toBe(true)
+  })
+  test('"vá para o Estúdio" só conta nas missões do Estúdio', () => {
+    const pinta = guide('Toque no foguete "Usar no Estúdio" e vá para o Estúdio.')
+    expect(guideIssues(pinta, new Set())).toEqual([])
+    expect(guideIssues(pinta, new Set(['palco']))[0]).toContain('tire o passo de abrir')
+  })
+  test('"entre a área X e a área Y" é lugar, não o passo vago; "entre na área" é', () => {
+    expect(
+      guideIssues(guide('Encaixe o bloco entre a área ⚙️ Ao iniciar e a área ⚡ Quando acontecer.')),
+    ).toEqual([])
+    expect(guideIssues(guide('Entre na área ⚙️ Ao iniciar.'))[0]).toContain('as áreas são blocos')
+  })
+  test('"volte para a área" só conta no Estúdio (no Pinta é o papel de desenho)', () => {
+    const pinta = guide('Volte para a área de desenho e pinte as asas.')
+    expect(guideIssues(pinta, new Set())).toEqual([])
+    expect(guideIssues(pinta, new Set(['palco']))[0]).toContain('as áreas são blocos')
+  })
+  test('o gesto preciso passa, inclusive "arraste para o espaço de montar" e "Usar no Estúdio"', () => {
+    expect(
+      guideIssues(
+        guide(
+          'Clique em "🗂️ Áreas do projeto", pegue o bloco "⚙️ Ao iniciar" e arraste para o espaço de montar.',
+          'Clique em "Jogo 2D" e em "Sprites", pegue o bloco "Criar sprite" e encaixe dentro do "⚙️ Ao iniciar".',
+          'Aperte o foguete "Usar no Estúdio".',
+          'Clique no botão ⋯ (Mais opções), no alto do Estúdio, e escolha "Imagens".',
+        ),
+      ),
+    ).toEqual([])
   })
 })

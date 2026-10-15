@@ -8,7 +8,7 @@ import type { MoldaSceneDocument } from './document'
 import { indexSceneNodes, selectSceneSubtrees } from './graph'
 import { SCENE_LIMITS } from './limits'
 import type { Quaternion } from './matrix'
-import { sampleSceneAnimationTrack } from './sampleAnimation'
+import { sampleSceneAnimationTrack, sceneAnimationPivotOffset } from './sampleAnimation'
 import * as v from './validation'
 
 export interface SceneAnimationLocalPose {
@@ -74,6 +74,14 @@ export function captureSceneAnimationLocalPoses(
       if (track.channel === 'rotation') pose.rotation = value as Quaternion
       else pose[track.channel] = value as Vec3
     }
+    const correction = sceneAnimationPivotOffset(
+      node,
+      clip.space,
+      tracks.get(nodeId) ?? [],
+      time,
+      pose,
+    )
+    pose.translation = pose.translation.map((n, axis) => n + correction[axis]!) as Vec3
     result.set(nodeId, pose)
   }
   return result

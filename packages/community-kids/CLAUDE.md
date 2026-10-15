@@ -2247,6 +2247,47 @@ O host remove chaves locais do fluxo anterior e mantém apenas os deep links de 
 matcher do proxy, sem gate próprio (posse do Pensa e dono/membro são do members). Ordem de deploy:
 members (migration `0098`) → gateway → member-shell → kids.
 
+## O jogo do Pensa no Estúdio: abrir sem tropeçar e a faixa própria (15/10/2026)
+
+Dois relatos dela sobre o Pensa v2: "Abrir meu jogo" mostrava "a tarefa mudou em outro lugar" (e o
+"Tentar de novo" não refazia nada), e o jogo do plano aparecia no meio dos jogos livres do Estúdio,
+como um projeto qualquer.
+
+- **"Abrir meu jogo" abre o jogo** (`pensa-client.tsx`, `onOpenGame`): `/estudio?projeto=pensa-<id>`,
+  o caminho que só retoma o que existe (aqui ou na conta) e nunca mexe em missão. Sem o jogo em
+  lugar nenhum (a criança foi testar antes da primeira missão do Estúdio), o recado diz isso e a
+  saída é "Voltar ao meu plano".
+- **A anotação da missão não tranca o jogo** (`lib/pensa-mission-link.ts`, `linkStudioMission`):
+  no v2, abrir por uma missão anota a missão sem a versão da página, e uma recusa de agora (missão
+  anterior pendente, caminho mudado, servidor fora, rede caída) abre o jogo e relê o guia. Só barra
+  abrir o que o jogo não resolve: missão de outra pessoa da equipe ou que saiu do plano. O plano
+  anterior ao v2 segue estrito. O "Tentar de novo" refaz a abertura de verdade (`openAttempt`).
+- **O conflito com motivo chega inteiro** (`progressRefusal`): o 409 `PENSA_TASK_PROGRESS_CONFLICT`
+  da jornada v2 diz o motivo em voz de criança ("Seu jogo mudou. Espere ficar guardado na conta…");
+  só a frase padrão (a versão velha da página) vira a do host. Vale no Estúdio e no Pinta.
+- **A faixa "Jogos dos seus planos"** na galeria do Estúdio: `ProjectList.sections` (do pacote) com
+  os jogos `pensa-<32 hex>` e o atalho "Abrir meus planos".
+- Testes: `tests/pensa-mission-link.test.ts`, `tests/pensa-guide-errors.test.ts` (o conflito com
+  motivo); a faixa no `ProjectList.test.tsx` do Estúdio.
+- **Full review (15/10/2026):**
+  - ⚠️⚠️ **Anotação adiada não desliga o concluir.** No v2 o guia só liga "Experimentei e
+    funcionou" com `outputRef`, que vinha do PATCH da abertura; adiada (rede, servidor, corrida), o
+    botão ficava desligado sem motivo nem saída. `withProvisionalGameLink` dá ao guia o jogo aberto
+    como vínculo provisório (a conclusão monta o `outputRef` com a revisão confirmada na nuvem).
+  - **Sair do editor do "Abrir meu jogo" volta ao PLANO** (`editorExitPath`), enquanto o jogo aberto
+    é o do plano; antes caía na galeria.
+  - Com o servidor fora (5xx) o v2 abre SEM reler o guia: a releitura falharia também e o erro dela
+    tomava a tela no lugar do jogo aberto. A releitura fica para o 409.
+  - A tela de erro da abertura tem "Voltar ao plano" além do "Tentar de novo" (que fica desligado
+    enquanto o guia é relido: a abertura nova seria derrubada no meio pela releitura), e a missão
+    de outra pessoa da equipe mostra a tela certa (`PensaMissionBlocked`) assim que o guia volta.
+  - Recusa sem frase própria ao ABRIR diz "Não consegui abrir esta missão agora" (`RECUSA_AO_ABRIR`;
+    `progressRefusal` ganhou a frase padrão como 3º argumento), e a missão anterior pendente usa a
+    frase do host ("missões"; a do servidor é a do plano clássico, "tarefas").
+  - `tests/pensa-guide-errors.test.ts` lê a frase padrão do conflito no members PELO CAMINHO e
+    confere que `CONFLITO_PADRAO` a reconhece: reescrevê-la lá sem mexer aqui faria a frase adulta
+    chegar crua à criança.
+
 ## Pensa em equipe nas oficinas (14/10/2026)
 
 O plano v2 em equipe tem duas funções (`code` = quem programa no Estúdio; `art` = Pinta e Molda);

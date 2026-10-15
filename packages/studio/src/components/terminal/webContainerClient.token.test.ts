@@ -116,6 +116,28 @@ describe('sinal de FS pro montado', () => {
 })
 
 describe('gatilho de mount pro (registerProMountTrigger / requestProFsMount)', () => {
+  it('não abre o shell de outra instância, mesmo com o mesmo id de projeto', async () => {
+    const first = {}
+    const second = {}
+    let calls = 0
+    const removeFirst = registerProMountTrigger(() => {
+      calls++
+      setProFsMounted('same', first)
+    }, first)
+    const removeSecond = registerProMountTrigger(() => {
+      calls += 10
+    }, second)
+    requestProFsMount(first)
+    expect(calls).toBe(1)
+    expect(await waitForProFsMounted('same', 10, first)).toBe(true)
+    expect(await waitForProFsMounted('same', 10, second)).toBe(false)
+    setProFsMounted(null, second)
+    expect(getProFsMountedProjectId(first)).toBe('same')
+    removeSecond()
+    requestProFsMount(first)
+    expect(calls).toBe(2)
+    removeFirst()
+  })
   it('requestProFsMount aciona o gatilho registrado', () => {
     let calls = 0
     registerProMountTrigger(() => {
@@ -162,8 +184,10 @@ describe('resetWebContainerFs — preservação de node_modules por template', (
     const removed: string[] = []
     const wc = {
       fs: {
-        readdir: async (_path: string, _opts: { withFileTypes: true }) =>
-          entries.map((name) => ({ name })),
+        readdir: async (path: string, _opts: { withFileTypes: true }) => {
+          expect(path).toBe('.')
+          return entries.map((name) => ({ name }))
+        },
         rm: async (path: string) => {
           removed.push(path)
         },
@@ -175,39 +199,39 @@ describe('resetWebContainerFs — preservação de node_modules por template', (
   it('sem templateId (compat): preserva node_modules', async () => {
     const { wc, removed } = fakeWc(['src', 'node_modules', 'package.json'])
     await resetWebContainerFs(wc)
-    expect(removed).toContain('/src')
-    expect(removed).toContain('/package.json')
-    expect(removed).not.toContain('/node_modules')
+    expect(removed).toContain('src')
+    expect(removed).toContain('package.json')
+    expect(removed).not.toContain('node_modules')
   })
 
   it('template IGUAL ao montado: preserva node_modules (evita reinstalar)', async () => {
     setMountedTemplateId('react-ts')
     const { wc, removed } = fakeWc(['src', 'node_modules'])
     await resetWebContainerFs(wc, { templateId: 'react-ts' })
-    expect(removed).toContain('/src')
-    expect(removed).not.toContain('/node_modules')
+    expect(removed).toContain('src')
+    expect(removed).not.toContain('node_modules')
   })
 
   it('template DIFERENTE do montado: apaga node_modules (não envenena o npm install)', async () => {
     setMountedTemplateId('react-ts')
     const { wc, removed } = fakeWc(['src', 'node_modules'])
     await resetWebContainerFs(wc, { templateId: 'vanilla-vite' })
-    expect(removed).toContain('/src')
-    expect(removed).toContain('/node_modules')
+    expect(removed).toContain('src')
+    expect(removed).toContain('node_modules')
   })
 
   it('pro → classic: apaga node_modules do template pro', async () => {
     setMountedTemplateId('react-ts')
     const { wc, removed } = fakeWc(['index.html', 'node_modules'])
     await resetWebContainerFs(wc, { templateId: CLASSIC_TEMPLATE_ID })
-    expect(removed).toContain('/node_modules')
+    expect(removed).toContain('node_modules')
   })
 
   it('classic → classic: preserva node_modules (mesmo sentinela)', async () => {
     setMountedTemplateId(CLASSIC_TEMPLATE_ID)
     const { wc, removed } = fakeWc(['index.html', 'node_modules'])
     await resetWebContainerFs(wc, { templateId: CLASSIC_TEMPLATE_ID })
-    expect(removed).not.toContain('/node_modules')
+    expect(removed).not.toContain('node_modules')
   })
 })
 

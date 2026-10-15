@@ -262,6 +262,19 @@ export async function streamPensaChat(opts: {
 const JSON_REPAIR_NUDGE =
   'Sua resposta anterior veio CORTADA ou fora do formato. Responda AGORA um ÚNICO objeto JSON VÁLIDO e COMPLETO que obedeça ao schema do começo ao fim, sem cortar no meio. Se precisar caber, seja mais ENXUTO no texto de cada campo (menos palavras) — mas não remova campos obrigatórios nem itens essenciais do plano.'
 
+export type PensaJsonTransport = (
+  body: {
+    model: string
+    messages: PensaWireMessage[]
+    stream: false
+    temperature: number
+    max_tokens: number
+    response_format: unknown
+  },
+  bodyTimeoutMs: number,
+  signal?: AbortSignal,
+) => Promise<unknown>
+
 /**
  * Saída ESTRUTURADA validada: `response_format: json_schema` (OpenRouter é
  * OpenAI-compatible) + parse Zod. 1 retry em JSON/shape inválido (com nudge de
@@ -285,6 +298,8 @@ export async function completePensaJson<T>(opts: {
    * (ex.: task_plan com maxTokens 8000) precisam de folga maior que 30s.
    */
   bodyTimeoutMs?: number
+  transport?: PensaJsonTransport
+  signal?: AbortSignal
 }): Promise<T> {
   const model = opts.model ?? pensaSynthesisModel()
   const baseMessages = [
@@ -309,12 +324,26 @@ export async function completePensaJson<T>(opts: {
     const body = {
       model,
       messages,
-      stream: false,
+      stream: false as const,
       temperature: opts.temperature ?? 0.3,
       max_tokens: opts.maxTokens ?? 1600,
       response_format: responseFormat,
     }
     try {
+      if (opts.signal?.aborted) throw new PensaLlmError('Operação abortada', undefined, false)
+      if (opts.transport) {
+        const data = (await opts.transport(
+          body,
+          opts.bodyTimeoutMs ?? CONNECT_TIMEOUT_MS,
+          opts.signal,
+        )) as { choices?: Array<{ message?: { content?: unknown } }> }
+        const content = data?.choices?.[0]?.message?.content
+        if (typeof content !== 'string' || !content.trim())
+          throw new PensaLlmError('IA devolveu resposta vazia')
+        const parsed = opts.schema.safeParse(JSON.parse(content))
+        if (!parsed.success) throw new PensaLlmError('IA devolveu JSON fora do contrato')
+        return parsed.data
+      }
       const { res, abort } = await connectWithTimeout(body)
       let timer: ReturnType<typeof setTimeout> | undefined
       const timeout = new Promise<never>((_, reject) => {

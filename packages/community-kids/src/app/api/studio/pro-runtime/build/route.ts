@@ -85,6 +85,7 @@ export async function POST(request: Request): Promise<Response> {
   const executionId = await opaqueStudioRuntimeExecutionId('lesson', session.id, lessonId, blockId)
   try {
     const result = await buildStudioProProject({
+      parentOrigin: new URL(request.url).origin,
       project: body.project,
       // O template vem do conteúdo autoral da aula, nunca do projeto enviado.
       templateId,

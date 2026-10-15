@@ -41,6 +41,7 @@ import {
   ScanEye,
   SlidersHorizontal,
   SquareDashedMousePointer,
+  X,
 } from '../../ui/icons'
 import { isTypingTarget } from '../../ui/interaction'
 import { ReferenceImageGuide } from '../model/ReferenceImageGuide'
@@ -49,6 +50,8 @@ import { SceneFirstSteps } from './SceneFirstSteps'
 import { type SceneSkinBrushMode, SceneSkinPaintControls } from './SceneSkinPaintControls'
 import { SceneSkinWeightMapControls } from './SceneSkinWeightMapControls'
 import { SceneTile } from './SceneTile'
+import { sceneCommand } from './sceneCommandRegistry'
+import { useCanvasHints } from './useCanvasHints'
 import { useSceneViewport } from './useSceneViewport'
 import type { SceneWorkshopTool } from './useSceneWorkshop'
 
@@ -74,10 +77,12 @@ export interface SceneCanvasSlots {
   toggles?: HTMLElement | null
   /** "Vista" e "Enquadrar seleção". */
   view?: HTMLElement | null
+  paintScope?: HTMLElement | null
   context?: HTMLElement | null
 }
 
 interface Props {
+  hintControls?: ReactNode
   guideInput?: SceneGuideInput | null
   guidePoint?(point: import('../../../core/model').Vec3): void
   previewGuide?: import('../../../viewport/ScenePreviewGuide').ScenePreviewGuideState | null
@@ -105,6 +110,9 @@ interface Props {
   onEndFaces?(): void
   onInterrupt?(): void
   paintTarget?: ScenePaintTarget | null
+  paintScope?: import('../../../viewport/sceneViewportTypes').ScenePaintSurfaceScope | null
+  paintGuides?: import('../../../viewport/ScenePaintGuides').ScenePaintGuideSettings | null
+  onPaintScopeChange?(mode: 'all' | 'selected'): void
   paint?: ScenePaintActions
   flipbook: SceneFlipbookPlayer
   animation?: SceneAnimationPlayer
@@ -175,6 +183,9 @@ function SceneCanvasAttempt({
   animationPose,
   mode = 'model',
   paintTarget = null,
+  paintScope = null,
+  paintGuides = null,
+  onPaintScopeChange,
   paintMirror = false,
   overlay = null,
   onEndPaint,
@@ -194,6 +205,7 @@ function SceneCanvasAttempt({
   guidePoint,
   previewGuide,
   cameraRequest,
+  hintControls,
 }: Props & { onRetry(): void }) {
   const [localTool, setLocalTool] = useState<SceneWorkshopTool>('select')
   const tool = controlledTool ?? localTool
@@ -285,6 +297,7 @@ function SceneCanvasAttempt({
   const activeTool =
     look ||
     tool === 'pivot' ||
+    tool === 'cut' ||
     mode === 'paint' ||
     !allowedTool(tool) ||
     reviewingSet ||
@@ -323,6 +336,8 @@ function SceneCanvasAttempt({
     animation,
     animationPose: mode === 'animation' ? animationPose : undefined,
     paintTarget: look || onSampleInk ? null : paintTarget,
+    paintScope: mode === 'paint' && !look && !onSampleInk ? paintScope : null,
+    paintGuides: mode === 'paint' && !look ? paintGuides : null,
     paintMode: look ? 'look' : mode === 'paint' ? 'paint' : 'off',
     paintMirror: mode === 'paint' && paintMirror,
     supportGuides: supportGuides && mode !== 'paint' && !paintTarget && !componentSelection,
@@ -344,6 +359,8 @@ function SceneCanvasAttempt({
   }
   const [gridVisible, setGridVisible] = useState(true)
   const [movementStep, setMovementStep] = useState<number | null>(null)
+  const [transformSpace, setTransformSpace] = useState<'world' | 'local'>('world')
+  const preciseSpace = can('model.precise') ? transformSpace : 'world'
   const [camera, setCamera] = useState<CameraView>('free')
   useEffect(() => {
     view.viewport?.setPreviewGuide?.(previewGuide ?? null)
@@ -359,6 +376,9 @@ function SceneCanvasAttempt({
     view.viewport?.setGridVisible?.(gridVisible)
     view.viewport?.setMovementStep?.(movementStep)
   }, [view.viewport, gridVisible, movementStep])
+  useEffect(() => {
+    view.viewport?.setTransformSpace?.(preciseSpace)
+  }, [view.viewport, preciseSpace])
 
   // ── as ferramentas ──────────────────────────────────────────────────────────────────────
   const showTools = mode !== 'paint' && !paintTarget
@@ -398,7 +418,11 @@ function SceneCanvasAttempt({
       key={name}
       icon={TOOL_ICONS[name]}
       label={toolLabel(name)}
-      pressed={!skinPaintSettings && tool !== 'pivot' && !look && activeTool === name}
+      keyHint={sceneCommand(`tool.${name}`).shortcut?.display}
+      aria-keyshortcuts={sceneCommand(`tool.${name}`).shortcut?.display}
+      pressed={
+        !skinPaintSettings && tool !== 'pivot' && tool !== 'cut' && !look && activeTool === name
+      }
       disabled={toolDisabled(name)}
       onClick={() => chooseTool(name)}
     />
@@ -408,7 +432,9 @@ function SceneCanvasAttempt({
       key={name}
       variant="ghost"
       className="px-3 text-sm"
-      aria-pressed={!skinPaintSettings && tool !== 'pivot' && !look && activeTool === name}
+      aria-pressed={
+        !skinPaintSettings && tool !== 'pivot' && tool !== 'cut' && !look && activeTool === name
+      }
       disabled={toolDisabled(name)}
       onClick={() => chooseTool(name)}
     >
@@ -420,25 +446,30 @@ function SceneCanvasAttempt({
   const areaTools = slots?.areaTools === undefined ? [] : tools.filter(isArea)
 
   // ── a dica do momento ───────────────────────────────────────────────────────────────────
-  const hint = skinPaintSettings
-    ? copy.skinPaint.hint
-    : mode === 'animation'
-      ? reviewingSet
-        ? copy.poseSet.review
-        : assisting
-          ? copy.twoBone.drag
-          : copy.animationViewportHint
-      : componentSelection
-        ? areaTool !== 'point'
-          ? copy.componentAreaHint
-          : activeTool === 'select'
-            ? componentSelection.mode === 'face'
-              ? copy.faceHint
-              : copy.componentPickHints[componentSelection.mode]
-            : copy.componentTransformHint
-        : areaTool === 'point'
-          ? copy.gizmoHint
-          : copy.areaHint
+  const hint =
+    tool === 'pivot'
+      ? 'A peça gira em volta do pivô.'
+      : tool === 'cut'
+        ? 'Marque pontos nas arestas para cortar a peça.'
+        : skinPaintSettings
+          ? copy.skinPaint.hint
+          : mode === 'animation'
+            ? reviewingSet
+              ? copy.poseSet.review
+              : assisting
+                ? copy.twoBone.drag
+                : copy.animationViewportHint
+            : componentSelection
+              ? areaTool !== 'point'
+                ? copy.componentAreaHint
+                : activeTool === 'select'
+                  ? componentSelection.mode === 'face'
+                    ? copy.faceHint
+                    : copy.componentPickHints[componentSelection.mode]
+                  : copy.componentTransformHint
+              : areaTool === 'point'
+                ? copy.gizmoHint
+                : copy.areaHint
   const throughBox = (areaTool !== 'point' || componentSelection) && (
     <label className="flex min-h-11 items-center gap-2 text-sm">
       <input
@@ -572,6 +603,7 @@ function SceneCanvasAttempt({
       </div>
     </details>
   )
+  const hints = useCanvasHints(mode)
   const settingsMenu = (
     // Apoios e passo do movimento: pouco usados, e o passo é o mais abstrato daqui.
     <details className="relative">
@@ -581,6 +613,35 @@ function SceneCanvasAttempt({
         {shell && <ChevronDown aria-hidden="true" className="size-4" />}
       </summary>
       <div className={dropClass('left')}>
+        {hints.hidden && (
+          <>
+            <Button className="text-sm" onClick={hints.restore}>
+              Mostrar dicas do palco
+            </Button>
+            {hints.unavailable && (
+              <p role="status" className="text-xs">
+                A dica ficou oculta só nesta sessão; o navegador não permitiu guardar a preferência.
+              </p>
+            )}
+          </>
+        )}
+        {can('model.precise') && mode !== 'paint' && (
+          <label className="flex min-h-11 items-center gap-2 px-1 text-sm">
+            <span>Eixos de Mover e Girar</span>
+            <select
+              name="molda-transform-space"
+              value={preciseSpace}
+              disabled={!view.viewport?.setTransformSpace}
+              onChange={(event) =>
+                setTransformSpace(event.target.value === 'local' ? 'local' : 'world')
+              }
+              className="min-h-11 rounded-lg border border-mld-border bg-mld-bg px-2"
+            >
+              <option value="world">Mundo</option>
+              <option value="local">Locais da peça</option>
+            </select>
+          </label>
+        )}
         {mode !== 'paint' && !paintTarget && !componentSelection && (
           <Button
             variant="ghost"
@@ -663,38 +724,66 @@ function SceneCanvasAttempt({
       <span className="mld-float-label">Olhar</span>
     </button>
   )
-  const hintCard = (
-    <div className="mld-stage-card pointer-events-auto flex max-w-full flex-wrap items-center gap-x-2 gap-y-1 px-3 py-2">
-      {mode === 'paint' && !paintTarget && (
-        // Região viva: o recado muda com o toque, e quem usa leitor de tela precisa ouvir.
-        <p role="status" className="flex items-center gap-2 text-sm font-bold">
-          <Lightbulb aria-hidden="true" className="mld-hint-bulb" />
-          {SCENE_PAINT_COPY.choosePiece}
-        </p>
-      )}
-      {paintModes}
-      {paintTarget && (
-        // A faixa da dica é dela (não cobre o palco), então ela aparece também no celular.
-        <p className="flex items-center gap-2 text-[0.8125rem] font-semibold text-mld-text">
-          <Lightbulb aria-hidden="true" className="mld-hint-bulb" />
-          {!!document.animations?.length && 'Editando a forma inicial. '}
-          {look ? copy.paintLookHint : SCENE_PAINT_COPY.modelHint}
-        </p>
-      )}
-      {/* A casca que não preparou lugar para as ferramentas recebe-as aqui, no palco. */}
-      {showTools && shell && slots.tools === undefined && tools.map(toolButton)}
-      {showTools && !look && (
-        <p className="flex items-center gap-2 text-sm font-semibold text-mld-text">
-          <Lightbulb aria-hidden="true" className="mld-hint-bulb" />
-          <span role={mode === 'animation' && pendingPose ? 'status' : undefined}>
-            {mode === 'model' && !!document.animations?.length && 'Editando a forma inicial. '}
-            {mode === 'animation' && pendingPose ? copy.animationPosePending : hint}
-          </span>
-        </p>
-      )}
-      {throughBox}
-    </div>
-  )
+  const dismissibleHint =
+    tool !== 'pivot' &&
+    tool !== 'cut' &&
+    !pendingPose &&
+    !reviewingSet &&
+    !assisting &&
+    !look &&
+    !hintControls &&
+    !componentSelection &&
+    !skinPaintSettings
+  const hintCard =
+    dismissibleHint && hints.hidden ? null : (
+      <div
+        data-dismissible={dismissibleHint}
+        className="mld-stage-card pointer-events-auto flex max-w-full flex-wrap items-center gap-x-2 gap-y-1 px-3 py-2"
+      >
+        {mode === 'paint' && !paintTarget && paintScope?.mode !== 'all' && (
+          // Região viva: o recado muda com o toque, e quem usa leitor de tela precisa ouvir.
+          <p role="status" className="flex items-center gap-2 text-sm font-bold">
+            <Lightbulb aria-hidden="true" className="mld-hint-bulb" />
+            {SCENE_PAINT_COPY.choosePiece}
+          </p>
+        )}
+        {paintModes}
+        {(paintTarget || (mode === 'paint' && paintScope?.mode === 'all')) && (
+          // A faixa da dica é dela (não cobre o palco), então ela aparece também no celular.
+          <p className="flex items-center gap-2 text-[0.8125rem] font-semibold text-mld-text">
+            <Lightbulb aria-hidden="true" className="mld-hint-bulb" />
+            {!!document.animations?.length && 'Editando a forma inicial. '}
+            {look ? copy.paintLookHint : SCENE_PAINT_COPY.modelHint}
+          </p>
+        )}
+        {/* A casca que não preparou lugar para as ferramentas recebe-as aqui, no palco. */}
+        {showTools && shell && slots.tools === undefined && tools.map(toolButton)}
+        {showTools && !look && (
+          <p className="flex items-center gap-2 text-sm font-semibold text-mld-text">
+            <Lightbulb aria-hidden="true" className="mld-hint-bulb" />
+            <span role={mode === 'animation' && pendingPose ? 'status' : undefined}>
+              {mode === 'model' &&
+                tool !== 'pivot' &&
+                !!document.animations?.length &&
+                'Editando a forma inicial. '}
+              {mode === 'animation' && pendingPose ? copy.animationPosePending : hint}
+            </span>
+          </p>
+        )}
+        {throughBox}
+        {hintControls}
+        {dismissibleHint && (
+          <button
+            type="button"
+            className="mld-dismiss-hint"
+            aria-label="Fechar dica do palco"
+            onClick={hints.dismiss}
+          >
+            <X aria-hidden="true" className="size-4" />
+          </button>
+        )}
+      </div>
+    )
 
   const stageCards = (
     <>
@@ -745,6 +834,31 @@ function SceneCanvasAttempt({
       )}
     </>
   )
+
+  const paintScopeControl = (
+    <fieldset
+      className="mld-paint-scope flex items-center gap-1 text-xs font-bold"
+      aria-label="Pintar em"
+    >
+      <span className="px-2 text-mld-muted">Pintar em:</span>
+      <Button
+        variant="ghost"
+        className="px-3 text-xs"
+        aria-pressed={paintScope?.mode === 'all'}
+        onClick={() => onPaintScopeChange?.('all')}
+      >
+        Todas as peças
+      </Button>
+      <Button
+        variant="ghost"
+        className="px-3 text-xs"
+        aria-pressed={paintScope?.mode === 'selected'}
+        onClick={() => onPaintScopeChange?.('selected')}
+      >
+        Só a escolhida
+      </Button>
+    </fieldset>
+  )
   const poseCard = !shell && mode === 'animation' && animationPose && (
     <SceneAnimationPoseControls gesture={animationPose} enabled={canAnimate} />
   )
@@ -778,6 +892,13 @@ function SceneCanvasAttempt({
         event.preventDefault()
       }}
     >
+      {mode === 'paint' &&
+        onPaintScopeChange &&
+        place(slots?.paintScope, paintScopeControl, () => (
+          <div className="mld-float absolute top-3 right-3 z-20 max-w-[calc(100%-1.5rem)]">
+            {paintScopeControl}
+          </div>
+        ))}
       {/* Sem o lugar pedido, o `inline` não desenha nada: o grupo sai no palco, mais abaixo. */}
       {showTools && place(slots?.tools, mainTools.map(toolTile), () => null)}
       {showTools &&
@@ -786,7 +907,7 @@ function SceneCanvasAttempt({
       {place(
         slots?.toggles,
         <>
-          {gridButton}
+          {slots?.view === undefined && gridButton}
           {settingsMenu}
         </>,
         () => null,
@@ -796,6 +917,7 @@ function SceneCanvasAttempt({
         <>
           {lookButton}
           {cameraMenu}
+          {slots?.view !== undefined && gridButton}
           {frameButton}
         </>,
         () => null,
@@ -895,8 +1017,8 @@ function SceneCanvasAttempt({
             <Minus aria-hidden="true" />
           </button>
         </div>
-        {/* A legenda dos eixos: a mesma cor das alças e dos selos do painel (só no 3D que mexe). */}
-        {shell && mode !== 'paint' && !paintTarget && (
+        {/* O palco continua 3D durante a pintura; a legenda compartilha as cores das alças. */}
+        {shell && (
           <p aria-hidden="true" className="mld-axis-legend">
             <span className="mld-axis-item">
               <span className="mld-axis" data-axis="x">

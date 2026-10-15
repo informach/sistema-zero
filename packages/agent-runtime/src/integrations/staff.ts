@@ -1,7 +1,7 @@
 import { artifactSchema, ToolRejected } from '@sistemazero/agent-core'
 import {
   ApiError,
-  parseBuildRequest,
+  parseStudioBuildSubmission,
   STUDIO_PRO_TEMPLATE_IDS,
   StaffClient,
   type StaffOperation,
@@ -9,6 +9,7 @@ import {
   staffMessageSchema,
   staffMutation,
   staffOperationSchema,
+  studioBuildResponseSchema,
 } from '@sistemazero/agent-integrations/sistemazero'
 import { z } from 'zod'
 import { Credentials } from '../credentials'
@@ -125,19 +126,28 @@ export function setupStaff(supervisor: Supervisor, dispatcher: Dispatcher) {
   dispatcher.register(
     tool(
       'studio_build_prepare',
-      'Capture selected workspace files into the shared Studio build contract. Hashes must match; reserved runtime config is excluded. Returns an immutable artifact and manifest for review.',
+      'Capture selected source files and binary materials into the Studio build contract. Hashes must match. Includes package/lock for server validation; executable runtime config is excluded. Returns an immutable snapshot for review.',
       'read',
       z.object({
         templateId: z.enum(STUDIO_PRO_TEMPLATE_IDS),
+        parentOrigin: z.string().url().max(2048),
+        validate: z.boolean().default(true),
+        binaries: z
+          .array(
+            z.object({ path: z.string().max(240), sha256: z.string().regex(/^[a-f0-9]{64}$/) }),
+          )
+          .max(258)
+          .default([]),
         files: z
           .array(
             z.object({ path: z.string().max(180), sha256: z.string().regex(/^[a-f0-9]{64}$/) }),
           )
           .min(1)
-          .max(80),
+          .max(82),
       }),
       async (input, context) => {
         const files: Record<string, string> = {}
+        const binaries: Record<string, { base64: string; sha256: string }> = {}
         let bytes = 0
         for (const file of input.files) {
           const data = await readBounded(
@@ -153,10 +163,30 @@ export function setupStaff(supervisor: Supervisor, dispatcher: Dispatcher) {
             throw new ToolRejected('STUDIO_DUPLICATE', 'Duplicate file path')
           files[file.path] = new TextDecoder('utf8', { fatal: true }).decode(data)
         }
-        const build = parseBuildRequest({
+        for (const file of input.binaries) {
+          const data = await readBounded(
+            await workspacePath(context.workspace, file.path),
+            2_000_000,
+          )
+          bytes += data.length
+          if (bytes > 2_000_000)
+            throw new ToolRejected('STUDIO_LIMIT', 'Studio snapshot exceeds 2 MB')
+          if (hash(data) !== file.sha256)
+            throw new ToolRejected('STUDIO_STALE', 'Material changed since review')
+          if (Object.hasOwn(binaries, file.path))
+            throw new ToolRejected('STUDIO_DUPLICATE', 'Duplicate material path')
+          binaries[file.path] = {
+            base64: Buffer.from(data).toString('base64'),
+            sha256: file.sha256,
+          }
+        }
+        const build = parseStudioBuildSubmission({
           executionId: crypto.randomUUID(),
           templateId: input.templateId,
           files,
+          binaries,
+          parentOrigin: input.parentOrigin,
+          validate: input.validate,
         })
         return {
           artifact: await artifacts.put(
@@ -164,6 +194,13 @@ export function setupStaff(supervisor: Supervisor, dispatcher: Dispatcher) {
             'application/vnd.sistemazero.studio-build+json',
           ),
           templateId: build.templateId,
+          parentOrigin: build.parentOrigin,
+          validate: build.validate,
+          binaries: Object.entries(build.binaries ?? {}).map(([path, entry]) => ({
+            path,
+            sha256: entry.sha256,
+            bytes: Buffer.byteLength(entry.base64, 'base64'),
+          })),
           files: Object.entries(build.files).map(([path, content]) => ({
             path,
             sha256: hash(content),
@@ -176,36 +213,27 @@ export function setupStaff(supervisor: Supervisor, dispatcher: Dispatcher) {
   dispatcher.register(
     tool(
       'studio_build',
-      'Build the exact prepared Studio artifact through the authorized backend facade. Uses the existing restricted Studio runtime contract; server credentials never enter the client. Produces HTML and build-log artifacts.',
+      'Build and optionally validate the exact prepared Studio snapshot through the staff facade. Returns an expiring remote preview reference plus persistent local result metadata and logs. Server credentials stay on the server.',
       'external',
       connectionSchema.extend({ artifact: artifactSchema }),
       async (input, context) => {
         if (input.artifact.bytes > 2_000_000)
           throw new ToolRejected('STUDIO_LIMIT', 'Build artifact exceeds limit')
-        const build = parseBuildRequest(
+        const build = parseStudioBuildSubmission(
           JSON.parse((await artifacts.read(input.artifact)).toString('utf8')),
         )
         const result = await execute(input, { action: 'studio.build', build }, context.signal)
-        const output = z
-          .discriminatedUnion('ok', [
-            z.object({
-              ok: z.literal(true),
-              html: z.string().max(2_500_000),
-              output: z.string(),
-              durationMs: z.number(),
-            }),
-            z.object({
-              ok: z.literal(false),
-              code: z.string(),
-              message: z.string(),
-              output: z.string().optional(),
-            }),
-          ])
-          .parse(result.value)
+        const output = studioBuildResponseSchema.parse(result.value)
         return output.ok
           ? {
               success: true,
-              html: await artifacts.put(output.html, 'text/html'),
+              preview: output.artifact,
+              result: await artifacts.put(
+                JSON.stringify(output),
+                'application/vnd.sistemazero.studio-result+json',
+              ),
+              evidence: output.evidence,
+              validation: output.validation,
               log: await artifacts.put(output.output),
               durationMs: output.durationMs,
             }

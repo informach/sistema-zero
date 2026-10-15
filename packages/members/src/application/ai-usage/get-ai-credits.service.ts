@@ -17,6 +17,10 @@ export interface GetAiCreditsDeps {
   dailyLimit: number
   monthlyLimit: number
   clock: () => Date
+  studioAccounts?: Pick<
+    import('../../domain/ports/studio-ai-account.port').StudioAiAccountRepository,
+    'get'
+  >
 }
 
 export class GetAiCreditsService {
@@ -32,13 +36,17 @@ export class GetAiCreditsService {
       day,
       month: day.slice(0, 7),
     })
-    return computeAiCredits({
-      now,
-      usedDay,
-      usedMonth,
-      dailyLimit: this.deps.dailyLimit,
-      monthlyLimit: this.deps.monthlyLimit,
-      unlimited: privileged,
-    })
+    const account = await this.deps.studioAccounts?.get(accountId)
+    return {
+      ...computeAiCredits({
+        now,
+        usedDay,
+        usedMonth,
+        dailyLimit: this.deps.dailyLimit,
+        monthlyLimit: this.deps.monthlyLimit,
+        unlimited: privileged,
+      }),
+      ...(account ? { studioSource: account.source } : {}),
+    }
   }
 }

@@ -3,9 +3,9 @@ import { createEmptyProject, createProProject } from '@sistemazero/studio'
 import { createAdminProRuntimeAdapter } from '../src/lib/studio-pro-authoring'
 
 describe('autoria do Estúdio Pro', () => {
-  test('o catálogo cria projeto Pro completo e mantém o projeto clássico disponível', () => {
+  test('o catálogo cria projeto Pro completo e mantém o projeto clássico disponível', async () => {
     const classic = createEmptyProject('aula-1', 'Atividade')
-    const pro = createProProject('aula-1', 'Atividade', 'react-ts')
+    const pro = await createProProject('aula-1', 'Atividade', 'react-ts')
 
     expect(classic.kind).toBeUndefined()
     expect(pro.kind).toBe('pro')
@@ -17,17 +17,26 @@ describe('autoria do Estúdio Pro', () => {
     let sent: unknown
     const fakeFetch = (async (_input: RequestInfo | URL, init?: RequestInit) => {
       sent = JSON.parse(String(init?.body))
-      return Response.json({ html: '<main>Pronto</main>', output: 'build ok', durationMs: 12 })
+      return Response.json({
+        artifact: {
+          id: 'a'.repeat(64),
+          url: `https://runtime.test/v1/artifacts/${'a'.repeat(64)}/index.html`,
+          sha256: 'b'.repeat(64),
+          expiresAt: Date.now() + 60_000,
+        },
+        output: 'build ok',
+        durationMs: 12,
+      })
     }) as typeof fetch
     const adapter = createAdminProRuntimeAdapter(fakeFetch)
-    const project = createProProject('aula-2', 'Pro', 'vanilla-js')
+    const project = await createProProject('aula-2', 'Pro', 'vanilla-js')
 
     const result = await adapter.build({ project })
 
     expect(sent).toEqual({
       project: { kind: 'pro', tree: project.tree, proMeta: project.proMeta },
     })
-    expect(result.html).toContain('Pronto')
+    expect(result.artifact?.url).toContain('/index.html')
   })
 
   test('adapter apresenta a mensagem e a saída segura do executor', async () => {
@@ -39,7 +48,7 @@ describe('autoria do Estúdio Pro', () => {
     const adapter = createAdminProRuntimeAdapter(fakeFetch)
 
     await expect(
-      adapter.build({ project: createProProject('aula-3', 'Pro', 'vanilla-vite') }),
+      adapter.build({ project: await createProProject('aula-3', 'Pro', 'vanilla-vite') }),
     ).rejects.toThrow('Revise o código.\n\nsrc/main.ts: erro')
   })
 })

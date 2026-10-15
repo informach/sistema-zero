@@ -3,7 +3,7 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-libra
 import type { Project } from '#core'
 import { useLogsStore } from '../../state/logsStore'
 import { useProjectStore } from '../../state/projectStore'
-import type { StudioProRuntimeAdapter } from '../../studio/pro-runtime'
+import type { StudioProRuntimeAdapter, StudioProRuntimeBuildResult } from '../../studio/pro-runtime'
 import { RemoteProPreview } from './RemoteProPreview'
 
 function project(content = 'console.log("primeiro")', updatedAt = 10): Project {
@@ -74,5 +74,39 @@ describe('preview Pro remoto', () => {
       kind: 'file',
       content: 'console.log("editado")',
     })
+  })
+
+  test('keeps the last compiled artifact on build failure, without leaking it to another project', async () => {
+    const artifact = {
+      id: 'a'.repeat(64),
+      url: `https://runtime.test/v1/artifacts/${'a'.repeat(64)}/index.html`,
+      sha256: 'b'.repeat(64),
+      expiresAt: Date.now() + 60_000,
+    }
+    let release: (result: StudioProRuntimeBuildResult) => void = () => {}
+    let calls = 0
+    const runtime: StudioProRuntimeAdapter = {
+      async build() {
+        calls++
+        if (calls === 1) return { artifact }
+        if (calls === 2) throw new Error('src/main.ts não compila')
+        return new Promise((resolve) => {
+          release = resolve
+        })
+      },
+    }
+    useProjectStore.setState({ project: project() })
+    const { container } = render(<RemoteProPreview runtime={runtime} />)
+    await waitFor(() => expect(container.querySelector('iframe')?.src).toBe(artifact.url))
+    const originalFrame = container.querySelector('iframe')
+    fireEvent.click(screen.getByRole('button', { name: 'Executar alterações' }))
+    await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('não compila'))
+    expect(container.querySelector('iframe')).toBe(originalFrame)
+    act(() => useProjectStore.setState({ project: { ...project(), id: 'other' } }))
+    expect(container.querySelector('iframe')).toBeNull()
+    await act(async () => release({ html: '<main>Outro projeto</main>' }))
+    await waitFor(() =>
+      expect(container.querySelector('iframe')?.getAttribute('srcdoc')).toContain('Outro projeto'),
+    )
   })
 })

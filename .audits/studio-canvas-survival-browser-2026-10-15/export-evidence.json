@@ -1,0 +1,41 @@
+{
+  "measuredAt": "2026-10-15T18:23:56.148Z",
+  "destination": "C:\\Users\\tocha\\AppData\\Local\\Temp\\studio-canvas-export-lUIkHH",
+  "commands": [
+    "npm ci --no-audit --no-fund",
+    "npm ls --all",
+    "npm run typecheck",
+    "npm run build",
+    "Chromium: dist em caminho aninhado"
+  ],
+  "sourceFiles": 29,
+  "assetFiles": 4,
+  "envelopeBytes": 147286,
+  "zipBytes": 53487,
+  "artifactBytes": 51606,
+  "artifactFiles": {
+    "assets/index-Bu2fMx90.css": 1298,
+    "assets/index-C0pqE76V.js": 38563,
+    "index.html": 453,
+    "studio-assets/000477c8bb8510a5f7f6a6f5ebaea93975dffcecfc9b0fd0dd5e324dc3e3e172.png": 2381,
+    "studio-assets/57f0e6cc631b29b1d35e2f61f384a037be8702b04fe8aa1457f090db708e1aaa.png": 1856,
+    "studio-assets/ef3ad9461e41b0de3a47b918f8e98c31bb44bb2e3796038786b7a43e443f9d47.png": 2468,
+    "studio-assets/manifest.json": 4587
+  },
+  "browserEvidence": {
+    "captureBytes": 53455,
+    "tick": 109,
+    "health": 5,
+    "nestedPath": true,
+    "errors": []
+  },
+  "artifactWithCaptureBytes": 105061,
+  "parsedDependencies": {
+    "dependencies": {},
+    "devDependencies": {
+      "typescript": "5.9.3",
+      "vite": "8.0.16"
+    }
+  },
+  "lockUnchanged": true
+}

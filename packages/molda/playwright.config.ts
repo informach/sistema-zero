@@ -11,6 +11,14 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   workers: 1,
   reporter: 'list',
+  expect: {
+    toHaveScreenshot: {
+      pathTemplate:
+        '{testDir}/../../../docs/plans/references/2026-10-15-molda-fidelidade/implemented/{arg}{ext}',
+      maxDiffPixels: 100,
+      animations: 'disabled',
+    },
+  },
   use: {
     baseURL,
     trace: 'on-first-retry',
