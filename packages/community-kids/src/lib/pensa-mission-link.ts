@@ -1,4 +1,4 @@
-import { type GuideError, progressRefusal } from './pensa-guide-errors'
+import { type GuideError, progressRefusal, RECUSA_AO_ABRIR } from './pensa-guide-errors'
 
 /**
  * Abrir o jogo por uma missão do Pensa: o Estúdio ANOTA a missão (começada e ligada ao jogo do
@@ -61,8 +61,48 @@ export async function linkStudioMission<P>(input: {
   if (response.ok && body?.task) return { kind: 'linked', progress: body.task.progress }
   const code = body?.error?.code ?? ''
   const tolerated = response.status === 409 || response.status >= 500 || response.ok
-  if (input.v2 && tolerated && !BARRA_ABRIR.has(code)) return { kind: 'deferred', reread: true }
-  const refusal: MissionLinkRefusal = progressRefusal(response.status, body)
+  // Reler o guia só quando ele pode ter mudado (409): com o servidor fora (5xx) a releitura
+  // falharia também, e o erro dela tomaria a tela no lugar do jogo que acabou de abrir.
+  if (input.v2 && tolerated && !BARRA_ABRIR.has(code))
+    return { kind: 'deferred', reread: response.status === 409 || response.ok }
+  const refusal: MissionLinkRefusal = progressRefusal(response.status, body, RECUSA_AO_ABRIR)
   if (response.status === 409) refusal.reread = true
   throw refusal
+}
+
+type LinkedProgress = { outputRef?: { kind: 'studio_project'; projectId: string } | null }
+
+/**
+ * O progresso que o guia do v2 recebe: sem `outputRef` (a anotação ao abrir foi adiada), o jogo
+ * aberto entra como vínculo provisório. Sem isso "Experimentei e funcionou" ficava desligado sem
+ * motivo nem saída; quem prova a missão é o jogo guardado, conferido na conclusão.
+ */
+export function withProvisionalGameLink<P extends LinkedProgress>(
+  progress: P,
+  v2: boolean,
+  projectId: string,
+): P {
+  if (!v2 || progress.outputRef) return progress
+  return { ...progress, outputRef: { kind: 'studio_project', projectId } }
+}
+
+/**
+ * Para onde vai quem sai do editor: o PLANO da missão aberta (`?tarefa=`), o plano do jogo aberto
+ * pelo "Abrir meu jogo" (`?projeto=pensa-…`, só enquanto ESSE jogo está aberto) ou, `null`, a
+ * lista de jogos.
+ */
+export function editorExitPath(input: {
+  taskId: string | null
+  handoffProjectId: string | null
+  openingPlanId: string | null
+  initialProjectId: string | null
+  openProjectId: string | null
+}): string | null {
+  if (input.taskId)
+    return input.handoffProjectId
+      ? `/pensa?plano=${encodeURIComponent(input.handoffProjectId)}`
+      : '/pensa'
+  if (input.openingPlanId && input.openProjectId && input.openProjectId === input.initialProjectId)
+    return `/pensa?plano=${encodeURIComponent(input.openingPlanId)}`
+  return null
 }

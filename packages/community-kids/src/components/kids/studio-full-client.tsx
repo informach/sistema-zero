@@ -28,7 +28,12 @@ import { cloudConfirmRefusal, guideError, progressRefusal } from '@/lib/pensa-gu
 import { resolveNextPensaMission } from '@/lib/pensa-next-mission'
 import { type CreationsCloud, createCreationsCloud } from '../../lib/creations-cloud'
 import { createStoredSyncedMarks } from '../../lib/creations-sync'
-import { linkStudioMission, type MissionLinkRefusal } from '../../lib/pensa-mission-link'
+import {
+  editorExitPath,
+  linkStudioMission,
+  type MissionLinkRefusal,
+  withProvisionalGameLink,
+} from '../../lib/pensa-mission-link'
 import {
   clearPensaRestore,
   isPensaRestorePending,
@@ -545,7 +550,16 @@ export function StudioFullClient({
             onNeedHelp: () =>
               router.push(`/pensa?plano=${encodeURIComponent(taskHandoff.project.id)}`),
             blocks: taskHandoff.task.context.blocks,
-            progress: taskHandoff.task.progress,
+            // No v2 a anotação feita ao abrir pode ter sido adiada (rede, servidor, corrida): o
+            // jogo abriu, mas o progresso voltou sem `outputRef` e o guia deixava "Experimentei e
+            // funcionou" desligado, sem motivo nem saída. Quem prova a missão é o jogo guardado
+            // (a conclusão monta o `outputRef` com a revisão confirmada logo abaixo), então o
+            // guia recebe o jogo aberto como vínculo provisório.
+            progress: withProvisionalGameLink(
+              taskHandoff.task.progress,
+              taskHandoff.task.guide.contractVersion === 2,
+              pensaStudioProjectId(taskHandoff.project.id),
+            ),
             onProgress: async (input) => {
               if (taskHandoff.task.guide.contractVersion === 2 && input.status === 'completed') {
                 if (!cloudSync) throw guideError('Espere seu jogo ficar guardado na conta.')
@@ -939,14 +953,19 @@ export function StudioFullClient({
         .finally(() => setSyncing(false))
     }
   }, [cloudSync])
+  // Sair do editor: o plano da missão, o plano do jogo aberto pelo "Abrir meu jogo" (antes ia
+  // para a galeria) ou a lista (ver `editorExitPath`).
+  const exitPath = editorExitPath({
+    taskId: taskId ?? null,
+    handoffProjectId,
+    openingPlanId,
+    initialProjectId: initialProjectId ?? null,
+    openProjectId: view.name === 'editor' ? view.projectId : null,
+  })
   const exitEditor = useCallback(() => {
-    // Volta ao PLANO desta missão (e não à lista de planos): `?plano=` abre o caminho dela.
-    if (taskId)
-      window.location.assign(
-        handoffProjectId ? `/pensa?plano=${encodeURIComponent(handoffProjectId)}` : '/pensa',
-      )
+    if (exitPath) window.location.assign(exitPath)
     else backToList()
-  }, [backToList, taskId, handoffProjectId])
+  }, [backToList, exitPath])
 
   // O selo "Guardado na sua conta" fica na Topbar do editor e no cabeçalho da lista.
   // O menu lateral é controlado pela alça do shell Kids (`hostChrome.menu` é null).
@@ -965,22 +984,44 @@ export function StudioFullClient({
   // dimensionam por `h-full` contando com isso.
   return (
     <div className={EMBEDDED_STUDIO_FRAME}>
-      {taskHandoffStatus === 'error' || taskError ? (
+      {taskHandoffStatus === 'error' ||
+      // Missão de outra pessoa: depois de reler o guia, a tela certa é a da missão bloqueada
+      // (com "Voltar ao plano"), e não o erro da abertura.
+      (taskError && !(taskHandoff && !taskHandoff.capability.owned)) ? (
         <div className="grid h-full place-items-center p-6 text-center">
           <div className="flex max-w-sm flex-col items-center gap-3">
             <p className="font-semibold">{taskHandoffError ?? taskError}</p>
-            <button
-              type="button"
-              onClick={() => {
-                setTaskError(null)
-                openedTaskKeyRef.current = null
-                if (taskHandoffStatus === 'error') retryTaskHandoff()
-                else setOpenAttempt((n) => n + 1)
-              }}
-              className="inline-flex min-h-11 items-center gap-2 rounded-full bg-primary px-4 font-bold text-primary-foreground"
-            >
-              <RefreshCw className="size-4" /> Tentar de novo
-            </button>
+            <div className="flex flex-wrap justify-center gap-2">
+              <button
+                type="button"
+                // Enquanto o guia é relido, tentar de novo começaria uma abertura que a releitura
+                // derruba no meio (a criança ficava sem tela e sem erro).
+                disabled={taskHandoffStatus === 'loading'}
+                onClick={() => {
+                  setTaskError(null)
+                  openedTaskKeyRef.current = null
+                  if (taskHandoffStatus === 'error') retryTaskHandoff()
+                  else setOpenAttempt((n) => n + 1)
+                }}
+                className="inline-flex min-h-11 items-center gap-2 rounded-full bg-primary px-4 font-bold text-primary-foreground disabled:opacity-60"
+              >
+                <RefreshCw className="size-4" /> Tentar de novo
+              </button>
+              {taskId ? (
+                // A frase costuma mandar voltar ao plano ("a missão saiu do plano"): a saída
+                // precisa estar aqui, e não só o "Tentar de novo" que repete a mesma recusa.
+                <a
+                  href={
+                    handoffProjectId
+                      ? `/pensa?plano=${encodeURIComponent(handoffProjectId)}`
+                      : '/pensa'
+                  }
+                  className="inline-flex min-h-11 items-center gap-2 rounded-full border-2 border-border px-4 font-bold"
+                >
+                  Voltar ao plano
+                </a>
+              ) : null}
+            </div>
           </div>
         </div>
       ) : taskHandoff && !taskHandoff.capability.owned ? (

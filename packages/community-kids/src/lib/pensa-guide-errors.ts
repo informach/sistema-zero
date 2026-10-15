@@ -20,22 +20,18 @@ export function guideError(message: string, code?: string): GuideError {
 }
 
 /**
- * Os códigos do servidor cuja frase já é para criança. A frase ainda passa pela régua da
- * aventura (`PALAVRAS_DA_ESCOLA`): uma frase de escola cai na do host.
- */
-const FRASE_DO_SERVIDOR = new Set(['PENSA_TASK_DEPENDENCY_PENDING'])
-
-/**
  * O conflito do progresso tem DOIS sentidos no servidor (15/10/2026): a versão que a página tinha
  * ficou velha (a frase padrão, adulta, que o host troca) ou a jornada v2 recusou por um motivo que
  * ela diz em voz de criança ("Seu jogo mudou. Espere ficar guardado na conta…", "Conclua a missão
  * anterior…", "Abra o caminho atual deste jogo."). Antes as duas viravam "A missão mudou em outro
  * lugar", e a criança que só precisava esperar o jogo subir lia que alguém tinha mexido no plano.
  */
-const CONFLITO_PADRAO = /^A tarefa mudou em outro aparelho/
+export const CONFLITO_PADRAO = /^A tarefa mudou em outro aparelho/
 
 /** Frases do host para as recusas que o servidor diz em voz técnica ou adulta. */
 const FRASE_DO_HOST: Record<string, string> = {
+  // A frase do servidor é a do plano clássico ("Conclua as tarefas anteriores…"): no v2 a
+  // criança lê "missões" (15/10/2026; antes ela passava direto).
   PENSA_TASK_DEPENDENCY_PENDING: 'Termine antes as missões que vêm antes desta no seu plano.',
   // O plano mudou por baixo (passo ou critério que não existe mais, outra ferramenta, revisão).
   PENSA_TASK_TRANSITION_INVALID: 'Seu plano mudou. Volte ao plano para ver esta missão de novo.',
@@ -48,19 +44,21 @@ const FRASE_DO_HOST: Record<string, string> = {
 }
 
 const RECUSA_DESCONHECIDA = 'Não consegui concluir agora. Tente de novo daqui a pouco.'
+/** A recusa desconhecida ao ABRIR uma missão (lá a criança não estava concluindo nada). */
+export const RECUSA_AO_ABRIR = 'Não consegui abrir esta missão agora. Tente de novo daqui a pouco.'
 
 /**
  * A recusa do `PATCH …/progress`, já na voz da criança. Falha de REDE nunca chega aqui (o
  * `fetch` lança antes, sem `childMessage`, e o guia mostra o recado da internet).
+ * `unknown` é a frase de uma recusa sem frase própria (padrão: a de concluir).
  */
 export function progressRefusal(
   status: number,
   body: { error?: { code?: string; message?: string } } | null,
+  unknown: string = RECUSA_DESCONHECIDA,
 ): GuideError {
   const code = body?.error?.code
   const message = body?.error?.message?.trim()
-  if (code && FRASE_DO_SERVIDOR.has(code) && message && !PALAVRAS_DA_ESCOLA.test(message))
-    return guideError(message, code)
   if (
     code === 'PENSA_TASK_PROGRESS_CONFLICT' &&
     message &&
@@ -70,7 +68,7 @@ export function progressRefusal(
     return guideError(message, code)
   if (code && FRASE_DO_HOST[code]) return guideError(FRASE_DO_HOST[code], code)
   if (status === 404) return guideError(FRASE_DO_HOST.PENSA_NOT_FOUND!, 'PENSA_NOT_FOUND')
-  return guideError(RECUSA_DESCONHECIDA, code)
+  return guideError(unknown, code)
 }
 
 /**

@@ -1,20 +1,28 @@
 import { describe, expect, test } from 'bun:test'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { CLOUD_MESSAGES } from '../src/lib/creations-cloud'
-import { cloudConfirmRefusal, guideError, progressRefusal } from '../src/lib/pensa-guide-errors'
+import {
+  CONFLITO_PADRAO,
+  cloudConfirmRefusal,
+  guideError,
+  progressRefusal,
+  RECUSA_AO_ABRIR,
+} from '../src/lib/pensa-guide-errors'
 
 /**
  * M2: o Guia do Pensa mostra a frase quando a recusa traz `childMessage`, e o recado da internet
  * quando não traz. Aqui mora a decisão de QUAL recusa do servidor é frase de criança.
  */
 describe('as recusas do Guia do Pensa falam com a criança', () => {
-  test('dependência não cumprida: a frase do servidor, que já é de criança', () => {
+  test('dependência não cumprida: a frase do host, com "missões" (a do servidor diz "tarefas")', () => {
     const error = progressRefusal(409, {
       error: {
         code: 'PENSA_TASK_DEPENDENCY_PENDING',
         message: 'Conclua as tarefas anteriores antes de começar esta',
       },
     })
-    expect(error.childMessage).toBe('Conclua as tarefas anteriores antes de começar esta')
+    expect(error.childMessage).toBe('Termine antes as missões que vêm antes desta no seu plano.')
     expect(error.code).toBe('PENSA_TASK_DEPENDENCY_PENDING')
   })
 
@@ -121,5 +129,31 @@ describe('o conflito do progresso com motivo (15/10/2026)', () => {
         error: { code: 'PENSA_TASK_PROGRESS_CONFLICT', message: 'Conclua a aula anterior.' },
       }).childMessage,
     ).toBe('A missão mudou em outro lugar. Recarreguei o Guia do Pensa para você.')
+  })
+})
+
+describe('o conflito padrão do servidor (15/10/2026)', () => {
+  test('a frase padrão do members é a que o host reconhece e troca', () => {
+    // Lida pelo caminho (o kids não depende do members): reescrever a frase padrão lá sem mexer
+    // aqui faria a frase adulta ("Recarregue o guia…") chegar crua à criança.
+    const fonte = readFileSync(
+      join(import.meta.dir, '../../members/src/domain/pensa/pensa.errors.ts'),
+      'utf8',
+    )
+    const bloco = fonte.slice(fonte.indexOf('class PensaTaskProgressConflictError'))
+    const padrao = /message = '([^']+)'/.exec(bloco)?.[1]
+    expect(padrao).toBeTruthy()
+    expect(CONFLITO_PADRAO.test(padrao ?? '')).toBe(true)
+    const error = progressRefusal(409, {
+      error: { code: 'PENSA_TASK_PROGRESS_CONFLICT', message: padrao },
+    })
+    expect(error.childMessage).toBe(
+      'A missão mudou em outro lugar. Recarreguei o Guia do Pensa para você.',
+    )
+  })
+
+  test('a recusa desconhecida ao abrir diz abrir, não concluir', () => {
+    expect(progressRefusal(500, null, RECUSA_AO_ABRIR).childMessage).toBe(RECUSA_AO_ABRIR)
+    expect(progressRefusal(500, null).childMessage).toContain('concluir')
   })
 })

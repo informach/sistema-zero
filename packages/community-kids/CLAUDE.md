@@ -2269,6 +2269,24 @@ como um projeto qualquer.
   os jogos `pensa-<32 hex>` e o atalho "Abrir meus planos".
 - Testes: `tests/pensa-mission-link.test.ts`, `tests/pensa-guide-errors.test.ts` (o conflito com
   motivo); a faixa no `ProjectList.test.tsx` do Estúdio.
+- **Full review (15/10/2026):**
+  - ⚠️⚠️ **Anotação adiada não desliga o concluir.** No v2 o guia só liga "Experimentei e
+    funcionou" com `outputRef`, que vinha do PATCH da abertura; adiada (rede, servidor, corrida), o
+    botão ficava desligado sem motivo nem saída. `withProvisionalGameLink` dá ao guia o jogo aberto
+    como vínculo provisório (a conclusão monta o `outputRef` com a revisão confirmada na nuvem).
+  - **Sair do editor do "Abrir meu jogo" volta ao PLANO** (`editorExitPath`), enquanto o jogo aberto
+    é o do plano; antes caía na galeria.
+  - Com o servidor fora (5xx) o v2 abre SEM reler o guia: a releitura falharia também e o erro dela
+    tomava a tela no lugar do jogo aberto. A releitura fica para o 409.
+  - A tela de erro da abertura tem "Voltar ao plano" além do "Tentar de novo" (que fica desligado
+    enquanto o guia é relido: a abertura nova seria derrubada no meio pela releitura), e a missão
+    de outra pessoa da equipe mostra a tela certa (`PensaMissionBlocked`) assim que o guia volta.
+  - Recusa sem frase própria ao ABRIR diz "Não consegui abrir esta missão agora" (`RECUSA_AO_ABRIR`;
+    `progressRefusal` ganhou a frase padrão como 3º argumento), e a missão anterior pendente usa a
+    frase do host ("missões"; a do servidor é a do plano clássico, "tarefas").
+  - `tests/pensa-guide-errors.test.ts` lê a frase padrão do conflito no members PELO CAMINHO e
+    confere que `CONFLITO_PADRAO` a reconhece: reescrevê-la lá sem mexer aqui faria a frase adulta
+    chegar crua à criança.
 
 ## Pensa em equipe nas oficinas (14/10/2026)
 
