@@ -1,5 +1,7 @@
 # Implementação do Estúdio Pro
 
+> Revisão posterior solicitada pelo usuário: flags de liberação removidas. A [revisão sem flags](../../../.audits/studio-pro-revisao-sem-flags-2026-10-15.md) substitui as decisões M1/M2/M3 registradas abaixo. Permanecem as permissões da jornada e os contratos técnicos dos serviços.
+
 > Execução autorizada em 15/10/2026. Implementar em lotes, sem nova aprovação entre lotes. Este registro distingue código entregue de validação ainda pendente.
 
 **Escopo aprovado:** [proposta completa](../../../.audits/studio-pro-proposta-v2-2026-10-15.md) e [matriz GameDev](../../../.audits/studio-gamedev-aproveitamento-v2-2026-10-15.md). Os critérios de aceite dessas duas referências continuam obrigatórios. Este documento é o acompanhamento da execução, não uma redução de escopo.
@@ -215,3 +217,10 @@ Durante a execução apareceram os pacotes não rastreados `marketing-desktop` e
 - Merge local sobre `fa6a83faf4d05e98f4a0f8995a49ee90867fb29f` em `staging`, na worktree liberada pela sessão Molda. Preservados os avanços existentes de Pensa/Molda. Os dois conflitos foram combinados: sessão Pensa compartilhada e ledger/funil na composição Members.
 - Pós-combinação: 67 testes Kids/Pensa, 32 galeria/bundle Studio, 35 gateway e 22 créditos Members; todos passaram. Typechecks de Studio, Kids, Members e Admin passaram. Instalação congelada sem mudar lock, fontes/locks gerados, licença/bibliotecas TS, fingerprint da imagem e diff check aprovados.
 - Relatório final e JSON de evidências atualizados no mesmo merge. Não houve push, deploy ou migração externa. Homologações externas continuam pendentes e os gates M1/M2/M3 permanecem restritos por padrão, conforme a revisão final.
+
+## Revisão posterior — remoção das flags e correções integradas
+
+- Pedido posterior do usuário substitui a política anterior: removidas as flags de criação, construção e publicação dos kits, além do interruptor do Zappy. Os 14 modelos seguem as permissões normais da jornada/produto e a compatibilidade técnica do runtime.
+- Dez achados corrigidos, incluindo autorização da publicação Pro no servidor, avanço justo das filas de limpeza, propagação de erros parciais do storage, retenção da obrigação de apagar o runtime e invalidação de ações do Pensa após troca de sessão. Revisão detalhada em [relatório sem flags](../../../.audits/studio-pro-revisao-sem-flags-2026-10-15.md).
+- Verificação final: Studio 9.048, BFF 1.590, Members 1.414, Kids 194, core 6 e runtime 64 testes aprovados; zero falhas nas baterias finais. Members deixou 345 casos dependentes de banco/serviços ignorados nesta rodada. Os seis pacotes passaram typecheck completo. Chromium: seis cenários aprovados. Imagem reconstruída e seis kits aprovados no Docker isolado. Geradores, bundles, Biome e diff check passaram sem ampliar limites.
+- As mudanças desta revisão estão isoladas em `fix/studio-pro-full-review`, na worktree de integração. Commit e merge são locais; não incluem alterações concorrentes da pasta principal nem push/deploy. [Evidências desta rodada](../../../.audits/studio-pro-revisao-sem-flags-evidencias-2026-10-15.json) distinguem execuções novas das provas históricas e homologações externas.

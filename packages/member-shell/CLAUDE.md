@@ -3262,8 +3262,8 @@ ci.yml mapeia `packages/member-shell/*` → deploy dos apps consumidores — mud
 - Cada pergunta revalida sessão, posse do Estúdio, jornada/modo/extensões e cursos liberados;
   impersonação não conversa. Reserva idempotente precede a resposta determinística; somente chamadas
   reais ao modelo consomem o crédito `studio-zappy`.
-- **Rollout por MÉRITO (08/2026 — substituiu o piloto fechado):** `ZAPPY_ENABLED=true` +
-  jornada **≥ `hacker`** (Inventor(a), o 3º degrau). A equipe ignora o interruptor e o nível
+- **Acesso pela jornada (revisado em 15/10/2026):** jornada **≥ `hacker`**
+  (Inventor(a), o 3º degrau), sem flags de liberação. A equipe ignora o nível
   para QA. Não existe allowlist de contas nem degrau configurável: a barra vive em
   **`AI_APPS_MIN_LEVEL`**, compartilhada com o Pensa — os dois CHAMAM a IA, e o custo por uso é o
   motivo de adiar. ⚠️ **O Pinta NÃO usa mais essa barra** (14/08): desenhar não custa por uso,

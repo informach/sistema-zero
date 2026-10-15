@@ -3,7 +3,7 @@
 import { PrivateZappyVoice } from '@sistemazero/member-shell/components/private-zappy-voice'
 import { sessionFetch as fetch } from '@sistemazero/member-shell/lib/session-fetch'
 import type { StudioTaskSession } from '@sistemazero/studio'
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import type { CreationsCloud } from '../../lib/creations-cloud'
 import { cloudConfirmRefusal, guideError, progressRefusal } from '../../lib/pensa-guide-errors'
 import { withProvisionalGameLink } from '../../lib/pensa-mission-link'
@@ -34,6 +34,33 @@ export function useStudioTaskSession({
   narrationEnabled?: boolean
   pro?: boolean
 }): StudioTaskSession | undefined {
+  const sessionScope = useMemo(
+    () => ({
+      cloud,
+      projectId,
+      viewerId,
+      taskId: handoff?.task.id,
+      revision: handoff?.task.revision,
+      owned: handoff?.capability.owned,
+    }),
+    [
+      cloud,
+      projectId,
+      viewerId,
+      handoff?.task.id,
+      handoff?.task.revision,
+      handoff?.capability.owned,
+    ],
+  )
+  const currentScope = useRef(sessionScope)
+  currentScope.current = sessionScope
+  const mounted = useRef(false)
+  useEffect(() => {
+    mounted.current = true
+    return () => {
+      mounted.current = false
+    }
+  }, [])
   const { collapsed, setCollapsed } = usePensaGuideCollapsed(viewerId)
   const nextMissionLabel = useNextMissionLabel({
     enabled:
@@ -44,12 +71,19 @@ export function useStudioTaskSession({
   })
   return useMemo(() => {
     if (!handoff || !projectId || !handoff.capability.owned) return undefined
+    const assertCurrent = () => {
+      if (!mounted.current || currentScope.current !== sessionScope)
+        throw guideError('O perfil, projeto ou missão mudou. Abra a missão atual para continuar.')
+    }
     const confirm = async () => {
+      assertCurrent()
       if (!cloud) throw guideError('Espere seu jogo ficar guardado na conta.')
       await cloud.confirm(projectId, { timeoutMs: 15000 }).catch((cause: unknown) => {
         throw cloudConfirmRefusal(cause, 'Seu jogo')
       })
+      assertCurrent()
       const saved = await cloud.peek(projectId)
+      assertCurrent()
       if (!saved) throw guideError('Seu jogo ainda não foi guardado na conta.')
       return String(saved.summary.revision)
     }
@@ -83,15 +117,20 @@ export function useStudioTaskSession({
               />
             )
           : undefined,
-      onNeedHelp: () => navigate(`/pensa?plano=${encodeURIComponent(handoff.project.id)}`),
+      onNeedHelp: () => {
+        assertCurrent()
+        navigate(`/pensa?plano=${encodeURIComponent(handoff.project.id)}`)
+      },
       onNextMission: async () => {
         await confirm()
         const next = await resolveNextPensaMission(handoff.project.id).catch(() => {
           throw guideError('Não consegui abrir a próxima missão. Tente de novo.')
         })
+        assertCurrent()
         navigate(next.path)
       },
       onProgress: async (input) => {
+        assertCurrent()
         if (handoff.task.guide.contractVersion === 2 && input.status === 'completed') {
           input = {
             ...input,
@@ -102,6 +141,7 @@ export function useStudioTaskSession({
             },
           }
         }
+        assertCurrent()
         const response = await fetch(
           `/api/pensa/tasks/${encodeURIComponent(handoff.task.id)}/progress`,
           {
@@ -114,6 +154,7 @@ export function useStudioTaskSession({
           task?: { progress: StudioTaskProgressUpdate }
           error?: { code?: string; message?: string }
         } | null
+        assertCurrent()
         if (response.status === 409) {
           retry()
           throw progressRefusal(409, {
@@ -140,5 +181,6 @@ export function useStudioTaskSession({
     collapsed,
     setCollapsed,
     nextMissionLabel,
+    sessionScope,
   ])
 }

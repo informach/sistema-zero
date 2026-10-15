@@ -587,34 +587,33 @@ describe('política normal e Pro em todas as respostas', () => {
 })
 
 describe('Acesso ao Zappy', () => {
-  const OPEN = { enabled: true } as const
   const KID = { ...STAFF, role: 'student', activeProfile: { accountId: 'account-1' } }
 
-  test('equipe entra para QA mesmo com o interruptor desligado e sem rank', () => {
-    expect(isStudioZappyAllowed(STAFF, undefined, { enabled: false })).toBe(true)
+  test('equipe entra para QA sem rank', () => {
+    expect(isStudioZappyAllowed(STAFF, undefined)).toBe(true)
   })
 
-  test('flag desligada barra o aluno mesmo no topo da jornada', () => {
-    expect(isStudioZappyAllowed(KID, 'god', { ...OPEN, enabled: false })).toBe(false)
+  test('sem sessão não entra, mesmo no topo da jornada', () => {
+    expect(isStudioZappyAllowed(null, 'god')).toBe(false)
   })
 
   test('abaixo de Inventor não entra; de Inventor para cima, entra', () => {
-    expect(isStudioZappyAllowed(KID, 'noob', OPEN)).toBe(false)
-    expect(isStudioZappyAllowed(KID, 'coder', OPEN)).toBe(false)
-    expect(isStudioZappyAllowed(KID, 'hacker', OPEN)).toBe(true)
-    expect(isStudioZappyAllowed(KID, 'explorer', OPEN)).toBe(true)
-    expect(isStudioZappyAllowed(KID, 'god', OPEN)).toBe(true)
+    expect(isStudioZappyAllowed(KID, 'noob')).toBe(false)
+    expect(isStudioZappyAllowed(KID, 'coder')).toBe(false)
+    expect(isStudioZappyAllowed(KID, 'hacker')).toBe(true)
+    expect(isStudioZappyAllowed(KID, 'explorer')).toBe(true)
+    expect(isStudioZappyAllowed(KID, 'god')).toBe(true)
   })
 
   test('sem rank (members fora) ou slug desconhecido REPROVA — fail-closed', () => {
-    expect(isStudioZappyAllowed(KID, undefined, OPEN)).toBe(false)
-    expect(isStudioZappyAllowed(KID, null, OPEN)).toBe(false)
-    expect(isStudioZappyAllowed(KID, 'nivel-que-nao-existe', OPEN)).toBe(false)
+    expect(isStudioZappyAllowed(KID, undefined)).toBe(false)
+    expect(isStudioZappyAllowed(KID, null)).toBe(false)
+    expect(isStudioZappyAllowed(KID, 'nivel-que-nao-existe')).toBe(false)
   })
 
   test('não existe escotilha por conta nem degrau configurável', () => {
-    expect(isStudioZappyAllowed(KID, 'noob', OPEN)).toBe(false)
-    expect(isStudioZappyAllowed(KID, 'coder', OPEN)).toBe(false)
+    expect(isStudioZappyAllowed(KID, 'noob')).toBe(false)
+    expect(isStudioZappyAllowed(KID, 'coder')).toBe(false)
   })
 })
 

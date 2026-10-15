@@ -78,7 +78,6 @@ export function StudioFullClient({
   moldaOwned = false,
   narrationEnabled = false,
   voiceInputEnabled = false,
-  proCreationTemplates,
 }: {
   viewerId: string | null
   /**
@@ -118,7 +117,6 @@ export function StudioFullClient({
   moldaOwned?: boolean
   narrationEnabled?: boolean
   voiceInputEnabled?: boolean
-  proCreationTemplates?: readonly import('@sistemazero/core/studio').StudioProTemplateId[]
 }) {
   const router = useRouter()
   const [mod, setMod] = useState<StudioModule | null>(null)
@@ -839,7 +837,6 @@ export function StudioFullClient({
               onOpenProject={openProject}
               theme={studioTheme}
               professional={proAvailable}
-              proCreationTemplates={proCreationTemplates}
               initialExtensions={tier.initialExtensions}
               allowedExtensions={tier.allowedExtensions}
               showExamples={showExamples}

@@ -1,5 +1,5 @@
 import 'server-only'
-import { isStudioPublicationId } from '@sistemazero/core/studio'
+import { isStudioPublicationId, STUDIO_PRO_PUBLICATION_LIMITS } from '@sistemazero/core/studio'
 import { getEnv } from '../lib/env'
 import { coverKeyFromPublicUrl } from '../lib/studio-cleanup'
 import {
@@ -7,12 +7,14 @@ import {
   r2DeleteObjectPrivate,
   r2DeleteObjects,
   r2GetObjectPrivate,
-  r2ListPrivateKeys,
+  r2HeadObjectPrivate,
+  r2ListPrivatePage,
   r2PutObjectPrivate,
 } from './r2'
 import { callStudioPublication } from './studio-publication'
 
 const PREFIX = 'studio/publication-cleanup/'
+const CHECKPOINT = 'studio/maintenance/publication-cleanup.json'
 const keyOf = (playId: string) => `${PREFIX}${playId}.json`
 
 /** Persist intent before attempting remote deletion; the queue contains only object identifiers. */
@@ -20,18 +22,28 @@ export async function enqueueStudioPublicationCleanup(playId: string, coverUrl?:
   if (!isStudioPublicationId(playId)) throw new Error('Publicação inválida.')
   const coverKey =
     typeof coverUrl === 'string' ? coverKeyFromPublicUrl(getEnv().R2_PUBLIC_URL, coverUrl) : null
+  let runtime = Boolean(getEnv().STUDIO_PRO_RUNTIME_URL || getEnv().STUDIO_PRO_RUNTIME_TOKEN)
+  // A configuration outage must never turn an existing Pro publication into a classic one.
+  const sourceKey = `studio/play/${playId}.json`
+  if (!runtime && (await r2HeadObjectPrivate(sourceKey))) {
+    const source = await r2GetObjectPrivate(sourceKey)
+    const project: unknown = JSON.parse(
+      (await bufferFromStream(source.body, STUDIO_PRO_PUBLICATION_LIMITS.maxSourceBytes)).toString(
+        'utf8',
+      ),
+    )
+    runtime = Boolean(
+      project && typeof project === 'object' && 'kind' in project && project.kind === 'pro',
+    )
+  }
+  const intent = { playId, coverKey, runtime }
   await r2PutObjectPrivate({
     key: keyOf(playId),
-    body: Buffer.from(
-      JSON.stringify({
-        playId,
-        coverKey,
-        runtime: Boolean(getEnv().STUDIO_PRO_RUNTIME_URL || getEnv().STUDIO_PRO_RUNTIME_TOKEN),
-      }),
-    ),
+    body: Buffer.from(JSON.stringify(intent)),
     contentType: 'application/json',
     cacheControl: 'private, no-store',
   })
+  return intent
 }
 
 export async function performStudioPublicationCleanup(
@@ -41,7 +53,7 @@ export async function performStudioPublicationCleanup(
   requiresRuntime = false,
 ) {
   const env = getEnv()
-  // Classic installations need no runtime. Pro release requires both settings.
+  // Classic installations need no runtime. Pro publications always require it.
   if (requiresRuntime || env.STUDIO_PRO_RUNTIME_URL || env.STUDIO_PRO_RUNTIME_TOKEN)
     await callStudioPublication({ operation: 'purge', playId }, signal)
   await r2DeleteObjectPrivate(`studio/play/${playId}.json`)
@@ -51,11 +63,20 @@ export async function performStudioPublicationCleanup(
 
 /** Four independent idempotent jobs per invocation. Failure retains the durable intent. */
 export async function drainStudioPublicationCleanup() {
-  const keys = await r2ListPrivateKeys(PREFIX, 4)
+  let cursor: string | undefined
+  if (await r2HeadObjectPrivate(CHECKPOINT)) {
+    const checkpoint = await r2GetObjectPrivate(CHECKPOINT)
+    const saved: unknown = JSON.parse(
+      (await bufferFromStream(checkpoint.body, 4096)).toString('utf8'),
+    )
+    if (saved && typeof saved === 'object' && 'cursor' in saved && typeof saved.cursor === 'string')
+      cursor = saved.cursor
+  }
+  const page = await r2ListPrivatePage(PREFIX, 4, cursor)
   let completed = 0,
     pending = 0
   await Promise.all(
-    keys.map(async (key) => {
+    page.keys.map(async (key) => {
       try {
         const object = await r2GetObjectPrivate(key)
         const raw: unknown = JSON.parse(
@@ -85,5 +106,11 @@ export async function drainStudioPublicationCleanup() {
       }
     }),
   )
+  // Advance even when a task fails. Wrap after the last page; failed intents remain for retry.
+  await r2PutObjectPrivate({
+    key: CHECKPOINT,
+    body: Buffer.from(JSON.stringify({ cursor: page.cursor })),
+    contentType: 'application/json',
+  })
   return { completed, pending }
 }

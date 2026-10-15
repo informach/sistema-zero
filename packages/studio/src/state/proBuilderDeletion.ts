@@ -3,6 +3,7 @@ import { conditionalGeneration, conditionalWrite, readAllKeys, readValue } from 
 import { captureProjectStorageScope, type ProjectStorageScope } from './projectStorageRuntime'
 
 const prefix = 'sz:builder-deletion:'
+const cursorKey = 'sz:builder-deletion-cursor'
 export const proBuilderDeletionKey = (projectId: string) => `${prefix}${projectId}`
 export interface ProBuilderDeletion {
   version: 1
@@ -39,16 +40,25 @@ export async function drainProBuilderDeletions(
 ): Promise<number> {
   const valid = () => !signal.aborted && captureProjectStorageScope() === scope
   if (!valid()) return 0
-  const keys = (await readAllKeys(scope.store))
-    .filter((key) => typeof key === 'string' && key.startsWith(prefix))
-    .slice(0, 20)
+  const cursor = await readValue(scope.store, cursorKey)
+  const allKeys = (await readAllKeys(scope.store))
+    .filter((key): key is string => typeof key === 'string' && key.startsWith(prefix))
+    .sort()
+  const afterCursor = typeof cursor === 'string' ? allKeys.filter((key) => key > cursor) : allKeys
+  const keys = (afterCursor.length ? afterCursor : allKeys).slice(0, 20)
   let acknowledged = 0
+  const failures: unknown[] = []
   for (const key of keys) {
     if (!valid()) break
     const item = await readValue(scope.store, key)
     if (!valid()) break
     if (!isDeletion(item) || key !== proBuilderDeletionKey(item.projectId)) continue
-    await remove(item.projectId, signal)
+    try {
+      await remove(item.projectId, signal)
+    } catch (error) {
+      failures.push(error)
+      continue
+    }
     if (!valid()) break
     await conditionalWrite(
       scope.store,
@@ -63,5 +73,18 @@ export async function drainProBuilderDeletions(
     )
     acknowledged++
   }
+  if (valid() && keys.length)
+    await conditionalWrite(
+      scope.store,
+      scope.identity,
+      conditionalGeneration(scope.identity),
+      [],
+      () => ({ result: undefined, write: { puts: [[cursorKey, keys.at(-1)]] } }),
+    )
+  if (failures.length)
+    throw new AggregateError(
+      failures,
+      'Algumas exclusões estão pendentes. Elas serão tentadas novamente.',
+    )
   return acknowledged
 }

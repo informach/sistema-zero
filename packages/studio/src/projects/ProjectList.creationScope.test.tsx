@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from 'bun:test'
-import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { STUDIO_PRO_TEMPLATE_IDS } from '@sistemazero/core/studio/pro-templates'
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import type { Project } from '#core'
 import {
   failNextFakeIdbWrite,
@@ -371,25 +372,28 @@ describe('ProjectList — conclusão assíncrona só navega na tela e no epoch o
   })
 })
 
-it('revocation during a kit factory prevents persistence and navigation', async () => {
+it('offers the complete Pro catalog without host release configuration', async () => {
+  render(<ProjectList professional onOpenProject={() => {}} theme="light" />)
+  await screen.findByText(t('projects.empty'))
+  fireEvent.click(screen.getByRole('button', { name: '+ Novo projeto' }))
+  fireEvent.click(screen.getByRole('radio', { name: /Profissional/ }))
+  expect(
+    within(screen.getByRole('dialog'))
+      .getAllByRole('option')
+      .map((element) => (element as HTMLOptionElement).value),
+  ).toEqual(STUDIO_PRO_TEMPLATE_IDS)
+})
+
+it('revoking Pro access during a factory prevents persistence and navigation', async () => {
   const loader = slowTemplate()
   const onOpen = mock((_id: string) => {})
-  const view = render(
-    <ProjectList
-      professional
-      proCreationTemplates={['canvas-survival']}
-      onOpenProject={onOpen}
-      theme="light"
-    />,
-  )
+  const view = render(<ProjectList professional onOpenProject={onOpen} theme="light" />)
   await screen.findByText(t('projects.empty'))
   fireEvent.click(screen.getByRole('button', { name: '+ Novo projeto' }))
   fireEvent.click(screen.getByRole('radio', { name: /Profissional/ }))
   fireEvent.click(screen.getByRole('button', { name: t('projects.newModal.create') }))
   await loader.started.promise
-  view.rerender(
-    <ProjectList professional proCreationTemplates={[]} onOpenProject={onOpen} theme="light" />,
-  )
+  view.rerender(<ProjectList professional={false} onOpenProject={onOpen} theme="light" />)
   await act(async () => loader.gate.resolve())
   await waitFor(() => expect(screen.queryByText('Criando…')).toBeNull())
   expect(screen.getByRole('dialog')).toBeTruthy()

@@ -111,20 +111,6 @@ export const STUDIO_PRO_TEMPLATES: readonly StudioProTemplateMetadata[] = catalo
   (template) => ({ ...template, devScript: 'dev' }),
 )
 export const STUDIO_PRO_TEMPLATE_IDS = catalog.map((template) => template.id)
-/** Creation rollout is independent of reading/executing an existing source project. */
-export const STUDIO_PRO_DEFAULT_CREATION_IDS: readonly StudioProTemplateId[] =
-  STUDIO_PRO_TEMPLATES.filter((template) => !template.kitVersion).map((template) => template.id)
-export function studioProReleasedTemplateIds(kitAllowlist = ''): StudioProTemplateId[] {
-  const enabled = new Set(
-    kitAllowlist
-      .split(',')
-      .map((id) => id.trim())
-      .filter(Boolean),
-  )
-  return STUDIO_PRO_TEMPLATES.filter(
-    (template) => !template.kitVersion || enabled.has(template.id),
-  ).map((template) => template.id)
-}
 const ids = new Set<string>(STUDIO_PRO_TEMPLATE_IDS)
 export function isStudioProTemplateId(value: unknown): value is StudioProTemplateId {
   return typeof value === 'string' && ids.has(value)

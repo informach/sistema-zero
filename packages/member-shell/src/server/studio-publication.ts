@@ -6,7 +6,6 @@ import {
   isStudioPublicationId,
   STUDIO_PRO_PUBLICATION_LIMITS,
   type StudioProPublication,
-  studioProReleasedTemplateIds,
 } from '@sistemazero/core/studio'
 import type { Project } from '@sistemazero/studio'
 import { getEnv } from '../lib/env'
@@ -152,11 +151,6 @@ export async function publishStudioProRevision(options: {
   const templateId = proProjectTemplateId(project)
   if (!isProStudioProject(project) || !templateId)
     throw new StudioPublicationError(400, 'Projeto Pro inválido.')
-  if (!studioProReleasedTemplateIds(env.STUDIO_PRO_KITS_PUBLISH).includes(templateId))
-    throw new StudioPublicationError(
-      503,
-      'A publicação deste kit ainda não está disponível. Você pode continuar editando e exportar o projeto.',
-    )
   if (!env.STUDIO_PRO_RUNTIME_URL || !env.STUDIO_PRO_RUNTIME_TOKEN)
     throw new StudioPublicationError(
       503,

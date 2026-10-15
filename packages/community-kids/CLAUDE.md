@@ -3585,8 +3585,8 @@ Sentry `sistema-zero-community-kids` + DSN no host.
 - O tutor é injetado somente em `StudioFullClient` e `StudioProClient`; players de aula e o
   Pensa não recebem `tutor`, portanto não exibem o botão. A capability `zappyEnabled` é derivada
   no Server Component pelo mesmo gate do BFF, então alunos abaixo de Inventor(a) não veem a UI.
-- Configuração: `ZAPPY_ENABLED` é o interruptor de emergência e `OPENROUTER_ZAPPY_MODEL` é
-  opcional. Não há allowlist de contas; a equipe mantém bypass de QA.
+- Configuração: `OPENROUTER_ZAPPY_MODEL` é opcional. O acesso acompanha a jornada, sem
+  flags de liberação ou allowlist de contas; a equipe mantém bypass de QA.
 - Chips de aula só existem em respostas com `courseSlug` autoritativo e abrem
   `/cursos/:slug/aulas/:lessonId` em nova aba com `noopener,noreferrer`.
 - **Chips de sugestão (08/2026):** a resposta traz até 3 continuações prováveis (`suggestions`) que

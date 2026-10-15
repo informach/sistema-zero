@@ -147,29 +147,28 @@ export async function r2ListKeys(prefix: string): Promise<string[]> {
     .filter((k): k is string => typeof k === 'string' && k.length > 0)
 }
 
-/** Bounded first page for durable private maintenance queues. */
-export async function r2ListPrivateKeys(prefix: string, limit = 4): Promise<string[]> {
+/** Bounded page for durable maintenance queues; failed entries cannot starve later pages. */
+export async function r2ListPrivatePage(prefix: string, limit = 4, cursor?: string) {
   const cfg = requirePrivateR2Config()
   const page = await getClient(cfg).send(
     new ListObjectsV2Command({
       Bucket: cfg.bucket,
       Prefix: normalizeKey(prefix),
       MaxKeys: Math.max(1, Math.min(100, limit)),
+      ContinuationToken: cursor,
     }),
   )
-  return (page.Contents ?? []).flatMap((entry) => (entry.Key ? [entry.Key] : []))
+  return {
+    keys: (page.Contents ?? []).flatMap((entry) => (entry.Key ? [entry.Key] : [])),
+    cursor: page.IsTruncated ? page.NextContinuationToken : undefined,
+  }
 }
 
 /** Apaga objetos do bucket PÚBLICO em lote (limpeza de avatares antigos). */
 export async function r2DeleteObjects(keys: string[]): Promise<void> {
   if (keys.length === 0) return
   const cfg = requireR2Config()
-  await getClient(cfg).send(
-    new DeleteObjectsCommand({
-      Bucket: cfg.bucket,
-      Delete: { Objects: keys.map((Key) => ({ Key })), Quiet: true },
-    }),
-  )
+  await createR2ObjectStore(getClient(cfg), cfg.bucket).deleteObjects(keys)
 }
 
 /** Objeto do bucket privado em STREAM — consuma OU bufferize (`bufferFromStream`). */
@@ -469,7 +468,7 @@ export async function r2DeleteObjectUgc(key: string): Promise<void> {
  */
 export async function r2DeleteObjectsUgc(keys: readonly string[]): Promise<void> {
   const cfg = requireUgcR2Config()
-  await createR2UgcObjectStore(getClient(cfg), cfg.bucket).deleteObjects(keys)
+  await createR2ObjectStore(getClient(cfg), cfg.bucket).deleteObjects(keys)
 }
 
 /**
@@ -478,17 +477,17 @@ export async function r2DeleteObjectsUgc(keys: readonly string[]): Promise<void>
  */
 export async function r2HeadObjectUgc(key: string): Promise<boolean | null> {
   const cfg = requireUgcR2Config()
-  return createR2UgcObjectStore(getClient(cfg), cfg.bucket).head(key)
+  return createR2ObjectStore(getClient(cfg), cfg.bucket).head(key)
 }
 
 /** Apaga prefixos inteiros e só retorna depois de confirmar uma primeira página vazia. */
 export async function r2DeleteUgcPrefixes(prefixes: readonly string[]): Promise<void> {
   const cfg = requireUgcR2Config()
-  await createR2UgcObjectStore(getClient(cfg), cfg.bucket).deletePrefixes(prefixes)
+  await createR2ObjectStore(getClient(cfg), cfg.bucket).deletePrefixes(prefixes)
 }
 
-/** Adapter injetável de operações UGC; produção e testes exercitam o mesmo caminho. */
-export function createR2UgcObjectStore(client: S3Client, bucket: string) {
+/** Operações de objetos compartilhadas por buckets públicos e UGC. */
+export function createR2ObjectStore(client: S3Client, bucket: string) {
   const operations = {
     async listFirstPage(prefix: string): Promise<string[]> {
       const page = await client.send(

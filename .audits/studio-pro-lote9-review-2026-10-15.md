@@ -1,5 +1,7 @@
 # Studio Pro — revisão do lote 9
 
+> Atualização de 15/10/2026: as recomendações de flags M1/M2/M3 deste registro foram substituídas pela [revisão sem flags](studio-pro-revisao-sem-flags-2026-10-15.md), a pedido do usuário. Este arquivo preserva as evidências e decisões anteriores como histórico.
+
 ## Resultado implementado
 
 O Pro tem contratos explícitos de criação, construção e publicação, preflight antes do custo de IA, artefatos permanentes e player isolado, histórico com restauração, desativação e limpeza. A implementação mantém o terminal npm local e explica incompatibilidades com o catálogo remoto. O catálogo atual tem 14 modelos, dos quais nove são kits de jogos.

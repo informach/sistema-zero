@@ -1,5 +1,7 @@
 # Zappy Pro — implementação do adendo
 
+> Atualização posterior: as flags deste registro histórico foram removidas a pedido do usuário. A [revisão sem flags](studio-pro-revisao-sem-flags-2026-10-15.md) consolida a política atual.
+
 Data: 15/10/2026. Referência: [adendo revisão 3](studio-pro-sandbox-adendo-2026-10-15.md) e [plano de execução](../docs/superpowers/plans/2026-10-15-studio-zappy-pro-adendo-implementacao.md).
 
 Implementação no worktree `C:/Users/tocha/projects/sistema-zero`, branch `feat/studio-pro-completo`, coordenada diretamente com a sessão principal `01a13f08-9d2b-7ab0-b8ad-b9dc600f145f`. Esta frente não fez checkout, reset, stash, stage, commit, merge ou deploy. A homologação completa do lote 9 continua pertencendo ao plano principal.

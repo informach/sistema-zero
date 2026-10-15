@@ -1,6 +1,6 @@
 import { afterEach, expect, mock, spyOn, test } from 'bun:test'
 import { createHash } from 'node:crypto'
-import type { StudioProPublication } from '@sistemazero/core/studio'
+import { STUDIO_PRO_TEMPLATE_IDS, type StudioProPublication } from '@sistemazero/core/studio'
 import { createBlankProjectSnapshot } from '@sistemazero/studio/blank-project'
 
 mock.module('server-only', () => ({}))
@@ -18,8 +18,10 @@ afterEach(() => {
 function fixture(
   options: {
     compiled?: boolean
-    publishEnabled?: boolean
     entitled?: boolean
+    level?: string
+    journeyStatus?: number
+    templateId?: string
     hubFirstFailure?: boolean
   } = {},
 ) {
@@ -39,7 +41,6 @@ function fixture(
     ...env.getEnv(),
     STUDIO_PRO_RUNTIME_URL: 'https://runtime.test',
     STUDIO_PRO_RUNTIME_TOKEN: 'runtime-secret-fixture',
-    STUDIO_PRO_KITS_PUBLISH: options.publishEnabled === false ? '' : 'canvas-survival',
   })
   const objects = new Map<string, Uint8Array>()
   spyOn(storage, 'r2PutObjectPrivate').mockImplementation(async (input) => {
@@ -60,7 +61,7 @@ function fixture(
     mode: 'code',
     tree: { 'index.html': { kind: 'file', content: '<main>Olá</main>' } },
     proMeta: {
-      templateId: 'canvas-survival',
+      templateId: options.templateId ?? 'canvas-survival',
       devScript: 'dev',
       assistance: { version: 1, briefing: 'private learner decision' },
       publication: { playId: crypto.randomUUID() },
@@ -131,45 +132,65 @@ function fixture(
     throw new Error(`Unexpected command ${input.operation}`)
   })
   globalThis.fetch = Object.assign(fetcher, { preconnect: originalFetch.preconnect })
+  const createThread = async (input: { playId: string }) => {
+    hubCalls++
+    expect(state?.playId).toBe(input.playId)
+    return hubCalls === 1 && options.hubFirstFailure
+      ? { status: 503, body: null }
+      : {
+          status: 200,
+          body: {
+            thread: { id: crypto.randomUUID(), playId: input.playId },
+            deduped: hubCalls > 1,
+          },
+        }
+  }
   const routes = createStudioRoutes({
     media: {
-      requireUploadSession: async () => ({ id: owner, activeProfile: { accountId: owner } }),
+      requireUploadSession: async () => ({
+        id: owner,
+        role: 'student',
+        activeProfile: { accountId: owner },
+      }),
     },
     members: {
+      getShowcasePayload: async () => ({
+        status: 200,
+        body: { eligible: true, defaultCoverUrl: null },
+      }),
+      getGamification: async () => ({
+        status: options.journeyStatus ?? 200,
+        body: { level: { slug: options.level ?? 'god' } },
+      }),
       checkStudioAccess: async () => ({
         status: 200,
         body: { access: { 'estudio-completo': options.entitled !== false } },
       }),
     },
     hub: {
-      createShowcaseThreadStudioStandalone: async (input: { playId: string }) => {
-        hubCalls++
-        expect(state?.playId).toBe(input.playId)
-        return hubCalls === 1 && options.hubFirstFailure
-          ? { status: 503, body: null }
-          : {
-              status: 200,
-              body: {
-                thread: { id: crypto.randomUUID(), playId: input.playId },
-                deduped: hubCalls > 1,
-              },
-            }
-      },
+      createShowcaseThreadStudioStandalone: createThread,
+      createShowcaseThreadStudio: createThread,
       resolveStudioPlay: async () => ({ status: 200, body: { visible, authorDisplayName: 'Ana' } }),
     },
   } as never)
-  async function publish() {
+  async function publish(lesson = false) {
     const form = new FormData()
     form.set('title', 'Ilha')
     form.set('description', 'Minha ilha')
     form.set('clientIdempotencyKey', requestId)
     form.set('project', new File([JSON.stringify(project)], 'project.json'))
+    if (lesson) {
+      form.set('lessonId', crypto.randomUUID())
+      form.set('blockId', crypto.randomUUID())
+    }
     const request = new Request('https://kids.test/api/studio/publish-standalone', {
       method: 'POST',
       body: form,
     })
     request.headers.set('Content-Length', String((await request.clone().arrayBuffer()).byteLength))
-    return routes.studioPublishStandalone.POST(request)
+    return lesson
+      ? routes.studioPublish.POST(request)
+      : routes.studioPublishStandalone.POST(request)
   }
   return {
     routes,
@@ -247,12 +268,10 @@ test('publication mutations reject browser-supplied ownership and oversized enve
   expect(f.state()).toBeNull()
 })
 
-test('M3, entitlement and failed validation prevent any post or playable pointer', async () => {
-  for (const options of [{ publishEnabled: false }, { entitled: false }, { compiled: false }]) {
+test('entitlement and failed validation prevent any post or playable pointer', async () => {
+  for (const options of [{ entitled: false }, { compiled: false }]) {
     const f = fixture(options)
-    expect((await f.publish()).status).toBe(
-      options.compiled === false ? 422 : options.entitled === false ? 403 : 503,
-    )
+    expect((await f.publish()).status).toBe(options.compiled === false ? 422 : 403)
     expect(f.objects.size).toBe(0)
     expect(f.hubCalls()).toBe(0)
     expect(f.state()).toBeNull()
@@ -266,6 +285,43 @@ test('a lost Hub response retries the same permanent publication without compili
   expect((await f.publish()).status).toBe(200)
   expect(f.builds()).toBe(1)
   expect(f.objects.size).toBe(1)
+})
+
+test('Pro publication enforces the journey on the server before compiling or creating a post', async () => {
+  for (const options of [{ level: 'hacker' }, { journeyStatus: 503 }]) {
+    const f = fixture(options)
+    expect((await f.publish()).status).toBe(options.journeyStatus ? 503 : 403)
+    expect(f.builds()).toBe(0)
+    expect(f.hubCalls()).toBe(0)
+    expect(f.objects.size).toBe(0)
+    mock.restore()
+  }
+})
+
+test('an eligible Pro lesson retains its course authorization before the free Studio Pro tier', async () => {
+  const f = fixture({ level: 'noob', entitled: false })
+  expect((await f.publish(true)).status).toBe(200)
+  expect(f.builds()).toBe(1)
+  expect(f.hubCalls()).toBe(1)
+})
+
+test.each(STUDIO_PRO_TEMPLATE_IDS)('%s publishes without a release flag', async (templateId) => {
+  const f = fixture({ templateId })
+  expect((await f.publish()).status).toBe(200)
+  expect(f.builds()).toBe(1)
+})
+
+test('cleanup cannot acknowledge an intent while its authentication secret is missing', async () => {
+  const f = fixture()
+  spyOn(env, 'getEnv').mockReturnValue({ ...env.getEnv(), GATEWAY_HMAC_SECRET: undefined })
+  const response = await f.routes.studioCleanup.POST(
+    new Request('https://kids.test/api/studio/cleanup', {
+      method: 'POST',
+      body: JSON.stringify({ playId: crypto.randomUUID() }),
+    }),
+  )
+  expect(response.status).toBe(503)
+  expect(f.objects.size).toBe(0)
 })
 
 test('the runtime visibility callback requires its bearer, checks the Hub and never counts a play', async () => {

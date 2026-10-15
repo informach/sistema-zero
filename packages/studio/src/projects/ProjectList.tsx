@@ -1,7 +1,3 @@
-import {
-  STUDIO_PRO_DEFAULT_CREATION_IDS,
-  type StudioProTemplateId,
-} from '@sistemazero/core/studio/pro-templates'
 import type { JSX } from 'react'
 import {
   lazy,
@@ -70,8 +66,6 @@ export interface ProjectListProps {
   onOpenProject: (projectId: string) => void
   /** Habilita a criação de projetos profissionais (host com COOP/COEP). */
   professional?: boolean
-  /** Explicit creation rollout. Omitted: web starters only; existing projects remain readable. */
-  proCreationTemplates?: readonly StudioProTemplateId[]
   /** Extensões instaladas automaticamente num projeto básico novo. */
   initialExtensions?: readonly string[]
   /** Extensões que a jornada permite; usadas também pelo aviso de importação. */
@@ -158,7 +152,6 @@ function HostStatusPill({ status }: { status: StudioHostChromeStatus }): JSX.Ele
 export function ProjectList({
   onOpenProject,
   professional = false,
-  proCreationTemplates = STUDIO_PRO_DEFAULT_CREATION_IDS,
   initialExtensions,
   allowedExtensions,
   theme: themeProp,
@@ -364,13 +357,7 @@ export function ProjectList({
 
   // Referência estável: inline, `listProTemplates()` novo a cada render entraria
   // nas deps do reset do modal e apagaria o nome enquanto a criança digita.
-  const templates = useMemo(
-    () =>
-      professional
-        ? listProTemplates().filter((template) => proCreationTemplates.includes(template.id))
-        : undefined,
-    [professional, proCreationTemplates],
-  )
+  const templates = useMemo(() => (professional ? listProTemplates() : undefined), [professional])
   const creationTemplates = useRef(templates)
   creationTemplates.current = templates
 

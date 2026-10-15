@@ -1,5 +1,7 @@
 # Studio completo e Pro — revisão final integrada
 
+> Atualização de 15/10/2026: as recomendações de flags M1/M2/M3 deste registro foram substituídas pela [revisão sem flags](studio-pro-revisao-sem-flags-2026-10-15.md), a pedido do usuário. Este arquivo preserva as evidências e decisões anteriores como histórico.
+
 ## Conclusão de código e alcance
 
 Os lotes 0–9 e os adendos Canvas e Zappy Pro A01–A06 estão implementados e passaram por revisões locais sucessivas. O Studio normal preserva blocos e CDN; o Pro usa arquivos, npm e serviço de linguagem próprio. O trabalho inclui integrações Pinta/Molda/Pensa, conta opcional OpenRouter do responsável, jogos 2D/3D, construção por revisão e publicação permanente. Este relatório distingue implementação revisada de aceite externo do produto: o rollout dos novos kits permanece condicionado às flags e à homologação descrita abaixo.

@@ -42,9 +42,6 @@ export const EnvSchema = z
     STUDIO_AI_RECONCILE_CRON_SECRET: z.string().min(24).optional(),
     STUDIO_PRO_RUNTIME_URL: z.string().url().optional(),
     STUDIO_PRO_RUNTIME_TOKEN: z.string().min(16).optional(),
-    STUDIO_PRO_KITS_CREATE: z.string().default(''),
-    STUDIO_PRO_KITS_BUILDER: z.string().default(''),
-    STUDIO_PRO_KITS_PUBLISH: z.string().default(''),
     OPENROUTER_STUDIO_BUILDER_MODEL: z.string().optional(),
     // Chave estável do cookie temporário da Área dos Pais do community-kids. Em
     // produção aquele app a exige no boot; aqui permanece opcional porque o shell
@@ -95,11 +92,6 @@ export const EnvSchema = z
       .string()
       .optional()
       .transform((value) => value?.trim().toLowerCase() === 'true'),
-    // Interruptor de emergência. A jornada decide o acesso; equipe sempre entra.
-    ZAPPY_ENABLED: z
-      .enum(['true', 'false'])
-      .default('true')
-      .transform((value) => value === 'true'),
     // A voz do Zappy (ElevenLabs) liga sozinha quando a chave existe: sem interruptor de piloto
     // (decisão dela, 14/10/2026). No Railway as duas são REFERÊNCIAS às do serviço admin.
     ELEVENLABS_API_KEY: z.string().optional(),
