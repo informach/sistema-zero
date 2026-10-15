@@ -61,6 +61,8 @@ function setup(
     conflict?: boolean
     conflictMessage?: string
     owned?: boolean
+    confirmGate?: Promise<void>
+    responseGate?: Promise<void>
   } = {},
 ) {
   const order: string[] = []
@@ -71,6 +73,7 @@ function setup(
   const cloud = {
     confirm: async (id: string) => {
       order.push(`confirm:${id}`)
+      await options.confirmGate
       if (options.cloudFailure) throw new Error('offline')
     },
     peek: async () => ({ summary: { revision: 42 } }),
@@ -79,6 +82,7 @@ function setup(
     mock(async (_url: RequestInfo | URL, init?: RequestInit) => {
       order.push('patch')
       requests.push(JSON.parse(String(init?.body)))
+      await options.responseGate
       return options.conflict
         ? Response.json(
             { error: { code: 'PENSA_TASK_PROGRESS_CONFLICT', message: options.conflictMessage } },
@@ -88,17 +92,22 @@ function setup(
     }),
     { preconnect: originalFetch.preconnect },
   )
-  const hook = renderHook(() =>
-    useStudioTaskSession({
-      handoff: { ...handoff, capability: { ...handoff.capability, owned: options.owned ?? true } },
-      projectId: 'actual-pro-project',
-      viewerId: 'child',
-      cloud,
-      retry,
-      updateProgress,
-      navigate,
-      pro: options.pro,
-    }),
+  const hook = renderHook(
+    ({ viewerId, projectId }) =>
+      useStudioTaskSession({
+        handoff: {
+          ...handoff,
+          capability: { ...handoff.capability, owned: options.owned ?? true },
+        },
+        projectId,
+        viewerId,
+        cloud,
+        retry,
+        updateProgress,
+        navigate,
+        pro: options.pro,
+      }),
+    { initialProps: { viewerId: 'child', projectId: 'actual-pro-project' } },
   )
   return { ...hook, order, requests, retry, updateProgress, navigate }
 }
@@ -159,4 +168,31 @@ test('progress conflicts retain the actionable server explanation in the shared 
     childMessage: message,
   })
   expect(retry).toHaveBeenCalledTimes(1)
+})
+
+test('a profile A → B → A change during cloud confirmation cannot dispatch the old progress update', async () => {
+  const gate = Promise.withResolvers<void>()
+  const f = setup({ pro: true, confirmGate: gate.promise })
+  const pending = f.result
+    .current!.onProgress({ status: 'completed' })
+    .catch((error: unknown) => error)
+  f.rerender({ viewerId: 'other-child', projectId: 'other-project' })
+  f.rerender({ viewerId: 'child', projectId: 'actual-pro-project' })
+  gate.resolve()
+  expect(await pending).toMatchObject({ childMessage: expect.stringContaining('mudou') })
+  expect(f.requests).toEqual([])
+  expect(f.updateProgress).not.toHaveBeenCalled()
+})
+
+test('a response received after unmount cannot update progress or reload the old guide', async () => {
+  const gate = Promise.withResolvers<void>()
+  const f = setup({ pro: true, conflict: true, responseGate: gate.promise })
+  const pending = f.result
+    .current!.onProgress({ completedStepIds: ['s'] })
+    .catch((error: unknown) => error)
+  f.unmount()
+  gate.resolve()
+  expect(await pending).toMatchObject({ childMessage: expect.stringContaining('mudou') })
+  expect(f.updateProgress).not.toHaveBeenCalled()
+  expect(f.retry).not.toHaveBeenCalled()
 })

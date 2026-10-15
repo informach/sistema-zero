@@ -3,7 +3,7 @@ import type { S3Client } from '@aws-sdk/client-s3'
 
 mock.module('server-only', () => ({}))
 
-const { createR2UgcObjectStore } = await import('../src/server/r2')
+const { createR2ObjectStore } = await import('../src/server/r2')
 
 /** Um S3Client de mentira: registra os comandos e deixa o teste decidir a resposta do lote. */
 function fakeClient(opts: { batch: 'ok' | 'throw' | 'partial'; pages?: string[][] }) {
@@ -44,7 +44,7 @@ function fakeClient(opts: { batch: 'ok' | 'throw' | 'partial'; pages?: string[][
 describe('R2 UGC — apagar em lote (partes soltas) e HEAD', () => {
   test('lote ok: um `DeleteObjects` por até 1000 chaves; uma chave só vai por `DeleteObject`', async () => {
     const { client, sent } = fakeClient({ batch: 'ok' })
-    const store = createR2UgcObjectStore(client, 'ugc')
+    const store = createR2ObjectStore(client, 'ugc')
     await store.deleteObjects(['a', 'b', '/b', 'c'])
     expect(sent).toEqual([{ name: 'DeleteObjectsCommand', keys: ['a', 'b', 'c'] }])
     sent.length = 0
@@ -54,7 +54,7 @@ describe('R2 UGC — apagar em lote (partes soltas) e HEAD', () => {
 
   test('lote que FALHA (checksum/R2 discordando do SDK): cai para um `DeleteObject` por chave — o lixo não fica no bucket', async () => {
     const { client, sent } = fakeClient({ batch: 'throw' })
-    await createR2UgcObjectStore(client, 'ugc').deleteObjects(['a', 'b'])
+    await createR2ObjectStore(client, 'ugc').deleteObjects(['a', 'b'])
     expect(sent.map((s) => s.name)).toEqual([
       'DeleteObjectsCommand',
       'DeleteObjectCommand',
@@ -65,7 +65,7 @@ describe('R2 UGC — apagar em lote (partes soltas) e HEAD', () => {
 
   test('falha PARCIAL no lote: as chaves que o R2 recusou vão uma a uma', async () => {
     const { client, sent } = fakeClient({ batch: 'partial' })
-    await createR2UgcObjectStore(client, 'ugc').deleteObjects(['a', 'b'])
+    await createR2ObjectStore(client, 'ugc').deleteObjects(['a', 'b'])
     expect(sent).toEqual([
       { name: 'DeleteObjectsCommand', keys: ['a', 'b'] },
       { name: 'DeleteObjectCommand', keys: ['a'] },
@@ -74,7 +74,7 @@ describe('R2 UGC — apagar em lote (partes soltas) e HEAD', () => {
 
   test('HEAD: existe → true; 404 definitivo → false; outro erro → null (o commit segue)', async () => {
     const { client } = fakeClient({ batch: 'ok' })
-    const store = createR2UgcObjectStore(client, 'ugc')
+    const store = createR2ObjectStore(client, 'ugc')
     expect(await store.head('creations/u/studio/j/parts/ok.1.gz')).toBe(true)
     expect(await store.head('creations/u/studio/j/parts/sumida.1.gz')).toBe(false)
     expect(await store.head('creations/u/studio/j/parts/erro.1.gz')).toBeNull()
@@ -83,7 +83,7 @@ describe('R2 UGC — apagar em lote (partes soltas) e HEAD', () => {
   test('limpeza por prefixo também cai para DeleteObject quando o lote falha', async () => {
     const { client, sent } = fakeClient({ batch: 'throw', pages: [['a', 'b'], []] })
 
-    await createR2UgcObjectStore(client, 'ugc').deletePrefixes(['creations/u/'])
+    await createR2ObjectStore(client, 'ugc').deletePrefixes(['creations/u/'])
 
     expect(sent.map((entry) => entry.name)).toEqual([
       'DeleteObjectsCommand',

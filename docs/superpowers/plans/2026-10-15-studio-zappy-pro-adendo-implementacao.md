@@ -1,5 +1,7 @@
 # Execução do adendo Zappy Pro — 15/10/2026
 
+> Atualização posterior: as flags mencionadas na coordenação histórica abaixo foram removidas a pedido do usuário. Ver [revisão integrada sem flags](../../../.audits/studio-pro-revisao-sem-flags-2026-10-15.md). Preflight, permissões e preservação das propostas continuam obrigatórios.
+
 Autorização explícita do usuário: implementar a revisão 3 no mesmo diretório, branch e worktree da sessão principal, com aviso e coordenação entre sessões.
 
 Base: [.audits/studio-pro-sandbox-adendo-2026-10-15.md](../../../.audits/studio-pro-sandbox-adendo-2026-10-15.md), [review](../../../.audits/studio-pro-sandbox-adendo-review-2026-10-15.md) e [plano principal](2026-10-15-studio-pro-implementacao.md). Implementação autorizada A01–A06 / etapas 0–3; A07 permanece posterior conforme a proposta. Este documento não encerra aceites transversais do lote 9.

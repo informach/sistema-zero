@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, mock, spyOn, test } from 'bun:test'
 import {
   createStudioProRevision,
+  STUDIO_PRO_TEMPLATE_IDS,
   type StudioProBuilderCommand,
   type StudioProBuilderJob,
   studioProBuilderView,
@@ -18,7 +19,6 @@ beforeEach(() =>
     STUDIO_PRO_RUNTIME_URL: 'https://runtime.test',
     STUDIO_PRO_RUNTIME_TOKEN: 'runtime-test-token',
     OPENROUTER_STUDIO_BUILDER_MODEL: 'provider/builder',
-    ZAPPY_ENABLED: true,
   }),
 )
 afterEach(() => mock.restore())
@@ -139,6 +139,9 @@ describe('Studio builder browser boundary', () => {
     const f = await fixture()
     const available = await f.post({ operation: 'availability', templateId: 'vanilla-vite' })
     expect(await available.json()).toEqual({ available: true })
+    expect((await f.post({ operation: 'availability', templateId: 'unknown-kit' })).status).toBe(
+      400,
+    )
     expect(f.commands).toHaveLength(0)
     spyOn(env, 'getEnv').mockReturnValue({ ...env.getEnv(), STUDIO_PRO_RUNTIME_TOKEN: undefined })
     const unavailable = await f.post({ operation: 'availability', templateId: 'vanilla-vite' })
@@ -274,27 +277,13 @@ describe('Studio builder browser boundary', () => {
   })
 })
 
-test('M2 is independent of M1, blocks new/continued jobs but preserves read and cancel', async () => {
-  spyOn(env, 'getEnv').mockReturnValue({
-    ...env.getEnv(),
-    STUDIO_PRO_KITS_CREATE: 'canvas-survival',
-    STUDIO_PRO_KITS_BUILDER: '',
-  })
-  const f = await fixture({ templateId: 'canvas-survival' })
-  expect(
-    await (await f.post({ operation: 'availability', templateId: 'canvas-survival' })).json(),
-  ).toMatchObject({ available: false })
-  expect((await f.post()).status).toBe(503)
-  expect(f.commands).toHaveLength(0)
-  expect(
-    (await f.post({ operation: 'advance', id: f.job.id, projectId: f.job.projectId })).status,
-  ).toBe(503)
-  expect(f.commands.map((entry) => entry.command.operation)).toEqual(['get'])
-  for (const operation of ['get', 'cancel'])
-    expect((await f.post({ operation, id: f.job.id, projectId: f.job.projectId })).status).toBe(200)
-  spyOn(env, 'getEnv').mockReturnValue({
-    ...env.getEnv(),
-    STUDIO_PRO_KITS_BUILDER: 'canvas-survival',
+test.each(
+  STUDIO_PRO_TEMPLATE_IDS,
+)('%s is available for construction without a release flag', async (templateId) => {
+  const f = await fixture({ templateId })
+  expect(await (await f.post({ operation: 'availability', templateId })).json()).toEqual({
+    available: true,
   })
   expect((await f.post()).status).toBe(200)
+  expect(f.commands.map((entry) => entry.command.operation)).toEqual(['create'])
 })

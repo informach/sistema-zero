@@ -81,7 +81,7 @@ test('offline deletion survives retry; only an acknowledged remote removal clear
       },
       controller.signal,
     ),
-  ).rejects.toThrow('offline')
+  ).rejects.toThrow('exclusões estão pendentes')
   expect(await readValue(scope.store, proBuilderDeletionKey('game'))).toEqual(entry)
   const requests: string[] = []
   expect(
@@ -136,4 +136,48 @@ test('profile A → B → A invalidates both dispatch and a late acknowledgment'
     ),
   ).toBe(0)
   expect(calls).toBe(1)
+})
+
+test('failed jobs cannot starve later pages of the durable deletion queue', async () => {
+  const scope = captureProjectStorageScope()
+  const ids = Array.from({ length: 24 }, (_, n) => `game-${String(n).padStart(2, '0')}`)
+  await writeInOneTransaction(scope.store, {
+    puts: ids.map((projectId) => [
+      proBuilderDeletionKey(projectId),
+      { version: 1, projectId, createdAt: Date.now() },
+    ]),
+  })
+  const removed: string[] = []
+  const remove = async (id: string) => {
+    if (ids.slice(0, 20).includes(id)) throw new Error('Retry required')
+    removed.push(id)
+  }
+  const signal = new AbortController().signal
+  await expect(drainProBuilderDeletions(scope, remove, signal)).rejects.toThrow('exclusões')
+  expect(await drainProBuilderDeletions(scope, remove, signal)).toBe(4)
+  expect(removed).toEqual(ids.slice(20))
+  for (const id of ids.slice(0, 20))
+    expect(await readValue(scope.store, proBuilderDeletionKey(id))).toBeDefined()
+  expect(await drainProBuilderDeletions(scope, async () => {}, signal)).toBe(20)
+})
+
+test('a single rejection does not abort independent deletions in the same batch', async () => {
+  const scope = captureProjectStorageScope()
+  await writeInOneTransaction(scope.store, {
+    puts: ['a', 'b'].map((projectId) => [
+      proBuilderDeletionKey(projectId),
+      { version: 1, projectId, createdAt: Date.now() },
+    ]),
+  })
+  await expect(
+    drainProBuilderDeletions(
+      scope,
+      async (id) => {
+        if (id === 'a') throw new Error('Retry required')
+      },
+      new AbortController().signal,
+    ),
+  ).rejects.toThrow('exclusões')
+  expect(await readValue(scope.store, proBuilderDeletionKey('a'))).toBeDefined()
+  expect(await readValue(scope.store, proBuilderDeletionKey('b'))).toBeUndefined()
 })

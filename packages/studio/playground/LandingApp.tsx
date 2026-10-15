@@ -1,4 +1,3 @@
-import { STUDIO_PRO_TEMPLATE_IDS } from '@sistemazero/core/studio/pro-templates'
 import { ProjectList } from '@sistemazero/studio/project-list'
 import type { JSX } from 'react'
 import { lazy, Suspense, useEffect, useState } from 'react'
@@ -46,7 +45,6 @@ export function LandingApp(): JSX.Element {
 
   const list = (
     <ProjectList
-      proCreationTemplates={STUDIO_PRO_TEMPLATE_IDS}
       professional
       showExamples
       onOpenProject={(projectId) => {

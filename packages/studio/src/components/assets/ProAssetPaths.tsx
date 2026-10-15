@@ -38,7 +38,7 @@ export function ProAssetPaths({ assets }: { assets: ProjectAsset[] }) {
       <summary className="cursor-pointer font-medium">Usar materiais no código</summary>
       <p className="my-2">
         Os arquivos ficam em public/. O manifesto studio-assets/manifest.json contém IDs, caminhos,
-        animações e colisões. Use o ID em src/characters.ts para trocar personagens da arena.
+        animações e colisões. Use os caminhos abaixo para carregar os materiais no código do jogo.
         Renomear um material mantém seu ID e caminho.
       </p>
       {state.error ? (

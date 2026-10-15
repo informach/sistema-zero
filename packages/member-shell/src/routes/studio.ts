@@ -16,7 +16,8 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getEnv } from '../lib/env'
 import { UGC_IMAGE_INPUT_MIME } from '../lib/hub-attachments'
-import { coverKeyFromPublicUrl, verifyCleanupSignature } from '../lib/studio-cleanup'
+import { verifyCleanupSignature } from '../lib/studio-cleanup'
+import { isPrivilegedRole, resolveStudioTier } from '../lib/studio-tier'
 import type { HubClient, MembersClient } from '../server/clients'
 import { optimizeImage } from '../server/image-optimizer'
 import { type MediaModule, mediaErrorResponse, rejectOversizedRequest } from '../server/media'
@@ -197,6 +198,16 @@ export function createStudioRoutes(deps: {
   media: MediaModule
 }) {
   const { hub, members, media } = deps
+
+  async function proPublicationAccess(user: { role: string }): Promise<NextResponse | null> {
+    if (isPrivilegedRole(user.role)) return null
+    const progress = await members.getGamification()
+    if (progress.status !== 200 || !progress.body)
+      return NextResponse.json({ error: { code: 'JOURNEY_UNAVAILABLE' } }, { status: 503 })
+    if (!resolveStudioTier(progress.body.level?.slug, user.role).pro)
+      return NextResponse.json({ error: { code: 'FORBIDDEN_MODE' } }, { status: 403 })
+    return null
+  }
 
   const studioDescribe = {
     POST: async (req: Request) => {
@@ -535,6 +546,8 @@ export function createStudioRoutes(deps: {
           : randomUUID())
       if (publicationProject?.kind === 'pro') {
         if (!liveSnapshot) {
+          const denied = await proPublicationAccess(sess)
+          if (denied) return denied
           const access = await members.checkStudioAccess()
           if (access.status !== 200 || access.body?.access?.['estudio-completo'] !== true)
             return NextResponse.json(
@@ -781,8 +794,8 @@ export function createStudioRoutes(deps: {
   // S2S do HUB (rede interna, HMAC): apaga os artefatos R2 de um post do Mural
   // APAGADO pela moderação — o snapshot jogável (R2 privado `studio/play/<id>.json`)
   // e a capa (R2 público `studio/cover/...`, que seguiria buscável pela URL). FORA do
-  // matcher do proxy (não é sessão de aluno): a auth é o HMAC do hub. Best-effort: o
-  // hub dispara em fire-and-forget → 204 sempre, salvo 401 em assinatura inválida.
+  // matcher do proxy (não é sessão de aluno): a auth é o HMAC do hub. Só confirma
+  // o recebimento após guardar uma intenção durável para todas as deleções.
   const studioCleanup = {
     POST: async (req: Request) => {
       const secret = getEnv().GATEWAY_HMAC_SECRET
@@ -792,8 +805,8 @@ export function createStudioRoutes(deps: {
       } catch {
         return invalid()
       }
-      // Sem segredo não há como autenticar o chamador → no-op (não apaga nada).
-      if (!secret) return new NextResponse(null, { status: 204 })
+      if (!secret)
+        return NextResponse.json({ error: { code: 'CLEANUP_UNAVAILABLE' } }, { status: 503 })
       if (!verifyCleanupSignature(secret, raw, req.headers.get('x-signature'))) {
         return NextResponse.json({ error: { code: 'UNAUTHORIZED' } }, { status: 401 })
       }
@@ -805,19 +818,19 @@ export function createStudioRoutes(deps: {
       }
       const playId = typeof body.playId === 'string' ? body.playId : ''
       if (!UUID_RE.test(playId)) return invalid()
+      let intent: Awaited<ReturnType<typeof enqueueStudioPublicationCleanup>>
       try {
-        await enqueueStudioPublicationCleanup(playId.toLowerCase(), body.coverUrl)
+        intent = await enqueueStudioPublicationCleanup(playId.toLowerCase(), body.coverUrl)
       } catch {
         // Hub retries 5xx; never acknowledge cleanup before its intent is durable.
         return NextResponse.json({ error: { code: 'CLEANUP_UNAVAILABLE' } }, { status: 503 })
       }
       try {
         await performStudioPublicationCleanup(
-          playId.toLowerCase(),
-          typeof body.coverUrl === 'string'
-            ? coverKeyFromPublicUrl(getEnv().R2_PUBLIC_URL, body.coverUrl)
-            : null,
+          intent.playId,
+          intent.coverKey,
           AbortSignal.timeout(2500),
+          intent.runtime,
         )
       } catch {
         console.info('[studio-publication] cleanup queued', { playId })
@@ -908,6 +921,8 @@ export function createStudioRoutes(deps: {
         const input = parsed.data
         const owner = studioPublicationOwner(user.id, user.activeProfile?.accountId ?? user.id)
         if (input.operation === 'update') {
+          const denied = await proPublicationAccess(user)
+          if (denied) return denied
           const access = await members.checkStudioAccess()
           if (access.status !== 200 || access.body?.access?.['estudio-completo'] !== true)
             return NextResponse.json({ error: { code: 'SHOWCASE_NOT_ELIGIBLE' } }, { status: 403 })

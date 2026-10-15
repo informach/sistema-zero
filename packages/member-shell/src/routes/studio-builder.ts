@@ -8,7 +8,6 @@ import {
   type StudioProAssistanceRequest,
   type StudioProBuilderCommand,
   studioProBuilderView,
-  studioProReleasedTemplateIds,
 } from '@sistemazero/core/studio'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
@@ -37,7 +36,12 @@ import { isUnsafeZappyText, redactZappySensitiveText } from '../server/zappy-saf
 const projectId = z.string().regex(/^[A-Za-z0-9_-]{1,128}$/)
 const id = z.string().uuid()
 const bodySchema = z.discriminatedUnion('operation', [
-  z.object({ operation: z.literal('availability'), templateId: z.string().max(100) }).strict(),
+  z
+    .object({
+      operation: z.literal('availability'),
+      templateId: z.string().max(100).refine(isStudioProTemplateId),
+    })
+    .strict(),
   z
     .object({
       operation: z.literal('create'),
@@ -134,14 +138,8 @@ export function createStudioBuilderRoutes(deps: {
           privileged: user.status === 'active' && isPrivilegedRole(user.role),
         }
         const env = getEnv()
-        const released = studioProReleasedTemplateIds(env.STUDIO_PRO_KITS_BUILDER)
-        const kitAllowed = (templateId: string) => released.some((id) => id === templateId)
         if (input.operation === 'availability') {
-          const available = Boolean(
-            env.STUDIO_PRO_RUNTIME_URL &&
-              env.STUDIO_PRO_RUNTIME_TOKEN &&
-              kitAllowed(input.templateId),
-          )
+          const available = Boolean(env.STUDIO_PRO_RUNTIME_URL && env.STUDIO_PRO_RUNTIME_TOKEN)
           return NextResponse.json(
             {
               available,
@@ -207,19 +205,6 @@ export function createStudioBuilderRoutes(deps: {
             )
           }
           if (input.operation === 'advance' || input.operation === 'refresh-preview') {
-            // Check the persisted immutable base, never a template id supplied by the browser.
-            const saved = await deps.members.studioBuilder(actor, {
-              operation: 'get',
-              id: input.id,
-              projectId: input.projectId,
-            })
-            if (saved.status !== 200 || !saved.body?.state)
-              return error('Não foi possível consultar a execução.', 503)
-            if (!kitAllowed(saved.body.state.job.base.templateId))
-              return error(
-                'O construtor deste modelo está temporariamente indisponível. Seus arquivos e propostas estão preservados.',
-                503,
-              )
             const job = await (input.operation === 'advance'
               ? advanceStudioBuilder
               : refreshStudioBuilderPreview)({
@@ -252,11 +237,6 @@ export function createStudioBuilderRoutes(deps: {
             }
             if (!isStudioProTemplateId(base.templateId))
               return error('Este modelo não é compatível com a construção remota.', 400)
-            if (!kitAllowed(base.templateId))
-              return error(
-                'O construtor deste modelo ainda não está disponível. Você pode continuar pelo terminal.',
-                503,
-              )
             let objective = redactZappySensitiveText(input.objective).text
             const assistance = sanitizeStudioAssistanceRequest(input.request)
             const mission = await studioAssistanceMission(

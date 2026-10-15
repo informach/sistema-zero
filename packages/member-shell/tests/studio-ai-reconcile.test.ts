@@ -1,8 +1,13 @@
-import { afterEach, expect, mock, spyOn, test } from 'bun:test'
+import { afterEach, beforeEach, expect, mock, spyOn, test } from 'bun:test'
 
 mock.module('server-only', () => ({}))
 process.env.JWT_HS256_SECRET ??= 'test-jwt-secret-with-32-characters'
-process.env.STUDIO_AI_RECONCILE_CRON_SECRET = 'local-studio-reconciliation-test-only'
+const secret = 'local-studio-reconciliation-test-only'
+const env = await import('../src/lib/env')
+const actualEnv = env.getEnv()
+beforeEach(() =>
+  spyOn(env, 'getEnv').mockReturnValue({ ...actualEnv, STUDIO_AI_RECONCILE_CRON_SECRET: secret }),
+)
 const { createStudioAiReconcileRoutes } = await import('../src/routes/studio-ai-reconcile')
 afterEach(() => mock.restore())
 const fetchDouble = (
@@ -54,9 +59,7 @@ test('cron requires its own server credential and never exposes keys or account 
   )
   expect((await studioAiReconcileWorker.POST(request())).status).toBe(401)
   expect(actions).toHaveLength(0)
-  const response = await studioAiReconcileWorker.POST(
-    request(process.env.STUDIO_AI_RECONCILE_CRON_SECRET),
-  )
+  const response = await studioAiReconcileWorker.POST(request(secret))
   expect(await response.json()).toEqual({ confirmed: 1, pending: 0, expiredBuilderJobs: 2 })
   expect(response.headers.get('Cache-Control')).toBe('no-store')
   expect(fetched).toHaveBeenCalledTimes(1)
@@ -85,11 +88,11 @@ test('unavailable generation is released for bounded backoff without confirming 
   spyOn(globalThis, 'fetch').mockImplementation(
     fetchDouble(async () => new Response('', { status: 404 })),
   )
-  expect(
-    await (
-      await studioAiReconcileWorker.POST(request(process.env.STUDIO_AI_RECONCILE_CRON_SECRET))
-    ).json(),
-  ).toEqual({ confirmed: 0, pending: 1, expiredBuilderJobs: 0 })
+  expect(await (await studioAiReconcileWorker.POST(request(secret))).json()).toEqual({
+    confirmed: 0,
+    pending: 1,
+    expiredBuilderJobs: 0,
+  })
   expect(settlements).toBe(0)
   expect(releases).toBe(1)
 })

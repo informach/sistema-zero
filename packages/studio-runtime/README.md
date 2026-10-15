@@ -68,6 +68,15 @@ Falhas usam os códigos `INVALID_REQUEST`, `BUILD_FAILED`, `OUTPUT_TOO_LARGE` e 
 * `react-ts`
 * `three-js`
 * `three-ts`
+* `canvas-puzzle`
+* `canvas-survival`
+* `phaser-arcade`
+* `phaser-platformer`
+* `three-exploration`
+* `three-action`
+* `canvas-grid-arena`
+* `phaser-tactics`
+* `three-tactics`
 
 A lista canônica vive em `@sistemazero/core/studio`. O runtime valida as dependências do `package.json` e o grafo completo do lock npm contra a imagem. Recria apenas os scripts/configuração Vite confiáveis e não executa scripts ou plugins do projeto. As versões instaladas na imagem estão fixadas em `runtime/package-lock.json`, e o Docker usa `npm ci`.
 
@@ -138,7 +147,7 @@ Smoke mínimo após deploy:
 
 ## Rollback
 
-Se a nova imagem falhar, volte o deploy do Worker para a versão anterior e preserve o mesmo token. Os BFFs podem ficar configurados durante o rollback. Para suspender novos kits, retire seus IDs das flags M1/M2/M3 no BFF. Preserve URL/token e callbacks enquanto houver links publicados ou limpeza pendente. Remover o runtime impede também o acesso aos jogos publicados; isso exige uma decisão operacional explícita.
+Se a nova imagem falhar, volte o deploy do Worker para a versão anterior e preserve o mesmo token. Os BFFs podem ficar configurados durante o rollback. Preserve URL/token e callbacks enquanto houver links publicados ou limpeza pendente. Remover o runtime impede também o acesso aos jogos publicados; isso exige uma decisão operacional explícita.
 
 ## Arquivos compilados e materiais
 
@@ -159,13 +168,13 @@ Versões exatas podem ser compiladas antes da primeira instalação. Faixas `^`/
 
 ## Criação, assistência e publicação
 
-As três liberações são independentes no BFF: `STUDIO_PRO_KITS_CREATE` (M1), `STUDIO_PRO_KITS_BUILDER` (M2) e `STUDIO_PRO_KITS_PUBLISH` (M3). São listas de IDs separadas por vírgula. Vazias mantêm só os cinco starters; o playground libera todos explicitamente. Remover um kit da lista não apaga projetos existentes. Consulta, cancelamento, revisão já produzida e restauração publicada continuam disponíveis.
+Os 14 modelos estão disponíveis para criação, assistência e publicação sem flags ou listas de liberação. O host mantém as permissões da jornada e do produto; o servidor valida essas permissões antes de operações custosas. Atividades de aula e projetos ao vivo mantêm sua autorização específica. O Zappy acompanha o nível da jornada, sem interruptor de liberação.
 
 `POST /v1/preflight` privado usa o mesmo parser, lock e SHA-256 dos binários do build, sem container/inferência. É obrigatório antes de iniciar uma construção por IA. O terminal local pode instalar bibliotecas fora do catálogo remoto: o projeto continua editável, mas o preflight explica a incompatibilidade. Capacidades/protocolo não são inferidos pelo cliente a partir de um nome de kit.
 
 ## Publicação permanente
 
-`POST /v1/publications` é privado e recebe somente chamadas do BFF. O servidor deriva ownership da conta/perfil autenticados, valida acesso ao Studio e a flag M3, compila/verifica a revisão exata e promove os bytes já verificados. O aluno não escolhe owner, artefato nem modelo remoto.
+`POST /v1/publications` é privado e recebe somente chamadas do BFF. O servidor deriva ownership da conta/perfil autenticados, valida acesso ao Studio Pro, compila/verifica a revisão exata e promove os bytes já verificados. O aluno não escolhe owner, artefato nem modelo remoto.
 
 - `previews/<id>/`: expira em 24 h; lifecycle de dois dias limpa restos.
 - `published/<playId>/<revision>/`: arquivos, captura, manifesto e fonte exata permanentes. **Não aplicar lifecycle por idade a este prefixo.**
@@ -178,7 +187,7 @@ Fonte pública/remix omite notas da assistência e vínculos com projeto/bibliot
 
 ## Retenção e limpeza
 
-A moderação primeiro revoga a visibilidade no Hub. O webhook assinado grava uma tarefa no R2 privado do BFF (`studio/publication-cleanup/<playId>.json`) antes de tentar a limpeza; falha de gravação retorna 503 para o retry do Hub. Falha posterior mantém a tarefa. O cron de 15 minutos do Worker chama o dreno autenticado, que processa quatro tarefas independentes: tombstone permanente, snapshot e capa, então ack da tarefa. Não remover as configurações de runtime enquanto a fila não estiver vazia. Falha anterior à entrega aceita continua registrada no gateway do Hub e exige replay operacional do webhook; a revogação de leitura independe da limpeza física.
+A moderação primeiro revoga a visibilidade no Hub. O webhook assinado grava uma tarefa no R2 privado do BFF (`studio/publication-cleanup/<playId>.json`) antes de tentar a limpeza; falha de gravação retorna 503 para o retry do Hub. Falha posterior mantém a tarefa. O cron de 15 minutos do Worker chama o dreno autenticado, que percorre a fila com cursor persistido e processa quatro tarefas independentes por chamada (falhas não bloqueiam as páginas seguintes): tombstone permanente, snapshot e capa, então ack da tarefa. A identificação de uma publicação Pro permanece na tarefa mesmo se a configuração do runtime estiver ausente. Exclusões parciais de objetos não confirmam a conclusão da tarefa. Não remover as configurações de runtime enquanto a fila não estiver vazia. Falha anterior à entrega aceita continua registrada no gateway do Hub e exige replay operacional do webhook; a revogação de leitura independe da limpeza física.
 
 A remoção grava tombstone mínimo no mesmo objeto CAS, impedindo promoção concorrente ou retry antigo de ressuscitar o link. Apaga até mil arquivos imediatamente. O cron também percorre mil objetos por invocação com cursor persistido. Remove cópias órfãs/arquivos de tombstones somente depois de 48 h e nunca remove revisões referenciadas no histórico. Falha de CAS com resposta ambígua não apaga arquivos que podem ter sido confirmados. Alertar falhas do cron, fila pendente persistente e registros inválidos; não registrar fontes ou credenciais.
 
@@ -192,4 +201,4 @@ O bridge aceita controles apenas da janela pai e da origem configurada. Eventos 
 
 ## Escopo das provas
 
-Testes de contrato usam armazenamento/CAS em memória; provas de player usam React, Chromium e IndexedDB reais, com transporte controlado. Docker exercita uid 1000, rede desativada e limites de CPU/memória. Essas provas não substituem homologação em Cloudflare DO/R2/SDK, autenticação real de Pinta/Molda/Pensa, conta OpenRouter real nem aparelhos físicos. Libere as flags de kits somente depois dos critérios de ambiente documentados no plano.
+Testes de contrato usam armazenamento/CAS em memória; provas de player usam React, Chromium e IndexedDB reais, com transporte controlado. Docker exercita uid 1000, rede desativada e limites de CPU/memória. Essas provas não substituem homologação em Cloudflare DO/R2/SDK, autenticação real de Pinta/Molda/Pensa, conta OpenRouter real nem aparelhos físicos. Não há flags de liberação: configuração dos serviços, permissões da jornada e compatibilidade técnica continuam sendo contratos do produto.

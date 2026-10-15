@@ -1,4 +1,3 @@
-import { studioProReleasedTemplateIds } from '@sistemazero/core/studio'
 import { isPrivilegedRole } from '@sistemazero/member-shell/lib/studio-tier'
 import { isVoiceInputConfigured } from '@sistemazero/member-shell/server/openrouter-transcribe'
 import { isStudioZappyAllowed } from '@sistemazero/member-shell/server/zappy-access'
@@ -126,7 +125,6 @@ export default async function EstudioPage({
   return (
     <StudioFullClient
       viewerId={session?.id ?? null}
-      proCreationTemplates={studioProReleasedTemplateIds(getEnv().STUDIO_PRO_KITS_CREATE)}
       challenge={challenge}
       tier={tier}
       showExamples={showExamples}

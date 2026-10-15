@@ -1,4 +1,3 @@
-import { STUDIO_PRO_TEMPLATE_IDS } from '@sistemazero/core/studio/pro-templates'
 import type {
   StudioMoldaLibraryAdapter,
   StudioPintaDrawingSummary,
@@ -478,7 +477,6 @@ export function App(): JSX.Element {
       <EditorScreen projectId={view.projectId} onExit={() => navigate({ name: 'list' })} />
     ) : (
       <ProjectList
-        proCreationTemplates={STUDIO_PRO_TEMPLATE_IDS}
         professional
         showExamples
         onOpenProject={(id) => navigate({ name: 'editor', projectId: id })}
