@@ -1,4 +1,4 @@
-import { CircleHelp, GraduationCap, Home, Mail, MessagesSquare } from 'lucide-react'
+import { CircleHelp, GraduationCap, Home, Mail, MessagesSquare, Radio } from 'lucide-react'
 
 export interface NavItem {
   href: string
@@ -16,6 +16,8 @@ export interface NavItem {
 export const NAV_ITEMS: NavItem[] = [
   { href: '/', label: 'Início', icon: Home },
   { href: '/cursos', label: 'Todos os cursos', icon: GraduationCap, match: '/cursos' },
+  // As oficinas ao vivo (cursos ao vivo, 14/10/2026): só as turmas em que a pessoa tem vaga.
+  { href: '/oficinas', label: 'Oficinas', icon: Radio, match: '/oficinas' },
   { href: '/comunidade', label: 'Comunidade', icon: MessagesSquare, match: '/comunidade' },
   { href: '/recados', label: 'Recados', icon: Mail, match: '/recados' },
   { href: '/ajuda', label: 'Ajuda', icon: CircleHelp, match: '/ajuda' },

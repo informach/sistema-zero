@@ -26,6 +26,7 @@ import {
   RotateCcw,
   Send,
 } from 'lucide-react'
+import dynamic from 'next/dynamic'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { type ApiError, apiGet, apiSend } from '../../lib/api'
 import { cn } from '../../lib/cn'
@@ -117,6 +118,12 @@ interface Props {
   fillHeight?: boolean
 }
 
+// O Estúdio da sala ao vivo só carrega na sala: as aulas gravadas não pagam por ele.
+const LiveBlockWorkspace = dynamic(
+  () => import('../live/live-workspace').then((module) => module.LiveBlockWorkspace),
+  { ssr: false },
+)
+
 type StudioModule = typeof import('@sistemazero/studio')
 type StudioComponent = StudioModule['StudioLesson']
 
@@ -130,7 +137,32 @@ type StudioComponent = StudioModule['StudioLesson']
  * Carregado SÓ no client (Monaco/Blockly/IndexedDB não existem no SSR): o import
  * dinâmico do editor roda dentro de um effect — o server renderiza só o placeholder.
  */
-export function StudioBlockView({
+export function StudioBlockView(props: Props) {
+  const player = useLessonPlayer()
+  const { estudio } = useLessonCopy()
+  // Estável entre renders: o projeto ao vivo é memorizado e só re-renderiza quando a curadoria muda.
+  const { level, allowBlocks, allowCategories, allowedModes, allowLevelReveal } = props.content
+  const curation = useMemo(
+    () => ({ level, allowBlocks, allowCategories, allowedModes, allowLevelReveal }),
+    [level, allowBlocks, allowCategories, allowedModes, allowLevelReveal],
+  )
+  // ⭐ Aula de curso AO VIVO na sala (14/10/2026): o bloco é o PROJETO AO VIVO da criança (um
+  // projeto só, com a ajuda da professora), sem rascunho local nem "Enviar para a equipe". A
+  // curadoria é a do bloco. Fora da sala o contexto não traz `liveWorkspace` e nada muda.
+  if (player?.liveWorkspace)
+    return (
+      <LiveBlockWorkspace
+        workspace={player.liveWorkspace}
+        blockId={props.blockId}
+        title={estudio.titulo}
+        fillHeight={props.fillHeight}
+        curation={curation}
+      />
+    )
+  return <LessonStudioBlockView {...props} />
+}
+
+function LessonStudioBlockView({
   blockId,
   content,
   studioState,

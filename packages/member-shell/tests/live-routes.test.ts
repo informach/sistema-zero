@@ -60,6 +60,37 @@ describe('live BFF security and delivery', () => {
     ).toBe(403)
     expect(calls).toBe(0)
   })
+  test('any support session (even write mode) reads the room but never acts in it', async () => {
+    let calls = 0
+    const support = createLiveRouteHandler({
+      scope: 'learner',
+      session: async () => ({ readonly: false, support: true }),
+      gatewayFetch: async () => {
+        calls++
+        return { status: 200, body: {} }
+      },
+    })
+    for (const path of [
+      ['sessions', id, 'join'],
+      ['sessions', id, 'chat'],
+      ['occurrences', id, 'media', 'join'],
+      ['workspaces', id, 'commits'],
+    ]) {
+      const response = await support(
+        new Request('https://sz.test/api/live', { method: 'POST', body: '{}' }),
+        context(...path),
+      )
+      expect(response.status).toBe(403)
+      expect(((await response.json()) as { error: { code: string } }).error.code).toBe(
+        'SUPPORT_SESSION',
+      )
+    }
+    expect(calls).toBe(0)
+    expect(
+      (await support(new Request('https://sz.test/api/live/catalog'), context('catalog'))).status,
+    ).toBe(200)
+    expect(calls).toBe(1)
+  })
   test('caps body size before upstream and accepts project-sized commits', async () => {
     let calls = 0
     const handler = createLiveRouteHandler({

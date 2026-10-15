@@ -1,3 +1,4 @@
+import type { CourseModality } from '@sistemazero/core/course/modality'
 import type { HelpTutorialDocument } from '@sistemazero/core/help'
 import type {
   LearningAnswers,
@@ -40,6 +41,7 @@ import type { AvatarConfig } from '../../../domain/avatar/avatar-config'
 import type { LessonBlockContent } from '../../../domain/course/lesson-block'
 import type { QuizAnswers } from '../../../domain/course/quiz'
 import type { EntitlementSnapshot } from '../../../domain/entitlement/entitlement-snapshot'
+import type { LiveRecordingSegmentTime } from '../../../domain/live/recording-chapters'
 import type {
   PensaChatMessage,
   PensaTaskContext,
@@ -193,6 +195,11 @@ export const courses = members.table(
     // abre depois que o aluno assiste ao vídeo uma vez. Desligado por padrão: a autora liga
     // nos cursos de quem está começando. Guia de interface, sem checagem no servidor.
     videoBeforeActivity: boolean('video_before_activity').notNull().default(false),
+    // Modalidade (14/10/2026, migration 0113): GRAVADO (o curso de sempre) ou AO VIVO (só existe
+    // em Oficinas; o acesso vem da vaga na turma). Texto + CHECK, não enum do Postgres: valor novo
+    // de enum não pode ser usado na mesma transação que o cria. Mesma régua de autoria do
+    // `audience`: o UPDATE sem o campo PRESERVA o valor atual.
+    modality: text('modality').$type<CourseModality>().notNull().default('recorded'),
     metadata: jsonb('metadata').$type<Record<string, unknown>>(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
@@ -215,6 +222,12 @@ export const courses = members.table(
     check(
       'courses_journey_role_slot_check',
       sql`(${t.journeyRole} = 'positioned') = (${t.careerSlot} is not null)`,
+    ),
+    check('courses_modality_check', sql`${t.modality} in ('recorded', 'live')`),
+    // Curso ao vivo nunca ocupa posição na Jornada (espelha a validação do `CourseAdminService`).
+    check(
+      'courses_live_off_journey_check',
+      sql`${t.modality} = 'recorded' or ${t.careerSlot} is null`,
     ),
   ],
 )
@@ -686,6 +699,12 @@ export const xpSourceTypeEnum = members.enum('xp_source_type', [
   'studio_remix',
   'play_milestone_10',
   'play_milestone_100',
+  // Cursos AO VIVO (14/10/2026, migration 0113) — MARCOS (amount 0, nada de XP por presença):
+  // a criança foi recebida num encontro (sourceId = ocorrência; conquista `live-first-encounter`
+  // e missão `live_encounter`) e concluiu todas as aulas de um curso ao vivo (sourceId = curso;
+  // conquista `live-course-complete` + troféu). Nenhum dos dois conta para a Jornada.
+  'live_encounter',
+  'live_course_complete',
 ])
 
 // Origem de um evento de moeda Zappy (carteira, fatia 06/2026). Faucets (ganho)
@@ -2003,12 +2022,20 @@ export const liveCohorts = members.table(
   'live_cohorts',
   {
     id: uuid('id').primaryKey(),
-    programId: uuid('program_id')
-      .notNull()
-      .references(() => livePrograms.id),
+    /** Roteiro antigo (`live_programs`). Turma de curso ao vivo (0114) não tem roteiro. */
+    programId: uuid('program_id').references(() => livePrograms.id),
+    /**
+     * O curso AO VIVO da turma (0114). Sem FK de propósito: o curso é lido pela porta
+     * `LiveCoursePort` e a turma guarda o resumo dele no documento. Nulo = turma antiga do
+     * roteiro, arquivada pela 0114 e ignorada pelo serviço.
+     */
+    courseId: uuid('course_id'),
     document: jsonb('document').$type<LiveCohort>().notNull(),
   },
-  (t) => [index('live_cohorts_program_idx').on(t.programId)],
+  (t) => [
+    index('live_cohorts_program_idx').on(t.programId),
+    index('live_cohorts_course_idx').on(t.courseId),
+  ],
 )
 
 export const liveSessions = members.table(
@@ -2132,10 +2159,46 @@ export const liveWorkspaces = members.table(
     project: jsonb('project').$type<Record<string, unknown>>().notNull(),
     assistance: jsonb('assistance').$type<LiveAssistanceView | null>(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+    /**
+     * Chave do projeto ao vivo por BLOCO (0114): curso + `chain` do bloco Estúdio, ou curso +
+     * id do bloco sem chain. Única por criança. Nula só nos projetos do roteiro antigo.
+     */
+    projectKey: text('project_key'),
+    /** Aulas do curso em que este projeto já abriu (o acesso vale nos encontros delas). */
+    lessonIds: jsonb('lesson_ids').$type<string[]>().notNull().default([]),
   },
   (t) => [
-    uniqueIndex('live_workspace_session_learner_uq').on(t.sessionId, t.learnerId),
+    uniqueIndex('live_workspace_session_learner_uq')
+      .on(t.sessionId, t.learnerId)
+      .where(sql`${t.projectKey} is null`),
+    uniqueIndex('live_workspace_learner_key_uq')
+      .on(t.learnerId, t.projectKey)
+      .where(sql`${t.projectKey} is not null`),
     index('live_workspaces_account_idx').on(t.accountId),
+  ],
+)
+
+/**
+ * Presence in an encounter (0114): when the teacher and each child were last seen, and when the
+ * child last confirmed what she is doing. A heartbeat writes this small row, never the
+ * occurrence document; every read of the room overlays it on `teachers`, `seenAt` and
+ * `activity.reportedAt`.
+ */
+export const livePresence = members.table(
+  'live_presence',
+  {
+    occurrenceId: uuid('occurrence_id')
+      .notNull()
+      .references(() => liveOccurrences.id, { onDelete: 'cascade' }),
+    actorId: uuid('actor_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    seenAt: timestamp('seen_at', { withTimezone: true }).notNull(),
+    activityAt: timestamp('activity_at', { withTimezone: true }),
+  },
+  (t) => [
+    primaryKey({ columns: [t.occurrenceId, t.actorId] }),
+    index('live_presence_account_idx').on(t.accountId),
+    index('live_presence_actor_idx').on(t.actorId),
   ],
 )
 
@@ -2175,7 +2238,14 @@ export const liveRecordingJobs = members.table(
     desiredState: text('desired_state').$type<'paused' | 'recording' | 'stopped'>().notNull(),
     confirmedState: text('confirmed_state')
       .$type<
-        'not_started' | 'starting' | 'recording' | 'paused' | 'processing' | 'review' | 'failed'
+        | 'not_started'
+        | 'starting'
+        | 'recording'
+        | 'paused'
+        | 'processing'
+        | 'review'
+        | 'failed'
+        | 'empty'
       >()
       .notNull()
       .default('not_started'),
@@ -2185,9 +2255,37 @@ export const liveRecordingJobs = members.table(
     manifestKey: text('manifest_key'),
     replayKey: text('replay_key'),
     error: text('error'),
+    /** Consecutive failed syncs; reset by any acknowledgement from the recorder. */
+    attempts: integer('attempts').notNull().default(0),
+    /** Exponential backoff: the loop skips the job until this instant. */
+    nextAttemptAt: timestamp('next_attempt_at', { withTimezone: true }),
+    /** Last acknowledgement (command response or event) from the private recorder. */
+    confirmedAt: timestamp('confirmed_at', { withTimezone: true }),
+    /**
+     * Lease of the newest command sent with desired `recording`. The recorder stops capturing
+     * when its lease ends, so once this passed (plus a margin) nothing can be recording.
+     */
+    recordingLeaseEndsAt: timestamp('recording_lease_ends_at', { withTimezone: true }),
+    /** Terminal: review, empty (no segments) or failed after the retry budget. Never retried. */
+    finishedAt: timestamp('finished_at', { withTimezone: true }),
+    /**
+     * Linha do tempo dos trechos que o gravador confirmou (0114): instantes de parede e duração
+     * de cada arquivo. É o que transforma a abertura de uma parte em capítulo do vídeo.
+     */
+    segments: jsonb('segments').$type<LiveRecordingSegmentTime[]>(),
   },
   (t) => [uniqueIndex('live_recording_job_uq').on(t.jobId)],
 )
+
+/**
+ * Cross-replica serialization of the media reconcile of one occurrence. A short lease row
+ * (never a connection held across provider calls); expired leases are taken over.
+ */
+export const liveMediaReconcileLeases = members.table('live_media_reconcile_leases', {
+  occurrenceId: uuid('occurrence_id').primaryKey(),
+  holder: uuid('holder').notNull(),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+})
 
 export const liveReplayPositions = members.table(
   'live_replay_positions',
@@ -2265,6 +2363,7 @@ export const schema = {
   liveMediaConnections,
   liveWorkspaces,
   liveWorkspaceRevisions,
+  livePresence,
   liveProjectTemplates,
   liveRecordingJobs,
   liveReplayPositions,

@@ -98,7 +98,8 @@ describe('clone de curso para a outra plataforma', () => {
     expect(await readJson(res)).toEqual({
       error: {
         code: 'CLONE_SAME_AUDIENCE',
-        message: 'O curso só pode ser clonado para a outra plataforma',
+        message:
+          'O clone precisa ir para a outra plataforma ou para a outra modalidade (gravado ou ao vivo)',
       },
     })
     expect(courses.courses).toHaveLength(before)

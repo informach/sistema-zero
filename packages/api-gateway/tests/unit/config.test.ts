@@ -20,6 +20,29 @@ describe('loadGatewayConfig', () => {
     expect(registry.resolve('POST', '/members/admin/live/programs', 'v1')?.route).toMatchObject({
       authorize: { roles: ['superadmin', 'admin'] },
     })
+    // Cursos ao vivo: turma do curso (admin, auditada); gravação ao Vimeo pela equipe da turma.
+    expect(
+      registry.resolve('POST', '/members/admin/live/courses/c/cohorts', 'v1')?.route,
+    ).toMatchObject({
+      id: 'members-admin-live-course-cohort-create',
+      authorize: { roles: ['superadmin', 'admin'] },
+      audit: {},
+    })
+    expect(
+      registry.resolve('GET', '/members/admin/live/occurrences/o/recording/source', 'v1')?.route,
+    ).toMatchObject({
+      id: 'members-live-recording-source',
+      authorize: { roles: ['superadmin', 'admin', 'staff'] },
+    })
+    expect(
+      registry.resolve('PUT', '/members/admin/live/occurrences/o/recording/vimeo', 'v1')?.route,
+    ).toMatchObject({
+      id: 'members-live-recording-vimeo',
+      authorize: { roles: ['superadmin', 'admin', 'staff'] },
+      audit: {},
+    })
+    // The child's project by block stays under the authenticated child routes.
+    expect(registry.resolve('GET', '/members/live/workspaces', 'v1')?.route.id).toBe('members-live')
     expect(
       registry.resolve('POST', '/members/admin/live/workspaces/a/cursor', 'v1')?.route.id,
     ).toBe('members-live-cursor')
@@ -30,6 +53,25 @@ describe('loadGatewayConfig', () => {
       { auth: { strategies: ['hmac'], allowedConsumers: ['member-shell'] }, maxBodyBytes: 4096 },
     )
     expect(registry.resolve('GET', '/members/internal/live/materials', 'v1')).toBeUndefined()
+    // Cohort edits (status, assigned teachers): admin-only and audited.
+    expect(registry.resolve('PATCH', '/members/admin/live/cohorts/a', 'v1')?.route).toMatchObject({
+      id: 'members-admin-live-cohort-update',
+      authorize: { roles: ['superadmin', 'admin'] },
+      audit: {},
+    })
+    // Cursos ao vivo: as anotações da professora são leitura de equipe (o members confere a
+    // professora atribuída), nunca da criança; não há escrita nesse caminho.
+    expect(
+      registry.resolve('GET', '/members/admin/live/lessons/a/teacher-notes', 'v1')?.route,
+    ).toMatchObject({
+      id: 'members-admin-live-teacher-notes',
+      service: 'members',
+      auth: { strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+    })
+    expect(
+      registry.resolve('POST', '/members/admin/live/lessons/a/teacher-notes', 'v1')?.route.id,
+    ).not.toBe('members-admin-live-teacher-notes')
   })
   test('self-service mutante da conta é autenticado no gateway e preserva o Bearer', () => {
     const byId = new Map(realConfig.routes.map((route) => [route.id, route]))

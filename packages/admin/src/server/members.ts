@@ -233,13 +233,22 @@ export interface ListCoursesParams {
   status?: string
   /** Plataforma (seletor global do painel) — o members filtra a listagem. */
   audience?: 'adult' | 'kids'
+  /** Gravado × ao vivo (filtro da lista e o painel da Jornada, que só olha gravados). */
+  modality?: 'recorded' | 'live'
   limit?: number
   offset?: number
 }
 
 export function listCourses(p: ListCoursesParams): Promise<GatewayResponse<Paginated<CourseView>>> {
   return gatewayFetch('/members/admin/courses', {
-    query: { q: p.q, status: p.status, audience: p.audience, limit: p.limit, offset: p.offset },
+    query: {
+      q: p.q,
+      status: p.status,
+      audience: p.audience,
+      modality: p.modality,
+      limit: p.limit,
+      offset: p.offset,
+    },
   })
 }
 export function createCourse(body: unknown): Promise<GatewayResponse<CourseView>> {

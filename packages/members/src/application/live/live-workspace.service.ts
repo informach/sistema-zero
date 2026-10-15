@@ -2,10 +2,10 @@ import { randomUUID } from 'node:crypto'
 import { ValidationError } from '@sistemazero/core/errors'
 import {
   assistanceRequestExpired,
+  type LiveCursorTarget,
   type LiveWorkspaceCommitRequest,
   type LiveWorkspaceView,
   lessonAccess,
-  liveProjectOrigin,
   occurrenceIsOpen,
   supervisionStatus,
 } from '@sistemazero/core/live'
@@ -15,8 +15,10 @@ import {
   LiveConflictError,
   LiveNotFoundError,
 } from '../../domain/live/live.errors'
+import { liveProjectKey } from '../../domain/live/live-course-rules'
 import { validateLiveSnapshot as validateSnapshot } from '../../domain/live/workspace-snapshot'
-import type { LiveActor } from '../../domain/ports/live-repository.port'
+import type { LiveStudioBlockRecord } from '../../domain/ports/live-course.port'
+import type { LiveActor, LiveCohortAggregate } from '../../domain/ports/live-repository.port'
 import type {
   LiveWorkspaceRecord,
   LiveWorkspaceRepository,
@@ -25,17 +27,51 @@ import type {
 import type { LiveContext, LiveService } from './live.service'
 
 const LEASE_MS = 30_000
-const view = ({ accountId: _accountId, ...workspace }: LiveWorkspaceRecord): LiveWorkspaceView =>
-  structuredClone(workspace)
+/**
+ * A poll whose revision did not change reuses a successful authorization for this long instead
+ * of reloading the whole cohort every second. Writes and project downloads always re-check.
+ */
+const POLL_AUTHORIZATION_MS = 5_000
+const POLL_MEMO_LIMIT = 10_000
+const view = ({
+  accountId: _accountId,
+  projectKey: _projectKey,
+  lessonIds: _lessonIds,
+  ...workspace
+}: LiveWorkspaceRecord): LiveWorkspaceView => structuredClone(workspace)
+/** The encounters whose lesson already opened this project: access is judged in them. */
+const linkedSessions = (aggregate: LiveCohortAggregate, workspace: LiveWorkspaceRecord) =>
+  aggregate.sessions.filter(
+    (session) => session.lessonId != null && workspace.lessonIds.includes(session.lessonId),
+  )
+
+type Cohort = LiveCohortAggregate | null
+type Access = (LiveContext & { enrollment: NonNullable<LiveContext['enrollment']> }) | undefined
+interface AccessOptions {
+  deviceId?: string
+  requireRoom?: boolean
+  /** Inside a transaction: the loader bound to that transaction (never a second connection). */
+  cohort?: () => Promise<Cohort>
+  /** Inside a transaction the subscription check is decided before the locks are taken. */
+  continuation?: boolean | 'defer'
+}
+/** Thrown inside a transaction when the subscription answer is needed; resolved outside it. */
+class ContinuationCheckRequired extends Error {}
+type TransactionAccess = (
+  workspace: LiveWorkspaceRecord,
+  options?: { deviceId?: string; requireRoom?: boolean },
+) => Promise<Access>
+type PollMemo = Map<string, { until: number; readOnly: boolean; contextSessionId?: string }>
 
 export class LiveWorkspaceService {
   constructor(
     private readonly repository: LiveWorkspaceRepository,
-    private readonly live: Pick<LiveService, 'requireContext'>,
+    private readonly live: Pick<LiveService, 'contextFor' | 'cohortForSession' | 'studioBlock'>,
     private readonly clock: () => Date = () => new Date(),
     private readonly recording?: { confirmPaused(occurrenceId: string): Promise<void> },
     private readonly continuation?: { canContinue(accountId: string): Promise<boolean> },
     private readonly contextSessionId?: string,
+    private readonly pollMemo: PollMemo = new Map(),
   ) {}
 
   forSession(sessionId?: string) {
@@ -46,35 +82,43 @@ export class LiveWorkspaceService {
       this.recording,
       this.continuation,
       sessionId,
+      this.pollMemo,
     )
+  }
+
+  private async continues(actor: LiveActor, options: AccessOptions) {
+    if (options.continuation === 'defer') throw new ContinuationCheckRequired()
+    if (options.continuation !== undefined) return options.continuation
+    return (await this.continuation?.canContinue(actor.accountId)) ?? false
   }
 
   private async existingAccess(
     actor: LiveActor,
     workspace: LiveWorkspaceRecord,
-    deviceId?: string,
-    requireRoom = false,
-  ) {
-    let origin: LiveContext
+    options: AccessOptions = {},
+  ): Promise<Access> {
+    const { deviceId, requireRoom = false } = options
+    const aggregate = options.cohort
+      ? await options.cohort()
+      : await this.live.cohortForSession(workspace.sessionId)
+    const owner = actor.id === workspace.learnerId && actor.accountId === workspace.accountId
     try {
-      origin = await this.live.requireContext(actor, workspace.sessionId)
+      if (!aggregate) throw new LiveNotFoundError()
+      this.live.contextFor(actor, aggregate, workspace.sessionId)
     } catch (error) {
       if (
         (error instanceof LiveNotFoundError || error instanceof LiveAccessError) &&
         !this.contextSessionId &&
         !requireRoom &&
-        actor.id === workspace.learnerId &&
-        actor.accountId === workspace.accountId &&
-        (await this.continuation?.canContinue(actor.accountId))
+        owner &&
+        (await this.continues(actor, options))
       ) {
         workspace.contextSessionId = workspace.sessionId
         return undefined
       }
       throw error
     }
-    const linked = origin.aggregate.sessions.filter(
-      (session) => liveProjectOrigin(origin.aggregate.sessions, session).id === workspace.sessionId,
-    )
+    const linked = linkedSessions(aggregate, workspace)
     const selected =
       this.contextSessionId ?? (requireRoom ? workspace.assistance?.sessionId : undefined)
     if (selected && !linked.some((session) => session.id === selected)) throw new LiveAccessError()
@@ -82,16 +126,16 @@ export class LiveWorkspaceService {
       ? linked.filter((session) => session.id === selected)
       : [...linked].sort((a, b) => {
           const open = (id: string) => {
-            const occurrence = origin.aggregate.occurrences.find((item) => item.id === id)
+            const occurrence = aggregate.occurrences.find((item) => item.id === id)
             return occurrence && occurrenceIsOpen(occurrence, this.clock()) ? 1 : 0
           }
           return open(b.occurrenceId) - open(a.occurrenceId) || b.order - a.order
         })
     for (const session of candidates) {
-      const enrollment = origin.aggregate.enrollments.find(
+      const enrollment = aggregate.enrollments.find(
         (item) => item.learnerId === workspace.learnerId && item.status === 'active',
       )
-      const grant = origin.aggregate.grants.find(
+      const grant = aggregate.grants.find(
         (item) => item.enrollmentId === enrollment?.id && item.sessionId === session.id,
       )
       if (
@@ -100,8 +144,9 @@ export class LiveWorkspaceService {
           'available'
       )
         continue
-      const context = await this.access(
+      const context = this.accessIn(
         actor,
+        aggregate,
         session.id,
         workspace.learnerId,
         deviceId,
@@ -118,27 +163,23 @@ export class LiveWorkspaceService {
     }
     // Subscription continues an existing project only from the library. Explicit lesson
     // requests must still respect that lesson's own release and expiry.
-    if (
-      !selected &&
-      !requireRoom &&
-      actor.id === workspace.learnerId &&
-      actor.accountId === workspace.accountId &&
-      (await this.continuation?.canContinue(actor.accountId))
-    ) {
+    if (!selected && !requireRoom && owner && (await this.continues(actor, options))) {
       workspace.contextSessionId = workspace.sessionId
       return undefined
     }
     throw new LiveAccessError()
   }
 
-  private async access(
+  /** Pure: the lesson grant of `learnerId` in `sessionId`, judged on an already loaded cohort. */
+  private accessIn(
     actor: LiveActor,
+    aggregate: LiveCohortAggregate,
     sessionId: string,
     learnerId: string,
     deviceId?: string,
     requireRoom = false,
   ) {
-    const context = await this.live.requireContext(actor, sessionId)
+    const context = this.live.contextFor(actor, aggregate, sessionId)
     if (context.role !== 'teacher' && learnerId !== actor.id) throw new LiveAccessError()
     const enrollment = context.aggregate.enrollments.find(
       (e) => e.learnerId === learnerId && e.status === 'active',
@@ -174,58 +215,126 @@ export class LiveWorkspaceService {
     return { ...context, enrollment }
   }
 
-  async open(actor: LiveActor, sessionId: string, learnerId: string): Promise<LiveWorkspaceView> {
-    const context = await this.access(actor, sessionId, learnerId)
-    const origin = liveProjectOrigin(context.aggregate.sessions, context.session)
-    const id = randomUUID()
-    const template = origin.plan.starterProjectId
-      ? await this.repository.findTemplate(origin.plan.starterProjectId)
-      : null
-    if (origin.plan.starterProjectId && !template) throw new LiveNotFoundError()
-    const project = template
-      ? { ...template, id }
-      : (JSON.parse(JSON.stringify(createEmptyProject(id, context.session.plan.title))) as Record<
-          string,
-          unknown
-        >)
-    const record = await this.repository.ensure({
-      id,
-      sessionId: origin.id,
-      learnerId,
-      accountId: context.enrollment.accountId,
-      revision: 0,
-      writerEpoch: 0,
-      writerId: learnerId,
-      writerDeviceId: null,
-      leaseExpiresAt: null,
-      project: validateSnapshot(project, id),
-      assistance: null,
-      updatedAt: this.clock().toISOString(),
-    })
-    return this.forSession(sessionId).get(actor, record.id)
+  /**
+   * After the lesson window, without a Studio subscription, the project is still the child's:
+   * the owner (library only) and an assigned teacher may view and export it. Never a write.
+   */
+  private async readOnlyAllowed(actor: LiveActor, workspace: LiveWorkspaceRecord) {
+    if (
+      !actor.staff &&
+      !this.contextSessionId &&
+      actor.id === workspace.learnerId &&
+      actor.accountId === workspace.accountId
+    )
+      return true
+    if (!actor.staff) return false
+    const aggregate = await this.live.cohortForSession(workspace.sessionId)
+    if (!aggregate?.cohort.teacherIds.includes(actor.id)) return false
+    return (
+      !this.contextSessionId ||
+      linkedSessions(aggregate, workspace).some((session) => session.id === this.contextSessionId)
+    )
   }
 
-  async demonstration(actor: LiveActor, sessionId: string) {
-    const context = await this.live.requireContext(actor, sessionId)
-    if (context.role !== 'teacher') throw new LiveAccessError()
-    const template = context.session.plan.starterProjectId
-      ? await this.repository.findTemplate(context.session.plan.starterProjectId)
-      : null
-    if (context.session.plan.starterProjectId && !template) throw new LiveNotFoundError()
-    return {
-      project: template
-        ? { ...template, id: sessionId }
-        : createEmptyProject(sessionId, context.session.plan.title),
+  /** The block's `initialProject` as this child's project (`id` is the workspace id). */
+  private seed(block: LiveStudioBlockRecord, id: string) {
+    const initial = block.initialProject
+    if (typeof initial !== 'object' || initial === null || Array.isArray(initial))
+      return validateSnapshot(
+        JSON.parse(JSON.stringify(createEmptyProject(id, 'Meu projeto'))) as Record<
+          string,
+          unknown
+        >,
+        id,
+      )
+    return validateSnapshot({ ...(initial as Record<string, unknown>), id }, id)
+  }
+
+  /**
+   * The child's project for a Studio BLOCK of the encounter's PUBLISHED lesson, opened or
+   * created: key = course + child + the block `chain` (one project across the chain lessons) or
+   * the block id. Seed = the block `initialProject`; the block curation goes in `studio`. A
+   * teacher of the cohort opens a child's project with `learnerId`. After the lesson deadline an
+   * existing project only opens to read (and export); none is created.
+   */
+  async openForBlock(
+    actor: LiveActor,
+    sessionId: string,
+    blockId: string,
+    learnerId: string = actor.id,
+  ): Promise<LiveWorkspaceView> {
+    const aggregate = await this.live.cohortForSession(sessionId)
+    if (!aggregate) throw new LiveNotFoundError()
+    const context = this.live.contextFor(actor, aggregate, sessionId)
+    if (context.role !== 'teacher' && learnerId !== actor.id) throw new LiveAccessError()
+    const courseId = aggregate.cohort.courseId
+    const lessonId = context.session.lessonId
+    if (!courseId || !lessonId) throw new LiveNotFoundError()
+    const block = await this.live.studioBlock(lessonId, blockId)
+    if (!block || block.courseId !== courseId) throw new LiveNotFoundError()
+    const projectKey = liveProjectKey(courseId, block)
+    let access: ReturnType<LiveWorkspaceService['accessIn']> | null = null
+    try {
+      access = this.accessIn(actor, aggregate, sessionId, learnerId)
+    } catch (error) {
+      if (!(error instanceof LiveAccessError)) throw error
     }
+    let record = await this.repository.findByKey(learnerId, projectKey)
+    if (!access) {
+      // This lesson is closed (deadline passed, not yet released, revoked): never a new project,
+      // and an existing one only to read here. The owner and the assigned teacher keep reading
+      // it (the library rules decide who); editing it is never reopened through this lesson.
+      if (!record) throw new LiveAccessError()
+      const readable = await this.forSession().get(actor, record.id)
+      return { ...readable, readOnly: true, studio: block.studio }
+    }
+    if (!record) {
+      const id = randomUUID()
+      record = await this.repository.ensureByKey({
+        id,
+        sessionId,
+        learnerId,
+        accountId: access.enrollment.accountId,
+        revision: 0,
+        writerEpoch: 0,
+        writerId: learnerId,
+        writerDeviceId: null,
+        leaseExpiresAt: null,
+        project: this.seed(block, id),
+        assistance: null,
+        updatedAt: this.clock().toISOString(),
+        projectKey,
+        lessonIds: [lessonId],
+      })
+    }
+    const anchor = record.sessionId
+    // Opened in a new lesson of the chain, or in an encounter of another cohort of the course.
+    const anchored = aggregate.sessions.some((session) => session.id === anchor)
+    if (!record.lessonIds.includes(lessonId) || !anchored)
+      record = await this.repository.linkLesson(record.id, { lessonId, sessionId })
+    return { ...(await this.forSession(sessionId).get(actor, record.id)), studio: block.studio }
+  }
+
+  private async read(actor: LiveActor, workspace: LiveWorkspaceRecord) {
+    try {
+      await this.existingAccess(actor, workspace)
+    } catch (error) {
+      if (
+        (error instanceof LiveAccessError || error instanceof LiveNotFoundError) &&
+        (await this.readOnlyAllowed(actor, workspace))
+      )
+        return { ...view(workspace), readOnly: true } satisfies LiveWorkspaceView
+      throw error
+    }
+    if (assistanceRequestExpired(workspace.assistance, this.clock()))
+      return this.transaction(actor, workspace.id, async ({ workspace }) => view(workspace))
+    return view(workspace)
   }
 
   async get(actor: LiveActor, id: string): Promise<LiveWorkspaceView> {
     const workspace = await this.repository.find(id)
     if (!workspace) throw new LiveNotFoundError()
-    await this.existingAccess(actor, workspace)
-    if (assistanceRequestExpired(workspace.assistance, this.clock()))
-      return this.transaction(actor, id, async ({ workspace }) => view(workspace))
-    return view(workspace)
+    return this.read(actor, workspace)
   }
 
   async poll(
@@ -233,9 +342,37 @@ export class LiveWorkspaceService {
     id: string,
     knownRevision: number,
   ): Promise<Omit<LiveWorkspaceView, 'project'> & { project?: LiveWorkspaceView['project'] }> {
-    const workspace = await this.get(actor, id)
-    if (workspace.revision !== knownRevision) return workspace
-    const { project: _project, ...metadata } = workspace
+    const workspace = await this.repository.find(id)
+    if (!workspace) throw new LiveNotFoundError()
+    const now = this.clock()
+    const key = [actor.id, actor.accountId, actor.staff, id, this.contextSessionId ?? ''].join('|')
+    const memo = this.pollMemo.get(key)
+    if (
+      memo &&
+      memo.until > now.getTime() &&
+      workspace.revision === knownRevision &&
+      !assistanceRequestExpired(workspace.assistance, now)
+    ) {
+      const { project: _project, ...metadata } = view(workspace)
+      return {
+        ...metadata,
+        ...(memo.contextSessionId ? { contextSessionId: memo.contextSessionId } : {}),
+        ...(memo.readOnly ? { readOnly: true } : {}),
+      }
+    }
+    this.pollMemo.delete(key)
+    const current = await this.read(actor, workspace)
+    if (this.pollMemo.size >= POLL_MEMO_LIMIT)
+      for (const [entry, value] of this.pollMemo)
+        if (value.until <= now.getTime()) this.pollMemo.delete(entry)
+    if (this.pollMemo.size >= POLL_MEMO_LIMIT) this.pollMemo.clear()
+    this.pollMemo.set(key, {
+      until: now.getTime() + POLL_AUTHORIZATION_MS,
+      readOnly: current.readOnly === true,
+      ...(current.contextSessionId ? { contextSessionId: current.contextSessionId } : {}),
+    })
+    if (current.revision !== knownRevision) return current
+    const { project: _project, ...metadata } = current
     return structuredClone(metadata)
   }
 
@@ -259,6 +396,8 @@ export class LiveWorkspaceService {
           revision: workspace.revision,
           updatedAt: workspace.updatedAt,
           canEdit,
+          // The child can always view and export what she created.
+          readOnly: !canEdit,
         }
       }),
     )
@@ -290,22 +429,46 @@ export class LiveWorkspaceService {
     }
   }
 
+  /**
+   * Every write: account lock + workspace row lock, then authorization on a cohort snapshot
+   * read through the SAME transaction (cached for it). The cohort row is not locked: workspace
+   * writes do not need to wait for room heartbeats, and the account lock orders them against
+   * account erasure. The subscription check, an extra query, never runs while locks are held.
+   */
   private async transaction<T>(
     actor: LiveActor,
     id: string,
-    fn: (tx: LiveWorkspaceTransaction) => Promise<T>,
+    fn: (tx: LiveWorkspaceTransaction, access: TransactionAccess) => Promise<T>,
   ) {
-    return this.repository.transaction(id, async (tx) => {
-      await this.existingAccess(actor, tx.workspace)
-      if (assistanceRequestExpired(tx.workspace.assistance, this.clock()))
-        tx.workspace.assistance = null
-      return fn(tx)
-    })
+    let continuation: boolean | undefined
+    for (;;) {
+      try {
+        return await this.repository.transaction(id, async (tx) => {
+          let cohort: Promise<Cohort> | undefined
+          const access: TransactionAccess = (workspace, options = {}) =>
+            this.existingAccess(actor, workspace, {
+              ...options,
+              cohort: () => {
+                cohort ??= tx.loadCohort()
+                return cohort
+              },
+              continuation: continuation ?? 'defer',
+            })
+          await access(tx.workspace)
+          if (assistanceRequestExpired(tx.workspace.assistance, this.clock()))
+            tx.workspace.assistance = null
+          return fn(tx, access)
+        })
+      } catch (error) {
+        if (!(error instanceof ContinuationCheckRequired) || continuation !== undefined) throw error
+        continuation = (await this.continuation?.canContinue(actor.accountId)) ?? false
+      }
+    }
   }
 
   async claim(actor: LiveActor, id: string, deviceId: string, takeover: boolean) {
-    return this.transaction(actor, id, async ({ workspace }) => {
-      await this.existingAccess(actor, workspace, deviceId)
+    return this.transaction(actor, id, async ({ workspace }, access) => {
+      await access(workspace, { deviceId })
       if (actor.id !== workspace.learnerId)
         throw new LiveAccessError('A professora precisa de um aceite para editar.')
       const active =
@@ -329,8 +492,8 @@ export class LiveWorkspaceService {
   }
 
   async renew(actor: LiveActor, id: string, deviceId: string, writerEpoch: number) {
-    return this.transaction(actor, id, async ({ workspace }) => {
-      await this.assertWriter(actor, workspace, deviceId, writerEpoch)
+    return this.transaction(actor, id, async ({ workspace }, access) => {
+      await this.assertWriter(actor, workspace, access, deviceId, writerEpoch)
       workspace.leaseExpiresAt = new Date(this.clock().getTime() + LEASE_MS).toISOString()
       return view(workspace)
     })
@@ -339,10 +502,11 @@ export class LiveWorkspaceService {
   private async assertWriter(
     actor: LiveActor,
     workspace: LiveWorkspaceRecord,
+    access: TransactionAccess,
     deviceId: string,
     writerEpoch: number,
   ) {
-    await this.existingAccess(actor, workspace, deviceId, actor.id !== workspace.learnerId)
+    await access(workspace, { deviceId, requireRoom: actor.id !== workspace.learnerId })
     if (
       workspace.writerId !== actor.id ||
       workspace.writerDeviceId !== deviceId ||
@@ -358,10 +522,11 @@ export class LiveWorkspaceService {
   private async commitInTransaction(
     actor: LiveActor,
     tx: LiveWorkspaceTransaction,
+    access: TransactionAccess,
     input: LiveWorkspaceCommitRequest,
   ) {
     const { workspace } = tx
-    await this.assertWriter(actor, workspace, input.deviceId, input.writerEpoch)
+    await this.assertWriter(actor, workspace, access, input.deviceId, input.writerEpoch)
     const project = validateSnapshot(input.project, workspace.id)
     const previous = await tx.findMutation(input.mutationId)
     if (previous) {
@@ -389,15 +554,15 @@ export class LiveWorkspaceService {
   }
 
   async commit(actor: LiveActor, id: string, input: LiveWorkspaceCommitRequest) {
-    return this.transaction(actor, id, async (tx) => {
-      await this.commitInTransaction(actor, tx, input)
+    return this.transaction(actor, id, async (tx, access) => {
+      await this.commitInTransaction(actor, tx, access, input)
       return view(tx.workspace)
     })
   }
 
   async requestAssistance(actor: LiveActor, id: string) {
-    return this.transaction(actor, id, async ({ workspace }) => {
-      const context = await this.existingAccess(actor, workspace, undefined, true)
+    return this.transaction(actor, id, async ({ workspace }, access) => {
+      const context = await access(workspace, { requireRoom: true })
       if (context?.role !== 'teacher') throw new LiveAccessError()
       if (workspace.assistance)
         throw new LiveConflictError('Já existe um pedido de ajuda para este projeto.')
@@ -429,12 +594,15 @@ export class LiveWorkspaceService {
       assistanceRequestExpired(initial.assistance, this.clock())
     )
       throw new LiveAccessError()
-    const current = await this.existingAccess(actor, initial, input.deviceId, true)
+    const current = await this.existingAccess(actor, initial, {
+      deviceId: input.deviceId,
+      requireRoom: true,
+    })
     if (!current) throw new LiveAccessError()
     if (this.recording) await this.recording.confirmPaused(current.occurrence.id)
-    return this.transaction(actor, id, async (tx) => {
+    return this.transaction(actor, id, async (tx, access) => {
       const { workspace } = tx
-      const context = await this.existingAccess(actor, workspace, input.deviceId, true)
+      const context = await access(workspace, { deviceId: input.deviceId, requireRoom: true })
       if (!context) throw new LiveAccessError()
       const request = workspace.assistance
       if (
@@ -443,11 +611,11 @@ export class LiveWorkspaceService {
         request.status !== 'requested'
       )
         throw new LiveAccessError()
-      // A failed recorder is NOT proof that capture has stopped. The recording service
-      // must first acknowledge paused or finalized capture; database status alone
-      // must not authorize help against a finalized receiver generation.
+      // A failed recorder is NOT proof that capture has stopped. `confirmPaused` just proved
+      // it (acknowledgement or expired capture lease); `unavailable`/`empty` are only shown
+      // after such a proof or when nothing was captured. Without a recorder nothing records.
       const safeRecordingStates = this.recording
-        ? ['not_started', 'paused', 'review', 'ready']
+        ? ['not_started', 'paused', 'review', 'ready', 'unavailable', 'empty']
         : ['not_started', 'paused', 'ready']
       if (!safeRecordingStates.includes(context.occurrence.recording.state))
         throw new LiveConflictError(
@@ -455,7 +623,7 @@ export class LiveWorkspaceService {
         )
       if (await tx.teacherHasActiveWorkspace(request.teacherId, this.clock()))
         throw new LiveConflictError('A professora está concluindo outra ajuda.')
-      await this.commitInTransaction(actor, tx, input)
+      await this.commitInTransaction(actor, tx, access, input)
       workspace.assistance = {
         ...request,
         status: 'active',
@@ -470,8 +638,8 @@ export class LiveWorkspaceService {
   }
 
   async attachTeacher(actor: LiveActor, id: string, deviceId: string) {
-    return this.transaction(actor, id, async ({ workspace }) => {
-      await this.existingAccess(actor, workspace, undefined, true)
+    return this.transaction(actor, id, async ({ workspace }, access) => {
+      await access(workspace, { requireRoom: true })
       if (
         workspace.assistance?.status !== 'active' ||
         workspace.writerId !== actor.id ||
@@ -488,9 +656,9 @@ export class LiveWorkspaceService {
   }
 
   async revoke(actor: LiveActor, id: string, deviceId: string) {
-    return this.transaction(actor, id, async ({ workspace }) => {
+    return this.transaction(actor, id, async ({ workspace }, access) => {
       if (actor.id !== workspace.learnerId) throw new LiveAccessError()
-      await this.existingAccess(actor, workspace, deviceId)
+      await access(workspace, { deviceId })
       // A declined invitation never transferred authorship. Keep in-flight child saves valid.
       if (!workspace.assistance || workspace.assistance.status === 'requested') {
         workspace.assistance = null
@@ -530,13 +698,13 @@ export class LiveWorkspaceService {
   }
 
   async returnAuthorship(actor: LiveActor, id: string, input: LiveWorkspaceCommitRequest) {
-    return this.transaction(actor, id, async (tx) => {
+    return this.transaction(actor, id, async (tx, access) => {
       if (
         tx.workspace.assistance?.teacherId !== actor.id ||
         tx.workspace.assistance.status !== 'active'
       )
         throw new LiveAccessError()
-      await this.commitInTransaction(actor, tx, input)
+      await this.commitInTransaction(actor, tx, access, input)
       tx.workspace.assistance.status = 'returning'
       tx.workspace.writerEpoch++
       tx.workspace.writerDeviceId = null
@@ -562,23 +730,6 @@ export class LiveWorkspaceService {
     })
   }
 
-  async createTemplate(actor: LiveActor, raw: Record<string, unknown>) {
-    if (!actor.staff) throw new LiveAccessError()
-    const id = randomUUID()
-    const project = validateSnapshot({ ...raw, id }, id)
-    await this.repository.createTemplate({
-      id,
-      project,
-      createdBy: actor.id,
-      createdAt: this.clock().toISOString(),
-    })
-    return { id, title: project.name }
-  }
-  async listTemplates(actor: LiveActor) {
-    if (!actor.staff) throw new LiveAccessError()
-    return this.repository.listTemplates()
-  }
-
   async cursor(
     actor: LiveActor,
     id: string,
@@ -587,12 +738,12 @@ export class LiveWorkspaceService {
       writerEpoch: number
       x: number
       y: number
-      target?: import('@sistemazero/core/live').LiveCursorTarget | null
+      target?: LiveCursorTarget | null
       revision?: number
     },
   ) {
-    return this.transaction(actor, id, async ({ workspace }) => {
-      await this.assertWriter(actor, workspace, input.deviceId, input.writerEpoch)
+    return this.transaction(actor, id, async ({ workspace }, access) => {
+      await this.assertWriter(actor, workspace, access, input.deviceId, input.writerEpoch)
       if (workspace.assistance?.status !== 'active' || workspace.assistance.teacherId !== actor.id)
         throw new LiveAccessError()
       if (![input.x, input.y].every((n) => Number.isFinite(n) && n >= 0 && n <= 1))

@@ -1,5 +1,25 @@
 # @sistemazero/api-gateway — Guia do Agente
 
+## Cursos ao vivo (14/10/2026)
+
+`members-admin-live-teacher-notes` (`GET /members/admin/live/lessons/:lessonId/teacher-notes`,
+staff+, 120/min) devolve as anotações da professora da versão publicada da aula; o members
+confere administração ou professora atribuída a uma turma do curso. Rota explícita (o wildcard
+`members-admin-live-read` também casaria) para o contrato ficar à vista; teste em
+`tests/unit/config.test.ts`. As demais mudanças do curso (modalidade no POST/PATCH e o filtro
+`?modality=`) passam pelos wildcards de autoria de sempre.
+
+Rotas explícitas novas das oficinas (o resto continua nos curingas `members-live`,
+`members-admin-live-read` e `members-admin-live-write`):
+- `members-admin-live-course-cohort-create` (`POST /members/admin/live/courses/:courseId/cohorts`):
+  turma de um curso ao vivo, admin+, `audit: {}`.
+- `members-live-recording-source` (`GET …/occurrences/:id/recording/source`): staff+ (o members
+  confere professora atribuída ou administração); o Admin assina a URL do MP4 revisado.
+- `members-live-recording-vimeo` (`PUT …/occurrences/:id/recording/vimeo`): staff+, corpo 4 KB,
+  `audit: {}`. ⚠️ PUT não cai no curinga de escrita admin (só POST/PATCH): precisa da rota própria.
+- O projeto ao vivo por bloco (`GET /members/live/workspaces?sessionId&blockId`) usa o curinga do
+  aluno. As rotas `/members/admin/live/programs*` e `/templates` saíram do members (404).
+
 ## Acesso infantil — correções do review (10/10/2026)
 
 - `kidsMayAccess` roda ANTES da introspecção no Auth (pedido proibido não custa ida ao Auth) e

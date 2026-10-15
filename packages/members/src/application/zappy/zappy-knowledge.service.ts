@@ -139,11 +139,18 @@ export class ZappyKnowledgeService {
 
   async sync(
     input: ZappyKnowledgeSyncInput,
-  ): Promise<{ id: string; status: string; changed: boolean }> {
+  ): Promise<{ id: string | null; status: string; changed: boolean }> {
     const authority = await this.repository.sourceAuthorityForRef(input.sourceRef)
     if (!authority) throw new Error('Fonte publicada do Zappy não encontrada')
     if (authority.lessonId !== input.lessonId) {
       throw new Error('Aula não corresponde à fonte do Zappy')
+    }
+    // Curso AO VIVO (14/10/2026) nunca entra na base do Zappy. O Admin sincroniza ao publicar
+    // QUALQUER aula, então a recusa é um 200 calado (`skipped`), e o que já estivesse indexado
+    // (o curso era gravado antes) sai agora, sem esperar a faxina do reconcile.
+    if (authority.modality === 'live') {
+      await this.repository.deleteByRef(input.sourceRef)
+      return { id: null, status: 'skipped', changed: false }
     }
     if (input.courseId && input.courseId !== authority.courseId) {
       throw new Error('Curso não corresponde à aula da fonte do Zappy')

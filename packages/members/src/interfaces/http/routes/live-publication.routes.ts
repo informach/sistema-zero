@@ -1,7 +1,7 @@
 import { Elysia, t } from 'elysia'
 import type { LivePublicationService } from '../../../application/live/live-publication.service'
 import type { LiveBenefitsPort } from '../../../domain/ports/live-benefits.port'
-import { assertInternalCaller } from '../auth'
+import { assertInternalCaller, assertNoLiveSupportWrite } from '../auth'
 import { resolveLiveActor } from './live.routes'
 
 const uuid = () => t.String({ format: 'uuid' })
@@ -17,13 +17,16 @@ export function livePublicationRoutes(deps: {
     })
     .get(
       '/members/live/workspaces/:id/showcase',
-      ({ headers, params, query }) =>
-        deps.publication.prepare(
+      ({ headers, params, query }) => {
+        // Preparing is the first step of publishing as the child: never in a support session.
+        assertNoLiveSupportWrite(headers, 'POST')
+        return deps.publication.prepare(
           resolveLiveActor(headers),
           params.id,
           query.revision,
           query.clientIdempotencyKey,
-        ),
+        )
+      },
       {
         params: t.Object({ id: uuid() }),
         query: t.Object({

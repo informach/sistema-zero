@@ -34,6 +34,7 @@ import { StatusBadge } from '@/components/admin/status-badge'
 import { TableSkeletonRows } from '@/components/admin/table-skeleton'
 import { useConfirm } from '@/components/admin/use-confirm'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
+import { isLiveCourse } from '@/lib/course-modality'
 import { formatDate } from '@/lib/format'
 import {
   createForegroundPriority,
@@ -45,7 +46,13 @@ import { offsetForPlatform, pageForPlatform } from '@/lib/platform-pagination'
 import { courseCreationPrefill } from '@/lib/platform-transition'
 import { slugify } from '@/lib/slug'
 import { fetchSubmissionCountsSafe, submissionCountWarning } from '@/lib/submission-counts'
-import { COURSE_STATUSES, COURSE_TIER_OPTIONS, type CourseView, type Paginated } from '@/lib/types'
+import {
+  COURSE_MODALITY_LABELS,
+  COURSE_STATUSES,
+  COURSE_TIER_OPTIONS,
+  type CourseView,
+  type Paginated,
+} from '@/lib/types'
 import { CourseFormDialog, type CoursePrefill, slotsForTier } from './course-form-dialog'
 
 const LIMIT = 20
@@ -61,6 +68,8 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
   const offset = offsetForPlatform(page, platform)
   const [q, setQ] = useState('')
   const [status, setStatus] = useState('')
+  /** Gravado × ao vivo ('' = todos). O BFF repassa `?modality=` ao members. */
+  const [modality, setModality] = useState('')
   const [loading, setLoading] = useState(true)
   const [journeyItems, setJourneyItems] = useState<CourseView[]>([])
   const [journeyLoading, setJourneyLoading] = useState(true)
@@ -94,6 +103,7 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
         params.set('audience', platform)
         if (q.trim()) params.set('q', q.trim())
         if (status) params.set('status', status)
+        if (modality) params.set('modality', modality)
         return apiGet<Paginated<CourseView>>(`/api/members/courses?${params}`)
       },
       {
@@ -107,7 +117,7 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
         onSettled: () => setLoading(false),
       },
     )
-  }, [offset, q, status, platform, loadAuthority])
+  }, [offset, q, status, modality, platform, loadAuthority])
 
   const loadJourney = useCallback(async () => {
     // O painel da Jornada só existe no modo Kids — no Adultos nem busca (a
@@ -123,13 +133,15 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
     await runLatestForeground(
       journeyAuthority,
       () =>
+        // A Jornada só tem cursos GRAVADOS: o curso ao vivo nunca ocupa posição. O filtro vai ao
+        // servidor e é repetido aqui (members antigo ignora o parâmetro).
         loadAllPages((pageOffset, limit) =>
           apiGet<Paginated<CourseView>>(
-            `/api/members/courses?audience=kids&limit=${limit}&offset=${pageOffset}`,
+            `/api/members/courses?audience=kids&modality=recorded&limit=${limit}&offset=${pageOffset}`,
           ),
         ),
       {
-        onSuccess: setJourneyItems,
+        onSuccess: (courses) => setJourneyItems(courses.filter((course) => !isLiveCourse(course))),
         onError: (error) => {
           toast.error((error as ApiError).message ?? 'Falha ao conferir a Jornada do Criador.')
         },
@@ -258,6 +270,19 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
             </option>
           ))}
         </Select>
+        <Select
+          aria-label="Modalidade"
+          value={modality}
+          onChange={(e) => {
+            setPage({ platform, offset: 0 })
+            setModality(e.target.value)
+          }}
+          className="sm:w-44"
+        >
+          <option value="">Gravados e ao vivo</option>
+          <option value="recorded">Só gravados</option>
+          <option value="live">Só ao vivo</option>
+        </Select>
       </div>
 
       <Card>
@@ -290,6 +315,11 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
                           Kids
                         </span>
                       ) : null}
+                      {isLiveCourse(c) ? (
+                        <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[11px] font-medium text-primary">
+                          {COURSE_MODALITY_LABELS.live}
+                        </span>
+                      ) : null}
                     </div>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <span>{c.slug}</span>
@@ -302,7 +332,15 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
                         </span>
                       ) : null}
                     </div>
-                    {c.audience === 'kids' ? (
+                    {isLiveCourse(c) ? (
+                      <div className="mt-1 text-xs text-muted-foreground">
+                        Curso ao vivo: fora da trilha e da Jornada. As turmas ficam em{' '}
+                        <Link href="/admin/oficinas" className="underline underline-offset-2">
+                          Oficinas ao vivo
+                        </Link>
+                        .
+                      </div>
+                    ) : c.audience === 'kids' ? (
                       <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
                         {c.level === 'lenda' ? (
                           '👑 Lenda — curso bônus da formatura (aparece na trilha da Lenda; fora da jornada)'
@@ -573,6 +611,7 @@ function CloneCourseDialog({
 }) {
   const targetAudience = course?.audience === 'kids' ? 'adult' : 'kids'
   const targetLabel = targetAudience === 'kids' ? 'Kids' : 'Adulto'
+  const live = isLiveCourse(course)
   const [slug, setSlug] = useState('')
   const [title, setTitle] = useState('')
   const [busy, setBusy] = useState(false)
@@ -591,6 +630,8 @@ function CloneCourseDialog({
     try {
       const view = await apiSend<CourseView>(`/api/members/courses/${course.id}/clone`, 'POST', {
         audience: targetAudience,
+        // O clone MANTÉM a modalidade: um curso ao vivo vira outro curso ao vivo.
+        modality: live ? 'live' : 'recorded',
         slug: slugify(slug) || undefined,
         title: title.trim() || undefined,
       })
@@ -610,7 +651,11 @@ function CloneCourseDialog({
       open={course !== null}
       onClose={onClose}
       title={`Clonar para a plataforma ${targetLabel}`}
-      description="O conteúdo inteiro (módulos, aulas, blocos e anexos) é copiado. O clone nasce como rascunho, fora da Jornada do Criador — e edições depois do clone NÃO sincronizam entre os dois cursos."
+      description={
+        live
+          ? 'O conteúdo inteiro (módulos, aulas, blocos e anexos) é copiado. O clone também é um curso ao vivo e nasce como rascunho, sem turmas. Edições depois do clone NÃO sincronizam entre os dois cursos.'
+          : 'O conteúdo inteiro (módulos, aulas, blocos e anexos) é copiado. O clone nasce como rascunho, fora da Jornada do Criador — e edições depois do clone NÃO sincronizam entre os dois cursos.'
+      }
       footer={
         <>
           <Button variant="outline" onClick={onClose} disabled={busy}>

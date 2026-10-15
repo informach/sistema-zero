@@ -3,6 +3,7 @@ import type { GamificationRepository } from '../../domain/ports/gamification-rep
 import type { RoomRepository } from '../../domain/ports/room-repository.port'
 import {
   canonicalizeRoomState,
+  HIDDEN_UNTIL_OWNED_TROPHIES,
   ROOM_FLOORS,
   ROOM_ITEMS,
   ROOM_LIGHTINGS,
@@ -34,7 +35,11 @@ export class GetRoomService {
     ])
     const ownedSet = new Set(owned)
     const state = canonicalizeRoomState(raw, ownedSet)
-    const items = ROOM_ITEMS.map((i) => ({
+    // Troféu de conquista que não se divulga (oficinas ao vivo) só entra no catálogo depois de ganho.
+    const visible = ROOM_ITEMS.filter(
+      (i) => !HIDDEN_UNTIL_OWNED_TROPHIES.has(i.id) || ownedSet.has(i.id),
+    )
+    const items = visible.map((i) => ({
       id: i.id,
       category: i.category,
       tier: i.tier,

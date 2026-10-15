@@ -1,5 +1,5 @@
 import type { CourseAudience } from '../../domain/course/course'
-import { BADGE_SLUGS } from '../../domain/gamification/badges'
+import { BADGE_SLUGS, HIDDEN_UNTIL_UNLOCKED_BADGES } from '../../domain/gamification/badges'
 import { effectiveStreak, localDateSaoPaulo } from '../../domain/gamification/gamification'
 import { computeStudentLevel } from '../../domain/gamification/levels'
 import {
@@ -85,7 +85,10 @@ export class GetGamificationService {
         onVacation,
         vacationUntil: onVacation ? (profile?.vacationTo ?? null) : null,
       },
-      badges: BADGE_SLUGS.map((slug) => ({
+      // As conquistas das oficinas ao vivo só aparecem depois de ganhas (não se divulgam).
+      badges: BADGE_SLUGS.filter(
+        (slug) => !HIDDEN_UNTIL_UNLOCKED_BADGES.has(slug) || unlockedBySlug.has(slug),
+      ).map((slug) => ({
         slug,
         unlockedAt: unlockedBySlug.get(slug)?.toISOString() ?? null,
       })),

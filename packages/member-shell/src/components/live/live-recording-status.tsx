@@ -25,6 +25,8 @@ export function LiveRecordingStatus({
       ? 'Gravação disponível para a turma.'
       : 'Gravação aguardando publicação.',
     failed: 'A gravação foi interrompida. A chamada continua.',
+    empty: 'Este encontro terminou sem trechos gravados.',
+    unavailable: 'O gravador não está respondendo. A chamada continua.',
   }
   async function command(action: 'pause' | 'resume') {
     setBusy(true)
@@ -38,6 +40,9 @@ export function LiveRecordingStatus({
       setBusy(false)
     }
   }
+  // Quem começou o encontro conduz a gravação; antes de começar, a primeira professora da turma.
+  const conductor = room.occurrence?.conductorId ?? room.cohort.teacherIds[0]
+  const conducting = room.actorId === conductor
   return (
     <div className="space-y-2 rounded-xl border bg-card px-4 py-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -48,9 +53,7 @@ export function LiveRecordingStatus({
           />
           {labels[state]}
         </p>
-        {room.role === 'teacher' &&
-        room.actorId === room.cohort.teacherIds[0] &&
-        room.occurrence?.state === 'live' ? (
+        {room.role === 'teacher' && conducting && room.occurrence?.state === 'live' ? (
           state === 'recording' || state === 'starting' ? (
             <Button
               variant="outline"
@@ -74,9 +77,9 @@ export function LiveRecordingStatus({
       </div>
       {room.role === 'teacher' ? (
         <p className="text-xs text-muted-foreground">
-          {room.actorId === room.cohort.teacherIds[0]
+          {conducting
             ? 'Você é a professora responsável pela gravação.'
-            : 'A gravação é conduzida pela professora responsável da turma.'}
+            : 'A gravação é conduzida pela professora que começou o encontro.'}
         </p>
       ) : null}
       {error ? (

@@ -3,6 +3,7 @@ import {
   type LearningManifest,
   type LessonDraftDocument,
   type LessonSection,
+  TEACHER_NOTES_MAX,
 } from '@sistemazero/core/learning'
 import { LESSON_BLOCK_KIND_LABELS, type LessonBlockContent, type LessonBlockKind } from './types'
 
@@ -327,10 +328,18 @@ export function buildLessonManifest(
       throw new ManifestExportError(
         `O título ou o objetivo da seção "${section.title.slice(0, 40)}" passa do que o manifesto aceita (${TETO.titulo} e ${TETO.objetivo} caracteres).`,
       )
+    const teacherNotes = section.teacherNotes?.trim() ? section.teacherNotes : undefined
+    if (teacherNotes && teacherNotes.length > TEACHER_NOTES_MAX)
+      throw new ManifestExportError(
+        `As anotações da professora da seção "${section.title.slice(0, 40)}" passam de ${TEACHER_NOTES_MAX} caracteres. Encurte antes de exportar.`,
+      )
     return {
       key,
       title: section.title,
       objective: section.objective,
+      // Aula de curso ao vivo: as anotações da professora VIAJAM (são autoria, texto puro). O
+      // destino só as mostra a quem conduz; a criança nunca recebe o campo.
+      ...(teacherNotes ? { teacherNotes } : {}),
       intent: section.intent,
       blockKeys: section.blockIds.map(mapped),
       workspaceKey: section.workspaceBlockId ? mapped(section.workspaceBlockId) : null,

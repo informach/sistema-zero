@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
-import { BADGE_SLUGS } from '../../src/domain/gamification/badges'
+import { BADGE_SLUGS, HIDDEN_UNTIL_UNLOCKED_BADGES } from '../../src/domain/gamification/badges'
 import { DAILY_COIN_CAP } from '../../src/domain/gamification/coins'
 import type { InMemoryCourseRepository } from '../fakes/in-memory'
 import { buildApp, grantLifetime, seedSampleCourse, signedWebhookHeaders } from '../helpers'
@@ -405,8 +405,12 @@ describe('Gamificação — GET /members/gamification/me', () => {
         onVacation: false,
         vacationUntil: null,
       },
-      // Catálogo completo do domain, todo bloqueado (derivado — robusto a novos slugs).
-      badges: BADGE_SLUGS.map((slug) => ({ slug, unlockedAt: null })),
+      // Catálogo completo do domain, todo bloqueado (derivado — robusto a novos slugs), menos as
+      // conquistas que só aparecem depois de ganhas (as das oficinas ao vivo, que não se divulgam).
+      badges: BADGE_SLUGS.filter((slug) => !HIDDEN_UNTIL_UNLOCKED_BADGES.has(slug)).map((slug) => ({
+        slug,
+        unlockedAt: null,
+      })),
       // Sem cursos qualificados → Noob; falta 1 curso (concluído + publicado) p/ Coder,
       // e ele mora no degrau de ENTRADA desde 14/08.
       level: {

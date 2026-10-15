@@ -1,3 +1,4 @@
+import { modalityFilterParam } from '@/lib/course-modality'
 import { parseLimit, parseOffset } from '@/lib/list-params'
 import { forwardUpstream } from '@/server/forward'
 import { createCourse, listCourses } from '@/server/members'
@@ -10,6 +11,8 @@ export async function GET(req: Request) {
     status: searchParams.get('status') ?? undefined,
     // Seletor global de plataforma: repassa só valores válidos (lixo → sem filtro).
     audience: audienceParam === 'kids' || audienceParam === 'adult' ? audienceParam : undefined,
+    // Gravado × ao vivo: mesma régua (lixo → sem filtro). Sem o repasse o filtro seria no-op.
+    modality: modalityFilterParam(searchParams.get('modality')),
     limit: parseLimit(searchParams.get('limit')),
     offset: parseOffset(searchParams.get('offset')),
   })

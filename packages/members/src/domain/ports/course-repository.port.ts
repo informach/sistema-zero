@@ -20,15 +20,19 @@ export interface CourseRepository {
   findLesson(lessonId: string): Promise<Lesson | null>
   /** A aula de um bloco ATIVO (o rascunho da fase chega só com o id do bloco). */
   findBlockLessonId(blockId: string): Promise<string | null>
-  /** Cursos ACESSÍVEIS (published ou archived) por slugs — para montar "meus cursos". */
+  /**
+   * Cursos GRAVADOS ACESSÍVEIS (published ou archived) por slugs — para montar "meus cursos".
+   * Curso AO VIVO nunca volta: ele não se libera por matrícula, só pela vaga na turma.
+   */
   findAccessibleCoursesBySlugs(slugs: string[]): Promise<Course[]>
   /** Cursos por slugs, QUALQUER status (admin: progresso/detalhe inclui draft/archived). */
   findCoursesBySlugs(slugs: string[]): Promise<Course[]>
   /** Cursos por IDS, qualquer status (ficha admin: resolve os cursos com atividade). */
   findCoursesByIds(ids: string[]): Promise<Course[]>
   /**
-   * TODOS os cursos `published` da AUDIÊNCIA (catálogo/descoberta), ordenados por
-   * título. O param é obrigatório: cada vitrine (community/community-kids) decide.
+   * TODOS os cursos GRAVADOS `published` da AUDIÊNCIA (catálogo/descoberta e chave-mestra),
+   * ordenados por título. O param é obrigatório: cada vitrine (community/community-kids)
+   * decide. Curso AO VIVO fica de fora: ele só aparece em Oficinas.
    */
   listPublishedCourses(audience: CourseAudience): Promise<Course[]>
   /**

@@ -8,18 +8,17 @@ import {
   assignDailyMissions,
   assignMonthlyMissions,
   assignWeeklyMissions,
-  CLUBE_ACCESS_REF,
-  ESTUDIO_ACCESS_REF,
   MISSIONS_BY_SLUG,
-  type MissionAccessPredicate,
   monthlyPeriodKey,
   periodBoundsFor,
   periodKeyFor,
   weeklyPeriodKey,
 } from '../../domain/gamification/missions'
 import type { GamificationRepository } from '../../domain/ports/gamification-repository.port'
+import type { LiveLessonAccessPort } from '../../domain/ports/live-lesson-access.port'
 import type { AccessCheckService } from '../access-check/access-check.service'
 import type { MissionClaimView } from '../mappers/views'
+import { resolveMissionAccess } from './mission-access'
 
 /**
  * Resgata o prêmio (XP + moedas) de uma missão concluída. REVALIDA a conclusão no
@@ -31,6 +30,8 @@ export class ClaimMissionService {
     private readonly repo: GamificationRepository,
     private readonly accessCheck: AccessCheckService,
     private readonly clock: () => Date,
+    /** Vaga nas oficinas ao vivo (missão `live_encounter`); o MESMO port do `GetMissionsService`. */
+    private readonly liveSeats?: Pick<LiveLessonAccessPort, 'hasActiveSeat'>,
   ) {}
 
   async execute(
@@ -51,7 +52,15 @@ export class ClaimMissionService {
     // `daily-aula` alvo 1 × `weekly-aulas-5` alvo 5 = `lesson_complete`), então sem este guard
     // um aluno resgataria, via POST direto, o prêmio de uma missão NUNCA oferecida cujo alvo
     // ele tenha cumprido — farm de XP/moeda fora do atribuído, ou de missão de produto que não tem.
-    const hasAccess = await this.resolveAccess(accountId, privileged)
+    const hasAccess = await resolveMissionAccess({
+      accessCheck: this.accessCheck,
+      liveSeats: this.liveSeats,
+      accountId,
+      userId,
+      audience,
+      privileged,
+      now: this.clock(),
+    })
     const assigned =
       mission.cadence === 'daily'
         ? assignDailyMissions(userId, today, hasAccess)
@@ -86,16 +95,5 @@ export class ClaimMissionService {
       coinsAwarded: result.coinsAwarded,
       coinBalance: result.coinBalance,
     }
-  }
-
-  /** Predicado de posse p/ podar missões GATED (espelha o `GetMissionsService`). */
-  private async resolveAccess(
-    accountId: string,
-    privileged: boolean,
-  ): Promise<MissionAccessPredicate> {
-    if (privileged) return () => true
-    const result = await this.accessCheck.execute(accountId, [CLUBE_ACCESS_REF, ESTUDIO_ACCESS_REF])
-    const owned = new Set<string>([...result.grants, ...result.communities])
-    return (ref: string) => owned.has(ref)
   }
 }

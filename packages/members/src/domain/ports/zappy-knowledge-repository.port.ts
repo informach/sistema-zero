@@ -1,3 +1,4 @@
+import type { CourseModality } from '@sistemazero/core/course/modality'
 import type { LessonBlockContent } from '../course/lesson-block'
 
 export type ZappyKnowledgeSourceType = 'video-vtt' | 'rich-text' | 'student-notebook'
@@ -27,6 +28,8 @@ export interface ZappySourceAuthority {
   courseId: string
   lessonId: string
   blockRevision: string
+  /** Modalidade do curso da fonte (ausente = gravado). Curso AO VIVO nunca entra na base. */
+  modality?: CourseModality
 }
 
 export interface ZappyLessonKnowledgeHit {

@@ -213,6 +213,7 @@ describe.skipIf(!url)('Kids teacher broadcasts against PostgreSQL', () => {
         env.entitlements,
         env.gamification,
         () => env.clockRef.now,
+        env.liveLessonAccess,
       ),
       () => env.clockRef.now,
     )

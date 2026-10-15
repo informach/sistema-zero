@@ -58,13 +58,23 @@ export type VideoFloatSlot = {
   mode: VideoFloatMode
   viewerId: string | null
   onMinimize: () => void
+  /**
+   * O nome do que flutua quando não é o vídeo da aula (a TRANSMISSÃO da sala ao vivo, 14/10/2026):
+   * vira o título da barra e o nome da região. Ausente = "Vídeo", como sempre.
+   */
+  label?: string
 }
 
 /** Provido pelo `BlockScope` em volta de cada bloco de vídeo da aula; fora dela, nada flutua. */
 export const LessonVideoFloatContext = createContext<VideoFloatSlot | null>(null)
 
 /** O estado do interruptor: `on` = o vídeo está flutuando à vista. */
-export type VideoToggle = { on: boolean; toggle: () => void }
+export type VideoToggle = {
+  on: boolean
+  toggle: () => void
+  /** O rótulo do interruptor quando quem flutua é a transmissão da sala. Ausente = "Vídeo". */
+  label?: string
+}
 
 /**
  * Provido pela aula (`LessonSections`) enquanto uma atividade está ampliada E a seção tem vídeo.
@@ -111,7 +121,7 @@ export function LessonVideoToggle({
     >
       <Tv aria-hidden className="size-4" />
       {/* Estreito, fica o ícone; o nome acessível continua "Vídeo". */}
-      <span className="max-sm:sr-only">Vídeo</span>
+      <span className="max-sm:sr-only">{toggle.label ?? 'Vídeo'}</span>
     </Button>
   )
 }
@@ -468,7 +478,9 @@ function FloatSlot({ slot, children }: { slot: VideoFloatSlot; children: ReactNo
         ref={frame}
         data-corner={floating ? corner : undefined}
         data-busy={floating && busy ? '' : undefined}
-        {...(floating ? { role: 'region', 'aria-label': video.titulo, ...hidden } : {})}
+        {...(floating
+          ? { role: 'region', 'aria-label': slot.label ?? video.titulo, ...hidden }
+          : {})}
         className={cn(
           'sz-lesson-video-frame',
           // `px-1.5 pb-1.5` é a moldura (`FLOAT_FRAME`, 6px): entra na conta da altura.
@@ -491,7 +503,7 @@ function FloatSlot({ slot, children }: { slot: VideoFloatSlot; children: ReactNo
             <button
               type="button"
               // Começa pelo texto à vista (WCAG 2.5.3) e diz o que a alça faz.
-              aria-label={video.mover}
+              aria-label={slot.label ? `${slot.label}: mover para outro canto` : video.mover}
               aria-describedby={hintId}
               {...gestureHandlers}
               onKeyDown={moveByKey}
@@ -510,7 +522,7 @@ function FloatSlot({ slot, children }: { slot: VideoFloatSlot; children: ReactNo
               {/* Estreito (celular), o título cortado em "Ví…" só sujava a barra: fica o ícone,
                   e o nome acessível continua inteiro. ⚠️ "Vídeo", não "Vídeo da aula": com os
                   botões − e + na barra o título longo não cabia no degrau pequeno. */}
-              {rect.width >= 240 ? <span className="truncate">Vídeo</span> : null}
+              {rect.width >= 240 ? <span className="truncate">{slot.label ?? 'Vídeo'}</span> : null}
             </button>
             <span id={hintId} className="sr-only">
               Arraste para outro canto da tela. Com o teclado, use as setas.

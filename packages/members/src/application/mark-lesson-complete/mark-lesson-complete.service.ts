@@ -59,6 +59,7 @@ export class MarkLessonCompleteService {
       lesson.courseId,
       privileged,
       userId,
+      { lessonId },
     )
 
     const completedIds = await this.progress.listCompletedLessonIds(userId, course.id)
@@ -176,6 +177,7 @@ export class MarkLessonCompleteService {
       unitCompleted,
       courseCompleted,
       privileged,
+      modality: course.modality,
     })
 
     // Vitrine (Mural): a aula tem um bloco de estúdio marcado p/ publicação? Então o

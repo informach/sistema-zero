@@ -18,13 +18,34 @@ describe('live BFF allowlist', () => {
     expect(liveUpstreamPath('teacher', 'GET', ['sessions', id, 'demonstration'])).toBe(
       `/members/live/sessions/${id}/demonstration`,
     )
-    expect(liveUpstreamPath('learner', 'GET', ['sessions', id, 'learning-preview'])).toBeNull()
-    expect(liveUpstreamPath('teacher', 'GET', ['sessions', id, 'learning-preview'])).toBe(
-      `/members/live/sessions/${id}/learning-preview`,
-    )
+    // As atividades das etapas do roteiro antigo saíram da sala (14/10/2026): as partes da aula
+    // passam pelas rotas de aula de sempre.
+    expect(liveUpstreamPath('teacher', 'GET', ['sessions', id, 'learning-preview'])).toBeNull()
     expect(
       liveUpstreamPath('learner', 'POST', ['sessions', id, 'blocks', id, 'learning-attempts']),
-    ).toBe(`/members/live/sessions/${id}/blocks/${id}/learning-attempts`)
+    ).toBeNull()
+  })
+  test('cursos ao vivo: a aula pela rota de sempre, o projeto do bloco e as anotações', () => {
+    // A sala da criança lê a aula do encontro pela rota de aula de sempre (só leitura).
+    expect(
+      liveUpstreamPath('learner', 'GET', ['courses', 'corre-dino-ao-vivo', 'lessons', id]),
+    ).toBe(`/members/courses/corre-dino-ao-vivo/lessons/${id}`)
+    expect(
+      liveUpstreamPath('learner', 'POST', ['courses', 'corre-dino-ao-vivo', 'lessons', id]),
+    ).toBeNull()
+    expect(liveUpstreamPath('learner', 'GET', ['courses', 'Slug', 'lessons', id])).toBeNull()
+    expect(liveUpstreamPath('learner', 'GET', ['courses', 'slug', 'lessons', 'x'])).toBeNull()
+    expect(liveUpstreamPath('teacher', 'GET', ['courses', 'slug', 'lessons', id])).toBeNull()
+    expect(liveUpstreamPath('parent', 'GET', ['courses', 'slug', 'lessons', id])).toBeNull()
+    // O projeto ao vivo do bloco (a consulta leva `sessionId` e `blockId`).
+    expect(liveUpstreamPath('learner', 'GET', ['workspaces'])).toBe('/members/live/workspaces')
+    expect(liveUpstreamPath('teacher', 'GET', ['workspaces'])).toBe('/members/live/workspaces')
+    // As anotações da professora: só pelo BFF do Admin.
+    expect(liveUpstreamPath('admin', 'GET', ['lessons', id, 'teacher-notes'])).toBe(
+      `/members/admin/live/lessons/${id}/teacher-notes`,
+    )
+    expect(liveUpstreamPath('learner', 'GET', ['lessons', id, 'teacher-notes'])).toBeNull()
+    expect(liveUpstreamPath('teacher', 'GET', ['lessons', id, 'teacher-notes'])).toBeNull()
   })
   test('rejects path traversal, unknown endpoints and generic SFU operations', () => {
     for (const path of [

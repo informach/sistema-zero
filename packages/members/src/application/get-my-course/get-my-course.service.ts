@@ -26,11 +26,12 @@ export class GetMyCourseService {
     accountId?: string,
   ): Promise<CourseDetailView> {
     // Acesso pela CONTA (sessão de perfil → x-auth-account-id); progresso pelo userId.
-    const { course, entitlement } = await this.checkAccess.requireBySlug(
+    const { course, entitlement, liveLessonIds } = await this.checkAccess.requireBySlug(
       accountId ?? userId,
       courseSlug,
       privileged,
       userId,
+      'course',
     )
     // Aluno só vê aulas PUBLICADAS — outline e progresso idem.
     const [
@@ -74,8 +75,11 @@ export class GetMyCourseService {
       last,
     )
     // Trava sequencial: só calcula quando o curso a tem ligada E o ator não é equipe
-    // interna (privileged navega tudo destravado, como a chave-mestra virtual).
-    const lockedSet = lockedLessonSetForCourse(course, publishedLessonIds, completedSet, privileged)
+    // interna (privileged navega tudo destravado, como a chave-mestra virtual). No curso AO
+    // VIVO quem trava é a vaga: fica fechada toda aula que o grant não abre agora.
+    const lockedSet = liveLessonIds
+      ? new Set(publishedLessonIds.filter((id) => !liveLessonIds.has(id)))
+      : lockedLessonSetForCourse(course, publishedLessonIds, completedSet, privileged)
     const continueLessonId = resolveContinueLesson(outline, completedSet, lastAccessed, lockedSet)
     const view = toCourseDetailView(
       course,

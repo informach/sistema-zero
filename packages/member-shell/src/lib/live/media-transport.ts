@@ -21,6 +21,28 @@ export interface LiveMediaTransportOptions {
   onError(error: Error): void
   fetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
   createPeerConnection?: (configuration: RTCConfiguration) => RTCPeerConnection
+  /**
+   * Quanto esperar um `disconnected` virar `connected` de novo antes de desistir. Uma oscilação
+   * do Wi-Fi passa por esse estado e o navegador costuma se recuperar sozinho em segundos;
+   * derrubar a sala na hora fazia a turma inteira perder a professora a cada soluço.
+   */
+  disconnectGraceMs?: number
+}
+
+/**
+ * As camadas de vídeo publicadas (simulcast): a cheia (`f`) e a miniatura (`q`).
+ *
+ * ⚠️ A tela e a demonstração da professora andam a 15 quadros por segundo, o mesmo ritmo do
+ * compositor do desenho (`ANNOTATION_FPS`): a 10, a seta e a caneta chegavam aos saltos na tela da
+ * criança, e ela repara. O teto de bits sobe junto (1,5 Mbps), senão o codificador ganha quadros
+ * perdendo nitidez justamente no texto pequeno do Estúdio.
+ */
+export function liveVideoEncodings(kind: LiveMediaKind): RTCRtpEncodingParameters[] {
+  const camera = kind === 'camera'
+  return [
+    { rid: 'f', maxBitrate: camera ? 600_000 : 1_500_000, maxFramerate: camera ? 20 : 15 },
+    { rid: 'q', scaleResolutionDownBy: 4, maxBitrate: 100_000, maxFramerate: 5 },
+  ]
 }
 
 /** One queue owns SDP, API requests, answer application and the backend acknowledgement. */
@@ -54,6 +76,8 @@ export function createLiveMediaTransport(options: LiveMediaTransportOptions) {
   let lastServerAt = 0
   let retired = true
   let focusedPublication: string | null = null
+  let disconnectTimer: ReturnType<typeof setTimeout> | undefined
+  const disconnectGraceMs = options.disconnectGraceMs ?? 8_000
   const local = new Map<LiveMediaKind, RTCRtpTransceiver>()
   const subscriptions = new Map<
     string,
@@ -110,6 +134,8 @@ export function createLiveMediaTransport(options: LiveMediaTransportOptions) {
     peer = null
     clearInterval(heartbeatTimer)
     heartbeatTimer = undefined
+    clearTimeout(disconnectTimer)
+    disconnectTimer = undefined
   }
 
   async function closeAs(next: LiveMediaState): Promise<void> {
@@ -200,13 +226,25 @@ export function createLiveMediaTransport(options: LiveMediaTransportOptions) {
           stream: new MediaStream([event.track]),
         })
       })
+      const interrupted = () =>
+        void fail(new Error('A transmissão foi interrompida. Reconecte para continuar.')).catch(
+          () => undefined,
+        )
       peer.addEventListener('connectionstatechange', () => {
         if (attempt !== generation || retired) return
-        if (peer?.connectionState === 'connected') state('connected')
-        if (peer?.connectionState === 'failed' || peer?.connectionState === 'disconnected') {
-          void fail(new Error('A transmissão foi interrompida. Reconecte para continuar.')).catch(
-            () => undefined,
-          )
+        const current = peer?.connectionState
+        if (current === 'connected') {
+          clearTimeout(disconnectTimer)
+          disconnectTimer = undefined
+          state('connected')
+        } else if (current === 'failed') {
+          interrupted()
+        } else if (current === 'disconnected' && !disconnectTimer) {
+          disconnectTimer = setTimeout(() => {
+            disconnectTimer = undefined
+            if (attempt === generation && !retired && peer?.connectionState !== 'connected')
+              interrupted()
+          }, disconnectGraceMs)
         }
       })
       lastServerAt = Date.now()
@@ -253,14 +291,7 @@ export function createLiveMediaTransport(options: LiveMediaTransportOptions) {
         direction: 'sendonly',
         ...(track.kind === 'video'
           ? {
-              sendEncodings: [
-                {
-                  rid: 'f',
-                  maxBitrate: kind === 'camera' ? 600_000 : 1_200_000,
-                  maxFramerate: kind === 'camera' ? 20 : 10,
-                },
-                { rid: 'q', scaleResolutionDownBy: 4, maxBitrate: 100_000, maxFramerate: 5 },
-              ],
+              sendEncodings: liveVideoEncodings(kind),
             }
           : {}),
       })

@@ -27,7 +27,10 @@ export function classroomState(
   const live = room?.occurrence?.state === 'live'
   const supervised = room?.supervision === 'present'
   const state = room?.occurrence?.state
-  const canEnter = !!room?.access.canOpen && (state === 'lobby' || state === 'live')
+  // A recepção abre 15 min antes (`canEnterLobby`); o conteúdo continua no horário (`canOpen`).
+  const canEnter =
+    (!!room?.access.canOpen || !!room?.access.canEnterLobby) &&
+    (state === 'lobby' || state === 'live')
   const canInteract = !!room?.access.canOpen && joined && admitted && live && supervised && !stale
   return {
     self,

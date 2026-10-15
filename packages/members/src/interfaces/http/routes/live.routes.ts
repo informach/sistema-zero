@@ -1,10 +1,10 @@
 import { ForbiddenError } from '@sistemazero/core/http'
-import type { InteractiveBlock } from '@sistemazero/core/learning'
 import { Elysia, t } from 'elysia'
 import type { LiveService } from '../../../application/live/live.service'
 import type { LiveActor } from '../../../domain/ports/live-repository.port'
 import {
   assertInternalCaller,
+  assertNoLiveSupportWrite,
   isPrivilegedActor,
   requireAdmin,
   resolveAccountId,
@@ -12,6 +12,7 @@ import {
   resolveUserId,
 } from '../auth'
 
+const ADMIN_ROLES = new Set(['superadmin', 'admin'])
 export interface LiveRoutesDeps {
   live: LiveService
   internalToken?: string
@@ -20,48 +21,21 @@ export interface LiveRoutesDeps {
 const uuid = () => t.String({ format: 'uuid' })
 const integer = (minimum: number, maximum: number) => t.Number({ minimum, maximum, multipleOf: 1 })
 const idParams = t.Object({ id: uuid() })
+const audience = t.Union([t.Literal('adult'), t.Literal('kids')])
 const catalogQuery = t.Object({
   cursor: t.Optional(uuid()),
   limit: t.Optional(t.Numeric({ minimum: 1, maximum: 50, multipleOf: 1 })),
+  /** The course platform (Kids × adults). Admin filters its management by it. */
+  audience: t.Optional(audience),
 })
-const lesson = t.Object({
-  title: t.String({ minLength: 1, maxLength: 160 }),
-  instructions: t.String({ minLength: 1, maxLength: 24_000 }),
-  starterProjectId: t.Union([uuid(), t.Null()]),
-  continueProjectFrom: t.Optional(t.Union([integer(0, 23), t.Null()])),
-  materials: t.Array(
-    t.Object({
-      id: uuid(),
-      title: t.String({ minLength: 1, maxLength: 160 }),
-      storageKey: t.String({ minLength: 1, maxLength: 1000 }),
-      fileName: t.String({ minLength: 1, maxLength: 200 }),
-    }),
-    { maxItems: 30 },
-  ),
-  steps: t.Optional(
-    t.Array(
-      t.Object({
-        id: uuid(),
-        title: t.String({ minLength: 1, maxLength: 160 }),
-        instructions: t.String({ maxLength: 10_000 }),
-        blocks: t.Array(
-          t.Object({
-            id: uuid(),
-            revision: uuid(),
-            content: t.Unsafe<InteractiveBlock>(t.Unknown()),
-          }),
-          { maxItems: 12 },
-        ),
-      }),
-      { maxItems: 24 },
-    ),
-  ),
-})
-const programFields = {
-  title: t.String({ minLength: 1, maxLength: 160 }),
-  description: t.String({ minLength: 1, maxLength: 4000 }),
-  lessons: t.Array(lesson, { minItems: 1, maxItems: 24 }),
-}
+const teacherIds = t.Array(uuid(), { minItems: 1, maxItems: 4, uniqueItems: true })
+const teacherNames = t.Record(
+  t.String({ minLength: 1, maxLength: 64 }),
+  t.String({ minLength: 1, maxLength: 80 }),
+  {
+    maxProperties: 4,
+  },
+)
 const status = t.Union([
   t.Literal('draft'),
   t.Literal('open'),
@@ -70,8 +44,22 @@ const status = t.Union([
 ])
 const speakingMode = t.Union([t.Literal('open'), t.Literal('turns'), t.Literal('listen')])
 const control = t.Union([
-  t.Object({ kind: t.Literal('suggest-step'), stepId: t.Union([uuid(), t.Null()]) }),
-  t.Object({ kind: t.Union([t.Literal('start'), t.Literal('end'), t.Literal('open-lobby')]) }),
+  /** The teacher opens a part of the published lesson and makes it current (only while live). */
+  t.Object({ kind: t.Literal('open-section'), sectionId: uuid() }),
+  t.Object({
+    kind: t.Union([
+      t.Literal('start'),
+      t.Literal('end'),
+      t.Literal('open-lobby'),
+      t.Literal('cancel'),
+    ]),
+  }),
+  t.Object({ kind: t.Literal('admit-all') }),
+  t.Object({
+    kind: t.Literal('lower-hands'),
+    learnerId: t.Union([uuid(), t.Null()]),
+    before: t.Optional(t.String({ format: 'date-time' })),
+  }),
   t.Object({ kind: t.Literal('speaking-mode'), mode: speakingMode }),
   t.Object({ kind: t.Literal('chat'), enabled: t.Boolean() }),
   t.Object({
@@ -99,7 +87,6 @@ const control = t.Union([
   t.Object({
     kind: t.Union([
       t.Literal('mute'),
-      t.Literal('lower-hands'),
       t.Literal('lock-microphone'),
       t.Literal('unlock-microphone'),
       t.Literal('lock-camera'),
@@ -119,6 +106,7 @@ export function resolveLiveActor(headers: Record<string, string | undefined>): L
     accountId: resolveAccountId(headers),
     name: resolveStudentName(headers),
     staff: isPrivilegedActor(headers),
+    admin: isPrivilegedActor(headers) && ADMIN_ROLES.has(headers['x-auth-user-role'] ?? ''),
   }
 }
 
@@ -133,8 +121,16 @@ export function liveRoutes(deps: LiveRoutesDeps) {
     assertInternalCaller(headers['x-internal-token'], deps.internalToken)
     set.headers['cache-control'] = 'private, no-store'
   }
+  const support = ({
+    headers,
+    request,
+  }: {
+    headers: Record<string, string | undefined>
+    request: Request
+  }) => assertNoLiveSupportWrite(headers, request.method)
   const student = new Elysia({ prefix: '/members/live' })
     .onTransform(guard)
+    .onBeforeHandle(support)
     .get(
       '/sessions/:id/replay-progress',
       ({ headers, params, query }) =>
@@ -165,10 +161,10 @@ export function liveRoutes(deps: LiveRoutesDeps) {
     )
     .get(
       '/sessions/:id',
-      ({ headers, params, query }) =>
-        deps.live.room(resolveLiveActor(headers), params.id, query.planRevision),
+      ({ headers, params }) => deps.live.room(resolveLiveActor(headers), params.id),
       {
         params: idParams,
+        // `planRevision` was the old script cache key: still accepted from older rooms, ignored.
         query: t.Object({ planRevision: t.Optional(t.String({ pattern: '^[a-f0-9]{64}$' })) }),
       },
     )
@@ -180,20 +176,30 @@ export function liveRoutes(deps: LiveRoutesDeps) {
     .post(
       '/sessions/:id/heartbeat',
       ({ headers, params, body }) =>
-        deps.live.heartbeat(resolveLiveActor(headers), params.id, body.deviceId, body.activity),
+        deps.live.heartbeat(
+          resolveLiveActor(headers),
+          params.id,
+          body.deviceId,
+          body.activity && { ...body.activity, stepId: body.activity.stepId ?? null },
+        ),
       {
         params: idParams,
         body: t.Object({
           deviceId: uuid(),
           activity: t.Optional(
             t.Object({
-              stepId: t.Union([uuid(), t.Null()]),
+              /** Old script steps: only `null` is valid now (kept for older rooms). */
+              stepId: t.Optional(t.Union([uuid(), t.Null()])),
               saveState: t.Union([
                 t.Literal('not-open'),
                 t.Literal('saving'),
                 t.Literal('saved'),
                 t.Literal('offline'),
               ]),
+              /** The part of the published lesson the child is in. */
+              sectionId: t.Optional(t.Union([uuid(), t.Null()])),
+              /** Parts she completed (the lesson progress), for the teacher's cards. */
+              completedSectionIds: t.Optional(t.Array(uuid(), { maxItems: 60, uniqueItems: true })),
             }),
           ),
         }),
@@ -233,14 +239,12 @@ export function liveRoutes(deps: LiveRoutesDeps) {
         deps.live.control(resolveLiveActor(headers), params.id, body.expectedVersion, body.command),
       {
         params: idParams,
-        body: t.Object({ expectedVersion: integer(1, Number.MAX_SAFE_INTEGER), command: control }),
+        // The version is checked only for state transitions (start/end/open-lobby/cancel).
+        body: t.Object({
+          expectedVersion: t.Optional(integer(1, Number.MAX_SAFE_INTEGER)),
+          command: control,
+        }),
       },
-    )
-    .get(
-      '/sessions/:id/materials/:materialId/download',
-      ({ headers, params }) =>
-        deps.live.material(resolveLiveActor(headers), params.id, params.materialId),
-      { params: t.Object({ id: uuid(), materialId: uuid() }) },
     )
     .get(
       '/sessions/:id/recording',
@@ -251,6 +255,7 @@ export function liveRoutes(deps: LiveRoutesDeps) {
 
   const parents = new Elysia({ prefix: '/members/parents/live' })
     .onTransform(guard)
+    .onBeforeHandle(support)
     .get(
       '/enrollments',
       ({ headers, query }) => deps.live.catalog(resolveLiveActor(headers), 'parents', query),
@@ -267,9 +272,10 @@ export function liveRoutes(deps: LiveRoutesDeps) {
     .onTransform(guard)
     .onBeforeHandle(({ headers, request }) => {
       requireAdmin(headers, deps.requireAdminEnabled)
+      assertNoLiveSupportWrite(headers, request.method)
       if (
         request.method !== 'GET' &&
-        !/^\/members\/admin\/live\/sessions\/[\da-f-]+\/(recording\/publish|occurrences)$/.test(
+        !/^\/members\/admin\/live\/(sessions\/[\da-f-]+\/(recording\/publish|occurrences)|occurrences\/[\da-f-]+\/recording\/vimeo)$/.test(
           new URL(request.url).pathname,
         ) &&
         !['superadmin', 'admin'].includes(headers['x-auth-user-role'] ?? '')
@@ -282,44 +288,21 @@ export function liveRoutes(deps: LiveRoutesDeps) {
       { query: catalogQuery },
     )
     .post(
-      '/programs',
-      ({ headers, body, set }) => {
-        set.status = 201
-        return deps.live.createProgram(resolveLiveActor(headers), body)
-      },
-      { body: t.Object(programFields) },
-    )
-    .patch(
-      '/programs/:id',
-      ({ headers, params, body }) =>
-        deps.live.updateProgram(resolveLiveActor(headers), params.id, body),
-      {
-        params: idParams,
-        body: t.Object({
-          title: t.Optional(programFields.title),
-          description: t.Optional(programFields.description),
-          lessons: t.Optional(programFields.lessons),
-          expectedRevision: integer(1, Number.MAX_SAFE_INTEGER),
-          status: t.Optional(
-            t.Union([t.Literal('draft'), t.Literal('published'), t.Literal('archived')]),
-          ),
-        }),
-      },
-    )
-    .post(
-      '/programs/:id/cohorts',
+      '/courses/:courseId/cohorts',
       ({ headers, params, body, set }) => {
         set.status = 201
-        return deps.live.createCohort(resolveLiveActor(headers), params.id, body)
+        return deps.live.createCohort(resolveLiveActor(headers), params.courseId, body)
       },
       {
-        params: idParams,
+        params: t.Object({ courseId: uuid() }),
         body: t.Object({
           title: t.String({ minLength: 1, maxLength: 160 }),
           timeZone: t.String({ minLength: 1, maxLength: 100 }),
           capacity: integer(1, 8),
           accessDays: integer(1, 366),
-          teacherIds: t.Array(uuid(), { minItems: 1, maxItems: 4 }),
+          teacherIds,
+          teacherNames: t.Optional(teacherNames),
+          // One interval per PUBLISHED lesson of the course, in the course order.
           schedule: t.Array(
             t.Object({
               startsAt: t.String({ format: 'date-time' }),
@@ -333,8 +316,15 @@ export function liveRoutes(deps: LiveRoutesDeps) {
     .patch(
       '/cohorts/:id',
       ({ headers, params, body }) =>
-        deps.live.updateCohort(resolveLiveActor(headers), params.id, body.status),
-      { params: idParams, body: t.Object({ status }) },
+        deps.live.updateCohort(resolveLiveActor(headers), params.id, body),
+      {
+        params: idParams,
+        body: t.Object({
+          status: t.Optional(status),
+          teacherIds: t.Optional(teacherIds),
+          teacherNames: t.Optional(teacherNames),
+        }),
+      },
     )
     .get(
       '/cohorts/:id/enrollments',
@@ -383,6 +373,24 @@ export function liveRoutes(deps: LiveRoutesDeps) {
           expectedVersion: integer(0, Number.MAX_SAFE_INTEGER),
           published: t.Boolean(),
           occurrenceId: t.Optional(uuid()),
+        }),
+      },
+    )
+    .get(
+      '/occurrences/:id/recording/source',
+      ({ headers, params }) => deps.live.recordingSource(resolveLiveActor(headers), params.id),
+      { params: idParams },
+    )
+    .put(
+      '/occurrences/:id/recording/vimeo',
+      ({ headers, params, body }) =>
+        deps.live.setRecordingVimeo(resolveLiveActor(headers), params.id, body),
+      {
+        params: idParams,
+        body: t.Object({
+          videoId: t.String({ pattern: '^[0-9]{1,20}$' }),
+          embedUrl: t.String({ minLength: 1, maxLength: 300 }),
+          status: t.Union([t.Literal('processing'), t.Literal('ready'), t.Literal('failed')]),
         }),
       },
     )

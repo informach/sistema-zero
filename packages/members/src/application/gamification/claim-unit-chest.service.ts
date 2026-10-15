@@ -39,6 +39,7 @@ export class ClaimUnitChestService {
       courseSlug,
       privileged,
       userId,
+      'course',
     )
     // O módulo precisa ser DESTE curso: sem isto, um id de outro curso passaria pelo
     // portão de acesso deste e pagaria um baú que a criança não tem.

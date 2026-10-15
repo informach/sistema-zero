@@ -46,6 +46,7 @@ describe.skipIf(!url)('journey authoring readiness (Postgres)', () => {
       level: 'iniciante',
       track: '2d',
       careerSlot: null,
+      modality: null,
     })
     ownedCourses.push(course.id)
     const mod = await repo.createModule(course.id, { title: 'Mundo', summary: null })
@@ -85,6 +86,7 @@ describe.skipIf(!url)('journey authoring readiness (Postgres)', () => {
       level: 'iniciante',
       track: '2d',
       careerSlot: null,
+      modality: null,
     })
     ownedCourses.push(course.id)
     expect(course.videoBeforeActivity).toBe(true)
@@ -105,6 +107,7 @@ describe.skipIf(!url)('journey authoring readiness (Postgres)', () => {
       slug: `video-antes-clone-${randomUUID()}`,
       title: 'Primeiros passos (adulto)',
       audience: 'adult',
+      modality: 'recorded',
       dropStudioUnlockBlocks: true,
     })
     if (!clone) throw new Error('O clone não nasceu')

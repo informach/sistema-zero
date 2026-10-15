@@ -785,6 +785,27 @@
       "when": 1792009220471,
       "tag": "0111_pensa_provider_budget",
       "breakpoints": true
+    },
+    {
+      "idx": 112,
+      "version": "7",
+      "when": 1792023397140,
+      "tag": "0112_live_recording_terminal_states",
+      "breakpoints": true
+    },
+    {
+      "idx": 113,
+      "version": "7",
+      "when": 1792023398140,
+      "tag": "0113_course_modality",
+      "breakpoints": true
+    },
+    {
+      "idx": 114,
+      "version": "7",
+      "when": 1792023399140,
+      "tag": "0114_live_course_cohorts",
+      "breakpoints": true
     }
   ]
 }

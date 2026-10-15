@@ -18,6 +18,7 @@ import {
 import {
   CloneSameAudienceError,
   CourseConflictError,
+  CourseModalityLockedError,
   DuplicateSlugError,
   JourneySlotConflictError,
   NoShowcaseBlockError,
@@ -47,6 +48,8 @@ import {
   clubeBadgeSlugs,
   coinsSaverBadgeSlugs,
   courseBadgeSlugs,
+  liveCourseBadgeSlugs,
+  liveEncounterBadgeSlugs,
   muralCommenterBadgeSlugs,
   pensaCycleBadgeSlugs,
   pensaStageBadgeSlugs,
@@ -431,6 +434,8 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
   }
 
   courses: Course[] = []
+  /** Cursos com turma das oficinas (`live_cohorts.document->>'courseId'`), semeável por teste. */
+  readonly liveCohortCourseIds = new Set<string>()
   modules: Module[] = []
   lessons: Lesson[] = []
   blocks: LessonBlock[] = []
@@ -454,7 +459,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
   async findAccessibleCoursesBySlugs(slugs: string[]): Promise<Course[]> {
     const set = new Set(slugs)
     return this.courses
-      .filter((c) => set.has(c.slug) && isCourseAccessible(c.status))
+      .filter((c) => set.has(c.slug) && isCourseAccessible(c.status) && c.modality === 'recorded')
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
   }
 
@@ -471,7 +476,9 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
   async listPublishedCourses(audience: CourseAudience): Promise<Course[]> {
     // Espelha o Drizzle: ordem PADRÃO das vitrines = criação (mais antigos primeiro).
     return this.courses
-      .filter((c) => c.status === 'published' && c.audience === audience)
+      .filter(
+        (c) => c.status === 'published' && c.audience === audience && c.modality === 'recorded',
+      )
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
   }
 
@@ -486,7 +493,8 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
         c.audience === audience &&
         c.level === level &&
         c.track === track &&
-        c.careerSlot === 1,
+        c.careerSlot === 1 &&
+        c.modality === 'recorded',
     )
   }
 
@@ -645,6 +653,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
     }
     if (filter.status) all = all.filter((c) => c.status === filter.status)
     if (filter.audience) all = all.filter((c) => c.audience === filter.audience)
+    if (filter.modality) all = all.filter((c) => c.modality === filter.modality)
     all.sort((a, b) => a.title.localeCompare(b.title))
     return { items: all.slice(filter.offset, filter.offset + filter.limit), total: all.length }
   }
@@ -671,7 +680,8 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
   ): Promise<Course | null> {
     const src = this.courses.find((c) => c.id === sourceCourseId)
     if (!src) return null
-    if (src.audience === overrides.audience) throw new CloneSameAudienceError()
+    if (src.audience === overrides.audience && src.modality === overrides.modality)
+      throw new CloneSameAudienceError()
     if (
       src.version !== overrides.expectedSourceVersion ||
       src.audience !== overrides.expectedSourceAudience
@@ -690,6 +700,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
       title: overrides.title,
       status: 'draft',
       audience: overrides.audience,
+      modality: overrides.modality,
       careerSlot: null,
       journeyRole: 'reward',
       metadata,
@@ -742,6 +753,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
       track,
       careerSlot,
       journeyRole,
+      modality,
       ...rest
     } = fields
     // Mirror do `buildCourseMetadata` do repo Drizzle: as DUAS chaves geridas pelo form
@@ -766,6 +778,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
       track: track ?? '2d',
       careerSlot: careerSlot ?? null,
       journeyRole: journeyRole ?? (careerSlot == null ? 'reward' : 'positioned'),
+      modality: modality ?? 'recorded',
       metadata: Object.keys(metadata).length > 0 ? metadata : null,
       createdAt: now,
       updatedAt: now,
@@ -781,6 +794,9 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
     if (this.courses.some((c) => c.id !== course.id && c.slug === course.slug)) {
       throw new DuplicateSlugError()
     }
+    // Mirror do SQL: trocar a modalidade só sem turma das oficinas.
+    if (this.courses[idx]?.modality !== course.modality && this.liveCohortCourseIds.has(course.id))
+      throw new CourseModalityLockedError()
     if (
       course.careerSlot != null &&
       this.courses.some(
@@ -2361,6 +2377,8 @@ export class InMemoryGamificationRepository implements GamificationRepository {
         e.sourceType === 'course_complete' || e.sourceType === 'course_showcased'
           ? this.sources?.courses.courses.find((c) => c.id === e.sourceId)
           : undefined
+      // Mirror do SQL: curso AO VIVO nunca gera marco da Jornada (descartado no award).
+      if (marcoCourse?.modality === 'live') continue
       this.events.push({
         ...e,
         userId: input.userId,
@@ -2456,6 +2474,17 @@ export class InMemoryGamificationRepository implements GamificationRepository {
     }
     if (newEvents.some((e) => e.sourceType === 'mural_comment')) {
       for (const slug of muralCommenterBadgeSlugs(countByType('mural_comment'))) {
+        badgeCandidates.add(slug)
+      }
+    }
+    // Cursos ao vivo (mirror do Drizzle): 1º encontro + curso ao vivo inteiro.
+    if (newEvents.some((e) => e.sourceType === 'live_encounter')) {
+      for (const slug of liveEncounterBadgeSlugs(countByType('live_encounter'))) {
+        badgeCandidates.add(slug)
+      }
+    }
+    if (newEvents.some((e) => e.sourceType === 'live_course_complete')) {
+      for (const slug of liveCourseBadgeSlugs(countByType('live_course_complete'))) {
         badgeCandidates.add(slug)
       }
     }
@@ -2819,7 +2848,13 @@ export class InMemoryGamificationRepository implements GamificationRepository {
     const out: { courseId: string; blocks: string[] }[] = []
     for (const ce of mine.filter((e) => e.sourceType === 'course_complete')) {
       const course = this.sources?.courses.courses.find((c) => c.id === ce.sourceId)
-      if (course?.status !== 'published' || course.audience !== audience) continue
+      // Mirror do SQL: curso AO VIVO nunca libera bloco do Estúdio.
+      if (
+        course?.status !== 'published' ||
+        course.audience !== audience ||
+        course.modality !== 'recorded'
+      )
+        continue
       const bonusKids = audience === 'kids' && course.careerSlot === null
       if (!bonusKids && !showcased.has(ce.sourceId)) continue
       const raw = (course.metadata as Record<string, unknown> | null | undefined)
@@ -2851,7 +2886,9 @@ export class InMemoryGamificationRepository implements GamificationRepository {
             (item) => item.id === completed.sourceId,
           )
           const course =
-            foundCourse?.status === 'published' && foundCourse.audience === audience
+            foundCourse?.status === 'published' &&
+            foundCourse.audience === audience &&
+            foundCourse.modality === 'recorded'
               ? foundCourse
               : undefined
           if (!course) return []

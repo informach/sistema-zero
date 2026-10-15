@@ -51,6 +51,21 @@ describe('classroom reception and participation', () => {
     expect(state.canEnter).toBe(true)
     expect(state.canInteract).toBe(false)
   })
+  test('the reception opens 15 minutes early, only while the teacher keeps it open', () => {
+    const early = (state: string) =>
+      classroomState(
+        room({
+          access: { canOpen: false, canEnterLobby: true } as LiveRoomView['access'],
+          occurrence: { state, participants: [] } as unknown as LiveRoomView['occurrence'],
+        }),
+        'a',
+        false,
+        false,
+      )
+    expect(early('lobby').canEnter).toBe(true)
+    expect(early('lobby').canInteract).toBe(false)
+    expect(early('scheduled').canEnter).toBe(false)
+  })
   test('pre-release, expired and ended lessons do not reopen calls', () => {
     expect(
       classroomState(

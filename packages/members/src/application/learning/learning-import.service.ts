@@ -30,6 +30,10 @@ const BLOCK_KIND_LABELS: Readonly<Record<string, string>> = {
 
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`
 
+/** O recado do manifesto que traz vídeo planejado para uma aula de curso ao vivo. */
+export const LIVE_LESSON_PLANNED_VIDEO_MESSAGE =
+  'Aula ao vivo não tem vídeo gravado: a transmissão do encontro faz esse papel.'
+
 /** O Vimeo já escolhido para um bloco de vídeo, pela fonte do bloco ou pelo `plannedVideos`. */
 function linkedVimeoId(document: LessonDraftDocument, block: DraftBlock): string | null {
   if (block.content.kind !== 'video') return null
@@ -112,6 +116,15 @@ export class LearningImportService {
       throw new ValidationError(
         'Este manifesto pertence a outro curso ou aula. Vincule-o ao destino aberto antes de importar.',
       )
+    // Aula de curso AO VIVO (14/10/2026) não tem vídeo gravado: quem faz esse papel é a
+    // transmissão do encontro, que é da aula inteira. O `plannedVideo` (e a mídia pendente da
+    // seção, que vira um vídeo planejado) é recusado com o recado, antes de montar o rascunho.
+    if (
+      course.modality === 'live' &&
+      (manifest.blocks.some((entry) => 'plannedVideo' in entry) ||
+        manifest.sections.some((section) => section.pendingMedia.length > 0))
+    )
+      throw new ValidationError(LIVE_LESSON_PLANNED_VIDEO_MESSAGE)
     const document: LessonDraftDocument = {
       ...draft.document,
       title: manifest.title,
@@ -225,6 +238,8 @@ export class LearningImportService {
       workspaceBlockId: s.workspaceKey ? mapped(s.workspaceKey) : null,
       externalTool: s.externalTool,
       pendingMedia: [],
+      // Anotações da professora por seção (cursos ao vivo): viajam do manifesto ao rascunho.
+      ...(s.teacherNotes !== undefined ? { teacherNotes: s.teacherNotes } : {}),
       ...(s.completion
         ? { completion: { ...s.completion, blockIds: s.completion.blockIds.map(mapped) } }
         : {}),

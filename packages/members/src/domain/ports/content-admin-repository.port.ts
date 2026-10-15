@@ -1,3 +1,4 @@
+import type { CourseModality } from '@sistemazero/core/course/modality'
 import type { CourseJourneyRole } from '@sistemazero/core/journey'
 import type {
   Course,
@@ -64,6 +65,11 @@ export interface CourseFields {
   careerSlot?: number | null
   /** Ausente no PATCH preserva, salvo mudança explícita do slot. */
   journeyRole?: CourseJourneyRole
+  /**
+   * Gravado ou ao vivo (14/10/2026). `null` = "não informado": no CREATE vira `recorded`; no
+   * UPDATE **preserva a atual** (régua do `audience`). Trocar exige um curso SEM turma.
+   */
+  modality: CourseModality | null
 }
 
 export interface ModuleFields {
@@ -92,6 +98,7 @@ export interface ListCoursesAdminFilter {
   q?: string
   status?: CourseStatus
   audience?: CourseAudience
+  modality?: CourseModality
   limit: number
   offset: number
 }
@@ -104,6 +111,8 @@ export interface CloneCourseOverrides {
   slug: string
   title: string
   audience: CourseAudience
+  /** Modalidade do clone (o service resolve: ausente no pedido = a da origem). */
+  modality: CourseModality
   /** `studioUnlockBlocks` é conceito kids — clone p/ adulto não o carrega. */
   dropStudioUnlockBlocks: boolean
 }
@@ -129,7 +138,11 @@ export interface ContentAdminRepository {
    * `DuplicateSlugError`.
    */
   cloneCourseTree(sourceCourseId: string, overrides: CloneCourseOverrides): Promise<Course | null>
-  /** `UPDATE ... WHERE id = ? AND version = ?` → `false` se conflito. 23505 → DuplicateSlugError. */
+  /**
+   * `UPDATE ... WHERE id = ? AND version = ?` → `false` se conflito. 23505 → DuplicateSlugError.
+   * Trocar a `modality` de um curso que já tem turma das oficinas (`live_cohorts` com o
+   * `courseId` no documento) → `CourseModalityLockedError`, conferido sob a trava do curso.
+   */
   updateCourse(course: Course): Promise<boolean>
   deleteCourse(id: string): Promise<boolean>
   /**

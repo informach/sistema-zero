@@ -1,6 +1,6 @@
 import 'server-only'
 import { NextResponse } from 'next/server'
-import { isReadonlyImpersonation } from '../lib/act'
+import { isReadonlyImpersonation, isSupportSession } from '../lib/act'
 import { type LiveRouteScope, liveUpstreamPath } from '../lib/live-route-policy'
 import type { CallOpts, GatewayModule, GatewayResponse } from '../server/gateway'
 import { r2PresignGetPrivate } from '../server/r2'
@@ -16,7 +16,8 @@ const error = (status: number, code: string, message: string) =>
 export function createLiveRouteHandler(deps: {
   scope: LiveRouteScope
   gatewayFetch: (path: string, opts: CallOpts) => Promise<GatewayResponse>
-  session: () => Promise<{ readonly: boolean } | null>
+  /** `support`: any support/impersonation session (`act`), read-only or not. */
+  session: () => Promise<{ readonly: boolean; support?: boolean } | null>
   signAsset?: typeof r2PresignGetPrivate
 }) {
   return async (request: Request, context: { params: Promise<{ path: string[] }> }) => {
@@ -24,6 +25,8 @@ export function createLiveRouteHandler(deps: {
     if (!path) return error(404, 'NOT_FOUND', 'Este caminho não existe.')
     const user = await deps.session()
     if (!user) return error(401, 'UNAUTHORIZED', 'Entre novamente para continuar.')
+    if (request.method !== 'GET' && user.support)
+      return error(403, 'SUPPORT_SESSION', 'A sessão de suporte não pode agir na oficina ao vivo.')
     if (request.method !== 'GET' && user.readonly)
       return error(403, 'IMPERSONATION_READONLY', 'A sessão de suporte é somente leitura.')
     let body: unknown
@@ -67,6 +70,10 @@ export function createLiveRouteHandler(deps: {
     const planRevision = url.searchParams.get('planRevision')
     const sessionId = url.searchParams.get('sessionId')
     const occurrenceId = url.searchParams.get('occurrenceId')
+    // O projeto ao vivo do BLOCO Estúdio (`workspaces?sessionId=&blockId=`; a professora acompanha
+    // uma criança com `learnerId`).
+    const blockId = url.searchParams.get('blockId')
+    const learnerId = url.searchParams.get('learnerId')
     const cursor = url.searchParams.get('cursor'),
       limit = url.searchParams.get('limit')
     const query = {
@@ -81,6 +88,12 @@ export function createLiveRouteHandler(deps: {
       ...(planRevision && /^[a-f0-9]{64}$/.test(planRevision) ? { planRevision } : {}),
       ...(occurrenceId && /^[\da-f]{8}-(?:[\da-f]{4}-){3}[\da-f]{12}$/i.test(occurrenceId)
         ? { occurrenceId }
+        : {}),
+      ...(blockId && /^[\da-f]{8}-(?:[\da-f]{4}-){3}[\da-f]{12}$/i.test(blockId)
+        ? { blockId }
+        : {}),
+      ...(learnerId && /^[\da-f]{8}-(?:[\da-f]{4}-){3}[\da-f]{12}$/i.test(learnerId)
+        ? { learnerId }
         : {}),
     }
     try {
@@ -158,7 +171,9 @@ export function createLiveRoutes({
 }) {
   const resolveSession = async () => {
     const user = await session.getSession()
-    return user ? { readonly: isReadonlyImpersonation(user) } : null
+    return user
+      ? { readonly: isReadonlyImpersonation(user), support: isSupportSession(user) }
+      : null
   }
   return {
     live: createLiveRouteHandler({

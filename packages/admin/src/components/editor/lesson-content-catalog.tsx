@@ -22,19 +22,32 @@ const descriptions: Record<LessonBlockKind, string> = {
   materials: 'Reunir arquivos, imagens, links e recados num bloco só.',
 }
 
-export function LessonContentCatalog({
-  audience,
-  onSelect,
-}: {
-  audience: 'kids' | 'adult'
-  onSelect: (kind: LessonBlockKind) => void
-}) {
-  const [search, setSearch] = useState('')
+/**
+ * Os tipos que entram como conteúdo NOVO. ⚠️ No curso ao vivo o bloco de vídeo sai: a
+ * transmissão do encontro faz esse papel e é da aula inteira. Um bloco de vídeo antigo continua
+ * editável (o editor avisa); só não se cria outro.
+ */
+export function catalogKinds(audience: 'kids' | 'adult', live = false): LessonBlockKind[] {
   const preferred: LessonBlockKind[] =
     audience === 'kids'
       ? ['video', 'dialogue', 'interactive', 'studio', 'pinta']
       : ['rich_text', 'video', 'interactive', 'studio', 'pinta']
   const ordered = [...preferred, ...LESSON_BLOCK_KINDS.filter((kind) => !preferred.includes(kind))]
+  return live ? ordered.filter((kind) => kind !== 'video') : ordered
+}
+
+export function LessonContentCatalog({
+  audience,
+  live = false,
+  onSelect,
+}: {
+  audience: 'kids' | 'adult'
+  /** Curso ao vivo: sem bloco de vídeo novo. */
+  live?: boolean
+  onSelect: (kind: LessonBlockKind) => void
+}) {
+  const [search, setSearch] = useState('')
+  const ordered = catalogKinds(audience, live)
   const normalize = (s: string) =>
     s
       .normalize('NFD')
@@ -49,7 +62,7 @@ export function LessonContentCatalog({
     <div className="space-y-4">
       <Input
         aria-label="Buscar tipo de conteúdo"
-        placeholder="Buscar vídeo, Zappy, livro, quiz…"
+        placeholder={live ? 'Buscar Zappy, livro, quiz…' : 'Buscar vídeo, Zappy, livro, quiz…'}
         value={search}
         onChange={(e) => setSearch(e.target.value)}
       />
