@@ -118,11 +118,15 @@ describe.skipIf(!databaseUrl)('cursos ao vivo no PostgreSQL real', () => {
       values (${lessonId}, ${randomUUID()}, ${JSON.stringify(parts)}::jsonb)`
   }
 
-  async function block(lessonId: string, content: Record<string, unknown>, archived = false) {
+  async function block(
+    lessonId: string,
+    content: Record<string, unknown>,
+    { archived = false, sortOrder = 0 }: { archived?: boolean; sortOrder?: number } = {},
+  ) {
     const id = randomUUID()
     await connection.sql`
       insert into members.lesson_blocks (id, lesson_id, kind, sort_order, content, archived_at)
-      values (${id}, ${lessonId}, ${String(content.kind)}, 0, ${JSON.stringify(content)}::jsonb,
+      values (${id}, ${lessonId}, ${String(content.kind)}, ${sortOrder}, ${JSON.stringify(content)}::jsonb,
         ${archived ? new Date().toISOString() : null}::timestamptz)`
     return id
   }
@@ -189,8 +193,16 @@ describe.skipIf(!databaseUrl)('cursos ao vivo no PostgreSQL real', () => {
       chain: null,
       studio: {},
     })
-    const text = await block(live.lessons[0]!, { kind: 'rich_text', markdown: 'Oi' })
-    const hidden = await block(live.lessons[0]!, { kind: 'studio', initialProject: seed }, true)
+    const text = await block(
+      live.lessons[0]!,
+      { kind: 'rich_text', markdown: 'Oi' },
+      { sortOrder: 1 },
+    )
+    const hidden = await block(
+      live.lessons[0]!,
+      { kind: 'studio', initialProject: seed },
+      { archived: true },
+    )
     const draft = await block(live.draft, { kind: 'studio', initialProject: seed })
     for (const [lessonId, blockId] of [
       [live.lessons[1]!, studio],

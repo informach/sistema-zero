@@ -12,7 +12,10 @@ import {
 } from '@sistemazero/core/learning'
 import { createLessonAsset, pintaAssetToWire } from '@sistemazero/pinta/assets'
 import { eq, sql } from 'drizzle-orm'
-import { caminhoAula, PASTA_CURSOS } from '../../../../docs/aulas-interativas-tecnico/qa/caminhos'
+import {
+  caminhoAula,
+  listarArquivosAulas,
+} from '../../../../docs/aulas-interativas-tecnico/qa/caminhos'
 import { LearningImportService } from '../../src/application/learning/learning-import.service'
 import { importedLearningId } from '../../src/domain/learning/learning-import'
 import { DrizzleContentAdminRepository } from '../../src/infrastructure/persistence/drizzle/content-admin.repository'
@@ -713,9 +716,8 @@ export function lessonDraftCases(getDb: () => Database) {
       expect((await f.reader.findLessonWithContent(second.id))?.blocks).toHaveLength(0)
     })
     test('every current manifest imports into drafts; retry and reimport retain linked videos and required work', async () => {
-      const root = PASTA_CURSOS
       // A importação exercita todos os manifestos atuais, copiados do fluxo criativo.
-      const paths = [...new Bun.Glob('*.manifesto.json').scanSync(root)]
+      const paths = listarArquivosAulas().filter((path) => path.endsWith('.manifesto.json'))
       // Piso anti-vácuo: um glob que deixasse de achar as aulas reprovaria.
       expect(paths.length).toBeGreaterThanOrEqual(28)
       let plannedCount = 0
