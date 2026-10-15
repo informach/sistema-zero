@@ -2265,8 +2265,10 @@ como um projeto qualquer.
 - **O conflito com motivo chega inteiro** (`progressRefusal`): o 409 `PENSA_TASK_PROGRESS_CONFLICT`
   da jornada v2 diz o motivo em voz de criança ("Seu jogo mudou. Espere ficar guardado na conta…");
   só a frase padrão (a versão velha da página) vira a do host. Vale no Estúdio e no Pinta.
+- **A faixa "Jogos dos seus planos"** na galeria do Estúdio: `ProjectList.sections` (do pacote) com
+  os jogos `pensa-<32 hex>` e o atalho "Abrir meus planos".
 - Testes: `tests/pensa-mission-link.test.ts`, `tests/pensa-guide-errors.test.ts` (o conflito com
-  motivo).
+  motivo); a faixa no `ProjectList.test.tsx` do Estúdio.
 
 ## Pensa em equipe nas oficinas (14/10/2026)
 

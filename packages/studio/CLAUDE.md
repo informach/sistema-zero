@@ -4517,6 +4517,13 @@ Gerar com `gen:snow-descent` e conferir com `check:snow-descent`. Guia: `docs/jo
 
 ## Home "Meus Jogos" no padrão Pinta (08/2026)
 
+⭐ **Seções do host (15/10/2026):** `ProjectList.sections` (`ProjectListSection`, exportado):
+cada seção tem `key`, `title`, `description?`, `includes(project)` e `action?` (link de verdade
+com `onNavigate`). Os projetos aceitos saem da grade principal e ganham uma faixa com
+`.sz-tool-section-title`; a busca e o filtro de modo valem para todas, o contador conta tudo,
+seção vazia não aparece. O Estúdio não sabe quem cria esses jogos: o kids usa para os jogos dos
+planos do Pensa (`pensa-<32 hex>`). Sem seções, nada muda. Testes em `ProjectList.test.tsx`.
+
 ⭐⭐⭐ **11/09/2026 — o desenho das telas-modelo (a imagem "Meus Jogos" dela, medida a 1440px).**
 A lista virou TRÊS FAIXAS de borda a borda que rolam juntas (o cabeçalho deixou de ficar preso em
 cima): **creme** (`<header>`: [menu][seta "Voltar para Criar"] + h1 `sz-tool-title` + subtítulo;

@@ -406,3 +406,77 @@ describe('ProjectList — cabeçalho de duas linhas', () => {
     expect(screen.queryByRole('button', { name: t('projects.help') })).toBeNull()
   })
 })
+
+describe('ProjectList — seções do host (15/10/2026)', () => {
+  const PLANO = 'pensa-0123456789abcdef0123456789abcdef'
+
+  async function seedComPlano(): Promise<void> {
+    await seedProjects()
+    await persistProject(createEmptyProject(PLANO, 'O voo do dragão'))
+  }
+
+  const secaoDoPlano = (onNavigate = mock()) => [
+    {
+      key: 'pensa',
+      title: 'Jogos dos seus planos',
+      description: 'Cada um nasceu de um plano do Pensa.',
+      includes: (project: { id: string }) => project.id.startsWith('pensa-'),
+      action: { label: 'Abrir meus planos', href: '/pensa', onNavigate },
+    },
+  ]
+
+  it('o jogo do plano sai da grade principal e ganha a faixa própria, com título e frase', async () => {
+    await seedComPlano()
+    render(<ProjectList onOpenProject={() => {}} theme="light" sections={secaoDoPlano()} />)
+    const secao = await screen.findByRole('region', { name: 'Jogos dos seus planos' })
+    expect(within(secao).getByText('Cada um nasceu de um plano do Pensa.')).toBeTruthy()
+    const daSecao = within(secao)
+      .getAllByRole('button', { name: /^Abrir projeto / })
+      .map((b) => b.getAttribute('aria-label'))
+    expect(daSecao).toEqual([expect.stringContaining('O voo do dragão')])
+    // Os quatro seguem na galeria (o contador conta tudo), e só o do plano está na faixa.
+    expect(cardNames()).toHaveLength(4)
+    const principal = cardNames().filter((nome) => !nome.includes('O voo do dragão'))
+    expect(principal).toHaveLength(3)
+  })
+
+  it('a busca vale para as seções: casa só o do plano, a grade principal some; casa outro, a faixa some', async () => {
+    await seedComPlano()
+    render(<ProjectList onOpenProject={() => {}} theme="light" sections={secaoDoPlano()} />)
+    await screen.findByRole('region', { name: 'Jogos dos seus planos' })
+    const search = screen.getByLabelText(t('projects.search')) as HTMLInputElement
+    fireEvent.change(search, { target: { value: 'dragao' } })
+    await waitFor(() => {
+      expect(cardNames()).toEqual([expect.stringContaining('O voo do dragão')])
+    })
+    expect(screen.getByRole('region', { name: 'Jogos dos seus planos' })).toBeTruthy()
+    fireEvent.change(search, { target: { value: 'nave' } })
+    await waitFor(() => {
+      expect(cardNames()).toEqual([expect.stringContaining('Nave Espacial')])
+    })
+    expect(screen.queryByRole('region', { name: 'Jogos dos seus planos' })).toBeNull()
+  })
+
+  it('o atalho da faixa é um link: clique simples navega pelo host, Ctrl fica com o navegador', async () => {
+    await seedComPlano()
+    const onNavigate = mock()
+    render(
+      <ProjectList onOpenProject={() => {}} theme="light" sections={secaoDoPlano(onNavigate)} />,
+    )
+    const link = await screen.findByRole('link', { name: 'Abrir meus planos' })
+    expect(link.getAttribute('href')).toBe('/pensa')
+    fireEvent.click(link, { ctrlKey: true })
+    expect(onNavigate).not.toHaveBeenCalled()
+    fireEvent.click(link)
+    expect(onNavigate).toHaveBeenCalledTimes(1)
+  })
+
+  it('sem seções, o jogo do plano fica na grade de sempre (nada muda para quem não pede)', async () => {
+    await seedComPlano()
+    render(<ProjectList onOpenProject={() => {}} theme="light" />)
+    await waitFor(() => {
+      expect(cardNames()).toHaveLength(4)
+    })
+    expect(screen.queryByRole('region', { name: 'Jogos dos seus planos' })).toBeNull()
+  })
+})

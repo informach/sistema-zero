@@ -429,6 +429,27 @@ export function StudioFullClient({
     viewerId,
   ])
 
+  // Os jogos dos planos do Pensa (`pensa-<32 hex>`) numa faixa própria da galeria (15/10/2026):
+  // no meio dos jogos livres eles pareciam um projeto qualquer, sem dizer de onde vieram nem que
+  // as missões seguem pelo plano.
+  const projectSections = useMemo(
+    () => [
+      {
+        key: 'pensa',
+        title: 'Jogos dos seus planos',
+        description:
+          'Cada jogo aqui nasceu de um plano do Pensa. Para seguir as missões, abra pelo plano.',
+        includes: (project: { id: string }) => pensaPlanIdFromStudioProjectId(project.id) !== null,
+        action: {
+          label: 'Abrir meus planos',
+          href: '/pensa',
+          onNavigate: () => router.push('/pensa'),
+        },
+      },
+    ],
+    [router],
+  )
+
   const recreateMissingTaskProject = useCallback(async () => {
     if (!mod || !missingTaskProject) return
     setTaskError(null)
@@ -1064,6 +1085,7 @@ export function StudioFullClient({
               initialExtensions={tier.initialExtensions}
               allowedExtensions={tier.allowedExtensions}
               showExamples={showExamples}
+              sections={projectSections}
             />
           ) : (
             <StudioFullEditor
