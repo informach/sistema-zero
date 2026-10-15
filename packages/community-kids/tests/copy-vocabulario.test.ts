@@ -155,6 +155,11 @@ const FORA_DA_VARREDURA: ForaDaVarredura[] = [
       'mensagens de AUTORIA de seção (só o Admin mostra) e o item `locked` ("Conclua a seção anterior"), que o Kids troca pelo `kind`',
   },
   {
+    caminho: 'core/src/course/modality.ts',
+    motivo:
+      'a modalidade do curso (gravado ou ao vivo) e as mensagens de AUTORIA da aula ao vivo (`liveLessonCompletionIssues`), que só o editor do Admin mostra à professora',
+  },
+  {
     caminho: 'studio/src/examples/',
     motivo:
       'a galeria de exemplos só abre para a equipe (`showExamples`) e o Zappy lê o índice sem citar o exemplo; o texto de dentro é do JOGO',

@@ -16,7 +16,7 @@ test('ao vivo recusa entrega e nota no Estúdio, incluindo propósito antigo aus
 })
 test('envio em dia incompatível é localizado na seção; objetivos continuam permitidos', () => {
   const section = {
-    ...defaultLessonSection('s'),
+    ...defaultLessonSection('s', 'Parte', ['b']),
     workspaceBlockId: 'b',
     blockIds: ['b'],
     completion: { version: 1 as const, blockIds: [], submissionUpToDate: true as const },
