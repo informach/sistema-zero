@@ -113,23 +113,65 @@
     align-items: center;
     gap: 4px;
   }
+  .mld-workshop-file-actions {
+    gap: 8px;
+  }
   .mld-workshop-project h1 {
-    max-width: 150px;
+    max-width: 200px;
+  }
+  @media (max-width: 1399px) {
+    .mld-workshop-project h1 {
+      max-width: 150px;
+    }
   }
   .mld-workshop-file-actions {
     justify-content: end;
   }
+  /* O selo do salvamento: a pílula menta do "Salvo" do Pinta; neutra enquanto grava e vermelha
+     no erro. É o `<summary>` do menu de salvar: o pseudo-elemento estica o ALVO até a altura
+     dos controles da barra sem engordar a pílula. */
   .mld-save-status {
-    display: flex;
+    position: relative;
+    display: inline-flex;
     align-items: center;
-    gap: 4px;
-    min-height: 44px;
-    padding: 0 8px;
-    border-radius: 12px;
+    gap: 6px;
+    min-height: 30px;
+    margin-inline: 4px;
+    padding: 0 12px;
+    border: 1px solid transparent;
+    border-radius: 9999px;
+    background: var(--color-mld-bg);
+    color: var(--color-mld-muted);
     font-size: 13px;
-    color: var(--sz-tool-ok, #26745d);
+    font-weight: 800;
+    white-space: nowrap;
     cursor: pointer;
     list-style: none;
+  }
+  .mld-save-status::-webkit-details-marker {
+    display: none;
+  }
+  .mld-save-status::after {
+    position: absolute;
+    inset: -6px -4px;
+    content: "";
+  }
+  .mld-save-status[data-state="saved"] {
+    border-color: color-mix(in oklab, var(--sz-tool-ok, #26745d) 30%, transparent);
+    background: var(--sz-tool-ok-tint, #e6f8ec);
+    color: var(--sz-tool-ok, #26745d);
+  }
+  .mld-save-status[data-state="pose"] {
+    background: color-mix(in oklab, var(--color-mld-warn) 14%, var(--color-mld-surface));
+    color: color-mix(in oklab, var(--color-mld-warn) 70%, var(--color-mld-text));
+  }
+  .mld-save-status[data-state="error"] {
+    background: color-mix(in oklab, var(--color-mld-danger) 10%, var(--color-mld-surface));
+    color: var(--color-mld-danger);
+  }
+  .mld-save-status:focus-visible {
+    outline: 2px solid var(--color-mld-accent);
+    outline-offset: 2px;
   }
   .mld-menu-action {
     display: flex;
@@ -152,83 +194,477 @@
   .mld-workshop-rail {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 14px;
     flex: 0 0 var(--mld-rail-width);
     width: var(--mld-rail-width);
     min-height: 0;
-    padding: 8px;
+    padding: 10px 8px 12px;
     overflow-x: hidden;
     overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-mld-border) transparent;
     border-right: 1px solid var(--color-mld-border);
   }
   .mld-workshop-rail .mld-tile {
-    min-height: 60px;
+    min-height: 58px;
     width: 100%;
     font-size: 12px;
   }
-  .mld-workshop-rail summary {
-    padding: 4px;
-    font-size: 12px;
+  /* "Mais ferramentas" e "Mais pincéis": o resumo é um ladrilho quieto com a seta embaixo, e o
+     conteúdo aberto ganha o fio da linha à esquerda, como um galho. */
+  .mld-rail-more {
+    border-radius: 12px;
+  }
+  .mld-rail-more > summary {
+    display: flex;
+    min-height: 44px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 6px 4px;
+    border: 1px dashed var(--color-mld-border);
+    border-radius: 12px;
+    color: var(--color-mld-muted);
+    font-size: 11.5px;
+    font-weight: 800;
+    line-height: 1.15;
+    text-align: center;
+    cursor: pointer;
+    list-style: none;
+    transition:
+      background-color 0.12s ease,
+      color 0.12s ease;
+  }
+  .mld-rail-more > summary::-webkit-details-marker {
+    display: none;
+  }
+  .mld-rail-more > summary:hover {
+    background: var(--color-mld-bg);
+    color: var(--color-mld-text);
+  }
+  .mld-rail-more > summary:focus-visible {
+    outline: 2px solid var(--color-mld-accent);
+    outline-offset: 2px;
+  }
+  .mld-rail-more > summary svg {
+    width: 14px;
+    height: 14px;
+    transition: transform 0.15s ease;
+  }
+  .mld-rail-more[open] > summary {
+    border-style: solid;
+    background: var(--color-mld-bg);
+    color: var(--color-mld-text);
+  }
+  .mld-rail-more[open] > summary svg {
+    transform: rotate(180deg);
+  }
+  .mld-rail-more > :not(summary) {
+    margin-top: 6px;
+  }
+  /* "Ferramentas que vêm por aí" no trilho estreito: o resumo centrado e miúdo, quebrando
+     entre palavras (antes cortava "Ferramenta / s que vêm po / r aí"). */
+  .mld-workshop-rail .mld-upcoming > summary {
+    justify-content: center;
+    padding: 6px 4px;
+    font-size: 11px;
+    line-height: 1.2;
+    text-align: center;
+    overflow-wrap: normal;
+    hyphens: auto;
+  }
+  .mld-workshop-rail .mld-upcoming > div {
+    padding-inline: 6px;
+    font-size: 11.5px;
+  }
+  .mld-workshop-rail .mld-upcoming ul {
+    padding-left: 0;
+    list-style: none;
+  }
+  /* A espessura do traço: três bolinhas num segmentado, como no trilho do Pinta. */
+  .mld-width-seg {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 2px;
+    padding: 3px;
+    border-radius: 12px;
+    background: var(--color-mld-bg);
+  }
+  .mld-width-seg > button {
+    display: grid;
+    min-height: 38px;
+    place-items: center;
+    border-radius: 9px;
+    color: var(--color-mld-text);
+    transition: background-color 0.12s ease;
+  }
+  .mld-width-seg > button:hover:not(:disabled):not([aria-pressed="true"]) {
+    background: color-mix(in oklab, var(--color-mld-bg) 85%, var(--color-mld-text));
+  }
+  .mld-width-seg > button[aria-pressed="true"] {
+    background: var(--color-mld-surface);
+    color: var(--color-mld-accent);
+    box-shadow: 0 0 0 2px var(--color-mld-accent);
+  }
+  .mld-width-seg > button:focus-visible {
+    outline: 2px solid var(--color-mld-accent);
+    outline-offset: 2px;
+  }
+  .mld-width-seg > button > span {
+    display: block;
+    border-radius: 9999px;
+    background: currentColor;
   }
   .mld-workshop-inspector {
     width: var(--mld-inspector-width);
     min-height: 0;
   }
+  /* O PALCO é uma superfície só: a faixa das ferramentas de olhar, o 3D e a faixa da dica
+     dividem o mesmo fundo (antes as faixas eram chapadas e o 3D tinha o clarão: três camadas). */
+  .mld-workshop-stage {
+    position: relative;
+    background: var(--mld-stage-bg);
+  }
   .mld-stage-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    height: 56px;
+    flex-shrink: 0;
+    padding: 8px 12px 0;
+    z-index: 25;
+  }
+  /* Os grupos de botões que flutuam no palco: um cartão branco com a sombra curta. */
+  .mld-float {
     display: flex;
     align-items: center;
     gap: 4px;
     min-width: 0;
-    height: 48px;
-    flex-shrink: 0;
-    padding: 2px 8px;
-    z-index: 25;
+    padding: 4px;
+    border: 1px solid var(--sz-tool-card-edge, transparent);
+    border-radius: 16px;
+    background: var(--color-mld-surface);
+    box-shadow: var(--mld-float-shadow);
+  }
+  .mld-float:empty {
+    display: none;
+  }
+  .mld-float .sz-tool-pill {
+    min-height: 36px;
+    padding-inline: 12px;
+    font-size: 13px;
+  }
+  .mld-float .sz-tool-pill--outline {
+    border-color: transparent;
+    background: transparent;
+  }
+  .mld-float .sz-tool-pill--outline:hover:not(:disabled) {
     background: var(--color-mld-bg);
+  }
+  .mld-float .mld-toggle[aria-pressed="true"],
+  .mld-float .mld-look[aria-pressed="true"] {
+    border-color: transparent;
+    background: color-mix(in oklab, var(--color-mld-accent) 12%, var(--color-mld-surface));
+    color: var(--color-mld-accent);
   }
   .mld-stage-context {
     display: flex;
     min-width: 0;
     align-items: center;
-    height: 48px;
+    justify-content: center;
+    height: 56px;
     flex-shrink: 0;
+    padding: 0 12px 8px;
     overflow: auto;
-    background: var(--color-mld-bg);
   }
+  /* A DICA do momento: a pílula escura do pé do palco (a âncora navy da casa), com a lâmpada
+     amarela. Os botões e caixas que moram nela herdam o tema escuro por `data-molda-theme`. */
   .mld-stage-context .mld-stage-card {
-    box-shadow: none;
-    border: 0;
-    padding: 2px 8px;
+    min-height: 40px;
+    padding: 4px 16px;
+    border-radius: 9999px;
+    box-shadow: var(--mld-float-shadow);
   }
   .mld-stage-context p {
     font-size: 13px;
   }
-  .mld-workshop-stage {
-    position: relative;
+  .mld-hint-bulb {
+    flex: none;
+    width: 16px;
+    height: 16px;
+    color: var(--sz-tool-new, #ffce3a);
   }
   .mld-placement-notice {
     position: absolute;
-    bottom: 48px;
-    left: 8px;
-    right: 8px;
+    bottom: 64px;
+    left: 50%;
     z-index: 25;
     display: flex;
+    max-width: calc(100% - 24px);
     align-items: center;
-    justify-content: space-between;
-    padding: 8px;
+    gap: 12px;
+    padding: 6px 6px 6px 16px;
+    transform: translateX(-50%);
+    border-radius: 9999px;
     background: var(--color-mld-surface);
-    border-radius: 12px;
+    box-shadow: var(--mld-float-shadow);
     font-size: 14px;
+    font-weight: 700;
+  }
+  /* O zoom: um cartão só, com os dois botões e o fio entre eles. */
+  .mld-zoom {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--sz-tool-card-edge, transparent);
+    border-radius: 14px;
+    background: var(--color-mld-surface);
+    box-shadow: var(--mld-float-shadow);
+  }
+  .mld-zoom > button {
+    display: grid;
+    width: var(--sz-tool-hit, 2.5rem);
+    height: var(--sz-tool-hit, 2.5rem);
+    place-items: center;
+    color: var(--color-mld-text);
+    transition: background-color 0.12s ease;
+  }
+  .mld-zoom > button + button {
+    border-top: 1px solid var(--color-mld-border);
+  }
+  .mld-zoom > button:hover:not(:disabled) {
+    background: var(--color-mld-bg);
+  }
+  .mld-zoom > button:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+  .mld-zoom > button:focus-visible {
+    outline: 2px solid var(--color-mld-accent);
+    outline-offset: -3px;
+  }
+  .mld-zoom svg {
+    width: 18px;
+    height: 18px;
+  }
+  /* A legenda dos eixos, no pé do palco: a mesma cor das alças e dos selos do painel. */
+  .mld-axis-legend {
+    position: absolute;
+    left: 64px;
+    bottom: 14px;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 12px;
+    border-radius: 12px;
+    background: color-mix(in oklab, var(--color-mld-surface) 88%, transparent);
+    box-shadow: var(--mld-float-shadow);
+    color: var(--color-mld-text);
+    font-size: 12px;
+    font-weight: 700;
+    pointer-events: none;
+  }
+  .mld-axis-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .mld-axis {
+    display: inline-grid;
+    flex: none;
+    width: 20px;
+    height: 20px;
+    place-items: center;
+    border-radius: 6px;
+    color: oklch(1 0 0);
+    font-size: 11px;
+    font-weight: 900;
+    line-height: 1;
+  }
+  .mld-axis[data-axis="x"] {
+    background: var(--mld-axis-x);
+  }
+  .mld-axis[data-axis="y"] {
+    background: var(--mld-axis-y);
+  }
+  .mld-axis[data-axis="z"] {
+    background: var(--mld-axis-z);
+  }
+  @media (max-width: 1279px) {
+    .mld-axis-legend {
+      display: none;
+    }
   }
   .mld-tree-action {
     display: grid;
+    flex: none;
     place-items: center;
-    min-width: 44px;
-    min-height: 44px;
+    width: 32px;
+    min-height: 40px;
     border-radius: 8px;
     color: var(--color-mld-muted);
   }
   .mld-tree-action:hover {
     background: var(--color-mld-bg);
+    color: var(--color-mld-text);
+  }
+  .mld-tree-action[aria-pressed="true"] {
+    color: var(--color-mld-text);
+  }
+  .mld-tree-action:focus-visible {
+    outline: 2px solid var(--color-mld-accent);
+    outline-offset: -2px;
+  }
+  @media (any-pointer: coarse) {
+    .mld-tree-action {
+      width: 44px;
+      min-height: 44px;
+    }
+  }
+  /* O `<details>` do painel (medidas, mais sobre a peça, mais ajustes): uma linha com a seta,
+     sem o bloco cinza que parecia botão desligado. */
+  .mld-disclosure {
+    border-top: 1px solid var(--color-mld-border);
+  }
+  .mld-disclosure > summary {
+    display: flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding-inline: 2px;
+    color: var(--color-mld-text);
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    list-style: none;
+  }
+  .mld-disclosure > summary::-webkit-details-marker {
+    display: none;
+  }
+  .mld-disclosure > summary::after {
+    flex: none;
+    width: 8px;
+    height: 8px;
+    margin-right: 6px;
+    border-right: 2px solid var(--color-mld-muted);
+    border-bottom: 2px solid var(--color-mld-muted);
+    transform: rotate(45deg) translateY(-2px);
+    transition: transform 0.15s ease;
+    content: "";
+  }
+  .mld-disclosure[open] > summary::after {
+    transform: rotate(-135deg) translateY(-2px);
+  }
+  .mld-disclosure > summary:hover {
+    color: var(--color-mld-accent);
+  }
+  .mld-disclosure > summary:focus-visible {
+    outline: 2px solid var(--color-mld-accent);
+    outline-offset: 2px;
+    border-radius: 8px;
+  }
+  .mld-disclosure[open] {
+    padding-bottom: 8px;
+  }
+  /* A régua do tempo: trilho fino, o andado no acento e a bolinha com o anel branco. */
+  .mld-scrubber {
+    width: 100%;
+    height: 28px;
+    margin: 0;
+    background: transparent;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  .mld-scrubber::-webkit-slider-runnable-track {
+    height: 4px;
+    border-radius: 9999px;
+    background: linear-gradient(
+      to right,
+      var(--color-mld-accent) var(--mld-progress, 0%),
+      var(--color-mld-border) var(--mld-progress, 0%)
+    );
+  }
+  .mld-scrubber::-moz-range-track {
+    height: 4px;
+    border-radius: 9999px;
+    background: var(--color-mld-border);
+  }
+  .mld-scrubber::-moz-range-progress {
+    height: 4px;
+    border-radius: 9999px;
+    background: var(--color-mld-accent);
+  }
+  .mld-scrubber::-webkit-slider-thumb {
+    width: 18px;
+    height: 18px;
+    margin-top: -7px;
+    border: 3px solid var(--color-mld-surface);
+    border-radius: 9999px;
+    background: var(--color-mld-accent);
+    box-shadow: 0 1px 4px color-mix(in oklab, var(--color-mld-text) 35%, transparent);
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  .mld-scrubber::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    border: 3px solid var(--color-mld-surface);
+    border-radius: 9999px;
+    background: var(--color-mld-accent);
+    box-shadow: 0 1px 4px color-mix(in oklab, var(--color-mld-text) 35%, transparent);
+  }
+  .mld-scrubber:focus-visible {
+    outline: 2px solid var(--color-mld-accent);
+    outline-offset: 2px;
+    border-radius: 8px;
+  }
+  /* O transporte da linha do tempo: botões quietos e o Reproduzir redondo no acento. */
+  .mld-transport-btn {
+    display: inline-grid;
+    flex: none;
+    width: var(--sz-tool-hit, 2.5rem);
+    height: var(--sz-tool-hit, 2.5rem);
+    place-items: center;
+    border-radius: 12px;
+    color: var(--color-mld-text);
+    transition: background-color 0.12s ease;
+  }
+  .mld-transport-btn:hover:not(:disabled) {
+    background: var(--color-mld-bg);
+  }
+  .mld-transport-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+  }
+  .mld-transport-btn:focus-visible {
+    outline: 2px solid var(--color-mld-accent);
+    outline-offset: 2px;
+  }
+  .mld-transport-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+  .mld-transport-btn[data-play] {
+    border-radius: 9999px;
+    background: var(--color-mld-accent);
+    color: var(--color-mld-accent-fg);
+  }
+  .mld-transport-btn[data-play]:hover:not(:disabled) {
+    background: color-mix(in oklab, var(--color-mld-accent) 88%, var(--color-mld-text));
+  }
+  .mld-transport-btn[data-play] svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
   }
   @media (max-width: 1399px) {
     [data-molda-theme].mld-workshop {
@@ -236,8 +672,31 @@
       --mld-inspector-width: 296px;
       --mld-timeline-height: 160px;
     }
+  }
+  /* Sem espaço ao lado das abas, o selo e o "Trazer arquivo 3D" ficam só com o ícone; o nome
+     segue no `title` e no texto escondido. */
+  @media (max-width: 1279px) {
     .mld-save-short {
       display: none;
+    }
+    .mld-save-status {
+      padding-inline: 9px;
+    }
+    .mld-bar-label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+    /* Só o ícone: o mesmo quadrado quieto da ajuda, ao lado dela. */
+    .mld-workshop-file-actions .sz-tool-pill:has(.mld-bar-label) {
+      width: var(--sz-tool-hit, 2.5rem);
+      padding-inline: 0;
+      border-color: transparent;
+      border-radius: var(--sz-tool-radius-control, 0.75rem);
+      background: var(--sz-tool-quiet);
     }
   }
   @media (max-width: 1100px) {
@@ -269,7 +728,7 @@
       justify-self: center;
     }
   }
-  @media (max-width: 899px) {
+  @media (max-width: 767px) {
     .mld-workshop-header {
       grid-template-columns: minmax(0, 1fr);
       grid-template-areas: "project" "tabs" "files";
@@ -281,20 +740,50 @@
   @media (max-width: 599px) {
     .mld-stage-toolbar {
       height: auto;
-      min-height: 48px;
+      min-height: 52px;
+      padding-inline: 8px;
       flex-wrap: wrap;
     }
     .mld-workshop-rail {
-      --mld-rail-width: 76px;
+      --mld-rail-width: 80px;
+      padding-inline: 6px;
+    }
+    .mld-workshop-rail .mld-tile {
+      font-size: 10.5px;
+      overflow-wrap: normal;
+    }
+    .mld-workshop-tabs,
+    .mld-workshop-tabs .mld-seg {
+      width: 100%;
+    }
+    .mld-workshop-tabs .mld-seg > button {
+      flex: 1 1 0;
+      justify-content: center;
+      padding-inline: 8px;
+    }
+    /* No celular em pé os grupos do palco ficam só com os ícones (o nome segue escondido). */
+    .mld-float-label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+    .mld-stage-context .mld-stage-card {
+      border-radius: 16px;
     }
   }
-  /* Browser zoom can make a desktop layout narrower than the normal 1024px target. */
+  /* Browser zoom can make a desktop layout narrower than the normal 1024px target. O painel
+     ocupa o que sobra abaixo do palco (antes, 420px fixos: num tablet em pé sobrava um vazio
+     embaixo enquanto o painel cortava o "Colocar no chão"). */
   @media (max-width: 899px) {
     .mld-workshop-body .mld-workshop-inspector {
-      flex: none;
+      flex: 1 0 420px;
       width: 100%;
-      height: 420px;
+      min-height: 420px;
       border-top: 1px solid var(--color-mld-border);
+      border-left: 0;
     }
   }
 }
@@ -540,8 +1029,29 @@
   --mld-fill-special: var(--sz-kids-roxo, #8b5cf6);
   --mld-fill-group: var(--sz-kids-tinta-suave, #5c6b85);
   --mld-stage-shadow: 0 10px 28px -14px color-mix(in oklab, var(--color-mld-text) 45%, transparent);
+  /* A sombra dos controles que FLUTUAM no palco (vista, zoom): mais curta que a do cartão. */
+  --mld-float-shadow:
+    0 1px 2px color-mix(in oklab, var(--color-mld-text) 10%, transparent),
+    0 6px 16px -8px color-mix(in oklab, var(--color-mld-text) 30%, transparent);
+  /* Os EIXOS (15/10/2026): a mesma cor nas alças do palco, nos selos do painel e na legenda.
+     São FUNDOS com a letra branca por cima (≥ 4,5:1), então não seguem o tema. */
+  --mld-axis-x: oklch(0.56 0.19 25);
+  --mld-axis-y: oklch(0.54 0.14 152);
+  --mld-axis-z: oklch(0.53 0.19 262);
+  /* O palco: o céu diluído com um clarão no alto, do topo das ferramentas ao pé da dica. */
+  --mld-stage-bg: radial-gradient(
+    120% 90% at 50% 18%,
+    color-mix(in oklab, var(--color-mld-surface) 72%, var(--color-mld-bg)),
+    var(--color-mld-bg) 70%
+  );
 }
 [data-molda-theme="dark"] {
+  --mld-float-shadow: 0 1px 2px oklch(0 0 0 / 0.4), 0 6px 16px -8px oklch(0 0 0 / 0.7);
+  --mld-stage-bg: radial-gradient(
+    120% 90% at 50% 18%,
+    color-mix(in oklab, var(--color-mld-surface) 55%, var(--color-mld-bg)),
+    var(--color-mld-bg) 70%
+  );
   --mld-shape-box: var(--sz-kids-azul-vivo, oklch(0.72 0.13 245));
   --mld-shape-wedge: var(--sz-kids-rosa-viva, oklch(0.75 0.16 356));
   --mld-shape-cylinder: var(--sz-kids-laranja-viva, oklch(0.8 0.15 70));
@@ -571,13 +1081,32 @@
     color: var(--color-mld-muted);
   }
 
-  /* O SEGMENTADO das abas: trilho claro e a aba escolhida em pílula azul cheia. */
+  /* No trilho, o rótulo de seção é o mesmo caixa-alta do painel (o "PRÉVIA" do Pinta), só
+     mais miúdo para caber nos 88–104px. */
   [data-molda-theme] .mld-workshop-rail .mld-kicker {
+    padding-inline: 4px;
     font-size: 10px;
-    letter-spacing: 0;
-    text-transform: none;
+    letter-spacing: 0.05em;
     overflow-wrap: normal;
+    white-space: nowrap;
   }
+  /* "FERRAMENTAS" precisa caber inteiro no trilho de 88–96px e no de 80px do celular. */
+  @media (max-width: 1399px) {
+    [data-molda-theme] .mld-workshop-rail .mld-kicker {
+      padding-inline: 2px;
+      font-size: 9.5px;
+      letter-spacing: 0.02em;
+    }
+  }
+  @media (max-width: 599px) {
+    [data-molda-theme] .mld-workshop-rail .mld-kicker {
+      padding-inline: 0;
+      font-size: 8.5px;
+      letter-spacing: 0;
+    }
+  }
+
+  /* O SEGMENTADO das abas: trilho claro e a aba escolhida em pílula azul cheia. */
   [data-molda-theme] .mld-seg {
     display: inline-flex;
     flex: none;
@@ -629,10 +1158,13 @@
     justify-content: center;
     gap: 0.3125rem;
     min-height: 3.5rem;
+    position: relative;
     padding: 0.5rem 0.25rem;
-    border: 1px solid var(--sz-tool-card-edge, transparent);
+    border: 1px solid transparent;
     border-radius: 0.75rem;
-    background: var(--color-mld-bg);
+    /* Quieto em repouso: só a escolhida ganha o acento cheio (antes a coluna era uma pilha de
+       blocos cinza, e a escolhida competia com eles). */
+    background: transparent;
     color: var(--color-mld-text);
     font-size: 0.75rem;
     font-weight: 800;
@@ -653,11 +1185,56 @@
     color: var(--mld-tile-ink, currentColor);
   }
   [data-molda-theme] .mld-tile:hover:not(:disabled):not([aria-pressed="true"]) {
-    background: color-mix(in oklab, var(--color-mld-bg) 88%, var(--color-mld-text));
+    background: var(--color-mld-bg);
   }
   [data-molda-theme] .mld-tile[aria-pressed="true"] {
     background: var(--color-mld-accent);
     color: var(--color-mld-accent-fg);
+    box-shadow: 0 6px 14px -8px color-mix(in oklab, var(--color-mld-accent) 80%, transparent);
+  }
+  /* O ladrilho TINGIDO das formas ("Adicionar"): o fundo claro na cor da forma, como as peças
+     prontas das telas-modelo. */
+  [data-molda-theme] .mld-tile[data-tint] {
+    border-color: color-mix(in oklab, var(--mld-tile-ink) 18%, transparent);
+    background: color-mix(in oklab, var(--mld-tile-ink) 10%, var(--color-mld-surface));
+  }
+  [data-molda-theme] .mld-tile[data-tint]:hover:not(:disabled) {
+    background: color-mix(in oklab, var(--mld-tile-ink) 18%, var(--color-mld-surface));
+  }
+  [data-molda-theme] .mld-tile[data-tint] > span {
+    color: color-mix(in oklab, var(--mld-tile-ink) 55%, var(--color-mld-text));
+  }
+  /* O ladrilho de LIGAR (Espelhar): ligado, o roxo da assinatura do Molda em tinta clara. */
+  [data-molda-theme] .mld-tile[data-toggle][aria-pressed="true"] {
+    background: color-mix(in oklab, var(--mld-shape-special) 14%, var(--color-mld-surface));
+    color: var(--mld-shape-special);
+    box-shadow: inset 0 0 0 2px var(--mld-shape-special);
+  }
+  /* A tecla do atalho, no canto do ladrilho (só com mouse: no toque não há teclado). */
+  [data-molda-theme] .mld-tile-key {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    display: none;
+    min-width: 16px;
+    height: 16px;
+    padding-inline: 3px;
+    border-radius: 5px;
+    background: color-mix(in oklab, var(--color-mld-text) 8%, transparent);
+    color: var(--color-mld-muted);
+    font-size: 9.5px;
+    font-weight: 800;
+    line-height: 16px;
+    text-align: center;
+  }
+  [data-molda-theme] .mld-tile[aria-pressed="true"] .mld-tile-key {
+    background: color-mix(in oklab, var(--color-mld-accent-fg) 22%, transparent);
+    color: var(--color-mld-accent-fg);
+  }
+  @media (hover: hover) and (pointer: fine) and (min-width: 1101px) {
+    [data-molda-theme] .mld-tile-key {
+      display: block;
+    }
   }
   [data-molda-theme] .mld-tile[aria-pressed="true"] > svg {
     color: inherit;
@@ -711,17 +1288,133 @@
     box-shadow: var(--mld-stage-shadow);
   }
 
-  /* Uma linha da lista de peças: cartão claro; a escolhida ganha o contorno azul. */
+  /* Uma linha da lista de peças (15/10/2026, a árvore das telas-modelo): linha baixa e quieta,
+     o ícone na cor da forma e o nome; a escolhida ganha o fundo tingido e o contorno azul. O
+     cartão alto de antes (ladrilho cheio + "Peça" embaixo) fazia uma lista de 6 peças rolar. */
   [data-molda-theme] .mld-piece {
-    border: 2px solid transparent;
-    border-radius: 0.875rem;
-    background: var(--color-mld-bg);
+    display: flex;
+    min-width: 0;
+    min-height: 40px;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 10px;
+    border: 1.5px solid transparent;
+    border-radius: 12px;
+    background: transparent;
+    color: var(--color-mld-text);
+    font-size: 14px;
+    font-weight: 700;
+    text-align: left;
+    transition:
+      background-color 0.12s ease,
+      border-color 0.12s ease;
   }
   [data-molda-theme] .mld-piece:hover:not([aria-pressed="true"]) {
-    border-color: var(--color-mld-border);
+    background: var(--color-mld-bg);
   }
   [data-molda-theme] .mld-piece[aria-pressed="true"] {
     border-color: var(--color-mld-accent);
-    background: var(--color-mld-surface);
+    background: color-mix(in oklab, var(--color-mld-accent) 9%, var(--color-mld-surface));
+    color: var(--color-mld-accent);
   }
+  [data-molda-theme] .mld-piece:focus-visible {
+    outline: 2px solid var(--color-mld-accent);
+    outline-offset: 2px;
+  }
+  @media (any-pointer: coarse) {
+    [data-molda-theme] .mld-piece {
+      min-height: 44px;
+    }
+  }
+  /* O selo do tipo ao lado do nome ("Caixa", "Grupo"): pílula clara na cor da forma. */
+  [data-molda-theme] .mld-kind-chip {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    height: 22px;
+    padding-inline: 8px;
+    border-radius: 9999px;
+    background: color-mix(
+      in oklab,
+      var(--mld-chip, var(--color-mld-accent)) 13%,
+      var(--color-mld-surface)
+    );
+    color: color-mix(in oklab, var(--mld-chip, var(--color-mld-accent)) 70%, var(--color-mld-text));
+    font-size: 11.5px;
+    font-weight: 800;
+  }
+  /* As ações com nome do cartão da peça ("Duplicar", "Apagar"): pequenas, claras. */
+  [data-molda-theme] .mld-chip-btn {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: 6px;
+    min-height: 36px;
+    padding-inline: 10px;
+    border-radius: 10px;
+    background: var(--color-mld-bg);
+    color: var(--color-mld-text);
+    font-size: 13px;
+    font-weight: 800;
+    transition: background-color 0.12s ease;
+  }
+  [data-molda-theme] .mld-chip-btn:hover:not(:disabled) {
+    background: color-mix(in oklab, var(--color-mld-bg) 85%, var(--color-mld-text));
+  }
+  [data-molda-theme] .mld-chip-btn[data-danger] {
+    background: color-mix(in oklab, var(--color-mld-danger) 9%, var(--color-mld-surface));
+    color: var(--color-mld-danger);
+  }
+  [data-molda-theme] .mld-chip-btn[data-danger]:hover:not(:disabled) {
+    background: color-mix(in oklab, var(--color-mld-danger) 16%, var(--color-mld-surface));
+  }
+  [data-molda-theme] .mld-chip-btn:focus-visible {
+    outline: 2px solid var(--color-mld-accent);
+    outline-offset: 2px;
+  }
+  [data-molda-theme] .mld-chip-btn svg {
+    width: 15px;
+    height: 15px;
+  }
+  @media (any-pointer: coarse) {
+    [data-molda-theme] .mld-chip-btn {
+      min-height: 44px;
+    }
+  }
+  /* O passo por clique (− / +) de cada eixo. */
+  [data-molda-theme] .mld-step {
+    display: grid;
+    width: var(--sz-tool-hit, 2.5rem);
+    height: var(--sz-tool-hit, 2.5rem);
+    place-items: center;
+    border: 1px solid var(--color-mld-border);
+    border-radius: 12px;
+    background: var(--color-mld-surface);
+    color: var(--color-mld-text);
+    transition:
+      background-color 0.12s ease,
+      border-color 0.12s ease;
+  }
+  [data-molda-theme] .mld-step:hover:not(:disabled) {
+    border-color: var(--color-mld-accent);
+    background: color-mix(in oklab, var(--color-mld-accent) 6%, var(--color-mld-surface));
+  }
+  [data-molda-theme] .mld-step:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+  [data-molda-theme] .mld-step:focus-visible {
+    outline: 2px solid var(--color-mld-accent);
+    outline-offset: 2px;
+  }
+  [data-molda-theme] .mld-step svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+/* O palco é a superfície: o 3D e a imagem de apoio não pintam fundo próprio por cima do clarão
+   do `.mld-workshop-stage` (sem camada: vence as utilitárias `bg-*` dos dois). */
+[data-molda-theme] .mld-workshop-stage .mld-stage-surface {
+  background: transparent;
 }

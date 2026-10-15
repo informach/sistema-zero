@@ -86,7 +86,17 @@ export function WorkspaceInspector({
             : 'absolute inset-y-0 right-0 z-30 flex w-80 max-w-[calc(100%_-_3.5rem)] flex-col border-l border-mld-border bg-mld-surface shadow-lg'
         }
       >
-        <div className="flex min-h-14 shrink-0 items-center justify-between gap-2 border-b border-mld-border px-3">
+        {/*
+         * Encaixado de vez na oficina, o título vira só o nome da região (e o alvo do foco do
+         * host): a faixa de 56px repetia o que as seções já dizem e roubava altura da lista.
+         */}
+        <div
+          className={
+            persistent && docked
+              ? 'sr-only'
+              : 'flex min-h-14 shrink-0 items-center justify-between gap-2 border-b border-mld-border px-3'
+          }
+        >
           <h2
             id={titleId}
             ref={heading}
@@ -98,7 +108,7 @@ export function WorkspaceInspector({
           {!(persistent && docked) && <ToolButton icon={X} label={copy.close} onClick={close} />}
         </div>
         <div
-          className={`mld-scroll-y flex min-h-0 flex-1 flex-col gap-2 ${persistent ? 'overflow-hidden' : 'overflow-y-auto'} overscroll-contain p-2`}
+          className={`mld-scroll-y flex min-h-0 flex-1 flex-col gap-2 ${persistent ? 'overflow-hidden px-3 pt-3 pb-2' : 'overflow-y-auto p-2'} overscroll-contain`}
         >
           {children}
         </div>

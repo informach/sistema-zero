@@ -2,15 +2,16 @@ import { useId, useState } from 'react'
 import { COPY } from '../../../core/copy'
 import type { ModelSceneNode } from '../../../scene/document'
 import type { SceneIndex } from '../../../scene/graph'
-import { Button } from '../../ui/Button'
 import {
   Box,
+  ChevronDown,
+  ChevronRight,
   Circle,
   Crosshair,
   Cylinder,
   Eye,
   EyeOff,
-  Group,
+  Folder,
   Lock,
   LockOpen,
   type LucideIcon,
@@ -30,24 +31,26 @@ export type SceneHierarchyShape =
   | 'group'
   | 'locator'
 
-const SHAPE_LOOK: Record<SceneHierarchyShape, [LucideIcon, string]> = {
-  box: [Box, 'var(--mld-fill-box)'],
-  wedge: [TriangleRight, 'var(--mld-fill-wedge)'],
-  cylinder: [Cylinder, 'var(--mld-fill-cylinder)'],
-  sphere: [Circle, 'var(--mld-fill-sphere)'],
-  mesh: [Waypoints, 'var(--mld-fill-special)'],
-  path: [Spline, 'var(--mld-fill-special)'],
-  group: [Group, 'var(--mld-fill-group)'],
-  locator: [Crosshair, 'var(--mld-fill-group)'],
+/** O ícone de linha de cada forma e a TINTA dele (a cor da forma, que segue o tema). */
+export const SHAPE_LOOK: Record<SceneHierarchyShape, [LucideIcon, string]> = {
+  box: [Box, 'var(--mld-shape-box)'],
+  wedge: [TriangleRight, 'var(--mld-shape-wedge)'],
+  cylinder: [Cylinder, 'var(--mld-shape-cylinder)'],
+  sphere: [Circle, 'var(--mld-shape-sphere)'],
+  mesh: [Waypoints, 'var(--mld-shape-special)'],
+  path: [Spline, 'var(--mld-shape-special)'],
+  group: [Folder, 'var(--mld-shape-cylinder)'],
+  locator: [Crosshair, 'var(--mld-shape-group)'],
 }
 
 /**
  * Native nested lists/disclosures: every action is a real focusable button, including on touch.
  *
- * Cada linha é um CARTÃO (a tela-modelo, 11/09/2026): o ladrilho na cor da forma com o ícone
- * branco, o nome, o tipo embaixo e o olho no fim. O olho é só INDICADOR (mostrar e esconder
- * moram em "Mais sobre a peça"): um segundo botão na linha seria um alvo pequeno ao lado do
- * grande, e o nome acessível da linha continua o de sempre ("Escolher corpo").
+ * Cada linha é a ÁRVORE dos prints (15/10/2026): o ícone de linha na cor da forma (a pasta
+ * para o grupo), o nome, e o olho e o cadeado no fim. Sem o cartão alto com o tipo embaixo, que
+ * fazia uma lista de seis peças rolar. No Modelar olho e cadeado são botões; nas outras abas
+ * só aparecem como INDICADOR quando a peça está escondida ou travada. O nome acessível da linha
+ * continua o de sempre ("Escolher corpo"), e o estado vai no `title`.
  */
 export function SceneHierarchy({
   index,
@@ -68,7 +71,7 @@ export function SceneHierarchy({
   const copy = COPY.scene
   function branch(ids: readonly string[], depth = 0) {
     return (
-      <ul className="space-y-1.5">
+      <ul className="space-y-0.5">
         {ids.map((id) => {
           const node = index.nodes.get(id)
           if (!node) return null
@@ -81,11 +84,11 @@ export function SceneHierarchy({
           const Visibility = node.hidden ? EyeOff : Eye
           return (
             <li key={id}>
-              <div className="flex min-h-11 items-center gap-1">
+              <div className="flex items-center gap-0.5">
                 {children.length > 0 && (
-                  <Button
-                    variant="ghost"
-                    className="min-w-11 shrink-0 px-1"
+                  <button
+                    type="button"
+                    className="grid min-h-10 w-7 shrink-0 place-items-center rounded-lg text-mld-muted hover:bg-mld-bg hover:text-mld-text focus-visible:outline-2 focus-visible:outline-mld-accent"
                     aria-label={open ? copy.hide(node.name) : copy.show(node.name)}
                     aria-expanded={open}
                     aria-controls={childId}
@@ -98,40 +101,42 @@ export function SceneHierarchy({
                       })
                     }
                   >
-                    {open ? '▾' : '▸'}
-                  </Button>
+                    {open ? (
+                      <ChevronDown aria-hidden="true" className="size-4" />
+                    ) : (
+                      <ChevronRight aria-hidden="true" className="size-4" />
+                    )}
+                  </button>
                 )}
                 <button
                   type="button"
                   aria-label={copy.select(node.name)}
                   aria-pressed={chosen}
-                  className="mld-piece flex min-h-13 min-w-0 flex-1 items-center gap-2.5 px-2 py-1.5 text-left transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mld-accent"
+                  title={[
+                    copy.nodeKind[node.kind],
+                    node.hidden ? copy.hiddenHint : '',
+                    node.locked ? copy.lockedHint : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
+                  className={`mld-piece flex-1 ${node.hidden ? 'text-mld-muted' : ''}`}
                   onClick={(event) =>
                     onSelect(id, event.shiftKey || event.ctrlKey || event.metaKey)
                   }
                 >
-                  <span
+                  <Icon
                     aria-hidden="true"
-                    className="grid size-8 shrink-0 place-items-center rounded-lg text-white"
-                    style={{ background: fill }}
-                  >
-                    <Icon className="size-4" />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-extrabold text-mld-text">
-                      {node.name}
-                    </span>
-                    <span className="block text-xs text-mld-muted">
-                      {copy.nodeKind[node.kind]}
-                      {node.hidden ? ` · ${copy.hiddenHint}` : ''}
-                      {node.locked ? ` · ${copy.lockedHint}` : ''}
-                    </span>
+                    className="size-[1.125rem] shrink-0"
+                    style={{ color: fill }}
+                  />
+                  <span className={`min-w-0 flex-1 truncate ${node.hidden ? 'opacity-60' : ''}`}>
+                    {node.name}
                   </span>
                   {!onFlag && node.locked && (
                     <Lock aria-hidden="true" className="size-4 shrink-0 text-mld-muted" />
                   )}
-                  {!onFlag && (
-                    <Visibility aria-hidden="true" className="size-4 shrink-0 text-mld-muted" />
+                  {!onFlag && node.hidden && (
+                    <EyeOff aria-hidden="true" className="size-4 shrink-0 text-mld-muted" />
                   )}
                 </button>
                 {onFlag && (
@@ -139,7 +144,10 @@ export function SceneHierarchy({
                     <button
                       type="button"
                       className="mld-tree-action"
-                      aria-label={(node.hidden ? 'Mostrar ' : 'Ocultar ') + node.name}
+                      // Nome FIXO com `aria-pressed`: "Ocultar caixa, pressionado" é a peça
+                      // escondida. Trocar o nome junto do estado lia ao contrário.
+                      aria-label={`Ocultar ${node.name}`}
+                      title={node.hidden ? `Mostrar ${node.name}` : `Ocultar ${node.name}`}
                       aria-pressed={node.hidden}
                       onClick={() => onFlag(id, 'hidden', !node.hidden)}
                     >
@@ -148,7 +156,8 @@ export function SceneHierarchy({
                     <button
                       type="button"
                       className="mld-tree-action"
-                      aria-label={(node.locked ? 'Destravar ' : 'Travar ') + node.name}
+                      aria-label={`Travar ${node.name}`}
+                      title={node.locked ? `Destravar ${node.name}` : `Travar ${node.name}`}
                       aria-pressed={node.locked}
                       onClick={() => onFlag(id, 'locked', !node.locked)}
                     >
@@ -165,7 +174,9 @@ export function SceneHierarchy({
                 <div
                   id={childId}
                   hidden={!open}
-                  className={depth < 4 ? 'mt-1.5 ml-3 border-l border-mld-border pl-1' : 'mt-1.5'}
+                  className={
+                    depth < 4 ? 'mt-0.5 ml-3.5 border-l border-mld-border pl-1.5' : 'mt-0.5'
+                  }
                 >
                   {branch(children, depth + 1)}
                 </div>

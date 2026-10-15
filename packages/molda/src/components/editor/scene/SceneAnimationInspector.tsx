@@ -9,6 +9,7 @@ import {
   reverseSceneAnimation,
   setSceneAnimationKey,
 } from '../../../scene/animationCommands'
+import { sameSceneContent } from '../../../scene/documentContent'
 import { evaluateSceneNodeFlags } from '../../../scene/evaluate'
 import { requireScene } from '../../../scene/validation'
 import { useMoldaToolAccess } from '../../toolAccess'
@@ -91,12 +92,14 @@ export function SceneAnimationInspector({
       : null
   return (
     <section className="space-y-3 border-t border-mld-border pt-3" aria-label={copy.animationMode}>
-      <h3 className="text-sm font-bold">
-        Pose em {snapshot.time.toLocaleString('pt-BR', { maximumFractionDigits: 2 })} s
-      </h3>
-      <p className="text-sm text-mld-muted">
-        {node ? node.name : 'Escolha uma peça para ajustar esta pose.'}
-      </p>
+      <div className="space-y-0.5">
+        <h3 className="mld-display text-[1.0625rem] text-mld-text">
+          Pose em {snapshot.time.toLocaleString('pt-BR', { maximumFractionDigits: 2 })} s
+        </h3>
+        <p className="text-sm font-semibold text-mld-muted">
+          {node ? node.name : 'Escolha uma peça para ajustar esta pose.'}
+        </p>
+      </div>
       {create && !snapshot.playing && <SceneTransformSteps workshop={workshop} />}
       {create && (
         <Button
@@ -123,10 +126,8 @@ export function SceneAnimationInspector({
           Mais tempo · +2 s
         </Button>
       )}
-      <details className="rounded-lg border border-mld-border p-2">
-        <summary className="min-h-11 cursor-pointer py-3 text-sm font-bold">
-          Mais ajustes da animação
-        </summary>
+      <details className="mld-disclosure">
+        <summary>Mais ajustes da animação</summary>
         <div className="space-y-3">
           <label className="flex min-h-11 items-center gap-2 text-sm">
             <input
@@ -209,7 +210,11 @@ export function SceneAnimationInspector({
                     event.preventDefault()
                     const data = new FormData(event.currentTarget)
                     run((source) => {
-                      requireScene(source === document, 'source', copy.animationChanged)
+                      requireScene(
+                        sameSceneContent(source, document),
+                        'source',
+                        copy.animationChanged,
+                      )
                       return setSceneAnimationKey(
                         source,
                         clip.id,
@@ -281,7 +286,11 @@ export function SceneAnimationInspector({
                       disabled={!initial.exact}
                       onClick={() =>
                         run((source) => {
-                          requireScene(source === document, 'source', copy.animationChanged)
+                          requireScene(
+                            sameSceneContent(source, document),
+                            'source',
+                            copy.animationChanged,
+                          )
                           return removeSceneAnimationKeys(source, clip.id, [
                             { nodeId: node.id, channel, time: snapshot.time },
                           ])
@@ -311,7 +320,11 @@ export function SceneAnimationInspector({
                   event.preventDefault()
                   const data = new FormData(event.currentTarget)
                   run((source) => {
-                    requireScene(source === document, 'source', copy.animationChanged)
+                    requireScene(
+                      sameSceneContent(source, document),
+                      'source',
+                      copy.animationChanged,
+                    )
                     const duration = sceneAnimationFormNumber(data, 'duration')
                     const base = data.has('retime')
                       ? retimeSceneAnimation(source, clip.id, duration)

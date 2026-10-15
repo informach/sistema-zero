@@ -33,6 +33,41 @@ describe('montar peças sem coordenadas', () => {
     expect(source.nodes).toHaveLength(1)
   })
 
+  test('a forma nova nasce AO LADO da peça erguida e afastada, na altura da base dela', () => {
+    let source = addScenePrimitive(empty(), 'box', 'Corpo')
+    const body = source.nodes[0]!.id
+    const delta = identityMatrix()
+    delta[12] = 3
+    delta[13] = 4
+    delta[14] = 9
+    source = transformSceneNodes(source, [body], delta)
+    const next = addScenePrimitiveNear(source, 'sphere', 'Cabeça', [body])
+    const head = bounds(next, next.nodes.at(-1)!.id)
+    const reference = bounds(next, body)
+    expect(head.min[0]).toBeGreaterThan(reference.max[0])
+    expect(head.min[0] - reference.max[0]).toBeLessThan(1)
+    expect(head.min[1]).toBeCloseTo(reference.min[1])
+    expect((head.min[2] + head.max[2]) / 2).toBeCloseTo((reference.min[2] + reference.max[2]) / 2)
+  })
+
+  test('caixa deitada de lado ainda é apoio de topo reto; caixa torta continua recusada', () => {
+    let source = addScenePrimitive(empty(), 'box', 'Corpo')
+    const body = source.nodes[0]!.id
+    const lying = identityMatrix()
+    // 90° em torno do X: o Y da peça vira o Z do mundo e o Z vira -Y (topo continua plano).
+    lying.splice(4, 7, 0, 0, 1, 0, 0, -1, 0)
+    source = transformSceneNodes(source, [body], lying)
+    source = addScenePrimitiveNear(source, 'sphere', 'Cabeça', [body])
+    const head = source.nodes.at(-1)!.id
+    const placed = placeSceneNodesOnSupport(source, [head], body)
+    expect(bounds(placed, head).min[1]).toBeCloseTo(bounds(placed, body).max[1])
+    const tilted = identityMatrix()
+    const c = Math.SQRT1_2
+    tilted.splice(4, 7, 0, c, c, 0, 0, -c, c)
+    const crooked = transformSceneNodes(source, [body], tilted)
+    expect(() => placeSceneNodesOnSupport(crooked, [head], body)).toThrow('inclinado')
+  })
+
   test('uma peça nova pertence ao grupo transformado sem mudar o pivô ou o movimento', () => {
     let source = addScenePrimitive(empty(), 'box', 'Corpo')
     source = groupSceneNodes(source, [source.nodes[0]!.id], { name: 'Bichinho' })

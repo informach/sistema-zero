@@ -88,11 +88,15 @@ export function SceneExitControl({
   }
   return (
     <>
-      {/* A pílula "← Meus projetos" da tela-modelo; abaixo de `sm` a seta fica sozinha. */}
+      {/*
+       * A seta de voltar é o QUADRADO quieto das barras da plataforma (a do editor do Pinta e a
+       * dos prints de 14/10): o nome "Meus projetos" segue no texto escondido e no `title`.
+       */}
       <button
         ref={trigger}
         type="button"
-        className="sz-tool-pill sz-tool-pill--quiet shrink-0 px-3.5 text-sm max-sm:w-(--sz-tool-hit) max-sm:px-0"
+        title={copy.open}
+        className="sz-tool-back"
         onClick={() => {
           requestTransition(() => {
             void saveAndLeave()
@@ -100,7 +104,7 @@ export function SceneExitControl({
         }}
       >
         <ArrowLeft aria-hidden="true" />
-        <span className="max-sm:sr-only">{copy.open}</span>
+        <span className="sr-only">{copy.open}</span>
       </button>
       <Dialog open={current.open} title={copy.title} onClose={close} returnFocusTo={trigger}>
         <p className="text-sm text-mld-text-soft">{copy.hint}</p>

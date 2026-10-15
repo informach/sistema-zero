@@ -344,3 +344,47 @@ test('reentrant subscribers cannot record a stale source while a preview is remo
     f.close()
   }
 })
+
+test('um gesto recusado em outra peça avisa, mas não invalida a pose por marcar', () => {
+  const f = setup()
+  try {
+    f.player.seek(2)
+    f.gesture.begin(['body'])
+    f.gesture.preview(move(2))
+    f.gesture.end(true)
+    const pose = f.gesture.getSnapshot().pose
+    // A peça "missing" não pode ser ajustada: o passo é recusado.
+    expect(f.gesture.begin(['missing'])).toBe(false)
+    const refused = f.gesture.getSnapshot()
+    expect(refused.refusal).not.toBeNull()
+    expect(refused.error).toBeNull()
+    expect(refused.pending).toBe(true)
+    expect(refused.pose).toBe(pose)
+    // Marcar pose continua possível (antes o erro travava o botão e a decisão de transição).
+    expect(f.gesture.record()).toBe(true)
+    expect(f.gesture.getSnapshot().refusal).toBeNull()
+  } finally {
+    f.close()
+  }
+})
+
+test('Desfazer no meio de um arrasto só cancela o arrasto; o gesto anterior fica', () => {
+  const f = setup()
+  try {
+    f.player.seek(2)
+    f.gesture.begin(['body'])
+    f.gesture.preview(move(2))
+    f.gesture.end(true)
+    const first = f.gesture.getSnapshot().pose
+    expect(f.gesture.begin(['body'])).toBe(true)
+    expect(f.gesture.preview(move(7))).toBe(true)
+    expect(f.gesture.undo()).toBe(true)
+    const after = f.gesture.getSnapshot()
+    expect(after.dragging).toBe(false)
+    expect(after.pending).toBe(true)
+    expect(after.pose).toBe(first)
+    expect(after.canUndo).toBe(true)
+  } finally {
+    f.close()
+  }
+})

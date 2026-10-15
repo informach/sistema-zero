@@ -170,3 +170,24 @@ test('recovery never overlays a different authoring revision', async () => {
     next.close()
   }
 })
+
+test('a oferta de continuar a pose some quando a criação muda depois de aberta', async () => {
+  const first = setup()
+  draft(first)
+  await waitFor(() => expect(localStorage.getItem(first.key) !== null).toBe(true))
+  await act(() => first.editor.getState().flush())
+  const saved = first.editor.getState().savedAsset
+  first.close()
+  const next = setup(saved)
+  try {
+    await waitFor(() => expect(next.hook.result.current.available !== null).toBe(true))
+    // A criança ignora o aviso e muda a criação: o rascunho velho não pode mais ser mesclado.
+    act(() => next.editor.getState().commit({ ...next.editor.getState().content, name: 'Outra' }))
+    await waitFor(() => expect(next.hook.result.current.available).toBeNull())
+    act(() => expect(next.hook.result.current.restore()).toBe(false))
+    expect(next.gesture.getSnapshot().pending).toBe(false)
+    expect(localStorage.getItem(next.key)).toBeNull()
+  } finally {
+    next.close()
+  }
+})

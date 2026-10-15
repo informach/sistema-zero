@@ -277,10 +277,14 @@ export function NewAssetDialog({
           <button
             type="button"
             onClick={openTemplates}
+            // Enquanto "Modelo" já está gravando a criação, trocar de caminho no meio puxava a
+            // criança para a oficina no meio da escolha do modelo pronto.
+            disabled={busy}
             aria-label={COPY.a11y.openTemplates}
             className={clsx(
               'flex min-h-11 flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-mld-accent/60 bg-mld-accent/5 p-4 text-center transition hover:border-mld-accent',
               'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mld-accent',
+              'disabled:cursor-not-allowed disabled:opacity-50',
             )}
           >
             <span

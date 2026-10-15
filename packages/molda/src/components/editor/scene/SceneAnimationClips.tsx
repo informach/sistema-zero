@@ -7,6 +7,7 @@ import {
   renameSceneAnimation,
 } from '../../../scene/animationCommands'
 import { prepareSceneAnimationTarget } from '../../../scene/animationTarget'
+import { keepSceneThumb } from '../../../scene/documentContent'
 import { useMoldaToolAccess } from '../../toolAccess'
 import { Button } from '../../ui/Button'
 import { Copy, Pencil, Plus, Trash2 } from '../../ui/icons'
@@ -70,10 +71,8 @@ export function SceneAnimationClips({
         </label>
       )}
       {create && (
-        <details className="w-full" open={!clip}>
-          <summary className="min-h-11 cursor-pointer py-3 text-sm font-bold">
-            Criar ou gerenciar movimentos
-          </summary>
+        <details className="mld-disclosure w-full" open={!clip}>
+          <summary>Criar ou gerenciar movimentos</summary>
           <div className="space-y-3">
             <fieldset className="w-full space-y-1">
               <legend className="text-sm font-bold">O que vai se mexer?</legend>
@@ -115,8 +114,11 @@ export function SceneAnimationClips({
                     let number = 1
                     while (current.animations?.some((clip) => clip.name === `Movimento ${number}`))
                       number++
-                    const next = run(() =>
-                      createSceneAnimation(target.document, `Movimento ${number}`),
+                    const next = run((source) =>
+                      keepSceneThumb(
+                        createSceneAnimation(target.document, `Movimento ${number}`),
+                        source,
+                      ),
                     )
                     if (next) {
                       choose(next.animations!.at(-1)!.id)

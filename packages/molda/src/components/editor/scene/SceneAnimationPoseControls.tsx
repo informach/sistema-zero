@@ -44,9 +44,10 @@ export function SceneAnimationPoseControls({
           compact ? 'flex shrink-0 items-center gap-1' : 'flex flex-wrap items-center gap-2'
         }
       >
+        {/* Na linha do tempo, Marcar pose é o amarelo dos prints: a ação que a aba existe para fazer. */}
         <button
           type="button"
-          className="sz-tool-pill sz-tool-pill--primary text-sm disabled:cursor-not-allowed disabled:opacity-50"
+          className={`sz-tool-pill ${compact ? 'mld-pill-sun' : 'sz-tool-pill--primary'} text-sm disabled:cursor-not-allowed disabled:opacity-50`}
           disabled={!enabled || !snapshot.pending || snapshot.dragging || !!snapshot.error}
           onClick={gesture.record}
         >
@@ -71,9 +72,9 @@ export function SceneAnimationPoseControls({
           {copy.animationPosePending}
         </p>
       )}
-      {snapshot.error && (
+      {(snapshot.error ?? snapshot.refusal) && (
         <p role="alert" className="text-sm text-mld-danger">
-          {snapshot.error}
+          {snapshot.error ?? snapshot.refusal}
         </p>
       )}
     </section>

@@ -25,7 +25,8 @@ export function SceneAnimationPresets({
         type="button"
         aria-expanded={open}
         aria-controls={open ? panelId : undefined}
-        className="sz-tool-pill mld-pill-sun text-sm"
+        // Quebra em duas linhas no painel estreito em vez de cortar o nome.
+        className="sz-tool-pill mld-pill-sun w-full py-2 text-sm leading-tight whitespace-normal"
         onClick={() => {
           if (open) workshop.requestTransition(() => setOpen(false))
           else setOpen(true)

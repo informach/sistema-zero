@@ -131,7 +131,7 @@ test('modelar e desfazer valem um passo cada, com o palco 3D vivo', async ({ pag
   const undo = page.getByRole('button', { name: 'Desfazer' })
   await expect(undo).toBeDisabled()
   // O painel de formas nasce recolhido: abrir faz parte do caminho da criança.
-  await page.getByText('Adicionar forma ou ponto').click()
+  await page.getByText('Adicionar', { exact: true }).click()
   await page.getByRole('button', { name: 'Caixa', exact: true }).click()
   await expect(undo).toBeEnabled()
   await undo.click()
@@ -515,7 +515,7 @@ test('duas abas detectam revisão externa e preservam a cópia local para recupe
   await second.getByRole('button', { name: 'Modelo abas-e2e', exact: true }).click()
   await expect(second.getByRole('button', { name: 'Imagem de apoio', exact: true })).toBeEnabled()
   await page.bringToFront()
-  await page.getByText('Adicionar forma ou ponto', { exact: true }).click()
+  await page.getByText('Adicionar', { exact: true }).click()
   await page.getByRole('button', { name: 'Caixa', exact: true }).click()
   await expect(page.getByTitle('Salvo neste computador', { exact: true })).toBeVisible()
   await second.bringToFront()

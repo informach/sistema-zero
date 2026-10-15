@@ -1054,7 +1054,7 @@ export const COPY = {
     openError: 'Não consegui abrir essa criação. O arquivo original continua guardado.',
     createBox: 'Adicionar caixa',
     boxName: 'Caixa',
-    add: 'Adicionar forma ou ponto',
+    add: 'Adicionar',
     selectTool: 'Escolher',
     selectBox: 'Caixa de seleção',
     selectLasso: 'Laço',

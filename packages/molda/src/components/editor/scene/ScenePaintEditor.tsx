@@ -33,10 +33,8 @@ export function ScenePaintEditor({ workshop }: { workshop: ReturnType<typeof use
   const copy = COPY.scene
   const rgba: ScenePaintRgba = typeof color === 'number' ? [0, 0, 0, 255] : color
   return (
-    <details className="rounded-xl border border-mld-border p-2">
-      <summary className="flex min-h-11 cursor-pointer items-center text-sm font-bold">
-        {SCENE_PAINT_COPY.more}
-      </summary>
+    <details className="mld-disclosure">
+      <summary>{SCENE_PAINT_COPY.more}</summary>
       <div className="space-y-3 pt-2">
         {!data && primary?.kind !== 'mesh' && (
           <p className="text-sm text-mld-muted">{SCENE_PAINT_COPY.moreChoose}</p>

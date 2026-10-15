@@ -6,6 +6,7 @@ import {
   SCENE_ANIMATION_CHANNELS,
   type sceneAnimationKeySelection,
 } from '../../../scene/animationKeySelection'
+import { sameSceneContent } from '../../../scene/documentContent'
 import { requireScene } from '../../../scene/validation'
 import { Button } from '../../ui/Button'
 import { sceneAnimationFormNumber } from './sceneAnimationForm'
@@ -59,7 +60,7 @@ export function SceneAnimationKeyTools({
             const data = new FormData(event.currentTarget)
             const operation = (event.nativeEvent as SubmitEvent).submitter?.getAttribute('value')
             run((source) => {
-              requireScene(source === document, 'source', copy.animationChanged)
+              requireScene(sameSceneContent(source, document), 'source', copy.animationChanged)
               requireScene(valid && refs.length > 0, 'keys', copy.animationRangeInvalid)
               if (operation === 'remove') return removeSceneAnimationKeys(source, clip.id, refs)
               requireScene(

@@ -3,18 +3,20 @@ import type { ReactNode, RefObject } from 'react'
 import { useStore } from 'zustand'
 import { COPY } from '../../../core/copy'
 import { NATIVE_IMPORT_COPY } from '../../../core/nativeImportCopy'
+import { SCENE_SHELL_COPY } from '../../../core/sceneShellCopy'
 import type { MoldaSceneDocument } from '../../../scene/document'
 import type { EditorStore } from '../../../state/editorStore'
 import { HostCloudStatus, HostMenuButton, useMoldaHostChrome } from '../../hostChrome'
 import { RequiresTool } from '../../toolAccess'
 import {
-  Check,
   ChevronDown,
+  CloudCheck,
   Download,
   FileBox,
   Loader2,
   Redo2,
   Save,
+  TriangleAlert,
   Undo2,
   Upload,
 } from '../../ui/icons'
@@ -74,7 +76,33 @@ export function SceneWorkshopBar({
     : saving
       ? COPY.editor.saving
       : (saveError ?? COPY.editor.dirty)
-  const StatusIcon = saved ? Check : saving ? Loader2 : Save
+  // Uma pose ainda não marcada NÃO está no projeto: o selo não pode dizer "Salvo" (fluxos, T29).
+  const state = saveError
+    ? 'error'
+    : pendingPose
+      ? 'pose'
+      : saved
+        ? 'saved'
+        : saving
+          ? 'saving'
+          : 'dirty'
+  const short = SCENE_SHELL_COPY.saveShort
+  const label =
+    state === 'error'
+      ? short.error
+      : state === 'pose'
+        ? short.pose
+        : state === 'saved'
+          ? short.saved
+          : short.saving
+  const StatusIcon =
+    state === 'error' || state === 'pose'
+      ? TriangleAlert
+      : saved
+        ? CloudCheck
+        : saving
+          ? Loader2
+          : Save
   return (
     <header className="mld-workshop-header mld-bar">
       <div className="mld-workshop-project">
@@ -92,20 +120,25 @@ export function SceneWorkshopBar({
         <SceneProjectName name={name} editor={editor} requestTransition={requestTransition} />
         <details className="relative shrink-0">
           <summary
-            title={status}
-            className={clsx('mld-save-status', saveError && 'text-mld-danger')}
+            title={state === 'pose' ? SCENE_SHELL_COPY.posePendingSave : status}
+            data-state={state}
+            className="mld-save-status"
           >
             <StatusIcon
               aria-hidden="true"
-              className={clsx('size-4', saving && 'animate-spin motion-reduce:animate-none')}
+              className={clsx(
+                'size-4',
+                state === 'saving' && 'animate-spin motion-reduce:animate-none',
+              )}
             />
-            <span className="mld-save-short">
-              {saved ? 'Salvo' : saving ? 'Salvando' : 'Salvar'}
+            {/* O erro e a pose por marcar nunca encolhem para só o ícone: são o recado. */}
+            <span className={state === 'error' || state === 'pose' ? undefined : 'mld-save-short'}>
+              {label}
             </span>
           </summary>
           <div className="mld-drop top-full left-0 mt-2">
-            <p role="status" className="p-2 text-sm">
-              {status}
+            <p className="p-2 text-sm">
+              {state === 'pose' ? SCENE_SHELL_COPY.posePendingSave : status}
             </p>
             {host?.status && <HostCloudStatus status={host.status} variant="bar" />}
             <button
@@ -117,12 +150,23 @@ export function SceneWorkshopBar({
             </button>
           </div>
         </details>
+        {/*
+         * Fora do menu, sempre montados: a região viva do erro de salvar (num `<details>`
+         * fechado ela nunca era anunciada) e o selo da nuvem do host (sem internet, erro).
+         */}
+        <p role="status" className="sr-only">
+          {saveError ?? ''}
+        </p>
+        {/* Na barra, a nuvem só aparece quando pede atenção; em repouso ela mora no menu. */}
+        {(host?.status?.tone === 'warn' || host?.status?.tone === 'danger') && (
+          <HostCloudStatus status={host.status} variant="bar" />
+        )}
         <button
           type="button"
           className="sz-tool-icon-btn"
           aria-label={COPY.editor.undo}
           title="Desfazer (Ctrl+Z)"
-          disabled={pendingPose || draftCanRedo ? !draftCanUndo : !canUndo}
+          disabled={pendingPose ? !draftCanUndo : !canUndo}
           onClick={onUndo}
         >
           <Undo2 aria-hidden="true" />
@@ -149,7 +193,7 @@ export function SceneWorkshopBar({
             onClick={onImport}
           >
             <Upload aria-hidden="true" />
-            <span>{NATIVE_IMPORT_COPY.open}</span>
+            <span className="mld-bar-label">{NATIVE_IMPORT_COPY.open}</span>
           </button>
         </RequiresTool>
         <details className="relative">

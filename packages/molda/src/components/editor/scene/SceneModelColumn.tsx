@@ -21,6 +21,7 @@ import {
   Ungroup,
   Waypoints,
 } from '../../ui/icons'
+import { focusWorkshopStage } from './focusStage'
 import { SceneCreateMenu } from './SceneCreateMenu'
 import { SceneTile, SCENE_TILE_GRID as TILES } from './SceneTile'
 import { SceneUpcomingTools } from './SceneUpcomingTools'
@@ -78,15 +79,12 @@ export function SceneModelColumn({
        * O que se usa menos, recolhido: a caixa e o laço, escolher várias, os grupos e a malha.
        * As ferramentas básicas permanecem na mesma ordem ao abrir os detalhes.
        */}
-      <details className="group shrink-0 rounded-xl border border-mld-border">
-        <summary className="flex min-h-11 cursor-pointer list-none flex-col items-center justify-center gap-1 px-1 text-center text-xs font-bold text-mld-text [&::-webkit-details-marker]:hidden">
+      <details className="mld-rail-more shrink-0">
+        <summary>
           {SCENE_SHELL_COPY.moreTools}
-          <ChevronDown
-            aria-hidden="true"
-            className="size-4 shrink-0 transition group-open:rotate-180 motion-reduce:transition-none"
-          />
+          <ChevronDown aria-hidden="true" />
         </summary>
-        <div className={`${TILES} p-1.5 pt-0`}>
+        <div className={TILES}>
           <RequiresTool family="model.mesh">
             {!components.selection && (
               <SceneTile
@@ -131,7 +129,11 @@ export function SceneModelColumn({
                 !selected.length ||
                 selected.some((id) => index.scene.nodes.get(id)?.kind !== 'group')
               }
-              onClick={() => run((source) => ungroupSceneNodes(source, selected), 'clear')}
+              onClick={(event) => {
+                const from = event.currentTarget
+                if (run((source) => ungroupSceneNodes(source, selected), 'clear'))
+                  focusWorkshopStage(from)
+              }}
             />
           </RequiresTool>
           <RequiresTool family="model.mesh">

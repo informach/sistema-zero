@@ -79,12 +79,27 @@ function beside(
     const bounds = sceneBounds(selected.index, { nodeIds: new Set([id]), includeHidden: false })
     return bounds ? [bounds] : []
   })
+  // "Ao lado" é ao lado DE VERDADE: a peça nova fica na mesma altura da base da referência e
+  // centrada no outro eixo do chão. Antes só um eixo andava, e uma forma acrescentada ao lado de
+  // uma peça erguida e afastada nascia no chão, longe dela.
+  const center = (bounds: Bounds, axis: 0 | 2) => (bounds.min[axis] + bounds.max[axis]) / 2
+  const base = (target: Bounds) => target.min[1] - own.min[1]
+  const alongX = (target: Bounds, x: number): Vec3 => [
+    x,
+    base(target),
+    center(target, 2) - center(own, 2),
+  ]
+  const alongZ = (target: Bounds, z: number): Vec3 => [
+    center(target, 0) - center(own, 0),
+    base(target),
+    z,
+  ]
   const candidates: Vec3[] = [
-    [near.max[0] + gap - own.min[0], 0, 0],
-    [near.min[0] - gap - own.max[0], 0, 0],
-    [0, 0, near.max[2] + gap - own.min[2]],
-    [0, 0, near.min[2] - gap - own.max[2]],
-    [all.max[0] + gap - own.min[0], 0, 0],
+    alongX(near, near.max[0] + gap - own.min[0]),
+    alongX(near, near.min[0] - gap - own.max[0]),
+    alongZ(near, near.max[2] + gap - own.min[2]),
+    alongZ(near, near.min[2] - gap - own.max[2]),
+    alongX(all, all.max[0] + gap - own.min[0]),
   ]
   const delta = candidates.find(
     (candidate) => !obstacles.some((bounds) => intersects(moved(own, candidate), bounds)),
@@ -181,8 +196,17 @@ export function placeSceneNodesOnSupport(
     'support',
     'Escolha o topo plano de uma caixa ou cilindro. Para outros apoios, use Mover.',
   )
+  // O topo é reto quando um eixo da peça fica de pé e os outros dois deitados. Na caixa vale
+  // qualquer eixo (deitada de lado ela continua com o topo plano); no cilindro, só o da altura,
+  // de pé ou de ponta-cabeça (a tampa é a única face plana dele).
+  const flat = (axis: 0 | 1 | 2) =>
+    ([0, 1, 2] as const).every((other) =>
+      other === axis
+        ? Math.abs(world[other * 4 + 1]!) > 1e-8
+        : Math.abs(world[other * 4 + 1]!) < 1e-8,
+    )
   requireScene(
-    Math.abs(world[1]) < 1e-8 && Math.abs(world[9]) < 1e-8 && world[5] > 0,
+    geometry.kind === 'box' ? flat(0) || flat(1) || flat(2) : flat(1),
     'support',
     'Esse apoio está inclinado. Use um apoio com o topo reto.',
   )

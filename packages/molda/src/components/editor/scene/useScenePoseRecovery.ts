@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 import type { SceneAnimationClip } from '../../../scene/animation'
 import type { MoldaSceneDocument } from '../../../scene/document'
+import { sameSceneContent } from '../../../scene/documentContent'
 import { sceneToJson } from '../../../scene/documentJson'
 import type { EditorStore } from '../../../state/editorStore'
 import { getMoldaStorageNamespace } from '../../../state/persistence'
@@ -40,6 +41,9 @@ export function useScenePoseRecovery(
   const [available, setAvailable] = useState<Recovery | null>(null)
   const [error, setError] = useState<string | null>(null)
   const stored = useRef<Recovery | null>(null)
+  // A revisão em que o rascunho foi OFERECIDO: editar ou marcar outra pose depois disso torna a
+  // oferta velha, e ela não pode ser mesclada na criação nova.
+  const offeredFor = useRef<MoldaSceneDocument | null>(null)
   const key = `molda:pose-draft:${JSON.stringify([getMoldaStorageNamespace(), editor.getState().content.id])}`
   useLayoutEffect(() => {
     let active = true,
@@ -65,6 +69,7 @@ export function useScenePoseRecovery(
           return
         }
         stored.current = recovery
+        offeredFor.current = source
         setAvailable(recovery)
       } catch {
         if (active) setError('Não foi possível ler o rascunho da pose.')
@@ -129,6 +134,17 @@ export function useScenePoseRecovery(
     }
     const unsubscribe = gesture.subscribe(persist)
     const unsubscribeSave = editor.subscribe((state) => {
+      const offered = offeredFor.current
+      if (stored.current && offered && !sameSceneContent(state.content, offered)) {
+        stored.current = null
+        offeredFor.current = null
+        setAvailable(null)
+        try {
+          localStorage.removeItem(key)
+        } catch {
+          /* A oferta já saiu da tela; o rascunho velho é recusado pela revisão ao abrir. */
+        }
+      }
       if (retryAfterSave && state.saveState === 'saved') {
         retryAfterSave = false
         persist()
@@ -143,6 +159,7 @@ export function useScenePoseRecovery(
   }, [editor, gesture, key])
   const discard = () => {
     stored.current = null
+    offeredFor.current = null
     setAvailable(null)
     try {
       localStorage.removeItem(key)
@@ -157,9 +174,18 @@ export function useScenePoseRecovery(
     restore: () => {
       const recovery = stored.current
       if (!recovery) return false
+      const offered = offeredFor.current
+      if (!offered || !sameSceneContent(editor.getState().content, offered)) {
+        stored.current = null
+        offeredFor.current = null
+        setAvailable(null)
+        setError('Esse rascunho é de antes das suas últimas mudanças e não pode mais ser usado.')
+        return false
+      }
       const restored = gesture.restoreDraft(recovery.clip, recovery.time)
       if (restored) {
         stored.current = null
+        offeredFor.current = null
         setAvailable(null)
       } else setError('Esse rascunho não pôde ser recuperado. A criação salva continua disponível.')
       return restored

@@ -1,4 +1,4 @@
-import { useId } from 'react'
+import { type CSSProperties, useId } from 'react'
 import { COPY } from '../../../core/copy'
 import { SCENE_SHELL_COPY } from '../../../core/sceneShellCopy'
 import {
@@ -15,6 +15,7 @@ import { primitiveDetail } from '../../../scene/primitiveDetail'
 import { RequiresTool, useMoldaToolAccess } from '../../toolAccess'
 import { Button } from '../../ui/Button'
 import { Copy, Trash2 } from '../../ui/icons'
+import { focusWorkshopStage } from './focusStage'
 import { SceneAdjustmentForm } from './SceneAdjustmentForm'
 import { SceneCurveDetails } from './SceneCurveDetails'
 import { SceneMirrors } from './SceneMirrors'
@@ -28,9 +29,8 @@ import { SceneVectorForm } from './SceneVectorForm'
 import { adjustScene } from './sceneAdjustment'
 import type { useSceneWorkshop } from './useSceneWorkshop'
 
-/** O `<details>` do painel: cartão claro, o resumo em negrito com 44px de alvo. */
-const DISCLOSURE = 'rounded-xl bg-mld-bg p-2'
-const SUMMARY = 'flex min-h-11 cursor-pointer items-center px-1 text-sm font-bold text-mld-text'
+/** O `<details>` do painel: uma linha com a seta (`.mld-disclosure`), o resumo com 44px de alvo. */
+const DISCLOSURE = 'mld-disclosure'
 
 /**
  * Cartão contextual da peça: apenas o ajuste da ferramenta ativa, seguido da aparência.
@@ -55,28 +55,67 @@ export function SceneNodeProperties({
   const { primary, selected, run, document, index, covered } = workshop
   const groups = document.nodes.filter((node) => node.kind === 'group' && !covered.has(node.id))
   const geometry = primary?.kind === 'mesh' ? index.geometries.get(primary.geometryId) : undefined
-  if (!selected.length) return <p className="p-2 text-sm text-mld-muted">{copy.choose}</p>
+  if (!selected.length)
+    return (
+      <p className="rounded-xl border border-dashed border-mld-border p-3 text-center text-sm text-mld-muted">
+        {copy.choose}
+      </p>
+    )
+  // O selo do tipo ao lado do nome ("Caixa", "Grupo"), na cor da forma, como nos prints.
+  const kind =
+    geometry && geometry.kind in COPY.shapes
+      ? (geometry.kind as keyof typeof COPY.shapes)
+      : undefined
+  const kindLabel = kind ? COPY.shapes[kind] : primary ? copy.nodeKind[primary.kind] : null
+  const kindInk =
+    kind && kind !== 'mesh'
+      ? `var(--mld-shape-${kind})`
+      : primary?.kind === 'group'
+        ? 'var(--mld-shape-cylinder)'
+        : 'var(--mld-shape-special)'
   return (
     <div className="space-y-4 border-t border-mld-border pt-3">
-      <div className="flex min-w-0 items-center gap-1">
-        <p className="min-w-0 flex-1 truncate text-sm font-bold text-mld-text">
-          {primary?.name ?? copy.selection(selected.length)}
-        </p>
+      <div className="space-y-2">
+        <div className="flex min-w-0 items-center gap-2">
+          <p className="mld-display min-w-0 truncate text-[1.0625rem] text-mld-text">
+            {primary?.name ?? copy.selection(selected.length)}
+          </p>
+          {kindLabel && (
+            <span className="mld-kind-chip" style={{ '--mld-chip': kindInk } as CSSProperties}>
+              {kindLabel}
+            </span>
+          )}
+        </div>
         <RequiresTool family="model.pieces">
-          <Button
-            className="px-2"
-            aria-label={copy.duplicate}
-            onClick={() => run((source) => duplicateSceneNodesNearby(source, selected), 'created')}
-          >
-            <Copy aria-hidden="true" className="size-4" />
-          </Button>
-          <Button
-            className="px-2"
-            aria-label={copy.remove}
-            onClick={() => run((source) => deleteSceneNodes(source, selected), 'clear')}
-          >
-            <Trash2 aria-hidden="true" className="size-4" />
-          </Button>
+          <div className="flex flex-wrap gap-1.5">
+            <button
+              type="button"
+              className="mld-chip-btn"
+              aria-label={copy.duplicate}
+              title={SCENE_SHELL_COPY.duplicateHint}
+              onClick={() =>
+                run((source) => duplicateSceneNodesNearby(source, selected), 'created')
+              }
+            >
+              <Copy aria-hidden="true" />
+              {copy.duplicate}
+            </button>
+            <button
+              type="button"
+              className="mld-chip-btn"
+              data-danger=""
+              aria-label={copy.remove}
+              title={`${copy.remove} (Delete)`}
+              onClick={(event) => {
+                const from = event.currentTarget
+                if (run((source) => deleteSceneNodes(source, selected), 'clear'))
+                  focusWorkshopStage(from)
+              }}
+            >
+              <Trash2 aria-hidden="true" />
+              {SCENE_SHELL_COPY.removeShort}
+            </button>
+          </div>
         </RequiresTool>
       </div>
       {geometry?.kind === 'mesh' && (
@@ -89,14 +128,14 @@ export function SceneNodeProperties({
       )}
       {mode && (
         <div className="space-y-3">
-          <h3 className="font-bold">
+          <h3 className="mld-kicker">
             {mode === 'pivot' ? 'Pivô — onde gira' : mode === 'scale' ? 'Tamanho' : copy[mode]}
           </h3>
           {mode === 'pivot' ? (
             <>
               <ScenePivotChoices workshop={workshop} />
               <details className={DISCLOSURE}>
-                <summary className={SUMMARY}>Valores do pivô</summary>
+                <summary>Valores do pivô</summary>
                 <SceneAdjustmentForm
                   mode="pivot"
                   disabled={selected.length !== 1}
@@ -111,7 +150,7 @@ export function SceneNodeProperties({
               <SceneTransformSteps workshop={workshop} />
               {precise && (
                 <details className={DISCLOSURE}>
-                  <summary className={SUMMARY}>Medidas e valores</summary>
+                  <summary>Medidas e valores</summary>
                   <SceneTransformCoordinates workshop={workshop} />
                 </details>
               )}
@@ -122,7 +161,7 @@ export function SceneNodeProperties({
       <SceneSurfaceStrip workshop={workshop} />
       {precise && primary && geometry && geometry.kind !== 'mesh' && geometry.kind !== 'path' && (
         <details className={DISCLOSURE}>
-          <summary className={SUMMARY}>{copy.dimensions}</summary>
+          <summary>{copy.dimensions}</summary>
           <SceneVectorForm
             key={`${primary.id}-${document.updatedAt}-dimensions`}
             label={copy.dimensions}
@@ -139,9 +178,7 @@ export function SceneNodeProperties({
       )}
       {precise && primary && (geometry?.kind === 'cylinder' || geometry?.kind === 'sphere') && (
         <details className={DISCLOSURE}>
-          <summary className="min-h-11 cursor-pointer px-1 py-3 text-sm font-bold text-mld-text">
-            {copy.curveDetail}
-          </summary>
+          <summary>{copy.curveDetail}</summary>
           <SceneCurveDetails
             key={`${primary.id}-${geometry.id}-${JSON.stringify(primitiveDetail(geometry))}`}
             geometry={geometry}
@@ -167,7 +204,7 @@ export function SceneNodeProperties({
       )}
       {/* Com várias escolhidas sobra o grupo: colocar todas de uma vez num grupo continua aqui. */}
       <details className={DISCLOSURE}>
-        <summary className={SUMMARY}>{SCENE_SHELL_COPY.moreAboutPiece}</summary>
+        <summary>{SCENE_SHELL_COPY.moreAboutPiece}</summary>
         <div className="space-y-3 px-1 pb-1">
           {primary && (
             <>
@@ -227,8 +264,8 @@ export function SceneNodeProperties({
             </>
           )}
           <RequiresTool family="model.pieces">
-            <details className="rounded-xl bg-mld-surface p-2">
-              <summary className={SUMMARY}>{copy.organize}</summary>
+            <details className={DISCLOSURE}>
+              <summary>{copy.organize}</summary>
               <div className="space-y-1">
                 <Button
                   className="w-full text-sm"

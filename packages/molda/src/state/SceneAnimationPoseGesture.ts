@@ -28,6 +28,12 @@ export interface SceneAnimationPoseGestureSnapshot {
   dragging: boolean
   autoKey: boolean
   error: string | null
+  /**
+   * Um gesto RECUSADO (a peça travada, por exemplo) com uma pose por marcar em andamento: o
+   * recado aparece, mas o rascunho continua válido e Marcar pose continua possível. Some no
+   * próximo estado publicado.
+   */
+  refusal: string | null
   reach: SceneTwoBonePoseFrame['reach'] | null
   canUndo: boolean
   canRedo: boolean
@@ -69,6 +75,7 @@ export class SceneAnimationPoseGesture {
     dragging: false,
     autoKey: false,
     error: null,
+    refusal: null,
     reach: null,
     canUndo: false,
     canRedo: false,
@@ -211,7 +218,10 @@ export class SceneAnimationPoseGesture {
       this.listeners.delete(listener)
     }
   }
-  private publish(next: Omit<SceneAnimationPoseGestureSnapshot, 'kind'>) {
+  private publish(
+    next: Omit<SceneAnimationPoseGestureSnapshot, 'kind' | 'refusal'>,
+    refusal: string | null = null,
+  ) {
     const before = this.snapshot
     next = {
       ...next,
@@ -226,12 +236,13 @@ export class SceneAnimationPoseGesture {
       before.dragging === next.dragging &&
       before.autoKey === next.autoKey &&
       before.error === next.error &&
+      before.refusal === refusal &&
       before.reach === next.reach &&
       before.canUndo === next.canUndo &&
       before.canRedo === next.canRedo
     )
       return
-    this.snapshot = { ...next, kind }
+    this.snapshot = { ...next, refusal, kind }
     for (const listener of this.listeners) listener()
   }
   private current(owner: PoseOwnerContext) {
@@ -305,6 +316,11 @@ export class SceneAnimationPoseGesture {
   undo = () => this.history('past', 'future')
   redo = () => this.history('future', 'past')
   private history(from: 'past' | 'future', to: 'past' | 'future') {
+    // Desfazer no MEIO de um arrasto só cancela esse arrasto; o gesto anterior fica.
+    if (this.owner?.kind === 'transform' && this.seed) {
+      this.end(false)
+      return true
+    }
     this.interrupt()
     const owner = this.owner
     if (owner?.kind !== 'transform' || !this.current(owner)) return false
@@ -377,6 +393,20 @@ export class SceneAnimationPoseGesture {
       })
       return this.owner === owner && this.seed !== null && this.current(owner)
     } catch (error) {
+      // O gesto foi recusado, mas a pose por marcar continua inteira: ela não vira inválida.
+      const owner = this.owner
+      if (
+        owner?.kind === 'transform' &&
+        !this.seed &&
+        owner.draft !== owner.source.document &&
+        this.current(owner)
+      ) {
+        this.publish(
+          { ...this.snapshot, dragging: false },
+          error instanceof Error ? error.message : COPY.scene.animationPoseFailed,
+        )
+        return false
+      }
       this.reportError(error)
       return false
     }

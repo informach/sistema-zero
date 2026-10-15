@@ -21,9 +21,9 @@ export const SCENE_FIRST_STEPS_COPY = {
       steps: [
         {
           title: 'Comece com uma peça',
-          // “Adicionar forma” é o começo do nome nos dois portões (no básico o ponto de apoio não
-          // aparece, e o botão se chama só assim): a criança acha o botão pelo que lê aqui.
-          text: `Sua criação nova começa com uma caixa. Em “${SCENE_TOOL_ACCESS_COPY.addShape}”, você pode acrescentar outras formas.`,
+          // “Adicionar” é o título da seção das formas nos dois portões: a criança acha os
+          // botões pelo que lê aqui.
+          text: `Sua criação nova começa com uma caixa. Em “${SCENE_TOOL_ACCESS_COPY.addShape}”, à esquerda, você pode acrescentar outras formas.`,
         },
         {
           title: 'Dê forma à sua ideia',

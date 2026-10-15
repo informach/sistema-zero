@@ -60,12 +60,15 @@ export class SceneBodyMove {
     if (!point) return
     const difference = point.sub(active.start)
     const delta: AffineMatrix = identityMatrix()
-    for (const [index, value] of [
-      [12, difference.x],
-      [13, difference.y],
-      [14, difference.z],
+    // O plano do gesto é sempre de um eixo do mundo: o eixo da normal NÃO se mexe. As duas
+    // interseções deixavam um resto de arredondamento (±1e-15) gravado na altura.
+    const normal = active.plane.normal
+    for (const [index, value, along] of [
+      [12, difference.x, normal.x],
+      [13, difference.y, normal.y],
+      [14, difference.z, normal.z],
     ] as const)
-      delta[index] = step ? Math.round(value / step) * step : value
+      delta[index] = Math.abs(along) > 0.5 ? 0 : step ? Math.round(value / step) * step : value
     if (!this.actions.preview(delta)) this.end(false)
   }
   end(commit: boolean) {

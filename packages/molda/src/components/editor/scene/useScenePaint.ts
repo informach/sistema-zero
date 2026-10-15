@@ -75,16 +75,30 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
   const [recentColors, setRecentColors] = useState<ScenePaintRgba[]>([])
   const [favorites, setFavorites] = useState<ScenePaintRgba[]>([])
   const [fillScope, setFillScope] = useState<'area' | 'base'>('area')
-  const rememberColor = (color: ScenePaintColor) => {
-    const ink = sceneInkRgba(editor.getState().content, color)
-    setColor(ink)
+  const pushRecent = (ink: ScenePaintRgba) =>
     setRecentColors((before) =>
       [ink, ...before.filter((entry) => entry.some((channel, i) => channel !== ink[i]))].slice(
         0,
         6,
       ),
     )
+  const rememberColor = (color: ScenePaintColor) => {
+    const ink = sceneInkRgba(editor.getState().content, color)
+    setColor(ink)
+    pushRecent(ink)
   }
+  /**
+   * Pegar cor lê a cor que a criança VÊ: um ponto sem tinta nenhuma (transparente sobre fundo
+   * transparente, comum em modelo importado) não vira tinta invisível, que faria o Pincel apagar.
+   * Fica a tinta de antes; o resto ganha alfa cheio.
+   */
+  const rememberSampled = (sampled: ScenePaintRgba) => {
+    if (sampled[3] === 0) return
+    rememberColor([sampled[0], sampled[1], sampled[2], 255])
+  }
+  // A cor do seletor nativo enquanto ele é arrastado: entra em "Recentes" só quando a escolha
+  // termina (cada passo do arrasto empurrava uma cor e apagava as que a criança usou).
+  const pickedColor = useRef<ScenePaintRgba | null>(null)
   const [brush, setBrush] = useState<BrushSize>(2)
   const [tool, setTool] = useState<
     'pencil' | 'eraser' | 'fill' | 'picker' | 'rotate' | 'closeup' | ScenePaintDraft['tool']
@@ -351,7 +365,7 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
             sample.point,
             data.imageKind,
           )
-          rememberColor(sampled)
+          rememberSampled(sampled)
           setTool('pencil')
           setError(null)
         } catch (error) {
@@ -497,7 +511,7 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
           : [...before, chosenColor].slice(-8),
       ),
     sample: (sampled: ScenePaintRgba) => {
-      rememberColor(sampled)
+      rememberSampled(sampled)
       setTool('pencil')
       setError(null)
     },
@@ -559,11 +573,18 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
     /** Choosing ink changes tool state only. Palette preparation joins the next stroke. */
     newColorStep: (hex: string) => {
       if (stroke.current || imageTask.busy) return
-      rememberColor([...hexToRgb(hex), 255])
+      const ink: ScenePaintRgba = [...hexToRgb(hex), 255]
+      setColor(ink)
+      pickedColor.current = ink
       if (eraser || picker || rotate || closeupTool) setTool('pencil')
       setError(null)
     },
-    newColorEnd: () => {},
+    /** O seletor fechou (`change` nativo): a cor escolhida entra em "Recentes", uma vez. */
+    newColorEnd: () => {
+      const ink = pickedColor.current
+      pickedColor.current = null
+      if (ink) pushRecent(ink)
+    },
     setBrush: (value: BrushSize) => {
       if (!stroke.current) setBrush(value)
     },

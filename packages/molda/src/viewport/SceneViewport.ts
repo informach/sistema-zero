@@ -93,7 +93,9 @@ export class SceneViewport implements SceneViewportPort {
   private readonly rig = new ViewportCamera()
   private readonly resource = new SceneRenderResource()
   private readonly grid = new GridHelper(32, 32, 0x9fb4d0, 0xd2deee)
-  private readonly outline = new Box3Helper(new Box3(), 0x1d6fd6)
+  // O contorno da escolhida é ÂMBAR (o ouro da casa): o azul de antes sumia sobre a peça
+  // nova, que nasce azul.
+  private readonly outline = new Box3Helper(new Box3(), 0xf0a417)
   private readonly pivot = new AxesHelper(0.75)
   private readonly faces = new SceneComponentOverlay()
   private readonly supports = new SceneSupportOverlay()
@@ -320,6 +322,9 @@ export class SceneViewport implements SceneViewportPort {
           const hit = sceneSurfaceHit(canvas, this.rig.camera, this.resource, event)
           const instance = hit && this.resource.instanceFor(hit.object)
           if (!hit || !instance) return null
+          // Peça travada não é alvo de Mover (como em Escolher e Pintar): o toque segue o
+          // caminho de sempre, que gira a câmera ou escolhe a peça de trás. Ler a cor dela vale.
+          if (instance.locked && !this.callbacks.samplingInk?.()) return null
           return {
             ...pointer,
             hit,
@@ -427,10 +432,12 @@ export class SceneViewport implements SceneViewportPort {
 
   setDocument(document: MoldaSceneDocument) {
     if (this.disposed) return []
+    // Só PEÇAS novas pedem enquadramento: o conjunto temporário da prévia de um movimento
+    // pronto ("Modelo inteiro") é um grupo novo a cada prévia e fazia a câmera pular.
     const added =
       this.document && document.id === this.document.id
         ? document.nodes
-            .filter((node) => !this.index?.scene.nodes.has(node.id))
+            .filter((node) => node.kind === 'mesh' && !this.index?.scene.nodes.has(node.id))
             .map((node) => node.id)
         : []
     const index = indexSceneDocument(document)

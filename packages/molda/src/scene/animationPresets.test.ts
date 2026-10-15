@@ -128,3 +128,12 @@ test('presets reject locks, invalid settings, precision collisions and exhausted
   expect(ids).toBe(0)
   expect(source).toEqual(before)
 })
+
+test('o mesmo movimento pronto duas vezes ganha nomes que se distinguem', () => {
+  const source = animatedScene()
+  const options = { kind: 'bounce', name: 'Pular', duration: 1, axis: 'y', amount: 1 } as const
+  const once = createSceneAnimationPreset(source, ['body'], options)
+  const twice = createSceneAnimationPreset(once, ['body'], options)
+  const names = twice.animations!.map((clip) => clip.name)
+  expect(names.filter((name) => name.startsWith('Pular'))).toEqual(['Pular', 'Pular 2'])
+})

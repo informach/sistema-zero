@@ -6,7 +6,7 @@ import {
 } from '../../../scene/animationPresets'
 import { prepareSceneAnimationTarget } from '../../../scene/animationTarget'
 import type { MoldaSceneDocument } from '../../../scene/document'
-import { sameSceneContent } from '../../../scene/documentContent'
+import { keepSceneThumb, sameSceneContent } from '../../../scene/documentContent'
 import { requireScene } from '../../../scene/validation'
 import type { SceneAnimationSnapshot } from '../../../state/SceneAnimationPlayer'
 import { isMoldaDialogOpen } from '../../ui/Dialog'
@@ -146,7 +146,7 @@ export function useSceneAnimationPreset(workshop: ReturnType<typeof useSceneWork
     live.current.setAnimationPreviewDocument(null)
     const next = live.current.run((source) => {
       requireScene(sameSceneContent(source, owner.document), 'source', COPY.scene.animationChanged)
-      return owner.next
+      return keepSceneThumb(owner.next, source)
     })
     if (!next) {
       animation.cancelPreview()

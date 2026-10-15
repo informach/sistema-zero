@@ -6,7 +6,7 @@ import { resolvePaletteColors } from '../../../core/sanitize'
 import { SCENE_PAINT_COPY } from '../../../core/scenePaintCopy'
 import type { ScenePaintRgba } from '../../../scene/imagePaint'
 import { RequiresTool } from '../../toolAccess'
-import { Button } from '../../ui/Button'
+import { Plus, Star } from '../../ui/icons'
 import { swatchClass } from '../../ui/interaction'
 import type { useScenePaint } from './useScenePaint'
 
@@ -30,7 +30,7 @@ export function ScenePaintPalette({
   const swatches = (colors: ScenePaintRgba[], label: string) =>
     colors.length > 0 && (
       <div>
-        <p className="mb-1 text-xs text-mld-muted">{label}</p>
+        <p className="mld-kicker mb-1.5">{label}</p>
         <div className="flex flex-wrap gap-1">
           {colors.map((entry) => {
             const color = rgbToHex(entry[0], entry[1], entry[2])
@@ -58,21 +58,24 @@ export function ScenePaintPalette({
         <div className="flex items-center gap-2">
           <span
             aria-hidden="true"
-            className="size-11 shrink-0 rounded-xl border-2 border-mld-border"
+            className="size-12 shrink-0 rounded-2xl shadow-[inset_0_0_0_1px_color-mix(in_oklab,var(--color-mld-text)_14%,transparent)]"
             style={{ backgroundColor: hex }}
           />
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-bold">Sua cor</p>
-            <p className="text-xs text-mld-muted">{hex}</p>
+            <p className="mld-display text-base leading-tight">Sua cor</p>
+            <p className="text-xs font-semibold text-mld-muted uppercase tabular-nums">{hex}</p>
           </div>
-          <Button
+          <button
+            type="button"
+            className="sz-tool-icon-btn aria-pressed:text-mld-warn"
             aria-label="Guardar cor favorita"
+            title="Guardar cor favorita"
             aria-pressed={favorite}
             disabled={busy}
             onClick={paint.toggleFavorite}
           >
-            ☆
-          </Button>
+            <Star aria-hidden="true" className={favorite ? 'fill-current' : undefined} />
+          </button>
         </div>
         {paint.fill && (
           <fieldset className="space-y-1">
@@ -133,8 +136,9 @@ export function ScenePaintPalette({
               />
             )
           })}
-          <label className="relative flex min-h-11 cursor-pointer items-center rounded-lg border border-dashed border-mld-border px-2 text-sm font-bold">
-            + Nova cor
+          <label className="relative flex min-h-11 cursor-pointer items-center gap-1 rounded-md border-2 border-dashed border-mld-border px-2.5 text-[0.8125rem] font-bold text-mld-muted hover:border-mld-accent hover:text-mld-accent">
+            <Plus aria-hidden="true" className="size-4" />
+            Nova cor
             <input
               type="color"
               name="molda-scene-new-color"
@@ -142,6 +146,14 @@ export function ScenePaintPalette({
               disabled={busy}
               value={hex}
               className="absolute inset-0 size-full cursor-pointer opacity-0"
+              // O `change` NATIVO só chega quando o seletor fecha (o `onChange` do React é o
+              // `input` de cada passo): é ele que guarda a cor em "Recentes".
+              ref={(input) => {
+                if (!input) return
+                const end = () => paint.newColorEnd()
+                input.addEventListener('change', end)
+                return () => input.removeEventListener('change', end)
+              }}
               onInput={(event) => paint.newColorStep(event.currentTarget.value)}
               onChange={(event) => paint.newColorStep(event.target.value)}
             />

@@ -56,7 +56,7 @@ export function SceneAnimationKeyStrip({
       {onSelect ? (
         <button
           type="button"
-          className="min-h-11 w-24 shrink-0 truncate text-left text-xs font-bold"
+          className="min-h-11 w-24 shrink-0 truncate rounded-lg px-1 text-left text-xs font-bold hover:text-mld-accent"
           aria-label={`Escolher ${label} na linha do tempo`}
           onClick={onSelect}
         >
@@ -71,7 +71,7 @@ export function SceneAnimationKeyStrip({
         aria-label={COPY.scene.animationStrip(label, times.length)}
         title={COPY.scene.animationStripHint}
         className={clsx(
-          'relative block min-h-11 min-w-0 flex-1 overflow-hidden rounded-lg border border-mld-border bg-mld-bg p-0 text-mld-accent',
+          'relative block min-h-11 min-w-0 flex-1 overflow-hidden rounded-xl border border-transparent bg-mld-bg p-0 text-mld-accent hover:border-mld-border',
           'focus-visible:outline-2 focus-visible:outline-mld-accent disabled:opacity-40',
         )}
         onKeyDown={(event) => {

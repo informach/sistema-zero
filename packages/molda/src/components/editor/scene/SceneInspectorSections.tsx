@@ -1,6 +1,10 @@
 import { type ReactNode, useEffect, useId, useState } from 'react'
 import { useMediaQuery } from '../../ui/useMediaQuery'
 
+/** As abas do painel compacto: o mesmo segmentado em pílula das abas Modelar/Pintar/Animar. */
+const INSPECTOR_TAB =
+  'min-h-10 flex-1 rounded-full px-2 text-[0.8125rem] font-extrabold text-mld-muted transition hover:text-mld-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mld-accent aria-selected:bg-mld-surface aria-selected:text-mld-accent aria-selected:shadow-sm'
+
 /** Independent scroll regions; compact screens expose named tabs without unmounting forms. */
 export function SceneInspectorSections({
   mode,
@@ -26,7 +30,7 @@ export function SceneInspectorSections({
     >
       {compact && (
         <div
-          className="flex shrink-0 gap-1 border-b border-mld-border"
+          className="flex shrink-0 gap-1 rounded-full bg-mld-bg p-1"
           role="tablist"
           aria-label="Painel da criação"
           onKeyDown={(event) => {
@@ -55,7 +59,7 @@ export function SceneInspectorSections({
               aria-controls={`${id}-overview`}
               tabIndex={tab === 'overview' ? 0 : -1}
               aria-selected={tab === 'overview'}
-              className="min-h-11 flex-1 rounded-t-lg text-xs font-bold aria-selected:bg-mld-bg"
+              className={INSPECTOR_TAB}
               onClick={() => setTab('overview')}
             >
               Movimentos
@@ -68,7 +72,7 @@ export function SceneInspectorSections({
             aria-controls={`${id}-pieces`}
             tabIndex={tab === 'pieces' ? 0 : -1}
             aria-selected={tab === 'pieces'}
-            className="min-h-11 flex-1 rounded-t-lg text-sm font-bold aria-selected:bg-mld-bg"
+            className={INSPECTOR_TAB}
             onClick={() => setTab('pieces')}
           >
             Peças
@@ -80,7 +84,7 @@ export function SceneInspectorSections({
             aria-controls={mode === 'paint' ? `${id}-overview ${id}-details` : `${id}-details`}
             tabIndex={tab === 'details' ? 0 : -1}
             aria-selected={tab === 'details'}
-            className="min-h-11 flex-1 rounded-t-lg text-sm font-bold aria-selected:bg-mld-bg"
+            className={INSPECTOR_TAB}
             onClick={() => setTab('details')}
           >
             {mode === 'paint' ? 'Cores' : mode === 'animation' ? 'Pose' : 'Ajustar'}

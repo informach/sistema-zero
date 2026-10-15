@@ -13,7 +13,7 @@
  */
 import { SCENE_PAINT_COPY } from '../../../core/scenePaintCopy'
 import { RequiresTool } from '../../toolAccess'
-import { Button } from '../../ui/Button'
+import { ChevronDown, FlipHorizontal2 } from '../../ui/icons'
 import { SCENE_TILE_GRID, SceneTile } from './SceneTile'
 import { sceneCommand } from './sceneCommandRegistry'
 import { SCENE_PAINT_ACTIONS, type ScenePaintActionId } from './scenePaintShortcuts'
@@ -26,6 +26,9 @@ import type { useScenePaint } from './useScenePaint'
  * ladrilhos o palco de um celular em pé caía para 190px.
  */
 const PAINT_TILES = SCENE_TILE_GRID
+
+/** A bolinha de cada espessura (o tamanho aproximado do traço). */
+const DOT_SIZE = { 1: 'size-1.5', 2: 'size-2.5', 3: 'size-4' } as const
 
 const WIDTHS = [
   [1, 'paint.width-1'],
@@ -68,6 +71,7 @@ export function ScenePaintToolbox({
                 icon={command.icon}
                 label={command.label}
                 pressed={active}
+                keyHint={key}
                 aria-keyshortcuts={key}
                 title={`${command.label}${key ? ` (${key})` : ''}${command.help ? `. ${command.help}` : ''}`}
                 onClick={() => SCENE_PAINT_ACTIONS[id](paint)}
@@ -86,39 +90,44 @@ export function ScenePaintToolbox({
           className={steadyWhileDrawing(paint, 'min-w-0')}
         >
           <legend className="mld-kicker mb-2">{SCENE_PAINT_COPY.widths}</legend>
-          {/* Três de largura igual numa linha: soltos, o "Grosso" caía sozinho na de baixo. */}
-          <div className="grid grid-cols-1 gap-1">
+          {/*
+           * Três bolinhas num segmentado (o trilho do Pinta e os prints): o nome Fino/Médio/Grosso
+           * é o nome acessível e o `title`. Em palavras, as três ocupavam 144px do trilho.
+           */}
+          <div className="mld-width-seg">
             {WIDTHS.map(([size, id]) => {
               const command = sceneCommand(id)
               const key = command.shortcut?.display
               return (
-                <Button
+                <button
                   key={size}
-                  variant="ghost"
-                  className="px-2 text-sm"
+                  type="button"
+                  aria-label={command.label}
                   aria-pressed={size === brush}
                   aria-keyshortcuts={key}
-                  title={key ? `${command.label} (${key})` : undefined}
+                  title={key ? `${command.label} (${key})` : command.label}
                   onClick={() => SCENE_PAINT_ACTIONS[id](paint)}
                 >
-                  {command.label}
-                </Button>
+                  <span aria-hidden="true" className={DOT_SIZE[size]} />
+                </button>
               )
             })}
           </div>
         </fieldset>
       )}
-      <Button
-        className="w-full px-1 text-xs"
+      <SceneTile
+        data-toggle=""
+        icon={FlipHorizontal2}
+        label={SCENE_PAINT_COPY.mirrorShort}
         aria-label={SCENE_PAINT_COPY.mirror}
-        aria-pressed={paint.mirror}
+        title={SCENE_PAINT_COPY.mirrorHint}
+        pressed={paint.mirror}
         onClick={() => paint.setMirror(!paint.mirror)}
-      >
-        Espelho
-      </Button>
-      <details className="rounded-xl border border-mld-border p-1">
-        <summary className="min-h-11 cursor-pointer py-2 text-center text-xs font-bold">
-          Mais pincéis
+      />
+      <details className="mld-rail-more">
+        <summary>
+          {SCENE_PAINT_COPY.moreBrushes}
+          <ChevronDown aria-hidden="true" />
         </summary>
         <div className={PAINT_TILES}>
           {(['paint.rotate', 'paint.closeup'] as const).map((id) => {

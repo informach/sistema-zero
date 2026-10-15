@@ -111,7 +111,13 @@ export function SceneFirstSteps({
               setOpen(true)
             }
           }}
-          className="sz-tool-icon-btn sz-tool-icon-btn--round shrink-0 bg-mld-surface shadow-(--mld-stage-shadow) hover:bg-mld-bg aria-expanded:bg-mld-accent aria-expanded:text-mld-accent-fg"
+          // Na barra do projeto, o quadrado quieto dos vizinhos (desfazer, refazer); flutuando no
+          // palco, o círculo branco com sombra.
+          className={
+            inline
+              ? 'sz-tool-icon-btn shrink-0 aria-expanded:bg-mld-accent aria-expanded:text-mld-accent-fg'
+              : 'sz-tool-icon-btn sz-tool-icon-btn--round shrink-0 bg-mld-surface shadow-(--mld-stage-shadow) hover:bg-mld-bg aria-expanded:bg-mld-accent aria-expanded:text-mld-accent-fg'
+          }
         >
           <CircleHelp aria-hidden="true" />
         </button>

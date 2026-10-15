@@ -28,14 +28,17 @@ import {
   Camera,
   ChevronDown,
   Grid3x3,
-  Info,
   Lasso,
+  Lightbulb,
   type LucideIcon,
+  Minus,
   MousePointer2,
   Move3d,
+  Plus,
   Rotate3d,
   Scale3d,
   Scan,
+  ScanEye,
   SlidersHorizontal,
   SquareDashedMousePointer,
 } from '../../ui/icons'
@@ -384,7 +387,9 @@ function SceneCanvasAttempt({
     ((name === 'move' || name === 'rotate' || name === 'scale') && !selection.length)
   const chooseTool = (name: SceneCanvasTool) => {
     cancelPaint()
-    setLook(false)
+    // Com a oficina no controle, é ela quem encerra o Olhar, e só quando a troca acontece de
+    // fato: uma prévia de pivô ou de divisão pode segurar a troca ("Continuar ajustando").
+    if (!onToolChange) setLook(false)
     setBrushMode('off')
     setTool(name)
   }
@@ -506,7 +511,7 @@ function SceneCanvasAttempt({
       onClick={frame}
     >
       <Scan aria-hidden="true" />
-      Enquadrar
+      <span className="mld-float-label">Enquadrar</span>
     </button>
   ) : (
     <Button variant="ghost" className="px-3 text-sm" disabled={!view.viewport} onClick={frame}>
@@ -537,7 +542,9 @@ function SceneCanvasAttempt({
     <details className="relative">
       <summary className={summaryClass}>
         {shell && <Camera aria-hidden="true" className="size-4" />}
-        {SCENE_SHELL_COPY.camera(COPY.editor.model.views[camera])}
+        <span className={shell ? 'mld-float-label' : undefined}>
+          {SCENE_SHELL_COPY.camera(COPY.editor.model.views[camera])}
+        </span>
         {shell && <ChevronDown aria-hidden="true" className="size-4" />}
       </summary>
       {/* Flutuando no palco (o Animar) o grupo fica à ESQUERDA: o menu abre para a direita. */}
@@ -640,32 +647,36 @@ function SceneCanvasAttempt({
     </section>
   )
 
+  // "Olhar" é um estado que dura: pílula com o olho, tingida enquanto ligado.
   const lookButton = (
-    <Button
-      variant="ghost"
-      className="px-3 text-sm"
+    <button
+      type="button"
+      className="sz-tool-pill sz-tool-pill--outline mld-look px-3 text-[0.8125rem]"
       aria-pressed={look}
+      title={look ? SCENE_SHELL_COPY.looking : undefined}
       onClick={() => {
         cancelPaint()
         setLook(!look)
       }}
     >
-      Olhar
-    </Button>
+      <ScanEye aria-hidden="true" />
+      <span className="mld-float-label">Olhar</span>
+    </button>
   )
   const hintCard = (
     <div className="mld-stage-card pointer-events-auto flex max-w-full flex-wrap items-center gap-x-2 gap-y-1 px-3 py-2">
       {mode === 'paint' && !paintTarget && (
         // Região viva: o recado muda com o toque, e quem usa leitor de tela precisa ouvir.
         <p role="status" className="flex items-center gap-2 text-sm font-bold">
-          <Info aria-hidden="true" className="size-4 shrink-0 text-mld-accent" />
+          <Lightbulb aria-hidden="true" className="mld-hint-bulb" />
           {SCENE_PAINT_COPY.choosePiece}
         </p>
       )}
       {paintModes}
       {paintTarget && (
-        // No celular a dica ocuparia o palco: ela mora nos Primeiros passos também.
-        <p className="hidden text-xs text-mld-muted md:block">
+        // A faixa da dica é dela (não cobre o palco), então ela aparece também no celular.
+        <p className="flex items-center gap-2 text-[0.8125rem] font-semibold text-mld-text">
+          <Lightbulb aria-hidden="true" className="mld-hint-bulb" />
           {!!document.animations?.length && 'Editando a forma inicial. '}
           {look ? copy.paintLookHint : SCENE_PAINT_COPY.modelHint}
         </p>
@@ -673,8 +684,8 @@ function SceneCanvasAttempt({
       {/* A casca que não preparou lugar para as ferramentas recebe-as aqui, no palco. */}
       {showTools && shell && slots.tools === undefined && tools.map(toolButton)}
       {showTools && !look && (
-        <p className="flex items-center gap-2 text-sm text-mld-text">
-          <Info aria-hidden="true" className="size-4 shrink-0 text-mld-accent" />
+        <p className="flex items-center gap-2 text-sm font-semibold text-mld-text">
+          <Lightbulb aria-hidden="true" className="mld-hint-bulb" />
           <span role={mode === 'animation' && pendingPose ? 'status' : undefined}>
             {mode === 'model' && !!document.animations?.length && 'Editando a forma inicial. '}
             {mode === 'animation' && pendingPose ? copy.animationPosePending : hint}
@@ -741,7 +752,7 @@ function SceneCanvasAttempt({
   return (
     <section
       aria-label={componentSelection ? copy.componentViewport : copy.viewport}
-      className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-mld-bg"
+      className="mld-stage-surface relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-mld-bg"
       onKeyDown={(event) => {
         if (event.key !== 'Escape' || event.defaultPrevented) return
         // O Esc de um diálogo aberto por cima do palco (a "Imagem de apoio") é do diálogo, e o de
@@ -789,7 +800,18 @@ function SceneCanvasAttempt({
         </>,
         () => null,
       )}
-      {slots?.context !== undefined && place(slots.context, hintCard, () => null)}
+      {/*
+       * No pé do palco a dica é a pílula ESCURA (a âncora navy da casa): o tema escuro vale só
+       * dentro dela, e os botões que moram ali (o "Voltar a pintar") herdam a tinta clara.
+       */}
+      {slots?.context !== undefined &&
+        place(
+          slots.context,
+          <div data-molda-theme="dark" className="contents">
+            {hintCard}
+          </div>,
+          () => null,
+        )}
       {shell ? (
         <>
           {/*
@@ -853,24 +875,49 @@ function SceneCanvasAttempt({
         </p>
       )}
       <div className="relative flex min-h-0 flex-1">
-        <div className="absolute bottom-3 right-3 z-20 flex flex-col gap-1 rounded-xl bg-mld-surface p-1 shadow-sm">
-          <Button
+        <div className="mld-zoom">
+          <button
+            type="button"
             aria-label="Aproximar"
-            className="min-w-11 px-2"
+            title="Aproximar"
             disabled={!view.viewport?.zoom}
             onClick={() => view.viewport?.zoom?.(1.2)}
           >
-            +
-          </Button>
-          <Button
+            <Plus aria-hidden="true" />
+          </button>
+          <button
+            type="button"
             aria-label="Afastar"
-            className="min-w-11 px-2"
+            title="Afastar"
             disabled={!view.viewport?.zoom}
             onClick={() => view.viewport?.zoom?.(1 / 1.2)}
           >
-            −
-          </Button>
+            <Minus aria-hidden="true" />
+          </button>
         </div>
+        {/* A legenda dos eixos: a mesma cor das alças e dos selos do painel (só no 3D que mexe). */}
+        {shell && mode !== 'paint' && !paintTarget && (
+          <p aria-hidden="true" className="mld-axis-legend">
+            <span className="mld-axis-item">
+              <span className="mld-axis" data-axis="x">
+                X
+              </span>
+              {SCENE_SHELL_COPY.axes[0]}
+            </span>
+            <span className="mld-axis-item">
+              <span className="mld-axis" data-axis="y">
+                Y
+              </span>
+              {SCENE_SHELL_COPY.axes[1]}
+            </span>
+            <span className="mld-axis-item">
+              <span className="mld-axis" data-axis="z">
+                Z
+              </span>
+              {SCENE_SHELL_COPY.axes[2]}
+            </span>
+          </p>
+        )}
         <ReferenceImageGuide
           view={camera}
           disabled={!view.viewport || !!view.error || view.lost}

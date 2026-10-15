@@ -16,6 +16,8 @@ export function SceneTile({
   icon: Icon,
   label,
   ink,
+  tint = false,
+  keyHint,
   pressed,
   className,
   style,
@@ -26,6 +28,13 @@ export function SceneTile({
   label: string
   /** A cor do ícone (a da forma); o ladrilho ligado usa a tinta dele. */
   ink?: string
+  /** Fundo claro na cor de `ink` (as formas de "Adicionar"). */
+  tint?: boolean
+  /**
+   * A tecla do atalho, desenhada no canto (só com mouse). Só para atalhos que EXISTEM: o
+   * `aria-keyshortcuts` continua sendo o anúncio para quem usa leitor de tela.
+   */
+  keyHint?: string
   /** Ladrilho de ESCOLHA (uma ferramenta): liga o visual e o `aria-pressed`. */
   pressed?: boolean
   ref?: Ref<HTMLButtonElement>
@@ -34,12 +43,18 @@ export function SceneTile({
     <button
       type={type ?? 'button'}
       aria-pressed={pressed}
+      data-tint={tint && ink ? '' : undefined}
       className={clsx('mld-tile', className)}
       style={ink ? ({ ...style, '--mld-tile-ink': ink } as CSSProperties) : style}
       {...props}
     >
       <Icon aria-hidden="true" />
       <span>{label}</span>
+      {keyHint && (
+        <span aria-hidden="true" className="mld-tile-key">
+          {keyHint}
+        </span>
+      )}
     </button>
   )
 }

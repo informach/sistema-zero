@@ -26,4 +26,21 @@ export const SCENE_SHELL_COPY = {
   surface: 'Cor e acabamento da peça',
   /** A faixa das ferramentas do Animar, à esquerda do palco. */
   animationTools: 'Ferramentas do movimento',
+  /** O nome curto do botão vermelho do cartão da peça (o acessível é "Apagar seleção"). */
+  removeShort: 'Apagar',
+  duplicateHint: 'Duplicar (Ctrl+D)',
+  /** Os eixos como a criança os chama, na legenda do palco e nas linhas do painel. */
+  axes: ['lado', 'altura', 'frente e fundo'] as const,
+  /** O selo do salvamento no cabeçalho (o texto inteiro fica no `title` e no menu). */
+  saveShort: {
+    saved: 'Salvo',
+    saving: 'Salvando',
+    error: 'Não salvou',
+    pose: 'Pose por marcar',
+  },
+  posePendingSave: 'Esta pose ainda não foi marcada. Marque a pose para guardá-la no projeto.',
+  /** O `title` do "Olhar" ligado: como voltar a criar. */
+  looking: 'Olhando o modelo. Clique numa ferramenta para voltar.',
+  placeOnGround: 'Colocar no chão',
+  placeOnTop: 'Colocar em cima',
 } as const

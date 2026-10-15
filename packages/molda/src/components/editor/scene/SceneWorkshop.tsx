@@ -17,7 +17,7 @@ import type { SceneViewportFactory, SceneViewportPort } from '../../../viewport/
 import { useMoldaToolAccess } from '../../toolAccess'
 import { Button } from '../../ui/Button'
 import { Dialog, isMoldaDialogOpen } from '../../ui/Dialog'
-import { Crosshair, Focus, ListChecks } from '../../ui/icons'
+import { ChevronDown, Crosshair, Focus, ListChecks } from '../../ui/icons'
 import { isTypingTarget } from '../../ui/interaction'
 import { DeferredModule } from '../DeferredEditor'
 import { WorkspaceInspector } from '../model/WorkspaceInspector'
@@ -235,8 +235,9 @@ export function SceneWorkshop({
       onKeyDown={(event) => {
         if (event.defaultPrevented || isTypingTarget(event.target) || isMoldaDialogOpen()) return
         if (event.key === 'Escape' && workshop.modelGuides.owner) {
+          // Esc é o "Cancelar" da barra da prévia: descarta direto, sem perguntar de novo.
           event.preventDefault()
-          workshop.requestTransition(workshop.modelGuides.cancel)
+          workshop.modelGuides.cancel()
         } else if (event.key === 'Escape' && workshop.placing) {
           event.preventDefault()
           workshop.cancelPlacement()
@@ -408,10 +409,13 @@ export function SceneWorkshop({
             faceToggle={faceToggle}
             onToggleFaces={() => {
               if (workshop.components.selection) closeFaces()
-              else {
-                workshop.setTool('select')
-                workshop.components.open()
-              }
+              // Uma prévia de pivô ou de divisão pergunta ANTES: abrir a malha por baixo dela
+              // misturava os dois contextos.
+              else
+                workshop.requestTransition(() => {
+                  workshop.setTool('select')
+                  workshop.components.open()
+                })
             }}
             canConvert={canConvert}
           />
@@ -426,11 +430,15 @@ export function SceneWorkshop({
             aria-label={SCENE_SHELL_COPY.animationTools}
             className="mld-workshop-rail mld-bar"
           >
+            <p aria-hidden="true" className="mld-kicker">
+              {SCENE_SHELL_COPY.tools}
+            </p>
             <div ref={setToolsSlot} className="flex flex-col gap-1.5" />
             {can('model.precise') && selected.length === 1 && (
-              <details>
-                <summary className="min-h-11 cursor-pointer py-3 text-center text-xs font-bold">
+              <details className="mld-rail-more">
+                <summary>
                   Mais ferramentas
+                  <ChevronDown aria-hidden="true" />
                 </summary>
                 <SceneTile
                   icon={Crosshair}
@@ -456,14 +464,20 @@ export function SceneWorkshop({
           <div
             className={`mld-workshop-stage flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden max-[899px]:flex-none ${mode === 'animation' ? 'max-[899px]:h-[500px] max-[899px]:min-h-[500px]' : 'max-[899px]:h-[420px] max-[899px]:min-h-[420px]'}`}
           >
+            {/* As ferramentas de OLHAR flutuam no alto do palco em dois cartões brancos. */}
             <div className="mld-stage-toolbar">
-              <div ref={setTogglesSlot} className="flex items-center gap-1" />
+              <div ref={setTogglesSlot} className="mld-float" />
               {workshop.isolation !== null && (
-                <Button className="text-sm" onClick={() => workshop.setIsolation(null)}>
+                <button
+                  type="button"
+                  className="sz-tool-pill sz-tool-pill--outline text-[0.8125rem] shadow-(--mld-float-shadow)"
+                  onClick={() => workshop.setIsolation(null)}
+                >
+                  <Focus aria-hidden="true" />
                   Ver todas as peças
-                </Button>
+                </button>
               )}
-              <div ref={setViewSlot} className="ml-auto flex items-center gap-1" />
+              <div ref={setViewSlot} className="mld-float ml-auto" />
             </div>
             <SceneCanvas
               guideInput={workshop.modelGuides.owner ? (workshop.modelGuides.input ?? {}) : null}
@@ -579,7 +593,17 @@ export function SceneWorkshop({
               }
               pieces={
                 <>
-                  <h3 className="mld-kicker px-1 pt-1">{copy.hierarchy}</h3>
+                  <div className="flex items-center justify-between gap-2 px-1 pb-1">
+                    <h3 className="mld-kicker">{copy.hierarchy}</h3>
+                    {document.nodes.length > 0 && (
+                      <span
+                        aria-hidden="true"
+                        className="rounded-full bg-mld-bg px-2 py-0.5 text-[0.6875rem] font-extrabold text-mld-muted tabular-nums"
+                      >
+                        {document.nodes.length}
+                      </span>
+                    )}
+                  </div>
                   {/* No Modelar ele mora em "Mais ferramentas"; em Pintar a escolha é de uma peça. */}
                   {mode === 'animation' && (
                     <Button

@@ -1,8 +1,31 @@
-import { type Camera, Group } from 'three'
+import { type Camera, Group, type Material, type Object3D } from 'three'
 import { TransformControls } from 'three/addons/controls/TransformControls.js'
 import type { Vec3 } from '../core/model'
 import { type AffineMatrix, affineInverse, affineMultiply } from '../scene/matrix'
 import type { SceneTransformActions, SceneTransformTool } from './sceneViewportTypes'
+
+/**
+ * As cores dos eixos da casa (15/10/2026): as mesmas dos selos X/Y/Z do painel e da legenda do
+ * palco, no lugar do vermelho, verde e azul puros do TransformControls. O amarelo do destaque
+ * ao passar o ponteiro continua o do three.
+ */
+const AXIS_TINT = new Map([
+  [0xff0000, 0xe5484d],
+  [0x00ff00, 0x30a46c],
+  [0x0000ff, 0x3e63dd],
+])
+
+/** Recolore os materiais básicos das alças (cada alça tem o seu, clonado pelo three). */
+export function tintGizmoAxes(root: Object3D) {
+  root.traverse((object) => {
+    const materials = (object as { material?: Material | Material[] }).material
+    for (const material of Array.isArray(materials) ? materials : materials ? [materials] : []) {
+      const color = (material as { color?: { getHex(): number; setHex(hex: number): void } }).color
+      const tint = color && AXIS_TINT.get(color.getHex())
+      if (color && tint !== undefined) color.setHex(tint)
+    }
+  })
+}
 
 /** Transform a disposable world-space proxy; never decompose an authorial matrix with shear. */
 export class SceneTransformGizmo {
@@ -45,6 +68,7 @@ export class SceneTransformGizmo {
     this.controls.addEventListener('mouseUp', this.finish)
     this.controls.addEventListener('change', request)
     this.controls.enabled = false
+    tintGizmoAxes(this.controls.getHelper())
     this.root.add(this.proxy, this.controls.getHelper())
   }
 

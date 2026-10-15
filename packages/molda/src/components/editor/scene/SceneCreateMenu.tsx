@@ -1,6 +1,5 @@
 import { useId, useState } from 'react'
 import { COPY } from '../../../core/copy'
-import { SCENE_TOOL_ACCESS_COPY } from '../../../core/sceneToolAccessCopy'
 import { addSceneLocator } from '../../../scene/commands'
 import { addScenePrimitiveNear, sceneInsertionParent } from '../../../scene/placement'
 import { useMoldaToolAccess } from '../../toolAccess'
@@ -49,7 +48,7 @@ export function SceneCreateMenu({
   return (
     <section aria-labelledby={headingId} className="space-y-2">
       <h3 id={headingId} className="mld-kicker">
-        {locator ? COPY.scene.add : SCENE_TOOL_ACCESS_COPY.addShape}
+        {COPY.scene.add}
       </h3>
       {document.nodes.some((node) => node.kind === 'group') && (
         <details className="text-xs text-mld-muted">
@@ -86,6 +85,7 @@ export function SceneCreateMenu({
               icon={icon}
               label={COPY.shapes[kind]}
               ink={`var(--mld-shape-${kind})`}
+              tint
               onClick={() =>
                 run(
                   (source) =>
@@ -107,6 +107,7 @@ export function SceneCreateMenu({
             icon={Crosshair}
             label={COPY.scene.addLocator}
             ink="var(--mld-shape-special)"
+            tint
             onClick={() =>
               run((source) => addSceneLocator(source, COPY.scene.locatorName), 'created')
             }

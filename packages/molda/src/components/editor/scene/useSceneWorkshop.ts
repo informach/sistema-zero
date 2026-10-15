@@ -4,6 +4,7 @@ import { COPY } from '../../../core/copy'
 import { SCENE_PAINT_COPY } from '../../../core/scenePaintCopy'
 import type { SceneAnimationTarget } from '../../../scene/animationTarget'
 import type { MoldaSceneDocument } from '../../../scene/document'
+import { sameSceneContent } from '../../../scene/documentContent'
 import { indexSceneDocument } from '../../../scene/documentIndex'
 import { SceneGraphError, selectSceneSubtrees } from '../../../scene/graph'
 import type { ScenePaintTarget } from '../../../scene/imagePaint'
@@ -74,6 +75,22 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
     useState<MoldaSceneDocument | null>(null)
   const [placementPreview, setPlacementPreview] = useState<MoldaSceneDocument | null>(null)
   const placementTarget = useRef<string | null>(null)
+  // O conteúdo em que "Colocar em cima" começou: qualquer mudança nele (desfazer, apagar,
+  // adicionar) encerra a preparação, senão o palco mostraria uma prévia de outra criação.
+  const placementSource = useRef<MoldaSceneDocument | null>(null)
+  // Pivô é de UMA peça: com várias (ou nenhuma) escolhidas, a ferramenta volta a Escolher em vez
+  // de deixar o cartão com botões desligados e sem motivo.
+  useEffect(() => {
+    if (tool === 'pivot' && chosen.length !== 1) setTool('select')
+  }, [tool, chosen.length])
+  useEffect(() => {
+    const source = placementSource.current
+    if (!placing || !source || sameSceneContent(source, document)) return
+    placementSource.current = null
+    placementTarget.current = null
+    setPlacing(false)
+    setPlacementPreview(null)
+  }, [placing, document])
   const [paintIssue, setPaintIssue] = useState<ScenePaintIssue | null>(null)
   const paint = useScenePaint(editor)
   const skinPaint = useSceneSkinPaint(editor)
@@ -318,6 +335,8 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
         setMessage(null)
         if (selection === 'clear') setChosen([])
         if (selection === 'created') {
+          // A peça nova chega pronta para Mover: o próximo arrasto nela a move, não gira a câmera.
+          setLooking(false)
           setTool('move')
           const oldIds = new Set(before.nodes.map((node) => node.id))
           const created = new Set(
@@ -493,6 +512,8 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
     setLooking(false)
     setPlacing(false)
     setPlacementPreview(null)
+    // O recado de uma aba não atravessa para a outra (o vermelho do Pintar ficava no Modelar).
+    setMessage(null)
     cancelGesture()
     releasePrep()
     closePaint()
@@ -517,8 +538,8 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
     // Entrar em Pintar com UMA peça escolhida já deixa pintar nela; com várias, a criança escolhe.
     const ids = chosenRef.current
     const only = ids.length === 1 ? source.nodes.find((node) => node.id === ids[0]) : undefined
+    // Sem uma peça só, a dica do palco já pede a escolha ("Toque numa peça…"): não é um erro.
     if (only?.kind === 'mesh') choosePaint(only.id)
-    else setMessage('Escolha uma peça para pintar.')
   }
   return {
     editor,
@@ -547,13 +568,17 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
     requestTransition,
     resolveTransition,
     undo: () => {
-      if (animationPose.getSnapshot().pending || animationPose.getSnapshot().canRedo) {
+      // O rascunho da pose responde enquanto tem passos para desfazer; sem eles, o próximo
+      // Desfazer age no histórico confirmado (antes, um rascunho com só Refazer travava o botão).
+      const draft = animationPose.getSnapshot()
+      if (draft.pending || draft.dragging || draft.canUndo) {
         animationPose.undo()
         return
       }
       requestTransition(() => {
         cancelGesture()
         releasePrep()
+        if (draft.canRedo) animationPose.cancel()
         editor.getState().undo()
       })
     },
@@ -586,6 +611,7 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
     startPlacement: () => {
       gesture.cancel()
       setLooking(false)
+      placementSource.current = editor.getState().content
       placementTarget.current = null
       setPlacementPreview(null)
       setPlacing(true)

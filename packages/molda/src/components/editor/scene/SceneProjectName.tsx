@@ -4,6 +4,7 @@ import type { MoldaSceneDocument } from '../../../scene/document'
 import type { EditorStore } from '../../../state/editorStore'
 import { useOptionalMoldaApp } from '../../appContext'
 import { Button } from '../../ui/Button'
+import { Box, Pencil } from '../../ui/icons'
 
 export function SceneProjectName({
   name,
@@ -18,19 +19,22 @@ export function SceneProjectName({
   const disclosure = useRef<HTMLDetailsElement>(null)
   const [error, setError] = useState<string | null>(null)
   return (
-    <details ref={disclosure} className="relative min-w-0 flex-1">
+    <details ref={disclosure} className="relative min-w-0 shrink">
+      {/* O cubo do Molda, o nome e o lápis, como nos prints: o nome cede com reticências. */}
       <summary
         aria-label={`Renomear ${name}`}
-        className="mld-display flex min-h-11 cursor-pointer list-none items-center gap-1 text-base"
+        className="mld-display group flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-xl px-1.5 text-[1.0625rem] hover:bg-mld-bg focus-visible:outline-2 focus-visible:outline-mld-accent [&::-webkit-details-marker]:hidden"
       >
+        <Box aria-hidden="true" className="size-[1.125rem] shrink-0 text-mld-accent" />
         <h1 tabIndex={-1} className="flex min-w-0 items-center gap-1">
           <span className="truncate" title={name}>
             {name}
           </span>
         </h1>
-        <span aria-hidden="true" className="text-sm text-mld-muted">
-          ✎
-        </span>
+        <Pencil
+          aria-hidden="true"
+          className="size-3.5 shrink-0 text-mld-muted group-hover:text-mld-text"
+        />
       </summary>
       <form
         className="mld-drop left-0 top-full mt-2"

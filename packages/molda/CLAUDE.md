@@ -16,6 +16,30 @@ Prévia de pintura usa `editor.stage`: autosave, flush e backup leem `saveSnapsh
 persistir a preparação antes da ação confirmada. `commit`/`commitGesture` encerram a prévia
 em um passo de desfazer. Rascunhos de pose são separados por perfil e criação.
 
+## Direção de arte da oficina — 15/10/2026
+
+Relatório: `docs/plans/2026-10-15-molda-direcao-de-arte-full-review.md` (antes/depois e os 25
+achados de código corrigidos). A pele segue as telas-modelo (`--sz-tool-*`) e os cinco prints:
+
+- **Receitas novas em `molda.css`** (`@layer components`): `.mld-float` (cartões que flutuam no
+  palco), `.mld-zoom`, `.mld-axis`/`.mld-axis-legend` (X/Y/Z com `--mld-axis-*`, as MESMAS cores
+  das alças: `tintGizmoAxes` recolore o TransformControls), `.mld-piece` (linha baixa da árvore),
+  `.mld-kind-chip`, `.mld-chip-btn`, `.mld-step`, `.mld-disclosure` (todo `<details>` do painel),
+  `.mld-rail-more`, `.mld-width-seg`, `.mld-scrubber`, `.mld-transport-btn`. Ladrilho em repouso
+  é TRANSPARENTE; `tint` pinta as formas; `keyHint` só para atalho que existe (paint P/G/E/I).
+- **Palco = uma superfície**: `--mld-stage-bg` no `.mld-workshop-stage`; o 3D e a imagem de apoio
+  levam `.mld-stage-surface` (fundo transparente, regra SEM camada para vencer o `bg-*`).
+- **Dica na pílula escura**: o `hintCard` no lugar `context` vai dentro de um
+  `<div data-molda-theme="dark" className="contents">`; os botões dela herdam o tema escuro.
+- ⚠️ `Button` tem `px-4` e o Tailwind não faz merge: `px-0/1/2/3` passados por `className`
+  PERDEM. Para botão estreito, use `<button>` com as próprias classes (a seta da árvore sumia).
+- Selo de salvar: `data-state` = `saved|saving|dirty|pose|error`; "Pose por marcar" e "Não
+  salvou" nunca encolhem para o ícone; o erro tem região viva FORA do `<details>`.
+- O título "Peças e propriedades" do painel encaixado é `sr-only` (segue nome da região e alvo de
+  foco). Apagar/Desagrupar devolvem o foco ao palco (`focusWorkshopStage`).
+- Copy: o título das formas é "Adicionar" (`COPY.scene.add` e `addShape`), o do Pintar é
+  "Ferramentas"; os e2e acham por esses textos.
+
 ## ⚠️⚠️ `content-visibility: auto` num cartão que recebe o ponteiro faz o cursor PISCAR (13/09/2026)
 
 Relato dela: "quando passo o mouse em cima de um card de um projeto em andamento, o mouse fica

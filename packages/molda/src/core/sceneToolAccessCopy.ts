@@ -5,8 +5,8 @@
  */
 export const SCENE_TOOL_ACCESS_COPY = {
   upcoming: 'Ferramentas que vêm por aí',
-  /** Com o ponto de apoio trancado, o menu de adicionar só tem formas. */
-  addShape: 'Adicionar forma',
+  /** O título da seção das formas no trilho (o mesmo com ou sem o ponto de apoio). */
+  addShape: 'Adicionar',
   /** Só o espelho no meio (o básico): sem escolher eixo nem posição. */
   mirrorMiddleHint:
     'O espelho acompanha sua peça: o que você faz de um lado aparece do outro, no meio da oficina.',

@@ -10,10 +10,7 @@ export function SceneSurfaceStrip({ workshop }: { workshop: ReturnType<typeof us
   const { can } = useMoldaToolAccess()
   if (!can('model.finish')) return null
   return (
-    <section
-      aria-label={SCENE_SHELL_COPY.surface}
-      className="mld-bar border-t border-mld-border py-3"
-    >
+    <section aria-label={SCENE_SHELL_COPY.surface} className="border-t border-mld-border pt-3">
       {workshop.primary?.kind === 'mesh' ? (
         <ScenePieceFinish workshop={workshop} />
       ) : (

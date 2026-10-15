@@ -82,9 +82,14 @@ export function createSceneAnimationPreset(
           keys: keys.map((key) => ({ ...key, value: quaternionFromEulerXYZ(key.value) })),
         }
   })
+  // "Pular" duas vezes vira "Pular" e "Pular 2": a lista de movimentos precisa distinguir.
+  const taken = new Set((document.animations ?? []).map((clip) => clip.name))
+  let unique = name
+  for (let copy = 2; taken.has(unique); copy++)
+    unique = `${name.slice(0, 48 - ` ${copy}`.length).trimEnd()} ${copy}`
   const clip = readSceneAnimationClip({
     id: allocateSceneId(document, nextId)(),
-    name,
+    name: unique,
     duration,
     fps: 24,
     loop: true,
