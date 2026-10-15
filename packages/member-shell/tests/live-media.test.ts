@@ -243,6 +243,58 @@ test('a tela da professora sai a 15 quadros por segundo (o ritmo do desenho), a 
   expect(liveVideoEncodings('camera')[0]?.maxFramerate).toBe(20)
 })
 
+/** O que `captureLiveTab` pede ao navegador (sem trilha aprovada ela recusa depois; não importa). */
+async function pedidoDaCaptura(currentTab?: boolean): Promise<DisplayMediaStreamOptions> {
+  const { captureLiveTab } = await import('../src/lib/live/media-devices')
+  let asked: DisplayMediaStreamOptions | undefined
+  const original = Object.getOwnPropertyDescriptor(globalThis, 'navigator')
+  const empty = { getVideoTracks: () => [], getAudioTracks: () => [], getTracks: () => [] }
+  Object.defineProperty(globalThis, 'navigator', {
+    configurable: true,
+    value: {
+      mediaDevices: {
+        getDisplayMedia: async (options: DisplayMediaStreamOptions) => {
+          asked = options
+          return empty
+        },
+      },
+    },
+  })
+  try {
+    await captureLiveTab({
+      handle: 'sz-live-demo:teste',
+      origin: 'https://kids.example',
+      ...(currentTab === undefined ? {} : { currentTab }),
+    }).catch(() => undefined)
+  } finally {
+    if (original) Object.defineProperty(globalThis, 'navigator', original)
+  }
+  if (!asked) throw new Error('getDisplayMedia não foi chamado')
+  return asked
+}
+
+test('a captura da aba já pede o ritmo do desenho: a fonte não pode ficar abaixo do envio', async () => {
+  const { ANNOTATION_FPS } = await import('../src/lib/live/screen-annotation')
+  const video = (await pedidoDaCaptura()).video as MediaTrackConstraints
+  expect((video.frameRate as ConstrainDoubleRange).max).toBe(ANNOTATION_FPS)
+  expect(liveVideoEncodings('demo')[0]?.maxFramerate).toBe(ANNOTATION_FPS)
+})
+
+test('a demonstração é OUTRA aba: a sala sai da lista do navegador em vez de vir em destaque', async () => {
+  // Medido no Chrome (ensaio de 14/10/2026): com `preferCurrentTab`, a escolha em destaque era a
+  // própria sala, e a validação a recusava ("Escolha esta aba…").
+  const sala = (await pedidoDaCaptura()) as DisplayMediaStreamOptions & Record<string, unknown>
+  expect(sala.preferCurrentTab).toBe(true)
+  expect(sala.selfBrowserSurface).toBe('include')
+  const demo = (await pedidoDaCaptura(false)) as DisplayMediaStreamOptions & Record<string, unknown>
+  expect(demo.preferCurrentTab).toBe(false)
+  expect(demo.selfBrowserSurface).toBe('exclude')
+  const painel = await Bun.file(
+    new URL('../src/components/live/live-media-panel.tsx', import.meta.url),
+  ).text()
+  expect(painel).toMatch(/handle: `sz-live-demo:[^`]+`,\s*currentTab: false,/)
+})
+
 test('o fundo da câmera anda no relógio em Worker, nunca no relógio da página', async () => {
   // Com a aba da sala em segundo plano, o setInterval da página cai a 1 por segundo (e a 1 por
   // minuto depois de alguns minutos): a câmera com efeito travava e o vigia de 4 s a desligava.

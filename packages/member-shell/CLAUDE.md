@@ -30,7 +30,19 @@ ferramentas de desenho.
   Regra: imagem que vai para a turma nunca anda no relógio da página.
 - **15 quadros por segundo na tela e na demonstração** (`liveVideoEncodings` no
   `media-transport.ts`, teto 1,5 Mbps; câmera 20 a 600 kbps): eram 10, e a seta e a caneta
-  chegavam aos saltos na tela da criança. O teste amarra ao `ANNOTATION_FPS`.
+  chegavam aos saltos na tela da criança. O teste amarra ao `ANNOTATION_FPS`. ⚠️ A CAPTURA da aba
+  (`captureLiveTab`, `media-devices.ts`) também pede 15: até 14/10/2026 ela pedia `max: 10`, e a
+  fonte a 10 deixava a codificação a 15 sem efeito (o Estúdio da professora seguia aos saltos). O
+  teste confere o pedido feito ao navegador. Medido com captura de aba REAL no Chrome
+  (`admin/tmp/desenho-real/`, descartável): com a fonte a 10 a turma recebia 14,4 quadros por
+  segundo, mas só 9,6 imagens NOVAS; com 15, 13,3.
+- ⚠️⚠️ **A demonstração é OUTRA aba** (`captureLiveTab({ currentTab: false })`): `preferCurrentTab`
+  falso e `selfBrowserSurface: 'exclude'`, então a sala SAI da lista do Chrome. Com o padrão
+  (`currentTab` verdadeiro, que é o certo para compartilhar a própria sala) o Chrome punha a SALA
+  em destaque, justamente a aba que a validação recusa ("Escolha esta aba…"). ⚠️ A validação pelo
+  identificador da aba (`getCaptureHandle`) não se prova no Chrome automatizado: com
+  `--auto-select-tab-capture-source-by-title` ele chega `null` sempre, inclusive em HTTPS. Confira
+  "Transmitir aba de demonstração" à mão em staging.
 - **Modelo puro** (`lib/live/annotation.ts`): formas VETORIAIS (caneta, marca-texto, seta,
   retângulo, círculo, texto), uma camada por superfície (tela e quadro guardam desenhos
   separados), desfazer por versões (forma nova, uma passada inteira de borracha e "limpar tudo"

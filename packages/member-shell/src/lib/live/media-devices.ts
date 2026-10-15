@@ -41,18 +41,27 @@ export async function captureLiveTab(options: {
   handle: string
   origin?: string
   onInvalidated?: () => void
+  /**
+   * `true` (padrão): a aba a escolher é ESTA (a sala compartilhada), e o Chrome a oferece em
+   * destaque. `false`: a aba é OUTRA (a demonstração), e esta sai da lista: em destaque, ela era
+   * justamente a escolha que a validação recusa.
+   */
+  currentTab?: boolean
 }): Promise<MediaStream> {
   const origin = options.origin ?? window.location.origin
+  const currentTab = options.currentTab ?? true
   const stream = await navigator.mediaDevices.getDisplayMedia({
     video: {
       displaySurface: 'browser',
-      frameRate: { max: 10 },
+      // O mesmo ritmo do envio e do desenho (`ANNOTATION_FPS`): com a fonte a 10, a codificação a
+      // 15 não adiantava e o Estúdio da professora chegava aos saltos à criança.
+      frameRate: { ideal: 15, max: 15 },
       width: { max: 1600 },
       height: { max: 1000 },
     },
     audio: false,
-    preferCurrentTab: true,
-    selfBrowserSurface: 'include',
+    preferCurrentTab: currentTab,
+    selfBrowserSurface: currentTab ? 'include' : 'exclude',
     systemAudio: 'exclude',
     surfaceSwitching: 'exclude',
   } as DisplayMediaStreamOptions)

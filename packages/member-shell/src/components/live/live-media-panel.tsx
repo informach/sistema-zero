@@ -354,6 +354,7 @@ export function useLiveMedia({
     () =>
       captureLiveTab({
         handle: `sz-live-demo:${roomRef.current.session.id}`,
+        currentTab: false,
         onInvalidated: () => stop('demo'),
       }),
     [stop],
