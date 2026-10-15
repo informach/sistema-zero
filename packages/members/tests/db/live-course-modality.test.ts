@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import { resolve } from 'node:path'
 import type { LiveCohort, LiveEnrollment, LiveProgram, LiveSession } from '@sistemazero/core/live'
+import { createBlankProjectSnapshot } from '@sistemazero/studio/blank-project'
 import { eq, sql as query } from 'drizzle-orm'
 import { readMigrationFiles } from 'drizzle-orm/migrator'
 import { CourseModalityLockedError } from '../../src/domain/course/course.errors'
@@ -9,6 +10,7 @@ import { DrizzleContentAdminRepository } from '../../src/infrastructure/persiste
 import { DrizzleCourseRepository } from '../../src/infrastructure/persistence/drizzle/course.repository'
 import { createDbConnection } from '../../src/infrastructure/persistence/drizzle/db'
 import { DrizzleGamificationRepository } from '../../src/infrastructure/persistence/drizzle/gamification.repository'
+import { DrizzleLessonDraftRepository } from '../../src/infrastructure/persistence/drizzle/lesson-draft.repository'
 import { DrizzleLiveLessonAccessRepository } from '../../src/infrastructure/persistence/drizzle/live-lesson-access.repository'
 import {
   courses,
@@ -27,6 +29,7 @@ import {
 } from '../../src/infrastructure/persistence/drizzle/schema'
 import { eligibleStudioGrants } from '../../src/infrastructure/persistence/drizzle/studio-unlock-eligibility'
 import { DrizzleZappyKnowledgeRepository } from '../../src/infrastructure/persistence/drizzle/zappy-knowledge.repository'
+import { parsePublishedLessonBlock } from '../../src/interfaces/http/lesson-draft.dtos'
 
 /**
  * Cursos AO VIVO (14/10/2026) no PostgreSQL REAL, com as migrations de verdade (inclusive a
@@ -109,6 +112,52 @@ describe.skipIf(!url)('Cursos ao vivo — PostgreSQL', () => {
         })
     return { id, lessonIds: lessonIds as [string, string] }
   }
+
+  test(
+    'publicação e revisão recusam entregas de Estúdio em curso ao vivo',
+    async () => {
+      const course = await insertCourse({
+        modality: 'live',
+        sequentialLock: false,
+        journeyRole: 'reward',
+      })
+      const repository = new DrizzleLessonDraftRepository(get().db, parsePublishedLessonBlock)
+      const lessonId = course.lessonIds[0]
+      const authorId = randomUUID()
+      const draft = await repository.read(lessonId)
+      const blockId = randomUUID()
+      const changed = await repository.replace(lessonId, authorId, draft.revision, randomUUID(), {
+        ...draft.document,
+        blocks: [
+          {
+            id: blockId,
+            content: {
+              kind: 'studio',
+              purpose: 'submission',
+              initialProject: createBlankProjectSnapshot(randomUUID(), 'Projeto'),
+            },
+          },
+        ],
+        sections: draft.document.sections.map((s, i) =>
+          i === 0 ? { ...s, blockIds: [blockId], workspaceBlockId: blockId } : s,
+        ),
+      })
+      expect(
+        (await repository.validate(lessonId, changed.revision, [])).some((issue) =>
+          issue.message.includes('Estúdio ao vivo'),
+        ),
+      ).toBe(true)
+      const rejected = await repository
+        .publish(lessonId, authorId, changed.revision, randomUUID(), [])
+        .then(
+          () => null,
+          (error: unknown) => error,
+        )
+      expect(rejected).toBeInstanceOf(Error)
+      expect(String(rejected)).toContain('Estúdio ao vivo')
+    },
+    SLOW,
+  )
 
   /** Uma turma do curso ao vivo com um encontro por aula e a vaga de uma criança. */
   async function insertCohort(input: {

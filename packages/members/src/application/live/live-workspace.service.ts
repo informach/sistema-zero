@@ -377,7 +377,7 @@ export class LiveWorkspaceService {
   }
 
   async listOwned(actor: LiveActor) {
-    if (actor.staff || actor.id === actor.accountId) return { workspaces: [] }
+    if (actor.staff) return { workspaces: [] }
     const records = await this.repository.listOwned(actor.accountId, actor.id)
     const workspaces = await Promise.all(
       records.map(async (workspace) => {

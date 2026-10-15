@@ -324,8 +324,10 @@ test('gravação: professora atribuída revisa, publica e manda ao Vimeo; equipe
   }
   // The assigned teacher (staff) may send it; an unassigned one may not.
   expect((await f.send(vimeo, outsider, valid, 'PUT')).status).toBe(404)
+  expect((await f.send(vimeo, outsider)).status).toBe(404)
   const saved = await f.send(vimeo, staff, valid, 'PUT')
   expect(saved.status).toBe(200)
+  expect(await (await f.send(vimeo, staff)).json()).toMatchObject({ recording: { vimeo: valid } })
   expect(await saved.json()).toMatchObject({
     occurrenceId: session.occurrenceId,
     recording: { vimeo: valid, published: true },

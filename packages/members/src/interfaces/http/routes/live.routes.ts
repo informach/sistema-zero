@@ -381,6 +381,11 @@ export function liveRoutes(deps: LiveRoutesDeps) {
       ({ headers, params }) => deps.live.recordingSource(resolveLiveActor(headers), params.id),
       { params: idParams },
     )
+    .get(
+      '/occurrences/:id/recording/vimeo',
+      ({ headers, params }) => deps.live.recordingVimeo(resolveLiveActor(headers), params.id),
+      { params: idParams },
+    )
     .put(
       '/occurrences/:id/recording/vimeo',
       ({ headers, params, body }) =>

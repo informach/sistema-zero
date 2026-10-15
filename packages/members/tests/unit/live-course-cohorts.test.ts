@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import { ValidationError } from '@sistemazero/core/errors'
 import { LiveService, type LiveServiceOptions } from '../../src/application/live/live.service'
+import { LiveWorkspaceService } from '../../src/application/live/live-workspace.service'
 import {
   LiveAccessError,
   LiveConflictError,
@@ -11,6 +12,7 @@ import type { LiveRecordingSegmentTime } from '../../src/domain/live/recording-c
 import type { LiveActor } from '../../src/domain/ports/live-repository.port'
 import type { LiveRewardsPort } from '../../src/domain/ports/live-rewards.port'
 import { InMemoryLiveCourses, InMemoryLiveRepository } from '../fakes/live-in-memory'
+import { InMemoryLiveWorkspaceRepository } from '../fakes/live-workspace-in-memory'
 
 const admin: LiveActor = {
   id: randomUUID(),
@@ -522,4 +524,49 @@ describe('gravação com Vimeo e capítulos', () => {
       LiveConflictError,
     )
   })
+})
+
+test('adulto: conta ativa vira vaga, catálogo, sala e projeto próprio; perfil infantil não substitui a conta', async () => {
+  const repository = new InMemoryLiveRepository()
+  const courses = new InMemoryLiveCourses()
+  const { course, lessons } = courses.add({ audience: 'adult', lessons: 2 })
+  const studio = courses.addStudioBlock(course.id, lessons[0]!.id)
+  const id = randomUUID()
+  const adult: LiveActor = { id, accountId: id, name: 'Conta adulta', staff: false }
+  const ownership: (string | null)[] = []
+  const live = new LiveService(
+    repository,
+    () => new Date(startsAt),
+    {
+      assertOwnership: async (account, learner) => {
+        ownership.push(learner)
+        if (account !== id || learner !== null) throw new LiveAccessError()
+        return { name: 'Nome confirmado pelo Auth' }
+      },
+    },
+    { courses },
+  )
+  const { cohort, sessions } = await live.createCohort(admin, course.id, cohortInput)
+  await live.updateCohort(admin, cohort.id, { status: 'open' })
+  const seat = await live.enroll(admin, cohort.id, {
+    accountId: id,
+    learnerId: id,
+    learnerName: 'Nome do formulário',
+  })
+  expect(seat.learnerId).toBe(id)
+  expect(seat.learnerName).toBe('Nome confirmado pelo Auth')
+  expect(ownership).toEqual([null])
+  expect((await live.catalog(adult, 'learner')).enrollments.map((e) => e.id)).toContain(seat.id)
+  expect((await live.room(adult, sessions[0]!.id)).access.canOpen).toBe(true)
+  const workspaces = new LiveWorkspaceService(
+    new InMemoryLiveWorkspaceRepository(repository),
+    live,
+    () => new Date(startsAt),
+  )
+  const workspace = await workspaces.openForBlock(adult, sessions[0]!.id, studio.blockId)
+  expect((await workspaces.listOwned(adult)).workspaces.map((w) => w.id)).toContain(workspace.id)
+  for (const learnerId of [null, bia.id])
+    await expect(
+      live.enroll(admin, cohort.id, { accountId: id, learnerId, learnerName: 'Bia' }),
+    ).rejects.toBeInstanceOf(ValidationError)
 })

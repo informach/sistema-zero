@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto'
+import { liveLessonCompletionIssues } from '@sistemazero/core/course/modality'
 import { ValidationError } from '@sistemazero/core/errors'
 import {
   defaultLessonSection,
@@ -520,12 +521,17 @@ export class LearningService {
     return { items, nextCursor: rows.length > 100 ? (items.at(-1)?.id ?? null) : null }
   }
   async assertPublishable(lessonId: string) {
+    const lesson = await this.courses.findLessonWithContent(lessonId)
+    if (!lesson) throw new LessonNotFoundError()
+    const course = await this.courses.findCourseById(lesson.courseId)
     const structure = await this.repository.getStructure(lessonId)
+    if (course?.modality === 'live') {
+      const issues = liveLessonCompletionIssues(lesson.blocks, structure?.sections ?? [])
+      if (issues.length) throw new ValidationError(issues.map((issue) => issue.message).join(' '))
+    }
     if (structure?.sections.some((s) => s.pendingMedia.length))
       throw new ValidationError('Produza e vincule as mídias pendentes antes de publicar a aula.')
     if (structure) {
-      const lesson = await this.courses.findLessonWithContent(lessonId)
-      if (!lesson) throw new LessonNotFoundError()
       const issues = studioSectionCompletionIssues(structure.sections, lesson.blocks)
       if (issues.length) throw new ValidationError(issues.map((issue) => issue.message).join(' '))
     }

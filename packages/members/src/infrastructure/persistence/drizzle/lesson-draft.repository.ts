@@ -1,4 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto'
+import { liveLessonCompletionIssues } from '@sistemazero/core/course/modality'
 import { ValidationError } from '@sistemazero/core/errors'
 import {
   applyLessonDraftChange,
@@ -511,7 +512,15 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
   async validate(lessonId: string, expectedRevision: string, readyVideoIds: string[]) {
     const draft = await this.read(lessonId)
     if (draft.revision !== expectedRevision) throw new LessonDraftConflictError()
-    return this.inspect(draft.document, readyVideoIds).issues
+    const courses = new DrizzleCourseRepository(this.db)
+    const lesson = await courses.findLesson(lessonId)
+    const course = lesson ? await courses.findCourseById(lesson.courseId) : null
+    return [
+      ...this.inspect(draft.document, readyVideoIds).issues,
+      ...(course?.modality === 'live'
+        ? liveLessonCompletionIssues(draft.document.blocks, draft.document.sections)
+        : []),
+    ]
   }
 
   async publish(
@@ -535,6 +544,11 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
         )
           throw new LessonDraftConflictError()
         const { issues, blocks } = this.inspect(draft.document, readyVideoIds)
+        const publishingCourse = await new DrizzleCourseRepository(tx).findCourseById(
+          snapshot.lesson.courseId,
+        )
+        if (publishingCourse?.modality === 'live')
+          issues.push(...liveLessonCompletionIssues(draft.document.blocks, draft.document.sections))
         if (issues.length) throw new ValidationError(issues.map((i) => i.message).join('\n'))
         const content = new DrizzleContentAdminRepository(tx)
         const hadShowcase =

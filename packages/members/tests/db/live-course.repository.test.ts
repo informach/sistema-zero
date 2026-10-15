@@ -291,6 +291,13 @@ describe.skipIf(!databaseUrl)('cursos ao vivo no PostgreSQL real', () => {
           expect(listed.some((item) => item.courseId === adult.id)).toBe(false)
           expect(listed.some((item) => item.id === cohort.id)).toBe(true)
           await service.updateCohort({ ...teacher, admin: true }, cohort.id, { status: 'open' })
+          const nextSlug = `renomeado-${live.id}`
+          await single.sql`update members.courses set slug = ${nextSlug} where id = ${live.id}::uuid`
+          expect((await service.room(teacher, sessions[0]!.id)).lesson?.courseSlug).toBe(nextSlug)
+          expect(
+            (await new DrizzleLiveRepository(single.db).findCohort(cohort.id))?.cohort.course?.slug,
+          ).toBe(nextSlug)
+
           await service.enroll(teacher, cohort.id, {
             accountId: child.accountId,
             learnerId: child.id,

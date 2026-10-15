@@ -276,3 +276,39 @@ describe('Oficinas ao vivo: as turmas dos cursos ao vivo da plataforma', () => {
     // (build ao lado, CI) passava dos 5 s de fábrica do bun. É tempo, não regra.
   }, 20_000)
 })
+
+test('inscrição adulta busca a conta e envia a mesma identidade como participante', async () => {
+  const { EnrollmentPicker } = await import('../src/app/admin/oficinas/enrollment-picker')
+  const requests: string[] = []
+  let enrolled: unknown = null
+  globalThis.fetch = (async (input: RequestInfo | URL) => {
+    requests.push(String(input))
+    return Response.json({
+      items: [
+        { id: 'adult-account', firstName: 'Ana', lastName: 'Silva', email: 'ana@example.test' },
+      ],
+    })
+  }) as typeof fetch
+  const view = await mount(
+    <EnrollmentPicker
+      audience="adult"
+      busy={false}
+      onEnroll={async (value) => {
+        enrolled = value
+        return true
+      }}
+    />,
+  )
+  expect(view.textContent).toContain('Inscrever um participante')
+  expect(view.querySelector('select')).toBeNull()
+  await act(async () => type(view.querySelector('input')!, 'Ana'))
+  await act(async () => new Promise((resolve) => setTimeout(resolve, 350)))
+  expect(requests[0]).toContain('/api/admin/users?')
+  await act(async () => view.querySelector<HTMLInputElement>('input[type="radio"]')!.click())
+  await act(async () => button(view, 'Adicionar inscrição').click())
+  expect(enrolled).toEqual({
+    accountId: 'adult-account',
+    learnerId: 'adult-account',
+    learnerName: 'Ana Silva',
+  })
+})

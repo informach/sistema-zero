@@ -293,6 +293,51 @@ export async function r2HeadObjectIn(bucket: string, key: string): Promise<{ siz
   }
 }
 
+/** Small private operation receipts, never a URL exposed to the browser. */
+export async function r2DeleteObjectIn(bucket: string, key: string): Promise<void> {
+  await getClient(requireAccountConfig()).send(
+    new DeleteObjectCommand({ Bucket: bucket, Key: key }),
+  )
+}
+
+export async function r2ReadJsonIn(bucket: string, key: string): Promise<unknown | null> {
+  try {
+    const result = await getClient(requireAccountConfig()).send(
+      new GetObjectCommand({ Bucket: bucket, Key: key }),
+    )
+    if (!result.Body || (result.ContentLength ?? 0) > 16_384)
+      throw new Error('Registro de envio inválido.')
+    return JSON.parse(await result.Body.transformToString())
+  } catch (error) {
+    if (error instanceof Error && error.name === 'NoSuchKey') return null
+    throw error
+  }
+}
+
+export async function r2WriteJsonIn(
+  bucket: string,
+  key: string,
+  value: unknown,
+  createOnly = false,
+): Promise<boolean> {
+  try {
+    await getClient(requireAccountConfig()).send(
+      new PutObjectCommand({
+        Bucket: bucket,
+        Key: key,
+        Body: JSON.stringify(value),
+        ContentType: 'application/json',
+        CacheControl: 'private, no-store',
+        ...(createOnly ? { IfNoneMatch: '*' } : {}),
+      }),
+    )
+    return true
+  } catch (error) {
+    if (createOnly && error instanceof Error && error.name === 'PreconditionFailed') return false
+    throw error
+  }
+}
+
 /** URL GET temporária de um objeto PRIVADO de um bucket conhecido (o Vimeo baixa por ela). */
 export async function r2PresignGetIn(
   bucket: string,

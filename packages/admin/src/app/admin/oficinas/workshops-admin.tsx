@@ -968,6 +968,7 @@ function EnrollmentDialog({
                 </p>
               ) : null}
               <EnrollmentPicker
+                audience={cohort.course?.audience}
                 key={`${assigning.id}:${families[assigning.accountId]?.email ?? ''}`}
                 busy={busy}
                 accountId={assigning.accountId}
@@ -991,6 +992,7 @@ function EnrollmentDialog({
             </div>
           ) : (
             <EnrollmentPicker
+              audience={cohort.course?.audience}
               busy={busy}
               onEnroll={(value) =>
                 mutate(`/api/admin/live/cohorts/${cohort.id}/enrollments`, value)

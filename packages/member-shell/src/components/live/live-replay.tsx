@@ -2,7 +2,7 @@
 import { Button } from '@sistemazero/ui'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { liveRequest } from '../../lib/live/client'
-import { sessionFetch as fetch } from '../../lib/session-fetch'
+import { readReplayProgress, writeReplayProgress } from '../../lib/live/replay-progress'
 import type { LessonVideoControls } from '../lesson-player-context'
 
 export function LiveReplay({
@@ -24,6 +24,7 @@ export function LiveReplay({
     null,
   )
   const [error, setError] = useState<string | null>(null)
+  const [progressError, setProgressError] = useState<string | null>(null)
   const [retry, setRetry] = useState(0)
   const player = useRef<HTMLVideoElement>(null)
   const position = useRef(0)
@@ -31,14 +32,13 @@ export function LiveReplay({
   const loadedSession = useRef(sessionId)
   const wasPlaying = useRef(false)
   const saveProgress = useCallback(() => {
-    if (teacherPreview || currentVersion.current === null || !player.current) return
-    const positionSeconds = Math.max(0, Math.floor(player.current.currentTime))
-    void fetch(`/api/live/sessions/${sessionId}/replay-progress`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ version: currentVersion.current, positionSeconds }),
-      keepalive: true,
-    }).catch(() => undefined)
+    if (teacherPreview || currentVersion.current === null) return
+    const positionSeconds = player.current?.currentTime ?? position.current
+    void writeReplayProgress(sessionId, currentVersion.current, positionSeconds)
+      .then(() => setProgressError(null))
+      .catch(() =>
+        setProgressError('Não foi possível guardar sua posição. Vamos tentar novamente.'),
+      )
   }, [sessionId, teacherPreview])
   useEffect(() => {
     const timer = setInterval(saveProgress, 15_000)
@@ -95,12 +95,7 @@ export function LiveReplay({
           position.current = 0
           wasPlaying.current = false
           if (!teacherPreview) {
-            const progress = await liveRequest<{ positionSeconds: number }>(
-              `/api/live/sessions/${sessionId}/replay-progress?version=${next.version}`,
-              undefined,
-              'GET',
-              controller.signal,
-            ).catch(() => null)
+            const progress = await readReplayProgress(sessionId, next.version, controller.signal)
             if (controller.signal.aborted) return
             position.current = progress?.positionSeconds ?? 0
           }
@@ -127,6 +122,11 @@ export function LiveReplay({
   }, [sessionId, occurrenceId, retry, teacherPreview])
   return (
     <section className="space-y-3">
+      {progressError ? (
+        <p role="status" className="text-sm">
+          {progressError}
+        </p>
+      ) : null}
       {bare ? null : (
         <>
           <h2 className="sz-display text-xl font-bold">Rever a explicação</h2>
@@ -169,6 +169,9 @@ export function LiveReplay({
             if (wasPlaying.current) void player.current?.play().catch(() => undefined)
           }}
           onPause={saveProgress}
+          onTimeUpdate={() => {
+            position.current = player.current?.currentTime ?? position.current
+          }}
           onEnded={saveProgress}
           onError={() => setError('A gravação foi interrompida. Tente carregar novamente.')}
         />

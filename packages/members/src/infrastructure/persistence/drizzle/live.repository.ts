@@ -42,8 +42,16 @@ type Reader = Database | Transaction
  * a second pool connection while a lock is held can exhaust the pool under load.
  */
 export async function loadLiveCohort(db: Reader, id: string): Promise<LiveCohortAggregate | null> {
-  const cohort = (await db.select().from(liveCohorts).where(eq(liveCohorts.id, id)))[0]?.document
+  const row = (
+    await db
+      .select({ document: liveCohorts.document, slug: courses.slug })
+      .from(liveCohorts)
+      .leftJoin(courses, eq(courses.id, liveCohorts.courseId))
+      .where(eq(liveCohorts.id, id))
+  )[0]
+  const cohort = row?.document
   if (!cohort) return null
+  if (cohort.course && row?.slug) cohort.course = { ...cohort.course, slug: row.slug }
   const sessions = (await db.select().from(liveSessions).where(eq(liveSessions.cohortId, id)))
     .map((row) => row.document)
     .sort((a, b) => a.order - b.order)
@@ -119,7 +127,9 @@ export async function loadLiveRoom(
     presence: LivePresenceRow[]
   }>(sql`
     select
-      c.document as cohort,
+      case when course.slug is not null and c.document->'course' is not null
+        then jsonb_set(c.document, '{course,slug}', to_jsonb(course.slug))
+        else c.document end as cohort,
       s.document as session,
       coalesce((select jsonb_agg(o.document) from members.live_occurrences o
         where o.session_id = s.id), '[]'::jsonb) as occurrences,
@@ -136,6 +146,7 @@ export async function loadLiveRoom(
         where o.session_id = s.id), '[]'::jsonb) as presence
     from members.live_sessions s
     join members.live_cohorts c on c.id = s.cohort_id
+    left join members.courses course on course.id = c.course_id
     where ${session}`)
   const row = [...rows][0]
   if (!row) return null

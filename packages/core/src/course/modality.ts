@@ -8,6 +8,8 @@
  *
  * O mesmo tema nas duas formas são DOIS cursos (o clone de curso ajuda a começar um do outro).
  */
+import type { LessonDraftIssue, LessonSection } from '../learning'
+
 export const COURSE_MODALITIES = ['recorded', 'live'] as const
 export type CourseModality = (typeof COURSE_MODALITIES)[number]
 export const DEFAULT_COURSE_MODALITY: CourseModality = 'recorded'
@@ -24,4 +26,34 @@ export function courseModalityOf(value: unknown): CourseModality {
 /** Só o curso gravado participa da Jornada (posições, trilha, liberação de blocos). */
 export function modalityJoinsJourney(modality: CourseModality): boolean {
   return modality === 'recorded'
+}
+
+/** Live Studio uses the canonical workspace and project checks, without course submissions. */
+export function liveLessonCompletionIssues(
+  blocks: { id: string; content: { kind: string; purpose?: unknown } }[],
+  sections: LessonSection[],
+): LessonDraftIssue[] {
+  const issues: LessonDraftIssue[] = []
+  const studioIds = new Set(blocks.filter((b) => b.content.kind === 'studio').map((b) => b.id))
+  for (const block of blocks) {
+    if (block.content.kind === 'studio' && block.content.purpose !== 'experiment')
+      issues.push({
+        blockId: block.id,
+        message:
+          'No Estúdio ao vivo, escolha o propósito “Experimento independente, sem entrega”. Use objetivos de verificação para concluir a parte.',
+      })
+  }
+  for (const section of sections) {
+    if (
+      section.completion?.submissionUpToDate &&
+      section.workspaceBlockId &&
+      studioIds.has(section.workspaceBlockId)
+    )
+      issues.push({
+        sectionId: section.id,
+        message:
+          'Retire “Envio em dia” desta parte: o Estúdio ao vivo guarda o projeto sem uma entrega para a equipe.',
+      })
+  }
+  return issues
 }

@@ -12,6 +12,15 @@ const VIMEO_ACCEPT = 'application/vnd.vimeo.*+json;version=3.4'
 const VIMEO_API_TIMEOUT_MS = 30_000
 const VIMEO_BYTES_TIMEOUT_MS = 60_000
 
+export class VimeoApiError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
+    super(message)
+  }
+}
+
 function requireAccessToken(): string {
   const token = getEnv().VIMEO_ACCESS_TOKEN
   if (!token) {
@@ -42,8 +51,9 @@ async function vimeoFetch<T>(
   })
   if (!response.ok) {
     const body = await response.text().catch(() => '')
-    throw new Error(
+    throw new VimeoApiError(
       `Vimeo API ${init.method ?? 'GET'} ${path} falhou (${response.status}): ${body.slice(0, 300)}`,
+      response.status,
     )
   }
   if (options.skipJsonParse || response.status === 204) return undefined as T

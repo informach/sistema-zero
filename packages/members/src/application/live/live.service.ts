@@ -432,10 +432,20 @@ export class LiveService {
   ) {
     this.requireStaff(actor)
     // Cross-service lookup outside the database lock; no user-supplied name becomes identity.
-    const identity = await this.profiles.assertOwnership(input.accountId, input.learnerId)
+    const found = await this.repository.findCohort(cohortId)
+    if (!found?.cohort.courseId) throw new LiveNotFoundError()
+    const adult = found.cohort.course?.audience === 'adult'
+    if (adult && input.learnerId !== input.accountId)
+      throw new ValidationError('Nesta turma, inscreva a própria conta do participante adulto.')
+    const identity = await this.profiles.assertOwnership(
+      input.accountId,
+      adult ? null : input.learnerId,
+    )
     return this.repository.transaction(
       cohortId,
       (aggregate) => {
+        if ((aggregate.cohort.course?.audience === 'adult') !== adult)
+          throw new LiveConflictError('A plataforma da turma mudou. Atualize a inscrição.')
         const active = aggregate.enrollments.filter((enrollment) => enrollment.status === 'active')
         // Idempotent: a double click (or a retry) returns the seat that already exists.
         const repeated = active.find((enrollment) =>
@@ -498,7 +508,13 @@ export class LiveService {
       (!actor.staff && (actor.id !== actor.accountId || current.accountId !== actor.accountId))
     )
       throw new LiveNotFoundError()
-    const identity = await this.profiles.assertOwnership(current.accountId, learnerId)
+    const adult = found.cohort.course?.audience === 'adult'
+    if (adult && learnerId !== current.accountId)
+      throw new ValidationError('Nesta turma, a vaga pertence à conta do participante adulto.')
+    const identity = await this.profiles.assertOwnership(
+      current.accountId,
+      adult ? null : learnerId,
+    )
     return this.repository.transaction(
       found.cohort.id,
       (aggregate) => {
@@ -1650,6 +1666,14 @@ export class LiveService {
       .join(' · ')
       .slice(0, 200)
     return { storageKey: recording.storageKey!, bucket: this.options.recordingBucket, title }
+  }
+
+  async recordingVimeo(actor: LiveActor, occurrenceId: string): Promise<LiveRecordingSummary> {
+    const aggregate = await this.repository.findRoom({ occurrenceId })
+    const occurrence = aggregate?.occurrences.find((item) => item.id === occurrenceId)
+    if (!aggregate || !occurrence) throw new LiveNotFoundError()
+    this.assertRecordingManager(actor, aggregate)
+    return recordingSummary(occurrence)
   }
 
   /**

@@ -7,10 +7,11 @@ import {
   createRecordingVimeoService,
   type RecordingVimeoOutcome,
 } from '@/server/live-recording-vimeo'
+import { liveVimeoJournal } from '@/server/live-vimeo-journal'
 import { requireLocalAdminSession } from '@/server/local-admin-session'
 import { finishVimeoVideoSetup, mediaErrorResponse } from '@/server/media'
 import { r2HeadObjectIn, r2PresignGetIn } from '@/server/r2'
-import { createPullUpload, deleteVideo, getVideo } from '@/server/vimeo'
+import { createPullUpload, getVideo } from '@/server/vimeo'
 
 /**
  * A gravação revisada de um encontro vai ao Vimeo (POST cria por `pull`; GET acompanha o
@@ -23,13 +24,13 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 function service() {
   return createRecordingVimeoService({
+    journal: liveVimeoJournal,
     gatewayFetch,
     headObject: r2HeadObjectIn,
     presignGet: r2PresignGetIn,
     createPullUpload,
     finishSetup: finishVimeoVideoSetup,
     getVideo,
-    deleteVideo,
     buckets: () => {
       const env = getEnv()
       return { privateBucket: env.R2_PRIVATE_BUCKET, recordingBucket: env.LIVE_RECORDING_BUCKET }

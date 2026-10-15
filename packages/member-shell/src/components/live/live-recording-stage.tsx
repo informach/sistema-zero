@@ -7,8 +7,8 @@ import { useEffect, useRef } from 'react'
 import { chapterSeconds } from '../../lib/live/sections'
 import { parseVimeo } from '../../lib/video-ids'
 import { type LessonVideoControls, useLessonPlayer } from '../lesson-player-context'
-import { VimeoPlayer } from '../vimeo-player'
 import { LiveReplay } from './live-replay'
+import { LiveVimeoReplay } from './live-vimeo-replay'
 
 /**
  * A GRAVAÇÃO no lugar da transmissão (fora do encontro, durante o prazo, 14/10/2026). A gravação
@@ -22,12 +22,14 @@ import { LiveReplay } from './live-replay'
  */
 export function LiveRecordingStage({
   sessionId,
+  version,
   occurrenceId,
   chapters,
   vimeo: published,
   sectionId,
 }: {
   sessionId: string
+  version: number
   occurrenceId: string | undefined
   chapters: LiveRecordingChapter[] | undefined
   vimeo: LiveRecordingVimeo | null | undefined
@@ -47,7 +49,10 @@ export function LiveRecordingStage({
   return (
     <div className="space-y-2">
       {vimeo ? (
-        <VimeoPlayer
+        <LiveVimeoReplay
+          key={`${sessionId}:${occurrenceId}:${version}`}
+          sessionId={sessionId}
+          version={version}
           vimeoId={vimeo.id}
           vimeoHash={vimeo.hash}
           watermark={player?.viewerWatermark ?? null}
@@ -57,6 +62,7 @@ export function LiveRecordingStage({
         />
       ) : (
         <LiveReplay
+          key={`${sessionId}:${occurrenceId}:${version}`}
           sessionId={sessionId}
           occurrenceId={occurrenceId}
           bare

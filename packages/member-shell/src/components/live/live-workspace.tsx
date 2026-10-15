@@ -29,6 +29,7 @@ import { isTransientLiveFailure, sameLiveProject } from '../../lib/live/workspac
 import { type LiveDraft, LiveDraftJournal, liveDraftScope } from '../../lib/live/workspace-drafts'
 import { sessionFetch as fetch } from '../../lib/session-fetch'
 import { EXPANDED_EXIT_ATTR, EXPANDED_EXIT_EDITOR, LessonVideoToggle } from '../lesson-video-float'
+import { SectionProjectCheck } from '../studio/section-project-check'
 import { LiveAssistanceCursor } from './live-assistance-cursor'
 
 const StudioEditor = dynamic(
@@ -376,6 +377,7 @@ export const LiveBlockWorkspace = memo(function LiveBlockWorkspace({
       {view ? (
         <WorkspaceEditor
           key={view.id}
+          blockId={blockId}
           initial={view}
           room={{
             session: { id: context.sessionId },
@@ -408,6 +410,7 @@ export const LiveBlockWorkspace = memo(function LiveBlockWorkspace({
 })
 
 function WorkspaceEditor({
+  blockId,
   initial,
   room,
   deviceId,
@@ -421,6 +424,7 @@ function WorkspaceEditor({
   publishToMural = true,
 }: {
   initial: LiveWorkspaceView
+  blockId?: string
   room: WorkspaceContext
   deviceId: string
   onError?: (message: string) => void
@@ -1363,6 +1367,9 @@ function WorkspaceEditor({
           />
         )}
       </div>
+      {!teacher && blockId && ready ? (
+        <SectionProjectCheck blockId={blockId} handleRef={editor} />
+      ) : null}
     </div>
   )
 }

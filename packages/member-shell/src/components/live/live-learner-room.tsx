@@ -553,6 +553,7 @@ interface StageDoor {
   takeover: boolean
 }
 interface StageModel {
+  recordingVersion: number
   mode: 'call' | 'recording' | 'placeholder' | 'door'
   door: (StageDoor & { onJoin(): void }) | null
   admitted: boolean
@@ -604,6 +605,7 @@ function StageSlot() {
   if (model.mode === 'recording')
     return (
       <LiveRecordingStage
+        version={model.recordingVersion}
         sessionId={model.sessionId}
         occurrenceId={model.occurrenceId}
         chapters={model.chapters}
@@ -680,13 +682,23 @@ function LessonRoom({
   const unread = useUnread(room, panel === 'chat')
   const live = room.occurrence?.state === 'live'
   const inCall = joined && !ended
-  const recording = room.occurrence?.recording
+  const [selectedReplay, setSelectedReplay] = useState<string | null>(null)
+  const replayLabelId = useId()
+  const recordings = room.access.canWatchRecording
+    ? (room.recordings ?? []).filter(
+        (item) => item.recording.published && item.recording.state === 'ready',
+      )
+    : []
+  const replayChoice = selectedReplay ?? (ended ? recordings[0]?.occurrenceId : null) ?? 'current'
+  const selected = recordings.find((item) => item.occurrenceId === replayChoice)
+  const recording = selected?.recording
+  const recordingState = recording?.state ?? room.occurrence?.recording.state
   const mode: StageModel['mode'] = inCall
     ? 'call'
-    : !joined && !ended
-      ? 'door'
-      : room.access.canWatchRecording
-        ? 'recording'
+    : selected
+      ? 'recording'
+      : !joined && !ended
+        ? 'door'
         : 'placeholder'
   // Listas que chegam com identidade nova a cada consulta: comparadas pelo conteúdo.
   const chaptersKey = JSON.stringify(recording?.chapters ?? null)
@@ -702,6 +714,7 @@ function LessonRoom({
   const { title: doorTitle, text: doorText, canJoin, busy: doorBusy, takeover } = door
   const stageModel = useMemo<StageModel>(
     () => ({
+      recordingVersion: recording?.version ?? 0,
       mode,
       door:
         mode === 'door'
@@ -710,7 +723,7 @@ function LessonRoom({
       admitted,
       removed,
       teacherName,
-      recordingState: recording?.state,
+      recordingState,
       supervised: room.supervision === 'present',
       reconnecting: media.reconnecting,
       sessionReady: media.sessionReady,
@@ -719,7 +732,7 @@ function LessonRoom({
       label: media.label,
       ended,
       sessionId: room.session.id,
-      occurrenceId: room.occurrence?.id,
+      occurrenceId: selected?.occurrenceId,
       sectionId: stageSection,
       chapters,
       vimeo,
@@ -735,7 +748,7 @@ function LessonRoom({
       admitted,
       removed,
       teacherName,
-      recording?.state,
+      recordingState,
       room.supervision,
       media.reconnecting,
       media.sessionReady,
@@ -744,7 +757,8 @@ function LessonRoom({
       media.label,
       ended,
       room.session.id,
-      room.occurrence?.id,
+      selected?.occurrenceId,
+      recording?.version,
       stageSection,
       chapters,
       vimeo,
@@ -755,7 +769,7 @@ function LessonRoom({
   const courseId = lessonRef?.courseId
   const courseSlug = lessonRef?.courseSlug
   const lessonId = lessonRef?.lessonId
-  const control = learnerSectionControl(room)
+  const control = mode === 'recording' ? null : learnerSectionControl(room)
   const controlKey = control ? `${control.openedIds.join(',')}|${control.currentId ?? ''}` : ''
   const audience = room.cohort.course?.audience
   const lessonElement = useMemo(() => {
@@ -786,6 +800,26 @@ function LessonRoom({
   ])
   return (
     <>
+      {!inCall && recordings.length > 0 ? (
+        <div className="flex flex-wrap items-center gap-2 px-4 py-2">
+          <label htmlFor={replayLabelId} className="text-sm font-semibold">
+            Encontro e gravações
+          </label>
+          <select
+            id={replayLabelId}
+            className="min-h-11 max-w-full rounded-xl border bg-background px-3"
+            value={selected?.occurrenceId ?? 'current'}
+            onChange={(event) => setSelectedReplay(event.target.value)}
+          >
+            <option value="current">Encontro atual</option>
+            {recordings.map((item) => (
+              <option key={item.occurrenceId} value={item.occurrenceId}>
+                Gravação · {friendlyWhen(item.startsAt, room.cohort.timeZone)}
+              </option>
+            ))}
+          </select>
+        </div>
+      ) : null}
       <StageContext.Provider value={stageModel}>
         {room.lesson ? lessonElement : <LegacyCohortNotice />}
       </StageContext.Provider>
@@ -1146,7 +1180,7 @@ function ControlBar({
       ) : null}
       <nav
         aria-label="Controles da sala"
-        className="flex items-center justify-between gap-1 rounded-[1.25rem] border bg-card/95 p-1.5 shadow-xl backdrop-blur sm:justify-center sm:gap-2 sm:p-2.5"
+        className="grid grid-cols-4 items-center gap-1 rounded-[1.25rem] border bg-card/95 p-1.5 shadow-xl backdrop-blur sm:flex sm:flex-wrap sm:justify-center sm:gap-2 sm:p-2.5"
       >
         <BarButton
           active={Boolean(media.local.microphone)}

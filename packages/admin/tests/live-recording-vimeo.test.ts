@@ -9,18 +9,37 @@ const { RECORDING_LINK_TTL_SECONDS, recordingObjectKey, resolveRecordingBucket }
 )
 const { mapVimeoStatus } = await import('../src/lib/vimeo-helpers')
 
+type Vimeo = import('@sistemazero/core/live').LiveRecordingVimeo
+type Entry = import('../src/server/live-vimeo-journal').VimeoUploadEntry
 type Deps = Parameters<typeof createRecordingVimeoService>[0]
 const OCCURRENCE = '22222222-2222-4222-8222-222222222222'
 const BASE = `/members/admin/live/occurrences/${OCCURRENCE}/recording`
 
 /** Gateway, R2 e Vimeo falsos, com o registro de cada chamada. */
-function fakes(overrides: Partial<Deps> & { source?: unknown; putStatus?: number } = {}) {
+function fakes(
+  overrides: Partial<Deps> & { source?: unknown; putStatus?: number; initialVimeo?: Vimeo } = {},
+) {
   const log: string[] = []
   const puts: unknown[] = []
   const pulls: unknown[] = []
+  let bound = overrides.initialVimeo ?? null
+  const receipts = new Map<string, Entry>()
   const deps: Deps = {
+    journal: {
+      remove: async (_bucket, key) => {
+        receipts.delete(key)
+      },
+      read: async (_bucket, key) => receipts.get(key) ?? null,
+      write: async (_bucket, key, entry, createOnly) => {
+        if (createOnly && receipts.has(key)) return false
+        receipts.set(key, structuredClone(entry))
+        return true
+      },
+    },
     gatewayFetch: async (path, opts) => {
       log.push(`${opts?.method ?? 'GET'} ${path}`)
+      if (path.endsWith('/vimeo') && !opts?.method)
+        return { status: 200, body: { recording: { vimeo: bound } } }
       if (path.endsWith('/source'))
         return {
           status: 200,
@@ -31,6 +50,7 @@ function fakes(overrides: Partial<Deps> & { source?: unknown; putStatus?: number
           },
         }
       puts.push(opts?.body)
+      if ((overrides.putStatus ?? 200) === 200) bound = opts?.body as Vimeo
       return { status: overrides.putStatus ?? 200, body: {} }
     },
     headObject: async (bucket, key) => {
@@ -53,13 +73,10 @@ function fakes(overrides: Partial<Deps> & { source?: unknown; putStatus?: number
       status: 'transcoding',
       embedUrl: 'https://player.vimeo.com/video/987654?h=abc',
     }),
-    deleteVideo: async (id) => {
-      log.push(`VIMEO delete ${id}`)
-    },
     buckets: () => ({ privateBucket: 'testes-privado' }),
     ...overrides,
   }
-  return { deps, log, puts, pulls }
+  return { deps, log, puts, pulls, receipts }
 }
 
 describe('gravação do encontro → Vimeo', () => {
@@ -75,6 +92,7 @@ describe('gravação do encontro → Vimeo', () => {
       },
     })
     expect(log).toEqual([
+      `GET ${BASE}/vimeo`,
       `GET ${BASE}/source`,
       'HEAD testes-privado/live/recordings/o/j/1/replay.mp4',
       `SIGN testes-privado/live/recordings/o/j/1/replay.mp4 ${RECORDING_LINK_TTL_SECONDS}`,
@@ -111,7 +129,7 @@ describe('gravação do encontro → Vimeo', () => {
     })
     const outcome = await createRecordingVimeoService(deps).start(OCCURRENCE)
     expect(outcome).toMatchObject({ kind: 'upstream', response: { status: 409 } })
-    expect(log).toEqual([`${BASE}/source`])
+    expect(log).toEqual([`${BASE}/vimeo`])
   })
 
   test('bucket que o Admin não conhece é erro de configuração, nunca assinatura às cegas', async () => {
@@ -138,11 +156,11 @@ describe('gravação do encontro → Vimeo', () => {
     expect([...torta.log, ...vazio.log].includes('VIMEO pull')).toBe(false)
   })
 
-  test('o members não registrou: o vídeo órfão é apagado do Vimeo', async () => {
-    const { deps, log } = fakes({ putStatus: 409 })
+  test('uma recusa preserva o recibo recuperável e não apaga um possível vínculo', async () => {
+    const { deps, receipts } = fakes({ putStatus: 409 })
     const outcome = await createRecordingVimeoService(deps).start(OCCURRENCE)
     expect(outcome).toMatchObject({ kind: 'upstream', response: { status: 409 } })
-    expect(log.at(-1)).toBe('VIMEO delete 987654')
+    expect([...receipts.values()][0]?.vimeo?.videoId).toBe('987654')
   })
 
   test('dois cliques no mesmo encontro fazem UM vídeo', async () => {
@@ -169,6 +187,11 @@ describe('gravação do encontro → Vimeo', () => {
   test('acompanhar: processando não grava; pronto e falha vão ao members', async () => {
     const run = async (status: string) => {
       const { deps, puts } = fakes({
+        initialVimeo: {
+          videoId: '987654',
+          embedUrl: 'https://player.vimeo.com/video/987654',
+          status: 'processing',
+        },
         getVideo: async () => ({ status, embedUrl: 'https://player.vimeo.com/video/987654' }),
       })
       return {
@@ -223,4 +246,120 @@ describe('regras puras da gravação no Vimeo', () => {
     expect(mapVimeoStatus('uploading')).toBe('processing')
     expect(mapVimeoStatus('transcoding')).toBe('processing')
   })
+})
+
+describe('autorização e recuperação do envio', () => {
+  test('cada solicitante é autorizado antes de compartilhar o envio', async () => {
+    let release!: () => void
+    let entered!: () => void
+    const gate = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    const entering = new Promise<void>((resolve) => {
+      entered = resolve
+    })
+    const allowed = fakes({
+      finishSetup: async () => {
+        entered()
+        await gate
+      },
+    })
+    const denied = fakes({ gatewayFetch: async () => ({ status: 404, body: {} }) })
+    const first = createRecordingVimeoService(allowed.deps).start(OCCURRENCE)
+    await entering
+    try {
+      expect(await createRecordingVimeoService(denied.deps).start(OCCURRENCE)).toMatchObject({
+        kind: 'upstream',
+        response: { status: 404 },
+      })
+      expect(denied.pulls).toHaveLength(0)
+    } finally {
+      release()
+      await first
+    }
+  })
+  test('consultar vídeo exige atribuição e vínculo exato, mesmo durante processamento', async () => {
+    let videos = 0
+    const denied = fakes({
+      gatewayFetch: async () => ({ status: 404, body: {} }),
+      getVideo: async () => {
+        videos++
+        throw new Error('não deveria consultar')
+      },
+    })
+    expect(await createRecordingVimeoService(denied.deps).refresh(OCCURRENCE, '123')).toMatchObject(
+      { kind: 'upstream', response: { status: 404 } },
+    )
+    const unrelated = fakes({
+      initialVimeo: {
+        videoId: '987654',
+        embedUrl: 'https://player.vimeo.com/video/987654',
+        status: 'processing',
+      },
+      getVideo: denied.deps.getVideo,
+    })
+    expect(
+      await createRecordingVimeoService(unrelated.deps).refresh(OCCURRENCE, '123'),
+    ).toMatchObject({ kind: 'invalid', status: 404 })
+    expect(videos).toBe(0)
+  })
+  test.each([
+    false,
+    true,
+  ])('PUT com resposta perdida (commit=%s) recupera o mesmo vídeo', async (committed) => {
+    const fake = fakes()
+    let first = true
+    const gateway = fake.deps.gatewayFetch
+    fake.deps.gatewayFetch = async (path, opts) => {
+      if (opts?.method === 'PUT' && first) {
+        first = false
+        if (committed) await gateway(path, opts)
+        throw new Error('conexão perdida')
+      }
+      return gateway(path, opts)
+    }
+    expect(await createRecordingVimeoService(fake.deps).start(OCCURRENCE)).toMatchObject({
+      kind: 'ok',
+    })
+    expect(await createRecordingVimeoService(fake.deps).start(OCCURRENCE)).toMatchObject({
+      kind: 'ok',
+    })
+    expect(fake.pulls).toHaveLength(1)
+  })
+  test('queda persistente sobrevive a uma nova instância sem criar outro vídeo', async () => {
+    const fake = fakes()
+    const gateway = fake.deps.gatewayFetch
+    fake.deps.gatewayFetch = async (path, opts) => {
+      if (opts?.method === 'PUT') throw new Error('offline')
+      return gateway(path, opts)
+    }
+    await expect(createRecordingVimeoService(fake.deps).start(OCCURRENCE)).rejects.toThrow(
+      'offline',
+    )
+    fake.deps.gatewayFetch = gateway
+    expect(await createRecordingVimeoService(fake.deps).start(OCCURRENCE)).toMatchObject({
+      kind: 'ok',
+    })
+    expect(fake.pulls).toHaveLength(1)
+  })
+})
+
+test('recusa explícita do Vimeo libera nova tentativa; timeout não cria outro vídeo', async () => {
+  const { VimeoApiError } = await import('../src/server/vimeo')
+  for (const error of [new VimeoApiError('cota excedida', 403), new Error('timeout')]) {
+    const fake = fakes({
+      createPullUpload: async () => {
+        throw error
+      },
+    })
+    await expect(createRecordingVimeoService(fake.deps).start(OCCURRENCE)).rejects.toThrow(
+      error.message,
+    )
+    expect(fake.receipts.size).toBe(error instanceof VimeoApiError ? 0 : 1)
+    if (!(error instanceof VimeoApiError))
+      expect(await createRecordingVimeoService(fake.deps).start(OCCURRENCE)).toMatchObject({
+        kind: 'invalid',
+        code: 'RECORDING_UPLOAD_PENDING',
+      })
+  }
 })

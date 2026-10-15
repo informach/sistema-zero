@@ -15,19 +15,22 @@ export function EnrollmentPicker({
   onEnroll,
   accountId,
   accountEmail,
+  audience = 'kids',
 }: {
   busy: boolean
   /** Vincular uma reserva: só os perfis desta conta aparecem. */
   accountId?: string
   /** E-mail do responsável da reserva: a busca já abre com a família certa. */
   accountEmail?: string
+  audience?: 'adult' | 'kids'
   onEnroll(value: {
     accountId: string
     learnerId: string | null
     learnerName: string
   }): Promise<boolean>
 }) {
-  const [mode, setMode] = useState<'child' | 'reservation'>('child')
+  const [childMode, setMode] = useState<'child' | 'reservation'>('child')
+  const mode = audience === 'adult' ? 'adult' : childMode
   const [query, setQuery] = useState(accountId && accountEmail ? accountEmail : '')
   const [choices, setChoices] = useState<Choice[]>([])
   const [selected, setSelected] = useState<Choice | null>(null)
@@ -87,7 +90,7 @@ export function EnrollmentPicker({
               response.items.map((item) => ({
                 id: item.id,
                 accountId: item.id,
-                learnerId: null,
+                learnerId: mode === 'adult' ? item.id : null,
                 name: `${item.firstName} ${item.lastName}`,
                 description: item.email,
               })),
@@ -115,7 +118,7 @@ export function EnrollmentPicker({
           (await onEnroll({
             accountId: selected.accountId,
             learnerId: selected.learnerId,
-            learnerName: mode === 'child' ? selected.name : name.trim(),
+            learnerName: mode === 'reservation' ? name.trim() : selected.name,
           }))
         ) {
           setQuery('')
@@ -124,21 +127,29 @@ export function EnrollmentPicker({
         }
       }}
     >
-      <h3 className="font-medium">Inscrever uma criança</h3>
+      <h3 className="font-medium">
+        {audience === 'adult' ? 'Inscrever um participante' : 'Inscrever uma criança'}
+      </h3>
+      {audience === 'kids' ? (
+        <label className="flex flex-col gap-1.5 text-sm font-medium">
+          Tipo de inscrição
+          <select
+            className="min-h-10 rounded-lg border bg-background p-2"
+            value={mode}
+            disabled={busy}
+            onChange={(event) => setMode(event.target.value as 'child' | 'reservation')}
+          >
+            <option value="child">Criança com perfil</option>
+            {!accountId ? <option value="reservation">Reservar para uma família</option> : null}
+          </select>
+        </label>
+      ) : null}
       <label className="flex flex-col gap-1.5 text-sm font-medium">
-        Tipo de inscrição
-        <select
-          className="min-h-10 rounded-lg border bg-background p-2"
-          value={mode}
-          disabled={busy}
-          onChange={(event) => setMode(event.target.value as 'child' | 'reservation')}
-        >
-          <option value="child">Criança com perfil</option>
-          {!accountId ? <option value="reservation">Reservar para uma família</option> : null}
-        </select>
-      </label>
-      <label className="flex flex-col gap-1.5 text-sm font-medium">
-        {mode === 'child' ? 'Busque a criança ou seu responsável' : 'Busque o responsável'}
+        {mode === 'adult'
+          ? 'Busque o participante'
+          : mode === 'child'
+            ? 'Busque a criança ou seu responsável'
+            : 'Busque o responsável'}
         <Input
           placeholder="Nome ou e-mail"
           value={query}

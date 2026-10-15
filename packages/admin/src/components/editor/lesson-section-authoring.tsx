@@ -15,6 +15,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
+import { liveLessonCompletionIssues } from '@sistemazero/core/course/modality'
 import {
   hasSectionProgression,
   isGalleryBlock,
@@ -202,6 +203,7 @@ export function LessonSectionAuthoring({
     (b) => (b.kind === 'studio' || b.kind === 'pinta') && !isGalleryBlock(b.content),
   )
   const localIssues: LessonDraftIssue[] = sectionCompletionIssues(doc.sections, doc.blocks)
+  if (live) localIssues.push(...liveLessonCompletionIssues(doc.blocks, doc.sections))
   const certificateLesson = doc.blocks.some((b) => b.content.kind === 'certificate')
   const allIssues = [...issues, ...localIssues].filter(
     (issue, i, list) =>
