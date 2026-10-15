@@ -158,6 +158,8 @@ describe('command só aceita o que o JourneyApp manda (L1)', () => {
     ],
     [{ type: 'retry' }],
     [{ type: 'pause', extra: true }],
+    // A etapa O começa quando a criança conta o teste, nunca por um botão (15/10/2026).
+    [{ type: 'observe' }],
   ])('%j é recusado sem chegar ao members', async (command) => {
     const { command: members, call } = setup()
     const res = await call('command', { expectedRevision: 3, command })

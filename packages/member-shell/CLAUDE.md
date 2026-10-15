@@ -388,6 +388,46 @@ O que veio da análise do sandbox (`code-with-antonio/sandbox`), no planejador
   ("1–3" vira "1 a 3") e os tetos do schema são os do members, sem folga; um rótulo no limite
   voltava 400 na publicação, sem reparo. Agora vira `JourneyOutputInvalid` e passa pelo reparo.
 
+## Pensa v2: uma extensão de jogo por plano e passos que são gestos (15/10/2026)
+
+Relato dela, com o guia aberto no Estúdio: o passo 1 instalava o Jogo 2D, o passo 2 o Jogo 2D
+Avançado ("não posso ter mais de uma extensão no mesmo projeto"), e o passo 3 dizia "Abrir o Estúdio
+e ir para a área ⚙️ Ao iniciar" (as áreas são BLOCOS que a criança pega e arrasta). Decisões dela:
+o modelo escolhe a extensão (preferindo a mais simples) e aprende a escrever o gesto exato.
+
+- **Uma extensão de jogo por plano** (`contracts.ts`): `gameExtensionIssues(draft, builtExtension)`
+  recusa a proposta cujas missões do Estúdio pedem mais de uma das cinco extensões donas do palco
+  (`GAME_RUNTIME_EXTENSION_IDS` em `interface-map.ts`, espelho de
+  `FULLSCREEN_RUNTIME_EXTENSION_IDS` do Estúdio, lido pelo caminho no teste), contando blocos E
+  manuais (`mechanicIds`). Numa versão nova de um jogo já construído, vale a extensão da proposta
+  guardada (`builtGameExtension`), que vai ao modelo em `gameExtension`. Entra nos `issues` da
+  revisão e no reparo, como as outras regras de desenho; fica FORA do `validateJourneyProposal`
+  (aquela régua roda também nos guias de propostas já aceitas). `installStepsByMission` instala
+  extensão de jogo uma vez só no plano inteiro (protege plano antigo que misture).
+- **O passo é o gesto** (`GuideDraftSchema`): `{action (até 260), effect (até 180)}`, até 8 por
+  missão; o `where` saiu. A tarefa leva `text = action` e `hint = effect` (antes `where\neffect`). O
+  pedido do guia traz dois exemplos no formato dela ("Clique em "🗂️ Áreas do projeto", pegue o
+  bloco "⚙️ Ao iniciar" e arraste para o espaço de montar." / "Isso prepara o jogo para começar.").
+  O passo determinístico de instalar também é o gesto inteiro.
+- **O modelo sabe como a tela funciona** (`STUDIO_INTERFACE_MAP`): as áreas são blocos da categoria
+  "🗂️ Áreas do projeto" (`STUDIO_AREA_NAMES`, conferido contra os rótulos dos blocos de área do
+  catálogo), pegar um bloco é seguir o `path` da paleta, o Guia do Pensa já aparece dentro do
+  Estúdio, e cada jogo usa uma extensão só. No guia, os blocos da missão vão com `area` (onde
+  encaixam direto) e `tip` (a dica do próprio bloco, que diz quando ele vai dentro de "A cada
+  quadro do jogo"); os dois só nos degraus com detalhe do orçamento, para o guia de oito missões
+  ainda caber nos 48 KB (`journeyModelContext({ tips })`).
+- ⚠️ **"Espaço de montar", não "área de trabalho"**: "trabalho" está na régua de palavras da escola
+  (guarda `copy-vocabulario` do Kids, que varre este pacote), e "área" já é o nome das áreas do
+  projeto. O Estúdio não dá nome visível a esse espaço; o mapa da interface o batiza.
+- **Passo vago volta uma vez** (`guideIssues`): "vá/ir para a área", "abra o Estúdio" e
+  "implemente" voltam ao modelo com o conserto; na tentativa de reparo o guia passa como está (uma
+  frase não trava o plano inteiro).
+- Testes: `pensa-journey-contracts.test.ts` (as duas réguas), `pensa-journey-interface-map.test.ts`
+  (espelho das extensões, nomes das áreas, instalar uma vez) e o bloco "uma extensão de jogo por
+  projeto e passos precisos" de `pensa-journey-worker.test.ts`.
+- O `command` do BFF parou de aceitar `observe` (ver o CLAUDE.md do pacote pensa, "Etapa R: um
+  caminho só").
+
 ## Pensa v2: a régua da narrativa e o teto do pedido (full review de 14/10/2026)
 
 O BFF do Pensa v2 mora em `server/pensa-journey/` e `routes/pensa-journey.ts`. O que o full review

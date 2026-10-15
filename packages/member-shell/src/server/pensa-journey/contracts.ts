@@ -5,6 +5,7 @@ import {
 } from '@sistemazero/core/pensa'
 import { z } from 'zod'
 import { dimensionAllows } from '../pensa-agents/planner-contract'
+import { isGameRuntimeExtension, STUDIO_EXTENSION_NAMES } from './interface-map'
 
 const short = (max: number) => z.string().trim().min(1).max(max)
 const ids = (max = 30) => z.array(short(160)).max(max)
@@ -132,15 +133,67 @@ export function playFirstIssues(
     `Missão "${first.key}": a primeira missão de um jogo novo é no Estúdio e já deixa algo se mexendo no ▶ Reproduzir com uma figura pronta. Coloque a missão de arte depois dela e faça uma missão do Estúdio, depois da arte, trocar a figura pronta pela arte da criança.`,
   ]
 }
+/** As extensões de JOGO que as missões do Estúdio pedem (blocos e manuais), na ordem do plano. */
+export function gameExtensionsOf(
+  missions: readonly Pick<
+    ProposalDraft['missions'][number],
+    'destination' | 'extensionIds' | 'mechanicIds'
+  >[],
+): string[] {
+  const found = new Set<string>()
+  for (const mission of missions) {
+    if (mission.destination !== 'studio') continue
+    for (const id of [...mission.extensionIds, ...mission.mechanicIds])
+      if (isGameRuntimeExtension(id)) found.add(id)
+  }
+  return [...found]
+}
+
+/**
+ * O jogo do plano é UM arquivo do Estúdio, e o Estúdio recusa instalar duas extensões de jogo no
+ * mesmo projeto (a segunda conflita com a primeira). Então todas as missões do Estúdio usam a MESMA
+ * extensão de jogo, e num jogo já construído ela é a que o jogo já tem (`builtExtension`).
+ * ⚠️ Fica FORA do `validateJourneyProposal`, como as outras regras de desenho: aquela régua roda
+ * também nos guias de propostas já aceitas.
+ */
+export function gameExtensionIssues(
+  draft: Pick<ProposalDraft, 'missions'>,
+  builtExtension: string | null,
+): string[] {
+  const used = gameExtensionsOf(draft.missions)
+  const name = (id: string) => STUDIO_EXTENSION_NAMES[id] ?? id
+  if (builtExtension && used.some((id) => id !== builtExtension))
+    return [
+      `O jogo já usa a extensão ${name(builtExtension)} (${builtExtension}), e cada jogo usa uma extensão de jogo só: use só blocos e manuais dela (troque ${used
+        .filter((id) => id !== builtExtension)
+        .join(', ')}).`,
+    ]
+  if (used.length > 1)
+    return [
+      `Cada jogo usa UMA extensão de jogo só, e as missões misturam ${used.join(' e ')}. Escolha uma (a mais simples que faz a ideia funcionar) e use só blocos e manuais dela em todas as missões do Estúdio.`,
+    ]
+  return []
+}
+
+/** A extensão de jogo da versão já construída (a da proposta guardada), se ela tem uma só. */
+export function builtGameExtension(
+  proposal: Pick<ProposalDraft, 'missions'> | null | undefined,
+): string | null {
+  const used = proposal ? gameExtensionsOf(proposal.missions) : []
+  return used.length === 1 ? (used[0] ?? null) : null
+}
+
 export const GuideDraftSchema = z.strictObject({
   missions: z
     .array(
       z.strictObject({
         key: short(80),
+        // Um gesto por passo: `action` é o gesto inteiro (onde clicar, qual bloco, para onde
+        // arrastar) e `effect` é o porquê, numa frase ("Isso prepara o jogo para começar.").
         steps: z
-          .array(z.strictObject({ action: short(180), where: short(180), effect: short(180) }))
+          .array(z.strictObject({ action: short(260), effect: short(180) }))
           .min(1)
-          .max(6),
+          .max(8),
         testAction: short(300),
         expected: short(300),
       }),
@@ -148,6 +201,49 @@ export const GuideDraftSchema = z.strictObject({
     .min(1)
     .max(8),
 })
+/**
+ * O passo que manda a criança "ir" a um lugar que não existe (15/10/2026, relato dela: "Abrir o
+ * Estúdio e ir para a área ⚙️ Ao iniciar"). As áreas são BLOCOS que ela pega e arrasta, e o guia já
+ * aparece dentro do Estúdio. Cada padrão diz o conserto, que é o que o reparo recebe.
+ */
+const VAGUE_STEPS: readonly { pattern: RegExp; fix: string; studioOnly?: boolean }[] = [
+  {
+    pattern:
+      /\b(?:ir|v[aá]|volte|voltar|entre|entrar|abra|abrir|acesse|acessar)\s+(?:para\s+|at[eé]\s+)?(?:a|na|à)\s+[aá]rea\b/iu,
+    fix: 'as áreas são blocos: diga "clique em "🗂️ Áreas do projeto", pegue o bloco da área e arraste para o espaço de montar" ou "arraste para dentro da área X"',
+  },
+  {
+    pattern:
+      /\b(?:abra|abrir|entre|entrar|v[aá]|ir)\s+(?:para\s+|no\s+|n[oa]\s+)?(?:o\s+)?est[uú]dio\b/iu,
+    fix: 'o Guia do Pensa já aparece dentro do Estúdio com o jogo aberto: tire o passo de abrir o Estúdio',
+    // Numa missão do Pinta ou do Molda, ir ao Estúdio pode ser o fim legítimo do desenho.
+    studioOnly: true,
+  },
+  {
+    pattern: /\bimplement/iu,
+    fix: 'troque "implementar" pelo gesto: qual bloco pegar, de qual categoria, e para onde arrastar',
+  },
+]
+
+/**
+ * Os passos vagos do guia, com a missão e o conserto (vazio = nada a reparar). `studioKeys` são as
+ * missões do Estúdio (sem a lista, todas contam como do Estúdio).
+ */
+export function guideIssues(
+  guides: z.infer<typeof GuideDraftSchema>,
+  studioKeys?: ReadonlySet<string>,
+): string[] {
+  const issues: string[] = []
+  for (const mission of guides.missions)
+    mission.steps.forEach((step, index) => {
+      const studio = !studioKeys || studioKeys.has(mission.key)
+      for (const { pattern, fix, studioOnly } of VAGUE_STEPS)
+        if ((studio || !studioOnly) && pattern.test(step.action))
+          issues.push(`Missão "${mission.key}", passo ${index + 1} ("${step.action}"): ${fix}.`)
+    })
+  return issues
+}
+
 export const HelpReplySchema = z.strictObject({ text: short(1500) })
 
 /** Lista curta de ids para o motivo: o reparo precisa saber QUAL, não receber o catálogo. */

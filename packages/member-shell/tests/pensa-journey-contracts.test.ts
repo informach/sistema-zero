@@ -2,6 +2,9 @@ import { describe, expect, test } from 'bun:test'
 import type { PensaCapabilitySnapshot } from '@sistemazero/core/pensa'
 import { SERVER_EXAMPLES_INDEX } from '@sistemazero/studio/server-examples'
 import {
+  builtGameExtension,
+  gameExtensionIssues,
+  guideIssues,
   type ProposalDraft,
   playFirstIssues,
   questionIssues,
@@ -199,5 +202,80 @@ describe('a pergunta do Zappy e o jogo que começa jogando', () => {
       'Missão "arte"',
     )
     expect(playFirstIssues({ missions: [art, mission('anda', ['arte'])] }, true)).toEqual([])
+  })
+})
+
+describe('uma extensão de jogo por projeto (15/10/2026)', () => {
+  const kit = { ...mission('kit'), extensionIds: ['game-2d-advanced'], mechanicIds: [] }
+  test('duas extensões de jogo nas missões do Estúdio voltam com o motivo', () => {
+    expect(gameExtensionIssues({ missions: [mission('anda')] }, null)).toEqual([])
+    expect(gameExtensionIssues({ missions: [mission('anda'), kit] }, null)[0]).toContain(
+      'game-2d e game-2d-advanced',
+    )
+    // O MANUAL de outra extensão de jogo também conta: o guia falaria dos blocos dela.
+    const manual = { ...mission('anda'), mechanicIds: ['game-3d'] }
+    expect(gameExtensionIssues({ missions: [manual] }, null)[0]).toContain('UMA extensão')
+    // Missão de arte não instala nada no jogo.
+    const art = { ...mission('arte'), destination: 'pinta' as const, extensionIds: ['game-3d'] }
+    expect(gameExtensionIssues({ missions: [mission('anda'), art] }, null)).toEqual([])
+  })
+
+  test('jogo já construído: a versão nova fica na extensão dele', () => {
+    expect(builtGameExtension({ missions: [mission('anda')] })).toBe('game-2d')
+    expect(builtGameExtension({ missions: [mission('anda'), kit] })).toBeNull()
+    expect(builtGameExtension(null)).toBeNull()
+    expect(gameExtensionIssues({ missions: [mission('anda')] }, 'game-2d')).toEqual([])
+    expect(gameExtensionIssues({ missions: [kit] }, 'game-2d')[0]).toContain(
+      'O jogo já usa a extensão Jogo 2D',
+    )
+  })
+})
+
+describe('o passo do guia é um gesto, não "vá para a área" (15/10/2026)', () => {
+  const guide = (...actions: string[]) => ({
+    missions: [
+      {
+        key: 'palco',
+        steps: actions.map((action) => ({ action, effect: 'Isso prepara o jogo.' })),
+        testAction: 'Aperte ▶ Reproduzir',
+        expected: 'O palco aparece',
+      },
+    ],
+  })
+  test('os vagos voltam com o conserto e citam missão e passo', () => {
+    const issues = guideIssues(
+      guide(
+        'Abrir o Estúdio e ir para a área ⚙️ Ao iniciar.',
+        'Vá na área ⚡ Quando acontecer.',
+        'Implemente o pulo.',
+      ),
+    )
+    expect(issues.some((i) => i.includes('passo 1') && i.includes('as áreas são blocos'))).toBe(
+      true,
+    )
+    expect(issues.some((i) => i.includes('passo 1') && i.includes('tire o passo de abrir'))).toBe(
+      true,
+    )
+    expect(issues.some((i) => i.includes('passo 2') && i.includes('as áreas são blocos'))).toBe(
+      true,
+    )
+    expect(issues.some((i) => i.includes('passo 3') && i.includes('implementar'))).toBe(true)
+  })
+  test('"vá para o Estúdio" só conta nas missões do Estúdio', () => {
+    const pinta = guide('Toque no foguete "Usar no Estúdio" e vá para o Estúdio.')
+    expect(guideIssues(pinta, new Set())).toEqual([])
+    expect(guideIssues(pinta, new Set(['palco']))[0]).toContain('tire o passo de abrir')
+  })
+  test('o gesto preciso passa, inclusive "arraste para o espaço de montar" e "Usar no Estúdio"', () => {
+    expect(
+      guideIssues(
+        guide(
+          'Clique em "🗂️ Áreas do projeto", pegue o bloco "⚙️ Ao iniciar" e arraste para o espaço de montar.',
+          'Clique em "Jogo 2D" e em "Sprites", pegue o bloco "Criar sprite" e encaixe dentro do "⚙️ Ao iniciar".',
+          'Aperte o foguete "Usar no Estúdio".',
+          'Clique no botão ⋯ (Mais opções), no alto do Estúdio, e escolha "Imagens".',
+        ),
+      ),
+    ).toEqual([])
   })
 })

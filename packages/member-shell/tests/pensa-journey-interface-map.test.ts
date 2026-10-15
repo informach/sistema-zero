@@ -1,7 +1,10 @@
 import { describe, expect, test } from 'bun:test'
+import { SERVER_BLOCK_CATALOG } from '@sistemazero/studio/server-catalog'
 import {
   extensionInstallStep,
+  GAME_RUNTIME_EXTENSION_IDS,
   installStepsByMission,
+  STUDIO_AREA_NAMES,
   STUDIO_EXTENSION_NAMES,
   STUDIO_INTERFACE_MAP,
 } from '../src/server/pensa-journey/interface-map'
@@ -36,8 +39,11 @@ describe('o mapa da interface do Pensa casa com as ferramentas', () => {
       'topbar.showPreview',
     ]) {
       const label = ptLabel(key)
+      const install = extensionInstallStep('game-2d')
       const cited =
-        STUDIO_INTERFACE_MAP.includes(label) || extensionInstallStep('game-2d').hint.includes(label)
+        STUDIO_INTERFACE_MAP.includes(label) ||
+        install.text.includes(label) ||
+        install.hint.includes(label)
       expect({ key, label, cited }).toEqual({ key, label, cited: true })
     }
   })
@@ -63,12 +69,41 @@ describe('o mapa da interface do Pensa casa com as ferramentas', () => {
     const steps = installStepsByMission([
       { key: 'arte', destination: 'pinta', extensionIds: ['game-2d'] },
       { key: 'a', destination: 'studio', extensionIds: ['game-2d'] },
-      { key: 'b', destination: 'studio', extensionIds: ['game-2d', 'game-2d-advanced'] },
+      { key: 'b', destination: 'studio', extensionIds: ['game-2d'] },
       { key: 'c', destination: 'studio', extensionIds: [] },
     ])
-    expect([...steps.keys()]).toEqual(['a', 'b'])
+    expect([...steps.keys()]).toEqual(['a'])
     expect(steps.get('a')?.map((s) => s.id)).toEqual(['install-game-2d'])
-    expect(steps.get('b')?.map((s) => s.id)).toEqual(['install-game-2d-advanced'])
-    expect(steps.get('b')?.[0]?.text).toBe('Instale a extensão Jogo 2D Avançado')
+    expect(steps.get('a')?.[0]?.text).toBe(
+      'Clique no botão ⋯ (Mais opções), no alto do Estúdio, escolha "Extensões" e, no cartão Jogo 2D, aperte "Instalar".',
+    )
+  })
+
+  test('extensão de JOGO entra uma vez só no plano (o Estúdio recusa a segunda)', () => {
+    const steps = installStepsByMission([
+      { key: 'a', destination: 'studio', extensionIds: ['game-2d'] },
+      { key: 'b', destination: 'studio', extensionIds: ['game-2d', 'game-2d-advanced'] },
+    ])
+    expect([...steps.keys()]).toEqual(['a'])
+  })
+
+  test('as extensões de jogo são as donas do palco no Estúdio (espelho lido pelo caminho)', async () => {
+    const source = await read('../../studio/src/official-extensions/fullscreenConflicts.ts')
+    const list = /FULLSCREEN_RUNTIME_EXTENSION_IDS = \[([^\]]+)\]/.exec(source)?.[1] ?? ''
+    const ids = [...list.matchAll(/'([^']+)'/g)].map((m) => m[1])
+    expect(ids.length).toBeGreaterThan(0)
+    expect([...GAME_RUNTIME_EXTENSION_IDS].sort()).toEqual([...ids].sort() as string[])
+  })
+
+  test('os nomes das áreas são os rótulos dos blocos de área da paleta', () => {
+    const frames = SERVER_BLOCK_CATALOG.filter((b) => b.type.startsWith('sz_frame_'))
+    expect(frames.length).toBeGreaterThan(0)
+    for (const [area, name] of Object.entries(STUDIO_AREA_NAMES)) {
+      const frame = frames.find((b) => b.area === area)
+      expect({ area, label: frame?.label.startsWith(name) }).toEqual({ area, label: true })
+      expect(frame?.palettePath.join(' › ')).toBe('🗂️ Áreas do projeto')
+      expect(STUDIO_INTERFACE_MAP).toContain(name)
+    }
+    expect(STUDIO_INTERFACE_MAP).toContain('"🗂️ Áreas do projeto"')
   })
 })

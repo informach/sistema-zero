@@ -35,16 +35,17 @@ const Start = z.strictObject({
 })
 /**
  * O que o navegador pode mandar por `command` (o `JourneyApp` usa pausar, retomar, aceitar,
- * observar, consertar e guardar ideia; tirar ideia é o par dela). ⚠️ `close`, `revise` e
- * `record_test` NÃO: as rotas próprias protegem a versão e conferem o jogo salvo antes, e pelo
- * `command` cru elas pulavam as duas coisas. `retry` é do `/work`.
+ * consertar e guardar ideia; tirar ideia é o par dela). ⚠️ `close`, `revise` e `record_test` NÃO:
+ * as rotas próprias protegem a versão e conferem o jogo salvo antes, e pelo `command` cru elas
+ * pulavam as duas coisas. `retry` é do `/work`. ⚠️ `observe` também NÃO (15/10/2026): o "Já quero
+ * experimentar" levava a criança à etapa O sem missão feita e sem jogo; hoje a etapa O começa
+ * quando ela CONTA o resultado do teste (a rota `/test` observa e registra junto).
  */
 const Command = z.strictObject({
   expectedRevision: z.number().int().min(0),
   command: z.discriminatedUnion('type', [
     z.strictObject({ type: z.literal('pause') }),
     z.strictObject({ type: z.literal('resume') }),
-    z.strictObject({ type: z.literal('observe') }),
     z.strictObject({ type: z.literal('repair') }),
     z.strictObject({ type: z.literal('accept'), proposalId: uuid }),
     z.strictObject({
