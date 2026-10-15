@@ -20,7 +20,7 @@ import { newModelIntent } from '../../../state/newModelIntent'
 import { createScenePivotGesture } from '../../../state/scenePivotGesture'
 import { createSceneTransformGesture } from '../../../state/sceneTransformGesture'
 import type { SceneTransformTool } from '../../../viewport/sceneViewportTypes'
-import { useMoldaToolAccess } from '../../toolAccess'
+import { useMoldaToolAccess, useMoldaToolGate } from '../../toolAccess'
 import { useSceneAnimationEditPreview } from './useSceneAnimationEditPreview'
 import { useSceneAnimationPlayer } from './useSceneAnimationPlayer'
 import { useSceneAnimationPoseGesture } from './useSceneAnimationPoseGesture'
@@ -233,6 +233,7 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
   // Sem o pincel liberado (`paint.brush`), escolher a peça em Pintar só escolhe: nada de preparar
   // a tinta, que muda o documento.
   const { can } = useMoldaToolAccess()
+  const pivotGate = useMoldaToolGate('model.pivot')
   const areaAllowed = !workspaceArea || can(SCENE_WORKSPACE_AREAS[workspaceArea].family)
   const area =
     workspaceArea && areaAllowed && SCENE_WORKSPACE_AREAS[workspaceArea].mode === mode
@@ -263,6 +264,12 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
     [editor],
   )
   useEffect(() => () => pivotGesture.cancel(), [pivotGesture])
+  useEffect(() => {
+    if (!pivotGate.allowed) {
+      pivotGesture.cancel()
+      if (tool === 'pivot') setTool('select')
+    }
+  }, [pivotGate.allowed, pivotGesture, tool])
   const index = useMemo(() => indexSceneDocument(document), [document])
   const selected = useMemo(() => chosen.filter((id) => index.scene.nodes.has(id)), [chosen, index])
   const covered = useMemo(
@@ -517,10 +524,16 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
   })
   const modelGuides = useSceneModelGuides(editor, (next) => !!run(() => next))
   const solidCut = useSceneSolidCut(editor, (next) => !!run(() => next))
+  const cutAllowed = can('model.cut')
   const cutLive = useRef(solidCut)
   cutLive.current = solidCut
   useEffect(() => {
     const cut = cutLive.current
+    if (!cutAllowed) {
+      cut.cancel()
+      if (tool === 'cut') setTool('select')
+      return
+    }
     if (
       cut.owner &&
       (mode !== 'model' ||
@@ -536,7 +549,7 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
       cut.owner?.nodeId !== selected[0]
     )
       cut.start(selected[0]!)
-  }, [mode, tool, selected])
+  }, [mode, tool, selected, cutAllowed])
   const currentModelGuides = useRef(modelGuides)
   currentModelGuides.current = modelGuides
   useEffect(
@@ -774,6 +787,7 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
     tool,
     setTool: (next: SceneWorkshopTool) => {
       const choose = () => {
+        if (next === 'pivot' && !pivotGate.canUse()) return
         pivotGesture.cancel()
         setPivotSnap(false)
         cancelModelGuide.current()

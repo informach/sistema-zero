@@ -1017,8 +1017,8 @@ function SceneCanvasAttempt({
             <Minus aria-hidden="true" />
           </button>
         </div>
-        {/* A legenda dos eixos: a mesma cor das alças e dos selos do painel (só no 3D que mexe). */}
-        {shell && mode !== 'paint' && !paintTarget && (
+        {/* O palco continua 3D durante a pintura; a legenda compartilha as cores das alças. */}
+        {shell && (
           <p aria-hidden="true" className="mld-axis-legend">
             <span className="mld-axis-item">
               <span className="mld-axis" data-axis="x">

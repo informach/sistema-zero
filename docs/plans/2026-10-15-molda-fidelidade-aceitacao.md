@@ -28,7 +28,7 @@ Referências: [Pivô](references/2026-10-15-molda-fidelidade/molda-ferramenta-pi
 | P8 | Atendido | Preset sincroniza pivô, campos e prévia | `C/ScenePrecisionTools.test.tsx`; navegador verifica valores imediatamente |
 | P9 | Atendido | Campos de pivô destacados e sincronizados | `C/ScenePieceCoordinates.tsx`; captura Pivô; texto adaptado para contraste no escuro |
 | P10 | Atendido | Peça já girada não pula | `S/pivot.test.ts`, `S/animationPivot.test.ts` |
-| P11 | Atendido | Girar usa o pivô escolhido | `V/SceneTransformGizmo.test.ts`, `S/animationPivot.test.ts`; compensação também na exportação |
+| P11 | Atendido | Girar usa o pivô escolhido | `V/SceneTransformGizmo.test.ts`, `S/animationPivot.test.ts`, `S/animationPivotEditing.test.ts`; inversão, pivôs diferentes, curvas independentes e reprodução GLB |
 | C1 | Atendido | K ou botão ativa Cortar | `C/sceneCommandRegistry.test.tsx`; navegador |
 | C2 | Atendido | Pontos médios visíveis de 8px | `V/ScenePreviewGuide.test.ts`, `V/sceneCutPicking.test.ts`; oclusão inclui outras peças |
 | C3 | Atendido | Hover de 22px e faca de 34px | `V/ScenePreviewGuide.test.ts`; captura Cortar |
@@ -52,7 +52,7 @@ Referências: [Pivô](references/2026-10-15-molda-fidelidade/molda-ferramenta-pi
 | A7 | Atendido | Conectores 2px/33% | Canvas com resolução por DPR; captura Animar |
 | A8 | Atendido | Agulha 2px, cabeça 14×18, até o fim | `C/SceneAnimationRuler.tsx`; navegador mede altura e exercita arrasto/Escape |
 | A9 | Atendido | Marcação manual e automática ao soltar | `E/SceneAnimationPoseGesture.test.ts`, `C/SceneAnimationAuthoring.test.tsx` |
-| A10 | Atendido | Chegada suave, linear e degrau reais | `S/animationArrival.test.ts`, `S/sampleAnimation.test.ts`; arquivos antigos mantêm sua interpretação |
+| A10 | Atendido | Chegada suave, linear e degrau reais | `S/animationArrival.test.ts`, `S/animationPivotEditing.test.ts`, `S/sampleAnimation.test.ts`; editar o giro preserva a curva de compensação e as posições autoradas; arquivos anteriores mantêm sua interpretação |
 | A11 | Atendido | Transporte e repetição funcionais | `E/SceneAnimationPlayer.test.ts`, `C/SceneWorkshop.test.tsx`; navegador |
 | A12 | Atendido | Contagem de poses na árvore | `C/SceneAnimationAuthoring.test.tsx`; captura Animar mostra 8 no corpo e 3 na roda |
 | A13 | Atendido | Altura ajustável | T1–T12 abaixo |
@@ -95,6 +95,8 @@ Referências: [Pivô](references/2026-10-15-molda-fidelidade/molda-ferramenta-pi
 Os arquivos `tokens.json` ao lado das capturas registram valores computados. Texto do pivô claro: contraste 4,71:1. Contador do corte: 4,95:1 claro e 6,68:1 escuro. Esses ajustes de texto são deliberados; os marcadores mantêm os valores dos documentos.
 
 **Inventário por nível e preservação dos dados.** O catálogo único é `src/core/toolFamilies.ts`; o host traduz o nível em famílias. `C/sceneCommandRegistry.test.tsx`, `C/SceneWorkshop.contract.test.tsx` e `C/SceneWorkshop.toolAccess.test.tsx` cobrem disponibilidade, atalhos e inventário.
+
+A revisão posterior acrescentou `C/SceneWorkshop.accessRevocation.test.tsx`, `C/useSceneSolidCut.test.tsx` e `src/components/toolAccess.test.tsx`: revogação com formulário aberto, rascunho numérico, corte preparado e worker pendente; reativação sem restaurar sessões antigas; coordenadas e pivô liberados independentemente. A legenda X/Y/Z de Pintar foi restaurada, conferida nos três temas e passou a ser uma asserção explícita de `e2e/fidelity.spec.ts`. O fechamento dos cinco achados está no [relatório de correção](../../.audits/molda-full-review-fixes-2026-10-15.md).
 
 | Nível | Autoria acrescentada |
 |---|---|

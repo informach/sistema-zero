@@ -3,7 +3,8 @@ import { AnimationMixer, LoopOnce, Object3D, Quaternion } from 'three'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import { clone } from 'three/addons/utils/SkeletonUtils.js'
 import type { SceneAnimationClip, SceneAnimationTrack } from '../scene/animation'
-import { recordSceneAnimationChannelValue } from '../scene/animationArrival'
+import { recordSceneAnimationChannelValue, setScenePoseArrival } from '../scene/animationArrival'
+import { reverseSceneAnimation } from '../scene/animationCommands'
 import type { ModelSceneNode, MoldaSceneDocument } from '../scene/document'
 import { evaluateSceneInstances } from '../scene/evaluate'
 import {
@@ -169,6 +170,44 @@ test('numeric rotation and size authoring export the same interpolated matrices 
       sampler.sample(time, false).worldMatrices.get('body')!,
       0.005,
     )
+  }
+})
+
+test.each([
+  'linear',
+  'step',
+  'smooth',
+] as const)('edited pivot arrival %s and reversed intervals survive GLB playback', async (arrival) => {
+  let source = fixture([{ ...sceneAnimationClip(), tracks: [] }])
+  source = {
+    ...source,
+    nodes: source.nodes.map((node) => (node.id === 'body' ? { ...node, pivot: [1, -1, 1] } : node)),
+  }
+  source = recordSceneAnimationChannelValue(source, 'clip', {
+    nodeId: 'body',
+    channel: 'rotation',
+    key: { time: 2, value: quaternionFromEulerXYZ([20, 90, -15]), interpolation: 'smooth' },
+  })
+  source = setScenePoseArrival(
+    source,
+    'clip',
+    { nodeId: 'body', channel: 'rotation', time: 2 },
+    arrival,
+  )
+  for (const document of [source, reverseSceneAnimation(source, 'clip')]) {
+    const loaded = await load(document, true)
+    const sampler = prepareSceneAnimation(document, 'clip')
+    const mixer = new AnimationMixer(loaded.gltf.scene)
+    const target = loaded.hierarchy.targets.get('body')![0]!
+    for (let i = 0; i <= 256; i++) {
+      const time = i / 128
+      pose(mixer, loaded.gltf.animations[0]!, time)
+      match(
+        loaded.nodes[target.leaf]!.matrixWorld.elements,
+        sampler.sample(time, false).worldMatrices.get('body')!,
+        0.005,
+      )
+    }
   }
 })
 

@@ -101,7 +101,11 @@ export function sceneGlbPivotTranslation(
       const acceleration = smooth ? (6 * angle) / turn.duration ** 2 : 0
       const pointRadius = Math.hypot(...turn.b.incomingPivot)
       const scaling = vectorRates(scale, middle)
-      const referenceAcceleration = smooth ? (12 * maxScale * pointRadius) / turn.duration ** 2 : 0
+      const referenceSmooth =
+        (turn.b.incomingPivotInterpolation ?? turn.a.interpolation) === 'smooth'
+      const referenceAcceleration = referenceSmooth
+        ? (12 * maxScale * pointRadius) / turn.duration ** 2
+        : 0
       curvature +=
         referenceAcceleration +
         pointRadius *
@@ -111,7 +115,10 @@ export function sceneGlbPivotTranslation(
     }
     const jump = tracks.some((track) => {
       const span = interval(track, middle)
-      return span?.a.interpolation === 'step' && span.b.time === end
+      return (
+        span?.b.time === end &&
+        (span.a.interpolation === 'step' || span.b.incomingPivotInterpolation === 'step')
+      )
     })
     const continuousEnd = jump ? previousFloat(end) : end
     requireScene(

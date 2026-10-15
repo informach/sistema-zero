@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { MoldaSceneDocument } from '../../../scene/document'
 import { indexSceneDocument } from '../../../scene/documentIndex'
 import { type AffineMatrix, transformPoint } from '../../../scene/matrix'
@@ -18,6 +18,8 @@ import { requireScene } from '../../../scene/validation'
 import type { EditorStore } from '../../../state/editorStore'
 import type { ScenePreviewGuideState } from '../../../viewport/ScenePreviewGuide'
 import { cutSolidInWorker } from '../../../workers/sceneSolidCut'
+import type { TaskWorker } from '../../../workers/workerTask'
+import { useMoldaToolGate } from '../../toolAccess'
 
 interface CutOwner {
   source: MoldaSceneDocument
@@ -33,7 +35,9 @@ interface CutOwner {
 export function useSceneSolidCut(
   editor: EditorStore<MoldaSceneDocument>,
   commit: (next: MoldaSceneDocument) => boolean,
+  createWorker?: () => TaskWorker,
 ) {
+  const { allowed, canUse } = useMoldaToolGate('model.cut')
   const [owner, setOwner] = useState<CutOwner | null>(null),
     live = useRef(owner)
   const [midpoint, setMidpoint] = useState(true),
@@ -53,6 +57,9 @@ export function useSceneSolidCut(
     setError(null)
     setBusy(false)
   }, [show])
+  useLayoutEffect(() => {
+    if (!allowed) cancel()
+  }, [allowed, cancel])
   useEffect(() => {
     const unsubscribe = editor.subscribe((state) => {
       const current = live.current
@@ -209,6 +216,7 @@ export function useSceneSolidCut(
     },
     start: (nodeId: string) => {
       cancel()
+      if (!canUse()) return
       try {
         const state = editor.getState()
         const prepared = prepareSceneSolidCut(state.content, nodeId)
@@ -263,10 +271,10 @@ export function useSceneSolidCut(
         setError(null)
       }
     },
-    canConfirm: !!plane && !busy && !error,
+    canConfirm: allowed && !!plane && !busy && !error,
     confirm: async () => {
       const current = live.current
-      if (!current || pending.current || error) return false
+      if (!canUse() || !current || current !== owner || pending.current || error) return false
       let plane: ReturnType<typeof sceneSolidCutPlane>
       try {
         plane =
@@ -292,9 +300,11 @@ export function useSceneSolidCut(
               plane,
             },
             controller.signal,
+            createWorker,
           ))
         if (
           controller.signal.aborted ||
+          !canUse() ||
           live.current !== current ||
           editor.getState().contentRevision !== current.revision
         )

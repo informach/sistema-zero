@@ -1,0 +1,40 @@
+Validação das correções do full review, 15/10/2026
+Base: 44bcbdb05f0b7aeb3b51d98a546ad3db262d1826
+
+TypeScript — bun run typecheck — exit 0
+$ tsc --noEmit
+
+Biome — arquivos TS/TSX alterados e novos — exit 0
+Checked 21 files in 115ms. No fixes applied.
+
+Kids — cinco arquivos de integração — exit 0
+ 75 pass
+ 0 fail
+ 445 expect() calls
+Ran 75 tests across 5 files. [4.23s]
+
+Estúdio — quatro arquivos de integração — exit 0
+ 30 pass
+ 0 fail
+ 2192 expect() calls
+Ran 30 tests across 4 files. [7.58s]
+
+Suíte completa anterior ao último ajuste do ciclo de acesso — exit 0
+ 1094 pass
+ 0 fail
+Ran 1094 tests across 129 files. [62.72s]
+ 1030 pass
+ 0 fail
+Ran 1030 tests across 186 files. [149.73s]
+ 1087 pass
+ 0 fail
+Ran 1087 tests across 130 files. [21.50s]
+
+Partição final de domínio/componentes após o último ajuste — bun run test:2 — exit 0
+ 1031 pass
+ 0 fail
+ 112961 expect() calls
+Ran 1031 tests across 186 files. [150.16s]
+
+Total final das partições: 1094 + 1031 + 1087 = 3212 aprovados; zero falhas.
+Git diff --check: exit 0.

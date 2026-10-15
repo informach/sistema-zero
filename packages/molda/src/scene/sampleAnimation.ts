@@ -184,7 +184,7 @@ export function sampleSceneAnimationTransform(
 }
 
 /** Endpoint-preserving curve of a geometric reference point, independent of today's authoring pivot.
- * With matching position/rotation arrivals, interpolating this point keeps it fixed throughout a turn.
+ * The reference chord has its own arrival: editing angular speed cannot change origin compensation.
  * Explicit position keys remain free to move it. Existing intervals without metadata stay unchanged.
  */
 export function sceneAnimationPivotOffset(
@@ -224,8 +224,9 @@ export function sceneAnimationPivotOffset(
     current?.rotation ?? (sampleSceneAnimationTrack(rotationTrack, time) as Quaternion),
     current?.scale ?? scaledAt(time),
   )
-  let weight = a.interpolation === 'step' ? 0 : (time - a.time) / (b.time - a.time)
-  if (a.interpolation === 'smooth') weight = weight * weight * (3 - 2 * weight)
+  const referenceInterpolation = b.incomingPivotInterpolation ?? a.interpolation
+  let weight = referenceInterpolation === 'step' ? 0 : (time - a.time) / (b.time - a.time)
+  if (referenceInterpolation === 'smooth') weight = weight * weight * (3 - 2 * weight)
   return start.map((n, axis) => (1 - weight) * n + weight * end[axis]! - now[axis]!) as Vec3
 }
 

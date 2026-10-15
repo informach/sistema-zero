@@ -21,7 +21,13 @@ export function setSceneAnimationKeys(
     const input = v.record(raw, 'key', ['nodeId', 'channel', 'key'])
     const nodeId = v.id(input.nodeId, 'nodeId')
     const channel = v.choice(input.channel, ['translation', 'rotation', 'scale'], 'channel')
-    const key = v.record(input.key, 'key', ['time', 'value', 'interpolation', 'incomingPivot'])
+    const key = v.record(input.key, 'key', [
+      'time',
+      'value',
+      'interpolation',
+      'incomingPivot',
+      'incomingPivotInterpolation',
+    ])
     const time = v.number(key.time, 'time', 0, clip.duration)
     const pair = JSON.stringify([nodeId, channel])
     const group = grouped.get(pair) ?? { nodeId, channel, keys: new Map<number, unknown>() }
@@ -83,6 +89,7 @@ export function setSceneAnimationKeys(
       if (
         next.interpolation === key.interpolation &&
         JSON.stringify(next.incomingPivot) === JSON.stringify(key.incomingPivot) &&
+        next.incomingPivotInterpolation === key.incomingPivotInterpolation &&
         next.value.every((value, i) => value === key.value[i])
       )
         return key

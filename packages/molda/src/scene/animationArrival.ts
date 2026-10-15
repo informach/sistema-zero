@@ -25,7 +25,14 @@ export function sceneKeyArrival(track: SceneAnimationTrack, time: number): Scene
 
 function arrivals(track: SceneAnimationTrack): ArrivalKey[] {
   return track.keys.map((key, i) => ({
-    key,
+    key:
+      key.incomingPivot && i > 0
+        ? {
+            ...key,
+            incomingPivotInterpolation:
+              key.incomingPivotInterpolation ?? track.keys[i - 1]!.interpolation,
+          }
+        : key,
     arrival: track.keys[i - 1]?.interpolation ?? 'smooth',
   }))
 }
@@ -214,9 +221,24 @@ export function recordSceneAnimationInputs(
       const old = new Map(
         previous ? arrivals(previous).map((entry) => [entry.key.time, entry.arrival]) : [],
       )
+      const references = new Map(
+        previous?.keys.map((key) => [key.time, key.incomingPivotInterpolation]) ?? [],
+      )
       return outgoing(
         track,
-        track.keys.map((key) => ({ key, arrival: old.get(key.time) ?? 'smooth' })),
+        track.keys.map((key) => ({
+          key: key.incomingPivot
+            ? {
+                ...key,
+                incomingPivotInterpolation:
+                  key.incomingPivotInterpolation ??
+                  references.get(key.time) ??
+                  old.get(key.time) ??
+                  'smooth',
+              }
+            : key,
+          arrival: old.get(key.time) ?? 'smooth',
+        })),
       )
     }),
   })
