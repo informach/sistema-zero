@@ -1,6 +1,6 @@
-import { studioProTaskGuides } from '@sistemazero/core/studio/pro-game-knowledge'
 import type { StudioTutorIntent } from '@sistemazero/core/studio/pro-tutor'
 import { useId, useState } from 'react'
+import { compatibleProGuides } from '../../core/proLearningGuides'
 import type { ProjectTree } from '../../core/proProject'
 
 export interface ProLearningRecipesProps {
@@ -15,27 +15,11 @@ export interface ProLearningRecipesProps {
 const button =
   'rounded-lg border border-sz-border px-3 py-2 text-xs focus-visible:outline focus-visible:outline-2 focus-visible:outline-sz-accent'
 
-/** Conservative availability check, not a claim that edited code still implements the recipe. */
-function hasExport(tree: ProjectTree | undefined, path: string, name: string): boolean {
-  const node = tree?.[path]
-  if (node?.kind !== 'file') return false
-  return (
-    new RegExp(`\\bexport\\s+(?:async\\s+)?(?:function|class|const|let|var)\\s+${name}\\b`).test(
-      node.content,
-    ) || new RegExp(`\\bexport\\s*\\{[^}]*\\b${name}\\b[^}]*\\}`).test(node.content)
-  )
-}
-
 /** Curated recipes are the same task guides used by tutor/builder; no generation or writes here. */
 export function ProLearningRecipes({ templateId, tree, onAsk, onBuild }: ProLearningRecipesProps) {
   const [search, setSearch] = useState('')
   const searchId = useId()
-  const guides = templateId ? studioProTaskGuides(search, templateId, 'browse') : []
-  const available = guides.filter((guide) =>
-    guide.recipe?.references.every((reference) =>
-      hasExport(tree, reference.path, reference.exportName),
-    ),
-  )
+  const available = compatibleProGuides(templateId, tree, search)
   return (
     <details className="rounded-xl border border-sz-border p-3 text-sm">
       <summary className="cursor-pointer font-semibold">Aprender com os recursos do kit</summary>

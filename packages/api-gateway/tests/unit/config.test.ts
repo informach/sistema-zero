@@ -52,7 +52,7 @@ describe('loadGatewayConfig', () => {
     const registry = new RouteRegistry(
       realConfig.routes.map((route) => routeConfigSchema.parse(route)),
     )
-    for (const endpoint of ['account', 'usage', 'reconcile']) {
+    for (const endpoint of ['account', 'usage', 'reconcile', 'builder/availability']) {
       const route = registry.resolve('POST', `/members/internal/studio-ai/${endpoint}`, 'v1')?.route
       expect(route).toMatchObject({
         auth: { strategies: ['hmac'], allowedConsumers: ['member-shell'] },

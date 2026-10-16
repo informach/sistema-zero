@@ -1,6 +1,16 @@
 import type * as Monaco from 'monaco-editor'
 import type { ProjectTree } from '#core'
-import { buildMonacoModelPath, getMonacoModelPath, isModelInPathPrefix } from '../modelPaths'
+import { studioTutorSourceHash } from '../../studio/tutorSafety'
+import {
+  buildMonacoModelPath,
+  findMonacoModel,
+  getMonacoModelPath,
+  isModelInPathPrefix,
+  releaseMonacoModelUri,
+  reserveMonacoModelUri,
+  setMonacoModelPath,
+  synchronizeMonacoModel,
+} from '../modelPaths'
 import { PRO_JS_LANGUAGE, PRO_TS_LANGUAGE } from './languages'
 import type { ProLanguageQueries } from './protocol'
 import { createProLanguageClient } from './workerClient'
@@ -15,6 +25,9 @@ export interface ProEditorDiagnostic {
   code: number
   line: number
   message: string
+  column?: number
+  sourceHash?: string
+  severity?: 'error' | 'warning' | 'info'
 }
 type Model = Monaco.editor.ITextModel
 type Session = ReturnType<typeof attachProLanguageService>
@@ -158,7 +171,8 @@ export function attachProLanguageService(
   const opener = monaco.editor.registerEditorOpener({
     openCodeEditor(source, resource, selection) {
       if (source !== navigation.editor) return false
-      const full = resource.path.replace(/^\/+/, '')
+      const target = monaco.editor.getModel(resource)
+      const full = target ? getMonacoModelPath(target) : resource.path.replace(/^\/+/, '')
       if (!full.startsWith(`${prefix}/`)) return false
       const path = full.slice(prefix.length + 1)
       if (input().tree[path]?.kind !== 'file') return false
@@ -170,23 +184,27 @@ export function attachProLanguageService(
   })
   const listeners = new Map<Model, Monaco.IDisposable>()
   const pathOf = (model: Model) => getMonacoModelPath(model).slice(prefix.length + 1)
-  const snapshot = () => {
+  const snapshot = (expectedTree?: ProjectTree) => {
     const project = input()
+    const tree = expectedTree ?? project.tree
     const next = { ...project.dependencies }
-    for (const [path, node] of Object.entries(project.tree))
+    for (const [path, node] of Object.entries(tree))
       if (node.kind === 'file') next[path] = node.content
     // The active Monaco buffer can precede React's next commit by one event.
     for (const model of monaco.editor.getModels())
-      if (isModelInPathPrefix(model, prefix) && project.tree[pathOf(model)]?.kind === 'file')
+      if (isModelInPathPrefix(model, prefix) && tree[pathOf(model)]?.kind === 'file') {
+        if (expectedTree && next[pathOf(model)] !== model.getValue())
+          throw new Error('O código está sendo atualizado. Confira o arquivo e tente novamente.')
         next[pathOf(model)] = model.getValue()
+      }
     return next
   }
-  const prepare = () => {
+  const prepare = (expectedTree?: ProjectTree) => {
     const operation = preparation
       .catch(() => undefined)
       .then(async () => {
         if (disposed) throw new Error('Serviço de linguagem encerrado.')
-        const next = snapshot()
+        const next = snapshot(expectedTree)
         const patch: Record<string, string | null> = {}
         for (const [path, text] of Object.entries(next)) if (sent[path] !== text) patch[path] = text
         for (const path of Object.keys(sent)) if (!(path in next)) patch[path] = null
@@ -201,50 +219,69 @@ export function attachProLanguageService(
   }
   const diagnose = async (epoch: number) => {
     await prepare()
+    const sources = sent
     const gathered: ProEditorDiagnostic[] = []
-    for (const model of monaco.editor.getModels()) {
+    const seen = new Set<string>()
+    for (const [path, node] of Object.entries(input().tree)) {
       if (disposed || epoch !== generation) return
-      if (!isModelInPathPrefix(model, prefix)) continue
-      const path = pathOf(model)
-      if (!input().tree[path]) continue
+      if (node.kind !== 'file') continue
       if (!/\.[cm]?[jt]sx?$/.test(path) && !/^(?:tsconfig|jsconfig)\.json$/.test(path)) continue
-      const version = model.getVersionId()
+      const text = sources[path]
+      if (text === undefined) continue
+      const model = findMonacoModel(monaco.editor.getModels(), buildMonacoModelPath(prefix, path))
+      const version = model?.getVersionId()
       const diagnostics = await client.query('diagnostics', path)
       if (
         disposed ||
-        model.isDisposed() ||
         epoch !== generation ||
-        model.getVersionId() !== version
+        (model && (model.isDisposed() || model.getVersionId() !== version))
       )
         continue
-      monaco.editor.setModelMarkers(
-        model,
-        'sz-pro-typescript',
-        diagnostics.map((item) => ({
-          ...range(model, item.start, item.length),
-          code: String(item.code),
-          message: item.message,
-          source: 'TypeScript',
-          severity:
-            item.severity === 'error'
-              ? monaco.MarkerSeverity.Error
-              : item.severity === 'warning'
-                ? monaco.MarkerSeverity.Warning
-                : monaco.MarkerSeverity.Info,
-        })),
-      )
-      gathered.push(
-        ...diagnostics.slice(0, 20).map((item) => ({
-          path,
+      if (model)
+        monaco.editor.setModelMarkers(
+          model,
+          'sz-pro-typescript',
+          diagnostics
+            .filter((item) => item.path === path)
+            .map((item) => ({
+              ...range(model, item.start, item.length),
+              code: String(item.code),
+              message: item.message,
+              source: 'TypeScript',
+              severity:
+                item.severity === 'error'
+                  ? monaco.MarkerSeverity.Error
+                  : item.severity === 'warning'
+                    ? monaco.MarkerSeverity.Warning
+                    : monaco.MarkerSeverity.Info,
+            })),
+        )
+      for (const item of diagnostics) {
+        const source = sources[item.path]
+        const key = `${item.path}:${item.start}:${item.code}:${item.message}`
+        if (
+          source === undefined ||
+          input().tree[item.path]?.kind !== 'file' ||
+          seen.has(key) ||
+          gathered.length >= 100
+        )
+          continue
+        seen.add(key)
+        const lines = source.slice(0, item.start).split(/\r\n|\r|\n/)
+        gathered.push({
+          path: item.path,
           code: item.code,
-          line: model.getPositionAt(item.start).lineNumber,
+          line: lines.length,
+          column: (lines.at(-1)?.length ?? 0) + 1,
+          sourceHash: studioTutorSourceHash(source),
+          severity: item.severity,
           message: item.message,
-        })),
-      )
+        })
+      }
     }
     if (!disposed && epoch === generation) {
       report(null)
-      navigation.diagnostics?.(gathered.slice(0, 20))
+      navigation.diagnostics?.(gathered)
     }
   }
   const update = () => {
@@ -267,10 +304,44 @@ export function attachProLanguageService(
   const removed = monaco.editor.onWillDisposeModel((model) => {
     listeners.get(model)?.dispose()
     listeners.delete(model)
+    if (isModelInPathPrefix(model, prefix)) releaseMonacoModelUri(model)
   })
   for (const model of monaco.editor.getModels()) observe(model)
   const session = {
     update,
+    async requestForTree<K extends keyof ProLanguageQueries>(
+      tree: ProjectTree,
+      method: K,
+      ...args: ProLanguageQueries[K]['args']
+    ): Promise<ProLanguageQueries[K]['result']> {
+      await prepare(tree)
+      return client.query(method, ...args)
+    },
+    synchronizeDocument(tree: ProjectTree, pathMap: Readonly<Record<string, string>>) {
+      const view = navigation.editor.saveViewState()
+      for (const model of monaco.editor.getModels()) {
+        if (!isModelInPathPrefix(model, prefix)) continue
+        const oldPath = pathOf(model)
+        const path = pathMap[oldPath] ?? oldPath
+        if (path !== oldPath) setMonacoModelPath(model, buildMonacoModelPath(prefix, path))
+        const node = tree[path]
+        if (node?.kind === 'file' && model.getValue() !== node.content)
+          // A document operation has its own guarded recovery. Reset only edited buffers'
+          // text undo so Ctrl+Z cannot undo one import out of a multi-file operation.
+          synchronizeMonacoModel(model, () => model.setValue(node.content))
+      }
+      const active = navigation.editor.getModel()
+      if (view && active && tree[pathOf(active)]?.kind === 'file')
+        navigation.editor.restoreViewState(view)
+      update()
+    },
+    async request<K extends keyof ProLanguageQueries>(
+      method: K,
+      ...args: ProLanguageQueries[K]['args']
+    ): Promise<ProLanguageQueries[K]['result']> {
+      await prepare()
+      return client.query(method, ...args)
+    },
     async query<K extends keyof ProLanguageQueries>(
       method: K,
       model: Model,
@@ -287,9 +358,9 @@ export function attachProLanguageService(
       if (input().tree[path]?.kind !== 'file') return null
       const content = sent[path]
       if (content === undefined) return null
-      const uri = monaco.Uri.parse(buildMonacoModelPath(prefix, path))
+      const uri = monaco.Uri.parse(reserveMonacoModelUri(monaco.editor, prefix, path))
       return (
-        monaco.editor.getModel(uri) ??
+        findMonacoModel(monaco.editor.getModels(), buildMonacoModelPath(prefix, path)) ??
         monaco.editor.createModel(
           content,
           /\.[cm]?tsx?$/.test(path) ? PRO_TS_LANGUAGE : PRO_JS_LANGUAGE,
@@ -317,3 +388,5 @@ export function attachProLanguageService(
   update()
   return session
 }
+
+export type ProLanguageSession = ReturnType<typeof attachProLanguageService>

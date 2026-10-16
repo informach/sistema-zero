@@ -12,6 +12,17 @@ const libraries = Object.fromEntries(
 )
 
 describe('serviço TS isolado por projeto', () => {
+  it('attributes compiler configuration errors to the actual jsconfig file', () => {
+    const service = createProLanguageService(libraries)
+    service.update({
+      'main.js': 'const value = 1',
+      'jsconfig.json': '{"compilerOptions":{"target":"invalid-target"}}',
+    })
+    const problems = service.diagnostics('jsconfig.json')
+    expect(problems.length).toBeGreaterThan(0)
+    expect(problems.every((item) => item.path === 'jsconfig.json')).toBe(true)
+    service.dispose()
+  })
   it('distingue pacote instalado sem tipos de pacote inexistente, sem fabricar declarações', () => {
     const service = createProLanguageService(libraries)
     service.update(

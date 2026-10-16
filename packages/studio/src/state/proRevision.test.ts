@@ -8,7 +8,7 @@ import { createEmptyProject } from '../core/project'
 import { registerProjectOperation } from './projectOperations'
 import { setProjectStorageNamespace } from './projectStorageRuntime'
 import { createProjectStore } from './projectStore'
-import { applyProRevision, captureProRevision } from './proRevision'
+import { applyProProposal, applyProRevision, captureProRevision } from './proRevision'
 
 afterEach(() => setProjectStorageNamespace(''))
 
@@ -43,6 +43,32 @@ async function editable() {
 }
 
 describe('application to the live Studio store', () => {
+  it('enforces the accepted line scope and candidate identity in the application boundary', async () => {
+    const { store, change } = await editable()
+    const original = store.getState().project
+    const input = {
+      operationId: 'scope-test',
+      jobId: 'job-test',
+      change,
+      request: {
+        version: 1 as const,
+        intent: 'change' as const,
+        scope: 'selection' as const,
+        criteria: [],
+        selection: { path: 'main.ts', startLine: 1, endLine: 1, sourceHash: 'a'.repeat(64) },
+      },
+    }
+    await expect(applyProProposal(store, 'revision-game', input)).rejects.toThrow('fora das linhas')
+    expect(store.getState().project).toBe(original)
+    await expect(
+      applyProProposal(store, 'revision-game', {
+        ...input,
+        request: { ...input.request, scope: 'part' },
+        expectedRevisionHash: 'f'.repeat(64),
+      }),
+    ).rejects.toThrow('proposta verificada')
+    expect(store.getState().project).toBe(original)
+  })
   it('applies and undoes as single updates with the exact original layout', async () => {
     const { store, change } = await editable(),
       original = store.getState().project!.tree

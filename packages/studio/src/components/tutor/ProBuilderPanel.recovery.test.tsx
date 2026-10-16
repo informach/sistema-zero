@@ -137,7 +137,6 @@ async function fixture(options: { autosave?: boolean } = {}) {
   const adapter: StudioProBuilderAdapter = {
     create: async () => ready,
     latest: async () => ready,
-    advance: async () => ready,
     cancel: async () => ({ ...ready, phase: 'cancelled' }),
   }
   return {

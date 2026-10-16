@@ -222,3 +222,4 @@ export function setStudioStorageNamespace(namespace: string): void {
   setStorageNamespace(namespace)
   setPersonalAssetsNamespace(namespace)
 }
+export type { ProWorkspacePreferences, StudioWorkspacePreferencesAdapter } from './studio/workspace'

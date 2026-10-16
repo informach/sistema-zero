@@ -143,6 +143,8 @@ export interface StudioCommonProps {
    * trocar exige remount.
    */
   persistence?: StudioPersistence
+  /** Preferences are separate from project content; static per instance. Local persistence supplies a scoped default. */
+  workspacePreferences?: import('./workspace').StudioWorkspacePreferencesAdapter
   /**
    * Liga/desliga partes do editor. Defaults: preview/console/extensões ON;
    * terminal OFF (exige COOP/COEP no host — ver docs/embedding.md); IA OFF

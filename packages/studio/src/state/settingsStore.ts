@@ -143,6 +143,7 @@ interface SettingsState {
   aiModel: string
   theme: ThemeName
   codeFontSize: number
+  codeFontSizeChosen: boolean
   revealAdvanced: boolean
   projectSort: ProjectSortOrder
   loaded: boolean
@@ -232,6 +233,7 @@ export const useSettingsStore = create<SettingsState>((setState, getState) => ({
   aiModel: DEFAULT_AI_MODEL,
   theme: 'light',
   codeFontSize: CODE_FONT_SIZE_DEFAULT,
+  codeFontSizeChosen: false,
   revealAdvanced: false,
   projectSort: 'recent',
   loaded: false,
@@ -249,6 +251,7 @@ export const useSettingsStore = create<SettingsState>((setState, getState) => ({
           aiModel,
           theme: persisted.theme ?? 'light',
           codeFontSize: clampCodeFontSize(persisted.codeFontSize ?? CODE_FONT_SIZE_DEFAULT),
+          codeFontSizeChosen: typeof persisted.codeFontSize === 'number',
           revealAdvanced: persisted.revealAdvanced ?? false,
           projectSort: persisted.projectSort ?? 'recent',
           loaded: true,
@@ -305,21 +308,21 @@ export const useSettingsStore = create<SettingsState>((setState, getState) => ({
   },
   setCodeFontSize: async (n) => {
     const codeFontSize = clampCodeFontSize(n)
-    setState({ codeFontSize })
+    setState({ codeFontSize, codeFontSizeChosen: true })
     await writeMerge({ codeFontSize })
   },
   increaseCodeFontSize: async () => {
     const codeFontSize = clampCodeFontSize(getState().codeFontSize + 1)
-    setState({ codeFontSize })
+    setState({ codeFontSize, codeFontSizeChosen: true })
     await writeMerge({ codeFontSize })
   },
   decreaseCodeFontSize: async () => {
     const codeFontSize = clampCodeFontSize(getState().codeFontSize - 1)
-    setState({ codeFontSize })
+    setState({ codeFontSize, codeFontSizeChosen: true })
     await writeMerge({ codeFontSize })
   },
   resetCodeFontSize: async () => {
-    setState({ codeFontSize: CODE_FONT_SIZE_DEFAULT })
+    setState({ codeFontSize: CODE_FONT_SIZE_DEFAULT, codeFontSizeChosen: true })
     await writeMerge({ codeFontSize: CODE_FONT_SIZE_DEFAULT })
   },
   setRevealAdvanced: async (revealAdvanced) => {

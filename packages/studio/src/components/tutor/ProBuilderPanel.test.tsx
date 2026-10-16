@@ -78,12 +78,79 @@ async function fixture() {
   const adapter: StudioProBuilderAdapter = {
     create: async () => ready,
     latest: async () => ready,
-    advance: async () => ready,
     cancel: async () => ({ ...ready, phase: 'cancelled' }),
   }
   return { ready, adapter }
 }
 describe('builder review interface', () => {
+  it('blocks an out-of-scope proposal before any application request', async () => {
+    const f = await fixture()
+    f.ready.assistance = {
+      version: 1,
+      disposition: 'pending',
+      events: [],
+      previewRefreshes: 0,
+      request: {
+        version: 1,
+        intent: 'change',
+        scope: 'selection',
+        criteria: [],
+        selection: { path: 'other.ts', startLine: 1, endLine: 1, sourceHash: 'a'.repeat(64) },
+      },
+    }
+    let checks = 0
+    f.adapter.checkApplication = async () => {
+      checks++
+      return { allowed: true }
+    }
+    const ui = render(<ProBuilderPanel adapter={f.adapter} projectId="builder-ui" />)
+    await ui.findByText('O arquivo do trecho não está na revisão escolhida.')
+    expect(
+      (ui.getByRole('button', { name: 'Aplicar alterações' }) as HTMLButtonElement).disabled,
+    ).toBe(true)
+    expect(checks).toBe(0)
+    expect(useProjectStore.getState().project!.tree!['main.ts']).toMatchObject({
+      content: 'export const goal = 10',
+    })
+  })
+  it('preserves a stale contextual draft without starting or broadening the request', async () => {
+    const f = await fixture()
+    f.adapter.latest = async () => null
+    let calls = 0
+    f.adapter.create = async () => {
+      calls++
+      return f.ready
+    }
+    const ui = render(
+      <ProBuilderPanel
+        adapter={f.adapter}
+        projectId="builder-ui"
+        draft={{
+          id: 'context',
+          objective: 'Mudar só o valor',
+          request: {
+            version: 1,
+            intent: 'change',
+            scope: 'selection',
+            criteria: [],
+            selection: { path: 'main.ts', startLine: 1, endLine: 1, sourceHash: 'a'.repeat(64) },
+          },
+        }}
+      />,
+    )
+    await waitFor(() =>
+      expect((ui.getByLabelText('O que vamos construir?') as HTMLTextAreaElement).value).toBe(
+        'Mudar só o valor',
+      ),
+    )
+    fireEvent.click(ui.getByRole('button', { name: 'Preparar proposta' }))
+    await ui.findByText('O trecho mudou. Selecione novamente o código para este pedido.')
+    expect(calls).toBe(0)
+    expect((ui.getByLabelText('Tamanho do pedido') as HTMLSelectElement).value).toBe('selection')
+    expect((ui.getByLabelText('O que vamos construir?') as HTMLTextAreaElement).value).toBe(
+      'Mudar só o valor',
+    )
+  })
   it('notifies the host to reread the balance after an explicit cancellation', async () => {
     const f = await fixture()
     f.adapter.latest = async () => ({ ...f.ready, phase: 'queued', result: null })
@@ -101,20 +168,19 @@ describe('builder review interface', () => {
     fireEvent.click(ui.getByRole('button', { name: /Cancelar/ }))
     await waitFor(() => expect(refreshes).toBe(1))
   })
-  it('queries status and history without authorizing an inference; only explicit continuation advances', async () => {
+  it('polls persisted progress after reopening without dispatching a new inference', async () => {
     const f = await fixture()
     const queued = { ...f.ready, phase: 'queued' as const, result: null }
-    let advances = 0,
+    let reads = 0,
       lists = 0
     f.adapter.latest = async () => queued
-    f.adapter.get = async () => queued
+    f.adapter.get = async () => {
+      reads++
+      return reads > 1 ? f.ready : queued
+    }
     f.adapter.list = async () => {
       lists++
       return { jobs: [queued], nextCursor: null }
-    }
-    f.adapter.advance = async () => {
-      advances++
-      return f.ready
     }
     const ui = render(<ProBuilderPanel adapter={f.adapter} projectId="builder-ui" />)
     await ui.findByText('Preparando o próximo passo')
@@ -125,10 +191,9 @@ describe('builder review interface', () => {
     )
     fireEvent.click(ui.getByRole('button', { name: 'Consultar estado' }))
     await waitFor(() => expect(lists).toBe(2))
-    expect(advances).toBe(0)
-    fireEvent.click(ui.getByRole('button', { name: 'Continuar execução' }))
-    await ui.findByText('Proposta pronta para revisar')
-    expect(advances).toBe(1)
+    expect(ui.queryByRole('button', { name: 'Continuar execução' })).toBeNull()
+    await ui.findByText('Proposta pronta para revisar', {}, { timeout: 4000 })
+    expect(reads).toBe(2)
   })
   it('keeps the review mounted while the learner returns to the conversation', async () => {
     const f = await fixture()
@@ -258,21 +323,20 @@ describe('builder review interface', () => {
     })
     expect(ui.queryByRole('button', { name: 'Desfazer alterações' })).toBeNull()
   })
-  it('cancellation wins over an in-flight advance and its late proposal never replaces the cancelled state', async () => {
+  it('cancellation wins over an in-flight poll and its late proposal never replaces the cancelled state', async () => {
     const f = await fixture(),
       pending = deferred<typeof f.ready>(),
       queued = { ...f.ready, phase: 'queued' as const, result: null }
     let requested = false,
       signal: AbortSignal | undefined
     f.adapter.latest = async () => queued
-    f.adapter.advance = async (_input, abort) => {
+    f.adapter.get = async (_input, abort) => {
       requested = true
       signal = abort
       return pending.promise
     }
     const ui = render(<ProBuilderPanel adapter={f.adapter} projectId="builder-ui" />)
-    fireEvent.click(await ui.findByRole('button', { name: 'Continuar execução' }))
-    await waitFor(() => expect(requested).toBe(true))
+    await waitFor(() => expect(requested).toBe(true), { timeout: 4000 })
     fireEvent.click(ui.getByRole('button', { name: 'Cancelar construção' }))
     await ui.findByText('Construção cancelada')
     expect(signal?.aborted).toBe(true)

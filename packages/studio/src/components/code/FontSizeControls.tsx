@@ -6,19 +6,19 @@ import { useT } from '../../studio/i18n'
  * Controles de tamanho de fonte do editor Monaco (A− / valor / A+). Compartilhado
  * entre os modos Código e Ponte para que ambos tenham a mesma ergonomia.
  */
-export function FontSizeControls(): JSX.Element {
+export function FontSizeControls({ defaultSize = 13 }: { defaultSize?: number }): JSX.Element {
   const t = useT()
-  const codeFontSize = useSettingsStore((s) => s.codeFontSize)
-  const increase = useSettingsStore((s) => s.increaseCodeFontSize)
-  const decrease = useSettingsStore((s) => s.decreaseCodeFontSize)
-  const reset = useSettingsStore((s) => s.resetCodeFontSize)
+  const codeFontSize = useSettingsStore((s) =>
+    s.codeFontSizeChosen ? s.codeFontSize : defaultSize,
+  )
+  const setSize = useSettingsStore((s) => s.setCodeFontSize)
 
   return (
     <div className="flex items-center gap-1 text-xs text-sz-fg-soft">
       <button
         type="button"
         style={{ touchAction: 'manipulation' }}
-        onClick={() => void decrease()}
+        onClick={() => void setSize(codeFontSize - 1)}
         disabled={codeFontSize <= CODE_FONT_SIZE_MIN}
         aria-label={t('editor.fontSize.decrease')}
         title={t('editor.fontSize.decrease')}
@@ -29,7 +29,7 @@ export function FontSizeControls(): JSX.Element {
       <button
         type="button"
         style={{ touchAction: 'manipulation' }}
-        onClick={() => void reset()}
+        onClick={() => void setSize(defaultSize)}
         title={t('editor.fontSize.reset')}
         className="sz-touch-target min-w-[2.25rem] rounded px-1.5 py-1.5 text-center tabular-nums leading-none text-sz-fg-soft hover:bg-sz-bg hover:text-sz-fg"
       >
@@ -38,7 +38,7 @@ export function FontSizeControls(): JSX.Element {
       <button
         type="button"
         style={{ touchAction: 'manipulation' }}
-        onClick={() => void increase()}
+        onClick={() => void setSize(codeFontSize + 1)}
         disabled={codeFontSize >= CODE_FONT_SIZE_MAX}
         aria-label={t('editor.fontSize.increase')}
         title={t('editor.fontSize.increase')}

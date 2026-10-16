@@ -74,6 +74,7 @@ export function StudioCore(props: StudioCoreProps): JSX.Element {
   const [stores] = useState(() =>
     createStudioStores({
       persistence: props.persistence,
+      workspacePreferences: props.workspacePreferences,
       limits: props.limits,
       proBuildLimits: props.proRuntime?.limits,
       locale: props.locale,

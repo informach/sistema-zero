@@ -34,6 +34,18 @@ self.onmessage = (event: MessageEvent<ProLanguageRequest>) => {
       case 'format':
         result = service.format(...message.args)
         break
+      case 'symbols':
+        result = service.symbols(...message.args)
+        break
+      case 'references':
+        result = service.references(...message.args)
+        break
+      case 'renameFile':
+        result = service.renameFile(...message.args)
+        break
+      case 'renameSymbol':
+        result = service.renameSymbol(...message.args)
+        break
     }
     self.postMessage({ id: message.id, result } satisfies ProLanguageResponse)
   } catch (error) {

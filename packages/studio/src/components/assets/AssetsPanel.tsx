@@ -18,6 +18,12 @@ import {
 } from '../../asset-library/personalSync'
 import { captureAndStoreProjectThumb } from '../../cover/thumbCapture'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
+import { retryProApplication } from '../../state/proRevision'
+import {
+  applyPreparedProWorkspaceOperation,
+  type ProWorkspaceOperation,
+  prepareProWorkspaceOperation,
+} from '../../state/proWorkspaceOperations'
 import type { AssetsTab } from '../../state/uiStore'
 import { useStudioEditCreation } from '../../studio/edit-creation'
 import { useStudioEditDrawing } from '../../studio/edit-drawing'
@@ -89,7 +95,7 @@ export interface AssetsPanelProps {
 const EMPTY_ASSETS: ProjectAsset[] = []
 
 type PendingDeletion =
-  | { scope: 'project'; id: string; name: string }
+  | { scope: 'project'; id: string; name: string; operation?: ProWorkspaceOperation }
   | { scope: 'personal'; id: string; name: string }
 
 export function AssetsPanel({
@@ -144,6 +150,11 @@ export function AssetsPanel({
   const [busy, setBusy] = useState(false)
   const [pendingDeletion, setPendingDeletion] = useState<PendingDeletion | null>(null)
   const [deleting, setDeleting] = useState(false)
+  const [materialNotice, setMaterialNotice] = useState('')
+  const [pendingMaterialSave, setPendingMaterialSave] = useState<{
+    projectId: string
+    id: string
+  } | null>(null)
   // Imagens (desenhos/sprites), sons (áudio importado) e binários 3D (modelo
   // .glb / céu .hdr) vivem na mesma lista de assets; separamos só para exibir
   // em seções distintas (um .glb na grade de imagens viraria <img> quebrado).
@@ -418,8 +429,30 @@ export function AssetsPanel({
   const confirmDeletion = async () => {
     if (!pendingDeletion || deleting) return
     if (pendingDeletion.scope === 'project') {
-      removeAsset(pendingDeletion.id)
-      setPendingDeletion(null)
+      setDeleting(true)
+      try {
+        if (pendingDeletion.operation) {
+          const receipt = await applyPreparedProWorkspaceOperation(
+            storeApi,
+            pendingDeletion.operation,
+          )
+          setMaterialNotice(
+            receipt.status === 'pending'
+              ? 'Material removido; falta guardar neste aparelho. A recuperação continua disponível nesta sessão.'
+              : 'Material removido. Use Ferramentas → Recuperar arquivos e materiais no editor para desfazer.',
+          )
+          setPendingMaterialSave(
+            receipt.status === 'pending'
+              ? { projectId: pendingDeletion.operation.projectId, id: receipt.operationId }
+              : null,
+          )
+        } else removeAsset(pendingDeletion.id)
+        setPendingDeletion(null)
+      } catch (cause) {
+        setError(cause instanceof Error ? cause.message : 'Não foi possível remover o material.')
+      } finally {
+        setDeleting(false)
+      }
       return
     }
 
@@ -552,8 +585,27 @@ export function AssetsPanel({
     )
   }
 
-  const deleteFromProject = (asset: ProjectAsset) =>
-    setPendingDeletion({ scope: 'project', id: asset.id, name: asset.name })
+  const deleteFromProject = (asset: ProjectAsset) => {
+    const project = storeApi.getState().project
+    if (!project || deleting) return
+    if (project.kind !== 'pro') {
+      setPendingDeletion({ scope: 'project', id: asset.id, name: asset.name })
+      return
+    }
+    setDeleting(true)
+    void prepareProWorkspaceOperation(storeApi, project.id, null, {
+      kind: 'material-delete',
+      id: asset.id,
+    })
+      .then((operation) => {
+        if (storeApi.getState().project === operation.context.project)
+          setPendingDeletion({ scope: 'project', id: asset.id, name: asset.name, operation })
+      })
+      .catch((cause: unknown) =>
+        setError(cause instanceof Error ? cause.message : 'Não foi possível conferir o material.'),
+      )
+      .finally(() => setDeleting(false))
+  }
 
   const handleRename = (asset: ProjectAsset, value: string) => {
     if (value === asset.name) return
@@ -685,6 +737,37 @@ export function AssetsPanel({
           </div>
 
           {isPro && <ProAssetPaths assets={assets} />}
+          {isPro && materialNotice && (
+            <p role="status" className="text-sm">
+              {materialNotice}
+            </p>
+          )}
+          {isPro && pendingMaterialSave && (
+            <Button
+              size="sm"
+              disabled={deleting}
+              onClick={() => {
+                setDeleting(true)
+                void retryProApplication(
+                  storeApi,
+                  pendingMaterialSave.projectId,
+                  pendingMaterialSave.id,
+                )
+                  .then((receipt) => {
+                    if (receipt.status === 'saved') {
+                      setPendingMaterialSave(null)
+                      setMaterialNotice('Material removido e recuperação guardada neste aparelho.')
+                    } else setError(receipt.error ?? 'A gravação ainda está pendente.')
+                  })
+                  .catch((cause: unknown) =>
+                    setError(cause instanceof Error ? cause.message : 'A gravação falhou.'),
+                  )
+                  .finally(() => setDeleting(false))
+              }}
+            >
+              Tentar guardar de novo
+            </Button>
+          )}
           {error && (
             <p
               role="alert"
@@ -800,6 +883,17 @@ export function AssetsPanel({
           <p>
             O asset <strong>{pendingDeletion?.name}</strong> será removido deste projeto. Blocos ou
             código que usam esse nome podem deixar de funcionar.
+          </p>
+        )}
+        {pendingDeletion?.scope === 'project' &&
+          pendingDeletion.operation?.warnings.map((warning) => (
+            <p key={warning} className="mt-2 text-sm">
+              {warning}
+            </p>
+          ))}
+        {error && (
+          <p role="alert" className="mt-2 text-sz-error">
+            {error}
           </p>
         )}
       </ConfirmDialog>

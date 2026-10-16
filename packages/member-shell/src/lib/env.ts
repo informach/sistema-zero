@@ -41,6 +41,7 @@ export const EnvSchema = z
     CREATION_CLEANUP_CRON_SECRET: z.string().min(24).optional(),
     STUDIO_AI_RECONCILE_CRON_SECRET: z.string().min(24).optional(),
     STUDIO_PRO_RUNTIME_URL: z.string().url().optional(),
+    STUDIO_BUILDER_EXECUTOR_SECRET: z.string().min(32).optional(),
     STUDIO_PRO_RUNTIME_TOKEN: z.string().min(16).optional(),
     OPENROUTER_STUDIO_BUILDER_MODEL: z.string().optional(),
     // Chave estável do cookie temporário da Área dos Pais do community-kids. Em

@@ -236,7 +236,7 @@ export interface StudioTutorConfig {
 export interface StudioTutorProRequest {
   id: string
   projectId: string
-  intent: StudioTutorIntent
+  intent: StudioTutorIntent | 'change'
   question: string
   selection?: StudioTutorSelection
 }
@@ -282,9 +282,11 @@ export function StudioTutorProvider({
       id: crypto.randomUUID(),
       question:
         request.question ??
-        (request.intent === 'investigate'
-          ? 'Me ajude a investigar este trecho.'
-          : 'Me explique este trecho.'),
+        (request.intent === 'change'
+          ? ''
+          : request.intent === 'investigate'
+            ? 'Me ajude a investigar este trecho.'
+            : 'Me explique este trecho.'),
     })
     setOpen(true)
   }, [])

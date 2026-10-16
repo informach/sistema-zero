@@ -172,7 +172,6 @@ describe('ZappyPanel', () => {
           creates++
           throw new Error('Not requested')
         },
-        advance: async () => null,
         cancel: async () => null,
       },
     }
@@ -314,7 +313,6 @@ describe('ZappyPanel', () => {
         create: async () => {
           throw new Error('Não solicitado')
         },
-        advance: async () => null,
         cancel: async () => null,
       },
     }

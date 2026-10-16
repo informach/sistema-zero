@@ -1,6 +1,19 @@
 import type { ProLanguageService } from './languageService'
 
 export interface ProLanguageQueries {
+  symbols: { args: [path: string]; result: ReturnType<ProLanguageService['symbols']> }
+  references: {
+    args: [path: string, offset: number]
+    result: ReturnType<ProLanguageService['references']>
+  }
+  renameFile: {
+    args: [from: string, to: string]
+    result: ReturnType<ProLanguageService['renameFile']>
+  }
+  renameSymbol: {
+    args: [path: string, offset: number, name: string]
+    result: ReturnType<ProLanguageService['renameSymbol']>
+  }
   diagnostics: { args: [path: string]; result: ReturnType<ProLanguageService['diagnostics']> }
   completions: {
     args: [path: string, offset: number]

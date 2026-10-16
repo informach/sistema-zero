@@ -1157,6 +1157,12 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
         body: {},
       })
     },
+    studioBuilderAvailability(): Promise<GatewayResponse<{ available: boolean }>> {
+      return gw.gatewayFetchHmac('/members/internal/studio-ai/builder/availability', {
+        method: 'POST',
+        body: {},
+      })
+    },
     studioBuilderHistory(
       actor: import('@sistemazero/core/ai-credits').StudioAiActor,
       query: { projectId: string; before?: string },

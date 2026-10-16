@@ -139,7 +139,6 @@ export function createStudioZappyAdapter(
         })
         return requireOk<StudioProBuilderPage>(response)
       },
-      advance: (input, signal) => build({ operation: 'advance', ...input }, signal),
       cancel: (input) => build({ operation: 'cancel', ...input }),
       async removeProject(projectId, signal) {
         await build({ operation: 'remove-project', projectId }, signal)

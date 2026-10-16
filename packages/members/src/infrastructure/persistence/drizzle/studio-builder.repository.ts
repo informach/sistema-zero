@@ -13,6 +13,7 @@ import {
   type StudioProBuilderPage,
   type StudioProBuilderRepository,
   studioProBuilderView,
+  studioProChangeScopeIssue,
 } from '@sistemazero/core/studio'
 import { and, desc, eq, gt, inArray, lt, or, sql } from 'drizzle-orm'
 import { StudioBuilderConflictError } from '../../../domain/studio-pro/studio-builder.errors'
@@ -65,6 +66,7 @@ async function view(tx: Transaction, row: Row): Promise<StudioProBuilderJob> {
     userId: _user,
     leaseToken: _token,
     binaries: _binaries,
+    execution: _execution,
     ...job
   } = row
   // The ledger remains authoritative even if cancellation wins a race with a late model response.
@@ -106,6 +108,53 @@ async function view(tx: Transaction, row: Row): Promise<StudioProBuilderJob> {
 /** Account lock is acquired before any job/ledger access, matching deletion and quota lock order. */
 export class DrizzleStudioBuilderRepository implements StudioProBuilderRepository {
   constructor(private readonly db: Database) {}
+  async pendingExecutions(now: Date, limit: number) {
+    const count = Math.min(20, Math.max(1, limit))
+    const columns = {
+      id: jobs.id,
+      projectId: jobs.projectId,
+      accountId: jobs.accountId,
+      userId: jobs.userId,
+      execution: jobs.execution,
+    }
+    const [active, unfinished] = await Promise.all([
+      this.db
+        .select(columns)
+        .from(jobs)
+        .where(
+          and(
+            inArray(jobs.phase, ['queued', 'generating', 'validating']),
+            gt(jobs.expiresAt, now),
+            or(sql`${jobs.leaseUntil} is null`, lt(jobs.leaseUntil, now), lt(jobs.deadlineAt, now)),
+          ),
+        )
+        .orderBy(jobs.deadlineAt, jobs.id)
+        .limit(count),
+      this.db
+        .select(columns)
+        .from(jobs)
+        .where(
+          and(
+            inArray(jobs.phase, ['review', 'failed', 'cancelled']),
+            gt(jobs.expiresAt, now),
+            sql`exists (select 1 from ${studioAiRuns} where ${studioAiRuns.id} = ${jobs.id} and ${studioAiRuns.finishedAt} is null)`,
+          ),
+        )
+        .orderBy(jobs.deadlineAt, jobs.id)
+        .limit(count),
+    ])
+    // Alternate execution and settlement so either queue can progress under load.
+    const rows = Array.from({ length: count }, (_, index) => [active[index], unfinished[index]])
+      .flat()
+      .filter((row): row is NonNullable<typeof row> => Boolean(row))
+      .slice(0, count)
+    return rows.map((row) => ({
+      id: row.id,
+      projectId: row.projectId,
+      parentOrigin: row.execution.parentOrigin,
+      actor: { accountId: row.accountId, userId: row.userId, privileged: row.execution.privileged },
+    }))
+  }
   list(
     actor: StudioAiActor,
     input: { projectId: string; before?: string },
@@ -254,6 +303,8 @@ export class DrizzleStudioBuilderRepository implements StudioProBuilderRepositor
             existing.objective !== command.objective ||
             existing.model !== command.model ||
             existing.base.hash !== command.base.hash ||
+            existing.execution.parentOrigin !== command.parentOrigin ||
+            existing.execution.privileged !== actor.privileged ||
             requestIdentity(existing.assistance?.request) !== requestIdentity(command.request)
           )
             throw new StudioBuilderConflictError()
@@ -327,6 +378,7 @@ export class DrizzleStudioBuilderRepository implements StudioProBuilderRepositor
           .insert(jobs)
           .values({
             id: command.id,
+            execution: { parentOrigin: command.parentOrigin, privileged: actor.privileged },
             accountId: actor.accountId,
             userId: actor.userId,
             projectId,
@@ -539,6 +591,12 @@ export class DrizzleStudioBuilderRepository implements StudioProBuilderRepositor
       )
         throw new StudioBuilderConflictError()
       if (command.result) {
+        const scopeIssue = studioProChangeScopeIssue(
+          row.assistance?.request,
+          row.base.files,
+          command.result.change,
+        )
+        if (scopeIssue) throw new StudioBuilderConflictError(scopeIssue)
         const applied = await applyStudioProChange(row.base, command.result.change)
         if (applied.revision.hash !== command.result.revisionHash)
           throw new StudioBuilderConflictError(

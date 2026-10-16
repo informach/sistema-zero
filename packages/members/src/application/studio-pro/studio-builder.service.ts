@@ -103,6 +103,19 @@ const commandSchema = z.discriminatedUnion('operation', [
   z
     .object({
       operation: z.literal('create'),
+      parentOrigin: z
+        .string()
+        .max(2048)
+        .url()
+        .refine((value) => {
+          const url = new URL(value)
+          return (
+            ['http:', 'https:'].includes(url.protocol) &&
+            url.origin === value &&
+            !url.username &&
+            !url.password
+          )
+        }),
       id,
       model: z.string().regex(/^[A-Za-z0-9_.:/-]{1,160}$/),
       binaries: z.record(
@@ -171,6 +184,7 @@ export class StudioBuilderService {
   constructor(
     private readonly repository: StudioProBuilderRepository,
     private readonly clock = () => new Date(),
+    readonly executionAvailable = false,
   ) {}
   purgeExpired() {
     return this.repository.purgeExpired(this.clock())
@@ -190,6 +204,10 @@ export class StudioBuilderService {
     if (!parsed.success) throw new ValidationError('Comando de construção inválido.')
     const command: StudioProBuilderCommand = parsed.data
     if (command.operation === 'create') {
+      if (!this.executionAvailable)
+        throw new ValidationError(
+          'A execução automática está indisponível. Seu pedido continua no editor.',
+        )
       try {
         const base = await createStudioProRevision(command.base)
         if (base.hash !== command.base.hash) throw new Error('hash')
@@ -201,7 +219,7 @@ export class StudioBuilderService {
           ...(baseline?.diagnostics ?? []),
         ]) {
           const source = base.files[reference.path]
-          if (source === undefined || reference.line > source.split('\n').length)
+          if (source === undefined || reference.line > source.split(/\r\n|\r|\n/).length)
             throw new Error('source reference')
           const digest = Buffer.from(
             await crypto.subtle.digest('SHA-256', new TextEncoder().encode(source)),

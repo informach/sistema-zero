@@ -114,6 +114,8 @@ const EnvSchema = z
     AI_LIMIT_MONTHLY: z.coerce.number().int().positive().default(500),
     // Independent AES-256 keys ({version: 64 hex chars}); retain old versions during rotation.
     STUDIO_AI_VAULT_KEYS: z.string().optional(),
+    STUDIO_BUILDER_EXECUTOR_URL: z.string().url().optional(),
+    STUDIO_BUILDER_EXECUTOR_SECRET: z.string().min(32).optional(),
     STUDIO_AI_VAULT_ACTIVE_ID: z.string().optional(),
     STUDIO_AI_CALLBACK_ORIGINS: z.string().optional(),
     // Technical ceilings for Studio inference; subscription interaction quotas remain separate.
@@ -229,6 +231,34 @@ const EnvSchema = z
       .optional()
       .transform((value) => normalizeAvatarPhotoPrefixes(value)),
   })
+  .refine(
+    (env) =>
+      Boolean(env.STUDIO_BUILDER_EXECUTOR_URL) === Boolean(env.STUDIO_BUILDER_EXECUTOR_SECRET),
+    {
+      message: 'Configure URL e segredo do executor Studio juntos.',
+      path: ['STUDIO_BUILDER_EXECUTOR_URL'],
+    },
+  )
+  .refine(
+    (env) => {
+      if (!env.STUDIO_BUILDER_EXECUTOR_URL) return true
+      const url = new URL(env.STUDIO_BUILDER_EXECUTOR_URL)
+      return (
+        !url.username &&
+        !url.password &&
+        !url.hash &&
+        !url.search &&
+        (url.protocol === 'https:' ||
+          (url.protocol === 'http:' &&
+            env.NODE_ENV !== 'production' &&
+            ['localhost', '127.0.0.1'].includes(url.hostname)))
+      )
+    },
+    {
+      message: 'O executor Studio deve usar HTTPS (HTTP somente em localhost de desenvolvimento).',
+      path: ['STUDIO_BUILDER_EXECUTOR_URL'],
+    },
+  )
   .refine((env) => env.NODE_ENV !== 'production' || Boolean(env.INTERNAL_API_TOKEN), {
     message:
       'INTERNAL_API_TOKEN é obrigatório em produção (defesa em profundidade da API do aluno)',

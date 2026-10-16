@@ -2504,6 +2504,7 @@ export const studioBuilderJobs = members.table(
     accountId: uuid('account_id').notNull(),
     userId: uuid('user_id').notNull(),
     projectId: varchar('project_id', { length: 128 }).notNull(),
+    execution: jsonb('execution').$type<{ parentOrigin: string; privileged: boolean }>().notNull(),
     objective: text('objective').notNull(),
     model: varchar('model', { length: 160 }).notNull(),
     binaries: jsonb('binaries')
@@ -2533,6 +2534,9 @@ export const studioBuilderJobs = members.table(
       table.createdAt,
     ),
     index('studio_builder_expiry_idx').on(table.expiresAt),
+    index('studio_builder_queue_idx')
+      .on(table.phase, table.leaseUntil, table.deadlineAt)
+      .where(sql`${table.phase} in ('queued','generating','validating')`),
     check(
       'studio_builder_phase',
       sql`${table.phase} in ('queued','generating','validating','review','failed','cancelled')`,

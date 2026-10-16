@@ -1,75 +1,102 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
 import { act, cleanup, fireEvent, render } from '@testing-library/react'
-import type { JSX } from 'react'
-import { useState } from 'react'
-import { createEmptyProject, type Project, type ProjectTree } from '#core'
+import { createEmptyProject } from '#core'
 import { useProjectStore } from '../../state/projectStore'
+import type { ProWorkspaceIntent } from '../../state/proWorkspaceOperations'
 import { ProFileTree } from './ProFileTree'
-
-// Projeto profissional mínimo com uma pasta `src` contendo o arquivo aberto.
-function setProProject(tree: ProjectTree): void {
-  const base = createEmptyProject('p-pro', 'Projeto Pro')
-  const project: Project = {
-    ...base,
-    kind: 'pro',
-    tree,
-    proMeta: { devScript: 'dev', templateId: 'vanilla' },
-  }
-  useProjectStore.setState({ project, isDirty: false, saveError: null })
-}
-
-// Wrapper que mantém o `activeFile` em estado (como o Shell faria) para observar
-// a re-seleção disparada por onSelectFile.
-function Harness({ initial }: { initial: string }): JSX.Element {
-  const [active, setActive] = useState(initial)
-  return (
-    <>
-      <span data-testid="active">{active}</span>
-      <ProFileTree activeFile={active} onSelectFile={setActive} />
-    </>
-  )
-}
 
 describe('ProFileTree', () => {
   beforeEach(() => {
-    setProProject({
-      src: { kind: 'dir' },
-      'src/main.ts': { kind: 'file', content: '' },
-      'src/util.ts': { kind: 'file', content: '' },
+    useProjectStore.setState({
+      project: {
+        ...createEmptyProject('p-pro', 'Projeto Pro'),
+        kind: 'pro',
+        proMeta: { devScript: 'dev', templateId: 'vanilla' },
+        tree: {
+          src: { kind: 'dir' },
+          'src/main.ts': { kind: 'file', content: '' },
+          'src/util.ts': { kind: 'file', content: '' },
+        },
+      },
+      isDirty: false,
+      saveError: null,
+      editingAccess: 'author',
     })
   })
-
   afterEach(() => {
     cleanup()
-    useProjectStore.setState({ project: null, isDirty: false, saveError: null })
+    useProjectStore.setState({ project: null, editingAccess: 'author' })
   })
 
-  it('mantém o arquivo aberto selecionado ao renomear a pasta que o contém (#6b)', () => {
-    const { getByTestId, getAllByTitle, getByLabelText } = render(<Harness initial="src/main.ts" />)
-    expect(getByTestId('active').textContent).toBe('src/main.ts')
-
-    // Duplo clique no nó da pasta `src` (não nos arquivos) entra em renomeação.
-    const folderButton = getAllByTitle('Duplo clique para renomear').find(
-      (b) => b.textContent?.replace(/[▸▾·\s]/g, '') === 'src',
+  it('requests semantic review for rename and deletion without mutating the tree first', () => {
+    const requests: ProWorkspaceIntent[] = []
+    const view = render(
+      <ProFileTree
+        activeFile="src/main.ts"
+        onSelectFile={() => {}}
+        onRequestOperation={(intent) => requests.push(intent)}
+      />,
     )
-    if (!folderButton) throw new Error('Botão da pasta src não encontrado')
-    act(() => {
-      fireEvent.doubleClick(folderButton)
-    })
+    const original = useProjectStore.getState().project!.tree
+    fireEvent.click(view.getByRole('button', { name: 'Renomear ou mover src' }))
+    fireEvent.change(view.getByLabelText('Renomear src'), { target: { value: 'lib' } })
+    fireEvent.keyDown(view.getByLabelText('Renomear src'), { key: 'Enter' })
+    expect(requests).toEqual([{ kind: 'rename', from: 'src', to: 'lib' }])
+    expect(useProjectStore.getState().project!.tree).toBe(original)
+    fireEvent.click(view.getByRole('button', { name: 'Excluir src/util.ts' }))
+    expect(requests.at(-1)).toEqual({ kind: 'delete', path: 'src/util.ts' })
+    expect(useProjectStore.getState().project!.tree).toBe(original)
+  })
 
-    const input = getByLabelText('Renomear src') as HTMLInputElement
-    act(() => {
-      fireEvent.change(input, { target: { value: 'lib' } })
-    })
-    act(() => {
-      fireEvent.keyDown(input, { key: 'Enter' })
-    })
+  it('navigates focus with arrows without selecting or editing another file', () => {
+    const selected: string[] = []
+    const view = render(
+      <ProFileTree activeFile="src/main.ts" onSelectFile={(path) => selected.push(path)} />,
+    )
+    const folder = view.getByRole('treeitem', { name: 'src' })
+    act(() => folder.focus())
+    fireEvent.keyDown(folder, { key: 'ArrowDown' })
+    expect(document.activeElement).toBe(view.getByRole('treeitem', { name: 'src/main.ts' }))
+    fireEvent.keyDown(document.activeElement!, { key: 'End' })
+    expect(document.activeElement).toBe(view.getByRole('treeitem', { name: 'src/util.ts' }))
+    expect(selected).toEqual([])
+    fireEvent.keyDown(document.activeElement!, { key: 'ArrowLeft' })
+    expect(document.activeElement).toBe(folder)
+    fireEvent.keyDown(folder, { key: 'ArrowLeft' })
+    expect(view.queryByRole('treeitem', { name: 'src/main.ts' })).toBeNull()
+  })
 
-    // O subtree foi renomeado (src/main.ts -> lib/main.ts) e o editor reaponta
-    // para o novo path em vez de ficar num caminho morto.
-    expect(getByTestId('active').textContent).toBe('lib/main.ts')
-    const tree = useProjectStore.getState().project?.tree ?? {}
-    expect(tree['lib/main.ts']).toBeTruthy()
-    expect(tree['src/main.ts']).toBeUndefined()
+  it('offers an explicit editable filename suggestion and blocks observer controls', () => {
+    const view = render(
+      <ProFileTree
+        activeFile="src/main.ts"
+        onSelectFile={() => {}}
+        onRequestOperation={() => {}}
+      />,
+    )
+    fireEvent.click(view.getByTitle('Novo arquivo na raiz'))
+    fireEvent.change(view.getByLabelText('Nome do novo item'), {
+      target: { value: 'pontuação final.ts' },
+    })
+    expect((view.getByLabelText('Nome do novo item') as HTMLInputElement).value).toBe(
+      'pontuação final.ts',
+    )
+    fireEvent.click(view.getByRole('button', { name: 'Usar sugestão: pontuacao-final.ts' }))
+    expect((view.getByLabelText('Nome do novo item') as HTMLInputElement).value).toBe(
+      'pontuacao-final.ts',
+    )
+    cleanup()
+    useProjectStore.setState({ editingAccess: 'observer' })
+    const observer = render(
+      <ProFileTree
+        activeFile="src/main.ts"
+        onSelectFile={() => {}}
+        onRequestOperation={() => {}}
+      />,
+    )
+    expect(
+      (observer.getByRole('button', { name: 'Renomear ou mover src' }) as HTMLButtonElement)
+        .disabled,
+    ).toBe(true)
   })
 })
