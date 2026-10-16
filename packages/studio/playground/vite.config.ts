@@ -108,6 +108,26 @@ export default defineConfig({
   worker: {
     format: 'es',
   },
+  build: {
+    rolldownOptions: {
+      output: {
+        // Shared chunks must keep React and their dependencies initialized first,
+        // including smaller hosts that import only the standalone preview.
+        strictExecutionOrder: true,
+        codeSplitting: {
+          includeDependenciesRecursively: false,
+          groups: [
+            {
+              // Only leaf utilities, UI primitives and React-only contexts belong here. Stores
+              // depend on application modules and must retain automatic splitting.
+              name: 'studio-editor-contracts',
+              test: /[\\/]src[\\/](?:preview[\\/](?:limits|scriptIntegrity)|studio[\\/](?:observation|pro-runtime)|components[\\/](?:layout[\\/]TabStrip|preview[\\/]playerOriginAdapter|assets[\\/]has3DConsumer))\.tsx?$/,
+            },
+          ],
+        },
+      },
+    },
+  },
   server: {
     port: 5173,
     host: '127.0.0.1',
