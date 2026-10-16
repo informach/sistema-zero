@@ -359,6 +359,18 @@ como capa fixa (vence a foto automática); sem escolha, a foto automática segue
 
 ## Gravação de saída: toda transação com `commit()` explícito (11/09/2026)
 
+### Plataformas de prova (15/10/2026)
+
+O CI Linux executa a prova `projectStorageBrowser.test.ts` com `STUDIO_STORAGE_BROWSER=chromium`.
+O job obrigatório `studio-storage-macos` executa o MESMO teste completo em Chromium e WebKit;
+o E2E de WebKit também roda no macOS. Sem a variável, a prova local continua cobrando os dois.
+WORKAROUND do port Linux do WebKit 1.60: com um CAS grande em voo, a recarga perdia o journal
+de saída, mesmo com `commit()` explícito. A reprodução com o mesmo fixture passou em Windows
+e no macOS do run 38838008325; retirar o CAS em voo também fez a reprodução Linux passar.
+Não houve mudança no armazenamento nem redução das asserções. A prova em macOS segue a
+[orientação do Playwright para maior proximidade com Safari](https://playwright.dev/docs/browsers#webkit).
+Ao atualizar o Playwright, repita o fixture completo no Linux antes de retirar esta divisão.
+
 O `PersistenceService` grava o que está pendente no `beforeunload`/`pagehide`, e a gravação SAÍA,
 mas morria com a troca de documento. Três mecanismos, os três consertados no mesmo dia:
 

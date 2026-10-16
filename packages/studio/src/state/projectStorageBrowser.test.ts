@@ -5,7 +5,9 @@ import { tmpdir } from 'node:os'
 import { join, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-test('actual pagehide: large pending CAS + latest draft survive reload in Chromium and WebKit; two tabs conflict', async () => {
+test('actual pagehide: large pending CAS + latest draft survive reload; two tabs conflict', async () => {
+  const browser = process.env.STUDIO_STORAGE_BROWSER ?? 'all'
+  if (!['all', 'chromium', 'webkit'].includes(browser)) throw new Error('Unknown storage browser')
   // Bun.build shares the test process's resolver cache (including module mocks).
   // Compile in a clean process so the browser exercises actual production modules.
   const temporaryRoot = resolve(tmpdir())
@@ -54,6 +56,7 @@ test('actual pagehide: large pending CAS + latest draft survive reload in Chromi
       'node',
       fileURLToPath(new URL('../../scripts/verify-project-storage-browser.mjs', import.meta.url)),
       `http://127.0.0.1:${address.port}`,
+      browser,
     ],
     { stdout: 'pipe', stderr: 'pipe' },
   )
@@ -65,8 +68,8 @@ test('actual pagehide: large pending CAS + latest draft survive reload in Chromi
       Bun.readableStreamToText(child.stderr),
     ])
     if (code !== 0) throw new Error(`${output}\n${error}`)
-    expect(output).toContain('pass chromium')
-    expect(output).toContain('pass webkit')
+    for (const name of browser === 'all' ? ['chromium', 'webkit'] : [browser])
+      expect(output).toContain(`pass ${name}`)
   } finally {
     clearTimeout(timeout)
     server.close()

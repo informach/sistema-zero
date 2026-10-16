@@ -1,7 +1,8 @@
 import { expect, test } from 'bun:test'
 import { mkdtemp, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
-import { join, resolve } from 'node:path'
+import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import {
   eventSchema,
   questionSchema,
@@ -31,7 +32,12 @@ test('stdio MCP uses the runtime dispatcher and exposes only Plan capabilities',
   try {
     const child = await app.processes.open({
       executable: process.execPath,
-      args: [resolve('packages/tui/src/cli.ts'), 'mcp', directory, 'plan'],
+      args: [
+        fileURLToPath(new URL('../../tui/src/cli.ts', import.meta.url)),
+        'mcp',
+        directory,
+        'plan',
+      ],
       cwd: directory,
       env: { SISTEMAZERO_HOME: directory },
     })

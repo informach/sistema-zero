@@ -123,7 +123,7 @@ jobs:
       # workerHandshake.ts` (nenhum worker é encerrado antes de anunciar que carregou).
       - name: Preparar navegadores das provas de persistência do Studio
         working-directory: packages/studio
-        run: bunx playwright install --with-deps chromium webkit
+        run: bunx playwright install --with-deps chromium
 
       - name: Instalar o compilador confiável para as provas fora da imagem
         run: npm ci --ignore-scripts --no-audit --no-fund --prefix packages/studio-runtime/runtime
@@ -131,7 +131,16 @@ jobs:
       # Credenciais e posse de portas do runtime são homologadas no Windows; o
       # FFmpeg empacotado do desktop também precisa de uma plataforma suportada.
       - name: Testes dos pacotes web e serviços
-        run: bun run --filter '*' --filter '!@sistemazero/agent-runtime' --filter '!@sistemazero/marketing-desktop' test
+        run: node scripts/ci/test-service-packages.mjs
+
+      - name: Testes do Studio com CPU disponível para os projetos grandes
+        run: bun run --filter '@sistemazero/studio' test
+        env:
+          # WebKit roda com as mesmas asserções no job obrigatório studio-storage-macos.
+          # WORKAROUND do port Linux: perde o journal no reload com CAS grande em voo;
+          # macOS e Windows passaram o mesmo cenário (run 38838008325 / prova local).
+          # macOS é a referência recomendada para Safari: playwright.dev/docs/browsers#webkit.
+          STUDIO_STORAGE_BROWSER: chromium
 
       - name: Verificar IR gerada dos exemplos 3D
         working-directory: packages/studio
@@ -252,7 +261,8 @@ jobs:
 
   desktop-windows:
     name: desktop-windows
-    runs-on: windows-latest
+    # Pin the native toolchain; windows-latest switched to Server 2025 / VS2026.
+    runs-on: windows-2022
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v5
@@ -264,6 +274,10 @@ jobs:
           node-version: '24'
       - name: Instalar dependências (lockfile congelado)
         run: bun install --frozen-lockfile
+      - name: Verificar compilação do helper nativo de processos
+        run: |
+          & "$env:SystemRoot/System32/WindowsPowerShell/v1.0/powershell.exe" -NoProfile -NonInteractive -ExecutionPolicy Bypass -File packages/agent-runtime/src/process/windows-job.ps1 -OutputFile "$env:RUNNER_TEMP/sistemazero-job-proof.exe"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Testar runtime nativo
         working-directory: packages/agent-runtime
         run: |
@@ -383,7 +397,7 @@ jobs:
   studio-e2e-webkit:
     name: studio-e2e-webkit
     needs: ci
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v5

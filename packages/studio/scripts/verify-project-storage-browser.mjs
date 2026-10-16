@@ -3,10 +3,13 @@ import { chromium, webkit } from '@playwright/test'
 
 const url = process.argv[2]
 if (!url) throw new Error('Expected fixture URL')
+const selected = process.argv[3] ?? 'all'
+if (!['all', 'chromium', 'webkit'].includes(selected)) throw new Error('Unknown storage browser')
 for (const [name, engine] of [
   ['chromium', chromium],
   ['webkit', webkit],
 ]) {
+  if (selected !== 'all' && selected !== name) continue
   const browser = await engine.launch({ headless: true })
   try {
     const context = await browser.newContext()
