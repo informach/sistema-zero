@@ -46,7 +46,7 @@ export const executeNative: ProductionExecutor = async (
     throw new Error('Selecione um componente da peça para produzir a arte')
   const structuredCopy =
     request.capability === 'copy' &&
-    ['piece', 'representation', 'component'].includes(context.source.document.kind)
+    ['piece', 'representation', 'component', 'analysis'].includes(context.source.document.kind)
   if (
     ![
       'copy',
@@ -247,14 +247,16 @@ export const executeNative: ProductionExecutor = async (
             : []),
         ]
       : []),
-    ...(request.capability === 'copy'
+    ...(request.capability === 'copy' && context.source.document.kind !== 'analysis'
       ? [
           `Revisão Light Copy: ${LIGHT_COPY_RULES.map((rule) => `${rule.n}. ${rule.fix}`).join('\n')}\nCitações reais e texto protegido são literais: não altere a fala para corrigir estilo. Não use estas regras para inventar fatos.`,
         ]
       : []),
     ...(structuredCopy
       ? [
-          `Entregue a proposta JSON editorial schemaVersion 1. ${request.intent === 'adapt' ? 'Use kind adapt e crie uma nova representação sem alterar o original. Referencie sourceComponentId somente para componentes presentes no contexto.' : 'Use kind copy. Cada variante contém label e changes com entityId, field e value. Podem mudar body/title de componentes, caption/cta/alt/title de representações e, somente em peças que já tenham conversation, conversationOpening/conversationOffer. Estes dois campos alteram apenas os textos de abertura/apresentação: preserve palavra-chave, destino, origem, respostas de saída e validade. Mantenha a identificação de mensagem automática e os limites de 25/70 palavras, respectivamente. A proposta nunca aprova nem ativa uma conversa. Preserve IDs, assets, falas reais, citações e trechos protegidos.'}`,
+          context.source.document.kind === 'analysis'
+            ? 'Entregue proposta JSON editorial schemaVersion 1, kind copy, summary e variants. Cada variante contém label e changes com entityId, field e value. Este pedido atualiza uma análise. Só pode alterar body, title, hypothesis e evaluationCriterion da análise source. Preencha body com observações, limitações, interpretações e um experimento verificável; hypothesis com a hipótese (até 6000 caracteres); evaluationCriterion com variável, denominador, janela e critério de avaliação (até 2000 caracteres). Preserve objetivo, evidenceIds, basis e proposedPieceId. Não altere a edição aprovada nem o rascunho de origem. Não invente dados nem causalidade.'
+            : `Entregue a proposta JSON editorial schemaVersion 1. ${request.intent === 'adapt' ? 'Use kind adapt e crie uma nova representação sem alterar o original. Referencie sourceComponentId somente para componentes presentes no contexto.' : 'Use kind copy. Cada variante contém label e changes com entityId, field e value. Podem mudar body/title de componentes, caption/cta/alt/title de representações e, somente em peças que já tenham conversation, conversationOpening/conversationOffer. Estes dois campos alteram apenas os textos de abertura/apresentação: preserve palavra-chave, destino, origem, respostas de saída e validade. Mantenha a identificação de mensagem automática e os limites de 25/70 palavras, respectivamente. A proposta nunca aprova nem ativa uma conversa. Preserve IDs, assets, falas reais, citações e trechos protegidos.'}`,
           `Gere ${request.intent === 'alternatives' ? request.limits.maxVariants : 1} alternativa(s). Ajuste somente source e selected, jamais ancestors, directions, evidence ou memory. Respeite protectedIds. Não invente IDs nem explique em campos de copy. summary descreve o que mudou.`,
         ]
       : []),

@@ -471,6 +471,140 @@ suite('execução PostgreSQL: concessão, tentativas e contexto', () => {
     inputTokens: null,
     outputTokens: null,
   }
+  test('análise por IA preenche hipótese e critério, preserva referências e respeita conflito e desfazer', async () => {
+    for (const concurrent of [false, true]) {
+      const f = await fixture()
+      const saved = await workspace.apply(owner, {
+        schemaVersion: 1,
+        operationId: randomUUID(),
+        projectId: f.projectId,
+        entityId: randomUUID(),
+        baseRevisionId: null,
+        action: 'save',
+        document: {
+          schemaVersion: 1,
+          kind: 'analysis',
+          title: 'Resultados',
+          body: 'Análise pendente.',
+          objective: 'Planejar próximo ciclo',
+          hypothesis: '',
+          evidenceIds: [],
+          proposedPieceId: null,
+          analysisType: 'research',
+          basis: [{ entityId: f.saved.item.id, revisionId: f.saved.revisionId }],
+        },
+      })
+      if (saved.status !== 'applied') throw new Error('Análise não criada')
+      const input = contextRequestSchema.parse({
+        ...f.request,
+        entityId: saved.item.id,
+        revisionId: saved.revisionId,
+      })
+      const adaptation = await execution.context(owner, { ...input, intent: 'adapt' })
+      await rejects(
+        () =>
+          execution.create(owner, {
+            ...input,
+            intent: 'adapt',
+            id: randomUUID(),
+            operationId: randomUUID(),
+            contextHash: adaptation.hash,
+          }),
+        /próxima pauta/,
+      )
+      const context = await execution.context(owner, input)
+      const created = await execution.create(owner, {
+        ...input,
+        id: randomUUID(),
+        operationId: randomUUID(),
+        contextHash: context.hash,
+      })
+      const claimed = await execution.claim(computerA, f.projectId, created.request.id, {
+        operationId: randomUUID(),
+        expectedEpoch: 0,
+      })
+      const claim = attempt(claimed)
+      const finish = {
+        operationId: randomUUID(),
+        attemptId: claim.id,
+        epoch: claim.epoch,
+        outcome: success,
+      }
+      await rejects(
+        () => execution.finish(computerA, f.projectId, created.request.id, finish),
+        /estruturada/,
+      )
+      if (concurrent)
+        await workspace.apply(owner, {
+          schemaVersion: 1,
+          operationId: randomUUID(),
+          projectId: f.projectId,
+          entityId: saved.item.id,
+          baseRevisionId: saved.revisionId,
+          action: 'save',
+          document: { ...saved.item.document, title: 'Revisão humana' },
+        })
+      const completed = await execution.finish(computerA, f.projectId, created.request.id, {
+        ...finish,
+        operationId: randomUUID(),
+        outcome: {
+          ...success,
+          editorial: {
+            schemaVersion: 1,
+            kind: 'copy',
+            summary: 'Análise concluída',
+            variants: [
+              {
+                label: 'Experimento',
+                changes: [
+                  {
+                    entityId: saved.item.id,
+                    field: 'body',
+                    value: 'A amostra não demonstra causalidade.',
+                  },
+                  {
+                    entityId: saved.item.id,
+                    field: 'hypothesis',
+                    value: 'Uma demonstração pode estimular salvamentos.',
+                  },
+                  {
+                    entityId: saved.item.id,
+                    field: 'evaluationCriterion',
+                    value: 'Comparar salvamentos por visualização em 48 horas.',
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      })
+      expect(completed.application?.error).toBeNull()
+      expect(completed.application?.result?.status).toBe(concurrent ? 'conflict' : 'applied')
+      const after = (await workspace.snapshot(owner, f.projectId)).items.find(
+        (item) => item.id === saved.item.id,
+      )
+      if (after?.document.kind !== 'analysis') throw new Error('Análise ausente')
+      expect(after.document.basis).toEqual(
+        saved.item.document.kind === 'analysis' ? saved.item.document.basis : undefined,
+      )
+      if (concurrent) {
+        expect(after.document.title).toBe('Revisão humana')
+        expect(after.document.hypothesis).toBe('')
+      } else {
+        expect(after.document.evaluationCriterion).toBe(
+          'Comparar salvamentos por visualização em 48 horas.',
+        )
+        expect(after.document.hypothesis).toBe('Uma demonstração pode estimular salvamentos.')
+        expect(
+          (await execution.undo(owner, f.projectId, created.request.id)).application?.undo?.status,
+        ).toBe('applied')
+        const restored = (await workspace.snapshot(owner, f.projectId)).items.find(
+          (item) => item.id === saved.item.id,
+        )
+        expect(restored?.document).toEqual(saved.item.document)
+      }
+    }
+  })
   async function editorialFixture(
     intent: 'adjust' | 'alternatives' | 'adapt' = 'adjust',
     twoComponents = false,

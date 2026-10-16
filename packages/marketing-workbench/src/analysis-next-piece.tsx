@@ -28,7 +28,9 @@ export function AnalysisNextPiece({
   const [brief, setBrief] = useState(doc.kind === 'analysis' ? doc.body : '')
   const [hypothesis, setHypothesis] = useState(doc.kind === 'analysis' ? doc.hypothesis : '')
   const [objective, setObjective] = useState(doc.kind === 'analysis' ? doc.objective : '')
-  const [criterion, setCriterion] = useState(''),
+  const [criterion, setCriterion] = useState(
+      doc.kind === 'analysis' ? (doc.evaluationCriterion ?? '') : '',
+    ),
     [format, setFormat] = useState('carousel'),
     [medium, setMedium] = useState('image')
   if (doc.kind !== 'analysis') return null

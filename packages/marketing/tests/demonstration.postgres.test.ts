@@ -16,6 +16,7 @@ import { createDbConnection, type DbConnection } from '../src/infrastructure/per
 import { DrizzleExecutionRepository } from '../src/infrastructure/persistence/drizzle/execution.repository'
 import { DrizzleWorkspaceRepository } from '../src/infrastructure/persistence/drizzle/workspace.repository'
 import { editorialAssets } from '../src/infrastructure/persistence/drizzle/workspace-schema'
+import { requireReviewDatabase } from './helpers/review-database'
 import { fixtureDirectory } from './helpers/staff-directory'
 
 const url = process.env.MARKETING_TEST_DATABASE_URL
@@ -33,12 +34,7 @@ suite('demonstração integrada: fontes, contexto e aprovação', () => {
     status: 'active',
   }
   beforeAll(async () => {
-    if (
-      !url ||
-      new URL(url).hostname !== '127.0.0.1' ||
-      new URL(url).pathname !== '/marketing_review'
-    )
-      throw new Error('Banco exclusivo de revisão obrigatório')
+    requireReviewDatabase(url)
     connection = createDbConnection(url)
     await migrate(connection.db, {
       migrationsFolder: 'src/infrastructure/persistence/drizzle/migrations',

@@ -34,6 +34,15 @@ export const workspaceResponseSchema = z.discriminatedUnion('ok', [
     })
     .strict(),
 ])
+export function unwrapWorkspaceResponse(input: unknown) {
+  const response = workspaceResponseSchema.parse(input)
+  if (!response.ok)
+    throw Object.assign(new Error(response.error.message), {
+      status: response.error.status,
+      code: response.error.code,
+    })
+  return response.value
+}
 function validWorkspacePath(value: string) {
   const [pathname, query, ...extra] = value.split('?')
   if (

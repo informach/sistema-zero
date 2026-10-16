@@ -13,9 +13,11 @@ import {
   videoSchema,
 } from '@sistemazero/marketing-contracts'
 import { app, BrowserWindow, session } from 'electron'
+import type { WorkspaceRequest } from '../../shared/connection'
 import type { DesktopWorkspaceManager } from '../sync/workspace-manager'
 import { captureProof } from './capture-proof'
 import { waitProof } from './wait-proof'
+import { requestWorkspaceProof } from './workspace-proof'
 
 export async function proveConnectedComposition(
   window: BrowserWindow,
@@ -28,10 +30,8 @@ export async function proveConnectedComposition(
   const directory = path.join(app.getAppPath(), '.cache/composition-connected-proof')
   await mkdir(directory, { recursive: true })
   const projectId = await stableEditorialId(`${scope.userId}:composition-connected-v1`)
-  const request = (route: string, method = 'GET', body?: unknown) =>
-    window.webContents.executeJavaScript(
-      `window.marketing.workspace(${JSON.stringify({ scope, path: route, method, ...(body ? { body } : {}) })})`,
-    )
+  const request = (route: string, method: WorkspaceRequest['method'] = 'GET', body?: unknown) =>
+    requestWorkspaceProof(window, { scope, path: route, method, ...(body ? { body } : {}) })
   await request('/projects', 'POST', {
     schemaVersion: 1,
     id: projectId,

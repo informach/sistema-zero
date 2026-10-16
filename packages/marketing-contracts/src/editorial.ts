@@ -138,6 +138,7 @@ export const documentSchema = z
         objective: z.string().max(2000),
         evidenceIds: z.array(idSchema).max(100),
         hypothesis: z.string().max(6000),
+        evaluationCriterion: z.string().max(2000).optional(),
         proposedPieceId: idSchema.nullable(),
         analysisType: z.enum(['research', 'summary', 'decision']).optional(),
         basis: z

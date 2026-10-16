@@ -3,6 +3,7 @@ import {
   type ClaimRun,
   type ContextRequest,
   canonicalJson,
+  demonstrationSources,
   type EditorialApplication,
   type EditorialBatch,
   type ExecutionContext,
@@ -706,6 +707,16 @@ export class DrizzleExecutionRepository implements ExecutionRepository {
       const now = await serverTime(tx),
         attempt = await activeLease(tx, run, actorId, deviceId, input, now)
       validateOutcomeCapability(run.request, input.outcome)
+      if (
+        run.request.capability === 'copy' &&
+        run.context.source.document.kind === 'analysis' &&
+        input.outcome.status === 'succeeded' &&
+        !input.outcome.editorial
+      )
+        throw new WorkspaceError(
+          'INVALID_RESULT',
+          'A análise precisa de uma proposta editorial estruturada',
+        )
       if (input.outcome.status === 'succeeded' && input.outcome.capture) {
         const capture = input.outcome.capture
         const [source] = await tx

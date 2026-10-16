@@ -26,6 +26,7 @@ import {
 import { DrizzleExecutionRepository } from '../src/infrastructure/persistence/drizzle/execution.repository'
 import { publications, socialAccounts } from '../src/infrastructure/persistence/drizzle/schema'
 import { engagementFixture, reviewBox, reviewKey } from './helpers/engagement'
+import { requireEngagementReviewDatabase } from './helpers/review-database'
 import { fixtureDirectory } from './helpers/staff-directory'
 
 const url = process.env.ENGAGEMENT_TEST_DATABASE_URL
@@ -33,13 +34,7 @@ const suite = url ? describe : describe.skip
 suite('engajamento PostgreSQL isolado', () => {
   let connection: DbConnection
   beforeAll(async () => {
-    if (
-      !url ||
-      new URL(url).hostname !== '127.0.0.1' ||
-      !['15465', '15466'].includes(new URL(url).port) ||
-      new URL(url).pathname !== '/marketing_review'
-    )
-      throw new Error('Use o banco exclusivo da revisão de engajamento')
+    requireEngagementReviewDatabase(url)
     connection = createDbConnection(url)
     await migrate(connection.db, {
       migrationsFolder: 'src/infrastructure/persistence/drizzle/migrations',

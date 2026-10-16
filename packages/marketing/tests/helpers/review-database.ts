@@ -19,3 +19,20 @@ export function requireReviewDatabase(url: string | undefined): asserts url is s
   )
     throw fail()
 }
+
+/** This suite truncates its inbound/outbound queues: never allow the connected review DB. */
+export function requireEngagementReviewDatabase(url: string | undefined): asserts url is string {
+  if (!url || !URL.canParse(url)) throw new Error('Use o banco exclusivo da revisão de engajamento')
+  const parsed = new URL(url)
+  const dedicated =
+    (['15465', '15466'].includes(parsed.port) && parsed.pathname === '/marketing_review') ||
+    (parsed.port === '15440' && parsed.pathname === '/marketing_engagement_review_tests')
+  if (
+    !['postgres:', 'postgresql:'].includes(parsed.protocol) ||
+    parsed.hostname !== '127.0.0.1' ||
+    parsed.search ||
+    parsed.hash ||
+    !dedicated
+  )
+    throw new Error('Use o banco exclusivo da revisão de engajamento')
+}

@@ -63,6 +63,7 @@ export function createLearningPiece(
       document: {
         ...analysis.document,
         hypothesis: input.hypothesis,
+        evaluationCriterion: input.criterion,
         proposedPieceId: piece.entityId,
       },
     })

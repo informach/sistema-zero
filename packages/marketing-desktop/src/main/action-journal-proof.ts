@@ -57,7 +57,7 @@ export async function proveActionJournal(window: BrowserWindow) {
   // Executes the real shared journal in the actual sandboxed renderer; never exposes Node.
   const invoke = (name: string, rest = '') =>
     window.webContents.executeJavaScript(
-      `(async()=>{const module={exports:{}};const exports=module.exports;${bundle}\nconst scope=${JSON.stringify(scope)};const port={identity:scope.origin+':'+scope.userId,userId:scope.userId,request:(path,method='GET',body)=>window.marketing.workspace({scope,path,method,body})};return module.exports.${name}(port,${JSON.stringify(fixture)}${rest})})()`,
+      `(async()=>{const module={exports:{}};const exports=module.exports;${bundle}\nconst scope=${JSON.stringify(scope)};const port={identity:scope.origin+':'+scope.userId,userId:scope.userId,request:async(path,method='GET',body)=>{const response=await window.marketing.workspace({scope,path,method,body});if(!response.ok)throw Object.assign(new Error(response.error.message),{status:response.error.status,code:response.error.code});return response.value}};return module.exports.${name}(port,${JSON.stringify(fixture)}${rest})})()`,
     )
   const evidence = []
   for (const mode of ['read', 'retry'] as const) {

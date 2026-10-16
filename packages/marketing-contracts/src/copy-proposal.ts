@@ -13,6 +13,8 @@ const textChangeSchema = z
       'title',
       'conversationOpening',
       'conversationOffer',
+      'hypothesis',
+      'evaluationCriterion',
     ]),
     value: z.string().max(100000),
   })

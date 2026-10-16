@@ -3,7 +3,11 @@ import { rejects } from 'node:assert/strict'
 import { randomUUID } from 'node:crypto'
 import { readBoundedJson } from '../src/main/bounded-json'
 import { SerialQueue } from '../src/main/serial-queue'
-import { workspaceRequestSchema, workspaceResponseSchema } from '../src/shared/connection'
+import {
+  unwrapWorkspaceResponse,
+  workspaceRequestSchema,
+  workspaceResponseSchema,
+} from '../src/shared/connection'
 import { parseDeepLink } from '../src/shared/deep-link'
 
 test('período analítico é aceito apenas no endpoint e intervalo previstos', () => {
@@ -53,6 +57,14 @@ test('envelope IPC preserva erros definitivos para impedir retry cego de comando
     }),
   )
   expect(response.ok).toBe(false)
+  expect(() => unwrapWorkspaceResponse(response)).toThrow('O estado mudou')
+  try {
+    unwrapWorkspaceResponse(response)
+  } catch (error) {
+    expect(error).toMatchObject({ status: 409, code: 'CONCURRENCY_CONFLICT' })
+  }
+  expect(unwrapWorkspaceResponse({ ok: true, value: { version: 2 } })).toEqual({ version: 2 })
+  expect(() => unwrapWorkspaceResponse({ version: 2 })).toThrow()
   expect(workspaceResponseSchema.safeParse({ ok: true, value: { version: 2 } }).success).toBe(true)
   expect(workspaceResponseSchema.safeParse({ ok: false, error: new Error('Falhou') }).success).toBe(
     false,

@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { requireReviewDatabase } from './helpers/review-database'
+import { requireEngagementReviewDatabase, requireReviewDatabase } from './helpers/review-database'
 
 test('instâncias de revisão são explícitas e não aceitam banco remoto, porta comum ou parâmetros que mudem conexão', () => {
   for (const port of ['15439', '15440'])
@@ -21,4 +21,22 @@ test('instâncias de revisão são explícitas e não aceitam banco remoto, port
   expect(() =>
     requireReviewDatabase('postgres://127.0.0.1:15440/marketing_review_tests'),
   ).not.toThrow()
+})
+
+test('engagement cleanup only accepts its dedicated databases', () => {
+  for (const target of [
+    'postgres://postgres@127.0.0.1:15440/marketing_engagement_review_tests',
+    'postgres://postgres@127.0.0.1:15465/marketing_review',
+    'postgres://postgres@127.0.0.1:15466/marketing_review',
+  ])
+    expect(() => requireEngagementReviewDatabase(target)).not.toThrow()
+  for (const target of [
+    'postgres://postgres@127.0.0.1:15440/marketing_review',
+    'postgres://postgres@127.0.0.1:15440/marketing_review_tests',
+    'postgres://postgres@127.0.0.1:5432/marketing_engagement_review_tests',
+    'postgres://postgres@remote.example:15440/marketing_engagement_review_tests',
+    'postgres://postgres@127.0.0.1:15440/marketing_engagement_review_tests?host=remote.example',
+    undefined,
+  ])
+    expect(() => requireEngagementReviewDatabase(target)).toThrow()
 })

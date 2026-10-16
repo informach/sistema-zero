@@ -65,9 +65,11 @@ export function LocalStorageDialog({
           computador.
         </p>
         <p className="text-muted-foreground">
-          A limpeza também libera trechos intermediários de render, que podem ser gerados novamente.
-          Para as mídias sincronizadas, prioriza arquivos maiores e para ao liberar cerca de 1 GB.
-          Os originais nas pastas de importação e o conteúdo da equipe permanecem preservados.
+          A limpeza também libera trechos de render e arquivos temporários de execuções cujo
+          resultado foi confirmado no servidor. Pedidos interrompidos ficam preservados para
+          retomada. Para as mídias sincronizadas, prioriza arquivos maiores e para ao liberar cerca
+          de 1 GB. Os originais nas pastas de importação e o conteúdo da equipe permanecem
+          preservados.
         </p>
         {error ? (
           <p role="alert" className="text-destructive">

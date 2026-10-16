@@ -136,6 +136,14 @@ export async function editorialBatch(
             [change.field === 'conversationOpening' ? 'opening' : 'offer']: change.value,
           },
         })
+      else if (
+        doc.kind === 'analysis' &&
+        (change.field === 'body' ||
+          change.field === 'title' ||
+          change.field === 'hypothesis' ||
+          change.field === 'evaluationCriterion')
+      )
+        changed.set(change.entityId, { ...doc, [change.field]: change.value })
       else if (doc.kind === 'component' && (change.field === 'body' || change.field === 'title'))
         changed.set(change.entityId, {
           ...doc,

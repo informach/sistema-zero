@@ -1084,6 +1084,7 @@ export function RequestPanel({
             size="sm"
             disabled={
               busy ||
+              (value.id === 'adapt' && target.document.kind === 'analysis') ||
               (value.id === 'adapt' && !['copy', 'video-adapt'].includes(capability)) ||
               (capability === 'video-adapt' && value.id !== 'adapt') ||
               (['render', 'capture', 'transcribe', 'prepare-media'].includes(capability) &&

@@ -93,6 +93,9 @@ export function KnowledgeForm({
                       ),
                     ),
                     hypothesis: doc?.kind === 'analysis' ? doc.hypothesis : '',
+                    ...(doc?.kind === 'analysis' && doc.evaluationCriterion !== undefined
+                      ? { evaluationCriterion: doc.evaluationCriterion }
+                      : {}),
                     proposedPieceId: doc?.kind === 'analysis' ? doc.proposedPieceId : null,
                   }
                 : {

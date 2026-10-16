@@ -23,6 +23,7 @@ import { type DesktopServerSession, ServerRequestError } from '../server-session
 import { downloadAsset } from './asset-download'
 import { AssetTransfer } from './asset-transfer'
 import { clearConfirmedAssets } from './clear-confirmed-cache'
+import { clearExecutionCache } from './clear-execution-cache'
 import { DiskBudget } from './disk-budget'
 import { prepareImportedFinal } from './import-final'
 import { LocalWorkspaceStore } from './local-store'
@@ -81,10 +82,19 @@ export class DesktopWorkspaceManager {
           path.join(resources.assets.directory, 'render-cache-v1'),
           0,
         ).initialize()
+        const executions = await clearExecutionCache({
+          projectId,
+          runtimeDirectory: resources.runtimeDirectory,
+          store: resources.store,
+          transport: rateLimitedTransport(resources.transport, this.abort.signal),
+          signal: this.abort.signal,
+        })
         return {
           ...confirmed,
-          removed: confirmed.removed + chunks.removed,
-          freedBytes: confirmed.freedBytes + chunks.freedBytes,
+          removed: confirmed.removed + chunks.removed + executions.removed,
+          freedBytes: confirmed.freedBytes + chunks.freedBytes + executions.freedBytes,
+          preserved: confirmed.preserved + executions.preserved,
+          unavailable: confirmed.unavailable + executions.unavailable,
         }
       } finally {
         this.maintenance = false

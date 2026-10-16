@@ -13,16 +13,18 @@ import {
 } from '@sistemazero/marketing-contracts'
 import { app, type BrowserWindow, session } from 'electron'
 import { z } from 'zod'
-import { connectionStateSchema } from '../../shared/connection'
+import { connectionStateSchema, unwrapWorkspaceResponse } from '../../shared/connection'
 import { readBoundedJson } from '../bounded-json'
 import type { DesktopWorkspaceManager } from '../sync/workspace-manager'
 import { proveCacheCleanup } from './cache-cleanup-proof'
 import { proveConnectedComposition } from './composition-connected-proof'
 import { proveImportCoverage } from './coverage-proof'
 import { proveImportDelta } from './delta-proof'
+import { proveEditionExport } from './edition-export-proof'
 import { profileImport } from './import-profile'
 import { proveNativeIntelligence } from './intelligence-proof'
 import { InventoryStore } from './inventory-store'
+import { proveMetricsLearning } from './metrics-learning-proof'
 import { proveOtherProducts, proveOtherReleases } from './other-products-proof'
 import { proveProductionBatch, proveProductionBatchLinks } from './production-batch-proof'
 import { proveProductionLink } from './production-link-proof'
@@ -43,9 +45,11 @@ export async function proveNativeImport(window: BrowserWindow, manager: DesktopW
     .parse(JSON.parse(await readFile(path.join(directory, 'fixture.json'), 'utf8')))
   const scope = { origin: fixture.origin, userId: fixture.userId }
   const invoke = (method: string, ...args: unknown[]) =>
-    window.webContents.executeJavaScript(
-      `window.marketing.${method}(${args.map((value) => JSON.stringify(value)).join(',')})`,
-    )
+    window.webContents
+      .executeJavaScript(
+        `window.marketing.${method}(${args.map((value) => JSON.stringify(value)).join(',')})`,
+      )
+      .then((value) => (method === 'workspace' ? unwrapWorkspaceResponse(value) : value))
   const before = connectionStateSchema.parse(await invoke('connection'))
   if (before.status !== 'connected') {
     const pair = z
@@ -79,6 +83,16 @@ export async function proveNativeImport(window: BrowserWindow, manager: DesktopW
     throw new Error('Identidade da revisão não corresponde ao perfil isolado')
   if (process.argv.includes('--smoke-intelligence'))
     return proveNativeIntelligence(window, manager, scope)
+  if (process.argv.includes('--smoke-metrics-learning'))
+    return proveMetricsLearning(window, manager, scope, {
+      email: fixture.email,
+      password: fixture.password,
+    })
+  if (process.argv.includes('--smoke-edition-export'))
+    return proveEditionExport(window, manager, scope, {
+      email: fixture.email,
+      password: fixture.password,
+    })
   if (process.argv.includes('--smoke-composition-connected'))
     return proveConnectedComposition(window, manager, scope, {
       email: fixture.email,

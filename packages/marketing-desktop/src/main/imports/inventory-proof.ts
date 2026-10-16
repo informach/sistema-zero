@@ -6,6 +6,7 @@ import { app, type BrowserWindow } from 'electron'
 import { z } from 'zod'
 import type { DesktopWorkspaceManager } from '../sync/workspace-manager'
 import { InventoryStore } from './inventory-store'
+import { requestWorkspaceProof } from './workspace-proof'
 
 export async function proveInventory(window: BrowserWindow, manager: DesktopWorkspaceManager) {
   if (app.isPackaged) throw new Error('Prova disponível somente em desenvolvimento')
@@ -20,9 +21,18 @@ export async function proveInventory(window: BrowserWindow, manager: DesktopWork
     userId: z.literal(scope.userId),
   }).parse(await window.webContents.executeJavaScript('window.marketing.connection()'))
   const project = projectSchema.parse(
-    await window.webContents.executeJavaScript(
-      `window.marketing.workspace(${JSON.stringify({ scope, method: 'POST', path: '/projects', body: { schemaVersion: 1, id: randomUUID(), operationId: randomUUID(), name: 'Acervo · inventário em revisão', product: 'Inventário das origens · preparação' } })})`,
-    ),
+    await requestWorkspaceProof(window, {
+      scope,
+      method: 'POST',
+      path: '/projects',
+      body: {
+        schemaVersion: 1,
+        id: randomUUID(),
+        operationId: randomUUID(),
+        name: 'Acervo · inventário em revisão',
+        product: 'Inventário das origens · preparação',
+      },
+    }),
   )
   await manager.synchronize()
   const resources = await manager.resources(scope, project.id)
@@ -55,9 +65,7 @@ export async function proveInventory(window: BrowserWindow, manager: DesktopWork
       },
     ])
       importRunSchema.parse(
-        await window.webContents.executeJavaScript(
-          `window.marketing.workspace(${JSON.stringify({ scope, method: 'POST', ...request })})`,
-        ),
+        await requestWorkspaceProof(window, { scope, method: 'POST', ...request }),
       )
     await window.loadURL(window.webContents.getURL())
     const recovered = await new InventoryStore(directory).list()

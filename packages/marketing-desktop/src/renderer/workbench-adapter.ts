@@ -1,6 +1,6 @@
 import { handoffSchema, projectSchema } from '@sistemazero/marketing-contracts'
 import type { WorkbenchPort } from '@sistemazero/marketing-workbench'
-import { type WorkspaceRequest, workspaceResponseSchema } from '../shared/connection'
+import { unwrapWorkspaceResponse, type WorkspaceRequest } from '../shared/connection'
 import type { DesktopBridge } from '../shared/contracts'
 import { DesktopProjectProjection } from './project-projection'
 
@@ -9,15 +9,7 @@ export function desktopWorkbench(
   scope: WorkspaceRequest['scope'],
 ): WorkbenchPort {
   const request: WorkbenchPort['request'] = async (path, method = 'GET', body) => {
-    const response = workspaceResponseSchema.parse(
-      await bridge.workspace({ scope, path, method, body }),
-    )
-    if (!response.ok)
-      throw Object.assign(new Error(response.error.message), {
-        status: response.error.status,
-        code: response.error.code,
-      })
-    return response.value
+    return unwrapWorkspaceResponse(await bridge.workspace({ scope, path, method, body }))
   }
   const projection = new DesktopProjectProjection((id, version) => bridge.projectView(id, version))
   return {

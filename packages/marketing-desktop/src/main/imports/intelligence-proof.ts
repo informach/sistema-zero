@@ -11,6 +11,7 @@ import { z } from 'zod'
 import type { DesktopWorkspaceManager } from '../sync/workspace-manager'
 import { captureProof } from './capture-proof'
 import { waitProof } from './wait-proof'
+import { requestWorkspaceProof } from './workspace-proof'
 
 /** Real native renderer, IPC allowlist, paired device session and local SQLite. */
 export async function proveNativeIntelligence(
@@ -26,9 +27,7 @@ export async function proveNativeIntelligence(
     .parse(JSON.parse(await readFile(path.join(directory, 'evidence.json'), 'utf8')))
   await manager.synchronize()
   const request = (route: string) =>
-    window.webContents.executeJavaScript(
-      `window.marketing.workspace(${JSON.stringify({ scope, path: route, method: 'GET' })})`,
-    )
+    requestWorkspaceProof(window, { scope, path: route, method: 'GET' })
   const report = projectAnalyticsSchema.parse(
     await request(`/projects/${fixture.projectId}/analytics?days=7`),
   )

@@ -13,6 +13,11 @@ import { WorkspaceError } from './workspace-error'
 
 export function validateVisualRequest(request: ExecutionRequest, context: ExecutionContext) {
   const source = context.source.document
+  if (source.kind === 'analysis' && request.capability === 'copy' && request.intent === 'adapt')
+    throw new WorkspaceError(
+      'INVALID_OPERATION',
+      'Prepare a próxima pauta para escolher seu formato',
+    )
   if (request.imageFormat && (request.capability !== 'render' || source.kind !== 'component'))
     throw new WorkspaceError(
       'INVALID_OPERATION',

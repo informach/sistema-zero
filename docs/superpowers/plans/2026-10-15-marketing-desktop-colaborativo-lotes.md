@@ -133,6 +133,8 @@ A primeira liberação cotidiana acontece em L9, com assinaturas, acervo, pesqui
 
 ## L2 — Desktop instalável e identidade
 
+**Atualização de 16/10:** instalação dos clientes oficiais Codex/Claude pela interface Windows x64 e reabertura foram exercitadas. Atualização do Electron possui manifesto restrito, assinatura Authenticode obrigatória e encerramento coordenado; distribuição exige certificado/feed reais. Faltam o instalador do Sistema Zero efetivamente assinado, atualização entre duas versões, primeiro login desconectado e piloto físico. Ver `.audits/marketing-l2-install-update-review-2026-10-16.md`.
+
 **Dependências:** L0, L1. **Áreas:** marketing-desktop; auth/gateway; componentes iniciais do workbench.
 
 - [ ] Criar shell Electron local, ponte nativa com operações permitidas e supervisor separado da interface.
@@ -265,6 +267,8 @@ A primeira liberação cotidiana acontece em L9, com assinaturas, acervo, pesqui
 
 ## L7 — Aprovação, distribuição, retenção e métricas existentes
 
+**Atualização integrada de 16/10:** exportação do final aprovado validada pelo núcleo nativo e download real da web, com bytes/hash do R2 idênticos e rascunho posterior preservado separadamente. Caixa nativa de destino e recuperação operacional remota continuam abertas. A prova do ciclo de aprendizado identificou e corrigiu o resultado de análise em texto separado: agora a IA atualiza uma revisão estruturada, hipótese e critério para a próxima pauta, com conflito e Desfazer. A regressão nativa passou com 434 testes; o percurso métricas → Electron/Codex real → sincronização → próxima pauta na web passou, usando métricas sintéticas explícitas, sem postagem social. Ver `.audits/marketing-l7-export-integration-review-2026-10-16.md`.
+
 **Dependências:** L1, L3, L5, L6A–C. **Áreas:** publication.service, publisher-worker, mídia, arquivo, métricas e UI de aprovação/análise.
 
 - [ ] Fixar edição aprovada com copy, legenda, arquivos finais confirmados/hash, ordem, alt, revisão da timeline/receita e verificações. Prévia aprovada não aprova automaticamente um arquivo final futuro; render posterior não substitui a mídia aprovada.
@@ -275,8 +279,8 @@ A primeira liberação cotidiana acontece em L9, com assinaturas, acervo, pesqui
 - [ ] Preservar checkpoints dos publicadores e reconciliar resultado externo incerto antes de repetir envio.
 - [ ] Proteger assets com dependências ativas e implementar restauração utilizável pelo renderizador.
 - [ ] Definir backup de banco/mídia e ensaiar restauração com manifestos; separar exclusão editorial de limpeza de cache.
-- [ ] Vincular publicação/edição/objetivo e snapshots de resultado; oferecer leitura assistida das métricas existentes/importadas que possa originar uma pauta/hipótese no primeiro ciclo.
-- [ ] Corrigir contratos/schema/agregações/UI para disponibilidade explícita: shares/saves ausentes não viram zero no worker, nem views indisponíveis no adaptador Facebook. Preservar zeros legados ambíguos como incerteza histórica, sem reclassificá-los sem evidência.
+- [x] Vincular publicação/edição/objetivo e snapshots de resultado; oferecer leitura assistida das métricas existentes/importadas que possa originar uma pauta/hipótese no primeiro ciclo.
+- [x] Corrigir contratos/schema/agregações/UI para disponibilidade explícita: shares/saves ausentes não viram zero no worker, nem views indisponíveis no adaptador Facebook. Preservar zeros legados ambíguos como incerteza histórica, sem reclassificá-los sem evidência.
 - [ ] Disponibilizar no Electron biblioteca, conexões, aprovação, agendamento, publicação e métricas já existentes no web, sempre pelos serviços centrais.
 
 **Validação:** rascunho novo após agendamento; invalidação de evidência; mudança simultânea de assets; arquivo arquivado usado em outro trabalho; conversão PNG/JPEG; confirmação manual da edição correta. Testar sem publicar campanha real. Conferir métrica ausente, zero observado, legado ambíguo, origem/período e associação à edição efetivamente publicada.

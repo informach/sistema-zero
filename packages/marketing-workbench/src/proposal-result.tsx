@@ -122,6 +122,8 @@ export function ProposalResult({
                         caption: 'Legenda',
                         cta: 'Chamada para ação',
                         alt: 'Descrição acessível',
+                        hypothesis: 'Hipótese para o próximo ciclo',
+                        evaluationCriterion: 'Como avaliar o resultado',
                         conversationOpening: 'Abertura da conversa',
                         conversationOffer: 'Apresentação do Desafio',
                       }[change.field]

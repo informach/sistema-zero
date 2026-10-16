@@ -77,3 +77,5 @@ Os checkpoints ficam no orçamento local e são preservados enquanto há trabalh
 ## Revisão integrada posterior em 16/10
 
 A corrida de refresh web citada acima foi corrigida e demonstrada em L9. A revisão de transferência encontrou e corrigiu a retomada de multipart expirado; teste PostgreSQL e prova no R2 real passaram. O ensaio de 2 GB está registrado separadamente em [recuperação de transferências](marketing-l3-recovery-review-2026-10-16.md). Essa atualização substitui o status histórico dessas pendências, sem encerrar vídeo, instalação assinada ou piloto físico.
+
+A retenção dos temporários de execuções confirmadas foi implementada na limpeza do app e conferida pela interface Electron, preservando os recibos e baixando novamente uma cópia do R2. Ver [revisão de retenção](marketing-l3-execution-retention-review-2026-10-16.md). A pendência acima sobre temporários confirmados é histórica; trabalhos interrompidos continuam protegidos.

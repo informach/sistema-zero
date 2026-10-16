@@ -5,7 +5,7 @@ import { app, type BrowserWindow, session, type WebContentsView } from 'electron
 import { z } from 'zod'
 import { itemSchema } from '../../../marketing-contracts/src/editorial'
 import { runViewSchema } from '../../../marketing-contracts/src/execution'
-import { connectionStateSchema } from '../shared/connection'
+import { connectionStateSchema, unwrapWorkspaceResponse } from '../shared/connection'
 import { readBoundedJson } from './bounded-json'
 import type { DesktopServerSession } from './server-session'
 
@@ -26,9 +26,11 @@ export async function proveServerSession(
     })
     .parse(JSON.parse(await readFile(path.join(root, 'fixture.json'), 'utf8')))
   const invoke = (method: string, input?: unknown) =>
-    window.webContents.executeJavaScript(
-      `window.marketing.${method}(${input === undefined ? '' : JSON.stringify(input)})`,
-    )
+    window.webContents
+      .executeJavaScript(
+        `window.marketing.${method}(${input === undefined ? '' : JSON.stringify(input)})`,
+      )
+      .then((value) => (method === 'workspace' ? unwrapWorkspaceResponse(value) : value))
   if (!process.argv.includes('--smoke-resume')) {
     const pair = z
       .object({ code: z.string() })

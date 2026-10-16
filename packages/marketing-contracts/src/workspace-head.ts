@@ -3,14 +3,14 @@ import { projectSchema } from './editorial'
 
 export const WORKSPACE_POLL_INTERVAL_MS = 1500
 export const workspaceProtocol = {
-  protocol: 3,
-  minimumDesktopProtocol: 3,
+  protocol: 4,
+  minimumDesktopProtocol: 4,
   snapshotPages: 1,
   workspaceHead: 1,
 } as const
 const protocolSchema = z.object({
-  protocol: z.number().int().min(1).max(3),
-  minimumDesktopProtocol: z.number().int().min(1).max(3),
+  protocol: z.number().int().min(1).max(4),
+  minimumDesktopProtocol: z.number().int().min(1).max(4),
   snapshotPages: z.literal(1).optional(),
   workspaceHead: z.literal(1).optional(),
 })
