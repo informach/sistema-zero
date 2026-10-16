@@ -1,5 +1,6 @@
+import { STUDIO_PRO_ASSISTANCE_LIMITS } from '@sistemazero/core/studio/pro-assistance'
 import { useEffect, useId, useRef, useState } from 'react'
-import { getProAssistance } from '../../core/proAssistance'
+import { getProAssistance, proAssistanceSummary } from '../../core/proAssistance'
 import type { ProAssistanceMeta } from '../../core/proProject'
 import { captureProjectStorageScope } from '../../state/projectStorageRuntime'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
@@ -59,8 +60,16 @@ export function ProAssistancePanel({ projectId }: { projectId: string }) {
         Ideias e decisões do projeto · opcional
       </summary>
       <p className="my-2 text-xs text-sz-fg-mute">
-        Você pode programar e pedir ajuda sem preencher estas notas. Elas acompanham o projeto; não
-        concluem tarefas do Pensa.
+        Estas notas ajudam o Zappy a conversar, investigar e construir com as suas decisões. São
+        opcionais e não concluem tarefas do Pensa.
+      </p>
+      <p className="my-2 text-xs text-sz-fg-mute">
+        Notas para o Zappy: {proAssistanceSummary(meta ?? { version: 1 }).length} de{' '}
+        {STUDIO_PRO_ASSISTANCE_LIMITS.decisionSummaryChars} caracteres.
+        {proAssistanceSummary(meta ?? { version: 1 }).length >
+        STUDIO_PRO_ASSISTANCE_LIMITS.decisionSummaryChars
+          ? ' Resuma as notas antes de pedir ajuda. Nenhuma decisão será cortada.'
+          : ''}
       </p>
       <form
         className="space-y-2"

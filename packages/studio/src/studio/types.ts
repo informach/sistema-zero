@@ -23,6 +23,8 @@ export interface StudioTaskGuideItem {
 }
 /** Guia de uma tarefa planejada no Pensa. É independente de LessonActivity. */
 export interface StudioTaskSession {
+  /** Different authoring mode from the saved plan; display-only, never submitted as progress. */
+  codeTransition?: boolean
   renderListen?: (stepId: string) => import('react').ReactNode
   /**
    * Abre a próxima missão do plano (guia v2). O Estúdio GUARDA o jogo antes de chamar.

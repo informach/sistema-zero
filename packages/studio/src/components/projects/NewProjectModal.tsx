@@ -156,7 +156,7 @@ export function NewProjectModal({
               className="mt-1"
             />
             <span>
-              <span className="font-medium text-sz-fg">Básico</span>
+              <span className="font-medium text-sz-fg">Clássico (blocos)</span>
               <span className="block text-xs text-sz-fg-mute">
                 Crie com blocos, vendo o resultado na hora. Perfeito para começar.
               </span>
@@ -171,9 +171,9 @@ export function NewProjectModal({
               className="mt-1"
             />
             <span>
-              <span className="font-medium text-sz-fg">Profissional</span>
+              <span className="font-medium text-sz-fg">Pro (código)</span>
               <span className="block text-xs text-sz-fg-mute">
-                Crie jogos 2D, mundos 3D e aplicativos com código, materiais e ajuda do Zappy.
+                Crie jogos 2D, mundos 3D e aplicativos com código, materiais e ajuda do Zappy Pro.
               </span>
             </span>
           </label>

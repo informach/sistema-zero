@@ -8,6 +8,50 @@ export type PensaJourneyStage =
   | 'observing'
   | 'closed'
 export type PensaDestination = 'studio' | 'pinta' | 'molda'
+
+export interface PensaMissionTarget {
+  taskId: string
+  destination: PensaDestination
+  /** Present only when the server reports a committed Pro game for this plan. */
+  studioProjectId?: string
+}
+
+export function pensaMissionTarget(
+  task: { id: string; destination: PensaDestination },
+  view: Pick<PensaJourneyView, 'project' | 'studioAuthoring'>,
+): PensaMissionTarget {
+  return {
+    taskId: task.id,
+    destination: task.destination,
+    ...(task.destination === 'studio' && view.studioAuthoring === 'code'
+      ? { studioProjectId: `pensa-${view.project.id.replaceAll('-', '')}` }
+      : {}),
+  }
+}
+
+/** Display-only instructions after conversion. They never replace persisted progress IDs. */
+export function pensaCodeTransitionInstructions() {
+  return [
+    {
+      id: 'code-open',
+      text: 'Abra a lista de arquivos e localize o script do jogo.',
+      hint: 'Veja em index.html quais scripts o jogo usa. Na conversão, scripts globais ficam em public/ e módulos em src/converted/.',
+      required: false,
+    },
+    {
+      id: 'code-edit',
+      text: 'Localize no código a parte ligada ao objetivo desta missão.',
+      hint: 'Altere uma parte de cada vez. Se precisar, selecione o trecho e use Explicar seleção com Zappy Pro, ou peça ajuda no Pensa.',
+      required: false,
+    },
+    {
+      id: 'code-test',
+      text: 'Execute o jogo na pré-visualização e faça o teste desta missão.',
+      hint: 'Compare o resultado com o critério abaixo. Corrija o código e teste de novo antes de concluir.',
+      required: false,
+    },
+  ]
+}
 export interface PensaJourneyActor {
   profileId: string
   accountId: string
@@ -18,6 +62,8 @@ export interface PensaCapabilitySnapshot {
   profileId: string
   rank: string
   studio: boolean
+  /** Existing snapshots without this field were planned for blocks. */
+  studioAuthoring?: 'blocks' | 'code'
   pinta: boolean
   molda: boolean
   dimensions: Array<'2d' | '3d'>
@@ -251,6 +297,8 @@ export function canWorkOnPensaMission(
 }
 
 export interface PensaJourneyView {
+  /** Mode of the programmer's committed Studio creation, read by the server. */
+  studioAuthoring?: 'blocks' | 'code'
   project: { id: string; name: string; status: 'active' | 'archived' }
   journey: PensaJourney
   operation: PensaOperation | null

@@ -59,13 +59,14 @@ export function useStudioTaskSession({
       project: handoff.project,
       cycle: handoff.cycle,
       guide: handoff.task.guide,
+      codeTransition: pro && handoff.task.context.authoring !== 'code',
       blocks: pro ? [] : handoff.task.context.blocks,
       progress: handoff.task.progress,
       collapsed,
       onCollapsedChange: setCollapsed,
       nextMissionLabel,
       renderListen:
-        narrationEnabled && viewerId
+        narrationEnabled && viewerId && (!pro || handoff.task.context.authoring === 'code')
           ? (stepId) => (
               <PrivateZappyVoice
                 viewerId={viewerId}

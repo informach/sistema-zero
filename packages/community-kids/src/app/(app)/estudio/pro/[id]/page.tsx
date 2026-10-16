@@ -1,4 +1,3 @@
-import { isStudioZappyAllowed } from '@sistemazero/member-shell/server/zappy-access'
 import { redirect } from 'next/navigation'
 import { KidsLockedStudio } from '@/components/kids/kids-locked-studio'
 import { KidsStudioUnavailable } from '@/components/kids/kids-studio-unavailable'
@@ -7,6 +6,7 @@ import { ToolRouteRecado } from '@/components/kids/tool-route-recado'
 import { checkCreativeToolsAccessReadonly, getGamificationReadonly } from '@/server/members'
 import { getSession } from '@/server/session'
 import { resolveStudioProAccess } from '@/server/studio-pro-access'
+import { prepareStudioServices } from '@/server/studio-services'
 
 export const dynamic = 'force-dynamic'
 
@@ -36,6 +36,7 @@ export default async function EstudioProPage({
     typeof query?.tarefa === 'string' && /^[0-9a-f-]{36}$/i.test(query.tarefa) ? query.tarefa : null
   if (!ID_RE.test(id)) redirect('/estudio')
 
+  const readServices = prepareStudioServices()
   const [res, session, gam] = await Promise.all([
     checkCreativeToolsAccessReadonly(),
     getSession(),
@@ -56,6 +57,7 @@ export default async function EstudioProPage({
   }
   // A página é protegida pelo proxy, mas mantém o redirect defensivo para URL direta.
   if (!access.allowed) redirect('/estudio')
+  const services = await readServices(session, levelSlug)
 
   return (
     <StudioProClient
@@ -66,7 +68,7 @@ export default async function EstudioProPage({
       moldaOwned={res.body?.access?.molda === true}
       // Mesma política do /estudio: equipe sempre, aluno a partir do degrau
       // mínimo da jornada (Inventor). Aqui o rank já foi buscado p/ o gate Pro.
-      zappyEnabled={isStudioZappyAllowed(session, levelSlug)}
+      {...services}
     />
   )
 }

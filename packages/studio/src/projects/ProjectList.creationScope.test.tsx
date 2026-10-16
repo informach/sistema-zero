@@ -234,7 +234,7 @@ async function openCreation(onOpenProject: (id: string) => void, pro = true) {
   const view = render(<ProjectList professional onOpenProject={onOpenProject} theme="light" />)
   await screen.findByText(t('projects.empty'))
   fireEvent.click(screen.getByRole('button', { name: '+ Novo projeto' }))
-  if (pro) fireEvent.click(screen.getByRole('radio', { name: /Profissional/ }))
+  if (pro) fireEvent.click(screen.getByRole('radio', { name: /Pro \(código\)/ }))
   return view
 }
 
@@ -384,7 +384,7 @@ it('revocation during a kit factory prevents persistence and navigation', async 
   )
   await screen.findByText(t('projects.empty'))
   fireEvent.click(screen.getByRole('button', { name: '+ Novo projeto' }))
-  fireEvent.click(screen.getByRole('radio', { name: /Profissional/ }))
+  fireEvent.click(screen.getByRole('radio', { name: /Pro \(código\)/ }))
   fireEvent.click(screen.getByRole('button', { name: t('projects.newModal.create') }))
   await loader.started.promise
   view.rerender(

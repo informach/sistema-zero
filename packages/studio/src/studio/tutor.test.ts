@@ -2,6 +2,53 @@ import { describe, expect, it } from 'bun:test'
 import { createEmptyProject } from '../core/project'
 import { buildStudioTutorContext } from './tutor'
 
+it('shares confirmed project decisions with explain and investigate, never with classic', () => {
+  const project = {
+    ...createEmptyProject('decisions', 'Decisões'),
+    kind: 'pro' as const,
+    mode: 'code' as const,
+    proMeta: {
+      devScript: 'dev',
+      templateId: 'vanilla-vite',
+      assistance: {
+        version: 1 as const,
+        briefing: 'Uma arena sem violência',
+        decisions: [
+          { id: 'yes', text: 'Coletar estrelas', confirmed: true, provenance: 'learner' as const },
+          {
+            id: 'no',
+            text: 'Adicionar inimigos',
+            confirmed: false,
+            provenance: 'suggestion' as const,
+          },
+        ],
+        questions: [
+          { id: 'q', text: 'Quantas estrelas?', status: 'answered' as const, answer: 'Cinco' },
+        ],
+      },
+    },
+  }
+  for (const intent of ['explain', 'investigate'] as const) {
+    const result = buildStudioTutorContext({
+      project,
+      intent,
+      selectedBlockId: null,
+      lastError: null,
+    })
+    expect(result.pro?.decisions).toEqual({
+      version: 1,
+      summary: 'Uma arena sem violência\nColetar estrelas\nQuantas estrelas? Cinco',
+    })
+  }
+  expect(
+    buildStudioTutorContext({
+      project: { ...project, kind: 'classic', mode: 'blocks' },
+      selectedBlockId: null,
+      lastError: null,
+    }).pro,
+  ).toBeUndefined()
+})
+
 describe('buildStudioTutorContext', () => {
   it('identifica o kit Pro de origem sem enviar fontes completas nem contaminar blocos', () => {
     const project = {

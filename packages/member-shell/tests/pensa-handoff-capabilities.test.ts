@@ -36,6 +36,7 @@ function routes(overrides: Record<string, unknown>, destination: 'studio' | 'pin
     session: { getSession: async () => CHILD },
     members: {
       pensaGetTaskHandoff: async () => ({ status: 200, body: handoff(destination) }),
+      pensaJourneyGet: async () => ({ status: 200, body: { studioAuthoring: 'blocks' } }),
       getGamificationReadonly: async () => ({ status: 200, body: { level: { slug: 'hacker' } } }),
       getStudioUnlocksReadonly: async () => ({
         status: 200,
@@ -56,6 +57,24 @@ const get = (r: ReturnType<typeof routes>) =>
   })
 
 describe('handoff: falha de LEITURA não tranca o guia (M6)', () => {
+  test('a converted mission opens with Pro capability even if its original block service is unavailable', async () => {
+    const unlocks = mock(async () => {
+      throw new Error('offline')
+    })
+    const res = await get(
+      routes(
+        {
+          pensaJourneyGet: async () => ({ status: 200, body: { studioAuthoring: 'code' } }),
+          getGamificationReadonly: async () => ({ status: 200, body: { level: { slug: 'god' } } }),
+          getStudioUnlocksReadonly: unlocks,
+        },
+        'studio',
+      ),
+    )
+    expect(res.status).toBe(200)
+    expect((await res.json()).capability.owned).toBe(true)
+    expect(unlocks).not.toHaveBeenCalled()
+  })
   test('gamificação fora do ar → 503 recuperável, nunca "recursos mudaram"', async () => {
     const res = await get(
       routes({ getGamificationReadonly: async () => ({ status: 502, body: null }) }),

@@ -1,5 +1,5 @@
 import type { AiCreditsView } from '@sistemazero/core/ai-credits'
-import type { PensaNarratableRef } from '@sistemazero/core/pensa'
+import type { PensaMissionTarget, PensaNarratableRef } from '@sistemazero/core/pensa'
 import type { ReactNode } from 'react'
 
 export type PensaStage = 'z' | 'e' | 'r' | 'o' | 'done'
@@ -280,7 +280,7 @@ export interface PensaHostAdapter {
   theme?: 'light' | 'dark'
   capabilities: { pintaOwned: boolean; studioOwned: boolean; moldaOwned?: boolean }
   mascotImages?: Partial<Record<PensaMascotPose, string>>
-  onOpenTask(args: { taskId: string; destination: PensaTaskDestination }): void
+  onOpenTask(args: PensaMissionTarget): void
 }
 
 /**

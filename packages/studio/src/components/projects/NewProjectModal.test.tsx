@@ -136,7 +136,7 @@ it('revoking a selected template preserves the name, explains the change and rej
     },
   }
   const view = render(<NewProjectModal {...props} templates={[kit]} />)
-  fireEvent.click(screen.getByRole('radio', { name: /Profissional/ }))
+  fireEvent.click(screen.getByRole('radio', { name: /Pro \(código\)/ }))
   view.rerender(<NewProjectModal {...props} templates={[]} />)
   expect(nameInput().value).toBe('Minha arena')
   expect(screen.getByRole('status').textContent).toContain('deixou de estar disponível')

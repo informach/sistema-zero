@@ -34,6 +34,7 @@ const pintaContextSchema = z.object({
 
 const studioContextSchema = z.object({
   kind: z.literal('studio'),
+  authoring: z.enum(['blocks', 'code']).optional(),
   dimension: z.enum(['2d', '3d']),
   visualAssetIds: z.array(z.string()),
   blockIds: z.array(z.string()),
@@ -43,7 +44,7 @@ const studioContextSchema = z.object({
       label: z.string(),
       category: z.string(),
       subcategory: z.string(),
-      area: z.enum(['structure', 'appearance', 'start', 'events', 'loops', 'value']),
+      area: z.enum(['structure', 'appearance', 'molds', 'start', 'events', 'loops', 'value']),
       extension: z.string().nullable(),
     }),
   ),

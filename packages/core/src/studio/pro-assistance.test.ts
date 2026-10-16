@@ -4,6 +4,7 @@ import {
   createStudioProAssistanceJournal,
   isStudioProAssistanceRequest,
   parseStudioProAssistanceRequest,
+  type StudioProAssistanceRequest,
 } from './pro-assistance'
 
 test('scope and context survive a strict canonical roundtrip; unsupported permissions and versions are refused', () => {
@@ -13,7 +14,7 @@ test('scope and context survive a strict canonical roundtrip; unsupported permis
     scope: 'selection',
     criteria: ['Preservar o controle por teclado'],
     selection: { path: 'src/main.ts', startLine: 400, endLine: 410, sourceHash: 'a'.repeat(64) },
-  }
+  } satisfies StudioProAssistanceRequest
   const parsed = parseStudioProAssistanceRequest(input)
   expect(parsed).toEqual(input)
   expect(parsed.criteria).not.toBe(input.criteria)
@@ -50,6 +51,6 @@ test('accepts the canonical tutor source hash for selection and observed baselin
       source: 'typescript',
       diagnostics: [{ path: 'main.ts', line: 2, message: 'Tipo incompatível', sourceHash }],
     },
-  }
+  } satisfies StudioProAssistanceRequest
   expect(parseStudioProAssistanceRequest(input)).toEqual(input)
 })

@@ -84,6 +84,23 @@ async function fixture() {
   return { ready, adapter }
 }
 describe('builder review interface', () => {
+  it('notifies the host to reread the balance after an explicit cancellation', async () => {
+    const f = await fixture()
+    f.adapter.latest = async () => ({ ...f.ready, phase: 'queued', result: null })
+    let refreshes = 0
+    const ui = render(
+      <ProBuilderPanel
+        adapter={f.adapter}
+        projectId="builder-ui"
+        onUsageChange={() => {
+          refreshes++
+        }}
+      />,
+    )
+    await ui.findByText('Preparando a próxima etapa')
+    fireEvent.click(ui.getByRole('button', { name: /Cancelar/ }))
+    await waitFor(() => expect(refreshes).toBe(1))
+  })
   it('queries status and history without authorizing an inference; only explicit continuation advances', async () => {
     const f = await fixture()
     const queued = { ...f.ready, phase: 'queued' as const, result: null }

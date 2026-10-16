@@ -57,6 +57,69 @@ function members(pinta: CreationIndexView[], molda: CreationIndexView[] = []) {
 }
 const CHILD = { id: '4fa0e474-1f0d-4a52-9a6a-3f2b8c85e010', role: 'student' } as SessionUser
 
+test('the saved Pro mode reaches planning without depending on a block palette', async () => {
+  const { client } = members([])
+  const unlocks = mock(async () => {
+    throw new Error('block service offline')
+  })
+  client.getStudioUnlocksReadonly = unlocks
+  const context = await loadJourneyContext(client, CHILD, 'Continuar meu jogo', {
+    projectId: 'plan',
+    view: { studioAuthoring: 'code' },
+  })
+  expect(context.capabilities.studioAuthoring).toBe('code')
+  expect(context.capabilities.studio).toBe(true)
+  expect(context.capabilities.dimensions).toEqual(['2d', '3d'])
+  expect(unlocks).not.toHaveBeenCalled()
+  const { resolveGuides, journeySystem } = await import('../src/server/pensa-journey/planner')
+  expect(journeySystem(context)).toContain('AUTORIA: este jogo já está no Estúdio Pro')
+  expect(journeySystem(context)).not.toContain('MAPA DA INTERFACE (rótulos reais')
+  const proposal = {
+    dimension: '2d',
+    missions: [
+      {
+        key: 'move',
+        destination: 'studio',
+        title: 'Mover',
+        result: 'O personagem anda',
+        dependencies: [],
+        blockIds: [],
+        extensionIds: [],
+        mechanicIds: [],
+        toolIds: [],
+        asset: null,
+      },
+    ],
+  } as unknown as PensaProposal
+  expect(validateJourneyProposal(proposal, context.capabilities, [])).toEqual([])
+  expect(
+    validateJourneyProposal({ ...proposal, dimension: '3d' }, context.capabilities, []),
+  ).toEqual([])
+  const tasks = resolveGuides(
+    {
+      missions: [
+        {
+          key: 'move',
+          steps: [
+            {
+              action: 'Ajuste a velocidade',
+              where: 'No script',
+              effect: 'O personagem anda mais rápido',
+            },
+          ],
+          testAction: 'Aperte a seta',
+          expected: 'O personagem anda',
+        },
+      ],
+    },
+    proposal,
+    context,
+  )
+  expect(tasks[0]?.context).toMatchObject({ kind: 'studio', authoring: 'code' })
+  expect(tasks[0]?.guide.steps).toHaveLength(1)
+  expect(tasks[0]?.guide.steps[0]?.text).toBe('Ajuste a velocidade')
+})
+
 describe('inventário: o tipo guardado vira a família da proposta (A1)', () => {
   test('todo tipo do Pinta e do Molda tem família, e a tabela não inventa tipo', () => {
     expect(Object.keys(PINTA_KIND_FAMILY).sort()).toEqual([...PINTA_ASSET_KINDS].sort())

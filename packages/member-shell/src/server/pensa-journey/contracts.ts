@@ -136,7 +136,11 @@ export function validateJourneyProposal(
     const lockedTools = mission.toolIds.filter((id) => !caps.moldaTools.includes(id))
     if (lockedTools.length)
       issues.push(`${at}: ferramentas do Molda indisponíveis: ${list(lockedTools)}.`)
-    if (mission.destination === 'studio' && !mission.blockIds.length)
+    if (
+      mission.destination === 'studio' &&
+      caps.studioAuthoring !== 'code' &&
+      !mission.blockIds.length
+    )
       issues.push(`${at}: missão do Estúdio sem nenhum bloco em blockIds.`)
     if (mission.destination === 'molda' && !mission.toolIds.length)
       issues.push(`${at}: missão do Molda sem nenhuma ferramenta em toolIds.`)

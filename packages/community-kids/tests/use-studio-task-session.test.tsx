@@ -55,7 +55,14 @@ const handoff: StudioTaskHandoff = {
 }
 
 function setup(
-  options: { pro?: boolean; cloudFailure?: boolean; conflict?: boolean; owned?: boolean } = {},
+  options: {
+    pro?: boolean
+    cloudFailure?: boolean
+    conflict?: boolean
+    owned?: boolean
+    authoring?: 'blocks' | 'code'
+    narration?: boolean
+  } = {},
 ) {
   const order: string[] = []
   const requests: unknown[] = []
@@ -81,7 +88,14 @@ function setup(
   )
   const hook = renderHook(() =>
     useStudioTaskSession({
-      handoff: { ...handoff, capability: { ...handoff.capability, owned: options.owned ?? true } },
+      handoff: {
+        ...handoff,
+        task: {
+          ...handoff.task,
+          context: { ...handoff.task.context, authoring: options.authoring },
+        },
+        capability: { ...handoff.capability, owned: options.owned ?? true },
+      },
       projectId: 'actual-pro-project',
       viewerId: 'child',
       cloud,
@@ -89,6 +103,7 @@ function setup(
       updateProgress,
       navigate,
       pro: options.pro,
+      narrationEnabled: options.narration,
     }),
   )
   return { ...hook, order, requests, retry, updateProgress, navigate }
@@ -98,6 +113,8 @@ test('Pro keeps the mission and confirms the actual saved project before complet
   const { result, order, requests, updateProgress } = setup({ pro: true })
   expect(result.current?.taskId).toBe('task')
   expect(result.current?.blocks).toEqual([])
+  expect(result.current?.codeTransition).toBe(true)
+  expect(result.current?.guide).toBe(handoff.task.guide)
   await act(async () => {
     await result.current?.onProgress({ status: 'completed' })
   })
@@ -114,6 +131,16 @@ test('Pro keeps the mission and confirms the actual saved project before complet
 
 test('normal mode retains block references', () => {
   expect(setup().result.current?.blocks).toEqual(handoff.task.context.blocks)
+})
+
+test('Pro narrates a code guide, but cannot narrate obsolete block instructions after conversion', () => {
+  const converted = setup({ pro: true, narration: true })
+  expect(converted.result.current?.codeTransition).toBe(true)
+  expect(converted.result.current?.renderListen).toBeUndefined()
+  converted.unmount()
+  const planned = setup({ pro: true, narration: true, authoring: 'code' })
+  expect(planned.result.current?.codeTransition).toBe(false)
+  expect(planned.result.current?.renderListen).toBeFunction()
 })
 
 test('offline confirmation cannot complete a mission', async () => {

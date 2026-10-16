@@ -43,6 +43,30 @@ function createSession(): StudioTaskSession {
 }
 
 describe('Guia da tarefa do Estúdio', () => {
+  test('converted mission shows code instructions, keeps its test and never submits synthetic progress', async () => {
+    const session = createSession()
+    session.codeTransition = true
+    session.blocks = []
+    session.guide = {
+      ...session.guide,
+      contractVersion: 2,
+      steps: [{ id: 'original', text: 'Arraste o bloco de movimento', required: false }],
+    }
+    session.renderListen = mock(() => null)
+    render(<TaskGuidePanel session={session} />)
+    expect(screen.queryByText('Arraste o bloco de movimento')).toBeNull()
+    expect(screen.getByText('Abra a lista de arquivos e localize o script do jogo.')).toBeTruthy()
+    expect(screen.getByText('O placar aumenta', { exact: false })).toBeTruthy()
+    expect(session.renderListen).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('button', { name: 'Experimentei e funcionou' }))
+    await waitFor(() =>
+      expect(session.onProgress).toHaveBeenCalledWith({
+        status: 'completed',
+        completedCriteriaIds: ['score'],
+      }),
+    )
+    expect(session.guide.steps[0]?.id).toBe('original')
+  })
   test('não vira LessonActivity e conclui somente com guia e projeto vinculados', async () => {
     const session = createSession()
     render(<TaskGuidePanel session={session} />)

@@ -369,6 +369,23 @@ test('a missão mostra a oficina, a posição no caminho e abre no destino certo
   expect(onOpenTask).toHaveBeenCalledWith({ taskId: 'm2', destination: 'studio' })
 })
 
+test('a saved Pro plan identifies the code editor and carries its game identity to the host', async () => {
+  const view = current()
+  view.studioAuthoring = 'code'
+  view.journey.stage = 'building'
+  view.journey.missionIds = ['m1']
+  const { onOpenTask } = openView(view, [mission('m1', 'studio', 'planned')])
+  fireEvent.click(await screen.findByRole('button', { name: 'Continuar no Estúdio Pro' }))
+  expect(onOpenTask).toHaveBeenCalledWith({
+    taskId: 'm1',
+    destination: 'studio',
+    studioProjectId: 'pensa-p1',
+  })
+  fireEvent.click(screen.getByRole('button', { name: 'Travei nesta parte' }))
+  expect(screen.getByRole('button', { name: 'Não achei o trecho de código' })).toBeTruthy()
+  expect(screen.queryByRole('button', { name: 'Não achei o bloco certo' })).toBeNull()
+})
+
 test('travar oferece atalhos que só PREENCHEM o campo, sem enviar nada', async () => {
   const view = current()
   view.journey.stage = 'building'

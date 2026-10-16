@@ -2,7 +2,6 @@ import { afterEach, expect, mock, spyOn, test } from 'bun:test'
 
 mock.module('server-only', () => ({}))
 process.env.JWT_HS256_SECRET ??= 'test-jwt-secret-with-32-characters'
-process.env.STUDIO_AI_RECONCILE_CRON_SECRET = 'local-studio-reconciliation-test-only'
 const { createStudioAiReconcileRoutes } = await import('../src/routes/studio-ai-reconcile')
 afterEach(() => mock.restore())
 const fetchDouble = (

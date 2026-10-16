@@ -66,7 +66,25 @@ test('orientação: ação real do Monaco captura seleção e referência stale 
   await editor.press('Home')
   await editor.press('Shift+End')
   await editor.press('Shift+F10')
-  await page.getByRole('menuitem', { name: 'Explicar seleção com Zappy Pro', exact: true }).click()
+  // Monaco deliberately ignores mouseup for 100 ms after opening a menu. This is a
+  // keyboard journey (Shift+F10): activate with Enter, without racing that mouse guard.
+  const explain = page.getByRole('menuitem', {
+    name: 'Explicar seleção com Zappy Pro',
+    exact: true,
+  })
+  await expect(explain).toBeVisible()
+  // Navigate through Monaco's action bar so its internal focused item and DOM focus agree.
+  for (let left = await page.getByRole('menuitem').count(); left > 0; left--) {
+    if (
+      await explain.evaluate(
+        (element) => element === (element.getRootNode() as Document | ShadowRoot).activeElement,
+      )
+    )
+      break
+    await page.keyboard.press('ArrowDown')
+  }
+  await expect(explain).toBeFocused()
+  await page.keyboard.press('Enter')
   await expect(page.getByLabel('Sua dúvida para o Zappy')).toHaveValue('Me explique este trecho.')
   await page.getByRole('button', { name: 'Perguntar', exact: true }).click()
   await expect(

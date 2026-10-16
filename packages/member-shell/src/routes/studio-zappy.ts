@@ -1,6 +1,7 @@
 import 'server-only'
 import type { StudioAiReservation } from '@sistemazero/core/ai-credits'
 import { isStudioTutorSourcePath, STUDIO_TUTOR_SOURCE_HASH_RE } from '@sistemazero/core/studio'
+import { STUDIO_PRO_ASSISTANCE_LIMITS } from '@sistemazero/core/studio/pro-assistance'
 import { studioTutorContextHint } from '@sistemazero/studio/tutor-mode'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
@@ -9,7 +10,7 @@ import { RequestBodyTooLargeError, readBoundedJson } from '../lib/read-bounded-j
 import { isPrivilegedRole } from '../lib/studio-tier'
 import type { AiCreditsView } from '../lib/types'
 import type { MembersClient } from '../server/clients'
-import { studioTutorTask } from '../server/pensa-journey/missions'
+import { missionForModel, studioTutorTask } from '../server/pensa-journey/missions'
 import { redactPensaText } from '../server/pensa-journey/privacy'
 import type { SessionModule } from '../server/session'
 import { createStudioAiTransport } from '../server/studio-ai-transport'
@@ -59,6 +60,13 @@ const QuestionBody = z.object({
     pro: z
       .object({
         revision: z.number().int().nonnegative(),
+        decisions: z
+          .object({
+            version: z.literal(1),
+            summary: z.string().max(STUDIO_PRO_ASSISTANCE_LIMITS.decisionSummaryChars),
+          })
+          .strict()
+          .optional(),
         templateId: z.string().max(64).optional(),
         activeFile: z.string().max(240).optional(),
         intent: z.enum(['explain', 'investigate']).optional(),
@@ -259,10 +267,11 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
       // de latência com a criança esperando. A ordem das CHECAGENS abaixo continua a mesma —
       // só a espera virou uma só. A equipe tem o passe livre e nem pergunta pelos blocos.
       const privileged = isPrivilegedRole(user.role)
+      const context = parsed.data.context as ZappyContextInput
       const [studioAccess, gamification, unlocks] = await Promise.all([
         hasStudioAccess(members),
         members.getGamification(),
-        privileged ? null : members.getStudioUnlocks(),
+        privileged || context.kind === 'pro' ? null : members.getStudioUnlocks(),
       ])
       if (!studioAccess) return error('FORBIDDEN', 403)
       const safeQuestion = redactZappySensitiveText(parsed.data.question)
@@ -275,12 +284,11 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
       // O tutor oferece os MESMOS blocos que a paleta: os conquistados nos cursos (a equipe
       // tem o passe livre e não precisa deles). Falhou: indisponível, nunca "sem blocos".
       let unlockedBlocks: readonly string[] = []
-      if (!privileged) {
+      if (!privileged && context.kind !== 'pro') {
         if (unlocks?.status !== 200 || !unlocks.body) return error('ZAPPY_UNAVAILABLE', 503)
         unlockedBlocks = unlocks.body.blocks
       }
       const tier = earnedStudioTier(levelSlug ?? 'noob', user.role, unlockedBlocks)
-      const context = parsed.data.context as ZappyContextInput
       if (context.kind === 'pro' && context.mode !== 'code') return error('INVALID_INPUT', 400)
       if (context.kind !== 'pro' && !tier.hasPalette) return error('ZAPPY_NOT_ENABLED', 403)
       // allowedModes descreve as visualizações CLÁSSICAS. Pro tem capacidade própria.
@@ -411,10 +419,10 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
               pensaMission = {
                 title: redactPensaText(mission.title).text,
                 expected: redactPensaText(mission.summary ?? '').text,
-                steps: mission.guide.steps
-                  .slice(0, 6)
+                steps: missionForModel(mission, context.kind === 'pro' ? 'code' : 'blocks')
+                  .steps.slice(0, 6)
                   .map((step) =>
-                    redactPensaText(`${step.text}. ${step.hint ?? ''}`).text.slice(0, 400),
+                    redactPensaText(`${step.action}. ${step.hint ?? ''}`).text.slice(0, 400),
                   ),
                 lastTest:
                   redactPensaText(journey.body.journey.tests.at(-1)?.note ?? '').text || null,

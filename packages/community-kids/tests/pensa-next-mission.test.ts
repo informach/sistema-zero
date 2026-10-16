@@ -11,6 +11,33 @@ afterEach(() => {
   globalThis.fetch = originalFetch
 })
 
+test('a saved Pro journey continues directly in the isolated Pro route', async () => {
+  const projectId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'
+  const journey = createPensaJourney(projectId, 'cycle', '')
+  journey.stage = 'building'
+  journey.missionIds = ['move']
+  const view: PensaJourneyView = {
+    project: { id: projectId, name: 'Jogo', status: 'active' },
+    studioAuthoring: 'code',
+    journey,
+    cycles: [],
+    operation: null,
+  }
+  globalThis.fetch = Object.assign(
+    async (url: RequestInfo | URL) =>
+      Response.json(
+        String(url).includes('/v2/')
+          ? view
+          : { nextTaskId: 'move', tasks: [{ id: 'move', destination: 'studio' }] },
+      ),
+    { preconnect: originalFetch.preconnect },
+  )
+  expect(await resolveNextPensaMission(projectId)).toEqual({
+    path: '/estudio/pro/pensa-aaaaaaaaaaaa4aaa8aaaaaaaaaaaaaaa?tarefa=move',
+    destination: 'studio',
+  })
+})
+
 test.each([
   'paused',
   'archived',

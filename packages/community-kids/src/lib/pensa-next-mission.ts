@@ -2,6 +2,7 @@ import {
   nextPensaMissionFor,
   type PensaJourneyView,
   type PensaTeamMissionProgress,
+  pensaMissionTarget,
 } from '@sistemazero/core/pensa'
 import { sessionFetch } from '@sistemazero/member-shell/lib/session-fetch'
 import type { PensaStageView } from '@sistemazero/pensa'
@@ -39,7 +40,10 @@ function teamProgress(task: StageTask): PensaTeamMissionProgress {
   }
 }
 
-function missionPath(task: StageTask): string {
+function missionPath(task: StageTask, view: PensaJourneyView): string {
+  const target = pensaMissionTarget(task, view)
+  if (target.studioProjectId)
+    return `/estudio/pro/${encodeURIComponent(target.studioProjectId)}?tarefa=${encodeURIComponent(task.id)}`
   return `/${task.destination === 'studio' ? 'estudio' : task.destination}?tarefa=${encodeURIComponent(task.id)}`
 }
 
@@ -76,13 +80,13 @@ export async function resolveNextPensaMission(projectId: string): Promise<PensaN
     )
     const next = missions.find((t) => t.id === mine)
     if (!next) return { path: planner, destination: null, backToPlan: true }
-    return { path: missionPath(next), destination: next.destination }
+    return { path: missionPath(next, view), destination: next.destination }
   }
   const next = stage.tasks.find(
     (t) => t.id === stage.nextTaskId && view.journey.missionIds.includes(t.id),
   )
   if (!next) return { path: planner, destination: null }
-  return { path: missionPath(next), destination: next.destination }
+  return { path: missionPath(next, view), destination: next.destination }
 }
 
 export async function openNextPensaMission(projectId: string, navigate: (path: string) => void) {

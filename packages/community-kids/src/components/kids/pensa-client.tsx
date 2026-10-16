@@ -109,10 +109,17 @@ export function PensaClient({
         celebrating: '/zappy/celebrating.webp',
         sleeping: '/zappy/sleeping.webp',
       },
-      onOpenTask: ({ taskId, destination }) =>
+      onOpenTask: ({ taskId, destination, studioProjectId }) => {
+        if (destination === 'studio' && studioProjectId) {
+          window.location.assign(
+            `/estudio/pro/${encodeURIComponent(studioProjectId)}?tarefa=${encodeURIComponent(taskId)}`,
+          )
+          return
+        }
         router.push(
           `/${destination === 'studio' ? 'estudio' : destination}?tarefa=${encodeURIComponent(taskId)}`,
-        ),
+        )
+      },
     }),
     // ⚠️ `theme` saiu do dep array: virou constante (sem tema escuro nesta plataforma).
     [

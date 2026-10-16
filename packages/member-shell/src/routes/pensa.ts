@@ -498,10 +498,18 @@ export function createPensaRoutes(deps: { members: MembersClient; session: Sessi
         }
         let level: string | undefined
         let caps: Awaited<ReturnType<typeof getPensaCapabilities>>
+        let studioAuthoring: 'blocks' | 'code' = 'blocks'
         try {
+          if (result.body.task.destination === 'studio') {
+            const journey = await members.pensaJourneyGet(result.body.project.id)
+            if (journey.status !== 200 || !journey.body) return unavailable()
+            studioAuthoring = journey.body.studioAuthoring ?? 'blocks'
+          }
           const gam = await members.getGamificationReadonly()
           level = gam.status === 200 ? gam.body?.level?.slug : undefined
-          caps = level ? await getPensaCapabilities(members, level, user.role) : null
+          caps = level
+            ? await getPensaCapabilities(members, level, user.role, studioAuthoring)
+            : null
         } catch (cause) {
           return unavailable(cause)
         }
@@ -520,6 +528,7 @@ export function createPensaRoutes(deps: { members: MembersClient; session: Sessi
         let blocked =
           !available ||
           (task.context.kind === 'studio' &&
+            studioAuthoring !== 'code' &&
             (!catalog ||
               task.context.blockIds.some((id) => !catalog.blocks.some((b) => b.type === id))))
         if (task.destination === 'molda') {

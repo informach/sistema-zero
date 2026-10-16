@@ -3,6 +3,7 @@
 import '@sistemazero/studio/styles.css'
 import type {
   Project,
+  StudioEditorProps,
   StudioMoldaLibraryAdapter,
   StudioPintaLibraryAdapter,
   StudioTaskSession,
@@ -30,6 +31,9 @@ interface Props {
   onExit: () => void
   /** Tutor opcional do host. Ausente em aulas e hosts que não contrataram o recurso. */
   tutor?: StudioTutorConfig
+  share?: StudioEditorProps['share']
+  onChange?: StudioEditorProps['onChange']
+  onError?: StudioEditorProps['onError']
   prepareProject?: () => Promise<void>
   pintaLibrary?: StudioPintaLibraryAdapter
   moldaLibrary?: StudioMoldaLibraryAdapter
@@ -71,6 +75,9 @@ function StudioProEditorSession({
   theme,
   onExit,
   tutor,
+  share,
+  onChange,
+  onError,
   prepareProject,
   pintaLibrary,
   moldaLibrary,
@@ -187,6 +194,9 @@ function StudioProEditorSession({
       theme={theme}
       features={{ professional: true }}
       tutor={tutor}
+      share={share}
+      onChange={onChange}
+      onError={onError}
       pintaLibrary={pintaLibrary}
       moldaLibrary={moldaLibrary}
       taskSession={taskSession}

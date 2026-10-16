@@ -76,9 +76,8 @@ const DEFAULT_ENDPOINT = 'https://openrouter.ai/api/v1/chat/completions'
 const DEFAULT_MAX_TOKENS = 900
 /**
  * Substituto exibível quando o upstream conclui COM SUCESSO mas devolve texto
- * vazio (stream sem deltas / `message.content` ausente). Sem isso o painel
- * renderizava uma bolha em branco. O AIPanel também tem sua própria salvaguarda
- * (o stream alimenta a bolha por tokens, não pelo retorno) — defesa em camadas.
+ * vazio (stream sem deltas / `message.content` ausente). Mantém uma resposta
+ * legível para consumidores da API pública deste provider.
  */
 export const AI_EMPTY_RESPONSE_FALLBACK = 'A IA não retornou conteúdo. Tente novamente.'
 /** Tempo máximo sem receber tokens antes de desistir do stream (ms). */

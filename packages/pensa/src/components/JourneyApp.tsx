@@ -7,6 +7,7 @@ import {
   type PensaJourneyTeamView,
   type PensaJourneyView,
   type PensaZeroStage,
+  pensaMissionTarget,
   pensaZeroStage,
 } from '@sistemazero/core/pensa'
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
@@ -526,7 +527,14 @@ export function JourneyApp({
   const continueGame = !view && !archived ? projects[0] : undefined
   // Pedir ajuda começa por um atalho que a criança reconhece; ela revisa e envia (nada sai sozinho).
   const helpChips =
-    composer && talking && conversationKind === 'help' && !text.trim() ? HELP_STARTERS : []
+    composer && talking && conversationKind === 'help' && !text.trim()
+      ? [
+          ...HELP_STARTERS,
+          view?.studioAuthoring === 'code'
+            ? 'Não achei o trecho de código'
+            : 'Não achei o bloco certo',
+        ]
+      : []
   const placeholder = !state
     ? 'Pode ser uma ideia bem pequena. Não precisa saber como fazer ainda.'
     : conversationKind === 'backlog'
@@ -922,14 +930,12 @@ export function JourneyApp({
                         <button
                           type="button"
                           className="sz-tool-pill sz-tool-pill--primary"
-                          onClick={() =>
-                            adapter.onOpenTask({
-                              taskId: nextTask.id,
-                              destination: nextTask.destination,
-                            })
-                          }
+                          onClick={() => adapter.onOpenTask(pensaMissionTarget(nextTask, view))}
                         >
-                          Continuar no {DESTINATIONS[nextTask.destination].label}
+                          Continuar no{' '}
+                          {nextTask.destination === 'studio' && view.studioAuthoring === 'code'
+                            ? 'Estúdio Pro'
+                            : DESTINATIONS[nextTask.destination].label}
                           <ArrowRightIcon />
                         </button>
                         <button
@@ -1029,9 +1035,7 @@ export function JourneyApp({
                                 <button
                                   type="button"
                                   className="sz-tool-pill sz-tool-pill--outline"
-                                  onClick={() =>
-                                    adapter.onOpenTask({ taskId: t.id, destination: 'studio' })
-                                  }
+                                  onClick={() => adapter.onOpenTask(pensaMissionTarget(t, view))}
                                 >
                                   <BlocksIcon />
                                   Abrir meu jogo
@@ -1417,12 +1421,7 @@ export function JourneyApp({
                                   type="button"
                                   className="sz-tool-pill sz-tool-pill--outline pensa-journey-path__review"
                                   aria-label={`Rever ${t.title}`}
-                                  onClick={() =>
-                                    adapter.onOpenTask({
-                                      taskId: t.id,
-                                      destination: t.destination,
-                                    })
-                                  }
+                                  onClick={() => adapter.onOpenTask(pensaMissionTarget(t, view))}
                                 >
                                   Rever
                                 </button>
@@ -1961,11 +1960,7 @@ const DESTINATIONS = {
 
 const ZERO_ORDER = ['z', 'e', 'r', 'o'] as const
 
-const HELP_STARTERS = [
-  'Não sei por onde começar',
-  'Aconteceu uma coisa diferente',
-  'Não achei o bloco certo',
-]
+const HELP_STARTERS = ['Não sei por onde começar', 'Aconteceu uma coisa diferente']
 
 /** O mapa Z·E·R·O do jogo aberto: a etapa vencida ganha o visto, a atual o fio e a ação do dia. */
 function ZeroMap({ current, allDone }: { current: PensaZeroStage; allDone: boolean }) {

@@ -109,13 +109,17 @@ function moldaToolsFor(level: string | null, privileged: boolean): string[] {
 }
 
 /** Plano solo: o posto, a paleta, a posse e o inventário de quem pede. */
-async function ownResources(members: MembersClient, user: SessionUser): Promise<JourneyResources> {
+async function ownResources(
+  members: MembersClient,
+  user: SessionUser,
+  authoring: 'blocks' | 'code',
+): Promise<JourneyResources> {
   const gam = await members.getGamificationReadonly()
   if (gam.status !== 200 || !gam.body)
     throw new JourneyChildError('Não consegui conferir seus recursos. Tente de novo.')
   const rank = gam.body.level?.slug
   if (!rank) throw new JourneyChildError('Não consegui conferir seu posto. Tente de novo.')
-  const access = await getPensaCapabilities(members, rank, user.role)
+  const access = await getPensaCapabilities(members, rank, user.role, authoring)
   if (!access) throw new JourneyChildError('Não consegui conferir suas ferramentas. Tente de novo.')
   const inventoryRead = (tool: 'pinta' | 'molda') =>
     members.listCreationsReadonly(tool).catch((cause: unknown) => {
@@ -151,7 +155,11 @@ async function ownResources(members: MembersClient, user: SessionUser): Promise<
  * no Estúdio dela que a arte guardada entra), com a mesma régua de posse do plano solo. ⚠️ O
  * papel de equipe (o passe livre do `role`) só vale para a PRÓPRIA sessão.
  */
-function teamResources(team: PensaTeamCapabilitiesView, user: SessionUser): JourneyResources {
+function teamResources(
+  team: PensaTeamCapabilitiesView,
+  user: SessionUser,
+  authoring: 'blocks' | 'code',
+): JourneyResources {
   const { code, art } = team
   // Sem o posto de quem programa não há paleta para conferir: é falha de leitura, não "sem Estúdio".
   if (!code.level) throw new JourneyChildError(TEAM_UNAVAILABLE)
@@ -188,7 +196,8 @@ function teamResources(team: PensaTeamCapabilitiesView, user: SessionUser): Jour
     rank: level,
     tier,
     studio:
-      available('estudio-completo', code.access.studio, level, code.profileId) && tier.hasPalette,
+      available('estudio-completo', code.access.studio, level, code.profileId) &&
+      (authoring === 'code' ? tier.pro : tier.hasPalette),
     pinta: art.some((person) =>
       available('pinta', person.access.pinta, person.level, person.profileId),
     ),
@@ -208,7 +217,7 @@ async function teamFor(
   members: MembersClient,
   user: SessionUser,
   projectId: string,
-  view: Pick<PensaJourneyView, 'team'> | undefined,
+  view: Pick<PensaJourneyView, 'team' | 'studioAuthoring'> | undefined,
 ): Promise<JourneyResources | null> {
   const unavailable = (cause?: unknown) => {
     if (cause !== undefined)
@@ -231,14 +240,14 @@ async function teamFor(
     throw unavailable(cause)
   })
   if (caps.status !== 200 || !caps.body) throw unavailable()
-  return teamResources(caps.body, user)
+  return teamResources(caps.body, user, view?.studioAuthoring ?? 'blocks')
 }
 
 export interface JourneyContextOptions {
   /** O plano do v2. Com ele, um plano EM EQUIPE monta os recursos da equipe (`team-capabilities`). */
   projectId?: string
   /** A view que quem chama ACABOU de ler (poupa uma ida ao members). Sem ela, o contexto relê. */
-  view?: Pick<PensaJourneyView, 'team'>
+  view?: Pick<PensaJourneyView, 'team' | 'studioAuthoring'>
 }
 
 /**
@@ -253,12 +262,26 @@ export async function loadJourneyContext(
   options: JourneyContextOptions = {},
 ) {
   query = redactPensaText(query).text
-  const team = options.projectId
-    ? await teamFor(members, user, options.projectId, options.view)
-    : null
-  const resources = team ?? (await ownResources(members, user))
+  let view = options.view
+  if (options.projectId && !view) {
+    const response = await members.pensaJourneyGet(options.projectId).catch((cause: unknown) => {
+      console.error('[pensa-v2] recursos da equipe indisponíveis', {
+        projectId: options.projectId,
+        name: errorName(cause),
+      })
+      throw new JourneyChildError(TEAM_UNAVAILABLE)
+    })
+    if (response.status !== 200 || !response.body) throw new JourneyChildError(TEAM_UNAVAILABLE)
+    view = response.body
+  }
+  const team = options.projectId ? await teamFor(members, user, options.projectId, view) : null
+  const resources = team ?? (await ownResources(members, user, view?.studioAuthoring ?? 'blocks'))
   const dimensions: ('2d' | '3d')[] = ['2d']
-  if (resources.tier.allowedExtensions.includes('game-3d')) dimensions.push('3d')
+  if (
+    (view?.studioAuthoring === 'code' && resources.studio && resources.tier.pro) ||
+    resources.tier.allowedExtensions.includes('game-3d')
+  )
+    dimensions.push('3d')
   const catalogs = dimensions.map((dimension) => ({
     dimension,
     ...availablePlannerCatalog(resources.tier, dimension),
@@ -275,6 +298,7 @@ export async function loadJourneyContext(
     profileId: user.id,
     rank: resources.rank,
     studio: resources.studio,
+    studioAuthoring: view?.studioAuthoring ?? 'blocks',
     pinta: resources.pinta,
     molda: resources.molda,
     dimensions,
