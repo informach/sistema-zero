@@ -213,10 +213,68 @@ export interface PensaJourney {
   tests: PensaObservedTest[]
   testSessionStart?: number
   checkpoint: PensaCheckpointRef | null
+  /**
+   * O jogo que já existe (15/10/2026): a proposta da versão construída (ou da que estava em
+   * construção, num "Adaptar meu caminho") e as extensões que as versões usaram. Ao começar a
+   * versão seguinte, `proposal` guarda uma cópia dela, mas a primeira proposta nova toma o lugar;
+   * sem este campo, o Zappy lia a proposta ainda não construída como o jogo pronto. Ausente nas
+   * jornadas anteriores.
+   */
+  built?: PensaBuiltGame | null
   operationId: string | null
   closedReason: 'met' | 'incomplete' | null
   closedFrom: Exclude<PensaJourneyStage, 'closed'> | null
   lastInteractionAt: string
+}
+
+/**
+ * Só o que diz o que o jogo tem. A proposta inteira leva o retrato dos recursos (a lista de blocos
+ * liberados chega a dezenas de KB) e ficaria duas vezes na jornada e em cada versão guardada.
+ */
+export type PensaBuiltProposal = Pick<
+  PensaProposal,
+  'id' | 'title' | 'summary' | 'firstResult' | 'essentials' | 'dimension'
+> & {
+  missions: Pick<
+    PensaBlueprintMission,
+    'key' | 'title' | 'destination' | 'extensionIds' | 'mechanicIds'
+  >[]
+}
+
+export interface PensaBuiltGame {
+  proposal: PensaBuiltProposal
+  /** As extensões das missões do Estúdio das versões construídas, na ordem em que entraram. */
+  extensionIds: string[]
+}
+
+/**
+ * O jogo construído a partir da proposta de agora (a versão que a criança fez), somando as
+ * extensões das versões anteriores. A primeira extensão de jogo da lista é a que o guia instalou.
+ */
+export function pensaBuiltGame(journey: PensaJourney): PensaBuiltGame | null {
+  const proposal = journey.proposal
+  if (!proposal) return journey.built ?? null
+  const used = proposal.missions
+    .filter((mission) => mission.destination === 'studio')
+    .flatMap((mission) => mission.extensionIds)
+  return {
+    proposal: {
+      id: proposal.id,
+      title: proposal.title,
+      summary: proposal.summary,
+      firstResult: proposal.firstResult,
+      essentials: proposal.essentials,
+      dimension: proposal.dimension,
+      missions: proposal.missions.map(({ key, title, destination, extensionIds, mechanicIds }) => ({
+        key,
+        title,
+        destination,
+        extensionIds,
+        mechanicIds,
+      })),
+    },
+    extensionIds: [...new Set([...(journey.built?.extensionIds ?? []), ...used])],
+  }
 }
 
 export type PensaNarratableRef =
@@ -496,6 +554,16 @@ export function applyPensaCommand(
         )
       next.stage = 'idea'
       next.revising = true
+      // Com o jogo já guardado, a proposta em construção é a que está no arquivo: a nova proposta
+      // vai tomar o lugar dela, então o jogo construído fica guardado à parte. Só a que estava em
+      // construção (também depois de encerrar): encerrada na proposta, ela nunca foi aceita.
+      if (
+        (current.checkpoint || current.builtResults?.length) &&
+        ['building', 'observing'].includes(
+          (current.stage === 'closed' ? current.closedFrom : current.stage) ?? '',
+        )
+      )
+        next.built = pensaBuiltGame(current)
       next.testSessionStart = current.tests.length
       next.paused = false
       next.closedFrom = null

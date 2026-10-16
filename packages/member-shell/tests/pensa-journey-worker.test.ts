@@ -21,6 +21,7 @@ const user = { id: 'child', role: 'student' } as SessionUser
 const STAGE = SERVER_BLOCK_CATALOG.find((b) => b.type === 'sz_g2d_setup_stage')!
 const KEY = SERVER_BLOCK_CATALOG.find((b) => b.type === 'sz_g2d_on_key')!
 const KIT = SERVER_BLOCK_CATALOG.find((b) => b.extension === 'game-2d-advanced')!
+const CORE = SERVER_BLOCK_CATALOG.find((b) => !b.extension)!
 
 const restorers: Array<() => void> = []
 afterEach(() => {
@@ -980,6 +981,44 @@ describe('uma extensão de jogo por projeto e passos precisos (15/10/2026)', () 
     expect(first.gameExtension).toBe('game-2d')
     expect(first.issues.join(' ')).toContain('O jogo já usa a extensão Jogo 2D')
     expect(f.published.mock.calls.at(-1)?.[4]).toMatchObject({ type: 'proposal' })
+  })
+
+  test('versão nova já proposta: a extensão e a base vêm do jogo construído, não da proposta nova', async () => {
+    // Na versão 2, a primeira proposta toma o lugar da proposta construída. Se ela não usa extensão
+    // de jogo (só blocos do Estúdio sem extensão), a rodada seguinte não sabia qual o jogo tem.
+    quietConsole()
+    const f = fixture('review')
+    f.view.journey.builtResults = ['O gato anda']
+    f.view.journey.checkpoint = { id: 'salvo', creationId: 'jogo', saveRevision: '1' } as never
+    f.view.journey.built = {
+      proposal: { ...draft, id: 'construida', title: 'Gato construído' } as never,
+      extensionIds: ['game-2d'],
+    }
+    f.view.journey.proposal = {
+      ...draft,
+      id: 'nova',
+      title: 'Gato com chapéu',
+      missions: [
+        {
+          ...studioMission('chapeu', [], [CORE.type]),
+          extensionIds: [],
+          mechanicIds: [],
+        },
+      ],
+    } as never
+    const advanced = { ...draft, missions: [studioMission('kit', [], [KIT.type])] }
+    f.work.output.draft = advanced
+    const users: string[] = []
+    const complete = mock(async (input: { user: string }) => {
+      users.push(input.user)
+      return users.length === 1 ? advanced : draft
+    })
+    await run(f, complete)
+    const first = JSON.parse(users[0] ?? '{}')
+    expect(first.gameExtension).toBe('game-2d')
+    expect(first.baseAlreadyBuilt).toMatchObject({ title: 'Gato construído' })
+    expect(first.currentProposal).toMatchObject({ title: 'Gato com chapéu' })
+    expect(first.issues.join(' ')).toContain('O jogo já usa a extensão Jogo 2D')
   })
 
   const accepted = (f: ReturnType<typeof fixture>) => {

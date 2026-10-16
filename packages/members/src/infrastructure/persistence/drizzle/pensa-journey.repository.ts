@@ -12,10 +12,12 @@ import {
   type PensaProtectionAction,
   type PensaVoiceRequest,
   type PensaVoiceResult,
+  pensaBuiltGame,
   pensaZeroStage,
 } from '@sistemazero/core/pensa'
 import { and, asc, count, eq, exists, inArray, isNull, or, sql } from 'drizzle-orm'
 import { CREATION_LIMITS } from '../../../domain/creations/creation'
+import { pensaCallsExhausted } from '../../../domain/pensa/operation-budget'
 import { MAX_ACTIVE_PROJECTS } from '../../../domain/pensa/pensa'
 import {
   PensaNotFoundError,
@@ -505,7 +507,7 @@ export class DrizzlePensaJourneyRepository implements PensaJourneyRepository {
             step: 'choice',
             status: 'waiting',
             inputRevision: state.revision,
-            input: { message: state.intent },
+            input: { message: state.intent, roundStartCalls: 0 },
             createdAt: now,
             updatedAt: now,
           })
@@ -525,6 +527,8 @@ export class DrizzlePensaJourneyRepository implements PensaJourneyRepository {
             status: 'queued',
             inputRevision: next.revision,
             attempts: 0,
+            // Escolher o começo abre a rodada dos guias: a conversa antes dela não a esgota.
+            ...(existing ? { input: { ...existing.input, roundStartCalls: existing.calls } } : {}),
             error: null,
             updatedAt: now,
           })
@@ -596,7 +600,11 @@ export class DrizzlePensaJourneyRepository implements PensaJourneyRepository {
           .select()
           .from(pensaOperations)
           .where(eq(pensaOperations.id, state.operationId!))
-        if (operation?.status !== 'failed' || operation.attempts >= 2 || operation.calls >= 10)
+        if (
+          operation?.status !== 'failed' ||
+          operation.attempts >= 2 ||
+          pensaCallsExhausted(operation)
+        )
           throw conflict(
             'Não consegui preparar esse caminho. Cancele e ajuste o pedido para tentar outra ideia.',
           )
@@ -786,6 +794,8 @@ export class DrizzlePensaJourneyRepository implements PensaJourneyRepository {
           message: input.message,
           requestIds,
           requesterProfileId: actor.profileId,
+          // A mensagem abre uma rodada nova: a cota de chamadas conta a partir daqui.
+          roundStartCalls: reuse ? previous.calls : 0,
         },
         output: {},
         status: 'queued' as const,
@@ -863,7 +873,7 @@ export class DrizzlePensaJourneyRepository implements PensaJourneyRepository {
         await releasePensaUsage(tx, projectId, now)
         return null
       }
-      if (operation.attempts >= 2 || operation.calls >= 10) {
+      if (operation.attempts >= 2 || pensaCallsExhausted(operation)) {
         await tx
           .update(pensaOperations)
           .set({
@@ -1375,6 +1385,8 @@ export class DrizzlePensaJourneyRepository implements PensaJourneyRepository {
             ...(state.proposal ? [state.proposal.firstResult] : []),
           ].slice(-40),
           proposal: state.proposal,
+          // A proposta de agora vai ser trocada pela da versão nova; o jogo construído fica à parte.
+          built: pensaBuiltGame(state),
           backlog: state.backlog,
           checkpoint: state.checkpoint,
           messages: [

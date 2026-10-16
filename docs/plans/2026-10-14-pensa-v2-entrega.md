@@ -43,6 +43,8 @@ As migrações **0108–0111**, geradas pelo Drizzle, são aditivas: jornadas, o
 
 - A reserva de créditos compartilha o lock de conta usado pelos demais apps. Cartão e explicação de planejamento não debitam um plano entregue; publicação das tarefas e débito acontecem na mesma transação. Ajuda entregue usa uma unidade.
 - A operação mantém entrada, saída de cada etapa, revisão, estado e lease. Há no máximo duas tentativas por etapa e dez chamadas por operação; falhas precisam de ação explícita para repetir.
+
+  > **Atualização de 15/10/2026 (decisão da dona):** as dez chamadas por operação viraram seis por rodada (cada mensagem que abre ou retoma o pedido, e o "Vamos construir esse começo"); a conversa para em 24 no pedido, e os guias nunca param nesse teto. Operação criada antes não tem rodada para contar e fica só com o teto. Ver "Pensa v2: cota de chamadas por rodada…" no `packages/members/CLAUDE.md`.
 - O teto adicional de chamadas externas é de 60/dia e 600/mês por conta, inclusive quando uma tentativa é cancelada. Esses contadores e os de voz usam UTC; a quota compartilhada de créditos mantém a convenção existente de São Paulo.
 - A síntese tem duas tentativas por chave, até 4.000 caracteres por fala, 6.000 caracteres/dia e 60.000/mês por conta. Ela não utiliza uma unidade de plano. Texto continua disponível em falha ou limite.
 - São até 20 planos ativos, 80 checkpoints e 512 MiB de versões por perfil. O limite de armazenamento das criações continua sendo conferido na restauração.

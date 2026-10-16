@@ -180,7 +180,15 @@ export function gameExtensionIssues(
  * misturava duas, o guia instalou só a PRIMEIRA (`installStepsByMission`), e é ela que o jogo tem.
  */
 export function builtGameExtension(
-  proposal: Pick<ProposalDraft, 'missions'> | null | undefined,
+  proposal:
+    | {
+        missions: readonly Pick<
+          ProposalDraft['missions'][number],
+          'destination' | 'extensionIds' | 'mechanicIds'
+        >[]
+      }
+    | null
+    | undefined,
 ): string | null {
   const used = proposal ? gameExtensionsOf(proposal.missions) : []
   if (used.length <= 1 || !proposal) return used[0] ?? null

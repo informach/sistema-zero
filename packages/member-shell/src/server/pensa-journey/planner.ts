@@ -1,6 +1,7 @@
 import 'server-only'
 import { randomUUID } from 'node:crypto'
 import {
+  type PensaBuiltProposal,
   type PensaJourney,
   type PensaJourneyActor,
   type PensaJourneyTeam,
@@ -30,7 +31,11 @@ import {
   validateJourneyProposal,
 } from './contracts'
 import { JourneyChildError, JourneyOutputInvalid } from './errors'
-import { installStepsByMission, STUDIO_INTERFACE_MAP } from './interface-map'
+import {
+  installStepsByMission,
+  isGameRuntimeExtension,
+  STUDIO_INTERFACE_MAP,
+} from './interface-map'
 import { currentPensaTask, missionForModel } from './missions'
 import { isSafePensaText } from './privacy'
 import {
@@ -73,7 +78,7 @@ Separe criar arte, integrar arte no Estúdio e experimentar o jogo. Toda arte te
 Missão do Pinta ou do Molda só entra quando a criança pediu para desenhar ou modelar (na ideia ou na conversa, inclusive pedindo a quem cuida das artes da equipe). Sem esse pedido, use figuras prontas do Estúdio e não crie missão de arte: a tela oferece desenhar depois, e ela escolhe.
 Arte já existente em existingCreations entra numa missão de integração do Estúdio (source existing, creationId e kind iguais aos do inventário); não crie uma tarefa para desenhá-la de novo. Não afirme conhecer sua aparência: você só recebeu nome e tipo.
 Não gere ciclos futuros: guarde essas ideias em later com origem child (foi dito) ou zappy (sugestão sua).
-Se baseAlreadyBuilt estiver preenchida, o jogo já existe: planeje apenas o próximo passo pedido, no mesmo arquivo, sem mandar recriar o que já está pronto.
+Se baseAlreadyBuilt estiver preenchida, o jogo já existe: planeje apenas o próximo passo pedido, no mesmo arquivo, sem mandar recriar o que já está pronto. currentProposal é a proposta desta conversa (numa versão nova, ainda não construída); o que já existe no jogo é baseAlreadyBuilt.
 Não imponha tutoria: capabilities.tutor=false exige guias autossuficientes e ajuda no Pensa.
 Quando team estiver presente, o Estúdio é de quem programa e as artes podem ser de outra pessoa.
 team.requester descreve quem PEDIU ajuda, mesmo quando uma colega retoma a resposta. Oriente só a missão dela; currentMission=null pode significar que está esperando a equipe. Não mande assumir a missão de outra pessoa.
@@ -331,7 +336,7 @@ function proposalForModel(proposal: PensaProposal) {
 }
 
 /** O desenho do caminho, curto: para quem só precisa saber o que já foi planejado. */
-function proposalOutline(proposal: PensaProposal | null) {
+function proposalOutline(proposal: PensaBuiltProposal | null) {
   if (!proposal) return null
   return {
     title: proposal.title,
@@ -359,14 +364,27 @@ function talk(state: PensaJourney, limits: JourneyPromptLimits) {
   }
 }
 
-/** Jogo novo = nada construído ainda (nem versão guardada nem resultado pronto). */
-function gameBuilt(state: PensaJourney): boolean {
-  return Boolean(state.checkpoint) || Boolean(state.builtResults?.length)
+/**
+ * O jogo construído, ou `null` num jogo novo (nem versão guardada nem resultado pronto). Numa
+ * versão nova, `state.proposal` vira a proposta ainda não construída assim que o Zappy propõe, e
+ * por isso o jogo construído vem de `state.built` (15/10/2026): a proposta da última versão feita
+ * e as extensões de todas elas, na ordem em que entraram (a primeira de jogo é a que o guia
+ * instalou). Numa jornada anterior a esse campo, vale a proposta de agora.
+ */
+function builtGame(state: PensaJourney) {
+  if (!state.checkpoint && !state.builtResults?.length) return null
+  const proposal = state.built?.proposal ?? state.proposal
+  return {
+    proposal,
+    extension:
+      state.built?.extensionIds.find(isGameRuntimeExtension) ?? builtGameExtension(proposal),
+  }
 }
 
 /** O que a criança já guardou, testou e construiu (planejar e ajudar precisam; o guia, não). */
 function memory(state: PensaJourney, limits: JourneyPromptLimits) {
   const test = state.tests.at(-1)
+  const built = builtGame(state)
   return {
     backlog: latest(state.backlog, limits.backlog).map((idea) => ({
       id: idea.id,
@@ -376,10 +394,10 @@ function memory(state: PensaJourney, limits: JourneyPromptLimits) {
     currentTest: test
       ? { result: test.result, note: clip(test.note, 300), creationId: test.creationId }
       : null,
-    baseAlreadyBuilt: state.checkpoint ? proposalOutline(state.proposal) : null,
+    baseAlreadyBuilt: state.checkpoint ? proposalOutline(built?.proposal ?? null) : null,
     builtResults: latest(state.builtResults ?? [], limits.built).map((text) => clip(text, 200)),
     // A extensão de jogo que o jogo já tem: uma versão nova continua nela.
-    gameExtension: gameBuilt(state) ? builtGameExtension(state.proposal) : null,
+    gameExtension: built?.extension ?? null,
     revising: state.revising === true,
   }
 }
@@ -418,11 +436,12 @@ async function produce(input: {
       : null
   const previousAnswerRejected = repair ? clip(repair, 2_000) : null
   // Jogo novo = nada construído ainda: a régua do "primeiro jogando" vale só nele.
-  const gameExists = gameBuilt(state)
+  const built = builtGame(state)
+  const gameExists = built !== null
   // Jogo já construído tem formato: nem pergunta de 2D ou 3D nem proposta no outro formato.
-  const fixedDimension = gameExists ? (state.proposal?.dimension ?? null) : null
+  const fixedDimension = built?.proposal?.dimension ?? null
   // E tem a extensão de jogo dele: a versão nova não troca nem soma outra.
-  const builtExtension = gameExists ? builtGameExtension(state.proposal) : null
+  const builtExtension = built?.extension ?? null
   if (work.step === 'propose') {
     const questionsLeft = pensaQuestionsLeft(state)
     const lastUser = state.messages.filter((m) => m.role === 'user').at(-1)?.text ?? ''
@@ -666,7 +685,8 @@ const errorName = (cause: unknown) => (cause instanceof Error ? cause.name : typ
 /** Um passo por lease. O banco retém entradas/saídas; retornar à tela retoma apenas passos pendentes.
  * Falhas só são repetidas por pedido explícito, nunca por polling. A ÚNICA repetição automática é
  * o reparo de uma saída inválida do modelo, uma vez por passo, e ela passa por um novo `claim`:
- * o members conta a chamada e aplica o teto da operação (2 por passo, 10 por operação). */
+ * o members conta a chamada e aplica o teto da operação (2 por passo; 6 por rodada e 24 por pedido,
+ * ver `domain/pensa/operation-budget.ts` do members). */
 export async function workJourney({
   members,
   user,
