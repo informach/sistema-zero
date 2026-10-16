@@ -106,6 +106,7 @@ function load(
     sent,
     dispatched,
     createAudio: () => new (win.Audio as typeof FakeAudio)(),
+    createAudioContext: <T>() => new (win.AudioContext as new () => T)(),
     reportGroupClick: (x: number, y: number) =>
       (win.__szReportGroupClick as (x: number, y: number) => void)(x, y),
     reportGameReady: () => (win.__szReportGameReady as () => void)(),
@@ -554,5 +555,79 @@ describe('inputBridge — window.__szInput', () => {
     })
     expect(dispatched).toEqual([{ type: 'keydown', key: 'ArrowRight', code: 'ArrowRight' }])
     expect(audio.muted).toBe(true)
+  })
+})
+
+describe('inputBridge — ciclo de vida do áudio do host', () => {
+  class Context {
+    state: AudioContextState = 'suspended'
+    suspensions = 0
+    resumptions = 0
+    rejectResume = false
+    suspend() {
+      this.suspensions++
+      this.state = 'suspended'
+      return Promise.resolve()
+    }
+    resume() {
+      this.resumptions++
+      if (this.rejectResume) return Promise.reject(new Error('Context closed during resume'))
+      this.state = 'running'
+      return Promise.resolve()
+    }
+  }
+
+  function fixture() {
+    const bridge = load({ globals: { AudioContext: Context } })
+    return {
+      create: () => bridge.createAudioContext<Context>(),
+      mute: (muted: boolean) =>
+        bridge.fire('message', { source: bridge.parent, data: { type: 'sz:audio', muted } }),
+    }
+  }
+
+  it('som ligado inicial não tenta iniciar contextos sem gesto nem reabrir os fechados', () => {
+    const { create, mute } = fixture()
+    const idle = create()
+    const closed = create()
+    closed.state = 'closed'
+    mute(false)
+    expect(idle.resumptions).toBe(0)
+    expect(closed.resumptions).toBe(0)
+  })
+
+  it('retoma apenas o áudio que o host suspendeu, uma vez por alternância', () => {
+    const { create, mute } = fixture()
+    const playing = create()
+    playing.state = 'running'
+    const idle = create()
+    mute(true)
+    expect(playing.suspensions).toBe(1)
+    expect(idle.suspensions).toBe(0)
+    mute(false)
+    mute(false)
+    expect(playing.resumptions).toBe(1)
+    expect(idle.resumptions).toBe(0)
+  })
+
+  it('descarta contexto fechado enquanto estava mudo', () => {
+    const { create, mute } = fixture()
+    const playing = create()
+    playing.state = 'running'
+    mute(true)
+    playing.state = 'closed'
+    mute(false)
+    expect(playing.resumptions).toBe(0)
+  })
+
+  it('trata a rejeição assíncrona quando o jogo fecha o contexto durante a retomada', async () => {
+    const { create, mute } = fixture()
+    const playing = create()
+    playing.state = 'running'
+    mute(true)
+    playing.rejectResume = true
+    mute(false)
+    await Promise.resolve()
+    expect(playing.resumptions).toBe(1)
   })
 })
