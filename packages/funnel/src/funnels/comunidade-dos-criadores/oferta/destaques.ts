@@ -1,5 +1,27 @@
 /** Frases-chave em negrito: id da seção → trechos LITERAIS da copy (a copy não muda; só ganha <strong>). */
 export const DESTAQUES: Record<string, readonly string[]> = {
+  f01: [
+    'pode faltar a ligação com uma situação que a criança consiga enxergar e compreender',
+    'O jeito de ensinar também precisa entrar nessa conversa.',
+    'O número corresponde a uma distância que ele consegue ver.',
+  ],
+  f02: [
+    'mostre o que faz o número mudar',
+    'entender um pedido, relacionar informações e conferir uma resposta',
+  ],
+  f03: [
+    'descobrir o que está sendo pedido',
+    'Operações, comparação de quantidades e valores que variam',
+    'Observar, comparar e explicar o efeito de uma alteração',
+    'Dividir o trabalho, ordenar os passos e conferir o que já fez',
+    'Ajustar largura, altura e distância',
+    'Fala, escrita, argumentação e escuta',
+  ],
+  f04: ['pode rever o trecho e comparar com a própria montagem'],
+  f05: ['o que queria fazer, o que aconteceu e o que tentou', 'de forma assíncrona'],
+  f06: ['A explicação do seu filho acrescenta o que ele entendeu sobre o próprio trabalho.'],
+  f07: ['concluir o curso obrigatório de entrada e publicar o projeto exigido'],
+  'habilidades-escolares:convite': ['aulas guiadas, ferramentas e um caminho de ajuda'],
   e02: [
     'Uma escolha pequena já dá uma tarefa à aprendizagem',
     'Você pode conhecer uma criação, jogar junto',

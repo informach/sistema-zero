@@ -37,6 +37,7 @@ export default function PreCheckoutModal({
   const [errors, setErrors] = useState<Errors>({})
   const [erroGeral, setErroGeral] = useState<string | null>(null)
   const firstFieldRef = useRef<HTMLInputElement>(null)
+  const dialogRef = useRef<HTMLDivElement>(null)
   const lastFocusedRef = useRef<HTMLElement | null>(null)
   const reduce = useReducedMotion()
   const uid = useId()
@@ -76,10 +77,10 @@ export default function PreCheckoutModal({
     })()
 
     function onDocClick(e: MouseEvent) {
-      const el = (e.target as HTMLElement | null)?.closest('[data-checkout-cta]')
+      const el = (e.target as HTMLElement | null)?.closest<HTMLElement>('[data-checkout-cta]')
       if (el) {
         e.preventDefault()
-        lastFocusedRef.current = document.activeElement as HTMLElement | null
+        lastFocusedRef.current = el
         setOferta(el.getAttribute('data-checkout-oferta'))
         setOpen(true)
         apiPost('/api/events', { eventName: 'abriu_checkout' }).catch(() => {})
@@ -92,13 +93,41 @@ export default function PreCheckoutModal({
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.key === 'Escape') setOpen(false)
+      const dialog = dialogRef.current
+      if (e.key !== 'Tab' || !dialog) return
+      const focusable = Array.from(
+        dialog.querySelectorAll<HTMLElement>(
+          'button, input, select, textarea, a[href], [tabindex]',
+        ),
+      ).filter(
+        (el) => el.tabIndex >= 0 && !el.matches(':disabled') && el.getClientRects().length > 0,
+      )
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (!first || !last) {
+        e.preventDefault()
+        dialog.focus()
+      } else if (
+        !dialog.contains(document.activeElement) ||
+        (e.shiftKey && document.activeElement === first) ||
+        (!e.shiftKey && document.activeElement === last)
+      ) {
+        e.preventDefault()
+        ;(e.shiftKey ? last : first).focus()
+      }
+    }
+    function keepFocus(event: FocusEvent) {
+      if (event.target instanceof Node && !dialogRef.current?.contains(event.target))
+        firstFieldRef.current?.focus()
     }
     if (open) {
       document.addEventListener('keydown', onKey)
+      document.addEventListener('focusin', keepFocus)
       // Aguarda o frame de montagem do diálogo p/ mover o foco.
       const t = setTimeout(() => firstFieldRef.current?.focus(), 30)
       return () => {
         document.removeEventListener('keydown', onKey)
+        document.removeEventListener('focusin', keepFocus)
         clearTimeout(t)
       }
     }
@@ -173,6 +202,8 @@ export default function PreCheckoutModal({
           {...overlayAnim}
           transition={{ duration: reduce ? 0 : 0.2 }}
           role="dialog"
+          ref={dialogRef}
+          tabIndex={-1}
           aria-modal="true"
           aria-labelledby={`${uid}-title`}
           className={`fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm sm:items-center sm:p-4 ${

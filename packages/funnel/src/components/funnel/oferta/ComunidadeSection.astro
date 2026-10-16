@@ -166,13 +166,13 @@ const situacoes = grupos.filter(({ group }) => group.title)
 
       {cards ? (
         <div class="cartas">
-          {grupos.map(({ group, visuais }, i) => (
+          {grupos.map(({ group, visuais, icone }, i) => (
             <article class:list={['carta-interesse', 'kof-carta', 'kof-carta--fio', 'kof-reveal', `cor-${CORES_GRUPO[i % CORES_GRUPO.length]}`]}>
               {visuais[0] && <ComunidadeVisual visual={visuais[0]} imagesBase={imagesBase} variant="plana" only="last" />}
               <div class="carta-corpo">
                 {group.title && (
                   <div class="sub-head">
-                    <span class="kof-ladrilho" aria-hidden="true"><span class="material-symbols-rounded">{ICONES_GRUPO[i % ICONES_GRUPO.length]}</span></span>
+                    <span class="kof-ladrilho" aria-hidden="true"><span class="material-symbols-rounded">{icone ?? ICONES_GRUPO[i % ICONES_GRUPO.length]}</span></span>
                     <h3 class="kof-display">{group.title}</h3>
                   </div>
                 )}

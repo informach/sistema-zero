@@ -9,6 +9,14 @@ import type { ComunidadePageId } from './types'
 
 /** Por seção, o ícone do chip do capítulo. A Jornada (`journey`) já tem o dela (`route`). */
 export const ICONES_DE_CAPITULO: Record<string, string> = {
+  // F: habilidades escolares
+  f01: 'lightbulb',
+  f02: 'extension',
+  f03: 'school',
+  f04: 'timer',
+  f05: 'build',
+  f06: 'family_star',
+  f07: 'route',
   // B: criação de jogos
   b04: 'tune',
   b05: 'hub',
@@ -46,6 +54,7 @@ export const ICONES_DE_CAPITULO: Record<string, string> = {
 
 /** Por seção, o ícone do grupo na MESMA posição (`null` = grupo sem subtítulo). */
 export const ICONES_DE_GRUPO: Record<string, readonly (string | null)[]> = {
+  f03: ['menu_book', 'calculate', 'science', 'checklist', 'palette', 'forum'],
   a03: [null, 'link'],
   a04: [null, 'forum'],
   a07: [null, 'smart_toy'],
@@ -74,5 +83,13 @@ export const ENFASE_NUMA_LINHA: Partial<Record<ComunidadePageId, number>> = {
 
 /** Por página, o ícone de cada assunto das dúvidas, na ordem de `faqGroups`. */
 export const ICONES_DE_DUVIDAS: Partial<Record<ComunidadePageId, readonly string[]>> = {
+  'habilidades-escolares': [
+    'school',
+    'family_star',
+    'build',
+    'devices',
+    'diversity_3',
+    'receipt_long',
+  ],
   continuar: ['signpost', 'key', 'school', 'build', 'devices', 'diversity_3', 'receipt_long'],
 }
