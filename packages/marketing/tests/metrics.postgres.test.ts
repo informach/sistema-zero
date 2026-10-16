@@ -14,7 +14,6 @@ suite('métricas de conta PostgreSQL', () => {
     if (
       !url ||
       new URL(url).hostname !== '127.0.0.1' ||
-      new URL(url).port !== '15439' ||
       new URL(url).pathname !== '/marketing_review'
     )
       throw new Error('Banco exclusivo de revisão obrigatório')

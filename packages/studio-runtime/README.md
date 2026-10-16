@@ -2,6 +2,16 @@
 
 Compilador isolado das atividades Pro do Sistema Zero. Um BFF autorizado envia a árvore do projeto, o Worker aplica um catálogo fechado de dependências e o Cloudflare Sandbox executa o build sem acesso à internet. Somente o BFF chama o build; o navegador lê os arquivos compilados por um endereço temporário imprevisível, sem credenciais.
 
+## Ambientes e capacidade
+
+Staging usa `bun run deploy:staging`, Worker `sistemazero-studio-runtime-staging` e bucket privado `sistemazero-studio-artifacts-staging`. O token `INTERNAL_TOKEN` é exclusivo desse ambiente e deve corresponder a `STUDIO_PRO_RUNTIME_TOKEN` em Kids, Admin e Auth no Railway. As URLs de autorização e limpeza apontam para o Kids de staging.
+
+A configuração principal é a de produção, com Worker `sistemazero-studio-runtime` e bucket `sistemazero-studio-artifacts`. Promova o runtime junto da aplicação que entende artefatos; a aplicação anterior espera HTML inline. Preparar o bucket e as variáveis não exige substituir o runtime ativo antes dessa promoção.
+
+A imagem com Chromium exige `standard-1` (4 GiB de memória e 8 GB de disco). Na validação remota de 15/10/2026, `lite` falhou ao descompactar a imagem no disco de 2 GB. O limite de 50 instâncias permanece. Ambos os buckets expiram apenas `previews/` após dois dias; `published/` e `publications/` não têm expiração por idade.
+
+Depois do deploy, aguarde o provisionamento dos contêineres e valide uma compilação com `validate: true`; `/healthz` sozinho não comprova que a imagem está pronta.
+
 ## Fluxo
 
 1. Community Kids ou Admin valida sessão e autorização.

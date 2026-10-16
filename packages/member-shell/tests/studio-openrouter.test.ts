@@ -1,4 +1,4 @@
-import { afterAll, beforeEach, expect, mock, test } from 'bun:test'
+import { beforeEach, expect, mock, test } from 'bun:test'
 import type { StudioAiAccountView } from '@sistemazero/core/ai-credits'
 import type { SessionUser } from '../src/lib/types'
 import type { MembersClient } from '../src/server/clients'
@@ -6,20 +6,15 @@ import type { SessionModule } from '../src/server/session'
 
 mock.module('server-only', () => ({}))
 process.env.JWT_HS256_SECRET ??= 'test-jwt-secret-with-32-characters'
-const originalHeaders = { ...(await import('next/headers')) }
 const jar = new Map<string, string>()
 const cookieOptions: unknown[] = []
-mock.module('next/headers', () => ({
-  ...originalHeaders,
-  cookies: async () => ({
-    get: (name: string) => (jar.has(name) ? { value: jar.get(name)! } : undefined),
-    set: (name: string, value: string, options: unknown) => {
-      jar.set(name, value)
-      cookieOptions.push(options)
-    },
-  }),
-}))
-afterAll(() => mock.module('next/headers', () => originalHeaders))
+const getCookies = (async () => ({
+  get: (name: string) => (jar.has(name) ? { value: jar.get(name)! } : undefined),
+  set: (name: string, value: string, options: unknown) => {
+    jar.set(name, value)
+    cookieOptions.push(options)
+  },
+})) as typeof import('next/headers').cookies
 const { createStudioOpenRouterRoutes } = await import('../src/routes/studio-openrouter')
 const user: SessionUser = {
   id: 'f5f1764d-9163-46ca-bc32-0cc9d85b7016',
@@ -70,6 +65,7 @@ function setup(initial: SessionUser | null = user) {
     members,
     session: { getSession: async () => active } as SessionModule,
     cookieBase: 'test_studio',
+    getCookies,
   })
   return {
     ...routes,

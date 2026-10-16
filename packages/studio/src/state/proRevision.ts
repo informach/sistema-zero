@@ -103,7 +103,7 @@ async function applyRevision(
     new TextEncoder().encode(JSON.stringify(inverse)).byteLength + 2048 > inverseBudget
   )
     throw new Error(
-      'Esta proposta é grande demais para um desfazer local completo. Divida a mudança em etapas menores.',
+      'Esta proposta é grande demais para um desfazer local completo. Divida a mudança em partes menores.',
     )
   const tree: ProjectTree = Object.fromEntries([
     ...revision.directories.map((path) => [path, { kind: 'dir' as const }] as const),

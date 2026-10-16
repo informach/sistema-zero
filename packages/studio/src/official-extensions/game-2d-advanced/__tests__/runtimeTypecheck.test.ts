@@ -246,7 +246,9 @@ test('a dívida de parâmetros JS sem tipo não pode crescer', () => {
   // Este contador inclui parâmetros com tipagem contextual do adaptador; o teste semântico acima cobre todos.
   // +14: projection/decorations, mold event/host, pause host and family cleanup.
   // +2 (full review 02/10): as duas varreduras novas das pistas, compartilhadas com o básico.
-  expect(runtimeFunctionParameterCount(gameKitRuntime)).toBeLessThanOrEqual(1377)
+  // +1: o callback `move` da projeção de availableMoves no inspetor de batalha.
+  // A inspeção expõe nome/custo/cura para validar as ações disponíveis do RPG.
+  expect(runtimeFunctionParameterCount(gameKitRuntime)).toBeLessThanOrEqual(1378)
 })
 
 test('as assinaturas centrais mantêm nomes e ordem dos parâmetros do contrato', () => {

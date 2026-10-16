@@ -125,8 +125,13 @@ jobs:
         working-directory: packages/studio
         run: bunx playwright install --with-deps chromium webkit
 
-      - name: Testes (todos os pacotes)
-        run: bun run --filter '*' test
+      - name: Instalar o compilador confiável para as provas fora da imagem
+        run: npm ci --ignore-scripts --no-audit --no-fund --prefix packages/studio-runtime/runtime
+
+      # Credenciais e posse de portas do runtime são homologadas no Windows; o
+      # FFmpeg empacotado do desktop também precisa de uma plataforma suportada.
+      - name: Testes dos pacotes web e serviços
+        run: bun run --filter '*' --filter '!@sistemazero/agent-runtime' --filter '!@sistemazero/marketing-desktop' test
 
       - name: Verificar IR gerada dos exemplos 3D
         working-directory: packages/studio
@@ -206,8 +211,68 @@ jobs:
           DATABASE_URL: postgres://postgres:postgres@localhost:55432/helpdesk_test
           HELPDESK_TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/helpdesk_test
 
+      - name: Criar banco descartável do marketing e desktop
+        run: PGPASSWORD=postgres psql -h 127.0.0.1 -p 55432 -U postgres -d postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE marketing_review"
+
+      - name: Testes DB marketing e sessões desktop (Postgres real)
+        run: |
+          cd packages/marketing
+          bun run db:migrate
+          bun test tests/*.postgres.test.ts
+          cd ../auth
+          bun run db:migrate
+          bun test tests/db/desktop-session.test.ts
+        env:
+          DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/marketing_review
+          MARKETING_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/marketing_review
+
       - name: Typecheck (todos os pacotes)
         run: bun run --filter '*' typecheck
+
+  studio-storage-macos:
+    name: studio-storage-macos
+    runs-on: macos-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Instalar dependências (lockfile congelado)
+        run: bun install --frozen-lockfile
+      - name: Preparar navegadores da prova de persistência
+        working-directory: packages/studio
+        run: bunx playwright install chromium webkit
+      - name: Provar recarga imediata e conflito entre abas no macOS
+        working-directory: packages/studio
+        run: bun test src/state/projectStorageBrowser.test.ts
+
+  desktop-windows:
+    name: desktop-windows
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Instalar dependências (lockfile congelado)
+        run: bun install --frozen-lockfile
+      - name: Testar runtime nativo
+        working-directory: packages/agent-runtime
+        run: |
+          bunx playwright install chromium
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          bun test
+      - name: Testar desktop e mídia empacotada
+        working-directory: packages/marketing-desktop
+        run: bun test
 
   community-kids-e2e:
     name: community-kids-e2e
@@ -348,7 +413,7 @@ jobs:
 
   deploy-staging:
     name: deploy-staging
-    needs: [ci, community-kids-e2e, studio-e2e-chromium, studio-e2e-firefox, studio-e2e-webkit]
+    needs: [ci, desktop-windows, studio-storage-macos, community-kids-e2e, studio-e2e-chromium, studio-e2e-firefox, studio-e2e-webkit]
     # Só push na staging (ou dispatch manual) — PR para a main NUNCA deploya.
     if: github.ref == 'refs/heads/staging' && (github.event_name == 'workflow_dispatch' || github.event_name == 'push')
     runs-on: ubuntu-latest

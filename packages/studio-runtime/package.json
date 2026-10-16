@@ -8,6 +8,7 @@
     "check:validation-profile": "bun scripts/validation-profile.ts --check",
     "dev": "wrangler dev",
     "deploy": "bun run check:validation-profile && wrangler deploy",
+    "deploy:staging": "bun run check:validation-profile && wrangler deploy --env staging",
     "audit:image": "npm audit --package-lock-only --omit=dev --prefix runtime",
     "build:image": "bun run check:validation-profile && docker build --tag sistemazero-studio-runtime:verify .",
     "typecheck": "tsc --noEmit && tsc --project tsconfig.test.json --noEmit",

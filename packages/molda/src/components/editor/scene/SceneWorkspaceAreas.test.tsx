@@ -35,7 +35,7 @@ test('named mesh and UV areas preserve the scene and the live viewport; opening 
     fireEvent.click(screen.getByRole('button', { name: 'Escolher corpo' }))
     const ports = f.probe.ports.length
     fireEvent.click(
-      within(screen.getByRole('navigation', { name: 'Áreas de trabalho' })).getByRole('button', {
+      within(screen.getByRole('navigation', { name: 'Áreas da oficina' })).getByRole('button', {
         name: 'Editar malha',
       }),
     )

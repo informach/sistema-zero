@@ -35,7 +35,7 @@ const RevisionDiff = lazy(() => import('./ProRevisionDiff'))
 const active = (job: StudioProBuilderView) =>
   ['queued', 'generating', 'validating'].includes(job.phase)
 const phases = {
-  queued: 'Preparando a próxima etapa',
+  queued: 'Preparando o próximo passo',
   generating: 'Zappy está preparando a proposta',
   validating: 'Verificando tipos e testando o jogo',
   review: 'Proposta pronta para revisar',
@@ -234,7 +234,7 @@ export default function ProBuilderPanel({
         setJob(state)
         if (state?.leaseUntil) {
           setNotice(
-            'Esta etapa continua no servidor. Use Consultar estado para ver o resultado. Continuar execução autoriza as etapas seguintes.',
+            'Este passo continua no servidor. Use Consultar estado para ver o resultado. Continuar execução autoriza os passos seguintes.',
           )
           break
         }
@@ -650,7 +650,7 @@ export default function ProBuilderPanel({
         {request.scope === 'game' && (
           <p className="text-xs">
             Este pedido tem até 3 chamadas de IA e 3 verificações. Se o jogo precisar de mais
-            etapas, você decide quando continuar em uma nova proposta.
+            passos, você decide quando continuar em uma nova proposta.
           </p>
         )}
         <button
@@ -977,7 +977,7 @@ export default function ProBuilderPanel({
           )}
           {job.assistance && (
             <details>
-              <summary className="cursor-pointer text-xs">Etapas registradas</summary>
+              <summary className="cursor-pointer text-xs">Passos registrados</summary>
               <ol className="mt-2 space-y-1 text-xs">
                 {job.assistance.events.map((event) => (
                   <li key={event.sequence}>

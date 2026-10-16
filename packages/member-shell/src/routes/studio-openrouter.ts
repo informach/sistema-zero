@@ -14,7 +14,9 @@ export function createStudioOpenRouterRoutes(deps: {
   members: MembersClient
   session: SessionModule
   cookieBase: string
+  getCookies?: typeof cookies
 }) {
+  const getCookies = deps.getCookies ?? cookies
   const cookieName = `${process.env.NODE_ENV === 'production' ? '__Host-' : ''}${deps.cookieBase}_openrouter`
   const cookieOptions = {
     httpOnly: true,
@@ -125,7 +127,7 @@ export function createStudioOpenRouterRoutes(deps: {
           new URL(response.body.url).origin !== 'https://openrouter.ai'
         )
           return failure('OPENROUTER_CONNECT_FAILED', 503)
-        ;(await cookies()).set(cookieName, binding, cookieOptions)
+        ;(await getCookies()).set(cookieName, binding, cookieOptions)
         return NextResponse.json(
           { url: response.body.url },
           { headers: { 'Cache-Control': 'no-store' } },
@@ -137,7 +139,7 @@ export function createStudioOpenRouterRoutes(deps: {
         const context = await parent()
         if (!context) return failure('PARENT_SESSION_REQUIRED', 403)
         const { actor } = context
-        const jar = await cookies()
+        const jar = await getCookies()
         const binding = jar.get(cookieName)?.value
         const params = new URL(req.url).searchParams
         const state = params.get('state') ?? ''

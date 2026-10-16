@@ -976,7 +976,7 @@ describe('scene workshop integration', () => {
       act(() => ports.at(-1)!.callbacks.select('part-0', false))
       openInspector()
       const trigger = within(
-          screen.getByRole('navigation', { name: 'Áreas de trabalho' }),
+          screen.getByRole('navigation', { name: 'Áreas da oficina' }),
         ).getByRole('button', { name: 'Ossos e pesos' }),
         open = async () => {
           trigger.focus()
@@ -1348,7 +1348,7 @@ describe('scene workshop integration', () => {
       act(() => ports.at(-1)!.callbacks.select('part-0', false))
       openInspector()
       const trigger = within(
-        screen.getByRole('navigation', { name: 'Áreas de trabalho' }),
+        screen.getByRole('navigation', { name: 'Áreas da oficina' }),
       ).getByRole('button', { name: 'Ossos e pesos' })
       trigger.focus()
       fireEvent.click(trigger)
@@ -1409,7 +1409,7 @@ describe('scene workshop integration', () => {
       act(() => ports.at(-1)!.callbacks.select('part-0', false))
       openInspector()
       fireEvent.click(
-        within(screen.getByRole('navigation', { name: 'Áreas de trabalho' })).getByRole('button', {
+        within(screen.getByRole('navigation', { name: 'Áreas da oficina' })).getByRole('button', {
           name: 'Ossos e pesos',
         }),
       )

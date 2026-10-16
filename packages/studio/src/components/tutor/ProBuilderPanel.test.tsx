@@ -97,7 +97,7 @@ describe('builder review interface', () => {
         }}
       />,
     )
-    await ui.findByText('Preparando a próxima etapa')
+    await ui.findByText('Preparando o próximo passo')
     fireEvent.click(ui.getByRole('button', { name: /Cancelar/ }))
     await waitFor(() => expect(refreshes).toBe(1))
   })
@@ -117,7 +117,7 @@ describe('builder review interface', () => {
       return f.ready
     }
     const ui = render(<ProBuilderPanel adapter={f.adapter} projectId="builder-ui" />)
-    await ui.findByText('Preparando a próxima etapa')
+    await ui.findByText('Preparando o próximo passo')
     await waitFor(() =>
       expect(
         (ui.getByRole('button', { name: 'Consultar estado' }) as HTMLButtonElement).disabled,

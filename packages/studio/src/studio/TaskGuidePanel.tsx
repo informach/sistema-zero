@@ -212,7 +212,7 @@ export function TaskGuidePanel({ session }: { session: StudioTaskSession }): JSX
               <LegacyStepsContainer>
                 {session.codeTransition && (
                   <>
-                    <summary>Conferir etapas do plano original em blocos</summary>
+                    <summary>Conferir passos do plano original em blocos</summary>
                     <p>Marque cada uma só depois de verificar o resultado equivalente no código.</p>
                   </>
                 )}

@@ -30,7 +30,7 @@ export function SceneWorkspaceAreas({
   )
   if (!areas.length) return null
   return (
-    <nav ref={navigation} aria-label="Áreas de trabalho" className="mld-workspace-areas">
+    <nav ref={navigation} aria-label="Áreas da oficina" className="mld-workspace-areas">
       {workshop.area && (
         <Button className="px-3 text-xs" onClick={() => workshop.openArea(null)}>
           Voltar ao{' '}

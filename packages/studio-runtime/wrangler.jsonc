@@ -17,7 +17,7 @@
     {
       "class_name": "ProBuildSandbox",
       "image": "./Dockerfile",
-      "instance_type": "lite",
+      "instance_type": "standard-1",
       "max_instances": 50
     }
   ],
@@ -66,7 +66,7 @@
         {
           "class_name": "ProBuildSandbox",
           "image": "./Dockerfile",
-          "instance_type": "lite",
+          "instance_type": "standard-1",
           "max_instances": 50
         }
       ],

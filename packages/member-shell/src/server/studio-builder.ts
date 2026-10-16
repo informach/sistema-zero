@@ -194,7 +194,7 @@ export async function advanceStudioBuilder(input: {
     !claimed.binaries ||
     !isStudioProTemplateId(job.base.templateId)
   )
-    return checkpoint('failed', job.result, 'A revisão de trabalho está incompleta.')
+    return checkpoint('failed', job.result, 'A revisão atual está incompleta.')
   try {
     const { revision } = await applyStudioProChange(job.base, job.result.change)
     const built = await requestStudioProBuild({
