@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { mkdtemp, readFile, writeFile } from 'node:fs/promises'
+import { mkdtemp, readFile, symlink, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { environmentRequestSchema, runSchema } from '@sistemazero/agent-core'
@@ -9,7 +9,9 @@ import { Store } from '../src/store/client'
 
 test('environment intent deduplicates, revisions revoke queued uses and local cleanup preserves user files', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'zero-env-'))
-  const workspace = await mkdtemp(join(tmpdir(), 'zero-env-workspace-'))
+  const source = await mkdtemp(join(tmpdir(), 'zero-env-workspace-'))
+  const workspace = join(directory, 'workspace-alias')
+  await symlink(source, workspace, 'junction')
   await writeFile(join(workspace, 'keep.txt'), 'user WIP')
   const store = new Store(join(directory, 'state.sqlite'))
   const manager = new Environments(store, new Processes(directory), directory)
@@ -38,6 +40,10 @@ test('environment intent deduplicates, revisions revoke queued uses and local cl
       manager.acquire(request, context),
     ])
     expect(first.id).toBe(duplicate.id)
+    expect((await manager.validate(first, { ...context, workspace: source })).id).toBe(first.id)
+    await expect(manager.validate(first, { ...context, workspace: directory })).rejects.toThrow(
+      'another workspace',
+    )
     expect((await manager.list()).values).toHaveLength(1)
     await expect(
       manager.acquire({ ...request, template: { ...request.template, cpus: 3 } }, context),

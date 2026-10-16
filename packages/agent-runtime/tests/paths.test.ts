@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { mkdir, mkdtemp, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, realpath, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { workspacePath } from '../src/tools/paths'
@@ -25,5 +25,7 @@ test('workspace path rejects credential aliases and special Windows file names',
       await expect(workspacePath(root, name, true)).rejects.toThrow()
   }
   await expect(workspacePath(root, '../outside', true)).rejects.toThrow('escapes')
-  expect(await workspacePath(root, 'nested/safe.txt', true)).toBe(join(root, 'nested', 'safe.txt'))
+  expect(await workspacePath(root, 'nested/safe.txt', true)).toBe(
+    join(await realpath(root), 'nested', 'safe.txt'),
+  )
 })

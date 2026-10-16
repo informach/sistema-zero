@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { mkdtemp, readFile, writeFile } from 'node:fs/promises'
+import { mkdtemp, readFile, realpath, symlink, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { Processes } from '../src/process/manager'
@@ -7,8 +7,10 @@ import { Store } from '../src/store/client'
 import { Workspaces } from '../src/workspace/snapshot'
 
 test('fork includes staged, unstaged and untracked WIP without changing source', async () => {
-  const directory = await mkdtemp(join(tmpdir(), 'zero-wip-'))
+  const source = await mkdtemp(join(tmpdir(), 'zero-wip-'))
   const profile = await mkdtemp(join(tmpdir(), 'zero-profile-'))
+  const directory = join(profile, 'source-alias')
+  await symlink(source, directory, 'junction')
   const store = new Store(join(profile, 'state.sqlite'))
   const processes = new Processes(profile)
   const workspaces = new Workspaces(store, processes, profile)
@@ -26,6 +28,8 @@ test('fork includes staged, unstaged and untracked WIP without changing source',
     await writeFile(join(directory, 'new.txt'), 'untracked')
     const before = await workspaces.git(directory, ['status', '--porcelain'], signal)
     const snapshot = await workspaces.capture(directory, signal)
+    expect(snapshot.workspace).toBe(await realpath(source))
+    expect(snapshot.files.map((file) => file.path).sort()).toEqual(['new.txt', 'tracked.txt'])
     const fork = await workspaces.branch(snapshot.id, 'fixture', signal)
     expect(await readFile(join(fork.path, 'tracked.txt'), 'utf8')).toBe('unstaged')
     expect(await readFile(join(fork.path, 'new.txt'), 'utf8')).toBe('untracked')

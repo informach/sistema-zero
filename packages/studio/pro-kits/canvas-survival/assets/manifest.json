@@ -8,8 +8,8 @@
       "file": "player.png",
       "width": 640,
       "height": 64,
-      "bytes": 2381,
-      "sha256": "108abd7946d7c157e88721c5bffb3430b0d52f5b3e0bc9de2e15fa3c25f81cc4",
+      "bytes": 2331,
+      "sha256": "9bce3aca656b240bff1bdd98940fc9650d5f5268b11591bd4e40b0e4574567b5",
       "sprite": {
         "frameW": 64,
         "frameH": 64,
@@ -61,8 +61,8 @@
       "file": "seeker.png",
       "width": 640,
       "height": 64,
-      "bytes": 2468,
-      "sha256": "a984e7c9d51770d72bf7e5e187a497515f398ed33eefa059bce007272945d935",
+      "bytes": 2434,
+      "sha256": "2b6fd72204e5abf5b1f549f857892a62288b2977c25582b703970406249c6aa5",
       "sprite": {
         "frameW": 64,
         "frameH": 64,
@@ -114,8 +114,8 @@
       "file": "drifter.png",
       "width": 640,
       "height": 64,
-      "bytes": 1856,
-      "sha256": "91baa145322b74b9a78b9f9388e2cb1cf80582a43480cbed9166cb4bfafbdb93",
+      "bytes": 1830,
+      "sha256": "980936b38293d46ed347f640f8aa2db5fc8e9dba63c15112e61c362fcc7e1c79",
       "sprite": {
         "frameW": 64,
         "frameH": 64,

@@ -43,6 +43,7 @@ export class Workspaces {
     return (await readBounded(join(this.directory, 'logs', result.log), 2_000_000)).toString('utf8')
   }
   async capture(workspace: string, signal: AbortSignal) {
+    workspace = await realpath(workspace)
     const root = (await this.git(workspace, ['rev-parse', '--show-toplevel'], signal)).trim()
     if ((await realpath(root)) !== (await realpath(workspace)))
       throw new Error(`Workspace snapshots require the repository root; open ${root}`)

@@ -261,9 +261,11 @@ jobs:
 
   desktop-windows:
     name: desktop-windows
-    # Pin the native toolchain; windows-latest switched to Server 2025 / VS2026.
-    runs-on: windows-2022
+    runs-on: windows-latest
     timeout-minutes: 20
+    env:
+      TEMP: ${{ runner.temp }}
+      TMP: ${{ runner.temp }}
     steps:
       - uses: actions/checkout@v5
       - uses: oven-sh/setup-bun@v2
@@ -281,7 +283,7 @@ jobs:
       - name: Testar runtime nativo
         working-directory: packages/agent-runtime
         run: |
-          bunx playwright install chromium
+          bun ../agent-integrations/node_modules/playwright-core/cli.js install chromium
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           bun test
       - name: Testar desktop e mídia empacotada

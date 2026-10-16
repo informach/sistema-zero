@@ -78,7 +78,10 @@ export class Environments {
       Date.parse(lease.expiresAt) <= Date.now()
     )
       throw new Error('Environment lease is expired, revoked or not ready')
-    if (lease.workspace !== context.workspace || lease.owner !== context.run.sessionId)
+    if (
+      lease.workspace !== (await realpath(context.workspace)) ||
+      lease.owner !== context.run.sessionId
+    )
       throw new Error('Environment belongs to another workspace or session')
     return lease
   }
@@ -113,7 +116,7 @@ export class Environments {
             id: request.snapshotId,
           }),
         )
-        if (snapshot.workspace !== workspace)
+        if ((await realpath(snapshot.workspace)) !== workspace)
           throw new Error('Snapshot belongs to another workspace')
       }
       if (request.kind === 'container' && !request.template.image)

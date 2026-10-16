@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { deflateSync } from 'node:zlib'
+import { zlibSync } from 'fflate'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const check = process.argv.includes('--check')
@@ -51,7 +51,9 @@ function png(pixels: Uint8Array) {
   return Buffer.concat([
     Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
     chunk('IHDR', header),
-    chunk('IDAT', deflateSync(raw, { level: 9 })),
+    // The native zlib implementation differs between Bun/Node and OS builds.
+    // Pure JavaScript compression keeps the authored PNG bytes reproducible.
+    chunk('IDAT', zlibSync(raw, { level: 9 })),
     chunk('IEND', new Uint8Array()),
   ])
 }
