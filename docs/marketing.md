@@ -229,6 +229,18 @@ As três telas também existem no Electron, usando os mesmos serviços e permiss
   sistemazero.com.br do Cloudflare (o token de API atual é read-only para DNS). A produção
   só atende pelo domínio depois disso; o deploy de produção em si acontece no próximo merge
   para a `main` (PR), como nos demais serviços.
+
+### CORS para o upload editorial multipart
+
+O upload da bancada usa `content-md5`, além do `content-type` do fluxo anterior. A regra antiga de julho não cobre esse contrato. Antes de implantar, execute no pacote `marketing`, com as credenciais R2 do ambiente carregadas de forma segura:
+
+```powershell
+bun run storage:cors --bucket sistemazero-marketing --origin https://marketing.sistemazero.com.br
+```
+
+O comando consulta e mostra a diferença; código 1 indica configuração pendente. Após conferir bucket e origens, acrescente `--apply` para aplicar e verificar. Ele preserva origens existentes e regras externas, recusa origem com caminho/credencial/curinga e não faz nenhuma escrita por padrão. Não torna o bucket público. Em staging, use o bucket e a origem de staging. O teste local de 16/10 atualizou somente `testes-marketing`, incluindo `http://127.0.0.1:15334`; a configuração de produção não foi modificada. Conclua a validação com upload real pelo navegador, pois uma assinatura válida não dispensa CORS. Referência: [documentação oficial do R2](https://developers.cloudflare.com/r2/buckets/cors/).
+
+A biblioteca acompanha a verificação do arquivo automaticamente enquanto estiver aberta. Arquivo recebido ainda não significa arquivo confirmado; nenhum original é vinculado antes da confirmação. Se a conexão falhar, o envio permanece rastreável e pode ser retomado com o mesmo arquivo.
 ## Revisão de descrições na entrega
 
 A entrega do fluxo editorial encaminha o texto alternativo da edição aprovada junto de cada posição de mídia. O publicador Instagram envia `alt_text` na imagem do feed e em cada imagem do carrossel; Facebook envia `alt_text_custom` nas fotos. Vídeos conservam a descrição na edição, sem transformá-la em legenda nem enviar um parâmetro de imagem. Imagem repetida em posições diferentes pode ter descrições distintas. O legado sem descrição continua identificado por valor ausente; não inventar alt a partir do nome do arquivo. Uma imagem ausente invalida o carrossel inteiro antes de criar contêineres externos.

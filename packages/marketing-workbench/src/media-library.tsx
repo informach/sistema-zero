@@ -55,7 +55,8 @@ export function MediaLibrary({
     [preview, setPreview] = useState<AssetManifest | null>(null)
   const abort = useRef<AbortController | null>(null),
     live = useRef(true),
-    lock = useRef(false)
+    lock = useRef(false),
+    receivedId = useRef<string | null>(null)
   const editable = project.permissions.includes('edit')
   const refresh = useCallback(async () => {
     const [remote, local] = await Promise.allSettled([
@@ -80,6 +81,15 @@ export function MediaLibrary({
         error: transfer.error,
       }))
     setPage({ ...result, items: [...localOnly, ...result.items] })
+    const received = result.items.find((item) => item.manifest.id === receivedId.current)
+    if (received?.state === 'confirmed') {
+      receivedId.current = null
+      setProgress({ message: 'Arquivo confirmado', fraction: 1 })
+    } else if (received?.state === 'failed') {
+      receivedId.current = null
+      setProgress({ message: 'A conferência do arquivo precisa de atenção.', fraction: 1 })
+      setError(received.error ?? 'O servidor recusou o arquivo. Confira o original.')
+    }
     if (remote.status === 'rejected' || local.status === 'rejected')
       setError(
         [remote, local]
@@ -95,6 +105,18 @@ export function MediaLibrary({
       abort.current?.abort()
     }
   }, [refresh])
+  useEffect(() => {
+    if (busy || !page.items.some((item) => item.state === 'verifying')) return
+    // Verification happens on the server after the transfer. Poll only this
+    // visible dialog and only while verification is pending, never retry bytes.
+    const timer = setTimeout(() => {
+      if (lock.current) return
+      void refresh().catch((error) => {
+        if (live.current) setError(errorMessage(error))
+      })
+    }, 2000)
+    return () => clearTimeout(timer)
+  }, [busy, page.items, refresh])
   const task = async (work: () => Promise<unknown>, reload = true) => {
     if (lock.current) return
     lock.current = true
@@ -112,14 +134,20 @@ export function MediaLibrary({
     }
   }
   const received = (view: UploadView | null) => {
-    if (view)
+    if (view) {
+      receivedId.current = ['confirmed', 'failed'].includes(view.state) ? null : view.manifest.id
+      if (view.state === 'failed')
+        setError(view.error ?? 'O servidor recusou o arquivo. Confira o original.')
       setProgress({
         message:
           view.state === 'confirmed'
             ? 'Arquivo confirmado'
-            : 'Arquivo recebido. Aguarde a conferência do servidor e atualize a biblioteca.',
+            : view.state === 'failed'
+              ? 'A conferência do arquivo precisa de atenção.'
+              : 'Arquivo recebido. Aguardando a conferência do servidor.',
         fraction: 1,
       })
+    }
   }
   const attach = async (asset: AssetManifest) => {
     if (!target?.confirmed || target.pending.length || target.conflict)

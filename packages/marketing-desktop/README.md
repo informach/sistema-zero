@@ -37,6 +37,8 @@ bun run start -- --smoke-text
 
 `--smoke-render` usa `.cache/proof/source.mp4`; `scripts/prove-transcription.ts` usa `.cache/proof/fala-pt.wav`. Essas fixtures e os binários/modelos de teste não são versionados. Provas conectadas exigem o ambiente isolado de revisão; não apontá-las para produção. `--smoke-native-import --smoke-intelligence` confere as três telas analíticas com renderer/IPC/sessão/SQLite reais, usando a fixture criada por `scripts/prove-intelligence.ts`.
 
+`--smoke-native-import --smoke-recorded-video` usa a gravação de tela do P21 em um projeto técnico separado. Exercita upload web, preparação, corte/texto pelo Codex, render e reprodução do proxy compartilhado. Reaberturas conservam os pedidos concluídos, sem nova inferência. Exige a stack nativa conectada ao R2 de testes e seu CORS configurado; veja [a revisão e seus limites](../../.audits/marketing-l6-recorded-video-review-2026-10-16.md). A gravação não tem fala e não substitui o ensaio com celular.
+
 ## Dados e limites
 
 O servidor mantém revisões confirmadas e arquivos compartilhados. SQLite e arquivos locais preservam rascunhos, fila, transferências e resultados em andamento, separados por conta/origem. “Confirmado” só aparece após o servidor aceitar a operação. Conflitos exigem conciliação; reconectar não apaga rascunhos nem repete geração automaticamente.

@@ -28,6 +28,7 @@ import { proveMetricsLearning } from './metrics-learning-proof'
 import { proveOtherProducts, proveOtherReleases } from './other-products-proof'
 import { proveProductionBatch, proveProductionBatchLinks } from './production-batch-proof'
 import { proveProductionLink } from './production-link-proof'
+import { proveRecordedVideo } from './recorded-video-proof'
 import { proveWebProductionReport } from './shared-report-proof'
 import { proveStructuredImport } from './structure-proof'
 
@@ -83,6 +84,11 @@ export async function proveNativeImport(window: BrowserWindow, manager: DesktopW
     throw new Error('Identidade da revisão não corresponde ao perfil isolado')
   if (process.argv.includes('--smoke-intelligence'))
     return proveNativeIntelligence(window, manager, scope)
+  if (process.argv.includes('--smoke-recorded-video'))
+    return proveRecordedVideo(window, manager, scope, {
+      email: fixture.email,
+      password: fixture.password,
+    })
   if (process.argv.includes('--smoke-metrics-learning'))
     return proveMetricsLearning(window, manager, scope, {
       email: fixture.email,

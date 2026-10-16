@@ -2,6 +2,8 @@
 
 Estado: **aberto**, com provas nativas e integração transacional adicionais abaixo. Não equivale a entrega integral, liberação nem autorização para marcar os critérios restantes como concluídos. L6A e pendências anteriores permanecem abertas.
 
+Atualização integrada: upload web, preparação/derivados sincronizados, edição pelo Codex, render e Player web foram exercitados com a gravação de tela existente do P21. A prova corrigiu CORS de testes e atualização da confirmação na biblioteca. Ver [gravação integrada](marketing-l6-recorded-video-review-2026-10-16.md), que substitui a pendência histórica desse percurso e mantém os limites de celular/fala/piloto explícitos.
+
 ## Revisão adicional e evidências
 
 - Consolidação anterior ao L6C: desktop 30 testes/1339 asserções; teste do observador de orçamento de saída passou. TypeScript desktop passou após corrigir a captura de duração opcional na preparação. Smoke Electron reabriu a sessão, carregou bancada com 191 itens e biblioteca, conservou cookie HttpOnly e rejeitou identidade divergente; superfície web continuou sem Node/ponte nativa. Isso não prova transferência R2. Avanços de composição posteriores estão no registro L6C.
