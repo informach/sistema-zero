@@ -9,13 +9,16 @@ import {
   QUIZ_VERSION,
   validChoice,
 } from './engine'
+import { DEFAULT_HEADLINE, QUIZ_HEADLINES } from './entry-copy'
 import { COMMUNITY_QUESTIONS } from './questions'
+import { COMMUNITY_QUESTIONS_V4 } from './questions-v4'
 
 export const COMMUNITY_QUIZ: FunnelQuiz = {
   version: QUIZ_VERSION,
   presentation: 'comunidade',
   steps: COMMUNITY_QUESTIONS,
-  total: 8,
+  // Dez perguntas para todos; os perfis B, C e F ganham uma condicional.
+  total: 10,
   valueSchema: Object.fromEntries(
     COMMUNITY_QUESTIONS.map((step) => [
       step.key,
@@ -23,7 +26,7 @@ export const COMMUNITY_QUIZ: FunnelQuiz = {
         ? z
             .array(z.string().max(64))
             .min(1)
-            .max(4)
+            .max(step.maxSelections ?? step.opcoes.length)
             .refine((value) => validChoice(step, value))
         : z
             .string()
@@ -38,4 +41,7 @@ export const COMMUNITY_QUIZ: FunnelQuiz = {
     const profile = communityDecision(answers)?.profile
     return profile ? PROFILE_IDS[profile] : null
   },
+  headlines: Object.fromEntries(Object.entries(QUIZ_HEADLINES).map(([id, h]) => [id, h.label])),
+  defaultHeadline: DEFAULT_HEADLINE,
+  legacySteps: COMMUNITY_QUESTIONS_V4,
 }

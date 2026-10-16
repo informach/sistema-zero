@@ -310,8 +310,8 @@ do período contratado. O pré-checkout lembra de usar o mesmo e-mail do respons
 sobrescrevem somente a oferta e as respostas desta página; as quatro copies anteriores permanecem.
 Registro e validação: `docs/marketing/kids/comunidade-dos-criadores/implementacao-continuidade.md`.
 **Habilidades escolares (15/10/2026):** `/oferta/habilidades-escolares` é uma sexta apresentação
-da assinatura, em `habilidades-escolares.ts`/`habilidades-escolares-faq.ts`, sem novo perfil de
-quiz. A dor e a explicação ficam imediatamente abaixo do hero; `tourAfterSection: 'f01'` coloca
+da assinatura, em `habilidades-escolares.ts`/`habilidades-escolares-faq.ts`; desde a v5 do quiz
+(16/10/2026) é o destino do perfil F. A dor e a explicação ficam imediatamente abaixo do hero; `tourAfterSection: 'f01'` coloca
 o `ComunidadeTour.astro` depois dessa seção, mantendo a ordem anterior nas demais páginas.
 As quatro cartas (leitura, matemática, ciências e resolver problemas) ligam tarefas do projeto às
 habilidades escolares, com ícones por assunto; quatro cartas ficam 2×2 no computador.
@@ -335,30 +335,52 @@ com as quatro páginas e com `FAQ_VISUALS` já existem. Ver "Direção de arte d
 Os termos kids (`content/legal-kids.ts`) cobrem os DOIS produtos (Desafio: compra única; Comunidade:
 assinatura recorrente no cartão ou anual à vista, cancelamento sem multa, carência, garantia na
 contratação inicial e em cada nova contratação anual via Pix, Mural de visitante após o fim).
-**Quiz da Comunidade (v4, tráfego frio):** entrada e perguntas não pressupõem conhecer o produto.
-Resultado entrega orientação e atividade antes de apresentar a Comunidade e seus prints reais.
-Resultado desenvolve ações do filho, mecanismo e benefício; formato, apoio e dúvida são compostos sem repetição, com prints pertinentes. Perguntas seguem situação → dificuldade/dúvida → desejo → condições; IDs permanecem estáveis. Copy de entrada compartilhada em `quiz/entry-copy.ts`; perguntas de formato e equipamento tratam
-da rotina geral. `FunnelQuiz.version` inicia novo lead para respostas de versão anterior,
-preservando o lead antigo. Oito perguntas-base, QT/QB/QC condicionais, inputs nativos e
-respostas múltiplas em Q3/Q4. `QuizAnswers` aceita `string[]` no JSONB existente, sem migração.
-`FunnelQuiz.applyAnswer/isComplete` validam, limpam ramos inativos e recalculam o perfil. PATCH
-exige revisão e token da sessão, derivados da sessão atual; o cookie HttpOnly continua sendo a
-única origem da propriedade do lead. A gravação compara o JSON anterior atomicamente. Outro
-filho recebe novo lead. Empate/exploração/outra procura mantêm perfil null; destino geral não
-significa avatar A. Resultado SSR em componente próprio, com prints reais e link para uma das
-quatro ofertas; `/oferta/continuar` não é resultado. Feedback é persistido antes de confirmar.
-Metadados `perfilLabels` enumeram os perfis no admin, inclusive para resultados compostos sem
-blocos estáticos em `result.profiles`. Referência: `docs/marketing/kids/comunidade-dos-criadores/quiz/`.
-⚠️ O PATCH recusa com 409 `QUIZ_CONFLICT` a gravação num lead de OUTRA versão do quiz (aba
+**Quiz da Comunidade (v5, 16/10/2026, SPIN + resultado-ponte):** proposta aprovada e decisões em
+`docs/marketing/kids/comunidade-dos-criadores/quiz/revisao-copy-2026-10-16.md` e no README da pasta.
+O quiz é a fase ANTES da oferta: qualifica e sobe o nível de consciência. Nenhuma tela antes do
+resultado cita Comunidade/aula/curso/plataforma/preço nem apresenta criar jogos como solução ("jogo"
+só quando descreve a família); o teste `comunidade-quiz.test.ts` reprova. Dez perguntas em SPIN
+(`quiz/questions.ts`, chaves semânticas `crianca`…`sintese`, eventos `respondeu_comunidade_v5_*`) e
+UMA condicional nos perfis B (`ferramenta`), C (`desenho`) e F (`escola`). A P1 (filho/filha + idade)
+fica na própria entrada; `genero.ts` (`paraFeminino`) troca o texto para "ela" (copy escrita no
+masculino, sem adjetivo que muda com o gênero; o teste varre 1.080 combinações). A I6 é a
+calculadora (horas/dia × 365, em faixa; `stepOnScreen`). **Perfil = soma de pontos**
+(`engine.ts`): cena de casa 3, preocupação 2, cena desejada 2, frase-síntese 3; empate → síntese,
+depois cena; a cena desejada não tem opção neutra (sempre sai perfil); < 4 pontos = "caminho mais
+perto". Cinco perfis: A tempo de tela, B jogos, C desenho, D programação, **F habilidades escolares**
+(→ `/oferta/habilidades-escolares`). QT, estado misto e resultado sem perfil SAÍRAM. **Resultado**
+(`result.ts`/`result-copy.ts`/`ComunidadeResultado.astro`): título com o PROBLEMA → quadro "O que você
+contou" (espelho de cada resposta) → "Por que isso acontece" (só afirma a cena de casa se a família a
+escolheu) → "O que muda isso" (criação de jogos, ainda sem produto) → "Onde isso acontece"
+(Comunidade, UMA tela real, relatos de `relatos.ts`) → "Antes de seguir" (condições) → "O próximo
+passo" (botão; sem preço). Recados SÓ quando a necessidade é "a quem recorrer". Sem a atividade de
+casa. **Manchete A/B:** `quiz/entry-copy.ts` (`QUIZ_HEADLINES`); a rota lê `?manchete=tela` e a ilha
+grava a variante em `attribution.quizHeadline` (`lib/lead-attribution.ts`, campo opcional). **Admin:**
+Performance e Perfis aceitam `?quiz=atual` (versão pela definição gravada no lead, via
+`analytics_quiz_definitions`; quem foi direto à oferta não tem definição e fica de fora) e
+`?manchete=<id>` (`QuizScope` no repo + fake; manchete escolhida força `quiz=atual`; a padrão é
+`FunnelQuiz.defaultHeadline` e conta também os leads sem registro). O painel mostra os filtros
+quando o funil tem quiz versionado (`AdminFunnelInfo.quiz`) e só liga o recorte por padrão no funil
+com teste A/B. Os links do resultado de volta ao quiz mantêm a manchete
+(`quizPathWithHeadline`); "Responder pensando em outra criança" vai a `quiz#outra-crianca` e a ilha
+reinicia ali (com definição e manchete). "ele" na copy é SEMPRE a criança (o personagem usa o
+substantivo), senão `paraFeminino` erra; o botão usa `completesQuiz`. Performance nomeia as perguntas
+(`rotuloCurto`) e a condicional (`condicional`) não quebra a cadeia "da etapa"; leads da v4 ficam
+legíveis em Respostas por `legacySteps` (`questions-v4.ts`). Espelho editorial gerado:
+`bun scripts/espelho-quiz-comunidade.ts` → `copy/quiz-comunidade.md` e `copy/resultados-quiz.md` (o
+teste reprova espelho velho; v4 em `copy/historico/2026-10-16-quiz-v4/`). Mantido da v4:
+`FunnelQuiz.version` inicia novo lead para respostas de versão anterior (lead antigo preservado);
+PATCH exige revisão e token da sessão; outro filho recebe novo lead; feedback persistido antes de
+confirmar. ⚠️ O PATCH recusa com 409 `QUIZ_CONFLICT` a gravação num lead de OUTRA versão do quiz (aba
 aberta antes do deploy): o `applyAnswer` tomaria as respostas antigas por vazias e apagaria o lead.
 **Desenho do quiz (02/10/2026, "mesmo estilo da oferta"):** `comunidade-quiz.css` (`.cq`) usa as
 receitas da oferta (`kof-eyebrow`, `cap-chip` na cor da etapa via `STAGE_CHIP`, `kof-ladrilho`,
 `kof-banda`, `kof-marca`, `fundo-folha`, `bloco--lado|largo`) e não cria cor própria. Etapas com
-linha de ligação e check nas feitas; opções táteis com o degrau de 3 px. O resultado
-(`ComunidadeResultado.astro`) é uma sequência de capítulos: herói com o Zappy, orientação + a
-atividade de casa (carta fixa ao rolar no computador), a Comunidade em folha branca com o aviso
-amarelo das diferenças, o dia a dia em blocos com tela (cada tela UMA vez; texto que diz "abaixo"
-ou tela com mais de um quadro vai para `bloco--largo`), o convite no cartão azul e a opinião.
+linha de ligação e check nas feitas; opções táteis com o degrau de 3 px. Na v5 o resultado é: herói
+com o Zappy, o quadro "O que você contou" na banda navy (fixo ao rolar à direita no computador,
+antes do texto no celular), a Comunidade em folha branca com a tela (`bloco--largo` quando a tela
+tem mais de um quadro), os relatos, o aviso amarelo "Antes de seguir", o próximo passo no cartão azul
+e a opinião.
 
 **Redesenho visual da Comunidade (30/09/2026, "a oficina do criador"):** a copy v2 ficou intacta e a
 página ganhou o desenho da plataforma kids: topo navy com a logo kids e o preço, herói com a TELA

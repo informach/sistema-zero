@@ -2,7 +2,10 @@
 import { quizDefinition } from '../../../analytics/quiz-definition'
 import ComunidadeQuizLayout from '../../../components/funnel/ComunidadeQuizLayout.astro'
 import DesafioQuizLayout from '../../../components/funnel/DesafioQuizLayout.astro'
-import { QUIZ_ENTRY } from '../../../funnels/comunidade-dos-criadores/quiz/entry-copy'
+import {
+  QUIZ_ENTRY,
+  quizHeadlineId,
+} from '../../../funnels/comunidade-dos-criadores/quiz/entry-copy'
 import { DESAFIO_QUIZ_ENTRY } from '../../../funnels/desafio-primeiro-jogo/quiz/entry-copy'
 import { getFunnel } from '../../../funnels/registry'
 import ComunidadeQuiz from '../../../islands/ComunidadeQuiz'
@@ -25,6 +28,8 @@ Astro.response.headers.set('cache-control', 'no-store')
 
 const quiz = f.content.quiz
 const quizDefinitionId = quizDefinition(f)!.id
+// Teste A/B da manchete da Comunidade: `?manchete=tela` mostra a alternativa; o resto, o padrão.
+const headline = quizHeadlineId(Astro.url.searchParams.get('manchete'))
 // Ao concluir: vai ao diagnóstico (se o funil tiver) ou direto à oferta.
 const donePath = f.steps.resultado ? `${f.basePath}/resultado` : `${f.basePath}/oferta`
 
@@ -43,8 +48,8 @@ const q1Images =
     <noscript><p class="wrap cq-panel">Ative o JavaScript no navegador para responder ao quiz.</p></noscript>
   </DesafioQuizLayout>
 ) : quiz.presentation === 'comunidade' ? (
-  <ComunidadeQuizLayout title="Um caminho para seu filho criar com tecnologia | Sistema Zero" description={QUIZ_ENTRY.description} imagesBase={f.imagesBase} ogImage={new URL(`${f.imagesBase}/zappy-happy.webp`, Astro.site ?? Astro.url).toString()}>
-    <ComunidadeQuiz client:load funnel={f.key} basePath={f.basePath} imagesBase={f.imagesBase} quizDefinitionId={quizDefinitionId} />
+  <ComunidadeQuizLayout title={`${QUIZ_ENTRY.pageTitle} | Sistema Zero`} description={QUIZ_ENTRY.description} imagesBase={f.imagesBase} ogImage={new URL(`${f.imagesBase}/zappy-happy.webp`, Astro.site ?? Astro.url).toString()}>
+    <ComunidadeQuiz client:load funnel={f.key} basePath={f.basePath} imagesBase={f.imagesBase} quizDefinitionId={quizDefinitionId} headline={headline} />
     <noscript><p class="wrap cq-panel">Ative o JavaScript no navegador para responder ao quiz.</p></noscript>
   </ComunidadeQuizLayout>
 ) : (<BaseLayout

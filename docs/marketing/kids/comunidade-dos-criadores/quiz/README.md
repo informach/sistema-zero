@@ -1,75 +1,103 @@
-# Quiz da Comunidade: um ponto de partida para aprender criando
+# Quiz da Comunidade: o diagnóstico que leva à oferta certa
 
-Versão vigente: 4, revisada em 02/10/2026. Entrada: `/kids/comunidade-dos-criadores/quiz`; resultado: `/kids/comunidade-dos-criadores/resultado`. A [revisão de perguntas e argumentação](revisao-argumentacao-personalizada.md) aplica as orientações do Fluxo Criativo ao produto e desenvolve as explicações para cada família. A [direção para tráfego frio](revisao-trafego-frio.md) continua válida. O [registro da implementação](implementacao.md) conserva as verificações por versão.
+Versão vigente: 5 (`comunidade-orientacao-v5`), implementada em 16/10/2026. Entrada:
+`/kids/comunidade-dos-criadores/quiz`; resultado: `/kids/comunidade-dos-criadores/resultado`.
+A [revisão de copy e a proposta da v5](revisao-copy-2026-10-16.md) explicam o porquê de cada
+mudança e registram as decisões da dona.
 
-## Promessa pública
+## A direção (decisões de 16/10/2026)
 
-> **Descubra por onde seu filho pode começar a criar com tecnologia.**
->
-> Os jogos de que seu filho gosta, os desenhos que faz e as perguntas que traz podem ajudar vocês a escolher uma atividade. Conte o que você observa em casa e o que gostaria que ele aprendesse.
->
-> Você vai receber uma sugestão explicada a partir das suas respostas e uma ideia para experimentar com ele em casa.
+- **As perguntas seguem o método SPIN** e definem o perfil da família para levar à oferta certa.
+  A régua é o comando `lt-quiz` do fluxo criativo (segmentação, situação, problema, implicação
+  com calculadora, necessidade com visualização profunda e diagnóstico final).
+- **O quiz é a fase antes da oferta.** Qualifica e sobe o nível de consciência da família. Nenhuma
+  tela antes do resultado cita a Comunidade, aula, curso, plataforma ou preço, e a criação de jogos
+  não aparece como solução. "Jogo" só aparece quando descreve a família.
+- **O resultado é muito pessoal e é a ponte até a oferta.** Ele devolve as respostas da família
+  com as palavras dela, explica por que aquilo acontece, apresenta a criação de jogos como o que
+  muda isso e só então mostra a Comunidade. O botão leva à página do perfil. Preço só na oferta.
+- **A manchete diz o motivo de responder:** "Em três minutos, veja como usar o que seu filho já
+  gosta de fazer para ele aprender mais". A alternativa, pela dor do tempo de tela, aparece com
+  `?manchete=tela` (teste A/B).
+- **Filho ou filha** na primeira pergunta: depois dela, todo texto fala "ela" quando é uma menina.
+- **Sem a atividade "Experimentem em casa"** no resultado: ela tirava a família da ponte.
+- **Uma tela real por perfil** no resultado, a que mostra o mecanismo.
 
-Para a família, a entrega é uma orientação que pode ser usada antes da compra. Internamente, identificamos a motivação que deve orientar a apresentação da Comunidade. O quiz é identificado como iniciativa do Sistema Zero Kids e leva às ofertas do próprio produto.
+## As perguntas
 
-O visitante não precisa saber o que é a Comunidade. A abertura apresenta interesses e possibilidades, sem telas do produto. As perguntas sobre acompanhamento, computador, jogos e desenho exploram condições da família. O resultado entrega a orientação e uma experiência possível; depois apresenta a Comunidade por extenso, explica sua relação com a procura e mostra os prints reais. Diferenças e requisitos ficam explícitos antes do botão para a oferta.
+Dez para todos e uma condicional nos perfis B, C e F: criança e idade (na própria entrada), tempo
+de tela, computador, cena de casa, o que ele faz quando trava, a calculadora do tempo de tela
+(horas por dia × 365, em faixa), a preocupação, a cena desejada daqui a três meses, o que precisa
+estar garantido e a frase-síntese. A condicional confere o que pode impedir a compra: Roblox no B,
+atividade só de desenho no C, matéria atrasada no F. Texto completo no
+[espelho das perguntas](../copy/quiz-comunidade.md).
 
-## Estrutura recomendada
+## Como o perfil é definido
 
-- Oito perguntas principais, uma por tela.
-- Interesses da criança podem ser combinados; deixam de ser resumidos numa alternativa genérica de “vários”.
-- O responsável escolhe até dois objetivos prioritários. Só recebe uma pergunta de prioridade se marcar dois.
-- Até duas perguntas adicionais conferem expectativas sobre ferramenta de jogos e integração com desenho, quando esses temas aparecem nas respostas.
-- O percurso tem de oito a onze perguntas para a faixa da oferta. A duração em minutos será medida antes de anunciada.
-- Quatro resultados principais, com atividade de três passos, explicação da sugestão, apoio adequado às respostas, demonstração e link correspondente.
-- Resultados próprios para empate, procura aberta e objetivo fora das opções. São estados de orientação, sem criar novos avatares.
-- Resultado na tela sem exigir cadastro. Uma resposta por criança, com opção de refazer para outro filho.
+O perfil soma quatro respostas, uma de cada fase do SPIN: cena de casa (3 pontos), preocupação (2),
+cena desejada (2) e frase-síntese (3). Empate: vence a frase-síntese, depois a cena de casa. O
+segundo perfil ganha uma frase no resultado e não muda a oferta. A cena desejada não tem opção
+neutra, então sempre sai um perfil; com 3 pontos ou menos, o resultado avisa que é o caminho mais
+perto.
 
-O quiz distingue relato de interesse, prioridade adulta e condições práticas. Não mede inteligência, personalidade, talento, estilo de aprendizagem ou probabilidade de sucesso.
+| Perfil | Página do botão |
+| --- | --- |
+| A. Tempo de tela | /kids/comunidade-dos-criadores/oferta |
+| B. Criação de jogos | /kids/comunidade-dos-criadores/oferta/criacao-de-jogos |
+| C. Desenho e personagens | /kids/comunidade-dos-criadores/oferta/expressao-visual |
+| D. Programação | /kids/comunidade-dos-criadores/oferta/formacao-tecnologica |
+| F. Habilidades escolares | /kids/comunidade-dos-criadores/oferta/habilidades-escolares |
 
-## As quatro saídas principais
+A rota /oferta/continuar fica na jornada de quem já conhece a plataforma e não é destino do quiz.
 
-| Prioridade | Título do resultado | Página do botão |
-| --- | --- | --- |
-| A. Aprendizagem no tempo de tela permitido | Aprender criando no tempo de tela combinado | /kids/comunidade-dos-criadores/oferta |
-| B. Criação dos próprios jogos | Uma ideia de jogo que cabe numa primeira tentativa | /kids/comunidade-dos-criadores/oferta/criacao-de-jogos |
-| C. Expressão visual | Do desenho a uma ideia de jogo | /kids/comunidade-dos-criadores/oferta/expressao-visual |
-| D. Formação tecnológica complementar | Programação com um caminho para acompanhar | /kids/comunidade-dos-criadores/oferta/formacao-tecnologica |
+## O resultado
 
-Cada resultado explica o motivo e oferece uma experiência possível com papel e objetos simples. Depois, mostra como a plataforma oferece orientação e ferramentas para a criação digital. Não promete transformar o exercício caseiro em prova de aprendizagem ou em diagnóstico de adequação.
+Título com o problema → "O que você contou" (as respostas) → "Por que isso acontece" (a tese) →
+"O que muda isso" (a criação de jogos) → "Onde isso acontece" (a Comunidade, a tela e os relatos)
+→ "Antes de seguir" (só com condição) → "O próximo passo" (o botão). "Por que isso acontece" só
+afirma a cena de casa quando a família a escolheu. Recados aparece uma vez, só para quem disse que
+precisa de alguém a quem recorrer. Texto completo e três exemplos montados no
+[espelho dos resultados](../copy/resultados-quiz.md).
 
-A rota /oferta/continuar permanece na jornada de relacionamento de quem já conhece a plataforma. Não participa do mapa de avatares deste quiz.
+## Métricas no /admin
 
-## Como tratar uma família que se encaixa em mais de um perfil
+- **Performance:** as perguntas aparecem pelo nome curto. As perguntas extras ficam marcadas e não
+  quebram a cadeia de etapas.
+- **Performance e Perfis ganham dois filtros:**
+  - "Só quem abriu o quiz atual": tira as respostas da v4 e quem foi direto à oferta. Vem ligado
+    só na Comunidade (o funil com teste A/B); nos outros funis a visão continua completa.
+  - A manchete, para comparar o padrão com a de tela. Escolher uma manchete liga sempre o recorte
+    do quiz atual, para o A/B comparar só quem viu uma das duas.
+- **Respostas:** os leads da v4 continuam legíveis, com o rótulo "(quiz anterior)".
+- **Métricas:** cada versão do quiz tem a sua definição, então as perguntas da v5 aparecem
+  separadas.
 
-Uma criança pode falar de desenho e jogos. Ambos permanecem no resultado. O adulto pode escolher formação tecnológica e criação de jogos como objetivos e indicar que prefere explorar primeiro a sequência de aprendizagem. Nesse caso, o principal é D, jogos é motivo complementar e o exemplo pode usar um personagem.
+## Full review (16/10/2026)
 
-Se os dois objetivos tiverem o mesmo peso, não inventar um vencedor. O resultado combina os dois numa atividade e convida a conhecer a apresentação geral. Registrar perfil principal null, objetivos declarados preservados e destino padrão separadamente.
+Dois revisores (código e copy) e uma leitura própria; todos os achados foram corrigidos. Principais
+mudanças depois da implementação:
+- "ele" na copy é sempre a criança: o personagem e o enunciado usam o substantivo, para a troca
+  para "ela" não errar (o teste reprova).
+- Os títulos seguem as respostas: no tempo de tela, a resposta "Boa parte" na calculadora muda o
+  título; na escola, o título, o porquê e a solução mudam pela parte que mais trava (ciências usa
+  a tela do experimento); "aprendeu a repetir os passos" só aparece com a cena da lição.
+- A calculadora entra no argumento do tempo de tela; o título dela repete o tempo por dia.
+- O resultado de programação usa a tela do Estúdio: a da Jornada mostra postos "em construção".
+- "O próximo passo" fica colado ao botão; nunca dois relatos da mesma pessoa; o segundo perfil
+  vem em parágrafo próprio.
+- O botão diz "Ver o resultado" exatamente quando a resposta escolhida completa o quiz.
+- A caixa de opinião leva às perguntas da v5, e "Responder pensando em outra criança" abre a
+  sessão nova no próprio quiz (`#outra-crianca`). Os links de volta ao quiz mantêm a manchete
+  que a família viu.
+- As telas do resultado abrem ampliadas, como nas ofertas.
 
-A mesma distinção vale para a procura ainda aberta e para quem busca algo fora das opções. Ir para a página padrão não transforma essas famílias em avatar A. Isso preserva a qualidade da experiência e dos dados que usaremos para revisar os avatares.
+Fica para a dona: a tela da Jornada com postos "em construção" ainda aparece nas ofertas A e D, e
+André e Débora aparecem no resultado como Aluno e Aluna, sem o contexto dos fundadores.
 
-## O que melhorou na revisão
+## Histórico
 
-Na v4, a conversa começa pela situação observada, passa pela dificuldade e pela dúvida, apresenta desejos em cenas concretas e confere as condições para começar. Cada alternativa de rotina participa da orientação. O resultado explica o que o filho faz, como o recurso ajuda e por que isso importa, com prints junto do argumento. Formato e apoio são desenvolvidos em sequência; uma dúvida sobre ajuda não produz um segundo cartão repetindo a resposta.
-
-A repetição de perguntas sobre prioridade foi reduzida. A classificação deixou de usar um desempate arbitrário. Interesses combinados passaram a gerar explicações próprias. A copy deixou de pressupor uso prévio de computador e a qualificação agora distingue preferência por ao vivo de exigência.
-
-Os resultados passaram a oferecer experiências que o responsável consegue propor a partir do próprio texto. As demonstrações são descritas como telas reais da plataforma, sem insinuar acesso gratuito a uma aula completa. Exigências de ferramenta ou desenho também são conferidas quando aparecem como interesse secundário, independentemente da página escolhida.
-
-## Materiais para revisão
-
-1. [Perguntas e alternativas](../copy/quiz-comunidade.md).
-2. [Resultados e textos condicionais](../copy/resultados-quiz.md).
-3. [Lógica, destinos, prints e cenários de validação](logica-e-validacao.md).
-4. [Pesquisa e decisões de estratégia](pesquisa-e-estrategia.md).
-5. [Problemas encontrados, correções e conferências da versão 2](revisao-proposta.md).
-6. [Dois exemplos completos da versão 2](exemplos-de-resultado.md), mantidos como histórico editorial.
-7. [Revisão e implementação da versão 3 para tráfego frio](revisao-trafego-frio.md).
-8. [Revisão de perguntas e argumentação da versão 4](revisao-argumentacao-personalizada.md).
-9. [Onze exemplos completos da versão 4](exemplos-de-resultado-v4.md), incluindo adolescente, tentativa anterior de criação e desenho sem jogos.
-
-## Alternativas e limites
-
-O seletor direto de quatro objetivos continua sendo uma opção mais curta de navegação, mas entrega pouca orientação. O quiz proposto justifica a etapa adicional pela atividade e pelos cuidados personalizados. Um teste com rótulos de personalidade exigiria conclusões que nossas respostas não sustentam.
-
-A revisão mantém as quatro motivações como hipóteses comerciais. Como ainda não há clientes pagantes, não temos base para declarar precisão de classificação ou ganho de vendas. A nova simulação verifica coerência das regras; o protocolo de entrevistas e observação verificará compreensão e utilidade com famílias.
+Os espelhos da v4 e os onze exemplos completos dela estão em
+[copy/historico/2026-10-16-quiz-v4](../copy/historico/2026-10-16-quiz-v4/). Revisões anteriores:
+[v2](revisao-proposta.md) ([exemplos](exemplos-de-resultado.md)), [v3 para tráfego frio](revisao-trafego-frio.md),
+[v4](revisao-argumentacao-personalizada.md). [Pesquisa e estratégia](pesquisa-e-estrategia.md) e
+[lógica e validação](logica-e-validacao.md) descrevem as versões anteriores.

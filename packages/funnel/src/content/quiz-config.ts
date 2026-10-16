@@ -42,6 +42,10 @@ interface StepBase {
   titulo: string
   /** Aviso/subtítulo opcional renderizado abaixo do título (ex.: P7). */
   subtitulo?: string
+  /** Nome curto da pergunta na aba Performance do /admin. Ausente: "Pergunta N". */
+  rotuloCurto?: string
+  /** Pergunta que só aparece em alguns percursos: no /admin ela não quebra a cadeia de etapas. */
+  condicional?: boolean
 }
 
 export interface MultiplaEscolhaStep extends StepBase {
@@ -58,7 +62,8 @@ export interface MultiplaEscolhaStep extends StepBase {
 /** Explicit confirmation, with optional multiple/exclusive choices. */
 export interface SelecaoStep extends StepBase {
   tipo: 'selecao'
-  etapa: 'filho' | 'objetivos' | 'comeco'
+  /** Etapa da barra do quiz. v5 da Comunidade: rotina → casa → desejo (v4: filho/objetivos/começo). */
+  etapa: 'rotina' | 'casa' | 'desejo' | 'filho' | 'objetivos' | 'comeco'
   opcoes: Opcao[]
   multiple?: boolean
   maxSelections?: number

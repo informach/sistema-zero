@@ -1,6 +1,6 @@
 # Implementação do quiz da Comunidade
 
-Versão vigente: v4, com perguntas e argumentação revistas em 02/10/2026. A [revisão correspondente](revisao-argumentacao-personalizada.md) registra as alterações e verificações, e os [onze exemplos completos](exemplos-de-resultado-v4.md) mostram a composição atual. A segunda revisão também corrige o escopo do rodapé e adapta os convites à situação da família. A [v3](revisao-trafego-frio.md) definiu a entrada para tráfego frio. As entregas e contagens abaixo documentam a implementação original da v2.
+Versão vigente: v5 (16/10/2026), descrita no [README](README.md) e na [revisão e proposta](revisao-copy-2026-10-16.md). O que segue é o histórico das versões anteriores. A v4 teve perguntas e argumentação revistas em 02/10/2026. A [revisão correspondente](revisao-argumentacao-personalizada.md) registra as alterações e verificações, e os [onze exemplos completos](../copy/historico/2026-10-16-quiz-v4/exemplos-de-resultado-v4.md) mostram a composição da v4. A segunda revisão também corrige o escopo do rodapé e adapta os convites à situação da família. A [v3](revisao-trafego-frio.md) definiu a entrada para tráfego frio. As entregas e contagens abaixo documentam a implementação original da v2.
 
 Especificação: [proposta v2](logica-e-validacao.md), autorizada para implementação em 01/10/2026. Implementado localmente em 01/10/2026, preservando as alterações anteriores das ofertas. Sem publicação ou deploy nesta etapa.
 

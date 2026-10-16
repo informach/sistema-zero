@@ -4,6 +4,7 @@ import ComunidadeResultado from '../../../components/funnel/ComunidadeResultado.
 import DesafioQuizLayout from '../../../components/funnel/DesafioQuizLayout.astro'
 import DesafioResultado from '../../../components/funnel/DesafioResultado.astro'
 import { quizRevision } from '../../../funnels/comunidade-dos-criadores/quiz/engine'
+import { DEFAULT_HEADLINE } from '../../../funnels/comunidade-dos-criadores/quiz/entry-copy'
 import { buildCommunityResult } from '../../../funnels/comunidade-dos-criadores/quiz/result'
 import { buildDesafioResult } from '../../../funnels/desafio-primeiro-jogo/quiz/result'
 import { leadBelongsToFunnel } from '../../../funnels/lead-scope'
@@ -38,15 +39,21 @@ const lead = await repo.getLead(leadId)
 if (!lead) return Astro.redirect(quizUrl)
 if (!leadBelongsToFunnel(lead.funnel, f.key)) return Astro.redirect(quizUrl)
 
-// Resultado aberto sem o quiz respondido: volta pro quiz (sem resultado vazio).
+// Resultado aberto sem o quiz respondido: volta pro quiz (sem resultado vazio), mantendo a
+// manchete do teste A/B que a família viu (Comunidade).
 const answers = lead.quizAnswers ?? {}
-if (!isQuizComplete(quiz, answers)) return Astro.redirect(quizUrl)
+const headline = lead.attribution?.quizHeadline
+const leadQuizUrl =
+  headline && headline !== DEFAULT_HEADLINE
+    ? `${quizUrl}${quizUrl.includes('?') ? '&' : '?'}manchete=${encodeURIComponent(headline)}`
+    : quizUrl
+if (!isQuizComplete(quiz, answers)) return Astro.redirect(leadQuizUrl)
 
 const communityResult = quiz.presentation === 'comunidade' ? buildCommunityResult(answers) : null
 const desafioResult = quiz.presentation === 'desafio' ? buildDesafioResult(answers) : null
 if (quiz.presentation === 'desafio' && !desafioResult) return Astro.redirect(quizUrl)
 const desafioPrice = desafioResult ? await desafioQuizPrice(f) : null
-if (quiz.presentation === 'comunidade' && !communityResult) return Astro.redirect(quizUrl)
+if (quiz.presentation === 'comunidade' && !communityResult) return Astro.redirect(leadQuizUrl)
 
 await repo.insertEvent(
   lead.id,
@@ -57,6 +64,8 @@ await repo.insertEvent(
         quiz_version: answers._quiz_version,
         revision: quizRevision(answers),
         perfil_principal: communityResult.decision.profile,
+        perfil_secundario: communityResult.decision.secondary,
+        pontos: communityResult.decision.scores,
         estado: communityResult.decision.state,
         adequacao: communityResult.decision.adequacy,
         destino: communityResult.offerPath,
@@ -107,7 +116,7 @@ const fecho = rc(result.fecho)
   </DesafioQuizLayout>
 ) : communityResult ? (
   <ComunidadeQuizLayout title="Seu ponto de partida | Sistema Zero" description={f.seoDescription} imagesBase={f.imagesBase} ogImage={funnelOgImage(f, Astro.site ?? Astro.url)}>
-    <ComunidadeResultado result={communityResult} imagesBase={f.imagesBase} basePath={f.basePath} funnel={f.key} revision={quizRevision(answers)} sessionToken={quizSessionToken(lead.id)} />
+    <ComunidadeResultado result={communityResult} imagesBase={f.imagesBase} basePath={f.basePath} funnel={f.key} revision={quizRevision(answers)} sessionToken={quizSessionToken(lead.id)} headline={lead.attribution?.quizHeadline} />
   </ComunidadeQuizLayout>
 ) : bloco && (<BaseLayout
   title={`Seu mapa de criação | ${f.productName}`}

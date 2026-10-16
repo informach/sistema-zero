@@ -11,13 +11,20 @@ interface Step {
 
 const pct = (n: number) => `${(n * 100).toFixed(1)}%`
 
-export default function PerformancePanel({ funnel }: { funnel: string }) {
+/** `scope`: query do recorte do quiz (`quiz=atual`, `manchete=<id>`), montada pelo painel. */
+export default function PerformancePanel({
+  funnel,
+  scope = '',
+}: {
+  funnel: string
+  scope?: string
+}) {
   const [steps, setSteps] = useState<Step[] | null>(null)
   const [total, setTotal] = useState(0)
   const [erro, setErro] = useState(false)
 
   useEffect(() => {
-    const qs = funnel ? `?funnel=${encodeURIComponent(funnel)}` : ''
+    const qs = funnel ? `?funnel=${encodeURIComponent(funnel)}${scope ? `&${scope}` : ''}` : ''
     apiGet<{ total: number; steps: Step[] }>(`/api/admin/funnel${qs}`)
       .then((d) => {
         setTotal(d.total)
@@ -30,7 +37,7 @@ export default function PerformancePanel({ funnel }: { funnel: string }) {
         }
         setErro(true)
       })
-  }, [funnel])
+  }, [funnel, scope])
 
   if (erro) return <p className="text-red-400">Falha ao carregar o funil.</p>
   if (!steps) return <p className="text-muted">Carregando…</p>
