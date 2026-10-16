@@ -2,6 +2,8 @@
 
 Data: 15/10/2026. Objetivo: fundamentar a [proposta de melhorias do Pro](../docs/plans/2026-10-15-polaris-estudio-pro-proposta.md).
 
+Atualização: a proposta foi revisada para o público de 9 a 14 anos. O [review da versão 2](../docs/plans/2026-10-15-polaris-estudio-pro-review.md) acrescenta a análise de organização do editor, materiais, contratos de seleção, hosts e a reprodução de renomeação sem atualização de imports no Pro. As constatações abaixo sobre o Polaris permanecem como evidência da análise original.
+
 ## Escopo e método
 
 Inventário do Polaris; leitura dos fluxos de editor, assistência, persistência, preview, jobs e GitHub; comparação com os módulos correspondentes do Estúdio Pro. Busca de chamadas e contratos para distinguir recursos existentes de oportunidades. Reprodução em memória de `buildFileTree`, importada do repositório original com Bun. Consulta de documentação oficial para as alternativas técnicas.
