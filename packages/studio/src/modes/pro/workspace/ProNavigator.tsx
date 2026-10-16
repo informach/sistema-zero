@@ -40,7 +40,10 @@ export function ProNavigator({
   const [query, setQuery] = useState('')
   const searchInput = useRef<HTMLInputElement>(null)
   const inputId = useId()
-  const results = useMemo(() => searchProFiles(tree, query, mode), [tree, query, mode])
+  const results = useMemo(
+    () => (view === 'search' ? searchProFiles(tree, query, mode) : { items: [], truncated: false }),
+    [view, tree, query, mode],
+  )
   useEffect(() => {
     if (!searchRequest) return
     setView('search')
