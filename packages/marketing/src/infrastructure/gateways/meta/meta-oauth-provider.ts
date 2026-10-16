@@ -73,6 +73,7 @@ export interface MetaOAuthConfig {
   appSecret: string
   /** Versão pinada da Graph API (ex.: v25.0). */
   graphVersion: string
+  engagementEnabled?: boolean
 }
 
 export class MetaOAuthProvider implements OAuthProvider {
@@ -89,7 +90,15 @@ export class MetaOAuthProvider implements OAuthProvider {
     url.searchParams.set('response_type', 'code')
     url.searchParams.set('state', input.state)
     // Meta usa vírgula como separador de escopos.
-    url.searchParams.set('scope', META_SCOPES.join(','))
+    url.searchParams.set(
+      'scope',
+      [
+        ...META_SCOPES,
+        ...(this.config.engagementEnabled
+          ? ['instagram_manage_comments', 'instagram_manage_messages', 'pages_manage_metadata']
+          : []),
+      ].join(','),
+    )
     return url.toString()
   }
 

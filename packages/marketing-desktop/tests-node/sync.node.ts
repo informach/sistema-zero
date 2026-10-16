@@ -356,7 +356,7 @@ test('protocolo incompatível bloqueia a fila; revogação mantém pendências v
     const incompatible = new WorkspaceSyncEngine(f.store, {
       async request() {
         calls++
-        return { protocol: 2, minimumDesktopProtocol: 2 }
+        return { protocol: 3, minimumDesktopProtocol: 3 }
       },
     })
     assert.equal((await incompatible.synchronize()).phase, 'blocked')

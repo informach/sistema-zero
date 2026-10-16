@@ -323,6 +323,7 @@
         "@fontsource/plus-jakarta-sans": "^5.2.8",
         "@sentry/bun": "^10.56.0",
         "@sistemazero/core": "workspace:*",
+        "@sistemazero/marketing-contracts": "workspace:*",
         "@sistemazero/ui": "workspace:*",
         "@tailwindcss/vite": "^4.3.0",
         "astro": "^6.4.2",

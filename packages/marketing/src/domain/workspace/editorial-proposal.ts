@@ -82,7 +82,19 @@ export async function editorialBatch(
           'O resultado tentou alterar um item fora da seleção',
         )
       const doc = changed.get(change.entityId) ?? source.document
-      if (doc.kind === 'component' && (change.field === 'body' || change.field === 'title'))
+      if (
+        doc.kind === 'piece' &&
+        doc.conversation &&
+        (change.field === 'conversationOpening' || change.field === 'conversationOffer')
+      )
+        changed.set(change.entityId, {
+          ...doc,
+          conversation: {
+            ...doc.conversation,
+            [change.field === 'conversationOpening' ? 'opening' : 'offer']: change.value,
+          },
+        })
+      else if (doc.kind === 'component' && (change.field === 'body' || change.field === 'title'))
         changed.set(change.entityId, {
           ...doc,
           [change.field]: change.value,

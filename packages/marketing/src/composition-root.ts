@@ -4,6 +4,7 @@ import { AccountService } from './application/accounts/account.service'
 import { OAuthService } from './application/accounts/oauth.service'
 import { AiCopyService } from './application/ai/ai-copy.service'
 import { ContentService } from './application/contents/content.service'
+import { EngagementService } from './application/engagement/engagement.service'
 import { IdeaService } from './application/ideas/idea.service'
 import { PromoteIdeaService } from './application/ideas/promote-idea.service'
 import { DriveImportService } from './application/media/drive.service'
@@ -38,9 +39,11 @@ import {
 } from './infrastructure/config/env'
 import { OpenRouterCopyClient } from './infrastructure/gateways/ai/openrouter-copy-client'
 import { GatewayStaffDirectory } from './infrastructure/gateways/auth/gateway-staff-directory'
+import { GatewayCommercialReportSource } from './infrastructure/gateways/funnel/commercial-report-source'
 import { GoogleDriveClient } from './infrastructure/gateways/google/google-drive-client'
 import { GoogleOAuthProvider } from './infrastructure/gateways/google/google-oauth-provider'
 import { GatewayMessagingClient } from './infrastructure/gateways/messaging/gateway-messaging-client'
+import { MetaEngagementProvider } from './infrastructure/gateways/meta/engagement-provider'
 import { MetaClient } from './infrastructure/gateways/meta/meta-client'
 import { MetaExternalResolver } from './infrastructure/gateways/meta/meta-external-resolver'
 import { MetaMetricsSource } from './infrastructure/gateways/meta/meta-metrics-source'
@@ -62,6 +65,9 @@ import { DrizzleCommentRepository } from './infrastructure/persistence/drizzle/c
 import { DrizzleContentRepository } from './infrastructure/persistence/drizzle/content.repository'
 import { createDbConnection, type DbConnection } from './infrastructure/persistence/drizzle/db'
 import { DrizzleDeliveryRepository } from './infrastructure/persistence/drizzle/delivery.repository'
+import { DrizzleEngagementRepository } from './infrastructure/persistence/drizzle/engagement.repository'
+import { DrizzleEngagementConversations } from './infrastructure/persistence/drizzle/engagement-conversations.repository'
+import { DrizzleEngagementEngine } from './infrastructure/persistence/drizzle/engagement-engine.repository'
 import { DrizzleExecutionRepository } from './infrastructure/persistence/drizzle/execution.repository'
 import { DrizzleIdeaRepository } from './infrastructure/persistence/drizzle/idea.repository'
 import { DrizzleImportRepository } from './infrastructure/persistence/drizzle/import.repository'
@@ -75,6 +81,7 @@ import { DrizzleSocialAccountRepository } from './infrastructure/persistence/dri
 import { DrizzleWorkspaceRepository } from './infrastructure/persistence/drizzle/workspace.repository'
 import { DrizzleWorkspaceAssetsRepository } from './infrastructure/persistence/drizzle/workspace-assets.repository'
 import { createSecretBox } from './infrastructure/security/secret-box'
+import { EngagementWorker } from './infrastructure/workers/engagement-worker'
 import { MediaArchiverWorker } from './infrastructure/workers/media-archiver-worker'
 import { MediaTransferWorker } from './infrastructure/workers/media-transfer-worker'
 import { MetricsWorker } from './infrastructure/workers/metrics-worker'
@@ -511,7 +518,53 @@ export function createApplication(env: Env): Application {
     return { ready: checks.db === 'ok', checks }
   }
 
+  const engagementReady = Boolean(
+    secretBox &&
+      metaCfg &&
+      env.META_ENGAGEMENT_VERIFY_TOKEN &&
+      env.MARKETING_ENGAGEMENT_IDENTITY_KEY,
+  )
+  const engagementSending = engagementReady && env.MARKETING_ENGAGEMENT_SEND_ENABLED
+  const engagementDirectory = new GatewayStaffDirectory(env.GATEWAY_URL, env.MARKETING_HMAC_SECRET)
+  const engagementEngine =
+    secretBox && env.MARKETING_ENGAGEMENT_IDENTITY_KEY
+      ? new DrizzleEngagementEngine(
+          db,
+          secretBox,
+          env.MARKETING_ENGAGEMENT_IDENTITY_KEY,
+          env.META_GRAPH_VERSION,
+          engagementSending,
+          engagementDirectory,
+        )
+      : null
+  const engagementWorker =
+    engagementEngine && metaCfg
+      ? new EngagementWorker(
+          engagementEngine,
+          new MetaEngagementProvider(accountService, env.META_GRAPH_VERSION),
+          logger,
+        )
+      : null
   const server = createServer({
+    engagement: {
+      engagement: new EngagementService(
+        new DrizzleEngagementRepository(db, env.META_GRAPH_VERSION, engagementSending),
+        new DrizzleEngagementConversations(db, env.META_GRAPH_VERSION, engagementSending),
+        engagementDirectory,
+        new GatewayCommercialReportSource(env.GATEWAY_URL, env.MARKETING_HMAC_SECRET),
+      ),
+      internalToken: env.INTERNAL_API_TOKEN,
+    },
+    engagementWebhook:
+      engagementEngine && metaCfg && env.META_ENGAGEMENT_VERIFY_TOKEN
+        ? {
+            engine: engagementEngine,
+            appSecret: metaCfg.appSecret,
+            appId: metaCfg.appId,
+            verifyToken: env.META_ENGAGEMENT_VERIFY_TOKEN,
+            internalToken: env.INTERNAL_API_TOKEN,
+          }
+        : undefined,
     execution: {
       execution: new ExecutionService(new DrizzleExecutionRepository(db)),
       internalToken: env.INTERNAL_API_TOKEN,
@@ -647,6 +700,7 @@ export function createApplication(env: Env): Application {
         )
       }, env.RETENTION_CLEANUP_INTERVAL_MS)
       publisherWorker.start()
+      engagementWorker?.start()
       mediaTransferWorker.start()
       mediaArchiverWorker?.start()
       tokenRefreshWorker.start()
@@ -661,6 +715,7 @@ export function createApplication(env: Env): Application {
       // Workers param ANTES do pool fechar (senão um tick em voo estoura no banco).
       await Promise.all([
         publisherWorker.stop(),
+        engagementWorker?.stop() ?? Promise.resolve(),
         mediaTransferWorker.stop(),
         mediaArchiverWorker?.stop() ?? Promise.resolve(),
         tokenRefreshWorker.stop(),

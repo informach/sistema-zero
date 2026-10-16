@@ -27,5 +27,16 @@ export async function quarantineRestoredWork(connection: DbConnection) {
       version = version + 1, updated_at = now() where status in ('importing','archiving')`
     await tx`update marketing.social_accounts set status = 'disabled', version = version + 1,
       last_refresh_error = 'Instância restaurada: reconecte a conta após a conferência do ambiente.', updated_at = now() where status = 'connected'`
+    // Older archives legitimately predate this additive feature. Never replay a restored DM queue.
+    const [engagement] = await tx`select to_regclass('marketing.engagement_channels') as existing`
+    if (engagement?.existing) {
+      await tx`update marketing.engagement_channels set enabled = false, proof = null, version = version + 1, updated_at = now()`
+      await tx`update marketing.engagement_activations set state = 'paused', reason = 'Backup restaurado: conferir histórico externo e solicitar nova ativação', verified_at = null, version = version + 1 where state <> 'retired'`
+      await tx`update marketing.engagement_outbound set state = 'cancelled', error = 'Pendência anterior à restauração' where state = 'pending'`
+      await tx`update marketing.engagement_outbound set state = 'uncertain', error = 'Backup não comprova resultado externo', lease_until = null where state = 'sending'`
+      await tx`update marketing.engagement_inbound set state = 'ignored', reason = 'Entrada anterior à restauração; não reprocessar' where state = 'pending'`
+      await tx`update marketing.engagement_journeys set previous_state = state, state = 'human' where state <> 'closed'`
+      await tx`update marketing.engagement_conversations set state = 'waiting-human', version = version + 1 where suppression is null`
+    }
   })
 }

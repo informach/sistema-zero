@@ -653,6 +653,22 @@ const config: GatewayConfigInput = {
         { type: 'path-rewrite', options: { addPrefix: '/api' } },
       ],
     },
+    {
+      id: 'funnel-marketing-attribution',
+      methods: ['POST'],
+      pathPattern: '/funnel/internal/marketing-attribution',
+      service: 'funnel',
+      auth: { required: true, mode: 'any', strategies: ['hmac'], allowedConsumers: ['marketing'] },
+      maxBodyBytes: 8192,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+      transforms: [
+        {
+          type: 'header-inject',
+          options: { headers: { 'x-internal-token': FUNNEL_INTERNAL_TOKEN } },
+        },
+        { type: 'path-rewrite', options: { stripPrefix: '/funnel', addPrefix: '/api' } },
+      ],
+    },
 
     // Kids: conferência da sessão pelo BFF. ⚠️ Assinada por HMAC (consumer `member-shell`):
     // com principal autenticado ela sai do limite ANÔNIMO global por IP, que derrubava
@@ -4071,6 +4087,17 @@ const config: GatewayConfigInput = {
       auth: 'public',
       transforms: marketingInternalTransforms,
       rateLimit: { max: 20, windowMs: 60_000, by: 'ip' },
+    },
+    // Meta validates the GET token and POST signature in marketing using the original bytes.
+    {
+      id: 'marketing-instagram-webhook',
+      methods: ['GET', 'POST'],
+      pathPattern: '/marketing/webhooks/instagram',
+      service: 'marketing',
+      auth: 'public',
+      transforms: marketingInternalTransforms,
+      maxBodyBytes: 512 * 1024,
+      rateLimit: { max: 600, windowMs: 60_000, by: 'ip' },
     },
 
     // ── Helpdesk (@sistemazero/helpdesk) ─────────────────────────────────────

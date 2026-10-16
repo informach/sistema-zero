@@ -5,7 +5,15 @@ import { batchResultSchema, editorialFormatSchema, mediumSchema } from './editor
 const textChangeSchema = z
   .object({
     entityId: idSchema,
-    field: z.enum(['body', 'caption', 'cta', 'alt', 'title']),
+    field: z.enum([
+      'body',
+      'caption',
+      'cta',
+      'alt',
+      'title',
+      'conversationOpening',
+      'conversationOffer',
+    ]),
     value: z.string().max(100000),
   })
   .strict()

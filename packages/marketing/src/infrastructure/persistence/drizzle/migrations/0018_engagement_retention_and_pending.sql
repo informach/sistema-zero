@@ -1,0 +1,2 @@
+ALTER TABLE "marketing"."engagement_conversations" ADD COLUMN "suppressed_at" timestamp with time zone;--> statement-breakpoint
+ALTER TABLE "marketing"."engagement_inbound" ADD COLUMN "available_at" timestamp with time zone DEFAULT now() NOT NULL;
