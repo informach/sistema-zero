@@ -34,7 +34,7 @@ export function proSourceInstructions(files: ExportFileMap, preferredScript?: st
     )
   if (!hasScript('build'))
     warnings.push(
-      'Este projeto não declara o script build. O ZIP contém a fonte; a etapa de publicação precisa ser definida no projeto.',
+      'Este projeto não declara o script build. O ZIP contém a fonte; a publicação precisa ser configurada no projeto.',
     )
   const locks = [
     { manager: 'npm', paths: ['npm-shrinkwrap.json', 'package-lock.json'] },
