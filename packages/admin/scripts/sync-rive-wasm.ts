@@ -14,7 +14,7 @@
  * caminho de origem, que é a peça que quebraria em silêncio se o pacote mudasse
  * o layout dele (aí a prévia ficaria em branco, sem erro nenhum).
  */
-import { copyFileSync, existsSync, mkdirSync, statSync } from 'node:fs'
+import { copyFileSync, existsSync, mkdirSync, realpathSync, statSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 
@@ -23,12 +23,13 @@ import path from 'node:path'
 // a resolução parte do react-canvas. Idêntico ao do community-kids de propósito:
 // os dois pacotes resolvem o binário da PRÓPRIA versão instalada.
 const requireDaqui = createRequire(`${import.meta.dir}/../package.json`)
-const raizReact = path.dirname(requireDaqui.resolve('@rive-app/react-canvas/package.json'))
-const requireDoReact = createRequire(`${raizReact}/package.json`)
+const raizReact = path.dirname(
+  realpathSync(requireDaqui.resolve('@rive-app/react-canvas/package.json')),
+)
 
 /** Origem: o `rive.wasm` que veio com a versão instalada do runtime. */
 export const ORIGEM = path.join(
-  path.dirname(requireDoReact.resolve('@rive-app/canvas/package.json')),
+  path.dirname(requireDaqui.resolve('@rive-app/canvas/package.json', { paths: [raizReact] })),
   'rive.wasm',
 )
 /** Destino servido pelo Next. O `module-rive-preview` aponta o loader para cá. */
