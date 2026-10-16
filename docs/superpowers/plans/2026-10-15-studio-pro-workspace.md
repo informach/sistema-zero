@@ -109,7 +109,9 @@ Arquivos: contratos builder em Core; executor/rotas em member-shell; serviço/re
 - [x] Validar fixtures de kit Canvas, 3D, React, convertido e customizado; isolamento por instância/perfil, observer e exportação.
 - [x] Documentar evidências e limites externos (pesquisa com crianças e implantação não fazem parte de um merge local).
 - [x] Reconsultar staging. Incorporar novos commits se necessário, resolver conflitos e repetir verificações afetadas.
-- [ ] Criar commits do trabalho revisado; fazer merge na staging local preservando alterações de outros trabalhos e verificar ancestry/status.
+- [x] Criar commits do trabalho revisado; fazer merge na staging local preservando alterações de outros trabalhos e verificar ancestry/status.
+
+Implementação: `77c7e43b7`. Merge local em staging: `835ea35e2`. A árvore do merge é idêntica à implementação validada e a ancestry foi confirmada. O diff das cinco alterações pendentes de outros trabalhos em staging conservou exatamente o mesmo SHA-256 antes/depois do merge. Relatório completo: `.audits/studio-pro-workspace-2026-10-15/full-review.md`. Sem push ou deploy.
 
 Comandos base (executar a partir do pacote correspondente):
 ```powershell

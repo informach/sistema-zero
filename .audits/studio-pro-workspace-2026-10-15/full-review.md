@@ -63,4 +63,4 @@ Os builds mantêm avisos existentes de chunks Monaco grandes e imports simultane
 
 ## Integração local
 
-A implementação foi mantida no worktree `sistema-zero-studio-pro-workspace`, branch `feat/studio-pro-workspace`. A base de staging foi atualizada de `1e5b0debc` para `7c820700b` antes das verificações finais. Alterações pendentes dos outros worktrees foram preservadas. Commit e merge serão registrados no plano após conferir o estado final de staging.
+A implementação foi mantida no worktree `sistema-zero-studio-pro-workspace`, branch `feat/studio-pro-workspace`. A base de staging foi atualizada de `1e5b0debc` para `7c820700b` antes das verificações finais. Commit de implementação `77c7e43b7`; merge local em staging `835ea35e2`. Ancestry confirmada e árvore do merge idêntica à árvore validada. As cinco alterações pendentes de outros trabalhos em staging foram preservadas: SHA-256 do diff antes/depois `b6bf115c1c785897d33a952467c4b35e49487cd97ab8991f3b76ad6fb40c8c47`. O PostgreSQL exclusivo da revisão foi encerrado. Nenhum push ou deploy foi realizado.
