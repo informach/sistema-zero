@@ -1,6 +1,7 @@
 import { createHmac, randomUUID } from 'node:crypto'
 import { conversationUrl } from '@sistemazero/marketing-contracts'
-import { and, asc, eq, lte, ne } from 'drizzle-orm'
+import { and, asc, eq, inArray, lte, ne } from 'drizzle-orm'
+import { alias } from 'drizzle-orm/pg-core'
 import {
   decideIncoming,
   type IncomingEvent,
@@ -40,28 +41,55 @@ export class DrizzleEngagementEngine implements EngagementEngine {
   ingest(events: IncomingEvent[]) {
     return this.db.transaction(async (tx) => {
       let inserted = 0
-      for (const event of events) {
-        const [account] = await tx
-          .select({ id: socialAccounts.id })
-          .from(socialAccounts)
-          .innerJoin(channels, eq(channels.accountId, socialAccounts.id))
-          .where(
-            and(
-              eq(socialAccounts.network, 'instagram'),
-              eq(socialAccounts.externalId, event.accountExternalId),
-            ),
-          )
-        if (!account) continue
-        const eventKey = createHmac('sha256', this.identityKey)
-          .update(`event:${account.id}:${event.key}`)
-          .digest('hex')
-        const rows = await tx
-          .insert(inbound)
-          .values({ id: randomUUID(), accountId: account.id, eventKey, event })
-          .onConflictDoNothing()
-          .returning({ id: inbound.id })
-        inserted += rows.length
-      }
+      // Serialize ingestion with erasure. Lock accounts in a stable order for multi-account envelopes.
+      const ingestChannel = alias(channels, 'ingest_channel')
+      const accounts = await tx
+        .select({ id: socialAccounts.id, externalId: socialAccounts.externalId })
+        .from(ingestChannel)
+        .innerJoin(socialAccounts, eq(ingestChannel.accountId, socialAccounts.id))
+        .where(
+          and(
+            eq(socialAccounts.network, 'instagram'),
+            inArray(socialAccounts.externalId, [
+              ...new Set(events.map((event) => event.accountExternalId)),
+            ]),
+          ),
+        )
+        .orderBy(asc(ingestChannel.accountId))
+        .for('update', { of: ingestChannel })
+      for (const account of accounts)
+        for (const event of events.filter(
+          (item) => item.accountExternalId === account.externalId,
+        )) {
+          const [conversation] = await tx
+            .select()
+            .from(conversations)
+            .where(
+              and(
+                eq(conversations.accountId, account.id),
+                eq(conversations.recipientKey, this.recipientKey(account.id, event.recipient)),
+              ),
+            )
+          const redacted =
+            conversation?.suppression === 'erased' || conversation?.suppression === 'child'
+          const eventKey = createHmac('sha256', this.identityKey)
+            .update(`event:${account.id}:${event.key}`)
+            .digest('hex')
+          const rows = await tx
+            .insert(inbound)
+            .values({
+              id: randomUUID(),
+              accountId: account.id,
+              eventKey,
+              event: redacted ? null : event,
+              conversationId: conversation?.id ?? null,
+              state: redacted ? 'ignored' : 'pending',
+              reason: redacted ? 'Contato excluído ou identificado como criança' : null,
+            })
+            .onConflictDoNothing()
+            .returning({ id: inbound.id })
+          inserted += rows.length
+        }
       return inserted
     })
   }
@@ -86,7 +114,14 @@ export class DrizzleEngagementEngine implements EngagementEngine {
           .from(inbound)
           .where(and(eq(inbound.id, candidate.id), eq(inbound.state, 'pending')))
           .for('update')
-        if (!channel || !row?.event) return false
+        if (!channel || !row) return false
+        if (!row.event) {
+          await tx
+            .update(inbound)
+            .set({ state: 'ignored', reason: 'Conteúdo removido; não reprocessar' })
+            .where(eq(inbound.id, row.id))
+          return true
+        }
         const event = row.event,
           eventAt = new Date(event.at)
         const [account] = await tx
@@ -106,6 +141,28 @@ export class DrizzleEngagementEngine implements EngagementEngine {
         }
         const live =
           this.sendingEnabled && !channelUnavailable(channel, account, this.graphVersion, now)
+        const recipientKey = this.recipientKey(row.accountId, event.recipient)
+        const [known] = await tx
+          .select()
+          .from(conversations)
+          .where(
+            and(
+              eq(conversations.accountId, row.accountId),
+              eq(conversations.recipientKey, recipientKey),
+            ),
+          )
+        if (known?.suppression === 'erased' || known?.suppression === 'child') {
+          await tx
+            .update(inbound)
+            .set({
+              event: null,
+              conversationId: known.id,
+              state: 'ignored',
+              reason: 'Contato excluído ou identificado como criança',
+            })
+            .where(eq(inbound.id, row.id))
+          return true
+        }
         const available = live
           ? await tx
               .select()
@@ -147,7 +204,6 @@ export class DrizzleEngagementEngine implements EngagementEngine {
             .where(eq(inbound.id, row.id))
           return !waiting
         }
-        const recipientKey = this.recipientKey(row.accountId, event.recipient)
         await tx
           .insert(conversations)
           .values({
@@ -243,7 +299,13 @@ export class DrizzleEngagementEngine implements EngagementEngine {
         })
         if (
           (decision === 'opening' || decision === 'offer') &&
-          (!live || activation?.state !== 'active' || new Date(activation.plan.validUntil) <= now)
+          (!live ||
+            activation?.state !== 'active' ||
+            new Date(activation.plan.validUntil) <= now ||
+            (conversation.automationAfter &&
+              (decision === 'offer'
+                ? eventAt <= conversation.automationAfter
+                : eventAt < conversation.automationAfter)))
         )
           decision = 'none'
         // A fresh comment must not restart a private reply already attempted on this post.

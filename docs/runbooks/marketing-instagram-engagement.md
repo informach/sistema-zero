@@ -31,6 +31,8 @@ Resolver envios incertos com evidência do histórico externo. Uma nova solicita
 
 Não recarregar a tela enquanto houver comando sem confirmação: o botão “Consultar a mesma tentativa” reutiliza sua identidade sem duplicar a operação. Se a tela já tiver sido fechada, conferir o histórico do servidor antes de criar outra resposta. Comandos e mensagens privadas ficam apenas em memória no cliente; não entram no journal offline ou no cache editorial.
 
+Falha temporária na consulta de contas conserva a tentativa sem confirmação e bloqueia novos envios até a atualização; revogação de acesso remove a visão privada. Respostas humanas consecutivas aguardam na ordem da fila, inclusive quando a primeira recebeu uma rejeição de quota com retentativa autorizada. Assumir/encerrar explicitamente continua interrompendo pendências. D01/D02 exigem oferta conferida e vigente associada à conversa, revalidada antes do despacho; em contato sem essa origem, a equipe atende manualmente.
+
 A expansão C4 exige avaliação da operação e dos resultados do piloto. Registrar amostra, período, falhas e motivos; não declarar aumento de conversão só porque o mecanismo funciona.
 
 ## Fila, métricas e limites de interpretação
@@ -46,6 +48,8 @@ As origens consultáveis vêm dos planos imutáveis das ativações da peça; um
 ## Retenção e exclusão
 
 Mensagens são retidas no servidor por 1–90 dias configuráveis (padrão 90). O ciclo de manutenção remove payloads vencidos, IDs externos e destinatários cifrados inativos; mantém contadores e a identidade HMAC mínima necessária à supressão/deduplicação. Identidades de eventos expiram após 180 dias, quando o limite de idade já impede reprocessamento. Recibos de comandos contêm hash e resultado de estado, sem texto privado.
+
+A manutenção continua mesmo sem configuração Meta ou chaves de envio, enquanto o serviço e o banco estiverem em execução. Novas entradas de contatos excluídos ou identificados como criança são minimizadas antes de confirmar o webhook, inclusive comentários sem campanha. A remoção do conteúdo também encerra entradas pendentes, evitando uma fila sem possibilidade de processamento.
 
 Excluir uma conversa remove conteúdo e mantém bloqueio mínimo. Identificação como criança remove conteúdo e categorias; conserva o destinatário cifrado somente enquanto a saída C01 já autorizada ainda estiver pendente/em execução. Nenhum dado recebido posteriormente reabre esse bloqueio. A exclusão do conteúdo nesta aplicação não apaga o histórico mantido pela Meta. Backups anteriores seguem o prazo de retenção de backups da instalação e precisam de acesso restrito.
 

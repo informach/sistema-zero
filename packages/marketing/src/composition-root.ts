@@ -67,6 +67,7 @@ import { createDbConnection, type DbConnection } from './infrastructure/persiste
 import { DrizzleDeliveryRepository } from './infrastructure/persistence/drizzle/delivery.repository'
 import { DrizzleEngagementRepository } from './infrastructure/persistence/drizzle/engagement.repository'
 import { DrizzleEngagementConversations } from './infrastructure/persistence/drizzle/engagement-conversations.repository'
+import { maintainEngagement } from './infrastructure/persistence/drizzle/engagement-dispatch'
 import { DrizzleEngagementEngine } from './infrastructure/persistence/drizzle/engagement-engine.repository'
 import { DrizzleExecutionRepository } from './infrastructure/persistence/drizzle/execution.repository'
 import { DrizzleIdeaRepository } from './infrastructure/persistence/drizzle/idea.repository'
@@ -537,14 +538,20 @@ export function createApplication(env: Env): Application {
           engagementDirectory,
         )
       : null
-  const engagementWorker =
+  const engagementWorker = new EngagementWorker(
+    (now) =>
+      maintainEngagement(
+        { db, graphVersion: env.META_GRAPH_VERSION, sendingEnabled: engagementSending },
+        now,
+      ),
     engagementEngine && metaCfg
-      ? new EngagementWorker(
-          engagementEngine,
-          new MetaEngagementProvider(accountService, env.META_GRAPH_VERSION),
-          logger,
-        )
-      : null
+      ? {
+          engine: engagementEngine,
+          provider: new MetaEngagementProvider(accountService, env.META_GRAPH_VERSION),
+        }
+      : null,
+    logger,
+  )
   const server = createServer({
     engagement: {
       engagement: new EngagementService(
@@ -700,7 +707,7 @@ export function createApplication(env: Env): Application {
         )
       }, env.RETENTION_CLEANUP_INTERVAL_MS)
       publisherWorker.start()
-      engagementWorker?.start()
+      engagementWorker.start()
       mediaTransferWorker.start()
       mediaArchiverWorker?.start()
       tokenRefreshWorker.start()
@@ -715,7 +722,7 @@ export function createApplication(env: Env): Application {
       // Workers param ANTES do pool fechar (senão um tick em voo estoura no banco).
       await Promise.all([
         publisherWorker.stop(),
-        engagementWorker?.stop() ?? Promise.resolve(),
+        engagementWorker.stop(),
         mediaTransferWorker.stop(),
         mediaArchiverWorker?.stop() ?? Promise.resolve(),
         tokenRefreshWorker.stop(),

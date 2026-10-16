@@ -1,5 +1,7 @@
 # Implementação e reviews por lote
 
+> Revisão posterior à integração: [full review de 16/10/2026](full-review-2026-10-16.md). Este documento preserva a evidência histórica da primeira entrega; a nova rodada registra os achados adicionais e suas correções.
+
 Base inicial: staging `1e5b0debc`. Branch isolada `feat/marketing-instagram-engagement`. Plano executável: `docs/superpowers/plans/2026-10-15-marketing-instagram-implementacao-lotes.md`.
 
 ## Lote 1 — Contratos e política

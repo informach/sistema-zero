@@ -20,7 +20,8 @@ let conversation = { id: conversationId, accountId, version: 1, state: 'waiting-
 const delivery = deliverySchema.parse({ schemaVersion: 1, id: publicationId, projectId, editionId: uuid(), editionHash: 'a'.repeat(64), representationId: representation.entityId, sourcePublicationId: null, version: 1, format: 'ig_feed', caption: 'Comente FERIAS', title: 'Férias', status: 'published', publishMode: 'auto', socialAccountId: accountId, scheduledAt: null, publishedAt: now, externalUrl: 'https://instagram.com/p/test', externalPostId: '123', lastError: null, started: true, createdAt: now })
 let approved = false, lost = false
 const commands: Array<{ path: string; body: unknown }> = [], replies = new Set<string>(), drafts: unknown[] = []
-Object.assign(window, { proof: { commands, replies, drafts, accountId, publicationId } })
+const proof = { commands, replies, drafts, accountId, publicationId, accountFailure: 0, reads: [] as string[] }
+Object.assign(window, { proof })
 const unavailable = async () => { throw new Error('Operação fora desta prova local') }
 const port: WorkbenchPort = {
   location: 'web', identity: 'local-review', userId,
@@ -38,7 +39,16 @@ const port: WorkbenchPort = {
       }
       return { version: conversation.version }
     }
-    if (path.endsWith('/engagement/accounts')) return [channel]
+    proof.reads.push(path)
+    if (path.includes('/engagement/summary?')) {
+      const range = new URL(path, 'https://local.test').searchParams
+      return { from: range.get('from'), to: range.get('to'), journeys: 0, openingAccepted: 0, interacted: 0, offerAccepted: 0, human: 0, suppressed: 0, uncertain: 0, failed: 0, pending: 0, topics: [], outcomes: [] }
+    }
+    if (path.includes('/engagement/commercial?')) return { reports: [], unavailable: [] }
+    if (path.endsWith('/engagement/accounts')) {
+      if (proof.accountFailure) throw Object.assign(new Error('Consulta de contas temporariamente indisponível'), { status: proof.accountFailure })
+      return [channel]
+    }
     if (path.includes('/approval?')) return { revisionId, approved }
     if (path.endsWith('/engagement')) return []
     if (path.endsWith('/deliveries')) return { items: [delivery], nextCursor: null }

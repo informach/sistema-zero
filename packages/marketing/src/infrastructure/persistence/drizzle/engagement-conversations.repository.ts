@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import { type ConversationAction, conversationResponses } from '@sistemazero/marketing-contracts'
-import { and, desc, eq, inArray } from 'drizzle-orm'
+import { and, desc, eq, inArray, isNull, or } from 'drizzle-orm'
 import { withinWindow } from '../../../domain/engagement/policy'
 import { WorkspaceError } from '../../../domain/workspace/workspace-error'
 import type { Database } from './db'
@@ -83,12 +83,11 @@ export class DrizzleEngagementConversations {
         if (
           input.action === 'saved-reply' &&
           ['platform', 'community'].includes(input.key) &&
-          current &&
-          new Date(current.activation.plan.validUntil) <= now
+          (!current || new Date(current.activation.plan.validUntil) <= now)
         )
           throw new WorkspaceError(
             'ENGAGEMENT_UNAVAILABLE',
-            'A validade desta resposta comercial terminou; confira a oferta antes de responder',
+            'Esta resposta comercial exige uma oferta conferida e vigente na conversa',
           )
       }
       const patch: Partial<typeof conversations.$inferInsert> = {
@@ -134,6 +133,14 @@ export class DrizzleEngagementConversations {
         patch.ownerId = null
         patch.suppression = null
         patch.suppressedAt = null
+        const reprocessRequest =
+          !current ||
+          current.journey.state === 'closed' ||
+          !current.journey.openedAt ||
+          Boolean(current.journey.offeredAt)
+        // Previously queued clicks cannot release an offer after a human interruption.
+        // A new journey may consume only the specific request reviewed by the operator and later events.
+        patch.automationAfter = reprocessRequest ? new Date(request.event.at) : now
         if (current && current.journey.state === 'human') {
           // A human review only releases a waiting journey; it never silently resends an opening/offer.
           await tx
@@ -143,12 +150,7 @@ export class DrizzleEngagementConversations {
             })
             .where(eq(journeys.id, current.journey.id))
         }
-        if (
-          !current ||
-          current.journey.state === 'closed' ||
-          !current.journey.openedAt ||
-          current.journey.offeredAt
-        ) {
+        if (reprocessRequest) {
           // Human confirmation authorizes this specific new request, not future incidental words.
           await tx
             .update(inbound)
@@ -201,10 +203,22 @@ export class DrizzleEngagementConversations {
             ? 'closed'
             : 'owned'
         patch.ownerId = actorId
+        if (input.action === 'close') patch.automationAfter = now
+        const preserveManual =
+          input.action === 'reply' ||
+          (input.action === 'saved-reply' && !['stop', 'student', 'child'].includes(input.key))
         await tx
           .update(outbound)
           .set({ state: 'cancelled', error: 'Atendimento humano interrompeu a pendência' })
-          .where(and(eq(outbound.conversationId, conversationId), eq(outbound.state, 'pending')))
+          .where(
+            and(
+              eq(outbound.conversationId, conversationId),
+              eq(outbound.state, 'pending'),
+              preserveManual
+                ? or(isNull(outbound.createdBy), eq(outbound.kind, 'typed'))
+                : undefined,
+            ),
+          )
         if (input.action === 'suppress' || input.action === 'erase') {
           patch.suppression = input.action === 'suppress' ? input.reason : 'erased'
           patch.suppressedAt = now
@@ -223,7 +237,7 @@ export class DrizzleEngagementConversations {
           patch.outcome = null
           await tx
             .update(inbound)
-            .set({ event: null })
+            .set({ event: null, state: 'ignored', reason: 'Conversa excluída' })
             .where(eq(inbound.conversationId, conversationId))
           await tx
             .update(outbound)
