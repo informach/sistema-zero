@@ -2,6 +2,7 @@ import { readFile, stat } from 'node:fs/promises'
 import path from 'node:path'
 import { z } from 'zod'
 import { probeImage } from './media/probe-image'
+import { MAX_VISUAL_IMAGES } from './visual-input-limits'
 
 export function claudeResult(raw: string, streaming: boolean): unknown {
   if (!raw.trim()) return undefined
@@ -18,7 +19,8 @@ export function claudeResult(raw: string, streaming: boolean): unknown {
 
 /** Official Claude Code streaming input, retaining authentication in the native client. */
 export async function claudeInput(prompt: string, files: string[], signal: AbortSignal) {
-  if (files.length > 18) throw new Error('A análise visual aceita até 18 imagens por pedido')
+  if (files.length > MAX_VISUAL_IMAGES)
+    throw new Error(`A análise visual aceita até ${MAX_VISUAL_IMAGES} imagens por pedido`)
   const content: Array<
     | { type: 'text'; text: string }
     | { type: 'image'; source: { type: 'base64'; media_type: string; data: string } }

@@ -75,3 +75,5 @@
 Receitas acessíveis no fluxo existente, validação central de fontes/escopo, prévia e render demonstrados, reviews por lote e final, evidência de testes e merge local. A entrega não marca como comprovados assinatura/login, R2, duas máquinas físicas ou autoria de código isolado se não foram exercitados; esses critérios permanecem com seus donos no plano principal.
 
 Review F3: [registro](../../../.audits/marketing-demonstracoes-flute-2026-10-16/F3-review.md). Review F4 e final: [registro e limites](../../../.audits/marketing-demonstracoes-flute-2026-10-16/full-review.md). Base atualizada para staging 3511cd6c6 antes dos builds e regressão finais, sem conflitos.
+
+Revisão posterior à integração: [segundo full review](../../../.audits/marketing-demonstracoes-flute-2026-10-16/second-full-review.md), iniciado sobre staging `4db993ba8`. Corrige orientação/dimensões das fontes, duplicação de referências, limites multimodais e edição textual invisível, conservando os critérios de aceite e limites externos deste plano.

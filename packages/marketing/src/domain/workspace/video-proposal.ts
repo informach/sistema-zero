@@ -49,8 +49,9 @@ export async function videoBatch(run: ExecutionRun, index: number) {
       throw new WorkspaceError('INVALID_RESULT', 'O pedido só permite alterar a cena selecionada')
     const before = original.clips.find((clip) => clip.id === clipId)
     if (!before) throw new WorkspaceError('INVALID_RESULT', 'A cena de origem não existe')
-    const excluded =
-      part === 'text'
+    const excluded = before.demonstration
+      ? new Set(part === 'text' ? [] : ['fadeInFrames', 'fadeOutFrames'])
+      : part === 'text'
         ? new Set(['text', 'listItems'])
         : new Set(['effect', 'counter', 'listItems', 'fadeInFrames', 'fadeOutFrames'])
     const retain = (clip: typeof selected) => ({

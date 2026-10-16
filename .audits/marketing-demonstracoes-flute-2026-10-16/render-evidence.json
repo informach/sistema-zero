@@ -8,7 +8,7 @@
     "logicalCpus": 12,
     "memoryBytes": 16962715648,
     "bun": "1.3.11",
-    "elapsedMsExcludingBrowserSetup": 56140,
+    "elapsedMsExcludingBrowserSetup": 39812,
     "remotion": "4.0.535"
   },
   "sourceDocuments": [
@@ -67,13 +67,13 @@
       "headline": "A barra revela parte do resultado.",
       "sources": [
         {
-          "id": "0f8aad31-1634-4e89-8b88-d7141acd120a",
-          "assetId": "ac0d3589-5521-48f4-9906-9335cbbff7c9",
+          "id": "60ff1353-9da4-45d9-8ac9-03eb5874b05f",
+          "assetId": "53ebbc8f-c935-4cc3-accb-103072a7e559",
           "sha256": "7ba4d284309e80af740d881e0ba28ada11ec6f7c768a039a75d0ded4de07f7e1",
           "width": 2748,
           "height": 1830,
-          "evidenceId": "f8cb3e08-20ca-465a-80f2-333cd8d0ab40",
-          "evidenceRevisionId": "8c4aa5e2-0f53-4623-b832-4e0dee3d4fba",
+          "evidenceId": "fe63c5ef-1aed-4276-be5b-f790ec8cba7b",
+          "evidenceRevisionId": "1f4e5405-f3f2-4c58-9484-8859fe5b15e8",
           "label": "Captura antes da resposta do Dragão",
           "focus": {
             "x": 0.49,
@@ -89,13 +89,13 @@
       "headline": "Uma regra muda o próximo ataque.",
       "sources": [
         {
-          "id": "f92b0c1f-323b-4398-a0c3-58647dcbce8f",
-          "assetId": "20b05bc8-d08d-4cd0-ae75-040651ab7449",
+          "id": "fa1f9163-a8b3-48a0-ae43-2b8981f8d54c",
+          "assetId": "9d44e1c6-8dcf-4405-83d6-13217b070871",
           "sha256": "853c62132da7e43c8adfd6e1caf495654829ec9967621b6d5fdc71d5a847f224",
           "width": 1378,
           "height": 192,
-          "evidenceId": "70439e8c-6125-491b-8e0b-e805294a0a46",
-          "evidenceRevisionId": "b6300e17-0f77-4a33-a134-81531449793a",
+          "evidenceId": "2af11531-fcce-48f2-bd23-51b679f1e3f8",
+          "evidenceRevisionId": "ce12538f-8995-4d78-8a51-5ba7a2cf6498",
           "label": "Regra: dano-base de 22 ao time",
           "focus": {
             "x": 0,
@@ -105,13 +105,13 @@
           }
         },
         {
-          "id": "b2dfadac-9533-4021-929c-88084a285fdf",
-          "assetId": "ac0d3589-5521-48f4-9906-9335cbbff7c9",
+          "id": "1f5084bf-bd85-4a1d-90e6-c687557f1ba4",
+          "assetId": "53ebbc8f-c935-4cc3-accb-103072a7e559",
           "sha256": "7ba4d284309e80af740d881e0ba28ada11ec6f7c768a039a75d0ded4de07f7e1",
           "width": 2748,
           "height": 1830,
-          "evidenceId": "dbb8981f-ec08-431e-8524-e3f9fd46316a",
-          "evidenceRevisionId": "c7fe52ab-e81b-4d94-8b3b-fb85a065eb62",
+          "evidenceId": "9a28c594-0718-4993-b2b9-57fd1bb9e13e",
+          "evidenceRevisionId": "b6a85b2d-3fd1-406f-9b46-583a9f9c50b0",
           "label": "Condição observada: vida abaixo da metade",
           "focus": {
             "x": 0.49,
@@ -127,13 +127,13 @@
       "headline": "A plataforma mudou de x = 12 para x = 7.",
       "sources": [
         {
-          "id": "59b257d7-e72b-439f-861c-7c65d54afc50",
-          "assetId": "da0211a7-9a03-4b76-a01c-2c1c3c824b43",
+          "id": "68168ce9-d8cb-4140-967b-566021d6aff9",
+          "assetId": "f055db04-528e-4148-98e8-33ebadb94ac2",
           "sha256": "c0878a593f0fbaee80e68dab15ccb3c439924849ef7bd036783bf0b036f96a92",
           "width": 1440,
           "height": 900,
-          "evidenceId": "5d9ee2e8-6a12-446f-9ad5-e773dbb77d1c",
-          "evidenceRevisionId": "59197a4e-0f35-42a2-9a4e-2faf061fa463",
+          "evidenceId": "dd8f8d96-889f-43e0-ac36-a67f8ab3f9d7",
+          "evidenceRevisionId": "0b658a62-103e-42fb-8dec-77f025bc627a",
           "label": "Antes: plataforma distante",
           "focus": {
             "x": 0.59,
@@ -143,13 +143,13 @@
           }
         },
         {
-          "id": "778e5242-ec29-4c08-9ef0-c429a37e3541",
-          "assetId": "2080d878-2ae0-49a3-91e1-bffe959a7e23",
+          "id": "c72d5937-711e-45ea-a2b3-c6384eae2dce",
+          "assetId": "cd1ccecf-49f5-4ce3-b60d-8fdeef9cb3dd",
           "sha256": "a1b2b3fe165aeee453f97ecce1029d70498ec2e71eda8f160a5f0a6362fe70dc",
           "width": 1440,
           "height": 900,
-          "evidenceId": "28e7762f-025e-4002-ac13-8197ebcd50a2",
-          "evidenceRevisionId": "43dfc4cd-a866-4a97-b58a-198ce10ec11a",
+          "evidenceId": "658abac3-ebc8-4dd0-a9df-c81354888ff7",
+          "evidenceRevisionId": "e5bdd9c4-4936-4d5f-a3b6-6b964819fa58",
           "label": "Depois: plataforma mais próxima",
           "focus": {
             "x": 0.46,

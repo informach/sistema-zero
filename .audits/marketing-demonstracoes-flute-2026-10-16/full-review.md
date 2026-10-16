@@ -63,6 +63,10 @@ Não foram comprovados aqui: duas máquinas físicas/R2 em rede real, instalador
 
 O incremento está revisado dentro desse escopo. Não há achado bloqueante aberto nas novas receitas/contratos/integrações. Aprovação comercial e medição de compreensão/conversão permanecem atividades editoriais do piloto, sem números inventados.
 
+## Revisão posterior
+
+Uma nova rodada solicitada pelo usuário reabriu casos de borda na seleção e no transporte de fontes. Os achados, correções e verificações posteriores estão no [segundo full review](second-full-review.md), que prevalece como registro mais recente. Os resultados acima documentam a execução original.
+
 ## Integração local
 
 Implementação no commit `2816e277b`. Staging estava limpo em `3511cd6c6`; o merge local não exigiu resolução de conflito. A árvore de `packages` preparada para o merge foi comparada com a branch testada e não apresentou diferenças. Este merge acrescenta apenas o fechamento documental do lote à implementação já verificada. O hash do commit de merge é verificável no histórico local de `staging`.
