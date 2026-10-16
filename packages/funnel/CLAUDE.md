@@ -330,7 +330,10 @@ começou. Guardas: `tests/unit/comunidade-offer-copy.test.ts` e `comunidade-funn
 O manifesto `oferta/visuals.ts` relaciona cada demonstração às suas telas, legenda e texto
 alternativo. **Só telas REAIS (01/10/2026, decisão da dona):** as 28 prévias SVG saíram; o que
 ainda não tem captura fica em `PENDING_VISUALS` e NÃO renderiza (a seção ou a resposta segue só
-com o texto). Ligar uma pendente = capturar e mover a chave para `COMUNIDADE_VISUALS`; os vínculos
+com o texto). ⚠️ **Nada de "em construção" nas telas (16/10/2026):** as capturas da Jornada trazem
+o cartão "Mais 6 postos estão sendo construídos"; o visual `jornada` usa só o RECORTE
+`tela-jornada-meus-postos` (Faísca + Construtor) e o mapa saiu. Recapturou, refaça o recorte
+(caixa no comentário de `visuals.ts`); `comunidade-offer-copy.test.ts` reprova a tela inteira. Ligar uma pendente = capturar e mover a chave para `COMUNIDADE_VISUALS`; os vínculos
 com as quatro páginas e com `FAQ_VISUALS` já existem. Ver "Direção de arte das quatro páginas".
 Os termos kids (`content/legal-kids.ts`) cobrem os DOIS produtos (Desafio: compra única; Comunidade:
 assinatura recorrente no cartão ou anual à vista, cancelamento sem multa, carência, garantia na

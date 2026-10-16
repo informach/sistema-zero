@@ -203,21 +203,22 @@ export const COMUNIDADE_VISUALS: Record<string, ComunidadeVisual> = {
     ],
     caption: 'A criança pode mostrar uma escolha e conferir seu efeito no projeto.',
   },
+  // 16/10/2026 (decisão da dona: a venda não mostra "em construção"): as capturas da Jornada
+  // trazem o cartão "Mais 6 postos estão sendo construídos". Aqui entra só o RECORTE da tela
+  // Minha jornada, com o título e os postos Faísca e Construtor (`tela-jornada-meus-postos`,
+  // recortado de `tela-jornada-postos` na caixa 600,30–2500,804 do @2x). O mapa (`tela-jornada`)
+  // saiu: a mensagem fica no meio dele. Recapturou? Refaça o recorte.
   jornada: {
-    mode: 'set',
     frames: [
       tela(
-        'jornada-postos',
+        'jornada-meus-postos',
         'Minha jornada',
-        'Minha jornada no perfil: cada posto com o que já foi liberado e os postos em construção.',
-      ),
-      tela(
-        'jornada',
-        'Jornada',
-        'Mapa da Jornada do Criador com o posto atual e as aventuras da trilha.',
+        'Minha jornada no perfil: o posto Faísca concluído e o posto atual, Construtor, com o que cada um liberou.',
+        950,
+        387,
       ),
     ],
-    caption: 'A Jornada mostra o próximo passo e os requisitos para liberar uma ferramenta.',
+    caption: 'A Jornada mostra em que posto a criança está e o que cada posto liberou.',
   },
   catalogo: {
     frames: [
