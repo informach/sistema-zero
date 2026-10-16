@@ -34,6 +34,9 @@ import { type MembersRoutesDeps, membersRoutes } from './routes/members.routes'
 import { type PensaRoutesDeps, pensaRoutes } from './routes/pensa.routes'
 import { type PensaJourneyRoutesDeps, pensaJourneyRoutes } from './routes/pensa-journey.routes'
 import { type PensaTeamRoutesDeps, pensaTeamRoutes } from './routes/pensa-team.routes'
+import { studioAiAccountRoutes } from './routes/studio-ai-account.routes'
+import { studioAiUsageRoutes } from './routes/studio-ai-usage.routes'
+import { studioBuilderRoutes } from './routes/studio-builder.routes'
 import { type WebhooksRoutesDeps, webhooksRoutes } from './routes/webhooks.routes'
 
 export interface HttpDeps {
@@ -91,6 +94,7 @@ const PENSA_TASKS_REPLACE_PATH = /\/members\/pensa\/cycles\/[^/]+\/tasks$/
 const MAX_PENSA_BODY_BYTES = 1024 * 1024
 
 function bodyLimitForPath(pathname: string, env: Env): number {
+  if (pathname === '/members/internal/studio-ai/builder') return 3_004_096
   if (
     PINTA_SUBMISSION_PATH.test(pathname) ||
     STUDIO_SUBMISSION_PATH.test(pathname) ||
@@ -192,7 +196,27 @@ export function createServer(deps: HttpDeps) {
   return app
     .use(healthRoutes(deps.readiness))
     .use(membersRoutes(deps.members))
+    .use(
+      studioAiAccountRoutes({
+        service: deps.members.studioAiAccount,
+        internalToken: deps.members.internalToken,
+      }),
+    )
+    .use(
+      studioAiUsageRoutes({
+        service: deps.members.studioAiUsage,
+        internalToken: deps.members.internalToken,
+        accessCheck: deps.members.accessCheck,
+      }),
+    )
     .use(learningRoutes(deps.learning))
+    .use(
+      studioBuilderRoutes({
+        service: deps.members.studioBuilder,
+        internalToken: deps.members.internalToken,
+        accessCheck: deps.members.accessCheck,
+      }),
+    )
     .use(pensaRoutes(deps.pensa))
     .use(deps.pensaJourney ? pensaJourneyRoutes(deps.pensaJourney) : new Elysia())
     .use(pensaTeamRoutes(deps.pensaTeam))

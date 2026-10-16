@@ -10,7 +10,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { type CreationsCloud, createCreationsCloud } from '@/lib/creations-cloud'
 import { cloudConfirmRefusal, guideError, progressRefusal } from '@/lib/pensa-guide-errors'
-import { resolveNextPensaMission } from '@/lib/pensa-next-mission'
+import { navigatePensaMission, resolveNextPensaMission } from '@/lib/pensa-next-mission'
 import {
   createCloudMirroredPintaPersistence,
   type PintaPersistenceLike,
@@ -173,6 +173,8 @@ export function PintaClient({
     usePensaGuideCollapsed(viewerId)
 
   const adapter = useMemo<PintaHostAdapter>(() => {
+    const proProjectId = handoff?.capability.studioProProjectId
+    const canSendDrawing = studioAvailable || Boolean(proProjectId)
     const initialIntent: PintaInitialIntent | undefined =
       handoff && !handoff.task.progress.outputRef
         ? {
@@ -219,10 +221,10 @@ export function PintaClient({
             const next = await resolveNextPensaMission(handoff.project.id).catch(() => {
               throw guideError('Não consegui abrir a próxima missão. Tente de novo.')
             })
-            router.push(next.path)
+            navigatePensaMission(next.path, (path) => router.push(path))
           },
           onNeedHelp: () => router.push(`/pensa?plano=${encodeURIComponent(handoff.project.id)}`),
-          ...(handoff.task.context.requiresStudioUse && !studioAvailable
+          ...(handoff.task.context.requiresStudioUse && !canSendDrawing
             ? { studioUseBlockedReason: 'O Estúdio ainda não foi liberado pela sua jornada.' }
             : {}),
           progress: handoff.task.progress,
@@ -252,7 +254,12 @@ export function PintaClient({
             } | null
             if (response.status === 409) {
               retryHandoff()
-              throw guideError('A missão mudou em outro lugar. Recarreguei o brief para você.')
+              throw progressRefusal(409, {
+                error: {
+                  code: body?.error?.code ?? 'PENSA_TASK_PROGRESS_CONFLICT',
+                  message: body?.error?.message,
+                },
+              })
             }
             if (!response.ok || !body?.task) throw progressRefusal(response.status, body)
             updateHandoffProgress(body.task.progress)
@@ -268,12 +275,16 @@ export function PintaClient({
       : undefined
     return {
       theme,
-      studioOwned: studioAvailable,
+      studioOwned: canSendDrawing,
       // "Abrir o Estúdio" (link no sucesso da ponte).
-      onOpenStudio: () => router.push('/estudio'),
+      onOpenStudio: () =>
+        navigatePensaMission(
+          proProjectId ? `/estudio/pro/${encodeURIComponent(proProjectId)}` : '/estudio',
+          (path) => router.push(path),
+        ),
       // A ponte: grava na biblioteca pessoal que o Estúdio lê ("Meus desenhos").
       // O Studio é o dono do formato/limites; aqui só ligamos os dois.
-      ...(studioAvailable
+      ...(canSendDrawing
         ? {
             sendToStudio: async (asset) => {
               const namespace = viewerId ?? ''

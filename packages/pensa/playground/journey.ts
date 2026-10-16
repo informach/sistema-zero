@@ -443,7 +443,12 @@ export function createJourneyServer(task: TaskBuilder, empty: boolean, withTeam 
     const operation = record.view.operation
     if (!operation || !['queued', 'running'].includes(operation.status)) return
     record.ticks -= 1
-    if (record.ticks > 0) return
+    // A primeira volta do planejamento entendeu a ideia: a tela mostra a etapa seguinte.
+    if (record.ticks > 0) {
+      if (operation.kind === 'planning' && operation.step === 'propose')
+        record.view = { ...record.view, operation: { ...operation, step: 'review' } }
+      return
+    }
     const journey = record.view.journey
     if (journey.stage === 'preparing') {
       const prefix = record.view.project.id
@@ -460,9 +465,47 @@ export function createJourneyServer(task: TaskBuilder, empty: boolean, withTeam 
           ),
         ],
       })
+    } else if (
+      journey.stage === 'idea' &&
+      !journey.questionsAsked &&
+      journey.messages.filter((m) => m.role === 'user').length === 1 &&
+      journey.intent.length < 40
+    ) {
+      // Ideia curta ("quero um jogo de dragão"): o Zappy pergunta UMA vez, com respostas para
+      // tocar, e dá um nome provisório ao jogo (15/10/2026).
+      if (record.view.project.name === 'Meu novo jogo')
+        record.view = {
+          ...record.view,
+          project: { ...record.view.project, name: 'O voo do dragão' },
+        }
+      bump(record, {
+        questionsAsked: 1,
+        workingTitle: 'O voo do dragão',
+        messages: [
+          ...journey.messages,
+          {
+            ...message('assistant', 'O que o seu dragão faz no jogo?', journey.revision + 1),
+            choices: {
+              about: 'action',
+              options: [
+                { label: 'Voa desviando das pedras', description: 'O jogo é não bater em nada.' },
+                { label: 'Pega ovos pelo caminho', description: 'Cada ovo vale um ponto.' },
+                {
+                  label: 'Leva os ovos até o ninho',
+                  description: 'Você ganha quando enche o ninho.',
+                },
+              ],
+            },
+          },
+        ],
+      })
+      record.view = { ...record.view, operation: { ...operation, status: 'waiting' } }
+      return
     } else {
       bump(record, {
         stage: 'proposal',
+        questionsAsked: 0,
+        workingTitle: null,
         proposal: proposalFor(journey.intent),
         messages: [
           ...journey.messages,
@@ -584,6 +627,17 @@ export function createJourneyServer(task: TaskBuilder, empty: boolean, withTeam 
         )
         .map(listItem)
     }
+    // O selo de usos do Zappy (15/10/2026): um dia já pela metade, como a criança veria.
+    if (method === 'GET' && path === '/v2/credits')
+      return {
+        credits: {
+          dayLimit: 50,
+          dayRemaining: 13,
+          monthLimit: 500,
+          monthRemaining: 320,
+          monthRenewsOn: '2026-11-01',
+        },
+      }
     if (withTeam) {
       const handled = handleTeam(method, path, body)
       if (handled !== undefined) return handled
@@ -615,9 +669,14 @@ export function createJourneyServer(task: TaskBuilder, empty: boolean, withTeam 
     if (!action && method === 'GET') return record.view
     if (!action && method === 'PATCH') {
       ownerOnly(record)
+      // Renomear (15/10/2026) ou arquivar/trazer de volta.
       record.view = {
         ...record.view,
-        project: { ...record.view.project, status: input.status as 'active' | 'archived' },
+        project: {
+          ...record.view.project,
+          ...(typeof input.name === 'string' ? { name: input.name.trim() } : {}),
+          ...(input.status ? { status: input.status as 'active' | 'archived' } : {}),
+        },
       }
       return record.view
     }

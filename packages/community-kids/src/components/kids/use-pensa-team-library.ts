@@ -29,6 +29,7 @@ export function usePensaTeamLibrary(input: {
 }): StudioTeamLibraryAdapter | undefined {
   const { projectId, viewerId } = input
   const planId = projectId ? pensaPlanIdFromStudioProjectId(projectId) : null
+  const scope = JSON.stringify([planId, viewerId])
   const adapter = useMemo(
     () => (planId ? createPensaTeamLibrary({ planId, viewerId }) : null),
     [planId, viewerId],
@@ -50,7 +51,7 @@ export function usePensaTeamLibrary(input: {
         .then((ok) => {
           if (!active || !ok) return
           found = true
-          setAvailableFor(planId)
+          setAvailableFor(scope)
         })
         .finally(() => {
           checking = false
@@ -72,7 +73,7 @@ export function usePensaTeamLibrary(input: {
       window.removeEventListener('focus', onFocus)
       document.removeEventListener('visibilitychange', onVisibility)
     }
-  }, [planId])
+  }, [planId, scope])
 
-  return adapter && availableFor === planId ? adapter : undefined
+  return adapter && availableFor === scope ? adapter : undefined
 }

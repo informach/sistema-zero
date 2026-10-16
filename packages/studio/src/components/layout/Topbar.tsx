@@ -1,5 +1,5 @@
 import type { JSX } from 'react'
-import { useContext, useState } from 'react'
+import { lazy, Suspense, useContext, useEffect, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { modesForKind, type Project } from '#core'
 import {
@@ -28,9 +28,10 @@ import {
   Menu,
   type MenuItem,
   type MenuSection,
+  Modal,
 } from '#ui'
-import { exportProjectSource } from '../../export'
 import { downloadProjectAsJSON, triggerDownload } from '../../export/download'
+import { flushProjectOperations } from '../../state/projectOperations'
 import { useProjectStore } from '../../state/projectStore'
 import { useSettingsStore } from '../../state/settingsStore'
 import { StudioStoresContext } from '../../state/storesContext'
@@ -46,8 +47,8 @@ import { useStudioShare, useStudioShareDisabledReason } from '../../studio/share
 import { useStudioTheme } from '../../studio/theme'
 import { useStudioTutor } from '../../studio/tutor'
 import { projectHas3DMaterials } from '../assets/has3DConsumer'
-import { ExportDialog } from './ExportDialog'
 import { HostMenuButton } from './HostMenuButton'
+import { LoadingScreen } from './LoadingViews'
 import {
   STUDIO_BAR_COMPACT_MAX_PX,
   STUDIO_BAR_LABELS_MIN_PX,
@@ -63,6 +64,11 @@ import { STUDIO_MENU_LAYOUT, type StudioMenuItemId } from './topbar/menuLayout'
 import { ProjectNameField } from './topbar/ProjectNameField'
 import { SavePill, type SaveTone } from './topbar/SavePill'
 import { UndoRedo, undoRedoMenuItems, useUndoRedo } from './topbar/UndoRedo'
+
+// The compiler/export workflow loads only when requested.
+const ExportDialog = lazy(() =>
+  import('./ExportDialog').then((module) => ({ default: module.ExportDialog })),
+)
 
 /** O que cada item do menu "⋯" FAZ. O nome, o grupo e a ordem vêm da árvore editorial. */
 interface MenuItemBehavior {
@@ -98,22 +104,23 @@ export interface TopbarProps {
  */
 export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps): JSX.Element {
   const t = useT()
-  const { hasProject, projectName, projectMode, projectKind, has3DInProject } = useProjectStore(
-    useShallow((s) => ({
-      hasProject: Boolean(s.project),
-      projectName: s.project?.name ?? '',
-      projectMode: s.project?.mode ?? 'blocks',
-      projectKind: s.project?.kind,
-      // ⚠️ Um BOOLEAN, nunca a referência do projeto: o `useShallow` compara o que
-      // sai daqui, e devolver `s.project` re-renderizaria a barra inteira a cada
-      // tecla. A régua em si é memoizada por identidade do `blocksState` (ver
-      // `has3DConsumer.ts`) — sem isso, este seletor faria um `JSON.stringify` do
-      // estado dos blocos a cada `set()` da store.
-      has3DInProject: projectHas3DMaterials(s.project, false),
-    })),
-  )
+  const { hasProject, projectId, projectName, projectMode, projectKind, has3DInProject } =
+    useProjectStore(
+      useShallow((s) => ({
+        hasProject: Boolean(s.project),
+        projectId: s.project?.id,
+        projectName: s.project?.name ?? '',
+        projectMode: s.project?.mode ?? 'blocks',
+        projectKind: s.project?.kind,
+        // ⚠️ Um BOOLEAN, nunca a referência do projeto: o `useShallow` compara o que
+        // sai daqui, e devolver `s.project` re-renderizaria a barra inteira a cada
+        // tecla. A régua em si é memoizada por identidade do `blocksState` (ver
+        // `has3DConsumer.ts`) — sem isso, este seletor faria um `JSON.stringify` do
+        // estado dos blocos a cada `set()` da store.
+        has3DInProject: projectHas3DMaterials(s.project, false),
+      })),
+    )
   const isDirty = useProjectStore((s) => s.isDirty)
-  const convertToPro = useProjectStore((s) => s.convertToPro)
   const persistence = useStudioPersistence()
   const saveError = useProjectStore((s) => s.saveError)
   const setMode = useProjectStore((s) => s.setMode)
@@ -129,8 +136,6 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
   const setConsoleVisibilityOverride = useUIStore((s) => s.setConsoleVisibilityOverride)
   const showTerminal = useUIStore((s) => s.showTerminal)
   const setShowTerminal = useUIStore((s) => s.setShowTerminal)
-  const showAI = useUIStore((s) => s.showAI)
-  const setShowAI = useUIStore((s) => s.setShowAI)
   const config = useStudioConfig()
   const showConsole = resolveConsoleVisibility(projectMode, consoleVisibilityOverride)
   const { width, isNarrow, isCompact } = useStudioLayout()
@@ -160,10 +165,25 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
 
   const [saving, setSaving] = useState(false)
   const [downloading, setDownloading] = useState(false)
+  const sourceDownload = useRef<AbortController | null>(null)
+  const [downloadNotice, setDownloadNotice] = useState<{
+    error: boolean
+    messages: string[]
+  } | null>(null)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: changing document/instance cancels this instance-owned download even before its dynamic import completes.
+  useEffect(() => {
+    setDownloadNotice(null)
+    setDownloading(false)
+    return () => {
+      sourceDownload.current?.abort()
+      sourceDownload.current = null
+    }
+  }, [projectId, stores])
   const [showShare, setShowShare] = useState(false)
   const [showExport, setShowExport] = useState(false)
   const [showConvert, setShowConvert] = useState(false)
   const [converting, setConverting] = useState(false)
+  const [conversionError, setConversionError] = useState<string | null>(null)
 
   const availableModes = modesForKind(projectKind).filter(
     (m) => projectKind === 'pro' || config.allowedModes.includes(m),
@@ -173,7 +193,7 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
 
   const exitToProjects = async () => {
     if (!onExit) return
-    if (isDirty) {
+    if (isDirty || projectKind === 'pro') {
       try {
         await persistence.save()
       } catch {
@@ -199,43 +219,69 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
   }
 
   // Baixar a FONTE do projeto (ZIP para continuar no VSCode). Lê o projeto da
-  // instância sob demanda (sem assinar re-render). Avisos não-fatais (ex.: um
-  // extra .ts que não compilou) vão ao console — o arquivo é baixado mesmo assim.
+  // instância sob demanda. Buffers, writers, snapshot e escopo são coordenados
+  // pelo mesmo caminho; avisos e falhas aparecem para quem pediu o download.
   const handleDownload = async () => {
-    if (downloading) return
-    const project = stores ? stores.project.getState().project : useProjectStore.getState().project
-    if (!project) return
+    if (sourceDownload.current) return
+    const store = stores?.project ?? useProjectStore
+    if (!store.getState().project) return
+    const controller = new AbortController()
+    sourceDownload.current = controller
     setDownloading(true)
+    setDownloadNotice(null)
     try {
-      const { blob, filename, warnings } = await exportProjectSource(project)
+      const { prepareSourceDownload } = await import('../../export/sourceDownload')
+      const { blob, filename, warnings } = await prepareSourceDownload(
+        store,
+        stores?.pendingEditorEdits,
+        controller.signal,
+      )
+      controller.signal.throwIfAborted()
       triggerDownload(blob, filename)
-      if (warnings.length > 0) console.warn('Baixar projeto:', ...warnings)
+      if (warnings.length > 0) setDownloadNotice({ error: false, messages: warnings })
     } catch (err) {
-      console.error('Falha ao baixar o projeto:', err)
+      if (!controller.signal.aborted)
+        setDownloadNotice({
+          error: true,
+          messages: [err instanceof Error ? err.message : String(err)],
+        })
     } finally {
-      setDownloading(false)
+      if (sourceDownload.current === controller) {
+        sourceDownload.current = null
+        setDownloading(false)
+      }
     }
   }
 
   // Exporta o projeto ATUAL como `.szproject.json` (mesmo formato da listagem) p/
   // levar ao Estúdio Completo. Lê o projeto sob demanda (sem assinar re-render).
-  const handleExportStudio = () => {
-    const project = stores ? stores.project.getState().project : useProjectStore.getState().project
-    if (project) downloadProjectAsJSON(project)
+  const handleExportStudio = async () => {
+    const store = stores?.project ?? useProjectStore
+    const projectId = store.getState().project?.id
+    if (!projectId) return
+    try {
+      await flushProjectOperations(store, projectId)
+      const project = store.getState().project
+      if (project?.id === projectId) downloadProjectAsJSON(project)
+    } catch (error) {
+      store.getState().markSaveFailed(error instanceof Error ? error.message : String(error))
+    }
   }
 
   const handleConvert = async () => {
     setConverting(true)
+    setConversionError(null)
     try {
-      await convertToPro()
+      await persistence.promoteToPro()
       // O callback do host costuma fazer uma navegação completa para a rota
       // COOP/COEP. Salva antes para essa navegação nunca interromper a promoção.
-      await persistence.save()
       const promoted = stores
         ? stores.project.getState().project
         : useProjectStore.getState().project
       if (promoted?.kind === 'pro') await onPromoteToPro?.(promoted)
       setShowConvert(false)
+    } catch (error) {
+      setConversionError(error instanceof Error ? error.message : String(error))
     } finally {
       setConverting(false)
     }
@@ -326,9 +372,6 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
       active: showTerminal,
       onSelect: () => setShowTerminal(!showTerminal),
     }
-  }
-  if (projectMode === 'code' && config.ai) {
-    behaviors.ai = { icon: <IconSparkles />, active: showAI, onSelect: () => setShowAI(!showAI) }
   }
 
   // "Levar para o Estúdio" (.szproject.json) — SEM gate: vale no editor da aula E
@@ -489,8 +532,38 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
           ) : null}
         </div>
       </header>
+      <Modal
+        open={Boolean(downloadNotice)}
+        title={downloadNotice?.error ? t('topbar.downloadFailed') : t('topbar.downloadWarnings')}
+        onClose={() => setDownloadNotice(null)}
+        footer={
+          <button
+            type="button"
+            className="min-h-10 rounded border border-sz-border px-3"
+            onClick={() => setDownloadNotice(null)}
+          >
+            {t('topbar.closeDownloadNotice')}
+          </button>
+        }
+      >
+        <ul className="list-disc space-y-2 pl-4" role={downloadNotice?.error ? 'alert' : 'status'}>
+          {downloadNotice?.messages.map((message) => (
+            <li key={message}>{message}</li>
+          ))}
+        </ul>
+      </Modal>
       <ShareDialog open={showShare} onClose={() => setShowShare(false)} adapter={share} />
-      <ExportDialog open={showExport} onClose={() => setShowExport(false)} />
+      {showExport && (
+        <Suspense
+          fallback={
+            <Modal open title={t('export.title')} onClose={() => setShowExport(false)}>
+              <LoadingScreen message={t('app.loading')} />
+            </Modal>
+          }
+        >
+          <ExportDialog open onClose={() => setShowExport(false)} />
+        </Suspense>
+      )}
       <ConfirmDialog
         open={showConvert}
         title={t('convert.title')}
@@ -501,6 +574,11 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
         onConfirm={handleConvert}
       >
         {t('convert.body')}
+        {conversionError ? (
+          <p role="alert" className="mt-3 text-sz-error">
+            {conversionError}
+          </p>
+        ) : null}
       </ConfirmDialog>
     </>
   )

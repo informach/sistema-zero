@@ -69,6 +69,7 @@ function node(raw: unknown, path: string): ModelSceneNode {
     'kind',
     'hidden',
     'locked',
+    'pivot',
     ...(kind === 'mesh' ? ['geometryId', 'materialId'] : ['bendLimit']),
   ])
   const base = {
@@ -78,6 +79,7 @@ function node(raw: unknown, path: string): ModelSceneNode {
     transform: transform(row.transform, `${path}.transform`),
     hidden: v.boolean(row.hidden, `${path}.hidden`),
     locked: v.boolean(row.locked, `${path}.locked`),
+    ...(row.pivot === undefined ? {} : { pivot: v.tuple(row.pivot, 3, `${path}.pivot`) as Vec3 }),
   }
   return kind === 'mesh'
     ? {

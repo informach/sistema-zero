@@ -8,6 +8,7 @@ test('criação rápida, montagem, pose de várias peças e telas menores', asyn
 }, info) => {
   test.setTimeout(120_000)
   const context = await browser.newContext({ baseURL: String(info.project.use.baseURL) })
+  context.setDefaultTimeout(15000)
   const out = info.outputPath('evidence')
   fs.mkdirSync(out, { recursive: true })
   try {
@@ -29,18 +30,31 @@ test('criação rápida, montagem, pose de várias peças e telas menores', asyn
       modelar: await page.locator('canvas').first().boundingBox(),
     }
     await page.getByRole('button', { name: 'Bola', exact: true }).click()
+    await page.locator('summary').filter({ hasText: 'Mais sobre a peça' }).click()
     await page.getByRole('button', { name: 'Colocar em cima', exact: true }).click()
-    await page.getByRole('button', { name: /^Escolher caixa/ }).click()
+    await page.getByRole('button', { name: /^Escolher caixa$/i }).click()
     await page.getByRole('button', { name: 'Pintar', exact: true }).click()
     await expect(page.getByRole('button', { name: 'Pincel', exact: true })).toBeVisible()
     await page.screenshot({ path: path.join(out, 'pintar-1366.png'), animations: 'disabled' })
     await page.getByRole('button', { name: 'Animar', exact: true }).click()
-    await page.getByRole('button', { name: 'Modelo inteiro', exact: true }).click()
     await page.getByRole('button', { name: 'Criar movimento', exact: true }).click()
-    await page.getByRole('button', { name: 'Próxima pose →', exact: true }).click()
+    await page.getByRole('button', { name: /^Escolher caixa$/i }).click()
+    await page.getByRole('button', { name: /^Escolher bola$/i }).click({ modifiers: ['Shift'] })
+    await expect(page.getByRole('button', { name: /^Escolher caixa$/i })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    await expect(page.getByRole('button', { name: /^Escolher bola$/i })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    await page.getByRole('button', { name: 'Mover', exact: true }).click()
+    await page.locator('summary').filter({ hasText: 'Valores e organização do movimento' }).click()
+    await page.getByRole('spinbutton', { name: 'Ir para o tempo (segundos)' }).fill('0.5')
+    await page.getByRole('spinbutton', { name: 'Ir para o tempo (segundos)' }).blur()
     await page.getByRole('button', { name: 'Mover Altura · Y mais', exact: true }).click()
     await expect(page.getByRole('button', { name: 'Marcar pose', exact: true })).toBeEnabled()
-    await page.getByRole('button', { name: /^Escolher caixa/ }).click()
+    await page.getByRole('button', { name: /^Escolher caixa$/i }).click()
     await page.getByRole('button', { name: 'Mover Lado · X mais', exact: true }).click()
     await page.getByRole('button', { name: 'Modelar', exact: true }).click()
     await expect(
@@ -73,6 +87,7 @@ test('pintura real, cor composta, movimento e recuperação da pose após recarr
 }, info) => {
   test.setTimeout(120_000)
   const context = await browser.newContext({ baseURL: String(info.project.use.baseURL) })
+  context.setDefaultTimeout(15000)
   const out = info.outputPath('evidence')
   fs.mkdirSync(out, { recursive: true })
   const page = await context.newPage()
@@ -162,13 +177,14 @@ test('pintura real, cor composta, movimento e recuperação da pose após recarr
     checks.push('real brush, eraser, undo and composite picker')
     await page.getByRole('button', { name: 'Modelar', exact: true }).click()
     await page.getByRole('button', { name: 'Bola', exact: true }).click()
+    await page.locator('summary').filter({ hasText: 'Mais sobre a peça' }).click()
     await page.getByRole('button', { name: 'Colocar em cima', exact: true }).click()
     await page.getByRole('button', { name: /^Escolher caixa/ }).click()
     await page.getByRole('button', { name: 'Animar', exact: true }).click()
-    await page.getByRole('button', { name: 'Modelo inteiro', exact: true }).click()
     await page
       .getByRole('button', { name: 'Experimentar um movimento pronto', exact: true })
       .click()
+    await page.getByRole('button', { name: 'Modelo inteiro', exact: true }).click()
     const previewSource = await snapshot()
     expect(previewSource.nodes.filter((node) => node.kind === 'group')).toHaveLength(0)
     await page.getByRole('button', { name: 'Pular', exact: true }).click()
@@ -181,8 +197,10 @@ test('pintura real, cor composta, movimento e recuperação da pose após recarr
     expect(animated.nodes.filter((node) => node.kind === 'group')).toHaveLength(1)
     expect(animated.animations).toHaveLength(1)
     checks.push('whole-model preset commits group plus clip together')
-    await page.getByRole('button', { name: 'Próxima pose →', exact: true }).click()
+    await page.getByRole('spinbutton', { name: 'Ir para o tempo (segundos)' }).fill('0.5')
+    await page.getByRole('spinbutton', { name: 'Ir para o tempo (segundos)' }).blur()
     await page.getByRole('button', { name: 'Mover', exact: true }).click()
+    await page.locator('summary').filter({ hasText: 'Valores e organização do movimento' }).click()
     await page.getByRole('button', { name: 'Mover Altura · Y mais', exact: true }).click()
     await expect(page.getByRole('button', { name: 'Marcar pose', exact: true })).toBeEnabled()
     await expect
@@ -218,6 +236,7 @@ test('pintura real, cor composta, movimento e recuperação da pose após recarr
 test('câmera, pivô, divisão e decisões antes de abandonar prévias', async ({ browser }, info) => {
   test.setTimeout(120_000)
   const context = await browser.newContext({ baseURL: String(info.project.use.baseURL) })
+  context.setDefaultTimeout(15000)
   const out = info.outputPath('evidence')
   fs.mkdirSync(out, { recursive: true })
   const page = await context.newPage()
@@ -268,29 +287,32 @@ test('câmera, pivô, divisão e decisões antes de abandonar prévias', async (
       'visible camera drag and wheel navigation preserve authoring and return to the selected tool',
     )
     await page.getByRole('button', { name: 'Pivô', exact: true }).click()
-    await page.getByRole('button', { name: 'Embaixo', exact: true }).click()
-    await expect(page.getByRole('button', { name: 'Aplicar', exact: true })).toBeEnabled()
-    await shot('pivo-previa')
-    await page.getByRole('button', { name: 'Pintar', exact: true }).click()
-    await expect(page.getByRole('dialog', { name: 'O pivô ainda está em prévia' })).toBeVisible()
-    await page.getByRole('button', { name: 'Continuar ajustando', exact: true }).click()
-    await expect(page.getByRole('button', { name: 'Aplicar', exact: true })).toBeEnabled()
-    await page.getByRole('button', { name: 'Cancelar', exact: true }).click()
+    const handle = page
+      .getByRole('button', { name: 'Pivô no eixo X', exact: true })
+      .locator('.mld-axis-tip')
+    const point = (await handle.boundingBox())!
+    await page.mouse.move(point.x + point.width / 2, point.y + point.height / 2)
+    await page.mouse.down()
+    await page.mouse.move(point.x + 40, point.y + 20, { steps: 5 })
+    await page.keyboard.press('Escape')
+    await page.mouse.up()
     expect(await snapshot()).toEqual(initial)
-    await page.getByRole('button', { name: 'Embaixo', exact: true }).click()
+    await page.getByRole('button', { name: 'Canto', exact: true }).click()
+    await shot('pivo-canto')
     await page.getByRole('button', { name: 'Pintar', exact: true }).click()
-    await page.getByRole('button', { name: 'Aplicar pivô', exact: true }).click()
     await expect(page.getByRole('button', { name: 'Pintar', exact: true })).toHaveAttribute(
       'aria-pressed',
       'true',
     )
     await page.getByRole('button', { name: 'Modelar', exact: true }).click()
     const pivoted = await snapshot()
-    expect(pivoted.nodes[0]!.transform).not.toEqual(initial.nodes[0]!.transform)
+    expect(pivoted.nodes[0]!.transform).toEqual(initial.nodes[0]!.transform)
+    expect(pivoted.nodes[0]!.pivot).not.toEqual(initial.nodes[0]!.pivot)
+    expect(pivoted.geometries).toEqual(initial.geometries)
     await page.getByRole('button', { name: 'Desfazer', exact: true }).click()
     expect(await snapshot()).toEqual(initial)
-    checks.push('pivot preview and cancel preserve source; apply and undo are atomic')
-    await page.locator('summary').filter({ hasText: 'Mais ferramentas' }).click()
+    checks.push('pivot drag cancels, presets commit once and preserve geometry and transforms')
+    await page.locator('summary').filter({ hasText: 'Seleção e organização' }).click()
     await page.getByRole('button', { name: 'Transformar em malha', exact: true }).click()
     await page.getByRole('button', { name: 'Editar malha', exact: true }).click()
     const mesh = await snapshot()
@@ -323,12 +345,12 @@ test('câmera, pivô, divisão e decisões antes de abandonar prévias', async (
     await page.getByRole('button', { name: 'Desfazer', exact: true }).click()
     expect(await snapshot()).toEqual(mesh)
     checks.push('division preview, cancellation and undo preserve source and keep both sides')
-    await page.getByRole('button', { name: 'Voltar às peças', exact: true }).click()
+    await page.getByRole('button', { name: 'Fechar área', exact: true }).click()
     await page.getByRole('button', { name: 'Animar', exact: true }).click()
-    await page.getByRole('button', { name: 'Modelo inteiro', exact: true }).click()
     await page
       .getByRole('button', { name: 'Experimentar um movimento pronto', exact: true })
       .click()
+    await page.getByRole('button', { name: 'Modelo inteiro', exact: true }).click()
     await page.getByRole('button', { name: 'Pular', exact: true }).click()
     await page.getByRole('button', { name: 'Mais devagar', exact: true }).click()
     await page.getByRole('button', { name: 'Mais intenso', exact: true }).click()
@@ -352,22 +374,19 @@ test('câmera, pivô, divisão e decisões antes de abandonar prévias', async (
     )
     await page.getByRole('button', { name: 'Animar', exact: true }).click()
     checks.push(
-      'leaving pivot and preset previews asks once, preserves Continue and resumes the requested activity after Apply',
+      'leaving a movement preset preview asks once, preserves Continue and resumes after Apply',
     )
     const animated = await snapshot()
-    const animationTools = page.locator('summary').filter({ hasText: 'Mais ferramentas' })
-    if (!(await animationTools.evaluate((el) => el.closest('details')?.open)))
-      await animationTools.click()
     await page.getByRole('button', { name: 'Pivô', exact: true }).click()
     await page.getByRole('button', { name: 'Embaixo', exact: true }).click()
-    await expect(
-      page.getByRole('alert').filter({ hasText: 'Essa peça já tem movimentos' }),
-    ).toBeVisible()
-    expect(await snapshot()).toEqual(animated)
-    await page.getByRole('button', { name: 'Mover', exact: true }).click()
-    checks.push(
-      'pivot in animation blocks an unsupported animated target with explanation and preserves the clip',
+    const changedPivot = await snapshot()
+    expect(changedPivot.animations).toEqual(animated.animations)
+    expect(changedPivot.geometries).toEqual(animated.geometries)
+    expect(changedPivot.nodes.map((node) => node.transform)).toEqual(
+      animated.nodes.map((node) => node.transform),
     )
+    await page.getByRole('button', { name: 'Mover', exact: true }).click()
+    checks.push('pivot authoring in animation preserves existing clips and base geometry')
     await page.setViewportSize({ width: 1024, height: 600 })
     await expect(page.getByRole('tab', { name: 'Movimentos', exact: true })).toBeVisible()
     await page.getByRole('tab', { name: 'Movimentos', exact: true }).focus()
@@ -423,6 +442,7 @@ test('câmera, pivô, divisão e decisões antes de abandonar prévias', async (
 test('textura e céu preservam pintura, ajustes e desfazer', async ({ browser }, info) => {
   test.setTimeout(120_000)
   const context = await browser.newContext({ baseURL: String(info.project.use.baseURL) })
+  context.setDefaultTimeout(15000)
   const out = info.outputPath('evidence')
   fs.mkdirSync(out, { recursive: true })
   const page = await context.newPage()

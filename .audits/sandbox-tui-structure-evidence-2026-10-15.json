@@ -1,0 +1,3805 @@
+{
+  "repository": "https://github.com/code-with-antonio/sandbox",
+  "commit": "ac18750e06d7678ca8a215fc61cb91e1e5709b50",
+  "trackedFiles": 179,
+  "sourceFiles": 142,
+  "sourceLines": 19462,
+  "tests": [],
+  "licenseFiles": [],
+  "cycles": [],
+  "duplicateSkills": [
+    [
+      ".agents/skills/trigger-authoring-chat-agent/SKILL.md",
+      ".claude/skills/trigger-authoring-chat-agent/SKILL.md"
+    ],
+    [
+      ".agents/skills/trigger-authoring-tasks/SKILL.md",
+      ".claude/skills/trigger-authoring-tasks/SKILL.md"
+    ],
+    [
+      ".agents/skills/trigger-chat-agent-advanced/SKILL.md",
+      ".claude/skills/trigger-chat-agent-advanced/SKILL.md"
+    ],
+    [
+      ".agents/skills/trigger-cost-savings/SKILL.md",
+      ".claude/skills/trigger-cost-savings/SKILL.md"
+    ],
+    [
+      ".agents/skills/trigger-getting-started/SKILL.md",
+      ".claude/skills/trigger-getting-started/SKILL.md"
+    ],
+    [
+      ".agents/skills/trigger-realtime-and-frontend/SKILL.md",
+      ".claude/skills/trigger-realtime-and-frontend/SKILL.md"
+    ]
+  ],
+  "unreachable": [
+    "components/ui/accordion.tsx",
+    "components/ui/aspect-ratio.tsx",
+    "components/ui/attachment.tsx",
+    "components/ui/avatar.tsx",
+    "components/ui/badge.tsx",
+    "components/ui/breadcrumb.tsx",
+    "components/ui/button-group.tsx",
+    "components/ui/calendar.tsx",
+    "components/ui/card.tsx",
+    "components/ui/carousel.tsx",
+    "components/ui/chart.tsx",
+    "components/ui/checkbox.tsx",
+    "components/ui/collapsible.tsx",
+    "components/ui/combobox.tsx",
+    "components/ui/command.tsx",
+    "components/ui/context-menu.tsx",
+    "components/ui/direction.tsx",
+    "components/ui/drawer.tsx",
+    "components/ui/hover-card.tsx",
+    "components/ui/input-otp.tsx",
+    "components/ui/item.tsx",
+    "components/ui/kbd.tsx",
+    "components/ui/menubar.tsx",
+    "components/ui/native-select.tsx",
+    "components/ui/navigation-menu.tsx",
+    "components/ui/pagination.tsx",
+    "components/ui/progress.tsx",
+    "components/ui/radio-group.tsx",
+    "components/ui/scroll-area.tsx",
+    "components/ui/select.tsx",
+    "components/ui/slider.tsx",
+    "components/ui/switch.tsx",
+    "components/ui/table.tsx",
+    "components/ui/tabs.tsx",
+    "components/ui/toast.tsx",
+    "components/ui/toggle-group.tsx",
+    "components/ui/toggle.tsx"
+  ],
+  "anyUsages": [
+    {
+      "file": "trigger/example.ts",
+      "line": 7
+    }
+  ],
+  "suppressions": [],
+  "rows": [
+    {
+      "file": "app/(app)/billing/page.tsx",
+      "lines": 61,
+      "bytes": 2380,
+      "sha256": "1b9187b1e55accf6f2e5db49d5812de214c928f002d72ef9eb357ef0a4eb263d",
+      "exports": [
+        "metadata",
+        "BillingPage"
+      ],
+      "imports": [
+        "@clerk/nextjs",
+        "@clerk/nextjs/server",
+        "next",
+        "@/lib/billing/format",
+        "@/lib/billing/ledger",
+        "@/lib/billing/reconcile"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": true
+    },
+    {
+      "file": "app/(app)/games/[id]/page.tsx",
+      "lines": 61,
+      "bytes": 2353,
+      "sha256": "c1a0dc7e30a53850e8e0f5304dcd2ca71c11ee6403035f9f6b7674ed2c30a9de",
+      "exports": [
+        "GamePage"
+      ],
+      "imports": [
+        "@clerk/nextjs/server",
+        "next/navigation",
+        "@/lib/billing/ledger",
+        "@/components/game-chat",
+        "@/components/game-menu",
+        "@/lib/games/model-catalog",
+        "@/lib/games/queries"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": true
+    },
+    {
+      "file": "app/(app)/layout.tsx",
+      "lines": 21,
+      "bytes": 664,
+      "sha256": "711a7513d8b50921b038bbcc11e4874e5df3c63486484238142641a3fdd1eb31",
+      "exports": [
+        "AppLayout"
+      ],
+      "imports": [
+        "@clerk/nextjs/server",
+        "@/components/app-sidebar",
+        "@/components/ui/sidebar",
+        "@/lib/billing/ledger",
+        "@/lib/games/queries"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": true
+    },
+    {
+      "file": "app/(app)/page.tsx",
+      "lines": 38,
+      "bytes": 1145,
+      "sha256": "74643195f85488704b4a06c12b8086349067f16612554c5d9f6ead88e774fb2d",
+      "exports": [
+        "Page"
+      ],
+      "imports": [
+        "@clerk/nextjs/server",
+        "next/image",
+        "@/components/new-game-composer",
+        "@/components/ui/empty"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": true
+    },
+    {
+      "file": "app/api/games/[id]/preview/route.ts",
+      "lines": 90,
+      "bytes": 3509,
+      "sha256": "da8e4aebf42a3d1e35f79915c3239bc5344629a11eb510e8df980a9e1bc20315",
+      "exports": [
+        "GET"
+      ],
+      "imports": [
+        "@sentry/nextjs",
+        "@/lib/daytona/utils",
+        "@/lib/games/queries",
+        "@/lib/observability"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": true
+    },
+    {
+      "file": "app/global-error.tsx",
+      "lines": 23,
+      "bytes": 426,
+      "sha256": "3bb6335caf61ff4c6da983ca663e5486d9fb57b31e1129915a0428e8c68426bc",
+      "exports": [
+        "GlobalError"
+      ],
+      "imports": [
+        "@sentry/nextjs",
+        "next/error",
+        "react"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": true
+    },
+    {
+      "file": "app/layout.tsx",
+      "lines": 55,
+      "bytes": 1422,
+      "sha256": "93846c77a6282945896bbf1ee8b673181dab3d76f1eff03ba4967d9b34f94571",
+      "exports": [
+        "metadata",
+        "RootLayout"
+      ],
+      "imports": [
+        "@clerk/nextjs",
+        "@clerk/ui/themes",
+        "next/font/google",
+        "./globals.css",
+        "@/components/theme-provider",
+        "@/lib/utils",
+        "next"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": true
+    },
+    {
+      "file": "app/sign-in/[[...sign-in]]/page.tsx",
+      "lines": 9,
+      "bytes": 201,
+      "sha256": "8cc23d844f923c2bf18bf3e07a8f8359337a36fa45492f3e0a422f8f2f5bfdf7",
+      "exports": [
+        "SignInPage"
+      ],
+      "imports": [
+        "@clerk/nextjs"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": true
+    },
+    {
+      "file": "app/sign-up/[[...sign-up]]/page.tsx",
+      "lines": 9,
+      "bytes": 201,
+      "sha256": "fa93dd8d0249d2d6781aac163149cfdd4f2014e53f437826d5755129c6029947",
+      "exports": [
+        "SignUpPage"
+      ],
+      "imports": [
+        "@clerk/nextjs"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": true
+    },
+    {
+      "file": "components/app-sidebar.tsx",
+      "lines": 200,
+      "bytes": 7358,
+      "sha256": "3095708b72e84842a136cde9fc308455681358c1375ecdda43461db2e3de9577",
+      "exports": [
+        "AppSidebar"
+      ],
+      "imports": [
+        "@clerk/nextjs",
+        "lucide-react",
+        "next/image",
+        "next/link",
+        "next/navigation",
+        "@/components/game-menu",
+        "@/components/ui/empty",
+        "@/components/ui/popover",
+        "@/components/ui/sidebar",
+        "@/lib/billing/format",
+        "@/lib/db/schema"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "app/(app)/layout.tsx"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "components/chat-composer.tsx",
+      "lines": 103,
+      "bytes": 3185,
+      "sha256": "198523b11ffbcd1b4ab05c24b9cadd0e7370053f1bf03508b46b13369653c4ef",
+      "exports": [
+        "ChatComposer"
+      ],
+      "imports": [
+        "lucide-react",
+        "@/components/model-picker",
+        "@/components/ui/button",
+        "@/components/ui/input-group",
+        "@/lib/games/model-catalog"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "components/chat-thread.tsx",
+        "components/new-game-composer.tsx"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "components/chat-preview.tsx",
+      "lines": 249,
+      "bytes": 9241,
+      "sha256": "a657d747251604c415c7ff047809004ce2f0f4f7c6bb3e323bf5a8b59922f260",
+      "exports": [
+        "ChatPreview"
+      ],
+      "imports": [
+        "@sentry/nextjs",
+        "react",
+        "@/components/ui/spinner"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "components/game-chat.tsx"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "components/chat-thread.tsx",
+      "lines": 729,
+      "bytes": 27967,
+      "sha256": "8c886298b5adea23e2adf424f407594f9961da496712e090fdf09ba9c53ede66",
+      "exports": [
+        "ChatThread"
+      ],
+      "imports": [
+        "@ai-sdk/react",
+        "@sentry/nextjs",
+        "@trigger.dev/sdk/chat",
+        "@trigger.dev/sdk/chat/react",
+        "ai",
+        "ai",
+        "lucide-react",
+        "next/image",
+        "next/link",
+        "react",
+        "@/components/chat-composer",
+        "@/components/ui/alert",
+        "@/components/ui/bubble",
+        "@/components/ui/marker",
+        "@/components/ui/message",
+        "@/components/ui/message-scroller",
+        "@/components/ui/questionnaire",
+        "@/components/ui/spinner",
+        "@/lib/games/chat-actions",
+        "@/lib/games/model-catalog",
+        "@/lib/observability",
+        "@/lib/utils",
+        "@/trigger/chat"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "components/game-chat.tsx"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "components/game-chat.tsx",
+      "lines": 121,
+      "bytes": 4656,
+      "sha256": "88197b2ee5ae276255efeab15a89aac73997dec34e4611c7df8fbda3f5ac2b73",
+      "exports": [
+        "GameChat"
+      ],
+      "imports": [
+        "@trigger.dev/sdk/chat",
+        "ai",
+        "next/navigation",
+        "react",
+        "@/components/chat-preview",
+        "@/components/chat-thread",
+        "@/components/ui/resizable",
+        "@/lib/games/model-catalog"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "app/(app)/games/[id]/page.tsx"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "components/game-menu.tsx",
+      "lines": 232,
+      "bytes": 8509,
+      "sha256": "ba0fb01606bdbcb57fb1fc9bca97c44b77e06f3e073e8649cd69d28bbaabdbee",
+      "exports": [
+        "GameMenu"
+      ],
+      "imports": [
+        "lucide-react",
+        "next/navigation",
+        "react",
+        "@/components/ui/alert-dialog",
+        "@/components/ui/button",
+        "@/components/ui/dialog",
+        "@/components/ui/dropdown-menu",
+        "@/components/ui/field",
+        "@/components/ui/input",
+        "@/components/ui/spinner",
+        "@/lib/games/actions",
+        "@/lib/games/title"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "app/(app)/games/[id]/page.tsx",
+        "components/app-sidebar.tsx"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "components/model-picker.tsx",
+      "lines": 76,
+      "bytes": 2692,
+      "sha256": "49dee2f47bc66eab20e055db908fa8a6fe096158b77faaf3ae9b5aeeb99c3014",
+      "exports": [
+        "ModelPicker"
+      ],
+      "imports": [
+        "lucide-react",
+        "@/components/ui/dropdown-menu",
+        "@/components/ui/input-group",
+        "@/lib/games/model-catalog"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "components/chat-composer.tsx"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "components/new-game-composer.tsx",
+      "lines": 76,
+      "bytes": 2719,
+      "sha256": "4029de6176cda9ca6fce2bf1dc043f9c7d75eef59cad572970a7b5fd08b9bf70",
+      "exports": [
+        "NewGameComposer"
+      ],
+      "imports": [
+        "react",
+        "@/components/chat-composer",
+        "@/components/ui/button",
+        "@/lib/games/actions",
+        "@/lib/games/model-catalog",
+        "@/lib/games/suggestions"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "app/(app)/page.tsx"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "components/theme-provider.tsx",
+      "lines": 71,
+      "bytes": 1515,
+      "sha256": "585f040dabcf2cee1e14943ff97b12a18ee6a86df142d242ade78fa6aa77822f",
+      "exports": [
+        "ThemeProvider"
+      ],
+      "imports": [
+        "react",
+        "next-themes"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "app/layout.tsx"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "components/ui/accordion.tsx",
+      "lines": 72,
+      "bytes": 2670,
+      "sha256": "2b08115404543a2708786152ca81f7842b99e1d90c406e30ee9fd0f34b685a9c",
+      "exports": [
+        "Accordion",
+        "AccordionItem",
+        "AccordionTrigger",
+        "AccordionContent"
+      ],
+      "imports": [
+        "@base-ui/react/accordion",
+        "@/lib/utils",
+        "lucide-react"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": false
+    },
+    {
+      "file": "components/ui/alert-dialog.tsx",
+      "lines": 187,
+      "bytes": 5459,
+      "sha256": "04f780fd3f8a6359c56095e0c75415ba3b8ed9b7988e658e4020731d94e029d2",
+      "exports": [
+        "AlertDialog",
+        "AlertDialogAction",
+        "AlertDialogCancel",
+        "AlertDialogContent",
+        "AlertDialogDescription",
+        "AlertDialogFooter",
+        "AlertDialogHeader",
+        "AlertDialogMedia",
+        "AlertDialogOverlay",
+        "AlertDialogPortal",
+        "AlertDialogTitle",
+        "AlertDialogTrigger"
+      ],
+      "imports": [
+        "react",
+        "@base-ui/react/alert-dialog",
+        "@/lib/utils",
+        "@/components/ui/button"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "components/game-menu.tsx"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "components/ui/alert.tsx",
+      "lines": 76,
+      "bytes": 2124,
+      "sha256": "155f5ef8f65ab555000d06f02c0596bdd44dc24ec3a0ec82eddf2e8cad038c6d",
+      "exports": [
+        "Alert",
+        "AlertTitle",
+        "AlertDescription",
+        "AlertAction"
+      ],
+      "imports": [
+        "react",
+        "class-variance-authority",
+        "@/lib/utils"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "components/chat-thread.tsx"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "components/ui/aspect-ratio.tsx",
+      "lines": 22,
+      "bytes": 425,
+      "sha256": "3ab288623ef5db558143788469927ad7f34792e47e991cf88983eee4efc354d7",
+      "exports": [
+        "AspectRatio"
+      ],
+      "imports": [
+        "@/lib/utils"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": false
+    },
+    {
+      "file": "components/ui/attachment.tsx",
+      "lines": 207,
+      "bytes": 6312,
+      "sha256": "f9e41d954570fd307413e36f90372adaec8f4f0e2bdc9a392dc362aaa76c17b0",
+      "exports": [
+        "Attachment",
+        "AttachmentGroup",
+        "AttachmentMedia",
+        "AttachmentContent",
+        "AttachmentTitle",
+        "AttachmentDescription",
+        "AttachmentActions",
+        "AttachmentAction",
+        "AttachmentTrigger"
+      ],
+      "imports": [
+        "react",
+        "@base-ui/react/merge-props",
+        "@base-ui/react/use-render",
+        "class-variance-authority",
+        "@/lib/utils",
+        "@/components/ui/button"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": false
+    },
+    {
+      "file": "components/ui/avatar.tsx",
+      "lines": 109,
+      "bytes": 3147,
+      "sha256": "c52c54196ece17beb13f2d5d349c21cea7c53ac06fa062e54e29f9de74acb47c",
+      "exports": [
+        "Avatar",
+        "AvatarImage",
+        "AvatarFallback",
+        "AvatarGroup",
+        "AvatarGroupCount",
+        "AvatarBadge"
+      ],
+      "imports": [
+        "react",
+        "@base-ui/react/avatar",
+        "@/lib/utils"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": false
+    },
+    {
+      "file": "components/ui/badge.tsx",
+      "lines": 52,
+      "bytes": 1977,
+      "sha256": "d28c229c3f41ad0e17c90b25bc7c409dd960c3d6b077c39be72b6854aee07e48",
+      "exports": [
+        "Badge",
+        "badgeVariants"
+      ],
+      "imports": [
+        "@base-ui/react/merge-props",
+        "@base-ui/react/use-render",
+        "class-variance-authority",
+        "@/lib/utils"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": false
+    },
+    {
+      "file": "components/ui/breadcrumb.tsx",
+      "lines": 125,
+      "bytes": 2711,
+      "sha256": "9d9b56d2a4acca40e261765e196ca255be73418a26f7656db9cf4f51925b842c",
+      "exports": [
+        "Breadcrumb",
+        "BreadcrumbList",
+        "BreadcrumbItem",
+        "BreadcrumbLink",
+        "BreadcrumbPage",
+        "BreadcrumbSeparator",
+        "BreadcrumbEllipsis"
+      ],
+      "imports": [
+        "react",
+        "@base-ui/react/merge-props",
+        "@base-ui/react/use-render",
+        "@/lib/utils",
+        "lucide-react"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": false
+    },
+    {
+      "file": "components/ui/bubble.tsx",
+      "lines": 128,
+      "bytes": 4937,
+      "sha256": "5814bda3b9539d3e0f405055d5230bef7cc323b550cdd9148732ec24ca23fbd4",
+      "exports": [
+        "BubbleGroup",
+        "Bubble",
+        "BubbleContent",
+        "BubbleReactions"
+      ],
+      "imports": [
+        "react",
+        "@base-ui/react/merge-props",
+        "@base-ui/react/use-render",
+        "class-variance-authority",
+        "@/lib/utils"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "components/chat-thread.tsx"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "components/ui/button-group.tsx",
+      "lines": 87,
+      "bytes": 2567,
+      "sha256": "6cdc123ef9a5ea6ef3fa1bfe91b7875151b5b925f3a0ed9abf983678f363adea",
+      "exports": [
+        "ButtonGroup",
+        "ButtonGroupSeparator",
+        "ButtonGroupText",
+        "buttonGroupVariants"
+      ],
+      "imports": [
+        "@base-ui/react/merge-props",
+        "@base-ui/react/use-render",
+        "class-variance-authority",
+        "@/lib/utils",
+        "@/components/ui/separator"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": false
+    },
+    {
+      "file": "components/ui/button.tsx",
+      "lines": 58,
+      "bytes": 3298,
+      "sha256": "77229b46b4446b55fd24a101743ceced0f41487889682e0ee5d8086930fe86e7",
+      "exports": [
+        "Button",
+        "buttonVariants"
+      ],
+      "imports": [
+        "@base-ui/react/button",
+        "class-variance-authority",
+        "@/lib/utils"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "components/chat-composer.tsx",
+        "components/game-menu.tsx",
+        "components/new-game-composer.tsx",
+        "components/ui/alert-dialog.tsx",
+        "components/ui/attachment.tsx",
+        "components/ui/calendar.tsx",
+        "components/ui/carousel.tsx",
+        "components/ui/combobox.tsx",
+        "components/ui/dialog.tsx",
+        "components/ui/input-group.tsx",
+        "components/ui/message-scroller.tsx",
+        "components/ui/pagination.tsx",
+        "components/ui/questionnaire.tsx",
+        "components/ui/sheet.tsx",
+        "components/ui/sidebar.tsx",
+        "components/ui/toast.tsx"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "components/ui/calendar.tsx",
+      "lines": 221,
+      "bytes": 8489,
+      "sha256": "36505336424560476addd755616dde20f37344e32d966a03a459c754b72ceee7",
+      "exports": [
+        "Calendar",
+        "CalendarDayButton"
+      ],
+      "imports": [
+        "react",
+        "react-day-picker",
+        "@/lib/utils",
+        "@/components/ui/button",
+        "lucide-react"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": false
+    },
+    {
+      "file": "components/ui/card.tsx",
+      "lines": 103,
+      "bytes": 2733,
+      "sha256": "4bf8c82ad7deda4e625105647c40c3a27f5d69ea81cd4ad0a3837e198f98bfe2",
+      "exports": [
+        "Card",
+        "CardHeader",
+        "CardFooter",
+        "CardTitle",
+        "CardAction",
+        "CardDescription",
+        "CardContent"
+      ],
+      "imports": [
+        "react",
+        "@/lib/utils"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": false
+    },
+    {
+      "file": "components/ui/carousel.tsx",
+      "lines": 242,
+      "bytes": 5853,
+      "sha256": "411ac5f85907d00487382bd27c3d5baf5b6b18ed8d9c9f479038ed0e6be7d62c",
+      "exports": [
+        "CarouselApi",
+        "Carousel",
+        "CarouselContent",
+        "CarouselItem",
+        "CarouselPrevious",
+        "CarouselNext",
+        "useCarousel"
+      ],
+      "imports": [
+        "react",
+        "embla-carousel-react",
+        "@/lib/utils",
+        "@/components/ui/button",
+        "lucide-react"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": false
+    },
+    {
+      "file": "components/ui/chart.tsx",
+      "lines": 373,
+      "bytes": 10874,
+      "sha256": "ab0ad6fad6a2aef2015687dccc62c317356bb79f4ed72c5cc9a3db65e0196df7",
+      "exports": [
+        "ChartConfig",
+        "ChartContainer",
+        "ChartTooltip",
+        "ChartTooltipContent",
+        "ChartLegend",
+        "ChartLegendContent",
+        "ChartStyle"
+      ],
+      "imports": [
+        "react",
+        "recharts",
+        "recharts",
+        "@/lib/utils"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": false
+    },
+    {
+      "file": "components/ui/checkbox.tsx",
+      "lines": 29,
+      "bytes": 1568,
+      "sha256": "b263f7f38b6ec5fbc04f2f092639df51eb43b26dc32fe812db57d98405c89668",
+      "exports": [
+        "Checkbox"
+      ],
+      "imports": [
+        "@base-ui/react/checkbox",
+        "@/lib/utils",
+        "lucide-react"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": false
+    },
+    {
+      "file": "components/ui/collapsible.tsx",
+      "lines": 21,
+      "bytes": 679,
+      "sha256": "457c783423ecbe4dd9f43ab32836d1e9d41bba4e66d7f7f71b6b1c3a2cd94178",
+      "exports": [
+        "Collapsible",
+        "CollapsibleTrigger",
+        "CollapsibleContent"
+      ],
+      "imports": [
+        "@base-ui/react/collapsible"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": false
+    },
+    {
+      "file": "components/ui/combobox.tsx",
+      "lines": 297,
+      "bytes": 9328,
+      "sha256": "5d86f6f0508fe6cfe456b549b6ef9b9a94ad509d6fa547f2d55b49419b53fa9a",
+      "exports": [
+        "Combobox",
+        "ComboboxInput",
+        "ComboboxContent",
+        "ComboboxList",
+        "ComboboxItem",
+        "ComboboxGroup",
+        "ComboboxLabel",
+        "ComboboxCollection",
+        "ComboboxEmpty",
+        "ComboboxSeparator",
+        "ComboboxChips",
+        "ComboboxChip",
+        "ComboboxChipsInput",
+        "ComboboxTrigger",
+        "ComboboxValue",
+        "useComboboxAnchor"
+      ],
+      "imports": [
+        "react",
+        "@base-ui/react",
+        "@/lib/utils",
+        "@/components/ui/button",
+        "@/components/ui/input-group",
+        "lucide-react"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": false
+    },
+    {
+      "file": "components/ui/command.tsx",
+      "lines": 196,
+      "bytes": 5201,
+      "sha256": "20988eed3c4a23668f83cd99f6eba7a3378da8b62c83261739fa553578938ca2",
+      "exports": [
+        "Command",
+        "CommandDialog",
+        "CommandInput",
+        "CommandList",
+        "CommandEmpty",
+        "CommandGroup",
+        "CommandItem",
+        "CommandShortcut",
+        "CommandSeparator"
+      ],
+      "imports": [
+        "react",
+        "cmdk",
+        "@/lib/utils",
+        "@/components/ui/dialog",
+        "@/components/ui/input-group",
+        "lucide-react"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": false
+    },
+    {
+      "file": "components/ui/context-menu.tsx",
+      "lines": 271,
+      "bytes": 8306,
+      "sha256": "f02837af613be6cc5d45a2e36834bfb59bc9919ca9270f31a2ce5e9646a34c90",
+      "exports": [
+        "ContextMenu",
+        "ContextMenuTrigger",
+        "ContextMenuContent",
+        "ContextMenuItem",
+        "ContextMenuCheckboxItem",
+        "ContextMenuRadioItem",
+        "ContextMenuLabel",
+        "ContextMenuSeparator",
+        "ContextMenuShortcut",
+        "ContextMenuGroup",
+        "ContextMenuPortal",
+        "ContextMenuSub",
+        "ContextMenuSubContent",
+        "ContextMenuSubTrigger",
+        "ContextMenuRadioGroup"
+      ],
+      "imports": [
+        "react",
+        "@base-ui/react/context-menu",
+        "@/lib/utils",
+        "lucide-react"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": false
+    },
+    {
+      "file": "components/ui/dialog.tsx",
+      "lines": 160,
+      "bytes": 4235,
+      "sha256": "6d35473f3a2824051b3cdf4b168a706d9101d81ef42495bde6149781a6be3d42",
+      "exports": [
+        "Dialog",
+        "DialogClose",
+        "DialogContent",
+        "DialogDescription",
+        "DialogFooter",
+        "DialogHeader",
+        "DialogOverlay",
+        "DialogPortal",
+        "DialogTitle",
+        "DialogTrigger"
+      ],
+      "imports": [
+        "react",
+        "@base-ui/react/dialog",
+        "@/lib/utils",
+        "@/components/ui/button",
+        "lucide-react"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "components/game-menu.tsx",
+        "components/ui/command.tsx"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "components/ui/direction.tsx",
+      "lines": 6,
+      "bytes": 109,
+      "sha256": "0fd9e12ece15ec2ac5b32018664deb9e1df0977d1f0a4d3ee65e070b3e7df04b",
+      "exports": [
+        "DirectionProvider",
+        "useDirection"
+      ],
+      "imports": [
+        "@base-ui/react/direction-provider"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": false
+    },
+    {
+      "file": "components/ui/drawer.tsx",
+      "lines": 228,
+      "bytes": 11584,
+      "sha256": "683380cd30e4a3a23a9fba3755ec708e1a64ce6e59d575705d4437c7d34a4bdf",
+      "exports": [
+        "Drawer",
+        "DrawerPortal",
+        "DrawerOverlay",
+        "DrawerSwipeHandle",
+        "DrawerTrigger",
+        "DrawerClose",
+        "DrawerContent",
+        "DrawerHeader",
+        "DrawerFooter",
+        "DrawerTitle",
+        "DrawerDescription"
+      ],
+      "imports": [
+        "react",
+        "@base-ui/react/drawer",
+        "@/lib/utils"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": false
+    },
+    {
+      "file": "components/ui/dropdown-menu.tsx",
+      "lines": 268,
+      "bytes": 9004,
+      "sha256": "895952cd7e5c1c912be4883c6d17dc53be6cf05c1e10dad0dad7a5836b154960",
+      "exports": [
+        "DropdownMenu",
+        "DropdownMenuPortal",
+        "DropdownMenuTrigger",
+        "DropdownMenuContent",
+        "DropdownMenuGroup",
+        "DropdownMenuLabel",
+        "DropdownMenuItem",
+        "DropdownMenuCheckboxItem",
+        "DropdownMenuRadioGroup",
+        "DropdownMenuRadioItem",
+        "DropdownMenuSeparator",
+        "DropdownMenuShortcut",
+        "DropdownMenuSub",
+        "DropdownMenuSubTrigger",
+        "DropdownMenuSubContent"
+      ],
+      "imports": [
+        "react",
+        "@base-ui/react/menu",
+        "@/lib/utils",
+        "lucide-react"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "components/game-menu.tsx",
+        "components/model-picker.tsx",
+        "components/ui/menubar.tsx"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "components/ui/empty.tsx",
+      "lines": 104,
+      "bytes": 2501,
+      "sha256": "b0d6fca35c9fecba1603fc3fd30d81a399fbc6ac09df39d3f9f1ff78123630a0",
+      "exports": [
+        "Empty",
+        "EmptyHeader",
+        "EmptyTitle",
+        "EmptyDescription",
+        "EmptyContent",
+        "EmptyMedia"
+      ],
+      "imports": [
+        "class-variance-authority",
+        "@/lib/utils"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "app/(app)/page.tsx",
+        "components/app-sidebar.tsx"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "components/ui/field.tsx",
+      "lines": 238,
+      "bytes": 6504,
+      "sha256": "209e2c948c8b853754366257fd5855461838870f783f55f365a04fdabc9f440e",
+      "exports": [
+        "Field",
+        "FieldLabel",
+        "FieldDescription",
+        "FieldError",
+        "FieldGroup",
+        "FieldLegend",
+        "FieldSeparator",
+        "FieldSet",
+        "FieldContent",
+        "FieldTitle"
+      ],
+      "imports": [
+        "react",
+        "class-variance-authority",
+        "@/lib/utils",
+        "@/components/ui/label",
+        "@/components/ui/separator"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "components/game-menu.tsx"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "components/ui/hover-card.tsx",
+      "lines": 51,
+      "bytes": 1906,
+      "sha256": "e3c7c4d3a9505e6de929a3a98cd256a03cfcb22e5446db1fcc9cea0e9857da07",
+      "exports": [
+        "HoverCard",
+        "HoverCardTrigger",
+        "HoverCardContent"
+      ],
+      "imports": [
+        "@base-ui/react/preview-card",
+        "@/lib/utils"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": false
+    },
+    {
+      "file": "components/ui/input-group.tsx",
+      "lines": 158,
+      "bytes": 5422,
+      "sha256": "858e490bef9912af6024f269b9219e0750d9db5d7359316358f8d180a2ebc0f6",
+      "exports": [
+        "InputGroup",
+        "InputGroupAddon",
+        "InputGroupButton",
+        "InputGroupText",
+        "InputGroupInput",
+        "InputGroupTextarea"
+      ],
+      "imports": [
+        "react",
+        "class-variance-authority",
+        "@/lib/utils",
+        "@/components/ui/button",
+        "@/components/ui/input",
+        "@/components/ui/textarea"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "components/chat-composer.tsx",
+        "components/model-picker.tsx",
+        "components/ui/combobox.tsx",
+        "components/ui/command.tsx"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "components/ui/input-otp.tsx",
+      "lines": 87,
+      "bytes": 2634,
+      "sha256": "8f3755b5443aaf3a9a2aca3703ce44e2f9e48a649961a0d970acafe70ad12d54",
+      "exports": [
+        "InputOTP",
+        "InputOTPGroup",
+        "InputOTPSlot",
+        "InputOTPSeparator"
+      ],
+      "imports": [
+        "react",
+        "input-otp",
+        "@/lib/utils",
+        "lucide-react"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": false
+    },
+    {
+      "file": "components/ui/input.tsx",
+      "lines": 20,
+      "bytes": 1060,
+      "sha256": "aa7d45bfb5cff98663124a091a5fcd86735b9b037e8e84d9bfd3a54aba2a6f77",
+      "exports": [
+        "Input"
+      ],
+      "imports": [
+        "react",
+        "@base-ui/react/input",
+        "@/lib/utils"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "components/game-menu.tsx",
+        "components/ui/input-group.tsx",
+        "components/ui/sidebar.tsx"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "components/ui/item.tsx",
+      "lines": 201,
+      "bytes": 5061,
+      "sha256": "3b95dd62cdcf6b80e87b8f1a50cc6a62b5b30cc322c1510a36ebfa1d9f0d3ad7",
+      "exports": [
+        "Item",
+        "ItemMedia",
+        "ItemContent",
+        "ItemActions",
+        "ItemGroup",
+        "ItemSeparator",
+        "ItemTitle",
+        "ItemDescription",
+        "ItemHeader",
+        "ItemFooter"
+      ],
+      "imports": [
+        "react",
+        "@base-ui/react/merge-props",
+        "@base-ui/react/use-render",
+        "class-variance-authority",
+        "@/lib/utils",
+        "@/components/ui/separator"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": false
+    },
+    {
+      "file": "components/ui/kbd.tsx",
+      "lines": 26,
+      "bytes": 863,
+      "sha256": "d36e11b852229f21fe140680d87cc44af926cbc4604a1867f73f1dfc3e028a5a",
+      "exports": [
+        "Kbd",
+        "KbdGroup"
+      ],
+      "imports": [
+        "@/lib/utils"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": false
+    },
+    {
+      "file": "components/ui/label.tsx",
+      "lines": 20,
+      "bytes": 538,
+      "sha256": "9662973c34f20f4a1e13103ae3d558e6a63a33593c98b2821b2fbe8de25b5099",
+      "exports": [
+        "Label"
+      ],
+      "imports": [
+        "react",
+        "@/lib/utils"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "components/ui/field.tsx"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "components/ui/marker.tsx",
+      "lines": 71,
+      "bytes": 2019,
+      "sha256": "6171c82931c72b9cdfaea05bf4f8a6f11f039996f1eea58938790a09a1eed50a",
+      "exports": [
+        "Marker",
+        "MarkerIcon",
+        "MarkerContent",
+        "markerVariants"
+      ],
+      "imports": [
+        "react",
+        "@base-ui/react/merge-props",
+        "@base-ui/react/use-render",
+        "class-variance-authority",
+        "@/lib/utils"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "components/chat-thread.tsx"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "components/ui/menubar.tsx",
+      "lines": 280,
+      "bytes": 8461,
+      "sha256": "42a4e0e04b4ea0059e6bc7f992de8df261285b5f0fa2179c23e7bc6bcf753bf0",
+      "exports": [
+        "Menubar",
+        "MenubarPortal",
+        "MenubarMenu",
+        "MenubarTrigger",
+        "MenubarContent",
+        "MenubarGroup",
+        "MenubarSeparator",
+        "MenubarLabel",
+        "MenubarItem",
+        "MenubarShortcut",
+        "MenubarCheckboxItem",
+        "MenubarRadioGroup",
+        "MenubarRadioItem",
+        "MenubarSub",
+        "MenubarSubTrigger",
+        "MenubarSubContent"
+      ],
+      "imports": [
+        "react",
+        "@base-ui/react/menu",
+        "@base-ui/react/menubar",
+        "@/lib/utils",
+        "@/components/ui/dropdown-menu",
+        "lucide-react"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": false
+    },
+    {
+      "file": "components/ui/message-scroller.tsx",
+      "lines": 131,
+      "bytes": 4193,
+      "sha256": "7c027d9166a0bfd7128e57dd705861061cfbc6039ff65876f3db27e77ce5a2b2",
+      "exports": [
+        "MessageScrollerProvider",
+        "MessageScroller",
+        "MessageScrollerViewport",
+        "MessageScrollerContent",
+        "MessageScrollerItem",
+        "MessageScrollerButton",
+        "useMessageScroller",
+        "useMessageScrollerScrollable",
+        "useMessageScrollerVisibility"
+      ],
+      "imports": [
+        "react",
+        "@shadcn/react/message-scroller",
+        "@/lib/utils",
+        "@/components/ui/button",
+        "lucide-react"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "components/chat-thread.tsx"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "components/ui/message.tsx",
+      "lines": 92,
+      "bytes": 2324,
+      "sha256": "a4a7f8a104559536a531e198d1a7a239cdd55748da74a0a3e2088f275e153287",
+      "exports": [
+        "MessageGroup",
+        "Message",
+        "MessageAvatar",
+        "MessageContent",
+        "MessageFooter",
+        "MessageHeader"
+      ],
+      "imports": [
+        "react",
+        "@/lib/utils"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "components/chat-thread.tsx"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "components/ui/native-select.tsx",
+      "lines": 61,
+      "bytes": 2154,
+      "sha256": "603a24de4f476473d0574d860a2af7b881cc5e3635b2e210e35ab9a0b588b628",
+      "exports": [
+        "NativeSelect",
+        "NativeSelectOptGroup",
+        "NativeSelectOption"
+      ],
+      "imports": [
+        "react",
+        "@/lib/utils",
+        "lucide-react"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": false
+    },
+    {
+      "file": "components/ui/navigation-menu.tsx",
+      "lines": 168,
+      "bytes": 7561,
+      "sha256": "946679b9762955037e95c11684b2035d583d3839609b4ad57e85e19d43d4655c",
+      "exports": [
+        "NavigationMenu",
+        "NavigationMenuContent",
+        "NavigationMenuIndicator",
+        "NavigationMenuItem",
+        "NavigationMenuLink",
+        "NavigationMenuList",
+        "NavigationMenuTrigger",
+        "navigationMenuTriggerStyle",
+        "NavigationMenuPositioner"
+      ],
+      "imports": [
+        "@base-ui/react/navigation-menu",
+        "class-variance-authority",
+        "@/lib/utils",
+        "lucide-react"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": false
+    },
+    {
+      "file": "components/ui/pagination.tsx",
+      "lines": 130,
+      "bytes": 2994,
+      "sha256": "3414c3d30de3756546d888b46eb33ea3e0e88b123b3b85317654a33d252445f7",
+      "exports": [
+        "Pagination",
+        "PaginationContent",
+        "PaginationEllipsis",
+        "PaginationItem",
+        "PaginationLink",
+        "PaginationNext",
+        "PaginationPrevious"
+      ],
+      "imports": [
+        "react",
+        "@/lib/utils",
+        "@/components/ui/button",
+        "lucide-react"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": false
+    },
+    {
+      "file": "components/ui/popover.tsx",
+      "lines": 95,
+      "bytes": 2829,
+      "sha256": "8c402095a779250a736db6a43f01406a91bb49c892c4b39636c37f39b93802c4",
+      "exports": [
+        "Popover",
+        "PopoverClose",
+        "PopoverContent",
+        "PopoverDescription",
+        "PopoverHeader",
+        "PopoverTitle",
+        "PopoverTrigger"
+      ],
+      "imports": [
+        "react",
+        "@base-ui/react/popover",
+        "@/lib/utils"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "components/app-sidebar.tsx"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "components/ui/progress.tsx",
+      "lines": 83,
+      "bytes": 1823,
+      "sha256": "126ba53d078a3696c70e5bcb33a62aba1899abdc822515fb86d38a8174d26301",
+      "exports": [
+        "Progress",
+        "ProgressTrack",
+        "ProgressIndicator",
+        "ProgressLabel",
+        "ProgressValue"
+      ],
+      "imports": [
+        "@base-ui/react/progress",
+        "@/lib/utils"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": false
+    },
+    {
+      "file": "components/ui/questionnaire.tsx",
+      "lines": 324,
+      "bytes": 10531,
+      "sha256": "a2526a8ac784237e95164a6ef709f51661d6e5bc296249dfe57966baf3411be5",
+      "exports": [
+        "Questionnaire",
+        "QuestionnaireActions",
+        "QuestionnaireChoice",
+        "QuestionnaireChoiceDescription",
+        "QuestionnaireChoices",
+        "QuestionnaireDescription",
+        "QuestionnaireError",
+        "QuestionnaireInput",
+        "QuestionnaireItem",
+        "QuestionnaireNext",
+        "QuestionnairePrevious",
+        "QuestionnaireProgress",
+        "QuestionnaireSkip",
+        "QuestionnaireSubmit",
+        "QuestionnaireTitle"
+      ],
+      "imports": [
+        "react",
+        "@shadcn/react/questionnaire",
+        "@/lib/utils",
+        "@/components/ui/button",
+        "lucide-react"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "components/chat-thread.tsx"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "components/ui/radio-group.tsx",
+      "lines": 38,
+      "bytes": 1873,
+      "sha256": "315b62ac532cc9ca6909530443f10953e25605e93d54eb30fb35dc20618b5d53",
+      "exports": [
+        "RadioGroup",
+        "RadioGroupItem"
+      ],
+      "imports": [
+        "@base-ui/react/radio",
+        "@base-ui/react/radio-group",
+        "@/lib/utils"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": false
+    },
+    {
+      "file": "components/ui/resizable.tsx",
+      "lines": 50,
+      "bytes": 1721,
+      "sha256": "4e9801df68908f53d5439a65106e78a3de74b9d689e15019525244d7cdaa1eff",
+      "exports": [
+        "ResizableHandle",
+        "ResizablePanel",
+        "ResizablePanelGroup"
+      ],
+      "imports": [
+        "react-resizable-panels",
+        "@/lib/utils"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "components/game-chat.tsx"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "components/ui/scroll-area.tsx",
+      "lines": 55,
+      "bytes": 1679,
+      "sha256": "d88cfd62451a6d3bccb438e973ab6d70a103e963fb7e76bb1a3d3b74b66dcd78",
+      "exports": [
+        "ScrollArea",
+        "ScrollBar"
+      ],
+      "imports": [
+        "react",
+        "@base-ui/react/scroll-area",
+        "@/lib/utils"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": false
+    },
+    {
+      "file": "components/ui/select.tsx",
+      "lines": 201,
+      "bytes": 6856,
+      "sha256": "63be1491cc58534c41f224d6ff0a3c0fb4a75fb1950cb9ff59fbdcce3f6a94c5",
+      "exports": [
+        "Select",
+        "SelectContent",
+        "SelectGroup",
+        "SelectItem",
+        "SelectLabel",
+        "SelectScrollDownButton",
+        "SelectScrollUpButton",
+        "SelectSeparator",
+        "SelectTrigger",
+        "SelectValue"
+      ],
+      "imports": [
+        "react",
+        "@base-ui/react/select",
+        "@/lib/utils",
+        "lucide-react"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": false
+    },
+    {
+      "file": "components/ui/separator.tsx",
+      "lines": 25,
+      "bytes": 570,
+      "sha256": "6f584fe7ab840824d05da0216f5b2c151c52026515b0bd6b6c2fdd5f95a96dbe",
+      "exports": [
+        "Separator"
+      ],
+      "imports": [
+        "@base-ui/react/separator",
+        "@/lib/utils"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "components/ui/button-group.tsx",
+        "components/ui/field.tsx",
+        "components/ui/item.tsx",
+        "components/ui/sidebar.tsx"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "components/ui/sheet.tsx",
+      "lines": 138,
+      "bytes": 4571,
+      "sha256": "4a7443e2fd0e3778f4330ee802fde2e505ec5142205dca7d2fb6d75a3ddceff4",
+      "exports": [
+        "Sheet",
+        "SheetTrigger",
+        "SheetClose",
+        "SheetContent",
+        "SheetHeader",
+        "SheetFooter",
+        "SheetTitle",
+        "SheetDescription"
+      ],
+      "imports": [
+        "react",
+        "@base-ui/react/dialog",
+        "@/lib/utils",
+        "@/components/ui/button",
+        "lucide-react"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "components/ui/sidebar.tsx"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "components/ui/sidebar.tsx",
+      "lines": 723,
+      "bytes": 22356,
+      "sha256": "933dd8d8db9f9bb3e1dab1b851ab4ab9852a24ce4a9455c7fba7877d09644e3a",
+      "exports": [
+        "Sidebar",
+        "SidebarContent",
+        "SidebarFooter",
+        "SidebarGroup",
+        "SidebarGroupAction",
+        "SidebarGroupContent",
+        "SidebarGroupLabel",
+        "SidebarHeader",
+        "SidebarInput",
+        "SidebarInset",
+        "SidebarMenu",
+        "SidebarMenuAction",
+        "SidebarMenuBadge",
+        "SidebarMenuButton",
+        "SidebarMenuItem",
+        "SidebarMenuSkeleton",
+        "SidebarMenuSub",
+        "SidebarMenuSubButton",
+        "SidebarMenuSubItem",
+        "SidebarProvider",
+        "SidebarRail",
+        "SidebarSeparator",
+        "SidebarTrigger",
+        "useSidebar"
+      ],
+      "imports": [
+        "react",
+        "@base-ui/react/merge-props",
+        "@base-ui/react/use-render",
+        "class-variance-authority",
+        "@/hooks/use-mobile",
+        "@/lib/utils",
+        "@/components/ui/button",
+        "@/components/ui/input",
+        "@/components/ui/separator",
+        "@/components/ui/sheet",
+        "@/components/ui/skeleton",
+        "@/components/ui/tooltip",
+        "lucide-react"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "app/(app)/layout.tsx",
+        "components/app-sidebar.tsx"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "components/ui/skeleton.tsx",
+      "lines": 13,
+      "bytes": 288,
+      "sha256": "6943aea99efa26e56d3d546bd7f41c8d4336bf56a258519e49248aa063f02ade",
+      "exports": [
+        "Skeleton"
+      ],
+      "imports": [
+        "@/lib/utils"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "components/ui/sidebar.tsx"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "components/ui/slider.tsx",
+      "lines": 52,
+      "bytes": 1926,
+      "sha256": "a76d0e8176915c730a504ef56f60b5d8f84e5eba9930d70274081fbe96787421",
+      "exports": [
+        "Slider"
+      ],
+      "imports": [
+        "@base-ui/react/slider",
+        "@/lib/utils"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": false
+    },
+    {
+      "file": "components/ui/spinner.tsx",
+      "lines": 10,
+      "bytes": 332,
+      "sha256": "e90b2681ae6910e499b5cc73614ce3fe7883ad87a90d6acd44dfb323e74f930e",
+      "exports": [
+        "Spinner"
+      ],
+      "imports": [
+        "@/lib/utils",
+        "lucide-react"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "components/chat-preview.tsx",
+        "components/chat-thread.tsx",
+        "components/game-menu.tsx"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "components/ui/switch.tsx",
+      "lines": 32,
+      "bytes": 1843,
+      "sha256": "264d5c2baeebded2607e6ea17358745893a1ee728182315b6957540e1e0dd562",
+      "exports": [
+        "Switch"
+      ],
+      "imports": [
+        "@base-ui/react/switch",
+        "@/lib/utils"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": false
+    },
+    {
+      "file": "components/ui/table.tsx",
+      "lines": 116,
+      "bytes": 2518,
+      "sha256": "00961b6cbca3cf9145c965377efa20a746051860ea6940bda24aea48057e9d42",
+      "exports": [
+        "Table",
+        "TableHeader",
+        "TableBody",
+        "TableFooter",
+        "TableHead",
+        "TableRow",
+        "TableCell",
+        "TableCaption"
+      ],
+      "imports": [
+        "react",
+        "@/lib/utils"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": false
+    },
+    {
+      "file": "components/ui/tabs.tsx",
+      "lines": 82,
+      "bytes": 3579,
+      "sha256": "01e03ff649de3a406f63aeebc3ef3b10cf8a14e9a416ef30722b74b0cc516a57",
+      "exports": [
+        "Tabs",
+        "TabsList",
+        "TabsTrigger",
+        "TabsContent",
+        "tabsListVariants"
+      ],
+      "imports": [
+        "@base-ui/react/tabs",
+        "class-variance-authority",
+        "@/lib/utils"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": false
+    },
+    {
+      "file": "components/ui/textarea.tsx",
+      "lines": 18,
+      "bytes": 860,
+      "sha256": "281e3b3a2d25a74c86ee5cdeebbaee1cd0b533a2bf52ed13bd9869aeaa1b6d76",
+      "exports": [
+        "Textarea"
+      ],
+      "imports": [
+        "react",
+        "@/lib/utils"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "components/ui/input-group.tsx"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "components/ui/toast.tsx",
+      "lines": 234,
+      "bytes": 7628,
+      "sha256": "c997befc5ab8bab994b968e27b2c1d62298579f90262451b1f9d6dfe49d07734",
+      "exports": [
+        "Toaster",
+        "Toast",
+        "ToastAction",
+        "ToastClose",
+        "ToastContent",
+        "ToastDescription",
+        "ToastPortal",
+        "ToastProvider",
+        "ToastTitle",
+        "ToastViewport",
+        "createToastManager",
+        "toast",
+        "useToastManager"
+      ],
+      "imports": [
+        "react",
+        "@base-ui/react/toast",
+        "@/lib/utils",
+        "@/components/ui/button",
+        "lucide-react"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": false
+    },
+    {
+      "file": "components/ui/toggle-group.tsx",
+      "lines": 89,
+      "bytes": 3272,
+      "sha256": "55c2398ec697208abc00db5f492b6eaea02e1065ff6de402b6755fad9aa35373",
+      "exports": [
+        "ToggleGroup",
+        "ToggleGroupItem"
+      ],
+      "imports": [
+        "react",
+        "@base-ui/react/toggle",
+        "@base-ui/react/toggle-group",
+        "class-variance-authority",
+        "@/lib/utils",
+        "@/components/ui/toggle"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": false
+    },
+    {
+      "file": "components/ui/toggle.tsx",
+      "lines": 45,
+      "bytes": 1807,
+      "sha256": "19ba026bff1e5b57edbdac7612de4616ac76f0478803f82e9fd9b70fd6111cd6",
+      "exports": [
+        "Toggle",
+        "toggleVariants"
+      ],
+      "imports": [
+        "@base-ui/react/toggle",
+        "class-variance-authority",
+        "@/lib/utils"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "components/ui/toggle-group.tsx"
+      ],
+      "reachable": false
+    },
+    {
+      "file": "components/ui/tooltip.tsx",
+      "lines": 66,
+      "bytes": 2912,
+      "sha256": "7fa132aa8be94a3cf05823fb40bbe0f762785f9a9e9a5917c0ea8a14a478da13",
+      "exports": [
+        "Tooltip",
+        "TooltipTrigger",
+        "TooltipContent",
+        "TooltipProvider"
+      ],
+      "imports": [
+        "@base-ui/react/tooltip",
+        "@/lib/utils"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "components/ui/sidebar.tsx"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "drizzle.config.ts",
+      "lines": 19,
+      "bytes": 502,
+      "sha256": "5f4af305d386171b8dd21f853cda1d6ff5c516dd54a378fe55401b27459aa707",
+      "exports": [],
+      "imports": [
+        "dotenv",
+        "@neon/env",
+        "drizzle-kit",
+        "./neon"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": true
+    },
+    {
+      "file": "eslint.config.mjs",
+      "lines": 21,
+      "bytes": 661,
+      "sha256": "d5bf009877d704cc095329e1159cf3b7a5426c15497b0e0164ae5818a606d2a7",
+      "exports": [],
+      "imports": [
+        "eslint/config",
+        "eslint-config-next/core-web-vitals",
+        "eslint-config-next/typescript"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": true
+    },
+    {
+      "file": "hooks/use-mobile.ts",
+      "lines": 19,
+      "bytes": 584,
+      "sha256": "d2377fbad5ad2bdf7fa896a68c36ac8bf4aa74a974b2061f77b41ae58d623001",
+      "exports": [
+        "useIsMobile"
+      ],
+      "imports": [
+        "react"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "components/ui/sidebar.tsx"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "instrumentation-client.ts",
+      "lines": 63,
+      "bytes": 2457,
+      "sha256": "dc981e1c8992cdd6133d966587fb7c9707796639a824aab0a142452c10ba0814",
+      "exports": [
+        "onRouterTransitionStart"
+      ],
+      "imports": [
+        "@sentry/nextjs"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": true
+    },
+    {
+      "file": "instrumentation.ts",
+      "lines": 14,
+      "bytes": 385,
+      "sha256": "64f323135c87be3775d3dcce08c557d23efca5cfa3122be3f15cae0111e964a3",
+      "exports": [
+        "register",
+        "onRequestError"
+      ],
+      "imports": [
+        "@sentry/nextjs",
+        "./sentry.server.config",
+        "./sentry.edge.config"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": true
+    },
+    {
+      "file": "lib/billing/format.ts",
+      "lines": 45,
+      "bytes": 1852,
+      "sha256": "b411591c285217dab90733fb015db7e2f3f42acdfff44261569cff9e4bbc73e4",
+      "exports": [
+        "DOLLAR",
+        "formatCredits"
+      ],
+      "imports": [],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "app/(app)/billing/page.tsx",
+        "components/app-sidebar.tsx",
+        "lib/billing/ledger.ts",
+        "lib/billing/pricing.ts",
+        "lib/billing/reconcile.ts"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "lib/billing/ledger.ts",
+      "lines": 124,
+      "bytes": 4848,
+      "sha256": "ccb831a394951c6f1e006eb53f6877448332a6dec71e65f8e81f1a514dbad188",
+      "exports": [
+        "DOLLAR",
+        "FREE_CREDITS",
+        "getCreditBalance",
+        "chargeStep",
+        "OUT_OF_CREDITS",
+        "hasCreditsToBuild"
+      ],
+      "imports": [
+        "drizzle-orm",
+        "@/lib/db/client",
+        "@/lib/billing/format",
+        "@/lib/billing/reconcile"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "app/(app)/billing/page.tsx",
+        "app/(app)/games/[id]/page.tsx",
+        "app/(app)/layout.tsx",
+        "lib/games/chat-actions.ts",
+        "trigger/chat.ts"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "lib/billing/pricing.ts",
+      "lines": 114,
+      "bytes": 4018,
+      "sha256": "9abe1c00ce88032a275d018ffebb80c652165015031c40e1a687b3f425718044",
+      "exports": [
+        "MODEL_RATES",
+        "priceStep"
+      ],
+      "imports": [
+        "ai",
+        "@/lib/billing/format",
+        "@/lib/games/model-catalog"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "trigger/chat.ts"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "lib/billing/reconcile.ts",
+      "lines": 145,
+      "bytes": 5555,
+      "sha256": "26af208293b85f3f24059e84e9f93e14c01ca580d7438160cf06b40947c3f975",
+      "exports": [
+        "reconcileCredits"
+      ],
+      "imports": [
+        "@clerk/backend",
+        "@/lib/billing/format",
+        "@/lib/db/client",
+        "@/lib/observability"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "app/(app)/billing/page.tsx",
+        "lib/billing/ledger.ts"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "lib/daytona/client.ts",
+      "lines": 7,
+      "bytes": 171,
+      "sha256": "d6947d6ba10adf9249b2a42b640167a26c7a545834c8bb1681803303dc27f6ea",
+      "exports": [
+        "daytona"
+      ],
+      "imports": [
+        "@daytona/sdk"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "lib/daytona/utils.ts"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "lib/daytona/utils.ts",
+      "lines": 325,
+      "bytes": 12758,
+      "sha256": "d0f1a9c7f1ef21fe0700b7a8fad371a7ffd9b632fffcf057c75c5d10048f7fc9",
+      "exports": [
+        "GAME_DIR",
+        "createGameSandbox",
+        "deleteGameSandboxes",
+        "getGameSandbox",
+        "PREVIEW_PORT",
+        "PREVIEW_URL_TTL_SECONDS",
+        "startGameServer"
+      ],
+      "imports": [
+        "@daytona/sdk",
+        "drizzle-orm",
+        "@/lib/daytona/client",
+        "@/lib/db/client",
+        "@/lib/games/seed",
+        "@/lib/observability"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "app/api/games/[id]/preview/route.ts",
+        "lib/games/actions.ts",
+        "lib/games/instructions/runtime.ts",
+        "lib/games/tools.ts",
+        "trigger/chat.ts"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "lib/db/client.ts",
+      "lines": 24,
+      "bytes": 714,
+      "sha256": "dd812aeef167a07e5dd393de5e32beba33571981c521f969b56a0522eae9d650",
+      "exports": [
+        "db"
+      ],
+      "imports": [
+        "@neon/env",
+        "drizzle-orm/node-postgres",
+        "pg",
+        "@/neon",
+        "./schema",
+        "./schema"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "lib/billing/ledger.ts",
+        "lib/billing/reconcile.ts",
+        "lib/daytona/utils.ts",
+        "lib/db/index.ts",
+        "lib/games/chat-store.ts"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "lib/db/index.ts",
+      "lines": 7,
+      "bytes": 324,
+      "sha256": "fc075c171757a7232073b3352508d9a799a9350053b08b8a82061ec5ec28b8ed",
+      "exports": [],
+      "imports": [
+        "server-only",
+        "./client"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "lib/games/actions.ts",
+        "lib/games/authorize.ts",
+        "lib/games/queries.ts"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "lib/db/schema.ts",
+      "lines": 81,
+      "bytes": 2881,
+      "sha256": "fe2dda2818e9f14b2abde1d11c1b3a6ae6c7a923e21e44542e258e4717b759a3",
+      "exports": [
+        "games",
+        "Game",
+        "NewGame",
+        "creditLedger",
+        "CreditLedgerEntry",
+        "NewCreditLedgerEntry"
+      ],
+      "imports": [
+        "ai",
+        "drizzle-orm",
+        "drizzle-orm/pg-core"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "components/app-sidebar.tsx",
+        "lib/db/client.ts"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "lib/games/actions.ts",
+      "lines": 304,
+      "bytes": 12141,
+      "sha256": "003a70288b8b9b87fb87953ebdc26b678adc3b822f041f2fe09d0469027cf42d",
+      "exports": [
+        "createGame",
+        "renameGame",
+        "deleteGame"
+      ],
+      "imports": [
+        "@ai-sdk/anthropic",
+        "@clerk/nextjs/server",
+        "@sentry/nextjs",
+        "ai",
+        "drizzle-orm",
+        "next/cache",
+        "next/navigation",
+        "@/lib/daytona/utils",
+        "@/lib/db",
+        "@/lib/games/authorize",
+        "@/lib/games/chat-session",
+        "@/lib/games/messages",
+        "@/lib/games/model-catalog",
+        "@/lib/games/title",
+        "@/lib/observability"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "components/game-menu.tsx",
+        "components/new-game-composer.tsx"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "lib/games/agent.ts",
+      "lines": 17,
+      "bytes": 772,
+      "sha256": "720ca04ca6fc9c543dfe7ec68597095c33d4ca69ac12feaa77ffe0a29edba029",
+      "exports": [
+        "gameModelSettings"
+      ],
+      "imports": [
+        "./model-catalog",
+        "./models"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "trigger/chat.ts"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "lib/games/authorize.ts",
+      "lines": 81,
+      "bytes": 2870,
+      "sha256": "d9e3018447c891ff3427f42614caa6f8f88932ad436b668514a95aceb4080f49",
+      "exports": [
+        "authorizeGame"
+      ],
+      "imports": [
+        "server-only",
+        "@clerk/nextjs/server",
+        "@sentry/nextjs",
+        "@/lib/db",
+        "@/lib/games/queries"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "lib/games/actions.ts",
+        "lib/games/chat-actions.ts"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "lib/games/chat-actions.ts",
+      "lines": 92,
+      "bytes": 3359,
+      "sha256": "05786a692f97fe3e2e09d8a796528111f694fc4f472fb738ad086ed506c318dc",
+      "exports": [
+        "startGameChatSession",
+        "mintGameChatAccessToken"
+      ],
+      "imports": [
+        "@sentry/nextjs",
+        "@trigger.dev/sdk",
+        "@trigger.dev/sdk/ai",
+        "@/lib/billing/ledger",
+        "@/lib/games/authorize",
+        "@/lib/observability",
+        "@/trigger/chat"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "components/chat-thread.tsx"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "lib/games/chat-session.ts",
+      "lines": 70,
+      "bytes": 2733,
+      "sha256": "66df832d3c2b9696733ce33a95ee4b0d6a56fa2a12db417dcf7b61b8664e3436",
+      "exports": [
+        "endGameChatSession"
+      ],
+      "imports": [
+        "server-only",
+        "@sentry/nextjs",
+        "@trigger.dev/sdk",
+        "@/lib/observability"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "lib/games/actions.ts"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "lib/games/chat-store.ts",
+      "lines": 84,
+      "bytes": 2511,
+      "sha256": "400896eddc2ae6b56cfdda1ec7bd9cf9934b73015abd84c460031b38c1d4a25c",
+      "exports": [
+        "loadGameMessages",
+        "loadGameOrgId",
+        "saveGameMessages",
+        "saveGameTurn"
+      ],
+      "imports": [
+        "ai",
+        "drizzle-orm",
+        "@/lib/db/client"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "trigger/chat.ts"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "lib/games/instructions/engine.ts",
+      "lines": 298,
+      "bytes": 14532,
+      "sha256": "3d1e2d17f568c41db080c9eace7eafbd108ffa84b6ab677976d0cc38a7460022",
+      "exports": [
+        "engine"
+      ],
+      "imports": [],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "lib/games/instructions/index.ts"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "lib/games/instructions/index.ts",
+      "lines": 22,
+      "bytes": 863,
+      "sha256": "671298f8441f30b1f9378a7239eff90cc3d5d2c43341bde5b511ec2ffb6534c2",
+      "exports": [
+        "gameInstructions"
+      ],
+      "imports": [
+        "ai",
+        "./engine",
+        "./runtime",
+        "./workflow"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "trigger/chat.ts"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "lib/games/instructions/runtime.ts",
+      "lines": 91,
+      "bytes": 4294,
+      "sha256": "baf9f5b08441629371d08e95791072cbac12002f4ee9b1629b92259e910a615f",
+      "exports": [
+        "runtime"
+      ],
+      "imports": [
+        "@/lib/daytona/utils"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "lib/games/instructions/index.ts"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "lib/games/instructions/workflow.ts",
+      "lines": 122,
+      "bytes": 6406,
+      "sha256": "bdad43c80078ede81894e1bfb84e6da45f38270426fba8651ae9d92a8cc79a63",
+      "exports": [
+        "workflow"
+      ],
+      "imports": [],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "lib/games/instructions/index.ts"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "lib/games/messages.ts",
+      "lines": 8,
+      "bytes": 353,
+      "sha256": "32fa9ebe49eddffa1baa447bffba13bdce6427989dd0c2cf2ae5fc3db5e5d9b4",
+      "exports": [
+        "generateMessageId"
+      ],
+      "imports": [
+        "server-only",
+        "ai"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "lib/games/actions.ts"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "lib/games/model-catalog.ts",
+      "lines": 57,
+      "bytes": 2146,
+      "sha256": "4ebb919785bd1c4f30b3e90d134871f6f0902996bc694edfc1beba552ba15fe2",
+      "exports": [
+        "GAME_MODELS",
+        "GameModelId",
+        "DEFAULT_GAME_MODEL_ID",
+        "isGameModelId"
+      ],
+      "imports": [],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "app/(app)/games/[id]/page.tsx",
+        "components/chat-composer.tsx",
+        "components/chat-thread.tsx",
+        "components/game-chat.tsx",
+        "components/model-picker.tsx",
+        "components/new-game-composer.tsx",
+        "lib/billing/pricing.ts",
+        "lib/games/actions.ts",
+        "lib/games/agent.ts",
+        "lib/games/models.ts",
+        "trigger/chat.ts"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "lib/games/models.ts",
+      "lines": 24,
+      "bytes": 1142,
+      "sha256": "d8a4c251f3e3167daa58d099e2aba5c2bae538f13d4000b071b71187044e5b30",
+      "exports": [
+        "gameModels"
+      ],
+      "imports": [
+        "@ai-sdk/anthropic",
+        "ai",
+        "./model-catalog"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "lib/games/agent.ts"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "lib/games/queries.ts",
+      "lines": 50,
+      "bytes": 1295,
+      "sha256": "61ea2243f8187d65c00054f8136748a01c371c77b10e1a28bf8f6c806f47b06e",
+      "exports": [
+        "listGames",
+        "getGame"
+      ],
+      "imports": [
+        "server-only",
+        "@clerk/nextjs/server",
+        "drizzle-orm",
+        "@/lib/db"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "app/(app)/games/[id]/page.tsx",
+        "app/(app)/layout.tsx",
+        "app/api/games/[id]/preview/route.ts",
+        "lib/games/authorize.ts"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "lib/games/runtime/engine/animation.js",
+      "lines": 348,
+      "bytes": 10767,
+      "sha256": "20053254a8da44f180a9fb1331601a23f98dba6ea603731a041ca3947947279f",
+      "exports": [
+        "createTweens",
+        "Spring",
+        "SpringVec3",
+        "createShake",
+        "flash",
+        "pop",
+        "hover",
+        "createMixer",
+        "ease"
+      ],
+      "imports": [
+        "three",
+        "./math.js"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "lib/games/runtime/engine/index.js"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "lib/games/runtime/engine/controls.js",
+      "lines": 452,
+      "bytes": 14596,
+      "sha256": "fb0d9a0ce317ee753475ec774fd6e0cc464b4b7daf7264c3e07a741ac27d46a6",
+      "exports": [
+        "orbitCamera",
+        "followCamera",
+        "topDownCamera",
+        "sideCamera",
+        "firstPerson",
+        "thirdPerson",
+        "platformer",
+        "pointerOnGround",
+        "pointerPicker"
+      ],
+      "imports": [
+        "three",
+        "three/addons/controls/OrbitControls.js",
+        "./math.js"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "lib/games/runtime/engine/index.js"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "lib/games/runtime/engine/debug.js",
+      "lines": 124,
+      "bytes": 4117,
+      "sha256": "3342c74a8bfc50a297d0b99cd628c98bd4349d2b62803e2ca62a6052316d47f3",
+      "exports": [
+        "showStats",
+        "showHelpers",
+        "showColliders",
+        "log"
+      ],
+      "imports": [
+        "three"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "lib/games/runtime/engine/index.js"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "lib/games/runtime/engine/engine.js",
+      "lines": 271,
+      "bytes": 8185,
+      "sha256": "b631d842831db5fb5d15d65a4c74a88c73bdfc86f966e3c1587cc31643918b81",
+      "exports": [
+        "createEngine",
+        "disposeObject"
+      ],
+      "imports": [
+        "three",
+        "./math.js"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "lib/games/runtime/engine/index.js"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "lib/games/runtime/engine/hud.js",
+      "lines": 573,
+      "bytes": 18465,
+      "sha256": "5a2c03eed90e8a480d91c85d7deae9053e87c5a1ad2762f55a72b3405f64eaf6",
+      "exports": [
+        "createHud"
+      ],
+      "imports": [
+        "three",
+        "./materials.js"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "lib/games/runtime/engine/index.js"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "lib/games/runtime/engine/index.js",
+      "lines": 123,
+      "bytes": 3342,
+      "sha256": "ca5f6bf698e75f45f1babf518e8d1931dba752dae5bd447ad2e531573cc7b303",
+      "exports": [
+        "createEngine",
+        "disposeObject",
+        "createInput",
+        "createHud",
+        "createAudio",
+        "createPhysics",
+        "hits",
+        "inside",
+        "createPostFX",
+        "createTweens",
+        "createMixer",
+        "createShake",
+        "Spring",
+        "SpringVec3",
+        "flash",
+        "pop",
+        "hover",
+        "ease",
+        "createParticles",
+        "createTrail",
+        "createAmbience",
+        "shockwave",
+        "createStateMachine",
+        "createScore",
+        "createStorage",
+        "createTimer",
+        "createTicker",
+        "createCooldown",
+        "createDifficulty",
+        "createEvents",
+        "formatTime",
+        "orbitCamera",
+        "followCamera",
+        "topDownCamera",
+        "sideCamera",
+        "firstPerson",
+        "thirdPerson",
+        "platformer",
+        "pointerOnGround",
+        "pointerPicker",
+        "palette",
+        "brand",
+        "createGame"
+      ],
+      "imports": [
+        "./engine.js",
+        "./input.js",
+        "./hud.js",
+        "./sound.js",
+        "./animation.js",
+        "./math.js",
+        "./models.js",
+        "./materials.js",
+        "./lighting.js",
+        "./particles.js",
+        "./animation.js",
+        "./debug.js",
+        "./engine.js",
+        "./input.js",
+        "./hud.js",
+        "./sound.js",
+        "./physics.js",
+        "./postfx.js",
+        "./animation.js",
+        "./particles.js",
+        "./state.js",
+        "./controls.js",
+        "./materials.js"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "lib/games/runtime/welcome.js"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "lib/games/runtime/engine/input.js",
+      "lines": 354,
+      "bytes": 12533,
+      "sha256": "0554dfa43bd364cadbb8e39f62cbbf5b1817a02a69f305bc1ebc2be720e82929",
+      "exports": [
+        "createInput"
+      ],
+      "imports": [
+        "three",
+        "./math.js"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "lib/games/runtime/engine/index.js"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "lib/games/runtime/engine/lighting.js",
+      "lines": 231,
+      "bytes": 7185,
+      "sha256": "65ef265fe21e3b357abb7cdbe086fa7c764621f0366f44218ea43d77bb19e3ae",
+      "exports": [
+        "daylight",
+        "sunset",
+        "night",
+        "studio",
+        "moody",
+        "attachLight",
+        "blobShadow"
+      ],
+      "imports": [
+        "three",
+        "./materials.js"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "lib/games/runtime/engine/index.js"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "lib/games/runtime/engine/materials.js",
+      "lines": 357,
+      "bytes": 11047,
+      "sha256": "eb6bd975973c56d588dcd5e4d036ca9d1aa626ecdda6fdfee80e3233c376c49a",
+      "exports": [
+        "brand",
+        "palette",
+        "mix",
+        "shade",
+        "standard",
+        "matte",
+        "metal",
+        "glow",
+        "flat",
+        "toon",
+        "glass",
+        "wireframe",
+        "outline",
+        "checkerTexture",
+        "gridTexture",
+        "noiseTexture",
+        "gradientTexture",
+        "sparkTexture",
+        "textTexture",
+        "skyGradient"
+      ],
+      "imports": [
+        "three"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "lib/games/runtime/engine/hud.js",
+        "lib/games/runtime/engine/index.js",
+        "lib/games/runtime/engine/lighting.js",
+        "lib/games/runtime/engine/models.js",
+        "lib/games/runtime/engine/particles.js"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "lib/games/runtime/engine/math.js",
+      "lines": 189,
+      "bytes": 6208,
+      "sha256": "a58cab7f38289278446455471165356a02bc675b270637aca425fa857297721e",
+      "exports": [
+        "TAU",
+        "DEG",
+        "clamp",
+        "clamp01",
+        "lerp",
+        "inverseLerp",
+        "remap",
+        "damp",
+        "dampVec",
+        "dampQuat",
+        "moveTowards",
+        "wrap",
+        "angleDelta",
+        "lerpAngle",
+        "dampAngle",
+        "deadzone",
+        "smoothstep",
+        "pingPong",
+        "randRange",
+        "randInt",
+        "randSpread",
+        "chance",
+        "pick",
+        "shuffle",
+        "createRandom",
+        "ease"
+      ],
+      "imports": [],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "lib/games/runtime/engine/animation.js",
+        "lib/games/runtime/engine/controls.js",
+        "lib/games/runtime/engine/engine.js",
+        "lib/games/runtime/engine/index.js",
+        "lib/games/runtime/engine/input.js",
+        "lib/games/runtime/engine/models.js",
+        "lib/games/runtime/engine/particles.js",
+        "lib/games/runtime/engine/physics.js"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "lib/games/runtime/engine/models.js",
+      "lines": 664,
+      "bytes": 19643,
+      "sha256": "9523e36aed03d21526f02d606fc2220a18f594efc28a1d4e0602ca53d6525b48",
+      "exports": [
+        "castShadows",
+        "box",
+        "sphere",
+        "cylinder",
+        "cone",
+        "capsule",
+        "torus",
+        "ground",
+        "arena",
+        "crate",
+        "coin",
+        "tree",
+        "rock",
+        "cloud",
+        "character",
+        "vehicle",
+        "ring",
+        "label",
+        "instances",
+        "merge",
+        "createPool",
+        "loadModel",
+        "loadTexture"
+      ],
+      "imports": [
+        "three",
+        "three/addons/loaders/GLTFLoader.js",
+        "three/addons/geometries/RoundedBoxGeometry.js",
+        "three/addons/utils/BufferGeometryUtils.js",
+        "./materials.js",
+        "./math.js"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "lib/games/runtime/engine/index.js"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "lib/games/runtime/engine/particles.js",
+      "lines": 416,
+      "bytes": 13035,
+      "sha256": "d4ece02f25c09092df59f069fd642913aff3507e33404c9aebe427143ad1ed05",
+      "exports": [
+        "createParticles",
+        "shockwave",
+        "createTrail",
+        "createAmbience"
+      ],
+      "imports": [
+        "three",
+        "./materials.js",
+        "./math.js"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "lib/games/runtime/engine/index.js"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "lib/games/runtime/engine/physics.js",
+      "lines": 344,
+      "bytes": 11528,
+      "sha256": "d5f13e1cfaf2e8867ba97c2537ebfdbe5898a76fc3aa2b08408d05d8592837b8",
+      "exports": [
+        "createPhysics",
+        "hits",
+        "inside"
+      ],
+      "imports": [
+        "three",
+        "./math.js"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "lib/games/runtime/engine/index.js"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "lib/games/runtime/engine/postfx.js",
+      "lines": 113,
+      "bytes": 3997,
+      "sha256": "0165325ef14197d7ea7fce5b92021a41eb6a87af1ca65c906431a03fd357226b",
+      "exports": [
+        "createPostFX"
+      ],
+      "imports": [
+        "three",
+        "three/addons/postprocessing/EffectComposer.js",
+        "three/addons/postprocessing/RenderPass.js",
+        "three/addons/postprocessing/UnrealBloomPass.js",
+        "three/addons/postprocessing/ShaderPass.js",
+        "three/addons/postprocessing/OutputPass.js",
+        "three/addons/shaders/VignetteShader.js",
+        "three/addons/shaders/FXAAShader.js"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "lib/games/runtime/engine/index.js"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "lib/games/runtime/engine/sound.js",
+      "lines": 406,
+      "bytes": 11050,
+      "sha256": "3e017d845b795d8ac83c2d4c3da29acbdb66aee04104ee7fd5e7de8cfd2b1450",
+      "exports": [
+        "createAudio"
+      ],
+      "imports": [],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "lib/games/runtime/engine/index.js"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "lib/games/runtime/engine/state.js",
+      "lines": 322,
+      "bytes": 8585,
+      "sha256": "85314c83a58613897668a36559d2bcfaad2031cea2f738c7c003555cefb609bc",
+      "exports": [
+        "createEvents",
+        "createStateMachine",
+        "createScore",
+        "createStorage",
+        "createTimer",
+        "formatTime",
+        "createDifficulty",
+        "createTicker",
+        "createCooldown"
+      ],
+      "imports": [],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "lib/games/runtime/engine/index.js"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "lib/games/runtime/report.js",
+      "lines": 133,
+      "bytes": 5337,
+      "sha256": "ca4171cbb24c6f671226467bf0b7aa5781e85d5dc9bd607b3befc4c4a093630a",
+      "exports": [],
+      "imports": [],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": true
+    },
+    {
+      "file": "lib/games/runtime/welcome.js",
+      "lines": 164,
+      "bytes": 5777,
+      "sha256": "a895bbf60efed49a2237e30e45842a2937a6082b5f8c1112d83e24e390bf4759",
+      "exports": [],
+      "imports": [
+        "three",
+        "./engine/index.js"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": true
+    },
+    {
+      "file": "lib/games/seed.ts",
+      "lines": 60,
+      "bytes": 2221,
+      "sha256": "e928a210f74298856b700e3bc980797a117d82f04bdbf15a5254c048b1c165f9",
+      "exports": [
+        "readRuntimeFiles"
+      ],
+      "imports": [
+        "node:fs/promises",
+        "node:path",
+        "@daytona/sdk"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "lib/daytona/utils.ts"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "lib/games/suggestions.ts",
+      "lines": 107,
+      "bytes": 5311,
+      "sha256": "b7022277a2f15905ba69b0723220d0e524ba963014ed57a7abd60ab4c8c77089",
+      "exports": [
+        "suggestions"
+      ],
+      "imports": [
+        "lucide-react"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "components/new-game-composer.tsx"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "lib/games/title.ts",
+      "lines": 17,
+      "bytes": 746,
+      "sha256": "3e20165ea27c2e446672c760c8e5cfd071b67f4a7f53d481494caa7eff968d41",
+      "exports": [
+        "TITLE_MAX_LENGTH",
+        "truncateTitle"
+      ],
+      "imports": [],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "components/game-menu.tsx",
+        "lib/games/actions.ts"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "lib/games/tools.ts",
+      "lines": 503,
+      "bytes": 19772,
+      "sha256": "d92029ed4ae001cf3a75e014779a915b043d4df2fda5025d276e36124027f6b0",
+      "exports": [
+        "createGameTools",
+        "GameTools"
+      ],
+      "imports": [
+        "node:path",
+        "@daytona/sdk",
+        "ai",
+        "zod",
+        "@/lib/daytona/utils",
+        "@/lib/observability"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "trigger/chat.ts"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "lib/observability.ts",
+      "lines": 41,
+      "bytes": 1857,
+      "sha256": "79b655c2bd7331ca794b7bbcc4e0ca961d840a4cf345ecd21ea578425890edb7",
+      "exports": [
+        "logger",
+        "describeError",
+        "elapsed"
+      ],
+      "imports": [
+        "@sentry/core"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "app/api/games/[id]/preview/route.ts",
+        "components/chat-thread.tsx",
+        "lib/billing/reconcile.ts",
+        "lib/daytona/utils.ts",
+        "lib/games/actions.ts",
+        "lib/games/chat-actions.ts",
+        "lib/games/chat-session.ts",
+        "lib/games/tools.ts",
+        "trigger/chat.ts"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "lib/utils.ts",
+      "lines": 6,
+      "bytes": 172,
+      "sha256": "74a147991a119f1c4cdc25a4d9b22713632fa32eb136e55ab6939b006d71b9d6",
+      "exports": [
+        "cn"
+      ],
+      "imports": [
+        "clsx",
+        "tailwind-merge"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "app/layout.tsx",
+        "components/chat-thread.tsx",
+        "components/ui/accordion.tsx",
+        "components/ui/alert-dialog.tsx",
+        "components/ui/alert.tsx",
+        "components/ui/aspect-ratio.tsx",
+        "components/ui/attachment.tsx",
+        "components/ui/avatar.tsx",
+        "components/ui/badge.tsx",
+        "components/ui/breadcrumb.tsx",
+        "components/ui/bubble.tsx",
+        "components/ui/button-group.tsx",
+        "components/ui/button.tsx",
+        "components/ui/calendar.tsx",
+        "components/ui/card.tsx",
+        "components/ui/carousel.tsx",
+        "components/ui/chart.tsx",
+        "components/ui/checkbox.tsx",
+        "components/ui/combobox.tsx",
+        "components/ui/command.tsx",
+        "components/ui/context-menu.tsx",
+        "components/ui/dialog.tsx",
+        "components/ui/drawer.tsx",
+        "components/ui/dropdown-menu.tsx",
+        "components/ui/empty.tsx",
+        "components/ui/field.tsx",
+        "components/ui/hover-card.tsx",
+        "components/ui/input-group.tsx",
+        "components/ui/input-otp.tsx",
+        "components/ui/input.tsx",
+        "components/ui/item.tsx",
+        "components/ui/kbd.tsx",
+        "components/ui/label.tsx",
+        "components/ui/marker.tsx",
+        "components/ui/menubar.tsx",
+        "components/ui/message-scroller.tsx",
+        "components/ui/message.tsx",
+        "components/ui/native-select.tsx",
+        "components/ui/navigation-menu.tsx",
+        "components/ui/pagination.tsx",
+        "components/ui/popover.tsx",
+        "components/ui/progress.tsx",
+        "components/ui/questionnaire.tsx",
+        "components/ui/radio-group.tsx",
+        "components/ui/resizable.tsx",
+        "components/ui/scroll-area.tsx",
+        "components/ui/select.tsx",
+        "components/ui/separator.tsx",
+        "components/ui/sheet.tsx",
+        "components/ui/sidebar.tsx",
+        "components/ui/skeleton.tsx",
+        "components/ui/slider.tsx",
+        "components/ui/spinner.tsx",
+        "components/ui/switch.tsx",
+        "components/ui/table.tsx",
+        "components/ui/tabs.tsx",
+        "components/ui/textarea.tsx",
+        "components/ui/toast.tsx",
+        "components/ui/toggle-group.tsx",
+        "components/ui/toggle.tsx",
+        "components/ui/tooltip.tsx"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "neon.ts",
+      "lines": 20,
+      "bytes": 570,
+      "sha256": "78da3933afa758ea19bea19bf7ce0fe489874fd3867afe20cfe26dca8333c5fd",
+      "exports": [],
+      "imports": [
+        "@neon/config/v1"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "drizzle.config.ts",
+        "lib/db/client.ts"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "next.config.ts",
+      "lines": 27,
+      "bytes": 745,
+      "sha256": "f51596a67c5d26ad3da03c122b520e83a3f51b774ea7fdba705f6e60e059027c",
+      "exports": [],
+      "imports": [
+        "@sentry/nextjs/config",
+        "next"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": true
+    },
+    {
+      "file": "postcss.config.mjs",
+      "lines": 7,
+      "bytes": 99,
+      "sha256": "07603cf4c1d0d6de822149a17d47932a1fe4b35a1cce9020ac965cb4a897ab56",
+      "exports": [],
+      "imports": [],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": true
+    },
+    {
+      "file": "proxy.ts",
+      "lines": 10,
+      "bytes": 301,
+      "sha256": "660bd8b03ae2f912bcbb88c8ca315180583aac7190d481bb4d376450da2b6c8c",
+      "exports": [
+        "config"
+      ],
+      "imports": [
+        "@clerk/nextjs/server"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": true
+    },
+    {
+      "file": "sentry.edge.config.ts",
+      "lines": 53,
+      "bytes": 1927,
+      "sha256": "74728cc492be4890d4e7edbfebc7486ee88f51683f2568fe761b4fb2207c7ae4",
+      "exports": [],
+      "imports": [
+        "@sentry/nextjs"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "instrumentation.ts"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "sentry.server.config.ts",
+      "lines": 63,
+      "bytes": 2519,
+      "sha256": "0c21198da7a04f5099bc321354066f518b8915de50750c44429b1266e5699cdf",
+      "exports": [],
+      "imports": [
+        "@sentry/nextjs"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "instrumentation.ts"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "trigger.config.ts",
+      "lines": 102,
+      "bytes": 4249,
+      "sha256": "e2e41ad3be8295d1adb20b10ab695c9aa1b515977b0501b65c82435a72ea7d0d",
+      "exports": [],
+      "imports": [
+        "node:module",
+        "node:path",
+        "@sentry/esbuild-plugin",
+        "@trigger.dev/build/extensions",
+        "@trigger.dev/build/extensions",
+        "@trigger.dev/build/extensions/core",
+        "@trigger.dev/sdk",
+        "@daytona/sdk/package.json"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": true
+    },
+    {
+      "file": "trigger/chat.ts",
+      "lines": 293,
+      "bytes": 13087,
+      "sha256": "0029b949d1f2b5b56bcaf4e6a0c8e00fa3071efbf6798232a3409f6a17b62866",
+      "exports": [
+        "gameChat"
+      ],
+      "imports": [
+        "@trigger.dev/sdk/ai",
+        "ai",
+        "zod",
+        "@/lib/billing/ledger",
+        "@/lib/billing/pricing",
+        "@/lib/daytona/utils",
+        "@/lib/games/agent",
+        "@/lib/games/chat-store",
+        "@/lib/games/instructions",
+        "@/lib/games/model-catalog",
+        "@/lib/observability",
+        "@/lib/games/tools"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [
+        "components/chat-thread.tsx",
+        "lib/games/chat-actions.ts"
+      ],
+      "reachable": true
+    },
+    {
+      "file": "trigger/example.ts",
+      "lines": 16,
+      "bytes": 468,
+      "sha256": "f245f2081c19bfc587a8e6d15fd0e0dc0a704e977bbc311a51a3cb09c3a81f9e",
+      "exports": [
+        "helloWorldTask"
+      ],
+      "imports": [
+        "@trigger.dev/sdk"
+      ],
+      "anyLines": [
+        7
+      ],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": true
+    },
+    {
+      "file": "trigger/init.ts",
+      "lines": 118,
+      "bytes": 4493,
+      "sha256": "cff65fdf8de909f7819448a633b9e7529d08efb54fc8f61fae5ed3304e92c19e",
+      "exports": [],
+      "imports": [
+        "@sentry/node",
+        "@trigger.dev/sdk"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": true
+    },
+    {
+      "file": "trigger/sentry-error-test.ts",
+      "lines": 18,
+      "bytes": 540,
+      "sha256": "8dc13d21f45584f150e4c893e34178878d6f9f4eeae1fb65ae8c6803036c773e",
+      "exports": [
+        "sentryErrorTest"
+      ],
+      "imports": [
+        "@trigger.dev/sdk"
+      ],
+      "anyLines": [],
+      "suppressionLines": [],
+      "parseDiagnostics": 0,
+      "review": "structural_ast",
+      "localImporters": [],
+      "reachable": true
+    }
+  ]
+}

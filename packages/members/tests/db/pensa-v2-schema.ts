@@ -18,6 +18,16 @@ const PENSA_V2_MIGRATIONS = [
   '0109_private_zappy_narrations.sql',
   '0110_pensa_lifecycle_cleanup.sql',
   '0111_pensa_provider_budget.sql',
+  // Pensa and Zappy share the account quota with Studio Pro, including active reservations.
+  '0116_groovy_shriek.sql',
+  '0117_absurd_jimmy_woo.sql',
+  '0118_high_stark_industries.sql',
+  '0119_numerous_mattie_franklin.sql',
+  '0120_cool_the_fallen.sql',
+  '0121_purple_taskmaster.sql',
+  '0122_optimal_argent.sql',
+  '0123_steep_warlock.sql',
+  '0124_superb_karen_page.sql',
 ]
 
 export async function applyPensaV2Schema(sql: postgres.Sql): Promise<void> {

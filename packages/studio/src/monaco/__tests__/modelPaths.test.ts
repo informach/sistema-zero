@@ -5,7 +5,9 @@ import {
   disposeModelsForPathPrefix,
   getMonacoModelPath,
   isModelInPathPrefix,
+  reserveMonacoModelUri,
   resolveModelPathPrefix,
+  setMonacoModelPath,
 } from '../modelPaths'
 
 function model(path: string): DisposableMonacoModel {
@@ -19,6 +21,24 @@ function model(path: string): DisposableMonacoModel {
 }
 
 describe('Monaco model paths', () => {
+  it('keeps a renamed buffer identity and allocates a different buffer if its old path is recreated', () => {
+    const original = model('rename-test/src/config.ts')
+    const registry = { getModels: () => [original] }
+    setMonacoModelPath(original, 'rename-test/src/rules.ts')
+    expect(getMonacoModelPath(original)).toBe('rename-test/src/rules.ts')
+    expect(reserveMonacoModelUri(registry, 'rename-test', 'src/rules.ts')).toBe(
+      original.uri.toString(),
+    )
+    const recreatedUri = reserveMonacoModelUri(registry, 'rename-test', 'src/config.ts')
+    expect(recreatedUri).not.toBe(original.uri.toString())
+    const recreated = model(recreatedUri)
+    expect(getMonacoModelPath(recreated)).toBe('rename-test/src/config.ts')
+    disposeModelsForPathPrefix('rename-test', { getModels: () => [original, recreated] })
+    expect(reserveMonacoModelUri({ getModels: () => [] }, 'rename-test', 'src/config.ts')).toBe(
+      'rename-test/src/config.ts',
+    )
+    disposeModelsForPathPrefix('rename-test', { getModels: () => [] })
+  })
   it('prefixa models por projeto', () => {
     expect(buildMonacoModelPath('project-1', 'script.js')).toBe('project-1/script.js')
     expect(buildMonacoModelPath(undefined, 'script.js')).toBe('script.js')

@@ -1,4 +1,30 @@
 export const ptBR: Record<string, string> = {
+  'pro.navigation': 'Explorar o projeto',
+  'pro.files': 'Arquivos',
+  'pro.search': 'Buscar',
+  'pro.materials': 'Materiais',
+  'pro.searchFiles': 'Encontrar um arquivo',
+  'pro.searchContent': 'Encontrar no código do projeto',
+  'pro.byName': 'Nome',
+  'pro.byContent': 'Conteúdo',
+  'pro.searchLimited': 'Primeiros {count} resultados. Refine sua busca.',
+  'pro.searchCount': '{count} resultados',
+  'pro.searchHint': 'Digite um nome ou uma parte do código.',
+  'pro.breadcrumb': 'Localização do arquivo',
+  'pro.pinTab': 'Fixar aba',
+  'pro.closeOtherTabs': 'Fechar outras abas',
+  'pro.organizeCode': 'Formatar documento',
+  'pro.quickOpen': 'Abrir arquivo rapidamente',
+  'pro.quickOpenHint':
+    '↑ ↓ para escolher · Enter para abrir · Esc para voltar. Até 100 arquivos; digite parte do caminho para filtrar.',
+  'pro.noFiles': 'Nenhum arquivo encontrado.',
+  'pro.symbols': 'Símbolos do arquivo',
+  'pro.references': 'Localizar referências',
+  'pro.renameSymbol': 'Renomear símbolo',
+  'pro.commands': 'Comandos…',
+  'pro.guides': 'Guias',
+  'pro.searchGuides': 'Buscar nos guias deste projeto',
+  'pro.noGuides': 'Nenhum guia compatível com os arquivos atuais e esta busca.',
   'app.name': 'Sistema Zero Studio',
   'app.tagline': 'Do bloco ao código. Da ideia ao sistema.',
   'app.loading': 'Carregando…',
@@ -12,6 +38,9 @@ export const ptBR: Record<string, string> = {
   'topbar.saving': 'Salvando…',
   'topbar.download': 'Baixar o código',
   'topbar.downloading': 'Baixando…',
+  'topbar.downloadFailed': 'Não foi possível baixar a fonte',
+  'topbar.downloadWarnings': 'Fonte baixada: confira estes avisos',
+  'topbar.closeDownloadNotice': 'Voltar ao editor',
   'topbar.extensions': 'Extensões',
   // ⚠️ O item NÃO publica: ele baixa um .zip pronto para pôr no ar (o `ExportDialog`
   // termina num download). "Publicar na internet" prometia o ato e competia com o
@@ -328,10 +357,10 @@ export const ptBR: Record<string, string> = {
 
   'convert.title': 'Virar profissional?',
   'convert.body':
-    'No projeto profissional você programa como os profissionais de verdade: vários arquivos e pastas, editando tudo pelo Código. Os blocos ficam para trás. Esta ação não pode ser desfeita.',
+    'No modo Pro você trabalha com código, arquivos, pastas e bibliotecas. Antes de converter, vamos guardar uma cópia completa deste jogo em Blocos na sua lista de projetos.',
   'convert.legacyTitle': 'Este projeto precisa virar profissional',
   'convert.legacyBody':
-    'Este projeto tem {count} arquivo(s) além dos três básicos, que o modo Blocos e Ponte não edita. Quer transformá-lo num projeto profissional (Vite) para trabalhar com todos eles? Esta ação não pode ser desfeita.',
+    'Este projeto tem {count} arquivo(s) além dos três básicos. No modo Pro você pode editar todos eles. Vamos guardar uma cópia completa do original em Blocos antes de converter.',
   'convert.confirm': 'Virar profissional',
   'convert.cancel': 'Cancelar',
   'convert.later': 'Agora não',

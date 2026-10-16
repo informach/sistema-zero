@@ -92,4 +92,56 @@ describe('NewProjectModal — nome do projeto', () => {
 
     expect(nameInput().value).toBe('Meu projeto 5')
   })
+  it('falha ao carregar um kit mantém nome e escolha para tentar novamente', async () => {
+    let attempts = 0
+    render(
+      <NewProjectModal
+        open
+        defaultName="Meu jogo"
+        onClose={noop}
+        onCreate={async () => {
+          if (++attempts === 1) throw new Error('chunk offline')
+        }}
+      />,
+    )
+    await act(async () => {
+      fireEvent.click(screen.getByText('Criar e abrir'))
+    })
+    expect(screen.getByRole('alert').textContent).toContain('tente novamente')
+    expect(nameInput().value).toBe('Meu jogo')
+    await act(async () => {
+      fireEvent.click(screen.getByText('Criar e abrir'))
+    })
+    expect(attempts).toBe(2)
+    expect(screen.queryByRole('alert')).toBeNull()
+  })
+})
+
+it('revoking a selected template preserves the name, explains the change and rejects Enter', async () => {
+  const kit = {
+    id: 'canvas-survival',
+    name: 'Arena',
+    description: '2D',
+    devScript: 'dev',
+    engine: 'canvas',
+  } as const
+  let creations = 0
+  const props = {
+    open: true,
+    defaultName: 'Minha arena',
+    professionalAvailable: true,
+    onClose: noop,
+    onCreate: () => {
+      creations++
+    },
+  }
+  const view = render(<NewProjectModal {...props} templates={[kit]} />)
+  fireEvent.click(screen.getByRole('radio', { name: /Pro \(código\)/ }))
+  view.rerender(<NewProjectModal {...props} templates={[]} />)
+  expect(nameInput().value).toBe('Minha arena')
+  expect(screen.getByRole('status').textContent).toContain('deixou de estar disponível')
+  expect((screen.getByText('Criar e abrir') as HTMLButtonElement).disabled).toBe(true)
+  await act(async () => fireEvent.keyDown(nameInput(), { key: 'Enter' }))
+  expect(creations).toBe(0)
+  view.unmount()
 })

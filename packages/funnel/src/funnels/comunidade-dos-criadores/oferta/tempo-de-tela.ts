@@ -1,152 +1,141 @@
 import type { ComunidadePage } from './types'
 
-// Copy em docs/marketing/kids/comunidade-dos-criadores/copy/, com abertura revista em 03/10/2026.
+// Página padrão (tráfego misto e frio). Proposta aprovada em 16/10/2026:
+// docs/marketing/kids/comunidade-dos-criadores/copy/proposta-melhoria-2026-10-16/a-tempo-de-tela.md.
 export const PAGE_A = {
   id: 'tempo-de-tela',
   label: 'Aprender criando',
-  seoTitle: 'Comunidade dos Criadores: aprender criando jogos | Sistema Zero',
+  seoTitle: 'Aprender criando jogos no tempo de tela | Comunidade dos Criadores | Sistema Zero',
   description:
-    'Seu filho aprende criando jogos, da primeira experiência às próprias ideias. Aulas guiadas, ferramentas e comunidade para crianças de 9 a 14 anos.',
-  emphasis: 'da primeira experiência às próprias ideias',
+    'Uma parte do tempo de tela vira um jogo que seu filho programa, com aulas guiadas, teste na hora e um projeto para mostrar à família. De 9 a 14 anos.',
+  emphasis: 'o jogo que ele mesmo programou',
   heroVisual: 'aula',
   heroChip: 'Aprender criando',
   hero: {
-    title: 'Seu filho aprende criando jogos, da primeira experiência às próprias ideias.',
+    title: 'Uma parte do tempo de tela do seu filho vira o jogo que ele mesmo programou',
     description:
-      'Ele começa jogando o que vai construir, experimenta os conceitos ao lado da explicação e programa o jogo passo a passo. Conforme avança, encontra novas ferramentas e orientações para desenvolver seus projetos, além de uma comunidade para trocar ideias e compartilhar suas criações.',
+      'Nos vídeos e nos jogos prontos, alguém já tomou todas as decisões, e ele só escolhe o que vem em seguida. Criando um jogo, as decisões passam para ele: quanto o personagem pula, quantos pontos vale cada estrela, quando a fase termina. A aula mostra o passo, ele monta, aperta para testar e vê o jogo responder.',
     benefits: [
-      'Um começo explicado passo a passo, em português.',
-      'Aulas e ferramentas de criação reunidas na mesma plataforma.',
-      'Projetos e registros para acompanhar cada criança da família.',
+      'Ele começa jogando o jogo pronto e, em A Chave do Farol, termina com a versão dele publicada e um link para mostrar.',
+      'Depois de A Chave do Farol, o Estúdio e o Pinta ficam livres para ele desenhar personagens e inventar fases.',
+      'Você não precisa saber programar: basta pedir “me mostra o que você mudou” e jogar junto.',
     ],
     requirements:
-      'Para crianças de 9 a 14 anos. No navegador do computador, com internet, mouse e teclado.',
+      'Para crianças de 9 a 14 anos que leem com autonomia. No navegador do computador, com internet, mouse e teclado.',
     primary: {
       label: 'Ver os planos para minha família',
       href: '#planos',
     },
     secondary: {
-      label: 'Conhecer a experiência por dentro',
+      label: 'Ver uma aula por dentro',
       href: '#experiencia',
     },
   },
+  // A tese vem antes das telas da plataforma.
+  tourAfterSection: 'a02',
   sections: [
     {
       id: 'a02',
-      title: 'Uma criação para mostrar e escolhas para explicar',
-      eyebrow: 'Como ele aprende',
+      title: 'No jogo pronto, cada decisão já foi tomada por outra pessoa',
+      eyebrow: 'O que muda na tela',
       layout: 'story',
       visuals: ['regra'],
       groups: [
         {
           title: null,
           paragraphs: [
-            'Seu filho abre um jogo e mostra o personagem andando pela tela. Depois muda uma regra, testa de novo e explica por que agora ele se move de outro jeito.',
-            'Nessa cena, ele tem uma decisão para tomar e um resultado para conferir. Precisa encontrar o comando, entender sua função e observar o que aconteceu depois da mudança. Você pode conhecer essa construção e perguntar como chegou até ela.',
-            'O computador já participa da rotina de muitas famílias. Dentro do tempo que vocês permitem, cabe reservar uma parte para uma atividade que envolva criar. Os combinados continuam sendo de vocês; a proposta da Comunidade está no que a criança faz durante aquele período.',
-            'Para começar, a atividade precisa fazer sentido também para ela. Criar um jogo oferece um motivo para aprender uma regra: ver o personagem responder, montar um desafio e ter algo para mostrar.',
+            'Pense na última hora que seu filho passou no computador. Ele escolheu um vídeo, depois outro, entrou numa partida e jogou do jeito que o jogo deixa. Foi divertido, e é justo que seja. Só que, em todo esse tempo, quem decidiu a velocidade do personagem, o que vale ponto e quando a fase acaba foi quem fez o jogo. Por isso, depois de uma tarde de tela, quase nunca existe alguma coisa dele para mostrar.',
+            'Quando ele cria um jogo, essas decisões passam para ele. Ele entra no bastidor do jogo, nas regras que dizem quanto o personagem pula e o que acontece quando ele encosta numa moeda. E cada decisão é testada na hora, porque ele aperta para jogar e o jogo obedece, ou não. É comparando o que mandou fazer com o que aconteceu que ele aprende.',
+            'Os combinados de tela continuam sendo de vocês. O que muda é o papel dele numa parte desse tempo.',
           ],
         },
       ],
+      falas: ['AV12', 'N2'],
       actions: [],
     },
     {
+      // Segunda seção: o template põe aqui a âncora `#experiencia` do botão do herói.
       id: 'a03',
-      title: 'A explicação acompanha o que seu filho está aprendendo a fazer',
-      eyebrow: 'Aprender e fazer',
+      title: 'Na primeira aula, ele joga o jogo pronto antes de montar o dele',
+      eyebrow: 'Uma aula por dentro',
       layout: 'story',
-      visuals: ['aula-estudio', 'integracao'],
+      visuals: ['jogo-pronto', 'aula-estudio', 'estudio', 'salvamento'],
       groups: [
+        {
+          title: 'Primeiro ele joga',
+          paragraphs: [
+            'A primeira aula do curso abre com o jogo terminado, para seu filho saber aonde vai chegar e ter vontade de chegar lá.',
+          ],
+        },
+        {
+          title: 'Depois monta, um passo de cada vez',
+          paragraphs: [
+            'O vídeo mostra o passo ao lado do editor. Ele pausa, encaixa os blocos e segue. As falas do Zappy explicam o que fazer, e o botão Ouvir lê em voz alta.',
+          ],
+        },
+        {
+          title: 'Então testa',
+          paragraphs: [
+            'Aperta para jogar e confere: o personagem alcançou a estrela e o placar subiu um ponto. Se não subiu, volta ao trecho do vídeo. Nas partes que têm verificação, Verificar esta parte mostra o que já está certo e o que falta; nos experimentos, Uma pista indica onde olhar.',
+          ],
+        },
+        {
+          title: 'E guarda para amanhã',
+          paragraphs: [
+            'O aviso Guardado na sua conta confirma que o projeto ficou salvo, e a faixa O que falta para seguir mostra o próximo passo. No outro dia, ele abre e continua de onde parou.',
+          ],
+        },
         {
           title: null,
           paragraphs: [
-            'Na Comunidade dos Criadores, seu filho começa por uma tarefa guiada. A aula apresenta o passo, mostra os recursos necessários e explica o que observar. Nas atividades integradas, o vídeo e a orientação ficam junto do editor ou do experimento.',
-            'Ele pode assistir a uma ação, pausar e fazê-la. Personagens e outros elementos preparados ajudam a começar, porque permitem concentrar a atenção no comando que está aprendendo. Textos, imagens, áudio, perguntas e materiais de consulta complementam a explicação conforme a atividade.',
-            'Imagine uma regra que acrescenta um ponto quando o personagem alcança um objeto. Seu filho monta a instrução e testa a partida. Numa atividade que permita alterar o valor, pode comparar o efeito no placar. A mudança que fez aparece no funcionamento do jogo.',
-            'Isso dá uma referência para conferir a própria tentativa. Se o resultado sair diferente do esperado, ele pode voltar à explicação e revisar a montagem. Para você, a mesma criação oferece uma conversa concreta: “Me mostra o que mudou quando você trocou esse número”.',
-          ],
-        },
-        {
-          title: 'Uma criação conecta as partes da plataforma',
-          paragraphs: [
-            'O Estúdio é onde seu filho monta e testa os jogos. No Pinta, cria desenhos digitais que podem participar desses projetos. Os Recados guardam as conversas de ajuda. A Jornada mostra onde continuar, e a área do responsável reúne registros da atividade de cada criança.',
-            'Pense no caminho de um personagem: ele é desenhado no Pinta, entra no Estúdio e recebe uma regra para se mover. Se aparecer uma dúvida da aula, há um lugar para enviá-la. Depois, a criação pode ser guardada e apresentada à família. O valor da integração aparece nessa continuidade entre aprender, fazer, pedir ajuda e mostrar.',
+            'A aula foi feita para a criança seguir com o que está na tela, e nas primeiras vezes sentar junto ajuda a conhecer os botões. No fim da sessão, ele tem uma regra que funciona para mostrar a alguém.',
           ],
         },
       ],
+      falas: ['N9'],
       actions: [],
     },
     {
-      id: 'a04',
-      title: 'A pausa dá tempo para fazer, conferir e tentar de novo',
-      eyebrow: 'No ritmo da atividade',
-      layout: 'story',
-      visuals: ['pausa', 'recados'],
+      id: 'a10',
+      title: 'Depois da aula, é ele quem chama para mostrar o jogo',
+      eyebrow: 'O que contam sobre as aulas',
+      layout: 'relatos',
+      visuals: ['publicacao'],
       groups: [
         {
           title: null,
           paragraphs: [
-            'A explicação pode levar alguns segundos; a criança pode precisar de mais tempo para localizar um bloco e experimentar a ação. Na aula gravada, ela pausa naquele ponto e continua quando estiver pronta para acompanhar o próximo passo.',
-            'Também pode rever só o trecho em que se perdeu. O vídeo permanece disponível durante o acesso, ao lado da prática nas atividades integradas. Essa consulta ajuda quando o resultado ficou diferente e ela quer comparar o que montou com a orientação.',
-            'A família escolhe o horário dentro do tempo de tela combinado. Ao voltar em outro dia, seu filho encontra o percurso registrado e pode abrir os trabalhos guardados. Antes de encerrar, vale conferir o aviso de salvamento para saber se o projeto ficou na conta.',
-          ],
-        },
-        {
-          title: 'A criança tem um começo orientado e um caminho para pedir ajuda',
-          paragraphs: [
-            'Ela precisa conseguir ler e usar mouse e teclado. Algumas crianças se familiarizam rapidamente; outras precisam de companhia nas primeiras atividades. Vocês podem conhecer os controles juntos e observar como ela acompanha uma tarefa antes de ampliar a independência.',
-            'Se uma dúvida continuar, o botão “Preciso de ajuda” permite enviar a pergunta a partir da seção da aula. A conversa segue nos Recados, com histórico para consultar. O apoio acontece por mensagens, de forma assíncrona, e pode ser necessário aguardar o retorno. O formato não inclui encontros ao vivo.',
-            'Para aprender uma ação da ferramenta, há também os tutoriais do Como fazer. Assim, a criança tem referências para consultar e um canal para explicar onde travou.',
+            'Quando o jogo fica pronto, ele publica no Mural e ganha um link e um cartão com código QR para mandar à avó, ao primo ou ao amigo da escola.',
+            'É nessa hora que aparece o pedido mais gostoso de ouvir: “vem ver o que eu fiz”. Alunos e pais contam, com as palavras deles, como foi.',
           ],
         },
       ],
-      actions: [],
-    },
-    {
-      id: 'a05',
-      title: 'Você acompanha uma atividade e conhece o que ele entendeu',
-      eyebrow: 'Você acompanha',
-      layout: 'story',
-      visuals: ['responsavel', 'aprendizagem'],
-      groups: [
-        {
-          title: null,
-          paragraphs: [
-            'Na área do responsável, cada criança tem seu painel. Você encontra cursos em andamento, atividades, entregas, temas explorados e o ponto em que ela está na Jornada. Esses registros ajudam a localizar o que aconteceu e escolher uma produção para conhecer.',
-            'Se a atividade envolveu movimento, peça que seu filho mostre como o personagem anda. Se mudou uma regra, pode executar as versões e explicar a diferença. Você participa pelo que consegue ver, ouvir e experimentar, inclusive sem trabalhar com programação.',
-            'Uma etapa concluída informa que certos requisitos foram cumpridos. A explicação da criança acrescenta o que entendeu e como relaciona a escolha ao resultado. Acompanhar os dois ajuda a conhecer melhor a experiência do que olhar apenas o tempo conectado.',
-            'Seu papel pode ser organizar a rotina, ajudar no primeiro acesso e se interessar pelas criações. A orientação de programação fica nas aulas, e as dúvidas da atividade têm o caminho dos Recados.',
-          ],
-        },
-      ],
+      falas: ['AV03', 'N1', 'N15', 'N12'],
       actions: [],
     },
     {
       id: 'a06',
-      title: 'O interesse pode começar numa regra ou num personagem',
-      eyebrow: 'O que desperta curiosidade',
+      title: 'Cada criança entra por um lado: a regra, o personagem ou a curiosidade',
+      eyebrow: 'Do jeito dele',
       layout: 'cards',
-      visuals: ['estudio', 'pinta', 'codigo'],
+      visuals: ['preparados', 'pinta', 'contador'],
       groups: [
         {
-          title: 'Para quem quer inventar jogos',
+          title: 'Para quem gosta de inventar jogos',
           paragraphs: [
-            'No Estúdio, os blocos representam instruções. A criança aprende a encaixá-los e testar o efeito. Pode começar com personagens e cenários preparados, concentrando-se em fazer o jogo funcionar. Quando libera o uso livre, encontra espaço para voltar ao projeto e experimentar combinações próprias.',
-            'O remix, quando disponível, permite explorar e modificar uma base publicada compatível. Alterar uma parte e observar a diferença oferece outra oportunidade de investigar como uma regra funciona.',
+            'Começa com personagens prontos e põe a atenção no que faz o jogo funcionar: andar, pular, somar ponto. Com o Estúdio livre, volta ao projeto e mistura as regras do jeito dele.',
           ],
         },
         {
-          title: 'Para quem gosta de desenhar',
+          title: 'Para quem vive desenhando',
           paragraphs: [
-            'O Pinta permite criar personagens, objetos e cenários digitais. Uma criação compatível pode entrar no Estúdio e participar de um jogo. Se o personagem ficar pequeno ou se confundir com o fundo, seu filho pode ajustar a aparência e conferir de novo.',
-            'A escolha visual ganha um uso que ele consegue experimentar. Também é possível combinar desenhos próprios com elementos prontos, conforme a atividade e as ferramentas liberadas.',
+            'No Pinta, desenha o personagem, escolhe as cores e monta o cenário, e depois leva tudo para o jogo. Se o personagem some no fundo azul, ele volta ao desenho, troca a cor e confere de novo.',
           ],
         },
         {
-          title: 'Para quem quer entender como a tecnologia funciona',
+          title: 'Para quem quer saber como as coisas funcionam',
           paragraphs: [
-            'Ao fazer uma ação depender de uma tecla ou de um encontro entre objetos, seu filho conhece relações de programação. O comando tem um efeito no projeto. Ele pode prever o que vai acontecer, testar e revisar a tentativa.',
-            'Esses interesses podem se encontrar na mesma criação. Vocês podem começar pelo que desperta mais curiosidade e conhecer as outras possibilidades durante o percurso.',
+            'Descobre que atrás de cada tecla existe uma instrução: quando apertar a seta, ande; quando encostar na moeda, some um ponto. Prever, testar e conferir é o primeiro passo da programação.',
           ],
         },
       ],
@@ -159,49 +148,35 @@ export const PAGE_A = {
     },
     {
       id: 'a07',
-      title: 'A Jornada mostra o próximo passo e o que ele libera',
+      title: 'Os projetos que ele termina vão abrindo ferramentas novas',
       eyebrow: 'Jornada do Criador',
       layout: 'journey',
-      visuals: ['jornada', 'pensa', 'zappy'],
+      visuals: ['pensa', 'jornada'],
       groups: [
         {
           title: null,
           paragraphs: [
-            'A Jornada do Criador organiza as etapas, os requisitos e as ferramentas. Dentro das aulas, seu filho usa os recursos previstos para aquela atividade. Depois de concluir o curso obrigatório de entrada e publicar o projeto exigido, chega ao posto Construtor e libera o uso livre do Estúdio e do Pinta.',
-            'Essa passagem começa com orientação e abre espaço para explorar o que aprendeu. Nas ferramentas liberadas, pode retomar uma criação, testar outra regra ou trabalhar uma nova aparência.',
-          ],
-        },
-        {
-          title: 'Ajuda para organizar uma ideia e examinar uma dificuldade',
-          paragraphs: [
-            'No posto Inventor, o Pensa ajuda a transformar uma ideia em planejamento. Ele faz perguntas sobre o jogo, organiza as escolhas da criança e ajuda a dividi-las em tarefas. O Zappy, no Estúdio, oferece ajuda com inteligência artificial para entender comandos e dificuldades; ele não altera o projeto.',
-            'A criança continua escolhendo, montando e testando. Usar uma sugestão pede comparar com a própria intenção e conferir o resultado. Essa é a função desses apoios na Comunidade: ajudar a avançar numa criação que ela precisa compreender. O acesso depende dos requisitos, da disponibilidade do serviço e dos créditos da família.',
-            'Mais adiante, o Molda abre possibilidades de criação em três dimensões. A Comunidade está em lançamento: a assinatura inclui os cursos publicados e os que forem acrescentados durante o período contratado. Algumas liberações dependem de cursos ainda em preparação. O catálogo mostra o que está disponível para começar e continuar hoje.',
+            'Na Comunidade, a criança avança como num jogo: os projetos concluídos fazem ela subir de posto na Jornada do Criador, e os postos abrem ferramentas. Quando conclui A Chave do Farol e publica o jogo, chega ao posto Construtor, e o Estúdio e o Pinta ficam livres para as ideias dela, fora das aulas.',
+            'No posto Inventor chegam o Pensa, que conversa sobre a ideia de um jogo e organiza as escolhas em tarefas, e a ajuda do Zappy no Estúdio, que olha os blocos e explica o que conferir sem mexer no projeto. Os dois usam os créditos de inteligência artificial da família. No Explorador de Mundos, o Molda abre a criação em três dimensões.',
+            'Para ele, a próxima ferramenta é um bom motivo para terminar o projeto. Para você, a Jornada mostra em que ponto ele está e o que vem depois, numa tela só.',
           ],
         },
       ],
       actions: [],
     },
     {
-      id: 'a08',
-      title: 'Uma criação para mostrar à família e conversar com outros criadores',
-      eyebrow: 'Criar e compartilhar',
+      id: 'a05',
+      title: 'Você não precisa saber programar para entender o que ele fez',
+      eyebrow: 'Você acompanha',
       layout: 'story',
-      visuals: ['clube+publicacao', 'espaco', 'perfis'],
+      visuals: ['responsavel', 'aprendizagem'],
       groups: [
         {
           title: null,
           paragraphs: [
-            'Quando seu filho publica um jogo, pode apresentá-lo no Mural e obter um link para compartilhar. Há também um cartão com código QR. Em casa, esse convite pode virar uma partida juntos: você joga e ele mostra uma escolha que fez.',
-            'O Clube oferece conversas por publicações e respostas sobre ideias e trabalhos. Um desafio do mês, quando disponível para a etapa, propõe um tema para criar outra versão usando o que já explorou. São lugares para apresentar uma produção e conhecer outras, com combinados de convivência e um caminho para avisar a equipe sobre algo que precise de atenção.',
-            'O responsável administra a visibilidade do perfil, inicialmente desligada para colegas. Um jogo publicado por link tem visibilidade pública própria. Por isso, vale combinar com a criança quais projetos mostrar e com quem compartilhar.',
-          ],
-        },
-        {
-          title: 'Um espaço para cada criança da família',
-          paragraphs: [
-            'Avatar, quarto virtual, missões e conquistas permitem personalizar o espaço e reconhecer a participação. O projeto continua sendo a referência para conversar sobre o que foi feito e aprendido. Os combinados da família orientam a frequência de uso.',
-            'A assinatura permite até dois perfis, com projetos e progresso separados. Um filho pode preferir desenhar; outro, experimentar regras. Você acompanha cada percurso, e as liberações seguem o avanço de cada criança.',
+            'A programação está nas aulas. O seu papel é outro: combinar o horário, abrir a primeira aula junto e, depois, pedir para ver o jogo.',
+            'Na sua área, cada filho tem um painel com os cursos, as atividades, as entregas, os temas que estudou e o ponto da Jornada. Dali você escolhe um projeto e faz a pergunta que abre a conversa: “Me mostra o que você mudou.” Ele aponta o bloco, joga e explica. Você entende o que ele aprendeu pelo que ele mostra, e passa a fazer parte de um assunto que antes era só dele.',
+            'Uma etapa concluída diz que ele cumpriu o pedido da aula; a explicação dele diz o que entendeu. Os dois juntos contam muito mais do que o tempo que ele passou conectado.',
           ],
         },
       ],
@@ -209,74 +184,68 @@ export const PAGE_A = {
     },
     {
       id: 'a09',
-      title: 'O valor da assinatura aparece quando essas partes trabalham juntas',
-      eyebrow: 'A experiência reunida',
-      layout: 'band',
-      visuals: ['reunida'],
+      title: 'O tutorial ensina o passo; o difícil é saber o que fazer quando o jogo não obedece',
+      eyebrow: 'Antes de escolher',
+      layout: 'cards',
+      visuals: [],
       groups: [
         {
-          title: null,
+          title: 'Construir dentro de um jogo',
           paragraphs: [
-            'Há ferramentas e tutoriais gratuitos para aprender programação. Para usá-los em casa, a família pode precisar escolher um começo, organizar uma sequência, encontrar os materiais e decidir onde buscar ajuda. Há famílias que gostam de montar esse caminho.',
-            'A Comunidade já reúne aulas guiadas, ferramentas de criação, ajuda por mensagens, espaços para mostrar os projetos e registros para acompanhar. Seu filho encontra uma atividade para fazer e os recursos previstos para ela. Se surgir uma dúvida, tem um caminho de ajuda. Quando você quer conhecer o que aconteceu, tem onde consultar.',
-            'É essa experiência organizada que a assinatura oferece. Mostre a demonstração ao seu filho e conversem sobre o que ele gostaria de construir. Nos planos abaixo, vocês escolhem entre cobrança mensal e acesso anual, com o mesmo percurso e até dois perfis.',
+            'Montar mundos no Minecraft ou no Roblox já é criação, e muita criança começa por aí. Só que a gravidade, os pontos e o fim da partida continuam sendo do jogo. Aqui é ele quem escreve essas regras.',
+          ],
+        },
+        {
+          title: 'Vídeo gratuito na internet',
+          paragraphs: [
+            'Há bons tutoriais, muitos em inglês e cada um num ponto diferente. Funcionam para quem já sabe o que procurar. O problema aparece no primeiro erro: o vídeo segue e a criança fica sem saber onde olhar. Aqui a explicação está na mesma tela do editor e, nas partes que têm verificação, o botão Verificar esta parte mostra o que falta.',
+          ],
+        },
+        {
+          title: 'Aula ao vivo',
+          paragraphs: [
+            'O professor explica na hora, no horário marcado e no ritmo da turma, e para quem precisa de alguém ao lado isso pesa a favor. Aqui a explicação é gravada: espera por ele, repete o trecho quantas vezes ele precisar e cabe no horário que vocês escolherem.',
           ],
         },
       ],
+      falas: ['N14'],
       actions: [],
     },
   ],
   faqTitle: 'Mais sobre a experiência do seu filho',
   faqGroups: [
     {
-      title: 'Aprender no tempo de tela combinado',
-      questions: ['telas', 'aprendizagem', 'aulas-gravadas', 'pais', 'ajuda', 'interesse'],
+      title: 'Rotina e tela',
+      questions: ['telas', 'frequencia', 'salvamento', 'interesse'],
     },
     {
-      title: 'Começo e aprendizagem',
+      title: 'Para começar',
       questions: [
         'programacao',
         'desenho',
-        'so-desenho',
-        'papel',
+        'pais',
+        'aulas-gravadas',
+        'ao-vivo',
+        'equipamento',
         'nivel',
-        'roblox',
-        'apoio-especifico',
       ],
     },
     {
-      title: 'Recursos e continuidade',
-      questions: [
-        'catalogo',
-        'liberacao',
-        'ia',
-        'pensa',
-        'zappy',
-        'creditos',
-        'planejamento',
-        '3d',
-        'codigo',
-        'desafio',
-        'certificado',
-        'custos',
-      ],
+      title: 'Ferramentas e inteligência artificial',
+      questions: ['liberacao', 'catalogo', 'ia', 'creditos', 'avancado', 'certificado'],
     },
     {
-      title: 'Uso no dia a dia',
-      questions: ['equipamento', 'internet', 'salvamento', 'exportacao', 'ferias', 'pontos'],
+      title: 'Família e segurança',
+      questions: ['irmaos', 'perfil', 'convivencia', 'apoio-especifico'],
     },
     {
-      title: 'Participação e família',
-      questions: ['irmaos', 'perfil', 'jogos-publicos', 'convivencia', 'indicacao'],
-    },
-    {
-      title: 'Conta e assinatura',
-      questions: ['atendimento', 'senha', 'cancelamento', 'reembolso'],
+      title: 'Assinatura',
+      questions: ['ajuda', 'custos', 'cancelamento', 'reembolso', 'atendimento'],
     },
   ],
   closing: {
     id: 'convite',
-    title: 'Uma parte do tempo no computador pode virar algo que vocês conhecem juntos',
+    title: 'A próxima hora no computador pode ser o começo de um jogo dele',
     eyebrow: 'Para começar juntos',
     layout: 'band',
     visuals: [],
@@ -284,8 +253,8 @@ export const PAGE_A = {
       {
         title: null,
         paragraphs: [
-          'Seu filho mostra o personagem, começa a partida e conta o que resolveu mudar. Você experimenta o jogo e conhece um pouco do caminho até ele funcionar.',
-          'A Comunidade oferece um começo guiado para essa experiência, com explicações para consultar, ferramentas para construir e projetos para compartilhar. Escolham o plano que cabe na rotina e abram juntos a primeira atividade.',
+          'Escolham um dia da semana, sentem juntos na primeira aula e deixem que ele jogue o jogo pronto antes de montar o dele.',
+          'No fim da sessão, o aviso Guardado na sua conta confirma que o projeto ficou salvo, e no dia seguinte ele continua de onde parou. Quando o jogo estiver pronto, quem vai chamar para jogar é ele. E se em sete dias vocês acharem que não é para ele, devolvemos o valor integral.',
         ],
       },
     ],

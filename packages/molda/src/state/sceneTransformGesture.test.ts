@@ -29,13 +29,9 @@ function setup() {
 }
 
 describe('scene transform gestures', () => {
-  test('cancel also restores disk when a preview was explicitly saved during the gesture', async () => {
+  test('flushing during a drag never persists its preview, and cancellation keeps history clean', async () => {
     const source = migrateLegacyModel(makeModel()).document
     const writes: (typeof source)[] = []
-    let restored!: () => void
-    const restoration = new Promise<void>((resolve) => {
-      restored = resolve
-    })
     const editor = createDocumentEditorStore({
       asset: source,
       sizeOf: structuredBytes,
@@ -44,9 +40,6 @@ describe('scene transform gestures', () => {
         save: async (document) => {
           writes.push(document)
         },
-      },
-      onSaved: () => {
-        if (writes.length === 2) restored()
       },
     })
     const gesture = createSceneTransformGesture(editor, (error) => {
@@ -57,22 +50,12 @@ describe('scene transform gestures', () => {
       const delta = identityMatrix()
       delta[12] = 5
       gesture.preview(delta)
+      expect(editor.getState().saveSnapshot().nodes).toEqual(source.nodes)
       await editor.getState().flush()
       gesture.end(false)
-      let timeout: ReturnType<typeof setTimeout> | undefined
-      try {
-        await Promise.race([
-          restoration,
-          new Promise<never>((_resolve, reject) => {
-            timeout = setTimeout(() => reject(new Error('Cancellation was not saved')), 250)
-          }),
-        ])
-      } finally {
-        clearTimeout(timeout)
-      }
-      expect(writes).toHaveLength(2)
-      expect(writes[1]?.nodes).toEqual(source.nodes)
-      expect(writes[1]?.updatedAt).toBeGreaterThan(writes[0]?.updatedAt ?? NaN)
+      await editor.getState().flush()
+      for (const saved of writes) expect(saved.nodes).toEqual(source.nodes)
+      expect(editor.getState().content.nodes).toEqual(source.nodes)
       expect(editor.getState().canUndo).toBe(false)
     } finally {
       editor.getState().dispose()

@@ -1,7 +1,9 @@
+import { studioProPublicationUrl } from '@sistemazero/core/studio/pro-publication'
 import type { CSSProperties, JSX, Ref } from 'react'
-import { forwardRef, useEffect, useRef, useState } from 'react'
+import { forwardRef, useCallback, useEffect, useRef, useState } from 'react'
 import type { Project } from '#core'
 import { renderProjectToPreviewDocAsync } from '#preview'
+import { useProGameStorage } from '../../modes/pro/useProGameStorage'
 import type { PreviewSecurityProfile } from '../../preview/csp'
 import { type StudioPlayerOriginAdapter, validateIsolatedPreviewUrl } from './playerOriginAdapter'
 
@@ -48,6 +50,8 @@ export interface StudioProjectPlayerProps {
   securityProfile?: PreviewSecurityProfile
   /** Publica o documento numa origem isolada e faz o iframe navegar por `src`. */
   originAdapter?: StudioPlayerOriginAdapter
+  /** Authoritative permanent revision resolved by the host after checking visibility. */
+  published?: { playId: string; revision: string; url: string }
   /** Título acessível do iframe (default = `project.name`). */
   title?: string
   className?: string
@@ -78,6 +82,7 @@ export const StudioProjectPlayer = forwardRef<HTMLIFrameElement, StudioProjectPl
       parentOrigin,
       securityProfile = 'strict',
       originAdapter,
+      published,
       title,
       className,
       tabIndex,
@@ -92,8 +97,66 @@ export const StudioProjectPlayer = forwardRef<HTMLIFrameElement, StudioProjectPl
       doc: PLAYER_LOADING_DOC,
       generation: 0,
     })
+    const [confirmedProGeneration, setConfirmedProGeneration] = useState<number | null>(null)
     const onErrorRef = useRef(onError)
+    const onReadyRef = useRef(onReady)
+    onReadyRef.current = onReady
+    const iframeRef = useRef<HTMLIFrameElement | null>(null)
+    const assignFrame = useCallback(
+      (node: HTMLIFrameElement | null) => {
+        iframeRef.current = node
+        if (typeof ref === 'function') return ref(node)
+        if (ref) ref.current = node
+      },
+      [ref],
+    )
+    const storageName = useProGameStorage({
+      frame: iframeRef,
+      projectId: project.kind === 'pro' && published ? `published-${published.playId}` : null,
+      revision: loadState.generation,
+      identity: `${loadState.url ?? ''}:${loadState.generation}`,
+      origin: project.kind === 'pro' && loadState.url ? 'null' : null,
+    })
     onErrorRef.current = onError
+    useEffect(() => {
+      if (project.kind !== 'pro' || !loadState.url || loadState.status !== 'ready') return
+      let confirmed = false
+      const ask = () =>
+        iframeRef.current?.contentWindow?.postMessage({ type: 'sz:pro-document?' }, '*')
+      const receive = (event: MessageEvent) => {
+        if (
+          event.source !== iframeRef.current?.contentWindow ||
+          event.origin !== 'null' ||
+          event.data?.type !== 'sz:pro-document-ready' ||
+          event.data.version !== 1 ||
+          confirmed
+        )
+          return
+        confirmed = true
+        setConfirmedProGeneration(loadState.generation)
+        clearInterval(interval)
+        clearTimeout(timeout)
+        onReadyRef.current?.()
+      }
+      const interval = setInterval(ask, 250)
+      const timeout = setTimeout(() => {
+        if (confirmed) return
+        clearInterval(interval)
+        setLoadState((current) => ({
+          status: 'error',
+          doc: PLAYER_ERROR_DOC,
+          generation: current.generation + 1,
+        }))
+        onErrorRef.current?.()
+      }, 10000)
+      window.addEventListener('message', receive)
+      ask()
+      return () => {
+        clearInterval(interval)
+        clearTimeout(timeout)
+        window.removeEventListener('message', receive)
+      }
+    }, [project.kind, loadState.url, loadState.status, loadState.generation])
     useEffect(() => {
       let ignore = false
       let activeUrl: string | null = null
@@ -115,6 +178,23 @@ export const StudioProjectPlayer = forwardRef<HTMLIFrameElement, StudioProjectPl
           : { status: 'loading', doc: PLAYER_LOADING_DOC, generation: current.generation },
       )
       void (async () => {
+        if (project.kind === 'pro') {
+          if (!published) throw new Error('Este projeto Pro ainda não tem uma revisão publicada.')
+          const url = validateIsolatedPreviewUrl(published.url, isolationHostOrigin)
+          if (
+            studioProPublicationUrl(new URL(url).origin, published.playId, published.revision) !==
+            url
+          )
+            throw new Error('Revisão publicada inválida.')
+          if (!ignore)
+            setLoadState((current) => ({
+              status: 'ready',
+              doc: '',
+              url,
+              generation: current.generation + 1,
+            }))
+          return
+        }
         const nextDoc = await renderProjectToPreviewDocAsync(project, {
           parentOrigin: resolvedParentOrigin || undefined,
           securityProfile,
@@ -159,14 +239,18 @@ export const StudioProjectPlayer = forwardRef<HTMLIFrameElement, StudioProjectPl
         abortController.abort()
         if (activeUrl) release(activeUrl)
       }
-    }, [project, parentOrigin, securityProfile, originAdapter])
+    }, [project, parentOrigin, securityProfile, originAdapter, published])
 
-    const statusMessage =
-      loadState.status === 'loading'
-        ? 'Carregando o motor do jogo…'
-        : loadState.status === 'ready'
-          ? 'Jogo pronto.'
-          : 'Não foi possível carregar o motor deste jogo.'
+    const loading =
+      loadState.status === 'loading' ||
+      (project.kind === 'pro' &&
+        loadState.status === 'ready' &&
+        confirmedProGeneration !== loadState.generation)
+    const statusMessage = loading
+      ? 'Carregando o motor do jogo…'
+      : loadState.status === 'ready'
+        ? 'Jogo pronto.'
+        : 'Não foi possível carregar o motor deste jogo.'
 
     return (
       <>
@@ -174,14 +258,16 @@ export const StudioProjectPlayer = forwardRef<HTMLIFrameElement, StudioProjectPl
           // Cada documento nasce em um elemento novo; não reescreva o srcDoc de
           // um iframe que ainda pode estar concluindo a navegação anterior.
           key={loadState.generation}
-          ref={ref}
+          ref={assignFrame}
+          name={project.kind === 'pro' ? storageName : undefined}
+          referrerPolicy="no-referrer"
           tabIndex={tabIndex}
           title={title ?? project.name ?? 'Projeto'}
           src={loadState.url}
           srcDoc={loadState.url ? undefined : loadState.doc}
-          aria-busy={loadState.status === 'loading'}
+          aria-busy={loading}
           onLoad={() => {
-            if (loadState.status === 'ready') onReady?.()
+            if (loadState.status === 'ready' && project.kind !== 'pro') onReady?.()
           }}
           // Mesmo sandbox do preview vivo do editor. Pointer Lock habilita a câmera FPS;
           // NUNCA adicionar `allow-same-origin`.

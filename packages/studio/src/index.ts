@@ -90,7 +90,11 @@ export {
   restoreProjectFromCloud,
   validateCloudProjectSnapshot,
 } from './projects/importSnapshot'
-export { ProjectList, type ProjectListProps } from './projects/ProjectList'
+export {
+  ProjectList,
+  type ProjectListProps,
+  type ProjectListSection,
+} from './projects/ProjectList'
 export {
   buildTilemapGameProject,
   type TilemapGamePayload,
@@ -218,3 +222,4 @@ export function setStudioStorageNamespace(namespace: string): void {
   setStorageNamespace(namespace)
   setPersonalAssetsNamespace(namespace)
 }
+export type { ProWorkspacePreferences, StudioWorkspacePreferencesAdapter } from './studio/workspace'

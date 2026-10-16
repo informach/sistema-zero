@@ -1,0 +1,106 @@
+[
+  {
+    "variant": "baseline",
+    "parts": 4,
+    "documentSha256": "2004c6f51b163b75a5574d44c0bc321447729ccfc22d8f0b0e8c19b3e8899e08",
+    "cpuPreviewMs": {
+      "samples": 60,
+      "p50": 0.082,
+      "p95": 0.164
+    },
+    "cpuConfirmMs": {
+      "samples": 30,
+      "p50": 0.035,
+      "p95": 0.066
+    },
+    "cpuCancelMs": {
+      "samples": 30,
+      "p50": 0.003,
+      "p95": 0.009
+    },
+    "browser": "148.0.7778.96",
+    "frameIntervalMs": {
+      "samples": 323,
+      "p50": 16.7,
+      "p95": 16.7
+    }
+  },
+  {
+    "variant": "current",
+    "parts": 4,
+    "documentSha256": "2004c6f51b163b75a5574d44c0bc321447729ccfc22d8f0b0e8c19b3e8899e08",
+    "cpuPreviewMs": {
+      "samples": 60,
+      "p50": 0.066,
+      "p95": 0.095
+    },
+    "cpuConfirmMs": {
+      "samples": 30,
+      "p50": 0.02,
+      "p95": 0.052
+    },
+    "cpuCancelMs": {
+      "samples": 30,
+      "p50": 0.002,
+      "p95": 0.011
+    },
+    "browser": "148.0.7778.96",
+    "frameIntervalMs": {
+      "samples": 332,
+      "p50": 33.4,
+      "p95": 50
+    }
+  },
+  {
+    "variant": "baseline",
+    "parts": 128,
+    "documentSha256": "bb1d7f63ee0884f3cd889625ea97b924f76ce503f672cd866aad4309d022ae3f",
+    "cpuPreviewMs": {
+      "samples": 60,
+      "p50": 0.694,
+      "p95": 1.425
+    },
+    "cpuConfirmMs": {
+      "samples": 30,
+      "p50": 0.307,
+      "p95": 0.726
+    },
+    "cpuCancelMs": {
+      "samples": 30,
+      "p50": 0.004,
+      "p95": 0.007
+    },
+    "browser": "148.0.7778.96",
+    "frameIntervalMs": {
+      "samples": 332,
+      "p50": 16.7,
+      "p95": 33.4
+    }
+  },
+  {
+    "variant": "current",
+    "parts": 128,
+    "documentSha256": "bb1d7f63ee0884f3cd889625ea97b924f76ce503f672cd866aad4309d022ae3f",
+    "cpuPreviewMs": {
+      "samples": 60,
+      "p50": 0.726,
+      "p95": 1.263
+    },
+    "cpuConfirmMs": {
+      "samples": 30,
+      "p50": 0.282,
+      "p95": 0.523
+    },
+    "cpuCancelMs": {
+      "samples": 30,
+      "p50": 0.003,
+      "p95": 0.007
+    },
+    "browser": "148.0.7778.96",
+    "frameIntervalMs": {
+      "samples": 332,
+      "p50": 50,
+      "p95": 66.7
+    }
+  }
+]

@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { fileURLToPath } from 'node:url'
 import realConfig from '../../gateway.config'
 import { loadEnv } from '../../src/infrastructure/config/env'
 import { routeConfigSchema } from '../../src/infrastructure/config/gateway-config.schema'
@@ -9,6 +10,78 @@ const env = loadEnv({})
 const service = { name: 'p', upstreamGroups: { default: [{ url: 'http://p' }] } }
 
 describe('loadGatewayConfig', () => {
+  test('Instagram publica apenas o webhook exato; inbox exige equipe e atribuição exige HMAC do marketing', () => {
+    const registry = new RouteRegistry(
+      realConfig.routes.map((route) => routeConfigSchema.parse(route)),
+    )
+    expect(registry.resolve('POST', '/marketing/webhooks/instagram', 'v1')?.route.auth).toBe(
+      'public',
+    )
+    for (const path of [
+      '/marketing/webhooks/instagram/extra',
+      '/marketing/workspace/engagement/accounts',
+    ])
+      expect(registry.resolve('POST', path, 'v1')?.route).toMatchObject({
+        auth: { strategies: ['jwt'] },
+        authorize: { statuses: ['active'], roles: ['superadmin', 'admin', 'staff'] },
+      })
+    expect(
+      registry.resolve('POST', '/funnel/internal/marketing-attribution', 'v1')?.route,
+    ).toMatchObject({
+      auth: { strategies: ['hmac'], allowedConsumers: ['marketing'] },
+      maxBodyBytes: 8192,
+    })
+  })
+  test('publicação da KB exige admin e vence o wildcard staff do Helpdesk', () => {
+    const registry = new RouteRegistry(
+      realConfig.routes.map((route) => routeConfigSchema.parse(route)),
+    )
+    for (const action of ['publish', 'unpublish', 'archive']) {
+      expect(registry.resolve('POST', `/helpdesk/kb/article/${action}`, 'v1')?.route).toMatchObject(
+        {
+          id: `helpdesk-kb-${action}`,
+          authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+          audit: {},
+        },
+      )
+    }
+    expect(registry.resolve('POST', '/helpdesk/kb', 'v1')?.route.authorize?.roles).toContain(
+      'staff',
+    )
+    expect(
+      registry.resolve('PATCH', '/helpdesk/kb/article', 'v1')?.route.authorize?.roles,
+    ).toContain('staff')
+  })
+  test('staff facade preserves user credentials only to auth; delegated messaging stays HMAC auth-only', () => {
+    const registry = new RouteRegistry(
+      realConfig.routes.map((route) => routeConfigSchema.parse(route)),
+    )
+    expect(registry.resolve('POST', '/auth/staff/operations', 'v1')?.route).toMatchObject({
+      auth: { strategies: ['jwt'] },
+      authorize: { statuses: ['active'], roles: ['superadmin', 'admin', 'staff'] },
+      upstreamAuth: 'passthrough',
+      timeoutMs: 65000,
+    })
+    expect(registry.resolve('POST', '/messaging/staff/send', 'v1')?.route).toMatchObject({
+      auth: { strategies: ['hmac'], allowedConsumers: ['auth'] },
+    })
+    expect(registry.resolve('POST', '/messaging/send', 'v1')?.route).toMatchObject({
+      auth: { strategies: ['hmac'] },
+    })
+  })
+  test('Studio credentials, usage and reconciliation require member-shell HMAC, never a browser JWT', () => {
+    const registry = new RouteRegistry(
+      realConfig.routes.map((route) => routeConfigSchema.parse(route)),
+    )
+    for (const endpoint of ['account', 'usage', 'reconcile', 'builder/availability']) {
+      const route = registry.resolve('POST', `/members/internal/studio-ai/${endpoint}`, 'v1')?.route
+      expect(route).toMatchObject({
+        auth: { strategies: ['hmac'], allowedConsumers: ['member-shell'] },
+        maxBodyBytes: 4096,
+      })
+      expect(route?.audit).toBeUndefined()
+    }
+  })
   test('browser session routes are bounded POST-only identity endpoints', () => {
     const registry = new RouteRegistry(
       realConfig.routes.map((route) => routeConfigSchema.parse(route)),
@@ -57,6 +130,12 @@ describe('loadGatewayConfig', () => {
       authorize: { roles: ['superadmin', 'admin', 'staff'] },
       audit: {},
     })
+    // O funil do Pensa v2: leitura da equipe, sem cair em outro padrão de admin.
+    expect(registry.resolve('GET', '/members/admin/pensa/funnel', 'v1')?.route).toMatchObject({
+      id: 'members-admin-pensa-funnel',
+      authorize: { roles: ['superadmin', 'admin', 'staff'] },
+    })
+    expect(registry.resolve('POST', '/members/admin/pensa/funnel', 'v1')).toBeUndefined()
     // The child's project by block stays under the authenticated child routes.
     expect(registry.resolve('GET', '/members/live/workspaces', 'v1')?.route.id).toBe('members-live')
     expect(
@@ -458,9 +537,59 @@ describe('loadGatewayConfig', () => {
 })
 
 // O boot real valida a config inteira (fail-fast), mas nenhum teste a CARREGAVA — então
-// invariantes que valem só sobre as rotas REAIS (audit em rota mutante, ids únicos, novas
-// rotas presentes) ficavam sem rede. Asserimos direto sobre o objeto exportado (estático).
+// invariantes que valem só sobre as rotas REAIS ficavam sem rede. O subprocesso prova
+// o carregamento com credenciais de fixture; as demais asserções conferem as rotas exportadas.
 describe('gateway.config.ts (configuração real)', () => {
+  async function bootRealConfig(bodyLimit?: string) {
+    const child = Bun.spawn(
+      [
+        process.execPath,
+        '-e',
+        `import { loadEnv } from './src/infrastructure/config/env';
+         import { loadGatewayConfig } from './src/infrastructure/config/load-gateway-config';
+         const config = await loadGatewayConfig(loadEnv(process.env));
+         console.log(JSON.stringify({routes: config.routes.length,
+           builderLimit: config.routes.find(r => r.id === 'members-internal-studio-builder')?.maxBodyBytes}));`,
+      ],
+      {
+        cwd: fileURLToPath(new URL('../..', import.meta.url)),
+        env: {
+          NODE_ENV: 'test',
+          JWT_JWKS_URL: 'http://localhost/jwks',
+          GATEWAY_CONSUMER_ID: 'gateway',
+          GATEWAY_HMAC_SECRET: 'gateway-test-secret-with-32-characters',
+          FUNNEL_HMAC_SECRET: 'funnel-test-secret-with-32-characters',
+          FUNNEL_INTERNAL_TOKEN: 'funnel-test-token-with-32-characters',
+          ...(bodyLimit ? { MAX_REQUEST_BODY_BYTES: bodyLimit } : {}),
+        },
+        stdout: 'pipe',
+        stderr: 'pipe',
+      },
+    )
+    const [code, stdout, stderr] = await Promise.all([
+      child.exited,
+      new Response(child.stdout).text(),
+      new Response(child.stderr).text(),
+    ])
+    return { code, stdout, stderr }
+  }
+
+  test('carrega todas as rotas reais com o teto de corpo padrão', async () => {
+    const result = await bootRealConfig()
+    expect(result.stderr).toBe('')
+    expect(result.code).toBe(0)
+    expect(JSON.parse(result.stdout)).toEqual({
+      routes: realConfig.routes.length,
+      builderLimit: 3_004_096,
+    })
+  })
+
+  test('recusa teto explícito que impede o corpo do builder do Studio', async () => {
+    const result = await bootRealConfig('2097152')
+    expect(result.code).not.toBe(0)
+    expect(result.stderr).toMatch(/members-internal-studio-builder.*MAX_REQUEST_BODY_BYTES/)
+  })
+
   test('consulta do curso-presente é exclusiva do referrals e re-assinada para members', () => {
     const registry = new RouteRegistry(
       realConfig.routes.map((route) => routeConfigSchema.parse(route)),

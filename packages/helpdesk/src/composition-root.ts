@@ -1,5 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import { createLogger, type Logger } from '@sistemazero/core/logging'
+import { AutomationService } from './application/ai/automation.service'
+import { KnowledgeAnswerService } from './application/ai/knowledge-answer.service'
 import { TicketAiService } from './application/ai/ticket-ai.service'
 import { ConnectionService } from './application/connection/connection.service'
 import { GmailAccountService } from './application/connection/gmail-account.service'
@@ -22,6 +24,9 @@ import { GmailOAuthProvider } from './infrastructure/gateways/google/gmail-oauth
 import { createGatewayMessagingClient } from './infrastructure/gateways/messaging/gateway-messaging-client'
 import { OpenRouterClient } from './infrastructure/gateways/openrouter/openrouter-client'
 import { withSentryMirror } from './infrastructure/observability/sentry'
+import { pruneAiData } from './infrastructure/persistence/drizzle/ai-retention'
+import { DrizzleAiRunRepository } from './infrastructure/persistence/drizzle/ai-run.repository'
+import { DrizzleAutomationRepository } from './infrastructure/persistence/drizzle/automation.repository'
 import { DrizzleConnectionRepository } from './infrastructure/persistence/drizzle/connection.repository'
 import { DrizzleCustomerTicketRepository } from './infrastructure/persistence/drizzle/customer-ticket.repository'
 import { createDbConnection, type DbConnection } from './infrastructure/persistence/drizzle/db'
@@ -35,7 +40,9 @@ import { DrizzleTicketRepository } from './infrastructure/persistence/drizzle/ti
 import { DrizzleTicketIngestionRepository } from './infrastructure/persistence/drizzle/ticket-ingestion.repository'
 import { createSecretBox } from './infrastructure/security/secret-box'
 import { AiWorker } from './infrastructure/workers/ai-worker'
+import { AutomationWorker } from './infrastructure/workers/automation-worker'
 import { GmailSyncWorker } from './infrastructure/workers/gmail-sync-worker'
+import { KnowledgeIndexWorker } from './infrastructure/workers/knowledge-index-worker'
 import { PortalNotificationWorker } from './infrastructure/workers/portal-notification-worker'
 import { createServer } from './interfaces/http/server'
 
@@ -172,6 +179,9 @@ export function createApplication(env: Env): Application {
     now,
     idGen,
   )
+  const automationRepo = new DrizzleAutomationRepository(db, ai?.model ?? null)
+  const automation = new AutomationService(automationRepo, ai?.model ?? null, now)
+  const aiRuns = new DrizzleAiRunRepository(db)
   const replyService = new ReplyService(
     ticketRepo,
     messageRepo,
@@ -185,6 +195,7 @@ export function createApplication(env: Env): Application {
     now,
     idGen,
     logger,
+    aiRuns,
   )
   // IA (F3): cliente OpenRouter só quando o grupo IA está configurado (senão as
   // rotas summarize/regenerate respondem 503; o worker nem monta). KB entra na F4.
@@ -197,19 +208,22 @@ export function createApplication(env: Env): Application {
         timeoutMs: env.AI_TIMEOUT_MS,
       })
     : null
+  const answers = new KnowledgeAnswerService(
+    llmClient,
+    kbRepo,
+    aiRuns,
+    env.AI_MAX_KB_CHARS,
+    now,
+    idGen,
+  )
+  const automationWorker = new AutomationWorker(automationRepo, answers, messageRepo, now, logger)
   const ticketAiService = new TicketAiService(
     llmClient,
     ticketRepo,
     messageRepo,
-    async () =>
-      (await kbRepo.listPublished(env.AI_KB_MAX_CANDIDATES)).map((article) => ({
-        title: article.title,
-        content: article.content,
-      })),
+    answers,
     {
       maxThreadChars: env.AI_MAX_THREAD_CHARS,
-      maxKbChars: env.AI_MAX_KB_CHARS,
-      onKbContextSelected: (stats) => logger.debug('ai.kb_context_selected', stats),
     },
     now,
   )
@@ -253,6 +267,7 @@ export function createApplication(env: Env): Application {
       })
     : null
 
+  const knowledgeIndexWorker = new KnowledgeIndexWorker(kbRepo, now, idGen, logger)
   const portalNotificationWorker = messaging
     ? new PortalNotificationWorker({
         outbox: portalNotificationOutboxRepo,
@@ -287,6 +302,8 @@ export function createApplication(env: Env): Application {
       tickets: ticketService,
       reply: replyService,
       ai: ticketAiService,
+      automation,
+      answers,
       internalToken: env.INTERNAL_API_TOKEN,
       requireStaffEnabled: env.REQUIRE_STAFF,
     },
@@ -296,11 +313,13 @@ export function createApplication(env: Env): Application {
     },
     kb: {
       kb: kbService,
+      answers,
       internalToken: env.INTERNAL_API_TOKEN,
       requireStaffEnabled: env.REQUIRE_STAFF,
     },
     settings: {
       settings: settingsService,
+      automation,
       internalToken: env.INTERNAL_API_TOKEN,
       requireStaffEnabled: env.REQUIRE_STAFF,
     },
@@ -339,6 +358,7 @@ export function createApplication(env: Env): Application {
         delete from helpdesk.portal_notification_outbox
         where status = 'sent' and sent_at < ${sentOutboxBefore}
       `
+      await pruneAiData(gate, retentionNow, env.AI_RUN_RETENTION_DAYS)
       if (staleStates.count > 0 || sentNotifications.count > 0) {
         logger.info('retention.pruned', {
           oauthStates: staleStates.count,
@@ -361,6 +381,8 @@ export function createApplication(env: Env): Application {
       gmailSyncWorker?.start()
       aiWorker?.start()
       portalNotificationWorker?.start()
+      knowledgeIndexWorker.start()
+      automationWorker.start()
       // `::` = dual-stack — necessário p/ o private networking do Railway (IPv6).
       server.listen({ port: env.PORT, hostname: env.HOST })
       logger.info('http.listening', { port: env.PORT, host: env.HOST })
@@ -372,6 +394,8 @@ export function createApplication(env: Env): Application {
         gmailSyncWorker?.stop(),
         aiWorker?.stop(),
         portalNotificationWorker?.stop(),
+        knowledgeIndexWorker.stop(),
+        automationWorker.stop(),
       ])
       try {
         await server.stop()

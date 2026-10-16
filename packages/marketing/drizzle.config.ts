@@ -7,6 +7,7 @@ export default defineConfig({
   schema: [
     './src/infrastructure/persistence/drizzle/schema.ts',
     './src/infrastructure/persistence/drizzle/workspace-schema.ts',
+    './src/infrastructure/persistence/drizzle/engagement-schema.ts',
   ],
   out: './src/infrastructure/persistence/drizzle/migrations',
   casing: 'snake_case',

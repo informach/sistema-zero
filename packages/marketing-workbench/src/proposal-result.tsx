@@ -1,5 +1,9 @@
 'use client'
-import { type ExecutionRun, runViewSchema } from '@sistemazero/marketing-contracts'
+import {
+  type EditorialDocument,
+  type ExecutionRun,
+  runViewSchema,
+} from '@sistemazero/marketing-contracts'
 import { timelineWebVtt } from '@sistemazero/marketing-production/data'
 import { Button } from '@sistemazero/ui/button'
 import { lazy, Suspense, useState } from 'react'
@@ -8,6 +12,13 @@ import { errorMessage, type WorkbenchPort } from './port'
 
 const ArtPreview = lazy(() => import('./art-preview'))
 const VideoPreview = lazy(() => import('./video-preview'))
+function beforeValue(document: EditorialDocument | undefined, field: string) {
+  if (document?.kind === 'piece' && field === 'conversationOpening')
+    return document.conversation?.opening ?? ''
+  if (document?.kind === 'piece' && field === 'conversationOffer')
+    return document.conversation?.offer ?? ''
+  return String(Object.entries(document ?? {}).find(([key]) => key === field)?.[1] ?? '')
+}
 export function ProposalResult({
   run,
   port,
@@ -111,6 +122,8 @@ export function ProposalResult({
                         caption: 'Legenda',
                         cta: 'Chamada para ação',
                         alt: 'Descrição acessível',
+                        conversationOpening: 'Abertura da conversa',
+                        conversationOffer: 'Apresentação do Desafio',
                       }[change.field]
                     }
                   </summary>
@@ -118,12 +131,11 @@ export function ProposalResult({
                     <div>
                       <p className="text-xs text-muted-foreground">Antes</p>
                       <p className="mt-1 whitespace-pre-wrap">
-                        {String(
-                          Object.entries(
-                            [run.context.source, ...run.context.selected].find(
-                              (revision) => revision.entityId === change.entityId,
-                            )?.document ?? {},
-                          ).find(([field]) => field === change.field)?.[1] ?? '',
+                        {beforeValue(
+                          [run.context.source, ...run.context.selected].find(
+                            (revision) => revision.entityId === change.entityId,
+                          )?.document,
+                          change.field,
                         )}
                       </p>
                     </div>

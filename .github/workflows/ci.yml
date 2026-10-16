@@ -36,12 +36,35 @@ concurrency:
 jobs:
   ci:
     name: ci
-    # 30min: o typecheck do studio ficou pesado (~16min) com o volume de IR dos
-    # exemplos de jogo (trilogias Clear Code + jogos 3D); antes 20min estourava e
-    # o job era CANCELADO (GitHub marca timeout como "cancelled", não "failure").
+    # Typecheck do Studio (~16 min) + imagem/playtests isolados + exports com npm ci.
+    # O limite do job inclui essas provas reais; não altera orçamentos do produto.
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     services:
+      marketing-postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: marketing_review
+        ports:
+          - 15439:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d marketing_review"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      engagement-postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: marketing_review
+        ports:
+          - 15465:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d marketing_review"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
       fiscal-postgres:
         image: postgres:16
         env:
@@ -75,6 +98,12 @@ jobs:
       - name: Construir imagem do Studio Pro
         working-directory: packages/studio-runtime
         run: bun run build:image
+
+      - name: Verificar imagem e objetivos dos kits no sandbox sem rede
+        working-directory: packages/studio-runtime
+        run: |
+          bun tests/image-smoke.ts
+          bun tests/validation-smoke.ts
 
       - name: Lint (biome ci)
         run: bun run ci
@@ -116,12 +145,40 @@ jobs:
       # Worker cujo módulo ainda transpilava no pool de threads (oven-sh/bun#33936, corrigido no
       # Bun 1.4.0). O conserto no código é o aperto de mão de `packages/molda/src/workers/
       # workerHandshake.ts` (nenhum worker é encerrado antes de anunciar que carregou).
-      - name: Testes (todos os pacotes)
-        run: bun run --filter '*' test
+      - name: Preparar navegadores das provas de persistência do Studio
+        working-directory: packages/studio
+        run: bunx playwright install --with-deps chromium
+
+      - name: Instalar o compilador confiável para as provas fora da imagem
+        run: npm ci --ignore-scripts --no-audit --no-fund --prefix packages/studio-runtime/runtime
+
+      # Credenciais e posse de portas do runtime são homologadas no Windows; o
+      # FFmpeg empacotado do desktop também precisa de uma plataforma suportada.
+      - name: Testes dos pacotes web e serviços
+        run: node scripts/ci/test-service-packages.mjs
+
+      - name: Testes do Studio com CPU disponível para os projetos grandes
+        run: bun run --filter '@sistemazero/studio' test
+        env:
+          # WebKit roda com as mesmas asserções no job obrigatório studio-storage-macos.
+          # WORKAROUND do port Linux: perde o journal no reload com CAS grande em voo;
+          # macOS e Windows passaram o mesmo cenário (run 38838008325 / prova local).
+          # macOS é a referência recomendada para Safari: playwright.dev/docs/browsers#webkit.
+          STUDIO_STORAGE_BROWSER: chromium
 
       - name: Verificar IR gerada dos exemplos 3D
         working-directory: packages/studio
         run: bun run check:game-3d-examples
+
+      - name: Verificar fontes, regras e exports dos kits de jogos
+        working-directory: packages/studio
+        run: |
+          bun run check:pro-kits
+          bun run check:pro-typescript-libs
+          bun run test:canvas-survival
+          bun run test:grid-games
+          bun run verify:canvas-export
+          bun run verify:grid-export
 
       # ⚠️ Este portão nunca rodou no CI: ele só era encadeado pelo `test:coverage` do
       # pacote, e o passo global chama `test`. Ele reprova quando um módulo declarado
@@ -160,11 +217,15 @@ jobs:
       - name: Criar banco descartável para upgrade das aulas
         run: PGPASSWORD=postgres psql -h localhost -p 55432 -U postgres -d postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE sz_aulas_qa_ci"
 
+      - name: Criar banco descartável para ledger e revisões do Studio
+        run: PGPASSWORD=postgres psql -h localhost -p 55432 -U postgres -d postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE studio_pro_review"
+
       - name: Testes DB members (Postgres real)
         run: cd packages/members && bun test tests/db
         env:
           TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/sistemazero
           LEARNING_QA_DATABASE_URL: postgres://postgres:postgres@localhost:55432/sz_aulas_qa_ci
+          STUDIO_REVIEW_DATABASE_URL: postgres://postgres:postgres@localhost:55432/studio_pro_review
 
       - name: Testes DB referrals (Postgres real)
         run: cd packages/referrals && bun test tests/db
@@ -178,17 +239,82 @@ jobs:
         working-directory: packages/helpdesk
         run: |
           bun run db:migrate
-          bun test tests/integration/drizzle-ticket.repository.test.ts tests/integration/drizzle-reply-delivery.test.ts tests/integration/drizzle-ingestion.test.ts tests/integration/drizzle-customer-tickets.test.ts tests/integration/drizzle-connection.test.ts
+          bun test tests/integration/drizzle-*.test.ts
         env:
           DATABASE_URL: postgres://postgres:postgres@localhost:55432/helpdesk_test
           HELPDESK_TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/helpdesk_test
 
+      - name: Testes DB marketing e sessões desktop (Postgres real)
+        run: |
+          cd packages/marketing
+          bun run db:migrate
+          bun test tests/*.postgres.test.ts
+          cd ../auth
+          bun run db:migrate
+          bun test tests/db/desktop-session.test.ts
+        env:
+          DATABASE_URL: postgres://postgres:postgres@127.0.0.1:15439/marketing_review
+          MARKETING_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:15439/marketing_review
+          ENGAGEMENT_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:15465/marketing_review
+
       - name: Typecheck (todos os pacotes)
         run: bun run --filter '*' typecheck
 
+  studio-storage-macos:
+    name: studio-storage-macos
+    runs-on: macos-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Instalar dependências (lockfile congelado)
+        run: bun install --frozen-lockfile
+      - name: Preparar navegadores da prova de persistência
+        working-directory: packages/studio
+        run: bunx playwright install chromium webkit
+      - name: Provar recarga imediata e conflito entre abas no macOS
+        working-directory: packages/studio
+        run: bun test src/state/projectStorageBrowser.test.ts
+
+  desktop-windows:
+    name: desktop-windows
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - name: Usar o diretório temporário dedicado do runner
+        run: |
+          "TEMP=$env:RUNNER_TEMP" >> $env:GITHUB_ENV
+          "TMP=$env:RUNNER_TEMP" >> $env:GITHUB_ENV
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Instalar dependências (lockfile congelado)
+        run: bun install --frozen-lockfile
+      - name: Verificar compilação do helper nativo de processos
+        run: |
+          & "$env:SystemRoot/System32/WindowsPowerShell/v1.0/powershell.exe" -NoProfile -NonInteractive -ExecutionPolicy Bypass -File packages/agent-runtime/src/process/windows-job.ps1 -OutputFile "$env:RUNNER_TEMP/sistemazero-job-proof.exe"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Testar runtime nativo
+        working-directory: packages/agent-runtime
+        run: |
+          bun ../agent-integrations/node_modules/playwright-core/cli.js install chromium
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          bun test
+      - name: Testar desktop e mídia empacotada
+        working-directory: packages/marketing-desktop
+        run: bun test
+
   community-kids-e2e:
     name: community-kids-e2e
-    needs: ci
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -225,7 +351,6 @@ jobs:
 
   studio-e2e-chromium:
     name: studio-e2e-chromium-${{ matrix.shard }}
-    needs: ci
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
@@ -246,6 +371,13 @@ jobs:
         working-directory: packages/studio
         run: bunx playwright install --with-deps chromium
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Instalar o compilador confiável para os jogos Pro
+        run: npm ci --ignore-scripts --no-audit --no-fund --prefix packages/studio-runtime/runtime
+
       - name: E2E Chromium completo (shard ${{ matrix.shard }}/3)
         working-directory: packages/studio
         run: bunx playwright test --project=chromium --shard=${{ matrix.shard }}/3
@@ -260,7 +392,6 @@ jobs:
 
   studio-e2e-firefox:
     name: studio-e2e-firefox
-    needs: ci
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -294,8 +425,7 @@ jobs:
   # specs dessa gravação (`testMatch` do projeto `webkit` no playwright.config.ts).
   studio-e2e-webkit:
     name: studio-e2e-webkit
-    needs: ci
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v5
@@ -325,7 +455,7 @@ jobs:
 
   deploy-staging:
     name: deploy-staging
-    needs: [ci, community-kids-e2e, studio-e2e-chromium, studio-e2e-firefox, studio-e2e-webkit]
+    needs: [ci, desktop-windows, studio-storage-macos, community-kids-e2e, studio-e2e-chromium, studio-e2e-firefox, studio-e2e-webkit]
     # Só push na staging (ou dispatch manual) — PR para a main NUNCA deploya.
     if: github.ref == 'refs/heads/staging' && (github.event_name == 'workflow_dispatch' || github.event_name == 'push')
     runs-on: ubuntu-latest

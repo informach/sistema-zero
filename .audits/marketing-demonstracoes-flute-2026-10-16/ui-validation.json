@@ -1,0 +1,121 @@
+{
+  "status": "passed",
+  "comparisons": [
+    {
+      "recipe": "detail-context-v1",
+      "height": 1920,
+      "frame": 89,
+      "meanChannelDifference": 0
+    },
+    {
+      "recipe": "detail-context-v1",
+      "height": 1920,
+      "frame": 0,
+      "meanChannelDifference": 0
+    },
+    {
+      "recipe": "detail-context-v1",
+      "height": 1920,
+      "frame": 45,
+      "meanChannelDifference": 0
+    },
+    {
+      "recipe": "rule-result-v1",
+      "height": 1920,
+      "frame": 89,
+      "meanChannelDifference": 0
+    },
+    {
+      "recipe": "rule-result-v1",
+      "height": 1920,
+      "frame": 0,
+      "meanChannelDifference": 0.0000019290123456790124
+    },
+    {
+      "recipe": "rule-result-v1",
+      "height": 1920,
+      "frame": 45,
+      "meanChannelDifference": 0
+    },
+    {
+      "recipe": "before-after-v1",
+      "height": 1920,
+      "frame": 89,
+      "meanChannelDifference": 0
+    },
+    {
+      "recipe": "before-after-v1",
+      "height": 1920,
+      "frame": 0,
+      "meanChannelDifference": 0
+    },
+    {
+      "recipe": "before-after-v1",
+      "height": 1920,
+      "frame": 45,
+      "meanChannelDifference": 0
+    },
+    {
+      "recipe": "detail-context-v1",
+      "height": 1350,
+      "frame": 89,
+      "meanChannelDifference": 0
+    },
+    {
+      "recipe": "detail-context-v1",
+      "height": 1350,
+      "frame": 0,
+      "meanChannelDifference": 0
+    },
+    {
+      "recipe": "detail-context-v1",
+      "height": 1350,
+      "frame": 45,
+      "meanChannelDifference": 0
+    },
+    {
+      "recipe": "rule-result-v1",
+      "height": 1350,
+      "frame": 89,
+      "meanChannelDifference": 0
+    },
+    {
+      "recipe": "rule-result-v1",
+      "height": 1350,
+      "frame": 0,
+      "meanChannelDifference": 0
+    },
+    {
+      "recipe": "rule-result-v1",
+      "height": 1350,
+      "frame": 45,
+      "meanChannelDifference": 0
+    },
+    {
+      "recipe": "before-after-v1",
+      "height": 1350,
+      "frame": 89,
+      "meanChannelDifference": 0
+    },
+    {
+      "recipe": "before-after-v1",
+      "height": 1350,
+      "frame": 0,
+      "meanChannelDifference": 0.0000036579789666209417
+    },
+    {
+      "recipe": "before-after-v1",
+      "height": 1350,
+      "frame": 45,
+      "meanChannelDifference": 0
+    }
+  ],
+  "exampleOnlyFillsRequest": true,
+  "demonstrationTextScopeSelectable": true,
+  "noHorizontalOverflow": [
+    1440,
+    390
+  ],
+  "browserErrors": [],
+  "note": "Real components and Player; fixture transport. No authenticated execution or publication."
+}

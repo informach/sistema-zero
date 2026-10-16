@@ -15,6 +15,7 @@ mock.module('server-only', () => ({}))
 const { workJourney } = await import('../src/server/pensa-journey/planner')
 const { loadJourneyContext } = await import('../src/server/pensa-journey/context')
 const { JOURNEY_PROMPT_BUDGET_BYTES } = await import('../src/server/pensa-journey/prompt-context')
+const { JourneyOutputInvalid } = await import('../src/server/pensa-journey/errors')
 const { journeyRecipes } = await import('../src/server/pensa-journey/recipes')
 
 const PROJECT = '0f5c2a8e-7d3b-4c1a-9e6f-2b8d4a6c1e01'
@@ -266,11 +267,20 @@ function nestedJson(value: unknown): string[] {
   return []
 }
 
-async function capture(profile: Profile, step: PensaOperationStep) {
+async function capture(profile: Profile, step: PensaOperationStep, repair = false) {
   const { members, user } = scenario(profile, step)
   const sent: { system: string; user: string; schemaName: string; maxTokens?: number }[] = []
   const complete = mock(async (input: (typeof sent)[number]) => {
     sent.push(input)
+    // Com `repair`, a 1ª resposta é recusada com o motivo no teto (2.000): a tentativa de reparo
+    // leva o motivo e precisa caber também.
+    if (repair && sent.length === 1)
+      throw new JourneyOutputInvalid(
+        long(
+          'Missão "missao-1", passo 1 ("Vá para a área ⚙️ Ao iniciar"): as áreas são blocos',
+          2_400,
+        ),
+      )
     // Falha do provedor (não reparável): só o pedido interessa aqui.
     throw new Error('provider down')
   })
@@ -302,6 +312,20 @@ describe('teto do pedido ao modelo (A4): 48 KB, sistema + usuário, em todo pass
         // M5: o provedor não recebe o perfil da criança.
         expect(request.user).not.toContain(CHILD_ID)
         expect(request.user).not.toContain('profileId')
+      })
+
+  // A tentativa de reparo soma o motivo da recusa (15/10/2026: com o mapa da interface maior, a
+  // revisão e o guia da equipe estouravam o teto no reparo e o passo falhava em vez de consertar).
+  for (const profile of ['child-2d', 'staff'] as const)
+    for (const step of ['propose', 'review', 'guides'] as const)
+      test(`${profile} · ${step} · tentativa de reparo`, async () => {
+        const sent = await capture(profile, step, true)
+        expect(sent).toHaveLength(2)
+        const retry = sent[1]!
+        expect(retry.user).toContain('previousAnswerRejected')
+        expect(bytes(retry.system) + bytes(retry.user)).toBeLessThanOrEqual(
+          JOURNEY_PROMPT_BUDGET_BYTES,
+        )
       })
 
   test('os blocos que a missão usa vão sempre, mesmo no degrau mais apertado', async () => {

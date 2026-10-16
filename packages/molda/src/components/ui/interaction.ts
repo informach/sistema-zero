@@ -40,9 +40,10 @@ export function interactiveChipClass(active: boolean, padding = 'px-1'): string 
  * Amostra de cor: a escolhida ganha um anel duplo (um vão claro e um anel escuro). Só a borda
  * escura sumia nas cores escuras (1,6:1 contra o preto); o vão claro separa o anel de qualquer cor.
  */
-export function swatchClass(active: boolean): string {
+export function swatchClass(active: boolean, size: 'regular' | 'compact' = 'regular'): string {
   return clsx(
-    'aspect-square min-h-11 min-w-11 rounded-md border-2 transition',
+    'aspect-square rounded-md border-2 transition',
+    size === 'regular' && 'min-h-11 min-w-11',
     'focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-mld-accent',
     'disabled:cursor-not-allowed disabled:opacity-40',
     active

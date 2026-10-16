@@ -12,6 +12,7 @@ import { EMBEDDED_APP_FRAME, EmbeddedAppLoadingBody } from '@/components/kids/em
 import { useFocusMode } from '@/components/kids/focus-mode'
 import { useHostChrome } from '@/components/kids/use-host-chrome'
 import { notePensaRestoreFromView } from '@/lib/pensa-restore-pending'
+import { pensaStudioProjectId } from '@/lib/pensa-studio-link'
 
 type PensaModule = typeof import('@sistemazero/pensa')
 
@@ -19,6 +20,7 @@ type PensaModule = typeof import('@sistemazero/pensa')
 export function PensaClient({
   pintaOwned,
   studioAvailable,
+  studioProAvailable = false,
   moldaAvailable = false,
   initialProjectId = null,
   viewerId,
@@ -27,6 +29,7 @@ export function PensaClient({
 }: {
   pintaOwned: boolean
   studioAvailable: boolean
+  studioProAvailable?: boolean
   moldaAvailable?: boolean
   initialProjectId?: string | null
   viewerId?: string
@@ -102,23 +105,43 @@ export function PensaClient({
       theme,
       // O pacote chama a capability de `studioOwned`, mas o host fornece a
       // disponibilidade efetiva: produto comprado + jornada liberada.
-      capabilities: { pintaOwned, studioOwned: studioAvailable, moldaOwned: moldaAvailable },
+      capabilities: {
+        pintaOwned,
+        studioOwned: studioAvailable,
+        studioProAvailable,
+        moldaOwned: moldaAvailable,
+      },
       mascotImages: {
         happy: '/zappy/happy.webp',
         thinking: '/zappy/thinking.webp',
         celebrating: '/zappy/celebrating.webp',
         sleeping: '/zappy/sleeping.webp',
       },
-      onOpenTask: ({ taskId, destination }) =>
+      onOpenTask: ({ taskId, destination, studioProjectId }) => {
+        if (destination === 'studio' && studioProjectId) {
+          window.location.assign(
+            `/estudio/pro/${encodeURIComponent(studioProjectId)}?tarefa=${encodeURIComponent(taskId)}`,
+          )
+          return
+        }
         router.push(
           `/${destination === 'studio' ? 'estudio' : destination}?tarefa=${encodeURIComponent(taskId)}`,
-        ),
+        )
+      },
+      // "Abrir meu jogo" na hora de testar: o jogo do plano, sem abrir missão (o `?projeto=` só
+      // retoma o que existe, aqui ou na conta, e nunca mexe no progresso das missões).
+      onOpenGame: ({ projectId, studioAuthoring }) => {
+        const gameId = encodeURIComponent(pensaStudioProjectId(projectId))
+        if (studioAuthoring === 'code') window.location.assign(`/estudio/pro/${gameId}`)
+        else router.push(`/estudio?projeto=${gameId}`)
+      },
     }),
     // ⚠️ `theme` saiu do dep array: virou constante (sem tema escuro nesta plataforma).
     [
       transport,
       pintaOwned,
       studioAvailable,
+      studioProAvailable,
       moldaAvailable,
       router,
       viewerId,

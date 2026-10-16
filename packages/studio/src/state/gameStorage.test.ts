@@ -47,6 +47,22 @@ describe('gameStorage', () => {
     expect(currentBackend().get(gameStorageKey('proj-1'))).toEqual({ fome: '7', nome: 'Rex' })
     expect(await loadGameStorage('proj-1')).toEqual({ fome: '7', nome: 'Rex' })
   })
+  it('a sessão Pro fixa o perfil antes dos awaits e confirma falhas de escrita', async () => {
+    setProjectStorageNamespace('profile-a')
+    const session = repository.session('pro-game')
+    setProjectStorageNamespace('profile-b')
+    await session.write({ score: '42' })
+    expect(await session.load()).toEqual({ score: '42' })
+    expect(await repository.load('pro-game')).toEqual({})
+    const broken = createGameStorageRepository({
+      get: async () => ({}),
+      set: async () => {
+        throw new Error('quota')
+      },
+      delete: async () => {},
+    }).session('failure')
+    await expect(broken.write({ score: '10' })).rejects.toThrow('quota')
+  })
 
   it('escopo por projeto (chaves não vazam entre projetos)', async () => {
     await writeGameStorage('proj-1', { x: '1' })

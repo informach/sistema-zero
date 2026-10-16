@@ -22,6 +22,8 @@
     "./result": "./src/result/index.ts",
     "./http": "./src/http/index.ts",
     "./studio": "./src/studio/index.ts",
+    "./staff": "./src/staff/index.ts",
+    "./studio/*": "./src/studio/*.ts",
     "./time": "./src/time/index.ts",
     "./zappy": "./src/zappy/index.ts",
     "./learning": "./src/learning/index.ts",
@@ -35,6 +37,9 @@
     "check:fix": "biome check --write .",
     "format": "biome format --write .",
     "lint": "biome lint ."
+  },
+  "dependencies": {
+    "zod": "4.3.6"
   },
   "devDependencies": {
     "@types/bun": "latest"

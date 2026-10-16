@@ -18,6 +18,7 @@ import { renderReceipt } from '../media/render-identity'
 import { runProvider } from '../providers'
 import { downloadAsset } from '../sync/asset-download'
 import { createComposition } from './composition'
+import { demonstrationImages } from './demonstration-context'
 import { prepareMedia } from './media-preparation'
 import { recordingContext } from './recording-context'
 import { executeStudioCapture } from './studio-capture'
@@ -83,6 +84,7 @@ export const executeNative: ProductionExecutor = async (
       progress,
       recovery.provider,
       await recordingContext(run, resources, directory, signal, progress),
+      await demonstrationImages(run, resources, signal),
     )
   if (request.capability === 'transcribe')
     return transcribeVideo(run, resources, directory, signal, progress)
@@ -252,7 +254,7 @@ export const executeNative: ProductionExecutor = async (
       : []),
     ...(structuredCopy
       ? [
-          `Entregue a proposta JSON editorial schemaVersion 1. ${request.intent === 'adapt' ? 'Use kind adapt e crie uma nova representação sem alterar o original. Referencie sourceComponentId somente para componentes presentes no contexto.' : 'Use kind copy. Cada variante contém label e changes com entityId, field e value. Somente body/title de componentes e caption/cta/alt/title de representações podem mudar. Preserve IDs, assets, falas reais, citações e trechos protegidos.'}`,
+          `Entregue a proposta JSON editorial schemaVersion 1. ${request.intent === 'adapt' ? 'Use kind adapt e crie uma nova representação sem alterar o original. Referencie sourceComponentId somente para componentes presentes no contexto.' : 'Use kind copy. Cada variante contém label e changes com entityId, field e value. Podem mudar body/title de componentes, caption/cta/alt/title de representações e, somente em peças que já tenham conversation, conversationOpening/conversationOffer. Estes dois campos alteram apenas os textos de abertura/apresentação: preserve palavra-chave, destino, origem, respostas de saída e validade. Mantenha a identificação de mensagem automática e os limites de 25/70 palavras, respectivamente. A proposta nunca aprova nem ativa uma conversa. Preserve IDs, assets, falas reais, citações e trechos protegidos.'}`,
           `Gere ${request.intent === 'alternatives' ? request.limits.maxVariants : 1} alternativa(s). Ajuste somente source e selected, jamais ancestors, directions, evidence ou memory. Respeite protectedIds. Não invente IDs nem explique em campos de copy. summary descreve o que mudou.`,
         ]
       : []),

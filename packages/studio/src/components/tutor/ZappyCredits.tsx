@@ -13,6 +13,12 @@ import { cn } from '#ui'
  * dizer "não consegui saber" — para a criança é a mesma coisa que "acabou".
  */
 export function ZappyCredits({ credits }: { credits?: AiCreditsView | null }): JSX.Element | null {
+  if (credits?.studioSource === 'openrouter')
+    return (
+      <div className="border-sz-border border-b px-4 py-1.5 text-xs text-sz-fg-mute">
+        Fonte no Estúdio: OpenRouter do responsável. O Pensa usa a franquia da família.
+      </div>
+    )
   const meter = resolveAiCredits(credits)
   if (meter.state === 'unknown') return null
   const alerta = meter.state === 'low' || meter.state === 'exhausted'
@@ -25,6 +31,9 @@ export function ZappyCredits({ credits }: { credits?: AiCreditsView | null }): J
         <span className="sr-only">{meter.ariaLabel}</span>
         <span aria-hidden="true">{meter.inline}</span>
       </span>
+      <p className="text-xs text-sz-fg-mute">
+        Franquia da família, compartilhada entre Pensa e Zappy no Estúdio.
+      </p>
     </div>
   )
 }

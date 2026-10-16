@@ -25,6 +25,7 @@ import {
 } from 'remotion'
 import { ArtCompositionView } from '../art-composition'
 import { useCompositionFonts } from '../composition-fonts'
+import { DemonstrationScene } from './demonstration'
 import type { TimelineProps } from './props'
 
 function Clip({
@@ -77,8 +78,16 @@ function Clip({
           style={{ width: '100%', height: '100%', objectFit: clip.fit }}
         />
       ) : null}
-      {clip.kind === 'image' ? (
+      {clip.kind === 'image' && !clip.demonstration ? (
         <Img src={src ?? ''} style={{ width: '100%', height: '100%', objectFit: clip.fit }} />
+      ) : null}
+      {clip.demonstration ? (
+        <DemonstrationScene
+          scene={clip.demonstration}
+          durationInFrames={clip.durationInFrames}
+          assets={assets}
+          accent={accent}
+        />
       ) : null}
       {clip.kind === 'art' && clip.art ? (
         <div
@@ -266,6 +275,17 @@ export function TimelineComposition({ timeline, assets }: TimelineProps) {
         const range = document.createRange()
         range.selectNodeContents(element)
         const ink = range.getBoundingClientRect()
+        const textBoundary = element.closest('[data-video-text-boundary]')?.getBoundingClientRect()
+        if (
+          textBoundary &&
+          (ink.left < textBoundary.left - 1 ||
+            ink.right > textBoundary.right + 1 ||
+            ink.top < textBoundary.top - 1 ||
+            ink.bottom > textBoundary.bottom + 1)
+        )
+          throw new Error(
+            `Em ${position}, o texto excede sua área na demonstração. Peça uma divisão ou ajuste de texto antes de exportar.`,
+          )
         if (
           ink.left < bounds.left - 1 ||
           ink.right > bounds.right + 1 ||

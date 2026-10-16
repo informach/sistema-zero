@@ -1,154 +1,196 @@
-# Descubra por onde seu filho pode começar a criar com tecnologia.
+<!-- Espelho gerado da copy tipada em packages/funnel/src/funnels/comunidade-dos-criadores/quiz/. Edite o código e rode `bun scripts/espelho-quiz-comunidade.ts` (em packages/funnel). -->
 
-Os jogos de que seu filho gosta, os desenhos que faz e as perguntas que traz podem ajudar vocês a escolher uma atividade. Conte o que você observa em casa e o que gostaria que ele aprendesse.
+# Quiz da Comunidade: entrada e perguntas
 
-Você vai receber uma sugestão explicada a partir das suas respostas e uma ideia para experimentar com ele em casa.
+_Versão `comunidade-orientacao-v5`. Tráfego frio em SPIN: as perguntas falam só da criança e da casa; nenhuma tela antes do resultado cita a Comunidade nem apresenta a criação de jogos como solução. O texto é escrito no masculino e vira "ela" quando a primeira resposta é "Filha"._
 
-- Um caminho ligado aos interesses dele
-- O que procurar numa atividade para esse momento
-- Seu resultado na tela, sem cadastro
+## Entrada
 
-Responda pensando em um filho de cada vez. Você pode indicar o que ainda não sabe.
+_Para famílias com crianças de 9 a 14 anos_
 
-Uma orientação do Sistema Zero Kids para mães, pais e responsáveis por crianças e adolescentes de 9 a 14 anos. Você pode responder pelo celular.
+**Manchete padrão** (Padrão: o que ele já gosta de fazer):
 
-**Descobrir um caminho para meu filho**
+# Em três minutos, veja como usar o que seu filho já gosta de fazer para ele aprender mais
 
-## Pergunta 1
+**Manchete com `?manchete=tela`** (Tela: a dor do tempo de tela):
 
-Qual é a idade do filho em quem você está pensando?
+# Seu filho passa horas na tela. Em três minutos, veja o que faria esse tempo ajudar no aprendizado dele.
 
-- Até 8 anos
-- De 9 a 11 anos
-- De 12 a 14 anos
-- 15 anos ou mais
+Pode ser o que ele já gosta de fazer, como jogos, vídeos, desenhos ou perguntas sobre como as coisas funcionam, ou o que preocupa você, como a lição de casa. Você responde sobre a rotina dele e, no fim, vê as suas respostas organizadas, por que aquilo acontece e por onde começar. O resultado aparece aqui mesmo, logo depois da última resposta.
 
-## Pergunta 2
+### O que o quiz olha
 
-No último mês, qual destas atividades ele procurou com mais frequência por vontade própria?
+- O tempo de tela
+- As ideias que ele inventa
+- Os desenhos
+- A curiosidade sobre como as coisas funcionam
+- A lição de casa
 
-Considere o último mês e escolha o que mais observou. Pode ser no computador, no celular ou fora das telas.
+Uma orientação do Sistema Zero Kids para mães, pais e responsáveis. Você pode responder pelo celular.
 
-- Jogar
-- Desenhar
-- Tentar criar ou modificar um jogo
-- Procurar entender como um programa funciona
-- Assistir a vídeos
-- Outra atividade
-- Variou bastante; não percebi uma atividade mais frequente
-- Não sei dizer
+## Perguntas
 
-## Pergunta 3
+### P1. Em quem você está pensando?
 
-Seu filho já falou que gostaria de fazer alguma destas coisas?
+_Etapa: A rotina (situação). Chave `crianca`. No /admin: Criança e idade. Fica na própria tela de entrada._
 
-Pode marcar mais de uma vontade. Se ele ainda não falou sobre isso ou você não souber dizer, escolha a opção correspondente.
+Responda pensando em uma criança de cada vez.
 
-- Fazer um jogo próprio
-- Criar desenhos ou personagens
-- Entender como se programa
-- Fazer outro tipo de criação
-- Ele ainda não falou em criar algo assim
-- Ainda não sei dizer o que ele gostaria de criar
+- `filho_9_11`: Filho de 9 a 11 anos
+- `filha_9_11`: Filha de 9 a 11 anos
+- `filho_12_14`: Filho de 12 a 14 anos
+- `filha_12_14`: Filha de 12 a 14 anos
+- `menos_9`: Menos de 9 anos
+- `15_mais`: 15 anos ou mais
 
-## Pergunta 4
+### P2. Num dia comum, quanto tempo ele passa em jogos e vídeos?
 
-Quando encontra uma dificuldade ao aprender algo no computador, o que ele costuma fazer primeiro?
+_Etapa: A rotina (situação). Chave `tempo_tela`. No /admin: Tempo de tela._
 
-Pense numa situação que você já viu acontecer. Se ainda não observou, pode indicar isso.
+Some celular, computador, tablet e videogame. Vale uma estimativa.
 
-- Volta a uma explicação ou a um exemplo
-- Pede ajuda a uma pessoa
-- Faz algumas tentativas para ver o que acontece
-- Varia bastante conforme a atividade
-- Ainda não observei uma situação assim
+- `menos_1h`: Menos de 1 hora
+- `1_2h`: De 1 a 2 horas
+- `2_4h`: De 2 a 4 horas
+- `mais_4h`: Mais de 4 horas
 
-## Pergunta 5
+### P3. Em casa, ele pode usar um computador?
 
-O que você gostaria de entender melhor antes de escolher uma atividade para ele?
+_Etapa: A rotina (situação). Chave `computador`. No /admin: Computador._
 
-Escolha o ponto que mais pesa para você agora.
+Pode ser o da família.
 
-- Se ela vai despertar o interesse do meu filho
-- Como ele vai dar os primeiros passos
-- Que ajuda terá quando surgir uma dúvida
-- Como eu vou acompanhar o que ele está aprendendo
-- Como encaixar a atividade na rotina
-- Se o investimento cabe no nosso planejamento
-- Ainda não tenho uma dúvida principal
+- `sim`: Sim, ele pode usar
+- `organizar`: Temos, mas preciso organizar os horários
+- `celular_tablet`: Por enquanto, só celular ou tablet
+- `verificar`: Ainda preciso ver
 
-## Pergunta 6
+### P4. Qual destas cenas mais acontece aí em casa?
 
-Pensando numa atividade nova, o que você mais gostaria de ver seu filho fazendo?
+_Etapa: O que acontece em casa (problema e implicação). Chave `cena`. No /admin: Cena de casa._
 
-Imagine uma atividade que valesse a pena para vocês. Escolha até duas possibilidades; se ainda estiver conhecendo os caminhos, pode dizer isso.
+- `A`: Ele passa horas em jogos e vídeos, e no fim do dia não sobra nada que ele tenha feito
+- `B`: Ele inventa jogos e regras o tempo todo, mas as ideias ficam na conversa ou no papel
+- `C`: Ele desenha personagens o tempo todo, e os desenhos ficam guardados no caderno
+- `D`: Ele quer saber como os jogos e os programas funcionam, e eu não sei por onde começar a ensinar
+- `F`: Na lição, ele repete o exemplo, mas trava quando a pergunta muda
+- `nenhum`: Nenhuma dessas parece com a nossa casa
 
-- Usando parte do tempo de tela que já tem para criar algo e mostrar o que aprendeu
-- Tirando uma ideia de jogo do papel e testando como ela funciona
-- Criando desenhos e personagens e encontrando novos usos para essas ideias
-- Aprendendo programação passo a passo e entendendo como os comandos funcionam
-- O que procuro não aparece nessas opções
-- Preciso conhecer atividades antes de escolher
+### P5. Quando alguma coisa não dá certo num jogo ou num aplicativo, o que ele faz primeiro?
 
-## Se você escolher dois objetivos
+_Etapa: O que acontece em casa (problema e implicação). Chave `quando_trava`. No /admin: Quando trava._
 
-Você marcou dois objetivos. Qual deles gostaria de explorar primeiro?
+- `larga`: Larga e vai fazer outra coisa
+- `chama`: Chama alguém para resolver
+- `tenta`: Tenta de outro jeito até dar certo
+- `procura`: Procura um vídeo ou um exemplo
+- `nao_reparou`: Ainda não reparei
 
-- Primeiro objetivo escolhido na pergunta anterior.
-- Segundo objetivo escolhido na pergunta anterior.
-- Os dois têm o mesmo peso para mim.
+### P6. Quanto do tempo em jogos e vídeos vira alguma coisa que ele mesmo fez?
 
-## Quando houver interesse em criar jogos
+_Etapa: O que acontece em casa (problema e implicação). Chave `tempo_criacao`. No /admin: Calculadora do tempo de tela._
 
-Para criar jogos, ele precisa usar uma ferramenta específica?
+Na tela, o título vem montado com o tempo de tela:
 
-Pense no que ele espera criar. Se ainda não conversaram sobre a ferramenta, pode indicar isso.
+- `menos_1h`: Isso dá até 365 horas por ano em jogos e vídeos. Quanto desse tempo vira alguma coisa que ele mesmo fez?
+- `1_2h`: Isso dá entre 365 e 730 horas por ano em jogos e vídeos. Quanto desse tempo vira alguma coisa que ele mesmo fez?
+- `2_4h`: Isso dá entre 730 e 1.460 horas por ano em jogos e vídeos. Quanto desse tempo vira alguma coisa que ele mesmo fez?
+- `mais_4h`: Isso dá mais de 1.460 horas por ano em jogos e vídeos. Quanto desse tempo vira alguma coisa que ele mesmo fez?
 
-- Precisa ser Roblox
-- Precisa ser Minecraft
-- Precisa ser outra ferramenta específica
-- Podemos conhecer outra ferramenta de criação de jogos
-- Ainda preciso conversar sobre isso com meu filho
+- `quase_nada`: Quase nada
+- `um_pouco`: Um pouco
+- `boa_parte`: Boa parte
+- `nao_sei`: Não sei dizer
 
-## Quando houver interesse em desenho
+### P7. Se nada mudar no próximo ano, o que mais preocupa você?
 
-Como vocês gostariam de aproveitar o interesse pelo desenho?
+_Etapa: O que acontece em casa (problema e implicação). Chave `preocupacao`. No /admin: Preocupação._
 
-Escolha a possibilidade que combina mais com o que vocês procuram.
+- `A`: Que a tela continue sendo só para assistir e jogar
+- `B`: Que a vontade de criar jogos passe antes de ele fazer o primeiro
+- `C`: Que os desenhos continuem guardados na gaveta
+- `D`: Que a curiosidade dele sobre os programas passe antes de ele entender como funcionam
+- `F`: Que a dificuldade na escola vire desânimo com os estudos
+- `nenhum`: Nada me preocupa; quero aproveitar o interesse dele
 
-- Criar personagens e imagens que possam entrar em jogos
-- Quero uma atividade de desenho que não envolva jogos
-- Ainda não conheço essas possibilidades; gostaria de ver um exemplo
-- O desenho é um interesse dele, mas não é uma condição para a nossa escolha
+### P8. Imagine que, daqui a três meses, alguma coisa mudou aí em casa. Qual cena você gostaria de ver primeiro?
 
-## Pergunta 7
+_Etapa: O que você quer ver (necessidade e diagnóstico final). Chave `cena_desejada`. No /admin: Cena desejada._
 
-Que tipo de acompanhamento você consideraria para seu filho aprender em casa?
+- `A`: Ele me chamando para ver uma coisa que ele mesmo fez no computador
+- `B`: Um amigo jogando um jogo que ele inventou
+- `C`: O personagem que ele desenhou se mexendo na tela
+- `D`: Ele me explicando como um programa funciona por dentro
+- `F`: Ele explicando uma conta com as próprias palavras
 
-Pense no que faria sentido para ele e para a rotina de vocês.
+### P9. Para uma atividade nova dar certo aí em casa, o que precisa estar garantido?
 
-- Considero aulas gravadas com ajuda por mensagens
-- Prefiro aulas ao vivo, mas posso conhecer outras formas de acompanhamento
-- Ainda não sei qual formato funcionaria melhor para nós
-- Ter um professor ao vivo durante a atividade é indispensável
+_Etapa: O que você quer ver (necessidade e diagnóstico final). Chave `garantia`. No /admin: O que precisa estar garantido._
 
-## Pergunta 8
+- `sozinho`: Que ele consiga aprender sozinho, porque eu não entendo do assunto
+- `recorrer`: Que ele tenha a quem recorrer quando travar
+- `acompanhar`: Que eu consiga acompanhar o que ele aprende
+- `tempo_tela`: Que caiba no tempo de tela que já combinamos
+- `orcamento`: Que o valor caiba no orçamento da família
+- `ao_vivo`: Que tenha um professor ao vivo acompanhando
 
-Como seu filho teria acesso a um computador para fazer uma atividade em casa?
+### P10. Juntando tudo o que você respondeu, qual destas frases mais parece com o que você quer para ele?
 
-Pode ser um computador compartilhado. Considere o acesso à internet, ao mouse e ao teclado.
+_Etapa: O que você quer ver (necessidade e diagnóstico final). Chave `sintese`. No /admin: Frase-síntese._
 
-- Ele poderá usar um computador
-- Temos computador, mas preciso organizar os horários de uso
-- Por enquanto, só temos celular ou tablet disponíveis para ele
-- Ainda preciso verificar
+- `A`: Que o tempo de tela deixe alguma coisa feita por ele
+- `B`: Que as ideias de jogo dele saiam do papel
+- `C`: Que os personagens que ele desenha ganhem movimento e história
+- `D`: Que ele entenda como os programas funcionam e aprenda a programar
+- `F`: Que ele entenda o que estuda e use isso na prática
+- `conhecer`: Ainda quero conhecer as possibilidades
 
-**Ver a sugestão para meu filho**
+### Extra (perfil B). Ele precisa criar jogos numa ferramenta específica?
 
-## Para outra faixa de idade
+_Etapa: O que você quer ver (necessidade e diagnóstico final). Chave `ferramenta`. No /admin: Ferramenta (perfil B)._
 
-Esta orientação foi pensada para famílias com filhos de 9 a 14 anos.
+- `roblox`: Precisa ser no Roblox
+- `minecraft`: Precisa ser no Minecraft
+- `outra`: Precisa ser em outra ferramenta específica
+- `pode_outra`: Qualquer ferramenta serve, se ele gostar
+- `conversar`: Ainda vou conversar com ele
 
-Os exemplos e as sugestões deste quiz foram preparados para essa faixa. A idade informada, sozinha, não diz o que seu filho consegue fazer.
+### Extra (perfil C). Para os desenhos dele, o que faz mais sentido?
 
-Para escolher uma atividade em outra fase, vale observar os interesses dele, a linguagem da orientação e o apoio de que precisa. Este quiz não vai indicar um caminho específico para essa idade.
+_Etapa: O que você quer ver (necessidade e diagnóstico final). Chave `desenho`. No /admin: Desenhos (perfil C)._
+
+- `movimento`: Que os personagens façam coisas: andem, pulem, reajam
+- `so_desenho`: Que ele desenhe melhor, com traço e técnica
+- `nao_sei`: Ainda não sei
+
+### Extra (perfil F). Em que parte da escola ele mais trava?
+
+_Etapa: O que você quer ver (necessidade e diagnóstico final). Chave `escola`. No /admin: Escola (perfil F)._
+
+- `leitura`: Entender o que o enunciado pede
+- `matematica`: Entender as contas, e não só repetir o exemplo
+- `problemas`: Começar e organizar uma tarefa de várias etapas
+- `ciencias`: Entender por que as coisas acontecem, em ciências
+- `vai_bem`: Ele vai bem; quero que use na prática o que aprende
+- `reforco`: Ele precisa recuperar matéria atrasada da série
+
+## Como o perfil é definido
+
+| Pergunta | Pontos |
+| --- | --- |
+| Cena de casa (`cena`) | 3 |
+| Preocupação (`preocupacao`) | 2 |
+| Cena desejada (`cena_desejada`) | 2 |
+| Frase-síntese (`sintese`) | 3 |
+
+O perfil é o que soma mais pontos. Empate: vence a frase-síntese, depois a cena de casa. O segundo perfil (2 pontos ou mais) ganha uma frase no resultado; empate no segundo lugar: a preocupação, depois a cena desejada. A cena desejada não tem opção neutra, então sempre sai um perfil.
+
+Com menos de 4 pontos no perfil vencedor, o resultado abre com "Suas respostas apontaram para mais de um lado. Este foi o que mais apareceu."
+
+| Perfil | Página de oferta | Pergunta extra |
+| --- | --- | --- |
+| A. Tempo de tela | `tempo-de-tela` | n/a |
+| B. Criação de jogos | `criacao-de-jogos` | ferramenta |
+| C. Desenho e personagens | `expressao-visual` | desenho |
+| D. Programação | `formacao-tecnologica` | n/a |
+| F. Habilidades escolares | `habilidades-escolares` | escola |

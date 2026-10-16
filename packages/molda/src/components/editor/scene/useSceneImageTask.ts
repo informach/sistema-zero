@@ -37,5 +37,5 @@ export function useSceneImageTask(editor: EditorStore<MoldaSceneDocument>) {
       task.cancel(false)
     }
   }, [task])
-  return { ...state, run: task.run, cancel: task.cancel }
+  return { ...state, run: task.run, runBatch: task.runBatch, cancel: task.cancel }
 }

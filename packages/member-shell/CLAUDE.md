@@ -305,7 +305,7 @@ regras e papéis efetivos no `@sistemazero/core/pensa` (`effectivePensaRoles` e 
 - **Só quem programa** testa, conclui, guarda versão, restaura e adapta (`test`, `close`,
   `increment`, `restore`, `revise`): com `view.team` e `team.roles.code` ≠ a sessão, 403
   `PENSA_NOT_PROGRAMMER` ("Quem testa e guarda as versões é quem programa o jogo.") ANTES de ler o
-  jogo salvo (que seria o da conta de quem pediu). O members recusa também; `observe`/`repair`
+  jogo salvo (que seria o da conta de quem pediu). O members recusa também; `repair`
   pelo `command` ficam só com a recusa de lá.
 - **O snapshot em equipe** (`pensa-journey/context.ts`): `loadJourneyContext(members, user, query,
   { projectId, view? })`. Com `team.memberCount > 0` ele lê `GET …/team-capabilities` e NÃO lê
@@ -327,6 +327,138 @@ regras e papéis efetivos no `@sistemazero/core/pensa` (`effectivePensaRoles` e 
 - Testes: `tests/pensa-journey-team.test.ts` (rotas, 403 por função, join, descida assinada,
   snapshot das duas pessoas, solo inalterado, aceite em equipe) e dois em
   `pensa-journey-worker.test.ts` (o `projectId` chega ao contexto).
+
+## Pensa v2: sem travessão e renomear o jogo (15/10/2026)
+
+- **A criança nunca lê travessão** (pedido dela: "linguagem humanizada, sem travessões"). O
+  sistema pede no `JOURNEY_SYSTEM`, mas o modelo escreve "—"/"–" assim mesmo, então a régua roda
+  em TODA saída do modelo no `json()` do `planner.ts`: `semTravessaoNosCampos(result, PROSE_KEYS)`
+  (`lib/kid-text.ts`, puro). Travessão no meio vira vírgula, o que abre a linha sai, intervalo de
+  números vira "a" ("8–13" → "8 a 13"), e o hífen solto entre palavras conta como travessão; o
+  hífen das palavras e a conta entre números ficam. Só campos de texto (`PROSE_KEYS`), nunca ids.
+  Testes: `tests/kid-text.test.ts` e o caso da ajuda em `pensa-journey-worker.test.ts`.
+- **Renomear:** o `PATCH /api/pensa/v2/projects/:id` aceita `{name}` (2..120, aparado) além de
+  `{status}`; o nome passa pela `pensaNarrativeRefusal` (422 `PENSA_MESSAGE_REVIEW`, a equipe lê o
+  nome) e vai a `pensaJourneyRename`. Testes em `tests/pensa-journey-routes.test.ts`.
+
+## Pensa v2: a anotação da missão sem a versão da página (15/10/2026)
+
+`ProgressBody.expectedUpdatedAt` (`routes/pensa.ts`) virou OPCIONAL: o Estúdio do kids anota a
+missão do v2 ao abrir o jogo sem a versão do progresso que a página tinha (o members junta com o
+que sabe e protege a escrita pela versão que ele mesmo leu). O guia segue mandando a versão,
+inclusive `null`. Teste: `tests/pensa-team-routes.test.ts`, "progresso da missão no BFF".
+
+## Pensa v2: perguntas com respostas e o jogo que começa jogando (15/10/2026)
+
+O que veio da análise do sandbox (`code-with-antonio/sandbox`), no planejador
+(`server/pensa-journey/planner.ts` e `contracts.ts`):
+
+- **A pergunta tem forma** (`PlanningQuestionSchema`): `about` (um de `PENSA_QUESTION_TOPICS` do
+  core: action, goal, challenge, controls, world, dimension), `text`, de 2 a 4 `options`
+  (`label` curto como botão e `description` do que muda no jogo) e `workingTitle` (o nome
+  provisório do jogo). O passo devolve `{type: 'question', text, choices, workingTitle}`.
+  `label` e `workingTitle` entraram nos `PROSE_KEYS` (passam pela régua do travessão e pela de
+  texto seguro).
+- **As regras de conversa** (prompt do `propose`): só perguntar quando a criança não disse, não dá
+  para deduzir e a resposta muda a primeira missão; nunca cor, som, cenário, nome, visual ou ritmo
+  (vão em suggestions); nunca o que já está na ideia, na conversa, no backlog, no inventário ou no
+  jogo construído; com o jogo construído, pedido vago se resolve propondo; respostas no mesmo
+  assunto, todas possíveis com os recursos dela, nenhuma de enfeite; "tanto faz" = o Zappy decide.
+  A conversa que vai ao modelo leva `asked` (o assunto de cada pergunta já feita).
+- **O teto é do servidor** (`questionsLeft` = `pensaQuestionsLeft` do core: 2 na primeira versão,
+  1 com o jogo construído). `questionIssues` recusa (pelo reparo de sempre, com o motivo) pergunta
+  com o teto esgotado, 2D/3D para quem só tem um deles e duas respostas com o mesmo rótulo.
+- **Jogo novo começa jogando** (`playFirstIssues`): sem checkpoint e sem `builtResults`, a
+  primeira missão é do Estúdio. Entra nos `issues` da revisão e, se a revisão insistir, vira o
+  reparo. ⚠️ Fica FORA do `validateJourneyProposal`: aquela régua é de RECURSOS e roda também nos
+  guias de propostas já aceitas, que não podem passar a falhar por uma regra de desenho nova.
+- **Caprichos em `later`**: o sistema pede até 2 ideias do Zappy que deixam o jogo mais gostoso
+  (som, pontos na tela, recorde, ficar mais difícil, tela de fim com jogar de novo, mostrar as
+  teclas), nos blocos dela. O members as soma ao backlog e a tela as oferece na próxima versão.
+- **`GET /api/pensa/v2/credits`** (`routes/pensa-journey.ts`): o saldo de IA da conta para o selo
+  de usos (`members.getAiCredits`). SEMPRE 200; members fora = `{credits: null}`.
+- Testes: os de "perguntas com respostas…" em `tests/pensa-journey-worker.test.ts`,
+  `tests/pensa-journey-contracts.test.ts` e o selo em `tests/pensa-journey-routes.test.ts`.
+- **Full review (15/10/2026):** num jogo já construído o formato é fixo (`fixedDimension` = a
+  `dimension` da proposta, com checkpoint ou `builtResults`): `questionIssues` recusa a pergunta de
+  2D ou 3D e `fixedDimensionIssues` recusa a proposta no outro formato, na revisão e depois dela
+  (antes a criança tocava "3D" e o members recusava com 409 em laço). `proposalOutline` leva a
+  `dimension` ao modelo. Resposta pronta "tanto faz" também volta (a tela já tem o botão).
+  ⚠️ O `json()` CONFERE o schema de novo depois de tirar o travessão: a troca alonga o texto
+  ("1–3" vira "1 a 3") e os tetos do schema são os do members, sem folga; um rótulo no limite
+  voltava 400 na publicação, sem reparo. Agora vira `JourneyOutputInvalid` e passa pelo reparo.
+
+## Pensa v2: uma extensão de jogo por plano e passos que são gestos (15/10/2026)
+
+Relato dela, com o guia aberto no Estúdio: o passo 1 instalava o Jogo 2D, o passo 2 o Jogo 2D
+Avançado ("não posso ter mais de uma extensão no mesmo projeto"), e o passo 3 dizia "Abrir o Estúdio
+e ir para a área ⚙️ Ao iniciar" (as áreas são BLOCOS que a criança pega e arrasta). Decisões dela:
+o modelo escolhe a extensão (preferindo a mais simples) e aprende a escrever o gesto exato.
+
+- **Uma extensão de jogo por plano** (`contracts.ts`): `gameExtensionIssues(draft, builtExtension)`
+  recusa a proposta cujas missões do Estúdio pedem mais de uma das cinco extensões donas do palco
+  (`GAME_RUNTIME_EXTENSION_IDS` em `interface-map.ts`, espelho de
+  `FULLSCREEN_RUNTIME_EXTENSION_IDS` do Estúdio, lido pelo caminho no teste), contando blocos E
+  manuais (`mechanicIds`). Numa versão nova de um jogo já construído, vale a extensão da proposta
+  guardada (`builtGameExtension`), que vai ao modelo em `gameExtension`. Entra nos `issues` da
+  revisão e no reparo, como as outras regras de desenho; fica FORA do `validateJourneyProposal`
+  (aquela régua roda também nos guias de propostas já aceitas). `installStepsByMission` instala
+  extensão de jogo uma vez só no plano inteiro (protege plano antigo que misture).
+- **O passo é o gesto** (`GuideDraftSchema`): `{action (até 260), effect (até 180)}`, até 8 por
+  missão; o `where` saiu. A tarefa leva `text = action` e `hint = effect` (antes `where\neffect`). O
+  pedido do guia traz dois exemplos no formato dela ("Clique em "🗂️ Áreas do projeto", pegue o
+  bloco "⚙️ Ao iniciar" e arraste para o espaço de montar." / "Isso prepara o jogo para começar.").
+  O passo determinístico de instalar também é o gesto inteiro.
+- **O modelo sabe como a tela funciona** (`STUDIO_INTERFACE_MAP`): as áreas são blocos da categoria
+  "🗂️ Áreas do projeto" (`STUDIO_AREA_NAMES`, conferido contra os rótulos dos blocos de área do
+  catálogo), pegar um bloco é seguir o `path` da paleta, o Guia do Pensa já aparece dentro do
+  Estúdio, e cada jogo usa uma extensão só. No guia, os blocos da missão vão com `area` (onde
+  encaixam direto) e `tip` (a dica do próprio bloco, que diz quando ele vai dentro de "A cada
+  quadro do jogo"); os dois só nos degraus com detalhe do orçamento, para o guia de oito missões
+  ainda caber nos 48 KB (`journeyModelContext({ tips })`).
+- ⚠️ **"Espaço de montar", não "área de trabalho"**: "trabalho" está na régua de palavras da escola
+  (guarda `copy-vocabulario` do Kids, que varre este pacote), e "área" já é o nome das áreas do
+  projeto. O Estúdio não dá nome visível a esse espaço; o mapa da interface o batiza.
+- **Passo vago volta uma vez** (`guideIssues`): "vá/ir para a área", "abra o Estúdio" e
+  "implemente" voltam ao modelo com o conserto; na tentativa de reparo o guia passa como está (uma
+  frase não trava o plano inteiro).
+- Testes: `pensa-journey-contracts.test.ts` (as duas réguas), `pensa-journey-interface-map.test.ts`
+  (espelho das extensões, nomes das áreas, instalar uma vez) e o bloco "uma extensão de jogo por
+  projeto e passos precisos" de `pensa-journey-worker.test.ts`.
+- **Full review do lote (15/10/2026):**
+  - O passo vago "ir/voltar para a área" vale só nas missões do Estúdio (no Pinta, "a área de
+    desenho" é o papel), e "entre a área X e a área Y" (lugar) não conta: só "entre na área".
+  - O defeito de forma do guia (guia faltando ou a mais) e os passos vagos voltam JUNTOS no reparo;
+    com um motivo só, o reparo consertava um e o outro derrubava o plano.
+  - A `tip` guarda a frase do "use a cada quadro" quando ela passa dos 140 caracteres
+    (`blockTip`): o `area` é onde o bloco PODE ficar solto (`⚙️ Ao iniciar` para quase todo
+    comando), e o controle da nave solto no início nunca responde. O pedido do guia diz isso.
+  - O orçamento ganhou um degrau de EMERGÊNCIA (sem o caminho de cada bloco na paleta): com o mapa
+    da interface maior, a tentativa de reparo do pior caso (oito missões de 16 blocos, mais o
+    motivo da recusa) passava dos 48 KB e o passo falhava em vez de consertar. O teste do teto
+    mede também a tentativa de reparo.
+  - Os nomes das áreas são os rótulos exatos ("🧱 Estrutura: HTML", "🎨 Aparência: CSS"), e um
+    plano antigo que misturava duas extensões de jogo continua na primeira (a que o guia instalou).
+  - A rota `/test` tem teste: observa e registra o teste com a revisão nova e o jogo guardado.
+  - Numa versão 2 ou mais, depois da primeira proposta, `state.proposal` é a proposta NOVA (ainda
+    não construída). O jogo construído vem de `state.built` (`builtGame` no `planner.ts`, desde o
+    lote seguinte de 15/10/2026): o `baseAlreadyBuilt`, o `fixedDimension` e a extensão de jogo
+    (a primeira de jogo em `built.extensionIds`, a que o guia instalou). Jornada anterior ao campo:
+    a proposta de agora. O `JOURNEY_SYSTEM` diz a diferença: `currentProposal` é a proposta desta
+    conversa (numa versão nova, ainda não construída) e o que já existe é `baseAlreadyBuilt` (até
+    aqui as duas eram iguais e o modelo nunca precisou separá-las). Teste: "versão nova já
+    proposta…" em `pensa-journey-worker.test.ts`.
+- O `command` do BFF parou de aceitar `observe` (ver o CLAUDE.md do pacote pensa, "Etapa R: um
+  caminho só").
+
+## Pensa v2: a arte própria é uma oferta da tela (15/10/2026)
+
+Decisão dela: o começo do jogo usa figuras prontas do Estúdio, e a missão do Pinta ou do Molda só
+entra quando a criança pede. O `JOURNEY_SYSTEM` diz isso (substituiu "Só proponha arte
+personalizada se faz parte da ideia", que deixava o modelo decidir sozinho); a tela do Pensa
+oferece desenhar no cartão do começo, e aceitar manda o pedido como planejamento (ver o CLAUDE.md
+do pacote pensa). Arte que já existe no inventário segue entrando por missão de integração do
+Estúdio. Teste: "a arte própria é uma oferta da tela" em `tests/pensa-journey-worker.test.ts`.
 
 ## Pensa v2: a régua da narrativa e o teto do pedido (full review de 14/10/2026)
 
@@ -371,8 +503,9 @@ consertou, e que não pode voltar:
 - **Reparo com motivo, contado pelo members** (`planner.ts`): saída inválida (bloco fora da
   paleta, missão faltando, JSON fora do contrato, texto inseguro) ganha UMA tentativa com o motivo
   (`previousAnswerRejected`, que diz a missão pela chave e o id), por `fail` + novo `claim`: o
-  members conta a chamada e o teto (2 por passo, 10 por operação) recusa o claim. Rede e prazo não
-  repetem. Os motivos de `validateJourneyProposal` citam a missão e o id.
+  members conta a chamada e o teto (2 por passo; 6 por rodada, que é cada mensagem da criança e o
+  aceite do começo; 24 por pedido na conversa, nunca nos guias; ver o CLAUDE.md do members)
+  recusa o claim. Rede e prazo não repetem. Os motivos de `validateJourneyProposal` citam a missão e o id.
 - **Erros nunca mudos:** `[pensa-v2] passo falhou {operationId, step, name}` (só o NOME, nunca a
   mensagem, que pode ter a fala ou o corpo do provedor). `JourneyChildError`/`JourneyOutputInvalid`
   (`errors.ts`) carregam a frase da criança e ela chega ao `fail` ("Seus recursos mudaram…").
@@ -383,7 +516,8 @@ consertou, e que não pode voltar:
   função).
 - **Leitura que falha não tranca** (`routes/pensa.ts`, handoff): sem gamificação ou sem
   capacidades, 503 recuperável; só a recusa real devolve `owned:false`.
-- **`command` com allowlist:** pause, resume, accept, observe, repair, keep_idea e remove_idea.
+- **`command` com allowlist:** pause, resume, accept, repair, keep_idea e remove_idea (o `observe`
+  saiu em 15/10/2026: a etapa O começa pelo `/test`, que observa e registra junto).
   `close`, `revise` e `record_test` só pelas rotas próprias (que protegem a versão e conferem o
   jogo salvo); `retry` pelo `/work`.
 - **A voz privada** (`lib/private-voice.ts`): a criança lê a frase da nossa rota
@@ -3134,8 +3268,8 @@ ci.yml mapeia `packages/member-shell/*` → deploy dos apps consumidores — mud
 - Cada pergunta revalida sessão, posse do Estúdio, jornada/modo/extensões e cursos liberados;
   impersonação não conversa. Reserva idempotente precede a resposta determinística; somente chamadas
   reais ao modelo consomem o crédito `studio-zappy`.
-- **Rollout por MÉRITO (08/2026 — substituiu o piloto fechado):** `ZAPPY_ENABLED=true` +
-  jornada **≥ `hacker`** (Inventor(a), o 3º degrau). A equipe ignora o interruptor e o nível
+- **Acesso pela jornada (revisado em 15/10/2026):** jornada **≥ `hacker`**
+  (Inventor(a), o 3º degrau), sem flags de liberação. A equipe ignora o nível
   para QA. Não existe allowlist de contas nem degrau configurável: a barra vive em
   **`AI_APPS_MIN_LEVEL`**, compartilhada com o Pensa — os dois CHAMAM a IA, e o custo por uso é o
   motivo de adiar. ⚠️ **O Pinta NÃO usa mais essa barra** (14/08): desenhar não custa por uso,

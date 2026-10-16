@@ -115,7 +115,7 @@ describe('loadEnv — fail-fast de produção', () => {
     expect(loadEnv({}).SHUTDOWN_DRAIN_MS).toBe(0)
   })
 
-  test('MAX_REQUEST_BODY_BYTES default 2 MB (lotes de webhook da SendGrid)', () => {
-    expect(loadEnv({}).MAX_REQUEST_BODY_BYTES).toBe(2 * 1024 * 1024)
+  test('MAX_REQUEST_BODY_BYTES comporta o envelope do builder do Studio', () => {
+    expect(loadEnv({}).MAX_REQUEST_BODY_BYTES).toBe(3_004_096)
   })
 })

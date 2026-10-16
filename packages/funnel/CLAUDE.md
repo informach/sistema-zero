@@ -268,9 +268,31 @@ dos assets do Desafio — a arte nova substitui por cima com os MESMOS nomes). A
 (`/`) apresenta Como funciona primeiro, o Desafio como primeiro passo e a Comunidade como
 continuidade ou contratação direta. A ampliação dos prints é compartilhada
 entre a raiz e as ofertas pelo componente `ComunidadeImageZoom.astro`.
-**Quatro copies da Comunidade (01/10/2026):** a referência vigente está em
-`docs/marketing/kids/comunidade-dos-criadores/copy/`. Conteúdo tipado em
-`src/funnels/comunidade-dos-criadores/oferta/`, com fatos e 40 respostas comuns em `shared.ts`.
+**Copies da Comunidade:** a copy vive no código, em
+`src/funnels/comunidade-dos-criadores/oferta/`; `docs/marketing/kids/comunidade-dos-criadores/copy/pagina-*.md`
+é o espelho gerado por `bun scripts/espelho-copy-comunidade.ts` (o teste reprova espelho velho). Conteúdo tipado em
+`src/funnels/comunidade-dos-criadores/oferta/`, com fatos e 26 respostas comuns em `shared.ts`
+(mais `FAQ_EXTRA`: Roblox e Desafio em B, desenho em C).
+**Proposta de copy de 16/10/2026 (aprovada pela dona e implementada):** diagnóstico, régua e copy
+de cada página em `docs/marketing/kids/comunidade-dos-criadores/copy/proposta-melhoria-2026-10-16/`.
+Tese comum (no jogo pronto alguém já decidiu tudo; criando, ele decide e o jogo responde), a
+plataforma orienta (Ouvir, Verificar esta parte, O que falta para seguir, Guardado na sua conta;
+Uma pista só nos experimentos) e Recados SÓ nas dúvidas. A Chave do Farol é o curso de entrada que
+leva ao Construtor; a ordem dos projetos é Cadê Todo Mundo, A Chave do Farol, Nave Contra
+Asteroides, O Jogo do Meu Jeito e Corre, Dino (nomes sem `?`/`!` na copy). Por decisão dela, a copy
+mostra o que a plataforma oferece e NÃO fala de curso em preparação ou de ferramenta "ainda não
+liberada" (o teste reprova "em preparação"); a liberação por posto continua explicada. Zappy:
+"falas do Zappy" nas aulas (desde a primeira, sem créditos) × "ajuda do Zappy no Estúdio" (Inventor,
+com créditos), sempre distinguidas. **Relatos reais**
+(`oferta/relatos.ts`, termos de autorização assinados): cartelas AV do destaque Avaliações e
+trechos N conferidos por segunda transcrição (segundos em `trechos-novos.md` da proposta);
+identificação igual à do Instagram (André e Débora como Aluno/Aluna). Seção `layout: 'relatos'`
+= faixa de cartas com retrato; `falas` em outra seção = fala solta no fim (nunca em `band`);
+`page.founder` troca os fundadores (`FOUNDER_COM_ESCOLA` na F, `FOUNDER_SEM_RELATO` em B e E);
+`offer.falas` põe uma fala antes dos planos. Retratos `relato-*.webp` recortados dos quadros dos
+vídeos (`depo-*.webp` para Rafael, Débora e André). Os vídeos de criança explicando o próprio jogo
+(V1/V2 da proposta) ainda não entraram: falta hospedagem. Os `copy/pagina-*.md` viraram ESPELHO
+gerado da copy tipada (versões anteriores em `copy/historico/2026-10-16-antes-da-proposta/`).
 
 A página padrão é `/kids/comunidade-dos-criadores/oferta` (aprender criando jogos, da primeira
 experiência às próprias ideias; o perfil interno continua `tempo-de-tela`). As variantes usam `/oferta/criacao-de-jogos`, `/oferta/expressao-visual` e
@@ -279,7 +301,7 @@ experiência às próprias ideias; o perfil interno continua `tempo-de-tela`). A
 retornar na ROTA, nunca no componente Astro compartilhado. `OfertaPage.astro` despacha os bodies.
 CTA principal aponta para `#planos`; link secundário para `#experiencia`.
 A página pública `/oferta/continuar` atende famílias que já conhecem a plataforma, sem presumir
-conclusão: copy e 50 respostas em `continuidade.ts`/`continuidade-faq.ts`, com as mesmas telas,
+conclusão: copy e cerca de 25 respostas em `continuidade.ts`/`continuidade-faq.ts` (desde 16/10), com as mesmas telas,
 componentes e estilos dos quatro perfis. É uma etapa de relacionamento, não um quinto avatar.
 O parâmetro antigo de origem foi removido, sem redirecionamento especial. Os convites de assinatura
 no Kids e nos serviços de continuidade/expiração do Members apontam para a nova rota.
@@ -287,45 +309,82 @@ A página E usa `#proximo-passo`, `#experiencia` e `#garantia`, compara os acess
 do período contratado. O pré-checkout lembra de usar o mesmo e-mail do responsável. Seus dados
 sobrescrevem somente a oferta e as respostas desta página; as quatro copies anteriores permanecem.
 Registro e validação: `docs/marketing/kids/comunidade-dos-criadores/implementacao-continuidade.md`.
-As dúvidas têm pesos e ordem próprios, mantendo as mesmas respostas e imagens correspondentes.
+**Habilidades escolares (15/10/2026):** `/oferta/habilidades-escolares` é uma sexta apresentação
+da assinatura, em `habilidades-escolares.ts`/`habilidades-escolares-faq.ts`; desde a v5 do quiz
+(16/10/2026) é o destino do perfil F. A dor e a explicação ficam imediatamente abaixo do hero; `tourAfterSection: 'f01'` coloca
+o `ComunidadeTour.astro` depois dessa seção, mantendo a ordem anterior nas demais páginas.
+As quatro cartas (leitura, matemática, ciências e resolver problemas) ligam tarefas do projeto às
+habilidades escolares, com ícones por assunto; quatro cartas ficam 2×2 no computador.
+Ciências usa o experimento do jardim; não há promessa de notas nem de reforço por série.
+Registro: `docs/marketing/kids/comunidade-dos-criadores/implementacao-habilidades-escolares.md`.
+As dúvidas têm pesos e ordem próprios: as 26 comuns mais as próprias de cada página (FAQ_EXTRA em
+B e C, respostas da escola na F, continuidade na E).
 Não prometer revisão de toda atividade, prazo de resposta ou jogo pronto em prazo universal.
 Recados é canal de dúvidas; a progressão e a disponibilidade dos cursos condicionam as ferramentas.
 Preços e equivalência mensal vêm dos planos ao vivo. O anual informa pagamento anual, com Pix
-sem renovação automática e cartão recorrente. Sem economia comparativa fixa ou relatos novos.
+sem renovação automática e cartão recorrente. A economia do anual (`{{economia_anual}}`, selo do
+cartão) é calculada ao vivo como 12 mensalidades menos o anual; sem economia positiva a frase sai
+(`comEconomia`). Nenhum valor escrito à mão; relatos só os de `relatos.ts`.
 Pré-checkout, checkout e obrigado preservam os dados do responsável e a continuidade de quem já
 começou. Guardas: `tests/unit/comunidade-offer-copy.test.ts` e `comunidade-funnel.test.ts`.
 O manifesto `oferta/visuals.ts` relaciona cada demonstração às suas telas, legenda e texto
 alternativo. **Só telas REAIS (01/10/2026, decisão da dona):** as 28 prévias SVG saíram; o que
 ainda não tem captura fica em `PENDING_VISUALS` e NÃO renderiza (a seção ou a resposta segue só
-com o texto). Ligar uma pendente = capturar e mover a chave para `COMUNIDADE_VISUALS`; os vínculos
+com o texto). ⚠️ **Nada de "em construção" nas telas (16/10/2026):** as capturas da Jornada trazem
+o cartão "Mais 6 postos estão sendo construídos"; o visual `jornada` usa só o RECORTE
+`tela-jornada-meus-postos` (Faísca + Construtor) e o mapa saiu; o `catalogo` (e a faixa TOUR) usa
+o recorte `tela-catalogo-trilha`, sem o fim do mapa. Recapturou, refaça o recorte
+(caixa no comentário de `visuals.ts`); `comunidade-offer-copy.test.ts` reprova a tela inteira. Ligar uma pendente = capturar e mover a chave para `COMUNIDADE_VISUALS`; os vínculos
 com as quatro páginas e com `FAQ_VISUALS` já existem. Ver "Direção de arte das quatro páginas".
 Os termos kids (`content/legal-kids.ts`) cobrem os DOIS produtos (Desafio: compra única; Comunidade:
 assinatura recorrente no cartão ou anual à vista, cancelamento sem multa, carência, garantia na
 contratação inicial e em cada nova contratação anual via Pix, Mural de visitante após o fim).
-**Quiz da Comunidade (v4, tráfego frio):** entrada e perguntas não pressupõem conhecer o produto.
-Resultado entrega orientação e atividade antes de apresentar a Comunidade e seus prints reais.
-Resultado desenvolve ações do filho, mecanismo e benefício; formato, apoio e dúvida são compostos sem repetição, com prints pertinentes. Perguntas seguem situação → dificuldade/dúvida → desejo → condições; IDs permanecem estáveis. Copy de entrada compartilhada em `quiz/entry-copy.ts`; perguntas de formato e equipamento tratam
-da rotina geral. `FunnelQuiz.version` inicia novo lead para respostas de versão anterior,
-preservando o lead antigo. Oito perguntas-base, QT/QB/QC condicionais, inputs nativos e
-respostas múltiplas em Q3/Q4. `QuizAnswers` aceita `string[]` no JSONB existente, sem migração.
-`FunnelQuiz.applyAnswer/isComplete` validam, limpam ramos inativos e recalculam o perfil. PATCH
-exige revisão e token da sessão, derivados da sessão atual; o cookie HttpOnly continua sendo a
-única origem da propriedade do lead. A gravação compara o JSON anterior atomicamente. Outro
-filho recebe novo lead. Empate/exploração/outra procura mantêm perfil null; destino geral não
-significa avatar A. Resultado SSR em componente próprio, com prints reais e link para uma das
-quatro ofertas; `/oferta/continuar` não é resultado. Feedback é persistido antes de confirmar.
-Metadados `perfilLabels` enumeram os perfis no admin, inclusive para resultados compostos sem
-blocos estáticos em `result.profiles`. Referência: `docs/marketing/kids/comunidade-dos-criadores/quiz/`.
-⚠️ O PATCH recusa com 409 `QUIZ_CONFLICT` a gravação num lead de OUTRA versão do quiz (aba
+**Quiz da Comunidade (v5, 16/10/2026, SPIN + resultado-ponte):** proposta aprovada e decisões em
+`docs/marketing/kids/comunidade-dos-criadores/quiz/revisao-copy-2026-10-16.md` e no README da pasta.
+O quiz é a fase ANTES da oferta: qualifica e sobe o nível de consciência. Nenhuma tela antes do
+resultado cita Comunidade/aula/curso/plataforma/preço nem apresenta criar jogos como solução ("jogo"
+só quando descreve a família); o teste `comunidade-quiz.test.ts` reprova. Dez perguntas em SPIN
+(`quiz/questions.ts`, chaves semânticas `crianca`…`sintese`, eventos `respondeu_comunidade_v5_*`) e
+UMA condicional nos perfis B (`ferramenta`), C (`desenho`) e F (`escola`). A P1 (filho/filha + idade)
+fica na própria entrada; `genero.ts` (`paraFeminino`) troca o texto para "ela" (copy escrita no
+masculino, sem adjetivo que muda com o gênero; o teste varre 1.080 combinações). A I6 é a
+calculadora (horas/dia × 365, em faixa; `stepOnScreen`). **Perfil = soma de pontos**
+(`engine.ts`): cena de casa 3, preocupação 2, cena desejada 2, frase-síntese 3; empate → síntese,
+depois cena; a cena desejada não tem opção neutra (sempre sai perfil); < 4 pontos = "caminho mais
+perto". Cinco perfis: A tempo de tela, B jogos, C desenho, D programação, **F habilidades escolares**
+(→ `/oferta/habilidades-escolares`). QT, estado misto e resultado sem perfil SAÍRAM. **Resultado**
+(`result.ts`/`result-copy.ts`/`ComunidadeResultado.astro`): título com o PROBLEMA → quadro "O que você
+contou" (espelho de cada resposta) → "Por que isso acontece" (só afirma a cena de casa se a família a
+escolheu) → "O que muda isso" (criação de jogos, ainda sem produto) → "Onde isso acontece"
+(Comunidade, UMA tela real, relatos de `relatos.ts`) → "Antes de seguir" (condições) → "O próximo
+passo" (botão; sem preço). Recados SÓ quando a necessidade é "a quem recorrer". Sem a atividade de
+casa. **Manchete A/B:** `quiz/entry-copy.ts` (`QUIZ_HEADLINES`); a rota lê `?manchete=tela` e a ilha
+grava a variante em `attribution.quizHeadline` (`lib/lead-attribution.ts`, campo opcional). **Admin:**
+Performance e Perfis aceitam `?quiz=atual` (versão pela definição gravada no lead, via
+`analytics_quiz_definitions`; quem foi direto à oferta não tem definição e fica de fora) e
+`?manchete=<id>` (`QuizScope` no repo + fake; manchete escolhida força `quiz=atual`; a padrão é
+`FunnelQuiz.defaultHeadline` e conta também os leads sem registro). O painel mostra os filtros
+quando o funil tem quiz versionado (`AdminFunnelInfo.quiz`) e só liga o recorte por padrão no funil
+com teste A/B. Os links do resultado de volta ao quiz mantêm a manchete
+(`quizPathWithHeadline`); "Responder pensando em outra criança" vai a `quiz#outra-crianca` e a ilha
+reinicia ali (com definição e manchete). "ele" na copy é SEMPRE a criança (o personagem usa o
+substantivo), senão `paraFeminino` erra; o botão usa `completesQuiz`. Performance nomeia as perguntas
+(`rotuloCurto`) e a condicional (`condicional`) não quebra a cadeia "da etapa"; leads da v4 ficam
+legíveis em Respostas por `legacySteps` (`questions-v4.ts`). Espelho editorial gerado:
+`bun scripts/espelho-quiz-comunidade.ts` → `copy/quiz-comunidade.md` e `copy/resultados-quiz.md` (o
+teste reprova espelho velho; v4 em `copy/historico/2026-10-16-quiz-v4/`). Mantido da v4:
+`FunnelQuiz.version` inicia novo lead para respostas de versão anterior (lead antigo preservado);
+PATCH exige revisão e token da sessão; outro filho recebe novo lead; feedback persistido antes de
+confirmar. ⚠️ O PATCH recusa com 409 `QUIZ_CONFLICT` a gravação num lead de OUTRA versão do quiz (aba
 aberta antes do deploy): o `applyAnswer` tomaria as respostas antigas por vazias e apagaria o lead.
 **Desenho do quiz (02/10/2026, "mesmo estilo da oferta"):** `comunidade-quiz.css` (`.cq`) usa as
 receitas da oferta (`kof-eyebrow`, `cap-chip` na cor da etapa via `STAGE_CHIP`, `kof-ladrilho`,
 `kof-banda`, `kof-marca`, `fundo-folha`, `bloco--lado|largo`) e não cria cor própria. Etapas com
-linha de ligação e check nas feitas; opções táteis com o degrau de 3 px. O resultado
-(`ComunidadeResultado.astro`) é uma sequência de capítulos: herói com o Zappy, orientação + a
-atividade de casa (carta fixa ao rolar no computador), a Comunidade em folha branca com o aviso
-amarelo das diferenças, o dia a dia em blocos com tela (cada tela UMA vez; texto que diz "abaixo"
-ou tela com mais de um quadro vai para `bloco--largo`), o convite no cartão azul e a opinião.
+linha de ligação e check nas feitas; opções táteis com o degrau de 3 px. Na v5 o resultado é: herói
+com o Zappy, o quadro "O que você contou" na banda navy (fixo ao rolar à direita no computador,
+antes do texto no celular), a Comunidade em folha branca com a tela (`bloco--largo` quando a tela
+tem mais de um quadro), os relatos, o aviso amarelo "Antes de seguir", o próximo passo no cartão azul
+e a opinião.
 
 **Redesenho visual da Comunidade (30/09/2026, "a oficina do criador"):** a copy v2 ficou intacta e a
 página ganhou o desenho da plataforma kids: topo navy com a logo kids e o preço, herói com a TELA
@@ -414,7 +473,8 @@ palavra; mudou a composição, e todas as imagens passaram a ser telas reais.
   semântica); no celular o par empilha e o rótulo de cada coluna entra na carta. O CSS mora no
   layout (`.cdc .comparacao-*`), sem `<style>` no componente. (3) `ENFASE_NUMA_LINHA` em
   `oferta/arte.ts` (largura da ênfase do título em `em`: o h1 encolhe por `cqi` até a frase azul
-  caber inteira numa linha; antes o equilíbrio de linhas deixava "continuar" sozinho).
+  caber inteira numa linha; antes o equilíbrio de linhas deixava "continuar" sozinho). Desde 16/10
+o mapa está vazio (nenhuma ênfase atual precisa); o mecanismo e a guarda ficam para títulos futuros.
 - **`oferta/arte.ts` (o que depende do ASSUNTO, não da posição), nas cinco páginas:**
   `ICONES_DE_CAPITULO` (chip do capítulo, por id de seção), `ICONES_DE_GRUPO` (ícone de cada
   subtítulo) e `ICONES_DE_DUVIDAS` (assuntos das dúvidas, por página). Sem entrada vale o ícone

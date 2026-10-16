@@ -1,0 +1,9 @@
+$ bun scripts/tui-release/upgrade.ts
+{
+  "at": "2026-10-15T23:33:54.245Z",
+  "directory": "C:\\Users\\tocha\\AppData\\Local\\Temp\\Zero upgrade ação gRJfo0",
+  "interruptedKeptPrevious": true,
+  "backupVerified": true,
+  "rollbackVerified": true,
+  "launcherVerified": true
+}

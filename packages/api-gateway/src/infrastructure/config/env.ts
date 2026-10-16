@@ -129,15 +129,11 @@ const EnvSchema = z
     TRUSTED_PROXY_HOPS: z.coerce.number().int().positive().default(1),
 
     // Teto GLOBAL do corpo (bytes) — enforçado pelo `maxRequestBodySize` do
-    // Bun.serve (413 automático). 2 MB: os webhooks de evento da SendGrid chegam
-    // em lotes de até ~2 MB (o messaging os aceita até esse teto) — 1 MB na borda
-    // os perderia em silêncio. Rotas individuais AFINAM o teto via
+    // Bun.serve (413 automático). O builder do Studio precisa de 3.004.096 bytes;
+    // os webhooks da SendGrid continuam limitados a 2 MB por rota.
+    // Rotas individuais AFINAM o teto via
     // `maxBodyBytes` na config (nunca o aumentam — validado no boot).
-    MAX_REQUEST_BODY_BYTES: z.coerce
-      .number()
-      .int()
-      .positive()
-      .default(2 * 1024 * 1024),
+    MAX_REQUEST_BODY_BYTES: z.coerce.number().int().positive().default(3_004_096),
 
     // Rate limit global default (por identidade).
     RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(600),

@@ -1,4 +1,5 @@
 import {
+  demonstrationSources,
   type EditorialDocument,
   type Revision,
   revisionSchema,
@@ -17,6 +18,11 @@ export async function loadContextBasis(
   ancestors: { document: EditorialDocument }[],
 ): Promise<Revision[]> {
   let refs = source.kind === 'analysis' ? (source.basis ?? []) : []
+  if (source.kind === 'video')
+    refs = demonstrationSources(source.timeline).map((reference) => ({
+      entityId: reference.evidenceId,
+      revisionId: reference.evidenceRevisionId,
+    }))
   const origin = [source, ...ancestors.map((item) => item.document)].flatMap((doc) =>
     doc.kind === 'piece' && doc.originAnalysis ? [doc.originAnalysis] : [],
   )[0]
@@ -38,7 +44,7 @@ export async function loadContextBasis(
         'A análise de origem da pauta não está disponível',
       )
     basis.push(revisionSchema.parse({ ...row, createdAt: row.createdAt.toISOString() }))
-    refs = row.document.basis ?? []
+    refs = [...refs, ...(row.document.basis ?? [])]
   }
   const rows = refs.length
     ? await tx

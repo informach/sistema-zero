@@ -6,6 +6,8 @@
  * irmão usou precisa entender o que aconteceu, senão parece castigo ou defeito.
  */
 export interface AiCreditsView {
+  /** Studio alone may use the parent's connection; other products still use this allowance. */
+  studioSource?: 'platform' | 'openrouter'
   dayLimit: number
   dayRemaining: number
   monthLimit: number

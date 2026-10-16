@@ -1,10 +1,15 @@
+import type { TicketDetailResponse } from '@sistemazero/helpdesk-contracts'
 import {
   ConcurrencyConflictError,
   TicketCursorInvalidError,
   TicketNotFoundError,
 } from '../../domain/helpdesk-errors'
 import type { MessageRepository } from '../../domain/ports/message-repository.port'
-import type { ListTicketsFilter, TicketRepository } from '../../domain/ports/ticket-repository.port'
+import type {
+  ListTicketsFilter,
+  TicketOperationalPatch,
+  TicketRepository,
+} from '../../domain/ports/ticket-repository.port'
 import type {
   Ticket,
   TicketCategory,
@@ -22,6 +27,7 @@ import {
 } from '../../domain/ticket/ticket-triage'
 import type { Actor } from '../actor'
 import { type MessageView, type TicketView, toMessageView, toTicketView } from '../views'
+import { decodeMessageCursor, encodeMessageCursor } from './message-cursor'
 import { decodeTicketCursor, encodeTicketCursor } from './ticket-cursor'
 
 export interface PatchTicketInput {
@@ -83,15 +89,37 @@ export class TicketService {
     return this.tickets.stats(this.now())
   }
 
-  async byId(id: string): Promise<{ ticket: TicketView; messages: MessageView[] }> {
+  async byId(id: string): Promise<TicketDetailResponse> {
+    return this.page(id, { limit: 50 })
+  }
+  async page(
+    id: string,
+    input: { limit: number; before?: string; after?: string },
+  ): Promise<TicketDetailResponse> {
+    if (input.before && input.after) throw new TicketCursorInvalidError()
     const ticket = await this.requireTicket(id)
-    const messages = await this.messages.byTicketId(id)
-    return { ticket: toTicketView(ticket, this.now()), messages: messages.map(toMessageView) }
+    const rows = await this.messages.page(id, {
+      limit: input.limit,
+      before: decodeMessageCursor(input.before),
+      after: decodeMessageCursor(input.after),
+    })
+    const selected = rows.slice(0, input.limit)
+    if (!input.after) selected.reverse()
+    return {
+      ticket: toTicketView(ticket, this.now()),
+      messages: selected.map(toMessageView),
+      hasOlder: !input.after && rows.length > input.limit,
+      hasMore: !!input.after && rows.length > input.limit,
+      olderCursor: selected[0] ? encodeMessageCursor(selected[0]) : (input.before ?? null),
+      latestCursor: selected.at(-1) ? encodeMessageCursor(selected.at(-1)!) : (input.after ?? null),
+    }
   }
 
   async patch(actor: Actor, id: string, input: PatchTicketInput): Promise<TicketView> {
     const ticket = await this.requireTicket(id)
     const now = this.now()
+    const changes: TicketOperationalPatch = {}
+    const promotes = input.triage === 'human' && ticket.triage !== 'human'
     // Triagem primeiro: só um atendimento humano aceita estado operacional.
     if (input.triage === 'human' && ticket.triage !== 'human') {
       promoteTicket(ticket, {
@@ -103,6 +131,31 @@ export class TicketService {
     } else if (input.triage === 'system') {
       // Vale também em ticket já triado: a decisão vira `manual:*` e fica sticky.
       demoteTicket(ticket, { kind: 'system', rule: MANUAL_DEMOTED_RULE, at: now })
+    }
+    if (promotes || input.triage === 'system') {
+      Object.assign(changes, {
+        triage: ticket.triage,
+        triageRule: ticket.triageRule,
+        triagedAt: ticket.triagedAt,
+        status: ticket.status,
+        resolvedAt: ticket.resolvedAt,
+        aiGeneration: ticket.aiGeneration,
+        aiStatus: ticket.aiStatus,
+        aiNextAttemptAt: ticket.aiNextAttemptAt,
+      })
+      if (promotes)
+        Object.assign(changes, {
+          lastInboundAt: ticket.lastInboundAt,
+          aiSummary: null,
+          aiSummaryAt: null,
+          aiDraftRunId: null,
+          aiDraft: null,
+          aiDraftAt: null,
+          aiDraftEdited: false,
+          aiClassification: null,
+          aiAttempts: 0,
+          aiLastError: null,
+        })
     }
     if (input.status !== undefined && ticket.triage === 'human') {
       ticket.status = input.status
@@ -118,20 +171,28 @@ export class TicketService {
       ticket.status = 'closed'
       ticket.resolvedAt ??= now
     }
+    if (input.status !== undefined || ticket.triage !== 'human') {
+      changes.status = ticket.status
+      changes.resolvedAt = ticket.resolvedAt
+    }
     if (input.category !== undefined) {
       ticket.category = input.category
       // Escolha humana de categoria trava a reclassificação automática.
       ticket.categoryManual = input.category !== null
+      changes.category = ticket.category
+      changes.categoryManual = ticket.categoryManual
     }
-    if (input.priority !== undefined) ticket.priority = input.priority
+    if (input.priority !== undefined) changes.priority = input.priority
     if (input.assignToMe !== undefined) {
       ticket.assignedTo = input.assignToMe ? actor.userId : null
       ticket.assignedToName = input.assignToMe ? actor.displayName : null
+      changes.assignedTo = ticket.assignedTo
+      changes.assignedToName = ticket.assignedToName
     }
     ticket.updatedAt = now
-    const ok = await this.tickets.update(ticket, input.version)
-    if (!ok) throw new ConcurrencyConflictError()
-    return toTicketView(ticket, now)
+    const saved = await this.tickets.patch(id, input.version, changes, now)
+    if (!saved) throw new ConcurrencyConflictError()
+    return toTicketView(saved, now)
   }
 
   /** Nota INTERNA (não vira e-mail): só aparece na thread para a equipe. */
@@ -155,6 +216,8 @@ export class TicketService {
       ccEmails: [],
       subject: null,
       bodyText: body.trim(),
+      aiRunId: null,
+      draftEdited: null,
       bodyHtml: null,
       snippet: null,
       attachments: [],
@@ -166,7 +229,7 @@ export class TicketService {
       createdByName: actor.displayName,
       createdAt: at,
     }
-    await this.messages.create(note)
+    if (!(await this.tickets.appendNote(note, at))) throw new TicketNotFoundError()
     return toMessageView(note)
   }
 

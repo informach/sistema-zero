@@ -1,3 +1,4 @@
+import type { StudioAiFundingSource } from '@sistemazero/core/ai-credits'
 import type { CourseModality } from '@sistemazero/core/course/modality'
 import type { HelpTutorialDocument } from '@sistemazero/core/help'
 import type {
@@ -18,9 +19,17 @@ import type {
 } from '@sistemazero/core/live'
 import type { Palette } from '@sistemazero/core/palette'
 import type { PensaJourney, PensaOperationKind, PensaOperationStep } from '@sistemazero/core/pensa'
+import type {
+  StudioProAssistanceJournal,
+  StudioProBuilderCost,
+  StudioProBuilderPhase,
+  StudioProBuilderResult,
+  StudioProRevision,
+} from '@sistemazero/core/studio'
 import { isNull, sql } from 'drizzle-orm'
 import {
   type AnyPgColumn,
+  bigint,
   boolean,
   check,
   customType,
@@ -2350,7 +2359,225 @@ export const liveLearningAttempts = members.table(
   ],
 )
 
+export const studioAiAccounts = members.table(
+  'studio_ai_accounts',
+  {
+    accountId: uuid('account_id').primaryKey(),
+    source: varchar('source', { length: 16 })
+      .$type<StudioAiFundingSource>()
+      .notNull()
+      .default('platform'),
+    credential: text('credential'),
+    keyHash: varchar('key_hash', { length: 64 }),
+    connectedAt: timestamp('connected_at', { withTimezone: true }),
+    externalDailyLimitMicroUsd: integer('external_daily_limit_micro_usd'),
+    externalMonthlyLimitMicroUsd: integer('external_monthly_limit_micro_usd'),
+    revision: integer('revision').notNull().default(0),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    check('studio_ai_source_check', sql`${table.source} in ('platform', 'openrouter')`),
+    check(
+      'studio_ai_daily_limit_check',
+      sql`${table.externalDailyLimitMicroUsd} is null or ${table.externalDailyLimitMicroUsd} between 1 and 1000000000`,
+    ),
+    check(
+      'studio_ai_monthly_limit_check',
+      sql`${table.externalMonthlyLimitMicroUsd} is null or ${table.externalMonthlyLimitMicroUsd} between 1 and 1000000000`,
+    ),
+  ],
+)
+
+export const studioAiOAuthStates = members.table(
+  'studio_ai_oauth_states',
+  {
+    stateHash: varchar('state_hash', { length: 64 }).primaryKey(),
+    accountId: uuid('account_id')
+      .notNull()
+      .references(() => studioAiAccounts.accountId, { onDelete: 'cascade' }),
+    bindingHash: varchar('binding_hash', { length: 64 }).notNull(),
+    verifier: text('verifier').notNull(),
+    callbackUrl: text('callback_url').notNull(),
+    revision: integer('revision').notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    uniqueIndex('studio_ai_oauth_account_idx').on(table.accountId),
+    index('studio_ai_oauth_expiry_idx').on(table.expiresAt),
+  ],
+)
+
+export const studioAiRuns = members.table(
+  'studio_ai_runs',
+  {
+    id: uuid('id').primaryKey(),
+    accountId: uuid('account_id')
+      .notNull()
+      .references(() => studioAiAccounts.accountId, { onDelete: 'cascade' }),
+    userId: uuid('user_id').notNull(),
+    projectId: varchar('project_id', { length: 128 }).notNull(),
+    purpose: varchar('purpose', { length: 16 }).$type<'tutor' | 'builder'>().notNull(),
+    model: varchar('model', { length: 160 }).notNull(),
+    source: varchar('source', { length: 16 }).$type<StudioAiFundingSource>().notNull(),
+    keyHash: varchar('key_hash', { length: 64 }),
+    day: date('day', { mode: 'string' }).notNull(),
+    inputBytes: integer('input_bytes').notNull(),
+    maxOutputTokens: integer('max_output_tokens').notNull(),
+    maxAttempts: smallint('max_attempts').notNull(),
+    estimateMicroUsd: bigint('estimate_micro_usd', { mode: 'number' }).notNull(),
+    spentMicroUsd: bigint('spent_micro_usd', { mode: 'number' }).notNull().default(0),
+    priceCaps: jsonb('price_caps')
+      .$type<{ prompt: number; completion: number; request: 0 }>()
+      .notNull(),
+    dispatched: smallint('dispatched').notNull().default(0),
+    allowanceCharged: boolean('allowance_charged').notNull().default(false),
+    privileged: boolean('privileged').notNull(),
+    finishedAt: timestamp('finished_at', { withTimezone: true }),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    index('studio_ai_runs_account_day_idx').on(table.accountId, table.day),
+    index('studio_ai_runs_day_idx').on(table.day),
+    index('studio_ai_runs_active_idx')
+      .on(table.accountId, table.expiresAt)
+      .where(isNull(table.finishedAt)),
+    check(
+      'studio_ai_runs_bounds',
+      sql`${table.maxAttempts} between 1 and 6 and ${table.dispatched} between 0 and ${table.maxAttempts} and ${table.estimateMicroUsd} > 0 and ${table.spentMicroUsd} >= 0`,
+    ),
+    check('studio_ai_runs_source', sql`${table.source} in ('platform', 'openrouter')`),
+    check(
+      'studio_ai_runs_request',
+      sql`${table.purpose} in ('tutor', 'builder') and ${table.inputBytes} between 1 and 256000 and ${table.maxOutputTokens} between 1 and 8000`,
+    ),
+  ],
+)
+
+export const studioAiAttempts = members.table(
+  'studio_ai_attempts',
+  {
+    runId: uuid('run_id')
+      .notNull()
+      .references(() => studioAiRuns.id, { onDelete: 'cascade' }),
+    attempt: smallint('attempt').notNull(),
+    status: varchar('status', { length: 16 })
+      .$type<'dispatched' | 'uncertain' | 'confirmed' | 'rejected'>()
+      .notNull(),
+    actualMicroUsd: bigint('actual_micro_usd', { mode: 'number' }),
+    generationId: varchar('generation_id', { length: 128 }),
+    promptTokens: integer('prompt_tokens'),
+    completionTokens: integer('completion_tokens'),
+    reconcileAttempts: smallint('reconcile_attempts').notNull().default(0),
+    reconcileClaimId: uuid('reconcile_claim_id'),
+    reconcileAfter: timestamp('reconcile_after', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.runId, table.attempt] }),
+    uniqueIndex('studio_ai_attempt_generation_idx').on(table.generationId),
+    index('studio_ai_attempt_reconcile_idx')
+      .on(table.reconcileAfter, table.createdAt)
+      .where(
+        sql`${table.generationId} is not null and ${table.status} in ('dispatched', 'uncertain')`,
+      ),
+    check(
+      'studio_ai_attempt_state',
+      sql`${table.status} in ('dispatched', 'uncertain', 'confirmed', 'rejected')`,
+    ),
+    check(
+      'studio_ai_attempt_cost',
+      sql`(${table.status} = 'confirmed' and ${table.actualMicroUsd} is not null and ${table.actualMicroUsd} between 0 and 1000000000) or (${table.status} <> 'confirmed' and ${table.actualMicroUsd} is null)`,
+    ),
+    check(
+      'studio_ai_attempt_bounds',
+      sql`${table.attempt} between 1 and 6 and ${table.reconcileAttempts} between 0 and 8 and (${table.promptTokens} is null or ${table.promptTokens} between 0 and 10000000) and (${table.completionTokens} is null or ${table.completionTokens} between 0 and 10000000)`,
+    ),
+  ],
+)
+
+export const studioBuilderJobs = members.table(
+  'studio_builder_jobs',
+  {
+    id: uuid('id').primaryKey(),
+    accountId: uuid('account_id').notNull(),
+    userId: uuid('user_id').notNull(),
+    projectId: varchar('project_id', { length: 128 }).notNull(),
+    execution: jsonb('execution').$type<{ parentOrigin: string; privileged: boolean }>().notNull(),
+    objective: text('objective').notNull(),
+    model: varchar('model', { length: 160 }).notNull(),
+    binaries: jsonb('binaries')
+      .$type<Record<string, { base64: string; sha256: string }>>()
+      .notNull(),
+    notes: jsonb('notes').$type<string[]>().notNull().default([]),
+    assistance: jsonb('assistance').$type<StudioProAssistanceJournal>(),
+    base: jsonb('base').$type<StudioProRevision>().notNull(),
+    phase: varchar('phase', { length: 16 }).$type<StudioProBuilderPhase>().notNull(),
+    version: integer('version').notNull().default(0),
+    modelCalls: smallint('model_calls').notNull().default(0),
+    validationCalls: smallint('validation_calls').notNull().default(0),
+    leaseToken: uuid('lease_token'),
+    leaseUntil: timestamp('lease_until', { withTimezone: true }),
+    result: jsonb('result').$type<StudioProBuilderResult>(),
+    error: text('error'),
+    cost: jsonb('cost').$type<StudioProBuilderCost>(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    deadlineAt: timestamp('deadline_at', { withTimezone: true }).notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    index('studio_builder_owner_idx').on(
+      table.accountId,
+      table.userId,
+      table.projectId,
+      table.createdAt,
+    ),
+    index('studio_builder_expiry_idx').on(table.expiresAt),
+    index('studio_builder_queue_idx')
+      .on(table.phase, table.leaseUntil, table.deadlineAt)
+      .where(sql`${table.phase} in ('queued','generating','validating')`),
+    check(
+      'studio_builder_phase',
+      sql`${table.phase} in ('queued','generating','validating','review','failed','cancelled')`,
+    ),
+    check(
+      'studio_builder_bounds',
+      sql`${table.modelCalls} between 0 and 3 and ${table.validationCalls} between 0 and 3 and ${table.version} >= 0 and char_length(${table.objective}) between 1 and 2000 and octet_length(${table.base}::text) <= 3000000 and (${table.result} is null or octet_length(${table.result}::text) <= 3000000)`,
+    ),
+    check(
+      'studio_builder_lease',
+      sql`(${table.leaseToken} is null) = (${table.leaseUntil} is null)`,
+    ),
+    check(
+      'studio_builder_assistance_bounds',
+      sql`${table.assistance} is null or (octet_length(${table.assistance}::text) <= 150000 and jsonb_array_length(${table.assistance}->'events') <= 128)`,
+    ),
+  ],
+)
+
+/** Short deletion fence: an in-flight create cannot resurrect a removed project's jobs. */
+export const studioBuilderProjectDeletions = members.table(
+  'studio_builder_project_deletions',
+  {
+    accountId: uuid('account_id').notNull(),
+    userId: uuid('user_id').notNull(),
+    projectId: varchar('project_id', { length: 128 }).notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.accountId, table.userId, table.projectId] }),
+    index('studio_builder_project_deletion_expiry_idx').on(table.expiresAt),
+  ],
+)
+
 export const schema = {
+  studioBuilderProjectDeletions,
+  studioBuilderJobs,
+  studioAiRuns,
+  studioAiAttempts,
+  studioAiAccounts,
+  studioAiOAuthStates,
   liveLearningProgress,
   liveLearningAttempts,
   livePrograms,

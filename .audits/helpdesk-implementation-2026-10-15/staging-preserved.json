@@ -1,0 +1,10 @@
+{
+  "base": "2d59b19a8d260777e2be57d545b52ba2a8317789",
+  "files": {
+    "bun.lock": "2688f0cf35f450de08bed40c4b3b4ec793447713dfd2e4e424c1a84f6380e84e",
+    "packages/agent-runtime/package.json": "e76b8fda090f0fc12ac6ece3f5548f84cfcc4c742501d36a42ad1733881be06f",
+    "packages/agent-runtime/tsconfig.json": "cb28ef22e1e23a821f79238e8ba6024d75ae409075c3d41133ae901a95b77e2f",
+    "packages/tui/package.json": "a5c13658810effd69a3dbdf2a027d9f9f224f00bd68e6c3c9d232ad4adf0bd81",
+    "packages/tui/tsconfig.json": "8729c8e6a0244f713c37ae9497d82d89296cfc1caa62e27726cc3ac528e12d51"
+  }
+}

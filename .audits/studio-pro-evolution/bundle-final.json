@@ -1,0 +1,128 @@
+{
+  "initial": {
+    "files": [
+      "index-BnvvRh4M.js",
+      "rolldown-runtime-QTnfLwEv.js",
+      "preload-helper-B8fFrdxC.js",
+      "jsx-runtime-By8HlURe.js",
+      "react-7w4oHemq.js",
+      "projectDocument-CX81k_b1.js",
+      "proAssetPaths-DAKuun3R.js",
+      "behaviorAreas-Zm7ssrOa.js",
+      "core-DND8SLqt.js"
+    ],
+    "raw": 344189,
+    "gzip": 113604
+  },
+  "route": {
+    "files": [
+      "assets/StudioEditor-D2Eed7eJ.js",
+      "assets/preview-jfoLZ0jn.js",
+      "assets/assetsBridge-gIuuiPtv.js",
+      "assets/extensions-DF0iyTwf.js",
+      "assets/ir-BIflObBy.js",
+      "assets/blocksStateVersion-Cw0msbXV.js",
+      "assets/studio-editor-host-BH2COB16.js",
+      "assets/projectStore-CECMGRLB.js",
+      "assets/projectValidation-BbSJMnqt.js",
+      "assets/registry-BwLZIkYX.js",
+      "assets/layoutContext-rY5rEF4z.js",
+      "assets/generators-CM5eIAvH.js",
+      "assets/resolve-DSPIxYm-.js",
+      "assets/lib-DVTz3sLm2.js",
+      "assets/lessonMarkdown-DF5PTvAK.js",
+      "assets/has3DConsumer-C9TO4plB.js",
+      "assets/proLearningGuides-YZy9ByKm.js",
+      "assets/App-TNwqJAND.js"
+    ],
+    "raw": 3755367,
+    "gzip": 1157208
+  },
+  "modes": [
+    {
+      "modeName": "BlocksMode",
+      "budget": {
+        "raw": 4750000,
+        "gzip": 1450000,
+        "files": 20
+      },
+      "files": [
+        "assets/BlocksMode-Dljg9-u4.js",
+        "assets/studio-editor-host-BH2COB16.js",
+        "assets/projectStore-CECMGRLB.js",
+        "assets/projectValidation-BbSJMnqt.js",
+        "assets/extensions-DF0iyTwf.js",
+        "assets/ir-BIflObBy.js",
+        "assets/blocksStateVersion-Cw0msbXV.js",
+        "assets/registry-BwLZIkYX.js",
+        "assets/layoutContext-rY5rEF4z.js",
+        "assets/generators-CM5eIAvH.js",
+        "assets/LazyPreviewIframe-7hwd__EE.js",
+        "assets/extensionsAdapter-BpXDVy4U.js",
+        "assets/blockly-D7KtvB3N.js",
+        "assets/blockCatalog-D9GRiuCw.js",
+        "assets/FieldTileGrid-BbvuCohD.js"
+      ],
+      "raw": 3669962,
+      "gzip": 943569
+    },
+    {
+      "modeName": "BridgeMode",
+      "budget": {
+        "raw": 4500000,
+        "gzip": 1450000,
+        "files": 20
+      },
+      "files": [
+        "assets/BridgeMode-oTMVCe6b.js",
+        "assets/html-9UttKUu9.js",
+        "assets/generators-CM5eIAvH.js",
+        "assets/extensions-DF0iyTwf.js",
+        "assets/ir-BIflObBy.js",
+        "assets/blocksStateVersion-Cw0msbXV.js",
+        "assets/useDebounced-C_7oXhG7.js",
+        "assets/studio-editor-host-BH2COB16.js",
+        "assets/projectStore-CECMGRLB.js",
+        "assets/projectValidation-BbSJMnqt.js",
+        "assets/registry-BwLZIkYX.js",
+        "assets/layoutContext-rY5rEF4z.js",
+        "assets/LazyPreviewIframe-7hwd__EE.js",
+        "assets/extensionsAdapter-BpXDVy4U.js",
+        "assets/blockly-D7KtvB3N.js",
+        "assets/blockCatalog-D9GRiuCw.js",
+        "assets/FieldTileGrid-BbvuCohD.js"
+      ],
+      "raw": 3176494,
+      "gzip": 815584
+    },
+    {
+      "modeName": "CodeMode",
+      "budget": {
+        "raw": 4000000,
+        "gzip": 1300000,
+        "files": 18
+      },
+      "files": [
+        "assets/CodeMode-CceSpVvR.js",
+        "assets/modelPaths-x8kAl7Qv.js",
+        "assets/proExamples-BV8KWkX8.js",
+        "assets/proAssets-DurKgn23.js",
+        "assets/proRevision-Bj_mHEne.js",
+        "assets/projectValidation-BbSJMnqt.js",
+        "assets/extensions-DF0iyTwf.js",
+        "assets/ir-BIflObBy.js",
+        "assets/blocksStateVersion-Cw0msbXV.js",
+        "assets/registry-BwLZIkYX.js",
+        "assets/ProWebContainerProvider-Du_R4dHU.js",
+        "assets/webContainerClient-hYqNBsPD.js",
+        "assets/projectStore-CECMGRLB.js",
+        "assets/studio-editor-host-BH2COB16.js",
+        "assets/layoutContext-rY5rEF4z.js",
+        "assets/generators-CM5eIAvH.js",
+        "assets/proLearningGuides-YZy9ByKm.js"
+      ],
+      "raw": 1638402,
+      "gzip": 443309
+    }
+  ]
+}

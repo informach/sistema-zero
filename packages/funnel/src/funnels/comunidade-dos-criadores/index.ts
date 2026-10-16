@@ -14,7 +14,7 @@ import { COMUNIDADE_LANDING, COMUNIDADE_OBRIGADO, COMUNIDADE_PRODUTO } from './c
 import { PAGE_A } from './oferta/tempo-de-tela'
 import { COMMUNITY_QUIZ } from './quiz'
 import { PROFILE_IDS } from './quiz/engine'
-import { PRIMARY_COPY } from './quiz/result-copy'
+import { PROFILE_LABELS } from './quiz/result-copy'
 
 export const COMUNIDADE_DOS_CRIADORES: FunnelDef = {
   audience: 'kids',
@@ -43,7 +43,10 @@ export const COMUNIDADE_DOS_CRIADORES: FunnelDef = {
       profiles: {},
       fecho: '',
       perfilLabels: Object.fromEntries(
-        Object.entries(PROFILE_IDS).map(([id, slug]) => [slug, PRIMARY_COPY[id]!.title]),
+        Object.entries(PROFILE_IDS).map(([id, slug]) => [
+          slug,
+          PROFILE_LABELS[id as keyof typeof PROFILE_IDS],
+        ]),
       ),
     },
   },

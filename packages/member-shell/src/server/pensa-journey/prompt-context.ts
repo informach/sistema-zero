@@ -2,6 +2,7 @@ import 'server-only'
 import type { ServerBlockCatalogEntry } from '@sistemazero/studio/server-catalog'
 import { expandedTerms, scoreTokens, searchTerms, tokenizeSearchable } from '../zappy-search'
 import type { JourneyContext } from './context'
+import { STUDIO_AREA_NAMES } from './interface-map'
 import { privateJourneyInput } from './privacy'
 import { journeyRecipes } from './recipes'
 
@@ -27,6 +28,8 @@ export interface JourneyPromptLimits {
   blocks: number
   /** Com entradas e encaixe; sem, só id, nome e caminho na paleta. */
   blockDetail: boolean
+  /** Sem o caminho na paleta: só no degrau de emergência (o pior caso com uma tentativa de reparo). */
+  blockPath?: false
   manualChunks: number
   sources: number
   sourceChars: number
@@ -102,6 +105,25 @@ export const JOURNEY_PROMPT_LADDER: readonly JourneyPromptLimits[] = [
     built: 3,
     palette: false,
   },
+  // Emergência: o pior caso (oito missões de 16 blocos) numa tentativa de reparo, que soma o motivo
+  // da recusa. Sem o caminho de cada bloco na paleta (o id e o nome ficam), em vez de recusar o
+  // pedido e falhar o passo que só precisava de conserto.
+  {
+    blocks: 0,
+    blockDetail: false,
+    blockPath: false,
+    manualChunks: 0,
+    sources: 0,
+    sourceChars: 0,
+    recipes: 0,
+    creations: 2,
+    messages: 2,
+    messageChars: 200,
+    backlog: 0,
+    backlogChars: 0,
+    built: 2,
+    palette: false,
+  },
 ]
 
 export class JourneyPromptTooLarge extends Error {
@@ -167,12 +189,40 @@ export function rankJourneyBlocks(
     .map(({ entry }) => entry)
 }
 
-function blockForModel(entry: ServerBlockCatalogEntry, detail: boolean) {
+/**
+ * Um bloco como o modelo precisa dele. `area` é o nome da área em que ele encaixa direto (como a
+ * criança a vê na paleta); `tip`, a dica do próprio bloco, só nos blocos que a missão USA: é ela
+ * que diz quando um comando vai dentro de "A cada quadro do jogo" (o guia precisa disso para dizer
+ * o gesto exato, 15/10/2026).
+ */
+/**
+ * A dica do bloco para o guia: o começo dela e, se o "use a cada quadro" ficou depois do corte, a
+ * frase que fala disso. O `area` do catálogo é onde o bloco PODE ficar solto (`⚙️ Ao iniciar` para
+ * quase todos os comandos), e um comando de "a cada quadro" solto no início nunca responde (15/10/
+ * 2026: 46 dicas tinham essa frase depois dos 140 caracteres, como a do controle da nave).
+ */
+export function blockTip(tooltip: string): string {
+  const head = clip(tooltip, 140)
+  if (/cada quadro/i.test(head)) return head
+  const frame = tooltip.split(/(?<=[.!?])\s+/).find((sentence) => /cada quadro/i.test(sentence))
+  return frame ? `${head} ${clip(frame, 140)}` : head
+}
+
+function blockForModel(
+  entry: ServerBlockCatalogEntry,
+  detail: boolean,
+  tip = false,
+  withPath = true,
+) {
+  const area = STUDIO_AREA_NAMES[entry.area]
   return {
     id: entry.type,
     label: entry.label,
     // O caminho na paleta já começa pela família ("🎮 Jogo 2D › …"): a extensão vai junto.
-    path: entry.palettePath.join(' › '),
+    ...(withPath ? { path: entry.palettePath.join(' › ') } : {}),
+    // Área e dica só nos degraus com detalhe: no degrau apertado, o guia de oito missões cabe.
+    ...(detail && area ? { area } : {}),
+    ...(tip && entry.tooltip ? { tip: blockTip(entry.tooltip) } : {}),
     ...(detail && entry.extension ? { extension: entry.extension } : {}),
     ...(detail && entry.inputs.length ? { inputs: entry.inputs.slice(0, 8) } : {}),
     ...(detail && entry.placement
@@ -202,11 +252,12 @@ function manualChunks(content: string): string[] {
 /**
  * O contexto do perfil para UMA chamada, no tamanho do degrau. `focus` é o texto que decide o que é
  * relevante (a ideia, as missões, o pedido de ajuda); `includeBlockIds` são os blocos que o plano já
- * usa e precisam ir sempre.
+ * usa e precisam ir sempre. `tips` leva a dica de cada um desses blocos (o guia precisa dela para
+ * dizer o gesto); só nos degraus com detalhe, para o guia de oito missões ainda caber no teto.
  */
 export function journeyModelContext(
   context: JourneyContext,
-  input: { focus: string; includeBlockIds?: readonly string[] },
+  input: { focus: string; includeBlockIds?: readonly string[]; tips?: boolean },
   limits: JourneyPromptLimits,
 ) {
   const included = new Set(input.includeBlockIds ?? [])
@@ -239,6 +290,7 @@ export function journeyModelContext(
     capabilities: {
       rank: caps.rank,
       studio: caps.studio,
+      studioAuthoring: caps.studioAuthoring ?? 'blocks',
       pinta: caps.pinta,
       molda: caps.molda,
       dimensions: caps.dimensions,
@@ -255,8 +307,17 @@ export function journeyModelContext(
       ? { palette: [...palette].slice(0, 80).map(([path, count]) => ({ path, count })) }
       : {}),
     blocks: [
-      ...must.map((entry) => blockForModel(entry, limits.blockDetail)),
-      ...ranked.map((entry) => blockForModel(entry, limits.blockDetail)),
+      ...must.map((entry) =>
+        blockForModel(
+          entry,
+          limits.blockDetail,
+          Boolean(input.tips) && limits.blockDetail,
+          limits.blockPath !== false,
+        ),
+      ),
+      ...ranked.map((entry) =>
+        blockForModel(entry, limits.blockDetail, false, limits.blockPath !== false),
+      ),
     ],
     manuals: chunks.map((chunk) => ({ manual: chunk.manual, excerpt: chunk.text })),
     knownMechanics: journeyRecipes(input.focus, caps).slice(0, limits.recipes),

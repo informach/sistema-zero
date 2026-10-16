@@ -1,543 +1,514 @@
-# Seu ponto de partida para aprender criando
+<!-- Espelho gerado da copy tipada em packages/funnel/src/funnels/comunidade-dos-criadores/quiz/. Edite o código e rode `bun scripts/espelho-quiz-comunidade.ts` (em packages/funnel). -->
 
-Biblioteca editorial da versão 4, com segunda revisão em 02/10/2026. Cada resultado exibe somente os módulos pertinentes às respostas. Veja [onze exemplos completos](../quiz/exemplos-de-resultado-v4.md) para ler a sequência montada, incluindo demonstrações e destino.
+# Quiz da Comunidade: o resultado como ponte
 
-## Resultado A: Aprender criando no tempo de tela combinado
+_Versão `comunidade-orientacao-v5`. Ordem dos níveis de consciência: o título nomeia o problema; o quadro "O que você contou" devolve as respostas; "Por que isso acontece" dá a tese; "O que muda isso" apresenta a criação de jogos, ainda sem o produto; "Onde isso acontece" mostra a Comunidade com uma tela real e os relatos; "Antes de seguir" só aparece com condição; "O próximo passo" leva à oferta do perfil. Sem preço. Recados só para quem precisa de alguém a quem recorrer._
 
-### O que pesou na sugestão
+## Por perfil
 
-Você quer que parte do tempo de tela que seu filho já tem também seja uma oportunidade de aprender. Um bom começo é uma atividade em que ele consiga mostrar o que fez: uma regra que montou, uma escolha que testou ou uma mudança no próprio projeto. Assim, você tem algo concreto para conhecer e conversar com ele.
+Abertura comum de "Onde isso acontece": A Comunidade dos Criadores é a plataforma do Sistema Zero Kids em que crianças de 9 a 14 anos aprendem criando jogos.
 
-### Comece pelo que ele teria vontade de fazer
+### A. Tempo de tela
 
-Para encaixar aprendizagem no tempo de tela, vale convidar seu filho a fazer algo que tenha sentido para ele. Pode ser inventar uma regra para um jogo ou imaginar uma ação para um personagem. A sua intenção de oferecer aprendizado e a curiosidade dele podem se encontrar nessa primeira escolha.
+**Título:** No tempo de tela do seu filho, quem decide quase tudo é quem fez o jogo ou o vídeo
 
-Quando ele mostrar a tentativa, peça que explique uma mudança. A conversa deixa de depender só de “gostou da aula?” e passa a ter um exemplo diante de vocês.
+**Abertura pela cena de casa:** Você contou que ele passa horas em jogos e vídeos e que, no fim do dia, não sobra nada que ele tenha feito.
 
-### Experimentem em casa: um personagem, uma regra
+**Tese:** Nos jogos e nos vídeos prontos, alguém já tomou todas as decisões. As regras, os personagens e o que acontece em cada toque vieram prontos, e ele só escolhe o que vem em seguida. O interesse está lá.
 
-1. Numa folha, seu filho desenha um caminho curto. Uma tampinha pode representar o personagem.
-2. Combinem uma regra: a cada palma, o personagem avança uma casa. Façam algumas tentativas.
-3. Deixe que ele altere a regra e mostre a diferença. Por exemplo: duas palmas fazem o personagem voltar uma casa.
+**O que muda isso:** Quando ele cria o próprio jogo, passa para o outro lado da tela. Decide quanto o personagem pula, o que acontece quando o personagem encosta numa moeda e quanto vale cada ponto. Aperta para testar e vê na hora se ficou como queria. O tempo na tela continua, mas agora tem decisão, teste e, no fim, um jogo que é dele.
 
-Pergunte: “O que mudou quando você trocou a regra?”. A ideia é conversar sobre uma escolha que ele acabou de fazer. Se não quiser participar agora, vocês podem retomar o convite em outro momento.
+**Onde isso acontece:** Os cursos são projetos de jogo, e a aula mostra cada passo ao lado do editor. O jogo publicado vai para o Mural dos Criadores com um link para a família jogar.
 
-### Um lugar para seu filho aprender enquanto cria
+**Tela:** `aula-estudio`
 
-A Comunidade dos Criadores é a plataforma por assinatura do Sistema Zero Kids para crianças e adolescentes de 9 a 14 anos. Aqui, seu filho acompanha aulas, cria jogos e pode preparar desenhos e personagens para usar nessas criações.
+> “O Fernando passava muito tempo nas telas, mas ele mais assistia, não desenvolvia nada. O curso incentivou ele a desenvolver, a programar, não a jogar.” Flávia · Mãe do Fernando · Usar a tela para criar (`AV12`)
 
-A proposta reúne a orientação das aulas, as ferramentas para construir e um canal de mensagens para pedir ajuda. Seu filho encontra o próximo passo e os recursos para colocá-lo em prática dentro da mesma plataforma.
+**O próximo passo:** Na próxima página, você vê um projeto por dentro, do jogo pronto até a regra que ele monta, como você acompanha e os dois planos, mensal e anual.
 
-Veja como esse começo se relaciona com o que você contou. As imagens a seguir são telas reais da plataforma e podem ser ampliadas.
+**Botão:** Ver como o tempo de tela vira criação
 
-### Uma parte do tempo de tela pode virar uma criação para ele mostrar
+### B. Criação de jogos
 
-Imagine seu filho acompanhando uma aula de criação de jogos. Ele vê como montar uma ação, faz a tentativa na área ao lado e executa o jogo para conferir o resultado. Se quiser mudar o que acontece, volta aos comandos e testa outra escolha. O tempo dessa atividade inclui observar, decidir e construir.
+**Título:** As ideias de jogo do seu filho já existem. Falta ver essas ideias funcionando
 
-Para você, isso abre uma conversa bem concreta: “Me mostra o que você mudou?”. Ele pode abrir o projeto e comparar as tentativas. A produção e a explicação dele ajudam a acompanhar o que está entendendo, além de saber que assistiu à aula.
+**Abertura pela cena de casa:** Você contou que ele inventa jogos e regras o tempo todo, mas as ideias ficam na conversa ou no papel. A vontade já está aí.
 
-Na tela abaixo, repare como a aula e a atividade ficam próximas. Seu filho pode consultar a orientação durante a criação. Vocês continuam combinando os horários e a duração do uso do computador dentro do tempo de tela que já permitem.
+**Tese:** O que falta é transformar a ideia em regras que o computador entende: quando tocar aqui, acontece isso. Enquanto esse passo não chega, cada ideia nova volta para o papel, como a anterior.
 
-**Ver a proposta para aprender criando no tempo de tela**
+**Com a preocupação deste perfil:** E é por isso que preocupa ver essa vontade passar antes do primeiro jogo.
 
-## Resultado B: Uma ideia de jogo que cabe numa primeira tentativa
+**O que muda isso:** Criar um jogo é escrever as regras da ideia: quando o jogador tocar no esconderijo, o personagem aparece e o contador soma um. Seu filho monta essas regras, aperta para testar e descobre na hora se o jogo faz o que imaginou. Se não fez, ajusta. É assim que uma ideia vira um jogo que outra pessoa consegue jogar.
 
-### O que pesou na sugestão
+**Onde isso acontece:** Cada curso é um jogo completo, e ele começa jogando a versão pronta para saber aonde vai chegar. Quando conclui o curso A Chave do Farol e publica o jogo, chega ao posto Construtor da Jornada do Criador, e o Estúdio, o editor onde ele monta os jogos, fica livre para as ideias dele. O jogo publicado ganha um link e um cartão com código QR para mandar a quem a família combinar.
 
-Você quer encontrar um começo para seu filho criar os próprios jogos. Para sair da ideia e chegar a algo que ele consiga testar, vale começar por uma ação pequena: fazer um personagem aparecer, abrir uma passagem ou mudar o que acontece ao tocar num objeto. Cada tentativa dá uma parte do jogo para ele entender e construir.
+**Tela:** `regra`
 
-### Uma ideia que ele consiga colocar à prova
+> “Eu já jogava um monte, agora eu faço os meus jogos. Esse foi o primeiro e já quero fazer um maior.” André · Aluno · Relato sobre o Desafio do Primeiro Jogo (`AV04`)
 
-Se seu filho falar em criar um jogo inteiro, ajude a escolher uma parte: o que o personagem faria primeiro? Quando ele define essa ação, vocês já têm algo para desenhar, testar e conversar. O restante da ideia pode vir depois.
+**O próximo passo:** Na próxima página, você vê os cursos como projetos de jogo, do primeiro até o Estúdio livre, como ele testa cada regra e os dois planos, mensal e anual.
 
-Esse começo também permite ouvir se ele gosta da parte de inventar e ajustar as regras. Jogar e criar trazem experiências diferentes; vale conhecer o que ele tem vontade de experimentar.
+**Botão:** Ver como ele tira os jogos do papel
 
-### Experimentem em casa: inventem uma regra de jogo
+### C. Desenho e personagens
 
-1. Numa folha, desenhem um caminho, a chegada e um obstáculo. Usem uma tampinha como personagem.
-2. Seu filho escolhe o que acontece ao encontrar o obstáculo: voltar uma casa, perder a vez ou tentar outro caminho.
-3. Joguem uma rodada. Depois, ele muda essa regra e vocês jogam de novo para comparar.
+**Título:** Os personagens que seu filho desenha já têm aparência e jeito. Falta o que eles fazem
 
-Pergunte qual versão ele prefere e por quê. A escolha dá um começo à conversa sobre construir jogos. Gostar de jogar e querer criar podem caminhar juntos; o convite ajuda a conhecer se essa segunda possibilidade interessa a ele.
+**Abertura pela cena de casa:** Você contou que ele desenha personagens o tempo todo, e que os desenhos ficam guardados no caderno.
 
-### Um lugar para seu filho aprender enquanto cria
+**Tese:** O desenho já tem muito do que um personagem precisa: aparência e jeito. O que ainda falta é ação: o que o personagem faz quando alguém aperta uma tecla, o que acontece quando encontra um obstáculo e aonde precisa chegar. É dessas respostas que nasce a história.
 
-A Comunidade dos Criadores é a plataforma por assinatura do Sistema Zero Kids para crianças e adolescentes de 9 a 14 anos. Aqui, seu filho acompanha aulas, cria jogos e pode preparar desenhos e personagens para usar nessas criações.
+**O que muda isso:** Num jogo, o personagem desenhado anda, pula e reage, e quem decide como é seu filho. A aparência vem do desenho, e a ação vem das regras que ele monta. O desenho deixa de ser só para olhar.
 
-A proposta reúne a orientação das aulas, as ferramentas para construir e um canal de mensagens para pedir ajuda. Seu filho encontra o próximo passo e os recursos para colocá-lo em prática dentro da mesma plataforma.
+**Onde isso acontece:** Os cursos começam com personagens preparados, para ele aprender primeiro as regras. Quando conclui o curso A Chave do Farol e publica o jogo, chega ao posto Construtor da Jornada do Criador, e o Pinta, o editor de desenhos da plataforma, fica livre junto com o Estúdio: ele desenha o personagem e traz o desenho para o jogo.
 
-Veja como esse começo se relaciona com o que você contou. As imagens a seguir são telas reais da plataforma e podem ser ampliadas.
+**Tela:** `integracao`
 
-### Ele monta uma regra e vê o que muda no jogo
+> “Uma coisa que eu queria dizer era sobre um jogo que eu mesmo criei. Não é do curso, mas eu usei conforme o que eu aprendi com a professora Helena. Eu criei todos os personagens. E esse aqui é o meu personagem, que no caso sou eu mesmo. Ainda estou desenvolvendo, mas está ficando bom.” Jeffrey · Aluno · Relato sobre criar jogos (`N18`)
 
-O Estúdio é a ferramenta de criação de jogos da Comunidade. Seu filho monta comandos em blocos, que representam ações e regras, e executa o projeto para ver o resultado. As atividades iniciais trazem elementos preparados e a orientação da aula. Ele começa com uma tarefa definida e pode entender uma parte de cada vez.
+**O próximo passo:** Na próxima página, você vê as primeiras aulas com personagens prontos, o Pinta por dentro, o caminho até ele usar os próprios personagens e os dois planos, mensal e anual.
 
-Nas duas telas abaixo, um experimento de uma aula mostra essa ideia. Com a reação desligada, tocar no arbusto deixa tudo como estava. Com a reação ligada, o arbusto some e o coelho aparece. Uma mudança na regra produz uma diferença que seu filho consegue observar e explicar.
+**Botão:** Ver o desenho dele entrando no jogo
 
-É essa ligação entre escolha e efeito que dá conteúdo à criação: ele pensa no que quer que aconteça, monta a regra e confere se funcionou. A aula oferece o passo; a tentativa mostra o que ele fez com aquela orientação.
+### D. Programação
 
-**Ver como meu filho pode começar a criar jogos**
+**Título:** A curiosidade do seu filho sobre como os programas funcionam pede alguma coisa que ele possa testar
 
-## Resultado C: Do desenho a uma ideia de jogo
+**Abertura pela cena de casa:** Você contou que ele quer saber como os jogos e os programas funcionam, e que você não sabe por onde começar a ensinar. A curiosidade dele é o melhor começo.
 
-### O que pesou na sugestão
+**Tese:** Só que uma explicação que começa pela lista de comandos faz a criança esperar um bom tempo até ver alguma coisa acontecer na tela, e a curiosidade não espera.
 
-Você quer dar mais espaço aos desenhos e personagens nas criações do seu filho. Uma possibilidade é partir de uma ideia que ele gosta de desenhar e imaginar o que ela faria num jogo. O personagem pode encontrar uma chave, abrir uma porta ou mudar de aparência. A criação ganha também uma ação para ele planejar.
+**O que muda isso:** Programar faz sentido quando cada comando tem um efeito que ele vê e testa. Num jogo, isso acontece o tempo todo: ele monta o comando, aperta para testar e vê o personagem andar, pular ou parar. Se não aconteceu o que esperava, a pergunta é dele: o que está trocado?
 
-### Dê espaço para ele contar a ideia por trás do desenho
+**Onde isso acontece:** Ele aprende a programar montando jogos. A aula mostra o passo ao lado do editor, e as falas do Zappy, o mascote das aulas, explicam o que fazer (o botão Ouvir lê em voz alta). Os cursos seguem esta ordem: Cadê Todo Mundo, A Chave do Farol, Nave Contra Asteroides, O Jogo do Meu Jeito e Corre, Dino. A Jornada do Criador mostra em que ponto ele está e o que vem depois.
 
-Escolha com seu filho um personagem ou cenário que ele goste de desenhar. Peça que conte o que acontece ali. Talvez a ideia seja uma cena, uma história ou algo que alguém possa controlar num jogo.
+**Tela:** `estudio`
 
-Essa conversa ajuda a perceber qual uso ele gostaria de dar à criação. A passagem para jogos faz sentido quando ele também se interessa por inventar o que acontece com os personagens.
+> “Tem um pouco da teoria, ele aprende, ele pratica teoria na aula e cria o joguinho. São aulas curtas que chegam no objetivo através da prática.” Daniel · Pai do Rafael · Teoria na prática (`N5`)
 
-### Experimentem em casa: um personagem em dois momentos
+**O próximo passo:** Na próxima página, você vê a sequência dos cursos, uma aula por dentro, a Jornada do Criador e os dois planos, mensal e anual.
 
-1. Seu filho escolhe um personagem que já desenhou ou faz um esboço simples.
-2. Em dois quadros no papel, mostra esse personagem antes e depois de alguma coisa acontecer. Por exemplo: encontra uma chave e abre uma porta.
-3. Pergunte o que o jogador faria para provocar essa mudança: apertar uma tecla, tocar num objeto ou fazer uma escolha.
+**Botão:** Ver o caminho para ele aprender a programar
 
-Conversem sobre a parte de que ele mais gostou: imaginar a aparência, a história ou a ação. A resposta ajuda a perceber se ele quer explorar também a interação. Não é necessário avaliar a qualidade do desenho.
+### F. Habilidades escolares
 
-### Um lugar para seu filho aprender enquanto cria
+**Título:** Seu filho aprendeu a repetir os passos. Falta ver o que os números fazem
 
-A Comunidade dos Criadores é a plataforma por assinatura do Sistema Zero Kids para crianças e adolescentes de 9 a 14 anos. Aqui, seu filho acompanha aulas, cria jogos e pode preparar desenhos e personagens para usar nessas criações.
+**Abertura pela cena de casa:** Você contou que, na lição, ele repete o exemplo e trava quando a pergunta muda
 
-A proposta reúne a orientação das aulas, as ferramentas para construir e um canal de mensagens para pedir ajuda. Seu filho encontra o próximo passo e os recursos para colocá-lo em prática dentro da mesma plataforma.
+**Tese:** Muitas vezes, a dificuldade na escola vem de aprender os passos antes de saber o que aqueles números representam. No caderno, o número não aparece fazendo nada: entra na conta, sai um resultado, e só a correção diz se deu certo. Por isso, uma resposta errada, sozinha, diz pouco sobre capacidade ou vontade.
 
-Veja como esse começo se relaciona com o que você contou. As imagens a seguir são telas reais da plataforma e podem ser ampliadas.
+**O que muda isso:** No jogo, o número faz alguma coisa. Um comando manda o personagem andar cinco passos. Seu filho troca para dez, aperta para testar e vê o personagem ir duas vezes mais longe. No caderno, cinco é só um número. No jogo que ele cria, cinco é a distância que o personagem anda.
 
-### O personagem que ele desenha pode entrar no jogo que ele cria
+**Onde isso acontece:** Ali, a aula liga o que ele viu no jogo ao que o comando significa. No jogo do jardim, do curso Cadê Todo Mundo, cada personagem encontrado soma um no contador, e é ele quem monta essa regra.
 
-O Pinta é o editor de desenhos da Comunidade. Nele, seu filho pode trabalhar as cores, as formas e os detalhes de uma criação digital. O Estúdio é a ferramenta em que ele monta as regras dos jogos. As duas ferramentas se conectam: uma arte preparada no Pinta pode ser trazida para um projeto no Estúdio.
+**Tela:** `contador`
 
-Nas telas abaixo, acompanhe o cavaleiro: primeiro ele aparece no Pinta, depois é escolhido na janela “Trazer do Pinta” e passa a fazer parte dos materiais do jogo. A partir daí, preparar uma ação para esse personagem envolve montar e testar as regras no Estúdio.
+> “Foi um curso que trouxe pro Rafa uma questão de se pensar, de se organizar, tanto na lógica, na matemática.” Daniel · Pai do Rafael · Organizar as ideias (`AV08`)
 
-Isso dá um uso concreto ao desenho e abre outra possibilidade para a criatividade dele. Vale mostrar esse caminho ao seu filho e ouvir se a parte de inventar a interação também o interessa. A entrada na Comunidade acontece por atividades guiadas de jogos; o uso livre do Pinta e do Estúdio é liberado depois de concluir o curso obrigatório e publicar o projeto exigido, no posto Construtor.
+**O próximo passo:** Na próxima página, você vê o jogo do jardim por dentro, onde aparecem leitura, matemática, ciências e resolver problemas, e os dois planos, mensal e anual.
 
-**Ver como os desenhos dele podem participar de jogos**
+**Botão:** Ver a escola dentro do jogo
 
-## Resultado D: Programação com um caminho para acompanhar
+## Tempo de tela (perfil A): a calculadora no argumento
 
-### O que pesou na sugestão
+**Título com "Boa parte":** Seu filho já faz alguma coisa no tempo de tela. Falta uma sequência para isso crescer
 
-Você procura uma forma de seu filho começar a aprender programação com uma sequência para seguir. Um começo concreto é montar uma instrução e observar o efeito dela: o que faz o personagem se mover, o que acontece ao apertar uma tecla e o que muda quando ele altera um comando. Assim, a explicação fica ligada a algo que ele consegue testar.
+**Frase da calculadora, depois da abertura** (`{horas}` vem do tempo de tela):
 
-### Um passo que ele faça, teste e consiga explicar
+- `quase_nada`: Você também contou que quase nada desse tempo, {horas} por ano, vira alguma coisa feita por ele.
+- `um_pouco`: Você também contou que só um pouco desse tempo, {horas} por ano, vira alguma coisa feita por ele.
+- `boa_parte`: Você também contou que uma boa parte desse tempo já vira alguma coisa feita por ele, então a vontade de fazer já existe.
+- `nao_sei`: Você não sabe dizer quanto desse tempo vira alguma coisa feita por ele, e uma pergunta simples responde: “O que você fez hoje que dá para me mostrar?”
 
-Ao conhecer uma atividade de programação, procure a ligação entre a explicação e o que seu filho faz com ela. Se ele monta um comando para mover um personagem, por exemplo, pode executar o projeto e conferir se o movimento aconteceu como imaginava.
+Depois da cena de casa: "Isso tem explicação."
 
-Você pode acompanhar pedindo que mostre essa relação. Uma mudança pequena, explicada por ele, já dá um assunto concreto para conversar sobre o que está entendendo.
+**Fim da tese:**
 
-### Experimentem em casa: instruções que outra pessoa consegue seguir
+- `padrao`: O que falta é um tempo de tela que peça alguma coisa dele além de escolher.
+- `boa_parte`: O que falta é uma sequência que peça um pouco mais dele a cada vez.
 
-1. Desenhem uma grade de três por três casas e marquem uma partida e uma chegada. Usem uma tampinha como personagem.
-2. Seu filho escreve instruções para levar a tampinha até a chegada, uma por linha: “uma casa para a direita”, por exemplo.
-3. Você segue as instruções na ordem. Se a tampinha parar em outro lugar, escolham uma instrução para mudar e tentem novamente.
+## Escola (perfil F)
 
-Depois, peça que ele mostre qual instrução mudou e o que aconteceu com a tampinha. Essa conversa ajuda a aproximar a palavra “programação” de uma ação que vocês acabaram de experimentar: escrever um passo, testar e ajustar.
+**Título pela parte da escola:**
 
-### Um lugar para seu filho aprender enquanto cria
+- `leitura`: Seu filho lê o enunciado, mas ainda não enxerga o que a pergunta pede
+- `ciencias`: Seu filho lê por que as coisas acontecem, mas ainda não viu acontecer
+- `problemas`: A tarefa chega inteira. Falta seu filho saber por onde começar
+- `vai_bem`: Seu filho vai bem na escola. Falta ver o que os números fazem fora do caderno
 
-A Comunidade dos Criadores é a plataforma por assinatura do Sistema Zero Kids para crianças e adolescentes de 9 a 14 anos. Aqui, seu filho acompanha aulas, cria jogos e pode preparar desenhos e personagens para usar nessas criações.
+Contas ou reforço sem a cena da lição: Nas contas, falta seu filho ver o que os números fazem
 
-A proposta reúne a orientação das aulas, as ferramentas para construir e um canal de mensagens para pedir ajuda. Seu filho encontra o próximo passo e os recursos para colocá-lo em prática dentro da mesma plataforma.
+**Depois da cena da lição, a frase continua:**
 
-Veja como esse começo se relaciona com o que você contou. As imagens a seguir são telas reais da plataforma e podem ser ampliadas.
+- `matematica`: , principalmente nas contas
+- `leitura`: , principalmente quando precisa entender o que o enunciado pede
+- `problemas`: , principalmente quando precisa começar e organizar uma tarefa de várias etapas
+- `ciencias`: , principalmente em ciências, quando precisa entender por que as coisas acontecem
+- `vai_bem`: , mas que, no geral, vai bem na escola
 
-### Cada etapa dá algo para seu filho fazer e explicar
+**Depois de outra abertura:**
 
-Na Comunidade, seu filho aprende a montar regras de jogos no Estúdio, a ferramenta de criação da plataforma. Ele acompanha a explicação, monta os comandos e executa o projeto. Se a ação saiu diferente do que esperava, pode comparar com o passo da aula e rever a montagem. Programar começa a fazer sentido pelo que ele vê acontecer.
+- `matematica`: Na escola, o que mais pesa é a parte das contas.
+- `leitura`: Na escola, o que mais pesa é entender o que o enunciado pede.
+- `problemas`: Na escola, o que mais pesa é começar e organizar uma tarefa de várias etapas.
+- `ciencias`: Na escola, o que mais pesa é entender por que as coisas acontecem, em ciências.
+- `vai_bem`: Hoje ele vai bem na escola.
 
-A Jornada do Criador organiza esse percurso e mostra quais etapas e liberações vêm a seguir. Isso ajuda seu filho a localizar o próximo passo e ajuda você a conhecer o caminho que ele está percorrendo. Nas telas abaixo, você pode ver a jornada e um exemplo de atividade.
+"Vai bem" com a preocupação da escola: Hoje ele vai bem na escola, e o que preocupa você é que uma dificuldade, quando aparecer, vire desânimo com os estudos.
 
-Para acompanhar, peça que ele mostre uma regra e conte o que acontece quando ela muda. Essa conversa permite conhecer o que ele entendeu por trás da atividade concluída. Ao olhar a jornada, confira também os postos marcados como em construção: eles indicam etapas futuras, não conteúdo disponível hoje.
+**Tese pela parte da escola** (sem entrada, vale a das contas):
 
-**Ver o caminho para meu filho começar a programar**
+- `leitura`: Muitas vezes, a dificuldade vem de ler o enunciado sem ver acontecendo o que a pergunta pede. No caderno, a pergunta é só texto: ele responde, e só a correção diz se entendeu. Por isso, uma resposta errada, sozinha, diz pouco sobre capacidade ou vontade.
+- `problemas`: Muitas vezes, a dificuldade vem de a tarefa chegar inteira, e ninguém mostrar por onde começar. No caderno, as etapas ficam escondidas dentro do enunciado, e só a correção diz onde a resposta se perdeu. Por isso, uma resposta errada, sozinha, diz pouco sobre capacidade ou vontade.
+- `ciencias`: Muitas vezes, a dificuldade vem de a explicação chegar pronta: no caderno, ele lê por que a coisa acontece, mas não vê acontecendo nem pode testar outra versão. Por isso, uma resposta errada, sozinha, diz pouco sobre capacidade ou vontade.
+- `vai_bem`: Quem vai bem na escola também aprende muita coisa como um passo a seguir. No caderno, o número não aparece fazendo nada: entra na conta, sai um resultado, e a correção diz se deu certo. Usar o que aprendeu numa coisa que ele quer ver funcionando mostra se ele entendeu de verdade.
 
-## Variações do convite para experimentar
+**O que muda isso, no lugar do parágrafo do número:**
 
-A escolha respeita esta precedência: desenho sem jogos quando o convite é visual; tentativa anterior de criar um jogo; exemplos para 12–14 anos; sugestão padrão. A idade muda a apresentação do convite, sem classificar conhecimento ou capacidade. Para desenho sem jogos, o resultado também adapta título, abertura e orientação; a diferença em relação ao produto fica explícita depois da apresentação.
+- `leitura`: No jogo, cada instrução funciona como um enunciado: quando o pedido é fazer um personagem aparecer depois de um toque, seu filho precisa descobrir o que fazer e quando. Se entendeu errado, o jogo mostra na hora, porque o personagem não aparece, e ele volta e lê de novo.
+- `ciencias`: No jogo, ele liga e desliga uma reação e compara as duas versões: ligada, o arbusto some e o personagem aparece; desligada, nada acontece. Mudar uma coisa por vez e observar o efeito é o jeito de investigar que as aulas de ciências pedem.
+- `problemas`: Um jogo tem personagem, obstáculos e pontos, e ninguém monta tudo de uma vez. Primeiro seu filho faz o personagem andar e testa; só então acrescenta o obstáculo e, depois, os pontos. É a organização que um trabalho escolar de várias etapas pede, com uma diferença: cada etapa mostra na hora se funcionou.
 
-### Adolescente, objetivo A
+**O que muda isso, somado ao parágrafo do número:**
 
-#### Para conversar em casa: uma ideia que ele gostaria de criar
+- `matematica`: E dá para treinar a previsão: antes de mudar quanto vale um ponto ou quantas vidas o personagem tem, ele diz o que vai acontecer no placar, depois joga e confere se acertou.
+- `vai_bem`: E a conta da escola ganha um uso: quanto vale cada estrela, quantos passos o personagem anda, quantas vidas sobram.
+- `reforco`: E a conta da escola ganha um uso: quanto vale cada estrela, quantos passos o personagem anda, quantas vidas sobram.
 
-1. Peça que seu filho escolha algo que conhece bem: um jogo, um personagem ou um assunto que acompanha em vídeos.
-2. Numa folha, ele esboça uma criação a partir dessa referência. Pode ser uma cena de jogo ou um personagem com uma ação, como abrir uma passagem ao encontrar uma chave.
-3. Ele mostra o esboço e escolhe uma parte que teria vontade de aprender a construir no computador.
+**Ciências:** tela `regra` e "Onde isso acontece": Ali, a aula liga o que ele viu no jogo ao que a regra faz. No experimento do jardim, do curso Cadê Todo Mundo, ele liga e desliga a reação ao toque e compara o que acontece em cada versão.
 
-Pergunte o que ele precisaria descobrir para fazer essa parte funcionar. A ideia é sair de um assunto que já o interessa e chegar a uma pergunta que ele queira investigar. Se a proposta não o atrair, ouça qual criação faria mais sentido para ele.
+## Frases montadas pelas respostas
 
-### Adolescente, objetivo B
+**Aberturas quando o perfil veio de outras respostas:**
 
-#### Para experimentar: mudar uma regra de um jogo que ele conhece
+- Pela preocupação: Você contou que o que mais preocupa é ….
+- Pela frase-síntese: Você disse que o que mais quer para ele é isto: ….
+- Pela cena desejada: Você contou que a cena que quer ver primeiro é esta: ….
 
-1. Seu filho escolhe uma situação de um jogo conhecido e explica como ela funciona.
-2. Ele muda uma única regra no papel. Por exemplo: o personagem só pode abrir uma porta depois de encontrar dois objetos.
-3. Vocês imaginam duas jogadas: uma em que ele já encontrou os objetos e outra em que ainda falta um. Seu filho descreve o que deve acontecer em cada caso.
+**Cena desejada, em "O que muda isso":**
 
-Peça que ele conte por que escolheu essa mudança e o que ela acrescentaria ao jogo. Essa é uma parte concreta do trabalho de criar: decidir uma regra e prever como o jogo deve responder.
+- `A`: E a cena que você quer ver primeiro, ele chamando você para ver uma coisa que ele mesmo fez, é como termina um jogo criado: com alguém da família jogando.
+- `B`: E a cena que você quer ver primeiro, um amigo jogando um jogo que ele inventou, é onde isso termina: um jogo que funciona na mão de outra pessoa.
+- `C`: E a cena que você quer ver primeiro, o personagem que ele desenhou se mexendo na tela, é o encontro do desenho com as regras do jogo.
+- `D`: E a cena que você quer ver primeiro, ele explicando como um programa funciona por dentro, nasce de cada teste: quando o jogo não faz o que ele esperava, ele vai atrás do porquê.
+- `F`: E a cena que você quer ver primeiro, ele explicando uma conta com as próprias palavras, cabe numa pergunta que você pode fazer sempre que ele mostrar um jogo: “Me mostra o que faz o placar mudar.”
 
-### Adolescente, objetivo C
+**Segundo perfil, em "O que muda isso":**
 
-#### Para experimentar: um personagem em duas versões
+- `A`: O tempo de tela também apareceu nas suas respostas: criando, esse tempo passa a ter decisão e, no fim, alguma coisa que é dele.
+- `B`: Criar jogos também apareceu nas suas respostas: criando, a ideia vira um jogo que outra pessoa consegue jogar.
+- `C`: Os desenhos também apareceram nas suas respostas: num jogo, o personagem desenhado ganha movimento.
+- `D`: A curiosidade sobre como os programas funcionam também apareceu nas suas respostas: num jogo, cada comando tem um efeito que ele testa.
+- `F`: A escola também apareceu nas suas respostas: num jogo, a conta ganha um uso que ele vê na tela.
 
-1. Seu filho escolhe um personagem próprio ou faz um esboço de uma ideia nova.
-2. Ele desenha duas versões para situações diferentes. Por exemplo: preparado para explorar uma floresta e depois de encontrar um objeto misterioso.
-3. Ele explica o que mudou na aparência e imagina uma ação que provocaria essa mudança se o personagem estivesse num jogo.
+**Quando trava, em "Onde isso acontece":**
 
-Conversem sobre a parte que mais deu vontade de desenvolver: o visual, a história ou a ação. Deixe que ele mostre o motivo das escolhas. A resposta ajuda a descobrir se também gostaria de construir a interação.
+- `larga`: Você contou que, quando algo não dá certo, ele larga e vai fazer outra coisa. No jogo, o erro aparece na hora, na regra que ele acabou de montar, e a plataforma mostra onde olhar: nas partes que têm verificação, Verificar esta parte diz o que já está certo e o que falta. Em vez de largar, ele fica sabendo onde mexer.
+- `chama`: Você contou que, quando algo não dá certo, ele chama alguém. Aqui, a primeira ajuda está na tela: ele volta ao trecho do vídeo, ouve de novo a fala {zappy} e, nas partes que têm verificação, vê o que falta. Aos poucos ele resolve sozinho e passa a chamar você para ver o jogo funcionando.
+- `tenta`: Você contou que ele tenta de outro jeito até dar certo. É exatamente o que um jogo pede: mudar uma parte, testar e comparar. A aula ensina a mudar uma coisa por vez, para ele saber o que resolveu.
+- `procura`: Você contou que ele procura um vídeo ou um exemplo. Aqui, o vídeo da aula fica ao lado do editor: ele volta ao trecho, compara com a própria montagem e segue.
+- `nao_reparou`: Você ainda não reparou o que ele faz quando algo não dá certo, e a primeira aula é uma boa hora para ver: sente perto e observe. A faixa O que falta para seguir mostra o próximo passo, e você percebe na hora se ele segue sozinho ou se chama você.
 
-### Adolescente, objetivo D
+`{zappy}` vira "do Zappy, o mascote das aulas," (no perfil D, que já apresentou o Zappy, "do Zappy").
 
-#### Para experimentar: planejar uma regra antes de programar
+**O que precisa estar garantido, em "O próximo passo":**
 
-1. Seu filho escolhe uma ação simples, como abrir uma porta quando o personagem encontra uma chave.
-2. Ele escreve o que precisa acontecer primeiro e qual deve ser a resposta em cada situação: com a chave, sem a chave ou depois de a porta já estar aberta.
-3. Você propõe uma dessas situações, e ele confere se as instruções escritas explicam o que fazer. Se faltar um caso, ele ajusta a regra.
+- `sozinho`: Você disse que ele precisa conseguir aprender sozinho, porque você não entende do assunto. A explicação está nas aulas, com o passo ao lado do editor. O seu papel é combinar o horário e pedir para ver o jogo.
+- `recorrer`: Você disse que ele precisa ter a quem recorrer quando travar. Primeiro vem o que está na tela: ele volta ao trecho do vídeo, aperta Verificar esta parte nas partes que têm verificação, usa Uma pista nos experimentos e abre o Como fazer, que tem tutoriais por assunto. Se a dúvida continuar, o botão Preciso de ajuda manda a pergunta para a nossa equipe, e a resposta chega por escrito nos Recados.
+- `acompanhar`: Você disse que quer acompanhar o que ele aprende. Na área dos pais, cada filho tem um painel com os cursos, as atividades, as entregas e o ponto da Jornada. E a conversa que mais mostra o que ele aprendeu é a mais simples: “Me mostra o que você mudou.”
+- `tempo_tela`: Você disse que precisa caber no tempo de tela que vocês já combinaram. As aulas são gravadas: ele pausa hoje e continua amanhã do mesmo ponto, e o aviso Guardado na sua conta confirma que o projeto ficou salvo. Vocês continuam decidindo os dias e a duração.
+- `orcamento`: Você disse que o valor precisa caber no orçamento. Os dois planos têm até dois perfis de criança, cada um com o próprio progresso, e incluem os cursos publicados, os que forem lançados e as ferramentas que a Jornada vai abrindo. E, se em sete dias vocês acharem que não é para ele, devolvemos o valor integral.
 
-Pergunte o que ele precisou acrescentar depois do teste. Assim, vocês conversam sobre uma parte da programação antes de abrir um editor: organizar o que deve acontecer e conferir se a regra cobre as situações do projeto.
+**Segundo relato, pela necessidade:**
 
-### Partam de uma ideia que ele já tentou construir
+- `sozinho`: “No começo das aulas, eu e a Ana acompanhava muito de perto. Com o decorrer do tempo, ele já ficou um pouco mais independente. Hoje eu posso até estar do lado, eu já não entendo mais nada, ele segue sozinho.” Daniel · Pai do Rafael · Seguir sozinho (`N8`)
+- `recorrer`: “Achei que ia ser difícil, mas fui montando os bloquinhos e deu certo. No último dia chamei a minha mãe pra ver o meu jogo.” Débora · Aluna · Relato sobre o Desafio do Primeiro Jogo (`AV03`)
+- `acompanhar`: “Ele fica mais assim, olhando o curso dele, mexendo no curso dele, ele quase não me chama. Eu pergunto ele todo dia à tarde quando eu chego do serviço, ele me mostra os jogos que ele criou.” Harle · Pai do Jeffrey · Me mostra quando chego (`N15`)
+- `tempo_tela`: “Surpreendentemente para nós, ele não ficou com maior tempo de tela. Ele ficou, às vezes, com o mesmo tempo, mas trocando a programação ao invés de só brincar.” Daniel · Pai do Rafael · O mesmo tempo de tela (`N2`)
+- `orcamento`: “A gente pensou aqui em casa que é como se fosse um investimento para crianças. Uma criança fazer uma natação, fazer inglês, isso ele está aprendendo um negócio agora, que é a programação.” Daniel · Pai do Rafael · Como uma atividade extra (`N6`)
 
-1. Peça que seu filho mostre uma tentativa de jogo que já fez. Se o projeto não estiver disponível, ele pode desenhar como a ideia deveria funcionar.
-2. Ele escolhe uma ação que gostaria de mudar ou entender melhor: o movimento, a reação a um toque ou a chegada a um objetivo.
-3. Peça que conte o que espera que aconteça e o que já tentou. Se puder testar no projeto, comparem o resultado; caso contrário, registrem a regra no papel.
+**Se for da mesma pessoa do relato do perfil, entra outra:**
 
-Essa conversa valoriza o que ele já experimentou e ajuda a localizar uma dúvida de verdade. Você pode perguntar: “Qual parte você gostaria de aprender a fazer agora?”. Ter tentado criar um jogo dá um ponto de partida para a conversa; a orientação das primeiras aulas continua importante.
+- `sozinho`: “No início eu acompanhei mais, agora eu acompanho menos. Ele faz o curso com total independência no momento.” Flávia · Mãe do Fernando · Fazer por conta própria (`AV10`)
+- `tempo_tela`: “O Fernando passava muito tempo nas telas, mas ele mais assistia, não desenvolvia nada. O curso incentivou ele a desenvolver, a programar, não a jogar.” Flávia · Mãe do Fernando · Usar a tela para criar (`AV12`)
+- `orcamento`: “Os cursos gratuitos eu até pesquisei, mas é pouquinha coisa, é uma aulazinha experimental, aí não dá pra você aprofundar mais. Agora ele aprofundou nesse daqui.” Harle · Pai do Jeffrey · Ir mais fundo (`N14`)
 
-### Para experimentar: uma nova versão de um desenho dele
+## Antes de seguir
 
-1. Seu filho escolhe um desenho que já fez ou esboça uma ideia que esteja com vontade de desenhar.
-2. Ele escolhe um detalhe para explorar: a expressão do personagem, as cores ou o lugar em que a cena acontece.
-3. Depois de fazer uma nova versão, ele coloca as duas lado a lado e conta qual prefere e o que quis mudar.
+- **Ele vai precisar de um computador** (`computador` · `celular_tablet`): Você contou que, por enquanto, ele só tem celular ou tablet. Para criar na plataforma, ele precisa de um computador com internet, mouse e teclado, que pode ser o da família. Vale organizar isso antes de assinar.
 
-Pergunte qual outra mudança ele teria vontade de experimentar. Vocês podem conhecer o interesse em continuar desenhando pelo que ele escolhe fazer e explicar, respeitando a procura de vocês por uma atividade de desenho.
+- **Um horário no computador da casa** (`computador` · `organizar`): Como as aulas são gravadas, basta combinar um horário em que o computador esteja livre.
 
-## Segundo objetivo, quando houver prioridade definida
+- **Confira o computador** (`computador` · `verificar`): Ele vai precisar de um computador com internet, mouse e teclado, que pode ser o da família.
 
-### Objetivo complementar A
+- **As aulas são gravadas** (`formato` · `ao_vivo`): Você disse que precisa de um professor ao vivo acompanhando. Na Comunidade, as aulas são gravadas e a plataforma orienta cada passo. As dúvidas vão por escrito para a equipe, e não há professor numa chamada. Se o ao vivo é indispensável, a Comunidade não atende esse ponto.
 
-Você também quer incluir aprendizagem no tempo de tela que já permite. Ao experimentar a ideia, peça que ele mostre o que fez e explique uma escolha. Essa conversa pode acompanhar o projeto dentro dos horários que vocês combinarem.
+- **A ferramenta é o Estúdio** (`ferramenta` · `roblox`): Você disse que precisa ser no Roblox. A Comunidade ensina no Estúdio, a ferramenta de criação da própria plataforma, e não tem curso de Roblox nem de Minecraft. Se a vontade dele é essa ferramenta, converse com ele antes de assinar.
 
-### Objetivo complementar B
+- **A ferramenta é o Estúdio** (`ferramenta` · `minecraft`): Você disse que precisa ser no Minecraft. A Comunidade ensina no Estúdio, a ferramenta de criação da própria plataforma, e não tem curso de Roblox nem de Minecraft. Se a vontade dele é essa ferramenta, converse com ele antes de assinar.
 
-Criar os próprios jogos também é importante para você. Esse interesse pode aparecer numa primeira regra: imaginar o que o jogador fará e decidir o que deve acontecer em resposta. Vale ouvir qual ação seu filho teria vontade de inventar.
+- **A ferramenta é o Estúdio** (`ferramenta` · `outra`): A Comunidade ensina no Estúdio, a ferramenta da própria plataforma. Confira se é essa a vontade dele antes de assinar.
 
-### Objetivo complementar C
+- **Converse sobre a ferramenta** (`ferramenta` · `conversar`): Mostre a ele as telas da próxima página e pergunte se a vontade é criar jogos ou usar uma ferramenta específica.
 
-Você também quer dar espaço ao desenho. Um personagem que ele gosta de desenhar pode entrar na conversa: que aparência teria e o que faria na atividade? Assim, a expressão visual participa da ideia desde o começo.
+- **O desenho entra nos jogos** (`desenho` · `so_desenho`): Você disse que quer que ele desenhe melhor, com traço e técnica. Na Comunidade, o desenho entra nos jogos: ele prepara os personagens no Pinta e usa no Estúdio, e as aulas ensinam a criar o jogo. Para aprender técnica de desenho, essa não é a escolha certa.
 
-### Objetivo complementar D
+- **Para matéria atrasada, o reforço** (`reforco` · `reforco`): Você contou que ele precisa recuperar matéria atrasada. Para isso, um professor de reforço, que retoma o conteúdo da série, é a escolha certa. A Comunidade não segue a série, mas pode entrar ao lado do reforço, como a atividade em que as contas têm um efeito que ele vê.
 
-Você também procura uma sequência para ele começar a aprender programação. Ao conhecer uma atividade, observe como ela passa da explicação para uma tarefa e para o teste do resultado. Isso ajuda a acompanhar o que ele está praticando em cada etapa.
+Com uma condição não atendida, o botão vira "Ver como funciona e conferir os requisitos".
 
-## Módulos condicionais
+## O quadro "O que você contou"
 
-### Contexto: o que a criança já expressou
+**Idade:**
 
-Como ele já falou em fazer um jogo próprio, você pode partir de uma ideia dele: peça que conte o que o jogador faria primeiro. Isso ajuda a escolher uma pequena ação para experimentar.
+- `filho_9_11`: Seu filho tem entre 9 e 11 anos
+- `filha_9_11`: Seu filho tem entre 9 e 11 anos
+- `filho_12_14`: Seu filho tem entre 12 e 14 anos
+- `filha_12_14`: Seu filho tem entre 12 e 14 anos
 
-Ele já falou em criar desenhos ou personagens. Convide-o a mostrar uma ideia que tenha em mente e contar o que mais gostaria de desenvolver nela: a aparência, a história ou alguma ação.
+**Computador:**
 
-Ele já falou em entender programação. Você pode perguntar o que gostaria de fazer funcionar no computador. Uma ação escolhida por ele dá um exemplo concreto para começar a conhecer os comandos.
+- `sim`:  e pode usar o computador da casa.
+- `organizar`: . Vocês têm computador em casa, e você precisa organizar os horários.
+- `celular_tablet`: . Por enquanto, ele só tem celular ou tablet.
+- `verificar`: . Você ainda vai ver se ele pode usar um computador em casa.
 
-Ele também demonstrou vontade de fazer outro tipo de criação. Peça que descreva a ideia com as palavras dele, para vocês considerarem esse interesse ao escolher uma atividade.
+**Tempo de tela:**
 
-### Contexto: jogos e desenho
+- `menos_1h`: menos de 1 hora
+- `1_2h`: de 1 a 2 horas
+- `2_4h`: de 2 a 4 horas
+- `mais_4h`: mais de 4 horas
 
-Você contou que ele já falou em criar jogos e desenhos. Um personagem próprio pode ligar esses interesses: ele escolhe a aparência e imagina uma ação para colocar no jogo.
+**Calculadora:**
 
-### Contexto: jogos e programação
+- `quase_nada`: quase nada desse tempo vira alguma coisa que ele mesmo fez
+- `um_pouco`: um pouco desse tempo vira alguma coisa que ele mesmo fez
+- `boa_parte`: uma boa parte desse tempo já vira alguma coisa que ele mesmo fez
+- `nao_sei`: você não sabe dizer quanto desse tempo vira alguma coisa que ele mesmo fez
 
-Você contou que ele já falou em criar jogos e entender programação. Uma regra de jogo pode ligar essas vontades: pensar no que deve acontecer e investigar como construir esse efeito.
+**Cena de casa:**
 
-### Contexto: desenho e programação
+- `A`: ele passa horas em jogos e vídeos, e no fim do dia não sobra nada que ele tenha feito
+- `B`: ele inventa jogos e regras o tempo todo, mas as ideias ficam na conversa ou no papel
+- `C`: ele desenha personagens o tempo todo, e os desenhos ficam guardados no caderno
+- `D`: ele quer saber como os jogos e os programas funcionam, e você não sabe por onde começar a ensinar
+- `F`: na lição, ele repete o exemplo, mas trava quando a pergunta muda
 
-Você contou que ele já falou em desenhar e entender programação. Imaginar uma interação para um personagem oferece uma forma de conversar sobre os dois interesses.
+**Quando trava:**
 
-### Contexto: os três interesses
+- `larga`: Quando algo não dá certo num jogo ou num aplicativo, ele larga e vai fazer outra coisa.
+- `chama`: Quando algo não dá certo num jogo ou num aplicativo, ele chama alguém para resolver.
+- `tenta`: Quando algo não dá certo num jogo ou num aplicativo, ele tenta de outro jeito até dar certo.
+- `procura`: Quando algo não dá certo num jogo ou num aplicativo, ele procura um vídeo ou um exemplo.
+- `nao_reparou`: Você ainda não reparou o que ele faz quando algo não dá certo num jogo ou num aplicativo.
 
-Você contou que ele já falou em jogos, desenho e programação. Uma criação pode reunir essas possibilidades. Para começar, escolham juntos uma parte pequena: a aparência do personagem, uma ação ou a regra que faz essa ação acontecer.
+**Preocupação:**
 
-### Contexto: ainda não expressou vontade de criar
+- `A`: que a tela continue sendo só para assistir e jogar
+- `B`: que a vontade de criar jogos passe antes de ele fazer o primeiro
+- `C`: que os desenhos continuem guardados na gaveta
+- `D`: que a curiosidade dele sobre os programas passe antes de ele entender como funcionam
+- `F`: que a dificuldade na escola vire desânimo com os estudos
 
-Ele ainda não falou em criar algo assim. Por isso, vale apresentar a ideia como um convite: “Você teria vontade de inventar uma parte desse jogo ou desenhar um personagem seu?”. Ouça também se ele preferir outro tipo de criação. O que você procura para ele pode abrir a conversa, e a resposta dele ajuda a escolher como continuar.
+**Cena desejada:**
 
-### Contexto: ainda não sabe
+- `A`: ele chamando você para ver uma coisa que ele mesmo fez no computador
+- `B`: um amigo jogando um jogo que ele inventou
+- `C`: o personagem que ele desenhou se mexendo na tela
+- `D`: ele explicando para você como um programa funciona por dentro
+- `F`: ele explicando uma conta com as próprias palavras
 
-Para conhecer o que ele gostaria de criar, você pode mostrar as possibilidades e ouvir qual dá vontade de experimentar. A ideia abaixo oferece um começo para essa conversa. Se ele propuser outro tema, use a sugestão dele como referência.
+**O que precisa estar garantido:**
 
-### Contexto: já tentou criar um jogo
+- `sozinho`: Para dar certo, ele precisa conseguir aprender sozinho, porque você não entende do assunto.
+- `recorrer`: Para dar certo, ele precisa ter a quem recorrer quando travar.
+- `acompanhar`: Para dar certo, você quer acompanhar o que ele aprende.
+- `tempo_tela`: Para dar certo, precisa caber no tempo de tela que vocês já combinaram.
+- `orcamento`: Para dar certo, o valor precisa caber no orçamento da família.
+- `ao_vivo`: Para dar certo, você precisa de um professor ao vivo acompanhando.
 
-Você observou tentativas de criar ou modificar um jogo. Se ele já tiver um projeto, pode usá-lo como assunto: peça que escolha uma regra que gostaria de mudar e explique o efeito esperado. Isso evita começar de uma tarefa que ele já conhece.
+**Frase-síntese:**
 
-### Dois objetivos com o mesmo peso
+- `A`: que o tempo de tela deixe alguma coisa feita por ele
+- `B`: que as ideias de jogo dele saiam do papel
+- `C`: que os personagens que ele desenha ganhem movimento e história
+- `D`: que ele entenda como os programas funcionam e aprenda a programar
+- `F`: que ele entenda o que estuda e use isso na prática
 
-#### Um começo que reúna os dois objetivos
+**Pergunta extra `ferramenta`:**
 
-Você indicou dois objetivos e preferiu mantê-los com o mesmo peso. A sugestão combina essas prioridades numa primeira experiência. Depois, vocês podem conhecer o que deu vontade de continuar.
+- `roblox`: Para criar jogos, ele precisa do Roblox.
+- `minecraft`: Para criar jogos, ele precisa do Minecraft.
+- `outra`: Para criar jogos, ele precisa de uma ferramenta específica.
+- `pode_outra`: Para criar jogos, qualquer ferramenta serve, se ele gostar.
+- `conversar`: Você ainda vai conversar com ele sobre a ferramenta para criar jogos.
 
-#### Aprendizagem no tempo de tela e criação de jogos
+**Pergunta extra `desenho`:**
 
-Inventar uma regra de jogo pode reunir as duas procuras. Seu filho experimenta uma ideia própria e você ganha um assunto para acompanhar: o que ele mudou e o que aconteceu depois.
+- `movimento`: Para os desenhos, você quer que os personagens façam coisas: andem, pulem, reajam.
+- `so_desenho`: Para os desenhos, você quer que ele desenhe melhor, com traço e técnica.
+- `nao_sei`: Você ainda não sabe o que quer para os desenhos dele.
 
-#### Aprendizagem no tempo de tela e desenho
+**Pergunta extra `escola`:**
 
-Um personagem em dois momentos permite começar pelo desenho e conversar sobre uma escolha. Vocês podem conhecer o interesse em levar essa ideia para uma atividade digital dentro do tempo de tela combinado.
+- `leitura`: Na escola, ele trava mais em entender o que o enunciado pede.
+- `matematica`: Na escola, ele trava mais nas contas.
+- `problemas`: Na escola, ele trava mais em começar e organizar uma tarefa de várias etapas.
+- `ciencias`: Na escola, ele trava mais em entender por que as coisas acontecem, em ciências.
+- `vai_bem`: Na escola, ele vai bem.
+- `reforco`: Ele precisa recuperar matéria atrasada da série.
 
-#### Aprendizagem no tempo de tela e formação tecnológica
+## Exemplos montados
 
-Uma sequência de instruções dá um primeiro assunto para acompanhar o aprendizado. Depois da tentativa, conversem sobre a mudança que fez o personagem chegar ao lugar esperado.
+### Perfil F, para uma filha que trava nas contas
 
-#### Criação de jogos e desenho
+_Pontos: A 0 · B 0 · C 0 · D 0 · F 10. Perfil F._
 
-Um personagem em dois momentos liga a criação visual à ideia de interação. Vocês podem começar pela aparência e conversar sobre o que o jogador faria para provocar uma mudança.
+#### Sua filha aprendeu a repetir os passos. Falta ver o que os números fazem
 
-#### Criação de jogos e formação tecnológica
+**O que você contou**
 
-Inventar e alterar uma regra permite conversar sobre a ideia do jogo e sobre seu funcionamento. Na experiência digital, vale conhecer tanto o projeto quanto a sequência de orientação para construí-lo.
+- Sua filha tem entre 9 e 11 anos e pode usar o computador da casa.
+- Ela passa de 2 a 4 horas por dia em jogos e vídeos. Isso dá entre 730 e 1.460 horas por ano, e quase nada desse tempo vira alguma coisa que ela mesma fez.
+- A cena mais comum aí em casa: na lição, ela repete o exemplo, mas trava quando a pergunta muda.
+- Quando algo não dá certo num jogo ou num aplicativo, ela larga e vai fazer outra coisa.
+- O que mais preocupa você: que a dificuldade na escola vire desânimo com os estudos.
+- A cena que você quer ver primeiro: ela explicando uma conta com as próprias palavras.
+- Para dar certo, você quer acompanhar o que ela aprende.
+- O que você quer para ela: que ela entenda o que estuda e use isso na prática.
+- Na escola, ela trava mais nas contas.
 
-#### Desenho e formação tecnológica
+**Por que isso acontece**
 
-Um personagem em dois momentos aproxima uma escolha visual de uma sequência de ações. A conversa ajuda a conhecer o interesse em programar a interação, além de preparar a imagem.
+Você contou que, na lição, ela repete o exemplo e trava quando a pergunta muda, principalmente nas contas.
 
-**Conhecer a proposta completa da Comunidade**
+Muitas vezes, a dificuldade na escola vem de aprender os passos antes de saber o que aqueles números representam. No caderno, o número não aparece fazendo nada: entra na conta, sai um resultado, e só a correção diz se deu certo. Por isso, uma resposta errada, sozinha, diz pouco sobre capacidade ou vontade.
 
-### Procura ainda aberta
+**O que muda isso**
 
-#### Primeiro, conheçam o que dá vontade de criar
+No jogo, o número faz alguma coisa. Um comando manda o personagem andar cinco passos. Sua filha troca para dez, aperta para testar e vê o personagem ir duas vezes mais longe. No caderno, cinco é só um número. No jogo que ela cria, cinco é a distância que o personagem anda. E dá para treinar a previsão: antes de mudar quanto vale um ponto ou quantas vidas o personagem tem, ela diz o que vai acontecer no placar, depois joga e confere se acertou. E a cena que você quer ver primeiro, ela explicando uma conta com as próprias palavras, cabe numa pergunta que você pode fazer sempre que ela mostrar um jogo: “Me mostra o que faz o placar mudar.”
 
-Você quer conhecer as possibilidades antes de escolher uma atividade. Podemos começar por uma conversa em casa: entre inventar um jogo, desenhar um personagem e descobrir como uma regra funciona, o que daria vontade de experimentar?
+**Onde isso acontece**
 
-Apresente essas ideias ao seu filho e peça que escolha uma parte que gostaria de fazer. Pode ser desenhar a cena de um jogo, inventar uma ação para um personagem ou explicar como seria uma regra. Uma folha já permite registrar essa primeira ideia.
+A Comunidade dos Criadores é a plataforma do Sistema Zero Kids em que crianças de 9 a 14 anos aprendem criando jogos. Ali, a aula liga o que ela viu no jogo ao que o comando significa. No jogo do jardim, do curso Cadê Todo Mundo, cada personagem encontrado soma um no contador, e é ela quem monta essa regra.
 
-Depois, pergunte o que ele teria vontade de aprender para continuar. Se nenhuma dessas possibilidades chamar a atenção, ouça qual tema ele escolheria. Você já sai dessa conversa com uma referência mais concreta para procurar a atividade.
+Você contou que, quando algo não dá certo, ela larga e vai fazer outra coisa. No jogo, o erro aparece na hora, na regra que ela acabou de montar, e a plataforma mostra onde olhar: nas partes que têm verificação, Verificar esta parte diz o que já está certo e o que falta. Em vez de largar, ela fica sabendo onde mexer.
 
-**Conhecer a proposta da Comunidade**
+_(tela `contador`)_
 
-### Quando a procura é outra
+> “Foi um curso que trouxe pro Rafa uma questão de se pensar, de se organizar, tanto na lógica, na matemática.” Daniel · Pai do Rafael · Organizar as ideias (`AV08`)
 
-#### Vale começar pelo que vocês procuram
+> “Ele fica mais assim, olhando o curso dele, mexendo no curso dele, ele quase não me chama. Eu pergunto ele todo dia à tarde quando eu chego do serviço, ele me mostra os jogos que ele criou.” Harle · Pai do Jeffrey · Me mostra quando chego (`N15`)
 
-O que você procura para seu filho ficou fora das opções apresentadas. Então vale começar dando nome a esse desejo, antes de tentar encaixar a família numa das sugestões do quiz.
+**O próximo passo**
 
-Anote uma cena que você gostaria de ver acontecendo: seu filho mostrando uma criação, explicando algo que aprendeu ou se dedicando a uma atividade que escolheu. Depois, pergunte o que ele gostaria de experimentar e compare as duas ideias.
+Você disse que quer acompanhar o que ela aprende. Na área dos pais, cada filho tem um painel com os cursos, as atividades, as entregas e o ponto da Jornada. E a conversa que mais mostra o que ela aprendeu é a mais simples: “Me mostra o que você mudou.”
 
-A partir daí, vocês podem escolher uma pergunta para levar a quem oferece a atividade: o que ele vai fazer, que orientação terá ou como você poderá acompanhar. Essas respostas ajudam a comparar as opções com o que importa para vocês.
+Na próxima página, você vê o jogo do jardim por dentro, onde aparecem leitura, matemática, ciências e resolver problemas, e os dois planos, mensal e anual.
 
-**Conhecer a proposta e conferir o que ela oferece**
+[Ver a escola dentro do jogo](/kids/comunidade-dos-criadores/oferta/habilidades-escolares)
 
-### Apoio: costuma rever uma explicação
+### Perfil A com a programação em segundo lugar e duas condições (só celular, professor ao vivo)
 
-#### A explicação fica disponível para a próxima tentativa
+_Pontos: A 6 · B 0 · C 0 · D 4 · F 0. Perfil A, segundo D._
 
-Você contou que seu filho costuma voltar a uma explicação quando encontra dificuldade. Na Comunidade, ele pode localizar o trecho da aula, pausar e comparar o exemplo com o que montou. Por exemplo: conferir onde colocou um bloco antes de executar o jogo outra vez. Rever ganha uma finalidade concreta: descobrir qual parte da montagem precisa de atenção.
+#### No tempo de tela do seu filho, quem decide quase tudo é quem fez o jogo ou o vídeo
 
-### Apoio: costuma procurar uma pessoa
+**O que você contou**
 
-#### Seu filho tem um caminho para pedir ajuda
+- Seu filho tem entre 12 e 14 anos. Por enquanto, ele só tem celular ou tablet.
+- Ele passa mais de 4 horas por dia em jogos e vídeos. Isso dá mais de 1.460 horas por ano, e um pouco desse tempo vira alguma coisa que ele mesmo fez.
+- A cena mais comum aí em casa: ele passa horas em jogos e vídeos, e no fim do dia não sobra nada que ele tenha feito.
+- Quando algo não dá certo num jogo ou num aplicativo, ele chama alguém para resolver.
+- O que mais preocupa você: que a curiosidade dele sobre os programas passe antes de ele entender como funcionam.
+- A cena que você quer ver primeiro: ele explicando para você como um programa funciona por dentro.
+- Para dar certo, você precisa de um professor ao vivo acompanhando.
+- O que você quer para ele: que o tempo de tela deixe alguma coisa feita por ele.
 
-Quando seu filho chama alguém porque travou, ajuda ter um próximo passo combinado. Nas primeiras aulas, sente com ele para encontrar o botão de ajuda e escrever uma pergunta. Você pode pedir que mostre onde parou e o que esperava que acontecesse.
+**Por que isso acontece**
 
-Seu papel nessa hora pode ser ajudá-lo a contar a dúvida. A orientação sobre a atividade segue pelo canal da plataforma. Assim, vocês sabem a quem recorrer quando a dificuldade passa do que conseguem esclarecer juntos.
+Você contou que ele passa horas em jogos e vídeos e que, no fim do dia, não sobra nada que ele tenha feito. Você também contou que só um pouco desse tempo, mais de 1.460 horas por ano, vira alguma coisa feita por ele. Isso tem explicação.
 
-### Apoio: costuma experimentar alternativas
+Nos jogos e nos vídeos prontos, alguém já tomou todas as decisões. As regras, os personagens e o que acontece em cada toque vieram prontos, e ele só escolhe o que vem em seguida. O interesse está lá. O que falta é um tempo de tela que peça alguma coisa dele além de escolher.
 
-#### As tentativas podem ajudar seu filho a encontrar a dúvida
+**O que muda isso**
 
-Você contou que seu filho costuma experimentar alternativas. No Estúdio, ele pode mudar uma parte dos comandos, executar o jogo e comparar o efeito. Oriente-o a mexer numa coisa de cada vez: fica mais fácil perceber qual alteração produziu a diferença e o que ainda precisa entender.
+Quando ele cria o próprio jogo, passa para o outro lado da tela. Decide quanto o personagem pula, o que acontece quando o personagem encosta numa moeda e quanto vale cada ponto. Aperta para testar e vê na hora se ficou como queria. O tempo na tela continua, mas agora tem decisão, teste e, no fim, um jogo que é dele. E a cena que você quer ver primeiro, ele explicando como um programa funciona por dentro, nasce de cada teste: quando o jogo não faz o que ele esperava, ele vai atrás do porquê.
 
-### Apoio: varia conforme a atividade
+**Onde isso acontece**
 
-#### Ele pode rever, tentar e pedir ajuda conforme a tarefa
+A Comunidade dos Criadores é a plataforma do Sistema Zero Kids em que crianças de 9 a 14 anos aprendem criando jogos. Os cursos são projetos de jogo, e a aula mostra cada passo ao lado do editor. O jogo publicado vai para o Mural dos Criadores com um link para a família jogar.
 
-Você percebe que seu filho procura apoios diferentes conforme a atividade. Ele pode rever a demonstração quando esqueceu um passo, testar uma mudança quando tem uma ideia e enviar uma pergunta quando continua em dúvida. No começo, conhecer esses caminhos juntos ajuda a escolher o que fazer em cada situação.
+Você contou que, quando algo não dá certo, ele chama alguém. Aqui, a primeira ajuda está na tela: ele volta ao trecho do vídeo, ouve de novo a fala do Zappy, o mascote das aulas, e, nas partes que têm verificação, vê o que falta. Aos poucos ele resolve sozinho e passa a chamar você para ver o jogo funcionando.
 
-### Apoio: ainda falta observar
+_(tela `aula-estudio`)_
 
-#### As primeiras tentativas ajudam a conhecer o apoio de que ele precisa
+> “O Fernando passava muito tempo nas telas, mas ele mais assistia, não desenvolvia nada. O curso incentivou ele a desenvolver, a programar, não a jogar.” Flávia · Mãe do Fernando · Usar a tela para criar (`AV12`)
 
-Você ainda não observou como seu filho reage a uma dificuldade no computador. Na primeira atividade, acompanhe um trecho: ele encontra o botão de pausa, consegue seguir a orientação ou chama você? Você pode mostrar esses controles e observar o que ele já faz por conta própria. Essa experiência ajuda a combinar sua presença nas próximas tentativas.
+**Antes de seguir**
 
-### Dúvida principal: interesse
+- **Ele vai precisar de um computador** (não atendida): Você contou que, por enquanto, ele só tem celular ou tablet. Para criar na plataforma, ele precisa de um computador com internet, mouse e teclado, que pode ser o da família. Vale organizar isso antes de assinar.
 
-#### Um começo que permita ouvir o que ele quer criar
+- **As aulas são gravadas** (não atendida): Você disse que precisa de um professor ao vivo acompanhando. Na Comunidade, as aulas são gravadas e a plataforma orienta cada passo. As dúvidas vão por escrito para a equipe, e não há professor numa chamada. Se o ao vivo é indispensável, a Comunidade não atende esse ponto.
 
-Sua principal dúvida é se a atividade vai despertar o interesse do seu filho. A ideia para experimentar em casa ajuda a abrir essa conversa: observe se ele quer mudar a regra, inventar outra ação ou desenhar o personagem. Pergunte o que gostaria de tentar depois e mostre as imagens da plataforma para ouvir a opinião dele.
+**O próximo passo**
 
-Na Comunidade, essa vontade encontra aulas e ferramentas para virar uma tentativa concreta. Ele pode conhecer um exemplo, seguir a tarefa e, conforme aprende e libera recursos, fazer novas escolhas nos projetos. A vontade de voltar à atividade precisa ser observada no uso; as respostas do quiz ajudam a escolher por onde convidá-lo.
+Na próxima página, você vê um projeto por dentro, do jogo pronto até a regra que ele monta, como você acompanha e os dois planos, mensal e anual.
 
-### Dúvida principal: começo
+[Ver como funciona e conferir os requisitos](/kids/comunidade-dos-criadores/oferta)
 
-#### Seu filho encontra uma tarefa e a orientação para começar
+### Perfil C pouco nítido, chegando pela cena de casa
 
-Você quer entender como seu filho vai dar os primeiros passos. Nas atividades iniciais da Comunidade, a aula apresenta o que fazer e traz recursos preparados para aquela tarefa. Ele acompanha um trecho, realiza a ação e testa o resultado. Isso dá um ponto de partida antes de criar projetos livres.
+_Pontos: A 0 · B 2 · C 3 · D 0 · F 0. Perfil C, segundo B._
 
-No início, sua companhia pode ajudar em ações como encontrar a aula, pausar o vídeo e usar os controles. Observe o que ele já consegue fazer e ajude no que ainda é novidade. Para acompanhar as atividades, ele precisa ler e usar mouse e teclado; o conteúdo de programação é apresentado ao longo das aulas.
+_Suas respostas apontaram para mais de um lado. Este foi o que mais apareceu._
 
-### Dúvida principal: ajuda
+#### Os personagens que seu filho desenha já têm aparência e jeito. Falta o que eles fazem
 
-#### Quando a explicação ainda deixa uma dúvida
+**O que você contou**
 
-Na própria seção da aula, seu filho encontra o botão “Preciso de ajuda”. Ele pode escrever, por exemplo: “Coloquei o bloco como no vídeo, mas o personagem não apareceu”. Contar o que tentou e o que viu ajuda a equipe a entender o problema junto do contexto daquela atividade.
+- Seu filho tem entre 9 e 11 anos. Vocês têm computador em casa, e você precisa organizar os horários.
+- Ele passa de 1 a 2 horas por dia em jogos e vídeos. Isso dá entre 365 e 730 horas por ano, e você não sabe dizer quanto desse tempo vira alguma coisa que ele mesmo fez.
+- A cena mais comum aí em casa: ele desenha personagens o tempo todo, e os desenhos ficam guardados no caderno.
+- Você ainda não reparou o que ele faz quando algo não dá certo num jogo ou num aplicativo.
+- Nada preocupa você agora: você quer aproveitar o interesse dele.
+- A cena que você quer ver primeiro: um amigo jogando um jogo que ele inventou.
+- Para dar certo, ele precisa ter a quem recorrer quando travar.
+- Você ainda quer conhecer as possibilidades.
+- Para os desenhos, você quer que os personagens façam coisas: andem, pulem, reajam.
 
-A conversa continua nos Recados, a área de mensagens da plataforma. Ali ficam a pergunta, a resposta e o caminho de volta à aula. Seu filho pode consultar a orientação recebida e testar novamente. O retorno acontece por mensagens e pode exigir espera; enquanto isso, ele pode rever o trecho ou guardar a dúvida para retomar depois.
+**Por que isso acontece**
 
-### Dúvida principal: acompanhar a aprendizagem
+Você contou que ele desenha personagens o tempo todo, e que os desenhos ficam guardados no caderno.
 
-#### Você pode acompanhar pelo que ele cria e consegue explicar
+O desenho já tem muito do que um personagem precisa: aparência e jeito. O que ainda falta é ação: o que o personagem faz quando alguém aperta uma tecla, o que acontece quando encontra um obstáculo e aonde precisa chegar. É dessas respostas que nasce a história.
 
-Você quer acompanhar o que seu filho está aprendendo. Quando ele vier mostrar uma criação, peça que execute uma parte e explique a escolha: “O que você fez para esse personagem aparecer?”. Ele pode mostrar o comando, testar e contar o que mudou desde a primeira tentativa.
+**O que muda isso**
 
-Essa conversa dá um jeito de participar do aprendizado com interesse pelo que ele fez e pelas escolhas que quer mostrar. As aulas e os canais de ajuda oferecem a orientação para construir, enquanto vocês compartilham as descobertas da atividade.
+Num jogo, o personagem desenhado anda, pula e reage, e quem decide como é seu filho. A aparência vem do desenho, e a ação vem das regras que ele monta. O desenho deixa de ser só para olhar. E a cena que você quer ver primeiro, um amigo jogando um jogo que ele inventou, é onde isso termina: um jogo que funciona na mão de outra pessoa.
 
-Na Área dos pais, você encontra o progresso e informações sobre a participação dele. Use esses registros para puxar uma conversa específica: qual atividade ele fez, o que achou difícil e o que gostaria de tentar depois. Ver uma aula concluída ajuda a localizar o percurso; ouvir a explicação dele acrescenta o que compreendeu.
+**Onde isso acontece**
 
-### Dúvida principal: rotina
+A Comunidade dos Criadores é a plataforma do Sistema Zero Kids em que crianças de 9 a 14 anos aprendem criando jogos. Os cursos começam com personagens preparados, para ele aprender primeiro as regras. Quando conclui o curso A Chave do Farol e publica o jogo, chega ao posto Construtor da Jornada do Criador, e o Pinta, o editor de desenhos da plataforma, fica livre junto com o Estúdio: ele desenha o personagem e traz o desenho para o jogo.
 
-#### A atividade pode acompanhar os horários que vocês combinarem
+Você ainda não reparou o que ele faz quando algo não dá certo, e a primeira aula é uma boa hora para ver: sente perto e observe. A faixa O que falta para seguir mostra o próximo passo, e você percebe na hora se ele segue sozinho ou se chama você.
 
-Você quer entender onde essa atividade caberia na rotina. Pense num horário em que seu filho já pode usar o computador: uma parte desse tempo pode ser reservada para abrir a aula e experimentar um passo. Como as aulas são gravadas, vocês escolhem quando começar dentro do período de acesso.
+_(tela `integracao`)_
 
-Quando chegar a hora de encerrar, ele pode pausar a explicação e conferir se o projeto ficou salvo. Antes de sair, peça que conte o que quer tentar na próxima vez. Esse pequeno combinado deixa um ponto de retomada, em vez de ter de decidir tudo de novo a cada dia.
+> “Uma coisa que eu queria dizer era sobre um jogo que eu mesmo criei. Não é do curso, mas eu usei conforme o que eu aprendi com a professora Helena. Eu criei todos os personagens. E esse aqui é o meu personagem, que no caso sou eu mesmo. Ainda estou desenvolvendo, mas está ficando bom.” Jeffrey · Aluno · Relato sobre criar jogos (`N18`)
 
-A tela abaixo mostra as criações e o aviso de salvamento. Se outras pessoas usam o mesmo computador, combine também quando ele estará livre para a próxima atividade. A rotina precisa caber nos horários da casa e no tempo de tela que vocês permitem.
+> “Achei que ia ser difícil, mas fui montando os bloquinhos e deu certo. No último dia chamei a minha mãe pra ver o meu jogo.” Débora · Aluna · Relato sobre o Desafio do Primeiro Jogo (`AV03`)
 
-### Dúvida principal: investimento
+**Antes de seguir**
 
-#### O valor precisa fazer sentido junto com o uso que vocês planejam
+- **Um horário no computador da casa** (conferir): Como as aulas são gravadas, basta combinar um horário em que o computador esteja livre.
 
-Você quer avaliar o investimento junto com as outras escolhas da família. A assinatura reúne os cursos incluídos, as ferramentas de criação e os canais de ajuda. O valor desse conjunto aparece numa situação simples: seu filho encontra o que fazer, abre a atividade, constrói uma parte e tem onde pedir orientação para continuar.
+**O próximo passo**
 
-Antes de decidir, pense também no uso que vocês conseguiriam organizar: quando o computador estaria disponível e por qual criação ele gostaria de começar. Essa conversa ajuda a comparar o que a plataforma oferece com o espaço que a atividade teria na rotina de vocês.
+Você disse que ele precisa ter a quem recorrer quando travar. Primeiro vem o que está na tela: ele volta ao trecho do vídeo, aperta Verificar esta parte nas partes que têm verificação, usa Uma pista nos experimentos e abre o Como fazer, que tem tutoriais por assunto. Se a dúvida continuar, o botão Preciso de ajuda manda a pergunta para a nossa equipe, e a resposta chega por escrito nos Recados.
 
-Na próxima página, confira os valores e as condições de pagamento, acesso, renovação e cancelamento. Os planos mensal e anual incluem o mesmo conjunto de recursos; as ferramentas para criar livremente são liberadas conforme ele avança na Jornada.
+Na próxima página, você vê as primeiras aulas com personagens prontos, o Pinta por dentro, o caminho até ele usar os próprios personagens e os dois planos, mensal e anual.
 
-### Formato: pode funcionar
-
-#### Ele pode pausar a explicação para colocar o passo em prática
-
-Você considera aulas gravadas com ajuda por mensagens. Na Comunidade, seu filho pode assistir ao passo, pausar o vídeo e realizar a tarefa ao lado. Se esquecer uma ação, volta ao trecho e compara com a própria montagem antes de seguir.
-
-Essa pausa permite dar à tentativa o tempo de que ele precisa naquele momento. E, como a explicação fica disponível durante o acesso, vocês escolhem quando fazer a atividade dentro dos combinados da família. Na imagem abaixo, veja o vídeo pausado junto da prática.
-
-### Formato: prefere ao vivo, mas considera outra possibilidade
-
-#### A orientação pode acompanhar o tempo da tentativa dele
-
-Você prefere aulas ao vivo, mas está aberto a conhecer outra forma de acompanhamento. Aqui, seu filho assiste à explicação gravada e faz a atividade na mesma tela. Pode pausar enquanto monta os comandos e repetir só o trecho que precisa conferir.
-
-A vantagem aparece durante a tarefa: se ele leva mais tempo para testar uma ideia, a explicação espera. Se quer rever um passo, pode voltar a ele. A família também escolhe o horário de acesso. Já a ajuda da equipe acontece por mensagens, com possível espera pela resposta; não há um professor ao vivo durante a atividade.
-
-### Formato: quer conhecer melhor
-
-#### Veja como seu filho acompanha uma aula, passo a passo
-
-Você ainda está conhecendo as formas de acompanhamento. Imagine seu filho numa das atividades integradas da Comunidade: de um lado, ele assiste à explicação; do outro, encontra a área para fazer a tarefa. Depois de ver um passo, pausa o vídeo e tenta realizar a ação.
-
-Se ficou em dúvida sobre onde colocar um comando, volta ao trecho, confere o exemplo e testa de novo. Isso permite consultar a orientação justamente enquanto está criando. A explicação pode acompanhar várias tentativas, no horário de estudo que vocês combinarem.
-
-Na tela abaixo, o vídeo está pausado junto da atividade. Nas primeiras aulas, você pode mostrar ao seu filho como usar a pausa e voltar ao trecho desejado. Depois, observe quais ações ele já consegue fazer e em quais ainda pede companhia. A seguir, veja também o caminho para enviar uma dúvida.
-
-### Formato: professor ao vivo indispensável
-
-#### Você procura um professor presente durante a atividade
-
-Você informou que ter um professor ao vivo durante a atividade é indispensável. Na Comunidade, seu filho acompanha aulas gravadas, e a ajuda da equipe acontece por mensagens. A resposta pode levar um tempo; não há um professor numa chamada acompanhando cada tentativa.
-
-Por isso, o formato atual não atende a essa condição que você indicou. As telas permitem conhecer como a proposta funciona, mas essa diferença precisa orientar sua escolha antes de contratar.
-
-### Equipamento: precisa organizar horários
-
-#### Vale reservar um horário no computador que vocês compartilham
-
-Você contou que há um computador, mas precisa organizar os horários de uso. Para criar aqui, seu filho usará o navegador, a internet, o mouse e o teclado. Ele precisa ter esse equipamento disponível tanto para acompanhar a explicação quanto para fazer a atividade.
-
-Como as aulas são gravadas, vocês podem escolher um horário em que o computador esteja livre. Combine esse momento com ele e com quem também usa o aparelho. Assim, a proposta já entra numa rotina possível para a família.
-
-### Equipamento: só celular ou tablet
-
-#### Para criar na plataforma, ele precisará de um computador
-
-Você contou que, por enquanto, seu filho tem acesso a celular ou tablet. Para as atividades de criação da Comunidade, ele precisa de um computador com internet, mouse e teclado. É nele que vai usar os controles dos editores e montar os projetos.
-
-Você pode conhecer as telas e ler a proposta pelo celular. Para seu filho realizar as atividades, porém, será preciso organizar o acesso ao computador antes de contratar. Pode ser um aparelho compartilhado, desde que esteja disponível no horário combinado.
-
-### Equipamento: ainda precisa verificar
-
-#### Confira em qual computador ele poderá fazer as atividades
-
-Você ainda vai verificar o acesso ao computador. Pense no aparelho que seu filho poderia usar para acompanhar a aula e criar: ele precisa ter internet, mouse e teclado. O computador pode ser compartilhado com a família.
-
-Além de encontrar o aparelho, vale combinar quando ele estará disponível. Esse cuidado ajuda a avaliar se a atividade cabe na rotina antes de contratar a assinatura.
-
-### Jogos: Roblox ou Minecraft indispensável
-
-#### A ferramenta que vocês procuram faz diferença na escolha
-
-Você indicou {{ferramenta}} como indispensável para a criação de jogos. A Comunidade ensina nas ferramentas próprias da plataforma, como o Estúdio, em que seu filho monta comandos em blocos e testa o efeito no jogo. Ela não oferece um curso de Roblox ou Minecraft.
-
-Se a vontade dele está ligada especificamente à ferramenta escolhida, essa diferença importa: criar no Estúdio é outra experiência. Você pode mostrar as telas a ele para conhecer a proposta, preservando o que vocês consideram necessário para escolher.
-
-### Jogos: outra ferramenta específica
-
-#### Confira qual ferramenta seu filho quer usar
-
-Você disse que uma ferramenta específica é importante, mas o quiz ainda não sabe qual é. A Comunidade usa o Estúdio, sua própria ferramenta para montar e testar jogos, junto dos outros recursos da plataforma.
-
-Antes de escolher, compare a ferramenta e o conteúdo que vocês procuram com os que aparecem na apresentação. Seu filho pode se interessar pela criação mostrada aqui, mas isso precisa ser conversado se ele espera aprender em outro programa.
-
-### Jogos: precisa conversar com o filho
-
-#### Mostre um exemplo e ouça o que ele quer criar
-
-Você quer conversar com seu filho antes de decidir sobre a ferramenta. Mostre o exemplo do Estúdio e pergunte o que chama a atenção dele: inventar as regras, escolher um personagem ou criar dentro de um jogo que já conhece.
-
-Essa conversa ajuda a distinguir duas vontades que podem ser diferentes: criar um jogo e usar uma ferramenta específica. Aqui, ele cria no Estúdio. Conhecer uma tela do que fará é uma forma concreta de conversar sobre essa possibilidade.
-
-### Desenho: precisa de uma atividade sem jogos
-
-#### Vocês procuram desenho como uma atividade própria
-
-Você indicou que quer uma atividade de desenho que não envolva jogos. Na Comunidade, o desenho se conecta à criação de jogos: seu filho pode preparar uma arte no Pinta e usá-la num projeto no Estúdio. O percurso começa com atividades guiadas de jogos.
-
-Por isso, essa proposta é diferente da condição que você escolheu. O uso livre do Pinta vem depois das etapas de entrada; a assinatura não deve ser escolhida como uma entrada imediata para um curso só de desenho.
-
-### Desenho: quer conhecer a integração
-
-#### Acompanhe o caminho do desenho até o jogo
-
-Você quer entender como um desenho entra num jogo. O Pinta é o editor de desenhos da Comunidade, e o Estúdio é onde seu filho monta as regras do jogo. Nas telas, acompanhe o cavaleiro: ele é preparado no Pinta, escolhido na janela “Trazer do Pinta” e adicionado aos materiais do projeto no Estúdio.
-
-Seu filho pode usar a arte na criação e decidir o que acontece com ela. Por exemplo, montar uma regra para o personagem aparecer quando o jogador tocar num objeto. A imagem dá a aparência; os comandos definem a ação. Ele trabalha as duas partes para chegar à interação que imaginou.
-
-Mostre esse caminho a ele e ouça qual parte dá vontade de experimentar. O começo na Comunidade é guiado por aulas de jogos. Depois de concluir o curso obrigatório e publicar o projeto exigido, ele chega à etapa chamada Construtor e libera o uso livre do Pinta e do Estúdio.
-
-### Para participar da Comunidade
-
-#### Veja as atividades e os planos para a família
-
-Na próxima página, você encontra os cursos, os recursos da plataforma e as condições dos planos. Para acompanhar as atividades, seu filho precisa ler e usar mouse e teclado num computador com internet.
-
-Seu filho começa com as aulas guiadas, conhecendo os passos e os comandos da atividade. Ao concluir o curso de entrada obrigatório e publicar o projeto pedido nessa etapa, ele chega ao posto Construtor. Ali, libera o uso livre do Estúdio, o editor de jogos, e do Pinta, o editor de desenhos. Vocês podem conhecer tanto esse começo quanto o caminho para criar com mais liberdade.
-
-### Botão quando há uma condição não atendida
-
-
-
-**Conhecer a proposta e conferir seus requisitos**
-
-### Depois do resultado
-
-Esta sugestão representa o que vocês procuram neste momento?
-
-**Responder pensando em outro filho**
-
-### Se a sugestão representar apenas em parte ou não representar
-
-O que você gostaria de ajustar?
-
-Sua opinião foi registrada nesta resposta.
-
-**Voltar ao resultado**
+[Ver o desenho dele entrando no jogo](/kids/comunidade-dos-criadores/oferta/expressao-visual)

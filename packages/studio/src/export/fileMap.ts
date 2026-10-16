@@ -10,6 +10,7 @@ import {
 } from '#core'
 import { loadExtensionBootstrapScript } from '#extensions'
 import { findExtension } from '#official-extensions'
+import { buildProAssetBundle } from '../core/proAssets'
 import { gameUiFontBootstrapScript, loadGameUiFont } from '../official-extensions/gameUiFont'
 import { resolveGameUiFontId } from '../official-extensions/gameUiFonts/resolve'
 import { buildAssetsRuntime } from '../preview/assetsBridge'
@@ -35,6 +36,8 @@ export interface ClassicFileMapResult {
   files: ExportFileMap
   /** Avisos não-fatais (extra que não compilou, lib 3D via esm.sh, JS 3D inline). */
   warnings: string[]
+  /** Import map separated from presentation so source conversion can install dependencies. */
+  imports: Record<string, string>
 }
 
 const MODULE_RE = /^\s*(?:import|export)\b/m
@@ -52,6 +55,7 @@ const MODULE_RE = /^\s*(?:import|export)\b/m
 export async function buildClassicFileMap(
   project: Project,
   minifiers: Minifiers,
+  options: { conversion?: boolean } = {},
 ): Promise<ClassicFileMapResult> {
   const files: ExportFileMap = {}
   const warnings: string[] = []
@@ -109,7 +113,13 @@ export async function buildClassicFileMap(
   const extraHtmlFragments: string[] = []
   for (const extra of project.extraFiles ?? []) {
     const name = normalizeExtraFileName(extra.name)
-    if (!name || isReservedProjectFileName(name)) continue
+    if (!name || isReservedProjectFileName(name)) {
+      if (options.conversion)
+        throw new Error(
+          `O arquivo ${extra.name} tem um nome inválido ou reservado. O original foi mantido.`,
+        )
+      continue
+    }
     if (extra.language === 'css') {
       // Colisão pelo NOME DE SAÍDA: `isReservedProjectFileName` só barra os nomes
       // EXATOS (style.css), mas dois extras com o mesmo basename — ou um extra que
@@ -142,7 +152,7 @@ export async function buildClassicFileMap(
       // captura throws; o ConvertLegacyPrompt engolia). Isolamos por extra:
       // pula o arquivo e COLETA um aviso para a UI surfar.
       try {
-        const transpiled = transpileExtra(name, extra.content)
+        const transpiled = transpileExtra(name, extra.content, { throwOnError: true })
         files[destPath] = await minifiers.js(transpiled, {
           module: MODULE_RE.test(transpiled),
         })
@@ -161,7 +171,13 @@ export async function buildClassicFileMap(
   let usesEsmImports = false
   for (const installed of project.installedExtensions) {
     const ext = findExtension(installed.id)
-    if (!ext) continue
+    if (!ext) {
+      if (options.conversion)
+        throw new Error(
+          `A biblioteca ${installed.id} não está disponível para conversão. O original foi mantido.`,
+        )
+      continue
+    }
     const src = `sz-ext/${installed.id}.js`
     files[`public/${src}`] = await minifiers.js(await loadExtensionBootstrapScript(ext), {
       module: Boolean(ext.runtime.esmImports),
@@ -215,7 +231,7 @@ export async function buildClassicFileMap(
 
   // LOW: dependência esm.sh. Extensões com esmImports (ex.: game-3d → three) são
   // carregadas da internet em tempo de execução do VISITANTE no site estático.
-  if (usesEsmImports) {
+  if (usesEsmImports && !options.conversion) {
     warnings.push(
       'A primeira abertura deste projeto 3D precisa de internet para carregar a biblioteca (esm.sh). Depois disso, o PWA prepara os recursos usados para as próximas aberturas offline.',
     )
@@ -258,6 +274,7 @@ export async function buildClassicFileMap(
   }
 
   const indexHtml = buildProductionIndexHtml({
+    includePwa: !options.conversion,
     html: rawHtml,
     hasExternalCss,
     hasExternalJs,
@@ -273,6 +290,11 @@ export async function buildClassicFileMap(
     fontScriptSrc,
   })
   files['public/index.html'] = minifiers.html(indexHtml)
+  if (options.conversion) {
+    if (warnings.length)
+      throw new Error(`Não foi possível converter sem perder conteúdo. ${warnings.join(' ')}`)
+    return { files, warnings, imports: importmap }
+  }
   files['public/manifest.webmanifest'] = buildWebAppManifest(project.name)
   files['public/icon.svg'] = PWA_ICON_SVG
 
@@ -281,7 +303,7 @@ export async function buildClassicFileMap(
     .map(publicPathToUrl)
   files['public/sw.js'] = buildServiceWorker(precacheUrls, buildPwaRevision(files))
 
-  return { files, warnings }
+  return { files, warnings, imports: importmap }
 }
 
 export interface ProFileMapResult {
@@ -296,7 +318,10 @@ export interface ProFileMapResult {
  * `node_modules`, caminhos absolutos e travessias `..`). Não minifica — o Vite
  * minifica no build do deploy.
  */
-export function buildProFileMap(project: Project): ProFileMapResult {
+export async function buildProFileMap(
+  project: Project,
+  options: { purpose?: 'source' | 'deploy' } = {},
+): Promise<ProFileMapResult> {
   const files: ExportFileMap = {}
   const warnings: string[] = []
   const tree = project.tree ?? {}
@@ -310,15 +335,30 @@ export function buildProFileMap(project: Project): ProFileMapResult {
     const norm = normalizeProPath(path)
     if (norm === null || norm !== path) {
       warnings.push(
-        `O arquivo "${path}" ficou de fora do pacote de deploy porque o caminho não é seguro para o ZIP.`,
+        `O arquivo "${path}" ficou de fora do pacote porque o caminho não é seguro para o ZIP.`,
       )
       continue
     }
     files[path] = node.content
   }
 
+  const bundle = await buildProAssetBundle(project.assets, tree, {
+    legacyRuntime: Boolean(project.proMeta?.origin),
+  })
+  for (const [path, bytes] of bundle.files) files[path] = bytes
+  if (!files['ASSET-CREDITS.md'])
+    files['ASSET-CREDITS.md'] = [
+      '# Materiais do jogo',
+      '',
+      ...bundle.manifest.assets.map(
+        (asset) =>
+          `${asset.name}: ${asset.license?.name ?? 'Licença não informada'}${asset.license?.attribution ? ` — ${asset.license.attribution}` : ''}${asset.license?.sourceUrl ? ` (${asset.license.sourceUrl})` : ''}`,
+      ),
+    ].join('\n')
+
   const pkgRaw =
     typeof files['package.json'] === 'string' ? (files['package.json'] as string) : null
+  if (options.purpose === 'source') return { files, warnings }
   if (!pkgRaw) {
     warnings.push('Este projeto nao tem package.json; o deploy precisa de um build que gere dist/.')
   } else {

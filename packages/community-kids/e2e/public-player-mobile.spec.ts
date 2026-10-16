@@ -51,14 +51,17 @@ async function abrirJogo(
   canvas: { w: number; h: number } | null,
   opts: { atrasoMs?: number } = {},
 ) {
-  await page.route(`**/api/studio/play/${ID}`, async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      headers: { 'X-Author-Name': encodeURIComponent('Sofia') },
-      body: JSON.stringify(fakeProject(canvas, opts)),
-    })
-  })
+  await page.route(
+    (url) => url.pathname === `/api/studio/play/${ID}`,
+    async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        headers: { 'X-Author-Name': encodeURIComponent('Sofia') },
+        body: JSON.stringify(fakeProject(canvas, opts)),
+      })
+    },
+  )
   await page.goto(`/jogar/${ID}`)
   await expect(page.getByText('Meu primeiro jogo').first()).toBeVisible()
 }
@@ -117,14 +120,17 @@ ${pedeTelaCheia ? "document.querySelector('canvas').addEventListener('pointerdow
     blocksState: { blocks: { languageVersion: 0, blocks: [] } },
     installedExtensions: ir.length ? [{ id: 'game-2d', version: '1.0.0', installedAt: now }] : [],
   }
-  await page.route(`**/api/studio/play/${ID}`, async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      headers: { 'X-Author-Name': encodeURIComponent('Sofia') },
-      body: JSON.stringify(projeto),
-    })
-  })
+  await page.route(
+    (url) => url.pathname === `/api/studio/play/${ID}`,
+    async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        headers: { 'X-Author-Name': encodeURIComponent('Sofia') },
+        body: JSON.stringify(projeto),
+      })
+    },
+  )
   await page.goto(`/jogar/${ID}`)
   await expect(page.getByText('Meu primeiro jogo').first()).toBeVisible()
   await page.waitForTimeout(1200)

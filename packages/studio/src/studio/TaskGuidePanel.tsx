@@ -1,3 +1,4 @@
+import { pensaCodeTransitionInstructions } from '@sistemazero/core/pensa'
 import { PensaInstructions } from '@sistemazero/ui/pensa-instructions'
 import type { JSX } from 'react'
 import { useEffect, useId, useRef, useState } from 'react'
@@ -29,6 +30,7 @@ export function TaskGuidePanel({ session }: { session: StudioTaskSession }): JSX
   const tutor = useStudioTutor()
   const [updating, setUpdating] = useState(false)
   const v2 = session.guide.contractVersion === 2
+  const LegacyStepsContainer = session.codeTransition ? 'details' : 'div'
   // A região viva do guia v2 (montada VAZIA: uma que nasce com o texto não é anunciada). Diz o
   // que está acontecendo durante a espera da nuvem, que pode levar até 15 s.
   const [aviso, setAviso] = useState('')
@@ -186,34 +188,56 @@ export function TaskGuidePanel({ session }: { session: StudioTaskSession }): JSX
             <div className="mb-3" />
           )}
           <div className="grid gap-2 text-sm">
+            {session.codeTransition ? (
+              <>
+                <p>
+                  Este jogo passou para o modo Pro. Continue pelo código, mantendo o objetivo e o
+                  teste desta missão.
+                </p>
+                <PensaInstructions
+                  key={`${session.taskId}-code`}
+                  steps={pensaCodeTransitionInstructions()}
+                />
+              </>
+            ) : null}
             {session.guide.contractVersion === 2 ? (
-              <PensaInstructions
-                key={session.taskId}
-                steps={session.guide.steps}
-                renderListen={session.renderListen}
-              />
+              session.codeTransition ? null : (
+                <PensaInstructions
+                  key={session.taskId}
+                  steps={session.guide.steps}
+                  renderListen={session.renderListen}
+                />
+              )
             ) : (
-              session.guide.steps.map((item) => (
-                <label
-                  key={item.id}
-                  className="flex min-h-9 items-start gap-2 rounded-lg bg-sz-bg p-2"
-                >
-                  <input
-                    type="checkbox"
-                    name={`task-step-${item.id}`}
-                    className="mt-1"
-                    disabled={updating || session.progress.status === 'completed'}
-                    checked={session.progress.completedStepIds.includes(item.id)}
-                    onChange={(event) => void change('step', item.id, event.target.checked)}
-                  />
-                  <span>
-                    {item.text}
-                    {item.hint ? (
-                      <small className="block text-sz-fg-soft">{item.hint}</small>
-                    ) : null}
-                  </span>
-                </label>
-              ))
+              <LegacyStepsContainer>
+                {session.codeTransition && (
+                  <>
+                    <summary>Conferir passos do plano original em blocos</summary>
+                    <p>Marque cada uma só depois de verificar o resultado equivalente no código.</p>
+                  </>
+                )}
+                {session.guide.steps.map((item) => (
+                  <label
+                    key={item.id}
+                    className="flex min-h-9 items-start gap-2 rounded-lg bg-sz-bg p-2"
+                  >
+                    <input
+                      type="checkbox"
+                      name={`task-step-${item.id}`}
+                      className="mt-1"
+                      disabled={updating || session.progress.status === 'completed'}
+                      checked={session.progress.completedStepIds.includes(item.id)}
+                      onChange={(event) => void change('step', item.id, event.target.checked)}
+                    />
+                    <span>
+                      {item.text}
+                      {item.hint ? (
+                        <small className="block text-sz-fg-soft">{item.hint}</small>
+                      ) : null}
+                    </span>
+                  </label>
+                ))}
+              </LegacyStepsContainer>
             )}
           </div>
           {session.blocks.length ? (

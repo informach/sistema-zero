@@ -6,6 +6,7 @@ import {
   artRecipeIdSchema,
   compositionSceneError,
   contextRequestSchema,
+  DEMONSTRATION_RECIPES,
   type ExecutionContext,
   type ExecutionRequest,
   type ExecutionRun,
@@ -727,6 +728,38 @@ export function RequestPanel({
       ) : null}
       {['video-edit', 'composition'].includes(capability) ? (
         <div>
+          <div className="mt-3 rounded-lg border p-3 text-sm">
+            <p>Demonstre uma decisão com capturas vinculadas às fontes da pauta.</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {Object.values(DEMONSTRATION_RECIPES).map((recipe) => (
+                <Button
+                  key={recipe.label}
+                  size="sm"
+                  variant="outline"
+                  disabled={busy}
+                  onClick={() => {
+                    const next = [
+                      instruction.trim(),
+                      `Use a demonstração “${recipe.label}” com as fontes factuais disponíveis. Preserve os fatos, a copy protegida e o CTA; não invente uma gravação a partir de imagens.`,
+                    ]
+                      .filter(Boolean)
+                      .join('\n\n')
+                    if (next.length > 12000)
+                      setError(
+                        'O pedido atingiu o limite; reduza o texto antes de acrescentar um exemplo.',
+                      )
+                    else setInstruction(next)
+                  }}
+                >
+                  {recipe.label}
+                </Button>
+              ))}
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              O exemplo só preenche o pedido. Confira as imagens e as evidências antes de produzir;
+              você também pode descrever livremente o que quer mostrar.
+            </p>
+          </div>
           {capability === 'composition' ? (
             <p className="mt-3 text-sm text-muted-foreground">
               Descreva a animação ou o detalhe que deseja mudar. A IA cria a cena no desktop; a
@@ -763,9 +796,10 @@ export function RequestPanel({
                       }
                     >
                       Cena {index + 1}:{' '}
-                      {(clip.generated?.input.title ||
-                        clip.generated?.input.body.slice(0, 60) ||
-                        clip.text?.slice(0, 60)) ??
+                      {clip.demonstration?.headline ??
+                        (clip.generated?.input.title ||
+                          clip.generated?.input.body.slice(0, 60) ||
+                          clip.text?.slice(0, 60)) ??
                         clip.art?.title ??
                         (clip.kind === 'audio' ? 'Áudio' : 'Imagem ou vídeo')}
                       {capability === 'composition' &&
@@ -797,7 +831,7 @@ export function RequestPanel({
                             clip.id === videoTarget.clipId &&
                             (capability === 'composition'
                               ? Boolean(clip.generated)
-                              : clip.kind === 'text'),
+                              : clip.kind === 'text' || Boolean(clip.demonstration)),
                         )
                       }
                     >

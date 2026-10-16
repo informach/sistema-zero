@@ -1,6 +1,6 @@
 /** Validação compartilhada de projetos. Sem React, Blockly, disco ou efeitos de gravação. */
 
-import { STUDIO_PARTS_FORMAT, STUDIO_PARTS_VERSION } from '@sistemazero/core/studio'
+import { STUDIO_PARTS_FORMAT, STUDIO_PARTS_VERSION } from '@sistemazero/core/studio/project-format'
 import { ulid } from 'ulid'
 import {
   createEmptyProject,
@@ -53,6 +53,7 @@ import {
 import { isCampaignStageExtraState } from '../official-extensions/game-2d-advanced/campaignSchema'
 import { STUDENT_BASELINE_PERMISSIONS } from '../preview/permissionGuard'
 import { CANVAS3D_BLOCK_TYPES } from '../three/canvas3dContract'
+import { copyLocalRevision } from './projectStorageRevision'
 import { sanitizeProMeta, sanitizeProTree } from './proTree'
 
 const MAX_PROJECT_NAME_CHARS = 200
@@ -1057,7 +1058,7 @@ export function sanitizeStoredProject(
   const coverAssetName = sanitizeCoverAssetName(r.coverAssetName)
   if (coverAssetName) project.coverAssetName = coverAssetName
   assertProjectContentPreserved(raw, project)
-  return project
+  return copyLocalRevision(raw as unknown as Project, project)
 }
 
 /**
@@ -1077,7 +1078,8 @@ export async function prepareProjectForHost(
   options: { proBuildLimits?: StudioProBuildLimits } = {},
 ): Promise<Project | null> {
   if (raw == null) return null
-  return sanitizeProjectForHost(await prepareProjectDocument(raw), options)
+  const project = sanitizeProjectForHost(await prepareProjectDocument(raw), options)
+  return project && typeof raw === 'object' ? copyLocalRevision(raw as Project, project) : project
 }
 
 export function getAllowedBlocklyBlockTypes(

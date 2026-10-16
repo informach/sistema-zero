@@ -138,6 +138,44 @@ async function setVisibility(page: Page, state: 'hidden' | 'visible'): Promise<v
   }, state)
 }
 
+/** Confere o journal no disco antes de voltar à aba ou disparar pagehide. */
+async function hiddenDraftHasAdvanced3D(page: Page): Promise<boolean> {
+  return page.evaluate(async () => {
+    const id = decodeURIComponent(location.pathname.split('/').at(-1)!)
+    const prefix = `sz:v3:project-recovery:${id}:`
+    const db = await new Promise<IDBDatabase>((resolve, reject) => {
+      const request = indexedDB.open('sistema-zero-studio')
+      request.onsuccess = () => resolve(request.result)
+      request.onerror = () => reject(request.error)
+    })
+    try {
+      return await new Promise<boolean>((resolve, reject) => {
+        const tx = db.transaction('kv', 'readonly')
+        const request = tx.objectStore('kv').getAll(IDBKeyRange.bound(prefix, `${prefix}\uffff`))
+        tx.oncomplete = () => {
+          const drafts = request.result as Array<{
+            write: { puts: Array<[string, { installedExtensions?: Array<{ id: string }> }]> }
+          }>
+          resolve(
+            drafts.some((draft) =>
+              draft.write.puts.some(
+                ([key, meta]) =>
+                  key === `sz:v3:project-meta:${id}` &&
+                  meta.installedExtensions?.some(
+                    (extension) => extension.id === 'game-3d-advanced',
+                  ),
+              ),
+            ),
+          )
+        }
+        tx.onabort = () => reject(tx.error)
+      })
+    } finally {
+      db.close()
+    }
+  })
+}
+
 function collectPageErrors(page: Page): string[] {
   const errors: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))
@@ -203,10 +241,13 @@ test('esconder a aba grava NA HORA, sem esperar o autosave', async ({ page }) =>
   await installAdvanced3D(page)
   await expect(saveStatus(page, 'Alterações não salvas')).toBeVisible()
 
+  expect(await hiddenDraftHasAdvanced3D(page)).toBe(false)
   await setVisibility(page, 'hidden')
-  // O autosave está segurado por 10 minutos: só a gravação da aba escondida explica o "Salvo".
-  await expect(saveStatus(page, 'Salvo')).toBeVisible({ timeout: 10_000 })
+  // A saída grava um journal recuperável sem confirmar o CAS como "Salvo".
+  // Com autosave segurado por 10 minutos, o journal prova a gravação ao esconder.
+  await expect.poll(() => hiddenDraftHasAdvanced3D(page), { timeout: 10_000 }).toBe(true)
   await setVisibility(page, 'visible')
+  await expect(saveStatus(page, 'Salvo')).toBeVisible({ timeout: 10_000 })
 
   await page.reload()
   await openMenuItem(page, 'Extensões')

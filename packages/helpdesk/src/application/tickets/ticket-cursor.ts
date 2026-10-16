@@ -9,7 +9,7 @@ export function encodeTicketCursor(ticket: Ticket, snapshotAt: Date): string {
   const position = ticketQueuePosition(ticket, snapshotAt)
   return Buffer.from(
     JSON.stringify({
-      v: 1,
+      v: 2,
       snapshotAt: snapshotAt.toISOString(),
       operationalRank: position.operationalRank,
       deadlineAt: position.deadlineAt.toISOString(),
@@ -27,7 +27,7 @@ export function decodeTicketCursor(value: string | undefined): TicketQueueCursor
       !parsed ||
       typeof parsed !== 'object' ||
       !('v' in parsed) ||
-      parsed.v !== 1 ||
+      parsed.v !== 2 ||
       !('snapshotAt' in parsed) ||
       typeof parsed.snapshotAt !== 'string' ||
       !('operationalRank' in parsed) ||

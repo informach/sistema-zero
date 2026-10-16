@@ -4,11 +4,20 @@
   "main": "src/index.ts",
   "compatibility_date": "2026-07-01",
   "compatibility_flags": ["nodejs_compat"],
+  "triggers": {
+    "crons": ["*/15 * * * *"]
+  },
+  "r2_buckets": [
+    {
+      "binding": "PRO_ARTIFACTS",
+      "bucket_name": "sistemazero-studio-artifacts"
+    }
+  ],
   "containers": [
     {
       "class_name": "ProBuildSandbox",
       "image": "./Dockerfile",
-      "instance_type": "lite",
+      "instance_type": "standard-1",
       "max_instances": 50
     }
   ],
@@ -35,5 +44,50 @@
         "period": 60
       }
     }
-  ]
+  ],
+  "vars": {
+    "PUBLICATION_AUTHORIZATION_URL": "https://kids.sistemazero.com.br/api/internal/studio-play",
+    "PUBLICATION_CLEANUP_URL": "https://kids.sistemazero.com.br/api/internal/studio-publication-cleanup"
+  },
+  "env": {
+    "staging": {
+      "name": "sistemazero-studio-runtime-staging",
+      "vars": {
+        "PUBLICATION_AUTHORIZATION_URL": "https://community-kids-staging.up.railway.app/api/internal/studio-play",
+        "PUBLICATION_CLEANUP_URL": "https://community-kids-staging.up.railway.app/api/internal/studio-publication-cleanup"
+      },
+      "r2_buckets": [
+        {
+          "binding": "PRO_ARTIFACTS",
+          "bucket_name": "sistemazero-studio-artifacts-staging"
+        }
+      ],
+      "containers": [
+        {
+          "class_name": "ProBuildSandbox",
+          "image": "./Dockerfile",
+          "instance_type": "standard-1",
+          "max_instances": 50
+        }
+      ],
+      "durable_objects": {
+        "bindings": [
+          {
+            "class_name": "ProBuildSandbox",
+            "name": "ProBuildSandbox"
+          }
+        ]
+      },
+      "ratelimits": [
+        {
+          "name": "BUILD_RATE_LIMITER",
+          "namespace_id": "27002",
+          "simple": {
+            "limit": 10,
+            "period": 60
+          }
+        }
+      ]
+    }
+  }
 }

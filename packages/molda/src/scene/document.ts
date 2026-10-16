@@ -27,6 +27,9 @@ interface ModelNodeBase extends SceneNode {
   name: string
   hidden: boolean
   locked: boolean
+  /** Authoring point in geometry-local coordinates. Absent retains the legacy node origin.
+   * This is not another scene transform and never changes existing animation or skin binds. */
+  pivot?: Vec3
 }
 
 export type ModelSceneNode = ModelNodeBase &

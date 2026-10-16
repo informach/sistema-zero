@@ -11,15 +11,17 @@ const funnel = 'kids/comunidade-dos-criadores'
 const fixture = (): QuizAnswers => ({
   _quiz_version: QUIZ_VERSION,
   _quiz_revision: 9,
-  q1: '9_a_11',
-  q2: 'jogar',
-  q3: ['jogo'],
-  q4: ['B'],
-  q5: 'ajuda',
-  q6: 'pessoa',
-  q7: 'pode_funcionar',
-  q8: 'disponivel',
-  qb: 'flexivel',
+  crianca: 'filho_9_11',
+  tempo_tela: '2_4h',
+  computador: 'sim',
+  cena: 'B',
+  quando_trava: 'chama',
+  tempo_criacao: 'um_pouco',
+  preocupacao: 'B',
+  cena_desejada: 'B',
+  garantia: 'recorrer',
+  sintese: 'B',
+  ferramenta: 'pode_outra',
 })
 const request = (method: string, body: Record<string, unknown>, id?: string) =>
   new Request('http://localhost/api/leads', {
@@ -39,8 +41,8 @@ async function setup(answers: QuizAnswers = {}) {
 
 describe('API do quiz da Comunidade', () => {
   test.each([
-    'comunidade-orientacao-v2',
     'comunidade-orientacao-v3',
+    'comunidade-orientacao-v4',
   ])('%s inicia novo lead sem reinterpretar nem apagar respostas', async (version) => {
     const oldAnswers = { ...fixture(), _quiz_version: version }
     const { deps, id, repo } = await setup(oldAnswers)
@@ -52,12 +54,12 @@ describe('API do quiz da Comunidade', () => {
     expect((await repo.getLead(id))?.quizAnswers).toEqual(oldAnswers)
   })
   // Uma aba aberta antes do deploy grava num lead de outra versão: o `applyAnswer` tomaria as
-  // respostas antigas por vazias e apagaria o lead (com q1) ou travaria o pai (com o resto).
+  // respostas antigas por vazias e apagaria o lead (com a 1ª pergunta) ou travaria o pai.
   test.each([
-    ['q1', '9_a_11'],
-    ['q6', 'rever'],
-  ])('a aba antiga não grava em lead v3 (%s): pede para retomar', async (key, value) => {
-    const oldAnswers = { ...fixture(), _quiz_version: 'comunidade-orientacao-v3' }
+    ['crianca', 'filho_9_11'],
+    ['quando_trava', 'tenta'],
+  ])('a aba antiga não grava em lead v4 (%s): pede para retomar', async (key, value) => {
+    const oldAnswers = { ...fixture(), _quiz_version: 'comunidade-orientacao-v4' }
     const { deps, id, repo } = await setup(oldAnswers)
     const response = await patchLead(
       request('PATCH', { key, value, funnel, revision: 9 }, id),
@@ -83,7 +85,7 @@ describe('API do quiz da Comunidade', () => {
         await patchLead(
           request(
             'PATCH',
-            { key: 'q6', value: 'rever', funnel, revision: 9, sessionToken },
+            { key: 'quando_trava', value: 'tenta', funnel, revision: 9, sessionToken },
             nextId,
           ),
           deps,
@@ -102,7 +104,7 @@ describe('API do quiz da Comunidade', () => {
   })
   test('exige cookie, funil, revisão e pergunta ativa', async () => {
     const { deps, id } = await setup()
-    const body = { key: 'q1', value: '9_a_11', funnel, revision: 0 }
+    const body = { key: 'crianca', value: 'filha_12_14', funnel, revision: 0 }
     expect((await patchLead(request('PATCH', body), deps)).status).toBe(401)
     expect(
       (
@@ -114,41 +116,67 @@ describe('API do quiz da Comunidade', () => {
     ).toBe(409)
     expect((await patchLead(request('PATCH', { ...body, revision: 1 }, id), deps)).status).toBe(409)
     expect(
-      (await patchLead(request('PATCH', { ...body, key: 'qb', value: 'roblox' }, id), deps)).status,
+      (await patchLead(request('PATCH', { ...body, key: 'ferramenta', value: 'roblox' }, id), deps))
+        .status,
     ).toBe(400)
     expect((await patchLead(request('PATCH', body, id), deps)).status).toBe(200)
   })
-  test('limpa qualificações, recalcula perfil e não apaga outras respostas ao editar', async () => {
+  test('trocar o perfil apaga a pergunta extra antiga, recalcula e não mexe no resto', async () => {
     const { deps, id, repo } = await setup(fixture())
-    const a = await patchLead(
-      request('PATCH', { key: 'q3', value: ['nao_sei'], funnel, revision: 9 }, id),
-      deps,
-    )
-    expect(a.status).toBe(200)
-    const b = await patchLead(
-      request('PATCH', { key: 'q4', value: ['D'], funnel, revision: 10 }, id),
-      deps,
-    )
-    expect(b.status).toBe(200)
+    let revision = 9
+    // B 10 → D: a soma muda e a pergunta extra do B (ferramenta) sai.
+    for (const key of ['sintese', 'cena', 'preocupacao']) {
+      const res = await patchLead(
+        request('PATCH', { key, value: 'D', funnel, revision: revision++ }, id),
+        deps,
+      )
+      expect(res.status).toBe(200)
+    }
     const lead = await repo.getLead(id)
-    expect(lead?.quizAnswers?.qb).toBeUndefined()
-    expect(lead?.quizAnswers?.q5).toBe('ajuda')
+    expect(lead?.quizAnswers?.ferramenta).toBeUndefined()
+    expect(lead?.quizAnswers?.garantia).toBe('recorrer')
     expect(lead?.perfilResultado).toBe('formacao-tecnologica')
   })
-  test('ramo novo fica incompleto e remove perfil antigo', async () => {
+  test('perfil novo com pergunta extra fica incompleto até ela ser respondida', async () => {
     const { deps, id, repo } = await setup(fixture())
-    const res = await patchLead(
-      request('PATCH', { key: 'q4', value: ['B', 'C'], funnel, revision: 9 }, id),
+    let revision = 9
+    for (const key of ['sintese', 'cena', 'preocupacao']) {
+      const res = await patchLead(
+        request('PATCH', { key, value: 'F', funnel, revision: revision++ }, id),
+        deps,
+      )
+      expect(res.status).toBe(200)
+    }
+    expect((await repo.getLead(id))?.perfilResultado).toBeNull()
+    const done = await patchLead(
+      request('PATCH', { key: 'escola', value: 'leitura', funnel, revision }, id),
       deps,
     )
-    expect((await res.json()).complete).toBe(false)
-    expect((await repo.getLead(id))?.perfilResultado).toBeNull()
+    expect((await done.json()).complete).toBe(true)
+    expect((await repo.getLead(id))?.perfilResultado).toBe('habilidades-escolares')
+  })
+  test('a manchete exibida vai na atribuição do lead (teste A/B)', async () => {
+    const fake = createFakeRepo()
+    const deps = { repo: fake.repo, secureCookie: false }
+    const make = async (quizHeadline: unknown) => {
+      const res = await createLead(
+        request('POST', {
+          funnel,
+          attribution: { landingPath: '/kids/comunidade-dos-criadores/quiz', quizHeadline },
+        }),
+        deps,
+      )
+      return (await fake.repo.getLead((await res.json()).id))?.attribution
+    }
+    expect((await make('tela'))?.quizHeadline).toBe('tela')
+    expect((await make('padrao'))?.quizHeadline).toBe('padrao')
+    expect((await make('<script>'))?.quizHeadline).toBeUndefined()
   })
   test('duas gravações concorrentes: somente uma revisão vence', async () => {
     const { deps, id, repo } = await setup(fixture())
     const responses = await Promise.all(
-      ['rever', 'experimentar'].map((value) =>
-        patchLead(request('PATCH', { key: 'q6', value, funnel, revision: 9 }, id), deps),
+      ['tenta', 'procura'].map((value) =>
+        patchLead(request('PATCH', { key: 'quando_trava', value, funnel, revision: 9 }, id), deps),
       ),
     )
     expect(responses.map((r) => r.status).sort()).toEqual([200, 409])

@@ -20,8 +20,9 @@ Cada versão do jogo tem um ciclo próprio. Uma versão nova pode ser planejada 
 
 - `transport.request` para `/api/pensa/*`;
 - `transport.streamChat` para o chat SSE da etapa Z;
-- `capabilities.pintaOwned` e `capabilities.studioOwned`;
-- `onOpenTask({ taskId, destination })`, que navega para `/pinta?tarefa=<id>` ou `/estudio?tarefa=<id>`;
+- `capabilities.pintaOwned` e `capabilities.studioOwned` (disponibilidade clássica); `capabilities.studioProAvailable?` separa o acesso Pro da paleta de blocos. O host Kids informa ambos; hosts antigos mantêm o fallback para `studioOwned`;
+- `onOpenTask({ taskId, destination, studioProjectId? })`: missões clássicas usam a rota da oficina com `?tarefa=`; um jogo Pro confirmado leva `studioProjectId` e usa navegação completa para `/estudio/pro/<id>?tarefa=<id>`;
+- `onOpenGame?({ projectId, studioAuthoring? })` abre o jogo do plano sem iniciar missão. `studioAuthoring: code` usa navegação completa para a rota Pro, preservando o isolamento do navegador;
 - tema e imagens opcionais do mascote.
 
 O adapter não cria projetos do Estúdio, não sincroniza snapshots e não renderiza editores. O pacote não conhece router, IndexedDB ou `LessonActivity`.
@@ -544,7 +545,7 @@ zero ou mais; sem ninguém, quem programa também desenha).
   dizem "alguém da equipe" (o "Colega" do `personName` é rótulo de lista). Nomes vêm de
   `GET …/team` (best-effort, relido quando muda quem está ou as funções).
 - **Quem pode o quê** (`canProgram` = `roles.code === viewer`; `isOwner` = `role !== 'member'`):
-  testar ("Já quero experimentar", o cartão do teste inteiro, "Voltar para ajustar"), guardar a
+  testar (o cartão do teste inteiro, "Voltar para ajustar"), guardar a
   versão pronta, "Escolher o próximo pedaço"/"Testar mudanças", "Adaptar meu caminho", "Encerrar
   por enquanto" e restaurar são de quem programa; no lugar, `.pensa-journey-team-note` "Quem testa e
   guarda as versões é Leo.". Arquivar, "Continuar este jogo" do arquivado e apagar são da dona (a
@@ -568,6 +569,195 @@ zero ou mais; sem ninguém, quem programa também desenha).
   as Funções, a trava e o 409, a leitura de quem entrou, tirar quem programa, sair com o foco no
   título, Esc; entrar com código e o erro; os chips; "Sua missão", o caminho com nomes, as três
   esperas; quem pode o quê; o compasso e a aba escondida).
+
+## Full review do v2 (15/10/2026)
+
+Pedido dela: "melhorar e não regredir". O v2 tinha perdido coisas boas do plano clássico, e o
+review achou defeitos de funcionamento. O que mudou, e que não pode voltar:
+
+- **A coluna fica no MEIO** (`.pensa-journey .sz-tool-band__inner`: teto `--pz-journey-max` + o
+  respiro das faixas, `margin-inline: auto`). Presa à esquerda, num monitor largo sobrava um vão
+  vazio à direita. As faixas seguem de borda a borda.
+- **Home:** com jogos, o campo do jogo NOVO fica atrás do **"+ Novo jogo"** (`aria-expanded`,
+  `aria-controls="pensa-new-game"`, "Cancelar" e Esc devolvem o foco ao botão); aberto sempre,
+  parecia o lugar de mexer no jogo de cima. No primeiro jogo ele nasce aberto. O cartão do jogo é
+  o do plano clássico (`.pensa-project-grid`/`.pensa-project-card` no `GameCard`): versão, etapa ou
+  "Pausado", equipe, trilha Z·E·R·O, "Editado há…", a **lixeira** (só de quem criou, com o
+  `ConfirmDialog`, foco de volta ao h1) e "Continuar". O nome acessível do botão continua "Abrir o
+  jogo <nome>".
+- **Rever uma etapa** (o "peek" do clássico): no `ZeroMap` a etapa feita é botão
+  (`aria-pressed`, "Feito. Ver de novo"); revendo, a atual vira "Voltar para agora". O
+  `StageReview` troca os cartões do momento (e esconde o campo): Z = a ideia contada (`intent`),
+  E = a proposta (o que veio da criança, o que o Zappy sugeriu, como testar), R = as missões com o
+  que cada uma faz, O = os testes guardados. Aviso `role="status"`, foco no título da revisão.
+- **"Meu caminho" fica à vista** (era uma sanfona "Ver meu caminho" dentro da seção de mesmo nome):
+  o h2 com "Missões feitas: N de M" e a lista num cartão branco. O "Ver o caminho" do cartão de
+  espera rola até ela e foca o h2.
+- **O cartão "O que ajudou a montar este caminho" SAIU** (decisão dela: é coisa interna). As
+  referências continuam na proposta, fora da tela.
+- **Renomear** com o lápis (`GameNameTitle`, molde do `ProjectNameTitle` do clássico): só a dona,
+  com o jogo ativo; otimista e desfeito se o servidor recusar. `PATCH /v2/projects/:id {name}`.
+- **A oficina precisa estar liberada:** "Continuar no X" fica desligado com a frase do porquê
+  (`toolOwned`, pelas `capabilities` do adapter) e o "Rever" some. Antes abria uma tela trancada.
+- **Ideias guardadas:** a lixeira de cada ideia (`remove_idea`), e guardar vale em qualquer momento
+  (pausado, versão pronta). Depois de guardar, o campo volta a ser a conversa (`planning`); antes
+  ficava preso em "guardar ideia" e o Zappy nunca respondia.
+- **O teste tem volta:** "Voltar para as missões" (antes de testar, com missão faltando) ou "Voltar
+  para ajustar" (depois de um teste), e "Travei nesta parte". Em equipe, quem faz as artes continua
+  vendo a SUA missão enquanto quem programa testa.
+- **Arquivado** só oferece apagar (dona); o cartão de encerrado e os cuidados que sempre falhariam
+  saíram. Pausar não aparece numa versão pronta, e no core retomar um jogo pausado E encerrado só
+  tira a pausa (antes desfazia a conclusão).
+- **"Adaptar meu caminho…"** pede confirmação na linha ("Sim, adaptar meu caminho"/"Deixar como
+  está"): refaz as próximas missões, e em equipe as de todos.
+- **Texto da criança não se perde:** o relato do teste mora no rascunho da aba (como o campo), os
+  chips de ideia somam ao texto em vez de trocar, e o primeiro envio leva o texto para o rascunho
+  do jogo recém-criado (se o envio falhar, "Atualizar" o traz de volta). Ctrl/Cmd+Enter envia.
+- **Recados:** rede caída vira frase ("Não consegui falar com o Pensa agora…"), o conflito genérico
+  diz o que houve ("Alguém da equipe mexeu no jogo. Já mostrei como ele está agora…"), o recado
+  rola para a vista, e um 404 de jogo v2 (apagado, ou a criança saiu da equipe) volta à lista com
+  "Esse jogo não está mais aqui…" em vez de cair no planejador clássico (só cai lá se o id for de um
+  plano clássico). Depois de uma ação que desmonta o botão, o foco vai ao título do cartão novo.
+- **Travessão:** a régua mora no BFF (`member-shell/src/lib/kid-text.ts`, `semTravessao`), aplicada
+  em toda saída do modelo; aqui, nenhum texto fixo usa travessão.
+- Testes: `components/JourneyApp.review.test.tsx`. ⚠️ Consultas por papel (`getByRole`) ficam MUITO
+  lentas nesta árvore no happy-dom (dezenas de segundos sob carga): em teste novo, prefira rótulo e
+  texto.
+
+## "Abrir meu jogo" abre o JOGO, não uma missão (15/10/2026)
+
+Relato dela: "Abrir meu jogo", na hora de testar, levava ao Estúdio com "a tarefa mudou em outro
+lugar, recarreguei o guia do Pensa para você". A criança podia testar antes de terminar as missões
+(o antigo "Já quero experimentar", que saiu em 15/10/2026), e o botão abria a ÚLTIMA missão do Estúdio, que ainda dependia das
+anteriores: o Estúdio tentava começá-la e o servidor recusava (409 de missão anterior pendente).
+
+- `PensaHostAdapter.onOpenGame?({ projectId })` (opcional): o botão chama ele quando o host sabe
+  abrir o jogo do plano direto (o kids manda para `/estudio?projeto=pensa-<id>`, que só retoma o
+  que existe e nunca mexe em missão). Sem ele, cai na missão do Estúdio mais adiantada que JÁ
+  começou (`gameTask`), nunca na que ainda espera.
+- Testes: `JourneyApp.team.test.tsx`, describe "Abrir meu jogo" na hora de testar.
+- **Full review (15/10/2026):** com `onOpenGame` o botão vale mesmo numa versão sem missão do
+  Estúdio; sem ele, o reserva (`gameTask`) nunca é uma missão que ainda depende de outra (sem
+  nenhuma que possa abrir, o botão some). E o botão só aparece com o Estúdio liberado
+  (`toolOwned('studio')`), como os outros atalhos: sem ele, a criança caía numa tela trancada.
+
+## O que veio do sandbox: perguntas com respostas, ideias e usos (15/10/2026)
+
+Pedido dela, depois da análise do repositório `code-with-antonio/sandbox` (o `ask_player`, as
+sugestões da home e o "jogo é julgado nos primeiros dez segundos"). A criança continua contando a
+ideia do jeito dela; o Zappy só pergunta o que muda a primeira missão, e quando pergunta, oferece
+respostas para tocar. O contrato da pergunta mora no core (`PENSA_QUESTION_TOPICS`,
+`PensaQuestionChoices`, `pensaQuestionsLeft`); as regras do modelo, no member-shell.
+
+- **A pergunta com respostas** (`pendingQuestion` no `JourneyApp`): a última mensagem do Zappy com
+  `choices`, com a conversa no planejamento e nada rodando. O rótulo do campo vira o assunto
+  ("Sobre: o que você faz no jogo", `QUESTION_TOPIC`) e a pergunta; embaixo, as respostas em
+  cartões (`.pensa-journey-answer`, o nome e o que muda no jogo) e, na linha de baixo, "Tanto faz,
+  escolhe você" (`ANY_ANSWER`, o prompt sabe ler) e "Contar do meu jeito" (limpa a resposta pronta
+  e foca o campo). ⚠️ **Tocar só PREENCHE o campo** (o gesto dos chips que ela aprovou; o sandbox
+  envia direto e aqui não): uma resposta troca a outra, e o que a criança escreveu do jeito dela
+  fica, com a resposta embaixo. A escolhida tem `aria-pressed`. O placeholder vira "Ou conte do seu
+  jeito.". Na conversa, o assunto aparece só nas perguntas já respondidas (a da vez está no campo).
+- **Ideias para começar** (`IDEA_STARTERS`, o `suggestions.ts` do sandbox): seis botões na home
+  do jogo novo, só com o campo vazio. O texto é a ideia INTEIRA na voz da criança (o que ela faz, o
+  que acontece e como termina), para o Zappy ir direto à proposta sem perguntar; só o começo do
+  Jogo 2D, e nada de 2D ou 3D no texto (quem decide é o que ela tem liberado).
+- **O selo de usos do Zappy voltou** (`AiCreditsBadge`, o do plano clássico, que o v2 tinha
+  perdido): `GET /v2/credits` (sempre 200; `null` = "não sei" e o selo some), relido ao abrir e
+  quando o Zappy termina. Acabou: o campo mostra o `AiCreditsNotice` e o "Enviar" fica desligado
+  ANTES de ela escrever (guardar ideia não gasta e segue valendo).
+- **A espera diz a etapa de verdade** (`waitingSteps`, como o sandbox mostra cada passo):
+  planejamento = "Entendendo a sua ideia" (`propose`) → "Conferindo com os seus blocos e montando
+  o começo" (`review`); preparação = "Você escolheu o começo" ✓ → "Escrevendo o passo a passo de
+  cada missão". A ajuda mantém os pontinhos.
+- **As ideias para depois ajudam a próxima versão**: os chips do campo dizem "Ou comece por uma
+  ideia para depois" (o Zappy agora guarda até 2 caprichos dele em `later`, que entram no backlog)
+  e somem enquanto uma pergunta espera resposta.
+- ⚠️ **Conserto do lote anterior:** o primeiro envio da home copia o texto para o rascunho do jogo
+  novo; depois do sucesso esse rascunho agora é apagado também, senão a ideia voltava para o campo
+  do jogo (medido no playground; o teste espera a recarga do rascunho e falha sem o conserto).
+- **Playground:** ideia curta (menos de 40 letras) recebe UMA pergunta com respostas e o nome
+  provisório "O voo do dragão"; a espera passa por `review`; `/v2/credits` responde 13 ideias.
+- Testes: `components/JourneyApp.questions.test.tsx`.
+
+### Full review do lote acima (15/10/2026)
+
+- ⚠️⚠️ **Responder ao Zappy não gasta uso novo, e a tela não pode barrar.** Quando o Zappy
+  pergunta, a operação fica `waiting` e a reserva dela continua contando no saldo; a resposta
+  RETOMA o mesmo pedido (a régua do `start` no members). Com a última ideia do dia, a tela dizia
+  "acabou" e desligava o "Enviar" justo na resposta que o servidor aceitaria. `reusesHold` (a mesma
+  conta do members: planejamento por planejamento ou na proposta, ajuda por ajuda) tira o bloqueio
+  e diz "Responder ao Zappy não gasta uma ideia nova."; o `send()` aplica a mesma regra (o
+  Ctrl/Cmd+Enter também chega lá).
+- ⚠️⚠️ **A pergunta feita na proposta volta ao reabrir.** `questionWaiting` (a última mensagem é
+  pergunta do Zappy e nada roda) abre o campo sozinho, sem depender de `talking`; antes a pergunta
+  do "Quero mudar uma coisa" sumia ao sair e voltar, e "Vamos construir esse começo" era recusado
+  pelo servidor (o aceite exige a operação no passo `choice`) num laço de "A tarefa mudou". Com
+  pergunta esperando, o aceite fica desligado com "Responda a pergunta do Zappy antes de escolher
+  esse começo."
+- **A resposta pronta é a ÚLTIMA linha do campo** (`chosenAnswer`): tocar outra a troca, o texto
+  da criança acima fica, "Contar do meu jeito" tira só ela e o `aria-pressed` compara com ela.
+  Antes as respostas se somavam a cada toque. Tocar não leva o foco ao campo (no tablet o teclado
+  cobria as respostas e o "Enviar"); só o "Contar do meu jeito" leva.
+- **O selo de usos relê** depois de toda ação (`creditsTick` no `finally` do `run`), ao entrar num
+  jogo e ao voltar para a aba (`visibilitychange`); antes só quando o Zappy terminava, e um
+  "acabou" ficava preso até recarregar a página.
+- ⚠️ As etapas da espera usam `.pensa-journey-progress`: com o nome `.pensa-journey-steps` elas
+  sobrescreviam a lista numerada de "Hora de testar" e da revisão da etapa E. A etapa de agora tem
+  um ponto dentro, além da cor (com menos movimento ela não pisca).
+- "ou fale" só aparece quando o host passa `renderVoiceInput` (os pais ligam a fala por criança).
+
+## Etapa R: um caminho só (15/10/2026)
+
+Relato dela: o cartão da missão tinha três botões ("Continuar no Estúdio", "Travei nesta parte",
+"Já quero experimentar") e a criança ficava na dúvida; "Já quero experimentar" mandava o comando
+`observe`, que pulava para a etapa O sem missão feita, e o "Abrir meu jogo" de lá ia ao Estúdio
+atrás de um jogo que ainda não existia. Decisão dela (opção A de três): um caminho só.
+
+- O botão principal diz o que FAZ (`missionCta`): "Começar a missão no Estúdio" para a missão
+  planejada, "Continuar a missão no …" para a começada. "Travei nesta parte" ficou como botão
+  discreto (`sz-tool-pill--quiet`).
+- O que fazer está escrito: enquanto nenhuma missão foi concluída, uma lista de três passos
+  (`aria-label="Como fazer a missão"`: tocar no botão, seguir o Guia do Pensa, apertar ▶ Reproduzir
+  e "Experimentei e funcionou", ou só o "Experimentei" fora do Estúdio); depois, uma linha só.
+  Com a oficina da missão trancada, só o aviso de por quê: os passos mandariam tocar num botão
+  desligado.
+- ⚠️ **Não existe mais botão que leve à etapa O.** Ela começa quando a criança CONTA o resultado do
+  teste, e a tela de teste só aparece com as missões dela feitas. O BFF parou de aceitar `observe`
+  pelo `command` (a rota `/test` observa e registra junto).
+- O rascunho do campo não se perde mais se a criança digita no instante em que o jogo abre: a
+  leitura do rascunho guardado não sobrescreve o que já foi digitado para o mesmo projeto (era a
+  causa de um teste instável de troca de perfil).
+- Testes: `JourneyApp.test.tsx` ("etapa R: um caminho só…" e "missão começada diz Continuar…").
+
+## Desenhar a arte é uma oferta (15/10/2026)
+
+Pergunta dela: "em que momento as missões do Pinta e do Molda são definidas?" (o teste dela só
+teve Estúdio). Decisão dela (opção C de três): o Zappy OFERECE desenhar, e a missão de arte só
+entra se a criança aceitar.
+
+- O planejador começa com figuras prontas do Estúdio e só cria missão do Pinta ou do Molda quando
+  a criança pediu para desenhar ou modelar (regra do `JOURNEY_SYSTEM`, no member-shell).
+- O cartão do começo (`JourneyApp`, `artOffer`) mostra a oferta com o ladrilho do Pinta, ou do
+  Molda num jogo 3D. Aparece só na versão 1, com todas as missões do Estúdio e nenhuma usando arte
+  dela (`asset`), nenhuma missão de arte já feita no ciclo, a oficina no `capabilities` da
+  proposta, um uso do Zappy disponível, o campo fora do "guardar ideia" e o Zappy sem pergunta
+  esperando. Os textos moram em `ART_OFFERS`: `self` ("Quer desenhar o seu personagem?") e
+  `team`, para quem só programa numa equipe ("Quer o personagem desenhado no Pinta?", pedindo a
+  quem cuida das artes).
+- Aceitar é o gesto das respostas prontas: o pedido vai para a ÚLTIMA linha do campo, embaixo do
+  que ela já escreveu, e nada sai sozinho. O botão fica, com `aria-pressed` (o foco não se perde),
+  e tocar de novo tira o pedido; o texto do cartão (`aria-live`) troca para "Agora toque em
+  "Enviar para o Zappy"…", e a tela rola até o campo sem focar (no tablet o teclado cobriria o
+  envio). O envio é de planejamento e retoma o mesmo pedido do Zappy (não gasta uso novo).
+- Estilo: `.pensa-journey-offer` (`journey.css`), no fundo `--pz-surface-2`; o botão quebra a
+  linha (a pílula é `nowrap`) para caber num celular de 320px.
+- O planejamento de uma versão é UMA operação do members, mas cada mensagem que abre ou retoma o
+  pedido (e o "Vamos construir esse começo") ganha a sua cota de 6 chamadas ao Zappy; a conversa
+  para em 24 no pedido, e os guias nunca param nesse teto (ver o CLAUDE.md do members). Antes eram
+  10 para tudo, e a ideia com quatro rodadas de "Quero mudar uma coisa" esgotava os guias.
+- Testes: `JourneyApp.artOffer.test.tsx` e o caso do `JOURNEY_SYSTEM` em
+  `member-shell/tests/pensa-journey-worker.test.ts`.
 
 ## Verificação
 

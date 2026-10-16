@@ -1,4 +1,12 @@
 import { z } from 'zod'
+/** Revision 3 adds sourced demonstration recipes to strict video documents. */
+export const WORKSPACE_PROTOCOL = 3
+export const workspaceProtocolSchema = z
+  .object({
+    protocol: z.number().int().min(1).max(WORKSPACE_PROTOCOL),
+    minimumDesktopProtocol: z.number().int().min(1).max(WORKSPACE_PROTOCOL),
+  })
+  .strict()
 export const idSchema = z.string().uuid()
 export const hashSchema = z.string().regex(/^[a-f0-9]{64}$/)
 export const timestampSchema = z.string().datetime({ offset: true })

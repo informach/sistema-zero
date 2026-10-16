@@ -1,0 +1,35 @@
+[WebServer] $ bun scripts/serve-e2e.ts
+[WebServer] Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer]       at warnOnDeactivatedColors (internal:tty:33:24)
+[WebServer]       at getColorDepth (internal:tty:42:39)
+[WebServer]       at shouldColorize (internal:util/colors:14:109)
+[WebServer]       at refresh (internal:util/colors:18:31)
+[WebServer]       at internal:util/colors (internal:util/colors:24:16)
+[WebServer]       at internal:assert/assertion_error (internal:assert/assertion_error:2:187)
+[WebServer]       at loadAssertionError (node:assert:28:96)
+[WebServer]
+[WebServer] [plugin builtin:vite-reporter]
+[WebServer] (!) Some chunks are larger than 500 kB after minification. Consider:
+[WebServer] - Using dynamic import() to code-split the application
+[WebServer] - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+[WebServer] - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+
+Running 11 tests using 1 worker
+
+(node:40204) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:40204) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [chromium] › e2e\fidelity.spec.ts:16:3 › five reference compositions preserve real geometry and platform identity: default (13.2s)
+  ✓   2 [chromium] › e2e\fidelity.spec.ts:16:3 › five reference compositions preserve real geometry and platform identity: pink (11.8s)
+  ✓   3 [chromium] › e2e\fidelity.spec.ts:16:3 › five reference compositions preserve real geometry and platform identity: dark (10.4s)
+  ✓   4 [chromium] › e2e\scene-authoring.spec.ts:14:1 › basic rings and scale preserve undo, and visible edge points cut two closed native pieces (3.3s)
+  ✓   5 [chromium] › e2e\scene-authoring.spec.ts:120:1 › intermediate precision opens local axes, pivot Y, alignment and a worker-backed numeric cut (2.4s)
+  ✓   6 [chromium] › e2e\scene-authoring.spec.ts:172:1 › advanced curves and UV keep the live stage, exact times and reversible graph gestures (3.0s)
+  ✓   7 [chromium] › e2e\scene-authoring.spec.ts:240:1 › paint uses the real UV grid, saved palette, temporary picker and one undo per stroke (5.5s)
+  ✓   8 [chromium] › e2e\scene-authoring.spec.ts:349:1 › basic authoring keeps the reference layout and exact imported key times (6.1s)
+  ✓   9 [chromium] › e2e\scene-authoring.spec.ts:442:1 › move and pivot handles commit one drag, cancel interruptions and work while posing (3.0s)
+  ✓  10 [chromium] › e2e\scene-authoring.spec.ts:506:1 › intermediate batch edits preview, cancel, confirm and undo without changing the saved scene early (2.1s)
+  ✓  11 [chromium] › e2e\scene-timeline-resize.spec.ts:8:1 › timeline dragging, cancellation, collapse, resize and reopening preserve the scene and playhead (6.7s)
+
+  11 passed (1.2m)

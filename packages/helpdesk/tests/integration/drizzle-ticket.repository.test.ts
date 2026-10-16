@@ -32,6 +32,18 @@ integration('DrizzleTicketRepository', () => {
     await connection.close()
   })
 
+  it('um patch operacional preserva a IA gravada depois da leitura humana', async () => {
+    const ticket = makeTicket({ aiGeneration: 1 })
+    await repository.create(ticket)
+    const at = new Date()
+    await repository.applyDraft(ticket.id, { generation: 1 }, 'Resposta recém-gerada', null, at)
+    const saved = await repository.patch(ticket.id, ticket.version, { priority: 'alta' }, at)
+    expect(saved?.priority).toBe('alta')
+    expect(saved?.aiDraft).toBe('Resposta recém-gerada')
+    expect(saved?.version).toBe(ticket.version + 1)
+    expect(await repository.patch(ticket.id, ticket.version, { priority: 'baixa' }, at)).toBeNull()
+  })
+
   it('filters, orders, and aggregates the SLA queue in PostgreSQL', async () => {
     const now = new Date('2026-09-01T12:00:00.000Z')
     const breached = makeTicket({
@@ -160,11 +172,14 @@ integration('DrizzleTicketRepository', () => {
       .where(eq(tickets.id, ticket.id))
 
     const staleGuard = { generation: 1, processingAttempt: 1 }
-    expect(await repository.applyDraft(ticket.id, staleGuard, 'rascunho obsoleto', at)).toBe(false)
+    expect(await repository.applyDraft(ticket.id, staleGuard, 'rascunho obsoleto', null, at)).toBe(
+      false,
+    )
     expect(await repository.markAiDone(ticket.id, staleGuard, at)).toBe(false)
     expect(await repository.byId(ticket.id)).toMatchObject({
       aiGeneration: 2,
       aiStatus: 'pending',
+      aiDraftRunId: null,
       aiDraft: null,
     })
   })

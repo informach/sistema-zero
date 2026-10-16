@@ -1,0 +1,141 @@
+{
+  "initial": {
+    "files": [
+      "index-Bqcl-ETQ.js",
+      "chunk-QTnfLwEv.js",
+      "preload-helper-B8fFrdxC.js",
+      "react-2v2mEj6a.js",
+      "projectDocument-1YdckeW7.js",
+      "proAssetPaths-ADadSaQ7.js",
+      "behaviorAreas-Zm7ssrOa.js",
+      "core-Cf5ve_8p.js"
+    ],
+    "raw": 342706,
+    "gzip": 112968
+  },
+  "route": {
+    "files": [
+      "assets/StudioEditor-4XnfauVO.js",
+      "assets/preview-Cfr1lPS3.js",
+      "assets/scriptIntegrity-XDo98Tgm.js",
+      "assets/extensions-BSq_jWE6.js",
+      "assets/ir-Dh3Q5_iX.js",
+      "assets/blocksStateVersion-Cw0msbXV.js",
+      "assets/generators-ZsbxeTz6.js",
+      "assets/projectValidation-BkOSyl_J.js",
+      "assets/registry-Bypnl08h.js",
+      "assets/resolve-DdpWOfGt.js",
+      "assets/lib-BifqSsSr2.js",
+      "assets/lessonMarkdown-BaAhm7Ou.js",
+      "assets/observation-BSNwdget.js",
+      "assets/has3DConsumer-C10qyRIJ.js",
+      "assets/blockCatalog-Drp6t-Gx.js",
+      "assets/projectStore-CNpxEo6u.js",
+      "assets/pro-runtime-CA4krnm4.js",
+      "assets/layoutContext-DvZBXcU3.js",
+      "assets/App-3H5HG-7-.js"
+    ],
+    "raw": 4024412,
+    "gzip": 1226436
+  },
+  "modes": [
+    {
+      "modeName": "BlocksMode",
+      "budget": {
+        "raw": 4750000,
+        "gzip": 1450000,
+        "files": 20
+      },
+      "files": [
+        "assets/BlocksMode-C01T4iTN.js",
+        "assets/observation-BSNwdget.js",
+        "assets/bridgeReverseParse-lH8EzNr0.js",
+        "assets/gameStorage-BD0tfcpB.js",
+        "assets/preview-Cfr1lPS3.js",
+        "assets/scriptIntegrity-XDo98Tgm.js",
+        "assets/extensions-BSq_jWE6.js",
+        "assets/ir-Dh3Q5_iX.js",
+        "assets/blocksStateVersion-Cw0msbXV.js",
+        "assets/generators-ZsbxeTz6.js",
+        "assets/projectValidation-BkOSyl_J.js",
+        "assets/registry-Bypnl08h.js",
+        "assets/resolve-DdpWOfGt.js",
+        "assets/lib-BifqSsSr2.js",
+        "assets/extensionsAdapter-Cr2fxPXN.js",
+        "assets/projectStore-CNpxEo6u.js",
+        "assets/blockly-CL3iMGB_.js",
+        "assets/blockCatalog-Drp6t-Gx.js",
+        "assets/FieldTileGrid-Dvt1JJu_.js",
+        "assets/layoutContext-DvZBXcU3.js"
+      ],
+      "raw": 4525059,
+      "gzip": 1161203
+    },
+    {
+      "modeName": "BridgeMode",
+      "budget": {
+        "raw": 4500000,
+        "gzip": 1450000,
+        "files": 20
+      },
+      "files": [
+        "assets/BridgeMode-jpd1SLjB.js",
+        "assets/preview-Cfr1lPS3.js",
+        "assets/scriptIntegrity-XDo98Tgm.js",
+        "assets/extensions-BSq_jWE6.js",
+        "assets/ir-Dh3Q5_iX.js",
+        "assets/blocksStateVersion-Cw0msbXV.js",
+        "assets/generators-ZsbxeTz6.js",
+        "assets/projectValidation-BkOSyl_J.js",
+        "assets/registry-Bypnl08h.js",
+        "assets/resolve-DdpWOfGt.js",
+        "assets/lib-BifqSsSr2.js",
+        "assets/useFormatIssueLogger-B4y9cRMB.js",
+        "assets/layoutContext-DvZBXcU3.js",
+        "assets/projectStore-CNpxEo6u.js",
+        "assets/bridgeReverseParse-lH8EzNr0.js",
+        "assets/gameStorage-BD0tfcpB.js",
+        "assets/extensionsAdapter-Cr2fxPXN.js",
+        "assets/blockly-CL3iMGB_.js",
+        "assets/blockCatalog-Drp6t-Gx.js",
+        "assets/FieldTileGrid-Dvt1JJu_.js",
+        "assets/observation-BSNwdget.js"
+      ],
+      "raw": 4028988,
+      "gzip": 1032403
+    },
+    {
+      "modeName": "CodeMode",
+      "budget": {
+        "raw": 4000000,
+        "gzip": 1300000,
+        "files": 18
+      },
+      "files": [
+        "assets/CodeMode-n91tdWJs.js",
+        "assets/gameStorage-BD0tfcpB.js",
+        "assets/preview-Cfr1lPS3.js",
+        "assets/scriptIntegrity-XDo98Tgm.js",
+        "assets/extensions-BSq_jWE6.js",
+        "assets/ir-Dh3Q5_iX.js",
+        "assets/blocksStateVersion-Cw0msbXV.js",
+        "assets/generators-ZsbxeTz6.js",
+        "assets/projectValidation-BkOSyl_J.js",
+        "assets/registry-Bypnl08h.js",
+        "assets/resolve-DdpWOfGt.js",
+        "assets/lib-BifqSsSr2.js",
+        "assets/modelPaths-x8kAl7Qv.js",
+        "assets/proAssets-CrBCkles.js",
+        "assets/webContainerClient-CIw9IVlQ.js",
+        "assets/useFormatIssueLogger-B4y9cRMB.js",
+        "assets/layoutContext-DvZBXcU3.js",
+        "assets/projectStore-CNpxEo6u.js",
+        "assets/ProAssetPaths-DmopLUml.js",
+        "assets/proRevision-DlLjkF9D.js",
+        "assets/pro-runtime-CA4krnm4.js"
+      ],
+      "raw": 2243156,
+      "gzip": 608602
+    }
+  ]
+}

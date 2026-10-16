@@ -256,6 +256,12 @@ test('trocar de perfil remove a conversa anterior e não copia seu rascunho', as
   const rendered = render(<PensaApp adapter={adapter} initialProjectId="p1" />)
   await screen.findByText('Minha ideia particular')
   fireEvent.change(screen.getByRole('textbox'), { target: { value: 'Rascunho particular' } })
+  // O rascunho de A fica guardado. Ele chegou a se perder em ~1 de 5 rodadas: a leitura do rascunho
+  // guardado chegava DEPOIS da digitação e apagava o texto (15/10/2026; a leitura não sobrescreve
+  // mais o que já foi digitado para o mesmo projeto).
+  await waitFor(() =>
+    expect(sessionStorage.getItem('sz:pensa-v2:draft:child-a:p1')).toBe('Rascunho particular'),
+  )
   rendered.rerender(<PensaApp adapter={{ ...adapter, viewerId: 'child-b' }} />)
   await screen.findByLabelText('Como é o jogo que está na sua cabeça?')
   expect(Boolean(screen.queryByText('Minha ideia particular'))).toBe(false)
@@ -310,7 +316,12 @@ test('arquivar em uma visita anterior não fecha o outro jogo que a criança abr
 
 // ── Direção de arte e atalhos (14/10/2026) ──────────────────────────────────────────────────
 
-function openView(view: PensaJourneyView, tasks: unknown[] = []) {
+function openView(
+  view: PensaJourneyView,
+  tasks: unknown[] = [],
+  capabilities: PensaHostAdapter['capabilities'] = { studioOwned: true, pintaOwned: true },
+  onOpenGame?: PensaHostAdapter['onOpenGame'],
+) {
   const request = mock(async (path: string) => {
     if (path === '/v2/projects/p1') return view
     if (path.startsWith('/cycles/')) return { tasks, nextTaskId: null }
@@ -322,12 +333,13 @@ function openView(view: PensaJourneyView, tasks: unknown[] = []) {
   const adapter: PensaHostAdapter = {
     viewerId: 'child-a',
     mode: 'kids',
-    capabilities: { studioOwned: true, pintaOwned: true },
+    capabilities,
     transport: {
       request: request as PensaHostAdapter['transport']['request'],
       streamChat: () => () => {},
     },
     onOpenTask,
+    onOpenGame,
   }
   render(<PensaApp adapter={adapter} initialProjectId="p1" />)
   return { request, onOpenTask }
@@ -365,8 +377,52 @@ test('a missão mostra a oficina, a posição no caminho e abre no destino certo
     mission('m2', 'studio', 'planned', ['m1']),
   ])
   await screen.findByText('Sua próxima missão · 2 de 2')
-  fireEvent.click(screen.getByRole('button', { name: 'Continuar no Estúdio' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Começar a missão no Estúdio' }))
   expect(onOpenTask).toHaveBeenCalledWith({ taskId: 'm2', destination: 'studio' })
+})
+
+test('etapa R: um caminho só, o que fazer escrito e nada que pule para o teste', async () => {
+  // Relato dela (15/10/2026): três botões e a criança na dúvida; "Já quero experimentar" levava à
+  // etapa O sem missão feita e abria um jogo que ainda não existia.
+  const view = current()
+  view.journey.stage = 'building'
+  view.journey.missionIds = ['m1', 'm2']
+  openView(view, [mission('m1', 'studio', 'planned'), mission('m2', 'pinta', 'planned', ['m1'])])
+  await screen.findByText('Sua próxima missão · 1 de 2')
+  const passos = screen.getByRole('list', { name: 'Como fazer a missão' })
+  expect(passos.textContent).toContain('Começar a missão no Estúdio')
+  expect(passos.textContent).toContain('▶ Reproduzir')
+  expect(passos.textContent).toContain('Experimentei e funcionou')
+  expect(screen.getByRole('button', { name: 'Começar a missão no Estúdio' })).toBeTruthy()
+  expect(screen.getByRole('button', { name: 'Travei nesta parte' })).toBeTruthy()
+  expect(screen.queryByRole('button', { name: 'Já quero experimentar' })).toBeNull()
+  expect(screen.queryByRole('button', { name: /experimentar/i })).toBeNull()
+})
+
+test('etapa R: com a oficina trancada, o aviso diz por quê e os passos não apontam o botão desligado', async () => {
+  const view = current()
+  view.journey.stage = 'building'
+  view.journey.missionIds = ['m1']
+  openView(view, [mission('m1', 'pinta', 'planned')], { studioOwned: true, pintaOwned: false })
+  await screen.findByText(/O Pinta ainda não está liberado para você/)
+  expect(screen.queryByRole('list', { name: 'Como fazer a missão' })).toBeNull()
+  expect(
+    screen.getByRole('button', { name: 'Começar a missão no Pinta' }).hasAttribute('disabled'),
+  ).toBe(true)
+})
+
+test('etapa R: missão começada diz "Continuar", e depois da primeira o "como fazer" encolhe', async () => {
+  const view = current()
+  view.journey.stage = 'building'
+  view.journey.missionIds = ['m1', 'm2']
+  openView(view, [
+    mission('m1', 'studio', 'completed'),
+    mission('m2', 'pinta', 'in_progress', ['m1']),
+  ])
+  await screen.findByText('Sua próxima missão · 2 de 2')
+  expect(screen.getByRole('button', { name: 'Continuar a missão no Pinta' })).toBeTruthy()
+  expect(screen.queryByRole('list', { name: 'Como fazer a missão' })).toBeNull()
+  expect(screen.getByText(/O Guia do Pensa abre junto/)).toBeTruthy()
 })
 
 test('travar oferece atalhos que só PREENCHEM o campo, sem enviar nada', async () => {
@@ -426,4 +482,51 @@ test('sem plano antigo, a home abre o campo do código sem passar pelo plano cl�
   fireEvent.click(await screen.findByRole('button', { name: 'Entrar com um código' }))
   expect(screen.getByLabelText('Código do plano de um colega')).toBeTruthy()
   expect(onLegacy).not.toHaveBeenCalled()
+})
+
+test('a saved Pro plan identifies the code editor and carries its game identity to the host', async () => {
+  const view = current()
+  view.studioAuthoring = 'code'
+  view.journey.stage = 'building'
+  view.journey.missionIds = ['m1']
+  const { onOpenTask } = openView(view, [mission('m1', 'studio', 'planned')], {
+    studioOwned: false,
+    studioProAvailable: true,
+    pintaOwned: true,
+  })
+  fireEvent.click(await screen.findByRole('button', { name: 'Começar a missão no Estúdio Pro' }))
+  expect(onOpenTask).toHaveBeenCalledWith({
+    taskId: 'm1',
+    destination: 'studio',
+    studioProjectId: 'pensa-p1',
+  })
+  fireEvent.click(screen.getByRole('button', { name: 'Travei nesta parte' }))
+  expect(screen.getByRole('button', { name: 'Não achei o trecho de código' })).toBeTruthy()
+  expect(screen.queryByRole('button', { name: 'Não achei o bloco certo' })).toBeNull()
+})
+
+test('Abrir meu jogo preserves Pro authoring without starting a mission', async () => {
+  const view = current()
+  view.studioAuthoring = 'code'
+  view.journey.stage = 'observing'
+  const onOpenGame = mock()
+  const { onOpenTask } = openView(view, [], undefined, onOpenGame)
+  fireEvent.click(await screen.findByRole('button', { name: 'Abrir meu jogo' }))
+  expect(onOpenGame).toHaveBeenCalledWith({ projectId: 'p1', studioAuthoring: 'code' })
+  expect(onOpenTask).not.toHaveBeenCalled()
+})
+
+test('Pro access does not unlock a classic mission without earned blocks', async () => {
+  const view = current()
+  view.journey.stage = 'building'
+  view.journey.missionIds = ['m1']
+  const { onOpenTask } = openView(view, [mission('m1', 'studio', 'planned')], {
+    studioOwned: false,
+    studioProAvailable: true,
+    pintaOwned: true,
+  })
+  const start = await screen.findByRole('button', { name: 'Começar a missão no Estúdio' })
+  expect(start.hasAttribute('disabled')).toBe(true)
+  fireEvent.click(start)
+  expect(onOpenTask).not.toHaveBeenCalled()
 })

@@ -8,6 +8,50 @@ export type PensaJourneyStage =
   | 'observing'
   | 'closed'
 export type PensaDestination = 'studio' | 'pinta' | 'molda'
+
+export interface PensaMissionTarget {
+  taskId: string
+  destination: PensaDestination
+  /** Present only when the server reports a committed Pro game for this plan. */
+  studioProjectId?: string
+}
+
+export function pensaMissionTarget(
+  task: { id: string; destination: PensaDestination },
+  view: Pick<PensaJourneyView, 'project' | 'studioAuthoring'>,
+): PensaMissionTarget {
+  return {
+    taskId: task.id,
+    destination: task.destination,
+    ...(task.destination === 'studio' && view.studioAuthoring === 'code'
+      ? { studioProjectId: `pensa-${view.project.id.replaceAll('-', '')}` }
+      : {}),
+  }
+}
+
+/** Display-only instructions after conversion. They never replace persisted progress IDs. */
+export function pensaCodeTransitionInstructions() {
+  return [
+    {
+      id: 'code-open',
+      text: 'Abra a lista de arquivos e localize o script do jogo.',
+      hint: 'Veja em index.html quais scripts o jogo usa. Na conversão, scripts globais ficam em public/ e módulos em src/converted/.',
+      required: false,
+    },
+    {
+      id: 'code-edit',
+      text: 'Localize no código a parte ligada ao objetivo desta missão.',
+      hint: 'Altere uma parte de cada vez. Se precisar, selecione o trecho e use Explicar seleção com Zappy Pro, ou peça ajuda no Pensa.',
+      required: false,
+    },
+    {
+      id: 'code-test',
+      text: 'Execute o jogo na pré-visualização e faça o teste desta missão.',
+      hint: 'Compare o resultado com o critério abaixo. Corrija o código e teste de novo antes de concluir.',
+      required: false,
+    },
+  ]
+}
 export interface PensaJourneyActor {
   profileId: string
   accountId: string
@@ -18,6 +62,8 @@ export interface PensaCapabilitySnapshot {
   profileId: string
   rank: string
   studio: boolean
+  /** Existing snapshots without this field were planned for blocks. */
+  studioAuthoring?: 'blocks' | 'code'
   pinta: boolean
   molda: boolean
   dimensions: Array<'2d' | '3d'>
@@ -78,6 +124,29 @@ export interface PensaProposal {
   capabilities: PensaCapabilitySnapshot
 }
 
+/**
+ * Do que trata a pergunta do Zappy (o selo em cima dela). Só o que muda a primeira missão vira
+ * pergunta: cor, som, cenário e nomes o Zappy decide e mostra como sugestão dele.
+ */
+export const PENSA_QUESTION_TOPICS = [
+  'action',
+  'goal',
+  'challenge',
+  'controls',
+  'world',
+  'dimension',
+] as const
+export type PensaQuestionTopic = (typeof PENSA_QUESTION_TOPICS)[number]
+/** Uma resposta pronta: o rótulo vai para o campo; a descrição diz o que muda no jogo. */
+export interface PensaQuestionOption {
+  label: string
+  description: string
+}
+export interface PensaQuestionChoices {
+  about: PensaQuestionTopic
+  options: PensaQuestionOption[]
+}
+
 export interface PensaJourneyMessage {
   id: string
   role: 'user' | 'assistant'
@@ -85,6 +154,18 @@ export interface PensaJourneyMessage {
   at: string
   revision: number
   final: boolean
+  /** Só nas perguntas do Zappy (15/10/2026): as respostas para tocar. Mensagens antigas não têm. */
+  choices?: PensaQuestionChoices
+}
+
+/**
+ * Quantas perguntas o Zappy ainda pode fazer antes de propor. Na primeira versão são duas; com o
+ * jogo já construído (uma versão guardada ou resultados prontos) o jogo responde quase tudo e
+ * sobra uma. Passado o teto, o planejador é obrigado a propor e completar o resto como sugestão.
+ */
+export function pensaQuestionsLeft(journey: PensaJourney): number {
+  const limit = journey.checkpoint || journey.builtResults?.length ? 1 : 2
+  return Math.max(0, limit - (journey.questionsAsked ?? 0))
 }
 
 export interface PensaObservedTest {
@@ -117,6 +198,13 @@ export interface PensaJourney {
   intent: string
   builtResults?: string[]
   revising?: boolean
+  /** Perguntas do Zappy desde a última proposta (a régua é `pensaQuestionsLeft`). */
+  questionsAsked?: number
+  /**
+   * O nome que o Zappy deu ao jogo junto com a primeira pergunta, antes da proposta. Enquanto o
+   * jogo ainda se chamar assim, o título da proposta pode trocá-lo; renomeado, o nome é da criança.
+   */
+  workingTitle?: string | null
   messages: PensaJourneyMessage[]
   proposal: PensaProposal | null
   acceptedProposalId: string | null
@@ -125,10 +213,68 @@ export interface PensaJourney {
   tests: PensaObservedTest[]
   testSessionStart?: number
   checkpoint: PensaCheckpointRef | null
+  /**
+   * O jogo que já existe (15/10/2026): a proposta da versão construída (ou da que estava em
+   * construção, num "Adaptar meu caminho") e as extensões que as versões usaram. Ao começar a
+   * versão seguinte, `proposal` guarda uma cópia dela, mas a primeira proposta nova toma o lugar;
+   * sem este campo, o Zappy lia a proposta ainda não construída como o jogo pronto. Ausente nas
+   * jornadas anteriores.
+   */
+  built?: PensaBuiltGame | null
   operationId: string | null
   closedReason: 'met' | 'incomplete' | null
   closedFrom: Exclude<PensaJourneyStage, 'closed'> | null
   lastInteractionAt: string
+}
+
+/**
+ * Só o que diz o que o jogo tem. A proposta inteira leva o retrato dos recursos (a lista de blocos
+ * liberados chega a dezenas de KB) e ficaria duas vezes na jornada e em cada versão guardada.
+ */
+export type PensaBuiltProposal = Pick<
+  PensaProposal,
+  'id' | 'title' | 'summary' | 'firstResult' | 'essentials' | 'dimension'
+> & {
+  missions: Pick<
+    PensaBlueprintMission,
+    'key' | 'title' | 'destination' | 'extensionIds' | 'mechanicIds'
+  >[]
+}
+
+export interface PensaBuiltGame {
+  proposal: PensaBuiltProposal
+  /** As extensões das missões do Estúdio das versões construídas, na ordem em que entraram. */
+  extensionIds: string[]
+}
+
+/**
+ * O jogo construído a partir da proposta de agora (a versão que a criança fez), somando as
+ * extensões das versões anteriores. A primeira extensão de jogo da lista é a que o guia instalou.
+ */
+export function pensaBuiltGame(journey: PensaJourney): PensaBuiltGame | null {
+  const proposal = journey.proposal
+  if (!proposal) return journey.built ?? null
+  const used = proposal.missions
+    .filter((mission) => mission.destination === 'studio')
+    .flatMap((mission) => mission.extensionIds)
+  return {
+    proposal: {
+      id: proposal.id,
+      title: proposal.title,
+      summary: proposal.summary,
+      firstResult: proposal.firstResult,
+      essentials: proposal.essentials,
+      dimension: proposal.dimension,
+      missions: proposal.missions.map(({ key, title, destination, extensionIds, mechanicIds }) => ({
+        key,
+        title,
+        destination,
+        extensionIds,
+        mechanicIds,
+      })),
+    },
+    extensionIds: [...new Set([...(journey.built?.extensionIds ?? []), ...used])],
+  }
 }
 
 export type PensaNarratableRef =
@@ -251,6 +397,8 @@ export function canWorkOnPensaMission(
 }
 
 export interface PensaJourneyView {
+  /** Mode of the programmer's committed Studio creation, read by the server. */
+  studioAuthoring?: 'blocks' | 'code'
   project: { id: string; name: string; status: 'active' | 'archived' }
   journey: PensaJourney
   operation: PensaOperation | null
@@ -360,7 +508,9 @@ export function applyPensaCommand(
       break
     case 'resume':
       next.paused = false
-      if (current.stage === 'closed') {
+      // Pausado e encerrado: retomar só tira a pausa. Sem isto, "Continuar de onde parei" numa
+      // versão pronta a levava de volta para a construção e a conclusão se perdia.
+      if (current.stage === 'closed' && !current.paused) {
         next.stage = current.closedReason === 'met' ? 'building' : (current.closedFrom ?? 'idea')
         next.closedReason = null
         next.closedFrom = null
@@ -377,6 +527,10 @@ export function applyPensaCommand(
       next.acceptedProposalId = command.proposalId
       next.stage = 'preparing'
       next.paused = false
+      // As perguntas e o nome provisório eram da conversa que acabou: a próxima (um "Adaptar meu
+      // caminho") começa com o teto inteiro, mesmo quando a proposta escolhida é a anterior.
+      next.questionsAsked = 0
+      next.workingTitle = null
       break
     case 'observe':
       if (!['building', 'observing'].includes(current.stage) || !current.missionIds.length)
@@ -400,11 +554,23 @@ export function applyPensaCommand(
         )
       next.stage = 'idea'
       next.revising = true
+      // Com o jogo já guardado, a proposta em construção é a que está no arquivo: a nova proposta
+      // vai tomar o lugar dela, então o jogo construído fica guardado à parte. Só a que estava em
+      // construção (também depois de encerrar): encerrada na proposta, ela nunca foi aceita.
+      if (
+        (current.checkpoint || current.builtResults?.length) &&
+        ['building', 'observing'].includes(
+          (current.stage === 'closed' ? current.closedFrom : current.stage) ?? '',
+        )
+      )
+        next.built = pensaBuiltGame(current)
       next.testSessionStart = current.tests.length
       next.paused = false
       next.closedFrom = null
       next.closedReason = null
       next.acceptedProposalId = null
+      next.questionsAsked = 0
+      next.workingTitle = null
       break
     case 'close':
       if (current.operationId || current.stage === 'preparing' || current.stage === 'closed')

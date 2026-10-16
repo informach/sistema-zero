@@ -359,6 +359,18 @@ como capa fixa (vence a foto automática); sem escolha, a foto automática segue
 
 ## Gravação de saída: toda transação com `commit()` explícito (11/09/2026)
 
+### Plataformas de prova (15/10/2026)
+
+O CI Linux executa a prova `projectStorageBrowser.test.ts` com `STUDIO_STORAGE_BROWSER=chromium`.
+O job obrigatório `studio-storage-macos` executa o MESMO teste completo em Chromium e WebKit;
+o E2E de WebKit também roda no macOS. Sem a variável, a prova local continua cobrando os dois.
+WORKAROUND do port Linux do WebKit 1.60: com um CAS grande em voo, a recarga perdia o journal
+de saída, mesmo com `commit()` explícito. A reprodução com o mesmo fixture passou em Windows
+e no macOS do run 38838008325; retirar o CAS em voo também fez a reprodução Linux passar.
+Não houve mudança no armazenamento nem redução das asserções. A prova em macOS segue a
+[orientação do Playwright para maior proximidade com Safari](https://playwright.dev/docs/browsers#webkit).
+Ao atualizar o Playwright, repita o fixture completo no Linux antes de retirar esta divisão.
+
 O `PersistenceService` grava o que está pendente no `beforeunload`/`pagehide`, e a gravação SAÍA,
 mas morria com a troca de documento. Três mecanismos, os três consertados no mesmo dia:
 
@@ -4516,6 +4528,13 @@ Gerar com `gen:snow-descent` e conferir com `check:snow-descent`. Guia: `docs/jo
   não achada). O servidor serve o BUILD: mudou o código, suba de novo.
 
 ## Home "Meus Jogos" no padrão Pinta (08/2026)
+
+⭐ **Seções do host (15/10/2026):** `ProjectList.sections` (`ProjectListSection`, exportado):
+cada seção tem `key`, `title`, `description?`, `includes(project)` e `action?` (link de verdade
+com `onNavigate`). Os projetos aceitos saem da grade principal e ganham uma faixa com
+`.sz-tool-section-title`; a busca e o filtro de modo valem para todas, o contador conta tudo,
+seção vazia não aparece. O Estúdio não sabe quem cria esses jogos: o kids usa para os jogos dos
+planos do Pensa (`pensa-<32 hex>`). Sem seções, nada muda. Testes em `ProjectList.test.tsx`.
 
 ⭐⭐⭐ **11/09/2026 — o desenho das telas-modelo (a imagem "Meus Jogos" dela, medida a 1440px).**
 A lista virou TRÊS FAIXAS de borda a borda que rolam juntas (o cabeçalho deixou de ficar preso em

@@ -48,6 +48,8 @@ export async function renderProjectToPreviewDocAsync(
   project: Project,
   opts: RenderProjectOptions = {},
 ): Promise<string> {
+  if (project.kind === 'pro')
+    throw new Error('Projetos Pro precisam de um artefato compilado para jogar ou capturar.')
   const playableProject = await prepareProjectForHost(project)
   if (!playableProject) throw new Error('Não foi possível preparar este jogo.')
   const files = playableProject.files ?? { 'index.html': '', 'style.css': '', 'script.js': '' }

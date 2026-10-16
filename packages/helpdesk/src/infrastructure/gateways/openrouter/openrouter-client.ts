@@ -21,6 +21,9 @@ export interface OpenRouterConfig {
 }
 
 interface ChatResponse {
+  id?: string
+  model?: string
+  usage?: { prompt_tokens?: number; completion_tokens?: number; cost?: number }
   choices?: Array<{ message?: { content?: unknown } }>
   error?: { message?: string; code?: number }
 }
@@ -51,33 +54,37 @@ export class OpenRouterClient implements LlmClient {
     }
   }
 
-  private async post(body: unknown): Promise<ChatResponse> {
+  private async post(body: unknown, deadline?: Date): Promise<ChatResponse> {
+    // Reservation and telemetry persistence may have waited for database locks.
+    if (deadline && deadline.getTime() <= Date.now())
+      throw new LlmError('Prazo da chamada de IA encerrado', 'unavailable')
     const controller = new AbortController()
     const timer = setTimeout(
       () => controller.abort(new DOMException('openrouter timeout', 'TimeoutError')),
-      this.config.timeoutMs,
+      Math.max(
+        1,
+        Math.min(
+          this.config.timeoutMs,
+          deadline ? deadline.getTime() - Date.now() : this.config.timeoutMs,
+        ),
+      ),
     )
-    let res: Response
     try {
-      res = await fetch(ENDPOINT, {
+      const res = await fetch(ENDPOINT, {
         method: 'POST',
         headers: this.headers(),
         body: JSON.stringify(body),
         signal: controller.signal,
       })
+      const json = (await res.json().catch(() => ({}))) as ChatResponse
+      if (!res.ok || json.error)
+        throw new LlmError(`Provedor de IA indisponível (${res.status})`, 'unavailable')
+      return json
     } catch (error) {
       throw new LlmError('Falha de rede ao falar com a IA', 'unavailable', { cause: error })
     } finally {
       clearTimeout(timer)
     }
-    const json = (await res.json().catch(() => ({}))) as ChatResponse
-    if (!res.ok || json.error) {
-      throw new LlmError(
-        `OpenRouter ${res.status}: ${json.error?.message ?? 'erro'}`.slice(0, 300),
-        'unavailable',
-      )
-    }
-    return json
   }
 
   async complete<T>(input: LlmCompleteInput<T>): Promise<T> {
@@ -88,7 +95,26 @@ export class OpenRouterClient implements LlmClient {
     ]
 
     let lastError: unknown
-    for (let attempt = 0; attempt < 2; attempt += 1) {
+    for (
+      let attempt = 0;
+      attempt < Math.max(1, Math.min(2, input.maxAttempts ?? 2));
+      attempt += 1
+    ) {
+      if (input.deadline && input.deadline.getTime() <= Date.now())
+        throw new LlmError('Prazo da execução expirou', 'unavailable')
+      await input.beforeAttempt?.(attempt + 1)
+      const started = Date.now()
+      const telemetry: import('@sistemazero/helpdesk-contracts').AiAttemptView = {
+        attempt: attempt + 1,
+        model: this.config.model,
+        providerId: null,
+        inputTokens: null,
+        outputTokens: null,
+        costUsd: null,
+        durationMs: 0,
+        outcome: 'started',
+      }
+      await input.onAttempt?.(telemetry)
       const messages =
         attempt === 0
           ? baseMessages
@@ -101,14 +127,24 @@ export class OpenRouterClient implements LlmClient {
               },
             ]
       try {
-        const data = await this.post({
-          model: this.config.model,
-          messages,
-          stream: false,
-          temperature: input.temperature ?? 0.4,
-          max_tokens: input.maxTokens ?? this.config.maxTokens,
-          response_format: { type: 'json_object' },
-        })
+        const data = await this.post(
+          {
+            model: this.config.model,
+            messages,
+            stream: false,
+            temperature: input.temperature ?? 0.4,
+            max_tokens: input.maxTokens ?? this.config.maxTokens,
+            response_format: { type: 'json_object' },
+          },
+          input.deadline,
+        )
+        telemetry.providerId = data.id ?? null
+        telemetry.model = data.model ?? this.config.model
+        const nonnegative = (value: unknown): number | null =>
+          typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : null
+        telemetry.inputTokens = nonnegative(data.usage?.prompt_tokens)
+        telemetry.outputTokens = nonnegative(data.usage?.completion_tokens)
+        telemetry.costUsd = nonnegative(data.usage?.cost)
         const content = data.choices?.[0]?.message?.content
         if (typeof content !== 'string' || !content.trim()) {
           throw new LlmError('A IA devolveu resposta vazia', 'invalid_output')
@@ -117,6 +153,7 @@ export class OpenRouterClient implements LlmClient {
         if (!parsed.success) {
           throw new LlmError('A IA devolveu um JSON fora do contrato', 'invalid_output')
         }
+        telemetry.outcome = 'completed'
         return parsed.data
       } catch (error) {
         lastError = error
@@ -125,7 +162,11 @@ export class OpenRouterClient implements LlmClient {
         const isParseFailure =
           error instanceof SyntaxError ||
           (error instanceof LlmError && error.kind === 'invalid_output')
+        telemetry.outcome = isParseFailure ? 'invalid_output' : 'unavailable'
         if (!isParseFailure) throw error
+      } finally {
+        telemetry.durationMs = Date.now() - started
+        await input.onAttempt?.(telemetry)
       }
     }
     if (lastError instanceof LlmError) throw lastError

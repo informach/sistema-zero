@@ -111,6 +111,11 @@ export const AiUsageStatsQuery = t.Object({
   month: t.Optional(t.String({ minLength: 7, maxLength: 7 })),
 })
 
+/** `?days=` do funil do Pensa v2 (ausente → 30). */
+export const PensaFunnelQuery = t.Object({
+  days: t.Optional(t.Numeric({ minimum: 1, maximum: 365 })),
+})
+
 // ── Zappy do Studio ─────────────────────────────────────────────────────────
 const STUDIO_LOCAL_PROJECT_ID = t.String({
   minLength: 1,
@@ -151,6 +156,22 @@ export const ZappyInternalResponseBody = t.Object({
   rejection: t.Optional(t.String({ minLength: 1, maxLength: 40 })),
   response: t.Object({
     id: UUID,
+    intent: t.Optional(t.Union([t.Literal('explain'), t.Literal('investigate')])),
+    kind: t.Optional(t.Union([t.Literal('classic'), t.Literal('pro')])),
+    fileReferences: t.Optional(
+      t.Array(
+        t.Object({
+          path: t.String({ minLength: 1, maxLength: 240 }),
+          startLine: t.Optional(t.Integer({ minimum: 1, maximum: 10_000_000 })),
+          endLine: t.Optional(t.Integer({ minimum: 1, maximum: 10_000_000 })),
+          sourceHash: t.Optional(t.String({ pattern: '^sha256-[A-Za-z0-9+/]{43}=$' })),
+          contextDigest: t.Optional(t.String({ pattern: '^sha256-[A-Za-z0-9+/]{43}=$' })),
+          excerptId: t.Optional(t.String({ pattern: '^[A-Za-z0-9_-]{1,64}$' })),
+        }),
+        { maxItems: 5 },
+      ),
+    ),
+    sourceRevision: t.Optional(t.Integer({ minimum: 0 })),
     text: t.String({ minLength: 1, maxLength: 8000 }),
     scope: t.Union([
       t.Literal('block'),
@@ -831,6 +852,7 @@ const PensaStudioBlockSchema = t.Object({
 })
 const PensaStudioContextSchema = t.Object({
   kind: t.Literal('studio'),
+  authoring: t.Optional(t.Union([t.Literal('blocks'), t.Literal('code')])),
   dimension: t.Union([t.Literal('2d'), t.Literal('3d')]),
   visualAssetIds: t.Array(t.String({ minLength: 1, maxLength: 100 }), { maxItems: 20 }),
   blockIds: t.Array(t.String({ maxLength: 160 }), { maxItems: 80 }),

@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { artAssetIds, artSchema } from './art'
 import { idSchema } from './common'
+import { demonstrationSchema, demonstrationSources } from './demonstration'
 import { generatedCompositionSchema } from './remotion-composition'
 import { fpsSchema } from './video-rate'
 
@@ -21,6 +22,7 @@ export const clipSchema = z
     assetId: idSchema.optional(),
     kind: z.enum(['video', 'audio', 'image', 'text', 'art']),
     art: videoArtSchema.optional(),
+    demonstration: demonstrationSchema.optional(),
     generated: generatedCompositionSchema.optional(),
     startFrame: z.number().int().min(0).max(2160000),
     durationInFrames: z.number().int().min(1).max(2160000),
@@ -55,6 +57,17 @@ export const clipSchema = z
   })
   .strict()
   .superRefine((clip, ctx) => {
+    if (
+      clip.demonstration &&
+      (clip.kind !== 'image' ||
+        clip.assetId !== clip.demonstration.sources[0]?.assetId ||
+        clip.effect !== 'none' ||
+        clip.fit !== 'contain')
+    )
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Demonstração exige imagem principal, contain e movimento da própria receita',
+      })
     if (!['text', 'art'].includes(clip.kind) && !clip.assetId)
       ctx.addIssue({ code: 'custom', message: 'Mídia exige arquivo' })
     if (clip.generated && (clip.kind !== 'video' || clip.assetId !== clip.generated.outputAssetId))
@@ -161,6 +174,7 @@ export function videoPlaybackAssetIds(video: VideoProject) {
   return [
     ...new Set([
       ...video.clips.flatMap((clip) => (clip.assetId ? [clip.assetId] : [])),
+      ...demonstrationSources(video).map((source) => source.assetId),
       ...video.clips.flatMap((clip) => (clip.art ? artAssetIds(clip.art.composition) : [])),
       ...video.captions.map((caption) => caption.assetId),
       ...(video.fontAssetId ? [video.fontAssetId] : []),

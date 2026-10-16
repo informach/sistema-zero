@@ -1,242 +1,103 @@
 /** Frases-chave em negrito: id da seção → trechos LITERAIS da copy (a copy não muda; só ganha <strong>). */
 export const DESTAQUES: Record<string, readonly string[]> = {
-  e02: [
-    'Uma escolha pequena já dá uma tarefa à aprendizagem',
-    'Você pode conhecer uma criação, jogar junto',
-  ],
-  'proximo-passo': [
-    'Cada criança continua a partir do que já fez',
-    'O que ela fez continua no perfil',
-    'Se falta publicar o projeto de entrada, essa é a etapa a realizar antes do uso livre',
-  ],
-  e04: [
-    'você não precisa comprar cada um separadamente',
-    'A conta e o progresso já registrado permanecem ligados à família',
-  ],
-  experiencia: [
-    'a opção de trazer uma arte do Pinta permite usar essa criação no projeto',
-    'Saber desenhar não é uma exigência para participar',
-    'uma produção que tem história, escolhas e tentativas',
-  ],
-  e06: [
-    'use o mesmo e-mail do responsável',
-    'A assinatura e o avanço têm funções diferentes',
-    'sem uma compra separada por curso',
-  ],
-  e07: [
-    'ele pausa naquele ponto e continua quando estiver pronto',
-    'dentro do tempo de computador que já permitem',
-    'A conversa continua nos Recados',
-    'A independência se desenvolve no uso, no ritmo de cada criança',
-  ],
-  e08: [
-    'a explicação da criança acrescenta o que entendeu da escolha que fez',
-    'A orientação de programação fica nas aulas',
-  ],
-  e09: ['Esses interesses podem aparecer juntos', 'reservar parte do tempo de tela já permitido'],
-  e10: [
-    'A criança continua escolhendo',
-    'Ele não altera os blocos nem executa a correção no projeto',
-    'Seu filho faz o ajuste e testa',
-  ],
-  e11: [
-    'um link e um cartão com código QR',
-    'Os jogos publicados por link têm visibilidade pública própria',
-    'guardam projetos e progresso separadamente',
-  ],
-  e12: ['guardar o projeto permite retomá-lo', 'permitem continuar no mesmo perfil'],
-  'continuar:convite': [
-    'Ele pode construir, conferir o resultado e guardar o projeto para continuar',
-  ],
+  // A: aprender criando
   a02: [
-    'ele tem uma decisão para tomar e um resultado para conferir',
-    'Os combinados continuam sendo de vocês',
-    'Criar um jogo oferece um motivo para aprender uma regra',
+    'É comparando o que mandou fazer com o que aconteceu que ele aprende.',
+    'O que muda é o papel dele numa parte desse tempo.',
   ],
   a03: [
-    'Ele pode assistir a uma ação, pausar e fazê-la',
-    'A mudança que fez aparece no funcionamento do jogo',
-    'continuidade entre aprender, fazer, pedir ajuda e mostrar',
+    'para seu filho saber aonde vai chegar',
+    'Verificar esta parte mostra o que já está certo e o que falta',
   ],
-  a04: [
-    'pode rever só o trecho em que se perdeu',
-    'A família escolhe o horário dentro do tempo de tela combinado',
-    'O apoio acontece por mensagens, de forma assíncrona',
+  a10: ['“vem ver o que eu fiz”'],
+  a06: ['Prever, testar e conferir é o primeiro passo da programação.'],
+  a07: ['a próxima ferramenta é um bom motivo para terminar o projeto'],
+  a05: ['“Me mostra o que você mudou.”', 'passa a fazer parte de um assunto que antes era só dele'],
+  a09: ['Aqui é ele quem escreve essas regras.', 'Aqui a explicação é gravada: espera por ele'],
+  'tempo-de-tela:convite': ['quem vai chamar para jogar é ele'],
+  // B: criação de jogos
+  'b-ideia': [
+    'Quem só joga recebe tudo isso pronto.',
+    'as ideias que ele conta começam a aparecer na tela',
   ],
-  a05: [
-    'Você participa pelo que consegue ver, ouvir e experimentar, inclusive sem trabalhar com programação',
-    'A explicação da criança acrescenta o que entendeu',
-    'A orientação de programação fica nas aulas',
+  'b-aula': [
+    'para seu filho saber aonde vai chegar',
+    'a atenção dele fica no que importa nesse começo: fazer o jogo funcionar',
   ],
-  a06: [
-    'Uma criação compatível pode entrar no Estúdio e participar de um jogo',
-    'Ele pode prever o que vai acontecer, testar e revisar a tentativa',
-    'Esses interesses podem se encontrar na mesma criação',
+  'b-mudanca': [
+    'ele passa a decidir o que o jogo faz',
+    'a conversa sobre jogos ganha um assunto novo',
   ],
-  a07: [
-    'o Pensa ajuda a transformar uma ideia em planejamento',
-    'A criança continua escolhendo, montando e testando',
-    'Algumas liberações dependem de cursos ainda em preparação',
+  'b-mostrar': ['Ele volta ao Estúdio com um motivo para a próxima versão'],
+  'b-jornada': ['ficam abertos para as ideias dele', 'Jogo maior pede plano.'],
+  'b-acompanha': ['você está ouvindo esses conceitos com as palavras dele'],
+  'b-alternativas': [
+    'Aqui é ele quem escreve essas regras.',
+    'Aqui a explicação é gravada: espera por ele',
   ],
-  a08: [
-    'combinados de convivência e um caminho para avisar a equipe',
-    'Um jogo publicado por link tem visibilidade pública própria',
-    'A assinatura permite até dois perfis, com projetos e progresso separados',
+  // C: expressão visual
+  'c-interesse': ['ver a própria criação obedecer ao jogador'],
+  'c-aula': [
+    'o desenho do caderno serve de modelo para a versão digital',
+    'ele volta ao desenho, ajusta e joga de novo',
   ],
-  a09: [
-    'Seu filho encontra uma atividade para fazer e os recursos previstos para ela',
-    'É essa experiência organizada que a assinatura oferece',
+  'c-mostrar': ['às vezes sai dali com a ideia da próxima versão'],
+  'c-jornada': ['um boneco de blocos que ele monta por todos os lados'],
+  'c-acompanha': ['Você conhece decisões que a imagem pronta sozinha nunca mostraria.'],
+  'c-alternativas': ['Aqui o desenho é digital e serve a um jogo'],
+  // D: formação tecnológica
+  'd-uso': [
+    'o nome técnico chega depois, quando ele já viu o efeito',
+    'a diferença entre o que previu e o que viu aponta o bloco a revisar',
   ],
-  'tempo-de-tela:convite': ['A Comunidade oferece um começo guiado para essa experiência'],
-
-  b02: [
-    'Um começo orientado transforma parte dessa vontade em uma tarefa',
-    'pode ter faltado uma explicação, um recurso ou uma sequência adequada ao que sabia',
+  'd-aula': ['é usando de novo que o conceito fica dele'],
+  'd-ferramentas': ['revisa uma parte por vez', 'Quebrar um problema em partes menores'],
+  'd-jornada': [
+    'O primeiro marco é concluir A Chave do Farol e publicar o jogo.',
+    'cada posto é uma conquista que ela vê no mapa',
   ],
-  b03: [
-    'pausar o vídeo e executar aquela ação antes de continuar',
-    'a criança pode se concentrar nas instruções que está aprendendo',
-    'A criação livre ganha espaço depois de cumprir os requisitos para liberar o Estúdio',
+  'd-acompanha': ['“Me mostra o que você mudou.”'],
+  'd-alternativas': [
+    'Aqui a explicação está na mesma tela do editor',
+    'este formato foi desenhado exatamente para isso',
   ],
-  b04: [
-    'precisa relacionar o comando ao comportamento',
-    'Você pode pedir que mostre a regra e jogar as duas versões',
-    'A ajuda por mensagens entra quando a dúvida continua',
+  // E: continuidade
+  ideia: ['o jogo fica do jeito que estava e a ideia esfria', 'agora a ideia é dele'],
+  'proximo-passo': [
+    'dá para terminar com esse acesso e decidir depois',
+    'o próximo passo é A Chave do Farol',
+    'Publicar o jogo é o passo que falta para chegar ao Construtor',
   ],
-  b05: [
-    'o responsável encontra registros e produções na área da família',
-    'aprender uma parte, experimentar, corrigir e apresentar',
+  acrescenta: ['esse e todos os outros cursos publicados'],
+  experiencia: ['saber desenhar nunca foi condição para continuar'],
+  'mesma-conta': ['cada ferramenta abre quando ele chega ao posto dela'],
+  // F: habilidades escolares
+  f01: ['o que faltou foi ver o que o número faz', 'No jogo, o número faz.'],
+  f02: ['a explicação dele diz o que entendeu'],
+  f03: [
+    'como num enunciado',
+    'Antes de mudar um valor, ele diz o que vai acontecer',
+    'Mudar uma coisa e observar o efeito',
+    'É a mesma organização que um trabalho escolar de várias etapas pede.',
   ],
-  b06: [
-    'A família escolhe o horário dentro do tempo de tela já permitido',
-    'A assinatura não inclui aulas ao vivo',
-    'A criança precisa ler e usar mouse e teclado',
+  f05: ['muda uma parte por vez', 'sem ninguém dando a resposta pronta'],
+  f06: ['Dá para aproximar o jogo da matéria da semana.'],
+  f08: ['para isso ele é a escolha certa', 'precisa entender a conta por dentro'],
+  f07: ['que ajuda a dividir uma ideia de jogo em tarefas'],
+  'habilidades-escolares:convite': [
+    'você ganha um assunto de escola que começa pelo que ele quer fazer',
   ],
-  b07: [
-    'A aparência passa pelo teste do jogo',
-    'o jogo pode ser construído usando a arte disponível',
-  ],
-  b08: [
-    'o Pensa ajuda a organizar uma ideia',
-    'Não altera o projeto: seu filho faz o ajuste e testa',
-    'A Comunidade está em lançamento, com cursos publicados e outras etapas em preparação',
-  ],
-  b09: [
-    'A criança tem a oportunidade de explicar o que fez',
-    'combinados de convivência e um caminho para avisar a equipe',
-    'Um jogo publicado por link é público e tem visibilidade própria',
-  ],
-  b10: [
-    'você consulta cursos, atividades, temas explorados, entregas e a etapa da Jornada',
-    'A orientação de programação fica nas aulas',
-  ],
-  b11: [
-    'a criança encontra o que fazer, onde fazer e como consultar uma orientação',
-    'as primeiras construções aqui acontecem no Estúdio da Comunidade, com blocos',
-  ],
-  'criacao-de-jogos:convite': [
-    'Se já começou pelo Desafio, ele pode continuar do ponto em que está',
-  ],
-
-  c02: [
-    'aparecem outras escolhas: como esse personagem vai se mover',
-    'um motivo para aprender as regras que produzem a interação',
-  ],
-  c03: [
-    'A escolha visual ganha um efeito que ele consegue observar',
-    'chega ao posto Construtor e libera o uso livre de Estúdio e Pinta',
-    'A experiência combina criação visual e programação de jogos',
-  ],
-  c04: [
-    'Uma criação também pode ganhar quadros de animação',
-    'Fotografar o desenho, por si só, não monta um jogo',
-    'Não é necessário chegar sabendo desenhar para participar da criação de jogos',
-  ],
-  c05: [
-    'comparar as versões e decidir qual combina com o jogo',
-    'Você pode pedir que ele mostre as duas partes',
-    'a Comunidade inclui programação no percurso desde o começo',
-  ],
-  c06: [
-    'Os trabalhos podem ser guardados na conta e encontrados nas galerias das ferramentas',
-    'Esse caminho dá continuidade ao esforço da criança',
-  ],
-  c07: [
-    'A família escolhe o horário dentro do tempo de tela combinado',
-    'O começo exige leitura e uso de mouse e teclado',
-    'O formato não inclui encontros ao vivo',
-  ],
-  c08: [
-    'você encontra atividades, temas explorados, entregas e a etapa da Jornada',
-    'A assinatura permite até dois perfis, com progresso e projetos separados',
-  ],
-  c09: [
-    'A criança tem a oportunidade de explicar a arte e a interação',
-    'combinados de convivência e um caminho para avisar a equipe',
-    'Jogos publicados por link têm visibilidade pública própria',
-  ],
-  c10: [
-    'organiza as escolhas e ajuda a transformá-las em tarefas',
-    'A criança faz o ajuste e testa o resultado',
-    'A Comunidade está em lançamento, com etapas ainda em preparação',
-  ],
-  c11: [
-    'Uma escolha feita na arte pode ser conferida no jogo e revista no desenho',
-    'Os planos abaixo oferecem a mesma experiência, com cobrança mensal ou acesso anual',
-  ],
-  'expressao-visual:convite': [
-    'ferramentas e orientação para explorar esse encontro entre desenho e interatividade',
-  ],
-
-  d02: [
-    'A criança encontra os conceitos no comportamento daquilo que constrói',
-    'qual instrução usou, o que esperava que acontecesse e como conferiu o resultado',
-  ],
-  d03: [
-    'Seu filho realiza a ação e confere o resultado',
-    'A regra liga um acontecimento a um resultado',
-    'Personagens e outros elementos preparados ajudam a concentrar a atenção no conceito da aula',
-  ],
-  d04: [
-    'alcança o posto Construtor e libera o uso livre do Estúdio e do Pinta',
-    'O Inventor dá acesso ao Pensa e à ajuda do Zappy no Estúdio',
-    'Algumas etapas dependem de cursos em preparação',
-  ],
-  d05: [
-    'A criação visual também passa por escolha, teste e ajuste',
-    'organizar as respostas e ajudar a dividir o trabalho em tarefas',
-    'Não altera o projeto: o ajuste e o teste continuam com a criança',
-  ],
-  d06: [
-    'A família escolhe o horário dentro do tempo de tela já permitido',
-    'O retorno acontece por mensagens, de forma assíncrona',
-    'O responsável pode ajudar com acesso, rotina e conversa sobre o que foi construído',
-  ],
-  d07: [
-    'Você participa pelo exemplo, inclusive sem conhecer os termos de programação',
-    'O que a criança consegue explicar, alterar e testar oferece outras referências sobre compreensão',
-  ],
-  d08: [
-    'A mesma assinatura atende até dois perfis, com projetos e progresso separados',
-    'Os combinados da família continuam orientando o tempo de uso',
-  ],
-  d09: [
-    'combinados de convivência e um caminho para avisar a equipe',
-    'A aprendizagem continua ligada ao que ela faz e consegue compreender',
-    'Jogos publicados por link têm visibilidade pública própria',
-  ],
-  d10: [
-    'consultar a explicação durante a construção e organizar a atividade no horário da casa',
-    'a orientação gravada e o apoio assíncrono sustentam uma iniciação por projetos',
-    'uma formação complementar que a família pode acompanhar nas produções',
-  ],
-  'formacao-tecnologica:convite': [
-    'A Comunidade reúne o caminho para começar essa prática em casa',
-  ],
-
+  // Comuns
   origem: [
-    'preparar um começo guiado para outras crianças, em português',
-    'acompanhar uma tentativa, experimentar um jogo e ouvir a explicação de uma escolha',
+    'Em vez de brigar com esse interesse, decidimos aproveitá-lo',
+    'ele chamava a gente para jogar e contava como tinha feito',
   ],
-  assinatura: ['Os dois planos permitem até dois perfis de criança'],
+  assinatura: [
+    'Os cursos publicados e os próximos.',
+    'As ferramentas, uma etapa de cada vez.',
+    'Dois filhos, uma assinatura.',
+    'Um lugar para mostrar.',
+    'A sua área.',
+    'Os cursos que vêm depois do que ele fez.',
+  ],
 }

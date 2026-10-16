@@ -1,8 +1,8 @@
 import type { UseStore } from 'idb-keyval'
 
 /**
- * O jeito de o Estúdio falar com o banco dos projetos: cada operação é UMA transação que faz
- * TODOS os pedidos de uma vez e termina com `commit()` EXPLÍCITO. Vale para ler e para gravar.
+ * O jeito de o Estúdio falar com o banco dos projetos: cada operação termina com
+ * `commit()` EXPLÍCITO. Leituras e staging de saída fazem TODOS os pedidos de uma vez.
  *
  * ⭐ Por que o commit explícito na GRAVAÇÃO (medido em 11/09/2026, recarregando logo depois de
  * gravar um arquivo grande): o `setMany`/`delMany` do idb-keyval dependiam do AUTO-commit, que
@@ -22,12 +22,13 @@ import type { UseStore } from 'idb-keyval'
  * no próprio banco, sem depender da página: no mesmo fluxo instrumentado, 20 de 20 sobreviveram,
  * cinco delas com uma leitura ainda aberta no instante da saída.
  *
- * ⭐ A regra que as duas metades seguem: nenhuma transação deste banco pode depender da página
- * continuar viva para terminar. Por isso os pedidos saem TODOS dentro do callback (depois dele a
- * transação fecha), e quem precisa ler para decidir o que gravar (renomear, a capa, a troca de
- * desenho) faz duas transações, uma de leitura e outra de escrita, na fila por projeto
- * (`runSerializedProjectWrite`). Uma leitura e uma escrita presas na mesma transação só
- * terminariam se a página processasse a leitura: é exatamente o que a saída não garante.
+ * ⭐ CAS entre abas exige leitura e escrita na MESMA transação enquanto a página está viva.
+ * `conditionalWrite` mantém essas transações rastreadas até pedir commit. No pagehide,
+ * `interruptConditionalTransactions` aborta as que ainda dependem de callbacks e invalida
+ * as que estavam enfileiradas. O snapshot completo vai para staging com TODOS os puts e
+ * commit no mesmo turno. A próxima abertura promove o staging pelo mesmo CAS, sem
+ * substituir outro autor. `projectStorageBrowser.test.ts` verifica reload imediato nos
+ * motores Chromium e WebKit com uma CAS anterior pendente e assets grandes.
  *
  * ⭐ Por que UMA transação por escrita: ela é atômica. Uma falha de quota aborta os `put` E os
  * `delete` juntos, então o `delete` nunca acontece sem o `put` que o justificava (o projeto não
@@ -55,6 +56,85 @@ import type { UseStore } from 'idb-keyval'
 export interface IdbWrite {
   readonly puts?: ReadonlyArray<readonly [IDBValidKey, unknown]>
   readonly deletes?: readonly IDBValidKey[]
+}
+
+const conditionalTransactions = new Map<string, Set<IDBTransaction>>()
+const conditionalGenerations = new Map<string, number>()
+export function conditionalGeneration(identity: string): number {
+  return conditionalGenerations.get(identity) ?? 0
+}
+/** Exit recovery must not wait for a read callback in a dying document. */
+export function interruptConditionalTransactions(identity: string): void {
+  conditionalGenerations.set(identity, conditionalGeneration(identity) + 1)
+  for (const transaction of conditionalTransactions.get(identity) ?? []) abortQuietly(transaction)
+}
+
+/**
+ * Live-page CAS exception: only synchronous computation is allowed after reads.
+ * Exit uses interruptConditionalTransactions + writeInOneTransaction staging instead.
+ */
+export function conditionalWrite<T>(
+  store: UseStore,
+  identity: string,
+  generation: number,
+  keys: readonly IDBValidKey[],
+  decide: (values: unknown[]) => { write: IdbWrite; result: T },
+): Promise<T> {
+  return store('readwrite', (objectStore) => {
+    const transaction = objectStore.transaction
+    if (conditionalGeneration(identity) !== generation) {
+      abortQuietly(transaction)
+      throw new DOMException('Gravação transferida para a recuperação de saída.', 'AbortError')
+    }
+    let active = conditionalTransactions.get(identity)
+    if (!active) {
+      active = new Set()
+      conditionalTransactions.set(identity, active)
+    }
+    active.add(transaction)
+    let decided: T
+    let failure: unknown
+    const done = transactionDone(transaction)
+      .then(
+        () => decided,
+        (error) => {
+          throw failure ?? error
+        },
+      )
+      .finally(() => {
+        active!.delete(transaction)
+        if (active!.size === 0) conditionalTransactions.delete(identity)
+      })
+    try {
+      const values: unknown[] = new Array(keys.length)
+      let remaining = keys.length
+      const finish = () => {
+        try {
+          const { write, result } = decide(values)
+          for (const [key, value] of write.puts ?? []) objectStore.put(value, key)
+          for (const key of write.deletes ?? []) objectStore.delete(key)
+          decided = result
+          conditionalTransactions.get(identity)?.delete(transaction)
+          if (typeof transaction.commit === 'function') transaction.commit()
+        } catch (error) {
+          failure = error
+          abortQuietly(transaction)
+        }
+      }
+      if (remaining === 0) finish()
+      keys.forEach((key, index) => {
+        const request = objectStore.get(key)
+        request.onsuccess = () => {
+          values[index] = request.result
+          if (--remaining === 0) finish()
+        }
+      })
+    } catch (error) {
+      failure = error
+      abortQuietly(transaction)
+    }
+    return done
+  })
 }
 
 /** Grava `puts` e apaga `deletes` numa transação readwrite só. Escrita vazia não abre transação. */

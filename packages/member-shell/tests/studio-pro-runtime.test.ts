@@ -2,9 +2,59 @@ import { describe, expect, test } from 'bun:test'
 import {
   buildStudioProProject,
   opaqueStudioRuntimeExecutionId,
+  preflightStudioProBuild,
   StudioProRuntimeInputError,
   studioProRuntimePublicStatus,
 } from '../src/server/studio-pro-runtime'
+
+test('preflight sends the complete bounded envelope, checks protocol and exposes actionable refusal', async () => {
+  const input = {
+    files: { 'index.html': '<main>Olá</main>' },
+    binaries: { 'public/a.png': { base64: 'aGk=', sha256: '0'.repeat(64) } },
+    templateId: 'vanilla-js' as const,
+    executionId: 'builder-1234567890abcdef',
+    parentOrigin: 'https://kids.test',
+    runtimeUrl: 'https://runtime.test',
+    runtimeToken: 'test-token',
+    validate: true,
+  }
+  let sent: unknown
+  const fetchImpl = async (url: RequestInfo | URL, init?: RequestInit) => {
+    expect(String(url)).toEndWith('/v1/preflight')
+    expect(init?.redirect).toBe('error')
+    sent = JSON.parse(String(init?.body))
+    return Response.json({ ok: true, capabilities: { protocol: 1 } })
+  }
+  await preflightStudioProBuild({ ...input, fetchImpl })
+  expect(sent).toMatchObject({
+    files: input.files,
+    binaries: input.binaries,
+    parentOrigin: input.parentOrigin,
+    validate: true,
+  })
+  await expect(
+    preflightStudioProBuild({
+      ...input,
+      fetchImpl: async () => Response.json({ ok: true, capabilities: { protocol: 99 } }),
+    }),
+  ).rejects.toThrow('atualizado')
+  await expect(
+    preflightStudioProBuild({
+      ...input,
+      fetchImpl: async () =>
+        Response.json({ ok: false, message: 'Dependência fora da imagem' }, { status: 400 }),
+    }),
+  ).rejects.toThrow('Dependência')
+  await expect(
+    preflightStudioProBuild({
+      ...input,
+      binaries: { 'public/a.png': { base64: 'a'.repeat(2_000_000), sha256: '0'.repeat(64) } },
+      fetchImpl: async () => {
+        throw new Error('Não deve chamar a rede')
+      },
+    }),
+  ).rejects.toBeInstanceOf(StudioProRuntimeInputError)
+})
 
 describe('opaqueStudioRuntimeExecutionId', () => {
   test('é estável para a mesma autorização e não expõe os identificadores', async () => {
@@ -63,6 +113,7 @@ describe('buildStudioProProject', () => {
         executionId: 'lesson-1234567890abcdef',
         runtimeUrl: 'https://runtime.test',
         runtimeToken: 'token',
+        parentOrigin: 'https://kids.test',
         fetchImpl,
       }),
     ).rejects.toBeInstanceOf(StudioProRuntimeInputError)

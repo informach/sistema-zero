@@ -62,6 +62,28 @@ export async function prepareTestDatabase(
 async function prepareBlockReadModel(database: ReturnType<typeof postgres>) {
   await database`create schema if not exists members`
   await prepareLiveTestSchema(database)
+  // Quotas and account deletion now also reach Studio Pro. These independent
+  // migrations supply their real contracts to every sparse repository fixture.
+  await database.begin(async (transaction) => {
+    await transaction`select pg_advisory_xact_lock(16012026, 116)`
+    for (const [table, migration] of [
+      ['studio_ai_accounts', '0116_groovy_shriek.sql'],
+      ['studio_ai_runs', '0117_absurd_jimmy_woo.sql'],
+      ['studio_builder_jobs', '0120_cool_the_fallen.sql'],
+      ['studio_builder_project_deletions', '0124_superb_karen_page.sql'],
+    ]) {
+      const [present] = await transaction`select to_regclass(${`members.${table}`}) as name`
+      if (present?.name) continue
+      const source = await Bun.file(
+        new URL(
+          `../../src/infrastructure/persistence/drizzle/migrations/${migration}`,
+          import.meta.url,
+        ),
+      ).text()
+      for (const statement of source.split('--> statement-breakpoint'))
+        if (statement.trim()) await transaction.unsafe(statement)
+    }
+  })
   await database.unsafe(`create table if not exists members.lesson_blocks (
     id uuid primary key, lesson_id uuid not null, kind text not null,
     sort_order integer not null default 0, content jsonb not null,

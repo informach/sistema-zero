@@ -110,3 +110,43 @@ test('a no-op fill creates no undo and an oversized RGBA conversion is rejected 
     f.close()
   }
 })
+
+test('filling two images is atomic, preserves other pixels and commits one history entry', async () => {
+  const f = setup()
+  try {
+    const requests = f.source.images.map((image) => ({
+      imageId: image.id,
+      operations: [
+        {
+          kind: 'fill' as const,
+          layerId: image.layers[0]!.id,
+          point: [0, 0] as [number, number],
+          color: 7,
+          tolerance: 0,
+          region: { x0: 0, y0: 0, x1: 1, y1: 1 },
+        },
+      ],
+    }))
+    const task = f.task.runBatch(f.source, requests)
+    expect(f.editor.getState().saveSnapshot()).toBe(f.source)
+    expect(await task).toBe(true)
+    expect(
+      f.editor.getState().asset.images.every((image) => image.layers[0]!.pixels[0] === 7),
+    ).toBe(true)
+    for (const [i, image] of f.editor.getState().asset.images.entries())
+      expect(image.layers[0]!.pixels.slice(image.width * 2)).toEqual(
+        f.source.images[i]!.layers[0]!.pixels.slice(image.width * 2),
+      )
+    f.editor.getState().undo()
+    expect(f.editor.getState().asset.images).toEqual(f.source.images)
+    expect(f.editor.getState().canUndo).toBe(false)
+    const invalid = requests.map((request, i) =>
+      i === 1 ? { ...request, imageId: 'missing-image' } : request,
+    )
+    expect(await f.task.runBatch(f.editor.getState().asset, invalid)).toBe(false)
+    expect(f.editor.getState().asset.images).toEqual(f.source.images)
+    expect(f.editor.getState().canUndo).toBe(false)
+  } finally {
+    f.close()
+  }
+})

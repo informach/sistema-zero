@@ -9,6 +9,8 @@ describe('inferLanguage', () => {
     expect(inferLanguage('helper.js')).toBe('javascript')
     expect(inferLanguage('module.mjs')).toBe('javascript')
     expect(inferLanguage('tipos.ts')).toBe('typescript')
+    expect(inferLanguage('module.mts')).toBe('typescript')
+    expect(inferLanguage('module.cts')).toBe('typescript')
     expect(inferLanguage('App.tsx')).toBe('typescript')
   })
 

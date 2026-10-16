@@ -1,6 +1,7 @@
-import type { JSX } from 'react'
+import { type JSX, useState } from 'react'
 import { Button } from '#ui'
 import { useActivityRunner } from '../../activity/useActivityRunner'
+import { useProjectStore } from '../../state/projectStore'
 import type { ActivityCheck } from '../../studio/activity'
 import { useStudioActivity } from '../../studio/activity'
 import { useStudioLayout } from '../../studio/layoutContext'
@@ -27,6 +28,11 @@ export function ActivityPanel(): JSX.Element | null {
   const activity = useStudioActivity()
   const runner = useActivityRunner(activity ?? { instructions: '', checks: [] })
   const isNarrow = useStudioLayout().isNarrow
+  const projectId = useProjectStore((state) => state.project?.id)
+  const [failure, setFailure] = useState<{
+    activity: typeof activity
+    projectId: typeof projectId
+  } | null>(null)
   if (!activity) return null
 
   const checkById = new Map<string, ActivityCheck>(activity.checks.map((c) => [c.id, c]))
@@ -67,11 +73,19 @@ export function ActivityPanel(): JSX.Element | null {
         <Button
           size="sm"
           variant="primary"
-          onClick={() => void runner.run()}
+          onClick={() => {
+            setFailure(null)
+            void runner.run().catch(() => setFailure({ activity, projectId }))
+          }}
           disabled={runner.running}
         >
           {runner.running ? 'Verificando…' : 'Verificar'}
         </Button>
+        {failure?.activity === activity && failure.projectId === projectId && (
+          <p role="alert" className="mt-2 text-sm text-sz-error">
+            Não foi possível executar a verificação. Confira a conexão e tente novamente.
+          </p>
+        )}
       </div>
 
       {/* Micro-celebração (07/2026): a vitória acontece AQUI, onde o esforço

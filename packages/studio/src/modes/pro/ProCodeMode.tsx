@@ -1,29 +1,47 @@
+import type * as Monaco from 'monaco-editor'
 import type { JSX } from 'react'
-import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
-import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import type { ProjectTree } from '#core'
-import { FontSizeControls } from '../../components/code/FontSizeControls'
-import { MonacoTabs } from '../../components/code/LazyMonacoTabs'
-import { ProFileTree } from '../../components/code/ProFileTree'
-import { useCodeHistory } from '../../components/code/useCodeHistory'
-import { useFormatIssueLogger } from '../../components/code/useFormatIssueLogger'
 import { EditorSkeleton } from '../../components/layout/LoadingViews'
-import { NarrowPanels } from '../../components/layout/NarrowPanels'
-import { useProjectStore } from '../../state/projectStore'
-import { CODE_FONT_SIZE_DEFAULT, useSettingsStore } from '../../state/settingsStore'
-import { useUIStore } from '../../state/uiStore'
+import { useProTutorDock } from '../../components/layout/proTutorDock'
+import { proFileDescriptions } from '../../core/proLearningGuides'
+import type { MonacoHighlight } from '../../monaco/MonacoTabs'
+import { getMonacoModelPath } from '../../monaco/modelPaths'
+import type {
+  ProAnalysisState,
+  ProEditorDiagnostic,
+  ProLanguageSession,
+} from '../../monaco/pro/session'
+import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { useStudioConfig } from '../../studio/config'
 import { useT } from '../../studio/i18n'
-import { useStudioLayout } from '../../studio/layoutContext'
-import { useStudioTheme } from '../../studio/theme'
-import { ProPreview } from './ProPreview'
+import { useProCandidatePreview } from '../../studio/pro-candidate-preview'
+import { useStudioTutor } from '../../studio/tutor'
+import { ProCodeEditor } from './ProCodeEditor'
 import { ProWebContainerProvider } from './ProWebContainerProvider'
+import { currentProDiagnostics } from './workspace/diagnostics'
+import {
+  closeWorkspaceFile,
+  openWorkspaceFile,
+  pinWorkspaceFile,
+  reconcileWorkspace,
+  remapWorkspace,
+} from './workspace/model'
+import { ProBottomPanel } from './workspace/ProBottomPanel'
+import { ProCodeTools } from './workspace/ProCodeTools'
+import { ProNavigator } from './workspace/ProNavigator'
+import { ProOperationReview } from './workspace/ProOperationReview'
+import { ProQuickOpen } from './workspace/ProQuickOpen'
+import { ProWorkspaceLayout } from './workspace/ProWorkspaceLayout'
+import { proSourcePosition } from './workspace/search'
+import { useProOperations } from './workspace/useProOperations'
+import { useProWorkspace } from './workspace/useProWorkspace'
 
 const EMPTY_TREE: ProjectTree = {}
-
-/** Ordem de preferência para o arquivo aberto por padrão ao carregar o projeto. */
-const DEFAULT_OPEN_CANDIDATES = ['src/main.tsx', 'src/main.ts', 'src/App.tsx', 'index.html']
+const ProPreview = lazy(() =>
+  import('./ProPreview').then((module) => ({ default: module.ProPreview })),
+)
 
 /**
  * Variante do modo Código para projetos PROFISSIONAIS (`kind: 'pro'`): árvore de
@@ -33,59 +51,138 @@ const DEFAULT_OPEN_CANDIDATES = ['src/main.tsx', 'src/main.ts', 'src/App.tsx', '
  */
 export function ProCodeMode(): JSX.Element {
   const t = useT()
-  const { projectId, tree } = useProjectStore(
+  const store = useProjectStoreApi()
+  const { projectId, tree, templateId } = useProjectStore(
     useShallow((s) => ({
       projectId: s.project?.id,
       tree: s.project?.tree ?? EMPTY_TREE,
+      templateId: s.project?.proMeta?.templateId,
     })),
   )
   const setProFileContent = useProjectStore((s) => s.setProFileContent)
   const studioConfig = useStudioConfig()
-  const showPreview = useUIStore((s) => s.showPreview) && studioConfig.preview
+  const { focusNonce } = useProCandidatePreview()
   // No ESTREITO (abas) o olhinho da Topbar não é renderizado, então `showPreview`
   // ali é só uma preferência velha de desktop. Se ela apagasse a aba, quem
   // desligou o preview no computador abriria no celular sem preview E sem botão
   // para trazer de volta. A aba existe sempre que o host oferece preview.
   const previewAvailable = studioConfig.preview
-  const codeFontSize = useSettingsStore((s) => s.codeFontSize)
-  const studioTheme = useStudioTheme()
-  const { isNarrow } = useStudioLayout()
+  const tutorDock = useProTutorDock()
+  const [diagnostics, setDiagnostics] = useState<ProEditorDiagnostic[] | null>(null)
+  const [analysis, setAnalysis] = useState<ProAnalysisState>({ status: 'pending' })
+  const updateAnalysis = useCallback((next: ProAnalysisState) => {
+    setAnalysis((previous) =>
+      previous.status === next.status && next.status !== 'error' ? previous : next,
+    )
+  }, [])
 
-  const [openFiles, setOpenFiles] = useState<string[]>([])
-  const [activeFile, setActiveFile] = useState<string>('')
-  const onFormatIssue = useFormatIssueLogger()
-  // Desfazer/refazer da barra: aqui o alvo é sempre o código.
-  const onCodeEditorReady = useCodeHistory()
-
-  // Auto-abre o arquivo padrão UMA VEZ por carga de projeto. Antes o efeito
-  // disparava sempre que `openFiles.length === 0`, então fechar a última aba
-  // reabria o default no mesmo instante — o aluno não conseguia ficar sem abas.
-  const autoOpenedProjectRef = useRef<string | null>(null)
-  useEffect(() => {
-    if (autoOpenedProjectRef.current === projectId) return
-    const fileKeys = Object.entries(tree)
-      .filter(([, node]) => node.kind === 'file')
-      .map(([path]) => path)
-    // Sem arquivos ainda (árvore vazia no 1º render): espera o próximo tick com a
-    // árvore carregada antes de marcar este projeto como já auto-aberto.
-    if (fileKeys.length === 0) return
-    autoOpenedProjectRef.current = projectId ?? null
-    // Respeita abas que o usuário já abriu manualmente antes do efeito rodar.
-    if (openFiles.length > 0) return
-    const initial = DEFAULT_OPEN_CANDIDATES.find((c) => fileKeys.includes(c)) ?? fileKeys[0]
-    if (initial) {
-      setOpenFiles([initial])
-      setActiveFile(initial)
+  const workspace = useProWorkspace(projectId, tree)
+  const { state: workspaceState, change: changeWorkspace } = workspace
+  const { openFiles, activeFile } = workspaceState
+  const [codeRequest, setCodeRequest] = useState(0)
+  const editorRef = useRef<Monaco.editor.IStandaloneCodeEditor | null>(null)
+  const [readyEditor, setReadyEditor] = useState<Monaco.editor.IStandaloneCodeEditor | null>(null)
+  const [languageSession, setLanguageSession] = useState<ProLanguageSession | null>(null)
+  const [quickOpen, setQuickOpen] = useState<{ query: string } | null>(null)
+  const formatRef = useRef<(() => void) | null>(null)
+  const [locations, setLocations] = useState<Array<{ path: string; line: number; column: number }>>(
+    [],
+  )
+  const remember = useCallback(() => {
+    const model = editorRef.current?.getModel(),
+      position = editorRef.current?.getPosition()
+    if (!model || !position) return
+    const full = getMonacoModelPath(model)
+    const location = {
+      path: full.slice(full.indexOf('/') + 1),
+      line: position.lineNumber,
+      column: position.column,
     }
-  }, [tree, projectId, openFiles.length])
-
-  // Fecha abas de arquivos que sumiram da árvore (excluídos/renomeados).
-  useEffect(() => {
-    setOpenFiles((prev) => {
-      const next = prev.filter((p) => tree[p]?.kind === 'file')
-      return next.length === prev.length ? prev : next
+    setLocations((previous) => {
+      const last = previous.at(-1)
+      return last?.path === location.path &&
+        last.line === location.line &&
+        last.column === location.column
+        ? previous
+        : [...previous.slice(-39), location]
     })
-  }, [tree])
+  }, [])
+  const operations = useProOperations(projectId, (next, pathMap) => {
+    changeWorkspace((previous) => {
+      const mapped = reconcileWorkspace(remapWorkspace(previous, pathMap), next)
+      const temporary = previous.temporaryFile
+      const oldNode = temporary ? tree[temporary] : undefined
+      const nextNode = mapped.temporaryFile ? next[mapped.temporaryFile] : undefined
+      return mapped.temporaryFile &&
+        (pathMap[temporary ?? ''] ||
+          (oldNode?.kind === 'file' &&
+            nextNode?.kind === 'file' &&
+            oldNode.content !== nextNode.content))
+        ? pinWorkspaceFile(mapped, mapped.temporaryFile)
+        : mapped
+    })
+    setCodeRequest((previous) => previous + 1)
+    setLocations((previous) =>
+      previous
+        .map((item) => ({ ...item, path: pathMap[item.path] ?? item.path }))
+        .filter((item) => next[item.path]?.kind === 'file'),
+    )
+  })
+  const [searchRequest, setSearchRequest] = useState(0)
+  const [revealRequest, setRevealRequest] = useState(0)
+  const descriptions = useMemo(() => proFileDescriptions(templateId, tree), [templateId, tree])
+  const {
+    config: tutorConfig,
+    proEditor,
+    proNavigate,
+    proValidateReference,
+    proCapture,
+    requestProHelp,
+  } = useStudioTutor()
+  const askFromCode = (intent: 'explain' | 'investigate' | 'change') => {
+    const context = proCapture.current?.()
+    if (context)
+      requestProHelp({ projectId: context.projectId, intent, selection: context.selection })
+  }
+  const [tutorHighlight, setTutorHighlight] = useState<MonacoHighlight | null>(null)
+  useEffect(() => {
+    proNavigate.current = (requested) => {
+      const reference = proValidateReference.current?.(requested)
+      if (!reference) return
+      if (tree[reference.path]?.kind !== 'file') return
+      setCodeRequest((previous) => previous + 1)
+      remember()
+      changeWorkspace((previous) => openWorkspaceFile(previous, reference.path, true))
+      const { startLine, endLine } = reference
+      setTutorHighlight((previous) =>
+        startLine !== undefined && endLine !== undefined
+          ? {
+              file: reference.path,
+              startLine,
+              endLine,
+              nonce: (previous?.nonce ?? 0) + 1,
+            }
+          : null,
+      )
+    }
+    return () => {
+      proNavigate.current = null
+    }
+  }, [tree, proNavigate, proValidateReference, changeWorkspace, remember])
+  useEffect(() => {
+    if (!projectId) return
+    proEditor.current = {
+      ...(proEditor.current?.projectId === projectId ? proEditor.current : {}),
+      projectId,
+      activeFile,
+    }
+  }, [projectId, activeFile, proEditor])
+  useEffect(
+    () => () => {
+      proEditor.current = null
+    },
+    [proEditor],
+  )
 
   const filesArray = useMemo(
     () =>
@@ -101,78 +198,350 @@ export function ProCodeMode(): JSX.Element {
   const handleSelectFile = (path: string) => {
     const node = tree[path]
     if (node?.kind !== 'file') return
-    setOpenFiles((prev) => (prev.includes(path) ? prev : [...prev, path]))
-    setActiveFile(path)
+    setCodeRequest((previous) => previous + 1)
+    if (path !== activeFile) remember()
+    setTutorHighlight(null)
+    changeWorkspace((previous) => openWorkspaceFile(previous, path))
   }
 
   const handleCloseFile = (name: string) => {
-    if (activeFile === name) {
-      const visible = filesArray.map((f) => f.name)
-      const idx = visible.indexOf(name)
-      setActiveFile(visible[idx + 1] ?? visible[idx - 1] ?? '')
-    }
-    setOpenFiles((prev) => prev.filter((p) => p !== name))
+    changeWorkspace((previous) => closeWorkspaceFile(previous, name))
   }
 
-  const codeEditor = (
-    <Suspense fallback={<EditorSkeleton message="Carregando editor de código…" />}>
-      <MonacoTabs
-        files={filesArray}
-        modelPathPrefix={projectId}
-        activeFile={activeFile}
-        onActiveFileChange={setActiveFile}
-        onChange={(name, value) => setProFileContent(name, value)}
-        theme={studioTheme === 'light' ? 'light' : 'vs-dark'}
-        fontSize={codeFontSize || CODE_FONT_SIZE_DEFAULT}
-        formatLabel={t('editor.format')}
-        onFormatIssue={onFormatIssue}
-        tabsRightSlot={<FontSizeControls />}
-        canCloseFile={() => true}
-        onCloseFile={handleCloseFile}
-        onEditorReady={onCodeEditorReady}
-      />
-    </Suspense>
+  const navigator = (close?: () => void) => (
+    <ProNavigator
+      tree={tree}
+      onGuideReference={async (path, name) => {
+        handleSelectFile(path)
+        close?.()
+        if (!operations.language.current)
+          throw new Error('Arquivo aberto. Aguarde a análise para localizar o símbolo.')
+        const symbols = await operations.language.current.requestForTree(tree, 'symbols', path)
+        const node = tree[path]
+        const model = editorRef.current?.getModel()
+        if (
+          store.getState().project?.tree !== tree ||
+          !model ||
+          !getMonacoModelPath(model).endsWith(`/${path}`)
+        )
+          return
+        const symbol = symbols.find((item) => item.name === name)
+        if (!symbol || node?.kind !== 'file')
+          throw new Error('Arquivo aberto. Este símbolo não está mais disponível na análise atual.')
+        const position = proSourcePosition(node.content, symbol.start)
+        setTutorHighlight((previous) => ({
+          file: path,
+          startLine: position.line,
+          endLine: position.line,
+          startColumn: position.column,
+          nonce: (previous?.nonce ?? 0) + 1,
+        }))
+      }}
+      onInsert={(example) => {
+        const node = tree[activeFile]
+        if (node?.kind === 'file')
+          void operations.prepare({
+            kind: 'example',
+            path: activeFile,
+            source: node.content,
+            asset: example.asset,
+            text: example.code,
+            name: example.name,
+            label: example.label,
+          })
+      }}
+      onRequestOperation={(intent) => void operations.prepare(intent)}
+      operationsBusy={operations.busy}
+      activeFile={activeFile}
+      descriptions={descriptions}
+      searchRequest={searchRequest}
+      revealRequest={revealRequest}
+      collapsedPaths={workspaceState.collapsed}
+      onCollapsedChange={(collapsed) => changeWorkspace((previous) => ({ ...previous, collapsed }))}
+      onSelectFile={(path) => {
+        handleSelectFile(path)
+        close?.()
+      }}
+      onPinFile={(path) => changeWorkspace((previous) => openWorkspaceFile(previous, path, true))}
+      onResult={(result) => {
+        remember()
+        handleSelectFile(result.path)
+        setTutorHighlight((previous) => ({
+          file: result.path,
+          startLine: result.line,
+          endLine: result.line,
+          startColumn: result.column,
+          nonce: (previous?.nonce ?? 0) + 1,
+        }))
+        close?.()
+      }}
+    />
   )
 
-  if (isNarrow) {
-    return (
-      <ProWebContainerProvider>
-        <NarrowPanels
-          editorPanes={[{ id: 'code', label: t('tab.code'), content: codeEditor }]}
-          preview={previewAvailable ? <ProPreview /> : undefined}
-          filesDrawer={(close) => (
-            <ProFileTree
-              activeFile={activeFile}
-              onSelectFile={(path) => {
-                handleSelectFile(path)
-                close()
+  const codeEditor = (
+    <section
+      className="flex h-full min-h-0 flex-col"
+      aria-label="Código do projeto"
+      onKeyDownCapture={(event) => {
+        // Ctrl+K is a Monaco chord prefix. Keep it intact; this action has its own scoped shortcut.
+        if (
+          (event.ctrlKey || event.metaKey) &&
+          event.altKey &&
+          !event.shiftKey &&
+          event.key.toLowerCase() === 'k' &&
+          tutorConfig &&
+          editorRef.current?.hasTextFocus()
+        ) {
+          event.preventDefault()
+          event.stopPropagation()
+          askFromCode('change')
+          return
+        }
+        if (
+          (event.ctrlKey || event.metaKey) &&
+          !event.shiftKey &&
+          !event.altKey &&
+          event.key.toLowerCase() === 'p'
+        ) {
+          event.preventDefault()
+          event.stopPropagation()
+          setQuickOpen({ query: '' })
+        }
+      }}
+    >
+      <ProOperationReview operations={operations} />
+      <ProCodeTools
+        help={tutorConfig ? askFromCode : undefined}
+        search={() => setQuickOpen({ query: '' })}
+        searchProject={() => setSearchRequest((previous) => previous + 1)}
+        format={() => formatRef.current?.()}
+        path={activeFile}
+        tree={tree}
+        language={languageSession}
+        editor={editorRef}
+        readyEditor={readyEditor}
+        busy={operations.busy}
+        prepare={(intent) => void operations.prepare(intent)}
+        recover={() => operations.setHistoryOpen(true)}
+        canGoBack={locations.some((item) => tree[item.path]?.kind === 'file')}
+        navigate={(path, line, column) => {
+          if (tree[path]?.kind !== 'file') return
+          setCodeRequest((previous) => previous + 1)
+          remember()
+          changeWorkspace((previous) => openWorkspaceFile(previous, path, true))
+          setTutorHighlight((previous) => ({
+            file: path,
+            startLine: line,
+            endLine: line,
+            startColumn: column,
+            nonce: (previous?.nonce ?? 0) + 1,
+          }))
+        }}
+        back={() => {
+          const valid = locations.filter((item) => tree[item.path]?.kind === 'file')
+          const target = valid.pop()
+          setLocations(valid)
+          if (!target) return
+          setCodeRequest((previous) => previous + 1)
+          changeWorkspace((previous) => openWorkspaceFile(previous, target.path, true))
+          setTutorHighlight((previous) => ({
+            file: target.path,
+            startLine: target.line,
+            endLine: target.line,
+            startColumn: target.column,
+            nonce: (previous?.nonce ?? 0) + 1,
+          }))
+        }}
+      />
+      {workspace.error && (
+        <p role="status" className="px-3 py-2 text-xs text-sz-error">
+          {workspace.error}{' '}
+          <button type="button" onClick={workspace.dismissError}>
+            Fechar
+          </button>
+        </p>
+      )}
+      {activeFile && (
+        <nav
+          aria-label={t('pro.breadcrumb')}
+          className="flex shrink-0 flex-wrap items-center gap-1 border-b border-sz-border-soft px-3 py-1 text-xs"
+        >
+          {activeFile.split('/').map((part, index, parts) => (
+            <button
+              key={parts.slice(0, index + 1).join('/')}
+              type="button"
+              className="min-h-8 rounded px-1 hover:bg-sz-panel"
+              onClick={() => {
+                if (index < parts.length - 1) {
+                  setQuickOpen({ query: `${parts.slice(0, index + 1).join('/')}/` })
+                  return
+                }
+                setRevealRequest((previous) => previous + 1)
+                changeWorkspace((previous) => ({
+                  ...previous,
+                  collapsed: previous.collapsed.filter(
+                    (path) => !activeFile.startsWith(`${path}/`),
+                  ),
+                }))
               }}
-            />
+            >
+              {index ? '/ ' : ''}
+              {part}
+            </button>
+          ))}
+          {workspaceState.temporaryFile === activeFile && (
+            <button
+              type="button"
+              className="ml-auto min-h-8 rounded px-2 text-sz-accent"
+              onClick={() => changeWorkspace((previous) => pinWorkspaceFile(previous, activeFile))}
+            >
+              {t('pro.pinTab')}
+            </button>
           )}
-        />
-      </ProWebContainerProvider>
-    )
-  }
+          {openFiles.length > 1 && (
+            <button
+              type="button"
+              className="min-h-8 rounded px-2"
+              onClick={() =>
+                changeWorkspace((previous) => ({
+                  ...previous,
+                  openFiles: [activeFile],
+                  temporaryFile: null,
+                }))
+              }
+            >
+              {t('pro.closeOtherTabs')}
+            </button>
+          )}
+        </nav>
+      )}
+      <div className="min-h-0 flex-1">
+        <Suspense fallback={<EditorSkeleton message="Carregando editor de código…" />}>
+          <ProCodeEditor
+            key={projectId}
+            files={filesArray}
+            modelPathPrefix={projectId}
+            activeFile={activeFile}
+            highlight={tutorHighlight}
+            onActiveFileChange={handleSelectFile}
+            onChange={(name, value) => {
+              if (workspaceState.temporaryFile === name)
+                changeWorkspace((previous) => pinWorkspaceFile(previous, name))
+              setProFileContent(name, value)
+            }}
+            onFormatReady={(run) => {
+              formatRef.current = run
+            }}
+            canCloseFile={() => true}
+            onCloseFile={handleCloseFile}
+            temporaryFile={workspaceState.temporaryFile}
+            onPinFile={(path) => changeWorkspace((previous) => pinWorkspaceFile(previous, path))}
+            onEditorReady={(editor) => {
+              editorRef.current = editor
+              setReadyEditor(editor)
+            }}
+            onProLanguageReady={(session) => {
+              operations.language.current = session
+              setLanguageSession(session)
+              if (!session) setDiagnostics(null)
+            }}
+            onProDiagnostics={setDiagnostics}
+            onProAnalysis={updateAnalysis}
+          />
+        </Suspense>
+      </div>
+    </section>
+  )
 
   return (
     <ProWebContainerProvider>
-      <PanelGroup direction="horizontal" className="h-full w-full">
-        <Panel id="pro-files" order={1} defaultSize={20} minSize={14} maxSize={30}>
-          <ProFileTree activeFile={activeFile} onSelectFile={handleSelectFile} />
-        </Panel>
-        <PanelResizeHandle className="sz-resize-handle sz-resize-handle--vertical" />
-        <Panel id="pro-code" order={2} defaultSize={showPreview ? 45 : 80} minSize={28}>
-          {codeEditor}
-        </Panel>
-        {showPreview && (
-          <>
-            <PanelResizeHandle className="sz-resize-handle sz-resize-handle--vertical" />
-            <Panel id="pro-preview" order={3} defaultSize={35} minSize={20}>
+      {quickOpen && (
+        <ProQuickOpen
+          key={projectId}
+          tree={tree}
+          recent={openFiles}
+          initialQuery={quickOpen.query}
+          onClose={() => setQuickOpen(null)}
+          onSelect={handleSelectFile}
+        />
+      )}
+      <ProWorkspaceLayout
+        navigator={navigator}
+        editor={codeEditor}
+        preview={
+          previewAvailable ? (
+            <Suspense fallback={<EditorSkeleton message="Carregando pré-visualização…" />}>
               <ProPreview />
-            </Panel>
-          </>
-        )}
-      </PanelGroup>
+            </Suspense>
+          ) : null
+        }
+        tutor={tutorDock}
+        preferences={workspaceState}
+        change={changeWorkspace}
+        gameRequest={focusNonce}
+        searchRequest={searchRequest + revealRequest}
+        codeRequest={codeRequest}
+        bottom={
+          <ProBottomPanel
+            tree={tree}
+            diagnostics={diagnostics}
+            analysis={analysis}
+            investigate={
+              tutorConfig
+                ? (item) => {
+                    const project = store.getState().project
+                    if (
+                      project?.id !== projectId ||
+                      !project?.tree ||
+                      !currentProDiagnostics([item], project.tree).length
+                    )
+                      return
+                    const reference = proValidateReference.current?.({
+                      path: item.path,
+                      startLine: item.line,
+                      endLine: item.line,
+                      sourceHash: item.sourceHash,
+                    })
+                    const node = project.tree[item.path]
+                    if (!reference?.startLine || node?.kind !== 'file' || !item.sourceHash) return
+                    requestProHelp({
+                      projectId: project.id,
+                      intent: 'investigate',
+                      question: `Me ajude a investigar TS${item.code}: ${item.message}`,
+                      selection: {
+                        path: item.path,
+                        startLine: item.line,
+                        endLine: item.line,
+                        sourceHash: item.sourceHash,
+                        startColumn: 1,
+                        endColumn:
+                          (node.content.split(/\r\n|\r|\n/)[item.line - 1]?.length ?? 0) + 1,
+                        documentVersion: 0,
+                      },
+                    })
+                  }
+                : undefined
+            }
+            selected={workspaceState.bottom}
+            onSelect={(bottom) => changeWorkspace((previous) => ({ ...previous, bottom }))}
+            navigate={(path, line, column) => {
+              setCodeRequest((previous) => previous + 1)
+              remember()
+              changeWorkspace((previous) => ({
+                ...openWorkspaceFile(previous, path, true),
+                layout: 'split',
+              }))
+              setTutorHighlight((previous) => ({
+                file: path,
+                startLine: line,
+                endLine: line,
+                startColumn: column,
+                nonce: (previous?.nonce ?? 0) + 1,
+              }))
+            }}
+          />
+        }
+      />
     </ProWebContainerProvider>
   )
 }

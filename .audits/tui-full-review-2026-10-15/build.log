@@ -1,0 +1,3 @@
+$ bun run --filter @sistemazero/tui build
+@sistemazero/tui build: Built 28 modules in C:\Users\tocha\projects\sistema-zero-tui\packages\tui\dist
+@sistemazero/tui build: Exited with code 0

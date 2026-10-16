@@ -1,0 +1,33 @@
+{
+  "method": "Original pure function imported from supplied repository; synthetic in-memory file metadata; no backend, browser, or credentials.",
+  "parentFirstPreservesChild": true,
+  "childFirstPreservesChild": false,
+  "binaryIncluded": false,
+  "parentFirst": {
+    "src": {
+      "directory": {
+        "index.ts": {
+          "file": {
+            "contents": "export const value = 1"
+          }
+        }
+      }
+    }
+  },
+  "childFirst": {
+    "src": {
+      "directory": {}
+    }
+  },
+  "withBinary": {
+    "src": {
+      "directory": {
+        "index.ts": {
+          "file": {
+            "contents": "export const value = 1"
+          }
+        }
+      }
+    }
+  }
+}

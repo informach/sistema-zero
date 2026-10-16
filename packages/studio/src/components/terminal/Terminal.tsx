@@ -7,7 +7,7 @@ import '@xterm/xterm/css/xterm.css'
 import type { FitAddon } from '@xterm/addon-fit'
 import type { Terminal as XTerm } from '@xterm/xterm'
 import { useShallow } from 'zustand/react/shallow'
-import { useProjectStore } from '../../state/projectStore'
+import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import {
   buildTerminalFileContents,
   buildTerminalFileTree,
@@ -72,6 +72,7 @@ interface TerminalRuntime {
 const EMPTY_EXTRA_FILES: ExtraFile[] = []
 
 export function Terminal(): JSX.Element {
+  const projectStore = useProjectStoreApi()
   const project = useProjectStore(
     useShallow(
       (s): TerminalProjectSnapshot => ({
@@ -180,14 +181,14 @@ export function Terminal(): JSX.Element {
         // esperar para sempre quando o preview está fechado. Se não houver projeto
         // pro identificado, segue sem esperar (cenário degradado).
         if (projectId && waitForProFsMounted) {
-          requestProFsMount?.()
+          requestProFsMount?.(projectStore)
           // `waitForProFsMounted` tem TIMEOUT: o escritor único pode estar `busy`
           // (outra instância é dona do FS singleton) e nunca publicar o sinal —
           // sem o timeout o terminal ficava preso para sempre "Carregando…". Ao
           // expirar (resolve `false`), espelhamos a UI de ocupado do terminal
           // clássico em vez de girar para sempre; o botão "Tentar novamente"
           // rechama handleLoad quando a posse for liberada.
-          const mounted = await waitForProFsMounted(projectId)
+          const mounted = await waitForProFsMounted(projectId, undefined, projectStore)
           if (loadSeqRef.current !== loadId) {
             term.dispose()
             return
@@ -292,7 +293,7 @@ export function Terminal(): JSX.Element {
       setError(message)
       setStatus('error')
     }
-  }, [cleanupRuntime, project, projectId])
+  }, [cleanupRuntime, project, projectId, projectStore])
 
   useEffect(() => {
     return () => {

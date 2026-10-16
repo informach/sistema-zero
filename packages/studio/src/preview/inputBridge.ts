@@ -199,6 +199,7 @@ function buildPreviewControlsRuntime(parentOrigin?: string): string {
   // Mute/unmute: interceptamos AudioContext criados PELO jogo para suspender/resumir.
   // Só intercepta se a API existir (segurança: nunca lança).
   var _audioInstances = [];
+  var _audioSuspendedByHost = new WeakSet();
   var _OrigAC = window.AudioContext || window.webkitAudioContext;
   if (_OrigAC) {
     var _PatchedAC = function () { var ctx = new _OrigAC(); _audioInstances.push(ctx); return ctx; };
@@ -227,8 +228,26 @@ function buildPreviewControlsRuntime(parentOrigin?: string): string {
     var d = e.data;
     if (!d || d.type !== 'sz:audio') return;
     _muted = !!d.muted;
+    _audioInstances = _audioInstances.filter(function (ctx) {
+      if (ctx.state !== 'closed') return true;
+      _audioSuspendedByHost.delete(ctx);
+      return false;
+    });
     _audioInstances.forEach(function (ctx) {
-      try { d.muted ? ctx.suspend() : ctx.resume(); } catch (err) {}
+      // A sincronização inicial de "som ligado" não é um gesto de autoplay.
+      // Só retomamos contextos que estavam tocando e foram suspensos pelo host.
+      try {
+        var operation;
+        if (_muted && ctx.state === 'running' && !_audioSuspendedByHost.has(ctx)) {
+          operation = ctx.suspend();
+          _audioSuspendedByHost.add(ctx);
+        } else if (!_muted && _audioSuspendedByHost.has(ctx)) {
+          _audioSuspendedByHost.delete(ctx);
+          operation = ctx.resume();
+        }
+        // O jogo pode fechar o contexto enquanto a operação assíncrona termina.
+        if (operation && operation.catch) operation.catch(function () {});
+      } catch (err) {}
     });
     _mediaEls.forEach(function (el) {
       try { el.muted = _muted; } catch (err) {}

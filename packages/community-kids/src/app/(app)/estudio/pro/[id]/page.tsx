@@ -1,12 +1,12 @@
-import { isStudioZappyAllowed } from '@sistemazero/member-shell/server/zappy-access'
 import { redirect } from 'next/navigation'
 import { KidsLockedStudio } from '@/components/kids/kids-locked-studio'
 import { KidsStudioUnavailable } from '@/components/kids/kids-studio-unavailable'
 import { StudioProClient } from '@/components/kids/studio-pro-client'
 import { ToolRouteRecado } from '@/components/kids/tool-route-recado'
-import { checkStudioAccessReadonly, getGamificationReadonly } from '@/server/members'
+import { checkCreativeToolsAccessReadonly, getGamificationReadonly } from '@/server/members'
 import { getSession } from '@/server/session'
 import { resolveStudioProAccess } from '@/server/studio-pro-access'
+import { prepareStudioServices } from '@/server/studio-services'
 
 export const dynamic = 'force-dynamic'
 
@@ -23,12 +23,22 @@ const ID_RE = /^[A-Za-z0-9_-]{1,64}$/
  * bloqueado / ok) + **exige a capacidade PRO** (`tier.pro` = Lenda/admin). Sem ela,
  * volta pro `/estudio`. O editor pesado só carrega no cliente (`StudioProClient`).
  */
-export default async function EstudioProPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function EstudioProPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>
+  searchParams?: Promise<{ tarefa?: string | string[] }>
+}) {
   const { id } = await params
+  const query = await searchParams
+  const taskId =
+    typeof query?.tarefa === 'string' && /^[0-9a-f-]{36}$/i.test(query.tarefa) ? query.tarefa : null
   if (!ID_RE.test(id)) redirect('/estudio')
 
+  const readServices = prepareStudioServices()
   const [res, session, gam] = await Promise.all([
-    checkStudioAccessReadonly(),
+    checkCreativeToolsAccessReadonly(),
     getSession(),
     getGamificationReadonly({ withRanking: true }).catch(() => null),
   ])
@@ -47,14 +57,18 @@ export default async function EstudioProPage({ params }: { params: Promise<{ id:
   }
   // A página é protegida pelo proxy, mas mantém o redirect defensivo para URL direta.
   if (!access.allowed) redirect('/estudio')
+  const services = await readServices(session, levelSlug)
 
   return (
     <StudioProClient
       viewerId={session?.id ?? null}
       projectId={id}
+      taskId={taskId}
+      pintaOwned={res.body?.access?.pinta === true}
+      moldaOwned={res.body?.access?.molda === true}
       // Mesma política do /estudio: equipe sempre, aluno a partir do degrau
       // mínimo da jornada (Inventor). Aqui o rank já foi buscado p/ o gate Pro.
-      zappyEnabled={isStudioZappyAllowed(session, levelSlug)}
+      {...services}
     />
   )
 }

@@ -35,16 +35,17 @@ const Start = z.strictObject({
 })
 /**
  * O que o navegador pode mandar por `command` (o `JourneyApp` usa pausar, retomar, aceitar,
- * observar, consertar e guardar ideia; tirar ideia é o par dela). ⚠️ `close`, `revise` e
- * `record_test` NÃO: as rotas próprias protegem a versão e conferem o jogo salvo antes, e pelo
- * `command` cru elas pulavam as duas coisas. `retry` é do `/work`.
+ * consertar e guardar ideia; tirar ideia é o par dela). ⚠️ `close`, `revise` e `record_test` NÃO:
+ * as rotas próprias protegem a versão e conferem o jogo salvo antes, e pelo `command` cru elas
+ * pulavam as duas coisas. `retry` é do `/work`. ⚠️ `observe` também NÃO (15/10/2026): o "Já quero
+ * experimentar" levava a criança à etapa O sem missão feita e sem jogo; hoje a etapa O começa
+ * quando ela CONTA o resultado do teste (a rota `/test` observa e registra junto).
  */
 const Command = z.strictObject({
   expectedRevision: z.number().int().min(0),
   command: z.discriminatedUnion('type', [
     z.strictObject({ type: z.literal('pause') }),
     z.strictObject({ type: z.literal('resume') }),
-    z.strictObject({ type: z.literal('observe') }),
     z.strictObject({ type: z.literal('repair') }),
     z.strictObject({ type: z.literal('accept'), proposalId: uuid }),
     z.strictObject({
@@ -188,6 +189,18 @@ export function createPensaJourneyRoutes({
     }
     const { path = [] } = await ctx.params
     const [resource, projectId, action] = path
+    // O selo de usos do Zappy (o mesmo do plano clássico, 15/10/2026). SEMPRE 200: sem dado,
+    // `credits: null` e a tela esconde o selo; "não sei" nunca pode virar "acabou".
+    if (resource === 'credits' && path.length === 1) {
+      if (req.method !== 'GET') return error(405, 'Ação indisponível.')
+      const res = await members.getAiCredits().catch((cause: unknown) => {
+        console.error('[pensa-v2] usos indisponíveis', { name: errorName(cause) })
+        return null
+      })
+      const credits =
+        res?.status === 200 && typeof res.body?.dayRemaining === 'number' ? res.body : null
+      return reply({ status: 200, body: { credits } })
+    }
     if (resource !== 'projects' || path.length > 5) return error(404, 'Plano não encontrado.')
     const body = req.method === 'GET' ? null : await req.json().catch(() => null)
     if (projectId === 'join' && path.length === 2)
@@ -217,6 +230,14 @@ export function createPensaJourneyRoutes({
       const parsed = z.strictObject({ status: z.enum(['active', 'archived']) }).safeParse(body)
       if (parsed.success)
         return reply(await members.pensaJourneyArchive(projectId, parsed.data.status))
+      // Renomear o jogo (15/10/2026): o nome aparece para a equipe, então passa pela régua da
+      // narrativa (nada de contato, segredo ou o que não é para criança).
+      const renamed = z.strictObject({ name: z.string().trim().min(2).max(120) }).safeParse(body)
+      if (renamed.success) {
+        const refusal = pensaNarrativeRefusal(renamed.data.name)
+        if (refusal) return error(422, refusal, 'PENSA_MESSAGE_REVIEW')
+        return reply(await members.pensaJourneyRename(projectId, renamed.data.name))
+      }
     }
     if (req.method !== 'POST') return error(405, 'Ação indisponível.')
     if (action === 'cancel') return reply(await members.pensaJourneyCancel(projectId))

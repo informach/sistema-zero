@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import type { ClassifyResult, DraftResult } from '../../src/application/ai/prompts'
+import type { ClassifyResult } from '../../src/application/ai/prompts'
 import { LlmError } from '../../src/domain/ports/llm-client.port'
 import { buildTestApp, json, makeMessage, makeTicket, request, type TestApp } from '../helpers'
 
@@ -11,7 +11,13 @@ const CLS: ClassifyResult = {
   flags: { reembolso: true, juridico: false },
   summary: 'Cliente pede reembolso da compra.',
 }
-const DRAFT: DraftResult = { reply: 'Entendo, vou verificar o reembolso.', kbCoverage: 'partial' }
+const DRAFT = {
+  citationIds: ['11111111-1111-4111-8111-111111111111'],
+  clarification: false,
+  reason: 'supported',
+  reply: 'Entendo, vou verificar o reembolso.',
+  kbCoverage: 'partial',
+}
 
 async function seedTicket(t: TestApp): Promise<string> {
   const ticket = makeTicket({ subject: 'Quero reembolso', aiStatus: 'pending' })
@@ -23,6 +29,34 @@ async function seedTicket(t: TestApp): Promise<string> {
 }
 
 describe('IA on-demand', () => {
+  it('mantém autoria do draft efetivamente enviado e recusa referência de outro ticket', async () => {
+    const t = buildTestApp()
+    const ticket = makeTicket({ source: 'portal', gmailThreadId: null, portal: 'adult' })
+    await t.repos.tickets.create(ticket)
+    await t.repos.messages.create(makeMessage(ticket.id))
+    t.llm.queue = [DRAFT]
+    const generated = await json(
+      await request(t.app, 'POST', `/helpdesk/tickets/${ticket.id}/draft/regenerate`),
+    )
+    const other = makeTicket({ source: 'portal', gmailThreadId: null })
+    await t.repos.tickets.create(other)
+    const denied = await request(t.app, 'POST', `/helpdesk/tickets/${other.id}/reply`, {
+      body: { body: DRAFT.reply, version: other.version, draftRunId: generated.aiDraftRunId },
+    })
+    expect(denied.status).toBe(409)
+    const sent = await request(t.app, 'POST', `/helpdesk/tickets/${ticket.id}/reply`, {
+      body: {
+        body: `${DRAFT.reply} Texto revisado.`,
+        version: ticket.version,
+        draftRunId: generated.aiDraftRunId,
+      },
+    })
+    expect(sent.status).toBe(200)
+    const messages = await t.repos.messages.byTicketId(ticket.id)
+    const outbound = messages.find((message) => message.direction === 'outbound')
+    expect(outbound?.aiRunId).toBe(generated.aiDraftRunId)
+    expect(outbound?.draftEdited).toBe(true)
+  })
   it('POST summarize classifica e resume', async () => {
     const t = buildTestApp({ gmailEnabled: true })
     const id = await seedTicket(t)

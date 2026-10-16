@@ -1,0 +1,105 @@
+{
+  "recordedAt": "2026-10-15T23:01:19.140Z",
+  "implementationCommit": "fcd6f11773e4b552b38a3e474fea46248f58d12f",
+  "testedCodeCommit": "d24838a5fa06f0f24ba7df401f07dd4aec05cc7f",
+  "integratedStaging": "9d542db02",
+  "tests": [
+    {
+      "command": "bun run test:tui",
+      "pass": 68,
+      "fail": 0,
+      "assertions": 421,
+      "files": 48,
+      "seconds": 53.4,
+      "log": "tui-after-staging.log",
+      "sha256": "5985dcb1fc43df70f434c966304e135d9c9557878b8214a9829fd3013240ccaa"
+    },
+    {
+      "command": "bun test packages/auth/tests/unit packages/auth/tests/integration packages/messaging/tests/unit packages/api-gateway/tests/unit/config.test.ts packages/studio-runtime/tests packages/core/src/staff packages/core/src/studio",
+      "pass": 458,
+      "fail": 0,
+      "assertions": 1643,
+      "files": 54,
+      "seconds": 36.23,
+      "log": "backend-after-staging.log",
+      "sha256": "992ce51ca159bc09d69525a174b6df43841db56c546a24b04e8c444de21c0879"
+    }
+  ],
+  "typechecks": {
+    "packages": [
+      "agent-core",
+      "agent-runtime",
+      "agent-integrations",
+      "tui",
+      "core",
+      "auth",
+      "messaging",
+      "api-gateway",
+      "studio-runtime"
+    ],
+    "releaseScripts": true,
+    "command": "bunx tsc --noEmit -p <package>/tsconfig.json",
+    "log": "typecheck-final.log",
+    "exitCode": 0,
+    "studioRuntimeTests": true
+  },
+  "release": {
+    "verifiedAt": "2026-10-15T23:00:41.516Z",
+    "manifestSha256": "332259559f1c75b21c642b62a5fb5689b150ab05d62a0059da7d40c5eff17a80",
+    "checks": [
+      "manifest",
+      "sqlite-worker",
+      "schema-worker",
+      "typescript-worker",
+      "opentui-native-wasm",
+      "windows-job-conpty",
+      "node-chromium-worker"
+    ],
+    "installation": "release-final.json",
+    "upgrade": "upgrade.json"
+  },
+  "startup": {
+    "sourceCommit": "0908f2b36f69f9f5b8582f073de03a06e0ac2db5",
+    "artifact": "startup.json",
+    "p95": {
+      "help": 123.34739999999965,
+      "warmPrompt": 857.148500000003,
+      "newProfilePrompt": 2183.0158999999985
+    },
+    "samplesPerScenario": 30,
+    "warmupsPerScenario": 3,
+    "idleWindowMs": 60099.59910000001,
+    "rss": 309579776,
+    "cpuPercentOfMachine": 0,
+    "note": "Measured at sourceCommit, before the final Studio release-flag cleanup and validation fingerprint regeneration; not a newly measured distribution startup after those changes."
+  },
+  "benchmarks": {
+    "beforeStagingIntegration": true,
+    "sourceFamily": "Implementation worktree committed as fcd6f1177; individual artifacts retain timestamps and parameters",
+    "f1ToF7Directory": ".",
+    "f5Milliseconds": 301277.1383,
+    "f5FrameP95": 32.55210000000079,
+    "f5FrameP99": 40.7953
+  },
+  "retainedFailedExperiment": {
+    "log": "tui-concurrent-release.log",
+    "failure": "Windows port ownership query failed with empty output while release work ran concurrently; targeted rerun and complete sequential suite passed. Root cause not conclusively established; fail-closed guard retained and diagnostic enhanced."
+  },
+  "acceptance": "partial",
+  "openCriteria": [
+    "Combined UI and supervisor RSS exceeds 300 MiB",
+    "No physical quota on Docker workspace bind mount",
+    "Bun workers have input/deadline bounds, not individual hard RAM quotas",
+    "Real ENOSPC and every patch boundary fault injection not covered",
+    "Controlled 30-task adoption comparison with independent evaluation pending",
+    "OpenRouter paid inference and external business account certification pending",
+    "Windows x64 exercised; other OS not certified"
+  ],
+  "localMerge": "ea52a502886e391b4a17c08e119e75533f599b2e",
+  "studioValidationProfile": {
+    "profileVersion": 1,
+    "runtimeFingerprint": "6a7fe8025aaa36d9aab86c1f13706485548b6b9943b9c6cd73bbdbed07c43caf",
+    "checkCommand": "bun scripts/validation-profile.ts --check",
+    "exitCode": 0
+  }
+}

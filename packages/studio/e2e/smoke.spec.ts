@@ -2,7 +2,7 @@ import { expect, type Page, test } from '@playwright/test'
 
 // Modelo D2 (src/core/modes.ts): projeto BÁSICO expõe só Blocos + Ponte — o
 // editor de código do clássico vive na PONTE; projeto PROFISSIONAL (radio
-// "Profissional" no modal "+ Novo projeto") expõe só Código (árvore Vite +
+// "Pro (código)" no modal "+ Novo projeto") expõe só Código (árvore Vite +
 // WebContainer). Nenhum projeto mostra os 3 modos ao mesmo tempo.
 
 async function createProject(page: Page): Promise<void> {
@@ -15,7 +15,7 @@ async function createProject(page: Page): Promise<void> {
 async function createProProject(page: Page): Promise<void> {
   await page.goto('/')
   await page.getByRole('button', { name: '+ Novo projeto' }).first().click()
-  await page.getByText('Profissional', { exact: true }).click()
+  await page.getByText('Pro (código)', { exact: true }).click()
   await page.getByRole('button', { name: 'Criar e abrir' }).click()
   await expect(page).toHaveURL(/\/editor\//)
   // Esconde o preview: no PRO ele bota um WebContainer + npm install em
@@ -280,13 +280,11 @@ test.describe('Sistema Zero Studio — smoke', () => {
     await expect(flyout).toContainText('Enquanto estiver rodando')
   })
 
-  test('AIPanel (projeto PRO) mostra badge MOCK por padrão', async ({ page }) => {
-    // A aba IA só existe no modo Código (D2) → projeto profissional.
+  test('Pro standalone não oferece um segundo painel de IA local', async ({ page }) => {
     await createProProject(page)
     await expect(page.getByRole('tab', { name: 'Console' })).toBeVisible()
-    await page.getByRole('tab', { name: 'IA' }).click()
-    await expect(page.getByText('mock', { exact: true })).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Configurar IA' }).first()).toBeVisible()
+    await expect(page.getByRole('tab', { name: 'IA' })).toHaveCount(0)
+    await expect(page.getByRole('button', { name: 'Configurar IA' })).toHaveCount(0)
   })
 
   test('Modo Ponte tem blocos + Monaco + preview', async ({ page }) => {

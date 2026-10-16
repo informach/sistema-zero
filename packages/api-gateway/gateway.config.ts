@@ -653,6 +653,22 @@ const config: GatewayConfigInput = {
         { type: 'path-rewrite', options: { addPrefix: '/api' } },
       ],
     },
+    {
+      id: 'funnel-marketing-attribution',
+      methods: ['POST'],
+      pathPattern: '/funnel/internal/marketing-attribution',
+      service: 'funnel',
+      auth: { required: true, mode: 'any', strategies: ['hmac'], allowedConsumers: ['marketing'] },
+      maxBodyBytes: 8192,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+      transforms: [
+        {
+          type: 'header-inject',
+          options: { headers: { 'x-internal-token': FUNNEL_INTERNAL_TOKEN } },
+        },
+        { type: 'path-rewrite', options: { stripPrefix: '/funnel', addPrefix: '/api' } },
+      ],
+    },
 
     // Kids: conferência da sessão pelo BFF. ⚠️ Assinada por HMAC (consumer `member-shell`):
     // com principal autenticado ela sai do limite ANÔNIMO global por IP, que derrubava
@@ -840,6 +856,18 @@ const config: GatewayConfigInput = {
       // passthrough: o Authorization (Bearer) precisa chegar ao auth, que o verifica.
       upstreamAuth: 'passthrough',
       rateLimit: { max: 120, windowMs: 60_000, by: 'ip' },
+    },
+    {
+      id: 'auth-staff-operations',
+      methods: ['POST'],
+      pathPattern: '/auth/staff/operations',
+      service: 'auth',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      upstreamAuth: 'passthrough',
+      maxBodyBytes: 2_032_768,
+      timeoutMs: 65_000,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
     },
     // "Esqueci minha senha": rate limit AGRESSIVO por IP (anti-enumeração/spam de
     // e-mail). O auth responde SEMPRE 200; o e-mail é enviado via messaging.
@@ -1744,6 +1772,96 @@ const config: GatewayConfigInput = {
         by: 'json-field',
         field: 'actor.userId',
       },
+      maxBodyBytes: 4096,
+    },
+    {
+      id: 'members-internal-studio-ai-account',
+      methods: ['POST'],
+      pathPattern: '/members/internal/studio-ai/account',
+      service: 'members',
+      auth: {
+        required: true,
+        mode: 'any',
+        strategies: ['hmac'],
+        allowedConsumers: ['member-shell'],
+      },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'json-field', field: 'actor.accountId' },
+      maxBodyBytes: 4096,
+    },
+    {
+      id: 'members-internal-studio-ai-usage',
+      methods: ['POST'],
+      pathPattern: '/members/internal/studio-ai/usage',
+      service: 'members',
+      auth: {
+        required: true,
+        mode: 'any',
+        strategies: ['hmac'],
+        allowedConsumers: ['member-shell'],
+      },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 180, windowMs: 60_000, by: 'json-field', field: 'actor.accountId' },
+      maxBodyBytes: 4096,
+    },
+    {
+      id: 'members-internal-studio-ai-reconcile',
+      methods: ['POST'],
+      pathPattern: '/members/internal/studio-ai/reconcile',
+      service: 'members',
+      auth: {
+        required: true,
+        mode: 'any',
+        strategies: ['hmac'],
+        allowedConsumers: ['member-shell'],
+      },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 4096,
+    },
+    {
+      id: 'members-internal-studio-builder',
+      methods: ['POST'],
+      pathPattern: '/members/internal/studio-ai/builder',
+      service: 'members',
+      auth: {
+        required: true,
+        mode: 'any',
+        strategies: ['hmac'],
+        allowedConsumers: ['member-shell'],
+      },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 90, windowMs: 60_000, by: 'json-field', field: 'actor.accountId' },
+      maxBodyBytes: 3_004_096,
+    },
+    {
+      id: 'members-internal-studio-builder-availability',
+      methods: ['POST'],
+      pathPattern: '/members/internal/studio-ai/builder/availability',
+      service: 'members',
+      auth: {
+        required: true,
+        mode: 'any',
+        strategies: ['hmac'],
+        allowedConsumers: ['member-shell'],
+      },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 4096,
+    },
+    {
+      id: 'members-internal-studio-builder-cleanup',
+      methods: ['POST'],
+      pathPattern: '/members/internal/studio-ai/builder/cleanup',
+      service: 'members',
+      auth: {
+        required: true,
+        mode: 'any',
+        strategies: ['hmac'],
+        allowedConsumers: ['member-shell'],
+      },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
       maxBodyBytes: 4096,
     },
     {
@@ -2954,6 +3072,18 @@ const config: GatewayConfigInput = {
       transforms: membersInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
+    // O funil do Pensa v2 (15/10/2026): onde as crianças param, só contagens. Literal
+    // `/members/admin/pensa/funnel` (4 seg), sem padrão `/members/admin/:x/:y` que o engula.
+    {
+      id: 'members-admin-pensa-funnel',
+      methods: ['GET'],
+      pathPattern: '/members/admin/pensa/funnel',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+    },
     {
       id: 'members-admin-zappy-knowledge-read',
       methods: ['GET'],
@@ -3391,6 +3521,16 @@ const config: GatewayConfigInput = {
       auth: { required: true, mode: 'any', strategies: ['hmac'] },
       transforms: messagingInternalTransforms,
       rateLimit: { max: 600, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'messaging-staff-delegation',
+      methods: ['POST'],
+      pathPattern: '/messaging/staff/:operation',
+      service: 'messaging',
+      auth: { required: true, mode: 'any', strategies: ['hmac'], allowedConsumers: ['auth'] },
+      transforms: messagingInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
     },
     {
       id: 'messaging-message-get',
@@ -3977,6 +4117,17 @@ const config: GatewayConfigInput = {
       transforms: marketingInternalTransforms,
       rateLimit: { max: 20, windowMs: 60_000, by: 'ip' },
     },
+    // Meta validates the GET token and POST signature in marketing using the original bytes.
+    {
+      id: 'marketing-instagram-webhook',
+      methods: ['GET', 'POST'],
+      pathPattern: '/marketing/webhooks/instagram',
+      service: 'marketing',
+      auth: 'public',
+      transforms: marketingInternalTransforms,
+      maxBodyBytes: 512 * 1024,
+      rateLimit: { max: 600, windowMs: 60_000, by: 'ip' },
+    },
 
     // ── Helpdesk (@sistemazero/helpdesk) ─────────────────────────────────────
     // O portal do responsável tem rotas explícitas: JWT de qualquer conta ativa,
@@ -4043,6 +4194,55 @@ const config: GatewayConfigInput = {
       maxBodyBytes: SMALL_JSON_BODY_BYTES,
       rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
       audit: {},
+    },
+    ...['publish', 'unpublish', 'archive'].map<GatewayConfigInput['routes'][number]>((action) => ({
+      id: `helpdesk-kb-${action}`,
+      methods: ['POST'],
+      pathPattern: `/helpdesk/kb/:id/${action}`,
+      service: 'helpdesk',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: helpdeskInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      audit: {},
+    })),
+    ...['/helpdesk/settings/automation', '/helpdesk/settings/automation/*'].map<
+      GatewayConfigInput['routes'][number]
+    >((pathPattern, index) => ({
+      id: `helpdesk-automation-policy-${index}`,
+      methods: ['PATCH', 'POST'],
+      pathPattern,
+      service: 'helpdesk',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: helpdeskInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 30, windowMs: 60000, by: 'principal' },
+      audit: {},
+    })),
+    ...['/helpdesk/settings/automation', '/helpdesk/settings/automation/*'].map<
+      GatewayConfigInput['routes'][number]
+    >((pathPattern, index) => ({
+      id: `helpdesk-automation-policy-read-${index}`,
+      methods: ['GET'],
+      pathPattern,
+      service: 'helpdesk',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: helpdeskInternalTransforms,
+      rateLimit: { max: 60, windowMs: 60000, by: 'principal' },
+    })),
+    {
+      id: 'helpdesk-test-answer',
+      methods: ['POST'],
+      pathPattern: '/helpdesk/kb/test-answer',
+      service: 'helpdesk',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: helpdeskInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 10, windowMs: 60000, by: 'principal' },
     },
     // Conectar/desconectar a caixa do Gmail é admin+ e auditado.
     {

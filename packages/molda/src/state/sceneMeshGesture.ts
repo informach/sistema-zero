@@ -19,7 +19,7 @@ export function createSceneMeshGesture(
   const gestures = createGestureCoordinator({
     current: () => editor.getState().asset,
     revision: () => editor.getState().contentRevision,
-    preview: (next: MoldaSceneDocument) => editor.getState().replace(next),
+    preview: (next: MoldaSceneDocument) => editor.getState().stage(next),
     cancel: (before) => editor.getState().cancelGesture(before),
     commit: (before, after) => editor.getState().commitGesture(before, after),
   })

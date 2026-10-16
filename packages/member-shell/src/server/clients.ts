@@ -1,4 +1,5 @@
 import 'server-only'
+import type { StudioAiAccountView, StudioAiPolicyInput } from '@sistemazero/core/ai-credits'
 import { cache } from 'react'
 import { getEnv } from '../lib/env'
 import type {
@@ -1110,6 +1111,90 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     ): Promise<GatewayResponse<ZappyHistoryPageView>> {
       return gw.gatewayFetch('/members/zappy/history', { query: { projectId, before } })
     },
+    studioAiAccount(
+      actor: { accountId: string; userId: string; parent: true },
+      action:
+        | { operation: 'view' | 'disconnect' }
+        | { operation: 'start'; binding: string; callbackUrl: string }
+        | { operation: 'complete'; binding: string; state: string; code: string }
+        | { operation: 'policy'; policy: StudioAiPolicyInput },
+    ): Promise<GatewayResponse<{ account?: StudioAiAccountView; url?: string }>> {
+      return gw.gatewayFetchHmac('/members/internal/studio-ai/account', {
+        method: 'POST',
+        body: { actor, action },
+      })
+    },
+    studioAiUsage(
+      actor: import('@sistemazero/core/ai-credits').StudioAiActor,
+      action: import('@sistemazero/core/ai-credits').StudioAiUsageAction | { operation: 'costs' },
+    ): Promise<
+      GatewayResponse<{
+        reservation?: import('@sistemazero/core/ai-credits').StudioAiReservation
+        dispatch?: { source: 'platform' | 'openrouter'; apiKey: string | null }
+        costs?: import('@sistemazero/core/ai-credits').StudioAiCostView
+        ok?: boolean
+      }>
+    > {
+      return gw.gatewayFetchHmac('/members/internal/studio-ai/usage', {
+        method: 'POST',
+        body: { actor, action },
+      })
+    },
+    studioBuilder(
+      actor: import('@sistemazero/core/ai-credits').StudioAiActor,
+      command: import('@sistemazero/core/studio').StudioProBuilderCommand,
+    ): Promise<
+      GatewayResponse<{ state: import('@sistemazero/core/studio').StudioProBuilderClaim | null }>
+    > {
+      return gw.gatewayFetchHmac('/members/internal/studio-ai/builder', {
+        method: 'POST',
+        body: { actor, command },
+      })
+    },
+    studioBuilderCleanup(): Promise<GatewayResponse<{ deleted: number }>> {
+      return gw.gatewayFetchHmac('/members/internal/studio-ai/builder/cleanup', {
+        method: 'POST',
+        body: {},
+      })
+    },
+    studioBuilderAvailability(): Promise<GatewayResponse<{ available: boolean }>> {
+      return gw.gatewayFetchHmac('/members/internal/studio-ai/builder/availability', {
+        method: 'POST',
+        body: {},
+      })
+    },
+    studioBuilderHistory(
+      actor: import('@sistemazero/core/ai-credits').StudioAiActor,
+      query: { projectId: string; before?: string },
+    ): Promise<GatewayResponse<{ page: import('@sistemazero/core/studio').StudioProBuilderPage }>> {
+      return gw.gatewayFetchHmac('/members/internal/studio-ai/builder/history', {
+        method: 'POST',
+        body: { actor, query },
+      })
+    },
+    studioAiReconcile(
+      action:
+        | { operation: 'claim' }
+        | { operation: 'release'; runId: string; attempt: number; claimId: string },
+    ): Promise<
+      GatewayResponse<{
+        jobs?: Array<{
+          actor: import('@sistemazero/core/ai-credits').StudioAiActor
+          runId: string
+          attempt: number
+          claimId: string
+          generationId: string
+          source: 'platform' | 'openrouter'
+          apiKey: string | null
+        }>
+        ok?: boolean
+      }>
+    > {
+      return gw.gatewayFetchHmac('/members/internal/studio-ai/reconcile', {
+        method: 'POST',
+        body: action,
+      })
+    },
     zappyDeleteHistory(projectId: string): Promise<GatewayResponse<{ ok: boolean }>> {
       return gw.gatewayFetch('/members/zappy/history', { method: 'DELETE', query: { projectId } })
     },
@@ -1125,7 +1210,11 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
         response?: ZappyStoredResponseView
         rateLimited?: boolean
         /** Últimos turnos da conversa (≤6, cronológico) — memória do tutor. */
-        recentMessages?: Array<{ role: 'user' | 'assistant'; text: string }>
+        recentMessages?: Array<{
+          role: 'user' | 'assistant'
+          text: string
+          kind?: 'classic' | 'pro'
+        }>
       }>
     > {
       return gw.gatewayFetchHmac('/members/internal/zappy/questions', { method: 'POST', body })

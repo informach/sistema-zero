@@ -349,7 +349,7 @@ function EditorScreen({
         showExamples
         // Experiência completa no playground (defaults embarcados: terminal/IA OFF).
         // Projeto profissional força terminal + allowedModes:['code'] via a flag.
-        features={isPro ? { professional: true, ai: true } : { terminal: true, ai: true }}
+        features={isPro ? { professional: true } : { terminal: true }}
         // Host fake: loga o fluxo híbrido p/ validação manual (DevTools).
         onChange={(project) => console.debug('[host] onChange', project.id, project.updatedAt)}
         onSave={(project) => console.debug('[host] onSave', project.id)}

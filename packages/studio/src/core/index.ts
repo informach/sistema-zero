@@ -4,7 +4,7 @@ export {
   type StudioProBuildLimits,
   studioProBuildFileLimitError,
   studioProBuildRequestByteLength,
-} from '@sistemazero/core/studio'
+} from '@sistemazero/core/studio/pro-build'
 export * from './behaviorAreas'
 export * from './example'
 export * from './i18n'

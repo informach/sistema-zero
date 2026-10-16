@@ -59,7 +59,10 @@ export class DrizzleSocialAccountRepository implements SocialAccountRepository {
     return updated.length > 0
   }
 
-  async upsertByExternalId(account: SocialAccount): Promise<SocialAccount> {
+  async upsertByExternalId(
+    account: SocialAccount,
+    preserveConnectionIdentity = false,
+  ): Promise<SocialAccount> {
     // Reconexão da MESMA conta = update atômico na unique (network, external_id).
     // `coalesce` preserva o refresh antigo quando o consent novo não devolve um
     // (o Google só manda refresh_token no 1º consent da conta).
@@ -78,7 +81,9 @@ export class DrizzleSocialAccountRepository implements SocialAccountRepository {
           refreshExpiresAt: sql`coalesce(excluded.refresh_expires_at, ${socialAccounts.refreshExpiresAt})`,
           scopes: account.scopes,
           status: account.status,
-          metadata: account.metadata,
+          metadata: preserveConnectionIdentity
+            ? sql`${JSON.stringify(account.metadata)}::jsonb || jsonb_strip_nulls(jsonb_build_object('engagementConnectionId', ${socialAccounts.metadata}->'engagementConnectionId'))`
+            : account.metadata,
           connectedBy: account.connectedBy,
           lastRefreshError: null,
           updatedAt: account.updatedAt,

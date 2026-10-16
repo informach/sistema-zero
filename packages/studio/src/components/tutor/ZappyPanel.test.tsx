@@ -4,12 +4,16 @@ import { type JSX, useEffect } from 'react'
 import { createEmptyProject } from '#core'
 import { useHighlightStore } from '../../state/highlightStore'
 import { useLogsStore } from '../../state/logsStore'
-import { useProjectStore } from '../../state/projectStore'
+import { registerProjectOperation } from '../../state/projectOperations'
+import { setProjectStorageNamespace } from '../../state/projectStorageRuntime'
+import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import type { StudioLayout } from '../../studio/layoutContext'
 import { StudioLayoutProvider } from '../../studio/layoutContext'
 import type {
   StudioTutorAdapter,
+  StudioTutorAskInput,
   StudioTutorConfig,
+  StudioTutorFileReference,
   StudioTutorLessonReference,
 } from '../../studio/tutor'
 import { StudioTutorProvider, useStudioTutor } from '../../studio/tutor'
@@ -17,21 +21,40 @@ import { ZappyPanel } from './ZappyPanel'
 
 const WIDE: StudioLayout = { width: 1000, isNarrow: false, isCompact: false }
 
-function OpenTutor(): null {
-  const { setOpen } = useStudioTutor()
+function OpenTutor({
+  navigate,
+  flush,
+}: {
+  navigate?: (reference: StudioTutorFileReference) => void
+  flush?: () => Promise<void>
+}): null {
+  const { setOpen, proNavigate } = useStudioTutor()
+  const store = useProjectStoreApi()
+  useEffect(() => {
+    const projectId = store.getState().project?.id
+    if (flush && projectId) return registerProjectOperation(store, { projectId, flush })
+  }, [store, flush])
   useEffect(() => setOpen(true), [setOpen])
+  useEffect(() => {
+    proNavigate.current = navigate ?? null
+    return () => {
+      proNavigate.current = null
+    }
+  }, [navigate, proNavigate])
   return null
 }
 
 function renderPanel(
   adapter: StudioTutorAdapter,
   options: Omit<StudioTutorConfig, 'adapter'> = {},
+  navigate?: (reference: StudioTutorFileReference) => void,
+  flush?: () => Promise<void>,
 ): JSX.Element {
   const config: StudioTutorConfig = { adapter, ...options }
   return (
     <StudioLayoutProvider value={WIDE}>
       <StudioTutorProvider value={config}>
-        <OpenTutor />
+        <OpenTutor navigate={navigate} flush={flush} />
         <ZappyPanel />
       </StudioTutorProvider>
     </StudioLayoutProvider>
@@ -74,6 +97,288 @@ beforeEach(() => {
 afterEach(() => cleanup())
 
 describe('ZappyPanel', () => {
+  it('explains excessive project notes without sending a request or blaming the service', async () => {
+    useProjectStore.getState().setProject({
+      ...createEmptyProject('pro-notes-limit', 'Pro'),
+      kind: 'pro',
+      mode: 'code',
+      tree: {},
+      proMeta: {
+        templateId: 'vanilla-vite',
+        devScript: 'dev',
+        assistance: {
+          version: 1,
+          briefing: 'a'.repeat(2000),
+          decisions: [
+            { id: 'rule', text: 'Preservar o salto', provenance: 'learner', confirmed: true },
+          ],
+        },
+      },
+    })
+    let asks = 0
+    const ui = render(
+      renderPanel({
+        loadHistory: async () => ({ messages: [], nextCursor: null }),
+        deleteHistory: async () => {},
+        feedback: async () => {},
+        ask: async () => {
+          asks++
+          return answer()
+        },
+      }),
+    )
+    const question = await ui.findByLabelText('Sua dúvida para o Zappy')
+    fireEvent.change(question, { target: { value: 'Explique o salto' } })
+    await waitFor(() =>
+      expect((ui.getByRole('button', { name: 'Perguntar' }) as HTMLButtonElement).disabled).toBe(
+        false,
+      ),
+    )
+    fireEvent.submit(question.closest('form')!)
+    await waitFor(() =>
+      expect(ui.container.querySelector('.text-sz-error')?.textContent).toContain(
+        'Resuma as notas do projeto',
+      ),
+    )
+    expect(asks).toBe(0)
+    expect((question as HTMLTextAreaElement).value).toBe('Explique o salto')
+  })
+  it('keeps diagnosis and construction in the same conversation without starting a job on transfer', async () => {
+    useProjectStore.getState().setProject({
+      ...createEmptyProject('pro-conversation', 'Pro'),
+      kind: 'pro',
+      mode: 'code',
+      tree: {},
+      proMeta: { templateId: 'vanilla-vite', devScript: 'dev' },
+    })
+    const asked: StudioTutorAskInput[] = []
+    let creates = 0
+    const adapter: StudioTutorAdapter = {
+      loadHistory: async () => ({ messages: [], nextCursor: null }),
+      deleteHistory: async () => {},
+      feedback: async () => {},
+      ask: async (input) => {
+        asked.push(input)
+        return answer({
+          ...response(),
+          kind: 'pro',
+          text: 'Vamos comparar o movimento esperado e o observado.',
+          scope: 'error',
+        })
+      },
+      builder: {
+        latest: async () => null,
+        create: async () => {
+          creates++
+          throw new Error('Not requested')
+        },
+        cancel: async () => null,
+      },
+    }
+    const ui = render(renderPanel(adapter))
+    await ui.findByText('Zappy Pro')
+    fireEvent.click(ui.getByRole('button', { name: 'Investigar' }))
+    const question = ui.getByLabelText('Sua dúvida para o Zappy')
+    fireEvent.change(question, { target: { value: 'O personagem atravessa o chão' } })
+    await waitFor(() =>
+      expect((ui.getByRole('button', { name: 'Perguntar' }) as HTMLButtonElement).disabled).toBe(
+        false,
+      ),
+    )
+    fireEvent.submit(question.closest('form')!)
+    await ui.findByText('Vamos comparar o movimento esperado e o observado.')
+    expect(asked[0]?.context.pro?.intent).toBe('investigate')
+    fireEvent.click(ui.getByRole('button', { name: 'Preparar alteração a partir desta resposta' }))
+    await ui.findByLabelText('O que vamos construir?')
+    expect(ui.getByText('Vamos comparar o movimento esperado e o observado.')).toBeDefined()
+    expect(creates).toBe(0)
+    fireEvent.click(ui.getByRole('button', { name: 'Conversar' }))
+    expect(ui.getByRole('button', { name: 'Perguntar' })).toBeDefined()
+    expect(creates).toBe(0)
+  })
+  it('flushes the Pro editor once and freezes the entire uncertain request across retries', async () => {
+    useProjectStore.getState().setProject({
+      ...createEmptyProject('pro-retry', 'Pro'),
+      kind: 'pro',
+      mode: 'code',
+      tree: { 'main.ts': { kind: 'file', content: 'const speed = 1' } },
+      proMeta: {
+        templateId: 'vanilla-vite',
+        devScript: 'dev',
+        assistance: { version: 1, briefing: 'Ideia original' },
+      },
+    })
+    const inputs: StudioTutorAskInput[] = []
+    let flushes = 0
+    const flush = async () => {
+      flushes++
+      useProjectStore.getState().setProFileContent('main.ts', `const speed = ${flushes + 1}`)
+    }
+    const adapter: StudioTutorAdapter = {
+      loadHistory: async () => ({ messages: [], nextCursor: null }),
+      deleteHistory: async () => {},
+      feedback: async () => {},
+      ask: async (input) => {
+        inputs.push(input)
+        throw new Error('Connection lost')
+      },
+    }
+    const ui = render(renderPanel(adapter, {}, undefined, flush))
+    const question = (await ui.findByLabelText('Sua dúvida para o Zappy')) as HTMLTextAreaElement
+    fireEvent.change(question, { target: { value: 'Explique a velocidade' } })
+    await waitFor(() =>
+      expect((ui.getByRole('button', { name: 'Perguntar' }) as HTMLButtonElement).disabled).toBe(
+        false,
+      ),
+    )
+    fireEvent.submit(question.closest('form')!)
+    await waitFor(() => {
+      expect(inputs).toHaveLength(1)
+      expect(question.value).toBe('Explique a velocidade')
+    })
+    act(() => {
+      useProjectStore.getState().setProAssistance({ version: 1, briefing: 'Nova ideia' })
+    })
+    fireEvent.submit(question.closest('form')!)
+    await waitFor(() => expect(inputs).toHaveLength(2))
+    expect(inputs[0]?.context.code?.[0]?.content).toContain('speed = 2')
+    expect(inputs[1]).toBe(inputs[0])
+    expect(inputs[1]?.context.pro?.decisions?.summary).toBe('Ideia original')
+    expect(flushes).toBe(1)
+    fireEvent.click(
+      ui.getByRole('button', { name: 'Usar código e notas atuais em um novo pedido' }),
+    )
+    fireEvent.submit(question.closest('form')!)
+    await waitFor(() => expect(inputs).toHaveLength(3))
+    expect(inputs[2]?.context.code?.[0]?.content).toContain('speed = 3')
+    expect(inputs[2]?.context.pro?.decisions?.summary).toBe('Nova ideia')
+    expect(inputs[2]?.clientMessageId).not.toBe(inputs[0]?.clientMessageId)
+  })
+  it('does not send a request if profile A changes to B and back while the editor flushes', async () => {
+    setProjectStorageNamespace('zappy-a')
+    useProjectStore.getState().setProject({
+      ...createEmptyProject('pro-epoch', 'Pro'),
+      kind: 'pro',
+      mode: 'code',
+      tree: {},
+      proMeta: { templateId: 'vanilla-vite', devScript: 'dev' },
+    })
+    const gate = deferred<void>()
+    let asks = 0
+    try {
+      const ui = render(
+        renderPanel(
+          {
+            loadHistory: async () => ({ messages: [], nextCursor: null }),
+            deleteHistory: async () => {},
+            feedback: async () => {},
+            ask: async () => {
+              asks++
+              return answer()
+            },
+          },
+          {},
+          undefined,
+          () => gate.promise,
+        ),
+      )
+      const question = await ui.findByLabelText('Sua dúvida para o Zappy')
+      fireEvent.change(question, { target: { value: 'Explique este código' } })
+      await waitFor(() =>
+        expect((ui.getByRole('button', { name: 'Perguntar' }) as HTMLButtonElement).disabled).toBe(
+          false,
+        ),
+      )
+      fireEvent.submit(question.closest('form')!)
+      setProjectStorageNamespace('zappy-b')
+      setProjectStorageNamespace('zappy-a')
+      await act(async () => gate.resolve())
+      expect(asks).toBe(0)
+    } finally {
+      setProjectStorageNamespace('')
+    }
+  })
+  it('oferece Construir somente no Pro e carrega o painel apenas depois da escolha', async () => {
+    let loads = 0
+    const adapter: StudioTutorAdapter = {
+      loadHistory: async () => ({ messages: [], nextCursor: null }),
+      deleteHistory: async () => undefined,
+      ask: async () => answer(),
+      feedback: async () => undefined,
+      builder: {
+        latest: async () => {
+          loads++
+          return null
+        },
+        create: async () => {
+          throw new Error('Não solicitado')
+        },
+        cancel: async () => null,
+      },
+    }
+    const classic = render(renderPanel(adapter))
+    expect(classic.queryByRole('button', { name: 'Construir' })).toBeNull()
+    expect(loads).toBe(0)
+    classic.unmount()
+    useProjectStore.setState({
+      project: {
+        ...createEmptyProject('pro-builder', 'Pro'),
+        kind: 'pro',
+        mode: 'code',
+        tree: {},
+        proMeta: { templateId: 'vanilla-vite', devScript: 'dev' },
+      },
+    })
+    const pro = render(renderPanel(adapter))
+    expect(loads).toBe(0)
+    fireEvent.click(await pro.findByRole('button', { name: 'Construir' }))
+    await pro.findByLabelText('O que vamos construir?')
+    expect(loads).toBe(1)
+  })
+  it('abre referência Pro existente e avisa quando a revisão mudou', async () => {
+    useProjectStore.setState({
+      project: {
+        ...createEmptyProject('project-zappy-panel', 'Pro'),
+        kind: 'pro',
+        mode: 'code',
+        updatedAt: 456,
+        tree: { 'src/main.ts': { kind: 'file', content: 'const x = 1' } },
+      },
+    })
+    const reference = { path: 'src/main.ts', startLine: 1, endLine: 1 }
+    const clicked: StudioTutorFileReference[] = []
+    const message = {
+      ...response(),
+      kind: 'pro' as const,
+      text: 'Veja o arquivo indicado.',
+      fileReferences: [reference, { ...reference, path: 'removed.ts' }],
+      sourceRevision: 123,
+    }
+    const adapter: StudioTutorAdapter = {
+      loadHistory: async () => ({
+        messages: [
+          {
+            id: message.id,
+            role: 'assistant',
+            text: message.text,
+            createdAt: message.createdAt,
+            response: message,
+          },
+        ],
+        nextCursor: null,
+      }),
+      deleteHistory: async () => undefined,
+      ask: async () => ({ response: message }),
+      feedback: async () => undefined,
+    }
+    const view = render(renderPanel(adapter, {}, (item) => clicked.push(item)))
+    fireEvent.click(await view.findByRole('button', { name: 'src/main.ts:1' }))
+    expect(clicked).toEqual([reference])
+    expect((view.getByRole('button', { name: 'removed.ts:1' }) as HTMLButtonElement).disabled).toBe(
+      true,
+    )
+    expect(view.getByText(/O projeto mudou desde esta resposta/)).toBeTruthy()
+  })
   it('não envia pergunta antes de concluir o carregamento inicial do histórico', async () => {
     const history = deferred<Awaited<ReturnType<StudioTutorAdapter['loadHistory']>>>()
     let asked = 0
@@ -248,6 +553,7 @@ describe('ZappyPanel', () => {
     useProjectStore.setState({ project: proProject })
     const tutorResponse = {
       ...response(),
+      text: 'Arraste o bloco para a área Ao iniciar.',
       blockReferences: [
         {
           blockType: 'sz_js_log',
@@ -278,7 +584,26 @@ describe('ZappyPanel', () => {
     const view = render(renderPanel(adapter))
 
     await view.findByText(tutorResponse.text)
+    expect(
+      view.getByText('Conversa anterior: orientação de outro modo').closest('details')?.open,
+    ).toBe(false)
     expect(view.queryByRole('button', { name: 'mostrar no console' })).toBeNull()
+  })
+
+  it('saudação e sugestões iniciais no Pro orientam por arquivo', async () => {
+    useProjectStore.setState({
+      project: { ...createEmptyProject('pro-greeting', 'Pro'), kind: 'pro', mode: 'code' },
+    })
+    const view = render(
+      renderPanel({
+        loadHistory: async () => ({ messages: [], nextCursor: null }),
+        deleteHistory: async () => {},
+        ask: async () => answer(),
+        feedback: async () => {},
+      }),
+    )
+    await view.findByText(/Abra o arquivo relacionado/)
+    expect(view.queryByText(/Selecione um bloco/)).toBeNull()
   })
 
   it('mostra a categoria e a subcategoria do bloco citado', async () => {
@@ -614,6 +939,22 @@ describe('ZappyPanel', () => {
     const view = render(renderPanel(silentAdapter(), { credits: null }))
     await view.findByLabelText('Sua dúvida para o Zappy')
     expect(view.queryByText(/ideias/)).toBeNull()
+  })
+
+  it('a fonte OpenRouter aparece sem confundir a franquia incluída esgotada com o saldo externo', async () => {
+    const view = render(
+      renderPanel(silentAdapter(), {
+        credits: { ...CREDITS, dayRemaining: 0, monthRemaining: 0, studioSource: 'openrouter' },
+      }),
+    )
+    await waitFor(() =>
+      expect(
+        view.queryByText(
+          'Fonte no Estúdio: OpenRouter do responsável. O Pensa usa a franquia da família.',
+        ),
+      ).not.toBeNull(),
+    )
+    expect(view.queryByText(/ajuda da família acabou/i)).toBeNull()
   })
 
   it('equipe vê "sem limite" em vez de número', async () => {

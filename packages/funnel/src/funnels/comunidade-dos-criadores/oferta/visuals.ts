@@ -98,23 +98,6 @@ export const COMUNIDADE_VISUALS: Record<string, ComunidadeVisual> = {
     // A tela mostra um CENÁRIO (e não um personagem): a legenda diz o que a copy já afirma do Pinta.
     caption: 'Personagens, cenários e peças do jogo podem ser desenhados no Pinta.',
   },
-  reunida: {
-    mode: 'set',
-    frames: [
-      tela(
-        'aula-estudio',
-        'Aula',
-        'Aula com o vídeo e a fala do Zappy à esquerda e a atividade no Estúdio à direita.',
-      ),
-      tela('recados', 'Recados', 'Recados do professor com a dúvida enviada a partir da aula.'),
-      tela(
-        'mural',
-        'Mural',
-        'Mural dos Criadores com cartões de jogos e botões para jogar e copiar o link.',
-      ),
-    ],
-    caption: 'Aulas e ferramentas de criação reunidas na mesma plataforma.',
-  },
   pausa: {
     frames: [
       tela(
@@ -220,31 +203,37 @@ export const COMUNIDADE_VISUALS: Record<string, ComunidadeVisual> = {
     ],
     caption: 'A criança pode mostrar uma escolha e conferir seu efeito no projeto.',
   },
+  // 16/10/2026 (decisão da dona: a venda não mostra "em construção"): as capturas da Jornada
+  // trazem o cartão "Mais 6 postos estão sendo construídos". Aqui entra só o RECORTE da tela
+  // Minha jornada, com o título e os postos Faísca e Construtor (`tela-jornada-meus-postos`,
+  // recortado de `tela-jornada-postos` na caixa 600,30–2500,804 do @2x). O mapa (`tela-jornada`)
+  // saiu: a mensagem fica no meio dele. Recapturou? Refaça o recorte.
   jornada: {
-    mode: 'set',
     frames: [
       tela(
-        'jornada-postos',
+        'jornada-meus-postos',
         'Minha jornada',
-        'Minha jornada no perfil: cada posto com o que já foi liberado e os postos em construção.',
-      ),
-      tela(
-        'jornada',
-        'Jornada',
-        'Mapa da Jornada do Criador com o posto atual e as aventuras da trilha.',
+        'Minha jornada no perfil: o posto Faísca concluído e o posto atual, Construtor, com o que cada um liberou.',
+        950,
+        387,
       ),
     ],
-    caption: 'A Jornada mostra o próximo passo e os requisitos para liberar uma ferramenta.',
+    caption: 'A Jornada mostra em que posto a criança está e o que cada posto liberou.',
   },
+  // A captura inteira (`tela-catalogo`) traz no alto o fim do mapa, com "Mais 6 postos estão
+  // sendo construídos": entra só o RECORTE da lista de aventuras (`tela-catalogo-trilha`, caixa
+  // 600,330–2560,1600 do @2x). Recapturou? Refaça o recorte (vale também para a faixa TOUR).
   catalogo: {
     frames: [
       tela(
-        'catalogo',
+        'catalogo-trilha',
         'Aventuras da trilha',
         'Aventuras da trilha Construtor: os cursos publicados, com aulas e progresso de cada um.',
+        980,
+        635,
       ),
     ],
-    caption: 'O catálogo disponível permite conhecer as atividades que podem ser iniciadas.',
+    caption: 'As aventuras da trilha mostram os cursos e o progresso em cada um.',
   },
   pensa: {
     mode: 'steps',
@@ -272,16 +261,6 @@ export const COMUNIDADE_VISUALS: Record<string, ComunidadeVisual> = {
     ],
     caption: 'O Zappy oferece orientação; a criança faz o ajuste e testa o resultado.',
   },
-  planejamento: {
-    frames: [
-      tela(
-        'planejamento',
-        'Equipe do plano',
-        'Equipe do plano no Pensa: código do plano, lugares e quem já entrou.',
-      ),
-    ],
-    caption: 'As crianças podem compartilhar o plano e construir nas próprias ferramentas.',
-  },
   molda: {
     frames: [
       tela(
@@ -290,7 +269,8 @@ export const COMUNIDADE_VISUALS: Record<string, ComunidadeVisual> = {
         'Molda com um personagem de blocos em três dimensões, ferramentas de modelar e a lista de peças.',
       ),
     ],
-    caption: 'As ferramentas posteriores têm requisitos próprios na Jornada.',
+    caption:
+      'O Molda abre no posto Explorador de Mundos, para criar personagens em três dimensões.',
   },
   codigo: {
     frames: [
@@ -300,7 +280,7 @@ export const COMUNIDADE_VISUALS: Record<string, ComunidadeVisual> = {
         'Estúdio no modo Ponte: os blocos, o código gerado e o jogo lado a lado.',
       ),
     ],
-    caption: 'O percurso prevê recursos que aproximam blocos e código.',
+    caption: 'No posto Gênio da Criação, o modo Ponte mostra os blocos ao lado do código.',
   },
   mural: {
     frames: [
@@ -323,23 +303,6 @@ export const COMUNIDADE_VISUALS: Record<string, ComunidadeVisual> = {
       ),
     ],
     caption: 'Os combinados e o aviso à equipe apoiam a participação nas conversas.',
-  },
-  espaco: {
-    mode: 'set',
-    frames: [
-      tela(
-        'avatar',
-        'Meu avatar',
-        'Meu avatar: personagem em 3D com opções de rosto, cabelo e roupas.',
-      ),
-      tela('quarto', 'Meu quarto', 'Meu quarto com cama, mesa e cadeira posicionadas no espaço.'),
-      tela(
-        'conquistas',
-        'Minhas conquistas',
-        'Minhas conquistas no perfil, com os marcos já alcançados e os que faltam.',
-      ),
-    ],
-    caption: 'A criança tem um espaço para seu avatar e seu percurso.',
   },
   missoes: {
     mode: 'set',
@@ -494,18 +457,6 @@ export const COMUNIDADE_VISUALS: Record<string, ComunidadeVisual> = {
     ],
     caption: 'O atendimento da família reúne dúvidas sobre conta e assinatura.',
   },
-  indicacao: {
-    frames: [
-      tela(
-        'pais-indicacao',
-        'Seja um embaixador',
-        'Cartão Seja um embaixador do Sistema Zero, na Conta da Área dos pais, com as condições do programa de indicações.',
-        1136,
-        266,
-      ),
-    ],
-    caption: 'O convite segue as condições apresentadas no programa de indicações.',
-  },
   // As telas da Área dos pais são capturas do staging de 11/10/2026 (páginas próprias), menos
   // "Minhas compras": ela vem de uma captura da própria dona na conta dela (02/10/2026), com os
   // dígitos do cartão embaçados, porque o staging não tem assinatura ativa para mostrar. O @2x
@@ -564,44 +515,35 @@ export const visualDe = (id: string): ComunidadeVisual | null => COMUNIDADE_VISU
 export const FAQ_VISUALS: Record<string, readonly string[]> = {
   programacao: ['aula', 'estudio'],
   desenho: ['estudio', 'pinta'],
-  'aulas-gravadas': ['pausa'],
-  ajuda: ['recados'],
   pais: ['responsavel'],
-  aprendizagem: ['aprendizagem', 'responsavel'],
-  interesse: ['aula'],
-  'so-desenho': ['integracao'],
-  papel: ['pinta', 'integracao'],
+  'aulas-gravadas': ['pausa'],
+  'ao-vivo': ['aula-estudio'],
   equipamento: ['aula'],
-  internet: ['salvamento'],
+  nivel: ['catalogo', 'estudio'],
+  telas: ['pausa'],
+  frequencia: ['ferias', 'missoes'],
+  salvamento: ['salvamento', 'exportacao'],
+  interesse: ['jogo-pronto'],
   liberacao: ['jornada'],
   catalogo: ['catalogo'],
   ia: ['pensa', 'zappy'],
-  pensa: ['pensa'],
-  zappy: ['zappy'],
   creditos: ['creditos'],
-  planejamento: ['planejamento'],
-  salvamento: ['salvamento'],
-  exportacao: ['exportacao'],
-  ferias: ['ferias'],
-  pontos: ['missoes'],
+  avancado: ['molda', 'codigo'],
   certificado: ['certificado'],
+  irmaos: ['perfis'],
+  perfil: ['privacidade', 'publicacao'],
+  convivencia: ['clube'],
   'apoio-especifico': ['aula'],
-  desafio: ['jornada'],
-  nivel: ['catalogo', 'estudio'],
-  roblox: ['estudio'],
-  '3d': ['molda'],
-  codigo: ['codigo'],
-  atendimento: ['conta'],
-  senha: ['senha'],
-  indicacao: ['indicacao'],
+  ajuda: ['como-fazer', 'recados'],
+  custos: ['jornada', 'creditos'],
   cancelamento: ['compras'],
   reembolso: [],
-  irmaos: ['perfis'],
-  perfil: ['privacidade'],
-  'jogos-publicos': ['publicacao'],
-  convivencia: ['clube'],
-  custos: ['jornada', 'creditos'],
-  telas: ['pausa'],
+  atendimento: ['conta', 'senha'],
+  // Respostas de algumas páginas (`FAQ_EXTRA`).
+  roblox: ['estudio'],
+  desafio: ['jornada'],
+  'so-desenho': ['integracao'],
+  papel: ['pinta', 'integracao'],
 }
 
 /**
@@ -642,7 +584,7 @@ export const TOUR: readonly ComunidadeTourItem[] = [
     'Onde ele cria em três dimensões.',
   ),
   area(
-    tela('catalogo', 'Jornada', 'Aventuras da trilha na Jornada do Criador.'),
+    tela('catalogo-trilha', 'Jornada', 'Aventuras da trilha na Jornada do Criador.', 980, 635),
     'Onde ele vê o próximo passo.',
   ),
   area(

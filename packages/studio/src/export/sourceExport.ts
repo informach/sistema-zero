@@ -1,6 +1,7 @@
 import type { Project } from '#core'
 import { buildClassicFileMap, buildProFileMap, type ExportFileMap } from './fileMap'
 import { identityMinifiers } from './minify'
+import { proSourceInstructions } from './proSourceInstructions'
 import { sanitizeBaseFilename } from './sanitize'
 import { zipFiles } from './zip'
 
@@ -72,7 +73,7 @@ export async function buildSourceFiles(project: Project): Promise<SourceFilesRes
   const files: ExportFileMap = {}
 
   if (isPro) {
-    const built = buildProFileMap(project)
+    const built = await buildProFileMap(project, { purpose: 'source' })
     warnings.push(...built.warnings)
     Object.assign(files, built.files)
   } else {
@@ -86,7 +87,13 @@ export async function buildSourceFiles(project: Project): Promise<SourceFilesRes
     }
   }
 
-  files['LEIA-ME.txt'] = LEIA_ME
+  const instructions = isPro ? proSourceInstructions(files, project.proMeta?.devScript) : null
+  if (instructions) warnings.push(...instructions.warnings)
+
+  // A documentação escrita pelo autor faz parte da fonte e deve permanecer intacta.
+  if (!('LEIA-ME.txt' in files)) {
+    files['LEIA-ME.txt'] = instructions?.text ?? LEIA_ME
+  }
   return { files, warnings }
 }
 
@@ -95,9 +102,14 @@ export async function buildSourceFiles(project: Project): Promise<SourceFilesRes
  * `exportProject`, o nome NÃO leva `-deploy` (é o projeto para continuar, não para
  * publicar).
  */
-export async function exportProjectSource(project: Project): Promise<SourceExportResult> {
+export async function exportProjectSource(
+  project: Project,
+  options: { signal?: AbortSignal } = {},
+): Promise<SourceExportResult> {
+  options.signal?.throwIfAborted()
   const { files, warnings } = await buildSourceFiles(project)
-  const bytes = await zipFiles(files)
+  options.signal?.throwIfAborted()
+  const bytes = await zipFiles(files, options)
   // Cópia para um Uint8Array com ArrayBuffer "comum" (o retorno do fflate pode ser
   // SharedArrayBuffer, que o Blob recusa) — mesmo cuidado do exportProject.
   const blobBytes = new Uint8Array(bytes.byteLength)

@@ -1,0 +1,2 @@
+# Raw heap profiles contain object graphs and are large. Commit summarized evidence only.
+*-heap.md

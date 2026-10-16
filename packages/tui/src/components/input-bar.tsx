@@ -1,6 +1,7 @@
 import type { KeyBinding, TextareaRenderable } from '@opentui/core'
 import { useRenderer } from '@opentui/react'
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useLayoutEffect, useRef } from 'react'
+import { useTheme } from '../providers/theme'
 import { useToast } from '../providers/toast'
 import { EmptyBorder } from './border'
 import { CommandMenu } from './command-menu'
@@ -9,8 +10,11 @@ import { useCommandMenu } from './command-menu/use-command-menu'
 import { StatusBar } from './status-bar'
 
 type Props = {
-  onSubmit: (text: string) => void
+  onSubmit: (text: string) => Promise<void>
+  status?: string
   disabled?: boolean
+  draft?: { text: string; version: number }
+  onDraft?: (text: string) => void
 }
 
 export const TEXTAREA_KEY_BINDINGS: KeyBinding[] = [
@@ -20,8 +24,10 @@ export const TEXTAREA_KEY_BINDINGS: KeyBinding[] = [
   { name: 'enter', shift: true, action: 'newline' },
 ]
 
-export function InputBar({ onSubmit, disabled = false }: Props) {
+export function InputBar({ onSubmit, disabled = false, status = '', draft, onDraft }: Props) {
+  const { colors } = useTheme()
   const textareaRef = useRef<TextareaRenderable>(null)
+  const submitting = useRef(false)
   const onSubmitRef = useRef<() => void>(() => {})
   const renderer = useRenderer()
   const toast = useToast()
@@ -41,20 +47,33 @@ export function InputBar({ onSubmit, disabled = false }: Props) {
     if (!textarea) return
 
     handleContentChange(textarea.plainText)
-  }, [handleContentChange])
+    onDraft?.(textarea.plainText)
+  }, [handleContentChange, onDraft])
+  useLayoutEffect(() => {
+    if (draft) textareaRef.current?.setText(draft.text)
+  }, [draft])
 
-  const handleSubmit = useCallback(() => {
-    if (disabled) return
+  const handleSubmit = useCallback(async () => {
+    if (disabled || submitting.current) return
 
     const textarea = textareaRef.current
     if (!textarea) return
 
     const text = textarea.plainText.trim()
     if (text.length === 0) return
-
-    onSubmit(text)
-    textarea.setText('')
-  }, [disabled, onSubmit])
+    submitting.current = true
+    try {
+      await onSubmit(text)
+      if (textarea.plainText.trim() === text) textarea.setText('')
+    } catch (error) {
+      toast.show({
+        variant: 'error',
+        message: error instanceof Error ? error.message : 'Falha ao enviar',
+      })
+    } finally {
+      submitting.current = false
+    }
+  }, [disabled, onSubmit, toast])
 
   const handleCommand = useCallback(
     (command: Command | undefined) => {
@@ -84,7 +103,7 @@ export function InputBar({ onSubmit, disabled = false }: Props) {
   )
 
   // Wire up textarea submit handler once so it always reads the latest state.
-  useEffect(() => {
+  useLayoutEffect(() => {
     const textarea = textareaRef.current
     if (!textarea) return
 
@@ -102,7 +121,7 @@ export function InputBar({ onSubmit, disabled = false }: Props) {
       return
     }
 
-    handleSubmit()
+    void handleSubmit()
   }
 
   return (
@@ -110,7 +129,7 @@ export function InputBar({ onSubmit, disabled = false }: Props) {
       <box
         width="100%"
         border={['left']}
-        borderColor="cyan"
+        borderColor={colors.primary}
         customBorderChars={{
           ...EmptyBorder,
           vertical: '┃',
@@ -122,7 +141,7 @@ export function InputBar({ onSubmit, disabled = false }: Props) {
           justifyContent="center"
           paddingX={2}
           paddingY={1}
-          backgroundColor="#1A1A24"
+          backgroundColor={colors.surface}
           width="100%"
           gap={1}
         >
@@ -132,7 +151,7 @@ export function InputBar({ onSubmit, disabled = false }: Props) {
               bottom="100%"
               left={0}
               width="100%"
-              backgroundColor="#1A1A24"
+              backgroundColor={colors.surface}
               zIndex={10}
             >
               <CommandMenu
@@ -149,9 +168,9 @@ export function InputBar({ onSubmit, disabled = false }: Props) {
             focused={!disabled}
             keyBindings={TEXTAREA_KEY_BINDINGS}
             onContentChange={handleTextareaContentChange}
-            placeholder={'Ask anything... "Fix a bug in the database"'}
+            placeholder={'Descreva a tarefa ou use /help · Shift+Enter para nova linha'}
           />
-          <StatusBar />
+          <StatusBar status={status} />
         </box>
       </box>
     </box>

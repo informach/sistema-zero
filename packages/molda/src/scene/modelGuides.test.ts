@@ -18,6 +18,7 @@ import {
   sceneDivisionPlane,
   scenePivotTargets,
 } from './modelGuides'
+import { sceneNodePivot } from './pivot'
 import { readSceneDocument } from './readDocument'
 
 const box = () =>
@@ -36,12 +37,15 @@ test('pivot choices use real rotated corners; applying preserves all world bound
       expect(after.min[axis]).toBeCloseTo(before.min[axis], 10)
       expect(after.max[axis]).toBeCloseTo(before.max[axis], 10)
       expect(
-        transformPoint(indexSceneDocument(next).scene.worldMatrices.get(id)!, [0, 0, 0])[axis],
+        transformPoint(
+          indexSceneDocument(next).scene.worldMatrices.get(id)!,
+          sceneNodePivot(next.nodes[0]!),
+        )[axis],
       ).toBeCloseTo(point[axis], 10)
     }
   }
 })
-test('pivot blocks incompatible animation and locked pieces before changing source', () => {
+test('authoring pivot preserves animation and refuses locked pieces', () => {
   const source = box(),
     id = source.nodes[0]!.id
   const clip = createSceneAnimation(source, 'Pulo')
@@ -50,9 +54,9 @@ test('pivot blocks incompatible animation and locked pieces before changing sour
     channel: 'translation',
     key: { time: 0, value: [0, 0, 0], interpolation: 'linear' },
   })
-  expect(() => moveScenePivotToWorld(animated, id, scenePivotTargets(animated, id).bottom)).toThrow(
-    'pivô',
-  )
+  expect(
+    moveScenePivotToWorld(animated, id, scenePivotTargets(animated, id).bottom).animations,
+  ).toBe(animated.animations)
   expect(() =>
     moveScenePivotToWorld(setSceneNodeFlag(source, [id], 'locked', true), id, [0, 0, 0]),
   ).toThrow()

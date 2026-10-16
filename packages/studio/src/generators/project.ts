@@ -6,6 +6,9 @@ import { generateHTML, generateHTMLWithMap } from './html'
 import { generateJS, generateJSWithMap } from './js'
 import type { SourceMap, SourceMappedFile } from './sourceMap'
 
+/** Shared by Blocks and Bridge; also keys canonical source-map reuse. */
+export const GENERATED_JS_HEADER = '// Gerado pelo Sistema Zero Studio'
+
 export interface ProjectGenerationInput {
   ir: SZIRInput
   projectName: string

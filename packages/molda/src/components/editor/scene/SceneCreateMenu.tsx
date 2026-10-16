@@ -46,12 +46,12 @@ export function SceneCreateMenu({
   const parent = document.nodes.find((node) => node.id === parentId)
   if (!shapes && !locator) return null
   return (
-    <section aria-labelledby={headingId} className="space-y-2">
+    <section aria-labelledby={headingId} className="flex flex-col gap-2">
       <h3 id={headingId} className="mld-kicker">
         {COPY.scene.add}
       </h3>
       {document.nodes.some((node) => node.kind === 'group') && (
-        <details className="text-xs text-mld-muted">
+        <details className="order-last text-xs text-mld-muted">
           <summary className="min-h-11 cursor-pointer py-2" title={parent?.name}>
             {parent ? `No conjunto ${parent.name}` : 'Fora de conjunto'}
           </summary>
@@ -105,7 +105,8 @@ export function SceneCreateMenu({
         {locator && (
           <SceneTile
             icon={Crosshair}
-            label={COPY.scene.addLocator}
+            label="Apoio"
+            aria-label={COPY.scene.addLocator}
             ink="var(--mld-shape-special)"
             tint
             onClick={() =>

@@ -1,41 +1,37 @@
 import type { JSX } from 'react'
-import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { useShallow } from 'zustand/react/shallow'
 import { buildWorkspaceStateFromIR, isBlocksStateEmpty } from '#blockly'
 import type { InstalledExtension } from '#core'
 import type { GeneratedFiles, SourceMap, SourceMappedFile } from '#generators'
-import { buildCssSourceMapFromText } from '#generators'
+import { buildCssSourceMapFromText, GENERATED_JS_HEADER } from '#generators'
 import { deepEqualIR, hasBehaviorStatements, irBlockStructureEqual, normalizeSZIR } from '#ir'
 import type { MonacoCursorPosition } from '#monaco'
 import type { ParseProjectDiagnostic } from '#parsers'
-import { extractInlineAssets } from '#parsers'
-import { PREVIEW_MESSAGE_SOURCE } from '#preview'
 import { BlocklyPanel } from '../components/blocks/BlocklyPanel'
-import { FontSizeControls } from '../components/code/FontSizeControls'
-import { MonacoTabs } from '../components/code/LazyMonacoTabs'
-import { useCodeHistory } from '../components/code/useCodeHistory'
-import { useFormatIssueLogger } from '../components/code/useFormatIssueLogger'
 import { EditorSkeleton } from '../components/layout/LoadingViews'
 import { ModeLimitationsNotice } from '../components/layout/ModeLimitationsNotice'
 import { NarrowPanels } from '../components/layout/NarrowPanels'
-import { PreviewIframe } from '../components/preview/PreviewIframe'
+import { PreviewIframe } from '../components/preview/LazyPreviewIframe'
 import { useCrossHighlight } from '../hooks/useCrossHighlight'
 import { useDebounced } from '../hooks/useDebounced'
+import { extractInlineAssets } from '../parsers/html'
+import { PREVIEW_MESSAGE_SOURCE } from '../preview/types'
 import { getCanonicalSourceMap } from '../state/canonicalSourceMap'
 import { useHighlightStore } from '../state/highlightStore'
 import { useLogsStore } from '../state/logsStore'
 import { useProjectStore, useProjectStoreApi } from '../state/projectStore'
-import { CODE_FONT_SIZE_DEFAULT, useSettingsStore } from '../state/settingsStore'
 import { useSourcemapStore } from '../state/sourcemapStore'
 import { useEditorHistory } from '../state/studioStores'
 import { useUIStore } from '../state/uiStore'
 import { useStudioConfig } from '../studio/config'
 import { useT } from '../studio/i18n'
 import { useStudioLayout } from '../studio/layoutContext'
-import { useStudioTheme } from '../studio/theme'
 import { canvas3DInternalCodeRanges } from '../three/canvas3dMacroCodec'
-import { BRIDGE_JS_HEADER, type BridgeReverseParseWorkerResponse } from './bridgeReverseParse'
+import type { BridgeReverseParseWorkerResponse } from './bridgeReverseParse'
+
+const BridgeCodeEditor = lazy(() => import('../components/code/BridgeCodeEditor'))
 
 const EMPTY_INSTALLED_EXTENSIONS: InstalledExtension[] = []
 const MAX_BRIDGE_REVERSE_PARSE_CHARS = 500_000
@@ -111,13 +107,7 @@ export function BridgeMode(): JSX.Element {
   const { isNarrow } = useStudioLayout()
   const setSourceMap = useSourcemapStore((s) => s.setMap)
   const pushLog = useLogsStore((s) => s.push)
-  const onFormatIssue = useFormatIssueLogger()
-  // Desfazer/refazer da barra: a pilha do código entra no registro da instância, e trocar de aba
-  // no estreito conta como tocar naquele editor (é ele que a criança passa a ver).
-  const onCodeEditorReady = useCodeHistory()
   const editorHistory = useEditorHistory()
-  const codeFontSize = useSettingsStore((s) => s.codeFontSize)
-  const studioTheme = useStudioTheme()
   const [parseDiagnostics, setParseDiagnostics] = useState<ParseProjectDiagnostic[]>([])
   const [showCanvas3DInternals, setShowCanvas3DInternals] = useState(false)
 
@@ -217,7 +207,7 @@ export function BridgeMode(): JSX.Element {
   // cabeçalho (string|undefined) para não regenerar o canônico a cada tecla no
   // corpo do JS — só quando a presença do cabeçalho realmente vira.
   const displayedJsHeader = useMemo(
-    () => (debouncedJs.startsWith(BRIDGE_JS_HEADER) ? BRIDGE_JS_HEADER : undefined),
+    () => (debouncedJs.startsWith(GENERATED_JS_HEADER) ? GENERATED_JS_HEADER : undefined),
     [debouncedJs],
   )
 
@@ -616,13 +606,9 @@ export function BridgeMode(): JSX.Element {
 
   const codeEditor = (
     <Suspense fallback={<EditorSkeleton message="Carregando editor de código…" />}>
-      <MonacoTabs
+      <BridgeCodeEditor
         files={filesArray}
         modelPathPrefix={projectId}
-        theme={studioTheme === 'light' ? 'light' : 'vs-dark'}
-        fontSize={codeFontSize || CODE_FONT_SIZE_DEFAULT}
-        formatLabel={t('editor.format')}
-        onFormatIssue={onFormatIssue}
         hiddenAreas={hiddenCanvas3DAreas}
         tabsRightSlot={
           <div className="flex items-center gap-1">
@@ -643,7 +629,6 @@ export function BridgeMode(): JSX.Element {
                   : t('bridge.showGeneratedInternals')}
               </button>
             )}
-            <FontSizeControls />
           </div>
         }
         onChange={(name, value) => {
@@ -657,7 +642,6 @@ export function BridgeMode(): JSX.Element {
         // apenas seleciona e SÓ recentraliza o canvas se o bloco estiver fora
         // da viewport, então o acoplamento não sacode a edição.
         onCursorChange={handleCursorChange}
-        onEditorReady={onCodeEditorReady}
       />
     </Suspense>
   )

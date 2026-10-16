@@ -295,20 +295,20 @@ export async function exportWorkspaceImage(
   workspace: Blockly.WorkspaceSvg,
   opts: { filename?: string } = {},
 ): Promise<ScreenshotResult> {
-  const blobPromise=renderWorkspaceImage(workspace)
-  const copyPromise=copyToClipboard(blobPromise)
-  try{
-    const blob=await blobPromise
-    triggerDownload(blob,opts.filename??'blocos.png')
-    return {downloaded:true,copied:await copyPromise}
-  }catch{
-    await copyPromise.catch(()=>false)
-    return {downloaded:false,copied:false}
+  const blobPromise = renderWorkspaceImage(workspace)
+  const copyPromise = copyToClipboard(blobPromise)
+  try {
+    const blob = await blobPromise
+    triggerDownload(blob, opts.filename ?? 'blocos.png')
+    return { downloaded: true, copied: await copyPromise }
+  } catch {
+    await copyPromise.catch(() => false)
+    return { downloaded: false, copied: false }
   }
 }
 
 /** Image data for embedded production flows. Does not download or access the clipboard. */
-export async function renderWorkspaceImage(workspace:Blockly.WorkspaceSvg):Promise<Blob>{
+export async function renderWorkspaceImage(workspace: Blockly.WorkspaceSvg): Promise<Blob> {
   // Fontes prontas + embutidas no SVG p/ o texto rasterizar na MESMA fonte do editor
   // (senão o texto transborda no fallback → corte à direita / campos empurrados).
   await ensureFontsReady()
@@ -320,5 +320,5 @@ export async function renderWorkspaceImage(workspace:Blockly.WorkspaceSvg):Promi
 
   const built = buildBlocksSvg(workspace, fontCss)
   if (!built) throw new Error('O projeto não tem blocos para capturar')
-  return rasterize(built.svg,built.width,built.height,backgroundColour(workspace))
+  return rasterize(built.svg, built.width, built.height, backgroundColour(workspace))
 }

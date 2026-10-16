@@ -165,7 +165,9 @@ const ProgressBody = z
     completedStepIds: z.array(z.string().min(1).max(100)).max(20).optional(),
     completedCriteriaIds: z.array(z.string().min(1).max(100)).max(10).optional(),
     outputRef: OutputRef.nullable().optional(),
-    expectedUpdatedAt: z.iso.datetime().nullable(),
+    // Opcional (15/10/2026): no Pensa v2 o Estúdio anota a missão ao abrir o jogo SEM a versão
+    // da página (o members junta com o que sabe e protege a escrita); o guia segue mandando.
+    expectedUpdatedAt: z.iso.datetime().nullable().optional(),
   })
   .refine((body) => Object.values(body).some((value) => value !== undefined))
 
@@ -498,10 +500,17 @@ export function createPensaRoutes(deps: { members: MembersClient; session: Sessi
         }
         let level: string | undefined
         let caps: Awaited<ReturnType<typeof getPensaCapabilities>>
+        let studioAuthoring: 'blocks' | 'code' = 'blocks'
+        let journey: Awaited<ReturnType<typeof members.pensaJourneyGet>>
         try {
+          journey = await members.pensaJourneyGet(result.body.project.id)
+          if (journey.status !== 200 || !journey.body) return unavailable()
+          studioAuthoring = journey.body.studioAuthoring ?? 'blocks'
           const gam = await members.getGamificationReadonly()
           level = gam.status === 200 ? gam.body?.level?.slug : undefined
-          caps = level ? await getPensaCapabilities(members, level, user.role) : null
+          caps = level
+            ? await getPensaCapabilities(members, level, user.role, studioAuthoring)
+            : null
         } catch (cause) {
           return unavailable(cause)
         }
@@ -520,16 +529,10 @@ export function createPensaRoutes(deps: { members: MembersClient; session: Sessi
         let blocked =
           !available ||
           (task.context.kind === 'studio' &&
+            studioAuthoring !== 'code' &&
             (!catalog ||
               task.context.blockIds.some((id) => !catalog.blocks.some((b) => b.type === id))))
         if (task.destination === 'molda') {
-          let journey: Awaited<ReturnType<typeof members.pensaJourneyGet>>
-          try {
-            journey = await members.pensaJourneyGet(result.body.project.id)
-          } catch (cause) {
-            return unavailable(cause)
-          }
-          if (journey.status !== 200 || !journey.body) return unavailable()
           const mission = journey.body.journey.proposal?.missions[task.position]
           const availableTools: string[] = MOLDA_TOOL_FAMILIES.filter(
             (tool) =>
@@ -547,6 +550,19 @@ export function createPensaRoutes(deps: { members: MembersClient; session: Sessi
               owned: false,
               blockedReason:
                 'Os recursos desta missão mudaram. Volte ao Pensa para ajustar seu caminho.',
+            },
+          })
+        if (
+          studioAuthoring === 'code' &&
+          caps.studioAvailable &&
+          result.body.capability.owned &&
+          (!journey.body.team || journey.body.team.roles.code === user.id)
+        )
+          return response(200, {
+            ...result.body,
+            capability: {
+              ...result.body.capability,
+              studioProProjectId: `pensa-${result.body.project.id.replaceAll('-', '')}`,
             },
           })
       }

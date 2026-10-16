@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import type { MoldaSceneDocument } from '../../../scene/document'
 import type { EditorStore } from '../../../state/editorStore'
 import type { SceneAnimationPlayer } from '../../../state/SceneAnimationPlayer'
@@ -7,8 +7,17 @@ import { SceneAnimationPoseGesture } from '../../../state/SceneAnimationPoseGest
 export function useSceneAnimationPoseGesture(
   editor: EditorStore<MoldaSceneDocument>,
   player: SceneAnimationPlayer,
+  onRecorded?: (clipId: string, time: number) => void,
 ) {
-  const gesture = useMemo(() => new SceneAnimationPoseGesture(editor, player), [editor, player])
+  const recorded = useRef(onRecorded)
+  recorded.current = onRecorded
+  const gesture = useMemo(
+    () =>
+      new SceneAnimationPoseGesture(editor, player, (clipId, time) =>
+        recorded.current?.(clipId, time),
+      ),
+    [editor, player],
+  )
   useEffect(() => {
     const disconnect = gesture.connect()
     const hidden = () => {

@@ -1,11 +1,9 @@
 import type { GeneratedFiles, SourceMap } from '#generators'
-import { generateProjectFilesWithMap } from '#generators'
+import { GENERATED_JS_HEADER, generateProjectFilesWithMap } from '#generators'
 import type { HTMLNode, HTMLShell, SZIRInput } from '#ir'
 import { assignStableIdsToIR } from '#ir'
 import type { ParseProjectDiagnostic } from '#parsers'
 import { hasBlockingParseDiagnostics, parseProjectFilesFromParts } from '#parsers'
-
-export const BRIDGE_JS_HEADER = '// Gerado pelo Sistema Zero Studio'
 
 export interface BridgeReverseParseInput {
   files: GeneratedFiles
@@ -57,7 +55,7 @@ export function runBridgeReverseParse(input: BridgeReverseParseInput): BridgeRev
     const generated = generateProjectFilesWithMap({
       ir: input.ir,
       projectName: input.projectName,
-      jsHeader: BRIDGE_JS_HEADER,
+      jsHeader: GENERATED_JS_HEADER,
     })
     if (filesEqual(generated.files, input.files)) {
       return { kind: 'generated-match', diagnostics: [], sourceMap: generated.sourceMap }
@@ -86,7 +84,7 @@ export function runBridgeReverseParse(input: BridgeReverseParseInput): BridgeRev
   const generated = generateProjectFilesWithMap({
     ir: newIR,
     projectName: input.projectName,
-    jsHeader: BRIDGE_JS_HEADER,
+    jsHeader: GENERATED_JS_HEADER,
   })
 
   return {

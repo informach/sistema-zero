@@ -49,7 +49,7 @@ import { proveStructuredImport } from './imports/structure-proof'
 import { installSpeechEngine, speechDirectory, speechEngine } from './media/speech-engine'
 import { getProviderStatus, loginProvider, runProvider } from './providers'
 import { proveRenderChunks } from './render-chunks-proof'
-import { DesktopServerSession } from './server-session'
+import { DesktopServerSession, ServerRequestError } from './server-session'
 import { proveServerSession } from './session-proof'
 import { DesktopWorkspaceManager } from './sync/workspace-manager'
 import { proveElectronTimeline } from './timeline-proof'
@@ -740,9 +740,24 @@ app
         throw new Error('Aguarde a produção e o envio de arquivos antes de desconectar')
       return serverSession.disconnect()
     })
-    handle('marketing:workspace', (request) =>
-      serverSession.workspace(workspaceRequestSchema.parse(request), ipcAbort.signal),
-    )
+    handle('marketing:workspace', async (request) => {
+      try {
+        return {
+          ok: true,
+          value: await serverSession.workspace(
+            workspaceRequestSchema.parse(request),
+            ipcAbort.signal,
+          ),
+        }
+      } catch (error) {
+        if (error instanceof ServerRequestError)
+          return {
+            ok: false,
+            error: { status: error.status, code: error.code, message: error.message },
+          }
+        throw error
+      }
+    })
     handle('marketing:online', async (value) => {
       const visible = z.boolean().parse(value)
       if (!visible) {

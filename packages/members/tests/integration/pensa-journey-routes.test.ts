@@ -18,6 +18,8 @@ function app() {
     fail: mock(async () => {}),
     protect: mock(async () => ({ ok: true })),
     voice: mock(async () => ({ status: 'generate', key: 'k' })),
+    rename: mock(async () => ({ renamed: true })),
+    archive: mock(async () => ({ archived: true })),
   }
   const routes = pensaJourneyRoutes({
     service: calls,
@@ -78,6 +80,37 @@ test('leitura usa o perfil autenticado e não a identidade inventada na URL', as
   )
   expect(response.status).toBe(200)
   expect(calls.get).toHaveBeenCalledWith({ profileId, accountId, privileged: false }, projectId)
+})
+test('renomear o jogo: o nome vai ao serviço com quem pede, e um PATCH vazio é recusado', async () => {
+  const { handler, calls } = app(),
+    profileId = randomUUID(),
+    accountId = randomUUID(),
+    projectId = randomUUID()
+  const patch = (body: unknown) =>
+    handler.handle(
+      new Request(`http://localhost/members/pensa/v2/projects/${projectId}`, {
+        method: 'PATCH',
+        headers: {
+          'content-type': 'application/json',
+          'x-internal-token': 'trusted-gateway',
+          'x-auth-user-id': profileId,
+          'x-auth-account-id': accountId,
+          'x-auth-user-role': 'student',
+          'x-auth-user-status': 'active',
+        },
+        body: JSON.stringify(body),
+      }),
+    )
+  expect((await patch({ name: 'Meu gatinho' })).status).toBe(200)
+  expect(calls.rename).toHaveBeenCalledWith(
+    { profileId, accountId, privileged: false },
+    projectId,
+    'Meu gatinho',
+  )
+  expect(calls.archive).not.toHaveBeenCalled()
+  expect((await patch({ status: 'archived' })).status).toBe(200)
+  expect(calls.archive).toHaveBeenCalledTimes(1)
+  expect((await patch({})).status).toBe(400)
 })
 test('worker recusa consumidor diferente e chamada pública sem o gateway', async () => {
   const { handler, calls } = app(),
@@ -172,4 +205,41 @@ test('todas as rotas internas aceitam o member-shell com os headers do gateway',
   for (const call of [calls.start, calls.claim, calls.publish, calls.fail, calls.protect])
     expect(call).toHaveBeenCalledTimes(1)
   expect(calls.voice).toHaveBeenCalledTimes(1)
+})
+
+test('a pergunta com escolhas atravessa a rota inteira (o normalize não apaga as respostas)', async () => {
+  const { handler, calls } = app(),
+    projectId = randomUUID(),
+    operationId = randomUUID()
+  const actor = { profileId: randomUUID(), accountId: randomUUID(), privileged: false }
+  const result = {
+    type: 'question',
+    text: 'O que o seu dragão faz?',
+    choices: {
+      about: 'action',
+      options: [
+        { label: 'Voa desviando', description: 'O jogo é não bater em nada.' },
+        { label: 'Pega ovos', description: 'Cada ovo vale um ponto.' },
+      ],
+    },
+    workingTitle: 'O voo do dragão',
+  }
+  const response = await handler.handle(
+    internal(`/projects/${projectId}/operations/${operationId}/publish`, {
+      actor,
+      leaseId: randomUUID(),
+      result,
+    }),
+  )
+  expect(response.status).toBe(200)
+  expect(calls.publish.mock.calls[0] as unknown[]).toContainEqual(result)
+  // Assunto fora da lista é pedido mal formado.
+  const bad = await handler.handle(
+    internal(`/projects/${projectId}/operations/${operationId}/publish`, {
+      actor,
+      leaseId: randomUUID(),
+      result: { ...result, choices: { ...result.choices, about: 'look' } },
+    }),
+  )
+  expect(bad.status).toBe(400)
 })

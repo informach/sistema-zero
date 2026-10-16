@@ -77,6 +77,15 @@ export class DrizzleTicketIngestionRepository implements TicketIngestionReposito
         return { status: 'created', ticketId: input.ticket.id }
       }
 
+      // A primeira confirmação pode chegar antes de a thread Gmail ser vinculada ao
+      // ticket do portal. Nesse caso o lock por gmail_thread_id não encontrou linha.
+      // Todos os writers continuam ticket -> mensagem, inclusive esse caminho.
+      await tx
+        .select({ id: tickets.id })
+        .from(tickets)
+        .where(eq(tickets.id, existingTicketId))
+        .for('update')
+
       if (
         deliveryByRfc822MessageId &&
         (deliveryByRfc822MessageId.deliveryState === 'pending' ||
@@ -87,6 +96,7 @@ export class DrizzleTicketIngestionRepository implements TicketIngestionReposito
           .set({
             gmailMessageId: input.message.gmailMessageId,
             deliveryState: 'sent',
+            position: sql`nextval(pg_get_serial_sequence('helpdesk.ticket_messages','position'))`,
             deliveryLastError: null,
             gmailInternalDate: input.at,
           })
@@ -209,6 +219,7 @@ export class DrizzleTicketIngestionRepository implements TicketIngestionReposito
           aiGeneration: sql`case when ${rearms} then ${tickets.aiGeneration} + 1 else ${tickets.aiGeneration} end`,
           aiSummary: sql`case when ${rearms} then null else ${tickets.aiSummary} end`,
           aiSummaryAt: sql`case when ${rearms} then null else ${tickets.aiSummaryAt} end`,
+          aiDraftRunId: sql`case when ${rearms} then null else ${tickets.aiDraftRunId} end`,
           aiDraft: sql`case when ${rearms} then null else ${tickets.aiDraft} end`,
           aiDraftAt: sql`case when ${rearms} then null else ${tickets.aiDraftAt} end`,
           aiDraftEdited: sql`case when ${rearms} then false else ${tickets.aiDraftEdited} end`,

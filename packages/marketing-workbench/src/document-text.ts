@@ -13,6 +13,17 @@ export function documentText(value: EditorialDocument | undefined): string {
       ? `Semana: ${value.week ?? 'Sem semana'} · Data: ${value.editorialDate ?? 'Sem data'}`
       : '',
     'source' in value ? `Origem: ${value.source.label} ${value.source.url ?? ''}` : '',
+    value.kind === 'piece' && value.conversation
+      ? [
+          `Conversa no Instagram · ${value.conversation.keyword}`,
+          value.conversation.opening,
+          value.conversation.offer,
+          `Destino: ${value.conversation.destination}`,
+          `Origem: ${value.conversation.campaign} / ${value.conversation.contentKey}`,
+          `Oferta: ${value.conversation.offerReference} · válida até ${value.conversation.validUntil}`,
+          ...Object.entries(value.conversation.responses).map(([key, text]) => `${key}: ${text}`),
+        ].join('\n\n')
+      : '',
   ]
     .filter(Boolean)
     .join('\n\n')

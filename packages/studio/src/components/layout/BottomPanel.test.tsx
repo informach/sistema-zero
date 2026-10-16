@@ -9,7 +9,6 @@ import { useUIStore } from '../../state/uiStore'
 // de mockar e restaura no afterAll, senão os stubs vazam para os próximos
 // arquivos da suíte (ver BlocksMode.test.tsx).
 const realTerminal = { ...(await import('../terminal/Terminal')) }
-const realAIPanel = { ...(await import('../ai/AIPanel')) }
 const realConsolePanel = { ...(await import('../console/ConsolePanel')) }
 
 // Probe leve do Terminal. A "não remontagem" é verificada por IDENTIDADE DO NÓ do
@@ -18,10 +17,6 @@ const realConsolePanel = { ...(await import('../console/ConsolePanel')) }
 // que tornava um contador de montagens flaky (0 no CI, ok local).
 mock.module('../terminal/Terminal', () => ({
   Terminal: (): JSX.Element => <div data-testid="terminal-probe">terminal</div>,
-}))
-
-mock.module('../ai/AIPanel', () => ({
-  AIPanel: () => <div data-testid="ai-probe">ia</div>,
 }))
 
 let consoleShouldThrow = false
@@ -34,7 +29,6 @@ mock.module('../console/ConsolePanel', () => ({
 
 afterAll(() => {
   mock.module('../terminal/Terminal', () => realTerminal)
-  mock.module('../ai/AIPanel', () => realAIPanel)
   mock.module('../console/ConsolePanel', () => realConsolePanel)
 })
 
@@ -95,7 +89,7 @@ describe('BottomPanel', () => {
     const { getAllByRole, getByRole } = render(<BottomPanel />)
     expect(getByRole('tablist')).toBeTruthy()
     const tabs = getAllByRole('tab')
-    expect(tabs.length).toBe(3) // console + terminal + ia (modo code, tudo ligado)
+    expect(tabs.length).toBe(2) // console + terminal; Zappy owns its own panel
     const selected = tabs.filter((b) => b.getAttribute('aria-selected') === 'true')
     expect(selected.length).toBe(1)
     expect(selected[0]?.textContent).toContain('Console')

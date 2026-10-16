@@ -2,7 +2,7 @@
  * Trilho vertical comum: ferramentas nomeadas, formas e detalhes conforme o acesso.
  * A oficina controla a ferramenta; os controles do palco chegam por portais.
  */
-import { type RefObject, useId } from 'react'
+import { useId } from 'react'
 import { COPY } from '../../../core/copy'
 import { SCENE_SHELL_COPY } from '../../../core/sceneShellCopy'
 import {
@@ -12,15 +12,7 @@ import {
 } from '../../../scene/commands'
 import { RequiresTool } from '../../toolAccess'
 import { Button } from '../../ui/Button'
-import {
-  ChevronDown,
-  Crosshair,
-  Group,
-  ListChecks,
-  Shapes,
-  Ungroup,
-  Waypoints,
-} from '../../ui/icons'
+import { ChevronDown, Crosshair, Group, ListChecks, Shapes, Slice, Ungroup } from '../../ui/icons'
 import { focusWorkshopStage } from './focusStage'
 import { SceneCreateMenu } from './SceneCreateMenu'
 import { SceneTile, SCENE_TILE_GRID as TILES } from './SceneTile'
@@ -31,14 +23,12 @@ export function SceneModelColumn({
   workshop,
   toolsSlot,
   areaToolsSlot,
-  faceToggle,
   onToggleFaces,
   canConvert,
 }: {
   workshop: ReturnType<typeof useSceneWorkshop>
   toolsSlot(element: HTMLDivElement | null): void
   areaToolsSlot(element: HTMLDivElement | null): void
-  faceToggle: RefObject<HTMLButtonElement | null>
   onToggleFaces(): void
   canConvert: boolean
 }) {
@@ -63,46 +53,43 @@ export function SceneModelColumn({
         <div className={TILES}>
           <div ref={toolsSlot} className="contents" />
           {selected.length === 1 && !components.selection && (
-            <RequiresTool family="model.precise">
+            <RequiresTool family="model.pivot">
               <SceneTile
                 icon={Crosshair}
                 label="Pivô"
+                keyHint="P"
+                aria-keyshortcuts="P"
                 title="Onde gira"
                 pressed={workshop.tool === 'pivot'}
                 onClick={() => workshop.setTool('pivot')}
               />
             </RequiresTool>
           )}
+          <RequiresTool family="model.cut">
+            <SceneTile
+              icon={Slice}
+              label="Cortar"
+              keyHint="K"
+              aria-keyshortcuts="K"
+              pressed={workshop.tool === 'cut'}
+              onClick={() => workshop.setTool('cut')}
+            />
+          </RequiresTool>
         </div>
       </section>
+      <div className="shrink-0 border-t border-mld-border pt-3">
+        <SceneCreateMenu run={run} document={workshop.document} selected={selected} />
+      </div>
       {/*
        * O que se usa menos, recolhido: a caixa e o laço, escolher várias, os grupos e a malha.
        * As ferramentas básicas permanecem na mesma ordem ao abrir os detalhes.
        */}
       <details className="mld-rail-more shrink-0">
         <summary>
-          {SCENE_SHELL_COPY.moreTools}
+          Seleção e organização
           <ChevronDown aria-hidden="true" />
         </summary>
         <div className={TILES}>
-          <RequiresTool family="model.mesh">
-            {!components.selection && (
-              <SceneTile
-                ref={faceToggle}
-                icon={Waypoints}
-                label={
-                  components.selection
-                    ? copy.finishFaces
-                    : selected.length === 1 && index.skinsByNode.has(selected[0]!)
-                      ? copy.editSkinBase
-                      : copy.editFaces
-                }
-                pressed={components.selection !== null}
-                disabled={!components.canEdit}
-                onClick={onToggleFaces}
-              />
-            )}
-          </RequiresTool>
           <div ref={areaToolsSlot} className="contents" />
           <SceneTile
             icon={ListChecks}
@@ -146,13 +133,8 @@ export function SceneModelColumn({
             />
           </RequiresTool>
         </div>
-      </details>
-      <div className="shrink-0">
-        <SceneCreateMenu run={run} document={workshop.document} selected={selected} />
-      </div>
-      <div className="min-w-0 shrink-0">
         <SceneUpcomingTools tabs={['model', 'files']} />
-      </div>
+      </details>
     </div>
   )
 }

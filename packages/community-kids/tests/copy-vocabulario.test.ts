@@ -140,6 +140,11 @@ interface ForaDaVarredura {
  */
 const FORA_DA_VARREDURA: ForaDaVarredura[] = [
   {
+    caminho: 'core/src/studio/pro-game-knowledge.ts',
+    motivo:
+      'manual técnico enviado ao modelo do construtor Pro, nunca desenhado na tela da criança',
+  },
+  {
     caminho: 'member-shell/src/lib/lesson-copy.ts',
     motivo:
       'o vocabulário ADULTO do `LessonCopy`; o Kids passa o dele (`lesson-copy-kids.ts`, varrido) pelo `KidsLessonCopy`',
@@ -197,6 +202,49 @@ interface Excecao {
  * aparecer UMA vez no arquivo e cobrir alguma palavra; o resto do mesmo texto continua varrido.
  */
 const EXCECOES: Excecao[] = [
+  {
+    arquivo: 'studio/src/components/code/pro-templates/games/canvas-survival.sources.generated.ts',
+    trechos: [
+      'O projeto de curso P27 foi referência de mecânicas, sem redistribuição de seus arquivos.',
+    ],
+    motivo: 'atribuição da referência no README do kit; não nomeia a aventura da criança',
+  },
+  {
+    arquivo: 'studio/src/components/code/pro-templates/games/sound.source.generated.ts',
+    trechos: ['Os kits táticos têm unidades procedurais'],
+    motivo: 'unidades são peças do jogo de tática no manual dos materiais',
+  },
+  {
+    arquivo: 'member-shell/src/server/studio-builder-tools.ts',
+    trechos: [
+      'construtor de jogos do Studio Pro para alunos',
+      'nem prometa etapas que não produziu',
+      'edite a revisão de trabalho apresentada',
+      'A instalação no terminal do aluno ocorre depois',
+      'o que o aluno deve conferir no jogo',
+    ],
+    motivo:
+      'instruções do STUDIO_BUILDER_SYSTEM para o modelo; não são respostas desenhadas para a criança',
+  },
+  {
+    arquivo: 'studio/src/components/code/pro-templates/games/grid.sources.generated.ts',
+    trechos: [
+      'Esperar unidade',
+      'Unidade inicial inválida.',
+      'As unidades precisam de um caminho de terra até a base.',
+    ],
+    motivo: 'unidade é uma peça do jogo de tática, não uma divisão da aventura',
+  },
+  {
+    arquivo: 'studio/src/components/code/pro-templates/games/grid.ts',
+    trechos: ['Escolha uma unidade', 'água e unidades bloqueiam o disparo'],
+    motivo: 'unidades são as peças que o jogador move no tabuleiro',
+  },
+  {
+    arquivo: 'molda/src/components/editor/scene/ScenePieceCoordinates.tsx',
+    trechos: ['Tamanho em unidades da peça'],
+    motivo: 'unidade de medida da geometria, não uma divisão da aventura',
+  },
   {
     arquivo: 'member-shell/src/components/lesson-video-gate.tsx',
     trechos: ['A atividade abre depois que você assistir ao vídeo uma vez.', 'Atividade liberada.'],
@@ -258,7 +306,9 @@ const EXCECOES: Excecao[] = [
   },
   {
     arquivo: 'member-shell/src/server/zappy-ai.ts',
-    trechos: ['sem entregar uma solução inteira.'],
+    trechos: [
+      'Fale em aventura, fase, parte, Mapa da Aventura e equipe; não em curso, aula, seção, caderno ou professor.',
+    ],
     motivo: 'instrução para o modelo do Zappy no modo Ponte, nunca desenhada',
   },
   {

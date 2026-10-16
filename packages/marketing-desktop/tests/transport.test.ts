@@ -3,7 +3,7 @@ import { rejects } from 'node:assert/strict'
 import { randomUUID } from 'node:crypto'
 import { readBoundedJson } from '../src/main/bounded-json'
 import { SerialQueue } from '../src/main/serial-queue'
-import { workspaceRequestSchema } from '../src/shared/connection'
+import { workspaceRequestSchema, workspaceResponseSchema } from '../src/shared/connection'
 import { parseDeepLink } from '../src/shared/deep-link'
 
 test('período analítico é aceito apenas no endpoint e intervalo previstos', () => {
@@ -30,6 +30,8 @@ test('consulta de equipe aceita acentos sem ampliar a ponte para outros caminhos
   for (const path of [
     `/projects/${project}/staff?q=Revis%C3%A3o`,
     `/projects/${project}/runs?entityId=${randomUUID()}&before=${randomUUID()}`,
+    `/engagement/accounts/${randomUUID()}/conversations?before=${randomUUID()}`,
+    `/projects/${project}/pieces/${randomUUID()}/engagement/commercial?from=2026-10-01T00%3A00%3A00.000Z&to=2026-10-15T00%3A00%3A00.000Z`,
   ])
     expect(workspaceRequestSchema.safeParse({ scope, path, method: 'GET' }).success).toBe(true)
   for (const path of [
@@ -38,8 +40,23 @@ test('consulta de equipe aceita acentos sem ampliar a ponte para outros caminhos
     '/projects?q=x&q=y',
     '/projects?command=whoami',
     `/projects/${project}/staff?q=ok&redirect=https://evil.test`,
+    `/engagement/accounts?from=2026-10-01T00:00:00.000Z`,
+    `/projects/${project}/pieces/${randomUUID()}/engagement/summary?from=inválida`,
   ])
     expect(workspaceRequestSchema.safeParse({ scope, path, method: 'GET' }).success).toBe(false)
+})
+test('envelope IPC preserva erros definitivos para impedir retry cego de comandos', () => {
+  const response = workspaceResponseSchema.parse(
+    structuredClone({
+      ok: false,
+      error: { status: 409, code: 'CONCURRENCY_CONFLICT', message: 'O estado mudou' },
+    }),
+  )
+  expect(response.ok).toBe(false)
+  expect(workspaceResponseSchema.safeParse({ ok: true, value: { version: 2 } }).success).toBe(true)
+  expect(workspaceResponseSchema.safeParse({ ok: false, error: new Error('Falhou') }).success).toBe(
+    false,
+  )
 })
 
 test('passagem web aceita só referência opaca e origem válida, nunca comando ou caminho', () => {

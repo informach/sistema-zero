@@ -3,6 +3,7 @@ import { Elysia, t } from 'elysia'
 import type { PensaJourneyService } from '../../../application/pensa/journey.service'
 import { AccessDeniedError } from '../../../domain/entitlement/entitlement.errors'
 import type { PensaJourneyActor } from '../../../domain/ports/pensa-journey-repository.port'
+import { ValidationError } from '../../../domain/shared/errors'
 import {
   assertInternalCaller,
   assertMemberShellConsumer,
@@ -79,11 +80,25 @@ export function pensaJourneyRoutes(deps: PensaJourneyRoutesDeps) {
     )
     .patch(
       '/projects/:projectId',
-      ({ headers, params, body }) =>
-        deps.service.archive(actor(headers), params.projectId, body.status),
+      async ({ headers, params, body }) => {
+        const who = actor(headers)
+        if (body.name === undefined && body.status === undefined)
+          throw new ValidationError('Diga o que mudar no jogo.')
+        // Renomear (15/10/2026): o nome que a criança deu fica; a IA não o troca mais.
+        let view =
+          body.name !== undefined
+            ? await deps.service.rename(who, params.projectId, body.name)
+            : null
+        if (body.status !== undefined)
+          view = await deps.service.archive(who, params.projectId, body.status)
+        return view
+      },
       {
         params: PensaJourneyParams,
-        body: t.Object({ status: t.Union([t.Literal('active'), t.Literal('archived')]) }),
+        body: t.Object({
+          status: t.Optional(t.Union([t.Literal('active'), t.Literal('archived')])),
+          name: t.Optional(t.String({ minLength: 1, maxLength: 160 })),
+        }),
       },
     )
     .delete(

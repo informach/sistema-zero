@@ -1,0 +1,2 @@
+ALTER TABLE "members"."studio_builder_jobs" ADD COLUMN "execution" jsonb NOT NULL;--> statement-breakpoint
+CREATE INDEX "studio_builder_queue_idx" ON "members"."studio_builder_jobs" USING btree ("phase","lease_until","deadline_at") WHERE "members"."studio_builder_jobs"."phase" in ('queued','generating','validating');

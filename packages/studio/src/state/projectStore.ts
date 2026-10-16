@@ -1,3 +1,4 @@
+import { isStudioPublicationId } from '@sistemazero/core/studio/project-format'
 import { useContext } from 'react'
 import { ulid } from 'ulid'
 import { useStore } from 'zustand'
@@ -21,6 +22,7 @@ import {
   type ProjectFiles,
   type ProjectTree,
   type StudioProBuildLimits,
+  sanitizeProjectAssets,
   sanitizeSpriteMeta,
   sanitizeTilemapMeta,
   sanitizeTilesetMeta,
@@ -31,12 +33,15 @@ import type { SZIRInput } from '#ir'
 import { findExtension } from '#official-extensions'
 import { reconcileDrawingsFromRestoredProject } from '../asset-library/personalSync'
 import { createProProject as createProProjectFromTemplate } from '../components/code/pro-templates'
+import { parseProAssistance } from '../core/proAssistance'
 import {
+  assertProjectContentPreserved,
   CURRENT_PROJECT_FORMAT_VERSION,
   prepareProjectDocument,
   projectFormatVersion,
   retainProjectTools,
 } from '../core/projectDocument'
+import type { ProAssistanceMeta } from '../core/proProject'
 import type { StudioPersistenceAdapter } from '../persistence/types'
 import {
   deleteProject as deleteProjectFromDB,
@@ -51,6 +56,13 @@ import {
   persistProject,
   renameProjectMeta,
 } from './persistence'
+import { bindProjectToDurableHead } from './projectStorageCoordinator'
+import {
+  advanceLocalRevision,
+  copyLocalRevision,
+  forkLocalRevision,
+  readLocalRevision,
+} from './projectStorageRevision'
 import {
   captureProjectStorageScope,
   getProjectStorageScope,
@@ -70,7 +82,14 @@ import {
   sanitizeStoredBlocksState,
   sanitizeStoredProject,
 } from './projectValidation'
-import { addProDir, addProFile, removeProNode, renameProNode, setProFileContent } from './proTree'
+import {
+  addProDir,
+  addProFile,
+  removeProNode,
+  renameProNode,
+  sanitizeProTree,
+  setProFileContent,
+} from './proTree'
 import { StudioStoresContext } from './storesContext'
 
 /**
@@ -125,7 +144,11 @@ interface ProjectStore {
   unloadProject: () => void
   createProject: (name: string, initialExtensionIds?: readonly string[]) => Promise<Project>
   /** Cria e persiste um projeto PROFISSIONAL a partir de um template. */
-  createProProject: (name: string, templateId: string) => Promise<Project>
+  createProProject: (
+    name: string,
+    templateId: string,
+    options?: { isCurrent(): boolean },
+  ) => Promise<Project>
   duplicateProject: (id: string) => Promise<Project | null>
   deleteProject: (id: string) => Promise<void>
   renameProject: (id: string, name: string) => Promise<void>
@@ -154,9 +177,12 @@ interface ProjectStore {
     },
   ) => Promise<{ project: Project; warnings: string[] }>
   setProject: (p: Project) => void
+  setProPublication: (playId: string) => string | null
+  setProAssistance: (assistance: ProAssistanceMeta) => string | null
   setMode: (mode: IDEMode) => void
   /** Gradua um projeto básico para profissional (Vite). One-way. */
-  convertToPro: () => Promise<void>
+  convertToPro: (preserveOriginal: (project: Project) => Promise<void>) => Promise<void>
+  reconcileProAssets: (projectId: string, expected: ProjectAsset[], next: ProjectAsset[]) => void
   setFiles: (files: Partial<ProjectFiles>) => void
   setFile: (name: FileName, value: string) => void
   setIR: (ir: SZIRInput | null) => void
@@ -204,6 +230,14 @@ interface ProjectStore {
   /** Cria pasta na árvore pro. Devolve mensagem de erro ou null se ok. */
   addProDir: (path: string) => string | null
   setProFileContent: (path: string, content: string) => void
+  /** Atomic external reconciliation; a stale project/tree cannot overwrite a live edit. */
+  reconcileProFiles: (
+    projectId: string,
+    expected: ProjectTree,
+    tree: ProjectTree,
+    beforePublish?: (project: Project) => void,
+    materials?: { assets: ProjectAsset[]; coverAssetName: string | null },
+  ) => string | null
   /** Renomeia/move nó da árvore pro. Devolve mensagem de erro ou null se ok. */
   renameProNode: (from: string, to: string) => string | null
   removeProNode: (path: string) => void
@@ -280,9 +314,12 @@ export { MAX_PROJECT_IMPORT_CHARS } from './projectLimits'
 export async function loadSanitizedProjectById(
   id: string,
   storageScope?: ProjectStorageScope,
+  recoverDraft = false,
 ): Promise<Project | null> {
-  const raw = await loadProjectById(id, storageScope)
-  return raw ? sanitizeStoredProject(await prepareProjectDocument(raw), id) : null
+  const raw = await loadProjectById(id, storageScope, { recoverDraft })
+  if (!raw) return null
+  const sanitized = sanitizeStoredProject(await prepareProjectDocument(raw), id)
+  return sanitized ? copyLocalRevision(raw, sanitized) : null
 }
 
 export async function loadSanitizedProjectShellById(
@@ -294,7 +331,8 @@ export async function loadSanitizedProjectShellById(
   // A migração precisa do documento inteiro antes de separar suas partições.
   if (projectFormatVersion(shell) !== CURRENT_PROJECT_FORMAT_VERSION)
     return loadSanitizedProjectById(id, storageScope)
-  return sanitizeStoredProject(shell, id)
+  const sanitized = sanitizeStoredProject(shell, id)
+  return sanitized ? copyLocalRevision(shell, sanitized) : null
 }
 
 export async function loadSanitizedProjectBlocksStateById(
@@ -349,6 +387,13 @@ export interface CreateProjectStoreOptions {
   translator?: Translator
 }
 
+/** O objeto capturado muda a cada troca de perfil, inclusive A → B → A. */
+function assertProjectCreationScope(scope: ProjectStorageScope): void {
+  if (scope !== captureProjectStorageScope()) {
+    throw new Error('O perfil mudou durante a criação. Inicie novamente no perfil atual.')
+  }
+}
+
 export function createProjectStore(
   options: CreateProjectStoreOptions = {},
 ): StoreApi<ProjectStore> {
@@ -388,6 +433,15 @@ export function createProjectStore(
       const patch = typeof update === 'function' ? update(get()) : update
       if (get().editingAccess === 'observer' && ('project' in patch || patch.isDirty === true))
         return
+      if (patch.project && patch.project !== get().project) {
+        const incoming = readLocalRevision(patch.project)
+        const previous = get().project && readLocalRevision(get().project!)
+        patch.project =
+          patch.isDirty === false ||
+          (incoming?.lineage.recovery && incoming.lineage !== previous?.lineage)
+            ? forkLocalRevision(patch.project)
+            : advanceLocalRevision(get().project, patch.project)
+      }
       rawSet(patch)
     }
     return {
@@ -423,7 +477,7 @@ export function createProjectStore(
       loadProject: async (id) => {
         loadSeq += 1
         const seq = loadSeq
-        const existing = await loadSanitizedProjectById(id)
+        const existing = await loadSanitizedProjectById(id, undefined, true)
         // Um load mais novo começou enquanto este aguardava o disco: a corrida foi
         // perdida — não toca o store (o load mais novo é a verdade), mas devolve o
         // que ESTE load leu para o chamador que o aguardava (sem efeito colateral).
@@ -434,8 +488,10 @@ export function createProjectStore(
         }
         set({
           project: existing,
-          isDirty: false,
-          saveError: null,
+          isDirty: readLocalRevision(existing)?.lineage.recovery === true,
+          saveError: readLocalRevision(existing)?.lineage.recovery
+            ? 'Uma edição preservada foi reaberta. A gravação local ainda está pendente.'
+            : null,
           blocksHydration: 'idle',
           bridgeCodeEditEpoch: 0,
           bridgeBlocksSyncedEpoch: 0,
@@ -445,9 +501,11 @@ export function createProjectStore(
       hydrateProject: (p) => {
         loadSeq++
         rawSet({
-          project: p,
-          isDirty: false,
-          saveError: null,
+          project: forkLocalRevision(p),
+          isDirty: readLocalRevision(p)?.lineage.recovery === true,
+          saveError: readLocalRevision(p)?.lineage.recovery
+            ? 'Uma edição preservada foi reaberta. A gravação local ainda está pendente.'
+            : null,
           blocksHydration: 'idle',
           bridgeCodeEditEpoch: 0,
           bridgeBlocksSyncedEpoch: 0,
@@ -486,6 +544,7 @@ export function createProjectStore(
         })
       },
       createProject: async (name, initialExtensionIds) => {
+        const scope = captureProjectStorageScope()
         const base = createEmptyProject(ulid(), sanitizeProjectName(name))
         const installedExtensions = [...new Set(initialExtensionIds ?? [])].flatMap((id) => {
           const definition = findExtension(id)
@@ -494,12 +553,23 @@ export function createProjectStore(
             : []
         })
         const p: Project = { ...base, installedExtensions }
-        await persistProject(p)
+        await persistProject(p, {}, scope)
+        assertProjectCreationScope(scope)
         return p
       },
-      createProProject: async (name, templateId) => {
-        const p = createProProjectFromTemplate(ulid(), sanitizeProjectName(name), templateId)
-        await persistProject(p)
+      createProProject: async (name, templateId, options) => {
+        const scope = captureProjectStorageScope()
+        const assertCurrent = () => {
+          if (options && !options.isCurrent())
+            throw new Error('A criação foi cancelada ou este modelo não está mais disponível.')
+        }
+        assertCurrent()
+        const p = await createProProjectFromTemplate(ulid(), sanitizeProjectName(name), templateId)
+        assertProjectCreationScope(scope)
+        assertCurrent()
+        await persistProject(p, {}, scope)
+        assertProjectCreationScope(scope)
+        assertCurrent()
         return p
       },
       duplicateProject: async (id) => {
@@ -524,6 +594,11 @@ export function createProjectStore(
       },
       renameProject: async (id, name) => {
         const safeName = sanitizeProjectName(name)
+        if (get().project?.id === id) {
+          get().rename(safeName)
+          await renameProjectMeta(id, safeName, get().project!)
+          return
+        }
         // Escrita SÓ-METADADO: NÃO reler+reescrever files/state (snapshot estale
         // ressuscitaria bytes antigos e correria com o autosave do editor aberto).
         await renameProjectMeta(id, safeName)
@@ -562,6 +637,10 @@ export function createProjectStore(
         if (get().project?.id === project.id || isProjectOpenAnywhere(project.id)) {
           throw new Error('Snapshot recusado: o projeto está aberto no editor.')
         }
+        await bindProjectToDurableHead(
+          project,
+          options.storageScope ?? captureProjectStorageScope(),
+        )
         // Antes de persistir, converge desenhos por revisão. Se só um lado é mais novo,
         // ele vence; legado divergente preserva ambos e religa o projeto à cópia remota.
         const drawings = await reconcileDrawingsFromRestoredProject(project, {
@@ -575,6 +654,36 @@ export function createProjectStore(
           options.storageScope,
         )
         return { project, warnings }
+      },
+      setProAssistance: (assistance) => {
+        const project = get().project
+        if (get().editingAccess !== 'author')
+          return 'Este projeto está aberto somente para leitura.'
+        if (project?.kind !== 'pro' || !project.proMeta) return 'Abra um projeto profissional.'
+        try {
+          const parsed = parseProAssistance(assistance)
+          set({
+            project: bump({ ...project, proMeta: { ...project.proMeta, assistance: parsed } }),
+            isDirty: true,
+            saveError: null,
+          })
+          return null
+        } catch (error) {
+          return error instanceof Error ? error.message : 'Decisões inválidas.'
+        }
+      },
+      setProPublication: (playId) => {
+        const project = get().project
+        if (get().editingAccess !== 'author')
+          return 'Este projeto está aberto somente para leitura.'
+        if (project?.kind !== 'pro' || !project.proMeta) return 'Abra um projeto profissional.'
+        if (!isStudioPublicationId(playId)) return 'Publicação inválida.'
+        set({
+          project: bump({ ...project, proMeta: { ...project.proMeta, publication: { playId } } }),
+          isDirty: true,
+          saveError: null,
+        })
+        return null
       },
       setProject: (p) =>
         set({
@@ -595,7 +704,19 @@ export function createProjectStore(
         if (p.mode === next) return
         set({ project: bump({ ...p, mode: next }), isDirty: true, saveError: null })
       },
-      convertToPro: async () => {
+      reconcileProAssets: (projectId, expected, next) => {
+        const project = get().project
+        if (
+          project?.id !== projectId ||
+          project.kind !== 'pro' ||
+          (project.assets !== expected && !(project.assets === undefined && expected.length === 0))
+        )
+          throw new Error('Os materiais mudaram durante a sincronização. Tente salvar novamente.')
+        const sanitized = sanitizeProjectAssets(next)
+        assertProjectContentPreserved({ assets: next }, { ...project, assets: sanitized })
+        set({ project: bump({ ...project, assets: next }), isDirty: true, saveError: null })
+      },
+      convertToPro: async (preserveOriginal) => {
         const initial = get().project
         if (!initial || initial.kind === 'pro') return
         // Import dinâmico PRIMEIRO: o build de conversão (com sucrase via
@@ -615,7 +736,18 @@ export function createProjectStore(
         // trocado/apagado/graduado nesse meio-tempo. Só commita se ainda for o
         // MESMO projeto classic que originou esta `tree`.
         const fresh = get().project
-        if (!fresh || fresh.id !== source.id || fresh.kind === 'pro') return
+        if (fresh !== source)
+          throw new Error(
+            'O projeto mudou durante a conversão. O original foi mantido; tente novamente.',
+          )
+        const original: Project = {
+          ...source,
+          id: ulid(),
+          name: `${source.name.slice(0, 191)} (Blocos)`,
+        }
+        await preserveOriginal(original)
+        if (get().project !== source)
+          throw new Error('O projeto mudou enquanto a cópia original era salva. Tente novamente.')
         // Constrói a partir de `source` (NÃO de `fresh`): a `tree` foi gerada desse
         // snapshot e os campos do básico que zeramos pertencem a ele. Espalhar
         // `fresh` aqui voltaria a divergir tree×conteúdo (a tree teria o conteúdo de
@@ -626,7 +758,17 @@ export function createProjectStore(
           kind: 'pro',
           mode: 'code',
           tree,
-          proMeta: { devScript: 'dev', templateId: 'vanilla-vite' },
+          proMeta: {
+            devScript: 'dev',
+            templateId: 'vanilla-vite',
+            origin: { projectId: original.id, revision: source.updatedAt },
+          },
+          assets: (source.assets ?? []).map((asset) => ({
+            ...asset,
+            ...(asset.kind === 'image' || asset.kind === 'audio'
+              ? { proPath: `public/${asset.name}` }
+              : {}),
+          })),
           // O pro usa a `tree` como fonte da verdade; zera os campos do básico.
           files: { 'index.html': '', 'style.css': '', 'script.js': '' },
           extraFiles: [],
@@ -1121,6 +1263,56 @@ export function createProjectStore(
         }
         set({ project: bump({ ...p, tree: next }), isDirty: true, saveError: null })
       },
+      reconcileProFiles: (projectId, expected, tree, beforePublish, materials) => {
+        const p = get().project
+        if (get().editingAccess === 'observer') return 'Este projeto está em observação.'
+        if (p?.id !== projectId || p.kind !== 'pro' || p.tree !== expected)
+          return 'O projeto mudou durante a sincronização.'
+        const sanitized = sanitizeProTree(tree)
+        if (!sanitized)
+          return 'A árvore do terminal não é válida ou ultrapassou os limites do projeto.'
+        const limitError = proTreeLimitError(sanitized)
+        if (limitError) return limitError
+        if (materials) {
+          const assets = sanitizeProjectAssets(materials.assets)
+          assertProjectContentPreserved({ assets: materials.assets }, { ...p, assets })
+          if (
+            materials.coverAssetName &&
+            !assets.some((a) => a.kind === 'image' && a.name === materials.coverAssetName)
+          )
+            return 'A imagem de capa não está nos materiais.'
+        }
+        const paths = Object.keys(sanitized)
+        if (
+          !beforePublish &&
+          !materials &&
+          paths.length === Object.keys(expected).length &&
+          paths.every((path) => {
+            const before = expected[path]
+            const after = sanitized[path]
+            return (
+              before?.kind === after?.kind &&
+              (before?.kind !== 'file' ||
+                (after?.kind === 'file' && before.content === after.content))
+            )
+          })
+        )
+          return null
+        const document = {
+          ...p,
+          tree: sanitized,
+          ...(materials ? { assets: materials.assets } : {}),
+        }
+        if (materials) {
+          if (materials.coverAssetName) document.coverAssetName = materials.coverAssetName
+          else delete document.coverAssetName
+        }
+        const next = advanceLocalRevision(p, bump(document))
+        // Attach the inverse to this exact revision before any subscriber can save or switch it.
+        beforePublish?.(next)
+        rawSet({ project: next, isDirty: true, saveError: null })
+        return null
+      },
       renameProNode: (from, to) => {
         const p = get().project
         if (!p?.tree) return 'Nenhum projeto profissional carregado.'
@@ -1221,6 +1413,9 @@ export function createLocalPersistenceAdapter(
     loadBlocksState: (project) =>
       loadSanitizedProjectBlocksStateById(project.id, project.installedExtensions, scope),
     save: (project) => persistProject(project, {}, scope),
+    flushOnExit: (project, options) =>
+      persistProject(project, { exit: true, incompleteBlocks: options?.incompleteBlocks }, scope),
+    localScope: scope,
     // Cada `save` pede a sua transação na hora, e o IndexedDB as executa na ordem em que
     // nascem: o serviço não precisa encadear os saves (ver `appliesSavesInCallOrder`).
     appliesSavesInCallOrder: true,

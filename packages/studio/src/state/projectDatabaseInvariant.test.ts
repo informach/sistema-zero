@@ -97,6 +97,7 @@ describe('o banco dos projetos só vê transações com commit explícito', () =
   it('toda operação que toca o banco pede tudo de uma vez e termina com commit()', async () => {
     dbs.clear()
     resetFakeIdb()
+    persistence.setStorageNamespace('invariant-reset')
     persistence.setStorageNamespace('')
     const project = {
       ...createEmptyProject('01J0000000000000000000INVA', 'Invariante'),
@@ -166,7 +167,7 @@ describe('o banco dos projetos só vê transações com commit explícito', () =
     // O `get` do idb-keyval: pede e devolve, sem commit; a transação só termina quando a
     // página processar o resultado.
     await store('readonly', (objectStore) => {
-      objectStore.get('sz:v2:project-meta:x')
+      objectStore.get('sz:v3:project-meta:x')
     })
 
     expect(withoutExplicitCommit(fakeIdbTransactions())).toHaveLength(1)
@@ -216,6 +217,8 @@ describe('ninguém lê nem grava o banco dos projetos pelo idb-keyval direto', (
       // preferências do editor (que moravam no banco dos projetos até 11/09/2026).
       'asset-library/personal.ts': ['createStore', 'del', 'get', 'getMany', 'keys', 'set'],
       'state/settingsStore.ts': ['createStore', 'get', 'update'],
+      // Organização Pro usa sz-studio-workspace:<perfil>, separado de documento e histórico.
+      'state/workspacePreferences.ts': ['createStore', 'get', 'set'],
     })
   })
 })

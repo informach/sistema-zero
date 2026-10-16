@@ -1,4 +1,6 @@
 import { describe, expect, test } from 'bun:test'
+import { STUDIO_PRO_REMOTE_PACKAGES } from '@sistemazero/core/studio'
+import runtimeLock from '../runtime/package-lock.json' with { type: 'json' }
 import {
   InvalidBuildRequestError,
   normalizeBuildPath,
@@ -9,6 +11,7 @@ import {
 
 const valid = {
   executionId: 'lesson-1234567890abcdef',
+  parentOrigin: 'https://kids.test',
   templateId: 'react-ts',
   files: {
     'index.html': '<div id="root"></div>',
@@ -30,6 +33,75 @@ function versionAtLeast(actual: string, minimum: string): boolean {
 }
 
 describe('contrato do executor Pro', () => {
+  test('validates actual project dependencies instead of inferring them from its starter', () => {
+    const parsed = parseBuildRequest({
+      ...valid,
+      templateId: 'vanilla-js',
+      files: {
+        ...valid.files,
+        'package.json': JSON.stringify({ dependencies: { three: '0.180.0', phaser: '3.90.0' } }),
+      },
+    })
+    expect(parsed.dependencies.dependencies).toEqual({ three: '0.180.0', phaser: '3.90.0' })
+    expect(JSON.parse(trustedPackageJson('vanilla-js', parsed.dependencies)).dependencies).toEqual(
+      parsed.dependencies.dependencies,
+    )
+  })
+
+  test('rejects unavailable libraries, versions and manifest installation features', () => {
+    for (const manifest of [
+      { dependencies: { mitt: '3.0.1' } },
+      { dependencies: { three: '0.179.0' } },
+      { dependencies: { three: '^0.180.0' } },
+      { dependencies: { three: 'https://elsewhere.test/three.tgz' } },
+      { workspaces: ['packages/*'] },
+      { overrides: { three: '0.179.0' } },
+    ])
+      expect(() =>
+        parseBuildRequest({
+          ...valid,
+          files: { ...valid.files, 'package.json': JSON.stringify(manifest) },
+        }),
+      ).toThrow(InvalidBuildRequestError)
+  })
+
+  test('accepts a completed npm range lock and rejects stale roots, transitives and integrity', () => {
+    const lock = structuredClone(runtimeLock)
+    lock.packages[''].dependencies.three = '^0.180.0'
+    const parse = (value: unknown) =>
+      parseBuildRequest({
+        ...valid,
+        files: {
+          ...valid.files,
+          'package.json': JSON.stringify({ dependencies: { three: '^0.180.0' } }),
+          'package-lock.json': JSON.stringify(value),
+        },
+      })
+    expect(parse(lock).dependencies.dependencies.three).toBe('0.180.0')
+    const redirected = structuredClone(lock)
+    redirected.packages['node_modules/three'].resolved = 'https://other.test/three.tgz'
+    expect(() => parse(redirected)).toThrow('imagem')
+    const forgedGraph = structuredClone(lock)
+    forgedGraph.packages['node_modules/vite'].dependencies.postcss = '0.0.0'
+    expect(() => parse(forgedGraph)).toThrow('imagem')
+    lock.packages['node_modules/three'].integrity += 'corrupt'
+    expect(() => parse(lock)).toThrow('imagem')
+    lock.packages['node_modules/three'] = structuredClone(
+      runtimeLock.packages['node_modules/three'],
+    )
+    lock.packages['node_modules/scheduler'].version = '0.0.0'
+    expect(() => parse(lock)).toThrow('scheduler')
+    lock.packages[''].dependencies.three = '0.179.0'
+    expect(() => parse(lock)).toThrow('versão')
+  })
+
+  test('the public package catalog exactly matches installed image versions', () => {
+    for (const [name, version] of Object.entries(STUDIO_PRO_REMOTE_PACKAGES)) {
+      const packages = runtimeLock.packages as Record<string, { version?: string }>
+      expect(packages[`node_modules/${name}`]?.version).toBe(version)
+    }
+  })
+
   test('aceita a árvore válida e remove arquivos de configuração não confiáveis', () => {
     const parsed = parseBuildRequest(valid)
     expect(parsed.files['src/main.tsx']).toContain('console.log')

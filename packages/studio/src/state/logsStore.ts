@@ -7,7 +7,7 @@ import {
   PREVIEW_MAX_LOG_PART_CHARS,
   PREVIEW_MAX_LOG_PARTS,
   type PreviewMessage,
-} from '#preview'
+} from '../preview/types'
 import { StudioStoresContext } from './storesContext'
 
 export const MAX_LOG_TEXT_CHARS = 16_000

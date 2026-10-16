@@ -1,4 +1,4 @@
-import { afterAll, expect, mock, test } from 'bun:test'
+import { afterAll, expect, mock, spyOn, test } from 'bun:test'
 import type { PintaHostAdapter } from '@sistemazero/pinta'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import type { ReactNode } from 'react'
@@ -265,6 +265,40 @@ test('missão de outra pessoa da equipe: a frase do servidor, "Voltar ao plano" 
     view.unmount()
   } finally {
     globalThis.fetch = fetchOriginal
+    searchParams = new URLSearchParams()
+  }
+})
+
+test('a Pro-bound art mission can send its drawing without the classic palette and opens the bound Pro game', async () => {
+  searchParams = new URLSearchParams('tarefa=tarefa-1')
+  const originalFetch = globalThis.fetch
+  globalThis.fetch = Object.assign(
+    async () =>
+      Response.json({
+        ...handoffDeArte,
+        capability: { owned: true, blockedReason: null, studioProProjectId: 'pensa-plano1' },
+        task: {
+          ...handoffDeArte.task,
+          guide: { contractVersion: 2, steps: [], criteria: [] },
+          context: { ...handoffDeArte.task.context, requiresStudioUse: true },
+        },
+      }),
+    { preconnect: originalFetch.preconnect },
+  )
+  const full = spyOn(window.location, 'assign').mockImplementation(() => {})
+  try {
+    const view = render(<PintaClient viewerId="perfil-pro" studioAvailable={false} />)
+    await waitFor(() => expect(lastAdapter?.taskSession).toBeDefined())
+    expect(lastAdapter?.studioOwned).toBe(true)
+    expect(lastAdapter?.sendToStudio).toBeFunction()
+    expect(lastAdapter?.sendGameToStudio).toBeUndefined()
+    expect(lastAdapter?.taskSession?.studioUseBlockedReason).toBeUndefined()
+    lastAdapter?.onOpenStudio?.()
+    expect(full).toHaveBeenCalledWith('/estudio/pro/pensa-plano1')
+    view.unmount()
+  } finally {
+    full.mockRestore()
+    globalThis.fetch = originalFetch
     searchParams = new URLSearchParams()
   }
 })

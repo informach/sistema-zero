@@ -32,10 +32,20 @@ export function cutMeshByPlane(
   const normal = scaled.map((v) => v / length) as Vec3
   const axisAligned =
     normal.filter((v) => v !== 0).length === 1 ? normal.findIndex((v) => v !== 0) : -1
+  let extent = 0
+  for (const point of Object.values(mesh.vertices))
+    for (const axis of [0, 1, 2] as const)
+      extent = Math.max(extent, Math.abs(point[axis] - plane.origin[axis]))
+  // A mathematically coplanar primitive vertex can carry sin/cos round-off. Classify
+  // within the dot product's floating-point error instead of creating microscopic slivers.
+  const planeTolerance = extent * Number.EPSILON * 32
   const distances = new Map(
     Object.entries(mesh.vertices).map(([id, p]) => [
       id,
-      number(dot(sub(p, plane.origin), normal), 'plane'),
+      (() => {
+        const distance = number(dot(sub(p, plane.origin), normal), 'plane')
+        return Math.abs(distance) <= planeTolerance ? 0 : distance
+      })(),
     ]),
   )
   const temporary = new Set([...Object.keys(mesh.vertices), ...Object.keys(mesh.faces)])

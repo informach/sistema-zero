@@ -142,7 +142,7 @@ describe('corte local com IndexedDB transacional', () => {
     await migrateLocalProject('old', scope)
     expect(await readValue(scope.store, projectFilesKey('old'))).toEqual(currentFiles)
     const metas = (await readAllKeys(scope.store)).filter((key) =>
-      String(key).startsWith('sz:v2:project-meta:recuperado-'),
+      String(key).startsWith('sz:v3:project-meta:recuperado-'),
     )
     expect(metas).toHaveLength(1)
     const recovery = await readValue(scope.store, metas[0]!)
@@ -150,7 +150,7 @@ describe('corte local com IndexedDB transacional', () => {
     await migrateLocalProject('old', scope)
     expect(
       (await readAllKeys(scope.store)).filter((key) =>
-        String(key).startsWith('sz:v2:project-meta:recuperado-'),
+        String(key).startsWith('sz:v3:project-meta:recuperado-'),
       ),
     ).toEqual(metas)
   })
@@ -171,7 +171,7 @@ describe('corte local com IndexedDB transacional', () => {
     await migrateLocalProject('old', scope)
     expect(
       (await readAllKeys(scope.store)).filter((key) =>
-        String(key).startsWith('sz:v2:project-meta:'),
+        String(key).startsWith('sz:v3:project-meta:'),
       ),
     ).toEqual([])
   })

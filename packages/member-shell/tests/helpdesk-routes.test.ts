@@ -7,7 +7,7 @@ const { createHelpdeskRoutes } = await import('../src/routes/helpdesk')
 
 const TICKET_ID = '2f1fb385-caad-47c2-9709-47f922584276'
 
-function routes(options?: { readonly?: boolean }) {
+function routes(options?: { readonly?: boolean; retryAfter?: string }) {
   const calls: Array<{ path: string; options: unknown }> = []
   const instance = createHelpdeskRoutes({
     // Explícito de propósito: sem ele `portal: undefined` satisfaria o toEqual e o
@@ -16,7 +16,11 @@ function routes(options?: { readonly?: boolean }) {
     gateway: {
       gatewayFetch: async (path: string, requestOptions?: unknown) => {
         calls.push({ path, options: requestOptions })
-        return { status: 200, body: { ok: true } }
+        return {
+          status: options?.retryAfter ? 429 : 200,
+          body: { ok: true },
+          retryAfter: options?.retryAfter,
+        }
       },
     },
     session: {
@@ -61,6 +65,7 @@ describe('BFF do portal de atendimento', () => {
       new Request('https://community.test/api/helpdesk/portal/tickets', {
         method: 'POST',
         body: JSON.stringify({
+          idempotencyKey: TICKET_ID,
           subject: '  Não consigo abrir a aula  ',
           body: '  A tela fica carregando.  ',
           category: 'curso_acesso',
@@ -75,6 +80,7 @@ describe('BFF do portal de atendimento', () => {
         options: {
           method: 'POST',
           body: {
+            idempotencyKey: TICKET_ID,
             subject: 'Não consigo abrir a aula',
             body: 'A tela fica carregando.',
             category: 'curso_acesso',
@@ -122,4 +128,38 @@ describe('BFF do portal de atendimento', () => {
     expect(await res.json()).toMatchObject({ error: { code: 'IMPERSONATION_READONLY' } })
     expect(calls).toEqual([])
   })
+})
+
+test('novos comandos preservam readonly e leituras validam cursores/fontes', async () => {
+  const readonly = routes({ readonly: true })
+  for (const route of [readonly.helpdeskTicketHandoff, readonly.helpdeskTicketResolve]) {
+    const result = await route.POST(
+      new Request('https://community.test/api/helpdesk', {
+        method: 'POST',
+        body: JSON.stringify({ idempotencyKey: TICKET_ID }),
+      }),
+      { params: Promise.resolve({ id: TICKET_ID }) },
+    )
+    expect(result.status).toBe(403)
+  }
+  expect(readonly.calls).toHaveLength(0)
+  const normal = routes()
+  const invalid = await normal.helpdeskTicketMessages.GET(
+    new Request('https://community.test/api/helpdesk?before=x&after=y'),
+    { params: Promise.resolve({ id: TICKET_ID }) },
+  )
+  expect(invalid.status).toBe(400)
+  const source = await normal.helpdeskTicketSource.GET(
+    new Request('https://community.test/api/helpdesk'),
+    { params: Promise.resolve({ id: TICKET_ID, citationId: TICKET_ID }) },
+  )
+  expect(source.status).toBe(200)
+  expect(normal.calls[0]?.path).toBe(`/helpdesk/portal/tickets/${TICKET_ID}/sources/${TICKET_ID}`)
+})
+
+test('preserva Retry-After para o polling respeitar o gateway', async () => {
+  const { helpdeskTickets } = routes({ retryAfter: '35' })
+  const result = await helpdeskTickets.GET(new Request('https://community.test/api/helpdesk'))
+  expect(result.status).toBe(429)
+  expect(result.headers.get('retry-after')).toBe('35')
 })

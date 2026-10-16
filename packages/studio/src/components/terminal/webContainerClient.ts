@@ -64,11 +64,14 @@ export function currentFsOwner(): symbol | null {
 // anterior). O sincronizador publica aqui quando o mount conclui/é invalidado, e
 // o Terminal pro espera por ele antes de spawnar o shell.
 let proFsMountedProjectId: string | null = null
+let proFsMountedScope: object | undefined
 const proFsMountWaiters = new Set<() => void>()
 
 /** Chamado pelo sincronizador único quando o FS pro está montado para `projectId`. */
-export function setProFsMounted(projectId: string | null): void {
+export function setProFsMounted(projectId: string | null, scope?: object): void {
+  if (projectId === null && scope && proFsMountedScope !== scope) return
   proFsMountedProjectId = projectId
+  proFsMountedScope = projectId === null ? undefined : scope
   if (projectId !== null) {
     const waiters = [...proFsMountWaiters]
     proFsMountWaiters.clear()
@@ -77,8 +80,8 @@ export function setProFsMounted(projectId: string | null): void {
 }
 
 /** Projeto cujo FS pro está montado, ou `null` (não montado / invalidado). */
-export function getProFsMountedProjectId(): string | null {
-  return proFsMountedProjectId
+export function getProFsMountedProjectId(scope?: object): string | null {
+  return scope && proFsMountedScope !== scope ? null : proFsMountedProjectId
 }
 
 /** Tempo padrão de espera pelo sinal de mount do FS pro antes de desistir. */
@@ -100,14 +103,15 @@ export const PRO_FS_MOUNT_TIMEOUT_MS = 30_000
 export function waitForProFsMounted(
   projectId: string,
   timeoutMs: number = PRO_FS_MOUNT_TIMEOUT_MS,
+  scope?: object,
 ): Promise<boolean> {
-  if (proFsMountedProjectId === projectId) return Promise.resolve(true)
+  if (getProFsMountedProjectId(scope) === projectId) return Promise.resolve(true)
   return new Promise<boolean>((resolve) => {
     let settled = false
     let timer: ReturnType<typeof setTimeout> | null = null
     const check = () => {
       if (settled) return
-      if (proFsMountedProjectId === projectId) {
+      if (getProFsMountedProjectId(scope) === projectId) {
         settled = true
         if (timer !== null) clearTimeout(timer)
         proFsMountWaiters.delete(check)
@@ -132,15 +136,27 @@ export function waitForProFsMounted(
 // evitando que o terminal espere para sempre. Continua sendo o provider quem
 // monta (escritor único); o Terminal só pede.
 let proMountTrigger: (() => void) | null = null
+const scopedProMountTriggers = new WeakMap<object, () => void>()
 
 /** O provider pro registra aqui seu `ensureMounted` (e desregistra ao desmontar). */
-export function registerProMountTrigger(trigger: (() => void) | null): void {
+export function registerProMountTrigger(trigger: (() => void) | null, scope?: object): () => void {
+  if (scope) {
+    if (trigger) scopedProMountTriggers.set(scope, trigger)
+    else scopedProMountTriggers.delete(scope)
+    return () => {
+      if (scopedProMountTriggers.get(scope) === trigger) scopedProMountTriggers.delete(scope)
+    }
+  }
   proMountTrigger = trigger
+  return () => {
+    if (proMountTrigger === trigger) proMountTrigger = null
+  }
 }
 
 /** Pede ao escritor único que monte o FS pro (no-op se não há provider montado). */
-export function requestProFsMount(): void {
-  proMountTrigger?.()
+export function requestProFsMount(scope?: object): void {
+  if (scope) scopedProMountTriggers.get(scope)?.()
+  else proMountTrigger?.()
 }
 
 /**
@@ -225,10 +241,10 @@ export async function resetWebContainerFs(
   const keepNodeModules =
     templateId === undefined || (templateId !== null && templateId === mountedTemplateId)
   const keepSet = new Set(keepNodeModules ? ['node_modules'] : [])
-  const entries = await wc.fs.readdir('/', { withFileTypes: true })
+  const entries = await wc.fs.readdir('.', { withFileTypes: true })
   await Promise.all(
     entries
       .filter((entry) => !keepSet.has(entry.name))
-      .map((entry) => wc.fs.rm(`/${entry.name}`, { recursive: true, force: true })),
+      .map((entry) => wc.fs.rm(entry.name, { recursive: true, force: true })),
   )
 }

@@ -58,6 +58,8 @@ export function SceneHierarchy({
   onSelect,
   shapeOf,
   onFlag,
+  poseCounts,
+  paintColors,
 }: {
   index: SceneIndex<ModelSceneNode>
   selected: readonly string[]
@@ -65,6 +67,8 @@ export function SceneHierarchy({
   /** A forma de cada peça, que só a oficina sabe (a geometria mora fora do grafo). */
   shapeOf?(node: ModelSceneNode): SceneHierarchyShape
   onFlag?(id: string, flag: 'hidden' | 'locked', value: boolean): void
+  poseCounts?: ReadonlyMap<string, number>
+  paintColors?: ReadonlyMap<string, readonly string[]>
 }) {
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(() => new Set())
   const prefix = useId()
@@ -132,10 +136,30 @@ export function SceneHierarchy({
                   <span className={`min-w-0 flex-1 truncate ${node.hidden ? 'opacity-60' : ''}`}>
                     {node.name}
                   </span>
-                  {!onFlag && node.locked && (
+                  {poseCounts && (
+                    <span className="shrink-0 text-[11px] text-mld-muted">
+                      {poseCounts.get(id) ?? 0} poses
+                    </span>
+                  )}
+                  {paintColors?.get(id)?.length ? (
+                    <span
+                      role="img"
+                      aria-label={`Cores de ${node.name}: ${paintColors.get(id)!.join(', ')}`}
+                      className="flex shrink-0 -space-x-1"
+                    >
+                      {paintColors.get(id)!.map((color) => (
+                        <span
+                          key={color}
+                          className="size-3 rounded-full border border-mld-surface"
+                          style={{ background: color }}
+                        />
+                      ))}
+                    </span>
+                  ) : null}
+                  {!onFlag && !poseCounts && node.locked && (
                     <Lock aria-hidden="true" className="size-4 shrink-0 text-mld-muted" />
                   )}
-                  {!onFlag && node.hidden && (
+                  {!onFlag && !poseCounts && node.hidden && (
                     <EyeOff aria-hidden="true" className="size-4 shrink-0 text-mld-muted" />
                   )}
                 </button>

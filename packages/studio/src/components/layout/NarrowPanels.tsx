@@ -29,6 +29,8 @@ export interface NarrowPanelsProps {
   editorPanes: NarrowEditorPane[]
   /** Pré-visualização; quando presente, vira a aba "Pré-visualização". */
   preview?: ReactNode
+  /** Explicit request to reveal the existing preview panel without remounting editors. */
+  previewRequest?: number
   /**
    * Árvore/explorador de arquivos. Quando presente, mostra um botão "Arquivos"
    * que abre uma gaveta sobreposta. Recebe `close` para fechar a gaveta (e focar
@@ -40,7 +42,7 @@ export interface NarrowPanelsProps {
 /**
  * Layout NARROW: em vez dos painéis lado a lado (que não cabem abaixo de
  * `STUDIO_NARROW_MAX_PX`), tudo vira UMA tira de abas — um painel por vez. As
- * abas são: editores do modo → Pré-visualização → Console/Terminal/IA (as que o
+ * abas são: editores do modo → Pré-visualização → Console/Terminal (as que o
  * contexto e as preferências liberam, via `useVisibleBottomTabs`). O explorador
  * de arquivos (modos Código) vira uma GAVETA sobreposta, acionada pelo botão
  * "Arquivos".
@@ -54,6 +56,7 @@ export interface NarrowPanelsProps {
 export function NarrowPanels({
   editorPanes,
   preview,
+  previewRequest = 0,
   filesDrawer,
 }: NarrowPanelsProps): JSX.Element {
   const t = useT()
@@ -71,6 +74,13 @@ export function NarrowPanels({
   ]
 
   const [active, setActive] = useState(firstEditorId)
+  const hasPreview = Boolean(preview)
+  useEffect(() => {
+    if (previewRequest > 0 && hasPreview) {
+      setActive('preview')
+      setDrawerOpen(false)
+    }
+  }, [previewRequest, hasPreview])
   // Aba EFETIVA: se a `active` escolhida some (o aluno escondeu aquele painel ou
   // mudou o contexto), cai para a primeira aba — derivado no render, sem efeito
   // nem estado intermediário. Reexibir o painel devolve o foco a ele (mostrar um

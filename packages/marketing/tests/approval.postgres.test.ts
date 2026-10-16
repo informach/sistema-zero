@@ -36,7 +36,7 @@ suite('aprovação PostgreSQL: edição exata e imutável', () => {
       fixtureDirectory,
     )
     approval = new ApprovalService(new DrizzleApprovalRepository(connection.db))
-  })
+  }, 30000) // A fresh database applies the entire migration history before the fixtures.
   afterAll(async () => connection?.close())
   async function fixture() {
     const projectId = randomUUID()

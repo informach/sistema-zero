@@ -1,5 +1,16 @@
 # Copy das páginas da Comunidade dos Criadores
 
+**Atualização de 16/10/2026.** A copy das seis páginas foi reescrita pela [proposta de melhoria](proposta-melhoria-2026-10-16/README.md), aprovada e implementada no funil (`packages/funnel/src/funnels/comunidade-dos-criadores/oferta/`). Os arquivos `pagina-*.md` desta pasta passaram a ser o ESPELHO gerado da copy tipada: para mudar uma frase, edite o código e rode `bun scripts/espelho-copy-comunidade.ts` dentro de `packages/funnel` (o teste `comunidade-offer-copy` reprova espelho desatualizado). As versões anteriores, inclusive a proposta da página F, estão em [historico/2026-10-16-antes-da-proposta](historico/2026-10-16-antes-da-proposta/). O texto abaixo descreve as versões de 01/10 e fica como registro; números como "40 respostas" e "50 respostas" valiam para elas (hoje são 26 comuns, mais as próprias de cada página).
+
+| Página | Espelho atual |
+| --- | --- |
+| A | [pagina-a-tempo-de-tela.md](pagina-a-tempo-de-tela.md) |
+| B | [pagina-b-criacao-de-jogos.md](pagina-b-criacao-de-jogos.md) |
+| C | [pagina-c-expressao-visual.md](pagina-c-expressao-visual.md) |
+| D | [pagina-d-formacao-tecnologica.md](pagina-d-formacao-tecnologica.md) |
+| E | [pagina-e-continuidade.md](pagina-e-continuidade.md) |
+| F | [pagina-f-habilidades-escolares.md](pagina-f-habilidades-escolares.md) |
+
 Data: 01/10/2026. Versão: revisão integral 2, com argumentação desenvolvida no corpo das quatro páginas, dúvidas separadas e demonstrações alinhadas. Referência editorial; a implementação local posterior está registrada no [relatório de implementação](../implementacao-paginas.md). Os arquivos abaixo contêm páginas completas e independentes, com texto dirigido à família.
 
 ## Páginas para leitura
@@ -18,9 +29,9 @@ As quatro páginas por motivação têm argumento central, demonstração descri
 
 ## Quiz de orientação para tráfego frio
 
-A [copy das perguntas](quiz-comunidade.md) e os [quatro resultados com variações](resultados-quiz.md) foram implementados localmente no quiz da Comunidade; ver [registro técnico e verificações](../quiz/implementacao.md). A promessa é ajudar a família a encontrar um ponto de partida para aprender criando. A identificação da prioridade comercial acontece pela mesma conversa, separando o interesse da criança das necessidades do responsável.
+**Quiz v5 (16/10/2026):** a [copy das perguntas](quiz-comunidade.md) e a [copy dos resultados](resultados-quiz.md) agora são ESPELHOS gerados do código (`bun scripts/espelho-quiz-comunidade.ts`, em packages/funnel). Perguntas em SPIN, cinco perfis (com a escola) e o resultado como ponte até a oferta; ver a [revisão e proposta da v5](../quiz/revisao-copy-2026-10-16.md). O texto a seguir descreve a v4, guardada em [historico/2026-10-16-quiz-v4](historico/2026-10-16-quiz-v4/). Na v4, a copy das perguntas e os quatro resultados com variações foram implementados localmente no quiz da Comunidade; ver [registro técnico e verificações](../quiz/implementacao.md). A promessa é ajudar a família a encontrar um ponto de partida para aprender criando. A identificação da prioridade comercial acontece pela mesma conversa, separando o interesse da criança das necessidades do responsável.
 
-Os resultados são uma biblioteca condicional: cada família recebe o texto pertinente às respostas e o botão da oferta correspondente. Na versão 4, o quiz fala com quem não conhece o produto: entrega a orientação e apresenta a Comunidade depois. Mantém oito perguntas principais e até três adicionais, interesses combinados e atividades com papel antes da compra. Empate, procura aberta e objetivo fora das opções têm textos próprios, sem inventar um perfil dominante. Não publicar todos os complementos como uma página única. Consulte a [visão geral](../quiz/README.md), a [pesquisa](../quiz/pesquisa-e-estrategia.md), a [lógica e validação](../quiz/logica-e-validacao.md) e a [revisão para tráfego frio](../quiz/revisao-trafego-frio.md). A [revisão da argumentação e das perguntas](../quiz/revisao-argumentacao-personalizada.md) explica os ajustes mais recentes, e os [exemplos completos da v4](../quiz/exemplos-de-resultado-v4.md) permitem ler os resultados montados. O quiz é opcional e não altera o quiz do Desafio.
+Os resultados são uma biblioteca condicional: cada família recebe o texto pertinente às respostas e o botão da oferta correspondente. Na versão 4, o quiz fala com quem não conhece o produto: entrega a orientação e apresenta a Comunidade depois. Mantém oito perguntas principais e até três adicionais, interesses combinados e atividades com papel antes da compra. Empate, procura aberta e objetivo fora das opções têm textos próprios, sem inventar um perfil dominante. Não publicar todos os complementos como uma página única. Consulte a [visão geral](../quiz/README.md), a [pesquisa](../quiz/pesquisa-e-estrategia.md), a [lógica e validação](../quiz/logica-e-validacao.md) e a [revisão para tráfego frio](../quiz/revisao-trafego-frio.md). A [revisão da argumentação e das perguntas](../quiz/revisao-argumentacao-personalizada.md) explica os ajustes mais recentes, e os [exemplos completos da v4](historico/2026-10-16-quiz-v4/exemplos-de-resultado-v4.md) permitem ler os resultados montados. O quiz é opcional e não altera o quiz do Desafio.
 
 ## Página de continuidade
 

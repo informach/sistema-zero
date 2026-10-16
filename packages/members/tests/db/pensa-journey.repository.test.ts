@@ -5,6 +5,7 @@ import { eq } from 'drizzle-orm'
 import postgres from 'postgres'
 import { PensaJourneyService } from '../../src/application/pensa/journey.service'
 import { UpdatePensaTaskProgressService } from '../../src/application/pensa/update-task-progress.service'
+import { PensaNotOwnerError } from '../../src/domain/pensa/pensa.errors'
 import { DrizzleAiUsageRepository } from '../../src/infrastructure/persistence/drizzle/ai-usage.repository'
 import { DrizzleCreationCleanupRepository } from '../../src/infrastructure/persistence/drizzle/creation-cleanup.repository'
 import {
@@ -163,6 +164,297 @@ describe.skipIf(!available)('Pensa v2: concorrência e publicação no Postgres'
       ),
     ).toBe('added')
   }
+
+  test('renomear: só a dona, e a proposta seguinte não troca o nome que a criança deu (15/10/2026)', async () => {
+    const owner = actor(),
+      member = actor()
+    const project = await repo.create(owner, randomUUID(), now)
+    const id = project.project.id
+    await join(id, owner, member)
+    // Quem entrou não renomeia.
+    let refused: unknown = null
+    try {
+      await repo.rename(member, id, 'Nome da colega', now)
+    } catch (cause) {
+      refused = cause
+    }
+    expect(refused).toBeInstanceOf(PensaNotOwnerError)
+    // Sem nome dado pela criança, a primeira proposta dá o nome.
+    const publishProposal = async (title: string) => {
+      const view = await repo.get(owner, id)
+      const op = randomUUID()
+      await repo.start(
+        owner,
+        id,
+        {
+          id: op,
+          expectedRevision: view.journey.revision,
+          message: 'Gato',
+          kind: 'planning',
+          context: {},
+        },
+        now,
+      )
+      // A operação que espera a escolha é retomada pelo pedido seguinte: vale o id dela.
+      const opened = (await repo.get(owner, id)).operation?.id ?? op
+      let lease = randomUUID()
+      await repo.claim(owner, id, opened, lease, now)
+      await repo.publish(
+        owner,
+        id,
+        opened,
+        lease,
+        { type: 'step', step: 'review', output: {} },
+        now,
+      )
+      lease = randomUUID()
+      await repo.claim(owner, id, opened, lease, now)
+      await repo.publish(
+        owner,
+        id,
+        opened,
+        lease,
+        { type: 'proposal', proposal: { ...proposal(owner), title } },
+        now,
+      )
+    }
+    await publishProposal('Gato na lua')
+    expect((await repo.get(owner, id)).project.name).toBe('Gato na lua')
+    // Uma proposta nova troca o nome que veio da proposta anterior.
+    await publishProposal('Gato nas estrelas')
+    expect((await repo.get(owner, id)).project.name).toBe('Gato nas estrelas')
+    // Renomeado pela criança, o nome é dela e a próxima proposta não o troca.
+    const renamed = await repo.rename(owner, id, '  Meu   gatinho  ', now)
+    expect(renamed.project.name).toBe('Meu gatinho')
+    await publishProposal('Gato espacial')
+    expect((await repo.get(owner, id)).project.name).toBe('Meu gatinho')
+  })
+
+  test('pergunta com escolhas: guarda as respostas, conta o teto e dá um nome provisório que a proposta troca (15/10/2026)', async () => {
+    const who = actor()
+    const id = (await repo.create(who, randomUUID(), now)).project.id
+    const op = randomUUID()
+    await repo.start(
+      who,
+      id,
+      {
+        id: op,
+        expectedRevision: 0,
+        message: 'Quero um jogo de dragão',
+        kind: 'planning',
+        context: {},
+      },
+      now,
+    )
+    let lease = randomUUID()
+    await repo.claim(who, id, op, lease, now)
+    const choices = {
+      about: 'action' as const,
+      options: [
+        { label: 'Voa desviando das pedras', description: 'O jogo é não bater em nada.' },
+        { label: 'Pega ovos pelo caminho', description: 'Cada ovo vale um ponto.' },
+      ],
+    }
+    await repo.publish(
+      who,
+      id,
+      op,
+      lease,
+      {
+        type: 'question',
+        text: 'O que o seu dragão faz?',
+        choices,
+        workingTitle: 'O voo do dragão',
+      },
+      now,
+    )
+    let view = await repo.get(who, id)
+    expect(view.journey.messages.at(-1)).toMatchObject({ role: 'assistant', choices })
+    expect(view.journey.questionsAsked).toBe(1)
+    // A lista deixa de mostrar "Meu novo jogo" antes mesmo da proposta.
+    expect(view.project.name).toBe('O voo do dragão')
+    await repo.start(
+      who,
+      id,
+      {
+        id: randomUUID(),
+        expectedRevision: view.journey.revision,
+        message: 'Pega ovos pelo caminho',
+        kind: 'planning',
+        context: {},
+      },
+      now,
+    )
+    lease = randomUUID()
+    await repo.claim(who, id, op, lease, now)
+    await repo.publish(who, id, op, lease, { type: 'step', step: 'review', output: {} }, now)
+    lease = randomUUID()
+    await repo.claim(who, id, op, lease, now)
+    await repo.publish(
+      who,
+      id,
+      op,
+      lease,
+      { type: 'proposal', proposal: { ...proposal(who), title: 'Dragão dos ovos' } },
+      now,
+    )
+    view = await repo.get(who, id)
+    // O nome provisório era do sistema: a proposta o troca, e o teto volta a zero.
+    expect(view.project.name).toBe('Dragão dos ovos')
+    expect(view.journey.questionsAsked).toBe(0)
+    expect(view.journey.workingTitle).toBeNull()
+    // "Quero mudar uma coisa" virou pergunta: com uma proposta, o nome provisório dela não
+    // renomeia o jogo (antes ele virava "A nave veloz" com o plano ainda sendo o dos ovos).
+    await repo.start(
+      who,
+      id,
+      {
+        id: randomUUID(),
+        expectedRevision: view.journey.revision,
+        message: 'Quero que seja uma nave',
+        kind: 'planning',
+        context: {},
+      },
+      now,
+    )
+    lease = randomUUID()
+    await repo.claim(who, id, op, lease, now)
+    await repo.publish(
+      who,
+      id,
+      op,
+      lease,
+      { type: 'question', text: 'A nave atira?', choices, workingTitle: 'A nave veloz' },
+      now,
+    )
+    view = await repo.get(who, id)
+    expect(view.project.name).toBe('Dragão dos ovos')
+    expect(view.journey.questionsAsked).toBe(1)
+    expect(view.journey.workingTitle ?? null).toBeNull()
+  })
+
+  test('cota por rodada: várias mudanças na proposta não esgotam o guia (15/10/2026)', async () => {
+    const who = actor()
+    const id = (await repo.create(who, randomUUID(), now)).project.id
+    const op = randomUUID()
+    let revision = 0
+    const round = async (message: string) => {
+      await repo.start(
+        who,
+        id,
+        { id: randomUUID(), expectedRevision: revision, message, kind: 'planning', context: {} },
+        now,
+      )
+      let lease = randomUUID()
+      expect(await repo.claim(who, id, op, lease, now)).not.toBeNull()
+      await repo.publish(who, id, op, lease, { type: 'step', step: 'review', output: {} }, now)
+      lease = randomUUID()
+      expect(await repo.claim(who, id, op, lease, now)).not.toBeNull()
+      await repo.publish(who, id, op, lease, { type: 'proposal', proposal: proposal(who) }, now)
+      revision = (await repo.get(who, id)).journey.revision
+    }
+    // A primeira mensagem abre o pedido com o id dele; as outras o retomam.
+    await repo.start(
+      who,
+      id,
+      { id: op, expectedRevision: 0, message: 'Gato', kind: 'planning', context: {} },
+      now,
+    )
+    let lease = randomUUID()
+    await repo.claim(who, id, op, lease, now)
+    await repo.publish(who, id, op, lease, { type: 'step', step: 'review', output: {} }, now)
+    lease = randomUUID()
+    await repo.claim(who, id, op, lease, now)
+    const card = proposal(who)
+    await repo.publish(who, id, op, lease, { type: 'proposal', proposal: card }, now)
+    revision = (await repo.get(who, id)).journey.revision
+    // Cinco "Quero mudar uma coisa": 12 chamadas no pedido (o teto antigo era 10 no total).
+    for (const message of ['Mais rápido', 'Com pedras', 'De noite', 'Com moedas', 'Quero desenhar'])
+      await round(message)
+    const [stored] = await conn.sql<Array<{ calls: number }>>`
+      select calls from members.pensa_operations where id = ${op}`
+    expect(stored?.calls).toBe(12)
+    // Mesmo com a conversa no teto do pedido e no fim da cota da rodada, escolher o começo abre a
+    // rodada dos guias, e o teto do pedido não barra os guias.
+    await conn.sql`update members.pensa_operations
+      set calls = 24, input = jsonb_set(input, '{roundStartCalls}', '18'::jsonb) where id = ${op}`
+    let view = await repo.get(who, id)
+    await repo.command(
+      who,
+      id,
+      view.journey.revision,
+      { type: 'accept', proposalId: view.journey.proposal!.id },
+      now,
+    )
+    lease = randomUUID()
+    expect(await repo.claim(who, id, op, lease, now)).not.toBeNull()
+    // A rede caiu no guia: o "Tentar de novo" vale com o pedido acima das 10 de antes.
+    await repo.fail(who, id, op, lease, 'tente de novo', now)
+    view = await repo.get(who, id)
+    await repo.command(who, id, view.journey.revision, { type: 'retry' }, now)
+    lease = randomUUID()
+    expect(await repo.claim(who, id, op, lease, now)).not.toBeNull()
+    const task = studioTask()
+    await repo.publish(who, id, op, lease, { type: 'plan', tasks: [task] }, now)
+    expect((await repo.get(who, id)).journey.missionIds).toEqual([task.id])
+  }, 30000)
+
+  test('cota por rodada: a conversa para no teto do pedido, e o pedido sem a marca não fica nas 10 de antes', async () => {
+    const who = actor()
+    const id = (await repo.create(who, randomUUID(), now)).project.id
+    const op = randomUUID()
+    await repo.start(
+      who,
+      id,
+      { id: op, expectedRevision: 0, message: 'Gato', kind: 'planning', context: {} },
+      now,
+    )
+    // Pedido que começou antes da marca da rodada: sem rodada para contar, vale só o teto.
+    await conn.sql`update members.pensa_operations set calls = 10, input = input - 'roundStartCalls' where id = ${op}`
+    const lease = randomUUID()
+    expect(await repo.claim(who, id, op, lease, now)).not.toBeNull()
+    await repo.fail(who, id, op, lease, 'tente de novo', now)
+    // Com a marca: a rodada nova tem cota, mas a conversa para em 24 no pedido.
+    await conn.sql`update members.pensa_operations
+      set status = 'queued', attempts = 0, error = null, calls = 24,
+        input = jsonb_set(input, '{roundStartCalls}', '20'::jsonb)
+      where id = ${op}`
+    expect(await repo.claim(who, id, op, randomUUID(), now)).toBeNull()
+    const [row] = await conn.sql<Array<{ status: string }>>`
+      select status from members.pensa_operations where id = ${op}`
+    expect(row?.status).toBe('failed')
+  })
+
+  test('o nome provisório não troca um nome que a criança já deu', async () => {
+    const who = actor()
+    const id = (await repo.create(who, randomUUID(), now)).project.id
+    await repo.rename(who, id, 'Meu dragão', now)
+    const op = randomUUID()
+    const view = await repo.get(who, id)
+    await repo.start(
+      who,
+      id,
+      {
+        id: op,
+        expectedRevision: view.journey.revision,
+        message: 'Dragão',
+        kind: 'planning',
+        context: {},
+      },
+      now,
+    )
+    const lease = randomUUID()
+    await repo.claim(who, id, op, lease, now)
+    await repo.publish(
+      who,
+      id,
+      op,
+      lease,
+      { type: 'question', text: 'O que ele faz?', workingTitle: 'O voo do dragão' },
+      now,
+    )
+    expect((await repo.get(who, id)).project.name).toBe('Meu dragão')
+  })
 
   test('uma colega retoma e publica a ajuda usando a reserva e o teto de quem pediu', async () => {
     const owner = actor(),
@@ -609,19 +901,16 @@ describe.skipIf(!available)('Pensa v2: concorrência e publicação no Postgres'
     })
     return { who, view: await repo.get(who, view.project.id), taskId, itemId }
   }
-  test('cópia só fica pronta após commit; restauração troca criação, ciclo, guia e progresso juntos', async () => {
-    const { who, view: first, taskId, itemId } = await playable()
-    const id = first.project.id,
-      checkpointId = randomUUID()
-    const prepared = await repo.protect(
-      who,
-      id,
-      { type: 'prepare', id: checkpointId, expectedRevision: first.journey.revision },
-      now,
-    )
-    expect('files' in prepared && prepared.files.length).toBe(2)
-    expect((await repo.get(who, id)).journey.checkpoint).toBeNull()
-    await repo.protect(who, id, { type: 'commit', id: checkpointId }, now)
+  test('planning reads the authoring mode from the programmer committed game, ignoring pending changes and tombstones', async () => {
+    const { who, view, itemId } = await playable()
+    expect(view.studioAuthoring).toBe('blocks')
+    await conn.sql`update members.creations set kind = 'pro', pending_kind = 'classic' where user_id = ${who.profileId} and item_id = ${itemId}`
+    expect((await repo.get(who, view.project.id)).studioAuthoring).toBe('code')
+    await conn.sql`update members.creations set deleted_at = ${now.toISOString()} where user_id = ${who.profileId} and item_id = ${itemId}`
+    expect((await repo.get(who, view.project.id)).studioAuthoring).toBe('blocks')
+  })
+  /** Testa a versão guardada, conclui e começa a próxima (o `increment`). */
+  async function nextVersion(who: PensaJourneyActor, id: string, itemId: string) {
     let view = await repo.get(who, id)
     view = await repo.command(who, id, view.journey.revision, { type: 'observe' }, now)
     view = await repo.command(
@@ -644,7 +933,22 @@ describe.skipIf(!available)('Pensa v2: concorrência e publicação no Postgres'
     )
     view = await repo.command(who, id, view.journey.revision, { type: 'close', reason: 'met' }, now)
     await repo.protect(who, id, { type: 'increment', expectedRevision: view.journey.revision }, now)
-    view = await repo.get(who, id)
+    return repo.get(who, id)
+  }
+  test('cópia só fica pronta após commit; restauração troca criação, ciclo, guia e progresso juntos', async () => {
+    const { who, view: first, taskId, itemId } = await playable()
+    const id = first.project.id,
+      checkpointId = randomUUID()
+    const prepared = await repo.protect(
+      who,
+      id,
+      { type: 'prepare', id: checkpointId, expectedRevision: first.journey.revision },
+      now,
+    )
+    expect('files' in prepared && prepared.files.length).toBe(2)
+    expect((await repo.get(who, id)).journey.checkpoint).toBeNull()
+    await repo.protect(who, id, { type: 'commit', id: checkpointId }, now)
+    let view = await nextVersion(who, id, itemId)
     expect(view.cycles).toHaveLength(2)
     await conn.db
       .update(creations)
@@ -685,6 +989,46 @@ describe.skipIf(!available)('Pensa v2: concorrência e publicação no Postgres'
     expect(game?.revision).toBe(3)
     expect(task?.outputRef).toMatchObject({ saveRevision: '3' })
     expect(task?.revision).toBe(2)
+  })
+  test('versão nova: a proposta nova não apaga o jogo construído (15/10/2026)', async () => {
+    const { who, view: first, itemId } = await playable()
+    const id = first.project.id,
+      checkpointId = randomUUID()
+    await repo.protect(
+      who,
+      id,
+      { type: 'prepare', id: checkpointId, expectedRevision: first.journey.revision },
+      now,
+    )
+    await repo.protect(who, id, { type: 'commit', id: checkpointId }, now)
+    let view = await nextVersion(who, id, itemId)
+    const built = { proposal: { title: 'Gato na lua' }, extensionIds: ['game-2d'] }
+    expect(view.journey.built).toMatchObject(built)
+    // Só o que diz o que o jogo tem: o retrato dos recursos não fica duas vezes na jornada.
+    expect(view.journey.built?.proposal).not.toHaveProperty('capabilities')
+    const op = randomUUID()
+    await repo.start(
+      who,
+      id,
+      {
+        id: op,
+        expectedRevision: view.journey.revision,
+        message: 'Um chapéu',
+        kind: 'planning',
+        context: {},
+      },
+      now,
+    )
+    let lease = randomUUID()
+    await repo.claim(who, id, op, lease, now)
+    await repo.publish(who, id, op, lease, { type: 'step', step: 'review', output: {} }, now)
+    lease = randomUUID()
+    await repo.claim(who, id, op, lease, now)
+    const next = { ...proposal(who), title: 'Gato de chapéu' }
+    await repo.publish(who, id, op, lease, { type: 'proposal', proposal: next }, now)
+    view = await repo.get(who, id)
+    expect(view.journey.proposal?.title).toBe('Gato de chapéu')
+    expect(view.journey.built).toMatchObject(built)
   })
   test('autosave entre cópia e commit impede proteção ou restauração obsoleta', async () => {
     const { who, view, itemId } = await playable(),

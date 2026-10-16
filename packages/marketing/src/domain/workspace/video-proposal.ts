@@ -9,6 +9,7 @@ import {
   videoAssetIds,
 } from '@sistemazero/marketing-contracts'
 import { validateCompositionResult } from './composition-result'
+import { validateDemonstrationSources } from './demonstration'
 import { WorkspaceError } from './workspace-error'
 
 export async function videoBatch(run: ExecutionRun, index: number, produced: AssetManifest[] = []) {
@@ -33,6 +34,12 @@ export async function videoBatch(run: ExecutionRun, index: number, produced: Ass
     throw new WorkspaceError('PROTECTED_CONTENT', 'Este vídeo está protegido')
   const original = source.document.timeline,
     next = variant.timeline
+  validateDemonstrationSources(
+    next,
+    run.request.projectId,
+    [...run.context.evidence, ...(run.context.basis ?? [])],
+    run.context.assets ?? [],
+  )
   if (run.request.videoTarget) {
     const { clipId, part } = run.request.videoTarget
     const selected = next.clips.find((clip) => clip.id === clipId)
@@ -46,12 +53,26 @@ export async function videoBatch(run: ExecutionRun, index: number, produced: Ass
       throw new WorkspaceError('INVALID_RESULT', 'O pedido só permite alterar a cena selecionada')
     const before = original.clips.find((clip) => clip.id === clipId)
     if (!before) throw new WorkspaceError('INVALID_RESULT', 'A cena de origem não existe')
-    const excluded =
-      part === 'text'
+    const excluded = before.demonstration
+      ? new Set(part === 'text' ? [] : ['fadeInFrames', 'fadeOutFrames'])
+      : part === 'text'
         ? new Set(['text', 'listItems'])
         : new Set(['effect', 'counter', 'listItems', 'fadeInFrames', 'fadeOutFrames'])
-    const retain = (clip: typeof selected) =>
-      Object.fromEntries(Object.entries(clip).filter(([key]) => !excluded.has(key)))
+    const retain = (clip: typeof selected) => ({
+      ...Object.fromEntries(
+        Object.entries(clip).filter(([key]) => !excluded.has(key) && key !== 'demonstration'),
+      ),
+      demonstration: clip.demonstration
+        ? {
+            ...clip.demonstration,
+            ...(part === 'text' ? { headline: '' } : {}),
+            sources: clip.demonstration.sources.map((source) => ({
+              ...source,
+              ...(part === 'text' ? { label: '' } : { focus: null }),
+            })),
+          }
+        : null,
+    })
     if (
       run.request.capability !== 'composition' &&
       part !== 'scene' &&

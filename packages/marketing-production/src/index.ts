@@ -10,4 +10,4 @@ export {
 } from './story'
 export { StoryComposition } from './story-composition'
 export { TimelineComposition } from './video/composition'
-export { defaultTimeline, timelinePropsSchema, type TimelineProps } from './video/props'
+export { defaultTimeline, type TimelineProps, timelinePropsSchema } from './video/props'

@@ -705,6 +705,7 @@ const adapter: PensaHostAdapter = {
   capabilities: { pintaOwned: true, studioOwned: true, moldaOwned: true },
   onOpenTask: ({ taskId, destination }) =>
     console.log('[playground] abrir o cartão', { taskId, destination }),
+  onOpenGame: ({ projectId }) => console.log('[playground] abrir o jogo', { projectId }),
 }
 
 // A Bia mexe no Runo: 40 s depois, o `updatedAt` muda e a faixa "alguém mexeu" aparece.

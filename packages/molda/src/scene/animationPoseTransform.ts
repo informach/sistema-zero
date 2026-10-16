@@ -21,6 +21,7 @@ import {
   prepareSceneAnimation,
   type SceneAnimationPose,
   sampleSceneAnimationTrack,
+  sceneAnimationPivotOffset,
 } from './sampleAnimation'
 import { number, requireScene } from './validation'
 
@@ -50,6 +51,7 @@ export function prepareSceneAnimationPoseTransform(
   }
   const values = new Map<string, SceneAnimationLocalPose>()
   const effective = new Map<string, SceneAnimationLocalPose>()
+  const rawTranslations = new Map<string, Vec3>()
   const locals = new Map<string, AffineMatrix>()
   const bases = new Map<string, AffineMatrix>()
   const coordinates = new Map<string, { matrix: AffineMatrix; inverse: AffineMatrix }>()
@@ -81,6 +83,10 @@ export function prepareSceneAnimationPoseTransform(
         authored[track.channel] = [...(exact?.value ?? sampled)] as Vec3
       }
     }
+    rawTranslations.set(id, [...authored.translation])
+    const correction = sceneAnimationPivotOffset(node, clip.space, ownTracks ?? [], time, rendered)
+    rendered.translation = rendered.translation.map((n, axis) => n + correction[axis]!) as Vec3
+    authored.translation = authored.translation.map((n, axis) => n + correction[axis]!) as Vec3
     bases.set(id, base)
     effective.set(id, rendered)
     const animated = ownTracks ? composeTransform({ kind: 'trs', ...rendered }) : null
@@ -128,18 +134,75 @@ export function prepareSceneAnimationPoseTransform(
     let addedTracks = 0,
       addedKeys = 0
     const keys: SceneAnimationKeyInput[] = []
-    for (const [nodeId, value] of frame.values)
-      for (const channel of changed(nodeId, value)) {
+    for (const [nodeId, value] of frame.values) {
+      const channels = changed(nodeId, value)
+      if (!channels.length) continue
+      const ownTracks = tracks.get(nodeId) ?? []
+      let proposedTracks = ownTracks
+      if (channels.includes('scale')) {
+        const previous = ownTracks.find((track) => track.channel === 'scale')
+        const keys = [
+          ...(previous?.channel === 'scale'
+            ? previous.keys
+            : time > 0
+              ? [{ time: 0, value: values.get(nodeId)!.scale, interpolation: 'smooth' as const }]
+              : []),
+        ].filter((key) => key.time !== time)
+        keys.push({ time, value: value.scale, interpolation: 'smooth' })
+        keys.sort((a, b) => a.time - b.time)
+        proposedTracks = [
+          ...ownTracks.filter((track) => track.channel !== 'scale'),
+          { nodeId, channel: 'scale', keys },
+        ]
+      }
+      const correction = channels.includes('rotation')
+        ? [0, 0, 0]
+        : sceneAnimationPivotOffset(
+            index.scene.nodes.get(nodeId)!,
+            clip.space,
+            proposedTracks,
+            time,
+            value,
+          )
+      const translation = value.translation.map((n, axis) => n - correction[axis]!) as Vec3
+      const raw = rawTranslations.get(nodeId)!
+      // Saved position is the origin channel, while the gesture operates on the displayed matrix.
+      // Adding a rotation key removes the old interval correction at this instant.
+      const keyChannels: SceneAnimationTrack['channel'][] = channels.filter(
+        (channel) => channel !== 'translation',
+      )
+      if (translation.some((n, axis) => n !== raw[axis])) keyChannels.push('translation')
+      for (const channel of keyChannels) {
         const existing = destinations.get(nodeId)!.get(channel)
         if (existing === undefined) addedTracks++
         if (existing == null) addedKeys++
         const interpolation = existing ?? 'linear'
         keys.push(
           channel === 'rotation'
-            ? { nodeId, channel, key: { time, value: value.rotation, interpolation } }
-            : { nodeId, channel, key: { time, value: value[channel], interpolation } },
+            ? {
+                nodeId,
+                channel,
+                key: {
+                  time,
+                  value: value.rotation,
+                  interpolation,
+                  ...(index.scene.nodes.get(nodeId)!.pivot
+                    ? { incomingPivot: [...index.scene.nodes.get(nodeId)!.pivot!] as Vec3 }
+                    : {}),
+                },
+              }
+            : {
+                nodeId,
+                channel,
+                key: {
+                  time,
+                  value: channel === 'translation' ? translation : value.scale,
+                  interpolation,
+                },
+              },
         )
       }
+    }
     requireScene(
       index.animationTrackCount + addedTracks <= SCENE_LIMITS.animationTracks &&
         index.animationKeyCount + addedKeys <= SCENE_LIMITS.animationKeys,

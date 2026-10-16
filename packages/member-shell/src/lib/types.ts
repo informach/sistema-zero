@@ -1270,6 +1270,7 @@ export interface AmbassadorEnrollmentView {
  */
 /** Mirror do `AiCreditsView` do members (e do `@sistemazero/core/ai-credits`). */
 export interface AiCreditsView {
+  studioSource?: 'platform' | 'openrouter'
   dayLimit: number
   dayRemaining: number
   monthLimit: number
@@ -1290,6 +1291,10 @@ export interface AiUsageConsumeView {
 }
 
 export interface ZappyStoredResponseView {
+  intent?: import('@sistemazero/core/studio').StudioTutorIntent
+  kind?: 'classic' | 'pro'
+  fileReferences?: import('@sistemazero/core/studio').StudioTutorFileReference[]
+  sourceRevision?: number
   id: string
   text: string
   scope:
@@ -2029,6 +2034,7 @@ export interface PensaStudioBlockReference {
 
 export interface PensaStudioTaskContext {
   kind: 'studio'
+  authoring?: 'blocks' | 'code'
   dimension: '2d' | '3d'
   visualAssetIds: string[]
   blockIds: string[]

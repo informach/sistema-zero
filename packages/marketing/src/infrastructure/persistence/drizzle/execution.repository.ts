@@ -164,6 +164,9 @@ async function loadContext(
     .limit(5)
   const evidenceIds = new Set<string>()
   for (const row of [source, ...ancestors, ...selected, ...directions]) {
+    if (row.document.kind === 'video')
+      for (const source of demonstrationSources(row.document.timeline))
+        evidenceIds.add(source.evidenceId)
     if (
       row.document.kind === 'piece' ||
       row.document.kind === 'analysis' ||

@@ -30,6 +30,7 @@ import { cutMeshEdgeRing } from '../../../scene/meshRingCut'
 import { mapMeshUv } from '../../../scene/meshUv'
 import { editMeshUv, type MeshUvOperation } from '../../../scene/meshUvOperations'
 import { prepareMeshWeld } from '../../../scene/meshWeld'
+import { sceneGeometryMesh } from '../../../scene/parametricGeometry'
 import { createScenePath, type ScenePathSettings } from '../../../scene/pathCommands'
 import type { SceneSkinInfluence } from '../../../scene/skin'
 import { setSceneSkinWeights } from '../../../scene/skinCommands'
@@ -83,7 +84,8 @@ export function useSceneComponents({
   const blocked = !!preview.tool || transform.dragging || meshCheck.busy || !!meshCheck.preview
   const flags = useMemo(() => evaluateSceneNodeFlags(index.scene), [index])
   const node = selected.length === 1 ? index.scene.nodes.get(selected[0] ?? '') : null
-  const mesh = node?.kind === 'mesh' ? index.geometries.get(node.geometryId) : null
+  const geometry = node?.kind === 'mesh' ? index.geometries.get(node.geometryId) : null
+  const mesh = geometry ? sceneGeometryMesh(geometry) : null
   const editable =
     node?.kind === 'mesh' &&
     mesh?.kind === 'mesh' &&
@@ -143,14 +145,20 @@ export function useSceneComponents({
     transform.cancel()
     setSession(null)
   }
-  function open(mode: SceneComponentMode = 'face') {
+  function open(mode: SceneComponentMode = 'face', ids: readonly string[] = []) {
     if (!editable) return
     activeWeights.current = null
     cancel()
     meshCheck.cancel()
     preview.cancel()
     transform.cancel()
-    setSession({ nodeId: node.id, geometryId: mesh.id, mode, ids: [] })
+    const alive = new Set(meshComponentIds(mesh, mode))
+    setSession({
+      nodeId: node.id,
+      geometryId: mesh.id,
+      mode,
+      ids: ids.filter((id) => alive.has(id)),
+    })
   }
   function select(componentId: string | null, add: boolean) {
     updateSelection(componentId === null ? [] : [componentId], add, true)
@@ -162,11 +170,12 @@ export function useSceneComponents({
       if (!current) return null
       const document = editor.getState().asset
       const liveNode = document.nodes.find((n) => n.id === current.nodeId)
-      const liveMesh =
+      const liveGeometry =
         liveNode?.kind === 'mesh' && liveNode.geometryId === current.geometryId
           ? document.geometries.find((g) => g.id === current.geometryId)
           : null
-      if (liveMesh?.kind !== 'mesh') return null
+      if (!liveGeometry) return null
+      const liveMesh = sceneGeometryMesh(liveGeometry)
       const alive = new Set(meshComponentIds(liveMesh, current.mode))
       if (ids.some((id) => !alive.has(id))) return current
       activeWeights.current = null
@@ -404,7 +413,7 @@ export function useSceneComponents({
         const liveNode = source.nodes.find((n) => n.id === selection.nodeId)
         if (
           liveNode?.kind !== 'mesh' ||
-          source.geometries.find((g) => g.id === liveNode.geometryId) !== mesh
+          source.geometries.find((g) => g.id === liveNode.geometryId) !== geometry
         )
           throw new Error('O caminho mudou. Escolha novamente.')
         return createScenePath(

@@ -16,7 +16,7 @@ import type { Network } from '../src/domain/publication/publication'
 import { loadEnv } from '../src/infrastructure/config/env'
 import { MetaExternalResolver } from '../src/infrastructure/gateways/meta/meta-external-resolver'
 import { YoutubeExternalResolver } from '../src/infrastructure/gateways/youtube/youtube-external-resolver'
-import { createServer } from '../src/interfaces/http/server'
+import { createServer, type HttpDeps } from '../src/interfaces/http/server'
 import { FakeAiCopyClient } from './fakes/ai-copy'
 import {
   FakeDriveClient,
@@ -79,6 +79,8 @@ export function buildTestApp(
     /** false = OAuth/Drive desligados (503 OAUTH_NOT_CONFIGURED). */
     googleEnabled?: boolean
     autoCapableNetworks?: ReadonlySet<Network>
+    engagementWebhook?: HttpDeps['engagementWebhook']
+    logger?: HttpDeps['logger']
   } = {},
 ): TestApp {
   const env = loadEnv({
@@ -192,8 +194,9 @@ export function buildTestApp(
   )
 
   const app = createServer({
+    engagementWebhook: overrides.engagementWebhook,
     env,
-    logger: silentLogger,
+    logger: overrides.logger ?? silentLogger,
     readiness: async () => ({ ready: true, checks: { db: 'ok' } }),
     ideas: {
       ideas: ideaService,

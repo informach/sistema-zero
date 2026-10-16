@@ -1,0 +1,69 @@
+{
+  "date": "2026-10-15",
+  "localHead": "7981caf7a4fb6773ebb804405bf7ad6f6551814f",
+  "scope": "All 16 TUI source files and package config; selected integration boundaries and external execution paths",
+  "sourceFiles": 16,
+  "sourceLines": 1476.0,
+  "repositories": [
+    {
+      "name": "nightcode",
+      "sha": "255883f130d350541e806f2431e7df32369f24bf",
+      "commitDate": "2026-05-21T17:55:30+02:00",
+      "trackedFiles": 78,
+      "codeFiles": 60,
+      "conventionalTestFiles": 0,
+      "licenseFiles": []
+    },
+    {
+      "name": "browser-automation-app",
+      "sha": "7b7ae9755f239c60f33d1edcefbde0a251a3fb02",
+      "commitDate": "2026-07-18T16:21:08+02:00",
+      "trackedFiles": 315,
+      "codeFiles": 128,
+      "conventionalTestFiles": 0,
+      "licenseFiles": []
+    },
+    {
+      "name": "ai-teammates",
+      "sha": "de32f461cc9e0ddf4c5087af07c65cf06df7d683",
+      "commitDate": "2026-10-11T12:10:46Z",
+      "trackedFiles": 738,
+      "codeFiles": 164,
+      "conventionalTestFiles": 0,
+      "licenseFiles": []
+    },
+    {
+      "name": "sendkit",
+      "sha": "e4f47cb77bcd4dddcb1af483ec014e654740ee74",
+      "commitDate": "2026-06-22T14:31:43+02:00",
+      "trackedFiles": 27,
+      "codeFiles": 9,
+      "conventionalTestFiles": 0,
+      "licenseFiles": []
+    }
+  ],
+  "verification": [
+    {
+      "command": "bun run check (packages/tui)",
+      "exitCode": 0,
+      "result": "Checked 18 files; no fixes applied"
+    },
+    {
+      "command": "packages/tui/node_modules/.bin/tsc.exe --noEmit -p packages/tui/tsconfig.json",
+      "exitCode": 0,
+      "result": "No diagnostics"
+    },
+    {
+      "command": "bun build packages/tui/src/index.tsx --outdir TEMP/sistema-zero-tui-research-20261015/tui-build --target bun",
+      "exitCode": 0,
+      "result": "44 modules bundled; output outside workspace"
+    }
+  ],
+  "limitations": [
+    "No live model/provider calls",
+    "No cloud services launched",
+    "No terminal interaction or native-binary runtime verification",
+    "External repositories inspected statically; no dependency installation or test execution",
+    "Other packages contain pre-existing WIP and were not comprehensively audited"
+  ]
+}

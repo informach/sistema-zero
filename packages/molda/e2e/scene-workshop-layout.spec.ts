@@ -75,7 +75,8 @@ async function coveredControls(page: Page): Promise<string[]> {
       const hit = document.elementFromPoint(x, y)
       if (!hit || control === hit || control.contains(hit)) continue
       // Um rótulo que envolve o próprio campo não é "cobrir".
-      if (hit.contains(control) && hit.tagName === 'LABEL') continue
+      // Its icon/switch also activates that input through native label behavior.
+      if (hit.closest('label')?.control === control) continue
       covered.push(`"${nameOf(control)}" coberto por "${nameOf(hit)}"`)
     }
     return covered
@@ -171,8 +172,10 @@ test('no nível de entrada, a oficina padrão não cobre nada', async ({ page })
   const pageErrors: string[] = []
   page.on('pageerror', (error) => pageErrors.push(error.message))
   await openFreshModel(page, 'layout-explorador-e2e', '&nivel=explorer')
+  await page.locator('summary').filter({ hasText: 'Seleção e organização' }).click()
   await expect(page.getByText('Ferramentas que vêm por aí')).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Trazer arquivo 3D' })).toHaveCount(0)
+  await page.locator('summary').filter({ hasText: 'Seleção e organização' }).click()
+  await expect(page.getByRole('button', { name: 'Trazer arquivo 3D' })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Editar malha', exact: true })).toHaveCount(0)
   await checkEverySize(page, 'Modelar no básico')
   await page.getByText('Adicionar', { exact: true }).click()

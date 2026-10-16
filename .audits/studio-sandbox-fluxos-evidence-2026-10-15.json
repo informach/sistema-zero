@@ -1,0 +1,119 @@
+{
+  "capturedAtUtc": "2026-10-15T19:20:36.5712259Z",
+  "purpose": "Revisão dos cinco fluxos de autoria e unificação Zappy Pro; evidência estática, sem executar Sandbox",
+  "files": [
+    {
+      "path": "packages/studio/src/components/tutor/ZappyPanel.tsx",
+      "sha256": "84e932100ef36ca250bcdc23d2c3b2a3c32140665c70dfc77a129a004421f434",
+      "bytes": 33709
+    },
+    {
+      "path": "packages/studio/src/components/tutor/ProBuilderPanel.tsx",
+      "sha256": "30279ef494f4539ff7b5eed982fab440ceaeb23bc34d33aa80340ced16c54e48",
+      "bytes": 15892
+    },
+    {
+      "path": "packages/studio/src/studio/tutor.ts",
+      "sha256": "e8881be0023cda1e7306ea823d2dfd3d7d24503ce5e03fb77299265e479ac040",
+      "bytes": 14512
+    },
+    {
+      "path": "packages/studio/src/studio/config.ts",
+      "sha256": "aa02b8014f73eee73909f8a7744b2dfb2607326ef81a6a8a2fd8dbdefb07d937",
+      "bytes": 8279
+    },
+    {
+      "path": "packages/studio/src/components/ai/AIPanel.tsx",
+      "sha256": "96d0d8e68cbd85d8ac74684b70a49d683c67b93cceacd337c4f65f730d1239f7",
+      "bytes": 18194
+    },
+    {
+      "path": "packages/studio/src/state/aiAdapter.ts",
+      "sha256": "d3a8accedc6c1e92ce8b39e73f69066f224b9dc9d1cbde5346e9585f705597c4",
+      "bytes": 2456
+    },
+    {
+      "path": "packages/studio/src/components/layout/bottomTabs.tsx",
+      "sha256": "f9fb9f47e280ebf4bc9e11c080e1dbc492848dd07a98066899f58e734c3d3eb0",
+      "bytes": 3730
+    },
+    {
+      "path": "packages/studio/src/state/proRevision.ts",
+      "sha256": "e4bef13f1ab3c41633c23f2068f24733d831a532ea37141641cde191fe45fb16",
+      "bytes": 3663
+    },
+    {
+      "path": "packages/core/src/studio/pro-revision.ts",
+      "sha256": "21d824f869ea7be5d4f01bcbdf173ae9b9ff532fc865da68a0635cfc1d81a714",
+      "bytes": 9387
+    },
+    {
+      "path": "packages/core/src/studio/pro-builder.ts",
+      "sha256": "255fccd4f026e89a3789a92f84a35c6cfac4fcbc5b896a5e29e63ae4da4bb697",
+      "bytes": 4697
+    },
+    {
+      "path": "packages/member-shell/src/server/zappy-ai.ts",
+      "sha256": "27a185ceabc91716d6b7dbfea67a12ec6c1995f7791259fca8798633b7c5a918",
+      "bytes": 61417
+    },
+    {
+      "path": "packages/member-shell/src/server/studio-builder.ts",
+      "sha256": "4246e8bf9c6b45fd8f3b4e6a0a5d2df2e21100a49b3a7cab6018ca3f36af69ec",
+      "bytes": 8378
+    },
+    {
+      "path": "packages/member-shell/src/routes/studio-zappy.ts",
+      "sha256": "ef1a67f456431c3bf436c79e50836b246fd32fc31714dae4da01288ad567ef88",
+      "bytes": 22758
+    },
+    {
+      "path": "packages/member-shell/src/components/studio/studio-pro-editor.tsx",
+      "sha256": "e88cf3d4a13a0ab4d9a1ee3127de06684b6b31e1505c5673ef6294ca441387c2",
+      "bytes": 6753
+    },
+    {
+      "path": "C:/Users/tocha/Downloads/sandbox-main/sandbox-main/lib/games/instructions/workflow.ts",
+      "sha256": "704bd51ea5541bfd1573f4c86e3b262c9c2f9b6f79cc10fb86632d0305fb2458",
+      "bytes": 6284
+    },
+    {
+      "path": "C:/Users/tocha/Downloads/sandbox-main/sandbox-main/components/chat-thread.tsx",
+      "sha256": "70b9f72dc91e4c7801696ea5060b9ec4817fa9eb924026002c094c890158a7e7",
+      "bytes": 27238
+    },
+    {
+      "path": "C:/Users/tocha/Downloads/sandbox-main/sandbox-main/components/chat-composer.tsx",
+      "sha256": "b078b02dd53f5b1e508d55451d00a0c71d06733eebaa743acf94f07bbbdfacbc",
+      "bytes": 3082
+    },
+    {
+      "path": "C:/Users/tocha/Downloads/sandbox-main/sandbox-main/components/new-game-composer.tsx",
+      "sha256": "e294e181929cb081b3c1b34b343e92549947958d8df5d3021ed7b91e97327051",
+      "bytes": 2643
+    },
+    {
+      "path": "C:/Users/tocha/Downloads/sandbox-main/sandbox-main/trigger/chat.ts",
+      "sha256": "132821106c15780a793d31a2e11ee88ee34b67c8be3fa7571b457e94eb05ff2b",
+      "bytes": 12794
+    }
+  ],
+  "checks": [
+    {
+      "command": "bun test src/state/proRevision.test.ts src/studio/tutor.test.ts src/studio/config.test.ts src/components/tutor/ProBuilderPanel.test.tsx",
+      "cwd": "packages/studio",
+      "passed": 28,
+      "failed": 0,
+      "assertions": 81,
+      "log": "studio-sandbox-fluxos-studio-tests-2026-10-15.txt"
+    },
+    {
+      "command": "bun test tests/studio-zappy.test.ts tests/studio-builder-tools.test.ts",
+      "cwd": "packages/member-shell",
+      "passed": 78,
+      "failed": 0,
+      "assertions": 355,
+      "log": "studio-sandbox-fluxos-server-tests-2026-10-15.txt"
+    }
+  ]
+}

@@ -41,6 +41,25 @@ export function SceneAnimationPresets({
           className="mt-2 space-y-3 rounded-xl border border-mld-border bg-mld-bg p-2"
         >
           <p className="text-xs text-mld-muted">{copy.animationPresetHint}</p>
+          <fieldset>
+            <legend className="text-sm font-bold">O que vai se mexer?</legend>
+            <div className="grid grid-cols-2 gap-1">
+              <Button
+                className="px-2 text-xs"
+                aria-pressed={workshop.animationTarget === 'piece'}
+                onClick={() => workshop.setAnimationTarget('piece')}
+              >
+                Esta peça
+              </Button>
+              <Button
+                className="px-2 text-xs"
+                aria-pressed={workshop.animationTarget === 'model'}
+                onClick={() => workshop.setAnimationTarget('model')}
+              >
+                Modelo inteiro
+              </Button>
+            </div>
+          </fieldset>
           <div className="flex flex-wrap gap-2">
             {(['bounce', 'sway', 'spin'] as const).map((kind) => (
               <Button

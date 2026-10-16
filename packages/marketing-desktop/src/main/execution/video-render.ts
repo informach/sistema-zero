@@ -1,4 +1,9 @@
-import { type ExecutionRun, videoPlaybackAssetIds } from '@sistemazero/marketing-contracts'
+import {
+  demonstrationSources,
+  type ExecutionRun,
+  videoPlaybackAssetIds,
+} from '@sistemazero/marketing-contracts'
+import { inspectDemonstrationImage } from '../media/demonstration-image'
 import { probeVideo } from '../media/probe-video'
 import { renderReceipt } from '../media/render-identity'
 import { renderTimeline } from '../media/render-timeline'
@@ -18,6 +23,7 @@ export async function exportVideo(
   const started = Date.now(),
     assets: Record<string, string> = {}
   const inspections: NonNullable<ProductionResult['recordingAnalysis']> = []
+  const sources = demonstrationSources(document.timeline)
   for (const id of videoPlaybackAssetIds(document.timeline)) {
     const metadata = run.context.assets?.find((asset) => asset.id === id)
     if (!metadata) throw new Error('Uma mídia da montagem não está no contexto confirmado')
@@ -26,9 +32,32 @@ export async function exportVideo(
         'A conversão de vídeo HDR ainda não está disponível; preserve o original e prepare uma cópia SDR',
       )
     progress('Carregando as mídias desta revisão')
-    assets[id] = (
-      await downloadAsset(run.request.projectId, id, resources.assets, resources.transport, signal)
-    ).url
+    const downloaded = await downloadAsset(
+      run.request.projectId,
+      id,
+      resources.assets,
+      resources.transport,
+      signal,
+    )
+    assets[id] = downloaded.url
+    const references = sources.filter((source) => source.assetId === id)
+    const source = references[0]
+    if (source) {
+      if (
+        references.some(
+          (reference) =>
+            downloaded.sha256 !== reference.sha256 ||
+            reference.width !== source.width ||
+            reference.height !== source.height,
+        )
+      )
+        throw new Error('A imagem de demonstração diverge da fonte confirmada')
+      await inspectDemonstrationImage(
+        (await resources.assets.verify(id)).path,
+        downloaded.mime,
+        source,
+      )
+    }
     if (metadata.mime.startsWith('video/') || metadata.mime.startsWith('audio/')) {
       const inspected = await probeVideo(
         (await resources.assets.verify(id)).path,

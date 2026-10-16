@@ -1,10 +1,17 @@
 import {
-  isStudioProTemplateId,
+  InvalidBuildRequestError,
+  normalizeStudioProBuildPath,
+  parseStudioBuildSubmission,
+  resolveStudioProRemoteDependencies,
   STUDIO_PRO_BUILD_LIMITS,
+  STUDIO_PRO_RESERVED_BUILD_PATHS,
   STUDIO_PRO_TEMPLATE_IDS,
+  type StudioProRemoteDependencies,
   type StudioProTemplateId,
-  studioProBuildFileLimitError,
+  studioProTemplate,
 } from '@sistemazero/core/studio'
+import runtimeLock from '../runtime/package-lock.json' with { type: 'json' }
+import { prepareRuntimeDependencyLock } from './dependency-lock'
 
 export const PRO_TEMPLATE_IDS = STUDIO_PRO_TEMPLATE_IDS
 
@@ -14,131 +21,158 @@ export interface ProBuildRequest {
   executionId: string
   templateId: ProTemplateId
   files: Record<string, string>
+  binaries?: Record<string, { base64: string; sha256: string }>
+  parentOrigin: string
+  dependencies: StudioProRemoteDependencies
+  validate: boolean
 }
 
 export interface ProBuildSuccess {
   ok: true
-  html: string
+  artifact: import('@sistemazero/core/studio').StudioProArtifact
   output: string
   durationMs: number
+  evidence?: import('@sistemazero/core/studio').StudioProBuilderEvidence[]
+  validation?: import('@sistemazero/core/studio').StudioProValidationIdentity
 }
 
 export interface ProBuildFailure {
   ok: false
-  code: 'INVALID_REQUEST' | 'BUILD_FAILED' | 'OUTPUT_TOO_LARGE' | 'RATE_LIMITED'
+  code:
+    | 'INVALID_REQUEST'
+    | 'BUILD_FAILED'
+    | 'TYPECHECK_FAILED'
+    | 'PLAYTEST_FAILED'
+    | 'OUTPUT_TOO_LARGE'
+    | 'RATE_LIMITED'
   message: string
   output?: string
 }
 
 export type ProBuildResponse = ProBuildSuccess | ProBuildFailure
 
-const EXECUTION_ID = /^[a-z0-9][a-z0-9-]{15,95}$/
-const PATH_SEGMENT = /^[A-Za-z0-9._-]+$/
-const FILE_EXTENSION = /\.(?:ts|tsx|js|jsx|mjs|cjs|json|html|css|svg|txt|md)$/i
-// Nomes que o runtime SEMPRE escreve server-side (config confiável) — o projeto
-// da criança nunca pode fornecê-los. Inclui `vite.config.cjs`: a extensão `.cjs`
-// é permitida pelo FILE_EXTENSION, então sem esta entrada o Vite poderia resolver
-// um config enviado pela criança (a precedência `.mjs` sobre `.cjs` protege hoje,
-// mas o modelo de segurança não deve depender da ordem de resolução do Vite).
-const RESERVED_PATHS = new Set([
-  'package.json',
-  'package-lock.json',
-  'npm-shrinkwrap.json',
-  'vite.config.js',
-  'vite.config.mjs',
-  'vite.config.cjs',
-  'vite.config.ts',
-])
+const RESERVED_PATHS = new Set<string>(STUDIO_PRO_RESERVED_BUILD_PATHS)
 
 export const PRO_BUILD_LIMITS = STUDIO_PRO_BUILD_LIMITS
 
-export class InvalidBuildRequestError extends Error {
-  constructor(message: string) {
-    super(message)
-    this.name = 'InvalidBuildRequestError'
-  }
-}
+export { InvalidBuildRequestError } from '@sistemazero/core/studio'
 
 export function parseBuildRequest(value: unknown): ProBuildRequest {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
-    throw new InvalidBuildRequestError('O corpo da requisição precisa ser um objeto.')
-  }
-  const input = value as Record<string, unknown>
-  if (typeof input.executionId !== 'string' || !EXECUTION_ID.test(input.executionId)) {
-    throw new InvalidBuildRequestError('Identificador de execução inválido.')
-  }
-  if (!isStudioProTemplateId(input.templateId)) {
-    throw new InvalidBuildRequestError('Template profissional inválido.')
-  }
-  if (!input.files || typeof input.files !== 'object' || Array.isArray(input.files)) {
-    throw new InvalidBuildRequestError('A árvore de arquivos é inválida.')
-  }
-
-  const entries = Object.entries(input.files as Record<string, unknown>)
-  const files: Record<string, string> = {}
-  for (const [path, content] of entries) {
-    const normalized = normalizeBuildPath(path)
-    if (!normalized) throw new InvalidBuildRequestError(`Caminho de arquivo inválido: ${path}`)
-    if (RESERVED_PATHS.has(normalized.toLowerCase())) continue
-    if (typeof content !== 'string')
-      throw new InvalidBuildRequestError(`Arquivo inválido: ${normalized}`)
-    files[normalized] = content
-  }
-
-  const limitError = studioProBuildFileLimitError(files)
-  if (limitError === 'EMPTY' || limitError === 'TOO_MANY_FILES') {
+  const input = parseStudioBuildSubmission(value)
+  const manifest = input.files['package.json'] ?? trustedPackageJson(input.templateId)
+  const lock = input.files['package-lock.json']
+  let dependencies: StudioProRemoteDependencies
+  try {
+    dependencies = resolveStudioProRemoteDependencies(manifest, lock)
+    if (lock) verifyRemoteLock(lock, manifest)
+  } catch (error) {
     throw new InvalidBuildRequestError(
-      `O projeto precisa ter entre 1 e ${PRO_BUILD_LIMITS.maxFiles} arquivos.`,
+      error instanceof Error ? error.message : 'Dependências inválidas.',
     )
   }
-  if (limitError === 'FILE_TOO_LARGE') {
-    throw new InvalidBuildRequestError('Um arquivo do projeto ultrapassou o tamanho permitido.')
-  }
-  if (limitError === 'TOTAL_TOO_LARGE') {
-    throw new InvalidBuildRequestError('O projeto ultrapassou o tamanho permitido.')
-  }
-
-  if (!files['index.html']) {
-    throw new InvalidBuildRequestError('O projeto precisa ter um arquivo index.html.')
-  }
-
   return {
-    executionId: input.executionId,
-    templateId: input.templateId,
-    files,
+    ...input,
+    files: Object.fromEntries(
+      Object.entries(input.files).filter(([path]) => !RESERVED_PATHS.has(path.toLowerCase())),
+    ),
+    dependencies,
   }
 }
 
-export function normalizeBuildPath(input: string): string | null {
-  if (typeof input !== 'string') return null
-  const cleaned = input
-    .replace(/\\/g, '/')
-    .replace(/\/+/g, '/')
-    .replace(/^\/+|\/+$/g, '')
-  if (!cleaned || cleaned.length > 180 || !FILE_EXTENSION.test(cleaned)) return null
-  const segments = cleaned.split('/')
-  if (segments.length > 8) return null
-  for (const segment of segments) {
-    if (!segment || segment === '.' || segment === '..' || !PATH_SEGMENT.test(segment)) return null
-    if (segment.toLowerCase() === 'node_modules' || segment.startsWith('.env')) return null
+/** The submitted lock cannot silently select different transitive code than the image. */
+function verifyRemoteLock(raw: string, packageJson: string): void {
+  const project = JSON.parse(raw) as {
+    packages: Record<string, Record<string, unknown>>
   }
-  return segments.join('/')
+  const trusted = runtimeLock.packages as Record<string, Record<string, unknown>>
+  const canonical = (value: unknown): unknown =>
+    Array.isArray(value)
+      ? value.map(canonical)
+      : value && typeof value === 'object'
+        ? Object.fromEntries(
+            Object.entries(value)
+              .sort(([a], [b]) => a.localeCompare(b))
+              .map(([key, entry]) => [key, canonical(entry)]),
+          )
+        : value
+  // Role/optional flags can differ in a project-only lock. Resolution and dependency metadata cannot.
+  const identityFields = [
+    'version',
+    'integrity',
+    'resolved',
+    'dependencies',
+    'optionalDependencies',
+    'peerDependencies',
+    'peerDependenciesMeta',
+    'os',
+    'cpu',
+    'libc',
+    'engines',
+    'bin',
+    'hasInstallScript',
+  ]
+  const required = JSON.parse(prepareRuntimeDependencyLock(packageJson)) as {
+    packages: Record<string, unknown>
+  }
+  for (const path of Object.keys(required.packages)) {
+    if (path && !Object.hasOwn(project.packages, path))
+      throw new InvalidBuildRequestError(
+        `O lock está incompleto: falta ${path.replace(/^node_modules\//, '')}. Conclua a instalação antes de compilar.`,
+      )
+  }
+  for (const [path, entry] of Object.entries(project.packages)) {
+    if (!path) continue
+    const expected = trusted[path]
+    if (
+      !entry ||
+      !expected ||
+      entry.link ||
+      identityFields.some(
+        (field) =>
+          JSON.stringify(canonical(entry[field])) !== JSON.stringify(canonical(expected[field])),
+      )
+    )
+      throw new InvalidBuildRequestError(
+        `O lock inclui uma versão de ${path.replace(/^node_modules\//, '')} diferente da imagem do compilador remoto. Execute pelo terminal local ou use as dependências compatíveis.`,
+      )
+  }
 }
 
-export function trustedPackageJson(templateId: ProTemplateId): string {
+export async function verifyBuildBinaries(binaries: ProBuildRequest['binaries']): Promise<void> {
+  for (const entry of Object.values(binaries ?? {})) {
+    const bytes = Uint8Array.from(atob(entry.base64), (character) => character.charCodeAt(0))
+    const digest = await crypto.subtle.digest('SHA-256', bytes)
+    const hash = Array.from(new Uint8Array(digest), (byte) =>
+      byte.toString(16).padStart(2, '0'),
+    ).join('')
+    if (hash !== entry.sha256)
+      throw new InvalidBuildRequestError('O material recebido está incompleto ou foi alterado.')
+  }
+}
+
+export const normalizeBuildPath = normalizeStudioProBuildPath
+
+export function trustedPackageJson(
+  templateId: ProTemplateId,
+  resolved?: StudioProRemoteDependencies,
+): string {
+  const template = studioProTemplate(templateId)
   const dependencies: Record<string, string> = {}
   const devDependencies: Record<string, string> = { vite: '8.0.16' }
-  if (templateId === 'vanilla-vite') devDependencies.typescript = '5.9.3'
+  if (templateId === 'vanilla-vite' || template?.kitVersion) devDependencies.typescript = '5.9.3'
+  if (template?.engine === 'phaser') dependencies.phaser = '3.90.0'
   if (templateId === 'react-ts') {
     dependencies.react = '19.2.0'
     dependencies['react-dom'] = '19.2.0'
     devDependencies['@vitejs/plugin-react'] = '6.0.2'
     devDependencies.typescript = '5.9.3'
+    devDependencies['@types/react'] = '19.2.15'
+    devDependencies['@types/react-dom'] = '19.2.3'
   }
-  if (templateId === 'three-js' || templateId === 'three-ts') {
+  if (template?.engine === 'three') {
     dependencies.three = '0.180.0'
   }
-  if (templateId === 'three-ts') {
+  if (templateId === 'three-ts' || (template?.engine === 'three' && template.kitVersion)) {
     devDependencies['@types/three'] = '0.180.0'
     devDependencies.typescript = '5.9.3'
   }
@@ -148,16 +182,28 @@ export function trustedPackageJson(templateId: ProTemplateId): string {
       private: true,
       type: 'module',
       scripts: { build: 'vite build' },
-      dependencies,
-      devDependencies,
+      dependencies: resolved?.dependencies ?? dependencies,
+      devDependencies: resolved?.devDependencies ?? devDependencies,
     },
     null,
     2,
   )}\n`
 }
 
-export function trustedViteConfig(templateId: ProTemplateId): string {
-  const reactImport = templateId === 'react-ts' ? "import react from '@vitejs/plugin-react'\n" : ''
-  const plugins = templateId === 'react-ts' ? '  plugins: [react()],\n' : ''
-  return `import { defineConfig } from 'vite'\n${reactImport}\nexport default defineConfig({\n${plugins}  base: './',\n  build: {\n    assetsInlineLimit: 100000000,\n    cssCodeSplit: false,\n    sourcemap: false,\n    rolldownOptions: { output: { codeSplitting: false } },\n  },\n})\n`
+export function trustedViteConfig(
+  templateId: ProTemplateId,
+  resolved?: StudioProRemoteDependencies,
+): string {
+  const react = resolved
+    ? Boolean(
+        resolved.dependencies.react &&
+          (resolved.devDependencies['@vitejs/plugin-react'] ||
+            resolved.dependencies['@vitejs/plugin-react']),
+      )
+    : templateId === 'react-ts'
+  const reactImport = react ? "import react from '@vitejs/plugin-react'\n" : ''
+  const plugins = react ? '  plugins: [react()],\n' : ''
+  // Inline PostCSS disables discovery of executable project/parent configuration.
+  // Native config loading avoids writing a bundled config into trusted node_modules.
+  return `import { defineConfig } from 'vite'\n${reactImport}\nexport default defineConfig({\n${plugins}  base: './',\n  envDir: false,\n  envPrefix: [],\n  cacheDir: '.vite-cache',\n  css: { postcss: { plugins: [] } },\n  build: {\n    assetsInlineLimit: 4096,\n    cssCodeSplit: true,\n    sourcemap: false,\n  },\n})\n`
 }

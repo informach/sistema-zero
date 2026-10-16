@@ -608,6 +608,91 @@
   margin-top: clamp(2rem, 4vw, 3rem);
 }
 
+/* ── Relatos: falas reais com retrato (a faixa e a fala solta do fim da seção) ── */
+/* As aspas são do desenho, fora do texto; o contexto do relato fica fora delas, em tinta suave. */
+.cdc .relatos {
+  display: grid;
+  gap: 1.25rem;
+  margin-top: clamp(1.5rem, 3vw, 2.25rem);
+}
+/* A faixa tem quatro relatos: uma coluna no celular, dois a dois no meio e quatro lado a lado no
+ * computador. Colunas fixas, porque `auto-fit` deixava a quarta carta sozinha entre 800 e 1.050 px. */
+.cdc .relatos--faixa {
+  grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 640px) {
+  .cdc .relatos--faixa {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 1100px) {
+  .cdc .relatos--faixa:has(> :nth-child(4):last-child) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+.cdc .relatos--soltas {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+  max-width: 60rem;
+  margin-inline: auto;
+}
+.cdc .relato {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 1.5rem 1.5rem 1.25rem;
+}
+.cdc .relato-aspas {
+  font-size: 2.25rem;
+  line-height: 1;
+  color: var(--cor, var(--kof-acao));
+}
+.cdc .relato-fala {
+  flex: 1;
+  margin: 0;
+}
+.cdc .relato-fala p {
+  margin: 0;
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  color: var(--kof-tinta);
+}
+.cdc .relato--solta .relato-fala p {
+  font-size: 1.125rem;
+}
+.cdc .relato-quem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.cdc .relato-retrato {
+  flex: none;
+  width: 3.5rem;
+  height: 3.5rem;
+  border: 3px solid var(--cor-fundo, var(--kof-azul-fundo));
+  border-radius: 50%;
+  object-fit: cover;
+}
+.cdc .relato-ident {
+  display: grid;
+  gap: 0.125rem;
+}
+.cdc .relato-nome {
+  font-family: var(--kof-display);
+  font-weight: 800;
+  font-size: 1rem;
+  line-height: 1.2;
+  color: var(--kof-tinta);
+}
+.cdc .relato-contexto {
+  font-size: 0.875rem;
+  line-height: 1.3;
+  color: var(--kof-tinta-suave);
+}
+.cdc .origem-texto .relatos--soltas {
+  max-width: none;
+}
+
 /* ── Comparação: o que a família já tem → o que a assinatura acrescenta ──────── */
 /* Cada linha é um PAR numa carta só: a metade neutra, a seta na emenda e a metade na cor do
  * capítulo. Sem grade nem fio de tabela: lê-se de um lado para o outro. */
@@ -878,6 +963,12 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1.25rem;
   align-items: stretch;
+}
+/* Quatro cartas ficam dois a dois: em três colunas, a quarta sobraria sozinha numa linha. */
+@media (min-width: 961px) {
+  .cdc .cartas:has(> :nth-child(4):last-child) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 .cdc .carta-interesse {
   display: flex;

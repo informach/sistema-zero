@@ -1,5 +1,9 @@
 # CLAUDE.md — @sistemazero/auth
 
+## Operações da equipe no TUI (15/10/2026)
+
+`POST /auth/staff/operations` é uma fachada de operações tipadas, com JWT + refresh vigente da mesma conta. Revalida família/linha, papel, estado e senha definida; não aceita Kids, perfil ou impersonação. Auditoria de intenção é durável antes de qualquer mutação. O schema compartilhado está em `@sistemazero/core/staff`. Mensageria é delegada por HMAC às rotas staff do messaging; demais leituras/resposta de helpdesk usam o Bearer no gateway. Studio build usa STUDIO_PRO_RUNTIME_URL/TOKEN somente no servidor. A rota tem teto de 2.032.768 bytes; o limite das outras rotas é preservado. O timeout de borda é 65 s para builds. Nunca registrar body desta rota: contém refreshToken. Testes em staff-operations.test.ts e staff-gateway.test.ts.
+
 ## Fala da criança (voz → texto) por perfil (14/10/2026)
 
 - **O quê:** no Kids a criança pode FALAR em vez de escrever as mensagens para a equipe (o navegador

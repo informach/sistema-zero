@@ -125,6 +125,12 @@ const common: Record<string, string[]> = {
     'PORT',
   ],
   marketing: [
+    'MARKETING_ENGAGEMENT_IDENTITY_KEY',
+    'META_ENGAGEMENT_VERIFY_TOKEN',
+    'GATEWAY_URL',
+    'MARKETING_APP_URL',
+    'MARKETING_TOKEN_ENC_KEY',
+    'OAUTH_PUBLIC_BASE_URL',
     'DATABASE_URL',
     'HOST',
     'INTERNAL_API_TOKEN',
@@ -139,6 +145,8 @@ const common: Record<string, string[]> = {
     'R2_SECRET_ACCESS_KEY',
   ],
   auth: [
+    'STUDIO_PRO_RUNTIME_TOKEN',
+    'STUDIO_PRO_RUNTIME_URL',
     'AUTH_HMAC_SECRET',
     'AUTH_INTERNAL_TOKEN',
     'COMMUNITY_URL',
@@ -272,6 +280,8 @@ const common: Record<string, string[]> = {
     'R2_SECRET_ACCESS_KEY',
   ],
   members: [
+    'STUDIO_BUILDER_EXECUTOR_URL',
+    'STUDIO_BUILDER_EXECUTOR_SECRET',
     'LIVE_MEDIA_READY',
     'LIVE_SFU_APP_ID',
     'LIVE_SFU_APP_SECRET',
@@ -333,6 +343,7 @@ const common: Record<string, string[]> = {
     'VIMEO_WHITELIST_DOMAINS',
   ],
   'community-kids': [
+    'STUDIO_BUILDER_EXECUTOR_SECRET',
     'APP_PUBLIC_URL',
     'CREATION_CLEANUP_CRON_SECRET',
     // Voz do Zappy no Pensa v2 e no tutor (14/10/2026): a chave e a voz da ElevenLabs.
@@ -374,12 +385,7 @@ const extra: Record<string, Record<string, string[]>> = {
     payments: [],
     'api-gateway': [],
     fiscal: [],
-    marketing: [
-      'GATEWAY_URL',
-      'MARKETING_APP_URL',
-      'MARKETING_TOKEN_ENC_KEY',
-      'OAUTH_PUBLIC_BASE_URL',
-    ],
+    marketing: [],
     auth: [],
     messaging: [],
     'marketing-app': [],

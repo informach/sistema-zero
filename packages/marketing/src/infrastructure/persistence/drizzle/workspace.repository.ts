@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import {
+  type AssetManifest,
   type BatchResult,
   batchResultSchema,
   type ChangeEvent,
@@ -24,6 +25,7 @@ import type {
   WorkspaceRepository,
 } from '../../../domain/ports/workspace-repository.port'
 import { assertArtifactFreshness } from '../../../domain/workspace/artifact-freshness'
+import { validateDemonstrationSources } from '../../../domain/workspace/demonstration'
 import { validateEditorialGraph } from '../../../domain/workspace/editorial-graph'
 import { references } from '../../../domain/workspace/references'
 import { WorkspaceError } from '../../../domain/workspace/workspace-error'
@@ -497,6 +499,8 @@ export class DrizzleWorkspaceRepository implements WorkspaceRepository {
     document: import('@sistemazero/marketing-contracts').EditorialDocument,
   ) {
     const refs = references(document)
+    let sourceRevisions: Pick<Revision, 'id' | 'entityId' | 'projectId' | 'document'>[] = []
+    let confirmedAssets: AssetManifest[] = []
     if (refs.items.length) {
       const rows = await tx
         .select({ id: items.id, archived: items.archived })
@@ -510,11 +514,17 @@ export class DrizzleWorkspaceRepository implements WorkspaceRepository {
     }
     if (refs.revisions.length) {
       const rows = await tx
-        .select({ id: revisions.id, entityId: revisions.entityId, document: revisions.document })
+        .select({
+          id: revisions.id,
+          entityId: revisions.entityId,
+          projectId: revisions.projectId,
+          document: revisions.document,
+        })
         .from(revisions)
         .where(and(eq(revisions.projectId, projectId), inArray(revisions.id, refs.revisions)))
       if (rows.length !== refs.revisions.length)
         throw new WorkspaceError('DEPENDENCY_MISSING', 'Revisão de origem indisponível')
+      sourceRevisions = rows
       if (
         document.kind === 'piece' &&
         document.originAnalysis &&
@@ -563,7 +573,7 @@ export class DrizzleWorkspaceRepository implements WorkspaceRepository {
     }
     if (refs.assets.length) {
       const rows = await tx
-        .select({ id: assets.id, confirmed: assets.confirmed })
+        .select({ id: assets.id, confirmed: assets.confirmed, manifest: assets.manifest })
         .from(assets)
         .where(and(eq(assets.projectId, projectId), inArray(assets.id, refs.assets)))
       if (rows.length !== refs.assets.length || rows.some((r) => !r.confirmed))
@@ -571,7 +581,10 @@ export class DrizzleWorkspaceRepository implements WorkspaceRepository {
           'ASSET_UNCONFIRMED',
           'Confirme o envio dos arquivos antes de sincronizar a peça',
         )
+      confirmedAssets = rows.map((row) => row.manifest)
     }
+    if (document.kind === 'video')
+      validateDemonstrationSources(document.timeline, projectId, sourceRevisions, confirmedAssets)
   }
   private async validateGraph(tx: WorkspaceTransaction, projectId: string, changed: Set<string>) {
     validateEditorialGraph(await readEditorialGraph(tx, projectId, changed), changed)

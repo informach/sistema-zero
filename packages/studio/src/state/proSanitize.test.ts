@@ -3,8 +3,8 @@ import { createProProject } from '../components/code/pro-templates'
 import { sanitizeProjectForHost } from './projectStore'
 
 describe('sanitizeStoredProject — projetos profissionais', () => {
-  it('preserva um projeto pro válido', () => {
-    const project = createProProject('p1', 'App', 'react-ts')
+  it('preserva um projeto pro válido', async () => {
+    const project = await createProProject('p1', 'App', 'react-ts')
     const out = sanitizeProjectForHost(JSON.parse(JSON.stringify(project)))
     expect(out?.kind).toBe('pro')
     expect(out?.mode).toBe('code')
@@ -12,7 +12,7 @@ describe('sanitizeStoredProject — projetos profissionais', () => {
     expect(out?.tree?.['src/App.tsx']?.kind).toBe('file')
   })
 
-  it('recusa árvore inválida sem descartar conteúdo', () => {
+  it('recusa árvore inválida sem descartar conteúdo', async () => {
     expect(() =>
       sanitizeProjectForHost({
         formatVersion: 2,
@@ -26,7 +26,7 @@ describe('sanitizeStoredProject — projetos profissionais', () => {
     ).toThrow()
   })
 
-  it('recusa projeto profissional sem metadados', () => {
+  it('recusa projeto profissional sem metadados', async () => {
     expect(() =>
       sanitizeProjectForHost({
         formatVersion: 2,
@@ -39,8 +39,8 @@ describe('sanitizeStoredProject — projetos profissionais', () => {
     ).toThrow()
   })
 
-  it('nunca aceita node_modules na árvore', () => {
-    const project = createProProject('p2', 'App', 'vanilla-vite')
+  it('nunca aceita node_modules na árvore', async () => {
+    const project = await createProProject('p2', 'App', 'vanilla-vite')
     const polluted = JSON.parse(JSON.stringify(project)) as {
       tree: Record<string, unknown>
     }
@@ -49,7 +49,7 @@ describe('sanitizeStoredProject — projetos profissionais', () => {
     expect(polluted.tree['node_modules/three/index.js']).toEqual({ kind: 'file', content: 'big' })
   })
 
-  it('projeto classic permanece classic', () => {
+  it('projeto classic permanece classic', async () => {
     const out = sanitizeProjectForHost({
       formatVersion: 2,
       id: 'c',
@@ -64,7 +64,7 @@ describe('sanitizeStoredProject — projetos profissionais', () => {
 describe('sanitizeProjectForHost — limite do id do initialProject', () => {
   const files = { 'index.html': '<h1>oi</h1>', 'style.css': '', 'script.js': '' }
 
-  it('mantém um id seguro (ulid/alfanumérico) vindo do host', () => {
+  it('mantém um id seguro (ulid/alfanumérico) vindo do host', async () => {
     const out = sanitizeProjectForHost({
       formatVersion: 2,
       id: '01HZ8XK3M9P0QABCDEFGHJKMNP',
@@ -74,7 +74,7 @@ describe('sanitizeProjectForHost — limite do id do initialProject', () => {
     expect(out?.id).toBe('01HZ8XK3M9P0QABCDEFGHJKMNP')
   })
 
-  it('substitui por um id fresco quando o id excede o teto de tamanho', () => {
+  it('substitui por um id fresco quando o id excede o teto de tamanho', async () => {
     const huge = 'a'.repeat(5000)
     const out = sanitizeProjectForHost({ formatVersion: 2, id: huge, name: 'Gigante', files })
     expect(out?.id).not.toBe(huge)
@@ -82,7 +82,7 @@ describe('sanitizeProjectForHost — limite do id do initialProject', () => {
     expect(out?.id).toMatch(/^[A-Za-z0-9_-]+$/)
   })
 
-  it('substitui por um id fresco quando o id tem caracteres fora do charset seguro', () => {
+  it('substitui por um id fresco quando o id tem caracteres fora do charset seguro', async () => {
     const out = sanitizeProjectForHost({
       formatVersion: 2,
       id: 'sz:project:../../etc',
@@ -93,7 +93,7 @@ describe('sanitizeProjectForHost — limite do id do initialProject', () => {
     expect(out?.id).toMatch(/^[A-Za-z0-9_-]+$/)
   })
 
-  it('substitui por um id fresco quando o id não é string', () => {
+  it('substitui por um id fresco quando o id não é string', async () => {
     const out = sanitizeProjectForHost({ formatVersion: 2, id: 12345, name: 'Número', files })
     expect(out).not.toBeNull()
     expect(typeof out?.id).toBe('string')
