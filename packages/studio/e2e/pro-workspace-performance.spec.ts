@@ -29,6 +29,32 @@ test.afterAll(async () => {
     )
 })
 
+test('large source ZIP uses one disposable worker and retains canonical buffers on success and abort', async ({
+  page,
+}) => {
+  const address = server.httpServer.address()
+  if (!address || typeof address === 'string') throw new Error('Missing benchmark server')
+  const workers = new Set<string>()
+  let created = 0
+  page.on('worker', (worker) => {
+    if (!worker.url().includes('zip.worker')) return
+    created++
+    workers.add(worker.url())
+    worker.on('close', () => workers.delete(worker.url()))
+  })
+  await page.goto(`http://127.0.0.1:${address.port}/?zip=1`)
+  await page.getByRole('button', { name: 'Gerar ZIP de teste', exact: true }).click()
+  await expect(page.getByLabel('Resultado ZIP')).toContainText('"valid":true')
+  const result = JSON.parse((await page.getByLabel('Resultado ZIP').textContent()) ?? '{}')
+  expect(result.files).toBe(81)
+  expect(result.inputBytes).toBe(200_000)
+  expect(created).toBe(1)
+  await expect.poll(() => workers.size).toBe(0)
+  await page.getByRole('button', { name: 'Cancelar ZIP de teste', exact: true }).click()
+  await expect(page.getByLabel('Resultado ZIP')).toContainText('"cancelled":true')
+  await expect.poll(() => workers.size).toBe(0)
+})
+
 test('records real editor input, openings and layout lifecycle with controlled services', async ({
   page,
   browser,

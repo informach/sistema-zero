@@ -80,8 +80,26 @@ const tutor: StudioTutorConfig = {
 }
 function Fixture() {
   const [models, setModels] = useState('[]')
+  const [zipResult, setZipResult] = useState('')
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+      {new URLSearchParams(location.search).has('zip') && (
+        <div>
+          {[false, true].map((cancel) => (
+            <button
+              type="button"
+              key={String(cancel)}
+              onClick={async () => {
+                const { zipProbe } = await import('./zipProbe')
+                setZipResult(JSON.stringify(await zipProbe(cancel)))
+              }}
+            >
+              {cancel ? 'Cancelar ZIP de teste' : 'Gerar ZIP de teste'}
+            </button>
+          ))}
+          <output aria-label="Resultado ZIP">{zipResult}</output>
+        </div>
+      )}
       <button
         type="button"
         onClick={async () => {

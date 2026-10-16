@@ -49,7 +49,7 @@ export function ProCodeTools({
   const showAssets = useUIStore((state) => state.setShowAssets)
   const [open, setOpen] = useState(false)
   const [symbolResult, setSymbols] = useState<{
-    tree: ProjectTree
+    content: string
     path: string
     items: ProSymbol[]
   } | null>(null)
@@ -57,8 +57,10 @@ export function ProCodeTools({
     tree: ProjectTree
     items: Array<{ path: string; line: number; column: number }>
   } | null>(null)
+  const content = tree[path]?.kind === 'file' ? tree[path].content : ''
   const symbols =
-    symbolResult?.tree === tree && symbolResult.path === path ? symbolResult.items : []
+    symbolResult?.content === content && symbolResult.path === path ? symbolResult.items : []
+  const [symbolsPending, setSymbolsPending] = useState(false)
   const references = referenceResult?.tree === tree ? referenceResult.items : []
   const [rename, setRename] = useState<{
     path: string
@@ -69,26 +71,39 @@ export function ProCodeTools({
   const [error, setError] = useState<string | null>(null)
   const current = useRef({ path, tree })
   current.current = { path, tree }
-  const content = tree[path]?.kind === 'file' ? tree[path].content : ''
   useEffect(() => {
     if (!open || !language.current || !/\.[cm]?[jt]sx?$/.test(path)) {
       setSymbols(null)
+      setSymbolsPending(false)
       return
     }
     let active = true
+    setSymbolsPending(true)
+    setSymbols(null)
     void language.current
-      .requestForTree(tree, 'symbols', path)
+      .request('symbols', path)
       .then((items) => {
-        if (active) setSymbols({ tree, path, items })
+        const node = current.current.tree[path]
+        if (
+          active &&
+          current.current.path === path &&
+          node?.kind === 'file' &&
+          node.content === content &&
+          editor.current?.getModel()?.getValue() === content
+        )
+          setSymbols({ content, path, items })
       })
       .catch((cause: unknown) => {
         if (active)
           setError(cause instanceof Error ? cause.message : 'Não foi possível ler o mapa.')
       })
+      .finally(() => {
+        if (active) setSymbolsPending(false)
+      })
     return () => {
       active = false
     }
-  }, [open, path, tree, language])
+  }, [open, path, content, language, editor])
   const capture = () => {
     const model = editor.current?.getModel(),
       cursor = editor.current?.getPosition()
@@ -270,7 +285,12 @@ export function ProCodeTools({
       </Modal>
       {open && (
         <section className="max-h-40 overflow-auto pb-2" aria-label="Mapa do arquivo">
-          {!symbols.length && (
+          {symbolsPending && (
+            <p role="status" className="p-2 text-xs text-sz-fg-mute">
+              Analisando símbolos…
+            </p>
+          )}
+          {!symbolsPending && !symbols.length && (
             <p className="p-2 text-xs text-sz-fg-mute">Nenhum símbolo disponível neste arquivo.</p>
           )}
           {symbols.map((symbol) => (
