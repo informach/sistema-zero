@@ -7,6 +7,8 @@ export interface SceneAnimationKey<T extends Vec3 | Quaternion> {
   value: T
   /** Interpolation from this key to the next; smooth is bounded ease-in/out, not a spline. */
   interpolation: 'step' | 'linear' | 'smooth'
+  /** Rotation keys only: geometric center for the incoming interval. Absent in legacy clips. */
+  incomingPivot?: Vec3
 }
 
 export type SceneAnimationTrack = { nodeId: string } & (

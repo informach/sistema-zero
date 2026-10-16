@@ -17,19 +17,14 @@ function mount() {
   return renderHook(() => useScenePaint(editor), { wrapper: StrictMode })
 }
 
-test('arrastar o seletor de cor não inunda "Recentes": só a cor escolhida no fim entra', () => {
+test('escolher cores não registra tinta como usada antes de confirmar uma pintura', () => {
   const view = mount()
   act(() => view.result.current.setColor([200, 10, 10, 255]))
   for (const hex of ['#202020', '#303030', '#404040', '#505050', '#606060', '#707070', '#808080'])
     act(() => view.result.current.newColorStep(hex))
   // A tinta acompanha o arrasto; "Recentes" ainda guarda a cor que a criança usou.
   expect(view.result.current.ink).toEqual([0x80, 0x80, 0x80, 255])
-  expect(view.result.current.recentColors).toEqual([[200, 10, 10, 255]])
-  act(() => view.result.current.newColorEnd())
-  expect(view.result.current.recentColors).toEqual([
-    [0x80, 0x80, 0x80, 255],
-    [200, 10, 10, 255],
-  ])
+  expect(view.result.current.recentColors).toEqual([])
   view.unmount()
 })
 

@@ -61,16 +61,17 @@ test('mesh previews replay stable topology IDs, isolate sharing and make exactly
   }
 })
 
-test('cancel compensates persisted previews and refuses late edits to unrelated revisions or locks', async () => {
+test('cancel keeps previews out of persistence and refuses late edits to unrelated revisions or locks', async () => {
   const f = setup()
   try {
     f.gesture.begin('body')
     f.gesture.preview((mesh, allocate) => insetMeshFaces(mesh, ['px'], 0.3, allocate))
+    expect(f.editor.getState().saveSnapshot().geometries).toEqual(f.source.geometries)
     await f.editor.getState().flush()
     f.gesture.cancel()
     await f.editor.getState().flush()
-    expect(f.writes).toHaveLength(2)
-    expect(f.writes[1]!.geometries).toEqual(f.source.geometries)
+    for (const saved of f.writes) expect(saved.geometries).toEqual(f.source.geometries)
+    expect(f.editor.getState().content.geometries).toEqual(f.source.geometries)
     expect(f.editor.getState().canUndo).toBe(false)
     f.gesture.begin('body')
     f.editor.getState().commit(renameSceneNode(f.editor.getState().asset, 'wing', 'Outra mudança'))

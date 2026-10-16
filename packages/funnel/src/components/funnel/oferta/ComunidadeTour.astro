@@ -1,0 +1,26 @@
+---
+import { TOUR } from '../../../funnels/comunidade-dos-criadores/oferta/visuals'
+
+interface Props {
+  imagesBase: string
+}
+const { imagesBase } = Astro.props
+const img = (file: string) => `${imagesBase}/${file}`
+---
+
+<section class="tour" aria-labelledby="title-tour">
+  <div class="wrap">
+    <h2 id="title-tour" class="tour-titulo kof-sobretitulo">Por dentro da Comunidade</h2>
+    <ul class="tour-faixa">
+      {TOUR.map((frame) => (
+        <li class="tour-item">
+          <a href={img(frame.retina)} target="_blank" rel="noopener" data-zoom aria-label={`Ampliar a imagem: ${frame.alt}`}>
+            <img src={img(frame.file)} alt={frame.alt} width={frame.width} height={frame.height} loading="lazy" decoding="async" />
+            <span class="tour-nome">{frame.label}<span class="material-symbols-rounded tour-lupa" aria-hidden="true">zoom_in</span></span>
+            <span class="tour-resumo">{frame.resumo}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>

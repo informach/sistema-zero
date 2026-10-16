@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef } from 'react'
 import { GLTF_IMPORT_COPY as copy } from '../../../core/gltfImportCopy'
 import { GltfInputError } from '../../../import/gltfInput'
 import {
@@ -44,11 +45,32 @@ export function useSceneGltfImport(
   options: {
     createWorker?: () => TaskWorker
     canAdopt?: () => boolean
+    allowOptions?: boolean
   } = {},
 ) {
   const session = useSceneImportSession(editor, initial, cancelled, copy),
     { view, current, owner, publish, revoke, cancel, owns, begin, isActive } = session,
-    { accept, confirm } = useSceneImportConfirmation(session, options.canAdopt, copy)
+    { accept, confirm } = useSceneImportConfirmation(
+      session,
+      () =>
+        (options.allowOptions !== false || Object.keys(current.current.options).length === 0) &&
+        (options.canAdopt?.() ?? true),
+      copy,
+    )
+  const allowOptions = useRef(options.allowOptions !== false)
+  useLayoutEffect(() => {
+    allowOptions.current = options.allowOptions !== false
+    if (allowOptions.current || !Object.keys(view.options).length) return
+    cancel()
+    publish({
+      ...current.current,
+      options: {},
+      stage: {
+        kind: 'choose',
+        message: 'As opções de conversão mudaram. Confira a importação novamente.',
+      },
+    })
+  }, [options.allowOptions, view.options, cancel, publish, current])
   function failed(entry: Owner, error: unknown) {
     if (!owns(entry)) return
     owner.current = null
@@ -171,6 +193,7 @@ export function useSceneGltfImport(
     publish({ ...current.current, sceneIndex, stage: { kind: 'choose' } })
   }
   function setOptions(next: GltfNativeOptions) {
+    if (!allowOptions.current && Object.keys(next).length) return
     if (!isActive()) return
     if (!revoke()) return
     publish({ ...current.current, options: next, stage: { kind: 'choose' } })

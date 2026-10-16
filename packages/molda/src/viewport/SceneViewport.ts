@@ -1,9 +1,7 @@
 import {
   AxesHelper,
-  Box3,
-  Box3Helper,
-  GridHelper,
   type Intersection,
+  PCFShadowMap,
   Plane,
   Raycaster,
   Scene,
@@ -44,23 +42,32 @@ import {
 } from '../scene/meshComponents'
 import { meshVertexCenter } from '../scene/meshVertices'
 import { sampleSceneInk } from '../scene/paintInk'
+import { sceneGeometryMesh } from '../scene/parametricGeometry'
+import { sceneLocalBounds, sceneNodePivot } from '../scene/pivot'
 import type { SceneAnimationPose } from '../scene/sampleAnimation'
 import type { SceneSkinPaintSample } from '../scene/skinPaint'
+import { sceneTransformFrame } from '../scene/transformFrame'
 import { requireScene } from '../scene/validation'
+import { sceneVisibleMesh } from '../scene/visibleMesh'
 import type { SceneSkinPaintPreview } from '../state/sceneSkinPaintGesture'
 import { CapturedPaintInput } from './CapturedPaintInput'
 import { DemandRenderLoop } from './demandRenderLoop'
 import { paintPointerPath } from './paintPointerPath'
 import { SceneAreaSelection, type SceneAreaTool } from './SceneAreaSelection'
+import { SceneAxisHandles } from './SceneAxisHandles'
 import { SceneBodyMove } from './SceneBodyMove'
 import { SceneBrushCursor } from './SceneBrushCursor'
 import { SceneComponentOverlay } from './SceneComponentOverlay'
+import { SceneGround } from './SceneGround'
+import { SceneGuideAnnotation } from './SceneGuideAnnotation'
 import { ScenePaintInput } from './ScenePaintInput'
 import { ScenePreviewGuide, type ScenePreviewGuideState } from './ScenePreviewGuide'
+import { SceneSelectionOutline } from './SceneSelectionOutline'
 import { SceneSkinWeightOverlay, type SceneSkinWeightTarget } from './SceneSkinWeightOverlay'
 import { SceneSupportOverlay } from './SceneSupportOverlay'
 import { SceneTransformGizmo } from './SceneTransformGizmo'
 import { SceneComponentPicker } from './sceneComponentPicking'
+import { SceneCutPicker } from './sceneCutPicking'
 import { pickSceneRegion } from './sceneRegionPicking'
 import { SceneRenderResource } from './sceneRenderResource'
 import { pickSceneSkinPaint } from './sceneSkinPaintPick'
@@ -69,6 +76,7 @@ import { prepareSceneSupports, type SceneSupportPoint } from './sceneSupports'
 import { sceneSurfaceHit } from './sceneSurfaceHit'
 import { prepareSceneTwoBoneGuide } from './sceneTwoBoneGuide'
 import type {
+  SceneGuideInput,
   ScenePaintMode,
   SceneTransformTool,
   SceneViewportCallbacks,
@@ -84,34 +92,41 @@ export type SceneRenderer = Pick<
   WebGLRenderer,
   'setPixelRatio' | 'setClearColor' | 'setSize' | 'render' | 'dispose'
 > &
-  Partial<Pick<WebGLRenderer, 'forceContextLoss'>>
+  Partial<Pick<WebGLRenderer, 'forceContextLoss' | 'shadowMap'>>
 
 /** Browser owner only: navigation, picking, context lifecycle and demand scheduling. */
 export class SceneViewport implements SceneViewportPort {
   private readonly renderer: SceneRenderer
   private readonly scene = new Scene()
-  private readonly rig = new ViewportCamera()
+  private readonly rig = new ViewportCamera('orthographic')
   private readonly resource = new SceneRenderResource()
-  private readonly grid = new GridHelper(32, 32, 0x9fb4d0, 0xd2deee)
+  private readonly lights = workshopLights()
+  private readonly ground: SceneGround
   // O contorno da escolhida é ÂMBAR (o ouro da casa): o azul de antes sumia sobre a peça
   // nova, que nasce azul.
-  private readonly outline = new Box3Helper(new Box3(), 0xf0a417)
+  private readonly outline = new SceneSelectionOutline()
   private readonly pivot = new AxesHelper(0.75)
   private readonly faces = new SceneComponentOverlay()
   private readonly supports = new SceneSupportOverlay()
   private readonly poseGuide = new SceneSupportOverlay(4)
   private readonly previewGuide = new ScenePreviewGuide()
+  private guideAnnotation: SceneGuideAnnotation | null = null
   private readonly weightPoints = new SceneSkinWeightOverlay()
   private readonly brushCursor = new SceneBrushCursor()
   private weightTarget: SceneSkinWeightTarget | null = null
   private supportGuides = false
   private displayedSupports: readonly SceneSupportPoint[] = []
   private readonly componentPicker = new SceneComponentPicker()
+  private readonly cutPicker = new SceneCutPicker()
+  private cutHoverFrame: number | null = null
+  private cutHoverPointer: { clientX: number; clientY: number } | null = null
   private componentSelection: SceneComponentSelection | null = null
   private areaTool: SceneAreaTool = 'point'
   private orbit: OrbitControls | null = null
   private loop: DemandRenderLoop | null = null
   private gizmo: SceneTransformGizmo | null = null
+  private pivotHandles: SceneAxisHandles | null = null
+  private pivotOwner: NonNullable<SceneGuideInput['pivot']> | null = null
   private area: SceneAreaSelection | null = null
   private paint: ScenePaintInput | null = null
   private paintTarget: ScenePaintTarget | null = null
@@ -141,6 +156,7 @@ export class SceneViewport implements SceneViewportPort {
     null
   private disposed = false
   private contextLost = false
+  private poseMode = false
   private thumbnail: ViewportThumbnail | null = null
 
   constructor(
@@ -152,6 +168,7 @@ export class SceneViewport implements SceneViewportPort {
   ) {
     this.renderer = createRenderer(canvas)
     try {
+      this.ground = new SceneGround(canvas, this.lights[1], this.request)
       // A miniatura reusa o mesmo alvo do editor antigo: um render próprio de 96 px,
       // sem tocar no palco que a criança está vendo.
       if (this.renderer instanceof WebGLRenderer)
@@ -160,7 +177,10 @@ export class SceneViewport implements SceneViewportPort {
         Math.min(canvas.ownerDocument.defaultView?.devicePixelRatio ?? 1, 2),
       )
       this.renderer.setClearColor(0, 0)
-      this.outline.visible = false
+      if (this.renderer.shadowMap) {
+        this.renderer.shadowMap.enabled = true
+        this.renderer.shadowMap.type = PCFShadowMap
+      }
       this.pivot.visible = false
       this.pivot.matrixAutoUpdate = false
       this.poseGuide.root.name = 'molda-two-bone-guide'
@@ -172,10 +192,11 @@ export class SceneViewport implements SceneViewportPort {
         this.previewGuide.root,
         this.weightPoints.root,
         this.brushCursor.root,
-        this.grid,
-        this.outline,
+        this.ground.root,
+        this.outline.root,
         this.pivot,
-        ...workshopLights(),
+        ...this.lights,
+        this.lights[1].target,
       )
       this.orbit = this.makeOrbit()
       this.area = new SceneAreaSelection(
@@ -185,8 +206,10 @@ export class SceneViewport implements SceneViewportPort {
           if (!this.index) return
           if (this.componentSelection) {
             const node = this.index.scene.nodes.get(this.componentSelection.nodeId)
-            const mesh = node?.kind === 'mesh' ? this.index.geometries.get(node.geometryId) : null
-            if (mesh?.kind === 'mesh')
+            const geometry =
+              node?.kind === 'mesh' ? this.index.geometries.get(node.geometryId) : null
+            const mesh = geometry ? sceneGeometryMesh(geometry) : null
+            if (mesh)
               callbacks.selectComponents?.(
                 this.componentPicker.region(
                   this.resource,
@@ -226,10 +249,63 @@ export class SceneViewport implements SceneViewportPort {
           },
           this.request,
         )
-        this.scene.add(this.gizmo.root)
       }
+      this.guideAnnotation = new SceneGuideAnnotation(canvas)
+      this.pivotHandles = new SceneAxisHandles(
+        canvas,
+        () => this.rig.camera,
+        'pivot',
+        {
+          begin: () => {
+            const input = this.callbacks.guideInput?.()?.pivot,
+              world = input && this.index?.scene.worldMatrices.get(input.nodeId)
+            if (!input || !world || !input.begin(world)) return false
+            this.pivotOwner = input
+            return true
+          },
+          preview: (delta) => this.pivotOwner?.preview(delta) ?? false,
+          end: (commit) => {
+            const owner = this.pivotOwner
+            this.pivotOwner = null
+            owner?.end(commit)
+          },
+        },
+        this.request,
+        (dragging) => {
+          if (this.orbit) this.orbit.enabled = !dragging && !this.contextLost
+        },
+      )
       this.loop = new DemandRenderLoop(canvas, this.renderer, this.rig, () => {
         const moving = this.orbit?.update() ?? false
+        this.updatePivotHandles()
+        this.gizmo?.draw()
+        const cut = this.callbacks.guideInput?.()?.cut
+        const node = cut && this.index?.scene.nodes.get(cut.nodeId)
+        const geometry = node?.kind === 'mesh' && this.index?.geometries.get(node.geometryId)
+        if (cut && geometry) {
+          const mesh = sceneGeometryMesh(geometry)
+          this.rig.camera.updateMatrixWorld(true)
+          this.previewGuide.updateCutVisibility(
+            (point) =>
+              this.cutPicker.visible(
+                this.resource,
+                mesh,
+                cut.nodeId,
+                this.rig.camera,
+                new Vector3(...point),
+              ),
+            (segments) =>
+              this.cutPicker.visibleSegments(
+                this.resource,
+                mesh,
+                cut.nodeId,
+                this.rig.camera,
+                segments,
+              ),
+          )
+        }
+        this.guideAnnotation?.draw(this.rig.camera, this.previewGuide.ghostLabelPoints)
+        this.paint?.draw()
         this.renderer.render(this.scene, this.rig.camera)
         return moving
       })
@@ -240,7 +316,10 @@ export class SceneViewport implements SceneViewportPort {
           () => this.index,
           this.resource,
           callbacks.paint,
+          () => this.document,
+          this.request,
         )
+      if (this.paint) this.scene.add(this.paint.guides.root)
       if (callbacks.skinPaint)
         this.skinPaint = new CapturedPaintInput(
           canvas,
@@ -268,6 +347,7 @@ export class SceneViewport implements SceneViewportPort {
           const pointer = { x: event.clientX, y: event.clientY }
           if (this.bodyMoving || this.bodySelection) return { ...pointer }
           const guide = this.callbacks.guideInput?.()
+          if (guide?.cut || guide?.pivot) return null
           if (guide && !this.contextLost && this.paintMode !== 'look') {
             const rect = canvas.getBoundingClientRect()
             let point: [number, number, number] | undefined
@@ -310,8 +390,7 @@ export class SceneViewport implements SceneViewportPort {
             this.paintMode === 'look' ||
             this.componentSelection ||
             this.areaTool !== 'point' ||
-            this.skinPaintEnabled ||
-            this.gizmo?.hitAt(event.clientX, event.clientY)
+            this.skinPaintEnabled
           )
             return null
           if (
@@ -416,6 +495,7 @@ export class SceneViewport implements SceneViewportPort {
       canvas.addEventListener('pointermove', this.onMove)
       canvas.addEventListener('pointermove', this.onSkinPaintHover)
       canvas.addEventListener('pointerleave', this.clearBrushCursor)
+      canvas.addEventListener('pointerleave', this.clearCutHover)
       canvas.addEventListener('wheel', this.clearBrushCursor, { passive: true })
       canvas.addEventListener('pointerup', this.onUp)
       canvas.addEventListener('pointercancel', this.onCancel)
@@ -455,6 +535,7 @@ export class SceneViewport implements SceneViewportPort {
     if (!sameDocument) {
       this.componentSelection = null
       this.weightTarget = null
+      this.poseMode = false
     }
     this.index = index
     this.baseIndex = index
@@ -664,6 +745,7 @@ export class SceneViewport implements SceneViewportPort {
     preparedSupports?: SceneSupportPoint[],
     preparedWeights?: ReturnType<SceneSkinWeightOverlay['prepare']>,
   ): void {
+    this.cutPicker.dispose()
     const flags = this.index ? evaluateSceneNodeFlags(this.index.scene) : null
     if (this.componentSelection) {
       const node = this.index?.scene.nodes.get(this.componentSelection.nodeId)
@@ -674,7 +756,7 @@ export class SceneViewport implements SceneViewportPort {
         !state ||
         state.hidden ||
         state.locked ||
-        geometry?.kind !== 'mesh' ||
+        !geometry ||
         this.selected.length !== 1 ||
         this.selected[0] !== node?.id
       )
@@ -697,19 +779,30 @@ export class SceneViewport implements SceneViewportPort {
       )
     }
     const bounds = this.bounds(true)
-    this.outline.visible = bounds !== null
-    if (bounds) this.outline.box.set(new Vector3(...bounds.min), new Vector3(...bounds.max))
+    this.ground.update(this.bounds(false))
+    this.outline.update(this.resource, this.covered(this.selected), this.pose)
     const world =
       this.selected.length === 1
         ? this.index?.scene.worldMatrices.get(this.selected[0] ?? '')
         : undefined
     this.pivot.visible = Boolean(world && bounds)
-    if (world) this.pivot.matrix.fromArray(world)
+    const selectedNode =
+      this.selected.length === 1 ? this.index?.scene.nodes.get(this.selected[0]!) : null
+    const localBounds =
+      selectedNode && this.document ? sceneLocalBounds(this.document, selectedNode.id) : null
+    const authoringPivot = selectedNode
+      ? sceneNodePivot(selectedNode)
+      : ([0, 0, 0] as [number, number, number])
+    if (world) {
+      this.pivot.matrix.fromArray(world)
+      this.pivot.matrix.setPosition(new Vector3(...transformPoint(world, authoringPivot)))
+    }
     const faceNode = this.componentSelection
       ? this.index?.scene.nodes.get(this.componentSelection.nodeId)
       : null
-    const faceMesh =
+    const faceGeometry =
       faceNode?.kind === 'mesh' ? this.index?.geometries.get(faceNode.geometryId) : null
+    const faceMesh = faceGeometry ? sceneGeometryMesh(faceGeometry) : null
     this.faces.update(
       this.resource,
       faceMesh?.kind === 'mesh' ? faceMesh : null,
@@ -752,13 +845,28 @@ export class SceneViewport implements SceneViewportPort {
           ? this.componentSelection
             ? faceCenter
             : world
-              ? transformPoint(world, [0, 0, 0])
+              ? transformPoint(
+                  world,
+                  this.transformTool === 'move' && localBounds
+                    ? [localBounds.center[0], localBounds.max[1], localBounds.center[2]]
+                    : authoringPivot,
+                )
               : [
                   bounds.min[0] / 2 + bounds.max[0] / 2,
-                  bounds.min[1] / 2 + bounds.max[1] / 2,
+                  this.transformTool === 'move'
+                    ? bounds.max[1]
+                    : bounds.min[1] / 2 + bounds.max[1] / 2,
                   bounds.min[2] / 2 + bounds.max[2] / 2,
                 ]
           : null,
+      world
+        ? sceneTransformFrame(
+            world,
+            selectedNode?.parentId
+              ? this.index?.scene.worldMatrices.get(selectedNode.parentId)
+              : undefined,
+          )
+        : undefined,
     )
     this.updateEditingEnabled()
     this.request()
@@ -802,8 +910,8 @@ export class SceneViewport implements SceneViewportPort {
       this.scene,
       bounds,
       [
-        this.grid,
-        this.outline,
+        this.ground.root,
+        this.outline.root,
         this.pivot,
         this.faces.root,
         this.supports.root,
@@ -811,7 +919,7 @@ export class SceneViewport implements SceneViewportPort {
         this.weightPoints.root,
         this.brushCursor.root,
         this.previewGuide.root,
-        ...(this.gizmo ? [this.gizmo.root] : []),
+        ...(this.paint ? [this.paint.guides.root] : []),
       ],
       capture,
     )
@@ -827,7 +935,53 @@ export class SceneViewport implements SceneViewportPort {
 
   setPreviewGuide(guide: ScenePreviewGuideState | null): void {
     if (this.disposed) return
+    this.canvas.classList.toggle('mld-cut-canvas', !!guide?.cut)
     this.previewGuide.update(guide)
+    this.guideAnnotation?.update(guide)
+    this.request()
+  }
+  private updatePivotHandles(input = this.callbacks.guideInput?.()?.pivot) {
+    const node = input && this.index?.scene.nodes.get(input.nodeId),
+      world = input && this.index?.scene.worldMatrices.get(input.nodeId)
+    let editable =
+      !!node &&
+      !!world &&
+      !this.contextLost &&
+      !this.painting &&
+      (!this.pose || this.animationEditing)
+    let current = node
+    while (current) {
+      if (current.locked || current.hidden) editable = false
+      current = current.parentId ? this.index?.scene.nodes.get(current.parentId) : undefined
+    }
+    this.pivotHandles?.setTarget(
+      node && world ? transformPoint(world, sceneNodePivot(node)) : null,
+      world
+        ? [
+            [world[0], world[1], world[2]],
+            [world[4], world[5], world[6]],
+            [world[8], world[9], world[10]],
+          ]
+        : undefined,
+    )
+    this.pivotHandles?.setEnabled(editable)
+    this.pivotHandles?.setVerticalVisible(input?.vertical === true)
+    this.pivotHandles?.draw()
+  }
+
+  private guideInputKey = ''
+  refreshGuideInput(input: SceneGuideInput | null): void {
+    const key = JSON.stringify([
+      input?.pivot?.nodeId,
+      input?.pivot?.vertical,
+      input?.pivot?.snapVertex,
+      input?.cut?.nodeId,
+      input?.cut?.midpoint,
+    ])
+    if (this.disposed || key === this.guideInputKey) return
+    this.guideInputKey = key
+    // React may deliver options before the staged document and its pose. Draw only
+    // in the shared frame, after that revision has reached the viewport.
     this.request()
   }
 
@@ -862,8 +1016,8 @@ export class SceneViewport implements SceneViewportPort {
   }
 
   setGridVisible(visible: boolean): void {
-    if (this.disposed || visible === this.grid.visible) return
-    this.grid.visible = visible
+    if (this.disposed || visible === this.ground.grid.visible) return
+    this.ground.grid.visible = visible
     this.request()
   }
 
@@ -875,12 +1029,19 @@ export class SceneViewport implements SceneViewportPort {
   private readonly request = () => {
     if (!this.disposed) this.loop?.request()
   }
+  setTransformSpace(space: 'world' | 'local'): void {
+    if (this.disposed) return
+    this.cancelGesture()
+    this.gizmo?.setSpace(space)
+    this.updateVisibility()
+  }
   setTransformTool(tool: SceneTransformTool): void {
     if (this.disposed) return
     if (tool !== 'select') this.setSkinPaintEnabled(false)
     if (this.transformTool !== tool) this.body?.cancel()
     this.transformTool = tool
     this.gizmo?.setTool(tool)
+    this.updateVisibility()
   }
   setAreaTool(tool: SceneAreaTool, through: boolean): void {
     if (this.disposed) return
@@ -913,6 +1074,12 @@ export class SceneViewport implements SceneViewportPort {
     this.updateEditingEnabled()
     this.paint?.setTarget(target)
     this.updateVisibility()
+  }
+  setPaintScope(scope: import('./sceneViewportTypes').ScenePaintSurfaceScope | null): void {
+    if (!this.disposed) this.paint?.setScope(scope)
+  }
+  setPaintGuides(settings: import('./ScenePaintGuides').ScenePaintGuideSettings | null): void {
+    if (!this.disposed) this.paint?.setGuideSettings(settings)
   }
   /**
    * A aba Pintar. Com o modo dito, o toque que não acerta a peça escolhida fica com a câmera, e
@@ -949,7 +1116,8 @@ export class SceneViewport implements SceneViewportPort {
     if (this.disposed || enabled === this.animationEditing) return
     this.animationEditing = enabled
     this.updateEditingEnabled()
-    if (this.updatePoseGuide()) this.request()
+    this.updatePoseGuide()
+    this.request()
   }
   private updatePoseGuide(flags?: ReturnType<typeof evaluateSceneNodeFlags> | null) {
     const guide = this.pose?.twoBoneGuide
@@ -1008,10 +1176,11 @@ export class SceneViewport implements SceneViewportPort {
     })
     const supports = this.supportGuides ? this.prepareSupports(next) : undefined
     const changed = this.resource.setPose(pose)
-    const modeChanged = Boolean(pose) !== Boolean(this.pose)
+    const modeChanged = Boolean(pose) !== this.poseMode
     const guideModeChanged = Boolean(pose?.twoBoneGuide) !== Boolean(this.pose?.twoBoneGuide)
     this.index = next
     this.pose = pose
+    this.poseMode = Boolean(pose)
     if (modeChanged) {
       this.cancelGesture()
       if (pose) this.componentSelection = null
@@ -1024,9 +1193,13 @@ export class SceneViewport implements SceneViewportPort {
     if (this.disposed || this.contextLost) return
     if (frame === this.resource.frameForImage(imageId)) return
     this.paint?.cancel()
-    if (this.resource.setImageFrame(imageId, frame)) this.request()
+    if (this.resource.setImageFrame(imageId, frame)) {
+      this.ground.invalidateShadow()
+      this.request()
+    }
   }
   cancelGesture(): void {
+    this.pivotHandles?.cancel()
     this.body?.cancel()
     if (this.disposed) return
     this.gizmo?.cancel()
@@ -1050,10 +1223,55 @@ export class SceneViewport implements SceneViewportPort {
       x: event.clientX,
       y: event.clientY,
       moved: false,
-      onGizmo: this.gizmo?.hit ?? false,
+      onGizmo: false,
     }
   }
+  private cutPoint(
+    event: { clientX: number; clientY: number },
+    cut: { nodeId: string; midpoint: boolean },
+  ) {
+    const node = this.index?.scene.nodes.get(cut.nodeId)
+    const geometry = node?.kind === 'mesh' ? this.index?.geometries.get(node.geometryId) : null
+    if (!geometry) return null
+    const rect = this.canvas.getBoundingClientRect()
+    return this.cutPicker.pick(
+      this.resource,
+      sceneGeometryMesh(geometry),
+      cut.nodeId,
+      this.rig.camera,
+      {
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top,
+        width: rect.width,
+        height: rect.height,
+      },
+      cut.midpoint,
+    )
+  }
   private readonly onMove = (event: PointerEvent) => {
+    const cut = this.callbacks.guideInput?.()?.cut
+    if (cut && !this.contextLost && !this.disposed) {
+      const rect = this.canvas.getBoundingClientRect()
+      this.guideAnnotation?.setPointer(
+        event.pointerType !== 'touch' && !event.buttons
+          ? { x: event.clientX - rect.left, y: event.clientY - rect.top }
+          : null,
+      )
+      this.request()
+      this.cutHoverPointer = event.buttons
+        ? null
+        : { clientX: event.clientX, clientY: event.clientY }
+      if (event.buttons) cut.hover(null)
+      else if (this.cutHoverFrame === null)
+        this.cutHoverFrame = requestAnimationFrame(() => {
+          this.cutHoverFrame = null
+          const current = this.callbacks.guideInput?.()?.cut
+          if (current && !this.contextLost && !this.disposed)
+            current.hover(
+              this.cutHoverPointer ? this.cutPoint(this.cutHoverPointer, current) : null,
+            )
+        })
+    }
     if (
       !event.buttons &&
       this.callbacks.hover &&
@@ -1088,6 +1306,13 @@ export class SceneViewport implements SceneViewportPort {
     )
       this.pointer.moved = true
   }
+  private readonly clearCutHover = () => {
+    if (this.cutHoverFrame !== null) cancelAnimationFrame(this.cutHoverFrame)
+    this.cutHoverFrame = null
+    this.cutHoverPointer = null
+    this.guideAnnotation?.setPointer(null)
+    this.callbacks.guideInput?.()?.cut?.hover(null)
+  }
   private readonly onCancel = (event: PointerEvent) => {
     this.pointers.delete(event.pointerId)
     this.pointer = null
@@ -1108,6 +1333,33 @@ export class SceneViewport implements SceneViewportPort {
       return
     const rect = this.canvas.getBoundingClientRect()
     if (rect.width <= 0 || rect.height <= 0) return
+    const cut = this.callbacks.guideInput?.()?.cut
+    if (cut) {
+      const point = this.cutPoint(event, cut)
+      if (point) cut.mark(point)
+      return
+    }
+    const pivot = this.callbacks.guideInput?.()?.pivot
+    if (pivot?.snapVertex) {
+      const mesh = this.index ? sceneVisibleMesh(this.index, pivot.nodeId) : null
+      if (mesh?.kind === 'mesh') {
+        const vertex = this.componentPicker.pick(
+          this.resource,
+          mesh,
+          { nodeId: pivot.nodeId, mode: 'vertex', ids: [] },
+          this.rig.camera,
+          {
+            x: event.clientX - rect.left,
+            y: event.clientY - rect.top,
+            width: rect.width,
+            height: rect.height,
+            radius: event.pointerType === 'touch' ? 18 : 12,
+          },
+        )
+        if (vertex) pivot.markVertex?.(vertex, mesh.vertices[vertex]!)
+      }
+      return
+    }
     // Um toque curto com tremida já girou a câmera antes do próximo quadro: a escolha usa a
     // câmera de AGORA, como o `sceneSurfaceHit` (em Pintar, o toque é o que troca de peça).
     this.rig.camera.updateWorldMatrix(true, false)
@@ -1121,7 +1373,8 @@ export class SceneViewport implements SceneViewportPort {
     )
     if (this.componentSelection) {
       const node = this.index?.scene.nodes.get(this.componentSelection.nodeId)
-      const mesh = node?.kind === 'mesh' ? this.index?.geometries.get(node.geometryId) : null
+      const geometry = node?.kind === 'mesh' ? this.index?.geometries.get(node.geometryId) : null
+      const mesh = geometry ? sceneGeometryMesh(geometry) : null
       this.callbacks.selectComponent?.(
         this.componentSelection.mode === 'face'
           ? this.faces.pick(ray, this.resource, this.componentSelection.nodeId, this.selectThrough)
@@ -1198,6 +1451,7 @@ export class SceneViewport implements SceneViewportPort {
   }
   private readonly onRestored = () => {
     this.contextLost = false
+    this.ground.invalidateShadow()
     this.updateEditingEnabled()
     this.orbit?.dispose()
     this.orbit = this.makeOrbit()
@@ -1208,6 +1462,7 @@ export class SceneViewport implements SceneViewportPort {
     if (this.canvas.ownerDocument.hidden) this.onBlur()
   }
   private readonly onBlur = () => {
+    this.clearCutHover()
     if (this.poseGuide.hide()) this.request()
     this.cancelGesture()
     this.paint?.forget()
@@ -1230,6 +1485,7 @@ export class SceneViewport implements SceneViewportPort {
     this.disposed = true
     this.loop?.dispose()
     this.gizmo?.dispose()
+    this.guideAnnotation?.dispose()
     this.area?.dispose()
     this.paint?.dispose()
     this.body?.dispose()
@@ -1239,6 +1495,7 @@ export class SceneViewport implements SceneViewportPort {
     this.canvas.removeEventListener('pointermove', this.onMove)
     this.canvas.removeEventListener('pointermove', this.onSkinPaintHover)
     this.canvas.removeEventListener('pointerleave', this.clearBrushCursor)
+    this.canvas.removeEventListener('pointerleave', this.clearCutHover)
     this.canvas.removeEventListener('wheel', this.clearBrushCursor)
     this.canvas.removeEventListener('pointerup', this.onUp)
     this.canvas.removeEventListener('pointercancel', this.onCancel)
@@ -1252,12 +1509,17 @@ export class SceneViewport implements SceneViewportPort {
     this.supports.dispose()
     this.poseGuide.dispose()
     this.previewGuide.dispose()
+    this.pivotHandles?.dispose()
     this.weightPoints.dispose()
     this.brushCursor.dispose()
     this.weightTarget = null
     this.displayedSupports = []
     this.componentPicker.dispose()
-    this.grid.dispose()
+    this.cutPicker.dispose()
+    if (this.cutHoverFrame !== null) cancelAnimationFrame(this.cutHoverFrame)
+    this.cutHoverFrame = null
+    this.cutHoverPointer = null
+    this.ground?.dispose()
     this.outline.dispose()
     this.pivot.dispose()
     this.renderer.dispose()

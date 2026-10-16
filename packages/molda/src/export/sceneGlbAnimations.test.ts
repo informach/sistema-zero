@@ -3,9 +3,15 @@ import { AnimationMixer, LoopOnce, Object3D, Quaternion } from 'three'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import { clone } from 'three/addons/utils/SkeletonUtils.js'
 import type { SceneAnimationClip, SceneAnimationTrack } from '../scene/animation'
+import { recordSceneAnimationChannelValue } from '../scene/animationArrival'
 import type { ModelSceneNode, MoldaSceneDocument } from '../scene/document'
 import { evaluateSceneInstances } from '../scene/evaluate'
-import { identityMatrix } from '../scene/matrix'
+import {
+  composeTransform,
+  identityMatrix,
+  quaternionFromEulerXYZ,
+  transformDirection,
+} from '../scene/matrix'
 import { readSceneDocument } from '../scene/readDocument'
 import { prepareSceneAnimation, sampleSceneAnimationTrack } from '../scene/sampleAnimation'
 import { readGlb } from '../testing/glbRead'
@@ -71,6 +77,100 @@ function match(actual: readonly number[], expected: readonly number[], tolerance
       tolerance * Math.max(1, Math.abs(expected[i]!)),
     )
 }
+
+test('pivot turns export the actual curved position, report resampling and match an independent GLTF mixer between keys', async () => {
+  const clip = sceneAnimationClip()
+  const pivot: [number, number, number] = [2, -1, 3]
+  const rotation = quaternionFromEulerXYZ([20, 125, -30])
+  const end = transformDirection(
+    composeTransform({ kind: 'trs', translation: [0, 0, 0], rotation, scale: [1, 1, 1] }),
+    pivot,
+  )
+  clip.tracks = [
+    {
+      nodeId: 'body',
+      channel: 'rotation',
+      keys: [
+        { time: 0, value: [0, 0, 0, 1], interpolation: 'smooth' },
+        { time: 2, value: rotation, interpolation: 'linear', incomingPivot: pivot },
+      ],
+    },
+    {
+      nodeId: 'body',
+      channel: 'translation',
+      keys: [
+        { time: 0, value: [0, 0, 0], interpolation: 'smooth' },
+        {
+          time: 2,
+          value: [pivot[0] - end[0], pivot[1] - end[1], pivot[2] - end[2]],
+          interpolation: 'linear',
+        },
+      ],
+    },
+  ]
+  const source = fixture([clip]),
+    saved = structuredClone(source)
+  expect(() => encodeSceneGlb(source)).toThrow(SceneGlbLossError)
+  const loaded = await load(source, true)
+  expect(
+    loaded.result.issues.some(
+      (issue) => issue.code === 'animation-resampled' && issue.channel === 'translation',
+    ),
+  ).toBe(true)
+  const sampler = prepareSceneAnimation(source, clip.id),
+    mixer = new AnimationMixer(loaded.gltf.scene)
+  const target = loaded.hierarchy.targets.get('body')![0]!
+  for (let time = 0; time <= 2; time += 1 / 128) {
+    pose(mixer, loaded.gltf.animations[0]!, time)
+    match(
+      loaded.nodes[target.leaf]!.matrixWorld.elements,
+      sampler.sample(time, false).worldMatrices.get('body')!,
+      0.005,
+    )
+  }
+  expect(source).toEqual(saved)
+})
+
+test('numeric rotation and size authoring export the same interpolated matrices as the viewport', async () => {
+  let source = fixture([{ ...sceneAnimationClip(), tracks: [] }])
+  source = {
+    ...source,
+    nodes: source.nodes.map((node) => (node.id === 'body' ? { ...node, pivot: [1, -1, 0] } : node)),
+  }
+  for (const time of [0.5, 1.3]) {
+    source = recordSceneAnimationChannelValue(source, 'clip', {
+      nodeId: 'body',
+      channel: 'rotation',
+      key: {
+        time,
+        value: quaternionFromEulerXYZ([15 * time, 60 * time, -20 * time]),
+        interpolation: 'smooth',
+      },
+    })
+    source = recordSceneAnimationChannelValue(source, 'clip', {
+      nodeId: 'body',
+      channel: 'scale',
+      key: {
+        time,
+        value: [1 + time, 1 + time / 2, 0.5 + time],
+        interpolation: 'smooth',
+      },
+    })
+  }
+  const loaded = await load(source, true)
+  const sampler = prepareSceneAnimation(source, 'clip'),
+    mixer = new AnimationMixer(loaded.gltf.scene)
+  const target = loaded.hierarchy.targets.get('body')![0]!
+  for (let i = 0; i <= 256; i++) {
+    const time = i / 128
+    pose(mixer, loaded.gltf.animations[0]!, time)
+    match(
+      loaded.nodes[target.leaf]!.matrixWorld.elements,
+      sampler.sample(time, false).worldMatrices.get('body')!,
+      0.005,
+    )
+  }
+})
 
 test('linear/smooth vectors become cubic Hermite channels with exact endpoint slopes, and keep start/end holds and clip duration', async () => {
   const clip = sceneAnimationClip()

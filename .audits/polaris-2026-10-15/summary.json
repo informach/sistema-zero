@@ -1,0 +1,100 @@
+{
+  "root": "C:/Users/tocha/Downloads/polaris-main/polaris-main",
+  "recordedAt": "2026-10-16T00:30:02.182Z",
+  "files": 196,
+  "sourceFiles": 181,
+  "sourceLines": 20577,
+  "sourceFilesWithoutGenerated": 176,
+  "sourceLinesWithoutGenerated": 20196,
+  "groups": [
+    {
+      "prefix": "src/components/ui/",
+      "files": 52,
+      "lines": 6119,
+      "reachableFiles": 22
+    },
+    {
+      "prefix": "src/components/ai-elements/",
+      "files": 30,
+      "lines": 5799,
+      "reachableFiles": 3
+    },
+    {
+      "prefix": "src/features/",
+      "files": 56,
+      "lines": 5664,
+      "reachableFiles": 56
+    },
+    {
+      "prefix": "src/app/",
+      "files": 15,
+      "lines": 897,
+      "reachableFiles": 15
+    },
+    {
+      "prefix": "convex/",
+      "files": 12,
+      "lines": 1743,
+      "reachableFiles": 12
+    }
+  ],
+  "testFiles": [],
+  "licenseFiles": [],
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": 87,
+  "aiElementsReachable": [
+    "src/components/ai-elements/conversation.tsx",
+    "src/components/ai-elements/message.tsx",
+    "src/components/ai-elements/prompt-input.tsx"
+  ],
+  "aiElementsNotReachable": [
+    "src/components/ai-elements/artifact.tsx",
+    "src/components/ai-elements/canvas.tsx",
+    "src/components/ai-elements/chain-of-thought.tsx",
+    "src/components/ai-elements/checkpoint.tsx",
+    "src/components/ai-elements/code-block.tsx",
+    "src/components/ai-elements/confirmation.tsx",
+    "src/components/ai-elements/connection.tsx",
+    "src/components/ai-elements/context.tsx",
+    "src/components/ai-elements/controls.tsx",
+    "src/components/ai-elements/edge.tsx",
+    "src/components/ai-elements/image.tsx",
+    "src/components/ai-elements/inline-citation.tsx",
+    "src/components/ai-elements/loader.tsx",
+    "src/components/ai-elements/model-selector.tsx",
+    "src/components/ai-elements/node.tsx",
+    "src/components/ai-elements/open-in-chat.tsx",
+    "src/components/ai-elements/panel.tsx",
+    "src/components/ai-elements/plan.tsx",
+    "src/components/ai-elements/queue.tsx",
+    "src/components/ai-elements/reasoning.tsx",
+    "src/components/ai-elements/shimmer.tsx",
+    "src/components/ai-elements/sources.tsx",
+    "src/components/ai-elements/suggestion.tsx",
+    "src/components/ai-elements/task.tsx",
+    "src/components/ai-elements/tool.tsx",
+    "src/components/ai-elements/toolbar.tsx",
+    "src/components/ai-elements/web-preview.tsx"
+  ],
+  "largeFiles": [
+    {
+      "file": "convex/system.ts",
+      "lines": 633
+    },
+    {
+      "file": "src/components/ai-elements/prompt-input.tsx",
+      "lines": 1417
+    },
+    {
+      "file": "src/components/ui/sidebar.tsx",
+      "lines": 727
+    }
+  ],
+  "scanErrors": [],
+  "caution": "Static import reachability is triage, not proof that every export is unused or that runtime behavior works. Type-only imports may be erased. No external service or application startup was used."
+}

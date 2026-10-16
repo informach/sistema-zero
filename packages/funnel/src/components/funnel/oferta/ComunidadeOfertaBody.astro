@@ -1,5 +1,5 @@
 ---
-// Quatro perfis e continuidade: docs/marketing/kids/comunidade-dos-criadores/copy/.
+// Perfis e variantes editoriais: docs/marketing/kids/comunidade-dos-criadores/copy/.
 // As receitas visuais ficam em kids-oferta.css; o layout (`.cdc`), em comunidade-oferta.css.
 import '../../../styles/kids-oferta.css'
 import '../../../styles/comunidade-oferta.css'
@@ -16,11 +16,7 @@ import type {
   ComunidadeOffer,
   ComunidadePageId,
 } from '../../../funnels/comunidade-dos-criadores/oferta/types'
-import {
-  FAQ_VISUALS,
-  TOUR,
-  visualDe,
-} from '../../../funnels/comunidade-dos-criadores/oferta/visuals'
+import { FAQ_VISUALS, visualDe } from '../../../funnels/comunidade-dos-criadores/oferta/visuals'
 import type { FunnelDef } from '../../../funnels/registry'
 import PreCheckoutModal from '../../../islands/PreCheckoutModal'
 import BaseLayout from '../../../layouts/BaseLayout.astro'
@@ -32,6 +28,7 @@ import ProductJsonLd from '../../seo/ProductJsonLd.astro'
 import ComunidadeImageZoom from './ComunidadeImageZoom.astro'
 import ComunidadeProsa from './ComunidadeProsa.astro'
 import ComunidadeSection from './ComunidadeSection.astro'
+import ComunidadeTour from './ComunidadeTour.astro'
 import ComunidadeVisual from './ComunidadeVisual.astro'
 
 interface Props {
@@ -163,24 +160,12 @@ const faqVisuals = (id: string) =>
         </div>
       </section>
 
-      <section class="tour" aria-labelledby="title-tour">
-        <div class="wrap">
-          <h2 id="title-tour" class="tour-titulo kof-sobretitulo">Por dentro da Comunidade</h2>
-          <ul class="tour-faixa">
-            {TOUR.map((frame) => (
-              <li class="tour-item">
-                <a href={img(frame.retina)} target="_blank" rel="noopener" data-zoom aria-label={`Ampliar a imagem: ${frame.alt}`}>
-                  <img src={img(frame.file)} alt={frame.alt} width={frame.width} height={frame.height} loading="lazy" decoding="async" />
-                  <span class="tour-nome">{frame.label}<span class="material-symbols-rounded tour-lupa" aria-hidden="true">zoom_in</span></span>
-                  <span class="tour-resumo">{frame.resumo}</span>
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
+      {!page.tourAfterSection && <ComunidadeTour imagesBase={imagesBase} />}
 
-      {page.sections.map((section, index) => <ComunidadeSection section={section} imagesBase={imagesBase} index={index} experience={index === 1 && !page.sections.some((item) => item.id === 'experiencia')} />)}
+      {page.sections.map((section, index) => <>
+        <ComunidadeSection section={section} imagesBase={imagesBase} index={index} experience={index === 1 && !page.sections.some((item) => item.id === 'experiencia')} />
+        {page.tourAfterSection === section.id && <ComunidadeTour imagesBase={imagesBase} />}
+      </>)}
 
       {page.showFounder !== false && <section class="section capitulo fundo-folha cor-rosa" id="origem" aria-labelledby="title-origem">
         <div class="folha">

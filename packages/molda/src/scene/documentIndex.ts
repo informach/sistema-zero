@@ -6,7 +6,7 @@ import { SCENE_LIMITS } from './limits'
 import { SCENE_MATERIAL_IMAGE_KEYS } from './materialImages'
 import { parametricTriangleCount } from './parametricGeometry'
 import { indexSceneSkins } from './skinIndex'
-import { requireScene, uniqueById } from './validation'
+import { requireScene, tuple, uniqueById } from './validation'
 
 /** Cross-resource references and aggregate costs. Never repairs orphaned topology/materials. */
 export function indexSceneDocument(document: MoldaSceneDocument) {
@@ -87,6 +87,7 @@ export function indexSceneDocument(document: MoldaSceneDocument) {
   let renderedParts = 0
   let triangleCount = 0
   for (const node of scene.nodes.values()) {
+    if (node.pivot !== undefined) tuple(node.pivot, 3, `nodes.${node.id}.pivot`)
     if (node.kind !== 'mesh' && node.bendLimit !== undefined)
       readSceneBendLimit(node.bendLimit, `nodes.${node.id}.bendLimit`)
     if (node.kind !== 'mesh') continue

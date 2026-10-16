@@ -4,7 +4,13 @@ import { indexSceneAnimations } from './animationIndex'
 import type { ModelSceneNode, MoldaSceneDocument } from './document'
 import { indexSceneNodes, type SceneIndex } from './graph'
 import { SCENE_LIMITS } from './limits'
-import { type AffineMatrix, affineMultiply, composeTransform, type Quaternion } from './matrix'
+import {
+  type AffineMatrix,
+  affineMultiply,
+  composeTransform,
+  type Quaternion,
+  transformDirection,
+} from './matrix'
 import { readSceneAnimationClip } from './readAnimation'
 import { list, number, requireScene, tuple, id as validateId } from './validation'
 
@@ -154,7 +160,7 @@ export function prepareSceneAnimationRotationPreview(
   }
 }
 
-function animatedTransform(
+export function sampleSceneAnimationTransform(
   node: ModelSceneNode,
   space: SceneAnimationClip['space'],
   tracks: readonly SceneAnimationTrack[],
@@ -172,7 +178,55 @@ function animatedTransform(
     if (track.channel === 'rotation') transform.rotation = value as Quaternion
     else transform[track.channel] = value as Vec3
   }
+  const correction = sceneAnimationPivotOffset(node, space, tracks, time, transform)
+  transform.translation = transform.translation.map((n, axis) => n + correction[axis]!) as Vec3
   return transform
+}
+
+/** Endpoint-preserving curve of a geometric reference point, independent of today's authoring pivot.
+ * With matching position/rotation arrivals, interpolating this point keeps it fixed throughout a turn.
+ * Explicit position keys remain free to move it. Existing intervals without metadata stay unchanged.
+ */
+export function sceneAnimationPivotOffset(
+  node: ModelSceneNode,
+  space: SceneAnimationClip['space'],
+  tracks: readonly SceneAnimationTrack[],
+  time: number,
+  current?: { rotation: Quaternion; scale: Vec3 },
+): Vec3 {
+  const rotationTrack = tracks.find((track) => track.channel === 'rotation')
+  if (!rotationTrack) return [0, 0, 0]
+  let low = 0,
+    high = rotationTrack.keys.length
+  while (low < high) {
+    const middle = (low + high) >>> 1
+    if (rotationTrack.keys[middle]!.time <= time) low = middle + 1
+    else high = middle
+  }
+  const a = rotationTrack.keys[low - 1],
+    b = rotationTrack.keys[low]
+  if (!a || !b?.incomingPivot || time === a.time) return [0, 0, 0]
+  const scaleTrack = tracks.find((track) => track.channel === 'scale')
+  const restScale =
+    space === 'local' && node.transform.kind === 'trs'
+      ? node.transform.scale
+      : ([1, 1, 1] satisfies Vec3)
+  const scaledAt = (at: number): Vec3 =>
+    scaleTrack ? (sampleSceneAnimationTrack(scaleTrack, at) as Vec3) : restScale
+  const point = (rotation: Quaternion, scale: Vec3) =>
+    transformDirection(
+      composeTransform({ kind: 'trs', translation: [0, 0, 0], rotation, scale }),
+      b.incomingPivot!,
+    )
+  const start = point(a.value, scaledAt(a.time)),
+    end = point(b.value, scaledAt(b.time))
+  const now = point(
+    current?.rotation ?? (sampleSceneAnimationTrack(rotationTrack, time) as Quaternion),
+    current?.scale ?? scaledAt(time),
+  )
+  let weight = a.interpolation === 'step' ? 0 : (time - a.time) / (b.time - a.time)
+  if (a.interpolation === 'smooth') weight = weight * weight * (3 - 2 * weight)
+  return start.map((n, axis) => (1 - weight) * n + weight * end[axis]! - now[axis]!) as Vec3
 }
 
 function compileSceneAnimation(
@@ -202,14 +256,19 @@ function compileSceneAnimation(
     }
   }
   const fixedLocals = fixedTime === undefined ? null : new Map<string, AffineMatrix>(),
-    fixedTransforms = new Map<string, ReturnType<typeof animatedTransform>>()
+    fixedTransforms = new Map<string, ReturnType<typeof sampleSceneAnimationTransform>>()
   if (fixedLocals && fixedTime !== undefined)
     for (const id of affected) {
       const tracks = tracksByNode.get(id),
         base = locals.get(id)!,
         transform =
           tracks || rotationTargets.has(id)
-            ? animatedTransform(scene.nodes.get(id)!, clip.space, tracks ?? [], fixedTime)
+            ? sampleSceneAnimationTransform(
+                scene.nodes.get(id)!,
+                clip.space,
+                tracks ?? [],
+                fixedTime,
+              )
             : null,
         animated = tracks ? composeTransform(transform!) : null
       fixedLocals.set(
@@ -236,7 +295,8 @@ function compileSceneAnimation(
         let local = fixedLocals?.get(id) ?? base
         if (rotation || (!fixedLocals && tracks)) {
           const transform =
-              fixedTransforms.get(id) ?? animatedTransform(node, clip.space, tracks ?? [], time),
+              fixedTransforms.get(id) ??
+              sampleSceneAnimationTransform(node, clip.space, tracks ?? [], time),
             animated = composeTransform(rotation ? { ...transform, rotation } : transform)
           local = clip.space === 'local' ? animated : affineMultiply(base, animated)
         }

@@ -57,7 +57,7 @@ export type SceneComponentToolsProps = Pick<
   | 'remove'
   | 'removal'
   | 'weights'
-> & { visualCut?: ReactNode }
+> & { visualCut?: ReactNode; onOpenUv?(): void; onOpenWeights?(): void }
 
 /**
  * Contextual controls only; topology and history are owned by the scene commands.
@@ -92,6 +92,8 @@ export function SceneComponentTools({
   removal,
   weights,
   visualCut,
+  onOpenUv,
+  onOpenWeights,
 }: SceneComponentToolsProps) {
   const triggers = useRef<Partial<Record<SceneFacePreviewTool, HTMLButtonElement | null>>>({})
   const previous = useRef(preview.tool)
@@ -157,8 +159,23 @@ export function SceneComponentTools({
       {pro && <SceneMeshCheck check={check} />}
       <fieldset disabled={blocked} className="space-y-3">
         <legend className="sr-only">{title}</legend>
-        {uv && can('paint.uv') && <SceneUvTools {...uv} />}
-        {weights && <SceneSkinWeightTools {...weights} />}
+        {uv &&
+          can('paint.uv') &&
+          (onOpenUv ? (
+            <Button className="w-full text-sm" onClick={onOpenUv}>
+              UV
+            </Button>
+          ) : (
+            <SceneUvTools {...uv} />
+          ))}
+        {weights &&
+          (onOpenWeights ? (
+            <Button className="w-full text-sm" onClick={onOpenWeights}>
+              Ossos e pesos
+            </Button>
+          ) : (
+            <SceneSkinWeightTools {...weights} />
+          ))}
         {pro && selection.mode === 'vertex' && (
           <div className="space-y-2">
             <label className="flex min-h-11 items-center gap-2 text-sm">

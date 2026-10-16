@@ -7,10 +7,12 @@ import {
   paintSceneImage,
   resolveScenePaintTarget,
   type ScenePaintColor,
+  type ScenePaintContact,
   type ScenePaintTarget,
   validateScenePaintColor,
 } from '../scene/imagePaint'
 import { intersectImageRegions, readImageRegion } from '../scene/imageRegion'
+import { prepareScenePaintContact } from '../scene/paintContact'
 import { prepareSceneInk } from '../scene/paintInk'
 import { requireScene, SceneValidationError } from '../scene/validation'
 import type { EditorStore } from './editorStore'
@@ -23,7 +25,7 @@ export function createScenePaintGesture(
   const gestures = createGestureCoordinator({
     current: () => editor.getState().asset,
     revision: () => editor.getState().contentRevision,
-    preview: (next: MoldaSceneDocument) => editor.getState().replace(next),
+    preview: (next: MoldaSceneDocument) => editor.getState().stage(next),
     cancel: (before) => editor.getState().cancelGesture(before),
     commit: (before, after) => editor.getState().commitGesture(before, after),
   })
@@ -31,6 +33,7 @@ export function createScenePaintGesture(
     token: GestureToken<MoldaSceneDocument>
     target: ScenePaintTarget
     color: ScenePaintColor
+    ink: ScenePaintColor
     brush: BrushSize
     revision: number
     prepared: MoldaSceneDocument
@@ -42,16 +45,24 @@ export function createScenePaintGesture(
     if (current) gestures.cancel(current.token)
   }
   return {
+    checkpoint: () => active?.prepared ?? null,
+    restore(document: MoldaSceneDocument) {
+      if (!active || !gestures.preview(active.token, document)) return false
+      active.prepared = document
+      active.revision = editor.getState().contentRevision
+      return true
+    },
     begin(
       target: ScenePaintTarget,
       color: ScenePaintColor,
       brush: BrushSize,
       expected?: SceneImage,
       region?: ScenePixelRegion,
+      preparedDocument?: MoldaSceneDocument,
     ) {
       cancel()
       try {
-        const document = editor.getState().asset
+        const document = preparedDocument ?? editor.getState().asset
         const { image } = resolveScenePaintTarget(document, target)
         requireScene(
           !expected || image === expected,
@@ -70,6 +81,7 @@ export function createScenePaintGesture(
           token: gestures.begin(),
           target: { ...target },
           color: prepared.color,
+          ink: color,
           prepared: prepared.document,
           brush,
           revision: editor.getState().contentRevision,
@@ -81,11 +93,37 @@ export function createScenePaintGesture(
         return false
       }
     },
+    /** A new piece or material joins the same revision-owned stroke. */
+    surface(contact: ScenePaintContact) {
+      if (!active) return null
+      if (active.revision !== editor.getState().contentRevision) {
+        cancel()
+        onError(
+          new SceneValidationError(
+            'revision',
+            'A criação mudou durante o traço. Comece a pintar novamente.',
+          ),
+        )
+        return null
+      }
+      try {
+        const result = prepareScenePaintContact(active.prepared, contact)
+        const prepared = prepareSceneInk(result.document, result.target.imageId, active.ink)
+        active.target = result.target
+        active.prepared = prepared.document
+        active.color = prepared.color
+        return result.sample
+      } catch (error) {
+        cancel()
+        onError(error)
+        return null
+      }
+    },
     /**
      * `clip` é o limite desta AMOSTRA (a face tocada, o quadro da pintura que se mexe), somado à
      * área escolhida do começo do traço. O traço atravessa faces, e cada pedaço fica na sua.
      */
-    segment(from: Texel, to: Texel, clip?: ScenePixelRegion) {
+    segment(from: Texel, to: Texel, clip?: ScenePixelRegion, target?: ScenePaintTarget) {
       if (!active) return false
       if (active.revision !== editor.getState().contentRevision) {
         cancel()
@@ -105,6 +143,12 @@ export function createScenePaintGesture(
       // Pedaço fora da área escolhida: nada a pintar, e o traço segue.
       if (clip && !region) return true
       try {
+        if (target) {
+          const prepared = prepareSceneInk(active.prepared, target.imageId, active.ink)
+          active.prepared = prepared.document
+          active.color = prepared.color
+          active.target = target
+        }
         const next = paintSceneImage(active.prepared, active.target, {
           from,
           to,

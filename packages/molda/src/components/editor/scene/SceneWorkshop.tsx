@@ -10,14 +10,17 @@ import { scenePalette } from '../../../scene/composite'
 import type { ModelSceneNode, MoldaSceneDocument } from '../../../scene/document'
 import { sceneToJson } from '../../../scene/documentJson'
 import { sceneMaterialImageBase } from '../../../scene/materialImages'
+import { transformPoint } from '../../../scene/matrix'
+import { sceneNodePivot, scenePivotRotation, setSceneAuthoringPivot } from '../../../scene/pivot'
 import { duplicateSceneNodesNearby } from '../../../scene/placement'
+import { sceneVisibleMesh } from '../../../scene/visibleMesh'
 import type { EditorStore } from '../../../state/editorStore'
 import type { SceneStorageObserver } from '../../../state/sceneStorageObserver'
 import type { SceneViewportFactory, SceneViewportPort } from '../../../viewport/sceneViewportTypes'
 import { useMoldaToolAccess } from '../../toolAccess'
 import { Button } from '../../ui/Button'
 import { Dialog, isMoldaDialogOpen } from '../../ui/Dialog'
-import { ChevronDown, Crosshair, Focus, ListChecks } from '../../ui/icons'
+import { Crosshair, Focus, Ghost, ListChecks } from '../../ui/icons'
 import { isTypingTarget } from '../../ui/interaction'
 import { DeferredModule } from '../DeferredEditor'
 import { WorkspaceInspector } from '../model/WorkspaceInspector'
@@ -30,17 +33,26 @@ import { SceneGlbExportPanel } from './SceneGlbExportPanel'
 import { SceneHierarchy, type SceneHierarchyShape } from './SceneHierarchy'
 import { SceneInspectorSections } from './SceneInspectorSections'
 import { SceneModelColumn } from './SceneModelColumn'
-import { SceneDivisionChoices, SceneModelGuideBar } from './SceneModelGuideControls'
+import {
+  SceneDivisionChoices,
+  SceneModelGuideBar,
+  ScenePivotChoices,
+} from './SceneModelGuideControls'
 import { SceneModeTabs } from './SceneModeTabs'
 import { SceneNodeProperties } from './SceneNodeProperties'
 import { ScenePaintCloseUp } from './ScenePaintCloseUp'
 import { ScenePaintColumn } from './ScenePaintKid'
 import { ScenePaintPalette } from './ScenePaintPalette'
+import { SceneSelectionModes } from './SceneSelectionModes'
+import { SceneSolidCutBar } from './SceneSolidCutBar'
 import { SceneStorageNotice } from './SceneStorageNotice'
 import { SceneTile } from './SceneTile'
 import { SceneUpcomingTools } from './SceneUpcomingTools'
 import { SceneWorkshopBar } from './SceneWorkshopBar'
+import { SceneWorkspaceAreas } from './SceneWorkspaceAreas'
+import { SceneWorkspacePanel } from './SceneWorkspacePanel'
 import { SCENE_PAINT_ADVANCED_FAMILIES } from './sceneCommandAccess'
+import { sceneCommandForShortcut } from './sceneCommandRegistry'
 import { runScenePaintShortcut } from './scenePaintShortcuts'
 import { useSceneWorkshop } from './useSceneWorkshop'
 
@@ -103,6 +115,7 @@ export function SceneWorkshop({
   const [toolsSlot, setToolsSlot] = useState<HTMLDivElement | null>(null)
   const [areaToolsSlot, setAreaToolsSlot] = useState<HTMLDivElement | null>(null)
   const [togglesSlot, setTogglesSlot] = useState<HTMLDivElement | null>(null)
+  const [paintScopeSlot, setPaintScopeSlot] = useState<HTMLDivElement | null>(null)
   const [viewSlot, setViewSlot] = useState<HTMLDivElement | null>(null)
   const [contextSlot, setContextSlot] = useState<HTMLDivElement | null>(null)
   function hasPendingPose() {
@@ -128,15 +141,59 @@ export function SceneWorkshop({
               document: workshop.document,
               ids: workshop.selected,
               pose: workshop.previousPose,
+              wireframe: true,
+              color: 0x8d96a3,
+              opacity: 0.6,
+              depthTest: true,
             },
           }
         : null,
     [workshop.document, workshop.selected, workshop.previousPose],
   )
+  const displayedPose = workshop.animation.getSnapshot().pose
+  const pivotGuide = useMemo(() => {
+    const node = workshop.primary
+    if (workshop.tool !== 'pivot' || !node) return null
+    const pose = displayedPose?.source === workshop.document ? displayedPose : undefined
+    const world = (pose?.worldMatrices ?? workshop.index.scene.worldMatrices).get(node.id)
+    if (!world) return null
+    try {
+      return {
+        size: 1,
+        snapPoints:
+          workshop.pivotSnap && node.kind === 'mesh'
+            ? Object.values(
+                sceneVisibleMesh(workshop.index, node.id, pose?.worldMatrices)!.vertices,
+              ).map((point) => transformPoint(world, point))
+            : undefined,
+        ghost: {
+          document: workshop.document,
+          ids: [node.id],
+          pose,
+          wireframe: true,
+          color: 0x8b3fd9,
+          opacity: 0.55,
+          depthTest: false,
+          label: 'Assim ela vai girar',
+          worldDelta: scenePivotRotation(world, sceneNodePivot(node)),
+        },
+      }
+    } catch {
+      return null
+    }
+  }, [
+    workshop.tool,
+    workshop.primary,
+    workshop.index,
+    workshop.document,
+    displayedPose,
+    workshop.pivotSnap,
+  ])
   const faceToggle = useRef<HTMLButtonElement>(null)
   function closeFaces() {
     workshop.requestTransition(() => {
-      workshop.components.close()
+      if (workshop.area === 'mesh' || workshop.area === 'skin') workshop.openArea(null)
+      else workshop.components.close()
       queueMicrotask(() => faceToggle.current?.focus())
     })
   }
@@ -210,6 +267,7 @@ export function SceneWorkshop({
     ...(mode === 'paint' ? {} : { tools: toolsSlot, areaTools: areaToolsSlot }),
     toggles: togglesSlot,
     view: viewSlot,
+    paintScope: paintScopeSlot,
     context: contextSlot,
   }
   // "Isolar seleção" é um jeito de OLHAR: mora na lista das vistas, nas três abas.
@@ -234,6 +292,108 @@ export function SceneWorkshop({
       }}
       onKeyDown={(event) => {
         if (event.defaultPrevented || isTypingTarget(event.target) || isMoldaDialogOpen()) return
+        // Activation belongs to the focused control. In particular, Space on a
+        // checkbox must toggle it, and Enter on Cancel must not confirm a cut.
+        if (
+          (event.key === ' ' || event.key === 'Enter') &&
+          (event.target as Element).closest?.(
+            'button, input, select, textarea, summary, a[href], [role="button"], [role="checkbox"], [role="switch"]',
+          )
+        )
+          return
+        if ((event.target as Element).closest?.('[data-workspace-area="skin"]')) {
+          // Binding review owns its keyboard context; a Delete/undo shortcut must not edit
+          // the scene behind a pending suggestion. The shared history buttons remain available.
+          if (event.key === 'Escape') workshop.openArea(null)
+          event.stopPropagation()
+          if (
+            event.key === 'Delete' ||
+            event.key === 'Escape' ||
+            (event.ctrlKey && event.key === 'z')
+          )
+            event.preventDefault()
+          return
+        }
+        if (mode === 'animation' && !event.ctrlKey && !event.metaKey && !event.altKey) {
+          const state = workshop.animation.getSnapshot(),
+            clip = state.source?.clip
+          if (event.key === 'Escape' && workshop.poseCopy) {
+            event.preventDefault()
+            workshop.cancelPoseCopy()
+            return
+          }
+          if (clip && [' ', 'Home', 'End', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
+            event.preventDefault()
+            if (event.key === ' ')
+              state.playing ? workshop.animation.pause() : workshop.animation.play()
+            else {
+              workshop.selectAnimationPose(null)
+              workshop.animation.seek(
+                event.key === 'Home'
+                  ? 0
+                  : event.key === 'End'
+                    ? clip.duration
+                    : Math.max(
+                        0,
+                        Math.min(
+                          clip.duration,
+                          state.time + (event.key === 'ArrowRight' ? 0.05 : -0.05),
+                        ),
+                      ),
+              )
+            }
+            return
+          }
+          if (event.key === 'Delete' || event.key === 'Backspace') {
+            event.preventDefault()
+            if (can('animate.create')) workshop.removeSelectedPose()
+            return
+          }
+        }
+        if (
+          mode === 'model' &&
+          workshop.tool === 'cut' &&
+          ['Escape', 'Enter', 'Backspace'].includes(event.key)
+        ) {
+          event.preventDefault()
+          if (event.key === 'Escape') workshop.setTool('select')
+          else if (event.key === 'Backspace') workshop.solidCut.back()
+          else void workshop.solidCut.confirm()
+          return
+        }
+        if (
+          mode === 'model' &&
+          !event.ctrlKey &&
+          !event.metaKey &&
+          !event.altKey &&
+          event.key.toLowerCase() === 'k'
+        ) {
+          event.preventDefault()
+          if (can('model.cut')) workshop.setTool('cut')
+          return
+        }
+        if (mode === 'model' || mode === 'animation') {
+          const command = sceneCommandForShortcut(
+            mode === 'model' ? 'model' : 'animate',
+            event,
+            can,
+          )
+          const transform =
+            command === 'tool.select'
+              ? 'select'
+              : command === 'tool.move'
+                ? 'move'
+                : command === 'tool.rotate'
+                  ? 'rotate'
+                  : command === 'tool.scale'
+                    ? 'scale'
+                    : null
+          if (transform) {
+            event.preventDefault()
+            workshop.setTool(transform)
+            return
+          }
+        }
         if (event.key === 'Escape' && workshop.modelGuides.owner) {
           // Esc é o "Cancelar" da barra da prévia: descarta direto, sem perguntar de novo.
           event.preventDefault()
@@ -252,6 +412,15 @@ export function SceneWorkshop({
           event.preventDefault()
           workshop.animation.pause()
           workshop.animationPose.interrupt()
+        } else if (
+          (mode === 'model' || mode === 'animation') &&
+          !event.ctrlKey &&
+          !event.metaKey &&
+          !event.altKey &&
+          event.key.toLowerCase() === 'p'
+        ) {
+          event.preventDefault()
+          if (can('model.pivot') && selected.length === 1) workshop.setTool('pivot')
         } else if (mode === 'model' && event.key === 'Delete' && selected.length) {
           // Atalho de família trancada é da oficina: não age, e o navegador não o recebe.
           event.preventDefault()
@@ -406,7 +575,6 @@ export function SceneWorkshop({
             workshop={workshop}
             toolsSlot={setToolsSlot}
             areaToolsSlot={setAreaToolsSlot}
-            faceToggle={faceToggle}
             onToggleFaces={() => {
               if (workshop.components.selection) closeFaces()
               // Uma prévia de pivô ou de divisão pergunta ANTES: abrir a malha por baixo dela
@@ -434,25 +602,21 @@ export function SceneWorkshop({
               {SCENE_SHELL_COPY.tools}
             </p>
             <div ref={setToolsSlot} className="flex flex-col gap-1.5" />
-            {can('model.precise') && selected.length === 1 && (
-              <details className="mld-rail-more">
-                <summary>
-                  Mais ferramentas
-                  <ChevronDown aria-hidden="true" />
-                </summary>
-                <SceneTile
-                  icon={Crosshair}
-                  label="Pivô"
-                  title="Onde gira"
-                  pressed={workshop.tool === 'pivot' && !workshop.looking}
-                  onClick={() =>
-                    workshop.requestTransition(() => {
-                      workshop.animation.pause()
-                      workshop.setTool('pivot')
-                    })
-                  }
-                />
-              </details>
+            {can('model.pivot') && selected.length === 1 && (
+              <SceneTile
+                icon={Crosshair}
+                label="Pivô"
+                keyHint="P"
+                aria-keyshortcuts="P"
+                title="Onde gira"
+                pressed={workshop.tool === 'pivot' && !workshop.looking}
+                onClick={() =>
+                  workshop.requestTransition(() => {
+                    workshop.animation.pause()
+                    workshop.setTool('pivot')
+                  })
+                }
+              />
             )}
           </section>
         )}
@@ -464,109 +628,211 @@ export function SceneWorkshop({
           <div
             className={`mld-workshop-stage flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden max-[899px]:flex-none ${mode === 'animation' ? 'max-[899px]:h-[500px] max-[899px]:min-h-[500px]' : 'max-[899px]:h-[420px] max-[899px]:min-h-[420px]'}`}
           >
-            {/* As ferramentas de OLHAR flutuam no alto do palco em dois cartões brancos. */}
-            <div className="mld-stage-toolbar">
-              <div ref={setTogglesSlot} className="mld-float" />
-              {workshop.isolation !== null && (
-                <button
-                  type="button"
-                  className="sz-tool-pill sz-tool-pill--outline text-[0.8125rem] shadow-(--mld-float-shadow)"
-                  onClick={() => workshop.setIsolation(null)}
-                >
-                  <Focus aria-hidden="true" />
-                  Ver todas as peças
-                </button>
-              )}
-              <div ref={setViewSlot} className="mld-float ml-auto" />
-            </div>
-            <SceneCanvas
-              guideInput={workshop.modelGuides.owner ? (workshop.modelGuides.input ?? {}) : null}
-              guidePoint={workshop.modelGuides.point}
-              previewGuide={workshop.modelGuides.guide ?? previousPoseGuide}
-              cameraRequest={workshop.modelGuides.cameraRequest}
-              reveal={workshop.reveal}
-              onViewport={setExportViewport}
-              mode={mode}
-              tool={workshop.tool}
-              onToolChange={workshop.setTool}
-              looking={workshop.looking}
-              onLookingChange={workshop.setLooking}
-              onHover={workshop.placing ? workshop.previewPlacement : undefined}
-              onSampleInk={workshop.paint.picker ? workshop.paint.sample : undefined}
-              document={
-                workshop.placementPreview ??
-                workshop.modelGuides.document ??
-                workshop.animationPreviewDocument ??
-                document
-              }
-              selection={selected}
-              isolation={workshop.isolation}
-              onSelect={workshop.select}
-              onSelectMany={workshop.selectMany}
-              factory={viewportFactory}
-              onThumb={(thumb) => {
-                if (
-                  !workshop.paintPreparationPending() &&
-                  !workshop.placing &&
-                  !workshop.modelGuides.owner
-                )
-                  workshop.editor.getState().setThumb(thumb)
-              }}
-              transform={
-                mode === 'animation'
-                  ? workshop.animationPose.transformActions(selected)
-                  : workshop.transform
-              }
-              transformTools={workshop.components.transformTools}
-              componentSelection={workshop.components.selection}
-              facePreviewOpen={
-                !!workshop.modelGuides.owner ||
-                workshop.placing ||
-                workshop.components.preview.tool !== null ||
-                workshop.components.check.busy ||
-                !!workshop.components.check.preview
-              }
-              onSelectComponent={workshop.components.select}
-              onSelectComponents={workshop.components.selectMany}
-              onEndFaces={escapeFaces}
-              onInterrupt={workshop.cancelGesture}
-              skinPaint={workshop.skinPaint}
-              paintTarget={workshop.paint.session?.target ?? null}
-              paintMirror={workshop.paint.mirror}
-              overlay={
-                mode === 'paint' && workshop.paint.data && workshop.paint.closeUp ? (
-                  <ScenePaintCloseUp
-                    image={workshop.paint.data.image}
-                    palette={paintPalette}
-                    base={paintBase ?? [0, 0, 0, 0]}
-                    view={workshop.paint.closeUp}
-                    drawing={workshop.paint.drawing}
-                    actions={workshop.paint.actions}
-                    onClose={workshop.paint.closeCloseUp}
-                  />
-                ) : null
-              }
-              paint={workshop.paint.actions}
-              flipbook={workshop.flipbook}
-              animation={workshop.animation}
-              animationPose={workshop.animationPose}
-              onEndPaint={workshop.endPaint}
-              slots={slots}
-              viewExtras={isolate}
-            />
+            <SceneWorkspaceAreas workshop={workshop} />
             <div
-              className={workshop.modelGuides.owner ? 'hidden' : 'mld-stage-context'}
-              ref={setContextSlot}
-            />
-            <SceneModelGuideBar workshop={workshop} />
-            {workshop.placing && (
-              <div className="mld-placement-notice" role="status">
-                Escolha o apoio para colocar a peça em cima.
-                <Button className="text-sm" onClick={workshop.cancelPlacement}>
-                  Cancelar
-                </Button>
+              className="mld-stage-workbench"
+              data-specialized={!!workshop.area && workshop.area !== 'curves'}
+            >
+              <div className="mld-stage-viewport" data-mode={mode}>
+                {/* As ferramentas de OLHAR flutuam no alto do palco em dois cartões brancos. */}
+                <div className="mld-stage-toolbar">
+                  {mode === 'model' && can('model.components') && (
+                    <SceneSelectionModes workshop={workshop} />
+                  )}
+                  {mode === 'animation' && (
+                    <label
+                      className="mld-float mld-previous-pose mld-auto-key"
+                      data-enabled={workshop.showPreviousPose}
+                    >
+                      <Ghost aria-hidden="true" className="size-4 text-mld-muted" />
+                      Ver pose anterior
+                      <input
+                        type="checkbox"
+                        className="sr-only"
+                        checked={workshop.showPreviousPose}
+                        name="showPreviousPose"
+                        onChange={(event) => workshop.setShowPreviousPose(event.target.checked)}
+                      />
+                      <span aria-hidden="true" className="mld-auto-switch" />
+                    </label>
+                  )}
+                  {mode === 'paint' && <div ref={setPaintScopeSlot} className="mld-float" />}
+                  {workshop.isolation !== null && (
+                    <button
+                      type="button"
+                      className="sz-tool-pill sz-tool-pill--outline text-[0.8125rem] shadow-(--mld-float-shadow)"
+                      onClick={() => workshop.setIsolation(null)}
+                    >
+                      <Focus aria-hidden="true" />
+                      Ver todas as peças
+                    </button>
+                  )}
+                  <div className="mld-float ml-auto">
+                    <div ref={setViewSlot} className="contents" />
+                    <div ref={setTogglesSlot} className="contents" />
+                  </div>
+                </div>
+                <SceneCanvas
+                  guideInput={
+                    workshop.tool === 'pivot' && workshop.primary
+                      ? {
+                          pivot: {
+                            nodeId: workshop.primary.id,
+                            vertical: workshop.pivotVertical,
+                            snapVertex: workshop.pivotSnap,
+                            markVertex: (_vertexId, point) =>
+                              workshop.run((source) =>
+                                setSceneAuthoringPivot(source, workshop.primary!.id, point),
+                              ),
+                            begin: (world) =>
+                              workshop.pivotGesture.begin(workshop.primary!.id, world),
+                            preview: workshop.pivotGesture.preview,
+                            end: workshop.pivotGesture.end,
+                          },
+                        }
+                      : workshop.solidCut.owner
+                        ? {
+                            cut: {
+                              nodeId: workshop.solidCut.owner.nodeId,
+                              midpoint: workshop.solidCut.midpoint,
+                              mark: workshop.solidCut.point,
+                              hover: workshop.solidCut.hover,
+                            },
+                          }
+                        : workshop.modelGuides.owner
+                          ? (workshop.modelGuides.input ?? {})
+                          : null
+                  }
+                  guidePoint={workshop.modelGuides.point}
+                  previewGuide={
+                    workshop.solidCut.guide ??
+                    pivotGuide ??
+                    workshop.modelGuides.guide ??
+                    previousPoseGuide
+                  }
+                  hintControls={
+                    workshop.tool === 'pivot' ? (
+                      <ScenePivotChoices workshop={workshop} compact />
+                    ) : undefined
+                  }
+                  cameraRequest={workshop.modelGuides.cameraRequest}
+                  reveal={workshop.reveal}
+                  onViewport={setExportViewport}
+                  mode={workshop.area === 'uv' ? 'model' : mode}
+                  tool={workshop.tool}
+                  onToolChange={workshop.setTool}
+                  looking={workshop.looking}
+                  onLookingChange={workshop.setLooking}
+                  onHover={workshop.placing ? workshop.previewPlacement : undefined}
+                  onSampleInk={workshop.paint.picker ? workshop.paint.sample : undefined}
+                  document={
+                    workshop.placementPreview ??
+                    workshop.modelGuides.document ??
+                    workshop.animationPreviewDocument ??
+                    document
+                  }
+                  selection={selected}
+                  isolation={workshop.isolation}
+                  onSelect={workshop.select}
+                  onSelectMany={workshop.selectMany}
+                  factory={viewportFactory}
+                  onThumb={(thumb) => {
+                    if (
+                      !workshop.paintPreparationPending() &&
+                      !workshop.placing &&
+                      !workshop.modelGuides.owner
+                    )
+                      workshop.editor.getState().setThumb(thumb)
+                  }}
+                  transform={
+                    mode === 'animation'
+                      ? workshop.animationPose.transformActions(selected)
+                      : workshop.transform
+                  }
+                  transformTools={workshop.components.transformTools}
+                  componentSelection={workshop.components.selection}
+                  facePreviewOpen={
+                    !!workshop.modelGuides.owner ||
+                    workshop.placing ||
+                    workshop.components.preview.tool !== null ||
+                    workshop.components.check.busy ||
+                    !!workshop.components.check.preview
+                  }
+                  onSelectComponent={workshop.components.select}
+                  onSelectComponents={workshop.components.selectMany}
+                  onEndFaces={escapeFaces}
+                  onInterrupt={workshop.cancelGesture}
+                  skinPaint={workshop.skinPaint}
+                  paintTarget={workshop.paint.session?.target ?? null}
+                  paintScope={
+                    can('paint.brush') &&
+                    workshop.paint.surfaceMode &&
+                    !workshop.paint.shape &&
+                    !workshop.paint.closeupTool &&
+                    !workshop.paint.rotate
+                      ? { mode: workshop.paint.pieceScope, nodeId: workshop.primary?.id ?? null }
+                      : null
+                  }
+                  onPaintScopeChange={
+                    can('paint.brush') && workshop.paint.surfaceMode
+                      ? workshop.paint.setPieceScope
+                      : undefined
+                  }
+                  paintMirror={workshop.paint.mirror}
+                  paintGuides={{
+                    grid: workshop.paint.grid,
+                    brush: workshop.paint.brush,
+                    ink: workshop.paint.ink,
+                    cursor:
+                      !workshop.paint.picker &&
+                      !workshop.paint.fill &&
+                      !workshop.paint.shape &&
+                      !workshop.paint.rotate &&
+                      !workshop.paint.closeupTool,
+                  }}
+                  overlay={
+                    mode === 'paint' && workshop.paint.data && workshop.paint.closeUp ? (
+                      <ScenePaintCloseUp
+                        image={workshop.paint.data.image}
+                        palette={paintPalette}
+                        base={paintBase ?? [0, 0, 0, 0]}
+                        view={workshop.paint.closeUp}
+                        drawing={workshop.paint.drawing}
+                        actions={workshop.paint.actions}
+                        onClose={workshop.paint.closeCloseUp}
+                      />
+                    ) : null
+                  }
+                  paint={workshop.paint.actions}
+                  flipbook={workshop.flipbook}
+                  animation={workshop.animation}
+                  animationPose={workshop.animationPose}
+                  onEndPaint={workshop.endPaint}
+                  slots={slots}
+                  viewExtras={isolate}
+                />
+                <div
+                  data-essential={workshop.tool === 'pivot' || !!workshop.components.selection}
+                  className={
+                    workshop.modelGuides.owner || workshop.tool === 'cut'
+                      ? 'hidden'
+                      : 'mld-stage-context'
+                  }
+                  ref={setContextSlot}
+                />
+                <SceneModelGuideBar workshop={workshop} />
+                <SceneSolidCutBar workshop={workshop} />
+                {workshop.placing && (
+                  <div className="mld-placement-notice" role="status">
+                    Escolha o apoio para colocar a peça em cima.
+                    <Button className="text-sm" onClick={workshop.cancelPlacement}>
+                      Cancelar
+                    </Button>
+                  </div>
+                )}
               </div>
-            )}
+              <SceneWorkspacePanel workshop={workshop} />
+            </div>
             {mode === 'animation' && (
               <DeferredModule
                 load={loadTimeline}
@@ -595,6 +861,18 @@ export function SceneWorkshop({
                 <>
                   <div className="flex items-center justify-between gap-2 px-1 pb-1">
                     <h3 className="mld-kicker">{copy.hierarchy}</h3>
+                    {mode === 'animation' && (
+                      <button
+                        type="button"
+                        className="mld-tree-action ml-auto"
+                        aria-label={copy.addSelection}
+                        title={copy.addSelection}
+                        aria-pressed={workshop.additive}
+                        onClick={() => workshop.setAdditive(!workshop.additive)}
+                      >
+                        <ListChecks aria-hidden="true" className="size-4" />
+                      </button>
+                    )}
                     {document.nodes.length > 0 && (
                       <span
                         aria-hidden="true"
@@ -604,17 +882,6 @@ export function SceneWorkshop({
                       </span>
                     )}
                   </div>
-                  {/* No Modelar ele mora em "Mais ferramentas"; em Pintar a escolha é de uma peça. */}
-                  {mode === 'animation' && (
-                    <Button
-                      className="w-full text-sm"
-                      aria-pressed={workshop.additive}
-                      onClick={() => workshop.setAdditive(!workshop.additive)}
-                    >
-                      <ListChecks aria-hidden="true" className="size-4" />
-                      {copy.addSelection}
-                    </Button>
-                  )}
                   {!document.nodes.length && (
                     <p className="px-1 text-sm text-mld-muted">{copy.empty}</p>
                   )}
@@ -623,6 +890,8 @@ export function SceneWorkshop({
                     selected={selected}
                     onSelect={workshop.select}
                     shapeOf={shapeOf}
+                    poseCounts={mode === 'animation' ? workshop.poseCounts : undefined}
+                    paintColors={mode === 'paint' ? workshop.paintColors : undefined}
                     onFlag={
                       mode === 'model' && can('model.pieces')
                         ? (id, flag, value) =>
@@ -630,6 +899,11 @@ export function SceneWorkshop({
                         : undefined
                     }
                   />
+                  {mode === 'paint' && workshop.paintColorsStatus && (
+                    <p role="status" className="px-1 text-xs text-mld-muted">
+                      {workshop.paintColorsStatus}
+                    </p>
+                  )}
                 </>
               }
             >
@@ -655,14 +929,41 @@ export function SceneWorkshop({
                       backLabel={copy.glbExport.close}
                     />
                   )}
-                  {/* No celular a linha mora aqui, na gaveta; no computador, no fim da coluna. */}
-                  <SceneUpcomingTools tabs={['paint']} className="md:hidden" />
+                  <SceneUpcomingTools tabs={['paint']} />
                 </>
-              ) : workshop.components.selection ? (
+              ) : workshop.area === 'mesh' && workshop.components.selection ? (
+                <div className="space-y-2 p-3 text-sm text-mld-muted">
+                  <h3 className="font-bold text-mld-text">Seleção da malha</h3>
+                  <p>
+                    {workshop.components.selection.ids.length}{' '}
+                    {copy.componentModes[workshop.components.selection.mode].toLowerCase()}{' '}
+                    escolhidos
+                  </p>
+                  <p>
+                    As ferramentas à esquerda do painel atuam nesta seleção. Use as alças no modelo
+                    para mover, girar ou mudar o tamanho.
+                  </p>
+                </div>
+              ) : workshop.area === 'skin' ? (
+                <SceneNodeProperties workshop={workshop} />
+              ) : workshop.components.selection && can('model.mesh') ? (
                 <SceneComponentTools
                   {...workshop.components}
+                  onOpenUv={() => workshop.openArea('uv')}
+                  onOpenWeights={() => workshop.openArea('skin')}
                   visualCut={<SceneDivisionChoices workshop={workshop} />}
                 />
+              ) : workshop.components.selection ? (
+                <div className="p-3 text-sm text-mld-muted">
+                  <p>
+                    {workshop.components.selection.ids.length}{' '}
+                    {workshop.components.selection.mode === 'vertex' ? 'pontos' : 'faces'}{' '}
+                    escolhidos
+                  </p>
+                  <p className="mt-2">
+                    Escolha Mover, Girar ou Tamanho e puxe uma alça para ajustar.
+                  </p>
+                </div>
               ) : (
                 <SceneNodeProperties workshop={workshop} />
               )}

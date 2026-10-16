@@ -1,38 +1,133 @@
+import type { Vec3 } from '../../../core/model'
+import { evaluateSceneNodeFlags } from '../../../scene/evaluate'
+import {
+  sceneLocalBounds,
+  sceneNodePivot,
+  setSceneAuthoringPivot,
+  setScenePivotPreset,
+} from '../../../scene/pivot'
+import { useMoldaToolAccess } from '../../toolAccess'
 import { Button } from '../../ui/Button'
 import type { useSceneWorkshop } from './useSceneWorkshop'
 
 type Workshop = ReturnType<typeof useSceneWorkshop>
 
-export function ScenePivotChoices({ workshop }: { workshop: Workshop }) {
+export function ScenePivotChoices({
+  workshop,
+  compact = false,
+  precision = false,
+}: {
+  workshop: Workshop
+  compact?: boolean
+  precision?: boolean
+}) {
+  const { can } = useMoldaToolAccess()
   const id = workshop.selected.length === 1 ? workshop.selected[0] : null
+  const node = id ? workshop.index.scene.nodes.get(id) : null,
+    bounds = id ? sceneLocalBounds(workshop.document, id) : null,
+    pivot = node ? sceneNodePivot(node) : null,
+    locked = id ? evaluateSceneNodeFlags(workshop.index.scene).get(id)?.locked : true
+  const active = (preset: 'center' | 'bottom' | 'corner') => {
+    if (!bounds || !pivot) return false
+    const point =
+      preset === 'center'
+        ? bounds.center
+        : preset === 'bottom'
+          ? bounds.base
+          : [bounds.max[0], bounds.min[1], bounds.max[2]]
+    return point.every((n, i) => Math.abs(n - pivot[i]!) <= Math.max(...bounds.size) * 1e-10)
+  }
   return (
-    <div className="space-y-2">
-      <p className="text-sm text-mld-muted">
-        Escolha onde a peça vai girar. O desenho rosa mostra uma volta de exemplo.
-      </p>
-      <div className="flex flex-wrap gap-1">
-        <Button disabled={!id} onClick={() => id && workshop.modelGuides.preset(id, 'center')}>
-          Centro
-        </Button>
-        <Button disabled={!id} onClick={() => id && workshop.modelGuides.preset(id, 'bottom')}>
-          Embaixo
-        </Button>
-        <Button disabled={!id} onClick={() => id && workshop.modelGuides.corners(id)}>
-          Canto
-        </Button>
-      </div>
-      {workshop.modelGuides.owner?.pickingCorners && (
-        <p role="status" className="text-sm">
-          Clique em um ponto rosa no modelo.
-        </p>
+    <div className={compact ? 'mld-pivot-presets flex flex-wrap items-center gap-2' : 'space-y-2'}>
+      {!precision && (
+        <>
+          <span className="text-xs whitespace-nowrap text-mld-muted">Colocar no:</span>
+          <div className="flex flex-wrap gap-1">
+            <Button
+              disabled={!id || locked}
+              aria-pressed={active('center')}
+              onClick={() =>
+                id && workshop.run((source) => setScenePivotPreset(source, id, 'center'))
+              }
+            >
+              Centro
+            </Button>
+            <Button
+              disabled={!id || locked}
+              aria-pressed={active('bottom')}
+              onClick={() =>
+                id && workshop.run((source) => setScenePivotPreset(source, id, 'bottom'))
+              }
+            >
+              Embaixo
+            </Button>
+            <Button
+              disabled={!id || locked}
+              aria-pressed={active('corner')}
+              onClick={() =>
+                id && workshop.run((source) => setScenePivotPreset(source, id, 'corner'))
+              }
+            >
+              Canto
+            </Button>
+          </div>
+        </>
       )}
-      {workshop.modelGuides.error && (
-        <p role="alert" className="text-sm text-mld-danger">
-          {workshop.modelGuides.error}
-        </p>
+      {precision && can('model.precise') && (
+        <details className="rounded-lg border border-mld-border bg-mld-surface p-2 text-xs">
+          <summary className="cursor-pointer font-bold">Mais posições do pivô</summary>
+          <label className="flex min-h-11 items-center gap-2">
+            <input
+              name="pivotVertical"
+              type="checkbox"
+              checked={workshop.pivotVertical}
+              onChange={(event) => workshop.setPivotVertical(event.target.checked)}
+            />
+            Mostrar alça Y
+          </label>
+          <label className="flex min-h-11 items-center gap-2">
+            <input
+              name="pivotSnapVertex"
+              type="checkbox"
+              disabled={node?.kind !== 'mesh' || locked}
+              checked={workshop.pivotSnap}
+              onChange={(event) => changeSnap(event.target.checked)}
+            />
+            Encaixar em um ponto da peça
+          </label>
+          {workshop.pivotSnap && (
+            <p role="status">
+              Clique em um ponto visível da peça. A câmera continua livre para girar.
+            </p>
+          )}
+          <div className="grid grid-cols-2 gap-1">
+            {bounds &&
+              [0, 1, 2, 3, 4, 5, 6, 7].map((i) => {
+                const point = [0, 1, 2].map(
+                  (axis) => (i & (1 << axis) ? bounds.max : bounds.min)[axis],
+                ) as Vec3
+                return (
+                  <Button
+                    key={i}
+                    disabled={!id || locked}
+                    aria-pressed={point.every((n, axis) => n === pivot?.[axis])}
+                    onClick={() =>
+                      id && workshop.run((source) => setSceneAuthoringPivot(source, id, point))
+                    }
+                  >
+                    Canto {i & 1 ? '+X' : '−X'} {i & 2 ? '+Y' : '−Y'} {i & 4 ? '+Z' : '−Z'}
+                  </Button>
+                )
+              })}
+          </div>
+        </details>
       )}
     </div>
   )
+  function changeSnap(enabled: boolean) {
+    workshop.cancelGesture()
+    workshop.setPivotSnap(enabled)
+  }
 }
 
 export function SceneDivisionChoices({ workshop }: { workshop: Workshop }) {
@@ -72,13 +167,11 @@ export function SceneModelGuideBar({ workshop }: { workshop: Workshop }) {
     >
       <span role="status" className="min-w-0 flex-1 text-xs">
         {guide.error ??
-          (owner.kind === 'cut'
-            ? owner.points.length < 2
-              ? `Clique no ${owner.points.length + 1}º ponto da divisão.`
-              : 'Confira o plano rosa e aplique a divisão.'
-            : 'Confira o ponto rosa e o giro de exemplo.')}
+          (owner.points.length < 2
+            ? `Clique no ${owner.points.length + 1}º ponto da divisão.`
+            : 'Confira o plano rosa e aplique a divisão.')}
       </span>
-      {owner.kind === 'cut' && (
+      {
         <>
           <Button
             className="px-2 text-xs"
@@ -91,7 +184,7 @@ export function SceneModelGuideBar({ workshop }: { workshop: Workshop }) {
             Dividir no meio
           </Button>
         </>
-      )}
+      }
       <Button className="px-2 text-xs" onClick={guide.cancel}>
         Cancelar
       </Button>

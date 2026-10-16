@@ -1,0 +1,44 @@
+{
+  "date": "2026-10-15",
+  "files": [
+    {
+      "file": "docs\\plans\\2026-10-15-tui-proposta-integrada.md",
+      "lines": 463
+    },
+    {
+      "file": "docs\\plans\\2026-10-15-tui-desempenho.md",
+      "lines": 106
+    },
+    {
+      "file": "docs\\superpowers\\plans\\2026-10-15-tui-lotes-v2.md",
+      "lines": 355
+    },
+    {
+      "file": ".audits\\architectural-analysis-tui-v2-2026-10-15.md",
+      "lines": 176
+    }
+  ],
+  "checkedLocalLinks": 23,
+  "batchIds": [
+    "B00",
+    "B01",
+    "B02",
+    "B03",
+    "B04",
+    "B05",
+    "B06",
+    "B07",
+    "B08",
+    "B09",
+    "B10",
+    "B11",
+    "B12"
+  ],
+  "inventoryFiles": 611,
+  "inventoryLines": 67555,
+  "newReproGroups": 6,
+  "sandboxReproGroups": 8,
+  "tuiGitStatus": "",
+  "errors": [],
+  "scope": "Document integrity, batch coverage, evidence totals and unchanged TUI. No application runtime or performance certification."
+}

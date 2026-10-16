@@ -91,46 +91,54 @@ export function SceneInspectorSections({
           </button>
         </div>
       )}
-      {overview && (
+      <div
+        className={
+          compact && mode === 'paint'
+            ? 'mld-inspector-content mld-scroll-y min-h-0 flex-1 overflow-y-auto'
+            : 'contents'
+        }
+      >
+        {overview && (
+          <section
+            id={`${id}-overview`}
+            role={compact ? 'tabpanel' : 'region'}
+            aria-label={
+              compact
+                ? undefined
+                : mode === 'animation'
+                  ? 'Movimentos e atalhos'
+                  : 'Cores disponíveis'
+            }
+            aria-labelledby={
+              compact ? `${id}-tab-${mode === 'animation' ? 'overview' : 'details'}` : undefined
+            }
+            hidden={compact && tab !== (mode === 'animation' ? 'overview' : 'details')}
+            className="mld-inspector-overview mld-scroll-y shrink-0 overflow-y-auto"
+          >
+            {overview}
+          </section>
+        )}
         <section
-          id={`${id}-overview`}
+          id={`${id}-pieces`}
           role={compact ? 'tabpanel' : 'region'}
-          aria-label={
-            compact
-              ? undefined
-              : mode === 'animation'
-                ? 'Movimentos e atalhos'
-                : 'Cores disponíveis'
-          }
-          aria-labelledby={
-            compact ? `${id}-tab-${mode === 'animation' ? 'overview' : 'details'}` : undefined
-          }
-          hidden={compact && tab !== (mode === 'animation' ? 'overview' : 'details')}
-          className="mld-inspector-overview mld-scroll-y shrink-0 overflow-y-auto"
+          aria-label={compact ? undefined : 'Lista de peças'}
+          aria-labelledby={compact ? `${id}-tab-pieces` : undefined}
+          hidden={compact && tab !== 'pieces'}
+          className={`mld-inspector-pieces mld-scroll-y overflow-y-auto ${compact ? 'min-h-0 flex-1' : ''}`}
         >
-          {overview}
+          {pieces}
         </section>
-      )}
-      <section
-        id={`${id}-pieces`}
-        role={compact ? 'tabpanel' : 'region'}
-        aria-label={compact ? undefined : 'Lista de peças'}
-        aria-labelledby={compact ? `${id}-tab-pieces` : undefined}
-        hidden={compact && tab !== 'pieces'}
-        className={`mld-inspector-pieces mld-scroll-y overflow-y-auto ${compact ? 'min-h-0 flex-1' : ''}`}
-      >
-        {pieces}
-      </section>
-      <section
-        id={`${id}-details`}
-        role={compact ? 'tabpanel' : 'region'}
-        aria-label={compact ? undefined : 'Ajustes do contexto'}
-        aria-labelledby={compact ? `${id}-tab-details` : undefined}
-        hidden={compact && tab !== 'details'}
-        className="mld-inspector-properties mld-scroll-y min-h-0 flex-1 space-y-2 overflow-y-auto"
-      >
-        {children}
-      </section>
+        <section
+          id={`${id}-details`}
+          role={compact ? 'tabpanel' : 'region'}
+          aria-label={compact ? undefined : 'Ajustes do contexto'}
+          aria-labelledby={compact ? `${id}-tab-details` : undefined}
+          hidden={compact && tab !== 'details'}
+          className="mld-inspector-properties mld-scroll-y min-h-0 flex-1 space-y-2 overflow-y-auto"
+        >
+          {children}
+        </section>
+      </div>
     </div>
   )
 }
