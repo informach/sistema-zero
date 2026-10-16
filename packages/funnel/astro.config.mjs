@@ -47,6 +47,7 @@ export default defineConfig({
         `${site}/kids/comunidade-dos-criadores/oferta/expressao-visual`,
         `${site}/kids/comunidade-dos-criadores/oferta/formacao-tecnologica`,
         `${site}/kids/comunidade-dos-criadores/oferta/continuar`,
+        `${site}/kids/comunidade-dos-criadores/oferta/habilidades-escolares`,
         // Páginas legais por público (rotas dinâmicas não são enumeradas sozinhas).
         `${site}/pro/termos`,
         `${site}/pro/privacidade`,

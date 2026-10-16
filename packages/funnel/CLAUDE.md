@@ -287,6 +287,13 @@ A página E usa `#proximo-passo`, `#experiencia` e `#garantia`, compara os acess
 do período contratado. O pré-checkout lembra de usar o mesmo e-mail do responsável. Seus dados
 sobrescrevem somente a oferta e as respostas desta página; as quatro copies anteriores permanecem.
 Registro e validação: `docs/marketing/kids/comunidade-dos-criadores/implementacao-continuidade.md`.
+**Habilidades escolares (15/10/2026):** `/oferta/habilidades-escolares` é uma sexta apresentação
+da assinatura, em `habilidades-escolares.ts`/`habilidades-escolares-faq.ts`, sem novo perfil de
+quiz. A dor e a explicação ficam imediatamente abaixo do hero; `tourAfterSection: 'f01'` coloca
+o `ComunidadeTour.astro` depois dessa seção, mantendo a ordem anterior nas demais páginas.
+As seis cartas ligam tarefas do projeto às habilidades escolares, com ícones por assunto.
+Ciências usa o experimento do jardim; não há promessa de notas nem de reforço por série.
+Registro: `docs/marketing/kids/comunidade-dos-criadores/implementacao-habilidades-escolares.md`.
 As dúvidas têm pesos e ordem próprios, mantendo as mesmas respostas e imagens correspondentes.
 Não prometer revisão de toda atividade, prazo de resposta ou jogo pronto em prazo universal.
 Recados é canal de dúvidas; a progressão e a disponibilidade dos cursos condicionam as ferramentas.

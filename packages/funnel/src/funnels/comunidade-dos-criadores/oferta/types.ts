@@ -4,8 +4,8 @@ export type ComunidadeProfile =
   | 'expressao-visual'
   | 'formacao-tecnologica'
 
-/** Continuidade é uma etapa de relacionamento, não um quinto avatar. */
-export type ComunidadePageId = ComunidadeProfile | 'continuar'
+/** Variantes editoriais e de relacionamento não acrescentam perfis ao quiz. */
+export type ComunidadePageId = ComunidadeProfile | 'continuar' | 'habilidades-escolares'
 
 export interface ComunidadeAction {
   label: string
@@ -46,6 +46,8 @@ export interface ComunidadePage {
     secondary: ComunidadeAction
   }
   sections: ComunidadeSection[]
+  /** Sem configuração, o tour aparece logo após o hero. */
+  tourAfterSection?: string
   faqTitle: string
   faqGroups: { title: string; questions: string[] }[]
   faq?: Record<string, ComunidadeFaqEntry>

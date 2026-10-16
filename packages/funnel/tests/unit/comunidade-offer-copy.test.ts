@@ -28,10 +28,10 @@ const source = (...parts: string[]) => readFileSync(join(SRC, ...parts), 'utf8')
 const raw = source('components', 'funnel', 'oferta', 'ComunidadeOfertaBody.astro')
 const publicCopy = JSON.stringify({ pages: COMUNIDADE_PAGES, shared: SHARED_COPY, faq: FAQ })
 
-// Contratos editoriais e comerciais das quatro páginas. Verificação do HTML,
+// Contratos editoriais e comerciais dos perfis e variantes. Verificação do HTML,
 // âncoras, imagens carregadas, responsividade e modal complementa estes testes no navegador.
 describe('Comunidade: quatro perfis, mesma entrega e contratação', () => {
-  test('mantém os quatro perfis e acrescenta a página de continuidade', () => {
+  test('mantém os quatro perfis com variantes editoriais de endereço próprio', () => {
     expect(comunidadeOfferPath('tempo-de-tela')).toBe('/kids/comunidade-dos-criadores/oferta')
     for (const profile of [
       'criacao-de-jogos',
@@ -44,7 +44,44 @@ describe('Comunidade: quatro perfis, mesma entrega e contratação', () => {
     for (const value of [undefined, '', 'toString', '__proto__', 'adultos']) {
       expect(isComunidadeProfile(value)).toBe(false)
     }
-    expect(new Set(Object.values(COMUNIDADE_PAGES).map((page) => page.seoTitle)).size).toBe(5)
+    expect(new Set(Object.values(COMUNIDADE_PAGES).map((page) => page.seoTitle)).size).toBe(6)
+    expect(Object.keys(COMUNIDADE_PAGES).filter(isComunidadeProfile)).toHaveLength(4)
+  })
+
+  test('habilidades escolares tem rota própria e não vira perfil de quiz', () => {
+    expect(isComunidadePage('habilidades-escolares')).toBe(true)
+    expect(isComunidadeProfile('habilidades-escolares')).toBe(false)
+    expect(comunidadeOfferPath('habilidades-escolares')).toBe(
+      '/kids/comunidade-dos-criadores/oferta/habilidades-escolares',
+    )
+    const page = COMUNIDADE_PAGES['habilidades-escolares']
+    expect(page.tourAfterSection).toBe(page.sections[0]?.id)
+    expect(page.offer).toBeUndefined()
+    const ids = page.faqGroups.flatMap((group) => group.questions)
+    expect(new Set(ids).size).toBe(ids.length)
+    expect([...ids].sort()).toEqual(Object.keys(page.faq ?? {}).sort())
+    expect(Object.keys(page.faqVisuals ?? {}).sort()).toEqual([...ids].sort())
+    for (const id of Object.keys(FAQ)) expect(ids).toContain(id)
+    for (const id of Object.values(page.faqVisuals ?? {}).flat())
+      expect(id in COMUNIDADE_VISUALS || id in PENDING_VISUALS).toBe(true)
+  })
+
+  test('o tour configurado tem destino único e os CTAs apontam para seções existentes', () => {
+    for (const page of Object.values(COMUNIDADE_PAGES)) {
+      const sectionIds = page.sections.map((section) => section.id)
+      expect(new Set(sectionIds).size).toBe(sectionIds.length)
+      if (page.tourAfterSection)
+        expect(sectionIds.filter((id) => id === page.tourAfterSection)).toHaveLength(1)
+      const anchors = new Set([...sectionIds, 'planos', 'garantia', 'contratacao', 'experiencia'])
+      for (const action of [
+        page.hero.primary,
+        page.hero.secondary,
+        ...page.sections.flatMap((section) => section.actions),
+        ...page.closing.actions,
+      ]) {
+        if (action.href.startsWith('#')) expect(anchors.has(action.href.slice(1))).toBe(true)
+      }
+    }
   })
 
   test('cada perfil tem todas as respostas, sem duplicação, com uma prioridade própria', () => {
