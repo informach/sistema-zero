@@ -67,7 +67,7 @@ As capturas comprovam a existência e o funcionamento visível dos recursos. Nã
 - Casos automatizados acrescentados: ordem e agrupamento das perguntas, uso das oito observações de Q2, ajuda desenvolvida uma única vez, distinção entre preferir e exigir ao vivo, integração do desenho apresentada uma vez e preservação de leads das versões 2 e 3.
 - Navegação local tentada com a ferramenta Playwright; resposta: `MCP tool call requires approval, but approval policy is never`. Não houve validação visual da página nesta revisão. O build e a inspeção das imagens de origem não substituem essa conferência.
 
-A [copy das perguntas](../copy/quiz-comunidade.md), a [biblioteca de resultados](../copy/resultados-quiz.md) e os [exemplos completos](exemplos-de-resultado-v4.md) refletem a implementação. A revisão verifica coerência editorial e funcional; compreensão pelas famílias e efeito em conversão ainda exigem observação de uso real.
+A [copy das perguntas](../copy/historico/2026-10-16-quiz-v4/quiz-comunidade.md), a [biblioteca de resultados](../copy/historico/2026-10-16-quiz-v4/resultados-quiz.md) e os [exemplos completos](../copy/historico/2026-10-16-quiz-v4/exemplos-de-resultado-v4.md) refletem a implementação da v4 (hoje no histórico; a v5 está no [README](README.md)). A revisão verifica coerência editorial e funcional; compreensão pelas famílias e efeito em conversão ainda exigem observação de uso real.
 
 ## Segunda revisão: conversa com a família e rodapé
 

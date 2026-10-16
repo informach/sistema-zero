@@ -3,13 +3,21 @@ import type { SelecaoStep } from '../content/quiz-config'
 import {
   activeCommunitySteps,
   answerList,
+  childGender,
+  completesQuiz,
   isCommunityQuizComplete,
   isOutsideCommunityAge,
   QUIZ_VERSION,
   quizRevision,
+  stepOnScreen,
   validChoice,
 } from '../funnels/comunidade-dos-criadores/quiz/engine'
-import { QUIZ_ENTRY } from '../funnels/comunidade-dos-criadores/quiz/entry-copy'
+import {
+  QUIZ_ENTRY,
+  QUIZ_HEADLINES,
+  type QuizHeadlineId,
+} from '../funnels/comunidade-dos-criadores/quiz/entry-copy'
+import { flexionar } from '../funnels/comunidade-dos-criadores/quiz/genero'
 import { COMMUNITY_QUESTIONS } from '../funnels/comunidade-dos-criadores/quiz/questions'
 import { ApiError, apiPatch, apiPost } from '../lib/api-fetch'
 import { leadAttributionFromLocation } from '../lib/lead-attribution'
@@ -20,24 +28,30 @@ interface Props {
   basePath: string
   imagesBase: string
   quizDefinitionId?: string
+  /** Variante da manchete resolvida no servidor (`?manchete=`); vai na atribuição do lead. */
+  headline: QuizHeadlineId
 }
 interface Session {
   id: string
   answers: QuizAnswers
   sessionToken: string
 }
+// SPIN em três etapas: a rotina (situação), o que acontece em casa (problema e implicação) e o
+// que a família quer ver (necessidade e diagnóstico final).
 const stages = [
-  ['filho', 'Sobre seu filho'],
-  ['objetivos', 'O que vocês procuram'],
-  ['comeco', 'A rotina de vocês'],
+  ['rotina', 'A rotina'],
+  ['casa', 'O que acontece em casa'],
+  ['desejo', 'O que você quer'],
 ] as const
 
 /** O chip de cada etapa: o mesmo desenho dos capítulos da oferta (ícone e cor de unidade). */
 const STAGE_CHIP = {
-  filho: { cor: 'cor-azul', icone: 'face', texto: 'O que chama a atenção dele' },
-  objetivos: { cor: 'cor-rosa', icone: 'favorite', texto: 'O que importa para você' },
-  comeco: { cor: 'cor-verde', icone: 'schedule', texto: 'O que cabe na rotina de vocês' },
+  rotina: { cor: 'cor-azul', icone: 'schedule', texto: 'A rotina dele' },
+  casa: { cor: 'cor-rosa', icone: 'home', texto: 'O que acontece em casa' },
+  desejo: { cor: 'cor-verde', icone: 'favorite', texto: 'O que você quer' },
 } as const
+
+const FIRST_STEP = COMMUNITY_QUESTIONS[0]!
 
 function Eyebrow({ icon, children }: { icon: string; children: string }) {
   return (
@@ -50,13 +64,22 @@ function Eyebrow({ icon, children }: { icon: string; children: string }) {
   )
 }
 
+/** A manchete com o trecho em destaque (o mesmo `<em>` das ofertas). */
+function Headline({ id }: { id: QuizHeadlineId }) {
+  const { title, emphasis } = QUIZ_HEADLINES[id]
+  const at = title.indexOf(emphasis)
+  if (at < 0) return <h1 className="kof-display">{title}</h1>
+  return (
+    <h1 className="kof-display">
+      {title.slice(0, at)}
+      <em>{emphasis}</em>
+      {title.slice(at + emphasis.length)}
+    </h1>
+  )
+}
+
 /** Stable within a lead, including refreshes; ordering never changes the decision. */
 export function orderedOptions(step: SelecaoStep, seed: string): SelecaoStep['opcoes'] {
-  if (step.key === 'qt') {
-    const objectives = COMMUNITY_QUESTIONS.find((s) => s.key === 'q4')!
-    const order = [...orderedOptions(objectives, seed).map((o) => o.value), 'iguais']
-    return [...step.opcoes].sort((a, b) => order.indexOf(a.value) - order.indexOf(b.value))
-  }
   if (!step.shuffle) return step.opcoes
   const movable = step.opcoes.filter((o) => !step.fixedLast?.includes(o.value))
   let hash = 2166136261
@@ -70,7 +93,13 @@ export function orderedOptions(step: SelecaoStep, seed: string): SelecaoStep['op
   return [...movable, ...step.opcoes.filter((o) => step.fixedLast?.includes(o.value))]
 }
 
-export default function ComunidadeQuiz({ funnel, basePath, imagesBase, quizDefinitionId }: Props) {
+export default function ComunidadeQuiz({
+  funnel,
+  basePath,
+  imagesBase,
+  quizDefinitionId,
+  headline,
+}: Props) {
   const [session, setSession] = useState<Session | null>(null)
   const [cursor, setCursor] = useState('intro')
   const [busy, setBusy] = useState(false)
@@ -84,7 +113,13 @@ export default function ComunidadeQuiz({ funnel, basePath, imagesBase, quizDefin
   const steps = activeCommunitySteps(current)
   const step = steps.find((s) => s.key === cursor)
   const complete = isCommunityQuizComplete(current)
-  const firstMissing = steps.find((s) => !validChoice(s, current[s.key]))?.key ?? 'q1'
+  const firstMissing = steps.find((s) => !validChoice(s, current[s.key]))?.key ?? FIRST_STEP.key
+  const genero = childGender(current)
+  // A variante da manchete viaja na atribuição (first-touch) para o teste A/B do /admin.
+  const attribution = () => ({
+    ...(leadAttributionFromLocation(window.location) ?? { landingPath: window.location.pathname }),
+    quizHeadline: headline,
+  })
 
   const receive = useCallback((data: Session, restart = false, navigate = true) => {
     setSession(data)
@@ -93,7 +128,7 @@ export default function ComunidadeQuiz({ funnel, basePath, imagesBase, quizDefin
     if (!navigate) return
     const a = data.answers._quiz_version === QUIZ_VERSION ? data.answers : {}
     const hash = window.location.hash.slice(1)
-    if (restart) setCursor('q1')
+    if (restart) setCursor('intro')
     else if (hash === 'rever') setCursor('review')
     else if (activeCommunitySteps(a).some((s) => s.key === hash)) setCursor(hash)
     else if (isOutsideCommunityAge(a)) setCursor('age')
@@ -110,7 +145,7 @@ export default function ComunidadeQuiz({ funnel, basePath, imagesBase, quizDefin
         funnel,
         restartQuiz: restart,
         quizDefinitionId,
-        attribution: leadAttributionFromLocation(window.location),
+        attribution: attribution(),
       })
       if (restart)
         window.history.replaceState(null, '', window.location.pathname + window.location.search)
@@ -124,15 +159,16 @@ export default function ComunidadeQuiz({ funnel, basePath, imagesBase, quizDefin
     }
   }
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: a sessão abre uma vez por funil; a atribuição é lida da URL nesse momento.
   useEffect(() => {
     let active = true
-    apiPost<Session>('/api/leads', {
-      funnel,
-      quizDefinitionId,
-      attribution: leadAttributionFromLocation(window.location),
-    })
+    apiPost<Session>('/api/leads', { funnel, quizDefinitionId, attribution: attribution() })
       .then((data) => {
-        if (active) receive(data)
+        if (!active) return
+        receive(data)
+        // "Responder pensando em outra criança" no resultado chega aqui: a sessão nova nasce com
+        // a definição do quiz e a manchete (o resultado não conhece nenhuma das duas).
+        if (window.location.hash === '#outra-crianca') void load(true)
       })
       .catch((err) => {
         if (err instanceof ApiError && err.code === 'QUIZ_UPDATED') setUpdated(true)
@@ -152,15 +188,15 @@ export default function ComunidadeQuiz({ funnel, basePath, imagesBase, quizDefin
     setCursor(key)
   }
 
-  async function save(value: QuizAnswerValue) {
-    if (!step || locked.current || !session) return
+  async function save(key: string, value: QuizAnswerValue) {
+    if (locked.current || !session) return
     locked.current = true
     setBusy(true)
     setError('')
     try {
       const data = await apiPatch<{ answers: QuizAnswers; complete: boolean }>('/api/leads', {
         quizDefinitionId,
-        key: step.key,
+        key,
         value,
         revision: quizRevision(answers),
         sessionToken: session.sessionToken,
@@ -206,69 +242,79 @@ export default function ComunidadeQuiz({ funnel, basePath, imagesBase, quizDefin
       )}
     </div>
   )
-  if (cursor === 'intro')
+  if (cursor === 'intro') {
+    const started = quizRevision(current) > 0
     return (
       <main id="quiz" className="wrap cq-intro">
         <div className="cq-intro-copy">
-          <Eyebrow icon="family_star">Uma descoberta para a família · 9 a 14 anos</Eyebrow>
-          <h1 className="kof-display">
-            {QUIZ_ENTRY.titleStart}
-            <em>{QUIZ_ENTRY.emphasis}</em>
-          </h1>
-          <p className="kof-lead">{QUIZ_ENTRY.lead}</p>
-          <p>{QUIZ_ENTRY.delivery}</p>
-          <ul className="cq-intro-points">
-            {QUIZ_ENTRY.points.map((point) => (
-              <li key={point}>{point}</li>
-            ))}
-          </ul>
-          <p>Responda pensando em um filho de cada vez. Você pode indicar o que ainda não sabe.</p>
+          <Eyebrow icon="family_star">{QUIZ_ENTRY.eyebrow}</Eyebrow>
+          <Headline id={headline} />
+          <p className="kof-lead">{QUIZ_ENTRY.description}</p>
           {errorView}
-          <div className="cq-actions">
-            <button
-              className="kof-btn kof-btn--grande"
-              type="button"
-              disabled={!session || busy}
-              onClick={() =>
-                complete ? window.location.assign(`${basePath}/resultado`) : go(firstMissing)
-              }
-            >
-              {!session && !error
-                ? 'Preparando o quiz…'
-                : complete
-                  ? 'Ver meu resultado'
-                  : quizRevision(current) > 0
-                    ? 'Continuar de onde parei'
-                    : QUIZ_ENTRY.cta}
-              <span aria-hidden="true">→</span>
-            </button>
-            {session && quizRevision(current) > 0 && (
+          {started ? (
+            <div className="cq-actions">
+              <button
+                className="kof-btn kof-btn--grande"
+                type="button"
+                disabled={busy}
+                onClick={() =>
+                  complete ? window.location.assign(`${basePath}/resultado`) : go(firstMissing)
+                }
+              >
+                {complete ? 'Ver meu resultado' : 'Continuar de onde parei'}
+                <span aria-hidden="true">→</span>
+              </button>
               <button className="cq-link" type="button" onClick={() => go('review')}>
                 Rever respostas
               </button>
-            )}
-          </div>
-          <p className="cq-note">
-            Uma orientação do Sistema Zero Kids para mães, pais e responsáveis. Você pode responder
-            pelo celular.
-          </p>
+            </div>
+          ) : (
+            // A P1 fica na própria entrada: clicar na criança e na idade já começa o quiz.
+            <section
+              className="cq-p1"
+              aria-labelledby="titulo-p1"
+              data-analytics-question={FIRST_STEP.key}
+              data-analytics-quiz={quizDefinitionId}
+              data-analytics-attempt={session?.id}
+              data-analytics-position={1}
+            >
+              <h2 id="titulo-p1" className="kof-display">
+                {FIRST_STEP.titulo}
+              </h2>
+              <p className="cq-description">{FIRST_STEP.subtitulo}</p>
+              <ul className="cq-p1-opcoes">
+                {FIRST_STEP.opcoes.map((o) => (
+                  <li key={o.value}>
+                    <button
+                      className="cq-option"
+                      type="button"
+                      disabled={!session || busy}
+                      onClick={() => void save(FIRST_STEP.key, o.value)}
+                    >
+                      <span>{o.label}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              {!session && !error && <p className="cq-note">Preparando o quiz…</p>}
+            </section>
+          )}
+          <p className="cq-note">{QUIZ_ENTRY.note}</p>
         </div>
         <div className="cq-hero-art">
-          <Eyebrow icon="auto_awesome">Um interesse. Várias possibilidades.</Eyebrow>
-          <ul className="cq-possibilities">
-            {QUIZ_ENTRY.possibilities.map((item) => (
+          <Eyebrow icon="visibility">{QUIZ_ENTRY.lookAtTitle}</Eyebrow>
+          <ul className="cq-possibilities cq-possibilities--curtas">
+            {QUIZ_ENTRY.lookAt.map((item) => (
               <li key={item.icon}>
                 <span className="material-symbols-rounded" aria-hidden="true">
                   {item.icon}
                 </span>
                 <div>
                   <strong>{item.title}</strong>
-                  <span>{item.detail}</span>
                 </div>
               </li>
             ))}
           </ul>
-          <p>O começo pode estar no que já chama a atenção dele.</p>
           <img
             className="cq-mascot"
             src={`${imagesBase}/zappy-happy.webp`}
@@ -279,6 +325,7 @@ export default function ComunidadeQuiz({ funnel, basePath, imagesBase, quizDefin
         </div>
       </main>
     )
+  }
 
   if (cursor === 'age')
     return (
@@ -286,21 +333,18 @@ export default function ComunidadeQuiz({ funnel, basePath, imagesBase, quizDefin
         <div className="cq-panel">
           <Eyebrow icon="cake">Sobre a faixa de idade</Eyebrow>
           <h1 ref={heading} tabIndex={-1} className="kof-display">
-            Esta orientação foi pensada para famílias com filhos de 9 a 14 anos.
+            Esta orientação foi pensada para famílias com crianças de 9 a 14 anos.
           </h1>
           <p>
-            Os exemplos e as sugestões deste quiz foram preparados para essa faixa. A idade
-            informada, sozinha, não diz o que seu filho consegue fazer.
-          </p>
-          <p>
-            Para escolher uma atividade em outra fase, vale observar os interesses dele, a linguagem
-            da orientação e o apoio de que precisa. Este quiz não vai indicar um caminho específico
-            para essa idade.
+            As perguntas e o resultado deste quiz partem do que costuma acontecer com crianças de 9
+            a 14 anos, e para outra idade a orientação não seria certa. Se a idade foi marcada por
+            engano, é só corrigir. Se há outra criança nessa faixa em casa, você pode responder
+            pensando nela.
           </p>
           {errorView}
           <div className="cq-actions">
-            <button className="cq-link" type="button" onClick={() => go('q1')}>
-              Corrigir a faixa de idade
+            <button className="cq-link" type="button" onClick={() => go(FIRST_STEP.key)}>
+              Corrigir a idade
             </button>
             <button
               className="cq-link"
@@ -308,7 +352,7 @@ export default function ComunidadeQuiz({ funnel, basePath, imagesBase, quizDefin
               disabled={busy}
               onClick={() => void load(true)}
             >
-              Responder pensando em outro filho
+              Responder pensando em outra criança
             </button>
           </div>
         </div>
@@ -323,35 +367,36 @@ export default function ComunidadeQuiz({ funnel, basePath, imagesBase, quizDefin
           <h1 ref={heading} tabIndex={-1} className="kof-display">
             O que você gostaria de ajustar?
           </h1>
-          <p>
-            Você pode rever qualquer resposta. A sugestão será atualizada com o que ficar salvo.
-          </p>
+          <p>Você pode rever qualquer resposta. O resultado muda com o que ficar salvo.</p>
           <ol className="cq-review">
-            {steps.map((s) => (
-              <li key={s.key}>
-                <div>
-                  <strong>{s.titulo}</strong>
-                  <p>
-                    {s.opcoes
-                      .filter(
-                        (o) =>
-                          answerList(current[s.key]).includes(o.value) ||
-                          current[s.key] === o.value,
-                      )
-                      .map((o) => o.label)
-                      .join(' · ') || 'Ainda sem resposta'}
-                  </p>
-                </div>
-                <button
-                  className="cq-link"
-                  type="button"
-                  onClick={() => go(s.key)}
-                  aria-label={`Editar: ${s.titulo}`}
-                >
-                  Editar
-                </button>
-              </li>
-            ))}
+            {steps.map((raw) => {
+              const s = stepOnScreen(raw, current)
+              return (
+                <li key={s.key}>
+                  <div>
+                    <strong>{s.titulo}</strong>
+                    <p>
+                      {s.opcoes
+                        .filter(
+                          (o) =>
+                            answerList(current[s.key]).includes(o.value) ||
+                            current[s.key] === o.value,
+                        )
+                        .map((o) => o.label)
+                        .join(' · ') || 'Ainda sem resposta'}
+                    </p>
+                  </div>
+                  <button
+                    className="cq-link"
+                    type="button"
+                    onClick={() => go(s.key)}
+                    aria-label={`Editar: ${s.titulo}`}
+                  >
+                    Editar
+                  </button>
+                </li>
+              )
+            })}
           </ol>
           {errorView}
           <div className="cq-actions">
@@ -370,7 +415,7 @@ export default function ComunidadeQuiz({ funnel, basePath, imagesBase, quizDefin
               disabled={busy}
               onClick={() => void load(true)}
             >
-              Responder pensando em outro filho
+              Responder pensando em outra criança
             </button>
           </div>
         </div>
@@ -378,9 +423,10 @@ export default function ComunidadeQuiz({ funnel, basePath, imagesBase, quizDefin
     )
 
   if (!step) return null
+  const shown = stepOnScreen(step, current)
   const position = steps.findIndex((s) => s.key === step.key)
   const stageIndex = stages.findIndex(([id]) => id === step.etapa)
-  const chip = STAGE_CHIP[step.etapa as keyof typeof STAGE_CHIP] ?? STAGE_CHIP.filho
+  const chip = STAGE_CHIP[step.etapa as keyof typeof STAGE_CHIP] ?? STAGE_CHIP.rotina
   return (
     <main
       id="quiz"
@@ -416,30 +462,27 @@ export default function ComunidadeQuiz({ funnel, basePath, imagesBase, quizDefin
           <span className="material-symbols-rounded cap-chip-icone" aria-hidden="true">
             {chip.icone}
           </span>
-          <span className="cap-chip-texto">{chip.texto}</span>
+          <span className="cap-chip-texto">{flexionar(chip.texto, genero)}</span>
         </span>
         <h1 className="kof-display" ref={heading} tabIndex={-1}>
-          {step.titulo}
+          {shown.titulo}
         </h1>
-        {step.subtitulo && (
+        {shown.subtitulo && (
           <p id="question-help" className="cq-description">
-            {step.subtitulo}
+            {shown.subtitulo}
           </p>
         )}
         <Question
           key={`${step.key}:${session?.id}:${quizRevision(answers)}`}
-          step={step}
+          step={shown}
           value={current[step.key]}
           seed={session?.id ?? ''}
           busy={busy}
           blocked={conflict}
-          submitLabel={
-            step.key === 'q8' &&
-            steps.every((s) => s.key === step.key || validChoice(s, current[s.key]))
-              ? 'Ver a sugestão para meu filho'
-              : 'Continuar'
+          labelFor={(value) =>
+            completesQuiz(current, step.key, value) ? 'Ver o resultado' : 'Continuar'
           }
-          onSave={save}
+          onSave={(value) => save(step.key, value)}
         />
         {errorView}
         <div className="cq-question-nav">
@@ -451,11 +494,6 @@ export default function ComunidadeQuiz({ funnel, basePath, imagesBase, quizDefin
           >
             ← Voltar
           </button>
-          {step.key === 'qt' && (
-            <button className="cq-link" type="button" disabled={busy} onClick={() => go('q4')}>
-              Rever os objetivos que marquei
-            </button>
-          )}
           <button className="cq-link" type="button" disabled={busy} onClick={() => go('review')}>
             Rever respostas
           </button>
@@ -474,7 +512,7 @@ function Question({
   seed,
   busy,
   blocked,
-  submitLabel,
+  labelFor,
   onSave,
 }: {
   step: SelecaoStep
@@ -482,7 +520,8 @@ function Question({
   seed: string
   busy: boolean
   blocked: boolean
-  submitLabel: string
+  /** O rótulo do botão pela resposta escolhida: "Ver o resultado" quando ela completa o quiz. */
+  labelFor: (value: QuizAnswerValue) => string
   onSave: (value: QuizAnswerValue) => Promise<void>
 }) {
   const [selected, setSelected] = useState<string[]>(
@@ -555,7 +594,7 @@ function Question({
         className="kof-btn kof-btn--grande cq-continue"
         disabled={busy || blocked}
       >
-        {busy ? 'Salvando…' : submitLabel}
+        {busy ? 'Salvando…' : labelFor(step.multiple ? selected : (selected[0] ?? ''))}
         <span aria-hidden="true">→</span>
       </button>
     </form>

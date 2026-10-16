@@ -119,6 +119,29 @@
   line-height: 1.5;
   color: var(--kof-tinta-suave);
 }
+/* A lateral da entrada lista as situações que o quiz olha (só o título, sem detalhe). */
+.cq .cq-possibilities--curtas {
+  gap: 0.7rem;
+}
+.cq .cq-possibilities--curtas li {
+  padding: 0.85rem 1rem;
+}
+.cq .cq-possibilities--curtas li > span {
+  width: 2.5rem;
+  height: 2.5rem;
+  font-size: 1.4rem;
+}
+.cq .cq-possibilities--curtas strong {
+  font-size: 1.1rem;
+}
+.cq .cq-possibilities li:nth-child(4) > span {
+  background: var(--kof-menta);
+  color: var(--kof-tinta);
+}
+.cq .cq-possibilities li:nth-child(5) > span {
+  background: var(--kof-lilas);
+  color: var(--kof-tinta);
+}
 .cq .cq-mascot {
   position: absolute;
   right: -0.5rem;
@@ -309,6 +332,37 @@
   flex: 0 0 1.25rem;
   accent-color: var(--kof-acao);
 }
+/* A P1 fica na própria entrada: clicar na criança e na idade já começa o quiz. */
+.cq .cq-p1 {
+  display: grid;
+  gap: 0.75rem;
+}
+.cq .cq-p1 h2 {
+  font-size: clamp(1.375rem, 2.4vw, 1.75rem);
+}
+.cq .cq-p1-opcoes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cq .cq-p1-opcoes .cq-option {
+  width: 100%;
+  font: inherit;
+  font-weight: 700;
+  color: var(--kof-tinta);
+  text-align: left;
+}
+.cq .cq-p1-opcoes .cq-option:focus-visible {
+  outline: 3px solid var(--kof-acao);
+  outline-offset: 3px;
+}
+.cq .cq-p1-opcoes .cq-option:disabled {
+  cursor: progress;
+  opacity: 0.6;
+}
 .cq .cq-continue {
   margin-top: 1.5rem;
   min-width: 12rem;
@@ -393,26 +447,89 @@
 .cq .cq-res-dia .sub-head .kof-ladrilho {
   translate: 0 calc(clamp(1.375rem, 2.4vw, 1.75rem) * -0.12);
 }
-.cq .cq-activity {
+.cq .cq-res-aproximado {
+  font-weight: 800;
+  color: var(--kof-tinta-suave);
+}
+.cq .cq-contou {
   display: grid;
-  gap: 1.1rem;
+  gap: 1rem;
   justify-items: start;
   padding: clamp(1.5rem, 3vw, 2.25rem);
   border-radius: var(--kof-raio-carta);
 }
-.cq .cq-activity h2 {
+.cq .cq-contou h2 {
   font-size: clamp(1.5rem, 2.6vw, 1.875rem);
 }
-.cq .cq-activity p {
+.cq .cq-contou ul {
+  display: grid;
+  gap: 0.85rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cq .cq-contou li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
   font-size: 1rem;
-  line-height: 1.65;
+  line-height: 1.55;
   color: var(--kof-navy-texto);
 }
+.cq .cq-contou li::before {
+  /* O ícone é decorativo: o texto alternativo vazio impede o leitor de tela de dizer "check". */
+  content: "check" / "";
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-top: 0.05rem;
+  border-radius: 9999px;
+  background: var(--kof-amarelo);
+  color: var(--kof-tinta);
+  font-family: "Material Symbols Rounded", sans-serif;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1;
+}
+.cq .cq-contou-rever {
+  font-weight: 800;
+  color: var(--kof-carta);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.cq .cq-contou-rever:focus-visible {
+  outline: 3px solid var(--kof-carta);
+  outline-offset: 3px;
+}
 @media (min-width: 961px) {
-  .cq .cq-activity {
+  .cq .cq-contou {
     position: sticky;
     top: 1.5rem;
   }
+}
+/* "O que você contou" à direita no computador (e fixo ao rolar); no celular vem antes do texto,
+ * porque é nele que a família se reconhece. No DOM ele já vem primeiro (ordem de leitura). */
+.cq .cq-res-duas--contou .cq-contou {
+  grid-column: 2;
+  grid-row: 1;
+}
+.cq .cq-res-duas--contou .cq-res-texto {
+  grid-column: 1;
+  grid-row: 1;
+}
+.cq .cq-res-muda {
+  margin-top: clamp(2rem, 4vw, 3rem);
+}
+.cq .cq-callout h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.cq .cq-callout h3 > span.material-symbols-rounded {
+  font-size: 1.5rem;
+  translate: 0 -0.06em;
 }
 .cq .cq-res-comunidade .cap-head {
   margin-bottom: 1.5rem;
@@ -501,30 +618,6 @@
   display: grid;
   gap: 1rem;
 }
-.cq .cq-activity ol {
-  display: grid;
-  gap: 1rem;
-  list-style: none;
-  counter-reset: activity;
-  padding: 0;
-}
-.cq .cq-activity li {
-  counter-increment: activity;
-  display: flex;
-  gap: 1rem;
-  line-height: 1.6;
-}
-.cq .cq-activity li::before {
-  content: counter(activity);
-  display: grid;
-  place-items: center;
-  flex: 0 0 2rem;
-  height: 2rem;
-  border-radius: 10px;
-  background: var(--kof-amarelo);
-  color: var(--kof-tinta);
-  font-weight: 800;
-}
 .cq .cq-feedback-options {
   display: flex;
   flex-wrap: wrap;
@@ -551,6 +644,11 @@
 @media (max-width: 960px) {
   .cq .cq-res-duas {
     grid-template-columns: minmax(0, 1fr);
+  }
+  .cq .cq-res-duas--contou .cq-contou,
+  .cq .cq-res-duas--contou .cq-res-texto {
+    grid-column: auto;
+    grid-row: auto;
   }
 }
 @media (max-width: 760px) {

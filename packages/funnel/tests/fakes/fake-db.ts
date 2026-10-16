@@ -6,6 +6,7 @@ import type {
   PaymentContext,
   PerfilCount,
   PriceCount,
+  QuizScope,
 } from '../../src/db/repo'
 import { canonicalEventName } from '../../src/db/repo'
 
@@ -56,6 +57,8 @@ export interface FakeRepoState {
   processed: Set<string>
   /** Histórico payment_id → contexto da cobrança (espelha funil.lead_payments). */
   payments: Map<string, { leadId: string; accessPeriodMonths: number | null } & PaymentContext>
+  /** Definição do quiz → versão (espelha funil.analytics_quiz_definitions, para o `QuizScope`). */
+  quizVersions: Map<string, string>
 }
 
 /** Implementação em memória do FunnelRepo para testes (sem Postgres). */
@@ -67,7 +70,18 @@ export function createFakeRepo(): FakeRepoState {
     string,
     { leadId: string; accessPeriodMonths: number | null } & PaymentContext
   >()
+  const quizVersions = new Map<string, string>()
   let seq = 0
+  const inScope = (l: Lead | undefined, scope?: QuizScope) => {
+    if (!l) return false
+    if (scope?.quizVersion && quizVersions.get(l.quizDefinitionId ?? '') !== scope.quizVersion)
+      return false
+    if (scope?.headline) {
+      const seen = l.attribution?.quizHeadline ?? (scope.headlineIsDefault ? scope.headline : null)
+      if (seen !== scope.headline) return false
+    }
+    return true
+  }
 
   const repo: FunnelRepo = {
     async createLead(funnel = null, attribution = null, quizDefinitionId = null) {
@@ -270,10 +284,11 @@ export function createFakeRepo(): FakeRepoState {
       if (term) rows = rows.filter((l) => matchesQuery(l, term))
       return rows.length
     },
-    async eventCounts(funnel): Promise<EventCount[]> {
+    async eventCounts(funnel, scope): Promise<EventCount[]> {
       const byName = new Map<string, Set<string>>()
       for (const e of events) {
         if (funnel && leads.get(e.leadId)?.funnel !== funnel) continue
+        if (funnel && !inScope(leads.get(e.leadId), scope)) continue
         const set = byName.get(e.eventName) ?? new Set<string>()
         set.add(e.leadId)
         byName.set(e.eventName, set)
@@ -358,11 +373,12 @@ export function createFakeRepo(): FakeRepoState {
         timestamp: new Date(),
       })
     },
-    async perfilCounts(funnel): Promise<PerfilCount[]> {
+    async perfilCounts(funnel, scope): Promise<PerfilCount[]> {
       const byPerfil = new Map<string, number>()
       for (const l of leads.values()) {
         if (l.perfilResultado == null) continue
         if (funnel && l.funnel !== funnel) continue
+        if (funnel && !inScope(l, scope)) continue
         byPerfil.set(l.perfilResultado, (byPerfil.get(l.perfilResultado) ?? 0) + 1)
       }
       return [...byPerfil].map(([perfil, count]) => ({ perfil, count }))
@@ -377,7 +393,7 @@ export function createFakeRepo(): FakeRepoState {
     },
   }
 
-  return { repo, leads, events, processed, payments }
+  return { repo, leads, events, processed, payments, quizVersions }
 }
 
 function readChargedPrice(snapshot: unknown): number | null {

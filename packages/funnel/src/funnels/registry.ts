@@ -54,6 +54,15 @@ export interface FunnelQuiz {
   activeSteps?: (answers: QuizAnswers) => QuizStep[]
   applyAnswer?: (answers: QuizAnswers, key: string, value: QuizAnswerValue) => QuizAnswers | null
   isComplete?: (answers: QuizAnswers) => boolean
+  /**
+   * Variantes da manchete da entrada (teste A/B): id → rótulo do /admin. A ilha grava a variante
+   * exibida em `attribution.quizHeadline`, e Performance/Perfis filtram por ela.
+   */
+  headlines?: Record<string, string>
+  /** A manchete padrão do teste A/B: no /admin ela conta também os leads sem registro. */
+  defaultHeadline?: string
+  /** Perguntas de versões anteriores, só para o /admin rotular respostas de leads antigos. */
+  legacySteps?: QuizStep[]
 }
 export interface FunnelHero {
   padrao: HeroVariacao
@@ -230,11 +239,19 @@ export interface AdminFunnelInfo {
   answerOptions?: Record<string, Record<string, string>>
   /** Rótulo por perfil — p/ a aba Perfis. */
   perfilLabels: Record<string, string>
+  /** Quiz versionado: filtros "só o quiz atual" e "manchete" de Performance/Perfis. */
+  quiz?: { version: string; headlines: { id: string; label: string }[] }
 }
+
+/** Prefixo das respostas de versões anteriores do quiz (`legacySteps`) no /admin. */
+export const LEGACY_ANSWER_PREFIX = '(quiz anterior) '
 
 /** Rótulo (pergunta/campo) por chave de resposta do quiz de um funil. */
 function quizAnswerLabels(f: FunnelDef): Record<string, string> {
   const labels: Record<string, string> = {}
+  const current = new Set((f.content.quiz?.steps ?? []).map((s) => s.key))
+  for (const step of f.content.quiz?.legacySteps ?? [])
+    if (!current.has(step.key)) labels[step.key] = `${LEGACY_ANSWER_PREFIX}${step.titulo}`
   for (const step of f.content.quiz?.steps ?? []) {
     if (step.tipo === 'calculadora' || step.tipo === 'calculadora_prefilled') {
       labels[step.campo1.key] = step.campo1.label
@@ -254,13 +271,23 @@ export function adminFunnelList(): AdminFunnelInfo[] {
     label: `${AUDIENCE_LABEL[f.audience]} · ${f.productName}`,
     answerLabels: quizAnswerLabels(f),
     answerOptions: Object.fromEntries(
-      (f.content.quiz?.steps ?? []).flatMap((step) =>
+      // As perguntas atuais vêm por último: numa chave repetida, valem as opções de hoje.
+      [...(f.content.quiz?.legacySteps ?? []), ...(f.content.quiz?.steps ?? [])].flatMap((step) =>
         step.tipo === 'selecao'
           ? [[step.key, Object.fromEntries(step.opcoes.map((o) => [o.value, o.label]))]]
           : [],
       ),
     ),
     perfilLabels: f.content.result?.perfilLabels ?? {},
+    quiz: f.content.quiz?.version
+      ? {
+          version: f.content.quiz.version,
+          headlines: Object.entries(f.content.quiz.headlines ?? {}).map(([id, label]) => ({
+            id,
+            label,
+          })),
+        }
+      : undefined,
   }))
 }
 

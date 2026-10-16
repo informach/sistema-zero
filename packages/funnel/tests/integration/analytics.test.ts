@@ -296,7 +296,7 @@ test('respostas de outra aba mantêm a tentativa vinculada ao visitante, sem ace
         path: '/kids/comunidade-dos-criadores/quiz',
         quizDefinitionId: definition.id,
         quizAttemptId: attempt,
-        questionId: 'q1',
+        questionId: 'crianca',
       },
     ],
   }
@@ -334,7 +334,7 @@ test('primeiro lote recupera vínculo quando o lead nasceu antes do cookie anal�
         path: '/kids/comunidade-dos-criadores/quiz',
         quizDefinitionId: definition.id,
         quizAttemptId: attempt,
-        questionId: 'q1',
+        questionId: 'crianca',
       },
     ],
   }
@@ -422,8 +422,8 @@ test('quiz arquiva versão antes da criação e impede aba antiga de alterar res
       await patchLead(
         request(
           {
-            key: 'q1',
-            value: '9_a_11',
+            key: 'crianca',
+            value: 'filho_9_11',
             quizDefinitionId: definition.id,
             funnel: definition.funnel,
             revision: 0,
@@ -436,19 +436,22 @@ test('quiz arquiva versão antes da criação e impede aba antiga de alterar res
     ).status,
   ).toBe(200)
   expect(events.find((e) => e.eventName === 'quiz_answer_saved')?.metadata).toMatchObject({
-    question_id: 'q1',
+    question_id: 'crianca',
     quiz_definition_id: definition.id,
   })
-  await repo.updateLead(id, { quizDefinitionId: 'b'.repeat(64), quizAnswers: { q1: '9_10' } })
+  await repo.updateLead(id, { quizDefinitionId: 'b'.repeat(64), quizAnswers: { crianca: '9_10' } })
   expect(
     (
       await patchLead(
-        request({ key: 'q1', value: '11_12', quizDefinitionId: definition.id }, `funil_lead=${id}`),
+        request(
+          { key: 'crianca', value: '11_12', quizDefinitionId: definition.id },
+          `funil_lead=${id}`,
+        ),
         deps,
       )
     ).status,
   ).toBe(409)
-  expect(leads.get(id)?.quizAnswers).toEqual({ q1: '9_10' })
+  expect(leads.get(id)?.quizAnswers).toEqual({ crianca: '9_10' })
   expect(
     (
       await createLead(

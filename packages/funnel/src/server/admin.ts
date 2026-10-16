@@ -1,4 +1,4 @@
-import type { FunnelRepo } from '../db/repo'
+import type { FunnelRepo, QuizScope } from '../db/repo'
 import { DEFAULT_FUNNEL, type FunnelDef, getFunnelByKey, isFunnelKey } from '../funnels/registry'
 import {
   ADMIN_REFRESH_COOKIE,
@@ -35,11 +35,19 @@ function withSession(base: Record<string, string>, setCookies?: string[]): [stri
  * default só para rotular as "perguntas N" (os eventos `respondeu_pergunta_N` são
  * compartilhados entre funis). Os labels das perguntas são genéricos ("Pergunta N").
  */
-function buildFunnelSteps(f: FunnelDef | null): { name: string; label: string }[] {
+function buildFunnelSteps(
+  f: FunnelDef | null,
+): { name: string; label: string; condicional?: boolean }[] {
   const quizSteps = (f ?? DEFAULT_FUNNEL).content.quiz?.steps ?? []
-  const steps: { name: string; label: string }[] = [
+  const steps: { name: string; label: string; condicional?: boolean }[] = [
     { name: 'entrou_landing', label: 'Entrou na landing' },
-    ...quizSteps.map((s, i) => ({ name: s.eventName, label: `Pergunta ${i + 1}` })),
+    // `rotuloCurto` nomeia a pergunta; a condicional (só alguns percursos) é marcada e não
+    // entra na cadeia "da etapa", senão pareceria uma queda.
+    ...quizSteps.map((s, i) => ({
+      name: s.eventName,
+      label: `${s.condicional ? 'Extra' : `Pergunta ${i + 1}`}${s.rotuloCurto ? ` · ${s.rotuloCurto}` : ''}`,
+      ...(s.condicional ? { condicional: true } : {}),
+    })),
   ]
   if (!f || f.steps.resultado) steps.push({ name: 'viu_resultado', label: 'Viu o resultado' })
   steps.push(
@@ -57,6 +65,25 @@ function buildFunnelSteps(f: FunnelDef | null): { name: string; label: string }[
 function funnelParam(params: URLSearchParams): string | undefined {
   const raw = params.get('funnel')?.trim()
   return raw && isFunnelKey(raw) ? raw : undefined
+}
+
+/**
+ * Recorte de um quiz versionado: `?quiz=atual` (só leads que abriram a versão atual do quiz; quem
+ * foi direto à oferta fica de fora) e `?manchete=<id>` (uma variante do teste A/B). Escolher uma
+ * manchete também recorta a versão atual, para o A/B comparar só quem viu uma das duas.
+ * Valores desconhecidos são ignorados.
+ */
+function quizScopeParam(params: URLSearchParams, f: FunnelDef | null): QuizScope | undefined {
+  const quiz = f?.content.quiz
+  if (!quiz?.version) return undefined
+  const scope: QuizScope = {}
+  const headline = params.get('manchete')
+  if (headline && Object.hasOwn(quiz.headlines ?? {}, headline)) {
+    scope.headline = headline
+    scope.headlineIsDefault = headline === quiz.defaultHeadline
+  }
+  if (params.get('quiz') === 'atual' || scope.headline) scope.quizVersion = quiz.version
+  return scope.quizVersion || scope.headline ? scope : undefined
 }
 
 const EVENT_REPORT_STEPS = [
@@ -175,17 +202,20 @@ export async function adminLeads(request: Request, deps: AdminDeps): Promise<Res
 export async function adminFunnel(request: Request, deps: AdminDeps): Promise<Response> {
   const auth = await resolveAdmin(request, deps.gateway, deps.secureCookie)
   if (!auth) return jsonError('Não autorizado.', 401, 'UNAUTHORIZED')
-  const funnel = funnelParam(new URL(request.url).searchParams)
-  const counts = await deps.repo.eventCounts(funnel)
+  const params = new URL(request.url).searchParams
+  const funnel = funnelParam(params)
+  const f = funnel ? getFunnelByKey(funnel) : null
+  const counts = await deps.repo.eventCounts(funnel, quizScopeParam(params, f))
   const byName = new Map(counts.map((c) => [c.eventName, c.leads]))
   const top = byName.get('entrou_landing') ?? 0
 
   let prev = 0
-  const steps = buildFunnelSteps(funnel ? getFunnelByKey(funnel) : null).map((step, i) => {
+  const steps = buildFunnelSteps(f).map((step, i) => {
     const count = byName.get(step.name) ?? 0
     const fromTop = top > 0 ? count / top : 0
     const fromPrev = i === 0 ? 1 : prev > 0 ? count / prev : 0
-    prev = count
+    // A pergunta extra é comparada à etapa anterior, mas não vira a base da seguinte.
+    if (!step.condicional) prev = count
     return { name: step.name, label: step.label, count, fromTop, fromPrev }
   })
 
@@ -200,10 +230,12 @@ export async function adminFunnel(request: Request, deps: AdminDeps): Promise<Re
 export async function adminPerfis(request: Request, deps: AdminDeps): Promise<Response> {
   const auth = await resolveAdmin(request, deps.gateway, deps.secureCookie)
   if (!auth) return jsonError('Não autorizado.', 401, 'UNAUTHORIZED')
-  const funnel = funnelParam(new URL(request.url).searchParams)
-  const rows = await deps.repo.perfilCounts(funnel)
+  const params = new URL(request.url).searchParams
+  const funnel = funnelParam(params)
+  const f = funnel ? getFunnelByKey(funnel) : null
+  const rows = await deps.repo.perfilCounts(funnel, quizScopeParam(params, f))
   const byPerfil = new Map(rows.map((r) => [r.perfil, r.count]))
-  const result = funnel ? getFunnelByKey(funnel)?.content.result : null
+  const result = f?.content.result
   const labels = result?.perfilLabels ?? {}
   // Com funil selecionado: os perfis DELE (mesmo zerados), na ordem do funil.
   // Sem funil: os perfis presentes nos dados (rótulo = a própria chave).

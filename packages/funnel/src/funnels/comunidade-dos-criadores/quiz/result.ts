@@ -1,315 +1,232 @@
 import type { QuizAnswers } from '../../../lib/quiz-types'
 import { comunidadeOfferPath } from '../oferta'
-import { type CommunityProfile, type Condition, communityDecision, PROFILE_IDS } from './engine'
+import { RELATOS } from '../oferta/relatos'
+import type { RelatoId } from '../oferta/types'
+import { type CommunityDecision, type Condition, communityDecision, PROFILE_IDS } from './engine'
+import { flexionar } from './genero'
+import { HORAS_POR_ANO } from './questions'
 import {
-  ACTIVITY_VARIANTS,
-  CHOOSING_ACTIVITY,
-  COMMUNITY_INTRO,
-  PRIMARY_COPY,
-  RESULT_COPY,
-  type ResultSection,
-  SECONDARY_CONTEXT,
+  A_SCENE_BRIDGE,
+  APPROXIMATE_NOTE,
+  COMMUNITY_OPENING,
+  CONDITION_COPY,
+  CREATION_SENTENCE,
+  CTA_WITH_UNMET_CONDITION,
+  F_GOING_WELL_WORRY,
+  MIRROR_AGE,
+  MIRROR_COMPUTER,
+  MIRROR_CONDITIONAL,
+  MIRROR_CREATION,
+  MIRROR_NEED,
+  MIRROR_SCENE,
+  MIRROR_SCREEN_TIME,
+  MIRROR_STUCK,
+  MIRROR_SYNTHESIS,
+  MIRROR_WISH_SCENE,
+  MIRROR_WORRY,
+  NEED_RELATO,
+  NEED_RELATO_ALT,
+  NEED_SENTENCE,
+  OPENER_FROM_SYNTHESIS,
+  OPENER_FROM_WISH_SCENE,
+  OPENER_FROM_WORRY,
+  PROFILE_COPY,
+  SCHOOL_CHANGE_ADD,
+  SCHOOL_CHANGE_REPLACE,
+  SCHOOL_SCENE_TAIL,
+  SCHOOL_THESIS,
+  SCHOOL_TITLE,
+  SCHOOL_VISUAL,
+  SCHOOL_WEIGHT,
+  SCHOOL_WHERE,
+  SECONDARY_SENTENCE,
+  STUCK_SENTENCE,
+  THESIS_A_END,
+  TITLE_A_GOOD_PART,
+  TITLE_F_NUMBERS,
+  WISH_SCENE_RELATO,
+  WISH_SCENE_SENTENCE,
+  ZAPPY_AGAIN,
+  ZAPPY_FIRST,
 } from './result-copy'
 
-const moduleCopy = (key: string): ResultSection => {
-  const section = RESULT_COPY[key]?.[0]
-  if (!section) throw new Error(`Módulo de resultado ausente: ${key}`)
-  return section
+export interface ResultCondition {
+  kind: Condition
+  unmet: boolean
+  title: string
+  text: string
 }
-const paragraphs = (key: string) => moduleCopy(key).paragraphs
-const SUPPORT: Record<string, string> = {
-  rever: 'costuma rever uma explicação',
-  pessoa: 'costuma procurar uma pessoa',
-  experimentar: 'costuma experimentar alternativas',
-  varia: 'varia conforme a atividade',
-  nao_observou: 'ainda falta observar',
+
+/** De qual resposta sai o valor de cada condição. */
+const CONDITION_ANSWER: Record<Condition, string> = {
+  computador: 'computador',
+  formato: 'garantia',
+  ferramenta: 'ferramenta',
+  desenho: 'desenho',
+  reforco: 'escola',
 }
-const DOUBT: Record<string, string> = {
-  interesse: 'interesse',
-  comeco: 'começo',
-  ajuda: 'ajuda',
-  aprendizagem: 'acompanhar a aprendizagem',
-  rotina: 'rotina',
-  investimento: 'investimento',
+const CONDITIONAL_KEYS = ['ferramenta', 'desenho', 'escola'] as const
+
+/** De onde vem a abertura de "Por que isso acontece". */
+type Opener = 'cena' | 'preocupacao' | 'sintese' | 'cena_desejada'
+
+/** "O que você contou": uma linha por resposta, nas palavras da família. */
+function toldLines(answers: QuizAnswers): string[] {
+  const a = (key: string) => String(answers[key] ?? '')
+  const lines = [
+    `${MIRROR_AGE[a('crianca')]}${MIRROR_COMPUTER[a('computador')]}`,
+    `Ele passa ${MIRROR_SCREEN_TIME[a('tempo_tela')]} por dia em jogos e vídeos. Isso dá ${HORAS_POR_ANO[a('tempo_tela')]} por ano, e ${MIRROR_CREATION[a('tempo_criacao')]}.`,
+  ]
+  if (MIRROR_SCENE[a('cena')])
+    lines.push(`A cena mais comum aí em casa: ${MIRROR_SCENE[a('cena')]}.`)
+  lines.push(MIRROR_STUCK[a('quando_trava')]!)
+  lines.push(
+    MIRROR_WORRY[a('preocupacao')]
+      ? `O que mais preocupa você: ${MIRROR_WORRY[a('preocupacao')]}.`
+      : 'Nada preocupa você agora: você quer aproveitar o interesse dele.',
+  )
+  lines.push(`A cena que você quer ver primeiro: ${MIRROR_WISH_SCENE[a('cena_desejada')]}.`)
+  lines.push(MIRROR_NEED[a('garantia')]!)
+  lines.push(
+    MIRROR_SYNTHESIS[a('sintese')]
+      ? `O que você quer para ele: ${MIRROR_SYNTHESIS[a('sintese')]}.`
+      : 'Você ainda quer conhecer as possibilidades.',
+  )
+  for (const key of CONDITIONAL_KEYS) {
+    const line = MIRROR_CONDITIONAL[key]?.[a(key)]
+    if (line) lines.push(line)
+  }
+  return lines
 }
-const PAIRS: Record<string, [number, CommunityProfile]> = {
-  AB: [1, 'B'],
-  AC: [2, 'C'],
-  AD: [3, 'D'],
-  BC: [4, 'C'],
-  BD: [5, 'B'],
-  CD: [6, 'C'],
+
+/**
+ * "Por que isso acontece" só afirma a cena de casa quando a família a escolheu. Se o perfil veio
+ * de outras respostas, abre pelo que ela disse de fato: a preocupação, a frase-síntese ou a cena
+ * desejada (o perfil sempre soma ao menos uma delas).
+ */
+function openerOf(answers: QuizAnswers, decision: CommunityDecision): Opener {
+  const p = decision.profile
+  if (answers.cena === p) return 'cena'
+  if (answers.preocupacao === p) return 'preocupacao'
+  if (answers.sintese === p) return 'sintese'
+  return 'cena_desejada'
 }
-const VISUALS: Record<CommunityProfile, string[]> = {
-  A: ['aula-estudio'],
-  B: ['regra'],
-  C: ['integracao'],
-  D: ['jornada', 'aprendizagem'],
+
+function whyParagraphs(answers: QuizAnswers, decision: CommunityDecision, opener: Opener) {
+  const p = decision.profile
+  const copy = PROFILE_COPY[p]
+  const escola = String(answers.escola)
+  const first =
+    opener === 'cena'
+      ? copy.scene
+      : opener === 'preocupacao'
+        ? OPENER_FROM_WORRY(MIRROR_WORRY[p]!)
+        : opener === 'sintese'
+          ? OPENER_FROM_SYNTHESIS(MIRROR_SYNTHESIS[p]!)
+          : OPENER_FROM_WISH_SCENE(MIRROR_WISH_SCENE[p]!)
+
+  if (p === 'A') {
+    // A calculadora (I6) entra no argumento; "Isso tem explicação." só depois da cena de casa.
+    const creation = CREATION_SENTENCE[String(answers.tempo_criacao)]?.replace(
+      '{horas}',
+      HORAS_POR_ANO[String(answers.tempo_tela)] ?? '',
+    )
+    const end = answers.tempo_criacao === 'boa_parte' ? THESIS_A_END.boa_parte : THESIS_A_END.padrao
+    return [
+      [first, creation, opener === 'cena' ? A_SCENE_BRIDGE : ''].filter(Boolean).join(' '),
+      `${copy.thesis} ${end}`,
+    ]
+  }
+  if (p === 'F') {
+    const opening =
+      opener === 'cena'
+        ? `${copy.scene}${SCHOOL_SCENE_TAIL[escola] ?? ''}.`
+        : opener === 'preocupacao' && escola === 'vai_bem'
+          ? F_GOING_WELL_WORRY
+          : [first, SCHOOL_WEIGHT[escola]].filter(Boolean).join(' ')
+    return [opening, SCHOOL_THESIS[escola] ?? copy.thesis]
+  }
+  const worry = copy.worry && answers.preocupacao === p && opener !== 'preocupacao'
+  return [[first, worry ? copy.worry : ''].filter(Boolean).join(' '), copy.thesis]
+}
+
+function titleOf(answers: QuizAnswers, decision: CommunityDecision, opener: Opener): string {
+  const p = decision.profile
+  if (p === 'A' && answers.tempo_criacao === 'boa_parte') return TITLE_A_GOOD_PART
+  if (p === 'F') {
+    const escola = String(answers.escola)
+    if (SCHOOL_TITLE[escola]) return SCHOOL_TITLE[escola]!
+    // Contas e reforço: "aprendeu a repetir os passos" só quando a família escolheu a cena da lição.
+    return opener === 'cena' ? PROFILE_COPY.F.title : TITLE_F_NUMBERS
+  }
+  return PROFILE_COPY[p].title
+}
+
+/** O relato do perfil e o da necessidade, nunca dois da mesma pessoa. */
+function relatosOf(answers: QuizAnswers, decision: CommunityDecision): RelatoId[] {
+  const p = decision.profile
+  const need = String(answers.garantia)
+  const first: RelatoId =
+    (p === 'B' && WISH_SCENE_RELATO[String(answers.cena_desejada)]) || PROFILE_COPY[p].relato
+  const samePerson = (id?: RelatoId) => !id || RELATOS[id].nome === RELATOS[first].nome
+  const candidate = NEED_RELATO[need]
+  const second = samePerson(candidate) ? NEED_RELATO_ALT[need] : candidate
+  return second && !samePerson(second) ? [first, second] : [first]
 }
 
 export function buildCommunityResult(answers: QuizAnswers) {
   const decision = communityDecision(answers)
   if (!decision) return null
-  const drawingOnly = decision.unmet.includes('desenho')
-  let title: string
-  let reason: string[]
-  let activity: ResultSection | null = null
-  let bridge: ResultSection | null = null
-  let cta: string
-  let activityProfile = decision.profile
-  if (decision.state === 'misto_sem_prioridade') {
-    const [index, profile] = PAIRS[decision.objectives.join('')]!
-    const combined = RESULT_COPY['Dois objetivos com o mesmo peso']!
-    title = combined[index]!.title
-    reason = [...combined[0]!.paragraphs, ...combined[index]!.paragraphs]
-    activityProfile = profile
-    cta = 'Conhecer a proposta completa da Comunidade'
-  } else if (decision.profile) {
-    const primary = PRIMARY_COPY[decision.profile]!
-    title = primary.title
-    reason = primary.sections[0]!.paragraphs
-    cta = primary.sections[2]!.cta!
-  } else {
-    const section = moduleCopy(
-      decision.state === 'exploratorio' ? 'Procura ainda aberta' : 'Quando a procura é outra',
-    )
-    title = section.title
-    reason = [section.paragraphs[0]!]
-    activity = {
-      title:
-        decision.state === 'exploratorio'
-          ? 'Um convite para experimentar em casa'
-          : 'Uma conversa para organizar a procura',
-      paragraphs: section.paragraphs.slice(1),
-    }
-    bridge = {
-      title: 'Conheça um exemplo do que seu filho pode fazer aqui',
-      paragraphs: [
-        'Nas atividades integradas da Comunidade, seu filho encontra a explicação de um lado e a área de criação do outro. Ele acompanha o passo, faz uma tentativa e observa o resultado. A tela abaixo mostra essa organização numa aula de criação de jogos.',
-        decision.state === 'exploratorio'
-          ? 'Mostre esse exemplo a ele e ouça o que teria vontade de experimentar. Como vocês ainda estão conhecendo os caminhos, vale comparar essa proposta com o que surgir na conversa, antes de escolher uma atividade.'
-          : 'Mostre esse exemplo a ele e ouça o que teria vontade de experimentar. Como o que você procura não aparece entre as opções, vale comparar essa proposta com o que surgir na conversa, antes de escolher uma atividade.',
-      ],
-    }
-    cta = section.cta!
-  }
-  if (activityProfile) {
-    activity = PRIMARY_COPY[activityProfile]!.sections[1]!
-    bridge = PRIMARY_COPY[activityProfile]!.sections[2]!
-  }
-  let activityVariant = 'padrao'
-  if (activityProfile === 'C' && drawingOnly) {
-    activity = ACTIVITY_VARIANTS.desenhoSemJogos
-    activityVariant = 'desenho_sem_jogos'
-    if (decision.profile === 'C') {
-      title = 'Um espaço para ele desenvolver os próprios desenhos'
-      reason = [
-        'Você quer dar mais espaço ao desenho e indicou que procura uma atividade que não envolva jogos. Podemos começar por uma criação dele: olhar o que fez, ouvir a ideia e convidá-lo a experimentar outra versão. Assim, a sugestão respeita o que vocês querem explorar agora.',
-      ]
-    } else {
-      reason = [
-        reason[0]!,
-        'Para o desenho, você indicou que procura uma atividade que não envolva jogos. A experiência abaixo parte de um desenho dele e convida a explorar uma mudança na aparência. Os dois objetivos que você escolheu continuam importantes para pensar nos próximos passos.',
-      ]
-    }
-  } else if (activityProfile && answers.q2 === 'criar_jogo') {
-    activity = ACTIVITY_VARIANTS.projetoExistente
-    activityVariant = 'projeto_existente'
-  } else if (activityProfile && answers.q1 === '12_a_14') {
-    activity = ACTIVITY_VARIANTS.adolescente[activityProfile]
-    activityVariant = 'adolescente'
-  }
-  const orientationFor = (profile: CommunityProfile): ResultSection =>
-    profile === 'C' && drawingOnly
-      ? {
-          title: 'O próprio desenho dele pode guiar a próxima tentativa',
-          paragraphs: [
-            'Convide seu filho a mostrar uma criação e contar o que gostaria de fazer diferente. Pode ser mudar a expressão do personagem, experimentar outras cores ou desenhar a mesma cena de outro jeito. Essas escolhas ajudam a conhecer o que ele quer desenvolver no desenho.',
-          ],
-        }
-      : CHOOSING_ACTIVITY[profile]!
-  const orientation: ResultSection | null = decision.profile
-    ? orientationFor(decision.profile)
-    : decision.state === 'misto_sem_prioridade'
-      ? {
-          title: 'O que procurar para reunir esses objetivos',
-          paragraphs: decision.objectives.map((p) => orientationFor(p).paragraphs[0]!),
-        }
-      : null
+  const f = (text: string) => flexionar(text, decision.gender)
+  const p = decision.profile
+  const copy = PROFILE_COPY[p]
+  const escola = String(answers.escola)
+  const wish = String(answers.cena_desejada)
+  const need = String(answers.garantia)
+  const opener = openerOf(answers, decision)
 
-  const observed: Record<string, string> = {
-    jogar:
-      'O jogo que ele costuma procurar pode ser o ponto de partida da conversa. Peça que mostre uma parte de que gosta e conte o que chama a atenção ali. Você passa a conhecer o interesse por trás daquele tempo no computador ou no celular.',
-    desenhar:
-      'Um desenho que ele fez recentemente já dá algo para vocês olharem juntos. Peça que mostre o detalhe de que mais gosta e conte como teve aquela ideia. O que ele valoriza na própria criação pode orientar o próximo convite.',
-    investigar_programas:
-      'Uma curiosidade que ele teve sobre um programa pode render essa primeira conversa. Peça que mostre o que tentou descobrir e conte o que gostaria de fazer funcionar. A pergunta dele pode virar o ponto de partida de uma atividade.',
-    videos:
-      'Como ele tem procurado assistir a vídeos, pergunte quais assuntos acompanha com mais vontade. Pode haver ali um personagem, uma história ou uma curiosidade para vocês explorarem juntos. Primeiro ouça o tema; depois, conversem sobre o que ele gostaria de fazer a partir dele.',
-    outra:
-      'Comece pela atividade de que você se lembrou ao responder. Peça que ele mostre uma coisa de que gosta nela e conte o que teria vontade de experimentar a seguir. Esse interesse merece participar da escolha, mesmo estando fora dos exemplos que apresentamos.',
-    variado:
-      'Os interesses dele variaram no último mês. Você pode convidá-lo a escolher uma ideia para experimentar agora e ouvir o motivo da escolha. A próxima atividade pode partir dessa curiosidade, e vocês continuam observando o que dá vontade de desenvolver.',
-    nao_sei:
-      'Você pode começar pedindo que seu filho mostre uma coisa de que gostou de fazer recentemente. Ouça o que chamou a atenção dele e pergunte o que teria vontade de tentar a seguir. Essa conversa dá uma referência para escolherem uma atividade juntos.',
-  }
-  const context: string[] = observed[String(answers.q2)] ? [observed[String(answers.q2)]!] : []
-  const interests = decision.interests
-  const named = ['jogo', 'visual', 'programacao'].filter((i) => interests.includes(i))
-  const contextKey =
-    named.length === 3
-      ? 'os três interesses'
-      : named.includes('jogo') && named.includes('visual')
-        ? 'jogos e desenho'
-        : named.includes('jogo') && named.includes('programacao')
-          ? 'jogos e programação'
-          : named.length === 2
-            ? 'desenho e programação'
-            : null
-  if (contextKey) context.push(...paragraphs(`Contexto: ${contextKey}`))
-  else if (named.length === 1)
-    context.push(
-      paragraphs('Contexto: o que a criança já expressou')[
-        ['jogo', 'visual', 'programacao'].indexOf(named[0]!)
-      ]!,
-    )
-  const sharedInterests: Record<string, string> = {
-    'jogar:jogo':
-      'Ele já gosta de jogar e falou em fazer um jogo próprio. Você pode pedir que mostre uma parte de um jogo que conhece e conte o que faria diferente. A conversa parte de uma referência dele e chega a uma escolha que teria vontade de construir.',
-    'desenhar:visual':
-      'O desenho já aparece na rotina dele, e ele falou em criar desenhos ou personagens. Peça que escolha uma criação dele e mostre o que mais gosta nela. A partir dessa ideia, vocês podem conversar sobre o que teria vontade de acrescentar ou fazer de outro jeito.',
-    'investigar_programas:programacao':
-      'Ele tem procurado entender como programas funcionam e já falou em aprender a programar. Peça que conte uma coisa que gostaria de fazer acontecer no computador. Essa curiosidade dá um exemplo para vocês procurarem uma explicação e uma primeira tarefa.',
-  }
-  const sharedInterest =
-    named.length === 1 ? sharedInterests[`${answers.q2}:${named[0]}`] : undefined
-  if (sharedInterest) context.splice(0, context.length, sharedInterest)
-  if (interests.includes('outro'))
-    context.push(paragraphs('Contexto: o que a criança já expressou')[3]!)
-  if (interests.includes('nao_expressou'))
-    context.push(...paragraphs('Contexto: ainda não expressou vontade de criar'))
-  if (interests.includes('nao_sei') && answers.q2 !== 'nao_sei')
-    context.push(...paragraphs('Contexto: ainda não sabe'))
-  if (answers.q2 === 'criar_jogo') context.push(...paragraphs('Contexto: já tentou criar um jogo'))
-  const secondary = decision.secondary
-  if (secondary)
-    context.push(SECONDARY_CONTEXT[secondary === 'C' && drawingOnly ? 'C_SEM_JOGOS' : secondary]!)
+  const base =
+    p === 'F'
+      ? (SCHOOL_CHANGE_REPLACE[escola] ??
+        [copy.change, SCHOOL_CHANGE_ADD[escola]].filter(Boolean).join(' '))
+      : copy.change
+  // A cena desejada não se repete quando já abriu o "porquê"; o segundo perfil vem à parte e só
+  // quando não é a própria cena desejada (a frase da cena já fala dele).
+  const change = [
+    [base, opener === 'cena_desejada' ? '' : WISH_SCENE_SENTENCE[wish]].filter(Boolean).join(' '),
+    decision.secondary && decision.secondary !== wish ? SECONDARY_SENTENCE[decision.secondary] : '',
+  ]
+  const where = [
+    `${COMMUNITY_OPENING} ${(p === 'F' && SCHOOL_WHERE[escola]) || copy.where}`,
+    STUCK_SENTENCE[String(answers.quando_trava)]!.replace(
+      '{zappy}',
+      p === 'D' ? ZAPPY_AGAIN : ZAPPY_FIRST,
+    ),
+  ]
 
-  const conditions: Array<ResultSection & { kind: Condition; unmet: boolean }> = []
-  const addCondition = (kind: Condition, key: string | undefined) => {
-    if (key && (decision.unmet.includes(kind) || decision.pending.includes(kind)))
-      conditions.push({ ...moduleCopy(key), kind, unmet: decision.unmet.includes(kind) })
-  }
-  addCondition(
-    'ferramenta',
-    {
-      roblox: 'Jogos: Roblox ou Minecraft indispensável',
-      minecraft: 'Jogos: Roblox ou Minecraft indispensável',
-      outra_especifica: 'Jogos: outra ferramenta específica',
-      conversar: 'Jogos: precisa conversar com o filho',
-    }[String(answers.qb)],
-  )
-  addCondition(
-    'desenho',
-    {
-      sem_jogos: 'Desenho: precisa de uma atividade sem jogos',
-      ver_exemplo: 'Desenho: quer conhecer a integração',
-    }[String(answers.qc)],
-  )
-  addCondition(
-    'formato',
-    {
-      exige_ao_vivo: 'Formato: professor ao vivo indispensável',
-      prefere_ao_vivo: 'Formato: prefere ao vivo, mas considera outra possibilidade',
-      conhecer: 'Formato: quer conhecer melhor',
-    }[String(answers.q7)],
-  )
-  addCondition(
-    'computador',
-    {
-      celular_tablet: 'Equipamento: só celular ou tablet',
-      organizar: 'Equipamento: precisa organizar horários',
-      verificar: 'Equipamento: ainda precisa verificar',
-    }[String(answers.q8)],
-  )
-  conditions.sort((a, b) => Number(b.unmet) - Number(a.unmet))
-  for (const condition of conditions) {
-    condition.paragraphs = condition.paragraphs.map((p) =>
-      p.replace('{{ferramenta}}', answers.qb === 'minecraft' ? 'Minecraft' : 'Roblox'),
-    )
-  }
+  const conditions: ResultCondition[] = [
+    ...decision.unmet.map((kind) => ({ kind, unmet: true })),
+    ...decision.pending.map((kind) => ({ kind, unmet: false })),
+  ].flatMap(({ kind, unmet }) => {
+    const text = CONDITION_COPY[kind]?.[String(answers[CONDITION_ANSWER[kind]])]
+    return text ? [{ kind, unmet, title: f(text.title), text: f(text.text) }] : []
+  })
 
-  const supportCopy = moduleCopy(`Apoio: ${SUPPORT[String(answers.q6)]}`)
-  const support: ResultSection = {
-    title:
-      answers.q5 === 'ajuda'
-        ? 'Seu filho tem onde pedir ajuda quando encontrar uma dúvida'
-        : supportCopy.title,
-    paragraphs: [...supportCopy.paragraphs, ...paragraphs('Dúvida principal: ajuda')],
-  }
-  const formatKey = {
-    pode_funcionar: 'Formato: pode funcionar',
-    prefere_ao_vivo: 'Formato: prefere ao vivo, mas considera outra possibilidade',
-    conhecer: 'Formato: quer conhecer melhor',
-  }[String(answers.q7)]
-  const format = formatKey ? moduleCopy(formatKey) : null
-  const doubtDef = DOUBT[String(answers.q5)]
-  // Quem procura desenho SEM jogos não recebe a regra do jogo como prova do interesse.
-  const doubtKey =
-    doubtDef === 'interesse' && drawingOnly ? 'interesse (desenho sem jogos)' : doubtDef
-  const doubt: ResultSection | null =
-    doubtKey && answers.q5 !== 'ajuda' ? moduleCopy(`Dúvida principal: ${doubtKey}`) : null
-  const doubtVisual =
-    {
-      interesse: drawingOnly ? 'pinta' : 'regra',
-      comeco: 'aula-estudio',
-      aprendizagem: 'responsavel',
-      rotina: 'salvamento',
-    }[String(answers.q5)] ?? null
-  const unmet = decision.unmet.length > 0
-  if (unmet) {
-    bridge = {
-      title: 'O que a Comunidade oferece',
-      paragraphs: [
-        'No Estúdio, a ferramenta de criação de jogos da plataforma, seu filho pode montar comandos em blocos e testar o resultado. O Pinta é o editor em que ele prepara desenhos que podem participar desses projetos. As aulas orientam as primeiras atividades; os recursos para criar livremente são liberados conforme o avanço na Jornada.',
-        'As telas abaixo permitem conhecer essa experiência e comparar com o que vocês procuram. As diferenças que explicamos acima continuam valendo para sua escolha: conhecer os recursos não muda o formato das aulas, os requisitos de equipamento ou as ferramentas usadas.',
-      ],
-    }
-    cta = moduleCopy('Botão quando há uma condição não atendida').cta!
-  }
-  const visuals = activityProfile ? [...VISUALS[activityProfile]] : ['aula-estudio']
-  const practicalConditions = conditions.filter((c) => !c.unmet && c.kind !== 'formato')
-  // Quando a integração já é o argumento principal, desenvolve a dúvida ali,
-  // sem repetir o mesmo texto e a mesma tira de capturas em outro cartão.
-  const drawingCondition = practicalConditions.find((c) => c.kind === 'desenho')
-  if (drawingCondition && activityProfile === 'C' && !unmet) {
-    bridge = { ...bridge!, title: drawingCondition.title, paragraphs: drawingCondition.paragraphs }
-  }
   return {
     decision,
-    title,
-    reason,
-    context,
-    orientation,
-    introduction: COMMUNITY_INTRO,
-    activity: activity!,
-    activityVariant,
-    bridge,
-    cta,
+    title: f(titleOf(answers, decision, opener)),
+    approximateNote: decision.state === 'perfil_aproximado' ? APPROXIMATE_NOTE : null,
+    told: toldLines(answers).map(f),
+    why: whyParagraphs(answers, decision, opener).map(f),
+    change: change.filter(Boolean).map(f),
+    where: where.map(f),
+    visual: (p === 'F' && SCHOOL_VISUAL[escola]) || copy.visual,
+    relatos: relatosOf(answers, decision),
     conditions,
-    unmetConditions: conditions.filter((c) => c.unmet),
-    practicalConditions: practicalConditions.filter(
-      (c) => !(c.kind === 'desenho' && activityProfile === 'C' && !unmet),
-    ),
-    format,
-    support,
-    doubt,
-    doubtVisual: doubtVisual && !visuals.includes(doubtVisual) ? doubtVisual : null,
-    visuals,
-    requirements: paragraphs('Para participar da Comunidade'),
-    offerPath: comunidadeOfferPath(
-      decision.profile ? PROFILE_IDS[decision.profile] : 'tempo-de-tela',
-    ),
+    // "Na próxima página…" fica colado ao botão; a necessidade (N9) vem antes.
+    next: [NEED_SENTENCE[need], copy.next].filter((t): t is string => Boolean(t)).map(f),
+    cta: f(decision.unmet.length ? CTA_WITH_UNMET_CONDITION : copy.cta),
+    offerPath: comunidadeOfferPath(PROFILE_IDS[p]),
   }
 }
 export type CommunityResult = NonNullable<ReturnType<typeof buildCommunityResult>>

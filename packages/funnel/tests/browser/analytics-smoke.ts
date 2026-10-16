@@ -85,9 +85,8 @@ try {
   assert.ok(batches.flatMap((b) => b.events).some((e) => e.name === 'details_open'))
   assert.ok(!JSON.stringify(batches).includes('nao-coletar@example.test'))
   await page.goto(`${origin}/kids/comunidade-dos-criadores/quiz`)
-  const start = page.locator('.cq-intro button.kof-btn')
-  await start.waitFor()
-  await start.click()
+  // v5: a primeira pergunta fica na própria entrada (sem botão de começar para quem chega agora).
+  await page.locator('.cq-p1-opcoes button:not([disabled])').first().waitFor()
   await page.locator('[data-analytics-question]').waitFor()
   await page.waitForTimeout(5500)
   assert.ok(

@@ -3,13 +3,12 @@ import { apiPost } from '../lib/api-fetch'
 
 export default function ComunidadeQuizFeedback({
   revision,
-  basePath,
-  funnel,
+  quizPath,
   sessionToken,
 }: {
   revision: number
-  basePath: string
-  funnel: string
+  /** O endereço do quiz com a manchete que a família viu (`quizPathWithHeadline`). */
+  quizPath: string
   sessionToken: string
 }) {
   const [feedback, setFeedback] = useState<string | null>(null)
@@ -33,20 +32,9 @@ export default function ComunidadeQuizFeedback({
       setBusy(false)
     }
   }
-  async function restart() {
-    if (locked.current) return
-    locked.current = true
-    setBusy(true)
-    setError('')
-    try {
-      await apiPost('/api/leads', { funnel, restartQuiz: true })
-      window.location.assign(`${basePath}/quiz#q1`)
-    } catch {
-      setError('Não foi possível começar uma nova resposta. Tente novamente.')
-      locked.current = false
-      setBusy(false)
-    }
-  }
+  // A sessão da outra criança nasce no próprio quiz (`#outra-crianca`), com a definição do quiz
+  // e a manchete; criada aqui, ela ficaria sem as duas e seria trocada por outra ao abrir o quiz.
+  const restartHref = `${quizPath}#outra-crianca`
   return (
     <section className="cq-panel cq-reading cq-result-section" aria-labelledby="feedback-title">
       <h2 id="feedback-title" className="kof-display">
@@ -85,25 +73,25 @@ export default function ComunidadeQuizFeedback({
             continua registrada.
           </p>
           <div className="cq-actions">
-            <a className="cq-link" href={`${basePath}/quiz#q3`}>
-              Os interesses do meu filho
+            <a className="cq-link" href={`${quizPath}#cena`}>
+              A cena mais comum em casa
             </a>
-            <a className="cq-link" href={`${basePath}/quiz#q4`}>
-              O que procuro para ele
+            <a className="cq-link" href={`${quizPath}#sintese`}>
+              A frase que mais parece com o que você quer
             </a>
-            <a className="cq-link" href={`${basePath}/quiz#q6`}>
-              O apoio de que ele precisa
+            <a className="cq-link" href={`${quizPath}#garantia`}>
+              O que precisa estar garantido
             </a>
           </div>
         </div>
       )}
       <div className="cq-actions">
-        <a className="cq-link" href={`${basePath}/quiz#rever`}>
+        <a className="cq-link" href={`${quizPath}#rever`}>
           Rever minhas respostas
         </a>
-        <button className="cq-link" type="button" disabled={busy} onClick={() => void restart()}>
-          Responder pensando em outro filho
-        </button>
+        <a className="cq-link" href={restartHref}>
+          Responder pensando em outra criança
+        </a>
       </div>
     </section>
   )

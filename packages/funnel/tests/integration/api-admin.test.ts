@@ -12,10 +12,10 @@ import { createFakeRepo } from '../fakes/fake-db'
 import { createFakeGateway, type FakeGatewayState } from '../fakes/fake-gateway'
 
 function setup() {
-  const { repo } = createFakeRepo()
+  const { repo, quizVersions } = createFakeRepo()
   const fg = createFakeGateway()
   const deps = { repo, gateway: fg.gateway, secureCookie: false }
-  return { repo, fg, deps }
+  return { repo, fg, deps, quizVersions }
 }
 
 function loginReq(body?: unknown): Request {
@@ -112,6 +112,41 @@ describe('admin auth (sessão via /auth/me)', () => {
 })
 
 describe('adminFunnel', () => {
+  test('Comunidade: perguntas nomeadas, extra fora da cadeia e recorte do quiz atual', async () => {
+    const { repo, fg, deps, quizVersions } = setup()
+    const funnel = 'kids/comunidade-dos-criadores'
+    quizVersions.set('def-v5', 'comunidade-orientacao-v5')
+    const v4 = await repo.createLead(funnel, null, 'def-v4')
+    await repo.insertEvent(v4.id, 'entrou_landing')
+    const ids: string[] = []
+    for (let i = 0; i < 4; i++) {
+      const { id } = await repo.createLead(funnel, null, 'def-v5')
+      ids.push(id)
+      await repo.insertEvent(id, 'entrou_landing')
+      await repo.insertEvent(id, 'respondeu_comunidade_v5_sintese')
+    }
+    // Só um dos quatro é perfil F: a pergunta extra da escola não vira a base da etapa seguinte.
+    await repo.insertEvent(ids[0]!, 'respondeu_comunidade_v5_escola')
+    await repo.insertEvent(ids[0]!, 'viu_resultado')
+    await repo.insertEvent(ids[1]!, 'viu_resultado')
+    const res = await adminFunnel(
+      new Request(`http://localhost/api/admin?funnel=${encodeURIComponent(funnel)}&quiz=atual`, {
+        headers: { cookie: accessCookie(fg) },
+      }),
+      deps,
+    )
+    const body = (await res.json()) as {
+      total: number
+      steps: Array<{ name: string; label: string; count: number; fromPrev: number }>
+    }
+    expect(body.total).toBe(4)
+    const step = (name: string) => body.steps.find((s) => s.name === name)!
+    expect(step('respondeu_comunidade_v5_sintese').label).toBe('Pergunta 10 · Frase-síntese')
+    expect(step('respondeu_comunidade_v5_escola').label).toBe('Extra · Escola (perfil F)')
+    expect(step('respondeu_comunidade_v5_escola').fromPrev).toBeCloseTo(0.25)
+    // O resultado é comparado com a última pergunta da cadeia (4), não com a extra (1).
+    expect(step('viu_resultado').fromPrev).toBeCloseTo(0.5)
+  })
   test('agrega contagem e conversão por etapa (com sessão)', async () => {
     const { repo, fg, deps } = setup()
     const a = await repo.createLead()
@@ -259,7 +294,7 @@ describe('adminLeads', () => {
 })
 
 describe('adminPerfis', () => {
-  test('Comunidade enumera as quatro motivações sem converter empate em A', async () => {
+  test('Comunidade enumera as cinco motivações, inclusive a escola', async () => {
     const { repo, fg, deps } = setup()
     const funnel = 'kids/comunidade-dos-criadores'
     const lead = await repo.createLead(funnel)
@@ -272,9 +307,61 @@ describe('adminPerfis', () => {
       deps,
     )
     const body = await response.json()
-    expect(body.counts).toHaveLength(4)
+    expect(body.counts.map((c: { perfil: string }) => c.perfil)).toEqual([
+      'tempo-de-tela',
+      'criacao-de-jogos',
+      'expressao-visual',
+      'formacao-tecnologica',
+      'habilidades-escolares',
+    ])
     expect(body.total).toBe(1)
     expect(body.counts.find((c: { perfil: string }) => c.perfil === 'tempo-de-tela')?.count).toBe(0)
+  })
+  test('quiz atual e manchete recortam os perfis da Comunidade', async () => {
+    const { repo, fg, deps, quizVersions } = setup()
+    const funnel = 'kids/comunidade-dos-criadores'
+    quizVersions.set('def-v4', 'comunidade-orientacao-v4')
+    quizVersions.set('def-v5', 'comunidade-orientacao-v5')
+    const make = async (definition: string, quizHeadline: string | null, perfil: string) => {
+      const attribution = quizHeadline
+        ? {
+            version: 1 as const,
+            utmSource: null,
+            utmMedium: null,
+            utmCampaign: null,
+            utmContent: null,
+            eventCode: null,
+            initialCouponCode: null,
+            landingPath: '/',
+            quizHeadline,
+          }
+        : null
+      const { id } = await repo.createLead(funnel, attribution, definition)
+      await repo.updateLead(id, { perfilResultado: perfil })
+    }
+    await make('def-v4', null, 'tempo-de-tela')
+    await make('def-v5', 'padrao', 'habilidades-escolares')
+    await make('def-v5', 'tela', 'tempo-de-tela')
+    await make('def-v5', 'tela', 'tempo-de-tela')
+    const total = async (query: string) =>
+      (
+        await (
+          await adminPerfis(
+            new Request(`http://localhost/api/admin?funnel=${encodeURIComponent(funnel)}${query}`, {
+              headers: { cookie: accessCookie(fg) },
+            }),
+            deps,
+          )
+        ).json()
+      ).total
+    expect(await total('')).toBe(4)
+    expect(await total('&quiz=atual')).toBe(3)
+    expect(await total('&quiz=atual&manchete=tela')).toBe(2)
+    // Escolher uma manchete recorta sempre o quiz atual: o A/B compara só quem viu uma das duas
+    // (o lead da v4, sem registro de manchete, não conta como "padrão").
+    expect(await total('&manchete=padrao')).toBe(1)
+    expect(await total('&manchete=tela')).toBe(2)
+    expect(await total('&manchete=inventada')).toBe(4)
   })
   test('401 sem sessão', async () => {
     const { deps } = setup()
