@@ -10,6 +10,7 @@ import {
   createDbConnection,
   type DbConnection,
 } from '../../src/infrastructure/persistence/drizzle/db'
+import { DrizzleStudioAiUsageRepository } from '../../src/infrastructure/persistence/drizzle/studio-ai-usage.repository'
 import { DrizzleStudioBuilderRepository } from '../../src/infrastructure/persistence/drizzle/studio-builder.repository'
 
 const url = process.env.STUDIO_REVIEW_DATABASE_URL
@@ -63,7 +64,11 @@ describe.skipIf(!url)('Studio builder — durable concurrency in Postgres', () =
       for (const statement of migration.split('--> statement-breakpoint'))
         if (statement.trim()) await connection.sql.unsafe(statement)
     }
-    service = new StudioBuilderService(new DrizzleStudioBuilderRepository(connection.db), () => now)
+    service = new StudioBuilderService(
+      new DrizzleStudioBuilderRepository(connection.db),
+      () => now,
+      true,
+    )
     const [assistanceColumn] =
       await connection.sql`select 1 from information_schema.columns where table_schema = 'members' and table_name = 'studio_builder_jobs' and column_name = 'assistance'`
     if (!assistanceColumn) {
@@ -88,12 +93,25 @@ describe.skipIf(!url)('Studio builder — durable concurrency in Postgres', () =
       for (const statement of migration.split('--> statement-breakpoint'))
         if (statement.trim()) await connection.sql.unsafe(statement)
     }
+    const [executionColumn] =
+      await connection.sql`select 1 from information_schema.columns where table_schema = 'members' and table_name = 'studio_builder_jobs' and column_name = 'execution'`
+    if (!executionColumn) {
+      const migration = await Bun.file(
+        new URL(
+          '../../src/infrastructure/persistence/drizzle/migrations/0125_opposite_guardian.sql',
+          import.meta.url,
+        ),
+      ).text()
+      for (const statement of migration.split('--> statement-breakpoint'))
+        if (statement.trim()) await connection.sql.unsafe(statement)
+    }
   })
   afterAll(async () => {
     if (!connection) return
     await connection.sql`delete from members.studio_builder_jobs where account_id = ${accountId}`
     await connection.sql`delete from members.studio_builder_project_deletions where account_id = ${accountId}`
     await connection.sql`delete from members.account_deletion_fences where account_id = ${accountId}`
+    await connection.sql`delete from members.studio_ai_accounts where account_id = ${accountId}`
     await connection.close()
   })
   async function create(projectId = randomUUID()) {
@@ -108,6 +126,7 @@ describe.skipIf(!url)('Studio builder — durable concurrency in Postgres', () =
     })
     const command = {
       operation: 'create' as const,
+      parentOrigin: 'https://kids.test',
       id: randomUUID(),
       objective: 'Adicionar placar',
       model: 'provider/model',
@@ -116,6 +135,92 @@ describe.skipIf(!url)('Studio builder — durable concurrency in Postgres', () =
     }
     return { command, state: (await service.execute(actor, command))! }
   }
+  test('execution context is immutable, private and rediscovered after a repository restart', async () => {
+    const { command, state } = await create()
+    const repo = new DrizzleStudioBuilderRepository(connection.db)
+    const pending = await repo.pendingExecutions(now, 20)
+    expect(pending.find((job) => job.id === state.job.id)).toEqual({
+      id: command.id,
+      projectId: command.base.projectId,
+      parentOrigin: command.parentOrigin,
+      actor,
+    })
+    expect(Object.keys(state.job)).not.toContain('execution')
+    for (const [owner, changed] of [
+      [actor, { ...command, parentOrigin: 'https://other.test' }],
+      [{ ...actor, privileged: true }, command],
+    ] as const) {
+      const [result] = await Promise.allSettled([service.execute(owner, changed)])
+      expect(result?.status).toBe('rejected')
+    }
+    await service.execute(actor, {
+      operation: 'claim',
+      id: state.job.id,
+      projectId: state.job.projectId,
+    })
+    expect((await repo.pendingExecutions(now, 20)).some((job) => job.id === state.job.id)).toBe(
+      false,
+    )
+    const expired = new Date(now.getTime() + limits.leaseMs + 1)
+    expect((await repo.pendingExecutions(expired, 20)).some((job) => job.id === state.job.id)).toBe(
+      true,
+    )
+    await service.execute(actor, {
+      operation: 'cancel',
+      id: state.job.id,
+      projectId: state.job.projectId,
+    })
+  })
+  test('terminal jobs remain pending until their reserved usage is finished, without another model dispatch', async () => {
+    const { state } = await create(),
+      repo = new DrizzleStudioBuilderRepository(connection.db)
+    const usage = new DrizzleStudioAiUsageRepository(connection.db)
+    await service.execute(actor, {
+      operation: 'claim',
+      id: state.job.id,
+      projectId: state.job.projectId,
+    })
+    expect(
+      await usage.reserve({
+        actor,
+        now,
+        day: now.toISOString().slice(0, 10),
+        estimateMicroUsd: 20,
+        expiresAt: new Date(now.getTime() + 300_000),
+        externalAvailable: false,
+        request: {
+          runId: state.job.id,
+          projectId: state.job.projectId,
+          purpose: 'builder',
+          model: 'provider/model',
+          inputBytes: 1000,
+          maxOutputTokens: 100,
+          maxAttempts: 3,
+        },
+        limits: {
+          dailyLimit: 50,
+          monthlyLimit: 500,
+          dailyMicroUsd: 1000,
+          monthlyMicroUsd: 10_000,
+          maxConcurrent: 2,
+          externalDailyRuns: 200,
+          priceCaps: { prompt: 1, completion: 4, request: 0 },
+        },
+      }),
+    ).toMatchObject({ allowed: true })
+    await service.execute(actor, {
+      operation: 'cancel',
+      id: state.job.id,
+      projectId: state.job.projectId,
+    })
+    expect((await repo.pendingExecutions(now, 20)).some((job) => job.id === state.job.id)).toBe(
+      true,
+    )
+    await usage.finish(actor, state.job.id, now)
+    expect((await repo.pendingExecutions(now, 20)).some((job) => job.id === state.job.id)).toBe(
+      false,
+    )
+  })
   test('one active job per owner/project survives racing creates; retries preserve structured request identity', async () => {
     const first = await create()
     await service.execute(actor, {

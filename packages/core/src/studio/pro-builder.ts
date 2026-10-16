@@ -143,14 +143,10 @@ export interface StudioProBuilderAdapter {
     signal?: AbortSignal,
   ): Promise<StudioProBuilderView | null>
   checkApplication?(
-    input: { id: string; projectId: string },
+    input: { id: string; projectId: string; version: number; revisionHash: string },
     signal?: AbortSignal,
   ): Promise<{ allowed: boolean; reason?: string }>
   removeProject?(projectId: string, signal?: AbortSignal): Promise<void>
-  advance(
-    input: { id: string; projectId: string },
-    signal?: AbortSignal,
-  ): Promise<StudioProBuilderView | null>
   cancel(input: { id: string; projectId: string }): Promise<StudioProBuilderView | null>
 }
 export type StudioProBuilderCommand =
@@ -162,6 +158,8 @@ export type StudioProBuilderCommand =
       base: StudioProRevision
       binaries: Record<string, { base64: string; sha256: string }>
       request?: StudioProAssistanceRequest
+      /** Server-captured preview origin, never an executor destination. */
+      parentOrigin: string
     }
   | { operation: 'get'; id: string; projectId: string }
   | { operation: 'cancel'; id: string; projectId: string }

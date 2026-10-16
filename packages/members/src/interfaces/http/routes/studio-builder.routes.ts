@@ -20,6 +20,10 @@ export function studioBuilderRoutes(deps: {
       if (!deps.service) throw new StudioAiUnavailableError()
       return { deleted: await deps.service.purgeExpired() }
     })
+    .post('/builder/availability', ({ set }) => {
+      set.headers['Cache-Control'] = 'no-store'
+      return { available: Boolean(deps.service?.executionAvailable) }
+    })
     .post(
       '/builder/history',
       async ({ body, set }) => {

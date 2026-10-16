@@ -1,33 +1,72 @@
 import type { JSX } from 'react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ProjectTree } from '#core'
-import { Button, ConfirmDialog } from '#ui'
+import { Button } from '#ui'
 import { useProjectStore } from '../../state/projectStore'
+import type { ProWorkspaceIntent } from '../../state/proWorkspaceOperations'
 import { buildTreeView, type TreeViewNode } from './proTreeView'
 
 export interface ProFileTreeProps {
   activeFile: string
   onSelectFile: (path: string) => void
+  onPinFile?: (path: string) => void
+  collapsedPaths?: readonly string[]
+  onCollapsedChange?: (paths: string[]) => void
+  descriptions?: Readonly<Record<string, string>>
+  revealRequest?: number
+  onRequestOperation?: (intent: ProWorkspaceIntent) => void
+  operationsBusy?: boolean
 }
 
 const EMPTY_TREE: ProjectTree = {}
 
-export function ProFileTree({ activeFile, onSelectFile }: ProFileTreeProps): JSX.Element {
+export function ProFileTree({
+  activeFile,
+  onSelectFile,
+  onPinFile,
+  collapsedPaths,
+  onCollapsedChange,
+  descriptions,
+  revealRequest = 0,
+  onRequestOperation,
+  operationsBusy = false,
+}: ProFileTreeProps): JSX.Element {
   const tree = useProjectStore((s) => s.project?.tree ?? EMPTY_TREE)
   const addProFile = useProjectStore((s) => s.addProFile)
   const addProDir = useProjectStore((s) => s.addProDir)
-  const renameProNode = useProjectStore((s) => s.renameProNode)
-  const removeProNode = useProjectStore((s) => s.removeProNode)
+  const observer = useProjectStore((s) => s.editingAccess === 'observer')
 
   const roots = useMemo(() => buildTreeView(tree), [tree])
-  const [collapsed, setCollapsed] = useState<Set<string>>(() => new Set())
+  const [localCollapsed, setLocalCollapsed] = useState<string[]>([])
+  const collapsed = new Set(collapsedPaths ?? localCollapsed)
+  const setCollapsed = (update: (previous: Set<string>) => Set<string>) => {
+    const next = [...update(collapsed)]
+    if (onCollapsedChange) onCollapsedChange(next)
+    else setLocalCollapsed(next)
+  }
   const [creating, setCreating] = useState<{ kind: 'file' | 'dir'; base: string } | null>(null)
   const [newName, setNewName] = useState('')
   const [renaming, setRenaming] = useState<{ from: string; to: string } | null>(null)
-  const [pendingDelete, setPendingDelete] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const renameInputRef = useRef<HTMLInputElement | null>(null)
   const createInputRef = useRef<HTMLInputElement | null>(null)
+  const fileButtons = useRef(new Map<string, HTMLButtonElement>())
+  const [focused, setFocused] = useState('')
+  const visible: TreeViewNode[] = []
+  const collect = (nodes: TreeViewNode[]) => {
+    for (const node of nodes) {
+      visible.push(node)
+      if (node.kind === 'dir' && !collapsed.has(node.path)) collect(node.children)
+    }
+  }
+  collect(roots)
+  const focusPath = visible.some((node) => node.path === focused) ? focused : visible[0]?.path
+  useEffect(() => {
+    if (!revealRequest) return
+    const button = fileButtons.current.get(activeFile)
+    button?.focus()
+    button?.scrollIntoView({ block: 'nearest' })
+  }, [activeFile, revealRequest])
 
   useEffect(() => {
     if (!renaming) return
@@ -68,38 +107,12 @@ export function ProFileTree({ activeFile, onSelectFile }: ProFileTreeProps): JSX
 
   const handleRenameSave = () => {
     if (!renaming) return
-    const slash = renaming.from.lastIndexOf('/')
-    const base = slash < 0 ? '' : renaming.from.slice(0, slash)
-    const to = base ? `${base}/${renaming.to.trim()}` : renaming.to.trim()
-    const err = renameProNode(renaming.from, to)
-    if (err) {
-      setError(err)
-      return
-    }
-    // `renameProNode` renomeia a subárvore inteira (from/... → to/...). Se o
-    // arquivo aberto está DENTRO da pasta renomeada, seu path morreu — reaponta
-    // para o equivalente sob o novo prefixo (espelha o branch do delete acima).
-    if (activeFile === renaming.from) onSelectFile(to)
-    else if (activeFile.startsWith(`${renaming.from}/`)) {
-      onSelectFile(to + activeFile.slice(renaming.from.length))
-    }
+    onRequestOperation?.({ kind: 'rename', from: renaming.from, to: renaming.to.trim() })
     setRenaming(null)
     setError(null)
   }
 
-  const handleConfirmDelete = () => {
-    if (!pendingDelete) return
-    removeProNode(pendingDelete)
-    if (activeFile === pendingDelete || activeFile.startsWith(`${pendingDelete}/`)) {
-      const firstFile = Object.entries(tree).find(
-        ([p, n]) => n.kind === 'file' && p !== pendingDelete && !p.startsWith(`${pendingDelete}/`),
-      )
-      if (firstFile) onSelectFile(firstFile[0])
-    }
-    setPendingDelete(null)
-  }
-
-  const renderNode = (node: TreeViewNode): JSX.Element => {
+  const renderNode = (node: TreeViewNode, index: number, siblings: TreeViewNode[]): JSX.Element => {
     const isDir = node.kind === 'dir'
     const isCollapsed = collapsed.has(node.path)
     const isActive = activeFile === node.path
@@ -121,7 +134,6 @@ export function ProFileTree({ activeFile, onSelectFile }: ProFileTreeProps): JSX
               autoComplete="off"
               value={renaming.to}
               onChange={(e) => setRenaming({ from: node.path, to: e.target.value })}
-              onBlur={handleRenameSave}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') handleRenameSave()
                 if (e.key === 'Escape') {
@@ -133,21 +145,78 @@ export function ProFileTree({ activeFile, onSelectFile }: ProFileTreeProps): JSX
             />
           ) : (
             <button
+              role="treeitem"
+              aria-label={node.path}
+              aria-level={node.depth + 1}
+              aria-posinset={index + 1}
+              aria-setsize={siblings.length}
+              aria-selected={!isDir && isActive}
+              aria-expanded={isDir ? !isCollapsed : undefined}
+              tabIndex={node.path === focusPath ? 0 : -1}
+              onFocus={() => setFocused(node.path)}
+              onKeyDown={(event) => {
+                const position = visible.findIndex((item) => item.path === node.path)
+                let next: string | undefined
+                if (event.key === 'ArrowDown')
+                  next = visible[Math.min(visible.length - 1, position + 1)]?.path
+                else if (event.key === 'ArrowUp') next = visible[Math.max(0, position - 1)]?.path
+                else if (event.key === 'Home') next = visible[0]?.path
+                else if (event.key === 'End') next = visible.at(-1)?.path
+                else if (event.key === 'ArrowRight') {
+                  if (isDir && isCollapsed) toggle(node.path)
+                  else if (isDir) next = node.children[0]?.path
+                } else if (event.key === 'ArrowLeft') {
+                  if (isDir && !isCollapsed) toggle(node.path)
+                  else next = node.path.slice(0, node.path.lastIndexOf('/'))
+                } else if (
+                  event.key === 'F2' &&
+                  !observer &&
+                  !operationsBusy &&
+                  onRequestOperation
+                ) {
+                  setRenaming({ from: node.path, to: node.path })
+                } else return
+                event.preventDefault()
+                if (next) fileButtons.current.get(next)?.focus()
+              }}
+              ref={(button) => {
+                if (button) fileButtons.current.set(node.path, button)
+                else fileButtons.current.delete(node.path)
+              }}
               type="button"
               onClick={() => (isDir ? toggle(node.path) : onSelectFile(node.path))}
-              onDoubleClick={() => setRenaming({ from: node.path, to: node.name })}
+              onDoubleClick={() =>
+                !isDir && onPinFile
+                  ? onPinFile(node.path)
+                  : !observer &&
+                    onRequestOperation &&
+                    setRenaming({ from: node.path, to: node.path })
+              }
               className="flex flex-1 items-center gap-1 truncate text-left"
-              title="Duplo clique para renomear"
+              title={
+                !isDir && onPinFile ? 'Duplo clique para fixar a aba' : 'Duplo clique para renomear'
+              }
             >
               <span aria-hidden="true" className="text-sz-fg-mute">
                 {isDir ? (isCollapsed ? '▸' : '▾') : '·'}
               </span>
-              <span className="truncate">{node.name}</span>
+              <span className="min-w-0 py-1">
+                <span className="block truncate">{node.name}</span>
+                {descriptions?.[node.path] && (
+                  <span
+                    className="block truncate font-sans text-xs text-sz-fg-mute"
+                    title={descriptions[node.path]}
+                  >
+                    {descriptions[node.path]}
+                  </span>
+                )}
+              </span>
             </button>
           )}
           {isDir && (
             <button
               type="button"
+              disabled={observer || operationsBusy}
               onClick={() => {
                 setCreating({ kind: 'file', base: node.path })
                 setNewName('')
@@ -160,20 +229,40 @@ export function ProFileTree({ activeFile, onSelectFile }: ProFileTreeProps): JSX
               }}
               title="Novo arquivo nesta pasta"
               aria-label={`Novo arquivo em ${node.path}`}
-              className="opacity-0 group-hover:opacity-100 text-sz-fg-mute hover:text-sz-accent"
+              className="min-h-6 min-w-6 text-sz-fg-mute hover:text-sz-accent focus-visible:outline disabled:opacity-40"
             >
               <span aria-hidden="true">+</span>
             </button>
           )}
           <button
             type="button"
-            onClick={() => setPendingDelete(node.path)}
+            disabled={observer || operationsBusy || !onRequestOperation}
+            onClick={() => setRenaming({ from: node.path, to: node.path })}
+            aria-label={`Renomear ou mover ${node.path}`}
+            title="Renomear ou mover — informe o caminho completo"
+            className="min-h-6 min-w-6 text-sz-fg-mute hover:text-sz-accent disabled:opacity-40"
+          >
+            ↗
+          </button>
+          <button
+            type="button"
+            disabled={observer || operationsBusy || !onRequestOperation}
+            onClick={() => onRequestOperation?.({ kind: 'delete', path: node.path })}
             title="Excluir"
             aria-label={`Excluir ${node.path}`}
-            className="opacity-0 group-hover:opacity-100 text-sz-fg-mute hover:text-sz-error"
+            className="min-h-6 min-w-6 text-sz-fg-mute hover:text-sz-error disabled:opacity-40"
           >
             <span aria-hidden="true">×</span>
           </button>
+          {isRenaming && (
+            <button
+              type="button"
+              onClick={handleRenameSave}
+              className="min-h-8 px-2 text-sz-accent"
+            >
+              Conferir
+            </button>
+          )}
         </div>
         {isDir && !isCollapsed && node.children.map(renderNode)}
       </div>
@@ -187,6 +276,7 @@ export function ProFileTree({ activeFile, onSelectFile }: ProFileTreeProps): JSX
         <div className="flex gap-1">
           <button
             type="button"
+            disabled={observer || operationsBusy}
             onClick={() => {
               setCreating({ kind: 'file', base: '' })
               setNewName('')
@@ -199,6 +289,7 @@ export function ProFileTree({ activeFile, onSelectFile }: ProFileTreeProps): JSX
           </button>
           <button
             type="button"
+            disabled={observer || operationsBusy}
             onClick={() => {
               setCreating({ kind: 'dir', base: '' })
               setNewName('')
@@ -211,7 +302,9 @@ export function ProFileTree({ activeFile, onSelectFile }: ProFileTreeProps): JSX
           </button>
         </div>
       </header>
-      <div className="flex-1 overflow-auto px-1 py-1">{roots.map(renderNode)}</div>
+      <div role="tree" aria-label="Arquivos do projeto" className="flex-1 overflow-auto px-1 py-1">
+        {roots.map(renderNode)}
+      </div>
       {creating && (
         <div className="space-y-1 border-t border-sz-border-soft p-2">
           <p className="text-xs text-sz-fg-mute">
@@ -235,6 +328,34 @@ export function ProFileTree({ activeFile, onSelectFile }: ProFileTreeProps): JSX
             placeholder={creating.kind === 'file' ? 'arquivo.ts' : 'pasta'}
             className="w-full rounded border border-sz-border bg-sz-bg px-2 py-1 font-mono text-xs text-sz-fg placeholder:text-sz-fg-mute"
           />
+          <p className="text-xs text-sz-fg-mute">
+            Use letras sem acentos, números, ponto, hífen ou sublinhado. Para escolher outra pasta,
+            escreva o caminho com /.
+          </p>
+          {newName !==
+            newName
+              .normalize('NFKD')
+              .replace(/[\u0300-\u036f]/g, '')
+              .replace(/\s+/g, '-') && (
+            <button
+              type="button"
+              className="min-h-8 text-xs text-sz-accent"
+              onClick={() =>
+                setNewName(
+                  newName
+                    .normalize('NFKD')
+                    .replace(/[\u0300-\u036f]/g, '')
+                    .replace(/\s+/g, '-'),
+                )
+              }
+            >
+              Usar sugestão:{' '}
+              {newName
+                .normalize('NFKD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/\s+/g, '-')}
+            </button>
+          )}
           <div className="flex gap-1">
             <Button size="sm" variant="primary" onClick={handleCreate} className="flex-1">
               Criar
@@ -253,21 +374,6 @@ export function ProFileTree({ activeFile, onSelectFile }: ProFileTreeProps): JSX
         </div>
       )}
       {error && <p className="px-2 pb-2 text-xs text-sz-error">{error}</p>}
-      <ConfirmDialog
-        open={pendingDelete !== null}
-        title="Excluir item?"
-        confirmLabel="Excluir"
-        cancelLabel="Cancelar"
-        danger
-        onConfirm={handleConfirmDelete}
-        onCancel={() => setPendingDelete(null)}
-      >
-        <p>
-          Tem certeza que deseja excluir{' '}
-          <span className="font-mono font-semibold">{pendingDelete}</span>? Se for uma pasta, todo o
-          conteúdo será removido. Essa ação não pode ser desfeita.
-        </p>
-      </ConfirmDialog>
     </aside>
   )
 }

@@ -8,6 +8,7 @@ import {
   type StudioProAssistanceRequest,
   type StudioProBuilderCommand,
   studioProBuilderView,
+  studioProChangeScopeIssue,
 } from '@sistemazero/core/studio'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
@@ -22,7 +23,7 @@ import {
   sanitizeStudioAssistanceRequest,
   studioAssistanceMission,
 } from '../server/studio-assistance'
-import { advanceStudioBuilder, refreshStudioBuilderPreview } from '../server/studio-builder'
+import { refreshStudioBuilderPreview } from '../server/studio-builder'
 import {
   preflightStudioProBuild,
   StudioProRuntimeInputError,
@@ -64,7 +65,6 @@ const bodySchema = z.discriminatedUnion('operation', [
     })
     .strict(),
   z.object({ operation: z.literal('get'), id, projectId }).strict(),
-  z.object({ operation: z.literal('advance'), id, projectId }).strict(),
   z.object({ operation: z.literal('cancel'), id, projectId }).strict(),
   z.object({ operation: z.literal('latest'), projectId }).strict(),
   z.object({ operation: z.literal('remove-project'), projectId }).strict(),
@@ -75,7 +75,15 @@ const bodySchema = z.discriminatedUnion('operation', [
     .object({ operation: z.literal('discard'), id, projectId, version: z.number().int().min(0) })
     .strict(),
   z.object({ operation: z.literal('refresh-preview'), id, projectId }).strict(),
-  z.object({ operation: z.literal('check-application'), id, projectId }).strict(),
+  z
+    .object({
+      operation: z.literal('check-application'),
+      id,
+      projectId,
+      version: z.number().int().min(0),
+      revisionHash: z.string().regex(/^[a-f0-9]{64}$/),
+    })
+    .strict(),
 ])
 const error = (message: string, status: number) =>
   NextResponse.json({ error: { message } }, { status, headers: { 'Cache-Control': 'no-store' } })
@@ -138,8 +146,19 @@ export function createStudioBuilderRoutes(deps: {
           privileged: user.status === 'active' && isPrivilegedRole(user.role),
         }
         const env = getEnv()
+        const executionAvailable = async () => {
+          if (!env.STUDIO_BUILDER_EXECUTOR_SECRET) return false
+          try {
+            const status = await deps.members.studioBuilderAvailability()
+            return status.status === 200 && status.body?.available === true
+          } catch {
+            return false
+          }
+        }
         if (input.operation === 'availability') {
-          const available = Boolean(env.STUDIO_PRO_RUNTIME_URL && env.STUDIO_PRO_RUNTIME_TOKEN)
+          const available =
+            Boolean(env.STUDIO_PRO_RUNTIME_URL && env.STUDIO_PRO_RUNTIME_TOKEN) &&
+            (await executionAvailable())
           return NextResponse.json(
             {
               available,
@@ -154,9 +173,7 @@ export function createStudioBuilderRoutes(deps: {
           )
         }
         if (
-          (input.operation === 'create' ||
-            input.operation === 'advance' ||
-            input.operation === 'refresh-preview') &&
+          (input.operation === 'create' || input.operation === 'refresh-preview') &&
           (!env.STUDIO_PRO_RUNTIME_URL || !env.STUDIO_PRO_RUNTIME_TOKEN)
         )
           return error('O ambiente de verificação ainda não está configurado.', 503)
@@ -190,6 +207,20 @@ export function createStudioBuilderRoutes(deps: {
               job.assistance?.disposition === 'discarded'
             )
               reason = 'Esta proposta não está mais disponível para aplicar.'
+            else if (
+              job.version !== input.version ||
+              job.result.revisionHash !== input.revisionHash
+            )
+              reason =
+                'A proposta mudou. Consulte o estado e confira a revisão atual antes de aplicar.'
+            else if (
+              studioProChangeScopeIssue(job.assistance?.request, job.base.files, job.result.change)
+            )
+              reason = studioProChangeScopeIssue(
+                job.assistance?.request,
+                job.base.files,
+                job.result.change,
+              )!
             else if (job.assistance?.request.mission) {
               const mission = await studioAssistanceMission(
                 deps.members,
@@ -204,10 +235,8 @@ export function createStudioBuilderRoutes(deps: {
               { headers: { 'Cache-Control': 'no-store' } },
             )
           }
-          if (input.operation === 'advance' || input.operation === 'refresh-preview') {
-            const job = await (input.operation === 'advance'
-              ? advanceStudioBuilder
-              : refreshStudioBuilderPreview)({
+          if (input.operation === 'refresh-preview') {
+            const job = await refreshStudioBuilderPreview({
               members: deps.members,
               actor,
               id: input.id,
@@ -224,6 +253,11 @@ export function createStudioBuilderRoutes(deps: {
           }
           let command: StudioProBuilderCommand
           if (input.operation === 'create') {
+            if (!(await executionAvailable()))
+              return error(
+                'A execução automática está indisponível. Seu pedido continua no editor.',
+                503,
+              )
             if (isUnsafeZappyText(input.objective))
               return error(
                 'Vamos usar o construtor para melhorar o seu jogo. Escolha um objetivo de criação.',
@@ -272,6 +306,7 @@ export function createStudioBuilderRoutes(deps: {
               base,
               binaries: input.binaries,
               request: assistance,
+              parentOrigin: new URL(request.url).origin,
             }
           } else command = input
           const response = await deps.members.studioBuilder(actor, command)

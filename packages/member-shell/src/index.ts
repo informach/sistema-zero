@@ -15,6 +15,7 @@ import { createPrivateNarrationRoutes } from './routes/private-narration'
 import { createStudioRoutes } from './routes/studio'
 import { createStudioAiReconcileRoutes } from './routes/studio-ai-reconcile'
 import { createStudioBuilderRoutes } from './routes/studio-builder'
+import { createStudioBuilderExecutorRoutes } from './routes/studio-builder-executor'
 import { createStudioOpenRouterRoutes } from './routes/studio-openrouter'
 import { createStudioZappyRoutes } from './routes/studio-zappy'
 import { createStudyAccessRoutes } from './routes/study-access'
@@ -91,6 +92,7 @@ export function createShell(cfg: ShellConfig) {
     ...createStudioRoutes({ hub, members, media }),
     ...createStudioZappyRoutes({ members, session }),
     ...createStudioBuilderRoutes({ members, session }),
+    ...createStudioBuilderExecutorRoutes({ members }),
     ...createStudioOpenRouterRoutes({ members, session, cookieBase: cfg.cookieBase }),
     ...createStudioAiReconcileRoutes({ members }),
     ...createCertificateRoutes({ members, session }),

@@ -7,6 +7,7 @@ import {
   type StudioProBuilderCommand,
   type StudioProBuilderJob,
   type StudioProBuilderResult,
+  studioProChangeScopeIssue,
 } from '@sistemazero/core/studio'
 import { z } from 'zod'
 import type { MembersClient } from './clients'
@@ -178,6 +179,12 @@ export async function advanceStudioBuilder(input: {
           signal,
         }),
       )
+      const scopeIssue = studioProChangeScopeIssue(
+        job.assistance?.request,
+        job.base.files,
+        result.change,
+      )
+      if (scopeIssue) return repairOrFail(scopeIssue, null)
       return checkpoint('validating', result, null)
     } catch (error) {
       // Ambiguous transport errors never cause another model call. Valid JSON/tool failures can repair.

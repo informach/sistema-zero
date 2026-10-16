@@ -9,6 +9,19 @@ export interface ProLanguageDiagnostic {
   start: number
   length: number
 }
+export interface ProTextEdit {
+  path: string
+  start: number
+  length: number
+  text: string
+}
+export interface ProSymbol {
+  name: string
+  kind: string
+  start: number
+  length: number
+  depth: number
+}
 
 function absolute(path: string): string {
   const parts: string[] = []
@@ -45,6 +58,7 @@ export function createProLanguageService(defaultLibraries: Record<string, string
   let invalidatedResolutions = false
   let roots: string[] = []
   let configErrors: readonly ts.Diagnostic[] = []
+  let configPath = 'tsconfig.json'
   let options: ts.CompilerOptions = {}
   const read = (path: string) => files.get(absolute(path))?.text ?? libraries.get(absolute(path))
   const fileExists = (path: string) =>
@@ -109,7 +123,7 @@ export function createProLanguageService(defaultLibraries: Record<string, string
     invalidatedResolutions = false
   }
   const diagnostic = (item: ts.Diagnostic): ProLanguageDiagnostic => ({
-    path: item.file?.fileName.replace('/project/', '') ?? 'tsconfig.json',
+    path: item.file?.fileName.replace('/project/', '') ?? configPath,
     code: item.code,
     message: ts.flattenDiagnosticMessageText(item.messageText, '\n'),
     severity:
@@ -180,6 +194,7 @@ export function createProLanguageService(defaultLibraries: Record<string, string
       }
       if (!structureChanged && !configurationChanged) return
       const configName = files.has('/project/tsconfig.json') ? 'tsconfig.json' : 'jsconfig.json'
+      configPath = configName
       const configText = read(`/project/${configName}`)
       const parsed = configText
         ? ts.parseConfigFileTextToJson(configName, configText)
@@ -268,6 +283,62 @@ export function createProLanguageService(defaultLibraries: Record<string, string
           span: item.textSpan,
         })) ?? []
       )
+    },
+    symbols(path: string): ProSymbol[] {
+      synchronize()
+      const full = absolute(`/project/${path}`)
+      if (!service.getProgram()?.getSourceFile(full)) return []
+      const result: ProSymbol[] = []
+      const visit = (items: ts.NavigationTree[], depth: number) => {
+        for (const item of items) {
+          const span = item.nameSpan ?? item.spans[0]
+          if (span && result.length < 300)
+            result.push({ name: item.text, kind: item.kind, ...span, depth })
+          if (result.length < 300) visit(item.childItems ?? [], depth + 1)
+        }
+      }
+      visit(service.getNavigationTree(full).childItems ?? [], 0)
+      return result
+    },
+    references(path: string, offset: number) {
+      synchronize()
+      return (service.getReferencesAtPosition(absolute(`/project/${path}`), offset) ?? []).map(
+        (item) => ({ path: item.fileName.replace('/project/', ''), span: item.textSpan }),
+      )
+    },
+    renameFile(from: string, to: string): ProTextEdit[] {
+      synchronize()
+      return service
+        .getEditsForFileRename(absolute(`/project/${from}`), absolute(`/project/${to}`), {}, {})
+        .flatMap((file) =>
+          file.textChanges.map((edit) => ({
+            path: file.fileName.replace('/project/', ''),
+            ...edit.span,
+            text: edit.newText,
+          })),
+        )
+    },
+    renameSymbol(path: string, offset: number, name: string): ProTextEdit[] {
+      synchronize()
+      const scanner = ts.createScanner(
+        ts.ScriptTarget.Latest,
+        true,
+        ts.LanguageVariant.Standard,
+        name,
+      )
+      if (
+        scanner.scan() !== ts.SyntaxKind.Identifier ||
+        scanner.scan() !== ts.SyntaxKind.EndOfFileToken
+      )
+        throw new Error('Escolha um nome de código válido, sem espaços.')
+      const full = absolute(`/project/${path}`)
+      const info = service.getRenameInfo(full, offset, { allowRenameOfImportPath: false })
+      if (!info.canRename) throw new Error(info.localizedErrorMessage)
+      return (service.findRenameLocations(full, offset, false, false, true) ?? []).map((item) => ({
+        path: item.fileName.replace('/project/', ''),
+        ...item.textSpan,
+        text: `${item.prefixText ?? ''}${name}${item.suffixText ?? ''}`,
+      }))
     },
     format(path: string) {
       synchronize()

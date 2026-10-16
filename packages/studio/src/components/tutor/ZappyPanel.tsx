@@ -98,7 +98,7 @@ function responseMessage(
   }
 }
 
-export function ZappyPanel(): JSX.Element | null {
+export function ZappyPanel({ embedded = false }: { embedded?: boolean }): JSX.Element | null {
   const { config, open, setOpen, proEditor, proNavigate, proCapture, proRequest, clearProRequest } =
     useStudioTutor()
   const store = useProjectStoreApi()
@@ -127,6 +127,7 @@ export function ZappyPanel(): JSX.Element | null {
   const { isNarrow } = useStudioLayout()
   const [messages, setMessages] = useState<StudioTutorHistoryMessage[]>([])
   const [question, setQuestion] = useState('')
+  const [historySearch, setHistorySearch] = useState('')
   const [voiceBusy, setVoiceBusy] = useState(false)
   const [busy, setBusy] = useState(false)
   const [building, setBuilding] = useState(false)
@@ -178,10 +179,41 @@ export function ZappyPanel(): JSX.Element | null {
     setIntent('explain')
     setSelection(undefined)
     setQuestion('')
+    setHistorySearch('')
   }, [projectId, config])
 
   useEffect(() => {
     if (!proRequest || proRequest.projectId !== projectId || !open) return
+    if (proRequest.intent === 'change') {
+      const selected = proRequest.selection
+      setBuilderDraft({
+        id: proRequest.id,
+        objective: proRequest.question,
+        request: {
+          version: 1,
+          intent: 'change',
+          scope: 'selection',
+          criteria: [],
+          ...(selected
+            ? {
+                selection: {
+                  path: selected.path,
+                  startLine: selected.startLine,
+                  endLine:
+                    selected.endLine > selected.startLine && selected.endColumn === 1
+                      ? selected.endLine - 1
+                      : selected.endLine,
+                  sourceHash: selected.sourceHash,
+                },
+              }
+            : {}),
+        },
+      })
+      setBuilderOpened(true)
+      setBuilding(true)
+      clearProRequest(proRequest.id)
+      return
+    }
     setIntent(proRequest.intent)
     setSelection(proRequest.selection)
     setQuestion(proRequest.question)
@@ -225,14 +257,16 @@ export function ZappyPanel(): JSX.Element | null {
       document.activeElement instanceof HTMLElement ? document.activeElement : null
     inputRef.current?.focus()
     const onKeyDown = (event: KeyboardEvent) => {
+      if (!panelRef.current?.contains(document.activeElement)) return
       if (event.key === 'Escape') setOpen(false)
       if (event.key !== 'Tab' || !isNarrow) return
       const focusable = panelRef.current?.querySelectorAll<HTMLElement>(
-        'button:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])',
+        'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])',
       )
       if (!focusable?.length) return
-      const first = focusable[0]
-      const last = focusable[focusable.length - 1]
+      const visible = [...focusable].filter((element) => !element.closest('[hidden], [inert]'))
+      const first = visible[0]
+      const last = visible[visible.length - 1]
       if (event.shiftKey && document.activeElement === first) {
         event.preventDefault()
         last?.focus()
@@ -503,22 +537,32 @@ export function ZappyPanel(): JSX.Element | null {
   }
 
   const titleId = 'sz-zappy-title'
-  if (!config || !open || !project) return null
+  if (!config || !project || (!open && project.kind !== 'pro')) return null
+  const panelAttributes =
+    project.kind === 'pro' && !isNarrow
+      ? { role: 'complementary' as const }
+      : { role: 'dialog' as const, 'aria-modal': isNarrow }
 
   const body = (
     <aside
       ref={panelRef}
       id="sz-zappy-panel"
-      role="dialog"
-      aria-modal={isNarrow}
+      {...panelAttributes}
+      hidden={!open}
       aria-labelledby={titleId}
       // No largo o painel começa logo abaixo da barra do editor, que mede 68px (4.25rem) desde a
       // tela-modelo de 11/09/2026; no estreito a barra tem 52px e o painel desce 16px além dela.
       className={cn(
-        'absolute z-[75] flex flex-col border-sz-border bg-sz-panel text-sz-fg shadow-2xl motion-reduce:transition-none',
-        isNarrow
-          ? 'inset-x-2 bottom-2 top-[4.25rem] rounded-2xl border'
-          : 'bottom-0 right-0 top-[4.25rem] w-[min(26rem,42%)] border-l',
+        'z-[75] flex flex-col border-sz-border bg-sz-panel text-sz-fg motion-reduce:transition-none',
+        !open && '!hidden',
+        embedded && !isNarrow ? 'relative h-full w-full min-h-0' : 'absolute shadow-2xl',
+        embedded && !isNarrow
+          ? ''
+          : embedded && isNarrow
+            ? 'inset-2 rounded-2xl border'
+            : isNarrow
+              ? 'inset-x-2 bottom-2 top-[4.25rem] rounded-2xl border'
+              : 'bottom-0 right-0 top-[4.25rem] w-[min(26rem,42%)] border-l',
       )}
     >
       <header className="flex items-center gap-3 border-b border-sz-border px-4 py-3">
@@ -668,189 +712,209 @@ export function ZappyPanel(): JSX.Element | null {
             </button>
           </div>
         ) : null}
-        {messages.map((message) => {
-          // Aviso de LIMITE não é aula: ganha cara de recado (âmbar) e perde os
-          // botões de avaliar — pedir "isso ajudou?" para "acabou a ajuda" é cruel,
-          // e o polegar viraria feedback de qualidade sobre um aviso operacional.
-          const isQuota = message.response?.scope === 'quota'
-          const incompatible =
-            message.role === 'assistant' &&
-            ((message.response?.kind &&
-              message.response.kind !== (project.kind === 'pro' ? 'pro' : 'classic')) ||
-              studioTutorModeViolation(message.text, project.kind === 'pro' ? 'pro' : 'classic'))
-          if (incompatible)
-            return (
-              <details
-                key={message.id}
-                className="rounded-2xl border border-sz-border p-3 text-sm text-sz-fg-mute"
-              >
-                <summary>Conversa anterior: orientação de outro modo</summary>
-                <p className="mt-2">Esta orientação não se aplica ao modo atual.</p>
-                <p className="mt-2 whitespace-pre-wrap">{message.text}</p>
-              </details>
-            )
-          return (
-            <article
-              key={message.id}
-              className={cn(
-                'max-w-[92%] rounded-2xl px-3.5 py-3 text-sm leading-relaxed',
-                message.role === 'user'
-                  ? 'ml-auto bg-sz-accent text-sz-bg'
-                  : isQuota
-                    ? 'mr-auto border border-sz-warn/40 bg-sz-warn/10 text-sz-fg'
-                    : 'mr-auto border border-sz-border bg-sz-bg text-sz-fg',
-              )}
-            >
-              <p className="whitespace-pre-wrap">{message.text}</p>
-              {message.role === 'assistant' && project
-                ? config?.renderListen?.(project.id, message.id)
-                : null}
-              {!isQuota && project.kind === 'pro' && message.response?.fileReferences?.length ? (
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  {message.response.sourceRevision !== undefined &&
-                  message.response.sourceRevision !== project.updatedAt ? (
-                    <p className="w-full text-xs text-sz-fg-mute">
-                      O projeto mudou desde esta resposta; as linhas podem ter mudado.
-                    </p>
-                  ) : null}
-                  {message.response.fileReferences.map((reference) => (
-                    <button
-                      key={`${reference.path}:${reference.startLine}:${reference.endLine}`}
-                      type="button"
-                      disabled={project.tree?.[reference.path]?.kind !== 'file'}
-                      onClick={() => proNavigate.current?.(reference)}
-                      className="rounded-lg border border-sz-accent/40 bg-sz-accent/10 px-2.5 py-1 text-xs text-sz-accent hover:bg-sz-accent/20 disabled:opacity-40"
-                    >
-                      {reference.path}
-                      {reference.startLine !== undefined ? `:${reference.startLine}` : ''}
-                      {reference.startLine !== undefined &&
-                      reference.endLine !== reference.startLine
-                        ? `–${reference.endLine}`
-                        : ''}
-                    </button>
-                  ))}
-                </div>
-              ) : null}
-              {!isQuota && project.kind !== 'pro' && message.response?.blockReferences?.length ? (
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  {message.response.blockReferences.map((reference) => {
-                    // O caminho da paleta é a verdade; o par categoria/subcategoria
-                    // fica só como compat de resposta antiga do histórico.
-                    const trail = reference.palettePath?.length
-                      ? reference.palettePath.join(' › ')
-                      : reference.subcategory && reference.subcategory !== reference.category
-                        ? `${reference.category} › ${reference.subcategory}`
-                        : reference.category
-                    return (
-                      <button
-                        key={`${reference.blockType}:${reference.blockId ?? 'catalog'}`}
-                        type="button"
-                        onClick={() => goToBlock(reference)}
-                        className="flex flex-col items-start rounded-lg border border-sz-accent/40 bg-sz-accent/10 px-2.5 py-1 text-left text-sz-accent hover:bg-sz-accent/20"
-                        title={`${trail} · ${reference.area}`}
-                      >
-                        <span className="font-semibold text-xs">{reference.name}</span>
-                        <span className="text-[0.6875rem] text-sz-accent/70">{trail}</span>
-                      </button>
-                    )
-                  })}
-                </div>
-              ) : null}
-              {config?.openLesson &&
-              message.response?.lessonReferences?.some((reference) => reference.courseSlug) ? (
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  {message.response.lessonReferences.map((reference) =>
-                    reference.courseSlug ? (
-                      <button
-                        key={`${reference.courseId}:${reference.lessonId}`}
-                        type="button"
-                        onClick={() => config.openLesson?.(reference)}
-                        className="rounded-full border border-sz-border bg-sz-surface px-2.5 py-1 font-semibold text-sz-fg-soft text-xs hover:border-sz-accent hover:text-sz-accent"
-                        title="Abrir a fase em nova aba"
-                      >
-                        Fase: {reference.title} ↗
-                      </button>
-                    ) : null,
-                  )}
-                </div>
-              ) : null}
-              {config?.openHelp && message.response?.helpReferences?.length ? (
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  {message.response.helpReferences.map((reference) => (
-                    <button
-                      key={reference.slug}
-                      type="button"
-                      onClick={() => config.openHelp?.(reference)}
-                      className="rounded-full border border-sz-border bg-sz-surface px-2.5 py-1 font-semibold text-sz-fg-soft text-xs hover:border-sz-accent hover:text-sz-accent"
-                      title="Abrir o passo a passo em nova aba"
-                    >
-                      Passo a passo: {reference.title} ↗
-                    </button>
-                  ))}
-                </div>
-              ) : null}
-              {message.role === 'assistant' && message.response && !isQuota ? (
-                <div className="mt-2 flex gap-1 text-sz-fg-mute text-xs">
-                  <span>Isso ajudou?</span>
-                  <button
-                    type="button"
-                    aria-label="A resposta ajudou"
-                    onClick={() => void sendFeedback(message.response?.id ?? message.id, true)}
-                    className="hover:text-sz-success"
-                  >
-                    👍
-                  </button>
-                  <button
-                    type="button"
-                    aria-label="A resposta não ajudou"
-                    onClick={() => void sendFeedback(message.response?.id ?? message.id, false)}
-                    className="hover:text-sz-error"
-                  >
-                    👎
-                  </button>
-                </div>
-              ) : null}
-              {message.role === 'assistant' &&
-                !isQuota &&
-                project.kind === 'pro' &&
-                config.adapter.builder &&
-                !incompatible && (
-                  <button
-                    type="button"
-                    className="mt-3 rounded-lg border border-sz-border px-3 py-2 text-xs"
-                    onClick={() => {
-                      const references = message.response?.fileReferences
-                      const origin = references?.length === 1 ? references[0] : undefined
-                      prepareChange({
-                        id: crypto.randomUUID(),
-                        objective: '',
-                        request: {
-                          version: 1,
-                          intent: 'change',
-                          scope: 'part',
-                          criteria: [],
-                          sourceMessageId: message.id,
-                          diagnostic: message.text.slice(0, 2000),
-                          ...(origin?.sourceHash && origin.startLine && origin.endLine
-                            ? {
-                                selection: {
-                                  path: origin.path,
-                                  startLine: origin.startLine,
-                                  endLine: origin.endLine,
-                                  sourceHash: origin.sourceHash,
-                                },
-                              }
-                            : {}),
-                        },
-                      })
-                    }}
-                  >
-                    Preparar alteração a partir desta resposta
-                  </button>
-                )}
-            </article>
+        {project.kind === 'pro' && messages.length > 0 && (
+          <label className="block text-xs">
+            Buscar nas mensagens carregadas
+            <input
+              type="search"
+              maxLength={120}
+              value={historySearch}
+              onChange={(event) => setHistorySearch(event.target.value)}
+              className="mt-1 min-h-10 w-full rounded-lg border border-sz-border bg-sz-bg px-3 text-sm"
+            />
+          </label>
+        )}
+        {messages
+          .filter(
+            (message) =>
+              !historySearch.trim() ||
+              message.text
+                .toLocaleLowerCase('pt-BR')
+                .includes(historySearch.trim().toLocaleLowerCase('pt-BR')),
           )
-        })}
+          .map((message) => {
+            // Aviso de LIMITE não é aula: ganha cara de recado (âmbar) e perde os
+            // botões de avaliar — pedir "isso ajudou?" para "acabou a ajuda" é cruel,
+            // e o polegar viraria feedback de qualidade sobre um aviso operacional.
+            const isQuota = message.response?.scope === 'quota'
+            const incompatible =
+              message.role === 'assistant' &&
+              ((message.response?.kind &&
+                message.response.kind !== (project.kind === 'pro' ? 'pro' : 'classic')) ||
+                studioTutorModeViolation(message.text, project.kind === 'pro' ? 'pro' : 'classic'))
+            if (incompatible)
+              return (
+                <details
+                  key={message.id}
+                  className="rounded-2xl border border-sz-border p-3 text-sm text-sz-fg-mute"
+                >
+                  <summary>Conversa anterior: orientação de outro modo</summary>
+                  <p className="mt-2">Esta orientação não se aplica ao modo atual.</p>
+                  <p className="mt-2 whitespace-pre-wrap">{message.text}</p>
+                </details>
+              )
+            return (
+              <article
+                key={message.id}
+                className={cn(
+                  'max-w-[92%] rounded-2xl px-3.5 py-3 text-sm leading-relaxed',
+                  message.role === 'user'
+                    ? 'ml-auto bg-sz-accent text-sz-bg'
+                    : isQuota
+                      ? 'mr-auto border border-sz-warn/40 bg-sz-warn/10 text-sz-fg'
+                      : 'mr-auto border border-sz-border bg-sz-bg text-sz-fg',
+                )}
+              >
+                <p className="whitespace-pre-wrap">{message.text}</p>
+                {message.role === 'assistant' && project
+                  ? config?.renderListen?.(project.id, message.id)
+                  : null}
+                {!isQuota && project.kind === 'pro' && message.response?.fileReferences?.length ? (
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {message.response.sourceRevision !== undefined &&
+                    message.response.sourceRevision !== project.updatedAt ? (
+                      <p className="w-full text-xs text-sz-fg-mute">
+                        O projeto mudou desde esta resposta; as linhas podem ter mudado.
+                      </p>
+                    ) : null}
+                    {message.response.fileReferences.map((reference) => (
+                      <button
+                        key={`${reference.path}:${reference.startLine}:${reference.endLine}`}
+                        type="button"
+                        disabled={project.tree?.[reference.path]?.kind !== 'file'}
+                        onClick={() => proNavigate.current?.(reference)}
+                        className="rounded-lg border border-sz-accent/40 bg-sz-accent/10 px-2.5 py-1 text-xs text-sz-accent hover:bg-sz-accent/20 disabled:opacity-40"
+                      >
+                        {reference.path}
+                        {reference.startLine !== undefined ? `:${reference.startLine}` : ''}
+                        {reference.startLine !== undefined &&
+                        reference.endLine !== reference.startLine
+                          ? `–${reference.endLine}`
+                          : ''}
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+                {!isQuota && project.kind !== 'pro' && message.response?.blockReferences?.length ? (
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {message.response.blockReferences.map((reference) => {
+                      // O caminho da paleta é a verdade; o par categoria/subcategoria
+                      // fica só como compat de resposta antiga do histórico.
+                      const trail = reference.palettePath?.length
+                        ? reference.palettePath.join(' › ')
+                        : reference.subcategory && reference.subcategory !== reference.category
+                          ? `${reference.category} › ${reference.subcategory}`
+                          : reference.category
+                      return (
+                        <button
+                          key={`${reference.blockType}:${reference.blockId ?? 'catalog'}`}
+                          type="button"
+                          onClick={() => goToBlock(reference)}
+                          className="flex flex-col items-start rounded-lg border border-sz-accent/40 bg-sz-accent/10 px-2.5 py-1 text-left text-sz-accent hover:bg-sz-accent/20"
+                          title={`${trail} · ${reference.area}`}
+                        >
+                          <span className="font-semibold text-xs">{reference.name}</span>
+                          <span className="text-[0.6875rem] text-sz-accent/70">{trail}</span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                ) : null}
+                {config?.openLesson &&
+                message.response?.lessonReferences?.some((reference) => reference.courseSlug) ? (
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {message.response.lessonReferences.map((reference) =>
+                      reference.courseSlug ? (
+                        <button
+                          key={`${reference.courseId}:${reference.lessonId}`}
+                          type="button"
+                          onClick={() => config.openLesson?.(reference)}
+                          className="rounded-full border border-sz-border bg-sz-surface px-2.5 py-1 font-semibold text-sz-fg-soft text-xs hover:border-sz-accent hover:text-sz-accent"
+                          title="Abrir a fase em nova aba"
+                        >
+                          Fase: {reference.title} ↗
+                        </button>
+                      ) : null,
+                    )}
+                  </div>
+                ) : null}
+                {config?.openHelp && message.response?.helpReferences?.length ? (
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {message.response.helpReferences.map((reference) => (
+                      <button
+                        key={reference.slug}
+                        type="button"
+                        onClick={() => config.openHelp?.(reference)}
+                        className="rounded-full border border-sz-border bg-sz-surface px-2.5 py-1 font-semibold text-sz-fg-soft text-xs hover:border-sz-accent hover:text-sz-accent"
+                        title="Abrir o passo a passo em nova aba"
+                      >
+                        Passo a passo: {reference.title} ↗
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+                {message.role === 'assistant' && message.response && !isQuota ? (
+                  <div className="mt-2 flex gap-1 text-sz-fg-mute text-xs">
+                    <span>Isso ajudou?</span>
+                    <button
+                      type="button"
+                      aria-label="A resposta ajudou"
+                      onClick={() => void sendFeedback(message.response?.id ?? message.id, true)}
+                      className="hover:text-sz-success"
+                    >
+                      👍
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="A resposta não ajudou"
+                      onClick={() => void sendFeedback(message.response?.id ?? message.id, false)}
+                      className="hover:text-sz-error"
+                    >
+                      👎
+                    </button>
+                  </div>
+                ) : null}
+                {message.role === 'assistant' &&
+                  !isQuota &&
+                  project.kind === 'pro' &&
+                  config.adapter.builder &&
+                  !incompatible && (
+                    <button
+                      type="button"
+                      className="mt-3 rounded-lg border border-sz-border px-3 py-2 text-xs"
+                      onClick={() => {
+                        const references = message.response?.fileReferences
+                        const origin = references?.length === 1 ? references[0] : undefined
+                        prepareChange({
+                          id: crypto.randomUUID(),
+                          objective: '',
+                          request: {
+                            version: 1,
+                            intent: 'change',
+                            scope: 'part',
+                            criteria: [],
+                            sourceMessageId: message.id,
+                            diagnostic: message.text.slice(0, 2000),
+                            ...(origin?.sourceHash && origin.startLine && origin.endLine
+                              ? {
+                                  selection: {
+                                    path: origin.path,
+                                    startLine: origin.startLine,
+                                    endLine: origin.endLine,
+                                    sourceHash: origin.sourceHash,
+                                  },
+                                }
+                              : {}),
+                          },
+                        })
+                      }}
+                    >
+                      Preparar alteração a partir desta resposta
+                    </button>
+                  )}
+              </article>
+            )
+          })}
         {busy ? <p className="text-sz-fg-mute text-sm">Zappy está pensando…</p> : null}
         {error ? (
           <p className="rounded-xl bg-sz-error/10 p-3 text-sz-error text-sm">{error}</p>
@@ -866,6 +930,12 @@ export function ZappyPanel(): JSX.Element | null {
               onUsageChange={refreshCredits}
             />
           </Suspense>
+        )}
+        {project.kind === 'pro' && building && !config.adapter.builder && (
+          <p role="status" className="rounded-lg bg-sz-bg p-3 text-sm">
+            O construtor não está disponível neste ambiente. Seu trecho está guardado neste painel;
+            você pode voltar a Explicar ou Investigar sem alterar o código.
+          </p>
         )}
         <div ref={endRef} />
       </div>
@@ -979,18 +1049,17 @@ export function ZappyPanel(): JSX.Element | null {
     </aside>
   )
 
-  return isNarrow ? (
+  return (
     <>
       <button
         type="button"
         aria-label="Fechar Zappy"
         tabIndex={-1}
+        hidden={!isNarrow || !open}
         className="absolute inset-0 z-[74] bg-black/45"
         onClick={() => setOpen(false)}
       />
       {body}
     </>
-  ) : (
-    body
   )
 }

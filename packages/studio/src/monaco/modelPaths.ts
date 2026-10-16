@@ -10,6 +10,53 @@ export interface MonacoModelRegistry {
   getModels(): readonly DisposableMonacoModel[]
 }
 
+// URI identifies a buffer for its lifetime; a document rename changes only its logical path.
+const logicalPaths = new WeakMap<DisposableMonacoModel, string>()
+const reservedPaths = new Map<string, string>()
+const synchronizing = new WeakSet<DisposableMonacoModel>()
+export function setMonacoModelPath(model: DisposableMonacoModel, path: string): void {
+  logicalPaths.set(model, path)
+  reservedPaths.set(model.uri.path.replace(/^\/+/, ''), path)
+}
+/** Reserve a URI without creating a visual model. Reusing a renamed file's old name gets a new URI. */
+export function reserveMonacoModelUri(
+  registry: MonacoModelRegistry,
+  prefix: string,
+  fileName: string,
+): string {
+  const logical = buildMonacoModelPath(prefix, fileName)
+  const existing = findMonacoModel(registry.getModels(), logical)
+  if (existing) return existing.uri.toString()
+  for (const [uri, path] of reservedPaths) if (path === logical) return uri
+  const occupied = new Set(registry.getModels().map((model) => model.uri.path.replace(/^\/+/, '')))
+  const uri =
+    occupied.has(logical) || reservedPaths.has(logical)
+      ? `${prefix}/.buffers/${crypto.randomUUID()}/${fileName.split('/').at(-1)}`
+      : logical
+  reservedPaths.set(uri, logical)
+  return uri
+}
+export function releaseMonacoModelUri(model: DisposableMonacoModel): void {
+  reservedPaths.delete(model.uri.path.replace(/^\/+/, ''))
+}
+export function isMonacoModelSynchronizing(model: DisposableMonacoModel): boolean {
+  return synchronizing.has(model)
+}
+export function synchronizeMonacoModel(model: DisposableMonacoModel, update: () => void): void {
+  synchronizing.add(model)
+  try {
+    update()
+  } finally {
+    synchronizing.delete(model)
+  }
+}
+export function findMonacoModel<T extends DisposableMonacoModel>(
+  models: readonly T[],
+  path: string,
+): T | undefined {
+  return models.find((model) => getMonacoModelPath(model) === path)
+}
+
 /**
  * Sanitiza um segmento do `path` do model: o Monaco cria o model via
  * `monaco.Uri.parse(path)`, e o parser do vscode-uri trata TUDO antes do
@@ -56,7 +103,11 @@ export function buildMonacoModelPath(prefix: string | undefined, fileName: strin
 }
 
 export function getMonacoModelPath(model: DisposableMonacoModel): string {
+  const logical = logicalPaths.get(model)
+  if (logical) return logical
   const uriPath = model.uri.path.replace(/^\/+/, '')
+  const reserved = reservedPaths.get(uriPath)
+  if (reserved) return reserved
   if (uriPath) return uriPath
   return model.uri
     .toString()
@@ -78,7 +129,10 @@ export function disposeModelsForPathPrefix(
   for (const model of registry.getModels()) {
     if (!isModelInPathPrefix(model, prefix)) continue
     model.dispose()
+    releaseMonacoModelUri(model)
     disposed += 1
   }
+  for (const uri of reservedPaths.keys())
+    if (uri.startsWith(`${prefix}/`)) reservedPaths.delete(uri)
   return disposed
 }

@@ -1,3 +1,5 @@
+import type { StudioProAssistanceRequest } from '@sistemazero/core/studio/pro-assistance'
+import { studioProChangeScopeIssue } from '@sistemazero/core/studio/pro-change-scope'
 import {
   applyStudioProChange,
   createStudioProRevision,
@@ -13,6 +15,7 @@ import { listProApplications, PRO_APPLICATION_LIMITS } from './projectStorageCoo
 import {
   installLocalRevision,
   type ProApplicationRecord,
+  type ProAssetEdit,
   readLocalRevision,
 } from './projectStorageRevision'
 import { captureProjectStorageScope } from './projectStorageRuntime'
@@ -79,7 +82,11 @@ async function applyRevision(
   change: StudioProChange,
   decisionsHash?: string,
   inverseBudget?: number,
-  beforePublish?: (inverse: StudioProChange, project: Project) => void,
+  beforePublish?: (inverse: StudioProChange, project: Project, assetInverse?: ProAssetEdit) => void,
+  afterPublish?: () => void,
+  assetEdit?: ProAssetEdit,
+  request?: StudioProAssistanceRequest,
+  expectedRevisionHash?: string,
 ): Promise<StudioProChange> {
   const scope = captureProjectStorageScope()
   const entryProject = store.getState().project
@@ -97,10 +104,61 @@ async function applyRevision(
   if (decisionsHash && (await digestProAssistance(getProAssistance(project))) !== decisionsHash)
     throw new Error('As decisões mudaram desde esta proposta. Revise ou gere uma nova proposta.')
   const base = await captureProRevision(project)
-  const { revision, inverse } = await applyStudioProChange(base, change)
+  const scopeIssue = studioProChangeScopeIssue(request, base.files, change)
+  if (scopeIssue) throw new Error(scopeIssue)
+  let assetInverse: ProAssetEdit | undefined
+  let materials:
+    | { assets: NonNullable<Project['assets']>; coverAssetName: string | null }
+    | undefined
+  if (assetEdit) {
+    if (base.hash !== change.baseHash || change.patches.length || change.directories)
+      throw new Error('Os materiais mudaram. Confira a operação novamente.')
+    if (
+      !Number.isSafeInteger(assetEdit.index) ||
+      assetEdit.index < 0 ||
+      (project.coverAssetName ?? null) !== assetEdit.cover.before
+    )
+      throw new Error('A capa ou a posição do material mudou.')
+    const assets = [...(project.assets ?? [])]
+    const index = assets.findIndex((asset) => asset.id === assetEdit.id)
+    const previous = index < 0 ? null : assets[index]!
+    if (
+      (assetEdit.value &&
+        (index >= 0 || assetEdit.value.id !== assetEdit.id || assetEdit.index > assets.length)) ||
+      (!assetEdit.value && index < 0)
+    )
+      throw new Error('Este material já foi alterado. Suas edições foram preservadas.')
+    if (assetEdit.value) assets.splice(assetEdit.index, 0, assetEdit.value)
+    else assets.splice(index, 1)
+    materials = { assets, coverAssetName: assetEdit.cover.after }
+    assetInverse = {
+      id: assetEdit.id,
+      value: previous,
+      index: previous ? index : assetEdit.index,
+      cover: { before: assetEdit.cover.after, after: assetEdit.cover.before },
+    }
+  }
+  const { revision, inverse } = materials
+    ? await (async () => {
+        const revision = await captureProRevision({ ...project, assets: materials.assets })
+        return {
+          revision,
+          inverse: {
+            baseHash: revision.hash,
+            summary: `Recuperar: ${change.summary}`,
+            patches: [],
+          } satisfies StudioProChange,
+        }
+      })()
+    : await applyStudioProChange(base, change)
+  if (expectedRevisionHash && revision.hash !== expectedRevisionHash)
+    throw new Error(
+      'As alterações não correspondem à proposta verificada. Consulte o estado e revise novamente.',
+    )
   if (
     inverseBudget !== undefined &&
-    new TextEncoder().encode(JSON.stringify(inverse)).byteLength + 2048 > inverseBudget
+    new TextEncoder().encode(JSON.stringify({ inverse, assetInverse })).byteLength + 2048 >
+      inverseBudget
   )
     throw new Error(
       'Esta proposta é grande demais para um desfazer local completo. Divida a mudança em partes menores.',
@@ -111,7 +169,7 @@ async function applyRevision(
       ([path, content]) => [path, { kind: 'file' as const, content }] as const,
     ),
   ])
-  await buildProAssetBundle(project.assets, tree)
+  await buildProAssetBundle(materials?.assets ?? project.assets, tree)
   // Includes edits to assets/metadata while digesting, even when the source tree is unchanged.
   if (
     captureProjectStorageScope() !== scope ||
@@ -125,9 +183,11 @@ async function applyRevision(
       projectId,
       project.tree!,
       tree,
-      beforePublish ? (next) => beforePublish(inverse, next) : undefined,
+      beforePublish ? (next) => beforePublish(inverse, next, assetInverse) : undefined,
+      materials,
     )
   if (error) throw new Error(error)
+  afterPublish?.()
   return inverse
 }
 
@@ -137,6 +197,8 @@ export interface ProProposalApplication {
   operationId: string
   jobId: string
   change: StudioProChange
+  request: StudioProAssistanceRequest
+  expectedRevisionHash?: string
   requestId?: string
   decisionsHash?: string
   undoOf?: string
@@ -175,7 +237,17 @@ function receiptFor(
     inverse: record.inverse,
   }
 }
-function validateApplication(input: ProProposalApplication): void {
+interface ProDocumentApplication extends Omit<ProProposalApplication, 'jobId' | 'request'> {
+  request?: StudioProAssistanceRequest
+  source: 'editor' | 'zappy'
+  jobId?: string
+  pathMap?: Record<string, string>
+  assetEdit?: ProAssetEdit
+}
+function validateApplication(input: ProDocumentApplication): void {
+  if (input.assetEdit && input.source !== 'editor')
+    throw new Error('Somente uma operação local pode alterar materiais.')
+  if (input.source === 'zappy' && !input.jobId) throw new Error('Construção sem identificação.')
   for (const id of [input.operationId, input.jobId, input.requestId, input.undoOf])
     if (id !== undefined && !/^[A-Za-z0-9:_-]{1,160}$/.test(id))
       throw new Error('Identificação de aplicação inválida.')
@@ -188,6 +260,27 @@ export async function applyProProposal(
   store: ProjectStoreApi,
   projectId: string,
   input: ProProposalApplication,
+): Promise<ProApplicationReceipt> {
+  return applyProDocument(store, projectId, { ...input, source: 'zappy' })
+}
+
+export async function applyProEditorChange(
+  store: ProjectStoreApi,
+  projectId: string,
+  input: Omit<
+    ProDocumentApplication,
+    'source' | 'jobId' | 'decisionsHash' | 'requestId' | 'request'
+  >,
+  onPublish?: (tree: ProjectTree) => void,
+): Promise<ProApplicationReceipt> {
+  return applyProDocument(store, projectId, { ...input, source: 'editor' }, onPublish)
+}
+
+async function applyProDocument(
+  store: ProjectStoreApi,
+  projectId: string,
+  input: ProDocumentApplication,
+  onPublish?: (tree: ProjectTree) => void,
 ): Promise<ProApplicationReceipt> {
   const entryScope = captureProjectStorageScope()
   const entryProject = store.getState().project
@@ -210,7 +303,11 @@ export async function applyProProposal(
   const sessionKey = `${localScope?.identity ?? 'session'}\0${projectId}\0${input.operationId}`
   const cached = applications(store).get(sessionKey)
   if (cached) {
-    if (cached.record.beforeHash !== input.change.baseHash || cached.record.jobId !== input.jobId)
+    if (
+      cached.record.beforeHash !== input.change.baseHash ||
+      cached.record.jobId !== input.jobId ||
+      cached.record.source !== input.source
+    )
       throw new Error('Esta identificação já pertence a outra aplicação.')
     if (cached.receipt.status !== 'pending') return cached.receipt
     return saveApplication(store, projectId, cached.record, cached.receipt)
@@ -221,7 +318,11 @@ export async function applyProProposal(
     )
     assertEntry()
     if (existing) {
-      if (existing.beforeHash !== input.change.baseHash || existing.jobId !== input.jobId)
+      if (
+        existing.beforeHash !== input.change.baseHash ||
+        existing.jobId !== input.jobId ||
+        existing.source !== input.source
+      )
         throw new Error('Esta identificação já pertence a outra aplicação.')
       const receipt = receiptFor(existing, 'saved')
       applications(store).set(sessionKey, { record: existing, receipt })
@@ -256,15 +357,19 @@ export async function applyProProposal(
       PRO_APPLICATION_LIMITS.projectBytes - pendingBytes,
       PRO_APPLICATION_LIMITS.profileBytes - profilePending,
     ),
-    (inverse, project) => {
+    (inverse, project, assetInverse) => {
       const record: ProApplicationRecord = {
         version: 1,
         operationId: input.operationId,
-        jobId: input.jobId,
+        source: input.source,
+        ...(input.jobId ? { jobId: input.jobId } : {}),
+        label: input.change.summary,
+        ...(input.pathMap ? { pathMap: input.pathMap } : {}),
         projectId,
         beforeHash: input.change.baseHash,
         afterHash: inverse.baseHash,
         inverse,
+        ...(assetInverse ? { assetInverse } : {}),
         createdAt: Date.now(),
         bytes: 0,
         ...(input.requestId ? { requestId: input.requestId } : {}),
@@ -283,6 +388,13 @@ export async function applyProProposal(
       applications(store).set(sessionKey, { record, receipt })
       applied = { project, record, receipt }
     },
+    () => {
+      if (applied && store.getState().project === applied.project)
+        onPublish?.(applied.project.tree!)
+    },
+    input.assetEdit,
+    input.request,
+    input.expectedRevisionHash,
   )
   if (!applied) throw new Error('A revisão não foi publicada.')
   const { record, receipt } = applied
@@ -371,6 +483,7 @@ export async function undoProApplication(
   projectId: string,
   operationId: string,
   undoOperationId = `undo:${operationId}`,
+  onPublish?: (tree: ProjectTree, pathMap: Record<string, string>) => void,
 ): Promise<ProApplicationReceipt> {
   const scope = captureProjectStorageScope()
   const project = store.getState().project
@@ -394,12 +507,23 @@ export async function undoProApplication(
     (entry) => entry.projectId === projectId && entry.operationId === operationId,
   )
   if (!record) throw new Error('Este desfazer expirou ou não está disponível neste aparelho.')
-  return applyProProposal(store, projectId, {
-    operationId: undoOperationId,
-    jobId: record.jobId,
-    change: record.inverse,
-    undoOf: operationId,
-  })
+  const pathMap = Object.fromEntries(
+    Object.entries(record.pathMap ?? {}).map(([from, to]) => [to, from]),
+  )
+  return applyProDocument(
+    store,
+    projectId,
+    {
+      operationId: undoOperationId,
+      source: record.source,
+      jobId: record.jobId,
+      change: record.inverse,
+      undoOf: operationId,
+      pathMap,
+      ...(record.assetInverse ? { assetEdit: record.assetInverse } : {}),
+    },
+    onPublish ? (tree) => onPublish(tree, pathMap) : undefined,
+  )
 }
 
 export function listProSessionApplications(

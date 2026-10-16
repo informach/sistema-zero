@@ -236,6 +236,7 @@ interface ProjectStore {
     expected: ProjectTree,
     tree: ProjectTree,
     beforePublish?: (project: Project) => void,
+    materials?: { assets: ProjectAsset[]; coverAssetName: string | null },
   ) => string | null
   /** Renomeia/move nó da árvore pro. Devolve mensagem de erro ou null se ok. */
   renameProNode: (from: string, to: string) => string | null
@@ -1262,7 +1263,7 @@ export function createProjectStore(
         }
         set({ project: bump({ ...p, tree: next }), isDirty: true, saveError: null })
       },
-      reconcileProFiles: (projectId, expected, tree, beforePublish) => {
+      reconcileProFiles: (projectId, expected, tree, beforePublish, materials) => {
         const p = get().project
         if (get().editingAccess === 'observer') return 'Este projeto está em observação.'
         if (p?.id !== projectId || p.kind !== 'pro' || p.tree !== expected)
@@ -1272,9 +1273,19 @@ export function createProjectStore(
           return 'A árvore do terminal não é válida ou ultrapassou os limites do projeto.'
         const limitError = proTreeLimitError(sanitized)
         if (limitError) return limitError
+        if (materials) {
+          const assets = sanitizeProjectAssets(materials.assets)
+          assertProjectContentPreserved({ assets: materials.assets }, { ...p, assets })
+          if (
+            materials.coverAssetName &&
+            !assets.some((a) => a.kind === 'image' && a.name === materials.coverAssetName)
+          )
+            return 'A imagem de capa não está nos materiais.'
+        }
         const paths = Object.keys(sanitized)
         if (
           !beforePublish &&
+          !materials &&
           paths.length === Object.keys(expected).length &&
           paths.every((path) => {
             const before = expected[path]
@@ -1287,7 +1298,16 @@ export function createProjectStore(
           })
         )
           return null
-        const next = advanceLocalRevision(p, bump({ ...p, tree: sanitized }))
+        const document = {
+          ...p,
+          tree: sanitized,
+          ...(materials ? { assets: materials.assets } : {}),
+        }
+        if (materials) {
+          if (materials.coverAssetName) document.coverAssetName = materials.coverAssetName
+          else delete document.coverAssetName
+        }
+        const next = advanceLocalRevision(p, bump(document))
         // Attach the inverse to this exact revision before any subscriber can save or switch it.
         beforePublish?.(next)
         rawSet({ project: next, isDirty: true, saveError: null })

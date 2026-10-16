@@ -1,5 +1,13 @@
 import type { StudioProChange } from '@sistemazero/core/studio/pro-revision'
-import type { Project } from '../core/project'
+import type { Project, ProjectAsset } from '../core/project'
+
+/** Local material inverse; binaries remain outside the textual tree and cloud artifacts. */
+export interface ProAssetEdit {
+  id: string
+  value: ProjectAsset | null
+  index: number
+  cover: { before: string | null; after: string | null }
+}
 
 /** Local-only lineage. Symbols survive immutable spreads, but never JSON/cloud exports. */
 const localRevision = Symbol('studio.local-revision')
@@ -14,13 +22,17 @@ export interface LocalHead {
 export interface ProApplicationRecord {
   version: 1
   operationId: string
-  jobId: string
+  source: 'editor' | 'zappy'
+  jobId?: string
+  label?: string
+  pathMap?: Record<string, string>
   requestId?: string
   decisionsHash?: string
   projectId: string
   beforeHash: string
   afterHash: string
   inverse: StudioProChange
+  assetInverse?: ProAssetEdit
   createdAt: number
   bytes: number
   undoOf?: string

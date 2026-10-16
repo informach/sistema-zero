@@ -81,7 +81,11 @@ function journal(value: unknown): ProApplicationRecord[] {
   if (
     !Array.isArray(value) ||
     value.some(
-      (r) => r?.version !== 1 || typeof r.operationId !== 'string' || typeof r.bytes !== 'number',
+      (r) =>
+        r?.version !== 1 ||
+        !['editor', 'zappy'].includes(r.source) ||
+        typeof r.operationId !== 'string' ||
+        typeof r.bytes !== 'number',
     )
   )
     throw new Error('O histórico local precisa ser conferido; nenhuma revisão foi sobrescrita.')
@@ -114,7 +118,8 @@ function journalWrite(
       if (
         existing.afterHash !== record.afterHash ||
         existing.beforeHash !== record.beforeHash ||
-        existing.jobId !== record.jobId
+        existing.jobId !== record.jobId ||
+        existing.source !== record.source
       )
         throw new Error('A identificação desta aplicação já pertence a outra revisão.')
       continue

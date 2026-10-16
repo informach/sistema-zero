@@ -118,6 +118,7 @@ import { SaveRoomService } from './application/room/save-room.service'
 import { SaveCourseRatingService } from './application/save-course-rating/save-course-rating.service'
 import { SaveVideoPositionService } from './application/save-video-position/save-video-position.service'
 import { StudioBuilderService } from './application/studio-pro/studio-builder.service'
+import { createStudioBuilderCoordinator } from './application/studio-pro/studio-builder-coordinator'
 import { StudioSubmissionsAdminService } from './application/studio-submissions-admin/studio-submissions-admin.service'
 import { GetStudioUnlocksService } from './application/studio-unlocks/get-studio-unlocks.service'
 import { SubmitQuizAttemptService } from './application/submit-quiz-attempt/submit-quiz-attempt.service'
@@ -308,7 +309,12 @@ export async function createApplication(env: Env): Promise<Application> {
     ...studioAiSecrets,
   })
   const studioAiUsageRepo = new DrizzleStudioAiUsageRepository(db)
-  const studioBuilder = new StudioBuilderService(new DrizzleStudioBuilderRepository(db))
+  const studioBuilderRepository = new DrizzleStudioBuilderRepository(db)
+  const studioBuilder = new StudioBuilderService(
+    studioBuilderRepository,
+    () => new Date(),
+    Boolean(env.STUDIO_BUILDER_EXECUTOR_URL && env.STUDIO_BUILDER_EXECUTOR_SECRET),
+  )
   const studioAiUsage = new StudioAiUsageService({
     repository: studioAiUsageRepo,
     vault: studioAiSecrets.vault,
@@ -326,6 +332,38 @@ export async function createApplication(env: Env): Promise<Application> {
         request: 0,
       },
     },
+  })
+  const studioBuilderCoordinator = createStudioBuilderCoordinator({
+    pending: (now, limit) => studioBuilderRepository.pendingExecutions(now, limit),
+    reconcile: async (job) =>
+      (
+        await studioBuilder.execute(job.actor, {
+          operation: 'get',
+          id: job.id,
+          projectId: job.projectId,
+        })
+      )?.job ?? null,
+    finish: async (job) => {
+      await studioAiUsage.finish(job.actor, job.id)
+    },
+    deliver: async (job, signal) => {
+      const response = await fetch(env.STUDIO_BUILDER_EXECUTOR_URL!, {
+        method: 'POST',
+        redirect: 'error',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${env.STUDIO_BUILDER_EXECUTOR_SECRET}`,
+        },
+        body: JSON.stringify(job),
+        signal: AbortSignal.any([signal, AbortSignal.timeout(155_000)]),
+      })
+      await response.body?.cancel()
+      if (!response.ok) throw new Error(`Executor do Studio indisponível (${response.status}).`)
+    },
+    report: (error) =>
+      logger.error('studio.builder_delivery_failed', {
+        error: error instanceof Error ? error.name : 'Error',
+      }),
   })
   const consumeAiUsage = new ConsumeAiUsageService({
     aiUsage: aiUsageRepo,
@@ -1197,6 +1235,7 @@ export async function createApplication(env: Env): Promise<Application> {
   return {
     logger,
     async start() {
+      if (studioBuilder.executionAvailable) studioBuilderCoordinator.start()
       stopLiveRecording = liveRecording?.start()
       liveDeadlineTimer = setInterval(() => {
         if (liveDeadlineCycle) return
@@ -1255,6 +1294,7 @@ export async function createApplication(env: Env): Promise<Application> {
       logger.info('http.listening', { port: env.PORT, host: env.HOST })
     },
     async stop() {
+      await studioBuilderCoordinator.stop()
       await stopLiveRecording?.()
       if (liveDeadlineTimer) clearInterval(liveDeadlineTimer)
       if (liveDeadlineCycle) await liveDeadlineCycle

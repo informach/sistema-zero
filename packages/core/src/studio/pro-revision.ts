@@ -189,19 +189,25 @@ export async function applyStudioProChange(
     !change.summary.trim() ||
     change.summary.length > STUDIO_PRO_REVISION_LIMITS.maxSummaryChars ||
     !Array.isArray(change.patches) ||
-    change.patches.length < 1 ||
+    (change.patches.length < 1 && !change.directories) ||
     change.patches.length > STUDIO_PRO_REVISION_LIMITS.maxPatches
   )
     throw new Error('A proposta não contém um conjunto válido de alterações.')
   const files = { ...base.files },
     directories = new Set(base.directories)
-  const paths = new Set<string>(),
+  const paths = new Map<string, StudioProPatch>(),
     inverse: StudioProPatch[] = []
   for (const patch of change.patches) {
     const { path, before, content } = patch
+    const sameCase = paths.get(path.toLowerCase())
+    const caseRenamePair =
+      sameCase &&
+      sameCase.path !== path &&
+      ((sameCase.content === null && content !== null && before === null) ||
+        (content === null && sameCase.content !== null && sameCase.before === null))
     if (
       !isStudioProRevisionPath(path) ||
-      paths.has(path.toLowerCase()) ||
+      (sameCase && !caseRenamePair) ||
       directories.has(path) ||
       /^public\/studio-assets(?:\/|$)/i.test(path) ||
       !/\.(?:[cm]?[jt]sx?|json|webmanifest|html|css|svg|txt|md)$/i.test(path) ||
@@ -209,7 +215,7 @@ export async function applyStudioProChange(
       (content !== null && typeof content !== 'string')
     )
       throw new Error(`Alteração inválida: ${path}`)
-    paths.add(path.toLowerCase())
+    paths.set(path.toLowerCase(), patch)
     const previous = Object.hasOwn(base.files, path) ? base.files[path]! : null
     if (
       (previous === null ? null : await studioProDigest(previous)) !== before ||
@@ -241,6 +247,7 @@ export async function applyStudioProChange(
     if (directories.size !== change.directories.after.length) throw new Error('Pastas duplicadas.')
   }
   const revision = await createStudioProRevision({ ...base, files, directories: [...directories] })
+  if (revision.hash === base.hash) throw new Error('A proposta não altera o projeto.')
   return {
     revision,
     inverse: {

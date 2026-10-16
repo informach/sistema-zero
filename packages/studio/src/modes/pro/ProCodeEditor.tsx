@@ -117,15 +117,17 @@ export function ProCodeEditor(props: MonacoTabsProps) {
   }, [project?.id, store, proEditor, proCapture, proValidateReference])
   useEffect(() => {
     if (!readyEditor || !config || !project?.id) return
-    const actions = (['explain', 'investigate'] as const).map((intent) =>
+    const actions = (['explain', 'investigate', 'change'] as const).map((intent) =>
       readyEditor.addAction({
         id: `studio-zappy-${intent}`,
         label:
-          intent === 'explain'
-            ? 'Explicar seleção com Zappy Pro'
-            : 'Investigar seleção com Zappy Pro',
+          intent === 'change'
+            ? 'Pedir mudança nestas linhas com Zappy Pro'
+            : intent === 'explain'
+              ? 'Explicar seleção com Zappy Pro'
+              : 'Investigar seleção com Zappy Pro',
         contextMenuGroupId: 'navigation',
-        contextMenuOrder: intent === 'explain' ? 2 : 3,
+        contextMenuOrder: intent === 'explain' ? 2 : intent === 'investigate' ? 3 : 4,
         run: () => {
           const context = proCapture.current?.()
           if (!context) return
@@ -203,16 +205,18 @@ export function ProCodeEditor(props: MonacoTabsProps) {
             if (project?.id && proEditor.current?.projectId === project.id)
               proEditor.current = {
                 ...proEditor.current,
-                diagnostics: diagnostics.map((item) => {
+                diagnostics: diagnostics.slice(0, 20).map((item) => {
                   const file = store.getState().project?.tree?.[item.path]
                   const model = editorRef.current?.getModel()
                   const modelPath = model ? getMonacoModelPath(model) : ''
                   return {
                     ...item,
                     source: 'typescript' as const,
-                    ...(file?.kind === 'file'
-                      ? { sourceHash: studioTutorSourceHash(file.content) }
-                      : {}),
+                    ...(item.sourceHash
+                      ? { sourceHash: item.sourceHash }
+                      : file?.kind === 'file'
+                        ? { sourceHash: studioTutorSourceHash(file.content) }
+                        : {}),
                     ...(model && modelPath.slice(modelPath.indexOf('/') + 1) === item.path
                       ? { documentVersion: model.getVersionId() }
                       : {}),

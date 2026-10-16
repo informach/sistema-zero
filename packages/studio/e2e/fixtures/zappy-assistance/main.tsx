@@ -100,7 +100,6 @@ const builder: StudioProBuilderAdapter = {
     notify()
     return latest
   },
-  advance: async () => latest,
   cancel: async () => (latest ? { ...latest, phase: 'cancelled' } : null),
 }
 const adapter: StudioTutorAdapter = {

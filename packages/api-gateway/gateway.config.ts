@@ -1821,6 +1821,21 @@ const config: GatewayConfigInput = {
       maxBodyBytes: 3_004_096,
     },
     {
+      id: 'members-internal-studio-builder-availability',
+      methods: ['POST'],
+      pathPattern: '/members/internal/studio-ai/builder/availability',
+      service: 'members',
+      auth: {
+        required: true,
+        mode: 'any',
+        strategies: ['hmac'],
+        allowedConsumers: ['member-shell'],
+      },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 4096,
+    },
+    {
       id: 'members-internal-studio-builder-cleanup',
       methods: ['POST'],
       pathPattern: '/members/internal/studio-ai/builder/cleanup',

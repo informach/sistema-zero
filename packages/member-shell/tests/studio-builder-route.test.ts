@@ -18,6 +18,7 @@ beforeEach(() =>
     ...actualEnv,
     STUDIO_PRO_RUNTIME_URL: 'https://runtime.test',
     STUDIO_PRO_RUNTIME_TOKEN: 'runtime-test-token',
+    STUDIO_BUILDER_EXECUTOR_SECRET: 'executor-test-secret-with-32-characters',
     OPENROUTER_STUDIO_BUILDER_MODEL: 'provider/builder',
   }),
 )
@@ -70,6 +71,7 @@ async function fixture(
   }
   const commands: { actor: unknown; command: StudioProBuilderCommand }[] = []
   const members = {
+    studioBuilderAvailability: async () => ({ status: 200, body: { available: true } }),
     checkStudioAccess: async () => ({
       status: 200,
       body: { access: { 'estudio-completo': options.access ?? true } },
@@ -181,6 +183,7 @@ describe('Studio builder browser boundary', () => {
       { ...f.input, mode: 'blocks' },
       { ...f.input, model: 'untrusted/model' },
       { operation: 'claim', id: f.job.id, projectId: f.job.projectId },
+      { operation: 'advance', id: f.job.id, projectId: f.job.projectId },
       { ...f.input, base: { ...f.input.base, hash: 'forged' } },
     ])
       expect((await f.post(input)).status).toBe(400)
@@ -193,7 +196,11 @@ describe('Studio builder browser boundary', () => {
     expect(response.status).toBe(200)
     expect(f.commands[0]).toMatchObject({
       actor: { accountId: user.activeProfile.accountId, userId: user.id, privileged: true },
-      command: { operation: 'create', model: 'provider/builder' },
+      command: {
+        operation: 'create',
+        model: 'provider/builder',
+        parentOrigin: 'https://kids.test',
+      },
     })
     const body = (await response.json()) as { job: Record<string, unknown> }
     expect(body.job.baseHash).toBe(f.input.base.hash)
@@ -257,6 +264,8 @@ describe('Studio builder browser boundary', () => {
     expect((await response.json()).jobs).toHaveLength(1)
     const check = await f.post({
       operation: 'check-application',
+      version: 0,
+      revisionHash: 'a'.repeat(64),
       id: f.input.id,
       projectId: f.input.base.projectId,
     })

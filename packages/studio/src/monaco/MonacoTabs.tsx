@@ -9,12 +9,15 @@ import {
   disposeModelsForPathPrefix,
   getMonacoModelPath,
   isModelInPathPrefix,
+  isMonacoModelSynchronizing,
+  reserveMonacoModelUri,
   resolveModelPathPrefix,
 } from './modelPaths'
 import { proLanguage } from './pro/languages'
 import type {
   attachProLanguageService,
   ProEditorDiagnostic,
+  ProLanguageSession,
   ProProjectLanguageInput,
 } from './pro/session'
 import {
@@ -131,6 +134,7 @@ export interface MonacoTabsProps {
   /** Isolated Pro service; includes closed source files and actual installed declarations. */
   proProject?: ProProjectLanguageInput
   onProDiagnostics?: (items: ProEditorDiagnostic[]) => void
+  onProLanguageReady?: (session: ProLanguageSession | null) => void
   files: MonacoTabsFile[]
   activeFile?: string
   onChange: (fileName: string, value: string) => void
@@ -159,6 +163,7 @@ export interface MonacoTabsProps {
    * aparece em `console.warn` (invisível sem DevTools).
    */
   onFormatIssue?: (issue: MonacoFormatIssue) => void
+  onFormatReady?: (run: (() => void) | null) => void
   /**
    * Decide se uma aba pode ser fechada (mostra o "×"). Fechar é só de UI: o
    * arquivo continua existindo; quem o reabre é o componente pai. Os arquivos
@@ -167,6 +172,8 @@ export interface MonacoTabsProps {
   canCloseFile?: (fileName: string) => boolean
   /** Chamado ao clicar no "×" de uma aba fechável. */
   onCloseFile?: (fileName: string) => void
+  temporaryFile?: string | null
+  onPinFile?: (fileName: string) => void
   /**
    * Prefixo do `path` dos models do Monaco (ex.: id do projeto). O `path` é o
    * identificador do model num registro GLOBAL que sobrevive ao desmonte do
@@ -277,6 +284,7 @@ function scheduleLanguageServicesLoad(): () => void {
 export function MonacoTabs({
   proProject,
   onProDiagnostics,
+  onProLanguageReady,
   files,
   activeFile,
   onChange,
@@ -290,8 +298,11 @@ export function MonacoTabs({
   hiddenAreas,
   formatLabel,
   onFormatIssue,
+  onFormatReady,
   canCloseFile,
   onCloseFile,
+  temporaryFile,
+  onPinFile,
   modelPathPrefix,
   onEditorReady,
 }: MonacoTabsProps): JSX.Element {
@@ -347,6 +358,14 @@ export function MonacoTabs({
   const [mountedEditor, setMountedEditor] = useState<monacoNs.editor.IStandaloneCodeEditor | null>(
     null,
   )
+  const hasFile = Boolean(file)
+  useEffect(() => {
+    if (hasFile) return
+    editorRef.current = null
+    setMountedEditor(null)
+    disposeModelsForPathPrefix(saltedPrefix, getMonacoModelRegistry())
+    viewStatesRef.current.clear()
+  }, [hasFile, saltedPrefix])
 
   const proMode = proProject !== undefined
   const proInput = useRef(proProject)
@@ -356,6 +375,8 @@ export function MonacoTabs({
   const proDiagnostics = useRef(onProDiagnostics)
   proDiagnostics.current = onProDiagnostics
   const proSession = useRef<ReturnType<typeof attachProLanguageService> | null>(null)
+  const proReady = useRef(onProLanguageReady)
+  proReady.current = onProLanguageReady
   const [languageIssue, setLanguageIssue] = useState<string | null>(null)
   const [languageAttempt, setLanguageAttempt] = useState(0)
   useEffect(() => (proMode ? undefined : scheduleLanguageServicesLoad()), [proMode])
@@ -382,9 +403,11 @@ export function MonacoTabs({
           },
         )
         proSession.current = session
+        proReady.current?.(session)
         dispose = () => {
           session.dispose()
           if (proSession.current === session) proSession.current = null
+          proReady.current?.(null)
         }
       })
       .catch((error: unknown) => {
@@ -493,6 +516,8 @@ export function MonacoTabs({
     activeFileNameRef.current = file?.name
   }, [file?.name])
   const handleChange = useCallback<OnChange>((value) => {
+    const model = editorRef.current?.getModel()
+    if (model && isMonacoModelSynchronizing(model)) return
     const name = activeFileNameRef.current
     if (name !== undefined) onChangeRef.current(name, value ?? '')
   }, [])
@@ -575,6 +600,12 @@ export function MonacoTabs({
     editorRef.current = editor
     setMountedEditor(editor)
   }, [])
+  const formatReadyRef = useRef(onFormatReady)
+  formatReadyRef.current = onFormatReady
+  useEffect(() => {
+    formatReadyRef.current?.(() => void handleFormat())
+    return () => formatReadyRef.current?.(null)
+  }, [handleFormat])
 
   // Entrega o editor montado a quem pediu (e `null` na saída). Pelo ref: o efeito roda uma vez
   // por editor, mesmo que o pai passe um callback novo a cada render.
@@ -592,7 +623,11 @@ export function MonacoTabs({
   // troca de model do <Editor> acontece num efeito PASSIVO do
   // @monaco-editor/react, então neste ponto o editor ainda exibe o model
   // anterior — `saveViewState()` captura o cursor/scroll certo sob a chave certa.
-  const activeModelPath = file ? buildMonacoModelPath(saltedPrefix, file.name) : ''
+  const activeModelPath = file
+    ? proMode
+      ? reserveMonacoModelUri(getMonacoModelRegistry(), saltedPrefix, file.name)
+      : buildMonacoModelPath(saltedPrefix, file.name)
+    : ''
   const prevModelPathRef = useRef(activeModelPath)
   useLayoutEffect(() => {
     const prev = prevModelPathRef.current
@@ -611,7 +646,9 @@ export function MonacoTabs({
     const disposable = mountedEditor.onDidChangeModel(() => {
       const model = mountedEditor.getModel()
       if (!model) return
-      const saved = viewStatesRef.current.get(getMonacoModelPath(model))
+      const saved =
+        viewStatesRef.current.get(model.uri.toString()) ??
+        viewStatesRef.current.get(getMonacoModelPath(model))
       if (saved) mountedEditor.restoreViewState(saved)
     })
     return () => disposable.dispose()
@@ -827,9 +864,13 @@ export function MonacoTabs({
                 <button
                   type="button"
                   onClick={() => setActive(f.name)}
-                  className={['py-2 pl-3 text-xs font-medium', closable ? 'pr-1' : 'pr-3'].join(
-                    ' ',
-                  )}
+                  onDoubleClick={() => onPinFile?.(f.name)}
+                  title={f.name}
+                  className={[
+                    'py-2 pl-3 text-xs font-medium',
+                    temporaryFile === f.name ? 'italic' : '',
+                    closable ? 'pr-1' : 'pr-3',
+                  ].join(' ')}
                 >
                   {f.name}
                 </button>
@@ -888,7 +929,7 @@ export function MonacoTabs({
         <Editor
           height="100%"
           theme={monacoThemeName(theme)}
-          path={buildMonacoModelPath(saltedPrefix, file.name)}
+          path={activeModelPath}
           defaultLanguage={
             proMode ? proLanguage(inferLanguage(file.name)) : inferLanguage(file.name)
           }

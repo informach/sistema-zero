@@ -6,6 +6,7 @@ import type {
   StudioProBuilderAdapter,
   StudioProBuilderView,
 } from '@sistemazero/core/studio/pro-builder'
+import { studioProChangeScopeIssue } from '@sistemazero/core/studio/pro-change-scope'
 import { studioProBuildEnvelopeIssue } from '@sistemazero/core/studio/pro-runtime-capabilities'
 import { lazy, Suspense, useEffect, useId, useRef, useState } from 'react'
 import {
@@ -222,27 +223,67 @@ export default function ProBuilderPanel({
     generation.current === version &&
     captureProjectStorageScope() === scope.current &&
     store.getState().project?.id === projectId
-  const advance = async (initial: StudioProBuilderView, version: number) => {
-    let state: StudioProBuilderView | null = initial
+  const polling = useRef({ id: '', count: 0 })
+  const pollingId = job?.id,
+    pollingPhase = job?.phase,
+    pollingDeadline = job?.deadlineAt
+  useEffect(() => {
+    if (
+      busy ||
+      !pollingId ||
+      !pollingPhase ||
+      !['queued', 'generating', 'validating'].includes(pollingPhase)
+    )
+      return
+    if (polling.current.id !== pollingId) polling.current = { id: pollingId, count: 0 }
+    const version = generation.current
     const controller = new AbortController()
     running.current = controller
-    try {
-      // At most three model calls plus three validations; each server step owns a lease.
-      for (let step = 0; state && active(state) && step < 6 && current(version); step++) {
-        state = await adapter.advance({ id: state.id, projectId }, controller.signal)
-        if (!current(version)) return
-        setJob(state)
-        if (state?.leaseUntil) {
-          setNotice(
-            'Este passo continua no servidor. Use Consultar estado para ver o resultado. Continuar execução autoriza os passos seguintes.',
-          )
-          break
-        }
+    let timer: ReturnType<typeof setTimeout>
+    const valid = () =>
+      !controller.signal.aborted &&
+      mounted.current &&
+      generation.current === version &&
+      captureProjectStorageScope() === scope.current &&
+      store.getState().project?.id === projectId
+    const poll = async () => {
+      if (!valid()) return
+      if (polling.current.count >= 90 || Date.now() > Date.parse(pollingDeadline ?? '') + 30_000) {
+        setNotice(
+          'A consulta automática foi pausada. Use Consultar estado para retomar; a execução no servidor tem seu próprio prazo.',
+        )
+        return
       }
-    } finally {
+      polling.current.count++
+      try {
+        const state = adapter.get
+          ? await adapter.get({ id: pollingId, projectId }, controller.signal)
+          : await adapter.latest(projectId, controller.signal)
+        if (!valid()) return
+        setJob((previous) =>
+          !state || !previous || (state.id === previous.id && state.version >= previous.version)
+            ? state
+            : previous,
+        )
+        if (!state || !active(state)) {
+          onUsageChange?.()
+          return
+        }
+      } catch {
+        if (!valid()) return
+        setNotice(
+          'Não consegui consultar agora. A execução pode continuar no servidor; vou tentar consultar de novo.',
+        )
+      }
+      timer = setTimeout(() => void poll(), Math.min(10_000, 2000 + polling.current.count * 250))
+    }
+    timer = setTimeout(() => void poll(), 1500)
+    return () => {
+      clearTimeout(timer)
+      controller.abort()
       if (running.current === controller) running.current = null
     }
-  }
+  }, [pollingId, pollingPhase, pollingDeadline, adapter, projectId, store, onUsageChange, busy])
   const execute = async (work: (version: number) => Promise<void>) => {
     if (scope.current !== captureProjectStorageScope()) {
       setError('O perfil mudou. Reabra o construtor no projeto deste perfil.')
@@ -359,19 +400,9 @@ export default function ProBuilderPanel({
       pendingCreate.current = null
       setJob(state)
       setReceipt(null)
-      await advance(state, version)
-    })
-  const resume = () =>
-    execute(async (version) => {
-      if (checkingAvailability || availability?.available === false)
-        throw new Error(availability?.reason ?? 'Aguarde a verificação do construtor.')
-      const state =
-        job && adapter.get
-          ? await adapter.get({ id: job.id, projectId })
-          : await adapter.latest(projectId)
-      if (!current(version)) return
-      setJob(state)
-      if (state) await advance(state, version)
+      setNotice(
+        'Pedido guardado no servidor. Você pode fechar o painel ou a aba e consultar o resultado depois.',
+      )
     })
   const cancel = () =>
     execute(async (version) => {
@@ -383,6 +414,7 @@ export default function ProBuilderPanel({
     })
   const refresh = (before?: string) =>
     execute(async (version) => {
+      polling.current.count = 0
       const state =
         job && adapter.get
           ? await adapter.get({ id: job.id, projectId })
@@ -421,10 +453,12 @@ export default function ProBuilderPanel({
     delete saved.error
     return saved
   }
-  const sessionApplications = listProSessionApplications(store, projectId).map((item) => ({
-    ...item,
-    receipt: effectiveReceipt(item.receipt)!,
-  }))
+  const sessionApplications = listProSessionApplications(store, projectId)
+    .filter((item) => item.record.source === 'zappy')
+    .map((item) => ({
+      ...item,
+      receipt: effectiveReceipt(item.receipt)!,
+    }))
   const localApplications = [...applications, ...sessionApplications.map((item) => item.record)]
   const application = job
     ? localApplications.find((item) => item.jobId === job.id && !item.undoOf)
@@ -457,8 +491,19 @@ export default function ProBuilderPanel({
   const apply = () =>
     execute(async (version) => {
       if (job?.phase !== 'review' || !job.result || discarded) return
+      const scopeIssue = studioProChangeScopeIssue(
+        job.assistance?.request,
+        job.beforeFiles,
+        job.result.change,
+      )
+      if (scopeIssue) throw new Error(scopeIssue)
       if (adapter.checkApplication) {
-        const check = await adapter.checkApplication({ id: job.id, projectId })
+        const check = await adapter.checkApplication({
+          id: job.id,
+          projectId,
+          version: job.version,
+          revisionHash: job.result.revisionHash,
+        })
         if (!current(version)) return
         if (!check.allowed)
           throw new Error(
@@ -470,6 +515,13 @@ export default function ProBuilderPanel({
         operationId: `apply:${job.id}`,
         jobId: job.id,
         change: job.result.change,
+        request: job.assistance?.request ?? {
+          version: 1,
+          intent: 'change',
+          scope: 'part',
+          criteria: [],
+        },
+        expectedRevisionHash: job.result.revisionHash,
         ...(job.assistance?.request.sourceMessageId
           ? { requestId: job.assistance.request.sourceMessageId }
           : {}),
@@ -533,6 +585,9 @@ export default function ProBuilderPanel({
         preview.show({ projectId, jobId: state.id, ...state.result.preview })
     })
   const patches = job?.result?.change.patches ?? []
+  const scopeIssue = job?.result
+    ? studioProChangeScopeIssue(job.assistance?.request, job.beforeFiles, job.result.change)
+    : null
   const selected = patches.find((patch) => patch.path === selectedPath) ?? patches[0]
   const capture = job?.result?.evidence.find(
     (item) => item.kind === 'capture' && item.status === 'passed',
@@ -575,7 +630,7 @@ export default function ProBuilderPanel({
           }
         >
           <option value="part">Uma parte do projeto</option>
-          <option value="selection">Trecho selecionado</option>
+          <option value="selection">Somente as linhas escolhidas</option>
           <option value="game">O jogo inteiro</option>
         </select>
         <label htmlFor={`${inputId}-objective`} className="block text-sm font-semibold">
@@ -600,7 +655,8 @@ export default function ProBuilderPanel({
         {request.selection && (
           <p className="text-xs">
             Trecho de origem: {request.selection.path}:{request.selection.startLine}–
-            {request.selection.endLine}. Sua revisão será conferida antes do pedido.
+            {request.selection.endLine}. A seleção vale por linhas inteiras; sua revisão será
+            conferida antes do pedido.
           </p>
         )}
         {(request.selection || request.scope === 'selection') && (
@@ -669,6 +725,12 @@ export default function ProBuilderPanel({
         </button>
         <p className="text-xs text-sz-fg-mute">
           A execução usa os limites de IA da família. Você revisa antes de aplicar.
+        </p>
+        <p className="text-xs text-sz-fg-mute">
+          O construtor pode consultar os arquivos do projeto, seu objetivo e o manifesto de
+          materiais para entender o pedido. Escolher linhas limita onde ele pode mudar, não o que
+          pode consultar. Imagens e outros binários são enviados à verificação do jogo, não ao
+          modelo de texto.
         </p>
       </form>
       <button
@@ -750,14 +812,10 @@ export default function ProBuilderPanel({
           {job.error && <p className="whitespace-pre-wrap text-sm text-sz-error">{job.error}</p>}
           {active(job) && (
             <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                className={button}
-                disabled={busy || checkingAvailability || availability?.available === false}
-                onClick={() => void resume()}
-              >
-                Continuar execução
-              </button>
+              <p className="text-xs">
+                A construção continua no servidor mesmo com esta aba fechada. Consultar não inicia
+                novas chamadas de IA.
+              </p>
               <button type="button" className={button} onClick={() => void cancel()}>
                 Cancelar construção
               </button>
@@ -765,7 +823,18 @@ export default function ProBuilderPanel({
           )}
           {job.result && (
             <>
-              <p className="text-sm">{job.result.change.summary}</p>
+              <p className="text-sm">
+                <strong>Efeito esperado:</strong> {job.result.change.summary}
+              </p>
+              <p className="text-xs text-sz-fg-mute">
+                Este resumo descreve a intenção da proposta. Experimente o jogo e confira os
+                critérios abaixo antes de aplicar.
+              </p>
+              {scopeIssue && (
+                <p role="alert" className="rounded-lg border border-sz-error p-3 text-sm">
+                  {scopeIssue}
+                </p>
+              )}
               {Boolean(job.assistance?.request.criteria.length) && (
                 <div className="text-sm">
                   <p className="font-semibold">Critérios para você conferir</p>
@@ -879,6 +948,7 @@ export default function ProBuilderPanel({
                   {showDiff && (
                     <Suspense fallback={<p role="status">Carregando comparação…</p>}>
                       <RevisionDiff
+                        path={selected.path}
                         before={job.beforeFiles[selected.path] ?? ''}
                         after={selected.content ?? ''}
                       />
@@ -926,7 +996,7 @@ export default function ProBuilderPanel({
                   <button
                     type="button"
                     className={button}
-                    disabled={busy || Boolean(application || currentReceipt)}
+                    disabled={busy || Boolean(application || currentReceipt) || Boolean(scopeIssue)}
                     onClick={() => void apply()}
                   >
                     Aplicar alterações

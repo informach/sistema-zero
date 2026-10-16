@@ -217,6 +217,8 @@ describe('ninguém lê nem grava o banco dos projetos pelo idb-keyval direto', (
       // preferências do editor (que moravam no banco dos projetos até 11/09/2026).
       'asset-library/personal.ts': ['createStore', 'del', 'get', 'getMany', 'keys', 'set'],
       'state/settingsStore.ts': ['createStore', 'get', 'update'],
+      // Organização Pro usa sz-studio-workspace:<perfil>, separado de documento e histórico.
+      'state/workspacePreferences.ts': ['createStore', 'get', 'set'],
     })
   })
 })

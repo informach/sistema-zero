@@ -1,7 +1,9 @@
 # Estúdio Pro: proposta revisada de editor e aprendizagem
 
 Data: 15/10/2026 · Versão 2 · Público: crianças de 9 a 14 anos.
-Status: proposta de produto e arquitetura; implementação e validação com alunos ainda pendentes.
+Status: referência de produto e arquitetura. A implementação autorizada está documentada no [plano por lotes](../superpowers/plans/2026-10-15-studio-pro-workspace.md) e nas [revisões](../../.audits/studio-pro-workspace-2026-10-15/reviews.md). Validação com crianças ainda não realizada.
+
+Decisões de implementação de 16/10/2026 prevalecem sobre as hipóteses abaixo: como não há usuários Pro existentes, os contratos mudam diretamente, sem flags ou protocolo legado; a coordenação usa Members/Postgres e o executor interno do member-shell; mudanças fora de uma seleção exigem novo pedido explícito com alcance maior. Ctrl/Cmd+Alt+K preserva os acordes nativos Ctrl/Cmd+K do Monaco. As integrações de classic, Pensa, Pinta, Molda e fases continuam protegidas.
 
 ## 1. Direção e resultado esperado
 
@@ -222,6 +224,8 @@ Oferecer essas ações na seleção por botão/menu acessível. `Ctrl/Cmd+K`, qu
 
 Capturar escopo, projeto, revisão, arquivo e hash no pedido. Ao receber a proposta, comparar a base antes de qualquer aplicação. Se houver mudança fora do alcance apresentado, sinalizar a ampliação, mostrar os arquivos/linhas afetados e exigir que o aluno a aceite na revisão. O botão de aplicação deve permanecer indisponível até essa escolha. O servidor e a validação de aplicação precisam conhecer o alcance; uma instrução ao modelo não constitui uma restrição técnica.
 
+Esse aceite de ampliação exige uma extensão versionada do contrato de aplicação, vinculada ao digest da proposta e ao alcance reconhecido. A interface não envia campos extras ao schema v1 nem usa um booleano local como autorização suficiente. Se essa extensão não fizer parte do primeiro recorte, o pedido contextual só aplica alterações dentro do alcance verificado; uma mudança mais ampla exige novo pedido explícito pelo escopo Parte/Jogo e nova revisão. Essa escolha deve constar do recorte da etapa 4.
+
 ### 8.2 Contexto compreensível e fiel ao que é enviado
 
 Mostrar um resumo simples: trecho escolhido, problema associado, objetivo do projeto e materiais relevantes. Separar **referências incluídas no pedido** de **arquivos consultados durante a execução**. O diário pode apresentar as consultas de maneira resumida, sem revelar raciocínio interno.
@@ -301,7 +305,11 @@ Não mover arquivos apenas para padronizar nomes. Extrair controladores quando i
 
 Usar um registro pequeno de comandos do Pro para reunir disponibilidade, rótulo, atalho e execução. Árvore, menu e paleta chamam o mesmo comando. Aplicar `editingAccess`, configuração do host e capacidade do runtime em cada comando; desabilitar um botão não substitui as guardas do store e do servidor. Não construir um sistema genérico de plugins para entregar essa organização.
 
-Distinguir três históricos: undo de texto do Monaco, navegação e operações documentais/revisões. A barra deve explicar qual ação será desfeita; operações locais estruturais precisam de uma política ordenada de undo com o editor. Não expor dois botões indistintos que alternem entre restaurar arquivos inteiros e desfazer digitação. Definir essa integração antes de liberar mover/renomear e substituição múltipla.
+Distinguir três históricos: undo de texto do Monaco, navegação e operações documentais/revisões. A política proposta mantém `Ctrl/Cmd+Z` no código como desfazer texto do arquivo ativo. Uma operação estrutural oferece uma ação nomeada, como **Desfazer renomeação**, no resultado da operação e no histórico correspondente; não toma silenciosamente o lugar do undo de digitação. O último comando textual é fechado antes da mudança estrutural. A inversa compara os hashes dos caminhos afetados: quando houve edição posterior, só aplica uma inversa compatível; caso contrário, mostra o conflito sem restaurar um snapshot antigo por cima do trabalho. Navegar para trás continua sendo outro comando.
+
+As edições automáticas de imports pertencem à operação estrutural. Se o undo textual alcançar esse marco, ele deve encaminhar à ação estrutural identificada, em vez de desfazer apenas um import e deixar a renomeação aplicada. Teclado, menu e topbar passam pela mesma coordenação. O teste precisa atravessar esse marco; demonstrar apenas que o arquivo mudou de nome não valida o histórico.
+
+Renomeação também altera a associação entre caminho e modelo Monaco. A implementação precisa preservar buffers e a coerência do histórico: adotar uma identidade de arquivo estável na sessão, remapeada pela operação estrutural e resolvida pelos providers para o caminho atual. Isso exige revisar a ligação atual entre URIs, providers e sessão TypeScript; não basta atualizar o nome da aba. Essa identidade é local ao workspace, não um novo identificador obrigatório no formato exportado do projeto. Modelos fechados continuam descartáveis; não se promete restaurar sua pilha de undo após fechar ou recarregar. Validar o remapeamento antes de liberar mover/renomear.
 
 ### 9.4 Matriz de integração
 
@@ -399,7 +407,7 @@ As etapas são marcos de liberação, não proibição de trabalho independente.
 | Papel pedagógico | Ajuda opcional; escolhas por experiência, sem gate por idade | Desde a etapa 1 |
 | Fonte de arquivos e materiais | Árvore textual + `Project.assets`, com projeções atuais | Desde a etapa 1 |
 | Alcance da refatoração | TS/JS semântico primeiro; formatos adicionais explicitamente cobertos | Antes de liberar etapa 2 |
-| Undo entre texto e estrutura | Histórico ordenado/compatível, com conflito e inversa condicionada | Antes de liberar etapa 2 |
+| Undo entre texto e estrutura | Texto no Monaco; ação estrutural nomeada com inversa condicionada; identidade de arquivo remapeável | Antes de liberar etapa 2 |
 | Chave de preferências em embeds | Adapter/chave opcional; memória quando identidade não for fornecida | Antes de liberar etapa 3 |
 | Seleção na IA | Linhas na v1; colunas somente em nova versão coordenada | Antes de liberar etapa 4 |
 | Executor e autorização de serviço | Spike de integração com Members/runtime; Cloudflare como candidato | Antes de implementar etapa 5 |
@@ -420,7 +428,7 @@ Os itens abaixo são **testes necessários para a implementação futura**, não
 | Navegação e edição | Abrir resultado temporário, editar, trocar de arquivo e desfazer preserva conteúdo e modelo; localizar símbolo e voltar mantém a seleção esperada |
 | Refatoração | Renomear/mover arquivo e pasta com imports relativos, colisão de caixa e edição pendente; imports cobertos atualizados, operação completa ou conflito explícito |
 | Concorrência local | Terminal, editor e material em escrita durante salvar/exportar/renomear: o snapshot incorpora escritores autorizados ou bloqueia a operação explicando o motivo; reconciliação não perde alterações |
-| Histórico | Digitar, mover arquivo, digitar novamente e desfazer em sequência; nenhuma restauração apaga silenciosamente trabalho posterior |
+| Histórico | Digitar, mover arquivo, digitar novamente e desfazer até atravessar o marco estrutural; imports e caminhos permanecem coordenados, e nenhuma restauração apaga silenciosamente trabalho posterior |
 | Persistência | Falha de storage, reload, preferência corrompida e arquivo removido; documento abre, pendência é visível e recuperação segue o protocolo existente |
 | Isolamento | Dois Studios e troca de perfil/projeto durante resposta; seleção, preferência, job e aplicação não atravessam instância/escopo |
 | Autoria | Observer não cria/renomeia/aplica/insere; handoff aguarda writers e usa a revisão correta; navegação continua disponível |

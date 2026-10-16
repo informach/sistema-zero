@@ -2,6 +2,7 @@ import { useContext } from 'react'
 import { createTranslator, type Locale, type StudioProBuildLimits } from '#core'
 import { createPersistenceService, type PersistenceService } from '../persistence/service'
 import { resolvePersistenceAdapter, type StudioPersistence } from '../persistence/types'
+import type { StudioWorkspacePreferencesAdapter } from '../studio/workspace'
 import { createChecksStore } from './checksStore'
 import { createDiagnosticsStore } from './diagnosticsStore'
 import { createEditorHistory, type EditorHistory } from './editorHistory'
@@ -17,6 +18,7 @@ import {
 import { createSourcemapStore } from './sourcemapStore'
 import { StudioStoresContext } from './storesContext'
 import { createUIStore } from './uiStore'
+import { createLocalWorkspacePreferences } from './workspacePreferences'
 
 /**
  * Conjunto de stores + serviço de persistência de UMA instância do <Studio>.
@@ -40,11 +42,13 @@ export interface StudioStores {
   /** As pilhas de desfazer dos editores desta instância (os botões da barra). */
   editorHistory: EditorHistory
   persistence: PersistenceService
+  workspacePreferences: StudioWorkspacePreferencesAdapter | null
 }
 
 export interface CreateStudioStoresOptions {
   /** Estático por instância (como locale): trocar exige remount do <Studio>. */
   persistence?: StudioPersistence
+  workspacePreferences?: StudioWorkspacePreferencesAdapter
   /** Limites de política do host (maxFileChars etc.) — também estáticos. */
   limits?: StudioLimits
   /** Cotas do compilador Pro remoto, quando o host usa um runtime remoto. */
@@ -74,6 +78,9 @@ export function createStudioStores(options: CreateStudioStoresOptions = {}): Stu
     diagnostics: createDiagnosticsStore(),
     pendingEditorEdits,
     editorHistory: createEditorHistory(),
+    workspacePreferences:
+      options.workspacePreferences ??
+      ((options.persistence ?? 'local') === 'local' ? createLocalWorkspacePreferences() : null),
     persistence: createPersistenceService(project, adapter, {
       flushPendingEditorEdits: () => pendingEditorEdits.flush(),
     }),

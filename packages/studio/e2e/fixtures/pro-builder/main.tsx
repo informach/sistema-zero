@@ -65,7 +65,6 @@ const view = studioProBuilderView(job)
 const adapter: StudioProBuilderAdapter = {
   latest: async () => view,
   create: async () => view,
-  advance: async () => view,
   cancel: async () => ({ ...view, phase: 'cancelled' }),
 }
 function Fixture() {

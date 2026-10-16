@@ -19,6 +19,7 @@ import { ConvertLegacyPrompt } from './ConvertLegacyPrompt'
 import { SectionErrorFallback } from './ErrorViews'
 import { ModeArea } from './ModeArea'
 import { NarrowLayout } from './NarrowLayout'
+import { ProTutorDockContext } from './proTutorDock'
 import { Topbar } from './Topbar'
 
 const ExtensionsPanel = lazy(() =>
@@ -45,11 +46,12 @@ export function Shell({
   canToggleTheme,
   onRenderError,
 }: ShellProps): JSX.Element {
-  const { hasProject, projectId, projectMode } = useProjectStore(
+  const { hasProject, projectId, projectMode, isPro } = useProjectStore(
     useShallow((s) => ({
       hasProject: Boolean(s.project),
       projectId: s.project?.id,
       projectMode: s.project?.mode ?? 'blocks',
+      isPro: s.project?.kind === 'pro',
     })),
   )
   const showExtensions = useUIStore((s) => s.showExtensions)
@@ -94,7 +96,28 @@ export function Shell({
               onPromoteToPro={onPromoteToPro}
               canToggleTheme={canToggleTheme}
             />
-            {layout.isNarrow ? (
+            {isPro ? (
+              <ProTutorDockContext.Provider
+                value={
+                  <ZappyPanelBoundary
+                    embedded
+                    onError={(error) => onRenderError?.('zappy', error)}
+                  />
+                }
+              >
+                <main className="flex min-h-0 flex-1 flex-col">
+                  <div
+                    key={projectId}
+                    className={`flex h-full min-h-0 w-full ${layout.isNarrow ? 'flex-col' : ''}`}
+                  >
+                    <ActivityPanel />
+                    <div className="min-h-0 min-w-0 flex-1">
+                      <ModeArea projectMode={projectMode} projectId={projectId} />
+                    </div>
+                  </div>
+                </main>
+              </ProTutorDockContext.Provider>
+            ) : layout.isNarrow ? (
               <NarrowLayout projectMode={projectMode} projectId={projectId} />
             ) : (
               <main className="flex min-h-0 flex-1 flex-col">
@@ -167,7 +190,7 @@ export function Shell({
             <DrawingSyncWatcher />
             {/* ⚠️ O tutor vai SEMPRE embrulhado: um erro do Zappy não pode
                 derrubar o Estúdio (ver ZappyPanelBoundary.tsx). */}
-            <ZappyPanelBoundary onError={(error) => onRenderError?.('zappy', error)} />
+            {!isPro && <ZappyPanelBoundary onError={(error) => onRenderError?.('zappy', error)} />}
           </>
         )}
       </div>

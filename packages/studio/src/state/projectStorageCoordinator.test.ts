@@ -36,6 +36,10 @@ import {
   retryProApplication,
   undoProApplication,
 } from './proRevision'
+import {
+  applyPreparedProWorkspaceOperation,
+  prepareProWorkspaceOperation,
+} from './proWorkspaceOperations'
 
 function database(): ProjectStorageScope {
   const identity = `coordinator-${crypto.randomUUID()}`
@@ -91,6 +95,12 @@ async function scenario() {
   })
   const base = await captureProRevision(store.getState().project!)
   const input = {
+    request: {
+      version: 1 as const,
+      intent: 'change' as const,
+      scope: 'part' as const,
+      criteria: [],
+    },
     operationId: 'apply-1',
     jobId: 'job-1',
     change: {
@@ -116,6 +126,33 @@ async function scenario() {
 }
 
 describe('local revision transactions on IndexedDB', () => {
+  it('keeps a deleted material and its inverse atomic through failure, retry and reload', async () => {
+    const { scope, store, setFailure } = await scenario()
+    store.getState().addAsset({
+      name: 'som',
+      kind: 'audio',
+      dataUrl: 'data:audio/wav;base64,aGVsbG8=',
+      source: 'upload',
+    })
+    const asset = store.getState().project!.assets![0]!
+    await persistProject(store.getState().project!, {}, scope)
+    const operation = await prepareProWorkspaceOperation(store, 'arena', null, {
+      kind: 'material-delete',
+      id: asset.id,
+    })
+    setFailure(true)
+    const receipt = await applyPreparedProWorkspaceOperation(store, operation)
+    expect(receipt.status).toBe('pending')
+    expect((await loadProjectById('arena', scope))!.assets).toEqual([asset])
+    expect(await listProApplications(scope, 'arena')).toHaveLength(0)
+    setFailure(false)
+    expect((await retryProApplication(store, 'arena', operation.id)).status).toBe('saved')
+    store.getState().hydrateProject((await loadProjectById('arena', scope))!)
+    expect(store.getState().project!.assets).toEqual([])
+    expect((await listProApplications(scope, 'arena'))[0]!.assetInverse?.value).toEqual(asset)
+    await undoProApplication(store, 'arena', operation.id)
+    expect((await loadProjectById('arena', scope))!.assets).toEqual([asset])
+  })
   it('publishes inverse before subscribers autosave or switch projects in a microtask', async () => {
     const { scope, store, input } = await scenario()
     const other = buildProProject(
@@ -287,6 +324,7 @@ describe('local revision transactions on IndexedDB', () => {
       const record: ProApplicationRecord = {
         version: 1,
         operationId: `large-${i}`,
+        source: 'zappy',
         jobId: `job-${i}`,
         projectId: project.id,
         beforeHash: 'a'.repeat(64),
@@ -409,6 +447,7 @@ describe('local revision transactions on IndexedDB', () => {
       expect(
         (
           await applyProProposal(store, 'arena', {
+            request: { version: 1, intent: 'change', scope: 'part', criteria: [] },
             operationId: `step-${index}`,
             jobId: `job-${index}`,
             change: {

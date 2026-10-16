@@ -4,6 +4,14 @@ import { Button, Modal } from '#ui'
 import { useT } from '../../studio/i18n'
 import type { ProTemplate } from '../code/pro-templates'
 
+const friendlyNames: Partial<Record<ProTemplate['id'], string>> = {
+  'vanilla-js': 'Página interativa · JavaScript',
+  'vanilla-vite': 'Página interativa · TypeScript',
+  'react-ts': 'Aplicativo com telas e botões',
+  'three-js': 'Cena 3D para inventar · JavaScript',
+  'three-ts': 'Cena 3D para inventar · TypeScript',
+}
+
 export interface NewProjectCreateOptions {
   kind: 'pro'
   templateId: string
@@ -37,6 +45,7 @@ export function NewProjectModal({
   const [templateId, setTemplateId] = useState(templates[0]?.id ?? '')
   const [submitting, setSubmitting] = useState(false)
   const [creationError, setCreationError] = useState<string | null>(null)
+  const [category, setCategory] = useState<'all' | '2d' | '3d' | 'web'>('all')
   const creating = useRef(false)
   const inputRef = useRef<HTMLInputElement | null>(null)
 
@@ -50,6 +59,7 @@ export function NewProjectModal({
       setKind('basic')
       setTemplateId(templates[0]?.id ?? '')
       setCreationError(null)
+      setCategory('all')
     }
     openedRef.current = open
   })
@@ -83,7 +93,22 @@ export function NewProjectModal({
   const duplicate = Boolean(trimmed) && (existingNames?.includes(trimmed) ?? false)
   const selectedAvailable =
     professionalAvailable && templates.some((template) => template.id === templateId)
-  const canSubmit = trimmed && !duplicate && (kind === 'basic' || selectedAvailable)
+  const categoryOf = (template: ProTemplate) =>
+    template.engine === 'three'
+      ? '3d'
+      : template.engine === 'canvas' || template.engine === 'phaser'
+        ? '2d'
+        : 'web'
+  const visibleTemplates = templates.filter(
+    (template) => category === 'all' || categoryOf(template) === category,
+  )
+  const friendlyName = (template: ProTemplate) => friendlyNames[template.id] ?? template.name
+  const selectedTemplate = templates.find((template) => template.id === templateId)
+  const canSubmit =
+    trimmed &&
+    !duplicate &&
+    (kind === 'basic' ||
+      (selectedAvailable && visibleTemplates.some((template) => template.id === templateId)))
 
   return (
     <Modal
@@ -179,31 +204,77 @@ export function NewProjectModal({
           </label>
 
           {kind === 'pro' && templates.length > 0 && (
-            <label className="mt-2 block text-sm text-sz-fg-soft">
-              Template
-              <select
-                name="project-template"
-                value={templateId}
-                onChange={(e) => setTemplateId(e.target.value)}
-                className="mt-1 w-full rounded border border-sz-border bg-sz-bg px-3 py-2 text-sm text-sz-fg outline-none focus:border-sz-accent"
-              >
-                {!selectedAvailable && (
-                  <option value={templateId} disabled>
-                    Modelo indisponível
-                  </option>
-                )}
-                {templates.map((tpl) => (
-                  <option key={tpl.id} value={tpl.id}>
-                    {tpl.name}
-                  </option>
+            <div className="mt-3 space-y-3">
+              <p className="font-medium text-sm">O que você quer criar?</p>
+              <div className="flex flex-wrap gap-2">
+                {(['all', '2d', '3d', 'web'] as const).map((choice) => (
+                  <button
+                    type="button"
+                    key={choice}
+                    aria-pressed={category === choice}
+                    className="min-h-10 rounded-lg border border-sz-border px-3 text-sm aria-pressed:bg-sz-accent/15"
+                    onClick={() => {
+                      setCategory(choice)
+                      const first = templates.find(
+                        (template) => choice === 'all' || categoryOf(template) === choice,
+                      )
+                      if (
+                        first &&
+                        (!selectedTemplate ||
+                          (choice !== 'all' && categoryOf(selectedTemplate) !== choice))
+                      )
+                        setTemplateId(first.id)
+                    }}
+                  >
+                    {choice === 'all'
+                      ? 'Todos'
+                      : choice === '2d'
+                        ? 'Jogos 2D'
+                        : choice === '3d'
+                          ? 'Mundos 3D'
+                          : 'Páginas e aplicativos'}
+                  </button>
                 ))}
-              </select>
-              {templates.find((tpl) => tpl.id === templateId)?.description && (
-                <span className="mt-1 block text-xs text-sz-fg-mute">
-                  {templates.find((tpl) => tpl.id === templateId)?.description}
-                </span>
+              </div>
+              <label className="block text-sm text-sz-fg-soft">
+                Escolha um ponto de partida
+                <select
+                  name="project-template"
+                  value={templateId}
+                  onChange={(e) => setTemplateId(e.target.value)}
+                  className="mt-1 w-full rounded border border-sz-border bg-sz-bg px-3 py-2 text-sm text-sz-fg outline-none focus:border-sz-accent"
+                >
+                  {!selectedAvailable && (
+                    <option value={templateId} disabled>
+                      Modelo indisponível
+                    </option>
+                  )}
+                  {visibleTemplates.map((tpl) => (
+                    <option key={tpl.id} value={tpl.id}>
+                      {friendlyName(tpl)}
+                    </option>
+                  ))}
+                </select>
+                {templates.find((tpl) => tpl.id === templateId)?.description && (
+                  <span className="mt-1 block text-xs text-sz-fg-mute">
+                    {templates.find((tpl) => tpl.id === templateId)?.description}
+                  </span>
+                )}
+              </label>
+              {selectedTemplate && (
+                <details className="text-xs text-sz-fg-mute">
+                  <summary className="cursor-pointer py-1">Ferramentas deste projeto</summary>
+                  <p>
+                    {selectedTemplate.name} · {selectedTemplate.engine}
+                  </p>
+                </details>
               )}
-            </label>
+              {!visibleTemplates.length && (
+                <p role="status" className="text-sm">
+                  Não há modelos dessa categoria disponíveis aqui.
+                </p>
+              )}
+            </div>
           )}
         </fieldset>
       )}
