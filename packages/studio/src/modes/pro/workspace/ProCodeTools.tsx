@@ -60,6 +60,7 @@ export function ProCodeTools({
     content: string
     path: string
     items: ProSymbol[]
+    error: string | null
   } | null>(null)
   const [referenceResult, setReferences] = useState<{
     session: ProLanguageSession
@@ -67,13 +68,13 @@ export function ProCodeTools({
     items: Array<{ path: string; line: number; column: number }>
   } | null>(null)
   const content = tree[path]?.kind === 'file' ? tree[path].content : ''
-  const symbols =
+  const currentSymbols =
     symbolResult?.content === content &&
     symbolResult.path === path &&
     symbolResult.session === language
-      ? symbolResult.items
-      : []
-  const [symbolsPending, setSymbolsPending] = useState(false)
+      ? symbolResult
+      : null
+  const symbols = currentSymbols?.items ?? []
   const references =
     referenceResult?.tree === tree && referenceResult.session === language
       ? referenceResult.items
@@ -100,17 +101,14 @@ export function ProCodeTools({
     () => (open && /\.[cm]?[jt]sx?$/.test(path) ? { path, content } : null),
     [open, path, content],
   )
+  // A new document is pending until its response arrives. Derive that state:
+  // dispatching resets from every typing effect accumulates nested React updates.
+  const symbolsPending = Boolean(symbolSource && language && !currentSymbols)
+  const visibleError = error ?? (open ? currentSymbols?.error : null)
   useEffect(() => {
-    if (!symbolSource || !language) {
-      setSymbols(null)
-      setSymbolsPending(false)
-      return
-    }
+    if (!symbolSource || !language) return
     const { path, content } = symbolSource
     let active = true
-    setSymbolsPending(true)
-    setSymbols(null)
-    setError(null)
     void language
       .request('symbols', path)
       .then((items) => {
@@ -122,14 +120,17 @@ export function ProCodeTools({
           node.content === content &&
           editor.current?.getModel()?.getValue() === content
         )
-          setSymbols({ session: language, content, path, items })
+          setSymbols({ session: language, content, path, items, error: null })
       })
       .catch((cause: unknown) => {
         if (active)
-          setError(cause instanceof Error ? cause.message : 'Não foi possível ler o mapa.')
-      })
-      .finally(() => {
-        if (active) setSymbolsPending(false)
+          setSymbols({
+            session: language,
+            content,
+            path,
+            items: [],
+            error: cause instanceof Error ? cause.message : 'Não foi possível ler o mapa.',
+          })
       })
     return () => {
       active = false
@@ -426,10 +427,16 @@ export function ProCodeTools({
           </button>
         </form>
       )}
-      {error && (
+      {visibleError && (
         <p role="status" className="py-2 text-xs text-sz-error">
-          {error}{' '}
-          <button type="button" onClick={() => setError(null)}>
+          {visibleError}{' '}
+          <button
+            type="button"
+            onClick={() => {
+              setError(null)
+              setSymbols((previous) => (previous?.error ? { ...previous, error: null } : previous))
+            }}
+          >
             Fechar
           </button>
         </p>
