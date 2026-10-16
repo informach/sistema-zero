@@ -72,10 +72,10 @@ Interfaces: `exportProjectSource(project)` mantém formato; instrução gerada r
 - [x] Reutilizar provas externas dos kits e ampliar casos React/convertido/materiais, sem depender de `node_modules` do monorepo.
 - [x] Executar checks afetados, suíte Studio, E2E workspace/Zappy, budgets e typechecks; inspecionar UI real.
 - [x] Full review do diff completo, corrigir achados e repetir verificações afetadas.
-- [ ] Reconferir staging e integrar avanços; commit e merge local somente após verificação do conjunto.
+- [x] Reconferir staging e integrar avanços; commit e merge local somente após verificação do conjunto.
 
 ## Critério final
 
 Relatório final contém mudanças, provas, base integrada, resultados e limitações externas reais. Falhas de produto são corrigidas antes do merge. Medições não realizadas e avaliação com alunos não são anunciadas como aprovadas.
 
-Evidência consolidada: [full review](../../../.audits/studio-pro-evolution/full-review.md). A integração Git será registrada após conferir a árvore de staging.
+Evidência consolidada: [full review](../../../.audits/studio-pro-evolution/full-review.md). Integração concluída no merge local `c90a925f7`; instalação e verificações pós-merge registradas no relatório.

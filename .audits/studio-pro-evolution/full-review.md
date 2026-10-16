@@ -175,3 +175,21 @@ até o segundo animation frame é uma proxy de apresentação, não INP nem lat�
 exata de pixels. Não foram realizados ensaio físico em 8 GB/iGPU, estudo com
 alunos ou sessão manual de VS Code; os exports foram construídos e executados
 pelas provas automatizadas. Esses aceites externos não são declarados aprovados.
+
+## Integração local concluída
+
+- Base de staging reconferida limpa imediatamente antes do merge: `b030c443e`.
+- Commit de fechamento: `a294758d0` (`feat/studio-pro-evolution`).
+- Merge local sem conflitos: `c90a925f7085f2e1b311611778f1b54138095dc0`.
+- Antes deste registro documental, a árvore do merge era idêntica à árvore
+  integralmente validada da branch de implementação (`git diff --exit-code`).
+- Na worktree de staging, `bun install --frozen-lockfile` passou e a instalação
+  do patch Monaco foi conferida no fonte ESM resolvido.
+- Verificação após merge: **28 testes de workspace** e **3 E2Es críticos** passaram
+  (teclado/paleta/diff, extensão/recuperação com mesmo model, digitação com símbolos).
+- Worktree original permaneceu intocada; os trabalhos locais de marketing/funil
+  não foram incorporados. Nenhum push ou deploy foi executado.
+
+Os achados locais desta revisão foram tratados. Os aceites externos descritos
+acima — hardware físico de entrada, host autenticado e avaliação com alunos —
+continuam explicitamente fora das provas realizadas nesta sessão.
