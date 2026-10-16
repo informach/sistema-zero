@@ -596,6 +596,8 @@ async function main() {
           await rolar(590)
           await foto('tela-jornada')
           await rolar(1075)
+          // A oferta usa só o RECORTE desta tela, sem o fim do mapa "em construção" (ver `catalogo`
+          // em oferta/visuals.ts): depois de recapturar, refaça `tela-catalogo-trilha`.
           await foto('tela-catalogo')
           await abrir('/perfil', 4000)
           await rolar(425)

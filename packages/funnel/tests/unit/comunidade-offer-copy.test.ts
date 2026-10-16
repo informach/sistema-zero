@@ -272,8 +272,12 @@ describe('Comunidade: quatro perfis, mesma entrega e contratação', () => {
       expect(visual.frames.length).toBeLessThanOrEqual(3)
     }
     // A venda não mostra "em construção" (decisão de 16/10/2026): as capturas inteiras da Jornada
-    // trazem o cartão "Mais 6 postos estão sendo construídos"; só o recorte entra.
-    const jornadaComConstrucao = ['tela-jornada.webp', 'tela-jornada-postos.webp']
+    // e do catálogo trazem "Mais 6 postos estão sendo construídos"; só os recortes entram.
+    const jornadaComConstrucao = [
+      'tela-jornada.webp',
+      'tela-jornada-postos.webp',
+      'tela-catalogo.webp',
+    ]
     for (const frame of frames) expect(jornadaComConstrucao).not.toContain(frame.file)
     expect(COMUNIDADE_VISUALS.jornada!.frames.map((f) => f.file)).toEqual([
       'tela-jornada-meus-postos.webp',
