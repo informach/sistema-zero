@@ -7,6 +7,7 @@ import {
   stableEditorialId,
   videoAssetIds,
 } from '@sistemazero/marketing-contracts'
+import { validateDemonstrationSources } from './demonstration'
 import { WorkspaceError } from './workspace-error'
 
 export async function videoBatch(run: ExecutionRun, index: number) {
@@ -29,6 +30,12 @@ export async function videoBatch(run: ExecutionRun, index: number) {
     throw new WorkspaceError('PROTECTED_CONTENT', 'Este vídeo está protegido')
   const original = source.document.timeline,
     next = variant.timeline
+  validateDemonstrationSources(
+    next,
+    run.request.projectId,
+    [...run.context.evidence, ...(run.context.basis ?? [])],
+    run.context.assets ?? [],
+  )
   if (run.request.videoTarget) {
     const { clipId, part } = run.request.videoTarget
     const selected = next.clips.find((clip) => clip.id === clipId)
@@ -46,8 +53,21 @@ export async function videoBatch(run: ExecutionRun, index: number) {
       part === 'text'
         ? new Set(['text', 'listItems'])
         : new Set(['effect', 'counter', 'listItems', 'fadeInFrames', 'fadeOutFrames'])
-    const retain = (clip: typeof selected) =>
-      Object.fromEntries(Object.entries(clip).filter(([key]) => !excluded.has(key)))
+    const retain = (clip: typeof selected) => ({
+      ...Object.fromEntries(
+        Object.entries(clip).filter(([key]) => !excluded.has(key) && key !== 'demonstration'),
+      ),
+      demonstration: clip.demonstration
+        ? {
+            ...clip.demonstration,
+            ...(part === 'text' ? { headline: '' } : {}),
+            sources: clip.demonstration.sources.map((source) => ({
+              ...source,
+              ...(part === 'text' ? { label: '' } : { focus: null }),
+            })),
+          }
+        : null,
+    })
     if (part !== 'scene' && canonicalJson(retain(before)) !== canonicalJson(retain(selected)))
       throw new WorkspaceError(
         'INVALID_RESULT',

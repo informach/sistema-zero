@@ -1,6 +1,7 @@
 import {
   captionSchema,
   clipSchema,
+  demonstrationSchema,
   videoArtSchema,
   videoProposalSchema,
   videoSchema,
@@ -16,6 +17,7 @@ const nativeClip = z
     text: clipSchema.shape.text.unwrap().nullable(),
     showCaptions: z.boolean().nullable(),
     art: videoArtSchema.extend({ composition: nativeArtCompositionSchema }).nullable(),
+    demonstration: demonstrationSchema.nullable(),
     counter: clipSchema.shape.counter.unwrap().nullable(),
     listItems: clipSchema.shape.listItems.unwrap().nullable(),
   })
@@ -54,13 +56,14 @@ export function canonicalVideoProposal(value: z.infer<typeof nativeVideoProposal
           ...timeline,
           ...(fontAssetId ? { fontAssetId } : {}),
           clips: timeline.clips.map(
-            ({ assetId, text, showCaptions, art, counter, listItems, ...clip }) => ({
+            ({ assetId, text, showCaptions, art, demonstration, counter, listItems, ...clip }) => ({
               ...clip,
               ...(assetId ? { assetId } : {}),
               ...(text !== null ? { text } : {}),
               ...(showCaptions !== null ? { showCaptions } : {}),
               ...(counter ? { counter } : {}),
               ...(listItems ? { listItems } : {}),
+              ...(demonstration ? { demonstration } : {}),
               ...(art
                 ? {
                     art: {

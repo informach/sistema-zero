@@ -16,6 +16,7 @@ import { renderArt } from '../media/render-art'
 import { renderReceipt } from '../media/render-identity'
 import { runProvider } from '../providers'
 import { downloadAsset } from '../sync/asset-download'
+import { demonstrationImages } from './demonstration-context'
 import { prepareMedia } from './media-preparation'
 import { recordingContext } from './recording-context'
 import { executeStudioCapture } from './studio-capture'
@@ -66,6 +67,7 @@ export const executeNative: ProductionExecutor = async (run, resources, signal, 
       signal,
       progress,
       await recordingContext(run, resources, directory, signal, progress),
+      await demonstrationImages(run, resources, signal),
     )
   if (request.capability === 'transcribe')
     return transcribeVideo(run, resources, directory, signal, progress)

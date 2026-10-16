@@ -3,6 +3,7 @@ import {
   type ClaimRun,
   type ContextRequest,
   canonicalJson,
+  demonstrationSources,
   type EditorialApplication,
   type EditorialBatch,
   type ExecutionContext,
@@ -80,7 +81,15 @@ async function loadContext(
       ),
     )
   if (!source || source.revisionId !== input.revisionId) throw contextChanged()
-  const basisRefs = source.document.kind === 'analysis' ? (source.document.basis ?? []) : []
+  const basisRefs =
+    source.document.kind === 'analysis'
+      ? (source.document.basis ?? [])
+      : source.document.kind === 'video'
+        ? demonstrationSources(source.document.timeline).map((source) => ({
+            entityId: source.evidenceId,
+            revisionId: source.evidenceRevisionId,
+          }))
+        : []
   const basisRows = basisRefs.length
     ? await tx
         .select()
@@ -190,6 +199,9 @@ async function loadContext(
     .limit(5)
   const evidenceIds = new Set<string>()
   for (const row of [source, ...ancestors, ...selected, ...directions]) {
+    if (row.document.kind === 'video')
+      for (const source of demonstrationSources(row.document.timeline))
+        evidenceIds.add(source.evidenceId)
     if (
       row.document.kind === 'piece' ||
       row.document.kind === 'analysis' ||

@@ -1,4 +1,5 @@
 import type { ExecutionRun } from '@sistemazero/marketing-contracts'
+import { demonstrationGuide } from '@sistemazero/marketing-production/data'
 import { runProvider } from '../providers'
 import type { ProductionResult } from './journal'
 
@@ -11,6 +12,7 @@ export async function editVideo(
     observations: NonNullable<ProductionResult['recordingAnalysis']>
     images: string[]
   },
+  demonstrationImages: string[] = [],
 ): Promise<ProductionResult> {
   if (run.context.source.document.kind !== 'video')
     throw new Error('Selecione uma montagem de vídeo')
@@ -41,6 +43,9 @@ export async function editVideo(
             ]
           : []),
         'Efeitos textuais disponíveis: lower-third (identificação), highlight (destaque), cta, counter (parâmetros from/to/decimals/prefix/suffix) e list (listItems). Contadores não são evidência de resultado: use apenas números fornecidos ou explicitamente pedidos, sem inventar métricas. Null nos parâmetros não utilizados.',
+        demonstrationGuide(run.context, run.request.videoTarget?.clipId),
+        'Em demonstrações, escopo text permite apenas headline e label; escopo effect permite apenas focus de cada fonte, além dos fades. Identidades, hashes, dimensões e receita permanecem. O servidor confere esses limites.',
+        `Imagens anexas: ${recording?.images.length ?? 0} amostras de gravação primeiro, depois ${demonstrationImages.length} imagens das fontes de demonstração.`,
         `Contexto confirmado: ${JSON.stringify(run.context)}`,
         ...(recording
           ? [
@@ -55,7 +60,7 @@ export async function editVideo(
     directory,
     signal,
     progress,
-    recording?.images.length ? recording.images : undefined,
+    [...(recording?.images ?? []), ...demonstrationImages],
   )
   if (!result.video)
     throw new Error('A IA não retornou uma montagem válida; a resposta foi preservada')

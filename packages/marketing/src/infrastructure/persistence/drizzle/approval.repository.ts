@@ -4,6 +4,7 @@ import {
   type ApproveEdition,
   approvedEditionSchema,
   canonicalJson,
+  demonstrationSources,
   editionSummarySchema,
   revisionSchema,
 } from '@sistemazero/marketing-contracts'
@@ -68,6 +69,11 @@ async function candidate(tx: WorkspaceTransaction, projectId: string, representa
       'Consolide a direção vigente em até cinco documentos antes de aprovar',
     )
   const referenceIds = [
+    ...components.flatMap((item) =>
+      item.document.kind === 'video'
+        ? demonstrationSources(item.document.timeline).map((source) => source.evidenceId)
+        : [],
+    ),
     ...piece.document.evidenceIds,
     ...directions.flatMap((item) =>
       item.document.kind === 'direction' ? item.document.referenceIds : [],
