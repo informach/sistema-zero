@@ -12,4 +12,19 @@ describe('zipFiles', () => {
     expect(Object.keys(unzipped)).toContain('Dockerfile')
     expect(new TextDecoder().decode(unzipped['public/index.html'])).toBe('<h1>oi</h1>')
   })
+  it('preserves large source and binary inputs after asynchronous compression', async () => {
+    const binary = Uint8Array.from({ length: 200_000 }, (_, index) => index % 251)
+    const text = 'const ponto = "ação🙂"\r\n'.repeat(12_000)
+    const result = unzipSync(await zipFiles({ 'src/main.ts': text, 'public/data.bin': binary }))
+    expect(new TextDecoder().decode(result['src/main.ts'])).toBe(text)
+    expect(result['public/data.bin']).toEqual(binary)
+    expect(binary.byteLength).toBe(200_000)
+  })
+  it('rejects an already cancelled export without consuming inputs', async () => {
+    const controller = new AbortController()
+    controller.abort(new Error('cancelled'))
+    await expect(
+      zipFiles({ 'a.txt': 'a'.repeat(80_000) }, { signal: controller.signal }),
+    ).rejects.toThrow('cancelled')
+  })
 })

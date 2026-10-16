@@ -35,19 +35,28 @@ export function searchProFiles(
     if (mode === 'files') {
       if (match.test(path)) items.push({ path, line: 1, column: 1, text: path })
     } else {
-      const lines = node.content.split(/\r\n|\r|\n/)
-      for (let index = 0; index < lines.length; index++) {
-        const line = lines[index] ?? ''
+      // Most files do not match. Avoid allocating a line array for every keystroke.
+      if (!match.test(node.content)) continue
+      const endings = /\r\n|\r|\n/g
+      let startOfLine = 0
+      let lineNumber = 1
+      while (startOfLine <= node.content.length) {
+        const ending = endings.exec(node.content)
+        const line = node.content.slice(startOfLine, ending?.index ?? node.content.length)
         const column = line.search(match)
-        if (column < 0) continue
-        const start = Math.max(0, column - 55)
-        items.push({
-          path,
-          line: index + 1,
-          column: column + 1,
-          text: `${start ? '…' : ''}${line.slice(start, start + 180)}`,
-        })
-        if (items.length > max) break
+        if (column >= 0) {
+          const start = Math.max(0, column - 55)
+          items.push({
+            path,
+            line: lineNumber,
+            column: column + 1,
+            text: `${start ? '…' : ''}${line.slice(start, start + 180)}`,
+          })
+          if (items.length > max) break
+        }
+        if (!ending) break
+        startOfLine = ending.index + ending[0].length
+        lineNumber++
       }
     }
     if (items.length > max) return { items: items.slice(0, max), truncated: true }

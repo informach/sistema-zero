@@ -3,11 +3,12 @@ import { useEffect } from 'react'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { useShallow } from 'zustand/react/shallow'
 import { buildWorkspaceStateFromIR, isBlocksStateEmpty } from '#blockly'
+import { GENERATED_JS_HEADER } from '#generators'
 import { hasBehaviorStatements, normalizeSZIR } from '#ir'
 import { BlocksWorkspaceEditor } from '../components/blocks/BlocksWorkspaceEditor'
 import { ModeLimitationsNotice } from '../components/layout/ModeLimitationsNotice'
 import { NarrowPanels } from '../components/layout/NarrowPanels'
-import { PreviewIframe } from '../components/preview/PreviewIframe'
+import { PreviewIframe } from '../components/preview/LazyPreviewIframe'
 import { getCanonicalSourceMap } from '../state/canonicalSourceMap'
 import { useProjectStore, useProjectStoreApi } from '../state/projectStore'
 import { useSourcemapStore } from '../state/sourcemapStore'
@@ -15,7 +16,6 @@ import { useUIStore } from '../state/uiStore'
 import { useStudioConfig } from '../studio/config'
 import { useT } from '../studio/i18n'
 import { useStudioLayout } from '../studio/layoutContext'
-import { BRIDGE_JS_HEADER } from './bridgeReverseParse'
 
 export function BlocksMode(): JSX.Element {
   const t = useT()
@@ -55,7 +55,7 @@ export function BlocksMode(): JSX.Element {
       return
     }
     try {
-      const header = js.startsWith(BRIDGE_JS_HEADER) ? BRIDGE_JS_HEADER : undefined
+      const header = js.startsWith(GENERATED_JS_HEADER) ? GENERATED_JS_HEADER : undefined
       setSourceMap(getCanonicalSourceMap(ir, projectName, header))
     } catch {
       // Best-effort: sem mapa, o Console só não mostra o chip.

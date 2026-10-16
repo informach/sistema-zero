@@ -24,7 +24,7 @@ import {
 } from '#blockly'
 import { type InstalledExtension, isCategoryAllowed, type LearningProfile } from '#core'
 import { extensionMinLevel } from '#extensions'
-import { generateProjectFilesWithMap } from '#generators'
+import { GENERATED_JS_HEADER, generateProjectFilesWithMap } from '#generators'
 import { deepEqualIR } from '#ir'
 import { findExtension } from '#official-extensions'
 import { SERVER_BLOCK_CATALOG } from '../../blockly/blockCatalog'
@@ -60,10 +60,6 @@ ensureBlocklyInitialized()
 
 const EMPTY_INSTALLED_EXTENSIONS: InstalledExtension[] = []
 const BLOCKLY_REGENERATION_DELAY_MS = 120
-// Cabeçalho dos arquivos gerados dos blocos. DEVE casar com `BRIDGE_JS_HEADER`
-// (modes/bridgeReverseParse) para o memo de source-map por `ir` reusar o mapa
-// entre o regenerate e o efeito canônico do BridgeMode (chave inclui o header).
-const REGEN_JS_HEADER = '// Gerado pelo Sistema Zero Studio'
 function blocklyWorkspaceConfiguration(
   theme: 'dark' | 'light',
   horizontalLayout: boolean,
@@ -518,11 +514,11 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       const { files, sourceMap } = generateProjectFilesWithMap({
         ir,
         projectName: projectNameForGen,
-        jsHeader: REGEN_JS_HEADER,
+        jsHeader: GENERATED_JS_HEADER,
       })
       // Semeia o memo por `ir`: na Ponte, o efeito canônico do BridgeMode reusa
       // este mapa em vez de regerar o projeto de novo com o MESMO `ir`.
-      primeCanonicalSourceMap(ir, projectNameForGen, REGEN_JS_HEADER, sourceMap)
+      primeCanonicalSourceMap(ir, projectNameForGen, GENERATED_JS_HEADER, sourceMap)
       // Modo Ponte: ao CARREGAR os blocos (force), NUNCA reescrever os arquivos do
       // aluno com o canônico — "código é sagrado". Só sincronizamos o IR (para os
       // ids/__declIds e o sourcemap de HTML/JS ficarem completos) e o blocksState

@@ -1,26 +1,22 @@
+import type * as Monaco from 'monaco-editor'
 import type { JSX } from 'react'
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import type { ProjectTree } from '#core'
-import { FontSizeControls } from '../../components/code/FontSizeControls'
-import { useCodeHistory } from '../../components/code/useCodeHistory'
-import { useFormatIssueLogger } from '../../components/code/useFormatIssueLogger'
 import { EditorSkeleton } from '../../components/layout/LoadingViews'
 import { useProTutorDock } from '../../components/layout/proTutorDock'
 import { proFileDescriptions } from '../../core/proLearningGuides'
 import type { MonacoHighlight } from '../../monaco/MonacoTabs'
 import { getMonacoModelPath } from '../../monaco/modelPaths'
-import type { ProEditorDiagnostic } from '../../monaco/pro/session'
-import { useProjectStore } from '../../state/projectStore'
-import { useSettingsStore } from '../../state/settingsStore'
+import type { ProAnalysisState, ProEditorDiagnostic } from '../../monaco/pro/session'
+import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { useStudioConfig } from '../../studio/config'
 import { useT } from '../../studio/i18n'
 import { useProCandidatePreview } from '../../studio/pro-candidate-preview'
-import { useStudioTheme } from '../../studio/theme'
 import { useStudioTutor } from '../../studio/tutor'
 import { ProCodeEditor } from './ProCodeEditor'
-import { ProPreview } from './ProPreview'
 import { ProWebContainerProvider } from './ProWebContainerProvider'
+import { currentProDiagnostics } from './workspace/diagnostics'
 import {
   closeWorkspaceFile,
   openWorkspaceFile,
@@ -32,11 +28,16 @@ import { ProBottomPanel } from './workspace/ProBottomPanel'
 import { ProCodeTools } from './workspace/ProCodeTools'
 import { ProNavigator } from './workspace/ProNavigator'
 import { ProOperationReview } from './workspace/ProOperationReview'
+import { ProQuickOpen } from './workspace/ProQuickOpen'
 import { ProWorkspaceLayout } from './workspace/ProWorkspaceLayout'
+import { proSourcePosition } from './workspace/search'
 import { useProOperations } from './workspace/useProOperations'
 import { useProWorkspace } from './workspace/useProWorkspace'
 
 const EMPTY_TREE: ProjectTree = {}
+const ProPreview = lazy(() =>
+  import('./ProPreview').then((module) => ({ default: module.ProPreview })),
+)
 
 /**
  * Variante do modo Código para projetos PROFISSIONAIS (`kind: 'pro'`): árvore de
@@ -46,6 +47,7 @@ const EMPTY_TREE: ProjectTree = {}
  */
 export function ProCodeMode(): JSX.Element {
   const t = useT()
+  const store = useProjectStoreApi()
   const { projectId, tree, templateId } = useProjectStore(
     useShallow((s) => ({
       projectId: s.project?.id,
@@ -61,16 +63,22 @@ export function ProCodeMode(): JSX.Element {
   // desligou o preview no computador abriria no celular sem preview E sem botão
   // para trazer de volta. A aba existe sempre que o host oferece preview.
   const previewAvailable = studioConfig.preview
-  const codeFontSize = useSettingsStore((s) => (s.codeFontSizeChosen ? s.codeFontSize : 15))
-  const studioTheme = useStudioTheme()
   const tutorDock = useProTutorDock()
   const [diagnostics, setDiagnostics] = useState<ProEditorDiagnostic[] | null>(null)
+  const [analysis, setAnalysis] = useState<ProAnalysisState>({ status: 'pending' })
+  const updateAnalysis = useCallback((next: ProAnalysisState) => {
+    setAnalysis((previous) =>
+      previous.status === next.status && next.status !== 'error' ? previous : next,
+    )
+  }, [])
 
   const workspace = useProWorkspace(projectId, tree)
   const { state: workspaceState, change: changeWorkspace } = workspace
   const { openFiles, activeFile } = workspaceState
   const [codeRequest, setCodeRequest] = useState(0)
-  const editorRef = useRef<Parameters<ReturnType<typeof useCodeHistory>>[0]>(null)
+  const editorRef = useRef<Monaco.editor.IStandaloneCodeEditor | null>(null)
+  const [readyEditor, setReadyEditor] = useState<Monaco.editor.IStandaloneCodeEditor | null>(null)
+  const [quickOpen, setQuickOpen] = useState<{ query: string } | null>(null)
   const formatRef = useRef<(() => void) | null>(null)
   const [locations, setLocations] = useState<Array<{ path: string; line: number; column: number }>>(
     [],
@@ -170,9 +178,6 @@ export function ProCodeMode(): JSX.Element {
     },
     [proEditor],
   )
-  const onFormatIssue = useFormatIssueLogger()
-  // Desfazer/refazer da barra: aqui o alvo é sempre o código.
-  const onCodeEditorReady = useCodeHistory()
 
   const filesArray = useMemo(
     () =>
@@ -201,6 +206,32 @@ export function ProCodeMode(): JSX.Element {
   const navigator = (close?: () => void) => (
     <ProNavigator
       tree={tree}
+      onGuideReference={async (path, name) => {
+        handleSelectFile(path)
+        close?.()
+        if (!operations.language.current)
+          throw new Error('Arquivo aberto. Aguarde a análise para localizar o símbolo.')
+        const symbols = await operations.language.current.requestForTree(tree, 'symbols', path)
+        const node = tree[path]
+        const model = editorRef.current?.getModel()
+        if (
+          store.getState().project?.tree !== tree ||
+          !model ||
+          !getMonacoModelPath(model).endsWith(`/${path}`)
+        )
+          return
+        const symbol = symbols.find((item) => item.name === name)
+        if (!symbol || node?.kind !== 'file')
+          throw new Error('Arquivo aberto. Este símbolo não está mais disponível na análise atual.')
+        const position = proSourcePosition(node.content, symbol.start)
+        setTutorHighlight((previous) => ({
+          file: path,
+          startLine: position.line,
+          endLine: position.line,
+          startColumn: position.column,
+          nonce: (previous?.nonce ?? 0) + 1,
+        }))
+      }}
       onInsert={(example) => {
         const node = tree[activeFile]
         if (node?.kind === 'file')
@@ -264,23 +295,26 @@ export function ProCodeMode(): JSX.Element {
         if (
           (event.ctrlKey || event.metaKey) &&
           !event.shiftKey &&
+          !event.altKey &&
           event.key.toLowerCase() === 'p'
         ) {
           event.preventDefault()
           event.stopPropagation()
-          setSearchRequest((previous) => previous + 1)
+          setQuickOpen({ query: '' })
         }
       }}
     >
       <ProOperationReview operations={operations} />
       <ProCodeTools
         help={tutorConfig ? askFromCode : undefined}
-        search={() => setSearchRequest((previous) => previous + 1)}
+        search={() => setQuickOpen({ query: '' })}
+        searchProject={() => setSearchRequest((previous) => previous + 1)}
         format={() => formatRef.current?.()}
         path={activeFile}
         tree={tree}
         language={operations.language}
         editor={editorRef}
+        readyEditor={readyEditor}
         busy={operations.busy}
         prepare={(intent) => void operations.prepare(intent)}
         recover={() => operations.setHistoryOpen(true)}
@@ -333,6 +367,10 @@ export function ProCodeMode(): JSX.Element {
               type="button"
               className="min-h-8 rounded px-1 hover:bg-sz-panel"
               onClick={() => {
+                if (index < parts.length - 1) {
+                  setQuickOpen({ query: `${parts.slice(0, index + 1).join('/')}/` })
+                  return
+                }
                 setRevealRequest((previous) => previous + 1)
                 changeWorkspace((previous) => ({
                   ...previous,
@@ -382,30 +420,27 @@ export function ProCodeMode(): JSX.Element {
             highlight={tutorHighlight}
             onActiveFileChange={handleSelectFile}
             onChange={(name, value) => {
-              changeWorkspace((previous) => pinWorkspaceFile(previous, name))
+              if (workspaceState.temporaryFile === name)
+                changeWorkspace((previous) => pinWorkspaceFile(previous, name))
               setProFileContent(name, value)
             }}
-            theme={studioTheme === 'light' ? 'light' : 'vs-dark'}
-            fontSize={codeFontSize}
-            formatLabel={t('pro.organizeCode')}
-            onFormatIssue={onFormatIssue}
             onFormatReady={(run) => {
               formatRef.current = run
             }}
-            tabsRightSlot={<FontSizeControls defaultSize={15} />}
             canCloseFile={() => true}
             onCloseFile={handleCloseFile}
             temporaryFile={workspaceState.temporaryFile}
             onPinFile={(path) => changeWorkspace((previous) => pinWorkspaceFile(previous, path))}
             onEditorReady={(editor) => {
               editorRef.current = editor
-              onCodeEditorReady(editor)
+              setReadyEditor(editor)
             }}
             onProLanguageReady={(session) => {
               operations.language.current = session
               if (!session) setDiagnostics(null)
             }}
             onProDiagnostics={setDiagnostics}
+            onProAnalysis={updateAnalysis}
           />
         </Suspense>
       </div>
@@ -414,20 +449,73 @@ export function ProCodeMode(): JSX.Element {
 
   return (
     <ProWebContainerProvider>
+      {quickOpen && (
+        <ProQuickOpen
+          key={projectId}
+          tree={tree}
+          recent={openFiles}
+          initialQuery={quickOpen.query}
+          onClose={() => setQuickOpen(null)}
+          onSelect={handleSelectFile}
+        />
+      )}
       <ProWorkspaceLayout
         navigator={navigator}
         editor={codeEditor}
-        preview={previewAvailable ? <ProPreview /> : null}
+        preview={
+          previewAvailable ? (
+            <Suspense fallback={<EditorSkeleton message="Carregando pré-visualização…" />}>
+              <ProPreview />
+            </Suspense>
+          ) : null
+        }
         tutor={tutorDock}
         preferences={workspaceState}
         change={changeWorkspace}
         gameRequest={focusNonce}
-        searchRequest={searchRequest}
+        searchRequest={searchRequest + revealRequest}
         codeRequest={codeRequest}
         bottom={
           <ProBottomPanel
             tree={tree}
             diagnostics={diagnostics}
+            analysis={analysis}
+            investigate={
+              tutorConfig
+                ? (item) => {
+                    const project = store.getState().project
+                    if (
+                      project?.id !== projectId ||
+                      !project?.tree ||
+                      !currentProDiagnostics([item], project.tree).length
+                    )
+                      return
+                    const reference = proValidateReference.current?.({
+                      path: item.path,
+                      startLine: item.line,
+                      endLine: item.line,
+                      sourceHash: item.sourceHash,
+                    })
+                    const node = project.tree[item.path]
+                    if (!reference?.startLine || node?.kind !== 'file' || !item.sourceHash) return
+                    requestProHelp({
+                      projectId: project.id,
+                      intent: 'investigate',
+                      question: `Me ajude a investigar TS${item.code}: ${item.message}`,
+                      selection: {
+                        path: item.path,
+                        startLine: item.line,
+                        endLine: item.line,
+                        sourceHash: item.sourceHash,
+                        startColumn: 1,
+                        endColumn:
+                          (node.content.split(/\r\n|\r|\n/)[item.line - 1]?.length ?? 0) + 1,
+                        documentVersion: 0,
+                      },
+                    })
+                  }
+                : undefined
+            }
             selected={workspaceState.bottom}
             onSelect={(bottom) => changeWorkspace((previous) => ({ ...previous, bottom }))}
             navigate={(path, line, column) => {

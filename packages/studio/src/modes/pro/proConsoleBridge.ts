@@ -1,4 +1,4 @@
-import { PREVIEW_MAX_LOG_PARTS } from '#preview'
+import { PREVIEW_MAX_LOG_PARTS } from '../../preview/types'
 
 /**
  * Ponte de console do preview PROFISSIONAL. O app do aluno roda num iframe

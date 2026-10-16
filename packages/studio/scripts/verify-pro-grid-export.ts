@@ -1,6 +1,6 @@
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
-import { dirname, join } from 'node:path'
+import { basename, dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { STUDIO_PRO_ARTIFACT_LIMITS, STUDIO_PRO_BUILD_LIMITS } from '@sistemazero/core/studio'
 import { unzipSync } from 'fflate'
@@ -13,6 +13,11 @@ const runtime = fileURLToPath(new URL('../../studio-runtime/runtime/', import.me
 const evidence: unknown[] = []
 for (const id of ['canvas-grid-arena', 'phaser-tactics', 'three-tactics']) {
   const root = await mkdtemp(join(tmpdir(), 'studio-grid-export-'))
+  if (
+    dirname(resolve(root)) !== resolve(tmpdir()) ||
+    !basename(root).startsWith('studio-grid-export-')
+  )
+    throw new Error('Diretório temporário fora do destino de verificação.')
   try {
     const exported = await exportProjectSource(await createProProject('grid-export-proof', id, id))
     if (exported.warnings.length) throw new Error(exported.warnings.join('\n'))

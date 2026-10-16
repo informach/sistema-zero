@@ -1,6 +1,7 @@
 import type { Project } from '#core'
 import { buildClassicFileMap, buildProFileMap, type ExportFileMap } from './fileMap'
 import { identityMinifiers } from './minify'
+import { proSourceInstructions } from './proSourceInstructions'
 import { sanitizeBaseFilename } from './sanitize'
 import { zipFiles } from './zip'
 
@@ -51,37 +52,6 @@ O que tem aqui:
 Divirta-se programando! 🚀
 `
 
-function proLeiaMe(hasLockfile: boolean): string {
-  const install = hasLockfile ? 'npm ci' : 'npm install'
-  return `Seu projeto Pro do Sistema Zero
-================================
-
-Esta pasta contém os arquivos do seu projeto Vite para continuar no VSCode.
-
-Como abrir e testar:
-1. Instale o Node.js compatível com o package.json do projeto.
-2. Abra ESTA pasta no VSCode e abra o terminal.
-3. Instale as dependências: ${install}
-4. Inicie o projeto: npm run dev
-5. Abra no navegador o endereço mostrado pelo terminal.
-
-Para gerar a versão final, execute npm run build. A pasta dist/ contém o site.
-Para testar essa versão, execute npx serve dist.
-
-${
-  hasLockfile
-    ? 'O package-lock.json fixa as dependências. Mantenha esse arquivo e use npm ci nas próximas instalações.'
-    : 'Este projeto ainda não contém package-lock.json. O npm install gera esse arquivo; guarde-o para repetir a instalação com npm ci.'
-}
-
-Não abra index.html com dois cliques nem use Live Server para executar a fonte:
-o código TypeScript, os módulos e os materiais são preparados pelo Vite.
-
-Leia também README.md e CREDITS.md, quando presentes. Eles explicam o projeto,
-seus controles e as condições de uso dos materiais.
-`
-}
-
 /**
  * Monta os arquivos de FONTE (legíveis, não minificados) de um projeto, prontos
  * para o aluno continuar no VSCode — o irmão "para editar" do `exportProject`
@@ -103,7 +73,7 @@ export async function buildSourceFiles(project: Project): Promise<SourceFilesRes
   const files: ExportFileMap = {}
 
   if (isPro) {
-    const built = await buildProFileMap(project)
+    const built = await buildProFileMap(project, { purpose: 'source' })
     warnings.push(...built.warnings)
     Object.assign(files, built.files)
   } else {
@@ -117,9 +87,12 @@ export async function buildSourceFiles(project: Project): Promise<SourceFilesRes
     }
   }
 
+  const instructions = isPro ? proSourceInstructions(files, project.proMeta?.devScript) : null
+  if (instructions) warnings.push(...instructions.warnings)
+
   // A documentação escrita pelo autor faz parte da fonte e deve permanecer intacta.
   if (!('LEIA-ME.txt' in files)) {
-    files['LEIA-ME.txt'] = isPro ? proLeiaMe('package-lock.json' in files) : LEIA_ME
+    files['LEIA-ME.txt'] = instructions?.text ?? LEIA_ME
   }
   return { files, warnings }
 }
@@ -129,9 +102,14 @@ export async function buildSourceFiles(project: Project): Promise<SourceFilesRes
  * `exportProject`, o nome NÃO leva `-deploy` (é o projeto para continuar, não para
  * publicar).
  */
-export async function exportProjectSource(project: Project): Promise<SourceExportResult> {
+export async function exportProjectSource(
+  project: Project,
+  options: { signal?: AbortSignal } = {},
+): Promise<SourceExportResult> {
+  options.signal?.throwIfAborted()
   const { files, warnings } = await buildSourceFiles(project)
-  const bytes = await zipFiles(files)
+  options.signal?.throwIfAborted()
+  const bytes = await zipFiles(files, options)
   // Cópia para um Uint8Array com ArrayBuffer "comum" (o retorno do fflate pode ser
   // SharedArrayBuffer, que o Blob recusa) — mesmo cuidado do exportProject.
   const blobBytes = new Uint8Array(bytes.byteLength)

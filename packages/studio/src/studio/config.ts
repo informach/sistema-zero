@@ -7,12 +7,9 @@ import {
   type IDEMode,
   normalizeBlockLevel,
 } from '#core'
-import {
-  DEFAULT_HEARTBEAT_TIMEOUT_MS,
-  DEFAULT_LOOP_BUDGET_MS,
-  sanitizeFetchOrigins,
-} from '#preview'
 import type { AIProvider } from '../ai/contracts'
+import { sanitizeFetchOrigins } from '../preview/csp'
+import { DEFAULT_HEARTBEAT_TIMEOUT_MS, DEFAULT_LOOP_BUDGET_MS } from '../preview/limits'
 import type { StudioLimits } from '../state/projectStore'
 
 /** @deprecated Compatibility only; configure StudioTutorConfig for the Studio assistant UI. */

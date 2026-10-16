@@ -1,5 +1,5 @@
 import type * as Monaco from 'monaco-editor'
-import { type RefObject, useEffect, useRef, useState } from 'react'
+import { type RefObject, useEffect, useMemo, useRef, useState } from 'react'
 import { Button, Modal } from '#ui'
 import { proCodeExamples } from '../../../core/proExamples'
 import type { ProjectTree } from '../../../core/proProject'
@@ -9,8 +9,10 @@ import type { ProLanguageSession } from '../../../monaco/pro/session'
 import { useProjectStore } from '../../../state/projectStore'
 import type { ProWorkspaceIntent } from '../../../state/proWorkspaceOperations'
 import { useUIStore } from '../../../state/uiStore'
-import { findProCommands, type ProCommand } from './commands'
+import { useT } from '../../../studio/i18n'
+import { findProCommands, type ProCommand, runProCommand } from './commands'
 import { proSourcePosition } from './search'
+import { useProCommands } from './useProCommands'
 
 const button =
   'min-h-9 rounded px-2 text-xs hover:bg-sz-panel focus-visible:outline focus-visible:outline-sz-accent disabled:opacity-40'
@@ -19,6 +21,7 @@ export function ProCodeTools({
   tree,
   language,
   editor,
+  readyEditor = null,
   navigate,
   back,
   canGoBack,
@@ -26,6 +29,7 @@ export function ProCodeTools({
   busy,
   recover,
   search,
+  searchProject = search,
   format,
   help,
 }: {
@@ -33,6 +37,7 @@ export function ProCodeTools({
   tree: ProjectTree
   language: RefObject<ProLanguageSession | null>
   editor: RefObject<Monaco.editor.IStandaloneCodeEditor | null>
+  readyEditor?: Monaco.editor.IStandaloneCodeEditor | null
   navigate: (path: string, line: number, column?: number) => void
   back: () => void
   canGoBack: boolean
@@ -40,16 +45,18 @@ export function ProCodeTools({
   busy: boolean
   recover: () => void
   search: () => void
+  searchProject?: () => void
   format: () => void
   help?: (intent: 'explain' | 'investigate' | 'change') => void
 }) {
+  const t = useT()
   const [toolsOpen, setToolsOpen] = useState(false)
   const [query, setQuery] = useState('')
   const author = useProjectStore((state) => state.editingAccess !== 'observer')
   const showAssets = useUIStore((state) => state.setShowAssets)
   const [open, setOpen] = useState(false)
   const [symbolResult, setSymbols] = useState<{
-    tree: ProjectTree
+    content: string
     path: string
     items: ProSymbol[]
   } | null>(null)
@@ -57,8 +64,10 @@ export function ProCodeTools({
     tree: ProjectTree
     items: Array<{ path: string; line: number; column: number }>
   } | null>(null)
+  const content = tree[path]?.kind === 'file' ? tree[path].content : ''
   const symbols =
-    symbolResult?.tree === tree && symbolResult.path === path ? symbolResult.items : []
+    symbolResult?.content === content && symbolResult.path === path ? symbolResult.items : []
+  const [symbolsPending, setSymbolsPending] = useState(false)
   const references = referenceResult?.tree === tree ? referenceResult.items : []
   const [rename, setRename] = useState<{
     path: string
@@ -69,26 +78,44 @@ export function ProCodeTools({
   const [error, setError] = useState<string | null>(null)
   const current = useRef({ path, tree })
   current.current = { path, tree }
-  const content = tree[path]?.kind === 'file' ? tree[path].content : ''
+  const symbolSource = useMemo(
+    () => (open && /\.[cm]?[jt]sx?$/.test(path) ? { path, content } : null),
+    [open, path, content],
+  )
   useEffect(() => {
-    if (!open || !language.current || !/\.[cm]?[jt]sx?$/.test(path)) {
+    if (!symbolSource || !language.current) {
       setSymbols(null)
+      setSymbolsPending(false)
       return
     }
+    const { path, content } = symbolSource
     let active = true
+    setSymbolsPending(true)
+    setSymbols(null)
     void language.current
-      .requestForTree(tree, 'symbols', path)
+      .request('symbols', path)
       .then((items) => {
-        if (active) setSymbols({ tree, path, items })
+        const node = current.current.tree[path]
+        if (
+          active &&
+          current.current.path === path &&
+          node?.kind === 'file' &&
+          node.content === content &&
+          editor.current?.getModel()?.getValue() === content
+        )
+          setSymbols({ content, path, items })
       })
       .catch((cause: unknown) => {
         if (active)
           setError(cause instanceof Error ? cause.message : 'Não foi possível ler o mapa.')
       })
+      .finally(() => {
+        if (active) setSymbolsPending(false)
+      })
     return () => {
       active = false
     }
-  }, [open, path, tree, language])
+  }, [symbolSource, language, editor])
   const capture = () => {
     const model = editor.current?.getModel(),
       cursor = editor.current?.getPosition()
@@ -147,10 +174,33 @@ export function ProCodeTools({
           }),
         )
       : []),
-    { id: 'search', label: 'Buscar arquivo', shortcut: 'Ctrl/Cmd+P', enabled: true, run: search },
+    {
+      id: 'search',
+      label: t('pro.quickOpen'),
+      shortcut: 'Ctrl/Cmd+P',
+      keybinding: 'quickOpen',
+      enabled: true,
+      run: search,
+    },
+    {
+      id: 'searchProject',
+      label: t('pro.searchContent'),
+      shortcut: 'Ctrl/Cmd+Shift+F',
+      keybinding: 'searchProject',
+      enabled: true,
+      run: searchProject,
+    },
+    {
+      id: 'symbols',
+      label: t('pro.symbols'),
+      shortcut: 'Ctrl/Cmd+Shift+O',
+      keybinding: 'symbols',
+      enabled: Boolean(path),
+      run: () => setOpen(true),
+    },
     {
       id: 'format',
-      label: 'Organizar código',
+      label: t('pro.organizeCode'),
       shortcut: 'Shift+Alt+F',
       enabled: Boolean(path) && author && !busy,
       run: format,
@@ -163,13 +213,17 @@ export function ProCodeTools({
     },
     {
       id: 'references',
-      label: 'Onde este nome aparece?',
+      label: t('pro.references'),
+      shortcut: 'Shift+F12',
+      keybinding: 'references',
       enabled: Boolean(path) && !busy,
       run: () => void findReferences(),
     },
     {
       id: 'rename',
-      label: 'Renomear símbolo',
+      label: t('pro.renameSymbol'),
+      shortcut: 'F2',
+      keybinding: 'rename',
       enabled: Boolean(path) && author && !busy,
       run: () => {
         setError(null)
@@ -199,6 +253,7 @@ export function ProCodeTools({
       }),
     ),
   ]
+  useProCommands(readyEditor, commands)
   return (
     <div className="shrink-0 border-b border-sz-border-soft px-2">
       <nav className="flex flex-wrap items-center gap-1" aria-label="Navegar no código">
@@ -211,7 +266,7 @@ export function ProCodeTools({
           aria-expanded={open}
           onClick={() => setOpen(!open)}
         >
-          Mapa do arquivo
+          {t('pro.symbols')}
         </button>
         <button
           type="button"
@@ -221,13 +276,13 @@ export function ProCodeTools({
             setToolsOpen(true)
           }}
         >
-          Ferramentas…
+          {t('pro.commands')}
         </button>
       </nav>
       <Modal
         open={toolsOpen}
         onClose={() => setToolsOpen(false)}
-        title="Ferramentas do código"
+        title={t('pro.commands')}
         footer={<Button onClick={() => setToolsOpen(false)}>Voltar ao código</Button>}
       >
         <label className="block">
@@ -249,7 +304,7 @@ export function ProCodeTools({
                 className={`${button} flex w-full items-center justify-between text-left`}
                 onClick={() => {
                   setToolsOpen(false)
-                  command.run()
+                  runProCommand(commands, command.id)
                 }}
               >
                 <span>{command.label}</span>
@@ -270,7 +325,12 @@ export function ProCodeTools({
       </Modal>
       {open && (
         <section className="max-h-40 overflow-auto pb-2" aria-label="Mapa do arquivo">
-          {!symbols.length && (
+          {symbolsPending && (
+            <p role="status" className="p-2 text-xs text-sz-fg-mute">
+              Analisando símbolos…
+            </p>
+          )}
+          {!symbolsPending && !symbols.length && (
             <p className="p-2 text-xs text-sz-fg-mute">Nenhum símbolo disponível neste arquivo.</p>
           )}
           {symbols.map((symbol) => (

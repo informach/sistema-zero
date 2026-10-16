@@ -68,4 +68,19 @@ describe('workspace Pro', () => {
     const source = 'const x = 0\r\n// exemplo\rexport const y = x'
     expect(proSourcePosition(source, source.indexOf('y ='))).toEqual({ line: 3, column: 14 })
   })
+  it('keeps line-local matches, exact truncation and long-line excerpts', () => {
+    const content = `${'a'.repeat(300)}needle\r\nneedle\rneedle\n`
+    const tree: ProjectTree = { 'main.ts': { kind: 'file', content } }
+    const result = searchProFiles(tree, 'needle', 'content', 3)
+    expect(result.truncated).toBe(false)
+    expect(result.items.map(({ line, column }) => [line, column])).toEqual([
+      [1, 301],
+      [2, 1],
+      [3, 1],
+    ])
+    expect(result.items[0]?.text.startsWith('…')).toBe(true)
+    expect(searchProFiles(tree, 'needle', 'content', 2).truncated).toBe(true)
+    expect(searchProFiles(tree, 'needle\r\nneedle', 'content').items).toEqual([])
+    expect(searchProFiles(tree, 'missing', 'content')).toEqual({ items: [], truncated: false })
+  })
 })

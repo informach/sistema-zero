@@ -33,6 +33,17 @@ const project = {
     'src/closed.ts': { kind: 'file' as const, content: 'export const wrong: number = "text"\n' },
   },
 }
+if (new URLSearchParams(location.search).has('performance')) {
+  for (let index = 0; index < 75; index++) {
+    const path = `src/fixture-${String(index).padStart(3, '0')}.ts`
+    Object.assign(project.tree, {
+      [path]: {
+        kind: 'file',
+        content: `export const value${index} = ${index}\n${'// deterministic workspace fixture\n'.repeat(300)}`,
+      },
+    })
+  }
+}
 const runtime = {
   async build() {
     return {
@@ -68,32 +79,53 @@ const tutor: StudioTutorConfig = {
   },
 }
 function Fixture() {
-  const [models, setModels] = useState('[]')
+  const [models, setModels] = useState({ value: '[]', version: 0 })
+  const [zipResult, setZipResult] = useState('')
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+      {new URLSearchParams(location.search).has('zip') && (
+        <div>
+          {[false, true].map((cancel) => (
+            <button
+              type="button"
+              key={String(cancel)}
+              onClick={async () => {
+                const { zipProbe } = await import('./zipProbe')
+                setZipResult(JSON.stringify(await zipProbe(cancel)))
+              }}
+            >
+              {cancel ? 'Cancelar ZIP de teste' : 'Gerar ZIP de teste'}
+            </button>
+          ))}
+          <output aria-label="Resultado ZIP">{zipResult}</output>
+        </div>
+      )}
       <button
         type="button"
         onClick={async () => {
           const { editor } = await import('monaco-editor/esm/vs/editor/editor.api.js')
-          setModels(
-            JSON.stringify(
-              editor.getModels().map((model) => ({
-                id: model.id,
-                path: getMonacoModelPath(model),
-                language: model.getLanguageId(),
-                markers: editor
-                  .getModelMarkers({ resource: model.uri })
-                  .map((marker) => marker.message),
-                content: model.getValue(),
-              })),
-            ),
+          const value = JSON.stringify(
+            editor.getModels().map((model) => ({
+              id: model.id,
+              path: getMonacoModelPath(model),
+              language: model.getLanguageId(),
+              markers: editor
+                .getModelMarkers({ resource: model.uri })
+                .map((marker) => marker.message),
+              content: model.getValue(),
+            })),
           )
+          setModels((previous) => ({ value, version: previous.version + 1 }))
         }}
       >
         Inspecionar buffers
       </button>
-      <output aria-label="Buffers da sessão" style={{ display: 'none' }}>
-        {models}
+      <output
+        aria-label="Buffers da sessão"
+        data-version={models.version}
+        style={{ display: 'none' }}
+      >
+        {models.value}
       </output>
       <div style={{ flex: 1, minHeight: 0 }}>
         <StudioEditor
@@ -101,7 +133,10 @@ function Fixture() {
           persistence="none"
           features={{ terminal: false }}
           proRuntime={runtime}
-          tutor={tutor}
+          editingAccess={
+            new URLSearchParams(location.search).has('observer') ? 'observer' : 'author'
+          }
+          tutor={new URLSearchParams(location.search).has('noTutor') ? undefined : tutor}
         />
       </div>
     </div>

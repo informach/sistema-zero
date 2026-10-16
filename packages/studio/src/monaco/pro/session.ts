@@ -30,6 +30,9 @@ export interface ProEditorDiagnostic {
   sourceHash?: string
   severity?: 'error' | 'warning' | 'info'
 }
+export type ProAnalysisState =
+  | { status: 'pending' | 'ready' }
+  | { status: 'error'; message: string }
 type Model = Monaco.editor.ITextModel
 type Session = ReturnType<typeof attachProLanguageService>
 const sessions = new Map<string, Session>()
@@ -142,6 +145,7 @@ export function attachProLanguageService(
     editor: Monaco.editor.IStandaloneCodeEditor
     openFile(path: string): void
     diagnostics?(items: ProEditorDiagnostic[]): void
+    analysis?(state: ProAnalysisState): void
   },
 ) {
   registerProviders(monaco)
@@ -151,6 +155,19 @@ export function attachProLanguageService(
   let timer: ReturnType<typeof setTimeout> | null = null
   let disposed = false
   let generation = 0
+  let analysisState: ProAnalysisState | undefined
+  // Monaco events update the document synchronously. Notify React only when
+  // analysis changes state; repeated pending reports enqueue redundant work.
+  const publishAnalysis = (next: ProAnalysisState) => {
+    if (
+      analysisState?.status === next.status &&
+      (next.status !== 'error' ||
+        (analysisState.status === 'error' && analysisState.message === next.message))
+    )
+      return
+    analysisState = next
+    navigation.analysis?.(next)
+  }
   let preparation: Promise<void> = Promise.resolve()
   let destination: { path: string; selection?: Monaco.IRange | Monaco.IPosition } | null = null
   const revealDestination = () => {
@@ -223,6 +240,7 @@ export function attachProLanguageService(
     const sources = sent
     const gathered: ProEditorDiagnostic[] = []
     const seen = new Set<string>()
+    const sourceHashes = new Map<string, string>()
     for (const [path, node] of Object.entries(input().tree)) {
       if (disposed || epoch !== generation) return
       if (node.kind !== 'file') continue
@@ -269,12 +287,17 @@ export function attachProLanguageService(
           continue
         seen.add(key)
         const lines = source.slice(0, item.start).split(/\r\n|\r|\n/)
+        let sourceHash = sourceHashes.get(item.path)
+        if (sourceHash === undefined) {
+          sourceHash = studioTutorSourceHash(source)
+          sourceHashes.set(item.path, sourceHash)
+        }
         gathered.push({
           path: item.path,
           code: item.code,
           line: lines.length,
           column: (lines.at(-1)?.length ?? 0) + 1,
-          sourceHash: studioTutorSourceHash(source),
+          sourceHash,
           severity: item.severity,
           message: item.message,
         })
@@ -283,16 +306,22 @@ export function attachProLanguageService(
     if (!disposed && epoch === generation) {
       report(null)
       navigation.diagnostics?.(gathered)
+      publishAnalysis({ status: 'ready' })
     }
   }
   const update = () => {
     if (disposed) return
     const epoch = ++generation
+    publishAnalysis({ status: 'pending' })
     if (timer) clearTimeout(timer)
     timer = setTimeout(() => {
       timer = null
       void diagnose(epoch).catch((error: unknown) => {
-        if (!disposed) report(error instanceof Error ? error.message : String(error))
+        if (!disposed && epoch === generation) {
+          const message = error instanceof Error ? error.message : String(error)
+          report(message)
+          publishAnalysis({ status: 'error', message })
+        }
       })
     }, 200)
   }

@@ -51,8 +51,14 @@ export function useProWorkspace(projectId: string | undefined, tree: ProjectTree
       active = false
     }
   }, [adapter, projectId])
+  const reconciledTree = useRef(tree)
   useEffect(() => {
-    setState((previous) => reconcileWorkspace(previous, tree))
+    const previousTree = reconciledTree.current
+    reconciledTree.current = tree
+    // Only removal/kind changes can invalidate open files or collapsed folders.
+    // Keep the functional update: an operation may already have queued its remap.
+    if (Object.keys(previousTree).some((path) => previousTree[path]?.kind !== tree[path]?.kind))
+      setState((previous) => reconcileWorkspace(previous, tree))
   }, [tree])
   const pendingWrite = useRef<null | { save: () => Promise<void> }>(null)
   const writing = useRef(false)

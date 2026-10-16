@@ -1,5 +1,5 @@
 import type { JSX } from 'react'
-import { lazy, Suspense, useContext, useState } from 'react'
+import { lazy, Suspense, useContext, useEffect, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { modesForKind, type Project } from '#core'
 import {
@@ -104,20 +104,22 @@ export interface TopbarProps {
  */
 export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps): JSX.Element {
   const t = useT()
-  const { hasProject, projectName, projectMode, projectKind, has3DInProject } = useProjectStore(
-    useShallow((s) => ({
-      hasProject: Boolean(s.project),
-      projectName: s.project?.name ?? '',
-      projectMode: s.project?.mode ?? 'blocks',
-      projectKind: s.project?.kind,
-      // ⚠️ Um BOOLEAN, nunca a referência do projeto: o `useShallow` compara o que
-      // sai daqui, e devolver `s.project` re-renderizaria a barra inteira a cada
-      // tecla. A régua em si é memoizada por identidade do `blocksState` (ver
-      // `has3DConsumer.ts`) — sem isso, este seletor faria um `JSON.stringify` do
-      // estado dos blocos a cada `set()` da store.
-      has3DInProject: projectHas3DMaterials(s.project, false),
-    })),
-  )
+  const { hasProject, projectId, projectName, projectMode, projectKind, has3DInProject } =
+    useProjectStore(
+      useShallow((s) => ({
+        hasProject: Boolean(s.project),
+        projectId: s.project?.id,
+        projectName: s.project?.name ?? '',
+        projectMode: s.project?.mode ?? 'blocks',
+        projectKind: s.project?.kind,
+        // ⚠️ Um BOOLEAN, nunca a referência do projeto: o `useShallow` compara o que
+        // sai daqui, e devolver `s.project` re-renderizaria a barra inteira a cada
+        // tecla. A régua em si é memoizada por identidade do `blocksState` (ver
+        // `has3DConsumer.ts`) — sem isso, este seletor faria um `JSON.stringify` do
+        // estado dos blocos a cada `set()` da store.
+        has3DInProject: projectHas3DMaterials(s.project, false),
+      })),
+    )
   const isDirty = useProjectStore((s) => s.isDirty)
   const persistence = useStudioPersistence()
   const saveError = useProjectStore((s) => s.saveError)
@@ -163,6 +165,20 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
 
   const [saving, setSaving] = useState(false)
   const [downloading, setDownloading] = useState(false)
+  const sourceDownload = useRef<AbortController | null>(null)
+  const [downloadNotice, setDownloadNotice] = useState<{
+    error: boolean
+    messages: string[]
+  } | null>(null)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: changing document/instance cancels this instance-owned download even before its dynamic import completes.
+  useEffect(() => {
+    setDownloadNotice(null)
+    setDownloading(false)
+    return () => {
+      sourceDownload.current?.abort()
+      sourceDownload.current = null
+    }
+  }, [projectId, stores])
   const [showShare, setShowShare] = useState(false)
   const [showExport, setShowExport] = useState(false)
   const [showConvert, setShowConvert] = useState(false)
@@ -203,26 +219,37 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
   }
 
   // Baixar a FONTE do projeto (ZIP para continuar no VSCode). Lê o projeto da
-  // instância sob demanda (sem assinar re-render). Avisos não-fatais (ex.: um
-  // extra .ts que não compilou) vão ao console — o arquivo é baixado mesmo assim.
+  // instância sob demanda. Buffers, writers, snapshot e escopo são coordenados
+  // pelo mesmo caminho; avisos e falhas aparecem para quem pediu o download.
   const handleDownload = async () => {
-    if (downloading) return
+    if (sourceDownload.current) return
     const store = stores?.project ?? useProjectStore
-    const projectId = store.getState().project?.id
-    if (!projectId) return
+    if (!store.getState().project) return
+    const controller = new AbortController()
+    sourceDownload.current = controller
     setDownloading(true)
+    setDownloadNotice(null)
     try {
-      await flushProjectOperations(store, projectId)
-      const { exportProjectSource } = await import('../../export')
-      const project = store.getState().project
-      if (!project || project.id !== projectId) return
-      const { blob, filename, warnings } = await exportProjectSource(project)
+      const { prepareSourceDownload } = await import('../../export/sourceDownload')
+      const { blob, filename, warnings } = await prepareSourceDownload(
+        store,
+        stores?.pendingEditorEdits,
+        controller.signal,
+      )
+      controller.signal.throwIfAborted()
       triggerDownload(blob, filename)
-      if (warnings.length > 0) console.warn('Baixar projeto:', ...warnings)
+      if (warnings.length > 0) setDownloadNotice({ error: false, messages: warnings })
     } catch (err) {
-      console.error('Falha ao baixar o projeto:', err)
+      if (!controller.signal.aborted)
+        setDownloadNotice({
+          error: true,
+          messages: [err instanceof Error ? err.message : String(err)],
+        })
     } finally {
-      setDownloading(false)
+      if (sourceDownload.current === controller) {
+        sourceDownload.current = null
+        setDownloading(false)
+      }
     }
   }
 
@@ -505,6 +532,26 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
           ) : null}
         </div>
       </header>
+      <Modal
+        open={Boolean(downloadNotice)}
+        title={downloadNotice?.error ? t('topbar.downloadFailed') : t('topbar.downloadWarnings')}
+        onClose={() => setDownloadNotice(null)}
+        footer={
+          <button
+            type="button"
+            className="min-h-10 rounded border border-sz-border px-3"
+            onClick={() => setDownloadNotice(null)}
+          >
+            {t('topbar.closeDownloadNotice')}
+          </button>
+        }
+      >
+        <ul className="list-disc space-y-2 pl-4" role={downloadNotice?.error ? 'alert' : 'status'}>
+          {downloadNotice?.messages.map((message) => (
+            <li key={message}>{message}</li>
+          ))}
+        </ul>
+      </Modal>
       <ShareDialog open={showShare} onClose={() => setShowShare(false)} adapter={share} />
       {showExport && (
         <Suspense

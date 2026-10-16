@@ -80,6 +80,36 @@ pelo fechamento do navegador antes de ser observada não tem garantia de flush.
 Construção assistida, conta OpenRouter e publicação seguem o
 [plano por lotes](../../../docs/superpowers/plans/2026-10-15-studio-pro-implementacao.md).
 
+## Evolução do workspace Pro (16/10/2026)
+
+O explorador, busca, materiais e guias são visões do mesmo workspace. Ctrl/Cmd+P,
+Ctrl/Cmd+Shift+F, Ctrl/Cmd+Shift+O, F2 e Shift+F12 passam pelos descritores de
+`workspace/commands.ts`; ações Monaco pertencem à instância, consultam o estado
+atual e mantêm a revisão explícita das mudanças. Guias usam o catálogo Core;
+“Investigar com Zappy” prepara contexto validado sem enviar uma pergunta.
+
+A análise informa pending/ready/error. Hashes são reutilizados por nó/fonte,
+resultados antigos continuam rejeitados e símbolos acompanham a fonte ativa.
+Busca e guias invisíveis não são recalculados. Materiais são materializados ao
+abrir, com paginação e uma prévia selecionada; uso literal não inclui caminhos
+dinâmicos. O estado canônico continua em Project.assets.
+
+Controles/histórico do código carregam com Monaco. Materiais, previews e o
+executor de atividades são demandados pelos fluxos que os usam. Contratos de
+logs/configuração importam módulos puros, sem arrastar o compilador do preview.
+No build Vite de laboratório, contratos pequenos do host são agrupados; o host
+Next mantém seu próprio bundler. Os budgets existentes não foram aumentados.
+
+`prepareSourceDownload` coordena buffers, escritores assíncronos, escopo e
+snapshot. Há um pedido ativo por instância; troca de projeto/perfil e unmount
+cancelam o pedido. Manifesto, scripts e locks determinam as instruções; documentação
+do autor é preservada e avisos/falhas ficam visíveis. ZIP grande codifica/comprime
+em um worker descartável, sem transferir os buffers canônicos.
+
+Monaco possui um patch de ciclo de vida global documentado em
+[patches/README.md](../../../patches/README.md). Não substituir essa correção por
+retenção de diffs, aquecimento artificial de menus ou espera antes de F1.
+
 ## Comandos locais
 
 ```sh
@@ -99,3 +129,9 @@ grandes. Código novo de extensão deve entrar em módulos de codec da própria
 extensão e ser injetado nessas fachadas; não acrescente um novo domínio inline.
 Ao extrair código existente, mantenha primeiro os testes de parse, geração e
 round-trip, mova um domínio por vez e só então reduza a fachada.
+
+O caminho de digitação mantém a gravação canônica síncrona. Efeitos de workspace
+não publicam reconciliações idênticas; o painel de símbolos fechado mantém entrada
+nula estável, e a sessão de linguagem notifica apenas transições de análise.
+Isso evita encadear atualizações React sem mudança de estado em eventos Monaco.
+A regressão de produção é coberta pelo benchmark browser com digitação contínua.

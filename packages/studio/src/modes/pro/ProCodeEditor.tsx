@@ -1,4 +1,4 @@
-import { lazy, useEffect, useRef, useState } from 'react'
+import { lazy, useEffect, useMemo, useRef, useState } from 'react'
 import type { MonacoTabsProps } from '../../monaco/MonacoTabs'
 import { getMonacoModelPath } from '../../monaco/modelPaths'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
@@ -24,6 +24,10 @@ export function ProCodeEditor(props: MonacoTabsProps) {
   const [navigationNotice, setNavigationNotice] = useState<string | null>(null)
   const [dependencies, setDependencies] = useState<Record<string, string>>({})
   const [availableDependencyFiles, setAvailableDependencyFiles] = useState<string[]>([])
+  const languageInput = useMemo(
+    () => ({ tree: project?.tree ?? {}, dependencies, availableDependencyFiles }),
+    [project?.tree, dependencies, availableDependencyFiles],
+  )
   const [indexing, setIndexing] = useState(false)
   const [issue, setIssue] = useState<string | null>(null)
   useEffect(() => {
@@ -224,7 +228,7 @@ export function ProCodeEditor(props: MonacoTabsProps) {
                 }),
               }
           }}
-          proProject={{ tree: project?.tree ?? {}, dependencies, availableDependencyFiles }}
+          proProject={languageInput}
         />
       </div>
     </div>

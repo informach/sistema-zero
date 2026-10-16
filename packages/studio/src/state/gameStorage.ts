@@ -1,4 +1,4 @@
-import { sanitizePreviewStorageData } from '#preview'
+import { sanitizePreviewStorageData } from '../preview/types'
 import { readValue, writeInOneTransaction } from './idbTransaction'
 import {
   captureProjectStorageScope,

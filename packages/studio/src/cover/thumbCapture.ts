@@ -3,7 +3,6 @@ import { perfSpanAsync } from '../core/perf'
 import { MAX_PROJECT_THUMB_CHARS, writeProjectThumb } from '../state/persistence'
 import type { ProjectStorageScope } from '../state/projectStorageRuntime'
 import { resolveCoverAsset } from './coverAsset'
-import { captureCoverFromProject } from './coverCapture'
 import { consumeProjectSnapshot, type ProjectSnapshot, peekProjectSnapshot } from './latestSnapshot'
 
 /** Tamanho da miniatura do card (proporção do palco 800×480). */
@@ -85,6 +84,9 @@ async function resolveThumb(project: Project): Promise<ResolvedThumb | null> {
   }
   const doPreview = peekProjectSnapshot(project.id)
   if (doPreview) return { dataUrl: doPreview.dataUrl, snapshot: doPreview }
+  // The renderer is only needed for this fallback, not to open the editor or
+  // reuse a chosen cover / an existing preview snapshot.
+  const { captureCoverFromProject } = await import('./coverCapture')
   const cover = await captureCoverFromProject(project)
   if (!cover) return null
   const dataUrl = await downscaleToThumb(cover)

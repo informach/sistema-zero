@@ -134,6 +134,7 @@ export interface MonacoTabsProps {
   /** Isolated Pro service; includes closed source files and actual installed declarations. */
   proProject?: ProProjectLanguageInput
   onProDiagnostics?: (items: ProEditorDiagnostic[]) => void
+  onProAnalysis?: (state: import('./pro/session').ProAnalysisState) => void
   onProLanguageReady?: (session: ProLanguageSession | null) => void
   files: MonacoTabsFile[]
   activeFile?: string
@@ -284,6 +285,7 @@ function scheduleLanguageServicesLoad(): () => void {
 export function MonacoTabs({
   proProject,
   onProDiagnostics,
+  onProAnalysis,
   onProLanguageReady,
   files,
   activeFile,
@@ -374,6 +376,8 @@ export function MonacoTabs({
   proNavigate.current = onActiveFileChange
   const proDiagnostics = useRef(onProDiagnostics)
   proDiagnostics.current = onProDiagnostics
+  const proAnalysis = useRef(onProAnalysis)
+  proAnalysis.current = onProAnalysis
   const proSession = useRef<ReturnType<typeof attachProLanguageService> | null>(null)
   const proReady = useRef(onProLanguageReady)
   proReady.current = onProLanguageReady
@@ -400,6 +404,7 @@ export function MonacoTabs({
             editor: mountedEditor,
             openFile: (path) => proNavigate.current?.(path),
             diagnostics: (items) => proDiagnostics.current?.(items),
+            analysis: (state) => proAnalysis.current?.(state),
           },
         )
         proSession.current = session
