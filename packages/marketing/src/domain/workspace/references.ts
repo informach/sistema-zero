@@ -1,5 +1,6 @@
 import {
   artAssetIds,
+  demonstrationSources,
   type EditorialDocument,
   preparedAssetIds,
   videoAssetIds,
@@ -32,6 +33,10 @@ export function references(document: EditorialDocument): {
       if (document.sourceRevisionId) refs.revisions.push(document.sourceRevisionId)
       break
     case 'video':
+      for (const source of demonstrationSources(document.timeline)) {
+        refs.items.push(source.evidenceId)
+        refs.revisions.push(source.evidenceRevisionId)
+      }
       if (document.sourceRevisionId) refs.revisions.push(document.sourceRevisionId)
       refs.revisions.push(
         ...document.timeline.clips.flatMap((clip) => (clip.art ? [clip.art.sourceRevisionId] : [])),

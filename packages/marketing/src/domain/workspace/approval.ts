@@ -1,5 +1,6 @@
 import {
   type AssetManifest,
+  demonstrationSources,
   type EditionSnapshot,
   editionSnapshotSchema,
   type Revision,
@@ -51,6 +52,19 @@ export function editionSnapshot(
         'O arquivo final ainda não foi confirmado com suas dimensões',
       )
     if (document.kind === 'video') {
+      for (const source of demonstrationSources(document.timeline)) {
+        const evidence = byId.get(source.evidenceId)
+        if (
+          evidence?.id !== source.evidenceRevisionId ||
+          evidence.document.kind !== 'evidence' ||
+          evidence.document.classification !== 'fact' ||
+          evidence.document.validity !== 'current'
+        )
+          throw new WorkspaceError(
+            'CONTEXT_CHANGED',
+            'Uma fonte da demonstração mudou. Confira a evidência e atualize a montagem antes de aprovar.',
+          )
+      }
       const duration =
         (document.timeline.durationInFrames * 1000 * document.timeline.fps.denominator) /
         document.timeline.fps.numerator

@@ -1,6 +1,6 @@
 import { z } from 'zod'
-/** Revision 2 adds conversation plans to strict editorial documents. */
-export const WORKSPACE_PROTOCOL = 2
+/** Revision 3 adds sourced demonstration recipes to strict video documents. */
+export const WORKSPACE_PROTOCOL = 3
 export const workspaceProtocolSchema = z
   .object({
     protocol: z.number().int().min(1).max(WORKSPACE_PROTOCOL),

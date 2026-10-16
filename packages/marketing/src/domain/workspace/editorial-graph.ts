@@ -1,4 +1,4 @@
-import type { EditorialDocument } from '@sistemazero/marketing-contracts'
+import { demonstrationSources, type EditorialDocument } from '@sistemazero/marketing-contracts'
 import { references } from './references'
 import { WorkspaceError } from './workspace-error'
 
@@ -44,6 +44,13 @@ export function validateEditorialGraph(nodes: Node[], changed: ReadonlySet<strin
       }
     }
     if (document.kind === 'component' || document.kind === 'video') {
+      if (
+        document.kind === 'video' &&
+        demonstrationSources(document.timeline).some(
+          (source) => kind(source.evidenceId) !== 'evidence',
+        )
+      )
+        throw invalid()
       const parent = live.get(document.representationId)?.document
       if (parent?.kind !== 'representation' || !parent.componentIds.includes(node.id))
         throw invalid()

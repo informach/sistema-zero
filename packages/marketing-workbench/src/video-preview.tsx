@@ -1,6 +1,7 @@
 'use client'
 import { Player } from '@remotion/player'
 import {
+  DEMONSTRATION_RECIPES,
   type MediaPreparation,
   type VideoProject,
   videoAssetIds,
@@ -87,6 +88,32 @@ export default function VideoPreview({
         )}{' '}
         s. Peça os ajustes à IA abaixo.
       </figcaption>
+      {timeline.clips.some((clip) => clip.demonstration) ? (
+        <details className="mt-3 rounded-lg border p-3 text-sm">
+          <summary className="cursor-pointer font-medium">Conferir demonstrações e fontes</summary>
+          <p className="mt-2">
+            As cenas comparam imagens estáticas. Confira o foco, a leitura e a correspondência com
+            os fatos antes de aprovar o vídeo final.
+          </p>
+          <ul className="mt-2 space-y-2">
+            {timeline.clips.flatMap((clip) =>
+              clip.demonstration
+                ? [
+                    <li key={clip.id}>
+                      <strong>{clip.demonstration.headline}</strong> ·{' '}
+                      {DEMONSTRATION_RECIPES[clip.demonstration.recipeId].label}
+                      <p className="text-xs text-muted-foreground">
+                        Fontes:{' '}
+                        {clip.demonstration.sources.map((source) => source.label).join(' / ')}.
+                        Imagens e revisões de evidência ficam vinculadas a esta montagem.
+                      </p>
+                    </li>,
+                  ]
+                : [],
+            )}
+          </ul>
+        </details>
+      ) : null}
     </figure>
   )
 }
