@@ -141,6 +141,12 @@ test('keeps buffers and the game session across layout changes, reviews rename a
   await expect(page.getByRole('button', { name: 'src/closed.ts:1' })).toBeVisible({
     timeout: 30_000,
   })
+  await page.getByRole('button', { name: 'Investigar com Zappy', exact: true }).first().click()
+  await expect(page.getByPlaceholder('O que deveria acontecer e o que aconteceu?')).toHaveValue(
+    /TS2322/,
+  )
+  await expect(page.getByText('Confira o nome no arquivo.', { exact: true })).toBeHidden()
+  await page.getByRole('button', { name: 'Fechar Zappy', exact: true }).first().click()
   await page.getByRole('button', { name: 'Recolher painéis' }).click()
   await page.getByRole('button', { name: 'Inspecionar buffers' }).click()
   const before = await page.getByLabel('Buffers da sessão').textContent()
@@ -198,6 +204,11 @@ test('keeps buffers and the game session across layout changes, reviews rename a
   await page.getByRole('button', { name: 'Aplicar mudança', exact: true }).click()
   await page.getByRole('button', { name: 'Inspecionar buffers' }).click()
   await expect(page.getByLabel('Buffers da sessão')).toContainText(materialUrl!)
+  await page.getByRole('button', { name: 'Buscar caminho no código', exact: true }).click()
+  await expect(page.getByRole('searchbox', { name: 'Encontrar no código do projeto' })).toHaveValue(
+    materialUrl!,
+  )
+  await expect(page.getByRole('button', { name: /src\/main.ts:/ })).toBeVisible()
   await page.getByRole('button', { name: 'Arquivos', exact: true }).click()
   const codeInput = page.locator('.monaco-editor textarea.inputarea').first()
   await codeInput.focus()
@@ -228,4 +239,23 @@ test('keeps buffers and the game session across layout changes, reviews rename a
   await page.setViewportSize({ width: 1440, height: 1000 })
   await page.screenshot({ path: info.outputPath('workspace-wide.png'), fullPage: true })
   expect(errors).toEqual([])
+})
+
+test('observer hosts remain inert and tutor-free author hosts retain navigation', async ({
+  page,
+}) => {
+  const address = server.httpServer.address()
+  if (!address || typeof address === 'string') throw new Error('Servidor indisponível')
+  await page.goto(`http://127.0.0.1:${address.port}/?observer=1&noTutor=1`)
+  const input = page.locator('.monaco-editor textarea.inputarea').first()
+  await expect(input).toBeVisible({ timeout: 30_000 })
+  await expect(page.locator('[data-editing-access="observer"] [inert]')).toHaveCount(1)
+  await page.keyboard.press('F2')
+  await expect(page.getByLabel('Novo nome do símbolo')).toBeHidden()
+  await expect(page.getByRole('button', { name: 'Abrir Zappy', exact: true })).toBeHidden()
+  await page.goto(`http://127.0.0.1:${address.port}/?noTutor=1`)
+  await expect(input).toBeVisible({ timeout: 30_000 })
+  await input.focus()
+  await input.press('Control+p')
+  await expect(page.getByRole('dialog', { name: 'Abrir arquivo rapidamente' })).toBeVisible()
 })

@@ -30,6 +30,9 @@ export interface ProEditorDiagnostic {
   sourceHash?: string
   severity?: 'error' | 'warning' | 'info'
 }
+export type ProAnalysisState =
+  | { status: 'pending' | 'ready' }
+  | { status: 'error'; message: string }
 type Model = Monaco.editor.ITextModel
 type Session = ReturnType<typeof attachProLanguageService>
 const sessions = new Map<string, Session>()
@@ -142,6 +145,7 @@ export function attachProLanguageService(
     editor: Monaco.editor.IStandaloneCodeEditor
     openFile(path: string): void
     diagnostics?(items: ProEditorDiagnostic[]): void
+    analysis?(state: ProAnalysisState): void
   },
 ) {
   registerProviders(monaco)
@@ -289,16 +293,22 @@ export function attachProLanguageService(
     if (!disposed && epoch === generation) {
       report(null)
       navigation.diagnostics?.(gathered)
+      navigation.analysis?.({ status: 'ready' })
     }
   }
   const update = () => {
     if (disposed) return
     const epoch = ++generation
+    navigation.analysis?.({ status: 'pending' })
     if (timer) clearTimeout(timer)
     timer = setTimeout(() => {
       timer = null
       void diagnose(epoch).catch((error: unknown) => {
-        if (!disposed) report(error instanceof Error ? error.message : String(error))
+        if (!disposed && epoch === generation) {
+          const message = error instanceof Error ? error.message : String(error)
+          report(message)
+          navigation.analysis?.({ status: 'error', message })
+        }
       })
     }, 200)
   }

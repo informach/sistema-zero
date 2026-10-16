@@ -10,8 +10,8 @@ import { useProTutorDock } from '../../components/layout/proTutorDock'
 import { proFileDescriptions } from '../../core/proLearningGuides'
 import type { MonacoHighlight } from '../../monaco/MonacoTabs'
 import { getMonacoModelPath } from '../../monaco/modelPaths'
-import type { ProEditorDiagnostic } from '../../monaco/pro/session'
-import { useProjectStore } from '../../state/projectStore'
+import type { ProAnalysisState, ProEditorDiagnostic } from '../../monaco/pro/session'
+import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { useSettingsStore } from '../../state/settingsStore'
 import { useStudioConfig } from '../../studio/config'
 import { useT } from '../../studio/i18n'
@@ -21,6 +21,7 @@ import { useStudioTutor } from '../../studio/tutor'
 import { ProCodeEditor } from './ProCodeEditor'
 import { ProPreview } from './ProPreview'
 import { ProWebContainerProvider } from './ProWebContainerProvider'
+import { currentProDiagnostics } from './workspace/diagnostics'
 import {
   closeWorkspaceFile,
   openWorkspaceFile,
@@ -34,6 +35,7 @@ import { ProNavigator } from './workspace/ProNavigator'
 import { ProOperationReview } from './workspace/ProOperationReview'
 import { ProQuickOpen } from './workspace/ProQuickOpen'
 import { ProWorkspaceLayout } from './workspace/ProWorkspaceLayout'
+import { proSourcePosition } from './workspace/search'
 import { useProOperations } from './workspace/useProOperations'
 import { useProWorkspace } from './workspace/useProWorkspace'
 
@@ -47,6 +49,7 @@ const EMPTY_TREE: ProjectTree = {}
  */
 export function ProCodeMode(): JSX.Element {
   const t = useT()
+  const store = useProjectStoreApi()
   const { projectId, tree, templateId } = useProjectStore(
     useShallow((s) => ({
       projectId: s.project?.id,
@@ -66,6 +69,12 @@ export function ProCodeMode(): JSX.Element {
   const studioTheme = useStudioTheme()
   const tutorDock = useProTutorDock()
   const [diagnostics, setDiagnostics] = useState<ProEditorDiagnostic[] | null>(null)
+  const [analysis, setAnalysis] = useState<ProAnalysisState>({ status: 'pending' })
+  const updateAnalysis = useCallback((next: ProAnalysisState) => {
+    setAnalysis((previous) =>
+      previous.status === next.status && next.status !== 'error' ? previous : next,
+    )
+  }, [])
 
   const workspace = useProWorkspace(projectId, tree)
   const { state: workspaceState, change: changeWorkspace } = workspace
@@ -205,6 +214,32 @@ export function ProCodeMode(): JSX.Element {
   const navigator = (close?: () => void) => (
     <ProNavigator
       tree={tree}
+      onGuideReference={async (path, name) => {
+        handleSelectFile(path)
+        close?.()
+        if (!operations.language.current)
+          throw new Error('Arquivo aberto. Aguarde a análise para localizar o símbolo.')
+        const symbols = await operations.language.current.requestForTree(tree, 'symbols', path)
+        const node = tree[path]
+        const model = editorRef.current?.getModel()
+        if (
+          store.getState().project?.tree !== tree ||
+          !model ||
+          !getMonacoModelPath(model).endsWith(`/${path}`)
+        )
+          return
+        const symbol = symbols.find((item) => item.name === name)
+        if (!symbol || node?.kind !== 'file')
+          throw new Error('Arquivo aberto. Este símbolo não está mais disponível na análise atual.')
+        const position = proSourcePosition(node.content, symbol.start)
+        setTutorHighlight((previous) => ({
+          file: path,
+          startLine: position.line,
+          endLine: position.line,
+          startColumn: position.column,
+          nonce: (previous?.nonce ?? 0) + 1,
+        }))
+      }}
       onInsert={(example) => {
         const node = tree[activeFile]
         if (node?.kind === 'file')
@@ -268,6 +303,7 @@ export function ProCodeMode(): JSX.Element {
         if (
           (event.ctrlKey || event.metaKey) &&
           !event.shiftKey &&
+          !event.altKey &&
           event.key.toLowerCase() === 'p'
         ) {
           event.preventDefault()
@@ -417,6 +453,7 @@ export function ProCodeMode(): JSX.Element {
               if (!session) setDiagnostics(null)
             }}
             onProDiagnostics={setDiagnostics}
+            onProAnalysis={updateAnalysis}
           />
         </Suspense>
       </div>
@@ -443,12 +480,49 @@ export function ProCodeMode(): JSX.Element {
         preferences={workspaceState}
         change={changeWorkspace}
         gameRequest={focusNonce}
-        searchRequest={searchRequest}
+        searchRequest={searchRequest + revealRequest}
         codeRequest={codeRequest}
         bottom={
           <ProBottomPanel
             tree={tree}
             diagnostics={diagnostics}
+            analysis={analysis}
+            investigate={
+              tutorConfig
+                ? (item) => {
+                    const project = store.getState().project
+                    if (
+                      project?.id !== projectId ||
+                      !project?.tree ||
+                      !currentProDiagnostics([item], project.tree).length
+                    )
+                      return
+                    const reference = proValidateReference.current?.({
+                      path: item.path,
+                      startLine: item.line,
+                      endLine: item.line,
+                      sourceHash: item.sourceHash,
+                    })
+                    const node = project.tree[item.path]
+                    if (!reference?.startLine || node?.kind !== 'file' || !item.sourceHash) return
+                    requestProHelp({
+                      projectId: project.id,
+                      intent: 'investigate',
+                      question: `Me ajude a investigar TS${item.code}: ${item.message}`,
+                      selection: {
+                        path: item.path,
+                        startLine: item.line,
+                        endLine: item.line,
+                        sourceHash: item.sourceHash,
+                        startColumn: 1,
+                        endColumn:
+                          (node.content.split(/\r\n|\r|\n/)[item.line - 1]?.length ?? 0) + 1,
+                        documentVersion: 0,
+                      },
+                    })
+                  }
+                : undefined
+            }
             selected={workspaceState.bottom}
             onSelect={(bottom) => changeWorkspace((previous) => ({ ...previous, bottom }))}
             navigate={(path, line, column) => {

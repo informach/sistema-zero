@@ -1,7 +1,7 @@
 import { useEffect, useId, useMemo, useState } from 'react'
 import { renderBottomPanel, useVisibleBottomTabs } from '../../../components/layout/bottomTabs'
 import type { ProjectTree } from '../../../core/proProject'
-import type { ProEditorDiagnostic } from '../../../monaco/pro/session'
+import type { ProAnalysisState, ProEditorDiagnostic } from '../../../monaco/pro/session'
 import { glossErrorMessage } from '../../../state/errorGloss'
 import { ERROR_LOG_KINDS, useLogsStore } from '../../../state/logsStore'
 import { currentProDiagnostics } from './diagnostics'
@@ -26,12 +26,16 @@ export function ProBottomPanel({
   selected,
   onSelect,
   navigate,
+  analysis,
+  investigate,
 }: {
   tree: ProjectTree
   diagnostics: ProEditorDiagnostic[] | null
   selected: ProWorkspacePreferences['bottom']
   onSelect: (tab: ProWorkspacePreferences['bottom']) => void
   navigate: (path: string, line: number, column?: number) => void
+  analysis?: ProAnalysisState
+  investigate?: (item: ProEditorDiagnostic) => void
 }) {
   const allowed = useVisibleBottomTabs()
   const entries = useLogsStore((state) => state.entries)
@@ -103,8 +107,15 @@ export function ProBottomPanel({
           hidden={active !== 'problems'}
           className="h-full space-y-2 overflow-auto p-3"
         >
-          {diagnostics === null && (
-            <p className="text-sm text-sz-fg-mute">A análise do código ainda não terminou.</p>
+          {(analysis?.status === 'pending' || (!analysis && diagnostics === null)) && (
+            <p role="status" className="text-sm text-sz-fg-mute">
+              Analisando o código…
+            </p>
+          )}
+          {analysis?.status === 'error' && (
+            <p role="alert" className="text-sm text-sz-error">
+              A análise não pôde ser concluída: {analysis.message}
+            </p>
           )}
           {diagnostics && diagnostics.length >= 100 && (
             <p className="text-sm text-sz-fg-mute">
@@ -116,12 +127,15 @@ export function ProBottomPanel({
               Algumas linhas mudaram; aguardando a análise atualizada.
             </p>
           )}
-          {!count && diagnostics !== null && diagnostics.length === 0 && (
-            <p className="text-sm">
-              Nenhum problema detectado por estas verificações. Experimente o jogo para conferir o
-              resultado.
-            </p>
-          )}
+          {!count &&
+            diagnostics !== null &&
+            diagnostics.length === 0 &&
+            (!analysis || analysis.status === 'ready') && (
+              <p className="text-sm">
+                Nenhum problema detectado por estas verificações. Experimente o jogo para conferir o
+                resultado.
+              </p>
+            )}
           {problems.map((item) => (
             <article
               key={`${item.path}:${item.line}:${item.column}:${item.code}:${item.message}`}
@@ -142,11 +156,21 @@ export function ProBottomPanel({
               >
                 {item.path}:{item.line}
               </button>
-              <p>{diagnosticHint(item.code)}</p>
+              <p className="text-xs text-sz-fg-mute">TS{item.code}</p>
+              <pre className="whitespace-pre-wrap break-words">{item.message}</pre>
               <details className="mt-1 text-xs">
-                <summary>Mensagem técnica ({item.code})</summary>
-                <pre className="whitespace-pre-wrap break-words">{item.message}</pre>
+                <summary>Como investigar</summary>
+                <p>{diagnosticHint(item.code)}</p>
               </details>
+              {investigate && (
+                <button
+                  type="button"
+                  className="mt-1 min-h-9 rounded px-2 text-xs text-sz-accent hover:bg-sz-bg"
+                  onClick={() => investigate(item)}
+                >
+                  Investigar com Zappy
+                </button>
+              )}
             </article>
           ))}
           {runtime.map((entry) => (

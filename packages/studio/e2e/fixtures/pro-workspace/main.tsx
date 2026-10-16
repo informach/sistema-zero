@@ -130,7 +130,10 @@ function Fixture() {
           persistence="none"
           features={{ terminal: false }}
           proRuntime={runtime}
-          tutor={tutor}
+          editingAccess={
+            new URLSearchParams(location.search).has('observer') ? 'observer' : 'author'
+          }
+          tutor={new URLSearchParams(location.search).has('noTutor') ? undefined : tutor}
         />
       </div>
     </div>

@@ -18,17 +18,20 @@ export function ProNavigator({
   revealRequest = 0,
   onResult,
   onInsert,
+  onGuideReference,
   ...treeProps
 }: ProFileTreeProps & {
   tree: ProjectTree
   searchRequest: number
   onResult(result: ProSearchResult): void
   onInsert(example: ProExample): void
+  onGuideReference?: (path: string, symbol: string) => Promise<void>
 }) {
   const t = useT()
   const setShowAssets = useUIStore((state) => state.setShowAssets)
   const [view, setView] = useState<'files' | 'search' | 'materials' | 'guides'>('files')
   const [guideQuery, setGuideQuery] = useState('')
+  const [guideNotice, setGuideNotice] = useState('')
   const assets = useProjectStore((state) => state.project?.assets)
   const templateId = useProjectStore((state) => state.project?.proMeta?.templateId)
   const converted = useProjectStore((state) => Boolean(state.project?.proMeta?.origin))
@@ -114,6 +117,11 @@ export function ProNavigator({
             assets={assets ?? []}
             path={treeProps.activeFile}
             onInsert={onInsert}
+            onFindUses={(text) => {
+              setQuery(text)
+              setMode('content')
+              setView('search')
+            }}
             expanded
           />
         </section>
@@ -131,6 +139,7 @@ export function ProNavigator({
             />
           </label>
           {!guides.length && <p role="status">{t('pro.noGuides')}</p>}
+          {guideNotice && <p role="status">{guideNotice}</p>}
           {converted && (
             <p className="my-2">
               Este projeto veio dos blocos.{' '}
@@ -152,7 +161,19 @@ export function ProNavigator({
                       type="button"
                       key={`${reference.path}:${reference.exportName}`}
                       className={`${control} block break-all text-left`}
-                      onClick={() => treeProps.onSelectFile(reference.path)}
+                      onClick={() => {
+                        setGuideNotice('')
+                        if (!onGuideReference) treeProps.onSelectFile(reference.path)
+                        else
+                          void onGuideReference(reference.path, reference.exportName).catch(
+                            (error: unknown) =>
+                              setGuideNotice(
+                                error instanceof Error
+                                  ? error.message
+                                  : 'Não foi possível localizar este símbolo.',
+                              ),
+                          )
+                      }}
                     >
                       {reference.path} · {reference.exportName}
                     </button>
