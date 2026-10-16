@@ -103,7 +103,9 @@ export async function pendingWorkspaceActions(port: ActionPort, projectId: strin
           return
         }
         try {
-          const key = z.string().max(32000).parse(cursor.key),
+          // JSON may escape every character of a valid 80k briefing. Keep the
+          // bound above the largest supported action, including escaped input.
+          const key = z.string().max(1_000_000).parse(cursor.key),
             [identity, userId, path, input] = z
               .tuple([z.string(), z.string(), z.string(), z.record(z.string(), z.unknown())])
               .parse(JSON.parse(key))

@@ -5,10 +5,9 @@ import {
   type Project,
   type ProjectView,
   type projectCreateSchema,
-  type Revision,
-  revisionSchema,
   type TeamMember,
   teamMemberSchema,
+  WORKSPACE_POLL_INTERVAL_MS,
 } from '@sistemazero/marketing-contracts'
 import { Button } from '@sistemazero/ui/button'
 import { Dialog } from '@sistemazero/ui/dialog'
@@ -16,24 +15,31 @@ import { Input } from '@sistemazero/ui/input'
 import { Select } from '@sistemazero/ui/select'
 import { lazy, Suspense, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { z } from 'zod'
+import { AnalysisNextPiece } from './analysis-next-piece'
 import { ApprovalPanel } from './approval-panel'
 import { EvidenceAttachments } from './asset-file-actions'
 import { AssetPreview } from './asset-preview'
 import { BatchReview } from './batch-review'
 import { ConflictResolution } from './conflict-resolution'
 import { CopyReview } from './copy-review'
-import { documentText, restoreContent } from './document-text'
 import { EditorialForm, formatLabels } from './editorial-form'
 import { ImportInventoryPanel } from './import-inventory-panel'
 import { KnowledgeForm } from './knowledge-form'
+import { LocalStorageDialog } from './local-storage-dialog'
 import { MediaLibrary } from './media-library'
+import { MonitoringOverviewDialog } from './monitoring-overview'
+import { MonitoringPanel } from './monitoring-panel'
+import { ObservationReadout } from './observation-readout'
 import { PendingActions } from './pending-actions'
 import { errorMessage, type WorkbenchPort } from './port'
+import { ProductionReportDialog } from './production-report'
+import { ProjectAnalyticsDialog } from './project-analytics'
 import { type EditorialEntry, entryStatus, projectEntries, searchableText } from './projection'
 import { ReferenceImportDialog } from './reference-import-dialog'
 import { RequestPanel } from './request-panel'
 import { ResolvedDrafts } from './resolved-drafts'
 import { RevisionComments } from './revision-comments'
+import { RevisionHistory } from './revision-history'
 import { TeamPanel } from './team-panel'
 
 const empty: ProjectView = {
@@ -61,10 +67,14 @@ export function Workbench({ port }: { port: WorkbenchPort }) {
       initialEvidenceIds?: string[]
     } | null>(null),
     [newProject, setNewProject] = useState(false),
-    [history, setHistory] = useState<Revision[] | null>(null)
+    [history, setHistory] = useState(false)
   const [importing, setImporting] = useState(false)
   const [mediaLibrary, setMediaLibrary] = useState(false)
+  const [localStorage, setLocalStorage] = useState(false)
   const [inventory, setInventory] = useState(false)
+  const [analytics, setAnalytics] = useState(false)
+  const [productionReport, setProductionReport] = useState(false)
+  const [monitoringOverview, setMonitoringOverview] = useState(false)
   const [team, setTeam] = useState<TeamMember[]>([]),
     [teamError, setTeamError] = useState('')
   const refreshTeam = useCallback(async () => {
@@ -95,7 +105,6 @@ export function Workbench({ port }: { port: WorkbenchPort }) {
   const [requestScope, setRequestScope] = useState<'component' | 'representation' | 'piece'>(
     'component',
   )
-  const [historyBusy, setHistoryBusy] = useState(false)
   const [handoff, setHandoff] = useState<Handoff | null>(null)
   const currentProject = useRef(projectId)
   const refreshVersion = useRef(0)
@@ -162,7 +171,7 @@ export function Workbench({ port }: { port: WorkbenchPort }) {
     }
     window.addEventListener('online', reconnect)
     const unsubscribe = port.subscribe(() => void update()),
-      timer = setInterval(() => void update(), 1500)
+      timer = setInterval(() => void update(), WORKSPACE_POLL_INTERVAL_MS)
     return () => {
       live = false
       refreshVersion.current++
@@ -178,7 +187,8 @@ export function Workbench({ port }: { port: WorkbenchPort }) {
     setKnowledgeForm(null)
     setImporting(false)
     setMediaLibrary(false)
-    setHistory(null)
+    setLocalStorage(false)
+    setHistory(false)
     setRepresentationId('')
     setComponentId('')
     setRequestScope('component')
@@ -307,17 +317,8 @@ export function Workbench({ port }: { port: WorkbenchPort }) {
     )
       setSection(target.kind)
   }, [handoff, projectId, view.items])
-  async function showHistory() {
-    if (!target) return
-    try {
-      setHistory(
-        z
-          .array(revisionSchema)
-          .parse(await port.request(`/projects/${projectId}/items/${target.id}/history`)),
-      )
-    } catch (error) {
-      setError(errorMessage(error))
-    }
+  function showHistory() {
+    if (target) setHistory(true)
   }
   return (
     <div className="space-y-5" data-marketing-workbench>
@@ -407,12 +408,69 @@ export function Workbench({ port }: { port: WorkbenchPort }) {
       ) : project ? (
         <>
           <nav aria-label="Áreas da bancada" className="flex flex-wrap gap-2">
+            <Button variant="outline" onClick={() => setMonitoringOverview(true)}>
+              Novidades observadas
+            </Button>
+            {monitoringOverview ? (
+              <MonitoringOverviewDialog
+                key={project.id}
+                port={port}
+                projectId={project.id}
+                onClose={() => setMonitoringOverview(false)}
+                onOpen={async (kind, id) => {
+                  await port.synchronize()
+                  await refresh()
+                  if (currentProject.current !== project.id)
+                    throw new Error('O projeto aberto mudou. Confira a seleção.')
+                  setMonitoringOverview(false)
+                  setSearch('')
+                  setSection(kind)
+                  setSelection(id)
+                  setHandoff(null)
+                }}
+              />
+            ) : null}
+            <Button variant="outline" onClick={() => setProductionReport(true)}>
+              Processo produtivo
+            </Button>
+            {productionReport ? (
+              <ProductionReportDialog
+                key={project.id}
+                port={port}
+                projectId={project.id}
+                editable={editable}
+                onClose={() => setProductionReport(false)}
+              />
+            ) : null}
+            <Button variant="outline" onClick={() => setAnalytics(true)}>
+              Resultados do projeto
+            </Button>
+            {analytics ? (
+              <ProjectAnalyticsDialog
+                key={project.id}
+                port={port}
+                projectId={project.id}
+                onClose={() => setAnalytics(false)}
+                onOpenPiece={(id) => {
+                  setAnalytics(false)
+                  setSearch('')
+                  setSection('pieces')
+                  setSelection(id)
+                  setHandoff(null)
+                }}
+              />
+            ) : null}
             <Button variant="outline" onClick={() => setMediaLibrary(true)}>
               Arquivos do projeto
             </Button>
             <Button variant="outline" onClick={() => setInventory(true)}>
               Importar acervo
             </Button>
+            {port.localStorage ? (
+              <Button variant="outline" onClick={() => setLocalStorage(true)}>
+                Espaço neste computador
+              </Button>
+            ) : null}
             {(
               [
                 { id: 'pieces', label: 'Peças' },
@@ -446,15 +504,26 @@ export function Workbench({ port }: { port: WorkbenchPort }) {
               onChanged={refresh}
             />
           ) : null}
+          {localStorage && port.localStorage ? (
+            <LocalStorageDialog
+              key={`storage:${project.id}`}
+              storage={port.localStorage}
+              project={project}
+              onClose={() => setLocalStorage(false)}
+            />
+          ) : null}
           {inventory ? (
             <ImportInventoryPanel
               key={`import:${project.id}`}
               port={port}
               project={project}
               onClose={() => setInventory(false)}
-              onOpenSource={(id) => {
-                setSection('evidence')
+              onOpenSource={(id, kind) => {
+                setSection(kind === 'piece' ? 'pieces' : 'evidence')
                 setSelection(id)
+                setRepresentationId('')
+                setComponentId('')
+                setHandoff(null)
                 setInventory(false)
                 void refresh()
               }}
@@ -689,6 +758,7 @@ export function Workbench({ port }: { port: WorkbenchPort }) {
                             <Button
                               key={item.id}
                               variant={representation?.id === item.id ? 'secondary' : 'ghost'}
+                              aria-pressed={representation?.id === item.id}
                               onClick={() => {
                                 setHandoff(null)
                                 setRepresentationId(item.id)
@@ -696,7 +766,7 @@ export function Workbench({ port }: { port: WorkbenchPort }) {
                               }}
                             >
                               {item.document.kind === 'representation'
-                                ? formatLabels[item.document.format]
+                                ? `${item.document.title} · ${item.document.purpose === 'direct' ? 'Mensagens' : formatLabels[item.document.format]}`
                                 : item.document.title}
                             </Button>
                           ))}
@@ -743,15 +813,14 @@ export function Workbench({ port }: { port: WorkbenchPort }) {
                                 body={component.document.body}
                               />
                             </Suspense>
-                          ) : component?.document.kind === 'component' &&
-                            representation?.document.kind === 'representation' &&
-                            representation.document.medium === 'image' ? (
+                          ) : component?.document.kind === 'component' ? (
                             component.document.assetIds.map((assetId) => (
                               <AssetPreview
                                 key={assetId}
                                 port={port}
                                 projectId={project.id}
                                 assetId={assetId}
+                                mediaType="auto"
                                 alt={
                                   component.document.kind === 'component'
                                     ? (component.document.alt ?? component.document.title)
@@ -763,12 +832,25 @@ export function Workbench({ port }: { port: WorkbenchPort }) {
                           <p className="whitespace-pre-wrap text-base leading-relaxed">
                             {component?.document.kind === 'component'
                               ? component.document.body ||
-                                'O texto desta peça ainda será produzido. Descreva o que você precisa no pedido abaixo.'
+                                (component.document.componentType === 'scene'
+                                  ? 'Este componente não tem texto de fala. Confira as orientações de produção.'
+                                  : 'O texto desta peça ainda será produzido. Descreva o que você precisa no pedido abaixo.')
                               : component?.document.kind === 'video'
                                 ? ''
                                 : 'Selecione um componente para conferir.'}
                           </p>
                         </article>
+                        {component?.document.kind === 'component' &&
+                        component.document.productionNotes ? (
+                          <details className="rounded-lg border p-3 text-sm">
+                            <summary className="cursor-pointer font-medium">
+                              Orientações de produção da origem
+                            </summary>
+                            <p className="mt-2 whitespace-pre-wrap">
+                              {component.document.productionNotes}
+                            </p>
+                          </details>
+                        ) : null}
                         {component?.document.kind === 'component' ? (
                           <CopyReview
                             text={component.document.body}
@@ -779,6 +861,43 @@ export function Workbench({ port }: { port: WorkbenchPort }) {
                     ) : (
                       <>
                         <DocumentReadout entry={selected} items={view.items} />
+                        {selected.document.kind === 'watchlist' &&
+                        selected.confirmed &&
+                        !selected.pending.length ? (
+                          <MonitoringPanel
+                            key={selected.confirmed.revisionId}
+                            port={port}
+                            watchlist={selected.confirmed}
+                            items={view.items}
+                            editable={editable}
+                            onOpenEvidence={async (id) => {
+                              await port.synchronize()
+                              await refresh()
+                              setSearch('')
+                              setSection('evidence')
+                              setSelection(id)
+                              setHandoff(null)
+                            }}
+                          />
+                        ) : null}
+                        {selected.document.kind === 'analysis' &&
+                        selected.confirmed &&
+                        !selected.pending.length &&
+                        editable ? (
+                          <AnalysisNextPiece
+                            key={selected.confirmed.revisionId}
+                            port={port}
+                            analysis={selected.confirmed}
+                            onOpenPiece={async (id) => {
+                              await port.synchronize()
+                              await refresh()
+                              setSearch('')
+                              setSection('pieces')
+                              setSelection(id)
+                              setHandoff(null)
+                            }}
+                          />
+                        ) : null}
                         {selected.document.kind === 'evidence' &&
                         selected.document.assetIds?.length ? (
                           <EvidenceAttachments
@@ -803,7 +922,13 @@ export function Workbench({ port }: { port: WorkbenchPort }) {
                       </>
                     )}
                   </div>
-                  {representation?.confirmed ? (
+                  {representation?.document.kind === 'representation' &&
+                  representation.document.purpose === 'direct' ? (
+                    <p className="rounded-lg border p-4 text-sm">
+                      Mensagens de direct: revise o texto e os botões com a IA. A configuração e o
+                      envio da automação não são feitos por esta tela.
+                    </p>
+                  ) : representation?.confirmed ? (
                     <ApprovalPanel
                       key={`${port.identity}:${representation.id}`}
                       port={port}
@@ -932,90 +1057,30 @@ export function Workbench({ port }: { port: WorkbenchPort }) {
           }}
         />
       ) : null}
-      <Dialog
-        open={history !== null}
-        onClose={() => setHistory(null)}
-        title="Histórico de revisões"
-      >
-        {' '}
-        <div className="space-y-4 p-5">
-          {history?.map((revision) => (
-            <article key={revision.id} className="rounded-lg border p-4">
-              <p className="text-xs text-muted-foreground">
-                {new Date(revision.createdAt).toLocaleString('pt-BR')} · {revision.id.slice(0, 8)}
-              </p>
-              <h3 className="mt-2 font-medium">{revision.document.title}</h3>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Autor:{' '}
-                {team.find((member) => member.id === revision.createdBy)?.name ?? 'Conta da equipe'}
-              </p>
-              <p className="mt-2 whitespace-pre-wrap text-sm">{documentText(revision.document)}</p>
-              {entries
-                .filter(
-                  (entry) =>
-                    entry.document.kind === 'comment' &&
-                    entry.document.revisionId === revision.id &&
-                    !entry.archived,
-                )
-                .map((comment) => (
-                  <div key={comment.id} className="mt-3 rounded border p-3 text-sm">
-                    <p className="text-xs text-muted-foreground">
-                      Comentário de{' '}
-                      {team.find((member) => member.id === comment.confirmed?.authorId)?.name ??
-                        'Pessoa da equipe'}
-                    </p>
-                    <p className="mt-1 whitespace-pre-wrap">
-                      {comment.document.kind === 'comment' ? comment.document.body : ''}
-                    </p>
-                  </div>
-                ))}
-              {editable &&
-              target?.confirmed &&
-              revision.entityId === target.id &&
-              revision.id !== target.confirmed.revisionId ? (
-                <Button
-                  className="mt-3"
-                  size="sm"
-                  variant="outline"
-                  disabled={historyBusy || Boolean(target.pending.length)}
-                  onClick={() => {
-                    setHistoryBusy(true)
-                    void port
-                      .save(
-                        {
-                          schemaVersion: 1,
-                          operationId: crypto.randomUUID(),
-                          projectId,
-                          entityId: target.id,
-                          baseRevisionId: target.confirmed?.revisionId ?? null,
-                          action: 'save',
-                          document: restoreContent(revision.document, target.document),
-                        },
-                        null,
-                      )
-                      .then(async () => {
-                        setHistory(null)
-                        await refresh()
-                      })
-                      .catch((error) => setError(errorMessage(error)))
-                      .finally(() => setHistoryBusy(false))
-                  }}
-                >
-                  Restaurar conteúdo como nova revisão
-                </Button>
-              ) : null}
-            </article>
-          ))}
-        </div>
-      </Dialog>
+      {history && target ? (
+        <RevisionHistory
+          key={`${projectId}:${target.id}`}
+          port={port}
+          projectId={projectId}
+          target={target}
+          entries={entries}
+          team={team}
+          editable={editable}
+          onClose={() => setHistory(false)}
+          onRestored={refresh}
+        />
+      ) : null}
     </div>
   )
 }
 function DocumentReadout({ entry, items }: { entry: EditorialEntry; items: ProjectView['items'] }) {
   const doc = entry.document
   return (
-    <div className="mt-5 space-y-4 text-sm leading-relaxed">
+    <section aria-label="Documento selecionado" className="mt-5 space-y-4 text-sm leading-relaxed">
       {'body' in doc ? <p className="whitespace-pre-wrap">{doc.body}</p> : null}
+      {doc.kind === 'evidence' && doc.observation ? (
+        <ObservationReadout value={doc.observation} />
+      ) : null}
       {doc.kind === 'direction' ? (
         <dl className="space-y-3">
           <div>
@@ -1140,7 +1205,7 @@ function DocumentReadout({ entry, items }: { entry: EditorialEntry; items: Proje
           ) : null}
         </div>
       ) : null}
-    </div>
+    </section>
   )
 }
 function ProjectForm({

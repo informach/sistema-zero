@@ -105,4 +105,77 @@ describe('limites locais', () => {
     await writeFile(store.get(asset.id).path, JSON.stringify({ texto: 'Alterado' }))
     await rejects(() => store.verify(asset.id), /mudou|danificado/)
   })
+  test('preserva anexos ZIP, fontes e documentos sem executá-los ou extrair o conteúdo', async () => {
+    const directory = await mkdtemp(path.join(os.tmpdir(), 'marketing-assets-'))
+    let store = new LocalAssets(path.join(directory, 'assets'))
+    cleanup.push(async () => {
+      store.close()
+      if (
+        path.dirname(directory) !== path.resolve(os.tmpdir()) ||
+        !path.basename(directory).startsWith('marketing-assets-')
+      )
+        throw new Error('Pasta inválida')
+      await rm(directory, { recursive: true, force: true })
+    })
+    await store.start()
+    const originals = [
+      {
+        name: 'projeto.zip',
+        mime: 'application/zip',
+        bytes: Buffer.from('504b0506000000000000000000000000000000000000', 'hex'),
+      },
+      { name: 'original.ttf', mime: 'font/ttf', bytes: Buffer.from([0, 1, 0, 0, 42]) },
+      { name: 'original.otf', mime: 'font/otf', bytes: Buffer.from('OTTO-original') },
+      // These opaque attachments are preserved, not opened as Office documents.
+      {
+        name: 'copy.docx',
+        mime: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        bytes: Buffer.from('504b0506000000000000000000000000000000000000', 'hex'),
+      },
+      {
+        name: 'calendario.xlsx',
+        mime: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        bytes: Buffer.from('504b0506000000000000000000000000000000000000', 'hex'),
+      },
+      {
+        name: 'roteiro.yaml',
+        mime: 'text/plain',
+        bytes: Buffer.from('titulo: História com acentos\n'),
+      },
+      {
+        name: 'historico.jsonl',
+        mime: 'text/plain',
+        bytes: Buffer.from('{"etapa":1}\n{"etapa":2}\n'),
+      },
+      {
+        name: 'rascunho.htm',
+        mime: 'text/html',
+        bytes: Buffer.from('<script>throw new Error("não executar")</script>'),
+      },
+    ]
+    for (const original of originals) {
+      const source = path.join(directory, original.name)
+      await writeFile(source, original.bytes)
+      const imported = await store.importFile(source)
+      expect(imported.mime).toBe(original.mime)
+      expect(await readFile(source)).toEqual(original.bytes)
+    }
+    store.close()
+    store = new LocalAssets(path.join(directory, 'assets'))
+    await store.start()
+    expect(store.diagnostics()).toEqual([])
+    expect(store.list()).toHaveLength(originals.length)
+    for (const original of originals) {
+      const asset = store.list().find((value) => value.name === original.name)
+      if (!asset) throw new Error('Original não restaurado')
+      await store.verify(asset.id)
+      expect(await store.bytes(asset.id)).toEqual(original.bytes)
+      const response = await fetch(asset.url)
+      expect(response.headers.get('content-type')).toBe(
+        original.mime === 'text/html' ? 'text/plain; charset=utf-8' : original.mime,
+      )
+      expect(response.headers.get('content-security-policy')).toContain('sandbox')
+    }
+    expect((await readdir(store.directory)).length).toBe(originals.length * 2)
+  })
 })

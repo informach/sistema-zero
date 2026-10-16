@@ -3,7 +3,11 @@ import type {
   ExecutionOutcome,
   ExecutionRequest,
 } from '@sistemazero/marketing-contracts'
-import { rasterExport, videoAssetIds } from '@sistemazero/marketing-contracts'
+import {
+  compositionSceneInput,
+  rasterExport,
+  videoAssetIds,
+} from '@sistemazero/marketing-contracts'
 import { references } from './references'
 import { WorkspaceError } from './workspace-error'
 
@@ -16,7 +20,7 @@ export function validateVisualRequest(request: ExecutionRequest, context: Execut
     )
   if (
     request.videoTarget &&
-    (request.capability !== 'video-edit' ||
+    (!['video-edit', 'composition'].includes(request.capability) ||
       source.kind !== 'video' ||
       !source.timeline.clips.some((clip) => clip.id === request.videoTarget?.clipId))
   )
@@ -57,7 +61,7 @@ export function validateVisualRequest(request: ExecutionRequest, context: Execut
     return
   }
   if (
-    ['video-edit', 'transcribe', 'prepare-media'].includes(request.capability) ||
+    ['video-edit', 'composition', 'transcribe', 'prepare-media'].includes(request.capability) ||
     (request.capability === 'render' && source.kind === 'video')
   ) {
     if (source.kind !== 'video' || request.intent === 'adapt')
@@ -72,8 +76,30 @@ export function validateVisualRequest(request: ExecutionRequest, context: Execut
         'INVALID_OPERATION',
         'Este pedido de vídeo não aceita opções de edição de imagem',
       )
-    if (request.capability !== 'video-edit' && request.intent !== 'adjust')
+    if (!['video-edit', 'composition'].includes(request.capability) && request.intent !== 'adjust')
       throw new WorkspaceError('INVALID_OPERATION', 'Render e transcrição usam a montagem atual')
+    if (request.capability === 'composition') {
+      const clip = source.timeline.clips.find((item) => item.id === request.videoTarget?.clipId)
+      if (
+        !clip ||
+        request.sourceAssetId ||
+        request.captionSourceAssetId ||
+        request.reviseCaptions ||
+        (request.videoTarget?.part === 'text' && !clip.generated)
+      )
+        throw new WorkspaceError(
+          'INVALID_OPERATION',
+          'Escolha uma cena gráfica para criar ou ajustar a animação',
+        )
+      try {
+        compositionSceneInput(source.timeline, clip)
+      } catch (error) {
+        throw new WorkspaceError(
+          'INVALID_OPERATION',
+          error instanceof Error ? error.message : 'Cena inválida',
+        )
+      }
+    }
     const allowed = new Set([
       ...videoAssetIds(source.timeline),
       ...(source.referenceAssetIds ?? []),
@@ -185,9 +211,14 @@ export function validateOutcomeCapability(request: ExecutionRequest, outcome: Ex
     (outcome.research && request.capability !== 'research') ||
     (outcome.capture && request.capability !== 'capture') ||
     (outcome.video &&
-      !['video-edit', 'video-adapt', 'transcribe', 'render', 'prepare-media'].includes(
-        request.capability,
-      )) ||
+      ![
+        'video-edit',
+        'composition',
+        'video-adapt',
+        'transcribe',
+        'render',
+        'prepare-media',
+      ].includes(request.capability)) ||
     (outcome.mediaPreparation && request.capability !== 'prepare-media') ||
     (outcome.recordingAnalysis &&
       (!outcome.video || !['video-edit', 'transcribe', 'render'].includes(request.capability))) ||
@@ -214,8 +245,11 @@ export function validateOutcomeCapability(request: ExecutionRequest, outcome: Ex
       'O resultado visual precisa de uma composição editável',
     )
   if (
-    (['video-edit', 'video-adapt', 'transcribe', 'prepare-media'].includes(request.capability) &&
+    (['video-edit', 'composition', 'video-adapt', 'transcribe', 'prepare-media'].includes(
+      request.capability,
+    ) &&
       !outcome.video) ||
+    (request.capability === 'composition' && !outcome.assetIds.length) ||
     (request.capability === 'prepare-media' &&
       (!outcome.mediaPreparation || !outcome.assetIds.length)) ||
     (request.capability === 'render' && ((!outcome.video && !outcome.art) || !outcome.render))

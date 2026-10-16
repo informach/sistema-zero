@@ -107,7 +107,7 @@ function makeInput(
     account: makeAccount(network),
     accessToken: 'page-token',
     assets,
-    orderedAssetIds,
+    orderedMedia: orderedAssetIds.map((assetId) => ({ assetId, alt: null })),
     assetBytes: () => Promise.reject(new Error('não usado pela Meta')),
     assetUrl: async (asset) => `https://r2.example/signed/${asset.id}`,
     get session() {
@@ -129,6 +129,53 @@ function publisher(network: 'instagram' | 'facebook', api: FakeMetaApi): MetaPub
 }
 
 describe('MetaPublisher — Instagram (container → poll → publish)', () => {
+  it('envia a descrição aprovada no feed e por posição no carrossel, mesmo com imagem repetida', async () => {
+    const media = makeAsset()
+    const feedApi = new FakeMetaApi()
+    const feed = makeInput(makePublication('ig_feed'), [media])
+    feed.orderedMedia = [{ assetId: media.id, alt: 'Mãe e filho criando um jogo.' }]
+    expect((await publisher('instagram', feedApi).publish(feed)).kind).toBe('published')
+    expect(feedApi.createCalls[0]?.params.alt_text).toBe('Mãe e filho criando um jogo.')
+
+    const carouselApi = new FakeMetaApi()
+    const carousel = makeInput(makePublication('ig_carousel'), [media])
+    carousel.orderedMedia = [
+      { assetId: media.id, alt: 'Primeira leitura da imagem.' },
+      { assetId: media.id, alt: 'Outra leitura da mesma imagem.' },
+    ]
+    expect((await publisher('instagram', carouselApi).publish(carousel)).kind).toBe('published')
+    expect(carouselApi.createCalls.map((call) => call.params.alt_text)).toEqual([
+      'Primeira leitura da imagem.',
+      'Outra leitura da mesma imagem.',
+      undefined,
+    ])
+  })
+
+  it('recusa todo o carrossel se uma imagem selecionada estiver ausente, sem descartá-la da ordem', async () => {
+    const api = new FakeMetaApi(),
+      a = makeAsset(),
+      b = makeAsset()
+    const input = makeInput(makePublication('ig_carousel'), [a, b], {}, [a.id, randomUUID(), b.id])
+    expect((await publisher('instagram', api).publish(input)).kind).toBe('permanent')
+    expect(api.createCalls).toHaveLength(0)
+  })
+
+  it('envia descrição aprovada na foto do Facebook; não converte alt em legenda de vídeo', async () => {
+    const api = new FakeMetaApi(),
+      media = makeAsset()
+    const input = makeInput(makePublication('fb_post'), [media])
+    input.orderedMedia = [{ assetId: media.id, alt: 'Descrição conferida da foto.' }]
+    expect((await publisher('facebook', api).publish(input)).kind).toBe('published')
+    expect(api.fbPhotoCalls[0]?.alt).toBe('Descrição conferida da foto.')
+    const videoApi = new FakeMetaApi(),
+      video = makeAsset({ contentType: 'video/mp4' })
+    const videoInput = makeInput(makePublication('ig_reels'), [video])
+    videoInput.orderedMedia = [{ assetId: video.id, alt: 'Descrição do vídeo na edição.' }]
+    expect((await publisher('instagram', videoApi).publish(videoInput)).kind).toBe('published')
+    expect(videoApi.createCalls[0]?.params.alt_text).toBeUndefined()
+    expect(videoApi.createCalls[0]?.params.caption).toBe(videoInput.publication.caption)
+  })
+
   it('ig_feed JPEG vencido: container → FINISHED → publish → published com permalink', async () => {
     const api = new FakeMetaApi()
     const input = makeInput(makePublication('ig_feed'), [makeAsset()])

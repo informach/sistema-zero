@@ -10,23 +10,32 @@ export class WorkspaceAssetVerifier {
   private timer: ReturnType<typeof setInterval> | undefined
   private flight: Promise<void> | undefined
   private abort: AbortController | undefined
+  private stopping = false
   constructor(
-    private readonly repo: WorkspaceAssetsRepository,
-    private readonly store: MultipartStore,
+    private readonly repo: Pick<
+      WorkspaceAssetsRepository,
+      'claimVerification' | 'renewVerification' | 'finishVerification'
+    >,
+    private readonly store: Pick<MultipartStore, 'head' | 'getStream'>,
     private readonly logger: Logger,
   ) {}
   start() {
+    if (this.stopping && this.flight)
+      throw new Error('Aguarde o encerramento do verificador antes de reiniciá-lo')
+    this.stopping = false
     this.timer ??= setInterval(() => {
       void this.tick()
     }, 5000)
   }
   async stop() {
+    this.stopping = true
     clearInterval(this.timer)
     this.timer = undefined
     this.abort?.abort(new Error('Servidor reiniciando'))
     await this.flight
   }
   tick() {
+    if (this.stopping) return Promise.resolve()
     this.flight ??= this.cycle()
       .catch((error) => {
         this.logger.error('workspace.asset.verification_failed', {
@@ -39,8 +48,23 @@ export class WorkspaceAssetVerifier {
     return this.flight
   }
   private async cycle() {
-    const job = await this.repo.claimVerification()
-    if (!job) return
+    // Drain a bounded batch per poll. Keep a single stream active so even large
+    // imports retain the same memory/network bound and claim ordering.
+    for (let count = 0; count < 20 && !this.stopping; count++) {
+      const job = await this.repo.claimVerification()
+      if (!job) return
+      await this.runJob(job)
+    }
+  }
+  private async runJob(job: VerificationJob) {
+    if (this.stopping) {
+      await this.repo.finishVerification(job, {
+        valid: false,
+        error: 'Servidor reiniciando',
+        retryable: true,
+      })
+      return
+    }
     if (job.attempt > 3) {
       await this.repo.finishVerification(job, {
         valid: false,

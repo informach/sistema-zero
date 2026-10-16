@@ -1,0 +1,1 @@
+DROP INDEX "marketing"."editorial_monitor_entries_identity_idx";

@@ -37,7 +37,9 @@ export function ReferenceImportDialog({
       <div className="space-y-4 p-5">
         <p className="text-sm text-muted-foreground">
           CSV ou lista JSON com title, label e, opcionalmente, body, url, classification, product,
-          validity, observedAt e tags. As referências não alteram a direção nem aprovam peças.
+          validity, observedAt e tags. As referências não alteram a direção nem aprovam peças. O
+          campo opcional observation aceita métricas estruturadas com origem pública/importada,
+          período, definição, amostra e cobertura. No CSV, use JSON entre aspas nesse campo.
         </p>
         <label htmlFor={id} className="block text-sm font-medium">
           Arquivo de referências

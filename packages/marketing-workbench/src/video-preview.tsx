@@ -3,7 +3,7 @@ import { Player } from '@remotion/player'
 import {
   type MediaPreparation,
   type VideoProject,
-  videoAssetIds,
+  videoPlaybackAssetIds,
 } from '@sistemazero/marketing-contracts'
 import { TimelineComposition } from '@sistemazero/marketing-production'
 import { Button } from '@sistemazero/ui/button'
@@ -21,7 +21,7 @@ export default function VideoPreview({
   timeline: VideoProject
   preparations?: MediaPreparation[]
 }) {
-  const ids = videoAssetIds(timeline).sort().join(',')
+  const ids = videoPlaybackAssetIds(timeline).sort().join(',')
   const proxies = JSON.stringify(
     Object.fromEntries(
       preparations
@@ -63,7 +63,10 @@ export default function VideoPreview({
     )
   if (loaded?.scope !== scope) return <p role="status">Carregando as mídias da montagem…</p>
   return (
-    <figure className="mx-auto max-w-lg">
+    <figure
+      className="mx-auto w-full"
+      style={{ maxWidth: `min(32rem, ${(65 * timeline.width) / timeline.height}vh)` }}
+    >
       <Player
         key={`${scope}:${JSON.stringify(timeline)}`}
         component={TimelineComposition}
@@ -86,6 +89,9 @@ export default function VideoPreview({
           1,
         )}{' '}
         s. Peça os ajustes à IA abaixo.
+        {timeline.clips.some((clip) => clip.generated)
+          ? ' As animações conservam seu fonte e parâmetros no histórico. Escolha Criar ou ajustar animação com IA para editar uma cena.'
+          : ''}
       </figcaption>
     </figure>
   )

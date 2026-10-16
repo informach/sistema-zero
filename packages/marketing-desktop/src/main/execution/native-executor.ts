@@ -7,6 +7,7 @@ import {
   CDC_ART_LABELS,
   LIGHT_COPY_RULES,
   rasterExport,
+  stableEditorialId,
 } from '@sistemazero/marketing-contracts'
 import { editorialRecipe, imageRecipe } from '@sistemazero/marketing-production/data'
 import { runRequestSchema } from '../../shared/contracts'
@@ -16,6 +17,7 @@ import { renderArt } from '../media/render-art'
 import { renderReceipt } from '../media/render-identity'
 import { runProvider } from '../providers'
 import { downloadAsset } from '../sync/asset-download'
+import { createComposition } from './composition'
 import { prepareMedia } from './media-preparation'
 import { recordingContext } from './recording-context'
 import { executeStudioCapture } from './studio-capture'
@@ -25,7 +27,13 @@ import { editVideo } from './video-edit'
 import { exportVideo } from './video-render'
 import { transcribeVideo } from './video-transcribe'
 
-export const executeNative: ProductionExecutor = async (run, resources, signal, progress) => {
+export const executeNative: ProductionExecutor = async (
+  run,
+  resources,
+  signal,
+  progress,
+  recovery,
+) => {
   const { request, context } = run
   const component =
     context.source.document.kind === 'component' ? context.source.document : undefined
@@ -48,15 +56,23 @@ export const executeNative: ProductionExecutor = async (run, resources, signal, 
       'render',
       'capture',
       'video-edit',
+      'composition',
       'transcribe',
       'prepare-media',
       'video-adapt',
     ].includes(request.capability)
   )
     throw new Error('Esta capacidade ainda não está instalada nesta versão do executor')
-  const directory = path.join(resources.runtimeDirectory, request.id, String(run.epoch))
+  const directory = path.join(
+    resources.runtimeDirectory,
+    request.id,
+    String(recovery.generationEpoch),
+  )
   await mkdir(directory, { recursive: true })
-  if (request.capability === 'video-adapt') return adaptVideo(run, directory, signal, progress)
+  if (request.capability === 'composition')
+    return createComposition(run, resources, directory, signal, progress, recovery.provider)
+  if (request.capability === 'video-adapt')
+    return adaptVideo(run, directory, signal, progress, recovery.provider)
   if (request.capability === 'prepare-media')
     return prepareMedia(run, resources, directory, signal, progress)
   if (request.capability === 'video-edit')
@@ -65,6 +81,7 @@ export const executeNative: ProductionExecutor = async (run, resources, signal, 
       directory,
       signal,
       progress,
+      recovery.provider,
       await recordingContext(run, resources, directory, signal, progress),
     )
   if (request.capability === 'transcribe')
@@ -72,7 +89,7 @@ export const executeNative: ProductionExecutor = async (run, resources, signal, 
   if (request.capability === 'render' && context.source.document.kind === 'video')
     return exportVideo(run, resources, directory, signal, progress)
   if (request.capability === 'capture')
-    return executeStudioCapture(run, resources, directory, signal, progress)
+    return executeStudioCapture(run, resources, directory, signal, progress, recovery.provider)
   if (request.capability === 'render') {
     if (!component) throw new Error('Selecione uma arte para exportar')
     const raster =
@@ -256,7 +273,12 @@ export const executeNative: ProductionExecutor = async (run, resources, signal, 
       : []),
   ].join('\n\n')
   const started = Date.now()
-  const release = await resources.assets.reserve(64 * 1024 * 1024)
+  // The raw checkpoint and the asset library each retain the native image until confirmation.
+  const release = await resources.assets.reserve(
+    ['image', 'image-edit'].includes(request.capability)
+      ? 48_000_000 + request.limits.maxVariants * 48_000_000
+      : 48_000_000,
+  )
   try {
     const result = await runProvider(
       runRequestSchema.parse({
@@ -278,15 +300,19 @@ export const executeNative: ProductionExecutor = async (run, resources, signal, 
       signal,
       progress,
       source,
+      recovery.provider,
     )
     const assetIds: string[] = []
-    for (const image of result.images)
+    for (const [index, image] of result.images.entries())
       assetIds.push(
         (
           await resources.assets.addImage(
             regionOriginal && request.imageRegion
               ? await mergeRegion(regionOriginal, request.imageRegion, image)
               : image,
+            await stableEditorialId(
+              `${request.projectId}:${request.id}:${recovery.generationEpoch}:native-image:${index}`,
+            ),
           )
         ).id,
       )

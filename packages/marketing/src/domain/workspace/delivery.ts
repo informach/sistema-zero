@@ -1,4 +1,8 @@
-import { type ApprovedEdition, deliveryFormatsFor } from '@sistemazero/marketing-contracts'
+import {
+  type ApprovedEdition,
+  deliveryFormatsFor,
+  editorialCaption,
+} from '@sistemazero/marketing-contracts'
 import type { PublicationFormat } from '../publication/publication'
 import { WorkspaceError } from './workspace-error'
 
@@ -12,6 +16,11 @@ export function deliveryCopy(edition: ApprovedEdition, format: PublicationFormat
   )?.document
   if (representation?.kind !== 'representation' || piece?.kind !== 'piece')
     throw new WorkspaceError('INVALID_RESULT', 'A edição está incompleta')
+  if (representation.purpose === 'direct')
+    throw new WorkspaceError(
+      'INVALID_OPERATION',
+      'Mensagens de direct não podem ser enviadas como publicação',
+    )
   if (!deliveryFormatsFor(representation.format).includes(format))
     throw new WorkspaceError(
       'INVALID_OPERATION',
@@ -56,7 +65,7 @@ export function deliveryCopy(edition: ApprovedEdition, format: PublicationFormat
     )
   // Caption is already the approved text. Never silently append, truncate or regenerate CTA/tags.
   return {
-    caption: representation.caption,
+    caption: editorialCaption(representation, edition.snapshot.revisions),
     title: piece.title,
     contentType:
       representation.format === 'story'

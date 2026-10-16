@@ -1,0 +1,27 @@
+# L3 — recuperação de transferências, revisão integrada de 16/10
+
+## Sessão multipart ausente
+
+A revisão reproduziu um bloqueio persistente: depois de expirar a sessão multipart no armazenamento, `start` reenviava seu identificador antigo. Nova tentativa não podia completar o arquivo. O teste novo falhou antes da correção (`tests-multipart-expired-red`, 1 falha).
+
+- O adaptador R2 traduz somente `NoSuchUpload` em erro de sessão ausente. Uma falha de rede, permissão ou consulta não autoriza descartar a sessão.
+- O serviço confere primeiro se o objeto completo já existe. Nesse caso, conserva o caminho de confirmação/verificação, sem reenviar os bytes.
+- Se a sessão não existe e o objeto ainda não foi recebido, `start` recupera o envio preservando manifesto, identidade, autoria e recibo. A troca exige estado `uploading` e o identificador antigo exato sob o lock do projeto. Uma recuperação atrasada não troca a sessão nova nem reabre arquivo confirmado. Consultar o arquivo apenas informa como retomar; não cria upload.
+- Dois pedidos concorrentes convergem no mesmo envio. O multipart excedente criado pela concorrência é abortado; permissões são revalidadas. Arquivo só fica confirmado depois da conferência completa de SHA-256.
+- Não há migração de schema nem aumento de limites. Web e desktop retomam pelo mesmo endpoint existente.
+
+## Evidências
+
+- Testes focados: **7 testes / 44 assertions**. Backend completo: **381 testes / 2.193 assertions**, zero falhas (`tests-multipart-backend-full`). Check backend e tipos passaram. Persistência desktop Node/SQLite: **19 testes**, zero falhas (`tests-multipart-local-sqlite`).
+- Prova com PostgreSQL nativo e R2 `testes-marketing`: `scripts/prove-marketing-multipart-expiry.ts --staging-storage`, código 0; `.cache/multipart-expiry-proof/evidence.json`. Sessão recém-criada exclusivamente pela prova foi abortada após receber uma parte. A API real do R2 retornou sessão ausente; retomada concorrente, proteção contra pedido atrasado e confirmação por hash passaram. O teste reproduz a ausência da sessão; não esperou transcorrer o prazo de expiração do bucket.
+- Ensaio de limite: `packages/marketing-desktop/scripts/prove-large-transfer.ts`, arquivo sintético de texto com **2.000.000.000 bytes**, SQLite real, BFF/Auth/servidor e R2 reais. Processos separados demonstraram interrupção após oito partes, retomada de upload, interrupção do download em **33.554.432 bytes** e retomada pelo Range exato. O SHA-256 final foi `7d38c385fc86c976f5d904416073d8bb6282c8f0794baad075fe42c8dbb67281`, igual no original, confirmação remota e cópia recebida. Não equivale a validar codec ou edição de um vídeo desse tamanho.
+- O primeiro processo confirmou oito partes no R2 e preservou a transferência local, mas falhou ao encerrar devido a um método incorreto no script da prova (`stop` em vez de `close`) e tentativa duplicada de fechar SQLite no tratamento de erro. Código da prova corrigido para cleanup único em `finally`, typecheck passou. O processo identificado foi encerrado, mantendo original, SQLite e partes remotas; não foi contabilizado como execução de código zero. `proof-large-interrupt` conserva log/exit -1. O processo seguinte parte desse estado persistido, sem recriar a fixture.
+- A primeira retomada enviou as partes restantes, mas o helper da prova inferia GET para um POST sem body: `/complete` retornou 404. Corrigida a passagem explícita do método HTTP no helper, sem mudar endpoint nem comportamento do produto. `proof-large-resume` conserva código 1. O novo processo leu **239 partes**, não reenviou nenhuma e concluiu confirmação/hash com código 0 (`proof-large-resume-complete`, **178.590 ms**, incluindo conferência remota e original local).
+- Download interrompido preservou exatamente 32 MiB sem expor arquivo incompleto; nova execução baixou somente o restante e conferiu o hash integral em **43.418 ms**, código 0 (`proof-large-download-{interrupt,resume}`). Picos de RSS amostrados no processo da prova: **357.670.912 bytes** na confirmação/retomada e **370.016.256 bytes** no download; não representam memória total do sistema nem pico dos subprocessos. JSONs ficam em `packages/marketing-desktop/.cache/large-transfer-proof/`.
+- Prova de interface com sobreposição parcial à verificação remota: três identidades/sessões, uma máquina, acervo carregado; p95 desktop **1.491 ms**, web **888/888 ms**, navegação **34,3 ms**, **266 respostas HTTP 200**, sem erros de handler (`proof-ui-large-transfer`, código 0). O ensaio começou enquanto o servidor verificava o arquivo e terminou após a confirmação. Não equivale a carga visual pesada durante todas as amostras nem a dois computadores. O JSON anterior foi preservado antes de repetir a medição.
+
+## Referências e limites
+
+[Cloudflare R2 — multipart](https://developers.cloudflare.com/r2/objects/upload-objects/) documenta expiração padrão de envios incompletos. [AWS — UploadPart](https://docs.aws.amazon.com/AmazonS3/latest/API/API_UploadPart.html) distingue `NoSuchUpload`, que também pode indicar envio concluído; por isso a recuperação consulta o objeto antes de criar sessão.
+
+Credenciais de staging ficam somente em memória. Nenhuma mídia existente foi apagada. As provas usam banco nativo e bucket de testes; não há Docker, publicação social, push ou deploy. Revisão final, critérios de vídeo e piloto físico continuam abertos. A correção da sessão web antes pendente em L3 está comprovada na revisão L9.

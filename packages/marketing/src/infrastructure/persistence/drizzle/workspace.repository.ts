@@ -27,7 +27,14 @@ import { assertArtifactFreshness } from '../../../domain/workspace/artifact-fres
 import { validateEditorialGraph } from '../../../domain/workspace/editorial-graph'
 import { references } from '../../../domain/workspace/references'
 import { WorkspaceError } from '../../../domain/workspace/workspace-error'
+import { freezeAnalysisBasis } from './analysis-basis'
 import type { Database } from './db'
+import { readEditorialGraph } from './editorial-graph-query'
+import { createLearningPiece } from './learning-piece'
+import { readProduction, recordProduction, voidProduction } from './production'
+import { readProjectAnalytics } from './project-analytics'
+import { readRevisionHistoryPage } from './revision-history-page'
+import { readSnapshotPage } from './snapshot-page'
 import {
   editorialAssets as assets,
   editorialChanges as changes,
@@ -49,7 +56,27 @@ export async function projectAccess(
   projectId: string,
   permission: Permission,
 ) {
-  const [project] = await tx.select().from(projects).where(eq(projects.id, projectId)).for('update')
+  return resolveProjectAccess(tx, actorId, projectId, permission, true)
+}
+/** Read-only repeatable-read projections authorize against their own consistent
+ * snapshot. Waiting on FOR UPDATE would instead cause serialization failures
+ * when an import commits while the reader is waiting for the project lock. */
+export async function snapshotProjectAccess(
+  tx: WorkspaceTransaction,
+  actorId: string,
+  projectId: string,
+) {
+  return resolveProjectAccess(tx, actorId, projectId, 'read', false)
+}
+async function resolveProjectAccess(
+  tx: WorkspaceTransaction,
+  actorId: string,
+  projectId: string,
+  permission: Permission,
+  lock: boolean,
+) {
+  const query = tx.select().from(projects).where(eq(projects.id, projectId))
+  const [project] = await (lock ? query.for('update') : query)
   if (!project) throw inaccessible()
   const [membership] = await tx
     .select()
@@ -110,6 +137,36 @@ function itemView(row: typeof items.$inferSelect, authorId?: string): EditorialI
   }
 }
 export class DrizzleWorkspaceRepository implements WorkspaceRepository {
+  voidProduction(
+    actorId: string,
+    projectId: string,
+    input: { operationId: string; recordId: string },
+    hash: string,
+  ) {
+    return voidProduction(this.db, actorId, projectId, input, hash)
+  }
+  production(actorId: string, projectId: string, days: number) {
+    return readProduction(this.db, actorId, projectId, days)
+  }
+  recordProduction(
+    actorId: string,
+    projectId: string,
+    input: import('@sistemazero/marketing-contracts').RecordProduction,
+    hash: string,
+  ) {
+    return recordProduction(this.db, actorId, projectId, input, hash)
+  }
+  analytics(actorId: string, projectId: string, days: number) {
+    return readProjectAnalytics(this.db, actorId, projectId, days)
+  }
+  proposePiece(
+    actorId: string,
+    projectId: string,
+    input: import('@sistemazero/marketing-contracts').LearningPiece,
+    hash: string,
+  ) {
+    return createLearningPiece(this.db, actorId, projectId, input, hash)
+  }
   constructor(private db: Database) {}
   actionReceipt(actorId: string, projectId: string, operationId: string) {
     return this.db.transaction(async (tx) => {
@@ -268,6 +325,15 @@ export class DrizzleWorkspaceRepository implements WorkspaceRepository {
       }))
     })
   }
+  async historyPage(actorId: string, projectId: string, entityId: string, before: string | null) {
+    return this.db.transaction(
+      async (tx) => {
+        await snapshotProjectAccess(tx, actorId, projectId)
+        return readRevisionHistoryPage(tx, projectId, entityId, before)
+      },
+      { isolationLevel: 'repeatable read', accessMode: 'read only' },
+    )
+  }
   async changes(actorId: string, projectId: string, cursor: number): Promise<ChangePage> {
     return this.db.transaction(async (tx) => {
       const { project, permissions: granted } = await projectAccess(tx, actorId, projectId, 'read')
@@ -327,6 +393,25 @@ export class DrizzleWorkspaceRepository implements WorkspaceRepository {
       }
     })
   }
+  async snapshotPage(
+    actorId: string,
+    projectId: string,
+    cursor: import('@sistemazero/marketing-contracts').SnapshotCursor | null,
+  ) {
+    return this.db.transaction(
+      async (tx) => {
+        const { project, permissions } = await snapshotProjectAccess(tx, actorId, projectId)
+        const at = cursor?.at ?? project.sequence
+        if (at > project.sequence)
+          throw new WorkspaceError(
+            'CONTEXT_CHANGED',
+            'O retrato não existe nesta sequência; reinicie a sincronização',
+          )
+        return readSnapshotPage(tx, projectId, at, permissions, cursor)
+      },
+      { isolationLevel: 'repeatable read', accessMode: 'read only' },
+    )
+  }
   async apply(actorId: string, op: EditorialOperation, hash: string): Promise<OperationResult> {
     return this.db.transaction(async (tx) => {
       await projectAccess(tx, actorId, op.projectId, 'edit')
@@ -345,7 +430,12 @@ export class DrizzleWorkspaceRepository implements WorkspaceRepository {
           currentRevisionId: current?.revisionId ?? null,
         }
       } else {
-        const document = op.action === 'archive' ? current?.document : op.document
+        const document =
+          op.action === 'archive'
+            ? current?.document
+            : op.document
+              ? await freezeAnalysisBasis(tx, op.projectId, op.document)
+              : undefined
         if (!document) throw new WorkspaceError('VALIDATION_ERROR', 'Documento ausente')
         if (current && document.kind !== current.kind)
           throw new WorkspaceError('VALIDATION_ERROR', 'Adaptação exige uma nova representação')
@@ -426,6 +516,20 @@ export class DrizzleWorkspaceRepository implements WorkspaceRepository {
       if (rows.length !== refs.revisions.length)
         throw new WorkspaceError('DEPENDENCY_MISSING', 'Revisão de origem indisponível')
       if (
+        document.kind === 'piece' &&
+        document.originAnalysis &&
+        !rows.some(
+          (row) =>
+            row.id === document.originAnalysis?.revisionId &&
+            row.entityId === document.originAnalysis.entityId &&
+            row.document.kind === 'analysis',
+        )
+      )
+        throw new WorkspaceError(
+          'DEPENDENCY_MISSING',
+          'A origem da pauta precisa apontar para a revisão da análise',
+        )
+      if (
         document.kind === 'analysis' &&
         (document.basis ?? []).some(
           (source) =>
@@ -470,13 +574,7 @@ export class DrizzleWorkspaceRepository implements WorkspaceRepository {
     }
   }
   private async validateGraph(tx: WorkspaceTransaction, projectId: string, changed: Set<string>) {
-    validateEditorialGraph(
-      await tx
-        .select({ id: items.id, document: items.document, archived: items.archived })
-        .from(items)
-        .where(eq(items.projectId, projectId)),
-      changed,
-    )
+    validateEditorialGraph(await readEditorialGraph(tx, projectId, changed), changed)
   }
   async applyBatch(actorId: string, input: EditorialBatch, hash: string): Promise<BatchResult> {
     return this.db.transaction((tx) => this.applyBatchInTransaction(tx, actorId, input, hash))
@@ -560,6 +658,15 @@ export class DrizzleWorkspaceRepository implements WorkspaceRepository {
           },
         }
       })
+      for (const { change, row } of updates) {
+        if (change.action === 'save')
+          row.document = await freezeAnalysisBasis(
+            tx,
+            input.projectId,
+            row.document,
+            updates.map((update) => update.row),
+          )
+      }
       for (const { row } of updates) {
         if (current.has(row.id))
           await tx
@@ -573,10 +680,7 @@ export class DrizzleWorkspaceRepository implements WorkspaceRepository {
         input.projectId,
         new Set(input.changes.map((change) => change.entityId)),
       )
-      let cursor = 0
       for (const { change, row } of updates) {
-        if (change.action === 'save')
-          await this.validateReferences(tx, input.projectId, row.document)
         await tx.insert(revisions).values({
           id: row.revisionId,
           projectId: input.projectId,
@@ -586,6 +690,11 @@ export class DrizzleWorkspaceRepository implements WorkspaceRepository {
           createdBy: actorId,
           createdAt: row.updatedAt,
         })
+      }
+      let cursor = 0
+      for (const { change, row } of updates) {
+        if (change.action === 'save')
+          await this.validateReferences(tx, input.projectId, row.document)
         cursor = await recordChange(
           tx,
           input.projectId,

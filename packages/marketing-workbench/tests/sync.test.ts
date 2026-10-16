@@ -7,6 +7,7 @@ import {
   type EditorialOperation,
   operationSchema,
   type ProjectView,
+  workspaceProtocol,
 } from '@sistemazero/marketing-contracts'
 import { BrowserWorkspaceAdapter, WorkspaceHttpError } from '../src/browser-adapter'
 import type { JournalEntry, MutationJournal } from '../src/browser-journal'
@@ -82,6 +83,137 @@ function fixture() {
   return { operation, item }
 }
 describe('bancada e confirmação', () => {
+  test('fresh authorized head skips one empty delta; writes and revocation are still checked', async () => {
+    const { item } = fixture(),
+      journal = new Journal(),
+      paths: string[] = []
+    let sequence = 1,
+      visible = true,
+      changedItem = item
+    const project = {
+      id: item.projectId,
+      name: 'Equipe',
+      product: 'Revisão',
+      createdBy: randomUUID(),
+      createdAt: item.updatedAt,
+      permissions: ['read'],
+    }
+    const adapter = new BrowserWorkspaceAdapter(
+      'review',
+      async (path) => {
+        paths.push(path)
+        if (path === '/protocol') return workspaceProtocol
+        if (path === '/head')
+          return { ...workspaceProtocol, projects: visible ? [{ ...project, sequence }] : [] }
+        if (!visible) throw new WorkspaceHttpError(403, 'FORBIDDEN', 'Acesso revogado')
+        if (path.endsWith('/snapshot-page'))
+          return {
+            projectId: item.projectId,
+            at: 1,
+            items: [{ ...item, sequence: 1 }],
+            permissions: ['read'],
+            nextAfter: null,
+          }
+        if (path.includes('/changes?')) {
+          const from = Number(new URL(path, 'https://review.test').searchParams.get('cursor'))
+          return {
+            cursor: sequence,
+            permissions: ['read'],
+            hasMore: false,
+            resetRequired: false,
+            events:
+              from < sequence
+                ? [
+                    {
+                      schemaVersion: 1,
+                      projectId: item.projectId,
+                      sequence,
+                      type: 'revision',
+                      entityId: item.id,
+                      revisionId: changedItem.revisionId,
+                      actorId: project.createdBy,
+                      createdAt: item.updatedAt,
+                    },
+                  ]
+                : [],
+            items: from < sequence ? [{ ...changedItem, sequence }] : [],
+          }
+        }
+        throw new Error(`Unexpected ${path}`)
+      },
+      journal,
+    )
+    await adapter.projects()
+    await adapter.view(item.projectId)
+    paths.length = 0
+    await adapter.projects()
+    await adapter.view(item.projectId)
+    expect(paths).toEqual(['/head'])
+    // A caller can request a view after a remote write without refreshing the list.
+    sequence = 2
+    changedItem = { ...item, revisionId: randomUUID() }
+    expect((await adapter.view(item.projectId)).items[0]?.revisionId).toBe(changedItem.revisionId)
+    expect(paths.at(-1)).toContain('/changes?cursor=1')
+    visible = false
+    expect(await adapter.projects()).toEqual([])
+    await expect(adapter.view(item.projectId)).rejects.toThrow('Acesso revogado')
+  })
+  test('primeira abertura retoma páginas congeladas e começa o delta depois do retrato completo', async () => {
+    const { item } = fixture(),
+      journal = new Journal()
+    const ids = [item.id, randomUUID()].sort()
+    const first = { ...item, id: ids[0] ?? item.id, sequence: 1 },
+      last = { ...item, id: ids[1] ?? item.id, revisionId: randomUUID(), sequence: 2 }
+    const paths: string[] = []
+    let fail = true
+    const adapter = new BrowserWorkspaceAdapter(
+      'revisão',
+      async (path) => {
+        paths.push(path)
+        if (path.endsWith('/snapshot-page'))
+          return {
+            projectId: item.projectId,
+            at: 1000,
+            items: [first],
+            permissions: ['read'],
+            nextAfter: first.id,
+          }
+        if (path.includes('/snapshot-page?')) {
+          expect(path).toContain(`at=1000&after=${first.id}`)
+          if (fail) throw new WorkspaceHttpError(503, 'UNAVAILABLE', 'Falha entre páginas')
+          return {
+            projectId: item.projectId,
+            at: 1000,
+            items: [last],
+            permissions: ['read'],
+            nextAfter: null,
+          }
+        }
+        if (path.endsWith('/changes?cursor=1000'))
+          return {
+            events: [],
+            items: [],
+            cursor: 1000,
+            permissions: ['read'],
+            hasMore: false,
+            resetRequired: false,
+          }
+        throw new Error(`Consulta inesperada: ${path}`)
+      },
+      journal,
+    )
+    const interrupted = await adapter.view(item.projectId)
+    expect(interrupted.items).toHaveLength(0)
+    expect(interrupted.report.phase).toBe('offline')
+    fail = false
+    const view = await adapter.view(item.projectId)
+    expect(view.items.map((value) => value.id)).toEqual(ids)
+    expect(view.report.phase).toBe('idle')
+    expect(paths.filter((path) => path.endsWith('/snapshot-page'))).toHaveLength(1)
+    expect(paths.filter((path) => path.includes('/changes?'))).toEqual([
+      `/projects/${item.projectId}/changes?cursor=1000`,
+    ])
+  })
   test('pauta local tem grafo completo, sem revisão confirmada inventada', () => {
     const batch = createPieceBatch({
       projectId: randomUUID(),
@@ -176,6 +308,14 @@ describe('bancada e confirmação', () => {
     const adapter = new BrowserWorkspaceAdapter(
       'pessoa',
       async (path) => {
+        if (path.endsWith('/snapshot-page'))
+          return {
+            projectId: item.projectId,
+            at: 0,
+            items: [],
+            nextAfter: null,
+            permissions: ['read', 'edit'],
+          }
         if (path === '/operations')
           return {
             status: 'applied',

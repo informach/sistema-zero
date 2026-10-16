@@ -28,3 +28,9 @@
 - O fluxo web legado ainda usa refresh rotativo. Sua revisão identificou concorrência na gravação de cookies entre requests; a correção integrada continua pendente e impede tratar o review completo como encerrado.
 
 L2 foi revisado nesta etapa, mas não está marcado como integralmente concluído. O trabalho segue nos lotes dependentes e nos pontos abertos, sem pausa para aprovação.
+
+## Atualização integrada em 16/10
+
+Cache/outbox, transferências, bancada compartilhada e seleção do handoff receberam implementação nos lotes seguintes. A corrida da sessão web foi corrigida em L9 com sessão opaca própria; a rotação e detecção de reuso existentes no Auth foram preservadas. Prova real de oito acessos paralelos, logout/revogação e três identidades está em `.audits/marketing-l9-sync-performance-2026-10-16.md`. A pendência de refresh acima é histórica, não um defeito ainda aberto.
+
+A prova de instalação/atualização assinadas, primeiro login em cliente desconectado e piloto físico em duas máquinas continuam pendentes. Demonstrações atuais não substituem esses critérios.

@@ -11,6 +11,8 @@ import {
 } from '@sistemazero/marketing-contracts'
 import { classifySource, containsCredential, sourceRoots } from './inventory-policy'
 
+export { reviewInventoryProduction } from './production-review-node'
+
 export class SourceChangedError extends Error {
   constructor() {
     super('Arquivo mudou durante a leitura; refaça o inventário antes de importar')
@@ -239,6 +241,16 @@ export async function sourceTextBytes(
   entry: InventoryEntry,
   signal: AbortSignal,
 ): Promise<Buffer> {
+  const bytes = await boundedSourceBytes(root, entry, signal)
+  new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(bytes)
+  return bytes
+}
+/** Small opaque documents retain their exact bytes for deterministic text extraction. */
+export async function boundedSourceBytes(
+  root: string,
+  entry: InventoryEntry,
+  signal: AbortSignal,
+): Promise<Buffer> {
   if (!entry.sha256 || entry.bytes === null || !['eligible', 'review'].includes(entry.disposition))
     throw new Error('Origem não está disponível para carga')
   if (entry.bytes > 196608)
@@ -251,6 +263,5 @@ export async function sourceTextBytes(
   if (value.sha256 !== entry.sha256 || value.bytes !== entry.bytes || value.credential)
     throw new SourceChangedError()
   const bytes = Buffer.concat(chunks)
-  new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(bytes)
   return bytes
 }

@@ -3,18 +3,25 @@ import { rejects } from 'node:assert/strict'
 import { createHash, randomUUID } from 'node:crypto'
 import {
   type AssetManifest,
+  assetConfirmationSchema,
   UPLOAD_PART_BYTES,
   type UploadedPart,
 } from '@sistemazero/marketing-contracts'
 import { migrate } from 'drizzle-orm/postgres-js/migrator'
+import { Elysia } from 'elysia'
 import type { Actor } from '../src/application/actor'
 import { WorkspaceService } from '../src/application/workspace/workspace.service'
 import { WorkspaceAssetsService } from '../src/application/workspace/workspace-assets.service'
-import type { MultipartStore } from '../src/domain/ports/multipart-store.port'
+import {
+  type MultipartStore,
+  MultipartUploadMissingError,
+} from '../src/domain/ports/multipart-store.port'
 import { createDbConnection, type DbConnection } from '../src/infrastructure/persistence/drizzle/db'
 import { DrizzleWorkspaceRepository } from '../src/infrastructure/persistence/drizzle/workspace.repository'
 import { DrizzleWorkspaceAssetsRepository } from '../src/infrastructure/persistence/drizzle/workspace-assets.repository'
 import { WorkspaceAssetVerifier } from '../src/infrastructure/workers/workspace-asset-verifier'
+import { workspaceAssetsRoutes } from '../src/interfaces/http/routes/workspace-assets.routes'
+import { requireReviewDatabase } from './helpers/review-database'
 
 class MemoryMultipart implements MultipartStore {
   uploads = new Map<string, { key: string; mime: string; parts: Map<number, Buffer> }>()
@@ -37,7 +44,7 @@ class MemoryMultipart implements MultipartStore {
   }
   async listParts(_key: string, id: string) {
     const upload = this.uploads.get(id)
-    if (!upload) throw new Error('NoSuchUpload')
+    if (!upload) throw new MultipartUploadMissingError()
     return [...upload.parts]
       .sort(([a], [b]) => a - b)
       .map(([number, bytes]) => ({
@@ -103,12 +110,7 @@ suite('arquivos editoriais: multipart, retomada e verificação', () => {
   }
   const logger = { debug() {}, info() {}, warn() {}, error() {} }
   beforeAll(async () => {
-    if (
-      !url ||
-      new URL(url).hostname !== '127.0.0.1' ||
-      new URL(url).pathname !== '/marketing_review'
-    )
-      throw new Error('Banco exclusivo de revisão obrigatório')
+    requireReviewDatabase(url)
     connection = createDbConnection(url)
     await migrate(connection.db, {
       migrationsFolder: 'src/infrastructure/persistence/drizzle/migrations',
@@ -179,6 +181,77 @@ suite('arquivos editoriais: multipart, retomada e verificação', () => {
     )
     expect((await f.service.complete(owner, f.projectId, f.manifest.id)).state).toBe('confirmed')
   })
+  test('sessão expirada retoma a mesma identidade, concilia dois pedidos e só confirma após hash', async () => {
+    const f = await fixture()
+    await f.service.start(owner, f.input)
+    const old = await repo.get(owner.userId, f.projectId, f.manifest.id, true)
+    if (!old.uploadId) throw new Error('Sessão da fixture ausente')
+    f.store.uploads.delete(old.uploadId)
+    const before = await f.service.get(owner, f.projectId, f.manifest.id)
+    expect(before.state).toBe('uploading')
+    expect(before.bytesReceived).toBe(false)
+    expect(before.error).toContain('Retome')
+    expect(f.store.uploads.size).toBe(0) // A consulta nunca inicia outro upload.
+    const results = await Promise.all([
+      f.service.start(owner, f.input),
+      f.service.start(owner, f.input),
+    ])
+    expect(results.every((value) => value.manifest.id === f.manifest.id)).toBe(true)
+    expect(results.every((value) => !value.bytesReceived && value.error === null)).toBe(true)
+    expect(f.store.uploads.size).toBe(1)
+    const current = await repo.get(owner.userId, f.projectId, f.manifest.id, true)
+    expect(current.uploadId).not.toBe(old.uploadId)
+    expect(
+      (await repo.resetExpiredUpload(owner.userId, f.projectId, f.manifest.id, old.uploadId))
+        .uploadId,
+    ).toBe(current.uploadId)
+    await rejects(
+      () => repo.resetExpiredUpload(randomUUID(), f.projectId, f.manifest.id, old.uploadId ?? ''),
+      { code: 'OBJECT_INACCESSIBLE' },
+    )
+    const upload = [...f.store.uploads.values()][0]
+    if (!upload) throw new Error('Novo envio ausente')
+    upload.parts.set(1, f.bytes)
+    expect((await f.service.complete(owner, f.projectId, f.manifest.id)).state).toBe('verifying')
+    await new WorkspaceAssetVerifier(repo, f.store, logger).tick()
+    expect((await f.service.get(owner, f.projectId, f.manifest.id)).state).toBe('confirmed')
+    expect(
+      (
+        await repo.resetExpiredUpload(
+          owner.userId,
+          f.projectId,
+          f.manifest.id,
+          current.uploadId ?? '',
+        )
+      ).state,
+    ).toBe('confirmed')
+    expect((await f.service.list(owner, f.projectId, {})).items).toHaveLength(1)
+  })
+  test('erro de rede não reinicia envio e objeto já completo conserva confirmação pendente', async () => {
+    const f = await fixture()
+    await f.service.start(owner, f.input)
+    const original = await repo.get(owner.userId, f.projectId, f.manifest.id, true)
+    const listParts = f.store.listParts.bind(f.store)
+    f.store.listParts = async () => {
+      throw new Error('Conexão indisponível')
+    }
+    await rejects(() => f.service.start(owner, f.input), /Conexão indisponível/)
+    expect((await repo.get(owner.userId, f.projectId, f.manifest.id, true)).uploadId).toBe(
+      original.uploadId,
+    )
+    expect(f.store.uploads.size).toBe(1)
+    f.store.listParts = listParts
+    if (!original.uploadId) throw new Error('Sessão ausente')
+    f.store.uploads.delete(original.uploadId)
+    f.store.objects.set(original.storageKey, { bytes: f.bytes, mime: f.manifest.mime })
+    const resumed = await f.service.start(owner, f.input)
+    expect(resumed.bytesReceived).toBe(true)
+    expect(resumed.state).toBe('uploading')
+    expect(f.store.uploads.size).toBe(0)
+    expect((await f.service.complete(owner, f.projectId, f.manifest.id)).state).toBe('verifying')
+    await new WorkspaceAssetVerifier(repo, f.store, logger).tick()
+    expect((await f.service.get(owner, f.projectId, f.manifest.id)).state).toBe('confirmed')
+  })
   test('biblioteca pagina sem duplicar e não expõe arquivos de outro projeto', async () => {
     const f = await fixture(),
       other = await fixture()
@@ -199,6 +272,78 @@ suite('arquivos editoriais: multipart, retomada e verificação', () => {
       [...first.items, ...second.items].every((item) => item.manifest.projectId === f.projectId),
     ).toBe(true)
     await rejects(() => f.service.list({ ...owner, userId: randomUUID() }, f.projectId, {}), {
+      code: 'OBJECT_INACCESSIBLE',
+    })
+  })
+  test('confirmação em lote retorna só arquivos verificados do projeto e revalida acesso', async () => {
+    const f = await fixture(),
+      other = await fixture()
+    await f.service.start(owner, f.input)
+    await other.service.start(owner, other.input)
+    const pending = randomUUID(),
+      absent = randomUUID()
+    await f.service.start(owner, {
+      operationId: randomUUID(),
+      manifest: { ...f.manifest, id: pending },
+    })
+    const input = { ids: [f.manifest.id, pending, other.manifest.id, absent] }
+    expect(await f.service.confirmed(owner, f.projectId, input)).toEqual({
+      projectId: f.projectId,
+      manifests: [],
+    })
+    const upload = [...f.store.uploads.values()].find((item) => item.key.includes(f.manifest.id))
+    if (!upload) throw new Error('Upload da prova ausente')
+    upload.parts.set(1, f.bytes)
+    await f.service.complete(owner, f.projectId, f.manifest.id)
+    expect((await f.service.confirmed(owner, f.projectId, input)).manifests).toHaveLength(0)
+    await new WorkspaceAssetVerifier(repo, f.store, logger).tick()
+    expect(await f.service.confirmed(owner, f.projectId, input)).toEqual({
+      projectId: f.projectId,
+      manifests: [f.manifest],
+    })
+    const api = new Elysia().use(
+      workspaceAssetsRoutes({ assets: f.service, internalToken: 'test-assets-confirmed' }),
+    )
+    const response = await api.handle(
+      new Request(`http://localhost/marketing/workspace/projects/${f.projectId}/assets/confirmed`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-internal-token': 'test-assets-confirmed',
+          'x-auth-user-id': owner.userId,
+          'x-auth-user-role': 'staff',
+          'x-auth-user-status': 'active',
+        },
+        body: JSON.stringify(input),
+      }),
+    )
+    expect(response.status).toBe(200)
+    expect(assetConfirmationSchema.parse(await response.json()).manifests).toEqual([f.manifest])
+    for (const ids of [[], [pending, pending], Array.from({ length: 101 }, () => randomUUID())])
+      await rejects(async () => f.service.confirmed(owner, f.projectId, { ids }), {
+        code: 'VALIDATION_ERROR',
+      })
+    await rejects(
+      async () => new WorkspaceAssetsService(repo, null).confirmed(owner, f.projectId, input),
+      { code: 'MEDIA_NOT_CONFIGURED' },
+    )
+    await rejects(
+      () => f.service.confirmed({ ...owner, userId: randomUUID() }, f.projectId, input),
+      { code: 'OBJECT_INACCESSIBLE' },
+    )
+    const reader = { ...owner, userId: randomUUID() }
+    await workspace.setMember(owner, f.projectId, {
+      operationId: randomUUID(),
+      userId: reader.userId,
+      permissions: ['read'],
+    })
+    expect((await f.service.confirmed(reader, f.projectId, input)).manifests).toEqual([f.manifest])
+    await workspace.setMember(owner, f.projectId, {
+      operationId: randomUUID(),
+      userId: reader.userId,
+      permissions: [],
+    })
+    await rejects(() => f.service.confirmed(reader, f.projectId, input), {
       code: 'OBJECT_INACCESSIBLE',
     })
   })

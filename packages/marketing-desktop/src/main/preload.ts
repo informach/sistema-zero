@@ -2,8 +2,18 @@ import { contextBridge, ipcRenderer } from 'electron'
 import type { DesktopBridge, Progress } from '../shared/contracts'
 
 const bridge: DesktopBridge = {
+  rescanInventory: (scope, projectId, id) =>
+    ipcRenderer.invoke('marketing:rescan-inventory', scope, projectId, id),
+  linkInventoryProduction: (scope, projectId, reportId, planHash) =>
+    ipcRenderer.invoke('marketing:link-inventory-production', scope, projectId, reportId, planHash),
   exportAssetFile: (scope, input) =>
     ipcRenderer.invoke('marketing:export-asset-file', scope, input),
+  inventoryProductionFolders: (scope, projectId, id) =>
+    ipcRenderer.invoke('marketing:inventory-production-folders', scope, projectId, id),
+  reviewInventoryProduction: (scope, projectId, id, folderPath) =>
+    ipcRenderer.invoke('marketing:review-inventory-production', scope, projectId, id, folderPath),
+  shareInventoryProduction: (scope, projectId, id, folderPath) =>
+    ipcRenderer.invoke('marketing:share-inventory-production', scope, projectId, id, folderPath),
   loadInventorySelection: (scope, projectId, id, selection) =>
     ipcRenderer.invoke('marketing:load-inventory-selection', scope, projectId, id, selection),
   loadInventoryFile: (scope, projectId, id, ordinal) =>
@@ -38,7 +48,8 @@ const bridge: DesktopBridge = {
     ipcRenderer.invoke('marketing:local-asset', scope, projectId, assetId),
   synchronize: () => ipcRenderer.invoke('marketing:synchronize'),
   projects: () => ipcRenderer.invoke('marketing:projects'),
-  projectView: (projectId) => ipcRenderer.invoke('marketing:project-view', projectId),
+  projectView: (projectId, version) =>
+    ipcRenderer.invoke('marketing:project-view', projectId, version),
   saveDraft: (scope, input) => ipcRenderer.invoke('marketing:save-draft', scope, input),
   onSync: (listener) => {
     const handler = (
@@ -55,6 +66,7 @@ const bridge: DesktopBridge = {
     return () => ipcRenderer.removeListener('marketing:handoff-available', handler)
   },
   connection: () => ipcRenderer.invoke('marketing:connection'),
+  connectionState: () => ipcRenderer.invoke('marketing:connection-state'),
   connect: (input) => ipcRenderer.invoke('marketing:connect', input),
   openApproval: () => ipcRenderer.invoke('marketing:open-approval'),
   pollConnection: () => ipcRenderer.invoke('marketing:poll-connection'),

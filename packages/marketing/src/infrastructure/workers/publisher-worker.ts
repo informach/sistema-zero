@@ -229,17 +229,20 @@ export class PublisherWorker {
             offset: 0,
           })
         ).items
-    const orderedAssetIds = delivery
-      ? delivery.orderedAssetIds
+    const orderedMedia = delivery
+      ? delivery.orderedMedia
       : publication.format === 'ig_carousel'
-        ? await auto.publicationAssets.listByPublication(publication.id)
+        ? (await auto.publicationAssets.listByPublication(publication.id)).map((assetId) => ({
+            assetId,
+            alt: null,
+          }))
         : []
     const outcome = await publisher.publish({
       publication,
       account,
       accessToken,
       assets: items,
-      orderedAssetIds,
+      orderedMedia,
       assetBytes: (asset: MediaAsset, start: number, endInclusive: number) => {
         if (!asset.r2Key) return Promise.reject(new Error('asset sem r2Key'))
         return auto.store.getRange({ key: asset.r2Key, start, endInclusive })

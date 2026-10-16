@@ -1,24 +1,20 @@
 import 'server-only'
-import { headers } from 'next/headers'
+import { retryAfterMilliseconds } from '@sistemazero/marketing-contracts'
 import { getEnv } from '@/lib/env'
+import { getBrowserCredential, requestBrowserAccess } from './browser-session'
+import { clientForwardHeaders } from './client-headers'
 import { forgetDesktopAccess, getDesktopCredential, requestDesktopAccess } from './desktop-session'
-import {
-  type AuthTokens,
-  clearSessionCookies,
-  getAccessToken,
-  getRefreshToken,
-  setSessionCookies,
-  verifyDesktopBinding,
-} from './session'
+import { type AuthTokens, verifyDesktopBinding } from './session'
 
 // Tetos das chamadas de saída (upstream pendurado NÃO pode pendurar o handler):
-// dados via gateway com folga; auth (login/refresh/logout) é rápido por contrato.
+// dados via gateway com folga; auth (login/logout) é rápido por contrato.
 const GATEWAY_TIMEOUT_MS = 60_000
 const AUTH_TIMEOUT_MS = 15_000
 
 export interface GatewayResponse<T = unknown> {
   status: number
   body: T
+  retryAfterMs?: number
 }
 
 export interface CallOpts {
@@ -26,27 +22,6 @@ export interface CallOpts {
   method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE'
   body?: unknown
   query?: Record<string, string | number | undefined | null>
-}
-
-/**
- * Prova de origem do cliente repassada ao gateway: sem o `x-forwarded-for`, o
- * rate limit por IP do gateway e o log de login falho do auth veriam SÓ o IP do
- * host do app (um balde único p/ toda a equipe). O `x-request-id` amarra o
- * rastreio ponta-a-ponta (o gateway valida o formato).
- */
-async function clientForwardHeaders(): Promise<Record<string, string>> {
-  try {
-    const h = await headers()
-    const out: Record<string, string> = {}
-    const xff = h.get('x-forwarded-for')
-    if (xff) out['x-forwarded-for'] = xff
-    const rid = h.get('x-request-id')
-    if (rid) out['x-request-id'] = rid
-    return out
-  } catch {
-    // Fora de request scope (defensivo) — segue sem os headers.
-    return {}
-  }
 }
 
 async function rawFetch(path: string, opts: CallOpts, access: string | null): Promise<Response> {
@@ -79,76 +54,7 @@ async function readJson<T>(res: Response): Promise<T> {
   }
 }
 
-// Single-flight da rotação: chamadas PARALELAS com o mesmo refresh token (ex.:
-// `Promise.all` no BFF, fetches concorrentes do painel) compartilham UMA
-// rotação. Sem isso, a segunda rotação perde o claim atômico do auth, recebe
-// !ok e limparia os cookies que a primeira acabou de regravar → logout aleatório.
-//
-// ⚠️ O estado vive em **`globalThis`**, NÃO em escopo de módulo: o Turbopack
-// separa route handlers (e o proxy) em BUNDLES distintos com cópias próprias do
-// módulo — um Map de módulo daria uma rotação concorrente POR bundle, mesmo num
-// único processo, reabrindo o logout aleatório (lição verificada no community).
-// Os bundles dividem o processo, então o `globalThis` é o ponto de encontro.
-//
-// ⚠️ Mesmo assim o single-flight é POR PROCESSO → cobre só UMA réplica. O app
-// roda em **réplica única** (default do Railway; a equipe é pequena) — NÃO
-// escale sem antes mover isto p/ um store compartilhado ou dar ao auth uma
-// janela de reuso do refresh. (Mesma regra do admin.)
-const refreshGlobal = globalThis as typeof globalThis & {
-  __szMktInflightRefresh?: Map<string, Promise<string | null>>
-}
-refreshGlobal.__szMktInflightRefresh ??= new Map()
-const inflightRefresh = refreshGlobal.__szMktInflightRefresh
-
-/**
- * Rotação de tokens (gateway → auth /refresh), com single-flight por refresh
- * token. Regrava os cookies; `null` se falhar. Falha de REDE não limpa cookies
- * (transitória); recusa do auth (401/409) limpa — o refresh já não vale.
- */
-export async function tryRefresh(): Promise<string | null> {
-  const refreshToken = await getRefreshToken()
-  if (!refreshToken) return null
-  const existing = inflightRefresh.get(refreshToken)
-  if (existing) return existing
-  const attempt = rotateTokens(refreshToken).finally(() => {
-    inflightRefresh.delete(refreshToken)
-  })
-  inflightRefresh.set(refreshToken, attempt)
-  return attempt
-}
-
-async function rotateTokens(refreshToken: string): Promise<string | null> {
-  const env = getEnv()
-  let res: Response
-  try {
-    res = await fetch(new URL('/auth/refresh', env.GATEWAY_URL), {
-      method: 'POST',
-      headers: { 'content-type': 'application/json', ...(await clientForwardHeaders()) },
-      body: JSON.stringify({ refreshToken }),
-      cache: 'no-store',
-      signal: AbortSignal.timeout(AUTH_TIMEOUT_MS),
-    })
-  } catch {
-    return null // rede/timeout: não derruba a sessão por falha transitória
-  }
-  if (!res.ok) {
-    await clearSessionCookies()
-    return null
-  }
-  const data = await readJson<{ tokens?: AuthTokens }>(res)
-  if (!data?.tokens?.accessToken) {
-    await clearSessionCookies()
-    return null
-  }
-  await setSessionCookies(data.tokens)
-  return data.tokens.accessToken
-}
-
-/**
- * Chamada autenticada ao gateway com o Bearer do cookie. Em 401, tenta UMA rotação
- * de token e re-tenta. SÓ pode ser usada em Route Handlers/Server Actions (escreve
- * cookies na rotação). Retorna `{status, body}` cru.
- */
+/** Session resolution is read-only: no request can rotate or clear another request's cookie. */
 export async function gatewayFetch<T = unknown>(
   path: string,
   opts: CallOpts = {},
@@ -182,7 +88,11 @@ export async function gatewayFetch<T = unknown>(
         },
         { status: access.status },
       )
-      return { status: response.status, body: await readJson<T>(response) }
+      return {
+        status: response.status,
+        body: await readJson<T>(response),
+        retryAfterMs: access.retryAfterMs,
+      }
     }
     if (
       opts.desktopBinding &&
@@ -201,15 +111,39 @@ export async function gatewayFetch<T = unknown>(
     }
     const response = await rawFetch(path, opts, access.accessToken)
     if (response.status === 401 || response.status === 403) forgetDesktopAccess(desktop)
-    return { status: response.status, body: await readJson<T>(response) }
+    return {
+      status: response.status,
+      body: await readJson<T>(response),
+      retryAfterMs: retryAfterMilliseconds(response.headers.get('retry-after')),
+    }
   }
-  const access = await getAccessToken()
-  let res = await rawFetch(path, opts, access)
-  if (res.status === 401) {
-    const renewed = await tryRefresh()
-    if (renewed) res = await rawFetch(path, opts, renewed)
+  const browser = await getBrowserCredential()
+  const access = browser ? await requestBrowserAccess(browser) : { ok: false as const, status: 401 }
+  if (!access.ok) {
+    const response = Response.json(
+      {
+        error: {
+          code: access.status === 401 ? 'UNAUTHORIZED' : 'IDENTITY_UNAVAILABLE',
+          message:
+            access.status === 401
+              ? 'Entre novamente na sua conta'
+              : 'Servidor de identidade indisponível',
+        },
+      },
+      { status: access.status },
+    )
+    return {
+      status: response.status,
+      body: await readJson<T>(response),
+      retryAfterMs: 'retryAfterMs' in access ? access.retryAfterMs : undefined,
+    }
   }
-  return { status: res.status, body: await readJson<T>(res) }
+  const res = await rawFetch(path, opts, access.accessToken)
+  return {
+    status: res.status,
+    body: await readJson<T>(res),
+    retryAfterMs: retryAfterMilliseconds(res.headers.get('retry-after')),
+  }
 }
 
 /** Login (rota pública do gateway → auth). NÃO leva Bearer. */
@@ -228,7 +162,7 @@ export async function loginRequest(
   return { status: res.status, body: await readJson(res) }
 }
 
-/** Native pairing shares this BFF's HttpOnly session; only the BFF rotates refresh tokens. */
+/** Native pairing exchanges its one-use grant for an independent HttpOnly session. */
 export async function desktopPairingRequest(
   action: 'start' | 'exchange',
   body: unknown,

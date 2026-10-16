@@ -22,6 +22,7 @@ export type ProductionExecutor = (
   resources: ExecutionResources,
   signal: AbortSignal,
   progress: (stage: string) => void,
+  recovery: { generationEpoch: number; provider: 'checkpoint' | 'only' },
 ) => Promise<ProductionResult>
 export type ExecuteSelection = {
   scope: WorkspaceRequest['scope']
@@ -114,6 +115,7 @@ export class ExecutionSupervisor {
           runId: selection.runId,
           projectId: selection.projectId,
           contextHash: run.request.contextHash,
+          generationEpoch: null,
           claim: {
             operationId: randomUUID(),
             expectedEpoch: run.epoch,
@@ -143,6 +145,7 @@ export class ExecutionSupervisor {
     if (
       selection.strategy === 'resume' &&
       !journal.result &&
+      journal.generationEpoch === null &&
       !['render', 'transcribe', 'prepare-media'].includes(run.request.capability)
     )
       throw new Error(
@@ -153,6 +156,7 @@ export class ExecutionSupervisor {
       journal.result = null
       journal.finish = null
       journal.stage = 'prepared'
+      journal.generationEpoch = null
     }
     // Reuse a live attempt only on this very device; server checks device ownership on every heartbeat.
     const resumeLive =
@@ -202,16 +206,28 @@ export class ExecutionSupervisor {
             'Esta tentativa já iniciou o envio. Recupere o resultado local antes de continuar.',
           )
         journal.stage = 'generating'
+        journal.generationEpoch ??= run.epoch
+        // A lost failure acknowledgement must not later replace a recovered success.
+        journal.finish = null
         persist()
         computeTimeout = setTimeout(
           () => controller.abort(new Error('A produção atingiu o limite deste pedido')),
           run.request.limits.timeoutMs,
         )
         journal.result = completedResultSchema.parse(
-          await this.execute(run, resources, controller.signal, (stage) => {
-            checkpoint = { ...checkpoint, stage }
-            this.progress(stage)
-          }),
+          await this.execute(
+            run,
+            resources,
+            controller.signal,
+            (stage) => {
+              checkpoint = { ...checkpoint, stage }
+              this.progress(stage)
+            },
+            {
+              generationEpoch: journal.generationEpoch,
+              provider: selection.strategy === 'resume' ? 'only' : 'checkpoint',
+            },
+          ),
         )
         clearTimeout(computeTimeout)
         // Persist before transfer or any acknowledgement. Never rerun inference to repair a network failure.

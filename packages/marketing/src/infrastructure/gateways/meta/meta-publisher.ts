@@ -7,6 +7,10 @@ import type {
 import type { PublicationFormat } from '../../../domain/publication/publication'
 import { type MetaApi, MetaApiError } from './meta-api.port'
 
+function imageDescription(alt: string | null | undefined): Record<string, string> {
+  return alt == null ? {} : { alt_text: alt }
+}
+
 /**
  * Publisher automático da Meta — UMA classe, DUAS instâncias (instagram e
  * facebook), compartilhando o MetaApi (o page token serve os dois).
@@ -157,7 +161,13 @@ export class MetaPublisher implements SocialPublisher {
         igUserId: input.account.externalId,
         params: isReels
           ? { media_type: 'REELS', video_url: mediaUrl, caption }
-          : { image_url: mediaUrl, caption },
+          : {
+              image_url: mediaUrl,
+              caption,
+              ...imageDescription(
+                input.orderedMedia.find((item) => item.assetId === media.id)?.alt,
+              ),
+            },
       })
       // Checkpoint IMEDIATO: retry consulta o status, nunca cria 2º container.
       await input.saveSession({ provider: 'meta', containerId })
@@ -178,9 +188,10 @@ export class MetaPublisher implements SocialPublisher {
       }
     }
     const byId = new Map(input.assets.map((a) => [a.id, a]))
-    const ordered = input.orderedAssetIds
-      .map((id) => byId.get(id))
-      .filter((a): a is MediaAsset => Boolean(a && a.status === 'ready' && a.r2Key))
+    const ordered = input.orderedMedia.map((placement) => ({
+      ...placement,
+      asset: byId.get(placement.assetId),
+    }))
     if (ordered.length < 2 || ordered.length > 10) {
       return {
         kind: 'permanent',
@@ -188,7 +199,13 @@ export class MetaPublisher implements SocialPublisher {
           'O carrossel do Instagram precisa de 2 a 10 imagens. Selecione e ordene no composer',
       }
     }
-    const notJpeg = ordered.find((a) => a.contentType !== 'image/jpeg')
+    if (ordered.some(({ asset }) => asset?.status !== 'ready' || !asset.r2Key))
+      return {
+        kind: 'permanent',
+        reason:
+          'Uma imagem selecionada não está pronta. Confira todos os arquivos antes de reenviar.',
+      }
+    const notJpeg = ordered.find(({ asset }) => asset?.contentType !== 'image/jpeg')?.asset
     if (notJpeg) {
       return {
         kind: 'permanent',
@@ -200,12 +217,18 @@ export class MetaPublisher implements SocialPublisher {
     // checkpoint após CADA um (crash no 7º retoma do 7º, nunca duplica o 1º).
     const children = [...(session.childContainerIds ?? [])]
     while (children.length < ordered.length) {
-      const asset = ordered[children.length] as MediaAsset
+      const placement = ordered[children.length]
+      if (!placement?.asset) throw new Error('A imagem selecionada não está disponível')
+      const asset = placement.asset
       const mediaUrl = await input.assetUrl(asset, this.deps.config.presignTtlSeconds)
       const childId = await this.deps.api.createIgContainer({
         accessToken: input.accessToken,
         igUserId: input.account.externalId,
-        params: { image_url: mediaUrl, is_carousel_item: 'true' },
+        params: {
+          image_url: mediaUrl,
+          is_carousel_item: 'true',
+          ...imageDescription(placement.alt),
+        },
       })
       children.push(childId)
       await input.saveSession({ provider: 'meta', childContainerIds: children })
@@ -310,6 +333,7 @@ export class MetaPublisher implements SocialPublisher {
           pageId: input.account.externalId,
           imageUrl: mediaUrl,
           caption: input.publication.caption,
+          alt: input.orderedMedia.find((item) => item.assetId === media.id)?.alt ?? null,
         })
     await input.saveSession({ publishedMediaId: postId, phase: undefined })
     return this.finishPublished(input, postId)

@@ -43,11 +43,20 @@ const mimeByExtension: Record<string, string> = {
   '.mp3': 'audio/mpeg',
   '.m4a': 'audio/mp4',
   '.woff2': 'font/woff2',
+  '.ttf': 'font/ttf',
+  '.otf': 'font/otf',
+  '.zip': 'application/zip',
+  '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  '.yaml': 'text/plain',
+  '.yml': 'text/plain',
   '.md': 'text/markdown',
   '.txt': 'text/plain',
   '.srt': 'text/plain',
   '.json': 'application/json',
+  '.jsonl': 'text/plain',
   '.html': 'text/html',
+  '.htm': 'text/html',
   '.pdf': 'application/pdf',
 }
 const canonicalExtension: Record<string, string> = {
@@ -61,6 +70,11 @@ const canonicalExtension: Record<string, string> = {
   'audio/mpeg': '.mp3',
   'audio/mp4': '.m4a',
   'font/woff2': '.woff2',
+  'font/ttf': '.ttf',
+  'font/otf': '.otf',
+  'application/zip': '.zip',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': '.xlsx',
   'text/markdown': '.md',
   'text/plain': '.txt',
   'application/json': '.json',
@@ -243,7 +257,7 @@ export class LocalAssets {
 
   async importFile(
     source: string,
-    options: { expected?: ExpectedSource; signal?: AbortSignal } = {},
+    options: { expected?: ExpectedSource; signal?: AbortSignal; name?: string } = {},
   ): Promise<Asset> {
     const extension = path.extname(source).toLowerCase()
     const mime = mimeByExtension[extension]
@@ -254,26 +268,52 @@ export class LocalAssets {
     try {
       await copySource(source, destination, (bytes) => this.reserve(bytes), options)
       copied = true
-      return await this.register(id, destination, path.basename(source), mime, options.expected)
+      return await this.register(
+        id,
+        destination,
+        options.name ?? path.basename(source),
+        mime,
+        options.expected,
+      )
     } catch (error) {
       if (copied) await this.discardRejected(id, destination, error)
       throw error
     }
   }
 
-  async addImage(data: Buffer): Promise<Asset> {
+  async addImage(data: Buffer, identity?: string): Promise<Asset> {
     const png = data.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))
     const jpeg = data[0] === 255 && data[1] === 216 && data[2] === 255
     if ((!png && !jpeg) || data.length > 24_000_000)
       throw new Error('O cliente retornou uma imagem inválida.')
-    const id = randomUUID()
+    const id = identity ? z.string().uuid().parse(identity) : randomUUID()
+    const expected = { sha256: createHash('sha256').update(data).digest('hex'), size: data.length }
+    const existing = this.entries.get(id)
+    if (existing) {
+      if (existing.asset.sha256 !== expected.sha256 || existing.asset.size !== expected.size)
+        throw new FileIntegrityError('A imagem desta tentativa difere da cópia preservada')
+      return (await this.verify(id)).asset
+    }
     const file = path.join(this.directory, `${id}.${png ? 'png' : 'jpg'}`)
     const release = await this.reserve(data.length)
     let written = false
     try {
-      await writeFile(file, data, { flag: 'wx' })
-      written = true
-      return await this.register(id, file, path.basename(file), png ? 'image/png' : 'image/jpeg')
+      try {
+        await writeFile(file, data, { flag: 'wx' })
+        written = true
+      } catch (error) {
+        if (!(identity && error instanceof Error && 'code' in error && error.code === 'EEXIST'))
+          throw error
+        if ((await stat(file)).size !== expected.size || (await hashFile(file)) !== expected.sha256)
+          throw new FileIntegrityError('A imagem desta tentativa difere da cópia preservada')
+      }
+      return await this.register(
+        id,
+        file,
+        path.basename(file),
+        png ? 'image/png' : 'image/jpeg',
+        expected,
+      )
     } catch (error) {
       if (written) await this.discardRejected(id, file, error)
       throw error

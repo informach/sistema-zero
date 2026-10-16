@@ -9,18 +9,14 @@ import {
   mediaAssets,
   publications,
 } from '../src/infrastructure/persistence/drizzle/schema'
+import { requireReviewDatabase } from './helpers/review-database'
 
 const url = process.env.MARKETING_TEST_DATABASE_URL
 const suite = url ? describe : describe.skip
 suite('mídia de publicação PostgreSQL: concorrência e checkpoints', () => {
   let connection: DbConnection, repo: DrizzlePublicationAssetRepository
   beforeAll(async () => {
-    if (
-      !url ||
-      new URL(url).hostname !== '127.0.0.1' ||
-      new URL(url).pathname !== '/marketing_review'
-    )
-      throw new Error('Banco exclusivo de revisão obrigatório')
+    requireReviewDatabase(url)
     connection = createDbConnection(url)
     await migrate(connection.db, {
       migrationsFolder: 'src/infrastructure/persistence/drizzle/migrations',

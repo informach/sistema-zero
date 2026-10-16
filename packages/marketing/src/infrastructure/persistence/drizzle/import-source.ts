@@ -6,12 +6,14 @@ import {
   type ImportSourceLoad,
   type ImportSourceResult,
   importSourceResultSchema,
+  isImportSourceAsset,
   stableEditorialId,
 } from '@sistemazero/marketing-contracts'
 import { containsCredential } from '@sistemazero/marketing-import'
 import { and, eq, inArray, sql } from 'drizzle-orm'
 import { WorkspaceError } from '../../../domain/workspace/workspace-error'
 import type { Database } from './db'
+import { requireImportProduct } from './import-product'
 import {
   DrizzleWorkspaceRepository,
   projectAccess,
@@ -21,11 +23,13 @@ import {
 } from './workspace.repository'
 import {
   editorialAssets as assets,
+  editorialImportDecisions as decisions,
   editorialImportEntries as entries,
   editorialItems as items,
   editorialReceipts as receipts,
   editorialRevisions as revisions,
   editorialImports as runs,
+  editorialImportSourceTexts as sourceTexts,
   editorialImportSourceVersions as versions,
 } from './workspace-schema'
 
@@ -70,6 +74,15 @@ export async function loadImportSource(
   const source = entry?.source
   if (!entry || !source?.sha256 || !['eligible', 'review'].includes(source.disposition))
     throw invalid('Origem excluída, pendente ou ausente do inventário')
+  await requireImportProduct(tx, projectId, run.origin, source.product)
+  const [decision] = await tx
+    .select()
+    .from(decisions)
+    .where(and(eq(decisions.runId, runId), eq(decisions.ordinal, input.ordinal)))
+  if (decision && decision.decision.state !== 'pending')
+    throw invalid(
+      'Uma decisão registrada mantém esta origem fora da carga. Reabra a pendência antes de importar',
+    )
   const identity = and(
     eq(versions.projectId, projectId),
     eq(versions.origin, run.origin),
@@ -103,7 +116,13 @@ export async function loadImportSource(
           eq(assets.confirmed, true),
         ),
       )
-    if (!asset || asset.manifest.sha256 !== source.sha256 || asset.manifest.size !== source.bytes)
+    if (
+      !asset ||
+      asset.manifest.projectId !== projectId ||
+      !isImportSourceAsset(asset.manifest) ||
+      asset.manifest.sha256 !== source.sha256 ||
+      asset.manifest.size !== source.bytes
+    )
       throw invalid('Confirme o arquivo original com o mesmo hash antes de vinculá-lo')
     assetId = asset.id
   }
@@ -246,6 +265,11 @@ export async function loadImportSource(
       previousSourceVersion: previous.length > 0,
     }
   }
+  if (text !== null)
+    await tx
+      .insert(sourceTexts)
+      .values({ sourceVersionId: result.sourceVersionId, text })
+      .onConflictDoNothing()
   await tx
     .update(entries)
     .set({ result })

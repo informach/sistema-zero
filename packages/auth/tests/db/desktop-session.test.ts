@@ -31,7 +31,7 @@ suite('desktop: vínculo e revogação no PostgreSQL', () => {
     if (
       !url ||
       new URL(url).hostname !== '127.0.0.1' ||
-      new URL(url).pathname !== '/marketing_review'
+      new URL(url).pathname !== '/marketing_review_tests'
     )
       throw new Error('Banco exclusivo de revisão obrigatório')
     connection = createDbConnection(url)

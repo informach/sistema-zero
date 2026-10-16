@@ -1,6 +1,10 @@
 import { z } from 'zod'
 import { artAssetIds, artSchema } from './art'
 import { idSchema } from './common'
+import { generatedCompositionSchema } from './remotion-composition'
+import { fpsSchema } from './video-rate'
+
+export { fpsSchema } from './video-rate'
 export const videoArtSchema = z
   .object({
     composition: artSchema,
@@ -10,16 +14,6 @@ export const videoArtSchema = z
     sourceRevisionId: idSchema,
   })
   .strict()
-export const fpsSchema = z
-  .object({
-    numerator: z.number().int().min(1).max(60000),
-    denominator: z.number().int().min(1).max(1001),
-  })
-  .strict()
-  .refine(
-    (v) => v.numerator / v.denominator >= 1 && v.numerator / v.denominator <= 120,
-    'FPS fora do limite',
-  )
 export const clipSchema = z
   .object({
     id: idSchema,
@@ -27,6 +21,7 @@ export const clipSchema = z
     assetId: idSchema.optional(),
     kind: z.enum(['video', 'audio', 'image', 'text', 'art']),
     art: videoArtSchema.optional(),
+    generated: generatedCompositionSchema.optional(),
     startFrame: z.number().int().min(0).max(2160000),
     durationInFrames: z.number().int().min(1).max(2160000),
     sourceStartMs: z.number().min(0).max(86400000).default(0),
@@ -62,6 +57,8 @@ export const clipSchema = z
   .superRefine((clip, ctx) => {
     if (!['text', 'art'].includes(clip.kind) && !clip.assetId)
       ctx.addIssue({ code: 'custom', message: 'Mídia exige arquivo' })
+    if (clip.generated && (clip.kind !== 'video' || clip.assetId !== clip.generated.outputAssetId))
+      ctx.addIssue({ code: 'custom', message: 'A composição precisa da sua prévia validada' })
     if ((clip.kind === 'art') !== Boolean(clip.art))
       ctx.addIssue({ code: 'custom', message: 'Cena de arte exige uma composição editável' })
     if (clip.art?.protectedText.some((text) => !clip.art?.body.includes(text)))
@@ -160,13 +157,28 @@ export function counterText(clip: VideoClip, frame: number) {
   const { from, to, decimals, prefix, suffix } = clip.counter
   return `${prefix}${(from + (to - from) * progress).toFixed(decimals).replace('.', ',')}${suffix}`
 }
-export function videoAssetIds(video: VideoProject) {
+export function videoPlaybackAssetIds(video: VideoProject) {
   return [
     ...new Set([
       ...video.clips.flatMap((clip) => (clip.assetId ? [clip.assetId] : [])),
       ...video.clips.flatMap((clip) => (clip.art ? artAssetIds(clip.art.composition) : [])),
       ...video.captions.map((caption) => caption.assetId),
       ...(video.fontAssetId ? [video.fontAssetId] : []),
+    ]),
+  ]
+}
+export function videoAssetIds(video: VideoProject) {
+  return [
+    ...new Set([
+      ...videoPlaybackAssetIds(video),
+      ...video.clips.flatMap((clip) =>
+        clip.generated
+          ? [
+              ...clip.generated.input.assetIds,
+              ...(clip.generated.input.fontAssetId ? [clip.generated.input.fontAssetId] : []),
+            ]
+          : [],
+      ),
     ]),
   ]
 }

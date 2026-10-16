@@ -20,6 +20,12 @@ export type PublishOutcome =
   | { kind: 'retryable'; reason: string }
   | { kind: 'permanent'; reason: string }
 
+/** Descriptions belong to each approved placement, not to a mutable media file. */
+export interface PublicationMedia {
+  assetId: string
+  alt: string | null
+}
+
 export interface PublishInput {
   publication: Publication
   account: SocialAccount
@@ -27,8 +33,8 @@ export interface PublishInput {
   accessToken: string
   /** Assets PRONTOS do conteúdo (o publisher escolhe vídeo/capa por kind/MIME). */
   assets: MediaAsset[]
-  /** Ordem dos assets da PUBLICAÇÃO (carrossel) — vazia fora do ig_carousel. */
-  orderedAssetIds: string[]
+  /** Approved placement order and exact alt; legacy carousel descriptions are unknown. */
+  orderedMedia: PublicationMedia[]
   /** Lê um range de bytes do asset (upload em chunks — memória O(chunk)). */
   assetBytes(asset: MediaAsset, start: number, endInclusive: number): Promise<Uint8Array>
   /**

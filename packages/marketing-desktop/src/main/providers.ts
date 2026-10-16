@@ -2,10 +2,8 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import {
   type ArtProposal,
-  adaptationProposalSchema,
   type CapturePlan,
-  capturePlanSchema,
-  copyProposalSchema,
+  type CompositionProposal,
   type EditorialProposal,
   type ResearchEvidence,
   researchResultSchema,
@@ -13,19 +11,22 @@ import {
 } from '@sistemazero/marketing-contracts'
 import { z } from 'zod'
 import type { Provider, ProviderStatus, RunRequest } from '../shared/contracts'
-import { claudeInput, claudeResult } from './claude-input'
+import { claudeInput } from './claude-input'
+import { completedCodexItem } from './codex-events'
 import { JsonRpcClient, type RpcEvent } from './json-rpc'
 import { observeLogin } from './login-completion'
 import { collectProcess, collectProcessResult, launchNative } from './native-client'
-import { canonicalArtProposal, nativeArtProposalSchema } from './provider-art-schema'
 import {
-  codexArguments,
-  decodeNativeImage,
-  requireNativeImage,
-  validateNativeImagePath,
-} from './provider-policy'
-import { canonicalVideoProposal, nativeVideoProposalSchema } from './provider-video-schema'
-import { observedResearchUrls, validateResearch } from './research-evidence'
+  beginProviderCheckpoint,
+  type ProviderOutput,
+  type ProviderRecovery,
+  providerReferenceHashes,
+  readProviderCheckpoint,
+  saveProviderCheckpoint,
+} from './provider-checkpoint'
+import { codexArguments, decodeNativeImage, validateNativeImagePath } from './provider-policy'
+import { interpretProviderOutput, providerResponseSchema } from './provider-result'
+import { observedResearchUrls } from './research-evidence'
 
 type NativeResult = {
   text: string
@@ -38,6 +39,7 @@ type NativeResult = {
   art?: ArtProposal
   capture?: CapturePlan
   video?: VideoProposal
+  composition?: CompositionProposal
 }
 const accountSchema = z.object({
   account: z.object({ type: z.string(), planType: z.string().optional() }).nullable(),
@@ -89,10 +91,9 @@ export async function getProviderStatus(
       const rpc = await openCodex(cwd, signal)
       try {
         const mode = await codexAccount(rpc)
-        const capability = await rpc.request<{ imageGeneration?: boolean }>(
-          'modelProvider/capabilities/read',
-          {},
-        )
+        const capability = z
+          .object({ imageGeneration: z.boolean().optional() })
+          .parse(await rpc.request('modelProvider/capabilities/read', {}))
         return { provider, available: true, mode, image: capability.imageGeneration === true }
       } finally {
         rpc.close()
@@ -138,12 +139,9 @@ export async function loginProvider(
   const rpc = await openCodex(cwd, signal)
   const login = observeLogin(rpc, signal)
   try {
-    const result = await rpc.request<{ type: string; authUrl?: string; loginId?: string }>(
-      'account/login/start',
-      {
-        type: 'chatgpt',
-      },
-    )
+    const result = z
+      .object({ type: z.string(), authUrl: z.string().optional(), loginId: z.string().optional() })
+      .parse(await rpc.request('account/login/start', { type: 'chatgpt' }))
     if (!result.authUrl || !result.loginId)
       throw new Error('O cliente não forneceu o endereço oficial de login.')
     login.identify(result.loginId)
@@ -172,24 +170,25 @@ export async function runProvider(
   signal: AbortSignal,
   onProgress: (stage: string) => void,
   sourceImage?: string | string[],
+  recovery?: ProviderRecovery,
 ): Promise<NativeResult> {
   await mkdir(cwd, { recursive: true })
+  const references = await providerReferenceHashes(
+    sourceImage ? (Array.isArray(sourceImage) ? sourceImage : [sourceImage]) : [],
+    signal,
+  )
+  if (recovery === 'only') {
+    signal.throwIfAborted()
+    const saved = await readProviderCheckpoint(cwd, request, references)
+    onProgress('Recuperando a resposta preservada, sem nova geração')
+    return interpretProviderOutput(request, saved.output, saved.images, saved.mode)
+  }
   const status = await getProviderStatus(request.provider, cwd, signal)
   if (!status.available) throw new Error(status.reason)
   if (signal.aborted) throw new Error('Operação cancelada.')
   onProgress('Produzindo com sua assinatura')
-  const responseSchema =
-    request.responseFormat === 'editorial-copy'
-      ? copyProposalSchema
-      : request.responseFormat === 'editorial-adapt'
-        ? adaptationProposalSchema
-        : request.responseFormat === 'art'
-          ? nativeArtProposalSchema
-          : request.responseFormat === 'video'
-            ? nativeVideoProposalSchema
-            : request.responseFormat === 'capture'
-              ? capturePlanSchema
-              : undefined
+  const responseSchema = providerResponseSchema(request)
+  if (recovery) await beginProviderCheckpoint(cwd, request, references)
   if (request.provider === 'claude') {
     const prompt = `${request.kind === 'video' ? videoInstruction : responseSchema ? 'Entregue a proposta editorial no schema JSON fornecido. Não use ferramentas.' : 'Escreva apenas a copy solicitada em português. Não use ferramentas.'}\n\n${request.prompt}`
     const input = sourceImage
@@ -221,7 +220,22 @@ export async function runProvider(
       ],
       cwd,
     )
-    const completion = collectProcessResult(child, 180000, signal)
+    const completion = collectProcessResult(child, 180000, signal, async (result, complete) => {
+      await saveProviderCheckpoint(
+        cwd,
+        request,
+        status.mode,
+        {
+          provider: 'claude',
+          raw: result.output.slice(0, 2_000_000),
+          streaming: Boolean(sourceImage),
+          code: result.code,
+        },
+        [],
+        complete,
+        references,
+      )
+    })
     child.stdin.end(input)
     const processResult = await completion,
       raw = processResult.output
@@ -230,80 +244,35 @@ export async function runProvider(
       raw,
       'utf8',
     )
-    const decoded = claudeResult(raw, Boolean(sourceImage))
-    if (processResult.code !== 0) {
-      const detail = z
-        .object({ subtype: z.string().optional(), errors: z.array(z.string()).optional() })
-        .passthrough()
-        .safeParse(decoded ?? {})
-      const reason = detail.success
-        ? [detail.data.subtype, ...(detail.data.errors ?? [])].filter(Boolean).join(': ')
-        : ''
-      throw new Error(
-        `Claude: ${reason || processResult.stderr || `processo encerrado com código ${processResult.code}`}`
-          .replace(/(?:Bearer\s+\S+|sk-[\w-]+|eyJ[\w.-]+)/g, '[credencial omitida]')
-          .slice(0, 1000),
-      )
+    const output: ProviderOutput = {
+      provider: 'claude',
+      raw,
+      streaming: Boolean(sourceImage),
+      code: processResult.code,
     }
-    const result = z
-      .object({
-        is_error: z.boolean().optional(),
-        result: z.string().optional(),
-        structured_output: z.unknown().optional(),
-        usage: z
-          .object({
-            input_tokens: z.number().int().nonnegative().optional(),
-            output_tokens: z.number().int().nonnegative().optional(),
-          })
-          .passthrough()
-          .optional(),
-      })
-      .passthrough()
-      .parse(decoded)
-    if (
-      result.is_error ||
-      (typeof result.result !== 'string' && result.structured_output === undefined)
-    )
-      throw new Error('O Claude não concluiu a resposta. Confira o limite da assinatura.')
-    const structured = responseSchema
-      ? responseSchema.parse(result.structured_output ?? JSON.parse(result.result ?? 'null'))
-      : undefined
-    const editorial =
-        structured && (structured.kind === 'copy' || structured.kind === 'adapt')
-          ? structured
-          : undefined,
-      art = structured?.kind === 'art' ? canonicalArtProposal(structured) : undefined
-    return {
-      text: structured && 'summary' in structured ? structured.summary : (result.result ?? ''),
-      ...(structured?.kind === 'capture' ? { capture: structured } : {}),
-      ...(editorial ? { editorial } : {}),
-      ...(art ? { art } : {}),
-      ...(structured?.kind === 'video' ? { video: canonicalVideoProposal(structured) } : {}),
-      images: [],
-      mode: status.mode,
-      inputTokens: result.usage?.input_tokens ?? null,
-      outputTokens: result.usage?.output_tokens ?? null,
-    }
+    return interpretProviderOutput(request, output, [], status.mode)
   }
   if (['image', 'edit-image'].includes(request.kind) && !status.image)
     throw new Error('Geração nativa de imagem indisponível neste cliente.')
   const rpc = await openCodex(cwd, signal)
   try {
     await codexAccount(rpc)
-    const { thread } = await rpc.request<{ thread: { id: string } }>('thread/start', {
-      cwd,
-      modelProvider: 'openai',
-      sandbox: 'read-only',
-      approvalPolicy: 'never',
-      ephemeral: true,
-      config: { web_search: request.kind === 'research' ? 'live' : 'disabled' },
-      baseInstructions:
-        'Você produz materiais de marketing solicitados pelo usuário. Não leia arquivos, não execute comandos, não use MCP ou agentes. Para imagens, use somente a ferramenta nativa de geração de imagem. Não use APIs externas.',
-      developerInstructions:
-        request.kind === 'video'
-          ? videoInstruction
-          : 'Responda em português. Preserve o escopo do pedido.',
-    })
+    const { thread } = z.object({ thread: z.object({ id: z.string().min(1) }) }).parse(
+      await rpc.request('thread/start', {
+        cwd,
+        modelProvider: 'openai',
+        sandbox: 'read-only',
+        approvalPolicy: 'never',
+        ephemeral: true,
+        config: { web_search: request.kind === 'research' ? 'live' : 'disabled' },
+        baseInstructions:
+          'Você produz materiais de marketing solicitados pelo usuário. Não leia arquivos, não execute comandos, não use MCP ou agentes. Para imagens, use somente a ferramenta nativa de geração de imagem. Não use APIs externas.',
+        developerInstructions:
+          request.kind === 'video'
+            ? videoInstruction
+            : 'Responda em português. Preserve o escopo do pedido.',
+      }),
+    )
     const images: Buffer[] = []
     const imagePaths: string[] = []
     let text = '',
@@ -312,6 +281,24 @@ export async function runProvider(
     const observedUrls = new Set<string>()
     let researchCalls = 0
     let imageFailed = false
+    let capture = Promise.resolve()
+    const capturePartial = () => {
+      const output: ProviderOutput = {
+        provider: 'codex',
+        text,
+        inputTokens,
+        outputTokens,
+        observedUrls: [...observedUrls],
+        researchCalls,
+        imageFailed,
+      }
+      const currentImages = [...images]
+      capture = capture.then(() =>
+        saveProviderCheckpoint(cwd, request, status.mode, output, currentImages, false, references),
+      )
+      // Failure to preserve evidence stops production; it must not look recoverable.
+      void capture.catch(() => rpc.close())
+    }
     const completion = new Promise<void>((resolve, reject) => {
       const finish = (error?: Error) => {
         cleanup()
@@ -341,8 +328,20 @@ export async function runProvider(
         rpc.off('closed', onClosed)
       }
       const event = (notification: RpcEvent) => {
-        const params = notification.params
-        if (params?.threadId !== thread.id) return
+        if (
+          ![
+            'thread/tokenUsage/updated',
+            'turn/started',
+            'item/completed',
+            'turn/completed',
+          ].includes(notification.method)
+        )
+          return
+        const params = z
+          .object({ threadId: z.string().min(1) })
+          .catchall(z.unknown())
+          .parse(notification.params)
+        if (params.threadId !== thread.id) return
         if (notification.method === 'thread/tokenUsage/updated') {
           const usage = z
             .object({
@@ -357,17 +356,11 @@ export async function runProvider(
             outputTokens = usage.data.total.outputTokens
           }
         }
-        if (notification.method === 'turn/started') activeTurn = (params.turn as { id: string }).id
+        if (notification.method === 'turn/started')
+          activeTurn = z.object({ id: z.string().min(1) }).parse(params.turn).id
         if (notification.method === 'item/completed') {
-          const item = params.item as {
-            type?: string
-            text?: string
-            result?: string
-            savedPath?: string
-            failure?: unknown
-            action?: unknown
-            results?: unknown
-          }
+          const item = completedCodexItem(params.item)
+          if (!item) return
           if (item.type === 'agentMessage' && item.text) text = item.text
           if (item.type === 'webSearch') {
             researchCalls++
@@ -390,6 +383,7 @@ export async function runProvider(
             else if (item.result && /^[A-Za-z0-9+/=\r\n]+$/.test(item.result))
               images.push(decodeNativeImage(item.result))
           }
+          capturePartial()
         }
         if (notification.method === 'turn/completed') {
           const turn = z
@@ -425,18 +419,22 @@ export async function runProvider(
         : [sourceImage]
       : [])
       input.push({ type: 'localImage', path: file })
-    await Promise.all([
-      completion,
-      rpc.request('turn/start', {
-        threadId: thread.id,
-        input,
-        ...(request.kind === 'research'
-          ? { outputSchema: z.toJSONSchema(researchResultSchema) }
-          : responseSchema
-            ? { outputSchema: z.toJSONSchema(responseSchema) }
-            : {}),
-      }),
-    ])
+    try {
+      await Promise.all([
+        completion,
+        rpc.request('turn/start', {
+          threadId: thread.id,
+          input,
+          ...(request.kind === 'research'
+            ? { outputSchema: z.toJSONSchema(researchResultSchema) }
+            : responseSchema
+              ? { outputSchema: z.toJSONSchema(responseSchema) }
+              : {}),
+        }),
+      ])
+    } finally {
+      await capture
+    }
     for (const saved of imagePaths) {
       const resolved = await validateNativeImagePath(saved)
       // Accept only the native result item, never a filename invented in assistant text.
@@ -444,39 +442,17 @@ export async function runProvider(
       if (data.length > 24_000_000) throw new Error('Imagem gerada acima do limite.')
       images.push(data)
     }
-    if (['image', 'edit-image'].includes(request.kind))
-      requireNativeImage(imageFailed, images.length)
-    await writeFile(
-      path.join(cwd, 'provider-response.json'),
-      JSON.stringify({
-        text,
-        inputTokens,
-        outputTokens,
-        observedUrls: [...observedUrls],
-        researchCalls,
-      }),
-      'utf8',
-    )
-    const structured = responseSchema ? responseSchema.parse(JSON.parse(text)) : undefined
-    const editorial =
-        structured && (structured.kind === 'copy' || structured.kind === 'adapt')
-          ? structured
-          : undefined,
-      art = structured?.kind === 'art' ? canonicalArtProposal(structured) : undefined
-    return {
-      text: structured && 'summary' in structured ? structured.summary : text,
-      ...(structured?.kind === 'capture' ? { capture: structured } : {}),
-      ...(editorial ? { editorial } : {}),
-      ...(art ? { art } : {}),
-      images,
-      ...(structured?.kind === 'video' ? { video: canonicalVideoProposal(structured) } : {}),
-      mode: status.mode,
+    const output: ProviderOutput = {
+      provider: 'codex',
+      text,
       inputTokens,
       outputTokens,
-      ...(request.kind === 'research'
-        ? { research: validateResearch(text, [...observedUrls], researchCalls) }
-        : {}),
+      observedUrls: [...observedUrls],
+      researchCalls,
+      imageFailed,
     }
+    await saveProviderCheckpoint(cwd, request, status.mode, output, images, true, references)
+    return interpretProviderOutput(request, output, images, status.mode)
   } finally {
     rpc.close()
   }

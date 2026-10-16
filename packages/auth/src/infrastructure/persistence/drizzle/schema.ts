@@ -454,7 +454,31 @@ export const desktopDevices = auth.table(
   ],
 )
 
+// Stable browser credentials keep only their hash. Canonical family revocation
+// covers logout-all/password reset; family expiry purge also removes the binding.
+export const browserSessions = auth.table(
+  'browser_sessions',
+  {
+    id: uuid('id').primaryKey(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    familyId: uuid('family_id')
+      .notNull()
+      .references(() => refreshTokenFamilies.id, { onDelete: 'cascade' }),
+    credentialHash: text('credential_hash').notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    uniqueIndex('browser_sessions_credential_uq').on(t.credentialHash),
+    uniqueIndex('browser_sessions_family_uq').on(t.familyId),
+    index('browser_sessions_user_idx').on(t.userId),
+  ],
+)
+
 export const schema = {
+  browserSessions,
   desktopPairings,
   desktopDevices,
   studyDevices,

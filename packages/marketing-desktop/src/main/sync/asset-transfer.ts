@@ -9,6 +9,7 @@ import {
 } from '../../../../marketing-contracts/src/assets'
 import type { LocalAssets } from '../assets'
 import type { LocalWorkspaceStore } from './local-store'
+import { rateLimitedTransport } from './rate-limit'
 import type { SyncTransport } from './sync-engine'
 
 const partResponse = z
@@ -55,15 +56,14 @@ export class AssetTransfer {
   ) {
     const request = this.local.stageTransfer(input),
       manifest = request.manifest
+    const transport = rateLimitedTransport(this.transport, signal)
     const entry = await this.assets.verify(manifest.id)
     if (entry.asset.sha256 !== manifest.sha256 || entry.asset.size !== manifest.size)
       throw new Error('O original difere do manifesto de envio')
     let uploadedBytes = 0
     try {
       signal.throwIfAborted()
-      const remote = uploadViewSchema.parse(
-        await this.transport.request('/assets', 'POST', request),
-      )
+      const remote = uploadViewSchema.parse(await transport.request('/assets', 'POST', request))
       if (remote.state === 'confirmed') {
         this.local.transferProgress(manifest.id, 'confirmed', manifest.size)
         return remote
@@ -91,7 +91,7 @@ export class AssetTransfer {
               existing.etag.replaceAll('"', '') !== md5.toString('hex')
             ) {
               const part = partResponse.parse(
-                await this.transport.request(
+                await transport.request(
                   `/projects/${manifest.projectId}/assets/${manifest.id}/part`,
                   'POST',
                   { number, md5: md5.toString('base64') },
@@ -115,7 +115,7 @@ export class AssetTransfer {
       }
       signal.throwIfAborted()
       const final = uploadViewSchema.parse(
-        await this.transport.request(
+        await transport.request(
           `/projects/${manifest.projectId}/assets/${manifest.id}/complete`,
           'POST',
         ),

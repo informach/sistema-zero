@@ -1,0 +1,1 @@
+CREATE INDEX "editorial_revisions_history_idx" ON "marketing"."editorial_revisions" USING btree ("project_id","entity_id","created_at" DESC NULLS LAST,"id" DESC NULLS LAST);

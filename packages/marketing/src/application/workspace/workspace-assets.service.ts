@@ -1,4 +1,5 @@
 import {
+  assetConfirmationRequestSchema,
   assetFilename,
   assetLibraryQuerySchema,
   idSchema,
@@ -7,7 +8,10 @@ import {
   uploadPartSchema,
   uploadStartSchema,
 } from '@sistemazero/marketing-contracts'
-import type { MultipartStore } from '../../domain/ports/multipart-store.port'
+import {
+  type MultipartStore,
+  MultipartUploadMissingError,
+} from '../../domain/ports/multipart-store.port'
 import type {
   UploadRecord,
   WorkspaceAssetsRepository,
@@ -36,7 +40,14 @@ export class WorkspaceAssetsService {
       parseWorkspace(assetLibraryQuerySchema, query).after,
     )
   }
-  private async view(record: UploadRecord): Promise<UploadView> {
+  confirmed(actor: Actor, projectId: string, raw: unknown) {
+    const actorId = workspaceActor(actor),
+      id = parseWorkspace(idSchema, projectId),
+      input = parseWorkspace(assetConfirmationRequestSchema, raw)
+    this.storage()
+    return this.repo.confirmed(actorId, id, input.ids)
+  }
+  private async inspect(record: UploadRecord) {
     const view: UploadView = {
       manifest: record.manifest,
       state: record.state,
@@ -45,16 +56,24 @@ export class WorkspaceAssetsService {
       parts: [],
       error: record.error,
     }
+    let expired = false
     if (record.state === 'uploading' && record.uploadId) {
       try {
         view.parts = await this.storage().listParts(record.storageKey, record.uploadId)
       } catch (error) {
-        if (!(await this.storage().head(record.storageKey)).exists) throw error
-        view.bytesReceived = true
-        view.error = 'Envio recebido; confirme para verificar o arquivo'
+        if ((await this.storage().head(record.storageKey)).exists) {
+          view.bytesReceived = true
+          view.error = 'Envio recebido; confirme para verificar o arquivo'
+        } else if (error instanceof MultipartUploadMissingError) {
+          expired = true
+          view.error = 'O envio temporário expirou. Retome para reenviar o original preservado.'
+        } else throw error
       }
     }
-    return view
+    return { view, expired }
+  }
+  private async view(record: UploadRecord): Promise<UploadView> {
+    return (await this.inspect(record)).view
   }
   async start(actor: Actor, raw: unknown) {
     const actorId = workspaceActor(actor),
@@ -65,6 +84,18 @@ export class WorkspaceAssetsService {
       input,
       payloadHash({ action: 'assetStart', input }),
     )
+    if (record.state === 'uploading' && record.uploadId) {
+      const current = await this.inspect(record)
+      if (!current.expired) return current.view
+      // Only a definitive missing session plus an absent object permits resetting.
+      // CAS prevents a delayed recovery from replacing a newer live upload.
+      record = await this.repo.resetExpiredUpload(
+        actorId,
+        record.manifest.projectId,
+        record.manifest.id,
+        record.uploadId,
+      )
+    }
     if (record.state === 'preparing') {
       const uploadId = await store.createMultipart(record.storageKey, record.manifest.mime)
       try {

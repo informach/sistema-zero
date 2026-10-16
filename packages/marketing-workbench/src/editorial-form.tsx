@@ -61,6 +61,10 @@ export function EditorialForm({
   const [objective, setObjective] = useState(doc && 'objective' in doc ? doc.objective : ''),
     [audience, setAudience] = useState(doc?.kind === 'direction' ? doc.audience : ''),
     [voice, setVoice] = useState(doc?.kind === 'direction' ? doc.voice : '')
+  const [audienceNeed, setAudienceNeed] = useState(
+    doc?.kind === 'piece' ? (doc.audienceNeed ?? '') : '',
+  )
+  const [series, setSeries] = useState(doc?.kind === 'piece' ? (doc.series ?? '') : '')
   const [format, setFormat] = useState<
       'feed' | 'carousel' | 'story' | 'reel' | 'long-video' | 'campaign'
     >('carousel'),
@@ -114,6 +118,8 @@ export function EditorialForm({
                 ...piece.document,
                 objective,
                 cta,
+                audienceNeed,
+                series,
                 week: week ? Number(week) : null,
                 evidenceIds,
               }
@@ -151,6 +157,7 @@ export function EditorialForm({
                   validity: doc?.kind === 'evidence' ? doc.validity : 'unverified',
                   tags: doc?.kind === 'evidence' ? doc.tags : [],
                   assetIds: doc?.kind === 'evidence' ? doc.assetIds : undefined,
+                  observation: doc?.kind === 'evidence' ? doc.observation : undefined,
                 }
               else if (doc?.kind === 'piece')
                 document = {
@@ -159,6 +166,8 @@ export function EditorialForm({
                   brief: body,
                   objective,
                   cta,
+                  audienceNeed,
+                  series,
                   editorialDate: date || null,
                   week: week ? Number(week) : null,
                   evidenceIds,
@@ -218,6 +227,30 @@ export function EditorialForm({
               onChange={(event) => setObjective(event.target.value)}
             />
           </label>
+        ) : null}
+        {kind === 'piece' ? (
+          <>
+            <label htmlFor={`${fieldId}-need`} className="block space-y-1 text-sm font-medium">
+              Necessidade do público
+              <Input
+                id={`${fieldId}-need`}
+                maxLength={1000}
+                value={audienceNeed}
+                onChange={(event) => setAudienceNeed(event.target.value)}
+                placeholder="Ex.: encontrar uma atividade para começar"
+              />
+            </label>
+            <label htmlFor={`${fieldId}-series`} className="block space-y-1 text-sm font-medium">
+              Série editorial
+              <Input
+                id={`${fieldId}-series`}
+                maxLength={300}
+                value={series}
+                onChange={(event) => setSeries(event.target.value)}
+                placeholder="Ex.: Primeira criação"
+              />
+            </label>
+          </>
         ) : null}
         {kind === 'direction' ? (
           <>

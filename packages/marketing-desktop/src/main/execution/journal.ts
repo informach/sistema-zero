@@ -12,6 +12,7 @@ export const executionJournalSchema = z
     runId: idSchema,
     projectId: idSchema,
     contextHash: hashSchema,
+    generationEpoch: z.number().int().positive().nullable().default(null),
     claim: claimRunSchema,
     stage: z.enum([
       'prepared',

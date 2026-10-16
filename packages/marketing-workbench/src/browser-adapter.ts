@@ -7,12 +7,17 @@ import {
   type EditorialBatch,
   type EditorialItem,
   type EditorialOperation,
+  HttpCooldown,
   operationResultSchema,
   type Project,
   type ProjectView,
+  parseSnapshotPage,
   projectCreateSchema,
   projectSchema,
+  type SnapshotCursor,
   type SyncReport,
+  snapshotPagePath,
+  WorkspaceHeadReader,
 } from '@sistemazero/marketing-contracts'
 import { z } from 'zod'
 import { BrowserJournal, type JournalEntry, type MutationJournal } from './browser-journal'
@@ -24,6 +29,7 @@ export class WorkspaceHttpError extends Error {
     readonly status: number,
     readonly code: string,
     message: string,
+    readonly retryAfterMs?: number,
   ) {
     super(message)
   }
@@ -37,7 +43,10 @@ type Cache = {
   cursor: number
   permissions: Project['permissions']
 }
+type SnapshotState = { cursor: SnapshotCursor | null; items: Cache['items'] }
 export class BrowserWorkspaceAdapter implements WorkbenchPort {
+  readonly request: Transport
+  private readonly cooldown = new HttpCooldown()
   uploadFile(projectId: string, file: File, signal: AbortSignal, progress: UploadProgress) {
     return uploadBrowserFile(this.identity, projectId, file, this.request, signal, progress)
   }
@@ -54,6 +63,8 @@ export class BrowserWorkspaceAdapter implements WorkbenchPort {
   }
   readonly location = 'web'
   private readonly caches = new Map<string, Cache>()
+  private readonly snapshots = new Map<string, SnapshotState>()
+  private readonly readErrors = new Map<string, string>()
   private readonly listeners = new Set<() => void>()
   private readonly views = new Map<string, Promise<ProjectView>>()
   private sync: Promise<void> | undefined
@@ -61,6 +72,9 @@ export class BrowserWorkspaceAdapter implements WorkbenchPort {
   private retryTimer: ReturnType<typeof setTimeout> | undefined
   private retryDelay = 1500
   private projectList: Project[] | undefined
+  private readonly head: WorkspaceHeadReader
+  private headVersion = 0
+  private readonly consumedHeads = new Map<string, number>()
   private report: SyncReport = {
     phase: 'idle',
     message: 'Pronto para sincronizar',
@@ -69,12 +83,31 @@ export class BrowserWorkspaceAdapter implements WorkbenchPort {
   }
   constructor(
     readonly identity: string,
-    readonly request: Transport,
+    transport: Transport,
     private readonly journal: MutationJournal = new BrowserJournal(identity),
-  ) {}
+  ) {
+    this.request = async (path, method, body) => {
+      const remaining = this.cooldown.remainingMilliseconds()
+      if (remaining)
+        throw new WorkspaceHttpError(
+          429,
+          'TOO_MANY_REQUESTS',
+          `O servidor solicitou uma pausa. Nova tentativa disponível em ${Math.ceil(remaining / 1000)} s.`,
+          remaining,
+        )
+      try {
+        return await transport(path, method, body)
+      } catch (error) {
+        if (error instanceof WorkspaceHttpError)
+          this.cooldown.observe(error.status, error.retryAfterMs)
+        throw error
+      }
+    }
+    this.head = new WorkspaceHeadReader((path) => this.request(path))
+  }
   subscribe = (listener: () => void) => {
     this.listeners.add(listener)
-    if (this.report.phase === 'offline') this.scheduleRetry()
+    if (this.report.phase === 'offline' || this.readErrors.size) this.scheduleRetry()
     return () => {
       this.listeners.delete(listener)
       if (!this.listeners.size && this.retryTimer) {
@@ -85,10 +118,13 @@ export class BrowserWorkspaceAdapter implements WorkbenchPort {
   }
   private scheduleRetry() {
     if (!this.listeners.size || this.retryTimer) return
-    this.retryTimer = setTimeout(() => {
-      this.retryTimer = undefined
-      void this.synchronize().catch(() => this.scheduleRetry())
-    }, this.retryDelay)
+    this.retryTimer = setTimeout(
+      () => {
+        this.retryTimer = undefined
+        void this.synchronize().catch(() => this.scheduleRetry())
+      },
+      Math.max(this.retryDelay, this.cooldown.remainingMilliseconds()),
+    )
     this.retryDelay = Math.min(this.retryDelay * 2, 60000)
   }
   private changed() {
@@ -96,7 +132,17 @@ export class BrowserWorkspaceAdapter implements WorkbenchPort {
   }
   async projects() {
     try {
-      this.projectList = z.array(projectSchema).parse(await this.request('/projects'))
+      this.projectList = (await this.head.read()).projects
+      this.headVersion++
+      const accessible = new Set(this.projectList.map((project) => project.id))
+      for (const id of new Set([...this.caches.keys(), ...this.snapshots.keys()])) {
+        if (!accessible.has(id)) {
+          this.caches.delete(id)
+          this.snapshots.delete(id)
+          this.readErrors.delete(id)
+          this.consumedHeads.delete(id)
+        }
+      }
       return this.projectList
     } catch (error) {
       if (error instanceof WorkspaceHttpError && error.retryable && this.projectList)
@@ -280,13 +326,28 @@ export class BrowserWorkspaceAdapter implements WorkbenchPort {
   }
   private async load(projectId: string): Promise<ProjectView> {
     let cache = this.caches.get(projectId) ?? { items: new Map(), cursor: 0, permissions: [] }
+    const project = this.projectList?.find((value) => value.id === projectId)
+    // A freshly authorized head can replace one empty delta. Never reuse that
+    // observation for another explicit view (e.g. immediately after a write).
+    const caughtUp = Boolean(
+      project &&
+        cache.cursor > 0 &&
+        cache.cursor === project.sequence &&
+        this.consumedHeads.get(projectId) !== this.headVersion &&
+        !this.snapshots.has(projectId),
+    )
+    this.consumedHeads.set(projectId, this.headVersion)
+    if (caughtUp && project) cache.permissions = project.permissions
     try {
-      for (let count = 0; count < 200; count++) {
+      if (cache.cursor === 0 || this.snapshots.has(projectId))
+        cache = await this.bootstrap(projectId)
+      for (let count = 0; !caughtUp && count < 200; count++) {
         const page = changePageSchema.parse(
           await this.request(`/projects/${projectId}/changes?cursor=${cache.cursor}`),
         )
         if (page.resetRequired) {
-          cache = { items: new Map(), cursor: 0, permissions: page.permissions }
+          this.snapshots.delete(projectId)
+          cache = await this.bootstrap(projectId)
           continue
         }
         if (
@@ -315,9 +376,10 @@ export class BrowserWorkspaceAdapter implements WorkbenchPort {
             'O acervo ainda está sendo carregado. Continue a sincronização para ver as próximas revisões.',
           )
       }
+      this.readErrors.delete(projectId)
     } catch (error) {
       if (!(error instanceof WorkspaceHttpError && error.retryable)) throw error
-      this.report = { ...this.report, phase: 'offline', message: errorMessage(error) }
+      this.readErrors.set(projectId, errorMessage(error))
       this.scheduleRetry()
     }
     const allDrafts = await this.journal.entries()
@@ -384,7 +446,41 @@ export class BrowserWorkspaceAdapter implements WorkbenchPort {
             ]
           : [],
       ),
-      report: { ...this.report, pending: pending.length + pendingBatches.length },
+      report: {
+        ...this.report,
+        ...(this.readErrors.has(projectId)
+          ? {
+              phase: 'offline' as const,
+              message: this.readErrors.get(projectId) ?? 'A leitura do acervo aguarda conexão',
+            }
+          : {}),
+        pending: pending.length + pendingBatches.length,
+      },
+    }
+  }
+  private async bootstrap(projectId: string): Promise<Cache> {
+    const pending: SnapshotState = this.snapshots.get(projectId) ?? {
+      cursor: null,
+      items: new Map(),
+    }
+    this.snapshots.set(projectId, pending)
+    for (;;) {
+      const page = parseSnapshotPage(
+        await this.request(snapshotPagePath(projectId, pending.cursor)),
+        projectId,
+        pending.cursor,
+      )
+      for (const entry of page.items) {
+        const { sequence, ...item } = entry
+        pending.items.set(item.id, { item, sequence })
+      }
+      if (!page.nextAfter) {
+        const cache = { items: pending.items, cursor: page.at, permissions: page.permissions }
+        this.caches.set(projectId, cache)
+        this.snapshots.delete(projectId)
+        return cache
+      }
+      pending.cursor = { at: page.at, after: page.nextAfter }
     }
   }
   async openDesktop(input: Parameters<WorkbenchPort['openDesktop']>[0]) {

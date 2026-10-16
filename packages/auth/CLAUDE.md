@@ -188,6 +188,14 @@ src/
    (ou perder o claim) → revoga a **família** (`family_id`) inteira (mitiga roubo).
    Logout revoga o token (ou a família). NÃO troque o claim por check-then-act:
    a corrida contornaria a reuse-detection para sempre (achado A1 do full review).
+   **Sessão de navegador marketing (`0022`, `browser_sessions`):** `/auth/browser/session/exchange`
+   consome atomicamente um refresh comum da equipe ativa e cria uma credencial opaca
+   estável, armazenada somente como SHA-256. Lock da família precede o token. Mantém
+   família e prazo absoluto existentes; recusa Kids, perfil, desktop e impersonação.
+   `/access` consulta revogação/expiração e papel/status atuais antes de emitir JWT;
+   `/disconnect` revoga a família. O BFF consulta a cada requisição, sem cache de JWT web.
+   Não altera `/refresh` nem sua detecção de reuso. Purga/exclusão em cascata acompanha
+   a família/usuário. Respostas dessas rotas são `private, no-store`.
 4. **Tokens (jose v6):** access JWT carrega `sub,email,firstName,lastName,role,status`
    (+ `phone`/`signupSource` opcionais). `JWT_ALG` = HS256 (segredo, default) ou
    RS256 (chave privada + JWKS público). O `verifyAccessToken` PINA o `alg` e valida

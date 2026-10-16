@@ -26,3 +26,11 @@
 - L6A (captura atual P07/crop de blocos/identidade do motor), integração de L6B e débitos anteriores continuam abertos. Depois: L7, importação integral L8A/B, piloto L9, L10, full review, commit e merge em staging local.
 
 Sem commit, merge, push, publicação ou liberação nesta revisão.
+
+## Atualização integrada em 16/10
+
+A stack nativa passou a usar o bucket R2 de staging e confirmou os originais do acervo em L8. A ausência de configuração R2 registrada acima é histórica. Aprovação da edição exata e vínculo da entrega foram implementados em L7. Essas entregas não demonstram, por si, o fluxo completo de vídeo pela UI em dois computadores. Autoria isolada de código e reutilização parcial do render continuam pendências funcionais de L6C, além dos ensaios de vídeo e do piloto.
+
+Atualização posterior: o reaproveitamento parcial de vídeo e da faixa contínua de áudio foi implementado e comprovado em Electron real, incluindo comparação com render integral, alteração visual/volume e cancelamento/retomada. Ver [revisão do cache](marketing-l6-render-cache-review-2026-10-16.md). Essa pendência funcional está resolvida; autoria isolada de código e os demais critérios operacionais continuam abertos.
+
+Atualização da autoria: a geração/edição de fonte Remotion em worker isolado foi integrada aos pedidos, histórico, validação do servidor e prévia sincronizada. Provas com Codex, Claude, recuperação de checkpoint, PostgreSQL nativo e formulário Electron → R2 → web constam em [revisão da composição](marketing-l6-composition-review-2026-10-16.md). Essa pendência funcional também está resolvida. O lote inteiro continua aberto pelos ensaios operacionais listados no plano.

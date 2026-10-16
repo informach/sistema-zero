@@ -1,4 +1,4 @@
-import { type ExecutionRun, videoAssetIds } from '@sistemazero/marketing-contracts'
+import { type ExecutionRun, videoPlaybackAssetIds } from '@sistemazero/marketing-contracts'
 import { probeVideo } from '../media/probe-video'
 import { renderReceipt } from '../media/render-identity'
 import { renderTimeline } from '../media/render-timeline'
@@ -18,7 +18,7 @@ export async function exportVideo(
   const started = Date.now(),
     assets: Record<string, string> = {}
   const inspections: NonNullable<ProductionResult['recordingAnalysis']> = []
-  for (const id of videoAssetIds(document.timeline)) {
+  for (const id of videoPlaybackAssetIds(document.timeline)) {
     const metadata = run.context.assets?.find((asset) => asset.id === id)
     if (!metadata) throw new Error('Uma mídia da montagem não está no contexto confirmado')
     if (['smpte2084', 'arib-std-b67'].includes(metadata.colorTransfer ?? ''))
@@ -48,15 +48,24 @@ export async function exportVideo(
     }
   }
   progress('Exportando vídeo no computador')
+  let reused = 0
+  let audioReused = false
   const output = await renderTimeline(
     { timeline: document.timeline, assets },
     resources,
     directory,
     signal,
+    (value) => {
+      reused = value.reused
+      audioReused = value.audioReused ?? false
+      progress(
+        `Preparando vídeo: ${value.rendered + value.reused}/${value.total} trechos; ${value.reused} reaproveitados${value.audioReused === undefined ? '' : value.audioReused ? '; áudio reaproveitado' : '; áudio preparado'}`,
+      )
+    },
   )
   return {
     status: 'succeeded',
-    text: 'Vídeo exportado desta revisão.',
+    text: `Vídeo exportado desta revisão.${reused ? ` ${reused} trechos preservados foram reaproveitados.` : ''}${audioReused ? ' A faixa de áudio também foi reaproveitada.' : ''}`,
     mode: 'Remotion local',
     assetIds: [output.id],
     render: await renderReceipt(run, output),

@@ -50,7 +50,7 @@ async function handle(req: Request, params: Promise<{ path: string[] }>): Promis
   // /confirm) segue sem body — o `.catch` cobre o parse de corpo vazio.
   const body = method === 'GET' ? undefined : await req.json().catch(() => undefined)
 
-  const { status, body: upstreamBody } = await gatewayFetch(`${upstreamPath}${search}`, {
+  const upstream = await gatewayFetch(`${upstreamPath}${search}`, {
     method,
     body,
     ...(req.headers.has('x-marketing-desktop-device') || req.headers.has('x-marketing-desktop-user')
@@ -62,7 +62,7 @@ async function handle(req: Request, params: Promise<{ path: string[] }>): Promis
         }
       : {}),
   })
-  return forwardUpstream({ status, body: upstreamBody })
+  return forwardUpstream(upstream)
 }
 
 export async function GET(req: Request, ctx: { params: Promise<{ path: string[] }> }) {

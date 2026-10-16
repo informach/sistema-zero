@@ -1,14 +1,36 @@
 import { Composition, registerRoot, Still } from 'remotion'
 import { ArtCompositionView } from './art-composition'
 import { type ArtProps, artPropsSchema, defaultArt } from './art-props'
+import { GeneratedCompositionView } from './generated/composition'
+import { defaultGenerated, type GeneratedProps, generatedPropsSchema } from './generated/props'
 import { defaultStory, type StoryProps, storySchema } from './story'
 import { StoryComposition } from './story-composition'
 import { TimelineComposition } from './video/composition'
-import { defaultTimeline, timelinePropsSchema, type TimelineProps } from './video/props'
+import { defaultTimeline, type TimelineProps, timelinePropsSchema } from './video/props'
 
 function Root() {
   return (
     <>
+      <Composition
+        id="MarketingGenerated"
+        component={GeneratedCompositionView}
+        defaultProps={defaultGenerated}
+        width={1080}
+        height={1920}
+        fps={30}
+        durationInFrames={90}
+        calculateMetadata={({ props }: { props: GeneratedProps }) => {
+          const value = generatedPropsSchema.parse(props),
+            { input } = value
+          return {
+            props: value,
+            width: input.width,
+            height: input.height,
+            fps: input.fps.numerator / input.fps.denominator,
+            durationInFrames: input.durationInFrames,
+          }
+        }}
+      />
       <Composition
         id="MarketingTimeline"
         component={TimelineComposition}

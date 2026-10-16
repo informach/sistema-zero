@@ -1,19 +1,22 @@
-import { z } from 'zod'
 import { runViewSchema } from '../../../../marketing-contracts/src/execution'
+import { snapshotPagePath } from '../../../../marketing-contracts/src/snapshot'
 import type { SyncReport } from '../../../../marketing-contracts/src/sync'
 import { changePageSchema } from '../../../../marketing-contracts/src/sync'
+import { WorkspaceHeadReader } from '../../../../marketing-contracts/src/workspace-head'
+import type { WorkspaceRequest } from '../../shared/connection'
 
 export type { SyncReport } from '../../../../marketing-contracts/src/sync'
 
 import type { LocalWorkspaceStore } from './local-store'
 export interface SyncTransport {
-  request(path: string, method?: 'GET' | 'POST', body?: unknown): Promise<unknown>
+  request(path: string, method?: WorkspaceRequest['method'], body?: unknown): Promise<unknown>
 }
 export class SyncTransportError extends Error {
   constructor(
     readonly status: number,
     readonly code: string,
     message: string,
+    readonly retryAfterMs?: number,
   ) {
     super(message)
   }
@@ -22,6 +25,7 @@ export class SyncTransportError extends Error {
   }
 }
 export class WorkspaceSyncEngine {
+  private readonly head: WorkspaceHeadReader
   private flight: Promise<SyncReport> | undefined
   private report: SyncReport = {
     phase: 'idle',
@@ -33,7 +37,9 @@ export class WorkspaceSyncEngine {
     private readonly store: LocalWorkspaceStore,
     private readonly transport: SyncTransport,
     private readonly changed: (report: SyncReport) => void = () => {},
-  ) {}
+  ) {
+    this.head = new WorkspaceHeadReader((path) => this.transport.request(path))
+  }
   state() {
     return { ...this.report }
   }
@@ -53,8 +59,20 @@ export class WorkspaceSyncEngine {
     this.report = { ...this.report, ...value }
     this.changed({ ...this.report })
   }
-  private async pull(projectId: string) {
+  private async pull(projectId: string, snapshots: boolean) {
     for (let pages = 0; pages < 200; pages++) {
+      if (
+        snapshots &&
+        (this.store.cursor(projectId) === 0 || this.store.snapshotCursor(projectId))
+      ) {
+        const pending = this.store.snapshotCursor(projectId)
+        this.store.applySnapshotPage(
+          projectId,
+          pending,
+          await this.transport.request(snapshotPagePath(projectId, pending)),
+        )
+        if (this.store.snapshotCursor(projectId)) continue
+      }
       const cursor = this.store.cursor(projectId)
       const page = changePageSchema.parse(
         await this.transport.request(`/projects/${projectId}/changes?cursor=${cursor}`),
@@ -67,18 +85,13 @@ export class WorkspaceSyncEngine {
   private async cycle(): Promise<SyncReport> {
     this.publish({ phase: 'syncing', message: 'Sincronizando com a equipe' })
     try {
-      const protocol = z
-        .object({ protocol: z.literal(1), minimumDesktopProtocol: z.number().int().max(1) })
-        .safeParse(await this.transport.request('/protocol'))
-      if (!protocol.success)
-        throw new Error(
-          'Esta versão do app não é compatível com o servidor. Atualize o desktop; seus rascunhos foram preservados.',
-        )
-      this.store.saveProjects(await this.transport.request('/projects'))
+      const head = await this.head.read()
+      this.store.saveProjects(head.projects)
       let catchingUp = false,
         accessChanged = false
       for (const project of this.store.projects()) {
         try {
+          let wrote = false
           for (const cancellation of this.store.pendingCancellations(project.id)) {
             try {
               runViewSchema.parse(
@@ -89,16 +102,26 @@ export class WorkspaceSyncEngine {
                 ),
               )
               this.store.settleCancellation(cancellation.runId, 'confirmed')
+              wrote = true
             } catch (error) {
               if (error instanceof SyncTransportError && !error.retryable)
                 this.store.settleCancellation(cancellation.runId, 'blocked', error.message)
               throw error
             }
           }
-          if (!(await this.pull(project.id))) {
+          // The freshly authorized project list is a high-water mark. A project
+          // already at that sequence needs no empty delta request. Pending pages
+          // and a server reset still require reconciliation.
+          if (
+            (wrote ||
+              this.store.cursor(project.id) !== project.sequence ||
+              this.store.snapshotCursor(project.id)) &&
+            !(await this.pull(project.id, head.snapshotPages === 1))
+          ) {
             catchingUp = true
             continue
           }
+          wrote = false
           for (let count = 0; count < 50; count++) {
             const batch = this.store.nextBatch(project.id)
             if (!batch) break
@@ -107,6 +130,7 @@ export class WorkspaceSyncEngine {
                 batch.operationId,
                 await this.transport.request('/batches', 'POST', batch),
               )
+              wrote = true
             } catch (error) {
               const retryable = error instanceof SyncTransportError && error.retryable
               this.store.failBatch(
@@ -129,6 +153,7 @@ export class WorkspaceSyncEngine {
                 operation.operationId,
                 await this.transport.request('/operations', 'POST', operation),
               )
+              wrote = true
             } catch (error) {
               const retryable = error instanceof SyncTransportError && error.retryable
               this.store.fail(
@@ -143,7 +168,7 @@ export class WorkspaceSyncEngine {
                 throw error
             }
           }
-          if (!(await this.pull(project.id))) catchingUp = true
+          if (wrote && !(await this.pull(project.id, head.snapshotPages === 1))) catchingUp = true
         } catch (error) {
           if (error instanceof SyncTransportError && [403, 404].includes(error.status)) {
             this.store.setInaccessible(project.id)

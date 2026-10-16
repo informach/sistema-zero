@@ -16,7 +16,8 @@ Front-end **dedicado e interno** (equipe staff+) da ferramenta de marketing: pip
 de conteúdo, calendário editorial, publicações cross-post, biblioteca de mídia, métricas e
 conexões de contas sociais. **Next.js 16 (App Router) + React 19 + Tailwind v4**; o back-end é o
 **[@sistemazero/marketing](../marketing)** (porta 3011), consumido SEMPRE via api-gateway.
-Molde arquitetural: **`packages/admin`** (BFF via gateway, cookies HttpOnly, réplica única).
+Molde arquitetural: **`packages/admin`** (BFF via gateway, cookies HttpOnly). A sessão do
+marketing é própria, revogável no Auth e independente de single-flight entre réplicas.
 Porta **3012**. Domínio futuro: `marketing.sistemazero.com.br`.
 
 > Estado: **F0 + F1 + F2 COMPLETAS (07/07/2026)** — TODAS as telas ricas no ar: Painel
@@ -35,18 +36,23 @@ Porta **3012**. Domínio futuro: `marketing.sistemazero.com.br`.
 
 ```
 Browser → /api/* (Route Handlers, mesma origem, cookie HttpOnly)
-        → gatewayFetch (Bearer do cookie, refresh-on-401 single-flight em globalThis)
+        → gatewayFetch (credencial opaca → Auth → access novo, sem rotação de cookie)
         → API Gateway (:3000) verifica JWT + RBAC staff+ → injeta X-Auth-User-* + x-internal-token
         → @sistemazero/marketing (:3011)
 ```
 
 - **Login:** `POST /api/auth/login` → gateway `/auth/login`; **rejeita role ∉
-  {superadmin, admin, staff} com 403 ANTES de gravar cookies**. Cookies `sz_mkt_access`/
-  `sz_mkt_refresh` (**`__Host-`** em prod; remoção via `expireCookieOptions` — `delete()` pelado
+  {superadmin, admin, staff} com 403 ANTES de gravar cookies**. O refresh recebido fica só
+  no BFF e é consumido uma vez em `/auth/browser/session/exchange`. Cookie `sz_mkt_browser`
+  (**`__Host-`** em prod; remoção via `expireCookieOptions` — `delete()` pelado
   não remove `__Host-*`). Pós-login/logout navega com **`window.location.replace`** (NUNCA
   `router.replace + refresh` — corrida do Next documentada no admin).
 - **Sessão (`src/server/session.ts`):** HS256 (`JWT_HS256_SECRET`, dev) e/ou RS256 via
   `JWT_JWKS_URL` (prod). **Prod EXIGE JWKS e RECUSA HS256** (mesma regra do admin).
+  Cada leitura web resolve a credencial estável no Auth, conferindo revogação, prazo
+  absoluto e papel/status atuais. O access JWT fica no servidor, sem cache de emissão.
+  Desktop usa sessão própria vinculada ao dispositivo e revalidada pelo gateway.
+  Logout revoga a família antes de limpar o cookie; indisponibilidade não simula sucesso.
 - **BFF (`src/app/api/marketing/[...path]/route.ts`):** catch-all que encaminha
   GET/POST/PATCH/DELETE ao gateway `/marketing/<path>` com **allowlist de 1º segmento**
   `{ideas, contents, publications, media, checklist, accounts, metrics}` (fora → 404) +
@@ -55,7 +61,7 @@ Browser → /api/* (Route Handlers, mesma origem, cookie HttpOnly)
   lógica (`/api/team` busca `/auth/admin/users` UMA vez POR PAPEL de equipe — `?role=` — com
   micro-cache 60s; filtrar a lista geral aqui perderia a equipe além da 1ª página; auth; healthz).
 - **Proxy (`src/proxy.ts`):** anti-CSRF same-origin em mutações `/api/*` + redirect `/login`
-  (com `?next=`) nas páginas do grupo `(app)` sem cookie de refresh. Gate REAL de sessão/role no
+  (com `?next=`) nas páginas do grupo `(app)` sem cookie browser/desktop. Gate REAL de sessão/role no
   `(app)/layout.tsx` (tela de acesso negado p/ role insuficiente).
 - **Security headers/CSP no `next.config.ts`** (cobrem tudo): iguais ao admin MENOS os hosts do
   Vimeo/Estúdio; `connect-src https://*.r2.cloudflarestorage.com` mantido (upload presigned
@@ -67,7 +73,10 @@ Browser → /api/* (Route Handlers, mesma origem, cookie HttpOnly)
 1. **Nunca chamar serviços direto** — tudo via gateway (`src/server/gateway.ts`). Não existe
    exceção de mídia aqui (≠ admin): o presign é do backend marketing.
 2. **Segredos só no servidor** (`src/lib/env.ts` é `server-only`; nunca importar de client).
-3. **Réplica única**: single-flight do refresh em `globalThis` — não escalar horizontalmente.
+3. **Sessão canônica no Auth**: nenhuma rotação/single-flight em memória na web. Não reutilizar
+   cookies access/refresh antigos nem cachear o JWT web entre requisições. Deploy exige
+   migration Auth `0022`, Auth/gateway atualizados e então web; sessões web anteriores
+   pedem um novo login. Rollback preserva a tabela aditiva e também requer novo login.
 4. Primitivos de UI vêm de **`@sistemazero/ui`** (exige `transpilePackages` +
    `@source "../../../ui/src"` no globals.css). Nunca copiar primitivo localmente.
    ⭐ **As CORES também (17/09/2026):** o `globals.css` importa `@sistemazero/ui/console.css` e

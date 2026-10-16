@@ -1,0 +1,26 @@
+[
+  {
+    "title": "Exemplo de observação — substituir pelos dados conferidos",
+    "label": "Pesquisa manual",
+    "url": "https://example.com/post",
+    "body": "Exemplo de formato; estes valores não são dados de campanha.",
+    "classification": "reference",
+    "validity": "unverified",
+    "observation": {
+      "schemaVersion": 1,
+      "sourceType": "imported",
+      "network": "instagram",
+      "subject": "Post consultado",
+      "periodStart": "2026-10-01T12:00:00Z",
+      "periodEnd": "2026-10-03T12:00:00Z",
+      "collectedAt": "2026-10-03T12:05:00Z",
+      "sampleSize": 1,
+      "coverage": "Uma observação pública; alcance e compartilhamentos não fornecidos.",
+      "dimensions": { "objective": "Ensinar", "audienceNeed": "Começar", "series": "Primeiro jogo", "format": "feed" },
+      "metrics": [
+        { "key": "likes", "label": "Curtidas", "unit": "count", "measurement": { "value": 0, "availability": "observed", "denominator": null, "definition": "Contador público no instante da coleta" } },
+        { "key": "shares", "label": "Compartilhamentos", "unit": "count", "measurement": { "value": null, "availability": "unavailable", "denominator": null, "definition": "Não fornecido pela fonte" } }
+      ]
+    }
+  }
+]

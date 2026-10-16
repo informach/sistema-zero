@@ -2,6 +2,7 @@ import { createHash, randomBytes } from 'node:crypto'
 import { mkdir, readFile, rename, unlink, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { FuseState, FuseV1Options, getCurrentFuseWire } from '@electron/fuses'
+import { HttpCooldown, retryAfterMilliseconds } from '@sistemazero/marketing-contracts'
 import { app, type Session, safeStorage, session } from 'electron'
 import { z } from 'zod'
 import {
@@ -47,11 +48,14 @@ export class ServerRequestError extends Error {
     readonly status: number,
     readonly code: string,
     message: string,
+    readonly retryAfterMs?: number,
   ) {
     super(message)
   }
 }
 export class DesktopServerSession {
+  private readonly workspaceCooldown = new HttpCooldown()
+  private cooldownIdentity = ''
   private readonly queue = new SerialQueue()
   private polling: Promise<ConnectionState> | undefined
   private config: z.infer<typeof configSchema> | null = null
@@ -65,7 +69,10 @@ export class DesktopServerSession {
     status: 'disconnected',
     storageProtected: false,
   }
-  constructor(private readonly directory: string) {}
+  constructor(
+    private readonly directory: string,
+    private readonly lifetime?: AbortSignal,
+  ) {}
   async initialize() {
     await mkdir(this.directory, { recursive: true })
     const fuses = await getCurrentFuseWire(process.execPath)
@@ -161,6 +168,25 @@ export class DesktopServerSession {
     const url = new URL(relative, origin)
     if (url.origin !== origin || !url.pathname.startsWith('/api/'))
       throw new Error('Rota fora do app de marketing')
+    const workspaceRequest = relative.startsWith('/api/marketing/workspace')
+    const requestIdentity = JSON.stringify([origin, this.state.userId, this.state.deviceId])
+    if (workspaceRequest) {
+      if (this.cooldownIdentity !== requestIdentity) {
+        this.cooldownIdentity = requestIdentity
+        this.workspaceCooldown.reset()
+      }
+      const remaining = this.workspaceCooldown.remainingMilliseconds()
+      if (remaining)
+        throw new ServerRequestError(
+          429,
+          'TOO_MANY_REQUESTS',
+          `O servidor solicitou uma pausa. Nova tentativa disponível em ${Math.ceil(remaining / 1000)} s.`,
+          remaining,
+        )
+    }
+    const signals = [AbortSignal.timeout(60000)]
+    if (this.lifetime) signals.push(this.lifetime)
+    if (signal) signals.push(signal)
     const response = await this.appSession
       .fetch(url.href, {
         method,
@@ -177,9 +203,7 @@ export class DesktopServerSession {
             : {}),
         },
         body: body === undefined ? undefined : JSON.stringify(body),
-        signal: signal
-          ? AbortSignal.any([signal, AbortSignal.timeout(60000)])
-          : AbortSignal.timeout(60000),
+        signal: AbortSignal.any(signals),
       })
       .catch((error) => {
         throw new ServerRequestError(
@@ -195,6 +219,9 @@ export class DesktopServerSession {
       if (response.ok) throw error
     }
     if (!response.ok) {
+      const retryAfterMs = retryAfterMilliseconds(response.headers.get('retry-after'))
+      if (workspaceRequest && this.cooldownIdentity === requestIdentity)
+        this.workspaceCooldown.observe(response.status, retryAfterMs)
       const error = z
         .object({ error: z.object({ code: z.string(), message: z.string() }) })
         .safeParse(json)
@@ -203,6 +230,7 @@ export class DesktopServerSession {
         response.status,
         error.success ? error.data.error.code : 'SERVER_ERROR',
         error.success ? error.data.error.message : 'O servidor não concluiu a operação',
+        retryAfterMs,
       )
     }
     return json

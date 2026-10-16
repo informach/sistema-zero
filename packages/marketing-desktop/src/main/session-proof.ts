@@ -381,7 +381,10 @@ export async function proveServerSession(
     observer.observe(document.body,{childList:true,subtree:true});button.click();finish();
   })`)
     : null
-  if (libraryRendered) await window.webContents.executeJavaScript('new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))')
+  if (libraryRendered)
+    await window.webContents.executeJavaScript(
+      'new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))',
+    )
   if (libraryRendered)
     await writeFile(
       path.join(root, 'media-library.png'),

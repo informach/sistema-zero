@@ -18,6 +18,45 @@ export type ProjectInput = {
   product: string
 }
 export interface WorkspaceRepository {
+  voidProduction(
+    actorId: string,
+    projectId: string,
+    input: { operationId: string; recordId: string },
+    hash: string,
+  ): Promise<{ id: string; voided: true }>
+  production(
+    actorId: string,
+    projectId: string,
+    days: number,
+  ): Promise<import('@sistemazero/marketing-contracts').ProductionActivityReport>
+  recordProduction(
+    actorId: string,
+    projectId: string,
+    input: import('@sistemazero/marketing-contracts').RecordProduction,
+    hash: string,
+  ): Promise<import('@sistemazero/marketing-contracts').ProductionRecord>
+  analytics(
+    actorId: string,
+    projectId: string,
+    days: number,
+  ): Promise<import('@sistemazero/marketing-contracts').ProjectAnalytics>
+  proposePiece(
+    actorId: string,
+    projectId: string,
+    input: import('@sistemazero/marketing-contracts').LearningPiece,
+    hash: string,
+  ): Promise<BatchResult>
+  historyPage(
+    actorId: string,
+    projectId: string,
+    entityId: string,
+    before: string | null,
+  ): Promise<import('@sistemazero/marketing-contracts').RevisionHistoryPage>
+  snapshotPage(
+    actorId: string,
+    projectId: string,
+    cursor: import('@sistemazero/marketing-contracts').SnapshotCursor | null,
+  ): Promise<import('@sistemazero/marketing-contracts').SnapshotPage>
   actionReceipt(
     actorId: string,
     projectId: string,

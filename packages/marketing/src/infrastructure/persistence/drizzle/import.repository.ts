@@ -1,18 +1,32 @@
-import { createHash } from 'node:crypto'
 import {
   canonicalJson,
   type ImportChunk,
   type ImportStart,
   importRunSchema,
-  inventoryDigestBoundary,
 } from '@sistemazero/marketing-contracts'
 import { and, asc, desc, eq, gte, lt } from 'drizzle-orm'
 import type { ImportRepository } from '../../../domain/ports/import-repository.port'
 import { WorkspaceError } from '../../../domain/workspace/workspace-error'
 import type { Database } from './db'
+import { applyCalendar, previewCalendar } from './import-calendar'
+import { importCoverage } from './import-coverage'
+import { decideImportSource } from './import-decision'
+import { importDelta } from './import-delta'
+import { verifyInventoryIntegrity } from './import-integrity'
+import { applyOfficeText, viewOfficeText } from './import-office'
+import { bindImportProduct, listImportProducts } from './import-product'
+import { productionReports, shareProduction } from './import-production'
+import { applyProductionLink, previewProductionLink } from './import-production-link'
+import { reconcileImport } from './import-reconcile'
+import { previewImportRelease, releaseImport } from './import-release'
 import { loadImportSource } from './import-source'
+import { applyStructure, previewStructure } from './import-structure'
 import { projectAccess, recordChange, type WorkspaceTransaction } from './workspace.repository'
-import { editorialImportEntries as entries, editorialImports as runs } from './workspace-schema'
+import {
+  editorialImportDecisions as decisions,
+  editorialImportEntries as entries,
+  editorialImports as runs,
+} from './workspace-schema'
 
 const conflict = (message: string) => new WorkspaceError('IMPORT_CONFLICT', message)
 const view = (row: typeof runs.$inferSelect) =>
@@ -31,6 +45,124 @@ async function run(tx: WorkspaceTransaction, projectId: string, runId: string) {
 }
 export class DrizzleImportRepository implements ImportRepository {
   constructor(private readonly db: Database) {}
+  reconcile(
+    actorId: string,
+    projectId: string,
+    runId: string,
+    input: import('@sistemazero/marketing-contracts').ImportReconcileApply,
+  ) {
+    return this.db.transaction((tx) => reconcileImport(tx, actorId, projectId, runId, input))
+  }
+  officeText(actorId: string, projectId: string, sourceId: string) {
+    return this.db.transaction((tx) => viewOfficeText(tx, actorId, projectId, sourceId), {
+      isolationLevel: 'repeatable read',
+    })
+  }
+  extractOfficeText(
+    actorId: string,
+    projectId: string,
+    sourceId: string,
+    input: import('@sistemazero/marketing-contracts').ImportOfficeApply,
+  ) {
+    return this.db.transaction((tx) =>
+      applyOfficeText(this.db, tx, actorId, projectId, sourceId, input),
+    )
+  }
+  previewRelease(actorId: string, projectId: string, runId: string) {
+    return this.db.transaction((tx) => previewImportRelease(tx, actorId, projectId, runId), {
+      isolationLevel: 'repeatable read',
+    })
+  }
+  release(
+    actorId: string,
+    projectId: string,
+    runId: string,
+    input: import('@sistemazero/marketing-contracts').ImportReleaseApply,
+  ) {
+    return this.db.transaction((tx) => releaseImport(tx, actorId, projectId, runId, input))
+  }
+  decideSource(
+    actorId: string,
+    projectId: string,
+    runId: string,
+    input: import('@sistemazero/marketing-contracts').ImportDecisionApply,
+  ) {
+    return this.db.transaction((tx) => decideImportSource(tx, actorId, projectId, runId, input))
+  }
+  delta(
+    actorId: string,
+    projectId: string,
+    runId: string,
+    query: import('@sistemazero/marketing-contracts').ImportDeltaQuery,
+  ) {
+    return this.db.transaction((tx) => importDelta(tx, actorId, projectId, runId, query), {
+      isolationLevel: 'repeatable read',
+    })
+  }
+  coverage(
+    actorId: string,
+    projectId: string,
+    runId: string,
+    query: import('@sistemazero/marketing-contracts').ImportCoverageQuery,
+  ) {
+    return this.db.transaction((tx) => importCoverage(tx, actorId, projectId, runId, query), {
+      isolationLevel: 'repeatable read',
+    })
+  }
+  previewProductionLink(actorId: string, projectId: string, reportId: string) {
+    return this.db.transaction((tx) => previewProductionLink(tx, actorId, projectId, reportId))
+  }
+  applyProductionLink(
+    actorId: string,
+    projectId: string,
+    reportId: string,
+    input: import('@sistemazero/marketing-contracts').ProductionLinkApply,
+  ) {
+    return this.db.transaction((tx) =>
+      applyProductionLink(this.db, tx, actorId, projectId, reportId, input),
+    )
+  }
+  shareProduction(
+    actorId: string,
+    projectId: string,
+    runId: string,
+    input: import('@sistemazero/marketing-contracts').ImportProductionShare,
+  ) {
+    return this.db.transaction((tx) => shareProduction(tx, actorId, projectId, runId, input))
+  }
+  productionReports(actorId: string, projectId: string, runId: string, after: string | null) {
+    return this.db.transaction((tx) => productionReports(tx, actorId, projectId, runId, after))
+  }
+  productBindings(actorId: string, projectId: string) {
+    return this.db.transaction((tx) => listImportProducts(tx, actorId, projectId))
+  }
+  bindProduct(
+    actorId: string,
+    projectId: string,
+    input: import('@sistemazero/marketing-contracts').ImportProductBind,
+  ) {
+    return this.db.transaction((tx) => bindImportProduct(tx, actorId, projectId, input))
+  }
+  previewCalendar(actorId: string, projectId: string, sourceId: string) {
+    return this.db.transaction((tx) => previewCalendar(tx, actorId, projectId, sourceId))
+  }
+  applyCalendar(
+    actorId: string,
+    projectId: string,
+    input: import('@sistemazero/marketing-contracts').ImportCalendarApply,
+  ) {
+    return this.db.transaction((tx) => applyCalendar(this.db, tx, actorId, projectId, input))
+  }
+  previewStructure(actorId: string, projectId: string, sourceId: string) {
+    return this.db.transaction((tx) => previewStructure(tx, actorId, projectId, sourceId))
+  }
+  applyStructure(
+    actorId: string,
+    projectId: string,
+    input: import('@sistemazero/marketing-contracts').ImportStructureApply,
+  ) {
+    return this.db.transaction((tx) => applyStructure(this.db, tx, actorId, projectId, input))
+  }
   loadSource(
     actorId: string,
     projectId: string,
@@ -142,26 +274,7 @@ export class DrizzleImportRepository implements ImportRepository {
       if (row.state === 'inventoried') return view(row)
       if (row.state !== 'receiving' || row.received !== row.entryCount)
         throw conflict('Inventário ainda incompleto ou desativado')
-      const boundary = inventoryDigestBoundary(row.origin, row.policyVersion),
-        hash = createHash('sha256').update(boundary.prefix)
-      let count = 0
-      for (;;) {
-        const page = await tx
-          .select({ ordinal: entries.ordinal, source: entries.source })
-          .from(entries)
-          .where(and(eq(entries.runId, runId), gte(entries.ordinal, count)))
-          .orderBy(asc(entries.ordinal))
-          .limit(500)
-        for (const entry of page) {
-          if (entry.ordinal !== count) throw conflict('Inventário contém uma lacuna')
-          hash.update(`${count ? ',' : ''}${canonicalJson(entry.source)}`)
-          count++
-        }
-        if (page.length < 500) break
-      }
-      const digest = hash.update(boundary.suffix).digest('hex')
-      if (count !== row.entryCount || digest !== row.digest)
-        throw conflict('O retrato recebido não corresponde ao hash do inventário')
+      await verifyInventoryIntegrity(tx, row)
       const [updated] = await tx
         .update(runs)
         .set({ state: 'inventoried' })
@@ -205,8 +318,17 @@ export class DrizzleImportRepository implements ImportRepository {
       await projectAccess(tx, actorId, projectId, 'read')
       const row = await run(tx, projectId, runId)
       const page = await tx
-        .select({ ordinal: entries.ordinal, source: entries.source, result: entries.result })
+        .select({
+          ordinal: entries.ordinal,
+          source: entries.source,
+          result: entries.result,
+          decision: decisions.decision,
+        })
         .from(entries)
+        .leftJoin(
+          decisions,
+          and(eq(decisions.runId, entries.runId), eq(decisions.ordinal, entries.ordinal)),
+        )
         .where(and(eq(entries.runId, runId), gte(entries.ordinal, cursor)))
         .orderBy(asc(entries.ordinal))
         .limit(101)

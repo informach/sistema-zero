@@ -64,7 +64,9 @@ export async function probeVideo(
     numerator = raw ? Number(raw[1]) : 0,
     denominator = raw ? Number(raw[2]) : 0
   const frameRate = numerator > 0 && denominator > 0 ? { numerator, denominator } : null
-  if (video && !frameRate) throw new Error('Taxa de quadros não identificada')
+  // Browser WebM/VFR can omit avg_frame_rate while carrying valid timestamps.
+  // Preserve that unknown value; r_frame_rate is a base rate, not the average.
+  // Presentation derivatives choose their CFR explicitly in prepareVideo.
   if (video) {
     // Some malformed VFR containers advertise a duration shorter than their last PTS.
     // Do not silently discard that tail when creating a CFR presentation derivative.

@@ -4,6 +4,7 @@ import {
   approvedEditionSchema,
   type EditionSummary,
   editionPageSchema,
+  editorialCaption,
   type Project,
 } from '@sistemazero/marketing-contracts'
 import { timelineWebVtt } from '@sistemazero/marketing-production/data'
@@ -170,7 +171,9 @@ export function ApprovalPanel({
           </p>
           {representation?.kind === 'representation' ? (
             <div className="rounded-lg bg-muted p-3 text-sm">
-              <p className="whitespace-pre-wrap">{representation.caption}</p>
+              <p className="whitespace-pre-wrap">
+                {editorialCaption(representation, preview.snapshot.revisions)}
+              </p>
               {representation.cta ? <p className="mt-2">{representation.cta}</p> : null}
             </div>
           ) : null}

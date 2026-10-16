@@ -1,4 +1,6 @@
 import { z } from 'zod'
+import { importCoverageStateSchema } from '../../../marketing-contracts/src/import-coverage'
+import { importDeltaStateSchema } from '../../../marketing-contracts/src/import-delta'
 export const connectSchema = z
   .object({ origin: z.string().url().max(1000), label: z.string().trim().min(2).max(80) })
   .strict()
@@ -28,7 +30,7 @@ function validWorkspacePath(value: string) {
   if (
     extra.length ||
     !pathname ||
-    !/^\/(projects|operations|batches|handoffs|protocol|context|runs|assets)(\/[a-zA-Z0-9-]+)*$/.test(
+    !/^\/(projects|operations|batches|handoffs|protocol|head|context|runs|assets)(\/[a-zA-Z0-9-]+)*$/.test(
       pathname,
     )
   )
@@ -42,6 +44,32 @@ function validWorkspacePath(value: string) {
     if (key === 'q' && pathname.endsWith('/staff') && value.length >= 2 && value.length <= 100)
       continue
     if (key === 'cursor' && /^\d+$/.test(value)) continue
+    if (
+      key === 'days' &&
+      /^\/projects\/[a-f0-9-]+\/(analytics|production)$/.test(pathname) &&
+      /^\d+$/.test(value) &&
+      Number(value) >= 1 &&
+      Number(value) <= 365
+    )
+      continue
+    if (
+      key === 'at' &&
+      /^\/projects\/[a-f0-9-]+\/snapshot-page$/.test(pathname) &&
+      /^\d+$/.test(value) &&
+      Number.isSafeInteger(Number(value))
+    )
+      continue
+    if (/^\/projects\/[a-f0-9-]+\/imports\/[a-f0-9-]+\/compare$/.test(pathname)) {
+      if (key === 'previousId' && z.string().uuid().safeParse(value).success) continue
+      if (key === 'state' && (value === 'all' || importDeltaStateSchema.safeParse(value).success))
+        continue
+    }
+    if (
+      key === 'state' &&
+      /^\/projects\/[a-f0-9-]+\/imports\/[a-f0-9-]+\/coverage$/.test(pathname) &&
+      (value === 'all' || importCoverageStateSchema.safeParse(value).success)
+    )
+      continue
     if (
       ['entityId', 'before', 'after', 'revisionId'].includes(key) &&
       z.string().uuid().safeParse(value).success

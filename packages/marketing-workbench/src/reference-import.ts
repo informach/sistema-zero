@@ -4,6 +4,7 @@ import {
   documentSchema,
   type EditorialBatch,
   type EditorialDocument,
+  evidenceObservationSchema,
   stableEditorialId,
 } from '@sistemazero/marketing-contracts'
 import { z } from 'zod'
@@ -20,6 +21,7 @@ const referenceSchema = z
     product: z.string().max(200).default(''),
     validity: z.enum(['current', 'historical', 'unverified']).default('unverified'),
     observedAt: z.string().datetime({ offset: true }).optional(),
+    observation: evidenceObservationSchema.optional(),
     tags: z.array(z.string().max(100)).max(30).default([]),
   })
   .strict()
@@ -87,6 +89,7 @@ export function parseReferenceImport(text: string, format: 'json' | 'csv'): Impo
       'product',
       'validity',
       'observedAt',
+      'observation',
       'tags',
     ])
     if (header.some((name) => !allowed.has(name)))
@@ -99,12 +102,14 @@ export function parseReferenceImport(text: string, format: 'json' | 'csv'): Impo
         const cell = row[column] ?? ''
         if (cell)
           item[name] =
-            name === 'tags'
-              ? cell
-                  .split(';')
-                  .map((tag) => tag.trim())
-                  .filter(Boolean)
-              : cell
+            name === 'observation'
+              ? JSON.parse(cell)
+              : name === 'tags'
+                ? cell
+                    .split(';')
+                    .map((tag) => tag.trim())
+                    .filter(Boolean)
+                : cell
       })
       return item
     })
@@ -142,6 +147,7 @@ export async function referenceImportBatch(
         product: reference.product,
         validity: reference.validity,
         tags: reference.tags,
+        observation: reference.observation,
       })
       return { entityId, baseRevisionId: null, action: 'save' as const, document }
     }),

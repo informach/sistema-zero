@@ -4,6 +4,7 @@ import { EventEmitter } from 'node:events'
 import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
+import { completedCodexItem } from '../src/main/codex-events'
 import { observeLogin } from '../src/main/login-completion'
 import {
   decodeNativeImage,
@@ -12,6 +13,34 @@ import {
 } from '../src/main/provider-policy'
 
 describe('resultados nativos e login', () => {
+  test('eventos validam somente os itens consumidos e aceitam imagem inline sem caminho', () => {
+    expect(
+      completedCodexItem({
+        type: 'imageGeneration',
+        result: 'AAAA',
+        savedPath: null,
+        failure: null,
+      }),
+    ).toEqual({ type: 'imageGeneration', result: 'AAAA', savedPath: null, failure: null })
+    expect(completedCodexItem({ type: 'unrelated', result: { future: true } })).toBeNull()
+    expect(() => completedCodexItem({ type: 'agentMessage', text: 42 })).toThrow()
+    expect(() => completedCodexItem({ type: 'imageGeneration', result: {} })).toThrow()
+  })
+  test('confirmação de outro modo de login não conclui a tentativa ChatGPT', async () => {
+    const rpc = new EventEmitter(),
+      login = observeLogin(rpc)
+    rpc.emit('notification', {
+      method: 'account/login/completed',
+      params: { loginId: null, success: true },
+    })
+    login.identify('ours')
+    rpc.emit('notification', {
+      method: 'account/login/completed',
+      params: { loginId: 'ours', success: true },
+    })
+    await login.completion
+    expect(rpc.listenerCount('notification')).toBe(0)
+  })
   test('login concluído antes da resposta não é perdido nem aceita outra tentativa', async () => {
     const rpc = new EventEmitter()
     const login = observeLogin(rpc, undefined, 1000)

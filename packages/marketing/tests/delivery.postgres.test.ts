@@ -20,6 +20,7 @@ import { DrizzleDeliveryRepository } from '../src/infrastructure/persistence/dri
 import { DrizzleExecutionRepository } from '../src/infrastructure/persistence/drizzle/execution.repository'
 import { DrizzleMediaAssetRepository } from '../src/infrastructure/persistence/drizzle/media-asset.repository'
 import { DrizzleMetricsRepository } from '../src/infrastructure/persistence/drizzle/metrics.repository'
+import { readProjectAnalytics } from '../src/infrastructure/persistence/drizzle/project-analytics'
 import { DrizzlePublicationRepository } from '../src/infrastructure/persistence/drizzle/publication.repository'
 import {
   metricPublicationSnapshots,
@@ -29,6 +30,7 @@ import {
 import { DrizzleWorkspaceRepository } from '../src/infrastructure/persistence/drizzle/workspace.repository'
 import { editorialAssets } from '../src/infrastructure/persistence/drizzle/workspace-schema'
 import { FakeMediaStore } from './fakes/in-memory'
+import { requireReviewDatabase } from './helpers/review-database'
 import { fixtureDirectory } from './helpers/staff-directory'
 
 class ReviewStore extends FakeMediaStore {
@@ -58,12 +60,7 @@ suite('entrega PostgreSQL: edição aprovada, ACL, armazenamento e publicação'
     store = new ReviewStore(),
     now = () => new Date('2026-10-15T12:00:00Z')
   beforeAll(async () => {
-    if (
-      !url ||
-      new URL(url).hostname !== '127.0.0.1' ||
-      new URL(url).pathname !== '/marketing_review'
-    )
-      throw new Error('Banco exclusivo de revisão obrigatório')
+    requireReviewDatabase(url)
     connection = createDbConnection(url)
     await migrate(connection.db, {
       migrationsFolder: 'src/infrastructure/persistence/drizzle/migrations',
@@ -358,6 +355,7 @@ suite('entrega PostgreSQL: edição aprovada, ACL, armazenamento e publicação'
       document: {
         ...draft.document,
         body: 'Outro rascunho',
+        alt: 'Descrição de outra revisão, ainda não aprovada',
         assetIds: [],
         referenceAssetIds: [f.manifest.id],
       },
@@ -366,7 +364,9 @@ suite('entrega PostgreSQL: edição aprovada, ACL, armazenamento e publicação'
       scheduled = await delivery.act(owner, f.projectId, f.created.id, request)
     expect(scheduled.status).toBe('scheduled')
     const resolved = await repository.resolve(await publication(f.created.id))
-    expect(resolved?.orderedAssetIds).toEqual([f.manifest.id])
+    expect(resolved?.orderedMedia).toEqual(
+      f.edition.snapshot.orderedAssets.map(({ asset, alt }) => ({ assetId: asset.id, alt })),
+    )
     expect(resolved?.assets[0]?.r2Key).toBe(f.key)
     expect(scheduled.caption).toBe('Conheça a atividade.')
     store.objects.delete(f.key)
@@ -565,12 +565,14 @@ suite('entrega PostgreSQL: edição aprovada, ACL, armazenamento e publicação'
       limits: {},
     })
     expect(context.context.basis?.map((row) => row.id).sort()).toEqual(
-      f.edition.snapshot.revisions
-        .filter((row) =>
-          ['piece', 'representation', 'component', 'video'].includes(row.document.kind),
-        )
-        .map((row) => row.id)
-        .sort(),
+      [
+        ...f.edition.snapshot.revisions
+          .filter((row) =>
+            ['piece', 'representation', 'component', 'video'].includes(row.document.kind),
+          )
+          .map((row) => row.id),
+        observation.revisionId,
+      ].sort(),
     )
     expect(context.context.evidence.some((row) => row.entityId === observation.id)).toBe(true)
     expect(
@@ -583,6 +585,107 @@ suite('entrega PostgreSQL: edição aprovada, ACL, armazenamento e publicação'
       { views: null, status: 'legacy-unknown' },
     ])
     expect((await delivery.metrics(owner, f.projectId, second.id)).snapshots).toEqual([])
+    const next = await workspace.proposePiece(owner, f.projectId, {
+      schemaVersion: 1,
+      operationId: randomUUID(),
+      analysisId: work.id,
+      expectedRevisionId: work.revisionId,
+      title: 'Próximo experimento',
+      brief: 'Comparar o convite à prática.',
+      objective: 'Salvar para praticar',
+      hypothesis: 'Uma demonstração pode estimular salvamentos.',
+      criterion: 'Conferir a mesma janela em 48 horas.',
+      format: 'story',
+      medium: 'video',
+    })
+    expect(next.status).toBe('applied')
+    if (next.status === 'applied')
+      expect(next.items.find((item) => item.kind === 'piece')?.document).toMatchObject({
+        evidenceIds: [observation.id],
+        originAnalysis: { entityId: work.id, revisionId: work.revisionId },
+      })
+    const currentPiece = f.saved.items.find((item) => item.kind === 'piece')!
+    await workspace.apply(owner, {
+      schemaVersion: 1,
+      operationId: randomUUID(),
+      projectId: f.projectId,
+      entityId: currentPiece.id,
+      baseRevisionId: currentPiece.revisionId,
+      action: 'save',
+      document: {
+        ...currentPiece.document,
+        objective: 'Objetivo alterado depois de publicar',
+        audienceNeed: 'Necessidade nova',
+        series: 'Série nova',
+      },
+    })
+    const early = await readProjectAnalytics(
+      connection.db,
+      owner.userId,
+      f.projectId,
+      90,
+      new Date('2026-10-16T13:00:00Z'),
+    )
+    expect(early.rows).toHaveLength(1)
+    expect(early.rows[0]?.metrics?.availability.views).toBe('legacy-unknown')
+    expect(early.rows[0]?.dimensions).toEqual({
+      objective: '',
+      audienceNeed: '',
+      series: '',
+      format: 'story',
+    })
+    expect(early.rows[0]?.editionId).toBe(f.edition.id)
+    const later = await readProjectAnalytics(
+      connection.db,
+      owner.userId,
+      f.projectId,
+      90,
+      new Date('2026-10-18T12:00:00Z'),
+    )
+    expect(later.rows[0]?.metrics?.views).toBe(0)
+    const newPreview = await approval.preview(owner, f.projectId, f.representationId)
+    const newEdition = await approval.approve(owner, f.projectId, {
+      schemaVersion: 1,
+      operationId: randomUUID(),
+      representationId: f.representationId,
+      expectedHash: newPreview.hash,
+      checks: { copy: true, visual: true, destination: true },
+    })
+    const newDelivery = await delivery.create(owner, f.projectId, {
+      ...f.input,
+      operationId: randomUUID(),
+      editionId: newEdition.id,
+      expectedHash: newEdition.hash,
+      sourcePublicationId: published.id,
+    })
+    await delivery.act(owner, f.projectId, newDelivery.id, {
+      ...action(newDelivery),
+      action: 'mark-published',
+      externalUrl: 'https://www.instagram.com/stories/review/456/',
+      externalPostId: null,
+      confirmedEdition: true,
+    })
+    const editions = await readProjectAnalytics(
+      connection.db,
+      owner.userId,
+      f.projectId,
+      90,
+      new Date('2026-10-18T12:00:00Z'),
+    )
+    expect(editions.rows).toHaveLength(2)
+    expect(editions.rows.find((row) => row.editionId === f.edition.id)?.dimensions.objective).toBe(
+      '',
+    )
+    expect(editions.rows.find((row) => row.editionId === newEdition.id)?.dimensions).toEqual({
+      objective: 'Objetivo alterado depois de publicar',
+      audienceNeed: 'Necessidade nova',
+      series: 'Série nova',
+      format: 'story',
+    })
+    expect(editions.rows.find((row) => row.editionId === newEdition.id)?.metrics).toBeNull()
+    await rejects(readProjectAnalytics(connection.db, randomUUID(), f.projectId, 90), {
+      code: 'OBJECT_INACCESSIBLE',
+    })
     await rejects(
       () => delivery.metrics({ ...owner, userId: randomUUID() }, f.projectId, published.id),
       /não disponível/,

@@ -1,6 +1,11 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
-import { assetManifestSchema, rasterExport, runViewSchema, videoSchema } from '@sistemazero/marketing-contracts'
+import {
+  assetManifestSchema,
+  rasterExport,
+  runViewSchema,
+  videoSchema,
+} from '@sistemazero/marketing-contracts'
 import { app } from 'electron'
 import sharp from 'sharp'
 import { z } from 'zod'
@@ -157,19 +162,48 @@ export async function proveHybridVideo() {
     const jpegMeanPixelError = jpegError / reference.length
     if (jpegMeanPixelError > 3)
       throw new Error(`Perda excessiva na exportação JPEG: ${jpegMeanPixelError}`)
-    if (proof.run.context.source.document.kind !== 'component') throw new Error('Arte de origem ausente')
+    if (proof.run.context.source.document.kind !== 'component')
+      throw new Error('Arte de origem ausente')
     const { composition: _composition, ...rasterDocument } = proof.run.context.source.document
-    const rasterManifest = assetManifestSchema.parse({ id: still.id, name: still.name, size: still.size, sha256: still.sha256, mime: still.mime, schemaVersion: 1, projectId: proof.run.request.projectId,
-      role: 'final', sourceAssetId: null, width: art.composition.width, height: art.composition.height, codec: 'png', rotation: 0, durationMs: null })
-    const raster = rasterExport({ ...proof.run.context.source, document: { ...rasterDocument, assetIds: [still.id] } }, [rasterManifest])
-    const converted = await renderArt({ composition: raster.composition, body: '', title: '', assets: { [still.id]: still.url } },
-      { assets }, path.join(directory, 'raster-jpeg'), AbortSignal.timeout(90000), 'jpeg')
-    const convertedPixels = await sharp((await assets.verify(converted.id)).path).removeAlpha().raw().toBuffer()
-    if (convertedPixels.length !== reference.length) throw new Error('A conversão raster alterou as dimensões')
+    const rasterManifest = assetManifestSchema.parse({
+      id: still.id,
+      name: still.name,
+      size: still.size,
+      sha256: still.sha256,
+      mime: still.mime,
+      schemaVersion: 1,
+      projectId: proof.run.request.projectId,
+      role: 'final',
+      sourceAssetId: null,
+      width: art.composition.width,
+      height: art.composition.height,
+      codec: 'png',
+      rotation: 0,
+      durationMs: null,
+    })
+    const raster = rasterExport(
+      { ...proof.run.context.source, document: { ...rasterDocument, assetIds: [still.id] } },
+      [rasterManifest],
+    )
+    const converted = await renderArt(
+      { composition: raster.composition, body: '', title: '', assets: { [still.id]: still.url } },
+      { assets },
+      path.join(directory, 'raster-jpeg'),
+      AbortSignal.timeout(90000),
+      'jpeg',
+    )
+    const convertedPixels = await sharp((await assets.verify(converted.id)).path)
+      .removeAlpha()
+      .raw()
+      .toBuffer()
+    if (convertedPixels.length !== reference.length)
+      throw new Error('A conversão raster alterou as dimensões')
     let rasterError = 0
-    for (let index = 0; index < convertedPixels.length; index++) rasterError += Math.abs((convertedPixels[index] ?? 0) - (reference[index] ?? 0))
+    for (let index = 0; index < convertedPixels.length; index++)
+      rasterError += Math.abs((convertedPixels[index] ?? 0) - (reference[index] ?? 0))
     const rasterMeanPixelError = rasterError / reference.length
-    if (rasterMeanPixelError > 3) throw new Error(`A conversão raster alterou a arte: ${rasterMeanPixelError}`)
+    if (rasterMeanPixelError > 3)
+      throw new Error(`A conversão raster alterou a arte: ${rasterMeanPixelError}`)
     await assets.verify(still.id)
     for (const [label, second] of [
       ['list', 3.8],

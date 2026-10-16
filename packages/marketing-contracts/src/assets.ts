@@ -23,7 +23,12 @@ export const assetManifestSchema = z
       'text/html',
       'application/json',
       'font/woff2',
+      'font/ttf',
+      'font/otf',
       'application/pdf',
+      'application/zip',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     ]),
     role: z.enum([
       'original',
@@ -132,6 +137,20 @@ export const assetLibraryPageSchema = z
   })
   .strict()
 export type AssetLibraryPage = z.infer<typeof assetLibraryPageSchema>
+export const assetConfirmationRequestSchema = z
+  .object({
+    ids: z
+      .array(idSchema)
+      .min(1)
+      .max(100)
+      .refine((ids) => new Set(ids).size === ids.length),
+  })
+  .strict()
+/** Missing or unfinished files are absent; this never authorizes deleting them. */
+export const assetConfirmationSchema = z
+  .object({ projectId: idSchema, manifests: z.array(assetManifestSchema).max(100) })
+  .strict()
+export type AssetConfirmation = z.infer<typeof assetConfirmationSchema>
 export const approvalSchema = z
   .object({
     schemaVersion: z.literal(1),

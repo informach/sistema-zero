@@ -1,5 +1,6 @@
 'use client'
 import {
+  type ImportProductBinding,
   type ImportSelection,
   importCategorySchema,
   type PreparedImport,
@@ -12,6 +13,7 @@ import type { WorkbenchPort } from './port'
 
 export function ImportBatchControls({
   prepared,
+  binding,
   project,
   inventory,
   busy,
@@ -19,6 +21,7 @@ export function ImportBatchControls({
   run,
 }: {
   prepared: PreparedImport
+  binding: ImportProductBinding
   project: Project
   inventory: NonNullable<WorkbenchPort['inventory']>
   busy: boolean
@@ -27,9 +30,7 @@ export function ImportBatchControls({
 }) {
   const field = useId()
   const [selection, setSelection] = useState<ImportSelection>({
-    product: prepared.products.includes(project.product)
-      ? project.product
-      : (prepared.products[0] ?? null),
+    product: binding.product,
     categories: ['direction', 'calendar', 'copy', 'research'],
     includeReview: false,
   })
@@ -50,12 +51,16 @@ export function ImportBatchControls({
           setSelection((previous) => ({ ...previous, product: event.target.value || null }))
         }
       >
-        {prepared.products.map((product) => (
-          <option key={product} value={product}>
-            {product}
-          </option>
-        ))}
-        <option value="">Todos os produtos deste inventário</option>
+        {prepared.products
+          .filter(
+            (product) =>
+              product === binding.product || (product === 'shared' && binding.includeShared),
+          )
+          .map((product) => (
+            <option key={product} value={product}>
+              {product}
+            </option>
+          ))}
       </Select>
       <div className="grid gap-2 text-sm sm:grid-cols-2">
         {importCategorySchema.options.map((category) => (
@@ -92,11 +97,16 @@ export function ImportBatchControls({
       </p>
       <Button
         size="sm"
-        disabled={busy || !selection.categories.length}
+        disabled={
+          busy ||
+          !selection.categories.length ||
+          !selection.product ||
+          !prepared.products.includes(selection.product)
+        }
         onClick={() =>
           run(async () => {
             const result = await inventory.loadSelection(project.id, prepared.id, selection)
-            return `${result.selected} origens selecionadas: ${result.loaded} carregadas, ${result.reused} já preservadas e ${result.verifying} aguardando conferência de arquivos no servidor.`
+            return `${result.selected} origens selecionadas: ${result.loaded} carregadas, ${result.reused} já preservadas, ${result.verifying} aguardando conferência de arquivos no servidor e ${result.skipped} mantidas fora da carga por decisão registrada.`
           })
         }
       >

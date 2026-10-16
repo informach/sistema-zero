@@ -19,6 +19,7 @@ export function references(document: EditorialDocument): {
       break
     case 'piece':
       refs.items.push(...document.evidenceIds, ...document.representationIds)
+      if (document.originAnalysis) refs.revisions.push(document.originAnalysis.revisionId)
       break
     case 'representation':
       refs.items.push(document.pieceId, ...document.componentIds)
@@ -35,6 +36,9 @@ export function references(document: EditorialDocument): {
       if (document.sourceRevisionId) refs.revisions.push(document.sourceRevisionId)
       refs.revisions.push(
         ...document.timeline.clips.flatMap((clip) => (clip.art ? [clip.art.sourceRevisionId] : [])),
+        ...document.timeline.clips.flatMap((clip) =>
+          clip.generated ? [clip.generated.sourceRevisionId] : [],
+        ),
       )
       for (const preparation of document.preparations ?? [])
         refs.assets.push(preparation.sourceAssetId, ...preparedAssetIds(preparation))

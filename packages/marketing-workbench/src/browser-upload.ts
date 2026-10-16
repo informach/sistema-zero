@@ -34,8 +34,17 @@ const extensions: Record<string, string> = {
   txt: 'text/plain',
   md: 'text/markdown',
   html: 'text/html',
+  htm: 'text/html',
   json: 'application/json',
+  jsonl: 'text/plain',
   woff2: 'font/woff2',
+  ttf: 'font/ttf',
+  otf: 'font/otf',
+  zip: 'application/zip',
+  docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  yaml: 'text/plain',
+  yml: 'text/plain',
   pdf: 'application/pdf',
 }
 export type UploadProgress = (message: string, fraction: number) => void

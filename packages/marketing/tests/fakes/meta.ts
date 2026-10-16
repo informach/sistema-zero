@@ -14,7 +14,8 @@ import type {
 export class FakeMetaApi implements MetaApi {
   createCalls: Array<{ igUserId: string; params: Record<string, string> }> = []
   publishCalls: string[] = []
-  fbPhotoCalls: Array<{ pageId: string; imageUrl: string; caption: string }> = []
+  fbPhotoCalls: Array<{ pageId: string; imageUrl: string; caption: string; alt: string | null }> =
+    []
   fbVideoCalls: Array<{ pageId: string; fileUrl: string; description: string }> = []
   /** Roteiro de status por containerId; sem roteiro → FINISHED direto. */
   statusScript = new Map<string, IgContainerStatus[]>()
@@ -63,12 +64,14 @@ export class FakeMetaApi implements MetaApi {
     pageId: string
     imageUrl: string
     caption: string
+    alt: string | null
   }): Promise<string> {
     if (this.failFbWith) throw this.failFbWith
     this.fbPhotoCalls.push({
       pageId: input.pageId,
       imageUrl: input.imageUrl,
       caption: input.caption,
+      alt: input.alt,
     })
     return `${input.pageId}_post${++this.seq}`
   }

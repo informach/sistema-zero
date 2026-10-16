@@ -6,10 +6,12 @@ import { migrate } from 'drizzle-orm/postgres-js/migrator'
 import type { Actor } from '../src/application/actor'
 import { ApprovalService } from '../src/application/workspace/approval.service'
 import { WorkspaceService } from '../src/application/workspace/workspace.service'
+import { deliveryCopy } from '../src/domain/workspace/delivery'
 import { DrizzleApprovalRepository } from '../src/infrastructure/persistence/drizzle/approval.repository'
 import { createDbConnection, type DbConnection } from '../src/infrastructure/persistence/drizzle/db'
 import { DrizzleWorkspaceRepository } from '../src/infrastructure/persistence/drizzle/workspace.repository'
 import { editorialAssets } from '../src/infrastructure/persistence/drizzle/workspace-schema'
+import { requireReviewDatabase } from './helpers/review-database'
 import { fixtureDirectory } from './helpers/staff-directory'
 
 const url = process.env.MARKETING_TEST_DATABASE_URL,
@@ -23,12 +25,7 @@ suite('aprovação PostgreSQL: edição exata e imutável', () => {
     status: 'active',
   }
   beforeAll(async () => {
-    if (
-      !url ||
-      new URL(url).hostname !== '127.0.0.1' ||
-      new URL(url).pathname !== '/marketing_review'
-    )
-      throw new Error('Banco exclusivo de revisão obrigatório')
+    requireReviewDatabase(url)
     connection = createDbConnection(url)
     await migrate(connection.db, {
       migrationsFolder: 'src/infrastructure/persistence/drizzle/migrations',
@@ -111,6 +108,88 @@ suite('aprovação PostgreSQL: edição exata e imutável', () => {
     representationId,
     expectedHash,
     checks: { copy: true, visual: true, destination: true },
+  })
+  test('legenda editável integra a edição e a entrega sem arquivo visual; direct não entra no publicador', async () => {
+    const f = await fixture(),
+      captionId = randomUUID()
+    const representation = f.saved.items.find((item) => item.id === f.representationId)
+    if (representation?.document.kind !== 'representation') throw new Error('Formato ausente')
+    const updated = await workspace.applyBatch(owner, {
+      schemaVersion: 1,
+      projectId: f.projectId,
+      operationId: randomUUID(),
+      changes: [
+        {
+          entityId: representation.id,
+          baseRevisionId: representation.revisionId,
+          action: 'save',
+          document: {
+            ...representation.document,
+            componentIds: [...representation.document.componentIds, captionId],
+          },
+        },
+        {
+          entityId: captionId,
+          baseRevisionId: null,
+          action: 'save',
+          document: {
+            schemaVersion: 1,
+            kind: 'component',
+            title: 'Legenda',
+            representationId: representation.id,
+            componentType: 'caption',
+            body: 'Legenda literal editável.',
+            assetIds: [],
+            protectedText: [],
+            sourceRevisionId: null,
+          },
+        },
+      ],
+    })
+    if (updated.status !== 'applied') throw new Error('Conflito inesperado')
+    const preview = await approval.preview(owner, f.projectId, f.representationId)
+    expect(preview.snapshot.orderedAssets).toHaveLength(1)
+    const edition = await approval.approve(
+      owner,
+      f.projectId,
+      input(f.representationId, preview.hash),
+    )
+    expect(deliveryCopy(edition, 'ig_story').caption).toBe('Legenda literal editável.')
+    const caption = updated.items.find((item) => item.id === captionId)
+    if (caption?.document.kind !== 'component') throw new Error('Legenda ausente')
+    await workspace.apply(owner, {
+      schemaVersion: 1,
+      projectId: f.projectId,
+      operationId: randomUUID(),
+      entityId: caption.id,
+      baseRevisionId: caption.revisionId,
+      action: 'save',
+      document: { ...caption.document, body: 'Legenda nova.' },
+    })
+    await rejects(
+      approval.approve(owner, f.projectId, input(f.representationId, preview.hash)),
+      /mudou durante/,
+    )
+    expect(deliveryCopy(edition, 'ig_story').caption).toBe('Legenda literal editável.')
+    const revised = await approval.preview(owner, f.projectId, f.representationId)
+    expect(
+      deliveryCopy(
+        await approval.approve(owner, f.projectId, input(f.representationId, revised.hash)),
+        'ig_story',
+      ).caption,
+    ).toBe('Legenda nova.')
+    const current = updated.items.find((item) => item.id === representation.id)
+    if (current?.document.kind !== 'representation') throw new Error('Formato ausente')
+    await workspace.apply(owner, {
+      schemaVersion: 1,
+      projectId: f.projectId,
+      operationId: randomUUID(),
+      entityId: current.id,
+      baseRevisionId: current.revisionId,
+      action: 'save',
+      document: { ...current.document, purpose: 'direct' },
+    })
+    await rejects(approval.preview(owner, f.projectId, f.representationId), /direct/)
   })
   test('consulta de confirmação é somente leitura, pertence ao autor e exige acesso atual', async () => {
     const f = await fixture(),

@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { artSchema } from './art'
 import { httpUrlSchema, idSchema, permissionSchema, sourceSchema, timestampSchema } from './common'
 import { mediaPreparationSchema } from './media-preparation'
+import { evidenceObservationSchema } from './observation'
 import { videoSchema } from './video'
 export const editorialFormatSchema = z.enum([
   'feed',
@@ -47,6 +48,7 @@ export const documentSchema = z
       .object({
         ...base,
         kind: z.literal('evidence'),
+        observation: evidenceObservationSchema.optional(),
         assetIds: z.array(idSchema).max(100).optional(),
         body,
         classification: z.enum(['fact', 'interpretation', 'hypothesis', 'reference']),
@@ -60,9 +62,12 @@ export const documentSchema = z
       .object({
         ...base,
         kind: z.literal('piece'),
+        originAnalysis: z.object({ entityId: idSchema, revisionId: idSchema }).strict().optional(),
         brief: body,
         objective: z.string().max(2000),
         cta: z.string().max(2000),
+        audienceNeed: z.string().trim().max(1000).optional(),
+        series: z.string().trim().max(300).optional(),
         week: z.number().int().min(1).max(104).nullable(),
         position: z.number().int().min(0).max(1000),
         editorialDate: z.string().date().nullable(),
@@ -76,6 +81,7 @@ export const documentSchema = z
       .object({
         ...base,
         kind: z.literal('representation'),
+        purpose: z.enum(['publication', 'direct']).optional(),
         pieceId: idSchema,
         format: editorialFormatSchema,
         medium: mediumSchema,
@@ -93,6 +99,7 @@ export const documentSchema = z
         referenceAssetIds: z.array(idSchema).max(100).optional(),
         representationId: idSchema,
         componentType: z.enum(['copy', 'slide', 'scene', 'art', 'caption', 'cover']),
+        productionNotes: body.optional(),
         composition: artSchema.optional(),
         alt: z.string().max(4000).optional(),
         body,

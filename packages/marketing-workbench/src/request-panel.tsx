@@ -4,6 +4,7 @@ import {
   type ArtRecipeId,
   type AssetManifest,
   artRecipeIdSchema,
+  compositionSceneError,
   contextRequestSchema,
   type ExecutionContext,
   type ExecutionRequest,
@@ -26,6 +27,7 @@ import { Select } from '@sistemazero/ui/select'
 import { Textarea } from '@sistemazero/ui/textarea'
 import { useEffect, useId, useRef, useState } from 'react'
 import { z } from 'zod'
+import { executionStateLabels } from './execution-labels'
 import { ImageRegionPicker } from './image-region'
 import { memoryOperation } from './memory-operation'
 import { errorMessage, type WorkbenchPort } from './port'
@@ -44,6 +46,7 @@ const availableCapabilities = z.enum([
   'render',
   'capture',
   'video-edit',
+  'composition',
   'video-adapt',
   'transcribe',
   'prepare-media',
@@ -84,7 +87,11 @@ export function RequestPanel({
 }) {
   const fieldId = useId()
   const [capability, setCapability] = useState<z.infer<typeof availableCapabilities>>(
-    target.document.kind === 'video' ? 'video-edit' : 'copy',
+    target.document.kind === 'video'
+      ? 'video-edit'
+      : target.document.kind === 'watchlist'
+        ? 'research'
+        : 'copy',
   )
   const [visualLayerId, setVisualLayerId] = useState<string | undefined>()
   const [artRecipeId, setArtRecipeId] = useState<ArtRecipeId | undefined>()
@@ -173,7 +180,9 @@ export function RequestPanel({
   const [instruction, setInstruction] = useState(
       target.document.kind === 'analysis'
         ? 'Analise as evidências e as revisões de origem conforme o objetivo registrado. Separe dados observados, limitações e hipóteses. Não invente métricas, conversões nem causalidade. Proponha um próximo experimento com variável, critério de avaliação e uma sugestão de pauta.'
-        : '',
+        : target.document.kind === 'watchlist'
+          ? 'Pesquise fontes públicas sobre este perfil ou tema conforme o objetivo e as orientações do registro. Informe URLs, datas da publicação e da consulta, novidades e limitações de cobertura. Não confunda conteúdo antigo recém-encontrado com notícia nova nem invente métricas.'
+          : '',
     ),
     [provider, setProvider] = useState<'codex' | 'claude'>('codex'),
     [intent, setIntent] = useState<'adjust' | 'alternatives' | 'adapt'>('adjust')
@@ -382,9 +391,9 @@ export function RequestPanel({
       ...(artRecipeId && capability === 'layout' ? { artRecipeId } : {}),
       ...(capability === 'render' && target.document.kind === 'component' ? { imageFormat } : {}),
       ...(capability === 'video-edit' && reviseCaptions ? { reviseCaptions: true } : {}),
-      ...(capability === 'video-edit' && videoTarget ? { videoTarget } : {}),
+      ...(['video-edit', 'composition'].includes(capability) && videoTarget ? { videoTarget } : {}),
       limits: {
-        timeoutMs: ['render', 'transcribe', 'prepare-media'].includes(capability)
+        timeoutMs: ['render', 'transcribe', 'prepare-media', 'composition'].includes(capability)
           ? 1800000
           : 360000,
         maxCalls: 1,
@@ -518,7 +527,11 @@ export function RequestPanel({
       entry.document.kind === 'component' && formatIds.includes(entry.document.representationId),
   )
   return (
-    <section className="rounded-xl border bg-card p-5" aria-label="Pedido de revisão">
+    <section
+      id={`request-${target.id}`}
+      className="rounded-xl border bg-card p-5"
+      aria-label="Pedido de revisão"
+    >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h3 className="font-semibold">O que você quer mudar?</h3>
@@ -628,6 +641,7 @@ export function RequestPanel({
           {targetDoc.kind === 'video' ? (
             <>
               <option value="video-edit">Editar montagem, áudio e legendas com IA</option>
+              <option value="composition">Criar ou ajustar animação com IA</option>
               <option value="transcribe">Transcrever gravação neste computador</option>
               <option value="prepare-media">Preparar prévia da gravação para a equipe</option>
               <option value="render" disabled={!targetDoc.timeline.clips.length}>
@@ -711,8 +725,15 @@ export function RequestPanel({
           ) : null}
         </div>
       ) : null}
-      {capability === 'video-edit' ? (
+      {['video-edit', 'composition'].includes(capability) ? (
         <div>
+          {capability === 'composition' ? (
+            <p className="mt-3 text-sm text-muted-foreground">
+              Descreva a animação ou o detalhe que deseja mudar. A IA cria a cena no desktop; a
+              prévia e o histórico ficam disponíveis para a equipe no web e no desktop. Gravações,
+              áudio e outras cenas permanecem na montagem.
+            </p>
+          ) : null}
           {targetDoc.kind === 'video' ? (
             <>
               <label htmlFor={`${fieldId}-video-scene`} className="mt-3 block text-sm">
@@ -729,13 +750,28 @@ export function RequestPanel({
                     )
                   }
                 >
-                  <option value="">Montagem inteira</option>
+                  <option value="">
+                    {capability === 'composition' ? 'Escolha uma cena gráfica' : 'Montagem inteira'}
+                  </option>
                   {targetDoc.timeline.clips.map((clip, index) => (
-                    <option key={clip.id} value={clip.id}>
+                    <option
+                      key={clip.id}
+                      value={clip.id}
+                      disabled={
+                        capability === 'composition' &&
+                        Boolean(compositionSceneError(targetDoc.timeline, clip))
+                      }
+                    >
                       Cena {index + 1}:{' '}
-                      {clip.text?.slice(0, 60) ??
+                      {(clip.generated?.input.title ||
+                        clip.generated?.input.body.slice(0, 60) ||
+                        clip.text?.slice(0, 60)) ??
                         clip.art?.title ??
                         (clip.kind === 'audio' ? 'Áudio' : 'Imagem ou vídeo')}
+                      {capability === 'composition' &&
+                      compositionSceneError(targetDoc.timeline, clip)
+                        ? ` · ${compositionSceneError(targetDoc.timeline, clip)}`
+                        : ''}
                     </option>
                   ))}
                 </Select>
@@ -757,50 +793,63 @@ export function RequestPanel({
                       value="text"
                       disabled={
                         !targetDoc.timeline.clips.find(
-                          (clip) => clip.id === videoTarget.clipId && clip.kind === 'text',
+                          (clip) =>
+                            clip.id === videoTarget.clipId &&
+                            (capability === 'composition'
+                              ? Boolean(clip.generated)
+                              : clip.kind === 'text'),
                         )
                       }
                     >
                       Somente o texto
                     </option>
-                    <option value="effect">Somente o efeito</option>
+                    <option value="effect">
+                      {capability === 'composition'
+                        ? 'Animação, preservando o texto'
+                        : 'Somente o efeito'}
+                    </option>
                   </Select>
                   <span className="mt-1 block text-xs text-muted-foreground">
                     As demais cenas, as legendas e a duração da montagem ficam preservadas. Para
-                    reorganizar cortes ou tempos, escolha a montagem inteira.
+                    reorganizar cortes ou tempos, use Editar montagem.
                   </span>
                 </label>
               ) : null}
             </>
           ) : null}
-          <label htmlFor={`${fieldId}-analysis-source`} className="mt-3 block text-sm">
-            Gravação para analisar neste pedido
-            <Select
-              id={`${fieldId}-analysis-source`}
-              disabled={busy}
-              value={sourceAssetId ?? ''}
-              onChange={(event) => setSourceAssetId(event.target.value || undefined)}
-            >
-              <option value="">Analisar as primeiras três gravações vinculadas</option>
-              {captureSources.map((asset) => (
-                <option key={asset.id} value={asset.id}>
-                  {asset.name}
-                </option>
-              ))}
-            </Select>
-            <span className="mt-1 block text-xs text-muted-foreground">
-              A IA recebe pausas e seis imagens de cada vídeo analisado. As demais mídias continuam
-              disponíveis na montagem; selecione uma gravação para analisar seus trechos.
-            </span>
-          </label>
-          <label className="mt-3 flex items-start gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={reviseCaptions}
-              onChange={(event) => setReviseCaptions(event.target.checked)}
-            />
-            Revisar também as legendas já corrigidas, conforme o pedido
-          </label>
+          {capability === 'video-edit' ? (
+            <>
+              <label htmlFor={`${fieldId}-analysis-source`} className="mt-3 block text-sm">
+                Gravação para analisar neste pedido
+                <Select
+                  id={`${fieldId}-analysis-source`}
+                  disabled={busy}
+                  value={sourceAssetId ?? ''}
+                  onChange={(event) => setSourceAssetId(event.target.value || undefined)}
+                >
+                  <option value="">Analisar as primeiras três gravações vinculadas</option>
+                  {captureSources.map((asset) => (
+                    <option key={asset.id} value={asset.id}>
+                      {asset.name}
+                    </option>
+                  ))}
+                </Select>
+                <span className="mt-1 block text-xs text-muted-foreground">
+                  A IA recebe pausas e seis imagens de cada vídeo analisado. As demais mídias
+                  continuam disponíveis na montagem; selecione uma gravação para analisar seus
+                  trechos.
+                </span>
+              </label>
+              <label className="mt-3 flex items-start gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={reviseCaptions}
+                  onChange={(event) => setReviseCaptions(event.target.checked)}
+                />
+                Revisar também as legendas já corrigidas, conforme o pedido
+              </label>
+            </>
+          ) : null}
         </div>
       ) : null}
       {capability === 'layout' ? (
@@ -1030,8 +1079,13 @@ export function RequestPanel({
         </label>
       ) : (
         <p className="text-sm text-muted-foreground">
-          Exportar a composição selecionada em PNG. Se a copy não couber, o app pedirá um ajuste na
-          montagem.
+          {capability === 'render'
+            ? targetDoc.kind === 'video'
+              ? 'Exportar esta revisão em MP4, com as mídias e o áudio da montagem.'
+              : `Exportar esta revisão em ${imageFormat.toUpperCase()}. Se a copy não couber, o app pedirá um ajuste na montagem.`
+            : capability === 'transcribe'
+              ? 'Criar legendas para a gravação selecionada, preservando as correções anteriores.'
+              : 'Preparar prévia, miniatura e forma de onda da gravação para a equipe.'}
         </p>
       )}
       {!ready ? (
@@ -1068,6 +1122,7 @@ export function RequestPanel({
             (!['render', 'transcribe', 'prepare-media'].includes(capability) &&
               !instruction.trim()) ||
             (['transcribe', 'prepare-media'].includes(capability) && !sourceAssetId) ||
+            (capability === 'composition' && !videoTarget) ||
             !restored
           }
           onClick={() => void work(task)}
@@ -1163,16 +1218,7 @@ export function RequestPanel({
               <div className="flex justify-between gap-3">
                 <p className="font-medium">{run.request.instruction}</p>
                 <span className="shrink-0 text-xs text-muted-foreground">
-                  {
-                    {
-                      queued: 'Aguardando desktop',
-                      running: 'Em produção',
-                      waiting: 'Aguardando ação',
-                      succeeded: 'Resultado confirmado',
-                      failed: 'Falhou',
-                      canceled: 'Cancelado',
-                    }[run.state]
-                  }
+                  {executionStateLabels[run.state]}
                 </span>
               </div>
               <p className="mt-2 text-xs text-muted-foreground">

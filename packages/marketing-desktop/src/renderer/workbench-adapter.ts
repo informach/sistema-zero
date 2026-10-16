@@ -1,7 +1,8 @@
-import { handoffSchema, projectSchema, projectViewSchema } from '@sistemazero/marketing-contracts'
+import { handoffSchema, projectSchema } from '@sistemazero/marketing-contracts'
 import type { WorkbenchPort } from '@sistemazero/marketing-workbench'
 import type { WorkspaceRequest } from '../shared/connection'
 import type { DesktopBridge } from '../shared/contracts'
+import { DesktopProjectProjection } from './project-projection'
 
 export function desktopWorkbench(
   bridge: DesktopBridge,
@@ -9,12 +10,25 @@ export function desktopWorkbench(
 ): WorkbenchPort {
   const request: WorkbenchPort['request'] = (path, method = 'GET', body) =>
     bridge.workspace({ scope, path, method, body })
+  const projection = new DesktopProjectProjection((id, version) => bridge.projectView(id, version))
   return {
     location: 'desktop',
     identity: `${scope.origin}:${scope.userId}`,
     userId: scope.userId,
+    localStorage: {
+      usage: () => bridge.storageUsage(),
+      clearConfirmed: (projectId) => bridge.clearConfirmedCache(scope, projectId),
+    },
     exportAssetFile: (input) => bridge.exportAssetFile(scope, input),
     inventory: {
+      rescan: (projectId, id) => bridge.rescanInventory(scope, projectId, id),
+      linkProduction: (projectId, reportId, planHash) =>
+        bridge.linkInventoryProduction(scope, projectId, reportId, planHash),
+      shareProduction: (projectId, id, folderPath) =>
+        bridge.shareInventoryProduction(scope, projectId, id, folderPath),
+      productionFolders: (projectId, id) => bridge.inventoryProductionFolders(scope, projectId, id),
+      reviewProduction: (projectId, id, folderPath) =>
+        bridge.reviewInventoryProduction(scope, projectId, id, folderPath),
       loadSelection: (projectId, id, selection) =>
         bridge.loadInventorySelection(scope, projectId, id, selection),
       loadFile: (projectId, id, ordinal) => bridge.loadInventoryFile(scope, projectId, id, ordinal),
@@ -38,13 +52,17 @@ export function desktopWorkbench(
     assetUrl: async (projectId, assetId) =>
       (await bridge.localAsset(scope, projectId, assetId)).url,
     request,
-    projects: () => bridge.projects(),
+    projects: async () => {
+      const projects = await bridge.projects()
+      projection.retain(projects.map((project) => project.id))
+      return projects
+    },
     createProject: async (input) => {
       const project = projectSchema.parse(await request('/projects', 'POST', input))
       await bridge.synchronize()
       return project
     },
-    view: async (id) => projectViewSchema.parse(await bridge.projectView(id)),
+    view: (id) => projection.read(id),
     save: async (operation, dependsOnOperationId) => {
       await bridge.saveDraft(scope, { operation, dependsOnOperationId })
       await bridge.synchronize()

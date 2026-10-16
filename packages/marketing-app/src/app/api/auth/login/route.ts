@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { isTeamRole } from '@/lib/types'
+import { createBrowserSession } from '@/server/browser-session'
 import { loginRequest } from '@/server/gateway'
-import { setSessionCookies } from '@/server/session'
+import { setBrowserSessionCookie } from '@/server/session'
 
 const Body = z.object({
   email: z.string().email(),
@@ -40,6 +41,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: { code: 'FORBIDDEN' } }, { status: 403 })
   }
 
-  await setSessionCookies(body.tokens)
+  const session = await createBrowserSession(body.tokens.refreshToken)
+  if (!session.ok)
+    return NextResponse.json({ error: { code: 'SERVICE_UNAVAILABLE' } }, { status: 503 })
+  await setBrowserSessionCookie(session.credential, session.expiresAt)
   return NextResponse.json({ ok: true })
 }

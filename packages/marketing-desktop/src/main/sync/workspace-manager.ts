@@ -1,7 +1,6 @@
 import { createHash, randomUUID } from 'node:crypto'
 import { mkdir } from 'node:fs/promises'
 import path from 'node:path'
-import { z } from 'zod'
 import { editionDownloadSchema } from '../../../../marketing-contracts/src/approval'
 import {
   type AssetExportRequest,
@@ -10,18 +9,24 @@ import {
   assetManifestSchema,
 } from '../../../../marketing-contracts/src/assets'
 import { idSchema } from '../../../../marketing-contracts/src/common'
+import { isImportSourceAsset } from '../../../../marketing-contracts/src/import-inventory'
 import { enqueueSchema } from '../../../../marketing-contracts/src/sync'
+import { WORKSPACE_POLL_INTERVAL_MS } from '../../../../marketing-contracts/src/workspace-head'
 import type { WorkspaceRequest } from '../../shared/connection'
 import type { Asset } from '../../shared/contracts'
 import { LocalAssets } from '../assets'
 import type { ExpectedSource } from '../media/copy-source'
 import { exportVerifiedFile } from '../media/export-file'
 import { mediaMetadata } from '../media/probe-image'
+import { RenderChunkCache } from '../media/render-chunk-cache'
 import { type DesktopServerSession, ServerRequestError } from '../server-session'
 import { downloadAsset } from './asset-download'
 import { AssetTransfer } from './asset-transfer'
+import { clearConfirmedAssets } from './clear-confirmed-cache'
 import { DiskBudget } from './disk-budget'
+import { prepareImportedFinal } from './import-final'
 import { LocalWorkspaceStore } from './local-store'
+import { rateLimitedTransport } from './rate-limit'
 import type { SyncTransport } from './sync-engine'
 import { type SyncReport, SyncTransportError, WorkspaceSyncEngine } from './sync-engine'
 
@@ -37,7 +42,7 @@ export class DesktopWorkspaceManager {
   private active: Workspace | undefined
   private timer: ReturnType<typeof setTimeout> | undefined
   private stopped = false
-  private delay = 5000
+  private delay = WORKSPACE_POLL_INTERVAL_MS
   private readonly abort = new AbortController()
   private readonly transfers = new Map<string, Promise<unknown>>()
   private readonly downloads = new Map<string, Promise<Asset>>()
@@ -65,33 +70,22 @@ export class DesktopWorkspaceManager {
           projectId,
           files.map((file) => file.id),
         )
-        let freedBytes = 0,
-          removed = 0,
-          preserved = 0
-        for (const file of files) {
-          if (protectedIds.has(file.id)) {
-            preserved++
-            continue
-          }
-          const download = z
-            .object({ manifest: assetManifestSchema, url: z.string().url() })
-            .parse(
-              await resources.transport.request(
-                `/projects/${projectId}/assets/${file.id}/download`,
-              ),
-            )
-          if (
-            download.manifest.sha256 !== file.sha256 ||
-            download.manifest.id !== file.id ||
-            download.manifest.projectId !== projectId
-          )
-            throw new Error(
-              'O servidor não confirmou uma cópia equivalente; o arquivo local foi preservado',
-            )
-          freedBytes += await resources.assets.evict(file.id)
-          removed++
+        const confirmed = await clearConfirmedAssets({
+          projectId,
+          assets: resources.assets,
+          protectedIds,
+          transport: rateLimitedTransport(resources.transport, this.abort.signal),
+          signal: this.abort.signal,
+        })
+        const chunks = await new RenderChunkCache(
+          path.join(resources.assets.directory, 'render-cache-v1'),
+          0,
+        ).initialize()
+        return {
+          ...confirmed,
+          removed: confirmed.removed + chunks.removed,
+          freedBytes: confirmed.freedBytes + chunks.freedBytes,
         }
-        return { freedBytes, removed, preserved }
       } finally {
         this.maintenance = false
       }
@@ -122,7 +116,12 @@ export class DesktopWorkspaceManager {
               )
             } catch (error) {
               if (error instanceof ServerRequestError)
-                throw new SyncTransportError(error.status, error.code, error.message)
+                throw new SyncTransportError(
+                  error.status,
+                  error.code,
+                  error.message,
+                  error.retryAfterMs,
+                )
               throw error
             }
           },
@@ -161,7 +160,10 @@ export class DesktopWorkspaceManager {
       void active.engine
         .synchronize()
         .then((report) => {
-          this.delay = report.phase === 'offline' ? Math.min(this.delay * 2, 60000) : 5000
+          this.delay =
+            report.phase === 'offline'
+              ? Math.min(this.delay * 2, 60000)
+              : WORKSPACE_POLL_INTERVAL_MS
         })
         .finally(() => this.schedule())
     }, this.delay)
@@ -181,6 +183,20 @@ export class DesktopWorkspaceManager {
     this.guard(workspace)
     return {
       items: workspace.store.items(projectId),
+      ...this.viewState(workspace, projectId),
+    }
+  }
+  async projection(projectId: string, version: number | null) {
+    idSchema.parse(projectId)
+    const workspace = await this.workspace()
+    this.guard(workspace)
+    return {
+      changes: workspace.store.itemProjection(projectId, version),
+      ...this.viewState(workspace, projectId),
+    }
+  }
+  private viewState(workspace: Workspace, projectId: string) {
+    return {
       pending: workspace.store.pending(projectId),
       pendingBatches: workspace.store.pendingBatches(projectId),
       resolvedDrafts: workspace.store.resolvedDrafts(projectId),
@@ -267,11 +283,18 @@ export class DesktopWorkspaceManager {
       const resources = await this.resources(scope, projectId)
       if (!resources.project.permissions.includes('edit'))
         throw new Error('Esta conta não pode adicionar arquivos ao projeto')
+      const originals = new Set(
+        resources.store
+          .transfers(projectId)
+          .filter((transfer) => isImportSourceAsset(transfer.input.manifest))
+          .map((transfer) => transfer.input.manifest.id),
+      )
       const existing = options.expected
         ? resources.assets
             .list()
             .find(
               (asset) =>
+                originals.has(asset.id) &&
                 asset.name === path.basename(file) &&
                 asset.sha256 === options.expected?.sha256 &&
                 asset.size === options.expected.size,
@@ -308,6 +331,21 @@ export class DesktopWorkspaceManager {
       })
       resources.store.stageTransfer({ operationId: randomUUID(), manifest })
       return asset
+    })
+  }
+  prepareImportedFinal(
+    scope: WorkspaceRequest['scope'],
+    projectId: string,
+    originalId: string,
+    expectedHash: string,
+    signal: AbortSignal,
+  ) {
+    return this.track(`prepare-final:${projectId}:${originalId}`, async () => {
+      const resources = await this.resources(scope, projectId)
+      if (!resources.project.permissions.includes('edit'))
+        throw new Error('Esta conta não pode vincular arquivos ao projeto')
+      const combined = AbortSignal.any([signal, this.abort.signal])
+      return prepareImportedFinal(resources, projectId, originalId, expectedHash, combined)
     })
   }
   private track<T>(key: string, operation: () => Promise<T>): Promise<T> {

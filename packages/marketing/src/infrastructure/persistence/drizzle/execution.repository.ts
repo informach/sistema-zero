@@ -30,6 +30,7 @@ import {
   validateVisualRequest,
 } from '../../../domain/workspace/visual-request'
 import { WorkspaceError } from '../../../domain/workspace/workspace-error'
+import { loadContextBasis } from './context-basis'
 import type { Database } from './db'
 import {
   DrizzleWorkspaceRepository,
@@ -80,34 +81,6 @@ async function loadContext(
       ),
     )
   if (!source || source.revisionId !== input.revisionId) throw contextChanged()
-  const basisRefs = source.document.kind === 'analysis' ? (source.document.basis ?? []) : []
-  const basisRows = basisRefs.length
-    ? await tx
-        .select()
-        .from(revisions)
-        .where(
-          and(
-            eq(revisions.projectId, input.projectId),
-            inArray(revisions.id, [...new Set(basisRefs.map((row) => row.revisionId))]),
-          ),
-        )
-        .orderBy(asc(revisions.id))
-    : []
-  if (
-    basisRefs.some(
-      (reference) =>
-        !basisRows.some(
-          (row) => row.id === reference.revisionId && row.entityId === reference.entityId,
-        ),
-    )
-  )
-    throw new WorkspaceError(
-      'DEPENDENCY_MISSING',
-      'Uma revisão de origem da análise não está disponível',
-    )
-  const basis = basisRows.map((row) =>
-    revisionSchema.parse({ ...row, createdAt: row.createdAt.toISOString() }),
-  )
   const ancestors: Array<typeof source> = []
   let child = source
   for (let level = 0; level < 2; level++) {
@@ -132,6 +105,7 @@ async function loadContext(
     ancestors.push(parent)
     child = parent
   }
+  const basis = await loadContextBasis(tx, input.projectId, source.document, ancestors)
   const byId = new Map([[source.id, source]])
   const allowed = new Set<string>(),
     queue = [source.id]
@@ -398,7 +372,27 @@ export class DrizzleExecutionRepository implements ExecutionRepository {
     let batch: EditorialBatch | undefined
     let error: EditorialApplication['error'] = null
     try {
-      batch = await editorialBatch(current, variantIndex)
+      const ids =
+        current.request.capability === 'composition' && current.outcome?.status === 'succeeded'
+          ? current.outcome.assetIds
+          : []
+      const produced = ids.length
+        ? await tx
+            .select({ manifest: assets.manifest })
+            .from(assets)
+            .where(
+              and(
+                eq(assets.projectId, run.projectId),
+                inArray(assets.id, ids),
+                eq(assets.confirmed, true),
+              ),
+            )
+        : []
+      batch = await editorialBatch(
+        current,
+        variantIndex,
+        produced.map((asset) => asset.manifest),
+      )
     } catch (failure) {
       if (!(failure instanceof WorkspaceError || failure instanceof z.ZodError)) throw failure
       error = {
@@ -757,6 +751,14 @@ export class DrizzleExecutionRepository implements ExecutionRepository {
           completed,
           confirmed.map((asset) => asset.manifest),
         )
+        if (run.request.capability === 'composition') {
+          for (let index = 0; index < (input.outcome.video?.variants.length ?? 0); index++)
+            await editorialBatch(
+              completed,
+              index,
+              confirmed.map((asset) => asset.manifest),
+            )
+        }
       }
       if (
         input.outcome.status === 'succeeded' &&

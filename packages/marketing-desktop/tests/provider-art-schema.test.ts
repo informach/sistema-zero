@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
-import { z } from 'zod'
 import { defaultArt } from '@sistemazero/marketing-production/data'
+import { z } from 'zod'
 import { canonicalArtProposal, nativeArtProposalSchema } from '../src/main/provider-art-schema'
 
 test('schema nativo exige todas as propriedades, ausência explícita não muda a revisão canônica', () => {

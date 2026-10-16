@@ -157,20 +157,27 @@ try {
       leaseExpired: false,
       outcome: null,
     })
-    const outcome = await editVideo(run, path.join(directory, provider), signal, console.log, {
-      images,
-      observations: [
-        {
-          version: 'ffmpeg-remotion-4.0.535-v1',
-          scope: 'audio-and-frames',
-          assetId: original.id,
-          sha256: original.sha256,
-          metadata: analysis.metadata,
-          silence: analysis.silence,
-          samples,
-        },
-      ],
-    })
+    const outcome = await editVideo(
+      run,
+      path.join(directory, provider, run.request.id),
+      signal,
+      console.log,
+      'checkpoint',
+      {
+        images,
+        observations: [
+          {
+            version: 'ffmpeg-remotion-4.0.535-v1',
+            scope: 'audio-and-frames',
+            assetId: original.id,
+            sha256: original.sha256,
+            metadata: analysis.metadata,
+            silence: analysis.silence,
+            samples,
+          },
+        ],
+      },
+    )
     await writeFile(
       path.join(directory, `${provider}-outcome.json`),
       JSON.stringify(outcome, null, 2),

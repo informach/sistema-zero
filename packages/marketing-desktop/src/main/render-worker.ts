@@ -4,17 +4,34 @@ import type {} from 'electron'
 import { artPropsSchema } from '../../../marketing-production/src/art-props'
 import { storySchema } from '../../../marketing-production/src/story'
 import { timelinePropsSchema } from '../../../marketing-production/src/video/props'
+import { renderCompositionWorker } from './media/render-composition-worker'
+import { renderTimelineChunks } from './media/render-timeline-chunks'
+import { chunkContextSchema } from './media/timeline-chunks'
 
-const [propsFile, outputLocation, serveUrl, mode] = process.argv.slice(2)
+const [propsFile, outputLocation, serveUrl, mode, chunksFile] = process.argv.slice(2)
 if (!propsFile || !outputLocation || !serveUrl) throw new Error('Parâmetros de render ausentes.')
 
 const { cancelSignal, cancel } = makeCancelSignal()
+const controller = new AbortController()
 if (!process.parentPort) throw new Error('O render precisa do processo isolado do app desktop')
 process.parentPort.on('message', (event) => {
-  if (event.data === 'cancel') cancel()
+  if (event.data === 'cancel') {
+    controller.abort()
+    cancel()
+  }
 })
 
 async function main(propsFile: string, outputLocation: string, serveUrl: string) {
+  if (mode === 'composition') {
+    await renderCompositionWorker(
+      JSON.parse(await readFile(propsFile, 'utf8')),
+      outputLocation,
+      serveUrl,
+      cancelSignal,
+      controller.signal,
+    )
+    return
+  }
   if (mode === 'art' || mode === 'art-jpeg') {
     const props = artPropsSchema.parse(JSON.parse(await readFile(propsFile, 'utf8')))
     const composition = await selectComposition({
@@ -42,6 +59,19 @@ async function main(propsFile: string, outputLocation: string, serveUrl: string)
     id: mode === 'timeline' ? 'MarketingTimeline' : 'MarketingStory',
     inputProps: props,
   })
+  if (mode === 'timeline' && chunksFile) {
+    await renderTimelineChunks({
+      props: timelinePropsSchema.parse(raw),
+      composition,
+      serveUrl,
+      outputLocation,
+      context: chunkContextSchema.parse(JSON.parse(await readFile(chunksFile, 'utf8'))),
+      cancellation: { cancelSignal, cancel },
+      signal: controller.signal,
+      progress: (chunks) => console.log(JSON.stringify({ chunks })),
+    })
+    return
+  }
   await renderMedia({
     composition,
     serveUrl,

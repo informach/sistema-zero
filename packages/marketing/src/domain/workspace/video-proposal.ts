@@ -1,4 +1,5 @@
 import {
+  type AssetManifest,
   artText,
   batchOperationSchema,
   canonicalJson,
@@ -7,9 +8,10 @@ import {
   stableEditorialId,
   videoAssetIds,
 } from '@sistemazero/marketing-contracts'
+import { validateCompositionResult } from './composition-result'
 import { WorkspaceError } from './workspace-error'
 
-export async function videoBatch(run: ExecutionRun, index: number) {
+export async function videoBatch(run: ExecutionRun, index: number, produced: AssetManifest[] = []) {
   const outcome = run.outcome?.status === 'succeeded' ? run.outcome : undefined
   const proposal = outcome?.video,
     variant = proposal?.variants[index],
@@ -19,7 +21,9 @@ export async function videoBatch(run: ExecutionRun, index: number) {
     !variant ||
     source.document.kind !== 'video' ||
     variant.videoId !== source.entityId ||
-    !['video-edit', 'render', 'transcribe', 'prepare-media'].includes(run.request.capability) ||
+    !['video-edit', 'composition', 'render', 'transcribe', 'prepare-media'].includes(
+      run.request.capability,
+    ) ||
     run.request.intent === 'adapt' ||
     proposal.variants.length > run.request.limits.maxVariants ||
     (run.request.intent === 'adjust' && proposal.variants.length !== 1)
@@ -48,7 +52,11 @@ export async function videoBatch(run: ExecutionRun, index: number) {
         : new Set(['effect', 'counter', 'listItems', 'fadeInFrames', 'fadeOutFrames'])
     const retain = (clip: typeof selected) =>
       Object.fromEntries(Object.entries(clip).filter(([key]) => !excluded.has(key)))
-    if (part !== 'scene' && canonicalJson(retain(before)) !== canonicalJson(retain(selected)))
+    if (
+      run.request.capability !== 'composition' &&
+      part !== 'scene' &&
+      canonicalJson(retain(before)) !== canonicalJson(retain(selected))
+    )
       throw new WorkspaceError(
         'INVALID_RESULT',
         'O pedido alterou mais que o texto ou efeito selecionado',
@@ -85,6 +93,8 @@ export async function videoBatch(run: ExecutionRun, index: number) {
     )
   }
   const manifests = new Map((run.context.assets ?? []).map((asset) => [asset.id, asset]))
+  for (const asset of await validateCompositionResult(run, next, produced))
+    manifests.set(asset.id, asset)
   const preparations = [...(source.document.preparations ?? [])]
   const preparation = outcome?.mediaPreparation
   if (run.request.capability === 'prepare-media') {
@@ -199,6 +209,8 @@ export async function videoBatch(run: ExecutionRun, index: number) {
       throw new WorkspaceError('PROTECTED_CONTENT', 'A legenda já corrigida precisa ser preservada')
   }
   for (const clip of original.clips.filter((clip) => clip.art)) {
+    if (run.request.capability === 'composition' && clip.id === run.request.videoTarget?.clipId)
+      continue
     const before = clip.art,
       after = next.clips.find((item) => item.id === clip.id)?.art
     if (!before) continue
