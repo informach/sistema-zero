@@ -1,27 +1,14 @@
-import { useEffect, useId, useState } from 'react'
+import { useEffect, useId, useMemo, useState } from 'react'
 import { renderBottomPanel, useVisibleBottomTabs } from '../../../components/layout/bottomTabs'
 import type { ProjectTree } from '../../../core/proProject'
 import type { ProEditorDiagnostic } from '../../../monaco/pro/session'
 import { glossErrorMessage } from '../../../state/errorGloss'
 import { ERROR_LOG_KINDS, useLogsStore } from '../../../state/logsStore'
-import { studioTutorSourceHash } from '../../../studio/tutorSafety'
+import { currentProDiagnostics } from './diagnostics'
 import type { ProWorkspacePreferences } from './model'
 
-export function currentProDiagnostics(items: ProEditorDiagnostic[], tree: ProjectTree) {
-  return [
-    ...new Map(
-      items
-        .filter((item) => {
-          const node = tree[item.path]
-          return node?.kind === 'file' && item.sourceHash === studioTutorSourceHash(node.content)
-        })
-        .map((item) => [
-          `${item.path}:${item.line}:${item.column}:${item.code}:${item.message}`,
-          item,
-        ]),
-    ).values(),
-  ]
-}
+export { currentProDiagnostics } from './diagnostics'
+
 function diagnosticHint(code: number) {
   if (code === 2307) return 'Confira se o caminho do arquivo ou o nome da biblioteca está certo.'
   if (code === 2322 || code === 2345)
@@ -48,14 +35,21 @@ export function ProBottomPanel({
 }) {
   const allowed = useVisibleBottomTabs()
   const entries = useLogsStore((state) => state.entries)
-  const problems = currentProDiagnostics(diagnostics ?? [], tree)
-  const runtime = [
-    ...new Map(
-      entries
-        .filter((entry) => ERROR_LOG_KINDS.has(entry.kind))
-        .map((entry) => [entry.text, entry]),
-    ).values(),
-  ].slice(-50)
+  const problems = useMemo(
+    () => currentProDiagnostics(diagnostics ?? [], tree),
+    [diagnostics, tree],
+  )
+  const runtime = useMemo(
+    () =>
+      [
+        ...new Map(
+          entries
+            .filter((entry) => ERROR_LOG_KINDS.has(entry.kind))
+            .map((entry) => [entry.text, entry]),
+        ).values(),
+      ].slice(-50),
+    [entries],
+  )
   const count = problems.length + runtime.length
   const tabs = [
     { id: 'problems' as const, label: `Problemas${count ? ` (${count})` : ''}` },

@@ -223,6 +223,7 @@ export function attachProLanguageService(
     const sources = sent
     const gathered: ProEditorDiagnostic[] = []
     const seen = new Set<string>()
+    const sourceHashes = new Map<string, string>()
     for (const [path, node] of Object.entries(input().tree)) {
       if (disposed || epoch !== generation) return
       if (node.kind !== 'file') continue
@@ -269,12 +270,17 @@ export function attachProLanguageService(
           continue
         seen.add(key)
         const lines = source.slice(0, item.start).split(/\r\n|\r|\n/)
+        let sourceHash = sourceHashes.get(item.path)
+        if (sourceHash === undefined) {
+          sourceHash = studioTutorSourceHash(source)
+          sourceHashes.set(item.path, sourceHash)
+        }
         gathered.push({
           path: item.path,
           code: item.code,
           line: lines.length,
           column: (lines.at(-1)?.length ?? 0) + 1,
-          sourceHash: studioTutorSourceHash(source),
+          sourceHash,
           severity: item.severity,
           message: item.message,
         })
