@@ -64,7 +64,7 @@ export class MetaMetricsSource implements MetricsSource {
       const stat = pub.externalPostId ? stats.get(pub.externalPostId) : undefined
       if (!stat) continue
       map.set(pub.id, {
-        views: 0,
+        views: null,
         likes: stat.likes,
         comments: stat.comments,
         shares: stat.shares,

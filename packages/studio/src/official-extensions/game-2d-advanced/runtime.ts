@@ -5056,7 +5056,7 @@ ${sceneApiEntries}
       runtimeInspectors['game-2d-advanced:battle'] = function () {
         var b = rpg.battle;
         if (!b) return null;
-        function snap(c) { return { name: c.name, side: c.side, hp: c.hp, max: c.max, energy: c.energy, alive: c.alive, poison: c.poison, regen: c.regen, str: c.str, def: c.def, moves: c.moves.length, boss: !!c.boss, image: c.image, color: c.color }; }
+        function snap(c) { return { name: c.name, side: c.side, hp: c.hp, max: c.max, energy: c.energy, alive: c.alive, poison: c.poison, regen: c.regen, str: c.str, def: c.def, moves: c.moves.length, boss: !!c.boss, image: c.image, color: c.color, x: c.x, y: c.y, w: c.w, h: c.h, availableMoves: c.moves.map(function (move) { return { name: move.name, cost: move.cost, heal: !!move.heal }; }) }; }
         var i;
         var allies = []; for (i = 0; i < b.allies.length; i++) allies.push(snap(b.allies[i]));
         var foes = []; for (i = 0; i < b.foes.length; i++) foes.push(snap(b.foes[i]));

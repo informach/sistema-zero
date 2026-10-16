@@ -21,6 +21,7 @@ import type {
 import type { Network } from '../../../domain/publication/publication'
 import type { Publication } from '../../../domain/publication/publication-record'
 import type { Database } from './db'
+import { legacyPublication } from './publication-scope'
 import { contents, publications } from './schema'
 
 export class DrizzlePublicationRepository implements PublicationRepository {
@@ -36,7 +37,11 @@ export class DrizzlePublicationRepository implements PublicationRepository {
   }
 
   async byId(id: string): Promise<Publication | null> {
-    const [row] = await this.db.select().from(publications).where(eq(publications.id, id)).limit(1)
+    const [row] = await this.db
+      .select()
+      .from(publications)
+      .where(and(eq(publications.id, id), legacyPublication))
+      .limit(1)
     return row ?? null
   }
 
@@ -73,7 +78,7 @@ export class DrizzlePublicationRepository implements PublicationRepository {
     return this.db
       .select()
       .from(publications)
-      .where(eq(publications.contentId, contentId))
+      .where(and(eq(publications.contentId, contentId), legacyPublication))
       .orderBy(asc(publications.createdAt), asc(publications.id))
   }
 
@@ -83,7 +88,7 @@ export class DrizzlePublicationRepository implements PublicationRepository {
     const rows = await this.db
       .select()
       .from(publications)
-      .where(inArray(publications.contentId, contentIds))
+      .where(and(inArray(publications.contentId, contentIds), legacyPublication))
       .orderBy(asc(publications.createdAt), asc(publications.id))
     for (const row of rows) {
       const list = map.get(row.contentId) ?? []
@@ -96,7 +101,7 @@ export class DrizzlePublicationRepository implements PublicationRepository {
   async listByWindow(
     filter: PublicationsWindowFilter,
   ): Promise<{ items: PublicationListItem[]; total: number }> {
-    const conditions = []
+    const conditions = [legacyPublication]
     if (filter.from) conditions.push(gte(publications.scheduledAt, filter.from))
     if (filter.to) conditions.push(lt(publications.scheduledAt, filter.to))
     if (filter.statuses && filter.statuses.length > 0) {
@@ -129,7 +134,12 @@ export class DrizzlePublicationRepository implements PublicationRepository {
     return { items: rows, total: totalRow?.value ?? 0 }
   }
 
-  async listRecentPublished(input: { since: Date; limit: number }): Promise<PublicationListItem[]> {
+  async listRecentPublished(input: {
+    since: Date
+    until?: Date
+    network?: Network
+    limit: number
+  }): Promise<PublicationListItem[]> {
     return this.db
       .select({
         publication: publications,
@@ -138,7 +148,15 @@ export class DrizzlePublicationRepository implements PublicationRepository {
       })
       .from(publications)
       .innerJoin(contents, eq(publications.contentId, contents.id))
-      .where(and(eq(publications.status, 'published'), gte(publications.publishedAt, input.since)))
+      .where(
+        and(
+          eq(publications.status, 'published'),
+          gte(publications.publishedAt, input.since),
+          input.until ? lte(publications.publishedAt, input.until) : undefined,
+          input.network ? eq(publications.network, input.network) : undefined,
+          legacyPublication,
+        ),
+      )
       .orderBy(desc(publications.publishedAt), asc(publications.id))
       .limit(input.limit)
   }

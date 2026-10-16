@@ -24,7 +24,7 @@ export class DrizzleMetricsRepository implements MetricsRepository {
       .select()
       .from(metricAccountSnapshots)
       .where(eq(metricAccountSnapshots.socialAccountId, socialAccountId))
-      .orderBy(desc(metricAccountSnapshots.capturedAt))
+      .orderBy(desc(metricAccountSnapshots.capturedAt), desc(metricAccountSnapshots.id))
       .limit(1)
     return row ?? null
   }
@@ -32,12 +32,16 @@ export class DrizzleMetricsRepository implements MetricsRepository {
   async latestAccountSnapshots(socialAccountIds: string[]): Promise<Map<string, AccountSnapshot>> {
     const map = new Map<string, AccountSnapshot>()
     if (socialAccountIds.length === 0) return map
-    // Mais recentes primeiro; o primeiro visto por conta vence.
+    // Keep one row per account in PostgreSQL, rather than transferring its entire history.
     const rows = await this.db
-      .select()
+      .selectDistinctOn([metricAccountSnapshots.socialAccountId])
       .from(metricAccountSnapshots)
       .where(inArray(metricAccountSnapshots.socialAccountId, socialAccountIds))
-      .orderBy(desc(metricAccountSnapshots.capturedAt))
+      .orderBy(
+        asc(metricAccountSnapshots.socialAccountId),
+        desc(metricAccountSnapshots.capturedAt),
+        desc(metricAccountSnapshots.id),
+      )
     for (const row of rows) {
       if (!map.has(row.socialAccountId)) map.set(row.socialAccountId, row)
     }
@@ -58,7 +62,7 @@ export class DrizzleMetricsRepository implements MetricsRepository {
           gte(metricAccountSnapshots.capturedAt, since),
         ),
       )
-      .orderBy(asc(metricAccountSnapshots.capturedAt))
+      .orderBy(asc(metricAccountSnapshots.capturedAt), asc(metricAccountSnapshots.id))
   }
 
   async latestPublicationStats(
@@ -66,12 +70,16 @@ export class DrizzleMetricsRepository implements MetricsRepository {
   ): Promise<Map<string, PublicationSnapshot>> {
     const map = new Map<string, PublicationSnapshot>()
     if (publicationIds.length === 0) return map
-    // Mais recentes primeiro; o primeiro visto por publicação vence.
+    // Bound the result by the requested publications, independently of snapshot history size.
     const rows = await this.db
-      .select()
+      .selectDistinctOn([metricPublicationSnapshots.publicationId])
       .from(metricPublicationSnapshots)
       .where(inArray(metricPublicationSnapshots.publicationId, publicationIds))
-      .orderBy(desc(metricPublicationSnapshots.capturedAt))
+      .orderBy(
+        asc(metricPublicationSnapshots.publicationId),
+        desc(metricPublicationSnapshots.capturedAt),
+        desc(metricPublicationSnapshots.id),
+      )
     for (const row of rows) {
       if (!map.has(row.publicationId)) map.set(row.publicationId, row)
     }
@@ -86,7 +94,7 @@ export class DrizzleMetricsRepository implements MetricsRepository {
       .select()
       .from(metricPublicationSnapshots)
       .where(eq(metricPublicationSnapshots.publicationId, publicationId))
-      .orderBy(desc(metricPublicationSnapshots.capturedAt))
+      .orderBy(desc(metricPublicationSnapshots.capturedAt), desc(metricPublicationSnapshots.id))
       .limit(limit)
   }
 }

@@ -69,13 +69,13 @@ export function TopPublicationsTable({
                   {pub.publishedAt ? formatShortSp(pub.publishedAt) : '—'}
                 </TableCell>
                 <TableCell className="text-right tabular-nums">
-                  {NUMBER_FMT.format(pub.views)}
+                  {pub.views === null ? '—' : NUMBER_FMT.format(pub.views)}
                 </TableCell>
                 <TableCell className="text-right tabular-nums">
-                  {NUMBER_FMT.format(pub.likes)}
+                  {pub.likes === null ? '—' : NUMBER_FMT.format(pub.likes)}
                 </TableCell>
                 <TableCell className="text-right tabular-nums">
-                  {NUMBER_FMT.format(pub.comments)}
+                  {pub.comments === null ? '—' : NUMBER_FMT.format(pub.comments)}
                 </TableCell>
                 <TableCell className="whitespace-nowrap text-muted-foreground">
                   {formatShortSp(pub.capturedAt)}

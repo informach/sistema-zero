@@ -5,7 +5,60 @@ import { getProviderStatus, runProvider } from '../src/main/providers'
 
 const directory = path.resolve('.cache/proof')
 await mkdir(directory, { recursive: true })
-if (process.argv.includes('--text')) {
+if (process.argv.includes('--editorial')) {
+  for (const provider of ['codex', 'claude'] as const) {
+    if (process.argv.includes('--claude') && provider !== 'claude') continue
+    const result = await runProvider(
+      {
+        provider,
+        kind: 'copy',
+        responseFormat: 'editorial-copy',
+        prompt:
+          'Faça um ajuste curto nesta copy: "Conheça nossa atividade de jogos." Entregue kind copy, schemaVersion 1, summary, uma variante com label e changes. entityId 00000000-0000-4000-8000-000000000001, field body, value com até 20 palavras. Não prometa resultados.',
+      },
+      path.join(directory, `${provider}-editorial`),
+      new AbortController().signal,
+      (stage) => console.log(stage),
+    )
+    if (!result.editorial) throw new Error('Proposta estruturada ausente')
+    await writeFile(
+      path.join(directory, `${provider}-editorial.json`),
+      JSON.stringify(result.editorial, null, 2),
+    )
+    console.log(
+      JSON.stringify({
+        provider,
+        mode: result.mode,
+        kind: result.editorial.kind,
+        variants: result.editorial.variants.length,
+      }),
+    )
+  }
+} else if (process.argv.includes('--research')) {
+  const result = await runProvider(
+    {
+      provider: 'codex',
+      kind: 'research',
+      prompt:
+        'Pesquise na documentação oficial https://www.remotion.dev/docs/ qual a função do Player. Faça uma busca web e abra o endereço exato que citar. Limite a pesquisa a 3 ações web. Entregue JSON com title, summary, findings [{claim,classification,sourceUrls,quote:null}], sources [{title,url}], hypothesis e proposedDirection (estes dois podem ser strings vazias). Uma única descoberta, sem citação literal. Não use comandos ou arquivos.',
+    },
+    directory,
+    new AbortController().signal,
+    (stage) => console.log(stage),
+  )
+  await writeFile(path.join(directory, 'research.json'), JSON.stringify(result.research, null, 2))
+  console.log(
+    JSON.stringify({
+      researchProof: {
+        mode: result.mode,
+        sources: result.research?.result.sources.length,
+        toolCalls: result.research?.toolCalls,
+        inputTokens: result.inputTokens,
+        outputTokens: result.outputTokens,
+      },
+    }),
+  )
+} else if (process.argv.includes('--text')) {
   for (const provider of ['codex', 'claude'] as const) {
     if (process.argv.includes('--claude') && provider !== 'claude') continue
     const started = Date.now()

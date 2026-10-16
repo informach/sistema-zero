@@ -1,4 +1,4 @@
-import type { KidsSessionClaim } from '@sistemazero/core/security'
+import type { DesktopSessionClaim, KidsSessionClaim } from '@sistemazero/core/security'
 import { sql } from 'drizzle-orm'
 import {
   boolean,
@@ -86,6 +86,7 @@ export const refreshTokenFamilies = auth.table(
     id: uuid('id').primaryKey(),
     userId: uuid('user_id').notNull(),
     kidsContext: jsonb('kids_context').$type<KidsSessionClaim>(),
+    desktopContext: jsonb('desktop_context').$type<DesktopSessionClaim>(),
     impersonatorUserId: uuid('impersonator_user_id'),
     impersonationWritable: boolean('impersonation_writable').notNull().default(false),
     expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
@@ -414,7 +415,48 @@ export const studyAttempts = auth.table(
   (t) => [index('study_attempts_resets_idx').on(t.resetsAt)],
 )
 
+export const desktopPairings = auth.table(
+  'desktop_pairings',
+  {
+    id: uuid('id').primaryKey(),
+    deviceCodeHash: text('device_code_hash').notNull(),
+    userCodeHash: text('user_code_hash').notNull(),
+    challenge: text('challenge').notNull(),
+    label: text('label').notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    approvedBy: uuid('approved_by').references(() => users.id, { onDelete: 'cascade' }),
+    consumedAt: timestamp('consumed_at', { withTimezone: true }),
+  },
+  (t) => [
+    uniqueIndex('desktop_pairings_device_code_idx').on(t.deviceCodeHash),
+    uniqueIndex('desktop_pairings_user_code_idx').on(t.userCodeHash),
+    index('desktop_pairings_expiry_idx').on(t.expiresAt),
+  ],
+)
+export const desktopDevices = auth.table(
+  'desktop_devices',
+  {
+    id: uuid('id').primaryKey(),
+    credentialHash: text('credential_hash'),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    sessionId: uuid('session_id').notNull(),
+    label: text('label').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    revokedAt: timestamp('revoked_at', { withTimezone: true }),
+  },
+  (t) => [
+    index('desktop_devices_user_idx').on(t.userId),
+    uniqueIndex('desktop_devices_session_idx').on(t.sessionId),
+    uniqueIndex('desktop_devices_credential_idx').on(t.credentialHash),
+  ],
+)
+
 export const schema = {
+  desktopPairings,
+  desktopDevices,
   studyDevices,
   studyGrants,
   studyCodes,

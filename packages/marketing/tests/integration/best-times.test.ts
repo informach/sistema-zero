@@ -1,5 +1,6 @@
 import { describe, expect, it, setSystemTime } from 'bun:test'
 import { randomUUID } from 'node:crypto'
+import { bestTimesSchema } from '@sistemazero/marketing-contracts'
 import type { PublicationView } from '../../src/application/mappers/views'
 import type { BestTimesView } from '../../src/application/metrics/metrics.service'
 import type { PublicationFormat } from '../../src/domain/publication/publication'
@@ -29,6 +30,7 @@ async function publishedAt(
     t.repos.metrics.publicationSnapshots.push({
       id: randomUUID(),
       publicationId: id,
+      collectionVersion: 1,
       capturedAt: new Date(),
       views,
       likes: Math.floor(views / 10),
@@ -45,6 +47,33 @@ async function publishedAt(
 }
 
 describe('GET /marketing/metrics/best-times (heatmap 7×24 em SP)', () => {
+  it('filtra a rede antes do limite e informa quando o recorte está incompleto', async () => {
+    const t = buildTestApp(),
+      now = Date.now()
+    await publishedAt(t, 'ig_feed', new Date(now - 2 * 86400000), 120)
+    const youtubeId = await publishedAt(t, 'yt_video', new Date(now - 86400000), 30),
+      row = t.repos.publications.rows.get(youtubeId)
+    if (!row) throw new Error('Fixture ausente')
+    for (let index = 0; index < 500; index++) {
+      const id = randomUUID()
+      t.repos.publications.rows.set(id, { ...row, id })
+    }
+    const ig = bestTimesSchema.parse(
+      await (
+        await request(t.app, 'GET', '/marketing/metrics/best-times?network=instagram&days=30')
+      ).json(),
+    )
+    expect(ig.totalPosts).toBe(1)
+    expect(ig.cells[0]?.views).toBe(120)
+    expect(ig.coverage.truncated).toBe(false)
+    const youtube = bestTimesSchema.parse(
+      await (
+        await request(t.app, 'GET', '/marketing/metrics/best-times?network=youtube&days=30')
+      ).json(),
+    )
+    expect(youtube.totalPosts).toBe(500)
+    expect(youtube.coverage.truncated).toBe(true)
+  })
   it('agrupa por dia×hora NO FUSO DE SP (virada de dia UTC não vaza) e soma views', async () => {
     // Relógio FIXO logo após os posts: as datas são cravadas em 08/07 e a janela
     // `days=30` é relativa ao AGORA — sem pinar, os posts saíam da janela quando a
@@ -64,8 +93,8 @@ describe('GET /marketing/metrics/best-times (heatmap 7×24 em SP)', () => {
       const body = (await res.json()) as BestTimesView
       expect(body.totalPosts).toBe(3)
       expect(body.cells).toEqual([
-        { dow: 2, hour: 23, posts: 2, views: 150, likes: 15 },
-        { dow: 3, hour: 12, posts: 1, views: 300, likes: 30 },
+        { dow: 2, hour: 23, posts: 2, views: 150, likes: 15, viewsObserved: 2, likesObserved: 2 },
+        { dow: 3, hour: 12, posts: 1, views: 300, likes: 30, viewsObserved: 1, likesObserved: 1 },
       ])
     } finally {
       setSystemTime()
@@ -82,7 +111,7 @@ describe('GET /marketing/metrics/best-times (heatmap 7×24 em SP)', () => {
       await request(t.app, 'GET', '/marketing/metrics/best-times?network=instagram&days=30')
     ).json()) as BestTimesView
     expect(onlyIg.totalPosts).toBe(1)
-    expect(onlyIg.cells.reduce((sum, c) => sum + c.views, 0)).toBe(10)
+    expect(onlyIg.cells.reduce((sum, c) => sum + (c.views ?? 0), 0)).toBe(10)
 
     const wide = (await (
       await request(t.app, 'GET', '/marketing/metrics/best-times?days=30')
@@ -95,6 +124,6 @@ describe('GET /marketing/metrics/best-times (heatmap 7×24 em SP)', () => {
     const body = (await (
       await request(t.app, 'GET', '/marketing/metrics/best-times')
     ).json()) as BestTimesView
-    expect(body).toEqual({ cells: [], totalPosts: 0 })
+    expect(body).toEqual({ cells: [], totalPosts: 0, coverage: { truncated: false, limit: 500 } })
   })
 })

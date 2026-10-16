@@ -32,7 +32,7 @@ const csp = [
   "form-action 'self'",
   "frame-src 'self'",
   "img-src 'self' data: blob: https:",
-  "font-src 'self' data:",
+  "font-src 'self' data: https://*.r2.cloudflarestorage.com",
   "media-src 'self' blob: https:",
   "style-src 'self' 'unsafe-inline'",
   `script-src 'self' 'unsafe-inline' https:${isDev ? " 'unsafe-eval'" : ''}`,
@@ -67,7 +67,7 @@ const nextConfig: NextConfig = {
   // (O Sentry NÃO usa SDK aqui — fala o protocolo de ingestão via fetch, sem dep
   // externa, justamente p/ não depender do tracing de externos do standalone.)
   // Pacotes workspace com TS cru (componentes compartilhados) — transpilar junto.
-  transpilePackages: ['@sistemazero/ui'],
+  transpilePackages: ['@sistemazero/ui','@sistemazero/marketing-workbench','@sistemazero/marketing-contracts','@sistemazero/marketing-production'],
   // Security headers em TODAS as respostas. Fonte única — não duplicar no proxy.
   async headers() {
     return [{ source: '/:path*', headers: securityHeaders }]

@@ -1,9 +1,14 @@
-import { parseKidsSessionClaim } from '@sistemazero/core/security'
+import {
+  desktopMayAccess,
+  parseDesktopSessionClaim,
+  parseKidsSessionClaim,
+} from '@sistemazero/core/security'
 import { createRemoteJWKSet, type JWTPayload, type JWTVerifyGetKey, jwtVerify } from 'jose'
 import type { AuthStrategy } from './auth-strategy.port'
 import { kidsMayAccess } from './kids-access-policy'
 
 export interface JwtStrategyOptions {
+  validateDesktopSession?: (token: string) => Promise<boolean>
   /** Introspecção sem cache: revogação infantil e saída adulta valem imediatamente. */
   validateKidsSession?: (token: string) => Promise<boolean>
   /** URL do JWKS remoto (RS256/ES…). O jose cuida do cache/rotação. */
@@ -86,6 +91,41 @@ export function createJwtStrategy(opts: JwtStrategyOptions): AuthStrategy {
             code: 'KIDS_LOGIN_REQUIRED',
             message: 'Entre pelo novo acesso de aluno.',
           }
+        if (payload.desktop !== undefined) {
+          const desktop = parseDesktopSessionClaim(payload.desktop)
+          if (!desktop || payload.typ !== 'access' || payload.kids || payload.pfl || payload.act)
+            return {
+              ok: false,
+              status: 401,
+              code: 'INVALID_TOKEN',
+              message: 'Sessão desktop inválida.',
+            }
+          if (!desktopMayAccess(ctx.upstreamPath, ctx.method))
+            return {
+              ok: false,
+              status: 403,
+              code: 'DESKTOP_CONTEXT_FORBIDDEN',
+              message: 'Esta sessão é exclusiva do Marketing.',
+            }
+          let valid = false
+          try {
+            valid = (await opts.validateDesktopSession?.(token)) ?? false
+          } catch {
+            return {
+              ok: false,
+              status: 503,
+              code: 'AUTH_UNAVAILABLE',
+              message: 'Não foi possível conferir o acesso agora.',
+            }
+          }
+          if (!valid)
+            return {
+              ok: false,
+              status: 401,
+              code: 'DEVICE_REVOKED',
+              message: 'Computador desconectado. Conecte novamente.',
+            }
+        }
         if (payload.kids !== undefined) {
           const kids = parseKidsSessionClaim(payload.kids)
           if (!kids)

@@ -92,7 +92,7 @@ describe('MetaMetricsSource', () => {
     })
   })
 
-  it('facebook: SÓ fields estáveis (reactions/comments/shares) e views 0', async () => {
+  it('facebook: SÓ fields estáveis (reactions/comments/shares) e views indisponíveis', async () => {
     const api = new FakeMetaApi()
     api.fbPageStats = { followers: 800, raw: {} }
     api.fbPostStats.set('post-1', { likes: 12, comments: 3, shares: 2, raw: {} })
@@ -104,7 +104,7 @@ describe('MetaMetricsSource', () => {
 
     const pub = published('fb_post', 'post-1')
     const map = await source.collectPublications([pub], acct, 'token')
-    expect(map.get(pub.id)).toMatchObject({ views: 0, likes: 12, comments: 3, shares: 2 })
+    expect(map.get(pub.id)).toMatchObject({ views: null, likes: 12, comments: 3, shares: 2 })
   })
 
   it('post apagado (sem stats na API) fica FORA do mapa — o worker reagenda', async () => {

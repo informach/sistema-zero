@@ -55,8 +55,8 @@ export const FORMAT_LABELS: Record<PublicationFormat, string> = {
 }
 
 /**
- * Stories não têm API de publicação (em NENHUMA ferramenta) — o formato é
- * SEMPRE `manual` (lembrete na hora + marcar como publicado).
+ * O publicador atual do Sistema Zero entrega Stories em modo manual.
+ * Esta é uma capacidade do app, não uma afirmação sobre todas as APIs das redes.
  */
 export function forcesManualMode(format: PublicationFormat): boolean {
   return format === 'ig_story'
@@ -94,6 +94,11 @@ const EDITABLE_STATUSES: ReadonlySet<PublicationStatus> = new Set([
 
 export function isEditable(status: PublicationStatus): boolean {
   return EDITABLE_STATUSES.has(status)
+}
+
+/** Any durable provider checkpoint can represent an external side effect, including an uncertain one. */
+export function hasProviderCheckpoint(session: Record<string, unknown>): boolean {
+  return Object.keys(session).length > 0
 }
 
 /** Estados de onde se pode (re)agendar. */

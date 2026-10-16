@@ -2,21 +2,12 @@ import type {
   ExternalPostResolver,
   ResolvedExternalPost,
 } from '../../../domain/ports/external-post-resolver.port'
+import { facebookPostIdentity, instagramShortcode } from '../../../domain/publication/post-url'
 import type { SocialAccount } from '../../../domain/social-account/social-account'
 import type { MetaApi } from './meta-api.port'
 
 /** Teto de páginas na busca (50/página ≈ os últimos ~400 posts, ~90d típicos). */
 const MAX_PAGES = 8
-
-/** Host/query/trailing-slash fora — sobra o caminho canônico p/ comparar. */
-function normalizeUrl(url: string): string {
-  try {
-    const u = new URL(url)
-    return u.pathname.replace(/\/+$/, '').toLowerCase()
-  } catch {
-    return url.toLowerCase()
-  }
-}
 
 /**
  * Resolve a URL de um post real do IG/FB contra a LISTAGEM da conta conectada
@@ -39,7 +30,7 @@ export class MetaExternalResolver implements ExternalPostResolver {
     account: SocialAccount | null
     accessToken: string | null
   }): Promise<ResolvedExternalPost | null> {
-    if (!input.account || !input.accessToken) return null
+    if (!input.account || input.account.network !== this.network || !input.accessToken) return null
     return this.network === 'instagram'
       ? this.resolveInstagram(input.url, input.account, input.accessToken)
       : this.resolveFacebook(input.url, input.account, input.accessToken)
@@ -50,8 +41,7 @@ export class MetaExternalResolver implements ExternalPostResolver {
     account: SocialAccount,
     accessToken: string,
   ): Promise<ResolvedExternalPost | null> {
-    const match = url.match(/instagram\.com\/(?:p|reel|tv)\/([A-Za-z0-9_-]+)/)
-    const shortcode = match?.[1]
+    const shortcode = instagramShortcode(url)
     if (!shortcode) return null
     let after: string | undefined
     for (let page = 0; page < MAX_PAGES; page++) {
@@ -60,7 +50,7 @@ export class MetaExternalResolver implements ExternalPostResolver {
         igUserId: account.externalId,
         after,
       })
-      const found = items.find((m) => m.permalink?.includes(`/${shortcode}/`))
+      const found = items.find((m) => m.permalink && instagramShortcode(m.permalink) === shortcode)
       if (found) return { externalPostId: found.id, externalUrl: found.permalink ?? url }
       if (!nextCursor) break
       after = nextCursor
@@ -73,9 +63,8 @@ export class MetaExternalResolver implements ExternalPostResolver {
     account: SocialAccount,
     accessToken: string,
   ): Promise<ResolvedExternalPost | null> {
-    const target = normalizeUrl(url)
-    // Ids numéricos longos na URL (story_fbid/fbid/posts/<id>) também casam.
-    const numericIds = [...url.matchAll(/(\d{10,})/g)].map((m) => m[1])
+    const target = facebookPostIdentity(url)
+    if (!target) return null
     let after: string | undefined
     for (let page = 0; page < MAX_PAGES; page++) {
       const { items, nextCursor } = await this.api.listFbPosts({
@@ -84,10 +73,10 @@ export class MetaExternalResolver implements ExternalPostResolver {
         after,
       })
       const found = items.find((p) => {
-        if (p.permalinkUrl && normalizeUrl(p.permalinkUrl) === target) return true
+        if (p.permalinkUrl && facebookPostIdentity(p.permalinkUrl) === target) return true
         // Post id é `{pageId}_{postId}` — casa o sufixo com o id da URL.
         const postPart = p.id.split('_')[1]
-        return Boolean(postPart && numericIds.includes(postPart))
+        return Boolean(postPart && target === `post:${postPart}`)
       })
       if (found) return { externalPostId: found.id, externalUrl: found.permalinkUrl ?? url }
       if (!nextCursor) break

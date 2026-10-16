@@ -1,4 +1,4 @@
-import { parseKidsSessionClaim } from '@sistemazero/core/security'
+import { parseDesktopSessionClaim, parseKidsSessionClaim } from '@sistemazero/core/security'
 import { type JWTPayload, jwtVerify, SignJWT } from 'jose'
 import type {
   AccessTokenClaims,
@@ -12,6 +12,7 @@ import { isPrivilegedUserRole } from '../../domain/user/user.role'
 import type { SigningMaterial } from './keys'
 
 export interface JoseTokenIssuerOptions {
+  validateDesktopSession?: (claims: AccessTokenClaims) => Promise<boolean>
   validateKidsSession?: (claims: AccessTokenClaims) => Promise<boolean>
   signing: SigningMaterial
   issuer: string
@@ -52,6 +53,11 @@ export function createJoseTokenIssuer(opts: JoseTokenIssuerOptions): TokenIssuer
         if (opts.act || (opts.kids.kind === 'student') !== Boolean(opts.profile))
           throw new Error('Contexto Kids incompatível com o perfil')
         claims.kids = opts.kids
+      }
+      if (opts?.desktop) {
+        if (opts.kids || opts.act || opts.profile || !parseDesktopSessionClaim(opts.desktop))
+          throw new Error('Contexto desktop incompatível')
+        claims.desktop = opts.desktop
       }
       // Impersonação (RFC 8693): `sub` = alvo; `act.sub` = admin navegando como ele.
       if (opts?.act) {
@@ -101,6 +107,7 @@ export function createJoseTokenIssuer(opts: JoseTokenIssuerOptions): TokenIssuer
       // Falha da infraestrutura não significa revogação. A borda HTTP deve
       // devolver erro retentável, mantendo fechada a autorização desta chamada.
       if (claims?.kids && !(await opts.validateKidsSession?.(claims))) return null
+      if (claims?.desktop && !(await opts.validateDesktopSession?.(claims))) return null
       return claims
     },
 
@@ -126,6 +133,9 @@ function toClaims(payload: JWTPayload): AccessTokenClaims | null {
   const role = asString(payload.role)
   const status = asString(payload.status)
   const kids = parseKidsSessionClaim(payload.kids)
+  const desktop = parseDesktopSessionClaim(payload.desktop)
+  if (payload.desktop !== undefined && (!desktop || payload.kids || payload.act || payload.pfl))
+    return null
   if (payload.kids !== undefined && !kids) return null
   const pfl = toProfileClaim(payload.pfl)
   if (kids && ((kids.kind === 'student') !== Boolean(pfl) || payload.act)) return null
@@ -146,6 +156,7 @@ function toClaims(payload: JWTPayload): AccessTokenClaims | null {
     act: toActClaim(payload.act),
     pfl,
     ...(kids ? { kids } : {}),
+    ...(desktop ? { desktop } : {}),
   }
 }
 

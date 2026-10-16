@@ -273,7 +273,7 @@ export const publications = marketing.table(
     tags: text('tags').array().notNull().default([]),
     coverAssetId: uuid('cover_asset_id'),
     scheduledAt: timestamp('scheduled_at', { withTimezone: true }),
-    // ig_story é SEMPRE manual (Stories não tem API de publicação).
+    // O publicador atual do app usa modo manual para ig_story.
     publishMode: publishModeEnum('publish_mode').notNull().default('manual'),
     status: pubStatusEnum('status').notNull().default('draft'),
     attempts: integer('attempts').notNull().default(0),
@@ -341,11 +341,12 @@ export const metricPublicationSnapshots = marketing.table(
       .notNull()
       .references(() => publications.id, { onDelete: 'cascade' }),
     capturedAt: timestamp('captured_at', { withTimezone: true }).notNull(),
-    views: bigint('views', { mode: 'number' }).notNull().default(0),
-    likes: integer('likes').notNull().default(0),
-    comments: integer('comments').notNull().default(0),
-    shares: integer('shares').notNull().default(0),
-    saves: integer('saves').notNull().default(0),
+    collectionVersion: integer('collection_version').notNull().default(0),
+    views: bigint('views', { mode: 'number' }),
+    likes: integer('likes'),
+    comments: integer('comments'),
+    shares: integer('shares'),
+    saves: integer('saves'),
     reach: bigint('reach', { mode: 'number' }),
     watchTimeSeconds: bigint('watch_time_seconds', { mode: 'number' }),
     avgWatchRatio: real('avg_watch_ratio'),
@@ -363,7 +364,8 @@ export const metricAccountSnapshots = marketing.table(
       .notNull()
       .references(() => socialAccounts.id, { onDelete: 'cascade' }),
     capturedAt: timestamp('captured_at', { withTimezone: true }).notNull(),
-    followers: integer('followers').notNull().default(0),
+    collectionVersion: integer('collection_version').notNull().default(0),
+    followers: integer('followers'),
     following: integer('following'),
     mediaCount: integer('media_count'),
     raw: jsonb('raw').$type<Record<string, unknown>>().notNull().default({}),

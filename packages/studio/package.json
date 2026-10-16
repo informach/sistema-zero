@@ -10,6 +10,7 @@
     "./editor": "./src/studio/StudioEditor.tsx",
     "./project": "./src/core/project.ts",
     "./pro-assets": "./src/core/proAssets.ts",
+    "./capture": "./src/capture/index.ts",
     "./blank-project": "./src/core/blankProject.ts",
     "./project-document": "./src/core/projectDocument.ts",
     "./project-migrations": "./src/project-migrations/index.ts",

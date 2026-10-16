@@ -51,13 +51,28 @@ export function launchNative(
   })
 }
 
-export function collectProcess(
+export async function collectProcess(
   child: ChildProcessWithoutNullStreams,
   timeoutMs = 20000,
   signal?: AbortSignal,
 ): Promise<string> {
+  const result = await collectProcessResult(child, timeoutMs, signal)
+  if (result.code !== 0)
+    throw new Error(
+      `O cliente não concluiu a operação (código ${result.code ?? 'encerrado'}). Confira login e limite da assinatura.`,
+    )
+  return result.output
+}
+export function collectProcessResult(
+  child: ChildProcessWithoutNullStreams,
+  timeoutMs = 20000,
+  signal?: AbortSignal,
+): Promise<{ output: string; stderr: string; code: number | null }> {
   return new Promise((resolve, reject) => {
     let output = ''
+    let stderr = ''
+    let exitCode: number | null = null
+    let inputClosed = false
     let settled = false
     const finish = (error?: Error) => {
       if (settled) return
@@ -67,7 +82,7 @@ export function collectProcess(
       if (error) {
         child.kill()
         reject(error)
-      } else resolve(output)
+      } else resolve({ output, stderr, code: exitCode })
     }
     const abort = () => finish(new Error('Operação cancelada.'))
     const timer = setTimeout(
@@ -79,16 +94,27 @@ export function collectProcess(
       output += chunk
       if (output.length > 2_000_000) finish(new Error('Resposta acima do limite permitido.'))
     })
-    child.stderr.resume()
-    child.stdin.on('error', () => finish(new Error('O canal com o cliente oficial foi encerrado.')))
-    child.on('error', () => finish(new Error('Não foi possível iniciar o cliente oficial.')))
-    child.on('close', (code) =>
+    child.stderr.setEncoding('utf8')
+    child.stderr.on('data', (chunk: string) => {
+      stderr = (stderr + chunk).slice(-32000)
+    })
+    // A CLI can reject its arguments before reading stdin. Preserve its stderr/exit status
+    // instead of replacing the useful diagnostic with a pipe error.
+    child.stdin.on('error', () => {
+      inputClosed = true
+    })
+    child.on('error', (error) => {
+      const code = 'code' in error && typeof error.code === 'string' ? error.code : 'UNKNOWN'
+      finish(new Error(`Não foi possível iniciar o cliente oficial (${code}).`, { cause: error }))
+    })
+    child.on('close', (code) => {
+      exitCode = code
       finish(
-        code === 0
-          ? undefined
-          : new Error('O cliente não concluiu a operação. Confira login e limite da assinatura.'),
-      ),
-    )
+        code === 0 && inputClosed
+          ? new Error('O cliente encerrou o canal antes de receber o pedido completo.')
+          : undefined,
+      )
+    })
     signal?.addEventListener('abort', abort, { once: true })
     if (signal?.aborted) abort()
   })

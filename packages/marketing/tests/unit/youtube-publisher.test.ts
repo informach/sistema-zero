@@ -6,10 +6,15 @@ import { PublicationService } from '../../src/application/publications/publicati
 import { YtQuotaGuard } from '../../src/application/publications/yt-quota-guard'
 import type { Content } from '../../src/domain/content/content'
 import type { MediaAsset } from '../../src/domain/media/media-asset'
+import type {
+  DeliveryRepository,
+  ResolvedDelivery,
+} from '../../src/domain/ports/delivery-repository.port'
 import type { SocialPublisher } from '../../src/domain/ports/social-publisher.port'
 import type { Network } from '../../src/domain/publication/publication'
 import type { Publication } from '../../src/domain/publication/publication-record'
 import type { SocialAccount } from '../../src/domain/social-account/social-account'
+import { WorkspaceError } from '../../src/domain/workspace/workspace-error'
 import { YoutubeApiError } from '../../src/infrastructure/gateways/youtube/youtube-api.port'
 import { YoutubePublisher } from '../../src/infrastructure/gateways/youtube/youtube-publisher'
 import { PublisherWorker } from '../../src/infrastructure/workers/publisher-worker'
@@ -142,7 +147,10 @@ function makeAutoPublication(
   }
 }
 
-function setup(quota: { budgetUnits?: number; uploadDailyCap?: number } = {}) {
+function setup(
+  quota: { budgetUnits?: number; uploadDailyCap?: number } = {},
+  deliveries?: Pick<DeliveryRepository, 'resolve' | 'syncContent'>,
+) {
   const publications = new InMemoryPublicationRepository()
   const contents = new InMemoryContentRepository()
   publications.contentsRef = contents
@@ -187,10 +195,11 @@ function setup(quota: { budgetUnits?: number; uploadDailyCap?: number } = {}) {
     contentService,
     now,
     randomUUID,
-    { links: new InMemoryPublicationAssetRepository(), media: assets },
+    { links: new InMemoryPublicationAssetRepository(publications), media: assets },
     { accounts, capableNetworks: new Set<Network>(['youtube']) },
   )
   const worker = new PublisherWorker({
+    deliveries,
     publications,
     contents,
     notifier: null,
@@ -200,7 +209,7 @@ function setup(quota: { budgetUnits?: number; uploadDailyCap?: number } = {}) {
       accounts,
       accountService,
       assets,
-      publicationAssets: new InMemoryPublicationAssetRepository(),
+      publicationAssets: new InMemoryPublicationAssetRepository(publications),
       store,
       publicationService,
     },
@@ -246,6 +255,48 @@ async function seedHappyPath(s: ReturnType<typeof setup>) {
 }
 
 describe('youtube-publisher via publisher-worker (ramo auto)', () => {
+  it('envia somente o arquivo da edição aprovada mesmo com outro final no catálogo legado', async () => {
+    let approved: ResolvedDelivery | null = null
+    const s = setup({}, { resolve: async () => approved, syncContent: async () => true })
+    const { pub, video, content } = await seedHappyPath(s)
+    const other = {
+      ...makeVideoAsset(content.id),
+      id: randomUUID(),
+      sizeBytes: 1024,
+      r2Key: 'legacy/newer.mp4',
+    }
+    s.assets.rows.clear()
+    await s.assets.create(other)
+    s.store.objects.set(other.r2Key, other.sizeBytes)
+    approved = {
+      projectId: randomUUID(),
+      representationId: randomUUID(),
+      editionHash: 'a'.repeat(64),
+      title: 'Edição aprovada',
+      assets: [video],
+      orderedAssetIds: [video.id],
+    }
+    await s.worker.tick()
+    expect(s.api.insertCalls).toBe(1)
+    expect([...s.api.sessions.values()].map((session) => session.totalBytes)).toEqual([VIDEO_BYTES])
+    expect(s.publications.rows.get(pub.id)?.providerSession.videoId).toBeTruthy()
+  })
+  it('uma edição invalidada impede o envio sem recorrer ao catálogo legado', async () => {
+    const s = setup(
+      {},
+      {
+        resolve: async () => {
+          throw new WorkspaceError('CONTEXT_CHANGED', 'Evidência invalidada')
+        },
+        syncContent: async () => true,
+      },
+    )
+    const { pub } = await seedHappyPath(s)
+    await s.worker.tick()
+    expect(s.api.insertCalls).toBe(0)
+    expect(s.publications.rows.get(pub.id)?.status).toBe('failed')
+    expect(s.publications.rows.get(pub.id)?.lastError).toBe('Evidência invalidada')
+  })
   it('agendada no lead: upload antecipado privado + publishAt nativo → pending; repoll pós-horário publica', async () => {
     const s = setup()
     const { content, pub } = await seedHappyPath(s)

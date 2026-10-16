@@ -1,8 +1,10 @@
 # Marketing web e desktop colaborativo — Implementation Plan
 
-> **For agentic workers:** executar um lote por vez com a skill disponível executing-plans, conferindo a proposta vinculada e os critérios de saída. As caixas abaixo acompanham entregáveis comprovados. Estado em 15/10/2026: L0 implementado como bancada local, ainda em validação; L1–L11 pendentes. Ver [evidências de implementação L0](../../plans/2026-10-15-marketing-desktop-l0-evidencias.md).
+> **For agentic workers:** executar os lotes consecutivamente com a skill disponível executing-plans, conferindo a proposta e os critérios de saída. L0–L5 têm implementação e provas registradas nas auditorias; L6A–C continuam abertos para integração e funcionalidades indicadas nos reviews. L7 está em implementação: aprovação exata e ligação da entrega à fila de publicação já foram testadas; retenção, métricas e integração continuam abertas. Existem critérios de validação e integração abertos nos lotes iniciais. As caixas acompanham entregáveis comprovados e não devem ser marcadas somente pela existência de código. Ver [L0](../../plans/2026-10-15-marketing-desktop-l0-evidencias.md) e os registros `.audits/marketing-l*-review-2026-10-15.md`.
 
 **Goal:** permitir que a equipe continue todo o trabalho de marketing pelo app web/desktop, com acervo carregado, assinaturas individuais, produção de imagem/vídeo, edição e sincronização confiável.
+
+**Execução autorizada em 15/10/2026:** seguir os lotes consecutivamente, revisar cada lote, fazer full review integrado e então commit e merge em staging local. A revisão entre lotes não exige pausa/novo aceite. Preservar alterações alheias em checkout separado e registrar evidências sem marcar verificações externas não realizadas como concluídas.
 
 **Architecture:** servidor de marketing como registro oficial, web Next/BFF e desktop React/Electron com executor e cache locais. Remotion é uma biblioteca interna: composição React compartilhada para prévia e renderização, sem serviço ou editor separado. Clientes oficiais de IA mantêm suas próprias credenciais; operações do produto passam pelo gateway. A execução hospedada permanece condicionada à capacidade e modalidade admitidas.
 
@@ -284,6 +286,8 @@ A primeira liberação cotidiana acontece em L9, com assinaturas, acervo, pesqui
 **Reversão:** pausar apenas novos envios do fluxo afetado, conservar edição e checkpoints. Não “desfazer” publicação externa nem reenviar automaticamente.
 
 ## L8 — Alimentar o app com todo o acervo
+
+**Execução:** inventário nativo e registro compartilhado demonstrados com ambas as origens; carga de fontes e vínculo editorial em implementação. Ver `.audits/marketing-l8-review-2026-10-15.md`. L8A/L8B permanecem abertos; contagem de origens não equivale a conteúdo importado ou produto liberado.
 
 **Áreas:** novo contexto de importação no marketing, ferramenta desktop e biblioteca. L8A prepara cedo; L8B completa/reconcilia e ativa antes da liberação.
 

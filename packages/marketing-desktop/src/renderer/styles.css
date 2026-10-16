@@ -12,7 +12,42 @@ body {
 main {
   max-width: 1500px;
   margin: auto;
-  padding: 30px 36px;
+  padding: 88px 36px 30px;
+}
+.desktop-toolbar {
+  position: fixed;
+  inset: 0 0 auto;
+  height: 64px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 24px;
+  background: #111827;
+  border-bottom: 1px solid #3a4b66;
+}
+.desktop-toolbar button {
+  padding: 6px 12px;
+}
+.desktop-toolbar [aria-pressed="true"] {
+  outline: 2px solid #d5b65d;
+}
+.connection-panel {
+  margin-bottom: 24px;
+}
+.connection-form {
+  display: flex;
+  gap: 14px;
+  align-items: end;
+  flex-wrap: wrap;
+}
+.connection-form label {
+  flex: 1;
+  min-width: 220px;
+}
+.pairing-code {
+  padding-top: 16px;
 }
 header,
 .section-title,

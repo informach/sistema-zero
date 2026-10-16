@@ -711,6 +711,68 @@ const config: GatewayConfigInput = {
       maxBodyBytes: SMALL_JSON_BODY_BYTES,
       rateLimit: { max: 60, windowMs: 60_000, by: 'ip' },
     },
+    // Desktop pairing: Auth validates the browser identity and single-use PKCE grant.
+    ...['pairings', 'pairings/describe', 'pairings/approve', 'pairings/exchange'].map<
+      NonNullable<GatewayConfigInput['routes']>[number]
+    >((path) => ({
+      id: `auth-desktop-${path.replaceAll('/', '-')}`,
+      methods: ['POST'],
+      pathPattern: `/auth/desktop/${path}`,
+      service: 'auth',
+      auth: 'public' as const,
+      upstreamAuth: 'passthrough' as const,
+      maxBodyBytes: 4096,
+      rateLimit: {
+        max: path === 'pairings/exchange' ? 60 : 20,
+        windowMs: 60_000,
+        by: 'ip' as const,
+      },
+    })),
+    {
+      id: 'auth-desktop-session',
+      methods: ['POST'],
+      pathPattern: '/auth/desktop/session/validate',
+      service: 'auth',
+      auth: 'public',
+      upstreamAuth: 'passthrough',
+      rateLimit: { max: 300, windowMs: 60_000, by: 'ip' },
+    },
+    {
+      id: 'auth-desktop-access',
+      methods: ['POST'],
+      pathPattern: '/auth/desktop/session/access',
+      service: 'auth',
+      auth: 'public',
+      upstreamAuth: 'passthrough',
+      rateLimit: { max: 300, windowMs: 60_000, by: 'ip' },
+    },
+    {
+      id: 'auth-desktop-disconnect',
+      methods: ['POST'],
+      pathPattern: '/auth/desktop/session/disconnect',
+      service: 'auth',
+      auth: 'public',
+      upstreamAuth: 'passthrough',
+      rateLimit: { max: 30, windowMs: 60_000, by: 'ip' },
+    },
+    {
+      id: 'auth-desktop-devices',
+      methods: ['GET'],
+      pathPattern: '/auth/desktop/devices',
+      service: 'auth',
+      auth: 'public',
+      upstreamAuth: 'passthrough',
+      rateLimit: { max: 60, windowMs: 60_000, by: 'ip' },
+    },
+    {
+      id: 'auth-desktop-revoke',
+      methods: ['DELETE'],
+      pathPattern: '/auth/desktop/devices/:id',
+      service: 'auth',
+      auth: 'public',
+      upstreamAuth: 'passthrough',
+      rateLimit: { max: 20, windowMs: 60_000, by: 'ip' },
+    },
     // ── Identidade (@sistemazero/auth) ──────────────────────────────────────
     // O IdP é a autoridade da sua própria auth: o gateway só ROTEIA (+ rate limit
     // por IP contra brute-force) e repassa o corpo/headers (`passthrough` mantém o
@@ -872,6 +934,11 @@ const config: GatewayConfigInput = {
       auth: { required: true, mode: 'any', strategies: ['hmac'] },
       transforms: authInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id:'auth-internal-staff-directory',methods:['POST'],pathPattern:'/auth/internal/staff-directory',service:'auth',
+      auth:{required:true,mode:'any',strategies:['hmac'],allowedConsumers:['marketing']},
+      transforms:authInternalTransforms,rateLimit:{max:120,windowMs:60000,by:'principal'},
     },
     // Garante o usuário do comprador (novo/recorrente) no pós-pagamento e devolve o
     // `userId` — destrava a concessão ao comprador recorrente. Mesma proteção S2S do

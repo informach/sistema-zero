@@ -6,14 +6,23 @@ import type { Env } from '../../infrastructure/config/env'
 import { buildErrorResponse } from './error-handler'
 import { type AccountsRoutesDeps, accountsRoutes } from './routes/accounts.routes'
 import { type AiRoutesDeps, aiRoutes } from './routes/ai.routes'
+import { type ApprovalRoutesDeps, approvalRoutes } from './routes/approval.routes'
 import { type ContentsRoutesDeps, contentsRoutes } from './routes/contents.routes'
+import { type DeliveryRoutesDeps, deliveryRoutes } from './routes/delivery.routes'
 import { type DriveRoutesDeps, driveRoutes } from './routes/drive.routes'
+import { type ExecutionRoutesDeps, executionRoutes } from './routes/execution.routes'
 import { healthRoutes, type ReadinessProbe } from './routes/health.routes'
 import { type IdeasRoutesDeps, ideasRoutes } from './routes/ideas.routes'
+import { type ImportRoutesDeps, importRoutes } from './routes/import.routes'
 import { type MediaRoutesDeps, mediaRoutes } from './routes/media.routes'
 import { type MetricsRoutesDeps, metricsRoutes } from './routes/metrics.routes'
 import { type OAuthRoutesDeps, oauthRoutes } from './routes/oauth.routes'
 import { type PublicationsRoutesDeps, publicationsRoutes } from './routes/publications.routes'
+import { type WorkspaceRoutesDeps, workspaceRoutes } from './routes/workspace.routes'
+import {
+  type WorkspaceAssetsRoutesDeps,
+  workspaceAssetsRoutes,
+} from './routes/workspace-assets.routes'
 
 export interface HttpDeps {
   env: Env
@@ -29,6 +38,12 @@ export interface HttpDeps {
   drive: DriveRoutesDeps
   metrics: MetricsRoutesDeps
   ai: AiRoutesDeps
+  workspace?: WorkspaceRoutesDeps
+  imports?: ImportRoutesDeps
+  approval?: ApprovalRoutesDeps
+  deliveries?: DeliveryRoutesDeps
+  execution?: ExecutionRoutesDeps
+  workspaceAssets?: WorkspaceAssetsRoutesDeps
 }
 
 const OVERSIZE = new WeakSet<Request>()
@@ -86,6 +101,12 @@ export function createServer(deps: HttpDeps) {
     )
   }
 
+  if (deps.workspace) app.use(workspaceRoutes(deps.workspace))
+  if (deps.imports) app.use(importRoutes(deps.imports))
+  if (deps.approval) app.use(approvalRoutes(deps.approval))
+  if (deps.deliveries) app.use(deliveryRoutes(deps.deliveries))
+  if (deps.execution) app.use(executionRoutes(deps.execution))
+  if (deps.workspaceAssets) app.use(workspaceAssetsRoutes(deps.workspaceAssets))
   return app
     .use(healthRoutes(deps.readiness))
     .use(ideasRoutes(deps.ideas))

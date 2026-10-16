@@ -7,6 +7,7 @@ import type {
 } from '../../../domain/ports/content-repository.port'
 import type { Database } from './db'
 import { escapeLike } from './pg-errors'
+import { legacyContent } from './publication-scope'
 import { contentStageEvents, contents } from './schema'
 
 export class DrizzleContentRepository implements ContentRepository {
@@ -17,7 +18,7 @@ export class DrizzleContentRepository implements ContentRepository {
   }
 
   async byId(id: string): Promise<Content | null> {
-    const [row] = await this.db.select().from(contents).where(eq(contents.id, id)).limit(1)
+    const [row] = await this.db.select().from(contents).where(and(eq(contents.id, id), legacyContent)).limit(1)
     return row ?? null
   }
 
@@ -35,13 +36,13 @@ export class DrizzleContentRepository implements ContentRepository {
         dueDate: content.dueDate,
         updatedAt: content.updatedAt,
       })
-      .where(and(eq(contents.id, content.id), eq(contents.version, expectedVersion)))
+      .where(and(eq(contents.id, content.id), eq(contents.version, expectedVersion), legacyContent))
       .returning({ id: contents.id })
     return updated.length > 0
   }
 
   async list(filter: ListContentsFilter): Promise<{ items: Content[]; total: number }> {
-    const conditions = []
+    const conditions = [legacyContent]
     if (filter.stage) conditions.push(eq(contents.stage, filter.stage))
     if (filter.ownerUserId) conditions.push(eq(contents.ownerUserId, filter.ownerUserId))
     if (filter.q) conditions.push(ilike(contents.title, `%${escapeLike(filter.q)}%`))
@@ -65,6 +66,7 @@ export class DrizzleContentRepository implements ContentRepository {
     const rows = await this.db
       .select({ stage: contents.stage, value: count() })
       .from(contents)
+      .where(legacyContent)
       .groupBy(contents.stage)
     return new Map(rows.map((row) => [row.stage, row.value]))
   }

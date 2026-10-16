@@ -1,3 +1,5 @@
+import { z } from 'zod'
+import { metricCount } from '../../../domain/metrics/availability'
 import {
   type SessionStatus,
   type UploadChunkResult,
@@ -72,6 +74,39 @@ function nextOffsetFromRange(res: Response): number {
 }
 
 export class YoutubeClient implements YoutubeApi {
+  async getPublishedVideo(accessToken: string, videoId: string) {
+    const url = new URL(VIDEOS_URL)
+    url.searchParams.set('part', 'snippet,status')
+    url.searchParams.set('id', videoId)
+    url.searchParams.set('fields', 'items(id,snippet/channelId,status/privacyStatus)')
+    const response = await fetchWithTimeout(
+      url.toString(),
+      {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      },
+      JSON_TIMEOUT_MS,
+    )
+    if (response.status === 404) return null
+    if (!response.ok) throw await classify(response, 'videos.list (identity)')
+    const result = z
+      .object({
+        items: z
+          .array(
+            z.object({
+              id: z.string(),
+              snippet: z.object({ channelId: z.string() }),
+              status: z.object({ privacyStatus: z.string() }),
+            }),
+          )
+          .max(1)
+          .default([]),
+      })
+      .parse(await response.json())
+    const video = result.items.find((item) => item.id === videoId)
+    return video
+      ? { channelId: video.snippet.channelId, privacyStatus: video.status.privacyStatus }
+      : null
+  }
   async initResumableSession(input: {
     accessToken: string
     metadata: YoutubeVideoMetadata
@@ -229,9 +264,9 @@ export class YoutubeClient implements YoutubeApi {
 
   async getChannelStats(accessToken: string): Promise<{
     channelId: string
-    subscriberCount: number
-    viewCount: number
-    videoCount: number
+    subscriberCount: number | null
+    viewCount: number | null
+    videoCount: number | null
   } | null> {
     const url = new URL(CHANNELS_URL)
     url.searchParams.set('part', 'statistics')
@@ -245,24 +280,35 @@ export class YoutubeClient implements YoutubeApi {
     const body = (await res.json()) as {
       items?: Array<{
         id?: string
-        statistics?: { subscriberCount?: string; viewCount?: string; videoCount?: string }
+        statistics?: {
+          subscriberCount?: string
+          hiddenSubscriberCount?: boolean
+          viewCount?: string
+          videoCount?: string
+        }
       }>
     }
     const channel = body.items?.[0]
     if (!channel?.id) return null
     return {
       channelId: channel.id,
-      subscriberCount: Number(channel.statistics?.subscriberCount ?? 0),
-      viewCount: Number(channel.statistics?.viewCount ?? 0),
-      videoCount: Number(channel.statistics?.videoCount ?? 0),
+      subscriberCount:
+        channel.statistics?.hiddenSubscriberCount === true
+          ? null
+          : metricCount(channel.statistics?.subscriberCount),
+      viewCount: metricCount(channel.statistics?.viewCount),
+      videoCount: metricCount(channel.statistics?.videoCount),
     }
   }
 
   async getVideoStats(
     accessToken: string,
     videoIds: string[],
-  ): Promise<Map<string, { views: number; likes: number; comments: number }>> {
-    const map = new Map<string, { views: number; likes: number; comments: number }>()
+  ): Promise<Map<string, { views: number | null; likes: number | null; comments: number | null }>> {
+    const map = new Map<
+      string,
+      { views: number | null; likes: number | null; comments: number | null }
+    >()
     if (videoIds.length === 0) return map
     const url = new URL(VIDEOS_URL)
     url.searchParams.set('part', 'statistics')
@@ -282,9 +328,9 @@ export class YoutubeClient implements YoutubeApi {
     for (const item of body.items ?? []) {
       if (!item.id) continue
       map.set(item.id, {
-        views: Number(item.statistics?.viewCount ?? 0),
-        likes: Number(item.statistics?.likeCount ?? 0),
-        comments: Number(item.statistics?.commentCount ?? 0),
+        views: metricCount(item.statistics?.viewCount),
+        likes: metricCount(item.statistics?.likeCount),
+        comments: metricCount(item.statistics?.commentCount),
       })
     }
     return map

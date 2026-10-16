@@ -226,7 +226,7 @@ function ComposerForm({
   const network = FORMAT_NETWORK[view.format]
   const isYouTube = network === 'youtube'
   const isCarousel = view.format === 'ig_carousel'
-  const editable = isEditable(view.status)
+  const editable = isEditable(view.status) && !view.mediaFrozen
 
   const assetsDirty = isCarousel && !sameTags(assetIds, view.assetIds)
   const fieldsDirty =
@@ -267,8 +267,7 @@ function ComposerForm({
     if (!dirty || saving) return
     setSaving(true)
     try {
-      // Sequência PATCH → PUT: os campos vão no PATCH (bump de versão); a
-      // ordem do carrossel vai no PUT /assets (não mexe na versão).
+      // Each mutation carries the version just confirmed by the previous one.
       let updated = view
       if (fieldsDirty) {
         const body: Record<string, unknown> = {
@@ -292,10 +291,8 @@ function ComposerForm({
         updated = await apiSend<PublicationView>(
           `/api/marketing/publications/${view.id}/assets`,
           'PUT',
-          { assetIds },
+          { assetIds, version: updated.version },
         )
-        // O PUT devolve a view com a versão do PATCH — preserva os campos dele.
-        updated = { ...updated, assetIds: [...assetIds] }
       }
       onView(updated)
       toast.success('Publicação salva.')
@@ -343,6 +340,7 @@ function ComposerForm({
         onMarkPublished={() => setMarkOpen(true)}
         onLinkExternal={() => setLinkOpen(true)}
       />
+      {view.mediaFrozen ? <p className="rounded-lg border bg-muted p-3 text-sm">O envio ao provedor já começou. A mídia e os dados desta entrega estão preservados até a confirmação do resultado.</p> : null}
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="min-w-0 space-y-6">
