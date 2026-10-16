@@ -293,7 +293,6 @@ jobs:
 
   community-kids-e2e:
     name: community-kids-e2e
-    needs: ci
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -330,7 +329,6 @@ jobs:
 
   studio-e2e-chromium:
     name: studio-e2e-chromium-${{ matrix.shard }}
-    needs: ci
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
@@ -365,7 +363,6 @@ jobs:
 
   studio-e2e-firefox:
     name: studio-e2e-firefox
-    needs: ci
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -399,7 +396,6 @@ jobs:
   # specs dessa gravação (`testMatch` do projeto `webkit` no playwright.config.ts).
   studio-e2e-webkit:
     name: studio-e2e-webkit
-    needs: ci
     runs-on: macos-latest
     timeout-minutes: 20
     steps:

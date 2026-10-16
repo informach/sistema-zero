@@ -1,5 +1,8 @@
 {
   "extends": "../../tsconfig.base.json",
-  "compilerOptions": { "types": ["bun"] },
+  "compilerOptions": {
+    "types": ["bun", "node"],
+    "typeRoots": ["./node_modules/@types"]
+  },
   "include": ["src", "tests", "bench"]
 }
