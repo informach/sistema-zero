@@ -1,4 +1,7 @@
 import { type ParserOptions, parse } from '@babel/parser'
+import { DEFAULT_LOOP_BUDGET_MS } from './limits'
+
+export { DEFAULT_HEARTBEAT_TIMEOUT_MS, DEFAULT_LOOP_BUDGET_MS } from './limits'
 
 /**
  * Guarda contra loops síncronos que travam a aba (Camada A do endurecimento do
@@ -35,11 +38,6 @@ const BABEL_OPTS_MODULE: ParserOptions = {
   errorRecovery: true,
   plugins: [],
 }
-
-/** Orçamento default de tempo SÍNCRONO contínuo de um loop antes de cortar. */
-export const DEFAULT_LOOP_BUDGET_MS = 4_000
-/** Timeout default do watchdog de heartbeat (Camada B) no PreviewIframe. */
-export const DEFAULT_HEARTBEAT_TIMEOUT_MS = 6_000
 
 const LOOP_TYPES: ReadonlySet<string> = new Set([
   'ForStatement',

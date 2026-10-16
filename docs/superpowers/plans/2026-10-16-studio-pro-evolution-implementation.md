@@ -32,11 +32,11 @@ Arquivos: `modes/pro/workspace/search.ts`, `ProNavigator.tsx`, `ProBottomPanel.t
 
 Interfaces: conservar `searchProFiles(tree, query, mode, limit)` e a ordem/limite dos resultados; acrescentar índice por nós imutáveis se o perfil justificar. Diagnósticos continuam validados por hash/revisão. `zipFiles(map)` conserva os bytes descompactados e a posse dos buffers de entrada.
 
-- [ ] Eliminar cálculos de busca/guias invisíveis; reduzir processamento repetido por arquivo sem perder posições Unicode/CRLF.
-- [ ] Calcular hash uma vez por arquivo/versão no filtro de problemas; separar logs e apresentação do editor.
-- [ ] Reduzir invalidação de símbolos e preparação redundante, mantendo dependências/configurações e respostas antigas corretas.
-- [ ] Corrigir compressão bloqueante se confirmada, com workers/cópias limitados e falhas propagadas.
-- [ ] Comparar antes/depois, golden outputs e regressões funcionais; registrar review antes de navegação nova.
+- [x] Eliminar cálculos de busca/guias invisíveis; reduzir processamento repetido por arquivo sem perder posições Unicode/CRLF.
+- [x] Calcular hash uma vez por arquivo/versão no filtro de problemas; separar logs e apresentação do editor.
+- [x] Reduzir invalidação de símbolos e preparação redundante, mantendo dependências/configurações e respostas antigas corretas.
+- [x] Corrigir compressão bloqueante se confirmada, com workers/cópias limitados e falhas propagadas.
+- [x] Comparar antes/depois, golden outputs e regressões funcionais; registrar review antes de navegação nova.
 
 ## Lote 2 — Editor e comandos
 
@@ -44,11 +44,11 @@ Arquivos: `ProCodeMode.tsx`, `workspace/commands.ts`, `ProCodeTools.tsx`, `ProNa
 
 Interfaces: descritores existentes `ProCommand` alimentam ações Monaco e menu; callback de busca diferencia arquivos/conteúdo. Ações verificam disponibilidade atual na execução. F2 usa `operations.prepare`, nunca aplica renomeação diretamente.
 
-- [ ] Criar abertura rápida com teclado e busca de projeto dedicada; manter arquivos como visão inicial.
-- [ ] Integrar paleta nativa, símbolos, referências, formatação e renomeação aos comandos existentes; preservar Ctrl/Cmd+K e Zappy contextual.
-- [ ] Separar Guias da árvore, tornar breadcrumbs úteis e preservar seleção/undo/painéis em mudanças de layout.
-- [ ] Usar tema, fonte, locale e componentes existentes; testar foco, Escape, teclado e modo observador.
-- [ ] Review de navegação no browser, regressões Zappy e desempenho.
+- [x] Criar abertura rápida com teclado e busca de projeto dedicada; manter arquivos como visão inicial.
+- [x] Integrar paleta nativa, símbolos, referências, formatação e renomeação aos comandos existentes; preservar Ctrl/Cmd+K e Zappy contextual.
+- [x] Separar Guias da árvore, tornar breadcrumbs úteis e preservar seleção/undo/painéis em mudanças de layout.
+- [x] Usar tema, fonte, locale e componentes existentes; testar foco, Escape, teclado e modo observador.
+- [x] Review de navegação no browser, regressões Zappy e desempenho.
 
 ## Lote 3 — Problemas, materiais e guias
 
@@ -56,10 +56,10 @@ Arquivos: `ProBottomPanel.tsx`, `ProAssetPaths.tsx`, módulos de guias/materiais
 
 Interfaces: diagnóstico leva arquivo/linha/hash ao mesmo `requestProHelp`; materiais continuam em `Project.assets`, com busca de usos literal explicitamente limitada. Guia usa `compatibleProGuides`, sem outro catálogo ou marcação de jornada.
 
-- [ ] Mostrar estados de análise e mensagem técnica com ação contextual de investigação; não navegar para revisão antiga.
-- [ ] Melhorar inspeção e busca de usos de materiais sem renderer 3D por item nem decodificação repetida.
-- [ ] Oferecer guias opcionais pesquisáveis e navegação a arquivos/símbolos reais, preservando avisos de conversão.
-- [ ] Review de hosts sem tutor, observação, materiais/terminal, acessibilidade e concorrência.
+- [x] Mostrar estados de análise e mensagem técnica com ação contextual de investigação; não navegar para revisão antiga.
+- [x] Melhorar inspeção e busca de usos de materiais sem renderer 3D por item nem decodificação repetida.
+- [x] Oferecer guias opcionais pesquisáveis e navegação a arquivos/símbolos reais, preservando avisos de conversão.
+- [x] Review de hosts sem tutor, observação, materiais/terminal, acessibilidade e concorrência.
 
 ## Lote 4 — Continuidade externa e review completo
 
@@ -67,13 +67,15 @@ Arquivos: `export/sourceExport.ts`, novo módulo puro de instruções por manife
 
 Interfaces: `exportProjectSource(project)` mantém formato; instrução gerada respeita scripts/lockfiles/Node e não sobrescreve documentação do autor. UI exibe avisos/falhas sem alterar o projeto.
 
-- [ ] Adaptar instruções aos scripts reais e indicar inconsistências sem instalar no download.
-- [ ] Tornar avisos visíveis e coordenar snapshot, projeto/escopo e pedido único.
-- [ ] Reutilizar provas externas dos kits e ampliar casos React/convertido/materiais, sem depender de `node_modules` do monorepo.
-- [ ] Executar checks afetados, suíte Studio, E2E workspace/Zappy, budgets e typechecks; inspecionar UI real.
-- [ ] Full review do diff completo, corrigir achados e repetir verificações afetadas.
+- [x] Adaptar instruções aos scripts reais e indicar inconsistências sem instalar no download.
+- [x] Tornar avisos visíveis e coordenar snapshot, projeto/escopo e pedido único.
+- [x] Reutilizar provas externas dos kits e ampliar casos React/convertido/materiais, sem depender de `node_modules` do monorepo.
+- [x] Executar checks afetados, suíte Studio, E2E workspace/Zappy, budgets e typechecks; inspecionar UI real.
+- [x] Full review do diff completo, corrigir achados e repetir verificações afetadas.
 - [ ] Reconferir staging e integrar avanços; commit e merge local somente após verificação do conjunto.
 
 ## Critério final
 
 Relatório final contém mudanças, provas, base integrada, resultados e limitações externas reais. Falhas de produto são corrigidas antes do merge. Medições não realizadas e avaliação com alunos não são anunciadas como aprovadas.
+
+Evidência consolidada: [full review](../../../.audits/studio-pro-evolution/full-review.md). A integração Git será registrada após conferir a árvore de staging.

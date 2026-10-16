@@ -1,10 +1,8 @@
+import type * as Monaco from 'monaco-editor'
 import type { JSX } from 'react'
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import type { ProjectTree } from '#core'
-import { FontSizeControls } from '../../components/code/FontSizeControls'
-import { useCodeHistory } from '../../components/code/useCodeHistory'
-import { useFormatIssueLogger } from '../../components/code/useFormatIssueLogger'
 import { EditorSkeleton } from '../../components/layout/LoadingViews'
 import { useProTutorDock } from '../../components/layout/proTutorDock'
 import { proFileDescriptions } from '../../core/proLearningGuides'
@@ -12,14 +10,11 @@ import type { MonacoHighlight } from '../../monaco/MonacoTabs'
 import { getMonacoModelPath } from '../../monaco/modelPaths'
 import type { ProAnalysisState, ProEditorDiagnostic } from '../../monaco/pro/session'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
-import { useSettingsStore } from '../../state/settingsStore'
 import { useStudioConfig } from '../../studio/config'
 import { useT } from '../../studio/i18n'
 import { useProCandidatePreview } from '../../studio/pro-candidate-preview'
-import { useStudioTheme } from '../../studio/theme'
 import { useStudioTutor } from '../../studio/tutor'
 import { ProCodeEditor } from './ProCodeEditor'
-import { ProPreview } from './ProPreview'
 import { ProWebContainerProvider } from './ProWebContainerProvider'
 import { currentProDiagnostics } from './workspace/diagnostics'
 import {
@@ -40,6 +35,9 @@ import { useProOperations } from './workspace/useProOperations'
 import { useProWorkspace } from './workspace/useProWorkspace'
 
 const EMPTY_TREE: ProjectTree = {}
+const ProPreview = lazy(() =>
+  import('./ProPreview').then((module) => ({ default: module.ProPreview })),
+)
 
 /**
  * Variante do modo Código para projetos PROFISSIONAIS (`kind: 'pro'`): árvore de
@@ -65,8 +63,6 @@ export function ProCodeMode(): JSX.Element {
   // desligou o preview no computador abriria no celular sem preview E sem botão
   // para trazer de volta. A aba existe sempre que o host oferece preview.
   const previewAvailable = studioConfig.preview
-  const codeFontSize = useSettingsStore((s) => (s.codeFontSizeChosen ? s.codeFontSize : 15))
-  const studioTheme = useStudioTheme()
   const tutorDock = useProTutorDock()
   const [diagnostics, setDiagnostics] = useState<ProEditorDiagnostic[] | null>(null)
   const [analysis, setAnalysis] = useState<ProAnalysisState>({ status: 'pending' })
@@ -80,9 +76,8 @@ export function ProCodeMode(): JSX.Element {
   const { state: workspaceState, change: changeWorkspace } = workspace
   const { openFiles, activeFile } = workspaceState
   const [codeRequest, setCodeRequest] = useState(0)
-  const editorRef = useRef<Parameters<ReturnType<typeof useCodeHistory>>[0]>(null)
-  const [readyEditor, setReadyEditor] =
-    useState<Parameters<ReturnType<typeof useCodeHistory>>[0]>(null)
+  const editorRef = useRef<Monaco.editor.IStandaloneCodeEditor | null>(null)
+  const [readyEditor, setReadyEditor] = useState<Monaco.editor.IStandaloneCodeEditor | null>(null)
   const [quickOpen, setQuickOpen] = useState<{ query: string } | null>(null)
   const formatRef = useRef<(() => void) | null>(null)
   const [locations, setLocations] = useState<Array<{ path: string; line: number; column: number }>>(
@@ -183,9 +178,6 @@ export function ProCodeMode(): JSX.Element {
     },
     [proEditor],
   )
-  const onFormatIssue = useFormatIssueLogger()
-  // Desfazer/refazer da barra: aqui o alvo é sempre o código.
-  const onCodeEditorReady = useCodeHistory()
 
   const filesArray = useMemo(
     () =>
@@ -428,17 +420,13 @@ export function ProCodeMode(): JSX.Element {
             highlight={tutorHighlight}
             onActiveFileChange={handleSelectFile}
             onChange={(name, value) => {
-              changeWorkspace((previous) => pinWorkspaceFile(previous, name))
+              if (workspaceState.temporaryFile === name)
+                changeWorkspace((previous) => pinWorkspaceFile(previous, name))
               setProFileContent(name, value)
             }}
-            theme={studioTheme === 'light' ? 'light' : 'vs-dark'}
-            fontSize={codeFontSize}
-            formatLabel={t('pro.organizeCode')}
-            onFormatIssue={onFormatIssue}
             onFormatReady={(run) => {
               formatRef.current = run
             }}
-            tabsRightSlot={<FontSizeControls defaultSize={15} />}
             canCloseFile={() => true}
             onCloseFile={handleCloseFile}
             temporaryFile={workspaceState.temporaryFile}
@@ -446,7 +434,6 @@ export function ProCodeMode(): JSX.Element {
             onEditorReady={(editor) => {
               editorRef.current = editor
               setReadyEditor(editor)
-              onCodeEditorReady(editor)
             }}
             onProLanguageReady={(session) => {
               operations.language.current = session
@@ -475,7 +462,13 @@ export function ProCodeMode(): JSX.Element {
       <ProWorkspaceLayout
         navigator={navigator}
         editor={codeEditor}
-        preview={previewAvailable ? <ProPreview /> : null}
+        preview={
+          previewAvailable ? (
+            <Suspense fallback={<EditorSkeleton message="Carregando pré-visualização…" />}>
+              <ProPreview />
+            </Suspense>
+          ) : null
+        }
         tutor={tutorDock}
         preferences={workspaceState}
         change={changeWorkspace}

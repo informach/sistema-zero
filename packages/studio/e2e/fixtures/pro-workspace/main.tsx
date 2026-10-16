@@ -79,7 +79,7 @@ const tutor: StudioTutorConfig = {
   },
 }
 function Fixture() {
-  const [models, setModels] = useState('[]')
+  const [models, setModels] = useState({ value: '[]', version: 0 })
   const [zipResult, setZipResult] = useState('')
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -104,25 +104,28 @@ function Fixture() {
         type="button"
         onClick={async () => {
           const { editor } = await import('monaco-editor/esm/vs/editor/editor.api.js')
-          setModels(
-            JSON.stringify(
-              editor.getModels().map((model) => ({
-                id: model.id,
-                path: getMonacoModelPath(model),
-                language: model.getLanguageId(),
-                markers: editor
-                  .getModelMarkers({ resource: model.uri })
-                  .map((marker) => marker.message),
-                content: model.getValue(),
-              })),
-            ),
+          const value = JSON.stringify(
+            editor.getModels().map((model) => ({
+              id: model.id,
+              path: getMonacoModelPath(model),
+              language: model.getLanguageId(),
+              markers: editor
+                .getModelMarkers({ resource: model.uri })
+                .map((marker) => marker.message),
+              content: model.getValue(),
+            })),
           )
+          setModels((previous) => ({ value, version: previous.version + 1 }))
         }}
       >
         Inspecionar buffers
       </button>
-      <output aria-label="Buffers da sessão" style={{ display: 'none' }}>
-        {models}
+      <output
+        aria-label="Buffers da sessão"
+        data-version={models.version}
+        style={{ display: 'none' }}
+      >
+        {models.value}
       </output>
       <div style={{ flex: 1, minHeight: 0 }}>
         <StudioEditor

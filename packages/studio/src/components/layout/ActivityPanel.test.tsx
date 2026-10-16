@@ -1,6 +1,7 @@
-import { afterEach, describe, expect, it } from 'bun:test'
-import { cleanup, render } from '@testing-library/react'
+import { afterEach, describe, expect, it, spyOn } from 'bun:test'
+import { cleanup, fireEvent, render, waitFor } from '@testing-library/react'
 import type { JSX } from 'react'
+import * as activityRunner from '../../activity/useActivityRunner'
 import type { LessonActivity } from '../../studio/activity'
 import { StudioActivityProvider } from '../../studio/activity'
 import type { StudioLayout } from '../../studio/layoutContext'
@@ -27,6 +28,25 @@ function renderPanel(activity: LessonActivity | null, layout: StudioLayout): JSX
 
 describe('ActivityPanel', () => {
   afterEach(() => cleanup())
+
+  it('mostra falha de carregamento/execução sem inventar uma nota e permite tentar de novo', async () => {
+    const run = spyOn(activityRunner, 'useActivityRunner').mockReturnValue({
+      run: () => Promise.reject(new Error('Failed to fetch dynamically imported module')),
+      running: false,
+      result: null,
+    })
+    try {
+      const view = render(renderPanel(ACTIVITY, WIDE))
+      fireEvent.click(view.getByText('Verificar'))
+      await waitFor(() => expect(view.getByRole('alert').textContent).toContain('tente novamente'))
+      expect(view.queryByText(/100/)).toBeNull()
+      expect(view.getByText('Verificar').hasAttribute('disabled')).toBe(false)
+      view.rerender(renderPanel({ ...ACTIVITY, instructions: 'Outra aula' }, WIDE))
+      expect(view.queryByRole('alert')).toBeNull()
+    } finally {
+      run.mockRestore()
+    }
+  })
 
   it('sem atividade não acrescenta DOM (self-gating do <StudioEditor>)', () => {
     const { container } = render(renderPanel(null, WIDE))

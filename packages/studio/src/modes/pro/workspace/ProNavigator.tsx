@@ -1,5 +1,4 @@
-import { useEffect, useId, useMemo, useRef, useState } from 'react'
-import { ProAssetPaths } from '../../../components/assets/ProAssetPaths'
+import { lazy, Suspense, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { ProFileTree, type ProFileTreeProps } from '../../../components/code/ProFileTree'
 import type { ProExample } from '../../../core/proExamples'
 import { compatibleProGuides } from '../../../core/proLearningGuides'
@@ -8,6 +7,12 @@ import { useProjectStore } from '../../../state/projectStore'
 import { useUIStore } from '../../../state/uiStore'
 import { useT } from '../../../studio/i18n'
 import { type ProSearchResult, searchProFiles } from './search'
+
+const ProAssetPaths = lazy(() =>
+  import('../../../components/assets/ProAssetPaths').then((module) => ({
+    default: module.ProAssetPaths,
+  })),
+)
 
 const control =
   'min-h-9 rounded-md px-2 py-1.5 text-xs aria-pressed:bg-sz-accent/15 aria-pressed:text-sz-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-sz-accent hover:bg-sz-bg'
@@ -113,17 +118,19 @@ export function ProNavigator({
             Importe imagens, sons e modelos pela biblioteca. Depois confira um exemplo para o
             arquivo aberto.
           </p>
-          <ProAssetPaths
-            assets={assets ?? []}
-            path={treeProps.activeFile}
-            onInsert={onInsert}
-            onFindUses={(text) => {
-              setQuery(text)
-              setMode('content')
-              setView('search')
-            }}
-            expanded
-          />
+          <Suspense fallback={<p role="status">Carregando materiais…</p>}>
+            <ProAssetPaths
+              assets={assets ?? []}
+              path={treeProps.activeFile}
+              onInsert={onInsert}
+              onFindUses={(text) => {
+                setQuery(text)
+                setMode('content')
+                setView('search')
+              }}
+              expanded
+            />
+          </Suspense>
         </section>
       )}
       {view === 'guides' && (

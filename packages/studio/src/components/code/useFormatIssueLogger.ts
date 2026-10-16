@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import type { MonacoFormatIssue } from '#monaco'
-import { PREVIEW_MESSAGE_SOURCE } from '#preview'
+import { PREVIEW_MESSAGE_SOURCE } from '../../preview/types'
 import { useLogsStore } from '../../state/logsStore'
 import { useT } from '../../studio/i18n'
 

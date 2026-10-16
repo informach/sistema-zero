@@ -2,6 +2,7 @@ import { mkdir, writeFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { expect, test } from '@playwright/test'
 import { build, type PreviewServer, preview } from 'vite'
+import { inspectWorkspaceBuffers } from './proWorkspaceInspection'
 
 let server: PreviewServer
 test.beforeAll(async () => {
@@ -111,7 +112,7 @@ test('records real editor input, openings and layout lifecycle with controlled s
   const inputFrames: number[] = await page.evaluate(() =>
     JSON.parse(document.documentElement.dataset.inputFrameSamples ?? '[]'),
   )
-  await page.getByRole('button', { name: 'Inspecionar buffers' }).click()
+  await inspectWorkspaceBuffers(page)
   await expect(page.getByLabel('Buffers da sessão')).toContainText('x'.repeat(200))
   const before = await page.getByLabel('Buffers da sessão').textContent()
   const layouts: number[] = []
@@ -121,7 +122,7 @@ test('records real editor input, openings and layout lifecycle with controlled s
     await page.getByRole('button', { name: 'Código e jogo', exact: true }).click()
     layouts.push(performance.now() - start)
   }
-  await page.getByRole('button', { name: 'Inspecionar buffers' }).click()
+  await inspectWorkspaceBuffers(page)
   expect(await page.getByLabel('Buffers da sessão').textContent()).toBe(before)
   expect(errors).toEqual([])
   const stats = (samples: number[]) => {
@@ -133,6 +134,30 @@ test('records real editor input, openings and layout lifecycle with controlled s
       max: sorted.at(-1),
     }
   }
+  const openZappy = page.getByRole('button', { name: 'Abrir Zappy', exact: true })
+  if (await openZappy.isVisible()) await openZappy.click()
+  await page.getByRole('button', { name: 'Investigar', exact: true }).click()
+  await page.getByLabel('Sua dúvida para o Zappy').fill('Confira o nome no arquivo.')
+  await page.getByRole('button', { name: 'Perguntar', exact: true }).click()
+  await expect(page.getByText('Confira o nome no arquivo.', { exact: true }).last()).toBeVisible()
+  await input.focus()
+  const sampleCount = await page.evaluate(
+    () => JSON.parse(document.documentElement.dataset.inputFrameSamples ?? '[]').length,
+  )
+  await input.press('Control+End')
+  await page.keyboard.type(`\n// ${'y'.repeat(200)}`)
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () => JSON.parse(document.documentElement.dataset.inputFrameSamples ?? '[]').length,
+      ),
+    )
+    .toBeGreaterThanOrEqual(sampleCount + 203)
+  const zappyFrames: number[] = await page.evaluate(
+    (start) => JSON.parse(document.documentElement.dataset.inputFrameSamples ?? '[]').slice(start),
+    sampleCount,
+  )
+  expect(errors).toEqual([])
   const report = {
     browser: browser.version(),
     fixture: '78-source-files-controlled-remote-runtime',
@@ -145,6 +170,7 @@ test('records real editor input, openings and layout lifecycle with controlled s
     opening: stats(openings),
     inputFrames: stats(inputFrames),
     layoutRoundTrip: stats(layouts),
+    inputWithZappy: stats(zappyFrames),
     errors,
   }
   const output =
@@ -154,6 +180,12 @@ test('records real editor input, openings and layout lifecycle with controlled s
     recursive: true,
   })
   await writeFile(output, `${JSON.stringify(report, null, 2)}\n`)
+  // Laboratory budgets fixed in batch 0. These are not physical-device acceptance.
+  expect(openings[0]).toBeLessThan(10_000)
+  expect(stats(openings.slice(1)).p95).toBeLessThan(2_000)
+  expect(report.inputFrames.p95).toBeLessThan(60)
+  expect(report.inputWithZappy.p95).toBeLessThan(60)
+  expect(report.layoutRoundTrip.p95).toBeLessThan(300)
   console.log(
     JSON.stringify({
       openingP95: report.opening.p95,

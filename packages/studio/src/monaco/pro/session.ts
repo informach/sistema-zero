@@ -155,6 +155,19 @@ export function attachProLanguageService(
   let timer: ReturnType<typeof setTimeout> | null = null
   let disposed = false
   let generation = 0
+  let analysisState: ProAnalysisState | undefined
+  // Monaco events update the document synchronously. Notify React only when
+  // analysis changes state; repeated pending reports enqueue redundant work.
+  const publishAnalysis = (next: ProAnalysisState) => {
+    if (
+      analysisState?.status === next.status &&
+      (next.status !== 'error' ||
+        (analysisState.status === 'error' && analysisState.message === next.message))
+    )
+      return
+    analysisState = next
+    navigation.analysis?.(next)
+  }
   let preparation: Promise<void> = Promise.resolve()
   let destination: { path: string; selection?: Monaco.IRange | Monaco.IPosition } | null = null
   const revealDestination = () => {
@@ -293,13 +306,13 @@ export function attachProLanguageService(
     if (!disposed && epoch === generation) {
       report(null)
       navigation.diagnostics?.(gathered)
-      navigation.analysis?.({ status: 'ready' })
+      publishAnalysis({ status: 'ready' })
     }
   }
   const update = () => {
     if (disposed) return
     const epoch = ++generation
-    navigation.analysis?.({ status: 'pending' })
+    publishAnalysis({ status: 'pending' })
     if (timer) clearTimeout(timer)
     timer = setTimeout(() => {
       timer = null
@@ -307,7 +320,7 @@ export function attachProLanguageService(
         if (!disposed && epoch === generation) {
           const message = error instanceof Error ? error.message : String(error)
           report(message)
-          navigation.analysis?.({ status: 'error', message })
+          publishAnalysis({ status: 'error', message })
         }
       })
     }, 200)

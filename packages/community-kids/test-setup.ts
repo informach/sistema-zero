@@ -1,7 +1,12 @@
+import { AsyncLocalStorage } from 'node:async_hooks'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
 import { createElement } from 'react'
 
 GlobalRegistrator.register()
+// Next's server bootstrap normally provides this before route/testing imports.
+// Bun loads those modules directly; otherwise Next caches its throwing fallback
+// and later cloud-error reporting fails depending on test-file order.
+if (!('AsyncLocalStorage' in globalThis)) Object.assign(globalThis, { AsyncLocalStorage })
 ;(globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true
 
 const { cleanup } = await import('@testing-library/react')

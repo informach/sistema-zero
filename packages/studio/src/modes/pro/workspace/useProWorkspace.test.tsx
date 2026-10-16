@@ -3,7 +3,12 @@ import { act, fireEvent, render } from '@testing-library/react'
 import type { ProjectTree } from '../../../core/proProject'
 import { StudioStoresContext } from '../../../state/storesContext'
 import { createStudioStores } from '../../../state/studioStores'
-import { emptyWorkspace, openWorkspaceFile, type ProWorkspacePreferences } from './model'
+import {
+  emptyWorkspace,
+  openWorkspaceFile,
+  type ProWorkspacePreferences,
+  remapWorkspace,
+} from './model'
 import { useProWorkspace } from './useProWorkspace'
 
 const tree: ProjectTree = {
@@ -124,4 +129,28 @@ describe('retomada do workspace', () => {
         .workspacePreferences,
     ).toBe(adapter)
   })
+})
+
+// Document operations publish the path map before the next tree commit. A local
+// layout render in between must not interpret that remap as a deleted file.
+it('preserves a tab remap published before the renamed tree arrives', () => {
+  function RenameHarness({ source }: { source: ProjectTree }) {
+    const workspace = useProWorkspace('rename-project', source)
+    return (
+      <>
+        <output data-testid="active-path">{workspace.state.activeFile}</output>
+        <button
+          type="button"
+          onClick={() => workspace.change((state) => remapWorkspace(state, { 'a.ts': 'a.js' }))}
+        >
+          Remapear
+        </button>
+      </>
+    )
+  }
+  const view = render(<RenameHarness source={tree} />)
+  fireEvent.click(view.getByRole('button', { name: 'Remapear' }))
+  expect(view.getByTestId('active-path').textContent).toBe('a.js')
+  view.rerender(<RenameHarness source={{ 'a.js': tree['a.ts']!, 'b.ts': tree['b.ts']! }} />)
+  expect(view.getByTestId('active-path').textContent).toBe('a.js')
 })

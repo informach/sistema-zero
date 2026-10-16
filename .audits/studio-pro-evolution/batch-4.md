@@ -5,4 +5,4 @@
 - Pedido único por instância, cancelado ao desmontar/trocar projeto. Buffers síncronos são descarregados antes e depois dos writers assíncronos. Snapshot usa a autoridade canônica; identidade do adapter/perfil e troca A → B → A são cercadas.
 - Falhas não produzem ZIP parcial; avisos aparecem em modal depois do download. Compressão grande usa o worker validado no lote 1.
 - Doze testes de fonte/instruções/concorrência passaram, mais a regressão de 56 testes da barra/builders/fonte. Chromium confirmou texto recém-editado no ZIP, materiais, avisos visíveis e falha real de carregamento do worker sem download parcial.
-- Full review pendente: suíte completa, exportação externa dos kits, budgets, typecheck do conjunto, medição comparativa final e revisão de staging.
+- As provas de exportação e a medição comparativa estão consolidadas no [full review](full-review.md), com os achados corrigidos, verificações finais e limites externos.

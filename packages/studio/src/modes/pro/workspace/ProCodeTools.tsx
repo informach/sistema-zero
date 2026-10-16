@@ -1,5 +1,5 @@
 import type * as Monaco from 'monaco-editor'
-import { type RefObject, useEffect, useRef, useState } from 'react'
+import { type RefObject, useEffect, useMemo, useRef, useState } from 'react'
 import { Button, Modal } from '#ui'
 import { proCodeExamples } from '../../../core/proExamples'
 import type { ProjectTree } from '../../../core/proProject'
@@ -78,12 +78,17 @@ export function ProCodeTools({
   const [error, setError] = useState<string | null>(null)
   const current = useRef({ path, tree })
   current.current = { path, tree }
+  const symbolSource = useMemo(
+    () => (open && /\.[cm]?[jt]sx?$/.test(path) ? { path, content } : null),
+    [open, path, content],
+  )
   useEffect(() => {
-    if (!open || !language.current || !/\.[cm]?[jt]sx?$/.test(path)) {
+    if (!symbolSource || !language.current) {
       setSymbols(null)
       setSymbolsPending(false)
       return
     }
+    const { path, content } = symbolSource
     let active = true
     setSymbolsPending(true)
     setSymbols(null)
@@ -110,7 +115,7 @@ export function ProCodeTools({
     return () => {
       active = false
     }
-  }, [open, path, content, language, editor])
+  }, [symbolSource, language, editor])
   const capture = () => {
     const model = editor.current?.getModel(),
       cursor = editor.current?.getPosition()

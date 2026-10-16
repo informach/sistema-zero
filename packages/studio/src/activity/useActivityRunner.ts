@@ -3,7 +3,6 @@ import { useChecksStore, useChecksStoreApi } from '../state/checksStore'
 import { useProjectStoreApi } from '../state/projectStore'
 import type { ActivityRunResult, LessonActivity } from '../studio/activity'
 import { useStudioConfig } from '../studio/config'
-import { runActivity } from './run'
 
 export interface ActivityRunnerHandle {
   run: () => Promise<ActivityRunResult | null>
@@ -30,6 +29,7 @@ export function useActivityRunner(activity: LessonActivity): ActivityRunnerHandl
     const runProjectId = project.id
     checksApi.getState().setRunning(true)
     try {
+      const { runActivity } = await import('./run')
       const r = await runActivity(project, activity, {
         fetchAllowedOrigins: previewSecurity.fetchAllowedOrigins,
         loopBudgetMs: previewSecurity.loopBudgetMs,

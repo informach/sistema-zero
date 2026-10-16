@@ -21,3 +21,24 @@ WebGL reais e DOM/heap após GC nos ciclos 5/10/15/20. Antes, 1 contexto ativo a
 
 Ao atualizar Three, verificar as duas causas no fonte e repetir esses testes, os percursos
 de exportação PNG/apresentação e os previews de textura/céu antes de remover o patch.
+
+
+## Monaco 0.52.2: ciclo de vida dos serviços globais de hover
+
+`monaco-editor@0.52.2.patch` move o registro global de hover do construtor de
+cada editor para a inicialização dos serviços standalone. A fábrica e o serviço
+base passam a pertencer ao mesmo escopo global que os consome. Editores e diffs
+continuam sendo descartados normalmente; não há editor oculto retido, timeout,
+retry ou captura de erro para disfarçar o defeito.
+
+Causa reproduzida: fechar a revisão de renomeação e depois abrir F1/Localizar
+podia lançar `InstantiationService has been disposed`. O último diff substituía
+a fábrica global por uma closure sobre seu serviço filho, já encerrado.
+O problema também está documentado em
+[Monaco #5518](https://github.com/microsoft/monaco-editor/issues/5518).
+
+O patch cobre a entrada ESM usada por todos os consumidores locais (o loader é
+configurado com a instância importada, sem AMD/CDN). Bun o reaplica via
+`patchedDependencies`, sem atualização das demais dependências. Ao atualizar
+Monaco, conferir a correção upstream e repetir `e2e/pro-workspace.spec.ts`,
+especialmente revisão carregada → fechar → F1 → Localizar, e assistência Zappy.

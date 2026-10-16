@@ -19,7 +19,9 @@ test('records reproducible workspace CPU costs and output fingerprints', async (
         {
           kind: 'file',
           content: `export const score${index} = ${index}\r\n// ação İ🙂\n`
-            .repeat(chars)
+            .repeat(
+              Math.ceil(chars / `export const score${index} = ${index}\r\n// ação İ🙂\n`.length),
+            )
             .slice(0, chars),
         },
       ]),

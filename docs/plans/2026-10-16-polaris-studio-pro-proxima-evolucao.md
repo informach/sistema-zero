@@ -375,4 +375,3 @@ Telemetria de performance coleta duração/contadores/faixas de tamanho/códigos
 - [Core do editor](../../packages/studio/src/studio/StudioCore.tsx), [host Pro](../../packages/member-shell/src/components/studio/studio-pro-editor.tsx), [runtime remoto](../../packages/studio/src/studio/pro-runtime.tsx), [embedding](../../packages/studio/docs/embedding.md), [headers Kids](../../packages/community-kids/next.config.ts) e [CI existente](../../.github/workflows/ci.yml).
 
 Revisão estática de código/contratos/testes, comparação Git e documentação oficial VS Code/Monaco. Sem novos benchmarks, builds, serviços pagos ou testes com alunos. Metas e benefícios de transferência ainda exigem validação. Nenhum código de produto foi alterado.
-
