@@ -22,12 +22,57 @@ export interface ComunidadeSection {
   id: string
   title: string
   eyebrow: string
-  /** `cases`: uma carta por situação (grupo com subtítulo), ligadas como etapas de um percurso. */
-  layout: 'story' | 'cards' | 'band' | 'journey' | 'tools' | 'cases'
+  /**
+   * `cases`: uma carta por situação (grupo com subtítulo), ligadas como etapas de um percurso.
+   * `relatos`: a faixa de relatos; as falas de `falas` viram cartas com retrato.
+   */
+  layout: 'story' | 'cards' | 'band' | 'journey' | 'tools' | 'cases' | 'relatos'
   visuals: string[]
   groups: ComunidadeGroup[]
+  /** Relatos reais (`relatos.ts`): a faixa em `relatos`; nas demais, a fala solta do fim da seção. */
+  falas?: readonly RelatoId[]
   actions: ComunidadeAction[]
 }
+
+/** Uma fala real, com as palavras de quem disse (cartelas do Instagram e trechos conferidos). */
+export interface Relato {
+  fala: string
+  nome: string
+  /** "Aluno", "Aluna" ou a relação do responsável com a criança. */
+  papel: string
+  /** Tema editorial ou curso do relato; fica fora das aspas. */
+  contexto: string
+  retrato: string
+}
+
+export type RelatoId =
+  | 'AV02'
+  | 'AV03'
+  | 'AV04'
+  | 'AV06'
+  | 'AV07'
+  | 'AV08'
+  | 'AV09'
+  | 'AV10'
+  | 'AV11'
+  | 'AV12'
+  | 'N1'
+  | 'N2'
+  | 'N4'
+  | 'N5'
+  | 'N6'
+  | 'N7'
+  | 'N8'
+  | 'N9'
+  | 'N11'
+  | 'N12'
+  | 'N13'
+  | 'N14'
+  | 'N15'
+  | 'N16'
+  | 'N17'
+  | 'N18'
+  | 'N19'
 
 export interface ComunidadePage {
   id: ComunidadePageId
@@ -55,12 +100,16 @@ export interface ComunidadePage {
   faqLinks?: ComunidadeAction[]
   offer?: ComunidadeOffer
   showFounder?: boolean
+  /** Sem configuração, vale `SHARED_COPY.founder`. */
+  founder?: ComunidadeSection
   closing: ComunidadeSection
 }
 
 export interface ComunidadeOffer {
   title: string
   paragraphs: string[]
+  /** Fala real antes dos cartões dos planos. */
+  falas?: readonly RelatoId[]
   monthly: { title: string; paragraphs: string[]; cta: string }
   annual: { title: string; paragraphs: string[]; cta: string }
   period?: { title: string; paragraphs: string[] }

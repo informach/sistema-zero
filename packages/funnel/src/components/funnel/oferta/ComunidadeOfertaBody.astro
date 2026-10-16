@@ -10,7 +10,12 @@ import {
   ICONES_DE_DUVIDAS,
 } from '../../../funnels/comunidade-dos-criadores/oferta/arte'
 import { DESTAQUES } from '../../../funnels/comunidade-dos-criadores/oferta/destaques'
-import { FAQ, SHARED_COPY } from '../../../funnels/comunidade-dos-criadores/oferta/shared'
+import { calcularEconomiaAnual } from '../../../funnels/comunidade-dos-criadores/oferta/economia'
+import {
+  FAQ,
+  FAQ_EXTRA,
+  SHARED_COPY,
+} from '../../../funnels/comunidade-dos-criadores/oferta/shared'
 import type {
   ComunidadeFaqEntry,
   ComunidadeOffer,
@@ -27,6 +32,7 @@ import Footer from '../../Footer.astro'
 import ProductJsonLd from '../../seo/ProductJsonLd.astro'
 import ComunidadeImageZoom from './ComunidadeImageZoom.astro'
 import ComunidadeProsa from './ComunidadeProsa.astro'
+import ComunidadeRelato from './ComunidadeRelato.astro'
 import ComunidadeSection from './ComunidadeSection.astro'
 import ComunidadeTour from './ComunidadeTour.astro'
 import ComunidadeVisual from './ComunidadeVisual.astro'
@@ -69,17 +75,24 @@ const anualCents = anual?.priceCents ?? COMUNIDADE_PRECO_FALLBACK.anualCents
 const mensalLabel = formatBRLFromCents(mensalCents)
 const anualLabel = formatBRLFromCents(anualCents)
 const anualPorMesLabel = formatBRLFromCents2(Math.round(anualCents / 12))
+// A economia do anual é a comparação que a copy faz: doze mensalidades contra o anual, só com os
+// dois preços AO VIVO (nunca contra o fallback). Sem economia, a frase que a cita sai do cartão.
+const economiaAnualCents = calcularEconomiaAnual(mensal?.priceCents, anual?.priceCents)
+const economiaAnualLabel = formatBRLFromCents(economiaAnualCents)
+const comEconomia = (text: string) => economiaAnualCents > 0 || !text.includes('{{economia_anual}}')
 const priceReais = ((plans?.main.priceCents ?? mensalCents) / 100).toFixed(2)
 const offer: ComunidadeOffer = page.offer ?? SHARED_COPY.offer
-const faq: Record<string, ComunidadeFaqEntry> = page.faq ?? FAQ
+const faq: Record<string, ComunidadeFaqEntry> = page.faq ?? { ...FAQ, ...FAQ_EXTRA }
 const fillPrice = (text: string) =>
   text
     .replaceAll('{{preco_mensal}}', mensalLabel)
     .replaceAll('{{preco_anual}}', anualLabel)
     .replaceAll('{{equivalente_mensal_anual}}', anualPorMesLabel)
+    .replaceAll('{{economia_anual}}', economiaAnualLabel)
 const benefitIcons = ['extension', 'brush', 'group']
 const benefitColors = ['', 'kof-ladrilho--rosa', 'kof-ladrilho--verde']
-const founder = SHARED_COPY.founder.groups.flatMap((group) => group.paragraphs)
+const founderSection = page.founder ?? SHARED_COPY.founder
+const founder = founderSection.groups.flatMap((group) => group.paragraphs)
 const closing = page.closing.groups.flatMap((group) => group.paragraphs)
 const faqIcons = ICONES_DE_DUVIDAS[page.id] ?? [
   'schedule',
@@ -180,11 +193,16 @@ const faqVisuals = (id: string) =>
             </figure>
             <div class="origem-texto kof-reveal">
               <div class="cap-head">
-                <span class="cap-chip"><span class="material-symbols-rounded cap-chip-icone" aria-hidden="true">favorite</span><span class="cap-chip-texto">Uma experiência em família</span></span>
-                <h2 id="title-origem" class="kof-display">{SHARED_COPY.founder.title}</h2>
+                <span class="cap-chip"><span class="material-symbols-rounded cap-chip-icone" aria-hidden="true">favorite</span><span class="cap-chip-texto">{founderSection.eyebrow}</span></span>
+                <h2 id="title-origem" class="kof-display">{founderSection.title}</h2>
                 <ComunidadeProsa paragraphs={founder.slice(0, 1)} class="cap-lead" />
               </div>
               <div class="prosa"><ComunidadeProsa paragraphs={founder.slice(1)} destaques={DESTAQUES.origem} /></div>
+              {(founderSection.falas ?? []).length > 0 && (
+                <div class="relatos relatos--soltas">
+                  {(founderSection.falas ?? []).map((id) => <ComunidadeRelato id={id} imagesBase={imagesBase} variant="solta" />)}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -200,19 +218,24 @@ const faqVisuals = (id: string) =>
           <div class="value-story prosa kof-reveal">
             <ComunidadeProsa paragraphs={offer.paragraphs.slice(1)} destaques={DESTAQUES.assinatura} />
           </div>
+          {(offer.falas ?? []).length > 0 && (
+            <div class="relatos relatos--soltas">
+              {(offer.falas ?? []).map((id) => <ComunidadeRelato id={id} imagesBase={imagesBase} variant="solta" />)}
+            </div>
+          )}
           <ComunidadeVisual visual="perfis" imagesBase={imagesBase} class="planos-visual" />
           <div class="plans kof-reveal" id="planos">
             <article class="plan kof-carta kof-carta--fio">
               <h3>{offer.monthly.title}</h3>
               <p class="price">{mensalLabel}<span>por mês</span></p>
-              {offer.monthly.paragraphs.map((paragraph) => <p>{fillPrice(paragraph)}</p>)}
+              {offer.monthly.paragraphs.filter(comEconomia).map((paragraph) => <p>{fillPrice(paragraph)}</p>)}
               <button type="button" class="kof-btn kof-btn--cheia kof-btn--contorno" data-checkout-cta data-checkout-oferta={mensal?.slug}>{offer.monthly.cta}</button>
             </article>
             <article class="plan annual kof-marca">
-              <span class="kof-eyebrow saving"><span class="material-symbols-rounded" aria-hidden="true">calendar_month</span>12 meses de acesso</span>
+              <span class="kof-eyebrow saving"><span class="material-symbols-rounded" aria-hidden="true">{economiaAnualCents > 0 ? 'savings' : 'calendar_month'}</span>{economiaAnualCents > 0 ? `Economia de ${economiaAnualLabel}` : '12 meses de acesso'}</span>
               <h3>{offer.annual.title}</h3>
               <p class="price">{anualLabel}<span>por 12 meses</span></p>
-              {offer.annual.paragraphs.map((paragraph) => <p>{fillPrice(paragraph)}</p>)}
+              {offer.annual.paragraphs.filter(comEconomia).map((paragraph) => <p>{fillPrice(paragraph)}</p>)}
               <button type="button" class="kof-btn kof-btn--cheia kof-btn--inversa" data-checkout-cta data-checkout-oferta={anual?.slug}>{offer.annual.cta}</button>
             </article>
           </div>

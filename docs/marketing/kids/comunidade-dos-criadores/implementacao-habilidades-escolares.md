@@ -1,6 +1,6 @@
 # Página F: habilidades escolares
 
-Implementada no código em 15/10/2026, conforme a [proposta revisada](../../../plans/2026-10-15-comunidade-habilidades-escolares-proposta.md) e a [copy aprovada](copy/pagina-f-habilidades-escolares-proposta.md). Sem deploy nesta etapa.
+Implementada no código em 15/10/2026, conforme a [proposta revisada](../../../plans/2026-10-15-comunidade-habilidades-escolares-proposta.md) e a [copy aprovada](copy/historico/2026-10-16-antes-da-proposta/pagina-f-habilidades-escolares-proposta.md). Sem deploy nesta etapa.
 
 Rota: `/kids/comunidade-dos-criadores/oferta/habilidades-escolares`.
 

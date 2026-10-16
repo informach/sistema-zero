@@ -6,7 +6,7 @@
 
 **Tech Stack:** Astro, TypeScript, Bun, componentes e estilos existentes do funil.
 
-**Spec:** [proposta revisada](../../plans/2026-10-15-comunidade-habilidades-escolares-proposta.md) e [copy aprovada](../../marketing/kids/comunidade-dos-criadores/copy/pagina-f-habilidades-escolares-proposta.md).
+**Spec:** [proposta revisada](../../plans/2026-10-15-comunidade-habilidades-escolares-proposta.md) e [copy aprovada](../../marketing/kids/comunidade-dos-criadores/copy/historico/2026-10-16-antes-da-proposta/pagina-f-habilidades-escolares-proposta.md).
 
 **Global Constraints:** hero aprovado; dor imediatamente abaixo; mesmas condições comerciais e preços do catálogo; somente capturas reais; nenhuma promessa de notas; alterações restritas ao funil e documentação desta página. Usar a alternativa de ciências baseada no experimento do jardim, cuja demonstração existe, sem depender da publicação de Corre, Dino!.
 

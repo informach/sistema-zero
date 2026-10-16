@@ -1,5 +1,16 @@
 # Copy das páginas da Comunidade dos Criadores
 
+**Atualização de 16/10/2026.** A copy das seis páginas foi reescrita pela [proposta de melhoria](proposta-melhoria-2026-10-16/README.md), aprovada e implementada no funil (`packages/funnel/src/funnels/comunidade-dos-criadores/oferta/`). Os arquivos `pagina-*.md` desta pasta passaram a ser o ESPELHO gerado da copy tipada: para mudar uma frase, edite o código e rode `bun scripts/espelho-copy-comunidade.ts` dentro de `packages/funnel` (o teste `comunidade-offer-copy` reprova espelho desatualizado). As versões anteriores, inclusive a proposta da página F, estão em [historico/2026-10-16-antes-da-proposta](historico/2026-10-16-antes-da-proposta/). O texto abaixo descreve as versões de 01/10 e fica como registro; números como "40 respostas" e "50 respostas" valiam para elas (hoje são 26 comuns, mais as próprias de cada página).
+
+| Página | Espelho atual |
+| --- | --- |
+| A | [pagina-a-tempo-de-tela.md](pagina-a-tempo-de-tela.md) |
+| B | [pagina-b-criacao-de-jogos.md](pagina-b-criacao-de-jogos.md) |
+| C | [pagina-c-expressao-visual.md](pagina-c-expressao-visual.md) |
+| D | [pagina-d-formacao-tecnologica.md](pagina-d-formacao-tecnologica.md) |
+| E | [pagina-e-continuidade.md](pagina-e-continuidade.md) |
+| F | [pagina-f-habilidades-escolares.md](pagina-f-habilidades-escolares.md) |
+
 Data: 01/10/2026. Versão: revisão integral 2, com argumentação desenvolvida no corpo das quatro páginas, dúvidas separadas e demonstrações alinhadas. Referência editorial; a implementação local posterior está registrada no [relatório de implementação](../implementacao-paginas.md). Os arquivos abaixo contêm páginas completas e independentes, com texto dirigido à família.
 
 ## Páginas para leitura
