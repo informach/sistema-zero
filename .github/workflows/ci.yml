@@ -293,7 +293,6 @@ jobs:
 
   community-kids-e2e:
     name: community-kids-e2e
-    needs: ci
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -330,7 +329,6 @@ jobs:
 
   studio-e2e-chromium:
     name: studio-e2e-chromium-${{ matrix.shard }}
-    needs: ci
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
@@ -351,6 +349,13 @@ jobs:
         working-directory: packages/studio
         run: bunx playwright install --with-deps chromium
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Instalar o compilador confiável para os jogos Pro
+        run: npm ci --ignore-scripts --no-audit --no-fund --prefix packages/studio-runtime/runtime
+
       - name: E2E Chromium completo (shard ${{ matrix.shard }}/3)
         working-directory: packages/studio
         run: bunx playwright test --project=chromium --shard=${{ matrix.shard }}/3
@@ -365,7 +370,6 @@ jobs:
 
   studio-e2e-firefox:
     name: studio-e2e-firefox
-    needs: ci
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -399,7 +403,6 @@ jobs:
   # specs dessa gravação (`testMatch` do projeto `webkit` no playwright.config.ts).
   studio-e2e-webkit:
     name: studio-e2e-webkit
-    needs: ci
     runs-on: macos-latest
     timeout-minutes: 20
     steps:
