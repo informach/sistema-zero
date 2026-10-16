@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { fileURLToPath } from 'node:url'
 import realConfig from '../../gateway.config'
 import { loadEnv } from '../../src/infrastructure/config/env'
 import { routeConfigSchema } from '../../src/infrastructure/config/gateway-config.schema'
@@ -478,9 +479,59 @@ describe('loadGatewayConfig', () => {
 })
 
 // O boot real valida a config inteira (fail-fast), mas nenhum teste a CARREGAVA — então
-// invariantes que valem só sobre as rotas REAIS (audit em rota mutante, ids únicos, novas
-// rotas presentes) ficavam sem rede. Asserimos direto sobre o objeto exportado (estático).
+// invariantes que valem só sobre as rotas REAIS ficavam sem rede. O subprocesso prova
+// o carregamento com credenciais de fixture; as demais asserções conferem as rotas exportadas.
 describe('gateway.config.ts (configuração real)', () => {
+  async function bootRealConfig(bodyLimit?: string) {
+    const child = Bun.spawn(
+      [
+        process.execPath,
+        '-e',
+        `import { loadEnv } from './src/infrastructure/config/env';
+         import { loadGatewayConfig } from './src/infrastructure/config/load-gateway-config';
+         const config = await loadGatewayConfig(loadEnv(process.env));
+         console.log(JSON.stringify({routes: config.routes.length,
+           builderLimit: config.routes.find(r => r.id === 'members-internal-studio-builder')?.maxBodyBytes}));`,
+      ],
+      {
+        cwd: fileURLToPath(new URL('../..', import.meta.url)),
+        env: {
+          NODE_ENV: 'test',
+          JWT_JWKS_URL: 'http://localhost/jwks',
+          GATEWAY_CONSUMER_ID: 'gateway',
+          GATEWAY_HMAC_SECRET: 'gateway-test-secret-with-32-characters',
+          FUNNEL_HMAC_SECRET: 'funnel-test-secret-with-32-characters',
+          FUNNEL_INTERNAL_TOKEN: 'funnel-test-token-with-32-characters',
+          ...(bodyLimit ? { MAX_REQUEST_BODY_BYTES: bodyLimit } : {}),
+        },
+        stdout: 'pipe',
+        stderr: 'pipe',
+      },
+    )
+    const [code, stdout, stderr] = await Promise.all([
+      child.exited,
+      new Response(child.stdout).text(),
+      new Response(child.stderr).text(),
+    ])
+    return { code, stdout, stderr }
+  }
+
+  test('carrega todas as rotas reais com o teto de corpo padrão', async () => {
+    const result = await bootRealConfig()
+    expect(result.stderr).toBe('')
+    expect(result.code).toBe(0)
+    expect(JSON.parse(result.stdout)).toEqual({
+      routes: realConfig.routes.length,
+      builderLimit: 3_004_096,
+    })
+  })
+
+  test('recusa teto explícito que impede o corpo do builder do Studio', async () => {
+    const result = await bootRealConfig('2097152')
+    expect(result.code).not.toBe(0)
+    expect(result.stderr).toMatch(/members-internal-studio-builder.*MAX_REQUEST_BODY_BYTES/)
+  })
+
   test('consulta do curso-presente é exclusiva do referrals e re-assinada para members', () => {
     const registry = new RouteRegistry(
       realConfig.routes.map((route) => routeConfigSchema.parse(route)),
