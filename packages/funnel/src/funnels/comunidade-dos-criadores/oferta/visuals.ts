@@ -220,12 +220,17 @@ export const COMUNIDADE_VISUALS: Record<string, ComunidadeVisual> = {
     ],
     caption: 'A Jornada mostra em que posto a criança está e o que cada posto liberou.',
   },
+  // A captura inteira (`tela-catalogo`) traz no alto o fim do mapa, com "Mais 6 postos estão
+  // sendo construídos": entra só o RECORTE da lista de aventuras (`tela-catalogo-trilha`, caixa
+  // 600,330–2560,1600 do @2x). Recapturou? Refaça o recorte (vale também para a faixa TOUR).
   catalogo: {
     frames: [
       tela(
-        'catalogo',
+        'catalogo-trilha',
         'Aventuras da trilha',
         'Aventuras da trilha Construtor: os cursos publicados, com aulas e progresso de cada um.',
+        980,
+        635,
       ),
     ],
     caption: 'As aventuras da trilha mostram os cursos e o progresso em cada um.',
@@ -579,7 +584,7 @@ export const TOUR: readonly ComunidadeTourItem[] = [
     'Onde ele cria em três dimensões.',
   ),
   area(
-    tela('catalogo', 'Jornada', 'Aventuras da trilha na Jornada do Criador.'),
+    tela('catalogo-trilha', 'Jornada', 'Aventuras da trilha na Jornada do Criador.', 980, 635),
     'Onde ele vê o próximo passo.',
   ),
   area(
