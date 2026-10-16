@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { artSchema } from './art'
 import { httpUrlSchema, idSchema, permissionSchema, sourceSchema, timestampSchema } from './common'
+import { conversationPlanSchema } from './engagement'
 import { mediaPreparationSchema } from './media-preparation'
 import { videoSchema } from './video'
 export const editorialFormatSchema = z.enum([
@@ -60,6 +61,7 @@ export const documentSchema = z
       .object({
         ...base,
         kind: z.literal('piece'),
+        conversation: conversationPlanSchema.optional(),
         brief: body,
         objective: z.string().max(2000),
         cta: z.string().max(2000),

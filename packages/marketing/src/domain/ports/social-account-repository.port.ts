@@ -14,7 +14,10 @@ export interface SocialAccountRepository {
    * vier nulo (Google só o devolve no 1º consent), PRESERVA o antigo.
    * Retorna a linha persistida (id vencedor).
    */
-  upsertByExternalId(account: SocialAccount): Promise<SocialAccount>
+  upsertByExternalId(
+    account: SocialAccount,
+    preserveConnectionIdentity?: boolean,
+  ): Promise<SocialAccount>
   /** Contas `connected` com access token vencendo dentro da margem (token-refresh-worker). */
   listExpiring(now: Date, marginMs: number, limit: number): Promise<SocialAccount[]>
   /**

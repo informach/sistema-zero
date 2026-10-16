@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { workspaceProtocolSchema } from '../../../../marketing-contracts/src/common'
 import { runViewSchema } from '../../../../marketing-contracts/src/execution'
 import type { SyncReport } from '../../../../marketing-contracts/src/sync'
 import { changePageSchema } from '../../../../marketing-contracts/src/sync'
@@ -67,9 +67,7 @@ export class WorkspaceSyncEngine {
   private async cycle(): Promise<SyncReport> {
     this.publish({ phase: 'syncing', message: 'Sincronizando com a equipe' })
     try {
-      const protocol = z
-        .object({ protocol: z.literal(1), minimumDesktopProtocol: z.number().int().max(1) })
-        .safeParse(await this.transport.request('/protocol'))
+      const protocol = workspaceProtocolSchema.safeParse(await this.transport.request('/protocol'))
       if (!protocol.success)
         throw new Error(
           'Esta versão do app não é compatível com o servidor. Atualize o desktop; seus rascunhos foram preservados.',

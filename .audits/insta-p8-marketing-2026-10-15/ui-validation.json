@@ -1,0 +1,17 @@
+{
+  "passed": true,
+  "checks": [
+    "salvar cria somente revisão",
+    "aviso MC08",
+    "aprovação separada",
+    "compatibilidade da publicação obrigatória",
+    "tomada humana",
+    "offline não enfileira",
+    "retry após offline conserva operationId",
+    "nenhuma DM em storage",
+    "sem overflow desktop/mobile com painéis abertos e D02",
+    "sem erro de runtime"
+  ],
+  "browser": "155.0.4283.60",
+  "at": "2026-10-16T03:06:13.634Z"
+}

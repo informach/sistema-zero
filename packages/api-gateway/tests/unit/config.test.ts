@@ -9,6 +9,28 @@ const env = loadEnv({})
 const service = { name: 'p', upstreamGroups: { default: [{ url: 'http://p' }] } }
 
 describe('loadGatewayConfig', () => {
+  test('Instagram publica apenas o webhook exato; inbox exige equipe e atribuição exige HMAC do marketing', () => {
+    const registry = new RouteRegistry(
+      realConfig.routes.map((route) => routeConfigSchema.parse(route)),
+    )
+    expect(registry.resolve('POST', '/marketing/webhooks/instagram', 'v1')?.route.auth).toBe(
+      'public',
+    )
+    for (const path of [
+      '/marketing/webhooks/instagram/extra',
+      '/marketing/workspace/engagement/accounts',
+    ])
+      expect(registry.resolve('POST', path, 'v1')?.route).toMatchObject({
+        auth: { strategies: ['jwt'] },
+        authorize: { statuses: ['active'], roles: ['superadmin', 'admin', 'staff'] },
+      })
+    expect(
+      registry.resolve('POST', '/funnel/internal/marketing-attribution', 'v1')?.route,
+    ).toMatchObject({
+      auth: { strategies: ['hmac'], allowedConsumers: ['marketing'] },
+      maxBodyBytes: 8192,
+    })
+  })
   test('staff facade preserves user credentials only to auth; delegated messaging stays HMAC auth-only', () => {
     const registry = new RouteRegistry(
       realConfig.routes.map((route) => routeConfigSchema.parse(route)),

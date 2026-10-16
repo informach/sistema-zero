@@ -23,12 +23,21 @@ export const workspaceRequestSchema = z
   })
   .strict()
 export type WorkspaceRequest = z.infer<typeof workspaceRequestSchema>
+export const workspaceResponseSchema = z.discriminatedUnion('ok', [
+  z.object({ ok: z.literal(true), value: z.unknown() }).strict(),
+  z
+    .object({
+      ok: z.literal(false),
+      error: z.object({ status: z.number().int(), code: z.string(), message: z.string() }).strict(),
+    })
+    .strict(),
+])
 function validWorkspacePath(value: string) {
   const [pathname, query, ...extra] = value.split('?')
   if (
     extra.length ||
     !pathname ||
-    !/^\/(projects|operations|batches|handoffs|protocol|context|runs|assets)(\/[a-zA-Z0-9-]+)*$/.test(
+    !/^\/(projects|operations|batches|handoffs|protocol|context|runs|assets|engagement)(\/[a-zA-Z0-9-]+)*$/.test(
       pathname,
     )
   )
@@ -42,6 +51,12 @@ function validWorkspacePath(value: string) {
     if (key === 'q' && pathname.endsWith('/staff') && value.length >= 2 && value.length <= 100)
       continue
     if (key === 'cursor' && /^\d+$/.test(value)) continue
+    if (
+      ['from', 'to'].includes(key) &&
+      /\/engagement\/(summary|commercial)$/.test(pathname) &&
+      z.string().datetime().safeParse(value).success
+    )
+      continue
     if (
       ['entityId', 'before', 'after', 'revisionId'].includes(key) &&
       z.string().uuid().safeParse(value).success

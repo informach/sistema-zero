@@ -170,6 +170,7 @@ export class AccountService {
             now: at,
             id: crypto.randomUUID(),
           }),
+          true,
         )
       }
       this.logger.info('account.renewed', {

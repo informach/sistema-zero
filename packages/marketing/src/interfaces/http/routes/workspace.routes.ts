@@ -1,3 +1,4 @@
+import { WORKSPACE_PROTOCOL } from '@sistemazero/marketing-contracts'
 import { Elysia } from 'elysia'
 import type { WorkspaceService } from '../../../application/workspace/workspace.service'
 import { assertInternalCaller, requireStaff, resolveActor } from '../auth'
@@ -13,7 +14,10 @@ export function workspaceRoutes(deps: WorkspaceRoutesDeps) {
       requireStaff(headers, true)
     })
     .get('/projects', ({ headers }) => deps.workspace.list(resolveActor(headers)))
-    .get('/protocol', () => ({ protocol: 1, minimumDesktopProtocol: 1 }))
+    .get('/protocol', () => ({
+      protocol: WORKSPACE_PROTOCOL,
+      minimumDesktopProtocol: WORKSPACE_PROTOCOL,
+    }))
     .post('/handoffs', ({ headers, body }) =>
       deps.workspace.createHandoff(resolveActor(headers), body),
     )

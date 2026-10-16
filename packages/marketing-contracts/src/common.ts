@@ -1,4 +1,12 @@
 import { z } from 'zod'
+/** Revision 2 adds conversation plans to strict editorial documents. */
+export const WORKSPACE_PROTOCOL = 2
+export const workspaceProtocolSchema = z
+  .object({
+    protocol: z.number().int().min(1).max(WORKSPACE_PROTOCOL),
+    minimumDesktopProtocol: z.number().int().min(1).max(WORKSPACE_PROTOCOL),
+  })
+  .strict()
 export const idSchema = z.string().uuid()
 export const hashSchema = z.string().regex(/^[a-f0-9]{64}$/)
 export const timestampSchema = z.string().datetime({ offset: true })

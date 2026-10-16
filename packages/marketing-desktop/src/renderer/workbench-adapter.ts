@@ -1,14 +1,23 @@
 import { handoffSchema, projectSchema, projectViewSchema } from '@sistemazero/marketing-contracts'
 import type { WorkbenchPort } from '@sistemazero/marketing-workbench'
-import type { WorkspaceRequest } from '../shared/connection'
+import { type WorkspaceRequest, workspaceResponseSchema } from '../shared/connection'
 import type { DesktopBridge } from '../shared/contracts'
 
 export function desktopWorkbench(
   bridge: DesktopBridge,
   scope: WorkspaceRequest['scope'],
 ): WorkbenchPort {
-  const request: WorkbenchPort['request'] = (path, method = 'GET', body) =>
-    bridge.workspace({ scope, path, method, body })
+  const request: WorkbenchPort['request'] = async (path, method = 'GET', body) => {
+    const response = workspaceResponseSchema.parse(
+      await bridge.workspace({ scope, path, method, body }),
+    )
+    if (!response.ok)
+      throw Object.assign(new Error(response.error.message), {
+        status: response.error.status,
+        code: response.error.code,
+      })
+    return response.value
+  }
   return {
     location: 'desktop',
     identity: `${scope.origin}:${scope.userId}`,

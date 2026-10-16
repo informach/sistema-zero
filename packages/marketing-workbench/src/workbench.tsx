@@ -21,9 +21,11 @@ import { EvidenceAttachments } from './asset-file-actions'
 import { AssetPreview } from './asset-preview'
 import { BatchReview } from './batch-review'
 import { ConflictResolution } from './conflict-resolution'
+import { ConversationPanel } from './conversation-panel'
 import { CopyReview } from './copy-review'
 import { documentText, restoreContent } from './document-text'
 import { EditorialForm, formatLabels } from './editorial-form'
+import { EngagementInbox } from './engagement-inbox'
 import { ImportInventoryPanel } from './import-inventory-panel'
 import { KnowledgeForm } from './knowledge-form'
 import { MediaLibrary } from './media-library'
@@ -65,6 +67,7 @@ export function Workbench({ port }: { port: WorkbenchPort }) {
   const [importing, setImporting] = useState(false)
   const [mediaLibrary, setMediaLibrary] = useState(false)
   const [inventory, setInventory] = useState(false)
+  const [inbox, setInbox] = useState(false)
   const [team, setTeam] = useState<TeamMember[]>([]),
     [teamError, setTeamError] = useState('')
   const refreshTeam = useCallback(async () => {
@@ -357,8 +360,19 @@ export function Workbench({ port }: { port: WorkbenchPort }) {
           <Button variant="outline" onClick={() => setNewProject(true)}>
             Novo projeto
           </Button>
+          <Button variant="outline" onClick={() => setInbox((open) => !open)} aria-expanded={inbox}>
+            Atendimento Instagram
+          </Button>
         </div>
       </header>
+      {inbox ? (
+        <EngagementInbox
+          key={port.identity}
+          port={port}
+          team={team}
+          onClose={() => setInbox(false)}
+        />
+      ) : null}
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-card px-4 py-3">
         <p role="status" className="text-sm">
           {loading ? 'Carregando o acervo…' : view.report.message}
@@ -803,6 +817,16 @@ export function Workbench({ port }: { port: WorkbenchPort }) {
                       </>
                     )}
                   </div>
+                  {piece ? (
+                    <ConversationPanel
+                      key={`${port.identity}:${piece.id}:${piece.confirmed?.revisionId}:${representation?.id}`}
+                      port={port}
+                      project={project}
+                      piece={piece}
+                      representationId={representation?.id}
+                      onChanged={refresh}
+                    />
+                  ) : null}
                   {representation?.confirmed ? (
                     <ApprovalPanel
                       key={`${port.identity}:${representation.id}`}

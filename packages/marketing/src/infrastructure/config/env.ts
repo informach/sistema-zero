@@ -93,6 +93,11 @@ const EnvSchema = z.object({
   // ── OAuth Meta (Facebook + Instagram) — grupo atômico c/ o núcleo OAuth ─────
   META_APP_ID: z.string().optional(),
   META_APP_SECRET: z.string().optional(),
+  META_ENGAGEMENT_OAUTH_ENABLED: optionalBool(false),
+  MARKETING_ENGAGEMENT_SEND_ENABLED: optionalBool(false),
+  META_ENGAGEMENT_VERIFY_TOKEN: z.string().min(16).optional(),
+  // Stable HMAC key for suppression identities; independent of token encryption rotation.
+  MARKETING_ENGAGEMENT_IDENTITY_KEY: z.string().min(32).optional(),
   META_GRAPH_VERSION: z.string().min(2).default('v25.0'),
   // Renova o user token 60d com esta folga (long-lived EXPIRADO = re-login).
   META_TOKEN_RENEW_MARGIN_DAYS: z.coerce.number().int().positive().default(10),
@@ -269,12 +274,13 @@ export function googleConfig(env: Env): { clientId: string; clientSecret: string
 /** Credenciais da Meta (Facebook+Instagram) ou null (provedor desligado). */
 export function metaConfig(
   env: Env,
-): { appId: string; appSecret: string; graphVersion: string } | null {
+): { appId: string; appSecret: string; graphVersion: string; engagementEnabled: boolean } | null {
   if (!env.META_APP_ID || !env.META_APP_SECRET) return null
   return {
     appId: env.META_APP_ID,
     appSecret: env.META_APP_SECRET,
     graphVersion: env.META_GRAPH_VERSION,
+    engagementEnabled: env.META_ENGAGEMENT_OAUTH_ENABLED,
   }
 }
 
