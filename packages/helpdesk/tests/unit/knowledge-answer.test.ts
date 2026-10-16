@@ -38,6 +38,18 @@ const response = {
   reason: 'supported',
 }
 describe('Respostas com evidência', () => {
+  for (const [reason, clarification] of [
+    ['clarification', false],
+    ['supported', true],
+  ] as const) {
+    it(`rejeita protocolo inconsistente: ${reason}/${clarification}`, async () => {
+      const { service, llm } = build()
+      llm.queue = [{ ...response, reason, clarification }]
+      const run = await service.answer(input)
+      expect(run.reply).toBeNull()
+      expect(run.reason).toBe('invalid_evidence')
+    })
+  }
   it('sem fonte não chama o provedor e registra lacuna', async () => {
     const { service, llm, runs } = build([])
     const run = await service.answer(input)

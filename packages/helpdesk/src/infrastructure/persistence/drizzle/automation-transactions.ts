@@ -9,6 +9,7 @@ import {
 import type { Ticket, TicketStatus } from '../../../domain/ticket/ticket'
 import type { Database } from './db'
 import { automationJobs, automationPolicy, tickets } from './schema'
+import { recordAutomationHandoff } from './ticket-events'
 
 export type HelpdeskTx = Parameters<Parameters<Database['transaction']>[0]>[0]
 
@@ -74,6 +75,7 @@ export async function handoffTicket(
     })
     .where(eq(tickets.id, ticket.id))
     .returning()
+  if (saved) await recordAutomationHandoff(tx, ticket, reason, at)
   await tx
     .update(automationJobs)
     .set({ state: 'handoff', reason, finishedAt: at, leaseToken: null, leaseExpiresAt: null })

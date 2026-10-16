@@ -14,6 +14,7 @@ import { humanTakeoverSet, supersedeJobs } from './automation-transactions'
 import type { Database, DbConnection } from './db'
 import { escapeLike } from './pg-errors'
 import { ticketMessages, tickets } from './schema'
+import { recordAutomationHandoff, recordResolutionReopened } from './ticket-events'
 
 type TicketUpdateDatabase = Pick<Database, 'update'>
 
@@ -79,12 +80,19 @@ export class DrizzleTicketRepository implements TicketRepository {
   }
   async appendNote(note: TicketMessage, at: Date): Promise<boolean> {
     return this.db.transaction(async (tx) => {
+      const [previous] = await tx
+        .select()
+        .from(tickets)
+        .where(eq(tickets.id, note.ticketId))
+        .for('update')
+      if (!previous) return false
       const [ticket] = await tx
         .update(tickets)
         .set({ ...humanTakeoverSet(at), version: sql`${tickets.version}+1` })
         .where(eq(tickets.id, note.ticketId))
         .returning({ id: tickets.id })
       if (!ticket) return false
+      await recordAutomationHandoff(tx, previous, 'staff_intervention', at)
       await supersedeJobs(tx, ticket.id, at)
       await tx.insert(ticketMessages).values(note)
       return true
@@ -109,6 +117,8 @@ export class DrizzleTicketRepository implements TicketRepository {
     at: Date,
   ): Promise<Ticket | null> {
     return this.db.transaction(async (tx) => {
+      const [previous] = await tx.select().from(tickets).where(eq(tickets.id, id)).for('update')
+      if (!previous) return null
       const [row] = await tx
         .update(tickets)
         .set({
@@ -119,7 +129,12 @@ export class DrizzleTicketRepository implements TicketRepository {
         })
         .where(and(eq(tickets.id, id), eq(tickets.version, expectedVersion)))
         .returning()
-      if (row) await supersedeJobs(tx, row.id, at)
+      if (row) {
+        await recordAutomationHandoff(tx, previous, 'staff_intervention', at)
+        if (!['resolved', 'closed'].includes(row.status))
+          await recordResolutionReopened(tx, previous, at)
+        await supersedeJobs(tx, row.id, at)
+      }
       return row ?? null
     })
   }

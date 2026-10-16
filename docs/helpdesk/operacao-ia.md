@@ -43,7 +43,9 @@ No handoff, SLA humano usa o início da automação. Novas mensagens enquanto a 
 
 ## Diagnóstico e desligamento
 
-Configurações mostra fila ativa/vencida, leases vencidos, maior espera, índices pendentes/falhos, fontes vencidas e avisos em retry. Métricas separam teste, classificação, copiloto, sombra e piloto; incluem custo conhecido/desconhecido, p50/p95 da inferência, tempo total do piloto, handoffs e primeira resposta humana, uso do rascunho e correção de lacunas.
+Configurações mostra fila ativa/vencida, leases vencidos, maior espera, índices pendentes/falhos, fontes vencidas e avisos em retry. Transferências são registradas em `automation_handoffs` na transação da mudança para a equipe, inclusive depois de uma resposta concluída e por intervenção de staff. O evento é único por ticket: o atendimento não retorna ao bot. Confirmação de resolução pelo cliente não conta como transferência; reabertura pelo cliente ou pela equipe invalida a resolução durável na janela de sete dias. Esses eventos operacionais têm retenção de 90 dias.
+
+Métricas separam teste, classificação, copiloto, sombra e piloto; incluem custo conhecido/desconhecido, p50/p95 da inferência, tempo total do piloto, handoffs e primeira resposta humana, uso do rascunho e correção de lacunas.
 
 Resolução confirmada é evento do cliente. Durável exige sete dias completos sem reabertura no mesmo ticket. Não correlacionar automaticamente tickets diferentes nem considerar silêncio como sucesso. Amostras sem observações não estabelecem linha de base; conferir as contagens junto com as latências.
 
@@ -51,8 +53,8 @@ Resolução confirmada é evento do cliente. Durável exige sete dias completos 
 
 ## Retenção e implantação
 
-Execuções, feedback, resumos, classificações e rascunhos derivados: `AI_RUN_RETENTION_DAYS=30`, máximo 90. Jobs terminais e reservas associadas seguem essa janela; jobs ativos permanecem para recuperação. Comandos idempotentes, eventos de resolução, políticas históricas e avaliações antigas não utilizadas: 90 dias. Outbox entregue mantém a retenção existente. Conversas, fontes editoriais e suas revisões continuam sob a política principal de dados do Helpdesk; não são cópias descartáveis de inferência. Evidências públicas guardam IDs e rótulos, sem duplicar texto dos trechos.
+Execuções, feedback, resumos, classificações e rascunhos derivados: `AI_RUN_RETENTION_DAYS=30`, máximo 90. Jobs terminais e reservas associadas seguem essa janela; jobs ativos permanecem para recuperação. Comandos idempotentes, eventos de resolução/transferência, políticas históricas e avaliações antigas não utilizadas: 90 dias. Outbox entregue mantém a retenção existente. Conversas, fontes editoriais e suas revisões continuam sob a política principal de dados do Helpdesk; não são cópias descartáveis de inferência. Evidências públicas guardam IDs e rótulos, sem duplicar texto dos trechos.
 
-Executar migrations geradas pelo Drizzle e implantar backend, gateway, contratos, console, Community e Kids de forma coordenada. A ausência de usuários permite atualizar o contrato diretamente; não há suporte para combinação de clientes antigos. Sem chave/modelo, atendimento humano continua disponível e não se ativa automação.
+Executar migrations geradas pelo Drizzle até `0020_colossal_madrox` (eventos de transferência) e implantar backend, gateway, contratos, console, Community e Kids de forma coordenada. A ausência de usuários permite atualizar o contrato diretamente; não há suporte para combinação de clientes antigos. Sem chave/modelo, atendimento humano continua disponível e não se ativa automação.
 
 Testes com PostgreSQL exigem `HELPDESK_TEST_DATABASE_URL` apontando para banco descartável cujo nome contenha `helpdesk_test`. Nunca usar banco de produção: as suites truncam tabelas. Ver [procedimento da avaliação](../../packages/helpdesk/evaluation/README.md) e [registro dos lotes](../superpowers/plans/2026-10-15-helpdesk-ia-kb-implementacao.md).

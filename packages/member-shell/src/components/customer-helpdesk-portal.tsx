@@ -1,5 +1,6 @@
 'use client'
 
+import { mergeConversationPage } from '@sistemazero/helpdesk-contracts'
 import { Button } from '@sistemazero/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@sistemazero/ui/card'
 import { Input } from '@sistemazero/ui/input'
@@ -122,24 +123,14 @@ export function CustomerHelpdeskPortal({
       let delay = detailRef.current?.ticket.handlingMode === 'assistant' ? 3000 : 15000
       if (!document.hidden)
         try {
-          const cursor = detailRef.current?.latestCursor
+          const cursor = detailRef.current?.latestCursor ?? null
           const next = await apiGet<CustomerTicketDetail>(
             `/api/helpdesk/portal/tickets/${id}/messages?limit=50${cursor ? `&after=${encodeURIComponent(cursor)}` : ''}`,
             undefined,
             { signal: controller.signal },
           )
           if (stopped) return
-          setDetail((current) => {
-            if (current?.ticket.id !== id) return current
-            const messages = new Map(current.messages.map((m) => [m.id, m]))
-            for (const message of next.messages) messages.set(message.id, message)
-            return {
-              ...current,
-              ticket: next.ticket.version >= current.ticket.version ? next.ticket : current.ticket,
-              messages: [...messages.values()],
-              latestCursor: next.latestCursor ?? current.latestCursor,
-            }
-          })
+          setDetail((current) => mergeConversationPage(current, next, cursor))
           failures = 0
           if (next.hasMore) delay = 200
         } catch (reason) {
@@ -289,19 +280,14 @@ export function CustomerHelpdeskPortal({
     setLoadingDetail(true)
     clearFeedback()
     try {
-      const next = await apiGet<CustomerTicketDetail>(`/api/helpdesk/portal/tickets/${id}`)
+      const cursor = detailRef.current?.ticket.id === id ? detailRef.current.latestCursor : null
+      const next = await apiGet<CustomerTicketDetail>(
+        cursor
+          ? `/api/helpdesk/portal/tickets/${id}/messages?limit=50&after=${encodeURIComponent(cursor)}`
+          : `/api/helpdesk/portal/tickets/${id}`,
+      )
       setDetail((current) =>
-        current?.ticket.id === id
-          ? {
-              ...next,
-              ticket: next.ticket.version >= current.ticket.version ? next.ticket : current.ticket,
-              messages: [
-                ...new Map([...current.messages, ...next.messages].map((m) => [m.id, m])).values(),
-              ],
-              hasOlder: current.hasOlder,
-              olderCursor: current.olderCursor,
-            }
-          : next,
+        current?.ticket.id === id ? mergeConversationPage(current, next, cursor) : next,
       )
       if (!options.keepDraft) setReply('')
       setMode('detail')

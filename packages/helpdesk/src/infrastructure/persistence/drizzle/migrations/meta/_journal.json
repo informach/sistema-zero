@@ -141,6 +141,13 @@
       "when": 1792120360245,
       "tag": "0019_wooden_fantastic_four",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1792139720682,
+      "tag": "0020_colossal_madrox",
+      "breakpoints": true
     }
   ]
 }

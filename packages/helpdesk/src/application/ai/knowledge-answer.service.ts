@@ -103,6 +103,7 @@ export class KnowledgeAnswerService {
           ids.size > 0 && [...ids].every((id) => evidence.some((entry) => entry.chunkId === id))
         if (
           !supported ||
+          result.clarification !== (result.reason === 'clarification') ||
           !result.reply.trim() ||
           (result.kbCoverage === 'covered' &&
             !['supported', 'clarification'].includes(result.reason))

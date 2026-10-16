@@ -9,7 +9,6 @@ import type { LlmClient } from '../../domain/ports/llm-client.port'
 import type { MessageRepository } from '../../domain/ports/message-repository.port'
 import type { AiWriteGuard, TicketRepository } from '../../domain/ports/ticket-repository.port'
 import type { Ticket } from '../../domain/ticket/ticket'
-import type { TicketMessage } from '../../domain/ticket/ticket-message'
 import { assertHumanTicket } from '../../domain/ticket/ticket-triage'
 import type { TicketView } from '../views'
 import { toTicketView } from '../views'
@@ -29,9 +28,6 @@ export interface TicketAiConfig {
 export interface AiPipelineResult {
   classification: ClassifyResult
   draft: DraftResult
-  /** Fatos da thread para classificação, resumo e rascunho do copiloto (F4). */
-  lastInbound: TicketMessage | null
-  hasOutbound: boolean
 }
 
 /** Controle de fluxo: a conversa mudou enquanto o modelo respondia. */
@@ -70,11 +66,8 @@ export class TicketAiService {
       .reverse()
     const threadText = buildThreadText(ticket.subject, messages, this.config.maxThreadChars)
     const classification = await this.classifyAndPersist(ticket.id, guard, threadText)
-    const draft = await this.draftAndPersist(ticket.id, guard, threadText, classification.summary)
-    const lastInbound =
-      [...messages].reverse().find((m) => m.direction === 'inbound' && m.triage === 'human') ?? null
-    const hasOutbound = messages.some((m) => m.direction === 'outbound')
-    return { classification, draft, lastInbound, hasOutbound }
+    const draft = await this.draftAndPersist(ticket.id, guard, threadText)
+    return { classification, draft }
   }
 
   /** On-demand: só classificar+resumir (rota summarize). Fecha com markAiDone. */
@@ -109,7 +102,7 @@ export class TicketAiService {
     const threadText = buildThreadText(ticket.subject, messages, this.config.maxThreadChars)
     const guard = { generation: ticket.aiGeneration }
     try {
-      await this.draftAndPersist(ticketId, guard, threadText, ticket.aiSummary ?? '')
+      await this.draftAndPersist(ticketId, guard, threadText)
       const completed = await this.tickets.markAiDone(ticketId, guard, this.now())
       if (!completed) throw new AiGenerationSupersededError()
     } catch (error) {
@@ -195,7 +188,6 @@ export class TicketAiService {
     ticketId: string,
     guard: AiWriteGuard,
     threadText: string,
-    _summary: string,
   ): Promise<DraftResult> {
     const ticket = await this.requireTicket(ticketId)
     const messages = (await this.messages.page(ticketId, { limit: 50, publicOnly: true }))

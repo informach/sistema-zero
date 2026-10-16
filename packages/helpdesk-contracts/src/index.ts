@@ -1,3 +1,4 @@
+export { mergeConversationPage } from './conversation'
 export { type SplitReply, splitQuotedReply, stripQuotedHistory } from './quote'
 
 export const TICKET_STATUSES = ['new', 'open', 'waiting', 'resolved', 'closed'] as const

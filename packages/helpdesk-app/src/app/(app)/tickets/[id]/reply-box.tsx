@@ -26,8 +26,8 @@ function aiErrorToast(error: ApiError): void {
  * Editor de resposta ao cliente. O canal é do TICKET, decidido no backend: e-mail
  * vai pelo Gmail na mesma thread; chamado aberto no portal (Ajuda) vira mensagem
  * da conversa + aviso por e-mail, sem depender da caixa Gmail. A assinatura vem
- * do backend nos dois casos. Vem preenchido com o rascunho da IA (quando existe);
- * "Regenerar rascunho" pede um novo à IA e substitui o texto.
+ * do backend nos dois casos. A sugestão da IA aparece com fontes e só entra no
+ * editor por ação explícita; regenerar preserva o texto que a equipe escreveu.
  */
 export function ReplyBox({
   ticketId,
@@ -44,7 +44,7 @@ export function ReplyBox({
   /** Canal do chamado — só muda a copy; quem decide o transporte é o backend. */
   replyChannel: 'portal' | 'email'
   draftRunId: string | null
-  /** Rascunho da IA no carregamento (prefill do editor). */
+  /** Sinaliza a sugestão disponível enquanto suas fontes são carregadas. */
   initialDraft: string
   /** Sucesso: o chamador recarrega o detalhe (versão nova + mudança do poller). */
   onSent: () => void

@@ -55,6 +55,9 @@ export class OpenRouterClient implements LlmClient {
   }
 
   private async post(body: unknown, deadline?: Date): Promise<ChatResponse> {
+    // Reservation and telemetry persistence may have waited for database locks.
+    if (deadline && deadline.getTime() <= Date.now())
+      throw new LlmError('Prazo da chamada de IA encerrado', 'unavailable')
     const controller = new AbortController()
     const timer = setTimeout(
       () => controller.abort(new DOMException('openrouter timeout', 'TimeoutError')),

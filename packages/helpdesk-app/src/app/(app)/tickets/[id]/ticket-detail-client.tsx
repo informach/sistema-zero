@@ -1,5 +1,6 @@
 'use client'
 
+import { mergeConversationPage } from '@sistemazero/helpdesk-contracts'
 import { Button } from '@sistemazero/ui/button'
 import { Skeleton } from '@sistemazero/ui/skeleton'
 import { ArrowLeft } from 'lucide-react'
@@ -108,20 +109,7 @@ export function TicketDetailClient({ ticketId }: { ticketId: string }) {
             controller.signal,
           )
           if (stopped) return
-          setData((prior) =>
-            prior
-              ? {
-                  ...prior,
-                  ticket: newestTicket(prior.ticket, next.ticket),
-                  messages: [
-                    ...new Map(
-                      [...prior.messages, ...next.messages].map((m) => [m.id, m]),
-                    ).values(),
-                  ],
-                  latestCursor: next.latestCursor ?? prior.latestCursor,
-                }
-              : prior,
-          )
+          setData((prior) => mergeConversationPage(prior, next, current.latestCursor))
           failures = 0
           if (next.hasMore) delay = 200
         } catch (reason) {
@@ -145,22 +133,11 @@ export function TicketDetailClient({ ticketId }: { ticketId: string }) {
   // Atualiza os dados no lugar para preservar o texto digitado no editor.
   const softReload = useCallback(async () => {
     try {
-      const detail = await apiGet<TicketDetailResponse>(`/api/helpdesk/tickets/${ticketId}`)
-      setData((current) =>
-        current
-          ? {
-              ...detail,
-              ticket: newestTicket(current.ticket, detail.ticket),
-              messages: [
-                ...new Map(
-                  [...current.messages, ...detail.messages].map((m) => [m.id, m]),
-                ).values(),
-              ],
-              hasOlder: current.hasOlder,
-              olderCursor: current.olderCursor,
-            }
-          : detail,
+      const cursor = dataRef.current?.latestCursor ?? null
+      const detail = await apiGet<TicketDetailResponse>(
+        `/api/helpdesk/tickets/${ticketId}/messages?limit=50${cursor ? `&after=${encodeURIComponent(cursor)}` : ''}`,
       )
+      setData((current) => mergeConversationPage(current, detail, cursor))
     } catch {
       // Um refresh secundário não apaga o estado útil que já está na tela.
     }

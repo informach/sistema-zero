@@ -577,6 +577,25 @@ export const messageEvidence = helpdesk.table(
   (t) => [uniqueIndex('message_evidence_chunk_uq').on(t.messageId, t.chunkId)],
 )
 
+/** Human takeover is permanent for a ticket, so there is at most one handoff. */
+export const automationHandoffs = helpdesk.table(
+  'automation_handoffs',
+  {
+    id: uuid('id').primaryKey(),
+    ticketId: uuid('ticket_id')
+      .notNull()
+      .references(() => tickets.id, { onDelete: 'cascade' }),
+    generation: integer('generation').notNull(),
+    reason: text('reason').$type<HandoffReason>().notNull(),
+    automationStartedAt: timestamp('automation_started_at', { withTimezone: true }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    uniqueIndex('automation_handoffs_ticket_uq').on(t.ticketId),
+    index('automation_handoffs_created_idx').on(t.createdAt),
+  ],
+)
+
 export const resolutionEvents = helpdesk.table(
   'resolution_events',
   {
@@ -593,6 +612,7 @@ export const resolutionEvents = helpdesk.table(
 )
 
 export const schema = {
+  automationHandoffs,
   resolutionEvents,
   messageEvidence,
   automationPolicy,

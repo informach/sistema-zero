@@ -16,6 +16,39 @@ const client = () =>
     timeoutMs: 1000,
   })
 describe('OpenRouter: uso de cada tentativa', () => {
+  for (const hook of ['reservation', 'telemetry'] as const) {
+    it(`não inicia rede se o prazo vencer durante ${hook}`, async () => {
+      let requests = 0
+      const deadline = new Date(Date.now() + 60000)
+      globalThis.fetch = Object.assign(
+        async () => {
+          requests++
+          return Response.json({ choices: [{ message: { content: '{"reply":"ok"}' } }] })
+        },
+        { preconnect: originalFetch.preconnect },
+      )
+      const failure = await client()
+        .complete({
+          system: 'test',
+          user: 'test',
+          schema: z.object({ reply: z.string() }),
+          deadline,
+          maxAttempts: 1,
+          beforeAttempt: async () => {
+            if (hook === 'reservation') deadline.setTime(0)
+          },
+          onAttempt: async (event) => {
+            if (hook === 'telemetry' && event.outcome === 'started') deadline.setTime(0)
+          },
+        })
+        .then(
+          () => null,
+          (error: unknown) => error,
+        )
+      expect(failure).toBeInstanceOf(Error)
+      expect(requests).toBe(0)
+    })
+  }
   it('contabiliza também a resposta inválida antes do reparo', async () => {
     let requests = 0
     globalThis.fetch = Object.assign(
