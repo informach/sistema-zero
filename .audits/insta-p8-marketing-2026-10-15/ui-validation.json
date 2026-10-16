@@ -1,6 +1,7 @@
 {
   "passed": true,
   "checks": [
+    "período usa calendário local e inclui último dia inteiro",
     "salvar cria somente revisão",
     "aviso MC08",
     "aprovação separada",
@@ -8,10 +9,12 @@
     "tomada humana",
     "offline não enfileira",
     "retry após offline conserva operationId",
+    "falha temporária de contas conserva tentativa incerta",
+    "revogação remove a conversa privada",
     "nenhuma DM em storage",
     "sem overflow desktop/mobile com painéis abertos e D02",
     "sem erro de runtime"
   ],
   "browser": "155.0.4283.60",
-  "at": "2026-10-16T03:06:13.634Z"
+  "at": "2026-10-16T08:42:35.616Z"
 }

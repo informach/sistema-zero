@@ -129,6 +129,7 @@ export const engagementConversations = marketing.table(
     suppression: text('suppression').$type<'stop' | 'student' | 'child' | 'erased'>(),
     suppressedAt: timestamp('suppressed_at', { withTimezone: true }),
     lastInboundAt: timestamp('last_inbound_at', { withTimezone: true }),
+    automationAfter: timestamp('automation_after', { withTimezone: true }),
     typedReplySent: boolean('typed_reply_sent').notNull().default(false),
     topic: text('topic').$type<'access' | 'project' | 'tools' | 'price' | 'continuity' | 'other'>(),
     outcome: text('outcome').$type<

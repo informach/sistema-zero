@@ -7,39 +7,38 @@ export class EngagementWorker {
   private stopping = false
   private maintenanceAt = 0
   constructor(
-    private readonly engine: EngagementEngine,
-    private readonly provider: EngagementProvider,
+    private readonly maintain: (now: Date) => Promise<void>,
+    private readonly runtime: { engine: EngagementEngine; provider: EngagementProvider } | null,
     private readonly logger: Logger,
     private readonly intervalMs = 2000,
   ) {}
   async tick() {
     const now = new Date()
     if (now.getTime() - this.maintenanceAt > 60000) {
-      await this.engine.maintain(now)
+      await this.maintain(now)
       this.maintenanceAt = now.getTime()
     }
-    for (const binding of await this.engine.bindings()) {
+    if (!this.runtime) return
+    const { engine, provider } = this.runtime
+    for (const binding of await engine.bindings()) {
       if (this.stopping) return
       try {
-        await this.engine.bind(
-          binding,
-          await this.provider.verifyPost(binding.account, binding.mediaId),
-        )
+        await engine.bind(binding, await provider.verifyPost(binding.account, binding.mediaId))
       } catch {
         this.logger.warn('engagement.binding.unavailable', { activationId: binding.id })
       }
     }
-    await this.engine.process(new Date())
+    await engine.process(new Date())
     for (let i = 0; i < 20 && !this.stopping; i++) {
-      const dispatch = await this.engine.claim(new Date())
+      const dispatch = await engine.claim(new Date())
       if (!dispatch) break
-      const outcome = await this.provider
+      const outcome = await provider
         .send(dispatch.account, dispatch.recipient, dispatch.commentId, dispatch.message)
         .catch(() => ({
           status: 'uncertain' as const,
           reason: 'Adaptador interrompido após reserva; reconciliar',
         }))
-      await this.engine.finish(dispatch, outcome, new Date())
+      await engine.finish(dispatch, outcome, new Date())
     }
   }
   start() {

@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import { and, asc, eq, inArray, isNotNull, lt, lte, ne, sql } from 'drizzle-orm'
+import { alias } from 'drizzle-orm/pg-core'
 import { withinWindow } from '../../../domain/engagement/policy'
 import type { Dispatch } from '../../../domain/ports/engagement-engine.port'
 import type { SendOutcome } from '../../../domain/ports/engagement-provider.port'
@@ -77,6 +78,7 @@ export async function claimEngagement(
         : []
       const commercial =
         intent.kind === 'opening' || intent.kind === 'offer' || intent.kind === 'typed'
+      const savedCommercial = intent.kind === 'platform' || intent.kind === 'community'
       const serviceExit = ['stop', 'child', 'student'].includes(intent.kind)
       const [operator] = intent.createdBy
         ? await tx
@@ -99,34 +101,38 @@ export async function claimEngagement(
                   : intent.createdBy &&
                       !operator?.permissions.some((p) => p === 'reply' || p === 'admin')
                     ? 'Permissão do operador revogada'
-                    : commercial &&
-                        (current?.activation.state !== 'active' ||
-                          new Date(current.activation.plan.validUntil) <= now ||
-                          !piece ||
-                          piece.archived ||
-                          piece.document.kind !== 'piece' ||
-                          ['historical', 'incomplete'].includes(piece.document.state) ||
-                          publication?.status !== 'published' ||
-                          publication.externalPostId !== current.activation.externalPostId ||
-                          publication.socialAccountId !== intent.accountId)
-                      ? 'Campanha, publicação ou oferta deixou de ser elegível'
-                      : commercial && conversation.state !== 'automatic'
-                        ? 'Atendimento interrompeu a automação'
-                        : intent.kind === 'opening' && current?.journey.state !== 'opening-pending'
-                          ? 'Abertura já processada ou interrompida'
-                          : intent.kind === 'offer' && current?.journey.state !== 'offer-pending'
-                            ? 'Apresentação já processada ou interrompida'
-                            : !withinWindow(
-                                  intent.commentId
-                                    ? (current?.journey.createdAt ?? null)
-                                    : conversation.lastInboundAt,
-                                  now,
-                                  intent.commentId
-                                    ? (channel.proof?.privateReplyHours ?? 0)
-                                    : (channel.proof?.messageWindowHours ?? 0),
-                                )
-                              ? 'Janela encerrada'
-                              : null))
+                    : savedCommercial &&
+                        (!current || new Date(current.activation.plan.validUntil) <= now)
+                      ? 'Validade da resposta comercial encerrada'
+                      : commercial &&
+                          (current?.activation.state !== 'active' ||
+                            new Date(current.activation.plan.validUntil) <= now ||
+                            !piece ||
+                            piece.archived ||
+                            piece.document.kind !== 'piece' ||
+                            ['historical', 'incomplete'].includes(piece.document.state) ||
+                            publication?.status !== 'published' ||
+                            publication.externalPostId !== current.activation.externalPostId ||
+                            publication.socialAccountId !== intent.accountId)
+                        ? 'Campanha, publicação ou oferta deixou de ser elegível'
+                        : commercial && conversation.state !== 'automatic'
+                          ? 'Atendimento interrompeu a automação'
+                          : intent.kind === 'opening' &&
+                              current?.journey.state !== 'opening-pending'
+                            ? 'Abertura já processada ou interrompida'
+                            : intent.kind === 'offer' && current?.journey.state !== 'offer-pending'
+                              ? 'Apresentação já processada ou interrompida'
+                              : !withinWindow(
+                                    intent.commentId
+                                      ? (current?.journey.createdAt ?? null)
+                                      : conversation.lastInboundAt,
+                                    now,
+                                    intent.commentId
+                                      ? (channel.proof?.privateReplyHours ?? 0)
+                                      : (channel.proof?.messageWindowHours ?? 0),
+                                  )
+                                ? 'Janela encerrada'
+                                : null))
       if (reason || !account || !conversation?.recipientEnc || !intent.message) {
         await tx
           .update(outbound)
@@ -145,7 +151,6 @@ export async function claimEngagement(
             eq(inbound.accountId, intent.accountId),
             eq(inbound.state, 'pending'),
             sql`${inbound.event}->>'recipient' = ${engine.box.open(conversation.recipientEnc)}`,
-            sql`${inbound.event}->>'kind' not in ('echo', 'postback')`,
           ),
         )
         .limit(1)
@@ -156,13 +161,15 @@ export async function claimEngagement(
           .where(eq(outbound.id, intent.id))
         return null
       }
+      const earlier = alias(outbound, 'earlier')
       const [unresolved] = await tx
-        .select({ id: outbound.id })
-        .from(outbound)
+        .select({ id: earlier.id })
+        .from(earlier)
+        .innerJoin(outbound, eq(outbound.id, intent.id))
         .where(
           and(
-            eq(outbound.conversationId, intent.conversationId),
-            inArray(outbound.state, ['sending', 'uncertain']),
+            eq(earlier.conversationId, intent.conversationId),
+            sql`(${earlier.state} in ('sending', 'uncertain') or (${earlier.state} = 'pending' and (${earlier.createdAt}, ${earlier.id}) < (${outbound.createdAt}, ${outbound.id})))`,
           ),
         )
         .limit(1)
@@ -311,7 +318,10 @@ export async function finishEngagement(
     if (conversation?.suppression === 'child') await minimizeChildConversation(tx, conversation.id)
   })
 }
-export async function maintainEngagement(engine: DrizzleEngagementEngine, now: Date) {
+export async function maintainEngagement(
+  engine: Pick<DrizzleEngagementEngine, 'db' | 'sendingEnabled' | 'graphVersion'>,
+  now: Date,
+) {
   const configured = await engine.db.select().from(channels)
   for (const config of configured) {
     await engine.db.transaction(async (tx) => {

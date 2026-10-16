@@ -17,6 +17,7 @@ import { DrizzleEngagementRepository } from '../src/infrastructure/persistence/d
 import { DrizzleEngagementConversations } from '../src/infrastructure/persistence/drizzle/engagement-conversations.repository'
 import { DrizzleEngagementEngine } from '../src/infrastructure/persistence/drizzle/engagement-engine.repository'
 import {
+  engagementActivations,
   engagementChannels,
   engagementConversations,
   engagementInbound,
@@ -542,6 +543,170 @@ suite('engajamento PostgreSQL isolado', () => {
     await f.engine.finish(first, { status: 'uncertain', reason: 'Timeout simulado' }, new Date())
     expect(await f.engine.claim(new Date(Date.now() + 61000))).toBeNull()
   })
+  test.each([
+    'postback',
+    'echo',
+  ] as const)('interrupção %s pendente impede oferta antes do processamento', async (kind) => {
+    const f = await liveFixture()
+    await f.engine.ingest([f.event()])
+    await f.engine.process(new Date())
+    const opening = await f.engine.claim(new Date())
+    if (opening?.message.buttons[0]?.type !== 'postback') throw new Error('Abertura ausente')
+    const payload = opening.message.buttons[0].payload
+    await f.engine.finish(opening, { status: 'accepted', externalId: randomUUID() }, new Date())
+    await f.engine.ingest([
+      f.event({ kind: 'postback', text: null, commentId: null, postback: payload }),
+    ])
+    await f.engine.process(new Date())
+    await f.engine.ingest([
+      f.event({
+        kind,
+        text: kind === 'echo' ? 'Atendimento externo' : null,
+        commentId: null,
+        postback: kind === 'postback' ? payload.replace(':offer', ':stop') : null,
+      }),
+    ])
+    expect(await f.engine.claim(new Date())).toBeNull()
+  })
+  test('duas respostas humanas preservam a ordem e não cancelam a primeira pendência', async () => {
+    const f = await liveFixture()
+    await f.engine.ingest([f.event({ kind: 'message', text: 'Preciso de ajuda', commentId: null })])
+    await f.engine.process(new Date())
+    const c = (await f.repo.listConversations(f.owner.userId, f.accountId)).items[0]
+    if (!c) throw new Error('Conversa ausente')
+    for (const text of ['Primeira resposta', 'Complemento da resposta']) {
+      const detail = await f.repo.detail(f.owner.userId, f.accountId, c.id)
+      await f.conversations.action(f.owner.userId, f.accountId, c.id, {
+        operationId: randomUUID(),
+        expectedVersion: detail.conversation.version,
+        action: 'reply',
+        text,
+      })
+    }
+    const pending = await connection.db
+      .select()
+      .from(engagementOutbound)
+      .where(eq(engagementOutbound.conversationId, c.id))
+    expect(pending.filter((row) => row.state === 'pending')).toHaveLength(2)
+    const first = await f.engine.claim(new Date())
+    expect(first?.message.text).toBe('Primeira resposta')
+    if (!first) throw new Error('Primeira resposta ausente')
+    await f.engine.finish(
+      first,
+      { status: 'retryable', reason: 'Rejeição explícita 429' },
+      new Date(),
+    )
+    expect(await f.engine.claim(new Date())).toBeNull()
+    expect((await f.engine.claim(new Date(Date.now() + 30000)))?.message.text).toBe(
+      'Primeira resposta',
+    )
+  })
+  test('encerrar não permite que palavra atrasada reabra o percurso comercial', async () => {
+    const f = await liveFixture()
+    await f.engine.ingest([f.event()])
+    await f.engine.process(new Date())
+    const opening = await f.engine.claim(new Date())
+    if (!opening) throw new Error('Abertura ausente')
+    await f.engine.finish(opening, { status: 'accepted', externalId: randomUUID() }, new Date())
+    const c = (await f.repo.listConversations(f.owner.userId, f.accountId)).items[0]
+    if (!c) throw new Error('Conversa ausente')
+    await f.conversations.action(f.owner.userId, f.accountId, c.id, {
+      operationId: randomUUID(),
+      expectedVersion: c.version,
+      action: 'close',
+    })
+    await f.engine.ingest([
+      f.event({
+        kind: 'message',
+        text: 'FERIAS',
+        commentId: null,
+        at: new Date(Date.now() - 5000).toISOString(),
+      }),
+    ])
+    await f.engine.process(new Date())
+    expect(await f.engine.claim(new Date())).toBeNull()
+    expect((await f.repo.detail(f.owner.userId, f.accountId, c.id)).conversation.state).toBe(
+      'closed',
+    )
+    await f.engine.ingest([f.event({ kind: 'message', text: 'FERIAS', commentId: null })])
+    await f.engine.process(new Date())
+    expect((await f.engine.claim(new Date()))?.message.text).toBe(f.plan.opening)
+  })
+  test.each([
+    'erase',
+    'child',
+  ] as const)('ingestão minimiza novas entradas de contato %s antes do worker, inclusive comentário sem campanha', async (action) => {
+    const f = await liveFixture()
+    await f.engine.ingest([f.event({ kind: 'message', text: 'Contato inicial', commentId: null })])
+    await f.engine.process(new Date())
+    const c = (await f.repo.listConversations(f.owner.userId, f.accountId)).items[0]
+    if (!c) throw new Error('Conversa ausente')
+    await f.engine.ingest([
+      f.event({ kind: 'message', text: 'Entrada pendente durante exclusão', commentId: null }),
+    ])
+    await f.conversations.action(f.owner.userId, f.accountId, c.id, {
+      operationId: randomUUID(),
+      expectedVersion: c.version,
+      ...(action === 'erase'
+        ? { action: 'erase' as const }
+        : { action: 'suppress' as const, reason: 'child' as const }),
+    })
+    await f.engine.ingest([
+      f.event({ text: 'Texto que não deve ser retido', mediaId: 'outro-post' }),
+      f.event({ kind: 'message', text: 'Mensagem privada posterior', commentId: null }),
+    ])
+    const rows = await connection.db
+      .select()
+      .from(engagementInbound)
+      .where(eq(engagementInbound.accountId, f.accountId))
+    expect(rows.every((row) => row.event === null && row.conversationId === c.id)).toBe(true)
+    expect(rows.every((row) => row.state !== 'pending')).toBe(true)
+    expect((await f.repo.health(f.owner.userId, f.accountId)).pendingInbound).toBe(0)
+  })
+  test('saída comercial salva revalida validade no despacho', async () => {
+    const f = await liveFixture()
+    await f.engine.ingest([f.event()])
+    await f.engine.process(new Date())
+    const opening = await f.engine.claim(new Date())
+    if (!opening) throw new Error('Abertura ausente')
+    await f.engine.finish(opening, { status: 'accepted', externalId: randomUUID() }, new Date())
+    await f.engine.ingest([
+      f.event({ kind: 'message', text: 'Quero saber sobre outros cursos', commentId: null }),
+    ])
+    await f.engine.process(new Date())
+    const c = (await f.repo.listConversations(f.owner.userId, f.accountId)).items[0]
+    if (!c) throw new Error('Conversa ausente')
+    await f.conversations.action(f.owner.userId, f.accountId, c.id, {
+      operationId: randomUUID(),
+      expectedVersion: c.version,
+      action: 'saved-reply',
+      key: 'community',
+    })
+    await connection.db
+      .update(engagementActivations)
+      .set({ plan: { ...f.plan, validUntil: new Date(Date.now() - 1000).toISOString() } })
+      .where(eq(engagementActivations.accountId, f.accountId))
+    expect(await f.engine.claim(new Date())).toBeNull()
+  })
+  test('saída comercial salva exige uma oferta conferida mesmo em DM sem campanha', async () => {
+    const f = await liveFixture()
+    await f.engine.ingest([
+      f.event({ kind: 'message', text: 'Quais são os outros cursos?', commentId: null }),
+    ])
+    await f.engine.process(new Date())
+    const c = (await f.repo.listConversations(f.owner.userId, f.accountId)).items[0]
+    if (!c) throw new Error('Conversa ausente')
+    await rejects(
+      () =>
+        f.conversations.action(f.owner.userId, f.accountId, c.id, {
+          operationId: randomUUID(),
+          expectedVersion: c.version,
+          action: 'saved-reply',
+          key: 'community',
+        }),
+      { code: 'ENGAGEMENT_UNAVAILABLE' },
+    )
+  })
   test('reconciliação libera R01 uma vez, exige novo botão e não repete a abertura', async () => {
     const f = await liveFixture()
     await f.engine.ingest([f.event()])
@@ -577,6 +742,17 @@ suite('engajamento PostgreSQL isolado', () => {
     expect(typed?.message.text).toBe(f.plan.responses.typed)
     if (!typed) throw new Error('R01 ausente')
     await f.engine.finish(typed, { status: 'accepted', externalId: randomUUID() }, new Date())
+    expect(await f.engine.claim(new Date())).toBeNull()
+    await f.engine.ingest([
+      f.event({
+        kind: 'postback',
+        text: null,
+        commentId: null,
+        postback: opening.message.buttons[0].payload,
+        at: new Date(Date.now() - 5000).toISOString(),
+      }),
+    ])
+    await f.engine.process(new Date())
     expect(await f.engine.claim(new Date())).toBeNull()
     await f.engine.ingest([
       f.event({

@@ -13,7 +13,10 @@ export async function minimizeChildConversation(tx: WorkspaceTransaction, id: st
     eq(outbound.kind, 'child'),
     inArray(outbound.state, ['pending', 'sending']),
   )
-  await tx.update(inbound).set({ event: null }).where(eq(inbound.conversationId, id))
+  await tx
+    .update(inbound)
+    .set({ event: null, state: 'ignored', reason: 'Contato identificado como criança' })
+    .where(eq(inbound.conversationId, id))
   await tx
     .update(outbound)
     .set({ message: null, externalId: null, error: null, commentId: null })

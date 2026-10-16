@@ -6,6 +6,7 @@ import {
 import { Button } from '@sistemazero/ui/button'
 import { useState } from 'react'
 import type { z } from 'zod'
+import { localDate } from './conversation-editor'
 import { EngagementField, outcomeLabels, topicLabels } from './engagement-ui'
 import { errorMessage, type WorkbenchPort } from './port'
 export function EngagementMetrics({
@@ -17,8 +18,10 @@ export function EngagementMetrics({
   projectId: string
   pieceId: string
 }) {
-  const [from, setFrom] = useState(new Date(Date.now() - 14 * 86400000).toISOString().slice(0, 10)),
-    [to, setTo] = useState(new Date().toISOString().slice(0, 10))
+  const [from, setFrom] = useState(() =>
+      localDate(new Date(Date.now() - 14 * 86400000).toISOString()).slice(0, 10),
+    ),
+    [to, setTo] = useState(() => localDate(new Date().toISOString()).slice(0, 10))
   const [summary, setSummary] = useState<z.infer<typeof engagementSummarySchema> | null>(null),
     [commercial, setCommercial] = useState<z.infer<typeof pieceCommercialReportSchema> | null>(null)
   const [issue, setIssue] = useState(''),
@@ -30,14 +33,23 @@ export function EngagementMetrics({
         className="mt-3 flex flex-wrap items-end gap-3"
         onSubmit={(e) => {
           e.preventDefault()
+          let range: URLSearchParams
+          try {
+            const start = new Date(`${from}T00:00:00`)
+            const end = new Date(`${to}T00:00:00`)
+            if (!Number.isFinite(start.getTime()) || !Number.isFinite(end.getTime()) || end < start)
+              throw new Error('Selecione um período válido')
+            // Queries use an exclusive upper bound; include the entire final local calendar day.
+            end.setDate(end.getDate() + 1)
+            range = new URLSearchParams({ from: start.toISOString(), to: end.toISOString() })
+          } catch (error) {
+            setIssue(errorMessage(error))
+            return
+          }
           setBusy(true)
           setIssue('')
           setSummary(null)
           setCommercial(null)
-          const range = new URLSearchParams({
-            from: new Date(`${from}T00:00:00`).toISOString(),
-            to: new Date(`${to}T23:59:59.999`).toISOString(),
-          })
           const base = `/projects/${projectId}/pieces/${pieceId}/engagement`
           void Promise.allSettled([
             port

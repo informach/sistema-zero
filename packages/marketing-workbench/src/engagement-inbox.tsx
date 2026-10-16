@@ -54,7 +54,15 @@ export function EngagementInbox({
         }
       } catch (e) {
         if (live) {
-          setChannels([])
+          // A transient query failure must not unmount an unconfirmed operational command.
+          // Authoritative revocation still removes the private view immediately.
+          if (
+            e &&
+            typeof e === 'object' &&
+            'status' in e &&
+            [401, 403, 404].includes(Number(e.status))
+          )
+            setChannels([])
           setIssue(errorMessage(e))
         }
       } finally {
@@ -68,7 +76,15 @@ export function EngagementInbox({
       clearInterval(timer)
     }
   }, [port])
-  const channel = channels.find((c) => c.id === accountId)
+  const selectedChannel = channels.find((c) => c.id === accountId)
+  const channel =
+    selectedChannel && issue
+      ? {
+          ...selectedChannel,
+          available: false,
+          reason: 'Consulta da conta indisponível; atualize antes de enviar novas respostas',
+        }
+      : selectedChannel
   return (
     <section
       className="space-y-4 rounded-xl border bg-card p-5"
@@ -354,6 +370,9 @@ function ConversationDetail({
   }, [port, base])
   const c = detail?.conversation,
     canReply = channel.permissions.some((p) => p === 'reply' || p === 'admin')
+  const savedOfferUnavailable =
+    ['platform', 'community'].includes(saved) &&
+    (!detail?.journey || new Date(detail.journey.plan.validUntil).getTime() <= Date.now())
   const windowOpen = Boolean(
     c?.lastInboundAt &&
       Date.now() - new Date(c.lastInboundAt).getTime() <
@@ -483,11 +502,18 @@ function ConversationDetail({
               </p>
               <Button
                 variant="outline"
-                disabled={command.blocked || !windowOpen || !channel.available}
+                disabled={
+                  command.blocked || !windowOpen || !channel.available || savedOfferUnavailable
+                }
                 onClick={() => void action({ action: 'saved-reply', key: saved })}
               >
                 Enviar resposta selecionada
               </Button>
+              {savedOfferUnavailable ? (
+                <p className="text-sm">
+                  Esta resposta comercial exige uma oferta conferida e vigente na conversa.
+                </p>
+              ) : null}
               <details className="space-y-3">
                 <summary className="cursor-pointer text-sm font-medium">
                   Classificação para o planejamento
