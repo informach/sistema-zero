@@ -6,7 +6,6 @@ import { defineConfig } from 'vite'
 // Dev server LOCAL do package (não deployado). Adaptado do vite.config do repo
 // de origem (sistema-zero-studio/apps/studio): mantém plugins, optimizeDeps,
 // worker es e os headers de cross-origin isolation que o WebContainer exige.
-// O agrupamento abaixo cobre contratos pequenos do host no build local.
 // Bundler e CSP de produção pertencem ao app consumidor (ver docs/embedding.md).
 const here = import.meta.dirname
 // Forward slashes: paths com backslash (Windows) não casam no glob de
@@ -108,23 +107,6 @@ export default defineConfig({
   },
   worker: {
     format: 'es',
-  },
-  build: {
-    rolldownOptions: {
-      output: {
-        // Small editor-host contracts are used together. Keep one request for
-        // them; do not pull their dependencies or optional renderers into it.
-        codeSplitting: {
-          includeDependenciesRecursively: false,
-          groups: [
-            {
-              name: 'studio-editor-host',
-              test: /[\\/]src[\\/](?:state[\\/](?:studioStores|storesContext|checksStore|diagnosticsStore|editorHistory|pendingEditorEdits|workspacePreferences)|preview[\\/](?:types|limits|scriptIntegrity)|persistence[\\/]types|studio[\\/](?:observation|pro-runtime)|cover[\\/](?:coverAsset|latestSnapshot)|components[\\/](?:layout[\\/]TabStrip|preview[\\/]playerOriginAdapter))\.tsx?$/,
-            },
-          ],
-        },
-      },
-    },
   },
   server: {
     port: 5173,
