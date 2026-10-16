@@ -1066,10 +1066,10 @@ app.on('before-quit', (event) => {
     await workspaceManager?.stop()
     assets?.close()
   })()
-    .then(() => {
+    .then(async () => {
       shutdownReady = true
       if (exitCode) app.exit(exitCode)
-      else if (updateOnQuit && desktopUpdates) desktopUpdates.installAfterShutdown()
+      else if (updateOnQuit && desktopUpdates) await desktopUpdates.installAfterShutdown()
       else app.quit()
     })
     .catch((error) => {

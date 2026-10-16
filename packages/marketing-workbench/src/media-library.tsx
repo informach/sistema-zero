@@ -12,6 +12,7 @@ import { Input } from '@sistemazero/ui/input'
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import { AssetFileActions } from './asset-file-actions'
 import { AssetPreview } from './asset-preview'
+import { mergeMediaEntries, pendingMedia, pollMediaLibrary } from './media-library-state'
 import { errorMessage, type WorkbenchPort } from './port'
 import type { EditorialEntry } from './projection'
 
@@ -48,6 +49,7 @@ export function MediaLibrary({
   const id = useId(),
     [page, setPage] = useState<AssetLibraryPage>({ items: [], nextCursor: null }),
     [error, setError] = useState(''),
+    [readError, setReadError] = useState(''),
     [busy, setBusy] = useState(false),
     [loaded, setLoaded] = useState(false),
     [progress, setProgress] = useState({ message: '', fraction: 0 }),
@@ -56,16 +58,18 @@ export function MediaLibrary({
   const abort = useRef<AbortController | null>(null),
     live = useRef(true),
     lock = useRef(false),
-    receivedId = useRef<string | null>(null)
+    receivedId = useRef<string | null>(null),
+    readVersion = useRef(0)
   const editable = project.permissions.includes('edit')
   const refresh = useCallback(async () => {
+    const version = ++readVersion.current
     const [remote, local] = await Promise.allSettled([
       port
         .request(`/projects/${project.id}/assets`)
         .then((value) => assetLibraryPageSchema.parse(value)),
       port.view(project.id),
     ])
-    if (!live.current) return
+    if (!live.current || version !== readVersion.current) return
     setLoaded(true)
     const result = remote.status === 'fulfilled' ? remote.value : { items: [], nextCursor: null }
     const transfers = local.status === 'fulfilled' ? (local.value.transfers ?? []) : []
@@ -80,8 +84,26 @@ export function MediaLibrary({
         state: transfer.state === 'local' ? ('preparing' as const) : transfer.state,
         error: transfer.error,
       }))
-    setPage({ ...result, items: [...localOnly, ...result.items] })
-    const received = result.items.find((item) => item.manifest.id === receivedId.current)
+    setPage((current) => {
+      const known = new Set(current.items.map((item) => item.manifest.id))
+      return {
+        ...mergeMediaEntries(current, [
+          ...localOnly.filter((item) => !known.has(item.manifest.id)),
+          ...result.items,
+        ]),
+        nextCursor: remote.status === 'fulfilled' ? result.nextCursor : current.nextCursor,
+      }
+    })
+    // Explicit refreshes keep visible files and restart discovery, so another
+    // author's new files can be found. Background status polling keeps the cursor.
+    setReadError(
+      [remote, local]
+        .flatMap((value) => (value.status === 'rejected' ? [errorMessage(value.reason)] : []))
+        .join(' '),
+    )
+  }, [port, project.id])
+  useEffect(() => {
+    const received = page.items.find((item) => item.manifest.id === receivedId.current)
     if (received?.state === 'confirmed') {
       receivedId.current = null
       setProgress({ message: 'Arquivo confirmado', fraction: 1 })
@@ -90,36 +112,46 @@ export function MediaLibrary({
       setProgress({ message: 'A conferência do arquivo precisa de atenção.', fraction: 1 })
       setError(received.error ?? 'O servidor recusou o arquivo. Confira o original.')
     }
-    if (remote.status === 'rejected' || local.status === 'rejected')
-      setError(
-        [remote, local]
-          .flatMap((result) => (result.status === 'rejected' ? [errorMessage(result.reason)] : []))
-          .join(' '),
-      )
-  }, [port, project.id])
+  }, [page.items])
   useEffect(() => {
     live.current = true
     void refresh().catch((e) => setError(errorMessage(e)))
     return () => {
       live.current = false
+      readVersion.current++
       abort.current?.abort()
     }
   }, [refresh])
   useEffect(() => {
-    if (busy || !page.items.some((item) => item.state === 'verifying')) return
+    if (busy || !pendingMedia(page).length) return
     // Verification happens on the server after the transfer. Poll only this
     // visible dialog and only while verification is pending, never retry bytes.
-    const timer = setTimeout(() => {
-      if (lock.current) return
-      void refresh().catch((error) => {
-        if (live.current) setError(errorMessage(error))
-      })
-    }, 2000)
-    return () => clearTimeout(timer)
-  }, [busy, page.items, refresh])
+    let active = true
+    let timer: ReturnType<typeof setTimeout>
+    const poll = async () => {
+      const version = readVersion.current
+      try {
+        if (lock.current) return
+        const updates = await pollMediaLibrary(port.request.bind(port), project.id, page)
+        if (!active || version !== readVersion.current) return
+        setPage((current) => mergeMediaEntries(current, updates))
+        setReadError('')
+      } catch (error) {
+        if (active && version === readVersion.current) setReadError(errorMessage(error))
+      } finally {
+        if (active) timer = setTimeout(() => void poll(), 5000)
+      }
+    }
+    timer = setTimeout(() => void poll(), 5000)
+    return () => {
+      active = false
+      clearTimeout(timer)
+    }
+  }, [busy, page, port, project.id])
   const task = async (work: () => Promise<unknown>, reload = true) => {
     if (lock.current) return
     lock.current = true
+    readVersion.current++
     setBusy(true)
     setError('')
     try {
@@ -135,6 +167,7 @@ export function MediaLibrary({
   }
   const received = (view: UploadView | null) => {
     if (view) {
+      setPage((current) => mergeMediaEntries(current, [view]))
       receivedId.current = ['confirmed', 'failed'].includes(view.state) ? null : view.manifest.id
       if (view.state === 'failed')
         setError(view.error ?? 'O servidor recusou o arquivo. Confira o original.')
@@ -264,6 +297,11 @@ export function MediaLibrary({
             {error}
           </p>
         ) : null}
+        {readError ? (
+          <p role="alert" className="text-sm text-destructive">
+            {readError}
+          </p>
+        ) : null}
         <div className="flex gap-2">
           <Input
             aria-label="Filtrar arquivos carregados"
@@ -271,7 +309,7 @@ export function MediaLibrary({
             value={search}
             onChange={(event) => setSearch(event.target.value)}
           />
-          <Button variant="outline" disabled={busy} onClick={() => void task(refresh)}>
+          <Button variant="outline" disabled={busy} onClick={() => void task(refresh, false)}>
             Atualizar
           </Button>
         </div>
@@ -339,7 +377,7 @@ export function MediaLibrary({
             ))}
         </ul>
         {!loaded ? <p role="status">Carregando arquivos…</p> : null}
-        {loaded && !error && !page.items.length ? (
+        {loaded && !error && !readError && !page.items.length ? (
           <p className="text-sm text-muted-foreground">Nenhum arquivo registrado neste projeto.</p>
         ) : null}
         {page.nextCursor ? (

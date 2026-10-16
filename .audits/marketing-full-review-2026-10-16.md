@@ -2,6 +2,8 @@
 
 ## Resultado e escopo
 
+**Atualização:** a [segunda revisão integral](architectural-analysis-marketing-2026-10-16.md) registra quatro achados adicionais corrigidos, reproduções antes/depois e a nova regressão completa para o commit/merge local solicitado. Os critérios operacionais abaixo continuam válidos.
+
 A implementação disponível foi revisada como um sistema: contratos e autoridade do servidor; sessões web/desktop; execução com assinaturas; persistência e recuperação; produção Remotion; aprovação/entregas; acervo; métricas e próximo ciclo. As correções desta rodada fecham problemas reais encontrados nos percursos integrados. **Integração local não equivale à primeira liberação cotidiana:** os critérios de aceitação operacional abaixo continuam abertos. Não marcar todos os lotes concluídos por compilar, executar testes ou fazer merge.
 
 Trabalho isolado em `sistema-zero-marketing`, branch `feat/marketing-desktop-operational-review`. Base do review: implementação consolidada já integrada a staging, acrescida de `65e622f75` (instalação/atualização), `99b09af45` (aprendizado/retenção), integração `7ca4a7663` e a correção de upload/gravação desta rodada. Alterações paralelas do Studio/Auth são preservadas. Nenhum push, deploy ou publicação social é parte desta entrega. Docker foi dispensado; testes transacionais usaram PostgreSQL 16 nativo em bancos exclusivos de revisão.

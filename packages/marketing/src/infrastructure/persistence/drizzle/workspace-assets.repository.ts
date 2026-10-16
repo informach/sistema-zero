@@ -61,6 +61,20 @@ async function authorize(
 }
 export class DrizzleWorkspaceAssetsRepository implements WorkspaceAssetsRepository {
   constructor(private readonly db: Database) {}
+  status(actorId: string, projectId: string, ids: string[]) {
+    return this.db.transaction(
+      async (tx) => {
+        await snapshotProjectAccess(tx, actorId, projectId)
+        const items = await tx
+          .select({ manifest: assets.manifest, state: uploads.state, error: uploads.error })
+          .from(assets)
+          .innerJoin(uploads, eq(uploads.assetId, assets.id))
+          .where(and(eq(assets.projectId, projectId), inArray(assets.id, ids)))
+        return { projectId, items }
+      },
+      { isolationLevel: 'repeatable read', accessMode: 'read only' },
+    )
+  }
   confirmed(actorId: string, projectId: string, ids: string[]) {
     return this.db.transaction(
       async (tx) => {

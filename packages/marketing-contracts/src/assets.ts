@@ -151,6 +151,11 @@ export const assetConfirmationSchema = z
   .object({ projectId: idSchema, manifests: z.array(assetManifestSchema).max(100) })
   .strict()
 export type AssetConfirmation = z.infer<typeof assetConfirmationSchema>
+/** Status lookup is independent of library pagination and never returns storage keys. */
+export const assetStatusSchema = z
+  .object({ projectId: idSchema, items: z.array(assetLibraryEntrySchema).max(100) })
+  .strict()
+export type AssetStatus = z.infer<typeof assetStatusSchema>
 export const approvalSchema = z
   .object({
     schemaVersion: z.literal(1),

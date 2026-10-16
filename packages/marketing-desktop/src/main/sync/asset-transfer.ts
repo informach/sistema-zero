@@ -122,8 +122,9 @@ export class AssetTransfer {
       )
       this.local.transferProgress(
         manifest.id,
-        final.state === 'confirmed' ? 'confirmed' : 'verifying',
+        final.state === 'preparing' ? 'local' : final.state,
         manifest.size,
+        final.error,
       )
       return final
     } catch (error) {

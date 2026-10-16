@@ -99,7 +99,7 @@ export async function transferBrowserFile(
   )
     throw new Error('A resposta não corresponde ao arquivo deste projeto')
   if (remote.state === 'confirmed' || remote.state === 'verifying') return remote
-  if (remote.state === 'failed') throw new Error(remote.error ?? 'O servidor recusou o arquivo')
+  if (remote.state === 'failed') return remote
   if (!remote.bytesReceived) {
     for (let offset = 0, number = 1; offset < file.size; offset += UPLOAD_PART_BYTES, number++) {
       signal.throwIfAborted()
@@ -179,6 +179,17 @@ export async function uploadBrowserFile(
       throw new Error('O registro local de envio não corresponde a este arquivo')
     // Persist identity before contacting the server. Reselection recomputes SHA-256 before resuming.
     localStorage.setItem(key, JSON.stringify(input))
-    return transferBrowserFile(file, input, request, signal, onProgress)
+    const result = await transferBrowserFile(file, input, request, signal, onProgress)
+    if (!raw || result.state !== 'failed') return result
+    // Reselection is an explicit retry of the verified original. A rejected
+    // object is immutable: preserve its record and persist a fresh identity
+    // before sending. Network errors and unfinished uploads retain their ID.
+    signal.throwIfAborted()
+    const replacement: UploadStart = {
+      operationId: crypto.randomUUID(),
+      manifest: { ...input.manifest, id: crypto.randomUUID() },
+    }
+    localStorage.setItem(key, JSON.stringify(replacement))
+    return transferBrowserFile(file, replacement, request, signal, onProgress)
   })
 }

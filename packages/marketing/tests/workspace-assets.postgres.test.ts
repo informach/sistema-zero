@@ -4,6 +4,7 @@ import { createHash, randomUUID } from 'node:crypto'
 import {
   type AssetManifest,
   assetConfirmationSchema,
+  assetStatusSchema,
   UPLOAD_PART_BYTES,
   type UploadedPart,
 } from '@sistemazero/marketing-contracts'
@@ -319,6 +320,26 @@ suite('arquivos editoriais: multipart, retomada e verificação', () => {
     )
     expect(response.status).toBe(200)
     expect(assetConfirmationSchema.parse(await response.json()).manifests).toEqual([f.manifest])
+    const statusResponse = await api.handle(
+      new Request(`http://localhost/marketing/workspace/projects/${f.projectId}/assets/status`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-internal-token': 'test-assets-confirmed',
+          'x-auth-user-id': owner.userId,
+          'x-auth-user-role': 'staff',
+          'x-auth-user-status': 'active',
+        },
+        body: JSON.stringify(input),
+      }),
+    )
+    expect(statusResponse.status).toBe(200)
+    const statuses = assetStatusSchema.parse(await statusResponse.json())
+    expect(statuses.items).toHaveLength(2)
+    expect(statuses.items.find((item) => item.manifest.id === f.manifest.id)?.state).toBe(
+      'confirmed',
+    )
+    expect(statuses.items.find((item) => item.manifest.id === pending)?.state).toBe('uploading')
     for (const ids of [[], [pending, pending], Array.from({ length: 101 }, () => randomUUID())])
       await rejects(async () => f.service.confirmed(owner, f.projectId, { ids }), {
         code: 'VALIDATION_ERROR',
@@ -367,6 +388,41 @@ suite('arquivos editoriais: multipart, retomada e verificação', () => {
     expect((await f.service.get(owner, f.projectId, f.manifest.id)).state).toBe('failed')
     await rejects(() => f.service.download(owner, f.projectId, f.manifest.id), {
       code: 'ASSET_UNCONFIRMED',
+    })
+  })
+  test('status polling returns only requested project files, including failures, and rechecks read access', async () => {
+    const f = await fixture(),
+      other = await fixture()
+    await f.service.start(owner, f.input)
+    await other.service.start(owner, other.input)
+    const ids = [f.manifest.id, other.manifest.id, randomUUID()]
+    const result = await f.service.status(owner, f.projectId, { ids })
+    expect(result).toEqual({
+      projectId: f.projectId,
+      items: [{ manifest: f.manifest, state: 'uploading', error: null }],
+    })
+    await connection.sql`update marketing.editorial_uploads set state='failed',error='Hash divergente' where asset_id=${f.manifest.id}`
+    expect((await f.service.status(owner, f.projectId, { ids })).items[0]?.error).toBe(
+      'Hash divergente',
+    )
+    await rejects(
+      () => f.service.status({ ...owner, userId: randomUUID() }, f.projectId, { ids }),
+      { code: 'OBJECT_INACCESSIBLE' },
+    )
+    const reader = { ...owner, userId: randomUUID() }
+    await workspace.setMember(owner, f.projectId, {
+      operationId: randomUUID(),
+      userId: reader.userId,
+      permissions: ['read'],
+    })
+    expect((await f.service.status(reader, f.projectId, { ids })).items).toHaveLength(1)
+    await workspace.setMember(owner, f.projectId, {
+      operationId: randomUUID(),
+      userId: reader.userId,
+      permissions: [],
+    })
+    await rejects(() => f.service.status(reader, f.projectId, { ids }), {
+      code: 'OBJECT_INACCESSIBLE',
     })
   })
   test('partes vinculadas ao tamanho e MD5, sem atravessar projetos ou autorização revogada', async () => {

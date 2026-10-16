@@ -979,7 +979,8 @@ test('multipart retomado após resposta perdida não reenvia a parte já recebid
     const parts: UploadedPart[] = [],
       sent: number[] = []
     let completed = false,
-      lost = true
+      lost = true,
+      rejectedAtCompletion = false
     const transport: SyncTransport = {
       async request(route, _method, body) {
         const view: UploadView = {
@@ -994,7 +995,12 @@ test('multipart retomado após resposta perdida não reenvia a parte já recebid
         if (route.endsWith('/complete')) {
           assert.equal(parts.length, 2)
           completed = true
-          return { ...view, state: 'verifying', bytesReceived: true }
+          return {
+            ...view,
+            state: rejectedAtCompletion ? 'failed' : 'verifying',
+            bytesReceived: true,
+            error: rejectedAtCompletion ? 'Hash divergente' : null,
+          }
         }
         const part = uploadPartSchema.parse(body)
         const size = Math.min(
@@ -1028,6 +1034,10 @@ test('multipart retomado após resposta perdida não reenvia a parte já recebid
     assert.equal((await transfer.upload(input, new AbortController().signal)).state, 'verifying')
     assert.deepEqual(sent, [1, 2])
     assert.equal(f.store.transfers(project.id)[0]?.uploadedBytes, bytes.length)
+    rejectedAtCompletion = true
+    assert.equal((await transfer.upload(input, new AbortController().signal)).state, 'failed')
+    assert.equal(f.store.transfers(project.id)[0]?.state, 'failed')
+    assert.equal(f.store.transfers(project.id)[0]?.error, 'Hash divergente')
   } finally {
     assets.close()
     f.store.close()

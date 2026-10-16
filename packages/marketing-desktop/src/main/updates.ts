@@ -9,6 +9,7 @@ import {
   validateUpdateManifest,
 } from '../shared/updates'
 import { verifyWindowsSignature } from './clients/windows-signature'
+import { verifyUpdateFile } from './verify-update-file'
 
 export class DesktopUpdates {
   private state: DesktopUpdate = {
@@ -21,6 +22,7 @@ export class DesktopUpdates {
   private token?: CancellationToken
   private timer?: ReturnType<typeof setInterval>
   private verifiedFile?: string
+  private expectedFile?: { size: number; sha512: string }
   private running = false
 
   constructor(private readonly changed: (value: DesktopUpdate) => void) {}
@@ -84,11 +86,13 @@ export class DesktopUpdates {
     )
       return this.status()
     this.running = true
+    this.expectedFile = undefined
     this.set({ state: 'checking' })
     try {
       const result = await this.updater.checkForUpdates()
       if (result?.isUpdateAvailable) {
         const manifest = validateUpdateManifest(result.updateInfo, this.config)
+        this.expectedFile = manifest.files[0]
         this.set({ state: 'available', version: manifest.version })
       } else this.set({ state: 'idle', message: 'Você está usando a versão atual.' })
     } catch {
@@ -103,7 +107,13 @@ export class DesktopUpdates {
     return this.status()
   }
   async download() {
-    if (!this.updater || !this.config || this.running || this.state.state !== 'available')
+    if (
+      !this.updater ||
+      !this.config ||
+      !this.expectedFile ||
+      this.running ||
+      this.state.state !== 'available'
+    )
       throw new Error('Verifique se há uma atualização disponível.')
     const version = this.state.version
     this.running = true
@@ -116,11 +126,7 @@ export class DesktopUpdates {
         throw new Error('Instalador inesperado.')
       // Always verify against the publishers embedded in the signed app, even if a
       // mutable app-update.yml is absent or has lost its publisherName property.
-      const rejection = await this.updater.verifyUpdateCodeSignature(
-        this.config.publisherNames,
-        file,
-      )
-      if (rejection) throw new Error('Assinatura da atualização inválida.')
+      await verifyUpdateFile(file, this.expectedFile, this.config.publisherNames)
       if (this.token.cancelled) throw new Error('Download cancelado.')
       this.verifiedFile = file
       this.set({ state: 'ready', version })
@@ -153,11 +159,17 @@ export class DesktopUpdates {
     if (this.timer) clearInterval(this.timer)
   }
   async verifyReady() {
-    if (!this.updater || !this.config || !this.verifiedFile || this.state.state !== 'ready')
-      throw new Error('Baixe e verifique a atualização antes de reiniciar.')
     if (
-      await this.updater.verifyUpdateCodeSignature(this.config.publisherNames, this.verifiedFile)
-    ) {
+      !this.updater ||
+      !this.config ||
+      !this.expectedFile ||
+      !this.verifiedFile ||
+      this.state.state !== 'ready'
+    )
+      throw new Error('Baixe e verifique a atualização antes de reiniciar.')
+    try {
+      await verifyUpdateFile(this.verifiedFile, this.expectedFile, this.config.publisherNames)
+    } catch {
       this.verifiedFile = undefined
       this.set({
         state: 'error',
@@ -167,7 +179,8 @@ export class DesktopUpdates {
     }
   }
   /** Called only after the app has drained IPC, stopped sync and closed local stores. */
-  installAfterShutdown() {
+  async installAfterShutdown() {
+    await this.verifyReady()
     if (!this.updater || !this.verifiedFile || this.state.state !== 'ready')
       throw new Error('Atualização não verificada.')
     this.set({ state: 'installing', version: this.state.version })

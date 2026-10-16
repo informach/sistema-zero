@@ -5,9 +5,15 @@ import {
   type UploadedPart,
   type UploadStart,
   type UploadView,
+  uploadStartSchema,
 } from '@sistemazero/marketing-contracts'
 import { z } from 'zod'
-import { hashUpload, storageUploadUrl, transferBrowserFile } from './browser-upload'
+import {
+  hashUpload,
+  storageUploadUrl,
+  transferBrowserFile,
+  uploadBrowserFile,
+} from './browser-upload'
 import type { WorkbenchPort } from './port'
 
 test('multipart web retoma sem repetir parte confirmada e confere SHA em blocos', async () => {
@@ -99,4 +105,67 @@ test('URLs de armazenamento não enviam arquivo a outro domínio ou credencial e
     `https://user:pass@${'a'.repeat(32)}.r2.cloudflarestorage.com/file`,
   ])
     expect(() => storageUploadUrl(url)).toThrow()
+})
+
+test('reselecting a rejected original creates a durable new upload without losing the failed record', async () => {
+  const saved = new Map<string, string>()
+  const descriptors = ['navigator', 'localStorage'].map(
+    (key) => [key, Object.getOwnPropertyDescriptor(globalThis, key)] as const,
+  )
+  Object.defineProperty(globalThis, 'navigator', {
+    configurable: true,
+    value: {
+      locks: {
+        request: async (_key: string, _options: unknown, work: () => Promise<unknown>) => work(),
+      },
+    },
+  })
+  Object.defineProperty(globalThis, 'localStorage', {
+    configurable: true,
+    value: {
+      getItem: (key: string) => saved.get(key) ?? null,
+      setItem: (key: string, value: string) => saved.set(key, value),
+    },
+  })
+  try {
+    const projectId = randomUUID(),
+      file = new File(['original intacto'], 'original.txt')
+    const requests: UploadStart[] = []
+    let rejectedId: string | undefined
+    const request: WorkbenchPort['request'] = async (path, _method, body) => {
+      expect(path).toBe('/assets')
+      const input = uploadStartSchema.parse(body)
+      requests.push(input)
+      expect(
+        [...saved.values()].some((value) => JSON.parse(value).manifest.id === input.manifest.id),
+      ).toBe(true)
+      return {
+        manifest: input.manifest,
+        state: input.manifest.id === rejectedId ? 'failed' : 'confirmed',
+        error: input.manifest.id === rejectedId ? 'Hash divergente' : null,
+        bytesReceived: true,
+        partBytes: UPLOAD_PART_BYTES,
+        parts: [],
+      }
+    }
+    const send = () =>
+      uploadBrowserFile('account', projectId, file, request, new AbortController().signal, () => {})
+    rejectedId = (await send()).manifest.id
+    const recovered = await send()
+    expect(recovered.state).toBe('confirmed')
+    expect(recovered.manifest.id).not.toBe(rejectedId)
+    expect(requests.map((input) => input.manifest.id)).toEqual([
+      rejectedId,
+      rejectedId,
+      recovered.manifest.id,
+    ])
+    expect((await send()).manifest.id).toBe(recovered.manifest.id)
+    expect(new Set(requests.map((input) => input.manifest.sha256)).size).toBe(1)
+    expect(new Set(requests.map((input) => input.operationId)).size).toBe(2)
+  } finally {
+    for (const [key, descriptor] of descriptors) {
+      if (descriptor) Object.defineProperty(globalThis, key, descriptor)
+      else Reflect.deleteProperty(globalThis, key)
+    }
+  }
 })

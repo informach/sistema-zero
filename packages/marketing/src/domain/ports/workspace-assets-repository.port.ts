@@ -2,6 +2,7 @@ import type {
   AssetConfirmation,
   AssetLibraryPage,
   AssetManifest,
+  AssetStatus,
   UploadStart,
   UploadView,
 } from '@sistemazero/marketing-contracts'
@@ -20,6 +21,7 @@ export interface VerificationJob {
   attempt: number
 }
 export interface WorkspaceAssetsRepository {
+  status(actorId: string, projectId: string, ids: string[]): Promise<AssetStatus>
   confirmed(actorId: string, projectId: string, ids: string[]): Promise<AssetConfirmation>
   list(actorId: string, projectId: string, after?: string): Promise<AssetLibraryPage>
   allocate(actorId: string, input: UploadStart, hash: string): Promise<UploadRecord>

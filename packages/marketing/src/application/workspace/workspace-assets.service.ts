@@ -47,6 +47,13 @@ export class WorkspaceAssetsService {
     this.storage()
     return this.repo.confirmed(actorId, id, input.ids)
   }
+  status(actor: Actor, projectId: string, raw: unknown) {
+    return this.repo.status(
+      workspaceActor(actor),
+      parseWorkspace(idSchema, projectId),
+      parseWorkspace(assetConfirmationRequestSchema, raw).ids,
+    )
+  }
   private async inspect(record: UploadRecord) {
     const view: UploadView = {
       manifest: record.manifest,

@@ -39,6 +39,8 @@ bun run start -- --smoke-text
 
 `--smoke-native-import --smoke-recorded-video` usa a gravação de tela do P21 em um projeto técnico separado. Exercita upload web, preparação, corte/texto pelo Codex, render e reprodução do proxy compartilhado. Reaberturas conservam os pedidos concluídos, sem nova inferência. Exige a stack nativa conectada ao R2 de testes e seu CORS configurado; veja [a revisão e seus limites](../../.audits/marketing-l6-recorded-video-review-2026-10-16.md). A gravação não tem fala e não substitui o ensaio com celular.
 
+`bun run scripts/prove-media-library.ts` exercita a biblioteca compartilhada em Chromium isolado, com transporte controlado: paginação, arquivo recém-enviado fora da primeira página, queda de rede e confirmação automática. Não usa credenciais, armazenamento remoto ou inferência. `--baseline` reproduz a falha na implementação `d8271493d`; a saída esperada dessa comparação é código 1. Os resultados ficam em `.cache/media-library-review` e `.cache/media-library-baseline`.
+
 ## Dados e limites
 
 O servidor mantém revisões confirmadas e arquivos compartilhados. SQLite e arquivos locais preservam rascunhos, fila, transferências e resultados em andamento, separados por conta/origem. “Confirmado” só aparece após o servidor aceitar a operação. Conflitos exigem conciliação; reconectar não apaga rascunhos nem repete geração automaticamente.
@@ -52,6 +54,8 @@ O desktop verifica atualizações, permite baixar/cancelar e reinicia somente ap
 `bun run package` exige `MARKETING_DESKTOP_UPDATE_URL` (pasta HTTPS pública terminada em `/`) e `MARKETING_DESKTOP_PUBLISHERS` (Subject completo de cada certificado autorizado, separado por `|`). Configure o certificado real pelos mecanismos do electron-builder (`CSC_LINK`/`WIN_CSC_LINK` e senha, ou `MARKETING_SIGNING_SUBJECT` para certificado instalado no Windows). Não versionar certificados, senhas ou chaves. Sem essa configuração, o comando recusa gerar uma distribuição final.
 
 O comando gera NSIS x64 assinado, metadados `latest.yml` e blockmap, com publicação automática desabilitada (`--publish never`). O operador deve disponibilizar esses arquivos juntos na pasta configurada e provar a atualização de uma versão assinada anterior antes da liberação. A configuração pública de origem/publicadores fica dentro do ASAR assinado; os publishers são verificados novamente após o download e antes do reinício, independentemente do `app-update.yml` externo. `bun run package:review` continua produzindo somente um diretório sem assinatura para inspeção.
+
+O tamanho e o SHA-512 do manifesto selecionado também são reconferidos após o download e antes da instalação, inclusive depois de drenar a sincronização. Um outro executável assinado pelo mesmo publicador não substitui a versão escolhida.
 
 `bun run scripts/prove-client-installation.ts` demonstra instalação pelos botões em perfil isolado e reabertura; não inicia login nem inferência. `scripts/prove-update-signatures.ts` verifica um binário oficial assinado, publicador incorreto, arquivo alterado, arquivo sem assinatura e verificador ausente. Isso não substitui a prova do instalador assinado do Sistema Zero.
 
