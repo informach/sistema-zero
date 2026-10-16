@@ -1,0 +1,2 @@
+ALTER TABLE "helpdesk"."ticket_messages" ADD COLUMN "position" bigserial NOT NULL;--> statement-breakpoint
+CREATE INDEX "ticket_messages_page_idx" ON "helpdesk"."ticket_messages" USING btree ("ticket_id","position");

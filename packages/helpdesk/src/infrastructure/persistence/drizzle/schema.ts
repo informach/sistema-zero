@@ -1,6 +1,19 @@
-import { TRIAGE_KINDS } from '@sistemazero/helpdesk-contracts'
+import {
+  type AiFeedbackKind,
+  type AiRunView,
+  type AutomationEvaluation,
+  type AutomationPolicy,
+  DEFAULT_AUTOMATION_POLICY,
+  type HandoffReason,
+  KNOWLEDGE_AUDIENCES,
+  KNOWLEDGE_INDEX_STATES,
+  KNOWLEDGE_PRODUCTS,
+  TRIAGE_KINDS,
+} from '@sistemazero/helpdesk-contracts'
 import { sql } from 'drizzle-orm'
 import {
+  type AnyPgColumn,
+  bigserial,
   boolean,
   index,
   integer,
@@ -54,6 +67,14 @@ export const aiStatusEnum = helpdesk.enum('ai_status', [
   'failed',
   'skipped',
 ])
+export const handlingModeEnum = helpdesk.enum('handling_mode', ['human', 'assistant'])
+export const automationJobStateEnum = helpdesk.enum('automation_job_state', [
+  'pending',
+  'processing',
+  'completed',
+  'handoff',
+  'superseded',
+])
 export const messageKindEnum = helpdesk.enum('message_kind', ['email', 'note', 'portal'])
 export const messageVisibilityEnum = helpdesk.enum('message_visibility', ['customer', 'internal'])
 export const messageDirectionEnum = helpdesk.enum('message_direction', ['inbound', 'outbound'])
@@ -78,6 +99,12 @@ export const portalNotificationStatusEnum = helpdesk.enum('portal_notification_s
 // confere `enumValues` == TRIAGE_KINDS. Adicionar valor = migration `ADD VALUE`
 // (⚠️ nunca escrever o valor novo na mesma transação que o cria).
 export const triageKindEnum = helpdesk.enum('triage_kind', TRIAGE_KINDS)
+export const knowledgeAudienceEnum = helpdesk.enum('knowledge_audience', KNOWLEDGE_AUDIENCES)
+export const knowledgeProductEnum = helpdesk.enum('knowledge_product', KNOWLEDGE_PRODUCTS)
+export const knowledgeIndexStateEnum = helpdesk.enum(
+  'knowledge_index_state',
+  KNOWLEDGE_INDEX_STATES,
+)
 
 // ── Conexão Gmail (tokens CIFRADOS — AES-256-GCM) ────────────────────────────
 export const gmailConnections = helpdesk.table(
@@ -125,6 +152,14 @@ export const tickets = helpdesk.table(
     id: uuid('id').primaryKey(),
     version: integer('version').notNull().default(0),
     gmailThreadId: text('gmail_thread_id'),
+    handlingMode: handlingModeEnum('handling_mode').notNull().default('human'),
+    handlingEpoch: integer('handling_epoch').notNull().default(0),
+    humanTakeover: boolean('human_takeover').notNull().default(false),
+    automationStartedAt: timestamp('automation_started_at', { withTimezone: true }),
+    humanSlaStartedAt: timestamp('human_sla_started_at', { withTimezone: true }),
+    handoffReason: text('handoff_reason').$type<HandoffReason>(),
+    automationReplies: integer('automation_replies').notNull().default(0),
+    automationClarifications: integer('automation_clarifications').notNull().default(0),
     source: ticketSourceEnum('source').notNull().default('email'),
     // App que abriu o chamado pelo portal (link do aviso de resposta). Nulo em
     // e-mail e no legado; imutável depois de criado.
@@ -153,6 +188,7 @@ export const tickets = helpdesk.table(
     aiSummary: text('ai_summary'),
     aiSummaryAt: timestamp('ai_summary_at', { withTimezone: true }),
     aiDraft: text('ai_draft'),
+    aiDraftRunId: uuid('ai_draft_run_id'),
     aiDraftAt: timestamp('ai_draft_at', { withTimezone: true }),
     aiDraftEdited: boolean('ai_draft_edited').notNull().default(false),
     aiClassification: jsonb('ai_classification').$type<AiClassification>(),
@@ -203,6 +239,7 @@ export const tickets = helpdesk.table(
 export const ticketMessages = helpdesk.table(
   'ticket_messages',
   {
+    position: bigserial('position', { mode: 'number' }).notNull(),
     id: uuid('id').primaryKey(),
     ticketId: uuid('ticket_id')
       .notNull()
@@ -225,6 +262,9 @@ export const ticketMessages = helpdesk.table(
     subject: text('subject'),
     bodyText: text('body_text').notNull(),
     bodyHtml: text('body_html'),
+    aiRunId: uuid('ai_run_id'),
+    automationGeneration: integer('automation_generation'),
+    draftEdited: boolean('draft_edited'),
     snippet: text('snippet'),
     // SÓ metadados (filename/mime/size/gmail_attachment_id) — bytes no Gmail.
     attachments: jsonb('attachments').$type<AttachmentMeta[]>().notNull().default([]),
@@ -240,7 +280,9 @@ export const ticketMessages = helpdesk.table(
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
   },
   (t) => [
+    index('ticket_messages_page_idx').on(t.ticketId, t.position),
     uniqueIndex('ticket_messages_gmail_uq').on(t.gmailMessageId),
+    uniqueIndex('ticket_messages_auto_generation_uq').on(t.ticketId, t.automationGeneration),
     index('ticket_messages_rfc822_idx')
       .on(t.rfc822MessageId)
       .where(sql`${t.rfc822MessageId} is not null and ${t.direction} = 'outbound'`),
@@ -290,14 +332,88 @@ export const kbArticles = helpdesk.table(
     version: integer('version').notNull().default(0),
     title: text('title').notNull(),
     content: text('content').notNull(),
-    published: boolean('published').notNull().default(false),
+    draftRevisionId: uuid('draft_revision_id').references((): AnyPgColumn => kbRevisions.id),
+    publishedRevisionId: uuid('published_revision_id').references(
+      (): AnyPgColumn => kbRevisions.id,
+    ),
+    audience: knowledgeAudienceEnum('audience').notNull().default('staff_only'),
+    product: knowledgeProductEnum('product').notNull().default('all'),
+    ownerName: text('owner_name').notNull().default(''),
+    origin: text('origin').notNull().default('manual'),
+    validUntil: timestamp('valid_until', { withTimezone: true }),
+    archived: boolean('archived').notNull().default(false),
     createdBy: uuid('created_by').notNull(),
     createdByName: text('created_by_name'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
   },
-  (t) => [index('kb_articles_published_idx').on(t.published, t.updatedAt)],
+  (t) => [index('kb_articles_published_revision_idx').on(t.publishedRevisionId)],
 )
+
+/** Cada revisão possui um único trabalho durável de indexação; conteúdo não é regravado. */
+export const kbRevisions = helpdesk.table(
+  'kb_revisions',
+  {
+    id: uuid('id').primaryKey(),
+    articleId: uuid('article_id')
+      .notNull()
+      .references((): AnyPgColumn => kbArticles.id),
+    number: integer('number').notNull(),
+    title: text('title').notNull(),
+    content: text('content').notNull(),
+    audience: knowledgeAudienceEnum('audience').notNull(),
+    product: knowledgeProductEnum('product').notNull(),
+    ownerName: text('owner_name').notNull(),
+    origin: text('origin').notNull(),
+    validUntil: timestamp('valid_until', { withTimezone: true }),
+    contentHash: text('content_hash').notNull(),
+    indexVersion: integer('index_version').notNull(),
+    indexState: knowledgeIndexStateEnum('index_state').notNull().default('pending'),
+    indexAttempts: integer('index_attempts').notNull().default(0),
+    indexNextAt: timestamp('index_next_at', { withTimezone: true }).notNull(),
+    indexLeaseToken: uuid('index_lease_token'),
+    indexLeaseExpiresAt: timestamp('index_lease_expires_at', { withTimezone: true }),
+    indexError: text('index_error'),
+    createdBy: uuid('created_by').notNull(),
+    createdByName: text('created_by_name'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    uniqueIndex('kb_revision_number_uq').on(t.articleId, t.number),
+    index('kb_revision_claim_idx').on(t.indexState, t.indexNextAt),
+  ],
+)
+
+export const kbChunks = helpdesk.table(
+  'kb_chunks',
+  {
+    id: uuid('id').primaryKey(),
+    revisionId: uuid('revision_id')
+      .notNull()
+      .references(() => kbRevisions.id, { onDelete: 'cascade' }),
+    position: integer('position').notNull(),
+    section: text('section').notNull(),
+    text: text('text').notNull(),
+  },
+  (t) => [
+    uniqueIndex('kb_chunk_position_uq').on(t.revisionId, t.position),
+    index('kb_chunk_search_idx').using(
+      'gin',
+      sql`to_tsvector('portuguese'::regconfig, ${t.section} || ' ' || ${t.text})`,
+    ),
+  ],
+)
+
+export const kbPublicationEvents = helpdesk.table('kb_publication_events', {
+  id: uuid('id').primaryKey(),
+  articleId: uuid('article_id')
+    .notNull()
+    .references(() => kbArticles.id),
+  revisionId: uuid('revision_id').references(() => kbRevisions.id),
+  action: text('action').$type<'publish' | 'withdraw' | 'archive'>().notNull(),
+  actorId: uuid('actor_id').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+})
 
 // ── Configuração (linha única, PK fixo `default`; get-or-create no repo) ─────
 export const settings = helpdesk.table('settings', {
@@ -324,12 +440,177 @@ export const oauthStates = helpdesk.table(
   (t) => [index('oauth_states_expires_idx').on(t.expiresAt)],
 )
 
+export const aiRuns = helpdesk.table(
+  'ai_runs',
+  {
+    id: uuid('id').primaryKey(),
+    ticketId: uuid('ticket_id').references(() => tickets.id, { onDelete: 'cascade' }),
+    generation: integer('generation'),
+    detail: jsonb('detail').$type<AiRunView>().notNull(),
+    resolvedAt: timestamp('resolved_at', { withTimezone: true }),
+    resolvedArticleId: uuid('resolved_article_id').references(() => kbArticles.id, {
+      onDelete: 'set null',
+    }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    index('ai_runs_ticket_idx').on(t.ticketId, t.generation),
+    index('ai_runs_retention_idx').on(t.createdAt),
+  ],
+)
+
+export const automationPolicy = helpdesk.table('automation_policy', {
+  id: text('id').primaryKey(),
+  version: integer('version').notNull().default(0),
+  policy: jsonb('policy').$type<AutomationPolicy>().notNull().default(DEFAULT_AUTOMATION_POLICY),
+  updatedBy: uuid('updated_by'),
+  updatedAt: timestamp('updated_at', { withTimezone: true }),
+})
+export const automationPolicyEvents = helpdesk.table('automation_policy_events', {
+  id: uuid('id').primaryKey(),
+  version: integer('version').notNull(),
+  policy: jsonb('policy').$type<AutomationPolicy>().notNull(),
+  actorId: uuid('actor_id').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+})
+export const automationEvaluations = helpdesk.table('automation_evaluations', {
+  id: uuid('id').primaryKey(),
+  detail: jsonb('detail').$type<AutomationEvaluation>().notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+})
+export const automationJobs = helpdesk.table(
+  'automation_jobs',
+  {
+    id: uuid('id').primaryKey(),
+    ticketId: uuid('ticket_id')
+      .notNull()
+      .references(() => tickets.id, { onDelete: 'cascade' }),
+    generation: integer('generation').notNull(),
+    epoch: integer('epoch').notNull(),
+    policyVersion: integer('policy_version').notNull(),
+    mode: text('mode').$type<'shadow' | 'pilot'>().notNull(),
+    state: automationJobStateEnum('state').notNull().default('pending'),
+    attempts: integer('attempts').notNull().default(0),
+    nextAt: timestamp('next_at', { withTimezone: true }).notNull(),
+    deadlineAt: timestamp('deadline_at', { withTimezone: true }).notNull(),
+    leaseToken: uuid('lease_token'),
+    leaseExpiresAt: timestamp('lease_expires_at', { withTimezone: true }),
+    runId: uuid('run_id'),
+    reason: text('reason'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    finishedAt: timestamp('finished_at', { withTimezone: true }),
+  },
+  (t) => [
+    uniqueIndex('automation_jobs_generation_uq').on(t.ticketId, t.generation),
+    index('automation_jobs_due_idx').on(t.state, t.nextAt),
+    index('automation_jobs_deadline_idx').on(t.state, t.deadlineAt),
+  ],
+)
+export const automationReservations = helpdesk.table(
+  'automation_reservations',
+  {
+    id: uuid('id').primaryKey(),
+    jobId: uuid('job_id')
+      .notNull()
+      .references(() => automationJobs.id, { onDelete: 'cascade' }),
+    attempt: integer('attempt').notNull(),
+    accountId: uuid('account_id').notNull(),
+    reservedMicros: integer('reserved_micros').notNull(),
+    knownMicros: integer('known_micros'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    uniqueIndex('automation_reservations_attempt_uq').on(t.jobId, t.attempt),
+    index('automation_reservations_date_idx').on(t.createdAt, t.accountId),
+  ],
+)
+export const customerCommands = helpdesk.table(
+  'customer_commands',
+  {
+    id: uuid('id').primaryKey(),
+    accountId: uuid('account_id').notNull(),
+    key: uuid('key').notNull(),
+    hash: text('hash').notNull(),
+    ticketId: uuid('ticket_id')
+      .notNull()
+      .references(() => tickets.id, { onDelete: 'cascade' }),
+    messageId: uuid('message_id').references(() => ticketMessages.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [uniqueIndex('customer_commands_key_uq').on(t.accountId, t.key)],
+)
+
+export const aiFeedback = helpdesk.table(
+  'ai_feedback',
+  {
+    id: uuid('id').primaryKey(),
+    runId: uuid('run_id')
+      .notNull()
+      .references(() => aiRuns.id, { onDelete: 'cascade' }),
+    actorId: uuid('actor_id').notNull(),
+    kind: text('kind').$type<AiFeedbackKind>().notNull(),
+    reason: text('reason'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [uniqueIndex('ai_feedback_run_actor_kind_uq').on(t.runId, t.actorId, t.kind)],
+)
+export const messageEvidence = helpdesk.table(
+  'message_evidence',
+  {
+    id: uuid('id').primaryKey(),
+    messageId: uuid('message_id')
+      .notNull()
+      .references(() => ticketMessages.id, { onDelete: 'cascade' }),
+    articleId: uuid('article_id')
+      .notNull()
+      .references(() => kbArticles.id),
+    revisionId: uuid('revision_id')
+      .notNull()
+      .references(() => kbRevisions.id),
+    chunkId: uuid('chunk_id')
+      .notNull()
+      .references(() => kbChunks.id),
+    title: text('title').notNull(),
+    section: text('section').notNull(),
+    revisionNumber: integer('revision_number').notNull(),
+  },
+  (t) => [uniqueIndex('message_evidence_chunk_uq').on(t.messageId, t.chunkId)],
+)
+
+export const resolutionEvents = helpdesk.table(
+  'resolution_events',
+  {
+    id: uuid('id').primaryKey(),
+    ticketId: uuid('ticket_id')
+      .notNull()
+      .references(() => tickets.id, { onDelete: 'cascade' }),
+    kind: text('kind').$type<'confirmed' | 'reopened'>().notNull(),
+    automated: boolean('automated').notNull(),
+    generation: integer('generation').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [index('resolution_events_created_idx').on(t.createdAt)],
+)
+
 export const schema = {
+  resolutionEvents,
+  messageEvidence,
+  automationPolicy,
+  automationPolicyEvents,
+  automationEvaluations,
+  automationJobs,
+  automationReservations,
+  customerCommands,
+  aiRuns,
+  aiFeedback,
   gmailConnections,
   tickets,
   ticketMessages,
   portalNotificationOutbox,
   kbArticles,
+  kbRevisions,
+  kbChunks,
+  kbPublicationEvents,
   settings,
   oauthStates,
 }

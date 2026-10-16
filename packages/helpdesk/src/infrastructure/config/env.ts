@@ -100,7 +100,7 @@ const EnvSchema = z
     // Clamp da thread no prompt (caracteres) — e-mails longos não estouram contexto.
     AI_MAX_THREAD_CHARS: z.coerce.number().int().positive().default(24_000),
     // O banco devolve um conjunto finito; a seleção lexical aplica o limite final.
-    AI_KB_MAX_CANDIDATES: z.coerce.number().int().positive().max(500).default(100),
+    AI_RUN_RETENTION_DAYS: z.coerce.number().int().positive().max(90).default(30),
     AI_MAX_KB_CHARS: z.coerce.number().int().positive().default(12_000),
 
     // ── Aviso por e-mail da resposta do PORTAL (outbox → gateway → messaging,

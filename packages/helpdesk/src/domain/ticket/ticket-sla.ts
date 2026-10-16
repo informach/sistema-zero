@@ -29,7 +29,7 @@ export interface TicketQueuePosition {
 }
 
 function isSlaActive(ticket: Ticket): boolean {
-  return ticket.status === 'new' || ticket.status === 'open'
+  return ticket.handlingMode === 'human' && (ticket.status === 'new' || ticket.status === 'open')
 }
 
 /**
@@ -41,7 +41,7 @@ export function ticketSla(ticket: Ticket, now: Date): TicketSla | null {
 
   const priority = ticket.priority ?? 'normal'
   const targetMinutes = SLA_TARGET_MINUTES[priority]
-  const startedAt = ticket.lastInboundAt ?? ticket.firstMessageAt
+  const startedAt = ticket.humanSlaStartedAt ?? ticket.lastInboundAt ?? ticket.firstMessageAt
   const deadlineAt = new Date(startedAt.getTime() + targetMinutes * 60_000)
   const remainingMs = deadlineAt.getTime() - now.getTime()
   const remainingMinutes = Math.floor(remainingMs / 60_000)
@@ -78,7 +78,7 @@ export function ticketSlaRank(ticket: Ticket, now: Date): number {
 /** Tupla estável compartilhada pelo cursor e pelo adapter em memória. */
 export function ticketQueuePosition(ticket: Ticket, now: Date): TicketQueuePosition {
   const priority = ticket.priority ?? 'normal'
-  const startedAt = ticket.lastInboundAt ?? ticket.firstMessageAt
+  const startedAt = ticket.humanSlaStartedAt ?? ticket.lastInboundAt ?? ticket.firstMessageAt
   return {
     operationalRank: ticketSlaRank(ticket, now),
     deadlineAt: new Date(startedAt.getTime() + SLA_TARGET_MINUTES[priority] * 60_000),

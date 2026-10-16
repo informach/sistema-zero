@@ -1,3 +1,2 @@
 import { shell } from '@/server/shell'
-
-export const { POST } = shell.routes.helpdeskTicketMessages
+export const { GET, POST } = shell.routes.helpdeskTicketMessages

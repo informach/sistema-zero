@@ -6,6 +6,7 @@ import {
   GmailSendFailedError,
   TicketNotFoundError,
 } from '../../domain/helpdesk-errors'
+import type { AiRunRepository } from '../../domain/ports/ai-run-repository.port'
 import type { ConnectionRepository } from '../../domain/ports/connection-repository.port'
 import { GmailApiError, type GmailClient } from '../../domain/ports/gmail-client.port'
 import type { MessageRepository } from '../../domain/ports/message-repository.port'
@@ -34,6 +35,7 @@ export interface ReplyServiceConfig {
 }
 
 export interface ReplyInput {
+  draftRunId?: string | null
   body: string
   version: number
 }
@@ -62,6 +64,7 @@ export class ReplyService {
     private readonly now: () => Date,
     private readonly idGen: () => string,
     private readonly logger: Logger,
+    private readonly aiRuns: AiRunRepository,
   ) {}
 
   /** Resposta HUMANA (rota): guard por `version`. */
@@ -73,12 +76,13 @@ export class ReplyService {
     const ticket = await this.tickets.byId(ticketId)
     if (!ticket) throw new TicketNotFoundError()
     assertHumanTicket(ticket)
+    const attribution = await this.draftAttribution(ticketId, input)
     // Ticket do portal que nunca passou pelo Gmail responde NO portal. Se a
     // conversa já vive numa thread do Gmail (legado respondido por e-mail, e o
     // cliente pode ter continuado por lá), segue pelo Gmail — a resposta também
     // aparece no portal, porque já é `visibility: 'customer'`.
     if (ticket.source === 'portal' && ticket.gmailThreadId === null) {
-      return this.deliverToPortal(actor, ticket, input)
+      return this.deliverToPortal(actor, ticket, input, attribution)
     }
     const connection = await this.requireConnection()
     const thread = await this.messages.byTicketId(ticketId)
@@ -93,6 +97,7 @@ export class ReplyService {
       sentVia: 'human',
       createdBy: actor.userId,
       createdByName: actor.displayName,
+      attribution,
     })
   }
 
@@ -105,10 +110,12 @@ export class ReplyService {
     actor: Actor,
     ticket: Ticket,
     input: ReplyInput,
+    attribution: Pick<TicketMessage, 'aiRunId' | 'draftEdited'>,
   ): Promise<{ ticket: TicketView; message: MessageView }> {
     const body = await this.withSignature(input.body)
     const createdAt = this.now()
     const message: TicketMessage = {
+      ...attribution,
       id: this.idGen(),
       ticketId: ticket.id,
       kind: 'portal',
@@ -171,6 +178,25 @@ export class ReplyService {
     return connection
   }
 
+  private async draftAttribution(
+    ticketId: string,
+    input: ReplyInput,
+  ): Promise<Pick<TicketMessage, 'aiRunId' | 'draftEdited'>> {
+    if (!input.draftRunId) return { aiRunId: null, draftEdited: null }
+    const run = await this.aiRuns.byId(input.draftRunId)
+    if (
+      !run ||
+      run.ticketId !== ticketId ||
+      run.purpose !== 'copilot' ||
+      run.status !== 'completed' ||
+      !run.reply
+    )
+      throw new ConcurrencyConflictError(
+        'Sugestão indisponível; revise o texto e gere outra sugestão',
+      )
+    return { aiRunId: run.id, draftEdited: input.body.trim() !== run.reply.trim() }
+  }
+
   private async withSignature(body: string): Promise<string> {
     const signature = (await this.settings.get()).signature.trim()
     const trimmed = body.trim()
@@ -187,6 +213,7 @@ export class ReplyService {
     sentVia: 'human'
     createdBy: string | null
     createdByName: string | null
+    attribution: Pick<TicketMessage, 'aiRunId' | 'draftEdited'>
   }): Promise<{ ticket: TicketView; message: MessageView }> {
     const { ticket, connection, thread, body, sentVia } = input
     // Último inbound HUMANO: depois de um bounce ou auto-reply, a resposta iria
@@ -213,6 +240,7 @@ export class ReplyService {
 
     const createdAt = this.now()
     const message: PendingReplyMessage = {
+      ...input.attribution,
       id: this.idGen(),
       ticketId: ticket.id,
       kind: 'email',

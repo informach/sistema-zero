@@ -1,256 +1,355 @@
 'use client'
 
-import { Badge } from '@sistemazero/ui/badge'
+import type {
+  AiRunView,
+  KnowledgeAudience,
+  KnowledgeGapView,
+  KnowledgeProduct,
+  KnowledgeRevisionView,
+} from '@sistemazero/helpdesk-contracts'
 import { Button } from '@sistemazero/ui/button'
-import { ConfirmDialog } from '@sistemazero/ui/confirm-dialog'
-import { Skeleton } from '@sistemazero/ui/skeleton'
-import { Switch } from '@sistemazero/ui/switch'
-import { BookOpen, Plus } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { Dialog } from '@sistemazero/ui/dialog'
+import { Textarea } from '@sistemazero/ui/textarea'
+import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { type ApiError, apiGet, apiSend } from '@/lib/api'
+import { AnswerEvidence } from '@/components/shared/answer-evidence'
+import { apiGet, apiSend, isApiError } from '@/lib/api'
 import { formatShortSp } from '@/lib/dates'
 import type { HelpdeskPage, KbArticleView } from '@/lib/types'
 import { ArticleDialog } from './article-dialog'
+import { audienceLabels, KnowledgeFields, productLabels } from './knowledge-fields'
 
-const LIMIT = 50
-
-function articleMeta(article: KbArticleView): string {
-  return [article.createdByName, `Atualizado ${formatShortSp(article.updatedAt)}`]
-    .filter(Boolean)
-    .join(' · ')
-}
-
-export function KbClient() {
+export function KbClient({ canPublish }: { canPublish: boolean }) {
+  const [tab, setTab] = useState('Artigos')
   const [items, setItems] = useState<KbArticleView[]>([])
-  const [total, setTotal] = useState(0)
   const [hasMore, setHasMore] = useState(false)
-  const [loading, setLoading] = useState(true)
-  const [loadingMore, setLoadingMore] = useState(false)
-  const [failed, setFailed] = useState(false)
-  const [reloadKey, setReloadKey] = useState(0)
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [editTarget, setEditTarget] = useState<KbArticleView | null>(null)
-  const [deleteTarget, setDeleteTarget] = useState<KbArticleView | null>(null)
-  const [togglingId, setTogglingId] = useState<string | null>(null)
+  const [offset, setOffset] = useState(0)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const [editor, setEditor] = useState<{ article: KbArticleView | null } | null>(null)
+  const [selected, setSelected] = useState<KbArticleView | null>(null)
+  const [revisions, setRevisions] = useState<KnowledgeRevisionView[]>([])
+  const [gaps, setGaps] = useState<KnowledgeGapView[]>([])
+  const [gapTarget, setGapTarget] = useState<string | null>(null)
+  const [question, setQuestion] = useState('')
+  const [audience, setAudience] = useState<KnowledgeAudience>('customer_adult')
+  const [product, setProduct] = useState<KnowledgeProduct>('community')
+  const [answer, setAnswer] = useState<AiRunView | null>(null)
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: `reloadKey` é só o gatilho do retry — bump força a re-carga sem ser lido no corpo.
-  useEffect(() => {
-    let alive = true
-    setLoading(true)
-    setFailed(false)
-    apiGet<HelpdeskPage<KbArticleView>>(`/api/helpdesk/kb?limit=${LIMIT}&offset=0`)
-      .then((page) => {
-        if (!alive) return
-        setItems(page.items)
-        setTotal(page.total)
-        setHasMore(page.hasMore)
-        setLoading(false)
-      })
-      .catch(() => {
-        // Erro não vira lista vazia (indistinguível de base vazia): aviso + tentar de novo.
-        if (!alive) return
-        setFailed(true)
-        setLoading(false)
-      })
-    return () => {
-      alive = false
-    }
-  }, [reloadKey])
-
-  async function loadMore() {
-    setLoadingMore(true)
+  const load = useCallback(async (start = 0) => {
+    setBusy(true)
+    setError('')
     try {
       const page = await apiGet<HelpdeskPage<KbArticleView>>(
-        `/api/helpdesk/kb?limit=${LIMIT}&offset=${items.length}`,
+        `/api/helpdesk/kb?limit=50&offset=${start}`,
       )
-      setItems((cur) => {
-        const seen = new Set(cur.map((it) => it.id))
-        return [...cur, ...page.items.filter((it) => !seen.has(it.id))]
-      })
-      setTotal(page.total)
+      setItems((current) =>
+        start
+          ? [...current, ...page.items.filter((item) => !current.some((old) => old.id === item.id))]
+          : page.items,
+      )
+      setOffset(start + page.items.length)
       setHasMore(page.hasMore)
     } catch {
-      toast.error('Não foi possível carregar mais artigos. Tente novamente.')
+      setError('Não foi possível carregar a base. Tente novamente.')
     } finally {
-      setLoadingMore(false)
+      setBusy(false)
     }
-  }
+  }, [])
+  useEffect(() => {
+    void load()
+  }, [load])
 
-  function reload() {
-    setReloadKey((key) => key + 1)
-  }
-
-  function openCreate() {
-    setEditTarget(null)
-    setDialogOpen(true)
-  }
-
-  function openEdit(article: KbArticleView) {
-    setEditTarget(article)
-    setDialogOpen(true)
-  }
-
-  function handleSaved(saved: KbArticleView, created: boolean) {
-    if (created) {
-      setItems((cur) => [saved, ...cur])
-      setTotal((t) => t + 1)
-      return
-    }
-    setItems((cur) => cur.map((it) => (it.id === saved.id ? saved : it)))
-  }
-
-  async function togglePublished(article: KbArticleView, published: boolean) {
-    setTogglingId(article.id)
+  async function inspect(article: KbArticleView) {
+    setBusy(true)
     try {
-      const saved = await apiSend<KbArticleView>(`/api/helpdesk/kb/${article.id}`, 'PATCH', {
-        published,
-        version: article.version,
-      })
-      setItems((cur) => cur.map((it) => (it.id === saved.id ? saved : it)))
-      toast.success(published ? 'Artigo publicado.' : 'Artigo despublicado.')
-    } catch (error) {
-      const apiError = error as ApiError
-      if (apiError.status === 409) {
-        toast.error('Alguém editou antes; recarregue.')
-        reload()
-        return
-      }
-      toast.error('Não foi possível atualizar o artigo. Tente novamente.')
+      setRevisions(
+        await apiGet<KnowledgeRevisionView[]>(`/api/helpdesk/kb/${article.id}/revisions`),
+      )
+      setSelected(article)
+    } catch {
+      toast.error('Não foi possível carregar as revisões.')
     } finally {
-      setTogglingId(null)
+      setBusy(false)
     }
   }
-
-  async function confirmDelete() {
-    if (!deleteTarget) return
+  async function mutate(
+    action: 'publish' | 'unpublish' | 'archive' | 'retry-index',
+    revisionId?: string,
+  ) {
+    if (!selected) return
+    setBusy(true)
     try {
-      await apiSend<null>(`/api/helpdesk/kb/${deleteTarget.id}`, 'DELETE')
-      setItems((cur) => cur.filter((it) => it.id !== deleteTarget.id))
-      setTotal((t) => Math.max(0, t - 1))
-      toast.success('Artigo excluído.')
-      setDeleteTarget(null)
-    } catch (error) {
-      // 404 = já tinha sido excluído (outra aba/tentativa anterior) — sincroniza.
-      if ((error as ApiError).status === 404) {
-        toast.success('Artigo excluído.')
-        setDeleteTarget(null)
-        reload()
-        return
-      }
-      toast.error('Não foi possível excluir o artigo. Tente novamente.')
+      await apiSend(
+        `/api/helpdesk/kb/${selected.id}/${action}`,
+        'POST',
+        action === 'retry-index'
+          ? { revisionId }
+          : { version: selected.version, ...(action === 'publish' ? { revisionId } : {}) },
+      )
+      toast.success(action === 'retry-index' ? 'Indexação reagendada.' : 'Base atualizada.')
+      setSelected(null)
+      await load()
+    } catch (e) {
+      toast.error(isApiError(e) ? e.message : 'Não foi possível atualizar a base.')
+    } finally {
+      setBusy(false)
     }
   }
-
+  async function showGaps() {
+    setTab('Lacunas')
+    setBusy(true)
+    setError('')
+    try {
+      setGaps(await apiGet<KnowledgeGapView[]>('/api/helpdesk/kb/gaps'))
+    } catch {
+      setError('Não foi possível carregar as lacunas.')
+    } finally {
+      setBusy(false)
+    }
+  }
+  async function testAnswer() {
+    setBusy(true)
+    setAnswer(null)
+    setError('')
+    try {
+      setAnswer(
+        await apiSend<AiRunView>('/api/helpdesk/kb/test-answer', 'POST', {
+          query: question,
+          audience,
+          product,
+        }),
+      )
+    } catch (e) {
+      setError(isApiError(e) ? e.message : 'Falha ao testar a resposta.')
+    } finally {
+      setBusy(false)
+    }
+  }
+  const draft = revisions.find((revision) => revision.id === selected?.draftRevisionId)
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-muted-foreground">
-          {total} {total === 1 ? 'artigo' : 'artigos'}
-        </p>
-        <Button onClick={openCreate}>
-          <Plus aria-hidden />
-          Novo artigo
-        </Button>
-      </div>
-
-      {failed ? (
-        <div className="flex flex-col items-center gap-3 rounded-xl border border-border bg-card py-16 text-center">
-          <p className="text-sm text-destructive" role="alert">
-            Não foi possível carregar os artigos.
-          </p>
-          <Button variant="outline" onClick={reload}>
-            Tentar de novo
+    <div className="space-y-5" aria-busy={busy}>
+      <nav aria-label="Base de conhecimento" className="flex flex-wrap gap-2">
+        {['Artigos', 'Fontes', 'Lacunas', 'Testar resposta'].map((name) => (
+          <Button
+            key={name}
+            variant={tab === name ? 'default' : 'outline'}
+            onClick={() => (name === 'Lacunas' ? void showGaps() : setTab(name))}
+          >
+            {name}
+          </Button>
+        ))}
+      </nav>
+      {error ? (
+        <div role="alert" className="text-sm text-destructive">
+          {error}
+          <Button variant="ghost" onClick={() => void (tab === 'Lacunas' ? showGaps() : load())}>
+            Tentar novamente
           </Button>
         </div>
-      ) : loading ? (
-        <div className="space-y-3" aria-busy="true">
-          <span className="sr-only">Carregando artigos</span>
-          {['a', 'b', 'c'].map((key) => (
-            <Skeleton key={key} className="h-20 w-full rounded-xl" />
-          ))}
-        </div>
-      ) : items.length === 0 ? (
-        <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border bg-card/50 py-20 text-center">
-          <BookOpen className="size-8 text-muted-foreground" />
-          <div className="space-y-1 px-6">
-            <p className="text-sm font-medium">Nenhum artigo ainda</p>
-            <p className="text-sm text-muted-foreground">
-              Escreva o primeiro artigo para a IA usar nas respostas.
-            </p>
-          </div>
-          <Button onClick={openCreate}>
-            <Plus aria-hidden />
-            Novo artigo
-          </Button>
-        </div>
-      ) : (
+      ) : null}
+      {tab === 'Artigos' || tab === 'Fontes' ? (
         <>
-          <ul className="divide-y divide-border rounded-xl border border-border bg-card">
+          <div className="flex justify-between gap-3">
+            <p className="text-sm text-muted-foreground">
+              {tab === 'Fontes'
+                ? 'Confira origem, responsável, revisão e validade antes de publicar.'
+                : 'Editar cria uma nova revisão sem alterar a publicação atual.'}
+            </p>
+            <Button onClick={() => setEditor({ article: null })}>Novo artigo</Button>
+          </div>
+          {!busy && !items.length ? <p>Nenhum artigo cadastrado.</p> : null}
+          <ul className="divide-y divide-border rounded-xl border border-border">
             {items.map((article) => (
-              <li
-                key={article.id}
-                className="flex flex-col gap-3 p-4 sm:flex-row sm:items-start sm:justify-between"
-              >
-                <div className="min-w-0 space-y-1.5">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="font-medium">{article.title}</h3>
-                    {article.published ? (
-                      <Badge variant="success">Publicado</Badge>
-                    ) : (
-                      <Badge variant="muted">Rascunho</Badge>
-                    )}
-                  </div>
-                  <p className="line-clamp-2 text-sm text-muted-foreground">{article.content}</p>
-                  <p className="text-xs text-muted-foreground">{articleMeta(article)}</p>
+              <li key={article.id} className="flex flex-wrap items-start justify-between gap-3 p-4">
+                <div className="min-w-0 space-y-1">
+                  <h2 className="font-medium">{article.title}</h2>
+                  <p className="text-sm text-muted-foreground">
+                    {article.published ? 'Publicado' : 'Rascunho'} ·{' '}
+                    {audienceLabels[article.audience]} · {productLabels[article.product]}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Responsável: {article.ownerName || 'Não definido'} · Origem: {article.origin} ·{' '}
+                    {article.validUntil
+                      ? `Válido até ${formatShortSp(article.validUntil)}`
+                      : 'Sem vencimento'}
+                  </p>
+                  {article.publishedRevisionId &&
+                  article.draftRevisionId !== article.publishedRevisionId ? (
+                    <p className="text-xs">Há alterações ainda não publicadas.</p>
+                  ) : null}
                 </div>
-                <div className="flex shrink-0 flex-wrap items-center gap-3">
-                  <Switch
-                    checked={article.published}
-                    onCheckedChange={(next) => togglePublished(article, next)}
-                    disabled={togglingId === article.id}
-                    aria-label={`Publicado: ${article.title}`}
-                  />
-                  <Button variant="outline" size="sm" onClick={() => openEdit(article)}>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => setEditor({ article })}>
                     Editar
                   </Button>
-                  <Button variant="destructive" size="sm" onClick={() => setDeleteTarget(article)}>
-                    Excluir
+                  <Button variant="outline" onClick={() => void inspect(article)} disabled={busy}>
+                    Revisões e publicação
                   </Button>
                 </div>
               </li>
             ))}
           </ul>
           {hasMore ? (
-            <div className="flex justify-center">
-              <Button variant="outline" onClick={loadMore} disabled={loadingMore}>
-                {loadingMore ? 'Carregando…' : `Carregar mais (${items.length} de ${total})`}
-              </Button>
-            </div>
+            <Button variant="outline" disabled={busy} onClick={() => void load(offset)}>
+              Carregar mais
+            </Button>
           ) : null}
         </>
-      )}
-
+      ) : null}
+      {tab === 'Lacunas' ? (
+        <div className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            Execuções sem cobertura completa. Revise o atendimento e escreva uma orientação geral,
+            removendo dados pessoais, antes de criar um artigo.
+          </p>
+          {gaps.length === 0 && !busy ? <p>Nenhuma lacuna pendente.</p> : null}
+          {gaps.map((gap) => (
+            <div
+              key={gap.runId}
+              className="flex flex-wrap justify-between gap-3 rounded-lg border p-3"
+            >
+              <p>
+                {audienceLabels[gap.audience]} · {productLabels[gap.product]} · {gap.reason}
+                {gap.ticketId ? (
+                  <a className="ml-3 underline" href={`/tickets/${gap.ticketId}`}>
+                    Revisar atendimento
+                  </a>
+                ) : null}
+              </p>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setGapTarget(gap.runId)
+                  setEditor({ article: null })
+                }}
+              >
+                Escrever artigo
+              </Button>
+            </div>
+          ))}
+        </div>
+      ) : null}
+      {tab === 'Testar resposta' ? (
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Simula uma pergunta com o público e o produto selecionados. Não envia mensagens a
+            clientes. Use perguntas sem dados pessoais.
+          </p>
+          <KnowledgeFields
+            audience={audience}
+            product={product}
+            onAudience={setAudience}
+            onProduct={setProduct}
+          />
+          <label htmlFor="kb-question" className="text-sm">
+            Pergunta de teste
+          </label>
+          <Textarea
+            id="kb-question"
+            maxLength={8000}
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+          />
+          <Button onClick={() => void testAnswer()} disabled={busy || question.trim().length < 3}>
+            {busy ? 'Testando…' : 'Testar resposta'}
+          </Button>
+          {answer ? <AnswerEvidence run={answer} /> : null}
+        </div>
+      ) : null}
       <ArticleDialog
-        open={dialogOpen}
-        article={editTarget}
-        onClose={() => setDialogOpen(false)}
-        onSaved={handleSaved}
-        onStale={reload}
+        open={editor !== null}
+        article={editor?.article ?? null}
+        onClose={() => {
+          setEditor(null)
+          setGapTarget(null)
+        }}
+        onSaved={(saved) => {
+          if (gapTarget)
+            void apiSend(`/api/helpdesk/kb/gaps/${gapTarget}/resolve`, 'POST', {
+              articleId: saved.id,
+            })
+              .then(() => showGaps())
+              .catch(() => toast.error('Artigo salvo, mas a lacuna continua pendente.'))
+          void load()
+        }}
+        onStale={() => void load()}
       />
-      <ConfirmDialog
-        open={deleteTarget !== null}
-        onClose={() => setDeleteTarget(null)}
-        title="Excluir artigo"
-        message={
-          deleteTarget
-            ? `O artigo "${deleteTarget.title}" some da base e a IA deixa de usá-lo. Não dá para desfazer.`
-            : ''
+      <Dialog
+        open={selected !== null}
+        onClose={() => setSelected(null)}
+        title="Revisões e publicação"
+        className="max-w-2xl"
+        footer={
+          <Button variant="outline" onClick={() => setSelected(null)}>
+            Fechar
+          </Button>
         }
-        confirmText="Excluir"
-        confirmVariant="destructive"
-        onConfirm={confirmDelete}
-      />
+      >
+        <div className="space-y-4">
+          <p className="text-sm">{selected?.title}</p>
+          {revisions.map((revision) => (
+            <details key={revision.id} className="rounded-lg border p-3">
+              <summary className="cursor-pointer">
+                Revisão {revision.number} · {revision.indexState}{' '}
+                {selected?.publishedRevisionId === revision.id ? '· Publicada' : ''}
+              </summary>
+              <p className="my-2 text-xs">
+                {audienceLabels[revision.audience]} · {revision.ownerName} · {revision.origin}
+              </p>
+              <pre className="max-h-64 overflow-auto whitespace-pre-wrap text-sm">
+                {revision.content}
+              </pre>
+              {revision.indexState === 'failed' ? (
+                <Button
+                  variant="outline"
+                  onClick={() => void mutate('retry-index', revision.id)}
+                  disabled={busy}
+                >
+                  Repetir indexação
+                </Button>
+              ) : null}
+            </details>
+          ))}
+          <Button
+            variant="outline"
+            onClick={() => selected && void inspect(selected)}
+            disabled={busy}
+          >
+            Atualizar indexação
+          </Button>
+          {canPublish ? (
+            <div className="flex flex-wrap gap-2">
+              <Button
+                disabled={
+                  busy ||
+                  draft?.indexState !== 'ready' ||
+                  !draft.ownerName ||
+                  !draft.validUntil ||
+                  new Date(draft.validUntil).getTime() <= Date.now()
+                }
+                onClick={() => draft && void mutate('publish', draft.id)}
+              >
+                Publicar revisão atual
+              </Button>
+              <Button
+                variant="outline"
+                disabled={busy || !selected?.published}
+                onClick={() => void mutate('unpublish')}
+              >
+                Retirar publicação
+              </Button>
+              <Button variant="destructive" disabled={busy} onClick={() => void mutate('archive')}>
+                Arquivar artigo
+              </Button>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              A publicação e a retirada são feitas por administradores.
+            </p>
+          )}
+        </div>
+      </Dialog>
     </div>
   )
 }

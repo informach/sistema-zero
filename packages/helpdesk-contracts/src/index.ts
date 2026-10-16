@@ -199,6 +199,9 @@ export interface TicketSlaView {
 }
 
 export interface TicketView {
+  handlingMode: import('./automation').HandlingMode
+  handoffReason: import('./automation').HandoffReason | null
+  replyChannel: 'portal' | 'email'
   id: string
   version: number
   source: TicketSource
@@ -217,6 +220,7 @@ export interface TicketView {
   messageCount: number
   aiSummary: string | null
   aiSummaryAt: string | null
+  aiDraftRunId: string | null
   aiDraft: string | null
   aiDraftAt: string | null
   aiDraftEdited: boolean
@@ -234,6 +238,8 @@ export interface TicketView {
 }
 
 export interface MessageView {
+  aiRunId: string | null
+  draftEdited: boolean | null
   id: string
   ticketId: string
   kind: 'email' | 'note' | 'portal'
@@ -265,6 +271,10 @@ export interface MessageView {
 }
 
 export interface TicketDetailResponse {
+  hasOlder: boolean
+  hasMore: boolean
+  olderCursor: string | null
+  latestCursor: string | null
   ticket: TicketView
   messages: MessageView[]
 }
@@ -282,12 +292,22 @@ export interface TicketStatsView {
   volume: DailyVolumePoint[]
 }
 
+export * from './knowledge'
+
 export interface KbArticleView {
   id: string
   version: number
   title: string
   content: string
   published: boolean
+  draftRevisionId: string | null
+  publishedRevisionId: string | null
+  audience: import('./knowledge').KnowledgeAudience
+  product: import('./knowledge').KnowledgeProduct
+  ownerName: string
+  origin: string
+  validUntil: string | null
+  archived: boolean
   createdBy: string
   createdByName: string | null
   createdAt: string
@@ -315,6 +335,9 @@ export type CustomerTicketStatus = TicketStatus
 export type CustomerTicketCategory = TicketCategory
 
 export interface CustomerTicketView {
+  handlingMode: import('./automation').HandlingMode
+  assistantState: 'thinking' | 'waiting_customer' | 'human' | 'resolved'
+  handoffMessage: string | null
   id: string
   version: number
   source: TicketSource
@@ -327,6 +350,8 @@ export interface CustomerTicketView {
 }
 
 export interface CustomerTicketMessageView {
+  authorKind: 'customer' | 'team' | 'assistant'
+  citations: import('./automation').PublicCitation[]
   id: string
   ticketId: string
   kind: 'email' | 'portal'
@@ -340,8 +365,14 @@ export interface CustomerTicketMessageView {
 export interface CustomerTicketDetail {
   ticket: CustomerTicketView
   messages: CustomerTicketMessageView[]
+  hasOlder: boolean
+  olderCursor: string | null
+  latestCursor: string | null
+  hasMore: boolean
 }
 
 export type CustomerTicketPage = CursorPage<CustomerTicketView>
 
 export const CUSTOMER_TICKET_CATEGORIES = TICKET_CATEGORIES
+export * from './ai'
+export * from './automation'

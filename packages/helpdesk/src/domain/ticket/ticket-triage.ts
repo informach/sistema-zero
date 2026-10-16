@@ -54,6 +54,7 @@ export function promoteTicket(ticket: Ticket, input: PromoteTicketInput): void {
   ticket.aiSummary = null
   ticket.aiSummaryAt = null
   ticket.aiDraft = null
+  ticket.aiDraftRunId = null
   ticket.aiDraftAt = null
   ticket.aiDraftEdited = false
   ticket.aiClassification = null

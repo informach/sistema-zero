@@ -18,6 +18,7 @@ export interface ApiError {
   code: string
   message: string
   /** Só em `QUIZ_COOLDOWN` (429): ISO de quando o aluno pode refazer o quiz. */
+  retryAfterMs?: number
   retryAvailableAt?: string
 }
 
@@ -42,7 +43,17 @@ async function handle<T>(res: Response): Promise<T> {
     throw { status: 401, code: 'UNAUTHORIZED', message: 'Sessão expirada.' } satisfies ApiError
   }
   const body = await res.json().catch(() => null)
-  if (!res.ok) throw extractError(res.status, body)
+  if (!res.ok) {
+    const error = extractError(res.status, body)
+    const retry = res.headers.get('retry-after')
+    if (retry) {
+      const seconds = Number(retry)
+      error.retryAfterMs = Number.isFinite(seconds)
+        ? Math.max(0, seconds * 1000)
+        : Math.max(0, (Date.parse(retry) || Date.now()) - Date.now())
+    }
+    throw error
+  }
   return body as T
 }
 

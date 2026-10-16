@@ -50,7 +50,13 @@ integration('DrizzleCustomerTicketRepository', () => {
       direction: 'inbound',
       sentVia: 'customer',
     })
-    await repository.createWithInitialMessage({ ticket, message: initial })
+    await repository.createWithInitialMessage({
+      ticket,
+      message: initial,
+      commandKey: crypto.randomUUID(),
+      commandHash: 'initial',
+      aiEnabled: false,
+    })
 
     const ownPage = await repository.listOwned({ ...owner, limit: 20, cursor: null })
     expect(ownPage.items.map((item) => item.id)).toEqual([ticket.id])
@@ -78,6 +84,8 @@ integration('DrizzleCustomerTicketRepository', () => {
       message: reply,
       at: new Date(ticket.createdAt.getTime() + 1_000),
       aiEnabled: false,
+      commandKey: crypto.randomUUID(),
+      commandHash: 'reply',
     })
     expect(appended?.ticket.status).toBe('open')
     expect(appended?.ticket.messageCount).toBe(2)

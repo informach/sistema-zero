@@ -182,6 +182,7 @@ describe('portal do responsável', () => {
     expect(await repos.tickets.byId(ticket.id)).toMatchObject({
       aiGeneration: 2,
       aiSummary: null,
+      aiDraftRunId: null,
       aiDraft: null,
     })
     expect((await repos.messages.byTicketId(ticket.id)).at(-1)).toMatchObject({
@@ -280,5 +281,21 @@ describe('portal do responsável', () => {
     })
     expect(invalid.status).toBe(400)
     expect((await json(invalid)).error.code).toBe('VALIDATION_ERROR')
+  })
+  it('novas ações e fontes recusam sessão infantil antes de ler ou escrever', async () => {
+    const { app } = buildTestApp(),
+      id = crypto.randomUUID()
+    for (const [method, path] of [
+      ['GET', `/helpdesk/portal/tickets/${id}/messages`],
+      ['GET', `/helpdesk/portal/tickets/${id}/sources/${id}`],
+      ['POST', `/helpdesk/portal/tickets/${id}/handoff`],
+      ['POST', `/helpdesk/portal/tickets/${id}/resolve`],
+    ] as const) {
+      const result = await request(app, method, path, {
+        headers: customerHeaders({ 'x-auth-account-id': CUSTOMER_USER_ID }),
+        ...(method === 'POST' ? { body: { idempotencyKey: crypto.randomUUID() } } : {}),
+      })
+      expect(result.status).toBe(403)
+    }
   })
 })

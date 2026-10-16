@@ -1,5 +1,8 @@
 # Helpdesk do Sistema Zero: conhecimento confiável e automação gradual
 
+> Implementação iniciada por autorização posterior do usuário, com atualização conjunta dos consumidores (Helpdesk ainda sem usuários). O texto abaixo preserva a análise original. Consulte o [registro dos lotes e revisão final](../superpowers/plans/2026-10-15-helpdesk-ia-kb-implementacao.md) e o [guia operacional](../helpdesk/operacao-ia.md) para o estado implementado.
+
+
 Data: 15/10/2026. Revisão 2. **Proposta de evolução; não implementada.**
 
 Esta é a proposta vigente. Substitui o desenho e as estimativas iniciais da [análise do Echo](../../.audits/architectural-analysis-2026-10-15-echo-helpdesk.md). A prioridade é automatizar atendimento com IA e conhecimento aprovado, mantendo o Helpdesk como sistema responsável pelo chamado.

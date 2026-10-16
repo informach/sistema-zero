@@ -13,6 +13,7 @@ import { formatDate } from '@/lib/format'
 import type { MessageView } from '@/lib/types'
 
 function senderLabel(message: MessageView): string {
+  if (message.sentVia === 'ai') return 'Assistente de IA'
   if (message.kind === 'note') return message.createdByName ?? 'Equipe'
   if (message.fromName && message.fromEmail) return `${message.fromName} <${message.fromEmail}>`
   return message.fromEmail ?? message.createdByName ?? 'Sem remetente'
@@ -27,7 +28,7 @@ function directionLabel(message: MessageView): string {
   if (message.kind === 'note') return `Nota interna · ${message.createdByName ?? 'Equipe'}`
   if (message.direction === 'inbound') return `Recebido${triageSuffix(message)}`
   if (message.direction === 'outbound') {
-    if (message.sentVia === 'ai') return 'Registro histórico de resposta automática'
+    if (message.sentVia === 'ai') return 'Respondido pelo assistente de IA'
     if (message.sentVia === 'gmail') return `Enviado pelo Gmail${triageSuffix(message)}`
     if (message.kind === 'portal') {
       return `Publicado na Ajuda por ${message.createdByName ?? 'Equipe'}`

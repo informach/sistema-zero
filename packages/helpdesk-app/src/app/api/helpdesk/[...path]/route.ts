@@ -37,11 +37,15 @@ async function handle(req: Request, params: Promise<{ path: string[] }>): Promis
   // o `.catch` cobre o parse de corpo vazio.
   const body = method === 'GET' ? undefined : await req.json().catch(() => undefined)
 
-  const { status, body: upstreamBody } = await gatewayFetch(`${upstreamPath}${search}`, {
+  const {
+    status,
+    body: upstreamBody,
+    retryAfter,
+  } = await gatewayFetch(`${upstreamPath}${search}`, {
     method,
     body,
   })
-  return forwardUpstream({ status, body: upstreamBody })
+  return forwardUpstream({ status, body: upstreamBody, retryAfter })
 }
 
 export async function GET(req: Request, ctx: { params: Promise<{ path: string[] }> }) {

@@ -4181,6 +4181,55 @@ const config: GatewayConfigInput = {
       rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
       audit: {},
     },
+    ...['publish', 'unpublish', 'archive'].map<GatewayConfigInput['routes'][number]>((action) => ({
+      id: `helpdesk-kb-${action}`,
+      methods: ['POST'],
+      pathPattern: `/helpdesk/kb/:id/${action}`,
+      service: 'helpdesk',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: helpdeskInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      audit: {},
+    })),
+    ...['/helpdesk/settings/automation', '/helpdesk/settings/automation/*'].map<
+      GatewayConfigInput['routes'][number]
+    >((pathPattern, index) => ({
+      id: `helpdesk-automation-policy-${index}`,
+      methods: ['PATCH', 'POST'],
+      pathPattern,
+      service: 'helpdesk',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: helpdeskInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 30, windowMs: 60000, by: 'principal' },
+      audit: {},
+    })),
+    ...['/helpdesk/settings/automation', '/helpdesk/settings/automation/*'].map<
+      GatewayConfigInput['routes'][number]
+    >((pathPattern, index) => ({
+      id: `helpdesk-automation-policy-read-${index}`,
+      methods: ['GET'],
+      pathPattern,
+      service: 'helpdesk',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: helpdeskInternalTransforms,
+      rateLimit: { max: 60, windowMs: 60000, by: 'principal' },
+    })),
+    {
+      id: 'helpdesk-test-answer',
+      methods: ['POST'],
+      pathPattern: '/helpdesk/kb/test-answer',
+      service: 'helpdesk',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: helpdeskInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 10, windowMs: 60000, by: 'principal' },
+    },
     // Conectar/desconectar a caixa do Gmail é admin+ e auditado.
     {
       id: 'helpdesk-connection-write',

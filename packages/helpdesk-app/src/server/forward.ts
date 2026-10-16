@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import { normalizeUpstreamError } from '@/lib/upstream'
 
 interface UpstreamResult {
+  retryAfter?: string
   status: number
   body: unknown
 }
@@ -12,14 +13,15 @@ interface UpstreamResult {
  * (status < 400) repassa o corpo intacto; em ERRO, normaliza para o envelope
  * `{ error: { code, message } }` (ver `normalizeUpstreamError`) para não vazar o
  * corpo interno do upstream. Use SEMPRE no pass-through em vez de
- * `NextResponse.json(body, { status })`. (Padrão herdado do admin.)
+ * `NextResponse.json(body, { status,headers })`. (Padrão herdado do admin.)
  */
-export function forwardUpstream({ status, body }: UpstreamResult): NextResponse {
+export function forwardUpstream({ status, body, retryAfter }: UpstreamResult): NextResponse {
+  const headers = retryAfter ? { 'retry-after': retryAfter } : undefined
   // 204/205/304 não admitem corpo — o construtor do Response LANÇA com json()
   // (o DELETE de artigo do helpdesk responde 204).
   if (status === 204 || status === 205 || status === 304) {
-    return new NextResponse(null, { status })
+    return new NextResponse(null, { status, headers })
   }
-  if (status < 400) return NextResponse.json(body, { status })
-  return NextResponse.json(normalizeUpstreamError(body), { status })
+  if (status < 400) return NextResponse.json(body, { status, headers })
+  return NextResponse.json(normalizeUpstreamError(body), { status, headers })
 }

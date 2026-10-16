@@ -3,14 +3,17 @@ import type {
   AiClassificationUpdate,
   AiWriteGuard,
   ListTicketsFilter,
+  TicketOperationalPatch,
   TicketRepository,
 } from '../../../domain/ports/ticket-repository.port'
 import type { Ticket } from '../../../domain/ticket/ticket'
+import type { TicketMessage } from '../../../domain/ticket/ticket-message'
 import { SLA_RISK_START_RATIO, SLA_TARGET_MINUTES } from '../../../domain/ticket/ticket-sla'
 import { densifyVolume, statsWindows, type TicketStats } from '../../../domain/ticket/ticket-stats'
+import { humanTakeoverSet, supersedeJobs } from './automation-transactions'
 import type { Database, DbConnection } from './db'
 import { escapeLike } from './pg-errors'
-import { tickets } from './schema'
+import { ticketMessages, tickets } from './schema'
 
 type TicketUpdateDatabase = Pick<Database, 'update'>
 
@@ -44,6 +47,7 @@ export async function updateTicketRow(
       messageCount: ticket.messageCount,
       aiSummary: ticket.aiSummary,
       aiSummaryAt: ticket.aiSummaryAt,
+      aiDraftRunId: ticket.aiDraftRunId,
       aiDraft: ticket.aiDraft,
       aiDraftAt: ticket.aiDraftAt,
       aiDraftEdited: ticket.aiDraftEdited,
@@ -73,6 +77,19 @@ export class DrizzleTicketRepository implements TicketRepository {
   async create(ticket: Ticket): Promise<void> {
     await this.db.insert(tickets).values(ticket)
   }
+  async appendNote(note: TicketMessage, at: Date): Promise<boolean> {
+    return this.db.transaction(async (tx) => {
+      const [ticket] = await tx
+        .update(tickets)
+        .set({ ...humanTakeoverSet(at), version: sql`${tickets.version}+1` })
+        .where(eq(tickets.id, note.ticketId))
+        .returning({ id: tickets.id })
+      if (!ticket) return false
+      await supersedeJobs(tx, ticket.id, at)
+      await tx.insert(ticketMessages).values(note)
+      return true
+    })
+  }
 
   async byId(id: string): Promise<Ticket | null> {
     const [row] = await this.db.select().from(tickets).where(eq(tickets.id, id)).limit(1)
@@ -85,6 +102,28 @@ export class DrizzleTicketRepository implements TicketRepository {
     return ok
   }
 
+  async patch(
+    id: string,
+    expectedVersion: number,
+    changes: TicketOperationalPatch,
+    at: Date,
+  ): Promise<Ticket | null> {
+    return this.db.transaction(async (tx) => {
+      const [row] = await tx
+        .update(tickets)
+        .set({
+          ...humanTakeoverSet(at, changes.status),
+          ...changes,
+          version: expectedVersion + 1,
+          updatedAt: at,
+        })
+        .where(and(eq(tickets.id, id), eq(tickets.version, expectedVersion)))
+        .returning()
+      if (row) await supersedeJobs(tx, row.id, at)
+      return row ?? null
+    })
+  }
+
   async list(filter: ListTicketsFilter, now: Date): Promise<{ items: Ticket[]; total: number }> {
     // O cursor congela a admissão de tickets novos e o relógio usado pelo SLA.
     const conditions = [lte(tickets.createdAt, now)]
@@ -92,6 +131,7 @@ export class DrizzleTicketRepository implements TicketRepository {
     conditions.push(
       filter.triage === 'automated' ? ne(tickets.triage, 'human') : eq(tickets.triage, 'human'),
     )
+    if (filter.handlingMode) conditions.push(eq(tickets.handlingMode, filter.handlingMode))
     if (filter.status) conditions.push(eq(tickets.status, filter.status))
     if (filter.category) conditions.push(eq(tickets.category, filter.category))
     if (filter.q) {
@@ -109,10 +149,10 @@ export class DrizzleTicketRepository implements TicketRepository {
       when 'baixa' then ${SLA_TARGET_MINUTES.baixa}::integer
       else ${SLA_TARGET_MINUTES.normal}::integer
     end`
-    const deadlineAt = sql<Date>`coalesce(${tickets.lastInboundAt}, ${tickets.firstMessageAt}) + (${targetMinutes} * interval '1 minute')`
-    const riskAt = sql<Date>`coalesce(${tickets.lastInboundAt}, ${tickets.firstMessageAt}) + (${targetMinutes} * ${SLA_RISK_START_RATIO}::double precision * interval '1 minute')`
+    const deadlineAt = sql<Date>`coalesce(${tickets.humanSlaStartedAt}, ${tickets.lastInboundAt}, ${tickets.firstMessageAt}) + (${targetMinutes} * interval '1 minute')`
+    const riskAt = sql<Date>`coalesce(${tickets.humanSlaStartedAt}, ${tickets.lastInboundAt}, ${tickets.firstMessageAt}) + (${targetMinutes} * ${SLA_RISK_START_RATIO}::double precision * interval '1 minute')`
     const nowIso = now.toISOString()
-    const active = sql`${tickets.status} in ('new', 'open')`
+    const active = sql`${tickets.handlingMode} = 'human' and ${tickets.status} in ('new', 'open')`
     if (filter.queue === 'unassigned') {
       conditions.push(sql`${active} and ${tickets.assignedTo} is null`)
     }
@@ -179,14 +219,14 @@ export class DrizzleTicketRepository implements TicketRepository {
       this.connection.sql`
         with ticket_sla as (
           select *,
-            coalesce(last_inbound_at, first_message_at) + (
+            coalesce(human_sla_started_at, last_inbound_at, first_message_at) + (
               case priority
                 when 'alta' then ${SLA_TARGET_MINUTES.alta}::integer
                 when 'baixa' then ${SLA_TARGET_MINUTES.baixa}::integer
                 else ${SLA_TARGET_MINUTES.normal}::integer
               end * interval '1 minute'
             ) as sla_deadline,
-            coalesce(last_inbound_at, first_message_at) + (
+            coalesce(human_sla_started_at, last_inbound_at, first_message_at) + (
               case priority
                 when 'alta' then ${SLA_TARGET_MINUTES.alta}::integer
                 when 'baixa' then ${SLA_TARGET_MINUTES.baixa}::integer
@@ -204,9 +244,9 @@ export class DrizzleTicketRepository implements TicketRepository {
           count(*) filter (where status = 'waiting') as waiting_count,
           count(*) filter (where status in ('resolved', 'closed') and resolved_at >= ${w.todayStartIso}) as resolved_today,
           count(*) filter (where status in ('resolved', 'closed') and resolved_at >= ${w.weekStartIso}) as resolved_7d,
-          count(*) filter (where status in ('new', 'open') and sla_deadline <= ${nowIso}) as sla_breached,
-          count(*) filter (where status in ('new', 'open') and sla_deadline > ${nowIso} and sla_risk_at <= ${nowIso}) as sla_at_risk,
-          count(*) filter (where status in ('new', 'open') and assigned_to is null) as sla_unassigned
+          count(*) filter (where handling_mode = 'human' and status in ('new', 'open') and sla_deadline <= ${nowIso}) as sla_breached,
+          count(*) filter (where handling_mode = 'human' and status in ('new', 'open') and sla_deadline > ${nowIso} and sla_risk_at <= ${nowIso}) as sla_at_risk,
+          count(*) filter (where handling_mode = 'human' and status in ('new', 'open') and assigned_to is null) as sla_unassigned
         from ticket_sla
       `,
       this.connection.sql`
@@ -279,10 +319,22 @@ export class DrizzleTicketRepository implements TicketRepository {
     return updated.length > 0
   }
 
-  async applyDraft(id: string, guard: AiWriteGuard, draft: string, at: Date): Promise<boolean> {
+  async applyDraft(
+    id: string,
+    guard: AiWriteGuard,
+    draft: string,
+    runId: string | null,
+    at: Date,
+  ): Promise<boolean> {
     const updated = await this.db
       .update(tickets)
-      .set({ aiDraft: draft, aiDraftAt: at, aiDraftEdited: false, updatedAt: at })
+      .set({
+        aiDraftRunId: runId,
+        aiDraft: draft,
+        aiDraftAt: at,
+        aiDraftEdited: false,
+        updatedAt: at,
+      })
       .where(this.aiWriteWhere(id, guard))
       .returning({ id: tickets.id })
     return updated.length > 0

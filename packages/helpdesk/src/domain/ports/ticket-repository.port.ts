@@ -10,6 +10,7 @@ import type { TicketSlaFilter } from '../ticket/ticket-sla'
 import type { TicketStats } from '../ticket/ticket-stats'
 
 export interface ListTicketsFilter {
+  handlingMode?: 'human' | 'assistant'
   status?: TicketStatus
   category?: TicketCategory
   /**
@@ -52,7 +53,38 @@ export interface AiWriteGuard {
   processingAttempt?: number
 }
 
+/** Campos alteráveis por uma intenção operacional, sem snapshots de entrega/contadores. */
+export type TicketOperationalPatch = Partial<
+  Pick<
+    Ticket,
+    | 'status'
+    | 'resolvedAt'
+    | 'category'
+    | 'categoryManual'
+    | 'priority'
+    | 'assignedTo'
+    | 'assignedToName'
+    | 'triage'
+    | 'triageRule'
+    | 'triagedAt'
+    | 'lastInboundAt'
+    | 'aiGeneration'
+    | 'aiStatus'
+    | 'aiNextAttemptAt'
+    | 'aiAttempts'
+    | 'aiLastError'
+    | 'aiSummary'
+    | 'aiSummaryAt'
+    | 'aiDraftRunId'
+    | 'aiDraft'
+    | 'aiDraftAt'
+    | 'aiDraftEdited'
+    | 'aiClassification'
+  >
+>
+
 export interface TicketRepository {
+  appendNote(note: TicketMessage, at: Date): Promise<boolean>
   create(ticket: Ticket): Promise<void>
   byId(id: string): Promise<Ticket | null>
   /**
@@ -60,6 +92,13 @@ export interface TicketRepository {
    * atualizadas → false (o chamador traduz em CONCURRENCY_CONFLICT).
    */
   update(ticket: Ticket, expectedVersion: number): Promise<boolean>
+  /** Retorna a linha atual; campos omitidos não são regravados. */
+  patch(
+    id: string,
+    expectedVersion: number,
+    changes: TicketOperationalPatch,
+    at: Date,
+  ): Promise<Ticket | null>
   list(filter: ListTicketsFilter, now: Date): Promise<{ items: Ticket[]; total: number }>
   /** Agregados do painel (contagens por status + resolvidos + série). */
   stats(now: Date): Promise<TicketStats>
@@ -81,7 +120,13 @@ export interface TicketRepository {
     update: AiClassificationUpdate,
   ): Promise<boolean>
   /** Persiste o rascunho da IA (ai_draft/ai_draft_at, ai_draft_edited=false). */
-  applyDraft(id: string, guard: AiWriteGuard, draft: string, at: Date): Promise<boolean>
+  applyDraft(
+    id: string,
+    guard: AiWriteGuard,
+    draft: string,
+    runId: string | null,
+    at: Date,
+  ): Promise<boolean>
   /** ai_status='done', zera erro/tentativas. */
   markAiDone(id: string, guard: AiWriteGuard, at: Date): Promise<boolean>
   /** Falha transitória: volta a `pending` com backoff + erro (attempts já bumpado no claim). */
@@ -95,3 +140,5 @@ export interface TicketRepository {
   /** Teto de tentativas: `failed` (o ticket segue 100% usável sem IA). */
   markAiFailed(id: string, guard: AiWriteGuard, error: string, at: Date): Promise<boolean>
 }
+
+import type { TicketMessage } from '../ticket/ticket-message'
