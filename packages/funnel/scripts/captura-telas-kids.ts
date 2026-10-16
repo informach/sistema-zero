@@ -599,6 +599,8 @@ async function main() {
           await foto('tela-catalogo')
           await abrir('/perfil', 4000)
           await rolar(425)
+          // A oferta usa só o RECORTE desta tela, sem o cartão "em construção" (ver `jornada` em
+          // oferta/visuals.ts): depois de recapturar, refaça `tela-jornada-meus-postos`.
           await foto('tela-jornada-postos')
           await rolar(2430)
           await foto('tela-ferias')
