@@ -9,8 +9,10 @@ import type { ProLanguageSession } from '../../../monaco/pro/session'
 import { useProjectStore } from '../../../state/projectStore'
 import type { ProWorkspaceIntent } from '../../../state/proWorkspaceOperations'
 import { useUIStore } from '../../../state/uiStore'
-import { findProCommands, type ProCommand } from './commands'
+import { useT } from '../../../studio/i18n'
+import { findProCommands, type ProCommand, runProCommand } from './commands'
 import { proSourcePosition } from './search'
+import { useProCommands } from './useProCommands'
 
 const button =
   'min-h-9 rounded px-2 text-xs hover:bg-sz-panel focus-visible:outline focus-visible:outline-sz-accent disabled:opacity-40'
@@ -19,6 +21,7 @@ export function ProCodeTools({
   tree,
   language,
   editor,
+  readyEditor = null,
   navigate,
   back,
   canGoBack,
@@ -26,6 +29,7 @@ export function ProCodeTools({
   busy,
   recover,
   search,
+  searchProject = search,
   format,
   help,
 }: {
@@ -33,6 +37,7 @@ export function ProCodeTools({
   tree: ProjectTree
   language: RefObject<ProLanguageSession | null>
   editor: RefObject<Monaco.editor.IStandaloneCodeEditor | null>
+  readyEditor?: Monaco.editor.IStandaloneCodeEditor | null
   navigate: (path: string, line: number, column?: number) => void
   back: () => void
   canGoBack: boolean
@@ -40,9 +45,11 @@ export function ProCodeTools({
   busy: boolean
   recover: () => void
   search: () => void
+  searchProject?: () => void
   format: () => void
   help?: (intent: 'explain' | 'investigate' | 'change') => void
 }) {
+  const t = useT()
   const [toolsOpen, setToolsOpen] = useState(false)
   const [query, setQuery] = useState('')
   const author = useProjectStore((state) => state.editingAccess !== 'observer')
@@ -162,10 +169,33 @@ export function ProCodeTools({
           }),
         )
       : []),
-    { id: 'search', label: 'Buscar arquivo', shortcut: 'Ctrl/Cmd+P', enabled: true, run: search },
+    {
+      id: 'search',
+      label: t('pro.quickOpen'),
+      shortcut: 'Ctrl/Cmd+P',
+      keybinding: 'quickOpen',
+      enabled: true,
+      run: search,
+    },
+    {
+      id: 'searchProject',
+      label: t('pro.searchContent'),
+      shortcut: 'Ctrl/Cmd+Shift+F',
+      keybinding: 'searchProject',
+      enabled: true,
+      run: searchProject,
+    },
+    {
+      id: 'symbols',
+      label: t('pro.symbols'),
+      shortcut: 'Ctrl/Cmd+Shift+O',
+      keybinding: 'symbols',
+      enabled: Boolean(path),
+      run: () => setOpen(true),
+    },
     {
       id: 'format',
-      label: 'Organizar código',
+      label: t('pro.organizeCode'),
       shortcut: 'Shift+Alt+F',
       enabled: Boolean(path) && author && !busy,
       run: format,
@@ -178,13 +208,17 @@ export function ProCodeTools({
     },
     {
       id: 'references',
-      label: 'Onde este nome aparece?',
+      label: t('pro.references'),
+      shortcut: 'Shift+F12',
+      keybinding: 'references',
       enabled: Boolean(path) && !busy,
       run: () => void findReferences(),
     },
     {
       id: 'rename',
-      label: 'Renomear símbolo',
+      label: t('pro.renameSymbol'),
+      shortcut: 'F2',
+      keybinding: 'rename',
       enabled: Boolean(path) && author && !busy,
       run: () => {
         setError(null)
@@ -214,6 +248,7 @@ export function ProCodeTools({
       }),
     ),
   ]
+  useProCommands(readyEditor, commands)
   return (
     <div className="shrink-0 border-b border-sz-border-soft px-2">
       <nav className="flex flex-wrap items-center gap-1" aria-label="Navegar no código">
@@ -226,7 +261,7 @@ export function ProCodeTools({
           aria-expanded={open}
           onClick={() => setOpen(!open)}
         >
-          Mapa do arquivo
+          {t('pro.symbols')}
         </button>
         <button
           type="button"
@@ -236,13 +271,13 @@ export function ProCodeTools({
             setToolsOpen(true)
           }}
         >
-          Ferramentas…
+          {t('pro.commands')}
         </button>
       </nav>
       <Modal
         open={toolsOpen}
         onClose={() => setToolsOpen(false)}
-        title="Ferramentas do código"
+        title={t('pro.commands')}
         footer={<Button onClick={() => setToolsOpen(false)}>Voltar ao código</Button>}
       >
         <label className="block">
@@ -264,7 +299,7 @@ export function ProCodeTools({
                 className={`${button} flex w-full items-center justify-between text-left`}
                 onClick={() => {
                   setToolsOpen(false)
-                  command.run()
+                  runProCommand(commands, command.id)
                 }}
               >
                 <span>{command.label}</span>

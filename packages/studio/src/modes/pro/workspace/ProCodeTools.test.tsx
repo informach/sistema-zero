@@ -40,11 +40,11 @@ it('keeps syntactic symbols for an unchanged file and discards an old response a
     format: () => {},
   }
   const view = render(<ProCodeTools {...props} />)
-  fireEvent.click(view.getByRole('button', { name: 'Mapa do arquivo' }))
+  fireEvent.click(view.getByRole('button', { name: 'Símbolos do arquivo' }))
   expect(calls).toBe(1)
   expect(view.getByRole('status').textContent).toContain('Analisando')
   await act(async () => finish([{ name: 'score', start: 6, depth: 0 }]))
-  expect(view.getByRole('button', { name: 'score', exact: true })).toBeDefined()
+  expect(view.getByRole('button', { name: 'score' })).toBeDefined()
   view.rerender(
     <ProCodeTools
       {...props}
@@ -59,7 +59,7 @@ it('keeps syntactic symbols for an unchanged file and discards an old response a
   content = 'const stars = 1'
   view.rerender(<ProCodeTools {...props} tree={{ 'main.ts': { kind: 'file', content } }} />)
   await act(async () => old([{ name: 'points', start: 6, depth: 0 }]))
-  expect(view.queryByRole('button', { name: 'points', exact: true })).toBeNull()
+  expect(view.queryByRole('button', { name: 'points' })).toBeNull()
   await act(async () => finish([{ name: 'stars', start: 6, depth: 0 }]))
-  expect(view.getByRole('button', { name: 'stars', exact: true })).toBeDefined()
+  expect(view.getByRole('button', { name: 'stars' })).toBeDefined()
 })

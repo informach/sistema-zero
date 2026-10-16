@@ -32,6 +32,7 @@ import { ProBottomPanel } from './workspace/ProBottomPanel'
 import { ProCodeTools } from './workspace/ProCodeTools'
 import { ProNavigator } from './workspace/ProNavigator'
 import { ProOperationReview } from './workspace/ProOperationReview'
+import { ProQuickOpen } from './workspace/ProQuickOpen'
 import { ProWorkspaceLayout } from './workspace/ProWorkspaceLayout'
 import { useProOperations } from './workspace/useProOperations'
 import { useProWorkspace } from './workspace/useProWorkspace'
@@ -71,6 +72,9 @@ export function ProCodeMode(): JSX.Element {
   const { openFiles, activeFile } = workspaceState
   const [codeRequest, setCodeRequest] = useState(0)
   const editorRef = useRef<Parameters<ReturnType<typeof useCodeHistory>>[0]>(null)
+  const [readyEditor, setReadyEditor] =
+    useState<Parameters<ReturnType<typeof useCodeHistory>>[0]>(null)
+  const [quickOpen, setQuickOpen] = useState<{ query: string } | null>(null)
   const formatRef = useRef<(() => void) | null>(null)
   const [locations, setLocations] = useState<Array<{ path: string; line: number; column: number }>>(
     [],
@@ -268,19 +272,21 @@ export function ProCodeMode(): JSX.Element {
         ) {
           event.preventDefault()
           event.stopPropagation()
-          setSearchRequest((previous) => previous + 1)
+          setQuickOpen({ query: '' })
         }
       }}
     >
       <ProOperationReview operations={operations} />
       <ProCodeTools
         help={tutorConfig ? askFromCode : undefined}
-        search={() => setSearchRequest((previous) => previous + 1)}
+        search={() => setQuickOpen({ query: '' })}
+        searchProject={() => setSearchRequest((previous) => previous + 1)}
         format={() => formatRef.current?.()}
         path={activeFile}
         tree={tree}
         language={operations.language}
         editor={editorRef}
+        readyEditor={readyEditor}
         busy={operations.busy}
         prepare={(intent) => void operations.prepare(intent)}
         recover={() => operations.setHistoryOpen(true)}
@@ -333,6 +339,10 @@ export function ProCodeMode(): JSX.Element {
               type="button"
               className="min-h-8 rounded px-1 hover:bg-sz-panel"
               onClick={() => {
+                if (index < parts.length - 1) {
+                  setQuickOpen({ query: `${parts.slice(0, index + 1).join('/')}/` })
+                  return
+                }
                 setRevealRequest((previous) => previous + 1)
                 changeWorkspace((previous) => ({
                   ...previous,
@@ -399,6 +409,7 @@ export function ProCodeMode(): JSX.Element {
             onPinFile={(path) => changeWorkspace((previous) => pinWorkspaceFile(previous, path))}
             onEditorReady={(editor) => {
               editorRef.current = editor
+              setReadyEditor(editor)
               onCodeEditorReady(editor)
             }}
             onProLanguageReady={(session) => {
@@ -414,6 +425,16 @@ export function ProCodeMode(): JSX.Element {
 
   return (
     <ProWebContainerProvider>
+      {quickOpen && (
+        <ProQuickOpen
+          key={projectId}
+          tree={tree}
+          recent={openFiles}
+          initialQuery={quickOpen.query}
+          onClose={() => setQuickOpen(null)}
+          onSelect={handleSelectFile}
+        />
+      )}
       <ProWorkspaceLayout
         navigator={navigator}
         editor={codeEditor}

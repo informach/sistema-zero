@@ -28,6 +28,52 @@ test.afterAll(async () => {
     )
 })
 
+test('uses conventional keyboard navigation, native commands and reviewed symbol rename', async ({
+  page,
+}) => {
+  const address = server.httpServer.address()
+  if (!address || typeof address === 'string') throw new Error('Servidor indisponível')
+  await page.goto(`http://127.0.0.1:${address.port}`)
+  const input = page.locator('.monaco-editor textarea.inputarea').first()
+  await expect(input).toBeVisible({ timeout: 30_000 })
+  await input.focus()
+  await input.press('Control+p')
+  const quick = page.getByRole('dialog', { name: 'Abrir arquivo rapidamente' })
+  await expect(quick).toBeVisible()
+  await quick.getByRole('combobox').fill('config.ts')
+  await quick.getByRole('combobox').press('Enter')
+  await expect(quick).toBeHidden()
+  await page.getByRole('button', { name: 'Inspecionar buffers' }).click()
+  await expect(page.getByLabel('Buffers da sessão')).toContainText('src/config.ts')
+  await input.focus()
+  await input.press('Control+Home')
+  await input.press('Control+ArrowRight')
+  await input.press('Control+ArrowRight')
+  await input.press('F2')
+  await expect(page.getByLabel('Novo nome do símbolo')).toBeVisible()
+  await page.getByLabel('Novo nome do símbolo').fill('velocity')
+  await page.getByRole('button', { name: 'Conferir referências', exact: true }).click()
+  await expect(page.getByRole('dialog', { name: 'Conferir mudança nos arquivos' })).toBeVisible()
+  await page.getByRole('dialog', { name: 'Conferir mudança nos arquivos' }).press('Escape')
+  await input.focus()
+  await input.press('F1')
+  const palette = page.locator('.quick-input-widget')
+  await expect(palette).toBeVisible()
+  await palette.getByRole('combobox').fill('>Studio: Localizar referências')
+  await expect(palette).toContainText('Studio: Localizar referências')
+  await palette.getByRole('combobox').press('Escape')
+  await input.press('Control+Shift+f')
+  await expect(
+    page.getByRole('searchbox', { name: 'Encontrar no código do projeto' }),
+  ).toBeFocused()
+  await page.getByRole('searchbox', { name: 'Encontrar no código do projeto' }).fill('speed')
+  await expect(page.getByRole('button', { name: /src\/main.ts:1/ })).toBeVisible()
+  await page.getByRole('button', { name: 'Guias', exact: true }).click()
+  await expect(
+    page.getByRole('searchbox', { name: 'Buscar nos guias deste projeto' }),
+  ).toBeVisible()
+})
+
 test('updates language and removes obsolete markers when an open file changes extension', async ({
   page,
 }) => {
@@ -66,7 +112,7 @@ test('updates language and removes obsolete markers when an open file changes ex
     language: 'plaintext',
     markers: [],
   })
-  await page.getByRole('button', { name: 'Ferramentas…', exact: true }).click()
+  await page.getByRole('button', { name: 'Comandos…', exact: true }).click()
   await page.getByRole('button', { name: 'Recuperar arquivos e materiais', exact: true }).click()
   await page.getByRole('button', { name: 'Recuperar', exact: true }).first().click()
   await expect(page.getByRole('treeitem', { name: 'src/closed.js', exact: true })).toBeVisible()
@@ -126,7 +172,7 @@ test('keeps buffers and the game session across layout changes, reviews rename a
   await expect(page.getByRole('treeitem', { name: 'src/settings.ts' })).toBeVisible()
   await page.getByRole('button', { name: 'Inspecionar buffers' }).click()
   await expect(page.getByLabel('Buffers da sessão')).toContainText('./settings')
-  await page.getByRole('button', { name: 'Ferramentas…', exact: true }).click()
+  await page.getByRole('button', { name: 'Comandos…', exact: true }).click()
   await page.getByRole('button', { name: 'Recuperar arquivos e materiais', exact: true }).click()
   await page.getByRole('button', { name: 'Recuperar', exact: true }).first().click()
   await page
@@ -134,7 +180,7 @@ test('keeps buffers and the game session across layout changes, reviews rename a
     .getByRole('button', { name: /Fechar/ })
     .click()
   await expect(page.getByRole('treeitem', { name: 'src/config.ts' })).toBeVisible()
-  await page.getByRole('button', { name: 'Ferramentas…', exact: true }).click()
+  await page.getByRole('button', { name: 'Comandos…', exact: true }).click()
   await page.getByRole('searchbox', { name: 'O que você quer fazer?' }).fill('placar')
   await page.getByRole('button', { name: 'Inserir exemplo: um placar' }).click()
   await expect(page.getByText(/Inserir um placar no fim/)).toBeVisible()

@@ -27,14 +27,16 @@ export function ProNavigator({
 }) {
   const t = useT()
   const setShowAssets = useUIStore((state) => state.setShowAssets)
-  const [view, setView] = useState<'files' | 'search' | 'materials'>('files')
+  const [view, setView] = useState<'files' | 'search' | 'materials' | 'guides'>('files')
+  const [guideQuery, setGuideQuery] = useState('')
   const assets = useProjectStore((state) => state.project?.assets)
   const templateId = useProjectStore((state) => state.project?.proMeta?.templateId)
   const converted = useProjectStore((state) => Boolean(state.project?.proMeta?.origin))
-  const hasConvertedModules = Object.keys(tree).some((path) => path.startsWith('src/converted/'))
+  const hasConvertedModules =
+    view === 'guides' && Object.keys(tree).some((path) => path.startsWith('src/converted/'))
   const guides = useMemo(
-    () => compatibleProGuides(templateId, tree).slice(0, 3),
-    [templateId, tree],
+    () => (view === 'guides' ? compatibleProGuides(templateId, tree, guideQuery) : []),
+    [view, templateId, tree, guideQuery],
   )
   const [mode, setMode] = useState<'files' | 'content'>('files')
   const [query, setQuery] = useState('')
@@ -47,7 +49,7 @@ export function ProNavigator({
   useEffect(() => {
     if (!searchRequest) return
     setView('search')
-    setMode('files')
+    setMode('content')
     searchInput.current?.focus()
   }, [searchRequest])
   useEffect(() => {
@@ -86,6 +88,14 @@ export function ProNavigator({
         >
           {t('pro.materials')}
         </button>
+        <button
+          type="button"
+          className={control}
+          aria-pressed={view === 'guides'}
+          onClick={() => setView('guides')}
+        >
+          {t('pro.guides')}
+        </button>
       </nav>
       {view === 'materials' && (
         <section aria-label="Materiais no código" className="min-h-0 flex-1 overflow-auto p-2">
@@ -108,51 +118,61 @@ export function ProNavigator({
           />
         </section>
       )}
-      <div className={view === 'files' ? 'flex min-h-0 flex-1 flex-col' : 'hidden'}>
-        {(converted || guides.length > 0) && (
-          <details className="max-h-64 shrink-0 overflow-auto border-b border-sz-border-soft p-3 text-xs">
-            <summary className="cursor-pointer">Primeiros passos neste jogo</summary>
-            {converted && (
-              <p className="my-2">
-                Este projeto veio dos blocos.{' '}
-                {hasConvertedModules
-                  ? 'Os módulos convertidos estão em src/converted. '
-                  : 'A conversão mantém os scripts globais em public/. '}
-                A cópia original em blocos continua separada; editar código aqui não altera essa
-                cópia.
-              </p>
-            )}
-            {guides.map(
-              (guide) =>
-                guide.recipe && (
-                  <details key={guide.id} className="mt-2">
-                    <summary className="cursor-pointer py-1">{guide.recipe.label}</summary>
-                    <p className="my-2">{guide.recipe.preconditions.join(' ')}</p>
-                    {guide.recipe.references.map((reference) => (
-                      <button
-                        type="button"
-                        key={`${reference.path}:${reference.exportName}`}
-                        className={`${control} block break-all text-left`}
-                        onClick={() => treeProps.onSelectFile(reference.path)}
-                      >
-                        Abrir {reference.path}
-                      </button>
+      {view === 'guides' && (
+        <section aria-label={t('pro.guides')} className="min-h-0 flex-1 overflow-auto p-3 text-xs">
+          <label className="block">
+            {t('pro.searchGuides')}
+            <input
+              type="search"
+              value={guideQuery}
+              maxLength={160}
+              onChange={(event) => setGuideQuery(event.target.value)}
+              className="my-2 min-h-10 w-full rounded border border-sz-border bg-sz-bg px-2"
+            />
+          </label>
+          {!guides.length && <p role="status">{t('pro.noGuides')}</p>}
+          {converted && (
+            <p className="my-2">
+              Este projeto veio dos blocos.{' '}
+              {hasConvertedModules
+                ? 'Os módulos convertidos estão em src/converted. '
+                : 'A conversão mantém os scripts globais em public/. '}
+              A cópia original em blocos continua separada; editar código aqui não altera essa
+              cópia.
+            </p>
+          )}
+          {guides.map(
+            (guide) =>
+              guide.recipe && (
+                <details key={guide.id} className="mt-2">
+                  <summary className="cursor-pointer py-1">{guide.recipe.label}</summary>
+                  <p className="my-2">{guide.recipe.preconditions.join(' ')}</p>
+                  {guide.recipe.references.map((reference) => (
+                    <button
+                      type="button"
+                      key={`${reference.path}:${reference.exportName}`}
+                      className={`${control} block break-all text-left`}
+                      onClick={() => treeProps.onSelectFile(reference.path)}
+                    >
+                      {reference.path} · {reference.exportName}
+                    </button>
+                  ))}
+                  <ol className="my-2 list-decimal space-y-2 pl-4">
+                    {guide.recipe.steps.map((step) => (
+                      <li key={step}>{step}</li>
                     ))}
-                    <ol className="my-2 list-decimal space-y-2 pl-4">
-                      {guide.recipe.steps.map((step) => (
-                        <li key={step}>{step}</li>
-                      ))}
-                    </ol>
-                    <p>{guide.recipe.checks.join(' ')}</p>
-                    <p className="mt-2 text-sz-fg-mute">
-                      {guide.recipe.limits} Esta experiência não conclui objetivos da sua fase
-                      automaticamente.
-                    </p>
-                  </details>
-                ),
-            )}
-          </details>
-        )}
+                  </ol>
+                  <p>{guide.recipe.checks.join(' ')}</p>
+                  <p className="mt-2 text-sz-fg-mute">
+                    {guide.recipe.limits} Esta experiência não conclui objetivos da sua fase
+                    automaticamente.
+                  </p>
+                </details>
+              ),
+          )}
+        </section>
+      )}
+      <div className={view === 'files' ? 'flex min-h-0 flex-1 flex-col' : 'hidden'}>
         <div className="min-h-0 flex-1">
           <ProFileTree {...treeProps} revealRequest={view === 'files' ? revealRequest : 0} />
         </div>
