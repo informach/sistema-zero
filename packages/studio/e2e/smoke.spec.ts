@@ -282,7 +282,7 @@ test.describe('Sistema Zero Studio — smoke', () => {
 
   test('Pro standalone não oferece um segundo painel de IA local', async ({ page }) => {
     await createProProject(page)
-    await expect(page.getByRole('tab', { name: 'Console' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Console', exact: true })).toBeVisible()
     await expect(page.getByRole('tab', { name: 'IA' })).toHaveCount(0)
     await expect(page.getByRole('button', { name: 'Configurar IA' })).toHaveCount(0)
   })
@@ -379,14 +379,14 @@ test.describe('Sistema Zero Studio — smoke', () => {
   test('Terminal (PRO) aparece como CTA sem quebrar a IDE', async ({ page }) => {
     // A aba Terminal só existe no modo Código (D2) → projeto profissional.
     await createProProject(page)
-    await page.getByRole('tab', { name: 'Terminal' }).click()
+    await page.getByRole('button', { name: 'Terminal', exact: true }).click()
     await expect(page.getByRole('button', { name: 'Carregar terminal real' })).toBeVisible()
   })
 
   test('Terminal real inicializa WebContainer e monta arquivos do projeto', async ({ page }) => {
     test.slow()
     await createProProject(page)
-    await page.getByRole('tab', { name: 'Terminal' }).click()
+    await page.getByRole('button', { name: 'Terminal', exact: true }).click()
     await page.getByRole('button', { name: 'Carregar terminal real' }).click()
 
     await expect(page.locator('.xterm')).toBeVisible({ timeout: 60_000 })
