@@ -2,6 +2,11 @@ import { describe, expect, test } from 'bun:test'
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import {
+  ARQUIVOS_ESPELHO,
+  espelhoDaPagina,
+  PASTA_ESPELHO,
+} from '../../scripts/espelho-copy-comunidade'
+import {
   COMUNIDADE_PAGES,
   comunidadeOfferPath,
   isComunidadePage,
@@ -15,7 +20,19 @@ import {
 } from '../../src/funnels/comunidade-dos-criadores/oferta/arte'
 import { comDestaques } from '../../src/funnels/comunidade-dos-criadores/oferta/destacar'
 import { DESTAQUES } from '../../src/funnels/comunidade-dos-criadores/oferta/destaques'
-import { FAQ, SHARED_COPY } from '../../src/funnels/comunidade-dos-criadores/oferta/shared'
+import { calcularEconomiaAnual } from '../../src/funnels/comunidade-dos-criadores/oferta/economia'
+import { RELATOS } from '../../src/funnels/comunidade-dos-criadores/oferta/relatos'
+import {
+  FAQ,
+  FAQ_EXTRA,
+  FOUNDER_COM_ESCOLA,
+  FOUNDER_SEM_RELATO,
+  SHARED_COPY,
+} from '../../src/funnels/comunidade-dos-criadores/oferta/shared'
+import type {
+  ComunidadePageId,
+  RelatoId,
+} from '../../src/funnels/comunidade-dos-criadores/oferta/types'
 import {
   COMUNIDADE_VISUALS,
   FAQ_VISUALS,
@@ -26,7 +43,13 @@ import {
 const SRC = join(import.meta.dir, '..', '..', 'src')
 const source = (...parts: string[]) => readFileSync(join(SRC, ...parts), 'utf8')
 const raw = source('components', 'funnel', 'oferta', 'ComunidadeOfertaBody.astro')
-const publicCopy = JSON.stringify({ pages: COMUNIDADE_PAGES, shared: SHARED_COPY, faq: FAQ })
+const publicCopy = JSON.stringify({
+  pages: COMUNIDADE_PAGES,
+  shared: SHARED_COPY,
+  faq: FAQ,
+  extra: FAQ_EXTRA,
+  relatos: RELATOS,
+})
 
 // Contratos editoriais e comerciais dos perfis e variantes. Verificação do HTML,
 // âncoras, imagens carregadas, responsividade e modal complementa estes testes no navegador.
@@ -84,20 +107,23 @@ describe('Comunidade: quatro perfis, mesma entrega e contratação', () => {
     }
   })
 
-  test('cada perfil tem todas as respostas, sem duplicação, com uma prioridade própria', () => {
-    const questions = Object.keys(FAQ).sort()
-    expect(questions).toHaveLength(40)
+  test('cada perfil tem todas as respostas comuns, sem duplicação, com uma prioridade própria', () => {
+    // Proposta de 16/10/2026: 26 respostas comuns; Roblox, Desafio e desenho só onde importam.
+    const questions = Object.keys(FAQ)
+    expect(questions).toHaveLength(26)
+    const permitidas = new Set([...questions, ...Object.keys(FAQ_EXTRA)])
     const priorities = new Set<string>()
     for (const page of Object.values(COMUNIDADE_PAGES).filter((page) =>
       isComunidadeProfile(page.id),
     )) {
       const ids = page.faqGroups.flatMap((group) => group.questions)
-      expect([...ids].sort()).toEqual(questions)
-      expect(new Set(ids).size).toBe(40)
+      for (const id of questions) expect([page.id, ids.includes(id)]).toEqual([page.id, true])
+      for (const id of ids) expect([page.id, id, permitidas.has(id)]).toEqual([page.id, id, true])
+      expect(new Set(ids).size).toBe(ids.length)
       priorities.add(ids.slice(0, 6).join(','))
       expect(page.hero.title).toContain(page.emphasis)
       expect(page.faqTitle).toBe('Mais sobre a experiência do seu filho')
-      expect(page.sections.length).toBeGreaterThanOrEqual(8)
+      expect(page.sections.length).toBeGreaterThanOrEqual(7)
       expect(new Set(page.sections.map((section) => section.id)).size).toBe(page.sections.length)
     }
     expect(priorities.size).toBe(4)
@@ -118,7 +144,10 @@ describe('Comunidade: quatro perfis, mesma entrega e contratação', () => {
     expect(publicCopy).not.toMatch(/[—–]/)
     expect(publicCopy).toContain('Construtor')
     expect(publicCopy).toContain('Inventor')
-    expect(FAQ.liberacao.paragraphs.join(' ')).toContain('cursos em preparação')
+    // Decisão da dona (16/10/2026): a página mostra o que a plataforma oferece; não anuncia curso
+    // em preparação nem ferramenta "ainda não liberada". A liberação por posto continua explicada.
+    expect(publicCopy).not.toMatch(/em preparação/i)
+    expect(FAQ.liberacao.paragraphs.join(' ')).toContain('Construtor')
     expect(SHARED_COPY.offer.paragraphs.join(' ')).toContain('até dois perfis de criança')
   })
 
@@ -130,62 +159,45 @@ describe('Comunidade: quatro perfis, mesma entrega e contratação', () => {
     expect(source('server', 'offer-page.ts')).not.toContain("searchParams.get('origem')")
     const page = COMUNIDADE_PAGES.continuar
     const ids = page.faqGroups.flatMap((group) => group.questions)
-    expect(ids).toHaveLength(50)
-    expect(new Set(ids).size).toBe(50)
-    expect([...ids].sort()).toEqual(Object.keys(page.faq ?? {}).sort())
+    // Tráfego quente: menos perguntas, todas respondidas, cada uma com a sua tela.
+    expect(new Set(ids).size).toBe(ids.length)
+    expect(ids.length).toBeLessThanOrEqual(30)
+    for (const id of ids) expect([id, Boolean(page.faq?.[id])]).toEqual([id, true])
     expect(Object.keys(page.faqVisuals ?? {}).sort()).toEqual([...ids].sort())
-    for (const id of Object.keys(FAQ)) expect(ids).toContain(id)
     for (const id of Object.values(page.faqVisuals ?? {}).flat())
       expect(id in COMUNIDADE_VISUALS || id in PENDING_VISUALS).toBe(true)
   })
 
-  test('a transposição preserva cada parágrafo, título, link e célula da copy aprovada', () => {
-    const doc = readFileSync(
-      join(
-        SRC,
-        '../../../docs/marketing/kids/comunidade-dos-criadores/copy/pagina-e-continuidade.md',
-      ),
-      'utf8',
-    )
-    const strings: string[] = []
-    const collect = (value: unknown) => {
-      if (typeof value === 'string') strings.push(value)
-      else if (Array.isArray(value)) value.forEach(collect)
-      else if (value && typeof value === 'object') Object.values(value).forEach(collect)
+  test('o espelho editorial (copy/pagina-*.md) é exatamente a copy que cada página renderiza', () => {
+    // Gerado por scripts/espelho-copy-comunidade.ts: mudou a copy, rode o script (README da copy).
+    for (const [id, arquivo] of Object.entries(ARQUIVOS_ESPELHO)) {
+      const doc = readFileSync(join(PASTA_ESPELHO, arquivo), 'utf8').replaceAll('\r\n', '\n')
+      expect(doc).toBe(espelhoDaPagina(COMUNIDADE_PAGES[id as ComunidadePageId]))
     }
-    collect(COMUNIDADE_PAGES.continuar)
-    const missing: string[] = []
-    for (const block of doc.trim().split(/\r?\n\r?\n/)) {
-      if (block.startsWith('<a ') || block.startsWith('**{{preco_')) continue
-      if (block.startsWith('|')) {
-        for (const cell of block
-          .split(/\r?\n/)
-          .filter((line) => !line.includes('---'))
-          .flatMap((line) =>
-            line
-              .split('|')
-              .slice(1, -1)
-              .map((cell) => cell.trim()),
-          ))
-          if (!strings.includes(cell)) missing.push(cell)
-      } else if (block.startsWith('[')) {
-        for (const [, label, href] of block.matchAll(/\[([^\]]+)\]\(([^)]+)\)/g)) {
-          // Os links editoriais dos planos viram botões que abrem o pré-checkout.
-          if (href === '#contratacao') {
-            expect([
-              COMUNIDADE_PAGES.continuar.offer?.monthly.cta,
-              COMUNIDADE_PAGES.continuar.offer?.annual.cta,
-            ]).toContain(label)
-            continue
-          }
-          if (!strings.includes(label ?? '') || !strings.includes(href ?? '')) missing.push(block)
-        }
-      } else if (block.startsWith('- ')) {
-        for (const item of block.split(/\r?\n/))
-          if (!strings.includes(item.slice(2))) missing.push(item)
-      } else if (!strings.includes(block.replace(/^#{1,4} /, ''))) missing.push(block)
+  })
+
+  test('economia do anual: só com os dois preços ao vivo, arredondada para baixo', () => {
+    expect(calcularEconomiaAnual(9_700, 79_700)).toBe(36_700)
+    expect(calcularEconomiaAnual(10_900, 89_900)).toBe(40_900)
+    // 12 × 97,55 − 1.070 = 100,60: anuncia R$ 100, nunca R$ 101.
+    expect(calcularEconomiaAnual(9_755, 107_000)).toBe(10_000)
+    // 50 centavos não viram "R$ 1"; anual mais caro não vira economia negativa.
+    expect(calcularEconomiaAnual(9_700, 116_350)).toBe(0)
+    expect(calcularEconomiaAnual(9_700, 115_950)).toBe(400)
+    expect(calcularEconomiaAnual(9_700, 120_000)).toBe(0)
+    // Sem um dos preços ao vivo, não compara com o fallback.
+    expect(calcularEconomiaAnual(undefined, 79_700)).toBe(0)
+    expect(calcularEconomiaAnual(9_700, null)).toBe(0)
+    expect(raw).toContain('calcularEconomiaAnual(mensal?.priceCents, anual?.priceCents)')
+    expect(raw.match(/filter\(comEconomia\)/g)).toHaveLength(2)
+    for (const offer of [SHARED_COPY.offer, COMUNIDADE_PAGES.continuar.offer]) {
+      // A frase da economia fica num parágrafo só dela: sem economia, ela sai inteira e nada mais.
+      const comMarcador = (offer?.annual.paragraphs ?? []).filter((paragrafo) =>
+        paragrafo.includes('{{economia_anual}}'),
+      )
+      expect(comMarcador).toHaveLength(1)
+      expect(comMarcador[0]).not.toContain('{{equivalente_mensal_anual}}')
     }
-    expect(missing).toEqual([])
   })
 
   test('preços vêm do catálogo e cada plano mantém sua seleção no pré-checkout', () => {
@@ -210,8 +222,9 @@ describe('Comunidade: quatro perfis, mesma entrega e contratação', () => {
   })
 
   test('cada explicação prática aponta para uma demonstração conhecida; reembolso remete aos termos', () => {
-    expect(Object.keys(FAQ_VISUALS).sort()).toEqual(Object.keys(FAQ).sort())
-    for (const id of Object.keys(FAQ)) {
+    const todas = [...Object.keys(FAQ), ...Object.keys(FAQ_EXTRA)]
+    expect(Object.keys(FAQ_VISUALS).sort()).toEqual(todas.sort())
+    for (const id of todas) {
       if (id === 'reembolso') {
         expect(FAQ_VISUALS[id]).toEqual([])
       } else {
@@ -290,6 +303,11 @@ describe('Comunidade: quatro perfis, mesma entrega e contratação', () => {
         expect([id, i, Boolean(icone)]).toEqual([id, i, Boolean(section?.groups[i]?.title)])
       })
     }
+    // Grupo com subtítulo (fora das ferramentas, que têm ícones próprios) não fica com o ícone da
+    // posição: a Jornada de B e C ficou com "palette" no Pensa antes desta guarda.
+    for (const section of secoes.values())
+      if (section.layout !== 'tools' && section.groups.some((group) => group.title))
+        expect([section.id, section.id in ICONES_DE_GRUPO]).toEqual([section.id, true])
     for (const [id, icones] of Object.entries(ICONES_DE_DUVIDAS)) {
       const page = COMUNIDADE_PAGES[id as keyof typeof COMUNIDADE_PAGES]
       expect(icones?.length).toBe(page.faqGroups.length)
@@ -301,8 +319,8 @@ describe('Comunidade: quatro perfis, mesma entrega e contratação', () => {
   })
 
   test('nenhuma demonstração se repete no corpo de uma página', () => {
-    // A única repetição pensada: na D o experimento do herói volta em "Você acompanha", ao lado do
-    // parágrafo que ele demonstra. A tira "tudo reunido" do fim tem chave própria (`reunida`).
+    // A única repetição pensada: na D a tela da aprendizagem do herói volta em "o que você
+    // acompanha", ao lado do parágrafo que ela demonstra.
     const permitidas: Record<string, string[]> = { 'formacao-tecnologica': ['aprendizagem'] }
     for (const page of Object.values(COMUNIDADE_PAGES)) {
       const telas = [
@@ -328,32 +346,41 @@ describe('Comunidade: quatro perfis, mesma entrega e contratação', () => {
   })
 
   test('os destaques são trechos LITERAIS da copy: o negrito não muda uma palavra', () => {
-    const textos = new Map<string, string[]>()
+    // Cada chave vale para um ou mais textos (os fundadores e a assinatura têm variantes por
+    // página): o trecho aparece no máximo uma vez em cada variante e em pelo menos uma delas.
+    const textos = new Map<string, string[][]>()
     for (const page of Object.values(COMUNIDADE_PAGES)) {
       for (const section of page.sections)
-        textos.set(
-          section.id,
-          section.groups.flatMap((group) => group.paragraphs),
-        )
-      textos.set(
-        `${page.id}:convite`,
-        page.closing.groups.flatMap((group) => group.paragraphs),
-      )
+        textos.set(section.id, [section.groups.flatMap((group) => group.paragraphs)])
+      textos.set(`${page.id}:convite`, [page.closing.groups.flatMap((group) => group.paragraphs)])
     }
     textos.set(
       'origem',
-      SHARED_COPY.founder.groups.flatMap((group) => group.paragraphs),
+      [SHARED_COPY.founder, FOUNDER_SEM_RELATO, FOUNDER_COM_ESCOLA].map((founder) =>
+        founder.groups.flatMap((group) => group.paragraphs),
+      ),
     )
-    textos.set('assinatura', [...SHARED_COPY.offer.paragraphs])
+    // A abertura da assinatura não recebe negrito; os itens começam no segundo parágrafo.
+    const ofertas = [SHARED_COPY.offer, COMUNIDADE_PAGES.continuar.offer]
+    textos.set(
+      'assinatura',
+      ofertas.map((offer) => (offer?.paragraphs ?? []).slice(1)),
+    )
     for (const [chave, frases] of Object.entries(DESTAQUES)) {
-      const paragrafos = textos.get(chave)
-      expect([chave, Boolean(paragrafos)]).toEqual([chave, true])
+      const variantes = textos.get(chave)
+      expect([chave, Boolean(variantes)]).toEqual([chave, true])
       for (const frase of frases) {
-        const onde = (paragrafos ?? []).filter((paragrafo) => paragrafo.includes(frase))
-        expect([frase, onde.length]).toEqual([frase, 1])
+        const vezes = (variantes ?? []).map(
+          (paragrafos) => paragrafos.filter((paragrafo) => paragrafo.includes(frase)).length,
+        )
+        expect([frase, vezes.every((n) => n <= 1), vezes.some((n) => n === 1)]).toEqual([
+          frase,
+          true,
+          true,
+        ])
       }
       // Partido em trechos e colado de volta, o parágrafo é o mesmo, com o negrito no lugar.
-      for (const paragrafo of paragrafos ?? []) {
+      for (const paragrafo of (variantes ?? []).flat()) {
         const trechos = comDestaques(paragrafo, frases)
         expect(trechos.map((trecho) => trecho.texto).join('')).toBe(paragrafo)
         expect(trechos.filter((trecho) => trecho.forte).length).toBe(
@@ -361,6 +388,59 @@ describe('Comunidade: quatro perfis, mesma entrega e contratação', () => {
         )
       }
     }
+    // Na assinatura, cada item da lista abre em negrito, nas duas variantes.
+    for (const offer of ofertas) {
+      for (const item of (offer?.paragraphs ?? []).slice(1, -1))
+        expect([item.slice(0, 40), DESTAQUES.assinatura?.some((f) => item.startsWith(f))]).toEqual([
+          item.slice(0, 40),
+          true,
+        ])
+    }
+  })
+
+  test('relatos: falas reais com retrato, sem repetir na mesma página', () => {
+    const pasta = join(SRC, '..', 'public', 'img', 'comunidade-dos-criadores')
+    for (const [id, relato] of Object.entries(RELATOS)) {
+      expect([id, existsSync(join(pasta, relato.retrato))]).toEqual([id, true])
+      expect(relato.fala.length).toBeGreaterThan(20)
+      expect(relato.nome.length).toBeGreaterThan(2)
+      expect(relato.papel).toMatch(/^(Aluno|Aluna|Pai d[oa] .+|Mãe d[oa] .+)$/)
+      expect(relato.contexto.length).toBeGreaterThan(5)
+    }
+    for (const page of Object.values(COMUNIDADE_PAGES)) {
+      const usadas: RelatoId[] = [
+        ...page.sections.flatMap((section) => section.falas ?? []),
+        ...(page.showFounder === false ? [] : ((page.founder ?? SHARED_COPY.founder).falas ?? [])),
+        ...((page.offer ?? SHARED_COPY.offer).falas ?? []),
+      ]
+      for (const id of usadas) expect([page.id, id, id in RELATOS]).toEqual([page.id, id, true])
+      const repetidas = [...new Set(usadas.filter((id, i) => usadas.indexOf(id) !== i))]
+      expect([page.id, repetidas]).toEqual([page.id, []])
+      // A faixa tem cartas; a fala solta não entra na banda navy (contraste da carta branca).
+      for (const section of page.sections) {
+        if (section.layout === 'relatos')
+          expect((section.falas ?? []).length).toBeGreaterThanOrEqual(3)
+        if (section.layout === 'band') expect(section.falas ?? []).toEqual([])
+      }
+    }
+    // Toda fala guardada aparece em alguma página (como carta ou citada numa dúvida), e o convite
+    // final, que o corpo monta sem relatos, não declara falas que nunca apareceriam.
+    const citadas = new Set<string>(
+      Object.values(COMUNIDADE_PAGES).flatMap((page) => [
+        ...page.sections.flatMap((section) => section.falas ?? []),
+        ...(page.showFounder === false ? [] : ((page.founder ?? SHARED_COPY.founder).falas ?? [])),
+        ...((page.offer ?? SHARED_COPY.offer).falas ?? []),
+      ]),
+    )
+    const duvidas = JSON.stringify([
+      FAQ,
+      FAQ_EXTRA,
+      ...Object.values(COMUNIDADE_PAGES).map((page) => page.faq),
+    ])
+    for (const [id, relato] of Object.entries(RELATOS))
+      expect([id, citadas.has(id) || duvidas.includes(relato.fala)]).toEqual([id, true])
+    for (const page of Object.values(COMUNIDADE_PAGES))
+      expect([page.id, page.closing.falas ?? []]).toEqual([page.id, []])
   })
 
   test('etapas compartilhadas não prometem começar antes de pagar ou reiniciar progresso', () => {

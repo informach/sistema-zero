@@ -1,6 +1,6 @@
 # Comunidade dos Criadores: proposta de página sobre aprendizagem escolar
 
-Proposta editorial e visual, revista e implementada no código em 15/10/2026 após autorização do usuário. Inclui análise de oportunidades, [copy implementada](../marketing/kids/comunidade-dos-criadores/copy/pagina-f-habilidades-escolares-proposta.md), [registro da revisão crítica](2026-10-15-comunidade-habilidades-escolares-review.md) e [implementação e verificações](../marketing/kids/comunidade-dos-criadores/implementacao-habilidades-escolares.md). Ainda sem deploy. A copy reúne as seções próprias e os blocos comerciais; tour, navegação, rodapé e dúvidas operacionais seguem os componentes compartilhados. Na montagem foi escolhida a alternativa de ciências baseada no experimento do jardim, descrita abaixo.
+Proposta editorial e visual, revista e implementada no código em 15/10/2026 após autorização do usuário. Inclui análise de oportunidades, [copy implementada](../marketing/kids/comunidade-dos-criadores/copy/historico/2026-10-16-antes-da-proposta/pagina-f-habilidades-escolares-proposta.md), [registro da revisão crítica](2026-10-15-comunidade-habilidades-escolares-review.md) e [implementação e verificações](../marketing/kids/comunidade-dos-criadores/implementacao-habilidades-escolares.md). Ainda sem deploy. A copy reúne as seções próprias e os blocos comerciais; tour, navegação, rodapé e dúvidas operacionais seguem os componentes compartilhados. Na montagem foi escolhida a alternativa de ciências baseada no experimento do jardim, descrita abaixo.
 
 ## Direção recomendada
 

@@ -98,23 +98,6 @@ export const COMUNIDADE_VISUALS: Record<string, ComunidadeVisual> = {
     // A tela mostra um CENÁRIO (e não um personagem): a legenda diz o que a copy já afirma do Pinta.
     caption: 'Personagens, cenários e peças do jogo podem ser desenhados no Pinta.',
   },
-  reunida: {
-    mode: 'set',
-    frames: [
-      tela(
-        'aula-estudio',
-        'Aula',
-        'Aula com o vídeo e a fala do Zappy à esquerda e a atividade no Estúdio à direita.',
-      ),
-      tela('recados', 'Recados', 'Recados do professor com a dúvida enviada a partir da aula.'),
-      tela(
-        'mural',
-        'Mural',
-        'Mural dos Criadores com cartões de jogos e botões para jogar e copiar o link.',
-      ),
-    ],
-    caption: 'Aulas e ferramentas de criação reunidas na mesma plataforma.',
-  },
   pausa: {
     frames: [
       tela(
@@ -244,7 +227,7 @@ export const COMUNIDADE_VISUALS: Record<string, ComunidadeVisual> = {
         'Aventuras da trilha Construtor: os cursos publicados, com aulas e progresso de cada um.',
       ),
     ],
-    caption: 'O catálogo disponível permite conhecer as atividades que podem ser iniciadas.',
+    caption: 'As aventuras da trilha mostram os cursos e o progresso em cada um.',
   },
   pensa: {
     mode: 'steps',
@@ -272,16 +255,6 @@ export const COMUNIDADE_VISUALS: Record<string, ComunidadeVisual> = {
     ],
     caption: 'O Zappy oferece orientação; a criança faz o ajuste e testa o resultado.',
   },
-  planejamento: {
-    frames: [
-      tela(
-        'planejamento',
-        'Equipe do plano',
-        'Equipe do plano no Pensa: código do plano, lugares e quem já entrou.',
-      ),
-    ],
-    caption: 'As crianças podem compartilhar o plano e construir nas próprias ferramentas.',
-  },
   molda: {
     frames: [
       tela(
@@ -290,7 +263,8 @@ export const COMUNIDADE_VISUALS: Record<string, ComunidadeVisual> = {
         'Molda com um personagem de blocos em três dimensões, ferramentas de modelar e a lista de peças.',
       ),
     ],
-    caption: 'As ferramentas posteriores têm requisitos próprios na Jornada.',
+    caption:
+      'O Molda abre no posto Explorador de Mundos, para criar personagens em três dimensões.',
   },
   codigo: {
     frames: [
@@ -300,7 +274,7 @@ export const COMUNIDADE_VISUALS: Record<string, ComunidadeVisual> = {
         'Estúdio no modo Ponte: os blocos, o código gerado e o jogo lado a lado.',
       ),
     ],
-    caption: 'O percurso prevê recursos que aproximam blocos e código.',
+    caption: 'No posto Gênio da Criação, o modo Ponte mostra os blocos ao lado do código.',
   },
   mural: {
     frames: [
@@ -323,23 +297,6 @@ export const COMUNIDADE_VISUALS: Record<string, ComunidadeVisual> = {
       ),
     ],
     caption: 'Os combinados e o aviso à equipe apoiam a participação nas conversas.',
-  },
-  espaco: {
-    mode: 'set',
-    frames: [
-      tela(
-        'avatar',
-        'Meu avatar',
-        'Meu avatar: personagem em 3D com opções de rosto, cabelo e roupas.',
-      ),
-      tela('quarto', 'Meu quarto', 'Meu quarto com cama, mesa e cadeira posicionadas no espaço.'),
-      tela(
-        'conquistas',
-        'Minhas conquistas',
-        'Minhas conquistas no perfil, com os marcos já alcançados e os que faltam.',
-      ),
-    ],
-    caption: 'A criança tem um espaço para seu avatar e seu percurso.',
   },
   missoes: {
     mode: 'set',
@@ -494,18 +451,6 @@ export const COMUNIDADE_VISUALS: Record<string, ComunidadeVisual> = {
     ],
     caption: 'O atendimento da família reúne dúvidas sobre conta e assinatura.',
   },
-  indicacao: {
-    frames: [
-      tela(
-        'pais-indicacao',
-        'Seja um embaixador',
-        'Cartão Seja um embaixador do Sistema Zero, na Conta da Área dos pais, com as condições do programa de indicações.',
-        1136,
-        266,
-      ),
-    ],
-    caption: 'O convite segue as condições apresentadas no programa de indicações.',
-  },
   // As telas da Área dos pais são capturas do staging de 11/10/2026 (páginas próprias), menos
   // "Minhas compras": ela vem de uma captura da própria dona na conta dela (02/10/2026), com os
   // dígitos do cartão embaçados, porque o staging não tem assinatura ativa para mostrar. O @2x
@@ -564,44 +509,35 @@ export const visualDe = (id: string): ComunidadeVisual | null => COMUNIDADE_VISU
 export const FAQ_VISUALS: Record<string, readonly string[]> = {
   programacao: ['aula', 'estudio'],
   desenho: ['estudio', 'pinta'],
-  'aulas-gravadas': ['pausa'],
-  ajuda: ['recados'],
   pais: ['responsavel'],
-  aprendizagem: ['aprendizagem', 'responsavel'],
-  interesse: ['aula'],
-  'so-desenho': ['integracao'],
-  papel: ['pinta', 'integracao'],
+  'aulas-gravadas': ['pausa'],
+  'ao-vivo': ['aula-estudio'],
   equipamento: ['aula'],
-  internet: ['salvamento'],
+  nivel: ['catalogo', 'estudio'],
+  telas: ['pausa'],
+  frequencia: ['ferias', 'missoes'],
+  salvamento: ['salvamento', 'exportacao'],
+  interesse: ['jogo-pronto'],
   liberacao: ['jornada'],
   catalogo: ['catalogo'],
   ia: ['pensa', 'zappy'],
-  pensa: ['pensa'],
-  zappy: ['zappy'],
   creditos: ['creditos'],
-  planejamento: ['planejamento'],
-  salvamento: ['salvamento'],
-  exportacao: ['exportacao'],
-  ferias: ['ferias'],
-  pontos: ['missoes'],
+  avancado: ['molda', 'codigo'],
   certificado: ['certificado'],
+  irmaos: ['perfis'],
+  perfil: ['privacidade', 'publicacao'],
+  convivencia: ['clube'],
   'apoio-especifico': ['aula'],
-  desafio: ['jornada'],
-  nivel: ['catalogo', 'estudio'],
-  roblox: ['estudio'],
-  '3d': ['molda'],
-  codigo: ['codigo'],
-  atendimento: ['conta'],
-  senha: ['senha'],
-  indicacao: ['indicacao'],
+  ajuda: ['como-fazer', 'recados'],
+  custos: ['jornada', 'creditos'],
   cancelamento: ['compras'],
   reembolso: [],
-  irmaos: ['perfis'],
-  perfil: ['privacidade'],
-  'jogos-publicos': ['publicacao'],
-  convivencia: ['clube'],
-  custos: ['jornada', 'creditos'],
-  telas: ['pausa'],
+  atendimento: ['conta', 'senha'],
+  // Respostas de algumas páginas (`FAQ_EXTRA`).
+  roblox: ['estudio'],
+  desafio: ['jornada'],
+  'so-desenho': ['integracao'],
+  papel: ['pinta', 'integracao'],
 }
 
 /**

@@ -1,0 +1,28 @@
+---
+import { RELATOS } from '../../../funnels/comunidade-dos-criadores/oferta/relatos'
+import type { RelatoId } from '../../../funnels/comunidade-dos-criadores/oferta/types'
+
+// Uma fala real com retrato, nome, papel e contexto (como nas cartelas do Instagram). As aspas
+// são do desenho, fora do texto; o contexto é editorial e fica fora delas.
+interface Props {
+  id: RelatoId
+  imagesBase: string
+  /** `faixa`: carta da faixa de relatos; `solta`: a fala ao fim de uma seção, mais larga. */
+  variant?: 'faixa' | 'solta'
+}
+
+const { id, imagesBase, variant = 'faixa' } = Astro.props
+const relato = RELATOS[id]
+---
+
+<figure class:list={['relato', `relato--${variant}`, 'kof-carta', 'kof-carta--fio', 'kof-reveal']} data-relato={id}>
+  <span class="relato-aspas material-symbols-rounded" aria-hidden="true">format_quote</span>
+  <blockquote class="relato-fala"><p>{relato.fala}</p></blockquote>
+  <figcaption class="relato-quem">
+    <img class="relato-retrato" src={`${imagesBase}/${relato.retrato}`} alt="" width="56" height="56" loading="lazy" decoding="async" />
+    <span class="relato-ident">
+      <span class="relato-nome">{relato.nome} · {relato.papel}</span>
+      <span class="relato-contexto">{relato.contexto}</span>
+    </span>
+  </figcaption>
+</figure>

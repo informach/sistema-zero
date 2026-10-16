@@ -137,15 +137,17 @@ try {
                 : section.id,
           ),
       )
+    // A e F trazem a tese antes da faixa de telas (proposta de copy de 16/10/2026).
     if (path === '/habilidades-escolares') assert.deepEqual(order, ['hero', 'f01', 'tour', 'f02'])
+    else if (path === '') assert.deepEqual(order.slice(0, 3), ['hero', 'a02', 'tour'])
     else assert.equal(order[1], 'tour', path)
     assert.equal(await page.locator('#title-tour').count(), 1)
   }
   console.log('Checking school page interactions')
   await page.evaluate(() => document.fonts.ready)
   assert.equal(await page.locator('h1').count(), 1)
-  assert.equal(await page.locator('#f03 .carta-interesse').count(), 6)
-  assert.equal(await page.locator('#duvidas details').count(), 45)
+  assert.equal(await page.locator('#f03 .carta-interesse').count(), 4)
+  assert.equal(await page.locator('#duvidas details').count(), 32)
   assert.equal(
     await page.locator('#convite .prosa strong').count(),
     1,
@@ -178,7 +180,8 @@ try {
     const columns = await page
       .locator('#f03 .cartas')
       .evaluate((el) => getComputedStyle(el).gridTemplateColumns.split(' ').length)
-    assert.equal(columns, width <= 960 ? 1 : 3)
+    // Quatro cartas ficam dois a dois no computador (copy nova de 16/10/2026).
+    assert.equal(columns, width <= 960 ? 1 : 2)
   }
   await page.setViewportSize({ width: 390, height: 844 })
   await page.screenshot({ path: resolve(output, 'mobile.png') })

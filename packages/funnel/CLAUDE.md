@@ -268,9 +268,31 @@ dos assets do Desafio — a arte nova substitui por cima com os MESMOS nomes). A
 (`/`) apresenta Como funciona primeiro, o Desafio como primeiro passo e a Comunidade como
 continuidade ou contratação direta. A ampliação dos prints é compartilhada
 entre a raiz e as ofertas pelo componente `ComunidadeImageZoom.astro`.
-**Quatro copies da Comunidade (01/10/2026):** a referência vigente está em
-`docs/marketing/kids/comunidade-dos-criadores/copy/`. Conteúdo tipado em
-`src/funnels/comunidade-dos-criadores/oferta/`, com fatos e 40 respostas comuns em `shared.ts`.
+**Copies da Comunidade:** a copy vive no código, em
+`src/funnels/comunidade-dos-criadores/oferta/`; `docs/marketing/kids/comunidade-dos-criadores/copy/pagina-*.md`
+é o espelho gerado por `bun scripts/espelho-copy-comunidade.ts` (o teste reprova espelho velho). Conteúdo tipado em
+`src/funnels/comunidade-dos-criadores/oferta/`, com fatos e 26 respostas comuns em `shared.ts`
+(mais `FAQ_EXTRA`: Roblox e Desafio em B, desenho em C).
+**Proposta de copy de 16/10/2026 (aprovada pela dona e implementada):** diagnóstico, régua e copy
+de cada página em `docs/marketing/kids/comunidade-dos-criadores/copy/proposta-melhoria-2026-10-16/`.
+Tese comum (no jogo pronto alguém já decidiu tudo; criando, ele decide e o jogo responde), a
+plataforma orienta (Ouvir, Verificar esta parte, O que falta para seguir, Guardado na sua conta;
+Uma pista só nos experimentos) e Recados SÓ nas dúvidas. A Chave do Farol é o curso de entrada que
+leva ao Construtor; a ordem dos projetos é Cadê Todo Mundo, A Chave do Farol, Nave Contra
+Asteroides, O Jogo do Meu Jeito e Corre, Dino (nomes sem `?`/`!` na copy). Por decisão dela, a copy
+mostra o que a plataforma oferece e NÃO fala de curso em preparação ou de ferramenta "ainda não
+liberada" (o teste reprova "em preparação"); a liberação por posto continua explicada. Zappy:
+"falas do Zappy" nas aulas (desde a primeira, sem créditos) × "ajuda do Zappy no Estúdio" (Inventor,
+com créditos), sempre distinguidas. **Relatos reais**
+(`oferta/relatos.ts`, termos de autorização assinados): cartelas AV do destaque Avaliações e
+trechos N conferidos por segunda transcrição (segundos em `trechos-novos.md` da proposta);
+identificação igual à do Instagram (André e Débora como Aluno/Aluna). Seção `layout: 'relatos'`
+= faixa de cartas com retrato; `falas` em outra seção = fala solta no fim (nunca em `band`);
+`page.founder` troca os fundadores (`FOUNDER_COM_ESCOLA` na F, `FOUNDER_SEM_RELATO` em B e E);
+`offer.falas` põe uma fala antes dos planos. Retratos `relato-*.webp` recortados dos quadros dos
+vídeos (`depo-*.webp` para Rafael, Débora e André). Os vídeos de criança explicando o próprio jogo
+(V1/V2 da proposta) ainda não entraram: falta hospedagem. Os `copy/pagina-*.md` viraram ESPELHO
+gerado da copy tipada (versões anteriores em `copy/historico/2026-10-16-antes-da-proposta/`).
 
 A página padrão é `/kids/comunidade-dos-criadores/oferta` (aprender criando jogos, da primeira
 experiência às próprias ideias; o perfil interno continua `tempo-de-tela`). As variantes usam `/oferta/criacao-de-jogos`, `/oferta/expressao-visual` e
@@ -279,7 +301,7 @@ experiência às próprias ideias; o perfil interno continua `tempo-de-tela`). A
 retornar na ROTA, nunca no componente Astro compartilhado. `OfertaPage.astro` despacha os bodies.
 CTA principal aponta para `#planos`; link secundário para `#experiencia`.
 A página pública `/oferta/continuar` atende famílias que já conhecem a plataforma, sem presumir
-conclusão: copy e 50 respostas em `continuidade.ts`/`continuidade-faq.ts`, com as mesmas telas,
+conclusão: copy e cerca de 25 respostas em `continuidade.ts`/`continuidade-faq.ts` (desde 16/10), com as mesmas telas,
 componentes e estilos dos quatro perfis. É uma etapa de relacionamento, não um quinto avatar.
 O parâmetro antigo de origem foi removido, sem redirecionamento especial. Os convites de assinatura
 no Kids e nos serviços de continuidade/expiração do Members apontam para a nova rota.
@@ -291,14 +313,18 @@ Registro e validação: `docs/marketing/kids/comunidade-dos-criadores/implementa
 da assinatura, em `habilidades-escolares.ts`/`habilidades-escolares-faq.ts`, sem novo perfil de
 quiz. A dor e a explicação ficam imediatamente abaixo do hero; `tourAfterSection: 'f01'` coloca
 o `ComunidadeTour.astro` depois dessa seção, mantendo a ordem anterior nas demais páginas.
-As seis cartas ligam tarefas do projeto às habilidades escolares, com ícones por assunto.
+As quatro cartas (leitura, matemática, ciências e resolver problemas) ligam tarefas do projeto às
+habilidades escolares, com ícones por assunto; quatro cartas ficam 2×2 no computador.
 Ciências usa o experimento do jardim; não há promessa de notas nem de reforço por série.
 Registro: `docs/marketing/kids/comunidade-dos-criadores/implementacao-habilidades-escolares.md`.
-As dúvidas têm pesos e ordem próprios, mantendo as mesmas respostas e imagens correspondentes.
+As dúvidas têm pesos e ordem próprios: as 26 comuns mais as próprias de cada página (FAQ_EXTRA em
+B e C, respostas da escola na F, continuidade na E).
 Não prometer revisão de toda atividade, prazo de resposta ou jogo pronto em prazo universal.
 Recados é canal de dúvidas; a progressão e a disponibilidade dos cursos condicionam as ferramentas.
 Preços e equivalência mensal vêm dos planos ao vivo. O anual informa pagamento anual, com Pix
-sem renovação automática e cartão recorrente. Sem economia comparativa fixa ou relatos novos.
+sem renovação automática e cartão recorrente. A economia do anual (`{{economia_anual}}`, selo do
+cartão) é calculada ao vivo como 12 mensalidades menos o anual; sem economia positiva a frase sai
+(`comEconomia`). Nenhum valor escrito à mão; relatos só os de `relatos.ts`.
 Pré-checkout, checkout e obrigado preservam os dados do responsável e a continuidade de quem já
 começou. Guardas: `tests/unit/comunidade-offer-copy.test.ts` e `comunidade-funnel.test.ts`.
 O manifesto `oferta/visuals.ts` relaciona cada demonstração às suas telas, legenda e texto
@@ -421,7 +447,8 @@ palavra; mudou a composição, e todas as imagens passaram a ser telas reais.
   semântica); no celular o par empilha e o rótulo de cada coluna entra na carta. O CSS mora no
   layout (`.cdc .comparacao-*`), sem `<style>` no componente. (3) `ENFASE_NUMA_LINHA` em
   `oferta/arte.ts` (largura da ênfase do título em `em`: o h1 encolhe por `cqi` até a frase azul
-  caber inteira numa linha; antes o equilíbrio de linhas deixava "continuar" sozinho).
+  caber inteira numa linha; antes o equilíbrio de linhas deixava "continuar" sozinho). Desde 16/10
+o mapa está vazio (nenhuma ênfase atual precisa); o mecanismo e a guarda ficam para títulos futuros.
 - **`oferta/arte.ts` (o que depende do ASSUNTO, não da posição), nas cinco páginas:**
   `ICONES_DE_CAPITULO` (chip do capítulo, por id de seção), `ICONES_DE_GRUPO` (ícone de cada
   subtítulo) e `ICONES_DE_DUVIDAS` (assuntos das dúvidas, por página). Sem entrada vale o ícone

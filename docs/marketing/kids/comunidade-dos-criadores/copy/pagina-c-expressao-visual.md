@@ -1,487 +1,427 @@
-# Os personagens que seu filho cria podem ganhar movimento e interação nos próprios jogos
+<!-- Espelho gerado da copy tipada em packages/funnel/src/funnels/comunidade-dos-criadores/oferta/. Edite o código e rode `bun scripts/espelho-copy-comunidade.ts` (em packages/funnel). -->
 
-No Pinta, ele cria a aparência do personagem. No Estúdio, aprende as regras que fazem esse personagem participar de um jogo. As aulas orientam o começo, e a Jornada libera o uso livre das ferramentas conforme ele avança.
+_Do desenho ao jogo_
 
-- Cores, formas e personagens para experimentar na criação digital.
-- Uma ligação entre o desenho e o que acontece no jogo.
-- Explicações para pausar e rever enquanto aprende a construir.
+# Os personagens que seu filho desenha passam a correr, pular e fugir de inimigos num jogo que ele mesmo programa
 
-Para crianças de 9 a 14 anos. No navegador do computador, com internet, mouse e teclado. A experiência inclui aprender a construir regras de jogos.
+Um desenho guarda as escolhas que ele fez de forma e de cor. Num jogo, o personagem precisa fazer coisas: andar quando alguém aperta uma tecla, alcançar a plataforma, aparecer bem no cenário da fase. Ele aprende a programar essas regras com personagens prontos e, depois de A Chave do Farol, passa a desenhar os dele no Pinta e levá-los para o jogo.
+
+- Nas primeiras aulas, ele programa com personagens prontos e aprende as regras que fazem qualquer personagem se mexer.
+- Depois de A Chave do Farol, o Pinta fica livre, e os desenhos dele entram nos jogos que ele monta.
+- O jogo publicado ganha um link, e quem joga encontra o personagem que ele desenhou.
+
+Para crianças de 9 a 14 anos. No navegador do computador, com internet, mouse e teclado. Além de desenhar, ele aprende a programar as regras do jogo.
 
 [Ver os planos para meu filho](#planos)
 
-[Conhecer o caminho do personagem ao jogo](#experiencia)
+[Ver o caminho do desenho ao jogo](#experiencia)
 
-## Você já conhece o cuidado que ele coloca num personagem
+<a id="c-interesse"></a>
 
-Pode ser a escolha de uma cor, o formato dos olhos ou um detalhe que ele refaz até ficar do jeito que imaginou. Quando seu filho mostra um desenho, mostra também decisões que tomou para criá-lo.
+_O interesse que ele já tem_
 
-Em um projeto interativo, aparecem outras escolhas: como esse personagem vai se mover, o que acontece quando encontra um objeto e qual cenário combina com o jogo que ele quer construir.
+## Num desenho, ele decide como o personagem é; num jogo, decide também o que ele faz
 
-O interesse visual encontra uma possibilidade de uso. Seu filho pode experimentar a aparência durante a partida e voltar ao desenho para ajustar o que percebeu. Para quem gosta de inventar personagens e tem curiosidade sobre o que eles fazem, essa passagem oferece um motivo para aprender as regras que produzem a interação.
+Você já viu o cuidado que seu filho coloca num personagem: a cor trocada três vezes, o formato dos olhos, o detalhe refeito até ficar como ele imaginou. Cada desenho guarda essas escolhas, mas todas são de aparência. Depois de pronto, o personagem fica do jeito que ele fez, parado na folha ou na tela.
 
-<a id="experiencia"></a>
+Num jogo, aparecem escolhas que o desenho nunca pediu: como esse personagem anda, o que acontece quando ele encosta numa moeda, se ele aparece bem no cenário da fase. Essas respostas vêm das regras do jogo, e as regras se montam com blocos de programação.
 
-## Do desenho à interação, cada parte tem um lugar
+Por isso, para uma criança que já inventa personagens, aprender a programar tem um motivo que ela enxerga: ver a própria criação obedecer ao jogador. E o desenho volta a ser escolha a cada teste, porque o personagem azul que some no fundo azul pede outra cor, e quem percebe isso é ele, jogando.
 
-O Pinta reúne ferramentas de desenho digital. No Estúdio, a criança constrói e testa as regras do jogo. Uma arte compatível criada no Pinta pode ser levada ao Estúdio para participar do projeto.
+<a id="c-aula"></a>
 
-Imagine um personagem azul sobre um cenário também azul. Na partida, ele fica difícil de enxergar. Seu filho pode voltar ao desenho, experimentar outra cor e conferir como ficou no jogo. A escolha visual ganha um efeito que ele consegue observar.
+_Do personagem ao jogo_
 
-Para o personagem responder a uma tecla, entra outra parte da criação: a programação. A aula orienta a montagem com blocos, explica o comando e mostra o comportamento que deve ser observado. A criança pode pausar, realizar a ação e testar antes de seguir.
+## Primeiro o personagem pronto obedece; depois chega a vez do personagem dele
 
-Conforme a atividade, textos, imagens, áudio e materiais de consulta complementam a explicação. O apoio fica ligado à tarefa, para ajudar a localizar e compreender o passo que está sendo feito.
+### As regras com um personagem pronto
 
-### O começo também ensina a construir as interações
+As primeiras aulas trazem personagens e cenários preparados, para seu filho aprender o que faz qualquer personagem andar, pular e responder a uma tecla. A primeira aula do curso abre com o jogo pronto, para ele saber aonde vai chegar.
 
-As primeiras aulas apresentam os comandos e os recursos da atividade. Depois de concluir o curso obrigatório de entrada e publicar o projeto exigido, seu filho chega ao posto Construtor e libera o uso livre de Estúdio e Pinta.
+### Monta e testa
 
-A experiência combina criação visual e programação de jogos. Conhecer esse começo com a criança ajuda a perceber se ela tem vontade de explorar as duas partes. A Jornada mostra os requisitos e as ferramentas disponíveis em cada momento.
+O vídeo mostra o passo ao lado do editor, e as falas do Zappy explicam o que fazer, com o botão Ouvir para escutar. Ele encaixa os blocos e aperta para jogar. Nas partes que têm verificação, Verificar esta parte mostra o que já está certo e o que falta.
 
-## Há espaço para escolher a aparência e voltar a ela
+### Desenha o dele no Pinta
 
-No Pinta, seu filho encontra cores, formas, camadas e recursos para criar personagens, fundos e peças de cenário. Pode começar por uma forma simples e trabalhar detalhes conforme se familiariza com as ferramentas. Nas aulas, usa a seleção preparada para a atividade.
+Quando conclui A Chave do Farol e publica o jogo, chega ao posto Construtor e o Pinta fica livre. Ali ele desenha o personagem com cores, formas e camadas, e o desenho do caderno serve de modelo para a versão digital. Com quadros de animação, faz o braço mudar de posição entre uma imagem e outra, que é o movimento do desenho; fazer o personagem responder ao jogador continua sendo trabalho das regras.
 
-As camadas permitem organizar partes da composição. As cores e formas podem ser ajustadas e comparadas. Quando o desenho participa do jogo, o teste oferece outra referência: o personagem aparece bem, tem o tamanho que a criança queria e combina com o cenário?
+### Leva para o jogo e ajusta
 
-Uma criação também pode ganhar quadros de animação. Mudar a posição de um braço entre imagens, por exemplo, permite experimentar o movimento visual. Fazer o personagem responder ao jogador exige construir as regras no Estúdio. A aparência e a interação se encontram no projeto, cada uma com seu trabalho.
+No Estúdio, ele traz a arte do Pinta e testa. O personagem ficou grande demais para a plataforma, a cor sumiu no cenário: ele volta ao desenho, ajusta e joga de novo. O aviso Guardado na sua conta confirma que o projeto ficou salvo para continuar no outro dia.
 
-### O desenho do caderno pode ser o começo de uma ideia
+Nas primeiras vezes, sentar junto ajuda a conhecer os botões; com o tempo, você acompanha menos.
 
-Seu filho pode usar o que desenhou no papel como referência para uma versão digital. Fotografar o desenho, por si só, não monta um jogo. A criação envolve preparar a arte e programar o que ela vai fazer.
+<a id="c-mostrar"></a>
 
-Também é possível combinar elementos próprios com os preparados. Não é necessário chegar sabendo desenhar para participar da criação de jogos. Para quem já gosta de desenhar, o Pinta oferece um lugar para explorar esse interesse dentro dos projetos.
+_Uma criação para mostrar_
 
-## A programação pode ter um motivo que ele consegue enxergar
+## Quem joga o jogo dele encontra o personagem que ele desenhou
 
-Seu filho quer que o personagem ande quando alguém aperta uma tecla. Para fazer isso, precisa conhecer o comando que responde àquela ação e definir o movimento. A regra tem uma função na ideia que ele está tentando realizar.
+Depois de publicado, o personagem que ele desenhou passa a correr pela fase na tela de outras pessoas, do jeito que ele programou.
 
-A orientação inicial mostra como montar. O teste permite observar o efeito. Numa atividade que permita mudar a velocidade, ele pode comparar as versões e decidir qual combina com o jogo. A escolha visual passa a conviver com uma escolha de funcionamento.
+O jogo vai para o Mural dos Criadores com um link e um cartão com código QR. A avó abre no computador dela, repara num detalhe e pergunta como ele fez. Seu filho explica a cor que escolheu e a regra que faz o personagem pular, e às vezes sai dali com a ideia da próxima versão.
 
-Você pode pedir que ele mostre as duas partes: o personagem que criou e a regra que faz alguma coisa acontecer. Essa conversa reconhece o cuidado com o desenho e dá espaço para conhecer o que aprendeu ao construir a interação.
+No Clube, as conversas são sobre criações e ideias, e o desafio do mês da etapa dele propõe um tema para o próximo personagem.
 
-É importante que a criança tenha curiosidade de experimentar essa passagem. Se procura apenas desenhar, vale considerar que a Comunidade inclui programação no percurso desde o começo.
+<a id="c-relatos"></a>
+
+_O que contam sobre as aulas_
+
+## Quando o jogo é dele, os personagens também são
+
+Alunos e pais contam, com as palavras deles, como foram as aulas.
+
+> “Eu gosto bastante de produzir os meus jogos, porque é uma forma de eu expressar as minhas ideias.” Jeffrey · Aluno · Relato sobre criar jogos
+
+> “Uma coisa que eu queria dizer era sobre um jogo que eu mesmo criei. Não é do curso, mas eu usei conforme o que eu aprendi com a professora Helena. Eu criei todos os personagens. E esse aqui é o meu personagem, que no caso sou eu mesmo. Ainda estou desenvolvendo, mas está ficando bom.” Jeffrey · Aluno · Relato sobre criar jogos
+
+> “Eu me sinto criando meus próprios jogos muito feliz, animado, para ver depois o que que vai dar.” Fernando · Aluno · Relato sobre criar jogos
+
+> “Achei que ia ser difícil, mas fui montando os bloquinhos e deu certo. No último dia chamei a minha mãe pra ver o meu jogo.” Débora · Aluna · Relato sobre o Desafio do Primeiro Jogo
 
 [Ver os planos da Comunidade](#planos)
 
-## Desenhar, construir, guardar e mostrar fazem parte da mesma experiência
+<a id="c-jornada"></a>
 
-Uma criação pode passar pela aula, pelo Pinta e pelo Estúdio. O desenho tem um destino no projeto, e o teste pode levar de volta à arte para um ajuste. Seu filho trabalha em ferramentas conectadas por essa finalidade.
+_Jornada do Criador_
 
-Os trabalhos podem ser guardados na conta e encontrados nas galerias das ferramentas. Se surgir uma dúvida da atividade, o pedido de ajuda parte da seção correspondente e a conversa continua nos Recados. Quando publica o jogo, pode apresentá-lo no Mural e obter um link para compartilhar.
+## Cada etapa abre espaço para personagens maiores, até em três dimensões
 
-Esse caminho dá continuidade ao esforço da criança. O personagem que levou tempo para desenhar pode participar de uma criação que alguém joga. A família encontra registros e produções para conhecer como o trabalho foi feito.
+Um personagem bem desenhado logo pede uma história: o que ele precisa alcançar, quem atrapalha o caminho, como a fase termina.
 
-## Experimentar uma cor ou uma regra pode levar mais de uma tentativa
+### Inventor: o Pensa e a ajuda do Zappy no Estúdio
 
-Ao desenhar, seu filho talvez queira testar duas cores antes de escolher. Ao montar uma regra, pode precisar rever onde um bloco foi colocado. A aula gravada permite pausar para executar a ação e voltar ao trecho necessário durante a construção.
+No posto Inventor, o Pensa conversa com seu filho sobre essas escolhas e organiza as respostas em tarefas para ele construir. No Estúdio, a ajuda do Zappy examina os blocos e o erro e explica o que conferir, mas quem ajusta e testa é ele. Os dois usam os créditos de inteligência artificial da família.
 
-A família escolhe o horário dentro do tempo de tela combinado. A atividade pode continuar em outra sessão durante o acesso. Antes de fechar, a criança confere o aviso de salvamento para saber se o projeto ficou guardado na conta.
+### Explorador de Mundos: o Molda
 
-O começo exige leitura e uso de mouse e teclado. Algumas crianças precisam de companhia para conhecer a dinâmica. Vocês podem acompanhar uma tarefa juntos e observar como ela usa a explicação antes de deixá-la seguir com mais independência.
+Mais adiante, o Molda leva os personagens para as três dimensões: em vez de uma figura plana, um boneco de blocos que ele monta por todos os lados.
 
-Se a dúvida permanecer, “Preciso de ajuda” dá acesso ao pedido ligado à aula. A conversa fica nos Recados, por mensagens assíncronas; pode ser necessário aguardar o retorno. O formato não inclui encontros ao vivo. Para dúvidas de uso das ferramentas, os tutoriais do Como fazer oferecem outra referência para consultar.
+<a id="c-acompanha"></a>
 
-## A família pode conhecer mais do que a imagem pronta
+_Você acompanha_
 
-Ao mostrar um personagem dentro do jogo, seu filho pode contar por que escolheu aquela cor, o que ajustou no tamanho e como montou um movimento. O resultado abre espaço para conhecer decisões que uma imagem isolada não mostra.
+## Você não precisa saber programar para entender o que ele fez
 
-No painel do responsável, você encontra atividades, temas explorados, entregas e a etapa da Jornada. Esses registros ajudam a localizar uma produção. Pedir que seu filho mostre uma alteração e explique o efeito acrescenta uma referência sobre o que compreendeu.
+A programação está nas aulas. O seu papel é outro: combinar o horário, abrir a primeira aula junto e, depois, pedir para ver o jogo.
 
-A assinatura permite até dois perfis, com progresso e projetos separados. Um irmão pode se interessar mais pela criação visual; outro, pelas regras. As liberações seguem o percurso de cada criança, e você acompanha os dois na área da família.
+Na sua área, cada filho tem um painel com os cursos, as atividades, as entregas, os temas que estudou e o ponto da Jornada. Dali você escolhe um projeto e faz a pergunta que abre a conversa: “Me mostra o que você mudou.” Ele aponta o bloco, joga e explica. Você entende o que ele aprendeu pelo que ele mostra, e passa a fazer parte de um assunto que antes era só dele.
 
-## Uma criação pode virar um convite para jogar
+Quando ele mostra o personagem dentro do jogo, conta por que escolheu aquela cor, o que ajustou no tamanho e como fez o personagem andar. Você conhece decisões que a imagem pronta sozinha nunca mostraria. E se você tem dois filhos, um pode passar a tarde no Pinta enquanto o outro monta as regras de um jogo, cada um no próprio perfil.
 
-O Mural reúne projetos publicados. Um jogo pode ganhar um link e um cartão com código QR para compartilhar. Seu filho tem uma forma de apresentar o personagem participando da partida, junto das escolhas que fez para ele.
+Uma etapa concluída diz que ele cumpriu o pedido da aula; a explicação dele diz o que entendeu. Os dois juntos contam muito mais do que o tempo que ele passou conectado.
 
-Ao jogar, alguém da família pode perceber um detalhe e perguntar como foi construído. A criança tem a oportunidade de explicar a arte e a interação. Essa conversa pode até trazer uma ideia para a próxima versão, que ela avalia e decide se quer experimentar.
+<a id="c-alternativas"></a>
 
-O Clube oferece publicações e respostas sobre criações, com combinados de convivência e um caminho para avisar a equipe quando algo precisa de atenção. O desafio do mês, quando disponível, propõe um tema; o remix liberado permite explorar uma base publicada compatível. Avatar, quarto e conquistas também dão espaço para personalização.
+_Antes de escolher_
 
-O perfil começa com a visibilidade para colegas desligada, administrada pelo responsável. Jogos publicados por link têm visibilidade pública própria. Vocês podem combinar quais criações mostrar e para quem enviá-las.
+## Uma aula de desenho ensina o traço; aqui o personagem também precisa funcionar num jogo
 
-## O desenho abre espaço para planejar uma criação maior
+### Aula de desenho
 
-Uma ideia visual pode trazer outras perguntas: o que esse personagem precisa conseguir, como o jogador vai controlá-lo e o que acontece ao terminar a fase? Responder ajuda a organizar a construção em partes que a criança consegue trabalhar.
+Uma boa aula de desenho ensina traço, proporção e técnica, e para quem quer só desenhar é o caminho certo. Aqui o desenho é digital e serve a um jogo: seu filho cria o personagem, programa o que ele faz e testa se ficou como queria.
 
-No posto Inventor, o Pensa oferece esse apoio. A conversa esclarece a ideia, organiza as escolhas e ajuda a transformá-las em tarefas para as ferramentas de criação. As decisões continuam com seu filho, inclusive quando ele escolhe entre sugestões.
+### Vídeo gratuito na internet
 
-O Zappy, no Estúdio, ajuda a examinar dúvidas sobre comandos e dificuldades do projeto. Ele não altera os blocos. A criança faz o ajuste e testa o resultado, conferindo se a sugestão atende ao que queria construir. É assim que a inteligência artificial participa como ajuda durante o trabalho. Esses recursos dependem dos requisitos, da disponibilidade do serviço e dos créditos da família.
+Há bons tutoriais, muitos em inglês e cada um num ponto diferente. Funcionam para quem já sabe o que procurar. O problema aparece no primeiro erro: o vídeo segue e a criança fica sem saber onde olhar. Aqui a explicação está na mesma tela do editor e, nas partes que têm verificação, o botão Verificar esta parte mostra o que falta.
 
-Mais adiante, o Molda oferece possibilidades em três dimensões. A Comunidade está em lançamento, com etapas ainda em preparação. A assinatura inclui os cursos publicados e os acrescentados durante o período contratado. O catálogo disponível mostra o que pode ser explorado hoje; as próximas liberações dependem dos cursos e requisitos correspondentes.
+### Aula ao vivo
 
-## A ligação entre arte e jogo dá um uso para cada ferramenta
+O professor explica na hora, no horário marcado e no ritmo da turma, e para quem precisa de alguém ao lado isso pesa a favor. Aqui a explicação é gravada: espera por ele, repete o trecho quantas vezes ele precisar e cabe no horário que vocês escolherem.
 
-Há ferramentas gratuitas de desenho e de criação de jogos. Há também atividades dedicadas exclusivamente à formação artística. Vale comparar o que seu filho quer experimentar e qual orientação acompanha essa experiência.
+<a id="origem"></a>
 
-A Comunidade reúne desenho digital, aulas de criação de jogos, ferramentas para testar, ajuda por mensagens e acompanhamento familiar. Uma escolha feita na arte pode ser conferida no jogo e revista no desenho. A integração permite seguir esse caminho dentro da plataforma.
+_Quem está por trás_
 
-Para a família, o benefício fica concreto quando conhece o personagem e depois joga a criação em que ele participa. Os planos abaixo oferecem a mesma experiência, com cobrança mensal ou acesso anual, respeitando o percurso de liberação das ferramentas.
+## Tudo começou com o tempo que nosso filho já passava jogando
 
-## A Comunidade nasceu de uma experiência de criação em família
+Somos Helena e Júlio, pais do André e da Débora. Nós dois somos formados em Sistemas de Informação e trabalhamos com programação.
 
-Somos Helena e Júlio, desenvolvedores de sistemas e formados em Sistemas de Informação. A criação de jogos com nosso filho André trouxe para dentro de casa uma experiência que já fazia parte do nosso trabalho.
+O André sempre gostou muito de jogar e de assistir a vídeos de jogos. Em vez de brigar com esse interesse, decidimos aproveitá-lo: passamos a usar uma parte do tempo que ele já ficava na tela para ensiná-lo a criar os próprios jogos.
 
-Ele passou a nos chamar para testar regras, explicar escolhas e imaginar outra versão. Essa convivência deu origem à Comunidade dos Criadores e à decisão de preparar um começo guiado para outras crianças, em português.
+Para um jogo funcionar, ele precisava pensar no que vem primeiro, testar e ajustar quando algo dava errado. Foi nesse processo que vimos o André se interessar cada vez mais por aprender. Depois, ele chamava a gente para jogar e contava como tinha feito.
 
-Na Comunidade, essa proposta toma forma nas aulas guiadas, nas ferramentas conectadas e nos projetos que a criança pode apresentar. Queremos que outras famílias possam conhecer o que seus filhos estão construindo: acompanhar uma tentativa, experimentar um jogo e ouvir a explicação de uma escolha.
+Essa experiência nos deu vontade de ajudar outras famílias a usar uma parte do tempo de tela para aprender criando, e foi assim que nasceu a Comunidade dos Criadores. Hoje somos nós que preparamos as aulas, usando o que sabemos de programação para ensinar as crianças a fazer os próprios jogos.
+
+> “Eu já jogava um monte, agora eu faço os meus jogos. Esse foi o primeiro e já quero fazer um maior.” André · Aluno · Relato sobre o Desafio do Primeiro Jogo
 
 <a id="planos"></a>
 
-## Um acesso para aprender, criar e acompanhar
+_Assinatura_
 
-A assinatura reúne os cursos publicados, as ferramentas de criação conforme a Jornada, os espaços da comunidade e o acompanhamento da família. Durante o período contratado, seu filho também tem acesso aos cursos que forem acrescentados à assinatura.
+## Tudo o que seu filho usa para criar entra numa assinatura só
 
-Os dois planos permitem até dois perfis de criança, cada um com seus projetos e progresso. As aulas são gravadas, com explicação e prática juntas, tutoriais para consulta e contato com a equipe. O acesso acontece pelo navegador do computador; o começo e as liberações seguem o mesmo percurso nos dois planos.
+Vocês assinam uma vez e seu filho tem os cursos da Comunidade, as ferramentas que a Jornada vai abrindo e um lugar para mostrar os jogos que fizer. Os cursos lançados enquanto a assinatura estiver ativa entram junto, sem compra separada.
+
+Os cursos publicados e os próximos. Cada curso é um jogo guiado do começo ao fim, de Cadê Todo Mundo e A Chave do Farol até os que ainda vão sair.
+
+As ferramentas, uma etapa de cada vez. Depois de A Chave do Farol, o Estúdio e o Pinta ficam livres para as ideias dele. No posto Inventor chegam o Pensa, para planejar um jogo, e a ajuda do Zappy no Estúdio. No Explorador de Mundos, o Molda, para criar em três dimensões.
+
+Dois filhos, uma assinatura. Os dois planos têm até dois perfis de criança, cada um com os próprios jogos, o próprio progresso e a própria Jornada.
+
+Um lugar para mostrar. O jogo publicado vai para o Mural com um link e um cartão com código QR para mandar à família, e o Clube e o desafio do mês dão motivo para a próxima versão.
+
+A sua área. Você vê o que cada filho fez, os temas que estudou, as entregas e em que ponto da Jornada ele está.
+
+As aulas são gravadas e funcionam no navegador do computador. O caminho de liberação é o mesmo nos dois planos; muda só a forma de pagar.
+
+> “A gente pensou aqui em casa que é como se fosse um investimento para crianças. Uma criança fazer uma natação, fazer inglês, isso ele está aprendendo um negócio agora, que é a programação.” Daniel · Pai do Rafael · Como uma atividade extra
 
 ### Plano mensal
 
-**{{preco_mensal}} por mês.**
+**{{preco_mensal}} por mês**
 
-Cobrança mensal com renovação automática no cartão. Você pode cancelar a próxima renovação pela área do responsável. O acesso continua até o fim do período pago.
+Cobrança mensal com renovação automática no cartão. Você cancela a próxima renovação pela sua área quando quiser, e o acesso continua até o fim do mês já pago.
 
 [Escolher o plano mensal](#contratacao)
 
 ### Plano anual
 
-**{{preco_anual}} por 12 meses de acesso.**
+**{{preco_anual}} por 12 meses**
 
-O valor equivale a {{equivalente_mensal_anual}} por mês, considerando o total anual. O pagamento é anual: Pix à vista ou cobrança anual recorrente no cartão.
+Doze meses pelo equivalente a {{equivalente_mensal_anual}} por mês.
 
-No Pix, uma nova contratação é necessária ao fim dos 12 meses. No cartão, a renovação é automática e você pode cancelar a próxima cobrança pela área do responsável.
+Comparado a doze mensalidades, vocês economizam {{economia_anual}}.
+
+Pagamento anual: Pix à vista ou cartão com renovação anual. No Pix, uma nova contratação é necessária ao fim dos 12 meses; no cartão, a renovação é automática e pode ser cancelada pela sua área.
 
 [Escolher o plano anual](#contratacao)
 
-### Sete dias para conhecer a experiência
+<a id="garantia"></a>
 
-Depois da contratação, vocês podem abrir a atividade de entrada, conhecer a orientação e observar como seu filho acompanha uma tarefa. Esse começo ajuda a avaliar o interesse e o apoio de que ele precisa na rotina de vocês.
+### Sete dias para ver seu filho na primeira aula
 
-Na contratação inicial, você tem sete dias para solicitar o reembolso integral pelo canal indicado nos termos da assinatura. Esse prazo também vale para cada nova contratação anual via Pix. As renovações automáticas no cartão seguem as condições dos termos.
+Assinem, abram a primeira aula juntos e vejam como seu filho se sai: se ele entende o passo, se gosta de montar, se a atividade cabe na rotina de vocês. Se em sete dias vocês acharem que não é para ele, devolvemos o valor.
 
-Depois da garantia, cancelar a próxima renovação impede as próximas cobranças e preserva o acesso até o fim do período já pago. O pedido de reembolso é feito separadamente, pelo canal informado nos termos.
+Para pedir o reembolso integral, escreva para contato@sistemazero.com.br com o e-mail usado na compra, em até sete dias contados da compra. O prazo vale para a primeira contratação e para cada nova contratação anual via Pix; as renovações automáticas no cartão seguem os termos.
+
+Cancelar a próxima renovação é outra ação, feita na sua área, e mantém o acesso até o fim do período pago.
 
 <a id="contratacao"></a>
 
-Ao escolher um plano, você informa seus dados, confere as condições e segue para o pagamento. O valor e a forma de renovação aparecem antes de concluir a contratação.
+Ao escolher o plano, você preenche os dados do responsável, confere o valor e a renovação e só então paga. O perfil do seu filho é criado depois, já dentro da plataforma.
 
 ## Mais sobre a experiência do seu filho
 
-### Do desenho à criação de jogos
+### Desenho e programação
 
 <a id="duvida-so-desenho"></a>
 
 #### A Comunidade serve para quem quer apenas desenhar?
 
-A Comunidade combina desenho digital e criação de jogos. Seu filho pode criar a aparência de um personagem no Pinta e aprender, no Estúdio, a regra que faz esse personagem responder a uma tecla ou a um acontecimento da partida.
+Não exatamente: aqui o desenho serve a um jogo, para quem quer desenhar e ver o desenho fazer alguma coisa. O desenho digital e a programação andam juntos: seu filho cria o personagem no Pinta e monta, no Estúdio, as regras que fazem ele andar, pular e responder ao jogador. Nas primeiras aulas, ele programa com personagens prontos, e o Pinta fica livre depois de A Chave do Farol.
 
-Essa ligação pode interessar a quem gosta de inventar personagens e quer experimentar o que eles fazem. Vale mostrar as duas partes à criança: a criação visual e a montagem das interações. Se ela procura apenas aulas de desenho, a proposta da Comunidade é mais ampla e precisa combinar com essa disposição para explorar programação.
+Se ele quer aulas de desenho, com traço e técnica, uma aula de desenho atende melhor. Mostre a demonstração e vejam juntos se a parte de programar também desperta a curiosidade dele.
+
+<a id="duvida-papel"></a>
+
+#### Ele pode aproveitar um personagem que desenhou no papel?
+
+Sim, como modelo. Com o desenho do caderno ao lado, ele refaz o personagem no Pinta: copia o formato, escolhe as cores e acerta os detalhes enquanto conhece as ferramentas. Depois leva essa versão digital para o Estúdio.
+
+Fotografar o desenho, sozinho, não faz um jogo, porque o personagem ainda precisa das regras de como anda e do que acontece quando encontra um objeto. Essa parte ele monta com blocos, e é justamente a graça da proposta.
 
 <a id="duvida-desenho"></a>
 
 #### Meu filho precisa saber desenhar para criar os jogos?
 
-Não. Seu filho pode usar personagens, objetos e cenários preparados. Isso permite dedicar a atenção às regras: fazer um personagem se mover, responder a uma tecla ou interagir com outro objeto. Ele consegue participar dessa construção usando a arte disponível na atividade.
+Não. As primeiras aulas trazem personagens, objetos e cenários prontos, e a atenção dele fica nas regras: fazer o personagem andar, pular e responder a uma tecla.
 
-Se quiser criar a própria aparência, o Pinta oferece ferramentas para experimentar formas, cores e desenhos digitais. Também é possível combinar uma criação própria com elementos prontos. A criança escolhe quanto quer explorar a parte visual conforme a atividade e as ferramentas já liberadas.
-
-<a id="duvida-papel"></a>
-
-#### Ele pode aproveitar uma ideia que desenhou no papel?
-
-Sim. Uma ideia do caderno pode servir de referência para criar sua versão digital no Pinta. Seu filho pode começar pelo formato do personagem, escolher as cores e ajustar detalhes enquanto conhece as ferramentas. Uma arte compatível pode então ser levada ao Estúdio.
-
-Para participar de um jogo, o personagem precisa de regras: como se move e o que acontece quando encontra um objeto, por exemplo. Essa parte é construída com programação. Fotografar o desenho, por si só, não cria as interações; a graça da proposta está também em aprender a construí-las.
+Depois de A Chave do Farol, o Pinta fica livre. Quem quiser desenha os próprios personagens e leva para o jogo, misturando com os prontos se preferir.
 
 <a id="duvida-programacao"></a>
 
 #### Meu filho precisa saber programar para começar?
 
-Não. O começo foi preparado para apresentar programação em blocos. A aula mostra onde encontrar uma instrução, como encaixá-la e o que observar quando o jogo roda. Seu filho pode pausar a explicação para executar cada passo e rever o trecho que precisar.
+Não. A programação começa do zero, em blocos: cada bloco é uma instrução que ele encaixa e testa. A aula mostra onde encontrar o bloco, como encaixar e o que observar quando o jogo roda, e ele pausa o vídeo para fazer cada passo.
 
-Os personagens e outros elementos preparados permitem começar por uma tarefa concreta, como montar um movimento. Assim, ele tem uma ação para realizar e um resultado para conferir enquanto conhece os comandos. O requisito inicial é conseguir ler e usar mouse e teclado.
-
-<a id="duvida-liberacao"></a>
-
-#### Todas as ferramentas ficam abertas no primeiro dia?
-
-O começo usa os recursos preparados para cada aula. Depois de concluir o curso obrigatório de entrada e publicar o projeto exigido, seu filho alcança o posto Construtor e libera o uso livre do Estúdio e do Pinta. Assim, a primeira experiência oferece orientação antes de ele explorar essas ferramentas por conta própria.
-
-No Inventor, entram o Pensa e a ajuda do Zappy no Estúdio. No Explorador de Mundos, começa o acesso ao Molda. A Jornada mostra os requisitos de cada etapa. Algumas ainda dependem de cursos em preparação, por isso o catálogo publicado é a referência para saber até onde ele pode avançar hoje.
-
-<a id="duvida-ajuda"></a>
-
-#### O que ele faz quando fica com uma dúvida na atividade?
-
-A orientação começa na própria atividade, com explicação junto da prática, materiais preparados e trechos que seu filho pode rever. Para consultar o uso de uma ferramenta, o Como fazer reúne tutoriais por assunto.
-
-O Mural e o Clube oferecem referências e troca de ideias. A partir do posto Inventor, o Pensa ajuda a organizar um projeto e o Zappy orienta sobre dificuldades no Estúdio, conforme os requisitos da Jornada, a disponibilidade do serviço e os créditos de inteligência artificial (IA) da família.
-
-Para conversar com a equipe, seu filho pode usar “Preciso de ajuda” na aula e contar o que tentou e o que aconteceu. A conversa continua nos Recados, com histórico para consultar. O atendimento humano acontece por mensagens, em outro momento, e pode ser necessário aguardar o retorno.
-
-### Começo e aprendizagem
-
-<a id="duvida-aulas-gravadas"></a>
-
-#### Como meu filho acompanha uma aula gravada?
-
-A aula apresenta uma tarefa que seu filho pode acompanhar por partes. Ele vê a ação, pausa para fazê-la e testa o resultado. Se perdeu onde um comando foi colocado, volta àquele trecho. Nas atividades integradas, a explicação fica junto do editor ou do experimento, para consultar durante a prática.
-
-Isso dá espaço para o tempo de cada tentativa. A criança pode rever o que precisa, conferir a montagem e só então continuar. Os tutoriais do Como fazer ajudam a consultar o uso das ferramentas, e os Recados permitem conversar com a equipe sobre uma dificuldade.
-
-Vocês podem acompanhar a primeira atividade para conhecer os controles e perceber como ele usa a orientação. A independência é construída no uso; algumas crianças precisam de mais companhia no começo. O formato oferece esses apoios, sem exigir que todas consigam fazer tudo sozinhas desde o primeiro acesso.
-
-<a id="duvida-pais"></a>
-
-#### Eu preciso saber programação para ajudar meu filho?
-
-Não. A orientação de programação está nas aulas, com os passos da montagem e o resultado que a criança deve observar. As dúvidas da atividade podem ser enviadas pelos Recados. Você pode ajudar a organizar o horário e conhecer os controles com seu filho nas primeiras atividades.
-
-Para participar depois, uma pergunta simples já abre conversa: “Me mostra o que você mudou?”. Ele pode apontar a regra e executar o jogo para explicar. Você conhece o trabalho pelo que ele mostra, sem ter de preparar ou ensinar o conteúdo da aula.
-
-<a id="duvida-aprendizagem"></a>
-
-#### Como percebo se ele está entendendo o que faz?
-
-O painel do responsável reúne cursos, atividades, entregas e temas explorados. Ele ajuda a localizar uma produção para conhecer com seu filho. O passo seguinte é pedir que ele mostre uma decisão: qual regra usou, o que esperava que acontecesse e como conferiu o resultado.
-
-Por exemplo, se mudou a pontuação de um jogo, pode mostrar o valor no comando e jogar para verificar o placar. Essa ligação entre a escolha e o efeito oferece uma referência concreta sobre o que compreendeu. Uma marca de conclusão registra que a etapa foi cumprida; a explicação, os testes e as alterações acrescentam informações sobre a aprendizagem.
-
-<a id="duvida-interesse"></a>
-
-#### E se ele já começou outras atividades e desistiu?
-
-Vale descobrir o que tornou difícil continuar: a atividade não interessou, a orientação ficou confusa, o nível era inadequado ou o horário não cabia na rotina? Cada motivo pede um apoio diferente.
-
-Aqui, as tarefas guiadas oferecem um começo, a explicação pode ser revista e os Recados permitem pedir ajuda. As aulas gravadas deixam a família escolher o horário. Esses recursos lidam com dificuldades práticas de participação, mas o interesse do seu filho também conta. Mostre a demonstração e conversem sobre uma criação que ele gostaria de tentar, sem transformar uma desistência anterior numa obrigação de acertar agora.
+Nas primeiras aulas, os personagens já vêm prontos, então ele começa por uma ação concreta, como fazer o personagem andar. O que ele precisa é conseguir ler e usar mouse e teclado.
 
 <a id="duvida-nivel"></a>
 
 #### A Comunidade combina com uma criança que já programa?
 
-Depende do que ele já conhece e do que quer construir. A entrada apresenta programação em blocos no Estúdio, com orientação para os primeiros projetos. Uma criança que já usa esses conceitos pode achar esse começo familiar.
+Depende do que ele já sabe e do que quer construir. A entrada é em blocos, no Estúdio, e quem já usa esses conceitos vai achar o começo familiar.
 
-Comparem uma atividade inicial e o catálogo publicado com a experiência dele: há algo que quer construir ou aprender ali? Os recursos avançados têm requisitos próprios. É importante considerar o que está acessível hoje, pois a presença de uma ferramenta na Jornada não significa liberação imediata.
+Vejam juntos a demonstração e a ordem dos projetos: Cadê Todo Mundo, A Chave do Farol, Nave Contra Asteroides, O Jogo do Meu Jeito, Corre, Dino e os próximos. Se houver ali algo que ele queira construir, o começo é o caminho mais curto até o Estúdio livre.
 
-<a id="duvida-roblox"></a>
+<a id="duvida-aulas-gravadas"></a>
 
-#### As aulas ensinam a criar no Roblox Studio?
+#### Como meu filho acompanha uma aula gravada?
 
-As primeiras construções acontecem no Estúdio da Comunidade, com programação em blocos. Se o objetivo do seu filho é aprender especificamente Roblox Studio, considere essa diferença antes de escolher. A demonstração mostra a ferramenta e o tipo de projeto que ele encontra aqui.
+O curso começa com o jogo pronto para ele experimentar, e as aulas mostram a montagem por partes, com o vídeo ao lado do editor. Ele assiste, pausa, faz e aperta para testar. Se perdeu onde um bloco foi colocado, volta àquele trecho. As falas do Zappy explicam o que fazer, e o botão Ouvir lê em voz alta. Nas partes que têm verificação, Verificar esta parte mostra o que já está certo e o que falta.
 
-<a id="duvida-apoio-especifico"></a>
+Nas primeiras aulas, vale sentar junto para conhecer os controles. Com o uso, ele passa a seguir a orientação da tela, e você acompanha menos.
 
-#### Como avaliar se meu filho precisa de um apoio que a Comunidade não oferece?
+O Daniel, pai do Rafael, tinha um receio parecido: “Ele é ativo, então ficar em frente ao computador num curso online era um receio que nós tínhamos muito, dele não conseguir prestar atenção. Mas a gente percebeu que o curso era super interativo, tem vários desafios, então o Rafa é uma criança que gosta de desafios, eu vi superando os desafios, então isso conseguiu concentrar ele no curso.”
 
-Conheçam uma atividade representativa e observem como seu filho acompanha a leitura, usa os controles e realiza a tarefa. Pausa, revisão e os apoios presentes na aula podem ser úteis, mas a adequação depende da necessidade concreta da criança.
+<a id="duvida-ao-vivo"></a>
 
-A equipe pode esclarecer os recursos disponíveis para essa avaliação. Se ele precisa de acompanhamento especializado ou adaptações individuais, conversem sobre isso antes de contratar para verificar o que pode ser atendido. A observação de uma tarefa oferece uma referência melhor do que presumir adequação apenas pela idade.
+#### Tem aula ao vivo?
 
-### Recursos e continuidade
+Não. As aulas são gravadas, e isso foi uma escolha: a explicação espera por ele. Seu filho pausa no passo, faz, volta ao trecho quantas vezes precisar e segue quando o jogo funcionar, no horário que vocês combinarem.
 
-<a id="duvida-catalogo"></a>
+<a id="duvida-pais"></a>
 
-#### Quais cursos entram na assinatura?
+#### Eu preciso saber programação para ajudar meu filho?
 
-A assinatura inclui os cursos publicados e os que forem acrescentados durante o período contratado. No catálogo, vocês podem conhecer o tema e a sequência disponíveis para começar. A Jornada mostra os requisitos para avançar e liberar ferramentas.
-
-A Comunidade está em lançamento, com outras etapas em preparação. Um recurso aparecer no mapa do percurso não significa que todos os cursos necessários para chegar até ele já estejam disponíveis. Vale escolher considerando as atividades que seu filho pode realizar agora e tratar as próximas publicações como continuidade.
-
-<a id="duvida-ia"></a>
-
-#### A inteligência artificial faz o projeto pela criança?
-
-A inteligência artificial pode ajudar a esclarecer uma dúvida, organizar uma ideia e sugerir caminhos. Para aprender criando, a criança precisa participar das decisões: escolher o que quer fazer, experimentar e entender o resultado. Receber uma solução pronta e aceitar tudo sem conferir deixa essas oportunidades de fora.
-
-É por isso que, na Comunidade, o Pensa e o Zappy têm funções de apoio. O Pensa ajuda seu filho a transformar a ideia em um planejamento, fazendo perguntas e organizando suas escolhas. O Zappy, no Estúdio, ajuda a entender comandos e dificuldades da construção; ele não altera o projeto pela criança.
-
-Seu filho continua responsável por escolher, montar e testar. Se uma sugestão aparecer, pode compará-la com o que imaginou e conferir se funciona. A proposta é aprender a usar essa ajuda com critério. A inteligência artificial também pode errar, e suas respostas precisam ser verificadas durante a criação.
-
-<a id="duvida-pensa"></a>
-
-#### O que meu filho faz no Pensa?
-
-O Pensa é um espaço para transformar uma ideia de jogo em um plano de criação. Ele conduz uma conversa sobre decisões como o objetivo do jogador, os controles e o que faz a partida terminar. Pode explicar uma pergunta, oferecer alternativas e organizar o que a criança escolheu.
-
-Imagine que seu filho quer criar um jogo de um gato que recolhe estrelas. A conversa ajuda a definir como mover o gato, o que conta como vitória e o que precisa existir na fase. A partir das escolhas registradas, o Pensa ajuda a organizar o trabalho em tarefas, com orientações para seguir às ferramentas de criação.
-
-Seu filho continua fazendo as escolhas sobre a ideia e construindo o projeto. O plano dá uma referência para começar por uma parte, conferir o que fez e decidir o próximo passo. O recurso é liberado no posto Inventor e depende dos requisitos da Jornada, da disponibilidade do serviço e dos créditos de uso.
-
-<a id="duvida-zappy"></a>
-
-#### Como o Zappy ajuda durante a criação no Estúdio?
-
-O Zappy oferece ajuda com inteligência artificial dentro do Estúdio. Ele pode considerar os blocos do projeto, o comando selecionado e o erro apresentado para explicar uma dúvida. Conforme a pergunta, também pode apontar uma aula ou um tutorial acessível à criança.
-
-Se o personagem não se move como ela esperava, por exemplo, seu filho pode explicar o que tentou. O Zappy pode ajudar a examinar os comandos e sugerir o que conferir. Ele não muda os blocos nem executa a correção no projeto: a criança faz o ajuste e testa o resultado.
-
-É uma ajuda para investigar a dificuldade. A resposta pode precisar de conferência, e a criança também tem os Recados para pedir apoio à equipe. A ajuda do Zappy no Estúdio é liberada no posto Inventor e depende dos requisitos, da disponibilidade do serviço e dos créditos da família.
-
-<a id="duvida-creditos"></a>
-
-#### O uso dos recursos de inteligência artificial é ilimitado?
-
-Não. Os recursos de inteligência artificial usam créditos compartilhados entre os perfis da família. O responsável pode consultar o saldo na sua área. Ter dois perfis, portanto, não significa ter dois saldos independentes.
-
-O acesso ao Pensa e ao Zappy também depende da etapa da Jornada e da disponibilidade do serviço. As aulas, os materiais de consulta e o caminho de ajuda por Recados têm funções próprias; o apoio da inteligência artificial é um recurso adicional dentro dessa experiência.
-
-<a id="duvida-planejamento"></a>
-
-#### Duas crianças podem planejar um jogo juntas?
-
-Sim, pelo Pensa, quando os participantes têm acesso ao recurso. Elas podem compartilhar o planejamento para organizar a ideia, as decisões e as tarefas. Isso dá uma referência comum sobre o que querem construir.
-
-Cada criança trabalha nas próprias ferramentas. O compartilhamento se refere ao plano; ele não permite que as duas editem simultaneamente o mesmo jogo. O Clube também oferece espaço para conversar sobre criações por publicações e respostas.
-
-<a id="duvida-3d"></a>
-
-#### Quando ele pode começar a criar em três dimensões?
-
-O Molda abre possibilidades de criação em três dimensões a partir do posto Explorador de Mundos. O acesso depende dos requisitos e dos cursos necessários para alcançar essa etapa. Confira o percurso publicado antes de escolher a assinatura por esse recurso.
-
-<a id="duvida-codigo"></a>
-
-#### Ele também pode conhecer a programação por código?
-
-Há recursos que relacionam blocos e código em etapas avançadas da Jornada. O começo da Comunidade acontece com blocos. Para avaliar essa continuidade, confira os requisitos e os cursos publicados que permitem chegar à etapa desejada. A proposta é uma iniciação por projetos, sem equivaler a uma formação profissional completa.
-
-<a id="duvida-desafio"></a>
-
-#### Ele já começou pelo Desafio. Precisa repetir o que concluiu?
-
-Pode continuar na mesma conta, do ponto registrado e conforme seu acesso. Se ainda faltar concluir uma etapa ou publicar o projeto exigido, a Jornada indica esse próximo passo.
-
-<a id="duvida-certificado"></a>
-
-#### Os cursos têm certificado?
-
-Há certificado nos cursos que o oferecem, após cumprir os requisitos de conclusão. Consulte essa informação no curso escolhido. O certificado registra a etapa concluída; as produções permitem conhecer o trabalho realizado nela.
-
-<a id="duvida-custos"></a>
-
-#### Preciso comprar as ferramentas separadamente?
-
-As ferramentas da Comunidade fazem parte da assinatura, sem uma compra adicional para desbloqueá-las. O que libera cada recurso é a etapa da Jornada e o cumprimento dos requisitos correspondentes.
-
-Os recursos de inteligência artificial têm limites de créditos, consultáveis na área do responsável. Por isso, vale distinguir o que está incluído, quando fica disponível e quanto pode ser usado. Os dois planos seguem o mesmo percurso de liberação.
-
-### Uso no dia a dia
-
-<a id="duvida-telas"></a>
-
-#### A proposta é aumentar o tempo de tela do meu filho?
-
-A proposta é reservar parte do tempo que a família já permite para aprender criando. Vocês continuam definindo os dias e a duração da atividade. As aulas gravadas permitem pausar a explicação e organizar a prática dentro desses combinados.
-
-O que muda é a tarefa naquele período. Ao montar uma regra, testar o jogo e explicar uma escolha, a criança participa de uma construção que vocês podem conhecer. É nesse uso do computador que a Comunidade concentra sua proposta educativa.
+Não. Cada passo da montagem e o resultado esperado estão nas aulas. Nas primeiras vezes, abra a aula junto para conhecer os botões; depois, peça para ver o jogo e deixe que ele explique o bloco que mudou.
 
 <a id="duvida-equipamento"></a>
 
 #### De que equipamento ele precisa?
 
-De um computador com internet, navegador, mouse e teclado. As atividades de criação são pensadas para esse uso; celular e tablet não são os equipamentos indicados para acompanhar o curso. Se houver dúvida sobre o computador da família, descreva o equipamento à equipe antes de contratar.
+De um computador com internet, navegador, mouse e teclado. As atividades de criação são feitas para esse uso; celular e tablet não servem para acompanhar as aulas. Se tiver dúvida sobre o computador de casa, descreva o equipamento num e-mail para contato@sistemazero.com.br antes de assinar.
 
-<a id="duvida-internet"></a>
+### Ferramentas e inteligência artificial
 
-#### A Comunidade funciona sem internet?
+<a id="duvida-liberacao"></a>
 
-A experiência precisa de conexão para acessar aulas, conta, mensagens e serviços. Se a internet cair durante a criação, confira o aviso de salvamento. Quando a conexão voltar, confirme que o trabalho foi guardado na conta antes de fechar ou trocar de computador. Um rascunho local pode estar apenas naquele navegador.
+#### Todas as ferramentas ficam abertas no primeiro dia?
+
+Não, e de propósito. No começo, cada aula traz os personagens e os recursos daquela atividade, para ele aprender um passo de cada vez. Quando conclui A Chave do Farol e publica o jogo, chega ao posto Construtor, e o Estúdio e o Pinta ficam livres para as ideias dele.
+
+No Inventor chegam o Pensa e a ajuda do Zappy no Estúdio; no Explorador de Mundos, o Molda.
+
+<a id="duvida-catalogo"></a>
+
+#### Quais cursos entram na assinatura?
+
+Todos os cursos publicados da Comunidade, inclusive A Chave do Farol, e os que forem lançados enquanto a assinatura estiver ativa, sem pagar à parte. Cada curso é um jogo guiado do começo ao fim.
+
+A ordem atual dos projetos é Cadê Todo Mundo, um curso extra que pode vir antes; A Chave do Farol, o curso de entrada da Jornada; Nave Contra Asteroides; O Jogo do Meu Jeito; e Corre, Dino. A Jornada mostra o que cada etapa libera.
+
+<a id="duvida-ia"></a>
+
+#### A inteligência artificial faz o projeto pela criança?
+
+Não. O Pensa conversa sobre a ideia do jogo (o objetivo, os controles, quando a partida termina) e organiza as escolhas dele em tarefas; dois irmãos podem montar juntos o mesmo plano de jogo no Pensa. O Zappy, no Estúdio, olha os blocos e o erro e explica o que conferir, mas não mexe no projeto: quem ajusta e testa é a criança.
+
+A inteligência artificial também erra, e conferir a sugestão no jogo faz parte de aprender. O Pensa e a ajuda do Zappy no Estúdio abrem no posto Inventor e usam os créditos de inteligência artificial da família. As falas do Zappy que conduzem as aulas estão lá desde a primeira e não usam créditos.
+
+<a id="duvida-creditos"></a>
+
+#### O uso dos recursos de inteligência artificial é ilimitado?
+
+Não. O Pensa e a ajuda do Zappy no Estúdio usam os créditos de inteligência artificial do mês, divididos entre os perfis da família, e você vê o saldo na sua área. As aulas, as pistas, a verificação e os tutoriais não usam créditos.
+
+<a id="duvida-avancado"></a>
+
+#### O que vem depois dos blocos?
+
+A Jornada continua. No Explorador de Mundos chega o Molda, para criar modelos em três dimensões que entram nos jogos 3D do Estúdio. Lá na frente, no Gênio da Criação, o modo Ponte mostra os blocos lado a lado com o código escrito, e na Lenda ele programa em código.
+
+É uma iniciação por projetos, pensada para crianças de 9 a 14 anos; formar um programador profissional fica fora da proposta.
+
+<a id="duvida-certificado"></a>
+
+#### Os cursos têm certificado?
+
+Sim, nos cursos que oferecem, depois de cumprir os requisitos de conclusão; cada curso informa isso. O certificado registra a etapa concluída, e o jogo mostra o que ele fez nela.
+
+### Rotina e tela
+
+<a id="duvida-telas"></a>
+
+#### A proposta é aumentar o tempo de tela do meu filho?
+
+Não. A ideia é mudar o que ele faz numa parte do tempo que vocês já permitem. Vocês continuam decidindo os dias e a duração, e a aula gravada cabe nesse combinado porque pausa hoje e continua amanhã do mesmo ponto.
+
+O que muda é o papel dele naquele tempo. Em vez de escolher o próximo vídeo, ele decide quanto o personagem pula, testa e mostra para você.
+
+<a id="duvida-frequencia"></a>
+
+#### Ele precisa entrar todos os dias?
+
+Não. Vocês decidem os dias. Missões, moedas, pontos e ligas registram a participação, e algumas contam a frequência, mas o projeto e o progresso continuam guardados se ele ficar uns dias sem entrar.
+
+Para viagens e férias, o modo férias registra a pausa e protege a sequência dele. A cobrança e o período do plano continuam correndo normalmente.
 
 <a id="duvida-salvamento"></a>
 
-#### Como ele guarda uma criação para continuar depois?
+#### Como ele guarda o projeto para continuar depois?
 
-Antes de sair da ferramenta, seu filho confere o aviso de salvamento e se a criação ficou guardada na conta. Na próxima sessão, pode abrir o trabalho salvo na galeria e continuar. Essa conferência é especialmente importante antes de trocar de computador.
+O projeto fica guardado na conta, e o aviso Guardado na sua conta confirma. No dia seguinte, ele abre o trabalho na galeria e continua de onde parou, inclusive em outro computador.
 
-Se o aviso indicar apenas uma cópia local ou um problema de conexão, confirme a sincronização quando a internet voltar. Um rascunho local pode estar apenas naquele navegador. Guardar o projeto na conta é o que permite contar com aquela versão ao acessar por outro aparelho.
+A plataforma precisa de internet. Se a conexão cair no meio da criação, vale esperar o aviso Guardado na sua conta voltar antes de fechar. As ferramentas também exportam o trabalho nos formatos de cada uma, como a imagem de um desenho, para guardar uma cópia fora da plataforma.
 
-<a id="duvida-exportacao"></a>
+<a id="duvida-interesse"></a>
 
-#### É possível baixar uma cópia do que ele criou?
+#### E se ele já começou outras atividades e desistiu?
 
-As ferramentas oferecem exportação nos formatos compatíveis com cada trabalho. Vale escolher o arquivo conforme o que vocês querem fazer: uma imagem serve para mostrar a arte; um arquivo editável pode permitir continuar a criação em uma ferramenta compatível.
+Vale descobrir o motivo: a atividade não interessou, a explicação ficou confusa, o nível não servia ou o horário não cabia. Cada um pede uma resposta diferente.
 
-Baixar uma cópia e manter acesso à Comunidade são coisas diferentes. O acesso às ferramentas acompanha o período da assinatura. Antes de depender de um arquivo fora da plataforma, confira o formato e onde ele pode ser aberto; o download não garante que toda a experiência do projeto funcione em qualquer programa.
+Aqui, o curso começa com o jogo pronto, a explicação espera por ele e o horário é o de vocês, o que cuida dos motivos práticos. O interesse é dele: mostrem a demonstração e perguntem o que ele mudaria num jogo de que gosta. Se nos sete dias ele não se envolver, vocês pedem o reembolso.
 
-<a id="duvida-ferias"></a>
-
-#### Como funciona uma pausa durante as férias?
-
-Vocês escolhem quando acessar as aulas durante o período contratado. O modo férias registra uma pausa e protege a sequência de participação da criança. Ele não suspende a cobrança nem acrescenta dias ao plano. Ao voltar, ela encontra o percurso registrado e pode retomar os trabalhos guardados.
-
-<a id="duvida-pontos"></a>
-
-#### Meu filho precisa entrar todos os dias para ganhar pontos?
-
-Vocês podem organizar a atividade nos dias combinados em casa. Missões, moedas, pontos e ligas registram formas de participação, e algumas dependem da frequência. Esses elementos dão referências de conquistas e personalização do espaço da criança.
-
-A família continua definindo o tempo de uso. O projeto é uma referência mais útil para conversar sobre aprendizagem: o que ela construiu, o que testou e o que consegue explicar. Uma sequência de acessos ou uma pontuação, sozinha, não responde a essas perguntas.
-
-### Participação e família
+### Família e segurança
 
 <a id="duvida-irmaos"></a>
 
 #### Uma assinatura atende meus dois filhos?
 
-Sim. Os planos mensal e anual permitem até dois perfis de criança. Cada um mantém seus projetos e seu progresso. Um irmão pode voltar ao desenho enquanto o outro continua a montagem de uma regra, nos horários que a família organizar.
-
-O conjunto de recursos é o mesmo, mas as liberações acompanham o percurso de cada perfil. Os créditos de inteligência artificial são compartilhados pela família. Isso permite acompanhar as crianças separadamente e conhecer o uso desses recursos na mesma área do responsável.
+Sim. Os dois planos têm até dois perfis de criança, cada um com os próprios jogos, o próprio progresso e a própria Jornada. Um pode estar no Pinta enquanto o outro monta uma regra, nos horários que vocês combinarem. Os créditos de inteligência artificial são da família, divididos entre os dois.
 
 <a id="duvida-perfil"></a>
 
-#### Quem decide se o perfil do meu filho aparece para os colegas?
+#### Quem vê o perfil e os jogos do meu filho?
 
-O responsável administra essa opção, que começa desligada para os colegas. Vocês podem revisar a configuração na área da família e combinar o que a criança vai mostrar. Essa escolha se refere ao perfil; os jogos publicados por link têm visibilidade própria.
-
-<a id="duvida-jogos-publicos"></a>
-
-#### Quem pode abrir um jogo que meu filho publica por link?
-
-O link de um jogo publicado é público. Quem o recebe pode abrir a criação em um aparelho compatível com os controles do jogo. Ter o perfil oculto para os colegas não torna esse link privado. Combinem quais projetos publicar e com quem compartilhar.
+O perfil começa escondido dos colegas, e só você liga essa opção, na sua área. Os jogos são outra coisa: quando ele publica, o link é público, e quem receber consegue jogar. Por isso vale combinar com ele quais jogos publicar e para quem mandar.
 
 <a id="duvida-convivencia"></a>
 
 #### Como a criança pede ajuda se uma conversa no Clube a incomodar?
 
-O Clube tem combinados de convivência e um caminho para avisar a equipe sobre algo que precise de atenção. Conheçam esses recursos juntos e combinem que seu filho também procure você quando uma conversa o deixar desconfortável.
+O Clube tem combinados de convivência e um caminho para avisar a equipe sobre algo que precise de atenção. Conheçam esses combinados juntos e combinem também que ele procure você quando uma conversa o deixar desconfortável.
 
-As publicações e respostas oferecem espaço para falar de ideias e projetos. Os combinados e o canal de aviso apoiam essa participação; acompanhar o que a criança compartilha e com quem conversa continua fazendo parte do cuidado da família.
+<a id="duvida-apoio-especifico"></a>
 
-<a id="duvida-indicacao"></a>
+#### Como avaliar se meu filho precisa de um apoio que a Comunidade não oferece?
 
-#### Como apresento a experiência a outra família?
+Abram juntos uma primeira aula e observem como ele lê, usa os controles e faz a tarefa. Se ele precisa de acompanhamento especializado ou de adaptações individuais, escrevam para contato@sistemazero.com.br antes de assinar, para conferir o que dá para atender. Ver uma tarefa diz mais do que a idade sozinha.
 
-Na área do responsável, consulte o programa de indicações e copie seu link. O convite e os benefícios seguem as condições da campanha apresentada ali. Confira essas condições antes de dizer à outra família o que ela receberá.
+### Assinatura
 
-### Conta e assinatura
+<a id="duvida-ajuda"></a>
 
-<a id="duvida-atendimento"></a>
+#### O que ele faz quando trava numa atividade?
 
-#### Como falo com a equipe de atendimento?
+Primeiro, usa o que está na tela: volta o vídeo ao trecho e, nas partes que têm verificação, aperta Verificar esta parte para ver o que já está certo e o que falta. Nos experimentos, Uma pista indica onde olhar. Para dúvidas de como usar uma ferramenta, o Como fazer tem tutoriais por assunto, e a partir do posto Inventor a ajuda do Zappy no Estúdio também examina os blocos.
 
-Use o atendimento na área do responsável e descreva o que precisa resolver. O histórico permite consultar a conversa com a equipe. As dúvidas da criança sobre uma atividade seguem pelos Recados, ligados à experiência de aprendizagem.
+Se a dúvida continuar, o botão Preciso de ajuda, na própria aula, manda a pergunta para a nossa equipe. A resposta chega por escrito nos Recados, e ele pode consultá-la depois.
 
-<a id="duvida-senha"></a>
+<a id="duvida-custos"></a>
 
-#### Como recupero a senha da conta?
+#### Preciso comprar as ferramentas separadamente?
 
-Na tela de entrada, use a opção de recuperação de senha e informe o e-mail da conta. Siga as instruções recebidas para definir uma nova senha e voltar ao acesso.
+Não. As ferramentas fazem parte da assinatura; o que abre cada uma é a etapa da Jornada. O único limite de uso é o dos créditos de inteligência artificial, que você acompanha na sua área. Os dois planos seguem o mesmo caminho de liberação.
 
 <a id="duvida-cancelamento"></a>
 
 #### Como cancelo a próxima renovação?
 
-Abra a área do responsável, entre em Conta e, em Minhas compras, clique em Cancelar assinatura. O acesso continua até o fim do período já pago. No plano anual por Pix, o acesso termina ao fim dos 12 meses e uma nova contratação é necessária para continuar.
+Abra a área dos pais, entre em Conta e, em Minhas compras, clique em Cancelar assinatura. O acesso continua até o fim do período já pago. No plano anual por Pix, o acesso termina ao fim dos 12 meses e uma nova contratação é necessária para continuar.
 
 <a id="duvida-reembolso"></a>
 
 #### Como solicito o reembolso dentro da garantia?
 
-Na contratação inicial, você tem sete dias para solicitar o reembolso integral pelo canal indicado nos termos, informando o e-mail da compra. O prazo também vale para cada nova contratação anual por Pix. Renovações automáticas no cartão seguem as condições dos termos. O pedido de reembolso é separado do cancelamento da próxima renovação.
+Na primeira contratação, você tem sete dias, contados da compra, para pedir o reembolso integral: escreva para contato@sistemazero.com.br com o e-mail da compra. O prazo vale também para cada nova contratação anual via Pix; renovações automáticas no cartão seguem os termos. O pedido de reembolso é separado do cancelamento da próxima renovação.
 
-## Aquele personagem pode ter uma história de criação para seu filho contar
+<a id="duvida-atendimento"></a>
 
-Ele mostra o desenho, abre o jogo e explica o que acontece quando o personagem se move. Você reconhece uma escolha de cor, um detalhe da aparência ou uma ideia que ele já tinha comentado.
+#### Como falo com a equipe ou recupero a senha?
 
-A Comunidade reúne ferramentas e orientação para explorar esse encontro entre desenho e interatividade. Escolham o plano e conheçam juntos o começo do percurso.
+Para assuntos da conta, use o atendimento na área dos pais; a conversa fica guardada. Para recuperar a senha, use a opção na tela de entrada e informe o e-mail da conta. Dúvidas do seu filho sobre uma aula seguem pelo Preciso de ajuda, na própria aula.
 
-[Escolher um plano para explorar essas criações](#planos)
+<a id="convite"></a>
+
+_Para começar juntos_
+
+## O personagem que hoje mora no caderno pode estar num jogo que a família inteira joga
+
+Imagine seu filho mostrando o desenho, abrindo o jogo e apertando a tecla: o personagem anda do jeito que ele programou. Você reconhece a cor que ele escolheu e entende a regra que ele montou.
+
+Escolham o plano e abram juntos a primeira aula. Se em sete dias vocês acharem que não é para ele, devolvemos o valor.
+
+[Escolher um plano para meu filho](#planos)

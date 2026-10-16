@@ -1,6 +1,6 @@
 # Review da proposta de habilidades escolares
 
-15/10/2026. Escopo: [proposta editorial e visual](2026-10-15-comunidade-habilidades-escolares-proposta.md) e [copy da página](../marketing/kids/comunidade-dos-criadores/copy/pagina-f-habilidades-escolares-proposta.md). As correções abaixo foram aplicadas aos documentos. O funil não foi alterado.
+15/10/2026. Escopo: [proposta editorial e visual](2026-10-15-comunidade-habilidades-escolares-proposta.md) e [copy da página](../marketing/kids/comunidade-dos-criadores/copy/historico/2026-10-16-antes-da-proposta/pagina-f-habilidades-escolares-proposta.md). As correções abaixo foram aplicadas aos documentos. O funil não foi alterado.
 
 ## Avaliação
 
