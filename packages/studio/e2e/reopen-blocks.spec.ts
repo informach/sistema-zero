@@ -85,7 +85,7 @@ async function storedUpdatedAt(page: Page, projectId: string): Promise<number> {
         const request = db
           .transaction('kv', 'readonly')
           .objectStore('kv')
-          .get(`sz:v2:project-meta:${id}`)
+          .get(`sz:v3:project-meta:${id}`)
         request.onsuccess = () => resolve(request.result)
         request.onerror = () => reject(request.error)
       })

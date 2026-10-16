@@ -18,7 +18,7 @@ test.describe('Zappy do Studio', () => {
     await trigger.focus()
     await trigger.press('Enter')
 
-    const panel = page.getByRole('dialog', { name: 'Zappy do Studio' })
+    const panel = page.getByRole('dialog', { name: 'Zappy', exact: true })
     await expect(panel).toBeVisible()
     await expect(panel).toHaveAttribute('aria-modal', 'false')
     await expect(page.getByLabel('Sua dúvida para o Zappy')).toBeFocused()
@@ -38,7 +38,7 @@ test.describe('Zappy do Studio', () => {
     await createProject(page)
 
     await page.getByRole('button', { name: 'Abrir Zappy' }).click()
-    const panel = page.getByRole('dialog', { name: 'Zappy do Studio' })
+    const panel = page.getByRole('dialog', { name: 'Zappy', exact: true })
     await expect(panel).toHaveAttribute('aria-modal', 'true')
     await expect(panel).toHaveCSS('left', '8px')
     await expect(panel).toHaveCSS('right', '8px')

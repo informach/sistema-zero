@@ -349,6 +349,13 @@ jobs:
         working-directory: packages/studio
         run: bunx playwright install --with-deps chromium
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Instalar o compilador confiável para os jogos Pro
+        run: npm ci --ignore-scripts --no-audit --no-fund --prefix packages/studio-runtime/runtime
+
       - name: E2E Chromium completo (shard ${{ matrix.shard }}/3)
         working-directory: packages/studio
         run: bunx playwright test --project=chromium --shard=${{ matrix.shard }}/3
