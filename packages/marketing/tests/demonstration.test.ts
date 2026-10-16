@@ -255,3 +255,77 @@ test('guia usa somente fontes factuais com mídia confirmada e não cria capacid
   asset.projectId = evidence.projectId
   expect(demonstrationCandidates(run.context)).toEqual([])
 })
+
+test('fontes com orientação desconhecida ou EXIF rotacionado não entram no guia nem na montagem', () => {
+  const { f, run } = executionFixture()
+  for (const rotation of [null, 90, 180, 270]) {
+    const asset = { ...f.asset, rotation }
+    expect(() =>
+      validateDemonstrationSources(f.timeline, f.projectId, [f.evidence], [asset]),
+    ).toThrow('normalizada')
+    run.context.assets = [asset]
+    expect(demonstrationCandidates(run.context)).toEqual([])
+  }
+})
+
+test('ajuste textual de demonstração não aceita texto invisível no clipe', async () => {
+  const { run } = executionFixture()
+  if (run.outcome?.status !== 'succeeded') throw new Error('Resultado ausente')
+  const clip = run.outcome.video?.variants[0]?.timeline.clips[0]
+  if (!clip) throw new Error('Cena ausente')
+  clip.text = 'Título alterado no campo que não aparece na demonstração'
+  await expect(videoBatch(run, 0)).rejects.toThrow('mais que o texto')
+})
+
+test('fontes repetidas não escondem a segunda imagem e preservam a evidência da cena selecionada', () => {
+  const { f, run } = executionFixture()
+  const otherAsset = { ...f.asset, id: crypto.randomUUID() }
+  const otherEvidence = structuredClone(f.evidence)
+  if (otherEvidence.document.kind !== 'evidence') throw new Error('Evidência ausente')
+  otherEvidence.id = crypto.randomUUID()
+  otherEvidence.entityId = crypto.randomUUID()
+  otherEvidence.document.assetIds = [otherAsset.id]
+  const duplicates = Array.from({ length: 7 }, () => ({
+    ...f.evidence,
+    id: crypto.randomUUID(),
+    entityId: crypto.randomUUID(),
+  }))
+  run.context.evidence = [...duplicates, f.evidence, otherEvidence]
+  run.context.assets = [f.asset, otherAsset]
+  const candidates = demonstrationCandidates(run.context, f.timeline.clips[0]?.id)
+  expect(candidates.map((source) => source.assetId)).toEqual([f.asset.id, otherAsset.id])
+  expect(candidates[0]?.evidenceRevisionId).toBe(f.evidence.id)
+  run.context.evidence.reverse()
+  expect(demonstrationCandidates(run.context, f.timeline.clips[0]?.id)).toEqual(candidates)
+})
+
+test('comparação conserva a revisão exata de cada imagem mesmo com fatos que compartilham assets', () => {
+  const { f, run } = executionFixture()
+  const original = run.context.source.document
+  if (original.kind !== 'video' || f.evidence.document.kind !== 'evidence')
+    throw new Error('Fixture inválida')
+  const scene = original.timeline.clips[0]?.demonstration
+  const first = scene?.sources[0]
+  if (!scene || !first) throw new Error('Cena ausente')
+  const otherAsset = { ...f.asset, id: crypto.randomUUID() }
+  const otherEvidence = { ...f.evidence, id: crypto.randomUUID(), entityId: crypto.randomUUID() }
+  scene.recipeId = 'before-after-v1'
+  scene.sources.push({
+    ...first,
+    id: crypto.randomUUID(),
+    assetId: otherAsset.id,
+    evidenceId: otherEvidence.entityId,
+    evidenceRevisionId: otherEvidence.id,
+  })
+  // Both facts mention both files, but each scene source pins its own factual revision.
+  f.evidence.document.assetIds = [f.asset.id, otherAsset.id]
+  run.context.evidence = [f.evidence, otherEvidence]
+  run.context.assets = [f.asset, otherAsset]
+  const candidates = demonstrationCandidates(run.context, original.timeline.clips[0]?.id)
+  expect(candidates.find((source) => source.assetId === f.asset.id)?.evidenceRevisionId).toBe(
+    f.evidence.id,
+  )
+  expect(candidates.find((source) => source.assetId === otherAsset.id)?.evidenceRevisionId).toBe(
+    otherEvidence.id,
+  )
+})

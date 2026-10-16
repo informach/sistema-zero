@@ -15,6 +15,8 @@ const scene = proof.scenes[Number(query.get('scene') ?? 0)]
 const height = Number(query.get('height') ?? 1920)
 const uuid = () => crypto.randomUUID(), trackId = uuid(), projectId = uuid(), userId = uuid()
 const timeline = videoSchema.parse({ schemaVersion: 1, recipeVersion: 'marketing-timeline-v1', width: 1080, height, fps: { numerator: 30000, denominator: 1001 }, durationInFrames: 90, tracks: [{ id: trackId, kind: 'visual', muted: false }], clips: [clipSchema.parse({ id: uuid(), trackId, kind: 'image', assetId: scene.sources[0].assetId, startFrame: 0, durationInFrames: 90, fit: 'contain', demonstration: { schemaVersion: 1, ...scene } })], captions: [], background: '#fffcf4', accent: '#ffdb56' })
+// Legacy clip metadata must not hide the demonstration's visible headline in the selector.
+timeline.clips[0]!.text = 'Metadado legado invisível'
 const assets = Object.fromEntries(scene.sources.map((source) => [source.assetId, proof.sources.find((file) => file.sha256 === source.sha256).url]))
 const player = createRef<PlayerRef>()
 window.seekProof = (frame: number) => player.current?.seekTo(frame)

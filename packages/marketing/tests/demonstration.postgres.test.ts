@@ -53,7 +53,7 @@ suite('demonstração integrada: fontes, contexto e aprovação', () => {
   }, 30000)
   afterAll(async () => connection?.close())
 
-  async function fixture() {
+  async function fixture(rotation: number | null = 0) {
     const projectId = id()
     await workspace.create(owner, {
       schemaVersion: 1,
@@ -76,7 +76,7 @@ suite('demonstração integrada: fontes, contexto e aprovação', () => {
       height: 600,
       durationMs: null,
       codec: null,
-      rotation: 0,
+      rotation,
     })
     const final = assetManifestSchema.parse({
       ...image,
@@ -89,6 +89,7 @@ suite('demonstração integrada: fontes, contexto e aprovação', () => {
       height: 1920,
       durationMs: 5000,
       codec: 'h264',
+      rotation: 0,
     })
     // Confirmed-storage fixtures test persistence, not a real transfer or render.
     for (const manifest of [image, final])
@@ -213,6 +214,11 @@ suite('demonstração integrada: fontes, contexto e aprovação', () => {
     const snapshot = await workspace.snapshot(owner, f.projectId)
     expect(snapshot.items.find((item) => item.id === f.item.id)?.revisionId).toBe(f.item.revisionId)
     await rejects(() => execution.context({ ...owner, userId: id() }, input), /disponível/)
+  })
+
+  test('gravação em lote rejeita imagem rotacionada ou sem orientação verificada', async () => {
+    await rejects(() => fixture(90), /normalizada/)
+    await rejects(() => fixture(null), /normalizada/)
   })
 
   test('aprovação fixa a fonte da cena; invalidação bloqueia novo aceite e preserva a edição antiga', async () => {

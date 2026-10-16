@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import type { AssetManifest } from './assets'
 import { hashSchema, idSchema } from './common'
 import type { VideoProject } from './video'
 
@@ -77,4 +78,20 @@ export type Demonstration = z.infer<typeof demonstrationSchema>
 export type DemonstrationSource = z.infer<typeof demonstrationSourceSchema>
 export function demonstrationSources(timeline: VideoProject): DemonstrationSource[] {
   return timeline.clips.flatMap((clip) => clip.demonstration?.sources ?? [])
+}
+
+/** Focus coordinates refer to encoded pixels, so EXIF presentation must already be normalized. */
+export function isDemonstrationAsset(
+  asset: AssetManifest,
+): asset is AssetManifest & { width: number; height: number } {
+  return (
+    asset.mime.startsWith('image/') &&
+    asset.rotation === 0 &&
+    asset.width !== null &&
+    asset.width > 0 &&
+    asset.width <= 32000 &&
+    asset.height !== null &&
+    asset.height > 0 &&
+    asset.height <= 32000
+  )
 }

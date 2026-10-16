@@ -1,6 +1,7 @@
 import {
   type AssetManifest,
   demonstrationSources,
+  isDemonstrationAsset,
   type Revision,
   type VideoProject,
 } from '@sistemazero/marketing-contracts'
@@ -27,15 +28,13 @@ export function validateDemonstrationSources(
       !asset ||
       asset.projectId !== projectId ||
       asset.sha256 !== source.sha256 ||
-      !asset.mime.startsWith('image/') ||
-      !asset.width ||
-      !asset.height ||
+      !isDemonstrationAsset(asset) ||
       asset.width !== source.width ||
       asset.height !== source.height
     )
       throw new WorkspaceError(
         'INVALID_RESULT',
-        'A demonstração exige uma imagem confirmada vinculada à revisão factual informada',
+        'A demonstração exige uma imagem confirmada e normalizada, sem rotação EXIF, vinculada à revisão factual informada',
       )
   }
 }

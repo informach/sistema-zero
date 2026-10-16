@@ -766,8 +766,8 @@ export function RequestPanel({
                   {targetDoc.timeline.clips.map((clip, index) => (
                     <option key={clip.id} value={clip.id}>
                       Cena {index + 1}:{' '}
-                      {clip.text?.slice(0, 60) ??
-                        clip.demonstration?.headline ??
+                      {clip.demonstration?.headline ??
+                        clip.text?.slice(0, 60) ??
                         clip.art?.title ??
                         (clip.kind === 'audio' ? 'Áudio' : 'Imagem ou vídeo')}
                     </option>
@@ -825,8 +825,8 @@ export function RequestPanel({
               ))}
             </Select>
             <span className="mt-1 block text-xs text-muted-foreground">
-              A IA recebe pausas e seis imagens de cada vídeo analisado. As demais mídias continuam
-              disponíveis na montagem; selecione uma gravação para analisar seus trechos.
+              A IA recebe pausas e até seis imagens de cada vídeo analisado. As demais mídias
+              continuam disponíveis na montagem; selecione uma gravação para analisar seus trechos.
             </span>
           </label>
           <label className="mt-3 flex items-start gap-2 text-sm">

@@ -1,22 +1,23 @@
 import type { ExecutionRun } from '@sistemazero/marketing-contracts'
 import { demonstrationGuide } from '@sistemazero/marketing-production/data'
+import { prepareVideoVisualImages } from '../media/visual-images'
 import { runProvider } from '../providers'
 import type { ProductionResult } from './journal'
+import { type RecordingContext, videoVisualContext } from './video-visual-context'
 
 export async function editVideo(
   run: ExecutionRun,
   directory: string,
   signal: AbortSignal,
   progress: (message: string) => void,
-  recording?: {
-    observations: NonNullable<ProductionResult['recordingAnalysis']>
-    images: string[]
-  },
+  recording?: RecordingContext,
   demonstrationImages: string[] = [],
 ): Promise<ProductionResult> {
   if (run.context.source.document.kind !== 'video')
     throw new Error('Selecione uma montagem de vídeo')
   const started = Date.now()
+  const visual = videoVisualContext(recording, demonstrationImages)
+  const visualImages = await prepareVideoVisualImages(visual.images, directory, signal)
   const result = await runProvider(
     {
       provider: run.request.provider,
@@ -39,18 +40,19 @@ export async function editVideo(
         `Pedido: ${run.request.instruction}`,
         ...(run.request.videoTarget
           ? [
-              `Escopo obrigatório: somente o clipe ${run.request.videoTarget.clipId}, parte ${run.request.videoTarget.part}. Preserve todas as outras cenas, legendas, trilhas e duração/dimensões da montagem. Em text só text/listItems podem mudar; em effect só effect, counter, listItems, fadeInFrames e fadeOutFrames. Em scene altere somente esse clipe sem o excluir.`,
+              `Escopo obrigatório: somente o clipe ${run.request.videoTarget.clipId}, parte ${run.request.videoTarget.part}. Preserve todas as outras cenas, legendas, trilhas e duração/dimensões da montagem. Em clipes sem demonstração, text só permite text/listItems; effect só permite effect, counter, listItems, fadeInFrames e fadeOutFrames. Em scene altere somente esse clipe sem o excluir.`,
             ]
           : []),
         'Efeitos textuais disponíveis: lower-third (identificação), highlight (destaque), cta, counter (parâmetros from/to/decimals/prefix/suffix) e list (listItems). Contadores não são evidência de resultado: use apenas números fornecidos ou explicitamente pedidos, sem inventar métricas. Null nos parâmetros não utilizados.',
         demonstrationGuide(run.context, run.request.videoTarget?.clipId),
         'Em demonstrações, escopo text permite apenas headline e label; escopo effect permite apenas focus de cada fonte, além dos fades. Identidades, hashes, dimensões e receita permanecem. O servidor confere esses limites.',
-        `Imagens anexas: ${recording?.images.length ?? 0} amostras de gravação primeiro, depois ${demonstrationImages.length} imagens das fontes de demonstração.`,
+        `Imagens anexas: ${visual.recording?.images.length ?? 0} amostras de gravação primeiro, depois ${demonstrationImages.length} imagens das fontes de demonstração.`,
+        'As referências visuais podem ter resolução reduzida para caber no pedido, sempre sem recorte e na proporção original. As dimensões e os hashes do contexto descrevem os originais usados no render. Não infira textos ou detalhes ilegíveis nas referências.',
         `Contexto confirmado: ${JSON.stringify(run.context)}`,
         ...(recording
           ? [
-              `Análise local verificada: ${JSON.stringify(recording.observations)}. scope metadata não inclui análise acústica ou visual; não interprete arrays vazios como ausência de pausas ou de conteúdo. Imagens anexadas correspondem, em ordem, a samples. São amostras de instantes, não uma inspeção de todos os frames. Só selecione conteúdo visual claramente identificável nessas amostras. Pausas são intervalos abaixo de -35 dB por pelo menos 400 ms; conserve margem de 100 ms junto às falas e nunca remova fala transcrita para encurtar uma pausa.`,
-              recording.images.length
+              `Análise local verificada: ${JSON.stringify(visual.recording?.observations)}. scope metadata não inclui análise acústica ou visual; não interprete arrays vazios como ausência de pausas ou de conteúdo. Imagens anexadas correspondem, em ordem, a samples. São amostras de instantes, não uma inspeção de todos os frames. Só selecione conteúdo visual claramente identificável nessas amostras. Pausas são intervalos abaixo de -35 dB por pelo menos 400 ms; conserve margem de 100 ms junto às falas e nunca remova fala transcrita para encurtar uma pausa.`,
+              visual.recording?.images.length
                 ? 'A transcrição ajuda a localizar falas; as imagens ajudam a localizar elementos visuais. Descreva incertezas sem inventar o conteúdo dos intervalos não vistos.'
                 : 'Não houve análise visual nesta execução; trabalhe com transcrição, metadados e pausas. Não afirme ter visto o vídeo.',
             ]
@@ -60,7 +62,7 @@ export async function editVideo(
     directory,
     signal,
     progress,
-    [...(recording?.images ?? []), ...demonstrationImages],
+    visualImages,
   )
   if (!result.video)
     throw new Error('A IA não retornou uma montagem válida; a resposta foi preservada')

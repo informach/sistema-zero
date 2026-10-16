@@ -42,6 +42,7 @@ try {
   await page.getByRole('button', { name: 'Antes e depois', exact: true }).click()
   assert.match(await page.getByPlaceholder('Ex.: deixe a abertura mais direta e preserve a chamada para ação.').inputValue(), /Antes e depois/)
   await page.locator('select[id$="-video-scene"]').selectOption({ index: 1 })
+  assert.equal(await page.locator('select[id$="-video-scene"] option:checked').textContent(), `Cena 1: ${proof.scenes[2].headline}`)
   await page.getByLabel('O que pode mudar nesta cena', { exact: false }).selectOption('text')
   assert.equal(await page.getByLabel('O que pode mudar nesta cena', { exact: false }).inputValue(), 'text')
   assert.deepEqual(await page.evaluate(() => window.proofWrites), [])

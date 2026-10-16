@@ -3,6 +3,7 @@ import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import sharp from 'sharp'
+import { inspectDemonstrationImage } from '../src/main/media/demonstration-image'
 import { cropRegion, mergeRegion } from '../src/main/media/image-region'
 import { probeImage } from '../src/main/media/probe-image'
 
@@ -15,6 +16,37 @@ async function imageDirectory() {
     throw new Error('Diretório inválido')
   return directory
 }
+
+test('demonstração confere dimensões e orientação dos pixels, além do manifesto', async () => {
+  const directory = await imageDirectory()
+  try {
+    const file = path.join(directory, 'captura.jpg')
+    const source = { width: 320, height: 480 }
+    for (const orientation of [1, 3, 6, 8]) {
+      await writeFile(
+        file,
+        await sharp({
+          create: { width: 320, height: 480, channels: 3, background: '#172a46' },
+        })
+          .withMetadata({ orientation })
+          .jpeg()
+          .toBuffer(),
+      )
+      if (orientation === 1) {
+        expect(await inspectDemonstrationImage(file, 'image/jpeg', source)).toMatchObject(source)
+        await expect(
+          inspectDemonstrationImage(file, 'image/jpeg', { width: 480, height: 320 }),
+        ).rejects.toThrow('dimensões')
+      } else {
+        await expect(inspectDemonstrationImage(file, 'image/jpeg', source)).rejects.toThrow(
+          'normalizada',
+        )
+      }
+    }
+  } finally {
+    await rm(directory, { recursive: true, force: true })
+  }
+})
 
 test('imagem é decodificada e o manifesto não aceita extensão falsa ou pixels truncados', async () => {
   const directory = await imageDirectory()

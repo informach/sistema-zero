@@ -1,5 +1,6 @@
 import type { ExecutionRun } from '@sistemazero/marketing-contracts'
 import { demonstrationCandidates } from '@sistemazero/marketing-production/data'
+import { inspectDemonstrationImage } from '../media/demonstration-image'
 import { downloadAsset } from '../sync/asset-download'
 import type { ExecutionResources } from './supervisor'
 
@@ -21,7 +22,9 @@ export async function demonstrationImages(
     )
     if (asset.sha256 !== source.sha256)
       throw new Error('A imagem de demonstração diverge da fonte confirmada')
-    files.push((await resources.assets.verify(asset.id)).path)
+    const file = (await resources.assets.verify(asset.id)).path
+    await inspectDemonstrationImage(file, asset.mime, source)
+    files.push(file)
   }
   return files
 }
