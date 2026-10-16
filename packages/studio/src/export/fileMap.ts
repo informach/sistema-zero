@@ -318,7 +318,10 @@ export interface ProFileMapResult {
  * `node_modules`, caminhos absolutos e travessias `..`). Não minifica — o Vite
  * minifica no build do deploy.
  */
-export async function buildProFileMap(project: Project): Promise<ProFileMapResult> {
+export async function buildProFileMap(
+  project: Project,
+  options: { purpose?: 'source' | 'deploy' } = {},
+): Promise<ProFileMapResult> {
   const files: ExportFileMap = {}
   const warnings: string[] = []
   const tree = project.tree ?? {}
@@ -332,7 +335,7 @@ export async function buildProFileMap(project: Project): Promise<ProFileMapResul
     const norm = normalizeProPath(path)
     if (norm === null || norm !== path) {
       warnings.push(
-        `O arquivo "${path}" ficou de fora do pacote de deploy porque o caminho não é seguro para o ZIP.`,
+        `O arquivo "${path}" ficou de fora do pacote porque o caminho não é seguro para o ZIP.`,
       )
       continue
     }
@@ -355,6 +358,7 @@ export async function buildProFileMap(project: Project): Promise<ProFileMapResul
 
   const pkgRaw =
     typeof files['package.json'] === 'string' ? (files['package.json'] as string) : null
+  if (options.purpose === 'source') return { files, warnings }
   if (!pkgRaw) {
     warnings.push('Este projeto nao tem package.json; o deploy precisa de um build que gere dist/.')
   } else {

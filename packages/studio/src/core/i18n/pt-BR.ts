@@ -38,6 +38,9 @@ export const ptBR: Record<string, string> = {
   'topbar.saving': 'Salvando…',
   'topbar.download': 'Baixar o código',
   'topbar.downloading': 'Baixando…',
+  'topbar.downloadFailed': 'Não foi possível baixar a fonte',
+  'topbar.downloadWarnings': 'Fonte baixada: confira estes avisos',
+  'topbar.closeDownloadNotice': 'Voltar ao editor',
   'topbar.extensions': 'Extensões',
   // ⚠️ O item NÃO publica: ele baixa um .zip pronto para pôr no ar (o `ExportDialog`
   // termina num download). "Publicar na internet" prometia o ato e competia com o

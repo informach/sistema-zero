@@ -1,5 +1,7 @@
+import { readFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { expect, test } from '@playwright/test'
+import { strFromU8, unzipSync } from 'fflate'
 import { build, type PreviewServer, preview } from 'vite'
 
 let server: PreviewServer
@@ -26,6 +28,46 @@ test.afterAll(async () => {
     await new Promise<void>((resolve, reject) =>
       server.httpServer.close((error) => (error ? reject(error) : resolve())),
     )
+})
+
+test('downloads the current source and surfaces manifest warnings', async ({ page }) => {
+  const address = server.httpServer.address()
+  if (!address || typeof address === 'string') throw new Error('Servidor indisponível')
+  await page.goto(`http://127.0.0.1:${address.port}`)
+  const input = page.locator('.monaco-editor textarea.inputarea').first()
+  await expect(input).toBeVisible({ timeout: 30_000 })
+  await input.focus()
+  await input.press('Control+End')
+  await page.keyboard.type('// current source export')
+  await page.getByRole('button', { name: 'Mais opções' }).click()
+  const downloaded = page.waitForEvent('download')
+  await page.getByRole('menuitem', { name: /Baixar o código/ }).click()
+  const download = await downloaded
+  const path = await download.path()
+  if (!path) throw new Error('Download ausente')
+  const files = unzipSync(await readFile(path))
+  expect(strFromU8(files['src/main.ts']!)).toContain('// current source export')
+  expect(Object.keys(files).some((name) => name.startsWith('public/studio-assets/'))).toBe(true)
+  expect(strFromU8(files['LEIA-ME.txt']!)).not.toContain('npm run dev')
+  await expect(
+    page.getByRole('dialog', { name: 'Fonte baixada: confira estes avisos' }),
+  ).toContainText('package.json está ausente ou inválido')
+})
+
+test('reports a source worker failure visibly and does not download a partial archive', async ({
+  page,
+}) => {
+  const address = server.httpServer.address()
+  if (!address || typeof address === 'string') throw new Error('Servidor indisponível')
+  let downloads = 0
+  page.on('download', () => downloads++)
+  await page.route('**/zip.worker-*.js', (route) => route.abort())
+  await page.goto(`http://127.0.0.1:${address.port}/?performance=1`)
+  await expect(page.locator('.monaco-editor').first()).toBeVisible({ timeout: 30_000 })
+  await page.getByRole('button', { name: 'Mais opções' }).click()
+  await page.getByRole('menuitem', { name: /Baixar o código/ }).click()
+  await expect(page.getByRole('dialog', { name: 'Não foi possível baixar a fonte' })).toBeVisible()
+  expect(downloads).toBe(0)
 })
 
 test('uses conventional keyboard navigation, native commands and reviewed symbol rename', async ({
