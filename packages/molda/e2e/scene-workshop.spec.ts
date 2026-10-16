@@ -429,14 +429,14 @@ test('pintura 2D e prévia 3D compartilham pixels, desfazer e reabertura; movime
   // Materiais chooses the explicit layer; the sheet shares that target with 3D.
   await page.getByRole('button', { name: SCENE_PAINT_COPY.tab, exact: true }).click()
   await page
-    .getByRole('navigation', { name: 'Áreas de trabalho' })
+    .getByRole('navigation', { name: 'Áreas da oficina' })
     .getByRole('button', { name: 'Materiais', exact: true })
     .click()
   const material = source.materials.find((entry) => entry.colorImageId === source.images[0]!.id)!
   await page.getByRole('combobox', { name: COPY.scene.materialChoose }).selectOption(material.id)
   await page.getByRole('button', { name: COPY.scene.paintLayer, exact: true }).click()
   await page
-    .getByRole('navigation', { name: 'Áreas de trabalho' })
+    .getByRole('navigation', { name: 'Áreas da oficina' })
     .getByRole('button', { name: 'Folha de pintura', exact: true })
     .click()
   const before = await nativeProject(page)
@@ -499,7 +499,7 @@ test('vincular uma malha aos apoios e desfazer usa a oficina pública e exporta 
     .getByRole('button', { name: COPY.scene.select(source.nodes[0]!.name), exact: true })
     .click()
   await page
-    .getByRole('navigation', { name: 'Áreas de trabalho' })
+    .getByRole('navigation', { name: 'Áreas da oficina' })
     .getByRole('button', { name: 'Ossos e pesos', exact: true })
     .click()
   const modal = page.getByRole('region', { name: 'Área Ossos e pesos' })

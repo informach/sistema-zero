@@ -186,7 +186,7 @@ test('advanced curves and UV keep the live stage, exact times and reversible gra
   const stage = page.locator('canvas').first()
   const originalCanvas = await stage.elementHandle()
   await page
-    .getByRole('navigation', { name: 'Áreas de trabalho' })
+    .getByRole('navigation', { name: 'Áreas da oficina' })
     .getByRole('button', { name: 'Editar malha', exact: true })
     .click()
   await page
