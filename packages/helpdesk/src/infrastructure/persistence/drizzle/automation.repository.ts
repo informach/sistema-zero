@@ -45,6 +45,8 @@ import {
   tickets,
 } from './schema'
 
+import { recordAutomationHandoff } from './ticket-events'
+
 type JobRow = typeof automationJobs.$inferSelect
 const activeStates = ['pending', 'processing'] as const
 const dayStart = (at: Date) => new Date(`${at.toISOString().slice(0, 10)}T00:00:00Z`)
@@ -177,6 +179,7 @@ export class DrizzleAutomationRepository implements AutomationRepository {
   async claim(at: Date): Promise<{ job: AutomationJob; ticket: Ticket } | null> {
     return this.db.transaction(async (tx) => {
       const policy = await lockAutomationPolicy(tx)
+      at = new Date(Math.max(at.getTime(), Date.now()))
       const [candidate] = await tx
         .select()
         .from(automationJobs)
@@ -206,6 +209,7 @@ export class DrizzleAutomationRepository implements AutomationRepository {
         )
         .for('update', { skipLocked: true })
       if (!job) return null
+      at = new Date(Math.max(at.getTime(), Date.now()))
       if (!this.current(ticket, job)) {
         await tx
           .update(automationJobs)
@@ -294,6 +298,7 @@ export class DrizzleAutomationRepository implements AutomationRepository {
   async reserve(job: AutomationJob, at: Date): Promise<boolean> {
     return this.db.transaction(async (tx) => {
       const { policy, ticket, stored } = await this.locked(tx, job)
+      at = new Date(Math.max(at.getTime(), Date.now()))
       if (
         !(await this.policyReady(tx, policy, at)) ||
         !this.authorized(ticket, stored, job, policy, at) ||
@@ -406,6 +411,7 @@ export class DrizzleAutomationRepository implements AutomationRepository {
         return fail('turn_limit')
       if (
         !['supported', 'clarification'].includes(run.reason ?? '') ||
+        run.clarification !== (run.reason === 'clarification') ||
         new Set(run.evidence.map((source) => source.chunkId)).size !== run.evidence.length
       )
         return fail('invalid_evidence')
@@ -576,6 +582,12 @@ export class DrizzleAutomationRepository implements AutomationRepository {
         if (command.hash !== hash) return null
         return (await tx.select().from(tickets).where(eq(tickets.id, command.ticketId)))[0] ?? null
       }
+      const [previous] = await tx
+        .select()
+        .from(tickets)
+        .where(eq(tickets.id, ticketId))
+        .for('update')
+      if (!previous) return null
       const [ticket] = await tx
         .update(tickets)
         .set({
@@ -587,6 +599,7 @@ export class DrizzleAutomationRepository implements AutomationRepository {
         .where(and(eq(tickets.id, ticketId), eq(tickets.version, version)))
         .returning()
       if (ticket) {
+        await recordAutomationHandoff(tx, previous, 'staff_intervention', at)
         await supersedeJobs(tx, ticket.id, at)
         await tx.insert(customerCommands).values({
           id: randomUUID(),

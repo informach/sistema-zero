@@ -82,6 +82,7 @@ export class DrizzleKbRepository implements KbRepository {
         .from(kbRevisions)
         .where(and(eq(kbRevisions.id, revisionId), eq(kbRevisions.articleId, id)))
         .for('share')
+      at = new Date(Math.max(at.getTime(), Date.now()))
       if (
         !revision ||
         article.draftRevisionId !== revisionId ||

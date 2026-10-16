@@ -59,7 +59,7 @@ suite('conhecimento no PostgreSQL', () => {
       content: `${'Apresentação geral. '.repeat(300)}\n\nAutorize o aparelho na área dos pais.`,
       audience: 'customer_parent',
       product: 'kids',
-      validUntil: '2027-01-01T00:00:00Z',
+      validUntil: new Date(Date.now() + 86400000).toISOString(),
     })
     if (!article.draftRevisionId) throw new Error('Revisão ausente')
     const publication = await repo
@@ -103,6 +103,20 @@ suite('conhecimento no PostgreSQL', () => {
     expect(await repo.finishIndex(old.id, old.indexLeaseToken, chunks, later)).toBe(false)
     expect(await repo.finishIndex(next.id, next.indexLeaseToken, chunks, later)).toBe(true)
     expect(await repo.finishIndex(next.id, next.indexLeaseToken, chunks, later)).toBe(false)
+  })
+  it('não publica revisão que venceu durante a espera pelo lock', async () => {
+    const article = await service.create(actor, {
+      title: 'Acesso',
+      content: 'Acesse a plataforma.',
+      validUntil: new Date(Date.now() - 1000).toISOString(),
+    })
+    const revision = await index()
+    const failure = await repo.publish(article.id, revision.id, 0, actor.userId, at).then(
+      () => null,
+      (error: unknown) => error,
+    )
+    expect(failure).toBeInstanceOf(KnowledgeNotReadyError)
+    expect((await repo.byId(article.id))?.publishedRevisionId).toBeNull()
   })
 
   it('índice parcial e revisão alheia nunca tornam uma fonte pronta', async () => {

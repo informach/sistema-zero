@@ -375,6 +375,8 @@ suite('Automação durável e concorrência no PostgreSQL', () => {
     expect(
       await repo.complete(job, run(created.ticket.id, job.generation, 'shadow'), new Date()),
     ).toBe('shadow')
+    await portal.command(owner, created.ticket.id, 'handoff', randomUUID())
+    expect((await repo.diagnostics(new Date())).handoffs).toHaveLength(0)
     expect((await tickets.byId(created.ticket.id))?.handlingMode).toBe('human')
     expect(
       (await messages.byTicketId(created.ticket.id)).filter((m) => m.sentVia === 'ai'),
@@ -593,6 +595,110 @@ suite('Automação durável e concorrência no PostgreSQL', () => {
     expect(confirmed.cycles.durable).toBe(0)
     expect((await repo.policy(new Date())).usage.unknownAttempts).toBe(1)
   })
+  it('contabiliza a transferência após resposta concluída uma única vez', async () => {
+    const { ticket } = await create(),
+      { job } = await claim()
+    await repo.complete(job, run(ticket.id, job.generation), new Date())
+    await portal.command(owner, ticket.id, 'handoff', randomUUID())
+    await portal.command(owner, ticket.id, 'handoff', randomUUID())
+    const diagnostics = await repo.diagnostics(new Date())
+    expect(diagnostics.handoffs).toEqual([
+      { reason: 'customer_requested', count: 1, p95Ms: expect.any(Number) },
+    ])
+    await messages.create(
+      makeMessage(ticket.id, {
+        kind: 'portal',
+        direction: 'outbound',
+        visibility: 'customer',
+        sentVia: 'human',
+        gmailMessageId: null,
+        gmailInternalDate: null,
+        createdAt: new Date(Date.now() + 1000),
+      }),
+    )
+    expect((await repo.diagnostics(new Date())).latency.human_response_samples).toBe(1)
+  })
+  for (const action of ['patch', 'note', 'takeover'] as const) {
+    it(`registra a transferência por ${action} depois de concluída a inferência`, async () => {
+      const { ticket } = await create(),
+        { job } = await claim()
+      await repo.complete(job, run(ticket.id, job.generation), new Date())
+      const current = (await tickets.byId(ticket.id))!
+      expect(
+        await tickets.patch(ticket.id, current.version - 1, { status: 'open' }, new Date()),
+      ).toBeNull()
+      expect((await repo.diagnostics(new Date())).handoffs).toHaveLength(0)
+      if (action === 'patch')
+        await tickets.patch(ticket.id, current.version, { status: 'open' }, new Date())
+      if (action === 'takeover')
+        await repo.takeover(
+          ticket.id,
+          actor.userId,
+          actor.displayName,
+          current.version,
+          randomUUID(),
+          new Date(),
+        )
+      if (action === 'note')
+        await tickets.appendNote(
+          makeMessage(ticket.id, {
+            kind: 'note',
+            visibility: 'internal',
+            direction: null,
+            sentVia: null,
+            gmailMessageId: null,
+          }),
+          new Date(),
+        )
+      // Subsequent staff activity is not a second transfer.
+      await tickets.appendNote(
+        makeMessage(ticket.id, {
+          kind: 'note',
+          visibility: 'internal',
+          direction: null,
+          sentVia: null,
+          gmailMessageId: null,
+        }),
+        new Date(),
+      )
+      expect((await repo.diagnostics(new Date())).handoffs).toEqual([
+        { reason: 'staff_intervention', count: 1, p95Ms: expect.any(Number) },
+      ])
+    })
+  }
+  it('reabertura pela equipe invalida a resolução durável automatizada', async () => {
+    const { ticket } = await create(),
+      { job } = await claim()
+    await repo.complete(job, run(ticket.id, job.generation), new Date())
+    await portal.command(owner, ticket.id, 'resolve', randomUUID())
+    const resolved = (await tickets.byId(ticket.id))!
+    await tickets.patch(
+      ticket.id,
+      resolved.version,
+      { status: 'open', resolvedAt: null },
+      new Date(),
+    )
+    const diagnostics = await repo.diagnostics(new Date(Date.now() + 8 * 86400000))
+    expect(diagnostics.cycles).toMatchObject({ confirmed: 1, reopened: 1, matured: 1, durable: 0 })
+    expect(diagnostics.handoffs).toHaveLength(0)
+  })
+  it('reserva revalida o prazo após adquirir os locks', async () => {
+    await create()
+    const { job } = await claim()
+    const expired = new Date(Date.now() - 1000)
+    await db.sql`update helpdesk.automation_evaluations set detail=jsonb_set(detail,'{evaluatedAt}',to_jsonb(${new Date(expired.getTime() - 60000).toISOString()}::text)) where id=${policy.evaluationId!}`
+    await db.sql`update helpdesk.automation_jobs set lease_expires_at=${expired.toISOString()}, deadline_at=${expired.toISOString()} where id=${job.id}`
+    expect(await repo.reserve(job, new Date(expired.getTime() - 1000))).toBe(false)
+    expect((await repo.policy(new Date())).usage.reservedMicros).toBe(0)
+  })
+  it('claim não reativa job cujo prazo venceu durante a espera pelo lock', async () => {
+    const { ticket } = await create()
+    const expired = new Date(Date.now() - 1000)
+    await db.sql`update helpdesk.automation_evaluations set detail=jsonb_set(detail,'{evaluatedAt}',to_jsonb(${new Date(expired.getTime() - 60000).toISOString()}::text)) where id=${policy.evaluationId!}`
+    await db.sql`update helpdesk.automation_jobs set created_at=${new Date(expired.getTime() - 60000).toISOString()}, next_at=${new Date(expired.getTime() - 60000).toISOString()}, deadline_at=${expired.toISOString()} where ticket_id=${ticket.id}`
+    expect(await repo.claim(new Date(expired.getTime() - 1000))).toBeNull()
+    expect((await tickets.byId(ticket.id))?.handlingMode).toBe('human')
+  })
   it('configuração alterada exige nova avaliação antes de reivindicar piloto', async () => {
     await repo.updatePolicy({ ...policy, dailyBudgetMicros: 200000 }, 1, actor.userId, new Date())
     await create()
@@ -632,12 +738,16 @@ suite('Automação durável e concorrência no PostgreSQL', () => {
     const result = run(ticket.id, job.generation)
     await new DrizzleAiRunRepository(db.db).create(result)
     await repo.complete(job, result, new Date())
+    await portal.command(owner, ticket.id, 'handoff', randomUUID())
+    expect((await repo.diagnostics(new Date())).handoffs).toHaveLength(1)
     await db.sql`update helpdesk.tickets set ai_draft_run_id=${result.id},ai_draft='derivado sintético',ai_summary='resumo sintético',ai_summary_at=${new Date().toISOString()} where id=${ticket.id}`
     await create()
     await db.sql.begin((tx) => pruneAiData(tx, new Date(Date.now() + 91 * 86400000), 30))
     const [counts] =
       await db.sql`select (select count(*) from helpdesk.automation_jobs)::int as jobs,(select count(*) from helpdesk.ai_runs)::int as runs,(select count(*) from helpdesk.customer_commands)::int as commands`
     expect(counts).toEqual({ jobs: 1, runs: 0, commands: 0 })
+    const [handoffs] = await db.sql`select count(*)::int as count from helpdesk.automation_handoffs`
+    expect(handoffs?.count).toBe(0)
     expect((await tickets.byId(ticket.id))?.aiDraft).toBeNull()
     expect((await tickets.byId(ticket.id))?.aiSummary).toBeNull()
     expect((await repo.policy(new Date())).policy.evaluationId).toBe(policy.evaluationId)
@@ -663,6 +773,19 @@ suite('Automação durável e concorrência no PostgreSQL', () => {
       ),
     ).toBe('handoff')
     expect((await tickets.byId(ticket.id))?.automationClarifications).toBe(1)
+  })
+  it('publicador recusa esclarecimento com flag inconsistente', async () => {
+    const { ticket } = await create(),
+      { job } = await claim()
+    expect(
+      await repo.complete(
+        job,
+        { ...run(ticket.id, job.generation), reason: 'clarification', clarification: false },
+        new Date(),
+      ),
+    ).toBe('handoff')
+    expect((await tickets.byId(ticket.id))?.handoffReason).toBe('invalid_evidence')
+    expect((await messages.byTicketId(ticket.id)).some((m) => m.sentVia === 'ai')).toBe(false)
   })
   it('mudança de público ou vencimento da revisão impede publicação', async () => {
     const { ticket } = await create(),
@@ -697,6 +820,7 @@ suite('Automação durável e concorrência no PostgreSQL', () => {
         kind: 'portal',
         direction: 'outbound',
         sentVia: 'human',
+        gmailInternalDate: null,
         gmailMessageId: null,
         createdAt: at,
       })
@@ -734,5 +858,10 @@ suite('Automação durável e concorrência no PostgreSQL', () => {
       await db.sql`select count(*)::int as count from helpdesk.portal_notification_outbox where ticket_id=${ticket.id}`
     expect(count?.count).toBe(1)
     expect((await tickets.byId(ticket.id))?.handlingMode).toBe('human')
+    const diagnostics = await repo.diagnostics(new Date())
+    expect(diagnostics.handoffs).toEqual([
+      { reason: 'staff_intervention', count: 1, p95Ms: expect.any(Number) },
+    ])
+    expect(diagnostics.latency.human_response_samples).toBe(1)
   })
 })

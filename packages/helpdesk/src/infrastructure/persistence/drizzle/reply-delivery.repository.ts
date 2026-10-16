@@ -8,6 +8,7 @@ import type { TicketMessage } from '../../../domain/ticket/ticket-message'
 import { humanTakeoverSet, supersedeJobs } from './automation-transactions'
 import type { Database } from './db'
 import { portalNotificationOutbox, ticketMessages, tickets } from './schema'
+import { recordAutomationHandoff } from './ticket-events'
 
 export class DrizzleReplyDeliveryRepository implements ReplyDeliveryRepository {
   constructor(private readonly db: Database) {}
@@ -23,7 +24,7 @@ export class DrizzleReplyDeliveryRepository implements ReplyDeliveryRepository {
         .select()
         .from(tickets)
         .where(eq(tickets.id, input.ticketId))
-        .limit(1)
+        .for('update')
       if (!ticket) return { status: 'not_found' }
 
       const [activeDelivery] = await tx
@@ -48,6 +49,7 @@ export class DrizzleReplyDeliveryRepository implements ReplyDeliveryRepository {
         .where(and(eq(tickets.id, input.ticketId), eq(tickets.version, input.expectedVersion)))
         .returning()
       if (!claimedTicket) return { status: 'conflict' }
+      await recordAutomationHandoff(tx, ticket, 'staff_intervention', input.at)
       await supersedeJobs(tx, input.ticketId, input.at)
 
       await tx.insert(ticketMessages).values(input.message)
@@ -144,10 +146,10 @@ export class DrizzleReplyDeliveryRepository implements ReplyDeliveryRepository {
   }): Promise<AppendPortalReplyResult> {
     return this.db.transaction(async (tx) => {
       const [ticket] = await tx
-        .select({ id: tickets.id })
+        .select()
         .from(tickets)
         .where(eq(tickets.id, input.ticketId))
-        .limit(1)
+        .for('update')
       if (!ticket) return { status: 'not_found' }
 
       // Mesmo guarda do createIntent: uma saída em voo por ticket, seja qual for
@@ -185,6 +187,7 @@ export class DrizzleReplyDeliveryRepository implements ReplyDeliveryRepository {
         .where(and(eq(tickets.id, input.ticketId), eq(tickets.version, input.expectedVersion)))
         .returning()
       if (!updatedTicket) return { status: 'conflict' }
+      await recordAutomationHandoff(tx, ticket, 'staff_intervention', input.at)
       await supersedeJobs(tx, input.ticketId, input.at)
 
       await tx.insert(ticketMessages).values(input.message)

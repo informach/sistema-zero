@@ -16,6 +16,7 @@ import {
 } from './automation-transactions'
 import type { Database } from './db'
 import { customerCommands, resolutionEvents, ticketMessages, tickets } from './schema'
+import { recordResolutionReopened } from './ticket-events'
 
 /** Queries do portal. Ownership fica no WHERE, não apenas no service. */
 export class DrizzleCustomerTicketRepository implements CustomerTicketRepository {
@@ -204,29 +205,7 @@ export class DrizzleCustomerTicketRepository implements CustomerTicketRepository
         .where(and(eq(tickets.id, input.ticketId), this.ownedWhere(input.owner)))
         .for('update')
       if (!previous) return null
-      if (['resolved', 'closed'].includes(previous.status)) {
-        const [confirmation] = previous.resolvedAt
-          ? await tx
-              .select({ automated: resolutionEvents.automated })
-              .from(resolutionEvents)
-              .where(
-                and(
-                  eq(resolutionEvents.ticketId, previous.id),
-                  eq(resolutionEvents.kind, 'confirmed'),
-                  eq(resolutionEvents.createdAt, previous.resolvedAt),
-                ),
-              )
-              .limit(1)
-          : []
-        await tx.insert(resolutionEvents).values({
-          id: randomUUID(),
-          ticketId: previous.id,
-          kind: 'reopened',
-          automated: confirmation?.automated ?? false,
-          generation: previous.aiGeneration,
-          createdAt: input.at,
-        })
-      }
+      await recordResolutionReopened(tx, previous, input.at)
       const atIso = input.at.toISOString()
       const [ticket] = await tx
         .update(tickets)

@@ -34,8 +34,8 @@ export async function automationDiagnostics(
       percentile_cont(0.95) within group(order by (a.value->>'durationMs')::numeric) as p95_ms
       from helpdesk.ai_runs r left join lateral jsonb_array_elements(r.detail->'attempts') a on true
       where r.created_at>=${since}::timestamptz group by r.detail->>'purpose'`),
-    db.execute(sql`select reason,count(*) as count,percentile_cont(0.95) within group(order by extract(epoch from (finished_at-created_at))*1000) as p95_ms
-      from helpdesk.automation_jobs where mode='pilot' and state='handoff' and created_at>=${since}::timestamptz group by reason`),
+    db.execute(sql`select reason,count(*) as count,percentile_cont(0.95) within group(order by extract(epoch from (created_at-automation_started_at))*1000) as p95_ms
+      from helpdesk.automation_handoffs where created_at>=${since}::timestamptz group by reason`),
     db.execute(sql`select
       (select count(*) from helpdesk.ai_feedback where kind='inserted' and created_at>=${since}::timestamptz) as inserted,
       (select count(*) from helpdesk.ai_feedback where kind='rejected' and created_at>=${since}::timestamptz) as rejected,
@@ -47,9 +47,9 @@ export async function automationDiagnostics(
       (select count(*) from helpdesk.automation_jobs where mode='pilot' and state='completed' and created_at>=${since}::timestamptz) as pilot_samples,
       (select percentile_cont(0.95) within group(order by extract(epoch from(r.resolved_at-r.created_at))) from helpdesk.ai_runs r where r.resolved_at is not null and r.created_at>=${since}::timestamptz) as gap_resolution_p95_seconds,
       count(first_reply.at) as human_response_samples,
-      percentile_cont(0.95) within group(order by extract(epoch from(first_reply.at-j.finished_at))) as human_response_p95_seconds
-      from helpdesk.automation_jobs j left join lateral (select min(coalesce(m.gmail_internal_date,m.created_at)) as at from helpdesk.ticket_messages m where m.ticket_id=j.ticket_id and m.direction='outbound' and m.visibility='customer' and m.sent_via in ('human','gmail') and (m.delivery_state is null or m.delivery_state='sent') and coalesce(m.gmail_internal_date,m.created_at)>=j.finished_at) first_reply on true
-      where j.mode='pilot' and j.state='handoff' and j.created_at>=${since}::timestamptz`),
+      percentile_cont(0.95) within group(order by extract(epoch from(first_reply.at-j.created_at))) as human_response_p95_seconds
+      from helpdesk.automation_handoffs j left join lateral (select min(coalesce(m.gmail_internal_date,m.created_at)) as at from helpdesk.ticket_messages m where m.ticket_id=j.ticket_id and m.direction='outbound' and m.visibility='customer' and m.sent_via in ('human','gmail') and (m.delivery_state is null or m.delivery_state='sent') and coalesce(m.gmail_internal_date,m.created_at)>=j.created_at) first_reply on true
+      where j.created_at>=${since}::timestamptz`),
   ])
   const numbers = (row: Record<string, unknown> | undefined) =>
     Object.fromEntries(Object.entries(row ?? {}).map(([k, v]) => [k, Number(v ?? 0)]))

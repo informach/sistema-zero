@@ -75,6 +75,44 @@ function install(handler: (path: string, init?: RequestInit) => Response | Promi
     { preconnect: originalFetch.preconnect },
   )
 }
+test('atualização manual percorre mensagens novas sem saltar para a última página', async () => {
+  const initial = conversation()
+  const incoming = Array.from({ length: 60 }, (_, index) => ({
+    ...response(initial),
+    citations: [],
+    bodyText: `Nova mensagem ${index + 1}`,
+  }))
+  let initialRead = true
+  install((path) => {
+    if (!path.includes('/messages?') && initialRead) {
+      initialRead = false
+      return Response.json(initial)
+    }
+    const after = new URL(path, 'https://example.test').searchParams.get('after')
+    const messages =
+      after === initial.latestCursor
+        ? incoming.slice(0, 50)
+        : after === 'cursor-50'
+          ? incoming.slice(50)
+          : incoming.slice(-50)
+    return Response.json({
+      ...initial,
+      messages,
+      hasMore: after === initial.latestCursor,
+      latestCursor: after === initial.latestCursor ? 'cursor-50' : 'cursor-60',
+    })
+  })
+  render(
+    <CustomerHelpdeskPortal
+      initialPage={{ items: [initial.ticket], total: 1, hasMore: false, nextCursor: null }}
+    />,
+  )
+  fireEvent.click(screen.getByRole('button', { name: /Bloco de movimento/ }))
+  fireEvent.click(await screen.findByRole('button', { name: 'Atualizar a conversa' }))
+  expect(await screen.findByText('Nova mensagem 1')).toBeTruthy()
+  await waitFor(() => expect(screen.getByText('Nova mensagem 60')).toBeTruthy(), { timeout: 3500 })
+  expect(screen.getByText('Como mover o personagem?')).toBeTruthy()
+})
 test('polling mostra autoria/fontes e preserva texto e foco; resolução repetida conserva chave', async () => {
   const initial = conversation(),
     bot = response(initial)
