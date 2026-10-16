@@ -135,3 +135,10 @@ não publicam reconciliações idênticas; o painel de símbolos fechado mantém
 nula estável, e a sessão de linguagem notifica apenas transições de análise.
 Isso evita encadear atualizações React sem mudança de estado em eventos Monaco.
 A regressão de produção é coberta pelo benchmark browser com digitação contínua.
+
+A disponibilidade da sessão de linguagem é reativa: abrir símbolos antes da
+carga ou reiniciar a análise atualiza o painel sem editar o arquivo. Referências
+pertencem à sessão, ao documento e ao pedido mais recente; respostas e erros
+atrasados não reabrem uma lista fechada. Falhas na inicialização também chegam
+ao estado de análise exibido em Problemas. O download revalida cancelamento e
+identidade entre cada fase de flush antes de continuar a próxima operação.

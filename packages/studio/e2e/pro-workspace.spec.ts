@@ -31,6 +31,56 @@ test.afterAll(async () => {
     )
 })
 
+test('loads symbols opened before the language module arrives', async ({ page }) => {
+  const requested = Promise.withResolvers<void>()
+  const resume = Promise.withResolvers<void>()
+  await page.route('**/session-*.js', async (route) => {
+    requested.resolve()
+    await resume.promise
+    await route.continue()
+  })
+  const address = server.httpServer.address()
+  if (!address || typeof address === 'string') throw new Error('Servidor indisponível')
+  try {
+    await page.goto(`http://127.0.0.1:${address.port}`, { waitUntil: 'domcontentloaded' })
+    await requested.promise
+    await page.getByRole('button', { name: 'Símbolos do arquivo', exact: true }).click()
+    resume.resolve()
+    await expect(page.getByRole('button', { name: 'score', exact: true })).toBeVisible()
+  } finally {
+    resume.resolve()
+  }
+})
+
+test('reports a language module loading failure in Problems instead of analysing forever', async ({
+  page,
+}) => {
+  await page.route('**/session-*.js', (route) => route.abort())
+  const address = server.httpServer.address()
+  if (!address || typeof address === 'string') throw new Error('Servidor indisponível')
+  await page.goto(`http://127.0.0.1:${address.port}`)
+  await page.getByRole('button', { name: /^Problemas/ }).click()
+  await expect(
+    page.getByRole('alert').filter({ hasText: 'A análise não pôde ser concluída' }),
+  ).toBeVisible()
+  await expect(page.getByText('Analisando o código…', { exact: true })).toBeHidden()
+  await expect(page.getByText(/Salve o projeto antes de recarregar a página/)).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Reiniciar análise', exact: true })).toBeHidden()
+  const input = page.locator('.monaco-editor textarea.inputarea').first()
+  await input.focus()
+  await input.press('Control+End')
+  await page.keyboard.type('// editing remains available')
+  await inspectWorkspaceBuffers(page)
+  await expect(page.getByLabel('Buffers da sessão')).toContainText('// editing remains available')
+  await page.unroute('**/session-*.js')
+  await page.reload()
+  await page.getByRole('button', { name: /^Problemas/ }).click()
+  await expect(page.getByRole('button', { name: 'src/closed.ts:1', exact: true })).toBeVisible()
+  await expect(
+    page.getByRole('alert').filter({ hasText: 'A análise não pôde ser concluída' }),
+  ).toBeHidden()
+})
+
 test('downloads the current source and surfaces manifest warnings', async ({ page }) => {
   const address = server.httpServer.address()
   if (!address || typeof address === 'string') throw new Error('Servidor indisponível')
@@ -53,6 +103,21 @@ test('downloads the current source and surfaces manifest warnings', async ({ pag
   await expect(
     page.getByRole('dialog', { name: 'Fonte baixada: confira estes avisos' }),
   ).toContainText('package.json está ausente ou inválido')
+})
+
+test('recovers an open symbols panel when a failed language worker is restarted', async ({
+  page,
+}) => {
+  await page.route('**/pro-language.worker-*.js', (route) => route.abort())
+  const address = server.httpServer.address()
+  if (!address || typeof address === 'string') throw new Error('Servidor indisponível')
+  await page.goto(`http://127.0.0.1:${address.port}`)
+  await page.getByRole('button', { name: 'Símbolos do arquivo', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Reiniciar análise', exact: true })).toBeVisible()
+  await page.unroute('**/pro-language.worker-*.js')
+  await page.getByRole('button', { name: 'Reiniciar análise', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'score', exact: true })).toBeVisible()
+  await expect(page.getByText(/Salve o projeto antes de recarregar a página/)).toBeHidden()
 })
 
 test('reports a source worker failure visibly and does not download a partial archive', async ({

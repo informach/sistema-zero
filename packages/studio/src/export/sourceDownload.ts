@@ -42,7 +42,9 @@ export async function prepareSourceDownload(
   try {
     assertCurrent()
     pending?.flush()
+    assertCurrent()
     await flushProjectOperations(store, initial.id)
+    assertCurrent()
     pending?.flush()
     assertCurrent()
     const project = store.getState().project
