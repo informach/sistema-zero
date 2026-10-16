@@ -6,8 +6,13 @@ import { build } from 'vite'
 import manifest from '../package.json'
 import { bundleHash } from '../src/main/media/render-identity'
 import { nativeExternals } from './node-externals'
+import { releaseConfiguration } from './release-config'
 
 await mkdir('dist', { recursive: true })
+await writeFile(
+  'dist/release-config.json',
+  JSON.stringify(releaseConfiguration(process.env, false)),
+)
 await mkdir('dist/licenses', { recursive: true })
 for (const font of ['nunito', 'baloo-2'])
   await copyFile(

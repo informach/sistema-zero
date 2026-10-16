@@ -31,6 +31,8 @@ import { parseDeepLink } from '../shared/deep-link'
 import { proveActionJournal } from './action-journal-proof'
 import { LocalAssets } from './assets'
 import { proveStudioCapture } from './capture-proof'
+import { initializeNativeClients, installNativeClient } from './clients/installation'
+import { proveClientInstallation } from './clients/proof'
 import { proveGeneratedComposition } from './composition-proof'
 import { proveCompositionProviders } from './composition-providers-proof'
 import { executeNative } from './execution/native-executor'
@@ -52,6 +54,7 @@ import { proveServerSession } from './session-proof'
 import { DesktopWorkspaceManager } from './sync/workspace-manager'
 import { proveElectronTimeline } from './timeline-proof'
 import { proveUiLatency } from './ui-latency-proof'
+import { DesktopUpdates } from './updates'
 
 const directory = path.join(app.getAppPath(), 'dist')
 const smoke = [
@@ -68,25 +71,36 @@ const smoke = [
   '--smoke-render-chunks',
   '--smoke-composition',
   '--smoke-composition-providers',
+  '--smoke-client-install',
 ].some((flag) => process.argv.includes(flag))
 const sessionProof =
   process.argv.includes('--smoke-session') ||
   process.argv.includes('--smoke-resume') ||
   process.argv.includes('--smoke-native-import') ||
-  process.argv.includes('--smoke-ui-latency')
+  process.argv.includes('--smoke-ui-latency') ||
+  process.argv.includes('--smoke-client-install')
 if (sessionProof) {
   if (app.isPackaged) throw new Error('Prova disponível somente em desenvolvimento')
   app.setPath(
     'userData',
     path.join(
       app.getAppPath(),
-      process.argv.includes('--smoke-ui-latency')
-        ? '.cache/ui-latency-proof/profile'
-        : process.argv.includes('--smoke-native-import')
-          ? '.cache/native-connected-proof/profile'
-          : process.argv.includes('--smoke-actions')
-            ? '.cache/connected-proof/actions-profile'
-            : '.cache/connected-proof/profile',
+      process.argv.includes('--smoke-client-install')
+        ? `.cache/client-install-proof/${z
+            .string()
+            .uuid()
+            .parse(
+              process.argv
+                .find((arg) => arg.startsWith('--client-install-id='))
+                ?.slice('--client-install-id='.length),
+            )}/profile`
+        : process.argv.includes('--smoke-ui-latency')
+          ? '.cache/ui-latency-proof/profile'
+          : process.argv.includes('--smoke-native-import')
+            ? '.cache/native-connected-proof/profile'
+            : process.argv.includes('--smoke-actions')
+              ? '.cache/connected-proof/actions-profile'
+              : '.cache/connected-proof/profile',
     ),
   )
 }
@@ -103,6 +117,8 @@ let workspaceManager: DesktopWorkspaceManager | undefined
 let supervisor: ExecutionSupervisor | undefined
 let shutdownReady = false
 let exitCode = 0
+let desktopUpdates: DesktopUpdates | undefined
+let updateOnQuit = false
 const ipcAbort = new AbortController()
 const pendingIpc = new Set<Promise<unknown>>()
 let pendingLink: ReturnType<typeof parseDeepLink> | undefined
@@ -187,6 +203,8 @@ function handle(channel: string, operation: (...args: unknown[]) => Promise<unkn
 app
   .whenReady()
   .then(async () => {
+    const clientsRoot = path.join(app.getPath('userData'), 'native-clients')
+    await initializeNativeClients(clientsRoot)
     if (process.argv.includes('--smoke-composition-providers')) {
       await proveCompositionProviders()
       app.quit()
@@ -234,6 +252,23 @@ app
     const manager = workspaceManager
     supervisor = new ExecutionSupervisor(manager, executeNative, (stage) => progress({ stage }))
     const executor = supervisor
+    desktopUpdates = new DesktopUpdates((value) => {
+      if (window && !window.isDestroyed()) window.webContents.send('marketing:update', value)
+    })
+    const updates = desktopUpdates
+    await updates.initialize()
+    handle('marketing:update-status', async () => updates.status())
+    handle('marketing:update-check', () => updates.check())
+    handle('marketing:update-download', () => updates.download())
+    handle('marketing:update-cancel', async () => updates.cancel())
+    handle('marketing:update-install', () =>
+      exclusive(async () => {
+        if (executor.busy) throw new Error('Aguarde a produção terminar antes de reiniciar.')
+        await updates.verifyReady()
+        updateOnQuit = true
+        app.quit()
+      }),
+    )
     const scopeSchema = workspaceRequestSchema.shape.scope
     const inventoryKey = (scope: unknown, projectId: unknown) =>
       JSON.stringify({ scope: scopeSchema.parse(scope), projectId: idSchema.parse(projectId) })
@@ -755,6 +790,18 @@ app
         ['codex', 'claude'].map((name) => getProviderStatus(providerSchema.parse(name), workspace)),
       ),
     )
+    handle('marketing:install-client', async (provider) =>
+      exclusive(async () => {
+        if (executor.busy) throw new Error('Aguarde a produção atual antes de instalar o cliente.')
+        controller = new AbortController()
+        await installNativeClient(
+          clientsRoot,
+          providerSchema.parse(provider),
+          controller.signal,
+          (stage) => progress({ stage }),
+        )
+      }),
+    )
     handle('marketing:login', async (provider) =>
       exclusive(() => {
         controller = new AbortController()
@@ -883,8 +930,11 @@ app
     )
     if (process.argv.includes('--smoke-actions')) console.log('action-journal: loading renderer')
     await window.loadURL(rendererUrl)
+    if (!smoke) void updates.check()
     if (sessionProof) {
-      if (process.argv.includes('--smoke-ui-latency'))
+      if (process.argv.includes('--smoke-client-install'))
+        await proveClientInstallation(window, clientsRoot)
+      else if (process.argv.includes('--smoke-ui-latency'))
         await proveUiLatency(window, manager, serverSession)
       else if (process.argv.includes('--smoke-native-import'))
         await proveNativeImport(window, manager)
@@ -988,6 +1038,7 @@ app.on('before-quit', (event) => {
   if (quitting) return
   quitting = true
   ipcAbort.abort()
+  desktopUpdates?.stop()
   tray?.destroy()
   // End renderer producers first, then drain requests before closing their stores.
   // Destroy bypasses the normal close-to-tray handler during an explicit quit.
@@ -1003,6 +1054,7 @@ app.on('before-quit', (event) => {
     .then(() => {
       shutdownReady = true
       if (exitCode) app.exit(exitCode)
+      else if (updateOnQuit && desktopUpdates) desktopUpdates.installAfterShutdown()
       else app.quit()
     })
     .catch((error) => {

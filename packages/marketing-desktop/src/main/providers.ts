@@ -15,7 +15,12 @@ import { claudeInput } from './claude-input'
 import { completedCodexItem } from './codex-events'
 import { JsonRpcClient, type RpcEvent } from './json-rpc'
 import { observeLogin } from './login-completion'
-import { collectProcess, collectProcessResult, launchNative } from './native-client'
+import {
+  collectProcess,
+  collectProcessResult,
+  launchNative,
+  nativeClientStatus,
+} from './native-client'
 import {
   beginProviderCheckpoint,
   type ProviderOutput,
@@ -86,7 +91,9 @@ export async function getProviderStatus(
   cwd: string,
   signal?: AbortSignal,
 ): Promise<ProviderStatus> {
+  const client = nativeClientStatus(provider)
   try {
+    if (!client.installed) throw new Error(client.reason)
     if (provider === 'codex') {
       const rpc = await openCodex(cwd, signal)
       try {
@@ -94,32 +101,47 @@ export async function getProviderStatus(
         const capability = z
           .object({ imageGeneration: z.boolean().optional() })
           .parse(await rpc.request('modelProvider/capabilities/read', {}))
-        return { provider, available: true, mode, image: capability.imageGeneration === true }
+        return {
+          provider,
+          available: true,
+          mode,
+          image: capability.imageGeneration === true,
+          client,
+        }
       } finally {
         rpc.close()
       }
     }
-    const account = claudeAccountSchema.parse(
-      JSON.parse(
-        await collectProcess(
-          launchNative('claude', ['auth', 'status', '--json'], cwd),
-          20000,
-          signal,
-        ),
-      ),
+    // Claude reports a normal signed-out account as JSON with exit code 1.
+    const authentication = await collectProcessResult(
+      launchNative('claude', ['auth', 'status', '--json'], cwd),
+      20000,
+      signal,
     )
+    const account = claudeAccountSchema.parse(JSON.parse(authentication.output))
+    if (authentication.code !== 0 && !(authentication.code === 1 && !account.loggedIn))
+      throw new Error(
+        'Não foi possível conferir o acesso ao Claude Code. Tente conectar novamente.',
+      )
     if (!account.loggedIn || account.authMethod !== 'claude.ai' || !account.subscriptionType) {
       throw new Error(
         'Entre no cliente oficial com sua assinatura Claude. Nenhuma API paga será usada.',
       )
     }
-    return { provider, available: true, mode: `Claude ${account.subscriptionType}`, image: false }
+    return {
+      provider,
+      available: true,
+      mode: `Claude ${account.subscriptionType}`,
+      image: false,
+      client,
+    }
   } catch (error) {
     return {
       provider,
       available: false,
       mode: 'Não conectado',
       image: false,
+      client,
       reason: error instanceof Error ? error.message : 'Cliente indisponível.',
     }
   }

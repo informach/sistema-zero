@@ -34,3 +34,5 @@ L2 foi revisado nesta etapa, mas não está marcado como integralmente concluíd
 Cache/outbox, transferências, bancada compartilhada e seleção do handoff receberam implementação nos lotes seguintes. A corrida da sessão web foi corrigida em L9 com sessão opaca própria; a rotação e detecção de reuso existentes no Auth foram preservadas. Prova real de oito acessos paralelos, logout/revogação e três identidades está em `.audits/marketing-l9-sync-performance-2026-10-16.md`. A pendência de refresh acima é histórica, não um defeito ainda aberto.
 
 A prova de instalação/atualização assinadas, primeiro login em cliente desconectado e piloto físico em duas máquinas continuam pendentes. Demonstrações atuais não substituem esses critérios.
+
+Instalação dos clientes pela interface, recuperação de instalação, configuração de distribuição e atualização com verificação obrigatória de assinatura foram implementadas e revistas em [instalação e atualização L2](marketing-l2-install-update-review-2026-10-16.md). A prova real instalou os dois clientes e reabriu o Electron; os critérios externos acima permanecem explicitamente abertos.

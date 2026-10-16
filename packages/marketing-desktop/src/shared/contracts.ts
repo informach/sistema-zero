@@ -52,6 +52,14 @@ export type ProviderStatus = {
   mode: string
   image: boolean
   reason?: string
+  client: {
+    installed: boolean
+    managed: boolean
+    installable: boolean
+    version: string | null
+    installVersion: string
+    downloadBytes: number
+  }
 }
 export type Asset = {
   id: string
@@ -70,6 +78,12 @@ export type RunResult = {
 }
 export type Progress = { stage: string; progress?: number; activity?: 'inventory' }
 export type DesktopBridge = {
+  updateStatus: () => Promise<import('./updates').DesktopUpdate>
+  checkUpdate: () => Promise<import('./updates').DesktopUpdate>
+  downloadUpdate: () => Promise<import('./updates').DesktopUpdate>
+  cancelUpdate: () => Promise<void>
+  installUpdate: () => Promise<void>
+  onUpdate: (listener: (value: import('./updates').DesktopUpdate) => void) => () => void
   linkInventoryProduction: (
     scope: WorkspaceRequest['scope'],
     projectId: string,
@@ -195,6 +209,7 @@ export type DesktopBridge = {
   workspace: (request: WorkspaceRequest) => Promise<unknown>
   status: () => Promise<ProviderStatus[]>
   login: (provider: Provider) => Promise<void>
+  installClient: (provider: Provider) => Promise<void>
   run: (request: RunRequest) => Promise<RunResult>
   cancel: () => Promise<void>
   chooseMedia: () => Promise<Asset | null>

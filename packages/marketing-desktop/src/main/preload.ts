@@ -2,6 +2,19 @@ import { contextBridge, ipcRenderer } from 'electron'
 import type { DesktopBridge, Progress } from '../shared/contracts'
 
 const bridge: DesktopBridge = {
+  updateStatus: () => ipcRenderer.invoke('marketing:update-status'),
+  checkUpdate: () => ipcRenderer.invoke('marketing:update-check'),
+  downloadUpdate: () => ipcRenderer.invoke('marketing:update-download'),
+  cancelUpdate: () => ipcRenderer.invoke('marketing:update-cancel'),
+  installUpdate: () => ipcRenderer.invoke('marketing:update-install'),
+  onUpdate: (listener) => {
+    const handler = (
+      _event: Electron.IpcRendererEvent,
+      value: import('../shared/updates').DesktopUpdate,
+    ) => listener(value)
+    ipcRenderer.on('marketing:update', handler)
+    return () => ipcRenderer.removeListener('marketing:update', handler)
+  },
   rescanInventory: (scope, projectId, id) =>
     ipcRenderer.invoke('marketing:rescan-inventory', scope, projectId, id),
   linkInventoryProduction: (scope, projectId, reportId, planHash) =>
@@ -76,6 +89,7 @@ const bridge: DesktopBridge = {
   workspace: (request) => ipcRenderer.invoke('marketing:workspace', request),
   status: () => ipcRenderer.invoke('marketing:status'),
   login: (provider) => ipcRenderer.invoke('marketing:login', provider),
+  installClient: (provider) => ipcRenderer.invoke('marketing:install-client', provider),
   run: (request) => ipcRenderer.invoke('marketing:run', request),
   cancel: () => ipcRenderer.invoke('marketing:cancel'),
   chooseMedia: () => ipcRenderer.invoke('marketing:choose-media'),

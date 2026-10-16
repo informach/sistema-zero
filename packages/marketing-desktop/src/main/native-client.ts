@@ -1,7 +1,48 @@
 import { type ChildProcessWithoutNullStreams, spawn } from 'node:child_process'
-import { existsSync } from 'node:fs'
+import { statSync } from 'node:fs'
 import { homedir } from 'node:os'
 import path from 'node:path'
+import type { Provider } from '../shared/contracts'
+import { clientReleases, supportsClientInstallation } from './clients/catalog'
+
+type ManagedClient = { executable: string; version: string } | { error: string }
+const managedClients = new Map<Provider, ManagedClient>()
+export function registerManagedClient(provider: Provider, client: ManagedClient) {
+  managedClients.set(provider, client)
+}
+function executableExists(file: string) {
+  try {
+    return path.isAbsolute(file) && statSync(file).isFile()
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      'code' in error &&
+      ['ENOENT', 'ENOTDIR'].includes(String(error.code))
+    )
+      return false
+    throw error
+  }
+}
+export function nativeClientStatus(provider: Provider) {
+  const release = clientReleases[provider]
+  const managed = managedClients.get(provider)
+  let installed = false
+  let reason: string | undefined
+  try {
+    installed = Boolean(findNativeClient(provider))
+  } catch (error) {
+    reason = error instanceof Error ? error.message : 'Não foi possível localizar o cliente.'
+  }
+  return {
+    installed,
+    reason,
+    managed: Boolean(managed),
+    installable: supportsClientInstallation(),
+    version: managed && 'version' in managed ? managed.version : null,
+    installVersion: release.version,
+    downloadBytes: release.bytes,
+  }
+}
 
 export function nativeEnvironment(source: NodeJS.ProcessEnv = process.env): NodeJS.ProcessEnv {
   const allowed =
@@ -10,6 +51,13 @@ export function nativeEnvironment(source: NodeJS.ProcessEnv = process.env): Node
 }
 
 export function findNativeClient(name: 'codex' | 'claude'): string {
+  const managed = managedClients.get(name)
+  if (managed) {
+    if ('error' in managed) throw new Error(managed.error)
+    if (!executableExists(managed.executable))
+      throw new Error('Repare a instalação do cliente pelo app.')
+    return managed.executable
+  }
   const executable = process.platform === 'win32' ? `${name}.exe` : name
   const candidates = [
     ...(process.env.PATH ?? '')
@@ -32,7 +80,7 @@ export function findNativeClient(name: 'codex' | 'claude'): string {
         ]
       : []),
   ]
-  const found = candidates.find((candidate) => path.isAbsolute(candidate) && existsSync(candidate))
+  const found = candidates.find(executableExists)
   if (!found) throw new Error(`Instale o cliente oficial ${name} para continuar.`)
   return found
 }
@@ -42,9 +90,15 @@ export function launchNative(
   args: string[],
   cwd: string,
 ): ChildProcessWithoutNullStreams {
+  const env = nativeEnvironment()
+  if (managedClients.has(name)) {
+    // The app curates compatible versions; do not let a client mutate this private installation.
+    env.DISABLE_AUTOUPDATER = '1'
+    env.DISABLE_UPDATES = '1'
+  }
   return spawn(findNativeClient(name), args, {
     cwd,
-    env: nativeEnvironment(),
+    env,
     windowsHide: true,
     shell: false,
     stdio: 'pipe',

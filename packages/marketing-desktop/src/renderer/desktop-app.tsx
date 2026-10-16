@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { ConnectionState } from '../shared/connection'
 import type { ProviderStatus } from '../shared/contracts'
 import { DesktopConnection } from './connection'
+import { DesktopUpdateControls } from './updates'
 import { desktopWorkbench } from './workbench-adapter'
 
 export function DesktopApp() {
@@ -36,9 +37,9 @@ export function DesktopApp() {
     }
   }, [])
   useEffect(() => {
-    if (!installing) return
+    if (!installing && !busy) return
     return window.marketing.onProgress(({ stage }) => setInstallation(stage))
-  }, [installing])
+  }, [installing, busy])
   useEffect(() => {
     let live = true
     void window.marketing
@@ -57,6 +58,7 @@ export function DesktopApp() {
     <>
       <DesktopConnection onChange={setState} />
       <main className="mx-auto max-w-[1500px] space-y-5 p-5 lg:p-8">
+        <DesktopUpdateControls />
         <section
           className="flex flex-wrap items-center gap-3 rounded-xl border bg-card px-4 py-3"
           aria-label="Assinaturas de inteligência artificial"
@@ -71,10 +73,11 @@ export function DesktopApp() {
               <Button
                 size="sm"
                 variant="outline"
-                disabled={busy}
+                disabled={busy || installing || !provider.client.installed}
                 onClick={() => {
                   setBusy(true)
                   setError('')
+                  setInstallation('Conclua o acesso no navegador oficial do provedor.')
                   void window.marketing
                     .login(provider.provider)
                     .then(() => window.marketing.status())
@@ -85,6 +88,34 @@ export function DesktopApp() {
               >
                 {provider.available ? 'Gerenciar acesso' : 'Conectar'}
               </Button>
+              {!provider.client.installed ? (
+                <Button
+                  size="sm"
+                  disabled={busy || installing || !provider.client.installable}
+                  onClick={() => {
+                    setInstalling(true)
+                    setError('')
+                    setInstallation('Preparando cliente oficial')
+                    void window.marketing
+                      .installClient(provider.provider)
+                      .then(() => window.marketing.status())
+                      .then(setProviders)
+                      .catch((error) => setError(errorMessage(error)))
+                      .finally(() => setInstalling(false))
+                  }}
+                >
+                  {provider.client.managed ? 'Reparar cliente' : 'Instalar cliente'} ·{' '}
+                  {Math.ceil(provider.client.downloadBytes / 1024 ** 2)} MB
+                </Button>
+              ) : null}
+              {provider.client.version ? (
+                <span className="text-xs text-muted-foreground">v{provider.client.version}</span>
+              ) : null}
+              {!provider.client.installed && !provider.client.installable ? (
+                <span className="text-xs text-muted-foreground">
+                  Instalação pelo app disponível no Windows x64.
+                </span>
+              ) : null}
             </div>
           ))}
           <p className="text-xs text-muted-foreground">Cada pessoa usa sua própria conta.</p>
@@ -117,23 +148,23 @@ export function DesktopApp() {
               Instalar transcrição · 148 MB
             </Button>
           ) : null}
-          {installing ? (
-            <>
-              <p role="status" className="text-sm">
-                {installation}
-              </p>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() =>
-                  void window.marketing.cancel().catch((error) => setError(errorMessage(error)))
-                }
-              >
-                Cancelar instalação
-              </Button>
-            </>
-          ) : null}
         </section>
+        {installing || busy ? (
+          <>
+            <p role="status" className="text-sm">
+              {installation}
+            </p>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() =>
+                void window.marketing.cancel().catch((error) => setError(errorMessage(error)))
+              }
+            >
+              Cancelar
+            </Button>
+          </>
+        ) : null}
         {error ? (
           <p role="alert" className="text-sm text-destructive">
             {error}
