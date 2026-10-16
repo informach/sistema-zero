@@ -38,3 +38,4 @@ const PROD = process.env.NODE_ENV === 'production'
 
 export const ACCESS_COOKIE = prefixedCookieName('sz_mkt_access', PROD)
 export const REFRESH_COOKIE = prefixedCookieName('sz_mkt_refresh', PROD)
+export const DESKTOP_COOKIE = prefixedCookieName('sz_mkt_desktop', PROD)

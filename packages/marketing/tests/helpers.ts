@@ -96,7 +96,7 @@ export function buildTestApp(
   const assets = new InMemoryMediaAssetRepository()
   const publications = new InMemoryPublicationRepository()
   publications.contentsRef = contents
-  const publicationAssets = new InMemoryPublicationAssetRepository()
+  const publicationAssets = new InMemoryPublicationAssetRepository(publications)
   const store = new FakeMediaStore()
   const accounts = new InMemorySocialAccountRepository()
   const oauthStates = new InMemoryOAuthStateRepository()

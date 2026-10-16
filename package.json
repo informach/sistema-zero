@@ -86,7 +86,8 @@
     "test:helpdesk-app": "bun run --filter @sistemazero/helpdesk-app test"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.4.16"
+    "@biomejs/biome": "2.4.16",
+    "zod": "^4.1.12"
   },
   "patchedDependencies": {
     "three@0.184.0": "patches/three@0.184.0.patch"

@@ -18,8 +18,12 @@ export interface MediaStore {
     expiresInSeconds: number
   }): Promise<string>
   /** URL GET pré-assinada (preview/download; também alimenta a Meta na publicação). */
-  presignGet(input: { key: string; expiresInSeconds: number }): Promise<string>
-  head(key: string): Promise<HeadResult>
+  presignGet(input: {
+    key: string
+    expiresInSeconds: number
+    downloadName?: string
+  }): Promise<string>
+  head(key: string, signal?: AbortSignal): Promise<HeadResult>
   delete(key: string): Promise<void>
   /**
    * Grava um objeto em STREAMING (import Drive→R2 do media-transfer-worker).
@@ -31,6 +35,7 @@ export interface MediaStore {
     contentType: string
     sizeBytes: number
     body: ReadableStream<Uint8Array>
+    signal?: AbortSignal
   }): Promise<void>
   /**
    * Lê um RANGE do objeto (upload resumable do YouTube em chunks de 8MiB —
@@ -42,5 +47,5 @@ export interface MediaStore {
    * Stream do objeto INTEIRO (arquivador R2→Drive) — memória O(chunk), o
    * consumidor pipa direto pro upload do Drive.
    */
-  getStream(key: string): Promise<ReadableStream<Uint8Array>>
+  getStream(key: string, signal?: AbortSignal): Promise<ReadableStream<Uint8Array>>
 }

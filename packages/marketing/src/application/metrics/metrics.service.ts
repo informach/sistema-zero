@@ -1,5 +1,19 @@
 import { ValidationError } from '@sistemazero/core/errors'
+import type {
+  BestTimesView,
+  FollowersSeriesView,
+  MetricsSummaryView,
+  PublicationMetricsSnapshot,
+} from '@sistemazero/marketing-contracts'
+
+export type {
+  BestTimesView,
+  FollowersSeriesView,
+  MetricsSummaryView,
+} from '@sistemazero/marketing-contracts'
+
 import { PublicationNotFoundError } from '../../domain/marketing-errors'
+import { followerValue, metricSnapshotView, metricValue } from '../../domain/metrics/availability'
 import type { MetricsRepository } from '../../domain/ports/metrics-repository.port'
 import type { PublicationRepository } from '../../domain/ports/publication-repository.port'
 import type { SocialAccountRepository } from '../../domain/ports/social-account-repository.port'
@@ -12,54 +26,6 @@ const NETWORKS: Network[] = ['instagram', 'facebook', 'youtube', 'tiktok']
 const TOTALS_WINDOW_DAYS = 28
 const TOP_WINDOW_DAYS = 90
 const TOP_LIMIT = 10
-
-/** CONTRATO do dashboard (fixo entre backend e front — não mudar à toa). */
-export interface MetricsSummaryView {
-  accounts: Array<{
-    accountId: string
-    network: Network
-    displayName: string
-    followers: number
-    capturedAt: string
-  }>
-  /** Totais dos últimos 28 dias por rede (posts publicados + último snapshot). */
-  networkTotals: Array<{
-    network: Network
-    posts: number
-    views: number
-    likes: number
-    comments: number
-  }>
-  /** Top 10 por views na janela de 90 dias. */
-  topPublications: Array<{
-    publicationId: string
-    contentId: string
-    contentTitle: string
-    network: Network
-    format: string
-    publishedAt: string | null
-    views: number
-    likes: number
-    comments: number
-    capturedAt: string
-  }>
-}
-
-/** Melhores horários (heatmap 7×24): agregado por dia-da-semana × hora em SP. */
-export interface BestTimesView {
-  /** Só células COM posts. `dow` 0=domingo..6=sábado; `hour` 0..23 (SP). */
-  cells: Array<{ dow: number; hour: number; posts: number; views: number; likes: number }>
-  totalPosts: number
-}
-
-export interface FollowersSeriesView {
-  series: Array<{
-    accountId: string
-    network: Network
-    displayName: string
-    points: Array<{ date: string; followers: number }>
-  }>
-}
 
 /** Dia 'YYYY-MM-DD' no fuso de SP (o dia "humano" da equipe). */
 const SP_DAY = new Intl.DateTimeFormat('en-CA', {
@@ -117,43 +83,74 @@ export class MetricsService {
     const now = this.now()
     const connected = await this.connectedAccounts()
     const accountSnapshots = await this.metrics.latestAccountSnapshots(connected.map((a) => a.id))
-    const accounts = connected.flatMap((account) => {
+    const accounts = connected.map((account) => {
       const snapshot = accountSnapshots.get(account.id)
-      if (!snapshot) return []
-      return [
-        {
-          accountId: account.id,
-          network: account.network,
-          displayName: account.displayName,
-          followers: snapshot.followers,
-          capturedAt: snapshot.capturedAt.toISOString(),
-        },
-      ]
+      return {
+        accountId: account.id,
+        network: account.network,
+        displayName: account.displayName,
+        followers: snapshot ? followerValue(snapshot) : null,
+        availability:
+          snapshot && snapshot.collectionVersion < 1 && snapshot.followers === 0
+            ? ('legacy-unknown' as const)
+            : !snapshot || followerValue(snapshot) === null
+              ? ('unavailable' as const)
+              : ('observed' as const),
+        capturedAt: snapshot?.capturedAt.toISOString() ?? null,
+      }
     })
 
     // UMA busca (90d) alimenta os totais (28d) e o top (90d).
     const since90 = new Date(now.getTime() - TOP_WINDOW_DAYS * 86_400_000)
     const since28 = new Date(now.getTime() - TOTALS_WINDOW_DAYS * 86_400_000)
-    const recent = await this.publications.listRecentPublished({ since: since90, limit: 300 })
+    const candidates = await this.publications.listRecentPublished({
+      since: since90,
+      until: now,
+      limit: 301,
+    })
+    const recent = candidates.slice(0, 300),
+      next = candidates[300]
+    const coverage = {
+      includedPosts: recent.length,
+      limit: 300,
+      topTruncated: !!next,
+      totalsTruncated: !!next?.publication.publishedAt && next.publication.publishedAt >= since28,
+    }
     const stats = await this.metrics.latestPublicationStats(
       recent.map((item) => item.publication.id),
     )
 
     const totalsByNetwork = new Map<
       Network,
-      { posts: number; views: number; likes: number; comments: number }
+      {
+        posts: number
+        views: number | null
+        likes: number | null
+        comments: number | null
+        observedPosts: { views: number; likes: number; comments: number }
+      }
     >()
     for (const item of recent) {
       const publishedAt = item.publication.publishedAt
       if (!publishedAt || publishedAt.getTime() < since28.getTime()) continue
       const network = item.publication.network
-      const totals = totalsByNetwork.get(network) ?? { posts: 0, views: 0, likes: 0, comments: 0 }
+      const totals = totalsByNetwork.get(network) ?? {
+        posts: 0,
+        views: null,
+        likes: null,
+        comments: null,
+        observedPosts: { views: 0, likes: 0, comments: 0 },
+      }
       totals.posts += 1
       const stat = stats.get(item.publication.id)
       if (stat) {
-        totals.views += stat.views
-        totals.likes += stat.likes
-        totals.comments += stat.comments
+        for (const key of ['views', 'likes', 'comments'] as const) {
+          const value = metricValue(stat, key)
+          if (value !== null) {
+            totals[key] = (totals[key] ?? 0) + value
+            totals.observedPosts[key]++
+          }
+        }
       }
       totalsByNetwork.set(network, totals)
     }
@@ -172,19 +169,19 @@ export class MetricsService {
             contentId: item.publication.contentId,
             contentTitle: item.contentTitle,
             network: item.publication.network,
-            format: item.publication.format as string,
+            format: item.publication.format,
             publishedAt: item.publication.publishedAt?.toISOString() ?? null,
-            views: stat.views,
-            likes: stat.likes,
-            comments: stat.comments,
+            views: metricValue(stat, 'views'),
+            likes: metricValue(stat, 'likes'),
+            comments: metricValue(stat, 'comments'),
             capturedAt: stat.capturedAt.toISOString(),
           },
         ]
       })
-      .sort((a, b) => b.views - a.views)
+      .sort((a, b) => (b.views ?? -1) - (a.views ?? -1))
       .slice(0, TOP_LIMIT)
 
-    return { accounts, networkTotals, topPublications }
+    return { accounts, networkTotals, topPublications, coverage }
   }
 
   /**
@@ -196,8 +193,15 @@ export class MetricsService {
     if (input.days < 1 || input.days > 365) {
       throw new ValidationError('`days` deve estar entre 1 e 365')
     }
-    const since = new Date(this.now().getTime() - input.days * 86_400_000)
-    const recent = await this.publications.listRecentPublished({ since, limit: 500 })
+    const until = this.now(),
+      since = new Date(until.getTime() - input.days * 86_400_000)
+    const candidates = await this.publications.listRecentPublished({
+      since,
+      until,
+      network: input.network,
+      limit: 501,
+    })
+    const recent = candidates.slice(0, 500)
     const filtered = recent.filter(
       (item) =>
         item.publication.publishedAt !== null &&
@@ -206,26 +210,40 @@ export class MetricsService {
     const stats = await this.metrics.latestPublicationStats(
       filtered.map((item) => item.publication.id),
     )
-    const cells = new Map<
-      string,
-      { dow: number; hour: number; posts: number; views: number; likes: number }
-    >()
+    const cells = new Map<string, BestTimesView['cells'][number]>()
     for (const item of filtered) {
       const publishedAt = item.publication.publishedAt as Date
       const { dow, hour } = spDowHour(publishedAt)
       const key = `${dow}:${hour}`
-      const cell = cells.get(key) ?? { dow, hour, posts: 0, views: 0, likes: 0 }
+      const cell = cells.get(key) ?? {
+        dow,
+        hour,
+        posts: 0,
+        views: null,
+        likes: null,
+        viewsObserved: 0,
+        likesObserved: 0,
+      }
       cell.posts += 1
       const stat = stats.get(item.publication.id)
       if (stat) {
-        cell.views += stat.views
-        cell.likes += stat.likes
+        const views = metricValue(stat, 'views'),
+          likes = metricValue(stat, 'likes')
+        if (views !== null) {
+          cell.views = (cell.views ?? 0) + views
+          cell.viewsObserved++
+        }
+        if (likes !== null) {
+          cell.likes = (cell.likes ?? 0) + likes
+          cell.likesObserved++
+        }
       }
       cells.set(key, cell)
     }
     return {
       cells: [...cells.values()].sort((a, b) => a.dow - b.dow || a.hour - b.hour),
       totalPosts: filtered.length,
+      coverage: { truncated: candidates.length > 500, limit: 500 },
     }
   }
 
@@ -241,7 +259,7 @@ export class MetricsService {
       connected.map((a) => a.id),
       since,
     )
-    const byAccount = new Map<string, Map<string, number>>()
+    const byAccount = new Map<string, Map<string, number | null>>()
     for (const snapshot of snapshots) {
       const day = SP_DAY.format(snapshot.capturedAt)
       let days = byAccount.get(snapshot.socialAccountId)
@@ -250,7 +268,7 @@ export class MetricsService {
         byAccount.set(snapshot.socialAccountId, days)
       }
       // snapshots vêm em capturedAt ASC — o último do dia vence.
-      days.set(day, snapshot.followers)
+      days.set(day, followerValue(snapshot))
     }
     return {
       series: connected.flatMap((account) => {
@@ -271,23 +289,13 @@ export class MetricsService {
   }
 
   async publicationSnapshots(publicationId: string): Promise<{
-    snapshots: Array<{
-      capturedAt: string
-      views: number
-      likes: number
-      comments: number
-    }>
+    snapshots: PublicationMetricsSnapshot[]
   }> {
     const pub = await this.publications.byId(publicationId)
     if (!pub) throw new PublicationNotFoundError()
     const snapshots = await this.metrics.listPublicationSnapshots(publicationId, 30)
     return {
-      snapshots: snapshots.map((s) => ({
-        capturedAt: s.capturedAt.toISOString(),
-        views: s.views,
-        likes: s.likes,
-        comments: s.comments,
-      })),
+      snapshots: snapshots.map(metricSnapshotView),
     }
   }
 }

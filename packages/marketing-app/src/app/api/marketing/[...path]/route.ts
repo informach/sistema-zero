@@ -15,6 +15,7 @@ import { gatewayFetch } from '@/server/gateway'
 // `oauth` cobre só o START (o callback é navegação do Google direto no gateway,
 // nunca passa por aqui); `drive` é o picker de importação.
 const ALLOWED_ROOTS = new Set([
+  'workspace',
   'ideas',
   'contents',
   'publications',
@@ -52,6 +53,14 @@ async function handle(req: Request, params: Promise<{ path: string[] }>): Promis
   const { status, body: upstreamBody } = await gatewayFetch(`${upstreamPath}${search}`, {
     method,
     body,
+    ...(req.headers.has('x-marketing-desktop-device') || req.headers.has('x-marketing-desktop-user')
+      ? {
+          desktopBinding: {
+            deviceId: req.headers.get('x-marketing-desktop-device') ?? '',
+            userId: req.headers.get('x-marketing-desktop-user') ?? '',
+          },
+        }
+      : {}),
   })
   return forwardUpstream({ status, body: upstreamBody })
 }

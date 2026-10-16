@@ -21,6 +21,7 @@ import {
   canSchedule,
   FORMAT_NETWORK,
   forcesManualMode,
+  hasProviderCheckpoint,
   isActivePublication,
   isEditable,
   isPendingPublication,
@@ -67,9 +68,8 @@ const SYSTEM_ACTOR: Actor = {
   status: 'active',
 }
 
-/** O vídeo já subiu ao provedor (checkpoint com id salvo)? Metadados congelam. */
-function hasRemoteVideo(pub: Publication): boolean {
-  return typeof pub.providerSession.videoId === 'string'
+function hasYouTubeVideo(pub: Publication): boolean {
+  return pub.network === 'youtube' && typeof pub.providerSession.videoId === 'string'
 }
 
 export class PublicationService {
@@ -164,12 +164,15 @@ export class PublicationService {
    * MESMO conteúdo da publicação — mídia de outro conteúdo no post é troca de
    * arquivo silenciosa, não reordenação.
    */
-  async setAssets(id: string, assetIds: string[]): Promise<PublicationView> {
+  async setAssets(id: string, assetIds: string[], expectedVersion: number): Promise<PublicationView> {
     const pub = await this.publications.byId(id)
     if (!pub) throw new PublicationNotFoundError()
     if (!isEditable(pub.status)) {
       throw new InvalidPublicationStateError('Publicação não pode mais ser editada')
     }
+    if (hasProviderCheckpoint(pub.providerSession))
+      throw new InvalidPublicationStateError('O envio já começou. A mídia precisa permanecer vinculada ao envio até sua reconciliação.')
+    if (pub.version !== expectedVersion) throw new ConcurrencyConflictError()
     if (assetIds.length === 0 || assetIds.length > 10) {
       throw new ValidationError('O carrossel aceita de 1 a 10 imagens')
     }
@@ -186,8 +189,9 @@ export class PublicationService {
         throw new ValidationError(`A mídia "${asset.filename}" ainda não terminou de subir`)
       }
     }
-    await this.carousel.links.replaceForPublication(pub.id, assetIds)
-    return toPublicationView(pub, assetIds)
+    const updated = await this.carousel.links.replaceForPublication(pub.id, assetIds, expectedVersion, this.now())
+    if (!updated) throw new ConcurrencyConflictError()
+    return toPublicationView(updated, assetIds)
   }
 
   /**
@@ -216,17 +220,19 @@ export class PublicationService {
     if (!isEditable(pub.status)) {
       throw new InvalidPublicationStateError('Publicação não pode mais ser editada')
     }
-    // PÓS-upload (vídeo já no YouTube): metadados congelam — editar aqui não
-    // mudaria o vídeo remoto e criaria divergência silenciosa.
+    // The provider may already have accepted a side effect even when its final result is uncertain.
     if (
-      hasRemoteVideo(pub) &&
+      hasProviderCheckpoint(pub.providerSession) &&
       (input.caption !== undefined ||
         input.title !== undefined ||
         input.tags !== undefined ||
-        input.coverAssetId !== undefined)
+        input.coverAssetId !== undefined ||
+        input.publishMode !== undefined ||
+        input.socialAccountId !== undefined ||
+        input.scheduledAt !== undefined)
     ) {
       throw new InvalidPublicationStateError(
-        'O vídeo já subiu ao YouTube. Edite os dados no YouTube Studio, ou cancele e recrie a publicação',
+        'O envio já começou. Os dados precisam permanecer vinculados ao envio até sua reconciliação.',
       )
     }
     const expectedVersion = input.version
@@ -266,7 +272,7 @@ export class PublicationService {
    */
   private async enableAutoMode(pub: Publication, socialAccountId?: string): Promise<void> {
     if (forcesManualMode(pub.format)) {
-      throw new AutoPublishUnavailableError('Stories não têm publicação automática (limite da API)')
+      throw new AutoPublishUnavailableError('Stories usam publicação manual nesta versão do app')
     }
     if (!this.auto?.capableNetworks.has(pub.network)) {
       throw new AutoPublishUnavailableError()
@@ -311,13 +317,15 @@ export class PublicationService {
       throw new InvalidPublicationStateError('Publicação não pode ser agendada neste estado')
     }
     this.assertScheduleWindow(scheduledAt)
+    if (hasProviderCheckpoint(pub.providerSession) && !hasYouTubeVideo(pub) && pub.scheduledAt?.getTime() !== scheduledAt.getTime())
+      throw new InvalidPublicationStateError('O envio já começou. Confira o resultado no provedor antes de alterar o agendamento.')
     const expectedVersion = pub.version
     pub.scheduledAt = scheduledAt
     pub.status = 'scheduled'
     pub.lastError = null
     // Reagendamento PÓS-upload: o vídeo já está no YouTube com publishAt — o
     // worker sincroniza o horário nativo via videos.update (fase resync).
-    if (hasRemoteVideo(pub)) {
+    if (hasYouTubeVideo(pub)) {
       pub.providerSession = { ...pub.providerSession, phase: 'resync_publish_at' }
       pub.nextAttemptAt = this.now()
     }
@@ -339,9 +347,11 @@ export class PublicationService {
     pub.status = 'canceled'
     // Vídeo já enviado (privado, aguardando o publishAt): o cancelamento local
     // NÃO apaga no provedor — deixa o aviso p/ a limpeza manual no Studio.
-    if (hasRemoteVideo(pub)) {
+    if (hasYouTubeVideo(pub)) {
       pub.lastError =
         'O vídeo já está no YouTube (privado). Apague no YouTube Studio se não quiser publicá-lo'
+    } else if (hasProviderCheckpoint(pub.providerSession)) {
+      pub.lastError = 'O envio já começou no provedor. Cancelar aqui não desfaz o envio externo; confira seu resultado antes de publicar novamente.'
     }
     pub.version = expectedVersion + 1
     pub.updatedAt = this.now()

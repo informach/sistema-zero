@@ -11,6 +11,7 @@ import { ResendInviteService } from './application/admin/resend-invite/resend-in
 import { SearchProfilesService } from './application/admin/search-profiles/search-profiles.service'
 import { SetUserPasswordService } from './application/admin/set-password/set-user-password.service'
 import { UpdateUserService } from './application/admin/update-user/update-user.service'
+import { DesktopSessionService } from './application/desktop/desktop-session.service'
 import { EnsureBuyerService } from './application/ensure-buyer/ensure-buyer.service'
 import { GetMeService } from './application/get-me/get-me.service'
 import { GetOwnProfileService } from './application/get-me/get-own-profile.service'
@@ -50,6 +51,7 @@ import {
 import { withSentryMirror } from './infrastructure/observability/sentry'
 import { DrizzleAuditLogRepository } from './infrastructure/persistence/drizzle/audit-log.repository'
 import { createDbConnection, type DbConnection } from './infrastructure/persistence/drizzle/db'
+import { DrizzleDesktopSessionRepository } from './infrastructure/persistence/drizzle/desktop-session.repository'
 import { DrizzleImpersonationTokenRepository } from './infrastructure/persistence/drizzle/impersonation-token.repository'
 import { DrizzleOtpCodeRepository } from './infrastructure/persistence/drizzle/otp-code.repository'
 import { DrizzlePasswordResetTokenRepository } from './infrastructure/persistence/drizzle/password-reset-token.repository'
@@ -110,6 +112,7 @@ export async function createApplication(env: Env): Promise<Application> {
   // Adapters
   const users = new DrizzleUserRepository(db)
   const studyAccessRepository = new DrizzleStudyAccessRepository(db)
+  const desktopSessionRepository = new DrizzleDesktopSessionRepository(db)
   const refreshTokens = new DrizzleRefreshTokenRepository(db)
   const passwordResetTokens = new DrizzlePasswordResetTokenRepository(db)
   const otpCodes = new DrizzleOtpCodeRepository(db)
@@ -139,6 +142,10 @@ export async function createApplication(env: Env): Promise<Application> {
 
   const signing = await loadSigningMaterial(env, logger)
   const tokenIssuer = createJoseTokenIssuer({
+    validateDesktopSession: (claims) =>
+      claims.desktop
+        ? desktopSessionRepository.validate(claims.desktop, claims.sub, new Date())
+        : Promise.resolve(false),
     validateKidsSession: (claims) =>
       claims.kids
         ? studyAccessRepository.validateSession(
@@ -159,6 +166,7 @@ export async function createApplication(env: Env): Promise<Application> {
     impersonationRefreshTtlSeconds: env.IMPERSONATION_REFRESH_TTL_SECONDS,
   })
   const studyAccess = new StudyAccessService(studyAccessRepository, profilesRepo, users, authTokens)
+  const desktopSessions = new DesktopSessionService(desktopSessionRepository, users, authTokens)
 
   // Hash "isca" p/ equalizar o tempo do login quando o e-mail não existe (anti-enumeração).
   const dummyHash = await hasher.hash('timing-equalizer-not-a-real-password')
@@ -347,6 +355,7 @@ export async function createApplication(env: Env): Promise<Application> {
   }
 
   const server = createServer({
+    desktopSessions,
     studyAccess,
     env,
     logger,
@@ -423,6 +432,12 @@ export async function createApplication(env: Env): Promise<Application> {
         graceMs: PURGE_GRACE_MS,
         auditRetentionMs: AUDIT_RETENTION_MS,
       })
+      for (let batch = 0; batch < 20; batch++) {
+        const removed = await desktopSessionRepository.purgePairings(
+          new Date(Date.now() - 24 * 60 * 60 * 1000),
+        )
+        if (removed < 5000) break
+      }
     })
   }
 

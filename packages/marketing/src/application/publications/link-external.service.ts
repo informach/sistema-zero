@@ -44,12 +44,12 @@ export class LinkExternalService {
     let accessToken: string | null = null
     if (resolver.requiresAccount) {
       const candidates = await this.accounts.listByNetwork(pub.network)
-      account =
-        (pub.socialAccountId
-          ? candidates.find((a) => a.id === pub.socialAccountId && a.status === 'connected')
-          : undefined) ??
-        candidates.find((a) => a.status === 'connected') ??
-        null
+      const connected = candidates.filter((candidate) => candidate.status === 'connected')
+      account = pub.socialAccountId
+        ? (connected.find((candidate) => candidate.id === pub.socialAccountId) ?? null)
+        : connected.length === 1
+          ? (connected[0] ?? null)
+          : null
       if (!account) throw new AccountNotConnectedError()
       accessToken = await this.accountService.getFreshAccessToken(account)
     }
@@ -58,6 +58,7 @@ export class LinkExternalService {
 
     const expectedVersion = pub.version
     pub.externalPostId = resolved.externalPostId
+    if (account) pub.socialAccountId = account.id
     pub.externalUrl = resolved.externalUrl
     // Post identificado → coleta de métricas entra no radar imediatamente.
     pub.metricsNextCollectAt = this.now()

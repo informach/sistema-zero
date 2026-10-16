@@ -1,4 +1,5 @@
 import 'server-only'
+import { parseDesktopSessionClaim } from '@sistemazero/core/security'
 import {
   createRemoteJWKSet,
   decodeJwt,
@@ -8,9 +9,10 @@ import {
   jwtVerify,
 } from 'jose'
 import { cookies } from 'next/headers'
-import { ACCESS_COOKIE, expireCookieOptions, REFRESH_COOKIE } from '@/lib/cookies'
+import { ACCESS_COOKIE, DESKTOP_COOKIE, expireCookieOptions, REFRESH_COOKIE } from '@/lib/cookies'
 import { getEnv, isProd } from '@/lib/env'
 import type { SessionUser } from '@/lib/types'
+import { requestDesktopAccess } from './desktop-session'
 
 /** Par de tokens devolvido pelo @sistemazero/auth (via gateway). */
 export interface AuthTokens {
@@ -83,6 +85,17 @@ function claimsToUser(payload: Record<string, unknown>): SessionUser | null {
  */
 export async function getSession(): Promise<SessionUser | null> {
   const store = await cookies()
+  const desktop = store.get(DESKTOP_COOKIE)?.value
+  if (desktop) {
+    const access = await requestDesktopAccess(desktop)
+    if (!access.ok) {
+      if (access.status >= 500 || access.status === 429)
+        throw new Error('Servidor de identidade temporariamente indisponível')
+      return null
+    }
+    const verified = await verifyAccessToken(access.accessToken)
+    return verified.ok ? verified.user : null
+  }
   const access = store.get(ACCESS_COOKIE)?.value
   const refresh = store.get(REFRESH_COOKIE)?.value
   if (!access || !refresh) return null
@@ -119,6 +132,25 @@ export async function verifyAccessToken(token: string): Promise<AccessVerdict> {
     return { ok: false, expired: err instanceof errors.JWTExpired }
   }
 }
+export async function verifyDesktopBinding(
+  token: string,
+  expected: { userId: string; deviceId: string },
+) {
+  try {
+    const { payload } = await jwtVerify(token, verificationKey(), verifyOptions())
+    const desktop = parseDesktopSessionClaim(payload.desktop)
+    return (
+      payload.typ === 'access' &&
+      payload.sub === expected.userId &&
+      desktop?.deviceId === expected.deviceId &&
+      !payload.kids &&
+      !payload.act &&
+      !payload.profile
+    )
+  } catch {
+    return false
+  }
+}
 
 export async function getAccessToken(): Promise<string | null> {
   return (await cookies()).get(ACCESS_COOKIE)?.value ?? null
@@ -130,6 +162,7 @@ export async function getRefreshToken(): Promise<string | null> {
 
 export async function setSessionCookies(tokens: AuthTokens): Promise<void> {
   const store = await cookies()
+  store.set(DESKTOP_COOKIE, '', expireCookieOptions(isProd()))
   const base = { httpOnly: true, sameSite: 'lax' as const, secure: isProd(), path: '/' }
   // O access cookie persiste pela vida do refresh; o exp do JWT (curto) é o que
   // dispara o refresh-on-401 nas chamadas de dados.
@@ -144,4 +177,17 @@ export async function clearSessionCookies(): Promise<void> {
   // (o cookie sobrevivia: logout não deslogava). Ver `expireCookieOptions`.
   store.set(ACCESS_COOKIE, '', expireCookieOptions(isProd()))
   store.set(REFRESH_COOKIE, '', expireCookieOptions(isProd()))
+  store.set(DESKTOP_COOKIE, '', expireCookieOptions(isProd()))
+}
+
+export async function setDesktopSessionCookie(credential: string, expiresAt: string) {
+  await clearSessionCookies()
+  const store = await cookies()
+  store.set(DESKTOP_COOKIE, credential, {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: isProd(),
+    path: '/',
+    expires: new Date(expiresAt),
+  })
 }

@@ -1,0 +1,37 @@
+appId: com.sistemazero.marketing
+productName: Sistema Zero Marketing
+directories:
+  output: release
+files:
+  - dist/**
+  - package.json
+  - resources/**
+asar: true
+asarUnpack:
+  - node_modules/@remotion/compositor-*/**
+  - dist/remotion/**
+forceCodeSigning: true
+electronFuses:
+  runAsNode: false
+  enableCookieEncryption: true
+  enableNodeOptionsEnvironmentVariable: false
+  enableNodeCliInspectArguments: false
+  enableEmbeddedAsarIntegrityValidation: true
+  onlyLoadAppFromAsar: true
+win:
+  icon: resources/app.ico
+  target: nsis
+  artifactName: Sistema-Zero-Marketing-${version}-${arch}.${ext}
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  deleteAppDataOnUninstall: false
+mac:
+  target: dmg
+  hardenedRuntime: true
+  category: public.app-category.productivity
+protocols:
+  - name: Sistema Zero Marketing
+    schemes:
+      - sistema-zero-marketing

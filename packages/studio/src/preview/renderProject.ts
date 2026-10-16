@@ -19,6 +19,8 @@ import { withCoreImports } from './coreImports'
 import type { PreviewSecurityProfile } from './csp'
 
 export interface RenderProjectOptions {
+  /** Opt-in host diagnostics. Inspectors return snapshots; the public game API is unchanged. */
+  runtimeInspection?: boolean
   /** Origem do host (targetOrigin dos interceptors — defesa em profundidade). */
   parentOrigin?: string
   /** Origens liberadas para fetch/XHR (opt-in; raríssimo num player público). */
@@ -27,6 +29,8 @@ export interface RenderProjectOptions {
   securityProfile?: PreviewSecurityProfile
   /** Orçamento síncrono do loopGuard (ms). */
   loopBudgetMs?: number
+  /** Host-owned packaged replacements for existing official ESM imports (e.g. offline desktop). */
+  runtimeImports?: Readonly<Record<string, string>>
 }
 
 /**
@@ -62,6 +66,8 @@ export async function renderProjectToPreviewDocAsync(
     return extension ? [extension] : []
   })
   const extensionScripts = await loadExtensionBootstrapScripts(extensions)
+  if (opts.runtimeInspection)
+    extensionScripts.unshift('window.__SZSTUDIO_RUNTIME_INSPECTORS = Object.create(null);')
   // A fonte do jogo: só a ESCOLHIDA é carregada e viaja no documento. Um projeto
   // sem extensão de jogo não paga nada por isso.
   const gameUiFont = extensions.length
@@ -94,7 +100,11 @@ export async function renderProjectToPreviewDocAsync(
     loopBudgetMs: opts.loopBudgetMs,
     // + os imports do NÚCLEO (three.js) se o código os usa — lazy: 2D devolve o
     // mesmo objeto, sem importmap.
-    extensionImports: withCoreImports(extensionImports, files['script.js']),
+    extensionImports: Object.fromEntries(
+      Object.entries(withCoreImports(extensionImports, files['script.js'])).map(
+        ([specifier, url]) => [specifier, opts.runtimeImports?.[specifier] ?? url],
+      ),
+    ),
   })
 }
 

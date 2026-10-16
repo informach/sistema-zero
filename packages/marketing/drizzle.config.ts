@@ -4,7 +4,10 @@ import { defineConfig } from 'drizzle-kit'
 // (isolamento por `pgSchema`). Todo o DDL gerado fica em `marketing.*`.
 export default defineConfig({
   dialect: 'postgresql',
-  schema: './src/infrastructure/persistence/drizzle/schema.ts',
+  schema: [
+    './src/infrastructure/persistence/drizzle/schema.ts',
+    './src/infrastructure/persistence/drizzle/workspace-schema.ts',
+  ],
   out: './src/infrastructure/persistence/drizzle/migrations',
   casing: 'snake_case',
   // Só gera/inspeciona o schema `marketing` (dados deste package).

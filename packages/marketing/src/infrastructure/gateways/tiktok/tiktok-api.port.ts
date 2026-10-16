@@ -65,7 +65,9 @@ export interface TikTokApi {
 
   // ── Métricas (Display API) ──────────────────────────────────────────────────
   /** GET /v2/user/info/?fields=follower_count (escopo user.info.stats). */
-  getUserStats(accessToken: string): Promise<{ followers: number; raw: Record<string, unknown> }>
+  getUserStats(
+    accessToken: string,
+  ): Promise<{ followers: number | null; raw: Record<string, unknown> }>
   /** POST /v2/video/query/ — stats dos PRÓPRIOS vídeos (≤20 ids por chamada). */
   queryVideoStats(input: {
     accessToken: string
@@ -74,9 +76,9 @@ export interface TikTokApi {
 }
 
 export interface TikTokVideoStats {
-  views: number
-  likes: number
-  comments: number
-  shares: number
+  views: number | null
+  likes: number | null
+  comments: number | null
+  shares: number | null
   raw: Record<string, unknown>
 }

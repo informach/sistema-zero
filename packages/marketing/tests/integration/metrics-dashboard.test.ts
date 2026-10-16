@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { randomUUID } from 'node:crypto'
+import { followersSeriesSchema, metricsSummarySchema } from '@sistemazero/marketing-contracts'
 import type { PublicationView } from '../../src/application/mappers/views'
 import type {
   FollowersSeriesView,
@@ -38,8 +39,15 @@ function connectedAccount(network: Network, overrides: Partial<SocialAccount> = 
   }
 }
 
-function accountSnapshot(accountId: string, followers: number, capturedAt: Date) {
-  return { id: randomUUID(), socialAccountId: accountId, capturedAt, followers, raw: {} }
+function accountSnapshot(accountId: string, followers: number | null, capturedAt: Date) {
+  return {
+    id: randomUUID(),
+    socialAccountId: accountId,
+    capturedAt,
+    followers,
+    collectionVersion: 1,
+    raw: {},
+  }
 }
 
 function pubSnapshot(
@@ -50,6 +58,7 @@ function pubSnapshot(
   return {
     id: randomUUID(),
     publicationId,
+    collectionVersion: 1,
     capturedAt,
     views: stats.views,
     likes: stats.likes ?? 0,
@@ -87,6 +96,70 @@ async function publishedPublication(
 }
 
 describe('GET /marketing/metrics/summary (contrato do dashboard)', () => {
+  it('contas sem coleta continuam no denominador e o zero antigo não inventa perda de seguidores', async () => {
+    const t = buildTestApp(),
+      current = connectedAccount('instagram'),
+      old = connectedAccount('facebook'),
+      missing = connectedAccount('youtube')
+    for (const account of [current, old, missing]) await t.repos.accounts.create(account)
+    t.repos.metrics.accountSnapshots.push(accountSnapshot(current.id, 0, new Date(NOW)), {
+      ...accountSnapshot(old.id, 0, new Date(NOW)),
+      collectionVersion: 0,
+    })
+    const summary = metricsSummarySchema.parse(
+      await (await request(t.app, 'GET', '/marketing/metrics/summary')).json(),
+    )
+    expect(summary.accounts.find((a) => a.accountId === current.id)).toMatchObject({
+      followers: 0,
+      availability: 'observed',
+    })
+    expect(summary.accounts.find((a) => a.accountId === old.id)).toMatchObject({
+      followers: null,
+      availability: 'legacy-unknown',
+    })
+    expect(summary.accounts.find((a) => a.accountId === missing.id)).toMatchObject({
+      followers: null,
+      capturedAt: null,
+      availability: 'unavailable',
+    })
+    t.repos.metrics.accountSnapshots.push(
+      accountSnapshot(current.id, 50, new Date(NOW - DAY)),
+      accountSnapshot(current.id, null, new Date(NOW + 1)),
+    )
+    const series = followersSeriesSchema.parse(
+      await (
+        await request(t.app, 'GET', '/marketing/metrics/followers-series?days=7&network=instagram')
+      ).json(),
+    )
+    expect(series.series[0]?.points.at(-1)?.followers).toBeNull()
+  })
+  it('expõe truncamento sem confundir o ranking de 90 dias com os totais de 28 dias', async () => {
+    const t = buildTestApp(),
+      first = await publishedPublication(t, 'ig_feed'),
+      row = t.repos.publications.rows.get(first.id)
+    if (!row) throw new Error('Fixture ausente')
+    row.publishedAt = new Date(NOW - DAY)
+    for (let index = 0; index < 300; index++) {
+      const id = randomUUID()
+      t.repos.publications.rows.set(id, { ...row, id, publishedAt: new Date(NOW - 40 * DAY) })
+    }
+    const summary = metricsSummarySchema.parse(
+      await (await request(t.app, 'GET', '/marketing/metrics/summary')).json(),
+    )
+    expect(summary.coverage).toEqual({
+      includedPosts: 300,
+      limit: 300,
+      topTruncated: true,
+      totalsTruncated: false,
+    })
+    expect(summary.networkTotals[0]?.posts).toBe(1)
+    for (const publication of t.repos.publications.rows.values())
+      publication.publishedAt = new Date(NOW - DAY)
+    const crowded = metricsSummarySchema.parse(
+      await (await request(t.app, 'GET', '/marketing/metrics/summary')).json(),
+    )
+    expect(crowded.coverage.totalsTruncated).toBe(true)
+  })
   it('devolve accounts + networkTotals 28d + topPublications 90d por views', async () => {
     const t = buildTestApp()
     const ig = connectedAccount('instagram')
@@ -122,7 +195,14 @@ describe('GET /marketing/metrics/summary (contrato do dashboard)', () => {
 
     // 28d: a de 40 dias NÃO conta nos totais do instagram.
     const igTotals = body.networkTotals.find((n) => n.network === 'instagram')
-    expect(igTotals).toEqual({ network: 'instagram', posts: 1, views: 50, likes: 5, comments: 0 })
+    expect(igTotals).toEqual({
+      network: 'instagram',
+      posts: 1,
+      views: 50,
+      likes: 5,
+      comments: 0,
+      observedPosts: { views: 1, likes: 1, comments: 1 },
+    })
     const ytTotals = body.networkTotals.find((n) => n.network === 'youtube')
     expect(ytTotals?.views).toBe(300)
 
@@ -137,7 +217,12 @@ describe('GET /marketing/metrics/summary (contrato do dashboard)', () => {
     const body = (await (
       await request(t.app, 'GET', '/marketing/metrics/summary')
     ).json()) as MetricsSummaryView
-    expect(body).toEqual({ accounts: [], networkTotals: [], topPublications: [] })
+    expect(body).toEqual({
+      accounts: [],
+      networkTotals: [],
+      topPublications: [],
+      coverage: { includedPosts: 0, limit: 300, topTruncated: false, totalsTruncated: false },
+    })
   })
 })
 

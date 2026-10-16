@@ -56,6 +56,7 @@ export function resolveDisplayName(headers: Record<string, string | undefined>):
 /** Monta o ator confiável a partir dos headers `X-Auth-User-*` (gateway). */
 export function resolveActor(headers: Record<string, string | undefined>): Actor {
   return {
+    desktopDeviceId: headers['x-auth-desktop-device-id'],
     userId: resolveUserId(headers),
     displayName: resolveDisplayName(headers),
     role: headers['x-auth-user-role'],

@@ -94,7 +94,7 @@ export interface MetaApi {
   getIgAccountStats(input: {
     accessToken: string
     igUserId: string
-  }): Promise<{ followers: number; raw: Record<string, unknown> }>
+  }): Promise<{ followers: number | null; raw: Record<string, unknown> }>
   /** Lote `?ids=` com fields + insights vivos (views/reach/saved/shares/total_interactions). */
   getIgMediaStats(input: {
     accessToken: string
@@ -104,7 +104,7 @@ export interface MetaApi {
   getFbPageStats(input: {
     accessToken: string
     pageId: string
-  }): Promise<{ followers: number; raw: Record<string, unknown> }>
+  }): Promise<{ followers: number | null; raw: Record<string, unknown> }>
   /** Lote `?ids=` com os fields ESTÁVEIS (reactions/comments summary + shares). */
   getFbPostStats(input: {
     accessToken: string
@@ -126,18 +126,18 @@ export interface MetaApi {
 }
 
 export interface IgMediaStats {
-  views: number
+  views: number | null
   reach: number | null
-  likes: number
-  comments: number
-  shares: number
-  saves: number
+  likes: number | null
+  comments: number | null
+  shares: number | null
+  saves: number | null
   raw: Record<string, unknown>
 }
 
 export interface FbPostStats {
-  likes: number
-  comments: number
-  shares: number
+  likes: number | null
+  comments: number | null
+  shares: number | null
   raw: Record<string, unknown>
 }

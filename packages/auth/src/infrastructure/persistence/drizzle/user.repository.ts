@@ -188,6 +188,7 @@ function buildListWhere(filter: ListUsersFilter): SQL | undefined {
       ilike(users.email, like),
       ilike(users.firstName, like),
       ilike(users.lastName, like),
+      sql`(${users.firstName} || ' ' || ${users.lastName}) ILIKE ${like}`,
     )
     if (match) clauses.push(match)
   }

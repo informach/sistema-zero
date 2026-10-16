@@ -1,12 +1,14 @@
 import 'server-only'
 import { headers } from 'next/headers'
 import { getEnv } from '@/lib/env'
+import { forgetDesktopAccess, getDesktopCredential, requestDesktopAccess } from './desktop-session'
 import {
   type AuthTokens,
   clearSessionCookies,
   getAccessToken,
   getRefreshToken,
   setSessionCookies,
+  verifyDesktopBinding,
 } from './session'
 
 // Tetos das chamadas de saída (upstream pendurado NÃO pode pendurar o handler):
@@ -20,6 +22,7 @@ export interface GatewayResponse<T = unknown> {
 }
 
 export interface CallOpts {
+  desktopBinding?: { userId: string; deviceId: string }
   method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE'
   body?: unknown
   query?: Record<string, string | number | undefined | null>
@@ -150,6 +153,56 @@ export async function gatewayFetch<T = unknown>(
   path: string,
   opts: CallOpts = {},
 ): Promise<GatewayResponse<T>> {
+  const desktop = await getDesktopCredential()
+  if (opts.desktopBinding && !desktop) {
+    const response = Response.json(
+      {
+        error: {
+          code: 'UNAUTHORIZED',
+          message: 'A sessão deste computador mudou. Reconecte a conta antes de sincronizar.',
+        },
+      },
+      { status: 401 },
+    )
+    return { status: 401, body: await readJson<T>(response) }
+  }
+  if (desktop) {
+    const access = await requestDesktopAccess(desktop, true)
+    if (!access.ok) {
+      // Forward an HTTP envelope without exposing the opaque credential.
+      const response = Response.json(
+        {
+          error: {
+            code: access.status === 401 ? 'UNAUTHORIZED' : 'IDENTITY_UNAVAILABLE',
+            message:
+              access.status === 401
+                ? 'Reconecte este computador'
+                : 'Servidor de identidade indisponível',
+          },
+        },
+        { status: access.status },
+      )
+      return { status: response.status, body: await readJson<T>(response) }
+    }
+    if (
+      opts.desktopBinding &&
+      !(await verifyDesktopBinding(access.accessToken, opts.desktopBinding))
+    ) {
+      const response = Response.json(
+        {
+          error: {
+            code: 'UNAUTHORIZED',
+            message: 'A identidade do computador não corresponde à sessão atual',
+          },
+        },
+        { status: 401 },
+      )
+      return { status: 401, body: await readJson<T>(response) }
+    }
+    const response = await rawFetch(path, opts, access.accessToken)
+    if (response.status === 401 || response.status === 403) forgetDesktopAccess(desktop)
+    return { status: response.status, body: await readJson<T>(response) }
+  }
   const access = await getAccessToken()
   let res = await rawFetch(path, opts, access)
   if (res.status === 401) {
@@ -173,6 +226,16 @@ export async function loginRequest(
     signal: AbortSignal.timeout(AUTH_TIMEOUT_MS),
   })
   return { status: res.status, body: await readJson(res) }
+}
+
+/** Native pairing shares this BFF's HttpOnly session; only the BFF rotates refresh tokens. */
+export async function desktopPairingRequest(
+  action: 'start' | 'exchange',
+  body: unknown,
+): Promise<GatewayResponse> {
+  const path = action === 'start' ? '/auth/desktop/pairings' : '/auth/desktop/pairings/exchange'
+  const response = await rawFetch(path, { method: 'POST', body }, null)
+  return { status: response.status, body: await readJson<unknown>(response) }
 }
 
 /** Logout (revoga o refresh no auth). Best-effort. */

@@ -62,7 +62,11 @@ export function gameUiFontIdOrDefault(value: unknown): GameUiFontId {
  * para de sintetizar. `font-synthesis` não resolveria: é propriedade de elemento, e
  * texto de canvas não tem elemento.
  */
-export function gameUiFontFaceCss(id: GameUiFontId, face: GameUiFontFace): string {
+export function gameUiFontFaceCss(
+  id: GameUiFontId,
+  face: GameUiFontFace,
+  options: { includeThemeVariable?: boolean } = {},
+): string {
   const variavel = face.weight.includes(' ')
   const peso = variavel ? face.weight : '100 900'
   return (
@@ -74,6 +78,8 @@ export function gameUiFontFaceCss(id: GameUiFontId, face: GameUiFontFace): strin
     `src:url(data:font/woff2;base64,${face.base64}) format("woff2");` +
     `unicode-range:${face.unicodeRange};` +
     '}' +
-    `:root{--sz-game-ui-font:${GAME_UI_FONTS[id].family};}`
+    (options.includeThemeVariable === false
+      ? ''
+      : `:root{--sz-game-ui-font:${GAME_UI_FONTS[id].family};}`)
   )
 }

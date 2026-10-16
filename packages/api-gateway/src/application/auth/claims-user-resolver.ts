@@ -1,4 +1,4 @@
-import { parseKidsSessionClaim } from '@sistemazero/core/security'
+import { parseDesktopSessionClaim, parseKidsSessionClaim } from '@sistemazero/core/security'
 import type { AuthenticatedUser, UserResolver } from './authenticated-user'
 
 function str(value: unknown): string | undefined {
@@ -28,6 +28,7 @@ export function createClaimsUserResolver(): UserResolver {
       // navegador da criança): a identidade dele é o perfil (`sub` + `pfl`). Sem contexto de
       // aluno, faltar qualquer campo continua não resolvendo o usuário.
       const kids = parseKidsSessionClaim(claims.kids)
+      const desktop = parseDesktopSessionClaim(claims.desktop)
       const student = kids?.kind === 'student'
       if (!id || !role || !status) return null
       if (!student && (!email || !firstName || !lastName)) return null
@@ -52,6 +53,7 @@ export function createClaimsUserResolver(): UserResolver {
         impersonatorId && (act as Record<string, unknown>).mode === 'write' ? 'write' : 'readonly'
 
       const user: AuthenticatedUser = {
+        ...(desktop ? { desktopDeviceId: desktop.deviceId } : {}),
         id,
         email: email ?? '',
         firstName: firstName ?? '',

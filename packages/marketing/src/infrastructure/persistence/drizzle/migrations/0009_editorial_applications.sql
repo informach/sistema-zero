@@ -1,0 +1,1 @@
+ALTER TABLE "marketing"."editorial_runs" ADD COLUMN "application" jsonb;

@@ -101,7 +101,7 @@ export function FollowersChart({ view }: { view: FollowersSeriesView }) {
             strokeWidth={2}
             dot={{ r: 2 }}
             activeDot={{ r: 4 }}
-            connectNulls
+            connectNulls={false}
           />
         ))}
       </LineChart>

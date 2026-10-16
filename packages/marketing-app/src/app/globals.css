@@ -3,6 +3,7 @@
 @import "@sistemazero/ui/console.css";
 /* Componentes compartilhados (@sistemazero/ui) — o scanner precisa ver as classes deles. */
 @source "../../../ui/src";
+@source "../../../marketing-workbench/src";
 
 @custom-variant dark (&:is(.dark *));
 

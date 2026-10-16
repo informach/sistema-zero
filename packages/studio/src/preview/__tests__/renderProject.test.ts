@@ -16,6 +16,15 @@ function projectWith(overrides: Partial<Project> = {}): Project {
 }
 
 describe('renderProjectToPreviewDoc', () => {
+  it('diagnóstico do host é opt-in e não aparece no player comum', async () => {
+    const source = projectWith()
+    expect(await renderProjectToPreviewDocAsync(source)).not.toContain(
+      'window.__SZSTUDIO_RUNTIME_INSPECTORS =',
+    )
+    expect(await renderProjectToPreviewDocAsync(source, { runtimeInspection: true })).toContain(
+      'window.__SZSTUDIO_RUNTIME_INSPECTORS = Object.create(null)',
+    )
+  })
   it('monta um doc auto-suficiente com CSP e o JS do aluno', async () => {
     const doc = await renderProjectToPreviewDocAsync(projectWith())
     expect(typeof doc).toBe('string')

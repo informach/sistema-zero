@@ -139,6 +139,18 @@ export async function createApplication(
       issuer: env.JWT_ISSUER,
       audience: env.JWT_AUDIENCE,
       algorithms: env.JWT_ALGORITHMS,
+      validateDesktopSession: async (token) => {
+        const target = targetsByGroup.get('auth:default')?.[0]
+        if (!target) throw new Error('Auth indisponível para validar desktop')
+        const response = await fetch(new URL('/auth/desktop/session/validate', target.baseUrl), {
+          method: 'POST',
+          headers: { authorization: `Bearer ${token}`, 'cache-control': 'no-store' },
+          signal: AbortSignal.timeout(5000),
+        })
+        if (response.ok) return true
+        if (response.status === 401 || response.status === 403) return false
+        throw new Error(`Validação desktop indisponível: ${response.status}`)
+      },
       validateKidsSession: async (token) => {
         const target = targetsByGroup.get('auth:default')?.[0]
         if (!target) throw new Error('Auth indisponível para validar a sessão Kids')

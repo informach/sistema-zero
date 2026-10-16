@@ -1,3 +1,4 @@
+import { metricCount } from '../../../domain/metrics/availability'
 import {
   type TikTokApi,
   TikTokApiError,
@@ -173,7 +174,7 @@ export class TikTokClient implements TikTokApi {
 
   async getUserStats(
     accessToken: string,
-  ): Promise<{ followers: number; raw: Record<string, unknown> }> {
+  ): Promise<{ followers: number | null; raw: Record<string, unknown> }> {
     const url = new URL(USER_INFO_URL)
     url.searchParams.set('fields', 'follower_count')
     const res = await fetchWithTimeout(
@@ -193,7 +194,7 @@ export class TikTokClient implements TikTokApi {
       )
     }
     return {
-      followers: Number(json.data?.user?.follower_count ?? 0),
+      followers: metricCount(json.data?.user?.follower_count),
       raw: { ...(json.data?.user ?? {}) },
     }
   }
@@ -227,10 +228,10 @@ export class TikTokClient implements TikTokApi {
       for (const video of body.data?.videos ?? []) {
         if (!video.id) continue
         map.set(video.id, {
-          views: Number(video.view_count ?? 0),
-          likes: Number(video.like_count ?? 0),
-          comments: Number(video.comment_count ?? 0),
-          shares: Number(video.share_count ?? 0),
+          views: metricCount(video.view_count),
+          likes: metricCount(video.like_count),
+          comments: metricCount(video.comment_count),
+          shares: metricCount(video.share_count),
           raw: { ...video },
         })
       }

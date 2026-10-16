@@ -12,6 +12,7 @@ import type { ResendInviteService } from '../../application/admin/resend-invite/
 import type { SearchProfilesService } from '../../application/admin/search-profiles/search-profiles.service'
 import type { SetUserPasswordService } from '../../application/admin/set-password/set-user-password.service'
 import type { UpdateUserService } from '../../application/admin/update-user/update-user.service'
+import type { DesktopSessionService } from '../../application/desktop/desktop-session.service'
 import type { EnsureBuyerService } from '../../application/ensure-buyer/ensure-buyer.service'
 import type { GetMeService } from '../../application/get-me/get-me.service'
 import type { GetOwnProfileService } from '../../application/get-me/get-own-profile.service'
@@ -41,6 +42,7 @@ import { PayloadTooLargeError } from './errors'
 import { isOversizeBody, markOversizeBody } from './raw-body'
 import { adminRoutes } from './routes/admin.routes'
 import { authRoutes } from './routes/auth.routes'
+import { desktopRoutes } from './routes/desktop.routes'
 import { healthRoutes, type ReadinessProbe } from './routes/health.routes'
 import { impersonationRoutes } from './routes/impersonation.routes'
 import { internalRoutes } from './routes/internal.routes'
@@ -48,6 +50,7 @@ import { type ProfilesRoutesDeps, profilesRoutes } from './routes/profiles.route
 import { studyAccessRoutes } from './routes/study-access.routes'
 
 export interface HttpDeps {
+  desktopSessions?: DesktopSessionService
   studyAccess?: StudyAccessService
   env: Env
   logger: Logger
@@ -144,6 +147,8 @@ export function createServer(deps: HttpDeps) {
     )
   }
 
+  if (deps.desktopSessions)
+    app.use(desktopRoutes({ service: deps.desktopSessions, tokenIssuer: deps.tokenIssuer }))
   return app
     .use(
       deps.studyAccess

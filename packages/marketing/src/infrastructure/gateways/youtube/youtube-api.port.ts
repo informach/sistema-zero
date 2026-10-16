@@ -83,13 +83,13 @@ export interface YoutubeApi {
   /** channels.list part=statistics&mine=true (1 unit) — snapshot do canal. */
   getChannelStats(accessToken: string): Promise<{
     channelId: string
-    subscriberCount: number
-    viewCount: number
-    videoCount: number
+    subscriberCount: number | null
+    viewCount: number | null
+    videoCount: number | null
   } | null>
   /** videos.list part=statistics (1 unit p/ até 50 ids) — snapshot dos vídeos. */
   getVideoStats(
     accessToken: string,
     videoIds: string[],
-  ): Promise<Map<string, { views: number; likes: number; comments: number }>>
+  ): Promise<Map<string, { views: number | null; likes: number | null; comments: number | null }>>
 }
