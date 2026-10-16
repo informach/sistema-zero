@@ -167,7 +167,8 @@ export function ProFileTree({
                   else if (isDir) next = node.children[0]?.path
                 } else if (event.key === 'ArrowLeft') {
                   if (isDir && !isCollapsed) toggle(node.path)
-                  else next = node.path.slice(0, node.path.lastIndexOf('/'))
+                  else if (node.path.includes('/'))
+                    next = node.path.slice(0, node.path.lastIndexOf('/'))
                 } else if (
                   event.key === 'F2' &&
                   !observer &&

@@ -99,4 +99,14 @@ describe('ProFileTree', () => {
         .disabled,
     ).toBe(true)
   })
+
+  it('keeps focus on a collapsed root instead of treating a sibling as its parent', () => {
+    useProjectStore.getState().addProDir('sr')
+    const view = render(<ProFileTree activeFile="" onSelectFile={() => {}} />)
+    const root = view.getByRole('treeitem', { name: 'src' })
+    act(() => root.focus())
+    fireEvent.keyDown(root, { key: 'ArrowLeft' })
+    fireEvent.keyDown(root, { key: 'ArrowLeft' })
+    expect(document.activeElement?.getAttribute('aria-label')).toBe('src')
+  })
 })

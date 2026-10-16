@@ -101,6 +101,7 @@ export default function ProBuilderPanel({
     null,
   )
   const [checkingAvailability, setCheckingAvailability] = useState(Boolean(adapter.availability))
+  const [availabilityAttempt, setAvailabilityAttempt] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<BuilderNotice | null>(null)
   const [applications, setApplications] = useState<ProApplicationRecord[]>([])
@@ -138,25 +139,6 @@ export default function ProBuilderPanel({
     setNextCursor(null)
     setLoading(true)
     setBusy(false)
-    setAvailability(null)
-    setCheckingAvailability(Boolean(adapter.availability))
-    if (adapter.availability)
-      void adapter
-        .availability(store.getState().project?.proMeta?.templateId ?? '', controller.signal)
-        .then((value) => {
-          if (initialized()) setAvailability(value)
-        })
-        .catch(() => {
-          if (!controller.signal.aborted && initialized())
-            setAvailability({
-              available: false,
-              reason:
-                'Não foi possível consultar o construtor. Reabra o painel para tentar novamente; seus arquivos estão preservados.',
-            })
-        })
-        .finally(() => {
-          if (initialized()) setCheckingAvailability(false)
-        })
     pendingCreate.current = null
     if (adapter.list)
       void adapter
@@ -205,6 +187,36 @@ export default function ProBuilderPanel({
       // Closing a panel is not cancellation. The bounded server step may still checkpoint.
     }
   }, [adapter, projectId, store])
+  // The panel survives closing. An explicit status refresh must also recover availability.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: availabilityAttempt is the explicit retry trigger.
+  useEffect(() => {
+    const controller = new AbortController()
+    const profileScope = captureProjectStorageScope()
+    const valid = () =>
+      !controller.signal.aborted &&
+      captureProjectStorageScope() === profileScope &&
+      store.getState().project?.id === projectId
+    setAvailability(null)
+    setCheckingAvailability(Boolean(adapter.availability))
+    if (adapter.availability)
+      void adapter
+        .availability(store.getState().project?.proMeta?.templateId ?? '', controller.signal)
+        .then((value) => {
+          if (valid()) setAvailability(value)
+        })
+        .catch(() => {
+          if (valid())
+            setAvailability({
+              available: false,
+              reason:
+                'Não foi possível consultar o construtor. Use Consultar estado para tentar novamente; seus arquivos estão preservados.',
+            })
+        })
+        .finally(() => {
+          if (valid()) setCheckingAvailability(false)
+        })
+    return () => controller.abort()
+  }, [adapter, projectId, store, availabilityAttempt])
   useEffect(() => {
     if (!draft || draft.id === consumedDraft.current || busy || loading) return
     if ((job && active(job)) || pendingCreate.current) {
@@ -414,6 +426,7 @@ export default function ProBuilderPanel({
     })
   const refresh = (before?: string) =>
     execute(async (version) => {
+      if (!before && !checkingAvailability) setAvailabilityAttempt((attempt) => attempt + 1)
       polling.current.count = 0
       const state =
         job && adapter.get

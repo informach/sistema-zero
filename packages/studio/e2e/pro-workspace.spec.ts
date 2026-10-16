@@ -28,6 +28,59 @@ test.afterAll(async () => {
     )
 })
 
+test('updates language and removes obsolete markers when an open file changes extension', async ({
+  page,
+}) => {
+  const errors: string[] = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  const address = server.httpServer.address()
+  if (!address || typeof address === 'string') throw new Error('Servidor indisponível')
+  await page.goto(`http://127.0.0.1:${address.port}`)
+  await expect(page.locator('.monaco-editor').first()).toBeVisible({ timeout: 30_000 })
+  await page.getByRole('treeitem', { name: 'src/closed.ts', exact: true }).dblclick()
+  const inspect = async (path: string) => {
+    await page.getByRole('button', { name: 'Inspecionar buffers' }).click()
+    const models = JSON.parse(
+      (await page.getByLabel('Buffers da sessão').textContent())!,
+    ) as Array<{ id: string; path: string; language: string; markers: string[] }>
+    return models.find((model) => model.path.endsWith(`/${path}`))!
+  }
+  await expect.poll(async () => (await inspect('src/closed.ts')).markers.length).toBeGreaterThan(0)
+  const original = await inspect('src/closed.ts')
+  const rename = async (from: string, to: string) => {
+    await page.getByRole('button', { name: `Renomear ou mover ${from}` }).click()
+    const field = page.getByLabel(`Renomear ${from.split('/').at(-1)}`)
+    await field.fill(to)
+    await field.press('Enter')
+    await page.getByRole('button', { name: 'Aplicar mudança', exact: true }).click()
+    await expect(page.getByRole('treeitem', { name: to, exact: true })).toBeVisible()
+  }
+  await rename('src/closed.ts', 'src/closed.js')
+  expect(await inspect('src/closed.js')).toMatchObject({
+    id: original.id,
+    language: 'sz-pro-javascript',
+  })
+  await rename('src/closed.js', 'src/closed.txt')
+  expect(await inspect('src/closed.txt')).toMatchObject({
+    id: original.id,
+    language: 'plaintext',
+    markers: [],
+  })
+  await page.getByRole('button', { name: 'Ferramentas…', exact: true }).click()
+  await page.getByRole('button', { name: 'Recuperar arquivos e materiais', exact: true }).click()
+  await page.getByRole('button', { name: 'Recuperar', exact: true }).first().click()
+  await expect(page.getByRole('treeitem', { name: 'src/closed.js', exact: true })).toBeVisible()
+  await page
+    .getByRole('dialog', { name: 'Recuperar arquivos e materiais' })
+    .getByRole('button', { name: /Fechar/ })
+    .click()
+  expect(await inspect('src/closed.js')).toMatchObject({
+    id: original.id,
+    language: 'sz-pro-javascript',
+  })
+  expect(errors).toEqual([])
+})
+
 test('keeps buffers and the game session across layout changes, reviews rename and diagnoses closed files', async ({
   page,
 }, info) => {

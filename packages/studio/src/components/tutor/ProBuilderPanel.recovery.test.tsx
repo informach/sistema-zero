@@ -159,6 +159,32 @@ function renderPanel(f: Awaited<ReturnType<typeof fixture>>) {
 }
 
 describe('builder persistence recovery', () => {
+  it('recovers unavailable execution through Consultar estado without losing the draft', async () => {
+    const f = await fixture()
+    let available = false
+    f.adapter.availability = async () => ({
+      available,
+      reason: available ? undefined : 'Sem conexão.',
+    })
+    f.adapter.latest = async () => null
+    const ui = renderPanel(f)
+    const objective = ui.getByLabelText('O que vamos construir?') as HTMLTextAreaElement
+    fireEvent.change(objective, { target: { value: 'Atualizar os pontos' } })
+    await ui.findByText('Sem conexão.')
+    expect(
+      (ui.getByRole('button', { name: 'Preparar proposta' }) as HTMLButtonElement).disabled,
+    ).toBe(true)
+    available = true
+    fireEvent.click(ui.getByRole('button', { name: 'Consultar estado' }))
+    await waitFor(() =>
+      expect(
+        (ui.getByRole('button', { name: 'Preparar proposta' }) as HTMLButtonElement).disabled,
+      ).toBe(false),
+    )
+    expect(objective.value).toBe('Atualizar os pontos')
+    expect(ui.queryByText('Sem conexão.')).toBeNull()
+  })
+
   it('finishes availability after Consultar estado while the initial check is pending', async () => {
     const f = await fixture()
     const availability = deferred<{ available: boolean }>()

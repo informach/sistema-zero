@@ -11,6 +11,11 @@ export interface ProSearchResults {
   truncated: boolean
 }
 
+export function proSourcePosition(source: string, offset: number) {
+  const lines = source.slice(0, offset).split(/\r\n|\r|\n/)
+  return { line: lines.length, column: (lines.at(-1)?.length ?? 0) + 1 }
+}
+
 /** Literal, bounded search over editable source files, including closed tabs. */
 export function searchProFiles(
   tree: ProjectTree,
@@ -18,21 +23,22 @@ export function searchProFiles(
   mode: 'files' | 'content',
   limit = 100,
 ): ProSearchResults {
-  const needle = query.trim().slice(0, 160).toLocaleLowerCase()
+  const needle = query.trim().slice(0, 160)
   if (!needle) return { items: [], truncated: false }
+  // Escape literals and match the original text: lowercasing can change UTF-16 offsets (e.g. İ).
+  const match = new RegExp(needle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'iu')
   const items: ProSearchResult[] = []
   const max = Math.max(1, Math.min(500, limit))
   for (const path of Object.keys(tree).sort()) {
     const node = tree[path]
     if (node?.kind !== 'file' || path.split('/').includes('node_modules')) continue
     if (mode === 'files') {
-      if (path.toLocaleLowerCase().includes(needle))
-        items.push({ path, line: 1, column: 1, text: path })
+      if (match.test(path)) items.push({ path, line: 1, column: 1, text: path })
     } else {
-      const lines = node.content.split('\n')
+      const lines = node.content.split(/\r\n|\r|\n/)
       for (let index = 0; index < lines.length; index++) {
         const line = lines[index] ?? ''
-        const column = line.toLocaleLowerCase().indexOf(needle)
+        const column = line.search(match)
         if (column < 0) continue
         const start = Math.max(0, column - 55)
         items.push({
