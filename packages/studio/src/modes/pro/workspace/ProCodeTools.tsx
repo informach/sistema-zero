@@ -35,7 +35,7 @@ export function ProCodeTools({
 }: {
   path: string
   tree: ProjectTree
-  language: RefObject<ProLanguageSession | null>
+  language: ProLanguageSession | null
   editor: RefObject<Monaco.editor.IStandaloneCodeEditor | null>
   readyEditor?: Monaco.editor.IStandaloneCodeEditor | null
   navigate: (path: string, line: number, column?: number) => void
@@ -56,19 +56,36 @@ export function ProCodeTools({
   const showAssets = useUIStore((state) => state.setShowAssets)
   const [open, setOpen] = useState(false)
   const [symbolResult, setSymbols] = useState<{
+    session: ProLanguageSession
     content: string
     path: string
     items: ProSymbol[]
   } | null>(null)
   const [referenceResult, setReferences] = useState<{
+    session: ProLanguageSession
     tree: ProjectTree
     items: Array<{ path: string; line: number; column: number }>
   } | null>(null)
   const content = tree[path]?.kind === 'file' ? tree[path].content : ''
   const symbols =
-    symbolResult?.content === content && symbolResult.path === path ? symbolResult.items : []
+    symbolResult?.content === content &&
+    symbolResult.path === path &&
+    symbolResult.session === language
+      ? symbolResult.items
+      : []
   const [symbolsPending, setSymbolsPending] = useState(false)
-  const references = referenceResult?.tree === tree ? referenceResult.items : []
+  const references =
+    referenceResult?.tree === tree && referenceResult.session === language
+      ? referenceResult.items
+      : []
+  const referenceRequest = useRef(0)
+  // Requests cannot outlive this panel. The scope below also rejects A → B → A.
+  useEffect(
+    () => () => {
+      referenceRequest.current++
+    },
+    [],
+  )
   const [rename, setRename] = useState<{
     path: string
     content: string
@@ -76,14 +93,15 @@ export function ProCodeTools({
     name: string
   } | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const current = useRef({ path, tree })
-  current.current = { path, tree }
+  const scope = useMemo(() => ({ path, tree, language }), [path, tree, language])
+  const current = useRef(scope)
+  current.current = scope
   const symbolSource = useMemo(
     () => (open && /\.[cm]?[jt]sx?$/.test(path) ? { path, content } : null),
     [open, path, content],
   )
   useEffect(() => {
-    if (!symbolSource || !language.current) {
+    if (!symbolSource || !language) {
       setSymbols(null)
       setSymbolsPending(false)
       return
@@ -92,7 +110,8 @@ export function ProCodeTools({
     let active = true
     setSymbolsPending(true)
     setSymbols(null)
-    void language.current
+    setError(null)
+    void language
       .request('symbols', path)
       .then((items) => {
         const node = current.current.tree[path]
@@ -103,7 +122,7 @@ export function ProCodeTools({
           node.content === content &&
           editor.current?.getModel()?.getValue() === content
         )
-          setSymbols({ content, path, items })
+          setSymbols({ session: language, content, path, items })
       })
       .catch((cause: unknown) => {
         if (active)
@@ -137,12 +156,14 @@ export function ProCodeTools({
     }
   }
   const findReferences = async () => {
+    const request = ++referenceRequest.current
     const selected = capture()
-    if (!selected || !language.current) return
+    if (!selected || !language) return
+    const isCurrent = () => referenceRequest.current === request && current.current === scope
     setError(null)
     try {
-      const items = await language.current.request('references', path, selected.offset)
-      if (current.current.path !== path || current.current.tree !== tree) return
+      const items = await language.request('references', path, selected.offset)
+      if (!isCurrent()) return
       const results = items
         .flatMap((item) => {
           const node = tree[item.path]
@@ -151,10 +172,11 @@ export function ProCodeTools({
             : []
         })
         .slice(0, 100)
-      setReferences({ tree, items: results })
+      setReferences({ session: language, tree, items: results })
       if (!results.length) setError('Nenhuma referência encontrada para esse nome no projeto.')
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Não foi possível buscar as referências.')
+      if (isCurrent())
+        setError(cause instanceof Error ? cause.message : 'Não foi possível buscar as referências.')
     }
   }
   const commands: ProCommand[] = [
@@ -351,7 +373,14 @@ export function ProCodeTools({
       )}
       {references.length > 0 && (
         <section className="max-h-40 overflow-auto pb-2" aria-label="Referências encontradas">
-          <button type="button" className={button} onClick={() => setReferences(null)}>
+          <button
+            type="button"
+            className={button}
+            onClick={() => {
+              referenceRequest.current++
+              setReferences(null)
+            }}
+          >
             Fechar referências
           </button>
           {references.map((item) => (

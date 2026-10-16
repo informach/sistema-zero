@@ -8,7 +8,11 @@ import { useProTutorDock } from '../../components/layout/proTutorDock'
 import { proFileDescriptions } from '../../core/proLearningGuides'
 import type { MonacoHighlight } from '../../monaco/MonacoTabs'
 import { getMonacoModelPath } from '../../monaco/modelPaths'
-import type { ProAnalysisState, ProEditorDiagnostic } from '../../monaco/pro/session'
+import type {
+  ProAnalysisState,
+  ProEditorDiagnostic,
+  ProLanguageSession,
+} from '../../monaco/pro/session'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { useStudioConfig } from '../../studio/config'
 import { useT } from '../../studio/i18n'
@@ -78,6 +82,7 @@ export function ProCodeMode(): JSX.Element {
   const [codeRequest, setCodeRequest] = useState(0)
   const editorRef = useRef<Monaco.editor.IStandaloneCodeEditor | null>(null)
   const [readyEditor, setReadyEditor] = useState<Monaco.editor.IStandaloneCodeEditor | null>(null)
+  const [languageSession, setLanguageSession] = useState<ProLanguageSession | null>(null)
   const [quickOpen, setQuickOpen] = useState<{ query: string } | null>(null)
   const formatRef = useRef<(() => void) | null>(null)
   const [locations, setLocations] = useState<Array<{ path: string; line: number; column: number }>>(
@@ -312,7 +317,7 @@ export function ProCodeMode(): JSX.Element {
         format={() => formatRef.current?.()}
         path={activeFile}
         tree={tree}
-        language={operations.language}
+        language={languageSession}
         editor={editorRef}
         readyEditor={readyEditor}
         busy={operations.busy}
@@ -437,6 +442,7 @@ export function ProCodeMode(): JSX.Element {
             }}
             onProLanguageReady={(session) => {
               operations.language.current = session
+              setLanguageSession(session)
               if (!session) setDiagnostics(null)
             }}
             onProDiagnostics={setDiagnostics}

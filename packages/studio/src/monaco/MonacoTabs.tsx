@@ -382,6 +382,7 @@ export function MonacoTabs({
   const proReady = useRef(onProLanguageReady)
   proReady.current = onProLanguageReady
   const [languageIssue, setLanguageIssue] = useState<string | null>(null)
+  const [languageLoadFailed, setLanguageLoadFailed] = useState(false)
   const [languageAttempt, setLanguageAttempt] = useState(0)
   useEffect(() => (proMode ? undefined : scheduleLanguageServicesLoad()), [proMode])
   // biome-ignore lint/correctness/useExhaustiveDependencies: retry creates a fresh worker and resends the complete project.
@@ -389,8 +390,16 @@ export function MonacoTabs({
     if (!proMode || !mountedEditor) return
     let active = true
     let dispose: (() => void) | undefined
+    setLanguageLoadFailed(false)
     setLanguageIssue('Conferindo código e bibliotecas…')
+    proAnalysis.current?.({ status: 'pending' })
     void Promise.all([import('./pro/session'), import('monaco-editor/esm/vs/editor/editor.api.js')])
+      .catch((error: unknown) => {
+        // A rejected ES module load is cached by the browser. Recreating a worker
+        // cannot repair it; keep editing available and require saving before reload.
+        if (active) setLanguageLoadFailed(true)
+        throw error
+      })
       .then(([module, monaco]) => {
         if (!active) return
         const session = module.attachProLanguageService(
@@ -416,7 +425,11 @@ export function MonacoTabs({
         }
       })
       .catch((error: unknown) => {
-        if (active) setLanguageIssue(error instanceof Error ? error.message : String(error))
+        if (active) {
+          const message = error instanceof Error ? error.message : String(error)
+          setLanguageIssue(message)
+          proAnalysis.current?.({ status: 'error', message })
+        }
       })
     return () => {
       active = false
@@ -919,14 +932,21 @@ export function MonacoTabs({
       {languageIssue && (
         <div role="status" className="shrink-0 px-3 py-1 text-xs">
           {languageIssue}
-          {languageIssue !== 'Conferindo código e bibliotecas…' && (
-            <button
-              type="button"
-              className="ml-2 underline"
-              onClick={() => setLanguageAttempt((attempt) => attempt + 1)}
-            >
-              Reiniciar análise
-            </button>
+          {languageLoadFailed ? (
+            <p>
+              A análise não carregou. Você pode continuar editando. Salve o projeto antes de
+              recarregar a página.
+            </p>
+          ) : (
+            languageIssue !== 'Conferindo código e bibliotecas…' && (
+              <button
+                type="button"
+                className="ml-2 underline"
+                onClick={() => setLanguageAttempt((attempt) => attempt + 1)}
+              >
+                Reiniciar análise
+              </button>
+            )
           )}
         </div>
       )}

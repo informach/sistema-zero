@@ -22,6 +22,50 @@ function fixture() {
   return stores
 }
 
+it('does not flush new editor buffers after the download was cancelled during a writer', async () => {
+  const stores = fixture()
+  const controller = new AbortController()
+  let flushes = 0
+  stores.pendingEditorEdits.register(() => {
+    flushes++
+  })
+  const unregister = registerProjectOperation(stores.project, {
+    projectId: 'source-export',
+    flush: async () => {
+      controller.abort(new Error('cancelled'))
+    },
+  })
+  try {
+    await expect(
+      prepareSourceDownload(stores.project, stores.pendingEditorEdits, controller.signal),
+    ).rejects.toThrow('cancelled')
+    expect(flushes).toBe(1)
+  } finally {
+    unregister()
+  }
+})
+
+it('does not start asynchronous writers after cancellation in the buffer flush', async () => {
+  const stores = fixture()
+  const controller = new AbortController()
+  let writes = 0
+  stores.pendingEditorEdits.register(() => controller.abort(new Error('cancelled')))
+  const unregister = registerProjectOperation(stores.project, {
+    projectId: 'source-export',
+    flush: async () => {
+      writes++
+    },
+  })
+  try {
+    await expect(
+      prepareSourceDownload(stores.project, stores.pendingEditorEdits, controller.signal),
+    ).rejects.toThrow('cancelled')
+    expect(writes).toBe(0)
+  } finally {
+    unregister()
+  }
+})
+
 it('flushes synchronous buffers around asynchronous writers before taking the immutable snapshot', async () => {
   const stores = fixture()
   let calls = 0
