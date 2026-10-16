@@ -1,0 +1,54 @@
+[
+  {
+    "path": "docs/superpowers/plans/2026-10-15-marketing-desktop-colaborativo-lotes.md",
+    "sha256": "9deb32df03e78e5b407c1a6b73310b560d657d2138de607ba814a0391d0acc38"
+  },
+  {
+    "path": "docs/plans/2026-10-15-marketing-app-fluxo-editorial-proposta.md",
+    "sha256": "dd59f07f0673874ded4cc167ffec4b9c761a014705b7264e87432ee4bba1fce3"
+  },
+  {
+    "path": "docs/plans/2026-10-15-marketing-desktop-l0-evidencias.md",
+    "sha256": "8137c9ca233029f39b2596f7e89f61aaff6392b96e0b4ac88d3f6b63d842115c"
+  },
+  {
+    "path": "docs/marketing/kids/comunidade-dos-criadores/instagram/README.md",
+    "sha256": "529db21996bb7606453beda2098c12919b57325a979e4c768a6615c86250aca0"
+  },
+  {
+    "path": "docs/marketing/kids/comunidade-dos-criadores/instagram/postagens/06-manychat.md",
+    "sha256": "e6460bff9f16adcb43e055c29588e05cdb8e459ccb3293b0eef6d6d1c1a4f07b"
+  },
+  {
+    "path": "docs/marketing/kids/comunidade-dos-criadores/instagram/postagens/15-guia-manychat.md",
+    "sha256": "702b36a05c3dbed0b6744f28ed8a2949204e245010a3341c22fca1f849c5eafc"
+  },
+  {
+    "path": "docs/marketing/kids/comunidade-dos-criadores/instagram/04-postagens-manychat.md",
+    "sha256": "107868da9ebb44e1be2d1246f48d7fe76c171b43f8f9392f430b987a1dd13a0e"
+  },
+  {
+    "path": "docs/marketing/kids/comunidade-dos-criadores/instagram/campanhas/manychat-desafio/fluxo-curto.md",
+    "sha256": "160e91d747176f195cba328bdb8835d7ba9424b1435f823bdbace25bb5698667"
+  },
+  {
+    "path": "docs/marketing/kids/comunidade-dos-criadores/instagram/apoio/links-e-publicacao.md",
+    "sha256": "9eacf956771dc53ba42dc1ab20d4d59db176ca2c5441ebb67217191b1eff3e25"
+  },
+  {
+    "path": "packages/marketing/src/infrastructure/gateways/meta/meta-oauth-provider.ts",
+    "sha256": "23ea2845e22ad3dd0b04ceb19014fa2ea5703235badf51dbc458398d34916865"
+  },
+  {
+    "path": "packages/funnel/src/lib/lead-attribution.ts",
+    "sha256": "8e6b5bf2697b279b8b680160a00c70d8828c7b1013a3e6893153375bae456643"
+  },
+  {
+    "path": "packages/messaging/src/domain/shared/channel.ts",
+    "sha256": "a0c8aa452f1f06609fc5928906ae513289e15b71e990b65ae721c272922ddf66"
+  },
+  {
+    "path": "packages/helpdesk-contracts/src/index.ts",
+    "sha256": "818b235f4873ac65289f8eca4026dc62512e90fd1cc390d398d1ed2c9ac11aee"
+  }
+]

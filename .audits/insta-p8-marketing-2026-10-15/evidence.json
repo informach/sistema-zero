@@ -1,0 +1,175 @@
+{
+  "capturedAt": "2026-10-16T00:45:01.512Z",
+  "root": "C:/Users/tocha/Downloads/insta-p8-main/insta-p8-main",
+  "files": 154,
+  "sourceFiles": 110,
+  "sourceLines": 12575,
+  "anyKeywords": 42,
+  "assertions": 44,
+  "tsNoCheck": [
+    "app/api/instagram/webhook/route.ts"
+  ],
+  "parseErrors": [],
+  "notReachedByStaticImports": [
+    "components/dashboard/AutomationList.tsx",
+    "components/ui/accordion.tsx",
+    "components/ui/alert-dialog.tsx",
+    "components/ui/alert.tsx",
+    "components/ui/aspect-ratio.tsx",
+    "components/ui/avatar.tsx",
+    "components/ui/breadcrumb.tsx",
+    "components/ui/button-group.tsx",
+    "components/ui/calendar.tsx",
+    "components/ui/card.tsx",
+    "components/ui/carousel.tsx",
+    "components/ui/chart.tsx",
+    "components/ui/checkbox.tsx",
+    "components/ui/collapsible.tsx",
+    "components/ui/command.tsx",
+    "components/ui/context-menu.tsx",
+    "components/ui/dialog.tsx",
+    "components/ui/drawer.tsx",
+    "components/ui/dropdown-menu.tsx",
+    "components/ui/empty.tsx",
+    "components/ui/field.tsx",
+    "components/ui/form.tsx",
+    "components/ui/hover-card.tsx",
+    "components/ui/input-group.tsx",
+    "components/ui/input-otp.tsx",
+    "components/ui/item.tsx",
+    "components/ui/kbd.tsx",
+    "components/ui/label.tsx",
+    "components/ui/menubar.tsx",
+    "components/ui/navigation-menu.tsx",
+    "components/ui/pagination.tsx",
+    "components/ui/popover.tsx",
+    "components/ui/progress.tsx",
+    "components/ui/radio-group.tsx",
+    "components/ui/resizable.tsx",
+    "components/ui/scroll-area.tsx",
+    "components/ui/select.tsx",
+    "components/ui/separator.tsx",
+    "components/ui/sidebar.tsx",
+    "components/ui/skeleton.tsx",
+    "components/ui/slider.tsx",
+    "components/ui/spinner.tsx",
+    "components/ui/switch.tsx",
+    "components/ui/table.tsx",
+    "components/ui/tabs.tsx",
+    "components/ui/toast.tsx",
+    "components/ui/toaster.tsx",
+    "components/ui/toggle-group.tsx",
+    "components/ui/toggle.tsx",
+    "components/ui/tooltip.tsx",
+    "components/ui/use-mobile.tsx",
+    "components/ui/use-toast.ts",
+    "hooks/use-mobile.ts",
+    "hooks/use-toast.ts"
+  ],
+  "largest": [
+    {
+      "path": "components/dashboard/CreateRuleForm.tsx",
+      "lines": 1001
+    },
+    {
+      "path": "app/api/instagram/webhook/route.ts",
+      "lines": 893
+    },
+    {
+      "path": "components/ui/sidebar.tsx",
+      "lines": 727
+    },
+    {
+      "path": "components/ui/chart.tsx",
+      "lines": 354
+    },
+    {
+      "path": "components/dashboard/AutomationList.tsx",
+      "lines": 301
+    }
+  ],
+  "tests": [
+    {
+      "name": "No active automation drops incoming inbox message and AI fallback",
+      "result": {
+        "savedMessages": 0,
+        "aiCalls": 0
+      },
+      "status": "observed"
+    },
+    {
+      "name": "Replayed DM event sends twice despite duplicate message primary key",
+      "result": {
+        "sameEventDeliveries": 2,
+        "outboundSends": 2
+      },
+      "status": "observed"
+    },
+    {
+      "name": "Story reply can match both story and DM branches",
+      "result": {
+        "incomingEvents": 1,
+        "outboundSends": 2
+      },
+      "status": "observed"
+    },
+    {
+      "name": "Public confirmation occurs before failed private reply",
+      "result": {
+        "order": [
+          "public",
+          "dm_failed"
+        ],
+        "savedMessages": 0
+      },
+      "status": "observed"
+    },
+    {
+      "name": "Database failure acknowledged with HTTP 200",
+      "result": {
+        "body": {
+          "ok": true
+        },
+        "status": 200
+      },
+      "status": "observed"
+    },
+    {
+      "name": "Portuguese matching has no accent normalization",
+      "result": {
+        "FERIAS/FÉRIAS": false,
+        "OLÁ/OLÁ": false,
+        "JEITO/jeito": true
+      },
+      "status": "observed"
+    },
+    {
+      "name": "Automation GET accepts caller userId without any authentication object",
+      "result": {
+        "status": 200,
+        "recordsReturned": 1,
+        "sessionSupplied": false
+      },
+      "status": "observed"
+    },
+    {
+      "name": "scripts/check-dm-ordering.cjs",
+      "status": "passed",
+      "result": [
+        "PASS: reply precedes profile completion; inbox/outgoing saves joined; no-match and profile failure handled"
+      ]
+    },
+    {
+      "name": "scripts/check-reply-api.cjs",
+      "status": "passed",
+      "result": [
+        "PASS: send success, HTTP failure, timeout handling, AI reply and timeout signals"
+      ]
+    }
+  ],
+  "limits": [
+    "Mocked local execution only; no Meta/Supabase calls",
+    "Static reachability is not proof of unused public APIs or runtime routes",
+    "No full dependency install, typecheck, build or browser validation"
+  ]
+}

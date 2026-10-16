@@ -1,0 +1,86 @@
+bun test v1.3.11 (af24e281)
+
+src\scene\animationCommands.test.ts:
+(pass) animation authoring commands > create, rename, duplicate and delete preserve unrelated resources and own copied keys [16.00ms]
+(pass) animation authoring commands > fps changes never retime/snap keys, and shortening refuses keys past the new end
+(pass) animation authoring commands > explicit keys insert/replace at exact seconds and own input while retaining other keys/tracks
+(pass) animation authoring commands > new scale/rotation tracks, malformed keys and derived/missing targets are handled at the command boundary
+(pass) animation authoring commands > removing keys is atomic across tracks, drops empty tracks, and keeps untouched references
+(pass) animation authoring commands > bulk deletion inspects times linearly, not once per selected key squared
+(pass) animation authoring commands > locks include inherited groups and locked descendants affected by a group track
+(pass) animation authoring commands > retiming scales source times and preserves values/curves, including extreme finite durations [16.00ms]
+(pass) animation authoring commands > reversing continuous segments mirrors evaluation and step still means holding the left pose
+(pass) animation authoring commands > precision collisions and aggregate budgets refuse the entire operation
+(pass) animation authoring commands > a recorded key is one real undo/redo entry and restores unchanged original pose [15.00ms]
+
+src\scene\animationKeyEdits.test.ts:
+(pass) moving multiple keys into vacated times is atomic, exact, and keeps untouched keys/resources [16.00ms]
+(pass) copy owns exact values, collapses duplicate refs and creates one reversible editor commit
+(pass) overlaps, out-of-range times, stale selections, invalid options and imperceptible Double shifts are refused without mutation
+(pass) inherited locks apply to batch edits and copy budgets are checked before reading values
+(pass) timeline selection merges exact channel times while range edits retain per-node identities
+
+src\scene\animationPoseTransform.test.ts:
+(pass) visual local translation writes only changed channels and preserves exact raw quaternion and curve
+(pass) visual local-delta translation writes only changed channels and preserves exact raw quaternion and curve
+(pass) world deltas transform selected roots once and carry their animated descendants, matching an independent Three matrix oracle
+(pass) successive drags have absolute seeds, preserve signed and zero scales for translation/uniform scaling, and reject another owner
+(pass) affine bases are preserved; induced shear, singular parent and inherited locks refuse atomically
+(pass) prepared pointer updates do not revisit geometry, images, or original key arrays, and enforce key budgets [15.00ms]
+
+src\scene\meshPlaneCut.test.ts:
+(pass) plane cuts share points across a closed solid, preserve volume and orientation at different scales [32.00ms]
+(pass) exact axis position, original UV seams and construction lines survive a cut
+(pass) planes through existing vertices cut without adding duplicate points; tangent/missing planes are no-ops
+(pass) invalid planes, non-affine UVs, concavity and budgets fail before allocating authorial IDs [78.00ms]
+(pass) preexisting special IDs and disconnected construction lines are never aliased by temporary identities
+
+src\scene\modelGuides.test.ts:
+(pass) pivot choices use real rotated corners; applying preserves all world bounds
+(pass) pivot blocks incompatible animation and locked pieces before changing source
+(pass) two orthographic points divide a transformed mesh without deleting either side
+(pass) keep base scales a group around its pivot and restores only base height
+
+src\scene\pieceAppearance.test.ts:
+(pass) material só da peça: muda no lugar, e nada mudou devolve o mesmo documento
+(pass) material dividido: pintar a porta de azul não pinta a parede, e nenhum pixel é copiado
+(pass) vale para todos os materiais da peça, inclusive o da face pintada do editor antigo
+(pass) face com material dividido em geometria dividida: só esta peça ganha a cópia
+(pass) recusas: peça travada e cor fora da paleta
+
+src\state\SceneAnimationPoseGesture.test.ts:
+(pass) thumbnail metadata preserves a pending pose through saving and recording
+(pass) 120 pose previews do not write, replace or autosave; explicit recording creates one undo and matches the preview exactly
+(pass) canceling just the latest drag restores an earlier pending pose; whole cancellation and no-op drags add no history
+(pass) opt-in automatic recording happens only on a successful pointer end, never on late callbacks or interruption
+(pass) seek invalidates an outstanding draft and prevents late automatic writes
+(pass) play invalidates an outstanding draft and prevents late automatic writes
+(pass) preview invalidates an outstanding draft and prevents late automatic writes
+(pass) clip invalidates an outstanding draft and prevents late automatic writes
+(pass) revision invalidates an outstanding draft and prevents late automatic writes [15.00ms]
+(pass) error invalidates an outstanding draft and prevents late automatic writes
+(pass) disconnect invalidates an outstanding draft and prevents late automatic writes
+(pass) changing selection keeps the earlier piece in the same draft; invalid inputs refuse edits
+(pass) local undo/redo crosses selected pieces, Escape retains finished gestures and recording is one undo
+(pass) a recovered compound draft remains separate from the document until marking
+(pass) group then child uses the staged parent once, and local undo keeps the group adjustment
+(pass) reentrant subscribers cannot record a stale source while a preview is removed or continue a canceled drag
+(pass) um gesto recusado em outra peça avisa, mas não invalida a pose por marcar
+(pass) Desfazer no meio de um arrasto só cancela o arrasto; o gesto anterior fica
+
+src\state\scenePaintGesture.test.ts:
+(pass) paint gesture owns a whole stroke, supports no-op strokes, cancel and exactly one undo/redo
+(pass) stale paint tokens never overwrite external edits, undo, locks or replacement images
+(pass) o limite vale por amostra: cada pedaço do traço fica na face em que caiu
+
+src\viewport\viewportCamera.test.ts:
+(pass) unrepresentable bounds cannot corrupt either camera or change the selected view
+(pass) invalid resize projections leave both existing projection matrices unchanged
+(pass) viewport camera > named views are exactly orthogonal and fit every corner in portrait and landscape
+(pass) viewport camera > orthographic projected sizes do not depend on depth and resize preserves zoom
+(pass) viewport camera > selection framing includes its twin, excludes hidden parts and falls back safely
+
+ 62 pass
+ 0 fail
+ 1791 expect() calls
+Ran 62 tests across 9 files. [1002.00ms]
