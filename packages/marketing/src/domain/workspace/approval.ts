@@ -19,6 +19,11 @@ export function editionSnapshot(
   if (representation?.document.kind !== 'representation')
     throw new WorkspaceError('OBJECT_INACCESSIBLE', 'Formato não disponível')
   const representationDocument = representation.document
+  if (representationDocument.purpose === 'direct')
+    throw new WorkspaceError(
+      'INVALID_OPERATION',
+      'Mensagens de direct são conteúdo de conversa; não são uma publicação de feed ou story',
+    )
   const piece = byId.get(representation.document.pieceId)
   if (
     piece?.document.kind !== 'piece' ||
@@ -30,7 +35,7 @@ export function editionSnapshot(
   if (!representation.document.componentIds.length)
     throw new WorkspaceError('INVALID_OPERATION', 'Este formato ainda não tem peças para aprovar')
   const manifests = new Map(assets.map((asset) => [asset.id, asset]))
-  const orderedAssets = representation.document.componentIds.map((id) => {
+  const orderedAssets = representation.document.componentIds.flatMap((id) => {
     const component = byId.get(id),
       document = component?.document
     if (
@@ -40,6 +45,14 @@ export function editionSnapshot(
       document.representationId !== representationId
     )
       throw new WorkspaceError('DEPENDENCY_MISSING', 'Uma peça do formato não está disponível')
+    if (document.kind === 'component' && document.componentType === 'caption') {
+      if (document.assetIds.length)
+        throw new WorkspaceError(
+          'INVALID_RESULT',
+          'A legenda é texto. Vincule arquivos finais aos componentes visuais.',
+        )
+      return []
+    }
     if (document.assetIds?.length !== 1)
       throw new WorkspaceError(
         'ASSET_UNCONFIRMED',
@@ -95,8 +108,13 @@ export function editionSnapshot(
         'INVALID_OPERATION',
         'Inclua uma descrição acessível antes de aprovar',
       )
-    return { componentId: id, revisionId: component.id, asset, alt }
+    return [{ componentId: id, revisionId: component.id, asset, alt }]
   })
+  if (!orderedAssets.length)
+    throw new WorkspaceError(
+      'ASSET_UNCONFIRMED',
+      'A publicação precisa de pelo menos um arquivo visual final',
+    )
   for (const revision of revisions) {
     if (revision.projectId !== projectId)
       throw new WorkspaceError('OBJECT_INACCESSIBLE', 'A revisão não pertence a este projeto')

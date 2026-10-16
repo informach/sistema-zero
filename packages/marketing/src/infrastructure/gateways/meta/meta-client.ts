@@ -166,12 +166,17 @@ export class MetaClient implements MetaApi {
     pageId: string
     imageUrl: string
     caption: string
+    alt: string | null
   }): Promise<string> {
     const body = await this.call<{ id?: string; post_id?: string }>({
       method: 'POST',
       path: `/${input.pageId}/photos`,
       accessToken: input.accessToken,
-      params: { url: input.imageUrl, caption: input.caption },
+      params: {
+        url: input.imageUrl,
+        caption: input.caption,
+        ...(input.alt === null ? {} : { alt_text_custom: input.alt }),
+      },
       context: 'fb photos',
     })
     const postId = body.post_id ?? body.id

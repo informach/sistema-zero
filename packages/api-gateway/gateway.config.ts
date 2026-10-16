@@ -789,6 +789,20 @@ const config: GatewayConfigInput = {
       upstreamAuth: 'passthrough',
       rateLimit: { max: 20, windowMs: 60_000, by: 'ip' },
     },
+    // Stable browser session: Auth consumes the initial login refresh once;
+    // subsequent BFF requests resolve the revocable credential without rotation.
+    ...(['exchange', 'access', 'disconnect'] as const).map<
+      NonNullable<GatewayConfigInput['routes']>[number]
+    >((action) => ({
+      id: `auth-browser-${action}`,
+      methods: ['POST'],
+      pathPattern: `/auth/browser/session/${action}`,
+      service: 'auth',
+      auth: 'public',
+      upstreamAuth: 'passthrough',
+      maxBodyBytes: 4096,
+      rateLimit: { max: action === 'access' ? 300 : 30, windowMs: 60_000, by: 'ip' },
+    })),
     // ── Identidade (@sistemazero/auth) ──────────────────────────────────────
     // O IdP é a autoridade da sua própria auth: o gateway só ROTEIA (+ rate limit
     // por IP contra brute-force) e repassa o corpo/headers (`passthrough` mantém o

@@ -84,7 +84,15 @@ test('transporte nativo conserva demonstração e remove null sem alterar os IDs
           ...defaultTimeline.timeline,
           fontAssetId: null,
           clips: [
-            { ...clip, art: null, text: null, counter: null, listItems: null, showCaptions: null },
+            {
+              ...clip,
+              art: null,
+              generated: null,
+              text: null,
+              counter: null,
+              listItems: null,
+              showCaptions: null,
+            },
           ],
         },
       },

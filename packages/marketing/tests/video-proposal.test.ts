@@ -1,20 +1,170 @@
 import { expect, test } from 'bun:test'
+import { createHash } from 'node:crypto'
 import {
   assetManifestSchema,
   clipSchema,
+  compositionIdentity,
+  compositionSceneClip,
+  compositionSceneInput,
+  generatedCompositionSchema,
   renderInputHash,
   runViewSchema,
+  videoAssetIds,
+  videoPlaybackAssetIds,
   videoSchema,
 } from '@sistemazero/marketing-contracts'
 import { defaultArt } from '../../marketing-production/src/art-props'
 import { artBatch } from '../src/domain/workspace/art-proposal'
 import { assertArtifactFreshness } from '../src/domain/workspace/artifact-freshness'
+import { references } from '../src/domain/workspace/references'
 import { validateRenderResult } from '../src/domain/workspace/render-result'
 import { videoBatch } from '../src/domain/workspace/video-proposal'
 import {
   validateOutcomeCapability,
   validateVisualRequest,
 } from '../src/domain/workspace/visual-request'
+
+async function compositionFixture() {
+  const run = fixture()
+  if (
+    run.context.source.document.kind !== 'video' ||
+    run.outcome?.status !== 'succeeded' ||
+    !run.outcome.video?.variants[0]
+  )
+    throw new Error('Fixture inválida')
+  const original = run.context.source.document.timeline
+  const clip = clipSchema.parse({
+    id: crypto.randomUUID(),
+    trackId: original.tracks[0]!.id,
+    kind: 'text',
+    text: 'Crie seu jogo',
+    startFrame: 5,
+    durationInFrames: 60,
+  })
+  original.clips.push(clip)
+  run.request.capability = 'composition'
+  run.request.videoTarget = { clipId: clip.id, part: 'scene' }
+  const source =
+    'export default function GeneratedComposition(props){return <div>{props.body}</div>}'
+  const input = compositionSceneInput(original, clip)
+  const output = assetManifestSchema.parse({
+    ...run.context.assets![0],
+    id: crypto.randomUUID(),
+    name: 'Animação.webm',
+    mime: 'video/webm',
+    sha256: 'c'.repeat(64),
+    codec: 'vp9',
+    hasAudio: false,
+    durationMs: (60 * 1000 * original.fps.denominator) / original.fps.numerator,
+  })
+  const generated = generatedCompositionSchema.parse({
+    schemaVersion: 1,
+    source,
+    sourceSha256: createHash('sha256').update(source).digest('hex'),
+    compiledSha256: 'd'.repeat(64),
+    engine: {
+      name: 'remotion',
+      version: '4.0.535',
+      bundleSha256: 'e'.repeat(64),
+      workerSha256: 'f'.repeat(64),
+      platform: 'win32',
+      architecture: 'x64',
+    },
+    inputSha256: await compositionIdentity(source, input, run.context.assets ?? []),
+    sourceRevisionId: run.context.source.id,
+    input,
+    protectedText: [],
+    outputAssetId: output.id,
+    outputSha256: output.sha256,
+    observedFrames: 60,
+    textFrames: [60],
+  })
+  const selected = compositionSceneClip(clip, generated)
+  run.outcome.assetIds = [output.id]
+  run.outcome.video.variants[0].timeline = {
+    ...original,
+    clips: original.clips.map((item) => (item.id === clip.id ? selected : structuredClone(item))),
+  }
+  return { run, output, selected, original, clip }
+}
+
+test('composição recebe somente a prévia confirmada, preserva origem e mantém o contexto congelado', async () => {
+  const f = await compositionFixture(),
+    before = structuredClone(f.run.context)
+  validateVisualRequest(f.run.request, f.run.context)
+  validateOutcomeCapability(f.run.request, f.run.outcome!)
+  await expect(videoBatch(f.run, 0)).rejects.toThrow('prévia WebM confirmada')
+  const applied = await videoBatch(f.run, 0, [f.output])
+  expect(f.run.context).toEqual(before)
+  const document = applied.changes[0]?.document
+  if (document?.kind !== 'video') throw new Error('Vídeo ausente')
+  expect(references(document).revisions).toContain(f.run.context.source.id)
+  expect(document.timeline.clips[0]).toEqual(f.original.clips[0])
+  expect(document.timeline.clips[1]?.generated?.source).toContain('GeneratedComposition')
+  expect(videoPlaybackAssetIds(document.timeline)).toContain(f.output.id)
+})
+
+test('recibo e escopo da composição rejeitam mídia trocada, fonte, quadro, copy e revisão adulterados', async () => {
+  for (const change of [
+    'hash',
+    'dimensions',
+    'duration',
+    'source',
+    'revision',
+    'input',
+    'outside',
+    'scope',
+    'text',
+    'protection',
+  ] as const) {
+    const f = await compositionFixture(),
+      generated = f.selected.generated!
+    if (change === 'hash') f.output.sha256 = '1'.repeat(64)
+    if (change === 'dimensions') f.output.width = 240
+    if (change === 'duration') f.output.durationMs = 1000
+    if (change === 'source') generated.source += ' '
+    if (change === 'revision') generated.sourceRevisionId = crypto.randomUUID()
+    if (change === 'input') generated.input.accent = '#ffffff'
+    if (change === 'outside' && f.run.outcome?.status === 'succeeded')
+      f.run.outcome.video!.variants[0]!.timeline.clips[0]!.volume = 0
+    if (change === 'scope') f.selected.startFrame++
+    if (change === 'text') f.run.request.videoTarget!.part = 'text'
+    if (change === 'protection') f.clip.protected = true
+    await expect(videoBatch(f.run, 0, [f.output])).rejects.toThrow()
+  }
+  const f = await compositionFixture()
+  f.run.request.videoTarget = { clipId: f.original.clips[0]!.id, part: 'scene' }
+  expect(() => validateVisualRequest(f.run.request, f.run.context)).toThrow()
+  const generated = structuredClone(f.selected.generated!)
+  generated.observedFrames--
+  expect(() => generatedCompositionSchema.parse(generated)).toThrow()
+  generated.observedFrames++
+  generated.textFrames = [0]
+  expect(() => generatedCompositionSchema.parse(generated)).toThrow()
+})
+
+test('edição de montagem conserva a receita; corte reutiliza prévia e dependências sem executá-las', async () => {
+  const f = await compositionFixture()
+  if (f.run.context.source.document.kind !== 'video' || f.run.outcome?.status !== 'succeeded')
+    throw new Error('Fixture inválida')
+  f.run.context.source.document.timeline.clips[1] = structuredClone(f.selected)
+  f.run.context.assets!.push(f.output)
+  f.run.request.capability = 'video-edit'
+  f.run.request.videoTarget = undefined
+  f.selected.durationInFrames = 30
+  await videoBatch(f.run, 0)
+  const generated = f.selected.generated!
+  generated.source += ' '
+  await expect(videoBatch(f.run, 0)).rejects.toThrow('pedido de animação')
+  f.selected.generated = undefined
+  await expect(videoBatch(f.run, 0)).rejects.toThrow('conservar seu fonte')
+  const imageId = crypto.randomUUID()
+  f.selected.generated = generated
+  generated.input.assetIds = [imageId]
+  const next = f.run.outcome.video!.variants[0]!.timeline
+  expect(videoAssetIds(next)).toContain(imageId)
+  expect(videoPlaybackAssetIds(next)).not.toContain(imageId)
+})
 
 function fixture() {
   const id = () => crypto.randomUUID(),

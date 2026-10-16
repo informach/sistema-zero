@@ -41,3 +41,39 @@
 - [SQLite no Node](https://nodejs.org/api/sqlite.html): persistência local sem addon nativo adicional.
 
 Não houve push, deploy, publicação social, commit ou merge nesta etapa. A revisão não equivale à liberação completa do produto.
+
+## Atualização de validação do L3 durante L8 (16/10)
+
+O R2 de staging passou a integrar a stack nativa de revisão; a limitação anterior de ausência de credenciais descreve apenas a primeira etapa. A importação já transfere e confirma arquivos reais. O retrato paginado inicial, o histórico paginado completo e a redução de deltas vazios foram exercitados no web/Electron com o acervo. A interface de limpeza local remove apenas equivalentes confirmados em grupos de até 100 e a prova real recuperou um arquivo removido, com hash/tamanho idênticos. Detalhes e logs na revisão L8, seção “Histórico completo, sincronização e espaço local”.
+
+Permanecem abertos: refresh concorrente da web, cenários de arquivos grandes/expiração multipart, desempenho p95 da colaboração, duas máquinas físicas e os demais critérios externos do piloto. Docker foi dispensado pelo usuário; os testes transacionais continuam no PostgreSQL nativo isolado. Nenhum desses pontos foi dado como validado por simulação.
+
+## Revisão adicional do transporte dos clientes oficiais (16/10)
+
+- Reproduzidas duas falhas: erro em stdout/stderr podia escapar do tratamento do subprocesso; envelopes JSON sem resultado/erro ficavam aguardando timeout. `tests-native-transport-red.log` registrou as duas regressões antes da correção.
+- O JSON-RPC valida o envelope na entrada e retorna resultado desconhecido até que o consumidor aplique seu schema. Não usa mais o parâmetro genérico como afirmação não verificada do resultado. Erros de ambos os streams encerram os pedidos pendentes; saída tardia após encerramento é ignorada. O coletor do Claude recebeu o mesmo tratamento.
+- Eventos são validados pelos campos efetivamente consumidos. Itens não relacionados são ignorados; notificações do protocolo conservam parâmetros JSON livres. Imagem inline aceita `savedPath: null` e confirmação de login sem ID não confirma a tentativa ChatGPT. Aprovações nativas não solicitadas continuam recusadas.
+- Schemas oficiais locais em `.cache/official-protocol` foram consultados, especialmente `JSONRPCMessage` e `v2/ItemCompletedNotification`; referência oficial complementar: https://learn.chatgpt.com/docs/app-server . Nenhum formato adicional de API paga foi introduzido.
+- Regressores completos do desktop: **60 testes, 1.698 assertions, zero falhas** (`tests-native-transport-complete`). Typecheck passou (`types-native-transport-final`). Prova real através dos clientes oficiais retornou texto com **ChatGPT Pro** e **Claude Max**, sem API paga (`proof-native-transport-text`, código zero). O próximo build integrado deve incorporar essas mudanças após o término da importação ativa; o bundle que está importando não foi substituído durante a execução.
+- Esses ajustes não encerram a pendência distinta de recuperar pelo app um resultado bruto interrompido antes de ser convertido em proposta válida, nem o problema do refresh web.
+
+## Recuperação da resposta nativa antes do resultado editorial (16/10)
+
+A pendência de recuperação citada acima recebeu implementação adicional. Cada geração do executor registra sua época antes de chamar o cliente oficial. A resposta bruta é preservada antes da interpretação editorial; imagens recebem cópia própria conferida por SHA-256. O recibo de início impede repetir uma invocação incerta no mesmo diretório. O botão existente “Retomar resultado local” usa a época original mesmo quando o servidor concede uma nova tentativa. Nesse caminho não há consulta de login nem chamada de geração: o parser e os schemas são os mesmos usados para respostas novas.
+
+Pedido e conteúdo das referências participam da identidade; mudança de referência no mesmo caminho bloqueia a reutilização. Resposta ausente, parcial, inválida ou imagem divergente não é aplicada e não inicia inferência. A saída parcial do Claude é salva antes de devolver cancelamento/falha; itens consumidos do Codex são preservados durante a execução. Um encerramento abrupto antes de um checkpoint completo continua exigindo nova geração explicitamente solicitada. Não se anuncia recuperação de resposta que nunca chegou ao disco.
+
+Imagens incorporadas usam identidade por projeto, pedido, época original e posição. Repetir a incorporação ou reiniciar entre escrita e registro do catálogo conserva o mesmo arquivo/ID, verificando bytes; divergência é recusada. Uma confirmação antiga de falha cujo envio se perdeu é descartada ao recuperar o resultado, evitando confirmar `failed` depois de uma recuperação bem-sucedida. O teste sem essa correção falhou com `failed` em vez de `succeeded` (`tests-provider-recovery-ack-red`); a implementação restaurada passou.
+
+Evidências desta revisão:
+
+- 66 testes Bun / 1.720 assertions, zero falhas (`tests-provider-recovery-reviewed`).
+- 19 testes Node/SQLite, zero falhas (`tests-provider-recovery-node-final`), incluindo reinício, recuperação na mesma concessão e em nova época, falha de confirmação, cancelamento e identidade da imagem.
+- Prova com os clientes oficiais: ChatGPT Pro e Claude Max retornaram texto e o resultado foi recuperado idêntico, em 3 ms e 2 ms respectivamente, sem nova geração (`proof-provider-recovery`, código zero; evidência em `packages/marketing-desktop/.cache/recovery-mvas9qtq/evidence.json`). Esses tempos medem somente leitura/interpretação local, não geração ou sincronização.
+- Typecheck será repetido após a integração dos ajustes finais; o próximo build Electron aguarda o término da importação ativa. Esta prova usa o adaptador real, ainda não demonstra o clique de recuperação dentro do Electron empacotado.
+
+Os checkpoints ficam no orçamento local e são preservados enquanto há trabalho recuperável. A limpeza já implementada de assets confirmados não remove esses diagnósticos intermediários; a política operacional de retenção de execuções confirmadas permanece na revisão de armazenamento. Os demais critérios abertos deste lote, inclusive refresh concorrente web e cenários de arquivos grandes, continuam abertos.
+
+## Revisão integrada posterior em 16/10
+
+A corrida de refresh web citada acima foi corrigida e demonstrada em L9. A revisão de transferência encontrou e corrigiu a retomada de multipart expirado; teste PostgreSQL e prova no R2 real passaram. O ensaio de 2 GB está registrado separadamente em [recuperação de transferências](marketing-l3-recovery-review-2026-10-16.md). Essa atualização substitui o status histórico dessas pendências, sem encerrar vídeo, instalação assinada ou piloto físico.

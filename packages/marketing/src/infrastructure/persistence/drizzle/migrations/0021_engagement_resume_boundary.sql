@@ -1,1 +1,0 @@
-ALTER TABLE "marketing"."engagement_conversations" ADD COLUMN "automation_after" timestamp with time zone;

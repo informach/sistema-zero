@@ -1,4 +1,5 @@
 import type {
+  AssetConfirmation,
   AssetLibraryPage,
   AssetManifest,
   UploadStart,
@@ -19,6 +20,7 @@ export interface VerificationJob {
   attempt: number
 }
 export interface WorkspaceAssetsRepository {
+  confirmed(actorId: string, projectId: string, ids: string[]): Promise<AssetConfirmation>
   list(actorId: string, projectId: string, after?: string): Promise<AssetLibraryPage>
   allocate(actorId: string, input: UploadStart, hash: string): Promise<UploadRecord>
   get(actorId: string, projectId: string, assetId: string, write: boolean): Promise<UploadRecord>
@@ -27,6 +29,12 @@ export interface WorkspaceAssetsRepository {
     projectId: string,
     assetId: string,
     uploadId: string,
+  ): Promise<UploadRecord>
+  resetExpiredUpload(
+    actorId: string,
+    projectId: string,
+    assetId: string,
+    expectedUploadId: string,
   ): Promise<UploadRecord>
   verify(actorId: string, projectId: string, assetId: string): Promise<UploadRecord>
   retry(actorId: string, projectId: string, assetId: string): Promise<UploadRecord>

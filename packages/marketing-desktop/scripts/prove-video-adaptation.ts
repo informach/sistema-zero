@@ -92,9 +92,10 @@ for (const provider of ['codex', 'claude'] as const) {
   })
   const outcome = await adaptVideo(
     run,
-    path.join(directory, provider),
+    path.join(directory, provider, run.request.id),
     AbortSignal.timeout(360000),
     console.log,
+    'checkpoint',
   )
   await writeFile(
     path.join(directory, `${provider}-outcome.json`),

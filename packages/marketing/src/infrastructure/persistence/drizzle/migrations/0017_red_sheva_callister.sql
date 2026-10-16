@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "editorial_import_source_project_idx" ON "marketing"."editorial_import_source_versions" USING btree ("project_id","id");

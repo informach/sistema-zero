@@ -5,6 +5,7 @@ import { bundle } from '@remotion/bundler'
 import { build } from 'vite'
 import manifest from '../package.json'
 import { bundleHash } from '../src/main/media/render-identity'
+import { nativeExternals } from './node-externals'
 
 await mkdir('dist', { recursive: true })
 await mkdir('dist/licenses', { recursive: true })
@@ -27,12 +28,7 @@ for (const entry of ['main', 'preload', 'render-worker']) {
     naming: `${entry}.cjs`,
     target: 'node',
     format: 'cjs',
-    external: [
-      'electron',
-      ...Object.entries(manifest.dependencies)
-        .filter(([, version]) => !version.startsWith('workspace:'))
-        .map(([name]) => name),
-    ],
+    external: nativeExternals,
     sourcemap: 'linked',
   })
   if (!built.success) throw new AggregateError(built.logs, `Falha ao construir ${entry}`)

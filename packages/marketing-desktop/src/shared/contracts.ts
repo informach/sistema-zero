@@ -12,11 +12,11 @@ import type {
   DraftResolution,
   PendingBatch,
   PendingOperation,
-  ProjectView,
   SyncReport,
 } from '../../../marketing-contracts/src/sync'
 import type { ExecuteSelection } from '../main/execution/supervisor'
 import type { ConnectionState, PairingView, WorkspaceRequest } from './connection'
+import type { ProjectProjection } from './project-projection'
 
 export const providerSchema = z.enum(['codex', 'claude'])
 export type Provider = z.infer<typeof providerSchema>
@@ -27,7 +27,7 @@ export const runRequestSchema = z
     kind: z.enum(['copy', 'image', 'edit-image', 'video', 'research']),
     sourceAssetId: z.string().uuid().optional(),
     responseFormat: z
-      .enum(['editorial-copy', 'editorial-adapt', 'art', 'capture', 'video'])
+      .enum(['editorial-copy', 'editorial-adapt', 'art', 'capture', 'video', 'composition'])
       .optional(),
   })
   .strict()
@@ -70,6 +70,29 @@ export type RunResult = {
 }
 export type Progress = { stage: string; progress?: number; activity?: 'inventory' }
 export type DesktopBridge = {
+  linkInventoryProduction: (
+    scope: WorkspaceRequest['scope'],
+    projectId: string,
+    reportId: string,
+    planHash: string,
+  ) => Promise<import('@sistemazero/marketing-contracts').ProductionLinkResult>
+  inventoryProductionFolders: (
+    scope: WorkspaceRequest['scope'],
+    projectId: string,
+    id: string,
+  ) => Promise<import('@sistemazero/marketing-contracts').ProductionFolder[]>
+  reviewInventoryProduction: (
+    scope: WorkspaceRequest['scope'],
+    projectId: string,
+    id: string,
+    folderPath: string,
+  ) => Promise<import('@sistemazero/marketing-contracts').ImportProductionPreview>
+  shareInventoryProduction: (
+    scope: WorkspaceRequest['scope'],
+    projectId: string,
+    id: string,
+    folderPath: string,
+  ) => Promise<import('@sistemazero/marketing-contracts').ProductionShareResult>
   exportAssetFile: (
     scope: WorkspaceRequest['scope'],
     input: import('@sistemazero/marketing-contracts').AssetExportRequest,
@@ -87,6 +110,11 @@ export type DesktopBridge = {
     ordinal: number,
   ) => Promise<import('@sistemazero/marketing-contracts').ImportFileLoadResult>
   cancelInventory: (scope: WorkspaceRequest['scope'], projectId: string) => Promise<void>
+  rescanInventory: (
+    scope: WorkspaceRequest['scope'],
+    projectId: string,
+    id: string,
+  ) => Promise<import('@sistemazero/marketing-contracts').PreparedImport>
   loadInventoryText: (
     scope: WorkspaceRequest['scope'],
     projectId: string,
@@ -132,7 +160,7 @@ export type DesktopBridge = {
   clearConfirmedCache: (
     scope: WorkspaceRequest['scope'],
     projectId: string,
-  ) => Promise<{ freedBytes: number; removed: number; preserved: number }>
+  ) => Promise<{ freedBytes: number; removed: number; preserved: number; unavailable: number }>
   saveBatch: (scope: WorkspaceRequest['scope'], input: EditorialBatch) => Promise<PendingBatch>
   execute: (selection: ExecuteSelection) => Promise<ExecutionRun>
   importProjectMedia: (scope: WorkspaceRequest['scope'], projectId: string) => Promise<Asset | null>
@@ -148,7 +176,7 @@ export type DesktopBridge = {
   ) => Promise<Asset>
   synchronize: () => Promise<SyncReport>
   projects: () => Promise<Project[]>
-  projectView: (projectId: string) => Promise<ProjectView>
+  projectView: (projectId: string, version: number | null) => Promise<ProjectProjection>
   saveDraft: (
     scope: WorkspaceRequest['scope'],
     input: { operation: EditorialOperation; dependsOnOperationId: string | null },
@@ -157,6 +185,7 @@ export type DesktopBridge = {
   handoff: () => Promise<Handoff | null>
   onHandoff: (listener: () => void) => () => void
   connection: () => Promise<ConnectionState>
+  connectionState: () => Promise<ConnectionState>
   connect: (input: { origin: string; label: string }) => Promise<PairingView>
   openApproval: () => Promise<void>
   pollConnection: () => Promise<ConnectionState>

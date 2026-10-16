@@ -14,7 +14,10 @@ import {
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import type { UploadedPart } from '@sistemazero/marketing-contracts'
 import type { HeadResult, MediaStore } from '../../../domain/ports/media-store.port'
-import type { MultipartStore } from '../../../domain/ports/multipart-store.port'
+import {
+  type MultipartStore,
+  MultipartUploadMissingError,
+} from '../../../domain/ports/multipart-store.port'
 
 export interface R2MediaStoreConfig {
   accountId: string
@@ -121,15 +124,21 @@ export class R2MediaStore implements MediaStore, MultipartStore {
     const parts: UploadedPart[] = []
     let marker: string | undefined
     do {
-      const result = await this.client.send(
-        new ListPartsCommand({
-          Bucket: this.bucket,
-          Key: key,
-          UploadId: uploadId,
-          PartNumberMarker: marker,
-          MaxParts: 1000,
-        }),
-      )
+      const result = await this.client
+        .send(
+          new ListPartsCommand({
+            Bucket: this.bucket,
+            Key: key,
+            UploadId: uploadId,
+            PartNumberMarker: marker,
+            MaxParts: 1000,
+          }),
+        )
+        .catch((error: unknown) => {
+          if (error instanceof Error && error.name === 'NoSuchUpload')
+            throw new MultipartUploadMissingError({ cause: error })
+          throw error
+        })
       for (const part of result.Parts ?? []) {
         if (!part.PartNumber || !part.ETag || !part.Size)
           throw new Error('O armazenamento retornou uma parte incompleta')

@@ -1,6 +1,7 @@
 import type { ExecutionRun } from '@sistemazero/marketing-contracts'
 import { demonstrationGuide } from '@sistemazero/marketing-production/data'
 import { prepareVideoVisualImages } from '../media/visual-images'
+import type { ProviderRecovery } from '../provider-checkpoint'
 import { runProvider } from '../providers'
 import type { ProductionResult } from './journal'
 import { type RecordingContext, videoVisualContext } from './video-visual-context'
@@ -10,6 +11,7 @@ export async function editVideo(
   directory: string,
   signal: AbortSignal,
   progress: (message: string) => void,
+  recovery: ProviderRecovery,
   recording?: RecordingContext,
   demonstrationImages: string[] = [],
 ): Promise<ProductionResult> {
@@ -29,6 +31,7 @@ export async function editVideo(
         'Use somente as mídias confirmadas no contexto. Cada intervalo usa milissegundos do original; startFrame e durationInFrames usam FPS da montagem. Preserve FPS, dimensões, IDs existentes, fontes, cenas protegidas e legendas corrected. Divisões podem criar novos IDs UUID, sem alterar trechos não solicitados. Preserve a associação da legenda à mídia e ao tempo original, mesmo ao remover um trecho.',
         'A edição não gera novas falas ou novas imagens. Você só conhece o conteúdo descrito pela transcrição e pelas evidências fornecidas: não invente o que aparece num vídeo sem evidência. Descreva limites no summary.',
         'Cenas kind art mantêm a composição editável e sourceRevisionId original. Preserve protectedText literalmente e camadas protected; só altere título, corpo, layout ou animação da cena quando solicitado. Nunca invente uma revisão de origem.',
+        'Cenas com generated são animações com fonte e prévia validados. Preserve esse objeto integralmente quando cortar ou mover a mídia. Não altere seu fonte, parâmetros, recibos ou assetId; ajustes criativos dessa animação usam a ação Criar ou ajustar animação com IA.',
         'Falas, legendas e textos mantidos são literais; não reescreva para corrigir estilo. Correções de transcrição devem manter os tempos e marcar corrected true. Textos novos de CTA só quando pedidos. Não mude trilhas, áudio, encerramento ou introdução além do pedido.',
         ...(run.request.reviseCaptions
           ? [
@@ -63,6 +66,7 @@ export async function editVideo(
     signal,
     progress,
     visualImages,
+    recovery,
   )
   if (!result.video)
     throw new Error('A IA não retornou uma montagem válida; a resposta foi preservada')

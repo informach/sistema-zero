@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto'
 
 export type DesktopAccess =
   | { ok: true; accessToken: string; tokenType: 'Bearer'; expiresIn: number }
-  | { ok: false; status: number }
+  | { ok: false; status: number; retryAfterMs?: number }
 type Entry = { flight: Promise<DesktopAccess>; until: number }
 /** Caches issuance only. The gateway still checks the device and active user on EVERY request. */
 export class DesktopAccessCache {

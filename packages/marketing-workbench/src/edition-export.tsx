@@ -1,5 +1,9 @@
 'use client'
-import { type EditionSnapshot, editionDownloadSchema } from '@sistemazero/marketing-contracts'
+import {
+  type EditionSnapshot,
+  editionDownloadSchema,
+  editorialCaption,
+} from '@sistemazero/marketing-contracts'
 import { Button } from '@sistemazero/ui/button'
 import { useState } from 'react'
 import { errorMessage, type WorkbenchPort } from './port'
@@ -26,7 +30,10 @@ export function EditionExport({
   const representation = snapshot.revisions.find(
     (row) => row.entityId === snapshot.representationId,
   )?.document
-  const copy = representation?.kind === 'representation' ? representation.caption : ''
+  const copy =
+    representation?.kind === 'representation'
+      ? editorialCaption(representation, snapshot.revisions)
+      : ''
   const work = async (operation: () => Promise<void>) => {
     setBusy(true)
     setError('')

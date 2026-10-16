@@ -1,5 +1,5 @@
 import { mkdir } from 'node:fs/promises'
-import manifest from '../package.json'
+import { nativeExternals } from './node-externals'
 
 await mkdir('.cache/tests', { recursive: true })
 const built = await Bun.build({
@@ -8,10 +8,7 @@ const built = await Bun.build({
   naming: 'sync.cjs',
   target: 'node',
   format: 'cjs',
-  // Match production: Node cannot resolve extensionless TS imports in workspace packages.
-  external: Object.entries(manifest.dependencies)
-    .filter(([, version]) => !version.startsWith('workspace:'))
-    .map(([name]) => name),
+  external: nativeExternals,
 })
 if (!built.success) throw new AggregateError(built.logs, 'Falha ao construir testes SQLite')
 const child = Bun.spawn(['node', '--test', '.cache/tests/sync.cjs'], {

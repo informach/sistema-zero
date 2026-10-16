@@ -15,6 +15,9 @@ export function workspaceAssetsRoutes(deps: WorkspaceAssetsRoutesDeps) {
     .get('/projects/:projectId/assets', ({ headers, params, query }) =>
       deps.assets.list(resolveActor(headers), params.projectId, query),
     )
+    .post('/projects/:projectId/assets/confirmed', ({ headers, params, body }) =>
+      deps.assets.confirmed(resolveActor(headers), params.projectId, body),
+    )
     .get('/projects/:projectId/assets/:id', ({ headers, params }) =>
       deps.assets.get(resolveActor(headers), params.projectId, params.id),
     )

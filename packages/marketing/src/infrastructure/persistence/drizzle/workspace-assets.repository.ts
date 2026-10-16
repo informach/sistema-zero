@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import { canonicalJson, type UploadStart } from '@sistemazero/marketing-contracts'
-import { and, asc, eq, gt, sql } from 'drizzle-orm'
+import { and, asc, eq, gt, inArray, sql } from 'drizzle-orm'
 import type {
   UploadRecord,
   VerificationJob,
@@ -12,6 +12,7 @@ import {
   projectAccess,
   receipt,
   recordChange,
+  snapshotProjectAccess,
   type WorkspaceTransaction,
 } from './workspace.repository'
 import {
@@ -60,6 +61,27 @@ async function authorize(
 }
 export class DrizzleWorkspaceAssetsRepository implements WorkspaceAssetsRepository {
   constructor(private readonly db: Database) {}
+  confirmed(actorId: string, projectId: string, ids: string[]) {
+    return this.db.transaction(
+      async (tx) => {
+        await snapshotProjectAccess(tx, actorId, projectId)
+        const rows = await tx
+          .select({ manifest: assets.manifest })
+          .from(assets)
+          .innerJoin(uploads, eq(uploads.assetId, assets.id))
+          .where(
+            and(
+              eq(assets.projectId, projectId),
+              inArray(assets.id, ids),
+              eq(assets.confirmed, true),
+              eq(uploads.state, 'confirmed'),
+            ),
+          )
+        return { projectId, manifests: rows.map((row) => row.manifest) }
+      },
+      { isolationLevel: 'repeatable read', accessMode: 'read only' },
+    )
+  }
   list(actorId: string, projectId: string, after?: string) {
     return this.db.transaction(async (tx) => {
       await projectAccess(tx, actorId, projectId, 'read')
@@ -135,6 +157,29 @@ export class DrizzleWorkspaceAssetsRepository implements WorkspaceAssetsReposito
         .update(uploads)
         .set({ uploadId, state: 'uploading' })
         .where(and(eq(uploads.assetId, assetId), eq(uploads.state, 'preparing')))
+      return load(tx, projectId, assetId)
+    })
+  }
+  resetExpiredUpload(
+    actorId: string,
+    projectId: string,
+    assetId: string,
+    expectedUploadId: string,
+  ) {
+    return this.db.transaction(async (tx) => {
+      await authorize(tx, actorId, projectId, assetId, true)
+      const [changed] = await tx
+        .update(uploads)
+        .set({ uploadId: null, state: 'preparing', error: null })
+        .where(
+          and(
+            eq(uploads.assetId, assetId),
+            eq(uploads.state, 'uploading'),
+            eq(uploads.uploadId, expectedUploadId),
+          ),
+        )
+        .returning()
+      if (changed) await recordChange(tx, projectId, actorId, 'asset', assetId, null)
       return load(tx, projectId, assetId)
     })
   }

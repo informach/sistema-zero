@@ -128,19 +128,26 @@ const run = runViewSchema.parse({
   leaseExpired: false,
   outcome: null,
 })
-const outcome = await editVideo(run, directory, AbortSignal.timeout(360000), console.log, {
-  images: [],
-  observations: [
-    {
-      version: 'ffmpeg-remotion-4.0.535-v1',
-      assetId,
-      sha256,
-      metadata: analysis.metadata,
-      silence: analysis.silence,
-      samples: [],
-    },
-  ],
-})
+const outcome = await editVideo(
+  run,
+  path.join(directory, run.request.id),
+  AbortSignal.timeout(360000),
+  console.log,
+  'checkpoint',
+  {
+    images: [],
+    observations: [
+      {
+        version: 'ffmpeg-remotion-4.0.535-v1',
+        assetId,
+        sha256,
+        metadata: analysis.metadata,
+        silence: analysis.silence,
+        samples: [],
+      },
+    ],
+  },
+)
 await writeFile(path.join(directory, 'outcome.json'), JSON.stringify(outcome, null, 2))
 const batch = await videoBatch({ ...run, outcome }, 0),
   changed = batch.changes[0]?.document

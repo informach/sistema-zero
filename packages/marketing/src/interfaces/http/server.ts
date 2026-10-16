@@ -22,6 +22,7 @@ import { type IdeasRoutesDeps, ideasRoutes } from './routes/ideas.routes'
 import { type ImportRoutesDeps, importRoutes } from './routes/import.routes'
 import { type MediaRoutesDeps, mediaRoutes } from './routes/media.routes'
 import { type MetricsRoutesDeps, metricsRoutes } from './routes/metrics.routes'
+import { type MonitoringRoutesDeps, monitoringRoutes } from './routes/monitoring.routes'
 import { type OAuthRoutesDeps, oauthRoutes } from './routes/oauth.routes'
 import { type PublicationsRoutesDeps, publicationsRoutes } from './routes/publications.routes'
 import { type WorkspaceRoutesDeps, workspaceRoutes } from './routes/workspace.routes'
@@ -45,6 +46,7 @@ export interface HttpDeps {
   metrics: MetricsRoutesDeps
   ai: AiRoutesDeps
   workspace?: WorkspaceRoutesDeps
+  monitoring?: MonitoringRoutesDeps
   imports?: ImportRoutesDeps
   approval?: ApprovalRoutesDeps
   deliveries?: DeliveryRoutesDeps
@@ -137,6 +139,7 @@ export function createServer(deps: HttpDeps) {
   if (deps.workspace) app.use(workspaceRoutes(deps.workspace))
   if (deps.engagement) app.use(engagementRoutes(deps.engagement))
   if (deps.engagementWebhook) app.use(engagementWebhookRoutes(deps.engagementWebhook))
+  if (deps.monitoring) app.use(monitoringRoutes(deps.monitoring))
   if (deps.imports) app.use(importRoutes(deps.imports))
   if (deps.approval) app.use(approvalRoutes(deps.approval))
   if (deps.deliveries) app.use(deliveryRoutes(deps.deliveries))

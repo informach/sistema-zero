@@ -1,4 +1,5 @@
 import { expect, test } from 'bun:test'
+import { createHash } from 'node:crypto'
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
@@ -7,6 +8,58 @@ import { mediaInputArguments, mediaProcess } from '../src/main/media/media-proce
 import { prepareVideo } from '../src/main/media/prepare-video'
 import { probeVideo } from '../src/main/media/probe-video'
 import { prepareWaveform } from '../src/main/media/waveform'
+
+test('WebM de navegador sem média de FPS preserva original e prepara derivada por timestamps', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'marketing-webm-review-'))
+  if (
+    path.dirname(root) !== path.resolve(os.tmpdir()) ||
+    !path.basename(root).startsWith('marketing-webm-review-')
+  )
+    throw new Error('Pasta fora da prova')
+  const file = path.resolve(import.meta.dir, 'fixtures/browser-vp9-no-average-rate.webm')
+  const before = await readFile(file)
+  const signal = AbortSignal.timeout(30000)
+  try {
+    const metadata = await probeVideo(file, 'video/webm', signal)
+    expect(metadata).toMatchObject({
+      codec: 'vp9',
+      width: 800,
+      height: 600,
+      frameRate: null,
+      hasAudio: false,
+    })
+    expect(metadata.durationMs).toBeCloseTo(3938.762, 2)
+    const prepared = await prepareVideo(file, 'video/webm', root, signal, true)
+    expect(prepared.metadata.frameRate).toEqual({ numerator: 30, denominator: 1 })
+    expect(
+      Math.abs((prepared.metadata.durationMs ?? 0) - (metadata.durationMs ?? 0)),
+    ).toBeLessThanOrEqual(100)
+    await mediaProcess(
+      'ffmpeg',
+      [
+        '-v',
+        'error',
+        '-xerror',
+        ...mediaInputArguments(prepared.file, 'video/mp4'),
+        '-c:v',
+        'libx264',
+        '-threads',
+        '2',
+        '-f',
+        'null',
+        '-',
+      ],
+      signal,
+    )
+    expect(
+      createHash('sha256')
+        .update(await readFile(file))
+        .digest('hex'),
+    ).toBe(createHash('sha256').update(before).digest('hex'))
+  } finally {
+    await rm(root, { recursive: true, force: true })
+  }
+}, 35000)
 
 test('FFmpeg incorporado lê vídeo/áudio reais, MOV rotacionado, arquivo incompleto e cancelamento', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'marketing-media-'))

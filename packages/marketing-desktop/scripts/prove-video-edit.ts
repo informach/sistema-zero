@@ -94,9 +94,10 @@ for (const provider of ['codex', 'claude'] as const) {
   })
   const outcome = await editVideo(
     run,
-    path.join(directory, provider),
+    path.join(directory, provider, run.request.id),
     AbortSignal.timeout(360000),
     console.log,
+    'checkpoint',
   )
   const completed = { ...run, outcome },
     batch = await videoBatch(completed, 0)

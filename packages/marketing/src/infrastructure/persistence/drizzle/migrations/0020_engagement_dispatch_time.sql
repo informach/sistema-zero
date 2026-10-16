@@ -1,1 +1,0 @@
-ALTER TABLE "marketing"."engagement_outbound" ADD COLUMN "last_attempt_at" timestamp with time zone;

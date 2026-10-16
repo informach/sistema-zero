@@ -41,6 +41,30 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     services:
+      marketing-postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: marketing_review
+        ports:
+          - 15439:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d marketing_review"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      engagement-postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: marketing_review
+        ports:
+          - 15465:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d marketing_review"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
       fiscal-postgres:
         image: postgres:16
         env:
@@ -215,13 +239,10 @@ jobs:
         working-directory: packages/helpdesk
         run: |
           bun run db:migrate
-          bun test tests/integration/drizzle-ticket.repository.test.ts tests/integration/drizzle-reply-delivery.test.ts tests/integration/drizzle-ingestion.test.ts tests/integration/drizzle-customer-tickets.test.ts tests/integration/drizzle-connection.test.ts
+          bun test tests/integration/drizzle-*.test.ts
         env:
           DATABASE_URL: postgres://postgres:postgres@localhost:55432/helpdesk_test
           HELPDESK_TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/helpdesk_test
-
-      - name: Criar banco descartável do marketing e desktop
-        run: PGPASSWORD=postgres psql -h 127.0.0.1 -p 55432 -U postgres -d postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE marketing_review"
 
       - name: Testes DB marketing e sessões desktop (Postgres real)
         run: |
@@ -232,8 +253,9 @@ jobs:
           bun run db:migrate
           bun test tests/db/desktop-session.test.ts
         env:
-          DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/marketing_review
-          MARKETING_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/marketing_review
+          DATABASE_URL: postgres://postgres:postgres@127.0.0.1:15439/marketing_review
+          MARKETING_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:15439/marketing_review
+          ENGAGEMENT_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:15465/marketing_review
 
       - name: Typecheck (todos os pacotes)
         run: bun run --filter '*' typecheck

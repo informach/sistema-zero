@@ -1,13 +1,19 @@
 import { createHash } from 'node:crypto'
 import { ForbiddenError } from '@sistemazero/core/http'
 import {
+  analyticsQuerySchema,
   batchOperationSchema,
   canonicalJson,
   handoffCreateSchema,
   idSchema,
+  learningPieceSchema,
   operationSchema,
   projectCreateSchema,
   projectMemberSchema,
+  recordProductionSchema,
+  revisionHistoryQuerySchema,
+  snapshotCursorSchema,
+  voidProductionSchema,
 } from '@sistemazero/marketing-contracts'
 import { z } from 'zod'
 import type { StaffDirectory } from '../../domain/ports/staff-directory.port'
@@ -34,6 +40,49 @@ export function workspaceActor(actor: Actor) {
   return parseWorkspace(idSchema, actor.userId)
 }
 export class WorkspaceService {
+  voidProduction(actor: Actor, projectId: string, raw: unknown) {
+    const input = parseWorkspace(voidProductionSchema, raw)
+    return this.repo.voidProduction(
+      workspaceActor(actor),
+      parseWorkspace(idSchema, projectId),
+      input,
+      payloadHash({ action: 'void-production-record', input }),
+    )
+  }
+  production(actor: Actor, projectId: string, raw: unknown) {
+    const query = parseWorkspace(analyticsQuerySchema, raw)
+    return this.repo.production(
+      workspaceActor(actor),
+      parseWorkspace(idSchema, projectId),
+      query.days,
+    )
+  }
+  recordProduction(actor: Actor, projectId: string, raw: unknown) {
+    const input = parseWorkspace(recordProductionSchema, raw)
+    return this.repo.recordProduction(
+      workspaceActor(actor),
+      parseWorkspace(idSchema, projectId),
+      input,
+      payloadHash({ action: 'production-record', input }),
+    )
+  }
+  analytics(actor: Actor, projectId: string, raw: unknown) {
+    const query = parseWorkspace(analyticsQuerySchema, raw)
+    return this.repo.analytics(
+      workspaceActor(actor),
+      parseWorkspace(idSchema, projectId),
+      query.days,
+    )
+  }
+  proposePiece(actor: Actor, projectId: string, raw: unknown) {
+    const input = parseWorkspace(learningPieceSchema, raw)
+    return this.repo.proposePiece(
+      workspaceActor(actor),
+      parseWorkspace(idSchema, projectId),
+      input,
+      payloadHash({ action: 'learning-piece', input }),
+    )
+  }
   constructor(
     private repo: WorkspaceRepository,
     private directory: StaffDirectory,
@@ -81,11 +130,33 @@ export class WorkspaceService {
   snapshot(actor: Actor, id: string) {
     return this.repo.snapshot(workspaceActor(actor), parseWorkspace(idSchema, id))
   }
+  snapshotPage(actor: Actor, id: string, query: unknown) {
+    const cursor = parseWorkspace(
+      z.union([
+        snapshotCursorSchema,
+        z
+          .object({})
+          .strict()
+          .transform(() => null),
+      ]),
+      query,
+    )
+    return this.repo.snapshotPage(workspaceActor(actor), parseWorkspace(idSchema, id), cursor)
+  }
   history(actor: Actor, id: string, entity: string) {
     return this.repo.history(
       workspaceActor(actor),
       parseWorkspace(idSchema, id),
       parseWorkspace(idSchema, entity),
+    )
+  }
+  historyPage(actor: Actor, id: string, entity: string, query: unknown) {
+    const { before } = parseWorkspace(revisionHistoryQuerySchema, query)
+    return this.repo.historyPage(
+      workspaceActor(actor),
+      parseWorkspace(idSchema, id),
+      parseWorkspace(idSchema, entity),
+      before ?? null,
     )
   }
   changes(actor: Actor, id: string, cursor: unknown) {

@@ -3,6 +3,7 @@ import path from 'node:path'
 import type { ExecutionRun } from '@sistemazero/marketing-contracts'
 import { imageRecipe } from '@sistemazero/marketing-production/data'
 import { captureStudio } from '../media/capture-studio'
+import type { ProviderRecovery } from '../provider-checkpoint'
 import { runProvider } from '../providers'
 import { downloadAsset } from '../sync/asset-download'
 import type { ProductionExecutor } from './supervisor'
@@ -24,6 +25,7 @@ export async function executeStudioCapture(
   directory: string,
   signal: AbortSignal,
   progress: (stage: string) => void,
+  recovery: ProviderRecovery,
 ): Promise<Awaited<ReturnType<ProductionExecutor>>> {
   const { request, context } = run,
     component = context.source.document,
@@ -60,6 +62,8 @@ export async function executeStudioCapture(
     directory,
     signal,
     progress,
+    undefined,
+    recovery,
   )
   if (!result.capture) throw new Error('A IA não retornou um plano de captura válido')
   progress('Capturando o projeto no Studio local')

@@ -1,5 +1,7 @@
 import { z } from 'zod'
+import type { AssetManifest } from './assets'
 import { canonicalJson, hashSchema, idSchema, timestampSchema } from './common'
+import { importDecisionSchema } from './import-decision'
 
 export const importOriginSchema = z.enum(['sistema-zero', 'fluxo-criativo'])
 export const importProductSchema = z
@@ -165,6 +167,14 @@ export const importFileLoadResultSchema = z.discriminatedUnion('status', [
   z.object({ status: z.literal('verifying'), assetId: idSchema }).strict(),
 ])
 export type ImportFileLoadResult = z.infer<typeof importFileLoadResultSchema>
+/** Font originals have a dedicated role for rendering. A derived final/proxy
+ * never becomes the preserved source merely because its bytes match. */
+export function isImportSourceAsset(asset: Pick<AssetManifest, 'role' | 'mime' | 'sourceAssetId'>) {
+  return (
+    asset.sourceAssetId === null &&
+    (asset.role === 'original' || (asset.role === 'font' && asset.mime.startsWith('font/')))
+  )
+}
 export const importSelectionSchema = z
   .object({
     product: importProductSchema.nullable(),
@@ -179,6 +189,7 @@ export const importBatchResultSchema = z
     loaded: z.number().int().nonnegative(),
     reused: z.number().int().nonnegative(),
     verifying: z.number().int().nonnegative(),
+    skipped: z.number().int().nonnegative().default(0),
   })
   .strict()
 export type ImportBatchResult = z.infer<typeof importBatchResultSchema>
@@ -192,11 +203,15 @@ export function selectedImportSource(entry: InventoryEntry, selection: ImportSel
 }
 /** Production code and large originals remain attachments, outside the textual evidence context. */
 export function importSourceIsText(entry: InventoryEntry) {
+  // Empty originals still have a meaningful hash/path. They require no media
+  // upload and contain no executable code to add to the evidence context.
+  if (entry.bytes === 0) return true
   return (
     entry.bytes !== null &&
     entry.bytes <= 196608 &&
     entry.category !== 'production-source' &&
-    /\.(md|txt|srt|csv)$/i.test(entry.path)
+    (/\.(md|txt|srt|csv|ya?ml)$/i.test(entry.path) ||
+      /(?:^|\/)(?:LICENSE|COPYING)(?:-[^/.]+)?$/i.test(entry.path))
   )
 }
 export const importPageSchema = z
@@ -209,6 +224,7 @@ export const importPageSchema = z
             ordinal: z.number().int().nonnegative(),
             source: inventoryEntrySchema,
             result: importSourceResultSchema.nullable(),
+            decision: importDecisionSchema.nullable().default(null),
           })
           .strict(),
       )

@@ -46,4 +46,11 @@
 - A migração de métricas requer leitores compatíveis antes de habilitar o novo coletor; leitores antigos podem apresentar `null` incorretamente. Rollback operacional deve pausar a coleta e conservar os snapshots, não converter ausência novamente em zero.
 - R2 real, segundo computador, assinatura/atualização do instalador e demais pendências registradas em L0–L6 continuam abertas.
 
-L7 não encerrado. Depois seguem L8A/B, L9, L10, full review integrado, commit e merge em staging local. Sem push/deploy.
+### Descrição aprovada até o publicador (16/10)
+
+- A revisão fechou o descarte do alt entre a edição aprovada e o publicador. `ResolvedDelivery` e `PublishInput` transportam agora posições com `assetId` e `alt`, preservando descrições diferentes quando a mesma imagem ocupa duas posições. Não há segunda cópia editável no catálogo legado. Um rascunho posterior não muda a descrição da edição já conferida.
+- Instagram recebe `alt_text` no feed de imagem e em cada filho de carrossel; Facebook recebe `alt_text_custom` nas fotos. Vídeo não recebe parâmetro de imagem nem alt convertido em legenda. O legado sem alt mantém `null`. A ausência de qualquer imagem selecionada recusa o carrossel completo antes de criar contêineres, em vez de remover silenciosamente o item da ordem.
+- As páginas de documentação da Meta continuaram respondendo 429. Os campos foram conferidos no código oficial atual do SDK da Meta: [IGUser.create_media](https://github.com/facebook/facebook-python-business-sdk/blob/main/facebook_business/adobjects/iguser.py) e [Page.create_photo](https://github.com/facebook/facebook-python-business-sdk/blob/main/facebook_business/adobjects/page.py). Não houve publicação real nem alteração de limite por inferência.
+- O teste falhou com a remoção do campo (`tests-l7-alt-red.log`) e passou com o envio restaurado (`tests-l7-alt-green.log`, 29 testes/90 assertions). A suíte backend completa passou com **346 testes / 1.974 assertions**, incluindo PostgreSQL e preservação do alt após mudança de rascunho (`tests-l7-publisher-alt-all.log`). Typecheck backend passou. A configuração operacional, exportação pela interface e o ciclo de análise continuam pendentes.
+
+L7 não encerrado. L8A/B segue em execução, depois L9, L10, full review integrado, commit e merge em staging local. Sem push/deploy.

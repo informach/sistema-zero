@@ -30,7 +30,7 @@ export async function bundleHash(directory: string): Promise<string> {
   return hash.digest('hex')
 }
 
-export async function renderReceipt(run: ExecutionRun, output: Asset) {
+export async function verifiedRenderEngine() {
   const { app } = await import('electron')
   const dist = path.join(app.getAppPath(), 'dist')
   const engine = renderEngineSchema.parse(
@@ -46,6 +46,11 @@ export async function renderReceipt(run: ExecutionRun, output: Asset) {
         .digest('hex')
   )
     throw new Error('O motor de produção mudou; reconstrua ou reinstale o app antes de exportar')
+  return engine
+}
+
+export async function renderReceipt(run: ExecutionRun, output: Asset) {
+  const engine = await verifiedRenderEngine()
   return renderReceiptSchema.parse({
     schemaVersion: 1,
     sourceRevisionId: run.context.source.id,

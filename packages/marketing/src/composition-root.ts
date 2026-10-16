@@ -7,6 +7,7 @@ import { ContentService } from './application/contents/content.service'
 import { EngagementService } from './application/engagement/engagement.service'
 import { IdeaService } from './application/ideas/idea.service'
 import { PromoteIdeaService } from './application/ideas/promote-idea.service'
+import { MonitoringService } from './application/intelligence/monitoring.service'
 import { DriveImportService } from './application/media/drive.service'
 import { MediaService } from './application/media/media.service'
 import { MetricsService } from './application/metrics/metrics.service'
@@ -39,6 +40,7 @@ import {
 } from './infrastructure/config/env'
 import { OpenRouterCopyClient } from './infrastructure/gateways/ai/openrouter-copy-client'
 import { GatewayStaffDirectory } from './infrastructure/gateways/auth/gateway-staff-directory'
+import { PublicFeedSource } from './infrastructure/gateways/feeds/public-feed-source'
 import { GatewayCommercialReportSource } from './infrastructure/gateways/funnel/commercial-report-source'
 import { GoogleDriveClient } from './infrastructure/gateways/google/google-drive-client'
 import { GoogleOAuthProvider } from './infrastructure/gateways/google/google-oauth-provider'
@@ -74,6 +76,7 @@ import { DrizzleIdeaRepository } from './infrastructure/persistence/drizzle/idea
 import { DrizzleImportRepository } from './infrastructure/persistence/drizzle/import.repository'
 import { DrizzleMediaAssetRepository } from './infrastructure/persistence/drizzle/media-asset.repository'
 import { DrizzleMetricsRepository } from './infrastructure/persistence/drizzle/metrics.repository'
+import { DrizzleMonitoringRepository } from './infrastructure/persistence/drizzle/monitoring.repository'
 import { DrizzleOAuthStateRepository } from './infrastructure/persistence/drizzle/oauth-state.repository'
 import { DrizzlePublicationRepository } from './infrastructure/persistence/drizzle/publication.repository'
 import { DrizzlePublicationAssetRepository } from './infrastructure/persistence/drizzle/publication-asset.repository'
@@ -86,6 +89,7 @@ import { EngagementWorker } from './infrastructure/workers/engagement-worker'
 import { MediaArchiverWorker } from './infrastructure/workers/media-archiver-worker'
 import { MediaTransferWorker } from './infrastructure/workers/media-transfer-worker'
 import { MetricsWorker } from './infrastructure/workers/metrics-worker'
+import { MonitoringWorker } from './infrastructure/workers/monitoring-worker'
 import { PublisherWorker } from './infrastructure/workers/publisher-worker'
 import { TokenRefreshWorker } from './infrastructure/workers/token-refresh-worker'
 import { WorkspaceAssetVerifier } from './infrastructure/workers/workspace-asset-verifier'
@@ -137,6 +141,14 @@ export function createApplication(env: Env): Application {
   })
   const db = connection.db
   const now = () => new Date()
+  const monitoringRepo = new DrizzleMonitoringRepository(db, now)
+  const monitoringDirectory = new GatewayStaffDirectory(env.GATEWAY_URL, env.MARKETING_HMAC_SECRET)
+  const monitoringWorker = new MonitoringWorker(
+    monitoringRepo,
+    new PublicFeedSource(),
+    monitoringDirectory,
+    logger,
+  )
   const idGen = () => randomUUID()
 
   // Adapters
@@ -572,6 +584,10 @@ export function createApplication(env: Env): Application {
             internalToken: env.INTERNAL_API_TOKEN,
           }
         : undefined,
+    monitoring: {
+      monitoring: new MonitoringService(monitoringRepo),
+      internalToken: env.INTERNAL_API_TOKEN,
+    },
     execution: {
       execution: new ExecutionService(new DrizzleExecutionRepository(db)),
       internalToken: env.INTERNAL_API_TOKEN,
@@ -713,6 +729,7 @@ export function createApplication(env: Env): Application {
       tokenRefreshWorker.start()
       metricsWorker?.start()
       workspaceAssetVerifier?.start()
+      monitoringWorker.start()
       // `::` = dual-stack — necessário p/ o private networking do Railway (IPv6).
       server.listen({ port: env.PORT, hostname: env.HOST })
       logger.info('http.listening', { port: env.PORT, host: env.HOST })
@@ -728,6 +745,7 @@ export function createApplication(env: Env): Application {
         tokenRefreshWorker.stop(),
         metricsWorker?.stop() ?? Promise.resolve(),
         workspaceAssetVerifier?.stop() ?? Promise.resolve(),
+        monitoringWorker.stop(),
       ])
       try {
         await server.stop()

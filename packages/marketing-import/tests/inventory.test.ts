@@ -4,6 +4,7 @@ import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promis
 import os from 'node:os'
 import path from 'node:path'
 import {
+  importSourceIsText,
   inventoryDigestInput,
   inventorySchema,
   inventorySummary,
@@ -34,6 +35,21 @@ async function fixture() {
   }
 }
 describe('inventory and provenance', () => {
+  test('licenças sem extensão preservam bytes e limite textual sem incorporar código', async () => {
+    const f = await fixture()
+    const filename = 'docs/marketing/kids/comunidade-dos-criadores/instagram/LICENSE-Nunito'
+    const content = 'Licença da fonte original.\r\nCopyright preservado.\r\n'
+    await f.put(filename, content)
+    const entry = (await f.scan()).entries.find((value) => value.path === filename)
+    if (!entry) throw new Error('Licença não inventariada')
+    expect(importSourceIsText(entry)).toBe(true)
+    expect(await sourceTextBytes(f.root, entry, new AbortController().signal)).toEqual(
+      Buffer.from(content),
+    )
+    expect(importSourceIsText({ ...entry, bytes: 196609 })).toBe(false)
+    expect(importSourceIsText({ ...entry, category: 'production-source' })).toBe(false)
+    expect(importSourceIsText({ ...entry, path: `${filename}.exe` })).toBe(false)
+  })
   test('freezes all eligible versions, reports duplicates without merging and excludes subtrees', async () => {
     const f = await fixture()
     await f.put(

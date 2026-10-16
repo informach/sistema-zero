@@ -1,14 +1,18 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import { rejects } from 'node:assert/strict'
-import { randomUUID } from 'node:crypto'
+import { createHash, randomUUID } from 'node:crypto'
 import {
   type ArtRecipeId,
   type AssetManifest,
   type ContextRequest,
+  compositionIdentity,
+  compositionSceneClip,
+  compositionSceneInput,
   contextRequestSchema,
   createPieceBatch,
   type EditorialProposal,
   type ExecutionRun,
+  generatedCompositionSchema,
   renderInputHash,
   videoAdaptationSeed,
   videoSchema,
@@ -24,6 +28,7 @@ import { createDbConnection, type DbConnection } from '../src/infrastructure/per
 import { DrizzleExecutionRepository } from '../src/infrastructure/persistence/drizzle/execution.repository'
 import { DrizzleWorkspaceRepository } from '../src/infrastructure/persistence/drizzle/workspace.repository'
 import { editorialAssets } from '../src/infrastructure/persistence/drizzle/workspace-schema'
+import { requireReviewDatabase } from './helpers/review-database'
 
 const url = process.env.MARKETING_TEST_DATABASE_URL,
   suite = url ? describe : describe.skip
@@ -38,12 +43,7 @@ suite('execução PostgreSQL: concessão, tentativas e contexto', () => {
   const computerA = { ...owner, desktopDeviceId: randomUUID() },
     computerB = { ...owner, desktopDeviceId: randomUUID() }
   beforeAll(async () => {
-    if (
-      !url ||
-      new URL(url).hostname !== '127.0.0.1' ||
-      new URL(url).pathname !== '/marketing_review'
-    )
-      throw new Error('Banco exclusivo de revisão obrigatório')
+    requireReviewDatabase(url)
     connection = createDbConnection(url)
     await migrate(connection.db, {
       migrationsFolder: 'src/infrastructure/persistence/drizzle/migrations',
@@ -56,6 +56,205 @@ suite('execução PostgreSQL: concessão, tentativas e contexto', () => {
     execution = new ExecutionService(new DrizzleExecutionRepository(connection.db))
   }, 30000)
   afterAll(async () => connection?.close())
+  test('composição: resultado confirmado, alternativa colaborativa, fonte sincronizado e desfazer', async () => {
+    const projectId = randomUUID(),
+      colleague: Actor = { ...owner, userId: randomUUID(), displayName: 'Revisora da animação' }
+    await workspace.create(owner, {
+      schemaVersion: 1,
+      id: projectId,
+      operationId: randomUUID(),
+      name: 'Animações em equipe',
+      product: 'Sistema Zero',
+    })
+    await workspace.setMember(owner, projectId, {
+      operationId: randomUUID(),
+      userId: colleague.userId,
+      permissions: ['read', 'edit'],
+    })
+    const batch = createPieceBatch({
+      projectId,
+      title: 'Cena gráfica',
+      brief: 'Convite à criação',
+      format: 'story',
+      medium: 'video',
+    })
+    const change = batch.changes.find((change) => change.document?.kind === 'video')
+    if (change?.document?.kind !== 'video') throw new Error('Vídeo ausente')
+    const clipId = randomUUID()
+    change.document.timeline = videoSchema.parse({
+      ...change.document.timeline,
+      durationInFrames: 120,
+      clips: [
+        {
+          id: clipId,
+          trackId: change.document.timeline.tracks[0]!.id,
+          kind: 'text',
+          text: 'Crie seu jogo',
+          startFrame: 0,
+          durationInFrames: 60,
+        },
+        {
+          id: randomUUID(),
+          trackId: change.document.timeline.tracks[0]!.id,
+          kind: 'text',
+          text: 'Conheça a atividade',
+          startFrame: 60,
+          durationInFrames: 60,
+          protected: true,
+        },
+      ],
+    })
+    const original = structuredClone(change.document)
+    expect((await workspace.applyBatch(owner, batch)).status).toBe('applied')
+    const current = async () => {
+      const item = (await workspace.snapshot(colleague, projectId)).items.find(
+        (item) => item.id === change.entityId,
+      )
+      if (item?.document.kind !== 'video') throw new Error('Vídeo ausente')
+      return { ...item, document: item.document }
+    }
+    const saved = await current()
+    const input = contextRequestSchema.parse({
+      schemaVersion: 1,
+      projectId,
+      entityId: saved.id,
+      revisionId: saved.revisionId,
+      intent: 'alternatives',
+      capability: 'composition',
+      provider: 'codex',
+      videoTarget: { clipId, part: 'scene' },
+      instruction: 'Crie duas alternativas de animação',
+      selection: [],
+      protectedIds: [],
+      limits: { maxVariants: 2 },
+    })
+    const frozen = await execution.context(owner, input)
+    const created = await execution.create(owner, {
+      ...input,
+      id: randomUUID(),
+      operationId: randomUUID(),
+      contextHash: frozen.hash,
+    })
+    const run = await execution.claim(computerA, projectId, created.request.id, {
+      operationId: randomUUID(),
+      expectedEpoch: 0,
+    })
+    const base = saved.document.timeline.clips[0]!,
+      parameters = compositionSceneInput(saved.document.timeline, base)
+    const variants = [],
+      manifests: AssetManifest[] = []
+    for (const number of [1, 2]) {
+      const source = `export default function GeneratedComposition(props){return <div style={{opacity:${number === 1 ? 1 : 0.9}}}>{props.body}</div>}`
+      // Storage fixture: these bytes are not a renderer/R2 proof; this verifies transactions and scope.
+      const manifest: AssetManifest = {
+        schemaVersion: 1,
+        id: randomUUID(),
+        projectId,
+        name: `Animação ${number}.webm`,
+        sha256: String(number).repeat(64),
+        size: 10000,
+        mime: 'video/webm',
+        role: 'original',
+        sourceAssetId: null,
+        width: parameters.width,
+        height: parameters.height,
+        durationMs:
+          (parameters.durationInFrames * 1000 * parameters.fps.denominator) /
+          parameters.fps.numerator,
+        codec: 'vp9',
+        rotation: 0,
+        hasAudio: false,
+      }
+      manifests.push(manifest)
+      const generated = generatedCompositionSchema.parse({
+        schemaVersion: 1,
+        source,
+        input: parameters,
+        sourceSha256: createHash('sha256').update(source).digest('hex'),
+        compiledSha256: 'a'.repeat(64),
+        engine: {
+          name: 'remotion',
+          version: '4.0.535',
+          bundleSha256: 'b'.repeat(64),
+          workerSha256: 'c'.repeat(64),
+          platform: 'win32',
+          architecture: 'x64',
+        },
+        inputSha256: await compositionIdentity(source, parameters, []),
+        sourceRevisionId: run.context.source.id,
+        protectedText: [],
+        outputAssetId: manifest.id,
+        outputSha256: manifest.sha256,
+        observedFrames: 60,
+        textFrames: [60],
+      })
+      variants.push({
+        label: `Alternativa ${number}`,
+        videoId: saved.id,
+        finalAssetId: null,
+        timeline: {
+          ...saved.document.timeline,
+          clips: saved.document.timeline.clips.map((clip) =>
+            clip.id === clipId ? compositionSceneClip(clip, generated) : clip,
+          ),
+        },
+      })
+    }
+    const outcome = {
+      ...success,
+      assetIds: manifests.map((manifest) => manifest.id),
+      video: {
+        schemaVersion: 1 as const,
+        kind: 'video' as const,
+        summary: 'Duas animações',
+        variants,
+      },
+    }
+    const finish = {
+      operationId: randomUUID(),
+      attemptId: attempt(run).id,
+      epoch: run.epoch,
+      outcome,
+    }
+    await rejects(() => execution.finish(computerA, projectId, run.request.id, finish), {
+      code: 'ASSET_UNCONFIRMED',
+    })
+    for (const manifest of manifests)
+      await connection.db.insert(editorialAssets).values({
+        id: manifest.id,
+        projectId,
+        manifest,
+        storageKey: `review/${manifest.id}`,
+        confirmed: true,
+        createdBy: owner.userId,
+      })
+    const tampered = structuredClone(finish)
+    tampered.outcome.video.variants[1]!.timeline.clips[1]!.text = 'Conteúdo fora do pedido'
+    await rejects(() => execution.finish(computerA, projectId, run.request.id, tampered), {
+      code: 'INVALID_RESULT',
+    })
+    expect((await execution.get(owner, projectId, run.request.id)).state).toBe('running')
+    const completed = await execution.finish(computerA, projectId, run.request.id, finish)
+    expect(completed.application).toBeNull()
+    expect((await current()).document).toEqual(original)
+    expect(completed.context).toEqual(run.context)
+    const selected = await execution.apply(colleague, projectId, run.request.id, {
+      variantIndex: 1,
+    })
+    expect(selected.application?.result?.status).toBe('applied')
+    expect((await current()).document.timeline.clips[0]?.generated).toEqual(
+      variants[1]!.timeline.clips[0]!.generated,
+    )
+    expect((await current()).document.timeline.clips[1]).toEqual(original.timeline.clips[1])
+    expect((await execution.get(colleague, projectId, run.request.id)).outcome).toEqual(outcome)
+    await rejects(() => execution.apply(owner, projectId, run.request.id, { variantIndex: 0 }), {
+      code: 'VALIDATION_ERROR',
+    })
+    expect(
+      (await execution.undo(colleague, projectId, run.request.id)).application?.undo?.status,
+    ).toBe('applied')
+    expect((await current()).document).toEqual(original)
+  })
   test('pedido em componente inclui formato, briefing e fontes da peça sem carregar peças alheias', async () => {
     const projectId = randomUUID(),
       sourceId = randomUUID()

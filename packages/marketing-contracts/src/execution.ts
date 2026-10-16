@@ -17,6 +17,7 @@ export const capabilitySchema = z.enum([
   'image-edit',
   'layout',
   'video-edit',
+  'composition',
   'render',
   'transcribe',
   'prepare-media',

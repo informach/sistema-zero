@@ -6,6 +6,24 @@ import { SerialQueue } from '../src/main/serial-queue'
 import { workspaceRequestSchema, workspaceResponseSchema } from '../src/shared/connection'
 import { parseDeepLink } from '../src/shared/deep-link'
 
+test('período analítico é aceito apenas no endpoint e intervalo previstos', () => {
+  const scope = { origin: 'https://marketing.example.test', userId: randomUUID() }
+  for (const endpoint of ['analytics', 'production']) {
+    const base = `/projects/${randomUUID()}/${endpoint}`
+    for (const path of [`${base}?days=1`, `${base}?days=365`])
+      expect(workspaceRequestSchema.safeParse({ scope, path, method: 'GET' }).success).toBe(true)
+    for (const path of [
+      `${base}?days=0`,
+      `${base}?days=366`,
+      `${base}?days=90&days=7`,
+      `${base}?days=-1`,
+      `${base}/other?days=90`,
+      `/projects?days=90`,
+    ])
+      expect(workspaceRequestSchema.safeParse({ scope, path, method: 'GET' }).success).toBe(false)
+  }
+})
+
 test('consulta de equipe aceita acentos sem ampliar a ponte para outros caminhos', () => {
   const scope = { origin: 'https://marketing.example.test', userId: randomUUID() },
     project = randomUUID()
@@ -57,6 +75,60 @@ test('passagem web aceita só referência opaca e origem válida, nunca comando 
     `sistema-zero-marketing://open/../../secret?server=${origin}`,
   ])
     expect(() => parseDeepLink(value, false)).toThrow()
+})
+
+test('filtro de cobertura fica restrito à consulta do inventário e rejeita duplicatas', () => {
+  const scope = { origin: 'https://marketing.example.test', userId: randomUUID() },
+    coverage = `/projects/${randomUUID()}/imports/${randomUUID()}/coverage`
+  for (const state of [
+    'all',
+    'loaded',
+    'pending',
+    'review',
+    'blocked',
+    'excluded',
+    'other-product',
+    'unbound',
+  ])
+    expect(
+      workspaceRequestSchema.safeParse({
+        scope,
+        path: `${coverage}?state=${state}&cursor=100`,
+        method: 'GET',
+      }).success,
+    ).toBe(true)
+  for (const path of [
+    `${coverage}?state=approved`,
+    `${coverage}?state=loaded&state=pending`,
+    '/projects?state=loaded',
+    `${coverage}/other?state=loaded`,
+    `${coverage}?state=loaded&cursor=-1`,
+  ])
+    expect(workspaceRequestSchema.safeParse({ scope, path, method: 'GET' }).success).toBe(false)
+})
+
+test('comparação de inventários aceita somente identidade opaca e estados próprios no caminho específico', () => {
+  const scope = { origin: 'https://marketing.example.test', userId: randomUUID() },
+    base = `/projects/${randomUUID()}/imports/${randomUUID()}/compare`,
+    previousId = randomUUID()
+  for (const state of ['all', 'added', 'removed', 'changed', 'reclassified', 'unchanged'])
+    expect(
+      workspaceRequestSchema.safeParse({
+        scope,
+        path: `${base}?previousId=${previousId}&state=${state}&cursor=200`,
+        method: 'GET',
+      }).success,
+    ).toBe(true)
+  for (const route of [
+    `${base}?previousId=../outside`,
+    `${base}?previousId=${previousId}&previousId=${randomUUID()}`,
+    `${base}?state=loaded`,
+    `/projects?previousId=${previousId}`,
+    `${base}/other?state=changed`,
+  ])
+    expect(workspaceRequestSchema.safeParse({ scope, path: route, method: 'GET' }).success).toBe(
+      false,
+    )
 })
 
 test('limite de bytes aborta stream sem content-length, incluindo UTF-8', async () => {

@@ -58,6 +58,7 @@ export interface MetaApi {
     pageId: string
     imageUrl: string
     caption: string
+    alt: string | null
   }): Promise<string>
   /** POST /{page}/videos {file_url} — devolve o id do vídeo (o download é assíncrono). */
   createFbVideoPost(input: {

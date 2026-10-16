@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, inArray } from 'drizzle-orm'
+import { and, asc, desc, eq, gte, inArray, lte } from 'drizzle-orm'
 import type {
   AccountSnapshot,
   MetricsRepository,
@@ -8,7 +8,7 @@ import type { Database } from './db'
 import { metricAccountSnapshots, metricPublicationSnapshots } from './schema'
 
 export class DrizzleMetricsRepository implements MetricsRepository {
-  constructor(private readonly db: Database) {}
+  constructor(private readonly db: Pick<Database, 'insert' | 'select' | 'selectDistinctOn'>) {}
 
   async insertAccountSnapshot(row: AccountSnapshot): Promise<void> {
     await this.db.insert(metricAccountSnapshots).values(row)
@@ -67,6 +67,7 @@ export class DrizzleMetricsRepository implements MetricsRepository {
 
   async latestPublicationStats(
     publicationIds: string[],
+    until?: Date,
   ): Promise<Map<string, PublicationSnapshot>> {
     const map = new Map<string, PublicationSnapshot>()
     if (publicationIds.length === 0) return map
@@ -74,7 +75,12 @@ export class DrizzleMetricsRepository implements MetricsRepository {
     const rows = await this.db
       .selectDistinctOn([metricPublicationSnapshots.publicationId])
       .from(metricPublicationSnapshots)
-      .where(inArray(metricPublicationSnapshots.publicationId, publicationIds))
+      .where(
+        and(
+          inArray(metricPublicationSnapshots.publicationId, publicationIds),
+          until ? lte(metricPublicationSnapshots.capturedAt, until) : undefined,
+        ),
+      )
       .orderBy(
         asc(metricPublicationSnapshots.publicationId),
         desc(metricPublicationSnapshots.capturedAt),

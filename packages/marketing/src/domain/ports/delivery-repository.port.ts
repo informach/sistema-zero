@@ -1,6 +1,7 @@
 import type { CreateDelivery, Delivery, DeliveryAction } from '@sistemazero/marketing-contracts'
 import type { MediaAsset } from '../media/media-asset'
 import type { Publication } from '../publication/publication-record'
+import type { PublicationMedia } from './social-publisher.port'
 
 export interface ResolvedDelivery {
   projectId: string
@@ -8,7 +9,7 @@ export interface ResolvedDelivery {
   editionHash: string
   title: string
   assets: MediaAsset[]
-  orderedAssetIds: string[]
+  orderedMedia: PublicationMedia[]
 }
 export interface DeliveryRepository {
   analyze(

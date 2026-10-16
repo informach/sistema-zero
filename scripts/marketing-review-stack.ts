@@ -12,12 +12,17 @@ import { loadEnv as authEnv } from '../packages/auth/src/infrastructure/config/e
 import { createDbConnection } from '../packages/auth/src/infrastructure/persistence/drizzle/db'
 import { DrizzleUserRepository } from '../packages/auth/src/infrastructure/persistence/drizzle/user.repository'
 import { createBunPasswordHasher } from '../packages/auth/src/infrastructure/security/bun-password-hasher'
+import { migrateReviewDatabase } from '../packages/marketing/scripts/review-migrations'
 import { createApplication as marketingApp } from '../packages/marketing/src/composition-root'
 import { loadEnv as marketingEnv } from '../packages/marketing/src/infrastructure/config/env'
 import { reviewStorage } from './marketing-review-storage'
 
 // Deliberately fixed to the disposable local review database, never DATABASE_URL.
-for (const port of [15300, 15302, 15311]) {
+const native = process.argv.includes('--native-review')
+const ports = native
+  ? { gateway: 15320, auth: 15322, marketing: 15331, web: 15334 }
+  : { gateway: 15300, auth: 15302, marketing: 15311, web: 15312 }
+for (const port of [ports.gateway, ports.auth, ports.marketing]) {
   await new Promise<void>((resolve, reject) => {
     const probe = createServer()
     probe.once('error', () =>
@@ -30,7 +35,12 @@ for (const port of [15300, 15302, 15311]) {
     )
   })
 }
-const DATABASE_URL = 'postgres://postgres@127.0.0.1:15439/marketing_review'
+const DATABASE_URL = native
+  ? `postgres://postgres:${encodeURIComponent((await readFile(path.resolve(import.meta.dir, '../.cache/pg16-native-review/password'), 'utf8')).trim())}@127.0.0.1:15440/marketing_review`
+  : 'postgres://postgres@127.0.0.1:15439/marketing_review'
+if (native) {
+  await migrateReviewDatabase(DATABASE_URL)
+}
 const JWT_HS256_SECRET = 'marketing-local-review-only-not-for-production-2026'
 const INTERNAL = 'marketing-review-internal-only-2026'
 const HMAC = 'marketing-review-hmac-only-2026'
@@ -43,20 +53,20 @@ const common = {
   JWT_AUDIENCE: 'sistemazero',
   AUTH_INTERNAL_TOKEN: INTERNAL,
 }
-const auth = await authApp(authEnv({ ...common, PORT: '15302' }))
+const auth = await authApp(authEnv({ ...common, PORT: String(ports.auth) }))
 const marketing = marketingApp(
   marketingEnv({
     ...common,
     ...(await reviewStorage()),
-    PORT: '15311',
+    PORT: String(ports.marketing),
     INTERNAL_API_TOKEN: INTERNAL,
-    GATEWAY_URL: 'http://127.0.0.1:15300',
+    GATEWAY_URL: `http://127.0.0.1:${ports.gateway}`,
     MARKETING_HMAC_SECRET: HMAC,
   }),
 )
 Object.assign(process.env, {
-  AUTH_URL: 'http://127.0.0.1:15302',
-  MARKETING_URL: 'http://127.0.0.1:15311',
+  AUTH_URL: `http://127.0.0.1:${ports.auth}`,
+  MARKETING_URL: `http://127.0.0.1:${ports.marketing}`,
   AUTH_INTERNAL_TOKEN: INTERNAL,
   MARKETING_INTERNAL_TOKEN: INTERNAL,
   MARKETING_HMAC_SECRET: HMAC,
@@ -73,7 +83,7 @@ const localConfig = {
 const gateway = await gatewayApp(
   gatewayEnv({
     ...common,
-    PORT: '15300',
+    PORT: String(ports.gateway),
     AUTH_URL: process.env.AUTH_URL,
     MARKETING_URL: process.env.MARKETING_URL,
     MARKETING_INTERNAL_TOKEN: INTERNAL,
@@ -85,14 +95,14 @@ const gateway = await gatewayApp(
 const connection = createDbConnection(DATABASE_URL)
 const directory = path.resolve(
   import.meta.dir,
-  '../packages/marketing-desktop/.cache/connected-proof',
+  `../packages/marketing-desktop/.cache/${native ? 'native-connected-proof' : 'connected-proof'}`,
 )
 await mkdir(directory, { recursive: true })
 const fixtureSchema = z.object({
   email: z.string().email(),
   password: z.string().min(20),
   userId: z.string().uuid(),
-  origin: z.literal('http://127.0.0.1:15312'),
+  origin: z.literal(`http://127.0.0.1:${ports.web}`),
 })
 let previous: z.infer<typeof fixtureSchema> | null = null
 try {
@@ -123,12 +133,14 @@ if (!retained)
 await connection.close()
 await writeFile(
   path.join(directory, 'fixture.json'),
-  JSON.stringify({ email, password, userId: id, origin: 'http://127.0.0.1:15312' }),
+  JSON.stringify({ email, password, userId: id, origin: `http://127.0.0.1:${ports.web}` }),
   { mode: 0o600 },
 )
 for (const service of [auth, marketing, gateway]) await service.start()
 await writeFile(path.join(directory, 'stack.pid'), String(process.pid))
-console.log('MARKETING_REVIEW_STACK_READY ports=15302,15311,15300 database=marketing_review')
+console.log(
+  `MARKETING_REVIEW_STACK_READY ports=${ports.auth},${ports.marketing},${ports.gateway} database=marketing_review native=${native}`,
+)
 let stopping = false
 async function stop() {
   if (stopping) return

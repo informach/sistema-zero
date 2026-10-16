@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server'
-import { DESKTOP_COOKIE, REFRESH_COOKIE } from '@/lib/cookies'
+import { BROWSER_COOKIE, DESKTOP_COOKIE } from '@/lib/cookies'
 import { isSameOriginRequest, requiresOriginCheck } from '@/lib/csrf'
 
 /**
@@ -44,7 +44,7 @@ export function proxy(req: NextRequest) {
     )
   }
 
-  if (isAppPath(pathname) && !req.cookies.has(REFRESH_COOKIE) && !req.cookies.has(DESKTOP_COOKIE)) {
+  if (isAppPath(pathname) && !req.cookies.has(BROWSER_COOKIE) && !req.cookies.has(DESKTOP_COOKIE)) {
     const url = req.nextUrl.clone()
     url.pathname = '/login'
     url.search = ''

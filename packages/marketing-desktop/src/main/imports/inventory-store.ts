@@ -7,7 +7,11 @@ import {
   type ImportInventory,
   type ImportSelection,
   idSchema,
+  importOfficeViewSchema,
   importPageSchema,
+  importProductAllowed,
+  importProductBindingSchema,
+  importProductionPreviewSchema,
   importRunSchema,
   importSelectionSchema,
   importSourceIsText,
@@ -15,13 +19,26 @@ import {
   inventoryDigestInput,
   inventorySchema,
   inventorySummary,
+  isImportSourceAsset,
   type PreparedImport,
+  type ProductionShareResult,
   preparedImportSchema,
+  productionReportSchema,
   selectedImportSource,
   stableEditorialId,
+  uploadViewSchema,
 } from '@sistemazero/marketing-contracts'
-import { confinedSource, scanInventory, sourceTextBytes } from '@sistemazero/marketing-import/node'
+import { productionFolders, productionInputs } from '@sistemazero/marketing-import'
+import {
+  boundedSourceBytes,
+  confinedSource,
+  reviewInventoryProduction,
+  scanInventory,
+  sourceTextBytes,
+} from '@sistemazero/marketing-import/node'
+import { extractOfficeText } from '@sistemazero/marketing-import/office'
 import { z } from 'zod'
+import { rateLimitedTransport } from '../sync/rate-limit'
 import type { SyncTransport } from '../sync/sync-engine'
 
 const storedSchema = z
@@ -40,9 +57,33 @@ function summary(value: Stored): PreparedImport {
     summary: inventorySummary(value.inventory),
   })
 }
+async function checkProduct(
+  transport: SyncTransport,
+  projectId: string,
+  origin: ImportInventory['origin'],
+  product: string | null,
+) {
+  if (product === null)
+    throw new Error('Selecione um produto por carga; cada projeto tem um vínculo próprio')
+  const bindings = z
+    .array(importProductBindingSchema)
+    .max(2)
+    .parse(await transport.request(`/projects/${projectId}/import-products`))
+  const binding = bindings.find((value) => value.origin === origin && value.projectId === projectId)
+  if (!binding || !importProductAllowed(binding, product))
+    throw new Error('Vincule este produto ao projeto antes de carregar seu conteúdo')
+}
 /** Scoped to the manager's per-origin/user/project directory. Absolute paths never leave main. */
 export class InventoryStore {
   constructor(private readonly directory: string) {}
+  async rescan(
+    id: string,
+    signal: AbortSignal,
+    onProgress: (files: number, bytes: number) => void,
+  ) {
+    const previous = await this.load(id)
+    return this.prepare(previous.root, previous.inventory.origin, signal, onProgress)
+  }
   private file(id: string) {
     return path.join(this.directory, `${idSchema.parse(id)}.json`)
   }
@@ -111,6 +152,74 @@ export class InventoryStore {
       nextCursor: cursor + 100 < value.inventory.entries.length ? cursor + 100 : null,
     }
   }
+  async productionFolders(id: string) {
+    const { inventory } = await this.load(id)
+    const folders = inventory.origin === 'sistema-zero' ? productionFolders(inventory.entries) : []
+    if (folders.length > 1000) throw new Error('Inventário excede 1.000 pastas de produção')
+    return folders
+  }
+  async reviewProduction(id: string, folderPath: string, signal: AbortSignal) {
+    const { root, inventory } = await this.load(id)
+    const review = await reviewInventoryProduction({ root, inventory, folderPath, signal })
+    return importProductionPreviewSchema.parse({
+      inventoryId: id,
+      inventoryDigest: inventory.digest,
+      reviewedAt: new Date().toISOString(),
+      review,
+    })
+  }
+  async shareProduction(
+    id: string,
+    projectId: string,
+    folderPath: string,
+    transport: SyncTransport,
+    signal: AbortSignal,
+    upload: Parameters<InventoryStore['loadFile']>[5],
+    progress: (message: string) => void,
+  ): Promise<ProductionShareResult> {
+    idSchema.parse(projectId)
+    const value = await this.load(id)
+    if (value.inventory.origin !== 'sistema-zero')
+      throw new Error('Origem de produção não reconhecida')
+    const { folder, selected } = productionInputs(value.inventory.entries, folderPath)
+    const limited = rateLimitedTransport(transport, signal, (ms) =>
+      progress(`Aguardando o servidor por ${Math.ceil(ms / 1000)} s`),
+    )
+    await checkProduct(limited, projectId, value.inventory.origin, folder.product)
+    await reviewInventoryProduction({
+      root: value.root,
+      inventory: value.inventory,
+      folderPath,
+      signal,
+    })
+    let pending = 0
+    for (const [index, entry] of selected.entries()) {
+      signal.throwIfAborted()
+      progress(`${index + 1} de ${selected.length} fontes da conferência · ${entry.source.path}`)
+      if (entry.kind === 'media') {
+        const result = await this.fileSource(
+          value,
+          projectId,
+          entry.ordinal,
+          limited,
+          signal,
+          upload,
+        )
+        if (result.status === 'verifying') pending++
+      } else await this.textSource(value, projectId, entry.ordinal, limited, signal)
+    }
+    if (pending) return { status: 'verifying', pending }
+    signal.throwIfAborted()
+    const report = productionReportSchema.parse(
+      await limited.request(`/projects/${projectId}/imports/${id}/production-reports`, 'POST', {
+        operationId: await stableEditorialId(
+          `${projectId}:${id}:${folderPath}:production-report-${folder.key.startsWith('P') ? 'v1' : 'v2'}`,
+        ),
+        folderPath,
+      }),
+    )
+    return { status: 'shared', report }
+  }
   async synchronize(
     id: string,
     projectId: string,
@@ -123,8 +232,9 @@ export class InventoryStore {
       start = summary(value)
     const { summary: _summary, products: _products, ...input } = start
     const base = `/projects/${projectId}/imports`
+    const limited = rateLimitedTransport(transport, signal)
     signal.throwIfAborted()
-    let run = importRunSchema.parse(await transport.request(base, 'POST', input))
+    let run = importRunSchema.parse(await limited.request(base, 'POST', input))
     if (
       run.digest !== input.digest ||
       run.id !== id ||
@@ -134,7 +244,7 @@ export class InventoryStore {
       throw new Error('Servidor respondeu com outro inventário')
     if (run.state === 'retired') throw new Error('Este inventário foi desativado no servidor')
     // Read confirmed progress after a crash; never create a new run to mask a lost response.
-    run = importPageSchema.parse(await transport.request(`${base}/${id}`)).run
+    run = importPageSchema.parse(await limited.request(`${base}/${id}`)).run
     for (
       let offset = run.received;
       offset < value.inventory.entries.length;
@@ -143,14 +253,14 @@ export class InventoryStore {
       signal.throwIfAborted()
       const chunk = value.inventory.entries.slice(offset, offset + 100)
       run = importRunSchema.parse(
-        await transport.request(`${base}/${id}/chunk`, 'POST', { offset, entries: chunk }),
+        await limited.request(`${base}/${id}/chunk`, 'POST', { offset, entries: chunk }),
       )
       if (run.received <= offset || run.received > input.entryCount)
         throw new Error('Servidor não confirmou o avanço do inventário')
       progress(run.received, input.entryCount)
     }
     signal.throwIfAborted()
-    return importRunSchema.parse(await transport.request(`${base}/${id}/finish`, 'POST', {}))
+    return importRunSchema.parse(await limited.request(`${base}/${id}/finish`, 'POST', {}))
   }
   async loadText(
     id: string,
@@ -161,7 +271,12 @@ export class InventoryStore {
   ) {
     idSchema.parse(projectId)
     z.number().int().min(0).max(99999).parse(ordinal)
-    return this.textSource(await this.load(id), projectId, ordinal, transport, signal)
+    const value = await this.load(id),
+      transportWithLimit = rateLimitedTransport(transport, signal)
+    const source = value.inventory.entries[ordinal]
+    if (!source) throw new Error('Origem não encontrada no inventário')
+    await checkProduct(transportWithLimit, projectId, value.inventory.origin, source.product)
+    return this.textSource(value, projectId, ordinal, transportWithLimit, signal)
   }
   private async textSource(
     value: Stored,
@@ -178,7 +293,7 @@ export class InventoryStore {
     return importSourceResultSchema.parse(
       await transport.request(`/projects/${projectId}/imports/${id}/load-source`, 'POST', {
         operationId: await stableEditorialId(
-          `${projectId}:${id}:${ordinal}:${entry.sha256}:load-text-v1`,
+          `${projectId}:${id}:${ordinal}:${entry.sha256}:load-text-v2`,
         ),
         ordinal,
         content: { kind: 'text', base64: bytes.toString('base64') },
@@ -198,7 +313,12 @@ export class InventoryStore {
   ): Promise<ImportFileLoadResult> {
     idSchema.parse(projectId)
     z.number().int().min(0).max(99999).parse(ordinal)
-    return this.fileSource(await this.load(id), projectId, ordinal, transport, signal, upload)
+    const value = await this.load(id),
+      transportWithLimit = rateLimitedTransport(transport, signal)
+    const source = value.inventory.entries[ordinal]
+    if (!source) throw new Error('Origem não encontrada no inventário')
+    await checkProduct(transportWithLimit, projectId, value.inventory.origin, source.product)
+    return this.fileSource(value, projectId, ordinal, transportWithLimit, signal, upload)
   }
   private async fileSource(
     value: Stored,
@@ -211,8 +331,12 @@ export class InventoryStore {
   ): Promise<ImportFileLoadResult> {
     const source = value.inventory.entries[ordinal],
       id = value.id
-    if (!source?.sha256 || !source.bytes || !['eligible', 'review'].includes(source.disposition))
-      throw new Error('Origem excluída, vazia ou pendente')
+    if (
+      !source?.sha256 ||
+      source.bytes === null ||
+      !['eligible', 'review'].includes(source.disposition)
+    )
+      throw new Error('Origem excluída ou pendente')
     const base = `/projects/${projectId}/imports/${id}`
     const remote =
       knownPage ?? importPageSchema.parse(await transport.request(`${base}?cursor=${ordinal}`))
@@ -221,25 +345,97 @@ export class InventoryStore {
     const loaded = remote.entries.find((entry) => entry.ordinal === ordinal)
     if (remote.run.digest !== value.inventory.digest || loaded?.source.sha256 !== source.sha256)
       throw new Error('O servidor tem outro inventário; preserve esta origem e confira a carga')
-    if (loaded.result) return { status: 'loaded', result: loaded.result }
+    if (loaded.result) {
+      await this.extractOfficeSource(value, projectId, ordinal, loaded.result, transport, signal)
+      return { status: 'loaded', result: loaded.result }
+    }
+    if (loaded.decision && loaded.decision.state !== 'pending')
+      throw new Error(
+        'Uma decisão mantém esta origem fora da carga. Reabra a pendência antes de importar',
+      )
     signal.throwIfAborted()
+    if (source.bytes === 0)
+      return {
+        status: 'loaded',
+        result: await this.textSource(value, projectId, ordinal, transport, signal),
+      }
+    if (/\.(docx|xlsx)$/i.test(source.path) && source.bytes <= 196608)
+      extractOfficeText(await boundedSourceBytes(value.root, source, signal), source.path)
     const file = await confinedSource(value.root, source.path)
     const asset = await upload(file, { sha256: source.sha256, size: source.bytes })
-    if (asset.manifest.sha256 !== source.sha256 || asset.manifest.size !== source.bytes)
+    if (
+      asset.manifest.projectId !== projectId ||
+      !isImportSourceAsset(asset.manifest) ||
+      asset.manifest.sha256 !== source.sha256 ||
+      asset.manifest.size !== source.bytes
+    )
       throw new Error('O arquivo enviado diverge da origem')
     if (asset.state === 'failed') throw new Error(asset.error ?? 'O servidor recusou este arquivo')
     if (asset.state !== 'confirmed') return { status: 'verifying', assetId: asset.manifest.id }
     signal.throwIfAborted()
+    return {
+      status: 'loaded',
+      result: await this.linkFileSource(
+        value,
+        projectId,
+        ordinal,
+        transport,
+        asset.manifest.id,
+        signal,
+      ),
+    }
+  }
+  private async linkFileSource(
+    value: Stored,
+    projectId: string,
+    ordinal: number,
+    transport: SyncTransport,
+    assetId: string,
+    signal: AbortSignal,
+  ) {
+    const source = value.inventory.entries[ordinal]
+    if (!source?.sha256) throw new Error('Origem ausente do inventário')
     const result = importSourceResultSchema.parse(
-      await transport.request(`${base}/load-source`, 'POST', {
+      await transport.request(`/projects/${projectId}/imports/${value.id}/load-source`, 'POST', {
         operationId: await stableEditorialId(
-          `${projectId}:${id}:${ordinal}:${source.sha256}:load-asset-v1`,
+          `${projectId}:${value.id}:${ordinal}:${source.sha256}:load-asset-v1`,
         ),
         ordinal,
-        content: { kind: 'asset', assetId: asset.manifest.id },
+        content: { kind: 'asset', assetId },
       }),
     )
-    return { status: 'loaded', result }
+    await this.extractOfficeSource(value, projectId, ordinal, result, transport, signal)
+    return result
+  }
+  private async extractOfficeSource(
+    value: Stored,
+    projectId: string,
+    ordinal: number,
+    result: import('@sistemazero/marketing-contracts').ImportSourceResult,
+    transport: SyncTransport,
+    signal: AbortSignal,
+  ) {
+    const source = value.inventory.entries[ordinal]
+    if (
+      !source ||
+      !/\.(docx|xlsx)$/i.test(source.path) ||
+      source.bytes === null ||
+      source.bytes > 196608
+    )
+      return
+    const endpoint = `/projects/${projectId}/import-sources/${result.sourceVersionId}/office-text`
+    const prior = importOfficeViewSchema.parse(await transport.request(endpoint))
+    if (prior.destinations.length) return
+    const bytes = await boundedSourceBytes(value.root, source, signal)
+    signal.throwIfAborted()
+    importOfficeViewSchema.parse(
+      await transport.request(endpoint, 'POST', {
+        operationId: await stableEditorialId(
+          `${projectId}:${result.sourceVersionId}:${prior.parserVersion}`,
+        ),
+        base64: bytes.toString('base64'),
+      }),
+    )
   }
   /** The server's source receipts are the checkpoint, including a response lost after commit. */
   async loadSelection(
@@ -258,7 +454,12 @@ export class InventoryStore {
       (count, source) => count + Number(selectedImportSource(source, selection)),
       0,
     )
-    const result: ImportBatchResult = { selected, loaded: 0, reused: 0, verifying: 0 }
+    const result: ImportBatchResult = { selected, loaded: 0, reused: 0, verifying: 0, skipped: 0 }
+    const pending = new Map<number, string>()
+    const limited = rateLimitedTransport(transport, signal, (milliseconds) =>
+      progress(result, `Aguardando o servidor por ${Math.ceil(milliseconds / 1000)} s`),
+    )
+    await checkProduct(limited, projectId, value.inventory.origin, selection.product)
     for (let cursor = 0; cursor < value.inventory.entries.length; cursor += 100) {
       signal.throwIfAborted()
       if (
@@ -268,7 +469,7 @@ export class InventoryStore {
       )
         continue
       const page = importPageSchema.parse(
-        await transport.request(`/projects/${projectId}/imports/${id}?cursor=${cursor}`),
+        await limited.request(`/projects/${projectId}/imports/${id}?cursor=${cursor}`),
       )
       if (
         page.run.state !== 'inventoried' ||
@@ -294,23 +495,30 @@ export class InventoryStore {
         signal.throwIfAborted()
         progress(result, source.path)
         if (remote.result) {
+          await this.extractOfficeSource(value, projectId, ordinal, remote.result, limited, signal)
           result.reused++
+          continue
+        }
+        if (remote.decision && ['deferred', 'omitted'].includes(remote.decision.state)) {
+          result.skipped++
+          progress(result, `Decisão preservada · ${source.path}`)
           continue
         }
         try {
           if (importSourceIsText(source)) {
-            const loaded = await this.textSource(value, projectId, ordinal, transport, signal)
+            const loaded = await this.textSource(value, projectId, ordinal, limited, signal)
             result[loaded.status === 'reused' ? 'reused' : 'loaded']++
           } else {
             const loaded = await this.fileSource(
               value,
               projectId,
               ordinal,
-              transport,
+              limited,
               signal,
               upload,
               page,
             )
+            if (loaded.status === 'verifying') pending.set(ordinal, loaded.assetId)
             result[
               loaded.status === 'verifying'
                 ? 'verifying'
@@ -327,6 +535,35 @@ export class InventoryStore {
           )
         }
       }
+    }
+    // Verification progresses while later originals are uploaded. Reconcile those
+    // receipts once without retransmitting files or requiring another full scan.
+    // A slow verifier stays explicitly pending; cancellation and restart are safe.
+    for (const [ordinal, assetId] of pending) {
+      signal.throwIfAborted()
+      const source = value.inventory.entries[ordinal]
+      if (!source) throw new Error('Origem ausente do inventário')
+      progress(result, `Conferindo arquivo recebido · ${source.path}`)
+      const file = uploadViewSchema.parse(
+        await limited.request(`/projects/${projectId}/assets/${assetId}`),
+      )
+      if (
+        file.manifest.id !== assetId ||
+        file.manifest.projectId !== projectId ||
+        file.manifest.sha256 !== source.sha256 ||
+        file.manifest.size !== source.bytes ||
+        !isImportSourceAsset(file.manifest)
+      )
+        throw new Error(`A confirmação não corresponde ao original: ${source.path}`)
+      if (file.state === 'failed')
+        throw new Error(
+          `Arquivo recusado: ${source.path}. ${file.error ?? 'Confira o envio na biblioteca.'}`,
+        )
+      if (file.state !== 'confirmed') continue
+      signal.throwIfAborted()
+      const linked = await this.linkFileSource(value, projectId, ordinal, limited, assetId, signal)
+      result[linked.status === 'reused' ? 'reused' : 'loaded']++
+      result.verifying--
     }
     progress(result, '')
     return result

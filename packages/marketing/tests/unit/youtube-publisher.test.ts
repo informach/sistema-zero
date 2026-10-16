@@ -274,7 +274,7 @@ describe('youtube-publisher via publisher-worker (ramo auto)', () => {
       editionHash: 'a'.repeat(64),
       title: 'Edição aprovada',
       assets: [video],
-      orderedAssetIds: [video.id],
+      orderedMedia: [{ assetId: video.id, alt: null }],
     }
     await s.worker.tick()
     expect(s.api.insertCalls).toBe(1)

@@ -13,10 +13,39 @@ import type {
 import type { z } from 'zod'
 
 export interface WorkbenchPort {
+  localStorage?: {
+    usage(): Promise<{ used: number; limit: number; available: number; reserved: number }>
+    clearConfirmed(
+      projectId: string,
+    ): Promise<{ freedBytes: number; removed: number; preserved: number; unavailable: number }>
+  }
   exportAssetFile?(
     input: import('@sistemazero/marketing-contracts').AssetExportRequest,
   ): Promise<boolean>
   inventory?: {
+    rescan(
+      projectId: string,
+      id: string,
+    ): Promise<import('@sistemazero/marketing-contracts').PreparedImport>
+    linkProduction(
+      projectId: string,
+      reportId: string,
+      planHash: string,
+    ): Promise<import('@sistemazero/marketing-contracts').ProductionLinkResult>
+    shareProduction(
+      projectId: string,
+      id: string,
+      folderPath: string,
+    ): Promise<import('@sistemazero/marketing-contracts').ProductionShareResult>
+    productionFolders(
+      projectId: string,
+      id: string,
+    ): Promise<import('@sistemazero/marketing-contracts').ProductionFolder[]>
+    reviewProduction(
+      projectId: string,
+      id: string,
+      folderPath: string,
+    ): Promise<import('@sistemazero/marketing-contracts').ImportProductionPreview>
     loadSelection(
       projectId: string,
       id: string,

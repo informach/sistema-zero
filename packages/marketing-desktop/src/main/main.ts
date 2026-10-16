@@ -4,9 +4,11 @@ import { pathToFileURL } from 'node:url'
 import {
   assetExportRequestSchema,
   editionExportRequestSchema,
+  hashSchema,
   idSchema,
   importOriginSchema,
   importSelectionSchema,
+  relativeSourcePathSchema,
 } from '@sistemazero/marketing-contracts'
 import {
   app,
@@ -29,19 +31,27 @@ import { parseDeepLink } from '../shared/deep-link'
 import { proveActionJournal } from './action-journal-proof'
 import { LocalAssets } from './assets'
 import { proveStudioCapture } from './capture-proof'
+import { proveGeneratedComposition } from './composition-proof'
+import { proveCompositionProviders } from './composition-providers-proof'
 import { executeNative } from './execution/native-executor'
 import { ExecutionSupervisor } from './execution/supervisor'
 import { proveHybridVideo } from './hybrid-video-proof'
 import { proveFileImport } from './imports/file-proof'
 import { proveInventory } from './imports/inventory-proof'
 import { InventoryStore } from './imports/inventory-store'
+import { linkProduction } from './imports/link-production'
+import { proveNativeImport } from './imports/native-import-proof'
+import { delayReviewConnectionProbe, proveProductionReview } from './imports/production-proof'
 import { proveSourceImport } from './imports/source-proof'
+import { proveStructuredImport } from './imports/structure-proof'
 import { installSpeechEngine, speechDirectory, speechEngine } from './media/speech-engine'
 import { getProviderStatus, loginProvider, runProvider } from './providers'
+import { proveRenderChunks } from './render-chunks-proof'
 import { DesktopServerSession, ServerRequestError } from './server-session'
 import { proveServerSession } from './session-proof'
 import { DesktopWorkspaceManager } from './sync/workspace-manager'
 import { proveElectronTimeline } from './timeline-proof'
+import { proveUiLatency } from './ui-latency-proof'
 
 const directory = path.join(app.getAppPath(), 'dist')
 const smoke = [
@@ -50,21 +60,33 @@ const smoke = [
   '--smoke-text',
   '--smoke-session',
   '--smoke-resume',
+  '--smoke-native-import',
+  '--smoke-ui-latency',
   '--smoke-capture',
   '--smoke-timeline',
   '--smoke-hybrid',
+  '--smoke-render-chunks',
+  '--smoke-composition',
+  '--smoke-composition-providers',
 ].some((flag) => process.argv.includes(flag))
 const sessionProof =
-  process.argv.includes('--smoke-session') || process.argv.includes('--smoke-resume')
+  process.argv.includes('--smoke-session') ||
+  process.argv.includes('--smoke-resume') ||
+  process.argv.includes('--smoke-native-import') ||
+  process.argv.includes('--smoke-ui-latency')
 if (sessionProof) {
   if (app.isPackaged) throw new Error('Prova disponível somente em desenvolvimento')
   app.setPath(
     'userData',
     path.join(
       app.getAppPath(),
-      process.argv.includes('--smoke-actions')
-        ? '.cache/connected-proof/actions-profile'
-        : '.cache/connected-proof/profile',
+      process.argv.includes('--smoke-ui-latency')
+        ? '.cache/ui-latency-proof/profile'
+        : process.argv.includes('--smoke-native-import')
+          ? '.cache/native-connected-proof/profile'
+          : process.argv.includes('--smoke-actions')
+            ? '.cache/connected-proof/actions-profile'
+            : '.cache/connected-proof/profile',
     ),
   )
 }
@@ -80,6 +102,8 @@ let tray: Tray | undefined
 let workspaceManager: DesktopWorkspaceManager | undefined
 let supervisor: ExecutionSupervisor | undefined
 let shutdownReady = false
+let exitCode = 0
+const ipcAbort = new AbortController()
 const pendingIpc = new Set<Promise<unknown>>()
 let pendingLink: ReturnType<typeof parseDeepLink> | undefined
 function receiveLink(value: string) {
@@ -126,6 +150,8 @@ async function exclusive<T>(work: () => Promise<T>): Promise<T> {
 }
 function handle(channel: string, operation: (...args: unknown[]) => Promise<unknown>) {
   ipcMain.handle(channel, async (event, ...args: unknown[]) => {
+    // A message already queued by the destroyed renderer cannot start new work while draining.
+    if (quitting) return
     if (
       ['marketing:run', 'marketing:choose-media', 'marketing:render', 'marketing:export'].includes(
         channel,
@@ -146,6 +172,12 @@ function handle(channel: string, operation: (...args: unknown[]) => Promise<unkn
     pendingIpc.add(flight)
     try {
       return await flight
+    } catch (error) {
+      // Shutdown destroys the consumer before aborting/draining its requests.
+      // There is no live renderer to receive an error; do not misreport the
+      // intentional cancellation as a network outage. Durable receipts remain pending.
+      if (quitting && ipcAbort.signal.aborted) return
+      throw error
     } finally {
       pendingIpc.delete(flight)
     }
@@ -155,6 +187,21 @@ function handle(channel: string, operation: (...args: unknown[]) => Promise<unkn
 app
   .whenReady()
   .then(async () => {
+    if (process.argv.includes('--smoke-composition-providers')) {
+      await proveCompositionProviders()
+      app.quit()
+      return
+    }
+    if (process.argv.includes('--smoke-composition')) {
+      await proveGeneratedComposition()
+      app.exit(0)
+      return
+    }
+    if (process.argv.includes('--smoke-render-chunks')) {
+      await proveRenderChunks()
+      app.exit(0)
+      return
+    }
     if (process.argv.includes('--smoke-hybrid')) {
       await proveHybridVideo()
       app.exit(0)
@@ -170,8 +217,13 @@ app
       app.exit(0)
       return
     }
-    const serverSession = new DesktopServerSession(path.join(app.getPath('userData'), 'connection'))
+    const serverSession = new DesktopServerSession(
+      path.join(app.getPath('userData'), 'connection'),
+      ipcAbort.signal,
+    )
     await serverSession.initialize()
+    if (sessionProof && process.argv.includes('--smoke-delayed-connection'))
+      delayReviewConnectionProbe(serverSession)
     workspaceManager = new DesktopWorkspaceManager(
       path.join(app.getPath('userData'), 'workspaces'),
       serverSession,
@@ -234,6 +286,37 @@ app
       const { store } = await inventoryResources(rawScope, rawProject)
       return store.list(before === undefined ? undefined : idSchema.parse(before))
     })
+    handle('marketing:rescan-inventory', (rawScope, rawProject, id) =>
+      exclusive(async () => {
+        const { store } = await inventoryResources(rawScope, rawProject)
+        const signal = startInventoryWork(rawScope, rawProject)
+        return store.rescan(idSchema.parse(id), signal, (files, bytes) =>
+          progress({
+            activity: 'inventory',
+            stage: `Conferindo novamente a pasta: ${files} itens · ${Math.round(bytes / 1024 ** 2)} MB`,
+          }),
+        )
+      }),
+    )
+    handle('marketing:inventory-production-folders', async (rawScope, rawProject, id) => {
+      const { store } = await inventoryResources(rawScope, rawProject)
+      return store.productionFolders(idSchema.parse(id))
+    })
+    handle('marketing:review-inventory-production', (rawScope, rawProject, id, folderPath) =>
+      exclusive(async () => {
+        const { store } = await inventoryResources(rawScope, rawProject)
+        const signal = startInventoryWork(rawScope, rawProject)
+        progress({
+          activity: 'inventory',
+          stage: 'Conferindo copy, ordem, legenda e integridade das artes locais',
+        })
+        return store.reviewProduction(
+          idSchema.parse(id),
+          z.string().min(1).max(1000).parse(folderPath),
+          signal,
+        )
+      }),
+    )
     handle('marketing:load-inventory-text', (rawScope, rawProject, id, ordinal) =>
       exclusive(async () => {
         const { store, projectId, resources } = await inventoryResources(rawScope, rawProject)
@@ -282,6 +365,43 @@ app
         return result
       }),
     )
+    handle('marketing:share-inventory-production', (rawScope, rawProject, id, folderPath) =>
+      exclusive(async () => {
+        const scope = scopeSchema.parse(rawScope),
+          { store, projectId, resources } = await inventoryResources(rawScope, rawProject)
+        const signal = startInventoryWork(rawScope, rawProject)
+        const result = await store.shareProduction(
+          idSchema.parse(id),
+          projectId,
+          relativeSourcePathSchema.parse(folderPath),
+          resources.transport,
+          signal,
+          async (file, expected) => {
+            const asset = await manager.importMedia(scope, projectId, file, { expected, signal })
+            return manager.upload(scope, projectId, asset.id, () => {}, signal)
+          },
+          (stage) => progress({ activity: 'inventory', stage }),
+        )
+        await manager.synchronize()
+        return result
+      }),
+    )
+    handle('marketing:link-inventory-production', (rawScope, rawProject, rawReport, rawHash) =>
+      exclusive(async () => {
+        const scope = scopeSchema.parse(rawScope),
+          projectId = idSchema.parse(rawProject)
+        const signal = startInventoryWork(rawScope, rawProject)
+        return linkProduction(
+          manager,
+          scope,
+          projectId,
+          idSchema.parse(rawReport),
+          hashSchema.parse(rawHash),
+          signal,
+          (stage) => progress({ activity: 'inventory', stage }),
+        )
+      }),
+    )
     handle('marketing:load-inventory-selection', (rawScope, rawProject, id, rawSelection) =>
       exclusive(async () => {
         const scope = scopeSchema.parse(rawScope),
@@ -301,9 +421,10 @@ app
           (result, source) =>
             progress({
               activity: 'inventory',
-              stage: `${result.loaded + result.reused + result.verifying} de ${result.selected} origens · ${result.verifying} aguardando conferência${source ? ` · ${source}` : ''}`,
+              stage: `${result.loaded + result.reused + result.verifying + result.skipped} de ${result.selected} origens · ${result.verifying} aguardando conferência · ${result.skipped} com decisão de carga${source ? ` · ${source}` : ''}`,
               progress: result.selected
-                ? (result.loaded + result.reused + result.verifying) / result.selected
+                ? (result.loaded + result.reused + result.verifying + result.skipped) /
+                  result.selected
                 : 1,
             }),
         )
@@ -413,9 +534,18 @@ app
               'txt',
               'srt',
               'html',
+              'htm',
               'json',
+              'jsonl',
               'pdf',
               'woff2',
+              'ttf',
+              'otf',
+              'zip',
+              'docx',
+              'xlsx',
+              'yaml',
+              'yml',
             ],
           },
         ],
@@ -457,8 +587,11 @@ app
     })
     handle('marketing:synchronize', () => manager.synchronize())
     handle('marketing:projects', () => manager.projects())
-    handle('marketing:project-view', (projectId) =>
-      manager.view(z.string().uuid().parse(projectId)),
+    handle('marketing:project-view', (projectId, version) =>
+      manager.projection(
+        z.string().uuid().parse(projectId),
+        z.number().int().nonnegative().safe().nullable().parse(version),
+      ),
     )
     handle('marketing:save-draft', (scope, input) =>
       manager.enqueue(
@@ -558,6 +691,7 @@ app
     window.on('resize', resizeOnline)
     window.on('closed', () => onlineView?.webContents.close())
     handle('marketing:connection', () => serverSession.status())
+    handle('marketing:connection-state', async () => serverSession.cachedState)
     handle('marketing:connect', (input) => {
       if (busy || manager.transferring)
         throw new Error('Aguarde a produção e o envio de arquivos antes de trocar de conta')
@@ -575,7 +709,10 @@ app
       try {
         return {
           ok: true,
-          value: await serverSession.workspace(workspaceRequestSchema.parse(request)),
+          value: await serverSession.workspace(
+            workspaceRequestSchema.parse(request),
+            ipcAbort.signal,
+          ),
         }
       } catch (error) {
         if (error instanceof ServerRequestError)
@@ -762,12 +899,25 @@ app
     if (process.argv.includes('--smoke-actions')) console.log('action-journal: loading renderer')
     await window.loadURL(rendererUrl)
     if (sessionProof) {
-      if (process.argv.includes('--smoke-import-files')) await proveFileImport(window, manager)
+      if (process.argv.includes('--smoke-ui-latency'))
+        await proveUiLatency(window, manager, serverSession)
+      else if (process.argv.includes('--smoke-native-import'))
+        await proveNativeImport(window, manager)
+      else if (process.argv.includes('--smoke-production-review'))
+        await proveProductionReview(window)
+      else if (process.argv.includes('--smoke-import-structure'))
+        await proveStructuredImport(window, manager)
+      else if (process.argv.includes('--smoke-import-files')) await proveFileImport(window, manager)
       else if (process.argv.includes('--smoke-import-sources'))
         await proveSourceImport(window, manager)
       else if (process.argv.includes('--smoke-inventory')) await proveInventory(window, manager)
       else if (process.argv.includes('--smoke-actions')) await proveActionJournal(window)
       else await proveServerSession(window, serverSession, () => onlineView, receiveLink)
+      if (process.argv.includes('--smoke-shutdown'))
+        await window.webContents.executeJavaScript(`{
+        for(let index=0;index<20;index++)void window.marketing.projects().catch(()=>{});
+        true;
+      }`)
       app.quit()
       return
     }
@@ -840,7 +990,8 @@ app
   })
   .catch((error) => {
     console.error(error instanceof Error ? error.message : 'Falha ao iniciar.')
-    app.exit(1)
+    exitCode = 1
+    app.quit()
   })
 
 app.on('window-all-closed', () => {
@@ -851,6 +1002,7 @@ app.on('before-quit', (event) => {
   event.preventDefault()
   if (quitting) return
   quitting = true
+  ipcAbort.abort()
   tray?.destroy()
   // End renderer producers first, then drain requests before closing their stores.
   // Destroy bypasses the normal close-to-tray handler during an explicit quit.
@@ -865,7 +1017,8 @@ app.on('before-quit', (event) => {
   })()
     .then(() => {
       shutdownReady = true
-      app.quit()
+      if (exitCode) app.exit(exitCode)
+      else app.quit()
     })
     .catch((error) => {
       console.error(

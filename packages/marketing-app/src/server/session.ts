@@ -2,16 +2,22 @@ import 'server-only'
 import { parseDesktopSessionClaim } from '@sistemazero/core/security'
 import {
   createRemoteJWKSet,
-  decodeJwt,
   errors,
   type JWTVerifyGetKey,
   type JWTVerifyOptions,
   jwtVerify,
 } from 'jose'
 import { cookies } from 'next/headers'
-import { ACCESS_COOKIE, DESKTOP_COOKIE, expireCookieOptions, REFRESH_COOKIE } from '@/lib/cookies'
+import {
+  ACCESS_COOKIE,
+  BROWSER_COOKIE,
+  DESKTOP_COOKIE,
+  expireCookieOptions,
+  REFRESH_COOKIE,
+} from '@/lib/cookies'
 import { getEnv, isProd } from '@/lib/env'
 import type { SessionUser } from '@/lib/types'
+import { requestBrowserAccess } from './browser-session'
 import { requestDesktopAccess } from './desktop-session'
 
 /** Par de tokens devolvido pelo @sistemazero/auth (via gateway). */
@@ -76,13 +82,8 @@ function claimsToUser(payload: Record<string, unknown>): SessionUser | null {
   }
 }
 
-/**
- * Sessão do app: lê o access JWT do cookie e o verifica (HS256 com o segredo
- * compartilhado em dev e/ou RS256 via JWKS do auth em produção — a chave é
- * escolhida pelo `alg` do token). Se o token expirou — a assinatura já foi validada
- * (jose checa assinatura ANTES do exp) — decodifica para exibição; as chamadas de
- * dados renovam via refresh-on-401 (ver `gateway.ts`). Assinatura inválida → null.
- */
+/** Resolve the revocable app session and strictly verify a newly issued access.
+ * Old rotating browser cookies require one new login; reads never rotate cookies. */
 export async function getSession(): Promise<SessionUser | null> {
   const store = await cookies()
   const desktop = store.get(DESKTOP_COOKIE)?.value
@@ -96,22 +97,16 @@ export async function getSession(): Promise<SessionUser | null> {
     const verified = await verifyAccessToken(access.accessToken)
     return verified.ok ? verified.user : null
   }
-  const access = store.get(ACCESS_COOKIE)?.value
-  const refresh = store.get(REFRESH_COOKIE)?.value
-  if (!access || !refresh) return null
-  try {
-    const { payload } = await jwtVerify(access, verificationKey(), verifyOptions())
-    return claimsToUser(payload)
-  } catch (err) {
-    if (err instanceof errors.JWTExpired) {
-      try {
-        return claimsToUser(decodeJwt(access))
-      } catch {
-        return null
-      }
-    }
+  const browser = store.get(BROWSER_COOKIE)?.value
+  if (!browser) return null
+  const access = await requestBrowserAccess(browser)
+  if (!access.ok) {
+    if (access.status >= 500 || access.status === 429)
+      throw new Error('Servidor de identidade temporariamente indisponível')
     return null
   }
+  const verified = await verifyAccessToken(access.accessToken)
+  return verified.ok ? verified.user : null
 }
 
 /** Veredito da verificação ESTRITA (exp incluso) — p/ decisões de AUTORIZAÇÃO. */
@@ -119,9 +114,8 @@ export type AccessVerdict = { ok: true; user: SessionUser } | { ok: false; expir
 
 /**
  * Verificação estrita de um access token (assinatura + exp + iss/aud). Diferente
- * de `getSession` (que tolera exp p/ EXIBIÇÃO — o gateway revalida toda chamada
- * de dados), esta é a régua p/ quem precisar AUTORIZAR localmente sem passar
- * pelo gateway: token expirado aqui NÃO vale — o chamador tenta UM refresh.
+ * de uma simples decodificação, assinatura, emissor, audiência e expiração são
+ * obrigatórios. As sessões web/desktop resolvem acesso novo antes desta validação.
  */
 export async function verifyAccessToken(token: string): Promise<AccessVerdict> {
   try {
@@ -152,22 +146,8 @@ export async function verifyDesktopBinding(
   }
 }
 
-export async function getAccessToken(): Promise<string | null> {
-  return (await cookies()).get(ACCESS_COOKIE)?.value ?? null
-}
-
 export async function getRefreshToken(): Promise<string | null> {
   return (await cookies()).get(REFRESH_COOKIE)?.value ?? null
-}
-
-export async function setSessionCookies(tokens: AuthTokens): Promise<void> {
-  const store = await cookies()
-  store.set(DESKTOP_COOKIE, '', expireCookieOptions(isProd()))
-  const base = { httpOnly: true, sameSite: 'lax' as const, secure: isProd(), path: '/' }
-  // O access cookie persiste pela vida do refresh; o exp do JWT (curto) é o que
-  // dispara o refresh-on-401 nas chamadas de dados.
-  store.set(ACCESS_COOKIE, tokens.accessToken, { ...base, maxAge: tokens.refreshExpiresIn })
-  store.set(REFRESH_COOKIE, tokens.refreshToken, { ...base, maxAge: tokens.refreshExpiresIn })
 }
 
 export async function clearSessionCookies(): Promise<void> {
@@ -178,16 +158,25 @@ export async function clearSessionCookies(): Promise<void> {
   store.set(ACCESS_COOKIE, '', expireCookieOptions(isProd()))
   store.set(REFRESH_COOKIE, '', expireCookieOptions(isProd()))
   store.set(DESKTOP_COOKIE, '', expireCookieOptions(isProd()))
+  store.set(BROWSER_COOKIE, '', expireCookieOptions(isProd()))
 }
 
 export async function setDesktopSessionCookie(credential: string, expiresAt: string) {
+  await setStableSessionCookie(DESKTOP_COOKIE, credential, expiresAt)
+}
+
+async function setStableSessionCookie(name: string, credential: string, expiresAt: string) {
   await clearSessionCookies()
   const store = await cookies()
-  store.set(DESKTOP_COOKIE, credential, {
+  store.set(name, credential, {
     httpOnly: true,
     sameSite: 'lax',
     secure: isProd(),
     path: '/',
     expires: new Date(expiresAt),
   })
+}
+
+export async function setBrowserSessionCookie(credential: string, expiresAt: string) {
+  await setStableSessionCookie(BROWSER_COOKIE, credential, expiresAt)
 }

@@ -2,6 +2,7 @@
 export { type ArtProps, artPropsSchema, defaultArt } from './art-props'
 export { demonstrationCandidates, demonstrationGuide } from './demonstration-guide'
 export { editorialRecipe } from './editorial-recipes'
+export { type GeneratedProps, generatedPropsSchema } from './generated/props'
 export { imageRecipe } from './image-recipe'
 export {
   applyStoryPatch,

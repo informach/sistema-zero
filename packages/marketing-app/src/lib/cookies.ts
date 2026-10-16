@@ -1,6 +1,6 @@
 /**
  * Nomes dos cookies de sessão do marketing-app (fonte ÚNICA — `session.ts` os
- * escreve e `proxy.ts` lê o de refresh no gate de UI; sem centralizar, um
+ * escreve e `proxy.ts` lê a sessão browser/desktop no gate de UI; sem centralizar, um
  * divergir do outro deslogaria todo mundo em silêncio).
  *
  * O IdP é o MESMO do admin/community (gateway → auth), mas os cookies são
@@ -39,3 +39,4 @@ const PROD = process.env.NODE_ENV === 'production'
 export const ACCESS_COOKIE = prefixedCookieName('sz_mkt_access', PROD)
 export const REFRESH_COOKIE = prefixedCookieName('sz_mkt_refresh', PROD)
 export const DESKTOP_COOKIE = prefixedCookieName('sz_mkt_desktop', PROD)
+export const BROWSER_COOKIE = prefixedCookieName('sz_mkt_browser', PROD)

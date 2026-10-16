@@ -11,6 +11,7 @@ import { ResendInviteService } from './application/admin/resend-invite/resend-in
 import { SearchProfilesService } from './application/admin/search-profiles/search-profiles.service'
 import { SetUserPasswordService } from './application/admin/set-password/set-user-password.service'
 import { UpdateUserService } from './application/admin/update-user/update-user.service'
+import { BrowserSessionService } from './application/browser/browser-session.service'
 import { DesktopSessionService } from './application/desktop/desktop-session.service'
 import { EnsureBuyerService } from './application/ensure-buyer/ensure-buyer.service'
 import { GetMeService } from './application/get-me/get-me.service'
@@ -52,6 +53,7 @@ import {
 import { createStaffGateway } from './infrastructure/messaging/staff-gateway'
 import { withSentryMirror } from './infrastructure/observability/sentry'
 import { DrizzleAuditLogRepository } from './infrastructure/persistence/drizzle/audit-log.repository'
+import { DrizzleBrowserSessionRepository } from './infrastructure/persistence/drizzle/browser-session.repository'
 import { createDbConnection, type DbConnection } from './infrastructure/persistence/drizzle/db'
 import { DrizzleDesktopSessionRepository } from './infrastructure/persistence/drizzle/desktop-session.repository'
 import { DrizzleImpersonationTokenRepository } from './infrastructure/persistence/drizzle/impersonation-token.repository'
@@ -169,6 +171,11 @@ export async function createApplication(env: Env): Promise<Application> {
   })
   const studyAccess = new StudyAccessService(studyAccessRepository, profilesRepo, users, authTokens)
   const desktopSessions = new DesktopSessionService(desktopSessionRepository, users, authTokens)
+  const browserSessions = new BrowserSessionService(
+    new DrizzleBrowserSessionRepository(connection.db),
+    users,
+    authTokens,
+  )
 
   // Hash "isca" p/ equalizar o tempo do login quando o e-mail não existe (anti-enumeração).
   const dummyHash = await hasher.hash('timing-equalizer-not-a-real-password')
@@ -371,6 +378,7 @@ export async function createApplication(env: Env): Promise<Application> {
         timeoutMs: env.GATEWAY_REQUEST_TIMEOUT_MS,
       }),
     ),
+    browserSessions,
     desktopSessions,
     studyAccess,
     env,

@@ -3,6 +3,7 @@ import path from 'node:path'
 import { renderStill, selectComposition } from '@remotion/renderer'
 import {
   ART_RECIPES,
+  type ArtProposal,
   type ArtRecipeId,
   artProposalSchema,
   artText,
@@ -78,7 +79,7 @@ try {
     let composition = base
     if (fixture.provider) {
       const file = path.join(directory, `${fixture.piece}-proposal.json`)
-      let proposal: ReturnType<typeof artProposalSchema.parse>
+      let proposal: ArtProposal
       if (process.argv.includes('--saved'))
         proposal = artProposalSchema.parse(JSON.parse(await readFile(file, 'utf8')))
       else {

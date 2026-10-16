@@ -125,6 +125,8 @@ const common: Record<string, string[]> = {
     'PORT',
   ],
   marketing: [
+    'MARKETING_ENGAGEMENT_IDENTITY_KEY',
+    'META_ENGAGEMENT_VERIFY_TOKEN',
     'GATEWAY_URL',
     'MARKETING_APP_URL',
     'MARKETING_TOKEN_ENC_KEY',
@@ -278,6 +280,8 @@ const common: Record<string, string[]> = {
     'R2_SECRET_ACCESS_KEY',
   ],
   members: [
+    'STUDIO_BUILDER_EXECUTOR_URL',
+    'STUDIO_BUILDER_EXECUTOR_SECRET',
     'LIVE_MEDIA_READY',
     'LIVE_SFU_APP_ID',
     'LIVE_SFU_APP_SECRET',
@@ -339,6 +343,7 @@ const common: Record<string, string[]> = {
     'VIMEO_WHITELIST_DOMAINS',
   ],
   'community-kids': [
+    'STUDIO_BUILDER_EXECUTOR_SECRET',
     'APP_PUBLIC_URL',
     'CREATION_CLEANUP_CRON_SECRET',
     // Voz do Zappy no Pensa v2 e no tutor (14/10/2026): a chave e a voz da ElevenLabs.

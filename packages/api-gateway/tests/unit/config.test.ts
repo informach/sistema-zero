@@ -82,6 +82,22 @@ describe('loadGatewayConfig', () => {
       expect(route?.audit).toBeUndefined()
     }
   })
+  test('browser session routes are bounded POST-only identity endpoints', () => {
+    const registry = new RouteRegistry(
+      realConfig.routes.map((route) => routeConfigSchema.parse(route)),
+    )
+    for (const action of ['exchange', 'access', 'disconnect']) {
+      const path = `/auth/browser/session/${action}`
+      expect(registry.resolve('POST', path, 'v1')?.route).toMatchObject({
+        id: `auth-browser-${action}`,
+        service: 'auth',
+        upstreamAuth: 'passthrough',
+        maxBodyBytes: 4096,
+      })
+      expect(registry.resolve('GET', path, 'v1')).toBeUndefined()
+      expect(registry.resolve('DELETE', path, 'v1')).toBeUndefined()
+    }
+  })
   test('live boundaries preserve actors and reserve material registration for the BFF', () => {
     const registry = new RouteRegistry(
       realConfig.routes.map((route) => routeConfigSchema.parse(route)),

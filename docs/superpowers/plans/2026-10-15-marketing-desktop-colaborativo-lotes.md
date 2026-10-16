@@ -1,6 +1,6 @@
 # Marketing web e desktop colaborativo — Implementation Plan
 
-> **For agentic workers:** executar os lotes consecutivamente com a skill disponível executing-plans, conferindo a proposta e os critérios de saída. L0–L5 têm implementação e provas registradas nas auditorias; L6A–C continuam abertos para integração e funcionalidades indicadas nos reviews. L7 está em implementação: aprovação exata e ligação da entrega à fila de publicação já foram testadas; retenção, métricas e integração continuam abertas. Existem critérios de validação e integração abertos nos lotes iniciais. As caixas acompanham entregáveis comprovados e não devem ser marcadas somente pela existência de código. Ver [L0](../../plans/2026-10-15-marketing-desktop-l0-evidencias.md) e os registros `.audits/marketing-l*-review-2026-10-15.md`.
+> **For agentic workers:** executar os lotes consecutivamente com a skill disponível executing-plans, conferindo a proposta e os critérios de saída. Estado em 16/10: L0–L5 têm implementação e provas registradas, com critérios operacionais ainda abertos. L6A–C têm pendências funcionais e de integração indicadas nos reviews. L7 tem aprovação/entrega, métricas e ensaio local de recuperação; exportação integrada e recuperação operacional ainda precisam de fechamento. L8 concluiu a carga e reconciliação do acervo em revisão. L9 demonstrou sessões/sincronização e aprendizado, mas não o piloto físico completo. L10 concluiu implementação, provas web/Electron e revisão dos pacotes; sua liberação continua dependendo dos critérios anteriores. A revisão integrada está fechando essas pendências, sem declarar os lotes iniciais concluídos pela passagem ao L10. As caixas acompanham entregáveis comprovados. Ver [L0](../../plans/2026-10-15-marketing-desktop-l0-evidencias.md) e as auditorias `.audits/marketing-l*-review-*.md`.
 
 **Goal:** permitir que a equipe continue todo o trabalho de marketing pelo app web/desktop, com acervo carregado, assinaturas individuais, produção de imagem/vídeo, edição e sincronização confiável.
 
@@ -250,9 +250,9 @@ A primeira liberação cotidiana acontece em L9, com assinaturas, acervo, pesqui
 ### L6C — Efeitos, composição híbrida e adaptação
 
 - [ ] Ampliar as composições já incorporadas em L6B com cenas reais, imagem animada e composição híbrida; sobrepor textos, identificação, destaques, contador, lista, CTA e transições.
-- [ ] Versionar receitas e validar parâmetros. A IA pode ajustar código de composição em escopo isolado, com validação antes de integrar; não carregar código arbitrário no renderer com ponte Electron nem criar um sistema de plugins.
+- [x] Versionar receitas e validar parâmetros. A IA pode ajustar código de composição em escopo isolado, com validação antes de integrar; não carregar código arbitrário no renderer com ponte Electron nem criar um sistema de plugins. Codex/Claude reais, preflight, retomada, PostgreSQL e percurso Electron → R2 → web comprovados em 16/10; auditoria `marketing-l6-composition-review-2026-10-16.md`.
 - [ ] Adaptar story de imagem para vídeo, inclusive um item dentro de sequência, reaproveitando imagem/copy/CTA sem alterar os outros.
-- [ ] Permitir regenerar/ajustar só cena, texto ou efeito: ajuste solicitado atualiza rascunho com Desfazer, alternativas aguardam escolha. Recalcular apenas o trecho/dependências afetados.
+- [x] Permitir regenerar/ajustar só cena, texto ou efeito: ajuste solicitado atualiza rascunho com Desfazer, alternativas aguardam escolha. Recalcular apenas o trecho/dependências afetados. Reuso visual e áudio contínuo comprovados em 16/10; auditoria `marketing-l6-render-cache-review-2026-10-16.md`.
 - [ ] Exportar arquivo válido para destino escolhido com checagem de duração, dimensões, áudio, texto/áreas seguras, codec e sincronismo.
 - [ ] Registrar identidade do render por timeline/assets/fontes/motor; upload retomável e aprovação da saída exata.
 - [ ] Mostrar “Requer app desktop” por ação local, com instalação/abertura preservando rascunho e seleção.
@@ -287,7 +287,7 @@ A primeira liberação cotidiana acontece em L9, com assinaturas, acervo, pesqui
 
 ## L8 — Alimentar o app com todo o acervo
 
-**Execução:** inventário nativo e registro compartilhado demonstrados com ambas as origens; carga de fontes e vínculo editorial em implementação. Ver `.audits/marketing-l8-review-2026-10-15.md`. L8A/L8B permanecem abertos; contagem de origens não equivale a conteúdo importado ou produto liberado.
+**Execução:** L8A/L8B concluídos no ambiente nativo de revisão, em retratos datados. CDC/Sistema Zero: 4.167 origens preservadas e liberação após reconciliação de alterações reais; conferência final com 4.209 registros sem diferenças. Conserva 109 peças/grupos, 779 componentes, 80 pautas/20 semanas, 47 conferências e 227 artes vinculadas a 37 posts. P29, três fixados e seis destaques mantêm dez pendências de produção consultáveis. Sete conjuntos adicionais liberados, incluindo 560 arquivos Fluxo, uma omissão explícita e 17 extrações Office. A web consultou P01, arte/copy/alt, histórico e Office no inventário reconciliado; o Electron conferiu a liberação pela interface. Origens alteradas ganham versão, removidas permanecem no histórico e a reconciliação conserva revisões humanas. A regressão backend passou com 354 testes/2.024 assertions. Isso não constitui deploy ou carga de produção: L9, L10 e critérios anteriores abertos seguem pendentes. Docker dispensado pelo usuário. Ver `.audits/marketing-l8-review-2026-10-15.md`.
 
 **Áreas:** novo contexto de importação no marketing, ferramenta desktop e biblioteca. L8A prepara cedo; L8B completa/reconcilia e ativa antes da liberação.
 
@@ -297,14 +297,14 @@ Subcargas ordenadas: direção/fontes → pauta/copy → originais/apoio → ent
 
 **Dependências:** L1, L3, L4. Pode fornecer amostras reais a L5/L6, sem aguardar toda a produção.
 
-- [ ] Inventariar docs/marketing, planos editoriais, produção e referências em output; incluir arquivos pertinentes ignorados pelo Git.
-- [ ] Incluir meus-produtos do Fluxo Criativo: três produtos, 561 arquivos brutos na análise. Distinguir marketing, referência pedagógica e arquivo técnico; comparar identidade/conteúdo além do hash.
-- [ ] Classificar calendários, oferta/preços e posicionamentos antigos sem substituir direção vigente; Programando com Diversão não vira produto ativo por inferência.
-- [ ] Separar produtos/canais e excluir credenciais, caches, node_modules e propostas de engenharia da base de posicionamento.
-- [ ] Manter importação sem execução de scripts; isolar prévias HTML e revisar receitas antes de executá-las.
-- [ ] Congelar retrato com hashes e mapear origem → destino → revisão; classificar vigente, histórico, referência e incompleto.
-- [ ] Carregar em preparação, reconciliando o que já existir no app e conservando IDs editoriais. Similaridade sugerida pela IA não autoriza apagar/mesclar origens.
-- [ ] Preparar amostras de copy, montagem, arquivo final e pendência real; identificar PNG sem fonte editável e dependências ausentes.
+- [x] Inventariar docs/marketing, planos editoriais, produção e referências em output; incluir arquivos pertinentes ignorados pelo Git.
+- [x] Incluir meus-produtos do Fluxo Criativo: três produtos, 561 arquivos brutos na análise. Distinguir marketing, referência pedagógica e arquivo técnico; comparar identidade/conteúdo além do hash.
+- [x] Classificar calendários, oferta/preços e posicionamentos antigos sem substituir direção vigente; Programando com Diversão não vira produto ativo por inferência.
+- [x] Separar produtos/canais e excluir credenciais, caches, node_modules e propostas de engenharia da base de posicionamento.
+- [x] Manter importação sem execução de scripts; isolar prévias HTML e revisar receitas antes de executá-las.
+- [x] Congelar retrato com hashes e mapear origem → destino → revisão; classificar vigente, histórico, referência e incompleto.
+- [x] Carregar em preparação, reconciliando o que já existir no app e conservando IDs editoriais. Similaridade sugerida pela IA não autoriza apagar/mesclar origens.
+- [x] Preparar amostras de copy, montagem, arquivo final e pendência real; identificar PNG sem fonte editável e dependências ausentes.
 
 **Validação e saída:** inventário reproduzível e amostras consultáveis, com proveniência e estados explícitos; nenhuma ativação ou aprovação por inferência. Revisar incompatibilidades antes de fechar parsers/produção.
 
@@ -312,11 +312,11 @@ Subcargas ordenadas: direção/fontes → pauta/copy → originais/apoio → ent
 
 **Dependências:** L8A, L5, L6A–C, L7.
 
-- [ ] Completar a carga de originais/componentes estruturáveis e vínculos, aproveitando os formatos validados em L5/L6.
-- [ ] Validar contagens, integridade, vínculos, ordem, textos, alt, fontes, precedência e amostra visual.
-- [ ] Detectar mudanças entre inventário e ativação e importar o delta com comparação; não sobrescrever trabalho já feito no app.
-- [ ] Resolver ou identificar ambiguidades, exclusões, duplicatas e dependências pendentes. Cada origem elegível precisa de destino ou motivo rastreável.
-- [ ] Ativar os projetos carregados e colocar pendências reais na fila de continuidade, sem publicar/agendar.
+- [x] Completar a carga de originais/componentes estruturáveis e vínculos, aproveitando os formatos validados em L5/L6.
+- [x] Validar contagens, integridade, vínculos, ordem, textos, alt, fontes, precedência e amostra visual.
+- [x] Detectar mudanças entre inventário e ativação e importar o delta com comparação; não sobrescrever trabalho já feito no app.
+- [x] Resolver ou identificar ambiguidades, exclusões, duplicatas e dependências pendentes. Cada origem elegível precisa de destino ou motivo rastreável.
+- [x] Ativar os projetos carregados e colocar pendências reais na fila de continuidade, sem publicar/agendar.
 
 **Validação:** reexecutar não duplica. Conferir calendário principal, extras, stories, fixados, destaques, ManyChat e materiais dos demais produtos. P01 conserva combinação entre versões de copy e arte; P29 conserva incompletude.
 
@@ -348,17 +348,19 @@ Subcargas ordenadas: direção/fontes → pauta/copy → originais/apoio → ent
 
 ## L10 — Ampliação de análise, monitoramento e aprendizado
 
+**Execução em 16/10:** relações e agrupamentos por edição aprovada, observações públicas/importadas estruturadas, ciclo análise → hipótese → pauta, feeds recorrentes no servidor, espera de pesquisa pessoal/manual, painel de novidades e análise do processo produtivo estão implementados. Provas web/Electron, revisão dos pacotes e builds passaram. Tempo humano é declarado e consumo tem cobertura explícita de resultados confirmados. Migrações novas `0028..0031`. Ver `.audits/marketing-l10-review-2026-10-16.md`. Os entregáveis abaixo estão demonstrados em revisão; a liberação permanece condicionada ao piloto L9 e aos critérios anteriores pendentes.
+
 **Dependências:** L4, L7, L8B; liberação após L9. **Áreas:** métricas existentes, contexto de inteligência, workers de coleta, relações de objetivo/hipótese e telas de análise.
 
-- [ ] Ampliar as relações publicação/edição e a disponibilidade explícita já entregues em L7, acrescentando cobertura e comparações para novas fontes.
-- [ ] Exibir resultado por objetivo, necessidade, série e formato, com contexto comparável, tanto na web quanto no Electron.
-- [ ] Transformar uma análise em hipótese e proposta para o próximo ciclo, preservando a evidência.
-- [ ] Reutilizar MetricsWorker/política/repos de snapshots para contas próprias; ampliar coletas para novas fontes/watchlists com agenda/fuso, credencial adequada, budget, deduplicação, retry limitado, cancelamento e última coleta visível. Não duplicar coleta de publicações já atendidas.
-- [ ] Distinguir contas próprias conectadas, referências públicas e dados importados; ausência de likes/shares/views não vira zero. Informar denominador, amostra, cobertura e janela comparável.
-- [ ] Manter coleta suportada no servidor com desktop desligado; tarefa pessoal/IA local aguarda dono/dispositivo. Não transferir assinatura privada ao servidor.
-- [ ] Criar alertas no app para novidades/mudanças observadas e propostas de novas pautas/variações, com fonte e revisão humana.
-- [ ] Avaliar Apify/coletor externo somente como integração opcional explícita; importação manual segue disponível. Nenhum envio de mensagem, publicação ou alteração de mídia paga automática.
-- [ ] Ampliar a análise das métricas de produção já instrumentadas em L3: tempo humano, retrabalho, consumo informado, geração descartada e falhas recuperadas.
+- [x] Ampliar as relações publicação/edição e a disponibilidade explícita já entregues em L7, acrescentando cobertura e comparações para novas fontes.
+- [x] Exibir resultado por objetivo, necessidade, série e formato, com contexto comparável, tanto na web quanto no Electron.
+- [x] Transformar uma análise em hipótese e proposta para o próximo ciclo, preservando a evidência.
+- [x] Reutilizar MetricsWorker/política/repos de snapshots para contas próprias; ampliar coletas para novas fontes/watchlists com agenda/fuso, credencial adequada, budget, deduplicação, retry limitado, cancelamento e última coleta visível. Não duplicar coleta de publicações já atendidas.
+- [x] Distinguir contas próprias conectadas, referências públicas e dados importados; ausência de likes/shares/views não vira zero. Informar denominador, amostra, cobertura e janela comparável.
+- [x] Manter coleta suportada no servidor com desktop desligado; tarefa pessoal/IA local aguarda dono/dispositivo. Não transferir assinatura privada ao servidor.
+- [x] Criar alertas no app para novidades/mudanças observadas e propostas de novas pautas/variações, com fonte e revisão humana.
+- [x] Avaliar Apify/coletor externo somente como integração opcional explícita; importação manual segue disponível. Nenhum envio de mensagem, publicação ou alteração de mídia paga automática.
+- [x] Ampliar a análise das métricas de produção já instrumentadas em L3: tempo humano, retrabalho, consumo informado, geração descartada e falhas recuperadas.
 
 **Validação:** peça republicada com edições diferentes; dados ausentes; análise que não transforma correlação em prova. Demonstrar uma decisão de pauta baseada em resultados, sem alterar automaticamente a estratégia aprovada. Testar dado oculto, snapshot parcial, mudança de definição, timezone, coleta duplicada, quota, rede ausente, fonte removida e desktop offline; falha não produz falsa queda de métrica.
 
@@ -418,4 +420,8 @@ Atualizar docs/marketing.md, os guias operacionais dos pacotes, o procedimento d
 | Referências, mercado e monitoramento | L4, L8A/L8B, L10 |
 | Hospedagem, vídeo avançado e outras plataformas | L11, condicionados à necessidade |
 
-Há execução de código e provas locais de L0 registradas nas evidências vinculadas. Não houve importação do acervo, publicação, sincronização com equipe ou liberação cotidiana. A proposta completa permanece pendente dos demais lotes e dos critérios abertos de L0.
+Há execução e provas locais registradas nas auditorias por lote, incluindo importação preparatória de fontes e peças e recuperação de originais no R2 de staging. Isso não equivale à carga integral, publicação ou liberação cotidiana. A proposta completa permanece pendente dos critérios abertos, do piloto colaborativo e da revisão final.
+
+### Atualização operacional de L8 — 16/10
+
+A pausa por espaço em disco foi superada. L8 concluiu a reconciliação de 4.167 origens e a conferência final dos 4.209 registros do inventário, sem diferenças no retrato de liberação. Os sete conjuntos adicionais também receberam recibos de liberação. Dez pendências reais de produção permanecem visíveis. A regressão backend passou com 354 testes/2.024 assertions no PostgreSQL nativo. L9 entrou na medição de sincronização e corrigiu a corrida da sessão web; L10 e critérios anteriores continuam abertos. A orientação do usuário é continuar sem Docker, executar os lotes sem pausas para aceite e realizar commit/merge local somente após a revisão final.

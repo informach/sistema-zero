@@ -67,6 +67,10 @@ export function collectProcessResult(
   child: ChildProcessWithoutNullStreams,
   timeoutMs = 20000,
   signal?: AbortSignal,
+  capture?: (
+    result: { output: string; stderr: string; code: number | null },
+    complete: boolean,
+  ) => Promise<void>,
 ): Promise<{ output: string; stderr: string; code: number | null }> {
   return new Promise((resolve, reject) => {
     let output = ''
@@ -79,10 +83,11 @@ export function collectProcessResult(
       settled = true
       clearTimeout(timer)
       signal?.removeEventListener('abort', abort)
-      if (error) {
-        child.kill()
-        reject(error)
-      } else resolve({ output, stderr, code: exitCode })
+      if (error) child.kill()
+      const result = { output, stderr, code: exitCode }
+      // Flush evidence before reporting completion/failure to the execution supervisor.
+      const captured = capture ? capture(result, !error && exitCode === 0) : Promise.resolve()
+      void captured.then(() => (error ? reject(error) : resolve(result)), reject)
     }
     const abort = () => finish(new Error('Operação cancelada.'))
     const timer = setTimeout(
@@ -90,12 +95,20 @@ export function collectProcessResult(
       timeoutMs,
     )
     child.stdout.setEncoding('utf8')
+    child.stdout.on('error', () =>
+      finish(new Error('O canal de saída do cliente oficial foi encerrado.')),
+    )
     child.stdout.on('data', (chunk: string) => {
+      if (settled) return
       output += chunk
       if (output.length > 2_000_000) finish(new Error('Resposta acima do limite permitido.'))
     })
     child.stderr.setEncoding('utf8')
+    child.stderr.on('error', () =>
+      finish(new Error('O canal de diagnóstico do cliente oficial foi encerrado.')),
+    )
     child.stderr.on('data', (chunk: string) => {
+      if (settled) return
       stderr = (stderr + chunk).slice(-32000)
     })
     // A CLI can reject its arguments before reading stdin. Preserve its stderr/exit status

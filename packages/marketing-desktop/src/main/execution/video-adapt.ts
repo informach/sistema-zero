@@ -1,4 +1,5 @@
 import { type ExecutionRun, videoAdaptationSeed } from '@sistemazero/marketing-contracts'
+import type { ProviderRecovery } from '../provider-checkpoint'
 import { runProvider } from '../providers'
 import type { ProductionResult } from './journal'
 
@@ -7,6 +8,7 @@ export async function adaptVideo(
   directory: string,
   signal: AbortSignal,
   progress: (message: string) => void,
+  recovery: ProviderRecovery,
 ): Promise<ProductionResult> {
   const seed = await videoAdaptationSeed(
       run.context.source,
@@ -31,6 +33,8 @@ export async function adaptVideo(
     directory,
     signal,
     progress,
+    undefined,
+    recovery,
   )
   if (!result.video)
     throw new Error('A IA não entregou uma adaptação válida; a resposta foi preservada')

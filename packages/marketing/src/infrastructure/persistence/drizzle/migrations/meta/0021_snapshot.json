@@ -1,6 +1,6 @@
 {
-  "id": "51330245-7b5e-4b18-bcde-cc1f8f6fda45",
-  "prevId": "b114552f-0194-44fd-a8ee-8cf3c5cc0daa",
+  "id": "24beead0-43c3-4a8e-bf4c-3ad23fd885a3",
+  "prevId": "b49873f8-e66a-40fc-91b6-b629fe50b4bd",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -2362,6 +2362,219 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "marketing.editorial_import_production_reports": {
+      "name": "editorial_import_production_reports",
+      "schema": "marketing",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "project_id": {
+          "name": "project_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "run_id": {
+          "name": "run_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "report": {
+          "name": "report",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "editorial_import_production_reports_run_idx": {
+          "name": "editorial_import_production_reports_run_idx",
+          "columns": [
+            {
+              "expression": "project_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "run_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "editorial_import_production_reports_project_id_editorial_projects_id_fk": {
+          "name": "editorial_import_production_reports_project_id_editorial_projects_id_fk",
+          "tableFrom": "editorial_import_production_reports",
+          "tableTo": "editorial_projects",
+          "schemaTo": "marketing",
+          "columnsFrom": [
+            "project_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "editorial_import_production_reports_run_id_editorial_imports_id_fk": {
+          "name": "editorial_import_production_reports_run_id_editorial_imports_id_fk",
+          "tableFrom": "editorial_import_production_reports",
+          "tableTo": "editorial_imports",
+          "schemaTo": "marketing",
+          "columnsFrom": [
+            "run_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "marketing.editorial_import_products": {
+      "name": "editorial_import_products",
+      "schema": "marketing",
+      "columns": {
+        "project_id": {
+          "name": "project_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "origin": {
+          "name": "origin",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "product": {
+          "name": "product",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "include_shared": {
+          "name": "include_shared",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "revision_id": {
+          "name": "revision_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_by": {
+          "name": "updated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "editorial_import_products_project_id_editorial_projects_id_fk": {
+          "name": "editorial_import_products_project_id_editorial_projects_id_fk",
+          "tableFrom": "editorial_import_products",
+          "tableTo": "editorial_projects",
+          "schemaTo": "marketing",
+          "columnsFrom": [
+            "project_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "editorial_import_products_project_id_origin_pk": {
+          "name": "editorial_import_products_project_id_origin_pk",
+          "columns": [
+            "project_id",
+            "origin"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "marketing.editorial_import_source_texts": {
+      "name": "editorial_import_source_texts",
+      "schema": "marketing",
+      "columns": {
+        "source_version_id": {
+          "name": "source_version_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "text": {
+          "name": "text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "editorial_import_source_texts_source_version_id_editorial_import_source_versions_id_fk": {
+          "name": "editorial_import_source_texts_source_version_id_editorial_import_source_versions_id_fk",
+          "tableFrom": "editorial_import_source_texts",
+          "tableTo": "editorial_import_source_versions",
+          "schemaTo": "marketing",
+          "columnsFrom": [
+            "source_version_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "marketing.editorial_import_source_versions": {
       "name": "editorial_import_source_versions",
       "schema": "marketing",
@@ -2449,6 +2662,27 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "editorial_import_source_project_idx": {
+          "name": "editorial_import_source_project_idx",
+          "columns": [
+            {
+              "expression": "project_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
@@ -2461,6 +2695,160 @@
             "project_id"
           ],
           "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "marketing.editorial_import_structures": {
+      "name": "editorial_import_structures",
+      "schema": "marketing",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "project_id": {
+          "name": "project_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source_version_id": {
+          "name": "source_version_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "piece_id": {
+          "name": "piece_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "section_key": {
+          "name": "section_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "parser_version": {
+          "name": "parser_version",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sequence": {
+          "name": "sequence",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "destinations": {
+          "name": "destinations",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "editorial_structure_version_idx": {
+          "name": "editorial_structure_version_idx",
+          "columns": [
+            {
+              "expression": "source_version_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "section_key",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "parser_version",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "editorial_structure_piece_idx": {
+          "name": "editorial_structure_piece_idx",
+          "columns": [
+            {
+              "expression": "project_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "piece_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "sequence",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "editorial_import_structures_project_id_editorial_projects_id_fk": {
+          "name": "editorial_import_structures_project_id_editorial_projects_id_fk",
+          "tableFrom": "editorial_import_structures",
+          "tableTo": "editorial_projects",
+          "schemaTo": "marketing",
+          "columnsFrom": [
+            "project_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "editorial_structure_source_fk": {
+          "name": "editorial_structure_source_fk",
+          "tableFrom": "editorial_import_structures",
+          "tableTo": "editorial_import_source_versions",
+          "schemaTo": "marketing",
+          "columnsFrom": [
+            "project_id",
+            "source_version_id"
+          ],
+          "columnsTo": [
+            "project_id",
             "id"
           ],
           "onDelete": "no action",
@@ -2655,6 +3043,21 @@
           "isUnique": false,
           "concurrently": false,
           "method": "btree",
+          "with": {}
+        },
+        "editorial_items_references_idx": {
+          "name": "editorial_items_references_idx",
+          "columns": [
+            {
+              "expression": "(\n    coalesce(\"document\"->'referenceIds', '[]'::jsonb) ||\n    coalesce(\"document\"->'evidenceIds', '[]'::jsonb) ||\n    coalesce(\"document\"->'representationIds', '[]'::jsonb) ||\n    coalesce(\"document\"->'componentIds', '[]'::jsonb) ||\n    coalesce(\"document\"->'pieceId', '[]'::jsonb) ||\n    coalesce(\"document\"->'representationId', '[]'::jsonb) ||\n    coalesce(\"document\"->'proposedPieceId', '[]'::jsonb)\n  )",
+              "asc": true,
+              "isExpression": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
           "with": {}
         },
         "editorial_items_project_id_idx": {
@@ -3237,1171 +3640,6 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "marketing.engagement_activations": {
-      "name": "engagement_activations",
-      "schema": "marketing",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "project_id": {
-          "name": "project_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "piece_id": {
-          "name": "piece_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "revision_id": {
-          "name": "revision_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "publication_id": {
-          "name": "publication_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "account_id": {
-          "name": "account_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "plan": {
-          "name": "plan",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "version": {
-          "name": "version",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 1
-        },
-        "state": {
-          "name": "state",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "reason": {
-          "name": "reason",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "external_post_id": {
-          "name": "external_post_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "verified_at": {
-          "name": "verified_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_by": {
-          "name": "created_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "engagement_activation_project_idx": {
-          "name": "engagement_activation_project_idx",
-          "columns": [
-            {
-              "expression": "project_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "piece_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "engagement_activation_live_post_idx": {
-          "name": "engagement_activation_live_post_idx",
-          "columns": [
-            {
-              "expression": "account_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "external_post_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "where": "\"marketing\".\"engagement_activations\".\"state\"='active'",
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "engagement_activation_identity_idx": {
-          "name": "engagement_activation_identity_idx",
-          "columns": [
-            {
-              "expression": "account_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "publication_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "revision_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "engagement_activations_project_id_editorial_projects_id_fk": {
-          "name": "engagement_activations_project_id_editorial_projects_id_fk",
-          "tableFrom": "engagement_activations",
-          "tableTo": "editorial_projects",
-          "schemaTo": "marketing",
-          "columnsFrom": [
-            "project_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "engagement_activations_revision_id_engagement_approvals_revision_id_fk": {
-          "name": "engagement_activations_revision_id_engagement_approvals_revision_id_fk",
-          "tableFrom": "engagement_activations",
-          "tableTo": "engagement_approvals",
-          "schemaTo": "marketing",
-          "columnsFrom": [
-            "revision_id"
-          ],
-          "columnsTo": [
-            "revision_id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "engagement_activations_publication_id_publications_id_fk": {
-          "name": "engagement_activations_publication_id_publications_id_fk",
-          "tableFrom": "engagement_activations",
-          "tableTo": "publications",
-          "schemaTo": "marketing",
-          "columnsFrom": [
-            "publication_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "engagement_activations_account_id_engagement_channels_account_id_fk": {
-          "name": "engagement_activations_account_id_engagement_channels_account_id_fk",
-          "tableFrom": "engagement_activations",
-          "tableTo": "engagement_channels",
-          "schemaTo": "marketing",
-          "columnsFrom": [
-            "account_id"
-          ],
-          "columnsTo": [
-            "account_id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "marketing.engagement_approvals": {
-      "name": "engagement_approvals",
-      "schema": "marketing",
-      "columns": {
-        "revision_id": {
-          "name": "revision_id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "project_id": {
-          "name": "project_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "piece_id": {
-          "name": "piece_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "approved_by": {
-          "name": "approved_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "approved_at": {
-          "name": "approved_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "engagement_approvals_revision_id_editorial_revisions_id_fk": {
-          "name": "engagement_approvals_revision_id_editorial_revisions_id_fk",
-          "tableFrom": "engagement_approvals",
-          "tableTo": "editorial_revisions",
-          "schemaTo": "marketing",
-          "columnsFrom": [
-            "revision_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "engagement_approvals_project_id_editorial_projects_id_fk": {
-          "name": "engagement_approvals_project_id_editorial_projects_id_fk",
-          "tableFrom": "engagement_approvals",
-          "tableTo": "editorial_projects",
-          "schemaTo": "marketing",
-          "columnsFrom": [
-            "project_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "marketing.engagement_channels": {
-      "name": "engagement_channels",
-      "schema": "marketing",
-      "columns": {
-        "account_id": {
-          "name": "account_id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "version": {
-          "name": "version",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 1
-        },
-        "enabled": {
-          "name": "enabled",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "connection_id": {
-          "name": "connection_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "graph_version": {
-          "name": "graph_version",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "proof": {
-          "name": "proof",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "retention_days": {
-          "name": "retention_days",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 90
-        },
-        "max_sends_per_hour": {
-          "name": "max_sends_per_hour",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 30
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "engagement_channels_account_id_social_accounts_id_fk": {
-          "name": "engagement_channels_account_id_social_accounts_id_fk",
-          "tableFrom": "engagement_channels",
-          "tableTo": "social_accounts",
-          "schemaTo": "marketing",
-          "columnsFrom": [
-            "account_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "marketing.engagement_conversations": {
-      "name": "engagement_conversations",
-      "schema": "marketing",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "account_id": {
-          "name": "account_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "recipient_key": {
-          "name": "recipient_key",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "recipient_enc": {
-          "name": "recipient_enc",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "version": {
-          "name": "version",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 1
-        },
-        "state": {
-          "name": "state",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'automatic'"
-        },
-        "owner_id": {
-          "name": "owner_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "suppression": {
-          "name": "suppression",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "suppressed_at": {
-          "name": "suppressed_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "last_inbound_at": {
-          "name": "last_inbound_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "automation_after": {
-          "name": "automation_after",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "typed_reply_sent": {
-          "name": "typed_reply_sent",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "topic": {
-          "name": "topic",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "outcome": {
-          "name": "outcome",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "engagement_recipient_idx": {
-          "name": "engagement_recipient_idx",
-          "columns": [
-            {
-              "expression": "account_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "recipient_key",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "engagement_inbox_idx": {
-          "name": "engagement_inbox_idx",
-          "columns": [
-            {
-              "expression": "account_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "updated_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "engagement_conversations_account_id_engagement_channels_account_id_fk": {
-          "name": "engagement_conversations_account_id_engagement_channels_account_id_fk",
-          "tableFrom": "engagement_conversations",
-          "tableTo": "engagement_channels",
-          "schemaTo": "marketing",
-          "columnsFrom": [
-            "account_id"
-          ],
-          "columnsTo": [
-            "account_id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "marketing.engagement_inbound": {
-      "name": "engagement_inbound",
-      "schema": "marketing",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "account_id": {
-          "name": "account_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "event_key": {
-          "name": "event_key",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "event": {
-          "name": "event",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "conversation_id": {
-          "name": "conversation_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "state": {
-          "name": "state",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'pending'"
-        },
-        "reason": {
-          "name": "reason",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "received_at": {
-          "name": "received_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "available_at": {
-          "name": "available_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "engagement_event_idx": {
-          "name": "engagement_event_idx",
-          "columns": [
-            {
-              "expression": "account_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "event_key",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "engagement_pending_idx": {
-          "name": "engagement_pending_idx",
-          "columns": [
-            {
-              "expression": "state",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "received_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "engagement_inbound_account_id_engagement_channels_account_id_fk": {
-          "name": "engagement_inbound_account_id_engagement_channels_account_id_fk",
-          "tableFrom": "engagement_inbound",
-          "tableTo": "engagement_channels",
-          "schemaTo": "marketing",
-          "columnsFrom": [
-            "account_id"
-          ],
-          "columnsTo": [
-            "account_id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "engagement_inbound_conversation_id_engagement_conversations_id_fk": {
-          "name": "engagement_inbound_conversation_id_engagement_conversations_id_fk",
-          "tableFrom": "engagement_inbound",
-          "tableTo": "engagement_conversations",
-          "schemaTo": "marketing",
-          "columnsFrom": [
-            "conversation_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "marketing.engagement_journeys": {
-      "name": "engagement_journeys",
-      "schema": "marketing",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "conversation_id": {
-          "name": "conversation_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "activation_id": {
-          "name": "activation_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "state": {
-          "name": "state",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "previous_state": {
-          "name": "previous_state",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "comment_id": {
-          "name": "comment_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "opened_at": {
-          "name": "opened_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "interacted_at": {
-          "name": "interacted_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "offered_at": {
-          "name": "offered_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "engagement_one_journey_idx": {
-          "name": "engagement_one_journey_idx",
-          "columns": [
-            {
-              "expression": "conversation_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "where": "\"marketing\".\"engagement_journeys\".\"state\" <> 'closed'",
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "engagement_journeys_conversation_id_engagement_conversations_id_fk": {
-          "name": "engagement_journeys_conversation_id_engagement_conversations_id_fk",
-          "tableFrom": "engagement_journeys",
-          "tableTo": "engagement_conversations",
-          "schemaTo": "marketing",
-          "columnsFrom": [
-            "conversation_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "engagement_journeys_activation_id_engagement_activations_id_fk": {
-          "name": "engagement_journeys_activation_id_engagement_activations_id_fk",
-          "tableFrom": "engagement_journeys",
-          "tableTo": "engagement_activations",
-          "schemaTo": "marketing",
-          "columnsFrom": [
-            "activation_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "marketing.engagement_members": {
-      "name": "engagement_members",
-      "schema": "marketing",
-      "columns": {
-        "account_id": {
-          "name": "account_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "permissions": {
-          "name": "permissions",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "engagement_members_account_id_engagement_channels_account_id_fk": {
-          "name": "engagement_members_account_id_engagement_channels_account_id_fk",
-          "tableFrom": "engagement_members",
-          "tableTo": "engagement_channels",
-          "schemaTo": "marketing",
-          "columnsFrom": [
-            "account_id"
-          ],
-          "columnsTo": [
-            "account_id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "engagement_members_account_id_user_id_pk": {
-          "name": "engagement_members_account_id_user_id_pk",
-          "columns": [
-            "account_id",
-            "user_id"
-          ]
-        }
-      },
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "marketing.engagement_outbound": {
-      "name": "engagement_outbound",
-      "schema": "marketing",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "account_id": {
-          "name": "account_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "conversation_id": {
-          "name": "conversation_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "journey_id": {
-          "name": "journey_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "logical_key": {
-          "name": "logical_key",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "kind": {
-          "name": "kind",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "message": {
-          "name": "message",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "comment_id": {
-          "name": "comment_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "state": {
-          "name": "state",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'pending'"
-        },
-        "lease_id": {
-          "name": "lease_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "lease_until": {
-          "name": "lease_until",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "attempts": {
-          "name": "attempts",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "last_attempt_at": {
-          "name": "last_attempt_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "available_at": {
-          "name": "available_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "external_id": {
-          "name": "external_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "error": {
-          "name": "error",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_by": {
-          "name": "created_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "accepted_at": {
-          "name": "accepted_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "engagement_intent_idx": {
-          "name": "engagement_intent_idx",
-          "columns": [
-            {
-              "expression": "account_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "logical_key",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "engagement_dispatch_idx": {
-          "name": "engagement_dispatch_idx",
-          "columns": [
-            {
-              "expression": "state",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "available_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "engagement_outbound_account_id_engagement_channels_account_id_fk": {
-          "name": "engagement_outbound_account_id_engagement_channels_account_id_fk",
-          "tableFrom": "engagement_outbound",
-          "tableTo": "engagement_channels",
-          "schemaTo": "marketing",
-          "columnsFrom": [
-            "account_id"
-          ],
-          "columnsTo": [
-            "account_id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "engagement_outbound_conversation_id_engagement_conversations_id_fk": {
-          "name": "engagement_outbound_conversation_id_engagement_conversations_id_fk",
-          "tableFrom": "engagement_outbound",
-          "tableTo": "engagement_conversations",
-          "schemaTo": "marketing",
-          "columnsFrom": [
-            "conversation_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "engagement_outbound_journey_id_engagement_journeys_id_fk": {
-          "name": "engagement_outbound_journey_id_engagement_journeys_id_fk",
-          "tableFrom": "engagement_outbound",
-          "tableTo": "engagement_journeys",
-          "schemaTo": "marketing",
-          "columnsFrom": [
-            "journey_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "marketing.engagement_receipts": {
-      "name": "engagement_receipts",
-      "schema": "marketing",
-      "columns": {
-        "account_id": {
-          "name": "account_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "actor_id": {
-          "name": "actor_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "operation_id": {
-          "name": "operation_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "hash": {
-          "name": "hash",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "result": {
-          "name": "result",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "engagement_receipts_account_id_engagement_channels_account_id_fk": {
-          "name": "engagement_receipts_account_id_engagement_channels_account_id_fk",
-          "tableFrom": "engagement_receipts",
-          "tableTo": "engagement_channels",
-          "schemaTo": "marketing",
-          "columnsFrom": [
-            "account_id"
-          ],
-          "columnsTo": [
-            "account_id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "engagement_receipts_account_id_actor_id_operation_id_pk": {
-          "name": "engagement_receipts_account_id_actor_id_operation_id_pk",
-          "columns": [
-            "account_id",
-            "actor_id",
-            "operation_id"
-          ]
-        }
-      },
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},

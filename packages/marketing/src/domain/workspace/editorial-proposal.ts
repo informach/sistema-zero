@@ -1,4 +1,5 @@
 import {
+  type AssetManifest,
   batchOperationSchema,
   type EditorialBatch,
   type EditorialDocument,
@@ -39,11 +40,12 @@ export function preserveProtected(before: EditorialDocument, after: EditorialDoc
 export async function editorialBatch(
   run: ExecutionRun,
   variantIndex: number,
+  produced: AssetManifest[] = [],
 ): Promise<EditorialBatch> {
   if (run.outcome?.status === 'succeeded' && run.outcome.video)
     return run.request.capability === 'video-adapt'
       ? videoAdaptationBatch(run, variantIndex)
-      : videoBatch(run, variantIndex)
+      : videoBatch(run, variantIndex, produced)
   if (run.outcome?.status === 'succeeded' && run.outcome.art)
     return artBatch(run, variantIndex, frozenRevisions(run))
   const proposal = run.outcome?.status === 'succeeded' ? run.outcome.editorial : undefined
@@ -70,8 +72,10 @@ export async function editorialBatch(
     const variant = proposal.variants[variantIndex]
     if (!variant) throw new WorkspaceError('INVALID_RESULT', 'Alternativa inexistente')
     const changed = new Map<string, EditorialDocument>()
-    for (const change of variant.changes) {
-      const source = byId.get(change.entityId)
+    const fields = new Set<string>()
+    for (const proposed of variant.changes) {
+      let change = proposed,
+        source = byId.get(change.entityId)
       if (
         !source ||
         !editable.has(change.entityId) ||
@@ -81,6 +85,44 @@ export async function editorialBatch(
           'PROTECTED_CONTENT',
           'O resultado tentou alterar um item fora da seleção',
         )
+      if (source.document.kind === 'representation' && change.field === 'caption') {
+        const components = source.document.componentIds.map((id) => byId.get(id))
+        if (components.some((component) => !component))
+          throw new WorkspaceError(
+            'PROTECTED_CONTENT',
+            'Selecione a legenda ou o formato inteiro para alterar o texto de publicação',
+          )
+        const captions = components.filter(
+          (component) =>
+            component?.document.kind === 'component' &&
+            component.document.componentType === 'caption',
+        )
+        if (captions.length > 1)
+          throw new WorkspaceError(
+            'INVALID_RESULT',
+            'Selecione uma legenda por vez para alterar seu texto',
+          )
+        const caption = captions[0]
+        if (caption) {
+          if (
+            !editable.has(caption.entityId) ||
+            run.context.protectedIds.includes(caption.entityId)
+          )
+            throw new WorkspaceError(
+              'PROTECTED_CONTENT',
+              'A legenda está protegida ou fora da seleção',
+            )
+          source = caption
+          change = { ...change, entityId: caption.entityId, field: 'body' }
+        }
+      }
+      const fieldKey = `${change.entityId}:${change.field}`
+      if (fields.has(fieldKey))
+        throw new WorkspaceError(
+          'INVALID_RESULT',
+          'O resultado propôs duas alterações para o mesmo campo de texto',
+        )
+      fields.add(fieldKey)
       const doc = changed.get(change.entityId) ?? source.document
       if (
         doc.kind === 'piece' &&

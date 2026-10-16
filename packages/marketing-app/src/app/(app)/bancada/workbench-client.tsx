@@ -1,4 +1,5 @@
 'use client'
+import { retryAfterMilliseconds } from '@sistemazero/marketing-contracts'
 import { Workbench } from '@sistemazero/marketing-workbench'
 import {
   BrowserWorkspaceAdapter,
@@ -44,6 +45,7 @@ export function WorkbenchClient({ userId }: { userId: string }) {
             envelope.success
               ? envelope.data.error.message
               : 'Não foi possível concluir a solicitação',
+            retryAfterMilliseconds(response.headers.get('retry-after')),
           )
         }
         return value

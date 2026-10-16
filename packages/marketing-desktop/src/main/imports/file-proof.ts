@@ -86,8 +86,7 @@ export async function proveFileImport(window: BrowserWindow, manager: DesktopWor
     const reference = view.items.find(
       (entry) => entry.id === outcome.result.destinations[0]?.entityId,
     )
-    if (!reference || reference.document.kind !== 'evidence')
-      throw new Error('Referência importada ausente')
+    if (reference?.document.kind !== 'evidence') throw new Error('Referência importada ausente')
     const assetId = reference.document.assetIds?.[0]
     if (!assetId) throw new Error('Referência sem vínculo ao original confirmado')
     const descriptor = assetDownloadSchema.parse(
@@ -174,6 +173,12 @@ export async function proveFileImport(window: BrowserWindow, manager: DesktopWor
     const check=()=>{if(ready()){observer.disconnect();clearTimeout(timeout);clearInterval(poll);resolve(true)}};
     const observer=new MutationObserver(check),timeout=setTimeout(()=>{observer.disconnect();clearInterval(poll);reject(new Error('Prévia do original não apareceu na referência'))},30000),poll=setInterval(check,250);
     observer.observe(document.body,{childList:true,subtree:true,attributes:true});check();
+  })`)
+  await window.webContents.executeJavaScript(`new Promise(resolve=>{
+    const image=[...document.images].find(img=>img.alt==='01-p01.png');
+    if(!image)throw new Error('Imagem importada ausente');
+    image.scrollIntoView({block:'center'});
+    requestAnimationFrame(()=>requestAnimationFrame(resolve));
   })`)
   await writeFile(
     path.join(directory, 'file-import-review.png'),

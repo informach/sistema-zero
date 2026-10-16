@@ -14,6 +14,11 @@ import {
   projectSchema,
 } from '../../../../marketing-contracts/src/editorial'
 import {
+  parseSnapshotPage,
+  type SnapshotCursor,
+  snapshotCursorSchema,
+} from '../../../../marketing-contracts/src/snapshot'
+import {
   changePageSchema,
   draftResolutionSchema,
   enqueueSchema,
@@ -22,6 +27,7 @@ import {
   pendingOperationSchema,
   resolvedDraftSchema,
 } from '../../../../marketing-contracts/src/sync'
+import type { ItemProjection } from '../../shared/project-projection'
 
 const scopeSchema = z.object({ origin: z.string().url(), userId: z.string().uuid() }).strict()
 const cancellationSchema = z.object({
@@ -77,7 +83,7 @@ export class LocalWorkspaceStore {
     const version = z
       .object({ user_version: z.number() })
       .parse(this.db.prepare('PRAGMA user_version').get()).user_version
-    if (version > 6) {
+    if (version > 8) {
       this.db.close()
       throw new Error('Atualize o app para abrir este cache. Os dados foram preservados.')
     }
@@ -99,8 +105,45 @@ export class LocalWorkspaceStore {
     CREATE TABLE IF NOT EXISTS batches(operation_id TEXT PRIMARY KEY,project_id TEXT NOT NULL REFERENCES projects(id),payload TEXT NOT NULL,state TEXT NOT NULL,result TEXT,error TEXT,created_at TEXT NOT NULL) STRICT;
     CREATE TABLE IF NOT EXISTS resolved_drafts (operation_id TEXT PRIMARY KEY,project_id TEXT NOT NULL,replacement_id TEXT,resolved_at TEXT NOT NULL) STRICT;
     CREATE TABLE IF NOT EXISTS cancellations(run_id TEXT PRIMARY KEY,project_id TEXT NOT NULL REFERENCES projects(id),operation_id TEXT NOT NULL UNIQUE,state TEXT NOT NULL CHECK(state IN ('pending','confirmed','blocked')),error TEXT) STRICT;
-    PRAGMA user_version=6;
    `)
+        if (version < 7) {
+          this.db.exec(`
+            ALTER TABLE projects ADD COLUMN items_version INTEGER NOT NULL DEFAULT 0;
+            CREATE TABLE item_changes (
+              item_id TEXT PRIMARY KEY, project_id TEXT NOT NULL REFERENCES projects(id),
+              version INTEGER NOT NULL, deleted INTEGER NOT NULL CHECK(deleted IN (0,1))
+            ) STRICT;
+            CREATE INDEX item_changes_project_version ON item_changes(project_id,version);
+            UPDATE projects SET items_version=1 WHERE EXISTS(SELECT 1 FROM items WHERE items.project_id=projects.id);
+            INSERT INTO item_changes(item_id,project_id,version,deleted) SELECT id,project_id,1,0 FROM items;
+            CREATE TRIGGER item_projection_insert AFTER INSERT ON items BEGIN
+              UPDATE projects SET items_version=items_version+1 WHERE id=NEW.project_id;
+              INSERT INTO item_changes(item_id,project_id,version,deleted)
+                SELECT NEW.id,NEW.project_id,items_version,0 FROM projects WHERE id=NEW.project_id
+                ON CONFLICT(item_id) DO UPDATE SET version=excluded.version,deleted=0;
+            END;
+            CREATE TRIGGER item_projection_update AFTER UPDATE OF payload ON items WHEN OLD.payload<>NEW.payload BEGIN
+              UPDATE projects SET items_version=items_version+1 WHERE id=NEW.project_id;
+              INSERT INTO item_changes(item_id,project_id,version,deleted)
+                SELECT NEW.id,NEW.project_id,items_version,0 FROM projects WHERE id=NEW.project_id
+                ON CONFLICT(item_id) DO UPDATE SET version=excluded.version,deleted=0;
+            END;
+            CREATE TRIGGER item_projection_delete AFTER DELETE ON items BEGIN
+              UPDATE projects SET items_version=items_version+1 WHERE id=OLD.project_id;
+              INSERT INTO item_changes(item_id,project_id,version,deleted)
+                SELECT OLD.id,OLD.project_id,items_version,1 FROM projects WHERE id=OLD.project_id
+                ON CONFLICT(item_id) DO UPDATE SET version=excluded.version,deleted=1;
+            END;
+            PRAGMA user_version=7;
+          `)
+        }
+        if (version < 8) {
+          this.db.exec(`
+            CREATE TABLE snapshot_runs (project_id TEXT PRIMARY KEY REFERENCES projects(id),at INTEGER NOT NULL,after TEXT NOT NULL) STRICT;
+            CREATE TABLE snapshot_items (id TEXT NOT NULL,project_id TEXT NOT NULL REFERENCES snapshot_runs(project_id) ON DELETE CASCADE,payload TEXT NOT NULL,sequence INTEGER NOT NULL,PRIMARY KEY(project_id,id)) STRICT;
+            PRAGMA user_version=8;
+          `)
+        }
         const binding = this.db.prepare('SELECT scope FROM binding WHERE id=1').get()
         if (
           binding &&
@@ -156,6 +199,55 @@ export class LocalWorkspaceStore {
       .object({ cursor: z.number() })
       .parse(this.db.prepare('SELECT cursor FROM projects WHERE id=?').get(projectId)).cursor
   }
+  snapshotCursor(projectId: string): SnapshotCursor | null {
+    const row = this.db
+      .prepare('SELECT at,after FROM snapshot_runs WHERE project_id=?')
+      .get(projectId)
+    return row ? snapshotCursorSchema.parse(row) : null
+  }
+  applySnapshotPage(projectId: string, expected: SnapshotCursor | null, raw: unknown) {
+    const page = parseSnapshotPage(raw, projectId, expected)
+    this.transaction(() => {
+      const project = this.requireProject(projectId)
+      if (JSON.stringify(this.snapshotCursor(projectId)) !== JSON.stringify(expected))
+        throw new Error('O cursor de preparação do acervo mudou')
+      if (!expected)
+        this.db
+          .prepare('INSERT INTO snapshot_runs(project_id,at,after) VALUES(?,?,?)')
+          .run(projectId, page.at, '')
+      const insert = this.db.prepare(
+        'INSERT INTO snapshot_items(id,project_id,payload,sequence) VALUES(?,?,?,?)',
+      )
+      for (const entry of page.items) {
+        const { sequence, ...item } = entry
+        insert.run(item.id, projectId, json(item), sequence)
+      }
+      if (page.nextAfter) {
+        this.db
+          .prepare('UPDATE snapshot_runs SET after=? WHERE project_id=?')
+          .run(page.nextAfter, projectId)
+        return
+      }
+      // Swap only the complete cut; newer operation receipts remain ahead of it.
+      this.db
+        .prepare('DELETE FROM items WHERE project_id=? AND sequence<=?')
+        .run(projectId, page.at)
+      this.db
+        .prepare(`INSERT INTO items(id,project_id,payload,sequence)
+        SELECT id,project_id,payload,sequence FROM snapshot_items WHERE project_id=?
+        ON CONFLICT(id) DO UPDATE SET payload=excluded.payload,sequence=excluded.sequence
+        WHERE excluded.project_id=items.project_id AND excluded.sequence>=items.sequence`)
+        .run(projectId)
+      this.db
+        .prepare('UPDATE projects SET cursor=?,payload=? WHERE id=?')
+        .run(
+          page.at,
+          json({ ...project, permissions: page.permissions, sequence: page.at }),
+          projectId,
+        )
+      this.db.prepare('DELETE FROM snapshot_runs WHERE project_id=?').run(projectId)
+    })
+  }
   setInaccessible(projectId: string) {
     this.db.prepare('UPDATE projects SET accessible=0 WHERE id=?').run(projectId)
   }
@@ -178,6 +270,7 @@ export class LocalWorkspaceStore {
       if (this.cursor(projectId) !== expectedCursor)
         throw new Error('Cursor local mudou durante a sincronização')
       if (page.resetRequired) {
+        this.db.prepare('DELETE FROM snapshot_runs WHERE project_id=?').run(projectId)
         this.db.prepare('DELETE FROM items WHERE project_id=?').run(projectId)
         this.db.prepare('UPDATE projects SET cursor=0 WHERE id=?').run(projectId)
         return
@@ -215,6 +308,44 @@ export class LocalWorkspaceStore {
       .map((row) =>
         itemSchema.parse(JSON.parse(z.object({ payload: z.string() }).parse(row).payload)),
       )
+  }
+  itemProjection(projectId: string, knownVersion: number | null): ItemProjection {
+    z.number().int().nonnegative().safe().nullable().parse(knownVersion)
+    return this.transaction(() => {
+      this.requireProject(projectId)
+      const version = z
+        .object({ items_version: z.number().int().nonnegative().safe() })
+        .parse(
+          this.db.prepare('SELECT items_version FROM projects WHERE id=?').get(projectId),
+        ).items_version
+      if (knownVersion === null || knownVersion > version)
+        return { projectId, version, reset: true, items: this.items(projectId), removed: [] }
+      const items: ItemProjection['items'] = [],
+        removed: string[] = []
+      const rows = this.db
+        .prepare(`
+        SELECT c.item_id,c.deleted,i.payload FROM item_changes c
+        LEFT JOIN items i ON i.id=c.item_id AND i.project_id=c.project_id
+        WHERE c.project_id=? AND c.version>? ORDER BY c.item_id
+      `)
+        .all(projectId, knownVersion)
+      for (const raw of rows) {
+        const row = z
+          .object({
+            item_id: z.string().uuid(),
+            deleted: z.number(),
+            payload: z.string().nullable(),
+          })
+          .parse(raw)
+        if (row.deleted === 1) removed.push(row.item_id)
+        else {
+          if (row.payload === null)
+            throw new Error('A projeção local perdeu um item; preserve o cache para diagnóstico')
+          items.push(itemSchema.parse(JSON.parse(row.payload)))
+        }
+      }
+      return { projectId, version, reset: false, items, removed }
+    })
   }
   enqueue(raw: unknown) {
     const input = enqueueSchema.parse(raw),

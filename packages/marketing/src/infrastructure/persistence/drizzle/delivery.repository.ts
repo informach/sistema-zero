@@ -229,7 +229,10 @@ async function validate(
     editionHash: edition.hash,
     title: copy.title,
     assets: files,
-    orderedAssetIds: files.map((file) => file.id),
+    orderedMedia: edition.snapshot.orderedAssets.map(({ asset, alt }) => ({
+      assetId: asset.id,
+      alt,
+    })),
   }
 }
 

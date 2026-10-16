@@ -15,7 +15,15 @@ export function DesktopConnection({ onChange }: { onChange?: (state: ConnectionS
   useEffect(() => {
     let live = true
     void window.marketing
-      .connection()
+      .connectionState()
+      .then((value) => {
+        if (live) {
+          setState(value)
+          setOrigin(value.origin ?? '')
+        }
+        // Cached identity opens the local workspace; server validation still decides connected/revoked.
+        return window.marketing.connection()
+      })
       .then((value) => {
         if (live) {
           setState(value)
