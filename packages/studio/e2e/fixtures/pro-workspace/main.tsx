@@ -33,6 +33,17 @@ const project = {
     'src/closed.ts': { kind: 'file' as const, content: 'export const wrong: number = "text"\n' },
   },
 }
+if (new URLSearchParams(location.search).has('performance')) {
+  for (let index = 0; index < 75; index++) {
+    const path = `src/fixture-${String(index).padStart(3, '0')}.ts`
+    Object.assign(project.tree, {
+      [path]: {
+        kind: 'file',
+        content: `export const value${index} = ${index}\n${'// deterministic workspace fixture\n'.repeat(300)}`,
+      },
+    })
+  }
+}
 const runtime = {
   async build() {
     return {
