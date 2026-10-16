@@ -397,12 +397,20 @@ test('keeps continuous edits intact while the symbols panel is open', async ({ p
   await expect(page.getByRole('button', { name: 'score', exact: true })).toBeVisible()
   await input.focus()
   await input.press('Control+End')
-  const text = `\n// ${'s'.repeat(200)}`
-  await page.keyboard.type(text)
+  const comment = `// ${'s'.repeat(1000)}`
+  const declaration = 'export const continuousEdit = 1'
+  await input.press('Enter')
+  await page.keyboard.type(comment)
+  // Enter should insert a line, not accept a word completion from the long comment.
+  await page.keyboard.press('Escape')
+  await page.keyboard.press('Enter')
+  await page.keyboard.type(declaration)
+  const text = `\n${comment}\n${declaration}`
   await inspectWorkspaceBuffers(page)
   const models = JSON.parse((await page.getByLabel('Buffers da sessão').textContent())!) as Array<{
     content: string
   }>
   expect(models.some((model) => model.content.endsWith(text))).toBe(true)
+  await expect(page.getByRole('button', { name: 'continuousEdit', exact: true })).toBeVisible()
   expect(errors).toEqual([])
 })

@@ -82,6 +82,26 @@ it('discards symbols from a replaced language session and loads the replacement'
   expect(view.queryByRole('button', { name: 'current' })).not.toBeNull()
 })
 
+it('shows a symbols failure and clears it when the language session recovers', async () => {
+  const props = toolsFixture({
+    request: async () => {
+      throw new Error('A análise foi interrompida.')
+    },
+  } as unknown as ProLanguageSession)
+  const view = render(<ProCodeTools {...props} />)
+  await act(async () => {
+    fireEvent.click(view.getByRole('button', { name: 'Símbolos do arquivo' }))
+  })
+  expect(view.getByRole('status').textContent).toContain('A análise foi interrompida.')
+  expect(view.queryByText('Analisando símbolos…')).toBeNull()
+  const language = {
+    request: async () => [{ name: 'score', start: 6, depth: 0 }],
+  } as unknown as ProLanguageSession
+  await act(async () => view.rerender(<ProCodeTools {...props} language={language} />))
+  expect(view.queryByText('A análise foi interrompida.')).toBeNull()
+  expect(view.getByRole('button', { name: 'score' })).toBeDefined()
+})
+
 it.each([
   'resolve',
   'reject',
