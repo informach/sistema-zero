@@ -8,7 +8,7 @@ import { Select } from '@sistemazero/ui/select'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { Textarea } from '@sistemazero/ui/textarea'
 import { ArrowLeft, CircleHelp, Plus, RefreshCw, Send } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { type ApiError, apiGet, apiSend } from '../lib/api'
 import {
   CUSTOMER_TICKET_CATEGORIES,
@@ -99,6 +99,125 @@ export function CustomerHelpdeskPortal({
   const [reply, setReply] = useState('')
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
 
+  const commands = useRef(new Map<string, { payload: string; key: string }>())
+  const detailRef = useRef(detail)
+  detailRef.current = detail
+  const [loadingOlder, setLoadingOlder] = useState(false)
+  function commandKey(scope: string, payload: unknown) {
+    const encoded = JSON.stringify(payload),
+      previous = commands.current.get(scope)
+    if (previous?.payload === encoded) return previous.key
+    const key = crypto.randomUUID()
+    commands.current.set(scope, { payload: encoded, key })
+    return key
+  }
+  useEffect(() => {
+    if (mode !== 'detail' || !detail?.ticket.id) return
+    const id = detail.ticket.id,
+      controller = new AbortController()
+    let timer: ReturnType<typeof setTimeout>,
+      stopped = false,
+      failures = 0
+    async function poll() {
+      let delay = detailRef.current?.ticket.handlingMode === 'assistant' ? 3000 : 15000
+      if (!document.hidden)
+        try {
+          const cursor = detailRef.current?.latestCursor
+          const next = await apiGet<CustomerTicketDetail>(
+            `/api/helpdesk/portal/tickets/${id}/messages?limit=50${cursor ? `&after=${encodeURIComponent(cursor)}` : ''}`,
+            undefined,
+            { signal: controller.signal },
+          )
+          if (stopped) return
+          setDetail((current) => {
+            if (current?.ticket.id !== id) return current
+            const messages = new Map(current.messages.map((m) => [m.id, m]))
+            for (const message of next.messages) messages.set(message.id, message)
+            return {
+              ...current,
+              ticket: next.ticket.version >= current.ticket.version ? next.ticket : current.ticket,
+              messages: [...messages.values()],
+              latestCursor: next.latestCursor ?? current.latestCursor,
+            }
+          })
+          failures = 0
+          if (next.hasMore) delay = 200
+        } catch (reason) {
+          if (stopped) return
+          const failure = reason as Partial<ApiError>
+          if (failure.status === 401 || failure.status === 403) {
+            const nextError = messageError(reason)
+            setError(nextError.text)
+            setGateExpired(nextError.parentGateExpired)
+            return
+          }
+          failures++
+          delay = Math.max(failure.retryAfterMs ?? 0, Math.min(60000, 3000 * 2 ** failures))
+        }
+      if (!stopped) timer = setTimeout(poll, delay)
+    }
+    timer = setTimeout(poll, 1000)
+    return () => {
+      stopped = true
+      clearTimeout(timer)
+      controller.abort()
+    }
+  }, [mode, detail?.ticket.id])
+
+  async function loadOlder() {
+    if (!detail?.olderCursor || loadingOlder) return
+    setLoadingOlder(true)
+    try {
+      const next = await apiGet<CustomerTicketDetail>(
+        `/api/helpdesk/portal/tickets/${detail.ticket.id}/messages?before=${encodeURIComponent(detail.olderCursor)}&limit=50`,
+      )
+      setDetail((current) =>
+        current?.ticket.id === next.ticket.id
+          ? {
+              ...current,
+              messages: [
+                ...new Map([...next.messages, ...current.messages].map((m) => [m.id, m])).values(),
+              ],
+              hasOlder: next.hasOlder,
+              olderCursor: next.olderCursor,
+            }
+          : current,
+      )
+    } catch (reason) {
+      registerError(reason)
+    } finally {
+      setLoadingOlder(false)
+    }
+  }
+  async function customerAction(action: 'handoff' | 'resolve') {
+    if (!detail || saving) return
+    const id = detail.ticket.id
+    setSaving(true)
+    clearFeedback()
+    try {
+      const result = await apiSend<{ ticket: CustomerTicketView }>(
+        `/api/helpdesk/portal/tickets/${id}/${action}`,
+        'POST',
+        { idempotencyKey: commandKey(`${id}:${action}`, { id, action }) },
+      )
+      setDetail((current) =>
+        current?.ticket.id === id && result.ticket.version >= current.ticket.version
+          ? { ...current, ticket: result.ticket }
+          : current,
+      )
+      commands.current.delete(`${id}:${action}`)
+      setNotice(
+        action === 'resolve'
+          ? 'Obrigado por confirmar. Se precisar, envie outra mensagem.'
+          : 'A equipe recebeu seu pedido e continuará por aqui.',
+      )
+    } catch (reason) {
+      registerError(reason)
+    } finally {
+      setSaving(false)
+    }
+  }
+
   // A ação de abrir o formulário é deliberada; só movemos foco em desktop com
   // ponteiro preciso para não abrir teclado virtual nem deslocar telas pequenas.
   useEffect(() => {
@@ -112,7 +231,10 @@ export function CustomerHelpdeskPortal({
   }, [mode])
 
   const sortedMessages = useMemo(
-    () => [...(detail?.messages ?? [])].sort((a, b) => a.createdAt.localeCompare(b.createdAt)),
+    () =>
+      [...(detail?.messages ?? [])].sort(
+        (a, b) => a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id),
+      ),
     [detail?.messages],
   )
 
@@ -161,14 +283,26 @@ export function CustomerHelpdeskPortal({
 
   /**
    * `keepDraft`: o "Atualizar" do detalhe recarrega a conversa (a resposta da
-   * equipe chega por aqui, não há polling) sem apagar o que o cliente digitava.
+   * equipe chega por aqui também) sem apagar o que o cliente digitava.
    */
   async function openTicket(id: string, options: { keepDraft?: boolean } = {}) {
     setLoadingDetail(true)
     clearFeedback()
     try {
       const next = await apiGet<CustomerTicketDetail>(`/api/helpdesk/portal/tickets/${id}`)
-      setDetail(next)
+      setDetail((current) =>
+        current?.ticket.id === id
+          ? {
+              ...next,
+              ticket: next.ticket.version >= current.ticket.version ? next.ticket : current.ticket,
+              messages: [
+                ...new Map([...current.messages, ...next.messages].map((m) => [m.id, m])).values(),
+              ],
+              hasOlder: current.hasOlder,
+              olderCursor: current.olderCursor,
+            }
+          : next,
+      )
       if (!options.keepDraft) setReply('')
       setMode('detail')
     } catch (reason) {
@@ -208,6 +342,11 @@ export function CustomerHelpdeskPortal({
         ticket: CustomerTicketView
         message: CustomerTicketMessageView
       }>('/api/helpdesk/portal/tickets', 'POST', {
+        idempotencyKey: commandKey('create', {
+          subject: subject.trim(),
+          body: firstMessage.trim(),
+          category,
+        }),
         subject: subject.trim(),
         body: firstMessage.trim(),
         ...(category ? { category } : {}),
@@ -220,14 +359,20 @@ export function CustomerHelpdeskPortal({
         ],
         total: current.total + 1,
       }))
-      setDetail({ ticket: created.ticket, messages: [created.message] })
+      setDetail({
+        ticket: created.ticket,
+        messages: [created.message],
+        hasOlder: false,
+        hasMore: false,
+        olderCursor: null,
+        latestCursor: null,
+      })
+      commands.current.delete('create')
       setSubject('')
       setCategory('')
       setFirstMessage('')
       setMode('detail')
-      setNotice(
-        'Chamado enviado. A equipe responderá por aqui; quando houver resposta, enviaremos um aviso por e-mail, que pode levar alguns instantes.',
-      )
+      setNotice('Chamado enviado. Acompanhe a resposta nesta conversa.')
     } catch (reason) {
       registerError(reason)
     } finally {
@@ -251,12 +396,15 @@ export function CustomerHelpdeskPortal({
         ticket: CustomerTicketView
         message: CustomerTicketMessageView
       }>(`/api/helpdesk/portal/tickets/${detail.ticket.id}/messages`, 'POST', {
+        idempotencyKey: commandKey(`reply:${detail.ticket.id}`, reply.trim()),
         body: reply.trim(),
       })
       setDetail((current) =>
-        current
+        current?.ticket.id === created.ticket.id
           ? {
-              ticket: created.ticket,
+              ...current,
+              ticket:
+                created.ticket.version >= current.ticket.version ? created.ticket : current.ticket,
               messages: current.messages.some((message) => message.id === created.message.id)
                 ? current.messages
                 : [...current.messages, created.message],
@@ -270,8 +418,9 @@ export function CustomerHelpdeskPortal({
           ...current.items.filter((ticket) => ticket.id !== created.ticket.id),
         ],
       }))
+      commands.current.delete(`reply:${detail.ticket.id}`)
       setReply('')
-      setNotice('Mensagem enviada. O chamado voltou para a equipe.')
+      setNotice('Mensagem enviada.')
     } catch (reason) {
       registerError(reason)
     } finally {
@@ -411,7 +560,47 @@ export function CustomerHelpdeskPortal({
           </Button>
         </header>
         {feedback}
-        <div className="space-y-3" aria-live="polite">
+        <p role="status" className="text-sm text-muted-foreground">
+          {detail.ticket.assistantState === 'thinking'
+            ? 'O assistente de IA está consultando a base de conhecimento.'
+            : detail.ticket.assistantState === 'waiting_customer'
+              ? 'O assistente de IA respondeu. A resposta ajudou?'
+              : (detail.ticket.handoffMessage ??
+                (detail.ticket.assistantState === 'resolved'
+                  ? 'Chamado resolvido.'
+                  : 'Atendimento com a equipe.'))}
+        </p>
+        {detail.ticket.assistantState !== 'resolved' ? (
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              disabled={saving}
+              onClick={() => void customerAction('handoff')}
+            >
+              Falar com a equipe
+            </Button>
+            {sortedMessages.some((m) => m.direction === 'outbound') ? (
+              <>
+                <Button disabled={saving} onClick={() => void customerAction('resolve')}>
+                  Resolveu meu problema
+                </Button>
+                <Button
+                  variant="ghost"
+                  disabled={saving}
+                  onClick={() => void customerAction('handoff')}
+                >
+                  Não ajudou
+                </Button>
+              </>
+            ) : null}
+          </div>
+        ) : null}
+        {detail.hasOlder ? (
+          <Button variant="outline" disabled={loadingOlder} onClick={() => void loadOlder()}>
+            Carregar mensagens anteriores
+          </Button>
+        ) : null}
+        <div className="space-y-3">
           {sortedMessages.map((message) => (
             <CustomerConversationMessage key={message.id} message={message} />
           ))}

@@ -13,8 +13,8 @@ Guia operacional deste package. Leia antes de editar.
 back-end/API; o front interno é o **[@sistemazero/helpdesk-app](../helpdesk-app)** e a área do
 cliente é consumida por Community via api-gateway). A equipe (staff+) lê a caixa do Gmail por
 **polling** (Gmail API, 1 consent OAuth), agrupa cada thread num **ticket**, e a IA (OpenRouter)
-**classifica, resume e rascunha** a resposta — **sem auto-resposta**: toda resposta exige aprovação
-humana. Chamados abertos no portal entram na mesma fila e são respondidos **no portal** (a resposta
+**classifica, resume e rascunha** a resposta. O piloto de atendimento automático é exclusivo do
+portal nativo, desligado por padrão e condicionado à avaliação editorial e aos limites da política. Chamados abertos no portal entram na mesma fila e são respondidos **no portal** (a resposta
 vira mensagem da conversa + aviso por e-mail pelo messaging), sem depender da caixa Gmail; só um
 ticket que já vive numa thread do Gmail segue por e-mail. Runtime: **Bun**. Framework:
 **Elysia**. Porta **3013**. Schema Postgres próprio **`helpdesk`**.
@@ -29,9 +29,9 @@ ticket que já vive numa thread do Gmail segue por e-mail. Runtime: **Bun**. Fra
 >   entrega (guard de duplo-envio por `version`), notas internas e colapso de citação.
 > - **F3 (IA):** `OpenRouterClient` (json_object+Zod+1 retry), `prompts.ts` puro, `ticket-ai.service`,
 >   `ai-worker` (claim SKIP LOCKED), rotas summarize/regenerate. Sem API key → `ai_status=skipped`.
-> - **F4 (KB):** KB publicada injetada no prompt do rascunho. A IA opera somente como copiloto;
->   não há mecanismo de auto-resposta no domínio ou nas configurações. Os candidatos e o total de
->   caracteres são limitados; a seleção lexical descarta artigos sem relação com a conversa.
+> - **F4 (KB, atualizado 16/10/2026):** revisões imutáveis, publicação administrativa, índice
+>   durável por trecho e busca portuguesa. Copiloto com fontes e inserção explícita; automação
+>   em off/sombra/piloto com jobs próprios, controle de concorrência, orçamento e handoff.
 > - **F5 (painel):** `GET /helpdesk/tickets/stats` (agregado no banco: contagens por status +
 >   resolvidos hoje/7d + série densa de 14 dias EM SP), `.env.example` e este guia.
 > - **F6 (portal):** tickets iniciados pelo responsável, mensagens do portal com visibilidade
@@ -63,9 +63,10 @@ ticket que já vive numa thread do Gmail segue por e-mail. Runtime: **Bun**. Fra
    remediado após dois minutos, protegendo contra crash do processo sem competir com envio em curso;
    rejeição conhecida fica `failed` e libera nova resposta; (c) o poller confirma o intent pendente
    em vez de criar uma segunda mensagem.
-6. **IA é copiloto, nunca remetente**: classifica, resume e prepara rascunhos. Não existe toggle,
-   rota, worker ou coluna de auto-resposta. Uma futura autonomia exige decisão de produto e desenho
-   de segurança dedicado.
+6. **Autonomia limitada ao portal nativo:** Gmail exige envio humano. Publicação automática
+   confere política, avaliação, geração, epoch, lease, prazo e fontes na transação; não usa outbox
+   de notificação. Intervenção humana invalida os jobs e mantém o ticket com a equipe. Nunca
+   adicionar ferramenta de escrita em contas/pagamentos ao modelo. Política nasce desligada.
 7. **Categoria/prioridade manual NUNCA são sobrescritas pela IA** (`applyClassification`:
    `category = case when category_manual then category else <novo> end`, `priority = coalesce`).
 8. **Concorrência otimista** em `tickets.version` (update confere → 0 linhas = `CONCURRENCY_CONFLICT`
@@ -219,8 +220,9 @@ usam o MESMO recorte (dia SP = UTC-3 fixo, `- interval '3 hours'` no SQL).
 `resolvedToday/7d` usa `resolved_at`, gravado somente na transição a `resolved`/`closed`; a
 migração de backfill usa `updated_at` apenas como aproximação dos registros históricos.
 
-**SLA:** é meta operacional, nunca promessa ao cliente. Começa na última mensagem inbound, fica
-ativo em `new`/`open`, entra em risco no último quarto da meta e pausa em `waiting`/`resolved`/
+**SLA:** é meta operacional, nunca promessa ao cliente. Em transferência, usa `human_sla_started_at`
+ancorado no início da automação; novos inbounds não reiniciam essa espera. Fora desse ciclo, usa a
+última mensagem inbound. Fica ativo apenas no modo humano em `new`/`open`, entra em risco no último quarto da meta e pausa em `waiting`/`resolved`/
 `closed`. A política pura em `ticket-sla.ts` é a fonte de verdade; a expressão SQL só replica a
 mesma regra para filtro, ordenação e agregados paginados.
 
@@ -293,3 +295,21 @@ são apagados. ⚠️ `Date` em SQL cru só via `.toISOString()` (gotcha Bun+pos
 - A migration `0002_zappy_studio_category` acrescenta `studio` à classificação. Dúvidas sobre
   Estúdio, blocos, projetos e Zappy usam essa dimensão, separada de `problema_tecnico`, para
   comparar o atendimento humano antes e durante o piloto.
+
+## Conhecimento e automação (16/10/2026)
+
+Consulte [operação, avaliação e retenção](../../docs/helpdesk/operacao-ia.md). Migrações 0013 em
+ diante são geradas pelo Drizzle. Não há migração entre versões de clientes: implante backend,
+ contratos, gateway, console e portais juntos. Identidade, gate parental e readonly permanecem.
+
+- `triage=human` significa demanda de atendimento; `handling_mode` identifica equipe/assistente.
+- Workers independentes de índice e automação rodam a cada segundo; watchdog não depende do LLM.
+- Mensagens paginadas usam `position` monotônica sob lock do ticket, inclusive transições de entrega.
+  Não substituir por timestamp: mensagens importadas e confirmação tardia podem ter data antiga.
+- Guards de publicação: política → ticket → job → artigos ordenados. Nenhuma chamada externa na TX.
+- Máximo 3 respostas, 1 esclarecimento, 2 tentativas e 60 s por geração; lease de 30 s.
+- `customer_commands` mantém dedupe por 90 dias; jobs terminais/execuções por 30 dias (configurável
+  até 90). Jobs ativos não são apagados; custos desconhecidos continuam reservados.
+- `resolution_events` separa confirmação explícita de reabertura. Waiting/silêncio não é resolução.
+- `settings/automation/*` é admin; execuções do ticket são staff; fontes públicas exigem ownership
+  e revisão ainda publicada, válida e acessível ao público/produto do ticket.

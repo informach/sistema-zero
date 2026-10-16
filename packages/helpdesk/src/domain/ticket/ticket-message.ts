@@ -43,6 +43,8 @@ export interface TicketMessage {
   subject: string | null
   bodyText: string
   bodyHtml: string | null
+  aiRunId: string | null
+  draftEdited: boolean | null
   snippet: string | null
   attachments: AttachmentMeta[]
   /**

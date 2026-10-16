@@ -1,9 +1,15 @@
-import { CustomerTicketCursorInvalidError, TicketNotFoundError } from '../../domain/helpdesk-errors'
+import type { CustomerTicketDetail } from '@sistemazero/helpdesk-contracts'
+import {
+  CustomerTicketCursorInvalidError,
+  SourceUnavailableError,
+  TicketNotFoundError,
+} from '../../domain/helpdesk-errors'
 import type {
   CustomerTicketOwner,
   CustomerTicketRepository,
 } from '../../domain/ports/customer-ticket-repository.port'
 import type { MessageRepository } from '../../domain/ports/message-repository.port'
+import { commandHash, initialHandling } from '../../domain/ticket/automation'
 import type { TicketCategory, TicketPortal, TicketStatus } from '../../domain/ticket/ticket'
 import type { TicketMessage } from '../../domain/ticket/ticket-message'
 import {
@@ -13,12 +19,14 @@ import {
   toCustomerTicketView,
 } from '../views'
 import { decodeCustomerTicketCursor, encodeCustomerTicketCursor } from './customer-ticket-cursor'
+import { decodeMessageCursor, encodeMessageCursor } from './message-cursor'
 
 export interface CustomerRequester extends CustomerTicketOwner {
   name: string | null
 }
 
 export interface CreateCustomerTicketInput {
+  idempotencyKey: string
   subject: string
   body: string
   category?: TicketCategory
@@ -70,18 +78,66 @@ export class CustomerTicketService {
     }
   }
 
-  async byId(
+  async byId(requester: CustomerRequester, id: string): Promise<CustomerTicketDetail> {
+    return this.page(requester, id, { limit: 50 })
+  }
+
+  async page(
     requester: CustomerRequester,
     id: string,
-  ): Promise<{ ticket: CustomerTicketView; messages: CustomerMessageView[] }> {
+    input: { limit: number; before?: string; after?: string },
+  ): Promise<CustomerTicketDetail> {
+    if (input.before && input.after) throw new CustomerTicketCursorInvalidError()
     const ticket = await this.requireOwnedTicket(requester, id)
-    const messages = await this.messages.byTicketId(ticket.id)
+    const rows = await this.messages.page(id, {
+      limit: input.limit,
+      before: decodeMessageCursor(input.before),
+      after: decodeMessageCursor(input.after),
+      publicOnly: true,
+    })
+    const extra = rows.length > input.limit
+    const selected = rows.slice(0, input.limit)
+    if (!input.after) selected.reverse()
+    const evidence = await this.messages.evidence(selected.map((m) => m.id))
     return {
       ticket: toCustomerTicketView(ticket),
-      messages: messages
-        .filter((message) => message.visibility === 'customer')
-        .map(toCustomerMessageView),
+      messages: selected.map((m) =>
+        toCustomerMessageView(
+          m,
+          evidence
+            .filter((e) => e.messageId === m.id)
+            .map(({ messageId, ...citation }) => citation),
+        ),
+      ),
+      hasOlder: !input.after && extra,
+      hasMore: !!input.after && extra,
+      olderCursor: selected[0] ? encodeMessageCursor(selected[0]) : (input.before ?? null),
+      latestCursor: selected.at(-1) ? encodeMessageCursor(selected.at(-1)!) : (input.after ?? null),
     }
+  }
+
+  async command(
+    requester: CustomerRequester,
+    id: string,
+    action: 'handoff' | 'resolve',
+    idempotencyKey: string,
+  ) {
+    const ticket = await this.tickets.command({
+      owner: requester,
+      ticketId: id,
+      action,
+      commandKey: idempotencyKey,
+      at: this.now(),
+    })
+    if (!ticket) throw new TicketNotFoundError()
+    return { ticket: toCustomerTicketView(ticket) }
+  }
+
+  async source(requester: CustomerRequester, id: string, citationId: string) {
+    await this.requireOwnedTicket(requester, id)
+    const source = await this.messages.publicSource(id, citationId, this.now())
+    if (!source) throw new SourceUnavailableError()
+    return source
   }
 
   async create(
@@ -115,10 +171,12 @@ export class CustomerTicketService {
       messageCount: 1,
       aiSummary: null,
       aiSummaryAt: null,
+      aiDraftRunId: null,
       aiDraft: null,
       aiDraftAt: null,
       aiDraftEdited: false,
       aiClassification: null,
+      ...initialHandling(),
       aiGeneration: 1,
       aiStatus: this.config.aiEnabled ? ('pending' as const) : ('skipped' as const),
       aiNextAttemptAt: this.config.aiEnabled ? at : null,
@@ -132,14 +190,30 @@ export class CustomerTicketService {
       updatedAt: at,
     }
     const message = this.customerMessage({ ticketId, body, requester, subject, at })
-    await this.tickets.createWithInitialMessage({ ticket, message })
-    return { ticket: toCustomerTicketView(ticket), message: toCustomerMessageView(message) }
+    const saved = await this.tickets.createWithInitialMessage({
+      ticket,
+      message,
+      commandKey: input.idempotencyKey,
+      commandHash: commandHash([
+        'create',
+        subject,
+        body,
+        input.category ?? null,
+        input.portal ?? null,
+      ]),
+      aiEnabled: this.config.aiEnabled,
+    })
+    return {
+      ticket: toCustomerTicketView(saved.ticket),
+      message: toCustomerMessageView(saved.message),
+    }
   }
 
   async addMessage(
     requester: CustomerRequester,
     ticketId: string,
     body: string,
+    idempotencyKey: string,
   ): Promise<{ ticket: CustomerTicketView; message: CustomerMessageView }> {
     const ticket = await this.requireOwnedTicket(requester, ticketId)
     const at = this.now()
@@ -156,6 +230,8 @@ export class CustomerTicketService {
       message,
       at,
       aiEnabled: this.config.aiEnabled,
+      commandKey: idempotencyKey,
+      commandHash: commandHash(['message', ticketId, body.trim()]),
     })
     if (!appended) throw new TicketNotFoundError()
     return {
@@ -194,6 +270,8 @@ export class CustomerTicketService {
       ccEmails: [],
       subject: input.subject,
       bodyText: input.body,
+      aiRunId: null,
+      draftEdited: null,
       bodyHtml: null,
       snippet: input.body.slice(0, 500),
       attachments: [],

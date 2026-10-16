@@ -31,6 +31,26 @@ describe('loadGatewayConfig', () => {
       maxBodyBytes: 8192,
     })
   })
+  test('publicação da KB exige admin e vence o wildcard staff do Helpdesk', () => {
+    const registry = new RouteRegistry(
+      realConfig.routes.map((route) => routeConfigSchema.parse(route)),
+    )
+    for (const action of ['publish', 'unpublish', 'archive']) {
+      expect(registry.resolve('POST', `/helpdesk/kb/article/${action}`, 'v1')?.route).toMatchObject(
+        {
+          id: `helpdesk-kb-${action}`,
+          authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+          audit: {},
+        },
+      )
+    }
+    expect(registry.resolve('POST', '/helpdesk/kb', 'v1')?.route.authorize?.roles).toContain(
+      'staff',
+    )
+    expect(
+      registry.resolve('PATCH', '/helpdesk/kb/article', 'v1')?.route.authorize?.roles,
+    ).toContain('staff')
+  })
   test('staff facade preserves user credentials only to auth; delegated messaging stays HMAC auth-only', () => {
     const registry = new RouteRegistry(
       realConfig.routes.map((route) => routeConfigSchema.parse(route)),

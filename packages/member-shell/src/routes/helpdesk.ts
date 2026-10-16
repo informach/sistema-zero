@@ -21,22 +21,26 @@ const TicketListQuery = z
   .strict()
 const TicketCreateBody = z
   .object({
+    idempotencyKey: UUID,
     subject: z.string().trim().min(3).max(300),
     body: z.string().trim().min(1).max(10_000),
     category: TicketCategory.optional(),
   })
   .strict()
-const TicketMessageBody = z.object({ body: z.string().trim().min(1).max(10_000) }).strict()
+const TicketMessageBody = z
+  .object({ idempotencyKey: UUID, body: z.string().trim().min(1).max(10_000) })
+  .strict()
 
 const invalidInput = () => NextResponse.json({ error: { code: 'INVALID_INPUT' } }, { status: 400 })
 
 function upstream(result: GatewayResponse) {
+  const headers = result.retryAfter ? { 'retry-after': result.retryAfter } : undefined
   if (result.body !== null && result.body !== undefined) {
-    return NextResponse.json(result.body, { status: result.status })
+    return NextResponse.json(result.body, { status: result.status, headers })
   }
   return NextResponse.json(
     { error: { code: 'HELPDESK_UNAVAILABLE' } },
-    { status: result.status >= 200 && result.status < 300 ? 502 : result.status },
+    { status: result.status >= 200 && result.status < 300 ? 502 : result.status, headers },
   )
 }
 
@@ -120,6 +124,25 @@ export function createHelpdeskRoutes(deps: {
   }
 
   const helpdeskTicketMessages = {
+    GET: async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
+      const id = await ticketId(ctx)
+      if (!id) return invalidInput()
+      const parsed = z
+        .object({
+          limit: z.coerce.number().int().min(1).max(50).optional(),
+          before: z.string().max(256).optional(),
+          after: z.string().max(256).optional(),
+        })
+        .strict()
+        .refine((q) => !(q.before && q.after))
+        .safeParse(Object.fromEntries(new URL(req.url).searchParams))
+      if (!parsed.success) return invalidInput()
+      return upstream(
+        await gateway.gatewayFetch(`/helpdesk/portal/tickets/${id}/messages`, {
+          query: parsed.data,
+        }),
+      )
+    },
     POST: async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
       const readonly = await requireWritableSession()
       if (readonly) return readonly
@@ -136,5 +159,40 @@ export function createHelpdeskRoutes(deps: {
     },
   }
 
-  return { helpdeskTickets, helpdeskTicket, helpdeskTicketMessages }
+  const command = (action: 'handoff' | 'resolve') => ({
+    POST: async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
+      const id = await ticketId(ctx)
+      if (!id) return invalidInput()
+      const parsed = z
+        .object({ idempotencyKey: UUID })
+        .strict()
+        .safeParse(await json(req))
+      if (!parsed.success) return invalidInput()
+      return upstream(
+        await gateway.gatewayFetch(`/helpdesk/portal/tickets/${id}/${action}`, {
+          method: 'POST',
+          body: parsed.data,
+        }),
+      )
+    },
+  })
+  const helpdeskTicketSource = {
+    GET: async (_req: Request, ctx: { params: Promise<{ id: string; citationId: string }> }) => {
+      const { id, citationId } = await ctx.params
+      if (!UUID.safeParse(id).success || !UUID.safeParse(citationId).success) return invalidInput()
+      return upstream(
+        await gateway.gatewayFetch(`/helpdesk/portal/tickets/${id}/sources/${citationId}`),
+      )
+    },
+  }
+  return {
+    helpdeskTickets,
+    helpdeskTicket,
+    helpdeskTicketMessages,
+    helpdeskTicketHandoff: command('handoff'),
+    helpdeskTicketResolve: command('resolve'),
+    helpdeskTicketSource,
+  }
 }

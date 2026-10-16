@@ -67,6 +67,7 @@ function apiListPath(
   queue: QueueFilter,
   triage: TriageFilter,
   query: string,
+  handlingMode: string,
   cursor: string | null = null,
 ): string {
   const params = new URLSearchParams({ limit: String(LIMIT) })
@@ -75,6 +76,7 @@ function apiListPath(
   if (queue === 'unassigned') params.set('queue', 'unassigned')
   // Ausente = atendimento (padrão do backend); só o "Automáticos" viaja na URL.
   if (triage === 'automated') params.set('triage', 'automated')
+  if (handlingMode !== 'all') params.set('handlingMode', handlingMode)
   if (query) params.set('q', query)
   if (cursor) params.set('cursor', cursor)
   return `/api/helpdesk/tickets?${params.toString()}`
@@ -89,6 +91,9 @@ export function TicketsClient() {
   const status: StatusFilter = isTicketStatus(statusValue) ? statusValue : 'all'
   const queue: QueueFilter = isQueueFilter(queueValue) ? queueValue : 'all'
   const triage: TriageFilter = searchParams.get('triage') === 'automated' ? 'automated' : 'human'
+  const handlingMode = ['human', 'assistant'].includes(searchParams.get('handlingMode') ?? '')
+    ? searchParams.get('handlingMode')!
+    : 'all'
   const query = (searchParams.get('q') ?? '').trim()
   const [search, setSearch] = useState(query)
   const [items, setItems] = useState<TicketView[]>([])
@@ -98,7 +103,7 @@ export function TicketsClient() {
   const [loadingMore, setLoadingMore] = useState(false)
   const [failed, setFailed] = useState(false)
   const [reloadKey, setReloadKey] = useState(0)
-  const filterKey = `${status}\u0000${queue}\u0000${triage}\u0000${query}`
+  const filterKey = `${status}\u0000${queue}\u0000${triage}\u0000${handlingMode}\u0000${query}`
   const activeFilterKey = useRef(filterKey)
   activeFilterKey.current = filterKey
 
@@ -107,9 +112,12 @@ export function TicketsClient() {
       status?: StatusFilter
       queue?: QueueFilter
       triage?: TriageFilter
+      handlingMode?: string
       query?: string
     }) => {
       const params = new URLSearchParams()
+      const nextHandling = next.handlingMode ?? handlingMode
+      if (nextHandling !== 'all') params.set('handlingMode', nextHandling)
       const nextStatus = next.status ?? status
       const nextQueue = next.queue ?? queue
       const nextTriage = next.triage ?? triage
@@ -121,7 +129,7 @@ export function TicketsClient() {
       const serialized = params.toString()
       router.replace(serialized ? `${pathname}?${serialized}` : pathname, { scroll: false })
     },
-    [pathname, query, queue, router, status, triage],
+    [pathname, query, queue, router, status, triage, handlingMode],
   )
 
   useEffect(() => setSearch(query), [query])
@@ -139,7 +147,7 @@ export function TicketsClient() {
     setLoading(true)
     setLoadingMore(false)
     setFailed(false)
-    apiGet<CursorPage<TicketView>>(apiListPath(status, queue, triage, query))
+    apiGet<CursorPage<TicketView>>(apiListPath(status, queue, triage, query, handlingMode))
       .then((page) => {
         if (!alive) return
         setItems(page.items)
@@ -155,7 +163,7 @@ export function TicketsClient() {
     return () => {
       alive = false
     }
-  }, [status, queue, triage, query, reloadKey])
+  }, [status, queue, triage, query, handlingMode, reloadKey])
 
   async function loadMore() {
     if (!nextCursor) return
@@ -163,7 +171,7 @@ export function TicketsClient() {
     setLoadingMore(true)
     try {
       const page = await apiGet<CursorPage<TicketView>>(
-        apiListPath(status, queue, triage, query, nextCursor),
+        apiListPath(status, queue, triage, query, handlingMode, nextCursor),
       )
       if (activeFilterKey.current !== requestedFilterKey) return
       setItems((current) => {
@@ -183,6 +191,18 @@ export function TicketsClient() {
 
   return (
     <div className="space-y-4">
+      <label className="flex items-center gap-2 text-sm">
+        Responsável pelo atendimento
+        <select
+          className="rounded border bg-background p-2"
+          value={handlingMode}
+          onChange={(event) => replaceFilters({ handlingMode: event.target.value })}
+        >
+          <option value="all">Todos</option>
+          <option value="human">Equipe</option>
+          <option value="assistant">Assistente de IA</option>
+        </select>
+      </label>
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="space-y-2">
           <fieldset className="m-0 border-0 p-0">
@@ -322,6 +342,9 @@ export function TicketsClient() {
                       <TicketSlaBadge sla={ticket.sla} />
                       <TicketSourceBadge source={ticket.source} />
                       <TicketTriageBadge triage={ticket.triage} />
+                      {ticket.handlingMode === 'assistant' ? (
+                        <span className="text-xs text-muted-foreground">Assistente de IA</span>
+                      ) : null}
                     </div>
                     <p className="truncate text-xs text-muted-foreground">
                       {requesterLabel(ticket)}

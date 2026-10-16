@@ -1,12 +1,13 @@
 'use client'
-
+import type { AiRunView } from '@sistemazero/helpdesk-contracts'
 import { Button } from '@sistemazero/ui/button'
 import { Textarea } from '@sistemazero/ui/textarea'
 import { Sparkles } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { type ApiError, apiSend } from '@/lib/api'
-import type { MessageView, TicketSource, TicketView } from '@/lib/types'
+import { AnswerEvidence } from '@/components/shared/answer-evidence'
+import { type ApiError, apiGet, apiSend } from '@/lib/api'
+import type { MessageView, TicketView } from '@/lib/types'
 
 type ReplyResponse = { ticket: TicketView; message: MessageView }
 
@@ -31,7 +32,8 @@ function aiErrorToast(error: ApiError): void {
 export function ReplyBox({
   ticketId,
   version,
-  source,
+  replyChannel,
+  draftRunId,
   initialDraft,
   onSent,
   onStale,
@@ -40,7 +42,8 @@ export function ReplyBox({
   ticketId: string
   version: number
   /** Canal do chamado — só muda a copy; quem decide o transporte é o backend. */
-  source: TicketSource
+  replyChannel: 'portal' | 'email'
+  draftRunId: string | null
   /** Rascunho da IA no carregamento (prefill do editor). */
   initialDraft: string
   /** Sucesso: o chamador recarrega o detalhe (versão nova + mudança do poller). */
@@ -50,11 +53,48 @@ export function ReplyBox({
   /** Regenerar: troca o ticket local pela view devolvida (novo rascunho/status). */
   onTicketUpdated: (ticket: TicketView) => void
 }) {
-  const [body, setBody] = useState(initialDraft)
+  const [body, setBody] = useState('')
   const [sending, setSending] = useState(false)
   const [regenerating, setRegenerating] = useState(false)
   const busy = sending || regenerating
-  const viaPortal = source === 'portal'
+  const viaPortal = replyChannel === 'portal'
+  const [run, setRun] = useState<AiRunView | null>(null)
+  const [usedRunId, setUsedRunId] = useState<string | null>(null)
+  const [reason, setReason] = useState('')
+  useEffect(() => {
+    let alive = true
+    setRun(null)
+    if (draftRunId)
+      void apiGet<AiRunView>(`/api/helpdesk/tickets/${ticketId}/runs/${draftRunId}`)
+        .then((value) => {
+          if (alive) setRun(value)
+        })
+        .catch(() => {
+          if (alive) toast.error('Não foi possível carregar as fontes da sugestão.')
+        })
+    return () => {
+      alive = false
+    }
+  }, [ticketId, draftRunId])
+  async function feedback(kind: 'inserted' | 'rejected') {
+    if (!run) return
+    try {
+      await apiSend(`/api/helpdesk/tickets/${ticketId}/feedback`, 'POST', {
+        runId: run.id,
+        kind,
+        reason: kind === 'rejected' ? reason : undefined,
+      })
+      if (kind === 'inserted') {
+        setBody((current) => [current, run.reply].filter(Boolean).join('\n\n'))
+        setUsedRunId(run.id)
+      } else {
+        setRun(null)
+        setReason('')
+      }
+    } catch {
+      toast.error('Não foi possível registrar o feedback. Tente novamente.')
+    }
+  }
 
   async function send() {
     const text = body.trim()
@@ -64,9 +104,11 @@ export function ReplyBox({
       await apiSend<ReplyResponse>(`/api/helpdesk/tickets/${ticketId}/reply`, 'POST', {
         body: text,
         version,
+        draftRunId: usedRunId,
       })
       toast.success(viaPortal ? 'Resposta publicada na Ajuda do cliente.' : 'Resposta enviada.')
       setBody('')
+      setUsedRunId(null)
       onSent()
     } catch (error) {
       const apiError = error as ApiError
@@ -100,7 +142,7 @@ export function ReplyBox({
         `/api/helpdesk/tickets/${ticketId}/draft/regenerate`,
         'POST',
       )
-      setBody(ticket.aiDraft ?? '')
+
       onTicketUpdated(ticket)
       toast.success('Rascunho gerado pela IA.')
     } catch (error) {
@@ -125,8 +167,40 @@ export function ReplyBox({
         {viaPortal
           ? 'A resposta aparece na Ajuda do cliente na hora; o aviso por e-mail é enfileirado e pode levar alguns instantes. '
           : 'A resposta vai por e-mail, na mesma conversa. '}
-        Revise o texto antes de enviar. A IA prepara sugestões, mas nunca responde sozinha.
+        Revise o texto e as fontes antes de enviar.
       </p>
+      {run ? (
+        <div className="space-y-2" aria-live="polite">
+          <AnswerEvidence run={run} />
+          <div className="flex flex-wrap items-end gap-2">
+            <Button
+              variant="outline"
+              disabled={busy || !run.reply}
+              onClick={() => void feedback('inserted')}
+            >
+              Inserir sugestão no final do texto
+            </Button>
+            <label className="text-xs">
+              Motivo da rejeição
+              <input
+                className="ml-2 rounded border bg-background p-2"
+                value={reason}
+                maxLength={500}
+                onChange={(e) => setReason(e.target.value)}
+              />
+            </label>
+            <Button
+              variant="ghost"
+              disabled={busy || !reason.trim()}
+              onClick={() => void feedback('rejected')}
+            >
+              Rejeitar
+            </Button>
+          </div>
+        </div>
+      ) : initialDraft ? (
+        <p className="text-xs text-muted-foreground">Sugestão disponível; carregando fontes.</p>
+      ) : null}
       <Textarea
         id="reply-body"
         value={body}

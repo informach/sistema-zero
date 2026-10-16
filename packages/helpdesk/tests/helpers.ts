@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto'
+import { AutomationService } from '../src/application/ai/automation.service'
 import { TicketAiService } from '../src/application/ai/ticket-ai.service'
 import { ConnectionService } from '../src/application/connection/connection.service'
 import { GmailAccountService } from '../src/application/connection/gmail-account.service'
@@ -8,12 +9,15 @@ import { SettingsService } from '../src/application/settings/settings.service'
 import { CustomerTicketService } from '../src/application/tickets/customer-ticket.service'
 import { ReplyService } from '../src/application/tickets/reply.service'
 import { TicketService } from '../src/application/tickets/ticket.service'
+import { initialHandling } from '../src/domain/ticket/automation'
 import type { Ticket } from '../src/domain/ticket/ticket'
 import type { TicketMessage } from '../src/domain/ticket/ticket-message'
 import { loadEnv } from '../src/infrastructure/config/env'
 import { PortalNotificationWorker } from '../src/infrastructure/workers/portal-notification-worker'
 import { createServer } from '../src/interfaces/http/server'
 import { FakeLlmClient } from './fakes/ai'
+import { testAnswers } from './fakes/answers'
+import { InMemoryAutomationRepository } from './fakes/automation'
 import { FakeGmailClient, FakeGmailOAuthProvider, FakeSecretBox } from './fakes/gmail'
 import {
   InMemoryConnectionRepository,
@@ -79,7 +83,8 @@ export function buildTestApp(
   const messaging = new FakeMessagingGateway()
 
   const tickets = new InMemoryTicketRepository()
-  const messages = new InMemoryMessageRepository()
+  const messages = new InMemoryMessageRepository(tickets.notes)
+  const automation = new AutomationService(new InMemoryAutomationRepository(tickets), 'fake', now)
   const customerTickets = new InMemoryCustomerTicketRepository(tickets, messages)
   const notificationOutbox = new InMemoryPortalNotificationOutboxRepository()
   const replyDelivery = new InMemoryReplyDeliveryRepository(tickets, messages, notificationOutbox)
@@ -128,6 +133,7 @@ export function buildTestApp(
     now,
     silentLogger,
   )
+  const answers = testAnswers(llm)
   const replyService = new ReplyService(
     tickets,
     messages,
@@ -141,13 +147,14 @@ export function buildTestApp(
     now,
     idGen,
     silentLogger,
+    answers.runs,
   )
   const ticketAiService = new TicketAiService(
     llm,
     tickets,
     messages,
-    async () => [],
-    { maxThreadChars: 24_000, maxKbChars: 12_000 },
+    answers,
+    { maxThreadChars: 24_000 },
     now,
   )
   const notificationWorker = messagingEnabled
@@ -173,6 +180,8 @@ export function buildTestApp(
       tickets: ticketService,
       reply: replyService,
       ai: ticketAiService,
+      automation,
+      answers,
       internalToken: INTERNAL_TOKEN,
       requireStaffEnabled: true,
     },
@@ -182,11 +191,13 @@ export function buildTestApp(
     },
     kb: {
       kb: kbService,
+      answers,
       internalToken: INTERNAL_TOKEN,
       requireStaffEnabled: true,
     },
     settings: {
       settings: settingsService,
+      automation,
       internalToken: INTERNAL_TOKEN,
       requireStaffEnabled: true,
     },
@@ -257,6 +268,15 @@ export function request(
   path: string,
   options: { headers?: Record<string, string>; body?: unknown } = {},
 ): Promise<Response> {
+  if (
+    method === 'POST' &&
+    /^\/helpdesk\/portal\/tickets(?:\/[^/]+\/messages)?$/.test(path) &&
+    typeof options.body === 'object' &&
+    options.body !== null &&
+    !('idempotencyKey' in options.body)
+  ) {
+    options = { ...options, body: { ...options.body, idempotencyKey: randomUUID() } }
+  }
   return app.handle(
     new Request(`http://localhost${path}`, {
       method,
@@ -270,6 +290,7 @@ export function request(
 export function makeTicket(overrides: Partial<Ticket> = {}): Ticket {
   const at = new Date('2026-07-08T12:00:00Z')
   return {
+    ...initialHandling(),
     id: randomUUID(),
     version: 0,
     gmailThreadId: `thread-${randomUUID()}`,
@@ -292,6 +313,7 @@ export function makeTicket(overrides: Partial<Ticket> = {}): Ticket {
     messageCount: 1,
     aiSummary: null,
     aiSummaryAt: null,
+    aiDraftRunId: null,
     aiDraft: null,
     aiDraftAt: null,
     aiDraftEdited: false,
@@ -333,6 +355,8 @@ export function makeMessage(
     ccEmails: [],
     subject: 'Não consigo acessar o curso',
     bodyText: 'Olá, comprei o curso e não consigo acessar. Podem me ajudar?',
+    aiRunId: null,
+    draftEdited: null,
     bodyHtml: null,
     snippet: 'Olá, comprei o curso e não consigo acessar.',
     attachments: [],

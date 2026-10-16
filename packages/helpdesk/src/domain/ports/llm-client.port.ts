@@ -1,3 +1,4 @@
+import type { AiAttemptView } from '@sistemazero/helpdesk-contracts'
 import type { ZodType } from 'zod'
 
 /**
@@ -30,6 +31,10 @@ export interface LlmCompleteInput<T> {
   label?: string
   maxTokens?: number
   temperature?: number
+  deadline?: Date
+  maxAttempts?: number
+  beforeAttempt?: (attempt: number) => Promise<void>
+  onAttempt?: (attempt: AiAttemptView) => Promise<void>
 }
 
 export interface LlmClient {

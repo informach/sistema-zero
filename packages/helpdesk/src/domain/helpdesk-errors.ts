@@ -1,4 +1,10 @@
 import { DomainError } from '@sistemazero/core/errors'
+export class SourceUnavailableError extends DomainError {
+  readonly code = 'SOURCE_UNAVAILABLE'
+  constructor() {
+    super('Esta fonte não está mais disponível para consulta.')
+  }
+}
 
 // ── Não encontrado (404) ─────────────────────────────────────────────────────
 export class TicketNotFoundError extends DomainError {

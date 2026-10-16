@@ -4,7 +4,7 @@ import { Button } from '@sistemazero/ui/button'
 import { Skeleton } from '@sistemazero/ui/skeleton'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   TicketCategoryBadge,
   TicketPriorityBadge,
@@ -13,20 +13,132 @@ import {
   TicketStatusBadge,
   TicketTriageBadge,
 } from '@/components/shared/ticket-badges'
-import { apiGet } from '@/lib/api'
+import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { triageRuleDescription } from '@/lib/categories'
 import { formatSlaRemaining } from '@/lib/sla'
 import type { TicketDetailResponse, TicketView } from '@/lib/types'
+import { AiHistory } from './ai-history'
 import { AiSummaryPanel } from './ai-summary-panel'
 import { NoteBox } from './note-box'
 import { ReplyBox } from './reply-box'
 import { TicketControls } from './ticket-controls'
 import { TicketMessageCard } from './ticket-message-card'
 
+function newestTicket(current: TicketView, incoming: TicketView): TicketView {
+  if (incoming.id !== current.id) return current
+  return incoming.version > current.version ||
+    (incoming.version === current.version && incoming.updatedAt >= current.updatedAt)
+    ? incoming
+    : current
+}
+
 export function TicketDetailClient({ ticketId }: { ticketId: string }) {
   const [data, setData] = useState<TicketDetailResponse | null>(null)
   const [failed, setFailed] = useState(false)
   const [reloadKey, setReloadKey] = useState(0)
+
+  const dataRef = useRef(data)
+  dataRef.current = data
+  const [actionError, setActionError] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
+  const takeoverKey = useRef<{ key: string; version: number } | null>(null)
+  async function takeover() {
+    if (!data || busy) return
+    setBusy(true)
+    setActionError(null)
+    try {
+      takeoverKey.current ??= { key: crypto.randomUUID(), version: data.ticket.version }
+      const ticket = await apiSend<TicketView>(
+        `/api/helpdesk/tickets/${ticketId}/takeover`,
+        'POST',
+        { version: takeoverKey.current.version, idempotencyKey: takeoverKey.current.key },
+      )
+      setData((current) =>
+        current ? { ...current, ticket: newestTicket(current.ticket, ticket) } : current,
+      )
+      takeoverKey.current = null
+    } catch (reason) {
+      setActionError((reason as ApiError).message)
+      if ((reason as ApiError).status === 409) {
+        takeoverKey.current = null
+        void softReload()
+      }
+    } finally {
+      setBusy(false)
+    }
+  }
+  async function older() {
+    if (!data?.olderCursor || busy) return
+    setBusy(true)
+    setActionError(null)
+    try {
+      const next = await apiGet<TicketDetailResponse>(
+        `/api/helpdesk/tickets/${ticketId}/messages?before=${encodeURIComponent(data.olderCursor)}&limit=50`,
+      )
+      setData((current) =>
+        current
+          ? {
+              ...current,
+              messages: [
+                ...new Map([...next.messages, ...current.messages].map((m) => [m.id, m])).values(),
+              ],
+              hasOlder: next.hasOlder,
+              olderCursor: next.olderCursor,
+            }
+          : current,
+      )
+    } catch {
+      setActionError('Não foi possível carregar as mensagens anteriores.')
+    } finally {
+      setBusy(false)
+    }
+  }
+  useEffect(() => {
+    const controller = new AbortController()
+    let stopped = false,
+      timer: ReturnType<typeof setTimeout>,
+      failures = 0
+    async function poll() {
+      let delay = 5000
+      const current = dataRef.current
+      if (current && !document.hidden)
+        try {
+          const next = await apiGet<TicketDetailResponse>(
+            `/api/helpdesk/tickets/${ticketId}/messages?limit=50${current.latestCursor ? `&after=${encodeURIComponent(current.latestCursor)}` : ''}`,
+            controller.signal,
+          )
+          if (stopped) return
+          setData((prior) =>
+            prior
+              ? {
+                  ...prior,
+                  ticket: newestTicket(prior.ticket, next.ticket),
+                  messages: [
+                    ...new Map(
+                      [...prior.messages, ...next.messages].map((m) => [m.id, m]),
+                    ).values(),
+                  ],
+                  latestCursor: next.latestCursor ?? prior.latestCursor,
+                }
+              : prior,
+          )
+          failures = 0
+          if (next.hasMore) delay = 200
+        } catch (reason) {
+          if (stopped) return
+          const error = reason as ApiError
+          if (error.status === 401 || error.status === 403) return
+          delay = Math.max(error.retryAfterMs ?? 0, Math.min(60000, 5000 * 2 ** ++failures))
+        }
+      if (!stopped) timer = setTimeout(poll, delay)
+    }
+    timer = setTimeout(poll, 1500)
+    return () => {
+      stopped = true
+      clearTimeout(timer)
+      controller.abort()
+    }
+  }, [ticketId])
 
   const reload = useCallback(() => setReloadKey((key) => key + 1), [])
 
@@ -34,7 +146,21 @@ export function TicketDetailClient({ ticketId }: { ticketId: string }) {
   const softReload = useCallback(async () => {
     try {
       const detail = await apiGet<TicketDetailResponse>(`/api/helpdesk/tickets/${ticketId}`)
-      setData(detail)
+      setData((current) =>
+        current
+          ? {
+              ...detail,
+              ticket: newestTicket(current.ticket, detail.ticket),
+              messages: [
+                ...new Map(
+                  [...current.messages, ...detail.messages].map((m) => [m.id, m]),
+                ).values(),
+              ],
+              hasOlder: current.hasOlder,
+              olderCursor: current.olderCursor,
+            }
+          : detail,
+      )
     } catch {
       // Um refresh secundário não apaga o estado útil que já está na tela.
     }
@@ -58,7 +184,9 @@ export function TicketDetailClient({ ticketId }: { ticketId: string }) {
   }, [ticketId, reloadKey])
 
   const handleTicketUpdated = useCallback((updated: TicketView) => {
-    setData((current) => (current ? { ...current, ticket: updated } : current))
+    setData((current) =>
+      current ? { ...current, ticket: newestTicket(current.ticket, updated) } : current,
+    )
   }, [])
 
   if (failed) {
@@ -121,6 +249,21 @@ export function TicketDetailClient({ ticketId }: { ticketId: string }) {
           {ticket.messageCount} {ticket.messageCount === 1 ? 'mensagem' : 'mensagens'}
           {ticket.assignedToName ? ` · Responsável: ${ticket.assignedToName}` : ''}
         </p>
+        <p className="text-sm">
+          {ticket.handlingMode === 'assistant'
+            ? 'Assistente de IA no atendimento'
+            : 'Atendimento com a equipe'}
+        </p>
+        {ticket.handlingMode === 'assistant' ? (
+          <Button disabled={busy} onClick={() => void takeover()}>
+            Assumir atendimento
+          </Button>
+        ) : null}
+        {actionError ? (
+          <p role="alert" className="text-sm text-destructive">
+            {actionError}
+          </p>
+        ) : null}
         {slaRemaining ? <p className="text-xs text-muted-foreground">{slaRemaining}</p> : null}
         {ticket.triage !== 'human' ? (
           <p className="text-xs text-muted-foreground">
@@ -137,21 +280,29 @@ export function TicketDetailClient({ ticketId }: { ticketId: string }) {
 
       <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
         <div className="space-y-6">
+          {data.hasOlder ? (
+            <Button variant="outline" disabled={busy} onClick={() => void older()}>
+              Carregar mensagens anteriores
+            </Button>
+          ) : null}
           <ul className="space-y-3">
-            {messages.map((message) => (
-              <TicketMessageCard
-                key={message.id}
-                message={message}
-                onDeliveryUpdated={softReload}
-              />
-            ))}
+            {[...messages]
+              .sort((a, b) => a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id))
+              .map((message) => (
+                <TicketMessageCard
+                  key={message.id}
+                  message={message}
+                  onDeliveryUpdated={softReload}
+                />
+              ))}
           </ul>
 
           {ticket.triage === 'human' ? (
             <ReplyBox
               ticketId={ticketId}
               version={ticket.version}
-              source={ticket.source}
+              replyChannel={ticket.replyChannel}
+              draftRunId={ticket.aiDraftRunId}
               initialDraft={
                 ticket.aiStatus === 'pending' || ticket.aiStatus === 'processing'
                   ? ''
@@ -167,6 +318,7 @@ export function TicketDetailClient({ ticketId }: { ticketId: string }) {
         <aside className="space-y-6">
           <TicketControls ticket={ticket} onUpdated={handleTicketUpdated} onStale={softReload} />
           <NoteBox ticketId={ticketId} onAdded={softReload} />
+          <AiHistory ticketId={ticketId} />
         </aside>
       </div>
     </div>

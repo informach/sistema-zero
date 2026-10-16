@@ -18,6 +18,7 @@ const GATEWAY_TIMEOUT_MS = 60_000
 const AUTH_TIMEOUT_MS = 15_000
 
 export interface GatewayResponse<T = unknown> {
+  retryAfter?: string
   status: number
   body: T
 }
@@ -107,7 +108,11 @@ export async function publicAuthPost<T>(path: string, body: unknown): Promise<Ga
       cache: 'no-store',
       signal: AbortSignal.timeout(AUTH_TIMEOUT_MS),
     })
-    return { status: res.status, body: await readJson<T>(res) }
+    return {
+      status: res.status,
+      body: await readJson<T>(res),
+      ...(res.headers.get('retry-after') ? { retryAfter: res.headers.get('retry-after')! } : {}),
+    }
   } catch {
     return {
       status: 503,
@@ -201,7 +206,11 @@ export function createGatewayModule(session: SessionModule) {
       const renewed = await tryRefresh()
       if (renewed) res = await authenticatedFetch(path, opts, renewed)
     }
-    return { status: res.status, body: await readJson<T>(res) }
+    return {
+      status: res.status,
+      body: await readJson<T>(res),
+      ...(res.headers.get('retry-after') ? { retryAfter: res.headers.get('retry-after')! } : {}),
+    }
   }
 
   /**
@@ -228,7 +237,11 @@ export function createGatewayModule(session: SessionModule) {
       const renewed = await tryRefresh()
       if (renewed) res = await request(renewed)
     }
-    return { status: res.status, body: await readJson<T>(res) }
+    return {
+      status: res.status,
+      body: await readJson<T>(res),
+      ...(res.headers.get('retry-after') ? { retryAfter: res.headers.get('retry-after')! } : {}),
+    }
   }
 
   /**
@@ -243,7 +256,11 @@ export function createGatewayModule(session: SessionModule) {
   ): Promise<GatewayResponse<T>> {
     const access = await session.getAccessToken()
     const res = await authenticatedFetch(path, opts, access, true)
-    return { status: res.status, body: await readJson<T>(res) }
+    return {
+      status: res.status,
+      body: await readJson<T>(res),
+      ...(res.headers.get('retry-after') ? { retryAfter: res.headers.get('retry-after')! } : {}),
+    }
   }
 
   /**

@@ -5,6 +5,7 @@ import type {
   ReplyDeliveryRepository,
 } from '../../../domain/ports/reply-delivery-repository.port'
 import type { TicketMessage } from '../../../domain/ticket/ticket-message'
+import { humanTakeoverSet, supersedeJobs } from './automation-transactions'
 import type { Database } from './db'
 import { portalNotificationOutbox, ticketMessages, tickets } from './schema'
 
@@ -39,10 +40,15 @@ export class DrizzleReplyDeliveryRepository implements ReplyDeliveryRepository {
 
       const [claimedTicket] = await tx
         .update(tickets)
-        .set({ version: input.expectedVersion + 1, updatedAt: input.at })
+        .set({
+          ...humanTakeoverSet(input.at),
+          version: input.expectedVersion + 1,
+          updatedAt: input.at,
+        })
         .where(and(eq(tickets.id, input.ticketId), eq(tickets.version, input.expectedVersion)))
         .returning()
       if (!claimedTicket) return { status: 'conflict' }
+      await supersedeJobs(tx, input.ticketId, input.at)
 
       await tx.insert(ticketMessages).values(input.message)
       return { status: 'created', intent: { ticket: claimedTicket, message: input.message } }
@@ -59,12 +65,23 @@ export class DrizzleReplyDeliveryRepository implements ReplyDeliveryRepository {
     message: typeof ticketMessages.$inferSelect
   } | null> {
     return this.db.transaction(async (tx) => {
+      const [identity] = await tx
+        .select({ ticketId: ticketMessages.ticketId })
+        .from(ticketMessages)
+        .where(eq(ticketMessages.id, input.messageId))
+      if (!identity) return null
+      await tx
+        .select({ id: tickets.id })
+        .from(tickets)
+        .where(eq(tickets.id, identity.ticketId))
+        .for('update')
       // postgres.js sob Bun exige ISO string em parâmetros dentro de SQL cru.
       const atIso = input.at.toISOString()
       const [updatedMessage] = await tx
         .update(ticketMessages)
         .set({
           gmailMessageId: input.gmailMessageId,
+          position: sql`nextval(pg_get_serial_sequence('helpdesk.ticket_messages','position'))`,
           deliveryState: 'sent',
           deliveryLastError: null,
           gmailInternalDate: input.at,
@@ -105,7 +122,7 @@ export class DrizzleReplyDeliveryRepository implements ReplyDeliveryRepository {
           // uma confirmação assíncrona. No fluxo normal (new/open), a resposta
           // muda o ticket para aguardar o cliente.
           status: sql`case
-            when ${tickets.status} in ('new', 'open') then 'waiting'::helpdesk.ticket_status
+            when ${tickets.status} in ('new', 'open') and coalesce(${tickets.lastInboundAt},${tickets.firstMessageAt}) <= ${updatedMessage.createdAt.toISOString()}::timestamptz then 'waiting'::helpdesk.ticket_status
             else ${tickets.status}
           end`,
           messageCount: sql`${tickets.messageCount} + 1`,
@@ -155,6 +172,8 @@ export class DrizzleReplyDeliveryRepository implements ReplyDeliveryRepository {
         .update(tickets)
         .set({
           version: input.expectedVersion + 1,
+          ...humanTakeoverSet(input.at),
+          humanSlaStartedAt: null,
           status: sql`case
             when ${tickets.status} in ('new', 'open') then 'waiting'::helpdesk.ticket_status
             else ${tickets.status}
@@ -166,6 +185,7 @@ export class DrizzleReplyDeliveryRepository implements ReplyDeliveryRepository {
         .where(and(eq(tickets.id, input.ticketId), eq(tickets.version, input.expectedVersion)))
         .returning()
       if (!updatedTicket) return { status: 'conflict' }
+      await supersedeJobs(tx, input.ticketId, input.at)
 
       await tx.insert(ticketMessages).values(input.message)
       await tx.insert(portalNotificationOutbox).values(input.notification)
@@ -174,26 +194,43 @@ export class DrizzleReplyDeliveryRepository implements ReplyDeliveryRepository {
   }
 
   async markUnknown(messageId: string, error: string): Promise<void> {
-    await this.db
-      .update(ticketMessages)
-      .set({ deliveryState: 'unknown', deliveryLastError: error.slice(0, 500) })
-      .where(and(eq(ticketMessages.id, messageId), eq(ticketMessages.deliveryState, 'pending')))
+    await this.deliveryTransition(messageId, 'unknown', error, ['pending'])
   }
-
   async markFailed(
     messageId: string,
     error: string,
   ): Promise<typeof ticketMessages.$inferSelect | null> {
-    const [message] = await this.db
-      .update(ticketMessages)
-      .set({ deliveryState: 'failed', deliveryLastError: error.slice(0, 500) })
-      .where(
-        and(
-          eq(ticketMessages.id, messageId),
-          inArray(ticketMessages.deliveryState, ['pending', 'unknown']),
-        ),
-      )
-      .returning()
-    return message ?? null
+    return this.deliveryTransition(messageId, 'failed', error, ['pending', 'unknown'])
+  }
+  private async deliveryTransition(
+    messageId: string,
+    state: 'unknown' | 'failed',
+    error: string,
+    allowed: ('pending' | 'unknown')[],
+  ) {
+    return this.db.transaction(async (tx) => {
+      const [identity] = await tx
+        .select({ ticketId: ticketMessages.ticketId })
+        .from(ticketMessages)
+        .where(eq(ticketMessages.id, messageId))
+      if (!identity) return null
+      await tx
+        .select({ id: tickets.id })
+        .from(tickets)
+        .where(eq(tickets.id, identity.ticketId))
+        .for('update')
+      const [message] = await tx
+        .update(ticketMessages)
+        .set({
+          deliveryState: state,
+          deliveryLastError: error.slice(0, 500),
+          position: sql`nextval(pg_get_serial_sequence('helpdesk.ticket_messages','position'))`,
+        })
+        .where(
+          and(eq(ticketMessages.id, messageId), inArray(ticketMessages.deliveryState, allowed)),
+        )
+        .returning()
+      return message ?? null
+    })
   }
 }
