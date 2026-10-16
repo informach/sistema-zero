@@ -263,11 +263,12 @@ jobs:
     name: desktop-windows
     runs-on: windows-latest
     timeout-minutes: 20
-    env:
-      TEMP: ${{ runner.temp }}
-      TMP: ${{ runner.temp }}
     steps:
       - uses: actions/checkout@v5
+      - name: Usar o diretório temporário dedicado do runner
+        run: |
+          "TEMP=$env:RUNNER_TEMP" >> $env:GITHUB_ENV
+          "TMP=$env:RUNNER_TEMP" >> $env:GITHUB_ENV
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: '1.3.11'
