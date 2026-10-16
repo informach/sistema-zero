@@ -14,7 +14,7 @@ test('process preserves argv, strips inherited secrets and bounds output', async
         executable: process.execPath,
         args: [
           '-e',
-          'console.log(JSON.stringify({args:process.argv.slice(1),secret:process.env.ZERO_SYNTHETIC_SECRET??null}))',
+          'console.log(JSON.stringify({args:process.argv.slice(1),secret:process.env.ZERO_SYNTHETIC_SECRET??null,moduleCache:process.env.PSModuleAnalysisCachePath??null}))',
           'a b',
           'quote"and\\',
         ],
@@ -23,7 +23,11 @@ test('process preserves argv, strips inherited secrets and bounds output', async
       new AbortController().signal,
     )
     expect(result.code).toBe(0)
-    expect(JSON.parse(result.output)).toEqual({ args: ['a b', 'quote"and\\'], secret: null })
+    expect(JSON.parse(result.output)).toEqual({
+      args: ['a b', 'quote"and\\'],
+      secret: null,
+      moduleCache: process.env.PSModuleAnalysisCachePath ?? null,
+    })
     const output = await manager.run(
       {
         executable: process.execPath,
