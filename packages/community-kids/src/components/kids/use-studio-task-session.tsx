@@ -7,7 +7,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import type { CreationsCloud } from '../../lib/creations-cloud'
 import { cloudConfirmRefusal, guideError, progressRefusal } from '../../lib/pensa-guide-errors'
 import { withProvisionalGameLink } from '../../lib/pensa-mission-link'
-import { resolveNextPensaMission } from '../../lib/pensa-next-mission'
+import { navigatePensaMission, resolveNextPensaMission } from '../../lib/pensa-next-mission'
 import { useNextMissionLabel } from './use-next-mission-label'
 import { usePensaGuideCollapsed } from './use-pensa-guide-collapsed'
 import type { StudioTaskHandoff, StudioTaskProgressUpdate } from './use-pensa-task-handoff'
@@ -94,6 +94,7 @@ export function useStudioTaskSession({
       project: handoff.project,
       cycle: handoff.cycle,
       guide: handoff.task.guide,
+      codeTransition: pro && handoff.task.context.authoring !== 'code',
       blocks: pro ? [] : handoff.task.context.blocks,
       progress: withProvisionalGameLink(
         handoff.task.progress,
@@ -104,7 +105,7 @@ export function useStudioTaskSession({
       onCollapsedChange: setCollapsed,
       nextMissionLabel,
       renderListen:
-        narrationEnabled && viewerId
+        narrationEnabled && viewerId && (!pro || handoff.task.context.authoring === 'code')
           ? (stepId) => (
               <PrivateZappyVoice
                 viewerId={viewerId}
@@ -127,7 +128,7 @@ export function useStudioTaskSession({
           throw guideError('Não consegui abrir a próxima missão. Tente de novo.')
         })
         assertCurrent()
-        navigate(next.path)
+        navigatePensaMission(next.path, navigate)
       },
       onProgress: async (input) => {
         assertCurrent()

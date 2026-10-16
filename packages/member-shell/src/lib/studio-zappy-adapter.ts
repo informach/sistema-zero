@@ -1,3 +1,4 @@
+import type { AiCreditsView } from '@sistemazero/core/ai-credits'
 import type { StudioProBuilderPage, StudioProBuilderView } from '@sistemazero/core/studio'
 import type {
   StudioTutorAdapter,
@@ -73,6 +74,15 @@ export function createStudioZappyAdapter(
     return (await requireOk<{ job: StudioProBuilderView | null }>(response)).job
   }
   return {
+    async loadCredits(signal) {
+      const response = await fetch('/api/members/ai-credits', {
+        cache: 'no-store',
+        signal: signal
+          ? AbortSignal.any([signal, AbortSignal.timeout(QUICK_TIMEOUT_MS)])
+          : timeout(QUICK_TIMEOUT_MS),
+      })
+      return (await requireOk<{ credits: AiCreditsView | null }>(response)).credits
+    },
     builder: {
       async availability(templateId, signal) {
         const response = await fetch(`${baseUrl}/build`, {

@@ -360,6 +360,18 @@ export class DrizzlePensaJourneyRepository implements PensaJourneyRepository {
       shareCode: row.project.shareCode,
       rows: roleRows,
     })
+    // Only the programmer's committed, live game determines the mode.
+    const [game] = await this.db
+      .select({ kind: creations.kind })
+      .from(creations)
+      .where(
+        and(
+          eq(creations.userId, team.roles.code),
+          eq(creations.tool, 'studio'),
+          eq(creations.itemId, `pensa-${projectId.replaceAll('-', '')}`),
+          isNull(creations.deletedAt),
+        ),
+      )
     const [operation] = row.state.operationId
       ? await this.db
           .select()
@@ -397,6 +409,7 @@ export class DrizzlePensaJourneyRepository implements PensaJourneyRepository {
       .orderBy(asc(pensaCheckpoints.createdAt))
     return {
       project: { id: projectId, name: row.project.name, status: row.project.status },
+      studioAuthoring: game?.kind === 'pro' ? 'code' : 'blocks',
       journey: row.state,
       operation: operation ? operationView(operation) : null,
       cycles,

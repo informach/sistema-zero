@@ -213,12 +213,18 @@ export const GuideDraftSchema = z.strictObject({
  * Estúdio e ir para a área ⚙️ Ao iniciar"). As áreas são BLOCOS que ela pega e arrasta, e o guia já
  * aparece dentro do Estúdio. Cada padrão diz o conserto, que é o que o reparo recebe.
  */
-const VAGUE_STEPS: readonly { pattern: RegExp; fix: string; studioOnly?: boolean }[] = [
+const VAGUE_STEPS: readonly {
+  pattern: RegExp
+  fix: string
+  fixPro?: string
+  studioOnly?: boolean
+}[] = [
   {
     // "entre a área X e a área Y" é "entre" de lugar: só "entre/entrar na área" é o passo vago.
     pattern:
       /\b(?:(?:ir|v[aá]|volte|voltar|abra|abrir|acesse|acessar)\s+(?:para\s+|at[eé]\s+)?(?:a|na|à)|(?:entre|entrar)\s+na)\s+[aá]rea\b/iu,
     fix: 'as áreas são blocos: diga "clique em "🗂️ Áreas do projeto", pegue o bloco da área e arraste para o espaço de montar" ou "arraste para dentro da área X"',
+    fixPro: 'diga como localizar o trecho de código e qual mudança fazer nele',
     // As áreas do projeto são do Estúdio; no Pinta "a área de desenho" é o próprio papel.
     studioOnly: true,
   },
@@ -232,6 +238,8 @@ const VAGUE_STEPS: readonly { pattern: RegExp; fix: string; studioOnly?: boolean
   {
     pattern: /\bimplement/iu,
     fix: 'troque "implementar" pelo gesto: qual bloco pegar, de qual categoria, e para onde arrastar',
+    fixPro:
+      'troque "implementar" por uma mudança concreta no código, como localizar o trecho e como testar o resultado',
   },
 ]
 
@@ -242,14 +250,17 @@ const VAGUE_STEPS: readonly { pattern: RegExp; fix: string; studioOnly?: boolean
 export function guideIssues(
   guides: z.infer<typeof GuideDraftSchema>,
   studioKeys?: ReadonlySet<string>,
+  authoring: 'blocks' | 'code' = 'blocks',
 ): string[] {
   const issues: string[] = []
   for (const mission of guides.missions)
     mission.steps.forEach((step, index) => {
       const studio = !studioKeys || studioKeys.has(mission.key)
-      for (const { pattern, fix, studioOnly } of VAGUE_STEPS)
+      for (const { pattern, fix, fixPro, studioOnly } of VAGUE_STEPS)
         if ((studio || !studioOnly) && pattern.test(step.action))
-          issues.push(`Missão "${mission.key}", passo ${index + 1} ("${step.action}"): ${fix}.`)
+          issues.push(
+            `Missão "${mission.key}", passo ${index + 1} ("${step.action}"): ${studio && authoring === 'code' ? (fixPro ?? fix) : fix}.`,
+          )
     })
   return issues
 }
@@ -327,7 +338,11 @@ export function validateJourneyProposal(
     const lockedTools = mission.toolIds.filter((id) => !caps.moldaTools.includes(id))
     if (lockedTools.length)
       issues.push(`${at}: ferramentas do Molda indisponíveis: ${list(lockedTools)}.`)
-    if (mission.destination === 'studio' && !mission.blockIds.length)
+    if (
+      mission.destination === 'studio' &&
+      caps.studioAuthoring !== 'code' &&
+      !mission.blockIds.length
+    )
       issues.push(`${at}: missão do Estúdio sem nenhum bloco em blockIds.`)
     if (mission.destination === 'molda' && !mission.toolIds.length)
       issues.push(`${at}: missão do Molda sem nenhuma ferramenta em toolIds.`)

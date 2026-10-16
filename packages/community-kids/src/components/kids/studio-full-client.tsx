@@ -2,21 +2,15 @@
 
 import type { AiCreditsView } from '@sistemazero/core/ai-credits'
 import { STUDIO_PROJECT_FORMAT_VERSION } from '@sistemazero/core/studio'
-import { PrivateZappyVoice } from '@sistemazero/member-shell/components/private-zappy-voice'
-import { VoiceInputButton } from '@sistemazero/member-shell/components/voice-input/voice-input-button'
 // O CSS do Estúdio (tokens + @theme que GERA as utilitárias sz-*) é carregado pelo
 // `@import` em `app/globals.css`, DENTRO do pipeline Tailwind — um JS-import aqui só
 // traz os tokens, NÃO registra as cores p/ gerar as utilitárias (sem isso os modais e
 // menus do editor saem sem fundo/cor). Ver o comentário no globals.css.
-import { dataUrlBase64ToBlob } from '@sistemazero/member-shell/lib/data-url'
 import { requestPersistentStorage } from '@sistemazero/member-shell/lib/persistent-storage'
 import { sessionFetch as fetch } from '@sistemazero/member-shell/lib/session-fetch'
-import { studioDescriptionInput } from '@sistemazero/member-shell/lib/studio-description-input'
-import { createStudioPublicationAdapter } from '@sistemazero/member-shell/lib/studio-publication-adapter'
 import type { StudioTier } from '@sistemazero/member-shell/lib/studio-tier'
-import { createStudioZappyAdapter } from '@sistemazero/member-shell/lib/studio-zappy-adapter'
 import { useIsDesktop } from '@sistemazero/member-shell/lib/use-is-desktop'
-import type { StudioShareAdapter, StudioTaskSession, StudioTutorConfig } from '@sistemazero/studio'
+import type { StudioTaskSession } from '@sistemazero/studio'
 import { RefreshCw } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -41,7 +35,6 @@ import {
 } from '../../lib/pensa-studio-link'
 import { resumeExistingCreation } from '../../lib/resume-creation'
 import { createStudioCloudSync } from '../../lib/studio-cloud'
-import { openStudioZappyHelp, openStudioZappyLesson } from '../../lib/studio-zappy-navigation'
 import { EMBEDDED_STUDIO_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
 import { PensaMissionBlocked } from './pensa-mission-blocked'
 import { StudioFullEditor } from './studio-full-editor'
@@ -49,7 +42,9 @@ import { HostChromeAnnouncer, useHostChrome } from './use-host-chrome'
 import { useStudioTaskHandoff } from './use-pensa-task-handoff'
 import { usePensaTeamLibrary } from './use-pensa-team-library'
 import { useStudioCreationLibraries } from './use-studio-creation-libraries'
+import { useStudioShare } from './use-studio-share'
 import { useStudioTaskSession } from './use-studio-task-session'
+import { useKidsStudioTutor } from './use-studio-tutor'
 
 // O package do Estúdio é pesado (Monaco/Blockly/IndexedDB) e NÃO roda no SSR — por
 // isso carregamos o módulo inteiro DENTRO de um effect (igual ao public-player) e o
@@ -501,125 +496,15 @@ export function StudioFullClient({
     narrationEnabled,
   })
 
-  // Adapter de COMPARTILHAR (Mural) — standalone (SEM aula): `describe` rascunha a
-  // descrição via IA no servidor (fail-soft) e `publish` sobe projeto + capa por
-  // multipart à rota standalone, que devolve os links. Memoizado (o Studio o latcha).
-  const share = useMemo<StudioShareAdapter>(
-    () => ({
-      proVerifiedCover: true,
-      publication: createStudioPublicationAdapter(),
-      // Desafio do mês: liga o checkbox no ShareDialog (posse checada na página).
-      ...(challenge ? { challenge } : {}),
-      async generateDescription({ project, title }) {
-        try {
-          const res = await fetch('/api/studio/describe', {
-            method: 'POST',
-            headers: { 'content-type': 'application/json' },
-            body: JSON.stringify(studioDescriptionInput(project, title)),
-          })
-          if (!res.ok) return ''
-          const body = (await res.json()) as {
-            description?: string
-            quotaExceeded?: boolean
-            scope?: 'day' | 'month'
-          }
-          // Teto de IA da conta atingido → o ShareDialog esconde o "Gerar" e cai
-          // no modo manual (o throw com code é duck-typed lá).
-          if (body.quotaExceeded) {
-            // ⚠️ O `scope` PRECISA viajar: sem ele o dialog dizia "a ajuda de HOJE
-            // acabou" mesmo quando o teto estourado era o do MÊS, mandando a
-            // criança voltar amanhã para nada.
-            throw Object.assign(new Error('quota de IA esgotada'), {
-              code: 'AI_QUOTA_EXCEEDED' as const,
-              scope: body.scope,
-            })
-          }
-          return body.description ?? ''
-        } catch (error) {
-          if ((error as { code?: string })?.code === 'AI_QUOTA_EXCEEDED') throw error
-          return '' // fail-soft: a criança escreve do zero
-        }
-      },
-      async publish({ project, coverDataUrl, title, description, challengeKey, requestId }) {
-        const form = new FormData()
-        form.set('title', title)
-        form.set('description', description)
-        form.set('clientIdempotencyKey', requestId ?? crypto.randomUUID())
-        // Tag do desafio (checkbox marcado) — o hub valida posse+mês (drop silencioso).
-        if (challengeKey) form.set('challengeKey', challengeKey)
-        form.set(
-          'project',
-          new File([JSON.stringify(project)], 'project.json', { type: 'application/json' }),
-        )
-        if (coverDataUrl) {
-          // ⚠️ NÃO usar fetch(data:) — a CSP (connect-src) bloqueia → "Failed to fetch".
-          const blob = dataUrlBase64ToBlob(coverDataUrl)
-          form.set('cover', new File([blob], 'cover', { type: blob.type || 'image/png' }))
-        }
-        const res = await fetch('/api/studio/publish-standalone', { method: 'POST', body: form })
-        const body = (await res.json().catch(() => null)) as {
-          muralUrl?: string
-          playUrl?: string
-          publicationId?: string
-          error?: { message?: string }
-        } | null
-        if (!res.ok) {
-          throw new Error(body?.error?.message ?? 'Não foi possível publicar agora.')
-        }
-        return {
-          muralUrl: body?.muralUrl,
-          playUrl: body?.playUrl,
-          publicationId: body?.publicationId,
-        }
-      },
-    }),
-    [challenge],
-  )
-  // A missão do Pensa aberta (o `?tarefa=` v2) vai com cada pergunta ao tutor: sem ela o Zappy
-  // respondia pela primeira missão do Estúdio, que pode não ser a aberta. ⚠️ Por FUNÇÃO lida na
-  // hora da pergunta: o `StudioCore` congela o `tutor` na montagem (`useState`), e a troca de
-  // missão no MESMO editor não remonta nada.
-  const tutorPensaTaskRef = useRef<string | null>(null)
-  useEffect(() => {
-    tutorPensaTaskRef.current = handoffV2 ? handoffTaskId : null
-  }, [handoffV2, handoffTaskId])
-  const tutor = useMemo<StudioTutorConfig | undefined>(
-    () =>
-      zappyEnabled
-        ? {
-            adapter: createStudioZappyAdapter(undefined, {
-              pensaTaskId: () => tutorPensaTaskRef.current,
-            }),
-            renderListen:
-              narrationEnabled && viewerId
-                ? (projectId, messageId) => (
-                    <PrivateZappyVoice
-                      viewerId={viewerId}
-                      reference={{ origin: 'studio_message', projectId, messageId }}
-                    />
-                  )
-                : undefined,
-            renderVoiceInput:
-              voiceInputEnabled && viewerId
-                ? (input) => (
-                    <VoiceInputButton
-                      {...input}
-                      viewerId={viewerId}
-                      context="Estúdio: dúvida para o Zappy"
-                      maxLength={1000}
-                      preserveOverflow
-                      onSpoken={() => {}}
-                    />
-                  )
-                : undefined,
-            openLesson: openStudioZappyLesson,
-            openHelp: openStudioZappyHelp,
-            cooldownMs: 1_500,
-            credits: aiCredits,
-          }
-        : undefined,
-    [zappyEnabled, aiCredits, narrationEnabled, voiceInputEnabled, viewerId],
-  )
+  const share = useStudioShare(challenge)
+  const tutor = useKidsStudioTutor({
+    viewerId,
+    zappyEnabled,
+    aiCredits,
+    narrationEnabled,
+    voiceInputEnabled,
+    taskId: handoffV2 ? handoffTaskId : null,
+  })
 
   const { pintaLibrary, moldaLibrary } = useStudioCreationLibraries(
     viewerId,

@@ -17,6 +17,7 @@ import {
 } from '@/server/members'
 import { getSession } from '@/server/session'
 import { shell } from '@/server/shell'
+import { resolveStudioProAccess } from '@/server/studio-pro-access'
 
 export const dynamic = 'force-dynamic'
 
@@ -78,6 +79,14 @@ export default async function PensaPage({
       narrationEnabled={Boolean(getEnv().ELEVENLABS_API_KEY)}
       pintaOwned={pintaOwned}
       studioAvailable={studioAvailable}
+      studioProAvailable={
+        resolveStudioProAccess({
+          session,
+          studioAccess:
+            toolsRes?.status === 200 && toolsRes.body?.access?.['estudio-completo'] === true,
+          levelSlug: gam.body?.level?.slug,
+        }).allowed
+      }
       moldaAvailable={
         creativeToolAvailability({
           tool: 'molda',

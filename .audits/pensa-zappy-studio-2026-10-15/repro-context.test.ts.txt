@@ -1,0 +1,44 @@
+import { expect, mock, test } from 'bun:test'
+import { createEmptyProject } from '../../packages/studio/src/core/project'
+import { buildStudioTutorRequest } from '../../packages/studio/src/studio/tutor'
+
+mock.module('server-only', () => ({}))
+process.env.ZAPPY_ENABLED = 'true'
+const { createStudioZappyRoutes } = await import('../../packages/member-shell/src/routes/studio-zappy')
+
+test('observation: saved Pro decisions are absent from the conversation request', () => {
+  const project = {
+    ...createEmptyProject('audit-pro', 'Jogo'), kind: 'pro' as const, mode: 'code' as const,
+    tree: { 'src/main.ts': { kind: 'file' as const, content: 'export const speed = 2' } },
+    proMeta: { templateId: 'vanilla-vite', devScript: 'dev', assistance: {
+      version: 1 as const, briefing: 'Minha meta exclusiva: resgatar sete tartarugas.',
+      decisions: [{ id: 'decision-1', text: 'Nunca adicionar inimigos.', provenance: 'learner' as const, confirmed: true }],
+    } },
+  }
+  const request = buildStudioTutorRequest({ project, question: 'Qual é minha meta?', selectedBlockId: null, lastError: null })
+  console.log('CONTEXT_EVIDENCE', JSON.stringify(request))
+  expect(JSON.stringify(request)).not.toContain('tartarugas')
+  expect(JSON.stringify(request)).not.toContain('Nunca adicionar inimigos')
+})
+
+test('observation: Pro conversation requires the block unlock service even with Pro authorized', async () => {
+  let reserves = 0
+  const routes = createStudioZappyRoutes({
+    session: { getSession: async () => ({ id: 'audit-child', role: 'student', status: 'active', activeProfile: { accountId: 'audit-account', name: 'Teste' } }) } as never,
+    members: {
+      checkStudioAccess: async () => ({ status: 200, body: { access: { 'estudio-completo': true } } }),
+      getGamification: async () => ({ status: 200, body: { level: { slug: 'god' } } }),
+      getStudioUnlocks: async () => ({ status: 503, body: null }),
+      zappyReserveQuestion: async () => { reserves++; throw new Error('Unexpected reservation') },
+    } as never,
+  })
+  const response = await routes.studioZappyMessage.POST(new Request('https://kids.test/api/studio/zappy/messages', {
+    method: 'POST', headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ projectId: 'audit-pro', clientMessageId: crypto.randomUUID(), question: 'Como funciona este arquivo?', context: {
+      projectId: 'audit-pro', mode: 'code', kind: 'pro', blocks: [], installedExtensions: [], selectedBlockId: null, lastError: null,
+    } }),
+  }))
+  console.log('UNLOCK_EVIDENCE', JSON.stringify({ status: response.status, body: await response.json(), reserves }))
+  expect(response.status).toBe(503)
+  expect(reserves).toBe(0)
+})

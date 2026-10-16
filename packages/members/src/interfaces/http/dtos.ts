@@ -852,6 +852,7 @@ const PensaStudioBlockSchema = t.Object({
 })
 const PensaStudioContextSchema = t.Object({
   kind: t.Literal('studio'),
+  authoring: t.Optional(t.Union([t.Literal('blocks'), t.Literal('code')])),
   dimension: t.Union([t.Literal('2d'), t.Literal('3d')]),
   visualAssetIds: t.Array(t.String({ minLength: 1, maxLength: 100 }), { maxItems: 20 }),
   blockIds: t.Array(t.String({ maxLength: 160 }), { maxItems: 80 }),

@@ -1,7 +1,8 @@
-import { type AiCreditsView, resolveAiCredits } from '@sistemazero/core/ai-credits'
+import { resolveAiCredits } from '@sistemazero/core/ai-credits'
 import type { FormEvent, JSX } from 'react'
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { cn, IconSparkles } from '#ui'
+import { ProAssistanceSummaryTooLarge } from '../../core/proAssistance'
 import { useDiagnosticsStore } from '../../state/diagnosticsStore'
 import { glossErrorMessage } from '../../state/errorGloss'
 import { useHighlightStore } from '../../state/highlightStore'
@@ -27,12 +28,14 @@ import { studioTutorContextHint, studioTutorModeViolation } from '../../studio/t
 import { ProAssistancePanel } from './ProAssistancePanel'
 import type { ProBuilderDraft } from './ProBuilderPanel'
 import { ProLearningRecipes } from './ProLearningRecipes'
+import { useTutorCredits } from './useTutorCredits'
 import { ZappyCredits } from './ZappyCredits'
 
 const MAX_QUESTION_CHARS = 1_000
 const ProBuilderPanel = lazy(() => import('./ProBuilderPanel'))
 
 function friendlyError(error: unknown): string {
+  if (error instanceof ProAssistanceSummaryTooLarge) return error.message
   const code =
     error && typeof error === 'object' && 'code' in error
       ? String((error as { code?: unknown }).code)
@@ -138,7 +141,11 @@ export function ZappyPanel(): JSX.Element | null {
   const [error, setError] = useState<string | null>(null)
   // Semeado pelo host (Server Component) e atualizado por cada resposta que
   // consumiu de verdade. `null` = não sei → o medidor não aparece.
-  const [credits, setCredits] = useState<AiCreditsView | null>(config?.credits ?? null)
+  const { credits, acceptCredits, refreshCredits } = useTutorCredits(
+    config,
+    project?.id ?? null,
+    open,
+  )
   const creditsMeter = resolveAiCredits(credits)
   const [cooldownUntil, setCooldownUntil] = useState(0)
   const [now, setNow] = useState(Date.now())
@@ -383,7 +390,7 @@ export function ZappyPanel(): JSX.Element | null {
       pendingAttemptRef.current = null
       // Saldo ausente = nada foi consumido agora (resposta pronta, replay):
       // mantém o número que já estava na tela em vez de zerar.
-      if (result.credits) setCredits(result.credits)
+      if (result.credits) acceptCredits(result.credits)
       setMessages((current) => [...current, responseMessage(result.response)])
       const until = Date.now() + Math.max(0, config.cooldownMs ?? 1_500)
       setCooldownUntil(until)
@@ -856,6 +863,7 @@ export function ZappyPanel(): JSX.Element | null {
               projectId={project.id}
               draft={builderDraft}
               draftOpen={building}
+              onUsageChange={refreshCredits}
             />
           </Suspense>
         )}
@@ -890,7 +898,7 @@ export function ZappyPanel(): JSX.Element | null {
           <div className="mb-2 text-xs">
             <p>
               A última resposta não foi confirmada. Enviar novamente consulta a mesma pergunta com o
-              contexto original.
+              contexto original, incluindo o código e as notas enviados naquela tentativa.
             </p>
             {project.kind === 'pro' && (
               <button
@@ -899,11 +907,11 @@ export function ZappyPanel(): JSX.Element | null {
                 onClick={() => {
                   pendingAttemptRef.current = null
                   setError(
-                    'O próximo envio será um novo pedido com o código atual e poderá usar mais IA.',
+                    'O próximo envio será um novo pedido com o código e as notas atuais e poderá usar mais IA.',
                   )
                 }}
               >
-                Usar código atual em um novo pedido
+                Usar código e notas atuais em um novo pedido
               </button>
             )}
           </div>

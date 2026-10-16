@@ -8,7 +8,11 @@ import type {
 } from '@sistemazero/core/studio/pro-builder'
 import { studioProBuildEnvelopeIssue } from '@sistemazero/core/studio/pro-runtime-capabilities'
 import { lazy, Suspense, useEffect, useId, useRef, useState } from 'react'
-import { digestProAssistance, getProAssistance } from '../../core/proAssistance'
+import {
+  boundedProAssistanceSummary,
+  digestProAssistance,
+  getProAssistance,
+} from '../../core/proAssistance'
 import { flushProjectOperations, projectPersistence } from '../../state/projectOperations'
 import { captureProjectStorageScope } from '../../state/projectStorageRuntime'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
@@ -74,11 +78,13 @@ export default function ProBuilderPanel({
   projectId,
   draft,
   draftOpen = true,
+  onUsageChange,
 }: {
   adapter: StudioProBuilderAdapter
   projectId: string
   draft?: ProBuilderDraft
   draftOpen?: boolean
+  onUsageChange?: () => void
 }) {
   const store = useProjectStoreApi()
   const isDirty = useProjectStore((state) => state.isDirty)
@@ -252,7 +258,10 @@ export default function ProBuilderPanel({
       if (current(version))
         setError(cause instanceof Error ? cause.message : 'A execução não pôde continuar.')
     } finally {
-      if (current(version)) setBusy(false)
+      if (current(version)) {
+        setBusy(false)
+        onUsageChange?.()
+      }
     }
   }
   const create = () =>
@@ -267,20 +276,7 @@ export default function ProBuilderPanel({
           throw new Error('O projeto aberto mudou.')
         const payload = await captureProRevisionPayload(project)
         const meta = getProAssistance(project)
-        const summary = [
-          meta.briefing,
-          ...(meta.decisions ?? []).filter((item) => item.confirmed).map((item) => item.text),
-          ...(meta.questions ?? [])
-            .filter((item) => item.status === 'answered')
-            .map((item) => `${item.text} ${item.answer}`),
-        ]
-          .filter(Boolean)
-          .join('\n')
-        // Never silently shorten a decision that the learner expects the builder to respect.
-        if (summary.length > 2000)
-          throw new Error(
-            'As decisões selecionadas ultrapassam o limite deste pedido. Resuma as notas do projeto antes de continuar.',
-          )
+        const summary = boundedProAssistanceSummary(meta)
         const editor = proCapture.current?.()
         const selected =
           request.scope === 'selection' && !request.selection ? editor?.selection : undefined

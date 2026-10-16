@@ -244,6 +244,12 @@ describe('o passo do guia é um gesto, não "vá para a área" (15/10/2026)', ()
       },
     ],
   })
+  test('no Pro o reparo de um passo vago pede uma mudança de código, sem mandar pegar blocos', () => {
+    const issues = guideIssues(guide('Implemente o pulo.'), new Set(['palco']), 'code')
+    expect(issues).toHaveLength(1)
+    expect(issues[0]).toContain('código')
+    expect(issues[0]).not.toContain('bloco')
+  })
   test('os vagos voltam com o conserto e citam missão e passo', () => {
     const issues = guideIssues(
       guide(

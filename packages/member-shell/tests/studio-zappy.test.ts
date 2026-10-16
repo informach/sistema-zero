@@ -85,6 +85,11 @@ describe('adendo Pro — seleção e intenção atravessam cliente, rota e respo
     })
     let sent: Record<string, unknown> = {},
       saved: unknown
+    if (!input.context.pro) throw new Error('Expected Pro context')
+    input.context.pro.decisions = {
+      version: 1,
+      summary: 'Coletar estrelas. Preservar o tema espacial.',
+    }
     const originalFetch = globalThis.fetch
     globalThis.fetch = (async (_url: unknown, init?: RequestInit) => {
       const transport = JSON.parse(String(init?.body ?? '{}'))
@@ -147,6 +152,7 @@ describe('adendo Pro — seleção e intenção atravessam cliente, rota e respo
       expect(sent).toMatchObject({
         project: {
           editor: {
+            decisions: { version: 1, summary: 'Coletar estrelas. Preservar o tema espacial.' },
             intent: 'investigate',
             selection: { startLine: 301, documentVersion: 7 },
             diagnostics: [
@@ -341,6 +347,33 @@ describe('adendo Pro — seleção e intenção atravessam cliente, rota e respo
 })
 
 describe('política normal e Pro em todas as respostas', () => {
+  test('Pro bypasses unavailable block unlocks, while classic still requires them', async () => {
+    const unlocks = mock(async () => ({ status: 503 }))
+    const routes = createStudioZappyRoutes({
+      members: members({ getStudioUnlocks: unlocks }) as never,
+      session: { getSession: async () => ({ ...STAFF, role: 'student' }) } as never,
+    })
+    const raw = await request('Abra o Pensa').json()
+    const pro = await routes.studioZappyMessage.POST(
+      new Request('https://kids.test/api/studio/zappy/messages', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          ...raw,
+          context: {
+            ...raw.context,
+            kind: 'pro',
+            mode: 'code',
+            pro: { revision: 1, decisions: { version: 1, summary: 'Coletar estrelas' } },
+          },
+        }),
+      }),
+    )
+    expect(pro.status).toBe(200)
+    expect(unlocks).not.toHaveBeenCalled()
+    expect((await routes.studioZappyMessage.POST(request('Abra o Pensa'))).status).toBe(503)
+    expect(unlocks).toHaveBeenCalledTimes(1)
+  })
   const proContext = {
     projectId: PROJECT_ID,
     kind: 'pro' as const,

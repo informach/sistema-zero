@@ -1,7 +1,5 @@
 'use client'
 
-import { sessionFetch as fetch } from '@sistemazero/member-shell/lib/session-fetch'
-
 import type { StudioTier } from '@sistemazero/member-shell/lib/studio-tier'
 import type {
   Project,
@@ -12,10 +10,10 @@ import type {
   StudioTeamLibraryAdapter,
   StudioTutorConfig,
 } from '@sistemazero/studio'
-import { useRouter } from 'next/navigation'
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { reportClientError } from '@/lib/report-error'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react'
+import { reportStudioError } from '../../lib/studio-error'
 import { useFocusMode } from './focus-mode'
+import { useStudioActivity } from './use-studio-activity'
 
 type StudioModule = typeof import('@sistemazero/studio')
 type EditorState =
@@ -37,24 +35,6 @@ function openDrawingInPinta(drawingId: string): void {
  */
 function openCreationInMolda(creationId: string): void {
   window.open(`/molda?criacao=${encodeURIComponent(creationId)}`, '_blank', 'noopener,noreferrer')
-}
-
-/**
- * Erro que o Estúdio CONTEVE sozinho vira telemetria (o mesmo beacon das error
- * boundaries do app → Sentry, com redação de PII). O `kind` distingue a falha
- * de persistência do crash de render segurado por uma boundary de seção.
- */
-function reportStudioError(
-  error:
-    | { kind: 'persistence'; message: string }
-    | { kind: 'render'; area: string; message: string; stack?: string },
-): void {
-  const failure = new Error(
-    error.kind === 'render' ? `[studio:${error.area}] ${error.message}` : error.message,
-  )
-  failure.name = error.kind === 'render' ? 'StudioRenderError' : 'StudioPersistenceError'
-  if (error.kind === 'render' && error.stack) failure.stack = error.stack
-  reportClientError(failure)
 }
 
 /** Carrega o projeto local e concentra apenas o ciclo de vida do editor aberto. */
@@ -99,65 +79,7 @@ export function StudioFullEditor({
     setWorkspaceActive(workspaceActive)
     return () => setWorkspaceActive(false)
   }, [setWorkspaceActive, workspaceActive])
-  const router = useRouter()
-  const routerRef = useRef(router)
-  useEffect(() => {
-    routerRef.current = router
-  }, [router])
-  const activityBeaconedRef = useRef(false)
-  // O XP de criar já foi gravado e falta só a barra (foguinho/XP) mostrar: isso fica para
-  // quando o editor SAI da tela.
-  const refreshOnLeaveRef = useRef(false)
-  const mountedRef = useRef(true)
-
-  const handleActivity = useCallback(
-    (project: Project, ctx?: { reason: 'autosave' | 'flush' }) => {
-      if (ctx?.reason !== 'autosave') return
-      if (
-        taskSession &&
-        !(taskSession.guide.contractVersion === 2 && taskSession.progress.status === 'completed')
-      ) {
-        void taskSession
-          .onProgress({
-            outputRef: {
-              kind: 'studio_project',
-              projectId: project.id,
-              saveRevision: String(project.updatedAt),
-            },
-          })
-          .catch(() => {})
-      }
-      if (activityBeaconedRef.current) return
-      activityBeaconedRef.current = true
-      fetch('/api/studio/activity', { method: 'POST' })
-        .then((response) => {
-          if (!response.ok) return
-          // Se o editor já saiu antes da resposta, não há jogo aberto a perder: atualiza agora.
-          if (mountedRef.current) refreshOnLeaveRef.current = true
-          else routerRef.current.refresh()
-        })
-        .catch(() => {})
-    },
-    [taskSession],
-  )
-
-  // ⚠️⚠️ NUNCA `router.refresh()` com o editor aberto. O jogo aberto vive só na memória do
-  // host (a URL é `/estudio`), e o Next troca o refresh por um RECARREGAMENTO da página
-  // quando a resposta não serve: o servidor foi atualizado depois que a aba abriu (build
-  // diferente) ou a ida falhou. A criança caía em "Meus Jogos" no meio do que estava
-  // fazendo, e a primeira edição real (instalar o Jogo 2D, por exemplo) era justamente o
-  // gatilho. Saindo do editor (de volta à lista ou para outra página) não há nada a perder.
-  // ⚠️ O editor também desmonta sem a criança sair do `/estudio` (o "Tentar de novo" da tarefa
-  // do Pensa e o "Recriar projeto" mostram a tela de carregamento no lugar dele). Ali o refresh
-  // ainda pode recarregar a página; é raro (pede XP gravado + essa troca + servidor novo) e a
-  // aba volta para a mesma tarefa.
-  useEffect(() => {
-    mountedRef.current = true
-    return () => {
-      mountedRef.current = false
-      if (refreshOnLeaveRef.current) routerRef.current.refresh()
-    }
-  }, [])
+  const handleActivity = useStudioActivity(taskSession)
 
   const handlePromoteToPro = useCallback(
     (project: Project) => {

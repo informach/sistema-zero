@@ -166,6 +166,8 @@ export interface PensaStudioBlockReference {
 
 export interface PensaStudioTaskContext {
   kind: 'studio'
+  /** Absent in plans created before authoring modes were explicit. */
+  authoring?: 'blocks' | 'code'
   dimension: PensaGameDimension
   /** Modelos, mundo ou materiais da Bíblia Visual criados por este cartão. */
   visualAssetIds: string[]

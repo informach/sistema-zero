@@ -2,6 +2,7 @@ import {
   nextPensaMission,
   nextPensaMissionFor,
   type PensaJourneyTeam,
+  pensaCodeTransitionInstructions,
 } from '@sistemazero/core/pensa'
 import type { PensaTaskView } from '../../lib/types'
 
@@ -69,16 +70,26 @@ const clip = (value: string | null | undefined, max: number) =>
     .join('')
 
 /** A missão e os passos do guia dela, curtos, para o modelo. */
-export function missionForModel(task: PensaTaskView) {
+export function missionForModel(
+  task: PensaTaskView,
+  studioAuthoring: 'blocks' | 'code' = 'blocks',
+) {
+  const transition =
+    studioAuthoring === 'code' &&
+    task.context.kind === 'studio' &&
+    task.context.authoring !== 'code'
   return {
     title: clip(task.title, 120),
     result: clip(task.summary, 300),
     destination: task.destination,
     status: task.progress.status,
-    steps: task.guide.steps.slice(0, 8).map((step) => ({
-      action: clip(step.text, 180),
-      hint: clip(step.hint, 300),
-    })),
+    authoring: task.context.kind === 'studio' ? studioAuthoring : undefined,
+    steps: (transition ? pensaCodeTransitionInstructions() : task.guide.steps)
+      .slice(0, 8)
+      .map((step) => ({
+        action: clip(step.text, 180),
+        hint: clip(step.hint, 300),
+      })),
     test: task.guide.criteria.slice(0, 2).map((criterion) => ({
       action: clip(criterion.text, 200),
       expected: clip(criterion.hint, 200),

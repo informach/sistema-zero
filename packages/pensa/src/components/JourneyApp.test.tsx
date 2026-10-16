@@ -320,6 +320,7 @@ function openView(
   view: PensaJourneyView,
   tasks: unknown[] = [],
   capabilities: PensaHostAdapter['capabilities'] = { studioOwned: true, pintaOwned: true },
+  onOpenGame?: PensaHostAdapter['onOpenGame'],
 ) {
   const request = mock(async (path: string) => {
     if (path === '/v2/projects/p1') return view
@@ -338,6 +339,7 @@ function openView(
       streamChat: () => () => {},
     },
     onOpenTask,
+    onOpenGame,
   }
   render(<PensaApp adapter={adapter} initialProjectId="p1" />)
   return { request, onOpenTask }
@@ -480,4 +482,51 @@ test('sem plano antigo, a home abre o campo do código sem passar pelo plano cl�
   fireEvent.click(await screen.findByRole('button', { name: 'Entrar com um código' }))
   expect(screen.getByLabelText('Código do plano de um colega')).toBeTruthy()
   expect(onLegacy).not.toHaveBeenCalled()
+})
+
+test('a saved Pro plan identifies the code editor and carries its game identity to the host', async () => {
+  const view = current()
+  view.studioAuthoring = 'code'
+  view.journey.stage = 'building'
+  view.journey.missionIds = ['m1']
+  const { onOpenTask } = openView(view, [mission('m1', 'studio', 'planned')], {
+    studioOwned: false,
+    studioProAvailable: true,
+    pintaOwned: true,
+  })
+  fireEvent.click(await screen.findByRole('button', { name: 'Começar a missão no Estúdio Pro' }))
+  expect(onOpenTask).toHaveBeenCalledWith({
+    taskId: 'm1',
+    destination: 'studio',
+    studioProjectId: 'pensa-p1',
+  })
+  fireEvent.click(screen.getByRole('button', { name: 'Travei nesta parte' }))
+  expect(screen.getByRole('button', { name: 'Não achei o trecho de código' })).toBeTruthy()
+  expect(screen.queryByRole('button', { name: 'Não achei o bloco certo' })).toBeNull()
+})
+
+test('Abrir meu jogo preserves Pro authoring without starting a mission', async () => {
+  const view = current()
+  view.studioAuthoring = 'code'
+  view.journey.stage = 'observing'
+  const onOpenGame = mock()
+  const { onOpenTask } = openView(view, [], undefined, onOpenGame)
+  fireEvent.click(await screen.findByRole('button', { name: 'Abrir meu jogo' }))
+  expect(onOpenGame).toHaveBeenCalledWith({ projectId: 'p1', studioAuthoring: 'code' })
+  expect(onOpenTask).not.toHaveBeenCalled()
+})
+
+test('Pro access does not unlock a classic mission without earned blocks', async () => {
+  const view = current()
+  view.journey.stage = 'building'
+  view.journey.missionIds = ['m1']
+  const { onOpenTask } = openView(view, [mission('m1', 'studio', 'planned')], {
+    studioOwned: false,
+    studioProAvailable: true,
+    pintaOwned: true,
+  })
+  const start = await screen.findByRole('button', { name: 'Começar a missão no Estúdio' })
+  expect(start.hasAttribute('disabled')).toBe(true)
+  fireEvent.click(start)
+  expect(onOpenTask).not.toHaveBeenCalled()
 })

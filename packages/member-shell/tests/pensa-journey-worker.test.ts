@@ -246,6 +246,18 @@ test('catálogo vazio não vira proposta e fala a língua da aventura', async ()
   expect(message).not.toMatch(/\baulas?\b/)
 })
 
+test('a Pro mission can ask for help without a block catalog', async () => {
+  quietConsole()
+  const f = fixture('answer')
+  f.context.capabilities.studioAuthoring = 'code'
+  f.context.blocks = []
+  f.context.capabilities.blockIds = []
+  const complete = mock(async () => ({ text: 'Confira o script indicado em index.html.' }))
+  await run(f, complete)
+  expect(complete).toHaveBeenCalledTimes(1)
+  expect(f.failed).not.toHaveBeenCalled()
+})
+
 test('retoma a revisão persistida sem refazer a extração da ideia', async () => {
   quietConsole()
   const f = fixture('review')

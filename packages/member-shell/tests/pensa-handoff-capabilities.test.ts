@@ -36,6 +36,7 @@ function routes(overrides: Record<string, unknown>, destination: 'studio' | 'pin
     session: { getSession: async () => CHILD },
     members: {
       pensaGetTaskHandoff: async () => ({ status: 200, body: handoff(destination) }),
+      pensaJourneyGet: async () => ({ status: 200, body: { studioAuthoring: 'blocks' } }),
       getGamificationReadonly: async () => ({ status: 200, body: { level: { slug: 'hacker' } } }),
       getStudioUnlocksReadonly: async () => ({
         status: 200,
@@ -56,6 +57,24 @@ const get = (r: ReturnType<typeof routes>) =>
   })
 
 describe('handoff: falha de LEITURA não tranca o guia (M6)', () => {
+  test('a converted mission opens with Pro capability even if its original block service is unavailable', async () => {
+    const unlocks = mock(async () => {
+      throw new Error('offline')
+    })
+    const res = await get(
+      routes(
+        {
+          pensaJourneyGet: async () => ({ status: 200, body: { studioAuthoring: 'code' } }),
+          getGamificationReadonly: async () => ({ status: 200, body: { level: { slug: 'god' } } }),
+          getStudioUnlocksReadonly: unlocks,
+        },
+        'studio',
+      ),
+    )
+    expect(res.status).toBe(200)
+    expect((await res.json()).capability.owned).toBe(true)
+    expect(unlocks).not.toHaveBeenCalled()
+  })
   test('gamificação fora do ar → 503 recuperável, nunca "recursos mudaram"', async () => {
     const res = await get(
       routes({ getGamificationReadonly: async () => ({ status: 502, body: null }) }),
@@ -107,4 +126,51 @@ describe('handoff: falha de LEITURA não tranca o guia (M6)', () => {
     expect(res.status).toBe(200)
     expect(((await res.json()) as { capability: { owned: boolean } }).capability.owned).toBe(true)
   })
+})
+
+test('a Pro game author can deliver a Pinta mission without a block palette', async () => {
+  const unlocks = mock(async () => {
+    throw new Error('blocks offline')
+  })
+  const result = await get(
+    routes({
+      pensaJourneyGet: async () => ({ status: 200, body: { studioAuthoring: 'code' } }),
+      getGamificationReadonly: async () => ({ status: 200, body: { level: { slug: 'god' } } }),
+      getStudioUnlocksReadonly: unlocks,
+    }),
+  )
+  expect(result.status).toBe(200)
+  expect((await result.json()).capability).toMatchObject({
+    owned: true,
+    studioProProjectId: 'pensa-project',
+  })
+  expect(unlocks).not.toHaveBeenCalled()
+})
+
+test.each([
+  'no-product',
+  'low-tier',
+  'another-programmer',
+] as const)('the Pro drawing bridge stays closed for %s', async (reason) => {
+  const result = await get(
+    routes({
+      pensaJourneyGet: async () => ({
+        status: 200,
+        body: {
+          studioAuthoring: 'code',
+          ...(reason === 'another-programmer' ? { team: { roles: { code: 'someone-else' } } } : {}),
+        },
+      }),
+      getGamificationReadonly: async () => ({
+        status: 200,
+        body: { level: { slug: reason === 'low-tier' ? 'hacker' : 'god' } },
+      }),
+      checkCreativeToolsAccessReadonly: async () => ({
+        status: 200,
+        body: { access: { 'estudio-completo': reason !== 'no-product', pinta: true, molda: true } },
+      }),
+    }),
+  )
+  expect(result.status).toBe(200)
+  expect((await result.json()).capability.studioProProjectId).toBeUndefined()
 })

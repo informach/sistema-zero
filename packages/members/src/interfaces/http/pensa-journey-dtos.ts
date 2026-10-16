@@ -17,6 +17,7 @@ const capability = t.Object({
   profileId: id,
   rank: text(100),
   studio: t.Boolean(),
+  studioAuthoring: t.Optional(t.Union([t.Literal('blocks'), t.Literal('code')])),
   pinta: t.Boolean(),
   molda: t.Boolean(),
   dimensions: t.Array(dimension, { maxItems: 2 }),

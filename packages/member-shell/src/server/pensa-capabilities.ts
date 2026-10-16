@@ -9,14 +9,20 @@ export async function getPensaCapabilities(
   members: Pick<MembersClient, 'getStudioUnlocksReadonly' | 'checkCreativeToolsAccessReadonly'>,
   level: string | undefined,
   role: string | undefined,
+  authoring: 'blocks' | 'code' = 'blocks',
 ) {
   if (!level) return null
   const [unlocks, access] = await Promise.all([
-    members.getStudioUnlocksReadonly(),
+    authoring === 'code' ? null : members.getStudioUnlocksReadonly(),
     members.checkCreativeToolsAccessReadonly(),
   ])
-  if (unlocks.status !== 200 || !unlocks.body || access.status !== 200 || !access.body) return null
-  const tier = earnedStudioTier(level, role, unlocks.body.blocks)
+  if (
+    (authoring !== 'code' && (unlocks?.status !== 200 || !unlocks.body)) ||
+    access.status !== 200 ||
+    !access.body
+  )
+    return null
+  const tier = earnedStudioTier(level, role, unlocks?.body?.blocks ?? [])
   const available = (tool: 'molda' | 'pinta' | 'estudio-completo') =>
     creativeToolAvailability({
       tool,
@@ -28,9 +34,9 @@ export async function getPensaCapabilities(
     tier,
     moldaAvailable: available('molda'),
     pintaAvailable: available('pinta'),
-    // Posse e nível não bastam: sem bloco conquistado o Estúdio livre está trancado, e um plano
-    // com tarefas do Estúdio mandaria a criança para uma porta fechada (e gastaria a geração
-    // paga com um catálogo vazio).
-    studioAvailable: available('estudio-completo') && tier.hasPalette,
+    // O clássico exige blocos conquistados. Um jogo já convertido exige acesso Pro,
+    // independentemente da paleta, preservando a posse e o nível em ambos os modos.
+    studioAvailable:
+      available('estudio-completo') && (authoring === 'code' ? tier.pro : tier.hasPalette),
   }
 }

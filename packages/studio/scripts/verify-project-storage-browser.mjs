@@ -49,9 +49,13 @@ for (const [name, engine] of [
       (await second.evaluate(() => window.storageHarness.read())).text.content,
       'first-wins',
     )
-    process.stdout.write(`pass ${name}: 12 immediate reloads + two independent tabs\n`)
+    process.stdout.write(`closing context ${name}\n`)
     await context.close()
   } finally {
+    process.stdout.write(`closing browser ${name}\n`)
     await browser.close()
   }
+  process.stdout.write(
+    `pass ${name}: 12 immediate reloads + two independent tabs; browser closed\n`,
+  )
 }

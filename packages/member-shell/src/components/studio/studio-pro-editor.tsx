@@ -3,6 +3,7 @@
 import '@sistemazero/studio/styles.css'
 import type {
   Project,
+  StudioEditorProps,
   StudioMoldaLibraryAdapter,
   StudioPintaLibraryAdapter,
   StudioTaskSession,
@@ -26,10 +27,13 @@ interface Props {
   projectId: string
   /** Tema fixado pelo app (segue a comunidade). */
   theme: StudioTheme
-  /** Volta para a lista do Estúdio (`/estudio`). */
+  /** Volta para o destino definido pelo host (lista ou plano do Pensa). */
   onExit: () => void
   /** Tutor opcional do host. Ausente em aulas e hosts que não contrataram o recurso. */
   tutor?: StudioTutorConfig
+  share?: StudioEditorProps['share']
+  onChange?: StudioEditorProps['onChange']
+  onError?: StudioEditorProps['onError']
   prepareProject?: () => Promise<void>
   pintaLibrary?: StudioPintaLibraryAdapter
   moldaLibrary?: StudioMoldaLibraryAdapter
@@ -71,6 +75,9 @@ function StudioProEditorSession({
   theme,
   onExit,
   tutor,
+  share,
+  onChange,
+  onError,
   prepareProject,
   pintaLibrary,
   moldaLibrary,
@@ -141,7 +148,7 @@ function StudioProEditorSession({
           você ainda pode criar jogos de blocos.
         </p>
         <Button variant="outline" size="sm" onClick={onExit}>
-          Voltar ao Estúdio
+          Voltar
         </Button>
       </div>
     )
@@ -164,7 +171,7 @@ function StudioProEditorSession({
             Tentar novamente
           </Button>
           <Button variant="ghost" size="sm" onClick={onExit}>
-            Voltar ao Estúdio
+            Voltar
           </Button>
         </div>
       </div>
@@ -187,6 +194,9 @@ function StudioProEditorSession({
       theme={theme}
       features={{ professional: true }}
       tutor={tutor}
+      share={share}
+      onChange={onChange}
+      onError={onError}
       pintaLibrary={pintaLibrary}
       moldaLibrary={moldaLibrary}
       taskSession={taskSession}

@@ -1,5 +1,5 @@
 import type { AiCreditsView } from '@sistemazero/core/ai-credits'
-import type { PensaNarratableRef } from '@sistemazero/core/pensa'
+import type { PensaMissionTarget, PensaNarratableRef } from '@sistemazero/core/pensa'
 import type { ReactNode } from 'react'
 
 export type PensaStage = 'z' | 'e' | 'r' | 'o' | 'done'
@@ -278,16 +278,22 @@ export interface PensaHostAdapter {
   transport: PensaTransport
   mode: 'kids'
   theme?: 'light' | 'dark'
-  capabilities: { pintaOwned: boolean; studioOwned: boolean; moldaOwned?: boolean }
+  capabilities: {
+    pintaOwned: boolean
+    studioOwned: boolean
+    /** Pro access is independent of the classic palette; older hosts use studioOwned. */
+    studioProAvailable?: boolean
+    moldaOwned?: boolean
+  }
   mascotImages?: Partial<Record<PensaMascotPose, string>>
-  onOpenTask(args: { taskId: string; destination: PensaTaskDestination }): void
+  onOpenTask(args: PensaMissionTarget): void
   /**
    * "Abrir meu jogo" na hora de testar (15/10/2026): abre o JOGO do plano no Estúdio, sem abrir
    * missão nenhuma. Abrir pela missão marcava a última missão do Estúdio como começada, e ela
    * quase sempre ainda depende das anteriores (a criança pode testar antes de terminar tudo), o
    * que o servidor recusava. Sem ele, o Pensa cai na missão do Estúdio mais adiantada.
    */
-  onOpenGame?(args: { projectId: string }): void
+  onOpenGame?(args: { projectId: string; studioAuthoring?: 'blocks' | 'code' }): void
 }
 
 /**

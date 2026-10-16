@@ -290,6 +290,7 @@ export function journeyModelContext(
     capabilities: {
       rank: caps.rank,
       studio: caps.studio,
+      studioAuthoring: caps.studioAuthoring ?? 'blocks',
       pinta: caps.pinta,
       molda: caps.molda,
       dimensions: caps.dimensions,

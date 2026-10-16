@@ -97,6 +97,52 @@ beforeEach(() => {
 afterEach(() => cleanup())
 
 describe('ZappyPanel', () => {
+  it('explains excessive project notes without sending a request or blaming the service', async () => {
+    useProjectStore.getState().setProject({
+      ...createEmptyProject('pro-notes-limit', 'Pro'),
+      kind: 'pro',
+      mode: 'code',
+      tree: {},
+      proMeta: {
+        templateId: 'vanilla-vite',
+        devScript: 'dev',
+        assistance: {
+          version: 1,
+          briefing: 'a'.repeat(2000),
+          decisions: [
+            { id: 'rule', text: 'Preservar o salto', provenance: 'learner', confirmed: true },
+          ],
+        },
+      },
+    })
+    let asks = 0
+    const ui = render(
+      renderPanel({
+        loadHistory: async () => ({ messages: [], nextCursor: null }),
+        deleteHistory: async () => {},
+        feedback: async () => {},
+        ask: async () => {
+          asks++
+          return answer()
+        },
+      }),
+    )
+    const question = await ui.findByLabelText('Sua dúvida para o Zappy')
+    fireEvent.change(question, { target: { value: 'Explique o salto' } })
+    await waitFor(() =>
+      expect((ui.getByRole('button', { name: 'Perguntar' }) as HTMLButtonElement).disabled).toBe(
+        false,
+      ),
+    )
+    fireEvent.submit(question.closest('form')!)
+    await waitFor(() =>
+      expect(ui.container.querySelector('.text-sz-error')?.textContent).toContain(
+        'Resuma as notas do projeto',
+      ),
+    )
+    expect(asks).toBe(0)
+    expect((question as HTMLTextAreaElement).value).toBe('Explique o salto')
+  })
   it('keeps diagnosis and construction in the same conversation without starting a job on transfer', async () => {
     useProjectStore.getState().setProject({
       ...createEmptyProject('pro-conversation', 'Pro'),
@@ -157,7 +203,11 @@ describe('ZappyPanel', () => {
       kind: 'pro',
       mode: 'code',
       tree: { 'main.ts': { kind: 'file', content: 'const speed = 1' } },
-      proMeta: { templateId: 'vanilla-vite', devScript: 'dev' },
+      proMeta: {
+        templateId: 'vanilla-vite',
+        devScript: 'dev',
+        assistance: { version: 1, briefing: 'Ideia original' },
+      },
     })
     const inputs: StudioTutorAskInput[] = []
     let flushes = 0
@@ -187,15 +237,22 @@ describe('ZappyPanel', () => {
       expect(inputs).toHaveLength(1)
       expect(question.value).toBe('Explique a velocidade')
     })
+    act(() => {
+      useProjectStore.getState().setProAssistance({ version: 1, briefing: 'Nova ideia' })
+    })
     fireEvent.submit(question.closest('form')!)
     await waitFor(() => expect(inputs).toHaveLength(2))
     expect(inputs[0]?.context.code?.[0]?.content).toContain('speed = 2')
     expect(inputs[1]).toBe(inputs[0])
+    expect(inputs[1]?.context.pro?.decisions?.summary).toBe('Ideia original')
     expect(flushes).toBe(1)
-    fireEvent.click(ui.getByRole('button', { name: 'Usar código atual em um novo pedido' }))
+    fireEvent.click(
+      ui.getByRole('button', { name: 'Usar código e notas atuais em um novo pedido' }),
+    )
     fireEvent.submit(question.closest('form')!)
     await waitFor(() => expect(inputs).toHaveLength(3))
     expect(inputs[2]?.context.code?.[0]?.content).toContain('speed = 3')
+    expect(inputs[2]?.context.pro?.decisions?.summary).toBe('Nova ideia')
     expect(inputs[2]?.clientMessageId).not.toBe(inputs[0]?.clientMessageId)
   })
   it('does not send a request if profile A changes to B and back while the editor flushes', async () => {
@@ -893,7 +950,11 @@ describe('ZappyPanel', () => {
       }),
     )
     await waitFor(() =>
-      expect(view.queryByText('Fonte escolhida: OpenRouter do responsável.')).not.toBeNull(),
+      expect(
+        view.queryByText(
+          'Fonte no Estúdio: OpenRouter do responsável. O Pensa usa a franquia da família.',
+        ),
+      ).not.toBeNull(),
     )
     expect(view.queryByText(/ajuda da família acabou/i)).toBeNull()
   })

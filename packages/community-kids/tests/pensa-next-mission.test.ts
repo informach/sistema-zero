@@ -1,4 +1,4 @@
-import { afterEach, expect, mock, test } from 'bun:test'
+import { afterEach, expect, mock, spyOn, test } from 'bun:test'
 import { createPensaJourney, type PensaJourneyView } from '@sistemazero/core/pensa'
 import {
   nextMissionLabel,
@@ -9,6 +9,44 @@ import {
 const originalFetch = globalThis.fetch
 afterEach(() => {
   globalThis.fetch = originalFetch
+})
+
+test('a saved Pro journey continues directly in the isolated Pro route', async () => {
+  const projectId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'
+  const journey = createPensaJourney(projectId, 'cycle', '')
+  journey.stage = 'building'
+  journey.missionIds = ['move']
+  const view: PensaJourneyView = {
+    project: { id: projectId, name: 'Jogo', status: 'active' },
+    studioAuthoring: 'code',
+    journey,
+    cycles: [],
+    operation: null,
+  }
+  globalThis.fetch = Object.assign(
+    async (url: RequestInfo | URL) =>
+      Response.json(
+        String(url).includes('/v2/')
+          ? view
+          : { nextTaskId: 'move', tasks: [{ id: 'move', destination: 'studio' }] },
+      ),
+    { preconnect: originalFetch.preconnect },
+  )
+  expect(await resolveNextPensaMission(projectId)).toEqual({
+    path: '/estudio/pro/pensa-aaaaaaaaaaaa4aaa8aaaaaaaaaaaaaaa?tarefa=move',
+    destination: 'studio',
+  })
+  const navigate = mock(() => {})
+  const full = spyOn(window.location, 'assign').mockImplementation(() => {})
+  try {
+    await openNextPensaMission(projectId, navigate)
+    expect(full).toHaveBeenCalledWith(
+      '/estudio/pro/pensa-aaaaaaaaaaaa4aaa8aaaaaaaaaaaaaaa?tarefa=move',
+    )
+    expect(navigate).not.toHaveBeenCalled()
+  } finally {
+    full.mockRestore()
+  }
 })
 
 test.each([

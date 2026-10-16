@@ -2034,6 +2034,7 @@ export interface PensaStudioBlockReference {
 
 export interface PensaStudioTaskContext {
   kind: 'studio'
+  authoring?: 'blocks' | 'code'
   dimension: '2d' | '3d'
   visualAssetIds: string[]
   blockIds: string[]

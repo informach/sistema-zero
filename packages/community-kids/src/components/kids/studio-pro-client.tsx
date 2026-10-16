@@ -1,13 +1,12 @@
 'use client'
 
+import type { AiCreditsView } from '@sistemazero/core/ai-credits'
 import { STUDIO_PROJECT_FORMAT_VERSION } from '@sistemazero/core/studio'
 
 // O CSS do Estúdio é gerado pelo `@import` no globals.css (pipeline Tailwind) — ver
 // o comentário no `studio-full-client.tsx`. Aqui só orquestramos o editor PRO.
 import { StudioProEditor } from '@sistemazero/member-shell/components/studio/studio-pro-editor'
-import { createStudioZappyAdapter } from '@sistemazero/member-shell/lib/studio-zappy-adapter'
-import type { StudioTutorConfig } from '@sistemazero/studio'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { type CreationsCloud, createCreationsCloud } from '../../lib/creations-cloud'
 import { createStoredSyncedMarks } from '../../lib/creations-sync'
 import {
@@ -17,13 +16,16 @@ import {
 } from '../../lib/pensa-restore-pending'
 import { pensaStudioProjectId } from '../../lib/pensa-studio-link'
 import { createStudioCloudSync } from '../../lib/studio-cloud'
-import { openStudioZappyHelp, openStudioZappyLesson } from '../../lib/studio-zappy-navigation'
+import { reportStudioError } from '../../lib/studio-error'
 import { EMBEDDED_STUDIO_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
 import { HostChromeAnnouncer, useHostChrome } from './use-host-chrome'
 import { useStudioTaskHandoff } from './use-pensa-task-handoff'
 import { usePensaTeamLibrary } from './use-pensa-team-library'
+import { useStudioActivity } from './use-studio-activity'
 import { useStudioCreationLibraries } from './use-studio-creation-libraries'
+import { useStudioShare } from './use-studio-share'
 import { useStudioTaskSession } from './use-studio-task-session'
+import { useKidsStudioTutor } from './use-studio-tutor'
 
 type StudioModule = typeof import('@sistemazero/studio')
 
@@ -43,13 +45,23 @@ const EXIT_FLUSH_TIMEOUT_MS = 3000
  * (mesma instância de contexto no bundle do kids), por isso o módulo é importado aqui
  * ANTES de montar o editor — importá-lo depois trocaria a árvore e remontaria o editor.
  */
-export function StudioProClient({
+export function StudioProClient(props: Parameters<typeof StudioProClientSession>[0]) {
+  return (
+    <StudioProClientSession key={JSON.stringify([props.viewerId, props.projectId])} {...props} />
+  )
+}
+
+function StudioProClientSession({
   viewerId,
   projectId,
   taskId = null,
   zappyEnabled = false,
   pintaOwned = false,
   moldaOwned = false,
+  challenge = null,
+  aiCredits = null,
+  narrationEnabled = false,
+  voiceInputEnabled = false,
 }: {
   viewerId: string | null
   projectId: string
@@ -58,6 +70,10 @@ export function StudioProClient({
   zappyEnabled?: boolean
   pintaOwned?: boolean
   moldaOwned?: boolean
+  challenge?: { key: string; title: string } | null
+  aiCredits?: AiCreditsView | null
+  narrationEnabled?: boolean
+  voiceInputEnabled?: boolean
 }) {
   // ⚠️ O tema escuro não existe nesta plataforma desde 11/09/2026: este valor era uma
   // CONSTANTE calculada por um hook. Trocar por literal é apagar código morto, não mudar
@@ -70,8 +86,6 @@ export function StudioProClient({
       pensaStudioProjectId(handoff.data.project.id) === projectId)
       ? handoff.data
       : null
-  const taskRef = useRef<string | null>(null)
-  taskRef.current = boundHandoff?.task.guide.contractVersion === 2 ? boundHandoff.task.id : null
   const teamLibrary = usePensaTeamLibrary({ projectId, viewerId })
   const [mod, setMod] = useState<StudioModule | null>(null)
   const [cloud, setCloud] = useState<CreationsCloud | null>(null)
@@ -94,11 +108,14 @@ export function StudioProClient({
   // backoff) ou com um projeto de vários MB, a criança não pode ficar presa no editor. O
   // `pagehide` da fila também cobre, e o `/estudio` reconcilia e sobe o que ficou.
   const onExit = useCallback(() => {
-    const leave = () => window.location.assign('/estudio')
+    const leave = () =>
+      window.location.assign(
+        boundHandoff ? `/pensa?plano=${encodeURIComponent(boundHandoff.project.id)}` : '/estudio',
+      )
     if (!cloud) return leave()
     if (cloud.getState().status === 'offline') return leave()
     void cloud.flush({ timeoutMs: EXIT_FLUSH_TIMEOUT_MS }).finally(leave)
-  }, [cloud])
+  }, [cloud, boundHandoff])
   const navigateTask = useCallback((path: string) => window.location.assign(path), [])
   const taskSession = useStudioTaskSession({
     handoff: boundHandoff,
@@ -109,25 +126,24 @@ export function StudioProClient({
     updateProgress: handoff.updateProgress,
     navigate: navigateTask,
     pro: true,
+    narrationEnabled,
   })
+  const share = useStudioShare(challenge)
+  const handleActivity = useStudioActivity(taskSession, false)
   const openDrawing = useCallback((id: string) => {
     window.open(`/pinta?desenho=${encodeURIComponent(id)}`, '_blank', 'noopener,noreferrer')
   }, [])
   const openCreation = useCallback((id: string) => {
     window.open(`/molda?criacao=${encodeURIComponent(id)}`, '_blank', 'noopener,noreferrer')
   }, [])
-  const tutor = useMemo<StudioTutorConfig | undefined>(
-    () =>
-      zappyEnabled
-        ? {
-            adapter: createStudioZappyAdapter(undefined, { pensaTaskId: () => taskRef.current }),
-            openLesson: openStudioZappyLesson,
-            openHelp: openStudioZappyHelp,
-            cooldownMs: 1_500,
-          }
-        : undefined,
-    [zappyEnabled],
-  )
+  const tutor = useKidsStudioTutor({
+    viewerId,
+    zappyEnabled,
+    aiCredits,
+    narrationEnabled,
+    voiceInputEnabled,
+    taskId: boundHandoff?.task.guide.contractVersion === 2 ? boundHandoff.task.id : null,
+  })
 
   // O módulo do Estúdio: é o mesmo que o editor PRO carrega por dentro (chunk já em
   // cache). Sempre, com ou sem perfil — o Provider do chrome precisa dele.
@@ -237,6 +253,9 @@ export function StudioProClient({
             theme={theme}
             onExit={onExit}
             tutor={tutor}
+            share={share}
+            onChange={handleActivity}
+            onError={reportStudioError}
             prepareProject={prepareProject}
             pintaLibrary={pintaLibrary}
             moldaLibrary={moldaLibrary}

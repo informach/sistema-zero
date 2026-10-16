@@ -10,6 +10,7 @@ import {
   type PensaJourneyView,
   type PensaQuestionTopic,
   type PensaZeroStage,
+  pensaMissionTarget,
   pensaZeroStage,
 } from '@sistemazero/core/pensa'
 import {
@@ -725,7 +726,7 @@ export function JourneyApp({
   const missionNumber = nextTask ? tasks.indexOf(nextTask) + 1 : 0
   /** O que o botão da missão FAZ: começar a que ainda não começou, continuar a começada. */
   const missionCta = nextTask
-    ? `${nextTask.progress.status === 'in_progress' ? 'Continuar' : 'Começar'} a missão no ${DESTINATIONS[nextTask.destination].label}`
+    ? `${nextTask.progress.status === 'in_progress' ? 'Continuar' : 'Começar'} a missão no ${nextTask.destination === 'studio' && view?.studioAuthoring === 'code' ? 'Estúdio Pro' : DESTINATIONS[nextTask.destination].label}`
     : ''
   // Todas as etapas vencidas: a versão foi experimentada e guardada pronta.
   const allDone = state?.stage === 'closed' && state.closedReason === 'met'
@@ -778,7 +779,14 @@ export function JourneyApp({
   const showNewGame = !view && !archived && hasGames && !loading
   // Pedir ajuda começa por um atalho que a criança reconhece; ela revisa e envia (nada sai sozinho).
   const helpChips =
-    composer && talking && conversationKind === 'help' && !text.trim() ? HELP_STARTERS : []
+    composer && talking && conversationKind === 'help' && !text.trim()
+      ? [
+          ...HELP_STARTERS,
+          view?.studioAuthoring === 'code'
+            ? 'Não achei o trecho de código'
+            : 'Não achei o bloco certo',
+        ]
+      : []
   // A pergunta do Zappy que espera resposta: as respostas viram botões que PREENCHEM o campo (o
   // gesto dos chips que ela aprovou; nada sai sozinho), mais "Tanto faz" e "Contar do meu jeito".
   const pendingQuestion =
@@ -894,7 +902,10 @@ export function JourneyApp({
               state: operationStep === 'propose' ? 'now' : 'done',
             },
             {
-              label: 'Conferindo com os seus blocos e montando o começo',
+              label:
+                view?.studioAuthoring === 'code'
+                  ? 'Conferindo seus recursos e montando o começo'
+                  : 'Conferindo com os seus blocos e montando o começo',
               state: operationStep === 'propose' ? 'next' : 'now',
             },
           ]
@@ -953,7 +964,9 @@ export function JourneyApp({
   // diz por quê (o plano clássico fazia isso; o v2 abria uma tela trancada, sem saída).
   const toolOwned = (destination: PensaTaskView['destination']) =>
     destination === 'studio'
-      ? adapter.capabilities.studioOwned
+      ? view?.studioAuthoring === 'code'
+        ? (adapter.capabilities.studioProAvailable ?? adapter.capabilities.studioOwned)
+        : adapter.capabilities.studioOwned
       : destination === 'pinta'
         ? adapter.capabilities.pintaOwned
         : adapter.capabilities.moldaOwned === true
@@ -999,12 +1012,7 @@ export function JourneyApp({
                 type="button"
                 className="sz-tool-pill sz-tool-pill--outline pensa-journey-path__review"
                 aria-label={`Rever ${t.title}`}
-                onClick={() =>
-                  adapter.onOpenTask({
-                    taskId: t.id,
-                    destination: t.destination,
-                  })
-                }
+                onClick={() => adapter.onOpenTask(pensaMissionTarget(t, view!))}
               >
                 Rever
               </button>
@@ -1566,10 +1574,7 @@ export function JourneyApp({
                                 toolOwned(nextTask.destination) ? undefined : 'pensa-tool-locked'
                               }
                               onClick={() =>
-                                adapter.onOpenTask({
-                                  taskId: nextTask.id,
-                                  destination: nextTask.destination,
-                                })
+                                adapter.onOpenTask(pensaMissionTarget(nextTask, view!))
                               }
                             >
                               {missionCta}
@@ -1667,12 +1672,14 @@ export function JourneyApp({
                                     className="sz-tool-pill sz-tool-pill--outline"
                                     onClick={() =>
                                       adapter.onOpenGame
-                                        ? adapter.onOpenGame({ projectId: view.project.id })
-                                        : gameTask &&
-                                          adapter.onOpenTask({
-                                            taskId: gameTask.id,
-                                            destination: 'studio',
+                                        ? adapter.onOpenGame({
+                                            projectId: view.project.id,
+                                            ...(view.studioAuthoring === 'code'
+                                              ? { studioAuthoring: 'code' as const }
+                                              : {}),
                                           })
+                                        : gameTask &&
+                                          adapter.onOpenTask(pensaMissionTarget(gameTask, view!))
                                     }
                                   >
                                     <BlocksIcon />
@@ -2807,11 +2814,7 @@ const ART_OFFERS = {
 
 const ZERO_ORDER = ['z', 'e', 'r', 'o'] as const
 
-const HELP_STARTERS = [
-  'Não sei por onde começar',
-  'Aconteceu uma coisa diferente',
-  'Não achei o bloco certo',
-]
+const HELP_STARTERS = ['Não sei por onde começar', 'Aconteceu uma coisa diferente']
 
 /** Do que trata a pergunta do Zappy, nas palavras da criança (o selo em cima dela). */
 const QUESTION_TOPIC: Record<PensaQuestionTopic, string> = {

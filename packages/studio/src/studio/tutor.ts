@@ -24,6 +24,7 @@ import {
   useState,
 } from 'react'
 import type { IDEMode, Project, ProjectKind } from '#core'
+import { boundedProAssistanceSummary, getProAssistance } from '../core/proAssistance'
 import { buildTutorBehavior, type StudioTutorBehaviorEntry } from './tutorBehavior'
 import { createStudioTutorExcerpts, isCurrentStudioTutorSelection } from './tutorProContext'
 import {
@@ -107,6 +108,7 @@ export interface StudioTutorProjectContext {
     revision: number
     intent?: StudioTutorIntent
     templateId?: StudioProTemplateId
+    decisions?: { version: 1; summary: string }
   }
 }
 
@@ -200,6 +202,7 @@ export interface StudioTutorAskResult {
 
 /** I/O do host. O Studio nunca conhece sessão, provedor, quota ou banco. */
 export interface StudioTutorAdapter {
+  loadCredits?(signal?: AbortSignal): Promise<AiCreditsView | null>
   builder?: import('@sistemazero/core/studio').StudioProBuilderAdapter
   loadHistory(projectId: string, before?: string): Promise<StudioTutorHistoryPage>
   deleteHistory(projectId: string): Promise<void>
@@ -505,6 +508,12 @@ export function buildStudioTutorContext(input: {
           code: compactCode(project, input.question, editor, selection),
           pro: {
             revision: project.updatedAt,
+            decisions: {
+              version: 1,
+              summary: redactStudioTutorSecrets(
+                boundedProAssistanceSummary(getProAssistance(project)),
+              ).text,
+            },
             intent: input.intent ?? 'explain',
             ...(selection ? { selection } : {}),
             ...(editor?.synchronization ? { synchronization: editor.synchronization } : {}),

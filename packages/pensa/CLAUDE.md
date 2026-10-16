@@ -20,8 +20,9 @@ Cada versão do jogo tem um ciclo próprio. Uma versão nova pode ser planejada 
 
 - `transport.request` para `/api/pensa/*`;
 - `transport.streamChat` para o chat SSE da etapa Z;
-- `capabilities.pintaOwned` e `capabilities.studioOwned`;
-- `onOpenTask({ taskId, destination })`, que navega para `/pinta?tarefa=<id>` ou `/estudio?tarefa=<id>`;
+- `capabilities.pintaOwned` e `capabilities.studioOwned` (disponibilidade clássica); `capabilities.studioProAvailable?` separa o acesso Pro da paleta de blocos. O host Kids informa ambos; hosts antigos mantêm o fallback para `studioOwned`;
+- `onOpenTask({ taskId, destination, studioProjectId? })`: missões clássicas usam a rota da oficina com `?tarefa=`; um jogo Pro confirmado leva `studioProjectId` e usa navegação completa para `/estudio/pro/<id>?tarefa=<id>`;
+- `onOpenGame?({ projectId, studioAuthoring? })` abre o jogo do plano sem iniciar missão. `studioAuthoring: code` usa navegação completa para a rota Pro, preservando o isolamento do navegador;
 - tema e imagens opcionais do mascote.
 
 O adapter não cria projetos do Estúdio, não sincroniza snapshots e não renderiza editores. O pacote não conhece router, IndexedDB ou `LessonActivity`.

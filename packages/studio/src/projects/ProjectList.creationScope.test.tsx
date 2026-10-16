@@ -235,7 +235,7 @@ async function openCreation(onOpenProject: (id: string) => void, pro = true) {
   const view = render(<ProjectList professional onOpenProject={onOpenProject} theme="light" />)
   await screen.findByText(t('projects.empty'))
   fireEvent.click(screen.getByRole('button', { name: '+ Novo projeto' }))
-  if (pro) fireEvent.click(screen.getByRole('radio', { name: /Profissional/ }))
+  if (pro) fireEvent.click(screen.getByRole('radio', { name: /Pro \(código\)/ }))
   return view
 }
 
@@ -376,7 +376,7 @@ it('offers the complete Pro catalog without host release configuration', async (
   render(<ProjectList professional onOpenProject={() => {}} theme="light" />)
   await screen.findByText(t('projects.empty'))
   fireEvent.click(screen.getByRole('button', { name: '+ Novo projeto' }))
-  fireEvent.click(screen.getByRole('radio', { name: /Profissional/ }))
+  fireEvent.click(screen.getByRole('radio', { name: /Pro \(código\)/ }))
   expect(
     within(screen.getByRole('dialog'))
       .getAllByRole('option')
@@ -390,7 +390,7 @@ it('revoking Pro access during a factory prevents persistence and navigation', a
   const view = render(<ProjectList professional onOpenProject={onOpen} theme="light" />)
   await screen.findByText(t('projects.empty'))
   fireEvent.click(screen.getByRole('button', { name: '+ Novo projeto' }))
-  fireEvent.click(screen.getByRole('radio', { name: /Profissional/ }))
+  fireEvent.click(screen.getByRole('radio', { name: /Pro \(código\)/ }))
   fireEvent.click(screen.getByRole('button', { name: t('projects.newModal.create') }))
   await loader.started.promise
   view.rerender(<ProjectList professional={false} onOpenProject={onOpen} theme="light" />)

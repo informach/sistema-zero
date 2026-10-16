@@ -809,6 +809,14 @@ describe.skipIf(!available)('Pensa v2: concorrência e publicação no Postgres'
     })
     return { who, view: await repo.get(who, view.project.id), taskId, itemId }
   }
+  test('planning reads the authoring mode from the programmer committed game, ignoring pending changes and tombstones', async () => {
+    const { who, view, itemId } = await playable()
+    expect(view.studioAuthoring).toBe('blocks')
+    await conn.sql`update members.creations set kind = 'pro', pending_kind = 'classic' where user_id = ${who.profileId} and item_id = ${itemId}`
+    expect((await repo.get(who, view.project.id)).studioAuthoring).toBe('code')
+    await conn.sql`update members.creations set deleted_at = ${now.toISOString()} where user_id = ${who.profileId} and item_id = ${itemId}`
+    expect((await repo.get(who, view.project.id)).studioAuthoring).toBe('blocks')
+  })
   test('cópia só fica pronta após commit; restauração troca criação, ciclo, guia e progresso juntos', async () => {
     const { who, view: first, taskId, itemId } = await playable()
     const id = first.project.id,
