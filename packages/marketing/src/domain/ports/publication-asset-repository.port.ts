@@ -5,7 +5,12 @@ import type { Publication } from '../publication/publication-record'
  */
 export interface PublicationAssetRepository {
   /** CAS da publicação e troca ordenada na mesma transação. Recusa estado/versão/checkpoint incompatível. */
-  replaceForPublication(publicationId: string, assetIds: string[], expectedVersion: number, at: Date): Promise<Publication | null>
+  replaceForPublication(
+    publicationId: string,
+    assetIds: string[],
+    expectedVersion: number,
+    at: Date,
+  ): Promise<Publication | null>
   /** Ids de asset na ordem de `position`. */
   listByPublication(publicationId: string): Promise<string[]>
 }

@@ -7,8 +7,8 @@ import type {
 import type { Idea } from '../../domain/idea/idea'
 import type { MediaAsset } from '../../domain/media/media-asset'
 import type { DriveFile } from '../../domain/ports/drive-client.port'
-import type { Publication } from '../../domain/publication/publication-record'
 import { hasProviderCheckpoint } from '../../domain/publication/publication'
+import type { Publication } from '../../domain/publication/publication-record'
 import type { SocialAccount } from '../../domain/social-account/social-account'
 
 const iso = (d: Date | null): string | null => (d ? d.toISOString() : null)

@@ -164,14 +164,20 @@ export class PublicationService {
    * MESMO conteúdo da publicação — mídia de outro conteúdo no post é troca de
    * arquivo silenciosa, não reordenação.
    */
-  async setAssets(id: string, assetIds: string[], expectedVersion: number): Promise<PublicationView> {
+  async setAssets(
+    id: string,
+    assetIds: string[],
+    expectedVersion: number,
+  ): Promise<PublicationView> {
     const pub = await this.publications.byId(id)
     if (!pub) throw new PublicationNotFoundError()
     if (!isEditable(pub.status)) {
       throw new InvalidPublicationStateError('Publicação não pode mais ser editada')
     }
     if (hasProviderCheckpoint(pub.providerSession))
-      throw new InvalidPublicationStateError('O envio já começou. A mídia precisa permanecer vinculada ao envio até sua reconciliação.')
+      throw new InvalidPublicationStateError(
+        'O envio já começou. A mídia precisa permanecer vinculada ao envio até sua reconciliação.',
+      )
     if (pub.version !== expectedVersion) throw new ConcurrencyConflictError()
     if (assetIds.length === 0 || assetIds.length > 10) {
       throw new ValidationError('O carrossel aceita de 1 a 10 imagens')
@@ -189,7 +195,12 @@ export class PublicationService {
         throw new ValidationError(`A mídia "${asset.filename}" ainda não terminou de subir`)
       }
     }
-    const updated = await this.carousel.links.replaceForPublication(pub.id, assetIds, expectedVersion, this.now())
+    const updated = await this.carousel.links.replaceForPublication(
+      pub.id,
+      assetIds,
+      expectedVersion,
+      this.now(),
+    )
     if (!updated) throw new ConcurrencyConflictError()
     return toPublicationView(updated, assetIds)
   }
@@ -317,8 +328,14 @@ export class PublicationService {
       throw new InvalidPublicationStateError('Publicação não pode ser agendada neste estado')
     }
     this.assertScheduleWindow(scheduledAt)
-    if (hasProviderCheckpoint(pub.providerSession) && !hasYouTubeVideo(pub) && pub.scheduledAt?.getTime() !== scheduledAt.getTime())
-      throw new InvalidPublicationStateError('O envio já começou. Confira o resultado no provedor antes de alterar o agendamento.')
+    if (
+      hasProviderCheckpoint(pub.providerSession) &&
+      !hasYouTubeVideo(pub) &&
+      pub.scheduledAt?.getTime() !== scheduledAt.getTime()
+    )
+      throw new InvalidPublicationStateError(
+        'O envio já começou. Confira o resultado no provedor antes de alterar o agendamento.',
+      )
     const expectedVersion = pub.version
     pub.scheduledAt = scheduledAt
     pub.status = 'scheduled'
@@ -351,7 +368,8 @@ export class PublicationService {
       pub.lastError =
         'O vídeo já está no YouTube (privado). Apague no YouTube Studio se não quiser publicá-lo'
     } else if (hasProviderCheckpoint(pub.providerSession)) {
-      pub.lastError = 'O envio já começou no provedor. Cancelar aqui não desfaz o envio externo; confira seu resultado antes de publicar novamente.'
+      pub.lastError =
+        'O envio já começou no provedor. Cancelar aqui não desfaz o envio externo; confira seu resultado antes de publicar novamente.'
     }
     pub.version = expectedVersion + 1
     pub.updatedAt = this.now()

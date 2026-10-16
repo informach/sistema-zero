@@ -33,7 +33,10 @@ const projectId = await stableEditorialId('marketing-review:instagram-sample:202
 // Fixed disposable target: never takes production DATABASE_URL or caller-supplied credentials.
 const connection = createDbConnection('postgres://postgres@127.0.0.1:15439/marketing_review')
 try {
-  const workspace = new WorkspaceService(new DrizzleWorkspaceRepository(connection.db),new GatewayStaffDirectory('http://127.0.0.1:15300','marketing-review-hmac-only-2026'))
+  const workspace = new WorkspaceService(
+    new DrizzleWorkspaceRepository(connection.db),
+    new GatewayStaffDirectory('http://127.0.0.1:15300', 'marketing-review-hmac-only-2026'),
+  )
   await workspace.create(actor, {
     schemaVersion: 1,
     operationId: await stableEditorialId('marketing-review:instagram-sample:create'),
@@ -83,4 +86,5 @@ try {
 } finally {
   await connection.close()
 }
-import {GatewayStaffDirectory} from '../packages/marketing/src/infrastructure/gateways/auth/gateway-staff-directory'
+
+import { GatewayStaffDirectory } from '../packages/marketing/src/infrastructure/gateways/auth/gateway-staff-directory'

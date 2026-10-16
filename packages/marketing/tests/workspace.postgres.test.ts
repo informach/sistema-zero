@@ -47,7 +47,7 @@ suite('workspace PostgreSQL: atomicidade, autorização e migração aditiva', (
       migrationsFolder: 'src/infrastructure/persistence/drizzle/migrations',
       migrationsTable: 'marketing_migrations',
     })
-    service = new WorkspaceService(new DrizzleWorkspaceRepository(connection.db),fixtureDirectory)
+    service = new WorkspaceService(new DrizzleWorkspaceRepository(connection.db), fixtureDirectory)
     projectId = randomUUID()
     await service.create(owner, {
       schemaVersion: 1,
@@ -198,26 +198,73 @@ suite('workspace PostgreSQL: atomicidade, autorização e migração aditiva', (
       /administrador/,
     )
   })
-  test('peça e componentes são atômicos; conflito não grava metade e relações não ficam órfãs',async()=>{
-    const {createPieceBatch}=await import('@sistemazero/marketing-contracts')
-    const input=createPieceBatch({projectId,title:'Peça integrada',brief:'Aprender criando',format:'story',medium:'image'})
-    const first=await service.applyBatch(owner,input)
-    if(first.status!=='applied')throw new Error('Fixture')
+  test('peça e componentes são atômicos; conflito não grava metade e relações não ficam órfãs', async () => {
+    const { createPieceBatch } = await import('@sistemazero/marketing-contracts')
+    const input = createPieceBatch({
+      projectId,
+      title: 'Peça integrada',
+      brief: 'Aprender criando',
+      format: 'story',
+      medium: 'image',
+    })
+    const first = await service.applyBatch(owner, input)
+    if (first.status !== 'applied') throw new Error('Fixture')
     expect(first.items).toHaveLength(3)
-    expect(await service.applyBatch(owner,input)).toEqual(first)
-    const piece=first.items.find(item=>item.kind==='piece'),component=first.items.find(item=>item.kind==='component')
-    if(!piece||!component)throw new Error('Fixture')
-    await service.apply(colleague,{schemaVersion:1,operationId:randomUUID(),projectId,entityId:component.id,baseRevisionId:component.revisionId,action:'save',document:{...component.document,title:'Mudou em outro computador'}})
-    const conflicting=await service.applyBatch(owner,{schemaVersion:1,operationId:randomUUID(),projectId,changes:[piece,component].map(item=>({entityId:item.id,baseRevisionId:item.revisionId,action:'save',document:{...item.document,title:'Tentativa conjunta'}}))})
+    expect(await service.applyBatch(owner, input)).toEqual(first)
+    const piece = first.items.find((item) => item.kind === 'piece'),
+      component = first.items.find((item) => item.kind === 'component')
+    if (!piece || !component) throw new Error('Fixture')
+    await service.apply(colleague, {
+      schemaVersion: 1,
+      operationId: randomUUID(),
+      projectId,
+      entityId: component.id,
+      baseRevisionId: component.revisionId,
+      action: 'save',
+      document: { ...component.document, title: 'Mudou em outro computador' },
+    })
+    const conflicting = await service.applyBatch(owner, {
+      schemaVersion: 1,
+      operationId: randomUUID(),
+      projectId,
+      changes: [piece, component].map((item) => ({
+        entityId: item.id,
+        baseRevisionId: item.revisionId,
+        action: 'save',
+        document: { ...item.document, title: 'Tentativa conjunta' },
+      })),
+    })
     expect(conflicting.status).toBe('conflict')
-    expect((await service.snapshot(owner,projectId)).items.find(item=>item.id===piece.id)?.revisionId).toBe(piece.revisionId)
-    await rejects(()=>service.apply(owner,{schemaVersion:1,operationId:randomUUID(),projectId,entityId:piece.id,baseRevisionId:piece.revisionId,action:'archive'}),{code:'DEPENDENCY_MISSING'})
-    const broken=createPieceBatch({projectId,title:'Relação inválida',brief:'',format:'carousel',medium:'image'})
-    const child=broken.changes.find(change=>change.document?.kind==='component')
-    if(child?.document?.kind!=='component')throw new Error('Fixture')
-    child.document.representationId=piece.id
-    await rejects(()=>service.applyBatch(owner,broken),{code:'DEPENDENCY_MISSING'})
-    expect((await service.snapshot(owner,projectId)).items.some(item=>item.id===child.entityId)).toBe(false)
+    expect(
+      (await service.snapshot(owner, projectId)).items.find((item) => item.id === piece.id)
+        ?.revisionId,
+    ).toBe(piece.revisionId)
+    await rejects(
+      () =>
+        service.apply(owner, {
+          schemaVersion: 1,
+          operationId: randomUUID(),
+          projectId,
+          entityId: piece.id,
+          baseRevisionId: piece.revisionId,
+          action: 'archive',
+        }),
+      { code: 'DEPENDENCY_MISSING' },
+    )
+    const broken = createPieceBatch({
+      projectId,
+      title: 'Relação inválida',
+      brief: '',
+      format: 'carousel',
+      medium: 'image',
+    })
+    const child = broken.changes.find((change) => change.document?.kind === 'component')
+    if (child?.document?.kind !== 'component') throw new Error('Fixture')
+    child.document.representationId = piece.id
+    await rejects(() => service.applyBatch(owner, broken), { code: 'DEPENDENCY_MISSING' })
+    expect(
+      (await service.snapshot(owner, projectId)).items.some((item) => item.id === child.entityId),
+    ).toBe(false)
   })
   test('rotas não aceitam headers de identidade sem prova do gateway', async () => {
     const app = new Elysia().use(
@@ -248,4 +295,5 @@ suite('workspace PostgreSQL: atomicidade, autorização e migração aditiva', (
     await connection.db.execute(sql`select id from marketing.contents limit 1`)
   })
 })
-import {fixtureDirectory} from './helpers/staff-directory'
+
+import { fixtureDirectory } from './helpers/staff-directory'

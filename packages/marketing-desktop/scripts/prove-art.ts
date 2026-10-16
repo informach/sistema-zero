@@ -1,7 +1,7 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { renderStill, selectComposition } from '@remotion/renderer'
-import { artProposalSchema,type ArtProposal } from '@sistemazero/marketing-contracts'
+import { type ArtProposal, artProposalSchema } from '@sistemazero/marketing-contracts'
 import { artPropsSchema, defaultArt } from '@sistemazero/marketing-production/data'
 import { z } from 'zod'
 import { probeImage } from '../src/main/media/probe-image'
@@ -16,7 +16,7 @@ const evidence: unknown[] = []
 for (const source of sources) {
   const file = path.join(directory, `${source.piece}-proposal.json`)
   const provider = source.piece === 'P34' ? 'claude' : 'codex'
-  let proposal:ArtProposal
+  let proposal: ArtProposal
   if (
     process.argv.includes('--saved') ||
     (process.argv.includes('--resume') && (await Bun.file(file).exists()))

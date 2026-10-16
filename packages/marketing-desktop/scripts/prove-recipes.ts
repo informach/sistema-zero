@@ -6,8 +6,8 @@ import {
   type ArtRecipeId,
   artProposalSchema,
   artText,
-  canonicalJson,
   CDC_ART_LABELS,
+  canonicalJson,
 } from '@sistemazero/marketing-contracts'
 import { artPropsSchema, editorialRecipe } from '@sistemazero/marketing-production/data'
 import { z } from 'zod'
@@ -78,7 +78,7 @@ try {
     let composition = base
     if (fixture.provider) {
       const file = path.join(directory, `${fixture.piece}-proposal.json`)
-      let proposal
+      let proposal: ReturnType<typeof artProposalSchema.parse>
       if (process.argv.includes('--saved'))
         proposal = artProposalSchema.parse(JSON.parse(await readFile(file, 'utf8')))
       else {

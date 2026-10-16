@@ -420,7 +420,12 @@ test('exportação JPEG tem identidade própria, conserva alt e rejeita PNG reno
   await expect(artBatch(run, 0, [run.context.source])).rejects.toThrow('descrição alternativa')
   variant.alt = run.context.source.document.alt ?? ''
   delete run.context.source.document.composition
-  const original = { ...asset, id: crypto.randomUUID(), mime: 'image/png' as const, name: 'original.png' }
+  const original = {
+    ...asset,
+    id: crypto.randomUUID(),
+    mime: 'image/png' as const,
+    name: 'original.png',
+  }
   run.context.source.document.assetIds = [original.id]
   run.context.assets = [original]
   variant.composition = null
@@ -429,7 +434,14 @@ test('exportação JPEG tem identidade própria, conserva alt e rejeita PNG reno
   run.outcome.render.inputSha256 = await renderInputHash(run.context.source, [original], 'jpeg')
   await validateRenderResult(run, [asset])
   const applied = await artBatch(run, 0, [run.context.source])
-  expect(applied.changes[0]?.document).toEqual({ ...run.context.source.document, assetIds: [finalId] })
-  expect(() => validateVisualRequest({ ...run.request, sourceAssetId: crypto.randomUUID() }, run.context)).toThrow('imagem confirmada')
-  expect(() => validateVisualRequest({ ...run.request, imageFormat: 'png' }, run.context)).toThrow('convertida para JPEG')
+  expect(applied.changes[0]?.document).toEqual({
+    ...run.context.source.document,
+    assetIds: [finalId],
+  })
+  expect(() =>
+    validateVisualRequest({ ...run.request, sourceAssetId: crypto.randomUUID() }, run.context),
+  ).toThrow('imagem confirmada')
+  expect(() => validateVisualRequest({ ...run.request, imageFormat: 'png' }, run.context)).toThrow(
+    'convertida para JPEG',
+  )
 })

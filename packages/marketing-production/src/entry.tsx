@@ -4,7 +4,7 @@ import { type ArtProps, artPropsSchema, defaultArt } from './art-props'
 import { defaultStory, type StoryProps, storySchema } from './story'
 import { StoryComposition } from './story-composition'
 import { TimelineComposition } from './video/composition'
-import { defaultTimeline, timelinePropsSchema, type TimelineProps } from './video/props'
+import { defaultTimeline, type TimelineProps, timelinePropsSchema } from './video/props'
 
 function Root() {
   return (

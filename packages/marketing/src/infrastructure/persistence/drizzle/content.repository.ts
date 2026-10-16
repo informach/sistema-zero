@@ -18,7 +18,11 @@ export class DrizzleContentRepository implements ContentRepository {
   }
 
   async byId(id: string): Promise<Content | null> {
-    const [row] = await this.db.select().from(contents).where(and(eq(contents.id, id), legacyContent)).limit(1)
+    const [row] = await this.db
+      .select()
+      .from(contents)
+      .where(and(eq(contents.id, id), legacyContent))
+      .limit(1)
     return row ?? null
   }
 

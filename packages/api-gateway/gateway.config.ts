@@ -936,9 +936,13 @@ const config: GatewayConfigInput = {
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
     {
-      id:'auth-internal-staff-directory',methods:['POST'],pathPattern:'/auth/internal/staff-directory',service:'auth',
-      auth:{required:true,mode:'any',strategies:['hmac'],allowedConsumers:['marketing']},
-      transforms:authInternalTransforms,rateLimit:{max:120,windowMs:60000,by:'principal'},
+      id: 'auth-internal-staff-directory',
+      methods: ['POST'],
+      pathPattern: '/auth/internal/staff-directory',
+      service: 'auth',
+      auth: { required: true, mode: 'any', strategies: ['hmac'], allowedConsumers: ['marketing'] },
+      transforms: authInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60000, by: 'principal' },
     },
     // Garante o usuário do comprador (novo/recorrente) no pós-pagamento e devolve o
     // `userId` — destrava a concessão ao comprador recorrente. Mesma proteção S2S do

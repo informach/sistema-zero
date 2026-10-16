@@ -15,7 +15,11 @@ export async function renderTimeline(
   const value = timelinePropsSchema.parse(props)
   if (
     !value.timeline.clips.some(
-      (clip) => clip.kind === 'video' || clip.kind === 'image' || clip.kind === 'text' || clip.kind === 'art',
+      (clip) =>
+        clip.kind === 'video' ||
+        clip.kind === 'image' ||
+        clip.kind === 'text' ||
+        clip.kind === 'art',
     )
   )
     throw new Error('Adicione cenas à montagem antes de exportar')

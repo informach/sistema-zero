@@ -9,7 +9,10 @@
       "/bun.lock",
       "/package.json",
       "/.dockerignore",
-      "/.railway/**"
+      "/.railway/**",
+      "/packages/marketing-contracts/**",
+      "/packages/marketing-workbench/**",
+      "/packages/marketing-production/**"
     ]
   },
   "deploy": {

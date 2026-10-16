@@ -1,29 +1,36 @@
 import { DatabaseSync } from 'node:sqlite'
-import { draftResolutionSchema, resolvedDraftSchema } from '../../../../marketing-contracts/src/sync'
 import { z } from 'zod'
 import { uploadStartSchema } from '../../../../marketing-contracts/src/assets'
 import { canonicalJson } from '../../../../marketing-contracts/src/common'
 import {
+  batchOperationSchema,
+  batchResultSchema,
   type EditorialOperation,
   itemSchema,
   type OperationResult,
   operationResultSchema,
   operationSchema,
-  batchOperationSchema,
-  batchResultSchema,
   type Project,
   projectSchema,
 } from '../../../../marketing-contracts/src/editorial'
 import {
   changePageSchema,
+  draftResolutionSchema,
   enqueueSchema,
   type PendingOperation,
-  pendingOperationSchema,
   pendingBatchSchema,
+  pendingOperationSchema,
+  resolvedDraftSchema,
 } from '../../../../marketing-contracts/src/sync'
 
 const scopeSchema = z.object({ origin: z.string().url(), userId: z.string().uuid() }).strict()
-const cancellationSchema=z.object({projectId:z.string().uuid(),runId:z.string().uuid(),operationId:z.string().uuid(),state:z.enum(['pending','confirmed','blocked']),error:z.string().nullable()})
+const cancellationSchema = z.object({
+  projectId: z.string().uuid(),
+  runId: z.string().uuid(),
+  operationId: z.string().uuid(),
+  state: z.enum(['pending', 'confirmed', 'blocked']),
+  error: z.string().nullable(),
+})
 const rowSchema = z.object({
   payload: z.string(),
   state: z.enum(['local', 'sending', 'confirmed', 'conflict', 'blocked']),
@@ -44,9 +51,15 @@ function pending(row: unknown): PendingOperation {
     createdAt: parsed.created_at,
   })
 }
-function pendingBatch(row:unknown){
- const parsed=rowSchema.omit({dependency_id:true}).parse(row)
- return pendingBatchSchema.parse({operation:JSON.parse(parsed.payload),state:parsed.state,result:parsed.result?JSON.parse(parsed.result):null,error:parsed.error,createdAt:parsed.created_at})
+function pendingBatch(row: unknown) {
+  const parsed = rowSchema.omit({ dependency_id: true }).parse(row)
+  return pendingBatchSchema.parse({
+    operation: JSON.parse(parsed.payload),
+    state: parsed.state,
+    result: parsed.result ? JSON.parse(parsed.result) : null,
+    error: parsed.error,
+    createdAt: parsed.created_at,
+  })
 }
 /** One database per server + user. Every draft and receipt survives process exit.
  * SQL is local schema evolution; server schema migrations remain Drizzle-owned. */
@@ -210,7 +223,12 @@ export class LocalWorkspaceStore {
       const project = this.requireProject(op.projectId)
       if (!project.permissions.includes('edit'))
         throw new Error('Esta conta não pode editar o projeto')
-      if(this.pendingBatches(op.projectId).some(batch=>batch.operation.changes.some(change=>change.entityId===op.entityId)))throw new Error('Aguarde a sincronização da alteração conjunta desta peça')
+      if (
+        this.pendingBatches(op.projectId).some((batch) =>
+          batch.operation.changes.some((change) => change.entityId === op.entityId),
+        )
+      )
+        throw new Error('Aguarde a sincronização da alteração conjunta desta peça')
       const existing = this.db
         .prepare('SELECT * FROM outbox WHERE operation_id=?')
         .get(op.operationId)
@@ -263,7 +281,9 @@ export class LocalWorkspaceStore {
   }
   pending(projectId: string) {
     return this.db
-      .prepare("SELECT * FROM outbox WHERE project_id=? AND state<>'confirmed' AND operation_id NOT IN (SELECT operation_id FROM resolved_drafts) ORDER BY rowid")
+      .prepare(
+        "SELECT * FROM outbox WHERE project_id=? AND state<>'confirmed' AND operation_id NOT IN (SELECT operation_id FROM resolved_drafts) ORDER BY rowid",
+      )
       .all(projectId)
       .map(pending)
   }
@@ -278,87 +298,219 @@ export class LocalWorkspaceStore {
           .get(),
       )
   }
-  stageCancellation(projectId:string,runId:string,operationId:string){
-    z.string().uuid().parse(runId);z.string().uuid().parse(operationId)
+  stageCancellation(projectId: string, runId: string, operationId: string) {
+    z.string().uuid().parse(runId)
+    z.string().uuid().parse(operationId)
     this.requireProject(projectId)
-    this.db.prepare("INSERT OR IGNORE INTO cancellations(run_id,project_id,operation_id,state) VALUES(?,?,?,'pending')").run(runId,projectId,operationId)
-    const value=this.cancellation(runId)
-    if(!value||value.projectId!==projectId)throw new Error('Cancelamento pertence a outro projeto')
+    this.db
+      .prepare(
+        "INSERT OR IGNORE INTO cancellations(run_id,project_id,operation_id,state) VALUES(?,?,?,'pending')",
+      )
+      .run(runId, projectId, operationId)
+    const value = this.cancellation(runId)
+    if (!value || value.projectId !== projectId)
+      throw new Error('Cancelamento pertence a outro projeto')
     return value
   }
-  cancellation(runId:string){
-    const row=this.db.prepare('SELECT project_id AS projectId,run_id AS runId,operation_id AS operationId,state,error FROM cancellations WHERE run_id=?').get(runId)
-    return row?cancellationSchema.parse(row):null
+  cancellation(runId: string) {
+    const row = this.db
+      .prepare(
+        'SELECT project_id AS projectId,run_id AS runId,operation_id AS operationId,state,error FROM cancellations WHERE run_id=?',
+      )
+      .get(runId)
+    return row ? cancellationSchema.parse(row) : null
   }
-  pendingCancellations(projectId:string){
-    return this.db.prepare("SELECT project_id AS projectId,run_id AS runId,operation_id AS operationId,state,error FROM cancellations WHERE project_id=? AND state='pending' ORDER BY rowid LIMIT 100").all(projectId).map(row=>cancellationSchema.parse(row))
+  pendingCancellations(projectId: string) {
+    return this.db
+      .prepare(
+        "SELECT project_id AS projectId,run_id AS runId,operation_id AS operationId,state,error FROM cancellations WHERE project_id=? AND state='pending' ORDER BY rowid LIMIT 100",
+      )
+      .all(projectId)
+      .map((row) => cancellationSchema.parse(row))
   }
-  settleCancellation(runId:string,state:'confirmed'|'blocked',error:string|null=null){
-    this.db.prepare('UPDATE cancellations SET state=?,error=? WHERE run_id=?').run(state,error,runId)
+  settleCancellation(runId: string, state: 'confirmed' | 'blocked', error: string | null = null) {
+    this.db
+      .prepare('UPDATE cancellations SET state=?,error=? WHERE run_id=?')
+      .run(state, error, runId)
   }
-  enqueueBatch(raw:unknown){
-    const input=batchOperationSchema.parse(raw)
-    return this.transaction(()=>{
-      const project=this.requireProject(input.projectId)
-      if(!project.permissions.includes('edit'))throw new Error('Esta conta não pode editar o projeto')
-      const existing=this.db.prepare('SELECT * FROM batches WHERE operation_id=?').get(input.operationId)
-      if(existing){const saved=pendingBatch(existing);if(canonicalJson(saved.operation)!==canonicalJson(input))throw new Error('Identificador de alteração conjunta reutilizado');return saved}
-      const touched=new Set(input.changes.map(change=>change.entityId))
-      if(this.pending(input.projectId).some(entry=>touched.has(entry.operation.entityId))||this.pendingBatches(input.projectId).some(entry=>entry.operation.changes.some(change=>touched.has(change.entityId))))throw new Error('Sincronize ou resolva os rascunhos anteriores destas peças antes de salvar em conjunto')
-      this.db.prepare("INSERT INTO batches(operation_id,project_id,payload,state,created_at) VALUES(?,?,?,'local',?)").run(input.operationId,input.projectId,json(input),new Date().toISOString())
-      return pendingBatch(this.db.prepare('SELECT * FROM batches WHERE operation_id=?').get(input.operationId))
+  enqueueBatch(raw: unknown) {
+    const input = batchOperationSchema.parse(raw)
+    return this.transaction(() => {
+      const project = this.requireProject(input.projectId)
+      if (!project.permissions.includes('edit'))
+        throw new Error('Esta conta não pode editar o projeto')
+      const existing = this.db
+        .prepare('SELECT * FROM batches WHERE operation_id=?')
+        .get(input.operationId)
+      if (existing) {
+        const saved = pendingBatch(existing)
+        if (canonicalJson(saved.operation) !== canonicalJson(input))
+          throw new Error('Identificador de alteração conjunta reutilizado')
+        return saved
+      }
+      const touched = new Set(input.changes.map((change) => change.entityId))
+      if (
+        this.pending(input.projectId).some((entry) => touched.has(entry.operation.entityId)) ||
+        this.pendingBatches(input.projectId).some((entry) =>
+          entry.operation.changes.some((change) => touched.has(change.entityId)),
+        )
+      )
+        throw new Error(
+          'Sincronize ou resolva os rascunhos anteriores destas peças antes de salvar em conjunto',
+        )
+      this.db
+        .prepare(
+          "INSERT INTO batches(operation_id,project_id,payload,state,created_at) VALUES(?,?,?,'local',?)",
+        )
+        .run(input.operationId, input.projectId, json(input), new Date().toISOString())
+      return pendingBatch(
+        this.db.prepare('SELECT * FROM batches WHERE operation_id=?').get(input.operationId),
+      )
     })
   }
-  pendingBatches(projectId:string){return this.db.prepare("SELECT * FROM batches WHERE project_id=? AND state<>'confirmed' AND operation_id NOT IN (SELECT operation_id FROM resolved_drafts) ORDER BY rowid").all(projectId).map(pendingBatch)}
-  resolvedDrafts(projectId:string){
+  pendingBatches(projectId: string) {
+    return this.db
+      .prepare(
+        "SELECT * FROM batches WHERE project_id=? AND state<>'confirmed' AND operation_id NOT IN (SELECT operation_id FROM resolved_drafts) ORDER BY rowid",
+      )
+      .all(projectId)
+      .map(pendingBatch)
+  }
+  resolvedDrafts(projectId: string) {
     this.requireProject(projectId)
-    return this.db.prepare(`SELECT o.payload,r.resolved_at,r.replacement_id FROM resolved_drafts r
+    return this.db
+      .prepare(`SELECT o.payload,r.resolved_at,r.replacement_id FROM resolved_drafts r
       JOIN (SELECT operation_id,payload FROM outbox UNION ALL SELECT operation_id,payload FROM batches) o
-      ON o.operation_id=r.operation_id WHERE r.project_id=? ORDER BY r.resolved_at DESC`).all(projectId).map(row=>{
-        const value=z.object({payload:z.string(),resolved_at:z.string(),replacement_id:z.string().nullable()}).parse(row)
-        return resolvedDraftSchema.parse({operation:JSON.parse(value.payload),resolvedAt:value.resolved_at,replacementId:value.replacement_id})
+      ON o.operation_id=r.operation_id WHERE r.project_id=? ORDER BY r.resolved_at DESC`)
+      .all(projectId)
+      .map((row) => {
+        const value = z
+          .object({
+            payload: z.string(),
+            resolved_at: z.string(),
+            replacement_id: z.string().nullable(),
+          })
+          .parse(row)
+        return resolvedDraftSchema.parse({
+          operation: JSON.parse(value.payload),
+          resolvedAt: value.resolved_at,
+          replacementId: value.replacement_id,
+        })
       })
   }
-  resolveDrafts(raw:unknown){
-    const input=draftResolutionSchema.parse(raw)
-    this.transaction(()=>{
-      const project=this.requireProject(input.projectId)
-      if(!project.permissions.includes('edit'))throw new Error('Sem permissão para resolver rascunhos')
-      const pendingEntries=[...this.pending(input.projectId),...this.pendingBatches(input.projectId)]
-      const selected=pendingEntries.filter(entry=>input.operationIds.includes(entry.operation.operationId))
-      if(selected.length!==input.operationIds.length||selected.some(entry=>!['conflict','blocked'].includes(entry.state)))throw new Error('O rascunho mudou; atualize antes de resolver')
-      const replacement=input.replacement
-      const touched=new Set(selected.flatMap(entry=>'changes' in entry.operation?entry.operation.changes.map(change=>change.entityId):[entry.operation.entityId]))
-      if(replacement?.changes.some(change=>!touched.has(change.entityId)))throw new Error('A resolução contém peças não selecionadas')
-      if(pendingEntries.some(entry=>!input.operationIds.includes(entry.operation.operationId)&&('changes' in entry.operation?entry.operation.changes.some(change=>touched.has(change.entityId)):touched.has(entry.operation.entityId))))throw new Error('Inclua os rascunhos dependentes na mesma resolução')
-      for(const id of input.operationIds)this.db.prepare('INSERT INTO resolved_drafts(operation_id,project_id,replacement_id,resolved_at) VALUES(?,?,?,?)').run(id,input.projectId,replacement?.operationId??null,new Date().toISOString())
-      if(replacement)this.db.prepare("INSERT INTO batches(operation_id,project_id,payload,state,created_at) VALUES(?,?,?,'local',?)").run(replacement.operationId,input.projectId,json(replacement),new Date().toISOString())
+  resolveDrafts(raw: unknown) {
+    const input = draftResolutionSchema.parse(raw)
+    this.transaction(() => {
+      const project = this.requireProject(input.projectId)
+      if (!project.permissions.includes('edit'))
+        throw new Error('Sem permissão para resolver rascunhos')
+      const pendingEntries = [
+        ...this.pending(input.projectId),
+        ...this.pendingBatches(input.projectId),
+      ]
+      const selected = pendingEntries.filter((entry) =>
+        input.operationIds.includes(entry.operation.operationId),
+      )
+      if (
+        selected.length !== input.operationIds.length ||
+        selected.some((entry) => !['conflict', 'blocked'].includes(entry.state))
+      )
+        throw new Error('O rascunho mudou; atualize antes de resolver')
+      const replacement = input.replacement
+      const touched = new Set(
+        selected.flatMap((entry) =>
+          'changes' in entry.operation
+            ? entry.operation.changes.map((change) => change.entityId)
+            : [entry.operation.entityId],
+        ),
+      )
+      if (replacement?.changes.some((change) => !touched.has(change.entityId)))
+        throw new Error('A resolução contém peças não selecionadas')
+      if (
+        pendingEntries.some(
+          (entry) =>
+            !input.operationIds.includes(entry.operation.operationId) &&
+            ('changes' in entry.operation
+              ? entry.operation.changes.some((change) => touched.has(change.entityId))
+              : touched.has(entry.operation.entityId)),
+        )
+      )
+        throw new Error('Inclua os rascunhos dependentes na mesma resolução')
+      for (const id of input.operationIds)
+        this.db
+          .prepare(
+            'INSERT INTO resolved_drafts(operation_id,project_id,replacement_id,resolved_at) VALUES(?,?,?,?)',
+          )
+          .run(id, input.projectId, replacement?.operationId ?? null, new Date().toISOString())
+      if (replacement)
+        this.db
+          .prepare(
+            "INSERT INTO batches(operation_id,project_id,payload,state,created_at) VALUES(?,?,?,'local',?)",
+          )
+          .run(
+            replacement.operationId,
+            input.projectId,
+            json(replacement),
+            new Date().toISOString(),
+          )
     })
   }
-  nextBatch(projectId:string){return this.transaction(()=>{
-    this.requireProject(projectId)
-    const row=this.db.prepare("SELECT * FROM batches WHERE project_id=? AND state='local' ORDER BY rowid LIMIT 1").get(projectId)
-    if(!row)return null
-    const entry=pendingBatch(row)
-    this.db.prepare("UPDATE batches SET state='sending' WHERE operation_id=?").run(entry.operation.operationId)
-    return entry.operation
-  })}
-  settleBatch(operationId:string,raw:unknown){
-    const result=batchResultSchema.parse(raw)
-    this.transaction(()=>{
-      const entry=pendingBatch(this.db.prepare('SELECT * FROM batches WHERE operation_id=?').get(operationId))
-      if(result.operationId!==operationId||entry.result&&canonicalJson(entry.result)!==canonicalJson(result))throw new Error('Recibo conjunto divergente')
-      if(result.status==='applied'){
-        if(result.items.length!==entry.operation.changes.length||new Set(result.items.map(item=>item.id)).size!==result.items.length)throw new Error('Recibo conjunto incompleto')
-        for(const item of result.items){
-          if(item.projectId!==entry.operation.projectId||!entry.operation.changes.some(change=>change.entityId===item.id))throw new Error('Recibo de outra peça')
-          this.db.prepare('INSERT INTO items(id,project_id,payload,sequence) VALUES(?,?,?,?) ON CONFLICT(id) DO UPDATE SET payload=excluded.payload,sequence=excluded.sequence WHERE excluded.project_id=items.project_id AND excluded.sequence>=items.sequence').run(item.id,item.projectId,json(item),result.cursor)
+  nextBatch(projectId: string) {
+    return this.transaction(() => {
+      this.requireProject(projectId)
+      const row = this.db
+        .prepare(
+          "SELECT * FROM batches WHERE project_id=? AND state='local' ORDER BY rowid LIMIT 1",
+        )
+        .get(projectId)
+      if (!row) return null
+      const entry = pendingBatch(row)
+      this.db
+        .prepare("UPDATE batches SET state='sending' WHERE operation_id=?")
+        .run(entry.operation.operationId)
+      return entry.operation
+    })
+  }
+  settleBatch(operationId: string, raw: unknown) {
+    const result = batchResultSchema.parse(raw)
+    this.transaction(() => {
+      const entry = pendingBatch(
+        this.db.prepare('SELECT * FROM batches WHERE operation_id=?').get(operationId),
+      )
+      if (
+        result.operationId !== operationId ||
+        (entry.result && canonicalJson(entry.result) !== canonicalJson(result))
+      )
+        throw new Error('Recibo conjunto divergente')
+      if (result.status === 'applied') {
+        if (
+          result.items.length !== entry.operation.changes.length ||
+          new Set(result.items.map((item) => item.id)).size !== result.items.length
+        )
+          throw new Error('Recibo conjunto incompleto')
+        for (const item of result.items) {
+          if (
+            item.projectId !== entry.operation.projectId ||
+            !entry.operation.changes.some((change) => change.entityId === item.id)
+          )
+            throw new Error('Recibo de outra peça')
+          this.db
+            .prepare(
+              'INSERT INTO items(id,project_id,payload,sequence) VALUES(?,?,?,?) ON CONFLICT(id) DO UPDATE SET payload=excluded.payload,sequence=excluded.sequence WHERE excluded.project_id=items.project_id AND excluded.sequence>=items.sequence',
+            )
+            .run(item.id, item.projectId, json(item), result.cursor)
         }
       }
-      this.db.prepare('UPDATE batches SET state=?,result=?,error=NULL WHERE operation_id=?').run(result.status==='applied'?'confirmed':'conflict',json(result),operationId)
+      this.db
+        .prepare('UPDATE batches SET state=?,result=?,error=NULL WHERE operation_id=?')
+        .run(result.status === 'applied' ? 'confirmed' : 'conflict', json(result), operationId)
     })
   }
-  failBatch(operationId:string,message:string,retryable:boolean){this.db.prepare("UPDATE batches SET state=?,error=? WHERE operation_id=? AND state='sending'").run(retryable?'local':'blocked',message.slice(0,1000),operationId)}
+  failBatch(operationId: string, message: string, retryable: boolean) {
+    this.db
+      .prepare("UPDATE batches SET state=?,error=? WHERE operation_id=? AND state='sending'")
+      .run(retryable ? 'local' : 'blocked', message.slice(0, 1000), operationId)
+  }
   stageTransfer(raw: unknown) {
     const input = uploadStartSchema.parse(raw)
     this.requireProject(input.manifest.projectId)
@@ -414,19 +566,28 @@ export class LocalWorkspaceStore {
     const row = this.db.prepare('SELECT payload FROM executions WHERE run_id=?').get(runId)
     return row ? JSON.parse(z.object({ payload: z.string() }).parse(row).payload) : null
   }
-  protectedAssets(projectId:string,ids:string[]){
+  protectedAssets(projectId: string, ids: string[]) {
     this.requireProject(projectId)
-    const payloads=[
-      ...this.db.prepare("SELECT payload FROM outbox WHERE project_id=? AND state<>'confirmed'").all(projectId),
-      ...this.db.prepare("SELECT payload FROM batches WHERE project_id=? AND state<>'confirmed'").all(projectId),
-      ...this.db.prepare("SELECT payload FROM transfers WHERE project_id=? AND state<>'confirmed'").all(projectId),
-      ...this.db.prepare('SELECT payload FROM executions WHERE project_id=?').all(projectId).filter(row=>{
-        const stored=JSON.parse(z.object({payload:z.string()}).parse(row).payload)
-        return z.object({stage:z.string()}).parse(stored).stage!=='confirmed'
-      }),
-    ].map(row=>z.object({payload:z.string()}).parse(row).payload)
+    const payloads = [
+      ...this.db
+        .prepare("SELECT payload FROM outbox WHERE project_id=? AND state<>'confirmed'")
+        .all(projectId),
+      ...this.db
+        .prepare("SELECT payload FROM batches WHERE project_id=? AND state<>'confirmed'")
+        .all(projectId),
+      ...this.db
+        .prepare("SELECT payload FROM transfers WHERE project_id=? AND state<>'confirmed'")
+        .all(projectId),
+      ...this.db
+        .prepare('SELECT payload FROM executions WHERE project_id=?')
+        .all(projectId)
+        .filter((row) => {
+          const stored = JSON.parse(z.object({ payload: z.string() }).parse(row).payload)
+          return z.object({ stage: z.string() }).parse(stored).stage !== 'confirmed'
+        }),
+    ].map((row) => z.object({ payload: z.string() }).parse(row).payload)
     // Conservative exact UUID match also retains files cited inside an unfinished prompt.
-    return new Set(ids.filter(id=>payloads.some(payload=>payload.includes(id))))
+    return new Set(ids.filter((id) => payloads.some((payload) => payload.includes(id))))
   }
   saveExecution(projectId: string, runId: string, payload: unknown) {
     this.requireProject(projectId)

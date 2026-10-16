@@ -6,9 +6,9 @@ import {
   Lightbulb,
   type LucideIcon,
   Monitor,
+  PanelsTopLeft,
   Plug,
   SquareKanban,
-  PanelsTopLeft,
 } from 'lucide-react'
 
 export interface NavItem {

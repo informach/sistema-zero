@@ -125,6 +125,10 @@ const common: Record<string, string[]> = {
     'PORT',
   ],
   marketing: [
+    'GATEWAY_URL',
+    'MARKETING_APP_URL',
+    'MARKETING_TOKEN_ENC_KEY',
+    'OAUTH_PUBLIC_BASE_URL',
     'DATABASE_URL',
     'HOST',
     'INTERNAL_API_TOKEN',
@@ -139,6 +143,8 @@ const common: Record<string, string[]> = {
     'R2_SECRET_ACCESS_KEY',
   ],
   auth: [
+    'STUDIO_PRO_RUNTIME_TOKEN',
+    'STUDIO_PRO_RUNTIME_URL',
     'AUTH_HMAC_SECRET',
     'AUTH_INTERNAL_TOKEN',
     'COMMUNITY_URL',
@@ -374,12 +380,7 @@ const extra: Record<string, Record<string, string[]>> = {
     payments: [],
     'api-gateway': [],
     fiscal: [],
-    marketing: [
-      'GATEWAY_URL',
-      'MARKETING_APP_URL',
-      'MARKETING_TOKEN_ENC_KEY',
-      'OAUTH_PUBLIC_BASE_URL',
-    ],
+    marketing: [],
     auth: [],
     messaging: [],
     'marketing-app': [],

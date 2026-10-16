@@ -3,7 +3,9 @@ import { z } from 'zod'
 
 // Native structured output requires every property, using null for absent values.
 // Keep this transport requirement separate from backward-compatible stored revisions.
-export const nativeArtCompositionSchema = z.object({ ...artSchema.shape, designRecipeId: artRecipeIdSchema.nullable() }).strict()
+export const nativeArtCompositionSchema = z
+  .object({ ...artSchema.shape, designRecipeId: artRecipeIdSchema.nullable() })
+  .strict()
 export const nativeArtProposalSchema = artProposalSchema.extend({
   variants: artProposalSchema.shape.variants.element
     .extend({

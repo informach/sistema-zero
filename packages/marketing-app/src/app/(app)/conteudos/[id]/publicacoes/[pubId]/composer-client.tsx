@@ -340,7 +340,12 @@ function ComposerForm({
         onMarkPublished={() => setMarkOpen(true)}
         onLinkExternal={() => setLinkOpen(true)}
       />
-      {view.mediaFrozen ? <p className="rounded-lg border bg-muted p-3 text-sm">O envio ao provedor já começou. A mídia e os dados desta entrega estão preservados até a confirmação do resultado.</p> : null}
+      {view.mediaFrozen ? (
+        <p className="rounded-lg border bg-muted p-3 text-sm">
+          O envio ao provedor já começou. A mídia e os dados desta entrega estão preservados até a
+          confirmação do resultado.
+        </p>
+      ) : null}
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="min-w-0 space-y-6">
