@@ -1,6 +1,7 @@
 import type * as Monaco from 'monaco-editor'
 import type { ProjectTree } from '#core'
 import { studioTutorSourceHash } from '../../studio/tutorSafety'
+import { inferLanguage } from '../languages'
 import {
   buildMonacoModelPath,
   findMonacoModel,
@@ -11,7 +12,7 @@ import {
   setMonacoModelPath,
   synchronizeMonacoModel,
 } from '../modelPaths'
-import { PRO_JS_LANGUAGE, PRO_TS_LANGUAGE } from './languages'
+import { PRO_JS_LANGUAGE, PRO_TS_LANGUAGE, proLanguage } from './languages'
 import type { ProLanguageQueries } from './protocol'
 import { createProLanguageClient } from './workerClient'
 
@@ -323,7 +324,12 @@ export function attachProLanguageService(
         if (!isModelInPathPrefix(model, prefix)) continue
         const oldPath = pathOf(model)
         const path = pathMap[oldPath] ?? oldPath
-        if (path !== oldPath) setMonacoModelPath(model, buildMonacoModelPath(prefix, path))
+        if (path !== oldPath) {
+          setMonacoModelPath(model, buildMonacoModelPath(prefix, path))
+          // A renamed buffer keeps its identity, but its language belongs to the new path.
+          monaco.editor.setModelLanguage(model, proLanguage(inferLanguage(path)))
+          monaco.editor.setModelMarkers(model, 'sz-pro-typescript', [])
+        }
         const node = tree[path]
         if (node?.kind === 'file' && model.getValue() !== node.content)
           // A document operation has its own guarded recovery. Reset only edited buffers'

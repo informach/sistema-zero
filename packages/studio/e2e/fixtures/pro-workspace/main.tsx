@@ -80,6 +80,10 @@ function Fixture() {
               editor.getModels().map((model) => ({
                 id: model.id,
                 path: getMonacoModelPath(model),
+                language: model.getLanguageId(),
+                markers: editor
+                  .getModelMarkers({ resource: model.uri })
+                  .map((marker) => marker.message),
                 content: model.getValue(),
               })),
             ),

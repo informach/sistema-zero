@@ -10,6 +10,7 @@ import { useProjectStore } from '../../../state/projectStore'
 import type { ProWorkspaceIntent } from '../../../state/proWorkspaceOperations'
 import { useUIStore } from '../../../state/uiStore'
 import { findProCommands, type ProCommand } from './commands'
+import { proSourcePosition } from './search'
 
 const button =
   'min-h-9 rounded px-2 text-xs hover:bg-sz-panel focus-visible:outline focus-visible:outline-sz-accent disabled:opacity-40'
@@ -88,10 +89,6 @@ export function ProCodeTools({
       active = false
     }
   }, [open, path, tree, language])
-  const position = (source: string, offset: number) => {
-    const lines = source.slice(0, offset).split('\n')
-    return { line: lines.length, column: (lines.at(-1)?.length ?? 0) + 1 }
-  }
   const capture = () => {
     const model = editor.current?.getModel(),
       cursor = editor.current?.getPosition()
@@ -123,7 +120,7 @@ export function ProCodeTools({
         .flatMap((item) => {
           const node = tree[item.path]
           return node?.kind === 'file'
-            ? [{ path: item.path, ...position(node.content, item.span.start) }]
+            ? [{ path: item.path, ...proSourcePosition(node.content, item.span.start) }]
             : []
         })
         .slice(0, 100)
@@ -283,7 +280,7 @@ export function ProCodeTools({
               className={`${button} block w-full truncate text-left`}
               style={{ paddingLeft: `${8 + symbol.depth * 12}px` }}
               onClick={() => {
-                const target = position(content, symbol.start)
+                const target = proSourcePosition(content, symbol.start)
                 navigate(path, target.line, target.column)
               }}
             >

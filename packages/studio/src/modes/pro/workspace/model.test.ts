@@ -9,7 +9,7 @@ import {
   reconcileWorkspace,
   remapWorkspace,
 } from './model'
-import { searchProFiles } from './search'
+import { proSourcePosition, searchProFiles } from './search'
 
 describe('workspace Pro', () => {
   it('explores one temporary tab and pins it before editing', () => {
@@ -52,5 +52,20 @@ describe('workspace Pro', () => {
       items: [{ line: 1 }, { line: 2 }],
     })
     expect(searchProFiles(tree, 'closed', 'files').items[0]?.path).toBe('closed.ts')
+  })
+  it('preserves source columns through Unicode case folding and all supported line endings', () => {
+    const tree: ProjectTree = {
+      'main.ts': { kind: 'file', content: '// İ points\rconst points = 1\r\n// POINTS\n// points' },
+    }
+    expect(
+      searchProFiles(tree, 'points', 'content').items.map(({ line, column }) => ({ line, column })),
+    ).toEqual([
+      { line: 1, column: 6 },
+      { line: 2, column: 7 },
+      { line: 3, column: 4 },
+      { line: 4, column: 4 },
+    ])
+    const source = 'const x = 0\r\n// exemplo\rexport const y = x'
+    expect(proSourcePosition(source, source.indexOf('y ='))).toEqual({ line: 3, column: 14 })
   })
 })
