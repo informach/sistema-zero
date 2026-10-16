@@ -32,8 +32,16 @@ for (const [id, example, apiName] of [
 setInterval(function () { document.body.dataset.snowDistance = String(${apiName}.${id === 'game-2d' ? 'spriteTrackValue' : 'trackPosition'}("pista", "distance")); }, 16);`
       project.installedExtensions = [{ id, version: '1.0.0', installedAt: Date.now() }]
       const srcdoc = await renderProjectToPreviewDocAsync(project)
-      await page.goto('/')
-      errors.length = 0
+      // Measure the game in its own host. Replacing the playground's body does
+      // not stop its pending catalog imports and schema parsing; those tasks
+      // compete with the first game frames on slower CI runners.
+      await page.route('**/__snow-descent-fixture__', (route) =>
+        route.fulfill({
+          contentType: 'text/html',
+          body: '<!doctype html><html><body></body></html>',
+        }),
+      )
+      await page.goto('/__snow-descent-fixture__')
       await page.evaluate((source) => {
         document.body.replaceChildren()
         document.body.style.margin = '0'
