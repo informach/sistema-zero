@@ -4,7 +4,7 @@
  */
 export interface PensaUsage {
   projects: number
-  cyclesCompleted: number
+  projectsCompleted: number
   lastActivityAt: string | null
 }
 export interface CreationToolUsage {

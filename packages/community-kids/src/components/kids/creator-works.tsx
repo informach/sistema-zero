@@ -87,9 +87,7 @@ export async function CreatorWorks({ available }: { available: CreativeToolId[] 
           return { ...space, response }
         }),
     ),
-    available.includes('pensa')
-      ? shell.members.pensaListProjectsReadonly().catch(() => null)
-      : null,
+    available.includes('pensa') ? shell.members.pensaListProjects().catch(() => null) : null,
   ])
   if (!available.length) return null
   return (
@@ -147,17 +145,18 @@ export async function CreatorWorks({ available }: { available: CreativeToolId[] 
               <p role="status" className="mt-5 mb-1.5 font-semibold text-muted-foreground text-sm">
                 Não conseguimos consultar seus planos agora.
               </p>
-            ) : plans.body?.projects.length ? (
+            ) : plans.body.length ? (
               <ul className="mt-5 mb-1.5 space-y-1">
-                {plans.body.projects.slice(0, 4).map((plan) => (
-                  <li key={plan.id}>
+                {plans.body.slice(0, 4).map((plan) => (
+                  <li key={plan.project.id}>
                     <Link
-                      href={`/pensa?plano=${encodeURIComponent(plan.id)}`}
+                      href={`/pensa?plano=${encodeURIComponent(plan.project.id)}`}
                       prefetch={false}
                       className={PILULA}
                     >
                       <span className="break-words">
-                        {plan.name} · Versão {plan.cycleNumber}
+                        {plan.project.name} · {plan.completedMissions} de {plan.totalMissions}{' '}
+                        missões
                       </span>
                       <ArrowUpRight className="size-4 shrink-0" aria-hidden />
                     </Link>

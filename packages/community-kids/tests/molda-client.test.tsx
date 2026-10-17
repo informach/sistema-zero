@@ -3,6 +3,8 @@ import type { MoldaHostAdapter } from '@sistemazero/molda'
 import { createModelAsset, type MoldaAsset } from '@sistemazero/molda/assets'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { type ReactNode, useState } from 'react'
+import { handoffFixture, PROFILE_ID } from '../../pensa/src/components/pensa.fixture'
+import { missionSessionFixture } from '../../ui/tests/mission-fixture'
 
 const actualNavigation = await import('next/navigation')
 const actualMolda = await import('@sistemazero/molda')
@@ -203,61 +205,48 @@ test('a volta da ponte só regrava a criação que JÁ está na biblioteca do Es
   })
 })
 
-test('o guia reabre a mesma criação depois de voltar à galeria, inclusive após um deep link', async () => {
+function modelHandoff() {
+  const handoff = handoffFixture()
+  const session = missionSessionFixture()
+  handoff.mission = {
+    ...session.mission,
+    kind: 'asset',
+    destination: 'molda',
+    assetSlotIds: session.assetSlots.map((slot) => slot.id),
+  }
+  handoff.progress = session.progress
+  handoff.assetSlots = [{ ...session.assetSlots[0]!, name: 'Rocha', kind: 'model' }]
+  return handoff
+}
+
+test('o guia reabre a criação associada ao slot depois de voltar à galeria', async () => {
   const asset = createModelAsset({ name: 'Rocha do plano' })
   localAssets = [asset]
-  query = new URLSearchParams({ criacao: asset.id, tarefa: 'task-a' })
+  const handoff = modelHandoff()
+  handoff.progress.deliveries = [
+    {
+      assetSlotId: handoff.assetSlots[0]!.id,
+      creation: {
+        tool: 'molda',
+        profileId: PROFILE_ID,
+        creationId: asset.id,
+        saveRevision: '1',
+        contentFingerprint: null,
+      },
+    },
+  ]
+  query = new URLSearchParams({ criacao: asset.id, missao: handoff.mission.id })
   globalThis.fetch = Object.assign(
-    mock(async () =>
-      Response.json({
-        project: { id: 'plan-a', name: 'Lua' },
-        cycle: { id: 'cycle-a', number: 1, goal: null },
-        capability: { owned: true, blockedReason: null },
-        task: {
-          id: 'task-a',
-          title: 'Rocha',
-          summary: null,
-          destination: 'molda',
-          category: 'art',
-          estimatedMinutes: 10,
-          position: 0,
-          dependencies: [],
-          revision: 1,
-          supersedesTaskId: null,
-          guide: { steps: [], criteria: [] },
-          context: {
-            kind: 'molda',
-            assetId: 'inventory-rock',
-            artKind: 'model',
-            appearance: 'Azul',
-            usage: 'Cenário',
-            palette: [],
-          },
-          progress: {
-            status: 'in_progress',
-            completedStepIds: [],
-            completedCriteriaIds: [],
-            startedAt: null,
-            completedAt: null,
-            updatedAt: null,
-            outputRef: {
-              kind: 'molda_asset',
-              assetId: asset.id,
-              assetName: asset.name,
-              assetKind: 'model',
-            },
-          },
-        },
-      }),
-    ),
+    async (input: RequestInfo | URL) =>
+      Response.json(String(input).includes('/pensa/') ? handoff : { items: [], serverNow: 1 }),
     { preconnect: originalFetch.preconnect },
   )
-  render(<MoldaClient viewerId={null} studioAvailable />)
+  render(<MoldaClient viewerId={PROFILE_ID} studioAvailable />)
   await waitFor(() => expect(screen.getByTestId('molda-opened').textContent).toBe(asset.id))
   for (let attempt = 0; attempt < 2; attempt++) {
     fireEvent.click(screen.getByRole('button', { name: 'Voltar à galeria' }))
     expect(screen.getByTestId('molda-opened').textContent).toBe('gallery')
-    fireEvent.click(await screen.findByRole('button', { name: 'Abrir criação vinculada' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Abrir Rocha' }))
     await waitFor(() => expect(screen.getByTestId('molda-opened').textContent).toBe(asset.id))
   }
 })
@@ -308,57 +297,25 @@ test('limpar o deep link mantém a prévia da equipe (`?nivel=`) e a tarefa', as
   await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/molda'))
 })
 
-test('missão de outra pessoa da equipe: a frase, "Voltar ao plano" e nada do guia nem do Molda', async () => {
-  query = new URLSearchParams({ tarefa: 'task-b' })
-  globalThis.fetch = Object.assign(
-    mock(async () =>
-      Response.json({
-        project: { id: 'plan-b', name: 'Lua' },
-        cycle: { id: 'cycle-b', number: 1, goal: null },
-        capability: {
-          owned: false,
-          blockedReason: 'Outra pessoa da equipe já está fazendo essa missão.',
-        },
-        task: {
-          id: 'task-b',
-          title: 'Rocha',
-          summary: null,
-          destination: 'molda',
-          category: 'art',
-          estimatedMinutes: 10,
-          position: 0,
-          dependencies: [],
-          revision: 1,
-          supersedesTaskId: null,
-          guide: { steps: [], criteria: [] },
-          context: {
-            kind: 'molda',
-            assetId: 'inventory-rock',
-            artKind: 'model',
-            appearance: 'Azul',
-            usage: 'Cenário',
-            palette: [],
-          },
-          progress: {
-            status: 'in_progress',
-            completedStepIds: [],
-            completedCriteriaIds: [],
-            startedAt: null,
-            completedAt: null,
-            updatedAt: null,
-            outputRef: null,
-          },
-        },
-      }),
-    ),
-    { preconnect: originalFetch.preconnect },
-  )
-  render(<MoldaClient viewerId={null} studioAvailable />)
+test('missão ocupada mostra a frase autorizada e volta ao plano sem montar o Molda', async () => {
+  const handoff = modelHandoff()
+  handoff.availability = {
+    ...handoff.availability,
+    available: false,
+    reason: 'claimed',
+    message: 'Outra pessoa da equipe já está fazendo essa missão.',
+    eligibleProfileIds: [],
+  }
+  query = new URLSearchParams({ missao: handoff.mission.id })
+  globalThis.fetch = Object.assign(async () => Response.json(handoff), {
+    preconnect: originalFetch.preconnect,
+  })
+  render(<MoldaClient viewerId={PROFILE_ID} studioAvailable />)
   expect(
     await screen.findByText('Outra pessoa da equipe já está fazendo essa missão.'),
   ).not.toBeNull()
   expect(screen.queryByTestId('molda-opened')).toBeNull()
   router.push.mockClear()
   fireEvent.click(screen.getByRole('button', { name: 'Voltar ao plano' }))
-  expect(router.push).toHaveBeenCalledWith('/pensa?plano=plan-b')
+  expect(router.push).toHaveBeenCalledWith(`/pensa?plano=${handoff.project.id}`)
 })

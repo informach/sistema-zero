@@ -10,6 +10,8 @@
     "start": "bun run src/index.ts",
     "typecheck": "tsc --noEmit",
     "test": "bun test",
+    "test:pensa-db": "bun run scripts/test-pensa-db.ts",
+    "pensa:maintenance": "bun run scripts/pensa-maintenance.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
@@ -35,7 +37,7 @@
     "drizzle-orm": "^0.44.5",
     "elysia": "^1.4.9",
     "postgres": "^3.4.7",
-    "zod": "^4.1.12"
+    "zod": "4.3.6"
   },
   "devDependencies": {
     "@types/bun": "latest",

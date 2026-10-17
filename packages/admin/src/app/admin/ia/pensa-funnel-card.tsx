@@ -17,7 +17,6 @@ import {
   PENSA_FUNNEL_PERIODS,
   type PensaFunnelPeriod,
   type PensaFunnelView,
-  pensaFunnelAnswers,
   pensaFunnelStages,
 } from '@/lib/pensa-funnel'
 
@@ -25,8 +24,7 @@ const number = (value: number) => value.toLocaleString('pt-BR')
 const share = (value: number | null) => (value === null ? '—' : `${value}%`)
 
 /**
- * Onde as crianças param no Pensa: da ideia à versão pronta, e como responderam às perguntas do
- * Zappy. Conta só a primeira versão dos jogos criados no período (a equipe entra junto).
+ * Conta os projetos desde a definição até a conferência final, uma vez por equipe.
  */
 export function PensaFunnelCard() {
   const [days, setDays] = useState<PensaFunnelPeriod>(30)
@@ -55,7 +53,6 @@ export function PensaFunnelCard() {
   }, [days])
 
   const stages = view ? pensaFunnelStages(view) : []
-  const answers = view ? pensaFunnelAnswers(view) : null
 
   return (
     <Card>
@@ -63,7 +60,8 @@ export function PensaFunnelCard() {
         <div>
           <CardTitle>Pensa: onde as crianças param</CardTitle>
           <p className="mt-1 text-muted-foreground text-sm">
-            Primeira versão dos jogos criados nos últimos {days} dias. Inclui as contas da equipe.
+            Projetos criados nos últimos {days} dias. Cada projeto é contado uma vez, incluindo
+            equipes.
           </p>
         </div>
         <select
@@ -92,10 +90,10 @@ export function PensaFunnelCard() {
           </p>
         ) : null}
         {loading && !view ? <Spinner /> : null}
-        {view && view.games === 0 ? (
+        {view && view.projects === 0 ? (
           <p className="text-muted-foreground text-sm">Nenhum jogo novo no Pensa neste período.</p>
         ) : null}
-        {view && view.games > 0 ? (
+        {view && view.projects > 0 ? (
           <>
             <Table>
               <TableHeader>
@@ -112,49 +110,26 @@ export function PensaFunnelCard() {
                     <TableCell className="font-medium">{stage.label}</TableCell>
                     <TableCell className="text-right tabular-nums">{number(stage.count)}</TableCell>
                     <TableCell className="text-right tabular-nums">
-                      {share(stage.ofGames)}
+                      {share(stage.ofProjects)}
                     </TableCell>
                     <TableCell className="text-right text-muted-foreground tabular-nums">
-                      {stage.key === 'games' || stage.lost === 0 ? '—' : number(stage.lost)}
+                      {stage.key === 'projects' || stage.lost === 0 ? '—' : number(stage.lost)}
                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
-            {answers ? (
-              <div className="space-y-2">
-                <h3 className="font-semibold text-sm">Perguntas do Zappy</h3>
-                <p className="text-muted-foreground text-sm">
-                  {answers.questions === 0
-                    ? 'O Zappy não fez nenhuma pergunta neste período.'
-                    : `${number(answers.questions)} ${answers.questions === 1 ? 'pergunta' : 'perguntas'} em ${number(view.asked)} ${view.asked === 1 ? 'jogo' : 'jogos'} (${share(answers.askedOfTold)} dos que contaram a ideia).`}
-                </p>
-                {answers.questions > 0 ? (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Como responderam</TableHead>
-                        <TableHead className="text-right">Perguntas</TableHead>
-                        <TableHead className="text-right">Parte</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {answers.rows.map((row) => (
-                        <TableRow key={row.key}>
-                          <TableCell className="font-medium">{row.label}</TableCell>
-                          <TableCell className="text-right tabular-nums">
-                            {number(row.count)}
-                          </TableCell>
-                          <TableCell className="text-right tabular-nums">
-                            {share(row.ofQuestions)}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                ) : null}
-              </div>
-            ) : null}
+            <div className="space-y-2 text-sm">
+              <p>
+                {number(view.setupCompleted)} projetos prepararam extensões pelo Pensa. Essa
+                preparação é dispensada no Pro.
+              </p>
+              <p>{number(view.pendingChoices)} projetos aguardam uma escolha da criança.</p>
+              <p>
+                {number(view.adaptationsAccepted)} projetos têm adaptações aceitas para os recursos
+                disponíveis.
+              </p>
+            </div>
           </>
         ) : null}
       </CardContent>

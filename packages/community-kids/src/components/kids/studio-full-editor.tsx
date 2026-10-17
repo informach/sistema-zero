@@ -83,7 +83,7 @@ export function StudioFullEditor({
 
   const handlePromoteToPro = useCallback(
     (project: Project) => {
-      const query = taskSession ? `?tarefa=${encodeURIComponent(taskSession.taskId)}` : ''
+      const query = taskSession ? `?missao=${encodeURIComponent(taskSession.mission.id)}` : ''
       window.location.assign(`/estudio/pro/${encodeURIComponent(project.id)}${query}`)
     },
     [taskSession],

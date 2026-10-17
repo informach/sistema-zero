@@ -10,7 +10,7 @@ import type { LearnerToolUsageView } from '../src/lib/tool-usage'
  */
 const learner: LearnerToolUsageView = {
   userId: 'u1',
-  pensa: { projects: 0, cyclesCompleted: 0, lastActivityAt: null },
+  pensa: { projects: 0, projectsCompleted: 0, lastActivityAt: null },
   pinta: { drawings: 0, deliveries: 0, lastActivityAt: null },
   estudio: { creations: 0, deliveries: 0, lastActivityAt: null },
   clube: null,

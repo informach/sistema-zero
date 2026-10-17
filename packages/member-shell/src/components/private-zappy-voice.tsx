@@ -1,11 +1,11 @@
 'use client'
-import type { PensaNarratableRef } from '@sistemazero/core/pensa'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   hasLessonMediaFocus,
   registerLessonMedia,
   requestLessonMediaFocus,
 } from '../lib/lesson-media-focus'
+import type { PrivateNarratableRef } from '../lib/private-narration'
 import { privateVoiceErrorText, readPrivateVoiceUrl } from '../lib/private-voice'
 import { sessionFetch } from '../lib/session-fetch'
 
@@ -13,7 +13,7 @@ export function PrivateZappyVoice({
   reference,
   viewerId,
 }: {
-  reference: PensaNarratableRef
+  reference: PrivateNarratableRef
   viewerId: string
 }) {
   return (
@@ -28,7 +28,7 @@ function PrivateZappyVoicePlayer({
   reference,
   viewerId,
 }: {
-  reference: PensaNarratableRef
+  reference: PrivateNarratableRef
   viewerId: string
 }) {
   const [state, setState] = useState<'idle' | 'loading' | 'playing'>('idle')

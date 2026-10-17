@@ -32,8 +32,6 @@ import { livePublicationRoutes } from './routes/live-publication.routes'
 import { liveWorkspaceRoutes } from './routes/live-workspaces.routes'
 import { type MembersRoutesDeps, membersRoutes } from './routes/members.routes'
 import { type PensaRoutesDeps, pensaRoutes } from './routes/pensa.routes'
-import { type PensaJourneyRoutesDeps, pensaJourneyRoutes } from './routes/pensa-journey.routes'
-import { type PensaTeamRoutesDeps, pensaTeamRoutes } from './routes/pensa-team.routes'
 import { studioAiAccountRoutes } from './routes/studio-ai-account.routes'
 import { studioAiUsageRoutes } from './routes/studio-ai-usage.routes'
 import { studioBuilderRoutes } from './routes/studio-builder.routes'
@@ -57,9 +55,7 @@ export interface HttpDeps {
   readiness: ReadinessProbe
   members: MembersRoutesDeps
   pensa: PensaRoutesDeps
-  pensaJourney?: PensaJourneyRoutesDeps
-  /** Equipe no Pensa v2 (14/10/2026): equipe, funções, recursos e artes da equipe. */
-  pensaTeam: PensaTeamRoutesDeps
+  /** Equipe no Pensa (14/10/2026): equipe, funções, recursos e artes da equipe. */
   creations: CreationsRoutesDeps
   webhooks: WebhooksRoutesDeps
   admin: AdminRoutesDeps
@@ -88,11 +84,6 @@ const PINTA_SUBMISSION_PATH = /\/pinta-submission$/
 // tasks): o teto padrão de 64 KB barraria payloads legítimos. Teto FIXO de 1 MB
 // (o gateway já capa em 512 KB na borda — este é o backstop interno, mesmo
 // racional do MAX_STUDIO_BODY_BYTES).
-const PENSA_CONVERSATION_PATH = /\/members\/pensa\/cycles\/[^/]+\/stages\/[^/]+\/conversation$/
-const PENSA_ARTIFACT_CREATE_PATH = /\/members\/pensa\/cycles\/[^/]+\/artifacts$/
-const PENSA_TASKS_REPLACE_PATH = /\/members\/pensa\/cycles\/[^/]+\/tasks$/
-const MAX_PENSA_BODY_BYTES = 1024 * 1024
-
 function bodyLimitForPath(pathname: string, env: Env): number {
   if (pathname === '/members/internal/studio-ai/builder') return 3_004_096
   if (
@@ -111,15 +102,8 @@ function bodyLimitForPath(pathname: string, env: Env): number {
   ) {
     return Math.max(env.MAX_STUDIO_BODY_BYTES, env.MAX_REQUEST_BODY_BYTES)
   }
-  if (
-    PENSA_CONVERSATION_PATH.test(pathname) ||
-    PENSA_ARTIFACT_CREATE_PATH.test(pathname) ||
-    PENSA_TASKS_REPLACE_PATH.test(pathname) ||
-    pathname.startsWith('/members/pensa/v2/') ||
-    pathname.startsWith('/members/internal/pensa/v2/')
-  ) {
-    return Math.max(MAX_PENSA_BODY_BYTES, env.MAX_REQUEST_BODY_BYTES)
-  }
+  if (pathname.startsWith('/members/internal/pensa/')) return 1024 * 1024
+  if (/^\/members\/pensa\/projects\/[^/]+\/draft$/.test(pathname)) return 512 * 1024
   return env.MAX_REQUEST_BODY_BYTES
 }
 
@@ -133,7 +117,7 @@ export function createServer(deps: HttpDeps) {
   const serveCeiling = Math.max(
     deps.env.MAX_REQUEST_BODY_BYTES,
     deps.env.MAX_STUDIO_BODY_BYTES,
-    MAX_PENSA_BODY_BYTES,
+    1024 * 1024,
   )
   const app = new Elysia({
     serve: { maxRequestBodySize: serveCeiling },
@@ -218,8 +202,6 @@ export function createServer(deps: HttpDeps) {
       }),
     )
     .use(pensaRoutes(deps.pensa))
-    .use(deps.pensaJourney ? pensaJourneyRoutes(deps.pensaJourney) : new Elysia())
-    .use(pensaTeamRoutes(deps.pensaTeam))
     .use(creationsRoutes(deps.creations))
     .use(
       creationCleanupRoutes({

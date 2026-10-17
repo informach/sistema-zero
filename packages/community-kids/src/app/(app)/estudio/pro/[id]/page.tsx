@@ -28,12 +28,12 @@ export default async function EstudioProPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>
-  searchParams?: Promise<{ tarefa?: string | string[] }>
+  searchParams?: Promise<{ missao?: string | string[] }>
 }) {
   const { id } = await params
   const query = await searchParams
   const taskId =
-    typeof query?.tarefa === 'string' && /^[0-9a-f-]{36}$/i.test(query.tarefa) ? query.tarefa : null
+    typeof query?.missao === 'string' && /^[0-9a-f-]{36}$/i.test(query.missao) ? query.missao : null
   if (!ID_RE.test(id)) redirect('/estudio')
 
   const readServices = prepareStudioServices()

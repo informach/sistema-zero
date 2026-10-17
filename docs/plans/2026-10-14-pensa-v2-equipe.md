@@ -1,5 +1,7 @@
 # Pensa v2: plano em equipe (14/10/2026)
 
+> Histórico: substituído pela [especificação funcional de 16/10/2026](2026-10-16-pensa-reestruturacao-spec.md). Este documento registra decisões anteriores e não define o contrato vigente.
+
 Pedido da dona: *"planejar juntos, na hora de construir, e pode dividir funções. Por exemplo uma
 fica com o estúdio, a programação do estúdio, e a outra fica com as artes no Pinta ou no Molda."*
 Proposta aprovada ("Pode seguir assim"). Esta é a especificação de implementação: contratos,

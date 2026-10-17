@@ -34,8 +34,8 @@ import { PensaFunnelCard } from './pensa-funnel-card'
 
 /** Rótulos amigáveis dos recursos que consomem IA (feature desconhecida = cru). */
 const FEATURE_LABELS: Record<string, string> = {
-  'pensa-chat': 'Pensa — conversa com o Zappy',
-  'pensa-synthesis': 'Pensa — gerações (carta/desenho/missões)',
+  'pensa-planning': 'Pensa — planejamento do jogo',
+  'pensa-help': 'Pensa — ajuda com o projeto',
   'studio-describe': 'Mural — descrição do jogo',
   'studio-zappy': 'Zappy do Studio',
   'studio-builder': 'Construção no Studio Pro',

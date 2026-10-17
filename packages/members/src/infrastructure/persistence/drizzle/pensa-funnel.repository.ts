@@ -2,92 +2,44 @@ import { sql } from 'drizzle-orm'
 import type { PensaFunnelCounts, PensaFunnelReader } from '../../../domain/ports/pensa-funnel.port'
 import type { Database } from './db'
 
-/** A frase do "Tanto faz" que a tela põe no campo (`ANY_ANSWER` do `JourneyApp`). */
-export const PENSA_ANY_ANSWER = 'Tanto faz, escolhe você.'
-
-/**
- * Uma consulta só: a primeira versão (`pensa_cycles.number = 1`) dos jogos v2 criados desde
- * `since`. As perguntas são as mensagens com `choices`; a resposta é a mensagem SEGUINTE, se for
- * da criança, comparada (sem o texto sair do banco) com os rótulos das respostas prontas.
- */
 export class DrizzlePensaFunnelRepository implements PensaFunnelReader {
-  constructor(private readonly db: Database) {}
-
+  constructor(readonly db: Database) {}
   async funnel(since: Date, until: Date): Promise<PensaFunnelCounts> {
-    const rows = await this.db.execute<Record<keyof PensaFunnelCounts, string | number>>(sql`
-      with g as (
-        select j.cycle_id, j.data
-        from members.pensa_projects p
-        join members.pensa_cycles c on c.project_id = p.id and c.number = 1
-        join members.pensa_journeys j on j.cycle_id = c.id
-        where p.created_at >= ${since.toISOString()}::timestamptz
-          and p.created_at <= ${until.toISOString()}::timestamptz
-      ),
-      q as (
-        select g.cycle_id, m.value as question,
-          (select n.value from jsonb_array_elements(g.data->'messages') with ordinality n(value, k)
-            where n.k = m.i + 1) as next
-        from g
-        cross join lateral jsonb_array_elements(coalesce(g.data->'messages', '[]'::jsonb))
-          with ordinality m(value, i)
-        where m.value ? 'choices'
-      ),
-      a as (
-        select q.*,
-          case when q.next->>'role' = 'user' then btrim(q.next->>'text') end as reply
-        from q
-      ),
-      -- Até onde cada jogo CHEGOU: a etapa mais adiantada (0 = só começou). Contar cada etapa
-      -- "chegou aqui ou além" mantém o funil encaixado: testar não exige missão concluída, e
-      -- guardar a versão não exige nenhuma das duas. Contadas soltas, uma etapa podia ter mais
-      -- jogos que a anterior e "quantos ficaram" saía trocado entre as duas.
-      s as (
-        select g.cycle_id,
-          case
-            when g.data->>'stage' = 'closed' and g.data->>'closedReason' = 'met' then 6
-            when jsonb_array_length(coalesce(g.data->'tests', '[]'::jsonb)) > 0 then 5
-            when exists (
-              select 1 from members.pensa_tasks t
-              where t.cycle_id = g.cycle_id and t.progress_status = 'completed') then 4
-            when g.data->>'acceptedProposalId' is not null
-              or jsonb_array_length(coalesce(g.data->'missionIds', '[]'::jsonb)) > 0 then 3
-            when jsonb_typeof(g.data->'proposal') = 'object' then 2
-            when coalesce(g.data->>'intent', '') <> '' then 1
-            else 0
-          end as reached
-        from g
+    const rows = await this.db.execute(sql`
+      with projects as (
+        select id from members.pensa_projects where created_at >= ${since.toISOString()}::timestamptz and created_at <= ${until.toISOString()}::timestamptz
+      ), milestones as (
+        select e.project_key, bool_or(e.kind = 'plan_accepted') as accepted, bool_or(e.kind = 'draft_ready') as ready,
+          bool_or(e.kind = 'first_feature') as feature,
+          bool_or(e.kind = 'construction_complete') as constructed,
+          bool_or(exists(select 1 from jsonb_array_elements(coalesce(e.data->'progressAfter','[]'::jsonb)) progress where progress->>'status' = 'completed' and progress->'verification'->>'source' = 'saved_configuration')) as prepared,
+          bool_or(e.kind = 'project_verified') as verified
+        from members.pensa_execution_events e join projects p on p.id = e.project_key group by e.project_key
       )
       select
-        (select count(*) from g) as "games",
-        (select count(*) from s where reached >= 1) as "told",
-        (select count(distinct cycle_id) from a) as "asked",
-        (select count(*) from a) as "questions",
-        (select count(*) from a where reply = ${PENSA_ANY_ANSWER}) as "answeredAny",
-        (select count(*) from a where reply is not null and reply <> ${PENSA_ANY_ANSWER} and exists (
-          select 1 from jsonb_array_elements(a.question->'choices'->'options') o
-          where btrim(o->>'label') = a.reply)) as "answeredByChoice",
-        (select count(*) from a where a.next is null) as "waitingOnQuestion",
-        (select count(*) from s where reached >= 2) as "proposal",
-        (select count(*) from s where reached >= 3) as "accepted",
-        (select count(*) from s where reached >= 4) as "firstMission",
-        (select count(*) from s where reached >= 5) as "tested",
-        (select count(*) from s where reached >= 6) as "versionDone"
+        (select count(*) from projects) as projects,
+        (select count(distinct m.project_id) from members.pensa_project_messages m join projects p on p.id = m.project_id where m.context = 'planning') as definition_started,
+        (select count(*) from milestones where ready) as draft_ready,
+        (select count(*) from milestones where accepted) as plan_accepted,
+        (select count(*) from milestones where prepared) as setup_completed,
+        (select count(*) from milestones where feature) as first_mission_completed,
+        (select count(*) from milestones where constructed) as construction_completed,
+        (select count(*) from milestones where verified) as project_completed,
+        (select count(distinct d.project_id) from members.pensa_plan_drafts d join projects p on p.id = d.project_id where d.status = 'needs_choice') as pending_choices,
+        (select count(distinct r.project_id) from members.pensa_project_revisions r join projects p on p.id = r.project_id where jsonb_array_length(coalesce(r.snapshot->'definition'->'adaptations','[]'::jsonb)) > 0) as adaptations_accepted
     `)
-    const row = (rows as unknown as Array<Record<string, string | number>>)[0] ?? {}
-    const n = (key: keyof PensaFunnelCounts) => Number(row[key] ?? 0)
+    const r = rows[0]
     return {
-      games: n('games'),
-      told: n('told'),
-      asked: n('asked'),
-      questions: n('questions'),
-      answeredByChoice: n('answeredByChoice'),
-      answeredAny: n('answeredAny'),
-      waitingOnQuestion: n('waitingOnQuestion'),
-      proposal: n('proposal'),
-      accepted: n('accepted'),
-      firstMission: n('firstMission'),
-      tested: n('tested'),
-      versionDone: n('versionDone'),
+      projects: Number(r?.projects ?? 0),
+      definitionStarted: Number(r?.definition_started ?? 0),
+      draftReady: Number(r?.draft_ready ?? 0),
+      planAccepted: Number(r?.plan_accepted ?? 0),
+      setupCompleted: Number(r?.setup_completed ?? 0),
+      firstMissionCompleted: Number(r?.first_mission_completed ?? 0),
+      constructionCompleted: Number(r?.construction_completed ?? 0),
+      projectCompleted: Number(r?.project_completed ?? 0),
+      pendingChoices: Number(r?.pending_choices ?? 0),
+      adaptationsAccepted: Number(r?.adaptations_accepted ?? 0),
     }
   }
 }

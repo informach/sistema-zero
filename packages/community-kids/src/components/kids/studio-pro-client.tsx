@@ -6,6 +6,7 @@ import { STUDIO_PROJECT_FORMAT_VERSION } from '@sistemazero/core/studio'
 // O CSS do Estúdio é gerado pelo `@import` no globals.css (pipeline Tailwind) — ver
 // o comentário no `studio-full-client.tsx`. Aqui só orquestramos o editor PRO.
 import { StudioProEditor } from '@sistemazero/member-shell/components/studio/studio-pro-editor'
+import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
 import { type CreationsCloud, createCreationsCloud } from '../../lib/creations-cloud'
 import { createStoredSyncedMarks } from '../../lib/creations-sync'
@@ -14,12 +15,11 @@ import {
   pensaRestoreRevision,
   reconcilePensaOpen,
 } from '../../lib/pensa-restore-pending'
-import { pensaStudioProjectId } from '../../lib/pensa-studio-link'
 import { createStudioCloudSync } from '../../lib/studio-cloud'
 import { reportStudioError } from '../../lib/studio-error'
 import { EMBEDDED_STUDIO_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
 import { HostChromeAnnouncer, useHostChrome } from './use-host-chrome'
-import { useStudioTaskHandoff } from './use-pensa-task-handoff'
+import { canOpenPensaMission, usePensaMissionHandoff } from './use-pensa-mission-session'
 import { usePensaTeamLibrary } from './use-pensa-team-library'
 import { useStudioActivity } from './use-studio-activity'
 import { useStudioCreationLibraries } from './use-studio-creation-libraries'
@@ -79,11 +79,10 @@ function StudioProClientSession({
   // CONSTANTE calculada por um hook. Trocar por literal é apagar código morto, não mudar
   // comportamento. Se o eixo claro/escuro voltar, ele volta com atributo e hook próprios.
   const theme: 'light' | 'dark' = 'light'
-  const handoff = useStudioTaskHandoff(taskId)
+  const router = useRouter()
+  const handoff = usePensaMissionHandoff(taskId, 'studio', viewerId)
   const boundHandoff =
-    handoff.data?.capability.owned &&
-    (handoff.data.task.progress.outputRef?.projectId === projectId ||
-      pensaStudioProjectId(handoff.data.project.id) === projectId)
+    handoff.data && canOpenPensaMission(handoff.data) && handoff.data.studioProjectId === projectId
       ? handoff.data
       : null
   const teamLibrary = usePensaTeamLibrary({ projectId, viewerId })
@@ -116,16 +115,22 @@ function StudioProClientSession({
     if (cloud.getState().status === 'offline') return leave()
     void cloud.flush({ timeoutMs: EXIT_FLUSH_TIMEOUT_MS }).finally(leave)
   }, [cloud, boundHandoff])
-  const navigateTask = useCallback((path: string) => window.location.assign(path), [])
+  const navigateTask = useCallback(
+    (path: string) => {
+      if (path.startsWith('/estudio/pro/') && path.split('?')[0] === window.location.pathname)
+        router.push(path)
+      else window.location.assign(path)
+    },
+    [router],
+  )
   const taskSession = useStudioTaskSession({
     handoff: boundHandoff,
     projectId,
     viewerId,
     cloud,
     retry: handoff.retry,
-    updateProgress: handoff.updateProgress,
+    update: handoff.update,
     navigate: navigateTask,
-    pro: true,
     narrationEnabled,
   })
   const share = useStudioShare(challenge)
@@ -142,7 +147,7 @@ function StudioProClientSession({
     aiCredits,
     narrationEnabled,
     voiceInputEnabled,
-    taskId: boundHandoff?.task.guide.contractVersion === 2 ? boundHandoff.task.id : null,
+    taskId: boundHandoff?.mission.id ?? null,
   })
 
   // O módulo do Estúdio: é o mesmo que o editor PRO carrega por dentro (chunk já em

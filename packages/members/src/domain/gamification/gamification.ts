@@ -8,9 +8,9 @@ export const XP_VALUES = {
   QUIZ_SCORE_BONUS_MAX: 10,
   /** Baú de fim de unidade (todas as aulas publicadas do módulo concluídas). */
   UNIT_COMPLETE: 25,
-  /** Pensa: etapa do ciclo concluída (advance z→e, e→r, r→o). */
+  /** Pensa: marcos do plano funcional e da construção. */
   PENSA_STAGE_COMPLETE: 15,
-  /** Pensa: ciclo LANÇADO (advance o→done) — vale o prêmio maior, sem acumular com a etapa. */
+  /** Pensa: projeto completo conferido na missão final. */
   PENSA_CYCLE_COMPLETE: 30,
   /** Clube: tópico APROVADO pela equipe (XP puro, sem moeda — sem torneira p/ farmar). */
   CLUBE_THREAD: 5,
@@ -200,18 +200,17 @@ export function coinsSaverBadgeSlugs(lifetimeCoins: number): BadgeSlug[] {
 }
 
 /**
- * Badges por nº de ETAPAS do Pensa concluídas (ledger `pensa_stage_complete`).
- * A 1ª etapa concluída é SEMPRE a Z — a 1ª Carta da Ideia validada.
+ * Conquista pela primeira definição aceita; usa o ledger financeiro histórico.
  */
-export function pensaStageBadgeSlugs(stagesCompleted: number): BadgeSlug[] {
-  return stagesCompleted >= 1 ? ['pensa-first-idea'] : []
+export function pensaDefinitionBadgeSlugs(milestonesCompleted: number): BadgeSlug[] {
+  return milestonesCompleted >= 1 ? ['pensa-first-idea'] : []
 }
 
-/** Badges por nº de planos de versão aprovados (ledger `pensa_cycle_complete`). */
-export function pensaCycleBadgeSlugs(cyclesCompleted: number): BadgeSlug[] {
+/** Conquistas por projetos completos conferidos; preserva os slugs financeiros. */
+export function pensaProjectBadgeSlugs(projectsCompleted: number): BadgeSlug[] {
   const slugs: BadgeSlug[] = []
-  if (cyclesCompleted >= 1) slugs.push('pensa-first-launch')
-  if (cyclesCompleted >= 3) slugs.push('pensa-creator-3')
+  if (projectsCompleted >= 1) slugs.push('pensa-first-launch')
+  if (projectsCompleted >= 3) slugs.push('pensa-creator-3')
   return slugs
 }
 

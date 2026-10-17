@@ -13,8 +13,3 @@ export function pensaPlanIdFromStudioProjectId(studioProjectId: string): string 
   const hex = match[1].toLowerCase()
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`
 }
-
-/** Namespace por perfil: irmãos no mesmo navegador não compartilham o vínculo. */
-export function pensaStudioLinkKey(viewerId: string | null, pensaProjectId: string): string {
-  return `sz:studio:pensa-link:${viewerId ?? 'account'}:${pensaProjectId}`
-}

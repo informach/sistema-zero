@@ -1,5 +1,7 @@
 # Pensa v2 — implementação e ativação
 
+> Histórico: substituído pela [especificação funcional de 16/10/2026](2026-10-16-pensa-reestruturacao-spec.md). Este documento registra decisões anteriores e não define o contrato vigente.
+
 Implementação em 14/10/2026 da [proposta aprovada](2026-10-14-pensa-proposta.md), com rastreabilidade à [revisão R01–R32](2026-10-14-pensa-revisao.md). O código está no workspace; migrações remotas, publicação e liberação para crianças não foram executadas.
 
 Revisão posterior da implementação: [relatório completo](../../.audits/architectural-analysis-2026-10-14-pensa-v2.md). Foram corrigidos nove problemas de privacidade, troca de perfil, respostas atrasadas, validade dos testes, compatibilidade 2D/3D, reparos, tentativas de voz, abertura após restauração e conclusão no Molda. A rodada ampliada passou em **532 testes distintos**, typechecks, lint e novo build completo Kids. As condições de validação real do piloto continuam pendentes.

@@ -32,7 +32,7 @@ export function useKidsStudioTutor({
     () =>
       zappyEnabled
         ? {
-            adapter: createStudioZappyAdapter(undefined, { pensaTaskId: () => task.current }),
+            adapter: createStudioZappyAdapter(undefined, { pensaMissionId: () => task.current }),
             renderListen:
               narrationEnabled && viewerId
                 ? (projectId, messageId) => (

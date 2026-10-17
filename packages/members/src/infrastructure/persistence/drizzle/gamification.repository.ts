@@ -33,8 +33,8 @@ import {
   liveCourseBadgeSlugs,
   liveEncounterBadgeSlugs,
   muralCommenterBadgeSlugs,
-  pensaCycleBadgeSlugs,
-  pensaStageBadgeSlugs,
+  pensaDefinitionBadgeSlugs,
+  pensaProjectBadgeSlugs,
   playsBadgeSlugs,
   quizPerfectBadgeSlugs,
   remixBadgeSlugs,
@@ -290,12 +290,12 @@ export class DrizzleGamificationRepository implements GamificationRepository {
       // Badges do PENSA: 1ª etapa concluída (é sempre a Z = 1ª Carta da Ideia) e
       // 1º/3º ciclo lançado — contados pelo ledger, como as demais de maestria.
       if (newEvents.some((e) => e.sourceType === 'pensa_stage_complete')) {
-        for (const slug of pensaStageBadgeSlugs(await countByType('pensa_stage_complete'))) {
+        for (const slug of pensaDefinitionBadgeSlugs(await countByType('pensa_stage_complete'))) {
           badgeCandidates.add(slug)
         }
       }
       if (newEvents.some((e) => e.sourceType === 'pensa_cycle_complete')) {
-        for (const slug of pensaCycleBadgeSlugs(await countByType('pensa_cycle_complete'))) {
+        for (const slug of pensaProjectBadgeSlugs(await countByType('pensa_cycle_complete'))) {
           badgeCandidates.add(slug)
         }
       }

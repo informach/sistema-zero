@@ -1,234 +1,14 @@
-import type { AiCreditsView } from '@sistemazero/core/ai-credits'
-import type { PensaMissionTarget, PensaNarratableRef } from '@sistemazero/core/pensa'
+import type { PensaDestination, PensaNarratableRef } from '@sistemazero/core/pensa'
 import type { ReactNode } from 'react'
 
-export type PensaStage = 'z' | 'e' | 'r' | 'o' | 'done'
-export type PensaWorkStage = Exclude<PensaStage, 'done'>
-export type PensaArtifactType =
-  | 'idea'
-  | 'game_design'
-  | 'visual_direction'
-  | 'task_plan'
-  | 'plan_review'
-export type PensaTaskDestination = 'pinta' | 'studio' | 'molda'
-export type PensaTaskStatus = 'planned' | 'in_progress' | 'completed'
-export type PensaTaskCategory = 'art' | 'setup' | 'gameplay' | 'scene' | 'ui' | 'polish'
-export type PensaArtKind = 'sprite' | 'background' | 'tileset' | 'tilemap'
-/** `owner` = meu plano; `member` = entrei pelo código de um colega (equipe, 26/09/2026). */
-export type PensaProjectRole = 'owner' | 'member'
-
-export interface PensaCycleView {
-  id: string
-  number: number
-  goal: string | null
-  stage: PensaStage
-  zCompletedAt: string | null
-  eCompletedAt: string | null
-  rCompletedAt: string | null
-  oCompletedAt: string | null
-}
-
-export interface PensaProjectListView {
-  id: string
-  name: string
-  status: 'active' | 'archived'
-  cycleNumber: number
-  stage: PensaStage
-  createdAt: string
-  updatedAt: string
-  /** Ausente = members antigo: a tela trata como plano só meu. */
-  role?: PensaProjectRole
-  team?: {
-    /** Quantos convidados a equipe tem (o dono não conta). */
-    memberCount: number
-    /** 1º nome do dono, só para `member` (`null` = "um colega"). */
-    ownerFirstName: string | null
-  }
-}
-
-export interface PensaArtifactView {
-  id: string
-  stage: PensaStage
-  type: PensaArtifactType
-  version: number
-  status: 'draft' | 'validated'
-  content: unknown
-  createdAt: string
-}
-
-export interface PensaProjectDetailView {
-  id: string
-  name: string
-  status: 'active' | 'archived'
-  createdAt: string
-  updatedAt: string
-  cycles: PensaCycleView[]
-  currentCycle: PensaCycleView
-  artifactsIndex: Array<Omit<PensaArtifactView, 'id' | 'content'>>
-  /** Ausente = members antigo: a tela trata como plano só meu. */
-  role?: PensaProjectRole
-  /** O CÓDIGO não vem aqui (só na rota de membros, para o dono): só se está ligado. */
-  team?: { memberCount: number; shareEnabled: boolean }
-}
-
-export interface PensaGuideItem {
-  id: string
-  text: string
-  hint?: string
-  required: boolean
-}
-export interface PensaTaskGuide {
-  contractVersion?: 2
-  steps: PensaGuideItem[]
-  criteria: PensaGuideItem[]
-}
-export interface PensaPintaTaskContext {
-  kind: 'pinta'
-  assetId: string
-  artKind: PensaArtKind
-  style: 'pixel' | 'vector' | 'either'
-  preset?: string
-  palette: Array<{ role: string; color: string }>
-  appearance: string
-  animations: string[]
-  states: string[]
-  usage: string
-  requiresStudioUse: boolean
-}
-export interface PensaStudioBlockReference {
-  id: string
-  label: string
-  category: string
-  subcategory: string
-  area: 'structure' | 'appearance' | 'molds' | 'start' | 'events' | 'loops' | 'value'
-  extension: string | null
-}
-export interface PensaStudioTaskContext {
-  kind: 'studio'
-  dimension: '2d' | '3d'
-  visualAssetIds: string[]
-  blockIds: string[]
-  blocks: PensaStudioBlockReference[]
-  mechanicDocumentIds: string[]
-  extensionIds: string[]
-}
-export interface PensaMoldaTaskContext {
-  kind: 'molda'
-  /** Inventory reference; the finished creation keeps its own stable ID. */
-  assetId: string
-  artKind: 'model' | 'texture' | 'sky'
-  appearance: string
-  usage: string
-  palette: Array<{ role: string; color: string }>
-}
-export type PensaTaskContext =
-  | PensaPintaTaskContext
-  | PensaStudioTaskContext
-  | PensaMoldaTaskContext
-export type PensaTaskOutputRef =
-  | {
-      kind: 'molda_asset'
-      assetId: string
-      assetName?: string
-      assetKind: 'model' | 'texture' | 'sky'
-    }
-  | { kind: 'pinta_asset'; assetId: string; assetName?: string; usedInStudioAt?: string }
-  | { kind: 'studio_project'; projectId: string; saveRevision?: string }
-
-export interface PensaTaskView {
-  id: string
-  title: string
-  summary: string | null
-  destination: PensaTaskDestination
-  category: PensaTaskCategory
-  estimatedMinutes: number
-  position: number
-  dependencies: string[]
-  guide: PensaTaskGuide
-  context: PensaTaskContext
-  progress: {
-    status: PensaTaskStatus
-    completedStepIds: string[]
-    completedCriteriaIds: string[]
-    outputRef: PensaTaskOutputRef | null
-    startedAt: string | null
-    completedAt: string | null
-    updatedAt: string | null
-  }
-  revision: number
-  supersedesTaskId: string | null
-  /**
-   * Equipe do Pensa v2 (14/10/2026): quem COMEÇOU a missão (com duas artistas, quem começa fica
-   * com ela) e quem a concluiu. Opcionais: ausentes = servidor anterior à equipe.
-   */
-  assigneeProfileId?: string | null
-  completedByProfileId?: string | null
-}
-
-export interface PensaChatMessage {
-  role: 'user' | 'assistant'
-  content: string
-  at: string
-}
-export interface PensaZState {
-  answered: {
-    idea: boolean
-    objective: boolean
-    controls: boolean
-    outcome: boolean
-    dimension: boolean
-  }
-  ready: boolean
-}
-export interface PensaStageView {
-  stage: PensaStage
-  conversation: { messages: PensaChatMessage[]; summary: string | null; messageCount: number }
-  state: Record<string, unknown>
-  artifacts: PensaArtifactView[]
-  tasks: PensaTaskView[]
-  nextTaskId: string | null
-  /**
-   * Quanta ajuda de IA ainda resta para a família. Ausente = "não sei" (members
-   * antigo, indisponível) → o medidor some, nunca vira zero.
-   */
-  credits?: AiCreditsView | null
-}
-
-export interface PensaTaskHandoffView {
-  task: PensaTaskView
-  project: { id: string; name: string }
-  cycle: { id: string; number: number; goal: string | null }
-  capability: { owned: boolean; blockedReason: string | null }
-}
-
-/** Uma pessoa da equipe do plano: 1º nome e foto best-effort (sem nome = "Colega"). */
-export interface PensaTeamPersonView {
-  profileId: string
-  firstName: string | null
-  photoUrl: string | null
-  /** `null` para o dono (ele não "entrou"). */
-  joinedAt: string | null
-}
-
-export interface PensaProjectMembersView {
-  role: PensaProjectRole
-  viewerProfileId: string
-  /** CRU (`AAAAAB`), só para o dono; `null` para membro ou com o código desligado. */
-  shareCode: string | null
-  maxMembers: number
-  owner: PensaTeamPersonView
-  members: PensaTeamPersonView[]
-}
-
-/** O código gerado (`code`) e como ele aparece na tela (`display`, com o prefixo). */
-export interface PensaShareView {
-  code: string
-  display: string
-}
-
-/** `POST /v2/projects/join`: o jogo em que a criança acabou de entrar. */
-export interface PensaJourneyJoinView {
-  projectId: string
+export interface PensaTransport {
+  request<T>(
+    path: string,
+    init?: {
+      method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE'
+      body?: unknown
+    },
+  ): Promise<T>
 }
 
 export class PensaApiError extends Error {
@@ -243,30 +23,16 @@ export class PensaApiError extends Error {
   }
 }
 
-export interface PensaChatInput {
-  projectId: string
-  cycleId: string
-  stage: 'z'
-  message: string
-}
-export interface PensaChatHandlers {
-  onDelta(text: string): void
-  onState?(state: Record<string, unknown>): void
-  onDone(): void
-  onError(error: Error): void
-}
-export interface PensaTransport {
-  request<T>(
-    path: string,
-    init?: { method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE'; body?: unknown },
-  ): Promise<T>
-  streamChat(input: PensaChatInput, handlers: PensaChatHandlers): () => void
-}
 export type PensaMascotPose = 'happy' | 'thinking' | 'celebrating' | 'sleeping'
 
-/** Única integração do Pensa: abrir o Cartão de Criação na ferramenta de destino. */
+/** Browser integration only. Project availability is supplied by the server. */
 export interface PensaHostAdapter {
   viewerId?: string
+  transport: PensaTransport
+  mode: 'kids'
+  theme?: 'light' | 'dark'
+  mascotImages?: Partial<Record<PensaMascotPose, string>>
+  renderListen?: (reference: PensaNarratableRef) => ReactNode
   renderVoiceInput?: (input: {
     value: string
     onChange(value: string): void
@@ -274,55 +40,29 @@ export interface PensaHostAdapter {
     disabled: boolean
     textareaId: string
   }) => ReactNode
-  renderListen?: (ref: PensaNarratableRef) => ReactNode
-  transport: PensaTransport
-  mode: 'kids'
-  theme?: 'light' | 'dark'
-  capabilities: {
-    pintaOwned: boolean
-    studioOwned: boolean
-    /** Pro access is independent of the classic palette; older hosts use studioOwned. */
-    studioProAvailable?: boolean
-    moldaOwned?: boolean
-  }
-  mascotImages?: Partial<Record<PensaMascotPose, string>>
-  onOpenTask(args: PensaMissionTarget): void
-  /**
-   * "Abrir meu jogo" na hora de testar (15/10/2026): abre o JOGO do plano no Estúdio, sem abrir
-   * missão nenhuma. Abrir pela missão marcava a última missão do Estúdio como começada, e ela
-   * quase sempre ainda depende das anteriores (a criança pode testar antes de terminar tudo), o
-   * que o servidor recusava. Sem ele, o Pensa cai na missão do Estúdio mais adiantada.
-   */
-  onOpenGame?(args: { projectId: string; studioAuthoring?: 'blocks' | 'code' }): void
+  onOpenMission(input: {
+    missionId: string
+    destination: PensaDestination
+    studioProjectId: string
+    studioAuthoring: 'blocks' | 'code'
+  }): void
+  onOpenGame(input: {
+    projectId: string
+    studioProjectId: string
+    studioAuthoring: 'blocks' | 'code'
+  }): void
 }
 
-/**
- * Chrome do HOST nos cabeçalhos do Pensa (07/09/2026): o botão de esconder o menu lateral
- * da comunidade. Espelho ESTRUTURAL do `HostChrome` do community-kids (zero import entre
- * pacotes) — só dados; o Pensa desenha com o círculo dele. Sem selo de nuvem: o plano vive
- * no servidor. Chega pelo `PensaHostChromeProvider`; sem Provider é `null`.
- */
 export interface PensaHostChromeMenu {
-  /** Menu escondido = `aria-pressed` do botão. */
   hidden: boolean
-  /** `aria-label` ('Esconder menu' | 'Mostrar menu'). Nunca vira `title`. */
   label: string
-  onToggle: () => void
+  onToggle(): void
 }
-
-/**
- * A seta da GALERIA de volta à seção do host (11/09/2026: "← Criar"). Só a home dos planos
- * desenha; o detalhe de um plano já volta para a home pelo "voltar" dele. É um `<a href>`: o
- * clique simples chama `onNavigate` (navegação do host) e o com Ctrl/Cmd/do meio fica com o
- * navegador. O Pensa espelha só `menu` e `back` (sem nuvem de conta: o plano vive no servidor).
- */
 export interface PensaHostChromeBack {
-  /** O nome acessível ("Voltar para Criar"): a seta é só o ícone. Nunca vira `title`. */
   label: string
   href: string
-  onNavigate: () => void
+  onNavigate(): void
 }
-
 export interface PensaHostChrome {
   menu: PensaHostChromeMenu | null
   back: PensaHostChromeBack | null

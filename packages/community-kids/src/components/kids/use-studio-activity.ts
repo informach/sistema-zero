@@ -7,7 +7,7 @@ import { useCallback, useEffect, useRef } from 'react'
 import { reportClientError } from '../../lib/report-error'
 
 export function useStudioActivity(
-  taskSession: StudioTaskSession | undefined,
+  _taskSession: StudioTaskSession | undefined,
   refreshOnLeave = true,
 ) {
   const router = useRouter()
@@ -22,24 +22,9 @@ export function useStudioActivity(
   const mountedRef = useRef(true)
 
   const handleActivity = useCallback(
-    (project: Project, ctx?: { reason: 'autosave' | 'flush' }) => {
+    (_project: Project, ctx?: { reason: 'autosave' | 'flush' }) => {
       if (ctx?.reason !== 'autosave') return
-      if (
-        taskSession &&
-        !(taskSession.guide.contractVersion === 2 && taskSession.progress.status === 'completed')
-      ) {
-        void taskSession
-          .onProgress({
-            outputRef: {
-              kind: 'studio_project',
-              projectId: project.id,
-              saveRevision: String(project.updatedAt),
-            },
-          })
-          .catch((error: unknown) =>
-            reportClientError(error instanceof Error ? error : new Error(String(error))),
-          )
-      }
+
       if (activityBeaconedRef.current) return
       activityBeaconedRef.current = true
       fetch('/api/studio/activity', { method: 'POST' })
@@ -54,7 +39,7 @@ export function useStudioActivity(
           reportClientError(error instanceof Error ? error : new Error(String(error))),
         )
     },
-    [taskSession, refreshOnLeave],
+    [refreshOnLeave],
   )
 
   // ⚠️⚠️ NUNCA `router.refresh()` com o editor aberto. O jogo aberto vive só na memória do

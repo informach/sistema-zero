@@ -1,602 +1,522 @@
 import 'server-only'
-import { journeyLevelAtLeast, MOLDA_TOOL_BAND_LEVELS } from '@sistemazero/core/journey'
-import { MOLDA_TOOL_FAMILIES } from '@sistemazero/molda/tools'
-import { NextResponse } from 'next/server'
+import {
+  PENSA_LIMITS,
+  type PensaActor,
+  PensaCreateProjectRequestSchema,
+  PensaDraftAcceptRequestSchema,
+  PensaDraftEditRequestSchema,
+  PensaJoinRequestSchema,
+  PensaMessagePageSchema,
+  PensaMessageRequestSchema,
+  PensaMetadataRequestSchema,
+  PensaMissionCompleteRequestSchema,
+  PensaMissionDeliveriesRequestSchema,
+  PensaMissionNoteRequestSchema,
+  PensaMissionReopenRequestSchema,
+  PensaMissionStartRequestSchema,
+  PensaRestoreRequestSchema,
+  PensaRolesRequestSchema,
+  validatePensaPlan,
+} from '@sistemazero/core/pensa'
+import { after, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { isReadonlyImpersonation } from '../lib/act'
 import { isPrivilegedRole } from '../lib/studio-tier'
-import type { PensaArtifactView, PensaStageView } from '../lib/types'
 import type { MembersClient } from '../server/clients'
+import { signCreationDownload } from '../server/creation-download'
 import { hasAiAppsLevel } from '../server/creative-apps-access'
-import { auditPlan } from '../server/pensa-agents/plan-audit'
-import {
-  availablePlannerCatalog,
-  IdeaArtifactSchema,
-  VisualDirectionArtifactSchema,
-} from '../server/pensa-agents/planner-contract'
-import { getPensaCapabilities } from '../server/pensa-capabilities'
+import { loadPensaContext, type PensaContextMembers } from '../server/pensa/context'
+import { PensaUnavailable } from '../server/pensa/errors'
+import { workPensa } from '../server/pensa/planning'
+import { pensaNarrativeRefusal, privatePensaInput, redactPensaText } from '../server/pensa/privacy'
+import { protectPensaProject, restorePensaProject } from '../server/pensa/protection'
+import type { PensaClient } from '../server/pensa-client'
+import { pensaLlmAvailable } from '../server/pensa-llm'
+import { r2PresignGetUgc } from '../server/r2'
 import type { SessionModule } from '../server/session'
 
-export type PensaRoutes = ReturnType<typeof createPensaRoutes>
-
-const UUID = z.uuid()
-const PROJECT_NAME = z.string().trim().min(2).max(120)
-const WorkStage = z.enum(['z', 'e', 'r', 'o'])
-const Stage = z.enum(['z', 'e', 'r', 'o', 'done'])
-const ClientEditableArtifactType = z.enum(['idea', 'game_design', 'visual_direction'])
-export const ClientValidatableArtifactType = z.enum([
-  'idea',
-  'game_design',
-  'visual_direction',
-  'task_plan',
-])
-const Destination = z.enum(['pinta', 'studio', 'molda'])
-const Category = z.enum(['art', 'setup', 'gameplay', 'scene', 'ui', 'polish'])
-
-const invalid = () =>
+const uuid = z.uuid()
+const RequestId = z.strictObject({ requestId: uuid })
+const WorkRequest = z.strictObject({ requestId: uuid, retry: z.boolean().optional() })
+const error = (status: number, message: string, code = 'OPERATION_FAILED') =>
   NextResponse.json(
-    { error: { code: 'VALIDATION_ERROR', message: 'Corpo inválido' } },
-    { status: 400 },
+    { error: { code, message } },
+    { status, headers: { 'Cache-Control': 'private, no-store' } },
   )
-const notFound = () => NextResponse.json({ error: { code: 'NOT_FOUND' } }, { status: 404 })
-const response = (status: number, body: unknown) =>
-  NextResponse.json(body ?? { ok: status === 200 }, { status })
+const reply = (response: { status: number; body: unknown }) =>
+  response.status === 204
+    ? new NextResponse(null, { status: 204 })
+    : NextResponse.json(response.body, {
+        status: response.status,
+        headers: { 'Cache-Control': 'private, no-store' },
+      })
 
-const CreateProjectBody = z.strictObject({ name: PROJECT_NAME })
-// O código como a criança digitou (o members normaliza: minúsculas, espaços, hífen, prefixo).
-const JoinBody = z.strictObject({ code: z.string().trim().min(4).max(16) })
-const UpdateProjectBody = z
-  .strictObject({
-    name: PROJECT_NAME.optional(),
-    status: z.enum(['active', 'archived']).optional(),
-  })
-  .refine((body) => Object.values(body).some((value) => value !== undefined))
-const CreateCycleBody = z.strictObject({ goal: z.string().trim().min(2).max(500) })
-export const ClientArtifactBody = z.strictObject({
-  stage: WorkStage,
-  type: ClientEditableArtifactType,
-  content: z.unknown(),
-})
-const AdvanceBody = z.strictObject({ from: WorkStage })
+async function readBody(request: Request, limit: number): Promise<unknown> {
+  const declared = Number(request.headers.get('content-length'))
+  if (Number.isFinite(declared) && declared > limit)
+    throw new PensaUnavailable(
+      'Este pedido ficou grande. Revise o texto antes de enviar.',
+      'PAYLOAD_TOO_LARGE',
+      413,
+    )
+  if (!request.body) return null
+  const reader = request.body.getReader()
+  const chunks: Uint8Array[] = []
+  let bytes = 0
+  for (;;) {
+    const next = await reader.read()
+    if (next.done) break
+    bytes += next.value.byteLength
+    if (bytes > limit) {
+      await reader.cancel()
+      throw new PensaUnavailable(
+        'Este pedido ficou grande. Revise o texto antes de enviar.',
+        'PAYLOAD_TOO_LARGE',
+        413,
+      )
+    }
+    chunks.push(next.value)
+  }
+  const buffer = new Uint8Array(bytes)
+  let offset = 0
+  for (const chunk of chunks) {
+    buffer.set(chunk, offset)
+    offset += chunk.length
+  }
+  try {
+    return JSON.parse(new TextDecoder().decode(buffer))
+  } catch {
+    throw new PensaUnavailable(
+      'Não consegui entender esse pedido. Revise e tente de novo.',
+      'VALIDATION_ERROR',
+      400,
+    )
+  }
+}
 
-const GuideItem = z.strictObject({
-  id: z.string().min(1).max(100),
-  text: z.string().min(1).max(500),
-  hint: z.string().max(500).optional(),
-  required: z.boolean(),
-})
-const Guide = z.strictObject({
-  contractVersion: z.literal(2).optional(),
-  steps: z.array(GuideItem).min(1).max(20),
-  criteria: z.array(GuideItem).min(1).max(10),
-})
-const PintaContext = z.strictObject({
-  kind: z.literal('pinta'),
-  assetId: z.string().min(1).max(100),
-  artKind: z.enum(['sprite', 'background', 'tileset', 'tilemap']),
-  style: z.enum(['pixel', 'vector', 'either']),
-  preset: z.string().max(100).optional(),
-  palette: z
-    .array(z.strictObject({ role: z.string().min(1).max(80), color: z.string().max(20) }))
-    .max(16),
-  appearance: z.string().min(1).max(2000),
-  animations: z.array(z.string().max(200)).max(20),
-  states: z.array(z.string().max(200)).max(20),
-  usage: z.string().min(1).max(2000),
-  requiresStudioUse: z.boolean(),
-})
-const StudioBlock = z.strictObject({
-  id: z.string().min(1).max(160),
-  label: z.string().min(1).max(200),
-  category: z.string().min(1).max(100),
-  subcategory: z.string().min(1).max(100),
-  area: z.enum(['structure', 'appearance', 'start', 'events', 'loops', 'value']),
-  extension: z.string().max(100).nullable(),
-})
-const StudioContext = z.strictObject({
-  kind: z.literal('studio'),
-  dimension: z.enum(['2d', '3d']),
-  visualAssetIds: z.array(z.string().min(1).max(100)).max(20),
-  blockIds: z.array(z.string().max(160)).max(80),
-  blocks: z.array(StudioBlock).max(80),
-  mechanicDocumentIds: z.array(z.string().max(100)).max(10),
-  extensionIds: z.array(z.string().max(100)).max(10),
-})
-const MoldaContext = z.strictObject({
-  kind: z.literal('molda'),
-  assetId: z.string().min(1).max(100),
-  artKind: z.enum(['model', 'texture', 'sky']),
-  appearance: z.string().min(1).max(2000),
-  usage: z.string().min(1).max(2000),
-  palette: z
-    .array(z.strictObject({ role: z.string().min(1).max(80), color: z.string().max(20) }))
-    .max(16),
-})
-const TaskContext = z.discriminatedUnion('kind', [PintaContext, StudioContext, MoldaContext])
-const TaskInput = z
-  .strictObject({
-    key: z.string().min(1).max(100),
-    title: z.string().min(1).max(200),
-    summary: z.string().max(2000).nullable().optional(),
-    destination: Destination,
-    category: Category,
-    estimatedMinutes: z.number().int().min(5).max(240),
-    dependencies: z.array(z.string().min(1).max(100)).max(40).optional(),
-    guide: Guide,
-    context: TaskContext,
-  })
-  .refine((task) => task.destination === task.context.kind)
-const TasksBody = z.strictObject({ tasks: z.array(TaskInput).min(1).max(60) })
-const TaskUpdateBody = z
-  .strictObject({
-    position: z.number().int().min(0).max(1000).optional(),
-    title: z.string().min(1).max(200).optional(),
-    summary: z.string().max(2000).nullable().optional(),
-    destination: Destination.optional(),
-    category: Category.optional(),
-    estimatedMinutes: z.number().int().min(5).max(240).optional(),
-    dependencies: z.array(UUID).max(40).optional(),
-    guide: Guide.optional(),
-    context: TaskContext.optional(),
-  })
-  .refine((body) => Object.values(body).some((value) => value !== undefined))
-const OutputRef = z.discriminatedUnion('kind', [
-  z.strictObject({
-    kind: z.literal('molda_asset'),
-    assetId: z.string().min(1).max(200),
-    assetName: z.string().max(200).optional(),
-    assetKind: z.enum(['model', 'texture', 'sky']),
-  }),
-  z.strictObject({
-    kind: z.literal('pinta_asset'),
-    assetId: z.string().min(1).max(200),
-    assetName: z.string().max(200).optional(),
-    usedInStudioAt: z.iso.datetime().optional(),
-  }),
-  z.strictObject({
-    kind: z.literal('studio_project'),
-    projectId: z.string().min(1).max(200),
-    saveRevision: z.string().max(200).optional(),
-  }),
-])
-const ProgressBody = z
-  .strictObject({
-    status: z.enum(['planned', 'in_progress', 'completed']).optional(),
-    completedStepIds: z.array(z.string().min(1).max(100)).max(20).optional(),
-    completedCriteriaIds: z.array(z.string().min(1).max(100)).max(10).optional(),
-    outputRef: OutputRef.nullable().optional(),
-    // Opcional (15/10/2026): no Pensa v2 o Estúdio anota a missão ao abrir o jogo SEM a versão
-    // da página (o members junta com o que sabe e protege a escrita); o guia segue mandando.
-    expectedUpdatedAt: z.iso.datetime().nullable().optional(),
-  })
-  .refine((body) => Object.values(body).some((value) => value !== undefined))
-
-/** BFF fino do planejador; autoria do plano e progresso das ferramentas ficam separados. */
-export function createPensaRoutes(deps: { members: MembersClient; session: SessionModule }) {
-  const { members, session } = deps
-  async function requireWritableSession(): Promise<NextResponse | null> {
+export function createPensaRoutes({
+  members,
+  session,
+  loadContext = loadPensaContext,
+  worker = workPensa,
+  schedule = after,
+  storage = { presignGet: r2PresignGetUgc },
+}: {
+  members: PensaClient &
+    PensaContextMembers &
+    Pick<MembersClient, 'getAiCredits' | 'getGamification'>
+  session: Pick<SessionModule, 'getSession'>
+  loadContext?: typeof loadPensaContext
+  worker?: typeof workPensa
+  schedule?: (callback: () => Promise<void>) => void
+  storage?: { presignGet: typeof r2PresignGetUgc }
+}) {
+  async function handle(request: Request, route: { params: Promise<{ path?: string[] }> }) {
     const user = await session.getSession()
-    if (isReadonlyImpersonation(user)) {
-      return NextResponse.json(
-        { error: { code: 'IMPERSONATION_READONLY', message: 'Sessão de suporte é só leitura.' } },
-        { status: 403 },
+    if (!user) return error(401, 'Entre de novo para continuar.', 'UNAUTHENTICATED')
+    if (user.kids?.kind !== 'student' && !isPrivilegedRole(user.role))
+      return error(403, 'Abra seu perfil na Comunidade Kids.', 'KIDS_PROFILE_REQUIRED')
+    if (request.headers.get('x-sz-viewer') !== user.id)
+      return error(
+        409,
+        'O perfil mudou. Abra esta página de novo para continuar.',
+        'VIEWER_MISMATCH',
       )
+    if (request.method !== 'GET' && isReadonlyImpersonation(user))
+      return error(403, 'A sessão de suporte é só leitura.', 'IMPERSONATION_READONLY')
+    const actor: PensaActor = {
+      profileId: user.id,
+      accountId: user.activeProfile?.accountId ?? user.id,
+      privileged: isPrivilegedRole(user.role),
     }
-    // Sem sessão, o members preserva o 401 autoritativo em vez de um 403 enganoso.
-    if (!user) return null
-    if (!(await hasAiAppsLevel(members, user.role))) {
-      return NextResponse.json(
-        {
-          error: {
-            code: 'CAREER_LEVEL_REQUIRED',
-            message: 'O Pensa abre quando você chegar no nível Inventor(a).',
-          },
-        },
-        { status: 403 },
-      )
+    const { path = [] } = await route.params
+    const [resource, id, action, leaf, tail] = path
+    const expectedLength =
+      resource === 'missions'
+        ? 3
+        : action === 'operations'
+          ? tail
+            ? 5
+            : 4
+          : action === 'team-art'
+            ? leaf
+              ? 6
+              : 3
+            : action === 'checkpoints'
+              ? leaf
+                ? 5
+                : 3
+              : action === 'draft' || action === 'members'
+                ? leaf
+                  ? 4
+                  : 3
+                : action
+                  ? 3
+                  : id
+                    ? 2
+                    : 1
+    if (path.length !== expectedLength) return error(404, 'Ação não encontrada.')
+    const queue = (projectId: string, retry = false) =>
+      schedule(() => worker({ members, user, actor, projectId, retry }))
+    const drain = () =>
+      schedule(async () => {
+        const response = await members.pensaRewardsWork()
+        if (response.status !== 200)
+          console.error('[pensa] entregas pendentes', { status: response.status })
+      })
+    const projectReply = async (projectId: string, response: { status: number; body: unknown }) => {
+      if (response.status < 200 || response.status >= 300) return reply(response)
+      drain()
+      const context = await loadContext(members, user, actor, projectId, '')
+      return reply({ status: response.status, body: context.view })
     }
-    return null
-  }
-  const parseId = (id: string) => UUID.safeParse(id).success
-  const latest = (stage: PensaStageView, type: string): PensaArtifactView | null =>
-    stage.artifacts.find((artifact) => artifact.type === type) ?? null
-
-  async function auditBeforeApproval(cycleId: string): Promise<NextResponse | null> {
-    const [user, oStage, zStage, eStage, gamification] = await Promise.all([
-      session.getSession(),
-      members.pensaGetStage(cycleId, 'o'),
-      members.pensaGetStage(cycleId, 'z'),
-      members.pensaGetStage(cycleId, 'e'),
-      members.getGamification(),
-    ])
-    if (
-      !user ||
-      oStage.status !== 200 ||
-      !oStage.body ||
-      zStage.status !== 200 ||
-      !zStage.body ||
-      eStage.status !== 200 ||
-      !eStage.body ||
-      gamification.status !== 200
-    ) {
-      return NextResponse.json(
-        {
-          error: {
-            code: 'PENSA_AUDIT_UNAVAILABLE',
-            message: 'Não consegui conferir o plano agora. Tente novamente.',
-          },
-        },
-        { status: 503 },
-      )
-    }
-    const idea = IdeaArtifactSchema.safeParse(latest(zStage.body, 'idea')?.content)
-    const visual = VisualDirectionArtifactSchema.safeParse(
-      latest(eStage.body, 'visual_direction')?.content,
-    )
-    if (!idea.success || !visual.success) {
-      return NextResponse.json(
-        {
-          error: {
-            code: 'PENSA_PLAN_AUDIT_STALE',
-            message: 'A ideia ou a Bíblia Visual mudou. Revise o plano de novo.',
-          },
-        },
-        { status: 409 },
-      )
-    }
-    const capabilities = await getPensaCapabilities(
-      members,
-      gamification.body?.level?.slug,
-      user.role,
-    )
-    if (!capabilities)
-      return NextResponse.json({ error: { code: 'PENSA_TIER_UNAVAILABLE' } }, { status: 503 })
-    const { tier } = capabilities
-    const review = auditPlan(
-      oStage.body,
-      availablePlannerCatalog(tier, idea.data.dimension),
-      idea.data.dimension,
-      true,
-      visual.data,
-      capabilities,
-    )
-    if (review.approved) return null
-    return NextResponse.json(
-      {
-        error: {
-          code: 'PENSA_PLAN_AUDIT_STALE',
-          message: 'O plano mudou ou usa algo que não está disponível. Revise novamente.',
-        },
-        details: { findings: review.findings },
-      },
-      { status: 409 },
-    )
-  }
-
-  const pensaProjects = {
-    GET: async () => {
-      const result = await members.pensaListProjects()
-      return response(result.status, result.body)
-    },
-    POST: async (req: Request) => {
-      const readonly = await requireWritableSession()
-      if (readonly) return readonly
-      const parsed = CreateProjectBody.safeParse(await req.json().catch(() => null))
-      if (!parsed.success) return invalid()
-      const result = await members.pensaCreateProject(parsed.data)
-      return response(result.status, result.body)
-    },
-  }
-
-  const pensaProject = {
-    GET: async (_req: Request, ctx: { params: Promise<{ projectId: string }> }) => {
-      const { projectId } = await ctx.params
-      if (!parseId(projectId)) return notFound()
-      const result = await members.pensaGetProject(projectId)
-      return response(result.status, result.body)
-    },
-    PATCH: async (req: Request, ctx: { params: Promise<{ projectId: string }> }) => {
-      const readonly = await requireWritableSession()
-      if (readonly) return readonly
-      const { projectId } = await ctx.params
-      if (!parseId(projectId)) return notFound()
-      const parsed = UpdateProjectBody.safeParse(await req.json().catch(() => null))
-      if (!parsed.success) return invalid()
-      const result = await members.pensaUpdateProject(projectId, parsed.data)
-      return response(result.status, result.body)
-    },
-    DELETE: async (_req: Request, ctx: { params: Promise<{ projectId: string }> }) => {
-      const readonly = await requireWritableSession()
-      if (readonly) return readonly
-      const { projectId } = await ctx.params
-      if (!parseId(projectId)) return notFound()
-      const result = await members.pensaDeleteProject(projectId)
-      return response(result.status, result.body)
-    },
-  }
-
-  // ── Equipe do plano (26/09/2026) ──
-  const pensaJoin = {
-    POST: async (req: Request) => {
-      const readonly = await requireWritableSession()
-      if (readonly) return readonly
-      const parsed = JoinBody.safeParse(await req.json().catch(() => null))
-      if (!parsed.success) return invalid()
-      const result = await members.pensaJoinProject(parsed.data)
-      return response(result.status, result.body)
-    },
-  }
-
-  const pensaShare = {
-    POST: async (_req: Request, ctx: { params: Promise<{ projectId: string }> }) => {
-      const readonly = await requireWritableSession()
-      if (readonly) return readonly
-      const { projectId } = await ctx.params
-      if (!parseId(projectId)) return notFound()
-      const result = await members.pensaShareProject(projectId)
-      return response(result.status, result.body)
-    },
-    DELETE: async (_req: Request, ctx: { params: Promise<{ projectId: string }> }) => {
-      const readonly = await requireWritableSession()
-      if (readonly) return readonly
-      const { projectId } = await ctx.params
-      if (!parseId(projectId)) return notFound()
-      const result = await members.pensaUnshareProject(projectId)
-      return response(result.status, result.body)
-    },
-  }
-
-  const pensaMembers = {
-    GET: async (_req: Request, ctx: { params: Promise<{ projectId: string }> }) => {
-      const { projectId } = await ctx.params
-      if (!parseId(projectId)) return notFound()
-      const result = await members.pensaListProjectMembers(projectId)
-      return response(result.status, result.body)
-    },
-  }
-
-  const pensaMember = {
-    DELETE: async (
-      _req: Request,
-      ctx: { params: Promise<{ projectId: string; profileId: string }> },
-    ) => {
-      const readonly = await requireWritableSession()
-      if (readonly) return readonly
-      const { projectId, profileId } = await ctx.params
-      // `me` = sair da equipe (o pacote não conhece o próprio profileId).
-      if (!parseId(projectId) || (profileId !== 'me' && !parseId(profileId))) return notFound()
-      const result = await members.pensaRemoveProjectMember(projectId, profileId)
-      return response(result.status, result.body)
-    },
-  }
-
-  const pensaCycleCreate = {
-    POST: async (req: Request, ctx: { params: Promise<{ projectId: string }> }) => {
-      const readonly = await requireWritableSession()
-      if (readonly) return readonly
-      const { projectId } = await ctx.params
-      const parsed = CreateCycleBody.safeParse(await req.json().catch(() => null))
-      if (!parseId(projectId) || !parsed.success) return invalid()
-      const result = await members.pensaCreateCycle(projectId, parsed.data.goal)
-      return response(result.status, result.body)
-    },
-  }
-
-  const pensaStage = {
-    GET: async (_req: Request, ctx: { params: Promise<{ cycleId: string; stage: string }> }) => {
-      const { cycleId, stage } = await ctx.params
-      if (!parseId(cycleId) || !Stage.safeParse(stage).success) return notFound()
-      const result = await members.pensaGetStage(cycleId, stage)
-      return response(result.status, result.body)
-    },
-  }
-
-  const pensaArtifactCreate = {
-    POST: async (req: Request, ctx: { params: Promise<{ cycleId: string }> }) => {
-      const readonly = await requireWritableSession()
-      if (readonly) return readonly
-      const { cycleId } = await ctx.params
-      const parsed = ClientArtifactBody.safeParse(await req.json().catch(() => null))
-      if (!parseId(cycleId) || !parsed.success) return invalid()
-      const result = await members.pensaSaveArtifact(cycleId, parsed.data)
-      return response(result.status, result.body)
-    },
-  }
-
-  const pensaArtifactValidate = {
-    POST: async (_req: Request, ctx: { params: Promise<{ cycleId: string; type: string }> }) => {
-      const readonly = await requireWritableSession()
-      if (readonly) return readonly
-      const { cycleId, type } = await ctx.params
-      const parsed = ClientValidatableArtifactType.safeParse(type)
-      if (!parseId(cycleId) || !parsed.success) return notFound()
-      const result = await members.pensaValidateArtifact(cycleId, parsed.data)
-      return response(result.status, result.body)
-    },
-  }
-
-  const pensaAdvance = {
-    POST: async (req: Request, ctx: { params: Promise<{ cycleId: string }> }) => {
-      const readonly = await requireWritableSession()
-      if (readonly) return readonly
-      const { cycleId } = await ctx.params
-      const parsed = AdvanceBody.safeParse(await req.json().catch(() => null))
-      if (!parseId(cycleId) || !parsed.success) return invalid()
-      if (parsed.data.from === 'o') {
-        const auditFailure = await auditBeforeApproval(cycleId)
-        if (auditFailure) return auditFailure
+    try {
+      const body =
+        request.method === 'GET'
+          ? null
+          : await readBody(
+              request,
+              resource === 'projects' && action === 'draft' && request.method === 'PATCH'
+                ? PENSA_LIMITS.draftBodyBytes
+                : 16 * 1024,
+            )
+      if (resource === 'credits' && path.length === 1 && request.method === 'GET') {
+        const response = await members.getAiCredits()
+        return reply({
+          status: 200,
+          body: { credits: response.status === 200 ? response.body : null },
+        })
       }
-      const result = await members.pensaAdvance(cycleId, parsed.data.from)
-      return response(result.status, result.body)
-    },
-  }
-
-  const taskCollection =
-    (method: 'PUT' | 'POST') =>
-    async (req: Request, ctx: { params: Promise<{ cycleId: string }> }) => {
-      const readonly = await requireWritableSession()
-      if (readonly) return readonly
-      const { cycleId } = await ctx.params
-      const parsed = TasksBody.safeParse(await req.json().catch(() => null))
-      if (!parseId(cycleId) || !parsed.success) return invalid()
-      const result =
-        method === 'PUT'
-          ? await members.pensaReplaceTasks(cycleId, parsed.data.tasks)
-          : await members.pensaAppendTasks(cycleId, parsed.data.tasks)
-      return response(result.status, result.body)
-    }
-  const pensaTasks = { PUT: taskCollection('PUT'), POST: taskCollection('POST') }
-
-  const pensaTask = {
-    PATCH: async (req: Request, ctx: { params: Promise<{ taskId: string }> }) => {
-      const readonly = await requireWritableSession()
-      if (readonly) return readonly
-      const { taskId } = await ctx.params
-      const parsed = TaskUpdateBody.safeParse(await req.json().catch(() => null))
-      if (!parseId(taskId) || !parsed.success) return invalid()
-      const result = await members.pensaUpdateTask(taskId, parsed.data)
-      return response(result.status, result.body)
-    },
-    DELETE: async (_req: Request, ctx: { params: Promise<{ taskId: string }> }) => {
-      const readonly = await requireWritableSession()
-      if (readonly) return readonly
-      const { taskId } = await ctx.params
-      if (!parseId(taskId)) return notFound()
-      const result = await members.pensaDeleteTask(taskId)
-      return response(result.status, result.body)
-    },
-  }
-
-  const pensaTaskHandoff = {
-    GET: async (_req: Request, ctx: { params: Promise<{ taskId: string }> }) => {
-      const { taskId } = await ctx.params
-      if (!parseId(taskId)) return notFound()
-      const result = await members.pensaGetTaskHandoff(taskId)
-      if (result.status === 200 && result.body?.task.guide.contractVersion === 2) {
-        const user = await session.getSession()
-        if (!user)
-          return NextResponse.json(
-            { error: { code: 'UNAUTHENTICATED', message: 'Entre de novo para continuar.' } },
-            { status: 401 },
+      if (resource === 'projects' && !id) {
+        if (request.method === 'GET')
+          return reply(
+            await members.pensaListProjects(
+              new URL(request.url).searchParams.get('status') === 'archived'
+                ? 'archived'
+                : 'active',
+            ),
           )
-        // ⚠️ Falha de LEITURA não é recusa (full review de 14/10/2026): sem gamificação ou sem as
-        // capacidades, a resposta era `owned:false` com "Os recursos desta missão mudaram", e um
-        // soluço de rede trancava o guia. Agora é 503 recuperável; só a recusa real tranca.
-        const unavailable = (cause?: unknown) => {
-          if (cause !== undefined)
-            console.error('[pensa-v2] conferência da missão falhou', {
-              taskId,
-              name: cause instanceof Error ? cause.name : typeof cause,
-            })
-          return NextResponse.json(
-            {
-              error: {
-                code: 'PENSA_CAPABILITIES_UNAVAILABLE',
-                message: 'Não consegui conferir seus recursos agora. Tente de novo em instantes.',
-              },
-            },
-            { status: 503, headers: { 'Retry-After': '5' } },
+        if (request.method !== 'POST') return error(405, 'Ação indisponível.')
+        if (!(await hasAiAppsLevel(members, user.role)))
+          return error(403, 'O Pensa abre no nível Inventor(a).', 'CAREER_LEVEL_REQUIRED')
+        const parsed = PensaCreateProjectRequestSchema.parse(body)
+        const refusal = pensaNarrativeRefusal(parsed.message)
+        if (refusal) return error(422, refusal, 'PENSA_MESSAGE_REVIEW')
+        const created = await members.pensaCreateProject({
+          ...parsed,
+          message: redactPensaText(parsed.message).text,
+        })
+        if (created.status === 200 && created.body.operation) queue(created.body.project.id)
+        return created.status === 200 && created.body
+          ? await projectReply(created.body.project.id, created)
+          : reply(created)
+      }
+      if (
+        resource === 'projects' &&
+        id === 'join' &&
+        path.length === 2 &&
+        request.method === 'POST'
+      )
+        return reply(await members.pensaJoinProject(PensaJoinRequestSchema.parse(body)))
+      if (!id || !uuid.safeParse(id).success)
+        return error(404, 'Projeto não encontrado.', 'PROJECT_GONE')
+      if (resource === 'missions') {
+        const target = await members.pensaMissionContext(actor, id)
+        if (target.status !== 200 || !target.body) return reply(target)
+        const context = await loadContext(members, user, actor, target.body.projectId, '')
+        if (action === 'handoff' && request.method === 'GET')
+          return reply(await members.pensaMissionHandoff(actor, id, context.capabilities))
+        if (action === 'start' && request.method === 'POST')
+          return reply(
+            await members.pensaStartMission(
+              actor,
+              id,
+              PensaMissionStartRequestSchema.parse(body),
+              context.capabilities,
+            ),
           )
+        if (action === 'note' && request.method === 'PATCH')
+          return reply(
+            await members.pensaMissionNote(
+              actor,
+              id,
+              PensaMissionNoteRequestSchema.parse(body),
+              context.capabilities,
+            ),
+          )
+        if (action === 'deliveries' && request.method === 'PATCH')
+          return reply(
+            await members.pensaMissionDeliveries(
+              actor,
+              id,
+              PensaMissionDeliveriesRequestSchema.parse(body),
+              context.capabilities,
+            ),
+          )
+        if (action === 'reopen' && request.method === 'POST')
+          return reply(
+            await members.pensaReopenMission(
+              actor,
+              id,
+              PensaMissionReopenRequestSchema.parse(body),
+              context.capabilities,
+            ),
+          )
+        if ((action === 'complete' || action === 'reconfirm') && request.method === 'POST') {
+          const input = PensaMissionCompleteRequestSchema.parse(body)
+          const mission = context.view.revision?.plan.missions.find((item) => item.id === id)
+          const game = context.capabilities.observedGame
+          const inspection =
+            mission?.kind === 'setup' && game
+              ? { creation: game.creation, installedExtensionIds: game.installedExtensionIds }
+              : undefined
+          const response =
+            action === 'complete'
+              ? await members.pensaCompleteMission(
+                  actor,
+                  id,
+                  input,
+                  context.capabilities,
+                  inspection,
+                )
+              : await members.pensaReconfirmMission(
+                  actor,
+                  id,
+                  input,
+                  context.capabilities,
+                  inspection,
+                )
+          if (response.status === 200) drain()
+          return reply(response)
         }
-        let level: string | undefined
-        let caps: Awaited<ReturnType<typeof getPensaCapabilities>>
-        let studioAuthoring: 'blocks' | 'code' = 'blocks'
-        let journey: Awaited<ReturnType<typeof members.pensaJourneyGet>>
-        try {
-          journey = await members.pensaJourneyGet(result.body.project.id)
-          if (journey.status !== 200 || !journey.body) return unavailable()
-          studioAuthoring = journey.body.studioAuthoring ?? 'blocks'
-          const gam = await members.getGamificationReadonly()
-          level = gam.status === 200 ? gam.body?.level?.slug : undefined
-          caps = level
-            ? await getPensaCapabilities(members, level, user.role, studioAuthoring)
-            : null
-        } catch (cause) {
-          return unavailable(cause)
-        }
-        if (!caps) return unavailable()
-        const task = result.body.task
-        const available =
-          task.destination === 'studio'
-            ? caps.studioAvailable
-            : task.destination === 'pinta'
-              ? caps.pintaAvailable
-              : caps.moldaAvailable
-        const catalog =
-          task.context.kind === 'studio'
-            ? availablePlannerCatalog(caps.tier, task.context.dimension)
-            : null
-        let blocked =
-          !available ||
-          (task.context.kind === 'studio' &&
-            studioAuthoring !== 'code' &&
-            (!catalog ||
-              task.context.blockIds.some((id) => !catalog.blocks.some((b) => b.type === id))))
-        if (task.destination === 'molda') {
-          const mission = journey.body.journey.proposal?.missions[task.position]
-          const availableTools: string[] = MOLDA_TOOL_FAMILIES.filter(
-            (tool) =>
-              isPrivilegedRole(user.role) ||
-              journeyLevelAtLeast(level, MOLDA_TOOL_BAND_LEVELS[tool.band]),
-          ).map((tool) => tool.id)
-          blocked ||=
-            mission?.destination !== 'molda' ||
-            mission.toolIds.some((id) => !availableTools.includes(id))
-        }
-        if (blocked)
-          return response(200, {
-            ...result.body,
-            capability: {
-              owned: false,
-              blockedReason:
-                'Os recursos desta missão mudaram. Volte ao Pensa para ajustar seu caminho.',
-            },
+        return error(405, 'Ação indisponível.')
+      }
+      if (resource !== 'projects') return error(404, 'Projeto não encontrado.', 'PROJECT_GONE')
+      if (!action) {
+        if (request.method === 'GET')
+          return reply({
+            status: 200,
+            body: (await loadContext(members, user, actor, id, '')).view,
           })
-        if (
-          studioAuthoring === 'code' &&
-          caps.studioAvailable &&
-          result.body.capability.owned &&
-          (!journey.body.team || journey.body.team.roles.code === user.id)
+        if (request.method === 'PATCH') {
+          const input = PensaMetadataRequestSchema.parse(body)
+          if (input.name) {
+            const refusal = pensaNarrativeRefusal(input.name)
+            if (refusal) return error(422, refusal, 'PENSA_MESSAGE_REVIEW')
+            input.name = redactPensaText(input.name).text
+          }
+          return await projectReply(id, await members.pensaUpdateProject(id, input))
+        }
+        if (request.method === 'DELETE') {
+          const response = await members.pensaDeleteProject(id, RequestId.parse(body).requestId)
+          if (response.status === 200) drain()
+          return reply(response)
+        }
+      }
+      if (action === 'messages' && request.method === 'GET') {
+        const query = z
+          .strictObject({
+            limit: z.coerce.number().int().min(1).max(100).optional(),
+            cursor: uuid.optional(),
+          })
+          .parse(Object.fromEntries(new URL(request.url).searchParams))
+        const response = await members.pensaMessages(id, query)
+        return reply(
+          response.status === 200
+            ? { status: 200, body: PensaMessagePageSchema.parse(response.body) }
+            : response,
         )
-          return response(200, {
-            ...result.body,
-            capability: {
-              ...result.body.capability,
-              studioProProjectId: `pensa-${result.body.project.id.replaceAll('-', '')}`,
-            },
+      }
+      if (action === 'messages' && request.method === 'POST') {
+        if (!pensaLlmAvailable())
+          return error(
+            503,
+            'O Zappy está descansando. Sua ideia continua guardada.',
+            'AI_UNAVAILABLE',
+          )
+        if (!(await hasAiAppsLevel(members, user.role)))
+          return error(403, 'O Pensa abre no nível Inventor(a).', 'CAREER_LEVEL_REQUIRED')
+        const input = PensaMessageRequestSchema.parse(body)
+        const refusal = pensaNarrativeRefusal(input.message)
+        if (refusal) return error(422, refusal, 'PENSA_MESSAGE_REVIEW')
+        const response = await members.pensaMessage(id, {
+          ...input,
+          message: redactPensaText(input.message).text,
+        })
+        if (response.status === 200) queue(id)
+        return await projectReply(id, response)
+      }
+      if (action === 'operations' && leaf && uuid.safeParse(leaf).success) {
+        if (!tail && request.method === 'GET') return reply(await members.pensaOperation(id, leaf))
+        if (tail === 'cancel' && request.method === 'POST')
+          return await projectReply(
+            id,
+            await members.pensaCancelOperation(id, leaf, RequestId.parse(body).requestId),
+          )
+        if (tail === 'work' && request.method === 'POST') {
+          const input = WorkRequest.parse(body)
+          const context = await loadContext(members, user, actor, id, '')
+          if (context.view.operation?.id !== leaf)
+            return error(409, 'O pedido mudou. Atualize o projeto.', 'REVISION_CONFLICT')
+          if (input.retry) {
+            const resumed = await members.pensaRetryOperation(
+              actor,
+              id,
+              leaf,
+              input.requestId,
+              context.capabilities,
+            )
+            if (resumed.status !== 200) return reply(resumed)
+          }
+          const current = input.retry ? await loadContext(members, user, actor, id, '') : context
+          queue(id)
+          return reply({ status: 200, body: current.view })
+        }
+      }
+      if (action === 'draft') {
+        if (!leaf && request.method === 'GET') return reply(await members.pensaDraft(id))
+        if (!leaf && request.method === 'PATCH') {
+          const context = await loadContext(members, user, actor, id, '')
+          return await projectReply(
+            id,
+            await members.pensaEditDraft(
+              actor,
+              id,
+              PensaDraftEditRequestSchema.parse(
+                privatePensaInput(PensaDraftEditRequestSchema.parse(body)),
+              ),
+              context.capabilities,
+            ),
+          )
+        }
+        if (!leaf && request.method === 'DELETE')
+          return await projectReply(
+            id,
+            await members.pensaDiscardDraft(id, RequestId.parse(body).requestId),
+          )
+        if (leaf === 'accept' && request.method === 'POST') {
+          const context = await loadContext(members, user, actor, id, '')
+          const draft = context.view.draft
+          if (!draft?.definition || !draft.plan || !draft.technical)
+            return error(409, 'Seu caminho ainda precisa ser preparado.', 'DRAFT_CHANGED')
+          const validation = validatePensaPlan({
+            definition: draft.definition,
+            plan: draft.plan,
+            technical: draft.technical,
+            capabilities: context.capabilities,
+            team: context.view.team,
+          })
+          if (!validation.ok)
+            return error(
+              409,
+              'Os recursos ou as escolhas mudaram. Vamos adaptar o caminho.',
+              'RESOURCES_CHANGED',
+            )
+          return await projectReply(
+            id,
+            await members.pensaAcceptDraft(
+              actor,
+              id,
+              PensaDraftAcceptRequestSchema.parse(body),
+              context.capabilities,
+            ),
+          )
+        }
+      }
+      if (action === 'members') {
+        if (!leaf && request.method === 'GET') return reply(await members.pensaTeam(id))
+        if (
+          leaf &&
+          (leaf === 'me' || uuid.safeParse(leaf).success) &&
+          request.method === 'DELETE'
+        ) {
+          const response = await members.pensaRemoveProjectMember(
+            id,
+            leaf,
+            RequestId.parse(body).requestId,
+          )
+          if (response.status === 200 && (leaf === 'me' || leaf === user.id))
+            return reply({ status: 200, body: { left: true } })
+          return await projectReply(id, response)
+        }
+      }
+      if (action === 'roles') {
+        if (request.method === 'GET') return reply(await members.pensaTeam(id))
+        if (request.method === 'PUT')
+          return await projectReply(
+            id,
+            await members.pensaRoles(id, PensaRolesRequestSchema.parse(body)),
+          )
+      }
+      if (action === 'share') {
+        const input = RequestId.parse(body)
+        if (request.method === 'POST')
+          return await projectReply(id, await members.pensaShareProject(id, input.requestId))
+        if (request.method === 'DELETE')
+          return await projectReply(id, await members.pensaUnshareProject(id, input.requestId))
+      }
+      if (action === 'team-art' && request.method === 'GET') {
+        if (!leaf) return reply(await members.pensaTeamArt(id))
+        if (
+          tail &&
+          uuid.safeParse(leaf).success &&
+          uuid.safeParse(tail).success &&
+          path[5] === 'download'
+        ) {
+          const ticket = await members.pensaTeamArtDownload(id, leaf, tail)
+          return ticket.status === 200 && ticket.body
+            ? reply({
+                status: 200,
+                body: await signCreationDownload(storage.presignGet, ticket.body),
+              })
+            : reply(ticket)
+        }
+      }
+      if (action === 'revisions' && request.method === 'GET')
+        return reply(
+          await members.pensaRevisions(
+            id,
+            new URL(request.url).searchParams.get('cursor') ?? undefined,
+          ),
+        )
+      if (action === 'checkpoints') {
+        if (!leaf && request.method === 'GET') return reply(await members.pensaCheckpoints(id))
+        const context = await loadContext(members, user, actor, id, '')
+        const dependencies = { refreshContext: () => loadContext(members, user, actor, id, '') }
+        if (!leaf && request.method === 'POST')
+          return await projectReply(id, {
+            status: 200,
+            body: await protectPensaProject(
+              members,
+              actor,
+              context,
+              PensaRestoreRequestSchema.parse(body),
+              dependencies,
+            ),
+          })
+        if (leaf && uuid.safeParse(leaf).success && tail === 'restore' && request.method === 'POST')
+          return await projectReply(id, {
+            status: 200,
+            body: await restorePensaProject(
+              members,
+              actor,
+              context,
+              leaf,
+              PensaRestoreRequestSchema.parse(body),
+              dependencies,
+            ),
           })
       }
-      return response(result.status, result.body)
-    },
+      return error(404, 'Ação não encontrada.')
+    } catch (cause) {
+      if (cause instanceof z.ZodError)
+        return error(400, 'Confira os campos e tente de novo.', 'VALIDATION_ERROR')
+      if (cause instanceof PensaUnavailable) return error(cause.status, cause.message, cause.code)
+      console.error('[pensa] pedido interrompido', {
+        name: cause instanceof Error ? cause.name : typeof cause,
+      })
+      return error(503, 'Não consegui concluir essa ação agora. Sua criação continua guardada.')
+    }
   }
-
-  const pensaTaskProgress = {
-    PATCH: async (req: Request, ctx: { params: Promise<{ taskId: string }> }) => {
-      const readonly = await requireWritableSession()
-      if (readonly) return readonly
-      const { taskId } = await ctx.params
-      const parsed = ProgressBody.safeParse(await req.json().catch(() => null))
-      if (!parseId(taskId) || !parsed.success) return invalid()
-      const result = await members.pensaUpdateTaskProgress(taskId, parsed.data)
-      return response(result.status, result.body)
-    },
-  }
-
-  return {
-    pensaProjects,
-    pensaProject,
-    pensaJoin,
-    pensaShare,
-    pensaMembers,
-    pensaMember,
-    pensaCycleCreate,
-    pensaStage,
-    pensaArtifactCreate,
-    pensaArtifactValidate,
-    pensaAdvance,
-    pensaTasks,
-    pensaTask,
-    pensaTaskHandoff,
-    pensaTaskProgress,
-  }
+  return { pensa: { GET: handle, POST: handle, PUT: handle, PATCH: handle, DELETE: handle } }
 }

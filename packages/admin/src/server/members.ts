@@ -32,7 +32,7 @@ export function getAiUsageStats(
   return gatewayFetch('/members/admin/ai-usage', { query: { month } })
 }
 
-/** Onde as crianças param no Pensa v2 (primeira versão dos jogos dos últimos `days` dias). */
+/** Onde as crianças param no Pensa (primeira versão dos jogos dos últimos `days` dias). */
 export function getPensaFunnel(days: number): Promise<GatewayResponse<PensaFunnelView>> {
   return gatewayFetch('/members/admin/pensa/funnel', { query: { days } })
 }

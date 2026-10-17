@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { strToU8, zipSync } from 'fflate'
+import { missionSessionFixture } from '../../../ui/tests/mission-fixture'
 import { COPY } from '../core/copy'
 import { createPixelBackgroundAsset } from '../core/project'
 import type { PintaTaskSession } from '../core/types'
@@ -513,36 +514,7 @@ describe('PintaApp — galeria', () => {
  */
 describe('PintaApp — Voltar ao plano', () => {
   function tarefa(onReturnToPlan: () => void | Promise<void>): PintaTaskSession {
-    return {
-      taskId: 'tarefa-1',
-      project: { id: 'plano-1', name: 'Bosque' },
-      cycle: { id: 'ciclo-1', number: 1, goal: null },
-      title: 'Desenhar a nave',
-      summary: null,
-      brief: {
-        assetId: 'nave',
-        artKind: 'sprite',
-        style: 'pixel',
-        palette: [],
-        appearance: 'Uma nave comprida',
-        animations: [],
-        states: [],
-        usage: 'Personagem principal',
-        requiresStudioUse: false,
-      },
-      guide: { steps: [], criteria: [] },
-      progress: {
-        status: 'in_progress',
-        completedStepIds: [],
-        completedCriteriaIds: [],
-        startedAt: null,
-        completedAt: null,
-        updatedAt: null,
-        outputRef: null,
-      },
-      onProgress: async () => undefined,
-      onReturnToPlan,
-    }
+    return { ...missionSessionFixture(), onReturnToPlan }
   }
 
   async function abrirNave(): Promise<void> {
@@ -652,70 +624,33 @@ describe('PintaApp — Voltar ao plano', () => {
 
     await waitFor(() => expect(eventos).toEqual(['navegou']), { timeout: 5000 })
   })
-
-  it('sem o `onReturnToPlan` do host o botão não existe (playground, aula, Pinta solto)', async () => {
-    const { createMemoryPersistence } = await import('../state/memoryPersistence')
-    const { createPixelSpriteAsset } = await import('../core/project')
-    const nave = createPixelSpriteAsset({ name: 'nave', frameSize: 32 })
-    const semVolta = tarefa(() => undefined)
-    delete semVolta.onReturnToPlan
-
-    render(
-      <PintaApp
-        adapter={{ taskSession: semVolta }}
-        persistence={createMemoryPersistence([nave])}
-      />,
-    )
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Abrir nave/ })).toBeTruthy()
-    })
-    expect(screen.queryByRole('button', { name: COPY.task.back })).toBeNull()
-  })
 })
 
 /**
- * O guia v2 no `PintaApp` (14/10/2026): "Experimentei e funcionou" GRAVA o desenho aberto antes
+ * O missão funcional no `PintaApp` (14/10/2026): "Conferi e está pronto" GRAVA o desenho aberto antes
  * de chamar o host, a mesma disciplina do "Voltar ao plano". A ordem é REGISTRADA numa lista
  * compartilhada; a gravação que falha não chama o host e o painel mostra a frase dela (nunca
  * "Confira a internet": a internet não tem nada a ver com o disco deste aparelho).
  */
-describe('PintaApp — guia v2 grava antes de concluir', () => {
+describe('PintaApp — missão funcional grava antes de concluir', () => {
   function tarefaV2(assetId: string, eventos: string[]): PintaTaskSession {
-    return {
-      taskId: 'tarefa-v2',
-      project: { id: 'plano-1', name: 'Bosque' },
-      cycle: { id: 'ciclo-1', number: 1, goal: null },
-      title: 'Desenhar a nave',
-      summary: null,
-      brief: {
-        assetId: 'nave',
-        artKind: 'sprite',
-        style: 'pixel',
-        palette: [],
-        appearance: 'Uma nave comprida',
-        animations: [],
-        states: [],
-        usage: 'Personagem principal',
-        requiresStudioUse: false,
+    const session = missionSessionFixture()
+    session.progress.deliveries = [
+      {
+        assetSlotId: session.assetSlots[0]!.id,
+        creation: {
+          tool: 'pinta',
+          profileId: '10000000-0000-4000-8000-000000000002',
+          creationId: assetId,
+          saveRevision: '1',
+          contentFingerprint: null,
+        },
       },
-      guide: {
-        contractVersion: 2,
-        steps: [{ id: 'a', text: 'Desenhe a nave', required: true }],
-        criteria: [{ id: 'ok', text: 'A nave aparece', required: true }],
-      },
-      progress: {
-        status: 'in_progress',
-        completedStepIds: [],
-        completedCriteriaIds: [],
-        startedAt: null,
-        completedAt: null,
-        updatedAt: null,
-        outputRef: { kind: 'pinta_asset', assetId },
-      },
-      onProgress: async (input) => {
-        eventos.push(`concluiu:${input.status ?? ''}`)
-      },
+    ]
+    session.onComplete = async () => {
+      eventos.push('concluiu:completed')
     }
+    return session
   }
 
   async function abrirNave(): Promise<void> {
@@ -755,7 +690,7 @@ describe('PintaApp — guia v2 grava antes de concluir', () => {
     )
     await abrirNave()
     editarPendente()
-    fireEvent.click(screen.getByRole('button', { name: 'Experimentei e funcionou' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Conferi e está pronto' }))
     await waitFor(() => expect(eventos).toEqual(['gravou', 'concluiu:completed']), {
       timeout: 5000,
     })
@@ -778,7 +713,7 @@ describe('PintaApp — guia v2 grava antes de concluir', () => {
     )
     await abrirNave()
     editarPendente()
-    fireEvent.click(screen.getByRole('button', { name: 'Experimentei e funcionou' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Conferi e está pronto' }))
     await waitFor(
       () => {
         const alertas = screen.getAllByRole('alert').map((alerta) => alerta.textContent)

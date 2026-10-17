@@ -32,9 +32,9 @@ export const dynamic = 'force-dynamic'
 export default async function EstudioPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tarefa?: string; projeto?: string }>
+  searchParams: Promise<{ missao?: string; projeto?: string }>
 }) {
-  const { tarefa, projeto } = await searchParams
+  const { missao, projeto } = await searchParams
   const readServices = prepareStudioServices()
   const [res, session, gam, unlocksRes] = await Promise.all([
     // ⚠️ Pede refs `estudio-completo,pinta,molda` numa ida SÓ: o gate segue sendo o
@@ -85,7 +85,7 @@ export default async function EstudioPage({
       {...services}
       tier={tier}
       showExamples={showExamples}
-      taskId={tarefa ?? null}
+      taskId={missao ?? null}
       initialProjectId={projeto ?? null}
       pintaOwned={pintaOwned}
       moldaOwned={moldaOwned}

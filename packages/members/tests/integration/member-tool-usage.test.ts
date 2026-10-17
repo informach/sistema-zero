@@ -25,7 +25,7 @@ describe('admin tool-usage — uso por ferramenta na ficha', () => {
     expect(body.learners).toHaveLength(3)
     const account = body.learners[0]
     expect(account.userId).toBe(ACCOUNT)
-    expect(account.pensa).toEqual({ projects: 0, cyclesCompleted: 0, lastActivityAt: null })
+    expect(account.pensa).toEqual({ projects: 0, projectsCompleted: 0, lastActivityAt: null })
     expect(account.pinta).toEqual({ drawings: 0, deliveries: 0, lastActivityAt: null })
     expect(account.estudio).toEqual({ creations: 0, deliveries: 0, lastActivityAt: null })
     expect(account.molda).toEqual({ creations: 0, lastActivityAt: null })
@@ -58,24 +58,12 @@ describe('admin tool-usage — uso por ferramenta na ficha', () => {
       name: 'Jogo da Nave',
       updatedAt: new Date('2026-06-03T10:00:00.000Z'),
     })
-    pensa.cycles.set('c1', {
-      id: 'c1',
-      projectId: 'p1',
-      number: 1,
-      goal: null,
-      stage: 'done',
-      zCompletedAt: null,
-      eCompletedAt: null,
-      rCompletedAt: null,
-      oCompletedAt: null,
-      createdAt: base.createdAt,
-      updatedAt: base.createdAt,
-    })
+    pensa.completedProjects.add('p1')
 
     const body = await usageOf(app, [PROFILE_A, PROFILE_B])
     const a = body.learners.find((l: { userId: string }) => l.userId === PROFILE_A)
     expect(a.pensa.projects).toBe(2)
-    expect(a.pensa.cyclesCompleted).toBe(1)
+    expect(a.pensa.projectsCompleted).toBe(1)
     expect(a.pensa.lastActivityAt).toBe('2026-06-03T10:00:00.000Z')
     // O irmão B não herda nada.
     const b = body.learners.find((l: { userId: string }) => l.userId === PROFILE_B)

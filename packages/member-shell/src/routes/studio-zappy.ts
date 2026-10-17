@@ -10,8 +10,9 @@ import { RequestBodyTooLargeError, readBoundedJson } from '../lib/read-bounded-j
 import { isPrivilegedRole } from '../lib/studio-tier'
 import type { AiCreditsView } from '../lib/types'
 import type { MembersClient } from '../server/clients'
-import { missionForModel, studioTutorTask } from '../server/pensa-journey/missions'
-import { redactPensaText } from '../server/pensa-journey/privacy'
+import { loadPensaContext } from '../server/pensa/context'
+import { pensaStudioTutorMission } from '../server/pensa/missions'
+import { redactPensaText } from '../server/pensa/privacy'
 import type { SessionModule } from '../server/session'
 import { createStudioAiTransport } from '../server/studio-ai-transport'
 import { earnedStudioTier } from '../server/studio-unlocks'
@@ -47,11 +48,10 @@ const QuestionBody = z.object({
   projectId: z.string().regex(PROJECT_ID),
   clientMessageId: z.string().uuid(),
   /**
-   * A missão do Pensa que a criança ABRIU (o `?tarefa=` do handoff), opcional. Só vale se for
-   * do plano deste projeto e do Estúdio; senão o servidor escolhe a primeira do Estúdio ainda não
-   * concluída. ⚠️ Declarada aqui de propósito: `z.object` descarta chave desconhecida em silêncio.
+   * A missão do Pensa aberta pelo handoff `?missao=`, opcional. Só vale para o plano atual,
+   * o Estúdio e quem programa. Sem referência, usa a próxima ação calculada pelo servidor.
    */
-  pensaTaskId: z.string().uuid().optional(),
+  pensaMissionId: z.string().uuid().optional(),
   question: z.string().trim().min(1).max(1000),
   context: z.object({
     projectId: z.string().regex(PROJECT_ID),
@@ -394,41 +394,35 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
             parsed.data.projectId,
           )
         let pensaMission: ZappyContextInput['pensaMission']
-        if (pensaId) {
-          const journey = await members
-            .pensaJourneyGet(pensaId.slice(1).join('-'))
-            .catch((cause: unknown) => {
-              console.error('[studio-zappy] plano do Pensa indisponível', {
-                name: cause instanceof Error ? cause.name : typeof cause,
-              })
-              return null
-            })
-          if (journey?.status === 200 && journey.body) {
-            const path = await members
-              .pensaGetStage(journey.body.journey.cycleId, 'z')
-              .catch((cause: unknown) => {
-                console.error('[studio-zappy] missões do Pensa indisponíveis', {
-                  name: cause instanceof Error ? cause.name : typeof cause,
-                })
-                return null
-              })
-            // A missão ABERTA (se for deste plano e do Estúdio) ou a primeira do Estúdio ainda não
-            // concluída. Era a ÚLTIMA do Estúdio quando a próxima do plano era do Pinta.
-            const mission = studioTutorTask(path?.body?.tasks ?? [], parsed.data.pensaTaskId)
+        if (pensaId)
+          try {
+            const pensa = await loadPensaContext(
+              members,
+              user,
+              {
+                profileId: user.id,
+                accountId: user.activeProfile?.accountId ?? user.id,
+                privileged: isPrivilegedRole(user.role),
+              },
+              pensaId.slice(1).join('-'),
+              '',
+            )
+            const mission = pensaStudioTutorMission(pensa.view, parsed.data.pensaMissionId)
             if (mission)
               pensaMission = {
                 title: redactPensaText(mission.title).text,
-                expected: redactPensaText(mission.summary ?? '').text,
-                steps: missionForModel(mission, context.kind === 'pro' ? 'code' : 'blocks')
-                  .steps.slice(0, 6)
-                  .map((step) =>
-                    redactPensaText(`${step.action}. ${step.hint ?? ''}`).text.slice(0, 400),
-                  ),
+                expected: redactPensaText(mission.objective).text,
+                rules: mission.rules.map((rule) => redactPensaText(rule.text).text),
+                checks: mission.checks.map(
+                  (check) => redactPensaText(`${check.action}. ${check.expected}`).text,
+                ),
                 lastTest:
-                  redactPensaText(journey.body.journey.tests.at(-1)?.note ?? '').text || null,
+                  pensa.view.progress.find((item) => item.missionId === mission.id)?.verification
+                    ?.note ?? null,
               }
+          } catch {
+            console.info('[pensa] contexto de missão indisponível no tutor')
           }
-        }
         prepared = prepareStudioZappyAnswer({
           question: safeQuestion.text,
           context: {

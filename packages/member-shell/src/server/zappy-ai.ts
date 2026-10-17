@@ -33,7 +33,7 @@ import {
   type ZappyKnowledgeHitView,
   type ZappyStoredResponseView,
 } from '../lib/types'
-import { PENSA_CHILD_SAFETY_CLAUSE } from './pensa-agents/safety'
+import { PENSA_CHILD_SAFETY_CLAUSE } from './child-safety'
 import { completePensaJson, type PensaJsonTransport } from './pensa-llm'
 import {
   buildBehaviorDigest,
@@ -76,7 +76,13 @@ const LEVEL_RANK: Record<string, number> = {
 
 export interface ZappyContextInput {
   /** Resolvido no servidor pelo projeto Pensa pertencente ao perfil, nunca pelo cliente. */
-  pensaMission?: { title: string; expected: string; steps: string[]; lastTest: string | null }
+  pensaMission?: {
+    title: string
+    expected: string
+    rules: string[]
+    checks: string[]
+    lastTest: string | null
+  }
   projectId: string
   mode: 'blocks' | 'bridge' | 'code'
   kind: 'classic' | 'pro'

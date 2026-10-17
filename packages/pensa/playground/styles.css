@@ -33,7 +33,7 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* Imitação dos botões de voz do host no `?v2=1` (lá eles vêm do member-shell, com Tailwind). */
+/* Preview of the host voice controls, supplied by member-shell in the application. */
 .playground-fake-voice {
   min-height: 44px;
   padding: 8px 16px;

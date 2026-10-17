@@ -25,7 +25,7 @@ import {
 import { EditorScreen } from './editor/EditorScreen'
 import { GalleryScreen } from './gallery/GalleryScreen'
 import { TaskBriefPanel } from './TaskBriefPanel'
-import { withSaveBeforeTaskActions } from './taskSessionSave'
+import { erroParaCrianca, withSaveBeforeTaskActions } from './taskSessionSave'
 import { ToastProvider, useToast } from './ui/Toast'
 
 type PintaView = { screen: 'gallery' } | { screen: 'editor'; assetId: string }
@@ -180,7 +180,8 @@ export function PintaApp({
       closeEditor,
     ],
   )
-  const taskOutputId = resolvedAdapter.taskSession?.progress.outputRef?.assetId ?? null
+  const taskOutputId =
+    resolvedAdapter.taskSession?.progress.deliveries[0]?.creation.creationId ?? null
   const taskOutputMissing = !!taskOutputId && missingAssetId === taskOutputId
   const recreateTaskAsset = () => {
     const session = resolvedAdapter.taskSession
@@ -189,10 +190,17 @@ export function PintaApp({
       projectRef: {
         id: session.project.id,
         name: session.project.name,
-        palette: session.brief.palette.map((item) => item.color),
+        palette: [],
       },
-      artKind: session.brief.artKind,
-      style: session.brief.style,
+      artKind:
+        session.assetSlots[0]?.kind === 'background'
+          ? 'background'
+          : session.assetSlots[0]?.kind === 'tileset'
+            ? 'tileset'
+            : session.assetSlots[0]?.kind === 'tilemap'
+              ? 'tilemap'
+              : 'sprite',
+      style: 'either',
     })
   }
   /**
@@ -223,7 +231,7 @@ export function PintaApp({
     const editor = editorRef.current
     if (editor) {
       const saved = await editor.getState().flush()
-      if (!saved.ok) throw new Error(saved.error)
+      if (!saved.ok) throw erroParaCrianca(COPY.task.backError, saved.error)
     }
     await resolvedAdapter.taskSession?.onReturnToPlan?.()
   }
@@ -237,7 +245,7 @@ export function PintaApp({
         <ToastProvider>
           <InitialAssetOpener
             onMissing={(id) => {
-              if (resolvedAdapter.taskSession?.progress.outputRef?.assetId === id) {
+              if (resolvedAdapter.taskSession?.progress.deliveries[0]?.creation.creationId === id) {
                 setMissingAssetId(id)
               }
             }}
@@ -246,9 +254,10 @@ export function PintaApp({
             <TaskBriefPanel
               session={sessaoDoGuia ?? resolvedAdapter.taskSession}
               outputMissing={taskOutputMissing}
+              currentCreationId={view.screen === 'editor' ? view.assetId : null}
               onRecreate={recreateTaskAsset}
               onRelink={() => setView({ screen: 'gallery' })}
-              {...(resolvedAdapter.taskSession.onReturnToPlan ? { onReturn: returnToPlan } : {})}
+              onReturn={returnToPlan}
             />
           ) : null}
           {view.screen === 'gallery' ? (

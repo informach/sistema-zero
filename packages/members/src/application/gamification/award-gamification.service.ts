@@ -10,8 +10,6 @@ import {
   studioActivityDaySourceId,
   studioPublishDaySourceId,
 } from '../../domain/gamification/source-id'
-import { pensaStageSourceId } from '../../domain/pensa/gamification'
-import type { PensaWorkStage } from '../../domain/pensa/pensa'
 import type {
   AwardXpEventInput,
   GamificationRepository,
@@ -275,44 +273,30 @@ export class AwardGamificationService {
     )
   }
 
-  /**
-   * Advance do Pensa bem-sucedido: fechar uma ETAPA (z→e/e→r/r→o) credita
-   * `pensa_stage_complete`; fechar o CICLO (o→done) credita SÓ o
-   * `pensa_cycle_complete` — a aprovação do plano vale o prêmio MAIOR, sem acumular
-   * com o de etapa (decisão do plano). Idempotência pelo ledger: a etapa usa
-   * um uuid DETERMINÍSTICO de (cycleId, stage) — `pensaStageSourceId` — e o
-   * ciclo usa o próprio cycleId; um replay do award nunca duplica.
-   */
-  async awardPensaAdvance(input: {
+  /** Durable milestone intention; the event ID is the idempotent ledger key. */
+  async awardPensaMilestone(input: {
     userId: string
-    /** CONTA do responsável (sessão de perfil). Default → userId no caller. */
     accountId: string
-    cycleId: string
-    /** Etapa que FECHOU (o `from` do advance). */
-    from: PensaWorkStage
-    /** Audiência do PROJETO Pensa — TODA a gamificação é segregada por vitrine. */
-    audience: CourseAudience
+    eventId: string
+    projectCompleted: boolean
+    xp: number
+    coins: number
     privileged: boolean
   }): Promise<GamificationDeltaView | null> {
-    const events: AwardXpEventInput[] =
-      input.from === 'o'
-        ? [
-            {
-              sourceType: 'pensa_cycle_complete',
-              sourceId: input.cycleId,
-              amount: XP_VALUES.PENSA_CYCLE_COMPLETE,
-              coins: COIN_VALUES.PENSA_CYCLE_COMPLETE,
-            },
-          ]
-        : [
-            {
-              sourceType: 'pensa_stage_complete',
-              sourceId: pensaStageSourceId(input.cycleId, input.from),
-              amount: XP_VALUES.PENSA_STAGE_COMPLETE,
-              coins: COIN_VALUES.PENSA_STAGE_COMPLETE,
-            },
-          ]
-    return this.award(input.userId, input.accountId, input.audience, events, input.privileged)
+    return this.award(
+      input.userId,
+      input.accountId,
+      'kids',
+      [
+        {
+          sourceType: input.projectCompleted ? 'pensa_cycle_complete' : 'pensa_stage_complete',
+          sourceId: input.eventId,
+          amount: input.xp,
+          coins: input.coins,
+        },
+      ],
+      input.privileged,
+    )
   }
 
   /**

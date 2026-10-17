@@ -1,5 +1,7 @@
 # Pensa: da ideia da criança ao primeiro jogo e às próximas versões
 
+> Histórico: substituído pela [especificação funcional de 16/10/2026](2026-10-16-pensa-reestruturacao-spec.md). Este documento registra decisões anteriores e não define o contrato vigente.
+
 **Proposta de produto e arquitetura — terceira revisão consolidada de 14 de outubro de 2026**
 
 Direção confirmada: **a criança constrói; Zappy planeja, orienta e ajuda quando ela trava**.

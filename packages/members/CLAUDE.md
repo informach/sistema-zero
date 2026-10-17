@@ -139,175 +139,36 @@ SAIU do serviço; os tipos ficam no core até a limpeza final e as tabelas (`liv
   o JSON vai como `${JSON.stringify(x)}::jsonb` (o drizzle deixa o serializador transparente);
   num cliente `postgres` cru isso vira string escalar.
 
-## Pensa v2 em equipe (14/10/2026)
+## Pensa: planejamento funcional (16/10/2026)
 
-Especificação: [`docs/plans/2026-10-14-pensa-v2-equipe.md`](../../docs/plans/2026-10-14-pensa-v2-equipe.md)
-(seções 2 e 2.7). As REGRAS das funções moram no core (`effectivePensaRoles`,
-`canWorkOnPensaMission`, `nextPensaMissionFor`); aqui só a ponte com o banco, em
-`domain/pensa/team.ts` (`pensaTeamRoles`, `pensaJourneyTeam`, `pensaMissionBlock`,
-`assertPensaMissionWorker`, `pensaMissionOwnership`), usada pelo Drizzle, pelo fake e pelos
-serviços. Nunca recopie as regras.
+Contrato vigente: [docs/pensa-planner.md](../../docs/pensa-planner.md) e
+[especificação](../../docs/plans/2026-10-16-pensa-reestruturacao-spec.md).
+A criança define o jogo completo; missões descrevem resultados, regras e conferências.
+Preparação recomenda extensões oficiais; cursos e tutor ensinam a implementação.
 
-- **Banco.** Tabela `pensa_project_roles` (PK `project_id, profile_id, role`; CHECK `role in
-  ('code','art')`; índice único PARCIAL `pensa_project_roles_code_uq` em `project_id where role =
-  'code'`; índice por perfil; FK cascade no projeto) e `pensa_tasks.assignee_profile_id` /
-  `completed_by_profile_id`. Linhas CRUAS: `code` igual à dona = sem linha, `art` vazio = sem
-  linhas; quem lê passa por `pensaTeamRoles` (quem saiu cai fora; sem programação válida, a dona;
-  sem artes, quem programa). ⚠️ **A migration (`pensa_v2_team`) ainda NÃO está no repositório**:
-  ela entra depois do lote das oficinas ao vivo (0112 a 0114), como 0115 ou depois.
-  `db:generate --name pensa_v2_team` gera exatamente esse DDL; deixe-o idempotente (`IF NOT
-  EXISTS`, a FK dentro do `CREATE TABLE`) e confira o `when` acima da marca d'água. O DDL de
-  referência dos testes é o `applyPensaTeamDdl` de `tests/db/pensa-v2-schema.ts`.
-- **Acesso no v2** (`pensa-journey.repository.ts`). `accessible(actor)` = a dona (qualquer status)
-  OU quem está em `pensa_project_members` num plano ATIVO, conferindo perfil E conta nos dois
-  ramos; `ownerOnly(actor)` para a cota, o `create` e o `delete`. O `lock()` devolve `role` e os
-  papéis EFETIVOS lidos depois da trava do projeto. `list`/`get` trazem `role` e `team` (na view,
-  `PensaJourneyTeam`; na lista, `{memberCount, ownerFirstName}`, com o 1º nome da dona via
-  `AuthGateway.getProfileIdentities` só nos planos em que a criança entrou, best-effort). Os
-  `checkpoints` da view são os de quem PROGRAMA. Membro em `archive`/`delete`: 403
-  `PENSA_NOT_OWNER`. `observe`, `record_test`, `repair`, `close`, `revise` e todo `protect`
-  (versão, restauração, próxima versão): 403 `PENSA_NOT_PROGRAMMER` ("Quem testa e guarda as
-  versões é quem programa o jogo."). Conversar, aceitar, pausar, ideias, `retry`, cancelar, voz:
-  a equipe toda (a operação e a cota são do ATOR). O `delete` agenda a limpeza de
-  `creations/<perfil>/pensa/<id>/` da dona, de quem está na equipe e de todo perfil com checkpoint
-  ou fala do plano (inclusive quem já saiu).
-- **Equipe.** `setShareCode` e `addMember` não têm mais `assertLegacyPensa`: as rotas clássicas
-  (`POST /members/pensa/projects/join`, `POST|DELETE …/:projectId/share`, `GET …/members`,
-  `DELETE …/members/:profileId`) valem para o v2, e o `join` devolve `{project: {id, …}}`.
-  `removeMember` tranca o projeto, apaga as funções da pessoa, solta as missões não concluídas que
-  ela começou e sobe a revisão da jornada. Quem programava e saiu devolve a função à dona (o jogo
-  fica no Estúdio de quem saiu).
-- **Rotas novas** (`routes/pensa-team.routes.ts` + `PensaTeamService`, prefixo
-  `/members/pensa/v2/projects`; acesso = `findProject` do plano clássico, quem é de fora = 404;
-  gateway: `members-pensa-v2` ganhou `PUT`):
-  - `GET /:projectId/team` → `PensaJourneyTeamView` (pessoas com 1º nome e foto best-effort, a dona
-    primeiro; `shareCode` cru só para a dona; `maxMembers`; `roles` efetivos; `codeLocked`).
-  - `PUT /:projectId/roles` `{code: uuid, art: uuid[] (≤ 6)}`: só a dona (403
-    `PENSA_NOT_OWNER`); id fora da equipe = 400; plano sem jornada = 409; regra 5 = 409
-    `PENSA_CODE_LOCKED`. `setRoles` tranca o projeto (`for update`), troca as linhas de uma vez,
-    solta as missões de quem perdeu a função, sobe a revisão e a rota devolve a
-    `PensaJourneyView` relida.
-  - `GET /:projectId/team-capabilities` (só o BFF) → `{code: {profileId, level, blocks, access:
-    {studio, pinta, molda}, creations: {pinta, molda}}, art: [{profileId, level, access: {pinta,
-    molda}}]}`. `access` = posse pela CONTA de cada pessoa (refs `estudio-completo`, `pinta`,
-    `molda`; a chave-mestra não conta); `level` = slug do posto ou `null`; `creations` = até 200
-    vivas, no formato de `GET /members/creations/:tool`.
-  - `GET /:projectId/team-art` → `{items: PensaTeamArtItem[]}` (missões não arquivadas de todos os
-    ciclos, concluídas, `outputRef` do Pinta ou do Molda, `completed_by` diferente de quem pede,
-    criação viva e confirmada no perfil de quem concluiu; mais recente primeiro, até 100).
-  - `GET /:projectId/team-art/:taskId/download` → o formato do `GetCreationDownloadService`
-    (`{storageKey, revision, bytes, summary, parts}`) lido no perfil de quem CONCLUIU. Missão de
-    fora do plano, não concluída ou sem arte = 404.
-- **Missões.** `PensaTaskView` ganhou `assigneeProfileId`/`completedByProfileId` (etapa e
-  handoff). No `PATCH /tasks/:taskId/progress` de uma jornada v2: a função (403
-  `PENSA_NOT_YOUR_MISSION`, "Essa missão é de outra pessoa da equipe.") e a missão pega (409
-  `PENSA_MISSION_TAKEN`) vêm antes da posse da ferramenta e são conferidas de novo no repositório,
-  sob a trava do projeto. "Pega" = começada por OUTRA pessoa que ainda tem a função. Sair de
-  `planned` grava o `assignee`; concluir grava `completed_by`; fora de `completed` ele volta a
-  `null`. ⚠️ A evidência (a criação guardada) é conferida no perfil e na CONTA do ator:
-  `UpdatePensaTaskProgressService.execute(actor: {profileId, accountId}, audience, taskId,
-  input)`. No handoff, a missão da outra função vem com `capability: {owned: false,
-  blockedReason}` ("Essa missão é de quem programa o jogo." / "… de quem cuida das artes." /
-  "Outra pessoa da equipe já está fazendo essa missão."). O ajuste do `repair` nasce sem
-  `assignee`; restaurar uma versão devolve `assignee`/`completed_by` da cópia.
-- **Regra 5** (`pensaCodeLocked`): quem programa só muda enquanto nenhuma missão do Estúdio do
-  ciclo ativo saiu de `planned` (arquivadas contam) e o plano não tem checkpoint (qualquer status).
-- **Testes.** Integração sobre o fake (`tests/integration/pensa-team-v2.test.ts`: Ana, Bia e Leo
-  com contas distintas, a Eva de fora); o fake espelha funções, missão pega, `assignee`/
-  `completed_by`, regra 5 (`checkpointProjects`) e artes (consulta o fake de criações) e tem um
-  `journeyView` mínimo para o `PUT …/roles`. ⚠️ A evidência continua só no Drizzle. Postgres:
-  `tests/db/pensa-team-v2.test.ts` (banco próprio `sistemazero_pensa_team_v2_test`: accessible,
-  travas de dona e de quem programa, `for update` e regra 5, evidência pelo ator, `team-art`,
-  limpeza do R2), mais `pensa-team-repository.test.ts` (sair apaga funções e solta missões; código
-  e entrada em plano v2) e `pensa-journey.repository.test.ts`, que passou a montar o schema por
-  `tests/db/pensa-v2-schema.ts`.
-- ⚠️ Pendente (lacuna anterior, da equipe de 26/09): a purga de conta não apaga a participação
-  (`pensa_project_members`) nem as funções de um perfil apagado em plano de OUTRA família.
-
-## Pensa v2: renomear o jogo (15/10/2026)
-
-- `PATCH /members/pensa/v2/projects/:projectId` aceita `{name?, status?}` (pelo menos um; vazio
-  é 400). `name` → `PensaJourneyService.rename` → `rename` do repositório: só a dona (403
-  `PENSA_NOT_OWNER`), aparado e com os espaços juntados, 2..120 (`ValidationError`), arquivado
-  também. Sem migration.
-- **O nome da criança não é trocado pela IA:** o `publish` da proposta só grava o título como
-  nome enquanto `aiGivenName(nome, título da proposta anterior)` (o de fábrica
-  `DEFAULT_JOURNEY_NAME` = "Meu novo jogo", ou o título da proposta anterior). Renomeado, fica.
-- No core, `resume` de um jogo pausado E encerrado só tira a pausa (antes reabria a versão pronta).
-- Testes: `tests/db/pensa-journey.repository.test.ts` ("renomear…", Postgres real) e
-  `tests/integration/pensa-journey-routes.test.ts`.
-
-## Pensa v2: pergunta com respostas e nome provisório (15/10/2026)
-
-- O resultado `question` do worker aceita `choices` (`{about, options[2..4]}` com o assunto de
-  `PENSA_QUESTION_TOPICS` do core) e `workingTitle`, DECLARADOS no `PensaStepResultDto` (o
-  `normalize` do Elysia os apagaria). A mensagem do Zappy guarda `choices`.
-- `questionsAsked` (jornada): +1 a cada pergunta do PLANEJAMENTO (a da ajuda não conta), zera na
-  proposta. É o que alimenta o teto `pensaQuestionsLeft` do member-shell.
-- `workingTitle`: com a pergunta, o jogo ganha o nome provisório enquanto o nome ainda é do sistema
-  (`aiGivenName` ganhou o 3º argumento); a proposta o troca pelo título dela e zera o campo.
-  Renomeado pela criança, nada troca. Sem migration (tudo no JSON da jornada).
-- Testes: `tests/db/pensa-journey.repository.test.ts` (os dois "pergunta com escolhas…" e "o nome
-  provisório…") e `tests/integration/pensa-journey-routes.test.ts` (as escolhas atravessam a rota).
-- **Onde as crianças param** (`GET /admin/pensa/funnel?days=1..365`, padrão 30, `requireAdmin`):
-  `GetPensaFunnelService` + `DrizzlePensaFunnelRepository`, UMA consulta sobre a primeira versão
-  (`pensa_cycles.number = 1`) dos projetos criados no período: contaram a ideia, receberam
-  pergunta, como responderam (a mensagem SEGUINTE à pergunta, se for da criança, comparada no banco
-  com os rótulos das respostas e com `PENSA_ANY_ANSWER`, que é o `ANY_ANSWER` do `JourneyApp`; o
-  texto nunca sai do banco), proposta, começo escolhido, primeira missão, teste e versão pronta.
-  ⚠️ Mudou a frase do "Tanto faz" na tela? Mude `PENSA_ANY_ANSWER` junto. Teste:
-  `tests/db/pensa-funnel.repository.test.ts`.
-- **Full review (15/10/2026):** as etapas contam "chegou aqui OU ALÉM" (a CTE `s` dá a etapa mais
-  adiantada de cada jogo): testar não exige missão concluída e guardar a versão não exige nenhuma
-  das duas, e contadas soltas uma etapa podia ter mais jogos que a anterior ("quantos pararam"
-  saía trocado). A janela é `[since, agora]` (o leitor recebe o `until`), o "Tanto faz" não conta
-  em "tocou numa resposta" mesmo repetido num rótulo, e jogos APAGADOS somem do funil (limite
-  conhecido: a cascata leva a jornada junto).
-- **O nome provisório só vale antes da primeira proposta** (`!state.proposal`): a pergunta do
-  "Quero mudar uma coisa" (ou a da versão 2, que copia a proposta anterior) renomeava o jogo para
-  algo que o plano não era. E escolher o começo (`accept`) e adaptar o caminho (`revise`) zeram
-  `questionsAsked` e `workingTitle` (core `applyPensaCommand`): antes só uma proposta NOVA zerava, e
-  o "Adaptar meu caminho" depois de aceitar a anterior nascia sem pergunta.
-
-## Pensa v2: cota de chamadas por rodada e o jogo construído à parte (15/10/2026)
-
-Os dois limites que ficaram do lote da oferta de arte; decisão dela (opção A nos dois).
-
-- **Cota por rodada** (`domain/pensa/operation-budget.ts`, `pensaCallsExhausted`): o planejamento
-  de uma versão inteira (perguntas, propostas, cada "Quero mudar uma coisa" e os guias) era UMA
-  operação com teto de 10 chamadas ao Zappy, e cinco rodadas de conversa (2 chamadas cada)
-  esgotavam o guia. Hoje cada rodada tem `PENSA_ROUND_CALLS` (6): a operação guarda no `input`
-  (jsonb, sem migration) `roundStartCalls`, as chamadas que ela já tinha quando a rodada começou.
-  O `start` que retoma a operação à espera marca `roundStartCalls = calls` (a operação nova nasce
-  com 0; a ajuda, `kind: 'help'`, também), e o `accept` marca de novo (na operação nova ou na que
-  continua para os guias): "escolher o começo" é uma rodada. O claim (e o `retry`) recusa com
-  `calls - roundStartCalls >= 6` OU, fora do passo `guides`, com o teto do pedido
-  `PENSA_OPERATION_CALLS` (24).
-  - ⚠️ **O teto do pedido nunca vale nos guias** (achado do full review): valendo, a conversa que
-    chegasse a 24 fazia o primeiro guia falhar logo depois do aceite, o mesmo defeito de antes, e
-    "Tentar de novo" voltava 409. O teto para a CONVERSA longa; os guias param na cota da rodada e
-    nas 2 tentativas.
-  - Na prática as 2 tentativas por passo já seguram uma rodada em 4 chamadas (proposta e revisão;
-    as tentativas só zeram na passagem da proposta para a revisão): a cota de 6 é a rede. O gasto
-    da conta segue preso aos tetos de 60 por dia e 600 por mês (`pensa_provider_usage`).
-  - Operação sem a marca (criada antes deste deploy) não tem rodada para contar: vale só o teto do
-    pedido, e um guia que parou nas 10 de antes volta com "Tentar de novo".
-- **O jogo construído fica guardado à parte** (`journey.built`, `PensaBuiltGame` do core): o
-  `increment` grava `built: pensaBuiltGame(state)` na jornada da versão nova (a proposta da versão
-  feita, ENXUTA, e as extensões das missões do Estúdio de TODAS as versões, na ordem em que
-  entraram). Motivo: a versão nova copia a `proposal` anterior, mas a primeira proposta nova toma o
-  lugar dela, e o member-shell lia a proposta ainda não construída como o jogo pronto (a extensão
-  de jogo e a base sumiam se ela não usasse extensão). O core faz o mesmo no `revise` quando a
-  versão estava em construção (ver o CLAUDE.md do core). O `increment` só acontece com a versão
-  concluída no teste (`closedReason: 'met'`, vinda de `observing`), então lá a proposta é sempre a
-  construída. Jornada anterior (sem o campo): o member-shell cai na proposta de agora.
-  ⚠️ `built.proposal` não leva o retrato dos recursos (`capabilities` chega a dezenas de KB com a
-  lista de blocos): inteira, ela ficaria duas vezes na jornada (teto de 256 KB) e em cada versão
-  guardada.
-- Testes: `tests/unit/pensa-operation-budget.test.ts` (a régua) e, em
-  `tests/db/pensa-journey.repository.test.ts` (Postgres), os dois "cota por rodada…" (o primeiro
-  leva o pedido ao teto, aceita, falha o guia e usa o "Tentar de novo") e "versão nova: a proposta
-  nova não apaga o jogo construído".
+- Core/pensa concentra schemas, capacidades por pessoa, cobertura, ordem, impacto e próxima ação.
+- Aplicação depende de pensa-project-repository.port e pensa-team-repository.port. Adaptadores
+  Drizzle aplicam locks, CAS, autorização e comandos atômicos. Não recriar a regra em fakes.
+- Projeto, revisões aceitas imutáveis, draft, progresso e eventos são separados. IDs de missões
+  e critérios sobrevivem a revisões. Reabrir ou mudar regra invalida somente a parte afetada.
+- Rotas públicas /members/pensa; fatos e comandos dependentes de capacidades ficam em
+  /members/internal/pensa, HMAC exclusivo do member-shell. Navegador não determina actor,
+  capabilities, instalação verificada, lease nem storageKey.
+- Aceitar compara base/draft/progresso afetado. Concluir exige criação/revisão salva e
+  conferência; setup verifica configuração pelo BFF. Arte usa entregas por slot.
+- Operações preservam ator/pagador, orçamento por fase/unidade, contador externo e reserva.
+  Marco e intenção de prêmio são atômicos; ledger deduplica, inclusive após excluir projeto.
+- Conta/pagadores são travados em ordem antes dos projetos. Purga relê o conjunto para
+  recusar corrida; exclusão de plano preserva criações independentes e dados financeiros.
+- Checkpoints usam prepare/copy/commit/abort e restore com CAS. Cópia falha ocupa cota
+  até o job cleanupId do manifesto ser confirmado; tentar novamente exige novo pedido.
+- Migrations 0126–0128 substituem os dados operacionais anteriores, preservando criações,
+  XP, contadores, reservas e outbox. DDL é gerada; não editar SQL/snapshots gerados.
+- Verificação: test:pensa-db exige PENSA_TEST_DATABASE_URL local/pensa_*, aplica migrations
+  reais e cobre concorrência, créditos, equipe, restore, purga e manutenção. pg_dump/psql
+  ficam em PATH ou em PENSA_PG_DUMP/PENSA_PSQL. Não usar DATABASE_URL como fallback de teste.
+- pensa:maintenance prepara manifesto/backup e dry-run. Publicação e migrations remotas
+  exigem janela coordenada; os scripts não cercam serviços externos automaticamente.
 
 ## Oficinas ao vivo (14/10/2026)
 
@@ -2072,123 +1933,10 @@ sem passar pelo motor de award nem mover streak (mas contando como XP ganho em l
 Prêmios históricos sem ledger seguem corretos por já estarem no perfil. Cursor inválido/adulterado
 é 400; o endpoint administrativo continua com offset e não captura snapshot.
 
-## Pensa (planejador de jogos — 08/2026)
+## Pensa: contrato vigente
 
-O members persiste o plano; Pinta e Estúdio persistem seus próprios resultados. Projeto → ciclos
-→ `z→e→r→o→done`. Os artefatos são `idea`, `game_design`, `visual_direction`, `task_plan` e
-`plan_review`. Tarefas têm posição global, dependências anteriores, guia, contexto Pinta/Studio e
-progresso `planned | in_progress | completed`.
-
-- A migration destrutiva `0060_pensa_planner_v2.sql` apaga toda a árvore Pensa anterior e recria
-  o domínio. Ela não toca projetos autônomos do Estúdio nem desenhos do Pinta.
-- `validateTaskPlan` exige um DAG por ordem e IDs de guia únicos. `nextAvailableTask` libera a
-  primeira tarefa cujas dependências terminaram.
-- `GET /tasks/:id/handoff` aplica ownership e informa entitlement. `PATCH /tasks/:id/progress`
-  valida IDs, transições, itens obrigatórios e `outputRef` da ferramenta correta.
-- Tarefa planejada pode ser editada ou apagada. Depois de O, a mudança reabre O e invalida
-  `plan_review`. Alterar tarefa iniciada ou concluída cria revisão e arquiva a original.
-- Todos os acessos resolvem `user_id` + `audience`; mismatch retorna 404. O gate de produto
-  continua no create. As cotas e os limites de conversa/artefato permanecem nos use cases.
-- A gamificação do avanço preserva os source IDs determinísticos existentes.
-- **`DELETE /members/pensa/projects/:projectId` (14/09/2026)** apaga o plano DE VEZ (decisão da
-  usuária: sem lixeira; quem pergunta antes é a tela). `DeletePensaProjectService` confere a posse
-  pelo `findProject` (plano de outro perfil/vitrine = 404, nunca "apagado com sucesso") e o
-  repositório faz UM `delete` com o mesmo `ownedProject` no WHERE — ciclos, conversas, artefatos e
-  cartões caem pelas FKs `on delete cascade` da `0060`. **Sem migration.** ⚠️ O ledger NÃO é
-  tocado: `xp_events` guarda `source_id` derivado, sem FK, então apagar o plano não tira XP nem
-  badge de quem o fez. Gateway: o DELETE entrou nos `methods` da rota `members-pensa-project`, que
-  já existia. O fake `tests/fakes/pensa-in-memory.ts` espelha a cascata (é ele que os testes de
-  integração exercitam). A mensagem do 404 é a frase que a CRIANÇA lê ("Esse plano não está mais
-  aqui.") — o BFF repassa `error.message` inteiro, e o padrão "Recurso do Pensa não encontrado"
-  é recado de servidor; o caso real é apagar o mesmo plano em duas abas. Um teste prova que o
-  ledger de XP/badges sobrevive ao DELETE.
-- **`DELETE /members/pensa/projects/:projectId` (14/09/2026)** apaga o plano DE VEZ (decisão da
-  usuária: sem lixeira; quem pergunta antes é a tela). `DeletePensaProjectService` confere a posse
-  pelo `findProject` (plano de outro perfil/vitrine = 404, nunca "apagado com sucesso") e o
-  repositório faz UM `delete` com o mesmo `ownedProject` do WHERE — ciclos, conversas, artefatos e
-  cartões caem pelas FKs `on delete cascade` da `0060`. **Sem migration.** ⚠️ O ledger NÃO é
-  tocado: `xp_events` guarda `source_id` derivado, sem FK, então apagar o plano não tira XP nem
-  badge de quem o fez — e é assim que tem que ser. Gateway: o DELETE entrou nos `methods` da rota
-  `members-pensa-project` que já existia. O fake `tests/fakes/pensa-in-memory.ts` espelha a
-  cascata (é ele que os testes de integração exercitam).
-
-- **Plano em EQUIPE (26/09/2026, migration gerada `0098_pensa_project_members`):** decisão da
-  dona: a criança compartilha o plano com outro perfil pelo **código do projeto** e os dois
-  precisam ter o Pensa. Modelo: `pensa_projects.share_code` (varchar 8, nulo = convite desligado,
-  índice único PARCIAL `pensa_projects_share_code_uq`) + a tabela `pensa_project_members`
-  (PK `project_id + profile_id`, FK `on delete cascade`, índice por perfil; `account_id` e
-  `invited_by` só para auditoria). **Sem coluna `role`**: dono = `pensa_projects.user_id`.
-  - **O acesso virou "dono OU membro"** (`accessibleProject` no repositório, usado por
-    `findProject`/`findCycleWithProject`/`findTaskWithProject`/`listActiveProjects`), e toda leitura
-    devolve `PensaProjectAccess` = projeto + `role: 'owner' | 'member'` + `memberCount`. As
-    MUTAÇÕES do plano (renomear, arquivar, apagar, gerar/desligar código, tirar membro) exigem o
-    dono → **403 `PENSA_NOT_OWNER`**; perfil de fora segue 404. `countActiveProjects` (o teto de
-    planos) conta só os do dono; plano compartilhado não gasta a cota de quem entrou.
-  - **O código** (`domain/pensa/share-code.ts`, puro): 6 letras do alfabeto sem `0/O/1/I/L`,
-    exibido `ZAP-XXXXXX`; `normalizeShareCode` aceita minúsculas, espaços, hífen e o prefixo.
-    Gerar de novo SOBRESCREVE (o antigo morre na hora), desligar = `NULL`; colisão = 5 tentativas
-    contra o índice único. ⚠️ O código nunca vai no `detail`: só o `GET …/members` do DONO o traz.
-  - **Entrar (`POST /members/pensa/projects/join`, declarado ANTES de `/projects/:projectId` — o
-    literal `join` tem de vencer o param):** exige o produto (`assertPensaProduct`, o mesmo do
-    create); código inválido, plano arquivado ou convite desligado → **404
-    `PENSA_INVITE_INVALID`** (uma mensagem só, para não confirmar que o código existe); o próprio
-    dono → 409 `PENSA_ALREADY_MEMBER` ("Esse plano já é seu."); já membro → 409; equipe com
-    `MAX_PROJECT_MEMBERS` (5) → 409 `PENSA_TEAM_FULL`; quem já entrou em `MAX_JOINED_PROJECTS` (20)
-    → 409 `PENSA_JOIN_LIMIT`. Entrar toca o `updatedAt` do plano (o dono vê "alguém mexeu").
-  - **Sair/tirar (`DELETE …/:projectId/members/:profileId`)**: `me` = sair (o dono não sai: 409
-    `PENSA_OWNER_CANNOT_LEAVE`; ele apaga); id explícito só o dono. Apagar o plano leva os membros
-    pela FK. **`GET …/:projectId/members`** = lista (1º nome pelo auth + rosto pelo
-    `GetAvatarsByProfilesService`, os dois best-effort) para dono e membros.
-  - **XP/cota:** quem avança a etapa ganha o XP (o `source_id` já carrega o ator); a cota de IA é
-    da CONTA de quem chama; a geração do `task_plan` usa posse/nível do chamador (aceito).
-  - ⚠️ Sem trava na conversa Z: dois na mesma etapa fazem último-vence (follow-up
-    `expectedMessageCount`). Estúdio/Pinta/Molda seguem locais por perfil: a colaboração é no
-    PLANO, cada um constrói no seu.
-  - **Full review do lote (26/09/2026), o que ficou de contrato:** (a) **nova versão (`POST
-    …/cycles`) é do DONO** (403 para membro): ela vira o ciclo corrente de toda a equipe e gasta
-    a cota do plano; (b) **`addMember` é uma transação que TRANCA o projeto** (`select … for
-    update`) e devolve `'added' | 'duplicate' | 'full'`: a vaga e a duplicidade são conferidas
-    DENTRO dela, então dois convidados no mesmo instante não passam de 5 e duas abas do mesmo
-    perfil viram 409, não 500 na chave primária (as checagens do serviço antes disso são só a UX);
-    (c) **`setShareCode` devolve `false` na colisão do índice único** (23505 caminhando a cadeia
-    de `cause`, como o content-admin) e o serviço sorteia outro, em vez de 500; (d) **o MEMBRO só
-    alcança plano ATIVO** (`accessibleProject` exige `status='active'` no ramo do membro; o dono
-    alcança sempre): arquivar é como o dono "fecha" o plano; (e) `DELETE …/members/<meu uuid>`
-    por um membro é sair, como `me`; (f) identidades/rostos indisponíveis passam a logar
-    (`console.warn('[pensa] …')`) em vez de virar "Colega" mudo. ⚠️ Aceitos e registrados:
-    `POST …/share` SEMPRE rotaciona (o código atual vive só no `GET …/members` do dono; a UI só
-    chama o POST em "Criar"/"Gerar outro"); um membro que reabre O (editar/apagar tarefa depois de
-    `done`) e fecha de novo ganha o XP do ciclo uma vez por perfil (teto 6× por ciclo); o membro
-    pode substituir o plano de tarefas e escrever na conversa (a lente infantil confia no código
-    passado de mão, e o dono tira quem abusar).
-  - Testes: `tests/unit/pensa-share-code.test.ts`, `tests/integration/pensa-team.test.ts` (perfis
-    A/B/C, `x-auth-account-id` distintos; o helper dá códigos determinísticos `AAAAAB`, …),
-    `tests/db/pensa-team-migration.test.ts` (cascata + índice parcial, contra Postgres) e
-    **`tests/db/pensa-team-repository.test.ts`** (o `DrizzlePensaRepository` de verdade contra
-    Postgres: dono/membro/estranho em `findProject`, `findCycleWithProject` e
-    `listActiveProjects`, arquivado, `addMember` trancado, colisão do código, cascata; até aqui só
-    o fake exercitava o SQL que decide a autorização).
-
-- **Pensa v2 — correções do full review (14/10/2026):**
-  - As rotas internas do worker (`/members/internal/pensa/v2/*`) conferem o consumer em
-    **`x-consumer-id`** (o que o gateway reinjeta para HMAC, como `gallery-delivery`); o
-    `x-auth-consumer-id` não existe e recusava o member-shell em staging/prod.
-  - **Reserva de IA renovada a cada uso** (`reservePensaUsage`): reserva `reserved` e viva ganha
-    `now + 30 min` no envio, no aceite e no claim, sem reconferir a cota (ela já conta no teto).
-    Antes o prazo era fixo desde a 1ª mensagem e o plano aceito tarde vencia no meio dos guias.
-  - **Operação `waiting` é retomada pelo mesmo tipo de pedido** (o planejamento como antes; a
-    ajuda/reparo pela próxima ajuda/reparo), com a mesma reserva. A que esperava e não é retomada
-    vira `cancelled` e solta SÓ a reserva dela (`releasePensaReservation`).
-  - **Concluir direto do `planned` depende da jornada v2 ATIVA do projeto**
-    (`findTaskWithProject().journey`, a régua do `updateTaskProgress`), nunca de
-    `guide.contractVersion`. O guia do plano LEGADO (replace/append/PATCH) não aceita nem grava
-    a marca (`legacyGuide`); o do worker v2 a exige (`PensaJourneyGuideSchema`). Testes:
-    `tests/integration/pensa.test.ts` (marca), `tests/db/pensa-journey.repository.test.ts`
-    (reserva com relógio injetado, ajuda retomada).
-
-Camadas: `domain/pensa/*`, port `pensa-repository.port.ts`, use cases em `application/pensa/*`,
-`DrizzlePensaRepository`, mappers e rotas HTTP. Contrato transversal:
-[`../../docs/pensa-planner.md`](../../docs/pensa-planner.md).
+Ver a seção de planejamento funcional acima e docs/pensa-planner.md. Os contratos de ciclos,
+artefatos, jornadas e tarefas anteriores foram substituídos integralmente em 16/10/2026.
 
 ## "Guardado na sua conta" — criações do Estúdio Completo, do Pinta e do Molda (18/08/2026, migration `0067`; Molda em 04/09/2026, migration `0072`)
 
@@ -2338,7 +2086,7 @@ pending_kind/pending_item_updated_at/pending_thumb` e o contador `last_reserved_
   `tests/db/creations.repository.test.ts` (Postgres real: recria a tabela do zero, porque a
   `user-data-purge.test.ts` a cria com DDL mínimo) e `tests/db/user-data-purge.test.ts` (linha de
   `creations` somada).
-- ⚠️⚠️ **A fila do worker também leva a limpeza de PLANO do Pensa v2 (14/10/2026)**
+- ⚠️⚠️ **A fila do worker também leva a limpeza restrita de planos do Pensa**
   (`pensa_deletion_jobs`, `scope: 'pensa'`), que NUNCA finaliza a conta. Duas travas, porque um
   worker antigo (rollback do Kids) ignora `scope` e chamaria o finalize com a conta da família:
   (a) `POST /members/internal/creation-cleanups/claim` aceita corpo OPCIONAL `{scopes?: string[]}`
@@ -2384,7 +2132,7 @@ que não passou pela borda → 403). Rotas em `interfaces/http/routes/admin.rout
   `tests/integration/admin-member-detail.test.ts`.
 - **`GET /members/admin/members/:userId/tool-usage[?profileIds=<csv>]` (08/2026)** → USO das
   ferramentas por aprendiz da FAMÍLIA (cartões da ficha; 1 chamada por família):
-  `pensa {projects, cyclesCompleted, lastActivityAt}` (pensa_projects/cycles) · `pinta`/`estudio
+  `pensa {projects, projectsCompleted, lastActivityAt}` (projetos e marcos funcionais) · `pinta`/`estudio
   {drawings|creations, deliveries, lastActivityAt}` (creations VIVAS E CONFIRMADAS — predicado do
   `creations_usage_idx`: `deleted_at is null AND storage_ref is not null` — e **nega somente a
   identidade exata** da biblioteca (tool+itemId+kind; 27/08). Um kind reservado isolado continua
@@ -2601,8 +2349,8 @@ user+course + serial — migration `0025`) e a **gamificação**: `gamification_
 `user_badges` (`0009`–`0015`), `coin_events` (Zappy Coins, `0018`), `avatar_configs`
 (`0019` + `photo_url` no `0023`)/`avatar_inventory` (`0019`), `room_state`/`room_inventory`
 (`0020`), `mission_claims` (`0021`) e `league_membership` (ligas, `0022`), o **Pensa**
-(`0060`, substituição destrutiva): `pensa_projects`/`pensa_cycles`/`pensa_conversations`/
-`pensa_artifacts`/`pensa_tasks` (ver §Pensa), e as **conversas com o professor**
+(`0126`–`0128`, substituição funcional): `pensa_projects`/`pensa_project_revisions`/
+`pensa_plan_drafts`/`pensa_mission_progress`/`pensa_project_messages`/`pensa_execution_events` (ver §Pensa), e as **conversas com o professor**
 (`0039`): `teacher_threads`/`teacher_messages` (ver §Conversas com o professor).
 
 ## Sentry (monitoramento de erros)
@@ -2748,9 +2496,8 @@ vive em `@sistemazero/core/journey`; os oito ranks e 49 posições permanecem.
 - Missões Kids filtram DEPOIS da atribuição, por ferramenta liberada e eventos de conteúdo
   ainda possíveis nos cursos acessíveis. Aulas em breve e barreiras sequenciais são excluídas;
   eventos já premiados não viram novas oportunidades. Prêmios completos/recebidos permanecem.
-- Pensa aceita `destination=molda`, contexto `molda` e saída `molda_asset` para model/texture/sky.
-  Handoff e atualização revalidam posse da conta e rank do perfil em cada destino. Migration
-  `0077` apenas acrescenta o valor ao enum. Não apagar/recriar planos para migrar.
+- Pensa usa missões de arte com destination=molda e slots model/texture/sky. Handoff,
+  vínculos e conclusão revalidam a pessoa responsável, ferramentas atuais e criação salva.
 
 ## Sessão e tentativa de cena
 

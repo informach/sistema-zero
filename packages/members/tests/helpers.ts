@@ -72,31 +72,8 @@ import { LiveTeacherNotesService } from '../src/application/live-course/teacher-
 import { ManageEntitlementService } from '../src/application/manage-entitlement/manage-entitlement.service'
 import { MarkLessonCompleteService } from '../src/application/mark-lesson-complete/mark-lesson-complete.service'
 import { ParentReportPrefsService } from '../src/application/parent-report/report-prefs.service'
-import { AdvancePensaStageService } from '../src/application/pensa/advance-stage.service'
-import { AppendPensaConversationTurnService } from '../src/application/pensa/append-conversation-turn.service'
-import { AppendPensaTasksService } from '../src/application/pensa/append-tasks.service'
-import { CreatePensaCycleService } from '../src/application/pensa/create-cycle.service'
-import { CreatePensaProjectService } from '../src/application/pensa/create-project.service'
-import { DeletePensaProjectService } from '../src/application/pensa/delete-project.service'
-import { DeletePensaTaskService } from '../src/application/pensa/delete-task.service'
-import { GetPensaProjectService } from '../src/application/pensa/get-project.service'
-import { GetPensaStageService } from '../src/application/pensa/get-stage.service'
-import { GetPensaTaskHandoffService } from '../src/application/pensa/get-task-handoff.service'
-import { JoinPensaProjectService } from '../src/application/pensa/join-project.service'
-import { ListPensaProjectMembersService } from '../src/application/pensa/list-project-members.service'
-import { ListPensaProjectsService } from '../src/application/pensa/list-projects.service'
-import { RemovePensaProjectMemberService } from '../src/application/pensa/remove-project-member.service'
-import { ReplacePensaTasksService } from '../src/application/pensa/replace-tasks.service'
-import { SavePensaArtifactService } from '../src/application/pensa/save-artifact.service'
-import {
-  SharePensaProjectService,
-  UnsharePensaProjectService,
-} from '../src/application/pensa/share-project.service'
+import { PensaProjectService } from '../src/application/pensa/project.service'
 import { PensaTeamService } from '../src/application/pensa/team.service'
-import { UpdatePensaProjectService } from '../src/application/pensa/update-project.service'
-import { UpdatePensaTaskService } from '../src/application/pensa/update-task.service'
-import { UpdatePensaTaskProgressService } from '../src/application/pensa/update-task-progress.service'
-import { ValidatePensaArtifactService } from '../src/application/pensa/validate-artifact.service'
 import { GetProfileAllowanceService } from '../src/application/profile-allowance/get-profile-allowance.service'
 import { GetPublicProfileService } from '../src/application/profiles/get-public-profile.service'
 import { GetProfilesOverviewService } from '../src/application/profiles-overview/get-profiles-overview.service'
@@ -124,11 +101,18 @@ import type {
   CourseTrack,
 } from '../src/domain/course/course'
 import { EntitlementAggregate } from '../src/domain/entitlement/entitlement.aggregate'
-import { SHARE_CODE_ALPHABET } from '../src/domain/pensa/share-code'
 import type { AuthGateway } from '../src/domain/ports/auth-gateway.port'
 import type { ResolvedOffer } from '../src/domain/ports/catalog-gateway.port'
 import type { HubAuthorActivity, HubGateway } from '../src/domain/ports/hub-gateway.port'
 import type { Env } from '../src/infrastructure/config/env'
+import { createDbConnection } from '../src/infrastructure/persistence/drizzle/db'
+import { DrizzlePensaCheckpointsRepository } from '../src/infrastructure/persistence/drizzle/pensa-checkpoints.repository'
+import { DrizzlePensaNarrationsRepository } from '../src/infrastructure/persistence/drizzle/pensa-narrations.repository'
+import { DrizzlePensaOperationsRepository } from '../src/infrastructure/persistence/drizzle/pensa-operations.repository'
+import { DrizzlePensaProjectCommands } from '../src/infrastructure/persistence/drizzle/pensa-project.commands'
+import { DrizzlePensaProjectRepository } from '../src/infrastructure/persistence/drizzle/pensa-project.repository'
+import { DrizzlePensaRewardsRepository } from '../src/infrastructure/persistence/drizzle/pensa-rewards.repository'
+import { DrizzlePensaTeamRepository } from '../src/infrastructure/persistence/drizzle/pensa-team.repository'
 import { EncryptedRankingCursorCodec } from '../src/infrastructure/security/ranking-cursor.codec'
 import { createServer } from '../src/interfaces/http/server'
 import { InMemoryAiUsageRepository } from './fakes/ai-usage-in-memory'
@@ -161,7 +145,6 @@ import {
 import { InMemoryLearningRepository } from './fakes/learning-in-memory'
 import { InMemoryLessonDraftRepository } from './fakes/lesson-draft-in-memory'
 import { InMemoryLiveLessonAccess } from './fakes/live-lesson-access-in-memory'
-import { InMemoryPensaRepository } from './fakes/pensa-in-memory'
 import { InMemoryToolUsageRepository } from './fakes/tool-usage-in-memory'
 
 export const WEBHOOK_SECRET = 'test-gateway-secret-0123456789ab'
@@ -205,15 +188,10 @@ export function buildApp(
   const processed = new InMemoryProcessedWebhookRepository()
   const catalog = new FakeCatalogGateway()
   const creations = new InMemoryCreationsRepository()
-  // As artes da equipe (Pensa v2) consultam o índice das criações.
-  const pensa = new InMemoryPensaRepository(creations)
-  // Códigos de plano DETERMINÍSTICOS (a sequência é previsível nos testes; o índice único
-  // do fake continua valendo).
-  let shareCodeSeq = 0
-  const nextShareCode = () => {
-    shareCodeSeq += 1
-    const a = SHARE_CODE_ALPHABET
-    return `AAAA${a[Math.floor(shareCodeSeq / a.length) % a.length]}${a[shareCodeSeq % a.length]}`
+  // As artes da equipe (Pensa) consultam o índice das criações.
+  const pensa = {
+    projects: new Map<string, { userId: string; updatedAt: Date; [key: string]: unknown }>(),
+    completedProjects: new Set<string>(),
   }
   const teacherThreadsRepo = new InMemoryTeacherThreadRepository(courses)
   const teacherThreads = new TeacherThreadsService(teacherThreadsRepo, clock)
@@ -554,48 +532,42 @@ export function buildApp(
       buyRoomItem: new BuyRoomItemService(room, gamification, awardGamification, clock),
       internalToken: opts.internalToken,
     },
-    pensa: {
-      listProjects: new ListPensaProjectsService(pensa, authGateway),
-      createProject: new CreatePensaProjectService(pensa, () => randomUUID(), clock),
-      getProject: new GetPensaProjectService(pensa),
-      updateProject: new UpdatePensaProjectService(pensa, clock),
-      deleteProject: new DeletePensaProjectService(pensa),
-      createCycle: new CreatePensaCycleService(pensa, () => randomUUID(), clock),
-      getStage: new GetPensaStageService(pensa),
-      appendConversationTurn: new AppendPensaConversationTurnService(pensa, clock),
-      saveArtifact: new SavePensaArtifactService(pensa, () => randomUUID(), clock),
-      validateArtifact: new ValidatePensaArtifactService(pensa, clock),
-      advanceStage: new AdvancePensaStageService(pensa, awardGamification, clock),
-      replaceTasks: new ReplacePensaTasksService(pensa, () => randomUUID(), clock),
-      appendTasks: new AppendPensaTasksService(pensa, () => randomUUID(), clock),
-      updateTask: new UpdatePensaTaskService(pensa, () => randomUUID(), clock),
-      deleteTask: new DeletePensaTaskService(pensa, clock),
-      getTaskHandoff: new GetPensaTaskHandoffService(pensa),
-      updateTaskProgress: new UpdatePensaTaskProgressService(pensa, clock),
-      shareProject: new SharePensaProjectService(pensa, clock, () => nextShareCode()),
-      unshareProject: new UnsharePensaProjectService(pensa, clock),
-      joinProject: new JoinPensaProjectService(pensa, clock),
-      listProjectMembers: new ListPensaProjectMembersService(pensa, authGateway, avatarsByProfiles),
-      removeProjectMember: new RemovePensaProjectMemberService(pensa, clock),
-      accessCheck: new AccessCheckService(entitlements, clock),
-      getGamification: new GetGamificationService(gamification, clock),
-      internalToken: opts.internalToken,
-    },
-    pensaTeam: {
-      team: new PensaTeamService({
-        repo: pensa,
-        journey: { get: (actor, projectId) => pensa.journeyView(actor, projectId) },
-        authGateway,
-        avatars: avatarsByProfiles,
-        accessCheck,
-        gamification: new GetGamificationService(gamification, clock),
-        studioUnlocks: new GetStudioUnlocksService(gamification, studioUnlocks, silentLogger),
-        creations,
-        creationDownload: new GetCreationDownloadService(creations),
+    pensa: (() => {
+      // Other-domain tests do not exercise Pensa persistence. Native Pensa tests
+      // use a real disposable database in their own fixture, rather than a second rule engine.
+      const repo = new DrizzlePensaProjectRepository(
+        createDbConnection('postgres://postgres@127.0.0.1:1/pensa_unconfigured_test').db,
         clock,
-      }),
-      internalToken: opts.internalToken,
-    },
+      )
+      const limits = { dailyLimit: 20, monthlyLimit: 200 }
+      const commands = new DrizzlePensaProjectCommands(repo, limits)
+      const projects = new PensaProjectService(commands)
+      const team = new PensaTeamService(
+        new DrizzlePensaTeamRepository({
+          projects: commands,
+          authGateway,
+          avatars: avatarsByProfiles,
+          accessCheck,
+          gamification: new GetGamificationService(gamification, clock),
+          studioUnlocks: new GetStudioUnlocksService(gamification, studioUnlocks, silentLogger),
+          creations,
+          creationDownload: new GetCreationDownloadService(creations),
+        }),
+      )
+      return {
+        store: repo,
+        projects,
+        team,
+        operations: new DrizzlePensaOperationsRepository(commands, limits),
+        checkpoints: new DrizzlePensaCheckpointsRepository(repo),
+        narrations: new DrizzlePensaNarrationsRepository(repo),
+        rewards: new DrizzlePensaRewardsRepository(repo.db, awardGamification),
+        accessCheck,
+        getGamification: new GetGamificationService(gamification, clock),
+        credits: aiCredits,
+        internalToken: opts.internalToken,
+      }
+    })(),
     creations: {
       list: new ListCreationsService(creations),
       reserveUpload: new ReserveCreationUploadService(

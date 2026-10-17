@@ -18,9 +18,9 @@ export const COIN_VALUES = {
   QUIZ_SCORE_BONUS_MAX: 5,
   /** Baú de fim de unidade (todas as aulas publicadas do módulo concluídas). */
   UNIT_COMPLETE: 15,
-  /** Pensa: etapa do ciclo concluída (advance z→e, e→r, r→o) — conta no teto diário. */
+  /** Pensa: marco do plano funcional — conta no teto diário. */
   PENSA_STAGE_COMPLETE: 5,
-  /** Pensa: ciclo LANÇADO (advance o→done) — conta no teto diário. */
+  /** Pensa: projeto completo conferido — conta no teto diário. */
   PENSA_CYCLE_COMPLETE: 15,
   /** Publicou jogo standalone no Mural (1×/dia — o XP diário de publicar). Conta no teto. */
   STUDIO_PUBLISH_DAY: 15,

@@ -1,6 +1,11 @@
 import { afterAll, afterEach, expect, mock, spyOn, test } from 'bun:test'
 import type { Project, StudioEditorProps } from '@sistemazero/studio'
 import { act, cleanup, render, renderHook, waitFor } from '@testing-library/react'
+import {
+  handoffFixture,
+  PROFILE_ID,
+  projectFixture,
+} from '../../pensa/src/components/pensa.fixture'
 import { useKidsStudioTutor } from '../src/components/kids/use-studio-tutor'
 
 const actualNavigation = await import('next/navigation')
@@ -96,52 +101,24 @@ test('the shared tutor supplies authorized narration and voice input in either h
 })
 
 test('leaving a bound Pro mission returns to its Pensa plan by full navigation', async () => {
-  const planId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'
-  const handoff = {
-    project: { id: planId, name: 'Meu plano' },
-    cycle: { id: 'cycle', number: 1, goal: null },
-    capability: { owned: true, blockedReason: null },
-    task: {
-      id: 'task',
-      title: 'Mover',
-      summary: 'O personagem anda',
-      category: 'gameplay',
-      estimatedMinutes: 10,
-      position: 0,
-      dependencies: [],
-      revision: 1,
-      supersedesTaskId: null,
-      destination: 'studio',
-      guide: { contractVersion: 2, steps: [], criteria: [] },
-      context: {
-        kind: 'studio',
-        dimension: '2d',
-        blockIds: [],
-        blocks: [],
-        visualAssetIds: [],
-        mechanicDocumentIds: [],
-        extensionIds: [],
-      },
-      progress: {
-        status: 'in_progress',
-        completedStepIds: [],
-        completedCriteriaIds: [],
-        startedAt: null,
-        completedAt: null,
-        updatedAt: null,
-        outputRef: { kind: 'studio_project', projectId: project.id },
-      },
-    },
-  }
+  const handoff = handoffFixture()
+  const planId = handoff.project.id
+  handoff.studioProjectId = project.id
+  handoff.studioAuthoring = 'code'
+  handoff.mission = projectFixture().revision!.plan.missions[1]!
+  handoff.progress.missionId = handoff.mission.id
+  handoff.availability.missionId = handoff.mission.id
   globalThis.fetch = Object.assign(async () => Response.json(handoff), {
     preconnect: originalFetch.preconnect,
   })
   const navigation = spyOn(window.location, 'assign').mockImplementation(() => {})
   try {
-    render(<StudioProClient viewerId={null} projectId={project.id} taskId="task" />)
-    await waitFor(() => expect(captured?.taskSession?.taskId).toBe('task'))
+    render(
+      <StudioProClient viewerId={PROFILE_ID} projectId={project.id} taskId={handoff.mission.id} />,
+    )
+    await waitFor(() => expect(captured?.taskSession?.mission.id).toBe(handoff.mission.id))
     act(() => captured?.onExit?.())
-    expect(navigation).toHaveBeenCalledWith(`/pensa?plano=${planId}`)
+    await waitFor(() => expect(navigation).toHaveBeenCalledWith(`/pensa?plano=${planId}`))
   } finally {
     navigation.mockRestore()
   }

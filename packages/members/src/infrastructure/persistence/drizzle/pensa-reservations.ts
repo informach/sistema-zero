@@ -1,9 +1,9 @@
 import { and, eq, sql } from 'drizzle-orm'
 import { localDateSaoPaulo } from '../../../domain/gamification/gamification'
 import {
-  PensaQuotaExceededError,
-  PensaTaskProgressConflictError,
-} from '../../../domain/pensa/pensa.errors'
+  PensaQuotaError,
+  PensaReservationConflictError,
+} from '../../../domain/pensa/project.errors'
 import { type AiUsageQueryable, readAiUsageTotals } from './ai-usage.repository'
 import { aiUsageDaily, aiUsageReservations } from './schema'
 
@@ -43,7 +43,7 @@ export async function reservePensaUsage(
       existing.profileId !== input.profileId ||
       existing.projectId !== input.projectId)
   )
-    throw new PensaTaskProgressConflictError()
+    throw new PensaReservationConflictError()
   if (existing?.status === 'committed') return
   const expiresAt = new Date(input.now.getTime() + RESERVATION_WINDOW_MS)
   if (existing?.status === 'reserved' && existing.expiresAt > input.now) {
@@ -69,7 +69,7 @@ export async function reservePensaUsage(
     !input.privileged &&
     (totals.usedDay >= input.dailyLimit || totals.usedMonth >= input.monthlyLimit)
   )
-    throw new PensaQuotaExceededError(
+    throw new PensaQuotaError(
       'O Zappy não pode criar novas respostas agora. Seu guia salvo continua disponível.',
     )
   await tx
@@ -105,7 +105,7 @@ export async function commitPensaUsage(
     .where(and(eq(aiUsageReservations.id, id), eq(aiUsageReservations.accountId, accountId)))
   if (hold?.status === 'committed') return
   if (hold?.status !== 'reserved' || hold.expiresAt <= now)
-    throw new PensaTaskProgressConflictError(
+    throw new PensaReservationConflictError(
       'A reserva terminou. Retome a preparação para continuar.',
     )
   await tx

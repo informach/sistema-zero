@@ -57,7 +57,7 @@ const bodySchema = z.discriminatedUnion('operation', [
           .object({ base64: z.string().max(2000000), sha256: z.string().regex(/^[a-f0-9]{64}$/) })
           .strict(),
       ),
-      pensaTaskId: id.optional(),
+      pensaMissionId: id.optional(),
       request: z
         .custom<StudioProAssistanceRequest>(isStudioProAssistanceRequest)
         .refine((value) => !value.mission, 'A missão deve ser consultada pelo servidor.')
@@ -224,6 +224,7 @@ export function createStudioBuilderRoutes(deps: {
             else if (job.assistance?.request.mission) {
               const mission = await studioAssistanceMission(
                 deps.members,
+                user,
                 input.projectId,
                 job.assistance.request.mission.id,
               )
@@ -275,8 +276,9 @@ export function createStudioBuilderRoutes(deps: {
             const assistance = sanitizeStudioAssistanceRequest(input.request)
             const mission = await studioAssistanceMission(
               deps.members,
+              user,
               base.projectId,
-              input.pensaTaskId,
+              input.pensaMissionId,
             )
             if (mission) {
               assistance.mission = mission

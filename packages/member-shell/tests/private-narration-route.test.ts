@@ -1,9 +1,7 @@
 import { afterEach, expect, mock, spyOn, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import type { Env } from '../src/lib/env'
-import type { SessionUser } from '../src/lib/types'
-import type { MembersClient } from '../src/server/clients'
-import type { SessionModule } from '../src/server/session'
+import { PENSA_USER, pensaNarrationMembers } from './pensa-fixtures'
 
 mock.module('server-only', () => ({}))
 const env = await import('../src/lib/env')
@@ -15,34 +13,22 @@ afterEach(() => {
 })
 
 function setup() {
-  const user = { id: randomUUID(), role: 'staff' } as SessionUser
+  const user = { ...PENSA_USER, role: 'staff' }
   const ref = {
     origin: 'pensa_message',
     projectId: randomUUID(),
-    cycleId: randomUUID(),
     messageId: randomUUID(),
-    revision: 1,
+    messageRevision: 1,
   }
   let source = 'Confira o gato. Contato: crianca@example.com'
   const ledger = mock(async (_actor: unknown, input: { type: string }) => ({
     status: 200,
-    body: { status: input.type === 'claim' ? 'generate' : 'ready', key: 'private/this-lease.mp3' },
+    body: {
+      status: input.type === 'claim' ? ('generate' as const) : ('ready' as const),
+      key: 'private/this-lease.mp3',
+    },
   }))
-  const members = {
-    checkPensaAccessReadonly: async () => ({ status: 200, body: { access: { pensa: true } } }),
-    pensaJourneyGet: async () => ({
-      status: 200,
-      body: {
-        journey: {
-          cycleId: ref.cycleId,
-          messages: source
-            ? [{ id: ref.messageId, revision: 1, role: 'assistant', final: true, text: source }]
-            : [],
-        },
-      },
-    }),
-    privateNarration: ledger,
-  } as unknown as MembersClient
+  const members = { ...pensaNarrationMembers(), privateNarration: ledger }
   const fetchMock = spyOn(globalThis, 'fetch').mockResolvedValue(new Response(new Uint8Array(200)))
   const config = spyOn(env, 'getEnv').mockReturnValue({
     ELEVENLABS_API_KEY: 'fake-test-key',
@@ -59,7 +45,8 @@ function setup() {
   })
   const route = createPrivateNarrationRoutes({
     members,
-    session: { getSession: async () => user } as SessionModule,
+    session: { getSession: async () => user },
+    resolveSource: async () => source || null,
   }).privateNarration
   const request = (viewer = user.id) =>
     new Request('https://kids.test/api/voice/narrate', {
@@ -123,7 +110,7 @@ test('a falha da síntese vai ao log pela origem e pelo nome, sem a fala (M1)', 
   f.remove.mockRejectedValue(new TypeError('R2 fora'))
   expect((await f.route.POST(f.request())).status).toBe(503)
   const logged = JSON.stringify(error.mock.calls)
-  expect(logged).toContain('[pensa-v2] voz privada falhou')
+  expect(logged).toContain('[pensa] voz privada falhou')
   expect(logged).toContain('"origin":"pensa_message"')
   expect(logged).toContain('"reason":"VOICE_PROVIDER_FAILED"')
   // Apagar o áudio que sobrou também não falha calado.

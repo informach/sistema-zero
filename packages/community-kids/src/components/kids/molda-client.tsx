@@ -14,16 +14,16 @@ import {
   createCloudMirroredMoldaPersistence,
   type MoldaPersistenceLike,
 } from '@/lib/molda-cloud-persistence'
-import { cloudConfirmRefusal, guideError } from '@/lib/pensa-guide-errors'
-import { openNextPensaMission } from '@/lib/pensa-next-mission'
 import { EMBEDDED_APP_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
 import { useFocusMode } from './focus-mode'
-import { type MoldaGuidePersistence, MoldaTaskGuide } from './molda-task-guide'
+import { type MoldaGuidePersistence, MoldaMissionGuide } from './molda-mission-guide'
 import { PensaMissionBlocked } from './pensa-mission-blocked'
 import { HostChromeAnnouncer, useHostChrome } from './use-host-chrome'
-import { useNextMissionLabel } from './use-next-mission-label'
-import { usePensaGuideCollapsed } from './use-pensa-guide-collapsed'
-import { useMoldaTaskHandoff } from './use-pensa-task-handoff'
+import {
+  canOpenPensaMission,
+  usePensaMissionHandoff,
+  usePensaMissionSession,
+} from './use-pensa-mission-session'
 
 // O pacote é client-only (zustand/WebGL/IndexedDB); carregamos DENTRO de um
 // effect (igual ao pinta-client) e o server renderiza só o placeholder.
@@ -76,32 +76,31 @@ export function MoldaClient({
   // O guia do Pensa recolhido, lembrado por CRIANÇA e valendo para as três oficinas. Vive AQUI,
   // e não dentro do guia, porque o hook lê a preferência num efeito pós-mount: no guia, que só
   // monta depois do módulo e do handoff, isso pintava o painel aberto por um quadro.
-  const { collapsed: guiaRecolhido, setCollapsed: setGuiaRecolhido } =
-    usePensaGuideCollapsed(viewerId)
-
   const [openRequest, setOpenRequest] = useState(() => ({
     assetId: searchParams.get('criacao'),
     revision: 0,
   }))
   const initialAssetId = openRequest.assetId
-  const [taskId] = useState(() => searchParams.get('tarefa'))
+  const taskId = searchParams.get('missao')
   // A prévia da equipe (`?nivel=`) sobrevive à limpeza: sem ela, a URL nova voltaria a
   // resolver tudo liberado no servidor e a oficina trocaria de ferramentas no meio.
   const [previewLevel] = useState(() => searchParams.get('nivel'))
-  const handoff = useMoldaTaskHandoff(taskId)
+  const handoff = usePensaMissionHandoff(taskId, 'molda', viewerId)
   // "Continuar no Estúdio" quando a próxima missão é em outra oficina.
-  const proximaMissaoRotulo = useNextMissionLabel({
-    enabled:
-      handoff.data?.task.guide.contractVersion === 2 &&
-      handoff.data.task.progress.status === 'completed',
-    taskId: handoff.data?.task.id ?? null,
-    projectId: handoff.data?.project.id ?? null,
-    current: 'molda',
+  const navigate = useCallback((path: string) => router.push(path), [router])
+  const missionSession = usePensaMissionSession({
+    handoff: handoff.data,
+    viewerId,
+    cloud,
+    update: handoff.update,
+    retry: handoff.retry,
+    navigate,
+    narrationEnabled,
   })
   useEffect(() => {
     if (!initialAssetId) return
     const keep = new URLSearchParams()
-    if (taskId) keep.set('tarefa', taskId)
+    if (taskId) keep.set('missao', taskId)
     if (previewLevel) keep.set('nivel', previewLevel)
     const query = keep.toString()
     router.replace(query ? `/molda?${query}` : '/molda')
@@ -293,37 +292,21 @@ export function MoldaClient({
             </button>
           ) : null}
         </div>
-      ) : handoff.data && !handoff.data.capability.owned ? (
+      ) : handoff.data && !canOpenPensaMission(handoff.data) ? (
         // A missão é de quem programa (ou de outra artista que já começou): sem o guia e sem
         // concluir, com o caminho de volta ao plano.
         <PensaMissionBlocked
-          reason={handoff.data.capability.blockedReason}
+          reason={handoff.data.availability.message}
           onBackToPlan={() =>
             router.push(`/pensa?plano=${encodeURIComponent(handoff.data!.project.id)}`)
           }
         />
       ) : (
         <>
-          {handoff.data && persistence ? (
-            <MoldaTaskGuide
-              narrationEnabled={narrationEnabled}
-              key={`${viewerId}:${handoff.data.task.id}:${handoff.data.task.revision}`}
-              profileId={viewerId}
-              handoff={handoff.data}
+          {missionSession && persistence ? (
+            <MoldaMissionGuide
+              session={missionSession}
               persistence={persistence}
-              onProgress={handoff.updateProgress}
-              onNextMission={() =>
-                openNextPensaMission(handoff.data!.project.id, (path) => router.push(path))
-              }
-              nextMissionLabel={proximaMissaoRotulo}
-              onConfirmSaved={async (assetId) => {
-                if (!cloud) throw guideError('Espere sua criação ficar guardada na conta.')
-                await cloud.confirm(assetId, { timeoutMs: 15000 }).catch((cause: unknown) => {
-                  throw cloudConfirmRefusal(cause, 'Sua criação')
-                })
-              }}
-              collapsed={guiaRecolhido}
-              onCollapsedChange={setGuiaRecolhido}
               onOpenAsset={(assetId) =>
                 setOpenRequest((current) => ({ assetId, revision: current.revision + 1 }))
               }
@@ -334,9 +317,6 @@ export function MoldaClient({
                   : await gallery.loadAll()
                 return all.some((asset) => mod.isMoldaAssetOpen(asset.id))
               }}
-              onReturn={() =>
-                router.push(`/pensa?plano=${encodeURIComponent(handoff.data.project.id)}`)
-              }
             />
           ) : null}
           {/* A região viva do selo fica no HOST (sempre montada; só offline/erro falam). */}

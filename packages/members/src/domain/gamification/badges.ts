@@ -30,8 +30,7 @@ export const BADGE_SLUGS = [
   'studio-first',
   'studio-master-3',
   'studio-master-10',
-  // Pensa (07/2026): 1ª etapa concluída (a 1ª é SEMPRE a Z = 1ª Carta da Ideia,
-  // ledger `pensa_stage_complete`) + 1º/3º ciclo lançado (`pensa_cycle_complete`).
+  // First accepted definition and first/third verified project. Slugs stay stable.
   'pensa-first-idea',
   'pensa-first-launch',
   'pensa-creator-3',

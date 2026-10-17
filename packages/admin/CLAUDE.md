@@ -644,7 +644,7 @@ chip é "Conta (responsável)"). Seções: "Cursos de <criança>" com `CoursePro
 `lastActivityAt` relativo + badge da plataforma; o members v2 só manda cursos REAIS: ferramenta
 não vira mais "curso 0%") e "Ferramentas e comunidades de <criança>" com os cartões de USO
 (`components/members/usage-cards.tsx`, PUROS — a futura ficha da criança reusa): Pensa
-(planos/lançamentos), Pinta (desenhos na nuvem/entregas), **Molda (criações na nuvem: modelos,
+(projetos/projetos concluídos), Pinta (desenhos na nuvem/entregas), **Molda (criações na nuvem: modelos,
 texturas e céus; sem entregas porque não há bloco de aula — 06/09/2026, sku `molda`, entre Pinta e
 Estúdio na ordem da jornada; `LearnerToolUsageView.molda` é OPCIONAL: members antigo sem o campo
 → "Indisponível agora", testado em `tests/usage-cards.test.tsx`)**, Estúdio (jogos na
@@ -1195,14 +1195,13 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   listagem. **Uso de IA (07/2026):** página `/admin/ia` (grupo Gestão, ícone Sparkles) — cards
   mês/hoje/contas + breakdown por feature + top contas (badge "equipe") + seletor de mês; BFF
   `GET /api/members/ai-usage` (hidrata nomes via batchGetUsers) → gateway
-  `GET /members/admin/ai-usage`. **Funil do Pensa (15/10/2026):** o card "Pensa: onde as crianças param"
-  (`admin/ia/pensa-funnel-card.tsx`, depois das perguntas que falharam) lê
-  `GET /api/members/pensa-funnel?days=7|30|90` → gateway `GET /members/admin/pensa/funnel`. As
-  contas (etapas com a parte dos jogos e quantos pararam antes; como as perguntas do Zappy foram
-  respondidas) são puras em `lib/pensa-funnel.ts` (`tests/pensa-funnel.test.ts`). Só números da
-  PRIMEIRA versão dos jogos criados no período, com as contas da equipe juntas. As etapas contam
-  "chegou aqui ou além" (o members), por isso dizem "Concluíram uma missão ou foram além" e
-  "Testaram o jogo ou foram além": testar não exige missão concluída.
+  `GET /members/admin/ai-usage`. **Funil do Pensa (16/10/2026):** o card
+  `admin/ia/pensa-funnel-card.tsx` lê `GET /api/members/pensa-funnel?days=7|30|90`
+  → `GET /members/admin/pensa/funnel`. Conta projetos uma vez por equipe: definição,
+  plano completo, aceite, primeira funcionalidade (instalação não conta), teste final e
+  conclusão. Mostra também projetos aguardando escolha e adaptações aceitas. Somente
+  contagens, sem narrativa das crianças. Regras puras em `lib/pensa-funnel.ts` e testes
+  em `tests/pensa-funnel.test.ts`. Uso do Pensa expõe `projectsCompleted`.
 - Pagamentos (via gateway, JWT+RBAC): `GET /payments/admin/payments` (`?q&status&method&consumerId&from&to&limit&offset`)
   → `Paginated<PaymentView>`; `GET /payments/admin/payments/:id`; `GET /payments/admin/subscriptions`
   (`?q&status&consumerId&limit&offset`) → `Paginated<SubscriptionView>`; `GET /payments/admin/subscriptions/:id`;

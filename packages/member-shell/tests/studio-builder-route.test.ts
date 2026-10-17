@@ -37,7 +37,7 @@ async function fixture(
     access?: boolean
     level?: string
     finishFails?: boolean
-    journeyStatus?: number
+    pensaStatus?: number
     preflightFails?: boolean
   } = {},
 ) {
@@ -101,7 +101,7 @@ async function fixture(
       status: 200,
       body: { page: { jobs: [studioProBuilderView(job)], nextCursor: null } },
     }),
-    pensaJourneyGet: async () => ({ status: options.journeyStatus ?? 404, body: null }),
+    pensaTeamCapabilities: async () => ({ status: options.pensaStatus ?? 404, body: null }),
   }
   const route = createStudioBuilderRoutes({
     members,
@@ -216,7 +216,7 @@ describe('Studio builder browser boundary', () => {
     expect(await response.json()).toMatchObject({ job: { phase: 'cancelled' } })
     expect(log).toHaveBeenCalledTimes(1)
   })
-  test('a Pensa project cannot create a builder job without the authorized journey', async () => {
+  test('a Pensa project cannot create a builder job without the authorized project context', async () => {
     const f = await fixture()
     const base = await createStudioProRevision({
       ...f.input.base,

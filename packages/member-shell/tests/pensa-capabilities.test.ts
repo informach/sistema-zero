@@ -1,193 +1,94 @@
-import { describe, expect, mock, test } from 'bun:test'
+import { expect, mock, test } from 'bun:test'
+import {
+  PENSA_ACTOR,
+  PENSA_USER,
+  pensaContext,
+  pensaContextMembers,
+  pensaId,
+} from './pensa-fixtures'
 
 mock.module('server-only', () => ({}))
-const { getPensaCapabilities } = await import('../src/server/pensa-capabilities')
-const { availablePlannerCatalog, resolveTaskPlan, TaskPlanDraftSchema } = await import(
-  '../src/server/pensa-agents/planner-contract'
-)
-const { resolveStudioTier } = await import('../src/lib/studio-tier')
-const { auditPlan } = await import('../src/server/pensa-agents/plan-audit')
-const members = {
-  getStudioUnlocksReadonly: async () => ({ status: 200, body: { blocks: ['sz_html_div'] } }),
-  checkCreativeToolsAccessReadonly: async () => ({
+const { loadPensaContext } = await import('../src/server/pensa/context')
+
+test('current capabilities use earned blocks and never borrow the observer staff privilege', async () => {
+  const context = pensaContext()
+  const members = pensaContextMembers(context)
+  const facts = (await members.pensaTeamCapabilities(PENSA_ACTOR, context.view.project.id)).body
+  facts.code.profileId = pensaId(72)
+  facts.code.level = 'coder'
+  facts.code.blocks = ['sz_g2d_setup_stage', 'sz_g2d_top_down']
+  facts.art = [
+    { profileId: PENSA_ACTOR.profileId, level: 'explorer', access: { pinta: true, molda: true } },
+  ]
+  members.pensaTeamCapabilities = async () => ({ status: 200, body: facts })
+  const actual = await loadPensaContext(
+    members,
+    { ...PENSA_USER, role: 'staff' },
+    PENSA_ACTOR,
+    context.view.project.id,
+    '',
+  )
+  const programmer = actual.capabilities.participants.find(
+    (person) => person.profileId === facts.code.profileId,
+  )
+  expect(programmer?.blockIds).toEqual(['sz_g2d_setup_stage', 'sz_g2d_top_down'])
+  expect(programmer?.molda).toBe(false)
+  expect(
+    actual.capabilities.participants.find((person) => person.profileId === PENSA_ACTOR.profileId)
+      ?.molda,
+  ).toBe(true)
+})
+
+test('resource lookup failure remains unavailable instead of becoming a blocked capability', async () => {
+  const context = pensaContext()
+  const members = pensaContextMembers(context)
+  members.pensaTeamCapabilities = async () => {
+    throw new Error('service offline')
+  }
+  await expect(
+    loadPensaContext(members, PENSA_USER, PENSA_ACTOR, context.view.project.id, ''),
+  ).rejects.toThrow('conferir os recursos')
+})
+
+test('project polling does not search lesson material or call an AI provider', async () => {
+  const context = pensaContext()
+  const members = pensaContextMembers(context)
+  members.zappyKnowledgeSearch = mock(async () => ({ status: 200, body: { hits: [] } }))
+  await loadPensaContext(members, PENSA_USER, PENSA_ACTOR, context.view.project.id, '')
+  expect(members.zappyKnowledgeSearch).not.toHaveBeenCalled()
+})
+
+test('lesson excerpts never enter the model context when current course access cannot be confirmed', async () => {
+  const context = pensaContext()
+  const members = pensaContextMembers(context)
+  members.zappyKnowledgeSearch = async () => ({
     status: 200,
-    body: { access: { molda: true, pinta: true, 'estudio-completo': true } },
-  }),
-}
-describe('capacidades reais do Pensa', () => {
-  test('o catálogo limita-se aos blocos conquistados e Molda exige Explorador', async () => {
-    const hacker = await getPensaCapabilities(members, 'hacker', 'customer')
-    expect(hacker?.moldaAvailable).toBe(false)
-    if (!hacker) throw new Error('Missing capabilities')
-    expect(hacker.tier.allowBlocks).toEqual(['sz_html_div'])
-    expect(availablePlannerCatalog(hacker.tier, '2d').blocks.map((block) => block.type)).toEqual([
-      'sz_html_div',
-    ])
-    expect((await getPensaCapabilities(members, 'explorer', 'customer'))?.moldaAvailable).toBe(true)
-    expect(
-      await getPensaCapabilities(
+    body: {
+      hits: [
         {
-          ...members,
-          getStudioUnlocksReadonly: async () => ({ status: 503, body: { blocks: [] } }),
-        },
-        'explorer',
-        'customer',
-      ),
-    ).toBeNull()
-  })
-  test('bloco conquistado acima do nível do posto entra no plano, como na paleta', async () => {
-    const caps = await getPensaCapabilities(
-      {
-        ...members,
-        getStudioUnlocksReadonly: async () => ({
-          status: 200,
-          body: { blocks: ['sz_g2d_setup_stage', 'sz_g2d_top_down'] },
-        }),
-      },
-      'coder',
-      'customer',
-    )
-    if (!caps) throw new Error('Missing capabilities')
-    // `sz_g2d_top_down` é do degrau iniciante-3d e o Construtor é iniciante-2d.
-    expect(caps.tier.level).toBe('iniciante-2d')
-    expect(availablePlannerCatalog(caps.tier, '2d').blocks.map((block) => block.type)).toEqual([
-      'sz_g2d_setup_stage',
-      'sz_g2d_top_down',
-    ])
-    // Sem nada conquistado, nenhum bloco do Estúdio entra no plano.
-    const semNada = await getPensaCapabilities(
-      { ...members, getStudioUnlocksReadonly: async () => ({ status: 200, body: { blocks: [] } }) },
-      'god',
-      'customer',
-    )
-    expect(semNada && availablePlannerCatalog(semNada.tier, '2d').blocks).toEqual([])
-    // …e o Estúdio não entra como destino: a porta do /estudio estaria trancada, e gerar o
-    // plano com o catálogo vazio gastaria a chamada paga para nada.
-    expect(semNada?.studioAvailable).toBe(false)
-    expect(caps.studioAvailable).toBe(true)
-  })
-  test('o draft do Molda exige capacidade e dimensão 3D; referências ficam intactas', () => {
-    const raw = TaskPlanDraftSchema.parse({
-      tasks: [
-        {
-          key: 'rocha',
-          title: 'Modelar rocha',
-          summary: null,
-          destination: 'molda',
-          category: 'art',
-          estimatedMinutes: 15,
-          dependencies: [],
-          guide: {
-            steps: [{ id: 's', text: 'Modele', hint: null, required: true }],
-            criteria: [{ id: 'c', text: 'Confira', hint: null, required: true }],
-          },
-          context: {
-            kind: 'molda',
-            assetId: 'rocha-visual',
-            artKind: 'model',
-            appearance: 'Azul',
-            usage: 'Cenário',
-            palette: [],
-          },
+          kind: 'lesson',
+          courseId: pensaId(80),
+          courseSlug: 'private-course',
+          courseTitle: 'Curso privado',
+          lessonId: pensaId(81),
+          lessonTitle: 'Cartas',
+          sourceType: 'rich-text',
+          content: 'PRIVATE PAID LESSON BODY',
         },
       ],
-    })
-    const tier = resolveStudioTier('explorer', 'customer')
-    expect(() => resolveTaskPlan(raw, tier, '3d', false)).toThrow('não está disponível')
-    expect(() => resolveTaskPlan(raw, tier, '2d', true)).toThrow('não está disponível')
-    expect(resolveTaskPlan(raw, tier, '3d', true)[0]?.context).toMatchObject({
-      kind: 'molda',
-      assetId: 'rocha-visual',
-      artKind: 'model',
-    })
+    },
   })
-  test('a aprovação revalida Pinta e Estúdio mesmo quando o catálogo ainda é compatível', async () => {
-    const capabilities = await getPensaCapabilities(members, 'explorer', 'customer')
-    if (!capabilities) throw new Error('Missing capabilities')
-    const raw = TaskPlanDraftSchema.parse({
-      tasks: [
-        {
-          key: 'personagem',
-          title: 'Desenhar personagem',
-          summary: null,
-          destination: 'pinta',
-          category: 'art',
-          estimatedMinutes: 10,
-          dependencies: [],
-          guide: {
-            steps: [{ id: 's', text: 'Desenhe', hint: null, required: true }],
-            criteria: [{ id: 'c', text: 'Confira', hint: null, required: true }],
-          },
-          context: {
-            kind: 'pinta',
-            assetId: 'hero',
-            artKind: 'sprite',
-            appearance: 'Azul',
-            usage: 'Personagem',
-            style: 'pixel',
-            preset: null,
-            animations: [],
-            states: [],
-            requiresStudioUse: true,
-            palette: [],
-          },
-        },
-        {
-          key: 'jogo',
-          title: 'Montar jogo',
-          summary: null,
-          destination: 'studio',
-          category: 'gameplay',
-          estimatedMinutes: 10,
-          dependencies: ['personagem'],
-          guide: {
-            steps: [{ id: 's', text: 'Crie', hint: null, required: true }],
-            criteria: [{ id: 'c', text: 'Teste', hint: null, required: true }],
-          },
-          context: {
-            kind: 'studio',
-            dimension: '2d',
-            visualAssetIds: [],
-            blockIds: [],
-            mechanicDocumentIds: [],
-            extensionIds: [],
-          },
-        },
-      ],
-    })
-    const tasks = resolveTaskPlan(raw, capabilities.tier, '2d').map((task, position) => ({
-      ...task,
-      id: task.key,
-      position,
-      revision: 1,
-      supersedesTaskId: null,
-      progress: {
-        status: 'planned' as const,
-        completedStepIds: [],
-        completedCriteriaIds: [],
-        outputRef: null,
-        startedAt: null,
-        completedAt: null,
-        updatedAt: null,
-      },
-    }))
-    const stage = {
-      stage: 'o' as const,
-      conversation: { messages: [], summary: null, messageCount: 0 },
-      state: {},
-      artifacts: [],
-      tasks,
-      nextTaskId: tasks[0]?.id ?? null,
-    }
-    const catalog = availablePlannerCatalog(capabilities.tier, '2d')
-    expect(auditPlan(stage, catalog, '2d', true, undefined, capabilities).approved).toBe(true)
-    for (const unavailable of [
-      { ...capabilities, pintaAvailable: false },
-      { ...capabilities, studioAvailable: false },
-    ]) {
-      const review = auditPlan(stage, catalog, '2d', true, undefined, unavailable)
-      expect(review.approved).toBe(false)
-      expect(review.findings.some((finding) => finding.severity === 'error')).toBe(true)
-    }
-  })
+  members.getMyCourseReadonly = async () => {
+    throw new Error('access service unavailable')
+  }
+  const actual = await loadPensaContext(
+    members,
+    PENSA_USER,
+    PENSA_ACTOR,
+    context.view.project.id,
+    'jogo da memória',
+  )
+  expect(actual.sources).toEqual([])
+  expect(actual.references.find((reference) => reference.id === pensaId(81))?.href).toBeNull()
+  expect(JSON.stringify(actual)).not.toContain('PRIVATE PAID LESSON BODY')
 })

@@ -10,7 +10,7 @@ export interface ToolUsageEntryView {
 export interface LearnerToolUsageView {
   /** O aprendiz (a conta no adulto; o PERFIL no kids). */
   userId: string
-  pensa: { projects: number; cyclesCompleted: number; lastActivityAt: string | null }
+  pensa: { projects: number; projectsCompleted: number; lastActivityAt: string | null }
   /** Desenhos vivos na nuvem + entregas de bloco `pinta`; lastActivity = max dos dois. */
   pinta: { drawings: number; deliveries: number; lastActivityAt: string | null }
   /** Jogos vivos na nuvem + entregas de bloco `studio`; lastActivity = max dos dois. */
@@ -71,7 +71,7 @@ export class GetMemberToolUsageService {
           userId: learnerId,
           pensa: {
             projects: p?.projects ?? 0,
-            cyclesCompleted: p?.cyclesCompleted ?? 0,
+            projectsCompleted: p?.projectsCompleted ?? 0,
             lastActivityAt: p?.lastActivityAt ? p.lastActivityAt.toISOString() : null,
           },
           pinta: { drawings: pinta.created, deliveries: pinta.delivered, lastActivityAt: pinta.at },

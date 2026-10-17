@@ -17,65 +17,24 @@ afterEach(() => {
   localStorage.clear()
 })
 
-/** A forma da jornada v2 que o members devolve (só o que a régua lê). */
-function view(input: {
-  journeyCheckpoint: { id: string; saveRevision: string } | null
-  records?: Array<{ id: string; saveRevision: string }>
-  contractVersion?: number
-}) {
-  return {
-    project: { id: PLANO, name: 'Jogo', status: 'active' },
-    journey: { contractVersion: input.contractVersion ?? 2, checkpoint: input.journeyCheckpoint },
-    checkpoints: input.records ?? [],
-  }
-}
-
-describe('a jornada restaurada se reconhece pela forma', () => {
-  test('restaurar: a jornada aponta o ponto escolhido com a revisão NOVA do arquivo', () => {
-    const restaurada = view({
-      journeyCheckpoint: { id: 'cp1', saveRevision: '9' },
-      records: [{ id: 'cp1', saveRevision: '4' }],
+describe('explicit committed restore', () => {
+  test('only a server restore revision creates a pending download', () => {
+    expect(restoredSaveRevisionOf({ project: { id: PLANO }, restoredSaveRevision: '9' })).toEqual({
+      projectId: PLANO,
+      revision: 9,
     })
-    expect(restoredSaveRevisionOf(restaurada)).toEqual({ projectId: PLANO, revision: 9 })
-  })
-
-  test('proteger uma versão NÃO é restaurar: a revisão é a mesma na jornada e no registro', () => {
-    const protegida = view({
-      journeyCheckpoint: { id: 'cp2', saveRevision: '7' },
-      records: [{ id: 'cp2', saveRevision: '7' }],
-    })
-    expect(restoredSaveRevisionOf(protegida)).toBeNull()
-  })
-
-  test('sem ponto, sem o registro do ponto, plano v1 ou lixo: nada', () => {
-    expect(restoredSaveRevisionOf(view({ journeyCheckpoint: null }))).toBeNull()
     expect(
-      restoredSaveRevisionOf(view({ journeyCheckpoint: { id: 'cp1', saveRevision: '9' } })),
+      restoredSaveRevisionOf({ project: { id: PLANO }, restoredSaveRevision: null }),
     ).toBeNull()
     expect(
-      restoredSaveRevisionOf(
-        view({
-          contractVersion: 1,
-          journeyCheckpoint: { id: 'cp1', saveRevision: '9' },
-          records: [{ id: 'cp1', saveRevision: '4' }],
-        }),
-      ),
+      restoredSaveRevisionOf({ project: { id: PLANO }, restoredSaveRevision: 'invalid' }),
     ).toBeNull()
     expect(restoredSaveRevisionOf(null)).toBeNull()
-    expect(restoredSaveRevisionOf({ tasks: [] })).toBeNull()
   })
-
-  test('o transporte guarda a marca do ARQUIVO do plano, por perfil', () => {
-    notePensaRestoreFromView(
-      'perfil-a',
-      view({
-        journeyCheckpoint: { id: 'cp1', saveRevision: '9' },
-        records: [{ id: 'cp1', saveRevision: '4' }],
-      }),
-    )
-    expect(pensaRestoreRevision('perfil-a', ARQUIVO)).toBe(9)
-    // Irmão no mesmo navegador não herda a marca.
-    expect(pensaRestoreRevision('perfil-b', ARQUIVO)).toBeNull()
+  test('the pending revision belongs to the viewing profile', () => {
+    notePensaRestoreFromView('profile-a', { project: { id: PLANO }, restoredSaveRevision: '9' })
+    expect(pensaRestoreRevision('profile-a', ARQUIVO)).toBe(9)
+    expect(pensaRestoreRevision('profile-b', ARQUIVO)).toBeNull()
   })
 })
 

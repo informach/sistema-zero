@@ -24,7 +24,7 @@ function authorized(request: Request, expected: string): boolean {
 
 /** Worker HTTP para um scheduler: claim distribuído no Members, limpeza no R2, ack durável. */
 export function createCreationCleanupWorkerRoutes(deps: {
-  gateway: GatewayModule
+  gateway: Pick<GatewayModule, 'gatewayFetchHmac'>
   deletePrefixes?: typeof r2DeleteUgcPrefixes
 }) {
   return {
@@ -44,6 +44,16 @@ export function createCreationCleanupWorkerRoutes(deps: {
           )
         }
 
+        let rewardsFailed = false
+        try {
+          const drained = await deps.gateway.gatewayFetchHmac(
+            '/members/internal/pensa/rewards/work',
+            { method: 'POST', body: {} },
+          )
+          rewardsFailed = drained.status < 200 || drained.status >= 300
+        } catch {
+          rewardsFailed = true
+        }
         let completed = 0
         let failed = 0
         for (let index = 0; index < 25; index += 1) {
@@ -58,7 +68,7 @@ export function createCreationCleanupWorkerRoutes(deps: {
           const job = claimed.body?.job
           if (claimed.status >= 400 || !job) {
             return NextResponse.json(
-              { completed, failed, upstreamStatus: claimed.status },
+              { completed, failed, rewardsFailed, upstreamStatus: claimed.status },
               { status: 502 },
             )
           }
@@ -105,7 +115,13 @@ export function createCreationCleanupWorkerRoutes(deps: {
           // A limpeza de contas já concluída não volta para a fila por uma falha independente.
           tombstoneCompactionFailed = true
         }
-        return NextResponse.json({ completed, failed, compacted, tombstoneCompactionFailed })
+        return NextResponse.json({
+          completed,
+          failed,
+          compacted,
+          tombstoneCompactionFailed,
+          rewardsFailed,
+        })
       },
     },
   }

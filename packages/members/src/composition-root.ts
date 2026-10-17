@@ -80,33 +80,9 @@ import { ManageEntitlementService } from './application/manage-entitlement/manag
 import { MarkLessonCompleteService } from './application/mark-lesson-complete/mark-lesson-complete.service'
 import { ParentReportPrefsService } from './application/parent-report/report-prefs.service'
 import { SendParentReportsService } from './application/parent-report/send-parent-reports.service'
-import { AdvancePensaStageService } from './application/pensa/advance-stage.service'
-import { AppendPensaConversationTurnService } from './application/pensa/append-conversation-turn.service'
-import { AppendPensaTasksService } from './application/pensa/append-tasks.service'
-import { CreatePensaCycleService } from './application/pensa/create-cycle.service'
-import { CreatePensaProjectService } from './application/pensa/create-project.service'
-import { DeletePensaProjectService } from './application/pensa/delete-project.service'
-import { DeletePensaTaskService } from './application/pensa/delete-task.service'
-import { GetPensaProjectService } from './application/pensa/get-project.service'
-import { GetPensaStageService } from './application/pensa/get-stage.service'
-import { GetPensaTaskHandoffService } from './application/pensa/get-task-handoff.service'
-import { JoinPensaProjectService } from './application/pensa/join-project.service'
-import { PensaJourneyService } from './application/pensa/journey.service'
-import { ListPensaProjectMembersService } from './application/pensa/list-project-members.service'
-import { ListPensaProjectsService } from './application/pensa/list-projects.service'
 import { GetPensaFunnelService } from './application/pensa/pensa-funnel.service'
-import { RemovePensaProjectMemberService } from './application/pensa/remove-project-member.service'
-import { ReplacePensaTasksService } from './application/pensa/replace-tasks.service'
-import { SavePensaArtifactService } from './application/pensa/save-artifact.service'
-import {
-  SharePensaProjectService,
-  UnsharePensaProjectService,
-} from './application/pensa/share-project.service'
+import { PensaProjectService } from './application/pensa/project.service'
 import { PensaTeamService } from './application/pensa/team.service'
-import { UpdatePensaProjectService } from './application/pensa/update-project.service'
-import { UpdatePensaTaskService } from './application/pensa/update-task.service'
-import { UpdatePensaTaskProgressService } from './application/pensa/update-task-progress.service'
-import { ValidatePensaArtifactService } from './application/pensa/validate-artifact.service'
 import { GetProfileAllowanceService } from './application/profile-allowance/get-profile-allowance.service'
 import { GetPublicProfileService } from './application/profiles/get-public-profile.service'
 import { GetProfilesOverviewService } from './application/profiles-overview/get-profiles-overview.service'
@@ -173,9 +149,14 @@ import { DrizzleLiveLessonAccessRepository } from './infrastructure/persistence/
 import { DrizzleLiveMaterialsRepository } from './infrastructure/persistence/drizzle/live-materials.repository'
 import { DrizzleLiveWorkspaceRepository } from './infrastructure/persistence/drizzle/live-workspace.repository'
 import { DrizzleParentReportRepository } from './infrastructure/persistence/drizzle/parent-report.repository'
-import { DrizzlePensaRepository } from './infrastructure/persistence/drizzle/pensa.repository'
+import { DrizzlePensaCheckpointsRepository } from './infrastructure/persistence/drizzle/pensa-checkpoints.repository'
 import { DrizzlePensaFunnelRepository } from './infrastructure/persistence/drizzle/pensa-funnel.repository'
-import { DrizzlePensaJourneyRepository } from './infrastructure/persistence/drizzle/pensa-journey.repository'
+import { DrizzlePensaNarrationsRepository } from './infrastructure/persistence/drizzle/pensa-narrations.repository'
+import { DrizzlePensaOperationsRepository } from './infrastructure/persistence/drizzle/pensa-operations.repository'
+import { DrizzlePensaProjectCommands } from './infrastructure/persistence/drizzle/pensa-project.commands'
+import { DrizzlePensaProjectRepository } from './infrastructure/persistence/drizzle/pensa-project.repository'
+import { DrizzlePensaRewardsRepository } from './infrastructure/persistence/drizzle/pensa-rewards.repository'
+import { DrizzlePensaTeamRepository } from './infrastructure/persistence/drizzle/pensa-team.repository'
 import { DrizzleProcessedWebhookRepository } from './infrastructure/persistence/drizzle/processed-webhook.repository'
 import { DrizzleProgressRepository } from './infrastructure/persistence/drizzle/progress.repository'
 import { DrizzleQuizAttemptRepository } from './infrastructure/persistence/drizzle/quiz-attempt.repository'
@@ -837,37 +818,6 @@ export async function createApplication(env: Env): Promise<Application> {
   const revokeCertificate = new RevokeCertificateService(certificates, clock)
 
   // Pensa (planejador de jogos — plano + Cartões de Criação + progresso externo)
-  const pensaRepo = new DrizzlePensaRepository(db)
-  const pensaNewId = () => randomUUID()
-  const listPensaProjects = new ListPensaProjectsService(pensaRepo, authGateway)
-  const createPensaProject = new CreatePensaProjectService(pensaRepo, pensaNewId, clock)
-  const getPensaProject = new GetPensaProjectService(pensaRepo)
-  const updatePensaProject = new UpdatePensaProjectService(pensaRepo, clock)
-  const deletePensaProject = new DeletePensaProjectService(pensaRepo)
-  const createPensaCycle = new CreatePensaCycleService(pensaRepo, pensaNewId, clock)
-  const getPensaStage = new GetPensaStageService(pensaRepo)
-  const appendPensaConversationTurn = new AppendPensaConversationTurnService(pensaRepo, clock)
-  const savePensaArtifact = new SavePensaArtifactService(pensaRepo, pensaNewId, clock)
-  const validatePensaArtifact = new ValidatePensaArtifactService(pensaRepo, clock)
-  // O advance credita a gamificação NA RESPOSTA (award-dentro-da-ação, fail-open).
-  const advancePensaStage = new AdvancePensaStageService(pensaRepo, awardGamification, clock)
-  const replacePensaTasks = new ReplacePensaTasksService(pensaRepo, pensaNewId, clock)
-  const appendPensaTasks = new AppendPensaTasksService(pensaRepo, pensaNewId, clock)
-  const updatePensaTask = new UpdatePensaTaskService(pensaRepo, pensaNewId, clock)
-  const deletePensaTask = new DeletePensaTaskService(pensaRepo, clock)
-  const getPensaTaskHandoff = new GetPensaTaskHandoffService(pensaRepo)
-  const updatePensaTaskProgress = new UpdatePensaTaskProgressService(pensaRepo, clock)
-  // Equipe (26/09/2026)
-  const sharePensaProject = new SharePensaProjectService(pensaRepo, clock)
-  const unsharePensaProject = new UnsharePensaProjectService(pensaRepo, clock)
-  const joinPensaProject = new JoinPensaProjectService(pensaRepo, clock)
-  const listPensaProjectMembers = new ListPensaProjectMembersService(
-    pensaRepo,
-    authGateway,
-    getAvatarsByProfiles,
-  )
-  const removePensaProjectMember = new RemovePensaProjectMemberService(pensaRepo, clock)
-
   const listCreations = new ListCreationsService(creationsRepo)
   const reserveCreationUpload = new ReserveCreationUploadService(
     creationsRepo,
@@ -878,27 +828,31 @@ export async function createApplication(env: Env): Promise<Application> {
   const commitCreationUpload = new CommitCreationUploadService(creationsRepo, clock)
   const getCreationDownload = new GetCreationDownloadService(creationsRepo)
   const deleteCreation = new DeleteCreationService(creationsRepo, clock)
-  // Pensa v2: a jornada e a EQUIPE (14/10/2026). O `PUT …/roles` devolve a jornada relida.
-  const pensaJourneyService = new PensaJourneyService(
-    new DrizzlePensaJourneyRepository(db, {
-      dailyLimit: env.AI_LIMIT_DAILY,
-      monthlyLimit: env.AI_LIMIT_MONTHLY,
-    }),
-    clock,
-    authGateway,
-  )
-  const pensaTeam = new PensaTeamService({
-    repo: pensaRepo,
-    journey: pensaJourneyService,
-    authGateway,
-    avatars: getAvatarsByProfiles,
-    accessCheck,
-    gamification: getGamification,
-    studioUnlocks: getStudioUnlocks,
-    creations: creationsRepo,
-    creationDownload: getCreationDownload,
-    clock,
+  // One project aggregate: accepted definition, functional plan and team progress.
+  const pensaRepo = new DrizzlePensaProjectRepository(db, clock)
+  const pensaCommands = new DrizzlePensaProjectCommands(pensaRepo, {
+    dailyLimit: env.AI_LIMIT_DAILY,
+    monthlyLimit: env.AI_LIMIT_MONTHLY,
   })
+  const pensaProjects = new PensaProjectService(pensaCommands)
+  const pensaOperations = new DrizzlePensaOperationsRepository(pensaCommands, {
+    dailyLimit: env.AI_LIMIT_DAILY,
+    monthlyLimit: env.AI_LIMIT_MONTHLY,
+  })
+  const pensaCheckpoints = new DrizzlePensaCheckpointsRepository(pensaRepo)
+  const pensaNarrations = new DrizzlePensaNarrationsRepository(pensaRepo)
+  const pensaTeam = new PensaTeamService(
+    new DrizzlePensaTeamRepository({
+      projects: pensaCommands,
+      authGateway,
+      avatars: getAvatarsByProfiles,
+      accessCheck,
+      gamification: getGamification,
+      studioUnlocks: getStudioUnlocks,
+      creations: creationsRepo,
+      creationDownload: getCreationDownload,
+    }),
+  )
   const compactCreationTombstones = new CompactCreationTombstonesService(creationsRepo, clock)
 
   // Motor de acesso (webhooks)
@@ -1053,39 +1007,18 @@ export async function createApplication(env: Env): Promise<Application> {
       internalToken: env.INTERNAL_API_TOKEN,
     },
     pensa: {
-      listProjects: listPensaProjects,
-      createProject: createPensaProject,
-      getProject: getPensaProject,
-      updateProject: updatePensaProject,
-      deleteProject: deletePensaProject,
-      createCycle: createPensaCycle,
-      getStage: getPensaStage,
-      appendConversationTurn: appendPensaConversationTurn,
-      saveArtifact: savePensaArtifact,
-      validateArtifact: validatePensaArtifact,
-      advanceStage: advancePensaStage,
-      replaceTasks: replacePensaTasks,
-      appendTasks: appendPensaTasks,
-      updateTask: updatePensaTask,
-      deleteTask: deletePensaTask,
-      getTaskHandoff: getPensaTaskHandoff,
-      updateTaskProgress: updatePensaTaskProgress,
-      shareProject: sharePensaProject,
-      unshareProject: unsharePensaProject,
-      joinProject: joinPensaProject,
-      listProjectMembers: listPensaProjectMembers,
-      removeProjectMember: removePensaProjectMember,
+      store: pensaRepo,
+      projects: pensaProjects,
+      team: pensaTeam,
+      operations: pensaOperations,
+      checkpoints: pensaCheckpoints,
+      narrations: pensaNarrations,
+      rewards: new DrizzlePensaRewardsRepository(db, awardGamification),
       accessCheck,
       getGamification,
+      credits: aiCredits,
       internalToken: env.INTERNAL_API_TOKEN,
     },
-    pensaJourney: {
-      service: pensaJourneyService,
-      accessCheck,
-      getGamification,
-      internalToken: env.INTERNAL_API_TOKEN,
-    },
-    pensaTeam: { team: pensaTeam, internalToken: env.INTERNAL_API_TOKEN },
     creations: {
       list: listCreations,
       reserveUpload: reserveCreationUpload,

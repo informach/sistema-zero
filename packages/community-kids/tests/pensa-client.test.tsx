@@ -90,7 +90,7 @@ describe('pensa-client: o chrome do host chega ao Pensa', () => {
     setViewportWidth(1280)
     render(
       <FocusModeProvider viewerId="perfil-1">
-        <PensaClient pintaOwned studioAvailable />
+        <PensaClient />
         <FocusModeToggle target="nav" />
       </FocusModeProvider>,
     )
@@ -108,7 +108,7 @@ describe('pensa-client: o chrome do host chega ao Pensa', () => {
     setViewportWidth(500)
     render(
       <FocusModeProvider viewerId="perfil-1">
-        <PensaClient pintaOwned studioAvailable />
+        <PensaClient />
       </FocusModeProvider>,
     )
     await waitFor(() => {
@@ -122,7 +122,7 @@ describe('pensa-client: o chrome do host chega ao Pensa', () => {
     setViewportWidth(1280)
     render(
       <FocusModeProvider viewerId="perfil-1">
-        <PensaClient pintaOwned studioAvailable />
+        <PensaClient />
         <FocusModeToggle target="nav" />
       </FocusModeProvider>,
     )
@@ -135,31 +135,68 @@ describe('pensa-client: o chrome do host chega ao Pensa', () => {
   })
 })
 
-it('opens Pro missions and games through a full navigation, preserving classic routing', async () => {
+it('preserves the canonical API error for definitive refusals in project care', async () => {
   render(
     <FocusModeProvider viewerId="perfil-1">
-      <PensaClient pintaOwned studioAvailable={false} studioProAvailable />
+      <PensaClient viewerId="perfil-1" />
     </FocusModeProvider>,
   )
   await screen.findByTestId('pensa-app')
-  expect(lastAdapter.capabilities.studioOwned).toBe(false)
-  expect(lastAdapter.capabilities.studioProAvailable).toBe(true)
+  const original = globalThis.fetch
+  globalThis.fetch = Object.assign(
+    async () =>
+      Response.json(
+        { error: { code: 'REVISION_CONFLICT', message: 'A tentativa foi encerrada.' } },
+        { status: 409 },
+      ),
+    { preconnect: original.preconnect },
+  )
+  try {
+    const result = lastAdapter.transport.request('/projects/test/checkpoints', { method: 'POST' })
+    await expect(result).rejects.toBeInstanceOf(actualPensa.PensaApiError)
+    await expect(result).rejects.toMatchObject({ status: 409, code: 'REVISION_CONFLICT' })
+  } finally {
+    globalThis.fetch = original
+  }
+})
+
+it('opens Pro missions and games through a full navigation, preserving classic routing', async () => {
+  render(
+    <FocusModeProvider viewerId="perfil-1">
+      <PensaClient />
+    </FocusModeProvider>,
+  )
+  await screen.findByTestId('pensa-app')
   const navigation = spyOn(window.location, 'assign').mockImplementation(() => {})
   router.push.mockClear()
   try {
-    lastAdapter.onOpenTask({
-      taskId: 'mission',
+    lastAdapter.onOpenMission({
+      missionId: 'mission',
       destination: 'studio',
       studioProjectId: 'pensa-plan',
+      studioAuthoring: 'code',
     })
-    expect(navigation).toHaveBeenLastCalledWith('/estudio/pro/pensa-plan?tarefa=mission')
-    lastAdapter.onOpenGame?.({ projectId: 'p-l-a-n', studioAuthoring: 'code' })
+    expect(navigation).toHaveBeenLastCalledWith('/estudio/pro/pensa-plan?missao=mission')
+    lastAdapter.onOpenGame?.({
+      projectId: 'p-l-a-n',
+      studioAuthoring: 'code',
+      studioProjectId: 'pensa-plan',
+    })
     expect(navigation).toHaveBeenLastCalledWith('/estudio/pro/pensa-plan')
     expect(router.push).not.toHaveBeenCalled()
-    lastAdapter.onOpenGame?.({ projectId: 'p-l-a-n' })
+    lastAdapter.onOpenGame?.({
+      projectId: 'p-l-a-n',
+      studioAuthoring: 'blocks',
+      studioProjectId: 'pensa-plan',
+    })
     expect(router.push).toHaveBeenLastCalledWith('/estudio?projeto=pensa-plan')
-    lastAdapter.onOpenTask({ taskId: 'classic', destination: 'studio' })
-    expect(router.push).toHaveBeenLastCalledWith('/estudio?tarefa=classic')
+    lastAdapter.onOpenMission({
+      missionId: 'classic',
+      destination: 'studio',
+      studioProjectId: 'pensa-plan',
+      studioAuthoring: 'blocks',
+    })
+    expect(router.push).toHaveBeenLastCalledWith('/estudio?missao=classic')
   } finally {
     navigation.mockRestore()
   }

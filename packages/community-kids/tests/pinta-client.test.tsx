@@ -2,6 +2,8 @@ import { afterAll, expect, mock, spyOn, test } from 'bun:test'
 import type { PintaHostAdapter } from '@sistemazero/pinta'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import type { ReactNode } from 'react'
+import { handoffFixture, PROFILE_ID } from '../../pensa/src/components/pensa.fixture'
+import { missionSessionFixture } from '../../ui/tests/mission-fixture'
 
 const actualNavigation = await import('next/navigation')
 const actualPinta = await import('@sistemazero/pinta')
@@ -9,6 +11,7 @@ const actualPersonal = await import('@sistemazero/studio/personal-assets')
 const namespaces: string[] = []
 /** O adapter que o host entregou ao último `<PintaApp>` montado. */
 let lastAdapter: PintaHostAdapter | undefined
+let pintaRenders = 0
 /** A biblioteca pessoal do Estúdio, falsa: o que existe e o que foi regravado. */
 const personalRecords = new Map<string, { id: string }>()
 const savedToStudio: Array<Record<string, unknown>> = []
@@ -46,6 +49,7 @@ function ObservedPintaApp({
   onWorkspaceChange?: (active: boolean) => void
 }): ReactNode {
   lastAdapter = adapter
+  pintaRenders += 1
   return (
     <>
       <output data-testid="pinta-app">montado</output>
@@ -59,7 +63,7 @@ function ObservedPintaApp({
   )
 }
 
-/** A query string da vez (`?tarefa=` é o deep link do Pensa). */
+/** A query string da vez (`?missao=` é o deep link do Pensa). */
 let searchParams = new URLSearchParams()
 
 mock.module('next/navigation', () => ({
@@ -167,138 +171,96 @@ test('a volta da ponte diz POR QUE não atualizou (nunca levado ao Estúdio, bib
   expect(namespaces).not.toContain('personal:perfil-b')
 })
 
-/** O que a rota `/api/pensa/tasks/:id/handoff` devolve para uma tarefa de arte. */
-const handoffDeArte = {
-  project: { id: 'plano-1', name: 'Bosque encantado' },
-  cycle: { id: 'ciclo-1', number: 1, goal: null },
-  capability: { owned: true, blockedReason: null },
-  task: {
-    id: 'tarefa-1',
-    title: 'Desenhar a heroína',
-    summary: null,
-    category: 'art',
-    estimatedMinutes: 20,
-    position: 1,
-    dependencies: [],
-    revision: 1,
-    supersedesTaskId: null,
-    destination: 'pinta',
-    guide: { steps: [], criteria: [] },
-    context: {
-      kind: 'pinta',
-      assetId: 'heroina',
-      artKind: 'sprite',
-      style: 'pixel',
-      palette: [{ role: 'roupa', color: '#aa33cc' }],
-      appearance: 'Pequena, ágil e com capa roxa',
-      animations: [],
-      states: [],
-      usage: 'Personagem principal',
-      requiresStudioUse: false,
-    },
-    progress: {
-      status: 'in_progress',
-      completedStepIds: [],
-      completedCriteriaIds: [],
-      startedAt: null,
-      completedAt: null,
-      updatedAt: null,
-      outputRef: null,
-    },
-  },
+/** Canonical saved-art mission used by the host. */
+function artHandoff() {
+  const session = missionSessionFixture()
+  return {
+    ...handoffFixture(),
+    mission: session.mission,
+    progress: session.progress,
+    assetSlots: session.assetSlots,
+  }
 }
 
-test('com ?tarefa= o "Voltar ao plano" do brief leva ao plano do Pensa, e o id vem do handoff', async () => {
-  searchParams = new URLSearchParams('tarefa=tarefa-1')
-  const fetchOriginal = globalThis.fetch
-  globalThis.fetch = (async (_input: RequestInfo | URL) =>
-    new Response(JSON.stringify(handoffDeArte), {
-      status: 200,
-      headers: { 'content-type': 'application/json' },
-    })) as typeof fetch
-
+test('com ?missao= o retorno usa o projeto do handoff canônico', async () => {
+  const handoff = artHandoff()
+  searchParams = new URLSearchParams(`missao=${handoff.mission.id}`)
+  const original = globalThis.fetch
+  globalThis.fetch = Object.assign(async () => Response.json(handoff), {
+    preconnect: original.preconnect,
+  })
   try {
-    const view = render(<PintaClient viewerId="perfil-c" studioAvailable />)
+    const view = render(<PintaClient viewerId={PROFILE_ID} studioAvailable />)
     await waitFor(() => expect(lastAdapter?.taskSession).toBeDefined())
-    const session = lastAdapter?.taskSession
-    if (!session) throw new Error('sem taskSession')
-
     router.push.mockClear()
-    await session.onReturnToPlan?.()
-    expect(router.push).toHaveBeenCalledTimes(1)
-    expect(router.push).toHaveBeenCalledWith('/pensa?plano=plano-1')
+    await lastAdapter?.taskSession?.onReturnToPlan()
+    expect(router.push).toHaveBeenCalledWith(`/pensa?plano=${handoff.project.id}`)
     view.unmount()
   } finally {
-    globalThis.fetch = fetchOriginal
+    globalThis.fetch = original
     searchParams = new URLSearchParams()
   }
 })
 
-test('sem ?tarefa= não há brief nenhum (quem abre o Pinta pelo menu não tem plano para voltar)', async () => {
+test('sem missão o Pinta abre livre, sem painel do plano', async () => {
   searchParams = new URLSearchParams()
+  const before = pintaRenders
   const view = render(<PintaClient viewerId="perfil-d" studioAvailable />)
-  await waitFor(() => expect(lastAdapter?.resyncToStudio).toBeDefined())
+  await waitFor(() => expect(pintaRenders).toBeGreaterThan(before))
   expect(lastAdapter?.taskSession).toBeUndefined()
   view.unmount()
 })
 
-test('missão de outra pessoa da equipe: a frase do servidor, "Voltar ao plano" e NADA do Pinta', async () => {
-  searchParams = new URLSearchParams('tarefa=tarefa-1')
-  const fetchOriginal = globalThis.fetch
-  globalThis.fetch = (async (_input: RequestInfo | URL) =>
-    new Response(
-      JSON.stringify({
-        ...handoffDeArte,
-        capability: { owned: false, blockedReason: 'Essa missão é de quem cuida das artes.' },
-      }),
-      { status: 200, headers: { 'content-type': 'application/json' } },
-    )) as typeof fetch
-
+test('missão de outra pessoa mostra a disponibilidade do servidor e volta ao plano', async () => {
+  const handoff = artHandoff()
+  handoff.availability = {
+    ...handoff.availability,
+    available: false,
+    reason: 'not_your_mission',
+    message: 'Essa missão é de quem cuida das artes.',
+    eligibleProfileIds: [],
+  }
+  searchParams = new URLSearchParams(`missao=${handoff.mission.id}`)
+  const original = globalThis.fetch
+  globalThis.fetch = Object.assign(async () => Response.json(handoff), {
+    preconnect: original.preconnect,
+  })
   try {
-    const view = render(<PintaClient viewerId="perfil-e" studioAvailable />)
+    const view = render(<PintaClient viewerId={PROFILE_ID} studioAvailable />)
     expect(await screen.findByText('Essa missão é de quem cuida das artes.')).not.toBeNull()
-    // Sem o app (nada de brief para marcar nem concluir).
     expect(screen.queryByTestId('pinta-app')).toBeNull()
     router.push.mockClear()
     fireEvent.click(screen.getByRole('button', { name: 'Voltar ao plano' }))
-    expect(router.push).toHaveBeenCalledWith('/pensa?plano=plano-1')
+    expect(router.push).toHaveBeenCalledWith(`/pensa?plano=${handoff.project.id}`)
     view.unmount()
   } finally {
-    globalThis.fetch = fetchOriginal
+    globalThis.fetch = original
     searchParams = new URLSearchParams()
   }
 })
 
-test('a Pro-bound art mission can send its drawing without the classic palette and opens the bound Pro game', async () => {
-  searchParams = new URLSearchParams('tarefa=tarefa-1')
-  const originalFetch = globalThis.fetch
-  globalThis.fetch = Object.assign(
-    async () =>
-      Response.json({
-        ...handoffDeArte,
-        capability: { owned: true, blockedReason: null, studioProProjectId: 'pensa-plano1' },
-        task: {
-          ...handoffDeArte.task,
-          guide: { contractVersion: 2, steps: [], criteria: [] },
-          context: { ...handoffDeArte.task.context, requiresStudioUse: true },
-        },
-      }),
-    { preconnect: originalFetch.preconnect },
-  )
+test('a missão de arte vinculada ao Pro abre o mesmo jogo e não exige importação para concluir', async () => {
+  const handoff = artHandoff()
+  handoff.studioAuthoring = 'code'
+  searchParams = new URLSearchParams(`missao=${handoff.mission.id}`)
+  const original = globalThis.fetch
+  globalThis.fetch = Object.assign(async () => Response.json(handoff), {
+    preconnect: original.preconnect,
+  })
   const full = spyOn(window.location, 'assign').mockImplementation(() => {})
   try {
-    const view = render(<PintaClient viewerId="perfil-pro" studioAvailable={false} />)
+    const view = render(<PintaClient viewerId={PROFILE_ID} studioAvailable={false} />)
     await waitFor(() => expect(lastAdapter?.taskSession).toBeDefined())
     expect(lastAdapter?.studioOwned).toBe(true)
     expect(lastAdapter?.sendToStudio).toBeFunction()
     expect(lastAdapter?.sendGameToStudio).toBeUndefined()
-    expect(lastAdapter?.taskSession?.studioUseBlockedReason).toBeUndefined()
+    expect(lastAdapter?.taskSession?.mission.kind).toBe('asset')
     lastAdapter?.onOpenStudio?.()
-    expect(full).toHaveBeenCalledWith('/estudio/pro/pensa-plano1')
+    expect(full).toHaveBeenCalledWith(`/estudio/pro/${handoff.studioProjectId}`)
     view.unmount()
   } finally {
     full.mockRestore()
-    globalThis.fetch = originalFetch
+    globalThis.fetch = original
     searchParams = new URLSearchParams()
   }
 })

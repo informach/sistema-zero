@@ -1,98 +1,140 @@
 import { expect, mock, test } from 'bun:test'
-import { randomUUID } from 'node:crypto'
-import { createPensaJourney } from '@sistemazero/core/pensa'
-import type { SessionUser } from '../src/lib/types'
-import type { MembersClient } from '../src/server/clients'
+import { PensaProjectRevisionSchema } from '@sistemazero/core/pensa'
+import {
+  PENSA_DATE,
+  PENSA_USER,
+  pensaContext,
+  pensaDefinition,
+  pensaId,
+  pensaNarrationMembers,
+} from './pensa-fixtures'
 
 mock.module('server-only', () => ({}))
 const { NarratableRefSchema, resolvePrivateNarration } = await import(
   '../src/routes/private-narration'
 )
-const projectId = randomUUID(),
-  cycleId = randomUUID(),
-  messageId = randomUUID()
-const reference = { origin: 'pensa_message' as const, projectId, cycleId, messageId, revision: 1 }
-const user = { id: randomUUID(), role: 'staff' } as SessionUser
-const state = {
-  ...createPensaJourney(projectId, cycleId, ''),
-  messages: [
-    {
-      id: messageId,
-      role: 'assistant' as const,
-      text: 'Vamos mover seu gato.',
-      revision: 1,
-      final: true,
-      at: '',
-    },
-  ],
-}
-const members = {
-  checkPensaAccessReadonly: async () => ({ status: 200, body: { access: { pensa: true } } }),
-  pensaJourneyGet: async (id: string) =>
-    id === projectId ? { status: 200, body: { journey: state } } : { status: 404, body: null },
-} as unknown as MembersClient
-test('narrar recebe uma origem, nunca texto arbitrário do navegador', () => {
-  expect(NarratableRefSchema.safeParse({ ...reference, text: 'texto inventado' }).success).toBe(
+const privileged = { ...PENSA_USER, role: 'staff' }
+
+test('narration only accepts a canonical reference and the current assistant message revision', async () => {
+  const context = pensaContext()
+  context.view.messages.push({
+    ...context.view.messages[0]!,
+    id: pensaId(30),
+    role: 'assistant',
+    text: 'Vamos organizar as cartas.',
+    revision: 2,
+  })
+  const members = pensaNarrationMembers(context)
+  const ref = {
+    origin: 'pensa_message' as const,
+    projectId: context.view.project.id,
+    messageId: pensaId(30),
+    messageRevision: 2,
+  }
+  const load = async () => context
+  expect(NarratableRefSchema.safeParse({ ...ref, text: 'arbitrary browser text' }).success).toBe(
     false,
   )
-  expect(NarratableRefSchema.safeParse(reference).success).toBe(true)
-})
-test('só narra mensagem final da revisão e do ciclo atuais', async () => {
-  expect(await resolvePrivateNarration(members, user, reference)).toBe('Vamos mover seu gato.')
-  expect(await resolvePrivateNarration(members, user, { ...reference, revision: 2 })).toBeNull()
-  expect(
-    await resolvePrivateNarration(members, user, { ...reference, cycleId: randomUUID() }),
-  ).toBeNull()
-  expect(
-    await resolvePrivateNarration(members, user, { ...reference, projectId: randomUUID() }),
-  ).toBeNull()
-  state.messages[0]!.final = false
-  expect(await resolvePrivateNarration(members, user, reference)).toBeNull()
-  state.messages[0]!.final = true
-})
-test('voz do guia não confunde revisão antiga com a orientação atual', async () => {
-  const source = {
-    ...members,
-    pensaGetTaskHandoff: async () => ({
-      status: 200,
-      body: {
-        task: {
-          revision: 3,
-          guide: {
-            steps: [{ id: 'a', text: 'Encaixe Mover.', hint: 'No evento da seta.' }],
-            criteria: [],
-          },
-        },
-        capability: { owned: true },
-      },
-    }),
-  } as unknown as MembersClient
-  const ref = { origin: 'pensa_guide' as const, taskId: randomUUID(), revision: 3, stepId: 'a' }
-  expect(await resolvePrivateNarration(source, user, ref)).toBe(
-    'Encaixe Mover.. No evento da seta.',
+  expect(await resolvePrivateNarration(members, privileged, ref, load)).toBe(
+    'Vamos organizar as cartas.',
   )
-  expect(await resolvePrivateNarration(source, user, { ...ref, revision: 2 })).toBeNull()
+  expect(
+    await resolvePrivateNarration(members, privileged, { ...ref, messageRevision: 1 }, load),
+  ).toBeNull()
+  context.view.messages.pop()
+  expect(await resolvePrivateNarration(members, privileged, ref, load)).toBeNull()
 })
-test('limpar histórico do tutor invalida a fonte e mensagens antigas podem ser encontradas', async () => {
-  const source = {
-    ...members,
-    checkCreativeToolsAccessReadonly: async () => ({
-      status: 200,
-      body: { access: { 'estudio-completo': true } },
-    }),
-    zappyHistory: async (_id: string, cursor?: string) => ({
-      status: 200,
-      body: cursor
-        ? {
-            messages: [{ id: messageId, role: 'assistant', text: 'Use a seta.' }],
-            nextCursor: null,
-          }
-        : { messages: [], nextCursor: 'older' },
-    }),
-  } as unknown as MembersClient
-  const ref = { origin: 'studio_message' as const, projectId: 'studio-project', messageId }
-  expect(await resolvePrivateNarration(source, user, ref)).toBe('Use a seta.')
-  source.zappyHistory = async () =>
-    ({ status: 200, body: { messages: [], nextCursor: null } }) as never
-  expect(await resolvePrivateNarration(source, user, ref)).toBeNull()
+
+test('mission narration uses functional rules and refuses an obsolete content revision', async () => {
+  const context = pensaContext()
+  context.view.revision = PensaProjectRevisionSchema.parse({
+    id: pensaId(40),
+    projectId: context.view.project.id,
+    number: 1,
+    previousRevisionId: null,
+    acceptedByProfileId: privileged.id,
+    acceptedAt: PENSA_DATE,
+    definition: pensaDefinition(),
+    plan: {
+      stages: [{ id: pensaId(41), title: 'Cartas', position: 0 }],
+      missions: [
+        {
+          id: pensaId(42),
+          stageId: pensaId(41),
+          position: 0,
+          contentRevision: 3,
+          kind: 'feature',
+          destination: 'studio',
+          title: 'Escolha duas cartas',
+          objective: 'Permita escolher duas cartas diferentes.',
+          requirementIds: [pensaId(11)],
+          dependencyIds: [],
+          rules: [{ id: 'two', text: 'Somente duas cartas diferentes podem ficar abertas.' }],
+          checks: [
+            {
+              id: 'same',
+              action: 'Escolha a mesma carta duas vezes.',
+              expected: 'A carta conta somente uma vez.',
+            },
+          ],
+        },
+      ],
+    },
+    technical: {
+      capabilitiesFingerprint: context.capabilities.fingerprint,
+      catalogVersion: context.capabilities.catalogVersion,
+      authoring: 'blocks',
+      runtimeExtensionId: 'game-2d-advanced',
+      extensions: [],
+      missionResources: [],
+      references: [],
+    },
+  })
+  const members = pensaNarrationMembers(context)
+  const ref = {
+    origin: 'pensa_mission' as const,
+    missionId: pensaId(42),
+    contentRevision: 3,
+    section: 'rule' as const,
+    itemId: 'two',
+  }
+  expect(await resolvePrivateNarration(members, privileged, ref, async () => context)).toContain(
+    'Somente duas cartas',
+  )
+  expect(
+    await resolvePrivateNarration(
+      members,
+      privileged,
+      { ...ref, contentRevision: 2 },
+      async () => context,
+    ),
+  ).toBeNull()
+})
+
+test('clearing the Studio tutor history invalidates its source, including older pages', async () => {
+  const members = pensaNarrationMembers()
+  members.zappyHistory = async (_id, cursor) => ({
+    status: 200,
+    body: cursor
+      ? {
+          messages: [
+            {
+              id: pensaId(50),
+              role: 'assistant',
+              text: 'Confira o resultado.',
+              createdAt: PENSA_DATE,
+            },
+          ],
+          nextCursor: null,
+        }
+      : { messages: [], nextCursor: 'older' },
+  })
+  const ref = {
+    origin: 'studio_message' as const,
+    projectId: 'studio-project',
+    messageId: pensaId(50),
+  }
+  expect(await resolvePrivateNarration(members, privileged, ref)).toBe('Confira o resultado.')
+  members.zappyHistory = async () => ({ status: 200, body: { messages: [], nextCursor: null } })
+  expect(await resolvePrivateNarration(members, privileged, ref)).toBeNull()
 })

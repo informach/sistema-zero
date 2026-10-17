@@ -1,5 +1,7 @@
 # Pensa, Zappy e Estúdio: correções de integração
 
+> Histórico: substituído pela [especificação funcional de 16/10/2026](../../plans/2026-10-16-pensa-reestruturacao-spec.md). Este documento registra decisões anteriores e não define o contrato vigente.
+
 > Execução nesta sessão com a skill executing-plans. O pedido “Corrija todos os problemas que você achou” autoriza implementar as recomendações do relatório. Não há nova decisão de produto pendente.
 
 **Goal:** corrigir os oito achados e as falhas de verificação da auditoria.

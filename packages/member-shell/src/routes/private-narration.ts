@@ -4,42 +4,26 @@ import {
   normalizarRoteiroDoZappy,
   ZAPPY_PRONUNCIATION_PROFILE_VERSION,
 } from '@sistemazero/core/learning/scene'
-import type { PensaNarratableRef } from '@sistemazero/core/pensa'
+import { PensaNarratableRefSchema } from '@sistemazero/core/pensa'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { isReadonlyImpersonation } from '../lib/act'
 import { getEnv } from '../lib/env'
+import type { PrivateNarratableRef } from '../lib/private-narration'
 import { isPrivilegedRole } from '../lib/studio-tier'
 import type { SessionUser } from '../lib/types'
 import type { MembersClient } from '../server/clients'
 import { hasAiAppsLevel } from '../server/creative-apps-access'
-import { redactPensaText } from '../server/pensa-journey/privacy'
+import { loadPensaContext, type PensaContextMembers } from '../server/pensa/context'
+import { redactPensaText } from '../server/pensa/privacy'
 import { r2DeleteObjectUgc, r2PresignGetUgc, r2PutObjectUgc } from '../server/r2'
 import type { SessionModule } from '../server/session'
 import { isStudioZappyAllowedForRequest } from '../server/zappy-access'
 import { redactZappySensitiveText } from '../server/zappy-safety'
 
 const uuid = z.uuid()
-export const NarratableRefSchema = z.discriminatedUnion('origin', [
-  z.strictObject({
-    origin: z.literal('pensa_message'),
-    projectId: uuid,
-    cycleId: uuid,
-    messageId: uuid,
-    revision: z.number().int().positive(),
-  }),
-  z.strictObject({
-    origin: z.literal('pensa_proposal'),
-    projectId: uuid,
-    cycleId: uuid,
-    proposalId: uuid,
-  }),
-  z.strictObject({
-    origin: z.literal('pensa_guide'),
-    taskId: uuid,
-    revision: z.number().int().positive(),
-    stepId: z.string().min(1).max(100),
-  }),
+export const NarratableRefSchema = z.union([
+  PensaNarratableRefSchema,
   z.strictObject({
     origin: z.literal('studio_message'),
     projectId: z.string().min(1).max(100),
@@ -52,10 +36,22 @@ const fail = (status: number, message: string) =>
     { status, headers: { 'Cache-Control': 'private, no-store' } },
   )
 
+export type PrivateNarrationMembers = PensaContextMembers &
+  Pick<
+    MembersClient,
+    | 'checkPensaAccessReadonly'
+    | 'checkCreativeToolsAccessReadonly'
+    | 'getGamification'
+    | 'zappyHistory'
+    | 'pensaMissionContext'
+    | 'privateNarration'
+  >
+
 export async function resolvePrivateNarration(
-  members: MembersClient,
+  members: PrivateNarrationMembers,
   user: SessionUser,
-  ref: PensaNarratableRef,
+  ref: PrivateNarratableRef,
+  loadContext = loadPensaContext,
 ): Promise<string | null> {
   if (ref.origin === 'studio_message') {
     if (!(await isStudioZappyAllowedForRequest(members, user))) return null
@@ -79,31 +75,37 @@ export async function resolvePrivateNarration(
   const access = await members.checkPensaAccessReadonly()
   if (access.body?.access?.pensa !== true || !(await hasAiAppsLevel(members, user.role)))
     return null
-  if (ref.origin === 'pensa_guide') {
-    const handoff = await members.pensaGetTaskHandoff(ref.taskId)
-    const task = handoff.body?.task
-    if (
-      handoff.status !== 200 ||
-      !task ||
-      task.revision !== ref.revision ||
-      !handoff.body?.capability.owned
-    )
-      return null
-    const step = [...task.guide.steps, ...task.guide.criteria].find((s) => s.id === ref.stepId)
-    return step ? [step.text, step.hint].filter(Boolean).join('. ') : null
+  const actor = {
+    profileId: user.id,
+    accountId: user.activeProfile?.accountId ?? user.id,
+    privileged: isPrivilegedRole(user.role),
   }
-  const response = await members.pensaJourneyGet(ref.projectId)
-  const state = response.body?.journey
-  if (response.status !== 200 || !state || state.cycleId !== ref.cycleId) return null
-  if (ref.origin === 'pensa_proposal') {
-    const proposal = state.proposal
-    return proposal?.id === ref.proposalId
-      ? [proposal.firstResult, proposal.summary, ...proposal.essentials].join('. ')
+  if (ref.origin === 'pensa_mission') {
+    const target = await members.pensaMissionContext(actor, ref.missionId)
+    if (target.status !== 200 || !target.body) return null
+    const context = await loadContext(members, user, actor, target.body.projectId, '')
+    const mission = context.view.revision?.plan.missions.find((item) => item.id === ref.missionId)
+    if (!mission || mission.contentRevision !== ref.contentRevision) return null
+    if (ref.section === 'objective') return mission.objective
+    if (ref.section === 'setup')
+      return mission.kind === 'setup' ? mission.setup.recommendation : null
+    if (ref.section === 'rule')
+      return mission.rules.find((item) => item.id === ref.itemId)?.text ?? null
+    const check = mission.checks.find((item) => item.id === ref.itemId)
+    return check ? `${check.action}. ${check.expected}` : null
+  }
+  const context = await loadContext(members, user, actor, ref.projectId, '')
+  if (ref.origin === 'pensa_definition')
+    return context.view.revision?.id === ref.projectRevisionId
+      ? context.view.revision.definition[ref.section]
       : null
-  }
-  const message = state.messages.find(
-    (m) =>
-      m.id === ref.messageId && m.revision === ref.revision && m.role === 'assistant' && m.final,
+  if (ref.origin === 'pensa_draft')
+    return context.view.draft?.id === ref.draftId &&
+      context.view.draft.revision === ref.draftRevision
+      ? (context.view.draft.definition?.[ref.section] ?? null)
+      : null
+  const message = context.view.messages.find(
+    (m) => m.id === ref.messageId && m.revision === ref.messageRevision && m.role === 'assistant',
   )
   return message?.text ?? null
 }
@@ -111,9 +113,11 @@ export async function resolvePrivateNarration(
 export function createPrivateNarrationRoutes({
   members,
   session,
+  resolveSource = (user, ref) => resolvePrivateNarration(members, user, ref),
 }: {
-  members: MembersClient
-  session: SessionModule
+  members: PrivateNarrationMembers
+  session: Pick<SessionModule, 'getSession'>
+  resolveSource?: (user: SessionUser, ref: PrivateNarratableRef) => Promise<string | null>
 }) {
   return {
     privateNarration: {
@@ -126,7 +130,12 @@ export function createPrivateNarrationRoutes({
           return fail(503, 'A voz do Zappy está descansando. Você pode continuar lendo.')
         const parsed = NarratableRefSchema.safeParse(await req.json().catch(() => null))
         if (!parsed.success) return fail(400, 'Escolha uma fala do Zappy para ouvir.')
-        const original = await resolvePrivateNarration(members, user, parsed.data)
+        let original: string | null
+        try {
+          original = await resolveSource(user, parsed.data)
+        } catch {
+          return fail(503, 'Não consegui conferir essa fala agora. Você pode continuar lendo.')
+        }
         if (!original) return fail(404, 'Essa fala mudou. Atualize o caminho antes de ouvir.')
         // A fala do Pensa passa pela régua do Pensa ("placar até 9999 9999" não é telefone); a do
         // tutor, pela do tutor.
@@ -155,12 +164,13 @@ export function createPrivateNarrationRoutes({
           privileged: isPrivilegedRole(user.role),
         }
         const ref = parsed.data
-        const sourceProject =
-          ref.origin === 'pensa_guide'
-            ? (await members.pensaGetTaskHandoff(ref.taskId)).body?.project.id
-            : ref.origin === 'studio_message'
-              ? undefined
-              : ref.projectId
+        let sourceProject: string | undefined
+        if (ref.origin === 'pensa_mission') {
+          const target = await members.pensaMissionContext(actor, ref.missionId).catch(() => null)
+          if (!target || target.status >= 500)
+            return fail(503, 'Não consegui conferir essa fala agora. Você pode continuar lendo.')
+          sourceProject = target.status === 200 ? target.body?.projectId : undefined
+        } else if (ref.origin !== 'studio_message') sourceProject = ref.projectId
         if (ref.origin !== 'studio_message' && !sourceProject)
           return fail(404, 'Essa fala não está mais disponível.')
         const input = {
@@ -169,9 +179,13 @@ export function createPrivateNarrationRoutes({
           leaseId: randomUUID(),
           ...(sourceProject ? { projectId: sourceProject } : {}),
         }
-        const reservation = await members.privateNarration(actor, { ...input, type: 'claim' })
-        if (reservation.status !== 200 || !reservation.body)
-          return fail(429, 'A voz descansou por hoje. O texto continua disponível.')
+        const reservation = await members
+          .privateNarration(actor, { ...input, type: 'claim' })
+          .catch(() => null)
+        if (reservation?.status !== 200 || !reservation.body)
+          return reservation?.status === 429
+            ? fail(429, 'A voz descansou por hoje. O texto continua disponível.')
+            : fail(503, 'Não consegui preparar a voz agora. Você pode continuar lendo.')
         if (reservation.body.status === 'waiting')
           return fail(
             409,
@@ -205,7 +219,7 @@ export function createPrivateNarrationRoutes({
             if (committed.status !== 200) throw new Error('VOICE_COMMIT_FAILED')
           }
           // Uma exclusão, revisão ou troca de acesso durante a síntese invalida o resultado.
-          if ((await resolvePrivateNarration(members, user, parsed.data)) !== original)
+          if ((await resolveSource(user, parsed.data)) !== original)
             throw new Error('VOICE_SOURCE_CHANGED')
           return NextResponse.json(
             {
@@ -219,7 +233,7 @@ export function createPrivateNarrationRoutes({
         } catch (cause) {
           // Só a origem e o NOME do erro: nada da fala, da chave do provedor ou do corpo dele.
           const name = (value: unknown) => (value instanceof Error ? value.name : typeof value)
-          console.error('[pensa-v2] voz privada falhou', {
+          console.error('[pensa] voz privada falhou', {
             origin: parsed.data.origin,
             name: name(cause),
             reason:
@@ -229,13 +243,13 @@ export function createPrivateNarrationRoutes({
             await members
               .privateNarration(actor, { ...input, type: 'fail' })
               .catch((failure: unknown) =>
-                console.error('[pensa-v2] voz privada: reserva não liberada', {
+                console.error('[pensa] voz privada: reserva não liberada', {
                   origin: parsed.data.origin,
                   name: name(failure),
                 }),
               )
             await r2DeleteObjectUgc(key).catch((failure: unknown) =>
-              console.error('[pensa-v2] voz privada: áudio não apagado', {
+              console.error('[pensa] voz privada: áudio não apagado', {
                 origin: parsed.data.origin,
                 name: name(failure),
               }),

@@ -24,6 +24,6 @@
     "noEmit": true,
     "types": ["bun"]
   },
-  "include": ["src", "test-setup.ts"],
+  "include": ["src", "playground", "test-setup.ts"],
   "exclude": ["node_modules"]
 }

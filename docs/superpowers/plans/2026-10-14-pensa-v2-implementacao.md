@@ -1,5 +1,7 @@
 # Pensa v2 Implementation Plan
 
+> Histórico: substituído pela [especificação funcional de 16/10/2026](../../plans/2026-10-16-pensa-reestruturacao-spec.md). Este documento registra decisões anteriores e não define o contrato vigente.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Implementar o ciclo ideia livre → proposta viável → construção acompanhada → teste → incremento protegido da proposta aprovada.

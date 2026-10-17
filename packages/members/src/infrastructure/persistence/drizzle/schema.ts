@@ -18,7 +18,7 @@ import type {
   LiveSession,
 } from '@sistemazero/core/live'
 import type { Palette } from '@sistemazero/core/palette'
-import type { PensaJourney, PensaOperationKind, PensaOperationStep } from '@sistemazero/core/pensa'
+import type { PensaOperationStep, PensaOperationView } from '@sistemazero/core/pensa'
 import type {
   StudioProAssistanceJournal,
   StudioProBuilderCost,
@@ -51,12 +51,6 @@ import type { LessonBlockContent } from '../../../domain/course/lesson-block'
 import type { QuizAnswers } from '../../../domain/course/quiz'
 import type { EntitlementSnapshot } from '../../../domain/entitlement/entitlement-snapshot'
 import type { LiveRecordingSegmentTime } from '../../../domain/live/recording-chapters'
-import type {
-  PensaChatMessage,
-  PensaTaskContext,
-  PensaTaskGuide,
-  PensaTaskOutputRef,
-} from '../../../domain/pensa/pensa'
 import type { CourseFeedbackAnswers } from '../../../domain/rating/course-rating'
 import type { RoomState } from '../../../domain/room/room-catalog'
 
@@ -671,9 +665,8 @@ export const xpSourceTypeEnum = members.enum('xp_source_type', [
   // (sourceId = courseId). Gravado pelo webhook hub→members; combinado com
   // `course_complete` define o curso "qualificado" p/ o nível do aluno.
   'course_showcased',
-  // Pensa (07/2026): etapa do ciclo concluída (z→e/e→r/r→o; sourceId = uuid
-  // DETERMINÍSTICO de (cycleId, stage) — `pensaStageSourceId`) e ciclo LANÇADO
-  // (o→done; sourceId = cycleId). XP real (amount > 0) — movem streak.
+  // Financial source values remain stable. Native Pensa milestones use the
+  // durable execution event ID; final verification grants the project reward.
   'pensa_stage_complete',
   'pensa_cycle_complete',
   // Desafio MENSAL (game jam, 07/2026): publicou no Mural com a tag do mês
@@ -1085,34 +1078,6 @@ export const certificatesIssued = members.table(
 // anterior integralmente antes de criar este contrato.
 export const pensaProjectKindEnum = members.enum('pensa_project_kind', ['game'])
 export const pensaProjectStatusEnum = members.enum('pensa_project_status', ['active', 'archived'])
-export const pensaStageEnum = members.enum('pensa_stage', ['z', 'e', 'r', 'o', 'done'])
-export const pensaArtifactTypeEnum = members.enum('pensa_artifact_type', [
-  'idea',
-  'game_design',
-  'visual_direction',
-  'task_plan',
-  'plan_review',
-])
-export const pensaArtifactStatusEnum = members.enum('pensa_artifact_status', ['draft', 'validated'])
-export const pensaTaskDestinationEnum = members.enum('pensa_task_destination', [
-  'pinta',
-  'studio',
-  'molda',
-])
-export const pensaTaskStatusEnum = members.enum('pensa_task_status', [
-  'planned',
-  'in_progress',
-  'completed',
-])
-export const pensaTaskCategoryEnum = members.enum('pensa_task_category', [
-  'art',
-  'setup',
-  'gameplay',
-  'scene',
-  'ui',
-  'polish',
-])
-
 export const pensaProjects = members.table(
   'pensa_projects',
   {
@@ -1126,6 +1091,15 @@ export const pensaProjects = members.table(
     status: pensaProjectStatusEnum('status').notNull().default('active'),
     // O código do plano (equipe, 26/09/2026): 6 símbolos sem ambíguos; `null` = desligado.
     shareCode: varchar('share_code', { length: 8 }),
+    paused: boolean('paused').notNull().default(false),
+    activeRevisionId: uuid('active_revision_id'),
+    revisionNumber: integer('revision_number').notNull().default(0),
+    metadataRevision: integer('metadata_revision').notNull().default(0),
+    teamRevision: integer('team_revision').notNull().default(0),
+    executionRevision: integer('execution_revision').notNull().default(0),
+    gameProfileId: uuid('game_profile_id'),
+    gameAccountId: uuid('game_account_id'),
+    gameCreationId: varchar('game_creation_id', { length: 120 }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
   },
@@ -1160,11 +1134,11 @@ export const pensaProjectMembers = members.table(
 )
 
 /**
- * As FUNÇÕES da equipe no Pensa v2 (14/10/2026): `code` = quem programa (o Estúdio, UMA pessoa
+ * As FUNÇÕES da equipe no Pensa (14/10/2026): `code` = quem programa (o Estúdio, UMA pessoa
  * por plano, o índice parcial garante) e `art` = quem faz as artes (Pinta e Molda, zero ou
  * mais). Sem linha `code`, programa a dona; sem linhas `art`, quem programa também desenha.
- * São linhas CRUAS: quem lê passa por `effectivePensaRoles` (`@sistemazero/core/pensa`), que
- * descarta quem já saiu da equipe. Sair ou ser tirada apaga as linhas da pessoa.
+ * The aggregate resolves current members and pins ownership of a started game.
+ * Leaving a team removes assignments and invalidates unavailable art and dependents.
  */
 export const pensaProjectRoles = members.table(
   'pensa_project_roles',
@@ -1186,47 +1160,106 @@ export const pensaProjectRoles = members.table(
   ],
 )
 
-export const pensaCycles = members.table(
-  'pensa_cycles',
+/** Immutable accepted definition, plan and technical decision. */
+export const pensaProjectRevisions = members.table(
+  'pensa_project_revisions',
   {
     id: uuid('id').primaryKey(),
     projectId: uuid('project_id')
       .notNull()
       .references(() => pensaProjects.id, { onDelete: 'cascade' }),
-    // 1 = MVP ("Versão 1").
     number: integer('number').notNull(),
-    // Objetivo do ciclo (ciclos ≥2).
-    goal: text('goal'),
-    stage: pensaStageEnum('stage').notNull().default('z'),
-    zCompletedAt: timestamp('z_completed_at', { withTimezone: true }),
-    eCompletedAt: timestamp('e_completed_at', { withTimezone: true }),
-    rCompletedAt: timestamp('r_completed_at', { withTimezone: true }),
-    oCompletedAt: timestamp('o_completed_at', { withTimezone: true }),
-    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+    previousRevisionId: uuid('previous_revision_id'),
+    snapshot: jsonb('snapshot').notNull(),
+    acceptedByProfileId: uuid('accepted_by_profile_id').notNull(),
+    acceptedAt: timestamp('accepted_at', { withTimezone: true }).notNull(),
   },
-  (t) => [uniqueIndex('pensa_cycles_project_number_uq').on(t.projectId, t.number)],
+  (t) => [uniqueIndex('pensa_project_revisions_number_uq').on(t.projectId, t.number)],
 )
-
-/** Additive v2 state. Absence keeps the legacy ZERO artifact workflow unchanged. */
-export const pensaJourneys = members.table(
-  'pensa_journeys',
+export const pensaPlanDrafts = members.table(
+  'pensa_plan_drafts',
   {
-    cycleId: uuid('cycle_id')
-      .primaryKey()
-      .references(() => pensaCycles.id, { onDelete: 'cascade' }),
+    id: uuid('id').primaryKey(),
     projectId: uuid('project_id')
       .notNull()
       .references(() => pensaProjects.id, { onDelete: 'cascade' }),
-    active: boolean('active').notNull().default(true),
     revision: integer('revision').notNull().default(0),
-    data: jsonb('data').$type<PensaJourney>().notNull(),
+    status: varchar('status', { length: 24 }).notNull(),
+    data: jsonb('data').notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
   },
-  (t) => [uniqueIndex('pensa_journeys_active_uq').on(t.projectId).where(sql`${t.active} = true`)],
+  (t) => [
+    uniqueIndex('pensa_plan_drafts_active_uq')
+      .on(t.projectId)
+      .where(sql`${t.status} in ('collecting', 'needs_choice', 'ready')`),
+  ],
 )
-
-/** Durable model steps, fenced by lease and input revision. Never return inputs to another profile. */
+export const pensaMissionProgress = members.table(
+  'pensa_mission_progress',
+  {
+    missionId: uuid('mission_id').primaryKey(),
+    projectId: uuid('project_id')
+      .notNull()
+      .references(() => pensaProjects.id, { onDelete: 'cascade' }),
+    progressRevision: integer('progress_revision').notNull().default(0),
+    status: varchar('status', { length: 24 }).notNull().default('planned'),
+    validity: varchar('validity', { length: 24 }).notNull().default('current'),
+    assigneeProfileId: uuid('assignee_profile_id'),
+    data: jsonb('data').notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    index('pensa_mission_progress_project_idx').on(t.projectId, t.status),
+    check(
+      'pensa_mission_progress_status_check',
+      sql`${t.status} in ('planned', 'in_progress', 'completed')`,
+    ),
+    check(
+      'pensa_mission_progress_validity_check',
+      sql`${t.validity} in ('current', 'needs_review')`,
+    ),
+  ],
+)
+export const pensaProjectMessages = members.table(
+  'pensa_project_messages',
+  {
+    id: uuid('id').primaryKey(),
+    projectId: uuid('project_id')
+      .notNull()
+      .references(() => pensaProjects.id, { onDelete: 'cascade' }),
+    profileId: uuid('profile_id').notNull(),
+    context: varchar('context', { length: 24 }).notNull(),
+    revision: integer('revision').notNull().default(1),
+    data: jsonb('data').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [index('pensa_project_messages_project_idx').on(t.projectId, t.createdAt)],
+)
+/** Minimal reward receipts survive deletion; private command data is redacted. */
+export const pensaExecutionEvents = members.table(
+  'pensa_execution_events',
+  {
+    id: uuid('id').primaryKey(),
+    projectId: uuid('project_id').references(() => pensaProjects.id, { onDelete: 'set null' }),
+    projectKey: uuid('project_key').notNull(),
+    requestId: uuid('request_id').notNull(),
+    requestHash: varchar('request_hash', { length: 64 }).notNull(),
+    profileId: uuid('profile_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    kind: varchar('kind', { length: 64 }).notNull(),
+    data: jsonb('data').notNull(),
+    reward: jsonb('reward'),
+    rewardStatus: varchar('reward_status', { length: 16 }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    uniqueIndex('pensa_execution_events_request_uq').on(t.requestId),
+    uniqueIndex('pensa_execution_events_milestone_uq')
+      .on(t.projectKey, t.kind)
+      .where(sql`${t.reward} is not null`),
+    index('pensa_execution_events_rewards_idx').on(t.rewardStatus),
+  ],
+)
 export const pensaOperations = members.table(
   'pensa_operations',
   {
@@ -1234,16 +1267,12 @@ export const pensaOperations = members.table(
     projectId: uuid('project_id')
       .notNull()
       .references(() => pensaProjects.id, { onDelete: 'cascade' }),
-    cycleId: uuid('cycle_id')
-      .notNull()
-      .references(() => pensaCycles.id, { onDelete: 'cascade' }),
+    draftId: uuid('draft_id'),
     profileId: uuid('profile_id').notNull(),
     accountId: uuid('account_id').notNull(),
-    kind: varchar('kind', { length: 24 }).$type<PensaOperationKind>().notNull(),
+    kind: varchar('kind', { length: 24 }).$type<PensaOperationView['kind']>().notNull(),
     step: varchar('step', { length: 24 }).$type<PensaOperationStep>().notNull(),
-    status: varchar('status', { length: 24 })
-      .$type<'queued' | 'running' | 'waiting' | 'succeeded' | 'failed' | 'cancelled'>()
-      .notNull(),
+    status: varchar('status', { length: 24 }).notNull(),
     inputRevision: integer('input_revision').notNull(),
     attempts: integer('attempts').notNull().default(0),
     calls: integer('calls').notNull().default(0),
@@ -1255,7 +1284,10 @@ export const pensaOperations = members.table(
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
   },
-  (t) => [index('pensa_operations_project_idx').on(t.projectId, t.status)],
+  (t) => [
+    index('pensa_operations_project_idx').on(t.projectId, t.status),
+    index('pensa_operations_lease_idx').on(t.status, t.leaseUntil),
+  ],
 )
 
 /** Holds count against the shared account quota; only committed delivery increments usage. */
@@ -1265,7 +1297,7 @@ export const aiUsageReservations = members.table(
     id: uuid('id').primaryKey(),
     accountId: uuid('account_id').notNull(),
     profileId: uuid('profile_id').notNull(),
-    projectId: uuid('project_id').references(() => pensaProjects.id, { onDelete: 'cascade' }),
+    projectId: uuid('project_id').references(() => pensaProjects.id, { onDelete: 'set null' }),
     day: date('day').notNull(),
     feature: varchar('feature', { length: 40 }).notNull(),
     status: varchar('status', { length: 16 })
@@ -1286,16 +1318,14 @@ export const pensaCheckpoints = members.table(
     projectId: uuid('project_id')
       .notNull()
       .references(() => pensaProjects.id, { onDelete: 'cascade' }),
-    cycleId: uuid('cycle_id')
-      .notNull()
-      .references(() => pensaCycles.id, { onDelete: 'cascade' }),
+    projectRevisionId: uuid('project_revision_id').notNull(),
     profileId: uuid('profile_id').notNull(),
     accountId: uuid('account_id').notNull(),
     creationId: varchar('creation_id', { length: 120 }).notNull(),
     saveRevision: varchar('save_revision', { length: 120 }).notNull(),
-    journey: jsonb('journey').$type<PensaJourney>().notNull(),
+    snapshot: jsonb('snapshot').notNull(),
     manifest: jsonb('manifest').$type<Record<string, unknown>>().notNull(),
-    status: varchar('status', { length: 20 }).$type<'copying' | 'ready' | 'failed'>().notNull(),
+    status: varchar('status', { length: 20 }).notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
   },
   (t) => [index('pensa_checkpoints_project_idx').on(t.projectId)],
@@ -1349,103 +1379,6 @@ export const pensaProviderUsage = members.table(
   (t) => [primaryKey({ columns: [t.accountId, t.day] })],
 )
 
-// 1 linha por (ciclo, etapa); upsert por turno. `message_count` é a contagem
-// TOTAL histórica (não encolhe quando o trim corta mensagens antigas).
-export const pensaConversations = members.table(
-  'pensa_conversations',
-  {
-    id: uuid('id').primaryKey(),
-    cycleId: uuid('cycle_id')
-      .notNull()
-      .references(() => pensaCycles.id, { onDelete: 'cascade' }),
-    stage: pensaStageEnum('stage').notNull(),
-    messages: jsonb('messages').$type<PensaChatMessage[]>().notNull().default([]),
-    // Sumarização quando o cap corta mensagens antigas.
-    summary: text('summary'),
-    // Etapa z: PensaZState; demais {}.
-    state: jsonb('state').$type<Record<string, unknown>>().notNull().default({}),
-    messageCount: integer('message_count').notNull().default(0),
-    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
-  },
-  (t) => [uniqueIndex('pensa_conversations_cycle_stage_uq').on(t.cycleId, t.stage)],
-)
-
-// Versionados APPEND-ONLY; "latest" = MAX(version) por (cycle, type).
-export const pensaArtifacts = members.table(
-  'pensa_artifacts',
-  {
-    id: uuid('id').primaryKey(),
-    cycleId: uuid('cycle_id')
-      .notNull()
-      .references(() => pensaCycles.id, { onDelete: 'cascade' }),
-    stage: pensaStageEnum('stage').notNull(),
-    type: pensaArtifactTypeEnum('type').notNull(),
-    // 1, 2, 3…
-    version: integer('version').notNull(),
-    content: jsonb('content').$type<unknown>().notNull(),
-    status: pensaArtifactStatusEnum('status').notNull().default('draft'),
-    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
-  },
-  (t) => [
-    uniqueIndex('pensa_artifacts_cycle_type_version_uq').on(t.cycleId, t.type, t.version),
-    index('pensa_artifacts_cycle_type_idx').on(t.cycleId, t.type),
-  ],
-)
-
-// Cartões de Criação em ordem GLOBAL. `dependencies` referencia somente cartões
-// anteriores (DAG validado no domínio). O contexto é discriminado por destino.
-export const pensaTasks = members.table(
-  'pensa_tasks',
-  {
-    id: uuid('id').primaryKey(),
-    cycleId: uuid('cycle_id')
-      .notNull()
-      .references(() => pensaCycles.id, { onDelete: 'cascade' }),
-    title: varchar('title', { length: 200 }).notNull(),
-    summary: text('summary'),
-    destination: pensaTaskDestinationEnum('destination').notNull(),
-    category: pensaTaskCategoryEnum('category').notNull(),
-    estimatedMinutes: integer('estimated_minutes').notNull(),
-    position: integer('position').notNull(),
-    dependencies: jsonb('dependencies').$type<string[]>().notNull().default([]),
-    guide: jsonb('guide').$type<PensaTaskGuide>().notNull(),
-    context: jsonb('context').$type<PensaTaskContext>().notNull(),
-    progressStatus: pensaTaskStatusEnum('progress_status').notNull().default('planned'),
-    completedStepIds: jsonb('completed_step_ids').$type<string[]>().notNull().default([]),
-    completedCriteriaIds: jsonb('completed_criteria_ids').$type<string[]>().notNull().default([]),
-    outputRef: jsonb('output_ref').$type<PensaTaskOutputRef>(),
-    startedAt: timestamp('started_at', { withTimezone: true }),
-    completedAt: timestamp('completed_at', { withTimezone: true }),
-    progressUpdatedAt: timestamp('progress_updated_at', { withTimezone: true }),
-    // Equipe no v2 (14/10/2026): quem COMEÇOU a missão (com duas artistas, quem começa fica com
-    // ela) e quem a CONCLUIU (a arte entregue que "Trazer da equipe" busca na conta dela).
-    assigneeProfileId: uuid('assignee_profile_id'),
-    completedByProfileId: uuid('completed_by_profile_id'),
-    revision: integer('revision').notNull().default(1),
-    supersedesTaskId: uuid('supersedes_task_id').references((): AnyPgColumn => pensaTasks.id, {
-      onDelete: 'set null',
-    }),
-    archivedAt: timestamp('archived_at', { withTimezone: true }),
-    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
-  },
-  (t) => [
-    index('pensa_tasks_cycle_position_idx').on(t.cycleId, t.position),
-    index('pensa_tasks_cycle_status_idx').on(t.cycleId, t.progressStatus),
-  ],
-)
-
-// ── Conversas professor↔aluno (canal de retorno — fatia 07/2026) ────────────
-// UMA conversa (thread) entre a EQUIPE (professor) e um ALUNO, opcionalmente
-// ancorada a um CONTEXTO: a entrega do Estúdio, a publicação no Mural ou um recado
-// GERAL. É o canal de VOLTA que faltava (o aluno só falava com o professor; nada
-// voltava): o professor responde "o erro está no bloco X", o aluno responde em
-// texto E reenvia o projeto corrigido. Tabela À PARTE de `studio_submissions` de
-// propósito — o upsert da entrega ("último vence") sobrescreve o projeto a cada
-// reenvio; a conversa em tabela própria SOBREVIVE aos reenvios. `context_ref` é
-// SNAPSHOT SEM FK (blockId da entrega | threadId do hub no Mural | null no geral) —
-// a conversa sobrevive a apagar o bloco/curso/post (como certificados/xp_events).
-// Não-lido por WATERMARK (`*_last_read_at`), não flag por mensagem (mais barato).
 export const teacherThreadContextEnum = members.enum('teacher_thread_context', [
   'studio_submission',
   'mural_publication',
@@ -2632,15 +2565,15 @@ export const schema = {
   roomInventory,
   certificatesIssued,
   pensaProjects,
-  pensaJourneys,
+  pensaProjectRevisions,
+  pensaPlanDrafts,
+  pensaMissionProgress,
+  pensaProjectMessages,
+  pensaExecutionEvents,
   pensaOperations,
   pensaCheckpoints,
   privateNarrations,
   aiUsageReservations,
-  pensaCycles,
-  pensaConversations,
-  pensaArtifacts,
-  pensaTasks,
   teacherThreads,
   teacherMessages,
   zappyConversations,

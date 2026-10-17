@@ -15,80 +15,7 @@ import type { StudioTutorConfig } from './tutor'
 
 export type StudioLocale = Locale
 
-export interface StudioTaskGuideItem {
-  id: string
-  text: string
-  hint?: string
-  required: boolean
-}
-/** Guia de uma tarefa planejada no Pensa. É independente de LessonActivity. */
-export interface StudioTaskSession {
-  /** Different authoring mode from the saved plan; display-only, never submitted as progress. */
-  codeTransition?: boolean
-  renderListen?: (stepId: string) => import('react').ReactNode
-  /**
-   * Abre a próxima missão do plano (guia v2). O Estúdio GUARDA o jogo antes de chamar.
-   *
-   * ⭐ Convenção de erro dos três callbacks do guia v2 (`onProgress`, `onNextMission`,
-   * `onNeedHelp`, 14/10/2026): a rejeição pode trazer `childMessage: string`, a frase escrita
-   * para a criança (dependência que falta, plano que mudou, "espere o jogo ficar guardado na
-   * conta"). Com ela o painel mostra a frase; SEM ela o painel entende falha de rede e mostra o
-   * genérico ("Confira a internet"). Nunca a `message` crua: ela pode ser técnica.
-   */
-  onNextMission?: () => Promise<void>
-  /**
-   * O rótulo do botão de continuar depois de concluir (guia v2). Ausente = "Continuar meu
-   * caminho". O host diz o destino quando a próxima missão é de OUTRA oficina ("Continuar no
-   * Pinta"), porque o clique troca de tela.
-   */
-  nextMissionLabel?: string
-  /** "Travei aqui" (guia v2): o Estúdio guarda o jogo e o host leva à ajuda. */
-  onNeedHelp?: () => void | Promise<void>
-  taskId: string
-  title: string
-  summary: string | null
-  project: { id: string; name: string }
-  cycle: { id: string; number: number; goal: string | null }
-  guide: { contractVersion?: 2; steps: StudioTaskGuideItem[]; criteria: StudioTaskGuideItem[] }
-  blocks: Array<{
-    id: string
-    label: string
-    category: string
-    subcategory: string
-    area: string
-    extension: string | null
-  }>
-  progress: {
-    status: 'planned' | 'in_progress' | 'completed'
-    completedStepIds: string[]
-    completedCriteriaIds: string[]
-    startedAt: string | null
-    completedAt: string | null
-    updatedAt: string | null
-    outputRef: { kind: 'studio_project'; projectId: string; saveRevision?: string } | null
-  }
-  onProgress(input: {
-    status?: 'in_progress' | 'completed'
-    completedStepIds?: string[]
-    completedCriteriaIds?: string[]
-    outputRef?: { kind: 'studio_project'; projectId: string; saveRevision?: string }
-  }): Promise<void>
-  /**
-   * O guia recolhido, e o aviso de que a criança mexeu na seta (18/09/2026).
-   *
-   * Quem LEMBRA é o host (uma chave por criança, valendo para as três oficinas); aqui isso
-   * chega como DADO, o mesmo idioma do `menu.hidden`/`onToggle` do chrome do host. Sem o par,
-   * o painel recolhe por conta própria e esquece ao sair — é o caso do playground e dos testes.
-   * ⚠ Recolhido sobra UMA linha, o título e a seta (19/09/2026, decisão dela). O que NÃO
-   * recolhe é PROBLEMA: aqui, o recado de uma marcação que não subiu.
-   * ⚠⚠ Os dois andam JUNTOS. Passar só o `collapsed` entrega um botão de 44px com
-   * `aria-expanded` que não faz NADA ao ser clicado (o estado local roda e o `??` o ignora), e
-   * passar só o `onCollapsedChange` faz o host ser avisado sem nunca mandar. São dois opcionais
-   * porque o par inteiro é opcional — não porque um sirva sem o outro.
-   */
-  collapsed?: boolean
-  onCollapsedChange?(collapsed: boolean): void
-}
+export type StudioTaskSession = import('@sistemazero/ui/pensa-mission-session').PensaMissionSession
 
 /** Acesso imperativo à instância (prop `ref` do Studio — React 19). */
 export interface StudioHandle {
@@ -357,7 +284,7 @@ export type StudioEditorProps = StudioCommonProps &
   StudioLearningProps & {
     /** Tutor somente leitura do Estúdio Completo. Não existe no StudioLesson. */
     tutor?: StudioTutorConfig
-    /** Cartão de Criação restaurado pelo host via `?tarefa=`. */
+    /** Cartão de Criação restaurado pelo host via `?missao=`. */
     taskSession?: StudioTaskSession
   }
 

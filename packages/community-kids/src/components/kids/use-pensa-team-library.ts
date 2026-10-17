@@ -47,7 +47,7 @@ export function usePensaTeamLibrary(input: {
       if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return
       checking = true
       lastCheck = Date.now()
-      void pensaTeamArtAvailable(planId)
+      void pensaTeamArtAvailable(planId, viewerId)
         .then((ok) => {
           if (!active || !ok) return
           found = true
@@ -73,7 +73,7 @@ export function usePensaTeamLibrary(input: {
       window.removeEventListener('focus', onFocus)
       document.removeEventListener('visibilitychange', onVisibility)
     }
-  }, [planId, scope])
+  }, [planId, scope, viewerId])
 
   return adapter && availableFor === scope ? adapter : undefined
 }

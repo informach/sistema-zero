@@ -130,7 +130,7 @@ export const ROOM_ITEMS: readonly RoomItemDef[] = [
   trophy('trofeu-diploma', 1, 1, 'wall'), // 1º curso 100% (course-complete)
   trophy('trofeu-chama', 1, 1), // streak de 30 dias (streak-30)
   trophy('trofeu-medalha-mil', 1, 1, 'wall'), // 10 quizzes nota mil (quiz-perfect-10)
-  trophy('trofeu-foguete', 1, 2), // 1º plano ZERO aprovado (slug histórico pensa-first-launch)
+  trophy('trofeu-foguete', 1, 2), // First verified Pensa project (stable badge slug).
   trophy('trofeu-console', 1, 1), // 3 atividades do Estúdio aprovadas (studio-master-3 — bônus)
   trophy('trofeu-estrela-do-mural', 1, 1), // um jogo seu foi jogado 100× (plays-100 — universal)
   trophy('trofeu-oficina-completa', 1, 1), // um curso AO VIVO inteiro (live-course-complete — bônus)

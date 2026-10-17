@@ -2213,135 +2213,33 @@ e encontra o recado, que é justamente a mensagem que a autora quer dar.
    desenha em SVG embutido, com o selo "kids" já no desenho (antes era a wordmark do adulto + um
    selo em HTML). Os favicons também são do pacote. Ver §"Tema: a paleta do Pen".
 
-## Pensa (planejador de jogos — 08/2026)
+## Pensa: definição do jogo e missões funcionais
 
-O **Pensa** (`@sistemazero/pensa`) planeja; Pinta e Estúdio executam. O método ZERO usa **Z**
-(ideia e regras), **E** (loop, cenas, telas e Bíblia Visual), **R** (Cartões de Criação ordenados)
-e **O** (auditoria e aprovação). Item "Pensa" no `nav.ts` → rota
-`/pensa` (`protectedPrefixes`), gate em 4 ESTADOS (indisponível, sem produto, comprado mas abaixo
-de Inventor(a), liberado):
-`app/(app)/pensa/page.tsx` chama `checkPensaAccessReadonly()` (`GET /members/access?refs=pensa`;
-ref = `PENSA_ACCESS_REF` do member-shell) → 200 sem produto = `KidsLockedPensa`; status ≠ 200 =
-`KidsPensaUnavailable` (retry); produto + jornada ≥ `hacker` = `pensa-client.tsx` (`'use client'`, import dinâmico
-do pacote no effect, tema claro fixo e sprites do Zappy). A persistência do plano é
-BACKEND (members, tabelas `pensa_*`) — o client injeta um **transport** que prefixa `/api/pensa`
-(shims de 1–3 linhas sobre `shell.routes.pensa*`; o chat SSE `/api/pensa/chat` E o
-`…/artifacts/generate` têm `force-dynamic` — a geração responde SSE desde 08/2026, ver
-member-shell). Erros do transport são duck-typed `{status, code}` (a classe não atravessa o
-dynamic import). ⚠️ O `request()` do transport **sniffa `content-type: text/event-stream`**:
-resposta SSE é lida pelo helper `readSse` (compartilhado com o `streamChat`) e o evento terminal
-vira o resolve (`done` = corpo JSON de sempre) ou o MESMO erro duck-typed (`error`); stream que
-acaba sem terminal rejeita "A conexão caiu no meio.". Sniff por content-type (não por path)
-tolera skew de deploy. É o que matou o 502 do "Criar plano de tarefas" (borda derrubava o POST
-mudo de minutos). `PensaHostAdapter.onOpenTask` navega para `/pinta?tarefa=<id>` ou
-`/estudio?tarefa=<id>`; nenhuma tela do Estúdio monta dentro do Pensa. `MainContainer` dá largura
-total a `/pensa`. Requisitos de
-build: `transpilePackages` + `@import` do `pensa.css` + `@source "../../../pensa/src"` no
-globals.css (MESMO gotcha das utilitárias `sz-*` do Estúdio — sem isso as `pz-*` são no-op).
-`api/pensa/*` fica DENTRO do matcher do proxy (JSON pequeno; a resposta SSE não é bufferizada
-pelo middleware). Deploy: `packages/pensa/**` nos watchPatterns do railway.json + case no ci.yml.
-O host remove chaves locais do fluxo anterior e mantém apenas os deep links de tarefa. Contrato:
-[`../../docs/pensa-planner.md`](../../docs/pensa-planner.md). **Equipe do plano (26/09/2026):** quatro shims novos sobre o BFF — `projects/join`
-(`pensaJoin`), `[projectId]/share` (`pensaShare` POST/DELETE), `[projectId]/members`
-(`pensaMembers`) e `[projectId]/members/[profileId]` (`pensaMember` DELETE); todos DENTRO do
-matcher do proxy, sem gate próprio (posse do Pensa e dono/membro são do members). Ordem de deploy:
-members (migration `0098`) → gateway → member-shell → kids.
+`@sistemazero/pensa` é a interface única para definir o jogo completo, revisar mudanças e organizar missões por funcionalidade. O plano não é tutorial de blocos. Especificação vigente: [reestruturação do Pensa](../../docs/plans/2026-10-16-pensa-reestruturacao-spec.md).
 
-## O jogo do Pensa no Estúdio: abrir sem tropeçar e a faixa própria (15/10/2026)
+`app/(app)/pensa/page.tsx` preserva o gate do produto e da jornada; `pensa-client.tsx` injeta tema, chrome, transporte e voz/narração. O browser não consulta capacidades para decidir o plano. O servidor oferece alternativas viáveis quando faltam recursos e fornece `availability`/`nextAction` atualizadas. Projetos, revisões, drafts, operações, missões e equipe vêm dos schemas de `@sistemazero/core/pensa`.
 
-Dois relatos dela sobre o Pensa v2: "Abrir meu jogo" mostrava "a tarefa mudou em outro lugar" (e o
-"Tentar de novo" não refazia nada), e o jogo do plano aparecia no meio dos jogos livres do Estúdio,
-como um projeto qualquer.
+A API usa somente o shim `app/api/pensa/[...path]/route.ts`, que encaminha os verbos para `shell.routes.pensa`. O transport prefixa `/api/pensa`, envia JSON e preserva os erros estruturados. As rotas canônicas são projects, missions, operations e credits; operações persistidas são acompanhadas por polling com `requestId`. Não existem aliases de tarefas, ciclos, etapas de método ou outra versão de API.
 
-- **"Abrir meu jogo" abre o jogo** (`pensa-client.tsx`, `onOpenGame`): `/estudio?projeto=pensa-<id>`,
-  o caminho que só retoma o que existe (aqui ou na conta) e nunca mexe em missão. Sem o jogo em
-  lugar nenhum (a criança foi testar antes da primeira missão do Estúdio), o recado diz isso e a
-  saída é "Voltar ao meu plano".
-- **A anotação da missão não tranca o jogo** (`lib/pensa-mission-link.ts`, `linkStudioMission`):
-  no v2, abrir por uma missão anota a missão sem a versão da página, e uma recusa de agora (missão
-  anterior pendente, caminho mudado, servidor fora, rede caída) abre o jogo e relê o guia. Só barra
-  abrir o que o jogo não resolve: missão de outra pessoa da equipe ou que saiu do plano. O plano
-  anterior ao v2 segue estrito. O "Tentar de novo" refaz a abertura de verdade (`openAttempt`).
-- **O conflito com motivo chega inteiro** (`progressRefusal`): o 409 `PENSA_TASK_PROGRESS_CONFLICT`
-  da jornada v2 diz o motivo em voz de criança ("Seu jogo mudou. Espere ficar guardado na conta…");
-  só a frase padrão (a versão velha da página) vira a do host. Vale no Estúdio e no Pinta.
-- **A faixa "Jogos dos seus planos"** na galeria do Estúdio: `ProjectList.sections` (do pacote) com
-  os jogos `pensa-<32 hex>` e o atalho "Abrir meus planos".
-- Testes: `tests/pensa-mission-link.test.ts`, `tests/pensa-guide-errors.test.ts` (o conflito com
-  motivo); a faixa no `ProjectList.test.tsx` do Estúdio.
-- **Full review (15/10/2026):**
-  - ⚠️⚠️ **Anotação adiada não desliga o concluir.** No v2 o guia só liga "Experimentei e
-    funcionou" com `outputRef`, que vinha do PATCH da abertura; adiada (rede, servidor, corrida), o
-    botão ficava desligado sem motivo nem saída. `withProvisionalGameLink` dá ao guia o jogo aberto
-    como vínculo provisório (a conclusão monta o `outputRef` com a revisão confirmada na nuvem).
-  - **Sair do editor do "Abrir meu jogo" volta ao PLANO** (`editorExitPath`), enquanto o jogo aberto
-    é o do plano; antes caía na galeria.
-  - Com o servidor fora (5xx) o v2 abre SEM reler o guia: a releitura falharia também e o erro dela
-    tomava a tela no lugar do jogo aberto. A releitura fica para o 409.
-  - A tela de erro da abertura tem "Voltar ao plano" além do "Tentar de novo" (que fica desligado
-    enquanto o guia é relido: a abertura nova seria derrubada no meio pela releitura), e a missão
-    de outra pessoa da equipe mostra a tela certa (`PensaMissionBlocked`) assim que o guia volta.
-  - Recusa sem frase própria ao ABRIR diz "Não consegui abrir esta missão agora" (`RECUSA_AO_ABRIR`;
-    `progressRefusal` ganhou a frase padrão como 3º argumento), e a missão anterior pendente usa a
-    frase do host ("missões"; a do servidor é a do plano clássico, "tarefas").
-  - `tests/pensa-guide-errors.test.ts` lê a frase padrão do conflito no members PELO CAMINHO e
-    confere que `CONFLITO_PADRAO` a reconhece: reescrevê-la lá sem mexer aqui faria a frase adulta
-    chegar crua à criança.
+### Oficinas e retomada
 
-## Pensa em equipe nas oficinas (14/10/2026)
+`onOpenMission` navega com `?missao=<id>` para Estúdio, Pinta ou Molda. `onOpenGame` abre a criação canônica `pensa-<32 hex>`. Estúdio Pro usa `/estudio/pro/<id>` com navegação completa ao entrar, sair ou trocar de jogo; apenas a troca de missão no mesmo pathname preserva o documento e o editor. `?plano=<id>` reabre o plano; `?ajuda=<missionId>` seleciona a dúvida da missão correta mesmo quando ela não é a próxima.
 
-O plano v2 em equipe tem duas funções (`code` = quem programa no Estúdio; `art` = Pinta e Molda);
-a especificação é `docs/plans/2026-10-14-pensa-v2-equipe.md` (§5 é a parte daqui) e as regras
-puras moram em `@sistemazero/core/pensa`. O que mora neste app:
+`use-pensa-mission-session.tsx` busca e valida `PensaMissionHandoff`, mantém a sessão durante refresh e serializa as escritas. Cada resposta assíncrona confere perfil, missão e revisão antes de atualizar a UI. A disponibilidade é do servidor; outra pessoa da equipe ou uma dependência pendente bloqueia execução com recado e volta ao plano.
 
-- **"Trazer da equipe" no Estúdio Completo** (`components/kids/use-pensa-team-library.ts` +
-  `lib/pensa-team-library.ts` + `lib/pensa-team-art.ts`). Com um jogo `pensa-<32 hex>` aberto, o
-  plano sai do id re-inserindo os hífens 8-4-4-4-12 (`pensaPlanIdFromStudioProjectId`, inverso do
-  `pensaStudioProjectId`). O adapter só chega ao `<StudioEditor teamLibrary>` quando
-  `pensaTeamArtAvailable` confirma: plano com `team.memberCount > 0`, a criança é `roles.code` e
-  `GET …/team-art` tem item. Plano solo, quem só desenha, jogo livre, sem arte ou servidor fora =
-  sem botão. ⚠️ O editor abre SEM esperar a rede (o Estúdio não latcha esse adapter); enquanto o
-  botão não apareceu, a conferência se repete ao voltar à aba (15 s de folga) e a cada minuto com a
-  aba à vista. Depois de aparecer, fica.
-  - Trazer = `GET …/team-art/:taskId/download` (URL assinada) → blob gzip → `gunzipToText`
-    (`DecompressionStream`) → converte → `savePersonalAsset` com `origin` `'pinta'`/`'molda'` e um
-    id de CÓPIA POR MISSÃO (`equipe-<taskId>`, o mesmo do `assetId` da lista): duas contas podem
-    ter criações com o mesmo id, e a cópia nunca sobrescreve a arte pessoal nem a de outra missão.
-    Trazer de novo é upsert dessa cópia, e a `personalSync` do Estúdio leva a versão nova aos
-    jogos → devolve o resultado do Pinta/Molda. Tudo por `sessionFetch`; o nome vem do
-    `GET …/team` (sem ele, "Colega"). Falhas viram `TEAM_ART_MESSAGES` (frase de criança, nunca a
-    crua); 404 = `not-found` (a janela tira o cartão).
-  - **Pinta**: `assetFromJson` (`/assets`) + `exportLoadedAssetForStudio` (`/studio-library`); mapa
-    sem as peças = a frase `needs-tileset` do próprio Pinta.
-  - **Molda (sem tocar `packages/molda`, que outra sessão edita)**: v1 por `readMoldaDocument` +
-    `exportLoadedAssetForStudio(asset, {namespace: perfil})`. v2 (cena) não tem exportação a partir
-    de JSON no público, então grava a cena num namespace TEMPORÁRIO (`<perfil>-equipe`) pela
-    `createMoldaSceneCloudSource` (o namespace global troca, a fonte nasce e ele VOLTA no mesmo
-    instante), exporta com `exportAssetForStudio(id, {namespace, persistence: memória vazia})` e
-    apaga em seguida (`removeIfUnchanged` deixa só a lápide). Qualquer passo que falhe: "Esse modelo
-    ainda não viaja pela equipe.". O consentimento das perdas usa o token NOSSO
-    `equipe:<missão>:<revisão>` (o do Molda inclui a revisão do armazenamento temporário, que muda a
-    cada importação); aceito, a conversão repassa o token do Molda na mesma ida. ⚠️ Só a cena importa
-    a RAIZ `@sistemazero/molda` (dinâmico), o resto fica nos subpaths.
-- **Missão de outra pessoa** (`capability.owned === false` no handoff): Estúdio, Pinta e Molda
-  mostram `PensaMissionBlocked` (`components/kids/pensa-mission-blocked.tsx`): a frase do servidor
-  ("Essa missão é de quem cuida das artes.", "Outra pessoa da equipe já está fazendo essa missão.")
-  e "Voltar ao plano" (`/pensa?plano=<id do handoff>`), sem guia, sem app e sem concluir. Antes era
-  só a frase, sem saída. Se a recusa só vem no PATCH do progresso (a outra artista começou no meio),
-  `PENSA_NOT_YOUR_MISSION`/`PENSA_MISSION_TAKEN` viram frase no `pensa-guide-errors.ts` (Estúdio e
-  Pinta) e no guia do Molda, em vez de "tente de novo" ou "o plano mudou em outra aba".
-- **"Continuar no …"** (`lib/pensa-next-mission.ts`): em equipe (`team.memberCount > 0`) a próxima
-  missão é a próxima que é DESTA criança (`nextPensaMissionFor` com os papéis da view; o
-  `assigneeProfileId` da etapa é lido com tolerância, ausente = ninguém começou). Sem nenhuma, o
-  caminho é o plano e o rótulo diz "Voltar ao plano" (`backToPlan` → `nextMissionLabel(…, {backToPlan})`).
-  Plano solo segue o `nextTaskId` do servidor.
-- Testes: `tests/pensa-team-library.test.ts` (id do plano, quem vê o botão, a lista, trazer com
-  gzip real, origem e frases, Pinta de verdade, Molda v1 com o leitor público e v2 com módulos
-  falsos, consentimento), `tests/use-pensa-team-library.test.tsx` (o hook e o bloqueio),
-  `tests/pensa-next-mission.test.ts` (equipe), `tests/pinta-client.test.tsx`,
-  `tests/molda-client.test.tsx` (missão bloqueada), `tests/molda-task-guide.test.tsx` e
-  `tests/pensa-guide-errors.test.ts` (as recusas da equipe) e `tests/studio-full-editor.test.tsx`.
-  ⚠️ Pende QA em navegador com a equipe real (BFF dos agentes A/B), inclusive a cena v2 do Molda.
+Antes de concluir, reconferir ou vincular uma criação, o host aguarda a gravação na conta por `CreationsCloud.confirm` e lê a revisão salva real. Entregas persistem por missão e `assetSlotId` via `PATCH /missions/:id/deliveries`. Referências não são inventadas nem guardadas em `sessionStorage`. Instalar a extensão recomendada é uma ação explícita no Estúdio; o BFF inspeciona o snapshot autorizado, incluindo extensões instaladas. A criação de uma arte independe de sua integração posterior no jogo.
+
+`pensa-mission-link.ts` inicia com as revisões canônicas de concorrência e não recomeça uma missão concluída. `pensa-next-mission.ts` consulta a próxima ação autorizada no servidor. Não ordene dependências ou decida papéis no browser. A anotação “Onde parei” é persistida no servidor. O recolhimento do painel é uma preferência visual por perfil (`use-pensa-guide-collapsed.tsx`), compartilhada pelas três oficinas.
+
+No Estúdio, restaure a criação da conta antes de propor um projeto vazio quando ela já existe. `gameCreation` e `restoredSaveRevision` vêm do servidor; `pensa-restore-pending.ts` protege contra gravar um rascunho local anterior sobre uma restauração. Não remonte o editor ao atualizar progresso. Pinta/Molda guardam antes de sair; o Molda exige fechar a criação pelo Voltar nativo antes de conferir, vincular ou navegar.
+
+### Equipe e biblioteca
+
+O servidor controla convites, dono, quem programa, artistas, ocupação de missões e estabilidade da pessoa que programa após o primeiro salvamento. `use-pensa-team-library.ts`/`pensa-team-library.ts` oferecem artes concluídas para quem programa, com revisão salva e identidade por missão e parte. Várias artes da mesma missão não podem colidir. A importação usa a criação autorizada do perfil de origem, com confirmação de conteúdo quando necessária; atualizar não duplica.
+
+Narração usa referências canônicas de definição, draft, mensagem ou missão e suas revisões. Voz permanece no member-shell. Links de cursos enviados na ajuda passam pelo renderer seguro do Pensa, sem HTML arbitrário.
+
+Testes principais: `pensa-client.test.tsx`, `pensa-mission-session.test.tsx`, `pensa-mission-link.test.ts`, `pensa-next-mission.test.ts`, `molda-mission-guide.test.tsx`, `pensa-team-library.test.ts`, `use-pensa-team-library.test.tsx` e `pensa-restore-pending.test.ts`. Painéis e fluxo de planejamento têm testes nos pacotes UI, Studio, Pinta e Pensa.
 
 ## Pinta (editor de assets de jogos — produto vendável, 07/2026)
 
@@ -2362,7 +2260,7 @@ em "Meus desenhos" na aba "Imagens" (menu ⋯ → Materiais) do `/estudio` do ME
 **Mão DUPLA (08/2026):** o Estúdio ganhou um botão "Editar" nos desenhos vindos daqui →
 `studio-full-client` passa `onEditDrawing` = `window.open('/pinta?desenho=<id>', '_blank',
 'noopener,noreferrer')`; o `pinta-client` lê `?desenho=` (query, porque `noopener` corta o
-`sessionStorage` usado pelo intent do Pensa), repassa como `initialAssetId` e LIMPA a URL
+contexto temporário da aba), repassa como `initialAssetId` e LIMPA a URL
 (`router.replace('/pinta')`) p/ um F5 não reabrir. Salvar no Pinta chama o `resyncToStudio` do
 adapter, que **só atualiza o que JÁ foi enviado** (guarda `getPersonalAsset(id)` — sem ela todo
 rascunho cairia na biblioteca sozinho); o Estúdio então reconcilia os JOGOS (todos, inclusive
@@ -2945,72 +2843,7 @@ proteção de sequência saíram do backlog — entregues na expansão de 6 fase
   `POST /api/studio/remix {playId}` (shim novo sobre `shell.routes.studioRemix`, DENTRO do matcher
   do proxy — JSON pequeno, ganha o anti-CSRF) → marco da missão `weekly-remix`/`monthly-remix-3` no
   members (que valida posse + playId real no hub + recusa self-remix; o toast não espera).
-- **Handoff Pensa→Pinta/Estúdio:** a página `/pensa` checa as duas capabilities best-effort e
-  mantém o plano visível mesmo sem posse. O client abre `?tarefa=<id>`; cada ferramenta busca
-  `/api/pensa/tasks/:id/handoff`, restaura seu painel e sincroniza
-  `/api/pensa/tasks/:id/progress`. Não use `sessionStorage` para contexto de tarefa.
-  ⭐ **A volta existe (09/2026):** o `pinta-client` monta `taskSession.onReturnToPlan` =
-  `router.push('/pensa?plano=' + handoff.project.id)` (espelho do `onReturn` do
-  `molda-client`/`MoldaTaskGuide`), e o painel do brief do Pinta desenha o botão "Voltar ao plano"
-  nas duas telas. O id do plano vem do HANDOFF, nunca de parâmetro novo na URL, e quem guarda o
-  desenho antes de navegar é o pacote. ⚠️ O `hostChrome.back` continua sendo só da galeria, sempre
-  "Voltar para Criar" (`tests/host-chrome.test.tsx`, `tests/nav-back.test.ts`).
-  ⭐⭐ **O guia RECOLHE por uma seta, e quem lembra é o host (18/09/2026).** Relato dela: o painel
-  come muito da tela e sobra pouco para criar. Não existe "o painel": são TRÊS componentes
-  independentes — `TaskBriefPanel` (pacote pinta), `TaskGuidePanel` (pacote studio) e o
-  `MoldaTaskGuide` daqui, que era o único no host e o único cujo corpo engolia o "Voltar ao plano".
-  O estado mora AQUI, numa chave por CRIANÇA valendo para as três oficinas
-  (`sz:kids:pensa-guia-recolhido:<viewerId>`, hook `use-pensa-guide-collapsed.tsx`), e desce aos
-  dois pacotes como DADO pelo par OPCIONAL `collapsed`/`onCollapsedChange` das sessões de tarefa —
-  o mesmo idioma do `menu.hidden`/`onToggle` do `hostChrome`, porque os pacotes não conhecem
-  `viewerId` nem `localStorage`. ⚠⚠ **O hook mora nos TRÊS clients, nunca dentro do painel** (conserto do full review de
-  18/09/2026): ele lê a preferência num efeito pós-mount, e o `MoldaTaskGuide` — que só monta
-  depois de o módulo do Molda carregar e o handoff resolver — pintava ABERTO no primeiro quadro e
-  fechava no seguinte. Pior: a `key` dele inclui a `revision` da tarefa, então cada progresso
-  guardado remontava e repetia o pisca. Nos clients o hook monta muito antes, e o painel já nasce
-  com o valor certo — por isso o guia do Molda também recebe `collapsed`/`onCollapsedChange` por
-  PROP, como os irmãos.
-  ⚠ Cobertura que FALTA, declarada: a fiação dos clients (o par descendo pelo adapter e pela
-  sessão) não tem teste. O hook tem o seu (`tests/use-pensa-guide-collapsed.test.tsx`, com os dois
-  mutantes que sobreviviam: gravar só o `'1'`, e vazar entre irmãos por varredura de prefixo) e os
-  três painéis têm os deles.
-  ⚠⚠ **A preferência é lida num `useEffect` PÓS-MOUNT, nunca no inicializador do `useState`**:
-  ler `localStorage` na primeira renderização dá mismatch de hidratação (React #418). Molde exato
-  do `focus-mode.tsx`, e a regra é load-bearing — ela já custou caro uma vez.
-  ⚠⚠ **O pé do Molda SAIU do que recolhe** (18/09): o `<details>` antigo embrulhava tudo, então
-  recolher escondia o ÚNICO caminho de volta ao plano e também o recado de um progresso que não
-  subiu. De quebra o pé saiu do corpo que ROLA (`max-h-80`), onde os botões nasciam abaixo da
-  dobra no celular.
-  ⭐⭐ **E em 19/09/2026 esse invariante foi REVOGADO EM PARTE, por decisão dela:** *"quando fechar
-  pode fechar tudo, mantendo só uma linha ali: o título e a setinha, para a gente deixar bastante
-  espaço para as ferramentas"*. O pé de ROTINA (guardar, concluir, abrir a criação vinculada,
-  voltar ao plano, a linha de situação) passou a recolher junto nos TRÊS guias. A regra que ficou
-  no lugar, e vale para os três: **recolher esconde conteúdo e ação de ROTINA, NUNCA um
-  problema** — o recado de erro e o aviso da criação que não está nesta galeria seguem fora do
-  que recolhe (escolha dela entre três opções), e a rotina volta com um clique na seta, que nunca
-  sai da tela. O sobretítulo também some recolhido, senão o cabeçalho tem duas linhas.
-  ⭐⭐ **No mesmo lote os três ganharam UMA casca só** (`.sz-tool-guide` do
-  `@sistemazero/ui/tool-chrome.css`): ela disse que o painel estava "totalmente fora do design da
-  identidade visual da comunidade", e era verdade — o do Pinta tinha fio de 2px no acento com
-  12px de respiro, este aqui o fio da marca com 20px, e o do Estúdio nem cartão era. Agora os
-  três são o cartão branco das galerias (canto de 20px, Baloo de 15px, 14/18px de respiro) com os
-  botões em `.sz-tool-pill`. ⚠️ Este guia é o único dos três que mora no HOST, então é o único
-  que usa a receita sem passar por um contrato de pacote.
-  **Full review do lote (19/09/2026), o que ele mudou aqui:** (a) o rascunho que o navegador NÃO
-  conseguiu guardar (`draftError`) SAIU da linha de situação e virou um recado próprio, fora do
-  que recolhe — ele só existe quando o `localStorage.setItem` lançou, ou seja as marcações da
-  criança estão só em memória, e recolhia junto com a rotina; (b) a SITUAÇÃO da tarefa virou a
-  pílula `.sz-tool-guide__state` no cabeçalho: enquanto ela era o sobretítulo, era `aria-hidden`
-  e sumia ao recolher, então quem usa leitor de tela deixava de saber que a tarefa estava pronta;
-  (c) os dois recados informativos (`role="status"`) usam `__alert--warn`, e o vermelho ficou
-  para o `role="alert"`: vermelho o tempo todo, para uma criança de 8 anos, lê como "quebrou";
-  (d) com o recado de falha na tela o pé FICA, porque "tente novamente" precisa do botão.
-  O review de integração acrescentou o caso da tarefa CONCLUÍDA e recolhida: a pílula
-  "Concluída" continua no cabeçalho e no nome acessível do botão, sem trazer o pé de rotina.
-  ⚠ As identidades novas nos `useMemo` do `pinta-client` (adapter) e do `studio-full-client`
-  (taskSession) NÃO remontam nada: o `PintaApp` guarda store/view/refs em `useState`/`useRef` e o
-  `EditorScreen` é chaveado pelo asset, e o `StudioCore` não latcha `taskSession`. Conferido antes
-  de fechar o lote, porque um remonte ali custaria o desenho aberto da criança.
+- **Handoff do Pensa:** a seção Pensa acima descreve o contrato canônico de missões, salvamento na conta, equipe, retorno ao plano e preferência de recolhimento. Os três consumidores usam `PensaMissionPanel`; não duplique o painel ou persista progresso no navegador.
 - **Desafio do MÊS (D — game jam, decisão da usuária: MENSAL e só Clube+Estúdio):** card
   `challenge-card.tsx` na home SÓ com as duas refs (`checkChallengeAccessReadonly`, 1 ida; tema de
   `getChallengeReadonly` — determinístico global, `m:YYYY-MM` SP); o `/estudio` passa
@@ -3621,11 +3454,7 @@ A validação em staging e a promoção para produção estão em `../../docs/pl
   distintos; aulas novas não apagam conquistas. Celebração usa progresso da resposta do servidor.
 - `creator-works.tsx` lista metadados da nuvem e planos; criações somente locais ficam nas galerias.
   Retomar Estúdio pelo ID conserva a preferência pelo rascunho local e os conflitos existentes.
-- Molda aceita `?tarefa=` do Pensa, guia contextual e saída vinculada a uma criação real do perfil.
-  O guia exige guardar/fechar pelo Voltar nativo do Molda antes de concluir/sair, preservando IDs.
-  Cada abertura pelo guia tem revisão própria (o `initialAssetId` do editor só é consumido na
-  montagem). Marcações do guia têm rascunho por perfil+tarefa, validado pela revisão e pelo
-  timestamp do progresso; uma atualização do servidor invalida um rascunho antigo.
+- Molda aceita `?missao=` do Pensa e recebe `PensaMissionHandoff`. `MoldaMissionGuide` vincula criações guardadas a cada parte do jogo e exige guardar/fechar pelo Voltar nativo antes de concluir ou sair. Progresso e entregas são persistidos no servidor; o browser guarda somente preferências visuais.
 - `/responsavel` exige sessão da conta e verificação de responsável. Reusa o dashboard com jornada,
   ferramentas e publicações pendentes; o fluxo de gerenciamento antigo continua em `/perfis`.
 - Curso com entrega recebida pelo Hub mostra propagação em andamento; refresh automático é

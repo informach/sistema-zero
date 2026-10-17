@@ -49,53 +49,15 @@ IDE educacional embarcável (Sistema Zero Studio) — biblioteca INTERNA do mono
 
 Editor com 3 modos — Blocos (Blockly), Código (Monaco) e Ponte (sync bidirecional blocos⇄código via worker de reverse-parse) — + preview sandbox, console, terminal (WebContainer), painel de IA (OpenRouter) e extensões.
 
-**Tarefas do Pensa:** `StudioEditorProps` aceita `taskSession?: StudioTaskSession`, independente
-de `LessonActivity`. O `TaskGuidePanel` mostra passos, dicas, blocos oficiais e critérios e envia
-progresso pelo callback do host.
-⭐⭐ **Ele RECOLHE por uma seta (18/09/2026).** Era o único dos três guias do Pensa que não
-recolhia, e no celular ele é a faixa do topo, comendo altura da área de criação. O botão mora
-DENTRO do `<h2>` (padrão de disclosure com cabeçalho), 44px, `aria-expanded`; recolhido, o título
-e a pílula de situação FICAM. Quem LEMBRA é o host: o par OPCIONAL
-`collapsed`/`onCollapsedChange` do `StudioTaskSession` desce como DADO (o mesmo idioma do
-`menu.hidden`/`onToggle` do `StudioHostChrome`), porque o pacote não conhece `viewerId` nem
-`localStorage`; sem o par, recolhe sozinho e esquece ao sair.
-⚠ `taskSession` NÃO é latchado no `StudioCore` (ao contrário de `activity`, `share`,
-`onCloudSync` e `onEditDrawing`), e é isso que faz o `collapsed` do host chegar vivo ao painel —
-latchar aquele contrato deixaria a seta MUDA.
-⚠ A margem de baixo é `mb-2 lg:mb-0`: até `lg` o guia é a faixa do topo e encostava no editor; a
-partir daí ele vira coluna lateral `lg:w-80` e quem separa é a borda da direita. O teto de altura
-e a rolagem só valem ABERTO.
-⚠⚠ **A casca do guia é COMPARTILHADA desde 19/09/2026**: `.sz-tool-guide` +
-`.sz-tool-guide--aside` do `@sistemazero/ui/tool-chrome.css`, a MESMA do guia do Pinta e do Molda
-(ela disse que o painel estava "totalmente fora do design da identidade visual da comunidade", e
-cada um dos três tinha inventado a própria). O `--aside` é deste painel: ele é o único dos três
-que vira coluna, e lá o fio em volta vira o fio do lado que separa do editor — em
-`--sz-tool-line`, nunca no `--sz-tool-card-edge`, que é TRANSPARENTE no claro. Medido no
-playground (o demo `taskSessionDemo`, novo neste lote; ⚠️ a lista reescreve a URL, então abra
-direto em `/editor/<id>?tarefa=1`, e `?tarefa=falha` faz a marcação REJEITAR, que é como se vê o
-recado sobrevivendo ao recolher): 320px de coluna com o fio à direita a partir de 1024px;
-abaixo disso, faixa que rola por dentro (`max-h-64`) com o `mb-2` de respiro. As utilitárias de
-espaçamento seguem LITERAIS no JSX (a receita cuida de cor, fio, canto e tipografia, e os testes
-leem as classes), e o sobretítulo virou "Guia do Pensa", igual nos três — ele SOME recolhido,
-porque ela pediu "só uma linha, o título e a setinha".
-O recado de falha (`syncError`) fica FORA do que recolhe — com o guia recolhido, uma marcação que
-não subiu ficaria invisível e a criança acharia que guardou. AQUI ele é a única coisa que
-sobrevive (não há mais nada a recuperar); nos irmãos sobrevivem também o aviso do desenho ou da
-criação ausente e os botões que o resolvem. A regra dos três, desde 19/09/2026: **recolher esconde
-conteúdo e ação de ROTINA, nunca um problema.**
-⚠️ Quem ROLA é o corpo, nunca o cartão: com o `max-h-64` no `<aside>`, a seta e o recado ficavam
-dentro da área rolável e o recado nascia abaixo da dobra justo quando a criança marca um passo.
-⚠ Recolhido, o `aria-controls` SAI (o corpo desmonta; id ausente é referência pendurada).
-⭐ **E a COLUNA encolhe recolhida** (conserto do full review de 18/09/2026): com o `lg:w-80` fixo
-na base, a partir de `lg` recolher devolvia altura nenhuma e largura nenhuma — 320px de título e
-vazio, com a seta parecendo inerte justo onde a largura é cara. Hoje o `lg:w-80` só vale aberto e
-o recolhido é `lg:w-auto lg:max-w-80`: título longo continua no pior caso de antes, título curto
-devolve o resto. O `mb-2` saiu para a base pelo mesmo motivo (no ramo do aberto, recolhido ele
-voltava a encostar no editor).
-⚠ O sobretítulo "Guia da tarefa" dentro do botão é `aria-hidden`: o `<aside>` em volta já se
-chama assim, e sem isso o leitor anunciava o nome duas vezes. O nome do botão é a TAREFA. O host de `/estudio?tarefa=<id>` cria ou restaura o projeto
-associado e mantém o guia após reload; o Studio não persiste vínculo ou backup no Pensa. Veja
-[`../../docs/pensa-planner.md`](../../docs/pensa-planner.md).
+**Missões do Pensa:** `StudioEditorProps.taskSession?: StudioTaskSession` recebe o contrato compartilhado `PensaMissionSession` de `@sistemazero/ui/pensa-mission-session`. O nome da prop permanece uma integração de editor; seu conteúdo é a missão canônica, sem passos ou schemas locais.
+
+`TaskGuidePanel` usa `PensaMissionPanel` e mostra objetivo, regras, conferências, referências e anotação “Onde parei”. A preparação instala as extensões recomendadas somente após clique, através de `findExtension`/`installExtension` e da store da instância atual. Extensões já instaladas não duplicam; conflitos aparecem como recado. A mesma criação, assets, código e histórico de undo permanecem no editor.
+
+`withTaskSessionSave` chama o flush antes de concluir, continuar, pedir ajuda ou voltar. Falha de gravação impede a ação e permanece visível com o painel recolhido. A confirmação da gravação na conta e a evidência das extensões são responsabilidade do host/BFF. O Studio não cria progresso fictício nem decide a próxima missão.
+
+A sessão não é latchada no `StudioCore`: uma atualização do progresso substitui o painel sem remontar o editor. O host abre `/estudio?missao=<id>` ou `/estudio/pro/<id>?missao=<id>`, sempre no jogo canônico `pensa-<32 hex>`. A entrada, saída ou troca de jogo Pro usa troca completa de documento; trocar apenas a missão no mesmo jogo mantém o editor montado. O Pro não instala extensões de blocos.
+
+CSS, estados, recolhimento e acessibilidade vêm de `@sistemazero/ui/pensa-mission-panel` e `tool-chrome.css`. Testes: `src/studio/TaskGuidePanel.test.tsx`; salvamento/navegação canônicos ficam em `community-kids/tests/pensa-mission-session.test.tsx`. Especificação: [reestruturação do Pensa](../../docs/plans/2026-10-16-pensa-reestruturacao-spec.md).
 
 **API pública** (`src/index.ts` — TUDO fora dela é interno; Fase 5 somou
 **`importProjectSnapshot(raw, {name?})`** — `src/projects/importSnapshot.ts`, importa um snapshot
@@ -1710,7 +1672,7 @@ ganha os blocos que a usam.
 ## "Trazer da equipe" (Pensa em equipe, 14/10/2026)
 
 Quem PROGRAMA um plano do Pensa em equipe traz para o jogo as artes que as colegas entregaram nas
-missões do plano (Pinta e Molda). Especificação: `docs/plans/2026-10-14-pensa-v2-equipe.md` §5.
+missões do plano (Pinta e Molda). Especificação: `docs/plans/2026-10-16-pensa-reestruturacao-spec.md`.
 
 - **Adapter de host `teamLibrary?: StudioTeamLibraryAdapter`** (`studio/team-library.ts`, molde do
   `pintaLibrary`: contexto + Provider + prop em `types.ts`/`StudioCore`; tipos ESPELHO, exportados no

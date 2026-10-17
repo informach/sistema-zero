@@ -1,6 +1,4 @@
 import { describe, expect, mock, test } from 'bun:test'
-import type { PensaJourneyView, PensaTeamArtItem } from '@sistemazero/core/pensa'
-import { createPensaJourney } from '@sistemazero/core/pensa'
 import {
   createModelAsset,
   assetToJson as moldaAssetToJson,
@@ -8,7 +6,6 @@ import {
 } from '@sistemazero/molda/assets'
 import { assetToJson, createAsset } from '@sistemazero/pinta/assets'
 import { NEEDS_TILESET_MESSAGE } from '@sistemazero/pinta/studio-library'
-import { gzipText } from '../src/lib/creations-cloud'
 import { pensaPlanIdFromStudioProjectId, pensaStudioProjectId } from '../src/lib/pensa-studio-link'
 import {
   convertTeamMoldaArt,
@@ -20,351 +17,132 @@ import {
 } from '../src/lib/pensa-team-art'
 import {
   createPensaTeamLibrary,
+  type PensaTeamLibraryDeps,
   pensaTeamArtAvailable,
+  pensaTeamArtId,
   teamArtKind,
   teamArtSummaries,
 } from '../src/lib/pensa-team-library'
 
-const PLAN = '0f1e2d3c-4b5a-6978-8a9b-0c1d2e3f4a5b'
-const BIA = 'b1a00000-0000-4000-8000-000000000001'
-const LEO = 'l3000000-0000-4000-8000-000000000002'
+import {
+  PENSA_TEST_PROGRAMMER as BIA,
+  PENSA_TEST_ARTIST as LEO,
+  PENSA_TEST_PROJECT as PLAN,
+  pensaTestArt,
+  pensaTestTeam,
+  pensaTestView,
+} from './fixtures/pensa'
 
-function artItem(overrides: Partial<PensaTeamArtItem> = {}): PensaTeamArtItem {
-  return {
-    taskId: 'task-heroi',
-    title: 'Desenhar o herói',
-    tool: 'pinta',
-    assetId: 'bia-heroi',
-    assetName: 'heroi',
-    assetKind: 'pixel-sprite',
-    byProfileId: BIA,
-    completedAt: '2026-10-14T10:00:00.000Z',
-    updatedAt: '2026-10-14T10:00:00.000Z',
-    revision: 3,
-    ...overrides,
-  }
-}
-
-function view(team: PensaJourneyView['team']): PensaJourneyView {
-  return {
-    project: { id: PLAN, name: 'Jogo', status: 'active' },
-    journey: createPensaJourney(PLAN, 'c1', ''),
-    cycles: [],
-    operation: null,
-    ...(team ? { team } : {}),
-  }
-}
-
-/** Um `fetch` falso que responde por caminho (o que não estiver no mapa vira 404). */
-function routes(table: Record<string, () => Response | Promise<Response>>) {
+function routes(table: Record<string, () => Response | Promise<Response>>, viewerId = BIA) {
   const calls: string[] = []
-  const fetch = mock(async (input: RequestInfo | URL) => {
+  const fetch = mock(async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = String(input)
     calls.push(url)
-    const handler = table[url]
-    return handler ? handler() : new Response('{}', { status: 404 })
+    if (url.startsWith('/api/pensa/') && new Headers(init?.headers).get('x-sz-viewer') !== viewerId)
+      return Response.json({ error: { code: 'VIEWER_MISMATCH' } }, { status: 409 })
+    return table[url]?.() ?? new Response('{}', { status: 404 })
   })
   return { fetch, calls }
 }
 
-describe('o id do plano a partir do jogo do Estúdio', () => {
-  test('re-insere os hífens 8-4-4-4-12, e é o inverso do pensaStudioProjectId', () => {
+describe('canonical team art', () => {
+  const base = `/api/pensa/projects/${PLAN}`
+  test('project and Studio game IDs round trip', () => {
     expect(pensaPlanIdFromStudioProjectId(pensaStudioProjectId(PLAN))).toBe(PLAN)
-    expect(pensaPlanIdFromStudioProjectId('pensa-0F1E2D3C4B5A69788A9B0C1D2E3F4A5B')).toBe(PLAN)
+    expect(pensaPlanIdFromStudioProjectId('free-game')).toBeNull()
   })
-
-  test('jogo livre ou id fora do formato: nenhum plano', () => {
-    expect(pensaPlanIdFromStudioProjectId('meu-jogo')).toBeNull()
-    expect(pensaPlanIdFromStudioProjectId('pensa-123')).toBeNull()
-    expect(pensaPlanIdFromStudioProjectId(`pensa-${'g'.repeat(32)}`)).toBeNull()
-    expect(pensaPlanIdFromStudioProjectId(`${pensaStudioProjectId(PLAN)}-copia`)).toBeNull()
+  test('only the programmer sees delivered team art', async () => {
+    const serve = (viewer: string, count: number) =>
+      routes(
+        {
+          [base]: () => Response.json(pensaTestView(pensaTestTeam(viewer, count))),
+          [`${base}/team-art`]: () => Response.json({ items: [pensaTestArt()] }),
+        },
+        viewer,
+      )
+    expect(await pensaTeamArtAvailable(PLAN, BIA, serve(BIA, 1).fetch)).toBe(true)
+    expect(await pensaTeamArtAvailable(PLAN, LEO, serve(LEO, 1).fetch)).toBe(false)
+    expect(await pensaTeamArtAvailable(PLAN, BIA, serve(BIA, 0).fetch)).toBe(false)
+    expect(await pensaTeamArtAvailable(PLAN, BIA, routes({}).fetch)).toBe(false)
   })
-})
-
-describe('quem vê o botão', () => {
-  const base = `/api/pensa/v2/projects/${PLAN}`
-  const teamOf = (viewer: string, code: string, memberCount = 1) => ({
-    viewerProfileId: viewer,
-    ownerProfileId: BIA,
-    memberCount,
-    shareEnabled: true,
-    roles: { code, art: [LEO] },
-  })
-
-  test('quem PROGRAMA um plano em equipe com arte entregue', async () => {
-    const { fetch } = routes({
-      [base]: () => Response.json(view(teamOf(BIA, BIA))),
-      [`${base}/team-art`]: () => Response.json({ items: [artItem()] }),
+  test('two elements in one mission have separate identities', () => {
+    const first = pensaTestArt()
+    const second = pensaTestArt({
+      slot: { ...first.slot, id: BIA, name: 'Fundo', kind: 'background' },
     })
-    expect(await pensaTeamArtAvailable(PLAN, fetch)).toBe(true)
+    const summaries = teamArtSummaries([first, second], pensaTestTeam())
+    expect(summaries.map((item) => item.id)).toEqual([
+      pensaTeamArtId(first),
+      pensaTeamArtId(second),
+    ])
+    expect(new Set(summaries.map((item) => item.assetId)).size).toBe(2)
+    expect(teamArtKind(first)).toBe('drawing')
   })
-
-  test('plano solo, quem só desenha, plano sem arte ou servidor fora: nenhum botão', async () => {
-    const semArte = routes({
-      [base]: () => Response.json(view(teamOf(BIA, BIA))),
-      [`${base}/team-art`]: () => Response.json({ items: [] }),
-    })
-    expect(await pensaTeamArtAvailable(PLAN, semArte.fetch)).toBe(false)
-
-    const solo = routes({ [base]: () => Response.json(view(teamOf(BIA, BIA, 0))) })
-    expect(await pensaTeamArtAvailable(PLAN, solo.fetch)).toBe(false)
-    // Solo nem pergunta pelas artes.
-    expect(solo.calls).toEqual([base])
-
-    const artista = routes({ [base]: () => Response.json(view(teamOf(LEO, BIA))) })
-    expect(await pensaTeamArtAvailable(PLAN, artista.fetch)).toBe(false)
-
-    const antigo = routes({ [base]: () => Response.json(view(undefined)) })
-    expect(await pensaTeamArtAvailable(PLAN, antigo.fetch)).toBe(false)
-
-    const fora = routes({})
-    expect(await pensaTeamArtAvailable(PLAN, fora.fetch)).toBe(false)
-  })
-})
-
-describe('a lista da janela', () => {
-  test('nome de quem fez, "Colega" sem nome, e o tipo pela ferramenta', () => {
-    const summaries = teamArtSummaries(
-      [
-        artItem(),
-        artItem({
-          taskId: 'task-nave',
-          tool: 'molda',
-          assetId: 'leo-nave',
-          assetName: null,
-          assetKind: 'model',
-          title: 'Modelar a nave',
-          byProfileId: LEO,
-        }),
-        artItem({ taskId: 'task-x', byProfileId: 'sumiu', tool: 'molda', assetKind: 'sky' }),
-      ],
-      {
-        people: [
-          { profileId: BIA, firstName: 'Bia', photoUrl: null, owner: true, joinedAt: null },
-          { profileId: LEO, firstName: null, photoUrl: null, owner: false, joinedAt: 'x' },
-        ],
-      },
-    )
-    expect(summaries[0]).toEqual({
-      id: 'task-heroi',
-      assetId: 'equipe-task-heroi',
-      name: 'heroi',
-      kind: 'drawing',
-      byName: 'Bia',
-      missionTitle: 'Desenhar o herói',
-      thumbDataUrl: null,
-    })
-    // Sem o nome da arte, o título da missão; sem o 1º nome, "Colega".
-    expect(summaries[1]).toMatchObject({ name: 'Modelar a nave', kind: 'model', byName: 'Colega' })
-    expect(summaries[2]).toMatchObject({ kind: 'sky', byName: 'Colega' })
-  })
-
-  test('teamArtKind: o Molda que não disse o tipo vira modelo', () => {
-    expect(teamArtKind({ tool: 'pinta', assetKind: 'tileset' })).toBe('drawing')
-    expect(teamArtKind({ tool: 'molda', assetKind: 'texture' })).toBe('texture')
-    expect(teamArtKind({ tool: 'molda', assetKind: null })).toBe('model')
-  })
-})
-
-describe('trazer: baixar, descomprimir, converter e guardar', () => {
-  const base = `/api/pensa/v2/projects/${PLAN}`
-  const BLOB = 'https://r2.example/blob?assinatura=1'
-
-  function setup(options: {
-    items?: PensaTeamArtItem[]
-    blob?: () => Promise<Response> | Response
-    ticket?: () => Response
-    save?: { ok: boolean; name?: string; updatedAt?: number; error?: string }
-  }) {
-    const items = options.items ?? [artItem()]
+  test('imports the exact saved delivery through the native conversion and preserves its origin', async () => {
+    const art = pensaTestArt()
+    const endpoint = `${base}/team-art/${art.missionId}/${art.slot.id}/download`
     const { fetch, calls } = routes({
-      [`${base}/team-art`]: () => Response.json({ items }),
-      [`${base}/team`]: () =>
-        Response.json({
-          people: [{ profileId: BIA, firstName: 'Bia', photoUrl: null, owner: true }],
-        }),
-      [`${base}/team-art/task-heroi/download`]:
-        options.ticket ??
-        (() => Response.json({ downloadUrl: BLOB, revision: 3, bytes: 10, parts: [] })),
-      [`${base}/team-art/task-nave/download`]: () =>
-        Response.json({ downloadUrl: BLOB, revision: 5, bytes: 10, parts: [] }),
-      [BLOB]: options.blob ?? (() => new Response('{}')),
+      [`${base}/team-art`]: () => Response.json({ items: [art] }),
+      [`${base}/members`]: () => Response.json(pensaTestTeam()),
+      [endpoint]: () => Response.json({ downloadUrl: 'https://example.test/art', revision: 3 }),
+      'https://example.test/art': () => new Response('document'),
     })
-    const saved: Array<{ asset: Record<string, unknown>; namespace: string }> = []
-    const convertPinta = mock(async (json: string) =>
-      json === 'pinta-doc'
-        ? {
-            ok: true as const,
-            asset: {
-              id: 'bia-heroi',
-              name: 'heroi',
-              dataUrl: 'data:image/png;base64,AAAA',
-              width: 8,
-              height: 8,
-            },
-          }
-        : { ok: false as const, error: 'frase do conversor' },
-    )
-    const convertMolda = mock(async (_json: string, _context: unknown) => ({
-      ok: true as const,
-      asset: {
-        id: 'leo-nave',
-        name: 'nave',
-        kind: 'model3d' as const,
-        dataUrl: 'data:model/gltf-binary;base64,Z2xURg==',
-        originalFileName: 'nave.glb',
-      },
-    }))
+    const saved: Array<Parameters<NonNullable<PensaTeamLibraryDeps['savePersonalAsset']>>[0]> = []
     const library = createPensaTeamLibrary({
       planId: PLAN,
-      viewerId: 'perfil-1',
+      viewerId: BIA,
       deps: {
         fetch,
-        convertPinta,
-        convertMolda: convertMolda as never,
         supported: () => true,
         gunzip: async (bytes) => new TextDecoder().decode(bytes),
-        savePersonalAsset: async (asset, opts) => {
-          saved.push({ asset, namespace: opts.namespace })
-          return options.save ?? { ok: true, name: `${asset.name}-2`, updatedAt: 99 }
+        convertPinta: async () => ({
+          ok: true,
+          asset: {
+            id: 'heroi',
+            name: 'Heroi',
+            dataUrl: 'data:image/png;base64,AAAA',
+            width: 8,
+            height: 8,
+          },
+        }),
+        savePersonalAsset: async (asset) => {
+          saved.push(asset)
+          return { ok: true, name: asset.name, updatedAt: 5 }
         },
       },
     })
-    return { library, calls, saved, convertPinta, convertMolda }
-  }
-
-  test('desenho do Pinta: grava na biblioteca COM a origem e devolve o nome salvo', async () => {
-    const { library, saved, calls } = setup({ blob: () => new Response('pinta-doc') })
-    const list = await library.list()
-    expect(list.map((item) => item.byName)).toEqual(['Bia'])
-    const result = await library.import('task-heroi')
-    expect(result).toEqual({
+    await library.list()
+    expect(await library.import(pensaTeamArtId(art))).toMatchObject({
       tool: 'pinta',
-      result: {
-        ok: true,
-        asset: {
-          id: 'equipe-task-heroi',
-          name: 'heroi-2',
-          dataUrl: 'data:image/png;base64,AAAA',
-          width: 8,
-          height: 8,
-          libRevision: 99,
-        },
+      result: { ok: true },
+    })
+    expect(saved).toEqual([
+      {
+        id: `equipe-${art.missionId}-${art.slot.id}`,
+        name: 'Heroi',
+        origin: 'pinta',
+        dataUrl: 'data:image/png;base64,AAAA',
+        width: 8,
+        height: 8,
       },
-    })
-    expect(saved[0]?.asset.origin).toBe('pinta')
-    expect(saved[0]?.asset.id).toBe('equipe-task-heroi')
-    expect(saved[0]?.namespace).toBe('perfil-1')
-    expect(calls).toContain(BLOB)
+    ])
+    expect(calls).toContain(endpoint)
   })
-
-  test('artes da equipe não sobrescrevem a arte pessoal nem a de outra missão com o mesmo id', async () => {
-    const items = [artItem(), artItem({ taskId: 'task-nave', byProfileId: LEO })]
-    const { library, saved } = setup({ items, blob: () => new Response('pinta-doc') })
-    const listed = await library.list()
-    await library.import('task-heroi')
-    await library.import('task-nave')
-    await library.import('task-heroi')
-    expect(saved[0]?.asset.id).not.toBe('bia-heroi')
-    expect(saved[1]?.asset.id).not.toBe(saved[0]?.asset.id)
-    expect(saved[2]?.asset.id).toBe(saved[0]?.asset.id)
-    expect(listed.map((item) => item.assetId)).toEqual(
-      saved.slice(0, 2).map((item) => item.asset.id as string | undefined),
-    )
-  })
-
-  test('criação do Molda: origem Molda, e a revisão e o consentimento chegam à conversão', async () => {
-    const nave = artItem({
-      taskId: 'task-nave',
-      tool: 'molda',
-      assetId: 'leo-nave',
-      assetKind: 'model',
-    })
-    const { library, saved, convertMolda } = setup({ items: [nave] })
-    await library.list()
-    const result = await library.import('task-nave', { acceptedReview: 'equipe:task-nave:5' })
-    expect(result.tool).toBe('molda')
-    expect(result.result.ok).toBe(true)
-    expect(saved[0]?.asset).toMatchObject({
-      origin: 'molda',
-      kind: 'model3d',
-      originalFileName: 'nave.glb',
-    })
-    expect(convertMolda.mock.calls[0]?.[1]).toEqual({
-      viewerId: 'perfil-1',
-      taskId: 'task-nave',
-      revision: 5,
-      acceptedReview: 'equipe:task-nave:5',
-    })
-  })
-
-  test('a arte que sumiu (404) volta como not-found, com frase de criança', async () => {
-    const { library } = setup({ ticket: () => new Response('{}', { status: 404 }) })
-    await library.list()
-    expect(await library.import('task-heroi')).toEqual({
-      tool: 'pinta',
-      result: { ok: false, error: TEAM_ART_MESSAGES.gone, code: 'not-found' },
-    })
-  })
-
-  test('rede, arquivo ilegível, conversor e biblioteca: cada um com a sua frase', async () => {
-    const semRede = setup({ blob: () => Promise.reject(new TypeError('Failed to fetch')) })
-    await semRede.library.list()
-    expect((await semRede.library.import('task-heroi')).result).toEqual({
-      ok: false,
-      error: TEAM_ART_MESSAGES.network,
-    })
-
-    const conversor = setup({ blob: () => new Response('outro') })
-    await conversor.library.list()
-    expect((await conversor.library.import('task-heroi')).result).toEqual({
-      ok: false,
-      error: 'frase do conversor',
-    })
-
-    const cheia = setup({
-      blob: () => new Response('pinta-doc'),
-      save: { ok: false, error: 'A biblioteca está cheia.' },
-    })
-    await cheia.library.list()
-    expect((await cheia.library.import('task-heroi')).result).toEqual({
-      ok: false,
-      error: 'A biblioteca está cheia.',
-    })
-  })
-
-  test('sem o list() antes, o import descobre a missão sozinho; missão que não existe = not-found', async () => {
-    const { library } = setup({ blob: () => new Response('pinta-doc') })
-    expect((await library.import('task-heroi')).result.ok).toBe(true)
-    expect((await library.import('task-que-nao-existe')).result).toEqual({
-      ok: false,
-      error: TEAM_ART_MESSAGES.gone,
-      code: 'not-found',
-    })
-  })
-
-  test('o arquivo real é gzip: a descompressão padrão abre o documento', async () => {
-    const gz = await gzipText('pinta-doc')
+  test('a different saved revision cannot silently replace the delivery', async () => {
+    const art = pensaTestArt()
     const { fetch } = routes({
-      [`${base}/team-art`]: () => Response.json({ items: [artItem()] }),
-      [`${base}/team-art/task-heroi/download`]: () =>
-        Response.json({ downloadUrl: BLOB, revision: 3 }),
-      [BLOB]: () => new Response(new Blob([gz as BlobPart])),
+      [`${base}/team-art`]: () => Response.json({ items: [art] }),
+      [`${base}/team-art/${art.missionId}/${art.slot.id}/download`]: () =>
+        Response.json({ downloadUrl: 'https://example.test/art', revision: 4 }),
     })
-    const seen: string[] = []
     const library = createPensaTeamLibrary({
       planId: PLAN,
-      viewerId: 'perfil-1',
-      deps: {
-        fetch,
-        convertPinta: async (json) => {
-          seen.push(json)
-          return { ok: false, error: 'parei aqui' }
-        },
-      },
+      viewerId: BIA,
+      deps: { fetch, supported: () => true },
     })
-    await library.import('task-heroi')
-    expect(seen).toEqual(['pinta-doc'])
+    expect(await library.import(pensaTeamArtId(art))).toMatchObject({
+      result: { ok: false, code: 'not-found' },
+    })
   })
 })
 

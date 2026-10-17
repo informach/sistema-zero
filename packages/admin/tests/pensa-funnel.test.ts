@@ -2,65 +2,45 @@ import { describe, expect, test } from 'bun:test'
 import {
   isPensaFunnelPeriod,
   type PensaFunnelView,
-  pensaFunnelAnswers,
   pensaFunnelStages,
 } from '../src/lib/pensa-funnel'
 
 const view: PensaFunnelView = {
   days: 30,
-  since: '2026-09-15T00:00:00.000Z',
-  games: 20,
-  told: 18,
-  asked: 9,
-  questions: 12,
-  answeredByChoice: 7,
-  answeredAny: 2,
-  answeredTyped: 1,
-  waitingOnQuestion: 2,
-  proposal: 15,
-  accepted: 12,
-  firstMission: 8,
-  tested: 5,
-  versionDone: 3,
+  since: '2026-09-16T00:00:00.000Z',
+  projects: 20,
+  definitionStarted: 20,
+  draftReady: 15,
+  planAccepted: 12,
+  setupCompleted: 10,
+  firstMissionCompleted: 8,
+  constructionCompleted: 5,
+  projectCompleted: 3,
+  pendingChoices: 2,
+  adaptationsAccepted: 4,
 }
-
-describe('funil do Pensa no painel', () => {
-  test('as etapas seguem a ordem da criança com a parte dos jogos e quem parou antes', () => {
+describe('funil do Pensa funcional', () => {
+  test('mostra o plano completo até o projeto conferido, sem confundir instalação com funcionalidade', () => {
     const stages = pensaFunnelStages(view)
-    expect(stages.map((s) => s.key)).toEqual([
-      'games',
-      'told',
-      'proposal',
-      'accepted',
-      'firstMission',
-      'tested',
-      'versionDone',
+    expect(stages.map((stage) => stage.key)).toEqual([
+      'projects',
+      'definitionStarted',
+      'draftReady',
+      'planAccepted',
+      'firstMissionCompleted',
+      'constructionCompleted',
+      'projectCompleted',
     ])
-    expect(stages[0]).toMatchObject({ count: 20, ofGames: 100, lost: 0 })
-    expect(stages[2]).toMatchObject({ count: 15, ofGames: 75, lost: 3 })
-    expect(stages[6]).toMatchObject({ count: 3, ofGames: 15, lost: 2 })
+    expect(stages[2]).toMatchObject({ count: 15, ofProjects: 75, lost: 5 })
+    expect(stages[6]).toMatchObject({ count: 3, ofProjects: 15, lost: 2 })
   })
-
-  test('sem jogos, nenhuma porcentagem é inventada', () => {
-    const empty = pensaFunnelStages({ ...view, games: 0, told: 0, proposal: 0, accepted: 0 })
-    expect(empty.every((s) => s.ofGames === null)).toBe(true)
+  test('sem projetos, não inventa porcentagens', () => {
+    expect(
+      pensaFunnelStages({ ...view, projects: 0 }).every((stage) => stage.ofProjects === null),
+    ).toBe(true)
   })
-
-  test('as respostas dividem as perguntas e dizem quantos jogos receberam pergunta', () => {
-    const answers = pensaFunnelAnswers(view)
-    expect(answers.askedOfTold).toBe(50)
-    expect(answers.rows.map((r) => [r.key, r.count, r.ofQuestions])).toEqual([
-      ['byChoice', 7, 58],
-      ['any', 2, 17],
-      ['typed', 1, 8],
-      ['waiting', 2, 17],
-    ])
-    expect(pensaFunnelAnswers({ ...view, questions: 0 }).rows[0]?.ofQuestions).toBeNull()
-  })
-
   test('o período só aceita 7, 30 ou 90 dias', () => {
     expect([7, 30, 90].every(isPensaFunnelPeriod)).toBe(true)
-    expect(isPensaFunnelPeriod(31)).toBe(false)
-    expect(isPensaFunnelPeriod(Number.NaN)).toBe(false)
+    expect([31, Number.NaN, '30', undefined].some(isPensaFunnelPeriod)).toBe(false)
   })
 })

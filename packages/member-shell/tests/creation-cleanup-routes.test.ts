@@ -109,8 +109,10 @@ describe('worker durável de limpeza das criações', () => {
       failed: 0,
       compacted: 7,
       tombstoneCompactionFailed: false,
+      rewardsFailed: false,
     })
     expect(calls).toEqual([
+      '/members/internal/pensa/rewards/work',
       '/members/internal/creation-cleanups/claim',
       'R2 creations/a/,creations/b/',
       '/hub/internal/account-deletion/finalize',
@@ -161,10 +163,33 @@ describe('worker durável de limpeza das criações', () => {
       failed: 1,
       compacted: 0,
       tombstoneCompactionFailed: false,
+      rewardsFailed: false,
     })
-    expect(calls[1]).toEqual({
+    expect(calls[2]).toEqual({
       path: '/members/internal/creation-cleanups/job-2/fail',
       body: { error: 'R2 indisponível', attempts: 3 },
     })
+  })
+  test('a failed Pensa outbox attempt cannot undo successful account cleanup', async () => {
+    const paths: string[] = []
+    const gateway = {
+      gatewayFetchHmac: async <T>(path: string): Promise<{ status: number; body: T }> => {
+        paths.push(path)
+        if (path.endsWith('/rewards/work')) throw new Error('rewards unavailable')
+        if (path.endsWith('/claim')) return { status: 204, body: null as T }
+        return { status: 200, body: { compacted: 2 } as T }
+      },
+    }
+    const route = createCreationCleanupWorkerRoutes({ gateway }).creationCleanupWorker
+    const response = await route.POST(request())
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual({
+      completed: 0,
+      failed: 0,
+      compacted: 2,
+      tombstoneCompactionFailed: false,
+      rewardsFailed: true,
+    })
+    expect(paths.filter((path) => path.endsWith('/rewards/work'))).toHaveLength(1)
   })
 })

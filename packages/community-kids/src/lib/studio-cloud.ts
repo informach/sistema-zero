@@ -294,7 +294,7 @@ export function createStudioCloudSync(options: {
   /** Prazo de cada PÁGINA da lista da nuvem (testes). Default: `LIST_TIMEOUT_MS`. */
   listTimeoutMs?: number
   /**
-   * A marca de restauração do Pensa v2 que este aparelho ainda não alcançou (ver
+   * A revisão restaurada do Pensa que este aparelho ainda não alcançou (ver
    * `pensa-restore-pending.ts`): ler a revisão restaurada (`null` = nada) e apagar a marca.
    * Default: a marca guardada por perfil no `localStorage`.
    */
@@ -456,7 +456,8 @@ export function createStudioCloudSync(options: {
    * reserva aceita qualquer base numa linha apagada).
    */
   async function resolveStale(id: string): Promise<void> {
-    // ⚠️ SÓ a restauração do Pensa v2 inverte a regra. Restaurar troca o arquivo NA CONTA e o
+    // A restauração do Pensa exige alcançar a revisão da conta antes de reenviar o arquivo local.
+    // Restaurar troca o arquivo NA CONTA e o
     // plano passa a apontar para a revisão restaurada: aqui a versão da nuvem é a que fica neste
     // id, e a daqui precisa virar a cópia. Isso só a DESCIDA faz direito (com o editor fechado
     // ela guarda o rascunho daqui como cópia e restaura a da nuvem no mesmo id), então o envio

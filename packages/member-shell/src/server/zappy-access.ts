@@ -19,7 +19,7 @@ export function isStudioZappyAllowed(
 
 /** Mesma política para handlers que ainda precisam consultar o nível no members. */
 export async function isStudioZappyAllowedForRequest(
-  members: MembersClient,
+  members: Pick<MembersClient, 'getGamification'>,
   session: ZappySession | null | undefined,
 ): Promise<boolean> {
   if (!session) return false

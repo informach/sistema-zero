@@ -18,7 +18,6 @@ import {
   CreationStaleBaseError,
 } from '../../domain/creations/creation.errors'
 import { HelpTutorialConflictError, HelpTutorialInvalidError } from '../../domain/help/help.errors'
-import { PensaGateNotReadyError } from '../../domain/pensa/pensa.errors'
 
 export type { ErrorEnvelope }
 
@@ -96,30 +95,19 @@ const DOMAIN_STATUS: Record<string, number> = {
   CHALLENGE_THEME_ARCHIVED: 409,
   // Pensa (planejamento guiado). NOT_FOUND cobre também ownership mismatch
   // (nunca vazar existência); os demais são conflitos de estado/cota.
-  PENSA_NOT_FOUND: 404,
-  PENSA_QUOTA_EXCEEDED: 409,
-  PENSA_CYCLE_NOT_DONE: 409,
-  PENSA_GATE_NOT_READY: 409,
-  PENSA_STAGE_MISMATCH: 409,
-  PENSA_TASK_LOCKED: 409,
-  PENSA_TASK_TRANSITION_INVALID: 409,
-  PENSA_TASK_DEPENDENCY_PENDING: 409,
-  PENSA_TASK_PROGRESS_CONFLICT: 409,
-  // Equipe do Pensa (26/09/2026): dono × membro; código que não abre nada é 404 (nunca
-  // vaza a existência do plano); o resto são conflitos de estado/cota.
-  PENSA_NOT_OWNER: 403,
-  PENSA_INVITE_INVALID: 404,
-  PENSA_ALREADY_MEMBER: 409,
-  PENSA_TEAM_FULL: 409,
-  PENSA_JOIN_LIMIT: 409,
-  PENSA_OWNER_CANNOT_LEAVE: 409,
-  // Equipe no v2 (14/10/2026): as funções (quem programa × quem faz as artes).
-  PENSA_NOT_PROGRAMMER: 403,
-  PENSA_NOT_YOUR_MISSION: 403,
-  PENSA_MISSION_TAKEN: 409,
-  PENSA_CODE_LOCKED: 409,
-  // "Guardado na sua conta" (criações do Estúdio Completo/Pinta). NOT_FOUND cobre
-  // ownership mismatch; quota e revisão vencida são conflitos.
+  PROJECT_GONE: 404,
+  REVISION_CONFLICT: 409,
+  DRAFT_CHANGED: 409,
+  MISSION_UNAVAILABLE: 409,
+  DEPENDENCY_PENDING: 409,
+  RESOURCES_CHANGED: 409,
+  RESOURCES_UNAVAILABLE: 503,
+  CREATION_NOT_SAVED: 409,
+  CREATION_CHANGED: 409,
+  EXTENSION_CONFLICT: 409,
+  NOT_YOUR_MISSION: 403,
+  QUOTA_EXCEEDED: 409,
+  OPERATION_FAILED: 409,
   CREATION_NOT_FOUND: 404,
   CREATION_QUOTA_EXCEEDED: 409,
   CREATION_REVISION_MISMATCH: 409,
@@ -187,16 +175,6 @@ export function buildErrorResponse(input: {
 
   // Gate do advance do Pensa: expõe `details.gate` + `details.missing`
   // ESTRUTURADOS (contrato) — a UI mostra exatamente o que falta na etapa.
-  if (error instanceof PensaGateNotReadyError) {
-    return {
-      status: 409,
-      body: {
-        ...envelope(error.code, error.message),
-        details: { gate: error.gate, missing: error.missing },
-      },
-    }
-  }
-
   // "Como fazer": o PATCH com `expectedRevision` velho devolve a revisão ATUAL (a outra aba
   // salvou); o publish de rascunho incompleto devolve os BLOQUEIOS campo a campo (o diálogo
   // "Revisar e publicar" do admin aponta cada um).

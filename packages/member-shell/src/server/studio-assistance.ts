@@ -4,8 +4,12 @@ import {
   type StudioProAssistanceRequest,
   studioProDigest,
 } from '@sistemazero/core/studio'
+import { isPrivilegedRole } from '../lib/studio-tier'
+import type { SessionUser } from '../lib/types'
 import type { MembersClient } from './clients'
-import { studioTutorTask } from './pensa-journey/missions'
+import { loadPensaContext } from './pensa/context'
+import { PensaUnavailable } from './pensa/errors'
+import { pensaStudioTutorMission } from './pensa/missions'
 import { redactZappySensitiveText } from './zappy-safety'
 
 export class StudioAssistanceContextError extends Error {
@@ -52,22 +56,33 @@ export function sanitizeStudioAssistanceRequest(
 
 /** The mission snapshot is read through the authenticated Members client; client text is not ownership. */
 export async function studioAssistanceMission(
-  members: Pick<MembersClient, 'pensaJourneyGet' | 'pensaGetStage'>,
+  members: MembersClient,
+  user: SessionUser,
   projectId: string,
-  taskId?: string,
+  missionId?: string,
 ): Promise<StudioProAssistanceRequest['mission']> {
   const match = /^pensa-([a-f0-9]{8})([a-f0-9]{4})([a-f0-9]{4})([a-f0-9]{4})([a-f0-9]{12})$/.exec(
     projectId,
   )
   if (!match) return undefined
-  const journey = await members.pensaJourneyGet(match.slice(1).join('-'))
-  if (journey.status !== 200 || !journey.body)
-    throw new StudioAssistanceContextError(503, 'Não foi possível consultar o objetivo do Pensa.')
-  const stage = await members.pensaGetStage(journey.body.journey.cycleId, 'z')
-  if (stage.status !== 200 || !stage.body)
-    throw new StudioAssistanceContextError(503, 'Não foi possível consultar as tarefas do Pensa.')
-  const mission = studioTutorTask(stage.body.tasks ?? [], taskId)
-  if (taskId && mission?.id !== taskId)
+  const context = await loadPensaContext(
+    members,
+    user,
+    {
+      profileId: user.id,
+      accountId: user.activeProfile?.accountId ?? user.id,
+      privileged: isPrivilegedRole(user.role),
+    },
+    match.slice(1).join('-'),
+    '',
+  ).catch((cause: unknown) => {
+    throw new StudioAssistanceContextError(
+      cause instanceof PensaUnavailable && cause.status === 409 ? 409 : 503,
+      'Não consegui conferir a missão deste projeto. Atualize o Pensa antes de preparar uma alteração.',
+    )
+  })
+  const mission = pensaStudioTutorMission(context.view, missionId)
+  if (missionId && mission?.id !== missionId)
     throw new StudioAssistanceContextError(
       409,
       'A missão vinculada mudou. Consulte o plano antes de preparar outra alteração.',
@@ -79,13 +94,11 @@ export async function studioAssistanceMission(
       JSON.stringify({
         id: mission.id,
         title: mission.title,
-        summary: mission.summary,
-        guide: mission.guide,
+        objective: mission.objective,
+        rules: mission.rules,
+        checks: mission.checks,
       }),
     ),
-    summary: redactZappySensitiveText(`${mission.title}. ${mission.summary ?? ''}`).text.slice(
-      0,
-      900,
-    ),
+    summary: redactZappySensitiveText(`${mission.title}. ${mission.objective}`).text.slice(0, 900),
   }
 }

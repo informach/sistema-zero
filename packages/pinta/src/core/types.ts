@@ -126,105 +126,7 @@ export interface PintaInitialIntent {
   style?: 'pixel' | 'vector' | 'either'
 }
 
-export interface PintaTaskGuideItem {
-  id: string
-  text: string
-  hint?: string
-  required: boolean
-}
-export interface PintaTaskSession {
-  renderListen?: (stepId: string) => import('react').ReactNode
-  /**
-   * Abre a próxima missão do plano (guia v2). O Pinta GUARDA o desenho antes de chamar.
-   *
-   * ⭐ Convenção de erro dos três callbacks do guia v2 (`onProgress`, `onNextMission`,
-   * `onNeedHelp`, 14/10/2026): a rejeição pode trazer `childMessage: string`, a frase escrita
-   * para a criança (dependência que falta, plano que mudou, "espere o desenho ficar
-   * guardado"). Com ela o painel mostra a frase; SEM ela o painel entende falha de rede e mostra
-   * o genérico ("Confira a internet"). Nunca a `message` crua: ela pode ser técnica.
-   */
-  onNextMission?: () => Promise<void>
-  /**
-   * O rótulo do botão de continuar depois de concluir (guia v2). Ausente = "Continuar meu
-   * caminho". O host diz o destino quando a próxima missão é de OUTRA oficina ("Continuar no
-   * Estúdio"), porque o clique troca de tela.
-   */
-  nextMissionLabel?: string
-  /** "Travei aqui" (guia v2): o Pinta guarda o desenho e o host leva à ajuda. */
-  onNeedHelp?: () => void | Promise<void>
-  taskId: string
-  project: { id: string; name: string }
-  cycle: { id: string; number: number; goal: string | null }
-  title: string
-  summary: string | null
-  brief: {
-    /** Item correspondente no inventário da Bíblia Visual. */
-    assetId: string
-    artKind: 'sprite' | 'background' | 'tileset' | 'tilemap'
-    style: 'pixel' | 'vector' | 'either'
-    preset?: string
-    palette: Array<{ role: string; color: string }>
-    appearance: string
-    animations: string[]
-    states: string[]
-    usage: string
-    requiresStudioUse: boolean
-  }
-  guide: { contractVersion?: 2; steps: PintaTaskGuideItem[]; criteria: PintaTaskGuideItem[] }
-  /** Explicação do host quando o cartão exige a ponte, mas o Estúdio não foi liberado. */
-  studioUseBlockedReason?: string
-  progress: {
-    status: 'planned' | 'in_progress' | 'completed'
-    completedStepIds: string[]
-    completedCriteriaIds: string[]
-    startedAt: string | null
-    completedAt: string | null
-    updatedAt: string | null
-    outputRef: {
-      kind: 'pinta_asset'
-      assetId: string
-      assetName?: string
-      usedInStudioAt?: string
-    } | null
-  }
-  onProgress(input: {
-    status?: 'in_progress' | 'completed'
-    completedStepIds?: string[]
-    completedCriteriaIds?: string[]
-    outputRef?: {
-      kind: 'pinta_asset'
-      assetId: string
-      assetName?: string
-      usedInStudioAt?: string
-    }
-  }): Promise<void>
-  /**
-   * "Voltar ao plano" no painel do brief (09/2026): leva a criança de volta ao
-   * plano do Pensa que abriu esta tarefa. O id do plano já está em `project.id`,
-   * então o host não precisa de parâmetro novo de URL.
-   *
-   * OPCIONAL de propósito, como o `sendToStudio` do adapter: ausente = o botão
-   * não aparece (o playground, a aula e os fixtures seguem válidos). O Pinta
-   * GUARDA o desenho antes de chamar; se a gravação falhar, não chama.
-   */
-  onReturnToPlan?(): void | Promise<void>
-  /**
-   * O guia recolhido, e o aviso de que a criança mexeu na seta (18/09/2026).
-   *
-   * Quem LEMBRA é o host (uma chave por criança, valendo para as três oficinas); aqui isso
-   * chega como DADO, o mesmo idioma do `menu.hidden`/`onToggle` do chrome do host. Sem o par,
-   * o painel recolhe por conta própria e esquece ao sair — é o caso do playground e dos testes.
-   * ⚠ Recolhido sobra UMA linha, o título e a seta (19/09/2026, decisão dela). O que NÃO
-   * recolhe é PROBLEMA: o recado de falha e o aviso do desenho que não está neste aparelho,
-   * com os dois botões que o resolvem.
-   * ⚠⚠ Os dois andam JUNTOS. Passar só o `collapsed` entrega um botão de 44px com
-   * `aria-expanded` que não faz NADA ao ser clicado (o estado local roda e o `??` o ignora), e
-   * passar só o `onCollapsedChange` faz o host ser avisado sem nunca mandar. São dois opcionais
-   * porque o par inteiro é opcional — não porque um sirva sem o outro.
-   */
-  collapsed?: boolean
-  onCollapsedChange?(collapsed: boolean): void
-}
+export type PintaTaskSession = import('@sistemazero/ui/pensa-mission-session').PensaMissionSession
 
 export interface PintaHostAdapter {
   /** Tema fixado pelo host; ausente = claro (default kids). */
@@ -270,7 +172,7 @@ export interface PintaHostAdapter {
    * ainda não conhece); desenho apagado cai na galeria com um recado gentil.
    */
   initialAssetId?: string
-  /** Sessão desacoplada do Pensa, restaurada pelo host a partir de `?tarefa=`. */
+  /** Sessão desacoplada do Pensa, restaurada pelo host a partir de `?missao=`. */
   taskSession?: PintaTaskSession
   /**
    * Avisa a cada revisão CONFIRMADA do desenho aberto (o autosave já gravou).

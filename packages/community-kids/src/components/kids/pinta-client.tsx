@@ -1,16 +1,13 @@
 'use client'
-import { PrivateZappyVoice } from '@sistemazero/member-shell/components/private-zappy-voice'
-import { sessionFetch as fetch } from '@sistemazero/member-shell/lib/session-fetch'
 // O CSS do Pinta (tokens + @theme que GERA as utilitárias pin-*) é carregado pelo
 // `@import` em `app/globals.css`, DENTRO do pipeline Tailwind — mesmo gotcha do
 // Estúdio/Pensa: um JS-import aqui só traria os tokens, sem gerar as utilitárias.
-import type { PintaHostAdapter, PintaInitialIntent, PintaTaskSession } from '@sistemazero/pinta'
+import type { PintaHostAdapter, PintaInitialIntent } from '@sistemazero/pinta'
 import { RefreshCw } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { type CreationsCloud, createCreationsCloud } from '@/lib/creations-cloud'
-import { cloudConfirmRefusal, guideError, progressRefusal } from '@/lib/pensa-guide-errors'
-import { navigatePensaMission, resolveNextPensaMission } from '@/lib/pensa-next-mission'
+import { navigatePensaMission } from '@/lib/pensa-next-mission'
 import {
   createCloudMirroredPintaPersistence,
   type PintaPersistenceLike,
@@ -19,9 +16,11 @@ import { EMBEDDED_APP_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loadi
 import { useFocusMode } from './focus-mode'
 import { PensaMissionBlocked } from './pensa-mission-blocked'
 import { HostChromeAnnouncer, useHostChrome } from './use-host-chrome'
-import { useNextMissionLabel } from './use-next-mission-label'
-import { usePensaGuideCollapsed } from './use-pensa-guide-collapsed'
-import { usePintaTaskHandoff } from './use-pensa-task-handoff'
+import {
+  canOpenPensaMission,
+  usePensaMissionHandoff,
+  usePensaMissionSession,
+} from './use-pensa-mission-session'
 
 // O pacote é client-only (zustand/canvas/IndexedDB); carregamos DENTRO de um
 // effect (igual ao pensa-client) e o server renderiza só o placeholder.
@@ -71,22 +70,15 @@ export function PintaClient({
   // e aí sessionStorage (o caminho do intent do Pensa) não atravessa. Lido no 1º
   // render e limpo da URL logo depois, para um F5 não reabrir o mesmo desenho.
   const searchParams = useSearchParams()
-  const taskId = searchParams.get('tarefa')
+  const taskId = searchParams.get('missao')
   const {
     data: handoff,
     status: handoffStatus,
     error: handoffError,
     retry: retryHandoff,
-    updateProgress: updateHandoffProgress,
-  } = usePintaTaskHandoff(taskId)
+    update: updateHandoffProgress,
+  } = usePensaMissionHandoff(taskId, 'pinta', viewerId)
   // "Continuar no Estúdio" quando a próxima missão é em outra oficina.
-  const proximaMissaoRotulo = useNextMissionLabel({
-    enabled:
-      handoff?.task.guide.contractVersion === 2 && handoff.task.progress.status === 'completed',
-    taskId: handoff?.task.id ?? null,
-    projectId: handoff?.project.id ?? null,
-    current: 'pinta',
-  })
   const [initialAssetId] = useState(() => searchParams.get('desenho'))
   useEffect(() => {
     if (initialAssetId && !taskId) router.replace('/pinta')
@@ -169,110 +161,39 @@ export function PintaClient({
   // O guia do Pensa recolhido, lembrado por CRIANÇA e valendo para as três oficinas. O painel
   // vive no PACOTE e não conhece `viewerId` nem `localStorage`, então o par desce como DADO —
   // o mesmo idioma do `menu.hidden`/`onToggle` do `hostChrome`.
-  const { collapsed: guiaRecolhido, setCollapsed: setGuiaRecolhido } =
-    usePensaGuideCollapsed(viewerId)
+  const navigate = useCallback((path: string) => router.push(path), [router])
+  const missionSession = usePensaMissionSession({
+    handoff,
+    viewerId,
+    cloud,
+    update: updateHandoffProgress,
+    retry: retryHandoff,
+    navigate,
+    narrationEnabled,
+  })
 
   const adapter = useMemo<PintaHostAdapter>(() => {
-    const proProjectId = handoff?.capability.studioProProjectId
+    const proProjectId = handoff?.studioAuthoring === 'code' ? handoff.studioProjectId : undefined
     const canSendDrawing = studioAvailable || Boolean(proProjectId)
+    const slot =
+      missionSession?.assetSlots.find(
+        (item) =>
+          !missionSession.progress.deliveries.some((delivery) => delivery.assetSlotId === item.id),
+      ) ?? missionSession?.assetSlots[0]
+    const pintaKind =
+      slot && ['sprite', 'background', 'tileset', 'tilemap'].includes(slot.kind) ? slot.kind : null
     const initialIntent: PintaInitialIntent | undefined =
-      handoff && !handoff.task.progress.outputRef
+      handoff && slot && pintaKind && !handoff.progress.deliveries.length
         ? {
-            projectRef: {
-              id: handoff.project.id,
-              name: handoff.project.name,
-              palette: handoff.task.context.palette.map((item) => item.color),
-            },
-            artKind: handoff.task.context.artKind,
-            style: handoff.task.context.style,
+            projectRef: { id: handoff.project.id, name: handoff.project.name, palette: [] },
+            artKind:
+              pintaKind === 'background' || pintaKind === 'tileset' || pintaKind === 'tilemap'
+                ? pintaKind
+                : 'sprite',
+            style: 'either',
           }
         : undefined
-    const taskSession: PintaTaskSession | undefined = handoff
-      ? {
-          taskId: handoff.task.id,
-          project: handoff.project,
-          cycle: handoff.cycle,
-          title: handoff.task.title,
-          summary: handoff.task.summary,
-          brief: handoff.task.context,
-          guide: handoff.task.guide,
-          // Sem perfil não há voz: a rota recusaria (403) um dono vazio.
-          renderListen:
-            narrationEnabled && viewerId
-              ? (stepId) => (
-                  <PrivateZappyVoice
-                    viewerId={viewerId}
-                    reference={{
-                      origin: 'pensa_guide',
-                      taskId: handoff.task.id,
-                      revision: handoff.task.revision,
-                      stepId,
-                    }}
-                  />
-                )
-              : undefined,
-          nextMissionLabel: proximaMissaoRotulo,
-          onNextMission: async () => {
-            const assetId = handoff.task.progress.outputRef?.assetId
-            if (!cloud || !assetId) throw guideError('Espere seu desenho ficar guardado na conta.')
-            await cloud.confirm(assetId, { timeoutMs: 15000 }).catch((cause: unknown) => {
-              throw cloudConfirmRefusal(cause, 'Seu desenho')
-            })
-            const next = await resolveNextPensaMission(handoff.project.id).catch(() => {
-              throw guideError('Não consegui abrir a próxima missão. Tente de novo.')
-            })
-            navigatePensaMission(next.path, (path) => router.push(path))
-          },
-          onNeedHelp: () => router.push(`/pensa?plano=${encodeURIComponent(handoff.project.id)}`),
-          ...(handoff.task.context.requiresStudioUse && !canSendDrawing
-            ? { studioUseBlockedReason: 'O Estúdio ainda não foi liberado pela sua jornada.' }
-            : {}),
-          progress: handoff.task.progress,
-          onProgress: async (input) => {
-            if (handoff.task.guide.contractVersion === 2 && input.status === 'completed') {
-              const assetId = input.outputRef?.assetId ?? handoff.task.progress.outputRef?.assetId
-              if (!cloud || !assetId)
-                throw guideError('Espere seu desenho ficar guardado na conta.')
-              await cloud.confirm(assetId, { timeoutMs: 15000 }).catch((cause: unknown) => {
-                throw cloudConfirmRefusal(cause, 'Seu desenho')
-              })
-            }
-            const response = await fetch(
-              `/api/pensa/tasks/${encodeURIComponent(handoff.task.id)}/progress`,
-              {
-                method: 'PATCH',
-                headers: { 'content-type': 'application/json' },
-                body: JSON.stringify({
-                  ...input,
-                  expectedUpdatedAt: handoff.task.progress.updatedAt,
-                }),
-              },
-            )
-            const body = (await response.json().catch(() => null)) as {
-              task?: { progress: PintaTaskSession['progress'] }
-              error?: { code?: string; message?: string }
-            } | null
-            if (response.status === 409) {
-              retryHandoff()
-              throw progressRefusal(409, {
-                error: {
-                  code: body?.error?.code ?? 'PENSA_TASK_PROGRESS_CONFLICT',
-                  message: body?.error?.message,
-                },
-              })
-            }
-            if (!response.ok || !body?.task) throw progressRefusal(response.status, body)
-            updateHandoffProgress(body.task.progress)
-          },
-          // "Voltar ao plano" no painel do brief: o id do plano já veio no handoff
-          // (nada de parâmetro novo na URL). Espelho do Molda (`molda-client.tsx`).
-          // Quem guarda o desenho ANTES de chamar é o próprio Pinta.
-          onReturnToPlan: () =>
-            router.push(`/pensa?plano=${encodeURIComponent(handoff.project.id)}`),
-          collapsed: guiaRecolhido,
-          onCollapsedChange: setGuiaRecolhido,
-        }
-      : undefined
+    const taskSession = missionSession
     return {
       theme,
       studioOwned: canSendDrawing,
@@ -343,28 +264,15 @@ export function PintaClient({
       ...(initialIntent ? { initialIntent } : {}),
       ...(taskSession ? { taskSession } : {}),
       // Botão "Editar" do Estúdio: abre direto o desenho pedido (1x no mount).
-      ...(handoff?.task.progress.outputRef?.assetId || initialAssetId
+      ...(handoff?.progress.deliveries[0]?.creation.creationId || initialAssetId
         ? {
             initialAssetId:
-              handoff?.task.progress.outputRef?.assetId ?? initialAssetId ?? undefined,
+              handoff?.progress.deliveries[0]?.creation.creationId ?? initialAssetId ?? undefined,
           }
         : {}),
     }
     // ⚠️ `theme` saiu do dep array: virou constante (sem tema escuro nesta plataforma).
-  }, [
-    studioAvailable,
-    cloud,
-    narrationEnabled,
-    viewerId,
-    router,
-    handoff,
-    updateHandoffProgress,
-    retryHandoff,
-    initialAssetId,
-    guiaRecolhido,
-    setGuiaRecolhido,
-    proximaMissaoRotulo,
-  ])
+  }, [studioAvailable, viewerId, router, handoff, initialAssetId, missionSession])
 
   // O selo "Guardado na sua conta" fica na barra do Pinta. O menu lateral pertence
   // à alça do shell Kids; `hostChrome.menu` é null para não duplicar o botão.
@@ -389,11 +297,11 @@ export function PintaClient({
             </button>
           </div>
         </div>
-      ) : handoff && !handoff.capability.owned ? (
+      ) : handoff && !canOpenPensaMission(handoff) ? (
         // A missão é de quem programa (ou de outra artista que já começou): sem o brief e
         // sem concluir, com o caminho de volta ao plano.
         <PensaMissionBlocked
-          reason={handoff.capability.blockedReason}
+          reason={handoff.availability.message}
           onBackToPlan={() => router.push(`/pensa?plano=${encodeURIComponent(handoff.project.id)}`)}
         />
       ) : loadError ? (
@@ -411,8 +319,8 @@ export function PintaClient({
         </div>
       ) : // Espera do brief (deep link do Pensa) e espera do pacote viram UMA só:
       // os dois fetches correm em paralelo, e mostrar dois textos diferentes em
-      // sequência fazia `/pinta?tarefa=` ter quatro telas.
-      handoffStatus === 'loading' || mod === null ? (
+      // sequência fazia `/pinta?missao=` ter quatro telas.
+      (handoffStatus === 'loading' && !handoff) || mod === null ? (
         <EmbeddedAppLoadingBody label="Carregando o Pinta…" />
       ) : (
         <>
@@ -422,6 +330,7 @@ export function PintaClient({
           <div className="flex min-h-0 flex-1 flex-col">
             <mod.PintaHostChromeProvider value={hostChrome}>
               <mod.PintaApp
+                key={handoff?.mission.id ?? 'free'}
                 adapter={adapter}
                 onWorkspaceChange={setWorkspaceActive}
                 {...(persistence ? { persistence } : {})}

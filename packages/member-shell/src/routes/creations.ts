@@ -30,7 +30,7 @@ interface CreationsStorage {
   headObject?: typeof r2HeadObjectUgc
 }
 
-/** O tipo do blob e os TTLs do GET moram em `server/creation-download.ts` (o Pensa v2 assina igual). */
+/** O tipo do blob e os TTLs do GET moram em `server/creation-download.ts`, compartilhado com o Pensa. */
 export { CREATION_BLOB_CONTENT_TYPE }
 
 /** TTL curto do PUT (o upload de 40 MB numa conexão ruim cabe em 10 min). */

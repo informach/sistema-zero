@@ -9,7 +9,7 @@ export interface LearnerPensaUsage {
   /** Projetos do Pensa (qualquer status — criou é criou). */
   projects: number
   /** Ciclos que chegaram ao `done` (o "Grande Lançamento"). */
-  cyclesCompleted: number
+  projectsCompleted: number
   /** Max `updated_at` dos projetos — quando mexeu por último. */
   lastActivityAt: Date | null
 }

@@ -12,7 +12,7 @@ export const CREATION_PARTS_GET_TTL_SECONDS = 600
 /**
  * Assina a descida de uma criação a partir do bilhete do members (`storageKey`, revisão, partes).
  * Uma régua só para o "Guardado na sua conta" (`creationsDownloadUrl`) e para o "Trazer da
- * equipe" do Pensa v2 (`team-art/:taskId/download`): mesma chave de conteúdo, mesmos TTLs. ⚠️ Só
+ * equipe" do Pensa (`team-art/:missionId/:slotId/download`): mesma chave de conteúdo e TTLs. Só
  * se chama DEPOIS de o members autorizar (o bilhete é a autorização).
  */
 export async function signCreationDownload(

@@ -28,7 +28,13 @@ class TestAudio {
     this.src = ''
   }
 }
-const reference = { origin: 'pensa_guide' as const, taskId: 'task', revision: 1, stepId: 'first' }
+const reference = {
+  origin: 'pensa_mission' as const,
+  missionId: '10000000-0000-4000-8000-000000000004',
+  contentRevision: 1,
+  section: 'objective' as const,
+  itemId: null,
+}
 afterEach(() => {
   cleanup()
   globalThis.fetch = originalFetch

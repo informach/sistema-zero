@@ -1,5 +1,7 @@
 # Revisão completa da proposta do Pensa
 
+> Histórico: substituído pela [especificação funcional de 16/10/2026](2026-10-16-pensa-reestruturacao-spec.md). Este documento registra decisões anteriores e não define o contrato vigente.
+
 **14 de outubro de 2026 — três rodadas de revisão de produto, fluxos, usabilidade infantil e arquitetura proposta**
 
 Documento principal: [proposta consolidada](2026-10-14-pensa-proposta.md). Apoio: [pesquisa e evidências](2026-10-14-pensa-pesquisa.md) e [inventário GameDev](2026-10-14-pensa-skills-inventario.csv).

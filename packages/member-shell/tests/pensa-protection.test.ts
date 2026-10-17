@@ -1,70 +1,138 @@
 import { expect, mock, test } from 'bun:test'
-import { createPensaJourney, type PensaJourneyView } from '@sistemazero/core/pensa'
-import type { MembersClient } from '../src/server/clients'
+import type { PensaClient } from '../src/server/pensa-client'
+import { PENSA_ACTOR, pensaContext, pensaId } from './pensa-fixtures'
 
 mock.module('server-only', () => ({}))
-const { protectJourney } = await import('../src/server/pensa-journey/protection')
-const actor = { profileId: 'child', accountId: 'parent', privileged: false }
-const view: PensaJourneyView = {
-  project: { id: 'project', name: 'Gato', status: 'active' },
-  journey: createPensaJourney('project', 'cycle', ''),
-  cycles: [],
-  operation: null,
-}
-function fixture() {
-  let revision = 1
-  const calls: { type: string; id?: string }[] = []
-  const members = {
-    getCreationDownload: async () => ({ status: 200, body: { revision } }),
-    pensaJourneyProtect: async (
-      _actor: unknown,
-      _id: unknown,
-      action: { type: string; id: string },
-    ) => {
-      calls.push(action)
+const { protectPensaProject, restorePensaProject } = await import('../src/server/pensa/protection')
+
+test('a definitive prepare refusal preserves its status so the UI can start a new attempt', async () => {
+  const context = pensaContext()
+  const members: Pick<PensaClient, 'pensaProtect'> = {
+    pensaProtect: async () => ({ status: 409, body: context.view }),
+  }
+  await expect(
+    protectPensaProject(
+      members,
+      PENSA_ACTOR,
+      context,
+      { requestId: pensaId(30), baseRevisionId: pensaId(31), saveRevision: '7' },
+      { refreshContext: async () => context },
+    ),
+  ).rejects.toMatchObject({ status: 409 })
+})
+
+test('a definitive commit refusal stays definitive after aborting the copy', async () => {
+  const context = pensaContext()
+  const members: Pick<PensaClient, 'pensaProtect'> = {
+    pensaProtect: async (_actor, _id, action) => ({
+      status: action.type === 'commit' ? 409 : 200,
+      body: action.type === 'prepare' ? { id: action.id, files: [] } : context.view,
+    }),
+  }
+  await expect(
+    protectPensaProject(
+      members,
+      PENSA_ACTOR,
+      context,
+      { requestId: pensaId(30), baseRevisionId: pensaId(31), saveRevision: '7' },
+      { refreshContext: async () => context, copyFiles: async () => {} },
+    ),
+  ).rejects.toMatchObject({ status: 409 })
+})
+
+test('copy failure aborts its ticket and cannot commit or change the current game', async () => {
+  const context = pensaContext()
+  const calls: string[] = []
+  const members: Pick<PensaClient, 'pensaProtect'> = {
+    pensaProtect: async (_actor, _id, action) => {
+      calls.push(action.type)
       return {
         status: 200,
         body:
           action.type === 'prepare'
-            ? { id: action.id, files: [{ source: 'original', destination: 'private-copy' }] }
-            : view,
+            ? { id: action.id, files: [{ source: 'saved', destination: 'checkpoint' }] }
+            : context.view,
       }
     },
-  } as unknown as MembersClient
-  return {
-    members,
-    calls,
-    changeGame: () => {
-      revision++
+  }
+  await expect(
+    protectPensaProject(
+      members,
+      PENSA_ACTOR,
+      context,
+      { requestId: pensaId(30), baseRevisionId: pensaId(31), saveRevision: '7' },
+      {
+        refreshContext: async () => context,
+        copyFiles: async () => {
+          throw new Error('copy failed')
+        },
+      },
+    ),
+  ).rejects.toThrow('copy failed')
+  expect(calls).toEqual(['prepare', 'abort'])
+})
+
+test('a rejected commit aborts copied destinations and reports failure instead of success', async () => {
+  const context = pensaContext()
+  const calls: string[] = []
+  const members: Pick<PensaClient, 'pensaProtect'> = {
+    pensaProtect: async (_actor, _id, action) => {
+      calls.push(action.type)
+      return {
+        status: action.type === 'commit' ? 409 : 200,
+        body: action.type === 'prepare' ? { id: action.id, files: [] } : context.view,
+      }
     },
   }
-}
-test('cópia interrompida nunca confirma checkpoint', async () => {
-  const f = fixture()
   await expect(
-    protectJourney(f.members, actor, view, async () => {
-      throw new Error('R2 failed')
-    }),
-  ).rejects.toThrow('R2 failed')
-  expect(f.calls.map((c) => c.type)).toEqual(['prepare'])
+    protectPensaProject(
+      members,
+      PENSA_ACTOR,
+      context,
+      { requestId: pensaId(30), baseRevisionId: pensaId(31), saveRevision: '7' },
+      { refreshContext: async () => context, copyFiles: async () => {} },
+    ),
+  ).rejects.toThrow('confirmar a cópia')
+  expect(calls).toEqual(['prepare', 'commit', 'abort'])
 })
-test('retry usa a mesma cópia até a revisão do jogo mudar, sem ficar preso no backup antigo', async () => {
-  const f = fixture(),
-    copy = mock(async () => {})
-  await protectJourney(f.members, actor, view, copy)
-  await protectJourney(f.members, actor, view, copy)
-  f.changeGame()
-  await protectJourney(f.members, actor, view, copy)
-  const ids = f.calls.filter((c) => c.type === 'prepare').map((c) => c.id)
-  expect(ids[0]).toBe(ids[1])
-  expect(ids[1]).not.toBe(ids[2])
-})
-test('publicação da cópia só acontece depois de terminar o armazenamento', async () => {
-  const f = fixture()
-  const result = await protectJourney(f.members, actor, view, async (ticket) => {
-    expect(ticket.files[0]?.destination).toBe('private-copy')
-    expect(f.calls.map((c) => c.type)).toEqual(['prepare'])
-  })
-  expect(f.calls.map((c) => c.type)).toEqual(['prepare', 'commit'])
-  expect(result).toEqual(view)
+
+test('restore first protects the current saved version, then copies and commits with fresh capabilities', async () => {
+  const context = pensaContext()
+  const fresh = pensaContext()
+  fresh.capabilities.fingerprint = 'd'.repeat(64)
+  const calls: string[] = []
+  const fingerprints: string[] = []
+  const members: Pick<PensaClient, 'pensaProtect'> = {
+    pensaProtect: async (_actor, _id, action, caps) => {
+      calls.push(action.type)
+      fingerprints.push(caps.fingerprint)
+      return {
+        status: 200,
+        body:
+          action.type === 'prepare' || action.type === 'restore_prepare'
+            ? { id: action.id, files: [{ source: 'saved', destination: action.type }] }
+            : context.view,
+      }
+    },
+  }
+  await restorePensaProject(
+    members,
+    PENSA_ACTOR,
+    context,
+    pensaId(45),
+    { requestId: pensaId(30), baseRevisionId: pensaId(31), saveRevision: '7' },
+    {
+      refreshContext: async () => fresh,
+      copyFiles: async () => {
+        calls.push('copy')
+      },
+    },
+  )
+  expect(calls).toEqual(['prepare', 'copy', 'commit', 'restore_prepare', 'copy', 'restore_commit'])
+  expect(fingerprints).toEqual([
+    context.capabilities.fingerprint,
+    fresh.capabilities.fingerprint,
+    fresh.capabilities.fingerprint,
+    fresh.capabilities.fingerprint,
+  ])
 })

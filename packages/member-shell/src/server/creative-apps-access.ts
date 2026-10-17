@@ -31,7 +31,7 @@ export function meetsAiAppsLevel(
 
 /** Decisão autoritativa para handlers do BFF. Falhas recusam acesso. */
 export async function hasAiAppsLevel(
-  members: MembersClient,
+  members: Pick<MembersClient, 'getGamification'>,
   role: string | undefined,
 ): Promise<boolean> {
   if (isPrivilegedRole(role)) return true

@@ -86,7 +86,7 @@ export interface AdminRoutesDeps {
   analytics: GetCourseAnalyticsService
   /** Agregados de uso de IA (quota por conta) p/ o painel acompanhar o custo. */
   aiUsageStats: GetAiUsageStatsService
-  /** Onde as crianças param no Pensa v2 (contagens, sem texto). Opcional nos testes. */
+  /** Onde as crianças param no Pensa (contagens, sem texto). Opcional nos testes. */
   pensaFunnel?: GetPensaFunnelService
   grantManual: GrantManualEntitlementService
   manageEntitlement: ManageEntitlementService
@@ -258,7 +258,7 @@ export function adminRoutes(deps: AdminRoutesDeps) {
         },
         { query: AiUsageStatsQuery },
       )
-      // O funil do Pensa v2 (15/10/2026): jogos criados no período e onde param (perguntas
+      // O funil do Pensa (15/10/2026): jogos criados no período e onde param (perguntas
       // respondidas por toque ou do jeito delas, proposta, começo escolhido, missão, teste).
       .get(
         '/pensa/funnel',

@@ -1,5 +1,7 @@
 # Pensa: pesquisa, diagnóstico e avaliação das skills
 
+> Histórico: substituído pela [especificação funcional de 16/10/2026](2026-10-16-pensa-reestruturacao-spec.md). Este documento registra decisões anteriores e não define o contrato vigente.
+
 Data: 14/10/2026. Documento de apoio à [proposta de produto](2026-10-14-pensa-proposta.md).
 
 ## 1. Decisão e método

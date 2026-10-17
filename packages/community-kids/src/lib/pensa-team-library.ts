@@ -1,7 +1,8 @@
-import type {
-  PensaJourneyTeamView,
-  PensaJourneyView,
-  PensaTeamArtItem,
+import type { PensaTeamArtItem, PensaTeamView } from '@sistemazero/core/pensa'
+import {
+  PensaProjectViewSchema,
+  PensaTeamArtListSchema,
+  PensaTeamViewSchema,
 } from '@sistemazero/core/pensa'
 import { sessionFetch } from '@sistemazero/member-shell/lib/session-fetch'
 import type {
@@ -19,26 +20,14 @@ import {
   type TeamPintaConversion,
 } from './pensa-team-art'
 
-/**
- * O "Trazer da equipe" do Estúdio de quem PROGRAMA um plano do Pensa em equipe (14/10/2026).
- *
- * Fala só com o BFF (`/api/pensa/v2/projects/:planId/…`, sempre por `sessionFetch`):
- * - `team-art` lista as artes ENTREGUES por outra pessoa nas missões do plano;
- * - `team` dá os nomes (best-effort: sem ele, "Colega");
- * - `team-art/:taskId/download` dá a URL assinada do arquivo da colega (gzip de UM documento).
- *
- * Trazer = baixar → descomprimir → converter (`pensa-team-art.ts`) → gravar na biblioteca
- * pessoal (`savePersonalAsset`, com a ORIGEM certa: Pinta ou Molda) → devolver ao Estúdio o
- * MESMO resultado do "Trazer do Pinta"/"Trazer do Molda". A cópia tem identidade por missão:
- * duas contas podem ter desenhos com o MESMO id (por exemplo, após importar um arquivo).
- * Trazer de novo atualiza só essa cópia, preservando as artes pessoais e de outras missões.
- * Toda falha volta como frase de criança, nunca a mensagem crua.
- */
+/** Saved team deliveries are identified by mission and slot. Import keeps each
+ * copy in the programmer's personal library and never modifies the artist's work. */
 
-const BASE = '/api/pensa/v2/projects'
+const BASE = '/api/pensa/projects'
 const FALLBACK_NAME = 'Colega'
 
-const teamCopyId = (taskId: string) => `equipe-${taskId}`
+export const pensaTeamArtId = (item: PensaTeamArtItem) => `${item.missionId}:${item.slot.id}`
+const teamCopyId = (itemId: string) => `equipe-${itemId.replace(':', '-')}`
 
 type FetchLike = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
 
@@ -88,57 +77,58 @@ const defaultSave: SavePersonalAsset = async (asset, options) => {
 }
 
 /** O tipo na janela: desenho do Pinta, ou o que o Molda guardou (sem saber, modelo). */
-export function teamArtKind(item: Pick<PensaTeamArtItem, 'tool' | 'assetKind'>): StudioTeamArtKind {
-  if (item.tool === 'pinta') return 'drawing'
-  return item.assetKind === 'texture' || item.assetKind === 'sky' ? item.assetKind : 'model'
+export function teamArtKind(item: PensaTeamArtItem): StudioTeamArtKind {
+  if (item.creation.tool === 'pinta') return 'drawing'
+  return item.slot.kind === 'texture' || item.slot.kind === 'sky' ? item.slot.kind : 'model'
 }
 
 /** Os itens do servidor no idioma da janela do Estúdio. */
 export function teamArtSummaries(
   items: readonly PensaTeamArtItem[],
-  team: Pick<PensaJourneyTeamView, 'people'> | null,
+  team: Pick<PensaTeamView, 'people'> | null,
 ): StudioTeamArtSummary[] {
   const names = new Map((team?.people ?? []).map((person) => [person.profileId, person.firstName]))
   return items.map((item) => ({
-    id: item.taskId,
-    assetId: teamCopyId(item.taskId),
-    name: item.assetName?.trim() || item.title,
+    id: pensaTeamArtId(item),
+    assetId: teamCopyId(pensaTeamArtId(item)),
+    name: item.slot.name,
     kind: teamArtKind(item),
-    byName: names.get(item.byProfileId)?.trim() || FALLBACK_NAME,
-    missionTitle: item.title,
+    byName: names.get(item.completedByProfileId)?.trim() || FALLBACK_NAME,
+    missionTitle: item.slot.description,
     thumbDataUrl: null,
   }))
 }
 
-async function getJson<T>(doFetch: FetchLike, path: string): Promise<T> {
-  const response = await doFetch(path)
+async function getJson(
+  doFetch: FetchLike,
+  path: string,
+  viewerId: string | null,
+): Promise<unknown> {
+  const response = await doFetch(path, { headers: viewerId ? { 'x-sz-viewer': viewerId } : {} })
   if (!response.ok) {
-    const failure = new Error(`GET ${path} → ${response.status}`) as Error & { status?: number }
-    failure.status = response.status
-    throw failure
+    throw Object.assign(new Error(`GET ${path} → ${response.status}`), { status: response.status })
   }
-  return (await response.json()) as T
+  return response.json()
 }
 
-/**
- * O plano TEM o botão? Só para quem PROGRAMA um plano v2 COM equipe (alguém entrou) e com ao
- * menos uma arte entregue por outra pessoa. Qualquer falha = não (o botão só some; o jogo
- * abre do mesmo jeito).
- */
+/** Show the team library only for a programmer with other people's deliveries. */
 export async function pensaTeamArtAvailable(
   planId: string,
+  viewerId: string | null,
   doFetch: FetchLike = sessionFetch,
 ): Promise<boolean> {
+  if (!viewerId) return false
   try {
-    const view = await getJson<PensaJourneyView>(doFetch, `${BASE}/${encodeURIComponent(planId)}`)
-    const team = view.team
-    if (!team || team.memberCount <= 0) return false
-    if (team.roles.code !== team.viewerProfileId) return false
-    const art = await getJson<{ items?: PensaTeamArtItem[] }>(
-      doFetch,
-      `${BASE}/${encodeURIComponent(planId)}/team-art`,
+    const view = PensaProjectViewSchema.parse(
+      await getJson(doFetch, `${BASE}/${encodeURIComponent(planId)}`, viewerId),
     )
-    return Array.isArray(art.items) && art.items.length > 0
+    const team = view.team
+    if (team.viewerProfileId !== viewerId || team.memberCount <= 0) return false
+    if (team.programmerProfileId !== team.viewerProfileId) return false
+    const art = PensaTeamArtListSchema.parse(
+      await getJson(doFetch, `${BASE}/${encodeURIComponent(planId)}/team-art`, viewerId),
+    )
+    return art.items.some((item) => item.completedByProfileId !== team.viewerProfileId)
   } catch {
     return false
   }
@@ -163,10 +153,10 @@ export function createPensaTeamLibrary(input: {
   const known = new Map<string, PensaTeamArtItem>()
 
   async function fetchItems(): Promise<PensaTeamArtItem[]> {
-    const art = await getJson<{ items?: PensaTeamArtItem[] }>(doFetch, `${plan}/team-art`)
-    const items = Array.isArray(art.items) ? art.items : []
+    const art = PensaTeamArtListSchema.parse(await getJson(doFetch, `${plan}/team-art`, viewerId))
+    const items = art.items
     known.clear()
-    for (const item of items) known.set(item.taskId, item)
+    for (const item of items) known.set(pensaTeamArtId(item), item)
     return items
   }
 
@@ -181,18 +171,33 @@ export function createPensaTeamLibrary(input: {
 
   /** O arquivo da colega, já descomprimido (o JSON de UM documento). */
   async function downloadJson(
-    taskId: string,
+    item: PensaTeamArtItem,
   ): Promise<{ json: string; revision: number } | 'gone' | 'network' | 'unreadable'> {
     let ticket: DownloadTicket
     try {
-      const response = await doFetch(`${plan}/team-art/${encodeURIComponent(taskId)}/download`)
+      const response = await doFetch(
+        `${plan}/team-art/${encodeURIComponent(item.missionId)}/${encodeURIComponent(item.slot.id)}/download`,
+        { headers: viewerId ? { 'x-sz-viewer': viewerId } : {} },
+      )
       if (response.status === 404) return 'gone'
       if (!response.ok) return 'network'
-      ticket = (await response.json()) as DownloadTicket
+      const body: unknown = await response.json()
+      if (
+        !body ||
+        typeof body !== 'object' ||
+        !('downloadUrl' in body) ||
+        typeof body.downloadUrl !== 'string' ||
+        !('revision' in body) ||
+        typeof body.revision !== 'number' ||
+        !Number.isSafeInteger(body.revision) ||
+        body.revision <= 0
+      )
+        return 'network'
+      ticket = { downloadUrl: body.downloadUrl, revision: body.revision }
     } catch {
       return 'network'
     }
-    if (!ticket || typeof ticket.downloadUrl !== 'string') return 'network'
+    if (String(ticket.revision) !== item.creation.saveRevision) return 'gone'
     let bytes: ArrayBuffer
     try {
       const blob = await doFetch(ticket.downloadUrl)
@@ -203,7 +208,7 @@ export function createPensaTeamLibrary(input: {
       return 'network'
     }
     try {
-      return { json: await gunzip(bytes), revision: Number(ticket.revision) || 0 }
+      return { json: await gunzip(bytes), revision: ticket.revision }
     } catch {
       return 'unreadable'
     }
@@ -213,7 +218,9 @@ export function createPensaTeamLibrary(input: {
     async list() {
       const [items, team] = await Promise.all([
         fetchItems(),
-        getJson<PensaJourneyTeamView>(doFetch, `${plan}/team`).catch(() => null),
+        getJson(doFetch, `${plan}/members`, viewerId)
+          .then((value) => PensaTeamViewSchema.parse(value))
+          .catch(() => null),
       ])
       return teamArtSummaries(items, team)
     },
@@ -222,16 +229,17 @@ export function createPensaTeamLibrary(input: {
       let item = known.get(taskId)
       if (!item) {
         try {
-          item = (await fetchItems()).find((candidate) => candidate.taskId === taskId)
+          item = (await fetchItems()).find((candidate) => pensaTeamArtId(candidate) === taskId)
         } catch {
           return refusal('pinta', TEAM_ART_MESSAGES.network)
         }
       }
       if (!item) return refusal('pinta', TEAM_ART_MESSAGES.gone, 'not-found')
-      const tool = item.tool
+      const tool = item.creation.tool
+      if (tool === 'studio') return refusal('pinta', TEAM_ART_MESSAGES.unreadable)
       if (!supported()) return refusal(tool, TEAM_ART_MESSAGES.unsupported)
 
-      const downloaded = await downloadJson(taskId)
+      const downloaded = await downloadJson(item)
       if (downloaded === 'gone') {
         known.delete(taskId)
         return refusal(tool, TEAM_ART_MESSAGES.gone, 'not-found')

@@ -1,22 +1,6 @@
 import { pensaStudioProjectId } from './pensa-studio-link'
 
-/**
- * Restauração do Pensa v2 PENDENTE neste aparelho (14/10/2026).
- *
- * Restaurar uma versão guardada troca o arquivo do jogo NA CONTA (`pensa-<id>` ganha uma
- * revisão nova, e o plano passa a apontar para ela). Até a versão restaurada descer para este
- * aparelho, a cópia local é a ANTIGA: abrir e salvar por cima dela subiria a versão velha no
- * lugar da restaurada, e o plano ficaria ligado ao arquivo errado.
- *
- * Só esse caso pede cuidado. Um jogo do Pensa que mudou em OUTRO aparelho (o caso comum de dois
- * computadores) segue a regra de sempre da nuvem, e um plano v1 nunca restaura. Por isso a
- * marca é EXPLÍCITA: a revisão restaurada, guardada por perfil quando o host VÊ a jornada
- * restaurada passar pelo transporte do Pensa (a resposta da restauração e as leituras da
- * jornada). Ela some quando a revisão sincronizada deste aparelho alcança a restaurada.
- *
- * ⚠️ O prefixo NÃO pode começar com `sz:pensa:`: o `pensa-client` apaga essas chaves (são do
- * fluxo antigo) toda vez que monta.
- */
+/** A device must download a committed restoration before saving over that game. */
 const PREFIX = 'sz:pensa-restore:'
 const PENSA_STUDIO_ID = /^pensa-[a-f0-9]{32}$/
 
@@ -32,7 +16,7 @@ function readMap(viewerId: string): Record<string, number> {
   const raw = storage()?.getItem(`${PREFIX}${viewerId}`)
   if (!raw) return {}
   try {
-    const parsed = JSON.parse(raw) as unknown
+    const parsed: unknown = JSON.parse(raw)
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {}
     const map: Record<string, number> = {}
     for (const [id, revision] of Object.entries(parsed as Record<string, unknown>)) {
@@ -88,41 +72,32 @@ export function isPensaRestorePending(
   return restoreRevision !== null && (syncedRevision ?? 0) < restoreRevision
 }
 
-/**
- * A revisão do arquivo restaurado, lida de uma jornada v2 (`PensaJourneyView`), ou `null`.
- *
- * O servidor não carimba "restaurado" na jornada; o que distingue é a forma: proteger uma
- * versão grava o ponto de restauração com a MESMA revisão do arquivo na jornada e no registro
- * do ponto, enquanto restaurar aponta a jornada para o ponto escolhido com a revisão NOVA do
- * arquivo (a do registro continua a antiga). Proteger de novo depois desfaz a diferença, e é o
- * certo: a partir daí a nuvem tem uma versão comum.
- */
+/** The server explicitly identifies a committed restore; a checkpoint is not a restore. */
 export function restoredSaveRevisionOf(
   view: unknown,
 ): { projectId: string; revision: number } | null {
-  if (!view || typeof view !== 'object') return null
-  const v = view as {
-    project?: { id?: unknown }
-    journey?: {
-      contractVersion?: unknown
-      checkpoint?: { id?: unknown; saveRevision?: unknown } | null
-    }
-    checkpoints?: Array<{ id?: unknown; saveRevision?: unknown }>
-  }
-  const checkpoint = v.journey?.checkpoint
-  if (v.journey?.contractVersion !== 2 || !checkpoint || typeof v.project?.id !== 'string')
+  if (
+    !view ||
+    typeof view !== 'object' ||
+    !('project' in view) ||
+    !('restoredSaveRevision' in view)
+  )
     return null
-  if (typeof checkpoint.id !== 'string' || typeof checkpoint.saveRevision !== 'string') return null
-  const record = Array.isArray(v.checkpoints)
-    ? v.checkpoints.find((item) => item?.id === checkpoint.id)
-    : undefined
-  if (!record || record.saveRevision === checkpoint.saveRevision) return null
-  const revision = Number(checkpoint.saveRevision)
+  const project = view.project
+  if (
+    !project ||
+    typeof project !== 'object' ||
+    !('id' in project) ||
+    typeof project.id !== 'string'
+  )
+    return null
+  if (typeof view.restoredSaveRevision !== 'string') return null
+  const revision = Number(view.restoredSaveRevision)
   if (!Number.isSafeInteger(revision) || revision <= 0) return null
-  return { projectId: v.project.id, revision }
+  return { projectId: project.id, revision }
 }
 
-/** O transporte do Pensa chama a cada resposta de jornada v2: guarda a marca quando cabe. */
+/** O transporte registra a revisão restaurada recebida do servidor. */
 export function notePensaRestoreFromView(viewerId: string | null | undefined, view: unknown) {
   if (!viewerId) return
   const restored = restoredSaveRevisionOf(view)
@@ -133,17 +108,7 @@ export function notePensaRestoreFromView(viewerId: string | null | undefined, vi
 /** Recusa de abrir com uma frase PARA A CRIANÇA (a tela mostra no lugar do recado genérico). */
 export class PensaOpenRefused extends Error {}
 
-/**
- * Antes de abrir um jogo do Pensa no Estúdio. SÓ faz algo com uma restauração v2 pendente neste
- * aparelho; sem ela não há rede nenhuma, e o jogo que está aqui abre na hora (inclusive sem
- * internet, e inclusive os planos v1: o `pensa-` do arquivo é o mesmo nos dois).
- *
- * Com ela, a versão restaurada precisa DESCER antes de o editor abrir (a descida guarda o que
- * mudou aqui como cópia e põe a restaurada no mesmo id). Sem rede, resolve e o host abre a cópia
- * local: o que for feito nela vira a cópia quando a restaurada chegar, nada se perde. Só RECUSA
- * quando a nuvem respondeu, a restaurada existe e mesmo assim não desceu, que é o jogo aberto em
- * outra aba (a descida não mexe em projeto aberto): a frase diz o que fazer.
- */
+/** Pull the committed restore first; offline edits remain eligible for the cloud conflict copy. */
 export async function reconcilePensaOpen(input: {
   restoreRevision: number | null
   syncedRevision: () => number | undefined

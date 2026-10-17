@@ -179,11 +179,6 @@ const FORA_DA_VARREDURA: ForaDaVarredura[] = [
     motivo: 'instrução para o modelo de IA do Estúdio, nunca desenhada',
   },
   {
-    caminho: 'member-shell/src/server/pensa-journey/planner.ts',
-    motivo:
-      'o PROMPT do planejador do Pensa v2 e os motivos de recusa devolvidos ao MODELO (o "guia" de cada missão é a peça do contrato que ele escreve); a frase que a criança lê vai no 2º argumento do `JourneyOutputInvalid`. ⚠️ Texto de tela novo neste arquivo não é varrido: frase para a criança mora fora dele',
-  },
-  {
     caminho: /^studio\/src\/official-extensions\/[^/]+\/(?:ai|aiSummary)\.ts$/,
     motivo: 'o manual de cada extensão escrito para o modelo de IA (Zappy), nunca desenhado',
   },
@@ -202,6 +197,23 @@ interface Excecao {
  * aparecer UMA vez no arquivo e cobrir alguma palavra; o resto do mesmo texto continua varrido.
  */
 const EXCECOES: Excecao[] = [
+  {
+    arquivo: 'member-shell/src/server/pensa/planning.ts',
+    trechos: [
+      'cursos e tutor ensinam a implementação',
+      'links, aulas feitas',
+      'em etapas e missões funcionais',
+      'depois de todas as entregas',
+    ],
+    motivo:
+      'trechos técnicos dos prompts enviados exclusivamente ao planejador, sem liberar mensagens de erro ou texto apresentado à criança neste arquivo',
+  },
+  {
+    arquivo: 'member-shell/src/server/pensa/help.ts',
+    trechos: ['Indique somente aula/ajuda recebida'],
+    motivo:
+      'instrução interna para o modelo selecionar referências autorizadas; a resposta exibida mantém o vocabulário da aventura',
+  },
   {
     arquivo: 'studio/src/components/code/pro-templates/games/canvas-survival.sources.generated.ts',
     trechos: [
@@ -285,17 +297,6 @@ const EXCECOES: Excecao[] = [
     arquivo: 'member-shell/src/lib/env.ts',
     trechos: ['downloads de aula'],
     motivo: 'erro de BOOT, lido por quem opera o deploy no log do Railway',
-  },
-  {
-    arquivo: 'member-shell/src/routes/pensa-ai.ts',
-    trechos: ['da etapa Z'],
-    motivo:
-      'no Pensa, "etapa" é o passo do método ZERO (Etapa Z…), não a da escola (decisão de 06/10/2026)',
-  },
-  {
-    arquivo: 'member-shell/src/server/pensa-agents/stage-z.ts',
-    trechos: ['da etapa Z (Zerar a Bagunça)'],
-    motivo: 'instrução para o modelo do Pensa; e "etapa" é o passo do método ZERO',
   },
   {
     arquivo: 'member-shell/src/server/zappy-ai.ts',
