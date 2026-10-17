@@ -72,3 +72,22 @@ Pontos de entrada das correções:
 Testes determinísticos comprovam os contratos e comportamentos exercitados. Não houve avaliação de respostas de um modelo pago nem observação de crianças usando o produto. O teste nativo de navegador usa identidade de QA, provedor determinístico e fronteira local de arquivos; editores e protocolos têm provas separadas, sem alegar que esse percurso abre todos os editores completos.
 
 As migrations foram ensaiadas em PostgreSQL local, tanto em banco vazio quanto no schema anterior, incluindo sentinelas e manutenção/rollback. Aplicação no ambiente publicado continua dependendo da janela operacional documentada. Esta revisão não publicou código nem alterou dados remotos.
+
+## Complemento: correções de CI em 17/10/2026
+
+O primeiro CI após a publicação falhou no portão de alcance estático: sua lista de módulos críticos ainda apontava para `use-pensa-task-handoff.ts`, removido na reestruturação. A referência foi atualizada para `use-pensa-mission-session.tsx`, já exercitado pelos testes de salvamento, troca de perfil e conclusão de missão. O portão passou localmente e na execução seguinte do GitHub.
+
+Essa execução revelou duas falhas na preparação dos testes de banco, antes bloqueados pelo portão:
+
+- O setup nativo tentava aplicar todo o histórico de migrations em uma única transação. O PostgreSQL 16 do CI recusa o uso de um valor de enum acrescentado nesse mesmo lote. A revisão local usara PostgreSQL 17, que permite esse caso quando o tipo também nasceu na transação ([mudança documentada no PostgreSQL 17](https://www.postgresql.org/docs/17/release-17.html)). O setup agora reconstrói o histórico até 0125 com uma transação por migration, registrando seus hashes e carimbos reais. As migrations da entrega, 0126–0128, continuam sendo aplicadas juntas pelo migrador Drizzle utilizado em produção. Conexões são fechadas se a preparação falhar.
+- O teste geral de exclusão de conta criava tabelas parciais do Pensa e não incluía os novos contratos consultados pela purga. Ele passou a usar um banco local descartável e isolado, com o schema completo migrado. Seus dados de teste cumprem as restrições reais; a criação do projeto usa o repositório nativo. A limpeza entre testes fica restrita às tabelas desse banco isolado.
+
+As falhas de enum e de tabela ausente foram reproduzidas antes das correções em PostgreSQL 16.15 local, a mesma versão observada no CI. Depois das correções:
+
+- Os 250 testes de banco do Members passaram, com 1.458 asserções e todas as variáveis de banco do CI definidas.
+- Os 24 testes do comando dedicado do Pensa passaram, com 171 asserções.
+- O Chromium passou novamente pelo percurso de API e PostgreSQL reais usando a versão 16.
+- O typecheck do Members, o Biome dos arquivos alterados e `git diff --check` passaram.
+- Antes desses ajustes de fixture, o typecheck global dos 37 pacotes, os 1.413 testes do Kids e as validações de aulas e tutoriais também haviam passado localmente. Os oito jobs paralelos de navegador, Windows e macOS passaram no GitHub.
+
+As correções não alteram o SQL histórico, o schema do produto ou as asserções dos testes. A retomada do workflow usa `services=auto` com o SHA do último deploy concluído, para incluir também a entrega cuja execução falhou antes da publicação dos serviços.

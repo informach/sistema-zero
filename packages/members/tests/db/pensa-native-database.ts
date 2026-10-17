@@ -1,13 +1,10 @@
-import { copyFile, mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
-import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { readMigrationFiles } from 'drizzle-orm/migrator'
 import { migrate } from 'drizzle-orm/postgres-js/migrator'
 import postgres from 'postgres'
 import { createDbConnection } from '../../src/infrastructure/persistence/drizzle/db'
 
-export function pensaTestTarget(name: string): URL {
-  const raw = process.env.PENSA_TEST_DATABASE_URL
+export function pensaTestTarget(name: string, raw = process.env.PENSA_TEST_DATABASE_URL): URL {
   if (!raw)
     throw new Error(
       'PENSA_TEST_DATABASE_URL must explicitly select disposable local PostgreSQL for Pensa tests',
@@ -27,8 +24,12 @@ const migrations = fileURLToPath(
   new URL('../../src/infrastructure/persistence/drizzle/migrations/', import.meta.url),
 )
 
-export async function openPensaTestDatabase(name: string, beforeReset = false) {
-  const target = pensaTestTarget(name)
+export async function openPensaTestDatabase(
+  name: string,
+  beforeReset = false,
+  databaseUrl?: string,
+) {
+  const target = pensaTestTarget(name, databaseUrl)
   const adminTarget = new URL(target)
   adminTarget.pathname = '/postgres'
   const admin = postgres(adminTarget.toString(), { max: 1, onnotice: () => {} })
@@ -39,26 +40,30 @@ export async function openPensaTestDatabase(name: string, beforeReset = false) {
     await admin.end()
   }
   const conn = createDbConnection(target.toString(), { max: 10 })
-  let migrationFolder = migrations
-  if (beforeReset) {
-    const journal = JSON.parse(await readFile(join(migrations, 'meta', '_journal.json'), 'utf8'))
-    journal.entries = journal.entries.filter((e: { idx: number }) => e.idx < 126)
-    migrationFolder = await mkdtemp(join(tmpdir(), 'pensa-migration-baseline-'))
-    await mkdir(join(migrationFolder, 'meta'))
-    await writeFile(join(migrationFolder, 'meta', '_journal.json'), JSON.stringify(journal))
-    for (const entry of journal.entries)
-      await copyFile(
-        join(migrations, `${entry.tag}.sql`),
-        join(migrationFolder, `${entry.tag}.sql`),
-      )
-  }
-  await migrate(conn.db, {
-    migrationsFolder: migrationFolder,
-    migrationsTable: 'members_migrations',
-  })
-  return {
-    ...conn,
-    upgrade: () =>
-      migrate(conn.db, { migrationsFolder: migrations, migrationsTable: 'members_migrations' }),
+  const upgrade = () =>
+    migrate(conn.db, { migrationsFolder: migrations, migrationsTable: 'members_migrations' })
+  try {
+    // Bootstrap the reviewed 0125 baseline one migration per transaction: PostgreSQL 16
+    // requires historical enum additions to commit before a later migration uses them.
+    // The Pensa cutover itself still runs through the production Drizzle migrator.
+    const baseline = readMigrationFiles({ migrationsFolder: migrations }).slice(0, 126)
+    if (baseline.length !== 126) throw new Error('The reviewed Pensa migration baseline is missing')
+    await conn.sql`create schema drizzle`
+    await conn.sql`create table drizzle.members_migrations (
+      id serial primary key, hash text not null, created_at bigint
+    )`
+    for (const migration of baseline) {
+      await conn.sql.begin(async (transaction) => {
+        for (const statement of migration.sql)
+          if (statement.trim()) await transaction.unsafe(statement)
+        await transaction`insert into drizzle.members_migrations (hash, created_at)
+          values (${migration.hash}, ${migration.folderMillis})`
+      })
+    }
+    if (!beforeReset) await upgrade()
+    return { ...conn, upgrade }
+  } catch (error) {
+    await conn.close()
+    throw error
   }
 }

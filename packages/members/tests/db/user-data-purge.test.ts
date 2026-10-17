@@ -2,11 +2,10 @@ import { afterAll, beforeAll, beforeEach, describe, expect, test } from 'bun:tes
 import { randomUUID } from 'node:crypto'
 import { PurgeUserDataService } from '../../src/application/admin/purge-user-data/purge-user-data.service'
 import { InvalidStateTransitionError } from '../../src/domain/shared/errors'
-import {
-  createDbConnection,
-  type DbConnection,
-} from '../../src/infrastructure/persistence/drizzle/db'
+import type { DbConnection } from '../../src/infrastructure/persistence/drizzle/db'
+import { DrizzlePensaProjectRepository } from '../../src/infrastructure/persistence/drizzle/pensa-project.repository'
 import { DrizzleUserDataPurgeRepository } from '../../src/infrastructure/persistence/drizzle/user-data-purge.repository'
+import { openPensaTestDatabase } from './pensa-native-database'
 import { prepareTestDatabase } from './test-database'
 
 const testDatabaseUrl = await prepareTestDatabase()
@@ -18,183 +17,74 @@ describe.skipIf(!testDatabaseUrl)('Purga de dados do usuário no Postgres real',
   let conn: DbConnection
 
   beforeAll(async () => {
-    conn = createDbConnection(testDatabaseUrl as string)
-    await conn.sql`create schema if not exists members`
-
-    const userTables = [
-      'entitlements (id uuid primary key, user_id uuid not null)',
-      'lesson_completions (user_id uuid not null)',
-      'lesson_progress (user_id uuid not null)',
-      'quiz_attempts (user_id uuid not null)',
-      'course_ratings (user_id uuid not null)',
-      'xp_events (user_id uuid not null)',
-      'user_badges (user_id uuid not null)',
-      'coin_events (user_id uuid not null)',
-      'avatar_inventory (user_id uuid not null)',
-      'mission_claims (user_id uuid not null)',
-      'room_inventory (user_id uuid not null)',
-      'studio_submissions (user_id uuid not null, account_id uuid)',
-      // ⚠️ `lesson_id` entra aqui mesmo sem esta suíte usá-lo: o banco de tests/db é
-      // COMPARTILHADO e o `challenge-lifecycle` cria esta tabela com `lesson_id not null`. Quem
-      // chega primeiro vence, a ordem dos arquivos não é contrato, e sem a coluna o insert
-      // abaixo quebra só quando o outro arquivo roda antes — num banco novo, como o do CI.
-      'lesson_section_progress (user_id uuid not null, account_id uuid not null, lesson_id uuid)',
-      'lesson_navigation (user_id uuid not null, account_id uuid not null)',
-      'lesson_block_progress (user_id uuid not null, account_id uuid not null)',
-      'learning_attempts (user_id uuid not null, account_id uuid not null)',
-      'gamification_profiles (user_id uuid not null, account_id uuid)',
-      'avatar_configs (user_id uuid not null, account_id uuid)',
-      'league_membership (user_id uuid not null, account_id uuid)',
-      'room_state (user_id uuid not null, account_id uuid)',
-      'certificates_issued (user_id uuid not null, account_id uuid)',
-      // ⚠️ As 4 colunas extras entram aqui E no INSERT porque outra suíte da pasta cria
-      // esta MESMA tabela com elas NOT NULL, e o `create table if not exists` do primeiro
-      // arquivo a rodar é quem vence. Sem os dois lados, o teste passa ou quebra conforme a
-      // ORDEM dos arquivos: coluna inexistente (42703) se ele vier primeiro, NOT NULL
-      // violado se vier depois. Declaradas NULLABLE e `context_type` como TEXT (lá é enum,
-      // que pode nem existir ainda) de propósito — aceita os dois mundos.
-      `teacher_threads (id uuid primary key, user_id uuid not null, account_id uuid,
-        audience text, context_type text, last_message_at timestamptz, created_at timestamptz)`,
-      'teacher_messages (id uuid primary key, thread_id uuid not null)',
-      'pensa_projects (id uuid primary key, user_id uuid not null, account_id uuid)',
-      'private_narrations (id varchar(64) primary key, profile_id uuid not null, account_id uuid not null)',
-      'pensa_provider_usage (account_id uuid not null, day date not null, calls integer not null default 0, updated_at timestamptz not null, primary key(account_id,day))',
-      'pensa_deletion_jobs (id uuid primary key, account_id uuid not null, profile_id uuid not null, prefixes jsonb not null, not_before timestamptz not null, attempts integer not null default 0, locked_at timestamptz, last_error text, completed_at timestamptz, created_at timestamptz not null, updated_at timestamptz not null)',
-      // O DDL aqui é escrito à mão, então tabela nova alcançada pela purga precisa
-      // entrar nesta lista — senão o teste quebra com 42P01. Foi o caso do Zappy
-      // (migration `0054`), que só aflorou quando o Postgres local voltou.
-      'zappy_conversations (id uuid primary key, user_id uuid not null, account_id uuid)',
-      // Mesma regra dos dois mundos: a `ai-usage-atomicity.test.ts` cria esta tabela
-      // com o DDL espelho da migration 0041 (`used`/`privileged`/`updated_at` NOT NULL
-      // com default) e lê `used`. Sem as três colunas aqui, quando ESTE arquivo roda
-      // primeiro a outra suíte cai com 42703 (`column ai_usage_daily.used does not
-      // exist`) — foi o CI de 02/09/2026. Com default, o INSERT de 3 colunas segue igual.
-      `ai_usage_daily (account_id uuid not null, day date not null, feature varchar(40) not null,
-        used integer default 0 not null, privileged boolean default false not null,
-        updated_at timestamptz default now() not null,
-        constraint ai_usage_daily_pk primary key (account_id, day, feature))`,
-      'parent_reports_sent (account_id uuid not null, week_key text not null)',
-      'parent_report_prefs (account_id uuid primary key)',
-      'renewal_reminders_sent (entitlement_id uuid not null, expires_on date not null)',
-      // "Guardado na sua conta" (migration 0067). Mesma regra dos dois mundos das
-      // `teacher_threads`: a `creations.repository.test.ts` cria esta tabela com o DDL
-      // completo (várias colunas NOT NULL, `tool` enum) — por isso as colunas extras
-      // entram aqui NULLABLE (e `tool` como text) E no INSERT.
-      `creations (id uuid primary key, user_id uuid not null, account_id uuid not null,
-        tool text, item_id varchar(64), name varchar(120), kind varchar(40),
-        item_updated_at timestamptz, created_at timestamptz, synced_at timestamptz)`,
-      // Recados e evidências (migration 0084). A mesma regra do comentário acima: a
-      // purga passou a alcançá-las, então sem o DDL aqui o teste cai com 42P01 num
-      // banco novo (o do CI), e só passa na máquina onde a migration já rodou.
-      `teacher_broadcast_recipients (broadcast_id uuid not null, profile_id uuid not null,
-        account_id uuid not null, name text, account_name text, account_email text,
-        thread_id uuid, status text default 'pending' not null, delivered_at timestamptz,
-        constraint teacher_broadcast_recipients_pk primary key (broadcast_id, profile_id))`,
-      `lesson_evidence (id uuid primary key, user_id uuid not null, account_id uuid,
-        lesson_id uuid not null, block_id uuid, section_id uuid, kind text,
-        revision text, payload jsonb, created_at timestamptz)`,
-      // A cor do perfil (migration 0086, renomeada para `palette` na 0088). A mesma regra do
-      // comentário acima: a purga alcança a tabela, então sem o DDL aqui o teste cai com 42P01
-      // num banco novo — o do CI — e só passa onde a migration já rodou.
-      `profile_preferences (user_id uuid primary key, account_id uuid not null,
-        palette varchar(32), updated_at timestamptz not null)`,
-      'account_deletion_fences (account_id uuid primary key, created_at timestamptz not null)',
-      `creation_cleanup_jobs (id uuid primary key, account_id uuid not null unique,
-        user_ids jsonb not null default '[]'::jsonb, prefixes jsonb not null,
-        not_before timestamptz not null, attempts integer not null default 0,
-        locked_at timestamptz, last_error text, completed_at timestamptz,
-        created_at timestamptz not null, updated_at timestamptz not null)`,
-    ]
-    for (const definition of userTables) {
-      await conn.sql.unsafe(`create table if not exists members.${definition}`)
-    }
-    await conn.sql.unsafe(
-      `alter table members.creation_cleanup_jobs add column if not exists user_ids jsonb not null default '[]'::jsonb`,
-    )
-    // O outro lado da regra dos dois mundos: se OUTRA suíte criou `teacher_threads`/
-    // `teacher_messages` primeiro com MENOS colunas, o create acima virou no-op e o
-    // INSERT/DELETE daqui quebraria com 42703 conforme a ordem. Nullable de
-    // propósito (o INSERT daqui sempre preenche o que usa).
-    for (const column of [
-      'user_id uuid',
-      'account_id uuid',
-      'audience text',
-      'context_type text',
-      'last_message_at timestamptz',
-      'created_at timestamptz',
-    ]) {
-      await conn.sql.unsafe(
-        `alter table members.teacher_threads add column if not exists ${column}`,
-      )
-    }
-    await conn.sql.unsafe(
-      'alter table members.teacher_messages add column if not exists thread_id uuid',
-    )
-  })
+    if (!testDatabaseUrl) throw new Error('The PostgreSQL test target is missing')
+    const target = new URL(testDatabaseUrl)
+    target.pathname = '/pensa_account_purge_test'
+    conn = await openPensaTestDatabase('pensa_account_purge_test', false, target.toString())
+  }, 60_000)
 
   afterAll(async () => {
     await conn?.close()
   })
 
   beforeEach(async () => {
-    // ⚠️ CASCADE não é preguiça: o banco de tests/db é COMPARTILHADO entre os arquivos da
-    // pasta e cada um cria o DDL de que precisa. Basta outra suíte criar uma tabela que
-    // referencie uma daqui (foi o `teacher_thread_staff_reads` → `teacher_threads`) para o
-    // TRUNCATE nu ser RECUSADO — e, como depende de qual arquivo rodou antes, isso quebra
-    // por ordem, não por lógica. Aqui a semântica desejada é "limpe o que depender disto".
-    await conn.sql`
-      truncate table
-        members.lesson_section_progress,
-        members.lesson_navigation,
-        members.lesson_block_progress,
-        members.learning_attempts,
-        members.creation_cleanup_jobs,
-        members.account_deletion_fences,
-        members.creations,
-        members.zappy_conversations,
-        members.renewal_reminders_sent,
-        members.parent_report_prefs,
-        members.parent_reports_sent,
-        members.ai_usage_daily,
-        members.pensa_projects,
-        members.teacher_messages,
-        members.teacher_threads,
-        members.certificates_issued,
-        members.room_state,
-        members.league_membership,
-        members.avatar_configs,
-        members.gamification_profiles,
-        members.studio_submissions,
-        members.room_inventory,
-        members.mission_claims,
-        members.avatar_inventory,
-        members.coin_events,
-        members.user_badges,
-        members.xp_events,
-        members.course_ratings,
-        members.quiz_attempts,
-        members.lesson_progress,
-        members.lesson_completions,
-        members.entitlements
-      cascade
+    // Isolated database with the real schema: new purge dependencies cannot be hidden
+    // by partial handwritten tables or by whichever shared test happened to run first.
+    const tables = await conn.sql<{ name: string }[]>`
+      select format('%I.%I', schemaname, tablename) as name
+      from pg_tables where schemaname = 'members'
     `
+    await conn.sql.unsafe(`truncate table ${tables.map((table) => table.name).join(', ')} cascade`)
   })
+
+  async function addEntitlement(accountId: string, id = randomUUID()) {
+    await conn.sql`insert into members.entitlements
+      (id, user_id, product_id, product_kind, access_type, snapshot, source_kind,
+       source_id, granted_at, idempotency_key, created_at, updated_at)
+      values (${id}, ${accountId}, ${randomUUID()}, 'course', 'course', '{}'::jsonb, 'manual',
+        ${randomUUID()}, now(), ${randomUUID()}, now(), now())`
+  }
+
+  async function addXp(profileId: string) {
+    await conn.sql`insert into members.xp_events
+      (id, user_id, source_type, source_id, amount, created_at)
+      values (${randomUUID()}, ${profileId}, 'lesson_complete', ${randomUUID()}, 10, now())`
+  }
+
+  async function addSectionProgress(profileId: string, accountId: string) {
+    const courseId = randomUUID(),
+      moduleId = randomUUID(),
+      lessonId = randomUUID()
+    await conn.sql`insert into members.courses (id, slug, title, created_at, updated_at)
+      values (${courseId}, ${courseId}, 'Curso', now(), now())`
+    await conn.sql`insert into members.modules (id, course_id, title, created_at, updated_at)
+      values (${moduleId}, ${courseId}, 'Módulo', now(), now())`
+    await conn.sql`insert into members.lessons
+      (id, module_id, course_id, slug, title, created_at, updated_at)
+      values (${lessonId}, ${moduleId}, ${courseId}, ${lessonId}, 'Aula', now(), now())`
+    await conn.sql`insert into members.lesson_section_progress
+      (user_id, account_id, lesson_id, section_id, revision)
+      values (${profileId}, ${accountId}, ${lessonId}, ${randomUUID()}, 'revision')`
+  }
 
   test('remove dados de todas as tabelas pessoais, inclusive as adicionadas recentemente', async () => {
     const accountId = randomUUID()
     const profileId = randomUUID()
     const entitlementId = randomUUID()
 
-    await conn.sql`insert into members.entitlements (id, user_id) values (${entitlementId}, ${accountId})`
+    await addEntitlement(accountId, entitlementId)
     await conn.sql`
       insert into members.teacher_threads
         (id, user_id, account_id, audience, context_type, last_message_at, created_at)
       values
         (${randomUUID()}, ${profileId}, ${accountId}, 'kids', 'general', now(), now())`
-    await conn.sql`insert into members.pensa_projects (id, user_id, account_id) values (${randomUUID()}, ${profileId}, ${accountId})`
+    await new DrizzlePensaProjectRepository(conn.db).create(
+      { profileId, accountId, privileged: false },
+      { requestId: randomUUID(), message: 'Quero criar meu jogo.' },
+    )
     await conn.sql`insert into members.ai_usage_daily (account_id, day, feature) values (${accountId}, '2026-07-24', 'pensa-chat')`
-    await conn.sql`insert into members.parent_reports_sent (account_id, week_key) values (${accountId}, 'w:2026-07-20')`
-    await conn.sql`insert into members.parent_report_prefs (account_id) values (${accountId})`
+    await conn.sql`insert into members.parent_reports_sent (account_id, week_key, sent_at) values (${accountId}, 'w:2026-07-20', now())`
+    await conn.sql`insert into members.parent_report_prefs (account_id, updated_at) values (${accountId}, now())`
     await conn.sql`insert into members.renewal_reminders_sent (entitlement_id, expires_on) values (${entitlementId}, '2026-08-01')`
     // Uma criação do PERFIL (user_id = perfil) e outra só da CONTA: as duas somem.
     await conn.sql`
@@ -204,7 +94,7 @@ describe.skipIf(!testDatabaseUrl)('Purga de dados do usuário no Postgres real',
         (${randomUUID()}, ${profileId}, ${accountId}, 'studio', 'proj-1', 'Nave', 'classic', now(), now(), now()),
         (${randomUUID()}, ${accountId}, ${accountId}, 'pinta', 'd-1', 'nave', 'pixel-sprite', now(), now(), now())`
 
-    await conn.sql`insert into members.lesson_section_progress (user_id, account_id, lesson_id) values (${profileId}, ${accountId}, ${randomUUID()})`
+    await addSectionProgress(profileId, accountId)
     const cleanupId = randomUUID()
     const createdAt = new Date('2026-08-19T12:00:00.000Z')
     const notBefore = new Date('2026-08-19T12:15:00.000Z')
@@ -296,8 +186,8 @@ describe.skipIf(!testDatabaseUrl)('Purga de dados do usuário no Postgres real',
     const accountId = randomUUID()
     const profileId = randomUUID()
     const service = new PurgeUserDataService(new DrizzleUserDataPurgeRepository(conn.db))
-    await conn.sql`insert into members.entitlements (id, user_id) values (${randomUUID()}, ${accountId})`
-    await conn.sql`insert into members.xp_events (user_id) values (${profileId})`
+    await addEntitlement(accountId)
+    await addXp(profileId)
 
     let refused: unknown = null
     try {
@@ -322,7 +212,7 @@ describe.skipIf(!testDatabaseUrl)('Purga de dados do usuário no Postgres real',
     await service.execute({ userId: accountId, profileIds: [profileId] })
     expect(await count('account_deletion_fences', 'account_id', accountId)).toBe(1)
     // Uma escrita que escapou antes da cerca some na segunda purga, pedida pelo worker.
-    await conn.sql`insert into members.xp_events (user_id) values (${profileId})`
+    await addXp(profileId)
     await service.finalize({ userId: accountId, profileIds: [profileId] })
     expect(await count('xp_events', 'user_id', profileId)).toBe(0)
     expect(await count('entitlements', 'user_id', accountId)).toBe(0)
