@@ -1,8 +1,10 @@
+import { consoleAppLinks } from '@sistemazero/ui/console-apps'
 import { ShieldAlert } from 'lucide-react'
 import { redirect } from 'next/navigation'
 import { AppSidebar, MobileNav } from '@/components/layout/app-sidebar'
 import { LogoutButton } from '@/components/layout/logout-button'
 import { Topbar } from '@/components/layout/topbar'
+import { getEnv } from '@/lib/env'
 import { isTeamRole } from '@/lib/types'
 import { getSession } from '@/server/session'
 
@@ -30,9 +32,15 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     )
   }
 
+  const env = getEnv()
+  const apps = consoleAppLinks('marketing', {
+    admin: env.ADMIN_APP_URL,
+    helpdesk: env.HELPDESK_APP_URL,
+  })
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <Topbar user={user} />
+      <Topbar user={user} apps={apps} />
       <div className="flex flex-1">
         <AppSidebar />
         <div className="flex min-w-0 flex-1 flex-col">

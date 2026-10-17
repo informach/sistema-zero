@@ -134,7 +134,9 @@ Da raiz: `dev:marketing-app`, `build:marketing-app`, `start:marketing-app`, `typ
 
 `GATEWAY_URL` (prod: obrigatório explícito) · `JWT_HS256_SECRET` (dev) e/ou `JWT_JWKS_URL` (prod,
 obrigatório; recusa HS256) · `JWT_ISSUER`/`JWT_AUDIENCE` (obrigatórios em prod) · `SENTRY_DSN`
-(opcional). Regras em `src/instrumentation.ts` E `scripts/boot-check.mjs` (manter em sincronia).
+(opcional) · `ADMIN_APP_URL`/`HELPDESK_APP_URL` (opcionais: os outros consoles, admin e atendimento, no menu do avatar em
+nova aba; ausentes → o link some. O menu é o `ConsoleUserMenu` do `@sistemazero/ui`, com a lista
+montada no `(app)/layout.tsx` por `consoleAppLinks`). Regras em `src/instrumentation.ts` E `scripts/boot-check.mjs` (manter em sincronia).
 
 ## Deploy (Railway) — PROVISIONADO 07/07/2026
 

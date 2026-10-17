@@ -26,6 +26,7 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@napi-rs/canvas": "^1.0.0",
     "@sistemazero/core": "workspace:*",
+    "@sistemazero/helpdesk-contracts": "workspace:*",
     "@sistemazero/member-shell": "workspace:*",
     "@sistemazero/pinta": "workspace:*",
     "@sistemazero/studio": "workspace:*",
