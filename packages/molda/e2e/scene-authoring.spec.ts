@@ -70,7 +70,8 @@ test('basic rings and scale preserve undo, and visible edge points cut two close
     .filter({ hasText: `Vista: ${COPY.editor.model.views.top}` })
     .click()
   await page.getByRole('button', { name: 'Enquadrar', exact: true }).click()
-  await page.getByRole('button', { name: 'Cortar', exact: true }).click()
+  await page.locator('summary').filter({ hasText: 'Seleção e organização' }).click()
+  await page.getByRole('button', { name: 'Separar peça', exact: true }).click()
   const canvas = page.locator('canvas').first(),
     box = (await canvas.boundingBox())!
   const index = indexSceneDocument(source),
@@ -98,8 +99,8 @@ test('basic rings and scale preserve undo, and visible edge points cut two close
   await expect(page.locator('.mld-cut-point-count')).toHaveText('2 pontos marcados')
   await expect(
     page
-      .getByRole('region', { name: 'Cortar a peça' })
-      .getByRole('button', { name: 'Cortar', exact: true }),
+      .getByRole('region', { name: 'Separar a peça' })
+      .getByRole('button', { name: 'Separar', exact: true }),
   ).toBeEnabled()
   await page.screenshot({ path: info.outputPath('cortar-pontos-1440.png') })
   await canvas.focus()
@@ -154,13 +155,14 @@ test('intermediate precision opens local axes, pivot Y, alignment and a worker-b
   await page.locator('summary').filter({ hasText: 'Mais posições do pivô' }).click()
   await page.getByRole('checkbox', { name: 'Mostrar alça Y' }).check()
   await expect(page.getByRole('button', { name: 'Pivô no eixo Y', exact: true })).toBeVisible()
-  await page.getByRole('button', { name: 'Cortar', exact: true }).click()
+  await page.locator('summary').filter({ hasText: 'Seleção e organização' }).click()
+  await page.getByRole('button', { name: 'Separar peça', exact: true }).click()
   await page.locator('summary').filter({ hasText: 'Precisão do corte' }).click()
-  const bar = page.getByRole('region', { name: 'Cortar a peça' })
+  const bar = page.getByRole('region', { name: 'Separar a peça' })
   await bar.getByRole('button', { name: 'Conferir plano', exact: true }).click()
   await page.locator('summary').filter({ hasText: 'Precisão do corte' }).click()
   await page.screenshot({ path: info.outputPath('intermediario-corte-numerico.png') })
-  await bar.getByRole('button', { name: 'Cortar', exact: true }).click()
+  await bar.getByRole('button', { name: 'Separar', exact: true }).click()
   await expect(page.getByRole('button', { name: 'Escolher asa (1)', exact: true })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Escolher asa (2)', exact: true })).toBeVisible()
   await page.getByRole('button', { name: COPY.editor.undo, exact: true }).click()
@@ -190,16 +192,16 @@ test('advanced curves and UV keep the live stage, exact times and reversible gra
     .getByRole('button', { name: 'Editar malha', exact: true })
     .click()
   await page
-    .getByRole('region', { name: 'Área Editar malha' })
-    .getByRole('button', { name: 'UV', exact: true })
+    .locator('.mld-component-root')
+    .getByRole('button', { name: 'Pintura da face', exact: true })
     .click()
-  const uv = page.getByRole('region', { name: 'Área UV', exact: true })
+  const uv = page.getByRole('region', { name: 'Pintura da face', exact: true })
   await expect(uv.getByRole('combobox', { name: COPY.scene.uvFace, exact: true })).toBeVisible()
   const canvasBounds = await stage.boundingBox(),
     uvBounds = await uv.boundingBox()
   expect(canvasBounds!.x + canvasBounds!.width).toBeLessThanOrEqual(uvBounds!.x + 1)
   await expect(page.getByRole('button', { name: COPY.editor.undo, exact: true })).toBeDisabled()
-  await uv.getByRole('button', { name: 'Fechar área' }).click()
+  await uv.getByRole('button', { name: 'Faces', exact: true }).click()
   await page.getByRole('button', { name: 'Animar', exact: true }).click()
   await page.getByRole('button', { name: 'Curvas', exact: true }).click()
   const curves = page.getByRole('region', { name: 'Editor de curvas' })

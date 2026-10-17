@@ -7,6 +7,7 @@ import {
   type MeshFixKind,
   type SceneMeshIssue,
 } from '../../../scene/meshDiagnosis'
+import { symmetrySourceIds } from '../../../scene/meshSymmetry'
 import { SceneValidationError } from '../../../scene/validation'
 import type { EditorStore } from '../../../state/editorStore'
 import { createSceneMeshGesture } from '../../../state/sceneMeshGesture'
@@ -82,6 +83,7 @@ export function useSceneMeshCheck(
     session: SceneComponentSession,
     mesh: SceneMeshGeometry,
     fix?: MeshFixKind,
+    editableMesh: SceneMeshGeometry = mesh,
   ) {
     const issue = fix
       ? report?.mesh === mesh && report.nodeId === session.nodeId
@@ -92,7 +94,7 @@ export function useSceneMeshCheck(
     cancel()
     setError(null)
     if (fix) {
-      if (!gesture.begin(session.nodeId, mesh)) return
+      if (!gesture.begin(session.nodeId, editableMesh)) return
       before.current = session
       setPreview(issue ?? null)
     } else setReport(null)
@@ -102,7 +104,7 @@ export function useSceneMeshCheck(
     pending.current = { controller, revision }
     setBusy(true)
     try {
-      const base = { documentId: state.asset.id, revision, mesh }
+      const base = { documentId: state.asset.id, revision, mesh: fix ? editableMesh : mesh }
       const result = await checkMeshInWorker(
         fix ? { ...base, action: 'repair', fix } : { ...base, action: 'inspect' },
         controller.signal,
@@ -122,7 +124,7 @@ export function useSceneMeshCheck(
                 nodeId: node.id,
                 geometryId: node.geometryId,
                 mode: MESH_ISSUE_MODES[issue.kind],
-                ids: issue.ids,
+                ids: symmetrySourceIds(mesh, MESH_ISSUE_MODES[issue.kind], issue.ids),
               })
           } else cancel()
         } finally {
@@ -147,8 +149,12 @@ export function useSceneMeshCheck(
       setError(null)
     },
     inspect: (session: SceneComponentSession, mesh: SceneMeshGeometry) => request(session, mesh),
-    repair: (session: SceneComponentSession, mesh: SceneMeshGeometry, kind: MeshFixKind) =>
-      request(session, mesh, kind),
+    repair: (
+      session: SceneComponentSession,
+      mesh: SceneMeshGeometry,
+      kind: MeshFixKind,
+      editableMesh: SceneMeshGeometry = mesh,
+    ) => request(session, mesh, kind, editableMesh),
     confirm: () => {
       if (busy || !preview) return
       before.current = null

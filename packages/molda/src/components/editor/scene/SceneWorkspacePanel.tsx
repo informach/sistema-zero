@@ -3,8 +3,6 @@ import { COPY } from '../../../core/copy'
 import { scenePalette } from '../../../scene/composite'
 import { sceneMaterialImageBase } from '../../../scene/materialImages'
 import { Button } from '../../ui/Button'
-import { SceneComponentTools } from './SceneComponentTools'
-import { SceneDivisionChoices } from './SceneModelGuideControls'
 import { SceneSkinWeightTools } from './SceneSkinWeightTools'
 import type { useSceneWorkshop } from './useSceneWorkshop'
 import { SCENE_WORKSPACE_AREAS } from './workspaceAreaRegistry'
@@ -26,10 +24,10 @@ export function SceneWorkspacePanel({
 }) {
   const { area, components, primary, paint } = workshop
   const palette = useMemo(() => scenePalette(workshop.document), [workshop.document])
-  if (!area || area === 'curves') return null
+  if (!area || area === 'curves' || area === 'mesh') return null
   const geometry =
     primary?.kind === 'mesh' ? workshop.index.geometries.get(primary.geometryId) : null
-  const componentArea = area === 'mesh' || area === 'uv' || area === 'skin'
+  const componentArea = area === 'uv' || area === 'skin'
   return (
     <section
       className="mld-workspace-panel mld-scroll-y"
@@ -53,13 +51,6 @@ export function SceneWorkspacePanel({
               <Button disabled={!components.canEdit} onClick={() => workshop.openArea(area)}>
                 Editar esta peça
               </Button>
-            )}
-            {area === 'mesh' && (
-              <SceneComponentTools
-                {...components}
-                onOpenUv={() => workshop.openArea('uv')}
-                visualCut={<SceneDivisionChoices workshop={workshop} />}
-              />
             )}
             {area === 'uv' && components.uv && (
               <>

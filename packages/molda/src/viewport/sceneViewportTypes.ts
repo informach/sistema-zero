@@ -3,6 +3,7 @@ import type { MoldaSceneDocument, Vec2 } from '../scene/document'
 import type { ScenePaintInputSample, ScenePaintRgba, ScenePaintTarget } from '../scene/imagePaint'
 import type { AffineMatrix } from '../scene/matrix'
 import type { SceneComponentSelection } from '../scene/meshComponents'
+import type { MeshKnifePoint } from '../scene/meshKnife'
 import type { MeshCutPlane } from '../scene/meshPlaneCut'
 import type { SceneAnimationPose } from '../scene/sampleAnimation'
 import type { SceneSkinPaintSample } from '../scene/skinPaint'
@@ -16,6 +17,13 @@ import type { SceneDrawIssue } from './sceneRenderResource'
 import type { CameraView } from './types'
 
 export interface SceneGuideInput {
+  knife?: {
+    nodeId: string
+    midpoint: boolean
+    closePoint?: { point: MeshKnifePoint; position: Vec3 } | null
+    mark(point: MeshKnifePoint): void
+    hover(point: MeshKnifePoint | null): void
+  }
   pivot?: {
     nodeId: string
     vertical?: boolean

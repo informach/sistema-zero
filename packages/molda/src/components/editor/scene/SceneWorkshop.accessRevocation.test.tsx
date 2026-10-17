@@ -72,25 +72,48 @@ test('revoking cut closes a prepared plane without modifying history and regrant
   const f = mount()
   try {
     fireEvent.click(screen.getByRole('button', { name: 'Escolher corpo' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Cortar' }))
-    const bar = screen.getByRole('region', { name: 'Cortar a peça' })
+    fireEvent.click(screen.getByText('Seleção e organização'))
+    fireEvent.click(screen.getByRole('button', { name: 'Separar peça' }))
+    const bar = screen.getByRole('region', { name: 'Separar a peça' })
     fireEvent.click(within(bar).getByText('Precisão do corte'))
     fireEvent.click(within(bar).getByRole('button', { name: 'Conferir plano' }))
-    const confirm = within(bar).getByRole('button', { name: 'Cortar' })
+    const confirm = within(bar).getByRole('button', { name: 'Separar' })
     f.deny('model.cut')
-    expect(screen.queryByRole('region', { name: 'Cortar a peça' })).toBeNull()
+    expect(screen.queryByRole('region', { name: 'Separar a peça' })).toBeNull()
     await act(async () => {
       fireEvent.click(confirm)
     })
     expect(f.editor.getState().content).toBe(f.source)
     expect(f.editor.getState().canUndo).toBe(false)
     f.deny()
-    expect(screen.queryByRole('region', { name: 'Cortar a peça' })).toBeNull()
-    fireEvent.click(screen.getByRole('button', { name: 'Cortar' }))
-    const fresh = screen.getByRole('region', { name: 'Cortar a peça' })
-    expect(within(fresh).getByRole('button', { name: 'Cortar' }).hasAttribute('disabled')).toBe(
+    expect(screen.queryByRole('region', { name: 'Separar a peça' })).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Separar peça' }))
+    const fresh = screen.getByRole('region', { name: 'Separar a peça' })
+    expect(within(fresh).getByRole('button', { name: 'Separar' }).hasAttribute('disabled')).toBe(
       true,
     )
+  } finally {
+    f.dispose()
+  }
+})
+
+test('revoking mesh-pro closes advanced component pages and invalidates their retained actions', () => {
+  const f = mount()
+  try {
+    fireEvent.click(screen.getByRole('button', { name: 'Escolher corpo' }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.scene.editFaces }))
+    fireEvent.click(screen.getByRole('button', { name: 'Mais ferramentas' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Mais ajustes da malha' }))
+    const form = screen.getByRole('button', { name: COPY.scene.applyPlaneCut }).closest('form')!
+    f.deny('model.mesh-pro')
+    expect(screen.queryByRole('button', { name: COPY.scene.applyPlaneCut })).toBeNull()
+    expect(screen.getByRole('heading', { name: 'Editar peça' })).toBeDefined()
+    fireEvent.submit(form)
+    expect(f.editor.getState().content).toBe(f.source)
+    f.deny()
+    expect(screen.queryByRole('button', { name: COPY.scene.applyPlaneCut })).toBeNull()
+    fireEvent.submit(form)
+    expect(f.editor.getState().content).toBe(f.source)
   } finally {
     f.dispose()
   }

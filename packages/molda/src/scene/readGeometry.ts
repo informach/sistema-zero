@@ -4,12 +4,14 @@ import { FACES_BY_SHAPE } from '../model/shapes'
 import type {
   SceneGeometry,
   SceneMeshFace,
+  SceneMeshGeometry,
   ScenePathGeometry,
   ScenePrimitiveGeometry,
   SceneUvTransform,
   Vec2,
 } from './document'
 import { SCENE_LIMITS } from './limits'
+import { readMeshSymmetry } from './meshSymmetry'
 import { pathTriangleCount, readPathParameters } from './pathParameters'
 import { primitiveTriangleCount, readPrimitiveDetail } from './primitiveDetail'
 import * as v from './validation'
@@ -49,7 +51,7 @@ export function readSceneGeometry(
     'id',
     'kind',
     ...(kind === 'mesh'
-      ? ['vertices', 'faces', 'looseEdges']
+      ? ['vertices', 'faces', 'looseEdges', 'symmetry']
       : kind === 'path'
         ? ['points', 'radius', 'around', 'endCaps', 'closed', 'surfaces']
         : ['from', 'to', 'surfaces']),
@@ -152,9 +154,9 @@ export function readSceneGeometry(
   )
   const edges = v.list(row.looseEdges, `${path}.looseEdges`, SCENE_LIMITS.looseEdges - budget.edges)
   budget.edges += edges.length
-  return {
+  const result: SceneMeshGeometry = {
     id,
-    kind,
+    kind: 'mesh' as const,
     faces: parsedFaces,
     vertices: Object.fromEntries(
       Object.entries(vertices).map(([id, point]) => [
@@ -175,6 +177,9 @@ export function readSceneGeometry(
       return [a, b]
     }),
   }
+  return row.symmetry === undefined
+    ? result
+    : { ...result, symmetry: readMeshSymmetry(row.symmetry, result) }
 }
 
 function readSurfaces(raw: unknown, path: string, allowed: readonly string[]) {

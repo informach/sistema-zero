@@ -31,6 +31,7 @@ import {
   identityMatrix,
   transformPoint,
 } from './matrix'
+import { meshSymmetrySource, synchronizeMeshSymmetry } from './meshSymmetry'
 import { parametricMesh, sceneGeometryMesh } from './parametricGeometry'
 import { primitiveDetail, readPrimitiveDetail } from './primitiveDetail'
 import { duplicateSceneSkinTargets } from './skinTargets'
@@ -285,6 +286,7 @@ export function editSceneMesh(
   nodeId: string,
   edit: (mesh: SceneMeshGeometry) => SceneMeshGeometry,
   nextId: SceneIdFactory = newId,
+  options: { bakeSymmetry?: boolean; symmetricNewFaces?: boolean } = {},
 ): MoldaSceneDocument {
   const selected = selection(document, [nodeId])
   editable(selected)
@@ -292,8 +294,13 @@ export function editSceneMesh(
   requireScene(node?.kind === 'mesh', 'node', 'Escolha uma peça para editar.')
   const geometry = selected.index.geometries.get(node.geometryId)
   requireScene(geometry, 'geometry', 'A forma não existe mais.')
-  const source = sceneGeometryMesh(geometry)
-  const result = edit(source)
+  const full = sceneGeometryMesh(geometry)
+  const source = options.bakeSymmetry ? full : meshSymmetrySource(full)
+  const editedMesh = edit(source)
+  if (editedMesh === source) return document
+  const result = options.bakeSymmetry
+    ? editedMesh
+    : synchronizeMeshSymmetry(full, editedMesh, nextId, options.symmetricNewFaces)
   if (result === source) return document
   requireScene(result.id === source.id, 'geometry', 'A identidade da malha mudou durante a edição.')
   const shared = document.nodes.some(

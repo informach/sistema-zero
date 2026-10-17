@@ -10,11 +10,13 @@ import { isTypingTarget } from '../../ui/interaction'
 export function WorkspaceInspector({
   docked,
   persistent = false,
+  flush = false,
   onBeforeClose,
   children,
 }: {
   docked: boolean
   persistent?: boolean
+  flush?: boolean
   onBeforeClose(): void
   children: ReactNode
 }): JSX.Element {
@@ -108,7 +110,7 @@ export function WorkspaceInspector({
           {!(persistent && docked) && <ToolButton icon={X} label={copy.close} onClick={close} />}
         </div>
         <div
-          className={`mld-scroll-y flex min-h-0 flex-1 flex-col gap-2 ${persistent ? 'overflow-hidden px-3 pt-3 pb-2' : 'overflow-y-auto p-2'} overscroll-contain`}
+          className={`mld-scroll-y flex min-h-0 flex-1 flex-col gap-2 ${persistent ? `overflow-hidden ${flush ? '' : 'px-3 pt-3 pb-2'}` : 'overflow-y-auto p-2'} overscroll-contain`}
         >
           {children}
         </div>

@@ -8,7 +8,7 @@ export function SceneSolidCutBar({ workshop }: { workshop: ReturnType<typeof use
   if (workshop.tool !== 'cut' || !can('model.cut')) return null
   const cut = workshop.solidCut
   return (
-    <section data-molda-theme="dark" className="mld-cut-bar" aria-label="Cortar a peça">
+    <section data-molda-theme="dark" className="mld-cut-bar" aria-label="Separar a peça">
       <Slice aria-hidden="true" className="size-5 shrink-0 text-[var(--mld-cut-ink)]" />
       <span className="mld-cut-status" role={cut.error ? 'alert' : 'status'}>
         {cut.error ??
@@ -51,7 +51,7 @@ export function SceneSolidCutBar({ workshop }: { workshop: ReturnType<typeof use
         onClick={() => void cut.confirm()}
       >
         <Check aria-hidden="true" className="size-4" />
-        Cortar
+        Separar
       </button>
     </section>
   )

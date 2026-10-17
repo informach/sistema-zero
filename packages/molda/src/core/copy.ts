@@ -890,7 +890,7 @@ export const COPY = {
       cut: 'Escolha dois pontos de lados diferentes de uma face. Uma linha reta divide a face sem mudar sua pintura.',
       line: 'Escolha dois pontos para ligar. A linha ajuda a construir, mas não cria uma superfície nem muda a pintura.',
     },
-    finishFaces: 'Voltar às peças',
+    finishFaces: 'Concluir edição',
     facesTitle: 'Faces da peça',
     faceHint: 'Toque numa face. Shift escolhe várias. Esc volta às peças.',
     faceTransformHint:

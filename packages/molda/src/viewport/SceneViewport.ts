@@ -68,6 +68,7 @@ import { SceneSupportOverlay } from './SceneSupportOverlay'
 import { SceneTransformGizmo } from './SceneTransformGizmo'
 import { SceneComponentPicker } from './sceneComponentPicking'
 import { SceneCutPicker } from './sceneCutPicking'
+import { pickSceneKnifePoint } from './sceneKnifePicking'
 import { pickSceneRegion } from './sceneRegionPicking'
 import { SceneRenderResource } from './sceneRenderResource'
 import { pickSceneSkinPaint } from './sceneSkinPaintPick'
@@ -119,7 +120,7 @@ export class SceneViewport implements SceneViewportPort {
   private readonly componentPicker = new SceneComponentPicker()
   private readonly cutPicker = new SceneCutPicker()
   private cutHoverFrame: number | null = null
-  private cutHoverPointer: { clientX: number; clientY: number } | null = null
+  private cutHoverPointer: { clientX: number; clientY: number; shiftKey?: boolean } | null = null
   private componentSelection: SceneComponentSelection | null = null
   private areaTool: SceneAreaTool = 'point'
   private orbit: OrbitControls | null = null
@@ -279,7 +280,8 @@ export class SceneViewport implements SceneViewportPort {
         const moving = this.orbit?.update() ?? false
         this.updatePivotHandles()
         this.gizmo?.draw()
-        const cut = this.callbacks.guideInput?.()?.cut
+        const guideInput = this.callbacks.guideInput?.()
+        const cut = guideInput?.cut ?? guideInput?.knife
         const node = cut && this.index?.scene.nodes.get(cut.nodeId)
         const geometry = node?.kind === 'mesh' && this.index?.geometries.get(node.geometryId)
         if (cut && geometry) {
@@ -347,7 +349,7 @@ export class SceneViewport implements SceneViewportPort {
           const pointer = { x: event.clientX, y: event.clientY }
           if (this.bodyMoving || this.bodySelection) return { ...pointer }
           const guide = this.callbacks.guideInput?.()
-          if (guide?.cut || guide?.pivot) return null
+          if (guide?.cut || guide?.knife || guide?.pivot) return null
           if (guide && !this.contextLost && this.paintMode !== 'look') {
             const rect = canvas.getBoundingClientRect()
             let point: [number, number, number] | undefined
@@ -977,6 +979,8 @@ export class SceneViewport implements SceneViewportPort {
       input?.pivot?.snapVertex,
       input?.cut?.nodeId,
       input?.cut?.midpoint,
+      input?.knife?.nodeId,
+      input?.knife?.midpoint,
     ])
     if (this.disposed || key === this.guideInputKey) return
     this.guideInputKey = key
@@ -1248,8 +1252,29 @@ export class SceneViewport implements SceneViewportPort {
       cut.midpoint,
     )
   }
+  private knifePoint(
+    event: { clientX: number; clientY: number; shiftKey?: boolean },
+    knife: NonNullable<SceneGuideInput['knife']>,
+  ) {
+    const node = this.index?.scene.nodes.get(knife.nodeId)
+    const geometry = node?.kind === 'mesh' ? this.index?.geometries.get(node.geometryId) : null
+    if (!geometry) return null
+    return pickSceneKnifePoint({
+      canvas: this.canvas,
+      camera: this.rig.camera,
+      resource: this.resource,
+      mesh: sceneGeometryMesh(geometry),
+      nodeId: knife.nodeId,
+      pointer: event,
+      midpoint: knife.midpoint || event.shiftKey === true,
+      closePoint: knife.closePoint,
+      edges: this.cutPicker,
+      vertices: this.componentPicker,
+    })
+  }
   private readonly onMove = (event: PointerEvent) => {
-    const cut = this.callbacks.guideInput?.()?.cut
+    const input = this.callbacks.guideInput?.()
+    const cut = input?.cut ?? input?.knife
     if (cut && !this.contextLost && !this.disposed) {
       const rect = this.canvas.getBoundingClientRect()
       this.guideAnnotation?.setPointer(
@@ -1260,16 +1285,22 @@ export class SceneViewport implements SceneViewportPort {
       this.request()
       this.cutHoverPointer = event.buttons
         ? null
-        : { clientX: event.clientX, clientY: event.clientY }
+        : { clientX: event.clientX, clientY: event.clientY, shiftKey: event.shiftKey }
       if (event.buttons) cut.hover(null)
       else if (this.cutHoverFrame === null)
         this.cutHoverFrame = requestAnimationFrame(() => {
           this.cutHoverFrame = null
-          const current = this.callbacks.guideInput?.()?.cut
-          if (current && !this.contextLost && !this.disposed)
-            current.hover(
-              this.cutHoverPointer ? this.cutPoint(this.cutHoverPointer, current) : null,
-            )
+          const current = this.callbacks.guideInput?.()
+          if (!this.contextLost && !this.disposed) {
+            if (current?.knife)
+              current.knife.hover(
+                this.cutHoverPointer ? this.knifePoint(this.cutHoverPointer, current.knife) : null,
+              )
+            else if (current?.cut)
+              current.cut.hover(
+                this.cutHoverPointer ? this.cutPoint(this.cutHoverPointer, current.cut) : null,
+              )
+          }
         })
     }
     if (
@@ -1312,6 +1343,7 @@ export class SceneViewport implements SceneViewportPort {
     this.cutHoverPointer = null
     this.guideAnnotation?.setPointer(null)
     this.callbacks.guideInput?.()?.cut?.hover(null)
+    this.callbacks.guideInput?.()?.knife?.hover(null)
   }
   private readonly onCancel = (event: PointerEvent) => {
     this.pointers.delete(event.pointerId)
@@ -1333,6 +1365,12 @@ export class SceneViewport implements SceneViewportPort {
       return
     const rect = this.canvas.getBoundingClientRect()
     if (rect.width <= 0 || rect.height <= 0) return
+    const knife = this.callbacks.guideInput?.()?.knife
+    if (knife) {
+      const point = this.knifePoint(event, knife)
+      if (point) knife.mark(point)
+      return
+    }
     const cut = this.callbacks.guideInput?.()?.cut
     if (cut) {
       const point = this.cutPoint(event, cut)

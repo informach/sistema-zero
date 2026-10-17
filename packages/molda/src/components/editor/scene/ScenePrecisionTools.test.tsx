@@ -34,20 +34,21 @@ function setup() {
 test('numeric cut validates the full plane, previews without saving and creates two native halves in one undo', async () => {
   const f = setup()
   try {
-    fireEvent.click(screen.getByRole('button', { name: 'Cortar' }))
-    const bar = within(screen.getByRole('region', { name: 'Cortar a peça' }))
+    fireEvent.click(screen.getByText('Seleção e organização'))
+    fireEvent.click(screen.getByRole('button', { name: 'Separar peça' }))
+    const bar = within(screen.getByRole('region', { name: 'Separar a peça' }))
     const field = () => bar.getByLabelText('Direção do plano Z')
     fireEvent.change(field(), { target: { value: '0' } })
     fireEvent.click(bar.getByRole('button', { name: 'Conferir plano' }))
     expect(bar.getByRole('alert').textContent).toContain('diferente de zero')
-    expect(bar.getByRole('button', { name: 'Cortar' }).hasAttribute('disabled')).toBe(true)
+    expect(bar.getByRole('button', { name: 'Separar' }).hasAttribute('disabled')).toBe(true)
     expect(f.editor.getState().content).toBe(f.source)
     fireEvent.change(field(), { target: { value: '1' } })
     fireEvent.click(bar.getByRole('button', { name: 'Conferir plano' }))
     expect(f.editor.getState().saveSnapshot()).toBe(f.source)
     expect(f.editor.getState().canUndo).toBe(false)
     await act(async () => {
-      fireEvent.click(bar.getByRole('button', { name: 'Cortar' }))
+      fireEvent.click(bar.getByRole('button', { name: 'Separar' }))
     })
     const cut = f.editor.getState().content
     const pieces = cut.nodes.filter((node) => node.name.startsWith('corpo ('))

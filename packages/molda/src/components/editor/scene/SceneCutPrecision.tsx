@@ -105,7 +105,7 @@ function PlaneForm({
           </div>
         </fieldset>
       ))}
-      <p>Conferir substitui os pontos pela prévia deste plano. Cortar confirma as duas peças.</p>
+      <p>Conferir substitui os pontos pela prévia deste plano. Separar confirma as duas peças.</p>
       <button type="submit" disabled={disabled}>
         Conferir plano
       </button>

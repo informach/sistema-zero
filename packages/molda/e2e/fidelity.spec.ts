@@ -78,7 +78,8 @@ for (const theme of ['default', 'pink', 'dark'] as const) {
     await page.mouse.move(1100, 65)
     await shot('02-modelar-pivo')
     await page.getByRole('button', { name: 'Embaixo', exact: true }).click()
-    await page.getByRole('button', { name: 'Cortar', exact: true }).click()
+    await page.locator('summary').filter({ hasText: 'Seleção e organização' }).click()
+    await page.getByRole('button', { name: 'Separar peça', exact: true }).click()
     await page.getByRole('button', { name: 'Enquadrar', exact: true }).click()
     for (let i = 0; i < 3; i++)
       await page.getByRole('button', { name: 'Afastar', exact: true }).click()
@@ -193,7 +194,7 @@ for (const theme of ['default', 'pink', 'dark'] as const) {
           ].map((name) => [name, style.getPropertyValue(name).trim()]),
         )
       })
-    fs.writeFileSync(path.join(captures, 'tokens.json'), JSON.stringify(tokens, null, 2))
+    fs.writeFileSync(path.join(captures, 'tokens.json'), `${JSON.stringify(tokens, null, 2)}\n`)
     expect(errors).toEqual([])
   })
 }

@@ -316,6 +316,8 @@ test('câmera, pivô, divisão e decisões antes de abandonar prévias', async (
     await page.getByRole('button', { name: 'Transformar em malha', exact: true }).click()
     await page.getByRole('button', { name: 'Editar malha', exact: true }).click()
     const mesh = await snapshot()
+    await page.getByRole('button', { name: 'Mais ferramentas', exact: true }).click()
+    await page.getByRole('button', { name: 'Mais ajustes da malha', exact: true }).click()
     await page.getByRole('button', { name: 'Dividir pela vista frontal', exact: true }).click()
     const cutCanvas = await page.locator('canvas').first().boundingBox()
     if (!cutCanvas) throw new Error('Palco sem área visível')
@@ -345,7 +347,8 @@ test('câmera, pivô, divisão e decisões antes de abandonar prévias', async (
     await page.getByRole('button', { name: 'Desfazer', exact: true }).click()
     expect(await snapshot()).toEqual(mesh)
     checks.push('division preview, cancellation and undo preserve source and keep both sides')
-    await page.getByRole('button', { name: 'Fechar área', exact: true }).click()
+    await page.getByRole('button', { name: 'Faces', exact: true }).click()
+    await page.getByRole('button', { name: 'Concluir edição', exact: true }).click()
     await page.getByRole('button', { name: 'Animar', exact: true }).click()
     await page
       .getByRole('button', { name: 'Experimentar um movimento pronto', exact: true })

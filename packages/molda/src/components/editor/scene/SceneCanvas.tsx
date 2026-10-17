@@ -298,6 +298,7 @@ function SceneCanvasAttempt({
     look ||
     tool === 'pivot' ||
     tool === 'cut' ||
+    tool === 'knife' ||
     mode === 'paint' ||
     !allowedTool(tool) ||
     reviewingSet ||
@@ -449,27 +450,29 @@ function SceneCanvasAttempt({
   const hint =
     tool === 'pivot'
       ? 'A peça gira em volta do pivô.'
-      : tool === 'cut'
-        ? 'Marque pontos nas arestas para cortar a peça.'
-        : skinPaintSettings
-          ? copy.skinPaint.hint
-          : mode === 'animation'
-            ? reviewingSet
-              ? copy.poseSet.review
-              : assisting
-                ? copy.twoBone.drag
-                : copy.animationViewportHint
-            : componentSelection
-              ? areaTool !== 'point'
-                ? copy.componentAreaHint
-                : activeTool === 'select'
-                  ? componentSelection.mode === 'face'
-                    ? copy.faceHint
-                    : copy.componentPickHints[componentSelection.mode]
-                  : copy.componentTransformHint
-              : areaTool === 'point'
-                ? copy.gizmoHint
-                : copy.areaHint
+      : tool === 'knife'
+        ? 'Clique na superfície para marcar o traçado. Enter aplica; Esc cancela. Arraste para olhar.'
+        : tool === 'cut'
+          ? 'Marque pontos nas arestas para cortar a peça.'
+          : skinPaintSettings
+            ? copy.skinPaint.hint
+            : mode === 'animation'
+              ? reviewingSet
+                ? copy.poseSet.review
+                : assisting
+                  ? copy.twoBone.drag
+                  : copy.animationViewportHint
+              : componentSelection
+                ? areaTool !== 'point'
+                  ? copy.componentAreaHint
+                  : activeTool === 'select'
+                    ? componentSelection.mode === 'face'
+                      ? copy.faceHint
+                      : copy.componentPickHints[componentSelection.mode]
+                    : copy.componentTransformHint
+                : areaTool === 'point'
+                  ? copy.gizmoHint
+                  : copy.areaHint
   const throughBox = (areaTool !== 'point' || componentSelection) && (
     <label className="flex min-h-11 items-center gap-2 text-sm">
       <input
@@ -727,6 +730,7 @@ function SceneCanvasAttempt({
   const dismissibleHint =
     tool !== 'pivot' &&
     tool !== 'cut' &&
+    tool !== 'knife' &&
     !pendingPose &&
     !reviewingSet &&
     !assisting &&

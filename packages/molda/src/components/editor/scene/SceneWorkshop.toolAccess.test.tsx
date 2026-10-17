@@ -187,7 +187,8 @@ describe('a oficina no nível de entrada', () => {
     // New project actions, tree visibility/lock and click-based camera navigation.
     // The approved basic workshop adds cut, import, support and piece/face/point modes.
     // One additional control dismisses the viewport hint without hiding essential decisions.
-    expect(montadosVazio.length, montadosVazio.join(' | ')).toBeLessThanOrEqual(59)
+    // The knife replaces Cut; volume separation adds one control inside the closed details.
+    expect(montadosVazio.length, montadosVazio.join(' | ')).toBeLessThanOrEqual(60)
     // Cut, import, pivot and component selection are now explicit basic authoring actions.
     expect(encaradosVazio.length, encaradosVazio.join(' | ')).toBeLessThanOrEqual(40)
     cleanup()
@@ -197,7 +198,7 @@ describe('a oficina no nível de entrada', () => {
     const montadosPeca = controlInventory(comPeca.view.container)
     const encaradosPeca = frontControls(comPeca.view.container)
     // Position, size, pivot and rotation contribute 12 inputs in the approved basic inspector.
-    expect(montadosPeca.length, montadosPeca.join(' | ')).toBeLessThanOrEqual(103)
+    expect(montadosPeca.length, montadosPeca.join(' | ')).toBeLessThanOrEqual(104)
     expect(encaradosPeca.length, encaradosPeca.join(' | ')).toBeLessThanOrEqual(78)
   })
 

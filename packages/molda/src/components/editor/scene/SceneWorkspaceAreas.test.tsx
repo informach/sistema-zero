@@ -29,7 +29,7 @@ function setup() {
   }
 }
 
-test('named mesh and UV areas preserve the scene and the live viewport; opening UV never converts a primitive', async () => {
+test('contextual mesh and UV panels preserve the scene and live viewport; opening UV never converts a primitive', async () => {
   const f = setup()
   try {
     fireEvent.click(screen.getByRole('button', { name: 'Escolher corpo' }))
@@ -39,20 +39,25 @@ test('named mesh and UV areas preserve the scene and the live viewport; opening 
         name: 'Editar malha',
       }),
     )
-    expect(await screen.findByRole('region', { name: 'Área Editar malha' })).toBeTruthy()
+    expect(
+      await screen.findByRole('region', { name: COPY.scene.componentTitles.face }),
+    ).toBeTruthy()
     fireEvent.click(
-      within(screen.getByRole('region', { name: 'Área Editar malha' })).getByRole('button', {
-        name: 'UV',
-      }),
+      within(screen.getByRole('region', { name: COPY.scene.componentTitles.face })).getByRole(
+        'button',
+        {
+          name: 'Pintura da face',
+        },
+      ),
     )
-    const area = await screen.findByRole('region', { name: 'Área UV' })
+    const area = await screen.findByRole('region', { name: 'Pintura da face' })
     await within(area).findByLabelText(COPY.scene.uvFace)
     expect(f.editor.getState().content).toBe(f.source)
     expect(f.editor.getState().canUndo).toBe(false)
     expect(f.probe.ports).toHaveLength(ports)
     expect(f.probe.ports.at(-1)!.disposed).toBe(0)
-    fireEvent.click(within(area).getByRole('button', { name: 'Fechar área' }))
-    expect(screen.queryByRole('region', { name: 'Área UV' })).toBeNull()
+    fireEvent.click(within(area).getByRole('button', { name: 'Faces' }))
+    expect(screen.queryByRole('region', { name: 'Pintura da face' })).toBeNull()
     expect(f.editor.getState().saveSnapshot()).toBe(f.source)
     expect(f.probe.ports).toHaveLength(ports)
   } finally {

@@ -1,45 +1,53 @@
-import { lazy, type ReactNode, Suspense, useEffect, useRef, useState } from 'react'
+import { lazy, type ReactNode, Suspense, useLayoutEffect, useRef, useState } from 'react'
 import { COPY } from '../../../core/copy'
 import { useMoldaToolAccess } from '../../toolAccess'
-import { Button } from '../../ui/Button'
-import { SceneBevel } from './SceneBevel'
+import {
+  ArrowUpFromLine,
+  Check,
+  ChevronRight,
+  Copy,
+  FlipHorizontal2,
+  Grid3x3,
+  Info,
+  Layers,
+  Lightbulb,
+  Merge,
+  Paintbrush,
+  RotateCw,
+  Scan,
+  Scissors,
+  Shapes,
+  Square,
+  Trash2,
+  Triangle,
+  Ungroup,
+} from '../../ui/icons'
+import { SceneComponentAdvanced } from './SceneComponentAdvanced'
+import { SceneComponentCut } from './SceneComponentCut'
+import { SceneComponentMirror } from './SceneComponentMirror'
+import { SceneComponentOperation } from './SceneComponentOperation'
+import { ComponentButton, ComponentEntry, ComponentPage } from './SceneComponentPanel'
 import { SceneFacePreview } from './SceneFacePreview'
 import { SceneMeshCheck } from './SceneMeshCheck'
-import { ScenePathForm } from './ScenePathForm'
-import { ScenePlaneCut } from './ScenePlaneCut'
 import { SceneSkinWeightTools } from './SceneSkinWeightTools'
 import type { useSceneComponents } from './useSceneComponents'
-import type { SceneFacePreviewTool } from './useSceneFacePreview'
 
 const SceneUvEditor = lazy(() =>
   import('./SceneUvEditor').then((module) => ({ default: module.SceneUvEditor })),
 )
 
-function SceneUvTools(props: NonNullable<ReturnType<typeof useSceneComponents>['uv']>) {
-  const [open, setOpen] = useState(false)
-  return (
-    <details onToggle={(event) => setOpen(event.currentTarget.open)}>
-      <summary className="min-h-11 cursor-pointer py-3 text-sm font-bold">
-        {COPY.scene.uvTitle}
-      </summary>
-      {open && (
-        <Suspense fallback={<p role="status">{COPY.scene.uvLoading}</p>}>
-          <SceneUvEditor {...props} />
-        </Suspense>
-      )}
-    </details>
-  )
-}
-
 export type SceneComponentToolsProps = Pick<
   ReturnType<typeof useSceneComponents>,
   | 'selection'
+  | 'empty'
   | 'choose'
   | 'apply'
   | 'preview'
   | 'beginPreview'
   | 'transform'
   | 'setMode'
+  | 'open'
+  | 'close'
   | 'splitEdges'
   | 'cutRing'
   | 'cutPlane'
@@ -57,88 +65,116 @@ export type SceneComponentToolsProps = Pick<
   | 'remove'
   | 'removal'
   | 'weights'
-> & { visualCut?: ReactNode; onOpenUv?(): void; onOpenWeights?(): void }
+  | 'operation'
+  | 'symmetry'
+  | 'stopSymmetry'
+> & {
+  visualCut?: ReactNode
+  onOpenUv?(): void
+  onOpenWeights?(): void
+  onKnife(): void
+  onDuplicateMove(): void
+}
 
-/**
- * Contextual controls only; topology and history are owned by the scene commands.
- *
- * O portão: escolher pontos, linhas e faces, mover, Puxar faces, Criar borda e apagar são
- * `model.mesh` (quem abre este painel já passou por ele). O resto da malha é `model.mesh-pro`, e
- * encaixar a pintura é `paint.uv`. Trancado não aparece.
- */
-export function SceneComponentTools({
-  selection,
-  choose,
-  apply,
-  preview,
-  beginPreview,
-  transform,
-  setMode,
-  splitEdges,
-  cutRing,
-  cutPlane,
-  bevel,
-  createPath,
-  pathPointCount,
-  blocked,
-  check,
-  uv,
-  dissolveEdges,
-  connectPoints,
-  weld,
-  weldPoints,
-  softMovement,
-  remove,
-  removal,
-  weights,
-  visualCut,
-  onOpenUv,
-  onOpenWeights,
-}: SceneComponentToolsProps) {
-  const triggers = useRef<Partial<Record<SceneFacePreviewTool, HTMLButtonElement | null>>>({})
-  const previous = useRef(preview.tool)
-  useEffect(() => {
-    if (!preview.tool && previous.current) triggers.current[previous.current]?.focus()
-    previous.current = preview.tool
-  }, [preview.tool])
+type Page =
+  | 'main'
+  | 'more'
+  | 'selection'
+  | 'help'
+  | 'check'
+  | 'uv'
+  | 'weights'
+  | 'advanced'
+  | 'cut'
+  | 'mirror'
+
+/** One contextual page at a time. Geometry, previews and history remain scene-owned. */
+export function SceneComponentTools(props: SceneComponentToolsProps) {
+  const {
+    selection,
+    choose,
+    apply,
+    preview,
+    beginPreview,
+    setMode,
+    blocked,
+    check,
+    uv,
+    onOpenUv,
+    onOpenWeights,
+    weights,
+    close,
+    removal,
+    remove,
+    operation,
+  } = props
+  const [page, setPage] = useState<Page>('main')
+  const panel = useRef<HTMLDivElement>(null)
+  const returnTo = useRef('')
+  const previous = useRef<string>('main')
+  const activePage = operation.kind ?? preview.tool ?? page
+  useLayoutEffect(() => {
+    if (activePage === 'main' && previous.current !== 'main') {
+      panel.current
+        ?.querySelector<HTMLButtonElement>(`[data-component-trigger="${returnTo.current}"]`)
+        ?.focus()
+    } else if (activePage !== 'main' && previous.current !== activePage) {
+      panel.current?.querySelector<HTMLButtonElement>('.mld-component-back')?.focus()
+    }
+    previous.current = activePage
+  }, [activePage])
   const copy = COPY.scene
   const { can } = useMoldaToolAccess()
   const pro = can('model.mesh-pro')
+  const uvAllowed = can('paint.uv')
+  useLayoutEffect(() => {
+    if (
+      (!pro && ['selection', 'advanced', 'check', 'cut', 'mirror'].includes(page)) ||
+      (!uvAllowed && page === 'uv')
+    )
+      setPage('main')
+  }, [page, pro, uvAllowed])
   if (!selection) return null
   const count = selection.ids.length
   const isFace = selection.mode === 'face'
-  const title = copy.componentTitles[selection.mode]
-  return (
-    <section aria-label={title} className="space-y-3 border-t border-mld-border pt-3">
-      <h3 className="mld-display text-lg">{title}</h3>
-      <fieldset disabled={blocked} className="space-y-2">
-        <legend className="text-sm">{copy.componentModeLabel}</legend>
-        <div className="flex flex-wrap gap-1">
-          {(['vertex', 'edge', 'face'] as const).map((mode) => (
-            <Button
-              key={mode}
-              variant="ghost"
-              className="flex-1 px-2 text-sm"
-              aria-pressed={selection.mode === mode}
-              onClick={() => setMode(mode)}
-            >
-              {copy.componentModes[mode]}
-            </Button>
-          ))}
-        </div>
-        <p className="text-xs text-mld-muted">{copy.componentModeHint}</p>
-      </fieldset>
-      <p role="status" className="text-sm text-mld-muted">
-        {selection.mode === 'face'
-          ? copy.faceCount(count)
-          : copy.componentCounts[selection.mode](count)}
-      </p>
-      {preview.error && (
-        <p role="alert" className="text-sm text-mld-danger">
-          {preview.error}
-        </p>
-      )}
-      {preview.tool && (
+  const modeLabel = copy.componentModes[selection.mode]
+  const go = (next: Page) => {
+    returnTo.current = next
+    setPage(next)
+  }
+  const back = () => {
+    operation.cancel()
+    preview.cancel()
+    check.cancel()
+    setPage('main')
+  }
+  const actionIcons = {
+    extrude: ArrowUpFromLine,
+    inset: Square,
+    thickness: Layers,
+    subdivide: Grid3x3,
+  }
+  const actionLabels = {
+    extrude: 'Puxar',
+    inset: 'Criar borda',
+    thickness: 'Espessura',
+    subdivide: 'Dividir',
+  }
+  const error = preview.error ?? props.transform.error
+  let content: ReactNode
+
+  if (operation.kind) {
+    content = (
+      <SceneComponentOperation
+        operation={operation}
+        selection={selection}
+        onKnife={props.onKnife}
+        onBack={() => setPage('main')}
+      />
+    )
+  } else if (preview.tool) {
+    content = (
+      <ComponentPage title={actionLabels[preview.tool]} backLabel={modeLabel} onBack={back}>
         <SceneFacePreview
           key={preview.tool}
           tool={preview.tool}
@@ -146,233 +182,481 @@ export function SceneComponentTools({
           update={preview.update}
           confirm={preview.confirm}
           cancel={preview.cancel}
+          compact
         />
-      )}
-      {transform.error && (
-        <p role="alert" className="text-sm text-mld-danger">
-          {transform.error}
+      </ComponentPage>
+    )
+  } else if (page === 'cut' && pro) {
+    content = <SceneComponentCut {...props} onBack={back} />
+  } else if (page === 'mirror' && pro) {
+    content = (
+      <SceneComponentMirror symmetry={props.symmetry} stop={props.stopSymmetry} onBack={back} />
+    )
+  } else if (page === 'more') {
+    content = (
+      <ComponentPage
+        title="Mais ferramentas"
+        description={
+          isFace
+            ? 'Outros jeitos de mudar suas faces.'
+            : `Outros jeitos de mudar ${modeLabel.toLowerCase()}.`
+        }
+        backLabel={modeLabel}
+        onBack={back}
+      >
+        {isFace && pro && (
+          <div className="mld-component-entries">
+            <ComponentEntry
+              icon={Merge}
+              label="Juntar"
+              aria-label={copy.faceActions.merge}
+              hint="Tira a linha entre faces planas."
+              disabled={blocked || count < 2}
+              onClick={() => apply('merge')}
+            />
+            <ComponentEntry
+              icon={Ungroup}
+              label="Separar"
+              aria-label={copy.faceActions.detach}
+              hint="Solta as faces do resto da peça."
+              disabled={blocked || !count}
+              onClick={() => apply('detach')}
+            />
+            <ComponentEntry
+              icon={Copy}
+              label="Duplicar"
+              hint="Cria uma cópia das faces."
+              disabled={blocked || !count}
+              onClick={() => {
+                if (operation.start('duplicate')) props.onDuplicateMove()
+              }}
+            />
+            <ComponentEntry
+              icon={Square}
+              label="Fechar buraco"
+              hint="Escolha as linhas ao redor do buraco."
+              disabled={blocked}
+              onClick={() => operation.start('fill')}
+            />
+            <ComponentEntry
+              icon={Triangle}
+              label="Triângulos"
+              aria-label={copy.faceActions.triangulate}
+              hint="Divide cada face em triângulos."
+              disabled={blocked || !count}
+              onClick={() => apply('triangulate')}
+            />
+            <ComponentEntry
+              icon={RotateCw}
+              label="Virar face"
+              aria-label={copy.faceActions.flip}
+              hint="Troca o lado de dentro pelo de fora."
+              disabled={blocked || !count}
+              onClick={() => apply('flip')}
+            />
+          </div>
+        )}
+        <p className="mld-component-description">
+          As ferramentas mostram o que escolher antes de aplicar.
         </p>
-      )}
-      <p className="text-xs text-mld-muted">
-        {isFace ? copy.faceTransformHint : copy.componentTransformHint}
-      </p>
-      {pro && <SceneMeshCheck check={check} />}
-      <fieldset disabled={blocked} className="space-y-3">
-        <legend className="sr-only">{title}</legend>
-        {uv &&
-          can('paint.uv') &&
-          (onOpenUv ? (
-            <Button className="w-full text-sm" onClick={onOpenUv}>
-              UV
-            </Button>
-          ) : (
-            <SceneUvTools {...uv} />
+        {!isFace && pro && selection.mode === 'edge' && (
+          <ComponentEntry
+            icon={Square}
+            label="Fechar buraco"
+            hint="Escolha as linhas ao redor do buraco."
+            disabled={blocked}
+            onClick={() => operation.start('fill')}
+          />
+        )}
+        {pro && (
+          <ComponentButton icon={Shapes} onClick={() => setPage('advanced')}>
+            Mais ajustes da malha
+            <ChevronRight aria-hidden="true" />
+          </ComponentButton>
+        )}
+        {pro && (
+          <ComponentButton onClick={() => setPage('selection')}>
+            {copy.componentMoreSelection}
+            <ChevronRight aria-hidden="true" />
+          </ComponentButton>
+        )}
+        {weights && (
+          <ComponentButton onClick={onOpenWeights ?? (() => setPage('weights'))}>
+            Ossos e pesos
+            <ChevronRight aria-hidden="true" />
+          </ComponentButton>
+        )}
+      </ComponentPage>
+    )
+  } else if (page === 'selection' && pro) {
+    content = (
+      <ComponentPage title="Mais formas de escolher" backLabel={modeLabel} onBack={back}>
+        <fieldset disabled={blocked} className="mld-component-stack">
+          <legend className="sr-only">Seleção</legend>
+          {(
+            [
+              'grow',
+              'shrink',
+              'invert',
+              ...(selection.mode === 'edge' ? (['ring', 'loop'] as const) : []),
+            ] as const
+          ).map((action) => (
+            <div key={action} className="mld-component-stack">
+              <ComponentButton
+                disabled={action !== 'invert' && !count}
+                onClick={() => choose(action)}
+              >
+                {copy.componentSelectionActions[action]}
+              </ComponentButton>
+              <p className="mld-component-description">{copy.componentSelectionHints[action]}</p>
+            </div>
           ))}
-        {weights &&
-          (onOpenWeights ? (
-            <Button className="w-full text-sm" onClick={onOpenWeights}>
-              Ossos e pesos
-            </Button>
-          ) : (
-            <SceneSkinWeightTools {...weights} />
+        </fieldset>
+      </ComponentPage>
+    )
+  } else if (page === 'advanced' && pro) {
+    content = (
+      <ComponentPage title="Mais ajustes da malha" backLabel={modeLabel} onBack={back}>
+        <SceneComponentAdvanced {...props} />
+      </ComponentPage>
+    )
+  } else if (page === 'check' && pro) {
+    content = (
+      <ComponentPage
+        title="Conferir a peça"
+        backLabel={modeLabel}
+        onBack={back}
+        onEscape={() => {
+          if (check.busy || check.preview) check.cancel()
+          else back()
+        }}
+      >
+        <SceneMeshCheck check={check} expanded />
+      </ComponentPage>
+    )
+  } else if (page === 'uv' && uv && uvAllowed) {
+    content = (
+      <ComponentPage title="Pintura da face" backLabel={modeLabel} onBack={back}>
+        <Suspense fallback={<p role="status">{copy.uvLoading}</p>}>
+          <fieldset disabled={blocked} className="mld-component-grid">
+            <legend className="sr-only">Seleção de faces no mapa</legend>
+            <ComponentButton aria-label={copy.faceAll} onClick={() => choose('all')}>
+              Todas
+            </ComponentButton>
+            <ComponentButton aria-label={copy.faceNone} onClick={() => choose('none')}>
+              Limpar
+            </ComponentButton>
+          </fieldset>
+          <SceneUvEditor {...uv} />
+        </Suspense>
+      </ComponentPage>
+    )
+  } else if (page === 'weights' && weights) {
+    content = (
+      <ComponentPage title="Ossos e pesos" backLabel={modeLabel} onBack={back}>
+        <SceneSkinWeightTools {...weights} />
+      </ComponentPage>
+    )
+  } else if (page === 'help') {
+    content = (
+      <ComponentPage title="Como editar a peça" backLabel={modeLabel} onBack={back}>
+        <p>
+          Escolha Pontos, Linhas ou Faces e clique na peça para escolher uma parte. Use Shift para
+          escolher várias.
+        </p>
+        <p>
+          Escolha uma ação para ver seus ajustes. Mover, Girar e Tamanho usam as alças no modelo.
+        </p>
+        <p>{copy.componentModeHint}</p>
+        <p>Cancelar descarta a prévia. Desfazer traz de volta o último ajuste aplicado.</p>
+        <ComponentButton tone="soft" onClick={back}>
+          Entendi
+        </ComponentButton>
+      </ComponentPage>
+    )
+  } else {
+    content = (
+      <section aria-label={copy.componentTitles[selection.mode]} className="mld-component-panel">
+        <div className="mld-component-heading">
+          <h3 className="mld-display mld-component-title">Editar peça</h3>
+          <button
+            type="button"
+            aria-label="Como editar a peça"
+            data-component-trigger="help"
+            className="mld-component-help"
+            onClick={() => go('help')}
+          >
+            <Info aria-hidden="true" />
+          </button>
+        </div>
+        <fieldset disabled={blocked} className="mld-component-modes" title={copy.componentModeHint}>
+          <legend className="sr-only">{copy.componentModeLabel}</legend>
+          {(['vertex', 'edge', 'face'] as const).map((mode) => (
+            <ComponentButton
+              key={mode}
+              tone={selection.mode === mode ? 'soft' : 'neutral'}
+              aria-pressed={selection.mode === mode}
+              onClick={() => {
+                setPage('main')
+                setMode(mode)
+              }}
+            >
+              {copy.componentModes[mode]}
+            </ComponentButton>
           ))}
-        {pro && selection.mode === 'vertex' && (
-          <div className="space-y-2">
-            <label className="flex min-h-11 items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                name="softMovementEnabled"
-                checked={softMovement.enabled}
-                onChange={(event) => softMovement.setEnabled(event.target.checked)}
-                className="size-5 accent-mld-accent"
-              />
-              {copy.softMovement}
-            </label>
-            {softMovement.enabled && (
+        </fieldset>
+        {props.symmetry && pro && (
+          <ComponentButton onClick={() => go('mirror')}>
+            Espelho {['X', 'Y', 'Z'][props.symmetry.axis]} ativo
+          </ComponentButton>
+        )}
+        <div className="mld-component-stack">
+          <p role="status" className="mld-component-count">
+            {count === 0
+              ? `Nenhum${isFace || selection.mode === 'edge' ? 'a' : ''} ${isFace ? 'face escolhida' : selection.mode === 'edge' ? 'linha escolhida' : 'ponto escolhido'}`
+              : selection.mode === 'face'
+                ? copy.faceCount(count)
+                : copy.componentCounts[selection.mode](count)}
+          </p>
+          <fieldset disabled={blocked} className="mld-component-selection">
+            <legend className="sr-only">Escolher partes da peça</legend>
+            <ComponentButton
+              aria-label={
+                selection.mode === 'face' ? copy.faceAll : copy.componentAll[selection.mode]
+              }
+              onClick={() => choose('all')}
+            >
+              {selection.mode === 'vertex' ? 'Todos' : 'Todas'}
+            </ComponentButton>
+            <ComponentButton
+              aria-label={isFace ? copy.faceConnected : copy.componentConnected}
+              disabled={!count}
+              title={!count ? 'Escolha uma parte primeiro.' : undefined}
+              onClick={() => choose('connected')}
+            >
+              {selection.mode === 'vertex' ? 'Ligados' : 'Ligadas'}
+            </ComponentButton>
+            <ComponentButton
+              aria-label={isFace ? copy.faceNone : copy.componentNone}
+              disabled={!count}
+              onClick={() => choose('none')}
+            >
+              Limpar
+            </ComponentButton>
+          </fieldset>
+          <p className="mld-component-description">
+            {isFace
+              ? 'Clique nas faces para escolher.'
+              : selection.mode === 'edge'
+                ? 'Clique nas linhas para escolher.'
+                : 'Clique nos pontos para escolher.'}
+          </p>
+        </div>
+        <fieldset disabled={blocked} className="mld-component-shape">
+          <legend className="sr-only">Mudar a forma</legend>
+          <h4>Mudar a forma</h4>
+          <div className="mld-component-grid">
+            {isFace ? (
               <>
-                <label className="flex flex-col gap-1 text-sm">
-                  {copy.softMovementReach}
-                  <input
-                    type="number"
-                    name="softMovementReach"
-                    step="any"
-                    min="0"
-                    value={softMovement.reach}
-                    aria-invalid={!softMovement.valid}
-                    onChange={(event) => softMovement.setReach(event.target.value)}
-                    className="min-h-11 w-full rounded-lg border border-mld-border bg-mld-bg px-3 text-mld-text focus-visible:outline-2 focus-visible:outline-mld-accent"
-                  />
-                </label>
-                <p className="text-xs text-mld-muted">{copy.softMovementHint}</p>
-                {!softMovement.valid && (
-                  <p role="status" className="text-xs text-mld-danger">
-                    {copy.softMovementInvalid}
-                  </p>
+                {(pro
+                  ? (['extrude', 'inset', 'thickness'] as const)
+                  : (['extrude', 'inset'] as const)
+                ).map((tool) => (
+                  <ComponentButton
+                    key={tool}
+                    icon={actionIcons[tool]}
+                    aria-label={copy.facePreview[tool]}
+                    data-component-trigger={tool}
+                    disabled={!count}
+                    onClick={() => {
+                      returnTo.current = tool
+                      beginPreview(tool)
+                    }}
+                  >
+                    {actionLabels[tool]}
+                  </ComponentButton>
+                ))}
+                {pro && (
+                  <ComponentButton
+                    icon={Scissors}
+                    data-component-trigger="cut"
+                    onClick={() => go('cut')}
+                  >
+                    Cortar
+                  </ComponentButton>
+                )}
+                {pro && (
+                  <ComponentButton
+                    icon={Grid3x3}
+                    aria-label={copy.facePreview.subdivide}
+                    data-component-trigger="subdivide"
+                    disabled={!count}
+                    onClick={() => {
+                      returnTo.current = 'subdivide'
+                      beginPreview('subdivide')
+                    }}
+                  >
+                    Dividir
+                  </ComponentButton>
+                )}
+                {pro && (
+                  <ComponentButton
+                    icon={FlipHorizontal2}
+                    data-component-trigger="mirror"
+                    disabled={!count}
+                    onClick={() => {
+                      returnTo.current = 'mirror'
+                      if (props.symmetry) go('mirror')
+                      else operation.start('mirror')
+                    }}
+                  >
+                    Espelhar
+                  </ComponentButton>
+                )}
+              </>
+            ) : selection.mode === 'edge' ? (
+              <>
+                {pro && (
+                  <ComponentButton
+                    icon={Grid3x3}
+                    aria-label={copy.splitEdges}
+                    disabled={!count}
+                    onClick={props.splitEdges}
+                  >
+                    Dividir linhas
+                  </ComponentButton>
+                )}
+                {pro && (
+                  <ComponentButton
+                    icon={Scissors}
+                    data-component-trigger="cut"
+                    onClick={() => go('cut')}
+                  >
+                    Cortar
+                  </ComponentButton>
+                )}
+                {pro && (
+                  <ComponentButton
+                    icon={Merge}
+                    aria-label={copy.dissolveEdges}
+                    disabled={!count}
+                    onClick={props.dissolveEdges}
+                  >
+                    Juntar faces
+                  </ComponentButton>
+                )}
+              </>
+            ) : (
+              <>
+                {pro && (
+                  <ComponentButton
+                    icon={Scissors}
+                    aria-label={copy.connectPoints.cut}
+                    disabled={count !== 2}
+                    onClick={() => props.connectPoints('cut')}
+                  >
+                    Cortar face
+                  </ComponentButton>
+                )}
+                {pro && (
+                  <ComponentButton
+                    icon={Shapes}
+                    aria-label={copy.connectPoints.line}
+                    disabled={count !== 2}
+                    onClick={() => props.connectPoints('line')}
+                  >
+                    Ligar pontos
+                  </ComponentButton>
+                )}
+                {pro && (
+                  <ComponentButton
+                    icon={Merge}
+                    aria-label={copy.weldPoints}
+                    disabled={!props.weld?.points || !!props.weld.blockedReason}
+                    onClick={props.weldPoints}
+                  >
+                    Juntar pontos
+                  </ComponentButton>
                 )}
               </>
             )}
           </div>
-        )}
-        {pro && selection.mode === 'vertex' && weld && (
-          <div className="space-y-1">
-            <Button
-              className="w-full text-sm"
-              disabled={!weld.points || !!weld.blockedReason}
-              onClick={weldPoints}
-            >
-              {copy.weldPoints}
-            </Button>
-            <p className="text-xs text-mld-muted">{copy.weldPointsHint}</p>
-            <p className="text-xs text-mld-muted">
-              {weld.blockedReason ??
-                (weld.points
-                  ? copy.weldImpact(weld.points, weld.groups, weld.faces, weld.looseEdges)
-                  : copy.weldEmpty)}
-            </p>
-          </div>
-        )}
-        {pro &&
-          selection.mode === 'vertex' &&
-          (['cut', 'line'] as const).map((action) => (
-            <div key={action} className="space-y-1">
-              <Button
-                className="w-full text-sm"
-                disabled={count !== 2}
-                onClick={() => connectPoints(action)}
-              >
-                {copy.connectPoints[action]}
-              </Button>
-              <p className="text-xs text-mld-muted">{copy.connectPointsHints[action]}</p>
-            </div>
-          ))}
-        {pro && selection.mode === 'edge' && (
-          <div className="space-y-1">
-            <Button className="w-full text-sm" disabled={!count} onClick={splitEdges}>
-              {copy.splitEdges}
-            </Button>
-            <p className="text-xs text-mld-muted">{copy.splitEdgesHint}</p>
-            <Button className="w-full text-sm" disabled={count !== 1} onClick={cutRing}>
-              {copy.cutRing}
-            </Button>
-            <p className="text-xs text-mld-muted">{copy.cutRingHint}</p>
-            <Button className="w-full text-sm" disabled={!count} onClick={dissolveEdges}>
-              {copy.dissolveEdges}
-            </Button>
-            <p className="text-xs text-mld-muted">{copy.dissolveEdgesHint}</p>
-          </div>
-        )}
-        {isFace && (
-          <div className="flex flex-col gap-2">
-            {(pro
-              ? (['extrude', 'inset', 'thickness', 'subdivide'] as const)
-              : (['extrude', 'inset'] as const)
-            ).map((tool) => (
-              <Button
-                key={tool}
-                ref={(element) => {
-                  triggers.current[tool] = element
-                }}
-                className="text-sm"
-                disabled={!count}
-                onClick={() => beginPreview(tool)}
-              >
-                {copy.facePreview[tool]}
-              </Button>
-            ))}
-          </div>
-        )}
-        {pro && selection.mode === 'edge' && <SceneBevel count={count} onApply={bevel} />}
-        {pro && selection.mode === 'edge' && (
-          <details>
-            <summary className="min-h-11 cursor-pointer py-3 text-sm">
-              {copy.pathCreateTitle}
-            </summary>
-            <p className="mb-3 text-xs text-mld-muted">{copy.pathCreateHint}</p>
-            <ScenePathForm
-              settings={{ radius: 0.1, around: 8, endCaps: true }}
-              points={pathPointCount}
-              action={copy.pathCreate}
-              onApply={createPath}
-            />
-          </details>
-        )}
-        {pro && (
-          <>
-            {visualCut}
-            <details>
-              <summary className="min-h-11 cursor-pointer py-3 text-sm font-bold">
-                Divisão por valores
-              </summary>
-              <ScenePlaneCut onApply={cutPlane} />
-            </details>
-          </>
-        )}
-        <div className="flex flex-col gap-2">
-          <Button className="text-sm" onClick={() => choose('all')}>
-            {selection.mode === 'face' ? copy.faceAll : copy.componentAll[selection.mode]}
-          </Button>
-          <Button className="text-sm" disabled={!count} onClick={() => choose('none')}>
-            {isFace ? copy.faceNone : copy.componentNone}
-          </Button>
-          <Button className="text-sm" disabled={!count} onClick={() => choose('connected')}>
-            {isFace ? copy.faceConnected : copy.componentConnected}
-          </Button>
+        </fieldset>
+        <div className="mld-component-tip">
+          <Lightbulb aria-hidden="true" />
+          <p>
+            {props.empty
+              ? 'Esta peça ficou sem faces. Desfaça para recuperar.'
+              : !count
+                ? 'Escolha uma parte da peça para começar.'
+                : 'Escolha uma ação para ver como usar.'}
+          </p>
         </div>
-        {pro && (
-          <details>
-            <summary className="min-h-11 cursor-pointer py-3 text-sm">
-              {copy.componentMoreSelection}
-            </summary>
-            <div className="space-y-3">
-              {(
-                [
-                  'grow',
-                  'shrink',
-                  'invert',
-                  ...(selection.mode === 'edge' ? (['ring', 'loop'] as const) : []),
-                ] as const
-              ).map((action) => (
-                <div key={action} className="space-y-1">
-                  <Button
-                    className="w-full text-sm"
-                    disabled={action !== 'invert' && !count}
-                    onClick={() => choose(action)}
-                  >
-                    {copy.componentSelectionActions[action]}
-                  </Button>
-                  <p className="text-xs text-mld-muted">{copy.componentSelectionHints[action]}</p>
-                </div>
-              ))}
-            </div>
-          </details>
-        )}
-        {isFace &&
-          (pro
-            ? (['merge', 'detach', 'triangulate', 'flip', 'remove'] as const)
-            : (['remove'] as const)
-          ).map((action) => (
-            <div key={action} className="space-y-1">
-              <Button
-                className="w-full text-sm"
-                disabled={action === 'merge' ? count < 2 : !count}
-                onClick={() => apply(action)}
-              >
-                {copy.faceActions[action]}
-              </Button>
-              <p className="text-xs text-mld-muted">{copy.faceActionHints[action]}</p>
-            </div>
-          ))}
-        {selection.mode !== 'face' && removal && (
-          <div className="space-y-1">
-            <Button className="w-full text-sm" disabled={!count} onClick={remove}>
-              {copy.componentRemove[selection.mode]}
-            </Button>
-            <p className="text-xs text-mld-muted">
-              {copy.componentRemovalImpact(removal.faces, removal.looseEdges)}
-            </p>
-          </div>
-        )}
-      </fieldset>
-    </section>
+        <div className="mld-component-links">
+          {(pro || weights) && (
+            <ComponentButton icon={Shapes} data-component-trigger="more" onClick={() => go('more')}>
+              Mais ferramentas
+              <ChevronRight aria-hidden="true" />
+            </ComponentButton>
+          )}
+          {uv && can('paint.uv') && (
+            <ComponentButton
+              icon={Paintbrush}
+              data-component-trigger="uv"
+              disabled={blocked}
+              onClick={onOpenUv ?? (() => go('uv'))}
+            >
+              Pintura da face
+              <ChevronRight aria-hidden="true" />
+            </ComponentButton>
+          )}
+          {pro && (
+            <ComponentButton
+              icon={Scan}
+              data-component-trigger="check"
+              disabled={!!preview.tool || props.transform.dragging}
+              onClick={() => go('check')}
+            >
+              Conferir a peça
+              <ChevronRight aria-hidden="true" />
+            </ComponentButton>
+          )}
+        </div>
+        <div className="mld-component-stack">
+          <ComponentButton
+            tone="danger"
+            icon={Trash2}
+            disabled={blocked || !count}
+            onClick={isFace ? () => apply('remove') : remove}
+          >
+            {selection.mode === 'face'
+              ? copy.faceActions.remove
+              : copy.componentRemove[selection.mode]}
+          </ComponentButton>
+          <p className="mld-component-description mld-component-removal">
+            {isFace
+              ? 'Abre um buraco. Você pode desfazer.'
+              : removal
+                ? copy.componentRemovalImpact(removal.faces, removal.looseEdges)
+                : 'Você pode desfazer.'}
+          </p>
+        </div>
+        <div className="mld-component-footer">
+          <ComponentButton tone="soft" icon={Check} onClick={close}>
+            Concluir edição
+          </ComponentButton>
+        </div>
+      </section>
+    )
+  }
+  return (
+    <div ref={panel} className="mld-component-root">
+      {content}
+      {error && (
+        <p role="alert" className="text-sm text-mld-danger">
+          {error}
+        </p>
+      )}
+    </div>
   )
 }

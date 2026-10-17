@@ -27,6 +27,7 @@ import { useSceneAnimationPoseGesture } from './useSceneAnimationPoseGesture'
 import { useSceneComponents } from './useSceneComponents'
 import { useSceneContextTransition } from './useSceneContextTransition'
 import { useSceneFlipbookPlayer } from './useSceneFlipbookPlayer'
+import { useSceneKnife } from './useSceneKnife'
 import { useSceneModelGuides } from './useSceneModelGuides'
 import { useScenePaint } from './useScenePaint'
 import { useScenePaintIndicators } from './useScenePaintIndicators'
@@ -37,7 +38,7 @@ import { SCENE_WORKSPACE_AREAS, type SceneWorkspaceArea } from './workspaceAreaR
 
 /** As três abas. O modo mora aqui para Pintar poder escolher a peça e preparar a tinta. */
 export type SceneWorkshopMode = 'model' | 'paint' | 'animation'
-export type SceneWorkshopTool = SceneTransformTool | 'box' | 'lasso' | 'pivot' | 'cut'
+export type SceneWorkshopTool = SceneTransformTool | 'box' | 'lasso' | 'pivot' | 'cut' | 'knife'
 
 /** A peça tem faces tortas: pintar pede o consentimento de dividi-las em triângulos. */
 export interface ScenePaintIssue {
@@ -524,7 +525,34 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
   })
   const modelGuides = useSceneModelGuides(editor, (next) => !!run(() => next))
   const solidCut = useSceneSolidCut(editor, (next) => !!run(() => next))
+  const knife = useSceneKnife(editor, (next) => !!run(() => next))
   const cutAllowed = can('model.cut')
+  const knifeLive = useRef(knife)
+  knifeLive.current = knife
+  useEffect(() => {
+    const current = knifeLive.current
+    if (!cutAllowed) {
+      current.cancel()
+      if (tool === 'knife') setTool('select')
+      return
+    }
+    if (
+      current.owner &&
+      (mode !== 'model' ||
+        tool !== 'knife' ||
+        selected.length !== 1 ||
+        selected[0] !== current.owner.nodeId ||
+        current.owner.source !== document)
+    )
+      current.cancel()
+    if (
+      mode === 'model' &&
+      tool === 'knife' &&
+      selected.length === 1 &&
+      (current.owner?.nodeId !== selected[0] || current.owner?.source !== document)
+    )
+      current.start(selected[0]!)
+  }, [mode, tool, selected, cutAllowed, document])
   const cutLive = useRef(solidCut)
   cutLive.current = solidCut
   useEffect(() => {
@@ -641,6 +669,8 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
     setWorkspaceArea(null)
   }, [areaAllowed, animationEdit, cancelPaint])
   function cancelGesture() {
+    components.operation.cancel()
+    knife.reset()
     pivotGesture.cancel()
     skinPaint.cancel()
     animationPose.interrupt()
@@ -758,6 +788,14 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
     requestTransition,
     resolveTransition,
     undo: () => {
+      if (components.operation.kind) {
+        components.operation.cancel()
+        return
+      }
+      if (knife.owner?.points.length) {
+        knife.reset()
+        return
+      }
       // O rascunho da pose responde enquanto tem passos para desfazer; sem eles, o próximo
       // Desfazer age no histórico confirmado (antes, um rascunho com só Refazer travava o botão).
       const draft = animationPose.getSnapshot()
@@ -792,6 +830,12 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
         setPivotSnap(false)
         cancelModelGuide.current()
         solidCut.cancel()
+        const knifeSelection = components.selection
+        knife.cancel()
+        if (next === 'knife') {
+          components.close()
+          if (chosenRef.current.length === 1) knife.start(chosenRef.current[0]!, knifeSelection)
+        }
         if (next === 'cut') {
           components.close()
           if (chosenRef.current.length === 1) solidCut.start(chosenRef.current[0]!)
@@ -874,6 +918,32 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
     paintColors: paintIndicators.colors,
     paintColorsStatus: paintIndicators.status,
     solidCut,
+    knife,
+    cancelKnife: () => {
+      const previous = knife.owner
+      knife.cancel()
+      setTool('select')
+      if (
+        previous?.selection &&
+        previous.source === editor.getState().content &&
+        chosenRef.current.length === 1 &&
+        chosenRef.current[0] === previous.nodeId
+      )
+        components.open(previous.selection.mode, previous.selection.ids)
+    },
+    confirmKnife: () => {
+      if (
+        !knife.owner ||
+        chosenRef.current.length !== 1 ||
+        chosenRef.current[0] !== knife.owner.nodeId
+      )
+        return false
+      const result = knife.confirm()
+      if (!result) return false
+      setTool('select')
+      components.open('face', result.faceIds)
+      return true
+    },
     skinPaint,
     flipbook,
     animation,

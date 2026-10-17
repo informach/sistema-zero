@@ -11,7 +11,6 @@ import {
   ungroupSceneNodes,
 } from '../../../scene/commands'
 import { RequiresTool } from '../../toolAccess'
-import { Button } from '../../ui/Button'
 import { ChevronDown, Crosshair, Group, ListChecks, Shapes, Slice, Ungroup } from '../../ui/icons'
 import { focusWorkshopStage } from './focusStage'
 import { SceneCreateMenu } from './SceneCreateMenu'
@@ -23,29 +22,19 @@ export function SceneModelColumn({
   workshop,
   toolsSlot,
   areaToolsSlot,
-  onToggleFaces,
   canConvert,
 }: {
   workshop: ReturnType<typeof useSceneWorkshop>
   toolsSlot(element: HTMLDivElement | null): void
   areaToolsSlot(element: HTMLDivElement | null): void
-  onToggleFaces(): void
   canConvert: boolean
 }) {
   const copy = COPY.scene
   const headingId = useId()
   const { selected, run, components, index } = workshop
   return (
-    // O trilho rola sem deslocar o palco e mantém o retorno da edição de componentes.
+    // O trilho rola sem deslocar o palco; a edição de componentes termina no painel direito.
     <div className="mld-workshop-rail mld-bar">
-      {components.selection && (
-        <Button
-          className="sticky top-0 z-10 shrink-0 bg-mld-surface px-1 text-xs"
-          onClick={onToggleFaces}
-        >
-          {copy.finishFaces}
-        </Button>
-      )}
       <section aria-labelledby={headingId} className="shrink-0 space-y-2">
         <h3 id={headingId} className="mld-kicker">
           {SCENE_SHELL_COPY.tools}
@@ -71,8 +60,8 @@ export function SceneModelColumn({
               label="Cortar"
               keyHint="K"
               aria-keyshortcuts="K"
-              pressed={workshop.tool === 'cut'}
-              onClick={() => workshop.setTool('cut')}
+              pressed={workshop.tool === 'knife'}
+              onClick={() => workshop.setTool('knife')}
             />
           </RequiresTool>
         </div>
@@ -91,6 +80,15 @@ export function SceneModelColumn({
         </summary>
         <div className={TILES}>
           <div ref={areaToolsSlot} className="contents" />
+          <RequiresTool family="model.cut">
+            <SceneTile
+              icon={Slice}
+              label="Separar peça"
+              title="Divide o volume em duas peças fechadas"
+              pressed={workshop.tool === 'cut'}
+              onClick={() => workshop.setTool('cut')}
+            />
+          </RequiresTool>
           <SceneTile
             icon={ListChecks}
             label={copy.addSelection}

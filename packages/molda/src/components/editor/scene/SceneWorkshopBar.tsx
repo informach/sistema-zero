@@ -41,6 +41,7 @@ export function SceneWorkshopBar({
   help,
   requestTransition,
   draftCanUndo = false,
+  previewCanUndo = false,
   draftCanRedo = false,
 }: {
   editor: EditorStore<MoldaSceneDocument>
@@ -53,6 +54,7 @@ export function SceneWorkshopBar({
   onRedo(): void
   pendingPose: boolean
   draftCanUndo?: boolean
+  previewCanUndo?: boolean
   draftCanRedo?: boolean
   exportTrigger: RefObject<HTMLButtonElement | null>
   importTrigger: RefObject<HTMLButtonElement | null>
@@ -166,7 +168,7 @@ export function SceneWorkshopBar({
           className="sz-tool-icon-btn"
           aria-label={COPY.editor.undo}
           title="Desfazer (Ctrl+Z)"
-          disabled={pendingPose ? !draftCanUndo : !canUndo}
+          disabled={pendingPose ? !draftCanUndo : !(canUndo || previewCanUndo)}
           onClick={onUndo}
         >
           <Undo2 aria-hidden="true" />

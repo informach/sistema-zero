@@ -606,6 +606,11 @@ test('vinte aberturas liberam o contexto gráfico e mantêm a memória limitada'
       )
       .toBe(0)
     if ([5, 10, 15, 20].includes(cycle)) {
+      // The gallery heading appears before its asynchronous project list. Compare the same
+      // loaded screen in every sample, rather than a loading tree with a populated gallery.
+      await expect(
+        page.getByRole('button', { name: 'Modelo memoria-e2e', exact: true }),
+      ).toBeVisible()
       await cdp.send('HeapProfiler.collectGarbage')
       const heap = await cdp.send('Runtime.getHeapUsage'),
         dom = await cdp.send('Memory.getDOMCounters')

@@ -201,7 +201,8 @@ describe('inventário da oficina: o que a criança alcança', () => {
     // Header rename/save menus, zoom alternatives and tree visibility/lock are explicit additions.
     // One local/world selector in stage settings, only from the intermediate tier.
     // The reference's dismissible canvas hint adds one named button in Modelar too.
-    expect(controlInventory(vazio.view.container).length).toBeLessThanOrEqual(64)
+    // The surface knife and the explicit volume separation are independent actions.
+    expect(controlInventory(vazio.view.container).length).toBeLessThanOrEqual(65)
     expect(
       encaradosVazio.length,
       `encarados na abertura: ${encaradosVazio.join(' | ')}`,
@@ -212,7 +213,7 @@ describe('inventário da oficina: o que a criança alcança', () => {
     choosePiece(comPeca.view.container)
     const encaradosPeca = frontControls(comPeca.view.container)
     // 12 coordinate inputs are now available directly, with pivot and component tools.
-    expect(controlInventory(comPeca.view.container).length).toBeLessThanOrEqual(117)
+    expect(controlInventory(comPeca.view.container).length).toBeLessThanOrEqual(118)
     expect(
       encaradosPeca.length,
       `encarados com uma peça escolhida: ${encaradosPeca.join(' | ')}`,
