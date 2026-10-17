@@ -77,7 +77,7 @@ nova aba, e cada um continua com login próprio. As URLs são envs OPCIONAIS de 
 ambiente: admin `HELPDESK_APP_URL` + `MARKETING_APP_URL`; helpdesk-app `ADMIN_APP_URL` +
 `MARKETING_APP_URL`; marketing-app `ADMIN_APP_URL` + `HELPDESK_APP_URL`. Ausente, o link some.
 O menu também traz sempre os Bastidores da Informach (`https://admin.informach.com.br/`, fixo).
-Ao criar essas envs no Railway, registre os nomes em `.railway/variables.ts` no mesmo passo.
+As seis estão criadas nos dois ambientes e registradas em `.railway/variables.ts`.
 
 > Login no admin/community de **staging**: superadmin próprio (mesmo e-mail de
 > prod, senha separada — gerada no setup e entregue fora do repo).

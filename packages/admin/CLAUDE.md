@@ -28,9 +28,9 @@ só mostra o que pede ação e leva até lá, em outra aba.
 - **Envs OPCIONAIS** `HELPDESK_APP_URL` e `MARKETING_APP_URL` (`optionalAppUrl` em `lib/env.ts`,
   igual nos três consoles): ausente, em branco, sem `https://` ou fora de http(s) → o link e os
   atalhos SOMEM (o painel avisa e segue mostrando os números). Não é fail-fast de propósito: é
-  só um link, e o `getEnv` roda em toda página. ⚠️ Os nomes destas envs (e os do helpdesk-app e
-  do marketing-app) ainda NÃO estão em `.railway/variables.ts`: ao criá-las no painel do
-  Railway, registre os nomes lá no mesmo passo, senão o plano mostra exclusão e o gate trava.
+  só um link, e o `getEnv` roda em toda página. Criadas no Railway (staging e produção) em
+  17/10/2026 e registradas em `.railway/variables.ts` (as do helpdesk-app e do marketing-app
+  também).
 - ⚠️ Cada console tem login próprio (cookies `__Host-` presos à origem): abrir o atendimento
   pela primeira vez pede login lá. Login único entre consoles ficou para depois (o molde seria
   o handoff de uso único da impersonação).
