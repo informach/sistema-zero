@@ -2,7 +2,6 @@ import { describe, expect, test } from 'bun:test'
 import {
   type KidsJourneyPolicy,
   KidsJourneyPolicySchema,
-  kidsJourneySteps,
   pauseKidsJourneyPolicy,
 } from '../src/journey/kids-policy'
 import {
@@ -10,6 +9,7 @@ import {
   projectKidsJourney,
   resolveKidsJourneyCourseLock,
 } from '../src/journey/kids-projection'
+import { initialKidsJourneyPolicy } from '../src/journey/kids-seed'
 import {
   analyzeKidsJourneyReadiness,
   validateKidsJourneyPolicy,
@@ -21,11 +21,12 @@ import {
   kidsMilestones,
 } from './fixtures/kids-journey'
 
-function configured(): Extract<KidsJourneyPolicy, { mode: 'configured' }> {
+function configured(): KidsJourneyPolicy {
   return {
+    ...initialKidsJourneyPolicy(),
     schemaVersion: 1,
-    mode: 'configured',
-    steps: kidsJourneySteps({ schemaVersion: 1, mode: 'legacy' }),
+    mode: 'active',
+    steps: initialKidsJourneyPolicy().steps,
   }
 }
 
@@ -106,7 +107,11 @@ describe('Kids policy contracts', () => {
     const view = projectKidsJourney(
       kidsJourneyInput({
         policy: configured(),
-        earned: { level: 'architect', capabilities: ['pro', 'studio'] },
+        earned: {
+          level: 'architect',
+          capabilities: ['pro', 'studio'],
+          courseAccess: { entry: [], expanded: [], reward: [] },
+        },
       }),
     )
     expect(view.earned.level).toBe('architect')
@@ -119,12 +124,17 @@ describe('Kids policy contracts', () => {
   test('paused stops new earnings even with all milestones', () => {
     const view = projectKidsJourney(
       kidsJourneyInput({
-        policy: pauseKidsJourneyPolicy({ schemaVersion: 1, mode: 'legacy' }),
+        policy: pauseKidsJourneyPolicy(initialKidsJourneyPolicy()),
         milestones: kidsMilestones(),
-        earned: { level: 'coder', capabilities: ['studio', 'pinta'] },
+        earned: {
+          level: 'coder',
+          capabilities: ['studio', 'pinta'],
+          courseAccess: { entry: [], expanded: [], reward: [] },
+        },
       }),
     )
-    expect(view.earned).toEqual({ level: 'coder', capabilities: ['studio', 'pinta'] })
+    expect(view.earned.level).toBe('coder')
+    expect(view.earned.capabilities).toEqual(['studio', 'pinta'])
     expect(view.missing).toEqual([])
     expect(view.advances).toHaveLength(7)
     expect(
@@ -138,7 +148,7 @@ describe('Kids policy contracts', () => {
       'unavailable',
     )
     const empty = analyzeKidsJourneyReadiness({
-      policy: { schemaVersion: 1, mode: 'legacy' },
+      policy: initialKidsJourneyPolicy(),
       catalog: [],
     })
     expect(empty.status).toBe('incomplete')
@@ -242,7 +252,12 @@ describe('Kids policy contracts', () => {
         : step,
     )
     const milestones = [...kidsMilestones(1), { ...kidsMilestones(2)[1]!, showcased: false }]
-    const input = kidsJourneyInput({ policy: { ...policy, steps }, milestones })
+    const tierAccess = policy.tierAccess.map((rule) =>
+      rule.tier === 'iniciante-2d'
+        ? { ...rule, foundation: { ...rule.foundation, milestone: 'complete' as const } }
+        : rule,
+    )
+    const input = kidsJourneyInput({ policy: { ...policy, steps, tierAccess }, milestones })
     expect(
       resolveKidsJourneyCourseLock({
         ...input,
@@ -270,7 +285,7 @@ describe('Kids policy contracts', () => {
     )
   })
 
-  test('explicit foundation identity does not borrow the previous occupant of its slot', () => {
+  test('explicit step course identity is separate from the slot foundation gate', () => {
     const policy = configured()
     const steps = policy.steps.map((step, index) =>
       index === 1
@@ -295,9 +310,14 @@ describe('Kids policy contracts', () => {
       milestones: kidsMilestones(2),
       catalog,
     })
-    expect(resolveKidsJourneyCourseLock({ ...input, catalog, course: catalog[2]! }).reason).toBe(
-      'foundation-first',
+    expect(resolveKidsJourneyCourseLock({ ...input, catalog, course: catalog[2]! }).locked).toBe(
+      false,
     )
+    expect(projectKidsJourney(input).missing).toContainEqual({
+      kind: 'course',
+      courseId: kidsCourseId(60),
+      milestone: 'complete',
+    })
   })
 
   test('preview preserves virtual baseline and does not mutate any caller facts', () => {
@@ -310,7 +330,7 @@ describe('Kids policy contracts', () => {
     expect(impact.after.earned.level).toBe('hacker')
     expect(impact.preservedCapabilities).toEqual(['studio', 'pinta', 'ai', 'pensa'])
     expect(impact.changes).toEqual([])
-    expect(impact.before.mode).toBe('legacy')
+    expect(impact.before.mode).toBe('active')
     expect(impact.after.mode).toBe('paused')
     expect(JSON.stringify(input)).toBe(before)
   })

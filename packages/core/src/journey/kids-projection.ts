@@ -1,11 +1,4 @@
-import {
-  creatorJourneyLevel,
-  JOURNEY_LEVEL_SLUGS,
-  type JourneyCourseLock,
-  type JourneyCourseTier,
-  type JourneyLevelSlug,
-  resolveJourneyCourseLock,
-} from './catalog'
+import { JOURNEY_LEVEL_SLUGS, type JourneyCourseLock, type JourneyLevelSlug } from './catalog'
 import {
   KIDS_CREATOR_CAPABILITIES,
   type KidsCreatorCapability,
@@ -15,20 +8,21 @@ import {
   KidsJourneyPolicySchema,
   type KidsJourneyProjectionInput,
   type KidsJourneyView,
-  kidsJourneySteps,
   kidsRequirementKey,
   kidsRequirementSatisfied,
 } from './kids-policy'
 import {
   analyzeKidsJourneyReadiness,
   kidsCourseLockAtLevel,
+  kidsFoundationCourse,
   kidsFoundationRequirements,
+  projectKidsCourseAccess,
 } from './kids-validation'
 
 export function projectKidsJourney(input: KidsJourneyProjectionInput): KidsJourneyView {
   const policy = KidsJourneyPolicySchema.parse(input.policy)
   const paused = policy.mode === 'paused'
-  const steps = kidsJourneySteps(policy)
+  const steps = policy.steps
   const floor = JOURNEY_LEVEL_SLUGS.indexOf(input.earned.level)
   let current = Math.max(0, floor)
   const earned = new Set<KidsCreatorCapability>(input.earned.capabilities)
@@ -76,6 +70,13 @@ export function projectKidsJourney(input: KidsJourneyProjectionInput): KidsJourn
     earned: {
       level,
       capabilities: KIDS_CREATOR_CAPABILITIES.filter((capability) => earned.has(capability)),
+      courseAccess: projectKidsCourseAccess(
+        policy,
+        level,
+        input.milestones,
+        input.catalog,
+        input.earned.courseAccess,
+      ),
     },
     nextLevel,
     missing:
@@ -102,49 +103,21 @@ export function resolveKidsJourneyCourseLock(
   )
     return { locked: false }
   const policy = KidsJourneyPolicySchema.parse(input.policy)
-  const foundation = input.catalog.find(
-    (course) =>
-      course.audience === 'kids' &&
-      course.modality === 'recorded' &&
-      course.status === 'published' &&
-      course.tier === input.course.tier &&
-      course.slot === 1,
-  )
-  if (policy.mode === 'legacy') {
-    const qualified: Partial<Record<JourneyCourseTier, number[]>> = {}
-    for (const milestone of input.milestones) {
-      if (
-        milestone.completed &&
-        milestone.showcased &&
-        milestone.qualifiedTier &&
-        milestone.qualifiedSlot !== null
-      ) {
-        qualified[milestone.qualifiedTier] ??= []
-        qualified[milestone.qualifiedTier]!.push(milestone.qualifiedSlot)
-      }
-    }
-    // A materialized rank remains a floor when historical catalog metadata is gone.
-    const floor = creatorJourneyLevel(input.earned.level).requiredSlots
-    for (const [tier, slots] of Object.entries(floor)) {
-      const key = tier as JourneyCourseTier
-      qualified[key] ??= []
-      qualified[key]!.push(...slots)
-    }
-    return resolveJourneyCourseLock(
-      qualified,
-      input.course.tier,
-      input.course.slot,
-      Boolean(foundation),
-      input.course.journeyRole,
-    )
-  }
+  const foundation = kidsFoundationCourse(input.catalog, input.course.tier)
   const view = projectKidsJourney({ ...input, policy })
   const satisfied = foundation
     ? kidsFoundationRequirements(policy, foundation).every((requirement) =>
         kidsRequirementSatisfied(requirement, input.milestones),
       )
     : false
-  return kidsCourseLockAtLevel(view.earned.level, input.course, Boolean(foundation), satisfied)
+  return kidsCourseLockAtLevel(
+    policy,
+    view.earned.level,
+    input.course,
+    Boolean(foundation),
+    satisfied,
+    view.earned.courseAccess,
+  )
 }
 
 /** A read-only preview carries the current policy's virtual baseline into the proposed one. */
@@ -155,8 +128,8 @@ export function compareKidsJourney(input: KidsJourneyComparisonInput): KidsJourn
     policy: input.proposedPolicy,
     earned: before.earned,
   })
-  const previous = kidsJourneySteps(input.policy)
-  const proposed = kidsJourneySteps(input.proposedPolicy)
+  const previous = input.policy.steps
+  const proposed = input.proposedPolicy.steps
   const changes = JOURNEY_LEVEL_SLUGS.slice(1)
     .map((level) => {
       const old = previous.find((step) => step.level === level)
@@ -203,5 +176,15 @@ export function compareKidsJourney(input: KidsJourneyComparisonInput): KidsJourn
     preservedCapabilities: before.earned.capabilities.filter((capability) =>
       after.earned.capabilities.includes(capability),
     ),
+    tierAccessChanges: input.policy.tierAccess.flatMap((previous) => {
+      const proposed = input.proposedPolicy.tierAccess.find((rule) => rule.tier === previous.tier)!
+      return previous.opensAt !== proposed.opensAt ||
+        previous.completedAt !== proposed.completedAt ||
+        previous.foundation.milestone !== proposed.foundation.milestone ||
+        previous.foundation.whenMissing !== proposed.foundation.whenMissing
+        ? [{ before: previous, after: proposed }]
+        : []
+    }),
+    preservedCourseAccess: before.earned.courseAccess,
   }
 }

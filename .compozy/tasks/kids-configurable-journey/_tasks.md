@@ -90,20 +90,23 @@ Recorte T2 atual: port/repositório com snapshot read-only, freeze monotônico, 
 
 **Depende de:** review do payload final pelo root; rebase remoto informado antes de editar contratos. Sem T3 antes desse aceite.
 
-- [ ] Preservar checkpoint/backup T2; rebase sobre remoto `f664cfa5184e5a4d633edb9292d9f1b09b8115be`, preservando patch companion de fixture sem cherry-pick duplicado; informar conflito em fronteiras compartilhadas.
-- [ ] Substituir legacy/configured/paused por configuração única `{schemaVersion, mode:active|paused, steps, tierAccess}`; pausa mantém tudo, sem nesting/fallback.
-- [ ] `tierAccess` tem sete tiers completos e thresholds/base explícitos: opensAt, completedAt, foundation slot1/milestone/whenMissing. Seed conforme tabela da techspec. Não derivar regras normais de `CREATOR_JOURNEY_LEVELS`.
+- [x] Preservar checkpoint/backup T2; rebase sobre remoto `f664cfa5184e5a4d633edb9292d9f1b09b8115be`, preservando patch companion de fixture sem cherry-pick duplicado; informar conflito em fronteiras compartilhadas. Checkpoint108574ec7/backup631b34 preservados, seis commits range-diff equivalentes.
+- [ ] Próximo checkpoint adota remoto2e76fb448 (ou SHA mais recente informado pelo root) e retira companion equivalente ao guard publicado, usando fixture remoto exato.
+- [x] Substituir legacy/configured/paused por configuração única `{schemaVersion, mode:active|paused, steps, tierAccess}`; pausa mantém tudo, sem nesting/fallback.
+- [x] Recorte core canônico: seed separado49, tierAccess e earned21; 58/0/2763 focados após RED/GREEN entry herdado→expanded, função pura compartilhada com autorização; TSC Core EXIT0.
+- [x] `tierAccess` tem sete tiers completos e thresholds/base explícitos: opensAt, completedAt, foundation slot1/milestone/whenMissing. Seed conforme tabela da techspec. Não derivar regras normais de `CREATOR_JOURNEY_LEVELS`.
 - [ ] Earned inclui 21 direitos bounded entry/expanded/reward; expanded implica entry, reward não. Baseline/award/pause preservam acesso antes liberalizado mesmo com política futura restritiva. Provar V1→offline→V2.
 - [ ] Coorte bootstrap captura Auth all (sem XP/arquivados) + históricos comprovados; admissão sempre persiste earned noob/[] e coorte recorrente captura todos earned, não só marcos.
 - [ ] Implementar Auth admissionState pending/ready separado do arquivamento, requestId idempotente/quota, S2S initializer específico sem RPC em TX, CAS ready sob lock local profile:<account> e worker retry durável/agendado. Inventariar todos criadores/seletores/backfill/refresh/study/impersonação/público/token, testar purge e ACK tardio. Rollout sem Auth antigo; existentes permanecem ready, não pending em massa.
-- [ ] Seed completo versionado, slot-based49, gerado/conferido contra oráculo congelado somente de testes/migração. Nenhuma importação desse oráculo no grafo produtivo.
-- [ ] Provar paridade dos oito postos, prefixos/slots ausentes/ordem/snapshots, capacidades e locks de todas as combinações de base/role, inclusive catálogo incompleto e formatura sem novo gate.
-- [ ] Readiness usa o resolver único com acesso explícito; recusa auto-bloqueio avanço/reward/base. Omissão da base não inventa showcase por código.
-- [ ] Modelar initializing V0 explícito → published V1, actorKind system/user e referência a preparação real; ausência/corrupção não é política/fallback/reseed.
-- [ ] Regenerar a 0136 ainda não publicada pelo script do package, com snapshot/journal coerentes; sem traduzir antigos payloads de teste. Preservar backup e recriar somente QA owned sem clientes/sem FORCE para o hash novo.
-- [ ] Atualizar port/testes/persistência mantendo monotonicidade, CAS, fence e capturas síncronas. Requalificar SQL/TSC em janela coordenada.
+- [ ] Seed completo versionado, slot-based49, gerado/conferido contra oráculo Kids congelado somente de testes/migração. Nenhuma importação desse oráculo no grafo produtivo Kids; helpers compartilhados ainda necessários a Adult preservados e testados.
+- [x] Provar paridade dos oito postos, prefixos/slots ausentes/ordem/snapshots, capacidades e locks de todas as combinações de base/role, inclusive catálogo incompleto e formatura sem novo gate. Congelar referência somente de testes ainda está no item de seed acima.
+- [x] Readiness usa o resolver único com acesso explícito; recusa auto-bloqueio avanço/reward/base. Omissão da base não inventa showcase por código.
+- [x] Modelar initializing V0 explícito → published V1, actorKind system/user e referência a preparação real; ausência/corrupção não é política/fallback/reseed.
+- [x] Regenerar a 0136 ainda não publicada pelo script do package, com snapshot/journal coerentes; sem traduzir antigos payloads de teste. Backup preservado; NOVO QA owned kids_journey_canonical com guard de clientes, sem reset do banco anterior/sem FORCE.
+- [x] Atualizar port/testes/persistência mantendo monotonicidade, CAS, fence e capturas síncronas. Requalificados SQL30/135 e TSC Core/Members0 em janela coordenada; award/serviços ainda pertencem a T3.
+- [x] Primeira SQL real canônica25/1/105; causa INSERT/UPSERT de ordenação corrigida na leitura de domínio, foco1/0/7. Captura Auth bounded→Members1/TX→hash50/TX→baseline1/TX. SQL30/135 repetida com fila/drain, purge3/25 e TSC Core/Members0.
 
-**Aceite:** um contrato/avaliador normal, seed exato e persistível, nenhuma dependência produtiva dos gates/rewards anteriores. Fonte T1/T2 intermediária não será integrada como camada de compatibilidade.
+**Aceite:** um contrato/avaliador Kids normal, seed exato e persistível, nenhuma dependência produtiva Kids dos gates/rewards anteriores. Fonte T1/T2 intermediária não será integrada como camada de compatibilidade. O nível/contrato Adult conserva seus helpers legítimos, sem reaproveitá-los como fallback Kids.
 
 ## T3 — Baseline preparado e publicação atômica
 

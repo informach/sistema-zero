@@ -1,6 +1,6 @@
 # Plano de testes — Jornada Kids configurável
 
-Status: T1/T2 intermediários verificados, sem consumidores. SQL T2 e TSC completo Members passaram; modelo canônico/seed/admissão e cenários T3+/browser continuam planejados. Executar checks amplos em janela coordenada para não competir com a validação Python no PC de 16 GB.
+Status: checkpoints T1/T2 preservados; contrato/seed/persistência canônicos escritos, fora da composição. Core focado58/2763, SQL30/135 com fila/drain, purge3/25 e TSC Core/Members0 passaram. Admissão Auth, serviços/consumidores e cenários T3+/browser continuam planejados. Executar checks amplos em janela coordenada para não competir com a validação Python no PC de 16 GB.
 
 ## Validação T2 — janela coordenada de 18/10/2026
 
@@ -26,7 +26,17 @@ Logs locais ignorados: `.cache/kids-configurable-journey/t2-db-repository-final.
 
 ## Provas adicionais obrigatórias do modelo canônico
 
-- Seed persistido dos oito postos/49 posições contra oráculo somente de teste; catálogo futuro incompleto, reward futuro sem base e catálogo unknown sem fail-open. Runtime sem import do algoritmo antigo.
+Evidência em andamento (base f664, WIP canônico): core **56 pass/0 fail/2.758 asserts**, 1,386s, seis arquivos focados. Migration0136 regenerada pelo `bun run db:generate --name kids_journey_policy`; somente cinco tabelas Kids e respectivos índices/FKs, histórico até0135 intacto. SQL em NOVO `kids_journey_canonical`, owned loopback5434, histórico real137 entradas: **25 pass/1 fail/105 asserts, 59,01s**. A falha real revelou leitura sem ordem de domínio das capabilities após UPSERT lexical, em contraste com primeiro INSERT. `orderedEarned` agora valida schema estrito e ordena capabilities/tier rights no domínio; assert original de rank/caps/cursor foi preservado, com direitos seed explícitos. Foco veteran **1 pass/0 fail/7 asserts, EXIT0, 1,63s**. Negativo e foco preservados em `canonical-db-first.log`/`canonical-db-baseline.log`; não alegar matriz final verde antes da repetição. TSC/purge canônicos aguardam janela.
+
+Revisão independente fechou duas lacunas adicionais. Entry preservado podia abrir slot2 no resolver sem projetar/congelar expanded: **RED2/4→GREEN2/5**, agora ambos usam tierEligibility pura única, com reward independente; core completo **58/0/2.763**, 1,60s (`canonical-core-focused.log`). Auth append podia provar owner para XP sem Gamma/earned e o capture ainda declarar unowned: **SQL RED0/1/1, 1,98s→GREEN2/0/9, 2,58s** incluindo divergências tardias Gamma/earned/cursor parado. Captura agora prioriza owner Auth coerente e compara todos os vínculos. Logs `canonical-entry-red/green`, `canonical-entry-shared-green`, `canonical-auth-owner-red/green`.
+
+Matriz real seguinte teve **26/4/117 +2 erros**: dois hooks de setup atingiram5s, e suas promises continuaram concorrendo com o TRUNCATE seguinte, gerando AccessExclusive↔AccessShare40P01. Essa cadeia envolve TRUNCATE do harness; não demonstra ciclo produtivo. Timeout não foi ampliado. Fixture passou a capturar UM bootstrap real vazio e restaurar suas linhas válidas por caso; testes dedicados de bootstrap/coorte/auditoria foram preservados. Matriz então **30 pass/0 fail/135 asserts, EXIT0, 35,19s** (`canonical-db-fixture-final.log`).
+
+Depois foi adicionado ownership/drain de beforeAll/beforeEach/casos antes do próximo reset e do close, para impedir trabalho expirado de tocar o próximo TRUNCATE independentemente da velocidade. A entrada de cada trabalho captura a fila anterior antes de qualquer await; o hook inteiro fica registrado, incluindo sua espera. Isso impede que dois hooks continuem juntos após um timeout da própria espera. Barreiras unitárias **3/0/8, EXIT0, 179 ms** provam espera, rejeição e ordem de duas continuações; não matam/cancelam clientes ou alteram deadlines. Repetição com essa fonte: **30 pass/0 fail/135 asserts, EXIT0, 38,12 s**, sem timeout/deadlock (`canonical-db-drain-repeat.log`). Purge canônica **3/0/25, EXIT0, 6,71s** (`canonical-db-purge.log`), incluindo remoção de preparationOwners por conta de filho omitido de userIds.
+
+TSC completo canônico Core e Members: **EXIT0**, Node24.22.0/TS5.9.3, `--noEmit --pretty false --incremental`, caches próprios `canonical-core.tsbuildinfo` e `canonical-members.tsbuildinfo`, logs finais vazios. Members inicialmente encontrou somente TS2304 em `kids-journey.repository.ts:355`: `KidsJourneyPolicy` não importado na anotação de `insertPreparation`. Import type corrigido, repetição EXIT0; negativo em `canonical-members-types-red.log`, sem mudança executável depois da SQL30. Resolvers conferidos: Core/Members Zod4.3.6, Studio4.5.4, @types/node24.19.0; `@sistemazero/*` resolve à própria worktree. Não homogeneizar versões para qualificar o gate.
+
+- Seed persistido dos oito postos/49 posições contra oráculo Kids congelado somente de teste; catálogo futuro incompleto, reward futuro sem base e catálogo unknown sem fail-open. Runtime Kids sem import do algoritmo antigo. Helpers legítimos do nível/contrato Adult preservados, com regressões de self/público/batch.
 - V1 liberaliza→aluno offline→V2 restringe opensAt/completedAt/base complete→showcase: preservar posto/app capabilities e 21 direitos entry/expanded/reward. Expanded implica entry, reward não implica entry; matrícula continua necessária. Pausa permite expansão por conclusão real da base sem promover posto/app capabilities.
 - Bootstrap Auth all inclui sem XP/arquivados/sem matrícula; earned noob/[] persiste. Ausência/corrupção após seed não reseta. Init repetido não sobrescreve Admin. Coorte recorrente inclui todos earned.
 - Create pending conta quota; mesmo requestId/ID em timeout/duplo clique; sweeper agendado realmente retoma após crash. Grade parental mostra preparando; selecionar, refresh, impersonação, estudo delegado, público e emissão indireta de sessão recusam pending.
@@ -67,7 +77,7 @@ A primeira entrega (`286614934`) perdeu o critério de base custom ao representa
 
 | ID | Preparação/ação | Resultado exigido |
 |---|---|---|
-| D01 | Sem registro de política, sem marcos | noob, sem ferramentas globais; aula continua pelo próprio contexto. |
+| D01 | Política ausente/corrompida ou initializing num leitor normal | Indisponível; não retornar noob/fallback. Seed published+perfil sem marcos permanece noob, sem ferramentas globais, com entrada pedagógica da configuração. |
 | D02 | Curso de entrada completo sem showcase / com ambos | Sem ambos continua noob; com ambos coder, livre/Pinta e mesmas recompensas atuais. |
 | D03 | Cada fronteira cumulativa 1,9,17,25,33,41,49 slots qualificados | coder,hacker,explorer,elite,architect,champion,god respectivamente; 1 e 8 por etapa, não 48 no total. |
 | D04 | Remover cada slot obrigatório, com todos os demais presentes | Nunca pular avanço incompleto; igualdade com `computeJourneyLevelSlug` legado. |
@@ -80,8 +90,8 @@ A primeira entrega (`286614934`) perdeu o critério de base custom ao representa
 | D11 | Política custom muda curso X de showcase para complete | Conclusão basta para avanço; fundação usa critério configurado; paleta posicionada continua pendente de Mural e a UI explica. |
 | D12 | Curso explícito extra de etapa alcançável / curso reward que depende do próprio avanço | Primeiro permitido com licença; segundo gera diagnóstico de ciclo e não publica. |
 | D13 | Curso futuro, adulto, live, inexistente ou com vitrine impossível | Tipo/audiência inválida rejeitados; futuro circular aponta curso/avanço; showcase sem vitrine é indisponível, sem prometer avanço pronto. |
-| D14 | Policy configured malformada, passo repetido/fora de ordem, vazio, slot 9 | Não normalizar silenciosamente, não subir por requisito vazio. |
-| D15 | Arrays de capacidades vazios / modo paused | Vazio não libera tudo; paused conserva política/base e conquistas, interrompe ganhos e não abre futuros/rewards por marcos posteriores. Ausente é legado; paused sem policy/nesting é inválido. |
+| D14 | Policy canônica malformada, passo repetido/fora de ordem, vazio, slot9; modos antigos | Não normalizar silenciosamente, não subir por requisito vazio; legacy/configured são recusados. |
+| D15 | Arrays de capacidades vazios / modo paused | Vazio não libera tudo; pausa retém steps+tierAccess, congela posto/app capabilities e permite expansão real da base sob posto congelado. Ausência é indisponível; payload vazio/aninhado é inválido. |
 | D16 | pro sem studio; bridge sem studio; pensa sem ai; Molda profissional sem intermediário | Rejeitar dependência cumulativa inválida. Pro+studio sem bridge é tecnicamente permitido. |
 | D17 | Mover capacidade para depois/remover na revisão seguinte | Quem conquistou conserva; novo perfil depende da regra atual, mesmo se outro perfil da família conquistou. |
 | D18 | Piso conquistado architect, novos requisitos anteriores faltantes | Não rebaixar nem pedir refazer etapas anteriores; avaliar próximo avanço a partir do piso. |

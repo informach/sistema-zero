@@ -3,16 +3,18 @@ import { ForbiddenError } from '@sistemazero/core/http'
 import {
   analyzeKidsJourneyReadiness,
   COURSE_JOURNEY_ROLES,
+  initialKidsJourneyPolicy,
   JOURNEY_COURSE_TIERS,
   JOURNEY_LEVEL_SLUGS,
   KIDS_CREATOR_CAPABILITIES,
   type KidsJourneyEarned,
+  KidsJourneyEarnedSchema,
+  type KidsJourneyPolicy,
   KidsJourneyPolicySchema,
-  legacyKidsJourneyPolicy,
   pauseKidsJourneyPolicy,
   projectKidsJourney,
 } from '@sistemazero/core/journey'
-import { and, asc, desc, eq, exists, inArray, lt, sql } from 'drizzle-orm'
+import { and, asc, desc, eq, exists, gt, inArray, lt, sql } from 'drizzle-orm'
 import { z } from 'zod'
 import { COURSE_LEVELS, COURSE_TRACKS } from '../../../domain/course/course'
 import {
@@ -35,6 +37,7 @@ import {
   gamificationProfiles,
   kidsJourneyEarned,
   kidsJourneyPolicy,
+  kidsJourneyPreparationOwners,
   kidsJourneyPreparations,
   kidsJourneyRevisions,
   lessons,
@@ -44,10 +47,11 @@ import {
 type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0]
 type PreparationRow = typeof kidsJourneyPreparations.$inferSelect
 const OwnerSchema = z.strictObject({ userId: z.uuid(), accountId: z.uuid() })
-const EarnedSchema = z.strictObject({
-  level: z.enum(JOURNEY_LEVEL_SLUGS),
-  capabilities: z.array(z.enum(KIDS_CREATOR_CAPABILITIES)).max(KIDS_CREATOR_CAPABILITIES.length),
-})
+const EarnedSchema = KidsJourneyEarnedSchema
+const ActorSchema = z.discriminatedUnion('kind', [
+  z.strictObject({ kind: z.literal('system') }),
+  z.strictObject({ kind: z.literal('user'), id: z.uuid() }),
+])
 const CatalogCourseSchema = z.strictObject({
   id: z.uuid(),
   graduationOnly: z.boolean(),
@@ -62,11 +66,23 @@ const CatalogCourseSchema = z.strictObject({
   track: z.enum(COURSE_TRACKS),
 })
 const CatalogSchema = z.array(CatalogCourseSchema)
-function versionZero(): KidsJourneyPolicyRecord {
-  return { version: 0, policy: legacyKidsJourneyPolicy(), updatedAt: null }
-}
 function emptyEarned(): KidsJourneyEarned {
-  return { level: 'noob', capabilities: [] }
+  return { level: 'noob', capabilities: [], courseAccess: { entry: [], expanded: [], reward: [] } }
+}
+
+function orderedEarned(input: unknown): KidsJourneyEarned {
+  const earned = EarnedSchema.parse(input)
+  return {
+    ...earned,
+    capabilities: KIDS_CREATOR_CAPABILITIES.filter((capability) =>
+      earned.capabilities.includes(capability),
+    ),
+    courseAccess: {
+      entry: JOURNEY_COURSE_TIERS.filter((tier) => earned.courseAccess.entry.includes(tier)),
+      expanded: JOURNEY_COURSE_TIERS.filter((tier) => earned.courseAccess.expanded.includes(tier)),
+      reward: JOURNEY_COURSE_TIERS.filter((tier) => earned.courseAccess.reward.includes(tier)),
+    },
+  }
 }
 
 /** Canonical values come from strict schemas and catalog order is the UUID order. */
@@ -84,15 +100,23 @@ async function lockPolicy(tx: Transaction, exclusive = false) {
     )
 }
 
-async function readPolicy(tx: Transaction): Promise<KidsJourneyPolicyRecord> {
+async function readPolicy(
+  tx: Transaction,
+  allowInitializing = false,
+): Promise<KidsJourneyPolicyRecord> {
   const [row] = await tx.select().from(kidsJourneyPolicy).where(eq(kidsJourneyPolicy.id, 'kids'))
-  return row
-    ? {
-        version: row.version,
-        policy: KidsJourneyPolicySchema.parse(row.policy),
-        updatedAt: row.updatedAt,
-      }
-    : versionZero()
+  if (!row) throw new Error('A política Kids não foi provisionada.')
+  if (
+    (row.phase !== 'published' || row.version < 1) &&
+    (!allowInitializing || row.phase !== 'initializing' || row.version !== 0)
+  )
+    throw new Error('A política Kids ainda não está publicada.')
+  return {
+    phase: row.phase,
+    version: row.version,
+    policy: KidsJourneyPolicySchema.parse(row.policy),
+    updatedAt: row.updatedAt,
+  }
 }
 
 async function readCatalog(tx: Transaction): Promise<KidsJourneyCatalogCourse[]> {
@@ -168,7 +192,15 @@ async function readOwnedEarned(
       return [
         owner.userId,
         earned
-          ? EarnedSchema.parse({ level: earned.level, capabilities: earned.capabilities })
+          ? orderedEarned({
+              level: earned.level,
+              capabilities: earned.capabilities,
+              courseAccess: {
+                entry: earned.entryTiers,
+                expanded: earned.expandedTiers,
+                reward: earned.rewardTiers,
+              },
+            })
           : emptyEarned(),
       ] as const
     }),
@@ -228,12 +260,24 @@ async function saveEarned(
   )}]::text[]`
   await tx
     .insert(kidsJourneyEarned)
-    .values({ ...owner, ...earned, policyVersion: version, updatedAt: new Date() })
+    .values({
+      ...owner,
+      level: earned.level,
+      capabilities: earned.capabilities,
+      entryTiers: [...earned.courseAccess.entry],
+      expandedTiers: [...earned.courseAccess.expanded],
+      rewardTiers: [...earned.courseAccess.reward],
+      policyVersion: version,
+      updatedAt: new Date(),
+    })
     .onConflictDoUpdate({
       target: kidsJourneyEarned.userId,
       set: {
         level: sql`case when array_position(${levelOrder}, excluded.level) > array_position(${levelOrder}, ${kidsJourneyEarned.level}) then excluded.level else ${kidsJourneyEarned.level} end`,
         capabilities: sql`(select coalesce(jsonb_agg(distinct value order by value), '[]'::jsonb) from jsonb_array_elements_text(${kidsJourneyEarned.capabilities} || excluded.capabilities) as expanded(value))`,
+        entryTiers: sql`array(select distinct value from unnest(${kidsJourneyEarned.entryTiers} || excluded.entry_tiers) as rights(value) order by value)`,
+        expandedTiers: sql`array(select distinct value from unnest(${kidsJourneyEarned.expandedTiers} || excluded.expanded_tiers) as rights(value) order by value)`,
+        rewardTiers: sql`array(select distinct value from unnest(${kidsJourneyEarned.rewardTiers} || excluded.reward_tiers) as rights(value) order by value)`,
         policyVersion: sql`greatest(${kidsJourneyEarned.policyVersion}, excluded.policy_version)`,
         updatedAt: sql`greatest(${kidsJourneyEarned.updatedAt}, excluded.updated_at)`,
       },
@@ -241,25 +285,58 @@ async function saveEarned(
     })
 }
 
-const cohort = sql`(
-  select ${xpEvents.userId} as user_id from ${xpEvents}
-  where ${xpEvents.audience} = 'kids' and ${xpEvents.sourceType} in ('course_complete','course_showcased')
-  union select ${kidsJourneyEarned.userId} as user_id from ${kidsJourneyEarned}
-)`
+/** Each indexed source contributes at most one candidate; no population-wide UNION DISTINCT. */
+function memberCohortCandidates(
+  cursor: string | null,
+  upperBound: string | null,
+  descending = false,
+) {
+  const direction = descending ? sql`desc` : sql`asc`
+  const xpAfter = cursor ? sql`and ${xpEvents.userId} > ${cursor}::uuid` : sql``
+  const xpBefore = upperBound ? sql`and ${xpEvents.userId} <= ${upperBound}::uuid` : sql``
+  const earnedAfter = cursor ? sql`and ${kidsJourneyEarned.userId} > ${cursor}::uuid` : sql``
+  const earnedBefore = upperBound
+    ? sql`and ${kidsJourneyEarned.userId} <= ${upperBound}::uuid`
+    : sql``
+  const profileAfter = cursor ? sql`and ${gamificationProfiles.userId} > ${cursor}::uuid` : sql``
+  const profileBefore = upperBound
+    ? sql`and ${gamificationProfiles.userId} <= ${upperBound}::uuid`
+    : sql``
+  return sql`(
+    (select ${xpEvents.userId} as user_id from ${xpEvents} where ${xpEvents.audience} = 'kids'
+      and ${xpEvents.sourceType} in ('course_complete','course_showcased') ${xpAfter} ${xpBefore}
+      order by ${xpEvents.userId} ${direction} limit 1)
+    union all
+    (select ${kidsJourneyEarned.userId} as user_id from ${kidsJourneyEarned} where true ${earnedAfter} ${earnedBefore}
+      order by ${kidsJourneyEarned.userId} ${direction} limit 1)
+    union all
+    (select ${gamificationProfiles.userId} as user_id from ${gamificationProfiles} where ${gamificationProfiles.audience} = 'kids' ${profileAfter} ${profileBefore}
+      order by ${gamificationProfiles.userId} ${direction} limit 1)
+  )`
+}
 
-async function nextCohortOwner(tx: Transaction, cursor: string | null, upperBound: string | null) {
+async function nextCohortOwner(
+  tx: Transaction,
+  preparationId: string,
+  cursor: string | null,
+  upperBound: string | null,
+) {
   if (!upperBound) return null
-  const rows = await tx.execute<{
-    userId: string
-    profileAccountId: string | null
-    earnedAccountId: string | null
-  }>(sql`select cohort.user_id as "userId", ${gamificationProfiles.accountId} as "profileAccountId",
-    ${kidsJourneyEarned.accountId} as "earnedAccountId"
-    from ${cohort} cohort
-    left join ${gamificationProfiles} on ${gamificationProfiles.userId} = cohort.user_id and ${gamificationProfiles.audience} = 'kids'
-    left join ${kidsJourneyEarned} on ${kidsJourneyEarned.userId} = cohort.user_id
-    where cohort.user_id <= ${upperBound}::uuid and (${cursor}::uuid is null or cohort.user_id > ${cursor}::uuid)
-    order by cohort.user_id limit 1`)
+  const rows = await tx
+    .select({
+      userId: kidsJourneyPreparationOwners.userId,
+      accountId: kidsJourneyPreparationOwners.accountId,
+    })
+    .from(kidsJourneyPreparationOwners)
+    .where(
+      and(
+        eq(kidsJourneyPreparationOwners.preparationId, preparationId),
+        sql`${kidsJourneyPreparationOwners.userId} <= ${upperBound}::uuid`,
+        cursor ? gt(kidsJourneyPreparationOwners.userId, cursor) : undefined,
+      ),
+    )
+    .orderBy(asc(kidsJourneyPreparationOwners.userId))
+    .limit(1)
   return rows[0] ?? null
 }
 
@@ -273,8 +350,369 @@ function preparation(row: PreparationRow): KidsJourneyPreparation {
   }
 }
 
+async function insertPreparation(
+  tx: Transaction,
+  source: KidsJourneyPolicyRecord,
+  candidatePolicy: KidsJourneyPolicy,
+  actorId: string | null,
+  reason: string,
+  capturedCatalog?: KidsJourneyCatalogCourse[],
+) {
+  const catalog = capturedCatalog ?? (await readCatalog(tx))
+  const now = new Date()
+  const seed = source.phase === 'initializing'
+  const [last] = seed
+    ? []
+    : await tx
+        .select({ userId: kidsJourneyEarned.userId })
+        .from(kidsJourneyEarned)
+        .orderBy(desc(kidsJourneyEarned.userId))
+        .limit(1)
+  const [row] = await tx
+    .insert(kidsJourneyPreparations)
+    .values({
+      id: randomUUID(),
+      expectedVersion: source.version,
+      sourcePolicy: source.policy,
+      candidatePolicy,
+      draftHash: hash(candidatePolicy),
+      catalogHash: hash(catalog),
+      cohortHash: null,
+      catalog,
+      origin: seed ? 'seed' : 'configuration',
+      actorKind: seed ? 'system' : 'user',
+      actorId,
+      captureStage: seed ? 'auth' : 'members',
+      captureCursor: null,
+      cursor: null,
+      upperBound: last?.userId ?? null,
+      processed: 0,
+      status: 'capturing',
+      reason,
+      createdAt: now,
+      updatedAt: now,
+    })
+    .returning()
+  return preparation(row!)
+}
+
+async function insertCohortOwner(
+  tx: Transaction,
+  preparationId: string,
+  userId: string,
+  accountId: string | null,
+) {
+  const rows = await tx
+    .insert(kidsJourneyPreparationOwners)
+    .values({ preparationId, userId, accountId })
+    .onConflictDoUpdate({
+      target: [kidsJourneyPreparationOwners.preparationId, kidsJourneyPreparationOwners.userId],
+      set: {
+        accountId: sql`coalesce(${kidsJourneyPreparationOwners.accountId}, excluded.account_id)`,
+      },
+      setWhere: sql`${kidsJourneyPreparationOwners.accountId} is null or excluded.account_id is null or ${kidsJourneyPreparationOwners.accountId} = excluded.account_id`,
+    })
+    .returning({ userId: kidsJourneyPreparationOwners.userId })
+  if (!rows.length) throw new Error('Conflicting Kids journey cohort owners')
+}
+
+async function nextMemberOwner(tx: Transaction, current: KidsJourneyPreparation) {
+  if (!current.upperBound) return null
+  if (current.origin === 'configuration') {
+    const [row] = await tx
+      .select({ userId: kidsJourneyEarned.userId, accountId: kidsJourneyEarned.accountId })
+      .from(kidsJourneyEarned)
+      .where(
+        and(
+          sql`${kidsJourneyEarned.userId} <= ${current.upperBound}::uuid`,
+          current.captureCursor ? gt(kidsJourneyEarned.userId, current.captureCursor) : undefined,
+        ),
+      )
+      .orderBy(asc(kidsJourneyEarned.userId))
+      .limit(1)
+    return row ?? null
+  }
+  const [row] = await tx.execute<{
+    userId: string
+    capturedAccountId: string | null
+    profileAccountId: string | null
+    earnedAccountId: string | null
+  }>(sql`select cohort.user_id as "userId", ${kidsJourneyPreparationOwners.accountId} as "capturedAccountId", ${gamificationProfiles.accountId} as "profileAccountId", ${kidsJourneyEarned.accountId} as "earnedAccountId"
+    from ${memberCohortCandidates(current.captureCursor, current.upperBound)} cohort left join ${gamificationProfiles} on ${gamificationProfiles.userId} = cohort.user_id and ${gamificationProfiles.audience} = 'kids'
+    left join ${kidsJourneyEarned} on ${kidsJourneyEarned.userId} = cohort.user_id
+    left join ${kidsJourneyPreparationOwners} on ${kidsJourneyPreparationOwners.preparationId} = ${current.id}::uuid and ${kidsJourneyPreparationOwners.userId} = cohort.user_id
+    order by cohort.user_id limit 1`)
+  if (!row) return null
+  const accounts = new Set(
+    [row.capturedAccountId, row.profileAccountId, row.earnedAccountId].filter(
+      (accountId): accountId is string => accountId !== null,
+    ),
+  )
+  if (accounts.size > 1) throw new Error('Conflicting Kids journey owners')
+  return {
+    userId: row.userId,
+    accountId: row.capturedAccountId ?? row.earnedAccountId ?? row.profileAccountId,
+  }
+}
+
 export class DrizzleKidsJourneyRepository implements KidsJourneyRepository {
   constructor(private readonly db: Database) {}
+
+  async initializeSeed() {
+    return this.db.transaction(async (tx) => {
+      await lockPolicy(tx, true)
+      const [existing] = await tx
+        .select({ id: kidsJourneyPolicy.id })
+        .from(kidsJourneyPolicy)
+        .limit(1)
+      if (existing) return readPolicy(tx, true)
+      const [history] = await tx.execute<{ present: boolean }>(sql`select (
+        exists(select 1 from ${kidsJourneyRevisions}) or exists(select 1 from ${kidsJourneyPreparations}) or exists(select 1 from ${kidsJourneyEarned})
+      ) as present`)
+      if (history?.present) throw new Error('Missing Kids policy after initialization')
+      await tx.insert(kidsJourneyPolicy).values({
+        id: 'kids',
+        phase: 'initializing',
+        version: 0,
+        policy: initialKidsJourneyPolicy(),
+        updatedAt: new Date(),
+      })
+      return readPolicy(tx, true)
+    })
+  }
+
+  async createSeedPreparation() {
+    return this.db.transaction(async (tx) => {
+      await lockPolicy(tx, true)
+      const source = await readPolicy(tx, true)
+      if (source.phase !== 'initializing') return null
+      if (hash(source.policy) !== hash(initialKidsJourneyPolicy()))
+        throw new Error('Initial Kids seed does not match the provisioning artifact')
+      const [existing] = await tx
+        .select()
+        .from(kidsJourneyPreparations)
+        .where(
+          and(
+            eq(kidsJourneyPreparations.origin, 'seed'),
+            inArray(kidsJourneyPreparations.status, ['capturing', 'preparing', 'ready']),
+          ),
+        )
+        .orderBy(desc(kidsJourneyPreparations.createdAt))
+        .limit(1)
+      if (existing) return preparation(existing)
+      return insertPreparation(
+        tx,
+        source,
+        source.policy,
+        null,
+        'Carga inicial das regras Kids atuais',
+      )
+    })
+  }
+
+  async appendSeedOwners(id: string, inputOwners: readonly KidsJourneyOwner[]) {
+    const owners = z.array(OwnerSchema).max(200).parse(inputOwners)
+    for (const owner of owners) {
+      const accepted = await this.db.transaction(async (tx) => {
+        let deleted = false
+        try {
+          await lockLearningOwner(tx, owner)
+        } catch (error) {
+          if (error instanceof ForbiddenError) deleted = true
+          else throw error
+        }
+        await lockPolicy(tx)
+        const source = await readPolicy(tx, true)
+        const [row] = await tx
+          .select()
+          .from(kidsJourneyPreparations)
+          .where(eq(kidsJourneyPreparations.id, id))
+          .for('update')
+        if (
+          row?.origin !== 'seed' ||
+          row.status !== 'capturing' ||
+          row.captureStage !== 'auth' ||
+          source.phase !== 'initializing'
+        )
+          return false
+        if (!deleted) {
+          await readOwnedEarned(tx, [owner])
+          await insertCohortOwner(tx, id, owner.userId, owner.accountId)
+        }
+        await tx
+          .update(kidsJourneyPreparations)
+          .set({
+            captureCursor:
+              row.captureCursor && row.captureCursor > owner.userId
+                ? row.captureCursor
+                : owner.userId,
+            updatedAt: new Date(),
+          })
+          .where(eq(kidsJourneyPreparations.id, id))
+        return true
+      })
+      if (!accepted) return false
+    }
+    return true
+  }
+
+  async sealSeedOwners(id: string) {
+    return this.db.transaction(async (tx) => {
+      await lockPolicy(tx)
+      if ((await readPolicy(tx, true)).phase !== 'initializing') return null
+      const [row] = await tx
+        .select()
+        .from(kidsJourneyPreparations)
+        .where(eq(kidsJourneyPreparations.id, id))
+        .for('update')
+      if (row?.origin !== 'seed' || row.status !== 'capturing') return null
+      if (row.captureStage !== 'auth') return preparation(row)
+      const [last] = await tx.execute<{ userId: string }>(
+        sql`select user_id as "userId" from ${memberCohortCandidates(null, null, true)} cohort order by user_id desc limit 1`,
+      )
+      const [updated] = await tx
+        .update(kidsJourneyPreparations)
+        .set({
+          captureStage: 'members',
+          captureCursor: null,
+          upperBound: last?.userId ?? null,
+          updatedAt: new Date(),
+        })
+        .where(eq(kidsJourneyPreparations.id, id))
+        .returning()
+      return preparation(updated!)
+    })
+  }
+
+  async advanceCapture(
+    id: string,
+    expectedStage: KidsJourneyPreparation['captureStage'],
+    expectedCursor: string | null,
+  ) {
+    const initial = await this.getPreparation(id)
+    if (
+      initial?.status !== 'capturing' ||
+      initial.captureStage !== expectedStage ||
+      initial.captureCursor !== expectedCursor ||
+      expectedStage === 'auth' ||
+      expectedStage === 'done'
+    )
+      return null
+    const candidate =
+      expectedStage === 'members'
+        ? await this.db.transaction((tx) => nextMemberOwner(tx, initial))
+        : null
+    if (candidate && !candidate.accountId)
+      throw new Error('Kids journey cohort owner could not be resolved')
+    return this.db.transaction(async (tx) => {
+      let deleted = false
+      if (candidate?.accountId) {
+        try {
+          await lockLearningOwner(tx, { userId: candidate.userId, accountId: candidate.accountId })
+        } catch (error) {
+          if (error instanceof ForbiddenError) deleted = true
+          else throw error
+        }
+      }
+      await lockPolicy(tx)
+      const source = await readPolicy(tx, true)
+      const [row] = await tx
+        .select()
+        .from(kidsJourneyPreparations)
+        .where(eq(kidsJourneyPreparations.id, id))
+        .for('update')
+      if (
+        row?.status !== 'capturing' ||
+        row.captureStage !== expectedStage ||
+        row.captureCursor !== expectedCursor
+      )
+        return null
+      const current = preparation(row)
+      if (source.version !== current.expectedVersion) {
+        await tx
+          .update(kidsJourneyPreparations)
+          .set({ status: 'stale', updatedAt: new Date() })
+          .where(eq(kidsJourneyPreparations.id, id))
+        return null
+      }
+      if (expectedStage === 'members') {
+        const next = await nextMemberOwner(tx, current)
+        if (next?.userId !== candidate?.userId || next?.accountId !== candidate?.accountId)
+          return null
+        if (next && !deleted) await insertCohortOwner(tx, id, next.userId, next.accountId)
+        const [updated] = await tx
+          .update(kidsJourneyPreparations)
+          .set({
+            captureStage: next ? 'members' : 'hashing',
+            captureCursor: next?.userId ?? null,
+            cohortHash: next ? null : hash([]),
+            updatedAt: new Date(),
+          })
+          .where(eq(kidsJourneyPreparations.id, id))
+          .returning()
+        return preparation(updated!)
+      }
+      const owners = await tx
+        .select({
+          userId: kidsJourneyPreparationOwners.userId,
+          accountId: kidsJourneyPreparationOwners.accountId,
+        })
+        .from(kidsJourneyPreparationOwners)
+        .where(
+          and(
+            eq(kidsJourneyPreparationOwners.preparationId, id),
+            current.captureCursor
+              ? gt(kidsJourneyPreparationOwners.userId, current.captureCursor)
+              : undefined,
+          ),
+        )
+        .orderBy(asc(kidsJourneyPreparationOwners.userId))
+        .limit(50)
+      const last = owners.at(-1)
+      const [updated] = await tx
+        .update(kidsJourneyPreparations)
+        .set({
+          cohortHash: owners.length ? hash([current.cohortHash, owners]) : current.cohortHash,
+          captureCursor: last?.userId ?? current.captureCursor,
+          captureStage: owners.length ? 'hashing' : 'done',
+          upperBound: owners.length ? current.upperBound : current.captureCursor,
+          status: owners.length ? 'capturing' : current.captureCursor ? 'preparing' : 'ready',
+          updatedAt: new Date(),
+        })
+        .where(eq(kidsJourneyPreparations.id, id))
+        .returning()
+      return preparation(updated!)
+    })
+  }
+
+  async initializeProfile(inputOwner: KidsJourneyOwner) {
+    const owner = OwnerSchema.parse(inputOwner)
+    return this.db.transaction(async (tx) => {
+      try {
+        await lockLearningOwner(tx, owner)
+      } catch (error) {
+        if (error instanceof ForbiddenError) return null
+        throw error
+      }
+      await tx.execute(
+        sql`select pg_advisory_xact_lock(hashtextextended(${`gamification:${owner.userId}`}, 0))`,
+      )
+      await lockPolicy(tx)
+      const policy = await readPolicy(tx, true)
+      if (policy.phase !== 'published') return null
+      const catalog = await readCatalog(tx)
+      const profile = (await readProfiles(tx, [owner], catalog)).get(owner.userId)!
+      const view = projectKidsJourney({
+        policy: policy.policy,
+        policyVersion: policy.version,
+        catalog,
+        earned: profile.earned,
+        milestones: profile.milestones,
+      })
+      await saveEarned(tx, owner, policy.version, view.earned)
+      return policy
+    })
+  }
 
   async readSnapshot(owners: readonly KidsJourneyOwner[]): Promise<KidsJourneySnapshot> {
     const unique = new Map<string, KidsJourneyOwner>()
@@ -314,23 +752,32 @@ export class DrizzleKidsJourneyRepository implements KidsJourneyRepository {
         sql`select pg_advisory_xact_lock(hashtextextended(${`gamification:${owner.userId}`}, 0))`,
       )
       await lockPolicy(tx)
-      const currentPolicy = await readPolicy(tx)
+      const currentPolicy = await readPolicy(tx, true)
       if (currentPolicy.version !== expectedVersion) return 'conflict' as const
       const frozen = (await readOwnedEarned(tx, [owner])).get(owner.userId)!
-      // Paused means no new rights, including a delayed/mistaken internal caller at the same version.
-      await saveEarned(
-        tx,
-        owner,
-        expectedVersion,
-        currentPolicy.policy.mode === 'paused' ? frozen : parsed,
-      )
+      // Pause freezes rank/apps; a real base completion may still expand lesson access.
+      let nextEarned = parsed
+      if (currentPolicy.policy.mode === 'paused') {
+        const catalog = await readCatalog(tx)
+        const profile = (await readProfiles(tx, [owner], catalog)).get(owner.userId)!
+        nextEarned = projectKidsJourney({
+          policy: currentPolicy.policy,
+          policyVersion: currentPolicy.version,
+          catalog,
+          earned: frozen,
+          milestones: profile.milestones,
+        }).earned
+      }
+      await saveEarned(tx, owner, expectedVersion, nextEarned)
       return 'frozen' as const
     })
   }
 
   async createPreparation(input: Parameters<KidsJourneyRepository['createPreparation']>[0]) {
     const { expectedVersion } = input
-    const actorId = z.uuid().parse(input.actorId)
+    const actor = ActorSchema.parse(input.actor)
+    if (actor.kind !== 'user') throw new Error('Configuration requires an authenticated user')
+    const actorId = actor.id
     const reason = z.string().trim().min(1).max(500).parse(input.reason)
     const candidatePolicy = KidsJourneyPolicySchema.parse(input.candidatePolicy)
     return this.db.transaction(async (tx) => {
@@ -349,31 +796,7 @@ export class DrizzleKidsJourneyRepository implements KidsJourneyRepository {
         readiness.issues.some((issue) => issue.severity === 'error')
       )
         throw new Error('Kids journey policy is not ready for preparation')
-      const [last] = await tx.execute<{ userId: string }>(
-        sql`select user_id as "userId" from ${cohort} cohort order by user_id desc limit 1`,
-      )
-      const now = new Date()
-      const [row] = await tx
-        .insert(kidsJourneyPreparations)
-        .values({
-          id: randomUUID(),
-          expectedVersion: source.version,
-          sourcePolicy: source.policy,
-          candidatePolicy,
-          draftHash: hash(candidatePolicy),
-          catalogHash: hash(catalog),
-          catalog,
-          cursor: null,
-          upperBound: last?.userId ?? null,
-          processed: 0,
-          status: last ? 'preparing' : 'ready',
-          actorId,
-          reason,
-          createdAt: now,
-          updatedAt: now,
-        })
-        .returning()
-      return preparation(row!)
+      return insertPreparation(tx, source, candidatePolicy, actorId, reason, catalog)
     })
   }
 
@@ -394,10 +817,10 @@ export class DrizzleKidsJourneyRepository implements KidsJourneyRepository {
     const initial = await this.getPreparation(id)
     if (!initial) return { status: 'missing' }
     const candidate = await this.db.transaction((tx) =>
-      nextCohortOwner(tx, initial.cursor, initial.upperBound),
+      nextCohortOwner(tx, id, initial.cursor, initial.upperBound),
     )
     return this.db.transaction(async (tx) => {
-      const accountId = candidate?.profileAccountId ?? candidate?.earnedAccountId
+      const accountId = candidate?.accountId
       let deleted = false
       if (candidate && accountId) {
         try {
@@ -420,15 +843,19 @@ export class DrizzleKidsJourneyRepository implements KidsJourneyRepository {
       const current = preparation(row)
       if (current.status !== 'preparing' || current.cursor !== expectedCursor)
         return { status: 'conflict' }
-      if ((await readPolicy(tx)).version !== current.expectedVersion) {
+      if ((await readPolicy(tx, true)).version !== current.expectedVersion) {
         await tx
           .update(kidsJourneyPreparations)
           .set({ status: 'stale', updatedAt: new Date() })
           .where(eq(kidsJourneyPreparations.id, id))
         return { status: 'stale' }
       }
-      const next = await nextCohortOwner(tx, current.cursor, current.upperBound)
-      if ((next?.userId ?? null) !== (candidate?.userId ?? null)) return { status: 'conflict' }
+      const next = await nextCohortOwner(tx, id, current.cursor, current.upperBound)
+      if (
+        (next?.userId ?? null) !== (candidate?.userId ?? null) ||
+        (next?.accountId ?? null) !== (candidate?.accountId ?? null)
+      )
+        return { status: 'conflict' }
       if (next && !accountId) return { status: 'unowned' }
       if (next && accountId && !deleted) {
         const owner = { userId: next.userId, accountId }
@@ -444,7 +871,7 @@ export class DrizzleKidsJourneyRepository implements KidsJourneyRepository {
         await saveEarned(tx, owner, current.expectedVersion, view.earned)
       }
       const cursor = next?.userId ?? current.cursor
-      const remaining = await nextCohortOwner(tx, cursor, current.upperBound)
+      const remaining = await nextCohortOwner(tx, id, cursor, current.upperBound)
       const [updated] = await tx
         .update(kidsJourneyPreparations)
         .set({
@@ -460,11 +887,12 @@ export class DrizzleKidsJourneyRepository implements KidsJourneyRepository {
   }
 
   async publishPrepared(input: Parameters<KidsJourneyRepository['publishPrepared']>[0]) {
-    const { preparationId, expectedVersion, draftHash, catalogHash } = input
-    const actorId = z.uuid().parse(input.actorId)
+    const { preparationId, expectedVersion, draftHash, catalogHash, cohortHash } = input
+    const actor = ActorSchema.parse(input.actor)
+    const actorId = actor.kind === 'user' ? actor.id : null
     return this.db.transaction(async (tx) => {
       await lockPolicy(tx, true)
-      const source = await readPolicy(tx)
+      const source = await readPolicy(tx, true)
       const [row] = await tx
         .select()
         .from(kidsJourneyPreparations)
@@ -484,7 +912,12 @@ export class DrizzleKidsJourneyRepository implements KidsJourneyRepository {
         ready.status !== 'ready' ||
         ready.expectedVersion !== source.version ||
         ready.draftHash !== draftHash ||
-        ready.catalogHash !== catalogHash
+        ready.catalogHash !== catalogHash ||
+        ready.cohortHash !== cohortHash ||
+        ready.actorKind !== actor.kind ||
+        (actor.kind === 'system'
+          ? source.phase !== 'initializing' || ready.origin !== 'seed'
+          : source.phase !== 'published' || ready.origin !== 'configuration')
       )
         return null
       if (
@@ -500,23 +933,17 @@ export class DrizzleKidsJourneyRepository implements KidsJourneyRepository {
       }
       const now = new Date()
       const version = source.version + 1
-      const changed =
-        source.version === 0
-          ? await tx
-              .insert(kidsJourneyPolicy)
-              .values({ id: 'kids', version, policy: ready.candidatePolicy, updatedAt: now })
-              .onConflictDoNothing()
-              .returning({ version: kidsJourneyPolicy.version })
-          : await tx
-              .update(kidsJourneyPolicy)
-              .set({ version, policy: ready.candidatePolicy, updatedAt: now })
-              .where(
-                and(
-                  eq(kidsJourneyPolicy.id, 'kids'),
-                  eq(kidsJourneyPolicy.version, source.version),
-                ),
-              )
-              .returning({ version: kidsJourneyPolicy.version })
+      const changed = await tx
+        .update(kidsJourneyPolicy)
+        .set({ phase: 'published', version, policy: ready.candidatePolicy, updatedAt: now })
+        .where(
+          and(
+            eq(kidsJourneyPolicy.id, 'kids'),
+            eq(kidsJourneyPolicy.version, source.version),
+            eq(kidsJourneyPolicy.phase, source.phase),
+          ),
+        )
+        .returning({ version: kidsJourneyPolicy.version })
       if (!changed.length) return null
       await tx.insert(kidsJourneyRevisions).values({
         version,
@@ -525,6 +952,8 @@ export class DrizzleKidsJourneyRepository implements KidsJourneyRepository {
         policy: ready.candidatePolicy,
         draftHash: ready.draftHash,
         catalogHash: ready.catalogHash,
+        cohortHash: ready.cohortHash!,
+        actorKind: actor.kind,
         actorId,
         reason: ready.reason,
         createdAt: now,
@@ -533,7 +962,7 @@ export class DrizzleKidsJourneyRepository implements KidsJourneyRepository {
         .update(kidsJourneyPreparations)
         .set({ status: 'published', updatedAt: now })
         .where(eq(kidsJourneyPreparations.id, ready.id))
-      return { version, policy: ready.candidatePolicy, updatedAt: now }
+      return { phase: 'published' as const, version, policy: ready.candidatePolicy, updatedAt: now }
     })
   }
 
@@ -551,6 +980,7 @@ export class DrizzleKidsJourneyRepository implements KidsJourneyRepository {
     return rows.map((row) => ({
       ...row,
       policy: KidsJourneyPolicySchema.parse(row.policy),
+      phase: 'published' as const,
       updatedAt: row.createdAt,
     }))
   }

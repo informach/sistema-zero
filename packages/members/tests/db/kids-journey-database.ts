@@ -3,6 +3,28 @@ import { readMigrationFiles } from 'drizzle-orm/migrator'
 import postgres from 'postgres'
 import { createDbConnection } from '../../src/infrastructure/persistence/drizzle/db'
 
+/** Bun deadlines do not cancel async work. Drain only this harness's work before another reset. */
+export class OwnedKidsJourneyTestWork {
+  private readonly pending = new Set<Promise<unknown>>()
+
+  track<T>(operation: () => Promise<T>): Promise<T> {
+    // Enqueue before awaiting: a timed-out hook must not leave an untracked drain continuation.
+    const previous = [...this.pending]
+    const work = Promise.allSettled(previous).then(operation)
+    this.pending.add(work)
+    // Observe late rejection even if Bun has already reported the deadline; the original still rejects.
+    void work.then(
+      () => this.pending.delete(work),
+      () => this.pending.delete(work),
+    )
+    return work
+  }
+
+  async drain(): Promise<void> {
+    while (this.pending.size) await Promise.allSettled([...this.pending])
+  }
+}
+
 export function kidsJourneyTestTarget(raw: string): URL {
   const target = new URL(raw)
   if (

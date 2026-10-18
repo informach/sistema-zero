@@ -1,25 +1,32 @@
 # CLAUDE.md — @sistemazero/members
 
-## Jornada Kids configurável — persistência isolada (18/10/2026)
+## Jornada Kids configurável — modelo canônico isolado (18/10/2026)
 
 `kids-journey-repository.port.ts` e o adapter Drizzle adicionam snapshot read-only/batch,
-freeze monotônico por perfil+conta, preparação keyset e CAS com histórico. As quatro tabelas
-Kids vêm da migration **gerada** `0136_kids_journey_policy`. Este é checkpoint intermediário
-fora da composição: ausência = legado v0 somente neste protótipo, a ser substituído antes de
-integrar pelo seed canônico persistido (initializing V0→published V1), sem fallback normal.
+freeze monotônico por perfil+conta, preparação keyset e CAS com histórico. As cinco tabelas
+Kids vêm da migration **gerada** `0136_kids_journey_policy`, regenerada antes de qualquer
+publicação compartilhada. Seed canônico persistido: initializing V0→published V1, auditado
+por system sem UUID humano fictício. Ausência/corrupção não é regra/fallback. Leitores normais
+exigem published. Código antigo de progressão fica somente até migrar todos os consumidores;
+não ligar um segundo autorizador nem adaptar ABI de protótipo não implantado.
 Capacidades pedagógicas não substituem matrícula, paleta curricular ou autorização JS/Python.
 
 O namespace advisory `kids-journey-policy` também protege v0: conta → owner (`creation-quota`)
 → gamification → política compartilhada → preparação. Publicação toma política exclusiva e
-preparação, sem percorrer contas. Pausa retém a política ativa e não aceita ganhos novos.
+preparação, sem percorrer contas. Pausa retém gates, congela posto/app capabilities e permite
+expansão de aulas pela conclusão real da base sob posto congelado. Earned preserva também
+21 direitos limitados entry/expanded/reward por tier, com expanded⇒entry e reward independente.
 O catálogo captura tags cruas para fallback campo a campo e deriva `graduationOnly` de `level`.
 
 **Ainda sem ligação na composição, rotas ou consumidores.** Não expor `publishPrepared` antes
 do hook transacional de award e das provas de baseline durante/depois de ready (T3). Uma
 preparação bounded sozinha não protege um novo perfil que aparece atrás do cursor. O serviço
 ainda precisa tratar retomada/erro operacional/retention; não inferir entrega da feature pelo DDL.
-Contrato final também preserva 21 direitos de acesso por tier e admite todos os perfis,
-inclusive sem XP, antes de visibilidade Auth. Ver `.compozy/tasks/kids-configurable-journey/`.
+Coorte inicial vem de TODOS os pares Auth (inclusive sem XP/arquivados) mais históricos
+com owner comprovado; captura append Auth≤200 em TX por owner, Members1/TX, hash50/TX e
+baseline1/TX. Publicação recorrente captura todos earned. `initializeProfile` persiste noob/[]
+antes de visibilidade Auth, mas handshake/worker Auth ainda não estão ligados. Ver specs em
+`.compozy/tasks/kids-configurable-journey/` na raiz. Não inferir escala dos fixtures SQL.
 
 SQL opt-in em `tests/db/kids-journey.repository.test.ts` exige
 `KIDS_JOURNEY_TEST_DATABASE_URL` local com nome `kids_journey_*`; não usa `DATABASE_URL` como

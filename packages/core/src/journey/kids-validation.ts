@@ -1,11 +1,13 @@
 import {
-  creatorJourneyLevel,
   JOURNEY_COURSE_TIERS,
   JOURNEY_LEVEL_SLUGS,
   type JourneyCourseLock,
   type JourneyLevelSlug,
+  journeyLevelAtLeast,
 } from './catalog'
 import {
+  type KidsCourseMilestone,
+  type KidsJourneyCourseAccess,
   type KidsJourneyCourseFact,
   type KidsJourneyIssue,
   type KidsJourneyPolicy,
@@ -14,7 +16,8 @@ import {
   type KidsJourneyReadiness,
   type KidsJourneyReadinessInput,
   type KidsRequirement,
-  kidsJourneySteps,
+  type KidsTierAccess,
+  kidsRequirementSatisfied,
 } from './kids-policy'
 
 export function validateKidsJourneyPolicy(input: unknown): KidsJourneyPolicyValidation {
@@ -43,54 +46,123 @@ export function kidsFoundationRequirements(
   policy: KidsJourneyPolicy,
   foundation: KidsJourneyCourseFact,
 ): readonly KidsRequirement[] {
-  const advance = kidsJourneySteps(policy).find(
-    (step) =>
-      creatorJourneyLevel(JOURNEY_LEVEL_SLUGS[JOURNEY_LEVEL_SLUGS.indexOf(step.level) - 1])
-        .learningTier === foundation.tier,
-  )
-  const requirements =
-    advance?.requirements.filter((requirement) =>
-      requirement.kind === 'course'
-        ? requirement.courseId === foundation.id
-        : requirement.tier === foundation.tier && requirement.slot === 1,
-    ) ?? []
-  if (requirements.length > 0) return requirements
-  return foundation.tier
-    ? [{ kind: 'slot', tier: foundation.tier, slot: 1, milestone: 'showcase' }]
-    : [{ kind: 'course', courseId: foundation.id, milestone: 'showcase' }]
+  if (!foundation.tier) return []
+  const rule = policy.tierAccess.find((access) => access.tier === foundation.tier)!
+  return [
+    {
+      kind: 'slot',
+      tier: rule.tier,
+      slot: rule.foundation.slot,
+      milestone: rule.foundation.milestone,
+    },
+  ]
 }
 
-/** Shared rank/base gate for configured projection and catalog readiness. No commercial checks. */
+export function kidsFoundationCourse(
+  catalog: readonly KidsJourneyCourseFact[],
+  tier: (typeof JOURNEY_COURSE_TIERS)[number],
+): KidsJourneyCourseFact | undefined {
+  return catalog.find(
+    (course) =>
+      course.audience === 'kids' &&
+      course.modality === 'recorded' &&
+      course.status === 'published' &&
+      course.tier === tier &&
+      course.slot === 1,
+  )
+}
+
+/** One eligibility calculation for authorization and monotonic materialization. */
+function tierEligibility(
+  rule: KidsTierAccess,
+  level: JourneyLevelSlug,
+  foundationAvailable: boolean | null,
+  foundationSatisfied: boolean,
+  earned?: KidsJourneyCourseAccess,
+) {
+  const completed = journeyLevelAtLeast(level, rule.completedAt)
+  const entry =
+    Boolean(earned?.entry.includes(rule.tier) || earned?.expanded.includes(rule.tier)) ||
+    journeyLevelAtLeast(level, rule.opensAt)
+  const missingOpen = foundationAvailable === false && rule.foundation.whenMissing === 'open'
+  return {
+    entry,
+    expanded:
+      Boolean(earned?.expanded.includes(rule.tier)) ||
+      completed ||
+      (entry && (foundationSatisfied || missingOpen)),
+    reward: Boolean(earned?.reward.includes(rule.tier)) || completed || missingOpen,
+  }
+}
+
+/** Shared policy/base gate for projection and readiness. No commercial checks. */
 export function kidsCourseLockAtLevel(
+  policy: KidsJourneyPolicy,
   level: JourneyLevelSlug,
   course: KidsJourneyCourseFact,
   foundationAvailable: boolean,
   foundationSatisfied: boolean,
+  access?: KidsJourneyCourseAccess,
 ): JourneyCourseLock {
-  if (!course.tier || course.journeyRole === 'extra') return { locked: false }
-  const learningTier = creatorJourneyLevel(level).learningTier
-  if (learningTier === null) return { locked: false }
-  const courseIndex = JOURNEY_COURSE_TIERS.indexOf(course.tier)
-  const learningIndex = JOURNEY_COURSE_TIERS.indexOf(learningTier)
-  if (courseIndex < learningIndex) return { locked: false }
+  if (!course.tier || course.journeyRole === 'extra' || course.graduationOnly)
+    return { locked: false }
+  const rule = policy.tierAccess.find((candidate) => candidate.tier === course.tier)!
+  const eligible = tierEligibility(rule, level, foundationAvailable, foundationSatisfied, access)
   if (course.slot === null) {
-    if (!foundationAvailable) return { locked: false }
+    if (eligible.reward) return { locked: false }
     return {
       locked: true,
       reason: 'tier-reward',
-      requiredLevel: JOURNEY_LEVEL_SLUGS[courseIndex + 1],
+      requiredLevel: rule.completedAt,
       requiredTier: course.tier,
     }
   }
-  if (courseIndex > learningIndex)
+  if (!eligible.entry)
     return {
       locked: true,
       reason: 'future-tier',
-      requiredLevel: JOURNEY_LEVEL_SLUGS[courseIndex],
+      requiredLevel: rule.opensAt,
       requiredTier: course.tier,
     }
-  if (course.slot === 1 || foundationSatisfied || !foundationAvailable) return { locked: false }
+  if (course.slot === 1 || eligible.expanded) return { locked: false }
   return { locked: true, reason: 'foundation-first', requiredTier: course.tier }
+}
+
+/** Bounded monotonic pedagogical rights; unknown catalog cannot grant missing-base rights. */
+export function projectKidsCourseAccess(
+  policy: KidsJourneyPolicy,
+  level: JourneyLevelSlug,
+  milestones: readonly KidsCourseMilestone[],
+  catalog: readonly KidsJourneyCourseFact[] | null,
+  earned: KidsJourneyCourseAccess,
+): KidsJourneyCourseAccess {
+  const entry = new Set(earned.entry)
+  const expanded = new Set(earned.expanded)
+  const reward = new Set(earned.reward)
+  for (const tier of expanded) entry.add(tier)
+  for (const rule of policy.tierAccess) {
+    const foundation = catalog === null ? undefined : kidsFoundationCourse(catalog, rule.tier)
+    const satisfied =
+      foundation !== undefined &&
+      kidsFoundationRequirements(policy, foundation).every((requirement) =>
+        kidsRequirementSatisfied(requirement, milestones),
+      )
+    const eligible = tierEligibility(
+      rule,
+      level,
+      catalog === null ? null : Boolean(foundation),
+      satisfied,
+      earned,
+    )
+    if (eligible.entry) entry.add(rule.tier)
+    if (eligible.expanded) expanded.add(rule.tier)
+    if (eligible.reward) reward.add(rule.tier)
+  }
+  return {
+    entry: JOURNEY_COURSE_TIERS.filter((tier) => entry.has(tier)),
+    expanded: JOURNEY_COURSE_TIERS.filter((tier) => expanded.has(tier)),
+    reward: JOURNEY_COURSE_TIERS.filter((tier) => reward.has(tier)),
+  }
 }
 
 function requirementCourses(
@@ -124,15 +196,8 @@ function courseIssue(
     }
   if (course.status !== 'published')
     return { code: 'course-unpublished', message: 'O curso não está publicado no catálogo.' }
-  const foundation = catalog.find(
-    (candidate) =>
-      candidate.audience === 'kids' &&
-      candidate.modality === 'recorded' &&
-      candidate.status === 'published' &&
-      candidate.tier === course.tier &&
-      candidate.slot === 1,
-  )
-  const lock = kidsCourseLockAtLevel(level, course, Boolean(foundation), true)
+  const foundation = course.tier ? kidsFoundationCourse(catalog, course.tier) : undefined
+  const lock = kidsCourseLockAtLevel(policy, level, course, Boolean(foundation), true)
   if (lock.locked)
     return {
       code: 'course-locked',
@@ -143,6 +208,11 @@ function courseIssue(
     course.slot !== 1 &&
     course.journeyRole !== 'extra' &&
     foundation &&
+    course.tier &&
+    !journeyLevelAtLeast(
+      level,
+      policy.tierAccess.find((rule) => rule.tier === course.tier)!.completedAt,
+    ) &&
     kidsFoundationRequirements(policy, foundation).some(
       (required) => required.milestone === 'showcase',
     ) &&
@@ -157,6 +227,17 @@ function courseIssue(
           code: 'foundation-unreachable',
           message: 'O curso-base precisa de uma vitrine alcançável para abrir esta aventura.',
         }
+  if (
+    course.slot !== null &&
+    course.slot !== 1 &&
+    course.journeyRole !== 'extra' &&
+    !foundation &&
+    kidsCourseLockAtLevel(policy, level, course, false, false).locked
+  )
+    return {
+      code: 'foundation-unreachable',
+      message: 'A regra exige um curso-base que não está disponível.',
+    }
   if (requirement.milestone === 'showcase' && course.hasShowcaseBlock !== true)
     return course.hasShowcaseBlock === null
       ? { code: 'showcase-unavailable', message: 'Não foi possível conferir a vitrine do curso.' }
@@ -189,7 +270,7 @@ export function analyzeKidsJourneyReadiness(
   const issues: KidsJourneyIssue[] = []
   let horizon: JourneyLevelSlug = 'noob'
   let previousReady = true
-  kidsJourneySteps(policy).forEach((step, stepIndex) => {
+  policy.steps.forEach((step, stepIndex) => {
     let ready = true
     step.requirements.forEach((requirement, requirementIndex) => {
       const candidates = requirementCourses(requirement, catalog)
@@ -209,7 +290,9 @@ export function analyzeKidsJourneyReadiness(
         severity:
           problem.code === 'showcase-unavailable' || problem.code === 'foundation-unavailable'
             ? 'unavailable'
-            : problem.code === 'course-locked' || requirement.kind === 'course'
+            : problem.code === 'course-locked' ||
+                problem.code === 'foundation-unreachable' ||
+                requirement.kind === 'course'
               ? 'error'
               : 'warning',
       })

@@ -1,18 +1,19 @@
 import { expect, test } from 'bun:test'
 import {
-  type KidsJourneyActivePolicy,
+  type KidsJourneyPolicy,
   KidsJourneyPolicySchema,
-  kidsJourneySteps,
   pauseKidsJourneyPolicy,
 } from '../src/journey/kids-policy'
 import { projectKidsJourney, resolveKidsJourneyCourseLock } from '../src/journey/kids-projection'
+import { initialKidsJourneyPolicy } from '../src/journey/kids-seed'
 import { kidsJourneyFacts, kidsJourneyInput, kidsMilestones } from './fixtures/kids-journey'
 
-function completeOnlyPolicy(): KidsJourneyActivePolicy {
+function completeOnlyPolicy(): KidsJourneyPolicy {
   return {
+    ...initialKidsJourneyPolicy(),
     schemaVersion: 1,
-    mode: 'configured',
-    steps: kidsJourneySteps({ schemaVersion: 1, mode: 'legacy' }).map((step, index) =>
+    mode: 'active',
+    steps: initialKidsJourneyPolicy().steps.map((step, index) =>
       index === 1
         ? {
             ...step,
@@ -22,6 +23,11 @@ function completeOnlyPolicy(): KidsJourneyActivePolicy {
             })),
           }
         : step,
+    ),
+    tierAccess: initialKidsJourneyPolicy().tierAccess.map((rule) =>
+      rule.tier === 'iniciante-2d'
+        ? { ...rule, foundation: { ...rule.foundation, milestone: 'complete' as const } }
+        : rule,
     ),
   }
 }
@@ -63,9 +69,10 @@ test('pause without any earned milestone does not open current peers or future c
   const catalog = kidsJourneyFacts()
   const paused = pauseKidsJourneyPolicy(policy)
   const input = { ...kidsJourneyInput({ policy: paused, catalog }), catalog }
-  expect(projectKidsJourney(input).earned).toEqual({ level: 'noob', capabilities: [] })
+  expect(projectKidsJourney(input).earned.level).toBe('noob')
+  expect(projectKidsJourney(input).earned.capabilities).toEqual([])
   expect(resolveKidsJourneyCourseLock({ ...input, course: catalog[1]! }).reason).toBe('future-tier')
-  const coder = { ...input, earned: { level: 'coder' as const, capabilities: [] } }
+  const coder = { ...input, earned: { ...input.earned, level: 'coder' as const, capabilities: [] } }
   expect(resolveKidsJourneyCourseLock({ ...coder, course: catalog[2]! }).reason).toBe(
     'foundation-first',
   )
@@ -73,7 +80,7 @@ test('pause without any earned milestone does not open current peers or future c
 })
 
 test('pause of legacy preserves every rank/base lock without using new milestones for rank', () => {
-  const policy = { schemaVersion: 1, mode: 'legacy' } as const
+  const policy = initialKidsJourneyPolicy()
   const catalog = kidsJourneyFacts()
   const input = kidsJourneyInput({ policy, catalog, milestones: kidsMilestones(2) })
   const earned = projectKidsJourney(input).earned

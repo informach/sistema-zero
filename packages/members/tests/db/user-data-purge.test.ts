@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto'
 import { PurgeUserDataService } from '../../src/application/admin/purge-user-data/purge-user-data.service'
 import { InvalidStateTransitionError } from '../../src/domain/shared/errors'
 import type { DbConnection } from '../../src/infrastructure/persistence/drizzle/db'
+import { DrizzleKidsJourneyRepository } from '../../src/infrastructure/persistence/drizzle/kids-journey.repository'
 import { DrizzlePensaProjectRepository } from '../../src/infrastructure/persistence/drizzle/pensa-project.repository'
 import { DrizzleUserDataPurgeRepository } from '../../src/infrastructure/persistence/drizzle/user-data-purge.repository'
 import { openPensaTestDatabase } from './pensa-native-database'
@@ -72,6 +73,13 @@ describe.skipIf(!testDatabaseUrl)('Purga de dados do usuário no Postgres real',
     const profileId = randomUUID()
     const entitlementId = randomUUID()
 
+    const kids = new DrizzleKidsJourneyRepository(conn.db)
+    await kids.initializeSeed()
+    const preparation = (await kids.createSeedPreparation())!
+    await kids.appendSeedOwners(preparation.id, [
+      { userId: profileId, accountId },
+      { userId: randomUUID(), accountId }, // A child omitted from purge.userIds is still account-owned.
+    ])
     await addEntitlement(accountId, entitlementId)
     await conn.sql`insert into members.kids_journey_earned(user_id,account_id,level,capabilities,policy_version,updated_at)
       values (${profileId},${accountId},'coder','["studio","pinta"]'::jsonb,0,now())`
@@ -113,6 +121,7 @@ describe.skipIf(!testDatabaseUrl)('Purga de dados do usuário no Postgres real',
 
     const tables = [
       'kids_journey_earned',
+      'kids_journey_preparation_owners',
       'lesson_section_progress',
       'creations',
       'teacher_threads',

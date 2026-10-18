@@ -4,6 +4,7 @@ import type {
   KidsJourneyCourseFact,
   KidsJourneyProjectionInput,
 } from '../../src/journey/kids-policy'
+import { initialKidsJourneyPolicy } from '../../src/journey/kids-seed'
 
 export function kidsCourseId(index: number): string {
   return `00000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`
@@ -45,10 +46,14 @@ export function kidsJourneyInput(
   patch: Partial<KidsJourneyProjectionInput> = {},
 ): KidsJourneyProjectionInput {
   return {
-    policy: { schemaVersion: 1, mode: 'legacy' },
+    policy: initialKidsJourneyPolicy(),
     policyVersion: 0,
     milestones: [],
-    earned: { level: 'noob', capabilities: [] },
+    earned: {
+      level: 'noob',
+      capabilities: [],
+      courseAccess: { entry: [], expanded: [], reward: [] },
+    },
     catalog: kidsJourneyFacts(),
     ...patch,
   }

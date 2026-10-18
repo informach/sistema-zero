@@ -19,9 +19,10 @@ export interface KidsJourneyCatalogCourse extends KidsJourneyCourseFact {
 }
 
 export interface KidsJourneyPolicyRecord {
+  phase: 'initializing' | 'published'
   version: number
   policy: KidsJourneyPolicy
-  updatedAt: Date | null
+  updatedAt: Date
 }
 
 export interface KidsJourneyEarnedRecord extends KidsJourneyOwner {
@@ -43,6 +44,7 @@ export interface KidsJourneySnapshot {
 }
 
 export const KIDS_JOURNEY_PREPARATION_STATUSES = [
+  'capturing',
   'preparing',
   'ready',
   'stale',
@@ -57,13 +59,18 @@ export interface KidsJourneyPreparation {
   candidatePolicy: KidsJourneyPolicy
   draftHash: string
   catalogHash: string
+  cohortHash: string | null
+  origin: 'seed' | 'configuration'
+  captureStage: 'auth' | 'members' | 'hashing' | 'done'
+  captureCursor: string | null
   catalog: readonly KidsJourneyCatalogCourse[]
   /** UUID keyset, bounded at creation. Never a timestamp supplied by a client. */
   cursor: string | null
   upperBound: string | null
   processed: number
   status: KidsJourneyPreparationStatus
-  actorId: string
+  actorKind: 'system' | 'user'
+  actorId: string | null
   reason: string
   createdAt: Date
   updatedAt: Date
@@ -72,17 +79,35 @@ export interface KidsJourneyPreparation {
 export interface KidsJourneyRevision extends KidsJourneyPolicyRecord {
   previousVersion: number
   preparationId: string
-  actorId: string
+  actorKind: 'system' | 'user'
+  actorId: string | null
   reason: string
   draftHash: string
   catalogHash: string
+  cohortHash: string
 }
+
+export type KidsJourneyActor = { kind: 'system' } | { kind: 'user'; id: string }
 
 export type KidsJourneyPreparationProgress =
   | { status: 'advanced'; preparation: KidsJourneyPreparation }
   | { status: 'conflict' | 'stale' | 'unowned' | 'missing' }
 
 export interface KidsJourneyRepository {
+  /** Provision once; missing after history or corruption is never repaired silently. */
+  initializeSeed(): Promise<KidsJourneyPolicyRecord>
+  createSeedPreparation(): Promise<KidsJourneyPreparation | null>
+  /** Auth-authoritative pairs, captured before enabling the new creators. Bounded/replayable. */
+  appendSeedOwners(id: string, owners: readonly KidsJourneyOwner[]): Promise<boolean>
+  sealSeedOwners(id: string): Promise<KidsJourneyPreparation | null>
+  /** One bounded Members-identity/hash page; no unbounded INSERT SELECT or aggregate. */
+  advanceCapture(
+    id: string,
+    expectedStage: KidsJourneyPreparation['captureStage'],
+    expectedCursor: string | null,
+  ): Promise<KidsJourneyPreparation | null>
+  /** Auth-only admission/reconciliation, persists even noob/empty; no normal visibility in V0. */
+  initializeProfile(owner: KidsJourneyOwner): Promise<KidsJourneyPolicyRecord | null>
   readSnapshot(owners: readonly KidsJourneyOwner[]): Promise<KidsJourneySnapshot>
   /** Server-internal only; CAS + account fence + immutable owner + monotonic union. */
   freezeEarned(
@@ -93,7 +118,7 @@ export interface KidsJourneyRepository {
   createPreparation(input: {
     expectedVersion: number
     candidatePolicy: KidsJourneyPolicy
-    actorId: string
+    actor: KidsJourneyActor
     reason: string
   }): Promise<KidsJourneyPreparation | null>
   getPreparation(id: string): Promise<KidsJourneyPreparation | null>
@@ -108,7 +133,8 @@ export interface KidsJourneyRepository {
     expectedVersion: number
     draftHash: string
     catalogHash: string
-    actorId: string
+    cohortHash: string
+    actor: KidsJourneyActor
   }): Promise<KidsJourneyPolicyRecord | null>
   listHistory(beforeVersion?: number, limit?: number): Promise<readonly KidsJourneyRevision[]>
 }

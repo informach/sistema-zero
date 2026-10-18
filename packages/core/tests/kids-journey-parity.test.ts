@@ -6,13 +6,13 @@ import {
   type QualifiedJourneySlots,
   resolveJourneyCourseLock,
 } from '../src/journey/catalog'
-import { kidsJourneySteps } from '../src/journey/kids-policy'
 import { projectKidsJourney, resolveKidsJourneyCourseLock } from '../src/journey/kids-projection'
+import { initialKidsJourneyPolicy } from '../src/journey/kids-seed'
 import { kidsJourneyFacts, kidsJourneyInput, kidsMilestones } from './fixtures/kids-journey'
 
 describe('Kids default preserves the legacy journey', () => {
   test('keeps 49 incremental positions and the seven fixed advances', () => {
-    const steps = kidsJourneySteps({ schemaVersion: 1, mode: 'legacy' })
+    const steps = initialKidsJourneyPolicy().steps
     expect(steps.map((step) => step.level)).toEqual([
       'coder',
       'hacker',

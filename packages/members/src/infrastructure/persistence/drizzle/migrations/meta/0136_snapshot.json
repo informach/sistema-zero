@@ -1,5 +1,5 @@
 {
-  "id": "b2613d08-cd49-4040-ac42-a24b49a5c74a",
+  "id": "322856d8-bdab-47f4-87b7-cda685cfd9ed",
   "prevId": "f989498c-2c3b-42ad-a0af-e735e3e120e3",
   "version": "7",
   "dialect": "postgresql",
@@ -3012,6 +3012,27 @@
           "primaryKey": false,
           "notNull": true
         },
+        "entry_tiers": {
+          "name": "entry_tiers",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "array[]::text[]"
+        },
+        "expanded_tiers": {
+          "name": "expanded_tiers",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "array[]::text[]"
+        },
+        "reward_tiers": {
+          "name": "reward_tiers",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "array[]::text[]"
+        },
         "policy_version": {
           "name": "policy_version",
           "type": "integer",
@@ -3055,6 +3076,10 @@
           "name": "kids_journey_earned_version_check",
           "value": "\"members\".\"kids_journey_earned\".\"policy_version\" >= 0"
         },
+        "kids_journey_earned_access_check": {
+          "name": "kids_journey_earned_access_check",
+          "value": "\"members\".\"kids_journey_earned\".\"entry_tiers\" <@ array['primeiros-passos-2d','iniciante-2d','iniciante-3d','intermediario-2d','intermediario-3d','avancado-2d','avancado-3d']::text[] and \"members\".\"kids_journey_earned\".\"reward_tiers\" <@ array['primeiros-passos-2d','iniciante-2d','iniciante-3d','intermediario-2d','intermediario-3d','avancado-2d','avancado-3d']::text[] and \"members\".\"kids_journey_earned\".\"expanded_tiers\" <@ \"members\".\"kids_journey_earned\".\"entry_tiers\" and cardinality(\"members\".\"kids_journey_earned\".\"entry_tiers\") <= 7 and cardinality(\"members\".\"kids_journey_earned\".\"expanded_tiers\") <= 7 and cardinality(\"members\".\"kids_journey_earned\".\"reward_tiers\") <= 7"
+        },
         "kids_journey_earned_capabilities_check": {
           "name": "kids_journey_earned_capabilities_check",
           "value": "jsonb_typeof(\"members\".\"kids_journey_earned\".\"capabilities\") = 'array' and \"members\".\"kids_journey_earned\".\"capabilities\" <@ '[\"studio\",\"pinta\",\"bridge\",\"pro\",\"ai\",\"pensa\",\"molda\",\"molda-intermediate\",\"molda-professional\"]'::jsonb"
@@ -3076,6 +3101,12 @@
         "version": {
           "name": "version",
           "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "phase": {
+          "name": "phase",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -3104,13 +3135,83 @@
         },
         "kids_journey_policy_version_check": {
           "name": "kids_journey_policy_version_check",
-          "value": "\"members\".\"kids_journey_policy\".\"version\" >= 1"
+          "value": "(\"members\".\"kids_journey_policy\".\"phase\" = 'initializing' and \"members\".\"kids_journey_policy\".\"version\" = 0) or (\"members\".\"kids_journey_policy\".\"phase\" = 'published' and \"members\".\"kids_journey_policy\".\"version\" >= 1)"
         },
         "kids_journey_policy_shape_check": {
           "name": "kids_journey_policy_shape_check",
-          "value": "jsonb_typeof(\"members\".\"kids_journey_policy\".\"policy\") = 'object' and \"members\".\"kids_journey_policy\".\"policy\"->>'schemaVersion' = '1' and \"members\".\"kids_journey_policy\".\"policy\"->>'mode' in ('legacy','configured','paused')"
+          "value": "jsonb_typeof(\"members\".\"kids_journey_policy\".\"policy\") = 'object' and \"members\".\"kids_journey_policy\".\"policy\"->>'schemaVersion' = '1' and \"members\".\"kids_journey_policy\".\"policy\"->>'mode' in ('active','paused') and jsonb_typeof(\"members\".\"kids_journey_policy\".\"policy\"->'steps') = 'array' and jsonb_typeof(\"members\".\"kids_journey_policy\".\"policy\"->'tierAccess') = 'array'"
         }
       },
+      "isRLSEnabled": false
+    },
+    "members.kids_journey_preparation_owners": {
+      "name": "kids_journey_preparation_owners",
+      "schema": "members",
+      "columns": {
+        "preparation_id": {
+          "name": "preparation_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "account_id": {
+          "name": "account_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "kids_journey_preparation_owners_account_idx": {
+          "name": "kids_journey_preparation_owners_account_idx",
+          "columns": [
+            {
+              "expression": "account_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "kids_journey_preparation_owners_preparation_id_kids_journey_preparations_id_fk": {
+          "name": "kids_journey_preparation_owners_preparation_id_kids_journey_preparations_id_fk",
+          "tableFrom": "kids_journey_preparation_owners",
+          "tableTo": "kids_journey_preparations",
+          "schemaTo": "members",
+          "columnsFrom": [
+            "preparation_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "kids_journey_preparation_owners_preparation_id_user_id_pk": {
+          "name": "kids_journey_preparation_owners_preparation_id_user_id_pk",
+          "columns": [
+            "preparation_id",
+            "user_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
       "isRLSEnabled": false
     },
     "members.kids_journey_preparations": {
@@ -3153,6 +3254,30 @@
           "primaryKey": false,
           "notNull": true
         },
+        "cohort_hash": {
+          "name": "cohort_hash",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "origin": {
+          "name": "origin",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "capture_stage": {
+          "name": "capture_stage",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "capture_cursor": {
+          "name": "capture_cursor",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
         "catalog": {
           "name": "catalog",
           "type": "jsonb",
@@ -3184,11 +3309,17 @@
           "primaryKey": false,
           "notNull": true
         },
+        "actor_kind": {
+          "name": "actor_kind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
         "actor_id": {
           "name": "actor_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "reason": {
           "name": "reason",
@@ -3247,7 +3378,7 @@
         },
         "kids_journey_preparations_status_check": {
           "name": "kids_journey_preparations_status_check",
-          "value": "\"members\".\"kids_journey_preparations\".\"status\" in ('preparing','ready','stale','published')"
+          "value": "\"members\".\"kids_journey_preparations\".\"status\" in ('capturing','preparing','ready','stale','published')"
         },
         "kids_journey_preparations_reason_check": {
           "name": "kids_journey_preparations_reason_check",
@@ -3260,6 +3391,14 @@
         "kids_journey_preparations_catalog_check": {
           "name": "kids_journey_preparations_catalog_check",
           "value": "jsonb_typeof(\"members\".\"kids_journey_preparations\".\"catalog\") = 'array'"
+        },
+        "kids_journey_preparations_actor_check": {
+          "name": "kids_journey_preparations_actor_check",
+          "value": "(\"members\".\"kids_journey_preparations\".\"actor_kind\" = 'system' and \"members\".\"kids_journey_preparations\".\"actor_id\" is null and \"members\".\"kids_journey_preparations\".\"origin\" = 'seed' and \"members\".\"kids_journey_preparations\".\"expected_version\" = 0) or (\"members\".\"kids_journey_preparations\".\"actor_kind\" = 'user' and \"members\".\"kids_journey_preparations\".\"actor_id\" is not null and \"members\".\"kids_journey_preparations\".\"origin\" = 'configuration' and \"members\".\"kids_journey_preparations\".\"expected_version\" >= 1)"
+        },
+        "kids_journey_preparations_capture_check": {
+          "name": "kids_journey_preparations_capture_check",
+          "value": "\"members\".\"kids_journey_preparations\".\"capture_stage\" in ('auth','members','hashing','done') and (\"members\".\"kids_journey_preparations\".\"status\" not in ('preparing','ready','published') or (\"members\".\"kids_journey_preparations\".\"capture_stage\" = 'done' and \"members\".\"kids_journey_preparations\".\"cohort_hash\" is not null and \"members\".\"kids_journey_preparations\".\"cohort_hash\" ~ '^[a-f0-9]{64}$'))"
         },
         "kids_journey_preparations_cursor_check": {
           "name": "kids_journey_preparations_cursor_check",
@@ -3308,11 +3447,23 @@
           "primaryKey": false,
           "notNull": true
         },
+        "cohort_hash": {
+          "name": "cohort_hash",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "actor_kind": {
+          "name": "actor_kind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
         "actor_id": {
           "name": "actor_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "reason": {
           "name": "reason",
@@ -3372,9 +3523,13 @@
           "name": "kids_journey_revisions_reason_check",
           "value": "length(btrim(\"members\".\"kids_journey_revisions\".\"reason\")) between 1 and 500"
         },
+        "kids_journey_revisions_actor_check": {
+          "name": "kids_journey_revisions_actor_check",
+          "value": "(\"members\".\"kids_journey_revisions\".\"actor_kind\" = 'system' and \"members\".\"kids_journey_revisions\".\"actor_id\" is null and \"members\".\"kids_journey_revisions\".\"version\" = 1) or (\"members\".\"kids_journey_revisions\".\"actor_kind\" = 'user' and \"members\".\"kids_journey_revisions\".\"actor_id\" is not null and \"members\".\"kids_journey_revisions\".\"version\" >= 2)"
+        },
         "kids_journey_revisions_hash_check": {
           "name": "kids_journey_revisions_hash_check",
-          "value": "\"members\".\"kids_journey_revisions\".\"draft_hash\" ~ '^[a-f0-9]{64}$' and \"members\".\"kids_journey_revisions\".\"catalog_hash\" ~ '^[a-f0-9]{64}$'"
+          "value": "\"members\".\"kids_journey_revisions\".\"draft_hash\" ~ '^[a-f0-9]{64}$' and \"members\".\"kids_journey_revisions\".\"catalog_hash\" ~ '^[a-f0-9]{64}$' and \"members\".\"kids_journey_revisions\".\"cohort_hash\" ~ '^[a-f0-9]{64}$'"
         }
       },
       "isRLSEnabled": false

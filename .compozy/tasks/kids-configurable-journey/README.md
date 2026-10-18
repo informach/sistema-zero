@@ -1,8 +1,12 @@
 # Jornada Kids configurável
 
-Status: T1/T2 são checkpoints intermediários testados no worktree isolado, fora da composição/consumidores. O usuário determinou um modelo canônico único com seed persistido; contrato/bootstrap/admissão serão ajustados antes da integração. Nenhuma política custom foi ativada.
+Status: contrato, seed e persistência canônicos estão escritos e em verificação no worktree isolado, fora da composição/consumidores. O usuário determinou um modelo Kids único com seed persistido; admissão Auth, serviços integrados e consumidores ainda faltam. Nenhuma política custom foi ativada na plataforma.
 
-Base atual: checkpoint conciliado publicado `ac85a7a323491b9b2416fcc3008b17140a328284`, em 18/10/2026. Os quatro commits T1 foram rebaseados sem conflitos; `range-diff` confirmou os quatro equivalentes. A base anterior `0fce18507` foi preservada em `backup/kids-journey-t1-before-ac85a7a-0fce18507`. Worktree: `C:/Users/tocha/projects/sistema-zero-journey`, branch `feat/kids-configurable-journey`. T1 começou antecipadamente sobre `3d83a3f46`; T2 foi autorizado pelo root após a publicação do checkpoint. Não mesclar nem publicar esta branch por iniciativa própria.
+Atualização canônica em andamento: rebase `f664cfa51` concluído sem conflitos, seis commits equivalentes no range-diff; checkpoint T2 `108574ec7`, backup `backup/kids-journey-t2-before-f664-631b34ce6`. Core canônico: **58/0/2.763** focados após RED/GREEN de entrada preservada→expansão e **TSC EXIT0**. Persistência/0136 regenerada: primeira matriz real **25/1/105**, achado de ordenação INSERT/UPSERT corrigido na fronteira; foco veteran **1/0/7**. Auth+XP sem Gamma/earned teve RED causal→GREEN2/9 com owner capturado e conflitos tardios. Remote `2e76fb448` será adotado no próximo checkpoint, retirando companion equivalente já publicado.
+
+Persistência canônica alcançou **SQL30/0/135** e **purge3/0/25**. Harness recebeu fila/ownership/drain com unidades **3/0/8**; repetição SQL com essa fonte passou **30/0/135, EXIT0, 38,12 s**, sem timeout/deadlock. **TSC Core e Members canônicos EXIT0** com Node24/TS5.9.3 e versões legítimas. Members apontou um import de tipo ausente, corrigido antes da repetição verde; negativo preservado. Negativos e correções causais estão no plano de testes; não são prova de integração/Auth/consumidores.
+
+Base atual `f664cfa51`, após primeiro rebase ao checkpoint conciliado `ac85a7a323491b9b2416fcc3008b17140a328284`, em 18/10/2026. Os quatro commits T1 foram preservados sem conflitos, com `range-diff` equivalente; base anterior `0fce18507` em `backup/kids-journey-t1-before-ac85a7a-0fce18507`. Worktree: `C:/Users/tocha/projects/sistema-zero-journey`, branch `feat/kids-configurable-journey`. T1 começou antecipadamente sobre `3d83a3f46`; T2 foi autorizado pelo root após a publicação do checkpoint. Não mesclar nem publicar esta branch por iniciativa própria.
 
 ## Leitura
 
@@ -14,7 +18,7 @@ Base atual: checkpoint conciliado publicado `ac85a7a323491b9b2416fcc3008b17140a3
 
 ## Decisão recomendada
 
-Criar uma política própria do Kids com oito postos, requisitos/capacidades e gates de acesso configuráveis. Seed persistido reproduz exatamente as 49 posições e todos os gates atuais, inclusive cursos futuros; runtime usa apenas a política publicada. O algoritmo anterior fica nas provas, sem fallback/segundo autorizador normal. Blocos/extensões, acesso comercial e contexto de aula mantêm suas próprias réguas.
+Criar uma política própria do Kids com oito postos, requisitos/capacidades e gates de acesso configuráveis. Seed persistido reproduz exatamente as 49 posições e gates atuais, inclusive futuros; runtime Kids usa apenas política publicada. Referência anterior Kids fica nas provas, sem fallback/segundo autorizador. Helpers compartilhados ainda necessários a Adult ficam exclusivamente nesse uso após inventário. Blocos/extensões, matrícula e contexto mantêm suas próprias réguas.
 
 Preservar conquistas exige baseline de toda a coorte antes de cada troca, incluindo crianças sem XP/arquivadas, posto, capacidades e 21 direitos limitados de acesso a tiers. Lotes preparam sem trocar política ativa; publicação exige baseline completo/revalidação/CAS. Novos perfis só ficam visíveis após admissão idempotente Members; não há lock entre databases nem congelamento apenas durante GET.
 

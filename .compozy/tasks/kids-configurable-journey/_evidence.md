@@ -1,5 +1,20 @@
 # Evidências e mapa de migração
 
+## Delta conciliado e fronteiras de identidade (18/10/2026)
+
+Base da implementação canônica: `f664cfa51`, rebase de seis commits equivalentes; remoto `2e76fb448` informado pelo root será adotado no próximo checkpoint, retirando o guard local já incorporado ao remoto. Leituras locais e fixtures SQL descartáveis não afirmam quantidade/estado de alunos reais.
+
+- Members `application/studio/free-studio-access.service.ts` e `authorize-free-runtime.service.ts` são autoridades conciliadas de contexto/linguagem/editor livre. Migrar somente o gate Kids de jornada; conservar matrícula, paleta, runtime JS/Python e validação no servidor.
+- Auth `application/profiles/create-profile.service.ts` e `profile.repository.ts:createWithinLimit` são o criador normal/primeiro perfil. `register.service.ts` cria conta/tokens, sem filho automático. `scripts/backfill-default-profiles.ts` escreve SQL direto e precisa usar admissão após rollout. `ProfileAggregate.restore` hidrata um registro, sem restauração produtiva de arquivado; não foi encontrado outro import/restore de perfil.
+- Auth não oferece admissão pending/ready nem worker de initialize. select/refresh/impersonation/study-access/get-own/public e listas/batches precisam exigir ready: negar apenas isArchived aceitaria pending.
+- `user.repository.ts:prepareDeletion` disputa lock LOCAL profile:<account> com criação, bloqueia conta e captura IDs antes de purge Members. CAS ready deve usar esse lock local e revalidar conta/perfil. Não é prova de database compartilhado entre serviços; o desenho não depende disso nem usa lock crossDB.
+- Auth composition-root possui start/stop e setInterval de maintenance. Retry terá ciclo próprio bounded/lease e teste de agendamento, não infraestrutura já pronta a alegar.
+- `/profiles/ownership` geral deve continuar recusando pending. Initializer específico Auth→Members recebe owner capturado/autorizado por Auth, sem ampliar o endpoint geral nem realizar RPC dentro da TX Members.
+
+Gamification nasce por atividade e não é coorte universal. Bootstrap precisa Auth all + históricos comprovados; depois todo perfil admitido possui earned até noob/[] e a coorte recorrente usa todos. Acesso editável exige 21 direitos limitados além de rank/app caps; só preservar rank não impede re-lock após mudar base/threshold.
+
+Consumidores compartilhados legítimos: `GetGamificationService` chama `listQualifyingJourneySlots` + `computeStudentLevel` nas duas audiências e anexa `AdultJourney` separadamente. `GetPublicProfileService`, `GetProfilesOverviewService` e `GetAvatarsByProfilesService` também calculam o nível usando a audiência recebida. Cleanup deve substituir seus ramos Kids; preservar o nível/contrato Adult e as consultas ainda necessárias a ele. `FreeStudioAccessService`, por sua vez, chama explicitamente audiência Kids e deve deixar de obter recompensa do helper antigo. Root confirmou esse limite: não apagar helper/tabela necessária a Adult só por ter servido Kids. Renomear/mover para explicitar uso Adult é opção após testes, sem fallback Kids.
+
 Todos os caminhos desta página são relativos à raiz do repositório. Esta é uma inspeção do código em `3d83a3f46`, não uma auditoria do banco de produção.
 
 ## Regras aplicáveis
@@ -55,13 +70,13 @@ Instruções históricas que proíbem mudar a régua descrevem decisões anterio
 | Infraestrutura | `members/src/composition-root.ts`, rotas/servidor, `api-gateway/gateway.config.ts`, client factories do member-shell, navegação/BFF/tipos do admin |
 | Exclusão | `members/src/infrastructure/persistence/drizzle/user-data-purge.repository.ts`; account fence e ordem dos locks devem proteger novas tabelas/cursor/baseline |
 
-`journeyLevelAtLeast` continua válido para comparar postos conquistados e desenhar a escada. Ele deixa de ser a fonte de autorização para capacidades configuráveis. `computeStudentLevel` continua sendo a régua pura do legado e um oráculo de paridade, não a resolução de toda política ativa.
+`journeyLevelAtLeast` continua válido para comparar postos conquistados e desenhar a escada. Ele deixa de ser a fonte de autorização para capacidades Kids configuráveis. `computeStudentLevel` ainda atende consumidores Adult legítimos; nenhum ramo Kids migrado deve chamá-lo para calcular posto, acesso ou recompensa. As provas de seed Kids precisam de referência histórica congelada em testes, sem depender de futuras alterações da régua Adult.
 
 ## Compatibilidade que carrega significado
 
 - `careerSlot`/`careerLock` e colunas `career_slot` permanecem como contratos existentes. Configurar os requisitos não renumera cursos nem muda a unicidade das posições.
 - A contagem de aventuras prontas inclui extras e bônus; progresso para posto usa só requisitos da política. Publicar um bônus em etapa antiga pode tirar o ✓ do mapa de cursos; não tira o posto do perfil.
-- Catálogo desconhecido é diferente de vazio; ausência do novo campo de rede durante deploy só pode cair no legado enquanto a política ativa for explicitamente legado.
+- Catálogo desconhecido é diferente de vazio. No caminho Kids migrado, política/view ausente significa indisponível; não há modo legado nem fallback de rede. O rollout deve impedir que clientes antigos autorizem Kids por thresholds fixos depois da ativação.
 - Autoria de aula usa paleta/extensões/ambiente próprios. Abrir uma ferramenta dentro de aula/oficina não concede a ferramenta livre globalmente.
 - Pro pode abrir sem paleta; clássico com paleta vazia não abre. Não eliminar essa distinção durante a mudança.
 

@@ -255,16 +255,13 @@ export function journeyLevelAtLeast(
 }
 
 const SLOTS_BY_TIER = new Map<JourneyCourseTier, number>(
-  JOURNEY_COURSE_TIERS.map((tier) => [
-    tier,
-    CREATOR_JOURNEY_LEVELS.at(-1)?.requiredSlots[tier]?.length ?? 0,
-  ]),
+  JOURNEY_COURSE_TIERS.map((tier) => [tier, tier === 'primeiros-passos-2d' ? 1 : 8]),
 )
 
 /**
- * Quantas posições OBRIGATÓRIAS um degrau tem. Derivado do último nível da escada (que
- * acumula tudo), então não existe número solto para drifar: 1 nos Primeiros Passos (o degrau
- * de entrada) e 8 em todos os demais. Degrau desconhecido → 0, e quem valida recusa.
+ * Limites estruturais das identidades de posição: 1 na entrada e 8 nos demais tiers.
+ * Não define requisitos, thresholds ou gates; estes pertencem à política publicada.
+ * Degrau desconhecido → 0, e quem valida recusa.
  */
 export function journeySlotsForTier(tier: string): number {
   return SLOTS_BY_TIER.get(tier as JourneyCourseTier) ?? 0

@@ -1,7 +1,6 @@
 import { z } from 'zod'
 import {
   type COURSE_JOURNEY_ROLES,
-  CREATOR_JOURNEY_LEVELS,
   JOURNEY_COURSE_TIERS,
   JOURNEY_LEVEL_SLUGS,
   type JourneyCourseTier,
@@ -9,7 +8,6 @@ import {
   journeyLevelAtLeast,
   journeySlotsForTier,
 } from './catalog'
-import { AI_APPS_MIN_LEVEL, CREATIVE_TOOL_LEVELS, MOLDA_TOOL_BAND_LEVELS } from './state'
 
 /** Pedagogical rights only: no license, palette, language or runtime is granted here. */
 export const KIDS_CREATOR_CAPABILITIES = [
@@ -80,17 +78,45 @@ export function kidsRequirementKey(requirement: KidsRequirement): string {
     : `slot:${requirement.tier}:${requirement.slot}`
 }
 
-export const KidsJourneyActivePolicySchema = z
-  .discriminatedUnion('mode', [
-    z.strictObject({ schemaVersion: z.literal(1), mode: z.literal('legacy') }),
-    z.strictObject({
-      schemaVersion: z.literal(1),
-      mode: z.literal('configured'),
-      steps: z.array(StepSchema).length(KIDS_JOURNEY_ADVANCES.length).readonly(),
-    }),
-  ])
+const TierAccessSchema = z
+  .strictObject({
+    tier: z.enum(JOURNEY_COURSE_TIERS),
+    opensAt: z.enum(JOURNEY_LEVEL_SLUGS),
+    completedAt: z.enum(JOURNEY_LEVEL_SLUGS),
+    foundation: z
+      .strictObject({
+        slot: z.literal(1),
+        milestone: MilestoneSchema,
+        whenMissing: z.enum(['open', 'locked']),
+      })
+      .readonly(),
+  })
+  .readonly()
+export type KidsTierAccess = z.infer<typeof TierAccessSchema>
+
+export const KidsJourneyPolicySchema = z
+  .strictObject({
+    schemaVersion: z.literal(1),
+    mode: z.enum(['active', 'paused']),
+    steps: z.array(StepSchema).length(KIDS_JOURNEY_ADVANCES.length).readonly(),
+    tierAccess: z.array(TierAccessSchema).length(JOURNEY_COURSE_TIERS.length).readonly(),
+  })
   .superRefine((policy, context) => {
-    if (policy.mode !== 'configured') return
+    const tiers = new Set(policy.tierAccess.map((rule) => rule.tier))
+    if (tiers.size !== JOURNEY_COURSE_TIERS.length)
+      context.addIssue({
+        code: 'custom',
+        path: ['tierAccess'],
+        message: 'Configure cada etapa uma única vez.',
+      })
+    policy.tierAccess.forEach((rule, index) => {
+      if (!journeyLevelAtLeast(rule.completedAt, rule.opensAt))
+        context.addIssue({
+          code: 'custom',
+          path: ['tierAccess', index, 'completedAt'],
+          message: 'A revisão não pode preceder a entrada na etapa.',
+        })
+    })
     const earned = new Set<KidsCreatorCapability>()
     policy.steps.forEach((step, index) => {
       if (step.level !== KIDS_JOURNEY_ADVANCES[index])
@@ -125,68 +151,11 @@ export const KidsJourneyActivePolicySchema = z
     })
   })
   .readonly()
-export type KidsJourneyActivePolicy = z.infer<typeof KidsJourneyActivePolicySchema>
-/** Pausing retains the complete course gate policy; it is not an empty curriculum. */
-export const KidsJourneyPolicySchema = z
-  .union([
-    KidsJourneyActivePolicySchema,
-    z
-      .strictObject({
-        schemaVersion: z.literal(1),
-        mode: z.literal('paused'),
-        policy: KidsJourneyActivePolicySchema,
-      })
-      .readonly(),
-  ])
-  .readonly()
 export type KidsJourneyPolicy = z.infer<typeof KidsJourneyPolicySchema>
 
 export function pauseKidsJourneyPolicy(policy: KidsJourneyPolicy): KidsJourneyPolicy {
   const parsed = KidsJourneyPolicySchema.parse(policy)
-  return parsed.mode === 'paused' ? parsed : { schemaVersion: 1, mode: 'paused', policy: parsed }
-}
-
-export function legacyKidsJourneyPolicy(): KidsJourneyPolicy {
-  return { schemaVersion: 1, mode: 'legacy' }
-}
-
-/** Derives first capability availability from existing defaults, never a second rank table. */
-function legacyCapabilities(level: JourneyLevelSlug): KidsCreatorCapability[] {
-  const reward = CREATOR_JOURNEY_LEVELS.find((definition) => definition.slug === level)!.reward
-  const available: Partial<Record<KidsCreatorCapability, boolean>> = {
-    studio: reward.freeStudio,
-    bridge: reward.bridge,
-    pro: reward.pro,
-    pinta: journeyLevelAtLeast(level, CREATIVE_TOOL_LEVELS.pinta),
-    ai: journeyLevelAtLeast(level, AI_APPS_MIN_LEVEL),
-    pensa: journeyLevelAtLeast(level, CREATIVE_TOOL_LEVELS.pensa),
-    molda: journeyLevelAtLeast(level, MOLDA_TOOL_BAND_LEVELS.basic),
-    'molda-intermediate': journeyLevelAtLeast(level, MOLDA_TOOL_BAND_LEVELS.intermediate),
-    'molda-professional': journeyLevelAtLeast(level, MOLDA_TOOL_BAND_LEVELS.professional),
-  }
-  return KIDS_CREATOR_CAPABILITIES.filter((capability) => available[capability])
-}
-
-/** Legacy positions remain identities even when their courses do not exist yet. */
-export function kidsJourneySteps(policy: KidsJourneyPolicy): readonly KidsJourneyStep[] {
-  if (policy.mode === 'paused') return kidsJourneySteps(policy.policy)
-  if (policy.mode === 'configured') return policy.steps
-  return CREATOR_JOURNEY_LEVELS.slice(1).map((level, index) => {
-    const previous = CREATOR_JOURNEY_LEVELS[index]!
-    const requirements: KidsRequirement[] = []
-    for (const tier of JOURNEY_COURSE_TIERS) {
-      for (const slot of level.requiredSlots[tier] ?? []) {
-        if (!previous.requiredSlots[tier]?.includes(slot))
-          requirements.push({ kind: 'slot', tier, slot, milestone: 'showcase' })
-      }
-    }
-    const before = new Set(legacyCapabilities(previous.slug))
-    return {
-      level: level.slug as Exclude<JourneyLevelSlug, 'noob'>,
-      requirements,
-      capabilities: legacyCapabilities(level.slug).filter((capability) => !before.has(capability)),
-    }
-  })
+  return { ...parsed, mode: 'paused' }
 }
 
 export interface KidsCourseMilestone {
@@ -200,7 +169,47 @@ export interface KidsCourseMilestone {
 export interface KidsJourneyEarned {
   level: JourneyLevelSlug
   capabilities: readonly KidsCreatorCapability[]
+  courseAccess: KidsJourneyCourseAccess
 }
+export interface KidsJourneyCourseAccess {
+  entry: readonly JourneyCourseTier[]
+  expanded: readonly JourneyCourseTier[]
+  reward: readonly JourneyCourseTier[]
+}
+const CourseAccessTiersSchema = z
+  .array(z.enum(JOURNEY_COURSE_TIERS))
+  .max(JOURNEY_COURSE_TIERS.length)
+  .refine((tiers) => new Set(tiers).size === tiers.length, 'Etapa repetida na concessão.')
+  .readonly()
+export const KidsJourneyCourseAccessSchema = z
+  .strictObject({
+    entry: CourseAccessTiersSchema,
+    expanded: CourseAccessTiersSchema,
+    reward: CourseAccessTiersSchema,
+  })
+  .superRefine((access, context) => {
+    if (access.expanded.some((tier) => !access.entry.includes(tier)))
+      context.addIssue({
+        code: 'custom',
+        path: ['expanded'],
+        message: 'A expansão exige entrada na mesma etapa.',
+      })
+  })
+  .readonly()
+export const KidsJourneyEarnedSchema = z
+  .strictObject({
+    level: z.enum(JOURNEY_LEVEL_SLUGS),
+    capabilities: z
+      .array(z.enum(KIDS_CREATOR_CAPABILITIES))
+      .max(KIDS_CREATOR_CAPABILITIES.length)
+      .refine(
+        (capabilities) => new Set(capabilities).size === capabilities.length,
+        'Capacidade repetida.',
+      )
+      .readonly(),
+    courseAccess: KidsJourneyCourseAccessSchema,
+  })
+  .readonly()
 export interface KidsJourneyCourseFact {
   id: string
   /** Derived from course.level === 'lenda'; tier:null alone loses this identity. */
@@ -287,6 +296,8 @@ export interface KidsJourneyImpact {
   after: KidsJourneyView
   changes: readonly KidsJourneyStepChange[]
   preservedCapabilities: readonly KidsCreatorCapability[]
+  tierAccessChanges: readonly { before: KidsTierAccess; after: KidsTierAccess }[]
+  preservedCourseAccess: KidsJourneyCourseAccess
 }
 
 /** Both milestones must belong to one course record; slots cannot merge evidence across IDs. */
