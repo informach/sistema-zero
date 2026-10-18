@@ -84,7 +84,7 @@ describe('MoldaApp', () => {
     expect(await screen.findByRole('dialog')).toBeDefined()
   })
 
-  // Full review do lote 10 (11/09/2026): com as faixas, "Trazer de volta" foi morar no cartão
+  // Full review do lote 10 (11/09/2026): com as faixas, "Importar projeto" foi morar no cartão
   // lilás, que só existe com a galeria carregada. Sem ele no erro, a criança ficava só com o
   // "Tentar de novo" e sem jeito de restaurar o backup.
   test('galeria que não carregou ainda oferece trazer as criações de volta', async () => {
@@ -483,7 +483,7 @@ describe('MoldaApp', () => {
     }
   })
 
-  test('Trazer de volta aceita o .zip do "Baixar tudo" e o .molda.json solto', async () => {
+  test('Importar projeto aceita o .zip do "Baixar tudo" e o .molda.json solto', async () => {
     const zip = await zipGallery([makeTexture(), makeSky()], {
       yieldBetween: null,
       skySize: { width: 16, height: 8 },
@@ -598,7 +598,7 @@ describe('galeria: o desenho das telas-modelo (11/09)', () => {
     }
   })
 
-  test('Baixar tudo e Trazer de volta moram no cartão lilás; o cabeçalho fica com o Criar novo', async () => {
+  test('Baixar tudo e Importar projeto moram no cartão lilás; o cabeçalho fica com o Criar novo', async () => {
     render(
       <MoldaApp
         persistence={createMemoryPersistence([makeModel()])}

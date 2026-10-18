@@ -55,7 +55,7 @@ export interface ZipGalleryOptions {
   /**
    * As criações da geração seguinte, cada uma no arquivo NATIVO dela (o mesmo do
    * "Baixar projeto"). Elas não entram no envelope v1: o backup antigo continua sendo
-   * exatamente o que sempre foi. Trazer de volta também lê esses projetos.
+   * exatamente o que sempre foi. Importar projeto também lê esses projetos.
    * Um leitor adiado permite comprimir e liberar cada projeto antes de ler o próximo.
    */
   scenes?: readonly (

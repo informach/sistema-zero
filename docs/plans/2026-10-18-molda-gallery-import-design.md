@@ -1,5 +1,7 @@
 # Importar modelos pela galeria do Molda
 
+> Proposta substituída pela orientação do responsável: [Projetos na galeria, modelos 3D na oficina](2026-10-18-molda-project-import-design.md). A galeria importa projetos do Molda; “Trazer 3D” fica dentro da oficina.
+
 Desenho aprovado: adicionar **Importar modelo** ao lado de **Criar novo**, usando os tokens e componentes da plataforma. Abrir a mesma preparação e prévia da oficina, com os formatos permitidos pelo nível da criança. Após a confirmação, salvar uma criação independente e abrir a oficina.
 
 A preparação usa um documento temporário em memória. Cancelar não grava uma criação vazia. A confirmação passa pela fila de importação da galeria, que atribui identidade e nome únicos, valida e salva o documento nativo. Uma falha de armazenamento mantém o resultado em memória e oferece nova tentativa. O acesso respeita `files.import`; os formatos adicionais respeitam `files.interop`. A restauração de backups continua no rodapé.

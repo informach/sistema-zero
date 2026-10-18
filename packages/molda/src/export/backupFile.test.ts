@@ -83,7 +83,7 @@ function zipWithDuplicateEntry(name: string, first: string, second: string): Pro
   })
 }
 
-describe('leitor de backup do Molda ("Trazer de volta")', () => {
+describe('leitor de backup do Molda ("Importar projeto")', () => {
   const json = galleryToJsonText([makeSky()], 123)
 
   it('a larger local gallery does not authorize a 200 MiB external JSON allocation', async () => {

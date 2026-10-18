@@ -1,6 +1,7 @@
 import { afterEach, expect, test } from 'bun:test'
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { COPY } from '../core/copy'
+import { sceneToJson } from '../scene/documentJson'
 import { migrateLegacyModel } from '../scene/migrateLegacy'
 import { createMemoryPersistence } from '../state/memoryPersistence'
 import { setMoldaGenerationStoreFactory } from '../state/persistence'
@@ -8,6 +9,7 @@ import { createScenePersistence } from '../state/scenePersistence'
 import { DOCUMENT_KEY_PREFIX } from '../state/storageKeys'
 import { makeModel, makeTexture } from '../testing/fixtures'
 import { nativeDatabase } from '../testing/nativeDatabase'
+import { animatedScene } from '../testing/sceneAnimation'
 import { MoldaApp } from './MoldaApp'
 
 afterEach(() => setMoldaGenerationStoreFactory(null))
@@ -32,21 +34,33 @@ async function withGeneration() {
   return { db, scene }
 }
 
-test('gallery exposes model import next to create and cancelling returns focus without saving a draft', async () => {
-  const { db } = await withGeneration()
+test('gallery imports a Molda project as an editable copy while 3D models stay in the workshop', async () => {
+  const { db, scene } = await withGeneration()
+  const source = { ...animatedScene(), name: 'carrinho' }
   const view = render(<MoldaApp persistence={createMemoryPersistence()} />)
   try {
-    const trigger = await screen.findByRole('button', { name: COPY.gallery.importModel })
-    await waitFor(() => expect((trigger as HTMLButtonElement).disabled).toBe(false))
-    expect(screen.getByRole('button', { name: COPY.gallery.create }).nextElementSibling).toBe(
-      trigger,
-    )
-    fireEvent.click(trigger)
-    await screen.findByRole('dialog', { name: COPY.gallery.importModel })
-    fireEvent.click(screen.getByRole('button', { name: COPY.a11y.closeDialog }))
-    await waitFor(() => expect(screen.queryByRole('dialog')).toBe(null))
-    expect(document.activeElement).toBe(trigger)
-    expect((await createScenePersistence(db.store).listSummaries()).summaries.length).toBe(1)
+    await screen.findByRole('button', { name: 'Importar projeto' })
+    expect(screen.queryByRole('button', { name: 'Importar modelo' })).toBe(null)
+    fireEvent.change(screen.getByLabelText(COPY.gallery.importJson), {
+      target: {
+        files: [new File([JSON.stringify(sceneToJson(source))], 'carrinho.molda.json')],
+      },
+    })
+    await screen.findByRole('button', { name: COPY.a11y.assetCard('carrinho', 'Modelo') })
+    const persistence = createScenePersistence(db.store)
+    const summaries = (await persistence.listSummaries()).summaries
+    expect(summaries).toHaveLength(2)
+    const restored = await persistence.read(summaries.find((item) => item.id !== scene.id)!.id)
+    expect(restored.status).toBe('active')
+    if (restored.status !== 'active') throw new Error('Imported project missing')
+    expect(restored.document.id).not.toBe(source.id)
+    expect(restored.document.nodes).toEqual(source.nodes)
+    expect(restored.document.geometries).toEqual(source.geometries)
+    expect(restored.document.images).toEqual(source.images)
+    expect(restored.document.animations).toEqual(source.animations)
+    const original = await persistence.read(scene.id)
+    expect(original.status === 'active' && original.document).toEqual(scene)
+    expect(screen.getByRole('heading', { name: COPY.gallery.title })).toBeTruthy()
     await settle()
   } finally {
     view.unmount()
@@ -54,14 +68,15 @@ test('gallery exposes model import next to create and cancelling returns focus w
   }
 })
 
-test('gallery import follows the same journey permission as workshop import', async () => {
+test('project recovery in the gallery remains available without the 3D model import tool', async () => {
   const { db } = await withGeneration()
   const view = render(
     <MoldaApp persistence={createMemoryPersistence()} adapter={{ toolAccess: { allow: [] } }} />,
   )
   try {
     await screen.findByRole('button', { name: COPY.a11y.assetCard('nave', 'Modelo') })
-    expect(screen.queryByRole('button', { name: COPY.gallery.importModel })).toBe(null)
+    expect(screen.queryByRole('button', { name: 'Importar modelo' })).toBe(null)
+    expect(screen.getByRole('button', { name: 'Importar projeto' })).toBeTruthy()
     expect(screen.getByRole('button', { name: COPY.gallery.create })).toBeTruthy()
   } finally {
     view.unmount()

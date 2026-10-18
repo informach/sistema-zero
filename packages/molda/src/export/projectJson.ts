@@ -1,6 +1,6 @@
 /**
  * Backup da galeria inteira: o envelope `molda-gallery` v2 do "Baixar tudo" e
- * a leitura do "Trazer de volta". `importMoldaJson` NUNCA lança: devolve
+ * a leitura do "Importar projeto". `importMoldaJson` NUNCA lança: devolve
  * `null` para arquivo ilegível e conta os registros que não passaram no
  * sanitize. Também aceita uma criação solta (JSON de um asset só).
  */

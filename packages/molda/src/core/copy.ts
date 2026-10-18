@@ -1210,12 +1210,6 @@ export const COPY = {
     title: 'Minhas criações 3D',
     subtitle: 'Modelos, texturas e céus para os seus jogos 3D.',
     create: 'Criar novo',
-    importModel: 'Importar modelo',
-    importedModelName: 'modelo-importado',
-    importModelHint:
-      'Confira a prévia. Ao confirmar, o modelo será guardado como uma nova criação.',
-    importModelConfirm: 'Importar e abrir',
-    importModelSaving: 'Guardando o modelo...',
     empty: 'Nada por aqui ainda. Toque em "Criar novo" para montar a sua primeira criação!',
     emptyCta: 'Começar minha primeira criação',
     loading: 'Abrindo a sua galeria...',
@@ -1245,16 +1239,17 @@ export const COPY = {
     downloadCancelled: 'Parei de preparar o pacote.',
     downloadReady: 'Baixei a sua galeria! Procure o .zip na pasta de downloads.',
     downloadFailed: 'Não consegui montar o pacote agora. Tente de novo daqui a pouco.',
-    importJson: 'Trazer de volta',
-    importHint: 'Escolha o .zip ou o .molda.json que você baixou antes.',
+    importJson: 'Importar projeto',
+    importHint: 'Escolha um projeto do Molda (.molda.json) ou um pacote de projetos (.zip).',
     imported: (count: number) =>
-      count === 1 ? 'Trouxe 1 criação de volta!' : `Trouxe ${count} criações de volta!`,
+      count === 1 ? 'Importei 1 projeto!' : `Importei ${count} projetos!`,
     importedPartial: (count: number) =>
-      `Trouxe ${count} criações. Não consegui trazer todas; conserve o backup e confira o espaço disponível. As criações que já estavam aqui continuam guardadas.`,
-    importedNone: 'Esse arquivo não tinha nenhuma criação que eu conseguisse ler.',
+      `Importei ${count} projetos. Não consegui importar todos; guarde o arquivo e confira o espaço disponível. Os projetos que já estavam aqui continuam guardados.`,
+    importedNone: 'Esse arquivo não tinha nenhum projeto do Molda que eu conseguisse abrir.',
     importFailed:
-      'Não consegui ler esse arquivo. Ele veio do "Baixar tudo" do Molda (.zip ou .molda.json)?',
-    restoreTooLarge: 'Esse backup é grande demais. Escolha um arquivo de até 32 MB.',
+      'Não consegui abrir esse projeto. Escolha um arquivo .molda.json ou .zip que você baixou do Molda.',
+    restoreTooLarge: (maximumMb: number) =>
+      `Esse arquivo é grande demais. Escolha um arquivo de até ${maximumMb} MB.`,
     restoreZipMissing: 'Esse .zip não tem a galeria do Molda.',
     restoreZipDuplicate:
       'Esse .zip tem mais de uma galeria do Molda e não é seguro trazê-lo de volta.',
@@ -1269,9 +1264,9 @@ export const COPY = {
         '  ceus/      arquivos .hdr  → o bloco "Usar o céu 360°"',
         '',
         'No Estúdio, o jeito mais fácil continua sendo o botão "Trazer do Molda" do painel de imagens.',
-        'Para voltar com tudo para o Molda, use o botão "Trazer de volta" e escolha este .zip.',
+        'Para abrir seus projetos no Molda, use o botão "Importar projeto" e escolha este .zip.',
         'Conserve galeria.molda.json e a pasta projetos/: juntos, eles guardam toda a galeria.',
-        'Trazer de volta restaura as duas gerações em novas cópias, sem substituir suas criações.',
+        'Importar projeto cria novas cópias, sem substituir seus projetos guardados.',
       ],
       /** A geração seguinte viaja no arquivo nativo dela, não num .glb pronto. */
       project: (name: string, file: string) =>
