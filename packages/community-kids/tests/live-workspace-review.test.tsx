@@ -8,16 +8,12 @@ test('live workspace handoff and durable drafts through the real UI', async () =
     [Bun.which('bun')!, 'test', './tests/fixtures/live-workspace-review.tsx'],
     {
       cwd: fileURLToPath(new URL('..', import.meta.url)),
-      stdout: 'pipe',
-      stderr: 'pipe',
+      stdout: 'inherit',
+      stderr: 'inherit',
     },
   )
-  const [exitCode, stdout, stderr] = await Promise.all([
-    process.exited,
-    new Response(process.stdout).text(),
-    new Response(process.stderr).text(),
-  ])
-  expect({ exitCode, output: exitCode === 0 ? '' : stdout + stderr }).toEqual({
+  const exitCode = await process.exited
+  expect({ exitCode, output: '' }).toEqual({
     exitCode: 0,
     output: '',
   })

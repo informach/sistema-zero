@@ -218,6 +218,14 @@ describe('nomes acessíveis dos compositores da comunidade', () => {
         ESPERA,
       )
       fireEvent.click(pilula)
+      Bun.gc(true)
+      console.log('COMPOSER_STATE', JSON.stringify({
+        fields: [...document.querySelectorAll('input')].map((field) => ({ name: field.name, html: field.outerHTML })),
+        dialogs: [...document.querySelectorAll('[role="dialog"]')].map((dialog) => dialog.outerHTML),
+        title: document.querySelector('#new-thread-title')?.outerHTML,
+        active: document.activeElement?.outerHTML,
+        button: pilula.outerHTML,
+      }))
       // ⚠️ O prazo é o do EDITOR, não o `ESPERA`: o título nasce no mesmo diálogo que o editor, e
       // em 03/10/2026 o CI caiu aqui com o diálogo já aberto (o `body` travado) e o campo ainda
       // por chegar depois de 5 s. Passava 3 de 3 vezes no Windows.
