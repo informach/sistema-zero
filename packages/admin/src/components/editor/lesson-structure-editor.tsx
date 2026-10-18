@@ -49,7 +49,6 @@ function ToolPreview({ block }: { block: BlockView }) {
             allowBlocks: block.content.allowBlocks,
             allowCategories: block.content.allowCategories,
             allowLevelReveal: block.content.allowLevelReveal,
-            activity: block.content.activity,
           }}
         />
         {rehearsal && (

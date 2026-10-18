@@ -18,11 +18,6 @@ import {
   MAX_SUBMISSION_MESSAGE_CHARS,
   type SubmissionBlockKind,
 } from '../../domain/course/lesson-block'
-import {
-  type ClientCheckResult,
-  gradeStudioActivity,
-  type StudioCheckResult,
-} from '../../domain/course/studio-activity'
 import { deterministicSourceId } from '../../domain/gamification/source-id'
 import { LearningConflictError } from '../../domain/learning/learning.errors'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
@@ -32,7 +27,6 @@ import type { CheckAccessService } from '../access/check-access.service'
 import type { AwardGamificationService } from '../gamification/award-gamification.service'
 import type { SectionProgressionService } from '../learning/section-progression.service'
 import { assertLessonUnlocked } from '../lesson-locking/lesson-locking'
-import type { GamificationDeltaView } from '../mappers/views'
 import type { TeacherThreadsService } from '../teacher-threads/teacher-threads.service'
 
 // Namespace fixo para tornar o retry do MESMO envio idempotente no histórico.
@@ -40,15 +34,6 @@ const STUDIO_SUBMIT_NOTE_NAMESPACE = '4a250e86-0c7b-4a2e-8f07-b3a12715e5b6'
 
 export interface StudioSubmissionResultView {
   submittedAt: string
-  // ── Auto-correção (presentes só quando o bloco tem atividade) ────────────────
-  /** Nota 0–100 gravada (recálculo de `structure` no servidor + reportado do cliente). */
-  score?: number
-  /** Atingiu a nota de corte? (sem `passingScore` = sempre true, formativa). */
-  passed?: boolean
-  /** Resultado por checagem (com `verifiedBy`). */
-  results?: StudioCheckResult[]
-  /** Delta de gamificação quando passou (XP/streak/badges) — `null` se award falhou. */
-  gamification?: GamificationDeltaView | null
 }
 
 /**
@@ -56,8 +41,6 @@ export interface StudioSubmissionResultView {
  * campo novo empurrava `undefined` em todos os chamadores). Ausente = o comportamento clássico.
  */
 export interface SubmitStudioProjectOptions {
-  /** Resultados das checagens rodadas no cliente (behavior/testcase/code). */
-  clientResults?: readonly ClientCheckResult[]
   /** Recado OPCIONAL do aluno ao professor. Em branco = sem recado. */
   message?: string | null
   /**
@@ -73,7 +56,7 @@ export interface SubmitStudioProjectOptions {
   /** Bloco que esta entrega atende. Default `studio` — zero regressão no caminho existente. */
   kind?: SubmissionBlockKind
   /** Only the authenticated gallery service can supply a validated immutable snapshot. */
-  gallery?: { snapshot: GallerySubmission; projectForChecks: unknown; revision: string }
+  gallery?: { snapshot: GallerySubmission; revision: string }
   /** Impressão digital do conteúdo enviado ("envio em dia"); a galeria não tem. */
   fingerprint?: string | null
 }
@@ -93,12 +76,9 @@ const SUBMISSION_LIMITS: Record<SubmissionBlockKind, { maxChars: number; notFoun
 
 /**
  * Recebe a ENTREGA do projeto do Estúdio (ou do desenho do Pinta). Upsert por aluno+bloco
- * (último vence).
- * Quando o bloco tem ATIVIDADE (fase 2), GRADEIA na entrega: recalcula `structure`
- * no servidor + registra o reportado pelo cliente (`results`), grava nota/`passed_at`
- * STICKY e dá award de XP quando passa (espelha o quiz). A existência da entrega (ou
- * a aprovação, se houver `passingScore`) destrava a conclusão da aula (gate em
- * mark-lesson-complete).
+ * (último vence). A entrega é só a entrega à equipe: os objetivos da parte são conferidos
+ * pelo "Verificar esta parte" (`SectionProgressionService.checkProject`), nunca aqui. A
+ * existência da entrega destrava a conclusão da aula (gate em mark-lesson-complete).
  */
 export class SubmitStudioProjectService {
   constructor(
@@ -122,7 +102,6 @@ export class SubmitStudioProjectService {
     options: SubmitStudioProjectOptions = {},
   ): Promise<StudioSubmissionResultView> {
     const {
-      clientResults = [],
       message = null,
       messageSpoken = false,
       privileged = false,
@@ -211,65 +190,9 @@ export class SubmitStudioProjectService {
       )
 
     const submittedAt = this.clock()
-    // Auto-correção é do Estúdio: o bloco de Pinta é só entrega (a régua de "desenho certo" não
-    // existe e ficou explicitamente fora de escopo).
-    const activity = block.content.kind === 'studio' ? block.content.activity : undefined
-
-    // Bloco sem atividade: comportamento clássico (só entrega).
-    if (!activity) {
-      // O recado é a confirmação da entrega para a equipe. Persiste-o antes da
-      // linha "último vence": se o canal estiver indisponível, a entrega não é
-      // parcialmente confirmada e o aluno pode reenviar com segurança.
-      await this.mirrorSubmitNote({
-        note,
-        noteSpoken,
-        userId,
-        accountId: accountId ?? userId,
-        audience: course.audience,
-        blockId,
-        courseId: lesson.courseId,
-        lessonId,
-        title: lesson.title,
-        authorName,
-        project: submissionProject,
-      })
-      await this.submissions.upsert(
-        {
-          id: this.newId(),
-          userId,
-          accountId: accountId ?? userId,
-          blockId,
-          lessonId,
-          courseId: lesson.courseId,
-          project: submissionProject,
-          submittedAt,
-          message: note,
-          messageSpoken: noteSpoken,
-          contentFingerprint,
-        },
-        { revision: block.contentRevision, galleryRequestId: gallery?.snapshot.requestId },
-      )
-      // Marco de missão "enviar ao professor" (amount 0, idempotente por bloco).
-      await this.gamification.awardStudioSubmitted({
-        userId,
-        accountId: accountId ?? userId,
-        blockId,
-        audience: course.audience,
-        privileged,
-      })
-      return { submittedAt: submittedAt.toISOString() }
-    }
-
-    // Com atividade: gradeia (structure recalc no servidor + reportado do cliente).
-    const grade = gradeStudioActivity(
-      activity,
-      gallery?.projectForChecks ?? submissionProject,
-      clientResults,
-    )
-    // `passed_at` é STICKY: aprovou uma vez = destrava para sempre (não regride no
-    // reenvio pior). O repositório mantém o valor existente com bloqueio advisory.
-    const passedAt = grade.passed ? submittedAt : null
-
+    // O recado é a confirmação da entrega para a equipe. Persiste-o antes da linha "último
+    // vence": se o canal estiver indisponível, a entrega não é parcialmente confirmada e o
+    // aluno pode reenviar com segurança.
     await this.mirrorSubmitNote({
       note,
       noteSpoken,
@@ -283,10 +206,8 @@ export class SubmitStudioProjectService {
       authorName,
       project: submissionProject,
     })
-
     await this.submissions.upsert(
       {
-        // id só vale no INSERT novo; no conflito o onConflictDoUpdate preserva a linha.
         id: this.newId(),
         userId,
         accountId: accountId ?? userId,
@@ -295,24 +216,13 @@ export class SubmitStudioProjectService {
         courseId: lesson.courseId,
         project: submissionProject,
         submittedAt,
-        score: grade.score,
-        results: grade.results,
-        checkedAt: submittedAt,
-        passedAt,
         message: note,
         messageSpoken: noteSpoken,
         contentFingerprint,
       },
-      {
-        preservePassedAt: true,
-        revision: block.contentRevision,
-        galleryRequestId: gallery?.snapshot.requestId,
-      },
+      { revision: block.contentRevision, galleryRequestId: gallery?.snapshot.requestId },
     )
-
-    // Marco de missão "enviar ao professor" (amount 0, idempotente por bloco) — SEMPRE
-    // que entrega, independentemente de nota. Distinto do `studio_passed` (XP quando
-    // passa): ambos deduplicam por bloco, então não há XP dobrado.
+    // Marco de missão "enviar ao professor" (amount 0, idempotente por bloco).
     await this.gamification.awardStudioSubmitted({
       userId,
       accountId: accountId ?? userId,
@@ -320,26 +230,7 @@ export class SubmitStudioProjectService {
       audience: course.audience,
       privileged,
     })
-
-    // Award SÓ quando passou agora (idempotente por bloco no ledger).
-    const gamification = grade.passed
-      ? await this.gamification.awardStudioPassed({
-          userId,
-          accountId: accountId ?? userId,
-          blockId,
-          score: grade.score,
-          audience: course.audience,
-          privileged,
-        })
-      : null
-
-    return {
-      submittedAt: submittedAt.toISOString(),
-      score: grade.score,
-      passed: grade.passed,
-      results: grade.results,
-      gamification,
-    }
+    return { submittedAt: submittedAt.toISOString() }
   }
 
   /**

@@ -230,14 +230,6 @@ export class PintaChainTypeMismatchError extends DomainError {
   // então quem lança PRECISA montá-la. Herda o construtor do DomainError.
 }
 
-/** Aula tem atividade do Estúdio com nota de corte ainda não atingida — conclusão bloqueada. → 409. */
-export class StudioGateNotPassedError extends DomainError {
-  readonly code = 'STUDIO_GATE_NOT_PASSED'
-  constructor(message = 'Atinja a nota mínima da atividade do Estúdio para concluir a aula') {
-    super(message)
-  }
-}
-
 /** Bloco de certificado inexistente na aula (ou o bloco não é um certificado). → 404. */
 export class CertificateBlockNotFoundError extends DomainError {
   readonly code = 'CERTIFICATE_BLOCK_NOT_FOUND'

@@ -193,12 +193,6 @@ describe('lesson completion requirements', () => {
           content: { kind: 'studio' },
           studioState: { submitted: false },
         },
-        {
-          id: 'studio-nota',
-          kind: 'studio',
-          content: { kind: 'studio', activity: { passingScore: 60 } },
-          studioState: { submitted: true, passed: false },
-        },
         { id: 'pinta', kind: 'pinta', content: { kind: 'pinta' } },
         { id: 'cert', kind: 'certificate', content: { kind: 'certificate' } },
       ],
@@ -210,7 +204,6 @@ describe('lesson completion requirements', () => {
       'Complete os alvos do jogo',
       'Passe no quiz (nota mínima 70%)',
       'Envie seu projeto para o professor',
-      'Alcance a nota mínima do projeto',
       'Envie seu desenho para o professor',
       'Pegue seu certificado',
     ])
@@ -267,18 +260,13 @@ describe('lesson completion requirements', () => {
       }),
     ).toEqual([])
   })
-  test('grade and delivery are distinct, and an already completed lesson never regresses', () => {
+  test('o bloco Estúdio só exige o envio, e a aula concluída nunca regride', () => {
     const blocks = [
-      {
-        id: 'studio',
-        kind: 'studio',
-        content: { activity: { passingScore: 70 } },
-        studioState: { submitted: true, passed: false },
-      },
+      { id: 'studio', kind: 'studio', content: {}, studioState: { submitted: false } },
     ]
     expect(lessonCompletionRequirements({ completed: false, blocks })[0]).toMatchObject({
       complete: false,
-      reason: 'STUDIO_GATE_NOT_PASSED',
+      reason: 'STUDIO_GATE_NOT_SUBMITTED',
     })
     expect(lessonCompletionRequirements({ completed: true, blocks })[0]?.complete).toBe(true)
   })

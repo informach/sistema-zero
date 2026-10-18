@@ -1,5 +1,13 @@
 # CLAUDE.md — @sistemazero/community-kids
 
+## Objetivos da parte (18/10/2026)
+
+[`docs/plans/2026-10-18-objetivos-do-estudio.md`](../../docs/plans/2026-10-18-objetivos-do-estudio.md). O cartão é do member-shell (ver lá); aqui ele veste a pele da casa pelos ganchos
+`sz-lesson-objectives*` no `globals.css` (os 6 temas do perfil pelos tokens semânticos) e o
+vocabulário vem do `KIDS_LESSON_COPY` (`verificacao.*`: "Desafio extra", "+5 XP", "você mexeu no
+projeto depois de verificar"). O `STUDIO_GATE_NOT_PASSED` e a nota mínima do Estúdio SAÍRAM: o
+toast de conclusão não trata mais esse código. Testes: `tests/section-objectives-card.test.tsx`.
+
 ## Oficinas ao vivo: conquistas, troféu e missão (14/10/2026)
 
 Lockstep dos cursos ao vivo (regras no CLAUDE.md do members): `BADGE_INFO` ganhou
@@ -359,7 +367,7 @@ o bloco **`studio`** (chip "Crie") REUSA o `StudioBlockView` do member-shell —
 (altura `h-[36rem] lg:h-[40rem]` desde 09/2026, quando ele passou a dividir a tela com o conteúdo
 da seção; mudança no member-shell, vale tb no adulto),
 rascunho local, "Enviar para o professor" (o modal de confirmação tem um campo OPCIONAL de recado ao professor — compartilhado do member-shell, vale tb no adulto) + gate de conclusão `STUDIO_GATE_NOT_SUBMITTED` (sem envio)
-ou `STUDIO_GATE_NOT_PASSED` (atividade enviada, mas abaixo da nota mínima); o `lesson-player-client`
+(o `STUDIO_GATE_NOT_PASSED` da nota mínima saiu em 18/10/2026); o `lesson-player-client`
 distingue os dois no toast/botão. O player compartilhado `LessonSections` mostra uma seção por vez e mantém uma instância do editor entre seções, ocultando-a quando não usada. O índice é livre dentro da aula desbloqueada.
 Renderizado DENTRO do `LessonPlayerProvider` (precisa do contexto do player). Exige `@sistemazero/studio` em transpilePackages + `@source`
 + `frame-src blob:`;

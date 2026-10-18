@@ -21,7 +21,6 @@ mock.module('idb-keyval', () => ({
 }))
 
 const { useStudioConfig } = await import('./config')
-const { useStudioActivity } = await import('./activity')
 const { useStudioTutor } = await import('./tutor')
 const { useProjectStore } = await import('../state/projectStore')
 
@@ -29,7 +28,6 @@ const { useProjectStore } = await import('../state/projectStore')
 // dos providers do StudioCore).
 function ConfigProbe(): React.JSX.Element {
   const config = useStudioConfig()
-  const activity = useStudioActivity()
   const tutor = useStudioTutor()
   const projectId = useProjectStore((s) => s.project?.id ?? '')
   return (
@@ -43,7 +41,6 @@ function ConfigProbe(): React.JSX.Element {
       data-extensions={String(config.extensions)}
       data-preview={String(config.preview)}
       data-level={config.learning.level}
-      data-activity={activity ? 'present' : 'none'}
       data-tutor={tutor.config ? 'present' : 'none'}
     />
   )
@@ -115,20 +112,6 @@ describe('StudioEditor', () => {
     })
     expect(getByTestId('config-probe').getAttribute('data-terminal')).toBe('true')
     expect(getByTestId('config-probe').getAttribute('data-ai')).toBe('true')
-  })
-
-  it('nunca provê atividade — o editor puro não paga pela feature de aula', async () => {
-    const { getByTestId } = render(
-      <StudioEditor
-        initialProject={createEmptyProject('editor-4', 'Editor 4')}
-        persistence="none"
-      />,
-    )
-
-    await waitFor(() => {
-      expect(getByTestId('config-probe').getAttribute('data-project')).toBe('editor-4')
-    })
-    expect(getByTestId('config-probe').getAttribute('data-activity')).toBe('none')
   })
 
   it('provê o tutor somente quando o host do editor injeta o adapter', async () => {

@@ -9,7 +9,9 @@ import {
   type LessonSection,
   lessonCompletionRequirements,
   PLATFORM_ACTION_LABELS,
+  type ProjectObjectiveResult,
   playbackLessonStructure,
+  requiredProjectChecks,
   type SectionPendingItem,
   type SectionProgressRecord,
   type SectionProgressView,
@@ -18,10 +20,10 @@ import {
   submissionFreshness,
   submissionUpToDateWorkspace,
 } from '@sistemazero/core/learning'
-import type { LessonWithContent } from '../../domain/course/course'
+import { evaluateStudioSectionObjectives } from '@sistemazero/studio/server-project-checks'
+import type { CourseAudience, LessonWithContent } from '../../domain/course/course'
 import { LessonNotFoundError } from '../../domain/course/course.errors'
 import { hasComingSoonBlock, MAX_STUDIO_PROJECT_CHARS } from '../../domain/course/lesson-block'
-import { gradeStudioActivity } from '../../domain/course/studio-activity'
 import type { CreationDraftState } from '../../domain/creations/creation'
 import { LearningConflictError, SectionLockedError } from '../../domain/learning/learning.errors'
 import type { CertificateRepository } from '../../domain/ports/certificate-repository.port'
@@ -31,6 +33,8 @@ import type { ProgressRepository } from '../../domain/ports/progress-repository.
 import type { QuizAttemptRepository } from '../../domain/ports/quiz-attempt-repository.port'
 import type { StudioSubmissionRepository } from '../../domain/ports/studio-submission-repository.port'
 import { stableJson } from '../../domain/shared/stable-json'
+import type { AwardGamificationService } from '../gamification/award-gamification.service'
+import type { GamificationDeltaView } from '../mappers/views'
 import type { PlatformActionService } from './platform-action.service'
 
 /**
@@ -62,6 +66,8 @@ export class SectionProgressionService {
      * não pode ser recusada com `SECTION_LOCKED`), e depois do encontro tudo fica livre.
      */
     private readonly courseModality?: (courseId: string) => Promise<CourseModality>,
+    /** O prêmio dos objetivos (`studio_passed` + `objective_extra`). Sem ele, verificar não premia. */
+    private readonly rewards?: Pick<AwardGamificationService, 'awardSectionObjectives'>,
   ) {}
 
   /** Impressão e hora do rascunho guardado de cada espaço de trabalho das partes marcadas. */
@@ -152,21 +158,27 @@ export class SectionProgressionService {
     const completed = new Set(
       structure.legacyLayout ? [] : records.filter((r) => r.completedAt).map((r) => r.sectionId),
     )
+    // A memória da lista: o último resultado de cada objetivo, só o da revisão atual da parte
+    // (mudou a regra ou um bloco da parte, o resultado guardado era de outra pergunta).
+    const objectiveResults = new Map<string, ProjectObjectiveResult[]>()
+    for (const section of structure.sections) {
+      const saved = records.find(
+        (r) => r.sectionId === section.id && r.revision === this.revision(section, lesson),
+      )
+      if (saved?.objectiveResults?.length) objectiveResults.set(section.id, saved.objectiveResults)
+    }
     if (completedLessons.includes(lesson.id)) {
       return sectionProgressView(
         structure.revision,
         structure.sections,
         new Set(structure.sections.map((s) => s.id)),
         new Map(),
+        { objectiveResults },
       )
     }
-    // Publication enforces the new authoring policy; existing hybrid activities keep
-    // their published grading contract until the author publishes a compatible revision.
     const issues = structure.legacyLayout
       ? []
-      : sectionCompletionIssues(structure.sections, lesson.blocks, {
-          purpose: 'playback',
-        })
+      : sectionCompletionIssues(structure.sections, lesson.blocks)
     const upToDateWorkspaces = new Map(
       structure.sections.flatMap((section) => {
         if (!section.completion?.submissionUpToDate || completed.has(section.id)) return []
@@ -203,10 +215,7 @@ export class SectionProgressionService {
               ? { ...b.content, required: true }
               : b.content,
           quizState: { passed: quizzes.get(b.id)?.everPassed ?? false },
-          studioState: {
-            submitted: submissions.has(b.id),
-            passed: submissions.get(b.id)?.passed ?? false,
-          },
+          studioState: { submitted: submissions.has(b.id) },
           pintaState: { submitted: submissions.has(b.id) },
           certificateState: { issued: certificate !== null },
         }))
@@ -236,7 +245,7 @@ export class SectionProgressionService {
         !structure.legacyLayout &&
         (!criteria ||
           (!criteria.blockIds.length &&
-            !criteria.projectChecks?.length &&
+            !requiredProjectChecks(criteria.projectChecks ?? []).length &&
             !criteria.platformAction &&
             !criteria.submissionUpToDate))
       )
@@ -251,15 +260,17 @@ export class SectionProgressionService {
           // conjugar, e o botão citado é o do `SectionPlatformAction` do member-shell.
           text: `Depois de ${minuscula(PLATFORM_ACTION_LABELS[criteria.platformAction])}, toque em "Verificar minha ação"`,
         })
+      // Só os OBRIGATÓRIOS trancam: uma parte só com desafios extras (mais outro critério, como
+      // um quiz) fecharia nunca, porque sem obrigatório a verificação nunca "passa".
       if (
-        criteria?.projectChecks?.length &&
+        requiredProjectChecks(criteria?.projectChecks ?? []).length &&
         !records.some(
           (r) => r.sectionId === section.id && r.revision === revision && r.projectPassed,
         )
       )
         missing.push({
           kind: 'project-check',
-          text: 'Confira o objetivo desta parte no seu projeto',
+          text: 'Cumpra os objetivos desta parte e toque em "Verificar esta parte"',
         })
       const workspace = upToDateWorkspaces.get(section.id)
       if (workspace) {
@@ -299,7 +310,7 @@ export class SectionProgressionService {
             sectionId: section.id,
             revision,
             completedAt: this.clock().toISOString(),
-            projectPassed: Boolean(criteria?.projectChecks?.length),
+            projectPassed: requiredProjectChecks(criteria?.projectChecks ?? []).length > 0,
           })
         if (!settles) persist = false
       } else if (!freeOrder) reachable = false
@@ -315,6 +326,7 @@ export class SectionProgressionService {
       )
     return sectionProgressView(structure.revision, structure.sections, completed, pending, {
       freeOrder,
+      objectiveResults,
     })
   }
 
@@ -416,13 +428,25 @@ export class SectionProgressionService {
     return { ...result, sectionProgress: await this.read(owner, lesson) }
   }
 
+  /**
+   * "Verificar esta parte": confere no SERVIDOR cada objetivo da parte no projeto enviado. A parte
+   * passa quando todos os OBRIGATÓRIOS passam numa mesma verificação (`projectPassed`, pegajoso
+   * dentro da revisão); os extras nunca trancam. O último resultado de cada objetivo fica guardado
+   * (a lista se lembra ao reabrir a fase) e a criança recebe só `{id, passed}`, nunca a regra.
+   */
   async checkProject(
     owner: LearningOwner,
     lesson: LessonWithContent,
     sectionId: string,
     revision: string,
     project: unknown,
-  ) {
+    context: { audience: CourseAudience; privileged: boolean },
+  ): Promise<{
+    results: ProjectObjectiveResult[]
+    passed: boolean
+    sectionProgress: SectionProgressView | undefined
+    gamification: GamificationDeltaView | null
+  }> {
     await this.assertSection(owner, lesson, sectionId)
     const structure = await this.repository.getStructure(lesson.id)
     if (!structure || structure.revision !== revision) throw new LearningConflictError()
@@ -432,15 +456,9 @@ export class SectionProgressionService {
       throw new ValidationError('Esta seção não possui verificação de projeto.')
     if (project === undefined || JSON.stringify(project).length > MAX_STUDIO_PROJECT_CHARS)
       throw new ValidationError('Projeto inválido ou muito grande.')
-    const result = gradeStudioActivity(
-      {
-        instructions: section.objective,
-        passingScore: 100,
-        checks: checks.map((c) => ({ ...c, kind: 'structure' })),
-      },
-      project,
-      [],
-    )
+    const evaluation = evaluateStudioSectionObjectives(checks, project)
+    const results = evaluation.results.map((r) => ({ id: r.checkId, passed: r.passed }))
+    const sectionRevision = this.revision(section, lesson)
     await this.repository.saveSectionProgress(
       owner,
       lesson.id,
@@ -448,9 +466,10 @@ export class SectionProgressionService {
       [
         {
           sectionId,
-          revision: this.revision(section, lesson),
+          revision: sectionRevision,
           completedAt: null,
-          projectPassed: result.passed,
+          projectPassed: evaluation.passed,
+          objectiveResults: results,
         },
       ],
       this.blockRevisions(lesson),
@@ -459,22 +478,45 @@ export class SectionProgressionService {
         kind: 'section_project',
         blockId: section.workspaceBlockId ?? null,
         sectionId,
-        revision: this.revision(section, lesson),
+        revision: sectionRevision,
         createdAt: this.clock().toISOString(),
         payload: {
           sectionTitle: section.title,
           project,
           checks,
-          results: result.results,
-          passed: result.passed,
+          results: evaluation.results,
+          passed: evaluation.passed,
           structureRevision: revision,
         },
       },
     )
+    // O prêmio pede TUDO o que passou agora e quem deduplica é o ledger (índice único por
+    // usuário, tipo e fonte). Filtrar aqui pelo resultado guardado perdia o XP para sempre quando
+    // o prêmio falhava uma vez: o progresso já registrava "passou" e a próxima verificação não
+    // pedia de novo.
+    const extraPassed = evaluation.results
+      .filter((r) => r.optional && r.passed)
+      .map((r) => r.checkId)
+    const requiredPassed = evaluation.passed
+    const gamification =
+      this.rewards && (requiredPassed || extraPassed.length)
+        ? await this.rewards.awardSectionObjectives({
+            userId: owner.userId,
+            accountId: owner.accountId,
+            lessonId: lesson.id,
+            sectionId,
+            workspaceBlockId: section.workspaceBlockId ?? null,
+            requiredPassed,
+            extraPassed,
+            audience: context.audience,
+            privileged: context.privileged,
+          })
+        : null
     return {
-      results: result.results,
-      passed: result.passed,
+      results,
+      passed: evaluation.passed,
       sectionProgress: await this.read(owner, lesson),
+      gamification,
     }
   }
 }

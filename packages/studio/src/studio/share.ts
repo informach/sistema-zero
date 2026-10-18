@@ -16,7 +16,7 @@ import type { Project } from '#core'
  * hoje) e ao estúdio COMPLETO independente (`<StudioEditor>`, produto futuro) — os
  * dois recebem a prop `share`.
  *
- * Segue o padrão do {@link useStudioActivity}: contexto INTERNO, latchado uma vez
+ * Segue o padrão dos adapters de host: contexto INTERNO, latchado uma vez
  * por instância (valor estável), default `null` (sem adapter → sem botão), e NÃO
  * exportado pelo index — só os TIPOS do adapter são públicos.
  */
@@ -134,7 +134,7 @@ export interface StudioShareAdapter {
   onPublished?(result: StudioShareResult): void
 }
 
-// Contexto INTERNO (como o StudioActivityContext): `null` = sem adapter → o botão
+// Contexto INTERNO: `null` = sem adapter → o botão
 // "Compartilhar" não aparece. Provido SÓ pelo StudioCore quando o host passa `share`.
 const StudioShareContext = createContext<StudioShareAdapter | null>(null)
 

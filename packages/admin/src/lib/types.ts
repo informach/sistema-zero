@@ -12,17 +12,7 @@ import type {
  */
 
 // Tipos do editor embarcável (bloco `studio`) — type-only (erasado em runtime).
-// As atividades (auto-correção) reusam os tipos PÚBLICOS do @sistemazero/studio
-// (sem mirror próprio — evita drift; o members tem o espelho do lado servidor).
-import type {
-  AnyBlockLevel,
-  CheckResult,
-  IDEMode,
-  LessonActivity,
-  Project,
-} from '@sistemazero/studio'
-
-export type { ActivityCheck, CheckResult, LessonActivity } from '@sistemazero/studio'
+import type { AnyBlockLevel, IDEMode, Project } from '@sistemazero/studio'
 
 export interface SessionUser {
   id: string
@@ -625,8 +615,11 @@ export interface StudioBlock {
   allowCategories?: string[]
   allowedModes?: IDEMode[]
   allowLevelReveal?: boolean
-  /** Atividade com auto-correção (fase 2). Ausente = bloco só de entrega. */
-  activity?: LessonActivity
+  /**
+   * O GABARITO da professora (18/10/2026): o projeto pronto. Só a equipe vê (o members o tira da
+   * aula do aluno); serve ao "Testar agora" dos objetivos e à publicação.
+   */
+  solutionProject?: Project
   /** Nome do projeto contínuo (cadeia). Aulas com o mesmo nome carregam o código entre si. */
   chain?: string
   /** Vitrine (Mural dos Criadores): config da auto-publicação ao concluir a última aula. */
@@ -748,10 +741,6 @@ export interface StudioSubmissionRow {
   accountEmail: string | null
   /** Nome da CRIANÇA (perfil) quando a entrega veio de um perfil; `null` no adulto. */
   childName: string | null
-  /** Correção automática (atividade): nota/aprovado; `null` sem atividade. */
-  score: number | null
-  checkedAt: string | null
-  passed: boolean
   /** Recado OPCIONAL do aluno ao professor. `null` = sem recado. */
   message: string | null
   /** O recado veio da fala transcrita (14/10/2026). */
@@ -773,15 +762,10 @@ export interface StudioSubmissionCourseRow extends StudioSubmissionRow {
   moduleTitle: string
 }
 
-/** Projeto enviado por um aluno (abrir no Estúdio embutido do admin) + correção. */
+/** Projeto enviado por um aluno (abrir no Estúdio embutido do admin). */
 export interface StudioSubmissionDetailView {
   project: Project
   submittedAt: string
-  score: number | null
-  /** Resultado por checagem (`verifiedBy`: server recalculado × client reportado). */
-  results: CheckResult[] | null
-  checkedAt: string | null
-  passed: boolean
   /** Recado OPCIONAL do aluno ao professor. `null` = sem recado. */
   message: string | null
   /** O recado veio da fala transcrita (14/10/2026). */
@@ -828,9 +812,6 @@ export interface StudioSubmissionQueueRow {
   courseTitle: string
   audience: 'adult' | 'kids'
   submittedAt: string
-  score: number | null
-  checkedAt: string | null
-  passed: boolean
   /** Recado opcional do aluno no envio. */
   message: string | null
   /** O recado veio da fala transcrita (14/10/2026). */

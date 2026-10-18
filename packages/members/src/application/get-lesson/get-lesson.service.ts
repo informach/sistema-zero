@@ -1,4 +1,4 @@
-import { lessonCompletionRequirements } from '@sistemazero/core/learning'
+import { lessonCompletionRequirements, sectionCompletionView } from '@sistemazero/core/learning'
 import { LessonNotFoundError } from '../../domain/course/course.errors'
 import { hasComingSoonBlock } from '../../domain/course/lesson-block'
 import { computeRetryAvailableAt } from '../../domain/course/quiz'
@@ -97,8 +97,8 @@ export class GetLessonService {
       })
     }
 
-    // Estado da entrega por bloco de estúdio (submitted? + nota/aprovado quando há
-    // atividade) — sem o projeto, que é pesado; o continuar usa o rascunho local.
+    // Estado da entrega por bloco de estúdio (submitted?) — sem o projeto, que é pesado; o
+    // continuar usa o rascunho local.
     const studioStates = new Map<string, StudioStateView>()
     for (const blockId of studioBlockIds) {
       const state = studioSummaries.get(blockId)
@@ -107,8 +107,6 @@ export class GetLessonService {
         // A data do envio entra na decisão de qual versão abrir (rascunho da conta × envio).
         submittedAt: state?.submittedAt.toISOString() ?? null,
         contentFingerprint: state?.contentFingerprint ?? null,
-        lastScore: state?.score ?? null,
-        passed: state?.passed ?? false,
         // O carimbo do professor vale para a entrega ATUAL: um reenvio depois
         // dele apaga o selo (a versão nova ainda não foi conferida).
         reviewed: state?.reviewedAt != null && state.reviewedAt >= state.submittedAt,
@@ -187,9 +185,11 @@ export class GetLessonService {
           workspaceBlockId:
             !privileged && sectionState(id)?.status === 'locked' ? null : workspaceBlockId,
           externalTool: !privileged && sectionState(id)?.status === 'locked' ? null : externalTool,
+          // A criança recebe a VISTA do critério: os objetivos vão com rótulo, dica e tipo,
+          // nunca com a regra (o que o servidor confere não sai do members).
           ...(completion &&
           (!sectionProgress || privileged || sectionState(id)?.status !== 'locked')
-            ? { completion }
+            ? { completion: sectionCompletionView(completion) }
             : {}),
         }),
       ),

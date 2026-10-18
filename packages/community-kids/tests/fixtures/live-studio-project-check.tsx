@@ -52,7 +52,7 @@ test('o Estúdio ao vivo verifica o projeto do editor e atualiza o progresso da 
   globalThis.fetch = (async (input: any, init: any) => {
     if (String(input).includes('/project-check')) {
       checked = JSON.parse(init.body)
-      return Response.json({ passed: true, results: [{ checkId: 'loop', passed: true }] })
+      return Response.json({ passed: true, results: [{ id: 'loop', passed: true }] })
     }
     return Response.json(canonical)
   }) as typeof fetch
@@ -68,7 +68,7 @@ test('o Estúdio ao vivo verifica o projeto do editor e atualiza o progresso da 
       blockId: block,
       sectionId: 'section',
       revision: 'revision',
-      objectives: [{ id: 'loop', label: 'Usar repetição', rule: { type: 'usesLoop' } }],
+      objectives: [{ id: 'loop', label: 'Usar repetição', kind: 'idea' }],
     },
   }
   // Positive control: the configured criterion really renders a verification in the regular control.

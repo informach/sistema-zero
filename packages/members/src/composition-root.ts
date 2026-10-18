@@ -618,6 +618,7 @@ export async function createApplication(env: Env): Promise<Application> {
   // "Guardado na sua conta" (índice das criações do Estúdio Completo/Pinta; blob no R2 via BFF).
   // Nasce aqui porque o "envio em dia" das seções lê os rascunhos da fase.
   const creationsRepo = new DrizzleCreationsRepository(db)
+  const awardGamification = new AwardGamificationService(gamificationRepo, clock, logger)
   const sectionProgression = new SectionProgressionService(
     learningRepository,
     progress,
@@ -628,6 +629,7 @@ export async function createApplication(env: Env): Promise<Application> {
     certificates,
     creationsRepo,
     async (courseId) => (await courses.findCourseById(courseId))?.modality ?? 'recorded',
+    awardGamification,
   )
   const learning = new LearningService(
     learningRepository,
@@ -662,7 +664,6 @@ export async function createApplication(env: Env): Promise<Application> {
     progress,
     sectionProgression,
   )
-  const awardGamification = new AwardGamificationService(gamificationRepo, clock, logger)
   liveRewardsImpl = new LiveRewardsService(awardGamification)
   const getGamification = new GetGamificationService(gamificationRepo, clock)
   const getAvatar = new GetAvatarService(avatarRepo, gamificationRepo)

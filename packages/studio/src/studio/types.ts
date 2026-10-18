@@ -3,7 +3,6 @@ import type { AnyBlockLevel, IDEMode, Locale, Project } from '#core'
 import type { StudioPlayerOriginAdapter } from '../components/preview/playerOriginAdapter'
 import type { StudioPersistence } from '../persistence/types'
 import type { StudioLimits } from '../state/projectStore'
-import type { ActivityRunResult, LessonActivity } from './activity'
 import type { StudioFeatures } from './config'
 import type { StudioMoldaLibraryAdapter } from './molda-library'
 import type { StudioPintaLibraryAdapter } from './pinta-library'
@@ -34,12 +33,6 @@ export interface StudioHandle {
   resumeAuthorship(revision: number): void
   setMode(mode: IDEMode): void
   isDirty(): boolean
-  /**
-   * Último resultado da auto-correção da atividade (`null` se ainda não rodou ou
-   * não há atividade). O host (member-shell) anexa este resultado reportado no
-   * envio — o servidor recalcula só as checagens de estrutura (correção híbrida).
-   */
-  getActivityResult(): ActivityRunResult | null
 }
 
 /**
@@ -153,7 +146,7 @@ export interface StudioCommonProps {
    * Adapter de "Compartilhar" (publicar no Mural dos Criadores). Quando
    * presente, a Topbar mostra o botão Compartilhar ao lado do Salvar; o host
    * implementa `generateDescription` (servidor) + `publish`. Ausente (default)
-   * → sem botão. Estável por instância (latchado, igual à `activity`). Serve
+   * → sem botão. Estável por instância (latchado, igual ao `share`). Serve
    * ao estúdio de aula (hoje) e ao estúdio completo (produto futuro).
    */
   share?: StudioShareAdapter
@@ -259,16 +252,11 @@ export interface StudioLearningProps {
 }
 
 /**
- * Props do motor {@link StudioCore} — superconjunto: editor + aprendizado +
- * atividade. Os dois componentes públicos repassam um subconjunto destas.
+ * Props do motor {@link StudioCore} — superconjunto: editor + aprendizado. Os
+ * dois componentes públicos repassam um subconjunto destas.
  */
 export type StudioCoreProps = StudioCommonProps &
   StudioLearningProps & {
-    /**
-     * Atividade com auto-correção (fiada para a fase seguinte; ver
-     * `studio/activity.ts`). Ausente → o painel de atividade não renderiza nada.
-     */
-    activity?: LessonActivity | null
     /** Interno: somente StudioEditor encaminha este contrato. */
     tutor?: StudioTutorConfig
     /** Interno: somente StudioEditor encaminha este contrato. */
@@ -290,13 +278,9 @@ export type StudioEditorProps = StudioCommonProps &
 
 /**
  * Props do <StudioLesson> — editor configurável de aula: editor + curadoria de
- * aprendizado + atividade (auto-correção).
+ * aprendizado. Os objetivos da parte são conferidos pelo servidor, fora do editor.
  */
-export type StudioLessonProps = StudioCommonProps &
-  StudioLearningProps & {
-    /** Atividade com auto-correção (fiada para a fase seguinte). */
-    activity?: LessonActivity | null
-  }
+export type StudioLessonProps = StudioCommonProps & StudioLearningProps
 
 /** @deprecated Use {@link StudioEditorProps} ou {@link StudioLessonProps}. Alias do {@link StudioCoreProps}. */
 export type StudioProps = StudioCoreProps

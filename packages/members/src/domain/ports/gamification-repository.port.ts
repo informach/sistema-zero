@@ -72,6 +72,9 @@ export type XpSourceType =
   // curso; conquista `live-course-complete` + troféu). Nenhum dos dois é marco da Jornada.
   | 'live_encounter'
   | 'live_course_complete'
+  // Objetivo EXTRA da parte cumprido pela primeira vez (18/10/2026): XP puro, sem moeda;
+  // sourceId = uuid determinístico de aula + parte + objetivo.
+  | 'objective_extra'
 
 export interface XpEventInput {
   sourceType: XpSourceType

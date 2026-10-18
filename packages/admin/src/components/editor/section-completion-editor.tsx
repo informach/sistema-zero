@@ -1,19 +1,25 @@
 'use client'
 
-import type { SectionCompletion, SectionStructureRule } from '@sistemazero/core/learning'
+import type {
+  SectionCompletion,
+  SectionProjectCheck,
+  SectionStructureRule,
+} from '@sistemazero/core/learning'
 import {
   isPlatformAction,
   PLATFORM_ACTION_LABELS,
   PLATFORM_ACTIONS,
+  PROJECT_CHECK_HINT_MAX,
 } from '@sistemazero/core/learning'
 import {
-  evaluateStudioSectionProject,
+  evaluateStudioSectionObjectives,
   projectCheckAuthoring,
 } from '@sistemazero/studio/server-project-checks'
 import { Button } from '@sistemazero/ui/button'
 import { Input } from '@sistemazero/ui/input'
 import { Select } from '@sistemazero/ui/select'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { testSectionObjectives } from '@/lib/objectives-test'
 import { ProjectRuleEditor } from './project-rule-editor'
 
 function newRule(type: string): SectionStructureRule {
@@ -58,6 +64,15 @@ export function SectionCompletionEditor({
   const checks = value.projectChecks ?? []
   const [expandedChecks, setExpandedChecks] = useState<string[]>([])
   const fallbackAllowBlocks = workspace === undefined ? allowBlocks : undefined
+  // Projeto Pro não tem blocos: os objetivos são as ideias de programação, lidas no código.
+  const isPro =
+    typeof workspace === 'object' &&
+    workspace !== null &&
+    'initialProject' in workspace &&
+    typeof workspace.initialProject === 'object' &&
+    workspace.initialProject !== null &&
+    'kind' in workspace.initialProject &&
+    workspace.initialProject.kind === 'pro'
   const authoring = useMemo(
     () => projectCheckAuthoring(workspace ?? { allowBlocks: fallbackAllowBlocks }),
     [workspace, fallbackAllowBlocks],
@@ -74,9 +89,22 @@ export function SectionCompletionEditor({
   const simulation =
     simulationProject === null
       ? simulationMessage
-      : evaluateStudioSectionProject(checks, simulationProject)
-          .map((result) => `${result.passed ? 'Cumprido' : 'Falta'}: ${result.label}`)
+      : evaluateStudioSectionObjectives(checks, simulationProject)
+          .results.map((result, index) => {
+            const check = checks.find((c) => c.id === result.checkId)
+            const name = check?.label.trim() || `Objetivo ${index + 1}`
+            return `${result.passed ? 'Cumprido' : 'Falta'}: ${name}${result.optional ? ' (extra)' : ''}`
+          })
           .join('\n')
+  // O "Testar agora" fica vivo depois do primeiro clique: mexer num objetivo ou no gabarito
+  // (que chega pelo autosave) atualiza o resultado na hora.
+  const [tested, setTested] = useState(false)
+  const report = useMemo(
+    () => (tested ? testSectionObjectives(checks, workspace) : null),
+    [tested, checks, workspace],
+  )
+  const patchCheck = (id: string, change: (check: SectionProjectCheck) => SectionProjectCheck) =>
+    onChange({ ...value, projectChecks: checks.map((c) => (c.id === id ? change(c) : c)) })
   return (
     <fieldset className="space-y-3 rounded-xl border border-border p-4">
       <legend className="px-2 font-medium">Para liberar a próxima seção</legend>
@@ -198,8 +226,15 @@ export function SectionCompletionEditor({
         <div key={check.id} className="space-y-2 rounded-lg bg-muted/40 p-3">
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div className="min-w-0">
-              <p className="text-sm font-medium">
-                {check.label || `Objetivo ${index + 1} · falta preencher`}
+              <p className="flex flex-wrap items-center gap-2 text-sm font-medium">
+                <span>{check.label || `Objetivo ${index + 1} · falta preencher`}</span>
+                <span
+                  className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                    check.optional ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
+                  }`}
+                >
+                  {check.optional ? 'Desafio extra' : 'Obrigatório'}
+                </span>
               </p>
               <p className="text-xs text-muted-foreground">
                 {check.rule.type === 'usesBlock'
@@ -233,15 +268,42 @@ export function SectionCompletionEditor({
               placeholder="Objetivo que o aluno deve cumprir"
               value={check.label}
               maxLength={200}
-              onChange={(e) =>
-                onChange({
-                  ...value,
-                  projectChecks: checks.map((c) =>
-                    c.id === check.id ? { ...c, label: e.target.value } : c,
-                  ),
-                })
-              }
+              onChange={(e) => patchCheck(check.id, (c) => ({ ...c, label: e.target.value }))}
             />
+            <label className="block space-y-1 text-sm">
+              <span>Dica (aparece só depois de verificar e não passar)</span>
+              <Input
+                aria-label={`Dica do objetivo ${index + 1}`}
+                placeholder="Ex.: procure o bloco na gaveta Laços"
+                value={check.hint ?? ''}
+                maxLength={PROJECT_CHECK_HINT_MAX}
+                onChange={(e) =>
+                  patchCheck(check.id, (c) => {
+                    const { hint: _hint, ...rest } = c
+                    return e.target.value ? { ...rest, hint: e.target.value } : rest
+                  })
+                }
+              />
+            </label>
+            <label className="flex min-h-11 items-start gap-2 text-sm">
+              <input
+                type="checkbox"
+                className="mt-1"
+                checked={check.optional === true}
+                onChange={(e) =>
+                  patchCheck(check.id, (c) => {
+                    const { optional: _optional, ...rest } = c
+                    return e.target.checked ? { ...rest, optional: true } : rest
+                  })
+                }
+              />
+              <span>
+                <span className="font-medium">Desafio extra</span>
+                <span className="block text-muted-foreground">
+                  Não tranca a parte. Cumprido, vale 5 XP uma vez (sem moedas).
+                </span>
+              </span>
+            </label>
             <Select
               aria-label={`Regra do objetivo ${index + 1}`}
               value={check.rule.type}
@@ -254,7 +316,9 @@ export function SectionCompletionEditor({
                 })
               }
             >
-              <option value="usesBlock">Usar um bloco</option>
+              <option value="usesBlock" disabled={isPro && check.rule.type !== 'usesBlock'}>
+                Usar um bloco
+              </option>
               <option value="usesLoop">Usar repetição</option>
               <option value="declaresVariable">Criar variável</option>
               <option value="definesFunction">Definir função</option>
@@ -353,7 +417,11 @@ export function SectionCompletionEditor({
               ...value,
               projectChecks: [
                 ...checks,
-                { id, label: '', rule: { type: 'usesBlock', blockType: '' } },
+                {
+                  id,
+                  label: '',
+                  rule: isPro ? { type: 'usesLoop' } : { type: 'usesBlock', blockType: '' },
+                },
               ],
             })
           }}
@@ -361,11 +429,49 @@ export function SectionCompletionEditor({
           Adicionar objetivo do Estúdio
         </Button>
       )}
+      {hasStudio && !value.platformAction && checks.length > 0 && (
+        <div className="space-y-2">
+          <Button variant="outline" size="sm" onClick={() => setTested(true)}>
+            Testar agora
+          </Button>
+          <p className="text-xs text-muted-foreground">
+            Confere os objetivos no projeto inicial (deve faltar) e no gabarito (deve cumprir).
+          </p>
+          {report && (
+            <div role="status" className="space-y-2 rounded-lg border border-border p-3 text-sm">
+              <ul className="space-y-1">
+                {report.rows.map((row) => (
+                  <li key={row.id}>
+                    <span className="font-medium">{row.label}</span>
+                    {row.optional ? ' (extra)' : ''}: inicial{' '}
+                    {row.initial === null ? 'sem projeto' : row.initial ? 'cumpre' : 'falta'} ·
+                    gabarito{' '}
+                    {row.solution === null ? 'sem gabarito' : row.solution ? 'cumpre' : 'falta'}
+                  </li>
+                ))}
+              </ul>
+              {report.problems.map((problem) => (
+                <p key={problem} className="text-destructive">
+                  {problem}
+                </p>
+              ))}
+              {report.notes.map((note) => (
+                <p key={note} className="text-muted-foreground">
+                  {note}
+                </p>
+              ))}
+              {report.problems.length === 0 && (
+                <p className="text-success-foreground">Nenhum problema nos objetivos.</p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
       {checks.length > 0 && (
         <details className="space-y-2">
-          <summary className="cursor-pointer text-sm">Simular com um projeto salvo</summary>
+          <summary className="cursor-pointer text-sm">Testar com outro projeto (arquivo)</summary>
           <p className="text-xs">
-            Usa o mesmo avaliador estrutural. Não registra progresso nem conclui a aula.
+            Usa o mesmo avaliador da verificação. Não registra progresso nem conclui a aula.
           </p>
           <input
             type="file"

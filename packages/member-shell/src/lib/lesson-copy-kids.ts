@@ -26,8 +26,6 @@ function itemPendente(item: SectionPendingItem): string {
     }
     case 'STUDIO_GATE_NOT_SUBMITTED':
       return 'Envie o seu projeto'
-    case 'STUDIO_GATE_NOT_PASSED':
-      return 'Alcance a meta do projeto'
     case 'PINTA_GATE_NOT_SUBMITTED':
       return 'Envie o seu desenho'
     // "Envio em dia": o rótulo do botão no Kids é "Enviar de novo" (Estúdio e Pinta).
@@ -74,7 +72,6 @@ const ERRO_DO_SERVIDOR: Record<string, string> = {
   LEARNING_GATE_INCOMPLETE: 'Termine as experiências desta fase para concluir.',
   QUIZ_GATE_NOT_PASSED: 'Passe no quiz desta fase para concluir.',
   STUDIO_GATE_NOT_SUBMITTED: 'Envie o seu projeto para concluir a fase.',
-  STUDIO_GATE_NOT_PASSED: 'Alcance a meta do projeto para concluir a fase.',
   PINTA_GATE_NOT_SUBMITTED: 'Envie o seu desenho para concluir a fase.',
   CERTIFICATE_GATE_NOT_ISSUED: 'Pegue o seu certificado para concluir a fase.',
   LESSON_COMING_SOON: 'Esta fase ainda está sendo preparada.',
@@ -143,9 +140,20 @@ export const KIDS_LESSON_COPY: LessonCopy = {
     botao: 'Verificar esta parte',
     objetivos: 'Objetivos desta parte',
     cumprido: 'Objetivo cumprido!',
-    faltou: 'Confira os blocos pedidos nesta parte e tente novamente.',
+    faltou: 'Ainda falta um objetivo. Veja a lista e tente de novo.',
     grandeDemais:
       'Seu projeto ficou grande demais para conferir. Tire algumas imagens ou sons e tente de novo.',
+    cumpridoComExtra: 'Objetivos cumpridos! Ainda tem um desafio extra, se você quiser.',
+    extras: 'Desafio extra',
+    extrasNota: 'Não precisa para seguir. Vale XP!',
+    dica: 'Dica',
+    mudou: 'Você mexeu no projeto depois de verificar. Verifique de novo!',
+    verificando: 'Verificando…',
+    erro: 'Não deu para verificar agora. Seu projeto continua aqui. Tente de novo.',
+    xp: (pontos) => `+${pontos} XP`,
+    estadoCumprido: 'cumprido',
+    estadoFalta: 'ainda não',
+    estadoNaoVerificado: 'ainda não verificado',
   },
   acaoDePlataforma: {
     concluida: 'Parte concluída!',
@@ -162,7 +170,6 @@ export const KIDS_LESSON_COPY: LessonCopy = {
     confirmarReenviar: 'Enviar o seu projeto de novo?',
     vaiReceber: 'A equipe vai receber o seu projeto do jeitinho que está agora.',
     vaiReceberDeNovo: 'A equipe vai receber a versão atual do seu projeto, no lugar da anterior.',
-    dicaVerificar: ' Dica: clique em "Verificar" no editor antes, para ver se já alcançou a meta.',
     avisoProjetoInicial:
       'Atenção: você está enviando o projeto inicial da fase por cima do que você já enviou. Se terminou em outro computador, use o menu ⋯ e escolha Trazer o que eu enviei antes.',
     // O componente completa com "(opcional)": na tela fica "Recado (opcional)".
@@ -171,8 +178,6 @@ export const KIDS_LESSON_COPY: LessonCopy = {
     enviado: (quando) => (quando ? `Projeto enviado! Foi em ${quando}.` : 'Projeto enviado!'),
     conferido: 'A equipe já viu o seu projeto.',
     paraConcluir: 'Envie o seu projeto para concluir a fase.',
-    paraConcluirComMeta:
-      'Use "Verificar" no editor e envie o seu projeto. Alcance a meta para concluir a fase.',
     continueConstruindo: 'Continue construindo. Você envia o projeto no fim da fase.',
     compartilharDepois: 'Envie o seu projeto primeiro para poder compartilhar.',
     semEnvio: 'Você ainda não enviou nenhum projeto.',
@@ -181,9 +186,6 @@ export const KIDS_LESSON_COPY: LessonCopy = {
     recomecarExplica:
       'O Estúdio vai abrir o projeto inicial mais recente desta fase. O que você mudou neste aparelho será substituído. Se você já enviou um projeto, o envio continua guardado.',
     erroAoAbrir: 'Não conseguimos abrir o seu projeto. O que você fez não foi substituído.',
-    pontuacao: (score) => `Sua pontuação: ${score}/100`,
-    metaAlcancada: '· você alcançou a meta',
-    precisaDe: (pontos) => `· a meta é ${pontos} para concluir`,
   },
   pinta: {
     enviar: 'Enviar meu desenho',

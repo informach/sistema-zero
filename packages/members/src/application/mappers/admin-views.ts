@@ -143,8 +143,8 @@ export type MemberActivityKind =
 /**
  * Um item da linha do tempo de atividade do aluno (ficha admin). União achatada das
  * 4 fontes (aula acessada/concluída, tentativa de quiz, entrega do Estúdio/Pinta) ordenada
- * por `at` desc. Campos específicos (`score`/`passed`/`message`) só vêm quando o
- * `kind` os tem.
+ * por `at` desc. Campos específicos só vêm quando o `kind` os tem: `score`/`passed` no quiz,
+ * `message` nas entregas (a nota da antiga auto-correção do Estúdio saiu em 18/10/2026).
  */
 export interface MemberActivityItemView {
   kind: MemberActivityKind

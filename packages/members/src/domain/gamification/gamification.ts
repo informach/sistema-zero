@@ -17,6 +17,11 @@ export const XP_VALUES = {
   /** Clube: comentário APROVADO pela equipe. */
   CLUBE_COMMENT: 3,
   /**
+   * Objetivo EXTRA da parte cumprido pela primeira vez (18/10/2026): um desafio a mais, que não
+   * tranca nada. XP puro e pequeno, sem moeda (cada objetivo paga uma vez só).
+   */
+  OBJECTIVE_EXTRA: 5,
+  /**
    * Publicou jogo standalone no Mural — XP DIÁRIO (1×/dia pelo sourceId
    * determinístico do dia civil SP, `studioPublishDaySourceId`): a âncora de
    * streak/liga de quem já acabou os cursos e só CRIA. Entre o baú (25) e o

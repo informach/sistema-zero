@@ -1,12 +1,14 @@
 import {
   evaluateProjectStructure,
-  evaluateSectionProject,
+  type evaluateSectionObjectives,
+  type evaluateSectionProject,
   isProjectBlockPattern,
   isSectionCompletion,
   type LessonSection,
   PROJECT_CHECK_AREAS,
   type SectionStructureRule,
   sectionCompletionIssues,
+  summarizeSectionObjectives,
 } from '@sistemazero/core/learning'
 import { isBlockTypeAllowed, MAX_BLOCK_LEVEL, normalizeBlockLevel } from '../core/levels'
 import { isHTMLBlockChildAllowed } from '../html/catalog'
@@ -14,6 +16,7 @@ import { sceneNamesAsText } from '../official-extensions/scene-2d/catalog'
 import { SERVER_BLOCK_CATALOG, type ServerBlockCatalogEntry } from './blockCatalog'
 import { effectiveBodyExecution } from './blockContracts'
 import type { StatementContext } from './blocks/types'
+import { codeIdeasPass, projectCodeIdeas } from './codeIdeas'
 
 type Area = keyof typeof PROJECT_CHECK_AREAS
 type Rule = Extract<SectionStructureRule, { type: 'usesBlock' }>
@@ -42,14 +45,37 @@ function readableProject(project: unknown): unknown {
 // quando há bloco-lista) acontece uma vez por projeto, e não uma vez por regra.
 const readableProjects = new WeakMap<object, unknown>()
 
+/**
+ * Uma regra contra um projeto, com a régua do Estúdio: os blocos pela IR e, para as ideias de
+ * programação (laço, variável, função, chamada), também o CÓDIGO (etapa 2, 18/10/2026). É o que
+ * faz o objetivo valer no Pro (que não tem IR) e no código digitado na Ponte (`rawJS`).
+ */
 export function evaluateStudioProjectStructure(rule: SectionStructureRule, project: unknown) {
+  if (rule.type !== 'usesBlock' && codeIdeasPass(rule, projectCodeIdeas(project))) return true
   return evaluateProjectStructure(rule, readableProject(project), valueBlockTypes)
 }
 export function evaluateStudioSectionProject(
   checks: Parameters<typeof evaluateSectionProject>[0],
   project: unknown,
 ) {
-  return evaluateSectionProject(checks, readableProject(project), valueBlockTypes)
+  return checks.map((check) => ({
+    checkId: check.id,
+    label: check.label,
+    passed: evaluateStudioProjectStructure(check.rule, project),
+  }))
+}
+/** A verificação de uma parte ("Verificar esta parte"), com a régua do Estúdio. */
+export function evaluateStudioSectionObjectives(
+  checks: Parameters<typeof evaluateSectionObjectives>[0],
+  project: unknown,
+) {
+  return summarizeSectionObjectives(
+    checks.map((check) => ({
+      checkId: check.id,
+      passed: evaluateStudioProjectStructure(check.rule, project),
+      optional: Boolean(check.optional),
+    })),
+  )
 }
 const record = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -293,7 +319,14 @@ export function projectCheckAuthoring(workspace: unknown) {
     )
   }
   function issues(rule: SectionStructureRule): string[] {
+    // Etapa 2 (18/10/2026): as ideias de programação também são lidas no CÓDIGO. No Pro elas
+    // sempre valem (e "usar um bloco" nunca: não há blocos); com a Ponte a criança pode digitá-las.
+    if (project.kind === 'pro')
+      return rule.type === 'usesBlock'
+        ? ['Projeto Pro não tem blocos: escolha uma ideia de programação (laço, variável, função).']
+        : []
     if (!blocksEnabled) return ['Este objetivo precisa de um projeto com modo Blocos ou Ponte.']
+    if (rule.type !== 'usesBlock' && (!modes.length || modes.includes('bridge'))) return []
     if (rule.type !== 'usesBlock') {
       const candidates = {
         usesLoop: [
@@ -428,11 +461,24 @@ export function studioSectionCompletionIssues(
       const checks = section.completion?.projectChecks ?? []
       if (!workspace || !checks.length) return []
       const authoring = projectCheckAuthoring(workspace.content)
-      return checks.flatMap((check) =>
+      const ruleIssues = checks.flatMap((check) =>
         authoring
           .issues(check.rule)
           .map((message) => ({ sectionId: section.id, message: `${check.label}: ${message}` })),
       )
+      // O gabarito da professora precisa cumprir o que a parte exige: um objetivo obrigatório que
+      // nem o gabarito cumpre é um objetivo que a criança não consegue cumprir.
+      const solution = record(workspace.content) ? workspace.content.solutionProject : undefined
+      if (solution === undefined || ruleIssues.length) return ruleIssues
+      const { results } = evaluateStudioSectionObjectives(checks, solution)
+      return results
+        .filter((result) => !result.optional && !result.passed)
+        .map((result) => ({
+          sectionId: section.id,
+          message: `O gabarito não cumpre o objetivo obrigatório "${
+            checks.find((check) => check.id === result.checkId)?.label ?? result.checkId
+          }". Ajuste o gabarito ou o objetivo.`,
+        }))
     }),
   ]
 }

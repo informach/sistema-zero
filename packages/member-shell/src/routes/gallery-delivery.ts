@@ -91,7 +91,6 @@ export function createGalleryDeliveryRoutes(
       if (plan.completed) return NextResponse.json(plan.result)
       try {
         // Validate the actual cloud file; the browser never supplies project contents or storage keys.
-        let program: unknown = null
         for (const item of plan.snapshot.items) {
           const source = plan.copies.find((copy) => copy.destination === item.storageKey)
           if (!source) throw new Error('Referência do envio indisponível.')
@@ -112,8 +111,7 @@ export function createGalleryDeliveryRoutes(
             if (!record(full) || !record(full.files))
               throw new Error('O projeto não pôde ser aberto. Salve novamente no Estúdio.')
             const { assets: _assets, ...withoutAssets } = full
-            program = withoutAssets
-            if (JSON.stringify(program).length > 1_500_000)
+            if (JSON.stringify(withoutAssets).length > 1_500_000)
               throw new Error('O programa deste projeto passa do limite do envio.')
           }
         }
@@ -137,7 +135,6 @@ export function createGalleryDeliveryRoutes(
                 privileged: ['superadmin', 'admin', 'staff'].includes(user.role),
               },
               input: parsed.data,
-              projectForChecks: program,
             },
           },
         )

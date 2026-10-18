@@ -20,6 +20,7 @@ import {
   assertPintaChainTypeMatches,
   canonicalizeBlockContent,
 } from '../../../application/content-admin/content-admin.service'
+import { blockRevisionFingerprint } from '../../../domain/course/block-revision'
 import { certificateLessonIssues } from '../../../domain/course/certificate-lesson'
 import {
   ContentNotFoundError,
@@ -33,11 +34,7 @@ import { LessonDraftConflictError } from '../../../domain/learning/lesson-draft.
 import { publishedLessonRevisions } from '../../../domain/learning/published-lesson-revisions'
 import type { LessonDraftRepository } from '../../../domain/ports/lesson-draft-repository.port'
 import { stableJson } from '../../../domain/shared/stable-json'
-import {
-  DrizzleContentAdminRepository,
-  quizGateFingerprint,
-  studioActivityFingerprint,
-} from './content-admin.repository'
+import { DrizzleContentAdminRepository, quizGateFingerprint } from './content-admin.repository'
 import { DrizzleCourseRepository } from './course.repository'
 import type { Database } from './db'
 import { lockLessonStructure } from './lesson-structure'
@@ -51,7 +48,6 @@ import {
   lessonStructures,
   lessons,
   quizAttempts,
-  studioSubmissions,
 } from './schema'
 
 type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0]
@@ -594,7 +590,9 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
               /* Previously invalid content gets a new revision after repair. */
             }
           }
-          const changed = !old || stableJson(previousContent) !== stableJson(block.content)
+          const changed =
+            !old ||
+            blockRevisionFingerprint(previousContent) !== blockRevisionFingerprint(block.content)
           const values = {
             lessonId,
             kind: block.content.kind,
@@ -609,14 +607,6 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
             .onConflictDoUpdate({ target: lessonBlocks.id, set: values })
           if (old && quizGateFingerprint(old.content) !== quizGateFingerprint(block.content))
             await tx.delete(quizAttempts).where(eq(quizAttempts.blockId, block.id))
-          if (
-            old &&
-            studioActivityFingerprint(old.content) !== studioActivityFingerprint(block.content)
-          )
-            await tx
-              .update(studioSubmissions)
-              .set({ score: null, results: null, checkedAt: null, passedAt: null })
-              .where(eq(studioSubmissions.blockId, block.id))
         }
         // Validate against the final set, avoiding transient conflicts while replacing content.
         if ((await content.countCertificateBlocks(snapshot.lesson.courseId)) > 1)

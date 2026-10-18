@@ -88,10 +88,6 @@ export class GalleryDeliveryService {
         completed: true,
         result: {
           submittedAt: previous.submittedAt.toISOString(),
-          ...(previous.score === null || previous.score === undefined
-            ? {}
-            : { score: previous.score }),
-          ...(previous.passedAt ? { passed: true } : {}),
         },
       }
     }
@@ -152,7 +148,6 @@ export class GalleryDeliveryService {
     lessonId: string,
     blockId: string,
     input: GalleryDeliveryRequest,
-    projectForChecks: unknown,
   ) {
     const plan = await this.prepare(actor, lessonId, blockId, input)
     if (plan.completed) return plan.result
@@ -162,7 +157,7 @@ export class GalleryDeliveryService {
       privileged: actor.privileged,
       accountId: actor.accountId,
       kind: plan.snapshot.tool,
-      gallery: { snapshot: plan.snapshot, projectForChecks, revision: input.revision },
+      gallery: { snapshot: plan.snapshot, revision: input.revision },
     })
   }
 }

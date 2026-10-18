@@ -40,7 +40,6 @@ import {
   CORE_CATEGORY_OPTIONS,
   createEmptyProject,
   type IDEMode,
-  type LessonActivity,
   normalizeBlockLevel,
   type Project,
   type StudioHandle,
@@ -109,7 +108,6 @@ import {
   type LessonBlockKind,
   type LessonContentView,
 } from '@/lib/types'
-import { ActivityBuilder, EMPTY_ACTIVITY, validateStudioActivity } from './activity-builder'
 import {
   EMPTY_MATERIALS,
   MaterialsBuilder,
@@ -118,6 +116,7 @@ import {
   validateMaterials,
 } from './materials-builder'
 import { QuizBuilder, type QuizValue, validateQuiz } from './quiz-builder'
+import { StudioSolutionField, solutionFrom } from './studio-solution-field'
 
 // O mapa vive em `lib/types.ts` desde a exportação de manifesto: a lista do que o formato
 // NÃO carrega nomeia os blocos pelos MESMOS rótulos, e duas cópias divergiriam.
@@ -190,8 +189,12 @@ export interface BlockForm {
    * projeto). UI no StudioBlocksPicker; reaproveitável pela área de transferência da config.
    */
   studioAllowBlocks: string[]
-  /** Estúdio: atividade com auto-correção (fase 2). Vazia = bloco só de entrega. */
-  studioActivity: LessonActivity
+  /**
+   * Estúdio: o GABARITO da professora (a versão pronta do projeto). Nunca chega à criança: serve
+   * para o "Testar agora" dos objetivos da parte e para a publicação conferir que cada objetivo
+   * obrigatório pode ser cumprido. É a SEMENTE do editor do gabarito; o valor vivo sai do handle.
+   */
+  studioSolution: Project | null
   /** Estúdio: nome do projeto contínuo (cadeia). Vazio = aula independente. */
   studioChain: string
   /** Estúdio: vitrine (Mural) — auto-publicar o projeto ao concluir esta aula. */
@@ -262,7 +265,7 @@ export const EMPTY_BLOCK: BlockForm = {
   // (ver o `?? true` na hidratação): aula publicada não muda sozinha.
   studioAllowReveal: false,
   studioAllowBlocks: [],
-  studioActivity: EMPTY_ACTIVITY,
+  studioSolution: null,
   studioChain: '',
   studioShowcaseEnabled: false,
   studioShowcaseTitle: '',
@@ -315,6 +318,7 @@ export function buildContent(
   studioProject?: Project,
   previousContent?: LessonBlockContent,
   pintaAsset?: unknown,
+  solutionProject?: Project | null,
 ): LessonBlockContent {
   const dur = num(f.durationSeconds)
   switch (f.kind) {
@@ -329,9 +333,6 @@ export function buildContent(
           gallery: { minItems: 1, maxItems: 1 },
         }
       // `studioProject` é garantido não-nulo no saveBlock (validação antes de chamar).
-      // Atividade só entra se tiver checagens OU enunciado (atividade vazia = omitida).
-      const hasActivity =
-        f.studioActivity.checks.length > 0 || f.studioActivity.instructions.trim() !== ''
       // Projeto PRO: o modo Código é automático do kind — `allowedModes` é omitido
       // (redesenho 24/07; a curadoria de modos só vale no projeto de blocos).
       const isPro = (studioProject as Project & { kind?: string }).kind === 'pro'
@@ -346,7 +347,7 @@ export function buildContent(
           ? { allowedModes: f.studioModes }
           : {}),
         allowLevelReveal: f.studioAllowReveal,
-        ...(hasActivity ? { activity: f.studioActivity } : {}),
+        ...(solutionProject ? { solutionProject } : {}),
         ...(f.studioChain.trim() ? { chain: f.studioChain.trim() } : {}),
         ...(f.studioShowcaseEnabled
           ? {
@@ -520,8 +521,7 @@ function validateBlock(f: BlockForm): string | null {
       // barramos "zero modos" — que, omitido no payload, viraria "todos liberados"
       // (o OPOSTO da intenção do autor; achado do review).
       if (f.studioModes.length === 0) return 'Selecione ao menos um modo do Estúdio.'
-      // Atividade (auto-correção): coerência espelhando o members.
-      return validateStudioActivity(f.studioActivity)
+      return null
     }
     case 'certificate': {
       // A mensagem abaixo do nome (frase e/ou parágrafo) é OBRIGATÓRIA — é o que descreve a
@@ -736,6 +736,8 @@ function LessonEditorSession({
   const [advancedOpen, setAdvancedOpen] = useState(false)
   // Handle do Estúdio embutido na autoria — lido no saveBlock (snapshot do projeto inicial).
   const studioHandleRef = useRef<StudioHandle | null>(null)
+  // Handle do editor do GABARITO (só existe com o gabarito criado). Lido junto com o de cima.
+  const solutionHandleRef = useRef<StudioHandle | null>(null)
   const galleryStudioSeed = useMemo(
     () => createEmptyProject(blockId ?? 'gallery', 'Entrega da galeria'),
     [blockId],
@@ -889,7 +891,8 @@ function LessonEditorSession({
         c.kind === 'studio' ? (c.allowedModes ?? ['blocks', 'bridge', 'code']) : ['blocks'],
       studioAllowReveal: c.kind === 'studio' ? (c.allowLevelReveal ?? true) : true,
       studioAllowBlocks: c.kind === 'studio' ? (c.allowBlocks ?? []) : [],
-      studioActivity: c.kind === 'studio' ? (c.activity ?? EMPTY_ACTIVITY) : EMPTY_ACTIVITY,
+      studioSolution:
+        c.kind === 'studio' && c.solutionProject ? (c.solutionProject as Project) : null,
       studioChain: c.kind === 'studio' ? (c.chain ?? '') : '',
       studioShowcaseEnabled: c.kind === 'studio' ? (c.showcase?.enabled ?? false) : false,
       studioShowcaseTitle: c.kind === 'studio' ? (c.showcase?.title ?? '') : '',
@@ -920,7 +923,6 @@ function LessonEditorSession({
       // default — senão o autor editaria sem ver a curadoria custom que existe.
       const modes = c.allowedModes ?? ['blocks', 'bridge', 'code']
       const modesDefault = modes.length === 1 && modes[0] === 'blocks'
-      const activity = c.activity ?? EMPTY_ACTIVITY
       setAdvancedOpen(
         (normalizeBlockLevel(c.level) ?? 'iniciante-2d') !== 'iniciante-2d' ||
           !modesDefault ||
@@ -930,8 +932,6 @@ function LessonEditorSession({
           // deixar a condição antiga aqui abriria a seção em todo bloco novo e a
           // esconderia justamente nas aulas que liberam o destravamento.
           (c.allowLevelReveal ?? true) === true ||
-          activity.checks.length > 0 ||
-          activity.instructions.trim() !== '' ||
           Boolean(c.showcase?.title || c.showcase?.summary || c.showcase?.defaultCoverUrl),
       )
     } else {
@@ -951,11 +951,16 @@ function LessonEditorSession({
       if (blockForm.kind === 'studio' && !project) return
       const asset =
         blockForm.kind === 'pinta' ? (pintaHandleRef.current?.getAsset() ?? pintaSeed) : null
+      const solution =
+        blockForm.kind === 'studio' && !blockForm.galleryEnabled && blockForm.studioSolution
+          ? (solutionHandleRef.current?.getProject() ?? blockForm.studioSolution)
+          : null
       const content = buildContent(
         blockForm,
         project,
         editingBlock?.content,
         asset ? pintaAssetToWire(asset) : undefined,
+        solution,
       )
       const before = session.getSnapshot().draft?.document
       const isNew = before && !before.blocks.some((b) => b.id === blockId)
@@ -1044,8 +1049,10 @@ function LessonEditorSession({
   }, [captureBlock, editorVersion])
 
   async function captureEditors() {
-    if (blockOpen && blockForm.kind === 'studio' && !blockForm.galleryEnabled)
+    if (blockOpen && blockForm.kind === 'studio' && !blockForm.galleryEnabled) {
       await studioHandleRef.current?.save()
+      if (blockForm.studioSolution) await solutionHandleRef.current?.save()
+    }
     if (
       blockOpen &&
       blockForm.kind === 'pinta' &&
@@ -2623,6 +2630,17 @@ function LessonEditorSession({
                         features={{ terminal: false, ai: false, professional: true, export: false }}
                       />
                     </Field>
+                    <StudioSolutionField
+                      solution={blockForm.studioSolution}
+                      handleRef={solutionHandleRef}
+                      onCreate={() => {
+                        const base = studioHandleRef.current?.getProject()
+                        if (!base) return
+                        setBlockForm((f) => ({ ...f, studioSolution: solutionFrom(base) }))
+                      }}
+                      onRemove={() => setBlockForm((f) => ({ ...f, studioSolution: null }))}
+                      onChange={() => setEditorVersion((v) => v + 1)}
+                    />
                     {studioKind === 'blocks' ? (
                       <Field
                         label="Blocos visíveis para o aluno"
@@ -2826,17 +2844,6 @@ function LessonEditorSession({
                               </label>
                             </>
                           ) : null}
-                          <Field
-                            label="Atividade (auto-correção)"
-                            hint="Opcional. Defina checagens que o editor corrige na hora; com nota de corte, viram gate da aula. Só 'estrutura' é reverificada no servidor."
-                          >
-                            <ActivityBuilder
-                              value={blockForm.studioActivity}
-                              onChange={(studioActivity) =>
-                                setBlockForm((f) => ({ ...f, studioActivity }))
-                              }
-                            />
-                          </Field>
                           <fieldset className="rounded-lg border border-border p-3">
                             <legend className="px-1 text-xs text-muted-foreground">
                               Vitrine do Mural — texto do post

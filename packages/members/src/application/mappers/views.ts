@@ -1,4 +1,8 @@
-import type { LessonRequirement, SectionProgressView } from '@sistemazero/core/learning'
+import type {
+  LessonRequirement,
+  SectionCompletionView,
+  SectionProgressView,
+} from '@sistemazero/core/learning'
 import {
   type LessonLearningProgress,
   type LessonSection,
@@ -7,7 +11,11 @@ import {
 import type { AvatarCategory, AvatarSlot } from '../../domain/avatar/avatar3d-catalog'
 import type { CertificateRecord } from '../../domain/certificate/certificate'
 import type { Course, LessonWithContent, ModuleWithLessons } from '../../domain/course/course'
-import { hasComingSoonBlock, type MaterialItem } from '../../domain/course/lesson-block'
+import {
+  hasComingSoonBlock,
+  type MaterialItem,
+  toMemberFacingStudioContent,
+} from '../../domain/course/lesson-block'
 import { toMemberFacingQuizContent } from '../../domain/course/quiz'
 import type { EntitlementAggregate } from '../../domain/entitlement/entitlement.aggregate'
 import { COIN_VALUES } from '../../domain/gamification/coins'
@@ -744,10 +752,6 @@ export interface StudioStateView {
   submitted: boolean
   /** ISO da última entrega; `null` se ainda não enviou. */
   submittedAt: string | null
-  /** Nota da última correção (atividade); `null` sem atividade ou sem entrega. */
-  lastScore?: number | null
-  /** Atingiu a nota de corte (sticky). `false` sem atividade/entrega. */
-  passed?: boolean
   /**
    * O professor já conferiu ESTA entrega (o carimbo dele é posterior ao último
    * envio). Reenviar volta para `false` — a entrega nova ainda não foi olhada.
@@ -773,7 +777,6 @@ export interface LessonBlockView {
   /**
    * Presente só em blocos de Pinta. MESMA forma do `studioState` (a entrega mora na mesma
    * tabela), em campo separado para o front não precisar adivinhar de qual bloco o estado é.
-   * `lastScore`/`passed` chegam nulos/false: não há auto-correção de desenho.
    */
   pintaState?: StudioStateView | null
   /**
@@ -815,10 +818,13 @@ export interface EbookDownloadView {
 
 export interface LessonDetailView {
   requirements?: LessonRequirement[]
-  sections?: Pick<
+  sections?: (Pick<
     LessonSection,
-    'id' | 'title' | 'blockIds' | 'workspaceBlockId' | 'externalTool' | 'completion'
-  >[]
+    'id' | 'title' | 'blockIds' | 'workspaceBlockId' | 'externalTool'
+  > & {
+    /** A VISTA do critério: os objetivos sem a regra (`sectionCompletionView`). */
+    completion?: SectionCompletionView
+  })[]
   legacyLayout?: boolean
   structureRevision?: string | null
   sectionProgress?: SectionProgressView
@@ -913,13 +919,15 @@ export function toLessonDetailView(
       }
       // Estúdio: a config (initialProject/level/allowlist) NÃO é segredo — o aluno
       // precisa dela para montar o editor. Anexa só o estado da entrega (já enviou?).
+      // ⚠️ O GABARITO da professora nunca sai (nem para a equipe: a view é a do aluno), e a
+      // `activity` de conteúdo antigo (a auto-correção que saiu em 18/10/2026) também não.
       if (b.content.kind === 'studio') {
         return {
           id: b.id,
           blockRevision: b.contentRevision,
           kind: b.kind,
           sortOrder: b.sortOrder,
-          content: b.content,
+          content: toMemberFacingStudioContent(b.content),
           studioState: studioStates.get(b.id) ?? { submitted: false, submittedAt: null },
         }
       }

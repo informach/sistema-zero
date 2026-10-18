@@ -176,7 +176,6 @@ export function buildApp(
   const quizAttempts = new InMemoryQuizAttemptRepository()
   const studioSubmissions = new InMemoryStudioSubmissionRepository(courses)
   courses.onQuizGateChanged = (blockId) => quizAttempts.deleteByBlockId(blockId)
-  courses.onStudioActivityChanged = (blockId) => studioSubmissions.resetCorrectionByBlockId(blockId)
   const ratings = new InMemoryCourseRatingRepository()
   const certificates = new InMemoryCertificateRepository()
   const avatar = new InMemoryAvatarRepository()
@@ -337,6 +336,7 @@ export function buildApp(
     certificates,
     creations,
     async (courseId) => (await courses.findCourseById(courseId))?.modality ?? 'recorded',
+    awardGamification,
   )
   const learning = new LearningService(
     learningRepository,

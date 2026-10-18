@@ -935,7 +935,6 @@ export interface LearningManifest {
               allowCategories?: string[]
               allowedModes?: Array<'blocks' | 'bridge' | 'code'>
               allowLevelReveal?: boolean
-              activity?: unknown
               chain?: string
               showcase?: {
                 enabled: boolean

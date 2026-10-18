@@ -152,8 +152,7 @@ describe.skipIf(!testDatabaseUrl)('versão anterior da entrega (Postgres real)',
     expect(prev?.project).toEqual({ name: 'v1' })
     expect(prev?.submittedAt.toISOString()).toBe(t1.toISOString())
 
-    // O caminho COM preservePassedAt (transação + advisory lock) também copia.
-    await repo.upsert(entrega(blockId, { name: 'v3' }, t3), { preservePassedAt: true })
+    await repo.upsert(entrega(blockId, { name: 'v3' }, t3))
     const prev2 = await repo.getPrevious(aluno, blockId)
     expect(prev2?.project).toEqual({ name: 'v2' })
     expect(prev2?.submittedAt.toISOString()).toBe(t2.toISOString())
@@ -163,27 +162,14 @@ describe.skipIf(!testDatabaseUrl)('versão anterior da entrega (Postgres real)',
     expect(detail?.previousSubmittedAt?.toISOString()).toBe(t2.toISOString())
   })
 
-  test('restaurar troca atual↔anterior num UPDATE só, zera correção e preserva sticky/carimbo/recado', async () => {
+  test('restaurar troca atual↔anterior num UPDATE só e preserva carimbo e recado', async () => {
     const blockId = randomUUID()
     const t1 = new Date('2026-08-01T10:00:00.000Z')
     const t2 = new Date('2026-08-10T10:00:00.000Z')
-    const aprovadoEm = new Date('2026-08-01T10:05:00.000Z')
 
+    await repo.upsert(entrega(blockId, { name: 'boa' }, t1, { message: 'terminei!' }))
     await repo.upsert(
-      entrega(blockId, { name: 'boa' }, t1, {
-        score: 100,
-        checkedAt: t1,
-        passedAt: aprovadoEm,
-        message: 'terminei!',
-      }),
-    )
-    await repo.upsert(
-      entrega(blockId, { name: 'template por engano' }, t2, {
-        score: 0,
-        checkedAt: t2,
-        message: 'terminei!',
-      }),
-      { preservePassedAt: true },
+      entrega(blockId, { name: 'template por engano' }, t2, { message: 'terminei!' }),
     )
     const staff = randomUUID()
     await repo.markReviewed({ userId: aluno, blockId, reviewed: true, staffId: staff, now: t2 })
@@ -192,9 +178,6 @@ describe.skipIf(!testDatabaseUrl)('versão anterior da entrega (Postgres real)',
     const detail = await repo.getOne(aluno, blockId)
     expect(detail?.project).toEqual({ name: 'boa' })
     expect(detail?.submittedAt.toISOString()).toBe(t1.toISOString())
-    expect(detail?.score).toBeNull()
-    expect(detail?.checkedAt).toBeNull()
-    expect(detail?.passedAt?.toISOString()).toBe(aprovadoEm.toISOString()) // sticky fica
     expect(detail?.message).toBe('terminei!')
     expect(detail?.reviewedAt?.toISOString()).toBe(t2.toISOString()) // carimbo fica
 
@@ -222,9 +205,7 @@ describe.skipIf(!testDatabaseUrl)('versão anterior da entrega (Postgres real)',
     expect((await repo.listByBlock(blockId))[0]).toMatchObject({ messageSpoken: true })
 
     // Reenvio do app antigo (sem o campo): a marca cai junto com o recado novo.
-    await repo.upsert(entrega(blockId, { name: 'v2' }, t2, { message: 'digitei' }), {
-      preservePassedAt: true,
-    })
+    await repo.upsert(entrega(blockId, { name: 'v2' }, t2, { message: 'digitei' }))
     expect(await repo.getOne(aluno, blockId)).toMatchObject({
       message: 'digitei',
       messageSpoken: false,

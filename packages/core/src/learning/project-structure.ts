@@ -180,6 +180,36 @@ export function evaluateProjectStructure(
   return false
 }
 
+/**
+ * A verificação de uma parte: o resultado de cada objetivo e se a parte PASSOU, que é todos os
+ * OBRIGATÓRIOS cumpridos nesta mesma verificação (extras nunca trancam). Sem obrigatório não há o
+ * que passar: a publicação recusa parte só com extras.
+ */
+export function evaluateSectionObjectives(
+  checks: readonly { id: string; rule: SectionStructureRule; optional?: true }[],
+  project: unknown,
+  valueBlockTypes?: ReadonlySet<string>,
+): { results: { checkId: string; passed: boolean; optional: boolean }[]; passed: boolean } {
+  return summarizeSectionObjectives(
+    checks.map((check) => ({
+      checkId: check.id,
+      passed: evaluateProjectStructure(check.rule, project, valueBlockTypes),
+      optional: Boolean(check.optional),
+    })),
+  )
+}
+
+/**
+ * A régua de "a parte passou": todos os OBRIGATÓRIOS passaram (e existe ao menos um). Exportada
+ * para quem avalia com outro leitor (o Estúdio lê também o código) não reescrever a regra.
+ */
+export function summarizeSectionObjectives<R extends { passed: boolean; optional: boolean }>(
+  results: R[],
+): { results: R[]; passed: boolean } {
+  const required = results.filter((result) => !result.optional)
+  return { results, passed: required.length > 0 && required.every((result) => result.passed) }
+}
+
 export function evaluateSectionProject(
   checks: readonly { id: string; label: string; rule: SectionStructureRule }[],
   project: unknown,

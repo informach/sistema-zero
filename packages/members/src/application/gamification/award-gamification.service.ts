@@ -6,6 +6,7 @@ import { COIN_VALUES, quizPassedCoins } from '../../domain/gamification/coins'
 import { localDateSaoPaulo, quizPassedXp, XP_VALUES } from '../../domain/gamification/gamification'
 import {
   avatarPartSourceId,
+  objectiveExtraSourceId,
   roomItemSourceId,
   studioActivityDaySourceId,
   studioPublishDaySourceId,
@@ -152,26 +153,40 @@ export class AwardGamificationService {
     return this.award(input.userId, input.accountId, input.audience, events, input.privileged)
   }
 
-  async awardStudioPassed(input: {
+  /**
+   * "Verificar esta parte" (18/10/2026). Os obrigatórios cumpridos pela primeira vez pagam o
+   * `studio_passed` do bloco Estúdio da parte (o mesmo prêmio que a auto-correção antiga dava:
+   * mantém as conquistas do Estúdio alcançáveis); cada extra cumprido paga `objective_extra`.
+   * O ledger deduplica os dois pelo sourceId, então verificar de novo não refarma.
+   */
+  async awardSectionObjectives(input: {
     userId: string
-    /** CONTA do responsável (sessão de perfil). Default → userId no caller. */
     accountId: string
-    blockId: string
-    score: number
-    /** Vitrine do CURSO — TODA a gamificação é segregada por audiência. */
+    lessonId: string
+    sectionId: string
+    /** Bloco Estúdio da parte; sem ele, os obrigatórios não pagam `studio_passed`. */
+    workspaceBlockId: string | null
+    requiredPassed: boolean
+    /** Ids dos objetivos EXTRAS que passaram nesta verificação. */
+    extraPassed: readonly string[]
     audience: CourseAudience
     privileged: boolean
   }): Promise<GamificationDeltaView | null> {
-    // Mesma régua do quiz aprovado (base + bônus por nota); fonte distinta no
-    // ledger (`studio_passed`) → idempotente por bloco, independente do quiz.
-    const events: AwardXpEventInput[] = [
-      {
+    const events: AwardXpEventInput[] = []
+    if (input.requiredPassed && input.workspaceBlockId)
+      events.push({
         sourceType: 'studio_passed',
-        sourceId: input.blockId,
-        amount: quizPassedXp(input.score),
-        coins: quizPassedCoins(input.score),
-      },
-    ]
+        sourceId: input.workspaceBlockId,
+        amount: quizPassedXp(100),
+        coins: quizPassedCoins(100),
+      })
+    for (const checkId of input.extraPassed)
+      events.push({
+        sourceType: 'objective_extra',
+        sourceId: objectiveExtraSourceId(input.lessonId, input.sectionId, checkId),
+        amount: XP_VALUES.OBJECTIVE_EXTRA,
+      })
+    if (!events.length) return null
     return this.award(input.userId, input.accountId, input.audience, events, input.privileged)
   }
 

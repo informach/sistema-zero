@@ -10,7 +10,6 @@ import {
 import { t } from 'elysia'
 import { MAX_SUBMISSION_MESSAGE_CHARS } from '../../domain/course/lesson-block'
 import { InteractiveBlockSchema } from './learning.dtos'
-import { fieldOptionsSchema, ProjectBlockRelationshipsSchema } from './project-pattern.schema'
 
 // Ids que vão a colunas `uuid` validam o FORMATO na borda — um id lixo chegaria
 // ao Postgres como 22P02 e viraria 500 INTERNAL_ERROR (padrão do catalog).
@@ -1059,101 +1058,6 @@ const StudioProjectSchema = t.Object(
   },
   { additionalProperties: true },
 )
-// ── Atividade com auto-correção (fase 2) ────────────────────────────────────
-// Values are JSON at both the HTTP boundary and in the domain.
-const ActivityJsonValue = t.Recursive((self) =>
-  t.Union([
-    t.String(),
-    t.Number(),
-    t.Boolean(),
-    t.Null(),
-    t.Array(self),
-    t.Record(t.String(), self),
-  ]),
-)
-const ActivityCheckBase = {
-  id: t.String({ minLength: 1, maxLength: 64 }),
-  label: t.String({ minLength: 1, maxLength: 200 }),
-  hint: t.Optional(t.String({ maxLength: 1000 })),
-  weight: t.Optional(t.Number({ exclusiveMinimum: 0 })),
-}
-const StructureRuleSchema = t.Union([
-  t.Object({ type: t.Literal('usesLoop') }),
-  t.Object({
-    type: t.Literal('declaresVariable'),
-    name: t.String({ minLength: 1, maxLength: 80 }),
-  }),
-  t.Object({ type: t.Literal('definesFunction'), name: t.String({ minLength: 1, maxLength: 80 }) }),
-  t.Object({ type: t.Literal('callsFunction'), name: t.String({ minLength: 1, maxLength: 80 }) }),
-  t.Object({
-    type: t.Literal('usesBlock'),
-    blockType: t.String({ minLength: 1, maxLength: 80 }),
-    area: t.Optional(
-      t.Union(
-        (['structure', 'appearance', 'molds', 'start', 'events', 'loops'] as const).map((area) =>
-          t.Literal(area),
-        ),
-      ),
-    ),
-    withinBlock: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
-    ...ProjectBlockRelationshipsSchema,
-    fields: t.Optional(
-      t.Record(t.String(), t.Union([t.String({ maxLength: 200 }), t.Number(), t.Boolean()]), {
-        maxProperties: 20,
-      }),
-    ),
-    fieldOptions: t.Optional(fieldOptionsSchema()),
-    inputs: t.Optional(
-      t.Record(t.String(), t.Union([t.String({ maxLength: 200 }), t.Number(), t.Boolean()]), {
-        maxProperties: 20,
-      }),
-    ),
-  }),
-])
-const BehaviorRuleSchema = t.Union([
-  t.Object({ type: t.Literal('consoleContains'), text: t.String({ maxLength: 2000 }) }),
-  t.Object({ type: t.Literal('domSelectorExists'), selector: t.String({ maxLength: 500 }) }),
-  t.Object({
-    type: t.Literal('domSelectorText'),
-    selector: t.String({ maxLength: 500 }),
-    text: t.String({ maxLength: 2000 }),
-  }),
-  t.Object({
-    type: t.Literal('globalEquals'),
-    name: t.String({ maxLength: 80 }),
-    value: ActivityJsonValue,
-  }),
-])
-const ActivityCheckSchema = t.Union([
-  t.Object({ ...ActivityCheckBase, kind: t.Literal('structure'), rule: StructureRuleSchema }),
-  t.Object({ ...ActivityCheckBase, kind: t.Literal('behavior'), rule: BehaviorRuleSchema }),
-  t.Object({
-    ...ActivityCheckBase,
-    kind: t.Literal('testcase'),
-    functionName: t.String({ minLength: 1, maxLength: 80 }),
-    cases: t.Array(
-      t.Object({
-        id: t.Optional(t.String({ maxLength: 64 })),
-        args: t.Array(ActivityJsonValue, { maxItems: 20 }),
-        expected: ActivityJsonValue,
-      }),
-      {
-        maxItems: 50,
-      },
-    ),
-  }),
-  t.Object({
-    ...ActivityCheckBase,
-    kind: t.Literal('code'),
-    source: t.String({ maxLength: 20_000 }),
-  }),
-])
-const StudioActivitySchema = t.Object({
-  instructions: t.String({ maxLength: 20_000 }),
-  checks: t.Array(ActivityCheckSchema, { maxItems: 50 }),
-  passingScore: t.Optional(t.Integer({ minimum: 0, maximum: 100 })),
-})
-
 /** Bloco Estúdio: editor pré-configurado embutido na aula (ver domain/course/lesson-block.ts). */
 const StudioBlockSchema = t.Object({
   kind: t.Literal('studio'),
@@ -1165,7 +1069,11 @@ const StudioBlockSchema = t.Object({
   allowCategories: t.Optional(t.Array(t.String({ maxLength: 80 }), { maxItems: 100 })),
   allowedModes: t.Optional(t.Array(StudioModeSchema, { maxItems: 3 })),
   allowLevelReveal: t.Optional(t.Boolean()),
-  activity: t.Optional(StudioActivitySchema),
+  /**
+   * Gabarito da professora (18/10/2026): o projeto que cumpre os objetivos da parte. Só a
+   * autoria o lê ("Testar agora" e a revisão para publicar); a view do aluno NUNCA o leva.
+   */
+  solutionProject: t.Optional(StudioProjectSchema),
   /** Nome do projeto contínuo (cadeia) — ver StudioBlock em domain/course/lesson-block.ts. */
   chain: t.Optional(t.String({ maxLength: 80 })),
   /** Vitrine (Mural dos Criadores) — config da auto-publicação; ver StudioBlock. */
@@ -1338,17 +1246,9 @@ export const AdminStudioSubmissionParams = t.Object({ id: UUID, userId: UUID })
 export const ReviewSubmissionParams = t.Object({ blockId: UUID, userId: UUID })
 export const ReviewSubmissionBody = t.Object({ reviewed: t.Boolean() })
 
-/** Resultado reportado pelo cliente p/ uma checagem (correção híbrida). */
-const ClientCheckResultSchema = t.Object({
-  checkId: t.String({ maxLength: 64 }),
-  passed: t.Boolean(),
-  message: t.Optional(t.String({ maxLength: 2000 })),
-})
 /** Corpo de `POST /members/lessons/:lessonId/blocks/:blockId/studio-submission` (aluno). */
 export const StudioSubmissionBody = t.Object({
   project: StudioProjectSchema,
-  /** Resultados das checagens rodadas no cliente (behavior/testcase/code). */
-  results: t.Optional(t.Array(ClientCheckResultSchema, { maxItems: 50 })),
   /** Recado OPCIONAL do aluno ao professor (modal de envio). Vazio → sem recado. */
   message: t.Optional(t.String({ maxLength: MAX_SUBMISSION_MESSAGE_CHARS })),
   /**

@@ -1,5 +1,13 @@
 # @sistemazero/studio
 
+> **Objetivos do Estúdio (18/10/2026):** a auto-correção de AULA saiu inteira ([`docs/plans/2026-10-18-objetivos-do-estudio.md`](../../docs/plans/2026-10-18-objetivos-do-estudio.md)): `src/activity/`
+> (runner, harness, sandbox, nota), `ActivityPanel`, `checksStore`, `studio/activity.ts`, a prop
+> `activity` do `<StudioLesson>`, os tipos `LessonActivity`/`ActivityCheck` e
+> `StudioHandle.getActivityResult()`. Quem confere agora são os objetivos da parte, no SERVIDOR,
+> pelo `server-project-checks` (`evaluateStudioSectionObjectives`; `studioSectionCompletionIssues`
+> recusa obrigatório que o `content.solutionProject` não cumpre). As menções a esses nomes mais
+> abaixo são históricas.
+
 > **Escrita com namespace explícito (10/10/2026):** `replaceLocalProject(project, {namespace})`
 > captura o armazenamento antes de persistir. Os rascunhos das aulas usam `namespace: ''`, inclusive
 > para cópias de conflito, sem depender do namespace que o Estúdio Completo ativou durante o download.

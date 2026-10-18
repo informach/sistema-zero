@@ -23,15 +23,13 @@ mock.module('idb-keyval', () => ({
 }))
 
 const { useStudioConfig } = await import('./config')
-const { useStudioActivity } = await import('./activity')
 const { useProjectStore } = await import('../state/projectStore')
 
-// Shell vira um PROBE que lê a CONFIG e a ATIVIDADE resolvidas da instância
+// Shell vira um PROBE que lê a CONFIG resolvida da instância
 // (renderiza DENTRO dos providers do StudioCore). As estáticas useXStore.getState
 // leem a store default — não servem para inspecionar a config de uma instância.
 function ConfigProbe(): React.JSX.Element {
   const config = useStudioConfig()
-  const activity = useStudioActivity()
   const projectId = useProjectStore((s) => s.project?.id ?? '')
   return (
     <div
@@ -44,7 +42,6 @@ function ConfigProbe(): React.JSX.Element {
       data-extensions={String(config.extensions)}
       data-level={config.learning.level}
       data-reveal={String(config.learning.allowLevelReveal)}
-      data-activity={activity ? 'present' : 'none'}
     />
   )
 }
@@ -116,32 +113,6 @@ describe('StudioLesson', () => {
     })
     expect(getByTestId('config-probe').getAttribute('data-level')).toBe('iniciante-2d')
     expect(getByTestId('config-probe').getAttribute('data-reveal')).toBe('false')
-  })
-
-  it('sem activity, o contexto de atividade é null (painel não renderiza nada)', async () => {
-    const { getByTestId } = render(
-      <StudioLesson initialProject={createEmptyProject('lesson-4', 'Aula 4')} persistence="none" />,
-    )
-
-    await waitFor(() => {
-      expect(getByTestId('config-probe').getAttribute('data-project')).toBe('lesson-4')
-    })
-    expect(getByTestId('config-probe').getAttribute('data-activity')).toBe('none')
-  })
-
-  it('com activity, o contexto entrega a atividade ao layout', async () => {
-    const { getByTestId } = render(
-      <StudioLesson
-        initialProject={createEmptyProject('lesson-5', 'Aula 5')}
-        persistence="none"
-        activity={{ instructions: 'Faça um botão que conta cliques', checks: [] }}
-      />,
-    )
-
-    await waitFor(() => {
-      expect(getByTestId('config-probe').getAttribute('data-project')).toBe('lesson-5')
-    })
-    expect(getByTestId('config-probe').getAttribute('data-activity')).toBe('present')
   })
 
   it('re-render do host com allowedModes/allowBlocks inline NÃO descarta edições não salvas', async () => {

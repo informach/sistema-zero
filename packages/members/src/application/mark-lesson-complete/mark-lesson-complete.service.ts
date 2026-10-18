@@ -9,7 +9,6 @@ import {
   LessonNotFoundError,
   PintaGateNotSubmittedError,
   QuizGateNotPassedError,
-  StudioGateNotPassedError,
   StudioGateNotSubmittedError,
 } from '../../domain/course/course.errors'
 import { LearningGateError, SectionGateError } from '../../domain/learning/learning.errors'
@@ -115,10 +114,7 @@ export class MarkLessonCompleteService {
           ...b,
           blockRevision: b.contentRevision,
           quizState: { passed: quizStates.get(b.id)?.everPassed ?? false },
-          studioState: {
-            submitted: studioStates.has(b.id),
-            passed: studioStates.get(b.id)?.passed ?? false,
-          },
+          studioState: { submitted: studioStates.has(b.id) },
           pintaState: { submitted: studioStates.has(b.id) },
           certificateState: { issued: certificateIssued },
         })),
@@ -138,8 +134,6 @@ export class MarkLessonCompleteService {
             throw new QuizGateNotPassedError()
           case 'STUDIO_GATE_NOT_SUBMITTED':
             throw new StudioGateNotSubmittedError()
-          case 'STUDIO_GATE_NOT_PASSED':
-            throw new StudioGateNotPassedError()
           case 'PINTA_GATE_NOT_SUBMITTED':
             throw new PintaGateNotSubmittedError()
           case 'CERTIFICATE_GATE_NOT_ISSUED':

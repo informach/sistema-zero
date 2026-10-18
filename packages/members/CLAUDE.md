@@ -1,5 +1,29 @@
 # CLAUDE.md — @sistemazero/members
 
+## Objetivos da parte: o sistema único do Estúdio (18/10/2026)
+
+Decisão da dona ([`docs/plans/2026-10-18-objetivos-do-estudio.md`](../../docs/plans/2026-10-18-objetivos-do-estudio.md)): a "Atividade (auto-correção)" do bloco Estúdio SAIU e os objetivos da
+parte viraram o único jeito de conferir o projeto, sempre no servidor.
+
+- **Saiu**: `content.activity` (DTO, validação, `domain/course/studio-activity.ts`, nota e pesos),
+  o `STUDIO_GATE_NOT_PASSED` e a nota nas views da equipe (`studio-submissions-admin`, atividade
+  da ficha 360). As colunas `score/results/checked_at/passed_at` de `studio_submissions` FICAM no
+  banco com os dados antigos, mas nada lê nem escreve (o port documenta isso). O upsert não tem
+  mais `preservePassedAt`; o `lesson_evidence` do envio é `{project, definition}`.
+- **Entrou**: `SectionProjectCheck.hint?` (até 300) e `optional?: true` (o EXTRA). A parte fecha
+  quando todos os OBRIGATÓRIOS passam numa mesma verificação (`projectPassed`, pegajoso na
+  revisão); extra nunca tranca. A criança recebe só a vista (`projectObjectiveView`): a regra não
+  sai do members.
+- **Memória**: `lesson_section_progress.objective_results` (jsonb, migration `0129`) guarda o
+  último resultado por objetivo da revisão; volta em `savedResults` e a lista se lembra ao reabrir.
+- **XP**: obrigatórios cumpridos pela 1ª vez pagam `studio_passed` do bloco Estúdio da parte (mantém
+  as conquistas do Estúdio); cada extra cumprido pela 1ª vez paga `objective_extra` (5 XP, sem
+  moedas, uma vez por objetivo). ⚠️ A migration `0129` faz `ALTER TYPE … ADD VALUE` e NÃO usa o
+  valor na mesma transação (o Postgres proíbe).
+- **Gabarito**: `content.solutionProject` do bloco Estúdio (validado no create/update como o
+  `initialProject`), retirado da aula do aluno. A publicação recusa objetivo obrigatório que o
+  gabarito não cumpre (`studioSectionCompletionIssues` do studio).
+
 ## Cursos ao vivo: a modalidade do curso (14/10/2026, migration `0113`)
 
 Decisão da dona: um curso é GRAVADO ou AO VIVO, nunca os dois (desenho em
@@ -763,7 +787,7 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    A entrega grava **`account_id`**
    (conta responsável; no kids = o pai, ≠ do `user_id` que é o PERFIL da criança — no adulto são
    iguais; migration `0026`) → o BFF do admin hidrata a CRIANÇA (nome do perfil) + o RESPONSÁVEL.
-   **AUTO-CORREÇÃO (fase 2, migration `0016`):** o `StudioBlock` ganha `activity?`
+   ⚠️ **REMOVIDO em 18/10/2026** (ver "Objetivos da parte" no topo); histórico: **AUTO-CORREÇÃO (fase 2, migration `0016`):** o `StudioBlock` ganha `activity?`
    (enunciado + `checks[]` união `structure`/`behavior`/`testcase`/`code` + `passingScore?`)
    — `domain/course/studio-activity.ts` (PURO: `gradeStudioActivity`/`evaluateStructureRule`/
    `validateStudioActivityAuthoring`, espelha `quiz.ts`). **Correção HÍBRIDA:** o cliente

@@ -171,6 +171,7 @@ export class DrizzleLearningRepository implements LearningRepository {
       revision: r.revision,
       completedAt: r.completedAt?.toISOString() ?? null,
       projectPassed: r.projectPassed,
+      objectiveResults: r.objectiveResults ?? null,
     }))
   }
   async saveSectionProgress(
@@ -205,8 +206,11 @@ export class DrizzleLearningRepository implements LearningRepository {
           .values({
             ...owner,
             lessonId,
-            ...r,
+            sectionId: r.sectionId,
+            revision: r.revision,
+            projectPassed: r.projectPassed,
             completedAt: r.completedAt ? new Date(r.completedAt) : null,
+            objectiveResults: r.objectiveResults ?? null,
           })
           .onConflictDoUpdate({
             target: [
@@ -218,12 +222,37 @@ export class DrizzleLearningRepository implements LearningRepository {
               revision: r.revision,
               completedAt: r.completedAt ? new Date(r.completedAt) : null,
               projectPassed: sql`case when ${lessonSectionProgress.revision} = ${r.revision} then ${lessonSectionProgress.projectPassed} or ${r.projectPassed} else ${r.projectPassed} end`,
+              // Só a verificação escreve o último resultado; quem só conclui a parte o mantém
+              // (na mesma revisão). Revisão nova: o resultado guardado era de outra regra.
+              objectiveResults:
+                r.objectiveResults === null
+                  ? sql`null`
+                  : r.objectiveResults !== undefined
+                    ? sql`${JSON.stringify(r.objectiveResults)}::jsonb`
+                    : sql`case when ${lessonSectionProgress.revision} = ${r.revision} then ${lessonSectionProgress.objectiveResults} else null end`,
             },
             setWhere: and(
               eq(lessonSectionProgress.accountId, owner.accountId),
               sql`${lessonSectionProgress.completedAt} is null`,
             ),
           })
+        // A memória da lista segue a criança DEPOIS de a parte fechar: ela continua verificando
+        // (um extra, por exemplo), e a parte concluída nunca é reaberta por isto. Só na mesma
+        // revisão, que é a da regra que gerou o resultado.
+        if (r.objectiveResults !== undefined)
+          await tx
+            .update(lessonSectionProgress)
+            .set({ objectiveResults: r.objectiveResults })
+            .where(
+              and(
+                eq(lessonSectionProgress.userId, owner.userId),
+                eq(lessonSectionProgress.accountId, owner.accountId),
+                eq(lessonSectionProgress.lessonId, lessonId),
+                eq(lessonSectionProgress.sectionId, r.sectionId),
+                eq(lessonSectionProgress.revision, r.revision),
+                sql`${lessonSectionProgress.completedAt} is not null`,
+              ),
+            )
       }
     })
   }

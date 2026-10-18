@@ -737,7 +737,6 @@ describe('o que falta para seguir, na voz da aventura', () => {
   const ORIGEM_DO_MOTIVO: Record<SectionPendingKind, Origem> = {
     QUIZ_GATE_NOT_PASSED: { core: true },
     STUDIO_GATE_NOT_SUBMITTED: { core: true },
-    STUDIO_GATE_NOT_PASSED: { core: true },
     PINTA_GATE_NOT_SUBMITTED: { core: true },
     CERTIFICATE_GATE_NOT_ISSUED: { core: true },
     LEARNING_GATE_INCOMPLETE: { core: true },

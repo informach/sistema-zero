@@ -6,7 +6,6 @@ export type LessonRequirementReason =
   | 'LEARNING_GATE_INCOMPLETE'
   | 'QUIZ_GATE_NOT_PASSED'
   | 'STUDIO_GATE_NOT_SUBMITTED'
-  | 'STUDIO_GATE_NOT_PASSED'
   | 'PINTA_GATE_NOT_SUBMITTED'
   | 'CERTIFICATE_GATE_NOT_ISSUED'
   | 'LESSON_COMING_SOON'
@@ -26,7 +25,7 @@ interface RequirementBlock {
   content: unknown
   blockRevision?: string
   quizState?: { passed: boolean } | null
-  studioState?: { submitted: boolean; passed?: boolean } | null
+  studioState?: { submitted: boolean } | null
   pintaState?: { submitted: boolean } | null
   certificateState?: { issued: boolean } | null
 }
@@ -169,19 +168,15 @@ export function lessonCompletionRequirements(input: {
           )
         break
       case 'studio':
-        if (content.purpose !== 'experiment') {
-          const graded =
-            record(content.activity) && typeof content.activity.passingScore === 'number'
-          const submitted = block.studioState?.submitted === true
+        // O que o projeto precisa TER é objetivo da parte ("Verificar esta parte"); o bloco só
+        // exige o envio. A nota do bloco (`content.activity`) saiu em 18/10/2026.
+        if (content.purpose !== 'experiment')
           add(
-            submitted && graded ? 'STUDIO_GATE_NOT_PASSED' : 'STUDIO_GATE_NOT_SUBMITTED',
-            submitted && graded
-              ? 'Alcance a nota mínima do projeto'
-              : 'Envie seu projeto para o professor',
-            submitted && (!graded || block.studioState?.passed === true),
+            'STUDIO_GATE_NOT_SUBMITTED',
+            'Envie seu projeto para o professor',
+            block.studioState?.submitted === true,
             'Projeto no Estúdio',
           )
-        }
         break
       case 'pinta':
         if (content.purpose !== 'experiment')

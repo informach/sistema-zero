@@ -17,7 +17,7 @@ type ProjectKindChoice = 'classic' | 'pro'
 interface Props {
   lessonConfig?: Pick<
     import('@sistemazero/studio').StudioLessonProps,
-    'level' | 'allowedModes' | 'allowBlocks' | 'allowCategories' | 'allowLevelReveal' | 'activity'
+    'level' | 'allowedModes' | 'allowBlocks' | 'allowCategories' | 'allowLevelReveal'
   >
   onChange?: (project: Project) => void
   /** Projeto inicial; ausente → cria um vazio (autoria de bloco novo). */

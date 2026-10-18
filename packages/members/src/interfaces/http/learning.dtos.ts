@@ -1,4 +1,8 @@
-import { PLATFORM_ACTIONS, TEACHER_NOTES_MAX } from '@sistemazero/core/learning'
+import {
+  PLATFORM_ACTIONS,
+  PROJECT_CHECK_HINT_MAX,
+  TEACHER_NOTES_MAX,
+} from '@sistemazero/core/learning'
 import {
   LIGHTHOUSE_POSITION,
   LIGHTHOUSE_WALK_SPEEDS,
@@ -683,6 +687,10 @@ export const SectionCompletionSchema = t.Object({
         id: t.String({ minLength: 1, maxLength: 200 }),
         label: t.String({ maxLength: 200 }),
         rule: SectionRule,
+        // Declarados de propósito (18/10/2026): o `normalize` do Elysia apagaria a dica e a marca
+        // de extra em silêncio, e o objetivo extra viraria obrigatório no rascunho.
+        hint: t.Optional(t.String({ maxLength: PROJECT_CHECK_HINT_MAX })),
+        optional: t.Optional(t.Literal(true)),
       }),
       { maxItems: 20 },
     ),

@@ -1,5 +1,20 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## Objetivos da parte no cartão da criança (18/10/2026)
+
+[`docs/plans/2026-10-18-objetivos-do-estudio.md`](../../docs/plans/2026-10-18-objetivos-do-estudio.md). `components/studio/section-project-check.tsx` (`SectionProjectCheck` → `ObjectivesCard`):
+UM botão ("Verificar esta parte"), a lista dos obrigatórios e, separada, a dos **Desafios extras**
+(5 XP uma vez). A dica só aparece num objetivo que FALTOU depois de verificar (antes tiraria a
+descoberta). O resultado guardado (`savedResults`) volta ao reabrir; o desta tela vence. Mexer no
+projeto depois de verificar marca o resultado como "de antes da mudança": o bloco passa
+`subscribeProjectChanges` (o `onChange` do Estúdio com `updatedAt`) e só uma edição POSTERIOR à
+verificação conta (o autosave do mesmo projeto não). As frases moram em `copy.verificacao` do
+`LessonCopy` (os dois vocabulários). Ganchos `sz-lesson-objectives*`/`sz-lesson-objective*` com
+`data-state`/`data-extra`/`data-stale` (invariante 8). O antigo `StudioActivityPanel`, o
+`getActivityResult` do envio e o `STUDIO_GATE_NOT_PASSED` saíram. `LessonDetailView.sections[]
+.completion` aceita a vista (aluno) OU a `SectionCompletion` inteira (prévia do admin);
+`LessonSections` converte com `projectObjectiveView`.
+
 > **Oficinas ao vivo (14/10/2026):** `createLiveRouteHandler` recebe `support` da sessão
 > (`isSupportSession`, qualquer `act`) e recusa toda chamada não-GET com `SUPPORT_SESSION`; a
 > prévia do Kids usa a mesma regra. O Members repete a recusa por `x-auth-impersonator-id`.

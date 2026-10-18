@@ -145,8 +145,6 @@ describe('legacy lessons with two sections', () => {
       blockId: ctx.studioId,
       project: {},
       submittedAt: new Date(),
-      passedAt: null,
-      score: null,
     })
     expect((await ctx.read()).sectionProgress?.completed).toBe(1)
     const wrong = await ctx.quiz('b')

@@ -29,8 +29,68 @@ export type SectionStructureRule =
 
 export interface SectionProjectCheck {
   id: string
+  /** A frase que a criança lê na lista "Objetivos desta parte". */
   label: string
   rule: SectionStructureRule
+  /** O que dizer quando o objetivo ainda não foi cumprido (a criança lê). */
+  hint?: string
+  /**
+   * EXTRA: um desafio a mais. Não tranca a parte e dá XP uma vez quando cumprido. Sem o campo, o
+   * objetivo é obrigatório para seguir (todos os objetivos anteriores a 18/10/2026).
+   */
+  optional?: true
+}
+
+/** O jeito de conferir, na língua da autoria (o Admin e a lista da criança usam o mesmo nome). */
+export type ProjectObjectiveKind = 'block' | 'idea'
+
+export function projectObjectiveKind(rule: SectionStructureRule): ProjectObjectiveKind {
+  return rule.type === 'usesBlock' ? 'block' : 'idea'
+}
+
+/**
+ * O que a CRIANÇA recebe de cada objetivo: nunca a regra. Com os objetivos de execução a regra
+ * carrega a resposta esperada, e mesmo a de estrutura não é da conta do navegador dela.
+ */
+export interface ProjectObjectiveView {
+  id: string
+  label: string
+  hint?: string
+  optional?: true
+  kind: ProjectObjectiveKind
+}
+
+export function projectObjectiveView(check: SectionProjectCheck): ProjectObjectiveView {
+  return {
+    id: check.id,
+    label: check.label,
+    ...(check.hint ? { hint: check.hint } : {}),
+    ...(check.optional ? { optional: true as const } : {}),
+    kind: projectObjectiveKind(check.rule),
+  }
+}
+
+/** A conclusão como a criança a recebe: a mesma, com os objetivos trocados pela vista. */
+export type SectionCompletionView = Omit<SectionCompletion, 'projectChecks'> & {
+  projectChecks?: ProjectObjectiveView[]
+}
+
+export function sectionCompletionView(completion: SectionCompletion): SectionCompletionView {
+  const { projectChecks, ...rest } = completion
+  return projectChecks ? { ...rest, projectChecks: projectChecks.map(projectObjectiveView) } : rest
+}
+
+/** Os objetivos que TRANCAM a parte. */
+export function requiredProjectChecks<T extends { optional?: true }>(
+  checks: readonly T[] | undefined,
+): T[] {
+  return (checks ?? []).filter((check) => !check.optional)
+}
+
+/** O resultado guardado de cada objetivo na última verificação (por revisão da parte). */
+export interface ProjectObjectiveResult {
+  id: string
+  passed: boolean
 }
 
 /** Presence on every section opts a published lesson into sequential progression. */
@@ -55,6 +115,11 @@ export interface SectionProgressRecord {
   revision: string
   completedAt: string | null
   projectPassed: boolean
+  /**
+   * O último resultado de cada objetivo (da última verificação desta revisão). Ausente na
+   * gravação = mantém o que estava guardado; só a verificação o escreve.
+   */
+  objectiveResults?: ProjectObjectiveResult[] | null
 }
 
 /**
@@ -91,8 +156,13 @@ export interface SectionProgressView {
     pending: string[]
     /** As mesmas frases, com o `kind`: é o que a faixa do rodapé lê. */
     pendingItems: SectionPendingItem[]
+    /** O resultado de cada objetivo na última "Verificar esta parte" desta revisão. */
+    objectives?: ProjectObjectiveResult[]
   }>
 }
+
+/** Teto da dica de um objetivo. */
+export const PROJECT_CHECK_HINT_MAX = 300
 
 const record = (v: unknown): v is Record<string, unknown> =>
   typeof v === 'object' && v !== null && !Array.isArray(v)
@@ -201,6 +271,9 @@ export function isSectionCompletion(v: unknown): v is SectionCompletion {
         !record(c) ||
         !label(c.id) ||
         !(typeof c.label === 'string' && c.label.length <= 200) ||
+        (c.hint !== undefined &&
+          !(typeof c.hint === 'string' && c.hint.length <= PROJECT_CHECK_HINT_MAX)) ||
+        (c.optional !== undefined && c.optional !== true) ||
         !record(c.rule)
       )
         return false
@@ -255,7 +328,6 @@ export function isFinalProjectSection(
 export function sectionCompletionIssues(
   sections: LessonSection[],
   blocks: { id: string; content: unknown }[],
-  options: { purpose?: 'publication' | 'playback' } = {},
 ): Array<{ sectionId: string; message: string }> {
   if (!hasSectionProgression(sections)) return []
   return sections.flatMap((s) => {
@@ -275,11 +347,15 @@ export function sectionCompletionIssues(
     }
     if (
       !c.blockIds.length &&
-      !c.projectChecks?.length &&
+      !requiredProjectChecks(c.projectChecks).length &&
       !c.platformAction &&
       !c.submissionUpToDate
     )
-      add('Esta seção precisa de uma checagem ou objetivo verificável.')
+      add(
+        c.projectChecks?.length
+          ? 'Objetivos extras não trancam a parte. Marque ao menos um objetivo como obrigatório ou escolha outro critério.'
+          : 'Esta seção precisa de uma checagem ou objetivo verificável.',
+      )
     if (
       blocks.some(
         (block) =>
@@ -356,18 +432,6 @@ export function sectionCompletionIssues(
         if (content.purpose === 'experiment' || !['closing', 'delivery'].includes(s.intent))
           add(
             'A entrega obrigatória do projeto deve ficar em Entrega e compartilhamento ou no fechamento.',
-          )
-        if (
-          options.purpose !== 'playback' &&
-          content.kind === 'studio' &&
-          record(content.activity) &&
-          typeof content.activity.passingScore === 'number' &&
-          content.activity.passingScore > 0 &&
-          Array.isArray(content.activity.checks) &&
-          content.activity.checks.some((check) => !record(check) || check.kind !== 'structure')
-        )
-          add(
-            'Para exigir aprovação do projeto nesta seção, use apenas checagens estruturais. Deixe testes de execução como formativos ou acrescente uma pergunta corrigida pelo servidor.',
           )
       } else add('Use uma pergunta, desafio ou entrega como critério de conclusão.')
     }
@@ -516,9 +580,19 @@ export function sectionProgressView(
    * Curso AO VIVO: nenhuma parte fica trancada pela anterior. Durante o encontro quem conduz é a
    * professora (ela abre as partes na sala); depois, a criança vai no próprio ritmo.
    */
-  options: { freeOrder?: boolean } = {},
+  options: {
+    freeOrder?: boolean
+    /** O último resultado de cada objetivo por seção (só os da revisão atual). */
+    objectiveResults?: ReadonlyMap<string, readonly ProjectObjectiveResult[]>
+  } = {},
 ): SectionProgressView {
   let available = true
+  const objetivos = (id: string) => {
+    const results = options.objectiveResults?.get(id)
+    return results?.length
+      ? { objectives: results.map((r) => ({ id: r.id, passed: r.passed })) }
+      : {}
+  }
   const states = sections.map((s) => {
     if (completedIds.has(s.id))
       return {
@@ -527,6 +601,7 @@ export function sectionProgressView(
         status: 'completed' as const,
         pending: [],
         pendingItems: [],
+        ...objetivos(s.id),
       }
     const status = available ? ('available' as const) : ('locked' as const)
     available = Boolean(options.freeOrder)
@@ -546,6 +621,7 @@ export function sectionProgressView(
       status,
       pending: itens.map((item) => item.text),
       pendingItems: itens,
+      ...(status === 'locked' ? {} : objetivos(s.id)),
     }
   })
   const completed = states.filter((s) => s.status === 'completed').length

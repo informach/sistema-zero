@@ -85,14 +85,6 @@ const STUDIO_LOOP_PROJECT = {
   blocksState: null,
 }
 
-const STUDIO_FUNCTION_PROJECT = {
-  formatVersion: 2,
-  name: 'Projeto com função',
-  files: { 'index.html': '', 'style.css': '', 'script.js': 'function go() { return 1 }' },
-  ir: { js: [{ type: 'funcDecl', name: 'go', body: [] }] },
-  blocksState: null,
-}
-
 describe('Bloco Estúdio — gate de conclusão + entrega', () => {
   test('expirar o acesso não apaga o projeto enviado pela criança', async () => {
     const { app, courses, entitlements, studioSubmissions, clockRef } = buildApp()
@@ -122,7 +114,7 @@ describe('Bloco Estúdio — gate de conclusão + entrega', () => {
     expect((await readJson(res)).error.code).toBe('STUDIO_GATE_NOT_SUBMITTED')
   })
 
-  test('atividade com nota de corte NÃO atingida → /complete 409 STUDIO_GATE_NOT_PASSED (não 400)', async () => {
+  test('editar o bloco preserva a entrega do aluno', async () => {
     const { app, courses, entitlements } = buildApp()
     const { slug, lessonIds } = seedSampleCourse(courses)
     grantLifetime(entitlements, { userId: USER, courseRef: slug })
@@ -141,141 +133,15 @@ describe('Bloco Estúdio — gate de conclusão + entrega', () => {
           name: 'x',
           files: { 'index.html': '', 'style.css': '', 'script.js': '' },
         },
-        activity: {
-          instructions: 'use um laço',
-          passingScore: 100,
-          checks: [{ id: 's', label: 'usa laço', kind: 'structure', rule: { type: 'usesLoop' } }],
-        },
-      },
-    })
-    // Projeto SEM laço → o servidor recalcula a estrutura, reprova → não passa.
-    const submitRes = await submit(app, lessonIds[0], blockId, {
-      formatVersion: 2,
-      name: 'sem laço',
-      files: { 'index.html': '', 'style.css': '', 'script.js': 'console.log(1)' },
-      ir: { js: [{ type: 'consoleLog' }] },
-      blocksState: null,
-    })
-    expect(submitRes.status).toBe(200)
-    expect((await readJson(submitRes)).passed).toBe(false)
-
-    const res = await complete(app, lessonIds[0])
-    expect(res.status).toBe(409)
-    expect((await readJson(res)).error.code).toBe('STUDIO_GATE_NOT_PASSED')
-  })
-
-  test('editar atividade Studio avaliativa invalida aprovação anterior do mesmo bloco', async () => {
-    const { app, courses, entitlements } = buildApp()
-    const { slug, lessonIds } = seedSampleCourse(courses)
-    grantLifetime(entitlements, { userId: USER, courseRef: slug })
-    const blockId = randomUUID()
-    const baseStudio = {
-      kind: 'studio' as const,
-      level: 'iniciante' as const,
-      allowCategories: ['JavaScript'],
-      initialProject: {
-        formatVersion: 2,
-        name: 'x',
-        files: { 'index.html': '', 'style.css': '', 'script.js': '' },
-      },
-    }
-    courses.blocks.push({
-      id: blockId,
-      lessonId: lessonIds[0],
-      kind: 'studio',
-      sortOrder: 20,
-      content: {
-        ...baseStudio,
-        activity: {
-          instructions: 'use um laço',
-          passingScore: 100,
-          checks: [
-            { id: 'loop', label: 'usa laço', kind: 'structure', rule: { type: 'usesLoop' } },
-          ],
-        },
-      },
-    })
-
-    const oldPass = await submit(app, lessonIds[0], blockId, STUDIO_LOOP_PROJECT)
-    expect(oldPass.status).toBe(200)
-    expect((await readJson(oldPass)).passed).toBe(true)
-
-    const patched = await updateBlock(app, lessonIds[0], blockId, {
-      ...baseStudio,
-      activity: {
-        instructions: 'crie a função go',
-        passingScore: 100,
-        checks: [
-          {
-            id: 'fn',
-            label: 'define função',
-            kind: 'structure',
-            rule: { type: 'definesFunction', name: 'go' },
-          },
-        ],
-      },
-    })
-    expect(patched.status, await patched.clone().text()).toBe(200)
-
-    // A aprovação antiga caiu (gate volta a travar) — mas por NOT_PASSED, não
-    // por NOT_SUBMITTED: a ENTREGA do aluno fica (é o save na nuvem dele).
-    const blocked = await complete(app, lessonIds[0])
-    expect(blocked.status).toBe(409)
-    expect((await readJson(blocked)).error.code).toBe('STUDIO_GATE_NOT_PASSED')
-
-    const kept = await getOwnSubmission(app, lessonIds[0], blockId)
-    expect(kept.status).toBe(200)
-    expect((await readJson(kept)).project).toEqual(STUDIO_LOOP_PROJECT)
-
-    const newPass = await submit(app, lessonIds[0], blockId, STUDIO_FUNCTION_PROJECT)
-    expect(newPass.status).toBe(200)
-    expect((await readJson(newPass)).passed).toBe(true)
-    expect((await complete(app, lessonIds[0])).status).toBe(200)
-  })
-
-  test('editar o bloco SEM mudar a atividade preserva entrega, nota e aprovação', async () => {
-    const { app, courses, entitlements } = buildApp()
-    const { slug, lessonIds } = seedSampleCourse(courses)
-    grantLifetime(entitlements, { userId: USER, courseRef: slug })
-    const blockId = randomUUID()
-    const activity = {
-      instructions: 'use um laço',
-      passingScore: 100,
-      checks: [
-        {
-          id: 'loop',
-          label: 'usa laço',
-          kind: 'structure' as const,
-          rule: { type: 'usesLoop' as const },
-        },
-      ],
-    }
-    courses.blocks.push({
-      id: blockId,
-      lessonId: lessonIds[0],
-      kind: 'studio',
-      sortOrder: 20,
-      content: {
-        kind: 'studio',
-        level: 'iniciante',
-        allowCategories: ['JavaScript'],
-        initialProject: {
-          formatVersion: 2,
-          name: 'x',
-          files: { 'index.html': '', 'style.css': '', 'script.js': '' },
-        },
-        activity,
       },
     })
 
     const pass = await submit(app, lessonIds[0], blockId, STUDIO_LOOP_PROJECT)
     expect(pass.status).toBe(200)
-    expect((await readJson(pass)).passed).toBe(true)
 
     // O caso REAL de produção (08/2026): o admin re-salva o bloco e o snapshot
     // do initialProject sai re-serializado (normalizações do editor), a lista de
-    // blocos muda, a vitrine é ligada… nada disso é a ATIVIDADE — a entrega e a
-    // aprovação do aluno NÃO podem ser tocadas.
+    // blocos muda, a vitrine é ligada… a entrega do aluno NÃO pode ser tocada.
     const patched = await updateBlock(app, lessonIds[0], blockId, {
       kind: 'studio',
       level: 'intermediario',
@@ -286,7 +152,6 @@ describe('Bloco Estúdio — gate de conclusão + entrega', () => {
         files: { 'index.html': '<h1>novo</h1>', 'style.css': '', 'script.js': '' },
       },
       showcase: { enabled: true, title: 'Meu jogo' },
-      activity,
     })
     expect(patched.status, await patched.clone().text()).toBe(200)
 
@@ -297,8 +162,6 @@ describe('Bloco Estúdio — gate de conclusão + entrega', () => {
     const lesson = await readJson(await getLesson(app, slug, lessonIds[0]))
     const state = lesson.blocks.find((b: any) => b.id === blockId)?.studioState
     expect(state?.submitted).toBe(true)
-    expect(state?.lastScore).toBe(100)
-    expect(state?.passed).toBe(true)
 
     expect((await complete(app, lessonIds[0])).status).toBe(200)
   })
@@ -1174,55 +1037,6 @@ describe('Versão anterior da entrega — backup do último reenvio', () => {
     expect((await readJson(await getDetail(app, blockId, USER))).previousSubmittedAt).toBeNull()
     expect((await getPrevious(app, blockId, USER)).status).toBe(404)
     expect((await restorePrevious(app, blockId, USER)).status).toBe(404)
-  })
-
-  test('restaurar zera a correção mas PRESERVA a aprovação sticky', async () => {
-    const { app, courses, entitlements } = buildApp()
-    const { slug, lessonIds } = seedSampleCourse(courses)
-    grantLifetime(entitlements, { userId: USER, courseRef: slug })
-    const blockId = randomUUID()
-    courses.blocks.push({
-      id: blockId,
-      lessonId: lessonIds[0],
-      kind: 'studio',
-      sortOrder: 20,
-      content: {
-        kind: 'studio',
-        level: 'iniciante',
-        allowCategories: ['JavaScript'],
-        initialProject: {
-          formatVersion: 2,
-          name: 'x',
-          files: { 'index.html': '', 'style.css': '', 'script.js': '' },
-        },
-        activity: {
-          instructions: 'use um laço',
-          passingScore: 100,
-          checks: [
-            { id: 'loop', label: 'usa laço', kind: 'structure', rule: { type: 'usesLoop' } },
-          ],
-        },
-      },
-    })
-
-    // Passa com laço; o reenvio SEM laço reprova, mas o sticky preserva o "passou".
-    expect(
-      (await readJson(await submit(app, lessonIds[0], blockId, STUDIO_LOOP_PROJECT))).passed,
-    ).toBe(true)
-    // A resposta do reenvio reporta a TENTATIVA atual (reprovada)…
-    expect(
-      (await readJson(await submit(app, lessonIds[0], blockId, STUDIO_FUNCTION_PROJECT))).passed,
-    ).toBe(false)
-    // …mas o `passed_at` sticky da linha segue de pé ("aprovou uma vez = destrava").
-    expect((await readJson(await getDetail(app, blockId, USER))).passed).toBe(true)
-
-    expect((await restorePrevious(app, blockId, USER)).status).toBe(200)
-    const detail = await readJson(await getDetail(app, blockId, USER))
-    expect(detail.project).toEqual(STUDIO_LOOP_PROJECT)
-    expect(detail.score).toBeNull()
-    expect(detail.checkedAt).toBeNull()
-    expect(detail.passed).toBe(true) // sticky intacto — a restauração não pune a criança
-    expect((await complete(app, lessonIds[0])).status).toBe(200)
   })
 })
 

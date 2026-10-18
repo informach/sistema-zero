@@ -1,5 +1,23 @@
 # CLAUDE.md — @sistemazero/admin
 
+## Gabarito e "Testar agora" dos objetivos (18/10/2026)
+
+[`docs/plans/2026-10-18-objetivos-do-estudio.md`](../../docs/plans/2026-10-18-objetivos-do-estudio.md). No bloco Estúdio a "Atividade (auto-correção)" (`activity-builder.tsx`) SAIU; no lugar,
+logo abaixo do projeto inicial, o **Gabarito (só a equipe vê)** (`aulas/[lessonId]/
+studio-solution-field.tsx`): um segundo `StudioEmbed` com handle próprio, criado como CÓPIA do
+inicial com id novo (`solutionFrom` — dois editores não podem dividir o mesmo id), capturado no
+autosave e no salvar (`BlockForm.studioSolution` → `content.solutionProject`). O members tira o
+gabarito da aula do aluno.
+
+`SectionCompletionEditor`: por objetivo, **dica** (até `PROJECT_CHECK_HINT_MAX`, vazia tira a
+chave) e **Desafio extra** (`optional`), com o selo Obrigatório/Desafio extra; **"Testar agora"**
+roda `lib/objectives-test.ts` (`testSectionObjectives`, puro) contra o projeto inicial (obrigatório
+cumprido ali = problema: a criança passa sem fazer nada) e o gabarito (obrigatório que falta = a
+publicação recusa), e avisa sem gabarito e com todos extras. O upload de projeto ficou como
+"Testar com outro projeto (arquivo)". A nota 0–100 saiu do viewer, da aba Entregas do curso e da
+fila de Entregas (e dos tipos/BFF). Testes: `tests/objectives-test.test.ts` e
+`tests/section-completion-editor.test.tsx`.
+
 ## Atendimento no admin: painel somente leitura + links entre consoles (17/10/2026)
 
 Decisão da dona: o app de atendimento (`helpdesk-app`) continua sendo onde se TRABALHA; o admin

@@ -84,7 +84,6 @@ export function LessonPlayer({
 
   const blockedByQuiz = missing('QUIZ_GATE_NOT_PASSED')
   const blockedByStudio = missing('STUDIO_GATE_NOT_SUBMITTED')
-  const blockedByStudioNotPassed = missing('STUDIO_GATE_NOT_PASSED')
   const blockedByComingSoon = missing('LESSON_COMING_SOON')
 
   const completeBlocked = requirements.some((r) => !r.complete)
@@ -157,9 +156,7 @@ export function LessonPlayer({
             ? 'Passe no quiz da aula para concluir'
             : blockedByStudio
               ? 'Envie seu projeto do Estúdio para concluir a aula'
-              : blockedByStudioNotPassed
-                ? 'Alcance a nota mínima do Estúdio para concluir a aula'
-                : null
+              : null
 
   return (
     <LessonPlayerProvider value={playerContext}>

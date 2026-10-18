@@ -35,7 +35,6 @@ import {
   pintaAssetKindOf,
 } from '../../domain/course/lesson-block'
 import { validateQuizAuthoring } from '../../domain/course/quiz'
-import { validateStudioActivityAuthoring } from '../../domain/course/studio-activity'
 import type {
   AttachmentFields,
   ContentAdminRepository,
@@ -591,11 +590,11 @@ export function assertBlockCoherent(content: LessonBlockContent): void {
         throw new InvalidContentCommandError('Escolha um modelo Pro válido')
       }
     }
-    // Atividade (auto-correção): coerência além do shape TypeBox (ids únicos,
-    // code com source, testcase com função+casos, nota de corte com ≥1 checagem).
-    if (content.activity) {
-      const problem = validateStudioActivityAuthoring(content.activity)
-      if (problem) throw new InvalidContentCommandError(problem)
+    // O gabarito é um projeto do Estúdio como o inicial: a mesma régua de autoria vale.
+    if (content.solutionProject !== undefined) {
+      assertCurrentStudioAuthoring(content.solutionProject)
+      if (JSON.stringify(content.solutionProject).length > MAX_STUDIO_PROJECT_CHARS)
+        throw new InvalidContentCommandError('O gabarito excede o tamanho máximo permitido')
     }
   }
 }

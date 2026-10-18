@@ -321,11 +321,6 @@ export function EntregasClient() {
                       ) : null}
                     </Badge>
                   ) : null}
-                  {s.score !== null ? (
-                    <span className={`text-xs ${s.passed ? 'text-success' : 'text-destructive'}`}>
-                      {s.score}/100
-                    </span>
-                  ) : null}
                   <span className="ml-auto shrink-0 text-xs text-muted-foreground">
                     {formatDate(s.submittedAt)}
                   </span>

@@ -3,7 +3,6 @@ import { createTranslator, type Locale, type StudioProBuildLimits } from '#core'
 import { createPersistenceService, type PersistenceService } from '../persistence/service'
 import { resolvePersistenceAdapter, type StudioPersistence } from '../persistence/types'
 import type { StudioWorkspacePreferencesAdapter } from '../studio/workspace'
-import { createChecksStore } from './checksStore'
 import { createDiagnosticsStore } from './diagnosticsStore'
 import { createEditorHistory, type EditorHistory } from './editorHistory'
 import { createHighlightStore } from './highlightStore'
@@ -36,7 +35,6 @@ export interface StudioStores {
   highlight: ReturnType<typeof createHighlightStore>
   logs: ReturnType<typeof createLogsStore>
   sourcemap: ReturnType<typeof createSourcemapStore>
-  checks: ReturnType<typeof createChecksStore>
   diagnostics: ReturnType<typeof createDiagnosticsStore>
   pendingEditorEdits: PendingEditorEdits
   /** As pilhas de desfazer dos editores desta instância (os botões da barra). */
@@ -74,7 +72,6 @@ export function createStudioStores(options: CreateStudioStoresOptions = {}): Stu
     highlight: createHighlightStore(),
     logs: createLogsStore(),
     sourcemap: createSourcemapStore(),
-    checks: createChecksStore(),
     diagnostics: createDiagnosticsStore(),
     pendingEditorEdits,
     editorHistory: createEditorHistory(),

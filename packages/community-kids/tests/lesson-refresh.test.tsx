@@ -86,7 +86,12 @@ function comPlayer(refresh: () => void, filho: ReactNode) {
     viewerWatermark: null,
     initialPositionSeconds: null,
     refreshAfterLearning: refresh,
-    sectionProjectCheck: { sectionId: SECTION, revision: 'r'.repeat(32), blockId: 'projeto' },
+    sectionProjectCheck: {
+      sectionId: SECTION,
+      revision: 'r'.repeat(32),
+      blockId: 'projeto',
+      objectives: [{ id: 'revelar-ao-toque', label: 'Revele ao toque', kind: 'block' }],
+    },
   }
   return <LessonPlayerProvider value={value}>{filho}</LessonPlayerProvider>
 }
@@ -99,7 +104,7 @@ describe('"Verificar esta parte"', () => {
 
   async function verificar(passed: boolean) {
     globalThis.fetch = mock(async () =>
-      Response.json({ passed, results: [{ checkId: 'revelar-ao-toque', passed }] }),
+      Response.json({ passed, results: [{ id: 'revelar-ao-toque', passed }] }),
     ) as unknown as typeof fetch
     const refresh = mock(() => {})
     const handleRef = { current: { getProject: () => ({ id: 'p' }) } as never }

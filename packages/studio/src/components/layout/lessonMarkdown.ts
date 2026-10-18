@@ -1,8 +1,8 @@
 /**
  * Renderizador de markdown MÍNIMO e seguro para o enunciado da atividade.
  *
- * O admin autora o enunciado em rich text (TipTap → markdown), então o
- * `ActivityPanel` mostrava `**negrito**`/`#`/`- ` crus ao aluno (6º review, F).
+ * O admin autora o texto em rich text (TipTap → markdown), e sem isto o
+ * painel da atividade (que saiu em 18/10/2026) mostrava `**negrito**`/`#`/`- ` crus ao aluno (6º review, F).
  * Este renderer cobre o subconjunto que o editor produz — títulos, listas,
  * negrito/itálico, código inline e links — SEM dependência (o studio é lib
  * embarcada como TS source).

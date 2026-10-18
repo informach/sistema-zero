@@ -123,13 +123,7 @@ describe.skipIf(!testDatabaseUrl)('updateBlock preserva as entregas (Postgres re
     )
   })
 
-  const atividadeLaco = {
-    instructions: 'use um laço',
-    passingScore: 100,
-    checks: [{ id: 'loop', label: 'usa laço', kind: 'structure', rule: { type: 'usesLoop' } }],
-  }
-
-  const blocoEstudio = (activity?: unknown) => ({
+  const blocoEstudio = (solutionProject?: unknown) => ({
     kind: 'studio',
     level: 'iniciante',
     initialProject: {
@@ -137,7 +131,7 @@ describe.skipIf(!testDatabaseUrl)('updateBlock preserva as entregas (Postgres re
       name: 'x',
       files: { 'index.html': '', 'style.css': '', 'script.js': '' },
     },
-    ...(activity ? { activity } : {}),
+    ...(solutionProject ? { solutionProject } : {}),
   })
 
   const insereBloco = async (content: unknown, kind = 'studio') => {
@@ -177,13 +171,13 @@ describe.skipIf(!testDatabaseUrl)('updateBlock preserva as entregas (Postgres re
   }
 
   test('🚨 salvar o bloco com OUTRO initialProject/curadoria não toca a entrega', async () => {
-    const blockId = await insereBloco(blocoEstudio(atividadeLaco))
+    const blockId = await insereBloco(blocoEstudio())
     await insereEntrega(blockId)
 
     // O caso real do incidente: a professora retoca o projeto inicial, liga a
-    // vitrine, muda a lista de blocos — nada disso é a atividade.
+    // vitrine, muda a lista de blocos.
     const updated = await repo.updateBlock(blockId, 'studio', {
-      ...blocoEstudio(atividadeLaco),
+      ...blocoEstudio(),
       initialProject: {
         formatVersion: 2,
         name: 'retocado',
@@ -202,30 +196,23 @@ describe.skipIf(!testDatabaseUrl)('updateBlock preserva as entregas (Postgres re
     expect(entrega?.passed_at).not.toBeNull()
   })
 
-  test('mudar a ATIVIDADE zera a correção mas PRESERVA o projeto enviado', async () => {
-    const blockId = await insereBloco(blocoEstudio(atividadeLaco))
+  test('trocar o GABARITO da professora não toca a entrega (18/10/2026)', async () => {
+    const blockId = await insereBloco(blocoEstudio({ formatVersion: 2, name: 'gabarito v1' }))
     await insereEntrega(blockId)
 
-    const updated = await repo.updateBlock(blockId, 'studio', {
-      ...blocoEstudio({
-        instructions: 'crie a função go',
-        passingScore: 100,
-        checks: [
-          { id: 'fn', label: 'função', kind: 'structure', rule: { type: 'definesFunction' } },
-        ],
-      }),
-    } as never)
+    const updated = await repo.updateBlock(
+      blockId,
+      'studio',
+      blocoEstudio({ formatVersion: 2, name: 'gabarito v2' }) as never,
+    )
     expect(updated).not.toBeNull()
 
     const entrega = await leEntrega(blockId)
-    expect(entrega).not.toBeNull()
     expect(entrega?.project).toMatchObject({ name: 'meu jogo' })
     expect(entrega?.message).toBe('terminei!')
-    // A correção caiu: o gate com nota de corte volta a travar (NOT_PASSED).
-    expect(entrega?.score).toBeNull()
-    expect(entrega?.results).toBeNull()
-    expect(entrega?.checked_at).toBeNull()
-    expect(entrega?.passed_at).toBeNull()
+    // Nada mais escreve a correção antiga: o que estava guardado fica como estava.
+    expect(entrega?.score).toBe(100)
+    expect(entrega?.passed_at).not.toBeNull()
   })
 
   test('quiz: mudar as questões apaga as TENTATIVAS (histórico, não trabalho)', async () => {

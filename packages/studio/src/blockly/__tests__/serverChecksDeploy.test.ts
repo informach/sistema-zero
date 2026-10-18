@@ -1,5 +1,5 @@
 /**
- * O Members confere as atividades das aulas no SERVIDOR com o catálogo de blocos e o
+ * O Members confere os objetivos das partes no SERVIDOR com o catálogo de blocos e o
  * avaliador deste pacote (`@sistemazero/studio/server-project-checks`). Se uma mudança
  * do Estúdio deployar só os apps (admin, kids, adulto), o Members fica com o catálogo
  * antigo: o bloco novo é aceito na autoria e recusado na correção, sem erro em lugar
@@ -22,7 +22,7 @@ describe('conformidade studio × members', () => {
       dependencies?: Record<string, string>
     }
     expect(manifest.dependencies?.['@sistemazero/studio']).toBeDefined()
-    expect(read(`${ROOT}packages/members/src/domain/course/studio-activity.ts`)).toContain(
+    expect(read(`${ROOT}packages/members/src/application/learning/learning.service.ts`)).toContain(
       '@sistemazero/studio/server-project-checks',
     )
   })

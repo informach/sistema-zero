@@ -442,6 +442,21 @@ function WorkspaceEditor({
   const [workspace, setWorkspace] = useState(initial)
   const latest = useRef(initial)
   const editor = useRef<StudioHandle>(null)
+  // Os Objetivos da parte querem saber que o projeto mudou depois de verificar (ver o bloco
+  // Estúdio da aula, mesmo padrão: um conjunto num ref, sem estado a cada autosave).
+  const projectListeners = useRef(new Set<(project: { updatedAt?: number }) => void>())
+  const notifyProjectChange = useCallback((project: Project) => {
+    for (const listener of projectListeners.current) listener(project)
+  }, [])
+  const subscribeProjectChanges = useCallback(
+    (listener: (project: { updatedAt?: number }) => void) => {
+      projectListeners.current.add(listener)
+      return () => {
+        projectListeners.current.delete(listener)
+      }
+    },
+    [],
+  )
   const initialProject = useRef(initial.project as unknown as Project)
   const [editing, setEditing] = useState(false)
   const [ready, setReady] = useState(false)
@@ -1060,6 +1075,7 @@ function WorkspaceEditor({
           shareDisabledReason={shareDisabledReason}
           onReady={onStudioReady}
           onError={onStudioError}
+          onChange={notifyProjectChange}
           // A curadoria (como no bloco do Estúdio das aulas). Sem ela, a criança via a paleta
           // inteira, os modos Ponte e Código e instalava qualquer extensão.
           level={curationLevel as never}
@@ -1083,6 +1099,7 @@ function WorkspaceEditor({
       shareDisabledReason,
       onStudioReady,
       onStudioError,
+      notifyProjectChange,
       curationLevel,
       curationBlocks,
       curationCategories,
@@ -1368,7 +1385,11 @@ function WorkspaceEditor({
         )}
       </div>
       {!teacher && blockId && ready ? (
-        <SectionProjectCheck blockId={blockId} handleRef={editor} />
+        <SectionProjectCheck
+          blockId={blockId}
+          handleRef={editor}
+          subscribeProjectChanges={subscribeProjectChanges}
+        />
       ) : null}
     </div>
   )

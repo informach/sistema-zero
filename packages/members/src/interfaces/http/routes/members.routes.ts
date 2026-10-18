@@ -926,7 +926,6 @@ export function membersRoutes(deps: MembersRoutesDeps) {
         async ({ headers, params, body }) => {
           const userId = resolveUserId(headers)
           return deps.submitStudio.execute(userId, params.lessonId, params.blockId, body.project, {
-            clientResults: body.results ?? [],
             message: body.message ?? null,
             messageSpoken: body.messageSpoken,
             privileged: isPrivilegedActor(headers),

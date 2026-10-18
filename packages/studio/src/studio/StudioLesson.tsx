@@ -5,13 +5,13 @@ import type { StudioLessonProps } from './types'
 
 /**
  * Editor de AULA configurável: o professor fixa o projeto inicial, o nível, os
- * blocos/categorias liberados e os modos, e (fase seguinte) uma ATIVIDADE com
- * auto-correção. Consumido pelos wrappers de autoria (admin) e do aluno
+ * blocos/categorias liberados e os modos. Os objetivos da parte são conferidos
+ * pelo servidor, fora do editor. Consumido pelos wrappers de autoria (admin) e do aluno
  * (member-shell). Para edição autônoma sem conceito de aula, use `<StudioEditor>`.
  *
  * Wrapper fino sobre o `StudioCore`: aplica os DEFAULTS RESTRITOS da aula
  * (terminal/IA/profissional/export/download desligados) e repassa as props de
- * aprendizado + `activity`. O chamador ainda pode religar item a item via
+ * aprendizado. O chamador ainda pode religar item a item via
  * `features` (ex.: o aluno desliga também `extensions`). Renderizar SOMENTE no
  * client (Monaco/Blockly/IndexedDB).
  */

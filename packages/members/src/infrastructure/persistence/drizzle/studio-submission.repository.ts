@@ -2,7 +2,6 @@ import { randomUUID } from 'node:crypto'
 import { isGallerySubmission } from '@sistemazero/core/learning'
 import { and, asc, count, desc, eq, gte, inArray, isNotNull, lt, or, sql } from 'drizzle-orm'
 import type { CourseAudience } from '../../../domain/course/course'
-import type { StudioCheckResult } from '../../../domain/course/studio-activity'
 import { LearningConflictError } from '../../../domain/learning/learning.errors'
 import type {
   RecentStudioSubmission,
@@ -33,17 +32,13 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
 
   async upsert(
     submission: StudioSubmissionRecord & { accountId: string },
-    options?: { preservePassedAt?: boolean; revision?: string; galleryRequestId?: string },
+    options?: { revision?: string; galleryRequestId?: string },
   ): Promise<void> {
-    // Reenvio = último vence: atualiza projeto + data + correção, preservando a
-    // linha (e o id). `passed_at` é STICKY — o service já calcula o valor a
-    // gravar (existente ?? agora-se-passou), então o set abaixo só persiste.
+    // Reenvio = último vence: atualiza projeto + data + recado, preservando a linha (e o id).
+    // ⚠️ As colunas da antiga auto-correção (`score/results/checked_at/passed_at`) não são
+    // escritas nem lidas desde 18/10/2026: ficam com o que já existia.
     const values = {
       ...submission,
-      score: submission.score ?? null,
-      results: submission.results ?? null,
-      checkedAt: submission.checkedAt ?? null,
-      passedAt: submission.passedAt ?? null,
       message: submission.message ?? null,
       messageSpoken: submission.messageSpoken ?? false,
       contentFingerprint: submission.contentFingerprint ?? null,
@@ -61,13 +56,13 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
 
     await this.db.transaction(async (tx) => {
       await lockLearningOwner(tx, submission)
-      // serializa concorrência de submit por aluno+bloco; evita perda de `passedAt` sticky.
+      // serializa concorrência de submit por aluno+bloco.
       await tx.execute(
         sql`select pg_advisory_xact_lock(hashtextextended(${`${submission.userId}:${submission.blockId}`}, 0))`,
       )
 
       const rows = await tx
-        .select({ passedAt: studioSubmissions.passedAt, project: studioSubmissions.project })
+        .select({ project: studioSubmissions.project })
         .from(studioSubmissions)
         .where(
           and(
@@ -93,9 +88,6 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
           .limit(1)
         if (alreadySubmitted) throw new LearningConflictError()
       }
-      const nextPassedAt = options?.preservePassedAt
-        ? (rows[0]?.passedAt ?? values.passedAt ?? null)
-        : values.passedAt
       const [block] = await tx
         .select()
         .from(lessonBlocks)
@@ -118,25 +110,19 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
           createdAt: submission.submittedAt,
           payload: {
             project: submission.project,
-            score: values.score,
-            results: values.results,
             definition: block.content,
           },
         })
 
       await tx
         .insert(studioSubmissions)
-        .values({ ...values, passedAt: nextPassedAt })
+        .values(values)
         .onConflictDoUpdate({
           target: [studioSubmissions.userId, studioSubmissions.blockId],
           set: {
             ...previousBackupSet,
             project: values.project,
             submittedAt: values.submittedAt,
-            score: values.score,
-            results: values.results,
-            checkedAt: values.checkedAt,
-            passedAt: nextPassedAt,
             message: values.message,
             messageSpoken: values.messageSpoken,
             contentFingerprint: values.contentFingerprint,
@@ -154,8 +140,6 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
       .select({
         blockId: studioSubmissions.blockId,
         submittedAt: studioSubmissions.submittedAt,
-        score: studioSubmissions.score,
-        passedAt: studioSubmissions.passedAt,
         reviewedAt: studioSubmissions.reviewedAt,
         contentFingerprint: studioSubmissions.contentFingerprint,
       })
@@ -167,8 +151,6 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
     for (const r of rows) {
       map.set(r.blockId, {
         submittedAt: r.submittedAt,
-        score: r.score ?? null,
-        passed: r.passedAt != null,
         reviewedAt: r.reviewedAt ?? null,
         contentFingerprint: r.contentFingerprint ?? null,
       })
@@ -182,9 +164,6 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
         userId: studioSubmissions.userId,
         accountId: studioSubmissions.accountId,
         submittedAt: studioSubmissions.submittedAt,
-        score: studioSubmissions.score,
-        checkedAt: studioSubmissions.checkedAt,
-        passedAt: studioSubmissions.passedAt,
         message: studioSubmissions.message,
         messageSpoken: studioSubmissions.messageSpoken,
       })
@@ -195,9 +174,6 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
       userId: r.userId,
       accountId: r.accountId ?? null,
       submittedAt: r.submittedAt,
-      score: r.score ?? null,
-      checkedAt: r.checkedAt ?? null,
-      passed: r.passedAt != null,
       message: r.message ?? null,
       messageSpoken: r.messageSpoken,
     }))
@@ -216,9 +192,6 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
         lessonTitle: lessons.title,
         moduleTitle: modules.title,
         submittedAt: studioSubmissions.submittedAt,
-        score: studioSubmissions.score,
-        checkedAt: studioSubmissions.checkedAt,
-        passedAt: studioSubmissions.passedAt,
         message: studioSubmissions.message,
         messageSpoken: studioSubmissions.messageSpoken,
       })
@@ -235,9 +208,6 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
       lessonTitle: r.lessonTitle,
       moduleTitle: r.moduleTitle,
       submittedAt: r.submittedAt,
-      score: r.score ?? null,
-      checkedAt: r.checkedAt ?? null,
-      passed: r.passedAt != null,
       message: r.message ?? null,
       messageSpoken: r.messageSpoken,
     }))
@@ -339,9 +309,6 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
           courseTitle: courses.title,
           audience: courses.audience,
           submittedAt: studioSubmissions.submittedAt,
-          score: studioSubmissions.score,
-          checkedAt: studioSubmissions.checkedAt,
-          passedAt: studioSubmissions.passedAt,
           message: studioSubmissions.message,
           messageSpoken: studioSubmissions.messageSpoken,
           answered,
@@ -377,9 +344,6 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
         courseTitle: r.courseTitle,
         audience: r.audience,
         submittedAt: r.submittedAt,
-        score: r.score ?? null,
-        checkedAt: r.checkedAt ?? null,
-        passed: r.passedAt != null,
         message: r.message ?? null,
         messageSpoken: r.messageSpoken,
         answered: r.answered,
@@ -394,10 +358,6 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
       .select({
         project: studioSubmissions.project,
         submittedAt: studioSubmissions.submittedAt,
-        score: studioSubmissions.score,
-        results: studioSubmissions.results,
-        checkedAt: studioSubmissions.checkedAt,
-        passedAt: studioSubmissions.passedAt,
         message: studioSubmissions.message,
         messageSpoken: studioSubmissions.messageSpoken,
         reviewedAt: studioSubmissions.reviewedAt,
@@ -414,10 +374,6 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
     return {
       project: row.project,
       submittedAt: row.submittedAt,
-      score: row.score ?? null,
-      results: (row.results as StudioCheckResult[] | null) ?? null,
-      checkedAt: row.checkedAt ?? null,
-      passedAt: row.passedAt ?? null,
       message: row.message ?? null,
       messageSpoken: row.messageSpoken,
       reviewedAt: row.reviewedAt ?? null,
@@ -448,9 +404,8 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
     // ANTIGA (semântica do UPDATE), então project↔previous e submitted↔previous
     // trocam de lugar sem SELECT prévio nem lock — restaurar 2× volta ao estado
     // inicial (reversível de propósito: o "desfazer" do próprio restaurar).
-    // Zera a correção (score/results/checked_at pertenciam à versão sobrescrita);
-    // PRESERVA passed_at (sticky — a restauração do professor não pune a criança),
-    // reviewed_at/by, message e message_spoken (não listados no SET).
+    // PRESERVA reviewed_at/by, message e message_spoken (não listados no SET). As colunas da
+    // antiga auto-correção não são mais tocadas (18/10/2026).
     const rows = await this.db
       .update(studioSubmissions)
       .set({
@@ -458,9 +413,6 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
         previousProject: sql`${studioSubmissions.project}`,
         submittedAt: sql`${studioSubmissions.previousSubmittedAt}`,
         previousSubmittedAt: sql`${studioSubmissions.submittedAt}`,
-        score: null,
-        results: null,
-        checkedAt: null,
         // A versão que volta não tem impressão conhecida: o "envio em dia" deixa passar.
         contentFingerprint: null,
       })
@@ -583,9 +535,6 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
         lessonId: studioSubmissions.lessonId,
         lessonTitle: lessons.title,
         courseTitle: courses.title,
-        score: studioSubmissions.score,
-        checkedAt: studioSubmissions.checkedAt,
-        passedAt: studioSubmissions.passedAt,
         submittedAt: studioSubmissions.submittedAt,
         message: studioSubmissions.message,
         messageSpoken: studioSubmissions.messageSpoken,
@@ -608,8 +557,6 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
           lessonId: r.lessonId,
           lessonTitle: r.lessonTitle ?? null,
           courseTitle: r.courseTitle ?? null,
-          score: r.score ?? null,
-          passed: r.checkedAt == null ? null : r.passedAt != null,
           submittedAt: r.submittedAt,
           message: r.message ?? null,
           messageSpoken: r.messageSpoken,

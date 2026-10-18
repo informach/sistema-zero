@@ -59,7 +59,6 @@ describe('LessonSectionStatus: a faixa "o que falta para seguir"', () => {
       ['LEARNING_GATE_INCOMPLETE', 'lucide-flask-conical'],
       ['QUIZ_GATE_NOT_PASSED', 'lucide-list-checks'],
       ['STUDIO_GATE_NOT_SUBMITTED', 'lucide-code'],
-      ['STUDIO_GATE_NOT_PASSED', 'lucide-code'],
       ['PINTA_GATE_NOT_SUBMITTED', 'lucide-palette'],
       ['MATERIAL_GATE_NOT_ACCESSED', 'lucide-backpack'],
       ['CERTIFICATE_GATE_NOT_ISSUED', 'lucide-award'],

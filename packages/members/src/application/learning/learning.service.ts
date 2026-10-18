@@ -438,7 +438,12 @@ export class LearningService {
     project: unknown,
   ) {
     const lesson = await this.requireLesson(actor, lessonId)
-    return this.sections.checkProject(actor, lesson, sectionId, revision, project)
+    const course = await this.courses.findCourseById(lesson.courseId)
+    if (!course) throw new LessonNotFoundError()
+    return this.sections.checkProject(actor, lesson, sectionId, revision, project, {
+      audience: course.audience,
+      privileged: actor.privileged,
+    })
   }
   async assertComplete(owner: LearningOwner, lesson: LessonWithContent) {
     const required = lesson.blocks.filter(

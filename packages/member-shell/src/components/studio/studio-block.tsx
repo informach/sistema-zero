@@ -246,11 +246,8 @@ function LessonStudioBlockView({
   const [submittedAt, setSubmittedAt] = useState<string | null>(studioState?.submittedAt ?? null)
   // "Compartilhar" da aula é 1 vez só (ver helper): trava depois do 1º publish bem-sucedido.
   const [alreadyShared, setAlreadyShared] = useState<boolean>(() => readSharedFlag(projectId))
-  const [score, setScore] = useState<number | null>(studioState?.lastScore ?? null)
-  const [passed, setPassed] = useState<boolean>(studioState?.passed ?? false)
   // "O professor já conferiu": some ao reenviar (a versão nova ainda não foi vista).
   const [reviewed, setReviewed] = useState<boolean>(studioState?.reviewed ?? false)
-  const [xp, setXp] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [expanded, setExpanded] = useState(() => expandedByProject.get(projectId) ?? false)
   // Confirmação antes de enviar: o envio destrava/regrava a entrega no professor —
@@ -277,8 +274,6 @@ function LessonStudioBlockView({
   const [restarting, setRestarting] = useState(false)
   const [restartNote, setRestartNote] = useState<string | null>(null)
 
-  const activity = content.activity
-  const passingScore = activity?.passingScore
   const isProLesson = content.initialProject.kind === 'pro'
 
   const proRuntime = useMemo<StudioProRuntimeAdapter | undefined>(() => {
@@ -322,6 +317,22 @@ function LessonStudioBlockView({
   }, [isProLesson, player?.courseSlug, lessonId, blockId])
 
   const handleRef = useRef<StudioHandle | null>(null)
+  // Quem quer saber que o projeto mudou (os Objetivos da parte marcam o resultado "de antes da
+  // mudança"). Um conjunto num ref: o `onChange` do Estúdio chega a cada autosave, e um estado
+  // aqui re-renderizaria o editor inteiro a cada segundo de trabalho.
+  const projectListeners = useRef(new Set<(project: { updatedAt?: number }) => void>())
+  const notifyProjectChange = useCallback((project: Project) => {
+    for (const listener of projectListeners.current) listener(project)
+  }, [])
+  const subscribeProjectChanges = useCallback(
+    (listener: (project: { updatedAt?: number }) => void) => {
+      projectListeners.current.add(listener)
+      return () => {
+        projectListeners.current.delete(listener)
+      }
+    },
+    [],
+  )
 
   const draftDeps = useMemo<StudioDraftDeps | null>(
     () =>
@@ -531,12 +542,6 @@ function LessonStudioBlockView({
         subirRef.current()
         await channel.flush(4000).catch(() => {})
       }
-      // Resultado da auto-correção rodada no editor (correção híbrida): o servidor
-      // RECALCULA a estrutura e registra estes p/ comportamento/teste/código.
-      const run = handleRef.current?.getActivityResult() ?? null
-      const results = run
-        ? run.results.map((r) => ({ checkId: r.checkId, passed: r.passed, message: r.message }))
-        : undefined
       // Recado opcional ao professor (trim → omite se vazio).
       const note = message.trim()
       const res = await apiSend<StudioSubmissionResultView>(
@@ -544,7 +549,6 @@ function LessonStudioBlockView({
         'POST',
         {
           project,
-          ...(activity ? { results } : {}),
           ...(note ? { message: note } : {}),
           ...(note && messageSpoken ? { messageSpoken: true } : {}),
           ...(fingerprint ? { fingerprint } : {}),
@@ -555,9 +559,6 @@ function LessonStudioBlockView({
       setSubmitted(true)
       setSubmittedAt(res.submittedAt)
       setReviewed(false) // entrega nova: o carimbo do professor não vale mais
-      if (res.score !== undefined) setScore(res.score)
-      if (res.passed !== undefined) setPassed(res.passed)
-      setXp(res.gamification?.xpAwarded ?? null)
       setMessage('') // recado é por envio: limpa após mandar
       setMessageSpoken(false)
       // Destrava o "Concluir aula" (gate do backend) → re-render da página.
@@ -574,7 +575,7 @@ function LessonStudioBlockView({
     } finally {
       setSubmitting(false)
     }
-  }, [lessonId, blockId, player, activity, message, messageSpoken, studioMod, projectId, channel])
+  }, [lessonId, blockId, player, message, messageSpoken, studioMod, projectId, channel])
 
   // Abre a confirmação de "Trazer o que eu enviei" (item do menu ⋯ do Estúdio).
   // Estável (o Studio latcha este callback no mount).
@@ -886,7 +887,7 @@ function LessonStudioBlockView({
             allowCategories={content.allowCategories}
             allowedModes={content.allowedModes}
             allowLevelReveal={content.allowLevelReveal}
-            activity={content.activity}
+            onChange={notifyProjectChange}
             features={{ extensions: false, professional: isProLesson, terminal: false }}
             proRuntime={proRuntime}
             share={share}
@@ -925,22 +926,12 @@ function LessonStudioBlockView({
         )}
       </div>
 
-      <SectionProjectCheck blockId={blockId} handleRef={handleRef} />
+      <SectionProjectCheck
+        blockId={blockId}
+        handleRef={handleRef}
+        subscribeProjectChanges={subscribeProjectChanges}
+      />
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
-
-      {/* Nota da auto-correção (quando o bloco tem atividade). O feedback POR
-          checagem é instantâneo no painel do editor (botão "Verificar"). */}
-      {activity && score !== null ? (
-        <p className="inline-flex flex-wrap items-center gap-2 text-sm">
-          <span className="font-medium">{estudio.pontuacao(score)}</span>
-          {passingScore !== undefined ? (
-            <span className={passed ? 'text-accent dark:text-primary' : 'text-muted-foreground'}>
-              {passed ? estudio.metaAlcancada : estudio.precisaDe(passingScore)}
-            </span>
-          ) : null}
-          {xp ? <span className="text-accent dark:text-primary">· +{xp} XP</span> : null}
-        </p>
-      ) : null}
 
       {submitted ? (
         <div className="space-y-1">
@@ -962,12 +953,9 @@ function LessonStudioBlockView({
         </div>
       ) : (
         <p className="text-xs text-muted-foreground">
-          {passingScore !== undefined
-            ? estudio.paraConcluirComMeta
-            : player?.submissionAllowedBlockIds &&
-                !player.submissionAllowedBlockIds.includes(blockId)
-              ? estudio.continueConstruindo
-              : estudio.paraConcluir}
+          {player?.submissionAllowedBlockIds && !player.submissionAllowedBlockIds.includes(blockId)
+            ? estudio.continueConstruindo
+            : estudio.paraConcluir}
         </p>
       )}
 
@@ -1002,7 +990,6 @@ function LessonStudioBlockView({
         <p className="text-sm text-muted-foreground">
           {submitted ? estudio.vaiReceberDeNovo : estudio.vaiReceber} Você pode continuar editando e
           enviar de novo quando quiser.
-          {passingScore !== undefined ? estudio.dicaVerificar : ''}
         </p>
         {templateWarning ? (
           <p className="mt-3 text-sm font-medium text-destructive">{estudio.avisoProjetoInicial}</p>

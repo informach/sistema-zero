@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { ValidationError } from '@sistemazero/core/errors'
 import { isPdfAttachment } from '@sistemazero/core/learning'
 import { and, asc, count, eq, inArray, isNull, ne, or, type SQL, sql } from 'drizzle-orm'
+import { blockRevisionFingerprint } from '../../../domain/course/block-revision'
 import type {
   Course,
   Lesson,
@@ -29,7 +30,6 @@ import type {
   ListCoursesAdminFilter,
   ModuleFields,
 } from '../../../domain/ports/content-admin-repository.port'
-import { stableJson } from '../../../domain/shared/stable-json'
 import type { Database } from './db'
 import { lessonContentAvailable } from './lesson-availability'
 import { lockLessonStructure, syncLessonStructure } from './lesson-structure'
@@ -43,7 +43,6 @@ import {
   liveCohorts,
   modules,
   quizAttempts,
-  studioSubmissions,
 } from './schema'
 import { JAVASCRIPT_TRIM_CHARACTERS } from './text-normalization'
 
@@ -197,21 +196,13 @@ async function retrySortOrderCollision<T>(operation: () => Promise<T>): Promise<
  * enviados de TODOS os alunos do bloco — o aluno via "você ainda não enviou
  * nenhum projeto" e o professor perdia a fila.
  *
- * O que uma edição PODE invalidar é a CORREÇÃO: quando a ATIVIDADE avaliada do
- * Estúdio muda, a nota/aprovação anterior não vale mais — os campos de correção
- * (score/results/checked_at/passed_at) são ZERADOS e o gate volta a travar por
- * `STUDIO_GATE_NOT_PASSED` até o aluno reenviar; o projeto enviado fica. Quiz
- * segue apagando as TENTATIVAS quando as questões/nota de corte mudam
+ * Quiz segue apagando as TENTATIVAS quando as questões/nota de corte mudam
  * (histórico de respostas de questões que não existem mais — não é trabalho
- * autoral). Pinta não tem correção: editar o bloco não toca a entrega.
+ * autoral). Estúdio e Pinta não têm correção na entrega (a auto-correção do bloco
+ * saiu em 18/10/2026; os objetivos são da parte): editar o bloco não toca a entrega.
  */
 // A régua mora no domínio (`quizGateFingerprint`), para o fake dos testes usar a MESMA.
 export { quizGateFingerprint }
-
-export function studioActivityFingerprint(content: LessonBlockContent): string {
-  if (content.kind !== 'studio') return 'none'
-  return stableJson(content.activity ?? null)
-}
 
 type DatabaseTransaction = Parameters<Parameters<Database['transaction']>[0]>[0]
 type DatabaseExecutor = Database | DatabaseTransaction
@@ -928,26 +919,23 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
       if (!current) return null
 
       const quizGateChanged = quizGateFingerprint(current.content) !== quizGateFingerprint(content)
-      const studioActivityChanged =
-        studioActivityFingerprint(current.content) !== studioActivityFingerprint(content)
       const [row] = await tx
         .update(lessonBlocks)
-        .set({ kind, content, contentRevision: randomUUID().replaceAll('-', '') })
+        .set({
+          kind,
+          content,
+          contentRevision:
+            current.kind === kind &&
+            blockRevisionFingerprint(current.content) === blockRevisionFingerprint(content)
+              ? current.contentRevision
+              : randomUUID().replaceAll('-', ''),
+        })
         .where(and(isNull(lessonBlocks.archivedAt), eq(lessonBlocks.id, id)))
         .returning()
       if (!row) return null
 
       if (quizGateChanged) {
         await tx.delete(quizAttempts).where(eq(quizAttempts.blockId, id))
-      }
-      if (studioActivityChanged) {
-        // Zera SÓ a correção (o projeto do aluno FICA — ver o comentário dos
-        // fingerprints). `passed_at` é o sticky do gate: sem zerá-lo, a
-        // atividade nova nasceria "aprovada" pela versão antiga.
-        await tx
-          .update(studioSubmissions)
-          .set({ score: null, results: null, checkedAt: null, passedAt: null })
-          .where(eq(studioSubmissions.blockId, id))
       }
       await syncLessonStructure(tx, row.lessonId)
       return toBlock(row)

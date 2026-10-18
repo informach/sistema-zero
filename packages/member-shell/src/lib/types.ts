@@ -2,6 +2,8 @@ import type {
   LessonLearningProgress,
   LessonRequirement,
   LessonSection,
+  SectionCompletion,
+  SectionCompletionView,
   SectionProgressView,
 } from '@sistemazero/core/learning'
 import type {
@@ -26,13 +28,7 @@ export type {
  */
 
 // Tipos do editor embarcável (bloco `studio`) — type-only (erasado em runtime).
-import type {
-  AnyBlockLevel,
-  CheckResult,
-  IDEMode,
-  LessonActivity,
-  Project,
-} from '@sistemazero/studio'
+import type { AnyBlockLevel, IDEMode, Project } from '@sistemazero/studio'
 
 // ── Sessão / usuário (claims do JWT do auth) ────────────────────────────────
 
@@ -498,8 +494,6 @@ export interface StudioBlock {
   allowCategories?: string[]
   allowedModes?: IDEMode[]
   allowLevelReveal?: boolean
-  /** Atividade com auto-correção (fase 2). Vai ao aluno (feedback instantâneo). */
-  activity?: LessonActivity
   /**
    * Nome do projeto contínuo (cadeia). Quando presente, o editor carrega a última
    * entrega do aluno no bloco contínuo da aula anterior da mesma cadeia (carryover).
@@ -607,10 +601,6 @@ export interface StudioStateView {
   submitted: boolean
   /** ISO da última entrega; `null` se ainda não enviou. */
   submittedAt: string | null
-  /** Nota da última correção (atividade); `null` sem atividade ou sem entrega. */
-  lastScore?: number | null
-  /** Atingiu a nota de corte (sticky). */
-  passed?: boolean
   /**
    * O professor já conferiu ESTA entrega. Reenviar volta para `false` (a versão
    * nova ainda não foi olhada). Não tem relação com a nota: é o professor
@@ -723,10 +713,6 @@ export interface CreationDownloadTicketView {
 /** `POST /members/lessons/:lessonId/blocks/:blockId/studio-submission`. */
 export interface StudioSubmissionResultView {
   submittedAt: string
-  /** Auto-correção (presentes só quando o bloco tem atividade). */
-  score?: number
-  passed?: boolean
-  results?: CheckResult[]
   gamification?: GamificationDelta | null
 }
 
@@ -1463,10 +1449,18 @@ export interface EbookDownloadView {
 /** `GET /members/courses/:slug/lessons/:lessonId` (busca por ID, não slug). */
 export interface LessonDetailView {
   requirements?: LessonRequirement[]
-  sections?: Pick<
+  /**
+   * As partes da aula. Para a criança a conclusão chega como VISTA: os objetivos do projeto trazem
+   * rótulo, dica e se são extra, nunca a regra (essa fica no members, que confere). A prévia do
+   * Admin monta a aula do documento de autoria, que tem a regra inteira; o `LessonSections`
+   * converte para a vista antes de qualquer coisa chegar à tela.
+   */
+  sections?: (Pick<
     LessonSection,
-    'id' | 'title' | 'blockIds' | 'workspaceBlockId' | 'externalTool' | 'completion'
-  >[]
+    'id' | 'title' | 'blockIds' | 'workspaceBlockId' | 'externalTool'
+  > & {
+    completion?: SectionCompletionView | SectionCompletion
+  })[]
   /** Presentation of an unconfigured lesson; completion still uses its original gates. */
   legacyLayout?: boolean
   structureRevision?: string | null

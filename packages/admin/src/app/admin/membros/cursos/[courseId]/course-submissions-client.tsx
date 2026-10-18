@@ -135,17 +135,6 @@ export function CourseSubmissionsPanel({
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="truncate text-sm font-medium">{studentName(r)}</span>
-                        {r.score !== null ? (
-                          <span
-                            className={`shrink-0 rounded px-1.5 py-0.5 text-xs ${
-                              r.passed
-                                ? 'bg-success/15 text-success-foreground'
-                                : 'bg-muted text-muted-foreground'
-                            }`}
-                          >
-                            {r.score}/100
-                          </span>
-                        ) : null}
                       </div>
                       {r.childName ? (
                         <div className="truncate text-xs text-muted-foreground">

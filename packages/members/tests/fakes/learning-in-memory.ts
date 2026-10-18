@@ -58,10 +58,22 @@ export class InMemoryLearningRepository implements LearningRepository {
       ])
     for (const r of records) {
       const old = all.find((p) => p.sectionId === r.sectionId)
-      if (old?.completedAt) continue
+      if (old?.completedAt) {
+        // Espelho do Drizzle: a parte fechada só aceita a memória da lista, na mesma revisão.
+        if (r.objectiveResults !== undefined && old.revision === r.revision)
+          old.objectiveResults = r.objectiveResults
+        continue
+      }
+      const sameRevision = old?.revision === r.revision
       const next = {
         ...r,
-        projectPassed: r.projectPassed || (old?.revision === r.revision && old.projectPassed),
+        projectPassed: r.projectPassed || (sameRevision && Boolean(old?.projectPassed)),
+        objectiveResults:
+          r.objectiveResults !== undefined
+            ? r.objectiveResults
+            : sameRevision
+              ? (old?.objectiveResults ?? null)
+              : null,
       }
       if (old) Object.assign(old, next)
       else all.push(next)

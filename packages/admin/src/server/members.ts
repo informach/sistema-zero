@@ -328,9 +328,6 @@ export function listCourseStudioSubmissions(courseId: string): Promise<
       lessonTitle: string
       moduleTitle: string
       submittedAt: string
-      score: number | null
-      checkedAt: string | null
-      passed: boolean
       /** Recado opcional do aluno ao professor. `null` = sem recado. */
       message: string | null
       /** O recado veio da fala transcrita (14/10/2026). OPCIONAL: members antigo não manda. */
@@ -340,7 +337,7 @@ export function listCourseStudioSubmissions(courseId: string): Promise<
 > {
   return gatewayFetch(`/members/admin/courses/${enc(courseId)}/studio-submissions`)
 }
-/** Projeto + correção de UMA entrega: `GET /members/admin/blocks/:id/studio-submissions/:userId`. */
+/** Projeto de UMA entrega: `GET /members/admin/blocks/:id/studio-submissions/:userId`. */
 export function getStudioSubmission(
   blockId: string,
   userId: string,
@@ -348,10 +345,6 @@ export function getStudioSubmission(
   GatewayResponse<{
     project: unknown
     submittedAt: string
-    score: number | null
-    results: unknown
-    checkedAt: string | null
-    passed: boolean
     /** Recado opcional do aluno ao professor. `null` = sem recado. */
     message: string | null
     /** ISO do carimbo "já conferi"; `null` = nunca conferida. */

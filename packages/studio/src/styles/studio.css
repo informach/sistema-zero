@@ -932,36 +932,12 @@
   stroke-dasharray: 8 5;
 }
 
-/*
- * Micro-celebração da ATIVIDADE (ActivityPanel): pop finito quando todas as
- * checagens passam. `prefers-reduced-motion` desliga a animação (o banner
- * continua aparecendo, estático).
- */
-@keyframes sz-activity-pop {
-  0% {
-    transform: scale(0.92);
-    opacity: 0;
-  }
-  60% {
-    transform: scale(1.03);
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-.sz-activity-pop {
-  animation: sz-activity-pop 350ms ease-out both;
-}
 @media (prefers-reduced-motion: reduce) {
   [data-sz-theme] .blocklyToolboxCategory {
     transition: none;
   }
   [data-sz-theme] .blocklyToolboxCategory:not(.blocklyToolboxSelected):hover {
     transform: none;
-  }
-  .sz-activity-pop {
-    animation: none;
   }
 }
 /* Seletor de nomes do Blockly: foco visível também no conteúdo portalado. */

@@ -12,7 +12,6 @@ import { LegacyAIEntryPoints } from '../../studio/legacy-ai'
 import { DrawingSyncWatcher } from '../assets/DrawingSyncWatcher'
 import { useAssetsPanelWiring } from '../assets/useAssetsPanel'
 import { ZappyPanelBoundary } from '../tutor/ZappyPanelBoundary'
-import { ActivityPanel } from './ActivityPanel'
 import { BottomPanel } from './BottomPanel'
 import { useVisibleBottomTabs } from './bottomTabs'
 import { ConvertLegacyPrompt } from './ConvertLegacyPrompt'
@@ -106,14 +105,8 @@ export function Shell({
                 }
               >
                 <main className="flex min-h-0 flex-1 flex-col">
-                  <div
-                    key={projectId}
-                    className={`flex h-full min-h-0 w-full ${layout.isNarrow ? 'flex-col' : ''}`}
-                  >
-                    <ActivityPanel />
-                    <div className="min-h-0 min-w-0 flex-1">
-                      <ModeArea projectMode={projectMode} projectId={projectId} />
-                    </div>
+                  <div key={projectId} className="h-full min-h-0 w-full">
+                    <ModeArea projectMode={projectMode} projectId={projectId} />
                   </div>
                 </main>
               </ProTutorDockContext.Provider>
@@ -136,17 +129,8 @@ export function Shell({
                     defaultSize={hasBottomPanel ? 70 : 100}
                     minSize={30}
                   >
-                    {/* ActivityPanel é self-gating (null sem atividade): no
-                        <StudioEditor> e nas aulas sem exercício não acrescenta
-                        DOM, então o split do editor fica idêntico ao de antes.
-                        Com atividade, a raiz do modo é `w-full`, então o ModeArea
-                        vai num wrapper `min-w-0 flex-1` para dividir a largura com
-                        o painel (`w-80 shrink-0`) sem estourar o split. */}
-                    <div key={projectId} className="flex h-full min-h-0 w-full">
-                      <ActivityPanel />
-                      <div className="h-full min-w-0 flex-1">
-                        <ModeArea projectMode={projectMode} projectId={projectId} />
-                      </div>
+                    <div key={projectId} className="h-full min-h-0 w-full">
+                      <ModeArea projectMode={projectMode} projectId={projectId} />
                     </div>
                   </Panel>
                   {hasBottomPanel && (

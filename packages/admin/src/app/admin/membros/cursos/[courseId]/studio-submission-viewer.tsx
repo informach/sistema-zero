@@ -355,36 +355,6 @@ export function StudioSubmissionViewer({
             studentName={studentName}
           />
 
-          {/* Correção automática (atividade). Sem atividade → score null, omite. */}
-          {detail.score !== null ? (
-            <Card className="space-y-2 p-3">
-              <div className="flex items-center gap-2 text-sm font-medium">
-                <span>Correção automática: {detail.score}/100</span>
-                <span className={detail.passed ? 'text-success' : 'text-destructive'}>
-                  {detail.passed ? '· aprovado' : '· não aprovado'}
-                </span>
-              </div>
-              {detail.results?.length ? (
-                <ul className="flex flex-col gap-1">
-                  {detail.results.map((r) => (
-                    <li key={r.checkId} className="flex items-start gap-2 text-xs">
-                      <span className={r.passed ? 'text-success' : 'text-destructive'} aria-hidden>
-                        {r.passed ? '✓' : '✗'}
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        {r.checkId}
-                        {r.message ? ` — ${r.message}` : ''}
-                      </span>
-                      <span className="shrink-0 text-muted-foreground">
-                        {r.verifiedBy === 'server' ? 'servidor' : 'cliente'}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
-            </Card>
-          ) : null}
-
           {/* key por aluno+bloco+VERSÃO: remonta o editor (re-semeia) ao trocar de entrega —
               inclusive via "Próxima pendente" (mesmo aluno, bloco diferente) e após o
               swap atual↔anterior (mesmo aluno/bloco, `submittedAt` diferente). Sem a versão,

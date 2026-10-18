@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import { defaultLessonSection, type SectionStructureRule } from '@sistemazero/core/learning'
 import {
   evaluateStudioProjectStructure,
+  evaluateStudioSectionObjectives,
   projectCheckAuthoring,
   studioSectionCompletionIssues,
 } from '../projectCheckAuthoring'
@@ -125,13 +126,62 @@ describe('objective authoring uses the actual workspace contracts', () => {
       projectCheckAuthoring({ ...workspace, allowedModes: ['code'] }).issues(stage).length,
     ).toBeGreaterThan(0)
   })
-  test('semantic objectives also require blocks that can express them', () => {
-    expect(projectCheckAuthoring(workspace).issues({ type: 'usesLoop' }).length).toBeGreaterThan(0)
+  test('semantic objectives also require blocks that can express them (só Blocos)', () => {
+    const onlyBlocks = { ...workspace, allowedModes: ['blocks'] }
+    expect(projectCheckAuthoring(onlyBlocks).issues({ type: 'usesLoop' }).length).toBeGreaterThan(0)
     expect(
-      projectCheckAuthoring({ ...workspace, allowBlocks: ['sz_js_repeat'] }).issues({
+      projectCheckAuthoring({ ...onlyBlocks, allowBlocks: ['sz_js_repeat'] }).issues({
         type: 'usesLoop',
       }),
     ).toEqual([])
+  })
+  test('com a Ponte a ideia pode ser digitada: não exige o bloco na paleta', () => {
+    const bridge = { ...workspace, allowedModes: ['blocks', 'bridge'] }
+    expect(projectCheckAuthoring(bridge).issues({ type: 'usesLoop' })).toEqual([])
+    // Sem modos declarados (bloco antigo) a Ponte vale também.
+    expect(projectCheckAuthoring(workspace).issues({ type: 'usesLoop' })).toEqual([])
+  })
+  test('no Pro as ideias sempre valem e "usar um bloco" nunca', () => {
+    const pro = { kind: 'studio', initialProject: { kind: 'pro', tree: {} } }
+    expect(projectCheckAuthoring(pro).issues({ type: 'definesFunction', name: 'pular' })).toEqual(
+      [],
+    )
+    expect(projectCheckAuthoring(pro).issues(stage).join(' ')).toContain(
+      'Projeto Pro não tem blocos',
+    )
+  })
+  test('a conferência do servidor lê o código do Pro e o rawJS da Ponte', () => {
+    const proProject = {
+      kind: 'pro',
+      tree: { 'src/main.ts': { kind: 'file', content: 'function pular() {}\nfor (;;) break' } },
+    }
+    const checks = [
+      { id: 'f', label: 'f', rule: { type: 'definesFunction' as const, name: 'pular' } },
+      { id: 'l', label: 'l', rule: { type: 'usesLoop' as const }, optional: true as const },
+    ]
+    expect(evaluateStudioSectionObjectives(checks, proProject)).toEqual({
+      results: [
+        { checkId: 'f', passed: true, optional: false },
+        { checkId: 'l', passed: true, optional: true },
+      ],
+      passed: true,
+    })
+    const bridgeProject = {
+      ir: { version: 2, behavior: { start: [{ type: 'rawJS', code: 'let vida = 3' }] } },
+    }
+    expect(
+      evaluateStudioSectionObjectives(
+        [{ id: 'v', rule: { type: 'declaresVariable', name: 'vida' } }],
+        bridgeProject,
+      ).passed,
+    ).toBe(true)
+    // Anti-vácuo: o nome errado continua falhando.
+    expect(
+      evaluateStudioSectionObjectives(
+        [{ id: 'v', rule: { type: 'declaresVariable', name: 'pontos' } }],
+        bridgeProject,
+      ).passed,
+    ).toBe(false)
   })
   test('evaluates active nonliteral value shadows from the actual catalog', () => {
     const variable = { type: 'sz_val_variable', fields: { NAME: 'pontos' } }
@@ -192,5 +242,74 @@ describe('objective authoring uses the actual workspace contracts', () => {
         allowLevelReveal: false,
       }).available.some((block) => block.type === 'sz_js_class'),
     ).toBe(false)
+  })
+})
+
+describe('o gabarito da professora na publicação (18/10/2026)', () => {
+  const loopWorkspace = (solutionProject?: unknown) => ({
+    kind: 'studio',
+    initialProject: {},
+    ...(solutionProject === undefined ? {} : { solutionProject }),
+  })
+  const comLaco = {
+    ir: {
+      version: 2,
+      html: [],
+      css: [],
+      extensions: [],
+      behavior: {
+        molds: [],
+        start: [],
+        events: [],
+        loops: [{ type: 'repeat', times: { type: 'num', value: 3 }, body: [] }],
+      },
+    },
+  }
+  const semNada = {
+    ir: {
+      version: 2,
+      html: [],
+      css: [],
+      extensions: [],
+      behavior: { molds: [], start: [], events: [], loops: [] },
+    },
+  }
+  const section = (optional?: true) => ({
+    ...defaultLessonSection('section', 'Repetir', []),
+    workspaceBlockId: 'workspace',
+    completion: {
+      version: 1 as const,
+      blockIds: [],
+      projectChecks: [
+        { id: 'laco', label: 'Use um laço', rule: { type: 'usesLoop' as const } },
+        ...(optional
+          ? [
+              {
+                id: 'funcao',
+                label: 'Crie a função pular',
+                rule: { type: 'definesFunction' as const, name: 'pular' },
+                optional,
+              },
+            ]
+          : []),
+      ],
+    },
+  })
+  const issues = (solution: unknown, optional?: true) =>
+    studioSectionCompletionIssues(
+      [section(optional)],
+      [{ id: 'workspace', content: loopWorkspace(solution) }],
+    ).map((issue) => issue.message)
+
+  test('sem gabarito, nada muda', () => {
+    expect(issues(undefined)).toEqual([])
+  })
+  test('gabarito que cumpre os obrigatórios publica, mesmo sem o extra', () => {
+    expect(issues(comLaco, true)).toEqual([])
+  })
+  test('gabarito que não cumpre um obrigatório bloqueia e nomeia o objetivo', () => {
+    expect(issues(semNada)).toEqual([
+      'O gabarito não cumpre o objetivo obrigatório "Use um laço". Ajuste o gabarito ou o objetivo.',
+    ])
   })
 })

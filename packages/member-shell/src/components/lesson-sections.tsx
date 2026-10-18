@@ -9,8 +9,11 @@ import {
   legacyLessonSections,
   lessonCompletionRequirements,
   mergeVideoCoverage,
+  type ProjectObjectiveView,
+  projectObjectiveView,
   publicInteractiveBlock,
   readVideoCoverage,
+  type SectionProjectCheck,
   VIDEO_WATCH_THRESHOLD,
   videoCoverageAnswers,
   videoWatchedFraction,
@@ -1219,7 +1222,14 @@ function LessonSectionsContent({
                       sectionId: section.id,
                       revision: state.revision,
                       blockId: section.workspaceBlockId,
-                      objectives: section.completion.projectChecks,
+                      // A prévia do Admin e as aulas sem estrutura trazem a regra inteira; a criança
+                      // só recebe a vista (a do members já vem assim). Nunca a regra na tela.
+                      objectives: section.completion.projectChecks.map(
+                        (check: ProjectObjectiveView | SectionProjectCheck) =>
+                          'rule' in check ? projectObjectiveView(check) : check,
+                      ),
+                      savedResults: state.sections.find((progress) => progress.id === section.id)
+                        ?.objectives,
                     }
                   : undefined,
               submissionAllowedBlockIds: state

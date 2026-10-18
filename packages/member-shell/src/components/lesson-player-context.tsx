@@ -4,6 +4,8 @@ import type {
   LearningBlockProgress,
   LessonLearningProgress,
   PlatformActionResult,
+  ProjectObjectiveResult,
+  ProjectObjectiveView,
   VideoWatchCoverage,
 } from '@sistemazero/core/learning'
 import { createContext, type ReactNode, useContext } from 'react'
@@ -37,11 +39,17 @@ export interface LessonPlayerContextValue {
   ) => ReactNode
   renderActionEvidence?: (result: PlatformActionResult) => ReactNode
   refreshAfterLearning?: () => void
+  /**
+   * Os objetivos da parte cujo projeto é o deste bloco Estúdio: a VISTA (rótulo, dica, extra), o
+   * resultado guardado da última verificação (`savedResults`, da mesma revisão) e o que é preciso
+   * para conferir de novo. Quem confere é o servidor.
+   */
   sectionProjectCheck?: {
     sectionId: string
     revision: string
     blockId: string
-    objectives?: { id: string; label: string }[]
+    objectives?: ProjectObjectiveView[]
+    savedResults?: ProjectObjectiveResult[]
   }
   submissionAllowedBlockIds?: string[]
   learningProgress?: LessonLearningProgress

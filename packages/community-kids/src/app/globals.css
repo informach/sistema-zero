@@ -1940,7 +1940,6 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
 .sz-lesson-sections .sz-lesson-status-item:is(
     [data-kind="LEARNING_GATE_INCOMPLETE"],
     [data-kind="STUDIO_GATE_NOT_SUBMITTED"],
-    [data-kind="STUDIO_GATE_NOT_PASSED"],
     [data-kind="PINTA_GATE_NOT_SUBMITTED"],
     [data-kind="submission-outdated"],
     [data-kind="project-check"]
@@ -1993,6 +1992,69 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
 }
 .sz-lesson-sections .sz-lesson-status-lista > ul {
   padding-bottom: 0.375rem;
+}
+
+/* ⭐ OBJETIVOS DA PARTE (18/10/2026). O cartão embaixo do Estúdio: os obrigatórios, os extras e o
+   "Verificar esta parte". Tudo em tokens do tema (o creme e a linha seguem a cor do perfil, nos
+   seis temas); o estado nunca é só cor: ícone + palavra para o leitor. */
+.sz-lesson-sections .sz-lesson-objectives {
+  border: 2px solid var(--linha-carta);
+  border-radius: 1.25rem;
+  background: var(--card);
+  box-shadow: 0 4px 0 var(--linha-carta);
+}
+.sz-lesson-sections .sz-lesson-objectives-title {
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: 1.0625rem;
+  font-weight: 800;
+  color: var(--tinta);
+}
+.sz-lesson-sections .sz-lesson-objective {
+  min-height: 2.75rem;
+  padding: 0.5rem 0.75rem;
+  border: 2px solid transparent;
+  border-radius: 0.875rem;
+  background: var(--band-creme);
+  font-weight: 700;
+  color: var(--tinta);
+}
+.sz-lesson-sections .sz-lesson-objective[data-extra] {
+  background: var(--band-lilas);
+}
+.sz-lesson-sections .sz-lesson-objective[data-state="passed"] {
+  background: var(--band-menta);
+}
+.sz-lesson-sections .sz-lesson-objective[data-state="passed"] .sz-lesson-objective-icon {
+  color: var(--success-foreground);
+}
+.sz-lesson-sections .sz-lesson-objective[data-state="failed"] .sz-lesson-objective-icon {
+  color: var(--pen-acao);
+}
+/* Mexeu no projeto depois de verificar: o resultado é de antes da mudança. */
+.sz-lesson-sections .sz-lesson-objective[data-stale] {
+  border-style: dashed;
+  border-color: var(--linha-carta);
+}
+.sz-lesson-sections .sz-lesson-objective-hint {
+  font-weight: 600;
+}
+.sz-lesson-sections .sz-lesson-objectives-extras-title {
+  font-weight: 800;
+  color: var(--tinta);
+}
+.sz-lesson-sections .sz-lesson-objectives-xp {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  background: var(--band-amarelo);
+  color: var(--tinta);
+  font-weight: 800;
+}
+.sz-lesson-sections .sz-lesson-objectives-feedback {
+  font-weight: 700;
+  color: var(--tinta);
+}
+.sz-lesson-sections .sz-lesson-objectives-feedback[data-tone="ok"] {
+  color: var(--success-foreground);
 }
 
 /* ⭐ "PRIMEIRO, ASSISTA AO VÍDEO" (03/10/2026). Curso com a opção "Assistir ao vídeo antes da

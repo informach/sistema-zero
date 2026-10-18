@@ -57,20 +57,15 @@ export function galleryDeliveryRoutes(deps: {
       '/internal/lessons/:lessonId/blocks/:blockId/gallery-commit',
       ({ headers, params, body }) => {
         assertMemberShellConsumer(headers['x-consumer-id'])
-        return deps.gallery.commit(
-          body.actor,
-          params.lessonId,
-          params.blockId,
-          body.input,
-          body.projectForChecks,
-        )
+        return deps.gallery.commit(body.actor, params.lessonId, params.blockId, body.input)
       },
       {
         params: Params,
         body: t.Object({
           actor: t.Object({ userId: Id, accountId: Id, privileged: t.Boolean() }),
           input: Input,
-          projectForChecks: t.Unknown(),
+          /** Legado: o member-shell anterior mandava o projeto para a auto-correção (saiu). */
+          projectForChecks: t.Optional(t.Unknown()),
         }),
       },
     )

@@ -16,6 +16,7 @@ import {
   assertPintaChainTypeMatches,
   canonicalizeBlockContent,
 } from '../../src/application/content-admin/content-admin.service'
+import { blockRevisionFingerprint } from '../../src/domain/course/block-revision'
 import { certificateLessonIssues } from '../../src/domain/course/certificate-lesson'
 import {
   ContentNotFoundError,
@@ -219,7 +220,7 @@ export class InMemoryLessonDraftRepository implements LessonDraftRepository {
         content,
         sortOrder,
         contentRevision:
-          old && stableJson(old.content) === stableJson(content)
+          old && blockRevisionFingerprint(old.content) === blockRevisionFingerprint(content)
             ? old.contentRevision
             : randomUUID().replaceAll('-', ''),
       }

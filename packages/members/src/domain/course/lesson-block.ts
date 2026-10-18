@@ -7,8 +7,6 @@ import type {
 
 export type { InteractiveBlock } from '@sistemazero/core/learning'
 
-import type { LessonActivity } from './studio-activity'
-
 /**
  * Conteúdo de uma aula é uma lista ORDENADA de blocos tipados. Uma aula "composta"
  * (ex.: vídeo + interativo + texto) é simplesmente uma aula com vários blocos. Cada
@@ -228,12 +226,11 @@ export interface StudioBlock {
   /** Aluno pode revelar blocos avançados (default true). */
   allowLevelReveal?: boolean
   /**
-   * Atividade com auto-correção (fase 2). Ausente = bloco só de entrega (gate =
-   * enviou). Com `passingScore` = gate por nota (ver mark-lesson-complete). As
-   * definições vão ao aluno (feedback instantâneo); só `structure` é recalculado
-   * no servidor (correção híbrida). Ver `studio-activity.ts`.
+   * Gabarito da professora (18/10/2026): um projeto que cumpre os objetivos da parte. Só a
+   * autoria o usa ("Testar agora" e a revisão para publicar); a view do aluno nunca o leva
+   * (`toMemberFacingStudioContent`).
    */
-  activity?: LessonActivity
+  solutionProject?: unknown
   /**
    * Nome do PROJETO CONTÍNUO (cadeia). Aulas com o MESMO `chain` no mesmo curso
    * formam uma sequência que constrói um único projeto (ex.: um jogo ao longo de N
@@ -538,6 +535,17 @@ export function isCompletionGatingBlock(content: LessonBlockContent): boolean {
  * projeto do PRÓPRIO aluno, não conteúdo autoral — barrá-los só tiraria dele o
  * trabalho que já é dele.
  */
+/**
+ * O bloco Estúdio como a CRIANÇA o recebe: tudo o que monta o editor, sem o gabarito da
+ * professora (`solutionProject`) e sem a `activity` de conteúdo gravado antes de 18/10/2026
+ * (a auto-correção antiga, que levava as respostas esperadas ao navegador).
+ */
+export function toMemberFacingStudioContent(content: StudioBlock): StudioBlock {
+  const { solutionProject: _gabarito, ...rest } = content as StudioBlock & { activity?: unknown }
+  const { activity: _legado, ...visible } = rest as typeof rest & { activity?: unknown }
+  return visible
+}
+
 export function hasComingSoonBlock(blocks: readonly { content: LessonBlockContent }[]): boolean {
   return blocks.some((b) => b.content.kind === 'coming_soon')
 }

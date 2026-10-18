@@ -8,6 +8,7 @@ import type {
   LearningResult,
   LessonDraftDocument,
   LessonSection,
+  ProjectObjectiveResult,
 } from '@sistemazero/core/learning'
 import type {
   LiveAssistanceView,
@@ -382,6 +383,12 @@ export const lessonSectionProgress = members.table(
     revision: varchar('revision', { length: 32 }).notNull(),
     completedAt: timestamp('completed_at', { withTimezone: true }),
     projectPassed: boolean('project_passed').notNull().default(false),
+    /**
+     * O último resultado de cada objetivo da parte (`{id, passed}`), da última verificação NESTA
+     * revisão (18/10/2026). É o que faz a lista se lembrar ao reabrir a fase; `null` = nunca
+     * verificou. Só a verificação escreve; concluir a parte não mexe.
+     */
+    objectiveResults: jsonb('objective_results').$type<ProjectObjectiveResult[]>(),
   },
   (t) => [
     primaryKey({ columns: [t.userId, t.lessonId, t.sectionId] }),
@@ -707,6 +714,9 @@ export const xpSourceTypeEnum = members.enum('xp_source_type', [
   // conquista `live-course-complete` + troféu). Nenhum dos dois conta para a Jornada.
   'live_encounter',
   'live_course_complete',
+  // Objetivo EXTRA da parte cumprido pela primeira vez (18/10/2026): XP puro (5), sem moeda.
+  // sourceId = uuid determinístico de aula + parte + objetivo (1 vez por objetivo).
+  'objective_extra',
 ])
 
 // Origem de um evento de moeda Zappy (carteira, fatia 06/2026). Faucets (ganho)

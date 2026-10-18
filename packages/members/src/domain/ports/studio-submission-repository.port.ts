@@ -1,6 +1,5 @@
 import type { CourseAudience } from '../course/course'
 import type { SubmissionBlockKind } from '../course/lesson-block'
-import type { StudioCheckResult } from '../course/studio-activity'
 
 /** Entrega do projeto do Estúdio (1 linha por aluno+bloco, upsert — último vence). */
 export interface StudioSubmissionRecord {
@@ -15,15 +14,10 @@ export interface StudioSubmissionRecord {
   /** Snapshot `Project` do Estúdio (JSON opaco — o front sanitiza). */
   project: unknown
   submittedAt: Date
-  // ── Auto-correção (fase 2; null quando o bloco não tem atividade) ────────────
-  /** Nota 0–100 da última entrega. */
-  score?: number | null
-  /** Resultado por checagem (server + client). */
-  results?: StudioCheckResult[] | null
-  /** Quando a correção rodou. */
-  checkedAt?: Date | null
-  /** STICKY: 1ª vez que passou (gate "aprovou uma vez = destrava"). */
-  passedAt?: Date | null
+  /**
+   * ⚠️ As colunas `score/results/checked_at/passed_at` da antiga auto-correção (saiu em
+   * 18/10/2026) ficam no banco com o que já existia: nada as escreve nem as lê.
+   */
   /** Recado OPCIONAL do aluno ao professor (modal de envio). `null` = sem recado. */
   message?: string | null
   /**
@@ -60,9 +54,6 @@ export interface StudioSubmissionSummary {
   /** Conta responsável (p/ o BFF hidratar o responsável + o nome do perfil). `null` = legado. */
   accountId: string | null
   submittedAt: Date
-  score: number | null
-  checkedAt: Date | null
-  passed: boolean
   /** Recado OPCIONAL do aluno ao professor. `null` = sem recado. */
   message: string | null
   /** O recado foi falado e transcrito (voz para texto). */
@@ -72,9 +63,6 @@ export interface StudioSubmissionSummary {
 /** Estado por bloco para o ALUNO (gate da conclusão + UI). */
 export interface StudioSubmissionState {
   submittedAt: Date
-  score: number | null
-  /** `passed_at` presente (sticky) — usado pelo gate de atividade com nota. */
-  passed: boolean
   /**
    * Quando o professor carimbou "já conferi". NÃO é sticky: comparar com
    * `submittedAt` diz se o carimbo vale para a entrega ATUAL (reenvio reabre).
@@ -88,10 +76,6 @@ export interface StudioSubmissionState {
 export interface StudioSubmissionDetail {
   project: unknown
   submittedAt: Date
-  score: number | null
-  results: StudioCheckResult[] | null
-  checkedAt: Date | null
-  passedAt: Date | null
   /** Recado OPCIONAL do aluno ao professor. `null` = sem recado. */
   message: string | null
   /** O recado foi falado e transcrito (voz para texto). */
@@ -119,9 +103,6 @@ export interface StudioSubmissionCourseRow {
   lessonTitle: string
   moduleTitle: string
   submittedAt: Date
-  score: number | null
-  checkedAt: Date | null
-  passed: boolean
   message: string | null
   /** O recado foi falado e transcrito (voz para texto). */
   messageSpoken: boolean
@@ -168,9 +149,6 @@ export interface RecentStudioSubmission {
   lessonId: string
   lessonTitle: string | null
   courseTitle: string | null
-  score: number | null
-  /** `null` quando a entrega não possui correção automática. */
-  passed: boolean | null
   submittedAt: Date
   message: string | null
   /** O recado foi falado e transcrito (voz para texto). */
@@ -182,15 +160,13 @@ export interface StudioSubmissionRepository {
   upsert(
     submission: StudioSubmissionRecord & { accountId: string },
     options?: {
-      /** Mantém `passedAt` existente (STICKY) se já houver, sem sobrescrever por `null`. */
-      preservePassedAt?: boolean
       revision?: string
       galleryRequestId?: string
     },
   ): Promise<void>
   /**
    * Estado das entregas do aluno nos `blockIds` — usado pelo gate da conclusão
-   * (submitted = tem entrada; passed = `passed_at`). Lote por aula.
+   * (submitted = tem entrada). Lote por aula.
    */
   summarizeByBlockIds(
     userId: string,

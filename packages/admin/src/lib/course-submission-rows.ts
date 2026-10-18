@@ -10,9 +10,6 @@ export interface CourseSubmissionSource {
   lessonTitle: string
   moduleTitle: string
   submittedAt: string
-  score: number | null
-  checkedAt: string | null
-  passed: boolean
   /** Recado opcional do aluno ao professor. `null` = sem recado. */
   message: string | null
   /** O recado veio da fala transcrita. OPCIONAL: members antigo não manda. */
@@ -28,9 +25,6 @@ export function toCourseSubmissionRow<I extends object>(s: CourseSubmissionSourc
     moduleTitle: s.moduleTitle,
     submittedAt: s.submittedAt,
     ...identity,
-    score: s.score,
-    checkedAt: s.checkedAt,
-    passed: s.passed,
     message: s.message,
     messageSpoken: s.messageSpoken === true,
   }

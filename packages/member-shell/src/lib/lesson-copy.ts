@@ -62,6 +62,21 @@ export interface LessonCopy {
     faltou: string
     /** O projeto passou do limite da rota (413 `PAYLOAD_TOO_LARGE`, 2 MB) ao ser conferido. */
     grandeDemais: string
+    /** Os obrigatórios passaram e ainda há desafio extra por cumprir. */
+    cumpridoComExtra: string
+    /** O título da lista dos extras (não trancam a parte; dão XP uma vez). */
+    extras: string
+    extrasNota: string
+    dica: string
+    /** O projeto mudou depois da última verificação: o resultado mostrado é de antes. */
+    mudou: string
+    verificando: string
+    erro: string
+    xp: (pontos: number) => string
+    /** O estado de cada objetivo para o leitor de tela (a tela mostra o ícone e a cor). */
+    estadoCumprido: string
+    estadoFalta: string
+    estadoNaoVerificado: string
   }
   acaoDePlataforma: {
     concluida: string
@@ -83,7 +98,6 @@ export interface LessonCopy {
     confirmarReenviar: string
     vaiReceber: string
     vaiReceberDeNovo: string
-    dicaVerificar: string
     avisoProjetoInicial: string
     recado: string
     recadoExemplo: string
@@ -95,16 +109,12 @@ export interface LessonCopy {
     enviado: (quando: string | null) => string
     conferido: string
     paraConcluir: string
-    paraConcluirComMeta: string
     continueConstruindo: string
     compartilharDepois: string
     semEnvio: string
     trazerExplica: string
     recomecarExplica: string
     erroAoAbrir: string
-    pontuacao: (score: number) => string
-    metaAlcancada: string
-    precisaDe: (pontos: number) => string
   }
   pinta: {
     enviar: string
@@ -245,9 +255,20 @@ export const ADULT_LESSON_COPY: LessonCopy = {
     botao: 'Verificar esta etapa',
     objetivos: 'Objetivos desta etapa',
     cumprido: 'Objetivo da etapa cumprido!',
-    faltou: 'Confira os blocos pedidos nesta etapa e tente novamente.',
+    faltou: 'Ainda falta cumprir um objetivo desta etapa. Veja a lista e tente novamente.',
     grandeDemais:
       'O projeto ficou grande demais para conferir. Remova algumas imagens ou sons e tente novamente.',
+    cumpridoComExtra: 'Objetivos cumpridos! Ainda há um desafio extra, se você quiser.',
+    extras: 'Desafio extra',
+    extrasNota: 'Não é obrigatório para seguir.',
+    dica: 'Dica',
+    mudou: 'Você mudou o projeto depois de verificar. Verifique de novo para conferir.',
+    verificando: 'Verificando…',
+    erro: 'Não foi possível verificar. Seu projeto continua aqui; tente novamente.',
+    xp: (pontos) => `+${pontos} XP`,
+    estadoCumprido: 'cumprido',
+    estadoFalta: 'ainda não',
+    estadoNaoVerificado: 'ainda não verificado',
   },
   acaoDePlataforma: {
     concluida: 'Etapa concluída!',
@@ -265,7 +286,6 @@ export const ADULT_LESSON_COPY: LessonCopy = {
     vaiReceber: 'O professor vai receber o seu projeto do jeitinho que está agora.',
     vaiReceberDeNovo:
       'O professor vai receber a versão atual do seu projeto, no lugar da anterior.',
-    dicaVerificar: ' Dica: clique em "Verificar" no editor antes, para ver se já atingiu a nota.',
     avisoProjetoInicial:
       'Atenção: você está enviando o projeto inicial da aula por cima do que você já entregou. Se terminou em outro computador, use o menu ⋯ e escolha Trazer o que eu enviei antes.',
     recado: 'Recado para o professor',
@@ -273,8 +293,6 @@ export const ADULT_LESSON_COPY: LessonCopy = {
     enviado: (quando) => `Projeto enviado ao professor${quando ? ` em ${quando}` : ''}.`,
     conferido: 'O professor já conferiu sua entrega.',
     paraConcluir: 'Envie seu projeto ao professor para poder concluir a aula.',
-    paraConcluirComMeta:
-      'Use "Verificar" no editor e envie ao professor. Atinja a nota mínima para concluir a aula.',
     continueConstruindo: 'Continue construindo. A entrega do projeto fica no fechamento.',
     compartilharDepois: 'Envie o projeto para o professor primeiro para poder compartilhar.',
     semEnvio: 'Você ainda não enviou nenhum projeto para o professor.',
@@ -283,9 +301,6 @@ export const ADULT_LESSON_COPY: LessonCopy = {
     recomecarExplica:
       'O Estúdio vai abrir o projeto inicial mais recente desta aula. O que você mudou neste aparelho será substituído. Se já enviou um projeto ao professor, o envio continuará salvo.',
     erroAoAbrir: 'Não conseguimos abrir sua atividade. Seu trabalho não foi substituído.',
-    pontuacao: (score) => `Sua nota: ${score}/100`,
-    metaAlcancada: '· você atingiu a nota mínima',
-    precisaDe: (pontos) => `· precisa de ${pontos} para concluir`,
   },
   pinta: {
     enviar: 'Enviar para o professor',

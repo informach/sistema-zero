@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import type { Logger } from '@sistemazero/core/logging'
 import { type AvatarConfig, defaultAvatarConfig } from '../../src/domain/avatar/avatar-config'
 import type { CertificateRecord } from '../../src/domain/certificate/certificate'
+import { blockRevisionFingerprint } from '../../src/domain/course/block-revision'
 import {
   type Course,
   type CourseAudience,
@@ -175,25 +176,8 @@ function cloneState(s: EntitlementState): EntitlementState {
   return { ...s, snapshot: { ...s.snapshot } }
 }
 
-function stableJson(value: unknown): string {
-  if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`
-  if (value && typeof value === 'object') {
-    const entries = Object.entries(value as Record<string, unknown>).sort(([a], [b]) =>
-      a.localeCompare(b),
-    )
-    return `{${entries.map(([k, v]) => `${JSON.stringify(k)}:${stableJson(v)}`).join(',')}}`
-  }
-  return JSON.stringify(value) ?? 'undefined'
-}
-
 // Espelho do Drizzle: editar bloco NUNCA apaga entregas — quiz apaga TENTATIVAS
-// quando as questões/nota mudam; Estúdio zera SÓ a correção quando a ATIVIDADE
-// muda (o projeto do aluno fica); Pinta não toca a entrega.
-
-function studioActivityFingerprint(content: LessonBlockContent): string {
-  if (content.kind !== 'studio') return 'none'
-  return stableJson(content.activity ?? null)
-}
+// quando as questões/nota mudam; Estúdio e Pinta não tocam a entrega.
 
 function isActive(s: EntitlementState, now: Date): boolean {
   return s.status === 'active' && (s.expiresAt === null || s.expiresAt.getTime() > now.getTime())
@@ -441,7 +425,6 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
   blocks: LessonBlock[] = []
   attachments: LessonAttachment[] = []
   onQuizGateChanged?: (blockId: string) => void
-  onStudioActivityChanged?: (blockId: string) => void
   private readonly pintaChainLocks = new Map<string, Promise<void>>()
 
   async findCourseBySlug(slug: string): Promise<Course | null> {
@@ -972,13 +955,12 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
         kind === 'coming_soon' ? { lessonId: b.lessonId } : { blockId: id },
       )
     const quizGateChanged = quizGateFingerprint(b.content) !== quizGateFingerprint(content)
-    const studioActivityChanged =
-      studioActivityFingerprint(b.content) !== studioActivityFingerprint(content)
+    const sameQuestion =
+      b.kind === kind && blockRevisionFingerprint(b.content) === blockRevisionFingerprint(content)
     b.kind = kind
     b.content = content
-    b.contentRevision = randomUUID().replaceAll('-', '')
+    if (!sameQuestion) b.contentRevision = randomUUID().replaceAll('-', '')
     if (quizGateChanged) this.onQuizGateChanged?.(id)
-    if (studioActivityChanged) this.onStudioActivityChanged?.(id)
     return b
   }
 
@@ -1612,21 +1594,10 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
     }
   }
 
-  /** Espelho do reset de correção do updateBlock (a entrega FICA, a nota cai). */
-  resetCorrectionByBlockId(blockId: string): void {
-    for (const s of this.submissions) {
-      if (s.blockId !== blockId) continue
-      s.score = null
-      s.results = null
-      s.checkedAt = null
-      s.passedAt = null
-    }
-  }
-
   /** Upsert por (user, block) — reenvio sobrescreve projeto/data/correção. */
   async upsert(
     submission: StudioSubmissionRecord & { accountId: string },
-    options?: { preservePassedAt?: boolean; revision?: string; galleryRequestId?: string },
+    options?: { revision?: string; galleryRequestId?: string },
   ): Promise<void> {
     const existing = this.submissions.find(
       (s) => s.userId === submission.userId && s.blockId === submission.blockId,
@@ -1656,23 +1627,12 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
       existing.previousSubmittedAt = existing.submittedAt
       existing.project = submission.project
       existing.submittedAt = submission.submittedAt
-      existing.score = submission.score ?? null
-      existing.results = submission.results ?? null
-      existing.checkedAt = submission.checkedAt ?? null
-      existing.passedAt =
-        options?.preservePassedAt && existing.passedAt
-          ? existing.passedAt
-          : (submission.passedAt ?? null)
       existing.message = submission.message ?? null
       existing.messageSpoken = submission.messageSpoken ?? false
       existing.contentFingerprint = submission.contentFingerprint ?? null
     } else {
       this.submissions.push({
         ...submission,
-        score: submission.score ?? null,
-        results: submission.results ?? null,
-        checkedAt: submission.checkedAt ?? null,
-        passedAt: submission.passedAt ?? null,
         message: submission.message ?? null,
         messageSpoken: submission.messageSpoken ?? false,
         contentFingerprint: submission.contentFingerprint ?? null,
@@ -1701,9 +1661,6 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
     s.submittedAt = s.previousSubmittedAt
     s.previousProject = project
     s.previousSubmittedAt = submittedAt
-    s.score = null
-    s.results = null
-    s.checkedAt = null
     s.contentFingerprint = null
     return true
   }
@@ -1732,8 +1689,6 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
       if (s.userId !== userId || !set.has(s.blockId)) continue
       map.set(s.blockId, {
         submittedAt: s.submittedAt,
-        score: s.score ?? null,
-        passed: s.passedAt != null,
         reviewedAt: s.reviewedAt ?? null,
         contentFingerprint: s.contentFingerprint ?? null,
       })
@@ -1749,9 +1704,6 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
         userId: s.userId,
         accountId: s.accountId ?? null,
         submittedAt: s.submittedAt,
-        score: s.score ?? null,
-        checkedAt: s.checkedAt ?? null,
-        passed: s.passedAt != null,
         message: s.message ?? null,
         messageSpoken: s.messageSpoken ?? false,
       }))
@@ -1774,9 +1726,6 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
             lessonTitle: lesson?.title ?? '',
             moduleTitle: mod?.title ?? '',
             submittedAt: s.submittedAt,
-            score: s.score ?? null,
-            checkedAt: s.checkedAt ?? null,
-            passed: s.passedAt != null,
             message: s.message ?? null,
             messageSpoken: s.messageSpoken ?? false,
           } satisfies StudioSubmissionCourseRow,
@@ -1836,9 +1785,6 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
           courseTitle: course?.title ?? '',
           audience: course?.audience ?? 'adult',
           submittedAt: s.submittedAt,
-          score: s.score ?? null,
-          checkedAt: s.checkedAt ?? null,
-          passed: s.passedAt != null,
           message: s.message ?? null,
           messageSpoken: s.messageSpoken ?? false,
           answered: this.answeredKeys.has(`${s.userId}:${s.blockId}`),
@@ -1880,10 +1826,6 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
       ? {
           project: s.project,
           submittedAt: s.submittedAt,
-          score: s.score ?? null,
-          results: s.results ?? null,
-          checkedAt: s.checkedAt ?? null,
-          passedAt: s.passedAt ?? null,
           message: s.message ?? null,
           messageSpoken: s.messageSpoken ?? false,
           reviewedAt: s.reviewedAt ?? null,
@@ -1957,8 +1899,6 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
         lessonId: s.lessonId,
         lessonTitle: null,
         courseTitle: this.courses?.courses.find((c) => c.id === s.courseId)?.title ?? null,
-        score: s.score ?? null,
-        passed: s.checkedAt == null ? null : s.passedAt != null,
         submittedAt: s.submittedAt,
         message: s.message ?? null,
         messageSpoken: s.messageSpoken ?? false,
