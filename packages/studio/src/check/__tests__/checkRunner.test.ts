@@ -154,6 +154,52 @@ describe.skipIf(!available)('o executor roda o jogo e confere', () => {
     expect(result['nao-existe']?.detail).toBe('Não achei tesouro no jogo.')
   }, 120_000)
 
+  test('regra em JavaScript: lê o jogo depois dos passos, sob a CSP da prévia', async () => {
+    const project = createEmptyProject('p-regra', 'Regra')
+    project.files['script.js'] = [
+      'let vidas = 3',
+      'const heroi = { x: 10, itens: [] }',
+      "document.addEventListener('keydown', (e) => { if (e.key === ' ') { heroi.itens.push('chave'); vidas-- } })",
+      "document.body.textContent = 'Fase 1'",
+      "console.log('pronto')",
+    ].join('\n')
+    const result = await check(project, [
+      {
+        id: 'chave',
+        rule: {
+          type: 'script',
+          steps: [{ action: 'press', key: 'Space' }],
+          code: "return jogo.heroi.itens.includes('chave') && jogo.vidas === 2 && texto.includes('Fase') && console.includes('pronto')",
+        },
+      },
+      {
+        id: 'espera',
+        rule: {
+          type: 'script',
+          steps: [],
+          code: 'await new Promise((r) => setTimeout(r, 50))\nreturn jogo.vidas === 3',
+        },
+      },
+      // As metades que FALHAM.
+      { id: 'falso', rule: { type: 'script', steps: [], code: 'return jogo.vidas === 2' } },
+      { id: 'numero', rule: { type: 'script', steps: [], code: 'return jogo.vidas' } },
+      { id: 'erro', rule: { type: 'script', steps: [], code: 'return jogo.naoExiste.x' } },
+      { id: 'escrita', rule: { type: 'script', steps: [], code: 'return (' } },
+      { id: 'laco', rule: { type: 'script', steps: [], code: 'while (true) {}' } },
+    ])
+    expect(result.chave).toEqual({ passed: true })
+    expect(result.espera).toEqual({ passed: true })
+    expect(result.falso).toEqual({ passed: false, detail: 'A regra em JavaScript devolveu false.' })
+    expect(result.numero?.detail).toBe(
+      'A regra em JavaScript precisa devolver true ou false; devolveu 3.',
+    )
+    expect(result.erro?.detail).toStartWith('A regra em JavaScript deu erro:')
+    expect(result.escrita?.detail).toStartWith('A regra em JavaScript deu erro:')
+    expect(result.laco?.detail).toBe(
+      'A regra em JavaScript deu erro: a regra demorou mais de 3 segundos',
+    )
+  }, 120_000)
+
   test('jogo de blocos do Jogo 2D: o herói anda com a seta e fica parado sem ela', async () => {
     const project = createEmptyProject('p-blocos', 'Plataforma')
     project.ir = platformerExample.ir

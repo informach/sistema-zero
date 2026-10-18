@@ -37,6 +37,13 @@
 > exige o gabarito quando há objetivo de execução e confere inicial/gabarito só na ESTRUTURA (a
 > execução é do "Testar agora"; a publicação não depende do executor). O executor de verdade
 > (Chromium) é testado em `src/check/__tests__/checkRunner.test.ts` (pulado sem Chromium).
+> ⚠️ Review da etapa 3: todo nome interno do leitor começa com `__sz` (um `var g` escondia a
+> variável `g` da criança e o teste lia o `globalThis`), e o leitor é CONGELADO numa propriedade
+> não gravável (o jogo não troca o `get` por um que aprova tudo). A autoria também recusa função
+> em 3D clássico (o arquivo inteiro para na importação do three.js), clique fora da tela do teste
+> (`CHECK_VIEWPORT`, 1024×640), regra em JavaScript fora da Ponte e do Pro ou com erro de escrita
+> (compila sem rodar; com CSP sem `unsafe-eval` não acusa) e parte cujos objetivos de execução
+> somam mais que `EXECUTION_LIMITS.maxSectionWaitMs` (40 s, `executionRuleBudgetMs`).
 
 > **Escrita com namespace explícito (10/10/2026):** `replaceLocalProject(project, {namespace})`
 > captura o armazenamento antes de persistir. Os rascunhos das aulas usam `namespace: ''`, inclusive

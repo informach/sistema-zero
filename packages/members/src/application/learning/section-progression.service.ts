@@ -30,6 +30,7 @@ import { hasComingSoonBlock, MAX_STUDIO_PROJECT_CHARS } from '../../domain/cours
 import type { CreationDraftState } from '../../domain/creations/creation'
 import {
   LearningConflictError,
+  ProjectCheckRejectedError,
   ProjectCheckUnavailableError,
   SectionLockedError,
   StudioProjectSyncingError,
@@ -96,6 +97,7 @@ export class SectionProgressionService {
     project: unknown,
     initialProject: unknown,
     requester: string,
+    screenshots = false,
   ): Promise<ProjectExecutionCheckOutput | undefined> {
     const objectives = executionProjectChecks(checks).flatMap(
       (check): ExecutionObjectiveRequest[] =>
@@ -120,6 +122,7 @@ export class SectionProgressionService {
       kind,
       ...(templateId ? { templateId } : {}),
       objectives,
+      ...(screenshots ? { screenshots } : {}),
     })
   }
 
@@ -137,12 +140,20 @@ export class SectionProgressionService {
     initialProject?: unknown
     requester: string
   }) {
-    const executed = await this.runExecution(
-      input.checks,
-      input.project,
-      input.initialProject,
-      input.requester,
-    )
+    let executed: ProjectExecutionCheckOutput | undefined
+    try {
+      executed = await this.runExecution(
+        input.checks,
+        input.project,
+        input.initialProject,
+        input.requester,
+        true,
+      )
+    } catch (error) {
+      // A equipe precisa do MOTIVO da recusa (a criança só lê "não consegui testar").
+      if (error instanceof ProjectCheckRejectedError) throw new ValidationError(error.reason)
+      throw error
+    }
     const evaluation = evaluateStudioSectionObjectives(
       input.checks,
       input.project,

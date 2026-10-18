@@ -1,5 +1,6 @@
 import {
   EXECUTION_COMPARES,
+  EXECUTION_GAME_FIELDS,
   EXECUTION_KEYS,
   EXECUTION_LIMITS,
   PLATFORM_ACTIONS,
@@ -700,7 +701,7 @@ export const SectionRule = t.Union([
         t.Object({ kind: t.Literal('console') }),
         t.Object({
           kind: t.Literal('game'),
-          field: t.Union([t.Literal('phase'), t.Literal('score'), t.Literal('health')]),
+          field: t.Union(EXECUTION_GAME_FIELDS.map((field) => t.Literal(field))),
         }),
       ]),
       compare: t.Union(EXECUTION_COMPARES.map((compare) => t.Literal(compare))),
@@ -761,6 +762,8 @@ export const SectionProjectParams = t.Object({ lessonId: Id, sectionId: Id })
 /** "Testar agora" da autoria: objetivos contra um projeto (o inicial ou o gabarito), sem guardar. */
 export const ProjectChecksTestBody = t.Object({
   project: t.Unknown(),
+  /** O projeto inicial do bloco: a base das ideias de código ("só conta o que mudou"). */
+  initialProject: t.Optional(t.Unknown()),
   checks: t.Array(
     t.Object({
       id: t.String({ minLength: 1, maxLength: 200 }),

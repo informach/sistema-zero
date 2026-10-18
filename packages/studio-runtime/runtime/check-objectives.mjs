@@ -68,6 +68,7 @@ const deadline = setTimeout(() => {
 const KIT_READY_MS = 10_000
 const SETTLE_MS = 250
 const CASE_TIMEOUT_MS = 2_000
+const SCRIPT_TIMEOUT_MS = 3_000
 const MAX_CONSOLE_LINES = 200
 const MAX_LINE_CHARS = 300
 const MAX_VALUE_CHARS = 20_000
@@ -155,23 +156,28 @@ async function runObjective(objective, index) {
     await startGame(page)
     const rule = objective.rule
     if (rule.type === 'functionReturns') {
+      // Só os ARGUMENTOS entram na página: a resposta esperada fica aqui fora. A página é da
+      // criança, e um jogo que mexesse nos protótipos leria o gabarito e o devolveria.
       const outcome = await page.evaluate(callFunctionCases, {
         scope,
         name: rule.name,
         module: rule.module ?? null,
-        cases: rule.cases,
+        cases: rule.cases.map((item) => item.args),
         timeoutMs: CASE_TIMEOUT_MS,
         maxChars: MAX_VALUE_CHARS,
       })
       return { id: objective.id, type: rule.type, ...outcome, errors }
     }
+    if (rule.type === 'script') {
+      await runSteps(page, rule.steps)
+      const outcome = await runScriptRule(page, rule.code, lines)
+      const screenshot = await shoot(page, index)
+      return { id: objective.id, type: rule.type, ...outcome, screenshot, errors }
+    }
     const initial = await readTarget(page, rule.expect.target, lines)
     await runSteps(page, rule.steps)
     const final = await readTarget(page, rule.expect.target, lines)
-    const screenshot = `check-shot-${index}.jpg`
-    await page
-      .screenshot({ path: path.join(root, screenshot), type: 'jpeg', quality: 55, timeout: 5_000 })
-      .catch(() => undefined)
+    const screenshot = await shoot(page, index)
     return { id: objective.id, type: rule.type, initial, final, screenshot, errors }
   } finally {
     await context.close().catch(() => undefined)
@@ -201,6 +207,63 @@ async function startGame(page) {
     () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))),
   )
   await page.waitForTimeout(SETTLE_MS)
+}
+
+async function shoot(page, index) {
+  // A captura é da equipe (o "Testar agora"); a verificação da criança não paga por ela.
+  if (options.screenshots !== true) return undefined
+  const screenshot = `check-shot-${index}.jpg`
+  await page
+    .screenshot({ path: path.join(root, screenshot), type: 'jpeg', quality: 55, timeout: 5_000 })
+    .catch(() => undefined)
+  return screenshot
+}
+
+// A Regra em JavaScript (etapa 4): a autora escreve o CORPO de uma função que recebe `jogo` (as
+// variáveis do jogo clássico, ou o estado do kit no Pro), `texto` (o texto da página) e
+// `console` (as linhas que o jogo escreveu) e devolve true para passar. Roda como expressão do
+// DevTools, que a CSP do Pro não barra (ela proíbe `eval` e `new Function` dentro da página).
+// ⚠️ Nada do veredito passa por código da página: a expressão devolve o valor cru e quem espera a
+// promessa é o protocolo do navegador (não o `Promise.prototype.then`, que o jogo pode trocar); as
+// entradas são montadas DENTRO da expressão, sem nome global. Só `true` passa: um número ou um
+// texto "verdadeiro" é engano da regra, não aprovação.
+async function runScriptRule(page, code, lines) {
+  const inputs = `(${prepareScriptInputs.toString()})(${JSON.stringify({ scope, lines: lines.slice(0, MAX_CONSOLE_LINES) })})`
+  const expression = `(async ({ jogo, texto, console }) => {\n${code}\n})(${inputs})`
+  let timer
+  const outcome = await Promise.race([
+    page.evaluate(expression).then(
+      (value) => ({ value }),
+      (error) => ({
+        scriptError: String(error?.message ?? error)
+          .replace(/^page\.evaluate:\s*/i, '')
+          .split('\n')[0]
+          .slice(0, 200),
+      }),
+    ),
+    new Promise((resolve) => {
+      timer = setTimeout(
+        () =>
+          resolve({ scriptError: `a regra demorou mais de ${SCRIPT_TIMEOUT_MS / 1000} segundos` }),
+        SCRIPT_TIMEOUT_MS,
+      )
+    }),
+  ])
+  clearTimeout(timer)
+  if (typeof outcome.scriptError === 'string')
+    return { verdict: false, scriptError: outcome.scriptError }
+  const value = outcome.value
+  const returned =
+    value === true
+      ? 'true'
+      : value === false
+        ? 'false'
+        : value === undefined || value === null
+          ? 'nada'
+          : typeof value === 'number' || typeof value === 'string'
+            ? JSON.stringify(value).slice(0, 80)
+            : typeof value
+  return { verdict: value === true, returned }
 }
 
 async function runSteps(page, steps) {
@@ -250,8 +313,11 @@ function readTargetInPage({ scope, target, maxChars }) {
     return JSON.stringify(json).length > maxChars ? { $sz: 'large' } : json
   }
   try {
-    if (target.kind === 'text')
-      return { found: true, value: (document.body?.innerText ?? '').slice(0, 5000) }
+    if (target.kind === 'text') {
+      // Texto cortado não prova que a palavra NÃO está lá: grande demais vira inconclusivo.
+      const text = document.body?.innerText ?? ''
+      return { found: true, value: text.length > 50_000 ? { $sz: 'large' } : text }
+    }
     if (target.kind === 'game') {
       const game = window.__studioGame
       if (!game || typeof game.inspect !== 'function') return { found: false }
@@ -271,6 +337,28 @@ function readTargetInPage({ scope, target, maxChars }) {
   } catch (error) {
     return { found: false, error: String(error?.message ?? error).slice(0, 200) }
   }
+}
+
+function prepareScriptInputs({ scope, lines }) {
+  const reader = globalThis[scope]
+  let jogo
+  if (reader && typeof reader.get === 'function')
+    jogo = new Proxy(
+      {},
+      {
+        get: (_target, name) => (typeof name === 'string' ? reader.get(name)?.v : undefined),
+        has: (_target, name) => typeof name === 'string' && Boolean(reader.get(name)),
+      },
+    )
+  else {
+    const game = window.__studioGame
+    try {
+      jogo = game && typeof game.inspect === 'function' ? game.inspect() : {}
+    } catch {
+      jogo = {}
+    }
+  }
+  return { jogo, texto: (document.body?.innerText ?? '').slice(0, 50_000), console: lines }
 }
 
 async function callFunctionCases({ scope, name, module, cases, timeoutMs, maxChars }) {
@@ -296,7 +384,7 @@ async function callFunctionCases({ scope, name, module, cases, timeoutMs, maxCha
   const outcomes = []
   for (const item of cases) {
     try {
-      const args = JSON.parse(JSON.stringify(item.args))
+      const args = JSON.parse(JSON.stringify(item))
       const value = await Promise.race([
         Promise.resolve().then(() => fn(...args)),
         new Promise((_, reject) =>

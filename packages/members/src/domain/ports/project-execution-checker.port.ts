@@ -16,6 +16,8 @@ export interface ProjectExecutionCheckInput {
   kind: 'classic' | 'pro'
   templateId?: string
   objectives: ExecutionObjectiveRequest[]
+  /** Pedir a captura da tela (só o "Testar agora" da equipe): nunca guardada no cache. */
+  screenshots?: boolean
 }
 
 export interface ProjectExecutionCheckOutput {

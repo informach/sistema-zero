@@ -36,6 +36,16 @@ export class ProjectCheckUnavailableError extends DomainError {
     super('Não consegui testar o seu jogo agora. Tente de novo.')
   }
 }
+/**
+ * O executor RECUSOU o pedido (regra que não vale neste projeto, projeto grande demais). Para a
+ * criança é a mesma frase de "não consegui testar" (o motivo é de autoria, não dela); o "Testar
+ * agora" da equipe mostra o `reason`.
+ */
+export class ProjectCheckRejectedError extends ProjectCheckUnavailableError {
+  constructor(readonly reason: string) {
+    super()
+  }
+}
 /** Muitos testes seguidos da mesma pessoa: o executor pede uma pausa. */
 export class ProjectCheckBusyError extends DomainError {
   readonly code = 'PROJECT_CHECK_BUSY'

@@ -1,7 +1,10 @@
 import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import { defaultLessonSection, type LessonSection } from '@sistemazero/core/learning'
-import { ProjectCheckUnavailableError } from '../../src/domain/learning/learning.errors'
+import {
+  ProjectCheckRejectedError,
+  ProjectCheckUnavailableError,
+} from '../../src/domain/learning/learning.errors'
 import type {
   ProjectExecutionChecker,
   ProjectExecutionCheckInput,
@@ -147,19 +150,19 @@ describe('objetivos que rodam o jogo, no servidor', () => {
     expect(JSON.stringify(body)).not.toContain('não andou')
   })
 
-  test('executor fora do ar: 503 com frase de criança, nada guardado', async () => {
+  test('executor fora do ar: 424 (fora do disjuntor do gateway) com frase de criança, nada guardado', async () => {
     const ctx = setup(fakeExecutor(() => 'fora').executor)
     const response = await ctx.check(COM_LACO)
-    expect(response.status).toBe(503)
+    expect(response.status).toBe(424)
     expect(((await response.json()) as { error: { message: string } }).error.message).toBe(
       'Não consegui testar o seu jogo agora. Tente de novo.',
     )
     expect((await ctx.read()).sectionProgress.sections[0]?.objectives).toBeUndefined()
   })
 
-  test('sem executor configurado: 503, nunca aprovação', async () => {
+  test('sem executor configurado: 424, nunca aprovação', async () => {
     const ctx = setup(undefined)
-    expect((await ctx.check(COM_LACO)).status).toBe(503)
+    expect((await ctx.check(COM_LACO)).status).toBe(424)
   })
 
   test('Pro: o modelo vem do projeto inicial da autora, não do que a criança mandou', async () => {
@@ -195,7 +198,13 @@ describe('objetivos que rodam o jogo, no servidor', () => {
       screenshots: { anda: 'anBlZw==' },
     })
     expect(fake.calls[0]?.requester).toBe(`admin-${USER}`)
-    expect([401, 403]).toContain((await ctx.request('/admin/project-checks/test', 'POST', body)).status)
+    // Só a equipe pede a captura; a verificação da criança nunca.
+    expect(fake.calls[0]?.screenshots).toBe(true)
+    await ctx.check(COM_LACO)
+    expect(fake.calls[1]?.screenshots).toBeUndefined()
+    expect([401, 403]).toContain(
+      (await ctx.request('/admin/project-checks/test', 'POST', body)).status,
+    )
     const broken = {
       ...body,
       checks: [{ id: 'x', rule: { ...anda, steps: [{ action: 'wait', ms: 99_000 }] } }],
@@ -203,5 +212,26 @@ describe('objetivos que rodam o jogo, no servidor', () => {
     expect((await ctx.request('/admin/project-checks/test', 'POST', broken, admin)).status).toBe(
       400,
     )
+  })
+
+  test('recusa do executor: a criança lê a frase de sempre, a equipe lê o motivo', async () => {
+    const recusa: ProjectExecutionChecker = {
+      async check() {
+        throw new ProjectCheckRejectedError('Projeto Pro não confere variáveis diretamente.')
+      },
+    }
+    const ctx = setup(recusa)
+    const crianca = await ctx.check(COM_LACO)
+    expect(crianca.status).toBe(424)
+    expect(JSON.stringify(await crianca.json())).not.toContain('variáveis')
+    const admin = { 'x-auth-user-role': 'admin', 'x-auth-user-status': 'active' }
+    const equipe = await ctx.request(
+      '/admin/project-checks/test',
+      'POST',
+      { project: COM_LACO, checks: [{ id: 'anda', rule: anda }] },
+      admin,
+    )
+    expect(equipe.status).toBe(400)
+    expect(JSON.stringify(await equipe.json())).toContain('não confere variáveis')
   })
 })

@@ -1,6 +1,8 @@
 import {
+  EXECUTION_LIMITS,
   evaluateProjectStructure,
   executionProjectChecks,
+  executionRuleBudgetMs,
   isExecutionRule,
   isProjectBlockPattern,
   isSectionCompletion,
@@ -133,11 +135,27 @@ function executionIssues(
     ([...extensions].some((id) => CLASSIC_3D_EXTENSIONS.has(id)) ||
       THREE_IMPORT.test(typeof files['script.js'] === 'string' ? files['script.js'] : ''))
   const errors: string[] = []
+  // Até a função de um jogo 3D clássico some: o arquivo inteiro para na importação do three.js.
+  if (classic3d)
+    errors.push(
+      'Jogos 3D do modo Blocos não rodam no teste (ele roda sem internet e o 3D precisa dela). Use uma ideia de programação.',
+    )
   if (rule.type === 'behavior' || rule.type === 'script') {
-    if (classic3d)
+    const outside = rule.steps.some(
+      (step) =>
+        step.action === 'click' &&
+        (step.x >= CHECK_VIEWPORT.width || step.y >= CHECK_VIEWPORT.height),
+    )
+    if (outside)
       errors.push(
-        'Jogos 3D do modo Blocos não rodam no teste (ele roda sem internet e o 3D precisa dela). Use uma ideia de programação.',
+        `O teste abre o jogo numa tela de ${CHECK_VIEWPORT.width} por ${CHECK_VIEWPORT.height}: o clique precisa caber nela.`,
       )
+  }
+  if (rule.type === 'script') {
+    if (!pro && modes.length > 0 && !modes.includes('bridge'))
+      errors.push('A regra em JavaScript vale na Ponte e no Pro.')
+    const syntax = scriptSyntaxError(rule.code)
+    if (syntax) errors.push(`A regra em JavaScript tem um erro de escrita: ${syntax}`)
   }
   if (rule.type === 'behavior') {
     const target = rule.expect.target
@@ -159,6 +177,27 @@ function executionIssues(
   }
   return errors
 }
+/** A tela do navegador do teste (o `check-objectives.mjs` do studio-runtime). */
+export const CHECK_VIEWPORT = { width: 1024, height: 640 } as const
+
+/**
+ * Confere a escrita da regra sem rodá-la (compilar um corpo de função assíncrona não executa
+ * nada). Onde o ambiente proíbe compilar código (CSP sem `unsafe-eval`), a conferência fica para o
+ * "Testar agora": não acusa o que não pôde olhar.
+ */
+function scriptSyntaxError(code: string): string | null {
+  try {
+    const AsyncFunction = Object.getPrototypeOf(async () => undefined).constructor as new (
+      ...args: string[]
+    ) => unknown
+    new AsyncFunction('jogo', 'texto', 'console', code)
+    return null
+  } catch (error) {
+    if (error instanceof SyntaxError) return error.message
+    return null
+  }
+}
+
 const record = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
 const strings = (value: unknown): string[] =>
@@ -550,6 +589,17 @@ export function studioSectionCompletionIssues(
           .map((message) => ({ sectionId: section.id, message: `${check.label}: ${message}` })),
       )
       if (ruleIssues.length) return ruleIssues
+      const budget = executionProjectChecks(checks).reduce(
+        (sum, check) => sum + executionRuleBudgetMs(check.rule as SectionExecutionRule),
+        0,
+      )
+      if (budget > EXECUTION_LIMITS.maxSectionWaitMs)
+        return [
+          {
+            sectionId: section.id,
+            message: `Os objetivos que rodam o jogo desta parte esperam ${Math.ceil(budget / 1000)} segundos somados; o teste aceita até ${EXECUTION_LIMITS.maxSectionWaitMs / 1000}. Encurte as esperas ou tire casos.`,
+          },
+        ]
       const content = record(workspace.content) ? workspace.content : {}
       const initial = content.initialProject
       // O que o jogo FAZ só se confere rodando: a publicação exige o gabarito, e quem o roda é o

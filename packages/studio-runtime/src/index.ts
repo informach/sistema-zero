@@ -536,6 +536,9 @@ async function runProjectCheck(
   env: Env,
   sandboxFactory: typeof getSandbox,
 ): Promise<Response> {
+  // O prazo é contado do começo do PEDIDO: quem chama (o Members) desiste em 150 s, e o tempo do
+  // contêiner subir e do Vite compilar sai do mesmo orçamento (review da etapa 3).
+  const started = Date.now()
   const input = parseCheckRequest(
     await readJsonBodyWithLimit(request, CHECK_LIMITS.maxRequestBytes),
   )
@@ -596,42 +599,65 @@ async function runProjectCheck(
         'ln -s /opt/sz-runtime/node_modules ./node_modules && node /opt/sz-runtime/node_modules/vite/bin/vite.js build --config ./vite.config.mjs --configLoader native',
         { cwd, timeout: BUILD_TIMEOUT_MS },
       )
-      // Jogo que não compila não cumpre nada: é resposta do teste, não falha do executor.
+      // Jogo que não compila não cumpre nada: é resposta do teste, não falha do executor. Sem
+      // mensagem de erro do Vite (tempo esgotado, contêiner caiu), é falha do executor: nunca
+      // vira resposta guardada para a criança.
+      const compileOutput = `${compiled.stdout}\n${compiled.stderr}`.trim()
+      if (!compiled.success && !/error/i.test(compileOutput)) {
+        console.error('studio-runtime check build failed', capOutput(compileOutput))
+        return checkFailed()
+      }
       if (!compiled.success)
         return checkJson({
           ok: true,
           results: input.objectives.map((objective) => ({
             id: objective.id,
             passed: false,
-            detail: `O projeto não compilou: ${capOutput(`${compiled.stdout}\n${compiled.stderr}`.trim()).slice(-600)}`,
+            detail: `O projeto não compilou: ${capOutput(compileOutput).slice(-600)}`,
           })),
         })
     }
+    const runTimeout = Math.min(
+      CHECK_LIMITS.runTimeoutMs,
+      CHECK_LIMITS.totalBudgetMs - (Date.now() - started),
+    )
+    if (runTimeout < CHECK_LIMITS.minRunMs) return checkFailed()
     await sandbox.writeFile(
       `${cwd}/check-options.json`,
       JSON.stringify({
         mode: input.mode,
         scope: input.scope,
         kit,
+        screenshots: input.screenshots,
         objectives: input.objectives,
-        deadlineMs: CHECK_LIMITS.runTimeoutMs - 5_000,
+        deadlineMs: runTimeout - 5_000,
       }),
     )
     const ran = await sandbox.exec('node /opt/sz-runtime/check-objectives.mjs', {
       cwd,
-      timeout: CHECK_LIMITS.runTimeoutMs,
+      timeout: runTimeout,
     })
     if (!ran.success) {
       console.error('studio-runtime check failed', capOutput(`${ran.stdout}\n${ran.stderr}`))
-      return checkJson(
-        { ok: false, code: 'CHECK_FAILED', message: 'Não foi possível testar o jogo agora.' },
-        500,
-      )
+      return checkFailed()
     }
     const report = JSON.parse(
       (await sandbox.readFile(`${cwd}/check-result.json`, { encoding: 'utf-8' })).content,
     ) as { observations?: unknown }
     const observations = Array.isArray(report.observations) ? report.observations : []
+    // Objetivo que o navegador não conseguiu testar (página não abriu, contêiner lento) é falha do
+    // EXECUTOR: devolver "não passou" deixaria a criança presa num resultado guardado que não é
+    // dela. Falha nunca aprova e nunca é guardada.
+    const broken = observations.find(
+      (item: unknown) =>
+        typeof item === 'object' &&
+        item !== null &&
+        typeof (item as { error?: unknown }).error === 'string',
+    ) as { error: string } | undefined
+    if (broken) {
+      console.error('studio-runtime check objective failed', broken.error)
+      return checkFailed()
+    }
     const screenshots: Record<string, string> = {}
     for (const [index, objective] of input.objectives.entries()) {
       const observation = observations.find(
@@ -655,6 +681,13 @@ async function runProjectCheck(
   } finally {
     await sandbox.destroy().catch(() => undefined)
   }
+}
+
+function checkFailed(): Response {
+  return checkJson(
+    { ok: false, code: 'CHECK_FAILED', message: 'Não foi possível testar o jogo agora.' },
+    500,
+  )
 }
 
 function checkJson(body: ProjectCheckResponse, status = 200): Response {

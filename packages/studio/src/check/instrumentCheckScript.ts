@@ -74,11 +74,15 @@ function declaredNames(statements: unknown[]): string[] {
 
 function reader(scope: string, names: string[]): string {
   const cases = names
-    .map((name) => `case ${JSON.stringify(name)}:try{return{v:${name}}}catch(e){return null}`)
+    .map((name) => `case ${JSON.stringify(name)}:try{return{v:${name}}}catch(__szE){return null}`)
     .join(';')
   // Uma linha só, sem quebras: as linhas do código da criança continuam nos mesmos números para as
-  // mensagens de erro do console.
-  return `;(function(){var g=globalThis,k=${JSON.stringify(scope)},r=g[k];if(!r){r={scopes:[],get:function(n){for(var i=r.scopes.length-1;i>=0;i--){var f=r.scopes[i](n);if(f)return f}return null}};try{Object.defineProperty(g,k,{value:r})}catch(e){return}}r.scopes.push(function(n){switch(n){${cases}}return null})})();`
+  // mensagens de erro do console. ⚠️ Todo nome interno começa com `__sz`: um `var g` aqui
+  // esconderia a variável `g` (gravidade) da criança dentro do `switch`, e o teste leria o
+  // `globalThis` no lugar dela (achado do review da etapa 3). `declaredNames` já descarta `__sz*`.
+  // O leitor é congelado e a propriedade não é gravável: o jogo não troca o `get` por um que
+  // aprove tudo. Não é cofre (a página é da criança), é para o atalho não existir.
+  return `;(function(){var __szG=globalThis,__szK=${JSON.stringify(scope)},__szR=__szG[__szK];if(!__szR){var __szS=[];__szR=Object.freeze({get:function(__szN){for(var __szI=__szS.length-1;__szI>=0;__szI--){var __szF=__szS[__szI](__szN);if(__szF)return __szF}return null},add:function(__szF){if(typeof __szF==='function')__szS.push(__szF)}});try{Object.defineProperty(__szG,__szK,{value:__szR})}catch(__szE){return}}__szR.add(function(__szN){switch(__szN){${cases}}return null})})();`
 }
 
 export function instrumentCheckScript(source: string, scope: string): string {

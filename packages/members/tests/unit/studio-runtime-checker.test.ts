@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import { createEmptyProject } from '@sistemazero/studio/project'
 import {
   ProjectCheckBusyError,
+  ProjectCheckRejectedError,
   ProjectCheckUnavailableError,
 } from '../../src/domain/learning/learning.errors'
 import { createStudioRuntimeChecker } from '../../src/infrastructure/gateways/studio-runtime-checker'
@@ -30,8 +31,14 @@ function setup(reply: (body: Record<string, unknown>) => Response | Promise<Resp
       return reply(body)
     },
   })
-  const run = () =>
-    checker.check({ requester: 'u1', project, kind: 'classic', objectives: [objective] })
+  const run = (screenshots?: boolean) =>
+    checker.check({
+      requester: 'u1',
+      project,
+      kind: 'classic',
+      objectives: [objective],
+      ...(screenshots ? { screenshots } : {}),
+    })
   return { run, bodies, advance: (ms: number) => (clock += ms) }
 }
 const ok = (passed = true) =>
@@ -109,13 +116,41 @@ describe('o adaptador do studio-runtime', () => {
         Response.json({ ok: false, code: 'RATE_LIMITED', message: 'x' }, { status: 429 }),
       ).run(),
     ).rejects.toBeInstanceOf(ProjectCheckBusyError)
-    await expect(
-      setup(() =>
-        Response.json(
-          { ok: false, code: 'INVALID_REQUEST', message: 'Grande demais.' },
-          { status: 400 },
-        ),
-      ).run(),
-    ).rejects.toThrow('Grande demais.')
+    // A recusa é de autoria: a criança lê a frase de sempre e a equipe recebe o motivo.
+    const recusa = await setup(() =>
+      Response.json(
+        { ok: false, code: 'INVALID_REQUEST', message: 'Grande demais.' },
+        { status: 400 },
+      ),
+    )
+      .run()
+      .catch((error: unknown) => error)
+    expect(recusa).toBeInstanceOf(ProjectCheckRejectedError)
+    expect(recusa).toBeInstanceOf(ProjectCheckUnavailableError)
+    expect((recusa as ProjectCheckRejectedError).reason).toBe('Grande demais.')
+    expect((recusa as Error).message).toBe('Não consegui testar o seu jogo agora. Tente de novo.')
+    expect(
+      await setup(() => new Response('grande', { status: 413 }))
+        .run()
+        .catch((error: unknown) => (error as ProjectCheckRejectedError).reason),
+    ).toBe('O projeto ficou grande demais para o teste.')
+  })
+
+  test('a captura só vai quando pedida e nunca entra no cache', async () => {
+    const ctx = setup((body) =>
+      Response.json({
+        ok: true,
+        results: [{ id: 'anda', passed: true }],
+        ...(body.screenshots ? { screenshots: { anda: 'anBlZw' } } : {}),
+      }),
+    )
+    expect((await ctx.run()).screenshots).toBeUndefined()
+    expect(ctx.bodies[0]?.screenshots).toBe(false)
+    expect((await ctx.run(true)).screenshots).toEqual({ anda: 'anBlZw' })
+    expect((await ctx.run(true)).screenshots).toEqual({ anda: 'anBlZw' })
+    // As duas com captura foram ao executor; a da criança seguinte reaproveita o cache SEM captura.
+    expect(ctx.bodies).toHaveLength(3)
+    expect((await ctx.run()).screenshots).toBeUndefined()
+    expect(ctx.bodies).toHaveLength(3)
   })
 })

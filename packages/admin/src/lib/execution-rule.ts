@@ -60,9 +60,12 @@ export function targetLabel(target: ExecutionTarget): string {
     case 'console':
       return 'o console'
     case 'game':
-      return { phase: 'a fase do kit', score: 'os pontos do kit', health: 'a vida do kit' }[
-        target.field
-      ]
+      return {
+        phase: 'a fase do kit',
+        score: 'os pontos do kit',
+        goal: 'a meta do kit',
+        health: 'a vida do kit',
+      }[target.field]
   }
 }
 

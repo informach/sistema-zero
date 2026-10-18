@@ -6,6 +6,7 @@ import {
   EXECUTION_KEYS,
   EXECUTION_LIMITS,
   type ExecutionCompare,
+  type ExecutionGameField,
   type ExecutionKey,
   type ExecutionStep,
   type ExecutionTarget,
@@ -222,7 +223,7 @@ function BehaviorEditor({
                   ? { kind: 'value', path: '' }
                   : value === 'text' || value === 'console'
                     ? { kind: value }
-                    : { kind: 'game', field: value.slice(5) as 'phase' | 'score' | 'health' },
+                    : { kind: 'game', field: value.slice(5) as ExecutionGameField },
               )
             }}
           >
@@ -236,6 +237,9 @@ function BehaviorEditor({
             </option>
             <option value="game:score" disabled={!isKit}>
               Os pontos do kit Pro
+            </option>
+            <option value="game:goal" disabled={!isKit}>
+              A meta do kit Pro (do src/config.ts)
             </option>
             <option value="game:health" disabled={!isKit}>
               A vida do kit Pro

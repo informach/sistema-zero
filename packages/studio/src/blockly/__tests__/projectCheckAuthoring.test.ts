@@ -383,8 +383,38 @@ describe('objetivos que rodam o jogo (etapa 3, 18/10/2026)', () => {
     expect(tresD.issues(anda)).toEqual([
       'Jogos 3D do modo Blocos não rodam no teste (ele roda sem internet e o 3D precisa dela). Use uma ideia de programação.',
     ])
-    // A função não abre o jogo 3D na tela: pode.
-    expect(tresD.issues(dobro)).toEqual([])
+    // Nem a função escapa: o arquivo inteiro para na importação do three.js, que o teste (sem
+    // internet) não alcança. Achado do review da etapa 3.
+    expect(tresD.issues(dobro)).toEqual([
+      'Jogos 3D do modo Blocos não rodam no teste (ele roda sem internet e o 3D precisa dela). Use uma ideia de programação.',
+    ])
+  })
+
+  test('o clique tem que caber na tela do teste (1024 por 640)', () => {
+    const clique = (x: number, y: number): SectionExecutionRule => ({
+      ...anda,
+      steps: [{ action: 'click', x, y }],
+    })
+    expect(classico().issues(clique(1000, 600))).toEqual([])
+    expect(classico().issues(clique(1024, 10))).toEqual([
+      'O teste abre o jogo numa tela de 1024 por 640: o clique precisa caber nela.',
+    ])
+    expect(classico().issues(clique(10, 700))).toHaveLength(1)
+  })
+
+  test('regra em JavaScript: Ponte ou Pro, e a escrita é conferida sem rodar', () => {
+    const regra = (code: string): SectionExecutionRule => ({ type: 'script', steps: [], code })
+    expect(classico().issues(regra('return jogo.pontos > 2'))).toEqual([])
+    expect(pro('canvas-puzzle').issues(regra('return jogo.score > 0'))).toEqual([])
+    expect(
+      projectCheckAuthoring({ initialProject: {}, allowedModes: ['blocks'] }).issues(
+        regra('return true'),
+      ),
+    ).toEqual(['A regra em JavaScript vale na Ponte e no Pro.'])
+    const [escrita] = classico().issues(regra('return ('))
+    expect(escrita).toStartWith('A regra em JavaScript tem um erro de escrita:')
+    // Compilar não roda: um laço infinito na regra não trava a autoria.
+    expect(classico().issues(regra('while (true) {}'))).toEqual([])
   })
 
   test('cada alvo só onde ele existe', () => {

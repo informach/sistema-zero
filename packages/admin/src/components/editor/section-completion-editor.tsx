@@ -47,6 +47,9 @@ function newRule(type: string, isPro: boolean): SectionObjectiveRule {
   }
 }
 
+/** Constante, e não `{}` a cada renderização: um objeto novo desfaria o `useMemo` do relatório. */
+const NOT_EXECUTED: ExecutedProjects = {}
+
 function verdictLabel(
   verdict: boolean | null | 'pending' | 'error',
   none: string,
@@ -156,7 +159,7 @@ export function SectionCompletionEditor({
     run.key === executionKey &&
     run.initial === content.initialProject &&
     run.solution === content.solutionProject
-  const executed: ExecutedProjects = runCurrent && run ? run.executed : {}
+  const executed: ExecutedProjects = runCurrent && run ? run.executed : NOT_EXECUTED
   const running = runCurrent && (executed.initial === 'pending' || executed.solution === 'pending')
   const report = useMemo(
     () => (tested ? testSectionObjectives(checks, workspace, executed) : null),

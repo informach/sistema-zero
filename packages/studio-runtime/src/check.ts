@@ -20,6 +20,10 @@ export const CHECK_LIMITS = {
   maxDocumentChars: 11_000_000,
   /** Prazo do script no contêiner; o Worker ainda compila o Pro antes. */
   runTimeoutMs: 110_000,
+  /** O pedido inteiro (contêiner + Vite + navegador) cabe antes de o Members desistir (150 s). */
+  totalBudgetMs: 140_000,
+  /** Menos que isso não testa nem um objetivo direito: é falha do executor, não resposta. */
+  minRunMs: 20_000,
   maxScreenshotBase64: 400_000,
 } as const
 
@@ -35,6 +39,7 @@ export type CheckRequest =
       scope: string
       document: string
       objectives: ExecutionObjectiveRequest[]
+      screenshots: boolean
     }
   | {
       mode: 'pro'
@@ -42,6 +47,7 @@ export type CheckRequest =
       scope: string
       build: ProBuildRequest
       objectives: ExecutionObjectiveRequest[]
+      screenshots: boolean
     }
 
 const record = (value: unknown): value is Record<string, unknown> =>
@@ -56,6 +62,8 @@ export function parseCheckRequest(value: unknown): CheckRequest {
     throw new InvalidBuildRequestError('Escopo do teste inválido.')
   if (!isExecutionObjectiveList(objectives))
     throw new InvalidBuildRequestError('Objetivos do teste inválidos.')
+  // A captura da tela é da equipe ("Testar agora"); a verificação da criança não a pede.
+  const screenshots = value.screenshots === true
   if (mode === 'classic') {
     if (
       typeof value.document !== 'string' ||
@@ -69,7 +77,7 @@ export function parseCheckRequest(value: unknown): CheckRequest {
       )
     )
       throw new InvalidBuildRequestError('O arquivo da função só vale no projeto Pro.')
-    return { mode, executionId, scope, document: value.document, objectives }
+    return { mode, executionId, scope, document: value.document, objectives, screenshots }
   }
   if (mode === 'pro') {
     const build = parseBuildRequest({
@@ -91,7 +99,7 @@ export function parseCheckRequest(value: unknown): CheckRequest {
       if (rule.type === 'behavior' && rule.expect.target.kind === 'value')
         throw new InvalidBuildRequestError('Projeto Pro não confere variáveis diretamente.')
     }
-    return { mode, executionId, scope, build, objectives }
+    return { mode, executionId, scope, build, objectives, screenshots }
   }
   throw new InvalidBuildRequestError('Tipo de projeto inválido.')
 }

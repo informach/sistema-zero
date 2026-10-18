@@ -145,6 +145,60 @@ describe('o julgamento do que o executor viu', () => {
     expect(obs({ x: 1 }, { x: 1 })).toBe(false)
   })
 
+  test('marcadores do navegador: undefined e NaN não "existem"; leitura cortada nunca aprova', () => {
+    expect(compareExecutionValue({ $sz: 'undefined' }, 'truthy', undefined)).toBe(false)
+    expect(compareExecutionValue({ $sz: 'NaN' }, 'truthy', undefined)).toBe(false)
+    expect(compareExecutionValue({ $sz: 'function' }, 'truthy', undefined)).toBe(true)
+    for (const mark of ['large', 'deep', 'error']) {
+      expect(compareExecutionValue({ $sz: mark }, 'notEquals', 3)).toBe(false)
+      expect(compareExecutionValue({ $sz: mark }, 'notContains', 'x')).toBe(false)
+      expect(compareExecutionValue({ $sz: mark }, 'truthy', undefined)).toBe(false)
+      expect(compareExecutionValue(1, 'changed', undefined, { $sz: mark })).toBe(false)
+    }
+    // A metade que tem que passar: um objeto de verdade com a chave $sz e mais coisa não é marcador.
+    expect(compareExecutionValue({ $sz: 'large', outro: 1 }, 'truthy', undefined)).toBe(true)
+  })
+
+  test('"mudou" sem a leitura do começo não passa', () => {
+    const mudou: SectionExecutionRule = {
+      ...anda,
+      expect: { target: { kind: 'value', path: 'pontos' }, compare: 'changed' },
+    }
+    const verdict = judgeExecutionObservation(mudou, {
+      id: 'a',
+      type: 'behavior',
+      initial: { found: false },
+      final: { found: true, value: 5 },
+    })
+    expect(verdict.passed).toBe(false)
+    expect(verdict.detail).toContain('no começo do teste')
+    expect(
+      judgeExecutionObservation(mudou, {
+        id: 'a',
+        type: 'behavior',
+        initial: { found: true, value: { $sz: 'undefined' } },
+        final: { found: true, value: 5 },
+      }).passed,
+    ).toBe(true)
+  })
+
+  test('a regra em JavaScript: só true passa e o motivo vai para a equipe', () => {
+    const regra: SectionExecutionRule = { type: 'script', steps: [], code: 'return true' }
+    const obs = (extra: object) =>
+      judgeExecutionObservation(regra, { id: 'r', type: 'script', ...extra })
+    expect(obs({ verdict: true, returned: 'true' })).toEqual({ passed: true })
+    expect(obs({ verdict: false, returned: 'false' }).detail).toBe(
+      'A regra em JavaScript devolveu false.',
+    )
+    expect(obs({ verdict: false, returned: '3' }).detail).toBe(
+      'A regra em JavaScript precisa devolver true ou false; devolveu 3.',
+    )
+    expect(obs({ verdict: false, scriptError: 'x is not defined' }).detail).toBe(
+      'A regra em JavaScript deu erro: x is not defined',
+    )
+    expect(obs({}).passed).toBe(false)
+  })
+
   test('a função precisa acertar TODOS os casos', () => {
     expect(
       judgeExecutionObservation(dobro, {

@@ -59,6 +59,12 @@ O members chama o `studio-runtime` (Cloudflare, contêiner sem internet com Chro
   `STUDIO_PRO_RUNTIME_URL`/`STUDIO_PRO_RUNTIME_TOKEN` (os nomes do Kids e do Admin). Decisão: a
   publicação EXIGE o gabarito, mas não roda o executor (publicar não fica refém de um contêiner
   externo); quem confere o gabarito rodando é o "Testar agora", que mostra o motivo e a tela final.
+- Review da etapa 3 (corrigido): a página do jogo é da criança, então ela nunca recebe a resposta
+  esperada (só os argumentos das funções) e o leitor de variáveis é congelado; marcadores do
+  navegador (`undefined`, `NaN`, valor grande demais) não aprovam; "mudou" exige a leitura do
+  começo; página que não abre, Vite que estoura o tempo ou prazo curto viram falha do executor
+  (424, nada guardado), nunca "não passou"; o prazo conta do começo do pedido e a parte tem um teto
+  de 40 s somados de esperas; a captura só sai no "Testar agora".
 
 ## Gabarito da professora
 

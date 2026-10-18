@@ -12,6 +12,7 @@ import {
 } from '@sistemazero/studio/server-check'
 import {
   ProjectCheckBusyError,
+  ProjectCheckRejectedError,
   ProjectCheckUnavailableError,
 } from '../../domain/learning/learning.errors'
 import type {
@@ -83,6 +84,7 @@ export function createStudioRuntimeChecker(
         files: proCheckSourceFiles(input.project),
         ...(Object.keys(binaries).length ? { binaries } : {}),
         objectives: input.objectives,
+        screenshots: input.screenshots === true,
       }
     } else {
       let document: string
@@ -91,7 +93,14 @@ export function createStudioRuntimeChecker(
       } catch {
         throw new ValidationError('Não consegui abrir este projeto para testar.')
       }
-      body = { mode: 'classic', executionId, scope, document, objectives: input.objectives }
+      body = {
+        mode: 'classic',
+        executionId,
+        scope,
+        document,
+        objectives: input.objectives,
+        screenshots: input.screenshots === true,
+      }
     }
     let response: Response
     try {
@@ -113,8 +122,12 @@ export function createStudioRuntimeChecker(
       () => null,
     )) as ProjectCheckResponse | null
     if (response.status === 429) throw new ProjectCheckBusyError()
+    // Recusa do executor é de AUTORIA (ou de tamanho): a criança lê "não consegui testar", a
+    // equipe lê o motivo. Nunca é guardada (só o sucesso entra no cache).
     if (response.status === 400 && result && !result.ok)
-      throw new ValidationError(result.message || 'O projeto não pode ser testado.')
+      throw new ProjectCheckRejectedError(result.message || 'O projeto não pode ser testado.')
+    if (response.status === 413)
+      throw new ProjectCheckRejectedError('O projeto ficou grande demais para o teste.')
     if (!response.ok || !result?.ok || !Array.isArray(result.results)) {
       opts.logger?.warn('studio-runtime check failed', { status: response.status })
       throw new ProjectCheckUnavailableError()
@@ -138,6 +151,9 @@ export function createStudioRuntimeChecker(
 
   return {
     async check(input) {
+      // A captura é só da equipe e pesa até 3 MB: esse pedido vai sempre ao executor e não entra no
+      // cache, que guarda só os resultados da verificação da criança.
+      if (input.screenshots) return run(input)
       const key = createHash('sha256')
         .update(
           stableJson({

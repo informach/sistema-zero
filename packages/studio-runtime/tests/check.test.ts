@@ -63,7 +63,13 @@ const proBody = {
 }
 
 function setup(
-  options: { compiled?: boolean; ran?: boolean; observations?: unknown[]; rate?: boolean } = {},
+  options: {
+    compiled?: boolean
+    silentBuild?: boolean
+    ran?: boolean
+    observations?: unknown[]
+    rate?: boolean
+  } = {},
 ) {
   const written = new Map<string, string>()
   const commands: string[] = []
@@ -90,7 +96,12 @@ function setup(
         return {
           success: options.compiled ?? true,
           stdout: '',
-          stderr: options.compiled === false ? 'src/main.ts: erro de sintaxe' : '',
+          stderr:
+            options.compiled === false
+              ? options.silentBuild
+                ? ''
+                : 'error during build:\nsrc/main.ts: erro de sintaxe'
+              : '',
         }
       if (command.includes('check-objectives.mjs'))
         return { success: options.ran ?? true, stdout: '', stderr: 'falhou' }
@@ -136,7 +147,7 @@ describe('POST /v1/check', () => {
         },
       ],
     })
-    const response = await context.call(classicBody)
+    const response = await context.call({ ...classicBody, screenshots: true })
     expect(response.status).toBe(200)
     expect(await response.json()).toEqual({
       ok: true,
@@ -148,6 +159,7 @@ describe('POST /v1/check', () => {
       mode: 'classic',
       scope: SCOPE,
       kit: false,
+      screenshots: true,
     })
     expect(context.commands.some((command) => command.includes('vite'))).toBe(false)
     // Um contêiner por teste, destruído no fim.
@@ -198,6 +210,28 @@ describe('POST /v1/check', () => {
     expect(context.destroyed()).toBe(1)
   })
 
+  test('a verificação da criança não pede captura', async () => {
+    const context = setup({ observations: [] })
+    await context.call(classicBody)
+    expect(JSON.parse(context.written.get('check-options.json') ?? '{}').screenshots).toBe(false)
+  })
+
+  test('objetivo que o navegador não conseguiu testar é falha do executor, não "não passou"', async () => {
+    const context = setup({
+      observations: [{ id: 'anda', type: 'behavior', error: 'page.goto: Timeout 15000ms' }],
+    })
+    const response = await context.call(classicBody)
+    expect(response.status).toBe(500)
+    expect(await response.json()).toMatchObject({ ok: false, code: 'CHECK_FAILED' })
+  })
+
+  test('Pro que falha sem erro do Vite (tempo esgotado) é falha do executor', async () => {
+    const context = setup({ compiled: false, silentBuild: true })
+    const response = await context.call(proBody)
+    expect(response.status).toBe(500)
+    expect(context.commands.some((c) => c.includes('check-objectives.mjs'))).toBe(false)
+  })
+
   test('o executor que falha vira 500, nunca aprovação', async () => {
     const context = setup({ ran: false })
     const response = await context.call(classicBody)
@@ -234,6 +268,32 @@ describe('o pedido de teste', () => {
       parseCheckRequest({ ...proBody, files: { ...proBody.files, [CHECK_ENTRY_PATH]: 'x' } }),
     ).toThrow('reservado')
     expect(() => parseCheckRequest({ ...classicBody, objectives: [{ ...dobro }] })).toThrow('Pro')
+  })
+
+  test('a regra em JavaScript vale no clássico e no Pro e só passa com true', async () => {
+    const regra = {
+      id: 'regra',
+      rule: { type: 'script', steps: [{ action: 'wait', ms: 100 }], code: 'return jogo.score > 0' },
+    }
+    expect(parseCheckRequest({ ...classicBody, objectives: [regra] }).objectives).toHaveLength(1)
+    expect(parseCheckRequest({ ...proBody, objectives: [regra] }).objectives).toHaveLength(1)
+    const { judgeCheck } = await import('../src/check')
+    expect(
+      judgeCheck(
+        [regra as never],
+        [{ id: 'regra', type: 'script', verdict: true, returned: 'true' }],
+      ),
+    ).toEqual([{ id: 'regra', passed: true }])
+    expect(
+      judgeCheck(
+        [regra as never],
+        [{ id: 'regra', type: 'script', verdict: false, scriptError: 'x is not defined' }],
+      )[0],
+    ).toEqual({
+      id: 'regra',
+      passed: false,
+      detail: 'A regra em JavaScript deu erro: x is not defined',
+    })
   })
 
   test('a entrada do Pro importa cada módulo uma vez e guarda no escopo sorteado', () => {

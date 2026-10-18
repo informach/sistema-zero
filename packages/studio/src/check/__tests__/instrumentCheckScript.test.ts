@@ -27,6 +27,35 @@ describe('o leitor de variáveis do teste', () => {
     expect(dobro(4)).toBe(8)
   })
 
+  test('variáveis de uma letra são da criança, não do leitor (g, k, r, n, i, f, e)', () => {
+    const reader = run(
+      "let g = 9.8\nlet n = 3\nlet r = 5\nlet k = 'x'\nlet i = 1\nlet f = 2\nlet e = 'e'",
+    )
+    expect(reader.get('g')).toEqual({ v: 9.8 })
+    expect(reader.get('n')).toEqual({ v: 3 })
+    expect(reader.get('r')).toEqual({ v: 5 })
+    expect(reader.get('k')).toEqual({ v: 'x' })
+    expect(reader.get('i')).toEqual({ v: 1 })
+    expect(reader.get('f')).toEqual({ v: 2 })
+    expect(reader.get('e')).toEqual({ v: 'e' })
+  })
+
+  test('o jogo não troca o leitor por um que aprova tudo', () => {
+    const realm: Record<string, unknown> = {}
+    realm.globalThis = realm
+    const code = instrumentCheckScript('let pontos = 1', SCOPE)
+    new Function('globalThis', code)(realm)
+    const leitor = realm[SCOPE] as { get: unknown }
+    // O arquivo de teste é módulo (modo estrito): a escrita recusada LANÇA.
+    expect(() => {
+      ;(leitor as { get: unknown }).get = () => ({ v: 99 })
+    }).toThrow()
+    expect(() => {
+      realm[SCOPE] = { get: () => ({ v: 99 }) }
+    }).toThrow()
+    expect((realm[SCOPE] as { get(n: string): unknown }).get('pontos')).toEqual({ v: 1 })
+  })
+
   test('lê dentro da função da partida, que é onde o jogo de blocos guarda tudo', () => {
     let run2: (() => void) | undefined
     const reader = run(

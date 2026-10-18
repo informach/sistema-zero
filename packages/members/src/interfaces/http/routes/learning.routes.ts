@@ -221,6 +221,9 @@ export function learningRoutes(deps: LearningRoutesDeps) {
               return deps.learning.sections.testObjectives({
                 checks: completion.projectChecks ?? [],
                 project: body.project,
+                ...(body.initialProject === undefined
+                  ? {}
+                  : { initialProject: body.initialProject }),
                 requester: `admin-${resolveUserId(headers)}`,
               })
             },

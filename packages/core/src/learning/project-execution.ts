@@ -30,6 +30,12 @@ export const EXECUTION_LIMITS = {
   /** Espera de um passo e a soma das esperas de um objetivo. */
   maxWaitMs: 10_000,
   maxTotalWaitMs: 15_000,
+  /**
+   * A soma das esperas (e do tempo das funções) de TODOS os objetivos que rodam o jogo numa
+   * parte: eles rodam no mesmo pedido, que tem prazo. Sem o teto, uma parte válida objetivo a
+   * objetivo estourava o prazo em toda verificação (review da etapa 3).
+   */
+  maxSectionWaitMs: 40_000,
   maxHoldMs: 5_000,
   /** Coordenada de clique, na tela do jogo. */
   maxCoordinate: 4_000,
@@ -52,13 +58,17 @@ export type ExecutionStep =
  * - `value`: uma variável ou uma propriedade dela (`pontos`, `heroi.x`), no jogo clássico;
  * - `text`: o texto que aparece na página;
  * - `console`: o que o jogo escreveu no console;
- * - `game`: o estado do kit Pro (`phase`, `score`, `health`).
+ * - `game`: o estado do kit Pro (`phase`, `score`, `goal` = a meta do `src/config.ts`, `health`).
  */
 export type ExecutionTarget =
   | { kind: 'value'; path: string }
   | { kind: 'text' }
   | { kind: 'console' }
-  | { kind: 'game'; field: 'phase' | 'score' | 'health' }
+  | { kind: 'game'; field: ExecutionGameField }
+
+/** O que o estado de um kit Pro (`window.__studioGame.inspect()`) mostra para conferir. */
+export const EXECUTION_GAME_FIELDS = ['phase', 'score', 'goal', 'health'] as const
+export type ExecutionGameField = (typeof EXECUTION_GAME_FIELDS)[number]
 
 export const EXECUTION_COMPARES = [
   'equals',
@@ -107,9 +117,10 @@ export type SectionExecutionRule =
       cases: FunctionCase[]
     }
   /**
-   * Regra em JavaScript (etapa 4): um corpo de função que a autora escreve, roda na página depois
-   * dos passos e devolve verdadeiro para passar. Recebe `jogo` (as variáveis do jogo clássico, ou
-   * os módulos exportados no Pro), `texto` (o texto da página) e `console` (as linhas escritas).
+   * Regra em JavaScript (etapa 4): o CORPO de uma função que a autora escreve, roda na página
+   * depois dos passos e devolve `true` para passar (pode usar `await`). Recebe `jogo` (as
+   * variáveis do jogo clássico, ou o estado do kit no Pro: `jogo.score`, `jogo.phase`),
+   * `texto` (o texto da página) e `console` (a lista das linhas que o jogo escreveu).
    */
   | { type: 'script'; steps: ExecutionStep[]; code: string }
 
@@ -210,6 +221,18 @@ function isStep(step: unknown): step is ExecutionStep {
   }
 }
 
+/** Quanto tempo do prazo um objetivo de execução pode gastar (esperas, teclas e casos). */
+export function executionRuleBudgetMs(rule: SectionExecutionRule): number {
+  if (rule.type === 'functionReturns') return rule.cases.length * FUNCTION_CASE_BUDGET_MS
+  return rule.steps.reduce(
+    (sum, step) =>
+      sum + (step.action === 'wait' ? step.ms : step.action === 'press' ? (step.holdMs ?? 80) : 0),
+    0,
+  )
+}
+/** O tempo máximo que o executor dá a cada caso de função. */
+const FUNCTION_CASE_BUDGET_MS = 2_000
+
 function areSteps(steps: unknown): steps is ExecutionStep[] {
   if (!Array.isArray(steps) || steps.length > EXECUTION_LIMITS.maxSteps || !steps.every(isStep))
     return false
@@ -231,7 +254,7 @@ function isTarget(target: unknown): target is ExecutionTarget {
       return Object.keys(target).length === 1
     case 'game':
       return (
-        ['phase', 'score', 'health'].includes(String(target.field)) &&
+        EXECUTION_GAME_FIELDS.some((field) => field === target.field) &&
         Object.keys(target).length === 2
       )
     default:
@@ -326,17 +349,49 @@ export function executionValuesEqual(a: unknown, b: unknown): boolean {
   return a === b
 }
 
+/**
+ * O navegador não manda `undefined`, `NaN` nem função pelo JSON: ele manda um marcador
+ * (`{ $sz: 'undefined' }`). Antes de comparar, o marcador volta ao valor que ele representa; os
+ * que querem dizer "não deu para ler direito" (grande demais, fundo demais, deu erro) tornam a
+ * leitura INCONCLUSIVA, e leitura inconclusiva nunca aprova (nem "é diferente de", nem "não
+ * contém": um texto cortado não prova que a palavra não está lá). Achado do review da etapa 3.
+ */
+const INCONCLUSIVE = new Set(['large', 'deep', 'error'])
+const marker = (value: unknown): string | null =>
+  record(value) && typeof value.$sz === 'string' && Object.keys(value).length === 1
+    ? value.$sz
+    : null
+
+export function isInconclusiveObservedValue(value: unknown): boolean {
+  const mark = marker(value)
+  return mark !== null && INCONCLUSIVE.has(mark)
+}
+
+function fromObserved(value: unknown): unknown {
+  const mark = marker(value)
+  if (mark === null) return value
+  if (mark === 'undefined') return undefined
+  if (mark === 'NaN' || mark === 'Infinity' || mark === '-Infinity') return Number(mark)
+  if (mark === 'function') return () => undefined
+  return value
+}
+
 /** A comparação do fim de um objetivo "O jogo faz algo", igual no executor e nos testes. */
 export function compareExecutionValue(
-  actual: unknown,
+  observed: unknown,
   compare: ExecutionCompare,
   expected: string | number | boolean | undefined,
-  initial?: unknown,
+  observedInitial?: unknown,
 ): boolean {
+  if (isInconclusiveObservedValue(observed)) return false
+  if (compare === 'changed' && isInconclusiveObservedValue(observedInitial)) return false
+  const actual = fromObserved(observed)
+  const initial = fromObserved(observedInitial)
   switch (compare) {
     case 'truthy':
       return Boolean(actual) && !(Array.isArray(actual) && actual.length === 0)
     case 'changed':
+      if (typeof actual === 'function' || typeof initial === 'function') return false
       return !executionValuesEqual(actual, initial)
     case 'equals':
       return executionValuesEqual(
@@ -392,7 +447,11 @@ export function isExecutionObjectiveList(value: unknown): value is ExecutionObje
         item.id.length >= 1 &&
         item.id.length <= 100 &&
         isSectionExecutionRule(item.rule),
-    )
+    ) &&
+    value.reduce(
+      (sum: number, item) => sum + executionRuleBudgetMs((item as ExecutionObjectiveRequest).rule),
+      0,
+    ) <= EXECUTION_LIMITS.maxSectionWaitMs
   )
 }
 
@@ -411,8 +470,12 @@ export interface ExecutionObservation {
   /** `functionReturns`: a função não existe (ou não é função). */
   missing?: boolean
   cases?: { ok: boolean; value?: unknown; error?: string }[]
-  /** `script`: o que a regra devolveu (etapa 4). */
+  /** `script`: a regra devolveu `true` (etapa 4). */
   verdict?: boolean
+  /** `script`: o que ela devolveu, em poucas letras (`false`, `3`, `nada`, `object`). */
+  returned?: string
+  /** `script`: a regra deu erro (escrita, variável que não existe, tempo esgotado). */
+  scriptError?: string
   /** Exceções do jogo durante o teste (para a equipe). */
   errors?: string[]
   /** O teste em si não terminou (página não abriu, tempo esgotado). */
@@ -452,7 +515,10 @@ function targetName(target: ExecutionTarget): string {
     case 'console':
       return 'o console'
     case 'game':
-      return `o ${target.field} do jogo`
+      return (
+        { phase: 'a fase', score: 'os pontos', goal: 'a meta', health: 'a vida' }[target.field] +
+        ' do jogo'
+      )
   }
 }
 
@@ -492,9 +558,16 @@ export function judgeExecutionObservation(
     return { passed: true }
   }
   if (rule.type === 'script') {
-    return observation.verdict === true
-      ? { passed: true }
-      : { passed: false, detail: 'A regra em JavaScript não devolveu verdadeiro.' }
+    if (observation.scriptError)
+      return { passed: false, detail: `A regra em JavaScript deu erro: ${observation.scriptError}` }
+    if (observation.verdict === true) return { passed: true }
+    return {
+      passed: false,
+      detail:
+        observation.returned === 'false'
+          ? 'A regra em JavaScript devolveu false.'
+          : `A regra em JavaScript precisa devolver true ou false; devolveu ${observation.returned ?? 'nada'}.`,
+    }
   }
   const { target, compare, value } = rule.expect
   const final = observation.final
@@ -507,6 +580,18 @@ export function judgeExecutionObservation(
           : target.kind === 'game'
             ? 'Este jogo não tem o estado do kit Pro.'
             : `Não consegui ler ${targetName(target)}.`,
+    }
+  // "Mudou" compara com o começo: sem a leitura do começo (a variável ainda não existia, por
+  // exemplo a da partida que só nasce depois de apertar uma tecla) não há com o que comparar.
+  if (compare === 'changed' && !observation.initial?.found)
+    return {
+      passed: false,
+      detail: `Não consegui ler ${targetName(target)} no começo do teste, então não sei se mudou.`,
+    }
+  if (isInconclusiveObservedValue(final.value))
+    return {
+      passed: false,
+      detail: `Não consegui ler ${targetName(target)} inteiro (grande demais ou com erro).`,
     }
   const passed = compareExecutionValue(final.value, compare, value, observation.initial?.value)
   return passed
