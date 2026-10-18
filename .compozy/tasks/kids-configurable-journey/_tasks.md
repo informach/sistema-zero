@@ -91,7 +91,7 @@ Recorte T2 atual: port/repositório com snapshot read-only, freeze monotônico, 
 **Depende de:** review do payload final pelo root; rebase remoto informado antes de editar contratos. Sem T3 antes desse aceite.
 
 - [x] Preservar checkpoint/backup T2; rebase sobre remoto `f664cfa5184e5a4d633edb9292d9f1b09b8115be`, preservando patch companion de fixture sem cherry-pick duplicado; informar conflito em fronteiras compartilhadas. Checkpoint108574ec7/backup631b34 preservados, seis commits range-diff equivalentes.
-- [ ] Próximo checkpoint adota remoto2e76fb448 (ou SHA mais recente informado pelo root) e retira companion equivalente ao guard publicado, usando fixture remoto exato.
+- [x] Checkpoint canônico e8be66021 adota remoto2e76fb448 e retira companion equivalente ao guard publicado, usando fixture remoto exato. Backup a4e4babb5; range-diff confirma seis Kids equivalentes, sem conflitos.
 - [x] Substituir legacy/configured/paused por configuração única `{schemaVersion, mode:active|paused, steps, tierAccess}`; pausa mantém tudo, sem nesting/fallback.
 - [x] Recorte core canônico: seed separado49, tierAccess e earned21; 58/0/2763 focados após RED/GREEN entry herdado→expanded, função pura compartilhada com autorização; TSC Core EXIT0.
 - [x] `tierAccess` tem sete tiers completos e thresholds/base explícitos: opensAt, completedAt, foundation slot1/milestone/whenMissing. Seed conforme tabela da techspec. Não derivar regras normais de `CREATOR_JOURNEY_LEVELS`.

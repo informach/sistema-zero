@@ -1,6 +1,6 @@
 # Techspec — política própria de Jornada Kids
 
-Status: T1/T2 são checkpoints intermediários preservados em Git. O contrato/seed e a persistência canônicos já estão escritos sobre `f664cfa51`, fora da composição; SQL30 com fila/drain e TSC Core/Members passaram. A orientação explícita do usuário exige um único modelo Kids, seed persistido e cleanup dos seus caminhos antigos antes de merge. Admissão Auth e consumidores ainda não foram implementados. Próximo checkpoint será rebaseado ao remoto informado pelo root, sem duplicar o guard já incorporado.
+Status: T1/T2 são checkpoints intermediários preservados em Git. Contrato/seed e persistência canônicos estão no checkpoint `e8be66021` sobre remoto `2e76fb448`, fora da composição; SQL30 com fila/drain e TSC Core/Members passaram antes desse rebase equivalente. A orientação explícita do usuário exige um único modelo Kids, seed persistido e cleanup dos seus caminhos antigos antes de merge. Admissão Auth e consumidores ainda não foram implementados. Companion guard já publicado foi retirado, sem alterar a fixture remota.
 
 ## Arquitetura e alternativas
 

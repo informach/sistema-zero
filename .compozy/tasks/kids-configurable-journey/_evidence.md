@@ -2,7 +2,7 @@
 
 ## Delta conciliado e fronteiras de identidade (18/10/2026)
 
-Base da implementação canônica: `f664cfa51`, rebase de seis commits equivalentes; remoto `2e76fb448` informado pelo root será adotado no próximo checkpoint, retirando o guard local já incorporado ao remoto. Leituras locais e fixtures SQL descartáveis não afirmam quantidade/estado de alunos reais.
+Base atual `2e76fb448`, checkpoint canônico `e8be66021`. Rebase sem conflitos, seis commits Kids equivalentes no range-diff; companion guard local retirado por já estar no remoto, fixture remoto preservado exatamente. Backup pré-rebase `backup/kids-journey-canonical-before-2e76-a4e4babb5`. Leituras locais e fixtures SQL descartáveis não afirmam quantidade/estado de alunos reais.
 
 - Members `application/studio/free-studio-access.service.ts` e `authorize-free-runtime.service.ts` são autoridades conciliadas de contexto/linguagem/editor livre. Migrar somente o gate Kids de jornada; conservar matrícula, paleta, runtime JS/Python e validação no servidor.
 - Auth `application/profiles/create-profile.service.ts` e `profile.repository.ts:createWithinLimit` são o criador normal/primeiro perfil. `register.service.ts` cria conta/tokens, sem filho automático. `scripts/backfill-default-profiles.ts` escreve SQL direto e precisa usar admissão após rollout. `ProfileAggregate.restore` hidrata um registro, sem restauração produtiva de arquivado; não foi encontrado outro import/restore de perfil.
