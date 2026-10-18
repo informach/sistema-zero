@@ -8,6 +8,18 @@
 > recusa obrigatório que o `content.solutionProject` não cumpre). As menções a esses nomes mais
 > abaixo são históricas.
 
+> **Objetivos lidos no código (18/10/2026, etapa 2):** `blockly/codeIdeas.ts` procura as ideias
+> de programação (laço, variável, função, chamada) na árvore sintática do Babel, para os objetivos
+> valerem no projeto Pro (a árvore Vite, sem configuração nem `node_modules`) e no código digitado na
+> Ponte (os nós `rawJS` da IR; sem IR, o `script.js`). `evaluateStudioProjectStructure` tenta o código
+> primeiro e cai no avaliador de blocos; `usesBlock` segue só de blocos e a autoria o recusa no Pro.
+> Com a Ponte liberada, a autoria não exige mais que o bloco da ideia esteja na paleta.
+> ⚠️ **Só conta o que MUDOU desde o projeto inicial** (review da etapa 2): `codeIdeas` CONTA
+> ocorrências e `codeIdeasPass(rule, ideas, baseline)` compara com o `initialProject` (os kits Pro
+> já trazem laço e funções no modelo). Os três avaliadores recebem o `baseline?` opcional; o members,
+> o "Testar agora" e o ensaio passam o projeto inicial do bloco. `studioSectionCompletionIssues`
+> recusa publicar objetivo obrigatório que o projeto inicial já cumpre.
+
 > **Escrita com namespace explícito (10/10/2026):** `replaceLocalProject(project, {namespace})`
 > captura o armazenamento antes de persistir. Os rascunhos das aulas usam `namespace: ''`, inclusive
 > para cópias de conflito, sem depender do namespace que o Estúdio Completo ativou durante o download.

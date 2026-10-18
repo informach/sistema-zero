@@ -19,6 +19,13 @@ export class LearningConflictError extends DomainError {
     super('Esta atividade foi atualizada. Recarregue a aula para continuar.')
   }
 }
+/** O projeto chegou com o código da Ponte mais novo que os blocos (o Estúdio ainda está lendo). */
+export class StudioProjectSyncingError extends DomainError {
+  readonly code = 'STUDIO_PROJECT_SYNCING'
+  constructor() {
+    super('O Estúdio ainda está organizando o seu código em blocos. Tente de novo em um instante.')
+  }
+}
 export class LearningGateError extends DomainError {
   readonly code = 'LEARNING_GATE_INCOMPLETE'
   constructor() {

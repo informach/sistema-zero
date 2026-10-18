@@ -10,28 +10,92 @@ import type { SectionStructureRule } from '@sistemazero/core/learning'
  */
 export type CodeIdeaRule = Exclude<SectionStructureRule, { type: 'usesBlock' }>
 
+/** Quantas vezes cada ideia aparece. Contar (e não só saber se tem) é o que deixa comparar com o
+ * projeto inicial: no Pro o modelo já traz laços e dezenas de funções, e só vale o que a criança
+ * ACRESCENTOU. */
 export interface CodeIdeas {
-  loops: boolean
-  variables: ReadonlySet<string>
-  functions: ReadonlySet<string>
-  calls: ReadonlySet<string>
+  loops: number
+  variables: ReadonlyMap<string, number>
+  functions: ReadonlyMap<string, number>
+  calls: ReadonlyMap<string, number>
 }
 
-/** Teto de código lido por projeto: o resto é ignorado (um objetivo nunca trava o servidor). */
-export const CODE_IDEAS_MAX_CHARS = 2_000_000
-const MAX_NODES = 400_000
-const CODE_FILE = /\.(?:m?js|cjs|jsx|ts|tsx)$/i
-/** Configuração do Vite e afins não são o jogo da criança. */
+/** Teto de código lido por projeto: o resto é ignorado (um objetivo nunca trava o servidor).
+ * Medido: 1,4 MB de TypeScript custa ~700 ms de análise; 500 mil caracteres ficam em ~250 ms. */
+export const CODE_IDEAS_MAX_CHARS = 500_000
+const MAX_NODES = 200_000
+const CODE_FILE = /\.(?:m?js|cjs|jsx|mts|cts|ts|tsx)$/i
+/** Configuração do Vite, dependências e os runtimes que a conversão para o Pro copia
+ * (`public/sz-*.js`, `public/sz-ext/`) não são o jogo da criança. */
 const IGNORED_FILE =
-  /(?:^|\/)(?:node_modules|dist|build)\/|(?:^|\/)[^/]*\.config\.[a-z]+$|\.d\.ts$/i
+  /(?:^|\/)(?:node_modules|dist)\/|^build\/|(?:^|\/)[^/]*\.config\.[a-z]+$|\.d\.[mc]?ts$|^public\/(?:sz-[^/]*\.js$|sz-ext\/|sw\.js$)/i
 
 const record = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
 
 function pluginsFor(name: string): ParserPlugin[] {
   if (/\.tsx$/i.test(name)) return ['typescript', 'jsx']
-  if (/\.ts$/i.test(name)) return ['typescript']
+  if (/\.[mc]?ts$/i.test(name)) return ['typescript']
   return ['jsx']
+}
+
+/** `(() => {})`, `fn as Tipo`, `fn satisfies Tipo` e `fn!` continuam sendo a mesma função. */
+function unwrap(node: unknown): unknown {
+  let current = node
+  for (let depth = 0; depth < 20 && record(current); depth++) {
+    if (
+      [
+        'TSAsExpression',
+        'TSSatisfiesExpression',
+        'TSNonNullExpression',
+        'ParenthesizedExpression',
+        'TSTypeAssertion',
+      ].includes(String(current.type))
+    )
+      current = current.expression
+    else break
+  }
+  return current
+}
+
+const isFunctionValue = (node: unknown) => {
+  const value = unwrap(node)
+  return record(value) && FUNCTION_VALUE.has(String(value.type))
+}
+
+/** O nome de uma propriedade: `obj.pular` e `obj['pular']`, nunca `obj[pular]`. */
+function propertyName(member: Record<string, unknown>): string | null {
+  if (member.computed) {
+    const key = member.property
+    return record(key) && key.type === 'StringLiteral' && typeof key.value === 'string'
+      ? key.value
+      : null
+  }
+  return nameOf(member.property)
+}
+
+function parseCode(file: { name: string; code: string }): unknown {
+  const options = (plugins: ParserPlugin[]) => ({
+    sourceType: 'unambiguous' as const,
+    errorRecovery: true,
+    allowReturnOutsideFunction: true,
+    allowAwaitOutsideFunction: true,
+    plugins,
+  })
+  try {
+    return parse(file.code, options(pluginsFor(file.name)))
+  } catch {
+    // JSX num .ts ou tipos num .js: um erro sem recuperação jogaria fora o arquivo inteiro.
+    try {
+      return parse(file.code, options(['typescript', 'jsx']))
+    } catch {
+      return null
+    }
+  }
+}
+
+function bump(map: Map<string, number>, name: string) {
+  map.set(name, (map.get(name) ?? 0) + 1)
 }
 
 function nameOf(node: unknown): string | null {
@@ -69,28 +133,18 @@ function collectPatternNames(pattern: unknown, into: Set<string>) {
 
 /** Lê as ideias de uma lista de arquivos de código. Arquivo que não analisa é pulado. */
 export function collectCodeIdeas(files: readonly { name: string; code: string }[]): CodeIdeas {
-  const variables = new Set<string>()
-  const functions = new Set<string>()
-  const calls = new Set<string>()
-  let loops = false
+  const variables = new Map<string, number>()
+  const functions = new Map<string, number>()
+  const calls = new Map<string, number>()
+  let loops = 0
   let budget = CODE_IDEAS_MAX_CHARS
   let nodes = 0
   for (const file of files) {
-    if (budget <= 0) break
+    if (budget <= 0 || nodes >= MAX_NODES) break
     if (file.code.length > budget) continue
     budget -= file.code.length
-    let ast: unknown
-    try {
-      ast = parse(file.code, {
-        sourceType: 'unambiguous',
-        errorRecovery: true,
-        allowReturnOutsideFunction: true,
-        allowAwaitOutsideFunction: true,
-        plugins: pluginsFor(file.name),
-      })
-    } catch {
-      continue
-    }
+    const ast = parseCode(file)
+    if (!ast) continue
     const stack: unknown[] = [ast]
     while (stack.length && nodes < MAX_NODES) {
       const node = stack.pop()
@@ -101,49 +155,60 @@ export function collectCodeIdeas(files: readonly { name: string; code: string }[
       if (!record(node) || typeof node.type !== 'string') continue
       nodes++
       const type = node.type
-      if (LOOPS.has(type)) loops = true
+      if (LOOPS.has(type)) loops++
+      if (type === 'VariableDeclaration' && node.declare) continue
       if (type === 'VariableDeclarator') {
-        collectPatternNames(node.id, variables)
+        const names = new Set<string>()
+        collectPatternNames(node.id, names)
+        for (const name of names) bump(variables, name)
         const name = nameOf(node.id)
-        if (name && record(node.init) && FUNCTION_VALUE.has(String(node.init.type)))
-          functions.add(name)
+        if (name && isFunctionValue(node.init)) bump(functions, name)
       } else if (type === 'FunctionDeclaration') {
         const name = nameOf(node.id)
-        if (name) functions.add(name)
+        if (name) bump(functions, name)
       } else if (
         type === 'ClassMethod' ||
         type === 'ObjectMethod' ||
         type === 'ClassPrivateMethod'
       ) {
         const name = nameOf(node.key)
-        if (name && node.kind !== 'constructor') functions.add(name)
-      } else if (type === 'AssignmentExpression' && record(node.right)) {
-        if (FUNCTION_VALUE.has(String(node.right.type))) {
-          const target =
-            record(node.left) && node.left.type === 'MemberExpression'
-              ? node.left.property
-              : node.left
-          const name = nameOf(target)
-          if (name) functions.add(name)
-        }
+        if (name && node.kind !== 'constructor') bump(functions, name)
+      } else if (type === 'AssignmentExpression' && isFunctionValue(node.right)) {
+        const left = record(node.left) ? node.left : null
+        const name =
+          left && left.type === 'MemberExpression' ? propertyName(left) : nameOf(node.left)
+        if (name) bump(functions, name)
       } else if (
-        (type === 'ClassProperty' || type === 'ObjectProperty') &&
-        record(node.value) &&
-        FUNCTION_VALUE.has(String(node.value.type))
+        (type === 'ClassProperty' ||
+          type === 'ClassPrivateProperty' ||
+          type === 'ObjectProperty') &&
+        isFunctionValue(node.value)
       ) {
         const name = nameOf(node.key)
-        if (name) functions.add(name)
+        if (name) bump(functions, name)
       } else if (type === 'CallExpression' || type === 'OptionalCallExpression') {
-        const callee = node.callee
-        const name =
+        const callee = unwrap(node.callee)
+        const member =
           record(callee) &&
           (callee.type === 'MemberExpression' || callee.type === 'OptionalMemberExpression')
-            ? nameOf(callee.property)
+            ? callee
+            : null
+        // `pular.call(...)` e `pular.apply(...)` ainda chamam `pular`.
+        const viaCall =
+          member &&
+          ['call', 'apply'].includes(String(propertyName(member))) &&
+          record(member.object) &&
+          member.object.type === 'Identifier'
+        const name = viaCall
+          ? nameOf((member as Record<string, unknown>).object)
+          : member
+            ? propertyName(member)
             : nameOf(callee)
         if (name) {
-          calls.add(name)
-          // `lista.forEach(...)` é o laço da IR (`forEach`) escrito em código.
-          if (name === 'forEach') loops = true
+          bump(calls, name)
+          // `lista.forEach(...)` é o laço da IR (`forEach`) escrito em código; `forEach(x)` solto
+          // é uma função qualquer com esse nome.
+          if (name === 'forEach' && member && !viaCall) loops++
         }
       }
       for (const key in node) {
@@ -168,16 +233,20 @@ export function collectCodeIdeas(files: readonly { name: string; code: string }[
   return { loops, variables, functions, calls }
 }
 
-export function codeIdeasPass(rule: CodeIdeaRule, ideas: CodeIdeas): boolean {
+/**
+ * A ideia está no código? Com o projeto inicial (`baseline`), só conta o que a criança
+ * ACRESCENTOU: mais laços do que o modelo tinha, ou o nome mais vezes do que lá.
+ */
+export function codeIdeasPass(rule: CodeIdeaRule, ideas: CodeIdeas, baseline?: CodeIdeas): boolean {
   switch (rule.type) {
     case 'usesLoop':
-      return ideas.loops
+      return ideas.loops > (baseline?.loops ?? 0)
     case 'declaresVariable':
-      return ideas.variables.has(rule.name)
+      return (ideas.variables.get(rule.name) ?? 0) > (baseline?.variables.get(rule.name) ?? 0)
     case 'definesFunction':
-      return ideas.functions.has(rule.name)
+      return (ideas.functions.get(rule.name) ?? 0) > (baseline?.functions.get(rule.name) ?? 0)
     case 'callsFunction':
-      return ideas.calls.has(rule.name)
+      return (ideas.calls.get(rule.name) ?? 0) > (baseline?.calls.get(rule.name) ?? 0)
   }
 }
 

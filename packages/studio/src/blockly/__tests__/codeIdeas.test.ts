@@ -13,9 +13,9 @@ describe('ideias de programação lidas do código', () => {
       'for (const k in obj) {}',
       'lista.forEach((item) => {})',
     ])
-      expect(ideas(code).loops).toBe(true)
+      expect(ideas(code).loops).toBeGreaterThan(0)
     // Anti-vácuo: código sem laço não passa.
-    expect(ideas('const a = 1; desenhar(a)').loops).toBe(false)
+    expect(ideas('const a = 1; desenhar(a)').loops).toBe(0)
   })
 
   test('variáveis, inclusive desestruturação', () => {
@@ -60,7 +60,7 @@ describe('ideias de programação lidas do código', () => {
 
   test('comentário e texto não contam como código', () => {
     const found = ideas('// for (;;) {}\nconst msg = "while (true)"')
-    expect(found.loops).toBe(false)
+    expect(found.loops).toBe(0)
   })
 })
 
@@ -97,5 +97,67 @@ describe('de onde vem o código de cada projeto', () => {
     })
     expect(ideasOf.variables.has('vida')).toBe(true)
     expect(ideasOf.functions.has('ajudar')).toBe(true)
+  })
+})
+
+describe('o que mudou desde o projeto inicial (review da etapa 2)', () => {
+  const proTree = (files: Record<string, string>) => ({
+    kind: 'pro',
+    tree: Object.fromEntries(
+      Object.entries(files).map(([path, content]) => [path, { kind: 'file', content }]),
+    ),
+  })
+  const modelo = proTree({
+    'src/main.ts': 'for (const x of lista) desenhar(x)\nfunction desenhar(x) {}',
+  })
+  test('o laço que o modelo já tinha não conta; um laço novo conta', () => {
+    expect(
+      codeIdeasPass({ type: 'usesLoop' }, projectCodeIdeas(modelo), projectCodeIdeas(modelo)),
+    ).toBe(false)
+    const mexeu = proTree({
+      'src/main.ts':
+        'for (const x of lista) desenhar(x)\nfunction desenhar(x) {}\nwhile (vivo) andar()',
+    })
+    expect(
+      codeIdeasPass({ type: 'usesLoop' }, projectCodeIdeas(mexeu), projectCodeIdeas(modelo)),
+    ).toBe(true)
+  })
+  test('a função do modelo não conta; criar outra com o nome pedido conta', () => {
+    const rule = { type: 'definesFunction' as const, name: 'desenhar' }
+    expect(codeIdeasPass(rule, projectCodeIdeas(modelo), projectCodeIdeas(modelo))).toBe(false)
+  })
+  test('os runtimes que a conversão para o Pro copia não são o jogo da criança', () => {
+    const convertido = proTree({
+      'public/sz-input.js': 'for (;;) break',
+      'public/sz-ext/game-2d.js': 'while (true) {}',
+      'public/sw.js': 'do {} while (false)',
+      'src/main.js': 'desenhar()',
+    })
+    expect(projectCodeIdeas(convertido).loops).toBe(0)
+  })
+  test('forEach solto não é laço; obj[nome]() não chama "nome"; declare let não é variável', () => {
+    const found = collectCodeIdeas([
+      { name: 'a.ts', code: 'forEach(x)\nobj[pular]()\ndeclare let vida: number' },
+    ])
+    expect(found.loops).toBe(0)
+    expect(found.calls.has('pular')).toBe(false)
+    expect(found.variables.has('vida')).toBe(false)
+  })
+  test('funções que antes escapavam: campo privado, "as", useCallback e pular.call', () => {
+    const found = collectCodeIdeas([
+      {
+        name: 'a.ts',
+        code: 'class A { #pular = () => {} }\nconst correr = (() => {}) as Acao\npular.call(this)',
+      },
+    ])
+    expect(found.functions.has('pular')).toBe(true)
+    expect(found.functions.has('correr')).toBe(true)
+    expect(found.calls.has('pular')).toBe(true)
+  })
+  test('JSX num .ts e arquivos .mts também são lidos', () => {
+    expect(
+      collectCodeIdeas([{ name: 'a.ts', code: 'const B = () => <b />; for(;;) break' }]).loops,
+    ).toBe(1)
+    expect(projectCodeIdeas(proTree({ 'src/m.mts': 'while (a) b()' })).loops).toBe(1)
   })
 })

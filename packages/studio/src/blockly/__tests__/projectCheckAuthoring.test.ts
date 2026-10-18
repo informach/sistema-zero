@@ -307,6 +307,36 @@ describe('o gabarito da professora na publicação (18/10/2026)', () => {
   test('gabarito que cumpre os obrigatórios publica, mesmo sem o extra', () => {
     expect(issues(comLaco, true)).toEqual([])
   })
+  test('projeto inicial que já cumpre um obrigatório bloqueia a publicação', () => {
+    const messages = studioSectionCompletionIssues(
+      [section()],
+      [{ id: 'workspace', content: { kind: 'studio', initialProject: comLaco } }],
+    ).map((issue) => issue.message)
+    expect(messages).toEqual([
+      'O projeto inicial já cumpre o objetivo obrigatório "Use um laço". Mude o objetivo ou o projeto inicial.',
+    ])
+  })
+  test('no Pro, o laço que o modelo já traz não cumpre; o gabarito precisa acrescentar um', () => {
+    const tree = (code: string) => ({
+      kind: 'pro',
+      tree: { 'src/main.ts': { kind: 'file', content: code } },
+    })
+    const modelo = tree('for (const x of lista) desenhar(x)')
+    const pro = (solution: unknown) =>
+      studioSectionCompletionIssues(
+        [section()],
+        [
+          {
+            id: 'workspace',
+            content: { kind: 'studio', initialProject: modelo, solutionProject: solution },
+          },
+        ],
+      ).map((issue) => issue.message)
+    expect(pro(modelo)).toEqual([
+      'O gabarito não cumpre o objetivo obrigatório "Use um laço". Ajuste o gabarito ou o objetivo.',
+    ])
+    expect(pro(tree('for (const x of lista) desenhar(x)\nwhile (vivo) andar()'))).toEqual([])
+  })
   test('gabarito que não cumpre um obrigatório bloqueia e nomeia o objetivo', () => {
     expect(issues(semNada)).toEqual([
       'O gabarito não cumpre o objetivo obrigatório "Use um laço". Ajuste o gabarito ou o objetivo.',

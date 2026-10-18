@@ -25,7 +25,11 @@ import type { CourseAudience, LessonWithContent } from '../../domain/course/cour
 import { LessonNotFoundError } from '../../domain/course/course.errors'
 import { hasComingSoonBlock, MAX_STUDIO_PROJECT_CHARS } from '../../domain/course/lesson-block'
 import type { CreationDraftState } from '../../domain/creations/creation'
-import { LearningConflictError, SectionLockedError } from '../../domain/learning/learning.errors'
+import {
+  LearningConflictError,
+  SectionLockedError,
+  StudioProjectSyncingError,
+} from '../../domain/learning/learning.errors'
 import type { CertificateRepository } from '../../domain/ports/certificate-repository.port'
 import type { CreationsRepository } from '../../domain/ports/creations-repository.port'
 import type { LearningOwner, LearningRepository } from '../../domain/ports/learning-repository.port'
@@ -456,7 +460,26 @@ export class SectionProgressionService {
       throw new ValidationError('Esta seção não possui verificação de projeto.')
     if (project === undefined || JSON.stringify(project).length > MAX_STUDIO_PROJECT_CHARS)
       throw new ValidationError('Projeto inválido ou muito grande.')
-    const evaluation = evaluateStudioSectionObjectives(checks, project)
+    // Conferir pelo tipo do projeto que a AULA montou: um Pro enviado a uma parte clássica (ou o
+    // contrário) seria avaliado por outra régua.
+    const workspace = lesson.blocks.find((b) => b.id === section.workspaceBlockId)
+    const initialProject =
+      workspace?.content.kind === 'studio' ? workspace.content.initialProject : undefined
+    const kindOf = (value: unknown) =>
+      typeof value === 'object' && value !== null && (value as { kind?: unknown }).kind === 'pro'
+        ? 'pro'
+        : 'classic'
+    if (initialProject !== undefined && kindOf(initialProject) !== kindOf(project))
+      throw new ValidationError('Este projeto não é do tipo desta parte.')
+    // Código da Ponte mais novo que os blocos: os blocos ainda não refletem o que a criança
+    // digitou, e o código gerado traz laços do próprio motor. O cartão espera o Estúdio terminar.
+    if (
+      typeof project === 'object' &&
+      project !== null &&
+      (project as { bridgeCodeAhead?: unknown }).bridgeCodeAhead
+    )
+      throw new StudioProjectSyncingError()
+    const evaluation = evaluateStudioSectionObjectives(checks, project, initialProject)
     const results = evaluation.results.map((r) => ({ id: r.checkId, passed: r.passed }))
     const sectionRevision = this.revision(section, lesson)
     await this.repository.saveSectionProgress(

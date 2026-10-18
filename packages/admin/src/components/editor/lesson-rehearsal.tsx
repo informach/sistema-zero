@@ -238,7 +238,14 @@ export function LessonRehearsal({
               !section.completion?.projectChecks?.length
             )
               return 'Esta seção não tem um objetivo estrutural para conferir.'
-            const checks = evaluateStudioSectionProject(section.completion.projectChecks, project)
+            const initial = lesson.blocks.find((b) => b.id === blockId)?.content as
+              | { initialProject?: unknown }
+              | undefined
+            const checks = evaluateStudioSectionProject(
+              section.completion.projectChecks,
+              project,
+              initial?.initialProject,
+            )
             if (checks.every((c) => c.passed))
               setState((s) => ({
                 ...s,

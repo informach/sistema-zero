@@ -103,12 +103,19 @@ function ObjectivesCard({
   const extras = objectives.filter((o) => o.optional)
 
   async function verify() {
-    const project = handleRef.current?.getProject()
-    if (!check || !project || !player || busy) return
+    if (!check || !handleRef.current || !player || busy) return
     setBusy(true)
     setFeedback(null)
     setXp(null)
     try {
+      // Com o código da Ponte mais novo que os blocos, o Estúdio ainda está lendo o que a criança
+      // digitou: espera um pouco (o servidor recusa esse retrato com STUDIO_PROJECT_SYNCING).
+      let project = handleRef.current.getProject()
+      for (let tries = 0; project?.bridgeCodeAhead && tries < 15; tries++) {
+        await new Promise((resolve) => setTimeout(resolve, 200))
+        project = handleRef.current?.getProject() ?? project
+      }
+      if (!project) return
       const result = await apiSend<CheckResponse>(
         `/api/members/lessons/${encodeURIComponent(player.lessonId)}/sections/${encodeURIComponent(check.sectionId)}/project-check`,
         'POST',

@@ -13,7 +13,9 @@ verificação conta (o autosave do mesmo projeto não). As frases moram em `copy
 `data-state`/`data-extra`/`data-stale` (invariante 8). O antigo `StudioActivityPanel`, o
 `getActivityResult` do envio e o `STUDIO_GATE_NOT_PASSED` saíram. `LessonDetailView.sections[]
 .completion` aceita a vista (aluno) OU a `SectionCompletion` inteira (prévia do admin);
-`LessonSections` converte com `projectObjectiveView`.
+`LessonSections` converte com `projectObjectiveView`. O "Verificar" espera a Ponte terminar de ler o
+código (`bridgeCodeAhead`, até 3 s) antes de mandar o projeto; o members responde 409
+`STUDIO_PROJECT_SYNCING` se ainda chegar lendo.
 
 > **Oficinas ao vivo (14/10/2026):** `createLiveRouteHandler` recebe `support` da sessão
 > (`isSupportSession`, qualquer `act`) e recusa toda chamada não-GET com `SUPPORT_SESSION`; a

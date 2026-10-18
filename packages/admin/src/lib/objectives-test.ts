@@ -37,14 +37,14 @@ export function testSectionObjectives(
   const content = record(workspace) ? workspace : {}
   const initial = content.initialProject
   const solution = content.solutionProject
+  // No código só conta o que mudou em relação ao projeto inicial (o mesmo critério do servidor).
   const passedBy = (project: unknown) =>
     project === undefined || project === null
       ? null
       : new Map(
-          evaluateStudioSectionObjectives(checks, project).results.map((r) => [
-            r.checkId,
-            r.passed,
-          ]),
+          evaluateStudioSectionObjectives(checks, project, initial ?? undefined).results.map(
+            (r) => [r.checkId, r.passed],
+          ),
         )
   const byInitial = passedBy(initial)
   const bySolution = passedBy(solution)
@@ -64,7 +64,7 @@ export function testSectionObjectives(
       )
     if (!row.optional && row.initial === true)
       problems.push(
-        `O projeto inicial já cumpre "${row.label}": a criança passa sem fazer nada. Mude o objetivo ou o projeto inicial.`,
+        `O projeto inicial já cumpre "${row.label}": a criança passa sem fazer nada. A publicação recusa: mude o objetivo ou o projeto inicial.`,
       )
     if (row.optional && row.solution === false)
       notes.push(`O gabarito não cumpre o desafio extra "${row.label}".`)

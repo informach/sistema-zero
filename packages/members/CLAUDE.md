@@ -20,6 +20,10 @@ parte viraram o único jeito de conferir o projeto, sempre no servidor.
   as conquistas do Estúdio); cada extra cumprido pela 1ª vez paga `objective_extra` (5 XP, sem
   moedas, uma vez por objetivo). ⚠️ A migration `0129` faz `ALTER TYPE … ADD VALUE` e NÃO usa o
   valor na mesma transação (o Postgres proíbe).
+- **Conferir no servidor** (`SectionProgressionService.checkProject`): o projeto de outro tipo
+  que o do bloco é 400; o projeto com `bridgeCodeAhead` (a Ponte ainda lendo o código) é 409
+  `STUDIO_PROJECT_SYNCING`; as ideias de programação contam só o que mudou desde o
+  `initialProject` do bloco (baseline).
 - **Gabarito**: `content.solutionProject` do bloco Estúdio (validado no create/update como o
   `initialProject`), retirado da aula do aluno. A publicação recusa objetivo obrigatório que o
   gabarito não cumpre (`studioSectionCompletionIssues` do studio).

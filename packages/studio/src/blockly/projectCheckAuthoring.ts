@@ -49,30 +49,47 @@ const readableProjects = new WeakMap<object, unknown>()
  * Uma regra contra um projeto, com a régua do Estúdio: os blocos pela IR e, para as ideias de
  * programação (laço, variável, função, chamada), também o CÓDIGO (etapa 2, 18/10/2026). É o que
  * faz o objetivo valer no Pro (que não tem IR) e no código digitado na Ponte (`rawJS`).
+ *
+ * `baseline` é o projeto INICIAL da autora: no código, só conta o que a criança acrescentou. Sem
+ * ele, um modelo Pro (que já traz laços e funções) cumpriria o objetivo antes de qualquer gesto.
  */
-export function evaluateStudioProjectStructure(rule: SectionStructureRule, project: unknown) {
-  if (rule.type !== 'usesBlock' && codeIdeasPass(rule, projectCodeIdeas(project))) return true
+export function evaluateStudioProjectStructure(
+  rule: SectionStructureRule,
+  project: unknown,
+  baseline?: unknown,
+) {
+  if (
+    rule.type !== 'usesBlock' &&
+    codeIdeasPass(
+      rule,
+      projectCodeIdeas(project),
+      baseline === undefined ? undefined : projectCodeIdeas(baseline),
+    )
+  )
+    return true
   return evaluateProjectStructure(rule, readableProject(project), valueBlockTypes)
 }
 export function evaluateStudioSectionProject(
   checks: Parameters<typeof evaluateSectionProject>[0],
   project: unknown,
+  baseline?: unknown,
 ) {
   return checks.map((check) => ({
     checkId: check.id,
     label: check.label,
-    passed: evaluateStudioProjectStructure(check.rule, project),
+    passed: evaluateStudioProjectStructure(check.rule, project, baseline),
   }))
 }
 /** A verificação de uma parte ("Verificar esta parte"), com a régua do Estúdio. */
 export function evaluateStudioSectionObjectives(
   checks: Parameters<typeof evaluateSectionObjectives>[0],
   project: unknown,
+  baseline?: unknown,
 ) {
   return summarizeSectionObjectives(
     checks.map((check) => ({
       checkId: check.id,
-      passed: evaluateStudioProjectStructure(check.rule, project),
+      passed: evaluateStudioProjectStructure(check.rule, project, baseline),
       optional: Boolean(check.optional),
     })),
   )
@@ -466,19 +483,38 @@ export function studioSectionCompletionIssues(
           .issues(check.rule)
           .map((message) => ({ sectionId: section.id, message: `${check.label}: ${message}` })),
       )
+      if (ruleIssues.length) return ruleIssues
+      const content = record(workspace.content) ? workspace.content : {}
+      const initial = content.initialProject
+      const nameOf = (id: string) => checks.find((check) => check.id === id)?.label ?? id
+      // Um obrigatório que o projeto inicial já cumpre deixa a criança passar sem fazer nada.
+      const free =
+        initial === undefined
+          ? []
+          : evaluateStudioSectionObjectives(checks, initial, initial)
+              .results.filter((result) => !result.optional && result.passed)
+              .map((result) => ({
+                sectionId: section.id,
+                message: `O projeto inicial já cumpre o objetivo obrigatório "${nameOf(
+                  result.checkId,
+                )}". Mude o objetivo ou o projeto inicial.`,
+              }))
       // O gabarito da professora precisa cumprir o que a parte exige: um objetivo obrigatório que
       // nem o gabarito cumpre é um objetivo que a criança não consegue cumprir.
-      const solution = record(workspace.content) ? workspace.content.solutionProject : undefined
-      if (solution === undefined || ruleIssues.length) return ruleIssues
-      const { results } = evaluateStudioSectionObjectives(checks, solution)
-      return results
-        .filter((result) => !result.optional && !result.passed)
-        .map((result) => ({
-          sectionId: section.id,
-          message: `O gabarito não cumpre o objetivo obrigatório "${
-            checks.find((check) => check.id === result.checkId)?.label ?? result.checkId
-          }". Ajuste o gabarito ou o objetivo.`,
-        }))
+      const solution = content.solutionProject
+      if (solution === undefined) return free
+      const { results } = evaluateStudioSectionObjectives(checks, solution, initial)
+      return [
+        ...free,
+        ...results
+          .filter((result) => !result.optional && !result.passed)
+          .map((result) => ({
+            sectionId: section.id,
+            message: `O gabarito não cumpre o objetivo obrigatório "${nameOf(
+              result.checkId,
+            )}". Ajuste o gabarito ou o objetivo.`,
+          })),
+      ]
     }),
   ]
 }

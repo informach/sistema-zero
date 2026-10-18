@@ -89,7 +89,13 @@ export function SectionCompletionEditor({
   const simulation =
     simulationProject === null
       ? simulationMessage
-      : evaluateStudioSectionObjectives(checks, simulationProject)
+      : evaluateStudioSectionObjectives(
+          checks,
+          simulationProject,
+          typeof workspace === 'object' && workspace !== null && 'initialProject' in workspace
+            ? workspace.initialProject
+            : undefined,
+        )
           .results.map((result, index) => {
             const check = checks.find((c) => c.id === result.checkId)
             const name = check?.label.trim() || `Objetivo ${index + 1}`

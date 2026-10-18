@@ -104,7 +104,12 @@ function setup() {
       sectionProgress: SectionProgressView
       gamification: { xpAwarded: number } | null
     }
-  return { ...env, lessonId, section, studioId, read, check }
+  const checkRaw = (snapshot: unknown) =>
+    request(`/lessons/${lessonId}/sections/${section.id}/project-check`, 'POST', {
+      revision: structureRevision,
+      project: snapshot,
+    })
+  return { ...env, lessonId, section, studioId, read, check, checkRaw }
 }
 
 describe('objetivos da parte no servidor', () => {
@@ -249,6 +254,17 @@ describe('objetivos da parte no servidor', () => {
       initialProject: COM_LACO_E_FUNCAO,
     })
     expect(await objetivos()).toBeUndefined()
+  })
+
+  test('projeto de outro tipo ou com a Ponte ainda lendo o código é recusado', async () => {
+    const ctx = setup()
+    const pro = await ctx.checkRaw({ kind: 'pro', tree: {} })
+    expect(pro.status).toBe(400)
+    const lendo = await ctx.checkRaw({ ...COM_LACO, bridgeCodeAhead: true })
+    expect(lendo.status).toBe(409)
+    expect(((await lendo.json()) as { error: { code: string } }).error.code).toBe(
+      'STUDIO_PROJECT_SYNCING',
+    )
   })
 
   test('extra cumprido antes dos obrigatórios paga o XP dele e não fecha a parte', async () => {
