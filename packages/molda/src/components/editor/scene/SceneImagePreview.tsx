@@ -13,6 +13,7 @@ export function SceneImagePreview({
   base,
   maxHeight = 256,
   frame,
+  square = false,
 }: {
   image: SceneImage
   palette: readonly SceneRgba[]
@@ -20,6 +21,7 @@ export function SceneImagePreview({
   maxHeight?: number
   /** Omit to show the full authorial sheet. */
   frame?: number
+  square?: boolean
 }) {
   const cropped = frame !== undefined && image.flipbook
   const width = cropped ? image.flipbook!.frameWidth : image.width
@@ -57,7 +59,7 @@ export function SceneImagePreview({
       height={height}
       role="img"
       aria-label={COPY.scene.imagePreview}
-      className="mld-pixelated block h-auto w-full rounded-lg outline outline-1 outline-mld-border"
+      className={`mld-pixelated block h-auto w-full ${square ? '' : 'rounded-lg outline outline-1 outline-mld-border'}`}
       style={{ maxWidth: (maxHeight * width) / height }}
     />
   )

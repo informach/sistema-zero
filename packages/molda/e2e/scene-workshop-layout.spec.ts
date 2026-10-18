@@ -113,6 +113,65 @@ async function openFreshModel(page: Page, name: string, query = '') {
   )
 }
 
+test('o menu de ajustes do palco cabe inteiro e seus campos recebem clique', async ({
+  page,
+}, testInfo) => {
+  await openFreshModel(page, 'layout-ajustes-e2e', 'nivel=god')
+  await page.getByText('Adicionar', { exact: true }).click()
+  await page.getByRole('button', { name: 'Caixa', exact: true }).click()
+  const trigger = page.locator('summary').filter({ hasText: 'Mais ajustes do palco' })
+  const menu = page.locator('details').filter({ has: trigger }).locator('.mld-drop')
+
+  for (const activity of ['Modelar', 'Pintar', 'Animar']) {
+    await page.getByRole('button', { name: activity, exact: true }).click()
+    for (const size of SIZES) {
+      await page.setViewportSize(size)
+      await trigger.click()
+      await expect(menu).toBeVisible()
+      const bounds = await menu.boundingBox()
+      const stage = await page.locator('.mld-stage-viewport').boundingBox()
+      if (!bounds || !stage) throw new Error('Menu ou palco sem área visível')
+      const label = `${activity} ${size.width}px`
+      expect.soft(bounds.x, `${label}: borda esquerda`).toBeGreaterThanOrEqual(stage.x)
+      expect
+        .soft(bounds.x + bounds.width, `${label}: borda direita`)
+        .toBeLessThanOrEqual(stage.x + stage.width)
+      expect
+        .soft(bounds.y + bounds.height, `${label}: borda inferior`)
+        .toBeLessThanOrEqual(stage.y + stage.height)
+      const covered = await menu.evaluate((element) =>
+        Array.from(element.querySelectorAll('select, button, input')).flatMap((control) => {
+          const rect = control.getBoundingClientRect()
+          const points = [
+            { x: rect.left + 2, y: rect.top + rect.height / 2 },
+            { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 },
+            { x: rect.right - 2, y: rect.top + rect.height / 2 },
+          ]
+          return points.every(({ x, y }) => control.contains(document.elementFromPoint(x, y)))
+            ? []
+            : [control.getAttribute('name') || control.textContent?.trim()]
+        }),
+      )
+      expect.soft(covered, `${label}: campos descobertos`).toEqual([])
+      await trigger.click()
+    }
+  }
+
+  await page.getByRole('button', { name: 'Modelar', exact: true }).click()
+  await page.setViewportSize(SIZES[0])
+  await trigger.click()
+  await menu.getByLabel('Eixos de Mover e Girar').selectOption('local')
+  await menu.getByRole('checkbox', { name: 'Permitir números quebrados' }).check()
+  await trigger.click()
+  await trigger.click()
+  await expect(menu.getByLabel('Eixos de Mover e Girar')).toHaveValue('local')
+  await expect(menu.getByRole('checkbox', { name: 'Permitir números quebrados' })).toBeChecked()
+  await expect(menu.getByText('Passo das medidas: 0,1', { exact: true })).toBeVisible()
+  await page.screenshot({ path: testInfo.outputPath('menu-ajustes-desktop.png') })
+  await page.setViewportSize(SIZES[3])
+  await page.screenshot({ path: testInfo.outputPath('menu-ajustes-mobile.png') })
+})
+
 test('nenhum controle da oficina fica coberto, e o palco tem área de desenho em todo tamanho', async ({
   page,
 }) => {
@@ -122,6 +181,54 @@ test('nenhum controle da oficina fica coberto, e o palco tem área de desenho em
   await checkEverySize(page, 'Modelar')
   expect(pageErrors).toEqual([])
 })
+
+for (const hasTouch of [false, true]) {
+  test.describe(`painel com ${hasTouch ? 'toque' : 'mouse'}`, () => {
+    test.use({ hasTouch })
+    test('o painel direito mostra as cores e seus contornos inteiros', async ({ page }) => {
+      await openFreshModel(page, 'layout-cores-e2e', 'nivel=god')
+      await page.getByText('Adicionar', { exact: true }).click()
+      await page.getByRole('button', { name: 'Caixa', exact: true }).click()
+      const colors = page.locator('.mld-inspector-properties .mld-paint-swatches > button')
+      await expect(colors).toHaveCount(15)
+      for (const size of [{ width: 1810, height: 900 }, ...SIZES]) {
+        await page.setViewportSize(size)
+        for (let index = 0; index < 15; index++) {
+          const color = colors.nth(index)
+          await color.scrollIntoViewIfNeeded()
+          await color.click()
+          await color.press('Shift+Tab')
+          await page.keyboard.press('Tab')
+          await expect(color).toBeFocused()
+          const clipped = await color.evaluate((button) => {
+            const rect = button.getBoundingClientRect()
+            const style = getComputedStyle(button)
+            const halo = Math.max(
+              4,
+              Number.parseFloat(style.outlineWidth) + Number.parseFloat(style.outlineOffset),
+            )
+            const result: string[] = []
+            for (let parent = button.parentElement; parent; parent = parent.parentElement) {
+              if (!/(auto|scroll|hidden|clip)/.test(getComputedStyle(parent).overflowX)) continue
+              const bounds = parent.getBoundingClientRect()
+              if (rect.left - halo < bounds.left || rect.right + halo > bounds.right)
+                result.push(
+                  `${parent.className}: ${rect.left - halo},${rect.right + halo} / ${bounds.left},${bounds.right}`,
+                )
+            }
+            return result
+          })
+          expect(clipped, `${size.width}px, cor ${index}: seleção e foco`).toEqual([])
+        }
+      }
+      await page.setViewportSize({ width: 1810, height: 900 })
+      await colors.nth(7).click()
+      await page.locator('.mld-workshop-inspector').screenshot({
+        path: `.cache/painel-direito-${hasTouch ? 'toque' : 'mouse'}.png`,
+      })
+    })
+  })
+}
 
 test('na aba Pintar, a coluna de ferramentas e a faixa de cores não cobrem nada nem o palco', async ({
   page,

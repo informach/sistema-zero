@@ -9,6 +9,7 @@ import {
   quaternionFromEulerRadians,
   transformDirection,
 } from '../scene/matrix'
+import { snapSceneMeasurement, snapSceneScale } from '../scene/measurementStep'
 import { SceneAxisHandles } from './SceneAxisHandles'
 import type { SceneTransformActions, SceneTransformTool } from './sceneViewportTypes'
 
@@ -19,11 +20,15 @@ export class SceneTransformGizmo {
   private tool: SceneTransformTool = 'select'
   private point: Vec3 | null = null
   private basis = identityMatrix()
+  private dimensions: Vec3 | null = null
+  private measurementOrigin: Vec3 | null = null
   private space: 'world' | 'local' = 'world'
   private owner: {
     frame: AffineMatrix
     inverse: AffineMatrix
     tool: Exclude<SceneTransformTool, 'select'>
+    dimensions: Vec3 | null
+    origin: Vec3
   } | null = null
   private movementStep: number | null = null
   private disposed = false
@@ -46,10 +51,18 @@ export class SceneTransformGizmo {
             const frame = this.frame(),
               inverse = affineInverse(frame)
             if (!inverse || !this.actions.begin()) return false
-            this.owner = { frame, inverse, tool }
+            this.owner = {
+              frame,
+              inverse,
+              tool,
+              dimensions: this.dimensions ? [...this.dimensions] : null,
+              origin: this.measurementOrigin
+                ? transformDirection(inverse, this.measurementOrigin)
+                : [0, 0, 0],
+            }
             return true
           },
-          preview: (value) => {
+          preview: (value, keyboardSteps) => {
             const owner = this.owner
             if (!owner) return false
             let delta: AffineMatrix
@@ -57,9 +70,19 @@ export class SceneTransformGizmo {
               delta = identityMatrix()
               let displacement = value
               if (this.movementStep !== null) {
-                const local = transformDirection(owner.inverse, value).map(
-                  (n) => Math.round(n / this.movementStep!) * this.movementStep!,
-                ) as Vec3
+                const direction = transformDirection(owner.inverse, value)
+                const magnitude = Math.max(...direction.map(Math.abs))
+                const local = direction.map((n, axis) => {
+                  if (Math.abs(n) <= magnitude * 1e-10) return 0
+                  const distance =
+                    keyboardSteps === undefined
+                      ? n
+                      : Math.sign(n) * this.movementStep! * keyboardSteps
+                  return (
+                    snapSceneMeasurement(owner.origin[axis]! + distance, this.movementStep) -
+                    owner.origin[axis]!
+                  )
+                }) as Vec3
                 displacement = transformDirection(owner.frame, local)
               }
               for (const axis of [0, 1, 2] as const) delta[12 + axis] = displacement[axis]
@@ -69,7 +92,10 @@ export class SceneTransformGizmo {
                 translation: [0, 0, 0],
                 rotation:
                   owner.tool === 'rotate' ? quaternionFromEulerRadians(value, 'XYZ') : [0, 0, 0, 1],
-                scale: owner.tool === 'scale' ? value : [1, 1, 1],
+                scale:
+                  owner.tool === 'scale'
+                    ? snapSceneScale(value, owner.dimensions, this.movementStep, keyboardSteps)
+                    : [1, 1, 1],
               })
               delta = affineMultiply(affineMultiply(owner.frame, local), owner.inverse)
             }
@@ -120,18 +146,31 @@ export class SceneTransformGizmo {
     this.enabled = enabled
     this.refresh()
   }
-  setTarget(point: Vec3 | null, basis?: AffineMatrix) {
+  setTarget(
+    point: Vec3 | null,
+    basis?: AffineMatrix,
+    dimensions: Vec3 | null = null,
+    origin: Vec3 | null = null,
+  ) {
     if (this.disposed) return
     const nextBasis = basis ?? identityMatrix()
     if (
       (point === null
         ? this.point === null
         : this.point && point.every((n, i) => n === this.point![i])) &&
-      nextBasis.every((n, i) => n === this.basis[i])
+      nextBasis.every((n, i) => n === this.basis[i]) &&
+      (dimensions === null
+        ? this.dimensions === null
+        : this.dimensions && dimensions.every((n, i) => n === this.dimensions![i])) &&
+      (origin === null
+        ? this.measurementOrigin === null
+        : this.measurementOrigin && origin.every((n, i) => n === this.measurementOrigin![i]))
     )
       return
     this.point = point ? [...point] : null
     this.basis = [...nextBasis]
+    this.dimensions = dimensions ? [...dimensions] : null
+    this.measurementOrigin = origin ? [...origin] : null
     if (!point) this.cancel()
     if (!this.dragging) this.refresh()
   }

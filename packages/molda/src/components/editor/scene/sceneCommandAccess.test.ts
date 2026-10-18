@@ -68,6 +68,7 @@ describe('família de cada comando', () => {
       'node.convert-mesh',
       'mode.mesh',
       'mesh.extrude',
+      'mesh.create',
       'mesh.inset',
       'mesh.plane-cut',
       'mesh.uv',
@@ -89,7 +90,14 @@ describe('o registro com o portão', () => {
 
   test('trancado some do trilho (nunca desligado), e o grupo que esvazia não vira legenda', () => {
     const rail = sceneRailGroups('model', {}, entry)
-    expect(rail.map((entry) => entry.group)).toEqual(['create', 'tools', 'piece', 'pinned'])
+    expect(rail.map((entry) => entry.group)).toEqual(['create', 'tools', 'pinned'])
+    // Organization stays available beside the tree at the entry tier, outside the rail.
+    expect(contextualSceneCommands('model', 'dock', {}, entry).map((c) => c.id)).toContain(
+      'node.group',
+    )
+    expect(contextualSceneCommands('model', 'dock', {}, nothing).map((c) => c.id)).not.toContain(
+      'node.group',
+    )
     const ids = rail.flatMap((entry) => entry.commands.map((command) => command.id))
     expect(ids).toContain('add.box')
     expect(ids).toContain('tool.move')

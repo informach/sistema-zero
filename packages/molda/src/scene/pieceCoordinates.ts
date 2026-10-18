@@ -1,5 +1,4 @@
 import type { Vec3 } from '../core/model'
-import { animationTrs } from './animationTrs'
 import { finishSceneCommand, requireEditableScene, sceneCommandSelection } from './commandContext'
 import type { MoldaSceneDocument } from './document'
 import { indexSceneDocument } from './documentIndex'
@@ -10,6 +9,7 @@ import {
   transformPoint,
 } from './matrix'
 import { sceneLocalBounds, sceneNodePivot, setSceneAuthoringPivot } from './pivot'
+import { sceneTransformTrs } from './transformTrs'
 import { requireScene, tuple } from './validation'
 
 export type SceneCoordinateField = 'position' | 'dimensions' | 'pivot' | 'rotation'
@@ -19,19 +19,11 @@ export function scenePieceCoordinates(document: MoldaSceneDocument, nodeId: stri
   const node = indexSceneDocument(document).scene.nodes.get(nodeId)
   requireScene(node, 'node', 'Escolha uma peça.')
   const matrix = composeTransform(node.transform)
-  const trs = animationTrs(matrix, {
-    space: 'local',
-    translation: [0, 0, 0],
-    rotation: [0, 0, 0, 1],
-    scale: [1, 1, 1],
-  })
-  requireScene(
-    trs.scale.every((n) => n > 0),
-    'scale',
-    'Use os controles especializados para eixos invertidos ou sem tamanho.',
-  )
+  const trs = sceneTransformTrs(node.transform)
   const bounds = sceneLocalBounds(document, nodeId)
-  const base = bounds?.base ?? [0, 0, 0]
+  const base = (bounds?.base ?? [0, 0, 0]).map((value, axis) =>
+    bounds && trs.scale[axis]! < 0 ? bounds.center[axis]! + (bounds.center[axis]! - value) : value,
+  ) as Vec3
   const localPivot = sceneNodePivot(node)
   const pivot = localPivot.map((value, axis) => (value - base[axis]!) * trs.scale[axis]!) as Vec3
   const point = transformPoint(matrix, localPivot)
@@ -51,8 +43,11 @@ export function scenePieceCoordinates(document: MoldaSceneDocument, nodeId: stri
     trs,
     bounds,
     localPivot,
+    base,
     position,
-    dimensions: (bounds?.size ?? [0, 0, 0]).map((value, axis) => value * trs.scale[axis]!) as Vec3,
+    dimensions: (bounds?.size ?? [0, 0, 0]).map(
+      (value, axis) => value * Math.abs(trs.scale[axis]!),
+    ) as Vec3,
     pivot,
     rotation: [x, y, z].map((value) => (value * 180) / Math.PI) as Vec3,
   }
@@ -69,7 +64,7 @@ export function setScenePieceCoordinates(
   const current = scenePieceCoordinates(document, nodeId)
   if (values.every((value, axis) => value === current[field][axis])) return document
   if (field === 'pivot') {
-    const base = current.bounds?.base ?? [0, 0, 0]
+    const base = current.base
     return setSceneAuthoringPivot(
       document,
       nodeId,
@@ -93,7 +88,10 @@ export function setScenePieceCoordinates(
         'dimensions',
         'O tamanho precisa ser maior que zero nos três eixos.',
       )
-      next.scale = values.map((value, axis) => value / current.bounds!.size[axis]!) as Vec3
+      next.scale = values.map(
+        (value, axis) =>
+          (Math.sign(current.trs.scale[axis]!) * value) / current.bounds!.size[axis]!,
+      ) as Vec3
     } else next.rotation = quaternionFromEulerXYZ(values)
     const fixed = transformPoint(composeTransform(current.node.transform), current.localPivot)
     const rotated = transformDirection(composeTransform(next), current.localPivot)

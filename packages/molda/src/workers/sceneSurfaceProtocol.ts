@@ -1,4 +1,5 @@
 import { isMoldaAssetId } from '../core/id'
+import type { Vec3 } from '../core/model'
 import type { SceneMeshGeometry } from '../scene/document'
 import { SCENE_LIMITS } from '../scene/limits'
 import { readSceneGeometry } from '../scene/readGeometry'
@@ -21,6 +22,7 @@ export interface SceneSurfaceApply {
   type: 'apply'
   requestId: number
   amount: number
+  offset?: Vec3
 }
 export type SceneSurfaceReply = SceneSurfaceToken &
   (
@@ -72,12 +74,15 @@ export function readSceneSurfaceInit(raw: unknown): SceneSurfaceInit {
 }
 
 export function readSceneSurfaceApply(raw: unknown): SceneSurfaceApply {
-  const row = v.record(raw, 'worker', ['type', 'requestId', 'amount'])
+  const row = v.record(raw, 'worker', ['type', 'requestId', 'amount', 'offset'])
   v.requireScene(row.type === 'apply', 'worker', 'Ajuste desconhecido.')
+  const values = row.offset === undefined ? undefined : v.tuple(row.offset, 3, 'offset')
+  const offset: Vec3 | undefined = values ? [values[0]!, values[1]!, values[2]!] : undefined
   return {
     type: 'apply',
     requestId: v.number(row.requestId, 'requestId', 1, Number.MAX_SAFE_INTEGER, true),
     amount: v.number(row.amount, 'amount'),
+    ...(offset ? { offset } : {}),
   }
 }
 

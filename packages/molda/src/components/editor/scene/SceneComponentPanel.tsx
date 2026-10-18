@@ -1,4 +1,5 @@
 import type { ButtonHTMLAttributes, ReactNode, Ref } from 'react'
+import { type SceneMeasurementStep, snapSceneMeasurement } from '../../../scene/measurementStep'
 import { ArrowLeft, ChevronRight, type LucideIcon } from '../../ui/icons'
 
 /** Compact controls share the host's type and color tokens with the rest of the workshop. */
@@ -23,6 +24,42 @@ export function ComponentButton({
       {Icon && <Icon aria-hidden="true" />}
       {children}
     </button>
+  )
+}
+
+export function ComponentNumberField({
+  label,
+  name,
+  value,
+  change,
+  inputRef,
+  measurementStep,
+}: {
+  label: string
+  name: string
+  value: number
+  change(value: number): void
+  inputRef?: Ref<HTMLInputElement>
+  measurementStep?: SceneMeasurementStep
+}) {
+  return (
+    <label className="mld-component-field">
+      {label}
+      <input
+        ref={inputRef}
+        name={name}
+        aria-label={label}
+        type="number"
+        step={measurementStep ?? 0.1}
+        className="min-h-11 w-full rounded-lg border border-mld-border bg-mld-bg px-3 text-mld-text focus-visible:outline-2 focus-visible:outline-mld-accent"
+        value={Number.isFinite(value) ? Number(value.toPrecision(12)) : ''}
+        onChange={(e) => change(e.target.value.trim() ? Number(e.target.value) : Number.NaN)}
+        onBlur={(e) => {
+          if (measurementStep && e.target.value.trim() && Number.isFinite(value))
+            change(snapSceneMeasurement(value, measurementStep))
+        }}
+      />
+    </label>
   )
 }
 

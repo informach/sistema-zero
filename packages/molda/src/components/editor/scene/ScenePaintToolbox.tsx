@@ -27,9 +27,6 @@ import type { useScenePaint } from './useScenePaint'
  */
 const PAINT_TILES = SCENE_TILE_GRID
 
-/** A bolinha de cada espessura (o tamanho aproximado do traço). */
-const DOT_SIZE = { 1: 'size-1.5', 2: 'size-2.5', 3: 'size-4' } as const
-
 const WIDTHS = [
   [1, 'paint.width-1'],
   [2, 'paint.width-2'],
@@ -39,10 +36,12 @@ const WIDTHS = [
 export function ScenePaintToolbox({
   paint,
   onDress,
+  onChooseTool,
 }: {
   paint: ReturnType<typeof useScenePaint>
   /** "Vestir com textura": só quando há galeria (dentro do app) e uma peça para vestir. */
   onDress?: () => void
+  onChooseTool?(): void
 }) {
   const { eraser, fill, picker, rotate, closeupTool, shape, brush } = paint
   const pencil = !eraser && !fill && !shape && !picker && !rotate && !closeupTool
@@ -51,6 +50,7 @@ export function ScenePaintToolbox({
     ['paint.fill', fill],
     ['paint.eraser', eraser],
     ['paint.picker', picker],
+    ['paint.closeup', closeupTool],
   ]
   const dress = sceneCommand('paint.dress')
   return (
@@ -74,7 +74,10 @@ export function ScenePaintToolbox({
                 keyHint={key}
                 aria-keyshortcuts={key}
                 title={`${command.label}${key ? ` (${key})` : ''}${command.help ? `. ${command.help}` : ''}`}
-                onClick={() => SCENE_PAINT_ACTIONS[id](paint)}
+                onClick={() => {
+                  onChooseTool?.()
+                  SCENE_PAINT_ACTIONS[id](paint)
+                }}
               />
             )
           })}
@@ -90,10 +93,7 @@ export function ScenePaintToolbox({
           className={steadyWhileDrawing(paint, 'min-w-0')}
         >
           <legend className="mld-kicker mb-2">{SCENE_PAINT_COPY.widths}</legend>
-          {/*
-           * Três bolinhas num segmentado (o trilho do Pinta e os prints): o nome Fino/Médio/Grosso
-           * é o nome acessível e o `title`. Em palavras, as três ocupavam 144px do trilho.
-           */}
+          {/* O número é a largura real em pixels, como no Pinta Pixelart. */}
           <div className="mld-width-seg">
             {WIDTHS.map(([size, id]) => {
               const command = sceneCommand(id)
@@ -108,11 +108,14 @@ export function ScenePaintToolbox({
                   title={key ? `${command.label} (${key})` : command.label}
                   onClick={() => SCENE_PAINT_ACTIONS[id](paint)}
                 >
-                  <span aria-hidden="true" className={DOT_SIZE[size]} />
+                  {size}
                 </button>
               )
             })}
           </div>
+          <p className="mt-1 text-center text-xs font-bold text-mld-muted" aria-live="polite">
+            {SCENE_PAINT_COPY.width[brush]}
+          </p>
         </fieldset>
       )}
       <SceneTile
@@ -138,7 +141,7 @@ export function ScenePaintToolbox({
           <ChevronDown aria-hidden="true" />
         </summary>
         <div className={PAINT_TILES}>
-          {(['paint.rotate', 'paint.closeup'] as const).map((id) => {
+          {(['paint.rotate'] as const).map((id) => {
             const command = sceneCommand(id)
             return (
               <SceneTile
@@ -146,8 +149,11 @@ export function ScenePaintToolbox({
                 data-paint-tool={id}
                 icon={command.icon}
                 label={command.label}
-                pressed={id === 'paint.rotate' ? rotate : closeupTool}
-                onClick={() => SCENE_PAINT_ACTIONS[id](paint)}
+                pressed={rotate}
+                onClick={() => {
+                  onChooseTool?.()
+                  SCENE_PAINT_ACTIONS[id](paint)
+                }}
               />
             )
           })}

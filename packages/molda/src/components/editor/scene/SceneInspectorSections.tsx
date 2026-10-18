@@ -18,6 +18,7 @@ export function SceneInspectorSections({
   children: ReactNode
 }) {
   const compact = useMediaQuery('(max-width: 1100px)')
+  const joinedScroll = compact && mode === 'paint'
   const id = useId()
   const [tab, setTab] = useState<'pieces' | 'details' | 'overview'>(
     mode === 'animation' ? 'overview' : 'details',
@@ -25,12 +26,12 @@ export function SceneInspectorSections({
   useEffect(() => setTab(mode === 'animation' ? 'overview' : 'details'), [mode])
   return (
     <div
-      className="mld-inspector-sections flex min-h-0 flex-1 flex-col gap-2 overflow-hidden"
+      className="mld-inspector-sections flex min-h-0 flex-1 flex-col gap-2 overflow-hidden px-1.5 pt-3 pb-2"
       data-activity={mode}
     >
       {compact && (
         <div
-          className="flex shrink-0 gap-1 rounded-full bg-mld-bg p-1"
+          className="mx-1.5 flex shrink-0 gap-1 rounded-full bg-mld-bg p-1"
           role="tablist"
           aria-label="Painel da criação"
           onKeyDown={(event) => {
@@ -93,7 +94,7 @@ export function SceneInspectorSections({
       )}
       <div
         className={
-          compact && mode === 'paint'
+          joinedScroll
             ? 'mld-inspector-content mld-scroll-y min-h-0 flex-1 overflow-y-auto'
             : 'contents'
         }
@@ -113,7 +114,7 @@ export function SceneInspectorSections({
               compact ? `${id}-tab-${mode === 'animation' ? 'overview' : 'details'}` : undefined
             }
             hidden={compact && tab !== (mode === 'animation' ? 'overview' : 'details')}
-            className="mld-inspector-overview mld-scroll-y shrink-0 overflow-y-auto"
+            className={`mld-inspector-overview shrink-0 px-1.5 ${joinedScroll ? '' : 'mld-scroll-y overflow-y-auto'}`}
           >
             {overview}
           </section>
@@ -124,7 +125,7 @@ export function SceneInspectorSections({
           aria-label={compact ? undefined : 'Lista de peças'}
           aria-labelledby={compact ? `${id}-tab-pieces` : undefined}
           hidden={compact && tab !== 'pieces'}
-          className={`mld-inspector-pieces mld-scroll-y overflow-y-auto ${compact ? 'min-h-0 flex-1' : ''}`}
+          className={`mld-inspector-pieces mld-scroll-y overflow-y-auto px-1.5 ${compact ? 'min-h-0 flex-1' : ''}`}
         >
           {pieces}
         </section>
@@ -134,7 +135,7 @@ export function SceneInspectorSections({
           aria-label={compact ? undefined : 'Ajustes do contexto'}
           aria-labelledby={compact ? `${id}-tab-details` : undefined}
           hidden={compact && tab !== 'details'}
-          className="mld-inspector-properties mld-scroll-y min-h-0 flex-1 space-y-2 overflow-y-auto"
+          className={`mld-inspector-properties min-h-0 flex-1 space-y-2 px-1.5 ${joinedScroll ? '' : 'mld-scroll-y overflow-y-auto'}`}
         >
           {children}
         </section>

@@ -142,7 +142,10 @@ describe('registro de comandos da oficina', () => {
 
   test('os grupos do trilho saem na ordem declarada, e grupo vazio não vira legenda solta', () => {
     const grupos = sceneRailGroups('model').map((entry) => entry.group)
-    expect(grupos).toEqual(['create', 'tools', 'piece', 'edit', 'pinned'])
+    // Group actions now live beside the hierarchy, leaving no piece section in the rail.
+    expect(grupos).toEqual(['create', 'tools', 'edit', 'pinned'])
+    expect(sceneCommand('node.group').slot).toBe('dock')
+    expect(sceneCommand('node.ungroup').slot).toBe('dock')
     for (const entry of sceneRailGroups('model')) expect(entry.commands.length).toBeGreaterThan(0)
   })
 

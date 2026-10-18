@@ -2,13 +2,15 @@ import { expect, test } from 'bun:test'
 import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import { COPY } from '../../../core/copy'
 import { structuredBytes } from '../../../core/structuredBytes'
+import { addScenePrimitive } from '../../../scene/commands'
+import { createSceneProject } from '../../../scene/createProject'
+import type { MoldaSceneDocument } from '../../../scene/document'
 import { createDocumentEditorStore } from '../../../state/editorStore'
 import { animatedScene } from '../../../testing/sceneAnimation'
 import { sceneViewportProbe } from '../../../testing/sceneViewportProbe'
 import { SceneWorkshop } from './SceneWorkshop'
 
-function setup() {
-  const source = animatedScene()
+function setup(source: MoldaSceneDocument = animatedScene()) {
   const editor = createDocumentEditorStore({
     asset: source,
     sizeOf: structuredBytes,
@@ -28,6 +30,35 @@ function setup() {
     },
   }
 }
+
+test('replacing an editor with the same document cancels a pending UV edit in its original owner', async () => {
+  const f = setup()
+  const replacement = createDocumentEditorStore({
+    asset: f.source,
+    sizeOf: structuredBytes,
+    persistence: { save: async () => undefined },
+    autosaveMs: 60_000,
+  })
+  try {
+    fireEvent.click(screen.getByRole('button', { name: 'Escolher corpo' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Pintar' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Folha de pintura' }))
+    const sheet = await screen.findByRole('region', { name: 'Área Folha de pintura' })
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Ajustar mapa' }))
+    const canvas = await within(sheet).findByRole('button', { name: COPY.scene.uvCanvasControl })
+    fireEvent.keyDown(canvas, { key: 'Enter' })
+    fireEvent.keyDown(canvas, { key: 'ArrowRight' })
+    f.view.rerender(<SceneWorkshop editor={replacement} viewportFactory={f.probe.factory} />)
+    fireEvent.keyDown(canvas, { key: 'Enter' })
+    expect(f.editor.getState().saveSnapshot()).toBe(f.source)
+    expect(f.editor.getState().canUndo).toBe(false)
+    expect(replacement.getState().saveSnapshot()).toBe(f.source)
+    expect(replacement.getState().canUndo).toBe(false)
+  } finally {
+    f.close()
+    replacement.getState().dispose()
+  }
+})
 
 test('contextual mesh and UV panels preserve the scene and live viewport; opening UV never converts a primitive', async () => {
   const f = setup()
@@ -51,7 +82,8 @@ test('contextual mesh and UV panels preserve the scene and live viewport; openin
       ),
     )
     const area = await screen.findByRole('region', { name: 'Pintura da face' })
-    await within(area).findByLabelText(COPY.scene.uvFace)
+    await within(area).findByRole('img', { name: COPY.scene.uvCanvas })
+    expect(within(area).queryByLabelText(COPY.scene.uvFace)).toBeNull()
     expect(f.editor.getState().content).toBe(f.source)
     expect(f.editor.getState().canUndo).toBe(false)
     expect(f.probe.ports).toHaveLength(ports)
@@ -60,6 +92,39 @@ test('contextual mesh and UV panels preserve the scene and live viewport; openin
     expect(screen.queryByRole('region', { name: 'Pintura da face' })).toBeNull()
     expect(f.editor.getState().saveSnapshot()).toBe(f.source)
     expect(f.probe.ports).toHaveLength(ports)
+  } finally {
+    f.close()
+  }
+})
+
+test('opening the UV sheet after touching a native cylinder cap keeps that side selected', async () => {
+  const source = addScenePrimitive(
+    createSceneProject({ kind: 'empty', name: 'Roda' }),
+    'cylinder',
+    'roda',
+  )
+  const f = setup(source)
+  try {
+    fireEvent.click(screen.getByRole('button', { name: 'Escolher roda' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Pintar' }))
+    act(() =>
+      f.probe.ports.at(-1)!.callbacks.select(source.nodes.at(-1)!.id, false, { faceId: 'top' }),
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Folha de pintura' }))
+    const sheet = await screen.findByRole('region', { name: 'Área Folha de pintura' })
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Ajustar mapa' }))
+    fireEvent.click(await within(sheet).findByRole('button', { name: 'Seleção e ajustes' }))
+    const summary = screen.getByText(COPY.scene.uvAdvanced, { selector: 'summary' })
+    act(() => {
+      const details = summary.closest('details')!
+      details.open = true
+      fireEvent(details, new Event('toggle'))
+    })
+    const selected = await screen.findByRole<HTMLSelectElement>('combobox', {
+      name: COPY.scene.uvFace,
+    })
+    expect(selected.value.startsWith('top:')).toBe(true)
+    expect(f.editor.getState().canUndo).toBe(false)
   } finally {
     f.close()
   }
@@ -99,6 +164,35 @@ test('curves use exact imported times, preview without saving, cancel and confir
     fireEvent.click(within(area).getByRole('button', { name: 'Conferir curva' }))
     expect(within(area).getByRole('alert').textContent).toContain('Já existe uma pose')
     expect(f.editor.getState().canUndo).toBe(false)
+  } finally {
+    f.close()
+  }
+})
+
+test('the unified sheet keeps the viewport and primitive intact, restores zoom and hides numeric UV controls', async () => {
+  const f = setup()
+  try {
+    fireEvent.click(screen.getByRole('button', { name: 'Escolher corpo' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Pintar' }))
+    const ports = f.probe.ports.length
+    fireEvent.click(screen.getByRole('button', { name: 'Folha de pintura' }))
+    const sheet = await screen.findByRole('region', { name: 'Área Folha de pintura' })
+    await within(sheet).findByRole('button', { name: COPY.scene.paintCanvas })
+    expect(screen.queryByRole('spinbutton')).toBeNull()
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Aumentar zoom da folha' }))
+    const zoom = within(sheet).getByLabelText('Zoom da folha', { exact: true }).textContent
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Ajustar mapa' }))
+    await within(sheet).findByRole('button', { name: COPY.scene.uvCanvasControl })
+    expect(within(sheet).getByLabelText('Zoom da folha', { exact: true }).textContent).toBe(zoom)
+    expect(within(sheet).queryByRole('spinbutton')).toBeNull()
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Pintar na folha' }))
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Fechar folha de pintura' }))
+    expect(screen.queryByRole('region', { name: 'Área Folha de pintura' })).toBeNull()
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Folha de pintura' }))
+    expect(f.editor.getState().canUndo).toBe(false)
+    expect(f.editor.getState().saveSnapshot()).toBe(f.source)
+    expect(f.probe.ports).toHaveLength(ports)
+    expect(f.probe.ports.at(-1)!.disposed).toBe(0)
   } finally {
     f.close()
   }

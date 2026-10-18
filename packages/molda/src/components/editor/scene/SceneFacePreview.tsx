@@ -11,6 +11,7 @@ export interface SceneFacePreviewProps {
   confirm(): void
   cancel(): void
   compact?: boolean
+  currentAmount?: number
 }
 
 export function SceneFacePreview({
@@ -20,8 +21,13 @@ export function SceneFacePreview({
   confirm,
   cancel,
   compact = false,
+  currentAmount,
 }: SceneFacePreviewProps) {
-  const [raw, setRaw] = useState('0')
+  const [draft, setDraft] = useState({ source: currentAmount, text: '0' })
+  const raw =
+    currentAmount !== undefined && currentAmount !== draft.source
+      ? String(Number(currentAmount.toPrecision(12)))
+      : draft.text
   const input = useRef<HTMLInputElement>(null)
   useEffect(() => {
     input.current?.focus()
@@ -63,8 +69,8 @@ export function SceneFacePreview({
       <p className="text-sm text-mld-muted">
         {compact
           ? {
-              extrude: 'Puxe para criar uma parte nova.',
-              inset: 'Crie uma borda dentro da face.',
+              extrude: copy.extrudeHandlesHint,
+              inset: copy.insetSelectionHint,
               thickness: 'Dê volume às faces.',
               subdivide: 'Crie partes menores para modelar.',
             }[tool]
@@ -98,8 +104,16 @@ export function SceneFacePreview({
           className="min-h-11 w-full rounded-lg border border-mld-border bg-mld-bg px-3 text-mld-text focus-visible:outline-2 focus-visible:outline-mld-accent"
           onChange={(event) => {
             const value = event.target.value
-            setRaw(value)
             const number = value === '' ? 0 : Number(value)
+            setDraft({
+              source:
+                currentAmount === undefined
+                  ? undefined
+                  : validAmount(number)
+                    ? number
+                    : currentAmount,
+              text: value,
+            })
             if (validAmount(number)) update(inset ? number / 100 : number)
           }}
         />

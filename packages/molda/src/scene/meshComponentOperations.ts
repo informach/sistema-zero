@@ -341,6 +341,40 @@ export function fillMeshHole(
     'edges',
     'Escolha um único contorno fechado por vez.',
   )
+  return createMeshFaceFromCycle(mesh, cycle, material, nextId)
+}
+
+/** Shared face construction for hole filling and faces between selected edges or points. */
+export function createMeshFaceFromCycle(
+  mesh: SceneMeshGeometry,
+  vertexIds: readonly string[],
+  material?: string,
+  nextId = newId,
+): MeshOperationResult {
+  let cycle = [...vertexIds]
+  requireScene(
+    cycle.length >= 3 &&
+      cycle.length <= SCENE_LIMITS.faceCorners &&
+      new Set(cycle).size === cycle.length,
+    'vertices',
+    'Escolha pelo menos três pontos diferentes para criar uma face.',
+  )
+  for (const id of cycle)
+    requireScene(Object.hasOwn(mesh.vertices, id), 'vertices', 'Esse ponto não existe mais.')
+  const topology = indexMeshEdges(mesh)
+  const chosen = cycle.map((a, i) => meshEdgeKey(a, cycle[(i + 1) % cycle.length]!))
+  requireScene(
+    chosen.every((key) => (topology.edges.get(key)?.length ?? 0) <= 1),
+    'edges',
+    'Essa face usaria uma linha que já liga duas faces. Escolha linhas de uma borda aberta.',
+  )
+  requireScene(
+    !Object.values(mesh.faces).some((face) =>
+      cycle.every((id) => face.corners.some((c) => c.vertexId === id)),
+    ),
+    'faces',
+    'Já existe uma face nessa região. Escolha uma região aberta para criar outra.',
+  )
   // A construction edge has no winding. Any neighboring face can orient the whole contour.
   const borderAt = cycle.findIndex((a, i) =>
     topology.edges.has(meshEdgeKey(a, cycle[(i + 1) % cycle.length]!)),

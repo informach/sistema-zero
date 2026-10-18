@@ -1,37 +1,12 @@
-import { type Ref, useRef } from 'react'
+import { COPY } from '../../../core/copy'
 import type { Vec3 } from '../../../core/model'
-import { ComponentButton, ComponentPage } from './SceneComponentPanel'
+import {
+  ComponentButton,
+  ComponentPage,
+  ComponentNumberField as NumberField,
+} from './SceneComponentPanel'
 import type { SceneComponentToolsProps } from './SceneComponentTools'
-
-function NumberField({
-  label,
-  name,
-  value,
-  change,
-  inputRef,
-}: {
-  label: string
-  name: string
-  value: number
-  change(value: number): void
-  inputRef?: Ref<HTMLInputElement>
-}) {
-  return (
-    <label className="mld-component-field">
-      {label}
-      <input
-        ref={inputRef}
-        name={name}
-        aria-label={label}
-        type="number"
-        step="0.1"
-        className="min-h-11 w-full rounded-lg border border-mld-border bg-mld-bg px-3 text-mld-text focus-visible:outline-2 focus-visible:outline-mld-accent"
-        value={Number.isFinite(value) ? Number(value.toPrecision(12)) : ''}
-        onChange={(e) => change(e.target.value.trim() ? Number(e.target.value) : Number.NaN)}
-      />
-    </label>
-  )
-}
+import { SceneLoopCutControls } from './SceneLoopCutControls'
 
 /** The same contextual panel owns its preview, selection instructions, error and atomic Apply. */
 export function SceneComponentOperation({
@@ -39,13 +14,17 @@ export function SceneComponentOperation({
   selection,
   onBack,
   onKnife,
-}: Pick<SceneComponentToolsProps, 'operation' | 'selection' | 'onKnife'> & { onBack(): void }) {
-  const positionInput = useRef<HTMLInputElement>(null)
+  measurementStep = 1,
+}: Pick<SceneComponentToolsProps, 'operation' | 'selection' | 'onKnife' | 'measurementStep'> & {
+  onBack(): void
+}) {
   const spec = operation.spec
   if (!spec) return null
   const title = {
     mirror: 'Espelhar',
     duplicate: 'Duplicar',
+    extrude: 'Puxar',
+    create: COPY.scene.createFaceEdge.label,
     fill: 'Fechar buraco',
     ring: 'Cortar',
   }[spec.kind]
@@ -59,13 +38,25 @@ export function SceneComponentOperation({
       description={
         spec.kind === 'mirror'
           ? 'Crie o outro lado igualzinho.'
-          : spec.kind === 'duplicate'
-            ? 'Crie uma cópia das faces na mesma peça.'
-            : spec.kind === 'ring'
-              ? 'Adicione linhas sem separar a peça.'
-              : 'Crie uma face no contorno escolhido.'
+          : spec.kind === 'create'
+            ? COPY.scene.createFaceEdge.description
+            : spec.kind === 'extrude'
+              ? selection?.mode === 'edge'
+                ? 'Puxe as linhas para criar novas faces ligadas a elas.'
+                : 'Puxe os pontos para criar novas linhas ligadas a eles.'
+              : spec.kind === 'duplicate'
+                ? 'Crie uma cópia das faces na mesma peça.'
+                : spec.kind === 'ring'
+                  ? 'Adicione linhas sem separar a peça.'
+                  : 'Crie uma face no contorno escolhido.'
       }
-      backLabel="Faces"
+      backLabel={
+        spec.kind === 'extrude' || spec.kind === 'create'
+          ? selection?.mode === 'edge'
+            ? 'Linhas'
+            : 'Pontos'
+          : 'Faces'
+      }
       onBack={back}
       footer={
         <div className="mld-component-grid">
@@ -136,17 +127,20 @@ export function SceneComponentOperation({
           </div>
         </>
       )}
-      {spec.kind === 'duplicate' && (
+      {(spec.kind === 'duplicate' || spec.kind === 'extrude') && (
         <>
           <div className="mld-component-note">
-            Mova a cópia para outro lugar. Arraste as setas de Mover ou ajuste os valores abaixo.
+            {spec.kind === 'extrude'
+              ? 'Arraste as setas de Mover ou ajuste quanto puxar em cada eixo.'
+              : 'Mova a cópia para outro lugar. Arraste as setas de Mover ou ajuste os valores abaixo.'}
           </div>
           {(['X', 'Y', 'Z'] as const).map((axis, i) => (
             <NumberField
               key={axis}
-              label={`Mover cópia ${axis}`}
-              name={`componentDuplicate${axis}`}
+              label={`${spec.kind === 'extrude' ? 'Puxar' : 'Mover cópia'} ${axis}`}
+              name={`component${spec.kind === 'extrude' ? 'Extrude' : 'Duplicate'}${axis}`}
               value={spec.offset[i]!}
+              measurementStep={spec.kind === 'extrude' ? measurementStep : undefined}
               change={(n) => {
                 const offset: Vec3 = [...spec.offset]
                 offset[i] = n
@@ -155,17 +149,28 @@ export function SceneComponentOperation({
             />
           ))}
           <p className="mld-component-description">
-            Aplicar confirma a cópia e o movimento juntos. Cancelar conserva as faces originais.
+            {spec.kind === 'extrude'
+              ? 'Aplicar cria a parte nova e mantém a ligação com a peça. Cancelar descarta a prévia.'
+              : 'Aplicar confirma a cópia e o movimento juntos. Cancelar conserva as faces originais.'}
           </p>
         </>
       )}
-      {spec.kind === 'fill' && (
+      {(spec.kind === 'fill' || spec.kind === 'create') && (
         <>
           <div className="mld-component-note">
-            <strong>Escolha as linhas ao redor do buraco.</strong>
-            <p>Use Shift para somar as linhas de um único contorno fechado.</p>
+            <strong>
+              {spec.kind === 'create'
+                ? selection?.mode === 'vertex'
+                  ? COPY.scene.createFaceEdge.vertexHint
+                  : COPY.scene.createFaceEdge.edgeHint
+                : 'Escolha as linhas ao redor do buraco.'}
+            </strong>
+            <p>Use Shift para escolher várias partes.</p>
           </div>
-          <p role="status">{selection?.ids.length ?? 0} linhas escolhidas</p>
+          <p role="status">
+            {selection?.ids.length ?? 0}{' '}
+            {selection?.mode === 'vertex' ? 'pontos escolhidos' : 'linhas escolhidas'}
+          </p>
           {operation.materials.length > 1 && (
             <label className="mld-component-field">
               Pintura da nova face
@@ -190,7 +195,9 @@ export function SceneComponentOperation({
             </label>
           )}
           <p className="mld-component-description">
-            O contorno precisa ser plano. A pintura das faces ao redor é preservada.
+            {spec.kind === 'create'
+              ? COPY.scene.createFaceEdge.preserveHint
+              : 'O contorno precisa ser plano. A pintura das faces ao redor é preservada.'}
           </p>
         </>
       )}
@@ -214,47 +221,10 @@ export function SceneComponentOperation({
             <p>2. Ajuste onde cortar.</p>
             <p>A prévia mostra por onde o corte passa.</p>
           </div>
-          <div className="mld-component-field">
-            Quantidade de cortes
-            <div className="mld-component-selection">
-              <ComponentButton
-                aria-label="Diminuir quantidade de cortes"
-                disabled={spec.count <= 1}
-                onClick={() => operation.configure({ ...spec, count: spec.count - 1, offset: 0 })}
-              >
-                −
-              </ComponentButton>
-              <output aria-label="Quantidade de cortes" className="mld-component-value">
-                {spec.count}
-              </output>
-              <ComponentButton
-                aria-label="Aumentar quantidade de cortes"
-                disabled={spec.count >= 16}
-                onClick={() => operation.configure({ ...spec, count: spec.count + 1, offset: 0 })}
-              >
-                +
-              </ComponentButton>
-            </div>
-          </div>
-          <h4>Onde cortar</h4>
-          <div className="mld-component-grid">
-            <ComponentButton
-              tone={spec.offset === 0 ? 'primary' : 'neutral'}
-              aria-pressed={spec.offset === 0}
-              onClick={() => operation.configure({ ...spec, offset: 0 })}
-            >
-              No meio
-            </ComponentButton>
-            <ComponentButton onClick={() => positionInput.current?.focus()}>
-              Ajustar
-            </ComponentButton>
-          </div>
-          <NumberField
-            inputRef={positionInput}
-            label="Posição do conjunto (%)"
-            name="componentRingOffset"
-            value={spec.offset * 100}
-            change={(offset) => operation.configure({ ...spec, offset: offset / 100 })}
+          <SceneLoopCutControls
+            count={spec.count}
+            offset={spec.offset}
+            change={(count, offset) => operation.configure({ ...spec, count, offset })}
           />
           <p className="mld-component-description">
             De 1 a 16 cortes. O corte em volta segue uma faixa de faces com 4 lados. Marque uma

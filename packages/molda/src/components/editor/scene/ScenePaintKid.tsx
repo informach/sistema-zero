@@ -1,7 +1,7 @@
 /**
  * A coluna da aba Pintar, no lugar das ferramentas de modelar: a caixa de ferramentas, o aviso
- * de trabalho em andamento, o erro da pintura e o consentimento das faces tortas. A faixa de
- * cores (`ScenePaintPalette`) fica embaixo do palco, onde o Animar tem a linha do tempo.
+ * de trabalho em andamento e o erro da pintura. As cores e a preparação das faces ficam no
+ * painel direito (`ScenePaintPalette`).
  */
 import { useMemo, useRef, useState } from 'react'
 import { COPY } from '../../../core/copy'
@@ -18,7 +18,7 @@ import { ScenePaintToolbox } from './ScenePaintToolbox'
 import type { useSceneWorkshop } from './useSceneWorkshop'
 
 export function ScenePaintColumn({ workshop }: { workshop: ReturnType<typeof useSceneWorkshop> }) {
-  const { paint, paintIssue } = workshop
+  const { paint } = workshop
   const copy = COPY.scene
   // As texturas moram na galeria do app: a oficina montada sozinha não oferece o "Vestir".
   const app = useOptionalMoldaApp()
@@ -53,6 +53,9 @@ export function ScenePaintColumn({ workshop }: { workshop: ReturnType<typeof use
     <>
       <ScenePaintToolbox
         paint={paint}
+        onChooseTool={() => {
+          if (workshop.area === 'uv') workshop.openArea('sheet')
+        }}
         {...(canDress
           ? {
               onDress: () => {
@@ -104,14 +107,6 @@ export function ScenePaintColumn({ workshop }: { workshop: ReturnType<typeof use
         <p role="alert" className="text-sm text-mld-danger">
           {paint.error}
         </p>
-      )}
-      {paintIssue && (
-        <div role="status" className="space-y-2">
-          <p className="text-sm">{SCENE_PAINT_COPY.crooked(paintIssue.faces.length)}</p>
-          <Button className="text-sm" onClick={workshop.splitCrookedAndPaint}>
-            {SCENE_PAINT_COPY.split}
-          </Button>
-        </div>
       )}
     </>
   )

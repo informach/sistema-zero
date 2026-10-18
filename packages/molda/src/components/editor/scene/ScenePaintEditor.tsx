@@ -27,7 +27,7 @@ export function ScenePaintEditor({ workshop }: { workshop: ReturnType<typeof use
   const copy = COPY.scene
   const rgba: ScenePaintRgba = typeof color === 'number' ? [0, 0, 0, 255] : color
   return (
-    <details className="mld-disclosure" open>
+    <details className="mld-disclosure" open={!paint.surfaceMode}>
       <summary>{SCENE_PAINT_COPY.more}</summary>
       <div className="space-y-3 pt-2">
         {!data && primary?.kind !== 'mesh' && (

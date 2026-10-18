@@ -234,3 +234,70 @@ test('UV corner keyboard placement supports precise increments, Escape and one e
     view.unmount()
   }
 })
+
+test('visual UV snaps points and whole selections to real pixels, keeps clicks selecting and cancels moved selections', () => {
+  const mesh = makeSceneGridGeometry(2)
+  const corners: Vec2[] = [],
+    moves: Vec2[] = [],
+    selections: string[] = []
+  const view = render(
+    <SceneUvCanvas
+      mesh={mesh}
+      ids={['f_0_0']}
+      onSelect={(id) => selections.push(id)}
+      corner={{
+        sourceKey: 'pixels',
+        faceId: 'f_0_0',
+        corner: 0,
+        ids: ['f_0_0'],
+        step: 0.01,
+        pixelStep: [1 / 16, 1 / 8],
+        onChoose: () => {},
+        onApply: (_i, uv) => corners.push(uv),
+        onMove: (offset) => moves.push(offset),
+      }}
+    />,
+  )
+  const button = screen.getByRole('button', { name: COPY.scene.uvCanvasControl })
+  const canvas = screen.getByRole('img', { name: COPY.scene.uvCanvas })
+  const rect = spyOn(canvas, 'getBoundingClientRect').mockReturnValue(new DOMRect(0, 0, 200, 200))
+  const captured = new Set<number>()
+  Object.assign(button, {
+    setPointerCapture: (id: number) => captured.add(id),
+    hasPointerCapture: (id: number) => captured.has(id),
+    releasePointerCapture: (id: number) => captured.delete(id),
+  })
+  const pointer = (kind: 'pointerDown' | 'pointerUp' | 'pointerMove', x: number, y: number) =>
+    fireEvent[kind](button, { pointerId: 1, button: 0, clientX: x, clientY: y })
+  try {
+    pointer('pointerDown', 12, 188)
+    pointer('pointerUp', 30, 170)
+    expect(corners).toEqual([[0.125, 0.125]])
+    fireEvent.click(button, { detail: 1, clientX: 30, clientY: 170 })
+    expect(selections).toEqual([])
+    pointer('pointerDown', 55, 145)
+    pointer('pointerMove', 71, 129)
+    expect(moves).toEqual([])
+    pointer('pointerUp', 73, 127)
+    expect(moves).toEqual([[0.125, 0.125]])
+    fireEvent.click(button, { detail: 1, clientX: 73, clientY: 127 })
+    pointer('pointerDown', 55, 145)
+    pointer('pointerMove', 73, 127)
+    fireEvent.keyDown(button, { key: 'Escape' })
+    pointer('pointerUp', 73, 127)
+    expect(moves).toHaveLength(1)
+    fireEvent.click(button, { detail: 1, clientX: 73, clientY: 127 })
+    fireEvent.click(button, { detail: 1, clientX: 145, clientY: 55 })
+    // This fixture intentionally overlaps the UVs; clicking cycles to the next face.
+    expect(selections).toEqual(['f_1_0'])
+    fireEvent.keyDown(button, { key: ' ' })
+    fireEvent.keyDown(button, { key: 'ArrowRight' })
+    fireEvent.keyDown(button, { key: 'ArrowUp' })
+    fireEvent.keyDown(button, { key: 'Enter' })
+    expect(corners.at(-1)).toEqual([1 / 16, 1 / 8])
+    expect(captured.size).toBe(0)
+  } finally {
+    view.unmount()
+    rect.mockRestore()
+  }
+})

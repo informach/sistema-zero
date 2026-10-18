@@ -187,3 +187,39 @@ test('rotation rings keep their CSS radius across zoom, follow local parent axes
     f.close()
   }
 })
+
+test('size handles snap actual dimensions to whole units, keyboard steps work, and fractional precision uses tenths', () => {
+  const f = setup()
+  try {
+    f.gizmo.setTarget([0, 0, 0], identityMatrix(), [2, 3, 4])
+    f.gizmo.setMovementStep(1)
+    f.gizmo.setTool('scale')
+    f.gizmo.draw()
+    const h = f.handle('Tamanho no eixo X')
+    h.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'ArrowRight' }))
+    expect(f.previews.at(-1)![0] * 2).toBe(3)
+    expect(f.previews.at(-1)![5] * 3).toBe(3)
+    expect(f.previews.at(-1)![10] * 4).toBe(4)
+    f.pointer(h, 'pointerdown', 675, 400)
+    f.pointer(h, 'pointermove', 745, 400)
+    expect(f.previews.at(-1)![0] * 2).toBe(3)
+    f.pointer(h, 'pointerup', 745, 400)
+    f.gizmo.setMovementStep(0.1)
+    h.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'ArrowRight' }))
+    expect(f.previews.at(-1)![0] * 2).toBeCloseTo(2.1, 12)
+    f.gizmo.setMovementStep(1)
+    f.gizmo.setTool('move')
+    f.handle('Mover no eixo X').dispatchEvent(
+      new KeyboardEvent('keydown', { bubbles: true, key: 'ArrowRight' }),
+    )
+    expect(f.previews.at(-1)![12]).toBe(1)
+    f.gizmo.setTarget([0, 0, 0], identityMatrix(), [2, 3, 4], [0.25, 0, 0.25])
+    f.handle('Mover no eixo X').dispatchEvent(
+      new KeyboardEvent('keydown', { bubbles: true, key: 'ArrowRight' }),
+    )
+    expect(f.previews.at(-1)![12] + 0.25).toBe(1)
+    expect(f.previews.at(-1)![14]).toBe(0)
+  } finally {
+    f.close()
+  }
+})

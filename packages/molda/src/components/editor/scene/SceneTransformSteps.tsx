@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { Vec3 } from '../../../core/model'
 import { SCENE_SHELL_COPY } from '../../../core/sceneShellCopy'
+import { transformSceneNodes } from '../../../scene/commands'
 import { selectSceneSubtrees } from '../../../scene/graph'
 import {
   affineMultiply,
@@ -9,10 +10,11 @@ import {
   quaternionFromEulerXYZ,
   transformPoint,
 } from '../../../scene/matrix'
+import { sceneMeasurementStepDelta } from '../../../scene/measurementTransform'
 import { placeSceneNodesOnGround } from '../../../scene/placement'
 import { Button } from '../../ui/Button'
 import { ArrowDownToLine, ArrowUpFromLine, Minus, Plus } from '../../ui/icons'
-import { adjustScene } from './sceneAdjustment'
+import { adjustScene, preserveSceneBase } from './sceneAdjustment'
 import type { useSceneWorkshop } from './useSceneWorkshop'
 
 const AXIS_KEYS = ['x', 'y', 'z'] as const
@@ -32,11 +34,9 @@ export function SceneTransformSteps({
   if (tool !== 'move' && tool !== 'rotate' && tool !== 'scale') return null
   const axes = ['Lado · X', 'Altura · Y', 'Frente e fundo · Z']
   const toolLabel = { move: 'Mover', rotate: 'Girar', scale: 'Tamanho' }[tool]
-  function apply(values: Vec3) {
+  function rotate(values: Vec3) {
     if (workshop.mode !== 'animation') {
-      run((source) =>
-        adjustScene(source, selected, tool as 'move' | 'rotate' | 'scale', values, keepBase),
-      )
+      run((source) => adjustScene(source, selected, 'rotate', values))
       return
     }
     const pose = workshop.animationPose.getSnapshot().pose ?? workshop.animation.getSnapshot().pose
@@ -52,19 +52,17 @@ export function SceneTransformSteps({
       : [0, 0, 0]
     let delta = composeTransform({
       kind: 'trs',
-      translation: tool === 'move' ? values : [0, 0, 0],
-      rotation: tool === 'rotate' ? quaternionFromEulerXYZ(values) : [0, 0, 0, 1],
-      scale: tool === 'scale' ? values : [1, 1, 1],
+      translation: [0, 0, 0],
+      rotation: quaternionFromEulerXYZ(values),
+      scale: [1, 1, 1],
     })
-    if (tool !== 'move') {
-      const forward = identityMatrix(),
-        backward = identityMatrix()
-      for (const axis of [0, 1, 2] as const) {
-        forward[12 + axis] = center[axis]
-        backward[12 + axis] = -center[axis]
-      }
-      delta = affineMultiply(forward, affineMultiply(delta, backward))
+    const forward = identityMatrix(),
+      backward = identityMatrix()
+    for (const axis of [0, 1, 2] as const) {
+      forward[12 + axis] = center[axis]
+      backward[12 + axis] = -center[axis]
     }
+    delta = affineMultiply(forward, affineMultiply(delta, backward))
     const actions = workshop.animationPose.transformActions(selected)
     if (actions.begin()) {
       const accepted = actions.preview(delta)
@@ -72,26 +70,52 @@ export function SceneTransformSteps({
     }
   }
   function step(axis: number, direction: number) {
-    const values: Vec3 = tool === 'scale' ? [1, 1, 1] : [0, 0, 0]
-    values[axis] =
-      tool === 'move'
-        ? direction * 0.5
-        : tool === 'rotate'
-          ? direction * 90
-          : direction > 0
-            ? 1.2
-            : 1 / 1.2
-    apply(values)
+    const values: Vec3 = [0, 0, 0]
+    values[axis] = direction * (tool === 'rotate' ? 90 : workshop.measurementStep)
+    if (tool === 'rotate') rotate(values)
+    else measure(values)
+  }
+  function measure(increments: Vec3) {
+    const mode = tool === 'move' ? 'move' : 'scale'
+    if (workshop.mode !== 'animation') {
+      run((source) => {
+        const delta = sceneMeasurementStepDelta(
+          source,
+          selected,
+          mode,
+          increments,
+          workshop.measurementStep,
+        )
+        const next = transformSceneNodes(source, selected, delta)
+        return mode === 'scale' && keepBase ? preserveSceneBase(source, next, selected) : next
+      })
+      return
+    }
+    const pose = workshop.animationPose.getSnapshot().pose ?? workshop.animation.getSnapshot().pose
+    const delta = sceneMeasurementStepDelta(
+      workshop.document,
+      selected,
+      mode,
+      increments,
+      workshop.measurementStep,
+      pose?.worldMatrices,
+    )
+    const actions = workshop.animationPose.transformActions(selected)
+    if (actions.begin()) actions.end(actions.preview(delta))
+  }
+  function size(direction: number) {
+    const step = direction * workshop.measurementStep
+    measure([step, step, step])
   }
   return (
     <section aria-label="Ajustar por cliques" className="space-y-2">
       {tool === 'scale' && (
         <>
           <div className="grid grid-cols-2 gap-2">
-            <Button disabled={disabled} onClick={() => apply([1 / 1.2, 1 / 1.2, 1 / 1.2])}>
+            <Button disabled={disabled} onClick={() => size(-1)}>
               Menor
             </Button>
-            <Button disabled={disabled} onClick={() => apply([1.2, 1.2, 1.2])}>
+            <Button disabled={disabled} onClick={() => size(1)}>
               Maior
             </Button>
           </div>

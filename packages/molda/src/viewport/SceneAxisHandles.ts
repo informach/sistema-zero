@@ -41,7 +41,7 @@ export class SceneAxisHandles {
     private readonly kind: HandleKind,
     private readonly actions: {
       begin(): boolean
-      preview(delta: Vec3): boolean
+      preview(delta: Vec3, keyboardSteps?: number): boolean
       end(commit: boolean): void
     },
     private readonly request: () => void,
@@ -187,7 +187,7 @@ export class SceneAxisHandles {
           } else
             for (const i of [0, 1, 2] as const)
               value[i] = this.axes[index]![i] * sign * (event.shiftKey ? 1 : 0.1)
-          const accepted = this.actions.preview(value)
+          const accepted = this.actions.preview(value, event.shiftKey ? 10 : 1)
           this.actions.end(accepted)
           this.request()
         }

@@ -105,7 +105,7 @@ describe('topological selection', () => {
     expect(selectMeshTopology(cube, 'edge', [edge('v_000', 'v_100')], 'ring')).toHaveLength(4)
   })
 
-  test('loops follow the unique continuation without turning at poles or crossing triangles', () => {
+  test('loops follow the unique continuation beside triangles and stop at poles', () => {
     const mesh = grid(4, 4)
     const seed = [edge('v1_2', 'v2_2')]
     expect(keysOf(selectMeshTopology(mesh, 'edge', seed, 'loop'))).toEqual(
@@ -115,7 +115,10 @@ describe('topological selection', () => {
     mesh.looseEdges = [['v2_2', 'pole']]
     expect(selectMeshTopology(mesh, 'edge', seed, 'loop')).toHaveLength(2)
     mesh.faces.f_1_1 = { v: ['v1_1', 'v2_2', 'v1_2'] }
-    expect(selectMeshTopology(mesh, 'edge', seed, 'loop')).toHaveLength(1)
+    expect(keysOf(selectMeshTopology(mesh, 'edge', seed, 'loop'))).toEqual([
+      'v0_2 v1_2',
+      'v1_2 v2_2',
+    ])
   })
 
   test('a non-manifold ring edge is a stop, not a branch to unrelated quads', () => {

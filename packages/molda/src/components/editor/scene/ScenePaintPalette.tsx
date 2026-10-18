@@ -6,7 +6,7 @@ import { resolvePaletteColors } from '../../../core/sanitize'
 import { SCENE_PAINT_COPY } from '../../../core/scenePaintCopy'
 import { RequiresTool } from '../../toolAccess'
 import { Button } from '../../ui/Button'
-import { Pipette, Plus } from '../../ui/icons'
+import { Grid3x3, Plus } from '../../ui/icons'
 import { swatchClass } from '../../ui/interaction'
 import { SceneColorPicker } from './SceneColorPicker'
 import type { useScenePaint } from './useScenePaint'
@@ -37,9 +37,13 @@ const NAMES: Readonly<Record<string, string>> = {
 export function ScenePaintPalette({
   paint,
   palette,
+  preparation,
+  mapping,
 }: {
   paint: ReturnType<typeof useScenePaint>
   palette: MoldaPaletteFields
+  preparation?: { faces: readonly string[]; apply(): void } | null
+  mapping?: { apply(): void; disabled: boolean } | null
 }) {
   const busy = paint.drawing || paint.busy
   const hex = rgbToHex(paint.ink[0], paint.ink[1], paint.ink[2])
@@ -52,12 +56,42 @@ export function ScenePaintPalette({
     })),
   ].filter((entry, index, all) => all.findIndex((other) => other.hex === entry.hex) === index)
   const favorite = colors.some((entry) => entry.hex === hex)
+  const copy = SCENE_PAINT_COPY
+  const instruction = paint.eraser
+    ? copy.instructions.eraser
+    : paint.fill
+      ? paint.fillScope === 'base'
+        ? copy.instructions.base
+        : copy.instructions.fill
+      : paint.picker
+        ? copy.instructions.picker
+        : paint.rotate
+          ? copy.instructions.rotate
+          : paint.closeupTool
+            ? copy.instructions.closeup
+            : copy.instructions.pencil
   return (
     <RequiresTool family="paint.brush">
       <section
         aria-label={SCENE_PAINT_COPY.colors}
         className="mld-paint-palette shrink-0 space-y-3 border-b border-mld-border py-3"
       >
+        <div className="space-y-1">
+          <h3 className="mld-display text-lg">{copy.chooseColor}</h3>
+          <p className="text-sm text-mld-muted" aria-live="polite">
+            {instruction}
+          </p>
+        </div>
+        {preparation && !(paint.fill && paint.fillScope === 'base') && (
+          <div className="space-y-2 rounded-xl border border-mld-border bg-mld-surface p-3">
+            <p role="status" className="text-sm text-mld-muted">
+              {copy.crooked(preparation.faces.length)}
+            </p>
+            <Button className="w-full text-sm" onClick={preparation.apply} disabled={busy}>
+              {copy.split}
+            </Button>
+          </div>
+        )}
         <div className="flex items-center gap-3">
           <span
             aria-hidden="true"
@@ -66,32 +100,8 @@ export function ScenePaintPalette({
           />
           <div className="min-w-0 flex-1">
             <p className="mld-display text-base leading-tight">{NAMES[hex] ?? 'Personalizada'}</p>
-            <p className="text-xs text-mld-muted uppercase tabular-nums">{hex}</p>
+            <p className="text-xs text-mld-muted">{copy.currentColor}</p>
           </div>
-          <button
-            type="button"
-            className="sz-tool-icon-btn"
-            aria-label="Ativar Pegar cor"
-            title="Pegar cor (I)"
-            aria-pressed={paint.picker}
-            disabled={busy}
-            onClick={paint.setPicker}
-          >
-            <Pipette aria-hidden="true" />
-          </button>
-        </div>
-        <SceneColorPicker ink={paint.ink} disabled={busy} change={paint.newColorStep} />
-        <div className="flex items-center justify-between gap-2 border-t border-mld-border pt-3">
-          <p className="mld-display text-sm">Minhas cores</p>
-          <Button
-            variant="ghost"
-            className="px-2 text-xs"
-            aria-label="Guardar cor favorita"
-            disabled={busy || favorite || paint.favoritesFull}
-            onClick={paint.toggleFavorite}
-          >
-            <Plus aria-hidden="true" className="size-3" /> Guardar
-          </Button>
         </div>
         <div className="mld-paint-swatches">
           {colors.map(({ index, hex: value }) => (
@@ -100,6 +110,7 @@ export function ScenePaintPalette({
               type="button"
               aria-label={COPY.a11y.colorSwatch(index, value)}
               aria-pressed={hex === value}
+              title={NAMES[value] ?? 'Cor personalizada'}
               disabled={busy}
               onClick={() => paint.setColor([...hexToRgb(value), 255])}
               className={`${swatchClass(hex === value, 'compact')} mld-paint-swatch`}
@@ -107,6 +118,33 @@ export function ScenePaintPalette({
             />
           ))}
         </div>
+        {mapping && (
+          <div className="space-y-1">
+            <Button
+              className="w-full text-sm"
+              disabled={busy || mapping.disabled}
+              onClick={mapping.apply}
+            >
+              <Grid3x3 aria-hidden="true" className="size-4" /> {copy.simpleUv}
+            </Button>
+            <p className="text-xs text-mld-muted">{copy.simpleUvHint}</p>
+          </div>
+        )}
+        <details className="mld-disclosure">
+          <summary>{copy.customColor}</summary>
+          <div className="space-y-3 pb-2">
+            <SceneColorPicker ink={paint.ink} disabled={busy} change={paint.newColorStep} />
+            <Button
+              variant="ghost"
+              className="w-full text-sm"
+              aria-label={copy.saveColor}
+              disabled={busy || favorite || paint.favoritesFull}
+              onClick={paint.toggleFavorite}
+            >
+              <Plus aria-hidden="true" className="size-4" /> {copy.saveColor}
+            </Button>
+          </div>
+        </details>
         {paint.favoritesUnavailable && (
           <p role="status" className="text-xs text-mld-muted">
             As cores continuam disponíveis nesta sessão. Não foi possível guardar a paleta neste
@@ -116,28 +154,27 @@ export function ScenePaintPalette({
         {paint.favoritesFull && (
           <p className="text-xs text-mld-muted">Sua paleta chegou a 256 cores guardadas.</p>
         )}
-        <div>
-          <p className="mld-kicker mb-2">Usadas agora</p>
-          <div className="flex flex-wrap gap-2">
-            {paint.recentColors.map((entry) => {
-              const value = rgbToHex(entry[0], entry[1], entry[2])
-              return (
-                <button
-                  key={value}
-                  type="button"
-                  aria-label={`Usadas agora: ${value}`}
-                  className={`${swatchClass(hex === value)} rounded-full!`}
-                  style={{ background: value }}
-                  disabled={busy}
-                  onClick={() => paint.setColor(entry)}
-                />
-              )
-            })}
-            {!paint.recentColors.length && (
-              <p className="text-xs text-mld-muted">As cores usadas na pintura aparecem aqui.</p>
-            )}
+        {paint.recentColors.length > 0 && (
+          <div>
+            <p className="mld-kicker mb-2">{copy.recentColors}</p>
+            <div className="flex flex-wrap gap-2">
+              {paint.recentColors.map((entry) => {
+                const value = rgbToHex(entry[0], entry[1], entry[2])
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    aria-label={`Usadas agora: ${value}`}
+                    className={`${swatchClass(hex === value)} rounded-full!`}
+                    style={{ background: value }}
+                    disabled={busy}
+                    onClick={() => paint.setColor(entry)}
+                  />
+                )
+              })}
+            </div>
           </div>
-        </div>
+        )}
         {paint.fill && (
           <fieldset className="space-y-1">
             <legend className="text-sm font-bold">O que pintar?</legend>

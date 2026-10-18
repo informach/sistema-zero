@@ -1,9 +1,9 @@
 import { newId } from '../core/id'
 import type { Vec3 } from '../core/model'
-import { dot, sub } from '../model/vec'
+import { sub } from '../model/vec'
 import type { SceneMeshGeometry, Vec2 } from './document'
 import { SCENE_LIMITS } from './limits'
-import { faceTurn, meshFaceFrame, requireAffineFaceUv } from './meshFaceFrame'
+import { meshFaceFrame, meshFaceSurfaceUv } from './meshFaceFrame'
 import { knifeFaceRegions, knifeInside, knifeOnSegment } from './meshKnifeGraph'
 import { indexMeshEdges, meshEdgeKey, meshIdAllocator } from './meshTopology'
 import { requireScene, tuple } from './validation'
@@ -72,8 +72,7 @@ export function cutMeshWithKnife(
   function frame(id: string) {
     let value = frames.get(id)
     if (!value) {
-      value = meshFaceFrame(mesh, id)
-      requireAffineFaceUv(value)
+      value = meshFaceFrame(mesh, id, { allowNonPlanar: true })
       frames.set(id, value)
     }
     return value
@@ -125,11 +124,11 @@ export function cutMeshWithKnife(
     const current = frame(input.faceId),
       projected = current.project(input.point)
     requireScene(
-      Math.abs(dot(sub(input.point, current.origin), current.normal)) <= current.extent * 1e-10 &&
-        knifeInside(projected, current.projected),
+      knifeInside(projected, current.projected),
       'point',
       'Marque os pontos sobre a superfície visível da face.',
     )
+    meshFaceSurfaceUv(current, input.point)
     for (let i = 0; i < current.face.corners.length; i++) {
       const a = current.face.corners[i]!.vertexId,
         b = current.face.corners[(i + 1) % current.face.corners.length]!.vertexId
@@ -225,27 +224,14 @@ export function cutMeshWithKnife(
     for (let i = 0; i < result.regions.length; i++) {
       const cycle = result.regions[i]!,
         id = i === retained ? faceId : temporary()
-      const [a, b, c] = current.first.map((index) => current.projected[index]!) as [
-        Vec2,
-        Vec2,
-        Vec2,
-      ]
       faces[id] = {
         ...face,
         corners: cycle.map((vertexId) => {
           const old = corners.find((corner) => corner.vertexId === vertexId)
           if (old) return old
-          const p = flat.get(vertexId)!,
-            v = faceTurn(a, p, c) / faceTurn(a, b, c),
-            w = faceTurn(a, b, p) / faceTurn(a, b, c)
           return {
             vertexId,
-            uv: [0, 1].map((axis) => {
-              const av = face.corners[current.first[0]]!.uv[axis]!,
-                bv = face.corners[current.first[1]]!.uv[axis]!,
-                cv = face.corners[current.first[2]]!.uv[axis]!
-              return av + v * (bv - av) + w * (cv - av)
-            }) as Vec2,
+            uv: meshFaceSurfaceUv(current, vertices[vertexId]!),
           }
         }),
       }
@@ -275,7 +261,7 @@ export function cutMeshWithKnife(
         'cut',
         'Uma face teria pontos demais. Faça um corte menor.',
       )
-      meshFaceFrame(candidate, id)
+      meshFaceFrame(candidate, id, { allowNonPlanar: true })
     }
   const allocate = meshIdAllocator(mesh, nextId),
     remap = new Map<string, string>()

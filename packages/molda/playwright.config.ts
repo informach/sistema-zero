@@ -27,12 +27,12 @@ export default defineConfig({
     { name: 'chromium', use: { ...devices['Desktop Chrome'], hasTouch: true } },
     {
       name: 'firefox',
-      testMatch: /scene-workshop\.spec\.ts/,
+      testMatch: /(scene-workshop|simple-uv)\.spec\.ts/,
       use: { ...devices['Desktop Firefox'] },
     },
     {
       name: 'webkit',
-      testMatch: /scene-workshop\.spec\.ts/,
+      testMatch: /(scene-workshop|simple-uv)\.spec\.ts/,
       use: { ...devices['Desktop Safari'], hasTouch: true },
     },
   ],

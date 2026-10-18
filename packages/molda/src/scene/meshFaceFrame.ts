@@ -5,7 +5,7 @@ import { triangulateFace } from './triangulate'
 import { requireScene, SceneValidationError } from './validation'
 
 /** Relative, derived plane. It never snaps authorial points to a plane. */
-function measureMeshFace(mesh: SceneMeshGeometry, id: string) {
+export function measureMeshFace(mesh: SceneMeshGeometry, id: string, allowNonPlanar = false) {
   const face = mesh.faces[id]
   requireScene(Object.hasOwn(mesh.faces, id) && face, 'faces', 'Essa face não existe mais.')
   const points = face.corners.map(({ vertexId }) => {
@@ -30,7 +30,7 @@ function measureMeshFace(mesh: SceneMeshGeometry, id: string) {
       (p[2] - origin[2]) / extent,
     ],
   )
-  if (!local.every((p) => Math.abs(dot(p, normal)) <= 1e-10))
+  if (!allowNonPlanar && !local.every((p) => Math.abs(dot(p, normal)) <= 1e-10))
     return {
       status: 'crooked' as const,
       message: 'Escolha faces planas para esse ajuste. Você pode dividir a face em triângulos.',
@@ -54,12 +54,26 @@ function measureMeshFace(mesh: SceneMeshGeometry, id: string) {
   const projected = points.map(project)
   return {
     status: 'ok' as const,
-    frame: { face, points, normal, origin, extent, projected, first, project },
+    frame: {
+      face,
+      points,
+      normal,
+      origin,
+      extent,
+      projected,
+      first,
+      project,
+      triangles: triangles.triangles,
+    },
   }
 }
 
-export function meshFaceFrame(mesh: SceneMeshGeometry, id: string) {
-  const measured = measureMeshFace(mesh, id)
+export function meshFaceFrame(
+  mesh: SceneMeshGeometry,
+  id: string,
+  options: { allowNonPlanar?: boolean } = {},
+) {
+  const measured = measureMeshFace(mesh, id, options.allowNonPlanar)
   if (measured.status !== 'ok') throw new SceneValidationError('faces', measured.message)
   return measured.frame
 }
@@ -77,6 +91,33 @@ export function inspectMeshFaceFrame(
 
 export const faceTurn = (a: Vec2, b: Vec2, c: Vec2) =>
   (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0])
+
+/** Sample the rendered triangle at a surface point, including non-affine UVs and bent quads. */
+export function meshFaceSurfaceUv(frame: ReturnType<typeof meshFaceFrame>, point: Vec3): Vec2 {
+  const p = frame.project(point)
+  for (const triangle of frame.triangles) {
+    const [ai, bi, ci] = triangle
+    const a = frame.projected[ai]!,
+      b = frame.projected[bi]!,
+      c = frame.projected[ci]!
+    const determinant = faceTurn(a, b, c)
+    if (Math.abs(determinant) <= 1e-12) continue
+    const v = faceTurn(a, p, c) / determinant
+    const w = faceTurn(a, b, p) / determinant
+    const u = 1 - v - w
+    if (Math.min(u, v, w) < -1e-10) continue
+    const surface: Vec3 = [0, 0, 0]
+    for (const axis of [0, 1, 2] as const)
+      surface[axis] =
+        u * frame.points[ai]![axis] + v * frame.points[bi]![axis] + w * frame.points[ci]![axis]
+    if (Math.hypot(...sub(surface, point)) > frame.extent * 1e-10) continue
+    const auv = frame.face.corners[ai]!.uv
+    const buv = frame.face.corners[bi]!.uv
+    const cuv = frame.face.corners[ci]!.uv
+    return [u * auv[0] + v * buv[0] + w * cuv[0], u * auv[1] + v * buv[1] + w * cuv[1]]
+  }
+  throw new SceneValidationError('point', 'Marque os pontos sobre a superfície visível da face.')
+}
 
 export function requireConvexMeshFace(
   frame: ReturnType<typeof meshFaceFrame>,

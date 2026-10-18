@@ -27,6 +27,7 @@ interface BodySample {
   point?: [number, number, number]
 }
 
+import type { Vec3 } from '../core/model'
 import type { MoldaSceneDocument } from '../scene/document'
 import { sameSceneContent } from '../scene/documentContent'
 import { indexSceneDocument } from '../scene/documentIndex'
@@ -34,7 +35,8 @@ import { evaluateSceneNodeFlags } from '../scene/evaluate'
 import { selectSceneSubtrees } from '../scene/graph'
 import { sceneFlipbookTexel } from '../scene/imageFlipbook'
 import type { ScenePaintTarget } from '../scene/imagePaint'
-import { transformPoint } from '../scene/matrix'
+import { affineInverse, affineMultiply, transformPoint } from '../scene/matrix'
+import { sceneMeasurementReference } from '../scene/measurementReference'
 import {
   meshComponentIds,
   meshComponentVertices,
@@ -137,6 +139,7 @@ export class SceneViewport implements SceneViewportPort {
   private bodySelection: { id: string; additive: boolean; faceId?: string } | null = null
   private transformTool: SceneTransformTool = 'select'
   private movementStep: number | null = null
+  private measurementOrigin: Vec3 | null = null
   /** `null` = quem chama não conhece a aba Pintar: a pintura é deduzida do alvo, como antes. */
   private paintMode: ScenePaintMode | null = null
   private skinPaint: CapturedPaintInput<SceneSkinPaintSample> | null = null
@@ -469,7 +472,13 @@ export class SceneViewport implements SceneViewportPort {
             if (sample.locked || this.paintMode === 'paint' || this.transformTool !== 'move')
               return false
             this.bodyMoving =
-              this.bodyMove?.begin(hit.point, sample.x, sample.y, this.rig.view) ?? false
+              this.bodyMove?.begin(
+                hit.point,
+                sample.x,
+                sample.y,
+                this.rig.view,
+                this.measurementOrigin,
+              ) ?? false
             return this.bodyMoving
           },
           move: (sample) => {
@@ -782,7 +791,11 @@ export class SceneViewport implements SceneViewportPort {
     }
     const bounds = this.bounds(true)
     this.ground.update(this.bounds(false))
-    this.outline.update(this.resource, this.covered(this.selected), this.pose)
+    this.outline.update(
+      this.resource,
+      this.componentSelection?.mode === 'edge' ? new Set() : this.covered(this.selected),
+      this.pose,
+    )
     const world =
       this.selected.length === 1
         ? this.index?.scene.worldMatrices.get(this.selected[0] ?? '')
@@ -805,6 +818,14 @@ export class SceneViewport implements SceneViewportPort {
     const faceGeometry =
       faceNode?.kind === 'mesh' ? this.index?.geometries.get(faceNode.geometryId) : null
     const faceMesh = faceGeometry ? sceneGeometryMesh(faceGeometry) : null
+    if (this.componentSelection && faceMesh) {
+      // Geometry updates can arrive before the editor's updated component selection.
+      // Keep the editing mode, but remove deleted targets before any overlay or measurement.
+      const alive = new Set(meshComponentIds(faceMesh, this.componentSelection.mode))
+      const ids = this.componentSelection.ids.filter((id) => alive.has(id))
+      if (ids.length !== this.componentSelection.ids.length)
+        this.componentSelection = { ...this.componentSelection, ids }
+    }
     this.faces.update(
       this.resource,
       faceMesh?.kind === 'mesh' ? faceMesh : null,
@@ -825,21 +846,57 @@ export class SceneViewport implements SceneViewportPort {
     const editable =
       this.selected.length > 0 &&
       ![...this.covered(this.selected)].some((id) => flags?.get(id)?.locked !== false)
-    const aliveComponents =
-      this.componentSelection && faceMesh?.kind === 'mesh'
-        ? new Set(meshComponentIds(faceMesh, this.componentSelection.mode))
-        : null
     const faceCenter =
       this.componentSelection && faceMesh?.kind === 'mesh' && world
         ? meshVertexCenter(
             faceMesh,
-            meshComponentVertices(faceMesh, {
-              ...this.componentSelection,
-              ids: this.componentSelection.ids.filter((id) => aliveComponents?.has(id)),
-            }),
+            meshComponentVertices(faceMesh, this.componentSelection),
             world,
           )
         : null
+    let dimensions: Vec3 | null = null
+    this.measurementOrigin = null
+    if (selectedNode && localBounds && world) {
+      let size = localBounds.size
+      if (this.componentSelection && faceMesh) {
+        const points = meshComponentVertices(faceMesh, this.componentSelection).map(
+          (id) => faceMesh.vertices[id]!,
+        )
+        if (points.length) {
+          const min: Vec3 = [Infinity, Infinity, Infinity]
+          const max: Vec3 = [-Infinity, -Infinity, -Infinity]
+          for (const point of points)
+            for (const axis of [0, 1, 2] as const) {
+              min[axis] = Math.min(min[axis], point[axis])
+              max[axis] = Math.max(max[axis], point[axis])
+            }
+          size = [max[0] - min[0], max[1] - min[1], max[2] - min[2]]
+        }
+      }
+      const parentWorld = selectedNode.parentId
+        ? this.index?.scene.worldMatrices.get(selectedNode.parentId)
+        : null
+      const parentInverse = parentWorld ? affineInverse(parentWorld) : null
+      requireScene(
+        !parentWorld || parentInverse,
+        'measurement',
+        'A peça precisa ter tamanho nos três eixos.',
+      )
+      const local = parentInverse ? affineMultiply(parentInverse, world) : world
+      dimensions = size.map(
+        (length, axis) =>
+          length * Math.hypot(local[axis * 4]!, local[axis * 4 + 1]!, local[axis * 4 + 2]!),
+      ) as Vec3
+      const { origin } = sceneMeasurementReference(
+        local,
+        selectedNode.transform,
+        authoringPivot,
+        localBounds,
+      )
+      this.measurementOrigin = parentWorld ? transformPoint(parentWorld, origin) : origin
+    } else if (bounds)
+      dimensions = [0, 1, 2].map((axis) => bounds.max[axis]! - bounds.min[axis]!) as Vec3
+    if (!this.measurementOrigin && bounds) this.measurementOrigin = [...bounds.min]
     this.gizmo?.setTarget(
       this.pose?.twoBoneGuide && this.animationEditing
         ? this.poseDestination()
@@ -869,6 +926,8 @@ export class SceneViewport implements SceneViewportPort {
               : undefined,
           )
         : undefined,
+      dimensions,
+      this.componentSelection ? null : this.measurementOrigin,
     )
     this.updateEditingEnabled()
     this.request()
@@ -981,6 +1040,7 @@ export class SceneViewport implements SceneViewportPort {
       input?.cut?.midpoint,
       input?.knife?.nodeId,
       input?.knife?.midpoint,
+      input?.knife?.edgesOnly,
     ])
     if (this.disposed || key === this.guideInputKey) return
     this.guideInputKey = key
@@ -1026,6 +1086,8 @@ export class SceneViewport implements SceneViewportPort {
   }
 
   setMovementStep(step: number | null): void {
+    if (step === this.movementStep || this.disposed) return
+    this.bodyMove?.end(false)
     this.movementStep = step
     if (!this.disposed) this.gizmo?.setMovementStep(step)
   }
@@ -1267,6 +1329,7 @@ export class SceneViewport implements SceneViewportPort {
       nodeId: knife.nodeId,
       pointer: event,
       midpoint: knife.midpoint || event.shiftKey === true,
+      edgesOnly: knife.edgesOnly,
       closePoint: knife.closePoint,
       edges: this.cutPicker,
       vertices: this.componentPicker,

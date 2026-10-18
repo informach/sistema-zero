@@ -267,7 +267,7 @@ test('grade, passo e imagem de apoio são da sessão; o ZIP restaura a oficina n
   await page.getByRole('button', { name: 'Mostrar grade', exact: true }).click()
   // O passo mora recolhido em "Mais ajustes do palco" desde o lote 7a: abrir faz parte do caminho.
   await page.locator('summary').filter({ hasText: 'Mais ajustes do palco' }).click()
-  await page.getByRole('combobox', { name: 'Passo do movimento', exact: true }).selectOption('0.5')
+  await page.getByRole('checkbox', { name: 'Permitir números quebrados', exact: true }).check()
   await expect(page.getByRole('button', { name: 'Desfazer', exact: true })).toBeDisabled()
   await backToGallery(page)
   const backup = await downloaded(page, 'Baixar tudo')
@@ -283,9 +283,9 @@ test('grade, passo e imagem de apoio são da sessão; o ZIP restaura a oficina n
   )
   // A oficina reaberta nasce com "Mais ajustes do palco" recolhido de novo.
   await page.locator('summary').filter({ hasText: 'Mais ajustes do palco' }).click()
-  await expect(page.getByRole('combobox', { name: 'Passo do movimento', exact: true })).toHaveValue(
-    'free',
-  )
+  await expect(
+    page.getByRole('checkbox', { name: 'Permitir números quebrados', exact: true }),
+  ).not.toBeChecked()
   await page.getByRole('button', { name: 'Imagem de apoio', exact: true }).click()
   await expect(page.getByRole('button', { name: 'Escolher imagem', exact: true })).toBeVisible()
   await expect(page.getByText('apoio.png', { exact: true })).toHaveCount(0)
@@ -428,8 +428,9 @@ test('pintura 2D e prévia 3D compartilham pixels, desfazer e reabertura; movime
   await page.getByRole('button', { name: COPY.scene.select('corpo'), exact: true }).click()
   // Materiais chooses the explicit layer; the sheet shares that target with 3D.
   await page.getByRole('button', { name: SCENE_PAINT_COPY.tab, exact: true }).click()
+  await page.getByRole('button', { name: 'Opções', exact: true }).click()
   await page
-    .getByRole('navigation', { name: 'Áreas da oficina' })
+    .getByRole('group', { name: 'Opções', exact: true })
     .getByRole('button', { name: 'Materiais', exact: true })
     .click()
   const material = source.materials.find((entry) => entry.colorImageId === source.images[0]!.id)!

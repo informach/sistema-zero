@@ -1,14 +1,5 @@
-import {
-  BufferAttribute,
-  BufferGeometry,
-  EdgesGeometry,
-  Group,
-  Mesh,
-  SkinnedMesh,
-  Vector3,
-} from 'three'
+import { type BufferGeometry, Group, Mesh, SkinnedMesh } from 'three'
 import type { LineSegments2 } from 'three/addons/lines/LineSegments2.js'
-import type { Vec3 } from '../core/model'
 import { guideLine } from './sceneGuideDrawing'
 import type { SceneRenderResource } from './sceneRenderResource'
 
@@ -45,30 +36,11 @@ export class SceneSelectionOutline {
           entry.line.geometry.dispose()
           entry.line.material.dispose()
         }
-        let source = object.geometry
-        if (object instanceof SkinnedMesh) {
-          const count = source.getAttribute('position').count,
-            points = new Float32Array(count * 3),
-            point = new Vector3()
-          for (let i = 0; i < count; i++) {
-            object.getVertexPosition(i, point)
-            points.set(point.toArray(), i * 3)
-          }
-          source = new BufferGeometry().setAttribute('position', new BufferAttribute(points, 3))
-          if (object.geometry.index) source.setIndex(object.geometry.index.clone())
-        }
-        const edges = new EdgesGeometry(source, 1),
-          positions = edges.getAttribute('position')
-        const segments: Array<[Vec3, Vec3]> = []
-        for (let i = 0; i < positions.count; i += 2)
-          segments.push([
-            [positions.getX(i), positions.getY(i), positions.getZ(i)],
-            [positions.getX(i + 1), positions.getY(i + 1), positions.getZ(i + 1)],
-          ])
-        const line = guideLine(segments, 0xffc21a, 3)
+        const line = guideLine(resource.edgePositionsFor(object), 0xffc21a, 3)
+        line.material.polygonOffset = true
+        line.material.polygonOffsetFactor = -3
+        line.material.polygonOffsetUnits = -3
         line.matrixAutoUpdate = false
-        edges.dispose()
-        if (source !== object.geometry) source.dispose()
         entry = { source: object.geometry, line, pose }
         this.entries.set(instance.id, entry)
         this.root.add(line)

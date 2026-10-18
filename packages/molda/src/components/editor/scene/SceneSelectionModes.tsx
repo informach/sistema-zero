@@ -1,4 +1,5 @@
-import { Box, Circle, Square } from '../../ui/icons'
+import { COPY } from '../../../core/copy'
+import { Box, Circle, Minus, Square } from '../../ui/icons'
 import type { useSceneWorkshop } from './useSceneWorkshop'
 
 export function SceneSelectionModes({
@@ -9,19 +10,22 @@ export function SceneSelectionModes({
   const mode = workshop.components.selection?.mode ?? 'whole'
   return (
     <fieldset className="mld-float mld-selection-modes" aria-label="Escolher">
-      <span className="text-xs font-semibold text-mld-muted">Escolher:</span>
+      <span className="hidden text-xs font-semibold text-mld-muted sm:block">Escolher:</span>
       {(
         [
           { mode: 'whole', label: 'Peça inteira', icon: Box },
-          { mode: 'face', label: 'Face', icon: Square },
-          { mode: 'vertex', label: 'Ponto', icon: Circle },
+          { mode: 'vertex', label: COPY.scene.componentModes.vertex, icon: Circle },
+          { mode: 'edge', label: COPY.scene.componentModes.edge, icon: Minus },
+          { mode: 'face', label: COPY.scene.componentModes.face, icon: Square },
         ] as const
       ).map(({ mode: next, label, icon: Icon }) => (
         <button
           type="button"
           key={next}
           aria-pressed={mode === next}
-          disabled={next !== 'whole' && !workshop.components.canEdit}
+          disabled={
+            next !== 'whole' && (!workshop.components.canEdit || workshop.components.blocked)
+          }
           onClick={() =>
             workshop.requestTransition(() => {
               workshop.setTool('select')
@@ -31,7 +35,7 @@ export function SceneSelectionModes({
             })
           }
         >
-          <Icon aria-hidden="true" />
+          <Icon aria-hidden="true" className="max-sm:hidden" />
           {label}
         </button>
       ))}

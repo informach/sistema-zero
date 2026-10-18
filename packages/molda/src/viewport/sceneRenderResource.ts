@@ -11,7 +11,9 @@ import {
   type Raycaster,
   SkinnedMesh,
   SRGBColorSpace,
+  Vector3,
 } from 'three'
+import type { Vec3 } from '../core/model'
 import {
   type ScenePixelRegion,
   type SceneRgba,
@@ -42,6 +44,8 @@ import {
   type SceneMaterialImageKind,
   sceneMaterialImageBase,
 } from '../scene/materialImages'
+import { meshComponentEdges } from '../scene/meshComponents'
+import { sceneGeometryMesh } from '../scene/parametricGeometry'
 import type { SceneAnimationPose } from '../scene/sampleAnimation'
 import type { SceneSkinBinding } from '../scene/skin'
 import { compileSceneSkinGeometry } from '../scene/skinPose'
@@ -172,6 +176,44 @@ export class SceneRenderResource {
     return id ? (this.instances.get(id) ?? null) : null
   }
 
+  /** Authorial boundaries include coplanar cuts; render triangulation is never an edit edge. */
+  edgePositionsFor(object: Mesh): Array<readonly [Vec3, Vec3]> {
+    const instance = this.instanceFor(object)
+    const entry = instance ? this.geometries.get(instance.geometryId) : null
+    if (!entry) return []
+    const mesh = sceneGeometryMesh(entry.source)
+    const positions = new Map<string, Vec3>()
+    if (object instanceof SkinnedMesh) {
+      const point = new Vector3()
+      for (const [i, cornerIndex] of entry.buffers.cornerIndices.entries()) {
+        const faceId = entry.buffers.componentFaceIds[Math.floor(i / 3)]
+        const corner = faceId === undefined ? undefined : mesh.faces[faceId]?.corners[cornerIndex]
+        requireScene(
+          corner,
+          'geometry',
+          'O contorno perdeu a correspondência com a face desenhada.',
+        )
+        const vertexId = corner.vertexId
+        if (positions.has(vertexId)) continue
+        object.getVertexPosition(i, point)
+        positions.set(vertexId, [point.x, point.y, point.z])
+      }
+    } else for (const [id, point] of Object.entries(mesh.vertices)) positions.set(id, point)
+    const segments: Array<readonly [Vec3, Vec3]> = []
+    for (const [a, b] of meshComponentEdges(mesh).values()) {
+      const from = positions.get(a),
+        to = positions.get(b)
+      if (!from || !to) continue
+      requireScene(
+        [...from, ...to].every((n) => Number.isFinite(Math.fround(n))),
+        'geometry',
+        'O contorno excede a precisão de desenho. Seus pontos continuam guardados.',
+      )
+      segments.push([from, to])
+    }
+    return segments
+  }
+
   surfaceIntersections(raycaster: Raycaster): Intersection[] {
     const hits: Intersection[] = []
     for (const object of this.root.children)
@@ -187,6 +229,13 @@ export class SceneRenderResource {
     const instance = this.instanceFor(object)
     return instance
       ? (this.geometries.get(instance.geometryId)?.buffers.faceIds[triangle] ?? null)
+      : null
+  }
+  /** Mesh editing uses individual authorial faces, even on a shared parametric paint surface. */
+  componentFaceFor(object: Object3D, triangle: number): string | null {
+    const instance = this.instanceFor(object)
+    return instance
+      ? (this.geometries.get(instance.geometryId)?.buffers.componentFaceIds[triangle] ?? null)
       : null
   }
   materialFor(object: Object3D, triangle: number): string | null {

@@ -89,6 +89,62 @@ function expectUnchangedLook(document: MoldaSceneDocument, materialId: string, i
 }
 
 describe('formas: um bloco por superfície, no tamanho da pele do editor antigo', () => {
+  test('formas grandes usam a resolução nativa sem reduzir a grade ao limite do editor antigo', () => {
+    const f = withShape('box')
+    const scaled = (scale: number): MoldaSceneDocument => ({
+      ...f.document,
+      nodes: f.document.nodes.map((node) =>
+        node.id === f.node.id
+          ? {
+              ...node,
+              transform: {
+                kind: 'trs',
+                translation: [0, 0, 0],
+                rotation: [0, 0, 0, 1],
+                scale: [scale, 1, 1],
+              },
+            }
+          : node,
+      ),
+    })
+    const result = ready(ensureScenePaintSurface(scaled(100), { nodeId: f.node.id }))
+    const bounds = scenePaintFaceBounds(
+      geometryOf(result.document, f.node.id),
+      'pz',
+      result.document.images.at(-1)!,
+    )!
+    expect(bounds.x1 - bounds.x0 + 1).toBe(800)
+    expect(() => ensureScenePaintSurface(scaled(600), { nodeId: f.node.id })).toThrow('não cabe')
+  })
+  test('uma caixa alongada mantém pixels quadrados nas faces, sem converter a forma', () => {
+    const f = withShape('box')
+    const source: MoldaSceneDocument = {
+      ...f.document,
+      nodes: f.document.nodes.map((node) =>
+        node.id === f.node.id
+          ? {
+              ...node,
+              transform: {
+                kind: 'trs',
+                translation: [0, 0, 0],
+                rotation: [0, 0, 0, 1],
+                scale: [3, 2, 1],
+              },
+            }
+          : node,
+      ),
+    }
+    const result = ready(ensureScenePaintSurface(source, { nodeId: f.node.id }))
+    const geometry = geometryOf(result.document, f.node.id)
+    const image = result.document.images.at(-1)!
+    const front = scenePaintFaceBounds(geometry, 'pz', image)!
+    const side = scenePaintFaceBounds(geometry, 'px', image)!
+    expect(geometry.kind).toBe('box')
+    expect(front.x1 - front.x0 + 1).toBe(24)
+    expect(front.y1 - front.y0 + 1).toBe(16)
+    expect(side.x1 - side.x0 + 1).toBe(8)
+    expect(side.y1 - side.y0 + 1).toBe(16)
+  })
   test('caixa: seis blocos que não se tocam, um passo só e nada muda de aparência', () => {
     const { document, node, nextId } = withShape('box')
     expect(findScenePaintTarget(document, { nodeId: node.id })).toBeNull()

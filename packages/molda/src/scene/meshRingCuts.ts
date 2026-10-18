@@ -3,7 +3,7 @@ import type { Vec3 } from '../core/model'
 import type { SceneMeshGeometry, Vec2 } from './document'
 import { SCENE_LIMITS } from './limits'
 import { requireMeshOperationBudget } from './meshComponentOperations'
-import { meshFaceFrame, requireAffineFaceUv, requireConvexMeshFace } from './meshFaceFrame'
+import { meshFaceFrame, requireConvexMeshFace } from './meshFaceFrame'
 import { indexMeshEdges, meshEdgeKey, meshIdAllocator } from './meshTopology'
 import { requireScene } from './validation'
 
@@ -34,7 +34,8 @@ export function cutMeshEdgeRings(
       [ids[0]!, [seed.a, seed.b].sort() as [string, string]],
     ]),
     queue = [ids[0]!],
-    affected = new Set<string>()
+    affected = new Set<string>(),
+    borders = new Set<string>()
   for (let i = 0; i < queue.length; i++) {
     const key = queue[i]!,
       [u] = directions.get(key)!,
@@ -47,11 +48,10 @@ export function cutMeshEdgeRings(
     for (const incident of incidents) {
       const face = mesh.faces[incident.faceId]!,
         cycle = topology.byFace.get(incident.faceId)!
-      requireScene(
-        cycle.length === 4,
-        'faces',
-        'Esse caminho precisa de faces com 4 lados. Tente o corte Livre.',
-      )
+      if (cycle.length !== 4) {
+        borders.add(incident.faceId)
+        continue
+      }
       affected.add(incident.faceId)
       const at = cycle.indexOf(key),
         opposite = cycle[(at + 2) % 4]!,
@@ -70,15 +70,35 @@ export function cutMeshEdgeRings(
       }
     }
   }
+  requireScene(affected.size > 0, 'faces', 'Escolha uma linha ligada a uma face com 4 lados.')
   for (const id of affected) {
-    const frame = meshFaceFrame(mesh, id)
-    requireAffineFaceUv(frame)
+    requireScene(
+      topology.byFace.get(id)!.filter((key) => directions.has(key)).length === 2,
+      'faces',
+      'Essa faixa cruza a si mesma. Tente o corte Livre.',
+    )
+    const frame = meshFaceFrame(mesh, id, { allowNonPlanar: true })
     requireConvexMeshFace(
       frame,
       'Esse caminho precisa de faces com 4 lados sem dobras. Tente o corte Livre.',
     )
   }
-  requireMeshOperationBudget(mesh, directions.size * count, affected.size * count * 2)
+  let borderTriangles = 0
+  for (const id of borders) {
+    const added = topology.byFace.get(id)!.filter((key) => directions.has(key)).length * count
+    requireScene(
+      mesh.faces[id]!.corners.length + added <= SCENE_LIMITS.faceCorners,
+      'faces',
+      'Uma face ligada teria pontos demais. Use menos cortes.',
+    )
+    meshFaceFrame(mesh, id, { allowNonPlanar: true })
+    borderTriangles += added
+  }
+  requireMeshOperationBudget(
+    mesh,
+    directions.size * count,
+    affected.size * count * 2 + borderTriangles,
+  )
   requireScene(
     mesh.looseEdges.length +
       mesh.looseEdges.filter(([a, b]) => directions.has(meshEdgeKey(a, b))).length * count <=
@@ -104,17 +124,35 @@ export function cutMeshEdgeRings(
         return id
       }),
     )
+  const lerp = (u: Vec2, v: Vec2, t: number): Vec2 => [
+    u[0] * (1 - t) + v[0] * t,
+    u[1] * (1 - t) + v[1] * t,
+  ]
+  for (const id of borders) {
+    const face = mesh.faces[id]!
+    faces[id] = {
+      ...face,
+      corners: face.corners.flatMap((corner, i) => {
+        const next = face.corners[(i + 1) % face.corners.length]!
+        const key = meshEdgeKey(corner.vertexId, next.vertexId)
+        const inserted = points.get(key)
+        if (!inserted) return [corner]
+        const forward = directions.get(key)![0] === corner.vertexId
+        const ids = forward ? inserted : [...inserted].reverse()
+        const ts = forward ? positions : positions.map((t) => 1 - t).reverse()
+        return [
+          corner,
+          ...ids.map((vertexId, j) => ({ vertexId, uv: lerp(corner.uv, next.uv, ts[j]!) })),
+        ]
+      }),
+    }
+  }
   for (const id of affected) {
     const face = mesh.faces[id]!,
       cycle = topology.byFace.get(id)!,
       at = cycle.findIndex((key) => directions.has(key)),
       key = cycle[at]!,
       opposite = cycle[(at + 2) % 4]!
-    requireScene(
-      cycle.filter((key) => directions.has(key)).length === 2,
-      'faces',
-      'Essa faixa cruza a si mesma. Tente o corte Livre.',
-    )
     const [a, b, c, d] = Array.from({ length: 4 }, (_, i) => face.corners[(at + i) % 4]!) as [
       (typeof face.corners)[number],
       (typeof face.corners)[number],
@@ -128,10 +166,6 @@ export function cutMeshEdgeRings(
       directions.get(opposite)![0] === d.vertexId
         ? points.get(opposite)!
         : [...points.get(opposite)!].reverse()
-    const lerp = (u: Vec2, v: Vec2, t: number): Vec2 => [
-      u[0] * (1 - t) + v[0] * t,
-      u[1] * (1 - t) + v[1] * t,
-    ]
     const left = [
         a,
         ...first.map((vertexId, i) => ({ vertexId, uv: lerp(a.uv, b.uv, ts[i]!) })),

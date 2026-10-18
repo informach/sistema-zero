@@ -5,14 +5,9 @@
 import { useId } from 'react'
 import { COPY } from '../../../core/copy'
 import { SCENE_SHELL_COPY } from '../../../core/sceneShellCopy'
-import {
-  convertSceneNodesToMesh,
-  groupSceneNodes,
-  ungroupSceneNodes,
-} from '../../../scene/commands'
+import { convertSceneNodesToMesh } from '../../../scene/commands'
 import { RequiresTool } from '../../toolAccess'
-import { ChevronDown, Crosshair, Group, ListChecks, Shapes, Slice, Ungroup } from '../../ui/icons'
-import { focusWorkshopStage } from './focusStage'
+import { ChevronDown, Crosshair, Shapes, Slice } from '../../ui/icons'
 import { SceneCreateMenu } from './SceneCreateMenu'
 import { SceneTile, SCENE_TILE_GRID as TILES } from './SceneTile'
 import { SceneUpcomingTools } from './SceneUpcomingTools'
@@ -31,7 +26,7 @@ export function SceneModelColumn({
 }) {
   const copy = COPY.scene
   const headingId = useId()
-  const { selected, run, components, index } = workshop
+  const { selected, run, components } = workshop
   return (
     // O trilho rola sem deslocar o palco; a edição de componentes termina no painel direito.
     <div className="mld-workshop-rail mld-bar">
@@ -70,7 +65,7 @@ export function SceneModelColumn({
         <SceneCreateMenu run={run} document={workshop.document} selected={selected} />
       </div>
       {/*
-       * O que se usa menos, recolhido: a caixa e o laço, escolher várias, os grupos e a malha.
+       * O que se usa menos, recolhido: a caixa, o laço e a malha.
        * As ferramentas básicas permanecem na mesma ordem ao abrir os detalhes.
        */}
       <details className="mld-rail-more shrink-0">
@@ -87,38 +82,6 @@ export function SceneModelColumn({
               title="Divide o volume em duas peças fechadas"
               pressed={workshop.tool === 'cut'}
               onClick={() => workshop.setTool('cut')}
-            />
-          </RequiresTool>
-          <SceneTile
-            icon={ListChecks}
-            label={copy.addSelection}
-            pressed={workshop.additive}
-            onClick={() => workshop.setAdditive(!workshop.additive)}
-          />
-          <RequiresTool family="model.pieces">
-            <SceneTile
-              icon={Group}
-              label={copy.group}
-              disabled={!selected.length}
-              onClick={() =>
-                run(
-                  (source) => groupSceneNodes(source, selected, { name: copy.groupName }),
-                  'created',
-                )
-              }
-            />
-            <SceneTile
-              icon={Ungroup}
-              label={copy.ungroup}
-              disabled={
-                !selected.length ||
-                selected.some((id) => index.scene.nodes.get(id)?.kind !== 'group')
-              }
-              onClick={(event) => {
-                const from = event.currentTarget
-                if (run((source) => ungroupSceneNodes(source, selected), 'clear'))
-                  focusWorkshopStage(from)
-              }}
             />
           </RequiresTool>
           <RequiresTool family="model.mesh">

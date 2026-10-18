@@ -10,7 +10,20 @@ import {
 } from './imagePaint'
 import { ensureScenePaintSurface } from './paintSurface'
 import { scenePaintFaceBounds, scenePaintIslandKey } from './paintSurfaceBounds'
-import { requireScene } from './validation'
+import { requireScene, SceneValidationError } from './validation'
+
+export interface ScenePaintPreparationIssue {
+  nodeId: string
+  faceId?: string
+  faces: readonly string[]
+}
+
+/** A recoverable authoring choice, distinct from an invalid paint gesture. */
+export class ScenePaintPreparationRequired extends SceneValidationError {
+  constructor(readonly issue: ScenePaintPreparationIssue) {
+    super('paint.face', 'Prepare a pintura desta peça para começar a desenhar.')
+  }
+}
 
 const buffers = new WeakMap<SceneGeometry, ReturnType<typeof buildSceneGeometry>>()
 
@@ -65,11 +78,12 @@ export function prepareScenePaintContact(
   contact: ScenePaintContact,
 ): { document: MoldaSceneDocument; target: ScenePaintTarget; sample: ScenePaintSample } {
   const result = ensureScenePaintSurface(document, contact)
-  requireScene(
-    result.status === 'ready',
-    'paint.face',
-    'Esta face precisa ser preparada antes de pintar. Escolha a peça e use “Dividir faces para pintar”. O traço foi cancelado por inteiro.',
-  )
+  if (result.status === 'crooked')
+    throw new ScenePaintPreparationRequired({
+      nodeId: contact.nodeId,
+      faceId: contact.faceId,
+      faces: result.faces,
+    })
   const reflected = contact.mirror
     ? prepareScenePaintContact(result.document, contact.mirror)
     : null

@@ -32,13 +32,15 @@ self.onmessage = (event: MessageEvent<unknown>) => {
     }
     const request = readSceneSurfaceApply(event.data)
     requestId = request.requestId
+    if (request.offset && source.tool !== 'extrude')
+      throw new SceneValidationError('offset', 'As alças só deslocam a extrusão de faces.')
     let next = 0
     const allocate = () => `surface:${source!.idSeed}:${++next}`
     const result =
       source.tool === 'subdivide'
         ? subdivideMeshFaces(source.mesh, source.faceIds, request.amount, allocate)
         : surface
-          ? surface.apply(request.amount, allocate)
+          ? surface.apply(request.amount, allocate, request.offset)
           : insetMeshFaces(source.mesh, source.faceIds, request.amount, allocate)
     // Validate the resource budget before cloning a potentially oversized response to the UI.
     const mesh = readSceneGeometry(result)

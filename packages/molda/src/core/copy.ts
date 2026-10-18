@@ -529,7 +529,7 @@ export const COPY = {
     componentTitles: { vertex: 'Pontos da peça', edge: 'Linhas da peça', face: 'Faces da peça' },
     componentPickHints: {
       vertex: 'Toque num ponto. Escolher várias junta pontos à seleção. Esc volta às peças.',
-      edge: 'Toque numa linha da malha. Escolher várias junta linhas à seleção. Esc volta às peças.',
+      edge: 'Clique em um trecho. Marque “Selecionar loop inteiro” no painel para escolher o loop. Escolher várias junta linhas à seleção. Esc volta às peças.',
     },
     componentViewport: 'Modelo 3D. Arraste para olhar. Toque para escolher uma parte da malha.',
     componentTransformHint:
@@ -540,9 +540,20 @@ export const COPY = {
     },
     componentAll: { vertex: 'Escolher todos os pontos', edge: 'Escolher todas as linhas' },
     componentNone: 'Limpar partes escolhidas',
+    componentWholeLoop: 'Selecionar loop inteiro',
+    componentCoplanarFaces: 'Selecionar faces do mesmo lado',
+    componentCoplanarHint: 'Clique em uma face para selecionar as faces ligadas no mesmo plano.',
     componentConnected: 'Escolher partes ligadas',
     componentMoreSelection: 'Mais jeitos de escolher',
     uvTitle: 'Encaixar a pintura (UV)',
+    uvAdvanced: 'Avançado',
+    uvVisualHint:
+      'Escolha uma face no modelo ou aqui. Arraste um ponto para ajustar, ou o meio da parte escolhida para mover.',
+    uvPixelSnap: 'Encaixar nos pixels',
+    uvNoTexture: 'Pinte a peça primeiro para ver os quadradinhos da pintura aqui.',
+    uvMixedImages: 'Essas faces usam folhas diferentes. Escolha uma face para ajustar sua pintura.',
+    uvRotateQuarter: 'Girar 90°',
+    uvVisualNotice: 'Isso muda onde a pintura aparece. Você pode desfazer.',
     uvCanvasControl: 'Escolher ou ajustar no mapa da pintura',
     uvCorners: 'Cantos e bordas da pintura',
     uvCornerHint:
@@ -554,7 +565,7 @@ export const COPY = {
     uvCornerAxis: (axis: 'U' | 'V') => `${axis} do canto`,
     uvCornerApply: 'Aplicar posição do canto',
     uvCornerKeyboard:
-      'Arraste um canto pelo número. No teclado: espaço começa, setas movem pelo passo escolhido e espaço ou Enter confirma. Escape cancela. O contorno é uma prévia; a pintura 3D muda ao confirmar.',
+      'Arraste um ponto e solte para aplicar. Teclado: espaço começa, setas movem, Enter confirma e Esc cancela.',
     uvStitch: 'Alinhar a borda da face vizinha',
     uvStitchHint:
       'A borda vai deste canto até o próximo. Escolha também a face vizinha: alinhar copia as duas posições desta borda para ela, sem mover o restante da ilha. Isso pode esticar a pintura da vizinha. Você pode desfazer.',
@@ -569,7 +580,7 @@ export const COPY = {
     uvFaceNumber: (number: number) => `Face ${number}`,
     uvIslands: (islands: number, seams: number) =>
       `${islands} ilhas de pintura, ${seams} linhas de contorno ou costura.`,
-    uvSelectIslands: 'Escolher ilhas inteiras',
+    uvSelectIslands: 'Escolher parte inteira',
     uvTransform: 'Ajustar o encaixe escolhido',
     uvFields: {
       u: 'Mover de lado (U)',
@@ -862,7 +873,7 @@ export const COPY = {
       shrink: 'Retira as partes que tocam vizinhas não escolhidas. Não apaga nada do modelo.',
       invert: 'Escolhe o que ficou de fora e solta o que estava escolhido.',
       ring: 'Passa para o lado oposto de cada face de quatro pontos. Para nas bordas e nas ligações ambíguas.',
-      loop: 'Segue a continuação das linhas, sem virar nas ligações com muitos caminhos. Para em triângulos e bordas.',
+      loop: 'Segue a continuação das linhas, inclusive nos cortes da faca. Para nas bordas e nas ligações com muitos caminhos.',
     },
     componentRemove: {
       vertex: 'Apagar pontos e faces ligadas',
@@ -929,11 +940,24 @@ export const COPY = {
       extrude:
         'Puxa cada região plana para fora. Valores negativos empurram para dentro. A medida é da peça, antes da escala. Não recorta outras partes; as laterais novas repetem a pintura.',
       inset:
-        'Cria uma borda em cada face escolhida. A porcentagem aproxima os pontos do centro, sem mudar a pintura.',
+        'Cria uma borda ao redor de cada região plana escolhida. As faces internas continuam unidas. A porcentagem aproxima os pontos do centro, mantendo a pintura contínua.',
     },
     extrudeAmount: 'Quanto puxar',
+    extrudeHandlesHint:
+      'Arraste as alças de Mover no modelo para puxar a face, ou ajuste o valor abaixo.',
+    createFaceEdge: {
+      label: 'Criar face ou linha',
+      description: 'Ligue os pontos ou crie uma face entre as linhas escolhidas.',
+      edgeHint:
+        'Escolha duas linhas para criar a face entre elas, ou escolha as linhas de um contorno.',
+      vertexHint: 'Dois pontos criam uma linha. Três ou mais pontos criam uma face.',
+      preserveHint:
+        'A peça mantém os pontos e a pintura que já tinha. A parte criada fica selecionada.',
+    },
     thicknessAmount: 'Espessura da peça',
     insetAmount: 'Borda em porcentagem',
+    insetSelectionHint:
+      'Crie uma borda ao redor da seleção. As faces internas ficam unidas para você puxar depois.',
     subdivideAmount: 'Quantidade de divisões',
     previewHint: 'Veja no modelo. Só confirme quando gostar do resultado.',
     previewConfirm: 'Confirmar ajuste',
@@ -958,7 +982,12 @@ export const COPY = {
     scaleHint: '1 mantém o tamanho. 2 dobra. 0,5 deixa pela metade.',
     apply: 'Aplicar ajuste',
     invalidNumber: 'Preencha os três valores com números válidos.',
-    positiveScale: 'Use um tamanho maior que zero. Para inverter, use Espelhar.',
+    positiveScale: 'Use um tamanho maior que zero. Para inverter, use Virar.',
+    flipTitle: 'Virar',
+    flipAxis: (axis: string) => `Virar no eixo ${axis}`,
+    flipInPlace: 'Manter no lugar',
+    flipHint: 'Leva as peças ou o grupo para o lado oposto da oficina no eixo escolhido.',
+    flipInPlaceHint: 'Inverte a forma em torno do centro da seleção, mantendo o conjunto no lugar.',
     organize: 'Colocar dentro de um grupo',
     root: 'Fora dos grupos',
     noGroups: 'Agrupe algumas peças para organizar aqui.',
@@ -1132,8 +1161,7 @@ export const COPY = {
     pathAround: 'Lados do tubo',
     pathCaps: 'Fechar as pontas',
     pathClosed: 'Caminho fechado',
-    movementStep: 'Passo do movimento',
-    movementFree: 'Livre',
+    movementStep: 'Passo das medidas',
     showGrid: 'Mostrar grade',
     applyPathSettings: 'Aplicar formato do tubo',
     pathPoint: 'Ponto do caminho',

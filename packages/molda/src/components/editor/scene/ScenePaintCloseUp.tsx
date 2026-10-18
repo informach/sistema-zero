@@ -1,15 +1,6 @@
-/**
- * Pintar de perto: SÓ a face tocada, ampliada e em pé, por cima do palco. As ferramentas e as
- * cores são as mesmas da aba (a coluna e a faixa continuam à vista), e o traço fica preso à
- * região da face (o limite vai em cada amostra).
- *
- * É diferente da folha inteira ("Mais jeitos de pintar"), que mostra a imagem toda, confusa
- * para a criança: aqui é uma face só, do tamanho do palco, do jeito que ela aparece de fora
- * (`scene/paintFaceView.ts`), e não do jeito que a folha a guarda.
- */
-import { useEffect, useLayoutEffect, useRef } from 'react'
-import { SCENE_PAINT_COPY } from '../../../core/scenePaintCopy'
-import type { Texel } from '../../../paint/skinPaint'
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
+import { SCENE_PAINT_COPY as copy } from '../../../core/scenePaintCopy'
+import type { BrushSize, Texel } from '../../../paint/skinPaint'
 import { compositeSceneImageRegion, type SceneRgba } from '../../../scene/composite'
 import type { SceneImage } from '../../../scene/document'
 import {
@@ -18,8 +9,10 @@ import {
   sceneFaceViewTexel,
 } from '../../../scene/paintFaceView'
 import { Button } from '../../ui/Button'
+import { Minus, Plus } from '../../ui/icons'
 import { SCENE_CLOSE_UP_REGION, type ScenePaintActions } from './useScenePaint'
 
+/** An integer-scaled pixel canvas beside the live 3D model; both share one paint transaction. */
 export function ScenePaintCloseUp({
   image,
   palette,
@@ -27,6 +20,7 @@ export function ScenePaintCloseUp({
   view,
   drawing,
   actions,
+  brush,
   onClose,
 }: {
   image: SceneImage
@@ -35,130 +29,268 @@ export function ScenePaintCloseUp({
   view: ScenePaintFaceView
   drawing: boolean
   actions: ScenePaintActions
+  brush: BrushSize
   onClose(): void
 }) {
   const { region } = view
   const { width, height } = sceneFaceViewSize(view)
   const canvas = useRef<HTMLCanvasElement>(null)
+  const input = useRef<HTMLButtonElement>(null)
+  const scroll = useRef<HTMLDivElement>(null)
   const root = useRef<HTMLElement>(null)
   const heading = useRef<HTMLHeadingElement>(null)
   const pointer = useRef<number | null>(null)
   const live = useRef(actions)
   live.current = actions
+  const hintId = useId()
+  const [fit, setFit] = useState(1)
+  const [zoom, setZoom] = useState<number | null>(null)
+  const [grid, setGrid] = useState(true)
+  const [cursor, setCursor] = useState<{ column: number; row: number } | null>(null)
+  const scale = zoom ?? fit
+  const reversedColumn = view.transpose ? view.flipY : view.flipX
+  const reversedRow = view.transpose ? view.flipX : view.flipY
+  useLayoutEffect(() => {
+    const element = scroll.current
+    if (!element) return
+    const measure = () =>
+      setFit(
+        Math.max(
+          1,
+          Math.min(
+            64,
+            Math.floor(
+              Math.min((element.clientWidth - 24) / width, (element.clientHeight - 24) / height),
+            ),
+          ),
+        ),
+      )
+    measure()
+    if (typeof ResizeObserver === 'undefined') return
+    const observer = new ResizeObserver(measure)
+    observer.observe(element)
+    return () => observer.disconnect()
+  }, [width, height])
   useEffect(() => {
     const context = canvas.current?.getContext('2d')
     if (!context) return
-    const pixels = compositeSceneImageRegion(image, palette, base, view.region)
-    const stride = view.region.x1 - view.region.x0 + 1
+    const pixels = compositeSceneImageRegion(image, palette, base, region)
+    const stride = region.x1 - region.x0 + 1
     const data = context.createImageData(width, height)
-    // Cada célula da tela puxa o texel dela: a face em pé, com a linha de cima em cima.
     for (let row = 0; row < height; row++)
       for (let column = 0; column < width; column++) {
         const [x, y] = sceneFaceViewTexel(view, column, row)
-        const from = ((y - view.region.y0) * stride + (x - view.region.x0)) * 4
+        const from = ((y - region.y0) * stride + x - region.x0) * 4
         data.data.set(pixels.subarray(from, from + 4), (row * width + column) * 4)
       }
     context.putImageData(data, 0, 0)
-  }, [image, palette, base, view, width, height])
+  }, [image, palette, base, view, region, width, height])
+  function finish(commit: boolean) {
+    const id = pointer.current
+    pointer.current = null
+    if (id === null) return
+    if (input.current?.hasPointerCapture?.(id)) input.current.releasePointerCapture(id)
+    live.current.end(commit)
+  }
   useEffect(() => {
     if (!drawing && pointer.current !== null) {
       pointer.current = null
       live.current.end(false)
     }
   }, [drawing])
-  useEffect(
-    () => () => {
-      if (pointer.current !== null) live.current.end(false)
-    },
-    [],
-  )
-  // Abrir leva o foco ao título (o leitor anuncia onde a criança está); fechar devolve o foco à
-  // ferramenta "Pintar de perto". Sem isso o botão "Voltar ao modelo" sumia com o foco, que caía
-  // no body, e os atalhos (P, E, Ctrl+Z, Esc) paravam até o próximo clique.
+  useEffect(() => {
+    const cancel = () => {
+      if (pointer.current !== null) {
+        pointer.current = null
+        live.current.end(false)
+      }
+    }
+    window.addEventListener('blur', cancel)
+    return () => {
+      window.removeEventListener('blur', cancel)
+      cancel()
+    }
+  }, [])
   useLayoutEffect(() => {
     const section = root.current
     heading.current?.focus({ preventScroll: true })
     return () => {
-      const active = window.document.activeElement
-      if (active && active !== window.document.body && !section?.contains(active)) return
+      const active = document.activeElement
+      if (active && active !== document.body && !section?.contains(active)) return
       section
         ?.closest('[data-molda-theme]')
         ?.querySelector<HTMLElement>('[data-paint-tool="paint.closeup"]')
         ?.focus({ preventScroll: true })
     }
   }, [])
-  /** O texel sob o dedo, contando a margem do `object-contain` quando a face não tem o formato do palco. */
-  function texel(clientX: number, clientY: number): Texel | null {
+  function cell(clientX: number, clientY: number) {
     const box = canvas.current?.getBoundingClientRect()
     if (!box?.width || !box.height) return null
-    const scale = Math.min(box.width / width, box.height / height)
-    const left = box.left + (box.width - width * scale) / 2
-    const top = box.top + (box.height - height * scale) / 2
-    const across = (clientX - left) / (width * scale)
-    const down = (clientY - top) / (height * scale)
-    if (across < 0 || down < 0 || across > 1 || down > 1) return null
-    return sceneFaceViewTexel(
-      view,
-      Math.min(width - 1, Math.floor(across * width)),
-      Math.min(height - 1, Math.floor(down * height)),
-    )
+    const across = (clientX - box.left) / box.width
+    const down = (clientY - box.top) / box.height
+    if (across < 0 || down < 0 || across >= 1 || down >= 1) return null
+    return { column: Math.floor(across * width), row: Math.floor(down * height) }
   }
   const sample = (point: Texel) => ({ point, region: SCENE_CLOSE_UP_REGION, bounds: region })
-  function finish(commit: boolean) {
-    const id = pointer.current
-    pointer.current = null
-    if (id === null) return
-    if (canvas.current?.hasPointerCapture?.(id)) canvas.current.releasePointerCapture(id)
-    live.current.end(commit)
-  }
+  const at = (position: { column: number; row: number }) =>
+    sample(sceneFaceViewTexel(view, position.column, position.row))
   return (
-    <section
-      ref={root}
-      aria-label={SCENE_PAINT_COPY.closeUp}
-      className="absolute inset-0 z-30 flex flex-col gap-2 bg-mld-bg p-3"
-    >
-      <div className="flex flex-wrap items-center justify-between gap-2">
+    <section ref={root} aria-label={copy.closeUp} className="mld-paint-detail">
+      <div className="space-y-1">
         <h2 ref={heading} tabIndex={-1} className="mld-display text-lg outline-none">
-          {SCENE_PAINT_COPY.closeUp}
+          {copy.closeUp}
         </h2>
-        <Button className="text-sm" onClick={onClose}>
-          {SCENE_PAINT_COPY.closeUpBack}
-        </Button>
+        <p id={hintId} className="text-xs text-mld-muted">
+          {copy.pixelHint}
+        </p>
       </div>
-      <canvas
-        ref={canvas}
-        width={width}
-        height={height}
-        role="img"
-        aria-label={SCENE_PAINT_COPY.closeUpSheet}
-        className="mld-pixelated min-h-0 w-full flex-1 touch-none rounded-lg object-contain"
-        onPointerDown={(event) => {
-          if (pointer.current !== null || event.button !== 0) return
-          const point = texel(event.clientX, event.clientY)
-          if (!point || !actions.begin(sample(point))) return
-          event.preventDefault()
-          pointer.current = event.pointerId
-          try {
-            event.currentTarget.setPointerCapture(event.pointerId)
-          } catch {
-            finish(false)
-          }
+      <div className="flex flex-wrap items-center gap-1">
+        <Button
+          className="px-2"
+          aria-label={copy.zoomOut}
+          disabled={scale <= 1 || drawing}
+          onClick={() => setZoom(Math.max(1, Math.floor(scale / 2)))}
+        >
+          <Minus className="size-4" aria-hidden="true" />
+        </Button>
+        <span className="min-w-10 text-center text-xs tabular-nums" aria-live="polite">
+          {scale}×
+        </span>
+        <Button
+          className="px-2"
+          aria-label={copy.zoomIn}
+          disabled={scale >= 64 || drawing}
+          onClick={() => setZoom(Math.min(64, scale * 2))}
+        >
+          <Plus className="size-4" aria-hidden="true" />
+        </Button>
+        <Button className="px-2 text-xs" disabled={drawing} onClick={() => setZoom(null)}>
+          {copy.fitPixels}
+        </Button>
+        <label className="flex min-h-11 items-center gap-1 text-xs">
+          <input
+            type="checkbox"
+            name="paint-closeup-grid"
+            checked={grid}
+            onChange={(event) => setGrid(event.target.checked)}
+          />
+          {copy.pixelGrid}
+        </label>
+      </div>
+      <div
+        ref={scroll}
+        className="mld-checkerboard min-h-0 flex-1 overflow-auto rounded-lg border border-mld-border"
+        onScroll={() => {
+          // Focus can scroll the canvas before a keyboard stroke. Keep its selected pixel.
+          if (document.activeElement !== input.current) setCursor(null)
         }}
-        onPointerMove={(event) => {
-          if (pointer.current !== event.pointerId) return
-          const point = texel(event.clientX, event.clientY)
-          actions.move(point ? sample(point) : null)
-        }}
-        onPointerUp={(event) => {
-          if (pointer.current !== event.pointerId) return
-          const point = texel(event.clientX, event.clientY)
-          if (point) actions.move(sample(point))
-          finish(true)
-        }}
-        onPointerCancel={(event) => {
-          if (pointer.current === event.pointerId) finish(false)
-        }}
-      />
+      >
+        <div
+          className="grid min-h-full min-w-full place-items-center p-3"
+          style={{ width: width * scale + 24, height: height * scale + 24 }}
+        >
+          <button
+            ref={input}
+            type="button"
+            aria-label={copy.closeUpSheet}
+            aria-describedby={hintId}
+            className="relative block touch-none overflow-hidden outline-none focus-visible:ring-2 focus-visible:ring-mld-accent"
+            style={{ width: width * scale, height: height * scale }}
+            onFocus={() => setCursor((before) => before ?? { column: 0, row: 0 })}
+            onBlur={() => {
+              finish(false)
+              setCursor(null)
+            }}
+            onKeyDown={(event) => {
+              if (event.ctrlKey || event.metaKey || event.altKey || drawing) return
+              const steps: Record<string, [number, number]> = {
+                ArrowLeft: [-1, 0],
+                ArrowRight: [1, 0],
+                ArrowUp: [0, -1],
+                ArrowDown: [0, 1],
+              }
+              const step = steps[event.key]
+              if (step) {
+                event.preventDefault()
+                setCursor((before) => ({
+                  column: Math.max(0, Math.min(width - 1, (before?.column ?? 0) + step[0])),
+                  row: Math.max(0, Math.min(height - 1, (before?.row ?? 0) + step[1])),
+                }))
+              } else if ((event.key === ' ' || event.key === 'Enter') && !event.repeat) {
+                event.preventDefault()
+                if (actions.begin(at(cursor ?? { column: 0, row: 0 }))) actions.end(true)
+              }
+            }}
+            onPointerDown={(event) => {
+              if (pointer.current !== null || event.button !== 0) return
+              const point = cell(event.clientX, event.clientY)
+              if (!point) return
+              event.preventDefault()
+              event.currentTarget.focus({ preventScroll: true })
+              setCursor(point)
+              if (!actions.begin(at(point))) return
+              pointer.current = event.pointerId
+              try {
+                event.currentTarget.setPointerCapture(event.pointerId)
+              } catch {
+                finish(false)
+              }
+            }}
+            onPointerMove={(event) => {
+              const point = cell(event.clientX, event.clientY)
+              setCursor(point)
+              if (pointer.current === event.pointerId) actions.move(point ? at(point) : null)
+            }}
+            onPointerLeave={() => setCursor(null)}
+            onPointerUp={(event) => {
+              if (pointer.current !== event.pointerId) return
+              const point = cell(event.clientX, event.clientY)
+              if (point) actions.move(at(point))
+              finish(true)
+            }}
+            onPointerCancel={(event) => {
+              if (pointer.current === event.pointerId) finish(false)
+            }}
+            onLostPointerCapture={(event) => {
+              if (pointer.current === event.pointerId) finish(false)
+            }}
+          >
+            <canvas
+              ref={canvas}
+              width={width}
+              height={height}
+              className="mld-pixelated block size-full"
+            />
+            {grid && scale >= 6 && (
+              <span
+                aria-hidden="true"
+                className="mld-paint-pixel-grid pointer-events-none absolute inset-0"
+                style={{ backgroundSize: `${scale}px ${scale}px` }}
+              />
+            )}
+            {cursor && (
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute border border-mld-text outline outline-mld-surface"
+                style={{
+                  left:
+                    (cursor.column - (brush === 3 || (brush === 2 && reversedColumn) ? 1 : 0)) *
+                    scale,
+                  top: (cursor.row - (brush === 3 || (brush === 2 && reversedRow) ? 1 : 0)) * scale,
+                  width: brush * scale,
+                  height: brush * scale,
+                }}
+              />
+            )}
+          </button>
+        </div>
+      </div>
+      <p className="text-xs text-mld-muted">
+        {width} × {height} px · {copy.pixelKeyboard}
+      </p>
+      <Button className="text-sm" onClick={onClose}>
+        {copy.closeUpBack}
+      </Button>
     </section>
   )
 }

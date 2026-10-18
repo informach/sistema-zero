@@ -5,6 +5,7 @@ import { SCENE_PAINT_COPY } from '../../../core/scenePaintCopy'
 import { SCENE_SHELL_COPY } from '../../../core/sceneShellCopy'
 import type { MoldaSceneDocument } from '../../../scene/document'
 import type { ScenePaintRgba, ScenePaintTarget } from '../../../scene/imagePaint'
+import type { SceneMeasurementStep } from '../../../scene/measurementStep'
 import type { SceneComponentSelection } from '../../../scene/meshComponents'
 import type { SceneSkinPaintSettings } from '../../../scene/skinPaint'
 import type { SceneAnimationPlayer } from '../../../state/SceneAnimationPlayer'
@@ -83,6 +84,8 @@ export interface SceneCanvasSlots {
 
 interface Props {
   hintControls?: ReactNode
+  measurementStep?: SceneMeasurementStep
+  onMeasurementStepChange?(step: SceneMeasurementStep): void
   guideInput?: SceneGuideInput | null
   guidePoint?(point: import('../../../core/model').Vec3): void
   previewGuide?: import('../../../viewport/ScenePreviewGuide').ScenePreviewGuideState | null
@@ -121,7 +124,7 @@ interface Props {
   /** Espelho de pintura ligado na caixa de ferramentas da aba Pintar. */
   paintMirror?: boolean
   /** O que cobre o palco por um tempo, como a face de perto da aba Pintar. */
-  overlay?: ReactNode
+  detailPanel?: ReactNode
   onEndPaint?(): void
   skinPaint?: SceneSkinPaintSession
   /** Foto da criação para a galeria; o palco decide quando ela vale. */
@@ -187,7 +190,7 @@ function SceneCanvasAttempt({
   paintGuides = null,
   onPaintScopeChange,
   paintMirror = false,
-  overlay = null,
+  detailPanel = null,
   onEndPaint,
   skinPaint,
   onThumb,
@@ -206,6 +209,8 @@ function SceneCanvasAttempt({
   previewGuide,
   cameraRequest,
   hintControls,
+  measurementStep,
+  onMeasurementStepChange,
 }: Props & { onRetry(): void }) {
   const [localTool, setLocalTool] = useState<SceneWorkshopTool>('select')
   const tool = controlledTool ?? localTool
@@ -359,7 +364,9 @@ function SceneCanvasAttempt({
     view.viewport?.cancelGesture()
   }
   const [gridVisible, setGridVisible] = useState(true)
-  const [movementStep, setMovementStep] = useState<number | null>(null)
+  const [localMovementStep, setLocalMovementStep] = useState<SceneMeasurementStep>(1)
+  const movementStep = measurementStep === undefined ? localMovementStep : measurementStep
+  const setMovementStep = onMeasurementStepChange ?? setLocalMovementStep
   const [transformSpace, setTransformSpace] = useState<'world' | 'local'>('world')
   const preciseSpace = can('model.precise') ? transformSpace : 'world'
   const [camera, setCamera] = useState<CameraView>('free')
@@ -451,7 +458,9 @@ function SceneCanvasAttempt({
     tool === 'pivot'
       ? 'A peça gira em volta do pivô.'
       : tool === 'knife'
-        ? 'Clique na superfície para marcar o traçado. Enter aplica; Esc cancela. Arraste para olhar.'
+        ? guideInput?.knife?.edgesOnly
+          ? 'Clique em uma linha para escolher a faixa. Enter aplica; Esc cancela. Arraste para olhar.'
+          : 'Clique na superfície para marcar o traçado. Enter aplica; Esc cancela. Arraste para olhar.'
         : tool === 'cut'
           ? 'Marque pontos nas arestas para cortar a peça.'
           : skinPaintSettings
@@ -558,13 +567,13 @@ function SceneCanvasAttempt({
   // Na barra de cima o menu DESCE; flutuando sobre o palco (o desenho antigo, no pé), ele SOBE.
   // `right` = o grupo da direita da barra, que só vai para a direita a partir de `sm`: abaixo
   // disso ele cai numa linha própria, colado à esquerda, e o menu ancorado à direita abria com
-  // os rótulos fora da tela. `left` estreita no celular: o resumo não começa na borda, e os
-  // 240px do menu passavam da tela.
+  // os rótulos fora da tela. Os ajustes ficam no fim da barra em todos os tamanhos: seu menu
+  // se alinha pela borda direita para não ser recortado pelo palco junto ao inspetor.
   // `stage` = a vista flutuando no palco (o Animar): o palco recorta o que passa do pé dele, e
   // no celular em pé as sete vistas em fila passavam; em duas colunas elas cabem.
   const DROP_ALIGN = {
     right: 'left-0 sm:right-0 sm:left-auto',
-    left: 'left-0 max-sm:w-52',
+    settings: 'right-0',
     stage: 'left-0 grid w-[min(18rem,calc(100vw-2rem))] grid-cols-2',
   } as const
   const dropClass = (align: keyof typeof DROP_ALIGN) =>
@@ -615,7 +624,7 @@ function SceneCanvasAttempt({
         <span className={shell ? 'sr-only' : undefined}>{SCENE_SHELL_COPY.stageSettings}</span>
         {shell && <ChevronDown aria-hidden="true" className="size-4" />}
       </summary>
-      <div className={dropClass('left')}>
+      <div className={dropClass('settings')}>
         {hints.hidden && (
           <>
             <Button className="text-sm" onClick={hints.restore}>
@@ -657,24 +666,18 @@ function SceneCanvasAttempt({
           </Button>
         )}
         <label className="flex min-h-11 items-center gap-2 px-1 text-sm">
-          <span>{copy.movementStep}</span>
-          <select
-            name="molda-movement-step"
-            value={movementStep ?? 'free'}
-            disabled={!view.viewport?.setMovementStep}
-            onChange={(event) =>
-              setMovementStep(event.target.value === 'free' ? null : Number(event.target.value))
-            }
-            className="min-h-11 rounded-lg border border-mld-border bg-mld-bg px-2"
-          >
-            <option value="free">{copy.movementFree}</option>
-            {[0.1, 0.5, 1].map((step) => (
-              <option key={step} value={step}>
-                {step.toLocaleString('pt-BR')}
-              </option>
-            ))}
-          </select>
+          <input
+            type="checkbox"
+            name="molda-fractional-measurements"
+            className="size-5 accent-mld-accent"
+            checked={movementStep !== 1}
+            onChange={(event) => setMovementStep(event.target.checked ? 0.1 : 1)}
+          />
+          Permitir números quebrados
         </label>
+        <p className="flex min-h-11 items-center gap-2 px-1 text-sm">
+          {copy.movementStep}: {movementStep.toLocaleString('pt-BR')}
+        </p>
       </div>
     </details>
   )
@@ -739,7 +742,7 @@ function SceneCanvasAttempt({
     !componentSelection &&
     !skinPaintSettings
   const hintCard =
-    dismissibleHint && hints.hidden ? null : (
+    detailPanel || (dismissibleHint && hints.hidden) ? null : (
       <div
         data-dismissible={dismissibleHint}
         className="mld-stage-card pointer-events-auto flex max-w-full flex-wrap items-center gap-x-2 gap-y-1 px-3 py-2"
@@ -1001,6 +1004,7 @@ function SceneCanvasAttempt({
         </p>
       )}
       <div className="relative flex min-h-0 flex-1">
+        {detailPanel}
         <div className="mld-zoom">
           <button
             type="button"
@@ -1104,7 +1108,6 @@ function SceneCanvasAttempt({
               {copy.drawIssues(view.issueCount)}
             </p>
           )}
-          {overlay}
           {!shell && (
             <SceneFirstSteps
               key={document.id}

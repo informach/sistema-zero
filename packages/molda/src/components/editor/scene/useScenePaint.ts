@@ -7,6 +7,7 @@ import { SCENE_PAINT_COPY } from '../../../core/scenePaintCopy'
 import type { BrushSize, Texel } from '../../../paint/skinPaint'
 import type { ScenePixelRegion } from '../../../scene/composite'
 import type { MoldaSceneDocument } from '../../../scene/document'
+import { sceneFlipbookRegion } from '../../../scene/imageFlipbook'
 import { captureSceneLayerRaster } from '../../../scene/imageImport'
 import {
   resolveScenePaintTarget,
@@ -17,7 +18,11 @@ import {
 } from '../../../scene/imagePaint'
 import { intersectImageRegions } from '../../../scene/imageRegion'
 import type { SceneStampSettings } from '../../../scene/imageStamp'
-import { prepareScenePaintContact } from '../../../scene/paintContact'
+import {
+  prepareScenePaintContact,
+  type ScenePaintPreparationIssue,
+  ScenePaintPreparationRequired,
+} from '../../../scene/paintContact'
 import {
   type ScenePaintFaceView,
   scenePaintFaceView,
@@ -25,7 +30,7 @@ import {
 } from '../../../scene/paintFaceView'
 import { prepareSceneInk, sampleSceneInk, sceneInkRgba } from '../../../scene/paintInk'
 import { rotateScenePaintFace } from '../../../scene/paintRegionRotate'
-import { scenePaintFaceFillsBounds } from '../../../scene/paintSurfaceBounds'
+import { scenePaintFaceBounds, scenePaintFaceFillsBounds } from '../../../scene/paintSurfaceBounds'
 import { patchScenePieceAppearance } from '../../../scene/pieceAppearance'
 import { SceneValidationError } from '../../../scene/validation'
 import type { EditorStore } from '../../../state/editorStore'
@@ -66,7 +71,11 @@ export function crossesSeam(previous: ScenePaintSample, next: ScenePaintSample):
   return Math.abs(previous.point[0] - next.point[0]) * 2 > bounds.x1 - bounds.x0 + 1
 }
 
-export function useScenePaint(editor: EditorStore<MoldaSceneDocument>, active = false) {
+export function useScenePaint(
+  editor: EditorStore<MoldaSceneDocument>,
+  active = false,
+  onPreparationRequired?: (issue: ScenePaintPreparationIssue | null) => void,
+) {
   const { can } = useMoldaToolAccess()
   const document = useStore(editor, (state) => state.content)
   /** `quiet`: a sessão que a aba Pintar abriu sozinha fecha sem alerta quando o alvo some. */
@@ -104,7 +113,7 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>, active = 
     if (sampled[3] === 0) return
     rememberColor([sampled[0], sampled[1], sampled[2], 255])
   }
-  const [brush, setBrush] = useState<BrushSize>(2)
+  const [brush, setBrush] = useState<BrushSize>(1)
   const [tool, setTool] = useState<
     'pencil' | 'eraser' | 'fill' | 'picker' | 'rotate' | 'closeup' | ScenePaintDraft['tool']
   >('pencil')
@@ -148,6 +157,16 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>, active = 
   const [selection, setSelection] = useState<ScenePaintScope | null>(null)
   const [drawing, setDrawing] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const reportError = useCallback(
+    (error: unknown) => {
+      if (error instanceof ScenePaintPreparationRequired && onPreparationRequired) {
+        setError(null)
+        onPreparationRequired(error.issue)
+      } else
+        setError(error instanceof SceneValidationError ? error.message : COPY.scene.paintFailed)
+    },
+    [onPreparationRequired],
+  )
   const runShape = useCallback<Parameters<typeof createScenePaintShapeGesture>[1]['run']>(
     async (...args) => {
       const [source, , operation, prepared] = args
@@ -169,10 +188,9 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>, active = 
         preview: setDraft,
         select: setSelection,
         run: runShape,
-        error: (error) =>
-          setError(error instanceof SceneValidationError ? error.message : COPY.scene.paintFailed),
+        error: reportError,
       }),
-    [editor, runShape],
+    [editor, runShape, reportError],
   )
   const stroke = useRef<{
     last: ScenePaintSample | null
@@ -180,13 +198,7 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>, active = 
     line?: { start: ScenePaintSample; checkpoint: MoldaSceneDocument }
   } | null>(null)
   const publishing = useRef(false)
-  const gesture = useMemo(
-    () =>
-      createScenePaintGesture(editor, (error) =>
-        setError(error instanceof SceneValidationError ? error.message : COPY.scene.paintFailed),
-      ),
-    [editor],
-  )
+  const gesture = useMemo(() => createScenePaintGesture(editor, reportError), [editor, reportError])
   /** Só o traço e o trabalho em andamento; o gesto de cor segue (o seletor nativo tira o foco). */
   const stopStroke = useCallback(() => {
     cancelImage()
@@ -339,15 +351,92 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>, active = 
       publishing.current = false
     }
   }
+  const openFace = useCallback(
+    (
+      source: MoldaSceneDocument,
+      target: ScenePaintTarget,
+      faceId?: string,
+      bounds?: ScenePixelRegion,
+    ) => {
+      const { image } = resolveScenePaintTarget(source, target)
+      const node = source.nodes.find((entry) => entry.id === target.nodeId)
+      const geometry =
+        node?.kind === 'mesh'
+          ? source.geometries.find((entry) => entry.id === node.geometryId)
+          : undefined
+      const region =
+        bounds ??
+        (geometry && faceId !== undefined
+          ? scenePaintFaceBounds(
+              geometry,
+              faceId,
+              image,
+              image.flipbook ? sceneFlipbookRegion(image, 0) : undefined,
+            )
+          : null)
+      if (!region) {
+        setError(SCENE_PAINT_COPY.faceOnly)
+        return
+      }
+      const cell = image.flipbook
+        ? { width: image.flipbook.frameWidth, height: image.flipbook.frameHeight }
+        : image
+      setCloseUp({
+        imageId: image.id,
+        view:
+          (geometry &&
+            faceId !== undefined &&
+            scenePaintFaceView(geometry, faceId, cell, region)) ||
+          sceneSheetView(region),
+      })
+      setTool('pencil')
+      setError(null)
+    },
+    [],
+  )
+  const changeBaseColor = (nodeId: string) => {
+    if (!can('model.finish')) {
+      setError('A cor de fundo não está disponível nesta oficina. Use Área desta face.')
+      return
+    }
+    try {
+      const source = editor.getState().content
+      const next = patchScenePieceAppearance(source, nodeId, {
+        baseColor: {
+          kind: 'rgba',
+          value: [
+            chosenColor[0] / 255,
+            chosenColor[1] / 255,
+            chosenColor[2] / 255,
+            chosenColor[3] / 255,
+          ],
+        },
+      })
+      if (next !== source) {
+        editor.getState().commit(next)
+        pushRecent(chosenColor)
+      }
+      setError(null)
+      onPreparationRequired?.(null)
+    } catch (error) {
+      reportError(error)
+    }
+  }
   const actions: ScenePaintActions = {
     begin(input) {
       if (stroke.current || shapeGesture.active() || imageTask.busy || stampFile.busy) return false
       let prepared: ReturnType<typeof prepareScenePaintContact> | null = null
       if ('kind' in input) {
+        // A solid piece color needs no image, UV layout or topology preparation.
+        if (fill && !picker && fillScope === 'base') {
+          changeBaseColor(input.nodeId)
+          return false
+        }
         try {
           prepared = prepareScenePaintContact(editor.getState().content, input)
+          onPreparationRequired?.(null)
         } catch (error) {
-          setError(error instanceof Error ? error.message : COPY.scene.paintFailed)
+          reportError(error)
           return false
         }
       }
@@ -385,22 +474,7 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>, active = 
           ? document.geometries.find((entry) => entry.id === node.geometryId)
           : undefined
       if (closeupTool && sample.bounds) {
-        // O toque escolhe a face; a pintura continua com o lápis, agora de perto.
-        const region = sample.bounds
-        // Na pintura que se mexe a UV corre pela célula: o em pé é medido no tamanho dela.
-        const cell = image.flipbook
-          ? { width: image.flipbook.frameWidth, height: image.flipbook.frameHeight }
-          : image
-        setCloseUp({
-          imageId: target.imageId,
-          view:
-            (geometry &&
-              sample.faceId !== undefined &&
-              scenePaintFaceView(geometry, sample.faceId, cell, region)) ||
-            sceneSheetView(region),
-        })
-        setTool('pencil')
-        setError(null)
+        openFace(document, target, sample.faceId, sample.bounds)
         return false
       }
       if (rotate && sample.bounds) {
@@ -486,29 +560,7 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>, active = 
       if (fill) {
         setError(null)
         if (fillScope === 'base' && imageKind === 'color') {
-          if (!can('model.finish')) {
-            setError('A cor de fundo não está disponível nesta oficina. Use Área desta face.')
-            return false
-          }
-          try {
-            const next = patchScenePieceAppearance(editor.getState().content, target.nodeId, {
-              baseColor: {
-                kind: 'rgba',
-                value: [
-                  chosenColor[0] / 255,
-                  chosenColor[1] / 255,
-                  chosenColor[2] / 255,
-                  chosenColor[3] / 255,
-                ],
-              },
-            })
-            if (next !== editor.getState().content) {
-              editor.getState().commit(next)
-              pushRecent(chosenColor)
-            }
-          } catch (error) {
-            setError(error instanceof Error ? error.message : COPY.scene.paintFailed)
-          }
+          changeBaseColor(target.nodeId)
           return false
         }
         try {
@@ -645,6 +697,7 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>, active = 
       closeUp.view.region.y1 < data.image.height
         ? closeUp.view
         : null,
+    openFace,
     closeCloseUp: () => {
       cancel()
       setCloseUp(null)
