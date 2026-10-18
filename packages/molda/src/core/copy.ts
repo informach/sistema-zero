@@ -1210,6 +1210,12 @@ export const COPY = {
     title: 'Minhas criações 3D',
     subtitle: 'Modelos, texturas e céus para os seus jogos 3D.',
     create: 'Criar novo',
+    importModel: 'Importar modelo',
+    importedModelName: 'modelo-importado',
+    importModelHint:
+      'Confira a prévia. Ao confirmar, o modelo será guardado como uma nova criação.',
+    importModelConfirm: 'Importar e abrir',
+    importModelSaving: 'Guardando o modelo...',
     empty: 'Nada por aqui ainda. Toque em "Criar novo" para montar a sua primeira criação!',
     emptyCta: 'Começar minha primeira criação',
     loading: 'Abrindo a sua galeria...',

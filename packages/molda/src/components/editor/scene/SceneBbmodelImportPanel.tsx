@@ -1,6 +1,7 @@
 import { BBMODEL_ANIMATION_IMPORT_COPY as movement } from '../../../core/bbmodelAnimationImportCopy'
 import { BBMODEL_IMPORT_COPY as copy } from '../../../core/bbmodelImportCopy'
 import { BBMODEL_IMPORT_ISSUE_COPY } from '../../../core/bbmodelImportIssueCopy'
+import { COPY } from '../../../core/copy'
 import { Button } from '../../ui/Button'
 import { SceneBbmodelAnimationReview } from './SceneBbmodelAnimationReview'
 import { SceneBbmodelImportOptions } from './SceneBbmodelImportOptions'
@@ -21,6 +22,7 @@ export function SceneBbmodelImportPanel({
   viewportFactory,
   canAdopt,
   blocked = false,
+  destination,
 }: SceneImportPanelProps) {
   const task = useSceneBbmodelImport(editor, { canAdopt }),
     { view } = task,
@@ -92,7 +94,7 @@ export function SceneBbmodelImportPanel({
             </p>
           </SceneImportReport>
           <p className="rounded-xl border border-mld-border p-3 text-sm font-bold">
-            {copy.replace}
+            {destination === 'gallery' ? COPY.gallery.importModelHint : copy.replace}
           </p>
           <label className={importChoice}>
             <input
@@ -122,7 +124,7 @@ export function SceneBbmodelImportPanel({
               if (task.confirm()) onImported()
             }}
           >
-            {copy.confirm}
+            {destination === 'gallery' ? COPY.gallery.importModelConfirm : copy.confirm}
           </Button>
         ) : view.entryPath ? (
           <Button variant="primary" onClick={() => void task.prepare()}>
@@ -130,7 +132,7 @@ export function SceneBbmodelImportPanel({
           </Button>
         ) : null}
         <Button variant="ghost" onClick={onClose}>
-          {copy.close}
+          {destination === 'gallery' ? COPY.gallery.cancel : copy.close}
         </Button>
       </div>
     </div>
