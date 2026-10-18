@@ -35,7 +35,13 @@ import { evaluateSceneNodeFlags } from '../scene/evaluate'
 import { selectSceneSubtrees } from '../scene/graph'
 import { sceneFlipbookTexel } from '../scene/imageFlipbook'
 import type { ScenePaintTarget } from '../scene/imagePaint'
-import { affineInverse, affineMultiply, transformPoint } from '../scene/matrix'
+import {
+  affineInverse,
+  affineMultiply,
+  composeTransform,
+  identityMatrix,
+  transformPoint,
+} from '../scene/matrix'
 import { sceneMeasurementReference } from '../scene/measurementReference'
 import {
   meshComponentIds,
@@ -897,6 +903,19 @@ export class SceneViewport implements SceneViewportPort {
     } else if (bounds)
       dimensions = [0, 1, 2].map((axis) => bounds.max[axis]! - bounds.min[axis]!) as Vec3
     if (!this.measurementOrigin && bounds) this.measurementOrigin = [...bounds.min]
+    const frameParent = selectedNode?.parentId
+      ? this.index?.scene.worldMatrices.get(selectedNode.parentId)
+      : undefined
+    // Relative animation is authored after the entire rest transform, including its scale.
+    // Remove only the animated scale when forming local handles; removing the rest scale
+    // would conjugate a valid local rotation into shear in the animation's coordinates.
+    const frameCoordinates =
+      selectedNode &&
+      this.animationEditing &&
+      this.pose &&
+      this.index?.animations.get(this.pose.clipId)?.space === 'local-delta'
+        ? affineMultiply(frameParent ?? identityMatrix(), composeTransform(selectedNode.transform))
+        : frameParent
     this.gizmo?.setTarget(
       this.pose?.twoBoneGuide && this.animationEditing
         ? this.poseDestination()
@@ -918,14 +937,7 @@ export class SceneViewport implements SceneViewportPort {
                   bounds.min[2] / 2 + bounds.max[2] / 2,
                 ]
           : null,
-      world
-        ? sceneTransformFrame(
-            world,
-            selectedNode?.parentId
-              ? this.index?.scene.worldMatrices.get(selectedNode.parentId)
-              : undefined,
-          )
-        : undefined,
+      world ? sceneTransformFrame(world, frameCoordinates) : undefined,
       dimensions,
       this.componentSelection ? null : this.measurementOrigin,
     )
@@ -1181,9 +1193,7 @@ export class SceneViewport implements SceneViewportPort {
   setAnimationEditing(enabled: boolean): void {
     if (this.disposed || enabled === this.animationEditing) return
     this.animationEditing = enabled
-    this.updateEditingEnabled()
-    this.updatePoseGuide()
-    this.request()
+    this.updateVisibility()
   }
   private updatePoseGuide(flags?: ReturnType<typeof evaluateSceneNodeFlags> | null) {
     const guide = this.pose?.twoBoneGuide
@@ -1243,6 +1253,7 @@ export class SceneViewport implements SceneViewportPort {
     const supports = this.supportGuides ? this.prepareSupports(next) : undefined
     const changed = this.resource.setPose(pose)
     const modeChanged = Boolean(pose) !== this.poseMode
+    const clipChanged = pose?.clipId !== this.pose?.clipId
     const guideModeChanged = Boolean(pose?.twoBoneGuide) !== Boolean(this.pose?.twoBoneGuide)
     this.index = next
     this.pose = pose
@@ -1252,7 +1263,8 @@ export class SceneViewport implements SceneViewportPort {
       if (pose) this.componentSelection = null
       this.updateEditingEnabled()
     }
-    if (changed || worldChanged || modeChanged || guideModeChanged) this.updateVisibility(supports)
+    if (changed || worldChanged || modeChanged || clipChanged || guideModeChanged)
+      this.updateVisibility(supports)
     else if (this.updatePoseGuide()) this.request()
   }
   setImageFrame(imageId: string, frame: number | null): void {

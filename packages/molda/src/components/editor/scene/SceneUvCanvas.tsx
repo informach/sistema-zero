@@ -6,6 +6,7 @@ import type { SceneImage, SceneMeshGeometry } from '../../../scene/document'
 import { meshUvLayout, meshUvTextureLayout } from '../../../scene/meshUvLayout'
 import { SceneTextureGrid } from './SceneTextureGrid'
 import { SceneUvOutlines, uvOutlinePath } from './SceneUvOutlines'
+import { SceneUvRotateHandle } from './SceneUvRotateHandle'
 import { SceneUvScaleHandles } from './SceneUvScaleHandles'
 import { type SceneUvCornerControl, useSceneUvCornerInput } from './useSceneUvCornerInput'
 
@@ -330,6 +331,17 @@ export function SceneUvCanvas({
       </button>
       {sheet && corner?.onScale && (
         <SceneUvScaleHandles
+          mesh={mesh}
+          layout={layout}
+          control={corner}
+          width={width}
+          height={height}
+          screenScale={screenScale}
+          cancelKey={cancelKey}
+        />
+      )}
+      {sheet && corner?.onRotate && (
+        <SceneUvRotateHandle
           mesh={mesh}
           layout={layout}
           control={corner}

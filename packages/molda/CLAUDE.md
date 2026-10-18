@@ -1,5 +1,23 @@
 # CLAUDE.md — @sistemazero/molda
 
+## Recuperação local, UV e animação — 18/10/2026
+
+- `maxGalleryBytes` é o fallback da capacidade adaptativa, não um orçamento de importação.
+  Documentos e backups usam limites de memória separados. Capturar os dados do caller antes
+  de aguardar estimativa de quota; a revisão e as referências ainda são conferidas na transação.
+- A recuperação usa dois checkpoints por sessão e blocos DEFLATE sem perdas. `inspect` informa
+  índices ilegíveis sem esconder outras sessões válidas. Só coletar cópias iguais ao projeto
+  salvo por comparação transacional; o checkpoint mais recente já salvo supera os anteriores
+  daquela sessão. Formatos desconhecidos e cópias corrompidas permanecem preservados.
+- `committedRevision` identifica operações concluídas, separado das prévias e de miniaturas.
+  Aviso de saída complementa os checkpoints e nunca substitui a recuperação após cada operação.
+- Girar UV usa pixels da textura, inclusive em imagens retangulares. Gestos confirmam uma vez
+  e cancelam ao trocar de dono. O divisor da folha também aplica a coordenada de `pointerup`.
+- Animar começa com eixos locais. Em `local-delta`, o frame das alças inclui o transform de
+  repouso inteiro para não converter rotação de peças redimensionadas em cisalhamento.
+
+Revisão de publicação: `docs/plans/2026-10-18-molda-release-full-review.md`.
+
 ## Edição de malha e pintura UV — 17/10/2026
 
 - Cortar divide a superfície com a faca; Loop cut percorre faixas de quadriláteros. A seleção

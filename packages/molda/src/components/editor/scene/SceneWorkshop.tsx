@@ -15,6 +15,7 @@ import { sceneNodePivot, scenePivotRotation, setSceneAuthoringPivot } from '../.
 import { duplicateSceneNodesNearby } from '../../../scene/placement'
 import { sceneVisibleMesh } from '../../../scene/visibleMesh'
 import type { EditorStore } from '../../../state/editorStore'
+import type { SceneRecoveryController } from '../../../state/sceneRecoveryController'
 import type { SceneStorageObserver } from '../../../state/sceneStorageObserver'
 import type { SceneViewportFactory, SceneViewportPort } from '../../../viewport/sceneViewportTypes'
 import { useMoldaToolAccess } from '../../toolAccess'
@@ -45,6 +46,7 @@ import { SceneNodeProperties } from './SceneNodeProperties'
 import { ScenePaintCloseUp } from './ScenePaintCloseUp'
 import { ScenePaintColumn } from './ScenePaintKid'
 import { ScenePaintPalette } from './ScenePaintPalette'
+import { SceneSaveProtection } from './SceneSaveProtection'
 import { SceneSelectionModes } from './SceneSelectionModes'
 import { SceneSolidCutBar } from './SceneSolidCutBar'
 import { SceneStorageNotice } from './SceneStorageNotice'
@@ -75,6 +77,7 @@ const loadAnimationInspector = () =>
 export function SceneWorkshop({
   editor,
   storage,
+  recovery,
   onExit,
   viewportFactory,
   theme = 'light',
@@ -83,6 +86,7 @@ export function SceneWorkshop({
 }: {
   editor: EditorStore<MoldaSceneDocument>
   storage?: SceneStorageObserver
+  recovery?: SceneRecoveryController
   onExit?: (mode: SceneExitMode) => void
   viewportFactory?: SceneViewportFactory
   theme?: 'light' | 'dark'
@@ -521,6 +525,7 @@ export function SceneWorkshop({
         onExport={() => openFromBar(setExportOpen)}
         onImport={() => openFromBar(setImportOpen)}
       />
+      <SceneSaveProtection editor={editor} recovery={recovery} backup={backup} />
       <Dialog
         open={!!workshop.transition}
         title="Esta pose ainda não foi marcada"

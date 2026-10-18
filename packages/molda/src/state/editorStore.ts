@@ -36,6 +36,8 @@ export interface EditorState<T extends EditableDocument = MoldaAsset> {
    * avançam esta revisão; ações adiadas usam-na para não reaplicar snapshots velhos.
    */
   contentRevision: number
+  /** Completed authoring operations only; live replacements and derived thumbnails do not advance it. */
+  committedRevision: number
   /** A última versão que chegou ao disco. */
   savedAsset: T
   saveState: SaveState
@@ -199,6 +201,7 @@ export function createDocumentEditorStore<T extends EditableDocument>(
         asset: next,
         content: contentChanged ? next : state.content,
         contentRevision: state.contentRevision + (contentChanged ? 1 : 0),
+        committedRevision: state.committedRevision + (contentChanged ? 1 : 0),
         saveState: 'dirty',
         ...historyFlags(),
       }))
@@ -209,6 +212,7 @@ export function createDocumentEditorStore<T extends EditableDocument>(
       asset: options.asset,
       content: options.asset,
       contentRevision: 0,
+      committedRevision: 0,
       savedAsset: options.asset,
       saveState: 'saved',
       saveError: null,

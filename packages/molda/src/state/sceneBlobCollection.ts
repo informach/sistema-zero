@@ -4,13 +4,19 @@ import { readSceneDocument } from '../scene/readDocument'
 import { SceneValidationError } from '../scene/validation'
 import { collectRecords } from './readRecords'
 import { isScenePixelHash, SceneBlobError } from './sceneBlob'
+import { isInlineLegacyRecord } from './sceneLegacyReferences'
 import { readSceneSummary, readSceneTombstone } from './sceneMetadata'
 import type { SceneStorageSnapshot } from './sceneQuota'
+import { readRecoveryBlock } from './sceneRecoveryCodec'
+import { readSceneCheckpointSet } from './sceneRecoveryPersistence'
 import { readSceneStorageManifest } from './sceneStorageDocument'
 import {
   SCENE_BLOB_KEY_PREFIX as BLOB,
+  SCENE_CHECKPOINT_PREFIX as CHECKPOINT,
+  SCENE_CHECKPOINT_BLOCK_PREFIX as CHECKPOINT_BLOCK,
   SCENE_DELETED_KEY_PREFIX as DELETED,
   SCENE_DOCUMENT_KEY_PREFIX as DOCUMENT,
+  SCENE_RECOVERY_KEY_PREFIX as ORIGINALS,
   SCENE_SUMMARY_KEY_PREFIX as SUMMARY,
 } from './storageKeys'
 
@@ -27,8 +33,8 @@ export interface SceneBlobCollection {
 }
 
 /**
- * Only consider the target's retired references. No orphan sweep or refcount authority.
- * All graph reads stay in the caller's live transaction. Unknown records/receipts pin candidates.
+ * Certify every root in the caller's live transaction before releasing unreferenced pixels.
+ * Supported legacy originals own inline pixels; unknown records still pin all candidates.
  */
 export function collectUnreferencedSceneBlobs(
   store: IDBObjectStore,
@@ -80,7 +86,7 @@ export function collectUnreferencedSceneBlobs(
           raw.byteLength !== raw.buffer.byteLength
         )
           opaque = true
-      } else if (key.startsWith(DOCUMENT)) documents.push(key)
+      } else if (key.startsWith(DOCUMENT) || key.startsWith(ORIGINALS)) documents.push(key)
       else if (key.startsWith(SUMMARY)) {
         try {
           const other = key.slice(SUMMARY.length)
@@ -103,7 +109,16 @@ export function collectUnreferencedSceneBlobs(
           if (!understoodFailure(error)) throw error
           opaque = true
         }
-      } else opaque = true
+      } else {
+        try {
+          if (key.startsWith(CHECKPOINT)) readSceneCheckpointSet(snapshot.records.get(key), key)
+          else if (key.startsWith(CHECKPOINT_BLOCK)) readRecoveryBlock(snapshot.records.get(key))
+          else if (!isInlineLegacyRecord(key, snapshot.records.get(key))) opaque = true
+        } catch (error) {
+          if (!understoodFailure(error)) throw error
+          opaque = true
+        }
+      }
     }
     if (opaque) {
       finish(true)
@@ -115,6 +130,10 @@ export function collectUnreferencedSceneBlobs(
         for (const [key, raw] of records) {
           costs.set(key, structuredBytes(raw))
           try {
+            if (key.startsWith(ORIGINALS)) {
+              if (!isInlineLegacyRecord(key, raw)) opaque = true
+              continue
+            }
             const other = key.slice(DOCUMENT.length)
             if (raw && typeof raw === 'object' && 'storageVersion' in raw) {
               const manifest = readSceneStorageManifest(raw)

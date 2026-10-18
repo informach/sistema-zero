@@ -80,6 +80,38 @@ function twoBoxes() {
   return { document: two, door: one.nodes.at(-1)!.id, wall: two.nodes.at(-1)!.id }
 }
 
+test('the sheet divider applies the release position even without an intermediate pointer move', async () => {
+  const { document, door } = twoBoxes()
+  const { editor, tap, view, stage } = mount(document)
+  try {
+    await waitFor(() => expect(stage.callbacks).not.toBeNull())
+    tap(door)
+    fireEvent.click(screen.getByRole('button', { name: 'Pintar' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Folha de pintura' }))
+    const divider = await screen.findByRole('separator', { name: 'Largura da folha' })
+    divider.parentElement!.getBoundingClientRect = () => new DOMRect(100, 0, 1000, 500)
+    let captured: number | null = null
+    Object.assign(divider, {
+      setPointerCapture: (id: number) => {
+        captured = id
+      },
+      hasPointerCapture: (id: number) => captured === id,
+      releasePointerCapture: () => {
+        captured = null
+      },
+    })
+    const before = editor.getState().content
+    fireEvent.pointerDown(divider, { pointerId: 1, button: 0, clientX: 480 })
+    fireEvent.pointerUp(divider, { pointerId: 1, button: 0, clientX: 650 })
+    expect(Number(divider.getAttribute('aria-valuenow'))).toBeCloseTo(55, 8)
+    expect(editor.getState().content).toBe(before)
+    expect(editor.getState().canUndo).toBe(false)
+  } finally {
+    view.unmount()
+    editor.getState().dispose()
+  }
+})
+
 function customColorInput() {
   act(() => {
     const details = screen

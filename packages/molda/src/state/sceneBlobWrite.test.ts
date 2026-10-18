@@ -5,9 +5,12 @@ import { structuredBytes } from '../core/structuredBytes'
 import type { MoldaSceneDocument } from '../scene/document'
 import { readSceneDocument } from '../scene/readDocument'
 import { deferred } from '../testing/deferred'
+import { makeModel, makeTexture } from '../testing/fixtures'
 import { nativeDatabase } from '../testing/nativeDatabase'
 import { makeSceneAtlasDocument } from '../testing/sceneAtlasFixture'
-import { MoldaStorageBudgetError } from './guardedWrite'
+import { guardedWrite, MoldaStorageBudgetError } from './guardedWrite'
+import { promoteLegacyScene } from './promoteScene'
+import { scenePixelHash } from './sceneBlob'
 import { mutateSceneBlobStorage } from './sceneBlobWrite'
 import { sceneSummary } from './sceneMetadata'
 import { createScenePersistence } from './scenePersistence'
@@ -20,6 +23,39 @@ import {
 } from './storageKeys'
 
 const budget = 512 * 1024 * 1024
+
+test('migrated originals and legacy tombstones do not retain every paint revision; certified stale blobs are reclaimed', async () => {
+  const db = await nativeDatabase()
+  try {
+    const legacy = makeModel()
+    await guardedWrite(db.store, [legacy, makeTexture()], budget)
+    const promoted = await promoteLegacyScene(db.store, legacy.id, legacy.updatedAt)
+    if (promoted.status !== 'promoted') throw new Error('Expected promoted fixture')
+    const originals = await db.read(`${ORIGINALS}${legacy.id}`)
+    const stalePixels = new Uint8Array(4096).fill(7)
+    await db.seed(`${BLOB}${await scenePixelHash(stalePixels)}`, stalePixels)
+    let document = promoted.document
+    let revision = 1
+    for (let i = 0; i < 1000; i++) {
+      const next = structuredClone(document)
+      next.images[0]!.layers[0]!.pixels[i % next.images[0]!.layers[0]!.pixels.length] = (i % 2) + 2
+      const result = await save(db.store, next, revision)
+      if (result.status !== 'saved') throw new Error('Unexpected conflict')
+      revision = result.revision
+      document = next
+    }
+    const active = await prepareSceneStorage(document)
+    const blobs = [...(await db.dump()).keys()].filter((key) => String(key).startsWith(BLOB))
+    expect(blobs.length).toBe(active.blobs.size)
+    expect(await db.read(`${ORIGINALS}${legacy.id}`)).toEqual(originals)
+    expect(await createScenePersistence(db.store).read(legacy.id)).toMatchObject({
+      status: 'active',
+      document,
+    })
+  } finally {
+    db.close()
+  }
+})
 const save = (
   store: UseStore,
   source: MoldaSceneDocument,

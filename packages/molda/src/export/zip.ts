@@ -12,7 +12,6 @@
  * volta" devolve tudo.
  */
 import { COPY } from '../core/copy'
-import { MOLDA_LIMITS } from '../core/limits'
 import type { MoldaAsset, MoldaAssetKind } from '../core/model'
 import { exportSkyHdrInWorker } from '../workers/skyExport'
 import {
@@ -89,7 +88,7 @@ export class GalleryZipError extends Error {
 }
 
 export const MAX_GALLERY_ZIP_READY_BYTES = MAX_BACKUP_FILE_BYTES * 2
-export const MAX_GALLERY_ZIP_COMPRESSED_BYTES = MOLDA_LIMITS.maxGalleryBytes * 4
+export const MAX_GALLERY_ZIP_COMPRESSED_BYTES = MAX_BACKUP_FILE_BYTES * 2
 
 function defaultYield(): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, 0))

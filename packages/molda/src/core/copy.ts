@@ -1228,7 +1228,7 @@ export const COPY = {
     removeConfirm: 'Apagar',
     cancel: 'Cancelar',
     storageBudget:
-      'Sua galeria chegou ao limite de 96 MB. Apague uma criação grande para continuar salvando.',
+      'Não há espaço suficiente para guardar as últimas mudanças. Guarde uma cópia do projeto e tente novamente.',
     downloadAll: 'Baixar tudo',
     /** A geração seguinte tem o "Baixar projeto" próprio dentro da oficina. */
     downloadSkippedScene: (count: number) =>

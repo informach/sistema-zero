@@ -14,15 +14,22 @@ import {
 } from 'three'
 import { createModelAsset } from '../core/model'
 import { structuredBytes } from '../core/structuredBytes'
+import { setSceneAnimationKeys } from '../scene/animationKeyBatch'
 import {
   addScenePrimitive,
   convertSceneNodesToMesh,
   editSceneMesh,
+  groupSceneNodes,
   transformSceneNodes,
 } from '../scene/commands'
 import { indexSceneDocument } from '../scene/documentIndex'
 import { setSceneImageFlipbook } from '../scene/imageFlipbookCommands'
-import { type AffineMatrix, identityMatrix, transformPoint } from '../scene/matrix'
+import {
+  type AffineMatrix,
+  identityMatrix,
+  quaternionFromEulerXYZ,
+  transformPoint,
+} from '../scene/matrix'
 import { meshComponentIds } from '../scene/meshComponents'
 import { prepareMeshRemoval } from '../scene/meshRemoval'
 import { meshEdgeKey } from '../scene/meshTopology'
@@ -523,6 +530,118 @@ describe('scene viewport lifecycle and picking', () => {
       expect(editor.getState().asset.nodes).toEqual(source.nodes)
       expect(editor.getState().canUndo).toBe(false)
     } finally {
+      f.close()
+      editor.getState().dispose()
+    }
+  })
+
+  test.each([
+    'local',
+    'local-delta',
+  ] as const)('local rings in a %s clip rotate a resized wheel under an animated affine parent and record one undoable pose', (space) => {
+    let source = groupSceneNodes(animatedScene(), ['body'], {
+      name: 'Rodas',
+      nextId: () => 'wheels',
+    })
+    source.animations![0]!.space = space
+    source.nodes = source.nodes.map((node) =>
+      node.id === 'body'
+        ? {
+            ...node,
+            transform: {
+              kind: 'trs',
+              translation: [0, 0, 0],
+              rotation: [0, 0, Math.SQRT1_2, Math.SQRT1_2],
+              scale: [2, 1, 0.5],
+            },
+          }
+        : node.id === 'wheels'
+          ? {
+              ...node,
+              transform: {
+                kind: 'affine',
+                matrix: [1, 0, 0, 0, 0.25, 2, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+              },
+            }
+          : node,
+    )
+    // Absolute clips cannot animate an affine group; relative clips must follow its animated pose.
+    source = setSceneAnimationKeys(source, 'clip', [
+      {
+        nodeId: 'body',
+        channel: 'scale',
+        key: { time: 0, value: [1.2, 0.8, 1.5], interpolation: 'linear' },
+      },
+      {
+        nodeId: 'body',
+        channel: 'rotation',
+        key: { time: 0, value: quaternionFromEulerXYZ([15, -20, 30]), interpolation: 'linear' },
+      },
+      ...(space === 'local-delta'
+        ? [
+            {
+              nodeId: 'wheels',
+              channel: 'rotation' as const,
+              key: {
+                time: 0,
+                value: quaternionFromEulerXYZ([10, 25, 5]),
+                interpolation: 'linear' as const,
+              },
+            },
+          ]
+        : []),
+    ])
+    const editor = createDocumentEditorStore({
+        asset: source,
+        sizeOf: structuredBytes,
+        persistence: { save: async () => {} },
+        autosaveMs: 60_000,
+      }),
+      player = new SceneAnimationPlayer({ now: () => 0, request: () => 1, cancel() {} }),
+      gesture = new SceneAnimationPoseGesture(editor, player),
+      disconnect = gesture.connect()
+    player.setClip(source, 'clip')
+    const f = setup(gesture.transformActions(['body'])),
+      off = gesture.subscribe(() =>
+        f.viewport.setPose(gesture.getSnapshot().pose ?? player.getSnapshot().pose),
+      )
+    try {
+      f.viewport.setDocument(source)
+      f.viewport.setSelection(['body'])
+      f.viewport.setPose(player.getSnapshot().pose)
+      f.viewport.setTransformSpace('local')
+      f.viewport.setTransformTool('rotate')
+      f.viewport.setAnimationEditing(true)
+      f.tick()
+      const ring = f.canvas.parentElement!.querySelector('[aria-label="Girar no eixo Z"]')
+      if (!ring) throw new Error('Missing wheel rotation ring')
+      ring.dispatchEvent(
+        new KeyboardEvent('keydown', { bubbles: true, key: 'ArrowRight', shiftKey: true }),
+      )
+      expect(gesture.getSnapshot().error).toBeNull()
+      expect(gesture.getSnapshot().pending).toBe(true)
+      const preview = gesture.getSnapshot().pose!
+      expect(editor.getState().asset).toBe(source)
+      expect(gesture.record()).toBe(true)
+      const saved = editor.getState().asset
+      expect(saved.nodes).toBe(source.nodes)
+      expect(saved.geometries).toBe(source.geometries)
+      expect(saved.images).toBe(source.images)
+      const scale = saved.animations![0]!.tracks.find((track) => track.channel === 'scale')
+      expect(scale?.keys).toHaveLength(1)
+      scale!.keys[0]!.value.forEach((value, axis) => {
+        expect(value).toBeCloseTo([1.2, 0.8, 1.5][axis]!, 12)
+      })
+      expect(prepareSceneAnimation(saved, 'clip').sample(0, false).worldMatrices).toEqual(
+        preview.worldMatrices,
+      )
+      expect(saved.animations![0]!.tracks.some((track) => track.channel === 'rotation')).toBe(true)
+      editor.getState().undo()
+      expect({ ...editor.getState().asset, updatedAt: source.updatedAt }).toEqual(source)
+      expect(editor.getState().canUndo).toBe(false)
+    } finally {
+      off()
+      disconnect()
       f.close()
       editor.getState().dispose()
     }

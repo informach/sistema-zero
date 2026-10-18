@@ -14,6 +14,8 @@ export const SCENE_RECOVERY_KEY_PREFIX = 'molda:scene-originals:'
 export const SCENE_DELETED_KEY_PREFIX = 'molda:scene-deleted:'
 /** Internal pixel layout. This does not activate writes into any database. */
 export const SCENE_BLOB_KEY_PREFIX = 'molda:scene-blob:'
+export const SCENE_CHECKPOINT_PREFIX = 'molda:scene-checkpoint:'
+export const SCENE_CHECKPOINT_BLOCK_PREFIX = 'molda:scene-checkpoint-block:'
 
 export const V1_DOCUMENT_PREFIXES = [
   DOCUMENT_KEY_PREFIX,

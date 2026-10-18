@@ -402,6 +402,65 @@ for (const dark of [false, true])
     expect(resized.images).toEqual(source.images)
     await page.getByRole('button', { name: COPY.editor.undo, exact: true }).click()
     expect((await saved(page)).geometries).toEqual(source.geometries)
+    const rotationHandle = area.getByRole('button', { name: 'Girar mapa livremente', exact: true })
+    async function rotateSelection(degrees: number, cancel = false, snap = false) {
+      const handle = (await rotationHandle.boundingBox())!
+      const bitmap = (await canvas.boundingBox())!
+      const pivot = { x: bitmap.x + bitmap.width / 2, y: bitmap.y + bitmap.height / 2 }
+      const start = { x: handle.x + handle.width / 2, y: handle.y + handle.height / 2 }
+      const dx = start.x - pivot.x,
+        dy = start.y - pivot.y
+      await page.mouse.move(start.x, start.y)
+      if (snap) await page.keyboard.down('Shift')
+      await page.mouse.down()
+      for (let i = 1; i <= 8; i++) {
+        const angle = (((degrees * Math.PI) / 180) * i) / 8
+        await page.mouse.move(
+          pivot.x + dx * Math.cos(angle) + dy * Math.sin(angle),
+          pivot.y - dx * Math.sin(angle) + dy * Math.cos(angle),
+        )
+      }
+      await expect(area.locator('[data-uv-rotation-preview]')).toBeVisible()
+      if (cancel) await page.keyboard.press('Escape')
+      await page.mouse.up()
+      if (snap) await page.keyboard.up('Shift')
+    }
+    await rotateSelection(37, true)
+    expect((await saved(page)).geometries).toEqual(source.geometries)
+    await rotateSelection(dark ? 397 : 37)
+    const freeRotation = await saved(page)
+    const freeMesh = freeRotation.geometries.find((g) => g.id === node.geometryId)!
+    if (freeMesh.kind !== 'mesh') throw new Error('Missing rotated mesh')
+    const freeCorners = freeMesh.faces.f_0_0!.corners
+    const freeEdge = [
+      (freeCorners[1]!.uv[0] - freeCorners[0]!.uv[0]) * 16,
+      (freeCorners[1]!.uv[1] - freeCorners[0]!.uv[1]) * 8,
+    ]
+    expect(Math.abs((Math.atan2(freeEdge[1]!, freeEdge[0]!) * 180) / Math.PI - 37)).toBeLessThan(
+      0.75,
+    )
+    expect(Math.hypot(...freeEdge)).toBeCloseTo(16, 9)
+    expect(freeRotation.images).toEqual(source.images)
+    const originalGeometry = source.geometries.find((g) => g.id === node.geometryId)!
+    if (originalGeometry.kind !== 'mesh') throw new Error('Missing original mesh')
+    expect(freeMesh.vertices).toEqual(originalGeometry.vertices)
+    await page.getByRole('button', { name: COPY.editor.undo, exact: true }).click()
+    expect((await saved(page)).geometries).toEqual(source.geometries)
+    await rotateSelection(34, false, true)
+    const snappedRotation = await saved(page)
+    const snappedMesh = snappedRotation.geometries.find((g) => g.id === node.geometryId)!
+    if (snappedMesh.kind !== 'mesh') throw new Error('Missing rotated mesh')
+    const snapCorners = snappedMesh.faces.f_0_0!.corners
+    const snapAngle =
+      (Math.atan2(
+        (snapCorners[1]!.uv[1] - snapCorners[0]!.uv[1]) * 8,
+        (snapCorners[1]!.uv[0] - snapCorners[0]!.uv[0]) * 16,
+      ) *
+        180) /
+      Math.PI
+    expect(snapAngle).toBeCloseTo(30, 9)
+    await page.getByRole('button', { name: COPY.editor.undo, exact: true }).click()
+    expect((await saved(page)).geometries).toEqual(source.geometries)
     // Fit changed the camera, so subsequent movements derive their screen coordinates again.
     const fittedBox = (await canvas.boundingBox())!
     center.x = fittedBox.x + fittedBox.width / 2
@@ -459,7 +518,7 @@ for (const dark of [false, true])
     const divider = page.getByRole('separator', { name: 'Largura da folha' })
     const previousWidth = (await area.boundingBox())!.width
     await divider.press('ArrowRight')
-    expect((await area.boundingBox())!.width).toBeGreaterThan(previousWidth)
+    await expect.poll(async () => (await area.boundingBox())!.width).toBeGreaterThan(previousWidth)
     const dividerBox = (await divider.boundingBox())!
     const dragWidth = (await area.boundingBox())!.width
     expect(dividerBox.height).toBeGreaterThan(300)
@@ -467,7 +526,7 @@ for (const dark of [false, true])
     await page.mouse.down()
     await page.mouse.move(dividerBox.x + 40, dividerBox.y + dividerBox.height / 2, { steps: 3 })
     await page.mouse.up()
-    expect((await area.boundingBox())!.width).toBeGreaterThan(dragWidth + 30)
+    await expect.poll(async () => (await area.boundingBox())!.width).toBeGreaterThan(dragWidth + 30)
     const viewBeforeExpand = await area.getByLabel('Zoom da folha', { exact: true }).textContent()
     await area.getByRole('button', { name: 'Ampliar folha' }).click()
     await expect(page.locator('.mld-stage-viewport')).toBeHidden()
