@@ -1,3 +1,4 @@
+import { COPY } from '../../../core/copy'
 import { OBJ_IMPORT_COPY as copy } from '../../../core/objImportCopy'
 import { OBJ_IMPORT_ISSUE_COPY } from '../../../core/objImportIssueCopy'
 import { Button } from '../../ui/Button'
@@ -18,6 +19,7 @@ export function SceneObjImportPanel({
   viewportFactory,
   canAdopt,
   blocked = false,
+  destination,
 }: SceneImportPanelProps) {
   const task = useSceneObjImport(editor, { canAdopt }),
     { view } = task,
@@ -71,7 +73,7 @@ export function SceneObjImportPanel({
             )}
           </SceneImportReport>
           <p className="rounded-xl border border-mld-border p-3 text-sm font-bold">
-            {copy.replace}
+            {destination === 'gallery' ? COPY.gallery.importModelHint : copy.replace}
           </p>
           <label className={choice}>
             <input
@@ -101,7 +103,7 @@ export function SceneObjImportPanel({
               if (task.confirm()) onImported()
             }}
           >
-            {copy.confirm}
+            {destination === 'gallery' ? COPY.gallery.importModelConfirm : copy.confirm}
           </Button>
         ) : view.entryPath ? (
           <Button variant="primary" onClick={() => void task.prepare()}>
@@ -109,7 +111,7 @@ export function SceneObjImportPanel({
           </Button>
         ) : null}
         <Button variant="ghost" onClick={onClose}>
-          {copy.close}
+          {destination === 'gallery' ? COPY.gallery.cancel : copy.close}
         </Button>
       </div>
     </div>

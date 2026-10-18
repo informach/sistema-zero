@@ -32,6 +32,43 @@ async function withGeneration() {
   return { db, scene }
 }
 
+test('gallery exposes model import next to create and cancelling returns focus without saving a draft', async () => {
+  const { db } = await withGeneration()
+  const view = render(<MoldaApp persistence={createMemoryPersistence()} />)
+  try {
+    const trigger = await screen.findByRole('button', { name: COPY.gallery.importModel })
+    await waitFor(() => expect((trigger as HTMLButtonElement).disabled).toBe(false))
+    expect(screen.getByRole('button', { name: COPY.gallery.create }).nextElementSibling).toBe(
+      trigger,
+    )
+    fireEvent.click(trigger)
+    await screen.findByRole('dialog', { name: COPY.gallery.importModel })
+    fireEvent.click(screen.getByRole('button', { name: COPY.a11y.closeDialog }))
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBe(null))
+    expect(document.activeElement).toBe(trigger)
+    expect((await createScenePersistence(db.store).listSummaries()).summaries.length).toBe(1)
+    await settle()
+  } finally {
+    view.unmount()
+    db.close()
+  }
+})
+
+test('gallery import follows the same journey permission as workshop import', async () => {
+  const { db } = await withGeneration()
+  const view = render(
+    <MoldaApp persistence={createMemoryPersistence()} adapter={{ toolAccess: { allow: [] } }} />,
+  )
+  try {
+    await screen.findByRole('button', { name: COPY.a11y.assetCard('nave', 'Modelo') })
+    expect(screen.queryByRole('button', { name: COPY.gallery.importModel })).toBe(null)
+    expect(screen.getByRole('button', { name: COPY.gallery.create })).toBeTruthy()
+  } finally {
+    view.unmount()
+    db.close()
+  }
+})
+
 test('a galeria padrão mostra modelos dos dois formatos numa lista só', async () => {
   const { db, scene } = await withGeneration()
   const legacy = { ...makeModel(), id: 'antigo', name: 'carro', updatedAt: 1 }

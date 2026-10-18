@@ -35,10 +35,12 @@ import { readSceneDocument } from '../../scene/readDocument'
 import { createGalleryPreviews } from '../../state/galleryPreviews'
 import { useGallery, useMoldaApp } from '../appContext'
 import { HostBackLink, HostCloudStatus, HostMenuButton, useMoldaHostChrome } from '../hostChrome'
+import { RequiresTool } from '../toolAccess'
 import { Box, Download, ExternalLink, Loader2, Plus, Search, Upload, X } from '../ui/icons'
 import { useToast } from '../ui/Toast'
 import { AssetCard } from './AssetCard'
 import { ConfirmDialog } from './ConfirmDialog'
+import { GalleryModelImportDialog } from './GalleryModelImportDialog'
 import { KIND_ICONS } from './kinds'
 import { NewAssetDialog } from './NewAssetDialog'
 import { RecoveryNotice } from './RecoveryNotice'
@@ -85,6 +87,7 @@ export function GalleryScreen({ onOpen }: { onOpen: (id: string) => void }): JSX
   const [filters, setFilters] = useState<GalleryFilters>(EMPTY_GALLERY_FILTERS)
   const [visibleLimit, setVisibleLimit] = useState(GALLERY_PAGE_SIZE)
   const [newOpen, setNewOpen] = useState(false)
+  const [importOpen, setImportOpen] = useState(false)
   const [renameTarget, setRenameTarget] = useState<MoldaAssetSummary | null>(null)
   const [removeTarget, setRemoveTarget] = useState<MoldaAssetSummary | null>(null)
   const [removing, setRemoving] = useState(false)
@@ -93,6 +96,7 @@ export function GalleryScreen({ onOpen }: { onOpen: (id: string) => void }): JSX
   const [restoring, setRestoring] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const createButtonRef = useRef<HTMLButtonElement>(null)
+  const importButtonRef = useRef<HTMLButtonElement>(null)
   const searchRef = useRef<HTMLInputElement>(null)
   const packingAbortRef = useRef<AbortController | null>(null)
 
@@ -353,6 +357,18 @@ export function GalleryScreen({ onOpen }: { onOpen: (id: string) => void }): JSX
                     <Plus aria-hidden="true" />
                     {COPY.gallery.create}
                   </button>
+                  <RequiresTool family="files.import">
+                    <button
+                      ref={importButtonRef}
+                      type="button"
+                      className="sz-tool-pill sz-tool-pill--outline"
+                      disabled={!ready}
+                      onClick={() => setImportOpen(true)}
+                    >
+                      <Upload aria-hidden="true" />
+                      {COPY.gallery.importModel}
+                    </button>
+                  </RequiresTool>
                   {/* O campo de arquivo mora aqui, SEMPRE montado: o botão que o aciona fica no
                       cartão lilás, que só existe com a galeria carregada. */}
                   <input
@@ -599,6 +615,15 @@ export function GalleryScreen({ onOpen }: { onOpen: (id: string) => void }): JSX
         </div>
       </div>
 
+      <RequiresTool family="files.import">
+        {importOpen && (
+          <GalleryModelImportDialog
+            onClose={() => setImportOpen(false)}
+            onOpen={onOpen}
+            returnFocusTo={importButtonRef}
+          />
+        )}
+      </RequiresTool>
       <NewAssetDialog
         open={newOpen}
         onClose={() => setNewOpen(false)}
