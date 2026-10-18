@@ -44,6 +44,10 @@ const DOMAIN_STATUS: Record<string, number> = {
   QUIZ_BLOCK_NOT_FOUND: 404,
   LEARNING_CONFLICT: 409,
   STUDIO_PROJECT_SYNCING: 409,
+  // 424 e não 503: o defeito é do executor (dependência), não do members. Um 5xx aqui entraria
+  // na conta do disjuntor do gateway e uma queda do executor fecharia TODAS as rotas do members.
+  PROJECT_CHECK_UNAVAILABLE: 424,
+  PROJECT_CHECK_BUSY: 429,
   SECTION_LOCKED: 423,
   SECTION_GATE_INCOMPLETE: 409,
   LESSON_DRAFT_CONFLICT: 409,

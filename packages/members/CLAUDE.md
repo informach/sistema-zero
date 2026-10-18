@@ -27,6 +27,25 @@ parte viraram o único jeito de conferir o projeto, sempre no servidor.
 - **Gabarito**: `content.solutionProject` do bloco Estúdio (validado no create/update como o
   `initialProject`), retirado da aula do aluno. A publicação recusa objetivo obrigatório que o
   gabarito não cumpre (`studioSectionCompletionIssues` do studio).
+- **Objetivos que RODAM o jogo** (etapa 3, `behavior`/`functionReturns`): a porta
+  `ProjectExecutionChecker` (`domain/ports/project-execution-checker.port.ts`) e o adaptador
+  `createStudioRuntimeChecker` (`infrastructure/gateways/studio-runtime-checker.ts`): monta o pedido
+  com o `@sistemazero/studio/server-check` e chama `POST /v1/check` do studio-runtime. O TIPO e o
+  modelo Pro saem do `initialProject` do bloco, nunca do projeto enviado. Resultado reaproveitado
+  por 10 min para o mesmo projeto e as mesmas regras (impressão), e pedidos iguais simultâneos
+  dividem uma ida. Executor fora, lento, 5xx ou resposta incompleta: **424**
+  `PROJECT_CHECK_UNAVAILABLE` e NADA é guardado (nunca aprova por falha); 429 vira
+  `PROJECT_CHECK_BUSY`. ⚠️ 424 e não 503 (review da etapa 3): o disjuntor do gateway conta todo
+  5xx contra o MEMBERS, e uma queda do executor fecharia todas as rotas. Recusa do executor (400,
+  413) é `ProjectCheckRejectedError` (subclasse do indisponível): a criança lê a frase de sempre e
+  o "Testar agora" recebe o `reason` como 400. Sem `STUDIO_PRO_RUNTIME_URL` +
+  `STUDIO_PRO_RUNTIME_TOKEN` (os mesmos nomes do Kids/Admin; o token é o `INTERNAL_TOKEN` do
+  Worker; declarados em `.railway/variables.ts`), toda parte com esses objetivos responde 424. O
+  "Testar agora" da autoria é `POST /members/admin/project-checks/test` (`testObjectives`:
+  estrutura + execução, com o motivo e as capturas, sem guardar). A CAPTURA só vai quando o
+  "Testar agora" pede (`screenshots: true`) e nunca entra no cache (até 3 MB por entrada). ⚠️ `server.listen` ganhou `idleTimeout: 170`: o padrão de
+  10 s do Bun cortava a conexão com a resposta ainda sendo preparada. ⚠️ O `tsconfig` ganhou
+  `DOM`/`DOM.Iterable` (só tipos): a prévia do Estúdio cita tipos do navegador.
 
 ## Cursos ao vivo: a modalidade do curso (14/10/2026, migration `0113`)
 

@@ -1,6 +1,9 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    // DOM só nos TIPOS: o teste dos objetivos monta o documento do jogo com o
+    // `@sistemazero/studio/server-check`, cujo código de prévia cita tipos do navegador.
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "types": ["bun"]
   },
   "include": ["src", "tests", "scripts", "drizzle.config.ts"]

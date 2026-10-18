@@ -1,15 +1,22 @@
 import {
+  EXECUTION_LIMITS,
+  type ExecutionGameField,
   evaluateProjectStructure,
-  type evaluateSectionObjectives,
-  type evaluateSectionProject,
+  executionProjectChecks,
+  executionRuleBudgetMs,
+  isExecutionRule,
   isProjectBlockPattern,
   isSectionCompletion,
+  isSectionExecutionRule,
   type LessonSection,
   PROJECT_CHECK_AREAS,
+  type SectionExecutionRule,
+  type SectionObjectiveRule,
   type SectionStructureRule,
   sectionCompletionIssues,
   summarizeSectionObjectives,
 } from '@sistemazero/core/learning'
+import { studioProTemplate } from '@sistemazero/core/studio/pro-templates'
 import { isBlockTypeAllowed, MAX_BLOCK_LEVEL, normalizeBlockLevel } from '../core/levels'
 import { isHTMLBlockChildAllowed } from '../html/catalog'
 import { sceneNamesAsText } from '../official-extensions/scene-2d/catalog'
@@ -54,10 +61,12 @@ const readableProjects = new WeakMap<object, unknown>()
  * ele, um modelo Pro (que já traz laços e funções) cumpriria o objetivo antes de qualquer gesto.
  */
 export function evaluateStudioProjectStructure(
-  rule: SectionStructureRule,
+  rule: SectionObjectiveRule,
   project: unknown,
   baseline?: unknown,
 ) {
+  // O que o jogo FAZ não se lê na estrutura: quem responde é o executor (`executed`, abaixo).
+  if (isExecutionRule(rule)) return false
   if (
     rule.type !== 'usesBlock' &&
     codeIdeasPass(
@@ -69,8 +78,10 @@ export function evaluateStudioProjectStructure(
     return true
   return evaluateProjectStructure(rule, readableProject(project), valueBlockTypes)
 }
+type ObjectiveCheck = { id: string; rule: SectionObjectiveRule; optional?: true }
+
 export function evaluateStudioSectionProject(
-  checks: Parameters<typeof evaluateSectionProject>[0],
+  checks: readonly (ObjectiveCheck & { label: string })[],
   project: unknown,
   baseline?: unknown,
 ) {
@@ -80,20 +91,128 @@ export function evaluateStudioSectionProject(
     passed: evaluateStudioProjectStructure(check.rule, project, baseline),
   }))
 }
-/** A verificação de uma parte ("Verificar esta parte"), com a régua do Estúdio. */
+/**
+ * A verificação de uma parte ("Verificar esta parte"), com a régua do Estúdio. Os objetivos de
+ * EXECUÇÃO chegam prontos em `executed` (o resultado do `studio-runtime`): sem ele, não passam.
+ */
 export function evaluateStudioSectionObjectives(
-  checks: Parameters<typeof evaluateSectionObjectives>[0],
+  checks: readonly ObjectiveCheck[],
   project: unknown,
   baseline?: unknown,
+  executed?: ReadonlyMap<string, boolean>,
 ) {
   return summarizeSectionObjectives(
     checks.map((check) => ({
       checkId: check.id,
-      passed: evaluateStudioProjectStructure(check.rule, project, baseline),
+      passed: isExecutionRule(check.rule)
+        ? executed?.get(check.id) === true
+        : evaluateStudioProjectStructure(check.rule, project, baseline),
       optional: Boolean(check.optional),
     })),
   )
 }
+
+/** As extensões 3D clássicas importam o three.js da internet, que o executor não tem. */
+const CLASSIC_3D_EXTENSIONS = new Set(['game-3d', 'world-3d', 'game-3d-advanced'])
+const THREE_IMPORT = /\bfrom\s*['"]three(?:\/[^'"]*)?['"]|\bimport\s*\(\s*['"]three/
+
+/**
+ * Onde um objetivo de EXECUÇÃO vale (etapa 3, 18/10/2026): a régua de autoria, no mesmo lugar da
+ * de estrutura, para o Admin avisar e a publicação recusar com a mesma frase.
+ */
+function executionIssues(
+  rule: SectionExecutionRule,
+  project: Record<string, unknown>,
+  extensions: ReadonlySet<string>,
+  modes: readonly string[],
+): string[] {
+  if (!isSectionExecutionRule(rule)) return ['O objetivo tem passos, valores ou casos inválidos.']
+  const pro = project.kind === 'pro'
+  const proMeta = record(project.proMeta) ? project.proMeta : {}
+  const template = pro ? studioProTemplate(proMeta.templateId) : undefined
+  const files = record(project.files) ? project.files : {}
+  const classic3d =
+    !pro &&
+    ([...extensions].some((id) => CLASSIC_3D_EXTENSIONS.has(id)) ||
+      THREE_IMPORT.test(typeof files['script.js'] === 'string' ? files['script.js'] : ''))
+  const errors: string[] = []
+  // Até a função de um jogo 3D clássico some: o arquivo inteiro para na importação do three.js.
+  if (classic3d)
+    errors.push(
+      'Jogos 3D do modo Blocos não rodam no teste (ele roda sem internet e o 3D precisa dela). Use uma ideia de programação.',
+    )
+  if (rule.type === 'behavior' || rule.type === 'script') {
+    const outside = rule.steps.some(
+      (step) =>
+        step.action === 'click' &&
+        (step.x >= CHECK_VIEWPORT.width || step.y >= CHECK_VIEWPORT.height),
+    )
+    if (outside)
+      errors.push(
+        `O teste abre o jogo numa tela de ${CHECK_VIEWPORT.width} por ${CHECK_VIEWPORT.height}: o clique precisa caber nela.`,
+      )
+  }
+  if (rule.type === 'script') {
+    if (!pro && modes.length > 0 && !modes.includes('bridge'))
+      errors.push('A regra em JavaScript vale na Ponte e no Pro.')
+    const syntax = scriptSyntaxError(rule.code)
+    if (syntax) errors.push(`A regra em JavaScript tem um erro de escrita: ${syntax}`)
+  }
+  if (rule.type === 'behavior') {
+    const target = rule.expect.target
+    if (target.kind === 'value' && pro)
+      errors.push('No projeto Pro, confira o texto da página, o console ou o estado do kit.')
+    if (target.kind === 'game' && !template?.kitVersion)
+      errors.push('O estado do jogo (fase, pontos, meta, vida) só existe nos kits Pro.')
+    else if (target.kind === 'game' && !kitStateFields(template?.id).includes(target.field))
+      errors.push('Este kit Pro não mostra a vida do jogador: confira a fase, os pontos ou a meta.')
+  }
+  if (rule.type === 'functionReturns') {
+    if (pro && !rule.module)
+      errors.push(
+        'No projeto Pro, diga em que arquivo a função está (por exemplo src/regras.ts). Ela precisa ser exportada.',
+      )
+    if (!pro && rule.module) errors.push('O arquivo da função só vale no projeto Pro.')
+    if (!pro && modes.length > 0 && !modes.includes('bridge'))
+      errors.push(
+        'A função responde certo precisa da Ponte (para a criança escrever a função) ou de um projeto Pro.',
+      )
+  }
+  return errors
+}
+/**
+ * O que o `inspect()` de cada kit Pro mostra (conferido nos kits, 18/10/2026): fase, pontos e meta
+ * em todos; a vida só no kit que a mostra no estado do jogo.
+ */
+const KITS_WITH_HEALTH = new Set(['canvas-survival'])
+export function kitStateFields(templateId: unknown): readonly ExecutionGameField[] {
+  if (!studioProTemplate(templateId)?.kitVersion) return []
+  return typeof templateId === 'string' && KITS_WITH_HEALTH.has(templateId)
+    ? ['phase', 'score', 'goal', 'health']
+    : ['phase', 'score', 'goal']
+}
+
+/** A tela do navegador do teste (o `check-objectives.mjs` do studio-runtime). */
+export const CHECK_VIEWPORT = { width: 1024, height: 640 } as const
+
+/**
+ * Confere a escrita da regra sem rodá-la (compilar um corpo de função assíncrona não executa
+ * nada). Onde o ambiente proíbe compilar código (CSP sem `unsafe-eval`), a conferência fica para o
+ * "Testar agora": não acusa o que não pôde olhar.
+ */
+function scriptSyntaxError(code: string): string | null {
+  try {
+    const AsyncFunction = Object.getPrototypeOf(async () => undefined).constructor as new (
+      ...args: string[]
+    ) => unknown
+    new AsyncFunction('jogo', 'texto', 'console', code)
+    return null
+  } catch (error) {
+    if (error instanceof SyntaxError) return error.message
+    return null
+  }
+}
+
 const record = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
 const strings = (value: unknown): string[] =>
@@ -335,7 +454,8 @@ export function projectCheckAuthoring(workspace: unknown) {
       [...byArea].some(([area, ids]) => (!rule.area || rule.area === area) && ids.has(block.type)),
     )
   }
-  function issues(rule: SectionStructureRule): string[] {
+  function issues(rule: SectionObjectiveRule): string[] {
+    if (isExecutionRule(rule)) return executionIssues(rule, project, extensions, modes)
     // Etapa 2 (18/10/2026): as ideias de programação também são lidas no CÓDIGO. No Pro elas
     // sempre valem (e "usar um bloco" nunca: não há blocos); com a Ponte a criança pode digitá-las.
     if (project.kind === 'pro')
@@ -484,14 +604,37 @@ export function studioSectionCompletionIssues(
           .map((message) => ({ sectionId: section.id, message: `${check.label}: ${message}` })),
       )
       if (ruleIssues.length) return ruleIssues
+      const budget = executionProjectChecks(checks).reduce(
+        (sum, check) => sum + executionRuleBudgetMs(check.rule as SectionExecutionRule),
+        0,
+      )
+      if (budget > EXECUTION_LIMITS.maxSectionWaitMs)
+        return [
+          {
+            sectionId: section.id,
+            message: `Os objetivos que rodam o jogo desta parte esperam ${Math.ceil(budget / 1000)} segundos somados; o teste aceita até ${EXECUTION_LIMITS.maxSectionWaitMs / 1000}. Encurte as esperas ou tire casos.`,
+          },
+        ]
       const content = record(workspace.content) ? workspace.content : {}
       const initial = content.initialProject
+      // O que o jogo FAZ só se confere rodando: a publicação exige o gabarito, e quem o roda é o
+      // "Testar agora" da autoria (o executor não entra no caminho de publicar).
+      if (executionProjectChecks(checks).length && content.solutionProject === undefined)
+        return [
+          {
+            sectionId: section.id,
+            message:
+              'Objetivos que rodam o jogo precisam de um gabarito: crie o gabarito no bloco do Estúdio e use "Testar agora".',
+          },
+        ]
       const nameOf = (id: string) => checks.find((check) => check.id === id)?.label ?? id
+      // Inicial e gabarito são conferidos aqui só na ESTRUTURA; a execução é do "Testar agora".
+      const structural = checks.filter((check) => !isExecutionRule(check.rule))
       // Um obrigatório que o projeto inicial já cumpre deixa a criança passar sem fazer nada.
       const free =
         initial === undefined
           ? []
-          : evaluateStudioSectionObjectives(checks, initial, initial)
+          : evaluateStudioSectionObjectives(structural, initial, initial)
               .results.filter((result) => !result.optional && result.passed)
               .map((result) => ({
                 sectionId: section.id,
@@ -503,7 +646,7 @@ export function studioSectionCompletionIssues(
       // nem o gabarito cumpre é um objetivo que a criança não consegue cumprir.
       const solution = content.solutionProject
       if (solution === undefined) return free
-      const { results } = evaluateStudioSectionObjectives(checks, solution, initial)
+      const { results } = evaluateStudioSectionObjectives(structural, solution, initial)
       return [
         ...free,
         ...results

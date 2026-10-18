@@ -4,6 +4,7 @@ import {
   RequestBodyTooLargeError,
   readJsonBodyWithLimit,
 } from '@sistemazero/core/http'
+import type { ProjectCheckResponse } from '@sistemazero/core/learning'
 import {
   buildProRuntimeBridgeScript,
   isStudioProBuilderEvidence,
@@ -17,6 +18,16 @@ import {
 } from '@sistemazero/core/studio'
 import validationProfile from '../runtime/validation-profile.json' with { type: 'json' }
 import { serveArtifact, storeArtifact, unavailableArtifact } from './artifacts'
+import {
+  CHECK_ENTRY_PATH,
+  CHECK_LIMITS,
+  isKitTemplate,
+  judgeCheck,
+  parseCheckRequest,
+  proCheckEntry,
+  proCheckModules,
+  withCheckEntry,
+} from './check'
 import {
   InvalidBuildRequestError,
   PRO_BUILD_LIMITS,
@@ -115,9 +126,13 @@ export function createStudioRuntimeHandler(
       }
       if (
         request.method !== 'POST' ||
-        !['/v1/build', '/v1/dependencies', '/v1/preflight', '/v1/publications'].includes(
-          url.pathname,
-        )
+        ![
+          '/v1/build',
+          '/v1/check',
+          '/v1/dependencies',
+          '/v1/preflight',
+          '/v1/publications',
+        ].includes(url.pathname)
       ) {
         return json({ ok: false, code: 'INVALID_REQUEST', message: 'Rota não encontrada.' }, 404)
       }
@@ -126,6 +141,7 @@ export function createStudioRuntimeHandler(
       }
 
       try {
+        if (url.pathname === '/v1/check') return await runProjectCheck(request, env, sandboxFactory)
         if (url.pathname === '/v1/publications') {
           const body = await readJsonBodyWithLimit(
             request,
@@ -510,6 +526,176 @@ export function createStudioRuntimeHandler(
 }
 
 export default createStudioRuntimeHandler()
+
+/**
+ * `POST /v1/check`: um contêiner próprio por teste (destruído no fim), o jogo montado como no
+ * build, e o `check-objectives.mjs` da imagem abrindo uma página nova por objetivo.
+ */
+async function runProjectCheck(
+  request: Request,
+  env: Env,
+  sandboxFactory: typeof getSandbox,
+): Promise<Response> {
+  // O prazo é contado do começo do PEDIDO: quem chama (o Members) desiste em 150 s, e o tempo do
+  // contêiner subir e do Vite compilar sai do mesmo orçamento (review da etapa 3).
+  const started = Date.now()
+  const input = parseCheckRequest(
+    await readJsonBodyWithLimit(request, CHECK_LIMITS.maxRequestBytes),
+  )
+  if (input.mode === 'pro') await verifyBuildBinaries(input.build.binaries)
+  if (!(await env.BUILD_RATE_LIMITER.limit({ key: `check-${input.executionId}` })).success)
+    return checkJson(
+      {
+        ok: false,
+        code: 'RATE_LIMITED',
+        message: 'Muitos testes em pouco tempo. Espere alguns segundos e tente de novo.',
+      },
+      429,
+    )
+  const buildId = crypto.randomUUID().replace(/-/g, '')
+  const sandbox = sandboxFactory(env.ProBuildSandbox, `check-${buildId}`, {
+    enableDefaultSession: false,
+    transport: 'rpc',
+  })
+  const cwd = `${BUILD_ROOT}/${buildId}`
+  try {
+    await sandbox.mkdir(cwd, { recursive: true })
+    let kit = false
+    if (input.mode === 'classic') {
+      await sandbox.writeFile(`${cwd}/game.html`, input.document)
+    } else {
+      const build = input.build
+      kit = isKitTemplate(build.templateId)
+      const modules = proCheckModules(input.objectives)
+      const files = modules.length
+        ? {
+            ...build.files,
+            'index.html': withCheckEntry(build.files['index.html'] ?? ''),
+            [CHECK_ENTRY_PATH]: proCheckEntry(input.scope, modules),
+          }
+        : build.files
+      await Promise.all(
+        Object.entries(files).map(async ([path, content]) => {
+          const slash = path.lastIndexOf('/')
+          if (slash > 0) await sandbox.mkdir(`${cwd}/${path.slice(0, slash)}`, { recursive: true })
+          await sandbox.writeFile(`${cwd}/${path}`, content)
+        }),
+      )
+      await Promise.all([
+        sandbox.writeFile(
+          `${cwd}/package.json`,
+          trustedPackageJson(build.templateId, build.dependencies),
+        ),
+        sandbox.writeFile(
+          `${cwd}/vite.config.mjs`,
+          trustedViteConfig(build.templateId, build.dependencies),
+        ),
+      ])
+      for (const [path, entry] of Object.entries(build.binaries ?? {})) {
+        await sandbox.mkdir(`${cwd}/${path.slice(0, path.lastIndexOf('/'))}`, { recursive: true })
+        await sandbox.writeFile(`${cwd}/${path}`, entry.base64, { encoding: 'base64' })
+      }
+      const compiled = await sandbox.exec(
+        'ln -s /opt/sz-runtime/node_modules ./node_modules && node /opt/sz-runtime/node_modules/vite/bin/vite.js build --config ./vite.config.mjs --configLoader native',
+        { cwd, timeout: BUILD_TIMEOUT_MS },
+      )
+      // Jogo que não compila não cumpre nada: é resposta do teste, não falha do executor. Sem
+      // mensagem de erro do Vite (tempo esgotado, contêiner caiu), é falha do executor: nunca
+      // vira resposta guardada para a criança.
+      const compileOutput = `${compiled.stdout}\n${compiled.stderr}`.trim()
+      if (!compiled.success && !/error/i.test(compileOutput)) {
+        console.error('studio-runtime check build failed', capOutput(compileOutput))
+        return checkFailed()
+      }
+      if (!compiled.success)
+        return checkJson({
+          ok: true,
+          results: input.objectives.map((objective) => ({
+            id: objective.id,
+            passed: false,
+            detail: `O projeto não compilou: ${capOutput(compileOutput).slice(-600)}`,
+          })),
+        })
+    }
+    const runTimeout = Math.min(
+      CHECK_LIMITS.runTimeoutMs,
+      CHECK_LIMITS.totalBudgetMs - (Date.now() - started),
+    )
+    if (runTimeout < CHECK_LIMITS.minRunMs) return checkFailed()
+    await sandbox.writeFile(
+      `${cwd}/check-options.json`,
+      JSON.stringify({
+        mode: input.mode,
+        scope: input.scope,
+        kit,
+        screenshots: input.screenshots,
+        objectives: input.objectives,
+        deadlineMs: runTimeout - 5_000,
+      }),
+    )
+    const ran = await sandbox.exec('node /opt/sz-runtime/check-objectives.mjs', {
+      cwd,
+      timeout: runTimeout,
+    })
+    if (!ran.success) {
+      console.error('studio-runtime check failed', capOutput(`${ran.stdout}\n${ran.stderr}`))
+      return checkFailed()
+    }
+    const report = JSON.parse(
+      (await sandbox.readFile(`${cwd}/check-result.json`, { encoding: 'utf-8' })).content,
+    ) as { observations?: unknown }
+    const observations = Array.isArray(report.observations) ? report.observations : []
+    // Objetivo que o navegador não conseguiu testar (página não abriu, contêiner lento) é falha do
+    // EXECUTOR: devolver "não passou" deixaria a criança presa num resultado guardado que não é
+    // dela. Falha nunca aprova e nunca é guardada.
+    const broken = observations.find(
+      (item: unknown) =>
+        typeof item === 'object' &&
+        item !== null &&
+        typeof (item as { error?: unknown }).error === 'string',
+    ) as { error: string } | undefined
+    if (broken) {
+      console.error('studio-runtime check objective failed', broken.error)
+      return checkFailed()
+    }
+    const screenshots: Record<string, string> = {}
+    for (const [index, objective] of input.objectives.entries()) {
+      const observation = observations.find(
+        (item: unknown) =>
+          typeof item === 'object' &&
+          item !== null &&
+          (item as { id?: unknown }).id === objective.id,
+      ) as { screenshot?: unknown } | undefined
+      if (observation?.screenshot !== `check-shot-${index}.jpg`) continue
+      const shot = await sandbox
+        .readFile(`${cwd}/check-shot-${index}.jpg`, { encoding: 'base64' })
+        .catch(() => null)
+      if (shot && shot.content.length <= CHECK_LIMITS.maxScreenshotBase64)
+        screenshots[objective.id] = shot.content
+    }
+    return checkJson({
+      ok: true,
+      results: judgeCheck(input.objectives, observations),
+      ...(Object.keys(screenshots).length ? { screenshots } : {}),
+    })
+  } finally {
+    await sandbox.destroy().catch(() => undefined)
+  }
+}
+
+function checkFailed(): Response {
+  return checkJson(
+    { ok: false, code: 'CHECK_FAILED', message: 'Não foi possível testar o jogo agora.' },
+    500,
+  )
+}
+
+function checkJson(body: ProjectCheckResponse, status = 200): Response {
+  return Response.json(body, {
+    status,
+    headers: { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' },
+  })
+}
 
 function capOutput(output: string): string {
   const limit = 20_000

@@ -101,6 +101,10 @@ function ObjectivesCard({
   }
   const required = objectives.filter((o) => !o.optional)
   const extras = objectives.filter((o) => o.optional)
+  // "O jogo faz algo" e "a função responde certo" abrem o jogo num navegador do servidor.
+  const runsGame = objectives.some(
+    (o) => o.kind === 'game' || o.kind === 'function' || o.kind === 'script',
+  )
 
   async function verify() {
     if (!check || !handleRef.current || !player || busy) return
@@ -126,13 +130,20 @@ function ObjectivesCard({
       setResults(result.results)
       setStale(editadoEm.current > conferidoEm.current)
       const extraFaltando = extras.some((o) => !result.results.find((r) => r.id === o.id)?.passed)
+      // Parte só com desafios extras: o servidor diz `passed: false` (não há obrigatório para
+      // cumprir), mas para a criança nada FALTA. Ela lê o estado dos extras.
       setFeedback(
-        result.passed
+        required.length === 0
           ? {
-              text: extraFaltando ? verificacao.cumpridoComExtra : verificacao.cumprido,
+              text: extraFaltando ? verificacao.soExtras : verificacao.cumprido,
               tone: 'ok',
             }
-          : { text: verificacao.faltou, tone: 'falta' },
+          : result.passed
+            ? {
+                text: extraFaltando ? verificacao.cumpridoComExtra : verificacao.cumprido,
+                tone: 'ok',
+              }
+            : { text: verificacao.faltou, tone: 'falta' },
       )
       const ganho = result.gamification?.xpAwarded ?? 0
       setXp(ganho > 0 ? ganho : null)
@@ -196,7 +207,7 @@ function ObjectivesCard({
           disabled={busy}
           onClick={() => void verify()}
         >
-          {busy ? verificacao.verificando : verificacao.botao}
+          {busy ? (runsGame ? verificacao.testando : verificacao.verificando) : verificacao.botao}
         </Button>
         {xp ? (
           <span className="sz-lesson-objectives-xp text-sm font-semibold text-primary">

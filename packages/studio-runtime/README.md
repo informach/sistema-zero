@@ -4,7 +4,7 @@ Compilador isolado das atividades Pro do Sistema Zero. Um BFF autorizado envia a
 
 ## Ambientes e capacidade
 
-Staging usa `bun run deploy:staging`, Worker `sistemazero-studio-runtime-staging` e bucket privado `sistemazero-studio-artifacts-staging`. O token `INTERNAL_TOKEN` é exclusivo desse ambiente e deve corresponder a `STUDIO_PRO_RUNTIME_TOKEN` em Kids, Admin e Auth no Railway. As URLs de autorização e limpeza apontam para o Kids de staging.
+Staging usa `bun run deploy:staging`, Worker `sistemazero-studio-runtime-staging` e bucket privado `sistemazero-studio-artifacts-staging`. O token `INTERNAL_TOKEN` é exclusivo desse ambiente e deve corresponder a `STUDIO_PRO_RUNTIME_TOKEN` em Kids, Admin, Auth e Members no Railway. As URLs de autorização e limpeza apontam para o Kids de staging.
 
 A configuração principal é a de produção, com Worker `sistemazero-studio-runtime` e bucket `sistemazero-studio-artifacts`. Promova o runtime junto da aplicação que entende artefatos; a aplicação anterior espera HTML inline. Preparar o bucket e as variáveis não exige substituir o runtime ativo antes dessa promoção.
 
@@ -70,6 +70,39 @@ Sucesso:
 ```
 
 Falhas usam os códigos `INVALID_REQUEST`, `BUILD_FAILED`, `OUTPUT_TOO_LARGE` e `RATE_LIMITED`. Os status esperados são 400 para contrato inválido, 401 para token inválido, 413 para saída grande, 422 para erro no código, 429 para limite de frequência e 500 para falha inesperada.
+
+### Teste dos objetivos
+
+`POST /v1/check` (Bearer igual ao build) roda o projeto num Chromium sem internet e confere os
+objetivos que RODAM o jogo (etapa 3 dos objetivos do Estúdio, 18/10/2026). Quem chama é o Members.
+
+```json
+{ "mode": "classic", "executionId": "check-…", "scope": "__sz<24 hex>",
+  "document": "<!doctype html>…", "objectives": [{ "id": "anda", "rule": { "type": "behavior", … } }] }
+{ "mode": "pro", "executionId": "check-…", "scope": "__sz<24 hex>", "templateId": "canvas-puzzle",
+  "files": { … }, "binaries": { … }, "objectives": [ … ] }
+```
+
+Um contêiner próprio por teste (`check-<id>`, destruído no fim). Clássico: o documento de prévia
+que o Members montou vira `game.html`. Pro: compila com o Vite de sempre; se algum objetivo chama
+uma função exportada, o Worker acrescenta `__sz-check-entry.js` (importa os módulos e os guarda no
+escopo sorteado) ao `index.html`. `runtime/check-objectives.mjs` abre UMA página por objetivo
+(três em paralelo), aperta "Começar" nos kits, faz os passos e relata o que viu; quem julga é o
+Worker, com a régua do core (`judgeExecutionObservation`). Resposta: `{ ok: true, results: [{ id,
+passed, detail? }], screenshots?: { id: base64 JPEG } }` (captura só com `"screenshots": true`, que
+o "Testar agora" da equipe manda). Projeto Pro que não compila responde 200 com todos os objetivos
+sem passar; falha do executor (página que não abre, Vite sem erro e sem fim, prazo do pedido curto)
+é 500 `CHECK_FAILED`; frequência 429. O prazo do navegador sai do que sobrou de 140 s desde o começo
+do pedido. A página recebe só os ARGUMENTOS das funções (a resposta esperada fica no script).
+⚠️ Nenhuma leitura usa `page.evaluate` (review da etapa 4: ele roda pelo `eval` da página e espera
+pelo `then` dela, que o jogo pode trocar): tudo vai pelo protocolo do navegador (`Runtime.evaluate`
+numa sessão CDP, `openProbe`). O texto da página e a regra em JavaScript (`script`, etapa 4) rodam
+num MUNDO ISOLADO (o mesmo documento, sem os globais nem os protótipos do jogo); a regra recebe uma
+FOTO em JSON do jogo depois dos passos (`jogo`: as variáveis no clássico, pelo `names()` do leitor,
+ou o estado do kit no Pro), `texto` (`null` acima de 50 mil letras) e `console` (a lista das linhas),
+com 3 s de prazo. Falha do próprio protocolo é falha do executor, nunca "não passou".
+⚠️ A rota exige a imagem nova (o script entra no `Dockerfile`): reconstrua e implante o Worker
+antes de ligar os objetivos de execução no Members.
 
 ## Templates confiáveis
 

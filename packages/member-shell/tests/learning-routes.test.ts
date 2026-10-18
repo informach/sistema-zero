@@ -113,7 +113,8 @@ describe('learning BFF boundary', () => {
     expect((await routes.learningProjectCheck.POST(request(payload), section)).status).toBe(200)
     expect(calls[0]).toEqual({
       path: `/members/lessons/${lessonId}/sections/${blockId}/project-check`,
-      opts: { method: 'POST', body: payload },
+      // O teste dos objetivos que rodam o jogo leva segundos: o BFF espera mais que o padrão.
+      opts: { method: 'POST', body: payload, timeoutMs: 165_000 },
     })
     expect(
       (await routes.learningProjectCheck.POST(request(payload, 'other-profile'), section)).status,

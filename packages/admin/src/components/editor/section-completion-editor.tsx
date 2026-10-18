@@ -2,28 +2,45 @@
 
 import type {
   SectionCompletion,
+  SectionObjectiveRule,
   SectionProjectCheck,
-  SectionStructureRule,
 } from '@sistemazero/core/learning'
 import {
+  isExecutionRule,
   isPlatformAction,
   PLATFORM_ACTION_LABELS,
   PLATFORM_ACTIONS,
   PROJECT_CHECK_HINT_MAX,
 } from '@sistemazero/core/learning'
+import { studioProTemplate } from '@sistemazero/core/studio/pro-templates'
 import {
   evaluateStudioSectionObjectives,
+  kitStateFields,
   projectCheckAuthoring,
 } from '@sistemazero/studio/server-project-checks'
 import { Button } from '@sistemazero/ui/button'
 import { Input } from '@sistemazero/ui/input'
 import { Select } from '@sistemazero/ui/select'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { testSectionObjectives } from '@/lib/objectives-test'
+import { describeExecutionRule, newExecutionRule } from '@/lib/execution-rule'
+import {
+  type ExecutedProjects,
+  ExecutionTestRejectedError,
+  executionChecksOf,
+  runExecutionTest,
+  testSectionObjectives,
+} from '@/lib/objectives-test'
+import { ExecutionRuleEditor } from './execution-rule-editor'
+import { ObjectiveTools } from './objective-tools'
 import { ProjectRuleEditor } from './project-rule-editor'
+import { ScriptRuleEditor } from './script-rule-editor'
 
-function newRule(type: string): SectionStructureRule {
+function newRule(type: string, isPro: boolean, isKit: boolean): SectionObjectiveRule {
   switch (type) {
+    case 'behavior':
+    case 'functionReturns':
+    case 'script':
+      return newExecutionRule(type, isPro, isKit)
     case 'usesLoop':
       return { type }
     case 'declaresVariable':
@@ -33,6 +50,20 @@ function newRule(type: string): SectionStructureRule {
     default:
       return { type: 'usesBlock', blockType: '' }
   }
+}
+
+/** Constante, e não `{}` a cada renderização: um objeto novo desfaria o `useMemo` do relatório. */
+const NOT_EXECUTED: ExecutedProjects = {}
+
+function verdictLabel(
+  verdict: boolean | null | 'pending' | 'error',
+  none: string,
+  running: boolean,
+): string {
+  if (verdict === null) return none
+  if (verdict === 'pending') return running ? 'testando…' : 'aperte Testar agora'
+  if (verdict === 'error') return 'não deu para testar'
+  return verdict ? 'cumpre' : 'falta'
 }
 
 export function SectionCompletionEditor({
@@ -73,6 +104,18 @@ export function SectionCompletionEditor({
     workspace.initialProject !== null &&
     'kind' in workspace.initialProject &&
     workspace.initialProject.kind === 'pro'
+  const proTemplateId =
+    isPro && typeof workspace === 'object' && workspace !== null && 'initialProject' in workspace
+      ? (workspace.initialProject as { proMeta?: { templateId?: unknown } }).proMeta?.templateId
+      : undefined
+  const isKit = Boolean(studioProTemplate(proTemplateId)?.kitVersion)
+  // A Ponte liberada (ou nenhum modo restrito): os modelos de código cabem no clássico.
+  const allowedModes =
+    typeof workspace === 'object' && workspace !== null && 'allowedModes' in workspace
+      ? workspace.allowedModes
+      : undefined
+  const bridge =
+    !Array.isArray(allowedModes) || allowedModes.length === 0 || allowedModes.includes('bridge')
   const authoring = useMemo(
     () => projectCheckAuthoring(workspace ?? { allowBlocks: fallbackAllowBlocks }),
     [workspace, fallbackAllowBlocks],
@@ -99,16 +142,70 @@ export function SectionCompletionEditor({
           .results.map((result, index) => {
             const check = checks.find((c) => c.id === result.checkId)
             const name = check?.label.trim() || `Objetivo ${index + 1}`
+            if (check && isExecutionRule(check.rule))
+              return `Roda o jogo (use "Testar agora"): ${name}`
             return `${result.passed ? 'Cumprido' : 'Falta'}: ${name}${result.optional ? ' (extra)' : ''}`
           })
           .join('\n')
   // O "Testar agora" fica vivo depois do primeiro clique: mexer num objetivo ou no gabarito
   // (que chega pelo autosave) atualiza o resultado na hora.
   const [tested, setTested] = useState(false)
-  const report = useMemo(
-    () => (tested ? testSectionObjectives(checks, workspace) : null),
-    [tested, checks, workspace],
+  // Os objetivos que RODAM o jogo vão ao executor (segundos): o resultado vale para os objetivos
+  // e os projetos daquele clique. Mudou algum? A linha pede um teste novo.
+  const content =
+    typeof workspace === 'object' && workspace !== null
+      ? (workspace as Record<string, unknown>)
+      : {}
+  const executionKey = JSON.stringify(
+    executionChecksOf(checks).map((check) => [check.id, check.rule]),
   )
+  const [run, setRun] = useState<{
+    key: string
+    initial: unknown
+    solution: unknown
+    executed: ExecutedProjects
+  } | null>(null)
+  const runRequest = useRef(0)
+  const runCurrent =
+    run &&
+    run.key === executionKey &&
+    run.initial === content.initialProject &&
+    run.solution === content.solutionProject
+  const executed: ExecutedProjects = runCurrent && run ? run.executed : NOT_EXECUTED
+  const running = runCurrent && (executed.initial === 'pending' || executed.solution === 'pending')
+  const report = useMemo(
+    () => (tested ? testSectionObjectives(checks, workspace, executed) : null),
+    [tested, checks, workspace, executed],
+  )
+  const runExecution = () => {
+    const execution = executionChecksOf(checks)
+    if (!execution.length) return
+    const request = ++runRequest.current
+    const base = {
+      key: executionKey,
+      initial: content.initialProject,
+      solution: content.solutionProject,
+    }
+    const projects = { initial: content.initialProject, solution: content.solutionProject } as const
+    const executedNow: ExecutedProjects = {}
+    for (const which of ['initial', 'solution'] as const)
+      if (projects[which] !== undefined) executedNow[which] = 'pending'
+    setRun({ ...base, executed: { ...executedNow } })
+    for (const which of ['initial', 'solution'] as const) {
+      if (projects[which] === undefined) continue
+      runExecutionTest(projects[which], checks, fetch, content.initialProject)
+        .then((outcome) => {
+          executedNow[which] = outcome
+        })
+        .catch((error: unknown) => {
+          executedNow[which] =
+            error instanceof ExecutionTestRejectedError ? { rejected: error.message } : 'error'
+        })
+        .finally(() => {
+          if (runRequest.current === request) setRun({ ...base, executed: { ...executedNow } })
+        })
+    }
+  }
   const patchCheck = (id: string, change: (check: SectionProjectCheck) => SectionProjectCheck) =>
     onChange({ ...value, projectChecks: checks.map((c) => (c.id === id ? change(c) : c)) })
   return (
@@ -243,11 +340,13 @@ export function SectionCompletionEditor({
                 </span>
               </p>
               <p className="text-xs text-muted-foreground">
-                {check.rule.type === 'usesBlock'
-                  ? `Conferir bloco ${check.rule.blockType || '(escolher bloco)'}`
-                  : check.rule.type === 'usesLoop'
-                    ? 'Usar repetição'
-                    : `${({ declaresVariable: 'Criar variável', definesFunction: 'Definir função', callsFunction: 'Chamar função' } as const)[check.rule.type]}: ${check.rule.name || '(definir nome)'}`}
+                {isExecutionRule(check.rule)
+                  ? describeExecutionRule(check.rule)
+                  : check.rule.type === 'usesBlock'
+                    ? `Conferir bloco ${check.rule.blockType || '(escolher bloco)'}`
+                    : check.rule.type === 'usesLoop'
+                      ? 'Usar repetição'
+                      : `${({ declaresVariable: 'Criar variável', definesFunction: 'Definir função', callsFunction: 'Chamar função' } as const)[check.rule.type]}: ${check.rule.name || '(definir nome)'}`}
               </p>
             </div>
             <Button
@@ -317,7 +416,7 @@ export function SectionCompletionEditor({
                 onChange({
                   ...value,
                   projectChecks: checks.map((c) =>
-                    c.id === check.id ? { ...c, rule: newRule(e.target.value) } : c,
+                    c.id === check.id ? { ...c, rule: newRule(e.target.value, isPro, isKit) } : c,
                   ),
                 })
               }
@@ -329,7 +428,29 @@ export function SectionCompletionEditor({
               <option value="declaresVariable">Criar variável</option>
               <option value="definesFunction">Definir função</option>
               <option value="callsFunction">Chamar função</option>
+              <option value="behavior">O jogo faz algo (roda o jogo)</option>
+              <option value="functionReturns">A função responde certo (roda a função)</option>
+              <option value="script">Regra em JavaScript (para quem programa)</option>
             </Select>
+            {check.rule.type === 'script' && (
+              <ScriptRuleEditor
+                rule={check.rule}
+                index={index}
+                isPro={isPro}
+                isKit={isKit}
+                onChange={(rule) => patchCheck(check.id, (c) => ({ ...c, rule }))}
+              />
+            )}
+            {isExecutionRule(check.rule) && check.rule.type !== 'script' && (
+              <ExecutionRuleEditor
+                rule={check.rule}
+                index={index}
+                isPro={isPro}
+                isKit={isKit}
+                kitFields={kitStateFields(proTemplateId)}
+                onChange={(rule) => patchCheck(check.id, (c) => ({ ...c, rule }))}
+              />
+            )}
             {check.rule.type === 'usesBlock' && (
               <ProjectRuleEditor
                 rule={check.rule}
@@ -343,7 +464,9 @@ export function SectionCompletionEditor({
                 }
               />
             )}
-            {check.rule.type !== 'usesLoop' && check.rule.type !== 'usesBlock' && (
+            {(check.rule.type === 'declaresVariable' ||
+              check.rule.type === 'definesFunction' ||
+              check.rule.type === 'callsFunction') && (
               <Input
                 aria-label={`Nome esperado no objetivo ${index + 1}`}
                 maxLength={200}
@@ -357,11 +480,11 @@ export function SectionCompletionEditor({
                         : {
                             ...c,
                             rule:
-                              c.rule.type === 'usesBlock'
-                                ? { ...c.rule, blockType: e.target.value }
-                                : c.rule.type === 'usesLoop'
-                                  ? c.rule
-                                  : { ...c.rule, name: e.target.value },
+                              c.rule.type === 'declaresVariable' ||
+                              c.rule.type === 'definesFunction' ||
+                              c.rule.type === 'callsFunction'
+                                ? { ...c.rule, name: e.target.value }
+                                : c.rule,
                           },
                     ),
                   })
@@ -435,24 +558,63 @@ export function SectionCompletionEditor({
           Adicionar objetivo do Estúdio
         </Button>
       )}
+      {hasStudio && !value.platformAction && (
+        <ObjectiveTools
+          checks={checks}
+          isPro={isPro}
+          {...(isKit && typeof proTemplateId === 'string' ? { kitTemplateId: proTemplateId } : {})}
+          bridge={bridge}
+          issuesOf={(rule) => authoring.issues(rule)}
+          onAdd={(added) => {
+            setExpandedChecks((ids) => [...ids, ...added.map((check) => check.id)])
+            onChange({ ...value, projectChecks: [...checks, ...added] })
+          }}
+        />
+      )}
       {hasStudio && !value.platformAction && checks.length > 0 && (
         <div className="space-y-2">
-          <Button variant="outline" size="sm" onClick={() => setTested(true)}>
-            Testar agora
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={running === true}
+            onClick={() => {
+              setTested(true)
+              runExecution()
+            }}
+          >
+            {running ? 'Rodando o jogo…' : 'Testar agora'}
           </Button>
           <p className="text-xs text-muted-foreground">
-            Confere os objetivos no projeto inicial (deve faltar) e no gabarito (deve cumprir).
+            Confere os objetivos no projeto inicial (deve faltar) e no gabarito (deve cumprir). Os
+            que rodam o jogo levam alguns segundos.
           </p>
           {report && (
             <div role="status" className="space-y-2 rounded-lg border border-border p-3 text-sm">
               <ul className="space-y-1">
                 {report.rows.map((row) => (
-                  <li key={row.id}>
-                    <span className="font-medium">{row.label}</span>
-                    {row.optional ? ' (extra)' : ''}: inicial{' '}
-                    {row.initial === null ? 'sem projeto' : row.initial ? 'cumpre' : 'falta'} ·
-                    gabarito{' '}
-                    {row.solution === null ? 'sem gabarito' : row.solution ? 'cumpre' : 'falta'}
+                  <li key={row.id} className="space-y-1">
+                    <span>
+                      <span className="font-medium">{row.label}</span>
+                      {row.optional ? ' (extra)' : ''}: inicial{' '}
+                      {verdictLabel(row.initial, 'sem projeto', running === true)} · gabarito{' '}
+                      {verdictLabel(row.solution, 'sem gabarito', running === true)}
+                    </span>
+                    {row.solutionDetail && (
+                      <span className="block text-xs text-muted-foreground">
+                        No gabarito: {row.solutionDetail}
+                      </span>
+                    )}
+                    {row.screenshot && (
+                      <details>
+                        <summary className="cursor-pointer text-xs">Ver a tela do gabarito</summary>
+                        {/* biome-ignore lint/performance/noImgElement: captura em base64, não um asset do Next */}
+                        <img
+                          src={`data:image/jpeg;base64,${row.screenshot}`}
+                          alt={`Tela do gabarito no fim do teste de "${row.label}"`}
+                          className="mt-1 max-w-full rounded border border-border"
+                        />
+                      </details>
+                    )}
                   </li>
                 ))}
               </ul>

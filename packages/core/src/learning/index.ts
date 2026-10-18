@@ -4,6 +4,7 @@ export * from './gallery-delivery'
 export * from './legacy-layout'
 export * from './manifest-quiz'
 export * from './prediction-context'
+export * from './project-execution'
 export * from './project-structure'
 export * from './quiz'
 export * from './requirements'
@@ -975,6 +976,25 @@ export interface LearningManifest {
   >
 }
 
+/** Um snapshot do Estúdio no formato atual (projeto inicial ou gabarito de um bloco do manifesto). */
+function isManifestStudioProject(project: unknown): boolean {
+  if (!record(project) || !record(project.files)) return false
+  const files = project.files
+  return (
+    project.formatVersion === STUDIO_PROJECT_FORMAT_VERSION &&
+    text(project.name, 200) &&
+    ['index.html', 'style.css', 'script.js'].every((name) => typeof files[name] === 'string') &&
+    Array.isArray(project.installedExtensions) &&
+    project.installedExtensions.every(
+      (extension: unknown) =>
+        record(extension) &&
+        text(extension.id, 80) &&
+        text(extension.version, 40) &&
+        typeof extension.installedAt === 'number',
+    )
+  )
+}
+
 function isManifestContent(content: unknown): boolean {
   if (isInteractiveBlock(content) || isManifestQuiz(content)) return true
   if (!record(content)) return false
@@ -987,21 +1007,11 @@ function isManifestContent(content: unknown): boolean {
           ['speaking', 'happy', 'thinking', 'celebrating'].includes(content.pose)))
     )
   if (content.kind === 'studio') {
-    const project = content.initialProject
-    if (!record(project) || !record(project.files)) return false
-    const files = project.files
+    // O gabarito da professora (`solutionProject`, objetivos do Estúdio de 18/10/2026) viaja no
+    // manifesto com a mesma régua do projeto inicial; ele nunca chega ao aluno.
     return (
-      project.formatVersion === STUDIO_PROJECT_FORMAT_VERSION &&
-      text(project.name, 200) &&
-      ['index.html', 'style.css', 'script.js'].every((name) => typeof files[name] === 'string') &&
-      Array.isArray(project.installedExtensions) &&
-      project.installedExtensions.every(
-        (extension: unknown) =>
-          record(extension) &&
-          text(extension.id, 80) &&
-          text(extension.version, 40) &&
-          typeof extension.installedAt === 'number',
-      ) &&
+      isManifestStudioProject(content.initialProject) &&
+      (content.solutionProject === undefined || isManifestStudioProject(content.solutionProject)) &&
       (content.gallery === undefined || isGalleryDeliveryConfig(content.gallery, 'studio'))
     )
   }

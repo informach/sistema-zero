@@ -16,6 +16,15 @@ verificação conta (o autosave do mesmo projeto não). As frases moram em `copy
 `LessonSections` converte com `projectObjectiveView`. O "Verificar" espera a Ponte terminar de ler o
 código (`bridgeCodeAhead`, até 3 s) antes de mandar o projeto; o members responde 409
 `STUDIO_PROJECT_SYNCING` se ainda chegar lendo.
+Com objetivos que RODAM o jogo (`kind` `game`/`function`/`script`), o botão ocupado diz
+`verificacao.testando` e o BFF chama o gateway com `timeoutMs: 165_000` (`CallOpts.timeoutMs`,
+novo; o padrão segue 60 s). O members responde 424 `PROJECT_CHECK_UNAVAILABLE` ("Não consegui
+testar o seu jogo agora. Tente de novo."; 424 e não 503 para o disjuntor do gateway não contar a
+queda do executor contra o members) e 429 `PROJECT_CHECK_BUSY`; nada é guardado nesses casos. Se o
+executor RECUSA o projeto, a criança lê "Não consegui testar este projeto. Peça ajuda à equipe."
+(o motivo só vai ao "Testar agora" da autoria). Parte só com desafios extras: o servidor responde
+`passed: false` (não há obrigatório), mas o cartão diz `verificacao.soExtras` ou
+`verificacao.cumprido`, nunca "ainda falta".
 
 > **Oficinas ao vivo (14/10/2026):** `createLiveRouteHandler` recebe `support` da sessão
 > (`isSupportSession`, qualquer `act`) e recusa toda chamada não-GET com `SUPPORT_SESSION`; a

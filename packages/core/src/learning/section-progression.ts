@@ -1,5 +1,11 @@
 import { isInteractiveBlock, type LessonSection } from './index'
 import { isPlatformAction, type PlatformAction } from './platform-action'
+import {
+  EXECUTION_LIMITS,
+  isExecutionRule,
+  isSectionExecutionRule,
+  type SectionExecutionRule,
+} from './project-execution'
 import type { LessonRequirementReason } from './requirements'
 
 export interface ProjectBlockPattern {
@@ -27,11 +33,17 @@ export type SectionStructureRule =
       count?: number
     })
 
+/**
+ * A regra de um objetivo: ESTRUTURA (o que o projeto tem, conferido na hora) ou EXECUÇÃO (o que o
+ * jogo faz quando roda, conferido pelo `studio-runtime`; ver `project-execution.ts`).
+ */
+export type SectionObjectiveRule = SectionStructureRule | SectionExecutionRule
+
 export interface SectionProjectCheck {
   id: string
   /** A frase que a criança lê na lista "Objetivos desta parte". */
   label: string
-  rule: SectionStructureRule
+  rule: SectionObjectiveRule
   /** O que dizer quando o objetivo ainda não foi cumprido (a criança lê). */
   hint?: string
   /**
@@ -41,11 +53,33 @@ export interface SectionProjectCheck {
   optional?: true
 }
 
-/** O jeito de conferir, na língua da autoria (o Admin e a lista da criança usam o mesmo nome). */
-export type ProjectObjectiveKind = 'block' | 'idea'
+/**
+ * O jeito de conferir, na língua da autoria (o Admin e a lista da criança usam o mesmo nome):
+ * um bloco, uma ideia de programação, o que o jogo faz (`game`), a resposta de uma função
+ * (`function`) ou uma regra em JavaScript (`script`).
+ */
+export type ProjectObjectiveKind = 'block' | 'idea' | 'game' | 'function' | 'script'
 
-export function projectObjectiveKind(rule: SectionStructureRule): ProjectObjectiveKind {
-  return rule.type === 'usesBlock' ? 'block' : 'idea'
+export function projectObjectiveKind(rule: SectionObjectiveRule): ProjectObjectiveKind {
+  switch (rule.type) {
+    case 'usesBlock':
+      return 'block'
+    case 'behavior':
+      return 'game'
+    case 'functionReturns':
+      return 'function'
+    case 'script':
+      return 'script'
+    default:
+      return 'idea'
+  }
+}
+
+/** Os objetivos que precisam RODAR o jogo (e por isso do executor). */
+export function executionProjectChecks<T extends { rule: { type: string } }>(
+  checks: readonly T[] | undefined,
+): T[] {
+  return (checks ?? []).filter((check) => isExecutionRule(check.rule))
 }
 
 /**
@@ -263,6 +297,13 @@ export function isSectionCompletion(v: unknown): v is SectionCompletion {
   }
   if (v.projectChecks === undefined) return true
   if (!Array.isArray(v.projectChecks) || v.projectChecks.length > 20) return false
+  // Cada objetivo de execução abre o jogo do zero num navegador: o teto é por parte.
+  if (
+    v.projectChecks.filter(
+      (c) => record(c) && record(c.rule) && isExecutionRule(c.rule as { type: string }),
+    ).length > EXECUTION_LIMITS.maxObjectives
+  )
+    return false
   return (
     new Set(v.projectChecks.map((c) => (record(c) ? c.id : null))).size ===
       v.projectChecks.length &&
@@ -298,6 +339,10 @@ export function isSectionCompletion(v: unknown): v is SectionCompletion {
         case 'definesFunction':
         case 'callsFunction':
           return typeof c.rule.name === 'string' && c.rule.name.length <= 200
+        case 'behavior':
+        case 'functionReturns':
+        case 'script':
+          return isSectionExecutionRule(c.rule)
         default:
           return false
       }
@@ -453,7 +498,9 @@ export function sectionCompletionIssues(
           !label(check.label) ||
           (check.rule.type === 'usesBlock'
             ? hasBlankBlockType(check.rule)
-            : check.rule.type === 'usesLoop'
+            : check.rule.type === 'usesLoop' ||
+                check.rule.type === 'behavior' ||
+                check.rule.type === 'script'
               ? false
               : !label(check.rule.name)),
       )

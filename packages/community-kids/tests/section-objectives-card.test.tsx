@@ -29,6 +29,7 @@ function montar(opts: {
   saved?: { id: string; passed: boolean }[]
   subscribe?: ProjectChangeSubscriber
   updatedAt?: number
+  objectives?: typeof OBJECTIVES
 }) {
   const value: LessonPlayerContextValue = {
     lessonId: 'aula',
@@ -41,7 +42,7 @@ function montar(opts: {
       sectionId: 'parte',
       revision: 'r'.repeat(32),
       blockId: 'projeto',
-      objectives: OBJECTIVES,
+      objectives: opts.objectives ?? OBJECTIVES,
       ...(opts.saved ? { savedResults: opts.saved } : {}),
     },
   }
@@ -114,6 +115,19 @@ describe('Objetivos da parte', () => {
     })
     expect(screen.getByRole('status').textContent).toContain('desafio extra')
     expect(screen.queryByText(/^\+\d+ XP$/)).toBeNull()
+  })
+
+  test('parte só com desafios extras: nada falta, o recado é de extra', async () => {
+    globalThis.fetch = mock(async () =>
+      Response.json({ passed: false, results: [{ id: 'funcao', passed: false }] }),
+    ) as unknown as typeof fetch
+    montar({ objectives: [OBJECTIVES[1]] as unknown as typeof OBJECTIVES })
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Verificar esta parte' }))
+    })
+    const status = screen.getByRole('status').textContent ?? ''
+    expect(status).toContain('desafio extra')
+    expect(status).not.toContain('falta')
   })
 
   test('a lista se lembra do resultado guardado ao reabrir', () => {

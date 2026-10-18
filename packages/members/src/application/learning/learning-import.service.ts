@@ -60,9 +60,21 @@ function removalLabel(document: LessonDraftDocument, block: DraftBlock): string 
 function importedContent(
   authored: DraftBlock['content'],
   previous: DraftBlock['content'] | undefined,
+  mode: 'preserve' | 'replace',
 ): DraftBlock['content'] {
   if (!previous || previous.kind !== authored.kind) return authored
   if (authored.kind === 'pinta') return { ...authored, initialAsset: previous.initialAsset }
+  // O gabarito do Estúdio pode ter sido feito no Admin depois da importação: no modo de preservar,
+  // um manifesto que não traz gabarito não o apaga (o que traz, manda); a substituição, que tira
+  // o que foi feito à mão, tira o gabarito também. A prévia avisa nos dois casos.
+  if (
+    mode === 'preserve' &&
+    authored.kind === 'studio' &&
+    authored.solutionProject === undefined &&
+    previous.kind === 'studio' &&
+    previous.solutionProject !== undefined
+  )
+    return { ...authored, solutionProject: previous.solutionProject }
   if (authored.kind === 'materials' && Array.isArray(authored.items)) {
     if (!Array.isArray(previous.items) || authored.items.length === 0)
       return { ...authored, items: Array.isArray(previous.items) ? previous.items : authored.items }
@@ -135,6 +147,7 @@ export class LearningImportService {
     const mapping = new Map<string, string>()
     const used = new Set<string>()
     let replacedStudioProject = false
+    let adminSolution = false
     const actions: Array<{
       id: string
       label?: string
@@ -215,8 +228,15 @@ export class LearningImportService {
           stableJson(previous.content.initialProject) !== stableJson(entry.content.initialProject)
         )
           replacedStudioProject = true
+        if (
+          previous?.content.kind === 'studio' &&
+          entry.content.kind === 'studio' &&
+          previous.content.solutionProject !== undefined &&
+          (entry.content as { solutionProject?: unknown }).solutionProject === undefined
+        )
+          adminSolution = true
         mapping.set(entry.key, id)
-        add({ id, content: importedContent({ ...entry.content }, previous?.content) })
+        add({ id, content: importedContent({ ...entry.content }, previous?.content, mode) })
       }
     }
     const mapped = (key: string) => {
@@ -305,6 +325,15 @@ export class LearningImportService {
         ...(replacedStudioProject
           ? [
               'O projeto inicial do Estúdio será substituído pelo manifesto. Projetos e entregas já salvos pelos alunos não são apagados.',
+            ]
+          : []),
+        ...(adminSolution
+          ? [
+              mode === 'replace'
+                ? 'O gabarito do Estúdio feito no Admin sai: o manifesto não traz gabarito. Os objetivos que rodam o jogo vão pedir um novo.'
+                : replacedStudioProject
+                  ? 'O gabarito do Estúdio feito no Admin fica, mas o projeto inicial mudou: confira o gabarito no "Testar agora".'
+                  : 'O gabarito do Estúdio feito no Admin fica (o manifesto não traz gabarito).',
             ]
           : []),
         ...(leaving.length || removedSections.length

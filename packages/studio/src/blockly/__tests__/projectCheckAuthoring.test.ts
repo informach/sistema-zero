@@ -1,8 +1,13 @@
 import { describe, expect, test } from 'bun:test'
-import { defaultLessonSection, type SectionStructureRule } from '@sistemazero/core/learning'
+import {
+  defaultLessonSection,
+  type SectionExecutionRule,
+  type SectionStructureRule,
+} from '@sistemazero/core/learning'
 import {
   evaluateStudioProjectStructure,
   evaluateStudioSectionObjectives,
+  kitStateFields,
   projectCheckAuthoring,
   studioSectionCompletionIssues,
 } from '../projectCheckAuthoring'
@@ -341,5 +346,149 @@ describe('o gabarito da professora na publicação (18/10/2026)', () => {
     expect(issues(semNada)).toEqual([
       'O gabarito não cumpre o objetivo obrigatório "Use um laço". Ajuste o gabarito ou o objetivo.',
     ])
+  })
+})
+
+describe('objetivos que rodam o jogo (etapa 3, 18/10/2026)', () => {
+  const anda: SectionExecutionRule = {
+    type: 'behavior',
+    steps: [{ action: 'press', key: 'ArrowRight' }],
+    expect: { target: { kind: 'value', path: 'heroi.x' }, compare: 'changed' },
+  }
+  const fase: SectionExecutionRule = {
+    type: 'behavior',
+    steps: [],
+    expect: { target: { kind: 'game', field: 'phase' }, compare: 'equals', value: 'won' },
+  }
+  const dobro: Extract<SectionExecutionRule, { type: 'functionReturns' }> = {
+    type: 'functionReturns',
+    name: 'dobro',
+    cases: [{ args: [2], expected: 4 }],
+  }
+  const classico = (extra: Record<string, unknown> = {}) =>
+    projectCheckAuthoring({ initialProject: { installedExtensions: [] }, ...extra })
+  const pro = (templateId: string) =>
+    projectCheckAuthoring({ initialProject: { kind: 'pro', tree: {}, proMeta: { templateId } } })
+
+  test('valem no jogo clássico e no kit Pro, com o alvo de cada um', () => {
+    expect(classico().issues(anda)).toEqual([])
+    expect(classico().issues(dobro)).toEqual([])
+    expect(pro('canvas-puzzle').issues(fase)).toEqual([])
+    expect(pro('canvas-puzzle').issues({ ...dobro, module: 'src/regras.ts' })).toEqual([])
+  })
+
+  test('o 3D clássico não roda no teste (precisa de internet): a autoria avisa', () => {
+    const tresD = projectCheckAuthoring({
+      initialProject: { installedExtensions: [{ id: 'game-3d' }] },
+    })
+    expect(tresD.issues(anda)).toEqual([
+      'Jogos 3D do modo Blocos não rodam no teste (ele roda sem internet e o 3D precisa dela). Use uma ideia de programação.',
+    ])
+    // Nem a função escapa: o arquivo inteiro para na importação do three.js, que o teste (sem
+    // internet) não alcança. Achado do review da etapa 3.
+    expect(tresD.issues(dobro)).toEqual([
+      'Jogos 3D do modo Blocos não rodam no teste (ele roda sem internet e o 3D precisa dela). Use uma ideia de programação.',
+    ])
+  })
+
+  test('a vida só nos kits que a mostram', () => {
+    const vida: SectionExecutionRule = {
+      type: 'behavior',
+      steps: [],
+      expect: { target: { kind: 'game', field: 'health' }, compare: 'atLeast', value: 6 },
+    }
+    expect(pro('canvas-survival').issues(vida)).toEqual([])
+    expect(pro('canvas-puzzle').issues(vida)).toEqual([
+      'Este kit Pro não mostra a vida do jogador: confira a fase, os pontos ou a meta.',
+    ])
+    expect(kitStateFields('canvas-puzzle')).toEqual(['phase', 'score', 'goal'])
+    expect(kitStateFields('vanilla-vite')).toEqual([])
+  })
+
+  test('o clique tem que caber na tela do teste (1024 por 640)', () => {
+    const clique = (x: number, y: number): SectionExecutionRule => ({
+      ...anda,
+      steps: [{ action: 'click', x, y }],
+    })
+    expect(classico().issues(clique(1000, 600))).toEqual([])
+    expect(classico().issues(clique(1024, 10))).toEqual([
+      'O teste abre o jogo numa tela de 1024 por 640: o clique precisa caber nela.',
+    ])
+    expect(classico().issues(clique(10, 700))).toHaveLength(1)
+  })
+
+  test('regra em JavaScript: Ponte ou Pro, e a escrita é conferida sem rodar', () => {
+    const regra = (code: string): SectionExecutionRule => ({ type: 'script', steps: [], code })
+    expect(classico().issues(regra('return jogo.pontos > 2'))).toEqual([])
+    expect(pro('canvas-puzzle').issues(regra('return jogo.score > 0'))).toEqual([])
+    expect(
+      projectCheckAuthoring({ initialProject: {}, allowedModes: ['blocks'] }).issues(
+        regra('return true'),
+      ),
+    ).toEqual(['A regra em JavaScript vale na Ponte e no Pro.'])
+    const [escrita] = classico().issues(regra('return ('))
+    expect(escrita).toStartWith('A regra em JavaScript tem um erro de escrita:')
+    // Compilar não roda: um laço infinito na regra não trava a autoria.
+    expect(classico().issues(regra('while (true) {}'))).toEqual([])
+  })
+
+  test('cada alvo só onde ele existe', () => {
+    expect(pro('vanilla-vite').issues(anda)).toEqual([
+      'No projeto Pro, confira o texto da página, o console ou o estado do kit.',
+    ])
+    expect(classico().issues(fase)).toEqual([
+      'O estado do jogo (fase, pontos, meta, vida) só existe nos kits Pro.',
+    ])
+    expect(pro('vanilla-vite').issues(fase)).toEqual([
+      'O estado do jogo (fase, pontos, meta, vida) só existe nos kits Pro.',
+    ])
+  })
+
+  test('a função: arquivo obrigatório no Pro, proibido no clássico, Ponte no clássico', () => {
+    expect(pro('canvas-puzzle').issues(dobro)[0]).toContain('em que arquivo a função está')
+    expect(classico().issues({ ...dobro, module: 'src/regras.ts' })).toEqual([
+      'O arquivo da função só vale no projeto Pro.',
+    ])
+    expect(classico({ allowedModes: ['blocks'] }).issues(dobro)[0]).toContain('precisa da Ponte')
+    expect(classico({ allowedModes: ['blocks', 'bridge'] }).issues(dobro)).toEqual([])
+  })
+
+  test('regra malformada é recusada antes de qualquer outra conta', () => {
+    expect(classico().issues({ ...anda, steps: [{ action: 'wait', ms: 99_999 }] })).toEqual([
+      'O objetivo tem passos, valores ou casos inválidos.',
+    ])
+  })
+
+  test('a estrutura não responde por execução: sem o resultado do executor, não passa', () => {
+    expect(evaluateStudioProjectStructure(anda, {})).toBe(false)
+    const checks = [
+      { id: 'a', rule: anda },
+      { id: 'b', rule: { type: 'usesLoop' as const }, optional: true as const },
+    ]
+    expect(evaluateStudioSectionObjectives(checks, {}).passed).toBe(false)
+    expect(
+      evaluateStudioSectionObjectives(checks, {}, undefined, new Map([['a', true]])).passed,
+    ).toBe(true)
+  })
+
+  test('a publicação exige o gabarito quando há objetivo que roda o jogo', () => {
+    const section = {
+      ...defaultLessonSection('section', 'Andar', []),
+      workspaceBlockId: 'workspace',
+      completion: {
+        version: 1 as const,
+        blockIds: [],
+        projectChecks: [{ id: 'anda', label: 'Faça o herói andar', rule: anda }],
+      },
+    }
+    const issues = (content: Record<string, unknown>) =>
+      studioSectionCompletionIssues(
+        [section],
+        [{ id: 'workspace', content: { kind: 'studio', initialProject: {}, ...content } }],
+      ).map((issue) => issue.message)
+    expect(issues({})).toEqual([
+      'Objetivos que rodam o jogo precisam de um gabarito: crie o gabarito no bloco do Estúdio e use "Testar agora".',
+    ])
+    expect(issues({ solutionProject: {} })).toEqual([])
   })
 })

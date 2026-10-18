@@ -31,6 +31,11 @@ export interface RenderProjectOptions {
   loopBudgetMs?: number
   /** Host-owned packaged replacements for existing official ESM imports (e.g. offline desktop). */
   runtimeImports?: Readonly<Record<string, string>>
+  /**
+   * Troca o `script.js` DEPOIS de o projeto ser preparado (o teste dos objetivos injeta o leitor
+   * de variáveis aqui, `check/instrumentCheckScript.ts`). Antes da preparação ele seria refeito.
+   */
+  transformScript?: (script: string) => string
 }
 
 /**
@@ -52,7 +57,10 @@ export async function renderProjectToPreviewDocAsync(
     throw new Error('Projetos Pro precisam de um artefato compilado para jogar ou capturar.')
   const playableProject = await prepareProjectForHost(project)
   if (!playableProject) throw new Error('Não foi possível preparar este jogo.')
-  const files = playableProject.files ?? { 'index.html': '', 'style.css': '', 'script.js': '' }
+  const prepared = playableProject.files ?? { 'index.html': '', 'style.css': '', 'script.js': '' }
+  const files = opts.transformScript
+    ? { ...prepared, 'script.js': opts.transformScript(prepared['script.js'] ?? '') }
+    : prepared
   const installedExtensions = Array.isArray(playableProject.installedExtensions)
     ? playableProject.installedExtensions
     : []

@@ -18,6 +18,27 @@ publicação recusa), e avisa sem gabarito e com todos extras. O upload de proje
 fila de Entregas (e dos tipos/BFF). Testes: `tests/objectives-test.test.ts` e
 `tests/section-completion-editor.test.tsx`.
 
+**Objetivos que RODAM o jogo (etapa 3):** a regra ganhou "O jogo faz algo" e "A função responde
+certo" (`components/editor/execution-rule-editor.tsx` + as réguas puras de `lib/execution-rule.ts`:
+passos esperar/apertar/segurar/clicar, o que conferir no fim, casos da função digitados como no
+código). O "Testar agora" confere a estrutura na hora e manda os de execução ao executor
+(`runExecutionTest` → BFF `POST /api/members/project-checks/test` → members `POST
+/members/admin/project-checks/test`, staff+, 160 s no gateway), um pedido para o inicial e outro para
+o gabarito; a linha mostra "testando…", o motivo visto no gabarito e a tela final (captura). Mudou
+um objetivo de execução ou um projeto depois do clique? A linha pede "aperte Testar agora".
+`CallOpts.timeoutMs` no `server/gateway.ts`. Testes: `tests/execution-objectives.test.tsx`.
+
+**Etapa 4 (regra em JavaScript, modelos, kits, copiar/colar):** a regra "Regra em JavaScript (para
+quem programa)" (`script-rule-editor.tsx`: passos + o corpo de uma função que devolve `true`; `jogo`
+são as variáveis no clássico e o estado do kit no Pro). `objective-tools.tsx` traz "Começar de um
+modelo" (`lib/objective-templates.ts`: modelos filtrados pelo tipo do bloco, `templatesFor`, e as
+SUGESTÕES do kit Pro, `kitSuggestions`, com a meta do `src/config.ts` como a mais firme, `game.goal`)
+e "Copiar objetivos"/"Colar objetivos" (`lib/objectives-clipboard.ts`: JSON com marcador de formato;
+colar confere cada um com o `isSectionCompletion` do core, dá ids NOVOS e respeita 20 por parte e 8
+que rodam o jogo, dizendo o que ficou de fora). Sem permissão para a área de transferência, o texto
+aparece para copiar à mão. Testes: `tests/objective-tools.test.tsx` (todo modelo e toda sugestão
+nascem válidos e sem aviso de autoria no projeto em que aparecem).
+
 ## Atendimento no admin: painel somente leitura + links entre consoles (17/10/2026)
 
 Decisão da dona: o app de atendimento (`helpdesk-app`) continua sendo onde se TRABALHA; o admin

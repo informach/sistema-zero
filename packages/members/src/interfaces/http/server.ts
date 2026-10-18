@@ -92,6 +92,8 @@ function bodyLimitForPath(pathname: string, env: Env): number {
     ADMIN_BLOCK_CREATE_PATH.test(pathname) ||
     ADMIN_BLOCK_UPDATE_PATH.test(pathname) ||
     /^\/members\/admin\/lessons\/[^/]+\/draft$/.test(pathname) ||
+    // "Testar agora" dos objetivos: o projeto inicial ou o gabarito inteiro.
+    pathname === '/members/admin/project-checks/test' ||
     /^\/members\/admin\/lessons\/[^/]+\/import-(preview|learning)$/.test(pathname) ||
     /^\/members\/admin\/live\/programs(?:\/[^/]+)?$/.test(pathname) ||
     /^\/members\/(?:admin\/)?live\/(?:workspaces\/[^/]+\/(?:commits|accept|return)|templates)$/.test(

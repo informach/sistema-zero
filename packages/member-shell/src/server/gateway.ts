@@ -27,6 +27,11 @@ export interface CallOpts {
   method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE'
   body?: unknown
   query?: Record<string, string | number | undefined | null>
+  /**
+   * Prazo PRÓPRIO desta chamada (padrão 60 s). Só para as rotas que esperam um trabalho longo do
+   * outro lado: o "Verificar esta parte" com objetivos que RODAM o jogo (até ~150 s).
+   */
+  timeoutMs?: number
 }
 
 /** Módulo de chamadas ao gateway de um app (ver `createGatewayModule`). */
@@ -73,7 +78,7 @@ async function rawFetch(path: string, opts: CallOpts, access: string | null): Pr
       headers: reqHeaders,
       body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined,
       cache: 'no-store',
-      signal: AbortSignal.timeout(GATEWAY_TIMEOUT_MS),
+      signal: AbortSignal.timeout(opts.timeoutMs ?? GATEWAY_TIMEOUT_MS),
     })
   } catch {
     // Timeout / conexão recusada / falha de DNS: NÃO rejeita (rejeição não tratada).

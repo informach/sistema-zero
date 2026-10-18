@@ -16,6 +16,15 @@ Guia operacional deste package. Leia antes de editar.
 > palpite, pistas e pergunta final continuam anexados à experimentação. Menções a
 > demonstração ou pergunta curta nas notas históricas abaixo não descrevem mais o contrato.
 
+## Objetivos que RODAM o jogo (18/10/2026)
+
+`learning/project-execution.ts`: as regras `behavior`/`functionReturns`/`script`
+(`isSectionExecutionRule`, limites em `EXECUTION_LIMITS`), o contrato do executor
+(`ExecutionObjectiveRequest`, `ExecutionObservation`, `ProjectCheckResponse`) e a régua ÚNICA de
+julgamento (`judgeExecutionObservation`, com o motivo para a equipe). `SectionProjectCheck.rule` é
+`SectionObjectiveRule` (estrutura OU execução); `isSectionCompletion` aceita até 8 de execução por
+parte; `projectObjectiveKind` dá `game`/`function`/`script`. Testes: `tests/project-execution.test.ts`.
+
 ## Impressão do conteúdo e "envio em dia" (10/10/2026)
 
 O rascunho do Estúdio e do Pinta da fase passou a subir sozinho para a conta, e o envio virou só a

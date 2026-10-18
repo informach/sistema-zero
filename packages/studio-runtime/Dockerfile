@@ -14,7 +14,7 @@ RUN npm ci --ignore-scripts --no-audit --no-fund \
 COPY runtime/pack-artifact.mjs ./
 COPY runtime/check-project.mjs ./
 COPY runtime/validation-profile.json ./
-COPY runtime/playtest.mjs runtime/gameplay.mjs ./
+COPY runtime/playtest.mjs runtime/gameplay.mjs runtime/check-objectives.mjs ./
 
 RUN mkdir -p /workspace/builds \
   && chown -R node:node /workspace \

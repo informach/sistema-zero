@@ -289,6 +289,10 @@ const common: Record<string, string[]> = {
   members: [
     'STUDIO_BUILDER_EXECUTOR_URL',
     'STUDIO_BUILDER_EXECUTOR_SECRET',
+    // Objetivos que rodam o jogo (18/10/2026): o executor `/v1/check` do studio-runtime. Os
+    // mesmos nomes do Admin e do Kids; o token é o INTERNAL_TOKEN do Worker.
+    'STUDIO_PRO_RUNTIME_TOKEN',
+    'STUDIO_PRO_RUNTIME_URL',
     'LIVE_MEDIA_READY',
     'LIVE_SFU_APP_ID',
     'LIVE_SFU_APP_SECRET',
