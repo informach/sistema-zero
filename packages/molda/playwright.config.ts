@@ -27,12 +27,14 @@ export default defineConfig({
     { name: 'chromium', use: { ...devices['Desktop Chrome'], hasTouch: true } },
     {
       name: 'firefox',
-      testMatch: /(scene-workshop|simple-uv|pixel-cutouts|gallery-project-import)\.spec\.ts/,
+      testMatch:
+        /(scene-workshop|simple-uv|pixel-cutouts|gallery-project-import|duplicate-selection|plane)\.spec\.ts/,
       use: { ...devices['Desktop Firefox'] },
     },
     {
       name: 'webkit',
-      testMatch: /(scene-workshop|simple-uv|pixel-cutouts|gallery-project-import)\.spec\.ts/,
+      testMatch:
+        /(scene-workshop|simple-uv|pixel-cutouts|gallery-project-import|duplicate-selection|plane)\.spec\.ts/,
       use: { ...devices['Desktop Safari'], hasTouch: true },
     },
   ],

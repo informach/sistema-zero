@@ -39,6 +39,7 @@ import { triangulateFace } from './triangulate'
 import { boolean, choice, number, requireScene, text, tuple } from './validation'
 
 export type SceneIdFactory = () => string
+export type SceneShapeKind = ScenePrimitiveGeometry['kind'] | 'plane'
 
 export function addSceneBox(
   document: MoldaSceneDocument,
@@ -55,6 +56,17 @@ export function addScenePrimitive(
   nextId: SceneIdFactory = newId,
 ): MoldaSceneDocument {
   choice(kind, ['box', 'wedge', 'cylinder', 'sphere'], 'kind')
+  return addSceneShape(document, kind, name, nextId)
+}
+
+/** A plane is an editable quad, using the existing mesh document and UV contracts. */
+export function addSceneShape(
+  document: MoldaSceneDocument,
+  kind: SceneShapeKind,
+  name: string,
+  nextId: SceneIdFactory = newId,
+): MoldaSceneDocument {
+  choice(kind, ['box', 'wedge', 'cylinder', 'sphere', 'plane'], 'kind')
   const allocate = allocateId(document, nextId)
   const nodeId = allocate()
   const geometryId = allocate()
@@ -75,10 +87,10 @@ export function addScenePrimitive(
         materialId,
         hidden: false,
         locked: false,
-        pivot: [0, -1, 0],
+        pivot: kind === 'plane' ? [0, 0, 0] : [0, -1, 0],
         transform: {
           kind: 'trs',
-          translation: [0, 1, 0],
+          translation: kind === 'plane' ? [0, 0, 0] : [0, 1, 0],
           rotation: [0, 0, 0, 1],
           scale: [1, 1, 1],
         },
@@ -86,7 +98,24 @@ export function addScenePrimitive(
     ],
     geometries: [
       ...document.geometries,
-      { id: geometryId, kind, from: [-1, -1, -1], to: [1, 1, 1], surfaces: {} },
+      kind === 'plane'
+        ? {
+            id: geometryId,
+            kind: 'mesh',
+            vertices: { a: [-1, 0, -1], b: [-1, 0, 1], c: [1, 0, 1], d: [1, 0, -1] },
+            faces: {
+              plane: {
+                corners: [
+                  { vertexId: 'a', uv: [0, 0] },
+                  { vertexId: 'b', uv: [0, 1] },
+                  { vertexId: 'c', uv: [1, 1] },
+                  { vertexId: 'd', uv: [1, 0] },
+                ],
+              },
+            },
+            looseEdges: [],
+          }
+        : { id: geometryId, kind, from: [-1, -1, -1], to: [1, 1, 1], surfaces: {} },
     ],
     materials: [
       ...document.materials,
@@ -96,7 +125,7 @@ export function addScenePrimitive(
         baseColor: { kind: 'palette', index: color },
         roughness: 1,
         metalness: 0,
-        doubleSided: false,
+        doubleSided: kind === 'plane',
       },
     ],
   })

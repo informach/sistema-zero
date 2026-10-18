@@ -3,12 +3,13 @@ import type { Bounds } from '../model/transform'
 import { sceneBounds } from './bounds'
 import { finishSceneCommand, requireEditableScene, sceneCommandSelection } from './commandContext'
 import {
-  addScenePrimitive,
+  addSceneShape,
   duplicateSceneNodes,
   type SceneIdFactory,
+  type SceneShapeKind,
   transformSceneNodes,
 } from './commands'
-import type { MoldaSceneDocument, ScenePrimitiveGeometry } from './document'
+import type { MoldaSceneDocument } from './document'
 import { indexSceneDocument } from './documentIndex'
 import { evaluateSceneNodeFlags } from './evaluate'
 import { reparentPreservingWorld } from './graph'
@@ -52,7 +53,13 @@ function moved(bounds: Bounds, delta: Vec3): Bounds {
 }
 
 function intersects(a: Bounds, b: Bounds) {
-  return [0, 1, 2].every((axis) => a.min[axis]! < b.max[axis]! && a.max[axis]! > b.min[axis]!)
+  return [0, 1, 2].every((axis) => {
+    if (a.min[axis] === a.max[axis])
+      return a.min[axis]! >= b.min[axis]! && a.min[axis]! <= b.max[axis]!
+    if (b.min[axis] === b.max[axis])
+      return b.min[axis]! >= a.min[axis]! && b.min[axis]! <= a.max[axis]!
+    return a.min[axis]! < b.max[axis]! && a.max[axis]! > b.min[axis]!
+  })
 }
 
 /** Try nearby cardinal placements, then the free edge of the entire visible creation. */
@@ -110,7 +117,7 @@ function beside(
 
 export function addScenePrimitiveNear(
   document: MoldaSceneDocument,
-  kind: ScenePrimitiveGeometry['kind'],
+  kind: SceneShapeKind,
   name: string,
   ids: readonly string[],
   nextId?: SceneIdFactory,
@@ -131,7 +138,7 @@ export function addScenePrimitiveNear(
       'Mostre e destrave o conjunto antes de adicionar uma peça.',
     )
   }
-  let next = addScenePrimitive(document, kind, name, nextId)
+  let next = addSceneShape(document, kind, name, nextId)
   const created = next.nodes.at(-1)!.id
   next = beside(next, [created], ids)
   if (parentId) {

@@ -204,11 +204,13 @@ describe('inventário da oficina: o que a criança alcança', () => {
     // The surface knife and the explicit volume separation are independent actions.
     // Direct edge picking adds one visible stage mode alongside whole, points and faces.
     // Group, ungroup and multiselect move into the tree; the destination selector adds one control.
-    expect(controlInventory(vazio.view.container).length).toBeLessThanOrEqual(67)
+    // The requested Plano adds one visible creation button.
+    expect(vazio.view.getByRole('button', { name: copy.plane })).toBeDefined()
+    expect(controlInventory(vazio.view.container).length).toBeLessThanOrEqual(68)
     expect(
       encaradosVazio.length,
       `encarados na abertura: ${encaradosVazio.join(' | ')}`,
-    ).toBeLessThanOrEqual(47)
+    ).toBeLessThanOrEqual(48)
     cleanup()
 
     const comPeca = mount(withPiece())
@@ -216,11 +218,11 @@ describe('inventário da oficina: o que a criança alcança', () => {
     const encaradosPeca = frontControls(comPeca.view.container)
     // 12 coordinate inputs are now available directly, with pivot and component tools.
     // Flip adds its disclosure, three axes and the in-place option, behind the disclosure.
-    expect(controlInventory(comPeca.view.container).length).toBeLessThanOrEqual(125)
+    expect(controlInventory(comPeca.view.container).length).toBeLessThanOrEqual(126)
     expect(
       encaradosPeca.length,
       `encarados com uma peça escolhida: ${encaradosPeca.join(' | ')}`,
-    ).toBeLessThanOrEqual(87)
+    ).toBeLessThanOrEqual(88)
   })
 
   /**
