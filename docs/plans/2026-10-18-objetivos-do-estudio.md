@@ -114,3 +114,23 @@ no banco (dados antigos), mas nada mais as escreve.
 3. Executor: `/v1/check`, "O jogo faz algo" e "A função responde certo". Review.
 4. Regra em JavaScript, modelos, sugestões dos kits Pro, Copiar e Colar, manifesto. Review.
 5. Diretrizes, especificação do manifesto, roteiros e prints; full review final.
+
+## Full review final (18/10/2026)
+
+Sem achado grave. Corrigidos:
+
+- O "Testar agora" mostra o motivo quando o executor recusa o projeto (400/413 viram problema
+  "No gabarito: …"), em vez de "tente de novo".
+- Parte só com desafios extras: o cartão diz que nada falta (`verificacao.soExtras`), não "ainda
+  falta um objetivo" (o servidor responde `passed: false` porque não há obrigatório).
+- O "Testar agora" do gabarito manda também o projeto inicial: o servidor recusa gabarito de outro
+  tipo ou de outro modelo Pro, e as ideias de código contam só o que mudou desde o inicial.
+- A criança com projeto recusado pelo executor lê "Não consegui testar este projeto. Peça ajuda à
+  equipe."; a pendência da parte ficou neutra ("Cumpra os objetivos e verifique o seu projeto"),
+  porque o botão tem nomes diferentes no Kids e no adulto.
+
+Registrados e não mudados: o ensaio do Admin ainda mostra o veredito pela régua antiga em partes só
+com extras; um gabarito e um inicial grandes juntos podem passar do teto de 2 MB do "Testar agora".
+
+Antes de usar objetivos que rodam o jogo em produção, publicar o Worker `studio-runtime` à mão
+(`bun run deploy:staging` e depois `bun run deploy` em `packages/studio-runtime`).

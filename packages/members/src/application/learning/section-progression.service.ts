@@ -140,6 +140,21 @@ export class SectionProgressionService {
     initialProject?: unknown
     requester: string
   }) {
+    // O gabarito precisa ser do mesmo tipo (e do mesmo modelo Pro) que o projeto inicial: a
+    // criança vai receber o inicial, e um teste que passa num modelo diferente não prova nada.
+    if (input.initialProject !== undefined) {
+      if (projectKind(input.initialProject) !== projectKind(input.project))
+        throw new ValidationError('O gabarito é de outro tipo de projeto que o inicial.')
+      const template = (project: unknown) =>
+        typeof project === 'object' && project !== null
+          ? (project as { proMeta?: { templateId?: unknown } }).proMeta?.templateId
+          : undefined
+      if (
+        projectKind(input.initialProject) === 'pro' &&
+        template(input.initialProject) !== template(input.project)
+      )
+        throw new ValidationError('O gabarito usa outro modelo Pro que o projeto inicial.')
+    }
     let executed: ProjectExecutionCheckOutput | undefined
     try {
       executed = await this.runExecution(
@@ -372,7 +387,8 @@ export class SectionProgressionService {
       )
         missing.push({
           kind: 'project-check',
-          text: 'Cumpra os objetivos desta parte e toque em "Verificar esta parte"',
+          // Neutro: o botão é "Verificar esta parte" no Kids e "Verificar esta etapa" no adulto.
+          text: 'Cumpra os objetivos e verifique o seu projeto',
         })
       const workspace = upToDateWorkspaces.get(section.id)
       if (workspace) {

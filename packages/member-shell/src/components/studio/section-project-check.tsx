@@ -130,13 +130,20 @@ function ObjectivesCard({
       setResults(result.results)
       setStale(editadoEm.current > conferidoEm.current)
       const extraFaltando = extras.some((o) => !result.results.find((r) => r.id === o.id)?.passed)
+      // Parte só com desafios extras: o servidor diz `passed: false` (não há obrigatório para
+      // cumprir), mas para a criança nada FALTA. Ela lê o estado dos extras.
       setFeedback(
-        result.passed
+        required.length === 0
           ? {
-              text: extraFaltando ? verificacao.cumpridoComExtra : verificacao.cumprido,
+              text: extraFaltando ? verificacao.soExtras : verificacao.cumprido,
               tone: 'ok',
             }
-          : { text: verificacao.faltou, tone: 'falta' },
+          : result.passed
+            ? {
+                text: extraFaltando ? verificacao.cumpridoComExtra : verificacao.cumprido,
+                tone: 'ok',
+              }
+            : { text: verificacao.faltou, tone: 'falta' },
       )
       const ganho = result.gamification?.xpAwarded ?? 0
       setXp(ganho > 0 ? ganho : null)

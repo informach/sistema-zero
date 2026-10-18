@@ -214,6 +214,39 @@ describe('objetivos que rodam o jogo, no servidor', () => {
     )
   })
 
+  test('"Testar agora": gabarito de outro tipo que o inicial é recusado com o motivo', async () => {
+    const fake = fakeExecutor(() => true)
+    const ctx = setup(fake.executor)
+    const admin = { 'x-auth-user-role': 'admin', 'x-auth-user-status': 'active' }
+    const checks = [{ id: 'anda', rule: anda }]
+    const outroTipo = await ctx.request(
+      '/admin/project-checks/test',
+      'POST',
+      {
+        project: { kind: 'pro', proMeta: { templateId: 'canvas-puzzle' } },
+        initialProject: COM_LACO,
+        checks,
+      },
+      admin,
+    )
+    expect(outroTipo.status).toBe(400)
+    expect(JSON.stringify(await outroTipo.json())).toContain('outro tipo de projeto')
+    const outroModelo = await ctx.request(
+      '/admin/project-checks/test',
+      'POST',
+      {
+        project: { kind: 'pro', proMeta: { templateId: 'canvas-puzzle' } },
+        initialProject: { kind: 'pro', proMeta: { templateId: 'phaser-arcade' } },
+        checks,
+      },
+      admin,
+    )
+    expect(outroModelo.status).toBe(400)
+    expect(JSON.stringify(await outroModelo.json())).toContain('outro modelo Pro')
+    // Nenhum dos dois chegou ao executor.
+    expect(fake.calls).toHaveLength(0)
+  })
+
   test('recusa do executor: a criança lê a frase de sempre, a equipe lê o motivo', async () => {
     const recusa: ProjectExecutionChecker = {
       async check() {

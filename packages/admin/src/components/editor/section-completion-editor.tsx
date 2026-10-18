@@ -25,6 +25,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { describeExecutionRule, newExecutionRule } from '@/lib/execution-rule'
 import {
   type ExecutedProjects,
+  ExecutionTestRejectedError,
   executionChecksOf,
   runExecutionTest,
   testSectionObjectives,
@@ -192,12 +193,13 @@ export function SectionCompletionEditor({
     setRun({ ...base, executed: { ...executedNow } })
     for (const which of ['initial', 'solution'] as const) {
       if (projects[which] === undefined) continue
-      runExecutionTest(projects[which], checks)
+      runExecutionTest(projects[which], checks, fetch, content.initialProject)
         .then((outcome) => {
           executedNow[which] = outcome
         })
-        .catch(() => {
-          executedNow[which] = 'error'
+        .catch((error: unknown) => {
+          executedNow[which] =
+            error instanceof ExecutionTestRejectedError ? { rejected: error.message } : 'error'
         })
         .finally(() => {
           if (runRequest.current === request) setRun({ ...base, executed: { ...executedNow } })

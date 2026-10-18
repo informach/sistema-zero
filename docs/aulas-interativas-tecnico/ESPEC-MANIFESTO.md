@@ -324,11 +324,12 @@ servidor em **Verificar esta parte** (até 20; [especificação](../plans/2026-1
   não passar; `optional: true` faz um **desafio extra** (não tranca a seção; 5 XP uma vez). Seção só
   com extras não tem critério.
 - `rule.type` de estrutura, conferida na hora: `usesBlock` (só Blocos e Ponte), `usesLoop`,
-  `declaresVariable`, `definesFunction` e `callsFunction` (blocos ou código; só conta o que mudou
-  desde o `initialProject`).
+  `declaresVariable`, `definesFunction` e `callsFunction` (blocos ou código; no código só conta o
+  que mudou desde o `initialProject`, nos blocos conta o projeto inteiro).
 - `rule.type` que **roda o jogo** num navegador sem internet (até 8 por seção, 40 s de esperas
   somadas): `behavior` (`steps` com `wait`/`press`/`click` e `expect` com `target` `value` no
-  clássico, `text`, `console` ou `game` nos kits Pro: `phase`, `score`, `goal`, `health`),
+  clássico, `text`, `console` ou `game` nos kits Pro: `phase`, `score`, `goal` e, só no `canvas-survival`,
+  `health`),
   `functionReturns` (`name`, `cases` com `args` e `expected`; no Pro, `module` com o arquivo que
   exporta a função) e `script` (`steps` e `code`, o corpo de uma função que devolve `true`; só Ponte e
   Pro). Não valem em jogo 3D do modo Blocos. Todos exigem o `solutionProject`.

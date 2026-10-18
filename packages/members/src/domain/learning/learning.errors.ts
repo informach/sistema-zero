@@ -44,6 +44,8 @@ export class ProjectCheckUnavailableError extends DomainError {
 export class ProjectCheckRejectedError extends ProjectCheckUnavailableError {
   constructor(readonly reason: string) {
     super()
+    // Tentar de novo não resolve: a criança precisa saber que é para pedir ajuda.
+    this.message = 'Não consegui testar este projeto. Peça ajuda à equipe.'
   }
 }
 /** Muitos testes seguidos da mesma pessoa: o executor pede uma pausa. */

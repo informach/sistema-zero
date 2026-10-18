@@ -128,7 +128,9 @@ describe('o adaptador do studio-runtime', () => {
     expect(recusa).toBeInstanceOf(ProjectCheckRejectedError)
     expect(recusa).toBeInstanceOf(ProjectCheckUnavailableError)
     expect((recusa as ProjectCheckRejectedError).reason).toBe('Grande demais.')
-    expect((recusa as Error).message).toBe('Não consegui testar o seu jogo agora. Tente de novo.')
+    expect((recusa as Error).message).toBe(
+      'Não consegui testar este projeto. Peça ajuda à equipe.',
+    )
     expect(
       await setup(() => new Response('grande', { status: 413 }))
         .run()

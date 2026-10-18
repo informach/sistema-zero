@@ -38,10 +38,18 @@ export interface ExecutionTestOutcome {
   screenshots?: Record<string, string>
 }
 
-export interface ExecutedProjects {
-  initial?: ExecutionTestOutcome | 'pending' | 'error'
-  solution?: ExecutionTestOutcome | 'pending' | 'error'
+/** O executor RECUSOU o projeto (modelo não escolhido, grande demais…): o motivo é da autoria. */
+export interface ExecutionTestRejected {
+  rejected: string
 }
+
+export interface ExecutedProjects {
+  initial?: ExecutionTestOutcome | ExecutionTestRejected | 'pending' | 'error'
+  solution?: ExecutionTestOutcome | ExecutionTestRejected | 'pending' | 'error'
+}
+
+/** Erro de `runExecutionTest` quando o servidor diz POR QUE o projeto não pode ser testado. */
+export class ExecutionTestRejectedError extends Error {}
 
 const record = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -80,11 +88,14 @@ export function testSectionObjectives(
     if (!structural) return null
     if (!isExecutionRule(check.rule)) return structural.get(check.id) ?? false
     if (run === undefined || run === 'pending') return 'pending'
-    if (run === 'error') return 'error'
+    if (run === 'error' || 'rejected' in run) return 'error'
     return run.results.find((r) => r.id === check.id)?.passed ?? false
   }
   const rows = checks.map((check, index): ObjectiveTestRow => {
-    const solutionRun = typeof executed.solution === 'object' ? executed.solution : undefined
+    const solutionRun =
+      typeof executed.solution === 'object' && 'results' in executed.solution
+        ? executed.solution
+        : undefined
     const detail = solutionRun?.results.find((r) => r.id === check.id)?.detail
     const screenshot = solutionRun?.screenshots?.[check.id]
     return {
@@ -113,7 +124,15 @@ export function testSectionObjectives(
     if (row.optional && row.initial === true)
       notes.push(`O projeto inicial já cumpre o desafio extra "${row.label}": ele sai de graça.`)
   }
-  if (rows.some((row) => row.initial === 'error' || row.solution === 'error'))
+  for (const [which, label] of [
+    ['initial', 'No projeto inicial'],
+    ['solution', 'No gabarito'],
+  ] as const) {
+    const run = executed[which]
+    if (typeof run === 'object' && 'rejected' in run) problems.push(`${label}: ${run.rejected}`)
+  }
+  const unavailable = (run: ExecutedProjects['initial']) => run === 'error'
+  if (unavailable(executed.initial) || unavailable(executed.solution))
     notes.push(
       'Não consegui rodar o jogo agora para conferir os objetivos que o testam. Tente de novo.',
     )
@@ -135,12 +154,15 @@ export async function runExecutionTest(
   project: unknown,
   checks: readonly SectionProjectCheck[],
   fetchImpl: typeof fetch = fetch,
+  /** O projeto inicial do bloco: o servidor confere que o gabarito é do mesmo tipo e modelo. */
+  initialProject?: unknown,
 ): Promise<ExecutionTestOutcome> {
   const response = await fetchImpl('/api/members/project-checks/test', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       project,
+      ...(initialProject === undefined || initialProject === project ? {} : { initialProject }),
       checks: executionChecksOf(checks).map(({ id, rule, optional }) => ({
         id,
         rule,
@@ -148,7 +170,16 @@ export async function runExecutionTest(
       })),
     }),
   })
-  const body = (await response.json().catch(() => null)) as ExecutionTestOutcome | null
+  const body = (await response.json().catch(() => null)) as
+    | (ExecutionTestOutcome & { error?: { message?: unknown } })
+    | null
+  // Recusa com motivo (400) ou projeto grande demais (413): a professora precisa ler o porquê.
+  if (response.status === 400 || response.status === 413)
+    throw new ExecutionTestRejectedError(
+      typeof body?.error?.message === 'string'
+        ? body.error.message
+        : 'O projeto ficou grande demais para o teste.',
+    )
   if (!response.ok || !body || !Array.isArray(body.results)) throw new Error('teste indisponível')
   return body
 }

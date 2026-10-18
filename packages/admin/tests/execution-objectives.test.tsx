@@ -13,7 +13,11 @@ import {
   parseExpected,
   parseExpectedValue,
 } from '../src/lib/execution-rule'
-import { runExecutionTest, testSectionObjectives } from '../src/lib/objectives-test'
+import {
+  ExecutionTestRejectedError,
+  runExecutionTest,
+  testSectionObjectives,
+} from '../src/lib/objectives-test'
 
 if (typeof document === 'undefined') GlobalRegistrator.register()
 ;(globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true
@@ -113,6 +117,32 @@ describe('a autoria dos objetivos que rodam o jogo', () => {
         (async () => new Response('', { status: 503 })) as unknown as typeof fetch,
       ),
     ).rejects.toThrow()
+  })
+
+  test('recusa do executor: o motivo vira problema, não "tente de novo"', async () => {
+    const sent: unknown[] = []
+    const recusa = (async (_url: string, init: RequestInit) => {
+      sent.push(JSON.parse(String(init.body)))
+      return Response.json(
+        { error: { code: 'VALIDATION_ERROR', message: 'Escolha o modelo Pro do bloco.' } },
+        { status: 400 },
+      )
+    }) as unknown as typeof fetch
+    const inicial = { kind: 'pro', nome: 'inicial' }
+    const erro = await runExecutionTest({ kind: 'pro' }, [anda], recusa, inicial).catch((e) => e)
+    expect(erro).toBeInstanceOf(ExecutionTestRejectedError)
+    expect((erro as Error).message).toBe('Escolha o modelo Pro do bloco.')
+    // O gabarito vai com o projeto inicial (o servidor confere tipo e modelo); o inicial, sozinho.
+    expect(sent[0]).toMatchObject({ initialProject: inicial })
+    await runExecutionTest(inicial, [anda], recusa, inicial).catch(() => {})
+    expect(sent[1]).not.toHaveProperty('initialProject')
+    const report = testSectionObjectives(
+      [anda],
+      { initialProject: {}, solutionProject: {} },
+      { initial: { results: [] }, solution: { rejected: 'Escolha o modelo Pro do bloco.' } },
+    )
+    expect(report.problems).toContain('No gabarito: Escolha o modelo Pro do bloco.')
+    expect(report.notes.join(' ')).not.toContain('Não consegui rodar o jogo agora')
   })
 })
 
