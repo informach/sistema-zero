@@ -6,7 +6,7 @@ import { captureProjectStorageScope, setProjectStorageNamespace } from './projec
 import { createProjectStore, loadSanitizedProjectById } from './projectStore'
 
 test('free Python creation persists a new native document with Programação and no installed extensions', async () => {
-  const oldIdb = globalThis.indexedDB
+  const oldIdb = Object.getOwnPropertyDescriptor(globalThis, 'indexedDB')
   const oldScope = captureProjectStorageScope()
   Object.defineProperty(globalThis, 'indexedDB', { value: new IDBFactory(), configurable: true })
   setProjectStorageNamespace(`python-create-${crypto.randomUUID()}`)
@@ -37,12 +37,13 @@ test('free Python creation persists a new native document with Programação and
     expect(store.getState().project).toBeNull()
   } finally {
     setProjectStorageNamespace(oldScope.namespace)
-    Object.defineProperty(globalThis, 'indexedDB', { value: oldIdb, configurable: true })
+    if (oldIdb) Object.defineProperty(globalThis, 'indexedDB', oldIdb)
+    else Reflect.deleteProperty(globalThis, 'indexedDB')
   }
 })
 
 test('cancelled or changed creation scope cannot persist Python under a different profile', async () => {
-  const oldIdb = globalThis.indexedDB
+  const oldIdb = Object.getOwnPropertyDescriptor(globalThis, 'indexedDB')
   const oldScope = captureProjectStorageScope()
   Object.defineProperty(globalThis, 'indexedDB', { value: new IDBFactory(), configurable: true })
   const namespace = `python-create-${crypto.randomUUID()}`
@@ -77,6 +78,7 @@ test('cancelled or changed creation scope cannot persist Python under a differen
     expect(await listAllProjects()).toEqual([])
   } finally {
     setProjectStorageNamespace(oldScope.namespace)
-    Object.defineProperty(globalThis, 'indexedDB', { value: oldIdb, configurable: true })
+    if (oldIdb) Object.defineProperty(globalThis, 'indexedDB', oldIdb)
+    else Reflect.deleteProperty(globalThis, 'indexedDB')
   }
 })

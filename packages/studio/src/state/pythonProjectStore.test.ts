@@ -23,7 +23,7 @@ async function setup(kind: 'classic' | 'pro') {
 describe('one project store for Python Classic and Pro', () => {
   test('v3 duplicates stay reopenable at the maximum title length in all four variants', async () => {
     const previous = captureProjectStorageScope()
-    const originalIndexedDB = globalThis.indexedDB
+    const originalIndexedDB = Object.getOwnPropertyDescriptor(globalThis, 'indexedDB')
     Object.defineProperty(globalThis, 'indexedDB', { value: new IDBFactory(), configurable: true })
     setProjectStorageNamespace(`duplicate-${crypto.randomUUID()}`)
     try {
@@ -59,10 +59,8 @@ describe('one project store for Python Classic and Pro', () => {
         }
     } finally {
       setProjectStorageNamespace(previous.namespace)
-      Object.defineProperty(globalThis, 'indexedDB', {
-        value: originalIndexedDB,
-        configurable: true,
-      })
+      if (originalIndexedDB) Object.defineProperty(globalThis, 'indexedDB', originalIndexedDB)
+      else Reflect.deleteProperty(globalThis, 'indexedDB')
     }
   })
   for (const kind of ['classic', 'pro'] as const) {

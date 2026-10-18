@@ -24,6 +24,19 @@ confirmação e desfazer. Os tokens e o desenho compartilhado da plataforma perm
    as quatro falhas localmente; isolando os três cenários do visualizador em um processo
    próprio, a mesma ordem passou. Nenhuma regra de autorização nem asserção dos cenários
    existentes foi removida. O padrão de processo próprio já é usado pelos testes do admin.
+3. **Propriedade global alterada por testes Python:** a execução remota
+   [39164324612](https://github.com/informach/sistema-zero/actions/runs/39164324612)
+   passou pelos pacotes, mas o Studio falhou ao coletar `gameStorage.test.ts`.
+   Dois testes restauravam apenas o valor de `indexedDB`, deixando uma propriedade
+   somente leitura que antes não existia. A restauração agora conserva o descritor
+   completo ou remove a propriedade temporária quando originalmente ausente.
+   A reprodução do descritor passou de 13 aprovados/1 falha para 14 aprovados/zero falhas.
+4. **Dependência de tipos ausente no serviço de linguagem:** a checagem ampla local
+   identificou duas versões de `@types/node` na mesma compilação, resolvidas por Bun
+   e JSON-RPC através de dependências transitivas. Isso apagava o método `on` do tipo
+   do processo filho. O pacote agora declara `@types/node` 24.19.0 diretamente, com
+   lockfile atualizado. As três configurações de tipos do serviço passaram, sem casts,
+   supressões ou alterações no comportamento do runtime.
 
 ## Verificação da integração local
 
@@ -42,6 +55,9 @@ Foi integrado por fast-forward antes do merge desta alteração, sem conflitos.
 | Reprodução visualizador → autoria após isolamento | 5 cenários aprovados; visualizador executa seus 3 cenários no processo filho |
 | `bun test` em `packages/admin` após isolamento | 649 aprovados, zero falhas; os 3 cenários do visualizador também aprovados no processo filho |
 | Biome dos dois arquivos de teste do admin | Aprovado |
+| Reprodução da restauração de `indexedDB` | 14 aprovados, zero falhas |
+| `STUDIO_STORAGE_BROWSER=chromium bun run test` em `packages/studio` após correção | 9.253 aprovados, zero falhas, 687 arquivos; 4 testes de executor pulados pela configuração existente |
+| `bun run typecheck` em `packages/studio-language-service` | Aprovado nas três configurações |
 | `git diff --check` | Aprovado |
 
 Os testes de navegador usam o seletor real de arquivos para JSON e ZIP, recarregam a
