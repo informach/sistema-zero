@@ -15,6 +15,8 @@
   e cancelam ao trocar de dono. O divisor da folha também aplica a coordenada de `pointerup`.
 - Animar começa com eixos locais. Em `local-delta`, o frame das alças inclui o transform de
   repouso inteiro para não converter rotação de peças redimensionadas em cisalhamento.
+- Mensagens infantis usam criação, cópia e mudanças. Ao alterar textos da oficina, rodar também
+  `bun test tests/copy-vocabulario.test.ts` em `packages/community-kids`, que varre o Molda.
 
 Revisão de publicação: `docs/plans/2026-10-18-molda-release-full-review.md`.
 

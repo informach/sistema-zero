@@ -129,7 +129,7 @@ export function SceneSaveProtection({
       )
         throw new Error('Download unavailable')
     } catch {
-      setActionError('Não consegui baixar o trabalho encontrado. Tente novamente.')
+      setActionError('Não consegui baixar a cópia encontrada. Tente novamente.')
     }
   }
   return (
@@ -155,9 +155,9 @@ export function SceneSaveProtection({
           role="status"
           className="flex shrink-0 flex-wrap items-center gap-2 border-b border-mld-border bg-mld-surface px-3 py-2 text-sm"
         >
-          <p className="min-w-0 flex-1">Seu trabalho encontrado continua guardado.</p>
+          <p className="min-w-0 flex-1">Sua cópia encontrada continua guardada.</p>
           <Button size="compact" onClick={() => setClosedRecovery(null)}>
-            Ver trabalho encontrado
+            Ver cópia encontrada
           </Button>
         </div>
       )}
@@ -170,7 +170,7 @@ export function SceneSaveProtection({
         <p className="mt-2 text-sm text-mld-text-soft">
           {protectedNow
             ? 'Uma cópia de recuperação já está guardada neste dispositivo. Você também pode baixar seu projeto.'
-            : 'Mantenha esta janela aberta e guarde uma cópia do projeto para proteger seu trabalho.'}
+            : 'Mantenha esta janela aberta e guarde uma cópia do projeto para proteger sua criação.'}
         </p>
         {actionError && (
           <p role="alert" className="mt-2 text-sm text-mld-danger">
@@ -186,12 +186,12 @@ export function SceneSaveProtection({
       </Dialog>
       <Dialog
         open={!!candidate && closedRecovery !== candidate && !discarding}
-        title="Encontramos seu trabalho mais recente"
+        title="Encontramos suas últimas mudanças"
         onClose={() => setClosedRecovery(candidate)}
       >
         <p className="text-sm">
           {conflict
-            ? 'Há outra versão desta criação. Guarde o trabalho encontrado para manter as duas versões.'
+            ? 'Há outra versão desta criação. Guarde a cópia encontrada para manter as duas versões.'
             : 'Há mudanças que não chegaram ao projeto salvo. Quer continuar de onde parou?'}
         </p>
         {candidate && (
@@ -212,16 +212,16 @@ export function SceneSaveProtection({
                 void act(async () => {
                   if (!(await recovery?.restore()))
                     setActionError(
-                      'Não consegui recuperar aqui. Baixe o trabalho encontrado para guardá-lo.',
+                      'Não consegui recuperar aqui. Baixe a cópia encontrada para guardá-la.',
                     )
                 })
               }
             >
-              Continuar meu trabalho
+              Continuar minha criação
             </Button>
           )}
           <Button size="compact" onClick={downloadFound}>
-            Baixar trabalho encontrado
+            Baixar cópia encontrada
           </Button>
           <Button
             size="compact"
@@ -244,7 +244,7 @@ export function SceneSaveProtection({
         )}
         <div className="mt-4 flex flex-wrap gap-2">
           <Button size="compact" onClick={downloadFound}>
-            Baixar trabalho encontrado
+            Baixar cópia encontrada
           </Button>
           <Button size="compact" disabled={busy} onClick={() => setDiscarding(null)}>
             Voltar

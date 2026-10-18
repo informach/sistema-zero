@@ -379,17 +379,17 @@ for (const theme of ['claro', 'escuro']) {
     await page.reload()
     await page.getByRole('button', { name: 'Modelo Recuperar carrinho', exact: true }).click()
     const recovery = page.getByRole('dialog', {
-      name: 'Encontramos seu trabalho mais recente',
+      name: 'Encontramos suas últimas mudanças',
       exact: true,
     })
     await expect(recovery).toBeVisible()
     await recovery.getByRole('button', { name: COPY.a11y.closeDialog, exact: true }).click()
     await expect(recovery).toHaveCount(0)
-    await page.getByRole('button', { name: 'Ver trabalho encontrado', exact: true }).click()
+    await page.getByRole('button', { name: 'Ver cópia encontrada', exact: true }).click()
     await expect(recovery).toBeVisible()
     await page.screenshot({ path: info.outputPath('continuar-trabalho.png') })
     await page.evaluate(() => sessionStorage.removeItem('molda-e2e-block-save'))
-    await recovery.getByRole('button', { name: 'Continuar meu trabalho', exact: true }).click()
+    await recovery.getByRole('button', { name: 'Continuar minha criação', exact: true }).click()
     await expect(recovery).toHaveCount(0)
     await expect(page.locator('.mld-save-status')).toHaveAttribute('data-state', 'saved')
     await page.getByRole('button', { name: 'Escolher corpo', exact: true }).click()
