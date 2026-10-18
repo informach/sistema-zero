@@ -68,6 +68,8 @@ export class SceneComponentOverlay {
     linewidth: 4,
     depthWrite: false,
     transparent: true,
+    side: DoubleSide,
+    forceSinglePass: true,
     polygonOffset: true,
     polygonOffsetFactor: -3,
     polygonOffsetUnits: -3,

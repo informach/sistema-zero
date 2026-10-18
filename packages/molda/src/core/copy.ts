@@ -983,6 +983,7 @@ export const COPY = {
     apply: 'Aplicar ajuste',
     invalidNumber: 'Preencha os três valores com números válidos.',
     positiveScale: 'Use um tamanho maior que zero. Para inverter, use Virar.',
+    plane: 'Plano',
     flipTitle: 'Virar',
     flipAxis: (axis: string) => `Virar no eixo ${axis}`,
     flipInPlace: 'Manter no lugar',

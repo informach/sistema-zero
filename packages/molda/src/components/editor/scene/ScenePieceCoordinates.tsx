@@ -87,6 +87,7 @@ export function ScenePieceCoordinates({
                       : 'any'
                   }
                   min={field === 'dimensions' ? workshop.measurementStep : undefined}
+                  disabled={field === 'dimensions' && coordinates.bounds?.size[axis] === 0}
                   aria-label={`${label} ${['X', 'Y', 'Z'][axis]}`}
                   aria-describedby={hint}
                   defaultValue={Number(coordinates[field][axis].toPrecision(12))}
