@@ -27,5 +27,5 @@ export const GALLERY_SHELL_COPY = {
         ? '1 criação guardada neste aparelho'
         : `${count} criações guardadas neste aparelho`,
   savedHint:
-    'Tudo é guardado sozinho enquanto você cria. Baixe tudo para ter uma cópia, e traga as criações de volta num aparelho novo.',
+    'Tudo é guardado sozinho enquanto você cria. Use “Baixar tudo” para levar uma cópia e “Importar projeto” para abrir seus projetos do Molda salvos no aparelho.',
 } as const

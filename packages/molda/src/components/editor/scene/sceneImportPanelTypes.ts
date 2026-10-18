@@ -9,5 +9,4 @@ export interface SceneImportPanelProps {
   viewportFactory?: SceneViewportFactory
   canAdopt?: () => boolean
   blocked?: boolean
-  destination?: 'gallery'
 }

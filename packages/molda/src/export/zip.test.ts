@@ -78,7 +78,7 @@ describe('"Baixar tudo" (o zip da galeria)', () => {
     expect(text).toContain('modelos/nave.glb')
     expect(text).toContain('texturas/grama.png')
     expect(text).toContain('ceus/fim-de-tarde.hdr')
-    expect(text).toContain('Trazer de volta')
+    expect(text).toContain('Importar projeto')
     expect(text).not.toContain('—')
   })
 

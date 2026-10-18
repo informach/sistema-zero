@@ -1,5 +1,5 @@
 /**
- * Leitor do botão inteligente "Trazer de volta": aceita o `.molda.json` cru ou
+ * Leitor do botão inteligente "Importar projeto": aceita o `.molda.json` cru ou
  * o ZIP produzido por "Baixar tudo". O ZIP é consultado por FAIXAS: diretório
  * central, cabeçalho da entrada e somente os bytes de `galeria.molda.json`. Os
  * `.glb`, `.png` e `.hdr` nunca entram na memória (molde do leitor do Pinta).

@@ -1,4 +1,3 @@
-import { COPY } from '../../../core/copy'
 import { GLTF_IMPORT_COPY as copy } from '../../../core/gltfImportCopy'
 import { GLTF_IMPORT_ISSUE_COPY } from '../../../core/gltfImportIssueCopy'
 import type { GltfConversionReport } from '../../../import/gltfConversionReport'
@@ -150,7 +149,6 @@ export function SceneGltfImportPanel({
   viewportFactory,
   canAdopt,
   blocked = false,
-  destination,
 }: SceneImportPanelProps) {
   const { can } = useMoldaToolAccess()
   const task = useSceneGltfImport(editor, { canAdopt, allowOptions: can('files.interop') }),
@@ -316,7 +314,7 @@ export function SceneGltfImportPanel({
           <SceneImportPreview document={stage.result.document} factory={viewportFactory} />
           <ImportReport report={stage.result.report} />
           <p className="rounded-xl border border-mld-border p-3 text-sm font-bold">
-            {destination === 'gallery' ? COPY.gallery.importModelHint : copy.replace}
+            {copy.replace}
           </p>
           <label className={choice}>
             <input
@@ -346,7 +344,7 @@ export function SceneGltfImportPanel({
               if (task.confirm()) onImported()
             }}
           >
-            {destination === 'gallery' ? COPY.gallery.importModelConfirm : copy.confirm}
+            {copy.confirm}
           </Button>
         ) : inspection ? (
           <Button
@@ -362,7 +360,7 @@ export function SceneGltfImportPanel({
           </Button>
         ) : null}
         <Button variant="ghost" onClick={onClose}>
-          {destination === 'gallery' ? COPY.gallery.cancel : copy.close}
+          {copy.close}
         </Button>
       </div>
     </div>

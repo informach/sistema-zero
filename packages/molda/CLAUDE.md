@@ -20,6 +20,14 @@
 
 Revisão de publicação: `docs/plans/2026-10-18-molda-release-full-review.md`.
 
+## Arquivos de projeto e modelos 3D — 18/10/2026
+
+- A galeria organiza os projetos. **Importar projeto**, no cartão inferior, abre o arquivo
+  `.molda.json` ou o pacote `.zip` do Molda, criando cópias independentes.
+- Modelos GLB/glTF, OBJ e Blockbench entram por **Trazer 3D**, dentro da oficina. Seus painéis
+  mantêm a revisão, a confirmação da troca e o desfazer. Não há importação de modelos na galeria.
+- Esta orientação substitui a proposta inicial de `molda-gallery-import-design.md`.
+
 ## Edição de malha e pintura UV — 17/10/2026
 
 - Cortar divide a superfície com a faca; Loop cut percorre faixas de quadriláteros. A seleção
@@ -161,7 +169,7 @@ borda, balde, cores extras, e o "Vestir a peça"), `state/` (persistência Index
 namespace, em memória, galleryStore, editorStore, sessionStore), `viewport/` (o palco three.js
 com o atlas, a prévia PMREM do céu, a prévia caixa + bola da textura), `export/` (JSON, PNG, GLB
 e RGBE PRÓPRIOS, `modelGlb`, `skyHdr`, `texturePng`, `studioLibrary` com lista + export dos
-três tipos, `zip` + `backupFile` do "Baixar tudo"/"Trazer de volta"), `templates/` (os modelos
+três tipos, `zip` + `backupFile` do "Baixar tudo"/"Importar projeto"), `templates/` (os modelos
 prontos), `assets/` (face pura), `components/` (MoldaApp, galeria completa com o `TemplatePicker`,
 casca do editor, a bancada do modelo com MONTAR e PINTAR + "Vestir com textura" + "Baixar .glb";
 o céu com presets/sol/cores/nuvens/estrelas/exposição + "Baixar .hdr"; a textura com a folha de
@@ -203,7 +211,7 @@ O que ainda PENDE fora do pacote: o QA no kids `:3008` com dois perfis e o QA da
   peça, atlas cheio, acima do teto) fica FORA dos arquivos prontos mas DENTRO do backup. O céu
   custa ~0,5 s cada (render 1024×512): a galeria mostra "Preparando..." e a montagem cede a
   thread entre criações (`yieldBetween`). fflate sob demanda.
-- **"Trazer de volta" é um botão inteligente** (`src/export/backupFile.ts`, `readMoldaBackupFile`,
+- **"Importar projeto" é um botão inteligente** (`src/export/backupFile.ts`, `readMoldaBackupFile`,
   molde do leitor do Pinta): aceita o `.zip` OU o `.molda.json` solto; no ZIP lê por FAIXAS
   (diretório central, cabeçalho e só os bytes de `galeria.molda.json`, inflate em stream) e nunca
   carrega os `.glb`/`.hdr`; recusa criptografia, ZIP64, entrada duplicada e JSON acima de
@@ -213,7 +221,7 @@ O que ainda PENDE fora do pacote: o QA no kids `:3008` com dois perfis e o QA da
   `export/backupFile.test.ts` e os dois casos novos de `MoldaApp.test.tsx` (modelo pronto →
   editor; ZIP e JSON de volta). QA no playground (Chrome real): a grade dos 5 modelos, o carro
   criado do template no palco (10 peças, 320 triângulos, rodas em pé), o `.zip` do "Baixar tudo"
-  e o "Trazer de volta" desse mesmo `.zip`.
+  e o "Importar projeto" desse mesmo `.zip`.
 
 ## Textura + Vestir a peça (L5)
 
@@ -431,7 +439,7 @@ O que ainda PENDE fora do pacote: o QA no kids `:3008` com dois perfis e o QA da
   parâmetros. "Criar
   novo" em 3 passos (tipo → opções → nome), renomear (bloqueado com a criação ABERTA), duplicar,
   apagar (confirmação), "Baixar tudo" (`galeria.molda.json`, writer do envelope `molda-gallery`
-  v2; reader aceita v1 e v2) e "Trazer de volta" (`importMoldaJson` nunca lança; aceita criação
+  v2; reader aceita v1 e v2) e "Importar projeto" (`importMoldaJson` nunca lança; aceita criação
   solta).
 - Copy 100 % em `core/copy.ts`: pt-BR, SEM travessão, sem "etapa"/"curso-base" (os testes do
   kids varrem o `src/` dele; o Molda é `@source`, então as CLASSES entram, as strings não, mas a
@@ -2623,7 +2631,7 @@ rolam juntas dentro de `[data-mld-scroll-root]` (`.sz-tool-bands`, receitas de
   criações): os chips de tipo com ÍCONES DE LINHA (`KIND_ICONS` em `gallery/kinds.tsx`: cubo, grade,
   sol com nuvem; "Todos" sem ícone; o rótulo é o PLURAL do tipo) e a busca (Esc limpa). ⚠️ A barra
   de busca e chips DEIXOU de ser `sticky` (ela agora mora na faixa creme, que rola junto: é o
-  desenho do Pinta e do Estúdio). O `<input type=file>` do "Trazer de volta" mora aqui, sempre
+  desenho do Pinta e do Estúdio). O `<input type=file>` do "Importar projeto" mora aqui, sempre
   montado (o botão que o aciona fica no cartão lilás, que não existe carregando).
 - **céu**: `RecoveryNotice`, a grade `.sz-tool-grid` compartilhada (`<ul>` de sempre, com o mesmo
   `aria-label`) com o cartão **"Nova criação"** como PRIMEIRO item (`<li data-mld-new-card>`); some
@@ -2637,7 +2645,7 @@ rolam juntas dentro de `[data-mld-scroll-root]` (`.sz-tool-bands`, receitas de
 - **lilás** (sempre que a galeria carregou, INCLUSIVE vazia): `.sz-tool-cta-card` com o ladrilho
   amarelo do cubo, "N criações guardadas na sua conta" (só com `account`) ou "neste aparelho", e o
   arquivo das criações em pílulas creme: "Baixar tudo" (com criações; cancelar com o progresso,
-  como antes) e "Trazer de volta". Os dois SAÍRAM do cabeçalho, como no Pinta. Textos novos em
+  como antes) e "Importar projeto". Os dois SAÍRAM do cabeçalho, como no Pinta. Textos novos em
   `core/galleryShellCopy.ts` (o `copy.ts` é editado por mais de uma frente).
 - **Cartão** (`AssetCard`): `.sz-tool-card` (branco, 20px, sem borda aparente e sem o pulo do
   `mld-pop`), o nome em cima (`.sz-tool-card-title`) com o `KindChip` ao lado, a miniatura na caixa
@@ -2737,6 +2745,6 @@ contêiner (o `opacity-100` é utilitária e vence o esmaecido do `.mld-tile`).
   recorta o que passa do pé dele). O "Mais ajustes do palco" é mais estreito no celular.
 - O erro de salvar encolhe com reticências (a frase inteira no `title` e na região viva): rígido,
   ele empurrava desfazer e refazer para fora da barra.
-- "Trazer de volta" também aparece quando a galeria não carregou, junto do "Tentar de novo".
+- "Importar projeto" também aparece quando a galeria não carregou, junto do "Tentar de novo".
 - Testes: o e2e de layout ganhou a aba Animar (os movimentos cabem na tela em todo tamanho) e o
   `MoldaApp.test.tsx`, a galeria que não carregou.
