@@ -1,10 +1,8 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import { createHash, randomUUID } from 'node:crypto'
-import {
-  createDbConnection,
-  type DbConnection,
-} from '../../src/infrastructure/persistence/drizzle/db'
+import type { DbConnection } from '../../src/infrastructure/persistence/drizzle/db'
 import { DrizzleStudioAiAccountRepository } from '../../src/infrastructure/persistence/drizzle/studio-ai-account.repository'
+import { openStudioReviewDatabase } from './studio-review-database'
 
 // This test must target an explicitly selected, disposable database. No fallback to DATABASE_URL.
 const url = process.env.STUDIO_REVIEW_DATABASE_URL
@@ -13,27 +11,7 @@ describe.skipIf(!url)('OpenRouter account — real Postgres concurrency', () => 
   let repo: DrizzleStudioAiAccountRepository
   const accounts: string[] = []
   beforeAll(async () => {
-    const target = new URL(url!)
-    if (
-      !['localhost', '127.0.0.1'].includes(target.hostname) ||
-      target.pathname !== '/studio_pro_review'
-    )
-      throw new Error('Use only the dedicated local studio_pro_review database.')
-    connection = createDbConnection(url!, { max: 8 })
-    await connection.sql`create schema if not exists members`
-    await connection.sql`create table if not exists members.account_deletion_fences (account_id uuid primary key, created_at timestamptz not null)`
-    const [table] =
-      await connection.sql`select to_regclass('members.studio_ai_accounts') as present`
-    if (!table?.present) {
-      const migration = await Bun.file(
-        new URL(
-          '../../src/infrastructure/persistence/drizzle/migrations/0116_groovy_shriek.sql',
-          import.meta.url,
-        ),
-      ).text()
-      for (const statement of migration.split('--> statement-breakpoint'))
-        if (statement.trim()) await connection.sql.unsafe(statement)
-    }
+    connection = await openStudioReviewDatabase(url!)
     repo = new DrizzleStudioAiAccountRepository(connection.db)
   })
   afterAll(async () => {

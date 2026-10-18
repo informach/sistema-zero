@@ -1,28 +1,58 @@
-name: Molda Kids CI diagnostic
+name: Molda publication DB diagnostic
 on:
   workflow_dispatch:
 permissions:
   contents: read
-concurrency:
-  group: molda-kids-diagnostic
-  cancel-in-progress: false
 jobs:
-  diagnose:
+  database:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: studio_pro_review
+        ports: ['55432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     env:
-      DEBUG_PRINT_LIMIT: '50000'
+      STUDIO_REVIEW_DATABASE_URL: postgres://postgres:postgres@localhost:55432/studio_pro_review
+      PGPASSWORD: postgres
     steps:
       - uses: actions/checkout@v5
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: '1.3.11'
       - run: bun install --frozen-lockfile
-      - name: Isolated composer repetitions
-        if: always()
-        working-directory: packages/community-kids
-        run: bun test tests/community-composers-a11y.test.tsx --rerun-each 100
-      - name: Full Kids package with original Bun 1.3.11
-        if: always()
-        working-directory: packages/community-kids
-        run: bun test tests
+      - name: Reproduce old account fixture poisoning the next suite
+        working-directory: packages/members
+        run: |
+          fixture=tests/db/studio-ai-account.test.ts
+          cp "$fixture" "$RUNNER_TEMP/fixed-account-fixture.ts"
+          git show 832e2d261:"packages/members/$fixture" > "$fixture"
+          bun test "$fixture"
+          set +e
+          bun test tests/db/adult-live-benefits.test.ts 2>&1 | tee "$RUNNER_TEMP/expected-schema-collision.log"
+          result=${PIPESTATUS[0]}
+          set -e
+          cp "$RUNNER_TEMP/fixed-account-fixture.ts" "$fixture"
+          test "$result" -ne 0
+          grep -F 'PostgresError: schema "members" already exists' "$RUNNER_TEMP/expected-schema-collision.log"
+      - name: Fresh disposable databases for unchanged full-suite assertions
+        run: |
+          psql -h localhost -p 55432 -U postgres -d postgres -v ON_ERROR_STOP=1 -c 'DROP DATABASE studio_pro_review WITH (FORCE)'
+          for db in studio_pro_review sistemazero pensa_ci sz_aulas_qa_ci; do
+            createdb -h localhost -p 55432 -U postgres "$db"
+          done
+      - name: Full members database suite with shared migration fixture
+        working-directory: packages/members
+        run: bun test tests/db
+        env:
+          TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/sistemazero
+          PENSA_TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/pensa_ci
+          LEARNING_QA_DATABASE_URL: postgres://postgres:postgres@localhost:55432/sz_aulas_qa_ci
