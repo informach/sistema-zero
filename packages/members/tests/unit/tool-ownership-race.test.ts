@@ -34,7 +34,7 @@ describe('a invalidação vence a checagem que estava em voo', () => {
       requireById: async () => {
         if (revoked) throw new Error('matrícula revogada')
         return {
-          course: { id: 'C1', sequentialLock: false, modality: 'recorded' },
+          course: { id: 'C1', audience: 'kids', sequentialLock: false, modality: 'recorded' },
           entitlement: { expiresAt: null },
         }
       },

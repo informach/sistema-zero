@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import * as P from '@sistemazero/core/pensa'
 import { Elysia } from 'elysia'
 import { AccessCheckService } from '../../src/application/access-check/access-check.service'
+import { AdultJourneyService } from '../../src/application/adult-journey/adult-journey.service'
 import { GetAiCreditsService } from '../../src/application/ai-usage/get-ai-credits.service'
 import { GetAvatarsByProfilesService } from '../../src/application/avatar/get-avatars-by-profiles.service'
 import { GetCreationDownloadService } from '../../src/application/creations/creations.service'
@@ -11,8 +12,10 @@ import { PensaProjectService } from '../../src/application/pensa/project.service
 import { PensaTeamService } from '../../src/application/pensa/team.service'
 import { GetStudioUnlocksService } from '../../src/application/studio-unlocks/get-studio-unlocks.service'
 import { creationStorageKey } from '../../src/domain/creations/creation'
+import { DrizzleAdultJourneyRepository } from '../../src/infrastructure/persistence/drizzle/adult-journey.repository'
 import { DrizzleAiUsageRepository } from '../../src/infrastructure/persistence/drizzle/ai-usage.repository'
 import { DrizzleAvatarRepository } from '../../src/infrastructure/persistence/drizzle/avatar.repository'
+import { DrizzleCourseRepository } from '../../src/infrastructure/persistence/drizzle/course.repository'
 import { DrizzleCreationsRepository } from '../../src/infrastructure/persistence/drizzle/creations.repository'
 import { DrizzleEntitlementRepository } from '../../src/infrastructure/persistence/drizzle/entitlement.repository'
 import { DrizzleGamificationRepository } from '../../src/infrastructure/persistence/drizzle/gamification.repository'
@@ -33,10 +36,21 @@ import { pensaRoutes } from '../../src/interfaces/http/routes/pensa.routes'
 import { silentLogger } from '../fakes/in-memory'
 import { openPensaTestDatabase } from './pensa-native-database'
 
-export async function nativePensa(name: string, blocks = false, privileged = false) {
+export async function nativePensa(
+  name: string,
+  blocks = false,
+  privileged = false,
+  audience: 'kids' | 'adult' = 'kids',
+) {
   const conn = await openPensaTestDatabase(name)
   let now = new Date('2026-10-16T12:00:00.000Z')
-  const actor: P.PensaActor = { profileId: randomUUID(), accountId: randomUUID(), privileged }
+  const learnerId = randomUUID()
+  const actor: P.PensaActor = {
+    profileId: learnerId,
+    accountId: audience === 'adult' ? learnerId : randomUUID(),
+    privileged,
+    ...(audience === 'adult' ? { audience: 'adult' as const } : {}),
+  }
   const repo = new DrizzlePensaProjectRepository(conn.db, () => now)
   const limits = { dailyLimit: 20, monthlyLimit: 200 }
   const commands = new DrizzlePensaProjectCommands(repo, limits)
@@ -44,7 +58,12 @@ export async function nativePensa(name: string, blocks = false, privileged = fal
   const operations = new DrizzlePensaOperationsRepository(commands, limits)
   const checkpoints = new DrizzlePensaCheckpointsRepository(repo)
   const gamiRepo = new DrizzleGamificationRepository(conn.db)
-  const getGamification = new GetGamificationService(gamiRepo, () => now)
+  const adultJourney = new AdultJourneyService(
+    new DrizzleAdultJourneyRepository(conn.db),
+    new DrizzleCourseRepository(conn.db),
+    () => now,
+  )
+  const getGamification = new GetGamificationService(gamiRepo, () => now, adultJourney)
   const accessCheck = new AccessCheckService(new DrizzleEntitlementRepository(conn.db), () => now)
   const creationRepo = new DrizzleCreationsRepository(conn.db)
   const team = new PensaTeamService(
@@ -60,6 +79,10 @@ export async function nativePensa(name: string, blocks = false, privileged = fal
         silentLogger,
       ),
       creations: creationRepo,
+      adultCreations: new DrizzleCreationsRepository(conn.db, 'adult'),
+      adultCreationDownload: new GetCreationDownloadService(
+        new DrizzleCreationsRepository(conn.db, 'adult'),
+      ),
       creationDownload: new GetCreationDownloadService(creationRepo),
     }),
   )
@@ -68,6 +91,7 @@ export async function nativePensa(name: string, blocks = false, privileged = fal
     new AwardGamificationService(gamiRepo, () => now, silentLogger),
   )
   const deps = {
+    adultJourney,
     store: repo,
     projects,
     team,
@@ -91,6 +115,7 @@ export async function nativePensa(name: string, blocks = false, privileged = fal
       return result.body
     })
     .use(pensaRoutes(deps))
+    .use(pensaRoutes(deps, 'adult'))
   const capabilities: P.PensaCapabilities = {
     fingerprint: 'native-resources',
     catalogVersion: 'native-catalog',
@@ -276,6 +301,7 @@ export async function nativePensa(name: string, blocks = false, privileged = fal
         userId: actor.profileId,
         accountId: actor.accountId,
         tool: 'studio',
+        audience,
         itemId: pensaGameId(projectId),
         name: 'Jogo dos pares',
         kind: blocks ? 'game' : 'pro',
@@ -284,12 +310,18 @@ export async function nativePensa(name: string, blocks = false, privileged = fal
         lastReservedRevision: revision,
         formatVersion: 1,
         bytes: 10,
-        storageRef: creationStorageKey(actor.profileId, 'studio', pensaGameId(projectId), revision),
+        storageRef: creationStorageKey(
+          actor.profileId,
+          'studio',
+          pensaGameId(projectId),
+          revision,
+          audience,
+        ),
         syncedAt: now,
         createdAt: now,
       })
       .onConflictDoUpdate({
-        target: [creations.userId, creations.tool, creations.itemId],
+        target: [creations.userId, creations.audience, creations.tool, creations.itemId],
         set: {
           revision,
           lastReservedRevision: revision,
@@ -298,6 +330,7 @@ export async function nativePensa(name: string, blocks = false, privileged = fal
             'studio',
             pensaGameId(projectId),
             revision,
+            audience,
           ),
           itemUpdatedAt: now,
         },

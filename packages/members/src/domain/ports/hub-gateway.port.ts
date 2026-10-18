@@ -50,6 +50,7 @@ export interface PlayCheckResult {
  * do hub, ~30s, cobre como rede de segurança se a notificação falhar).
  */
 export interface HubGateway {
+  canUseAdultShowcase?(userId: string, accountId: string): Promise<boolean | null>
   /**
    * Sinaliza ao hub que o acesso do `userId` mudou (`event` = `grant`/`revoke`/…,
    * só para log/dedupe). **NUNCA lança** (implementações engolem erro/timeout).
@@ -73,7 +74,11 @@ export interface HubGateway {
    * degrada sem a seção). O members só monta a seção num perfil PÚBLICO; os jogos já
    * são públicos na página `/jogar`.
    */
-  listShowcaseByAuthor(profileId: string, limit: number): Promise<PublicGameItem[] | null>
+  listShowcaseByAuthor(
+    profileId: string,
+    limit: number,
+    audience?: 'adult' | 'kids',
+  ): Promise<PublicGameItem[] | null>
   /**
    * Participação no Clube + Mural dos autores dados, em LOTE (ficha admin — uso
    * por ferramenta). S2S HMAC direto members→hub (rota NUNCA no gateway; o portão
@@ -87,5 +92,5 @@ export interface HubGateway {
    * hub indisponível (o chamador NÃO grava o marco — melhor perder um marco de
    * missão que aceitar id não-verificado).
    */
-  checkPlay(playId: string): Promise<PlayCheckResult | null>
+  checkPlay(playId: string, audience?: 'adult' | 'kids'): Promise<PlayCheckResult | null>
 }

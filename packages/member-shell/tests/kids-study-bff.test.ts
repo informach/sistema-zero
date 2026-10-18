@@ -21,6 +21,11 @@ delete process.env.JWT_JWKS_URL
 const { getEnv } = await import('../src/lib/env')
 const { createShell } = await import('../src/index')
 const shell = createShell({ cookieBase: 'test_kids', audience: 'kids', serviceName: 'kids-test' })
+const adultShell = createShell({
+  cookieBase: 'test_adult',
+  audience: 'adult',
+  serviceName: 'adult-test',
+})
 const originalFetch = globalThis.fetch
 const parentId = '11111111-1111-4111-8111-111111111111'
 const profileId = '22222222-2222-4222-8222-222222222222'
@@ -72,6 +77,71 @@ async function parent() {
   jar.set(shell.cookies.refreshCookie, crypto.randomUUID())
   requestHeaders.set('x-sz-session', parentSession)
 }
+
+describe('isolamento da identidade adulta', () => {
+  test('conta ativa entra sem perfil e sem consultar autorização familiar', async () => {
+    const access = await token()
+    jar.set(adultShell.cookies.accessCookie, access)
+    jar.set(adultShell.cookies.refreshCookie, crypto.randomUUID())
+    expect((await adultShell.session.getSession())?.id).toBe(parentId)
+    expect((await adultShell.session.verifyAccessTokenLocally(access)).ok).toBe(true)
+    expect(calls).toEqual([])
+  })
+  test('preferência pública adulta exige a identidade da página e usa a conta, sem perfil familiar', async () => {
+    const access = await token()
+    jar.set(adultShell.cookies.accessCookie, access)
+    jar.set(adultShell.cookies.refreshCookie, crypto.randomUUID())
+    const preferences = { displayName: 'Criador adulto', publicEnabled: true, voiceEnabled: false }
+    const request = (viewer?: string) =>
+      new Request('http://adult.test/api/members/adult/profile', {
+        method: 'PUT',
+        headers: {
+          'content-type': 'application/json',
+          ...(viewer ? { 'x-sz-viewer': viewer } : {}),
+        },
+        body: JSON.stringify(preferences),
+      })
+    expect((await adultShell.routes.adultProfile.PUT(request(profileId))).status).toBe(409)
+    expect(calls).toEqual([])
+    expect((await adultShell.routes.adultProfile.PUT(request(parentId))).status).toBe(200)
+    expect(calls).toEqual(['/members/adult/profile'])
+    expect(JSON.parse(sent.get('/members/adult/profile')?.body ?? '{}')).toEqual(preferences)
+  })
+  test('o gateway adulto recusa perfil Kids inclusive nas rotas que não renderizam página', async () => {
+    jar.set(adultShell.cookies.accessCookie, await token(undefined, true))
+    expect((await adultShell.gateway.gatewayFetch('/members/gamification/me')).status).toBe(401)
+    expect(calls).toEqual([])
+    jar.clear()
+    expect((await adultShell.gateway.gatewayFetch('/members/gamification/me')).status).toBe(401)
+    expect(calls).toEqual([])
+  })
+  test('a consulta de jogo público funciona sem cookie e não transmite a identidade de quem joga', async () => {
+    for (const current of [shell, adultShell]) {
+      jar.clear()
+      calls.length = 0
+      const playId = crypto.randomUUID()
+      expect((await current.hub.resolveStudioPlay(playId)).status).toBe(200)
+      expect(calls).toEqual([`/hub/internal/studio-play/${playId}`])
+      expect(sent.get(`/hub/internal/studio-play/${playId}`)?.headers.has('authorization')).toBe(
+        false,
+      )
+    }
+  })
+  test('cookie adulto recusa capacidades Kids, perfil legado e conta inativa', async () => {
+    const tokens = [
+      await token({ kind: 'parent', sessionId: parentSession, authenticatedAt: 1 }),
+      await token({ kind: 'student', sessionId: crypto.randomUUID(), deviceId, grantId }, true),
+      await token(undefined, true),
+      await token(undefined, false, { status: 'inactive' }),
+    ]
+    for (const access of tokens) {
+      jar.set(adultShell.cookies.accessCookie, access)
+      jar.set(adultShell.cookies.refreshCookie, crypto.randomUUID())
+      expect(await adultShell.session.getSession()).toBeNull()
+      expect((await adultShell.session.verifyAccessTokenLocally(access)).ok).toBe(false)
+    }
+  })
+})
 function request(path: string, body: unknown) {
   return new Request(`http://kids.test/api/study/${path}`, {
     method: 'POST',

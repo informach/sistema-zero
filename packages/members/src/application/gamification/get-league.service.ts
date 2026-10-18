@@ -10,6 +10,7 @@ import {
   resolveTier,
 } from '../../domain/gamification/league'
 import { weekBoundsUtc, weeklyPeriodKey } from '../../domain/gamification/missions'
+import type { AdultProfileRepository } from '../../domain/ports/adult-profile-repository.port'
 import type { AuthGateway, ProfileIdentity } from '../../domain/ports/auth-gateway.port'
 import type { GamificationRepository } from '../../domain/ports/gamification-repository.port'
 import type {
@@ -33,6 +34,7 @@ export class GetLeagueService {
     private readonly avatars: GetAvatarsByProfilesService,
     /** Nome/flag-público via auth S2S; `null` (dev/local sem envs) → sem nome/link. */
     private readonly auth: AuthGateway | null,
+    private readonly adultProfiles?: AdultProfileRepository,
   ) {}
 
   /** Colocação 1-based de `userId` na coorte por XP da semana (empate → competition rank). */
@@ -108,6 +110,7 @@ export class GetLeagueService {
     const myPosition = rows.find((e) => e.isMe)?.position ?? this.rankOf(userId, xpByUser)
 
     return {
+      ...(audience === 'adult' ? { audience: 'adult' as const } : {}),
       tier,
       weekKey,
       promotionCount: promotionCount(cohort.length),
@@ -124,6 +127,17 @@ export class GetLeagueService {
    * expõe o id de um não-público. Coorte é limitada por tier (bem abaixo do teto de 100
    * do batch do auth) — sem chunking.
    */
+  private async adultIdentities(ids: string[]) {
+    const result = new Map<string, ProfileIdentity>()
+    try {
+      for (const profile of (await this.adultProfiles?.listPublic(ids)) ?? [])
+        result.set(profile.userId, { firstName: profile.displayName, public: true })
+    } catch {
+      return new Map<string, ProfileIdentity>()
+    }
+    return result
+  }
+
   private async hydrate(
     rows: { id: string; position: number; weeklyXp: number; isMe: boolean }[],
     audience: CourseAudience,
@@ -131,9 +145,11 @@ export class GetLeagueService {
     const ids = rows.map((r) => r.id)
     const [avatars, identities] = await Promise.all([
       this.avatars.execute(ids, audience).catch((): Record<string, ProfileAvatarView> => ({})),
-      this.auth
-        ? this.auth.getProfileIdentities(ids).catch(() => new Map<string, ProfileIdentity>())
-        : Promise.resolve(new Map<string, ProfileIdentity>()),
+      audience === 'adult'
+        ? this.adultIdentities(ids)
+        : this.auth
+          ? this.auth.getProfileIdentities(ids).catch(() => new Map<string, ProfileIdentity>())
+          : Promise.resolve(new Map<string, ProfileIdentity>()),
     ])
     return rows.map((r) => {
       const avatar = avatars[r.id]

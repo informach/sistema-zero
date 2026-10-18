@@ -1,4 +1,15 @@
+import { DomainError } from '@sistemazero/core/errors'
 import { canonicalizeAvatarConfig } from '../../domain/avatar/avatar-config'
+import type { AdultProfileRepository } from '../../domain/ports/adult-profile-repository.port'
+import type { AdultJourneyService } from '../adult-journey/adult-journey.service'
+
+class AdultPublicProfileNotFoundError extends DomainError {
+  readonly code = 'CONTENT_NOT_FOUND'
+  constructor() {
+    super('Perfil indisponível.')
+  }
+}
+
 import type { CourseAudience } from '../../domain/course/course'
 import { computeStudentLevel } from '../../domain/gamification/levels'
 import type { AvatarRepository } from '../../domain/ports/avatar-repository.port'
@@ -31,9 +42,14 @@ export class GetPublicProfileService {
     private readonly room: RoomRepository,
     private readonly hub: HubGateway,
     private readonly clock: () => Date,
+    private readonly adultProfiles?: AdultProfileRepository,
+    private readonly adultJourney?: AdultJourneyService,
   ) {}
 
   async execute(profileId: string, audience: CourseAudience): Promise<PublicProfileView> {
+    const adultProfile = audience === 'adult' ? await this.adultProfiles?.get(profileId) : null
+    if (audience === 'adult' && !adultProfile?.publicEnabled)
+      throw new AdultPublicProfileNotFoundError()
     const [
       profile,
       badges,
@@ -53,7 +69,7 @@ export class GetPublicProfileService {
       this.room.listInventory(profileId, audience),
       // Jogos publicados no Mural (best-effort; `null` → seção vazia). O Mural é kids;
       // p/ audiência adult ainda não há vitrine, mas o hub simplesmente devolve vazio.
-      this.hub.listShowcaseByAuthor(profileId, MAX_PUBLIC_GAMES),
+      this.hub.listShowcaseByAuthor(profileId, MAX_PUBLIC_GAMES, audience),
     ])
     // Ranking só faz sentido com perfil (XP); a coorte usa a conta dona do perfil.
     const ranking = profile
@@ -64,6 +80,13 @@ export class GetPublicProfileService {
     const room = roomRaw ? canonicalizeRoomState(roomRaw, new Set(roomInventory)) : null
     return {
       profileId,
+      ...(adultProfile
+        ? {
+            audience: 'adult' as const,
+            displayName: adultProfile.displayName,
+            journey: await this.adultJourney?.get(profileId),
+          }
+        : {}),
       xp: profile?.xp ?? 0,
       ranking,
       // Nível do aluno (rank) — mesma derivação do /gamification/me.

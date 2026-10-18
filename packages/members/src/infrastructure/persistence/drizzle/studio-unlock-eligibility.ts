@@ -42,9 +42,7 @@ export async function eligibleStudioGrants(
         eq(xpEvents.userId, userId),
         eq(xpEvents.audience, audience),
         eq(xpEvents.sourceType, 'course_complete'),
-        audience === 'kids'
-          ? or(isNull(courses.careerSlot), isNotNull(showcased.id))
-          : isNotNull(showcased.id),
+        audience === 'kids' ? or(isNull(courses.careerSlot), isNotNull(showcased.id)) : undefined,
         courseIds ? inArray(courses.id, courseIds) : undefined,
       ),
     )

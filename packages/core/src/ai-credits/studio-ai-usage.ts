@@ -3,6 +3,7 @@ import type { StudioAiFundingSource } from './studio-ai'
 
 /** Server-to-server contracts. These commands are never accepted directly from a browser. */
 export interface StudioAiActor {
+  audience?: 'adult' | 'kids'
   accountId: string
   userId: string
   privileged: boolean

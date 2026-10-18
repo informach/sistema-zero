@@ -13,7 +13,12 @@ import {
   sanitizeFilename,
   UGC_IMAGE_INPUT_MIME,
 } from '../lib/hub-attachments'
-import { attachAuthorAvatars, collectAuthorIds, redactAuthors } from '../lib/hub-redact'
+import {
+  attachAdultPublicIdentities,
+  attachAuthorAvatars,
+  collectAuthorIds,
+  redactAuthors,
+} from '../lib/hub-redact'
 import { stripImageMarkdown } from '../lib/markdown'
 import type { HubAttachmentKind } from '../lib/types'
 import type { HubClient, MembersAudience, MembersClient } from '../server/clients'
@@ -120,7 +125,24 @@ export function createHubRoutes(deps: {
     r: GatewayResponse,
     vid: string | null,
   ): Promise<NextResponse> => {
-    if (!revealAuthors) return okRedacted(r, vid)
+    if (!revealAuthors) {
+      const ids = [...collectAuthorIds(r.body)]
+      const identities = new Map<string, string>()
+      try {
+        for (let offset = 0; offset < ids.length; offset += 100) {
+          const response = await members.getAdultPublicIdentities(ids.slice(offset, offset + 100))
+          if (response.status === 200)
+            for (const identity of response.body?.identities ?? [])
+              identities.set(identity.userId, identity.displayName)
+        }
+      } catch {
+        /* Public identities fail closed; the forum remains readable. */
+      }
+      return NextResponse.json(
+        redactAuthors(attachAdultPublicIdentities(r.body, identities), vid),
+        { status: r.status },
+      )
+    }
     const ids = [...collectAuthorIds(r.body)]
     if (ids.length > 0) {
       try {

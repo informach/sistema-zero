@@ -10,6 +10,20 @@ const env = loadEnv({})
 const service = { name: 'p', upstreamGroups: { default: [{ url: 'http://p' }] } }
 
 describe('loadGatewayConfig', () => {
+  test('jornada adulta tem leitura autenticada e configuração restrita à equipe', () => {
+    const registry = new RouteRegistry(
+      realConfig.routes.map((route) => routeConfigSchema.parse(route)),
+    )
+    expect(registry.resolve('GET', '/members/journey/adult', 'v1')?.route).toMatchObject({
+      auth: { strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+    })
+    for (const method of ['GET', 'PUT'])
+      expect(registry.resolve(method, '/members/admin/journey/adult', 'v1')?.route).toMatchObject({
+        auth: { strategies: ['jwt'] },
+        authorize: { statuses: ['active'], roles: ['superadmin', 'admin', 'staff'] },
+      })
+  })
   test('Instagram publica apenas o webhook exato; inbox exige equipe e atribuição exige HMAC do marketing', () => {
     const registry = new RouteRegistry(
       realConfig.routes.map((route) => routeConfigSchema.parse(route)),
@@ -634,6 +648,16 @@ describe('gateway.config.ts (configuração real)', () => {
       authorize: { statuses: ['active'] },
       maxBodyBytes: 2 * 1024 * 1024,
       rateLimit: { by: 'principal' },
+      timeoutMs: 160_000,
+    })
+    expect(
+      registry.resolve('POST', '/members/admin/project-checks/test', 'v1')?.route,
+    ).toMatchObject({
+      service: 'members',
+      auth: { required: true, strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      maxBodyBytes: 2 * 1024 * 1024,
+      timeoutMs: 160_000,
     })
   })
   /**

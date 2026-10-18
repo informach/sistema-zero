@@ -24,6 +24,7 @@ import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
+import { usePlatform } from '@/components/admin/platform-provider'
 import { useConfirm } from '@/components/admin/use-confirm'
 import { RichTextEditor } from '@/components/editor/rich-text-editor'
 import { ImageUploader } from '@/components/media/image-uploader'
@@ -70,13 +71,24 @@ function videoProviderOf(src: string): 'vimeo' | 'youtube' | null {
  * a MESMA função que o members roda) e sugestões (`helpEditorialWarnings`), com a prévia sendo o
  * `HelpTutorialView` real do member-shell.
  */
-export function HelpEditorClient({
+export function HelpEditorClient(props: { tutorialId: string; currentRole: string }) {
+  const platform = usePlatform()
+  return <HelpEditorForPlatform key={platform + props.tutorialId} {...props} platform={platform} />
+}
+function HelpEditorForPlatform({
   tutorialId,
   currentRole,
+  platform,
 }: {
   tutorialId: string
+  platform: 'kids' | 'adult'
   currentRole: string
 }) {
+  const helpPath = useCallback(
+    (path: string) => `${path}${path.includes('?') ? '&' : '?'}audience=${platform}`,
+    [platform],
+  )
+
   const canWrite = currentRole === 'superadmin' || currentRole === 'admin'
   const router = useRouter()
   const [record, setRecord] = useState<HelpTutorialAdminView | null>(null)
@@ -101,8 +113,8 @@ export function HelpEditorClient({
   const load = useCallback(async () => {
     try {
       const [t, c] = await Promise.all([
-        apiGet<HelpTutorialAdminView>(`/api/members/help/tutorials/${tutorialId}`),
-        apiGet<{ collections: HelpCollectionView[] }>('/api/members/help/collections'),
+        apiGet<HelpTutorialAdminView>(helpPath(`/api/members/help/tutorials/${tutorialId}`)),
+        apiGet<{ collections: HelpCollectionView[] }>(helpPath('/api/members/help/collections')),
       ])
       setRecord(t)
       setDraft(t.draft)
@@ -114,7 +126,7 @@ export function HelpEditorClient({
     } catch (err) {
       toast.error((err as ApiError).message ?? 'Não consegui carregar o tutorial.')
     }
-  }, [tutorialId])
+  }, [tutorialId, helpPath])
 
   useEffect(() => {
     void load()
@@ -173,7 +185,7 @@ export function HelpEditorClient({
     setBusy(true)
     try {
       const saved = await apiSend<HelpTutorialAdminView>(
-        `/api/members/help/tutorials/${tutorialId}`,
+        helpPath(`/api/members/help/tutorials/${tutorialId}`),
         'PATCH',
         {
           expectedRevision: record.revision,
@@ -213,7 +225,7 @@ export function HelpEditorClient({
     setBusy(true)
     try {
       const next = await apiSend<HelpTutorialAdminView>(
-        `/api/members/help/tutorials/${tutorialId}/${action}`,
+        helpPath(`/api/members/help/tutorials/${tutorialId}/${action}`),
         'POST',
         { expectedRevision: base.revision },
       )

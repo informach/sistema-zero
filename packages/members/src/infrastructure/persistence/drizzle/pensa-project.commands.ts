@@ -906,6 +906,7 @@ export class DrizzlePensaProjectCommands implements PensaProjectRepository {
         kind,
         data: {},
         reward: {
+          ...(actor.audience === 'adult' ? { audience: 'adult' } : {}),
           xp,
           coins,
           privileged: actor.privileged,

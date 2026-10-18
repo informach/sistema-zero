@@ -142,6 +142,7 @@ export class DrizzleThreadRepository implements ThreadRepository {
           version: 0,
           channelId: input.channelId,
           authorId: input.authorId,
+          authorAccountId: input.authorAccountId ?? null,
           title: input.title,
           slug: input.slug,
           body: input.body,
@@ -191,6 +192,7 @@ export class DrizzleThreadRepository implements ThreadRepository {
   async hasVisibleShowcasePlayId(
     playId: string,
     countHit = false,
+    audience?: 'adult' | 'kids',
   ): Promise<{
     visible: boolean
     authorDisplayName: string | null
@@ -198,6 +200,13 @@ export class DrizzleThreadRepository implements ThreadRepository {
     authorAccountId: string | null
     playsCount: number
   }> {
+    const audienceScope =
+      audience === undefined
+        ? undefined
+        : sql`exists (
+      select 1 from hub.channels c join hub.spaces s on s.id = c.space_id
+      where c.id = ${threads.channelId} and s.audience = ${audience}
+    )`
     if (countHit) {
       // Hit FUNDIDO no resolve (1 round-trip): o RETURNING responde o "visível?"
       // (+ o 1º nome do autor p/ a página pública) e o UPDATE conta a jogada. NÃO
@@ -212,6 +221,7 @@ export class DrizzleThreadRepository implements ThreadRepository {
             eq(threads.playId, playId),
             eq(threads.isShowcase, true),
             eq(threads.status, 'visible'),
+            audienceScope,
           ),
         )
         .returning({
@@ -242,6 +252,7 @@ export class DrizzleThreadRepository implements ThreadRepository {
           eq(threads.playId, playId),
           eq(threads.isShowcase, true),
           eq(threads.status, 'visible'),
+          audienceScope,
         ),
       )
       .limit(1)
@@ -285,6 +296,7 @@ export class DrizzleThreadRepository implements ThreadRepository {
   async listShowcaseByAuthor(
     authorId: string,
     limit: number,
+    audience?: 'adult' | 'kids',
   ): Promise<
     Array<{ title: string; playId: string | null; coverImageUrl: string | null; createdAt: Date }>
   > {
@@ -303,6 +315,9 @@ export class DrizzleThreadRepository implements ThreadRepository {
           eq(threads.authorId, authorId),
           eq(threads.isShowcase, true),
           eq(threads.status, 'visible'),
+          audience === undefined
+            ? undefined
+            : sql`exists (select 1 from hub.channels c join hub.spaces s on s.id = c.space_id where c.id = ${threads.channelId} and s.audience = ${audience})`,
         ),
       )
       .orderBy(desc(threads.createdAt))

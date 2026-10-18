@@ -64,6 +64,10 @@ async function abrirJogo(
   )
   await page.goto(`/jogar/${ID}`)
   await expect(page.getByText('Meu primeiro jogo').first()).toBeVisible()
+  // The loading iframe is intentionally replaced when compilation finishes.
+  // Measure and mark the actual game iframe, using the player's readiness contract.
+  await expect(page.locator('iframe')).toBeVisible()
+  await expect(page.locator('iframe')).toHaveAttribute('aria-busy', 'false')
 }
 
 /** Área na TELA da caixa do jogo (o boundingBox já considera o giro). */
@@ -133,6 +137,10 @@ ${pedeTelaCheia ? "document.querySelector('canvas').addEventListener('pointerdow
   )
   await page.goto(`/jogar/${ID}`)
   await expect(page.getByText('Meu primeiro jogo').first()).toBeVisible()
+  // The loading iframe is intentionally replaced when compilation finishes.
+  // Measure and mark the actual game iframe, using the player's readiness contract.
+  await expect(page.locator('iframe')).toBeVisible()
+  await expect(page.locator('iframe')).toHaveAttribute('aria-busy', 'false')
   await page.waitForTimeout(1200)
 }
 

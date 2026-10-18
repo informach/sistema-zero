@@ -911,6 +911,41 @@
       "when": 1792318977591,
       "tag": "0129_section_objectives",
       "breakpoints": true
+    },
+    {
+      "idx": 130,
+      "version": "7",
+      "when": 1792327557118,
+      "tag": "0130_oval_trish_tilby",
+      "breakpoints": true
+    },
+    {
+      "idx": 131,
+      "version": "7",
+      "when": 1792328327548,
+      "tag": "0131_adult_journey_policy",
+      "breakpoints": true
+    },
+    {
+      "idx": 132,
+      "version": "7",
+      "when": 1792330294215,
+      "tag": "0132_useful_jigsaw",
+      "breakpoints": true
+    },
+    {
+      "idx": 133,
+      "version": "7",
+      "when": 1792332248864,
+      "tag": "0133_adult_tutorial_library",
+      "breakpoints": true
+    },
+    {
+      "idx": 134,
+      "version": "7",
+      "when": 1792332720652,
+      "tag": "0134_adult_ai_execution_isolation",
+      "breakpoints": true
     }
   ]
 }

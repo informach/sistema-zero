@@ -18,6 +18,7 @@ import type { GamificationRepository } from '../../domain/ports/gamification-rep
 import type { LiveLessonAccessPort } from '../../domain/ports/live-lesson-access.port'
 import type { AccessCheckService } from '../access-check/access-check.service'
 import type { MissionClaimView } from '../mappers/views'
+import type { GetMissionsService } from './get-missions.service'
 import { resolveMissionAccess } from './mission-access'
 
 /**
@@ -32,6 +33,7 @@ export class ClaimMissionService {
     private readonly clock: () => Date,
     /** Vaga nas oficinas ao vivo (missão `live_encounter`); o MESMO port do `GetMissionsService`. */
     private readonly liveSeats?: Pick<LiveLessonAccessPort, 'hasActiveSeat'>,
+    private readonly available?: Pick<GetMissionsService, 'execute'>,
   ) {}
 
   async execute(
@@ -43,6 +45,16 @@ export class ClaimMissionService {
   ): Promise<MissionClaimView> {
     const mission = MISSIONS_BY_SLUG.get(slug)
     if (!mission) throw new MissionNotFoundError()
+    if (audience === 'adult') {
+      if (!this.available) throw new MissionNotFoundError()
+      const available = await this.available.execute(userId, accountId, audience, privileged)
+      if (
+        ![...available.daily, ...available.weekly, ...available.monthly].some(
+          (view) => view.slug === slug,
+        )
+      )
+        throw new MissionNotFoundError()
+    }
 
     const today = localDateSaoPaulo(this.clock())
     // A missão precisa estar ATRIBUÍDA a este perfil no período. O catálogo tem muitas

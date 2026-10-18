@@ -15,6 +15,7 @@ export interface PensaTeamFacts {
   code: {
     profileId: string
     level: string
+    journey?: import('@sistemazero/core/journey').AdultJourneyView
     blocks: string[]
     access: { studio: boolean; pinta: boolean; molda: boolean }
     creations: { pinta: CreationSummary[]; molda: CreationSummary[] }
@@ -22,6 +23,7 @@ export interface PensaTeamFacts {
   art: Array<{
     profileId: string
     level: string
+    journey?: import('@sistemazero/core/journey').AdultJourneyView
     access: { studio: boolean; pinta: boolean; molda: boolean }
   }>
   gameTicket: PensaCreationDownloadTicket | null

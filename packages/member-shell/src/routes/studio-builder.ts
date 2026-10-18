@@ -14,6 +14,7 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { isReadonlyImpersonation } from '../lib/act'
 import { getEnv } from '../lib/env'
+import { learnerIdentity } from '../lib/learner-identity'
 import { isPrivilegedRole } from '../lib/studio-tier'
 import type { MembersClient } from '../server/clients'
 import { pensaSynthesisModel } from '../server/pensa-llm'
@@ -89,6 +90,7 @@ const error = (message: string, status: number) =>
   NextResponse.json({ error: { message } }, { status, headers: { 'Cache-Control': 'no-store' } })
 
 export function createStudioBuilderRoutes(deps: {
+  audience?: 'kids' | 'adult'
   members: MembersClient
   session: SessionModule
   preflight?: typeof preflightStudioProBuild
@@ -135,12 +137,17 @@ export function createStudioBuilderRoutes(deps: {
             return error('O Estúdio não está liberado para este perfil.', 403)
           const level = gamification.body?.level?.slug
           if (
-            !isStudioZappyAllowed(user, level) ||
-            !earnedStudioTier(level ?? 'noob', user.role, []).pro
+            deps.audience === 'adult'
+              ? !learnerIdentity(user, 'adult') ||
+                !gamification.body?.journey?.capabilities.includes('ai') ||
+                !gamification.body.journey.capabilities.includes('pro')
+              : !isStudioZappyAllowed(user, level) ||
+                !earnedStudioTier(level ?? 'noob', user.role, []).pro
           )
             return error('O construtor precisa do modo Pro e do Zappy liberados.', 403)
         }
         const actor = {
+          ...(deps.audience === 'adult' ? { audience: 'adult' as const } : {}),
           userId: user.id,
           accountId: user.activeProfile?.accountId ?? user.id,
           privileged: user.status === 'active' && isPrivilegedRole(user.role),

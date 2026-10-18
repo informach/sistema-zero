@@ -221,6 +221,7 @@ export class DrizzlePensaOperationsRepository {
           status: 'running',
           calls: operation.calls + 1,
           actor: {
+            ...(state.project.audience === 'adult' ? { audience: 'adult' as const } : {}),
             profileId: operation.profileId,
             accountId: operation.accountId,
             privileged: operation.input.privileged === true,

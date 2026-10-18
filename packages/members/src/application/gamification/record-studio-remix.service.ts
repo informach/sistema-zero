@@ -1,8 +1,10 @@
+import { creativeToolAccessRef } from '@sistemazero/core/creations'
 import type { CourseAudience } from '../../domain/course/course'
 import { AccessDeniedError } from '../../domain/entitlement/entitlement.errors'
 import { ESTUDIO_ACCESS_REF } from '../../domain/gamification/missions'
 import type { HubGateway } from '../../domain/ports/hub-gateway.port'
 import type { AccessCheckService } from '../access-check/access-check.service'
+import type { AdultJourneyService } from '../adult-journey/adult-journey.service'
 import type { AwardGamificationService } from './award-gamification.service'
 
 export type RecordStudioRemixResult =
@@ -30,6 +32,7 @@ export class RecordStudioRemixService {
     private readonly accessCheck: AccessCheckService,
     private readonly hub: HubGateway,
     private readonly award: AwardGamificationService,
+    private readonly adultJourney?: AdultJourneyService,
   ) {}
 
   async execute(input: {
@@ -39,15 +42,19 @@ export class RecordStudioRemixService {
     playId: string
     privileged: boolean
   }): Promise<RecordStudioRemixResult> {
+    if (input.audience === 'adult') {
+      if (input.userId !== input.accountId || !this.adultJourney)
+        throw new AccessDeniedError('Conta adulta inválida')
+      await this.adultJourney.assert(input.userId, 'studio', input.privileged)
+    }
+    const accessRef = creativeToolAccessRef(ESTUDIO_ACCESS_REF, input.audience)
     if (!input.privileged) {
-      const result = await this.accessCheck.execute(input.accountId, [ESTUDIO_ACCESS_REF])
-      const allowed =
-        result.grants.includes(ESTUDIO_ACCESS_REF) ||
-        result.communities.includes(ESTUDIO_ACCESS_REF)
+      const result = await this.accessCheck.execute(input.accountId, [accessRef])
+      const allowed = result.grants.includes(accessRef) || result.communities.includes(accessRef)
       if (!allowed) throw new AccessDeniedError('Você não tem acesso ao Estúdio Completo')
     }
 
-    const play = await this.hub.checkPlay(input.playId)
+    const play = await this.hub.checkPlay(input.playId, input.audience)
     // Hub fora → NÃO grava (fail-closed do anti-farm: melhor perder um marco de
     // missão que aceitar um id não-verificado). O cliente é best-effort.
     if (!play) return { recorded: false, reason: 'HUB_UNAVAILABLE' }

@@ -4,6 +4,7 @@ import type { ShowcaseService } from '../../../application/showcase/showcase.ser
 import { ValidationError } from '../../../domain/shared/errors'
 import {
   ActivityByAuthorsBody,
+  AdultCommunityAccessBody,
   PlayCheckBody,
   ShowcaseByAuthorBody,
   ShowcaseByAuthorsBody,
@@ -56,6 +57,14 @@ export function internalRoutes(deps: InternalRoutesDeps) {
   return new Elysia({ prefix: '/hub/internal' })
     .onTransform(verify)
     .post(
+      '/adult-community-access',
+      async ({ body }) => ({
+        audience: 'adult' as const,
+        available: await deps.showcase.adultCommunityAvailable(body.userId, body.accountId),
+      }),
+      { body: AdultCommunityAccessBody },
+    )
+    .post(
       '/showcase-by-authors',
       async ({ body }) => {
         const from = parseIsoDate(body.from, 'from')
@@ -81,8 +90,13 @@ export function internalRoutes(deps: InternalRoutesDeps) {
       // só monta a seção num perfil PÚBLICO). Os jogos já são públicos no /jogar.
       '/showcase-by-author',
       async ({ body }) => {
-        const items = await deps.showcase.listShowcaseByAuthor(body.authorId, body.limit ?? 24)
+        const items = await deps.showcase.listShowcaseByAuthor(
+          body.authorId,
+          body.limit ?? 24,
+          body.audience ?? 'kids',
+        )
         return {
+          ...(body.audience === 'adult' ? { audience: 'adult' as const } : {}),
           items: items.map((i) => ({
             title: i.title,
             playId: i.playId,
@@ -100,8 +114,12 @@ export function internalRoutes(deps: InternalRoutesDeps) {
       // SELECT puro (sem countHit — validar não é jogar).
       '/play-check',
       async ({ body }) => {
-        const res = await deps.showcase.isPlayable(body.playId, false)
-        return { visible: res.visible, authorId: res.visible ? res.authorId : null }
+        const res = await deps.showcase.isPlayable(body.playId, false, body.audience ?? 'kids')
+        return {
+          visible: res.visible,
+          authorId: res.visible ? res.authorId : null,
+          ...(body.audience === 'adult' ? { audience: 'adult' as const } : {}),
+        }
       },
       { body: PlayCheckBody },
     )

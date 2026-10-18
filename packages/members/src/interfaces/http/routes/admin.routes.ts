@@ -403,46 +403,59 @@ export function adminRoutes(deps: AdminRoutesDeps) {
       // ── Desafio do mês (Sala do Professor) ────────────────────────────────
       // Janela de meses com o tema RESOLVIDO (definido pelo professor ou
       // sorteado como fallback), override por mês e biblioteca de temas custom.
-      .get('/challenge/months', async ({ headers }) => {
-        requireAdmin(headers, deps.requireAdminEnabled)
-        return deps.challengeAdmin.listMonths()
-      })
+      .get(
+        '/challenge/months',
+        async ({ headers, query }) => {
+          requireAdmin(headers, deps.requireAdminEnabled)
+          return deps.challengeAdmin.listMonths(query.audience ?? 'kids')
+        },
+        { query: AudienceQuery },
+      )
       .put(
         '/challenge/months/:month',
-        async ({ params, body, headers }) => {
+        async ({ params, body, headers, query }) => {
           requireAdmin(headers, deps.requireAdminEnabled)
-          return deps.challengeAdmin.setMonth(params.month, body, resolveOptionalUserId(headers))
+          return deps.challengeAdmin.setMonth(
+            params.month,
+            body,
+            resolveOptionalUserId(headers),
+            query.audience ?? 'kids',
+          )
         },
-        { params: ChallengeMonthParams, body: ChallengeOverrideBody },
+        { params: ChallengeMonthParams, body: ChallengeOverrideBody, query: AudienceQuery },
       )
       .delete(
         '/challenge/months/:month',
-        async ({ params, headers }) => {
+        async ({ params, headers, query }) => {
           requireAdmin(headers, deps.requireAdminEnabled)
-          return deps.challengeAdmin.clearMonth(params.month)
+          return deps.challengeAdmin.clearMonth(params.month, query.audience ?? 'kids')
         },
-        { params: ChallengeMonthParams },
+        { params: ChallengeMonthParams, query: AudienceQuery },
       )
-      .get('/challenge/themes', async ({ headers }) => {
-        requireAdmin(headers, deps.requireAdminEnabled)
-        return deps.challengeAdmin.listThemes()
-      })
+      .get(
+        '/challenge/themes',
+        async ({ headers, query }) => {
+          requireAdmin(headers, deps.requireAdminEnabled)
+          return deps.challengeAdmin.listThemes(query.audience ?? 'kids')
+        },
+        { query: AudienceQuery },
+      )
       .post(
         '/challenge/themes',
-        async ({ body, headers, set }) => {
+        async ({ body, headers, set, query }) => {
           requireAdmin(headers, deps.requireAdminEnabled)
           set.status = 201
-          return deps.challengeAdmin.createTheme(body)
+          return deps.challengeAdmin.createTheme(body, query.audience ?? 'kids')
         },
-        { body: ChallengeThemeBody },
+        { body: ChallengeThemeBody, query: AudienceQuery },
       )
       .patch(
         '/challenge/themes/:id',
-        async ({ params, body, headers }) => {
+        async ({ params, body, headers, query }) => {
           requireAdmin(headers, deps.requireAdminEnabled)
-          return deps.challengeAdmin.updateTheme(params.id, body)
+          return deps.challengeAdmin.updateTheme(params.id, body, query.audience ?? 'kids')
         },
-        { params: IdParams, body: ChallengeThemePatchBody },
+        { params: IdParams, body: ChallengeThemePatchBody, query: AudienceQuery },
       )
       .post(
         '/entitlements',

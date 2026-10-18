@@ -1,5 +1,10 @@
 import { describe, expect, test } from 'bun:test'
-import { attachAuthorAvatars, collectAuthorIds, redactAuthors } from '../src/lib/hub-redact'
+import {
+  attachAdultPublicIdentities,
+  attachAuthorAvatars,
+  collectAuthorIds,
+  redactAuthors,
+} from '../src/lib/hub-redact'
 
 const ME = 'user-me'
 const OTHER = 'user-other'
@@ -226,5 +231,23 @@ describe('attachAuthorAvatars', () => {
     ) as { items: { authorAvatarUrl?: string | null; authorLevel?: string | null }[] }
     expect(out.items[0]?.authorLevel).toBe('god')
     expect(out.items[1]?.authorLevel).toBeUndefined()
+  })
+})
+
+test('perfil adulto privado não volta a ser público por snapshot antigo do Hub', () => {
+  const snapshot = { authorId: OTHER, authorPublic: true, authorDisplayName: 'Nome antigo' }
+  expect(redactAuthors(attachAdultPublicIdentities(snapshot, new Map()), ME)).toMatchObject({
+    authorId: null,
+    authorPublic: false,
+    authorProfileId: null,
+    authorDisplayName: null,
+  })
+  expect(
+    redactAuthors(attachAdultPublicIdentities(snapshot, new Map([[OTHER, 'Nome escolhido']])), ME),
+  ).toMatchObject({
+    authorId: null,
+    authorPublic: true,
+    authorProfileId: OTHER,
+    authorDisplayName: 'Nome escolhido',
   })
 })

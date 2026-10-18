@@ -1,3 +1,4 @@
+import { tutorLanguage } from './adult-prompts'
 import 'server-only'
 import { randomUUID } from 'node:crypto'
 import {
@@ -1125,6 +1126,7 @@ function projectData(
 }
 
 export function buildStudioZappyPrompt(input: {
+  audience?: 'adult' | 'kids'
   question: string
   context: ZappyContextInput
   tier: StudioTier
@@ -1139,7 +1141,13 @@ export function buildStudioZappyPrompt(input: {
 } {
   if (input.context.kind === 'pro') {
     const { context, user } = proProjectData(input)
-    return { system: proSystemPrompt(), user, catalog: [], allowed: [], context }
+    return {
+      system: tutorLanguage(proSystemPrompt(), input.audience),
+      user,
+      catalog: [],
+      allowed: [],
+      context,
+    }
   }
   const allowed = allowedCatalog(input.tier, input.context.installedExtensions)
   const allowedTypes = new Set(allowed.map((entry) => entry.type.toLowerCase()))
@@ -1199,7 +1207,7 @@ export function buildStudioZappyPrompt(input: {
     system = systemPrompt(context.mode, context.kind, catalog, manuals, recipes, diagnostico)
   }
   return {
-    system,
+    system: tutorLanguage(system, input.audience),
     user: projectData(
       question,
       context,
@@ -1392,6 +1400,7 @@ export function validatedStudioZappyResponse(
 }
 
 export interface StudioZappyAnswerInput {
+  audience?: 'adult' | 'kids'
   question: string
   context: ZappyContextInput
   tier: StudioTier

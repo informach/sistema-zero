@@ -94,8 +94,13 @@ export function showcaseRoutes(deps: ShowcaseRoutesDeps) {
         const { visible, authorDisplayName } = await deps.showcase.isPlayable(
           params.playId,
           query.count === '1',
+          query.audience ?? 'kids',
         )
-        return { visible, authorDisplayName }
+        return {
+          visible,
+          authorDisplayName,
+          ...(query.audience === 'adult' ? { audience: 'adult' as const } : {}),
+        }
       },
       { params: PlayIdParams, query: PlayResolveQuery },
     )

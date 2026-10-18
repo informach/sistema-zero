@@ -139,6 +139,19 @@ export function createGatewayModule(session: SessionModule) {
     access: string | null,
     readOnly = false,
   ): Promise<Response> {
+    if (session.audience === 'adult') {
+      const verdict = access ? await session.verifyAccessTokenLocally(access) : null
+      if (!verdict?.ok)
+        return Response.json(
+          {
+            error: {
+              code:
+                verdict && !verdict.ok && verdict.unavailable ? 'AUTH_UNAVAILABLE' : 'UNAUTHORIZED',
+            },
+          },
+          { status: verdict && !verdict.ok && verdict.unavailable ? 503 : 401 },
+        )
+    }
     if (session.audience === 'kids') {
       // ⚠️ Só a verificação LOCAL: o Gateway introspecta no Auth TODA chamada de sessão Kids
       // (sem cache), então a revogação continua imediata e indisponibilidade dele volta como

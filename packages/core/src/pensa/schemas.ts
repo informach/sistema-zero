@@ -14,6 +14,7 @@ const resourceIds = (max = 2_000) => z.array(text(160)).max(max)
 export const PensaDestinationSchema = z.enum(['studio', 'pinta', 'molda'])
 export const PensaAuthoringSchema = z.enum(['blocks', 'code'])
 export const PensaActorSchema = z.strictObject({
+  audience: z.enum(['adult', 'kids']).optional(),
   profileId: id,
   accountId: id,
   privileged: z.boolean(),
@@ -246,6 +247,7 @@ export const PensaPlanDraftSchema = z.strictObject({
   updatedAt: date,
 })
 export const PensaProjectMetadataSchema = z.strictObject({
+  audience: z.enum(['adult', 'kids']).optional(),
   id,
   name: text(100),
   status: z.enum(['active', 'archived']),

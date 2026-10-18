@@ -30,6 +30,7 @@ export interface CreateThreadInput {
 
 /** Criação de um post de VITRINE (Mural) — auto-publicado pela criança (idempotente). */
 export interface CreateShowcaseThreadInput {
+  authorAccountId?: string
   /** Persisted atomically with the thread for durable journey notification. Absent on standalone games. */
   coursePublication?: ShowcasePublishedArgs
   id: string
@@ -147,6 +148,7 @@ export interface ThreadRepository {
   hasVisibleShowcasePlayId(
     playId: string,
     countHit?: boolean,
+    audience?: 'adult' | 'kids',
   ): Promise<{
     visible: boolean
     authorDisplayName: string | null
@@ -182,6 +184,7 @@ export interface ThreadRepository {
   listShowcaseByAuthor(
     authorId: string,
     limit: number,
+    audience?: 'adult' | 'kids',
   ): Promise<
     Array<{
       title: string

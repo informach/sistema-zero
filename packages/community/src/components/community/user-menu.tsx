@@ -79,6 +79,12 @@ export function UserMenu({ user }: { user: SessionUserWithAvatar }) {
               <p className="truncate text-xs text-muted-foreground">{user.email}</p>
             </div>
           </div>
+          <Link href="/meu-avatar" onClick={() => setOpen(false)} className={itemClass}>
+            <User className="size-4" /> Meu avatar 3D
+          </Link>
+          <Link href="/quarto" onClick={() => setOpen(false)} className={itemClass}>
+            <User className="size-4" /> Meu espaço 3D
+          </Link>
           <Link href="/perfil" onClick={() => setOpen(false)} className={itemClass}>
             <User className="size-4" />
             Meu perfil

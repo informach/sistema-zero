@@ -88,6 +88,22 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
     await conn.sql.unsafe(
       `create unique index creations_user_tool_item_uq on members.creations (user_id, tool, item_id)`,
     )
+    await conn.sql.unsafe(
+      `create index creations_user_tool_idx on members.creations (user_id, tool, deleted_at)`,
+    )
+    await conn.sql`insert into members.creations (id, user_id, account_id, tool, item_id, name, kind, item_updated_at, revision, storage_ref, created_at, synced_at)
+      values (${randomUUID()}, ${conta}, ${conta}, 'pinta', 'legacy-preserved', 'Legado', 'drawing', ${now.toISOString()}, 1, 'creations/legacy/original.gz', ${now.toISOString()}, ${now.toISOString()})`
+    const migration = await Bun.file(
+      new URL(
+        '../../src/infrastructure/persistence/drizzle/migrations/0130_oval_trish_tilby.sql',
+        import.meta.url,
+      ),
+    ).text()
+    await conn.sql.begin(async (tx) => {
+      for (const statement of migration.split('--> statement-breakpoint')) {
+        if (statement.trim()) await tx.unsafe(statement)
+      }
+    })
     // O mesmo índice parcial da migration 0069 (quota por perfil em index-only scan).
     await conn.sql.unsafe(
       `create index creations_usage_idx on members.creations (user_id, tool, bytes) where deleted_at is null and storage_ref is not null`,
@@ -135,6 +151,47 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
     ).toEqual({ ok: false, reason: 'account-deleting' })
   })
   const key = (rev: number) => `creations/${perfil}/studio/proj-1/${rev}.json.gz`
+  test('migração conserva registro e chave legados como Kids, invisíveis no adulto', async () => {
+    expect((await repo.get(conta, 'pinta', 'legacy-preserved'))?.storageRef).toBe(
+      'creations/legacy/original.gz',
+    )
+    expect(
+      await new DrizzleCreationsRepository(conn.db, 'adult').get(
+        conta,
+        'pinta',
+        'legacy-preserved',
+      ),
+    ).toBeNull()
+  })
+  test('mesma conta e mesmo item mantêm versões, cotas e exclusões isoladas por público', async () => {
+    const adult = new DrizzleCreationsRepository(conn.db, 'adult')
+    const userId = randomUUID()
+    const input = { ...base, userId, accountId: userId, itemId: 'same-item' }
+    for (const repository of [repo, adult]) {
+      const reserved = await repository.reserveUpload(input)
+      if (!reserved.ok) throw new Error('Reserva recusada')
+      expect(reserved.revision).toBe(1)
+      expect(
+        await repository.commit({
+          userId,
+          tool: input.tool,
+          itemId: input.itemId,
+          revision: 1,
+          storageRef: `${repository.audience}/blob`,
+          now,
+          limits: LIMITS,
+        }),
+      ).toMatchObject({ ok: true })
+    }
+    expect((await repo.get(userId, input.tool, input.itemId))?.storageRef).toBe('kids/blob')
+    expect((await adult.get(userId, input.tool, input.itemId))?.storageRef).toBe('adult/blob')
+    expect((await repo.usage(userId)).totalBytes).toBe(100)
+    expect((await adult.usage(userId)).totalBytes).toBe(100)
+    await adult.softDelete(userId, input.tool, input.itemId, 1, now, 2)
+    expect((await repo.get(userId, input.tool, input.itemId))?.deletedAt).toBeNull()
+    expect((await adult.usage(userId)).totalBytes).toBe(0)
+    expect((await repo.usage(userId)).totalBytes).toBe(100)
+  })
   test('manifesto verificado precisa corresponder às partes reservadas dentro da transação', async () => {
     const input = {
       ...base,

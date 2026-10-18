@@ -1,3 +1,4 @@
+import type { CourseAudience } from '../course/course'
 import type {
   CreationDraftState,
   CreationPartRef,
@@ -113,6 +114,8 @@ export type CreationDeleteResult =
   | { ok: false; reason: 'stale-base'; currentRevision: number }
 
 export interface CreationsRepository {
+  readonly audience?: CourseAudience
+
   /** Índice do perfil numa ferramenta — só itens VIVOS e já confirmados, mais novos primeiro. */
   list(userId: string, tool: CreationTool): Promise<CreationSummary[]>
   /** Página estável do índice; busca `limit + 1` para produzir o próximo cursor. */
@@ -124,7 +127,12 @@ export interface CreationsRepository {
   /** Remove em lote lápides anteriores à janela de retenção. */
   compactTombstones(cutoff: Date, limit: number): Promise<number>
   /** Uma linha (inclusive apagada — quem decide é o serviço). `null` = não existe. */
-  get(userId: string, tool: CreationTool, itemId: string): Promise<CreationRecord | null>
+  get(
+    userId: string,
+    tool: CreationTool,
+    itemId: string,
+    audience?: CourseAudience,
+  ): Promise<CreationRecord | null>
   usage(userId: string): Promise<CreationUsage>
   /**
    * Impressão e hora da última subida confirmada de cada item VIVO pedido (o "envio em dia" lê os
@@ -134,6 +142,7 @@ export interface CreationsRepository {
     userId: string,
     tool: CreationTool,
     itemIds: readonly string[],
+    audience?: CourseAudience,
   ): Promise<CreationDraftState[]>
   /**
    * Reserva a PRÓXIMA revisão, sob lock da chave `(user, tool, item)`, conferindo a

@@ -5,6 +5,7 @@ import type { LiveActor } from '../../domain/ports/live-repository.port'
 import type { LiveWorkspaceService } from './live-workspace.service'
 
 interface PublicationClaim {
+  audience?: 'kids' | 'adult'
   purpose: 'live-showcase'
   workspaceId: string
   revision: number
@@ -31,9 +32,12 @@ export class LivePublicationService {
     workspaceId: string,
     revision: number,
     clientIdempotencyKey: string,
+    audience: 'kids' | 'adult' = 'kids',
   ) {
-    const snapshot = await this.workspace.showcaseSnapshot(actor, workspaceId, revision)
+    const snapshot = await this.workspace.showcaseSnapshot(actor, workspaceId, revision, audience)
+    if (audience === 'adult' && snapshot.audience !== 'adult') throw new LiveAccessError()
     const claim: PublicationClaim = {
+      ...(audience === 'adult' ? { audience: 'adult' as const } : {}),
       purpose: 'live-showcase',
       workspaceId,
       revision,
@@ -62,6 +66,7 @@ export class LivePublicationService {
     revision: number
     playId: string
     publicationToken: string
+    audience?: 'kids' | 'adult'
   }) {
     const parts = input.publicationToken.split('.')
     const body = parts[0],
@@ -79,6 +84,7 @@ export class LivePublicationService {
       throw new LiveAccessError()
     }
     if (
+      (claim.audience ?? 'kids') !== (input.audience ?? 'kids') ||
       claim.purpose !== 'live-showcase' ||
       claim.workspaceId !== input.workspaceId ||
       claim.revision !== input.revision ||
@@ -93,7 +99,13 @@ export class LivePublicationService {
       { id: input.userId, accountId: input.accountId, name: '', staff: false },
       input.workspaceId,
       input.revision,
+      input.audience ?? 'kids',
     )
-    return { eligible: true, title: snapshot.title }
+    if (input.audience === 'adult' && snapshot.audience !== 'adult') throw new LiveAccessError()
+    return {
+      eligible: true,
+      title: snapshot.title,
+      ...(input.audience === 'adult' ? { audience: 'adult' as const } : {}),
+    }
   }
 }

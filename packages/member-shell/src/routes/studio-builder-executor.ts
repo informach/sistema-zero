@@ -20,7 +20,12 @@ const delivery = z
           ['http:', 'https:'].includes(new URL(value).protocol) && new URL(value).origin === value,
       ),
     actor: z
-      .object({ userId: z.string().uuid(), accountId: z.string().uuid(), privileged: z.boolean() })
+      .object({
+        userId: z.string().uuid(),
+        accountId: z.string().uuid(),
+        privileged: z.boolean(),
+        audience: z.enum(['kids', 'adult']).optional(),
+      })
       .strict(),
   })
   .strict()
@@ -28,6 +33,7 @@ const delivery = z
 /** Service-only bounded step. Cookies and browser claims never authorize this endpoint. */
 export function createStudioBuilderExecutorRoutes(deps: {
   members: MembersClient
+  audience?: 'kids' | 'adult'
   advance?: typeof advanceStudioBuilder
 }) {
   return {
@@ -50,6 +56,7 @@ export function createStudioBuilderExecutorRoutes(deps: {
         let input: z.infer<typeof delivery>
         try {
           input = delivery.parse(await readJsonBodyWithLimit(request, 4096))
+          if ((input.actor.audience ?? 'kids') !== (deps.audience ?? 'kids')) return reply(403)
         } catch {
           return reply(400)
         }

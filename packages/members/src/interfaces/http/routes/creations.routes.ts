@@ -1,3 +1,4 @@
+import { ForbiddenError } from '@sistemazero/core/http'
 import { Elysia } from 'elysia'
 import type {
   CommitCreationUploadService,
@@ -7,8 +8,15 @@ import type {
   ListCreationsService,
   ReserveCreationUploadService,
 } from '../../../application/creations/creations.service'
-import { assertInternalCaller, isPrivilegedActor, resolveAccountId, resolveUserId } from '../auth'
 import {
+  assertInternalCaller,
+  isPrivilegedActor,
+  resolveAccountId,
+  resolveAdultLearnerId,
+  resolveUserId,
+} from '../auth'
+import {
+  AudienceQuery,
   CreationCommitBody,
   CreationDeleteBody,
   CreationItemParams,
@@ -26,6 +34,10 @@ export interface CreationsRoutesDeps {
   compactTombstones: CompactCreationTombstonesService
   /** Token interno do gateway (defesa em profundidade). Vazio em dev → checagem desligada. */
   internalToken?: string
+  adult?: Pick<
+    CreationsRoutesDeps,
+    'list' | 'reserveUpload' | 'commitUpload' | 'getDownload' | 'remove'
+  >
 }
 
 /**
@@ -42,6 +54,15 @@ export interface CreationsRoutesDeps {
  * criança sempre consegue trazer de volta o que já guardou.
  */
 export function creationsRoutes(deps: CreationsRoutesDeps) {
+  function services(
+    audience: 'adult' | 'kids' | undefined,
+    headers: Record<string, string | undefined>,
+  ) {
+    if (audience !== 'adult') return deps
+    resolveAdultLearnerId(headers)
+    if (!deps.adult) throw new ForbiddenError('Biblioteca adulta indisponível.')
+    return deps.adult
+  }
   return (
     new Elysia({ prefix: '/members/creations' })
       .onTransform(({ headers }) =>
@@ -51,7 +72,7 @@ export function creationsRoutes(deps: CreationsRoutesDeps) {
       .get(
         '/:tool',
         async ({ headers, params, query }) =>
-          deps.list.execute(resolveUserId(headers), params.tool, {
+          services(query.audience, headers).list.execute(resolveUserId(headers), params.tool, {
             ...(query.cursor ? { cursor: query.cursor } : {}),
             ...(query.limit !== undefined ? { limit: query.limit } : {}),
           }),
@@ -62,8 +83,8 @@ export function creationsRoutes(deps: CreationsRoutesDeps) {
       // Reserva a próxima revisão (quota + posse) → `{revision, storageKey, bytes}`.
       .post(
         '/:tool/:itemId/upload',
-        async ({ headers, params, body }) =>
-          deps.reserveUpload.execute({
+        async ({ headers, params, body, query }) =>
+          services(query.audience, headers).reserveUpload.execute({
             userId: resolveUserId(headers),
             accountId: resolveAccountId(headers),
             privileged: isPrivilegedActor(headers),
@@ -79,14 +100,14 @@ export function creationsRoutes(deps: CreationsRoutesDeps) {
             ...(body.parts ? { parts: body.parts } : {}),
             ...(body.fingerprint ? { fingerprint: body.fingerprint } : {}),
           }),
-        { params: CreationItemParams, body: CreationUploadBody },
+        { query: AudienceQuery, params: CreationItemParams, body: CreationUploadBody },
       )
       // Confirma a revisão reservada depois do PUT no R2 → `{item, previousStorageKey}`
       // (o BFF apaga a revisão anterior no R2, best-effort).
       .post(
         '/:tool/:itemId/commit',
-        async ({ headers, params, body }) =>
-          deps.commitUpload.execute({
+        async ({ headers, params, body, query }) =>
+          services(query.audience, headers).commitUpload.execute({
             userId: resolveUserId(headers),
             tool: params.tool,
             itemId: params.itemId,
@@ -94,27 +115,31 @@ export function creationsRoutes(deps: CreationsRoutesDeps) {
             ...(body.verifiedPartHashes ? { verifiedPartHashes: body.verifiedPartHashes } : {}),
             ...(body.uploadedParts ? { uploadedParts: body.uploadedParts } : {}),
           }),
-        { params: CreationItemParams, body: CreationCommitBody },
+        { query: AudienceQuery, params: CreationItemParams, body: CreationCommitBody },
       )
       // Onde está o blob da revisão corrente (o BFF assina o GET).
       .get(
         '/:tool/:itemId/download',
-        async ({ headers, params }) =>
-          deps.getDownload.execute(resolveUserId(headers), params.tool, params.itemId),
-        { params: CreationItemParams },
+        async ({ headers, params, query }) =>
+          services(query.audience, headers).getDownload.execute(
+            resolveUserId(headers),
+            params.tool,
+            params.itemId,
+          ),
+        { query: AudienceQuery, params: CreationItemParams },
       )
       // Lixeira lógica (idempotente).
       .delete(
         '/:tool/:itemId',
-        async ({ headers, params, body }) =>
-          deps.remove.execute(
+        async ({ headers, params, body, query }) =>
+          services(query.audience, headers).remove.execute(
             resolveUserId(headers),
             params.tool,
             params.itemId,
             body.baseRevision,
             body.maxFormatVersion ?? 1,
           ),
-        { params: CreationItemParams, body: CreationDeleteBody },
+        { query: AudienceQuery, params: CreationItemParams, body: CreationDeleteBody },
       )
   )
 }

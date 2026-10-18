@@ -1,3 +1,6 @@
+import { createHash } from 'node:crypto'
+import { creatorCommunityAccessRef } from '@sistemazero/core/creations'
+import type { AdultProfilePreferences } from '@sistemazero/core/profiles'
 import 'server-only'
 import type { StudioAiAccountView, StudioAiPolicyInput } from '@sistemazero/core/ai-credits'
 import { cache } from 'react'
@@ -336,11 +339,30 @@ export function createAuthClient(gw: GatewayModule) {
 
 /**
  * Client das rotas do MEMBERS. `audience` é a VITRINE do app (`adult` no
- * community, `kids` no community-kids) — só afeta as LISTAGENS; detalhe/aula/
- * quiz/anexos são governados por matrícula (não filtram por audiência).
+ * community, `kids` no community-kids). Curso, criações, progressão e serviços
+ * avançados validam também a identidade e o público no backend.
  */
 export function createMembersClient(gw: GatewayModule, opts: { audience: MembersAudience }) {
+  const aiProject = (id: string) =>
+    audience === 'adult' ? `adult-${createHash('sha256').update(id).digest('hex')}` : id
+
   const { audience } = opts
+  async function adultAiReply<T>(
+    request: Promise<GatewayResponse<T>>,
+  ): Promise<GatewayResponse<T>> {
+    const result = await request
+    if (
+      audience === 'adult' &&
+      result.status === 200 &&
+      (!result.body ||
+        typeof result.body !== 'object' ||
+        !('audience' in result.body) ||
+        result.body.audience !== 'adult')
+    )
+      return { status: 503, body: result.body }
+    return result
+  }
+
   // Dedup por request (React cache) — chave é o BOOLEANO `withRanking` (um objeto
   // literal teria referência diferente por chamada → não deduparia). layout + home/
   // perfil pedem no mesmo render. Request-scoped (não cruza requests/usuários).
@@ -358,7 +380,8 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
   // visível": layout + página + painel pedem no mesmo render e vai UMA ida.
   // ⚠️ SEM `?audience`: a quota é da conta e cruza as duas vitrines.
   const aiCreditsReadonlyCached = cache(
-    (): Promise<GatewayResponse<AiCreditsView>> => gw.gatewayFetchReadonly('/members/ai-usage/me'),
+    (): Promise<GatewayResponse<AiCreditsView>> =>
+      gw.gatewayFetchReadonly('/members/ai-usage/me', { query: { audience } }),
   )
   // Paleta do Estúdio livre montada pelo CURRÍCULO (bônus Kids: conclusão; demais:
   // conclusão + Mural). Rota à parte do `/gamification/me` de propósito: a lista pode ter
@@ -457,7 +480,10 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
      */
     checkChallengeAccessReadonly(): Promise<GatewayResponse<ProductAccessView>> {
       return gw.gatewayFetchReadonly('/members/access', {
-        query: { refs: `${CLUB_ACCESS_REF},${STUDIO_ACCESS_REF}`, audience },
+        query: {
+          refs: `${creatorCommunityAccessRef(CLUB_ACCESS_REF, audience)},${STUDIO_ACCESS_REF}`,
+          audience,
+        },
       })
     },
     /**
@@ -470,29 +496,44 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
 
     /** Detalhe do curso (módulos + aulas + progresso). */
     getMyCourse(slug: string): Promise<GatewayResponse<CourseDetailView>> {
-      return gw.gatewayFetch(`/members/courses/${enc(slug)}`)
+      return gw.gatewayFetch(
+        `/members/courses/${enc(slug)}`,
+        audience === 'adult' ? { query: { audience } } : undefined,
+      )
     },
     getMyCourseReadonly(slug: string): Promise<GatewayResponse<CourseDetailView>> {
-      return gw.gatewayFetchReadonly(`/members/courses/${enc(slug)}`)
+      return gw.gatewayFetchReadonly(
+        `/members/courses/${enc(slug)}`,
+        audience === 'adult' ? { query: { audience } } : undefined,
+      )
     },
 
     /** Conteúdo da aula (blocos + anexos). Busca por ID da aula (não slug). */
     getLesson(slug: string, lessonId: string): Promise<GatewayResponse<LessonDetailView>> {
-      return gw.gatewayFetch(`/members/courses/${enc(slug)}/lessons/${enc(lessonId)}`)
+      return gw.gatewayFetch(
+        `/members/courses/${enc(slug)}/lessons/${enc(lessonId)}`,
+        audience === 'adult' ? { query: { audience } } : undefined,
+      )
     },
 
     // ── "Como fazer" (biblioteca de ajuda): SÓ o publicado, qualquer conta ativa, sem progresso ──
     /** Coleções ativas com a contagem de tutoriais publicados (Server Component). */
     listHelpCollectionsReadonly(): Promise<GatewayResponse<{ collections: HelpCollectionView[] }>> {
-      return gw.gatewayFetchReadonly('/members/help/collections')
+      return gw.gatewayFetchReadonly(
+        `/members/${audience === 'adult' ? 'adult/' : ''}help/collections`,
+      )
     },
     /** A lista publicada, com o texto achatado para a busca no navegador (Server Component). */
     listHelpTutorialsReadonly(): Promise<GatewayResponse<{ tutorials: HelpTutorialEntry[] }>> {
-      return gw.gatewayFetchReadonly('/members/help/tutorials')
+      return gw.gatewayFetchReadonly(
+        `/members/${audience === 'adult' ? 'adult/' : ''}help/tutorials`,
+      )
     },
     /** Um tutorial publicado pelo slug (Server Component). 404 = não existe ou não está publicado. */
     getHelpTutorialReadonly(slug: string): Promise<GatewayResponse<HelpTutorialView>> {
-      return gw.gatewayFetchReadonly(`/members/help/tutorials/${enc(slug)}`)
+      return gw.gatewayFetchReadonly(
+        `/members/${audience === 'adult' ? 'adult/' : ''}help/tutorials/${enc(slug)}`,
+      )
     },
 
     /**
@@ -720,6 +761,16 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
      * Dado de jogo do perfil PÚBLICO de OUTRA criança (xp/ranking/conquistas/avatar/
      * quarto). Peer-viewable; o BFF junta com a identidade do auth. SEM refresh (SC).
      */
+    getAdultProfileReadonly(): Promise<GatewayResponse<AdultProfilePreferences>> {
+      return gw.gatewayFetchReadonly('/members/adult/profile')
+    },
+    getAdultPublicIdentities(
+      ids: string[],
+    ): Promise<GatewayResponse<{ identities: { userId: string; displayName: string }[] }>> {
+      return gw.gatewayFetch('/members/adult/profiles/public-identities', {
+        query: { ids: ids.join(',') },
+      })
+    },
     getPublicProfile(profileId: string): Promise<GatewayResponse<PublicProfileGameView>> {
       return gw.gatewayFetchReadonly(`/members/profiles/${enc(profileId)}/public`, {
         query: { audience },
@@ -808,7 +859,7 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     checkCreativeToolsAccessReadonly(): Promise<GatewayResponse<ProductAccessView>> {
       return creativeToolsAccessReadonlyCached()
     },
-    ...createPensaClient(gw),
+    ...createPensaClient(gw, audience),
     /**
      * Consome 1 crédito de IA da CONTA (quota diária + mensal, keyada no members
      * pelos headers confiáveis — irmãos da mesma conta kids dividem o teto).
@@ -827,7 +878,7 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
      * o medidor da criança e o painel do mês na área dos pais.
      */
     getAiCredits(): Promise<GatewayResponse<AiCreditsView>> {
-      return gw.gatewayFetch('/members/ai-usage/me')
+      return gw.gatewayFetch('/members/ai-usage/me', { query: { audience } })
     },
     /** Idem, sem refresh/escrita de cookie — o seguro em Server Component. */
     getAiCreditsReadonly(): Promise<GatewayResponse<AiCreditsView>> {
@@ -837,7 +888,9 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
       projectId: string,
       before?: string,
     ): Promise<GatewayResponse<ZappyHistoryPageView>> {
-      return gw.gatewayFetch('/members/zappy/history', { query: { projectId, before } })
+      return gw.gatewayFetch('/members/zappy/history', {
+        query: { projectId: aiProject(projectId), before, audience },
+      })
     },
     studioAiAccount(
       actor: { accountId: string; userId: string; parent: true },
@@ -852,7 +905,7 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
         body: { actor, action },
       })
     },
-    studioAiUsage(
+    async studioAiUsage(
       actor: import('@sistemazero/core/ai-credits').StudioAiActor,
       action: import('@sistemazero/core/ai-credits').StudioAiUsageAction | { operation: 'costs' },
     ): Promise<
@@ -863,21 +916,68 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
         ok?: boolean
       }>
     > {
-      return gw.gatewayFetchHmac('/members/internal/studio-ai/usage', {
+      const signedActor = actor.audience
+        ? actor
+        : audience === 'adult'
+          ? { ...actor, audience: 'adult' as const }
+          : actor
+      if (
+        signedActor.audience === 'adult' &&
+        (action.operation === 'reserve' || action.operation === 'dispatch')
+      ) {
+        const protocol = await adultAiReply(
+          gw.gatewayFetchHmac('/members/internal/studio-ai/usage', {
+            method: 'POST',
+            body: { actor: signedActor, action: { operation: 'costs' } },
+          }),
+        )
+        if (protocol.status !== 200) return { status: protocol.status, body: {} }
+      }
+      const read = gw.gatewayFetchHmac<{
+        audience?: 'adult'
+        reservation?: import('@sistemazero/core/ai-credits').StudioAiReservation
+        dispatch?: { source: 'platform' | 'openrouter'; apiKey: string | null }
+        costs?: import('@sistemazero/core/ai-credits').StudioAiCostView
+        ok?: boolean
+      }>('/members/internal/studio-ai/usage', {
         method: 'POST',
-        body: { actor, action },
+        body: {
+          actor: actor.audience
+            ? actor
+            : audience === 'adult'
+              ? { ...actor, audience: 'adult' }
+              : actor,
+          action,
+        },
       })
+      return (actor.audience ?? audience) === 'adult' &&
+        (action.operation === 'reserve' ||
+          action.operation === 'dispatch' ||
+          action.operation === 'costs')
+        ? adultAiReply(read)
+        : read
     },
-    studioBuilder(
+    async studioBuilder(
       actor: import('@sistemazero/core/ai-credits').StudioAiActor,
       command: import('@sistemazero/core/studio').StudioProBuilderCommand,
     ): Promise<
       GatewayResponse<{ state: import('@sistemazero/core/studio').StudioProBuilderClaim | null }>
     > {
-      return gw.gatewayFetchHmac('/members/internal/studio-ai/builder', {
-        method: 'POST',
-        body: { actor, command },
-      })
+      if (audience === 'adult' && command.operation !== 'get') {
+        const protocol = await adultAiReply(
+          gw.gatewayFetchHmac('/members/internal/studio-ai/builder/availability?audience=adult', {
+            method: 'POST',
+            body: {},
+          }),
+        )
+        if (protocol.status !== 200) return { status: protocol.status, body: { state: null } }
+      }
+      return adultAiReply(
+        gw.gatewayFetchHmac('/members/internal/studio-ai/builder', {
+          method: 'POST',
+          body: { actor: audience === 'adult' ? { ...actor, audience: 'adult' } : actor, command },
+        }),
+      )
     },
     studioBuilderCleanup(): Promise<GatewayResponse<{ deleted: number }>> {
       return gw.gatewayFetchHmac('/members/internal/studio-ai/builder/cleanup', {
@@ -886,19 +986,23 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
       })
     },
     studioBuilderAvailability(): Promise<GatewayResponse<{ available: boolean }>> {
-      return gw.gatewayFetchHmac('/members/internal/studio-ai/builder/availability', {
-        method: 'POST',
-        body: {},
-      })
+      return adultAiReply(
+        gw.gatewayFetchHmac(
+          `/members/internal/studio-ai/builder/availability${audience === 'adult' ? '?audience=adult' : ''}`,
+          { method: 'POST', body: {} },
+        ),
+      )
     },
     studioBuilderHistory(
       actor: import('@sistemazero/core/ai-credits').StudioAiActor,
       query: { projectId: string; before?: string },
     ): Promise<GatewayResponse<{ page: import('@sistemazero/core/studio').StudioProBuilderPage }>> {
-      return gw.gatewayFetchHmac('/members/internal/studio-ai/builder/history', {
-        method: 'POST',
-        body: { actor, query },
-      })
+      return adultAiReply(
+        gw.gatewayFetchHmac('/members/internal/studio-ai/builder/history', {
+          method: 'POST',
+          body: { actor: audience === 'adult' ? { ...actor, audience: 'adult' } : actor, query },
+        }),
+      )
     },
     studioAiReconcile(
       action:
@@ -924,7 +1028,10 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
       })
     },
     zappyDeleteHistory(projectId: string): Promise<GatewayResponse<{ ok: boolean }>> {
-      return gw.gatewayFetch('/members/zappy/history', { method: 'DELETE', query: { projectId } })
+      return gw.gatewayFetch('/members/zappy/history', {
+        method: 'DELETE',
+        query: { projectId: aiProject(projectId), audience },
+      })
     },
     zappyReserveQuestion(body: {
       actor: { userId: string; accountId: string; privileged: boolean }
@@ -945,7 +1052,17 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
         }>
       }>
     > {
-      return gw.gatewayFetchHmac('/members/internal/zappy/questions', { method: 'POST', body })
+      return gw.gatewayFetchHmac('/members/internal/zappy/questions', {
+        method: 'POST',
+        body:
+          audience === 'adult'
+            ? {
+                ...body,
+                actor: { ...body.actor, audience: 'adult' },
+                projectId: aiProject(body.projectId),
+              }
+            : body,
+      })
     },
     zappyCompleteQuestion(
       questionId: string,
@@ -961,7 +1078,14 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     ): Promise<GatewayResponse<ZappyStoredResponseView>> {
       return gw.gatewayFetchHmac(`/members/internal/zappy/questions/${enc(questionId)}/response`, {
         method: 'PUT',
-        body,
+        body:
+          audience === 'adult'
+            ? {
+                ...body,
+                actor: { ...body.actor, audience: 'adult' },
+                projectId: aiProject(body.projectId),
+              }
+            : body,
       })
     },
     zappyFeedback(body: {
@@ -969,7 +1093,11 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
       responseId: string
       useful: boolean
     }): Promise<GatewayResponse<{ ok: boolean }>> {
-      return gw.gatewayFetch('/members/zappy/feedback', { method: 'POST', body })
+      return gw.gatewayFetch('/members/zappy/feedback', {
+        method: 'POST',
+        query: { audience },
+        body: { ...body, projectId: aiProject(body.projectId) },
+      })
     },
     zappyKnowledgeSearch(
       query: string,
@@ -977,6 +1105,7 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     ): Promise<GatewayResponse<{ hits: ZappyKnowledgeHitView[] }>> {
       return gw.gatewayFetch('/members/zappy/knowledge/search', {
         method: 'POST',
+        query: { audience },
         body: { query, limit },
       })
     },
@@ -1158,17 +1287,30 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     listCreations(
       tool: CreationToolView,
       options: { cursor?: string; limit?: number } = {},
-    ): Promise<GatewayResponse<{ items: CreationIndexView[]; nextCursor?: string | null }>> {
+    ): Promise<
+      GatewayResponse<{
+        audience?: 'adult'
+        items: CreationIndexView[]
+        nextCursor?: string | null
+      }>
+    > {
       const query = new URLSearchParams()
+      if (audience === 'adult') query.set('audience', audience)
       if (options.cursor) query.set('cursor', options.cursor)
       if (options.limit !== undefined) query.set('limit', String(options.limit))
       const suffix = query.size > 0 ? `?${query}` : ''
       return gw.gatewayFetch(`/members/creations/${enc(tool)}${suffix}`, { method: 'GET' })
     },
-    listCreationsReadonly(
-      tool: CreationToolView,
-    ): Promise<GatewayResponse<{ items: CreationIndexView[]; nextCursor?: string | null }>> {
-      return gw.gatewayFetchReadonly(`/members/creations/${enc(tool)}`, { query: { limit: 24 } })
+    listCreationsReadonly(tool: CreationToolView): Promise<
+      GatewayResponse<{
+        audience?: 'adult'
+        items: CreationIndexView[]
+        nextCursor?: string | null
+      }>
+    > {
+      return gw.gatewayFetchReadonly(`/members/creations/${enc(tool)}`, {
+        query: { limit: 24, ...(audience === 'adult' ? { audience } : {}) },
+      })
     },
     /** Reserva a próxima revisão (gate de posse + quota no members) — o BFF assina o PUT. */
     reserveCreationUpload(
@@ -1188,6 +1330,7 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     ): Promise<GatewayResponse<CreationUploadTicketView>> {
       return gw.gatewayFetch(`/members/creations/${enc(tool)}/${enc(itemId)}/upload`, {
         method: 'POST',
+        ...(audience === 'adult' ? { query: { audience } } : {}),
         body,
       })
     },
@@ -1199,6 +1342,7 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     ): Promise<GatewayResponse<CreationCommitResultView>> {
       return gw.gatewayFetch(`/members/creations/${enc(tool)}/${enc(itemId)}/commit`, {
         method: 'POST',
+        ...(audience === 'adult' ? { query: { audience } } : {}),
         body,
       })
     },
@@ -1209,6 +1353,7 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     ): Promise<GatewayResponse<CreationDownloadTicketView>> {
       return gw.gatewayFetch(`/members/creations/${enc(tool)}/${enc(itemId)}/download`, {
         method: 'GET',
+        ...(audience === 'adult' ? { query: { audience } } : {}),
       })
     },
     /** Lixeira lógica (idempotente). O `storageKey` devolvido é o blob que o BFF apaga do R2. */
@@ -1219,6 +1364,7 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     ): Promise<GatewayResponse<CreationDeleteResultView>> {
       return gw.gatewayFetch(`/members/creations/${enc(tool)}/${enc(itemId)}`, {
         method: 'DELETE',
+        ...(audience === 'adult' ? { query: { audience } } : {}),
         body,
       })
     },
@@ -1297,6 +1443,7 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     ): Promise<
       GatewayResponse<{
         eligible: boolean
+        audience?: 'adult'
         project: Record<string, unknown>
         revision: number
         title: string
@@ -1305,7 +1452,7 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
       }>
     > {
       return gw.gatewayFetch(
-        `/members/live/workspaces/${enc(workspaceId)}/showcase?revision=${revision}&clientIdempotencyKey=${enc(clientIdempotencyKey)}`,
+        `/members/live/workspaces/${enc(workspaceId)}/showcase?revision=${revision}&clientIdempotencyKey=${enc(clientIdempotencyKey)}${audience === 'adult' ? '&audience=adult' : ''}`,
         { method: 'GET' },
       )
     },
@@ -1538,9 +1685,11 @@ export function createHubClient(gw: GatewayModule, opts: { audience: MembersAudi
     resolveStudioPlay(
       playId: string,
       countHit = false,
-    ): Promise<GatewayResponse<{ visible: boolean; authorDisplayName?: string | null }>> {
-      return gw.gatewayFetch(
-        `/hub/internal/studio-play/${enc(playId)}${countHit ? '?count=1' : ''}`,
+    ): Promise<
+      GatewayResponse<{ visible: boolean; authorDisplayName?: string | null; audience?: 'adult' }>
+    > {
+      return publicGet(
+        `/hub/internal/studio-play/${enc(playId)}${audience === 'adult' ? `?audience=adult${countHit ? '&count=1' : ''}` : countHit ? '?count=1' : ''}`,
       )
     },
     /** Jornada (RSC, sem refresh): jogos publicados no Mural + soma das jogadas. */

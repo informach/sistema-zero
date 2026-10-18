@@ -123,3 +123,48 @@ describe('live material provenance', () => {
     ).rejects.toThrow()
   })
 })
+
+test('adult live proof cannot be replayed into Kids and rejects an old service without audience confirmation', async () => {
+  const id = crypto.randomUUID()
+  const actor = { id, accountId: id, name: 'Criador', staff: false }
+  const workspaceId = crypto.randomUUID()
+  const service = new LivePublicationService(
+    {
+      showcaseSnapshot: async (_who, workspaceId, revision, audience) => ({
+        workspaceId,
+        revision,
+        project: { id: workspaceId },
+        title: 'Jogo',
+        ...(audience === 'adult' ? { audience: 'adult' as const } : {}),
+      }),
+    },
+    'local-publication-secret',
+  )
+  const prepared = await service.prepare(actor, workspaceId, 1, crypto.randomUUID(), 'adult')
+  const proof = {
+    userId: id,
+    accountId: id,
+    workspaceId,
+    revision: 1,
+    playId: prepared.playId,
+    publicationToken: prepared.publicationToken,
+  }
+  await expect(service.verify(proof)).rejects.toThrow()
+  expect(await service.verify({ ...proof, audience: 'adult' })).toEqual({
+    eligible: true,
+    title: 'Jogo',
+    audience: 'adult',
+  })
+  const old = new LivePublicationService(
+    {
+      showcaseSnapshot: async (_who, workspaceId, revision) => ({
+        workspaceId,
+        revision,
+        project: {},
+        title: 'Jogo',
+      }),
+    },
+    'local-publication-secret',
+  )
+  await expect(old.prepare(actor, workspaceId, 1, crypto.randomUUID(), 'adult')).rejects.toThrow()
+})

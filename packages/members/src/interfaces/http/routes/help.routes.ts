@@ -1,6 +1,12 @@
 import { Elysia } from 'elysia'
 import type { HelpService } from '../../../application/help/help.service'
-import { assertInternalCaller, requireAdmin, resolveOptionalUserId, resolveUserId } from '../auth'
+import {
+  assertInternalCaller,
+  requireAdmin,
+  resolveAdultLearnerId,
+  resolveOptionalUserId,
+  resolveUserId,
+} from '../auth'
 import {
   HelpAdminListQuery,
   HelpCollectionBody,
@@ -28,12 +34,18 @@ export interface HelpRoutesDeps {
  * ferramenta nenhuma e não toca em progresso, XP nem matrícula. O admin (`/members/admin/help`)
  * edita o rascunho, publica, despublica, arquiva e transporta por JSON.
  */
-export function helpRoutes(deps: HelpRoutesDeps) {
+export function helpRoutes(deps: HelpRoutesDeps, audience: 'kids' | 'adult' = 'kids') {
   const guard = ({ headers }: { headers: Record<string, string | undefined> }) =>
     assertInternalCaller(headers['x-internal-token'], deps.internalToken)
 
-  const student = new Elysia({ prefix: '/members/help' })
+  const studentPrefix: string = audience === 'adult' ? '/members/adult/help' : '/members/help'
+  const adminPrefix: string =
+    audience === 'adult' ? '/members/admin/adult/help' : '/members/admin/help'
+  const student = new Elysia({ prefix: studentPrefix })
     .onTransform(guard)
+    .onBeforeHandle(({ headers }) => {
+      if (audience === 'adult') resolveAdultLearnerId(headers)
+    })
     .get('/collections', ({ headers }) => {
       resolveUserId(headers)
       return deps.help.listCollectionsPublic()
@@ -51,7 +63,7 @@ export function helpRoutes(deps: HelpRoutesDeps) {
       { params: HelpSlugParams },
     )
 
-  const admin = new Elysia({ prefix: '/members/admin/help' })
+  const admin = new Elysia({ prefix: adminPrefix })
     .onTransform(guard)
     .onBeforeHandle(({ headers }) => requireAdmin(headers, deps.requireAdminEnabled))
     // Coleções
@@ -119,5 +131,5 @@ export function helpRoutes(deps: HelpRoutesDeps) {
       { params: IdParams, body: HelpRevisionBody },
     )
 
-  return new Elysia({ name: 'help' }).use(student).use(admin)
+  return new Elysia({ name: `help-${audience}` }).use(student).use(admin)
 }

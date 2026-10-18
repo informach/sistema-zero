@@ -2,6 +2,7 @@ import { nextJourneyCourse } from '@sistemazero/core/journey'
 import { BookOpen } from 'lucide-react'
 import Link from 'next/link'
 import { CourseCard } from '@/components/community/course-card'
+import { GamificationSummary } from '@/components/community/gamification-summary'
 import { listMyCourses } from '@/server/members'
 import { getSession } from '@/server/session'
 
@@ -16,6 +17,7 @@ export default async function HomePage() {
 
   return (
     <div className="flex flex-col gap-8">
+      <GamificationSummary />
       <div>
         <h1 className="sz-display text-2xl md:text-3xl">
           Olá{user?.firstName ? `, ${user.firstName}` : ''} 👋

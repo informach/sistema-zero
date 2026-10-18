@@ -4,6 +4,7 @@ import { CheckAccessService } from './application/access/check-access.service'
 import { AccessCheckService } from './application/access-check/access-check.service'
 import { CreationCleanupService } from './application/admin/creation-cleanup/creation-cleanup.service'
 import { PurgeUserDataService } from './application/admin/purge-user-data/purge-user-data.service'
+import { AdultJourneyService } from './application/adult-journey/adult-journey.service'
 import { ConsumeAiUsageService } from './application/ai-usage/consume-ai-usage.service'
 import { GetAiCreditsService } from './application/ai-usage/get-ai-credits.service'
 import { GetAiUsageStatsService } from './application/ai-usage/get-ai-usage-stats.service'
@@ -84,6 +85,7 @@ import { GetPensaFunnelService } from './application/pensa/pensa-funnel.service'
 import { PensaProjectService } from './application/pensa/project.service'
 import { PensaTeamService } from './application/pensa/team.service'
 import { GetProfileAllowanceService } from './application/profile-allowance/get-profile-allowance.service'
+import { AdultProfileService } from './application/profiles/adult-profile.service'
 import { GetPublicProfileService } from './application/profiles/get-public-profile.service'
 import { GetProfilesOverviewService } from './application/profiles-overview/get-profiles-overview.service'
 import { SendRenewalRemindersService } from './application/renewal-reminder/send-renewal-reminders.service'
@@ -117,12 +119,15 @@ import { createGatewayMessagingClient } from './infrastructure/gateways/gateway-
 import { createHubHttpGateway, noopHubGateway } from './infrastructure/gateways/hub-http.gateway'
 import { LiveProfileOwnershipGateway } from './infrastructure/gateways/live-profile-ownership.gateway'
 import { OpenRouterOAuthGateway } from './infrastructure/gateways/openrouter-oauth'
+import { createStudioBuilderExecutorDelivery } from './infrastructure/gateways/studio-builder-executor.gateway'
 import { createStudioRuntimeChecker } from './infrastructure/gateways/studio-runtime-checker'
 import { teacherRecipientDirectory } from './infrastructure/gateways/teacher-recipient-http.gateway'
 import type { CloudflareSfuMediaProvider } from './infrastructure/live/cloudflare-sfu.provider'
 import { createLiveMediaInfrastructure } from './infrastructure/live/create-live-media'
 import { OwnRecordingProvider } from './infrastructure/live/own-recording.provider'
 import { withSentryMirror } from './infrastructure/observability/sentry'
+import { DrizzleAdultJourneyRepository } from './infrastructure/persistence/drizzle/adult-journey.repository'
+import { DrizzleAdultProfileRepository } from './infrastructure/persistence/drizzle/adult-profile.repository'
 import { DrizzleAiUsageRepository } from './infrastructure/persistence/drizzle/ai-usage.repository'
 import { DrizzleAnalyticsRepository } from './infrastructure/persistence/drizzle/analytics.repository'
 import { DrizzleAvatarRepository } from './infrastructure/persistence/drizzle/avatar.repository'
@@ -305,6 +310,7 @@ export async function createApplication(env: Env): Promise<Application> {
     studioBuilderRepository,
     () => new Date(),
     Boolean(env.STUDIO_BUILDER_EXECUTOR_URL && env.STUDIO_BUILDER_EXECUTOR_SECRET),
+    Boolean(env.ADULT_STUDIO_BUILDER_EXECUTOR_URL && env.STUDIO_BUILDER_EXECUTOR_SECRET),
   )
   const studioAiUsage = new StudioAiUsageService({
     repository: studioAiUsageRepo,
@@ -337,20 +343,11 @@ export async function createApplication(env: Env): Promise<Application> {
     finish: async (job) => {
       await studioAiUsage.finish(job.actor, job.id)
     },
-    deliver: async (job, signal) => {
-      const response = await fetch(env.STUDIO_BUILDER_EXECUTOR_URL!, {
-        method: 'POST',
-        redirect: 'error',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${env.STUDIO_BUILDER_EXECUTOR_SECRET}`,
-        },
-        body: JSON.stringify(job),
-        signal: AbortSignal.any([signal, AbortSignal.timeout(155_000)]),
-      })
-      await response.body?.cancel()
-      if (!response.ok) throw new Error(`Executor do Studio indisponível (${response.status}).`)
-    },
+    deliver: createStudioBuilderExecutorDelivery({
+      kidsUrl: env.STUDIO_BUILDER_EXECUTOR_URL,
+      adultUrl: env.ADULT_STUDIO_BUILDER_EXECUTOR_URL,
+      secret: env.STUDIO_BUILDER_EXECUTOR_SECRET,
+    }),
     report: (error) =>
       logger.error('studio.builder_delivery_failed', {
         error: error instanceof Error ? error.name : 'Error',
@@ -512,6 +509,12 @@ export async function createApplication(env: Env): Promise<Application> {
     new DrizzleHelpTutorialRepository(db),
     clock,
   )
+  const adultHelp = new HelpService(
+    new DrizzleHelpCollectionRepository(db, 'adult'),
+    new DrizzleHelpTutorialRepository(db, 'adult'),
+    clock,
+  )
+
   let liveMedia: CloudflareSfuMediaProvider | undefined
   let liveRecording: OwnRecordingProvider | undefined
   let stopLiveRecording: (() => Promise<void>) | undefined
@@ -608,6 +611,7 @@ export async function createApplication(env: Env): Promise<Application> {
     getMyCourse,
     clock,
     help,
+    adultHelp,
   )
   const teacherThreads = new TeacherThreadsService(new DrizzleTeacherThreadRepository(db), clock)
   const teacherBroadcasts = new TeacherBroadcastsService(
@@ -641,6 +645,7 @@ export async function createApplication(env: Env): Promise<Application> {
     async (courseId) => (await courses.findCourseById(courseId))?.modality ?? 'recorded',
     awardGamification,
     projectExecutor,
+    async (courseId) => (await courses.findCourseById(courseId))?.audience ?? 'kids',
   )
   const learning = new LearningService(
     learningRepository,
@@ -676,7 +681,14 @@ export async function createApplication(env: Env): Promise<Application> {
     sectionProgression,
   )
   liveRewardsImpl = new LiveRewardsService(awardGamification)
-  const getGamification = new GetGamificationService(gamificationRepo, clock)
+  const adultProfileRepository = new DrizzleAdultProfileRepository(db)
+  const adultProfile = new AdultProfileService(adultProfileRepository, clock)
+  const adultJourney = new AdultJourneyService(
+    new DrizzleAdultJourneyRepository(db),
+    courses,
+    clock,
+  )
+  const getGamification = new GetGamificationService(gamificationRepo, clock, adultJourney)
   const getAvatar = new GetAvatarService(avatarRepo, gamificationRepo)
   const getAvatarsByProfiles = new GetAvatarsByProfilesService(avatarRepo, gamificationRepo)
   const ranking = new ListRankingService(gamificationRepo, getAvatarsByProfiles, clock)
@@ -686,6 +698,7 @@ export async function createApplication(env: Env): Promise<Application> {
     clock,
     authGateway,
     new EncryptedRankingCursorCodec(env.GATEWAY_HMAC_SECRET),
+    adultProfileRepository,
   )
   const buyAvatarPart = new BuyAvatarPartService(
     avatarRepo,
@@ -705,6 +718,8 @@ export async function createApplication(env: Env): Promise<Application> {
     roomRepo,
     hub,
     clock,
+    adultProfileRepository,
+    adultJourney,
   )
   const getChallenge = new GetChallengeService(gamificationRepo, challengeConfigRepo, clock)
   // Paleta do Estúdio livre pelo CURRÍCULO (união dos cursos concluídos+publicados).
@@ -717,12 +732,15 @@ export async function createApplication(env: Env): Promise<Application> {
     clock,
     listMyCourses,
     liveLessonAccess,
+    adultJourney,
+    hub,
   )
   const claimMission = new ClaimMissionService(
     gamificationRepo,
     accessCheck,
     clock,
     liveLessonAccess,
+    getMissions,
   )
   // Baú de fim de unidade: a criança clica na trilha e AÍ ganha o XP (antes ele caía
   // sozinho ao concluir a última aula do módulo).
@@ -733,12 +751,27 @@ export async function createApplication(env: Env): Promise<Application> {
     awardGamification,
   )
   // Remix do Mural (marco de missão gated) — valida posse + playId no hub (anti-farm).
-  const recordRemix = new RecordStudioRemixService(accessCheck, hub, awardGamification)
+  const recordRemix = new RecordStudioRemixService(
+    accessCheck,
+    hub,
+    awardGamification,
+    adultJourney,
+  )
   // XP diário de CRIAR no Estúdio (sem hub/playId — só posse + award do dia).
-  const recordStudioActivity = new RecordStudioActivityDayService(accessCheck, awardGamification)
+  const recordStudioActivity = new RecordStudioActivityDayService(
+    accessCheck,
+    awardGamification,
+    adultJourney,
+  )
   const buyStreakFreeze = new BuyStreakFreezeService(gamificationRepo, () => randomUUID(), clock)
   const setVacation = new SetVacationService(gamificationRepo, clock)
-  const getLeague = new GetLeagueService(gamificationRepo, clock, getAvatarsByProfiles, authGateway)
+  const getLeague = new GetLeagueService(
+    gamificationRepo,
+    clock,
+    getAvatarsByProfiles,
+    authGateway,
+    adultProfileRepository,
+  )
   const markComplete = new MarkLessonCompleteService(
     checkAccess,
     courses,
@@ -830,6 +863,7 @@ export async function createApplication(env: Env): Promise<Application> {
   const revokeCertificate = new RevokeCertificateService(certificates, clock)
 
   // Pensa (planejador de jogos — plano + Cartões de Criação + progresso externo)
+  const adultCreationsRepo = new DrizzleCreationsRepository(db, 'adult')
   const listCreations = new ListCreationsService(creationsRepo)
   const reserveCreationUpload = new ReserveCreationUploadService(
     creationsRepo,
@@ -863,6 +897,9 @@ export async function createApplication(env: Env): Promise<Application> {
       studioUnlocks: getStudioUnlocks,
       creations: creationsRepo,
       creationDownload: getCreationDownload,
+      adultProfiles: adultProfileRepository,
+      adultCreations: adultCreationsRepo,
+      adultCreationDownload: new GetCreationDownloadService(adultCreationsRepo),
     }),
   )
   const compactCreationTombstones = new CompactCreationTombstonesService(creationsRepo, clock)
@@ -964,6 +1001,7 @@ export async function createApplication(env: Env): Promise<Application> {
     accountDeletionFence: userDataPurgeRepository,
     readiness,
     members: {
+      adultJourney,
       listMyCourses,
       listCatalog,
       accessCheck,
@@ -1019,6 +1057,7 @@ export async function createApplication(env: Env): Promise<Application> {
       internalToken: env.INTERNAL_API_TOKEN,
     },
     pensa: {
+      adultJourney,
       store: pensaRepo,
       projects: pensaProjects,
       team: pensaTeam,
@@ -1031,7 +1070,27 @@ export async function createApplication(env: Env): Promise<Application> {
       credits: aiCredits,
       internalToken: env.INTERNAL_API_TOKEN,
     },
+    adultProfiles: { service: adultProfile, internalToken: env.INTERNAL_API_TOKEN },
+    adultJourney: {
+      service: adultJourney,
+      profiles: adultProfile,
+      internalToken: env.INTERNAL_API_TOKEN,
+      requireAdminEnabled: env.REQUIRE_ADMIN,
+    },
     creations: {
+      adult: {
+        list: new ListCreationsService(adultCreationsRepo),
+        reserveUpload: new ReserveCreationUploadService(
+          adultCreationsRepo,
+          accessCheck,
+          clock,
+          new LessonDraftAccessService(courses, checkAccess, progress, sectionProgression),
+          adultJourney,
+        ),
+        commitUpload: new CommitCreationUploadService(adultCreationsRepo, clock),
+        getDownload: new GetCreationDownloadService(adultCreationsRepo),
+        remove: new DeleteCreationService(adultCreationsRepo, clock),
+      },
       list: listCreations,
       reserveUpload: reserveCreationUpload,
       commitUpload: commitCreationUpload,
@@ -1095,6 +1154,11 @@ export async function createApplication(env: Env): Promise<Application> {
       showcasePayload: getShowcasePayload,
       validateCertificate,
       internalToken: env.INTERNAL_API_TOKEN,
+    },
+    adultHelp: {
+      help: adultHelp,
+      internalToken: env.INTERNAL_API_TOKEN,
+      requireAdminEnabled: true,
     },
     help: {
       help,
@@ -1180,7 +1244,8 @@ export async function createApplication(env: Env): Promise<Application> {
   return {
     logger,
     async start() {
-      if (studioBuilder.executionAvailable) studioBuilderCoordinator.start()
+      if (studioBuilder.executionAvailable || studioBuilder.adultExecutionAvailable)
+        studioBuilderCoordinator.start()
       stopLiveRecording = liveRecording?.start()
       liveDeadlineTimer = setInterval(() => {
         if (liveDeadlineCycle) return

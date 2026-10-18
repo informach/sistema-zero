@@ -35,6 +35,7 @@ mock.module('@/components/editor/rich-text-editor', () => ({
   ),
 }))
 
+const { PlatformProvider } = await import('../src/components/admin/platform-provider')
 const { act } = await import('react')
 const { createRoot } = await import('react-dom/client')
 const { HelpEditorClient } = await import('../src/app/admin/como-fazer/[id]/help-editor-client')
@@ -91,7 +92,7 @@ beforeEach(() => {
   current = tutorial()
   globalThis.fetch = Object.assign(
     (async (input: Parameters<typeof fetch>[0], init?: Parameters<typeof fetch>[1]) => {
-      const path = String(input)
+      const path = new URL(String(input), 'http://admin.test').pathname
       const method = init?.method ?? 'GET'
       const body = typeof init?.body === 'string' ? JSON.parse(init.body) : null
       calls.push({ path, method, body })
@@ -143,7 +144,11 @@ function fixture() {
 async function mount() {
   const f = fixture()
   await act(async () => {
-    f.root.render(<HelpEditorClient tutorialId={ID} currentRole="admin" />)
+    f.root.render(
+      <PlatformProvider initialPlatform="kids">
+        <HelpEditorClient tutorialId={ID} currentRole="admin" />
+      </PlatformProvider>,
+    )
   })
   await act(async () => {})
   return f

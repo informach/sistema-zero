@@ -1,10 +1,7 @@
 import type { CourseAudience } from '../../domain/course/course'
 import { AccessDeniedError } from '../../domain/entitlement/entitlement.errors'
-import type {
-  AccountIdentity,
-  AuthGateway,
-  ProfileIdentity,
-} from '../../domain/ports/auth-gateway.port'
+import type { AdultProfileRepository } from '../../domain/ports/adult-profile-repository.port'
+import type { AuthGateway, ProfileIdentity } from '../../domain/ports/auth-gateway.port'
 import type { GamificationRepository } from '../../domain/ports/gamification-repository.port'
 import type { RankingCursorCodec } from '../../domain/ports/ranking-cursor.port'
 import { ValidationError } from '../../domain/shared/errors'
@@ -28,6 +25,7 @@ export class GetRankingLeaderboardService {
     private readonly clock: () => Date,
     private readonly auth: AuthGateway | null,
     private readonly cursors: RankingCursorCodec,
+    private readonly adultProfiles?: AdultProfileRepository,
   ) {}
 
   async execute(
@@ -77,11 +75,12 @@ export class GetRankingLeaderboardService {
         firstName: identity?.firstName || null,
         photoUrl: entry.photoUrl,
         levelSlug: entry.levelSlug,
-        ...(input.audience === 'kids' && identity?.public ? { profileId: entry.userId } : {}),
+        ...(identity?.public ? { profileId: entry.userId } : {}),
       }
     }
 
     return {
+      ...(input.audience === 'adult' ? { audience: 'adult' as const } : {}),
       items: visibleItems.map(toPublic),
       total: page.totalParticipants,
       limit: input.limit,
@@ -105,29 +104,29 @@ export class GetRankingLeaderboardService {
     audience: CourseAudience,
   ): Promise<Map<string, ProfileIdentity>> {
     const out = new Map<string, ProfileIdentity>()
-    if (!this.auth || rows.length === 0) return out
-
-    try {
-      if (audience === 'kids') {
+    if (audience === 'adult') {
+      if (!this.adultProfiles) return out
+      try {
         for (const batch of chunks(
           rows.map((row) => row.userId),
           AUTH_BATCH_SIZE,
-        )) {
-          const result = await this.auth.getProfileIdentities(batch)
-          for (const [id, identity] of result) out.set(id, identity)
-        }
-        return out
+        ))
+          for (const profile of await this.adultProfiles.listPublic(batch))
+            out.set(profile.userId, { firstName: profile.displayName, public: true })
+      } catch {
+        return new Map()
       }
+      return out
+    }
+    if (!this.auth || rows.length === 0) return out
 
-      const ids = [...new Set(rows.map((row) => row.accountId))]
-      const accounts: AccountIdentity[] = []
-      for (const batch of chunks(ids, AUTH_BATCH_SIZE)) {
-        accounts.push(...(await this.auth.getAccountIdentities(batch)))
-      }
-      const byAccount = new Map(accounts.map((account) => [account.id, account]))
-      for (const row of rows) {
-        const account = byAccount.get(row.accountId)
-        if (account) out.set(row.userId, { firstName: account.firstName, public: false })
+    try {
+      for (const batch of chunks(
+        rows.map((row) => row.userId),
+        AUTH_BATCH_SIZE,
+      )) {
+        const result = await this.auth.getProfileIdentities(batch)
+        for (const [id, identity] of result) out.set(id, identity)
       }
     } catch {
       return new Map()

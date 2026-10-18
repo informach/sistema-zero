@@ -224,7 +224,7 @@ describe('a seta gravada na cruz precisa CONTRASTAR com a cruz', () => {
   const raizDoPacote = new URL('..', import.meta.url)
   const css = readFileSync(new URL('src/app/globals.css', raizDoPacote), 'utf8')
   const componente = readFileSync(
-    new URL('src/components/kids/console-controls.tsx', raizDoPacote),
+    new URL('../member-shell/src/components/creator/console-controls.tsx', raizDoPacote),
     'utf8',
   )
 

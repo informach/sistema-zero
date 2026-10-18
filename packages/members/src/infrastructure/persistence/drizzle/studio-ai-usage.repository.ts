@@ -34,6 +34,7 @@ async function ownedRun(tx: Transaction, actor: StudioAiActor, id: string): Prom
         eq(studioAiRuns.id, id),
         eq(studioAiRuns.accountId, actor.accountId),
         eq(studioAiRuns.userId, actor.userId),
+        eq(studioAiRuns.audience, actor.audience ?? 'kids'),
       ),
     )
   if (!run) throw new StudioAiConflictError()
@@ -43,6 +44,7 @@ const active = (now: Date) => and(isNull(studioAiRuns.finishedAt), gt(studioAiRu
 function sameRequest(run: Run, input: StudioAiReserveInput) {
   const request = input.request
   return (
+    run.audience === (input.actor.audience ?? 'kids') &&
     run.userId === input.actor.userId &&
     run.projectId === request.projectId &&
     run.purpose === request.purpose &&
@@ -161,6 +163,7 @@ export class DrizzleStudioAiUsageRepository implements StudioAiUsageRepository {
         id: request.runId,
         accountId: actor.accountId,
         userId: actor.userId,
+        audience: actor.audience ?? 'kids',
         projectId: request.projectId,
         purpose: request.purpose,
         model: request.model,
@@ -424,7 +427,12 @@ export class DrizzleStudioAiUsageRepository implements StudioAiUsageRepository {
           )
         if (usable)
           jobs.push({
-            actor: { accountId: run.accountId, userId: run.userId, privileged: run.privileged },
+            actor: {
+              accountId: run.accountId,
+              userId: run.userId,
+              privileged: run.privileged,
+              audience: run.audience,
+            },
             runId: run.id,
             attempt: attempt.attempt,
             claimId,

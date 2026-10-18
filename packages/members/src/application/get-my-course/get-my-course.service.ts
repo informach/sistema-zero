@@ -24,7 +24,9 @@ export class GetMyCourseService {
     courseSlug: string,
     privileged = false,
     accountId?: string,
+    audience?: CourseAudience,
   ): Promise<CourseDetailView> {
+    if (audience === 'adult' && userId !== (accountId ?? userId)) throw new CourseNotFoundError()
     // Acesso pela CONTA (sessão de perfil → x-auth-account-id); progresso pelo userId.
     const { course, entitlement, liveLessonIds } = await this.checkAccess.requireBySlug(
       accountId ?? userId,
@@ -33,6 +35,7 @@ export class GetMyCourseService {
       userId,
       'course',
     )
+    if (audience && course.audience !== audience) throw new CourseNotFoundError()
     // Aluno só vê aulas PUBLICADAS — outline e progresso idem.
     const [
       outline,
@@ -102,3 +105,6 @@ export class GetMyCourseService {
     }
   }
 }
+
+import type { CourseAudience } from '../../domain/course/course'
+import { CourseNotFoundError } from '../../domain/course/course.errors'

@@ -67,6 +67,10 @@ export function buildApp(
 ) {
   const repo = new InMemoryCommunityAdminRepository()
   const threadRepo = new InMemoryThreadRepository()
+  threadRepo.audienceForChannel = (id) =>
+    repo.spaces.find(
+      (space) => space.id === repo.channels.find((channel) => channel.id === id)?.spaceId,
+    )?.audience
   const reactionRepo = new InMemoryReactionRepository()
   const readStateRepo = new InMemoryReadStateRepository()
   const moderationRepo = new InMemoryModerationRepository(threadRepo, repo)
@@ -144,6 +148,7 @@ export function buildApp(
         () => randomUUID(),
         new Set(opts.showcaseWallSlugs ?? []),
         opts.showcaseWallChannelSlug ?? 'parede',
+        { walls: new Set(['mural-dos-criadores-adulto']), access },
       ),
       internalToken,
     },
@@ -185,6 +190,7 @@ export function buildApp(
         () => randomUUID(),
         new Set(opts.showcaseWallSlugs ?? []),
         opts.showcaseWallChannelSlug ?? 'parede',
+        { walls: new Set(['mural-dos-criadores-adulto']), access },
       ),
       webhookSecret: TEST_WEBHOOK_SECRET,
       toleranceSeconds: 300,

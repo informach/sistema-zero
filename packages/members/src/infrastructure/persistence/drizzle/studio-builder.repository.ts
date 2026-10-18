@@ -19,8 +19,9 @@ import { and, desc, eq, gt, inArray, lt, or, sql } from 'drizzle-orm'
 import { StudioBuilderConflictError } from '../../../domain/studio-pro/studio-builder.errors'
 import type { Database } from './db'
 import {
-  studioBuilderProjectDeletions as deletions,
+  adultStudioBuilderProjectDeletions,
   studioBuilderJobs as jobs,
+  studioBuilderProjectDeletions as kidsDeletions,
   studioAiAttempts,
   studioAiRuns,
 } from './schema'
@@ -58,11 +59,13 @@ const owned = (actor: StudioAiActor, projectId: string) =>
   and(
     eq(jobs.accountId, actor.accountId),
     eq(jobs.userId, actor.userId),
+    eq(jobs.audience, actor.audience ?? 'kids'),
     eq(jobs.projectId, projectId),
   )!
 async function view(tx: Transaction, row: Row): Promise<StudioProBuilderJob> {
   const {
     accountId: _account,
+    audience: _audience,
     userId: _user,
     leaseToken: _token,
     binaries: _binaries,
@@ -78,6 +81,7 @@ async function view(tx: Transaction, row: Row): Promise<StudioProBuilderJob> {
         eq(studioAiRuns.id, row.id),
         eq(studioAiRuns.accountId, row.accountId),
         eq(studioAiRuns.userId, row.userId),
+        eq(studioAiRuns.audience, row.audience),
       ),
     )
   if (run) {
@@ -115,6 +119,7 @@ export class DrizzleStudioBuilderRepository implements StudioProBuilderRepositor
       projectId: jobs.projectId,
       accountId: jobs.accountId,
       userId: jobs.userId,
+      audience: jobs.audience,
       execution: jobs.execution,
     }
     const [active, unfinished] = await Promise.all([
@@ -152,7 +157,12 @@ export class DrizzleStudioBuilderRepository implements StudioProBuilderRepositor
       id: row.id,
       projectId: row.projectId,
       parentOrigin: row.execution.parentOrigin,
-      actor: { accountId: row.accountId, userId: row.userId, privileged: row.execution.privileged },
+      actor: {
+        accountId: row.accountId,
+        userId: row.userId,
+        privileged: row.execution.privileged,
+        ...(row.audience === 'adult' ? { audience: 'adult' as const } : {}),
+      },
     }))
   }
   list(
@@ -201,27 +211,29 @@ export class DrizzleStudioBuilderRepository implements StudioProBuilderRepositor
   /** Bounded physical retention, independent of the family returning to create another job. */
   purgeExpired(now: Date): Promise<number> {
     return this.db.transaction(async (tx) => {
-      const expiredFences = await tx
-        .select()
-        .from(deletions)
-        .where(lt(deletions.expiresAt, now))
-        .orderBy(deletions.expiresAt)
-        .limit(100)
-        .for('update', { skipLocked: true })
-      if (expiredFences.length)
-        await tx
-          .delete(deletions)
-          .where(
-            or(
-              ...expiredFences.map((item) =>
-                and(
-                  eq(deletions.accountId, item.accountId),
-                  eq(deletions.userId, item.userId),
-                  eq(deletions.projectId, item.projectId),
+      for (const deletions of [kidsDeletions, adultStudioBuilderProjectDeletions]) {
+        const expiredFences = await tx
+          .select()
+          .from(deletions)
+          .where(lt(deletions.expiresAt, now))
+          .orderBy(deletions.expiresAt)
+          .limit(100)
+          .for('update', { skipLocked: true })
+        if (expiredFences.length)
+          await tx
+            .delete(deletions)
+            .where(
+              or(
+                ...expiredFences.map((item) =>
+                  and(
+                    eq(deletions.accountId, item.accountId),
+                    eq(deletions.userId, item.userId),
+                    eq(deletions.projectId, item.projectId),
+                  ),
                 ),
               ),
-            ),
-          )
+            )
+      }
       const expired = await tx
         .select({ id: jobs.id })
         .from(jobs)
@@ -249,6 +261,8 @@ export class DrizzleStudioBuilderRepository implements StudioProBuilderRepositor
   ): Promise<StudioProBuilderClaim | null> {
     return this.db.transaction(async (tx) => {
       await lockStudioAiAccount(tx, actor.accountId)
+      const deletions =
+        actor.audience === 'adult' ? adultStudioBuilderProjectDeletions : kidsDeletions
       const projectId = command.operation === 'create' ? command.base.projectId : command.projectId
       const deletedProject = and(
         eq(deletions.accountId, actor.accountId),
@@ -299,6 +313,7 @@ export class DrizzleStudioBuilderRepository implements StudioProBuilderRepositor
           if (
             existing.accountId !== actor.accountId ||
             existing.userId !== actor.userId ||
+            existing.audience !== (actor.audience ?? 'kids') ||
             existing.projectId !== projectId ||
             existing.objective !== command.objective ||
             existing.model !== command.model ||
@@ -381,6 +396,7 @@ export class DrizzleStudioBuilderRepository implements StudioProBuilderRepositor
             execution: { parentOrigin: command.parentOrigin, privileged: actor.privileged },
             accountId: actor.accountId,
             userId: actor.userId,
+            audience: actor.audience ?? 'kids',
             projectId,
             objective: command.objective,
             model: command.model,

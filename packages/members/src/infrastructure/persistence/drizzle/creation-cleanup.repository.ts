@@ -122,7 +122,7 @@ export class DrizzleCreationCleanupRepository implements CreationCleanupReposito
 function userIdsFromPrefixes(accountId: string, prefixes: readonly string[]): string[] {
   const ids = new Set<string>([accountId])
   for (const prefix of prefixes) {
-    const match = /^creations\/([^/]+)\/$/.exec(prefix)
+    const match = /^creations\/(?:adult\/)?([^/]+)\/$/.exec(prefix)
     if (match?.[1]) ids.add(match[1])
   }
   return [...ids]

@@ -41,7 +41,7 @@ export function CommunityTopnav({ user }: { user: SessionUserWithAvatar }) {
         </Link>
 
         {/* Menu principal CENTRALIZADO (como na referência) */}
-        <nav className="-translate-x-1/2 absolute left-1/2 hidden items-center gap-1 md:flex">
+        <nav className="-translate-x-1/2 absolute left-1/2 hidden items-center gap-1 2xl:flex">
           {NAV_ITEMS.map((item) => {
             const active = isActive(item.href, item.match)
             const Icon = item.icon
@@ -72,7 +72,7 @@ export function CommunityTopnav({ user }: { user: SessionUserWithAvatar }) {
 
       {/* Nav compacto (mobile). `scrollbar-subtle`: a barra de rolagem clara do navegador ficava
           riscada sobre o fundo escuro; o item cortado na borda já mostra que a fileira rola. */}
-      <nav className="scrollbar-subtle flex items-center gap-1 overflow-x-auto border-(--topo-borda) border-t px-4 py-1.5 md:hidden">
+      <nav className="scrollbar-subtle flex items-center gap-1 overflow-x-auto border-(--topo-borda) border-t px-4 py-1.5 2xl:hidden">
         {NAV_ITEMS.map((item) => {
           const active = isActive(item.href, item.match)
           return (

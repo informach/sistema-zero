@@ -4,6 +4,7 @@ import { CheckAccessService } from '../src/application/access/check-access.servi
 import { AccessCheckService } from '../src/application/access-check/access-check.service'
 import { CreationCleanupService } from '../src/application/admin/creation-cleanup/creation-cleanup.service'
 import { PurgeUserDataService } from '../src/application/admin/purge-user-data/purge-user-data.service'
+import { AdultJourneyService } from '../src/application/adult-journey/adult-journey.service'
 import { ConsumeAiUsageService } from '../src/application/ai-usage/consume-ai-usage.service'
 import { GetAiCreditsService } from '../src/application/ai-usage/get-ai-credits.service'
 import { GetAiUsageStatsService } from '../src/application/ai-usage/get-ai-usage-stats.service'
@@ -75,6 +76,7 @@ import { ParentReportPrefsService } from '../src/application/parent-report/repor
 import { PensaProjectService } from '../src/application/pensa/project.service'
 import { PensaTeamService } from '../src/application/pensa/team.service'
 import { GetProfileAllowanceService } from '../src/application/profile-allowance/get-profile-allowance.service'
+import { AdultProfileService } from '../src/application/profiles/adult-profile.service'
 import { GetPublicProfileService } from '../src/application/profiles/get-public-profile.service'
 import { GetProfilesOverviewService } from '../src/application/profiles-overview/get-profiles-overview.service'
 import { RevokeEntitlementService } from '../src/application/revoke-entitlement/revoke-entitlement.service'
@@ -115,6 +117,8 @@ import { DrizzlePensaRewardsRepository } from '../src/infrastructure/persistence
 import { DrizzlePensaTeamRepository } from '../src/infrastructure/persistence/drizzle/pensa-team.repository'
 import { EncryptedRankingCursorCodec } from '../src/infrastructure/security/ranking-cursor.codec'
 import { createServer } from '../src/interfaces/http/server'
+import { InMemoryAdultJourneyRepository } from './fakes/adult-journey-in-memory'
+import { InMemoryAdultProfileRepository } from './fakes/adult-profile-in-memory'
 import { InMemoryAiUsageRepository } from './fakes/ai-usage-in-memory'
 import { InMemoryChallengeConfigRepository } from './fakes/challenge-config-in-memory'
 import { InMemoryCreationsRepository } from './fakes/creations-in-memory'
@@ -185,10 +189,15 @@ export function buildApp(
   const studioUnlocks = new InMemoryStudioUnlockRepository()
   // gamification recebe avatar/room p/ a compra ATÔMICA (spendCoins concede a posse junto).
   const gamification = new InMemoryGamificationRepository({ entitlements, courses, avatar, room })
+  const adultProfileRepository = new InMemoryAdultProfileRepository()
+  const adultProfile = new AdultProfileService(adultProfileRepository, clock)
+  const adultJourneyRepository = new InMemoryAdultJourneyRepository(gamification)
+  const adultJourney = new AdultJourneyService(adultJourneyRepository, courses, clock)
   const parentReports = new InMemoryParentReportRepository()
   const processed = new InMemoryProcessedWebhookRepository()
   const catalog = new FakeCatalogGateway()
   const creations = new InMemoryCreationsRepository()
+  const adultCreations = new InMemoryCreationsRepository('adult', creations.rows)
   // As artes da equipe (Pensa) consultam o índice das criações.
   const pensa = {
     projects: new Map<string, { userId: string; updatedAt: Date; [key: string]: unknown }>(),
@@ -201,6 +210,9 @@ export function buildApp(
   const helpCollections = new InMemoryHelpCollectionRepository()
   const helpTutorials = new InMemoryHelpTutorialRepository(helpCollections)
   const help = new HelpService(helpCollections, helpTutorials, clock)
+  const adultHelpCollections = new InMemoryHelpCollectionRepository()
+  const adultHelpTutorials = new InMemoryHelpTutorialRepository(adultHelpCollections)
+  const adultHelp = new HelpService(adultHelpCollections, adultHelpTutorials, clock)
   const consumeAiUsage = new ConsumeAiUsageService({
     aiUsage,
     dailyLimit: opts.aiLimits?.daily ?? 50,
@@ -242,7 +254,10 @@ export function buildApp(
   } = { items: null }
   // Play-check do REMIX, semeável por teste: playId → {visible, authorId}. Ausente
   // do mapa → null (hub indisponível — o service NÃO grava o marco, fail-closed).
-  const hubPlays = new Map<string, { visible: boolean; authorId: string | null }>()
+  const hubPlays = new Map<
+    string,
+    { visible: boolean; authorId: string | null; audience?: 'adult' | 'kids' }
+  >()
   // Jogos publicados por PERFIL (perfil público kids), semeável por teste. Ausente do
   // mapa → null (hub indisponível → o service degrada p/ `games: []`).
   const hubGamesByAuthor = new Map<
@@ -252,7 +267,11 @@ export function buildApp(
   // Participação Clube/Mural por autor (ficha admin), semeável por teste.
   // `items: null` (default) = hub indisponível → cartões clube/mural viram null.
   const hubActivityByAuthors: { items: HubAuthorActivity[] | null } = { items: null }
+  const adultCommunityAvailability = { value: true }
   const hub: HubGateway = {
+    async canUseAdultShowcase() {
+      return adultCommunityAvailability.value
+    },
     async notifyAccessChanged(userId, event) {
       hubCalls.push({ userId, event })
     },
@@ -280,8 +299,10 @@ export function buildApp(
           },
       )
     },
-    async checkPlay(playId) {
-      return hubPlays.get(playId) ?? null
+    async checkPlay(playId, audience = 'kids') {
+      const play = hubPlays.get(playId)
+      if (!play) return null
+      return (play.audience ?? 'kids') === audience ? play : { visible: false, authorId: null }
     },
   }
 
@@ -318,6 +339,7 @@ export function buildApp(
     clock,
     authGateway,
     new EncryptedRankingCursorCodec(WEBHOOK_SECRET),
+    adultProfileRepository,
   )
 
   const env = {
@@ -340,6 +362,7 @@ export function buildApp(
     async (courseId) => (await courses.findCourseById(courseId))?.modality ?? 'recorded',
     awardGamification,
     opts.projectExecutor,
+    async (courseId) => (await courses.findCourseById(courseId))?.audience ?? 'kids',
   )
   const learning = new LearningService(
     learningRepository,
@@ -362,6 +385,15 @@ export function buildApp(
     () => randomUUID(),
     clock,
     sectionProgression,
+  )
+  const getMissions = new GetMissionsService(
+    gamification,
+    accessCheck,
+    clock,
+    new ListMyCoursesService(entitlements, courses, progress, positions, gamification, clock),
+    liveLessonAccess,
+    adultJourney,
+    hub,
   )
   const app = createServer({
     learning: {
@@ -388,6 +420,7 @@ export function buildApp(
     },
     readiness: opts.readiness ?? (async () => ({ ready: true, checks: { db: 'ok' } })),
     members: {
+      adultJourney,
       listMyCourses: new ListMyCoursesService(
         entitlements,
         courses,
@@ -495,23 +528,33 @@ export function buildApp(
         learningRepository,
         sectionProgression,
       ),
-      getGamification: new GetGamificationService(gamification, clock),
+      getGamification: new GetGamificationService(gamification, clock, adultJourney),
       getChallenge: new GetChallengeService(gamification, challengeConfig, clock),
       getStudioUnlocks: new GetStudioUnlocksService(gamification, studioUnlocks, silentLogger),
-      getMissions: new GetMissionsService(
+      getMissions,
+      claimMission: new ClaimMissionService(
         gamification,
         accessCheck,
         clock,
-        new ListMyCoursesService(entitlements, courses, progress, positions, gamification, clock),
         liveLessonAccess,
+        getMissions,
       ),
-      claimMission: new ClaimMissionService(gamification, accessCheck, clock, liveLessonAccess),
       claimUnitChest: new ClaimUnitChestService(checkAccess, courses, progress, awardGamification),
-      recordRemix: new RecordStudioRemixService(accessCheck, hub, awardGamification),
-      recordStudioActivity: new RecordStudioActivityDayService(accessCheck, awardGamification),
+      recordRemix: new RecordStudioRemixService(accessCheck, hub, awardGamification, adultJourney),
+      recordStudioActivity: new RecordStudioActivityDayService(
+        accessCheck,
+        awardGamification,
+        adultJourney,
+      ),
       buyStreakFreeze: new BuyStreakFreezeService(gamification, () => randomUUID(), clock),
       setVacation: new SetVacationService(gamification, clock),
-      getLeague: new GetLeagueService(gamification, clock, avatarsByProfiles, authGateway),
+      getLeague: new GetLeagueService(
+        gamification,
+        clock,
+        avatarsByProfiles,
+        authGateway,
+        adultProfileRepository,
+      ),
       getRankingLeaderboard,
       childrenStats: new GetChildrenStatsService(
         gamification,
@@ -529,7 +572,15 @@ export function buildApp(
       equipAvatar: new EquipAvatarService(avatar, clock),
       setAvatarPhoto: new SetAvatarPhotoService(avatar, clock),
       getAvatarsByProfiles: avatarsByProfiles,
-      getPublicProfile: new GetPublicProfileService(gamification, avatar, room, hub, clock),
+      getPublicProfile: new GetPublicProfileService(
+        gamification,
+        avatar,
+        room,
+        hub,
+        clock,
+        adultProfileRepository,
+        adultJourney,
+      ),
       getRoom: new GetRoomService(room, gamification),
       saveRoom: new SaveRoomService(room, clock),
       buyRoomItem: new BuyRoomItemService(room, gamification, awardGamification, clock),
@@ -551,13 +602,17 @@ export function buildApp(
           authGateway,
           avatars: avatarsByProfiles,
           accessCheck,
-          gamification: new GetGamificationService(gamification, clock),
+          gamification: new GetGamificationService(gamification, clock, adultJourney),
           studioUnlocks: new GetStudioUnlocksService(gamification, studioUnlocks, silentLogger),
           creations,
           creationDownload: new GetCreationDownloadService(creations),
+          adultCreations,
+          adultCreationDownload: new GetCreationDownloadService(adultCreations),
+          adultProfiles: adultProfileRepository,
         }),
       )
       return {
+        adultJourney,
         store: repo,
         projects,
         team,
@@ -566,12 +621,34 @@ export function buildApp(
         narrations: new DrizzlePensaNarrationsRepository(repo),
         rewards: new DrizzlePensaRewardsRepository(repo.db, awardGamification),
         accessCheck,
-        getGamification: new GetGamificationService(gamification, clock),
+        getGamification: new GetGamificationService(gamification, clock, adultJourney),
         credits: aiCredits,
         internalToken: opts.internalToken,
       }
     })(),
+    adultProfiles: { service: adultProfile, internalToken: opts.internalToken },
+    adultJourney: {
+      service: adultJourney,
+      profiles: adultProfile,
+      internalToken: opts.internalToken,
+      requireAdminEnabled: opts.requireAdmin ?? false,
+    },
     creations: {
+      adult: {
+        list: new ListCreationsService(adultCreations),
+        reserveUpload: new ReserveCreationUploadService(
+          adultCreations,
+          new AccessCheckService(entitlements, clock),
+          clock,
+          new LessonDraftAccessService(courses, checkAccess, progress, sectionProgression, () =>
+            clock().getTime(),
+          ),
+          adultJourney,
+        ),
+        commitUpload: new CommitCreationUploadService(adultCreations, clock),
+        getDownload: new GetCreationDownloadService(adultCreations),
+        remove: new DeleteCreationService(adultCreations, clock),
+      },
       list: new ListCreationsService(creations),
       reserveUpload: new ReserveCreationUploadService(
         creations,
@@ -625,7 +702,7 @@ export function buildApp(
       ),
       listMemberCertificates: new ListMemberCertificatesService(certificates),
       listMemberRatings: new ListMemberRatingsService(ratings),
-      getGamification: new GetGamificationService(gamification, clock),
+      getGamification: new GetGamificationService(gamification, clock, adultJourney),
       ranking,
       analytics: new GetCourseAnalyticsService(new InMemoryAnalyticsRepository(courses, progress)),
       aiUsageStats: new GetAiUsageStatsService(aiUsage, clock),
@@ -682,6 +759,11 @@ export function buildApp(
       validateCertificate: new ValidateCertificateService(certificates),
       internalToken: opts.internalToken,
     },
+    adultHelp: {
+      help: adultHelp,
+      internalToken: opts.internalToken,
+      requireAdminEnabled: opts.requireAdmin ?? false,
+    },
     help: {
       help,
       internalToken: opts.internalToken,
@@ -695,6 +777,12 @@ export function buildApp(
   })
 
   return {
+    adultJourney,
+    adultJourneyRepository,
+    adultProfile,
+    adultProfileRepository,
+    adultCommunityAvailability,
+    adultHelp,
     learning,
     learningRepository,
     liveLessonAccess,

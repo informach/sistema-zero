@@ -863,6 +863,7 @@ export interface HubMyThreadView {
 
 /** `GET /members/gamification/me` — widgets (sidebar/home) e vitrine do perfil. */
 export interface GamificationMeView {
+  journey?: import('@sistemazero/core/journey').AdultJourneyView
   xp: number
   /** Revisão curta das ferramentas conquistadas; presente na vitrine kids. */
   studioUnlockRevision?: string
@@ -910,6 +911,7 @@ export interface RankingEntryView {
 }
 
 export interface RankingLeaderboardView {
+  audience?: 'adult'
   items: RankingEntryView[]
   total: number
   limit: number
@@ -932,6 +934,7 @@ export interface MissionView {
   periodKey: string
 }
 export interface MissionsMeView {
+  audience?: 'adult'
   daily: MissionView[]
   weekly: MissionView[]
   monthly: MissionView[]
@@ -948,6 +951,7 @@ export interface StudioUnlocksView {
 
 /** Desafio do MÊS (game jam kids) — mirror do `ChallengeMeView` do members. */
 export interface ChallengeMeView {
+  audience?: 'adult'
   challenge: {
     /** `m:YYYY-MM` (mês civil SP) — a MESMA chave que o hub valida no publish. */
     key: string
@@ -993,6 +997,7 @@ export interface LeagueEntryView {
   profileId?: string
 }
 export interface LeagueMeView {
+  audience?: 'adult'
   tier: string
   weekKey: string
   promotionCount: number
@@ -1135,6 +1140,9 @@ export interface PublicProfileIdentity {
 
 /** Dado de jogo do perfil público (members) — sem identidade. */
 export interface PublicProfileGameView {
+  audience?: 'adult'
+  displayName?: string
+  journey?: import('@sistemazero/core/journey').AdultJourneyView
   profileId: string
   xp: number
   ranking: { position: number; totalStudents: number } | null
@@ -1816,6 +1824,7 @@ export interface PensaTeamCapabilitiesView {
     profileId: string
     /** Slug do posto; `null` = o members não conseguiu calcular. */
     level: string | null
+    journey?: import('@sistemazero/core/journey').AdultJourneyView
     /** Os blocos que ela conquistou nos cursos (a paleta do Estúdio livre dela). */
     blocks: string[]
     /** Posse pela CONTA dela (a chave-mestra não conta). */
@@ -1827,6 +1836,7 @@ export interface PensaTeamCapabilitiesView {
   art: Array<{
     profileId: string
     level: string | null
+    journey?: import('@sistemazero/core/journey').AdultJourneyView
     access: { pinta: boolean; molda: boolean }
   }>
 }

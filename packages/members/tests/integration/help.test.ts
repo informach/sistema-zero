@@ -549,3 +549,79 @@ describe('Como fazer: o Zappy enxerga o publicado', () => {
     expect(hits[0]?.content).toContain('1. Em tela estreita')
   })
 })
+
+test('biblioteca adulta tem coleções, slugs, publicação e importação próprios; Kids permanece intacto', async () => {
+  const { app } = buildApp({ requireAdmin: true })
+  const kids = await criarColecao(app)
+  await criarTutorial(app, kids.id)
+  const collection = await send(
+    app,
+    '/members/admin/adult/help/collections',
+    'POST',
+    {
+      slug: 'estudio',
+      title: 'Estúdio adulto',
+      description: 'Jogos',
+      icon: 'blocks',
+      tone: 'estudio',
+    },
+    adminHeaders,
+  )
+  expect(collection.status).toBe(201)
+  const adultCollection = await readJson(collection)
+  const created = await send(
+    app,
+    '/members/admin/adult/help/tutorials',
+    'POST',
+    {
+      slug: 'estudio-pre-visualizacao',
+      collectionId: adultCollection.id,
+      draft: { ...documento, title: 'Minha prévia adulta' },
+    },
+    adminHeaders,
+  )
+  expect(created.status).toBe(201)
+  const tutorial = await readJson(created)
+  expect(
+    (
+      await send(
+        app,
+        `/members/admin/adult/help/tutorials/${tutorial.id}/publish`,
+        'POST',
+        { expectedRevision: tutorial.revision },
+        adminHeaders,
+      )
+    ).status,
+  ).toBe(200)
+  expect(
+    (await readJson(await get(app, '/members/adult/help/tutorials', studentHeaders))).tutorials.map(
+      (item: { title: string }) => item.title,
+    ),
+  ).toEqual(['Minha prévia adulta'])
+  expect(
+    (await readJson(await get(app, '/members/help/tutorials', studentHeaders))).tutorials,
+  ).toEqual([])
+  expect(
+    (await get(app, `/members/admin/help/tutorials/${tutorial.id}`, adminHeaders)).status,
+  ).toBe(404)
+  expect(
+    (
+      await send(
+        app,
+        '/members/admin/adult/help/tutorials',
+        'POST',
+        { slug: 'cruzado', collectionId: kids.id, draft: documento },
+        adminHeaders,
+      )
+    ).status,
+  ).toBe(404)
+  expect(
+    (
+      await get(app, '/members/admin/adult/help/tutorials', {
+        ...studentHeaders,
+        'x-auth-user-role': 'customer',
+        'x-auth-user-status': 'active',
+      })
+    ).status,
+  ).toBe(403)
+})

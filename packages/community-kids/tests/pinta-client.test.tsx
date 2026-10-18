@@ -1,6 +1,6 @@
 import { afterAll, expect, mock, spyOn, test } from 'bun:test'
 import type { PintaHostAdapter } from '@sistemazero/pinta'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { handoffFixture, PROFILE_ID } from '../../pensa/src/components/pensa.fixture'
 import { missionSessionFixture } from '../../ui/tests/mission-fixture'
@@ -11,6 +11,10 @@ const actualPersonal = await import('@sistemazero/studio/personal-assets')
 const namespaces: string[] = []
 /** O adapter que o host entregou ao último `<PintaApp>` montado. */
 let lastAdapter: PintaHostAdapter | undefined
+function currentAdapter(): PintaHostAdapter | undefined {
+  return lastAdapter
+}
+let lastPersistence: { listAllAssets(): Promise<unknown[]> } | undefined
 let pintaRenders = 0
 /** A biblioteca pessoal do Estúdio, falsa: o que existe e o que foi regravado. */
 const personalRecords = new Map<string, { id: string }>()
@@ -42,13 +46,15 @@ function localPersistence(namespace: string) {
 
 function ObservedPintaApp({
   adapter,
+  persistence,
   onWorkspaceChange,
 }: {
   adapter?: PintaHostAdapter
-  persistence?: object
+  persistence?: { listAllAssets(): Promise<unknown[]> }
   onWorkspaceChange?: (active: boolean) => void
 }): ReactNode {
   lastAdapter = adapter
+  lastPersistence = persistence
   pintaRenders += 1
   return (
     <>
@@ -262,5 +268,43 @@ test('a missão de arte vinculada ao Pro abre o mesmo jogo e não exige importa�
     full.mockRestore()
     globalThis.fetch = original
     searchParams = new URLSearchParams()
+  }
+})
+
+test('adulto isola a biblioteca local e a ponte, mantendo o ID real no servidor', async () => {
+  searchParams = new URLSearchParams()
+  personalNamespaces.length = 0
+  personalSaveFailure = null
+  lastAdapter = undefined
+  lastPersistence = undefined
+  personalRecords.set('adult-drawing', { id: 'adult-drawing' })
+  const fetchSpy = spyOn(globalThis, 'fetch').mockImplementation(
+    Object.assign(async () => Response.json({ items: [] }), {
+      preconnect: globalThis.fetch.preconnect,
+    }),
+  )
+  try {
+    render(<PintaClient viewerId="adult-account" audience="adult" studioAvailable />)
+    await waitFor(() => expect(namespaces).toContain('adult:adult-account'))
+    await waitFor(() => expect(lastAdapter?.resyncToStudio).toBeDefined())
+    const resync = currentAdapter()?.resyncToStudio
+    if (!resync) throw new Error('Adapter ausente')
+    await act(async () => {
+      await resync({
+        id: 'adult-drawing',
+        name: 'Nave',
+        dataUrl: 'data:image/png;base64,AAAA',
+        width: 8,
+        height: 8,
+      })
+      await lastPersistence?.listAllAssets()
+    })
+    expect(personalNamespaces.every((namespace) => namespace === 'adult:adult-account')).toBe(true)
+    await waitFor(() => expect(fetchSpy.mock.calls.length).toBeGreaterThan(0))
+    for (const [, init] of fetchSpy.mock.calls) {
+      expect(new Headers(init?.headers).get('x-sz-viewer')).toBe('adult-account')
+    }
+  } finally {
+    fetchSpy.mockRestore()
   }
 })

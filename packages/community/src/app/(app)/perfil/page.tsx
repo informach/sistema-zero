@@ -1,11 +1,14 @@
 import { PalettePicker } from '@sistemazero/member-shell/components/palette-picker'
 import { isReadonlyImpersonation } from '@sistemazero/member-shell/lib/act'
 import { paletteValueOf } from '@sistemazero/member-shell/lib/palette-cookie'
+import { isVoiceInputConfigured } from '@sistemazero/member-shell/server/openrouter-transcribe'
 import { Card, CardContent, CardHeader, CardTitle } from '@sistemazero/ui/card'
 import { cookies } from 'next/headers'
+import { PublicProfileSettings } from '@/components/community/public-profile-settings'
 import { PALETTE_COOKIE } from '@/lib/cookies'
 import { getMeReadonly } from '@/server/auth'
 import { getSession } from '@/server/session'
+import { shell } from '@/server/shell'
 import { ProfileClient } from './profile-client'
 
 export const dynamic = 'force-dynamic'
@@ -26,6 +29,10 @@ export default async function ProfilePage() {
     status === 200 && body?.user ? body.user : session ? { ...session, phone: undefined } : null
 
   if (!user) return null
+  const [preferences, progress] = await Promise.all([
+    shell.members.getAdultProfileReadonly().catch(() => null),
+    shell.members.getGamificationReadonly().catch(() => null),
+  ])
 
   // A cor vem do MESMO espelho que o layout raiz leu: é o que pinta a tela no primeiro quadro.
   // O seletor confere com o servidor depois de montar (espelho de seis horas é POR APARELHO).
@@ -57,6 +64,14 @@ export default async function ProfilePage() {
           />
         </CardContent>
       </Card>
+      <PublicProfileSettings
+        voiceAvailable={
+          isVoiceInputConfigured() && progress?.body?.journey?.capabilities.includes('ai') === true
+        }
+        initial={preferences?.status === 200 ? preferences.body : null}
+        viewerId={session?.id ?? user.id}
+        readOnly={Boolean(session && isReadonlyImpersonation(session))}
+      />
       <ProfileClient user={user} />
     </div>
   )

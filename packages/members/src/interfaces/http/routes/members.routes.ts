@@ -1,5 +1,8 @@
+import { creativeToolAccessRef } from '@sistemazero/core/creations'
 import { Elysia, t } from 'elysia'
 import type { AccessCheckService } from '../../../application/access-check/access-check.service'
+import { assertAdultCreativeAccess } from '../../../application/adult-journey/adult-creative-access'
+import type { AdultJourneyService } from '../../../application/adult-journey/adult-journey.service'
 import type { ConsumeAiUsageService } from '../../../application/ai-usage/consume-ai-usage.service'
 import type { GetAiCreditsService } from '../../../application/ai-usage/get-ai-credits.service'
 import type { StudioAiAccountService } from '../../../application/ai-usage/studio-ai-account.service'
@@ -59,6 +62,7 @@ import {
   assertMemberShellConsumer,
   isPrivilegedActor,
   resolveAccountId,
+  resolveAdultLearnerId,
   resolveStudentName,
   resolveUserId,
 } from '../auth'
@@ -116,6 +120,7 @@ function idempotencyKey(headers: Record<string, string | undefined>): string | u
 }
 
 export interface MembersRoutesDeps {
+  adultJourney?: AdultJourneyService
   studioAiAccount?: StudioAiAccountService
   studioAiUsage?: StudioAiUsageService
   studioBuilder?: StudioBuilderService
@@ -185,7 +190,22 @@ export interface MembersRoutesDeps {
  * ANTES da validação do corpo/params — 401 antes de 422, espelhando o HMAC dos webhooks.
  */
 export function membersRoutes(deps: MembersRoutesDeps) {
-  const zappyAccess = async (headers: Record<string, string | undefined>) => {
+  const zappyAccess = async (
+    headers: Record<string, string | undefined>,
+    audience: 'kids' | 'adult' = 'kids',
+  ) => {
+    if (audience === 'adult') {
+      if (headers['x-auth-kids-context']) throw new AccessDeniedError('Use sua conta adulta.')
+      return assertAdultCreativeAccess(
+        deps,
+        {
+          userId: resolveUserId(headers),
+          accountId: resolveAccountId(headers),
+          privileged: isPrivilegedActor(headers),
+        },
+        'studio',
+      )
+    }
     if (isPrivilegedActor(headers)) return
     const access = await deps.accessCheck.execute(resolveAccountId(headers), ['estudio-completo'])
     if (
@@ -203,13 +223,22 @@ export function membersRoutes(deps: MembersRoutesDeps) {
     if (!deps.zappyKnowledge) throw new Error('Base de conhecimento do Zappy não configurada')
     return deps.zappyKnowledge
   }
-  const zappyWriteAccess = async (headers: Record<string, string | undefined>) => {
-    await zappyAccess(headers)
+  const zappyWriteAccess = async (
+    headers: Record<string, string | undefined>,
+    audience: 'kids' | 'adult' = 'kids',
+  ) => {
+    await zappyAccess(headers, audience)
     if (headers['x-auth-impersonator-id']) {
       throw new AccessDeniedError('Impersonação não pode conversar com o Zappy')
     }
   }
-  const zappyActorAccess = async (actor: { accountId: string; privileged: boolean }) => {
+  const zappyActorAccess = async (actor: {
+    userId: string
+    accountId: string
+    privileged: boolean
+    audience?: 'kids' | 'adult'
+  }) => {
+    if (actor.audience === 'adult') return assertAdultCreativeAccess(deps, actor, 'studio')
     if (actor.privileged) return
     const access = await deps.accessCheck.execute(actor.accountId, ['estudio-completo'])
     if (
@@ -225,6 +254,9 @@ export function membersRoutes(deps: MembersRoutesDeps) {
         assertInternalCaller(headers['x-internal-token'], deps.internalToken),
       )
       // Listagens por VITRINE: `?audience=adult|kids` (ausente → adult; inválido → 400).
+      .onBeforeHandle(({ headers, query }) => {
+        if (query.audience === 'adult') resolveAdultLearnerId(headers)
+      })
       .get(
         '/courses',
         async ({ headers, query }) => {
@@ -278,7 +310,11 @@ export function membersRoutes(deps: MembersRoutesDeps) {
             return { access }
           }
           const valid = parseAccessRefs(query.refs)
-          const result = await deps.accessCheck.execute(resolveAccountId(headers), valid)
+          const audience = query.audience ?? 'kids'
+          const result = await deps.accessCheck.execute(
+            resolveAccountId(headers),
+            valid.map((ref) => creativeToolAccessRef(ref, audience)),
+          )
           const validSet = new Set(valid)
           const access: Record<string, boolean> = {}
           // ⚠️ A chave-mestra (`all_courses`/`all_kids_courses`) é SÓ para CURSOS (decisão
@@ -288,7 +324,9 @@ export function membersRoutes(deps: MembersRoutesDeps) {
           // continua honrando a chave-mestra, mas pelo caminho do curso, não por esta rota.)
           for (const ref of requested) {
             access[ref] =
-              validSet.has(ref) && (result.grants.includes(ref) || result.communities.includes(ref))
+              validSet.has(ref) &&
+              (result.grants.includes(creativeToolAccessRef(ref, audience)) ||
+                result.communities.includes(creativeToolAccessRef(ref, audience)))
           }
           return { access }
         },
@@ -309,27 +347,53 @@ export function membersRoutes(deps: MembersRoutesDeps) {
       // (`isPrivilegedActor`) nunca é recusada, mas o uso é gravado (custo visível).
       .post(
         '/ai-usage/consume',
-        async ({ headers, body }) =>
-          deps.consumeAiUsage.execute(
+        async ({ headers, body, query }) => {
+          if (query.audience === 'adult') {
+            if (headers['x-auth-kids-context']) throw new AccessDeniedError('Use sua conta adulta.')
+            await assertAdultCreativeAccess(
+              deps,
+              {
+                userId: resolveUserId(headers),
+                accountId: resolveAccountId(headers),
+                privileged: isPrivilegedActor(headers),
+              },
+              body.feature.startsWith('pensa') ? 'pensa' : 'studio',
+            )
+          }
+          return deps.consumeAiUsage.execute(
             resolveAccountId(headers),
             body.feature,
             isPrivilegedActor(headers),
-          ),
-        { body: AiUsageConsumeBody },
+          )
+        },
+        { body: AiUsageConsumeBody, query: AudienceQuery },
       )
       // Quanto AINDA resta da ajuda de IA da conta — leitura pura, NÃO consome.
       // Antes disto o único jeito de saber o saldo era chamar o `/consume`, que
       // gasta um crédito para responder: mostrar "restam 13" custava um dos 13.
       // Mesma identidade do consume (a CONTA), então irmãos veem o mesmo número.
-      .get('/ai-usage/me', async ({ headers }) =>
-        deps.aiCredits.execute(resolveAccountId(headers), isPrivilegedActor(headers)),
+      .get(
+        '/ai-usage/me',
+        async ({ headers, query }) => {
+          if (query.audience === 'adult') {
+            if (
+              headers['x-auth-kids-context'] ||
+              resolveUserId(headers) !== resolveAccountId(headers) ||
+              !deps.adultJourney
+            )
+              throw new AccessDeniedError('Use sua conta adulta.')
+            await deps.adultJourney.assert(resolveUserId(headers), 'ai', isPrivilegedActor(headers))
+          }
+          return deps.aiCredits.execute(resolveAccountId(headers), isPrivilegedActor(headers))
+        },
+        { query: AudienceQuery },
       )
       // Histórico do Zappy é isolado por perfil + projeto local. Snapshot/código
       // não atravessam estas rotas e nunca são persistidos no members.
       .get(
         '/zappy/history',
         async ({ headers, query }) => {
-          await zappyAccess(headers)
+          await zappyAccess(headers, query.audience)
           return zappy().history(resolveUserId(headers), query.projectId, query.before)
         },
         { query: ZappyHistoryQuery },
@@ -337,7 +401,7 @@ export function membersRoutes(deps: MembersRoutesDeps) {
       .delete(
         '/zappy/history',
         async ({ headers, query }) => {
-          await zappyWriteAccess(headers)
+          await zappyWriteAccess(headers, query.audience)
           await zappy().delete(resolveUserId(headers), query.projectId)
           return { ok: true }
         },
@@ -377,8 +441,8 @@ export function membersRoutes(deps: MembersRoutesDeps) {
       )
       .post(
         '/zappy/feedback',
-        async ({ headers, body }) => {
-          await zappyWriteAccess(headers)
+        async ({ headers, body, query }) => {
+          await zappyWriteAccess(headers, query.audience)
           return {
             ok: await zappy().feedback(
               resolveUserId(headers),
@@ -388,23 +452,25 @@ export function membersRoutes(deps: MembersRoutesDeps) {
             ),
           }
         },
-        { body: ZappyFeedbackBody },
+        { body: ZappyFeedbackBody, query: AudienceQuery },
       )
       .post(
         '/zappy/knowledge/search',
-        async ({ headers, body }) => {
-          await zappyWriteAccess(headers)
+        async ({ headers, body, query }) => {
+          await zappyWriteAccess(headers, query.audience)
           return {
             hits: await zappyKnowledge().search({
               userId: resolveUserId(headers),
               accountId: resolveAccountId(headers),
               privileged: isPrivilegedActor(headers),
+              audience: query.audience,
               query: body.query,
               limit: body.limit,
             }),
           }
         },
         {
+          query: AudienceQuery,
           body: t.Object({
             query: t.String({ minLength: 1, maxLength: 1_000 }),
             limit: t.Optional(t.Integer({ minimum: 1, maximum: 10 })),
@@ -642,8 +708,14 @@ export function membersRoutes(deps: MembersRoutesDeps) {
       // juntado pelo BFF (auth) e a flag dos pais gateia lá (404 se off).
       .get(
         '/profiles/:profileId/public',
-        async ({ params, query }) =>
-          deps.getPublicProfile.execute(params.profileId, query.audience ?? 'kids'),
+        async ({ params, query, headers }) => {
+          if (
+            query.audience === 'adult' &&
+            (resolveUserId(headers) !== resolveAccountId(headers) || headers['x-auth-kids-context'])
+          )
+            throw new AccessDeniedError('Use sua conta adulta.')
+          return deps.getPublicProfile.execute(params.profileId, query.audience ?? 'kids')
+        },
         { params: PublicProfileParams, query: AudienceQuery },
       )
       // Avatar + NÍVEL em LOTE por profileId (peer-viewable, como o perfil público): o
@@ -750,16 +822,17 @@ export function membersRoutes(deps: MembersRoutesDeps) {
       )
       .get(
         '/courses/:slug',
-        async ({ headers, params }) => {
+        async ({ headers, params, query }) => {
           const userId = resolveUserId(headers)
           return deps.getMyCourse.execute(
             userId,
             params.slug,
             isPrivilegedActor(headers),
             resolveAccountId(headers),
+            query.audience,
           )
         },
-        { params: SlugParams },
+        { params: SlugParams, query: AudienceQuery },
       )
       .get(
         '/courses/:slug/progress',
@@ -811,7 +884,7 @@ export function membersRoutes(deps: MembersRoutesDeps) {
       )
       .get(
         '/courses/:slug/lessons/:lessonId',
-        async ({ headers, params }) => {
+        async ({ headers, params, query }) => {
           const userId = resolveUserId(headers)
           return deps.getLesson.execute(
             userId,
@@ -819,9 +892,10 @@ export function membersRoutes(deps: MembersRoutesDeps) {
             params.lessonId,
             isPrivilegedActor(headers),
             resolveAccountId(headers),
+            query.audience,
           )
         },
-        { params: SlugLessonParams },
+        { params: SlugLessonParams, query: AudienceQuery },
       )
       // Resolução de download de anexo (consumida SÓ pelo servidor do community —
       // a `storageRef` devolvida nunca deve ser repassada ao browser).

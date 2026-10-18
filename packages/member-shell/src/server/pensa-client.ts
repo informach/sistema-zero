@@ -52,24 +52,35 @@ export type PensaProtectionAction =
   | { type: 'restore_commit'; id: string }
   | { type: 'abort'; id: string }
 
-export function createPensaClient(gw: Pick<GatewayModule, 'gatewayFetch' | 'gatewayFetchHmac'>) {
-  const project = (id: string) => `/members/pensa/projects/${encodeURIComponent(id)}`
-  const internal = (id: string) => `/members/internal/pensa/projects/${encodeURIComponent(id)}`
+export function createPensaClient(
+  gw: Pick<GatewayModule, 'gatewayFetch' | 'gatewayFetchHmac'>,
+  audience: 'kids' | 'adult' = 'kids',
+) {
+  const project = (id: string) =>
+    `/members/${audience === 'adult' ? 'adult/' : ''}pensa/projects/${encodeURIComponent(id)}`
+  const internal = (id: string) =>
+    `/members/internal/${audience === 'adult' ? 'adult/' : ''}pensa/projects/${encodeURIComponent(id)}`
   const privateMission = (id: string) =>
-    `/members/internal/pensa/missions/${encodeURIComponent(id)}`
+    `/members/internal/${audience === 'adult' ? 'adult/' : ''}pensa/missions/${encodeURIComponent(id)}`
   const publicProject = <T>(id: string, suffix = '', opts: CallOpts = {}) =>
     gw.gatewayFetch<T>(`${project(id)}${suffix}`, opts)
   return {
     pensaListProjects(status: 'active' | 'archived' = 'active') {
-      return gw.gatewayFetch<PensaProjectListItem[]>('/members/pensa/projects', {
-        query: { status },
-      })
+      return gw.gatewayFetch<PensaProjectListItem[]>(
+        `/members/${audience === 'adult' ? 'adult/' : ''}pensa/projects`,
+        {
+          query: { status },
+        },
+      )
     },
     pensaCreateProject(input: PensaCreateProjectRequest) {
-      return gw.gatewayFetch<PensaProjectBase>('/members/pensa/projects', {
-        method: 'POST',
-        body: input,
-      })
+      return gw.gatewayFetch<PensaProjectBase>(
+        `/members/${audience === 'adult' ? 'adult/' : ''}pensa/projects`,
+        {
+          method: 'POST',
+          body: input,
+        },
+      )
     },
     pensaProjectView(actor: PensaActor, id: string, capabilities: PensaCapabilities) {
       return gw.gatewayFetchHmac<PensaProjectView>(`${internal(id)}/view`, {
@@ -250,10 +261,13 @@ export function createPensaClient(gw: Pick<GatewayModule, 'gatewayFetch' | 'gate
       })
     },
     pensaJoinProject(input: PensaJoinRequest) {
-      return gw.gatewayFetch<{ projectId: string }>('/members/pensa/projects/join', {
-        method: 'POST',
-        body: input,
-      })
+      return gw.gatewayFetch<{ projectId: string }>(
+        `/members/${audience === 'adult' ? 'adult/' : ''}pensa/projects/join`,
+        {
+          method: 'POST',
+          body: input,
+        },
+      )
     },
     pensaTeamArt(id: string) {
       return publicProject<{ items: PensaTeamArtItem[] }>(id, '/team-art')
@@ -302,7 +316,7 @@ export function createPensaClient(gw: Pick<GatewayModule, 'gatewayFetch' | 'gate
       },
     ) {
       return gw.gatewayFetchHmac<{ status: 'generate' | 'ready' | 'waiting'; key: string }>(
-        '/members/internal/pensa/narrations',
+        `/members/internal/${audience === 'adult' ? 'adult/' : ''}pensa/narrations`,
         { method: 'POST', body: { actor, input } },
       )
     },
@@ -344,10 +358,13 @@ export function createPensaClient(gw: Pick<GatewayModule, 'gatewayFetch' | 'gate
       )
     },
     pensaRewardsWork() {
-      return gw.gatewayFetchHmac<{ ok: true }>('/members/internal/pensa/rewards/work', {
-        method: 'POST',
-        body: {},
-      })
+      return gw.gatewayFetchHmac<{ ok: true }>(
+        `/members/internal/${audience === 'adult' ? 'adult/' : ''}pensa/rewards/work`,
+        {
+          method: 'POST',
+          body: {},
+        },
+      )
     },
   }
 }

@@ -1904,6 +1904,48 @@ const config: GatewayConfigInput = {
     // Perfil de gamificação do aluno (XP/streak/badges) — widgets do kids buscam
     // a cada render de página (layout + home), por isso o teto generoso.
     {
+      id: 'members-adult-profile',
+      methods: ['GET', 'PUT'],
+      pathPattern: '/members/adult/profile',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 16 * 1024,
+    },
+    {
+      id: 'members-adult-public-identities',
+      methods: ['GET'],
+      pathPattern: '/members/adult/profiles/public-identities',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'members-adult-journey',
+      methods: ['GET'],
+      pathPattern: '/members/journey/adult',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'members-admin-adult-journey',
+      methods: ['GET', 'PUT'],
+      pathPattern: '/members/admin/journey/adult',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 512 * 1024,
+    },
+    {
       id: 'members-gamification-me',
       methods: ['GET'],
       pathPattern: '/members/gamification/me',
@@ -4451,4 +4493,37 @@ const config: GatewayConfigInput = {
   ],
 }
 
+// Adult Pensa uses the same explicit commands and limits, with separate audience endpoints.
+config.routes.push(
+  ...config.routes
+    .filter(
+      (route) =>
+        route.pathPattern.startsWith('/members/pensa/') ||
+        route.pathPattern.startsWith('/members/internal/pensa/'),
+    )
+    .map((route) => ({
+      ...route,
+      id: `${route.id}-adult`,
+      pathPattern: route.pathPattern
+        .replace('/members/pensa/', '/members/adult/pensa/')
+        .replace('/members/internal/pensa/', '/members/internal/adult/pensa/'),
+    })),
+)
+
+// Tutorial contracts remain separate at the service boundary, including Admin authorization.
+config.routes.push(
+  ...config.routes
+    .filter(
+      (route) =>
+        route.pathPattern.startsWith('/members/help/') ||
+        route.pathPattern.startsWith('/members/admin/help/'),
+    )
+    .map((route) => ({
+      ...route,
+      id: `${route.id}-adult`,
+      pathPattern: route.pathPattern
+        .replace('/members/help/', '/members/adult/help/')
+        .replace('/members/admin/help/', '/members/admin/adult/help/'),
+    })),
+)
 export default config

@@ -98,14 +98,15 @@ export class ModerationService {
       // TÓPICO de vitrine não recompensa aqui (a publicação já rende `course_showcased`).
       if (!author?.authorAccountId) return
       if (kind === 'thread' && author.isShowcase) return
-      if ((await this.audienceForChannel(author.channelId)) !== 'kids') return
+      const audience = await this.audienceForChannel(author.channelId)
+      if (!audience) return
       // COMENTÁRIO num post de vitrine = comentar no MURAL → marco `mural_comment`
       // (missão universal). Comentário no fórum do Clube (ou tópico) → `clube_*` (gated).
       if (kind === 'comment' && author.isShowcase) {
         void this.members.notifyMuralComment({
           userId: author.authorId,
           accountId: author.authorAccountId,
-          audience: 'kids',
+          audience,
           commentId: contentId,
         })
         return
@@ -113,7 +114,7 @@ export class ModerationService {
       void this.members.notifyClubContribution({
         userId: author.authorId,
         accountId: author.authorAccountId,
-        audience: 'kids',
+        audience,
         kind,
         contentId,
       })
@@ -140,11 +141,12 @@ export class ModerationService {
       // keyada pelo `authorId` (perfil) — a conta responsável é só snapshot (pode faltar
       // em vitrine; o post de vitrine não guarda `authorAccountId`).
       if (!thread?.isShowcase) return
-      if ((await this.audienceForChannel(thread.channelId)) !== 'kids') return
+      const audience = await this.audienceForChannel(thread.channelId)
+      if (!audience) return
       void this.members.notifyMuralModerationMessage({
         userId: thread.authorId,
         accountId: thread.authorAccountId,
-        audience: 'kids',
+        audience,
         contextRef: thread.id,
         reason: reason.trim(),
         moderatorName: moderatorName ?? null,
@@ -265,7 +267,9 @@ export class ModerationService {
     // jogável no R2 privado + a capa no R2 público, que seguiria buscável pela URL).
     // FIRE-AND-FORGET best-effort: o gateway NUNCA lança e a moderação já foi aplicada.
     if (thread?.isShowcase && thread.playId) {
+      const audience = await this.audienceForChannel(thread.channelId)
       void this.studioBff.cleanupShowcaseArtifacts({
+        ...(audience === 'adult' ? { audience } : {}),
         playId: thread.playId,
         coverUrl: thread.coverImageUrl,
       })

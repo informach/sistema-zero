@@ -18,6 +18,8 @@ import type { OwnRecordingProvider } from '../../infrastructure/live/own-recordi
 import { buildErrorResponse } from './error-handler'
 import { isOversizeBody, markOversizeBody, setRawBody } from './raw-body'
 import { type AdminRoutesDeps, adminRoutes } from './routes/admin.routes'
+import { adultJourneyRoutes } from './routes/adult-journey.routes'
+import { adultProfileRoutes } from './routes/adult-profile.routes'
 import { type ContentRoutesDeps, contentRoutes } from './routes/content.routes'
 import { creationCleanupRoutes } from './routes/creation-cleanup.routes'
 import { type CreationsRoutesDeps, creationsRoutes } from './routes/creations.routes'
@@ -38,6 +40,8 @@ import { studioBuilderRoutes } from './routes/studio-builder.routes'
 import { type WebhooksRoutesDeps, webhooksRoutes } from './routes/webhooks.routes'
 
 export interface HttpDeps {
+  adultJourney?: Parameters<typeof adultJourneyRoutes>[0]
+  adultProfiles?: Parameters<typeof adultProfileRoutes>[0]
   liveMaterials?: LiveMaterialsService
   livePublication?: LivePublicationService
   liveBenefits?: LiveBenefitsPort
@@ -63,6 +67,7 @@ export interface HttpDeps {
   internal: InternalRoutesDeps
   /** "Como fazer": a biblioteca de ajuda do Kids (leitura da criança + autoria do admin). */
   help: HelpRoutesDeps
+  adultHelp?: HelpRoutesDeps
 }
 
 // Rotas que carregam o projeto do Estúdio (entrega do aluno + autoria do bloco):
@@ -104,8 +109,8 @@ function bodyLimitForPath(pathname: string, env: Env): number {
   ) {
     return Math.max(env.MAX_STUDIO_BODY_BYTES, env.MAX_REQUEST_BODY_BYTES)
   }
-  if (pathname.startsWith('/members/internal/pensa/')) return 1024 * 1024
-  if (/^\/members\/pensa\/projects\/[^/]+\/draft$/.test(pathname)) return 512 * 1024
+  if (/^\/members\/internal\/(?:adult\/)?pensa\//.test(pathname)) return 1024 * 1024
+  if (/^\/members\/(?:adult\/)?pensa\/projects\/[^/]+\/draft$/.test(pathname)) return 512 * 1024
   return env.MAX_REQUEST_BODY_BYTES
 }
 
@@ -193,6 +198,7 @@ export function createServer(deps: HttpDeps) {
         service: deps.members.studioAiUsage,
         internalToken: deps.members.internalToken,
         accessCheck: deps.members.accessCheck,
+        adultJourney: deps.members.adultJourney,
       }),
     )
     .use(learningRoutes(deps.learning))
@@ -201,10 +207,14 @@ export function createServer(deps: HttpDeps) {
         service: deps.members.studioBuilder,
         internalToken: deps.members.internalToken,
         accessCheck: deps.members.accessCheck,
+        adultJourney: deps.members.adultJourney,
       }),
     )
     .use(pensaRoutes(deps.pensa))
+    .use(pensaRoutes(deps.pensa, 'adult'))
     .use(creationsRoutes(deps.creations))
+    .use(deps.adultProfiles ? adultProfileRoutes(deps.adultProfiles) : new Elysia())
+    .use(deps.adultJourney ? adultJourneyRoutes(deps.adultJourney) : new Elysia())
     .use(
       creationCleanupRoutes({
         cleanup: deps.admin.creationCleanup,
@@ -216,6 +226,7 @@ export function createServer(deps: HttpDeps) {
     .use(contentRoutes(deps.content))
     .use(internalRoutes(deps.internal))
     .use(helpRoutes(deps.help))
+    .use(deps.adultHelp ? helpRoutes(deps.adultHelp, 'adult') : new Elysia())
     .use(deps.live ? liveRoutes(deps.live) : new Elysia())
     .use(deps.liveCourse ? liveCourseRoutes(deps.liveCourse) : new Elysia())
     .use(

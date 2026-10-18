@@ -135,6 +135,7 @@ export class ZappyKnowledgeService {
     private readonly clock: () => Date,
     /** O "Como fazer": tutoriais publicados entram na busca sem gate de matrícula. */
     private readonly help?: Pick<HelpService, 'searchForZappy'>,
+    private readonly adultHelp?: Pick<HelpService, 'searchForZappy'>,
   ) {}
 
   async sync(
@@ -201,6 +202,7 @@ export class ZappyKnowledgeService {
    */
   async search(input: {
     userId: string
+    audience?: 'kids' | 'adult'
     accountId: string
     privileged: boolean
     query: string
@@ -209,7 +211,7 @@ export class ZappyKnowledgeService {
     const courses = await this.listMyCourses.execute(
       input.userId,
       input.privileged,
-      'kids',
+      input.audience ?? 'kids',
       input.accountId,
     )
     const available = courses.filter((course) => !course.careerLock.locked)
@@ -232,7 +234,9 @@ export class ZappyKnowledgeService {
     const [lessonHits, helpHits] = await Promise.all([
       this.repository.search(lessonIds, normalized, input.limit ?? 5),
       // Best-effort: a ajuda nunca derruba a resposta didática.
-      this.help ? this.help.searchForZappy(normalized, HELP_HITS_MAX).catch(() => []) : [],
+      (input.audience === 'adult' ? this.adultHelp : this.help)
+        ?.searchForZappy(normalized, HELP_HITS_MAX)
+        .catch(() => []) ?? [],
     ])
     return [...lessonHits, ...helpHits]
   }

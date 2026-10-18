@@ -1,0 +1,105 @@
+import { z } from 'zod'
+
+export const ADULT_CREATOR_CAPABILITIES = [
+  'studio',
+  'pinta',
+  'molda',
+  'bridge',
+  'pro',
+  'ai',
+  'pensa',
+] as const
+export type AdultCreatorCapability = (typeof ADULT_CREATOR_CAPABILITIES)[number]
+
+const Requirement = z.strictObject({
+  courseId: z.uuid(),
+  milestone: z.enum(['complete', 'showcase']),
+})
+const Stage = z.strictObject({
+  id: z
+    .string()
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+    .max(64),
+  title: z.string().trim().min(1).max(120),
+  requirements: z.array(Requirement).min(1).max(200),
+  capabilities: z.array(z.enum(ADULT_CREATOR_CAPABILITIES)).max(7),
+})
+
+/** Configuração adulta independente do catálogo de posições Kids. */
+export const AdultJourneyPolicySchema = z
+  .strictObject({ schemaVersion: z.literal(1), stages: z.array(Stage).max(500) })
+  .superRefine((policy, ctx) => {
+    const ids = new Set<string>()
+    for (const [index, stage] of policy.stages.entries()) {
+      if (ids.has(stage.id))
+        ctx.addIssue({ code: 'custom', path: ['stages', index, 'id'], message: 'Etapa repetida.' })
+      ids.add(stage.id)
+      const courses = new Set<string>()
+      for (const requirement of stage.requirements) {
+        if (courses.has(requirement.courseId))
+          ctx.addIssue({
+            code: 'custom',
+            path: ['stages', index, 'requirements'],
+            message: 'Curso repetido na etapa.',
+          })
+        courses.add(requirement.courseId)
+      }
+      if (new Set(stage.capabilities).size !== stage.capabilities.length)
+        ctx.addIssue({
+          code: 'custom',
+          path: ['stages', index, 'capabilities'],
+          message: 'Capacidade repetida.',
+        })
+    }
+  })
+export type AdultJourneyPolicy = z.infer<typeof AdultJourneyPolicySchema>
+export const EMPTY_ADULT_JOURNEY_POLICY: AdultJourneyPolicy = { schemaVersion: 1, stages: [] }
+
+export interface AdultCourseMilestone {
+  courseId: string
+  completed: boolean
+  showcased: boolean
+}
+export interface AdultJourneyView {
+  audience: 'adult'
+  policyVersion: number
+  configured: boolean
+  capabilities: AdultCreatorCapability[]
+  stages: {
+    id: string
+    title: string
+    completed: boolean
+    available: boolean
+    missing: { courseId: string; milestone: 'complete' | 'showcase' }[]
+  }[]
+}
+
+/** Exige as etapas anteriores e os marcos reais; XP e licença não substituem conclusão. */
+export function projectAdultJourney(
+  policy: AdultJourneyPolicy,
+  version: number,
+  milestones: readonly AdultCourseMilestone[],
+  frozen: readonly AdultCreatorCapability[] = [],
+): AdultJourneyView {
+  const byCourse = new Map(milestones.map((milestone) => [milestone.courseId, milestone]))
+  const earned = new Set(frozen)
+  let previousComplete = true
+  const stages = policy.stages.map((stage) => {
+    const missing = stage.requirements.filter((requirement) => {
+      const milestone = byCourse.get(requirement.courseId)
+      return !milestone?.completed || (requirement.milestone === 'showcase' && !milestone.showcased)
+    })
+    const available = previousComplete
+    const completed = available && missing.length === 0
+    if (completed) for (const capability of stage.capabilities) earned.add(capability)
+    previousComplete = completed
+    return { id: stage.id, title: stage.title, completed, available, missing }
+  })
+  return {
+    audience: 'adult',
+    policyVersion: version,
+    configured: policy.stages.length > 0,
+    capabilities: ADULT_CREATOR_CAPABILITIES.filter((capability) => earned.has(capability)),
+    stages,
+  }
+}

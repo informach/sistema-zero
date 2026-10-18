@@ -122,10 +122,12 @@ const STUDIO_LOCAL_PROJECT_ID = t.String({
   pattern: '^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$',
 })
 export const ZappyHistoryQuery = t.Object({
+  audience: t.Optional(t.Union([t.Literal('adult'), t.Literal('kids')])),
   projectId: STUDIO_LOCAL_PROJECT_ID,
   before: t.Optional(UUID),
 })
 const ZappyActor = t.Object({
+  audience: t.Optional(t.Union([t.Literal('adult'), t.Literal('kids')])),
   userId: UUID,
   accountId: UUID,
   privileged: t.Boolean(),
@@ -1490,6 +1492,7 @@ export const CreationDeleteBody = t.Object({
 })
 
 export const CreationListQuery = t.Object({
+  audience: t.Optional(AUDIENCE),
   cursor: t.Optional(t.String({ minLength: 1, maxLength: 512 })),
   limit: t.Optional(t.Numeric({ minimum: 1, maximum: 500 })),
 })

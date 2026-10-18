@@ -538,13 +538,13 @@ describe('marcos do curso nas listagens', () => {
     expect(bySlug.get('base-2d')?.milestones).toEqual({ completed: true, showcased: true })
   })
 
-  test('vitrine ADULTA não consulta marco algum (não há Mural lá)', async () => {
+  test('vitrine adulta não usa os marcos de qualificação da jornada Kids', async () => {
     const { app, courses, entitlements, gamification } = buildApp()
     const adulto = seedSampleCourse(courses, 'curso-adulto', 'published', 'adult')
     grantAllKidsCourses(entitlements, { userId: ACCOUNT })
     // Mesmo com marcos gravados na vitrine adulta, a view sai zerada de propósito.
     await gamification.award({
-      userId: USER,
+      userId: ACCOUNT,
       accountId: ACCOUNT,
       audience: 'adult',
       events: [
@@ -557,7 +557,9 @@ describe('marcos do curso nas listagens', () => {
     })
 
     const response = await app.handle(
-      new Request('http://localhost/members/catalog?audience=adult', { headers }),
+      new Request('http://localhost/members/catalog?audience=adult', {
+        headers: { 'x-auth-user-id': ACCOUNT },
+      }),
     )
     const body = (await response.json()) as { courses: Record<string, any>[] }
     const bySlug = new Map(body.courses.map((course) => [course.courseSlug, course]))

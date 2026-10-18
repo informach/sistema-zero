@@ -76,6 +76,10 @@ export default async function LessonPage({
       nextLessonHref={nextLessonHref}
       viewerWatermark={session?.email ?? null}
       viewerId={session?.id ?? null}
+      lessonDraftsEnabled={
+        getEnv().LESSON_DRAFTS_ENABLED && session?.act?.mode !== 'readonly' && Boolean(session?.id)
+      }
+      creationSharingEnabled={Boolean(session?.id) && session?.act?.mode !== 'readonly'}
       viewer={{
         firstName: session?.firstName ?? null,
         lastName: session?.lastName ?? null,

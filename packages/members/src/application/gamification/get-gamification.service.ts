@@ -6,6 +6,7 @@ import {
   type GamificationRepository,
   MAX_STREAK_FREEZES,
 } from '../../domain/ports/gamification-repository.port'
+import type { AdultJourneyService } from '../adult-journey/adult-journey.service'
 import type { GamificationMeView } from '../mappers/views'
 
 /**
@@ -20,6 +21,7 @@ export class GetGamificationService {
   constructor(
     private readonly repo: GamificationRepository,
     private readonly clock: () => Date,
+    private readonly adultJourney?: Pick<AdultJourneyService, 'get'>,
   ) {}
 
   async execute(
@@ -33,15 +35,18 @@ export class GetGamificationService {
     // um membro da equipe que TAMBÉM comprou um curso se via ranqueado entre os clientes.
     const now = this.clock()
     const wantsRanking = opts.withRanking && !opts.privileged
-    const [profile, badges, ranking, qualifying, studioUnlockRevision] = await Promise.all([
-      this.repo.getProfile(userId, opts.audience),
-      this.repo.listBadges(userId, opts.audience),
-      wantsRanking ? this.repo.getRanking(userId, accountId, opts.audience, now) : null,
-      this.repo.listQualifyingJourneySlots(userId, opts.audience),
-      opts.audience === 'kids'
-        ? this.repo.getStudioUnlockRevision(userId, opts.audience).catch(() => null)
-        : Promise.resolve(null),
-    ])
+    const [profile, badges, ranking, qualifying, studioUnlockRevision, journey] = await Promise.all(
+      [
+        this.repo.getProfile(userId, opts.audience),
+        this.repo.listBadges(userId, opts.audience),
+        wantsRanking ? this.repo.getRanking(userId, accountId, opts.audience, now) : null,
+        this.repo.listQualifyingJourneySlots(userId, opts.audience),
+        opts.audience === 'kids'
+          ? this.repo.getStudioUnlockRevision(userId, opts.audience).catch(() => null)
+          : Promise.resolve(null),
+        opts.audience === 'adult' ? this.adultJourney?.get(userId, opts.privileged) : null,
+      ],
+    )
     const today = localDateSaoPaulo(now)
     const unlockedBySlug = new Map(badges.map((b) => [b.badgeSlug, b.unlockedAt]))
     const onVacation =
@@ -94,6 +99,7 @@ export class GetGamificationService {
       })),
       // Nível do aluno (rank): derivado dos cursos qualificados (concluído + Mural).
       level: computeStudentLevel(qualifying),
+      ...(journey ? { journey } : {}),
       ...(studioUnlockRevision ? { studioUnlockRevision } : {}),
       ...(ranking ? { ranking } : {}),
     }

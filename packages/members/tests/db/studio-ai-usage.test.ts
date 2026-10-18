@@ -3,12 +3,10 @@ import { randomUUID } from 'node:crypto'
 import type { StudioAiActor } from '@sistemazero/core/ai-credits'
 import type { StudioAiReserveInput } from '../../src/domain/ports/studio-ai-usage.port'
 import { DrizzleAiUsageRepository } from '../../src/infrastructure/persistence/drizzle/ai-usage.repository'
-import {
-  createDbConnection,
-  type DbConnection,
-} from '../../src/infrastructure/persistence/drizzle/db'
+import type { DbConnection } from '../../src/infrastructure/persistence/drizzle/db'
 import { DrizzleStudioAiAccountRepository } from '../../src/infrastructure/persistence/drizzle/studio-ai-account.repository'
 import { DrizzleStudioAiUsageRepository } from '../../src/infrastructure/persistence/drizzle/studio-ai-usage.repository'
+import { openStudioReviewDatabase } from './studio-review-database'
 
 const url = process.env.STUDIO_REVIEW_DATABASE_URL
 describe.skipIf(!url)('Studio AI ledger — real PostgreSQL', () => {
@@ -18,56 +16,9 @@ describe.skipIf(!url)('Studio AI ledger — real PostgreSQL', () => {
   const accounts: string[] = []
   const now = new Date('2026-10-15T12:00:00Z')
   beforeAll(async () => {
-    const target = new URL(url!)
-    if (
-      !['localhost', '127.0.0.1'].includes(target.hostname) ||
-      target.pathname !== '/studio_pro_review'
-    )
-      throw new Error('Disposable studio_pro_review database required.')
-    db = createDbConnection(url!, { max: 8 })
-    await db.sql`create schema if not exists members`
-    await db.sql`create table if not exists members.account_deletion_fences (account_id uuid primary key, created_at timestamptz not null)`
-    // Existing quota tables are fixtures; both new ledger migrations are executed verbatim.
-    await db.sql`create table if not exists members.ai_usage_daily (account_id uuid not null, day date not null, feature varchar(64) not null, used integer not null, privileged boolean not null, updated_at timestamptz not null, primary key(account_id, day, feature))`
-    await db.sql`create table if not exists members.ai_usage_reservations (account_id uuid not null, day date not null, status varchar(16) not null, expires_at timestamptz not null)`
-    for (const [table, file] of [
-      ['studio_ai_accounts', '0116_groovy_shriek.sql'],
-      ['studio_ai_runs', '0117_absurd_jimmy_woo.sql'],
-    ]) {
-      const [present] = await db.sql`select to_regclass(${`members.${table}`}) as name`
-      if (present?.name) continue
-      const migration = await Bun.file(
-        new URL(`../../src/infrastructure/persistence/drizzle/migrations/${file}`, import.meta.url),
-      ).text()
-      for (const statement of migration.split('--> statement-breakpoint'))
-        if (statement.trim()) await db.sql.unsafe(statement)
-    }
+    db = await openStudioReviewDatabase(url!)
     repo = new DrizzleStudioAiUsageRepository(db.db)
-    const [reconcileColumn] =
-      await db.sql`select 1 from information_schema.columns where table_schema='members' and table_name='studio_ai_attempts' and column_name='reconcile_attempts'`
-    if (!reconcileColumn) {
-      const migration = await Bun.file(
-        new URL(
-          '../../src/infrastructure/persistence/drizzle/migrations/0118_high_stark_industries.sql',
-          import.meta.url,
-        ),
-      ).text()
-      for (const statement of migration.split('--> statement-breakpoint'))
-        if (statement.trim()) await db.sql.unsafe(statement)
-    }
     accountsRepo = new DrizzleStudioAiAccountRepository(db.db)
-    const [bounds] =
-      await db.sql`select 1 from pg_constraint where conname = 'studio_ai_attempt_bounds' and connamespace = 'members'::regnamespace`
-    if (!bounds) {
-      const migration = await Bun.file(
-        new URL(
-          '../../src/infrastructure/persistence/drizzle/migrations/0119_numerous_mattie_franklin.sql',
-          import.meta.url,
-        ),
-      ).text()
-      for (const statement of migration.split('--> statement-breakpoint'))
-        if (statement.trim()) await db.sql.unsafe(statement)
-    }
   })
   afterAll(async () => {
     if (!db) return
@@ -322,5 +273,22 @@ describe.skipIf(!url)('Studio AI ledger — real PostgreSQL', () => {
     ).toBe(false)
     const next = await repo.claimReconciliation(new Date(later.getTime() + 120_000), 25)
     expect(next.some((job) => job.runId === i.request.runId)).toBe(true)
+  })
+  test('adult runs cannot be read, dispatched or finished through Kids, while account budgets stay shared', async () => {
+    const adult = input()
+    adult.actor = { ...adult.actor, userId: adult.actor.accountId, audience: 'adult' }
+    expect(await repo.reserve(adult)).toMatchObject({ allowed: true, usedDay: 1 })
+    const kids = { ...adult.actor, audience: 'kids' as const }
+    await rejected(repo.reserve({ ...adult, actor: kids }))
+    await rejected(repo.dispatch(kids, adult.request.runId, 1, now))
+    await rejected(repo.finish(kids, adult.request.runId, now))
+    const sibling = input({ ...kids, userId: randomUUID() })
+    expect(await repo.reserve(sibling)).toMatchObject({ allowed: true, usedDay: 2 })
+    expect(await repo.reserve(input(adult.actor))).toMatchObject({ allowed: false, scope: 'day' })
+    const rows =
+      await db.sql`select audience from members.studio_ai_runs where id = ${adult.request.runId}`
+    expect(rows[0]?.audience).toBe('adult')
+    await repo.finish(adult.actor, adult.request.runId, now)
+    await repo.finish(sibling.actor, sibling.request.runId, now)
   })
 })

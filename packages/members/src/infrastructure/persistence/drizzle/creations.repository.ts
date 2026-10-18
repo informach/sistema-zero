@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import { STUDIO_PROJECT_FORMAT_VERSION } from '@sistemazero/core/studio'
 import { and, desc, eq, inArray, isNotNull, isNull, lt, or, sql } from 'drizzle-orm'
+import type { CourseAudience } from '../../../domain/course/course'
 import {
   type CreationDraftState,
   type CreationPartRef,
@@ -66,6 +67,7 @@ const toSummary = (row: SummaryRow): CreationSummary => {
 const toRecord = (row: Row): CreationRecord => ({
   ...toSummary(row),
   id: row.id,
+  audience: row.audience,
   userId: row.userId,
   accountId: row.accountId,
   pending:
@@ -112,8 +114,13 @@ function sanitizeParts(raw: unknown): CreationPartRef[] {
 }
 
 /** As mesmas três condições em toda query: o dono é sempre parte da chave. */
-const whereItem = (userId: string, tool: CreationTool, itemId: string) =>
-  and(eq(creations.userId, userId), eq(creations.tool, tool), eq(creations.itemId, itemId))
+const whereItem = (userId: string, tool: CreationTool, itemId: string, audience: CourseAudience) =>
+  and(
+    eq(creations.userId, userId),
+    eq(creations.audience, audience),
+    eq(creations.tool, tool),
+    eq(creations.itemId, itemId),
+  )
 
 /** Só o que já COMMITOU alguma vez e está vivo: reserva sem upload não é uma criação guardada. */
 const whereAliveCommitted = () => and(isNull(creations.deletedAt), isNotNull(creations.storageRef))
@@ -126,7 +133,10 @@ const whereIndexed = () => or(whereAliveCommitted(), isNotNull(creations.deleted
  * perfil nunca alcança a linha de outro.
  */
 export class DrizzleCreationsRepository implements CreationsRepository {
-  constructor(private readonly db: Database) {}
+  constructor(
+    private readonly db: Database,
+    readonly audience: CourseAudience = 'kids',
+  ) {}
 
   async list(userId: string, tool: CreationTool): Promise<CreationSummary[]> {
     // Só as colunas do resumo público: nada de `pending_*`/`storage_ref`/ids internos — e o
@@ -146,7 +156,14 @@ export class DrizzleCreationsRepository implements CreationsRepository {
         deletedAt: creations.deletedAt,
       })
       .from(creations)
-      .where(and(eq(creations.userId, userId), eq(creations.tool, tool), whereIndexed()))
+      .where(
+        and(
+          eq(creations.userId, userId),
+          eq(creations.audience, this.audience),
+          eq(creations.tool, tool),
+          whereIndexed(),
+        ),
+      )
       .orderBy(desc(creations.itemUpdatedAt))
     return rows.map((row) => {
       const summary: CreationSummary = { ...row }
@@ -188,7 +205,13 @@ export class DrizzleCreationsRepository implements CreationsRepository {
       })
       .from(creations)
       .where(
-        and(eq(creations.userId, userId), eq(creations.tool, tool), whereIndexed(), cursorWhere),
+        and(
+          eq(creations.userId, userId),
+          eq(creations.audience, this.audience),
+          eq(creations.tool, tool),
+          whereIndexed(),
+          cursorWhere,
+        ),
       )
       .orderBy(desc(creations.itemUpdatedAt), desc(creations.itemId))
       .limit(options.limit + 1)
@@ -225,23 +248,29 @@ export class DrizzleCreationsRepository implements CreationsRepository {
     })
   }
 
-  async get(userId: string, tool: CreationTool, itemId: string): Promise<CreationRecord | null> {
+  async get(
+    userId: string,
+    tool: CreationTool,
+    itemId: string,
+    audience: CourseAudience = this.audience,
+  ): Promise<CreationRecord | null> {
     const [row] = await this.db
       .select()
       .from(creations)
-      .where(whereItem(userId, tool, itemId))
+      .where(whereItem(userId, tool, itemId, audience))
       .limit(1)
     return row ? toRecord(row) : null
   }
 
   async usage(userId: string): Promise<CreationUsage> {
-    return usageWith(this.db, userId)
+    return usageWith(this.db, userId, this.audience)
   }
 
   async getDraftStates(
     userId: string,
     tool: CreationTool,
     itemIds: readonly string[],
+    audience: CourseAudience = this.audience,
   ): Promise<CreationDraftState[]> {
     if (itemIds.length === 0) return []
     const rows = await this.db
@@ -254,6 +283,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
       .where(
         and(
           eq(creations.userId, userId),
+          eq(creations.audience, audience),
           eq(creations.tool, tool),
           inArray(creations.itemId, [...itemIds]),
           whereAliveCommitted(),
@@ -295,7 +325,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
           deletedAt: creations.deletedAt,
         })
         .from(creations)
-        .where(whereItem(input.userId, input.tool, input.itemId))
+        .where(whereItem(input.userId, input.tool, input.itemId, this.audience))
         .limit(1)
         .for('update')
 
@@ -349,7 +379,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
 
       // Quota DENTRO da transação (atômica com o lock): o total do perfil TROCA os bytes
       // correntes deste item pelos novos (reenviar 20 MB por 20 MB não gasta 40).
-      const usage = await usageWith(tx, input.userId)
+      const usage = await usageWith(tx, input.userId, this.audience)
       const currentBytes = alive && existing.storageRef ? existing.bytes : 0
       if (usage.totalBytes - currentBytes + totalBytes > input.limits.maxTotalBytes) {
         return { ok: false, reason: 'total-bytes' }
@@ -397,6 +427,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
         await tx.insert(creations).values({
           id: randomUUID(),
           userId: input.userId,
+          audience: this.audience,
           accountId: input.accountId,
           tool: input.tool,
           itemId: input.itemId,
@@ -422,7 +453,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
       await tx
         .update(creations)
         .set({ ...pending, pendingRevision: revision, lastReservedRevision: revision })
-        .where(whereItem(input.userId, input.tool, input.itemId))
+        .where(whereItem(input.userId, input.tool, input.itemId, this.audience))
       return { ok: true, revision, missingParts: resolved.missing }
     })
   }
@@ -448,7 +479,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
       const [row] = await tx
         .select()
         .from(creations)
-        .where(whereItem(input.userId, input.tool, input.itemId))
+        .where(whereItem(input.userId, input.tool, input.itemId, this.audience))
         .limit(1)
         .for('update')
       if (!row) return { ok: false }
@@ -469,7 +500,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
       ) {
         return { ok: false }
       }
-      const usage = await usageWith(tx, input.userId)
+      const usage = await usageWith(tx, input.userId, this.audience)
       const committedAlive = row.deletedAt === null && row.storageRef !== null
       const currentBytes = committedAlive ? row.bytes : 0
       const overBytes =
@@ -488,7 +519,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
         await tx
           .update(creations)
           .set(clearPending())
-          .where(whereItem(input.userId, input.tool, input.itemId))
+          .where(whereItem(input.userId, input.tool, input.itemId, this.audience))
         return { ok: false, reason: 'palette-library-identity' }
       }
       const currentItemCount = committedAlive && currentIdentity !== 'palette-library' ? 1 : 0
@@ -503,7 +534,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
         await tx
           .update(creations)
           .set(clearPending())
-          .where(whereItem(input.userId, input.tool, input.itemId))
+          .where(whereItem(input.userId, input.tool, input.itemId, this.audience))
         return { ok: false, reason: overBytes ? 'total-bytes' : 'items-per-tool' }
       }
       // PARTES: as que a reserva exigia e o item ainda não tinha precisam ter sido PUTadas
@@ -519,7 +550,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
         await tx
           .update(creations)
           .set(clearPending())
-          .where(whereItem(input.userId, input.tool, input.itemId))
+          .where(whereItem(input.userId, input.tool, input.itemId, this.audience))
         return { ok: false, reason: 'client-outdated', requiredVersion }
       }
       const committed = row.deletedAt === null && row.storageRef ? sanitizeParts(row.parts) : []
@@ -554,7 +585,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
           deletedAt: null,
           syncedAt: input.now,
         })
-        .where(whereItem(input.userId, input.tool, input.itemId))
+        .where(whereItem(input.userId, input.tool, input.itemId, this.audience))
       const previous = row.storageRef && row.storageRef !== input.storageRef ? row.storageRef : null
       const nextSet = new Set(pendingParts.map((part) => part.hash))
       return {
@@ -586,7 +617,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
           pendingRevision: creations.pendingRevision,
         })
         .from(creations)
-        .where(whereItem(userId, tool, itemId))
+        .where(whereItem(userId, tool, itemId, this.audience))
         .limit(1)
         .for('update')
       if (!row) {
@@ -618,7 +649,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
           thumb: null,
           syncedAt: now,
         })
-        .where(whereItem(userId, tool, itemId))
+        .where(whereItem(userId, tool, itemId, this.audience))
       return {
         ok: true,
         deleted: row.deletedAt === null,
@@ -687,7 +718,11 @@ function clearPending() {
  * que ocupa o R2, e a aritmética `totalBytes - currentBytes + novos` assume a própria linha
  * dentro do total.
  */
-async function usageWith(db: Pick<Database, 'select'>, userId: string): Promise<CreationUsage> {
+async function usageWith(
+  db: Pick<Database, 'select'>,
+  userId: string,
+  audience: CourseAudience,
+): Promise<CreationUsage> {
   const rows = await db
     .select({
       tool: creations.tool,
@@ -699,7 +734,9 @@ async function usageWith(db: Pick<Database, 'select'>, userId: string): Promise<
       bytes: sql<number>`coalesce(sum(${creations.bytes}), 0)::bigint`,
     })
     .from(creations)
-    .where(and(eq(creations.userId, userId), whereAliveCommitted()))
+    .where(
+      and(eq(creations.userId, userId), eq(creations.audience, audience), whereAliveCommitted()),
+    )
     .groupBy(creations.tool)
   const countByTool = emptyCountByTool()
   let totalBytes = 0

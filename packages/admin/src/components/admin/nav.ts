@@ -76,6 +76,7 @@ export const NAV_GROUPS: NavGroup[] = [
       },
       { label: 'Recados', href: '/admin/professor/recados', icon: Mail, badgeKey: 'recados' },
       { label: 'Desafio do mês', href: '/admin/professor/desafio', icon: Trophy },
+      { label: 'Jornada adulta', href: '/admin/professor/jornada-adulta', icon: GraduationCap },
       {
         label: 'Moderação',
         href: '/admin/comunidade/moderacao',

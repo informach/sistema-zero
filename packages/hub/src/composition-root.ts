@@ -90,14 +90,16 @@ export async function createApplication(env: Env): Promise<Application> {
   })
   // Limpeza de R2 na moderação: ao APAGAR um post do Mural, avisa o BFF do kids a
   // apagar o snapshot jogável + a capa. Sem `KIDS_BFF_BASE_URL` (dev/local) → no-op.
-  const studioArtifacts = env.KIDS_BFF_BASE_URL
-    ? createStudioArtifactHttpGateway({
-        baseUrl: env.KIDS_BFF_BASE_URL,
-        hmacSecret: env.GATEWAY_HMAC_SECRET,
-        timeoutMs: env.KIDS_BFF_REQUEST_TIMEOUT_MS,
-        logger,
-      })
-    : noopStudioArtifactGateway
+  const studioArtifacts =
+    env.KIDS_BFF_BASE_URL || env.ADULT_BFF_BASE_URL
+      ? createStudioArtifactHttpGateway({
+          baseUrl: env.KIDS_BFF_BASE_URL,
+          adultBaseUrl: env.ADULT_BFF_BASE_URL,
+          hmacSecret: env.GATEWAY_HMAC_SECRET,
+          timeoutMs: env.KIDS_BFF_REQUEST_TIMEOUT_MS,
+          logger,
+        })
+      : noopStudioArtifactGateway
   const accessCache = new MicroCache<{
     granted: Set<string>
     hasMaster: boolean
@@ -170,6 +172,7 @@ export async function createApplication(env: Env): Promise<Application> {
     () => randomUUID(),
     showcaseWallSlugs(env),
     showcaseWallChannelSlug(env),
+    { walls: new Set(['mural-dos-criadores-adulto']), access: accessResolution },
   )
   const moderationService = new ModerationService(
     threadRepo,

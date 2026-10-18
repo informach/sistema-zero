@@ -397,6 +397,13 @@ describe('Gamificação — GET /members/gamification/me', () => {
     expect(body).toEqual({
       xp: 0,
       coins: { balance: 0 },
+      journey: {
+        audience: 'adult',
+        policyVersion: 0,
+        configured: false,
+        capabilities: [],
+        stages: [],
+      },
       streak: {
         current: 0,
         best: 0,
@@ -905,11 +912,13 @@ describe('Missões — progresso derivado + claim', () => {
     grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
 
     const before = await readJson(await getMissions(app))
-    // Set determinístico do USER em 2026-06-02 (computado): 3 diárias, 3 semanais, 2 mensais.
-    // O USER não tem o Clube → nenhuma missão gated no pool.
-    expect(before.daily.length).toBe(3)
-    expect(before.weekly.length).toBe(3)
-    expect(before.monthly.length).toBe(2)
+    // Sem bloco de quiz ou Estúdio disponível, essas ações não são oferecidas.
+    expect(
+      before.daily.some((mission: { goalType: string }) => mission.goalType === 'quiz_passed'),
+    ).toBe(false)
+    expect(
+      before.daily.some((mission: { goalType: string }) => mission.goalType === 'studio_submitted'),
+    ).toBe(false)
     expect(before.daily.every((m: { completed: boolean }) => !m.completed)).toBe(true)
 
     const blockId = seedQuizBlock(courses, course.lessonIds[0])
@@ -996,7 +1005,10 @@ describe('Missões — progresso derivado + claim', () => {
   })
 
   test('claim de missão NÃO concluída → 409; inexistente → 404', async () => {
-    const { app } = buildApp()
+    const { app, courses, entitlements } = buildApp()
+    const course = seedSampleCourse(courses)
+    seedQuizBlock(courses, course.lessonIds[0])
+    grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
     expect((await claimMission(app, 'daily-quiz')).status).toBe(409)
     expect((await claimMission(app, 'missao-fantasma')).status).toBe(404)
   })

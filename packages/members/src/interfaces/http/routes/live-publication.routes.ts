@@ -25,11 +25,13 @@ export function livePublicationRoutes(deps: {
           params.id,
           query.revision,
           query.clientIdempotencyKey,
+          query.audience,
         )
       },
       {
         params: t.Object({ id: uuid() }),
         query: t.Object({
+          audience: t.Optional(t.Union([t.Literal('kids'), t.Literal('adult')])),
           revision: t.Numeric({ minimum: 1, multipleOf: 1 }),
           clientIdempotencyKey: uuid(),
         }),
@@ -52,6 +54,7 @@ export function livePublicationRoutes(deps: {
           workspaceId: uuid(),
           revision: t.Number({ minimum: 1, multipleOf: 1 }),
           playId: uuid(),
+          audience: t.Optional(t.Union([t.Literal('kids'), t.Literal('adult')])),
           publicationToken: t.String({ minLength: 1, maxLength: 4096 }),
         }),
       },

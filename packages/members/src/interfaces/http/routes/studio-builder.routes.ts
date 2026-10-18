@@ -1,5 +1,7 @@
 import { Elysia, t } from 'elysia'
 import type { AccessCheckService } from '../../../application/access-check/access-check.service'
+import { assertAdultCreativeAccess } from '../../../application/adult-journey/adult-creative-access'
+import type { AdultJourneyService } from '../../../application/adult-journey/adult-journey.service'
 import type { StudioBuilderService } from '../../../application/studio-pro/studio-builder.service'
 import { StudioAiUnavailableError } from '../../../domain/ai-usage/studio-ai.errors'
 import { AccessDeniedError } from '../../../domain/entitlement/entitlement.errors'
@@ -9,6 +11,7 @@ export function studioBuilderRoutes(deps: {
   service?: StudioBuilderService
   internalToken?: string
   accessCheck: AccessCheckService
+  adultJourney?: AdultJourneyService
 }) {
   return new Elysia({ prefix: '/members/internal/studio-ai' })
     .onTransform(({ headers }) => {
@@ -20,16 +23,25 @@ export function studioBuilderRoutes(deps: {
       if (!deps.service) throw new StudioAiUnavailableError()
       return { deleted: await deps.service.purgeExpired() }
     })
-    .post('/builder/availability', ({ set }) => {
+    .post('/builder/availability', ({ set, query }) => {
       set.headers['Cache-Control'] = 'no-store'
-      return { available: Boolean(deps.service?.executionAvailable) }
+      return {
+        ...(query.audience === 'adult' ? { audience: 'adult' as const } : {}),
+        available: Boolean(
+          query.audience === 'adult'
+            ? deps.service?.adultExecutionAvailable
+            : deps.service?.executionAvailable,
+        ),
+      }
     })
     .post(
       '/builder/history',
       async ({ body, set }) => {
         set.headers['Cache-Control'] = 'no-store'
         if (!deps.service) throw new StudioAiUnavailableError()
-        if (!body.actor.privileged) {
+        if (body.actor.audience === 'adult')
+          await assertAdultCreativeAccess(deps, body.actor, 'studio', true, true)
+        if (!body.actor.privileged && body.actor.audience !== 'adult') {
           const access = await deps.accessCheck.execute(body.actor.accountId, ['estudio-completo'])
           if (
             !access.grants.includes('estudio-completo') &&
@@ -37,7 +49,10 @@ export function studioBuilderRoutes(deps: {
           )
             throw new AccessDeniedError('Você não tem acesso ao Estúdio Completo')
         }
-        return { page: await deps.service.list(body.actor, body.query) }
+        return {
+          ...(body.actor.audience === 'adult' ? { audience: 'adult' as const } : {}),
+          page: await deps.service.list(body.actor, body.query),
+        }
       },
       {
         body: t.Object({
@@ -45,6 +60,7 @@ export function studioBuilderRoutes(deps: {
             accountId: t.String({ format: 'uuid' }),
             userId: t.String({ format: 'uuid' }),
             privileged: t.Boolean(),
+            audience: t.Optional(t.Union([t.Literal('adult'), t.Literal('kids')])),
           }),
           query: t.Unknown(),
         }),
@@ -60,7 +76,9 @@ export function studioBuilderRoutes(deps: {
           typeof body.command === 'object' &&
           'operation' in body.command &&
           body.command.operation === 'remove-project'
-        if (!body.actor.privileged && !removingProject) {
+        if (body.actor.audience === 'adult' && !removingProject)
+          await assertAdultCreativeAccess(deps, body.actor, 'studio', true, true)
+        if (!body.actor.privileged && !removingProject && body.actor.audience !== 'adult') {
           const access = await deps.accessCheck.execute(body.actor.accountId, ['estudio-completo'])
           if (
             !access.grants.includes('estudio-completo') &&
@@ -68,7 +86,10 @@ export function studioBuilderRoutes(deps: {
           )
             throw new AccessDeniedError('Você não tem acesso ao Estúdio Completo')
         }
-        return { state: await deps.service.execute(body.actor, body.command) }
+        return {
+          ...(body.actor.audience === 'adult' ? { audience: 'adult' as const } : {}),
+          state: await deps.service.execute(body.actor, body.command),
+        }
       },
       {
         body: t.Object({
@@ -76,6 +97,7 @@ export function studioBuilderRoutes(deps: {
             accountId: t.String({ format: 'uuid' }),
             userId: t.String({ format: 'uuid' }),
             privileged: t.Boolean(),
+            audience: t.Optional(t.Union([t.Literal('adult'), t.Literal('kids')])),
           }),
           command: t.Unknown(),
         }),

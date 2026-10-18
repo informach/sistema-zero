@@ -13,7 +13,27 @@ export const proxy = createMemberProxy({
   cookies: { accessCookie: ACCESS_COOKIE, refreshCookie: REFRESH_COOKIE },
   paletteCookie: PALETTE_COOKIE,
   // `/oficinas`: as oficinas ao vivo (cursos ao vivo, 14/10/2026) e a sala de cada encontro.
-  protectedPrefixes: ['/cursos', '/oficinas', '/perfil', '/compras', '/comunidade', '/ajuda'],
+  protectedPrefixes: [
+    '/cursos',
+    '/oficinas',
+    '/perfil',
+    '/compras',
+    '/comunidade',
+    '/ajuda',
+    '/progresso',
+    '/ranking',
+    '/mural-dos-criadores-adulto',
+    '/meu-avatar',
+    '/quarto',
+    '/desafios',
+    '/criador',
+    '/criar',
+    '/estudio',
+    '/pinta',
+    '/molda',
+    '/pensa',
+    '/como-fazer',
+  ],
   isRootProtected: true,
 })
 
@@ -24,6 +44,6 @@ export const config = {
   // do `requireUploadSession`). `api/certificates` (validação PÚBLICA por QR, sem
   // login) também fica de fora — sem gate de sessão.
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|api/me/avatar|api/hub/uploads/image|api/certificates).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api/me/avatar|api/members/avatar/snapshot|api/studio/play|api/studio/publish|api/studio/cleanup|api/internal/studio-builder/execute|api/hub/uploads/image|api/certificates).*)',
   ],
 }

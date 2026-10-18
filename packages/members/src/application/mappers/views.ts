@@ -194,6 +194,7 @@ export interface LessonCompleteView extends CourseProgressView {
 
 /** Perfil de gamificação do aluno (widgets/perfil — `GET /members/gamification/me`). */
 export interface GamificationMeView {
+  journey?: import('@sistemazero/core/journey').AdultJourneyView
   xp: number
   /** Revisão curta das ferramentas do Estúdio; presente na vitrine kids. */
   studioUnlockRevision?: string
@@ -245,6 +246,7 @@ export interface RankingEntryView {
 
 /** Página pública do ranking geral, com a própria linha disponível fora da página. */
 export interface RankingLeaderboardView {
+  audience?: 'adult'
   items: RankingEntryView[]
   total: number
   limit: number
@@ -292,6 +294,9 @@ export interface AvatarPartView {
  * e-mail/telefone/nascimento/conta NUNCA). `ranking` null = fora da coorte.
  */
 export interface PublicProfileView {
+  audience?: 'adult'
+  displayName?: string
+  journey?: import('@sistemazero/core/journey').AdultJourneyView
   profileId: string
   xp: number
   ranking: { position: number; totalStudents: number } | null
@@ -332,6 +337,7 @@ export interface MissionView {
 
 /** Missões do aluno por cadência (`GET …/missions/me`). */
 export interface MissionsMeView {
+  audience?: 'adult'
   daily: MissionView[]
   weekly: MissionView[]
   monthly: MissionView[]
@@ -360,6 +366,7 @@ export interface LeagueEntryView {
 
 /** Liga semanal do aluno (`GET …/league/me`). */
 export interface LeagueMeView {
+  audience?: 'adult'
   tier: string
   weekKey: string
   /** Quantos sobem no topo / caem na base ESTA semana (0 = semana amistosa, pouca massa). */

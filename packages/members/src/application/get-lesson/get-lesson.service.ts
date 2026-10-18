@@ -1,4 +1,5 @@
 import { lessonCompletionRequirements, sectionCompletionView } from '@sistemazero/core/learning'
+import type { CourseAudience } from '../../domain/course/course'
 import { LessonNotFoundError } from '../../domain/course/course.errors'
 import { hasComingSoonBlock } from '../../domain/course/lesson-block'
 import { computeRetryAvailableAt } from '../../domain/course/quiz'
@@ -37,7 +38,9 @@ export class GetLessonService {
     lessonId: string,
     privileged = false,
     accountId?: string,
+    audience?: CourseAudience,
   ): Promise<LessonDetailView> {
+    if (audience === 'adult' && userId !== (accountId ?? userId)) throw new LessonNotFoundError()
     const { course } = await this.checkAccess.requireBySlug(
       accountId ?? userId,
       courseSlug,
@@ -46,6 +49,7 @@ export class GetLessonService {
       { lessonId },
     )
     const lesson = await this.courses.findLessonWithContent(lessonId)
+    if (audience && course.audience !== audience) throw new LessonNotFoundError()
     // Aula rascunho é invisível ao aluno (mesmo por URL direta) → 404.
     if (!lesson || lesson.courseId !== course.id || !lesson.isPublished) {
       throw new LessonNotFoundError()
