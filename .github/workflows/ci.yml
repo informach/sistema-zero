@@ -1,150 +1,18 @@
-name: Molda remaining integration diagnostic
+name: Read-only all staging deployment status
 on:
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
-  integration:
+  inspect:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
-    services:
-      marketing-postgres:
-        image: postgres:16
-        env:
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: marketing_review
-        ports:
-          - 15439:5432
-        options: >-
-          --health-cmd "pg_isready -U postgres -d marketing_review"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-      engagement-postgres:
-        image: postgres:16
-        env:
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: marketing_review
-        ports:
-          - 15465:5432
-        options: >-
-          --health-cmd "pg_isready -U postgres -d marketing_review"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-      fiscal-postgres:
-        image: postgres:16
-        env:
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: sistemazero
-        ports:
-          - 55432:5432
-        options: >-
-          --health-cmd "pg_isready -U postgres -d sistemazero"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v5
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: '1.3.11'
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-      - run: bun install --frozen-lockfile
-      - name: Preparar testes de mídia das oficinas
-        working-directory: packages/live-recorder
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ffmpeg
-          bunx playwright install --with-deps chromium
-          # Ubuntu 24 restringe user namespaces de binários fora dos perfis do sistema.
-          # Autorizar somente o Chromium instalado pelo Playwright mantém seu sandbox ativo.
-          sudo tee /etc/apparmor.d/sistemazero-playwright >/dev/null <<EOF
-          abi <abi/4.0>,
-          include <tunables/global>
-          profile sistemazero-playwright "$HOME/.cache/ms-playwright/**/chrome" flags=(unconfined) {
-            userns,
-          }
-          profile sistemazero-playwright-headless "$HOME/.cache/ms-playwright/**/chrome-headless-shell" flags=(unconfined) {
-            userns,
-          }
-          EOF
-          sudo apparmor_parser -r /etc/apparmor.d/sistemazero-playwright
-
-      - name: Preparar navegador da integração Pensa como no pipeline oficial
-        working-directory: packages/pensa
-        run: bunx playwright install --with-deps chromium
-
-      - name: Testes DB fiscal (Postgres real)
-        run: cd packages/fiscal && bun test tests/db
+      - name: Inspect statuses only
         env:
-          TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/sistemazero
-
-      # ⚠️ A pasta INTEIRA, como no fiscal acima. Até 15/08 esta linha apontava para UM
-      # arquivo, então os outros 10 — justamente os documentados como "o único teste que
-      # alcança este SQL", porque o fake in-memory o reimplementa em JS — nunca rodaram no
-      # CI: eles PULAM sozinhos sem Postgres (`describe.skipIf`) e o passo verde do
-      # `bun test` geral parecia cobri-los.
-      - name: Criar banco descartável para upgrade das aulas
-        run: PGPASSWORD=postgres psql -h localhost -p 55432 -U postgres -d postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE sz_aulas_qa_ci"
-
-      - name: Criar banco descartável para ledger e revisões do Studio
-        run: PGPASSWORD=postgres psql -h localhost -p 55432 -U postgres -d postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE studio_pro_review"
-
-      - name: Testes DB members (Postgres real)
-        run: cd packages/members && bun test tests/db
-        env:
-          TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/sistemazero
-          PENSA_TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/pensa_ci
-          LEARNING_QA_DATABASE_URL: postgres://postgres:postgres@localhost:55432/sz_aulas_qa_ci
-          STUDIO_REVIEW_DATABASE_URL: postgres://postgres:postgres@localhost:55432/studio_pro_review
-
-      - name: Pensa integrado com API e PostgreSQL reais
-        working-directory: packages/pensa
-        run: |
-          bun run typecheck:e2e
-          bun run e2e:native
-        env:
-          PENSA_TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/pensa_ci
-
-      - name: Testes DB referrals (Postgres real)
-        run: cd packages/referrals && bun test tests/db
-        env:
-          TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/sistemazero
-
-      - name: Criar banco descartável do Helpdesk
-        run: PGPASSWORD=postgres psql -h localhost -p 55432 -U postgres -d postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE helpdesk_test"
-
-      - name: Testes DB helpdesk (Postgres real)
-        working-directory: packages/helpdesk
-        run: |
-          bun run db:migrate
-          bun test tests/integration/drizzle-*.test.ts
-        env:
-          DATABASE_URL: postgres://postgres:postgres@localhost:55432/helpdesk_test
-          HELPDESK_TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/helpdesk_test
-
-      - name: Testes DB marketing (Postgres real)
-        run: |
-          cd packages/marketing
-          bun run db:migrate
-          bun test tests/*.postgres.test.ts
-        env:
-          DATABASE_URL: postgres://postgres:postgres@127.0.0.1:15439/marketing_review
-          MARKETING_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:15439/marketing_review
-          ENGAGEMENT_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:15465/marketing_review
-
-      - name: Criar banco isolado das sessões de autenticação
-        run: PGPASSWORD=postgres psql -h 127.0.0.1 -p 15439 -U postgres -d postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE marketing_review_tests"
-
-      - name: Testes DB auth, sessões desktop e navegador (Postgres real)
-        working-directory: packages/auth
-        run: |
-          bun run db:migrate
-          bun test tests/db
-        env:
-          DATABASE_URL: postgres://postgres:postgres@127.0.0.1:15439/marketing_review_tests
-          MARKETING_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:15439/marketing_review_tests
-          TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:15439/marketing_review_tests
+          RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          HELPDESK_SERVICE_ID: ${{ vars.HELPDESK_SERVICE_ID }}
+          HELPDESK_APP_SERVICE_ID: ${{ vars.HELPDESK_APP_SERVICE_ID }}
+          LIVE_RECORDER_SERVICE_ID: ${{ vars.LIVE_RECORDER_SERVICE_ID }}
+        run: node scripts/ci/molda-all-staging-readonly.mjs
