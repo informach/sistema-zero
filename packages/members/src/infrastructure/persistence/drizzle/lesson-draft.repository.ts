@@ -238,8 +238,12 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
       const document = await update(draft, tx)
       checkDocumentBounds(document)
       for (const block of document.blocks)
-        if (block.content.kind === 'studio')
+        if (block.content.kind === 'studio') {
           assertCurrentStudioAuthoring(block.content.initialProject)
+          // O gabarito (que pode chegar pelo manifesto) passa pela mesma régua do inicial.
+          if (block.content.solutionProject !== undefined)
+            assertCurrentStudioAuthoring(block.content.solutionProject)
+        }
       const revision = randomUUID()
       const updatedAt = new Date()
       const snapshot = await publishedSnapshot(tx, lessonId)

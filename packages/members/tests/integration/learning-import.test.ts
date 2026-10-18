@@ -152,6 +152,50 @@ describe('manifest import through the authoring HTTP boundary', () => {
     expect((await f.apply('not-a-revision')).status).toBe(400)
   })
 
+  test('o gabarito do Estúdio: o do manifesto entra; sem ele no manifesto, o do Admin fica', async () => {
+    const f = await setup(1)
+    const id = randomUUID()
+    const gabaritoDoAdmin = {
+      formatVersion: 2,
+      name: 'Gabarito do Admin',
+      files: { 'index.html': '<p>feito no Admin</p>' },
+    }
+    f.courses.blocks.push({
+      id,
+      lessonId: f.lessonId,
+      kind: 'studio',
+      content: {
+        kind: 'studio',
+        chain: 'corre-dino',
+        initialProject: { formatVersion: 2, name: 'Projeto original', files: {} },
+        solutionProject: gabaritoDoAdmin,
+      },
+      sortOrder: 20,
+    })
+    expect((await f.apply(await revision(await f.preview()))).status).toBe(200)
+    const studioDe = async () =>
+      (await readDraft(f.app, f.lessonId)).document.blocks.find(
+        (block) => block.content.kind === 'studio',
+      )?.content as { solutionProject?: unknown } | undefined
+    expect((await studioDe())?.solutionProject).toEqual(gabaritoDoAdmin)
+    const authored = f.document.blocks.find(
+      (block) => 'content' in block && block.content.kind === 'studio',
+    )
+    if (!authored || !('content' in authored) || authored.content.kind !== 'studio')
+      throw new Error('Estúdio ausente')
+    const gabaritoDoManifesto = {
+      ...(authored.content.initialProject as Record<string, unknown>),
+      name: 'Gabarito do manifesto',
+    }
+    Object.assign(authored.content, { solutionProject: gabaritoDoManifesto })
+    expect(isLearningManifest(f.document)).toBe(true)
+    expect((await f.apply(await revision(await f.preview()))).status).toBe(200)
+    expect((await studioDe())?.solutionProject).toEqual(gabaritoDoManifesto)
+    // Gabarito torto no manifesto: o manifesto inteiro é recusado pelo core.
+    Object.assign(authored.content, { solutionProject: { name: 'sem formato' } })
+    expect(isLearningManifest(f.document)).toBe(false)
+  })
+
   test('an empty lesson creates its configured Studio and reimports without changing the ID', async () => {
     const f = await setup(2)
     const before = await readDraft(f.app, f.lessonId)

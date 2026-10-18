@@ -56,7 +56,7 @@ export function ExecutionRuleEditor({
   return null
 }
 
-function StepsEditor({
+export function StepsEditor({
   steps,
   index,
   onChange,

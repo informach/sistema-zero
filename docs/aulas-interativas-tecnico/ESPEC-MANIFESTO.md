@@ -139,6 +139,13 @@ e `installedExtensions`. Use a versão do manifesto da extensão oficial. `chain
 `content`. O mesmo `key` pode ser `workspaceKey` nas seções de construção e aparecer em `blockKeys`
 na seção de entrega.
 
+**Gabarito (`solutionProject`, 18/10/2026):** o projeto pronto da equipe, no mesmo formato do
+`initialProject`, e opcional. Ele nunca chega ao aluno. É ele que prova os objetivos da seção: a
+publicação recusa objetivo obrigatório que o gabarito não cumpre, e todo objetivo que **roda o
+jogo** exige o gabarito. Reimportar um manifesto SEM `solutionProject` preserva o gabarito que a
+equipe criou no Admin; com ele, o do manifesto vale. A antiga `activity` do bloco Estúdio
+(auto-correção com nota) saiu em 18/10/2026: não a escreva, porque ela não é mais lida.
+
 **Pinta:** `initialAsset` é o desenho inicial completo. Em entregas pela galeria, `initialAsset` é
 `null` e `gallery` informa `minItems` e `maxItems`; a criança escolhe criações da própria galeria.
 
@@ -302,7 +309,28 @@ trabalham nele.
 ```
 
 `blockIds` lista as chaves dos blocos que precisam ser concluídos (vídeo assistido a 90%, cena com
-as metas caídas, quiz respondido). `projectChecks` verifica a estrutura do projeto no Estúdio.
+as metas caídas, quiz respondido). `projectChecks` são os **Objetivos** da seção, conferidos no
+servidor em **Verificar esta parte** (até 20; [especificação](../plans/2026-10-18-objetivos-do-estudio.md)):
+
+```json
+{ "id": "anda", "label": "Faça o herói andar com a seta", "hint": "Use o bloco de mover com as setas.",
+  "optional": true,
+  "rule": { "type": "behavior", "steps": [{ "action": "press", "key": "ArrowRight", "holdMs": 600 }],
+            "expect": { "target": { "kind": "value", "path": "heroi.x" }, "compare": "changed" } } }
+```
+
+- `label` (até 200) é a tarefa como a criança lê; `hint` (até 300) aparece só depois de verificar e
+  não passar; `optional: true` faz um **desafio extra** (não tranca a seção; 5 XP uma vez). Seção só
+  com extras não tem critério.
+- `rule.type` de estrutura, conferida na hora: `usesBlock` (só Blocos e Ponte), `usesLoop`,
+  `declaresVariable`, `definesFunction` e `callsFunction` (blocos ou código; só conta o que mudou
+  desde o `initialProject`).
+- `rule.type` que **roda o jogo** num navegador sem internet (até 8 por seção, 40 s de esperas
+  somadas): `behavior` (`steps` com `wait`/`press`/`click` e `expect` com `target` `value` no
+  clássico, `text`, `console` ou `game` nos kits Pro: `phase`, `score`, `goal`, `health`),
+  `functionReturns` (`name`, `cases` com `args` e `expected`; no Pro, `module` com o arquivo que
+  exporta a função) e `script` (`steps` e `code`, o corpo de uma função que devolve `true`; só Ponte e
+  Pro). Não valem em jogo 3D do modo Blocos. Todos exigem o `solutionProject`.
 
 Na direção vigente, uma seção com vídeo e atividade nunca conclui por apenas um deles:
 
