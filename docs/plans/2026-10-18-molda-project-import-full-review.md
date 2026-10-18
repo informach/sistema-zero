@@ -42,6 +42,19 @@ confirmação e desfazer. Os tokens e o desenho compartilhado da plataforma perm
    legado acessava `files` em uma união que também admite árvores Pro. O teste agora
    confere que recebeu a variante JavaScript Classic antes de retirar os campos de
    linguagem. Os três cenários do contrato permaneceram aprovados.
+6. **Coleta de callback no teste de retirada Python:** o Happy DOM guarda o callback
+   de observação de mutações por `WeakRef`. Sob coleta de lixo, o teste perdia o
+   gatilho de retirada e chegava ao prazo limite. A reprodução com `Bun.gc(true)`
+   falhou nos dois cenários. O teste agora observa a montagem real do iframe por
+   um spy restaurado no `finally` e agenda a retirada na microtarefa seguinte,
+   conservando o runner real e as asserções de remoção síncrona. Os dois cenários
+   passaram sob coleta forçada; a suíte completa passou com 9.253 aprovações,
+   zero falhas e os quatro skips existentes. A checagem de tipos do teste passou.
+7. **Contrato assíncrono no teste de personalização do Farol:** a integração Python
+   tornou `completeLibraryAssets` assíncrona. O teste do curso ainda lia a Promise
+   como projeto. A falha foi reproduzida isoladamente; as duas chamadas agora são
+   aguardadas, mantendo todas as verificações de conteúdo e identidade. Os nove
+   cenários do arquivo passaram após a correção.
 
 ## Verificação da integração local
 
