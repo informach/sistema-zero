@@ -1,13 +1,13 @@
 # Techspec — política própria de Jornada Kids
 
-Status: desenho aprovado pelo agente principal; T1 puro autorizado antecipadamente e implementado isoladamente. T2+ e integração aguardam checkpoint. A estratégia de baseline precisa das provas SQL de `_test-plan.md` antes de ser considerada correta.
+Status: T1/T2 são checkpoints intermediários testados sobre `ac85a7a32` + guard `a85bcf327`. A orientação explícita do usuário exige um único modelo canônico, seed persistido e cleanup da jornada antiga antes de merge. O payload abaixo substitui os modos/fallbacks do protótipo, ainda fora da composição. Bootstrap em revisão; rebase remoto antes de mudar contratos. Sem T3 iniciado.
 
 ## Arquitetura e alternativas
 
 | Alternativa | Ganho | Limitação | Decisão proposta |
 |---|---|---|---|
 | Reutilizar Adult diretamente | Menos classes iniciais | Não representa slots legados, identidade/contadores, faixas Molda, trava de base e posto permanente; a regra adulta de IA conflita com Kids | Não escolher |
-| Política Kids com adaptador legado e baseline materializado | Mantém semântica atual, permite requisitos/capacidades, custo de preservação limitado por lote | Precisa preparar a ativação e congelar eventos na política corrente | Recomendada; validar em SQL |
+| Política Kids canônica com seed explícito e baseline materializado | Uma fonte persistida com comportamento inicial exato | Precisa bootstrap e captura antes de cada publicação | Escolhida pelo usuário; fluxo em revisão |
 | Histórico MVCC + replay por perfil/revisão | Evita varredura antes de publicar | História de xid legada não é original; catálogo mutável, purge, revisões acumuladas e visibilidade exigem provas adicionais | Hipótese futura, sem dependência no MVP |
 
 Fluxo:
@@ -55,12 +55,18 @@ interface KidsJourneyStep {
   requirements: readonly KidsRequirement[]
   capabilities: readonly KidsCreatorCapability[]
 }
-type KidsJourneyActivePolicy =
-  | { schemaVersion: 1; mode: 'legacy' }
-  | { schemaVersion: 1; mode: 'configured'; steps: readonly KidsJourneyStep[] }
-type KidsJourneyPolicy =
-  | KidsJourneyActivePolicy
-  | { schemaVersion: 1; mode: 'paused'; policy: KidsJourneyActivePolicy }
+interface KidsJourneyPolicy {
+  schemaVersion: 1
+  mode: 'active' | 'paused'
+  steps: readonly KidsJourneyStep[]
+  tierAccess: readonly KidsTierAccess[]
+}
+interface KidsTierAccess {
+  tier: JourneyCourseTier
+  opensAt: JourneyLevelSlug
+  completedAt: JourneyLevelSlug
+  foundation: { slot: 1; milestone: KidsMilestone; whenMissing: 'open' | 'locked' }
+}
 interface KidsCourseMilestone {
   courseId: string
   completed: boolean
@@ -71,6 +77,11 @@ interface KidsCourseMilestone {
 interface KidsJourneyEarned {
   level: JourneyLevelSlug
   capabilities: readonly KidsCreatorCapability[]
+  courseAccess: {
+    entry: readonly JourneyCourseTier[]
+    expanded: readonly JourneyCourseTier[]
+    reward: readonly JourneyCourseTier[]
+  }
 }
 ```
 
@@ -121,31 +132,48 @@ interface KidsJourneyReadiness {
 
 `KidsJourneyImpact` contém versão base, alterações por avanço (`requirementsAdded/Removed/Changed`, `capabilitiesAdded/Removed`), readiness proposta e comparação opcional do perfil (`before/after/preservedCapabilities`, pendências curriculares/comerciais informadas por camada autorizada). Códigos de issue são um enum central durante implementação, não comparação de strings traduzidas. `KidsJourneyAdvanceView` contém `level`, `earned`, `available`, requisitos com estado e capacidades oferecidas. Esses dois views são somente saída; não aceitam concessões vindas do navegador.
 
-`steps` configurados contém exatamente os sete avanços na ordem coder→god. Os oito postos continuam presentes: noob é entrada, não uma etapa artificial que exige zero cursos. O schema/runtime distingue `mode` explicitamente; pausa não é o mesmo que registro ausente.
+`steps` contém exatamente os sete avanços coder→god; noob é entrada. `tierAccess` contém exatamente os sete tiers, sem repetição, com slugs válidos e opensAt ≤ completedAt. Esse contrato substitui legacy/configured/paused do protótipo ainda não implantado, sem tradutor ABI.
 
-Pausa é um estado que retém uma política ativa validada; não aceita política vazia nem pausa aninhada. `pauseKidsJourneyPolicy(policy)` cria esse estado de forma idempotente, e `kidsJourneySteps` continua expondo os requisitos retidos. A futura publicação deve derivar essa regra da versão ativa no servidor e verificar sua igualdade/hash; não aceitar que um cliente troque os gates de curso ao mesmo tempo em que pede somente pausar.
+Pausa conserva steps e tierAccess completos. O comando deriva da configuração corrente no servidor e verifica igualdade/hash; não aceitar trocar gates disfarçadamente ao pausar. Não há regra vazia/aninhada nem algoritmo alternativo.
 
 `slot` é identidade pedagógica legada, não um alias de courseId. Dois marcos do mesmo curso qualificam um slot com a precedência atual de snapshots (showcase → complete → fallback vivo). Não combinar complete de um curso e showcase de outro que ocupou o mesmo slot. Cursos explícitos satisfazem somente seu próprio ID; a mesma matéria pode ser repetida em avanços posteriores sem apagar marcos.
 
-O adaptador `legacyKidsJourneyPolicy()` deriva os requisitos incrementais de `CREATOR_JOURNEY_LEVELS`; não copia outra tabela manual. Default tem 49 requisitos de showcase distribuídos em 1+8×6. Recompensas incrementais derivam dos defaults atuais, incluindo faixas Molda. `computeStudentLevel` e `resolveJourneyCourseLock` permanecem como oráculos do comportamento legado.
+O seed explícito contém 49 requisitos de showcase em 1+8×6, capacidades e regras de acesso atuais. Gerar/conferir o artefato contra referência congelada do algoritmo anterior. Runtime normal não importa seed/fábrica/algoritmo antigo como fallback. Requisitos, rewards, thresholds e learning mapping normais não vêm de `CREATOR_JOURNEY_LEVELS`; metadados estruturais de slug/ordem/tier/limites podem continuar em código. Remover caminhos antigos sem consumidor legítimo depois da substituição completa, mantendo referência histórica somente nas provas.
+
+`opensAt` governa posições futuras. `completedAt` transforma posições em revisão e abre recompensas; antes disso, posições 2+ usam a fundação explícita. Reward sem base segue `whenMissing` mesmo em tier futuro, preservando exatamente o comportamento atual. Extra/live/formatura continuam sob autoridade do currículo/matrícula, sem gate novo de Lenda.
+
+| Tier do seed | opensAt | completedAt | Fundação |
+|---|---|---|---|
+| primeiros-passos-2d | noob | coder | slot1/showcase, missing open |
+| iniciante-2d | coder | hacker | slot1/showcase, missing open |
+| iniciante-3d | hacker | explorer | slot1/showcase, missing open |
+| intermediario-2d | explorer | elite | slot1/showcase, missing open |
+| intermediario-3d | elite | architect | slot1/showcase, missing open |
+| avancado-2d | architect | champion | slot1/showcase, missing open |
+| avancado-3d | champion | god | slot1/showcase, missing open |
+
+Não duplicar um learningTier hardcoded: apresentações derivam dos requisitos e dessas regras. Readiness usa o mesmo resolver e rejeita auto-bloqueio avanço/reward/base. Esse payload é a proposta final para review antes da implementação canônica.
 
 Exportações públicas propostas:
 
 ```ts
-legacyKidsJourneyPolicy(): KidsJourneyPolicy
 projectKidsJourney(input: KidsJourneyProjectionInput): KidsJourneyView
 validateKidsJourneyPolicy(input: unknown): KidsJourneyPolicyValidation
 analyzeKidsJourneyReadiness(input: KidsJourneyReadinessInput): KidsJourneyReadiness
 compareKidsJourney(input: KidsJourneyComparisonInput): KidsJourneyImpact
 ```
 
-T1 também implementa os schemas/tipos de rede, `kidsJourneySteps`, `pauseKidsJourneyPolicy`, helpers de requisito/base e `resolveKidsJourneyCourseLock`. Este último exige catálogo conhecido (array, inclusive vazio); catálogo desconhecido não pode ser convertido no fail-open de base ausente. Os consumidores existentes continuam sem usar esses contratos até T4+.
+O resolver único exige catálogo conhecido; desconhecido não é base ausente. Remover delegação legacy e helpers que se tornem aliases sem valor no novo contrato. Consumidores não serão ligados ao protótipo intermediário antes dessa substituição.
+
+Os 21 direitos pedagógicos limitados preservam gates editáveis sem congelar IDs de cursos: expanded implica entry; reward não implica entry (recompensa futura sem base é um quirk atual). Entry elegível exige posto≥opensAt; expanded exige posto≥completedAt ou entry+fundação satisfeita/ausente conhecida com whenMissing open; reward exige posto≥completedAt ou base ausente conhecida com whenMissing open. Acesso efetivo usa a união dos direitos persistidos e calculados, depois cruza currículo/contexto/matrícula. Antes de toda troca, congelar também esses direitos, não apenas posto/app capabilities. Assim V1 liberal→aluno offline→V2 restritiva não fecha aulas já liberadas pela política.
+
+Pausa congela posto/app capabilities; direitos de curso seguem política retida+posto congelado e podem ampliar após conclusão real da base. Congelar esse acesso monotonicamente. Pausa não impede novato de estudar entrada nem promove posto com novos fatos.
 
 Tipos de entrada carregam política/versão, marcos, concessões e fatos mínimos de catálogo. Não recebem clients, banco ou callback de persistência. Schemas Zod estritos, UUIDs, listas sem repetição, limite de 200 requisitos por avanço, slots conforme `journeySlotsForTier`, capacidades enumeradas. Não introduzir Effect-TS: projeto usa TS/Zod/ports.
 
 ### Projeção
 
-- Começar do maior posto materializado e das capacidades congeladas; em modo legado não materializado, partir da avaliação legada atual.
+- Começar do maior posto materializado e das capacidades congeladas; regras sempre vêm do JSON canônico persistido, inclusive no baseline inicial com seed.
 - Avaliar somente os avanços posteriores ao posto conquistado, em ordem; requisitos removidos de etapas vencidas não reabrem dívida. Array vazio de requisito custom é inválido, nunca avanço automático.
 - Acrescentar capacidades que a política corrente oferece em postos já atingidos; isso permite liberalização sem forçar refazer cursos. Remoção futura não apaga grants já ganhos.
 - Congelar posto e capacidade em campos distintos. O posto preservado não autoriza automaticamente uma ferramenta nova que não foi atribuída nem oferecida naquela política.
@@ -158,7 +186,7 @@ View aditiva proposta:
 interface KidsJourneyView {
   audience: 'kids'
   policyVersion: number
-  mode: 'legacy' | 'configured' | 'paused'
+  mode: 'active' | 'paused'
   earned: KidsJourneyEarned
   nextLevel: JourneyLevelSlug | null
   missing: readonly KidsRequirement[]
@@ -171,11 +199,11 @@ interface KidsJourneyView {
 
 O diff de requisitos/capacidades de uma pausa pura fica vazio porque a regra foi retida. A UI deve comparar também `before.mode`/`after.mode` e apresentar a transição para pausado; `changes.length === 0` sozinho não significa que a configuração é idêntica.
 
-`GamificationMeView` recebe `kidsJourney?` ao lado do `journey?` Adult. `level.slug/next` permanece coerente com Kids. `level.remaining` continua um espelho legado por etapa para clientes antigos, mas nenhuma UI custom pode inferir requisitos/capacidades dele; os novos consumidores usam `kidsJourney`. Não inventar contagens por slot para curso extra sem posição.
+O payload Kids exige sua view `kidsJourney`; o namespace `journey` Adult permanece separado. `level.slug/next` pode ser apresentação derivada da mesma projeção, sem espelho de remaining calculado pelo algoritmo antigo. Migrar consumidores juntos: view ausente é indisponível, não autorização por posto fixo. Não inventar ABI/contagens por slot para curso extra.
 
 ## Trava dos cursos e prontidão
 
-Preservar organização fixa de `learningTier`, papéis e posições. Em modo legado delegar ao código atual. Custom usa posto efetivo para `future-tier`/`tier-reward` e resolve a base pelo marco configurado para a base no avanço daquela etapa; na ausência desse requisito mantém showcase legado. Mesmo projetor serve listagem e `CheckAccessService`.
+Preservar papéis/posições. O único resolver recebe policy.tierAccess, posto efetivo e catálogo para future-tier/tier-reward/foundation-first. Não usa learningTier/thresholds do catálogo antigo nem inventa showcase se a base foi omitida do avanço. O marco da base está explícito no payload. Mesmo resolver serve listagem, readiness e `CheckAccessService`.
 
 Análise estrutural monta dependências entre avanço, curso e base. Exemplos:
 
@@ -197,16 +225,22 @@ Novas tabelas conceituais no schema `members` (migration aditiva gerada depois d
 
 | Tabela | Dados e invariantes |
 |---|---|
-| `kids_journey_policy` | Uma linha `id='kids'`, versão ativa, JSON validado, data; ausência = legado v0. |
-| `kids_journey_policy_revisions` | Versão única, política imutável, versão anterior, autor autenticado, data servidor, motivo de 1–500 caracteres, resumo do diff, baseline de origem. Sem UPDATE para restaurar revisão antiga. |
-| `kids_journey_earned` | Por perfil Kids, conta proprietária conhecida, maior posto, capacidades permanentes, versão reconciliada e data. UPSERT monotônico; capacidades enumeradas sem entradas desconhecidas. Pode usar linhas de grant separadas se isso simplificar unicidade/auditoria real. |
-| `kids_journey_preparations` | ID, expectedVersion, draftHash, catálogo/fallback capturado, cursor, upperBound, status preparing/ready/failed/stale, contagens e erro operacional sem PII desnecessária. Dados de trabalho expirados têm limpeza explícita. |
+| `kids_journey_policy` | Uma regra canônica persistida, fase/versão e data. Proposta: initializing V0 explícita e published V>=1, com CHECK coerente. Ausência não é configuração. |
+| `kids_journey_revisions` | Versão única, política imutável, versão anterior, autor autenticado, data servidor, motivo de 1–500 caracteres, hashes e preparação de origem. Diff é derivado dos JSONs das políticas, sem segunda cópia divergente. Sem UPDATE para restaurar revisão antiga. |
+| `kids_journey_earned` | Por perfil Kids admitido, inclusive noob sem XP, conta proprietária imutável, maior posto, nove capacidades e 21 direitos de curso, versão reconciliada/data. UPSERT monotônico; listas enumeradas sem entradas desconhecidas. |
+| `kids_journey_preparations` | ID, expectedVersion, sourcePolicy, candidatePolicy, draftHash, catalogHash, catálogo/fallback capturado, cursor, upperBound, status preparing/ready/stale/published e contagem. Falhas/retomada/limpeza operacional pertencem ao serviço T3; owner irresolvido retorna `unowned` sem avançar. Dados de trabalho expirados precisam de limpeza explícita antes de habilitar custom. |
 
 É aceitável armazenar grants separados por capacidade para unicidade e origem; o contrato exige maior posto e união monotônica, não uma obrigação de compactar tudo em JSON. Definir a forma final após revisar o padrão de migrations no checkpoint.
 
-CAS compara a versão no UPDATE/INSERT, não read-then-write na aplicação. Primeiro registro v0→v1 usa INSERT on conflict do nothing. Publicação ativa+histórico+referência da preparação são uma transação. O cliente não envia autor/data/concessões. Sem histórico fictício para alterações anteriores à feature.
+CAS compara fase/versão no UPDATE/INSERT. Init idempotente não sobrescreve edição/histórico existentes. Publicação+histórico+preparação real são uma transação. Bootstrap usa actorKind system/actorId null; operação humana usa actorKind user/UUID autenticado. Não fabricar conta humana ou preparação vazia. Ajustar schema/port intermediários sem ABI do protótipo não implantado.
 
-A ausência da linha ativa precisa da mesma proteção de concorrência: `SELECT ... FOR SHARE` em linha inexistente não bloqueia sua criação. A implementação deve usar um lock de política estável mesmo no v0 (advisory compartilhado/exclusivo por namespace), ou criar o registro sentinela legado v0 na migration e provar a transição das instâncias antigas. Recomendação inicial: lock advisory transacional de política também no v0, compartilhado pelos writers e exclusivo no publish, sem transação global aberta durante preparação. O caminho CAS continua necessário; lock não substitui expectedVersion.
+A inicialização usa o namespace advisory estável: ausência de linha não é protegida por FOR SHARE. V0 é provisionamento com JSON completo, não sentinela de algoritmo legado. Hook usa essa configuração persistida na mesma transação do marco; publish exclusivo antes da preparação. Sem transação global longa, preservando CAS.
+
+### Bootstrap canônico — em revisão
+
+Persistir seed completo como initializing V0; preparar baseline real com o mesmo avaliador; hook protege perfis/commits novos; revalidar hashes, fence e CAS e publicar V1 com revisão seed/system. Só então expor a primeira política publicada. Antes do provisionamento, operações dependentes ficam indisponíveis; depois dele, ausência com histórico é invariante, nunca reseed/reset. Init repetido não altera política editada. Capturar catálogo/coorte e hashes.
+
+Catálogo incompleto não apaga slots futuros nem impede seed estruturalmente válido que reproduz o produto atual. Readiness distingue pendências herdadas de novo ciclo inválido; falha de leitura não vira catálogo vazio. Preservar checkpoint/backup T2, rebase remoto e regenerar a 0136 ainda não publicada com snapshot/journal coerentes, sem traduzir JSON antigo de teste. Recriar somente QA owned, sem clientes e sem FORCE, para o novo hash.
 
 Restaurar consiste em publicar cópia de uma política antiga como nova revisão, com CAS e baseline. Não apagar grants ou reduzir números de versão em rollback operacional.
 
@@ -216,9 +250,9 @@ O estado atual só congela slots/blocos; não há uma tabela completa de posto/c
 
 Preparação proposta, a provar com Postgres:
 
-1. Iniciar sob a versão ativa V. Validar draft, guardar hash, fotografia dos fatos de curso usados como fallback legado e upperBound da coorte relevante. Coorte = perfis Kids com marcos ou estado de jornada já existente; perfis sem marco não tinham capacidades globais no default.
-2. Processar páginas por chave estável (primeira implementação: até 50 perfis por chamada, default 20; medir antes de ajustar). Cada perfil é reconciliado pela política V, gravando somente o maior posto e a união das capacidades. Cursor avança atomicamente com o resultado, e repetição é idempotente. Não usar OFFSET em coleção mutável.
-3. A política V continua ativa. Durante todo o processo, award de marco Kids e leitura autenticada de jornada reconciliam V sob a mesma disciplina de locks. Perfil novo que apareça abaixo do cursor é protegido pelo hook do próprio marco. Perfis elegíveis pela mera publicação de V, sem visita/award novo, entram na varredura antes de V sair.
+1. Iniciar sob a versão ativa V. Validar draft, guardar hash, fotografia do catálogo e upperBound da coorte completa. Bootstrap captura Auth id/owner de TODOS os perfis, inclusive sem XP/arquivados, mais históricos Members comprovados. Depois da admissão universal descrita abaixo, a coorte recorrente é TODOS os registros earned, inclusive noob/listas vazias; não presumir gamification universal.
+2. Processar páginas por chave estável (primeira implementação: até 50 perfis por chamada, default 20; medir antes de ajustar). Cada perfil é reconciliado pela política V, gravando maior posto e união de capacidades/21 direitos de curso. Cursor avança atomicamente com o resultado; repetição é idempotente. Não usar OFFSET em coleção mutável.
+3. A política V continua ativa. Award/reconciliação congelam V sob a mesma disciplina de locks. Perfil novo só fica visível após initialize Members persistir earned sob política corrente; isso protege IDs abaixo/fora do cursor mesmo sem marco. Perfis elegíveis pela mera publicação de V entram na varredura antes de V sair.
 4. Ao terminar, marcar ready. Publicar compara expectedVersion/draftHash, confere readiness/catalogHash novamente e só então ativa V+1 com histórico. Mudança incompatível do catálogo exige nova preparação; grants já materializados sob V permanecem válidos.
 5. Crash antes de ready ou antes do CAS não troca a regra ativa. Repetir etapa não duplica XP nem grants. Publicações concorrentes deixam no máximo uma versão ativa; preparação antiga fica stale.
 
@@ -227,6 +261,18 @@ O hook de award deve ser instalado em todas as instâncias escritoras antes de p
 Ordem de locks proposta para provar: conta/cerca → owner/gamification → política compartilhada (inclusive v0) → cursor da preparação, quando houver. A publicação adquire política exclusiva antes da preparação e não percorre contas nessa transação. Reservar uma chamada de processamento, se necessário, usa lease em transação curta; não manter o lock da preparação enquanto espera por conta/política. O processamento de baseline usa uma transação por perfil, evitando segurar locks de várias famílias durante um lote. Revisar callers de award e purge para não introduzir inversão; o código atual de award começa em `gamification:<userId>` e precisará acomodar a proteção da conta nas operações Kids pertinentes.
 
 Jobs não concluem ignorando linhas com owner não resolvido. Auditoria local deve medir legados sem vínculo/snapshot; falha operacional permanece visível e impede publicar uma preparação que não provou preservação. Isso não afirma que tais linhas existam no banco real.
+
+### Admissão Auth sem lock entre databases
+
+Estado separado `admissionState: pending|ready` preserva `status:active|archived`. Novos perfis nascem pending durável e contam no teto. Create com requestId estável tem unicidade por conta e retorna/reutiliza o mesmo ID no retry; não cria outro irmão. A grade parental pode mostrar preparando/repetir/cancelar, sem seleção. Nenhuma sessão/perfil público/estudo delegado/impersonação aceita pending.
+
+Após commit Auth, S2S específico Auth→Members initialize recebe owner capturado pelo Auth autorizado, persiste earned mesmo noob/[] sob lock account/fence→owner→policy e retorna recibo. Não ampliar ownership geral para pending, nem fazer RPC Auth dentro da TX Members. Após ACK, Auth CAS pending→ready sob seu lock local profile:<account>, compartilhado com createWithinLimit e prepareDeletion, revalidando conta ativa e perfil active/pending/mesmo owner. Não exige repetir CAS da versão de política: conquista já está persistida e incluída na coorte.
+
+Pending é trabalho durável: mesmo ID/requestId, nextAttemptAt/attempts/leaseUntil, retry com limites e sweeper efetivamente agendado/observável. Falha de rede não remove perfil nem gera outra cobrança (criação atual apenas consulta allowance). Crash após Members commit repete initialize idempotente e une direitos atuais. Arquivamento cancela visibilidade; ready não revive arquivado. prepareDeletion bloqueia conta sob lock Auth antes de Members purge; ACK tardio não ativa conta bloqueada, initializer depois da purge é negado por fence.
+
+Rollout inicial suspende criação/import/backfill e retira instâncias Auth antigas de create. Provisionar seedV0 e capturar pares existentes antes de habilitar somente criadores pending. Perfis antigos active/archived permanecem ready: não mudar todos para pending. Baseline completo precede V1/exposição do novo modelo. Captura usa keyset UUID/upperBound e pares owner imutáveis, copiados/hash na preparação; exclusão precisa receipt/fence, não skip silencioso. Não há lock PG compartilhado Auth/Members nem 2PC.
+
+Inventário obrigatório: CreateProfileService/profile.repository; backfill-default-profiles SQL direto; select-profile/refresh/change-impersonation-mode/study-access/get-own-profile/get-public-profile/update-profile; listas active/batch/search/admin/internal ownership/recipients e emissores de token/browser/desktop. RegisterService cria somente conta/tokens; não foi encontrado import/restore produtivo de perfil (restore do aggregate hidrata registro). Se surgir novo criador/restauração, usar mesma admissão. Scheduler real e handlers de retry serão fechados na implementação Auth, com teste do agendamento, não só retry manual.
 
 ### Baseline versus MVCC
 
@@ -266,7 +312,7 @@ Preparação progride por chamadas limitadas do painel e retoma ao reabrir. Não
 | Listagem e `CheckAccessService` | Compartilhar resolução de trava usando política/posto/base milestone. Manter checagem de matrícula e modalidade. |
 | Missões | Usar capacidades/acesso efetivo para elegibilidade de criação; não reembaralhar missões já atribuídas nem invalidar resgates concluídos. |
 | Member-shell | Adicionar `kidsStudioTier(view, role, blocks)` no server de unlocks; inferir modos pelo view. Blocos→extensões continua server-only. Migrar gates de IA/Pensa/Pro e narração para capability resolvida. |
-| Kids UI | Menu, locks, recompensas e horizonte recebem view; default pode usar adapters antigos verificados por paridade. Custom não deriva requisitos de `LEVEL_STUDY`/remaining fixo. |
+| Kids UI | Menu, locks, recompensas e horizonte recebem a mesma view canônica. Não usar adapters antigos nem derivar requisitos de `LEVEL_STUDY`/remaining fixo. |
 | Pensa | Transportar KidsJourneyView/capacidades de cada participante no contrato interno e usar na montagem do contexto; bloco/extension/grants continuam individuais. |
 | Molda | Converter capacidades/faixas em famílias. Faltando view, retornar estado indisponível; nunca `undefined` liberador por erro. |
 | Mural/remix | Usar tier resolvido no clique e no selo, mantendo checagem autoritativa do snapshot. Jogar publicação existente não ganha novo requisito de curso. |
@@ -278,11 +324,11 @@ Manter os oito slugs e assets. Para custom, gerar promessas de ferramentas pelos
 
 Horizonte custom usa requisitos e disponibilidade conhecidos da política; não é automaticamente o maior tier com oito slots. Visão nunca esconde posto conquistado. Diferenciar contagem da trilha inteira e requisitos para próximo posto. Curso completo sem Mural pode estar pronto para avanço custom e pendente de paleta; mostrar a pendência específica sem mentir.
 
-Implantar reader/backend primeiro, interfaces depois, ativação custom por último. Enquanto algum leitor não entende KidsJourneyView, manter modo legado. Ausência do campo novo não é permissão para aplicar fallback fixo após custom ativo: isso precisa virar indisponibilidade recuperável ou impedir ativação pelo rollout. Verificar shared member-shell consumido também por Adult para não regressar seu contrato.
+Finalizar todos os consumidores sobre o mesmo modelo antes de liberar em staging/produção. Provisionar schema/hooks/seed antes da exposição não cria modo legado permanente. Campo ausente/indisponível não permite voltar a thresholds fixos. Preservar contratos compartilhados Adult e JS/Python.
 
 ## O que permanece em seu sistema
 
-XP/moedas/streak/badges e calendário; bloco/extensão por curso; runtime e servidores de execução; autoria de aula/oficina; vagas ao vivo; matrícula e assinaturas; catálogo comercial; serviços criativos; política Adult. Não renomear campos career de rede/banco para implementar esta feature.
+XP/moedas/streak/badges; snapshots/blocos/extensões por curso; runtime/catalog e execução; projetos JSv2; autoria/aulas/oficinas; vagas ao vivo; matrícula/assinaturas; namespaces/ownership; política Adult e histórico de migrations. Cleanup é somente da jornada Kids substituída. Não remover outros contratos por se chamarem legacy nem renomear campos career.
 
 ## Validação e implantação
 

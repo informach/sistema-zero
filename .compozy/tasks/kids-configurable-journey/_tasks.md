@@ -8,7 +8,9 @@
 
 **Spec:** [_techspec.md](./_techspec.md). **Produto:** [_prd.md](./_prd.md).
 
-T1 foi iniciado antecipadamente por instrução explícita do root em 18/10/2026, somente no worktree isolado. A base ainda precisa ser atualizada ao checkpoint conciliado antes da integração e de T2+. Não usa subagentes adicionais. Tabelas/serviços/UI/consumidores não foram implementados.
+T1 foi iniciado antecipadamente por instrução explícita do root em 18/10/2026, somente no worktree isolado. Após publicação de `ac85a7a323491b9b2416fcc3008b17140a328284`, o root autorizou T2. Rebase sem conflitos, com backup e os quatro commits equivalentes no range-diff; HEAD T1 atualizado `08ad6801f`. Não usa subagentes adicionais. T2 permanece desacoplado de consumidores/rotas/hosts.
+
+**Novo escopo obrigatório do usuário:** um modelo canônico, seed persistido e todos os consumidores migrados, sem modo legado/fallback normal/dupla autorização. T1/T2 abaixo registram checkpoints intermediários, não o contrato final. T1R/T2R são pré-requisitos de T3 e do merge. Cleanup somente da jornada Kids; não tocar compatibilidade JSv2, Adult, snapshots/paletas, ownership, runtime/catalog ou migrations de outros sistemas.
 
 ## Restrições globais
 
@@ -26,15 +28,15 @@ T1 foi iniciado antecipadamente por instrução explícita do root em 18/10/2026
 
 **Arquivos:** esta pasta e contratos JS/Python modificados no checkpoint, lidos antes de alterar implementação.
 
-- [ ] Confirmar branch/status do worktree, preservar estes documentos e atualizar para o checkpoint informado sem reset destrutivo.
+- [x] Confirmar branch/status do worktree, preservar estes documentos e atualizar para o checkpoint informado sem reset destrutivo.
 - [ ] Comparar `git diff 3d83a3f46..<checkpoint> -- packages/core packages/members packages/member-shell packages/community-kids packages/admin packages/studio` e ajustar o mapa de arquivos/tipos.
 - [ ] Validar com root o baseline proposto; registrar definição de conquista na publicação e tratamento de legados sem owner/snapshot após auditoria real.
 - [ ] Registrar Faísca aula-only no primeiro editor como escopo recomendado, não nova regra supostamente aprovada; manter modelagem extensível.
-- [ ] Escolher formato de estado/grants persistidos dentro do contrato monotônico e gerar as migrations na numeração atual.
+- [x] Escolher formato de estado/grants persistidos dentro do contrato monotônico e gerar as migrations na numeração atual: posto + união JSONB enumerada em `kids_journey_earned`; migration gerada 0136.
 
 **Entrega verificável:** especificação atualizada e autorização de implementação recebida do root. Sem mudança produtiva nesta etapa.
 
-## T1 — Contrato e avaliador puro com paridade exata
+## T1 — Checkpoint intermediário do avaliador puro
 
 **Depende de:** T0 para integração; antecipação do núcleo puro autorizada pelo root.
 
@@ -61,7 +63,7 @@ Primeira verificação (`286614934`): 44 testes, 0 falhas, 2.641 asserções; Bi
 
 **Aceite:** default e locks legados equivalentes nos casos de `_test-plan.md`; requisito vazio custom não sobe; pause não libera; prova de ordem sem união de marcos de cursos distintos.
 
-## T2 — Persistência aditiva, monotonicidade e proteção de exclusão
+## T2 — Checkpoint intermediário de persistência/monotonicidade
 
 **Depende de:** T1.
 
@@ -73,18 +75,39 @@ Primeira verificação (`286614934`): 44 testes, 0 falhas, 2.641 asserções; Bi
 
 **Produz:** port do repositório com leitura individual/batch de fatos/estado, UPSERT monotônico, CAS de policy+histórico, preparação paginada e purge. Exportar records tipados, sem banco na camada application.
 
-- [ ] Escrever DB tests que provam UPSERT concorrente de posto/capacidades e CAS v0/v1, sem escolher vencedor por timestamp do cliente.
-- [ ] Definir tabelas policy/revisions/earned/preparations conforme techspec e checks de enum/versão.
-- [ ] Gerar migration pelo fluxo do package; inspecionar SQL, journal e snapshot. Não reescrever snapshots históricos do ledger para simplificar feature.
-- [ ] Implementar leituras batch, incluindo snapshots legados e curso apagado; manter a precedência atual dos snapshots.
-- [ ] Integrar purge/fence com ordem consistente dos locks; provar que retry de preparação não ressuscita grant de conta excluída.
-- [ ] Em janela coordenada com Postgres de teste já disponível: `bun test tests/db/kids-journey.repository.test.ts tests/db/user-data-purge.test.ts` em `packages/members`.
+- [x] Escrever DB tests que provam UPSERT concorrente de posto/capacidades e CAS v0/v1, sem escolher vencedor por timestamp do cliente.
+- [x] Definir tabelas policy/revisions/earned/preparations conforme techspec e checks de enum/versão.
+- [x] Gerar migration pelo fluxo do package; inspecionar SQL, journal e snapshot. Não reescrever snapshots históricos do ledger para simplificar feature.
+- [x] Implementar leituras batch, incluindo snapshots legados e curso apagado; manter a precedência atual dos snapshots.
+- [x] Integrar purge/fence com ordem consistente dos locks; retry depois da exclusão não ressuscita grant. Corrida de award/purge completa continua T3.
+- [x] Em janela coordenada: **20/0/69 SQL Kids + 3/0/24 purge**, sem skips, e **TSC Members completo EXIT0** com deps legítimas/guard companion `a85bcf327`. Seis regressões lifetime tiveram RED causal→GREEN6/11; manter capturas/defaults frescos no contrato canônico.
 
 **Aceite:** migration aditiva, DB tests realmente executados (não apenas skip), posse/perfil/audiência isolados e nenhuma regressão de estado sob concorrência.
 
+Recorte T2 atual: port/repositório com snapshot read-only, freeze monotônico, preparação keyset de um perfil por transação, CAS SQL e histórico, sem ligação na composição. A publicação de baixo nível permanece inacessível a rotas/consumidores: o hook de award e a orquestração T3 são obrigatórios antes de habilitar custom. Erro `unowned` interrompe o cursor; status/retomada/retention operacional do serviço são T3, não supostos concluídos pelo repositório.
+
+## T1R/T2R — Contrato único, seed explícito e cleanup do protótipo
+
+**Depende de:** review do payload final pelo root; rebase remoto informado antes de editar contratos. Sem T3 antes desse aceite.
+
+- [ ] Preservar checkpoint/backup T2; rebase sobre remoto `f664cfa5184e5a4d633edb9292d9f1b09b8115be`, preservando patch companion de fixture sem cherry-pick duplicado; informar conflito em fronteiras compartilhadas.
+- [ ] Substituir legacy/configured/paused por configuração única `{schemaVersion, mode:active|paused, steps, tierAccess}`; pausa mantém tudo, sem nesting/fallback.
+- [ ] `tierAccess` tem sete tiers completos e thresholds/base explícitos: opensAt, completedAt, foundation slot1/milestone/whenMissing. Seed conforme tabela da techspec. Não derivar regras normais de `CREATOR_JOURNEY_LEVELS`.
+- [ ] Earned inclui 21 direitos bounded entry/expanded/reward; expanded implica entry, reward não. Baseline/award/pause preservam acesso antes liberalizado mesmo com política futura restritiva. Provar V1→offline→V2.
+- [ ] Coorte bootstrap captura Auth all (sem XP/arquivados) + históricos comprovados; admissão sempre persiste earned noob/[] e coorte recorrente captura todos earned, não só marcos.
+- [ ] Implementar Auth admissionState pending/ready separado do arquivamento, requestId idempotente/quota, S2S initializer específico sem RPC em TX, CAS ready sob lock local profile:<account> e worker retry durável/agendado. Inventariar todos criadores/seletores/backfill/refresh/study/impersonação/público/token, testar purge e ACK tardio. Rollout sem Auth antigo; existentes permanecem ready, não pending em massa.
+- [ ] Seed completo versionado, slot-based49, gerado/conferido contra oráculo congelado somente de testes/migração. Nenhuma importação desse oráculo no grafo produtivo.
+- [ ] Provar paridade dos oito postos, prefixos/slots ausentes/ordem/snapshots, capacidades e locks de todas as combinações de base/role, inclusive catálogo incompleto e formatura sem novo gate.
+- [ ] Readiness usa o resolver único com acesso explícito; recusa auto-bloqueio avanço/reward/base. Omissão da base não inventa showcase por código.
+- [ ] Modelar initializing V0 explícito → published V1, actorKind system/user e referência a preparação real; ausência/corrupção não é política/fallback/reseed.
+- [ ] Regenerar a 0136 ainda não publicada pelo script do package, com snapshot/journal coerentes; sem traduzir antigos payloads de teste. Preservar backup e recriar somente QA owned sem clientes/sem FORCE para o hash novo.
+- [ ] Atualizar port/testes/persistência mantendo monotonicidade, CAS, fence e capturas síncronas. Requalificar SQL/TSC em janela coordenada.
+
+**Aceite:** um contrato/avaliador normal, seed exato e persistível, nenhuma dependência produtiva dos gates/rewards anteriores. Fonte T1/T2 intermediária não será integrada como camada de compatibilidade.
+
 ## T3 — Baseline preparado e publicação atômica
 
-**Depende de:** T2; decisão do root de baseline.
+**Depende de:** T1R/T2R e review final de seed/bootstrapping.
 
 **Criar:** `packages/members/src/application/kids-journey/kids-journey.service.ts`, `kids-journey.errors.ts`; `packages/members/tests/integration/kids-journey.test.ts`, `packages/members/tests/db/kids-journey-activation.test.ts`.
 
@@ -95,6 +118,7 @@ Primeira verificação (`286614934`): 44 testes, 0 falhas, 2.641 asserções; Bi
 **Produz:** `KidsJourneyService` com `get/getMany`, `preview`, `prepare/advancePreparation/publish`, `policy/history`. GET pode reconciliar concessões; preview obrigatoriamente usa leituras/projeções sem escrita.
 
 - [ ] Escrever cenários reais SQL: veterano offline no legado; V1 liberaliza, perfil não visita, V2 restringe; nenhum dos dois perde ganho legítimo ao ativar.
+- [ ] Bootstrap guarda configuração explícita initializing0, captura conquistas com o mesmo avaliador/hook, e publica1 somente após baseline real/CAS; autor system honesto e idempotência sem sobrescrever edição.
 - [ ] Implementar preparação com versão/hash/catálogo capturado/cursor/upperBound e batches limitados; um perfil por transação; status e retry idempotentes.
 - [ ] Integrar freeze do posto/capacidades com award de marco/replay na mesma transação e proteção da conta antes de owner/policy conforme prova de lock.
 - [ ] Implementar CAS final policy+histórico; revalidar draft/catalogHash/prontidão. Conflito deixa rascunho e grants já conquistados, sem publicar parcialmente.
@@ -178,7 +202,7 @@ Primeira verificação (`286614934`): 44 testes, 0 falhas, 2.641 asserções; Bi
 - [ ] Coordenar com root e executar testes/check/typecheck dos packages alterados. Rodar DB suite sem skips e confirmar DDL em banco novo/ordens relevantes.
 - [ ] Executar regressão Adult/JS/Python, paridade default e smoke real sem privilégios.
 - [ ] Registrar versão do banco, comandos, pass/fail/skip e tempo de baseline/preview; não apresentar um skip como sucesso de SQL.
-- [ ] Implantar schema/backend readers e hooks antes de UIs; manter legado ativo enquanto existirem leitores antigos. Só permitir custom depois dos critérios cumpridos.
+- [ ] Finalizar consumidores no modelo único; remover caminhos antigos substituídos de jornada Kids. Preparar schema/hooks/seed antes de exposição não cria fallback/compatibilidade permanente. Liberar staging antes de produção.
 - [ ] Entregar revisão concreta ao root; push/merge/ativação seguem a autorização do fluxo principal, não ação autônoma deste agente.
 
 **Aceite:** `_test-plan.md` preenchido com evidência atual, riscos materiais nomeados e nenhuma reivindicação de execução que não aconteceu.
@@ -194,3 +218,4 @@ Primeira verificação (`286614934`): 44 testes, 0 falhas, 2.641 asserções; Bi
 | K11 | T2/T4/T5 |
 | K14 | T6 |
 | Verificação/rollout | T7 |
+| K15/K16, modelo único/seed/cleanup | T1R/T2R/T3/T4/T5/T6/T7 |

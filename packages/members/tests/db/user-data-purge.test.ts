@@ -73,6 +73,8 @@ describe.skipIf(!testDatabaseUrl)('Purga de dados do usuário no Postgres real',
     const entitlementId = randomUUID()
 
     await addEntitlement(accountId, entitlementId)
+    await conn.sql`insert into members.kids_journey_earned(user_id,account_id,level,capabilities,policy_version,updated_at)
+      values (${profileId},${accountId},'coder','["studio","pinta"]'::jsonb,0,now())`
     await conn.sql`
       insert into members.teacher_threads
         (id, user_id, account_id, audience, context_type, last_message_at, created_at)
@@ -110,6 +112,7 @@ describe.skipIf(!testDatabaseUrl)('Purga de dados do usuário no Postgres real',
     })
 
     const tables = [
+      'kids_journey_earned',
       'lesson_section_progress',
       'creations',
       'teacher_threads',

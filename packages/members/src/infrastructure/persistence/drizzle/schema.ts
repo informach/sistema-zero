@@ -1,7 +1,13 @@
 import type { StudioAiFundingSource } from '@sistemazero/core/ai-credits'
 import type { CourseModality } from '@sistemazero/core/course/modality'
 import type { HelpTutorialDocument } from '@sistemazero/core/help'
-import type { AdultCreatorCapability, AdultJourneyPolicy } from '@sistemazero/core/journey'
+import type {
+  AdultCreatorCapability,
+  AdultJourneyPolicy,
+  JourneyLevelSlug,
+  KidsCreatorCapability,
+  KidsJourneyPolicy,
+} from '@sistemazero/core/journey'
 import type {
   LearningAnswers,
   LearningAttemptView,
@@ -54,6 +60,10 @@ import type { LessonBlockContent } from '../../../domain/course/lesson-block'
 import type { QuizAnswers } from '../../../domain/course/quiz'
 import type { EntitlementSnapshot } from '../../../domain/entitlement/entitlement-snapshot'
 import type { LiveRecordingSegmentTime } from '../../../domain/live/recording-chapters'
+import type {
+  KidsJourneyCatalogCourse,
+  KidsJourneyPreparationStatus,
+} from '../../../domain/ports/kids-journey-repository.port'
 import type { CourseFeedbackAnswers } from '../../../domain/rating/course-rating'
 import type { RoomState } from '../../../domain/room/room-catalog'
 
@@ -2769,7 +2779,126 @@ export const adultJourneyGrants = members.table(
   ],
 )
 
+// Additive Kids policy storage. No default row: absence means version 0 / exact legacy.
+export const kidsJourneyPolicy = members.table(
+  'kids_journey_policy',
+  {
+    id: text('id').primaryKey().default('kids'),
+    version: integer('version').notNull(),
+    policy: jsonb('policy').$type<KidsJourneyPolicy>().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    check('kids_journey_policy_id_check', sql`${t.id} = 'kids'`),
+    check('kids_journey_policy_version_check', sql`${t.version} >= 1`),
+    check(
+      'kids_journey_policy_shape_check',
+      sql`jsonb_typeof(${t.policy}) = 'object' and ${t.policy}->>'schemaVersion' = '1' and ${t.policy}->>'mode' in ('legacy','configured','paused')`,
+    ),
+  ],
+)
+
+export const kidsJourneyPreparations = members.table(
+  'kids_journey_preparations',
+  {
+    id: uuid('id').primaryKey(),
+    expectedVersion: integer('expected_version').notNull(),
+    sourcePolicy: jsonb('source_policy').$type<KidsJourneyPolicy>().notNull(),
+    candidatePolicy: jsonb('candidate_policy').$type<KidsJourneyPolicy>().notNull(),
+    draftHash: varchar('draft_hash', { length: 64 }).notNull(),
+    catalogHash: varchar('catalog_hash', { length: 64 }).notNull(),
+    catalog: jsonb('catalog').$type<readonly KidsJourneyCatalogCourse[]>().notNull(),
+    cursor: uuid('cursor'),
+    upperBound: uuid('upper_bound'),
+    processed: integer('processed').notNull().default(0),
+    status: text('status').$type<KidsJourneyPreparationStatus>().notNull(),
+    actorId: uuid('actor_id').notNull(),
+    reason: varchar('reason', { length: 500 }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    index('kids_journey_preparations_status_idx').on(t.status, t.updatedAt),
+    check('kids_journey_preparations_version_check', sql`${t.expectedVersion} >= 0`),
+    check('kids_journey_preparations_count_check', sql`${t.processed} >= 0`),
+    check(
+      'kids_journey_preparations_status_check',
+      sql`${t.status} in ('preparing','ready','stale','published')`,
+    ),
+    check(
+      'kids_journey_preparations_reason_check',
+      sql`length(btrim(${t.reason})) between 1 and 500`,
+    ),
+    check(
+      'kids_journey_preparations_hash_check',
+      sql`${t.draftHash} ~ '^[a-f0-9]{64}$' and ${t.catalogHash} ~ '^[a-f0-9]{64}$'`,
+    ),
+    check('kids_journey_preparations_catalog_check', sql`jsonb_typeof(${t.catalog}) = 'array'`),
+    check(
+      'kids_journey_preparations_cursor_check',
+      sql`${t.cursor} is null or (${t.upperBound} is not null and ${t.cursor} <= ${t.upperBound})`,
+    ),
+  ],
+)
+
+export const kidsJourneyRevisions = members.table(
+  'kids_journey_revisions',
+  {
+    version: integer('version').primaryKey(),
+    previousVersion: integer('previous_version').notNull(),
+    preparationId: uuid('preparation_id')
+      .notNull()
+      .references(() => kidsJourneyPreparations.id),
+    policy: jsonb('policy').$type<KidsJourneyPolicy>().notNull(),
+    draftHash: varchar('draft_hash', { length: 64 }).notNull(),
+    catalogHash: varchar('catalog_hash', { length: 64 }).notNull(),
+    actorId: uuid('actor_id').notNull(),
+    reason: varchar('reason', { length: 500 }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    uniqueIndex('kids_journey_revisions_preparation_uq').on(t.preparationId),
+    check(
+      'kids_journey_revisions_version_check',
+      sql`${t.version} >= 1 and ${t.previousVersion} = ${t.version} - 1`,
+    ),
+    check('kids_journey_revisions_reason_check', sql`length(btrim(${t.reason})) between 1 and 500`),
+    check(
+      'kids_journey_revisions_hash_check',
+      sql`${t.draftHash} ~ '^[a-f0-9]{64}$' and ${t.catalogHash} ~ '^[a-f0-9]{64}$'`,
+    ),
+  ],
+)
+
+export const kidsJourneyEarned = members.table(
+  'kids_journey_earned',
+  {
+    userId: uuid('user_id').primaryKey(),
+    accountId: uuid('account_id').notNull(),
+    level: text('level').$type<JourneyLevelSlug>().notNull(),
+    capabilities: jsonb('capabilities').$type<readonly KidsCreatorCapability[]>().notNull(),
+    policyVersion: integer('policy_version').notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    index('kids_journey_earned_account_idx').on(t.accountId),
+    check(
+      'kids_journey_earned_level_check',
+      sql`${t.level} in ('noob','coder','hacker','explorer','elite','architect','champion','god')`,
+    ),
+    check('kids_journey_earned_version_check', sql`${t.policyVersion} >= 0`),
+    check(
+      'kids_journey_earned_capabilities_check',
+      sql`jsonb_typeof(${t.capabilities}) = 'array' and ${t.capabilities} <@ '["studio","pinta","bridge","pro","ai","pensa","molda","molda-intermediate","molda-professional"]'::jsonb`,
+    ),
+  ],
+)
+
 export const schema = {
+  kidsJourneyPolicy,
+  kidsJourneyPreparations,
+  kidsJourneyRevisions,
+  kidsJourneyEarned,
   adultChallengeCustomThemes,
   adultChallengeMonthOverrides,
   adultProfiles,

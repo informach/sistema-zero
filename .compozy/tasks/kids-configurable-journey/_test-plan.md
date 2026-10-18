@@ -1,6 +1,37 @@
 # Plano de testes — Jornada Kids configurável
 
-Status: T1 puro implementado antecipadamente por instrução do root e verificado com matriz completa focada + TSC core em janela autorizada; demais cenários planejados. Nenhum teste SQL/browser foi executado. Executar checks amplos em janela coordenada para não competir com a validação Python no PC de 16 GB.
+Status: T1/T2 intermediários verificados, sem consumidores. SQL T2 e TSC completo Members passaram; modelo canônico/seed/admissão e cenários T3+/browser continuam planejados. Executar checks amplos em janela coordenada para não competir com a validação Python no PC de 16 GB.
+
+## Validação T2 — janela coordenada de 18/10/2026
+
+Base `ac85a7a32` + T1 rebaseado `08ad6801f` + WIP T2. Bun **1.3.11**, Windows, PostgreSQL do container owned pelo root em **127.0.0.1:5434**. Nenhum DB remoto ou produção. Alvos informados ao root antes de mutações:
+
+- `kids_journey_repository`: `KIDS_JOURNEY_TEST_DATABASE_URL` explícita, guard loopback/prefixo, histórico real até **0136** (137 entradas); helper não faz DROP. Recusa reuso se houver outro cliente conectado.
+- `pensa_account_purge_test`: helper existente de purge, por URL explícita apontada à mesma stack QA; agora verifica clientes antes de **DROP normal**, sem FORCE/encerramento de conexões. Consumers `pensa_*` existentes mantêm seus nomes e guard.
+
+Resultados frescos, executados sequencialmente:
+
+1. `bun test tests/unit/kids-journey-facts.test.ts tests/unit/kids-journey-database-target.test.ts`, Members: **8 pass, 0 fail, 17 asserções, 193 ms**. Precedência campo a campo, complete-only, snapshots de curso apagado, isolamento de curso/perfil, formatura e guard do alvo.
+2. `bun test tests/db/kids-journey.repository.test.ts`, Members, variável Kids explícita: **14 pass, 0 fail, 58 asserções, EXIT0, 14,04 s**, sem skips. Snapshot read-only, batch/audiência/posse, catálogo/vitrine alcançável, UPSERT monotônico concorrente, CAS v0/v1 concorrente, baseline offline/cursor atômico, workers repetidos, owner irresolvido, hashes/stale, pausa retida, purge/fence, corrupção recusada, rollback de audit e guard de cliente conectado.
+3. `bun test tests/db/user-data-purge.test.ts`, Members, `TEST_DATABASE_URL` explícita da stack owned (o harness deriva seu alvo dedicado): **3 pass, 0 fail, 24 asserções, EXIT0, 26,44 s**, sem skips. Estado Kids incluído no purge; demais regressões existentes preservadas.
+4. Biome focado e `git diff --check`: limpos. Migration gerada por `bun run db:generate --name kids_journey_policy`, somente quatro tabelas + índices/FK/checks, sem enum/backfill.
+
+RED/GREEN SQL: a primeira matriz encontrou **2 pass/12 fail**, todos os fluxos de catálogo falhavam com SQLSTATE **42702**. Drizzle remove qualificadores de `Column` interpolada diretamente no campo SQL de um SELECT single-table; o EXISTS literal tornava `id` ambíguo. O subselect passou a usar o query builder/join e `exists(subquery)`, preservando as referências. Regressão catálogo isolada **1 pass/0 fail/4 asserções**, seguida da matriz completa acima. Não foi alterada a migration para corrigir consulta.
+
+O primeiro TSC Members terminou EXIT1 com overlays incompletos/versões Zod misturadas; não foi atribuído à fonte. Após overlays legítimos, root corrigiu somente narrowing da fixture JS classic (companion `a85bcf327`, equivalente a `05bb6a790`). Verificação final completa Members: Node24.22.0/TS5.9.3, `tsc --noEmit --pretty false --incremental --tsBuildInfoFile ../../.cache/kids-configurable-journey/t2-members.tsbuildinfo`, **EXIT0**, log vazio. `@sistemazero/*` resolve ao próprio worktree, Members/Core Zod4.3.6 e Studio4.5.4 conforme manifests. Nenhum pin abaixo do manifesto foi usado para qualificar o resultado.
+
+Review independente identificou lifetime de owner/input e aliasing de defaults. Seis regressões causais SQL foram executadas antes da correção (**RED 0 pass/6 fail/8 asserts, 6,23 s**) e depois (**GREEN 6 pass/0 fail/11 asserts, 5,52 s**). Owner parse e primitives são capturados sincronamente; defaults são fresh. Matriz SQL final completa: **20 pass/0 fail/69 asserts, EXIT0, 17,99 s**. Purge permanece **3/0/24**, fonte purge não mudou desde sua prova. Review readonly confirmou fonte/recibos, sem novo achado.
+
+Logs locais ignorados: `.cache/kids-configurable-journey/t2-db-repository-final.log`, `t2-db-purge.log`, `t2-lifetime-red.log`, `t2-lifetime-green.log`, `t2-members-typecheck-final.log`. Estes testes provam o recorte T2; **não** encerram B02–B05/B13 (award durante/depois de ready/primeira ativação), crash/replay completo, HTTP preview/RBAC, consumidores ou escala. Publicação de baixo nível continua fora da composição até T3+.
+
+## Provas adicionais obrigatórias do modelo canônico
+
+- Seed persistido dos oito postos/49 posições contra oráculo somente de teste; catálogo futuro incompleto, reward futuro sem base e catálogo unknown sem fail-open. Runtime sem import do algoritmo antigo.
+- V1 liberaliza→aluno offline→V2 restringe opensAt/completedAt/base complete→showcase: preservar posto/app capabilities e 21 direitos entry/expanded/reward. Expanded implica entry, reward não implica entry; matrícula continua necessária. Pausa permite expansão por conclusão real da base sem promover posto/app capabilities.
+- Bootstrap Auth all inclui sem XP/arquivados/sem matrícula; earned noob/[] persiste. Ausência/corrupção após seed não reseta. Init repetido não sobrescreve Admin. Coorte recorrente inclui todos earned.
+- Create pending conta quota; mesmo requestId/ID em timeout/duplo clique; sweeper agendado realmente retoma após crash. Grade parental mostra preparando; selecionar, refresh, impersonação, estudo delegado, público e emissão indireta de sessão recusam pending.
+- initializeV1→publishV2→ready preserva V1; publishV2→initialize nasce V2; novo UUID abaixo cursor protegido. Sem RPC em TX nem lock crossDB. initialize→prepareDeletion→purge→ACK não ressuscita. Archive/cancel→ACK não ativa. Defaults existentes não viram pending em massa.
+- Backfill direto e todos criadores/seletores inventariados, rollout retira criadores Auth antigos antes da captura; seedV0 antes do novo tráfego Members. Cleanup restrito à jornada Kids, JS/Python e contratos Adult preservados.
 
 ## Validação final T1 — janela autorizada após SQL principal
 

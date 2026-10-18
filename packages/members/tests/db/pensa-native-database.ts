@@ -34,7 +34,12 @@ export async function openPensaTestDatabase(
   adminTarget.pathname = '/postgres'
   const admin = postgres(adminTarget.toString(), { max: 1, onnotice: () => {} })
   try {
-    await admin.unsafe(`DROP DATABASE IF EXISTS "${name}" WITH (FORCE)`)
+    const [clients] =
+      await admin`select count(*)::int as count from pg_stat_activity where datname = ${name}`
+    if (Number(clients?.count ?? 0) > 0)
+      throw new Error(`Refusing to reset disposable ${name}: another database client is connected`)
+    // A client that connects after the check makes normal DROP fail. Never kill it.
+    await admin.unsafe(`DROP DATABASE IF EXISTS "${name}"`)
     await admin.unsafe(`CREATE DATABASE "${name}"`)
   } finally {
     await admin.end()

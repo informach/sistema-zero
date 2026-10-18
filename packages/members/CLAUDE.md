@@ -1,5 +1,30 @@
 # CLAUDE.md — @sistemazero/members
 
+## Jornada Kids configurável — persistência isolada (18/10/2026)
+
+`kids-journey-repository.port.ts` e o adapter Drizzle adicionam snapshot read-only/batch,
+freeze monotônico por perfil+conta, preparação keyset e CAS com histórico. As quatro tabelas
+Kids vêm da migration **gerada** `0136_kids_journey_policy`. Este é checkpoint intermediário
+fora da composição: ausência = legado v0 somente neste protótipo, a ser substituído antes de
+integrar pelo seed canônico persistido (initializing V0→published V1), sem fallback normal.
+Capacidades pedagógicas não substituem matrícula, paleta curricular ou autorização JS/Python.
+
+O namespace advisory `kids-journey-policy` também protege v0: conta → owner (`creation-quota`)
+→ gamification → política compartilhada → preparação. Publicação toma política exclusiva e
+preparação, sem percorrer contas. Pausa retém a política ativa e não aceita ganhos novos.
+O catálogo captura tags cruas para fallback campo a campo e deriva `graduationOnly` de `level`.
+
+**Ainda sem ligação na composição, rotas ou consumidores.** Não expor `publishPrepared` antes
+do hook transacional de award e das provas de baseline durante/depois de ready (T3). Uma
+preparação bounded sozinha não protege um novo perfil que aparece atrás do cursor. O serviço
+ainda precisa tratar retomada/erro operacional/retention; não inferir entrega da feature pelo DDL.
+Contrato final também preserva 21 direitos de acesso por tier e admite todos os perfis,
+inclusive sem XP, antes de visibilidade Auth. Ver `.compozy/tasks/kids-configurable-journey/`.
+
+SQL opt-in em `tests/db/kids-journey.repository.test.ts` exige
+`KIDS_JOURNEY_TEST_DATABASE_URL` local com nome `kids_journey_*`; não usa `DATABASE_URL` como
+fallback. Aplica histórico real em banco descartável explícito. Skip não qualifica SQL.
+
 ## Contratos conciliados do Estúdio JS/Python (18/10/2026)
 
 `SectionProjectCheck` distingue objetivos JavaScript e Python. Python usa inspeção estrutural autorizada pelo servidor, vinculada ao perfil de runtime do inicial, ao vínculo durável da aula e, ao vivo, ao bloco/workspace/geração de escrita. A lista canônica da seção decide obrigatórios, extras e progressão; a simulação de autoria não registra conclusão ou XP. Entregar projeto/recado não recupera a antiga nota do bloco.

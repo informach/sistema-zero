@@ -1,5 +1,7 @@
 # PRD — Jornada Kids configurável
 
+Complemento de preservação aprovado pelo root: configurar gates de curso exige guardar também 21 direitos limitados de entrada/expansão/recompensa por tier, além de posto/ferramentas. Crianças sem XP e arquivadas entram no baseline inicial. Novos perfis têm admissão durável pending→Members materializa→Auth ready; pending não autoriza sessão, conta quota e retoma com mesmo ID. Isso é ciclo de identidade, sem segundo motor de jornada ou lock entre databases. Rollout inicial preserva perfis existentes ready e retira criadores antigos antes da captura. Detalhes/provas estão na techspec e no plano de testes.
+
 ## Problema
 
 Hoje uma mudança na quantidade de aventuras necessárias ou no posto que libera uma ferramenta exige alterar código em várias superfícies. A jornada fixa exige 49 posições mesmo quando o catálogo ainda não contém todos esses cursos. O horizonte da interface evita promessas falsas, mas não permite ao responsável pedagógico ajustar o percurso.
@@ -9,6 +11,8 @@ Precisamos configurar requisitos e ferramentas sem descaracterizar a experiênci
 ## Resultado esperado
 
 O administrador pedagógico vê os oito postos atuais, escolhe o que cada avanço exige e quando capacidades abrem, simula o efeito e publica uma revisão com autoria. A criança continua usando o mesmo mapa e encontra pendências coerentes com a política efetiva. Uma revisão posterior pode mudar os próximos passos, mas não remove posto ou capacidade já conquistados. A posse do produto continua necessária para uso.
+
+Orientação explícita do usuário em 18/10/2026: **um modelo novo, uma política persistida e publicada, todos os consumidores migrados**. O seed inicial reproduz exatamente as regras atuais. O algoritmo anterior fica somente nas provas de testes/migração; sem modo legado, fallback normal ou dupla autorização de jornada. O maior posto atual informado é Construtor; isso não reduz a cobertura dos oito postos/49 posições nem a preservação de 100% das conquistas. Staging precede produção.
 
 ## Pessoas e permissões
 
@@ -22,7 +26,7 @@ O administrador pedagógico vê os oito postos atuais, escolhe o que cada avanç
 | ID | Requisito e aceitação |
 |---|---|
 | K01 | Preservar slugs, nomes, arte, ordem e identidade visual dos oito postos. Não criar ou reordenar postos nesta entrega. |
-| K02 | Política ausente resulta no legado exato: 49 posições, marcos e portões atuais, incluindo catálogo incompleto, bônus/extra e fail-open sem base publicada. Não converter default para somente IDs dos cursos existentes. |
+| K02 | Bootstrap materializa e publica um seed exato: 49 posições, marcos, capacidades e acesso por posto/etapa/base atuais, inclusive catálogo incompleto e base ausente. Não usar somente IDs dos cursos existentes. Leitores normais usam exclusivamente a política publicada; ausência/corrupção não ativa regra antiga ou seed em memória. |
 | K03 | Configurar requisitos por avanço: curso Kids gravado com `complete` ou `showcase` (showcase sempre também exige complete). O editor começa pelos requisitos legados e permite substituí-los por cursos explícitos. Placeholders de posições ainda não preenchidas continuam representáveis. |
 | K04 | Configurar capacidades por posto: Estúdio livre, Pinta, Molda/faixas, Ponte, Pro, Zappy/IA e Pensa. Requisitos estruturais impedem combinações impossíveis; não exigir curso avançado para IA Kids, pois isso romperia o default. |
 | K05 | Blocos e extensões livres continuam vindo dos cursos e grants existentes, independentemente do marco escolhido para subir de posto. `complete` no posto não muda automaticamente um curso posicionado para entregar sua paleta sem Mural. A simulação/editor precisa explicar essa diferença. |
@@ -32,9 +36,11 @@ O administrador pedagógico vê os oito postos atuais, escolhe o que cada avanç
 | K09 | Preparação de baseline com progresso retomável e publicação atômica somente quando pronta; interface informa que a regra atual continua ativa até a publicação. Falha/retry não perde conquistas nem publica metade da mudança. |
 | K10 | Listagem e acesso direto usam a mesma política para cursos e ferramentas. Pensa verifica cada participante; Molda recebe famílias resolvidas; remix verifica requisitos do snapshot. |
 | K11 | Toda operação mantém checagem comercial, conta/perfil/audiência e regras de exclusão. Revogação/expiração pode impedir uso do produto, mas não apaga a conquista. |
-| K12 | Política pausada retém a regra pedagógica vigente e não concede novos avanços/capacidades; mantém conquistas e gates de curso pela regra retida, além do acesso de aula. Registro ausente é legado; registro inválido/erro de busca é indisponível, nunca “liberado” nem reset silencioso para legado. |
+| K12 | Pausa mantém a configuração canônica completa, inclusive acesso/base, e não concede novos avanços/capacidades. Conserva conquistas e aula. Ausência/registro inválido/erro é indisponível, nunca “liberado” nem reset silencioso para regra anterior. |
 | K13 | JS e Python compartilham a política de capacidades, mas linguagem/ambiente da aula continua no contrato de autoria conciliado. Não adicionar Python aos grants de todos nem remover JS para liberar Pro. |
 | K14 | Nenhuma promessa fixa de recompensa ou de domínio de habilidade pode contradizer a configuração. Default mantém a copy atual; custom usa recompensas derivadas e, quando necessário, frases neutras de conquista. |
+| K15 | Retirar do runtime as regras e caminhos antigos da jornada Kids depois de substituir seus consumidores e provar paridade. Não criar ABI/modo legado permanente. Preservar projetos JSv2, Adult, ownership, snapshots/paletas curriculares, runtime/catalog e migrations: são outros contratos. |
+| K16 | Bootstrap idempotente e auditável como sistema, com baseline real antes de expor a primeira política publicada. Não fabricar autor humano/preparação vazia, sobrescrever edição administrativa em deploy ou reiniciar versão silenciosamente após falha. |
 
 ## Jornada de quem configura
 
@@ -53,7 +59,7 @@ Não pedir uma confirmação adicional genérica em cada edição. A publicaçã
 
 A organização por etapa/posição permanece. Uma política custom pode reduzir/substituir o que conta para o posto, mas não torna um curso futuro acessível por só referenciá-lo. A validação detecta ciclos com a trava pedagógica e aponta o curso/avanço envolvido.
 
-O curso-base necessário para abrir as outras posições usa o marco que a política definiu para aquele curso/posição naquele avanço. Se a base não aparece entre os requisitos custom, conserva seu comportamento legado de complete+showcase. Isso evita configurar “só concluir” para a base e ainda esconder a exigência de Mural na entrada das próximas aventuras. O ganho de paleta segue K05.
+O acesso por etapa/posto, a abertura de recompensas e o marco da base são explícitos na mesma política. Omitir a base dos requisitos de avanço não inventa um gate por código. Seed usa complete+showcase para a base, com o comportamento atual de base ausente; o editor e a simulação mostram qualquer diferença entre concluir avanço, abrir as outras aventuras e ganhar paleta. O ganho curricular segue K05.
 
 Um curso `reward` que só abre depois do avanço não pode ser requisito desse mesmo avanço. Curso `extra` continua por matrícula e pode ser escolhido como requisito se for alcançável. `lenda` não entra nos avanços anteriores porque o próprio mapa só o oferece no topo; nesta fase permanece conteúdo de formatura. Uma revisão que mudou classificação de curso pode deixar um requisito antigo indisponível; conserva-se a conquista e sinaliza-se reparo ao operador.
 
@@ -65,7 +71,7 @@ Escolha recomendada para o primeiro escopo, ainda sujeita à revisão de produto
 
 ### Estados vazios e falhas
 
-Ausência de registro de configuração usa o legado. Um modo explícito pausado interrompe novos ganhos e guarda a política ativa que foi pausada. Ele não bloqueia aula, não apaga conquista nem troca silenciosamente uma base complete-only por showcase. Os gates de curso continuam usando o posto já conquistado e os requisitos de base retidos; marcos novos durante pausa não promovem posto nem abrem por posto as etapas futuras/recompensas. Arrays vazios de capacidades significam “nenhuma capacidade nova”; uma lista vazia de requisitos de avanço não é conclusão automática. O editor exige pelo menos um requisito por avanço custom ou oferece pausar a jornada como ação explícita.
+Ausência de configuração não é modo de jornada. O provisionamento explícito persiste o seed, prepara conquistas e publica a primeira versão. Leitores normais exigem configuração publicada válida. Pausa conserva todos os requisitos/gates e interrompe ganhos, sem trocar base complete-only por showcase nem abrir futuros/rewards por marcos novos. Arrays vazios de capacidades significam nenhuma capacidade nova; requisito vazio não conclui avanço. O editor exige pelo menos um requisito por avanço ou oferece pausar explicitamente.
 
 Busca de estado indisponível preserva o último dado válido para apresentação e oferece nova tentativa. Operações que gastam recursos exigem verificação atual e falham de maneira recuperável. Não tratar erro como ausência de compra, zero conquistas ou catálogo vazio.
 
@@ -81,4 +87,4 @@ O preview inicial fornece diff de regras, análise de alcançabilidade do catál
 
 ## Critérios para liberar implementação e ativação
 
-Antes de implementar: atualizar este worktree ao checkpoint conciliado, revisar contratos JS/Python e confirmar o desenho de baseline com o agente principal. Antes de ativar custom: paridade do default, provas SQL de concorrência/purge, migração dos consumidores e teste com usuário sem passe de equipe. A decisão de baseline está proposta; não foi aprovada nem validada contra banco nesta fase.
+O checkpoint conciliado foi incorporado e a persistência intermediária tem provas SQL. Antes de T3: rebase ao remoto informado pelo root e revisão do payload canônico/seed, retirando os modos/fallbacks do protótipo T1/T2. Antes de liberar: bootstrap/baseline completos em SQL, todos os consumidores migrados, caminhos antigos de jornada removidos, teste sem passe de equipe e staging validado. Produção/deploy/push não estão autorizados nesta frente.

@@ -22,6 +22,7 @@ import {
   entitlements,
   galleryCopyAttempts,
   gamificationProfiles,
+  kidsJourneyEarned,
   leagueMembership,
   learningAttempts,
   lessonBlockProgress,
@@ -298,6 +299,14 @@ export class DrizzleUserDataPurgeRepository implements UserDataPurgeRepository {
       await tx.delete(xpEvents).where(inArray(xpEvents.userId, userIds))
       await tx.delete(adultProfiles).where(inArray(adultProfiles.userId, userIds))
       await tx.delete(adultJourneyGrants).where(inArray(adultJourneyGrants.userId, userIds))
+      await tx
+        .delete(kidsJourneyEarned)
+        .where(
+          or(
+            inArray(kidsJourneyEarned.userId, userIds),
+            eq(kidsJourneyEarned.accountId, accountId),
+          ),
+        )
       await tx.delete(userBadges).where(inArray(userBadges.userId, userIds))
       await tx.delete(coinEvents).where(inArray(coinEvents.userId, userIds))
       await tx.delete(avatarInventory).where(inArray(avatarInventory.userId, userIds))
