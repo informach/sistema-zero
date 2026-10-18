@@ -1,4 +1,6 @@
 // Run outside bun:test: its shared resolver cache includes editor module mocks.
+export {}
+
 const entry = process.argv[2]
 if (!entry) throw new Error('Missing server entry')
 
