@@ -1,9 +1,12 @@
 import { expect, test } from 'bun:test'
 import { resolve } from 'node:path'
 
-test('server project checks bundle without browser editor dependencies', async () => {
+test.each([
+  ['server project checks', '../projectCheckAuthoring.ts'],
+  ['server check (o teste que roda o jogo)', '../../check/serverCheck.ts'],
+])('%s bundle without browser editor dependencies', async (_name, entry) => {
   const result = await Bun.build({
-    entrypoints: [resolve(import.meta.dir, '../projectCheckAuthoring.ts')],
+    entrypoints: [resolve(import.meta.dir, entry)],
     target: 'bun',
     plugins: [
       {

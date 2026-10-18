@@ -107,7 +107,12 @@ export function createLearningRoutes({
           : ''
       const { status, body } = await gateway.gatewayFetch(
         `/members/lessons/${encodeURIComponent(params.lessonId)}${blockPath}/${endpoint}`,
-        { method, body: parsed.data },
+        {
+          method,
+          body: parsed.data,
+          // O "Verificar" com objetivos que RODAM o jogo espera o executor (o gateway dá 160 s).
+          ...(endpoint === 'project-check' ? { timeoutMs: 165_000 } : {}),
+        },
       )
       return NextResponse.json(body ?? { ok: status === 200 }, {
         status,

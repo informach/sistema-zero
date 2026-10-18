@@ -101,6 +101,10 @@ function ObjectivesCard({
   }
   const required = objectives.filter((o) => !o.optional)
   const extras = objectives.filter((o) => o.optional)
+  // "O jogo faz algo" e "a função responde certo" abrem o jogo num navegador do servidor.
+  const runsGame = objectives.some(
+    (o) => o.kind === 'game' || o.kind === 'function' || o.kind === 'script',
+  )
 
   async function verify() {
     if (!check || !handleRef.current || !player || busy) return
@@ -196,7 +200,7 @@ function ObjectivesCard({
           disabled={busy}
           onClick={() => void verify()}
         >
-          {busy ? verificacao.verificando : verificacao.botao}
+          {busy ? (runsGame ? verificacao.testando : verificacao.verificando) : verificacao.botao}
         </Button>
         {xp ? (
           <span className="sz-lesson-objectives-xp text-sm font-semibold text-primary">

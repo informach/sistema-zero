@@ -2,7 +2,10 @@ import { createHash, randomUUID } from 'node:crypto'
 import type { CourseModality } from '@sistemazero/core/course/modality'
 import { ValidationError } from '@sistemazero/core/errors'
 import {
+  type ExecutionObjectiveRequest,
+  executionProjectChecks,
   hasSectionProgression,
+  isExecutionRule,
   isFinalProjectSection,
   isLegacyMaterialLesson,
   isVideoOnlySection,
@@ -27,6 +30,7 @@ import { hasComingSoonBlock, MAX_STUDIO_PROJECT_CHARS } from '../../domain/cours
 import type { CreationDraftState } from '../../domain/creations/creation'
 import {
   LearningConflictError,
+  ProjectCheckUnavailableError,
   SectionLockedError,
   StudioProjectSyncingError,
 } from '../../domain/learning/learning.errors'
@@ -34,6 +38,10 @@ import type { CertificateRepository } from '../../domain/ports/certificate-repos
 import type { CreationsRepository } from '../../domain/ports/creations-repository.port'
 import type { LearningOwner, LearningRepository } from '../../domain/ports/learning-repository.port'
 import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
+import type {
+  ProjectExecutionChecker,
+  ProjectExecutionCheckOutput,
+} from '../../domain/ports/project-execution-checker.port'
 import type { QuizAttemptRepository } from '../../domain/ports/quiz-attempt-repository.port'
 import type { StudioSubmissionRepository } from '../../domain/ports/studio-submission-repository.port'
 import { stableJson } from '../../domain/shared/stable-json'
@@ -72,7 +80,86 @@ export class SectionProgressionService {
     private readonly courseModality?: (courseId: string) => Promise<CourseModality>,
     /** O prêmio dos objetivos (`studio_passed` + `objective_extra`). Sem ele, verificar não premia. */
     private readonly rewards?: Pick<AwardGamificationService, 'awardSectionObjectives'>,
+    /**
+     * Quem RODA o jogo para os objetivos de execução (o `studio-runtime`). Sem ele, uma parte com
+     * esses objetivos responde "não consegui testar agora" e nada é guardado.
+     */
+    private readonly executor?: ProjectExecutionChecker,
   ) {}
+
+  /**
+   * Roda os objetivos de execução no executor. O tipo e o modelo Pro vêm do projeto INICIAL do
+   * bloco (o que a autora montou), nunca do que a criança mandou.
+   */
+  private async runExecution(
+    checks: readonly { id: string; rule: { type: string } }[],
+    project: unknown,
+    initialProject: unknown,
+    requester: string,
+  ): Promise<ProjectExecutionCheckOutput | undefined> {
+    const objectives = executionProjectChecks(checks).flatMap(
+      (check): ExecutionObjectiveRequest[] =>
+        isExecutionRule(check.rule) ? [{ id: check.id, rule: check.rule }] : [],
+    )
+    if (!objectives.length) return undefined
+    if (!this.executor) throw new ProjectCheckUnavailableError()
+    const reference = initialProject ?? project
+    const kind = projectKind(reference)
+    const templateId =
+      kind === 'pro' &&
+      typeof reference === 'object' &&
+      reference !== null &&
+      typeof (reference as { proMeta?: { templateId?: unknown } }).proMeta?.templateId === 'string'
+        ? ((reference as { proMeta: { templateId: string } }).proMeta.templateId as string)
+        : undefined
+    if (kind === 'pro' && !templateId)
+      throw new ValidationError('O modelo Pro desta parte não foi escolhido.')
+    return this.executor.check({
+      requester,
+      project,
+      kind,
+      ...(templateId ? { templateId } : {}),
+      objectives,
+    })
+  }
+
+  /**
+   * "Testar agora" da autoria: os objetivos (estrutura e execução) contra um projeto, sem guardar
+   * nada nem premiar. A equipe recebe o motivo de cada objetivo e as capturas da tela.
+   */
+  async testObjectives(input: {
+    checks: readonly {
+      id: string
+      rule: import('@sistemazero/core/learning').SectionObjectiveRule
+      optional?: true
+    }[]
+    project: unknown
+    initialProject?: unknown
+    requester: string
+  }) {
+    const executed = await this.runExecution(
+      input.checks,
+      input.project,
+      input.initialProject,
+      input.requester,
+    )
+    const evaluation = evaluateStudioSectionObjectives(
+      input.checks,
+      input.project,
+      input.initialProject,
+      executed ? new Map(executed.results.map((r) => [r.id, r.passed])) : undefined,
+    )
+    const details = new Map(executed?.results.map((r) => [r.id, r.detail]) ?? [])
+    return {
+      results: evaluation.results.map((r) => ({
+        id: r.checkId,
+        passed: r.passed,
+        ...(details.get(r.checkId) ? { detail: details.get(r.checkId) } : {}),
+      })),
+      passed: evaluation.passed,
+      ...(executed?.screenshots ? { screenshots: executed.screenshots } : {}),
+    }
+  }
 
   /** Impressão e hora do rascunho guardado de cada espaço de trabalho das partes marcadas. */
   private async draftStates(
@@ -465,11 +552,7 @@ export class SectionProgressionService {
     const workspace = lesson.blocks.find((b) => b.id === section.workspaceBlockId)
     const initialProject =
       workspace?.content.kind === 'studio' ? workspace.content.initialProject : undefined
-    const kindOf = (value: unknown) =>
-      typeof value === 'object' && value !== null && (value as { kind?: unknown }).kind === 'pro'
-        ? 'pro'
-        : 'classic'
-    if (initialProject !== undefined && kindOf(initialProject) !== kindOf(project))
+    if (initialProject !== undefined && projectKind(initialProject) !== projectKind(project))
       throw new ValidationError('Este projeto não é do tipo desta parte.')
     // Código da Ponte mais novo que os blocos: os blocos ainda não refletem o que a criança
     // digitou, e o código gerado traz laços do próprio motor. O cartão espera o Estúdio terminar.
@@ -479,7 +562,14 @@ export class SectionProgressionService {
       (project as { bridgeCodeAhead?: unknown }).bridgeCodeAhead
     )
       throw new StudioProjectSyncingError()
-    const evaluation = evaluateStudioSectionObjectives(checks, project, initialProject)
+    // Os objetivos que RODAM o jogo vão ao executor; se ele não responder, nada é guardado.
+    const executed = await this.runExecution(checks, project, initialProject, owner.userId)
+    const evaluation = evaluateStudioSectionObjectives(
+      checks,
+      project,
+      initialProject,
+      executed ? new Map(executed.results.map((r) => [r.id, r.passed])) : undefined,
+    )
     const results = evaluation.results.map((r) => ({ id: r.checkId, passed: r.passed }))
     const sectionRevision = this.revision(section, lesson)
     await this.repository.saveSectionProgress(
@@ -542,6 +632,12 @@ export class SectionProgressionService {
       gamification,
     }
   }
+}
+
+function projectKind(value: unknown): 'classic' | 'pro' {
+  return typeof value === 'object' && value !== null && (value as { kind?: unknown }).kind === 'pro'
+    ? 'pro'
+    : 'classic'
 }
 
 /** "Personalizar o avatar" → "personalizar o avatar", para entrar no meio da frase. */

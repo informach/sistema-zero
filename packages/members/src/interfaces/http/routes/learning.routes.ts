@@ -1,3 +1,5 @@
+import { ValidationError } from '@sistemazero/core/errors'
+import { isSectionCompletion } from '@sistemazero/core/learning'
 import { PALETTES, readPalette } from '@sistemazero/core/palette'
 import { Elysia, t } from 'elysia'
 import type { GalleryDeliveryService } from '../../../application/learning/gallery-delivery.service'
@@ -23,6 +25,7 @@ import {
   LearningNavigationBody,
   LearningProgressBody,
   LearningReportQuery,
+  ProjectChecksTestBody,
   SectionProjectBody,
   SectionProjectParams,
 } from '../learning.dtos'
@@ -204,6 +207,25 @@ export function learningRoutes(deps: LearningRoutesDeps) {
           .get('/lessons/:id/structure', ({ params }) => deps.learning.adminStructure(params.id), {
             params: IdParams,
           })
+          .post(
+            '/project-checks/test',
+            ({ headers, body }) => {
+              // A regra passa pelo validador do core antes de ir ao executor.
+              const completion = {
+                version: 1 as const,
+                blockIds: [],
+                projectChecks: body.checks.map((check) => ({ ...check, label: '' })),
+              }
+              if (!isSectionCompletion(completion))
+                throw new ValidationError('Os objetivos têm valores inválidos.')
+              return deps.learning.sections.testObjectives({
+                checks: completion.projectChecks ?? [],
+                project: body.project,
+                requester: `admin-${resolveUserId(headers)}`,
+              })
+            },
+            { body: ProjectChecksTestBody },
+          )
           .post(
             '/lessons/:id/import-preview',
             async ({ params, body }) => {

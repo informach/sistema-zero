@@ -71,6 +71,8 @@ export interface LessonCopy {
     /** O projeto mudou depois da última verificação: o resultado mostrado é de antes. */
     mudou: string
     verificando: string
+    /** O botão ocupado quando algum objetivo RODA o jogo (leva alguns segundos). */
+    testando: string
     erro: string
     xp: (pontos: number) => string
     /** O estado de cada objetivo para o leitor de tela (a tela mostra o ícone e a cor). */
@@ -264,6 +266,7 @@ export const ADULT_LESSON_COPY: LessonCopy = {
     dica: 'Dica',
     mudou: 'Você mudou o projeto depois de verificar. Verifique de novo para conferir.',
     verificando: 'Verificando…',
+    testando: 'Testando o seu jogo… isso leva alguns segundos.',
     erro: 'Não foi possível verificar. Seu projeto continua aqui; tente novamente.',
     xp: (pontos) => `+${pontos} XP`,
     estadoCumprido: 'cumprido',

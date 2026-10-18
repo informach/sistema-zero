@@ -114,6 +114,11 @@ const EnvSchema = z
     AI_LIMIT_MONTHLY: z.coerce.number().int().positive().default(500),
     // Independent AES-256 keys ({version: 64 hex chars}); retain old versions during rotation.
     STUDIO_AI_VAULT_KEYS: z.string().optional(),
+    // O executor dos objetivos que RODAM o jogo (`POST /v1/check` do studio-runtime). Os mesmos
+    // nomes do Kids e do Admin: o token é o INTERNAL_TOKEN do Worker. Sem os dois, as partes com
+    // esses objetivos respondem "não consegui testar agora".
+    STUDIO_PRO_RUNTIME_URL: z.string().url().optional(),
+    STUDIO_PRO_RUNTIME_TOKEN: z.string().min(16).optional(),
     STUDIO_BUILDER_EXECUTOR_URL: z.string().url().optional(),
     STUDIO_BUILDER_EXECUTOR_SECRET: z.string().min(32).optional(),
     STUDIO_AI_VAULT_ACTIVE_ID: z.string().optional(),

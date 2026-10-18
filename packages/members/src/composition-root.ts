@@ -117,6 +117,7 @@ import { createGatewayMessagingClient } from './infrastructure/gateways/gateway-
 import { createHubHttpGateway, noopHubGateway } from './infrastructure/gateways/hub-http.gateway'
 import { LiveProfileOwnershipGateway } from './infrastructure/gateways/live-profile-ownership.gateway'
 import { OpenRouterOAuthGateway } from './infrastructure/gateways/openrouter-oauth'
+import { createStudioRuntimeChecker } from './infrastructure/gateways/studio-runtime-checker'
 import { teacherRecipientDirectory } from './infrastructure/gateways/teacher-recipient-http.gateway'
 import type { CloudflareSfuMediaProvider } from './infrastructure/live/cloudflare-sfu.provider'
 import { createLiveMediaInfrastructure } from './infrastructure/live/create-live-media'
@@ -257,6 +258,15 @@ export async function createApplication(env: Env): Promise<Application> {
         logger,
       })
     : noopHubGateway
+  // O executor dos objetivos que RODAM o jogo (etapa 3 dos objetivos, 18/10/2026).
+  const projectExecutor =
+    env.STUDIO_PRO_RUNTIME_URL && env.STUDIO_PRO_RUNTIME_TOKEN
+      ? createStudioRuntimeChecker({
+          runtimeUrl: env.STUDIO_PRO_RUNTIME_URL,
+          runtimeToken: env.STUDIO_PRO_RUNTIME_TOKEN,
+          logger,
+        })
+      : undefined
 
   // Casos de uso do aluno
   // Curso AO VIVO (14/10/2026): a aula abre pela vaga na turma (grants das oficinas).
@@ -630,6 +640,7 @@ export async function createApplication(env: Env): Promise<Application> {
     creationsRepo,
     async (courseId) => (await courses.findCourseById(courseId))?.modality ?? 'recorded',
     awardGamification,
+    projectExecutor,
   )
   const learning = new LearningService(
     learningRepository,
@@ -1224,7 +1235,10 @@ export async function createApplication(env: Env): Promise<Application> {
       }
       // `::` = dual-stack (IPv4+IPv6) — necessário p/ o private networking do
       // Railway (`members.railway.internal` resolve IPv6).
-      server.listen({ port: env.PORT, hostname: env.HOST })
+      // O Bun fecha a conexão depois de `idleTimeout` sem bytes, INCLUSIVE com a resposta ainda
+      // sendo preparada (padrão 10 s). O teste dos objetivos que rodam o jogo espera o
+      // studio-runtime (até 150 s): sem a folga, o gateway via a conexão cair no meio.
+      server.listen({ port: env.PORT, hostname: env.HOST, idleTimeout: 170 })
       logger.info('http.listening', { port: env.PORT, host: env.HOST })
     },
     async stop() {

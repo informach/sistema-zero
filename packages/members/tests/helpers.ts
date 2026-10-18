@@ -161,6 +161,8 @@ export function buildApp(
     zappy?: ZappyHistoryService
     /** Contas já cercadas por exclusão (simula a barreira durável do Postgres). */
     deletedAccountIds?: string[]
+    /** O executor dos objetivos que rodam o jogo (o studio-runtime); sem ele, 503. */
+    projectExecutor?: import('../src/domain/ports/project-execution-checker.port').ProjectExecutionChecker
   } = {},
 ) {
   // Cache de posse das criações é por processo: cada app de teste começa limpo.
@@ -337,6 +339,7 @@ export function buildApp(
     creations,
     async (courseId) => (await courses.findCourseById(courseId))?.modality ?? 'recorded',
     awardGamification,
+    opts.projectExecutor,
   )
   const learning = new LearningService(
     learningRepository,

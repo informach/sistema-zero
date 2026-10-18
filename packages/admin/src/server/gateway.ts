@@ -24,6 +24,8 @@ export interface CallOpts {
   method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE'
   body?: unknown
   query?: Record<string, string | number | undefined | null>
+  /** Prazo próprio (padrão 60 s): o "Testar agora" espera o jogo rodar no executor. */
+  timeoutMs?: number
 }
 
 /**
@@ -65,7 +67,7 @@ async function rawFetch(path: string, opts: CallOpts, access: string | null): Pr
     headers: reqHeaders,
     body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined,
     cache: 'no-store',
-    signal: AbortSignal.timeout(GATEWAY_TIMEOUT_MS),
+    signal: AbortSignal.timeout(opts.timeoutMs ?? GATEWAY_TIMEOUT_MS),
   })
 }
 

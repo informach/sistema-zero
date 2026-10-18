@@ -53,6 +53,12 @@ O members chama o `studio-runtime` (Cloudflare, contêiner sem internet com Chro
   uma captura da tela final para a equipe.
 - Executor fora do ar: "Não consegui testar o seu jogo agora. Tente de novo." Nunca aprova por
   falha. Sem mudança no projeto, o resultado é reaproveitado.
+- Implementado (etapa 3): a variável do jogo clássico é lida por um leitor injetado no
+  `script.js` (`@sistemazero/studio/server-check`), porque o jogo de blocos guarda tudo dentro da
+  função da partida; os kits Pro recebem o clique em "Começar" antes dos passos. O members usa
+  `STUDIO_PRO_RUNTIME_URL`/`STUDIO_PRO_RUNTIME_TOKEN` (os nomes do Kids e do Admin). Decisão: a
+  publicação EXIGE o gabarito, mas não roda o executor (publicar não fica refém de um contêiner
+  externo); quem confere o gabarito rodando é o "Testar agora", que mostra o motivo e a tela final.
 
 ## Gabarito da professora
 

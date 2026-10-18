@@ -20,6 +20,24 @@
 > o "Testar agora" e o ensaio passam o projeto inicial do bloco. `studioSectionCompletionIssues`
 > recusa publicar objetivo obrigatório que o projeto inicial já cumpre.
 
+> **Objetivos que RODAM o jogo (18/10/2026, etapa 3):** subpath novo **`./server-check`**
+> (`src/check/serverCheck.ts`, server-safe; o `serverProjectChecks.test.ts` trava o bundle):
+> `prepareClassicCheckDocument(project, scope)` é o documento de prévia de sempre
+> (`renderProjectToPreviewDocAsync`, perfil `strict`) com o **leitor de variáveis** que o
+> `instrumentCheckScript` injeta no `script.js` (no topo do arquivo e no começo de cada
+> `__szProjectRun`: lê pela closure, numa propriedade NÃO enumerável de `globalThis` com nome
+> sorteado `__sz<24 hex>`; nomes `__sz*` do motor ficam de fora; código que não analisa volta
+> igual; as linhas não mudam de número). Para isso o `renderProjectToPreviewDocAsync` ganhou
+> `transformScript` (roda DEPOIS do `prepareProjectForHost`, que refaria o arquivo). Pro:
+> `proCheckSourceFiles`/`proCheckBinaries`. A autoria (`projectCheckAuthoring.issues`) conhece
+> `behavior`/`functionReturns`: 3D clássico (Jogo 3D, Mundo 3D, 3D Avançado ou `import three`)
+> não roda no teste (sem internet); `value` só no clássico; `game` só nos kits Pro; função no Pro
+> pede `module`, no clássico pede a Ponte. `evaluateStudioSectionObjectives(…, executed?)` recebe o
+> resultado do executor; sem ele, objetivo de execução não passa. `studioSectionCompletionIssues`
+> exige o gabarito quando há objetivo de execução e confere inicial/gabarito só na ESTRUTURA (a
+> execução é do "Testar agora"; a publicação não depende do executor). O executor de verdade
+> (Chromium) é testado em `src/check/__tests__/checkRunner.test.ts` (pulado sem Chromium).
+
 > **Escrita com namespace explícito (10/10/2026):** `replaceLocalProject(project, {namespace})`
 > captura o armazenamento antes de persistir. Os rascunhos das aulas usam `namespace: ''`, inclusive
 > para cópias de conflito, sem depender do namespace que o Estúdio Completo ativou durante o download.

@@ -71,6 +71,29 @@ Sucesso:
 
 Falhas usam os códigos `INVALID_REQUEST`, `BUILD_FAILED`, `OUTPUT_TOO_LARGE` e `RATE_LIMITED`. Os status esperados são 400 para contrato inválido, 401 para token inválido, 413 para saída grande, 422 para erro no código, 429 para limite de frequência e 500 para falha inesperada.
 
+### Teste dos objetivos
+
+`POST /v1/check` (Bearer igual ao build) roda o projeto num Chromium sem internet e confere os
+objetivos que RODAM o jogo (etapa 3 dos objetivos do Estúdio, 18/10/2026). Quem chama é o Members.
+
+```json
+{ "mode": "classic", "executionId": "check-…", "scope": "__sz<24 hex>",
+  "document": "<!doctype html>…", "objectives": [{ "id": "anda", "rule": { "type": "behavior", … } }] }
+{ "mode": "pro", "executionId": "check-…", "scope": "__sz<24 hex>", "templateId": "canvas-puzzle",
+  "files": { … }, "binaries": { … }, "objectives": [ … ] }
+```
+
+Um contêiner próprio por teste (`check-<id>`, destruído no fim). Clássico: o documento de prévia
+que o Members montou vira `game.html`. Pro: compila com o Vite de sempre; se algum objetivo chama
+uma função exportada, o Worker acrescenta `__sz-check-entry.js` (importa os módulos e os guarda no
+escopo sorteado) ao `index.html`. `runtime/check-objectives.mjs` abre UMA página por objetivo
+(três em paralelo), aperta "Começar" nos kits, faz os passos e relata o que viu; quem julga é o
+Worker, com a régua do core (`judgeExecutionObservation`). Resposta: `{ ok: true, results: [{ id,
+passed, detail? }], screenshots?: { id: base64 JPEG } }`. Projeto Pro que não compila responde 200
+com todos os objetivos sem passar; falha do executor é 500 `CHECK_FAILED`; frequência 429.
+⚠️ A rota exige a imagem nova (o script entra no `Dockerfile`): reconstrua e implante o Worker
+antes de ligar os objetivos de execução no Members.
+
 ## Templates confiáveis
 
 * `vanilla-js`

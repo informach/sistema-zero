@@ -26,6 +26,23 @@ export class StudioProjectSyncingError extends DomainError {
     super('O Estúdio ainda está organizando o seu código em blocos. Tente de novo em um instante.')
   }
 }
+/**
+ * O executor que roda o jogo não respondeu (fora do ar, demorou, não está configurado). Nunca
+ * aprova por falha e nada é guardado: a criança só tenta de novo.
+ */
+export class ProjectCheckUnavailableError extends DomainError {
+  readonly code = 'PROJECT_CHECK_UNAVAILABLE'
+  constructor() {
+    super('Não consegui testar o seu jogo agora. Tente de novo.')
+  }
+}
+/** Muitos testes seguidos da mesma pessoa: o executor pede uma pausa. */
+export class ProjectCheckBusyError extends DomainError {
+  readonly code = 'PROJECT_CHECK_BUSY'
+  constructor() {
+    super('Calma: espere alguns segundos e teste de novo.')
+  }
+}
 export class LearningGateError extends DomainError {
   readonly code = 'LEARNING_GATE_INCOMPLETE'
   constructor() {

@@ -149,6 +149,7 @@ export const KIDS_LESSON_COPY: LessonCopy = {
     dica: 'Dica',
     mudou: 'Você mexeu no projeto depois de verificar. Verifique de novo!',
     verificando: 'Verificando…',
+    testando: 'Testando o seu jogo… isso leva alguns segundos.',
     erro: 'Não deu para verificar agora. Seu projeto continua aqui. Tente de novo.',
     xp: (pontos) => `+${pontos} XP`,
     estadoCumprido: 'cumprido',

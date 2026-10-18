@@ -27,6 +27,20 @@ parte viraram o único jeito de conferir o projeto, sempre no servidor.
 - **Gabarito**: `content.solutionProject` do bloco Estúdio (validado no create/update como o
   `initialProject`), retirado da aula do aluno. A publicação recusa objetivo obrigatório que o
   gabarito não cumpre (`studioSectionCompletionIssues` do studio).
+- **Objetivos que RODAM o jogo** (etapa 3, `behavior`/`functionReturns`): a porta
+  `ProjectExecutionChecker` (`domain/ports/project-execution-checker.port.ts`) e o adaptador
+  `createStudioRuntimeChecker` (`infrastructure/gateways/studio-runtime-checker.ts`): monta o pedido
+  com o `@sistemazero/studio/server-check` e chama `POST /v1/check` do studio-runtime. O TIPO e o
+  modelo Pro saem do `initialProject` do bloco, nunca do projeto enviado. Resultado reaproveitado
+  por 10 min para o mesmo projeto e as mesmas regras (impressão), e pedidos iguais simultâneos
+  dividem uma ida. Executor fora, lento, 5xx ou resposta incompleta: 503 `PROJECT_CHECK_UNAVAILABLE`
+  e NADA é guardado (nunca aprova por falha); 429 vira `PROJECT_CHECK_BUSY`. Sem
+  `STUDIO_PRO_RUNTIME_URL` + `STUDIO_PRO_RUNTIME_TOKEN` (os mesmos nomes do Kids/Admin; o token é o
+  `INTERNAL_TOKEN` do Worker), toda parte com esses objetivos responde 503. O "Testar agora" da
+  autoria é `POST /members/admin/project-checks/test` (`testObjectives`: estrutura + execução, com
+  o motivo e as capturas, sem guardar). ⚠️ `server.listen` ganhou `idleTimeout: 170`: o padrão de
+  10 s do Bun cortava a conexão com a resposta ainda sendo preparada. ⚠️ O `tsconfig` ganhou
+  `DOM`/`DOM.Iterable` (só tipos): a prévia do Estúdio cita tipos do navegador.
 
 ## Cursos ao vivo: a modalidade do curso (14/10/2026, migration `0113`)
 

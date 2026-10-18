@@ -2610,6 +2610,22 @@ const config: GatewayConfigInput = {
       transforms: membersInternalTransforms,
       rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
       maxBodyBytes: 2 * 1024 * 1024,
+      // Objetivos que RODAM o jogo (18/10/2026): o members compila (Pro) e abre o jogo num
+      // navegador do studio-runtime antes de responder. O comum é segundos; o teto cobre o pior.
+      timeoutMs: 160_000,
+    },
+    {
+      // "Testar agora" da autoria: os objetivos contra o projeto inicial ou o gabarito.
+      id: 'members-admin-project-checks-test',
+      methods: ['POST'],
+      pathPattern: '/members/admin/project-checks/test',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 2 * 1024 * 1024,
+      timeoutMs: 160_000,
     },
     {
       id: 'members-section-action-check',

@@ -1,4 +1,7 @@
 import {
+  EXECUTION_COMPARES,
+  EXECUTION_KEYS,
+  EXECUTION_LIMITS,
   PLATFORM_ACTIONS,
   PROJECT_CHECK_HINT_MAX,
   TEACHER_NOTES_MAX,
@@ -635,7 +638,26 @@ export const InteractiveBlockSchema = t.Object({
    */
   semPerguntaFinal: t.Optional(t.Literal(true)),
 })
-const SectionRule = t.Union([
+const ExecutionSteps = t.Array(
+  t.Union([
+    t.Object({
+      action: t.Literal('wait'),
+      ms: t.Integer({ minimum: 0, maximum: EXECUTION_LIMITS.maxWaitMs }),
+    }),
+    t.Object({
+      action: t.Literal('press'),
+      key: t.Union(EXECUTION_KEYS.map((key) => t.Literal(key))),
+      holdMs: t.Optional(t.Integer({ minimum: 0, maximum: EXECUTION_LIMITS.maxHoldMs })),
+    }),
+    t.Object({
+      action: t.Literal('click'),
+      x: t.Number({ minimum: 0, maximum: EXECUTION_LIMITS.maxCoordinate }),
+      y: t.Number({ minimum: 0, maximum: EXECUTION_LIMITS.maxCoordinate }),
+    }),
+  ]),
+  { maxItems: EXECUTION_LIMITS.maxSteps },
+)
+export const SectionRule = t.Union([
   t.Object({ type: t.Literal('usesLoop') }),
   t.Object({
     type: t.Literal('usesBlock'),
@@ -665,6 +687,45 @@ const SectionRule = t.Union([
   ...(['declaresVariable', 'definesFunction', 'callsFunction'] as const).map((type) =>
     t.Object({ type: t.Literal(type), name: t.String({ maxLength: 200 }) }),
   ),
+  // Objetivos que RODAM o jogo (etapa 3, 18/10/2026). Declarados campo a campo: o `normalize` do
+  // Elysia apagaria o que não estivesse aqui. Os limites finos (soma das esperas, tamanho dos
+  // valores) são do core (`isSectionExecutionRule`), que a publicação confere.
+  t.Object({
+    type: t.Literal('behavior'),
+    steps: ExecutionSteps,
+    expect: t.Object({
+      target: t.Union([
+        t.Object({ kind: t.Literal('value'), path: t.String({ minLength: 1, maxLength: 200 }) }),
+        t.Object({ kind: t.Literal('text') }),
+        t.Object({ kind: t.Literal('console') }),
+        t.Object({
+          kind: t.Literal('game'),
+          field: t.Union([t.Literal('phase'), t.Literal('score'), t.Literal('health')]),
+        }),
+      ]),
+      compare: t.Union(EXECUTION_COMPARES.map((compare) => t.Literal(compare))),
+      value: t.Optional(
+        t.Union([t.String({ maxLength: EXECUTION_LIMITS.maxTextChars }), t.Number(), t.Boolean()]),
+      ),
+    }),
+  }),
+  t.Object({
+    type: t.Literal('functionReturns'),
+    name: t.String({ minLength: 1, maxLength: 100 }),
+    module: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
+    cases: t.Array(
+      t.Object({
+        args: t.Array(t.Unknown(), { maxItems: EXECUTION_LIMITS.maxArgs }),
+        expected: t.Unknown(),
+      }),
+      { minItems: 1, maxItems: EXECUTION_LIMITS.maxCases },
+    ),
+  }),
+  t.Object({
+    type: t.Literal('script'),
+    steps: ExecutionSteps,
+    code: t.String({ minLength: 1, maxLength: EXECUTION_LIMITS.maxScriptChars }),
+  }),
 ])
 export const SectionCompletionSchema = t.Object({
   version: t.Literal(1),
@@ -697,6 +758,18 @@ export const SectionCompletionSchema = t.Object({
   ),
 })
 export const SectionProjectParams = t.Object({ lessonId: Id, sectionId: Id })
+/** "Testar agora" da autoria: objetivos contra um projeto (o inicial ou o gabarito), sem guardar. */
+export const ProjectChecksTestBody = t.Object({
+  project: t.Unknown(),
+  checks: t.Array(
+    t.Object({
+      id: t.String({ minLength: 1, maxLength: 200 }),
+      rule: SectionRule,
+      optional: t.Optional(t.Literal(true)),
+    }),
+    { minItems: 1, maxItems: 20 },
+  ),
+})
 export const SectionProjectBody = t.Object({ revision: Id, project: t.Unknown() })
 export const LessonSectionSchema = t.Object({
   id: Id,

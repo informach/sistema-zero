@@ -2,6 +2,7 @@
 
 import {
   evaluateLearning,
+  isExecutionRule,
   type LearningAnswers,
   type LearningResult,
   type LessonDraftDocument,
@@ -251,7 +252,19 @@ export function LessonRehearsal({
                 ...s,
                 completedProjects: new Set([...s.completedProjects, section.id]),
               }))
-            return checks.map((c) => `${c.passed ? 'Cumprido' : 'Falta'}: ${c.label}`).join('\n')
+            // Os que RODAM o jogo só o executor confere: o ensaio aponta para o "Testar agora".
+            const runsGame = new Set(
+              section.completion.projectChecks
+                .filter((c) => isExecutionRule(c.rule))
+                .map((c) => c.id),
+            )
+            return checks
+              .map((c) =>
+                runsGame.has(c.checkId)
+                  ? `Roda o jogo (confira no "Testar agora"): ${c.label}`
+                  : `${c.passed ? 'Cumprido' : 'Falta'}: ${c.label}`,
+              )
+              .join('\n')
           },
         }}
       >
