@@ -1,4 +1,4 @@
-import { expect, test } from 'bun:test'
+import { expect, spyOn, test } from 'bun:test'
 import { awaitWithSignal } from '@sistemazero/core/http'
 import { StudioPythonActivitySchema } from '@sistemazero/core/studio/python-activity'
 import { pythonEnvironmentFixture } from '../state/fixtures/pythonEnvironment'
@@ -13,14 +13,22 @@ test.each([
   const controller = new AbortController()
   const deadline = AbortSignal.timeout(1500)
   let beforeWithdrawal: number | undefined, afterWithdrawal: number | undefined
-  const observer = new MutationObserver(() => {
+  const withdraw = () => {
     const frames = document.querySelectorAll('iframe')
     if (!frames.length || controller.signal.aborted) return
     beforeWithdrawal = frames.length
     controller.abort(new DOMException('Atividade retirada.', 'AbortError'))
     afterWithdrawal = document.querySelectorAll('iframe').length
+  }
+  const append = document.body.append.bind(document.body)
+  // Happy DOM keeps its mutation-listener callback only through WeakRef. Trigger the
+  // withdrawal from the actual frame mount, in the post-append microtask where the
+  // runner has registered ownership, instead of depending on that GC-sensitive observer.
+  const mounting = spyOn(document.body, 'append').mockImplementation((...nodes) => {
+    append(...nodes)
+    if (nodes.some((node) => typeof node !== 'string' && node.nodeName === 'IFRAME'))
+      queueMicrotask(withdraw)
   })
-  observer.observe(document.body, { childList: true, subtree: true })
   const signal = AbortSignal.any([controller.signal, deadline])
   try {
     const pending = awaitWithSignal(
@@ -41,10 +49,14 @@ test.each([
             environment: {
               ...environment,
               signal: lifetime === 'environment' ? signal : undefined,
-              resolvePythonAnalysis: async () => ({
-                url: 'https://analysis.test/analysis.html',
-                allowedOrigins: ['https://analysis.test'],
-              }),
+              resolvePythonAnalysis: async () => {
+                // Reproduce the collection that previously lost the observer's callback.
+                Bun.gc(true)
+                return {
+                  url: 'https://analysis.test/analysis.html',
+                  allowedOrigins: ['https://analysis.test'],
+                }
+              },
             },
             signal: lifetime === 'request' ? signal : deadline,
             assertCurrent() {},
@@ -58,6 +70,6 @@ test.each([
     expect(document.querySelectorAll('iframe')).toHaveLength(0)
   } finally {
     controller.abort()
-    observer.disconnect()
+    mounting.mockRestore()
   }
 })
