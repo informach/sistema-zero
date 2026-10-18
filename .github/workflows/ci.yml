@@ -1,59 +1,166 @@
-name: Molda publication DB diagnostic
+name: Molda remaining integration diagnostic
 on:
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
-  database:
+  integration:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     services:
-      postgres:
+        description: 'Serviços p/ deploy no staging: "all", "auto" com before_sha, ou CSV'
+        required: false
+        default: 'all'
+      before_sha:
+        description: 'SHA anterior de staging, obrigatório para services=auto'
+        required: false
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    name: ci
+    # Typecheck do Studio (~16 min) + imagem/playtests isolados + exports com npm ci.
+    # O limite do job inclui essas provas reais; não altera orçamentos do produto.
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      marketing-postgres:
         image: postgres:16
         env:
-          POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: studio_pro_review
-        ports: ['55432:5432']
+          POSTGRES_DB: marketing_review
+        ports:
+          - 15439:5432
         options: >-
-          --health-cmd "pg_isready -U postgres"
-          --health-interval 5s
+          --health-cmd "pg_isready -U postgres -d marketing_review"
+          --health-interval 10s
           --health-timeout 5s
-          --health-retries 10
-    env:
-      STUDIO_REVIEW_DATABASE_URL: postgres://postgres:postgres@localhost:55432/studio_pro_review
-      PGPASSWORD: postgres
+          --health-retries 5
+      engagement-postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: marketing_review
+        ports:
+          - 15465:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d marketing_review"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      fiscal-postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: sistemazero
+        ports:
+          - 55432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d sistemazero"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v5
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: '1.3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
       - run: bun install --frozen-lockfile
-      - name: Reproduce old account fixture poisoning the next suite
-        working-directory: packages/members
+      - name: Preparar testes de mídia das oficinas
+        working-directory: packages/live-recorder
         run: |
-          fixture=tests/db/studio-ai-account.test.ts
-          cp "$fixture" "$RUNNER_TEMP/fixed-account-fixture.ts"
-          git fetch --depth=1 origin 832e2d261f3f7cf085026ae4004ec7ce25327c80
-          git show 832e2d261:"packages/members/$fixture" > "$fixture"
-          bun test "$fixture"
-          set +e
-          bun test tests/db/adult-live-benefits.test.ts 2>&1 | tee "$RUNNER_TEMP/expected-schema-collision.log"
-          result=${PIPESTATUS[0]}
-          set -e
-          cp "$RUNNER_TEMP/fixed-account-fixture.ts" "$fixture"
-          test "$result" -ne 0
-          grep -F 'PostgresError: schema "members" already exists' "$RUNNER_TEMP/expected-schema-collision.log"
-      - name: Fresh disposable databases for unchanged full-suite assertions
-        run: |
-          psql -h localhost -p 55432 -U postgres -d postgres -v ON_ERROR_STOP=1 -c 'DROP DATABASE studio_pro_review WITH (FORCE)'
-          for db in studio_pro_review sistemazero pensa_ci sz_aulas_qa_ci; do
-            createdb -h localhost -p 55432 -U postgres "$db"
-          done
-      - name: Full members database suite with shared migration fixture
-        working-directory: packages/members
-        run: bun test tests/db
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          bunx playwright install --with-deps chromium
+          # Ubuntu 24 restringe user namespaces de binários fora dos perfis do sistema.
+          # Autorizar somente o Chromium instalado pelo Playwright mantém seu sandbox ativo.
+          sudo tee /etc/apparmor.d/sistemazero-playwright >/dev/null <<EOF
+          abi <abi/4.0>,
+          include <tunables/global>
+          profile sistemazero-playwright "$HOME/.cache/ms-playwright/**/chrome" flags=(unconfined) {
+            userns,
+          }
+          profile sistemazero-playwright-headless "$HOME/.cache/ms-playwright/**/chrome-headless-shell" flags=(unconfined) {
+            userns,
+          }
+          EOF
+          sudo apparmor_parser -r /etc/apparmor.d/sistemazero-playwright
+
+      - name: Testes DB fiscal (Postgres real)
+        run: cd packages/fiscal && bun test tests/db
+        env:
+          TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/sistemazero
+
+      # ⚠️ A pasta INTEIRA, como no fiscal acima. Até 15/08 esta linha apontava para UM
+      # arquivo, então os outros 10 — justamente os documentados como "o único teste que
+      # alcança este SQL", porque o fake in-memory o reimplementa em JS — nunca rodaram no
+      # CI: eles PULAM sozinhos sem Postgres (`describe.skipIf`) e o passo verde do
+      # `bun test` geral parecia cobri-los.
+      - name: Criar banco descartável para upgrade das aulas
+        run: PGPASSWORD=postgres psql -h localhost -p 55432 -U postgres -d postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE sz_aulas_qa_ci"
+
+      - name: Criar banco descartável para ledger e revisões do Studio
+        run: PGPASSWORD=postgres psql -h localhost -p 55432 -U postgres -d postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE studio_pro_review"
+
+      - name: Testes DB members (Postgres real)
+        run: cd packages/members && bun test tests/db
         env:
           TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/sistemazero
           PENSA_TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/pensa_ci
           LEARNING_QA_DATABASE_URL: postgres://postgres:postgres@localhost:55432/sz_aulas_qa_ci
+          STUDIO_REVIEW_DATABASE_URL: postgres://postgres:postgres@localhost:55432/studio_pro_review
+
+      - name: Pensa integrado com API e PostgreSQL reais
+        working-directory: packages/pensa
+        run: |
+          bun run typecheck:e2e
+          bun run e2e:native
+        env:
+          PENSA_TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/pensa_ci
+
+      - name: Testes DB referrals (Postgres real)
+        run: cd packages/referrals && bun test tests/db
+        env:
+          TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/sistemazero
+
+      - name: Criar banco descartável do Helpdesk
+        run: PGPASSWORD=postgres psql -h localhost -p 55432 -U postgres -d postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE helpdesk_test"
+
+      - name: Testes DB helpdesk (Postgres real)
+        working-directory: packages/helpdesk
+        run: |
+          bun run db:migrate
+          bun test tests/integration/drizzle-*.test.ts
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:55432/helpdesk_test
+          HELPDESK_TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/helpdesk_test
+
+      - name: Testes DB marketing (Postgres real)
+        run: |
+          cd packages/marketing
+          bun run db:migrate
+          bun test tests/*.postgres.test.ts
+        env:
+          DATABASE_URL: postgres://postgres:postgres@127.0.0.1:15439/marketing_review
+          MARKETING_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:15439/marketing_review
+          ENGAGEMENT_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:15465/marketing_review
+
+      - name: Criar banco isolado das sessões de autenticação
+        run: PGPASSWORD=postgres psql -h 127.0.0.1 -p 15439 -U postgres -d postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE marketing_review_tests"
+
+      - name: Testes DB auth, sessões desktop e navegador (Postgres real)
+        working-directory: packages/auth
+        run: |
+          bun run db:migrate
+          bun test tests/db
+        env:
+          DATABASE_URL: postgres://postgres:postgres@127.0.0.1:15439/marketing_review_tests
+          MARKETING_TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:15439/marketing_review_tests
+          TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:15439/marketing_review_tests
+
