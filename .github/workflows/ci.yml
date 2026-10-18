@@ -9,25 +9,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     services:
-        description: 'Serviços p/ deploy no staging: "all", "auto" com before_sha, ou CSV'
-        required: false
-        default: 'all'
-      before_sha:
-        description: 'SHA anterior de staging, obrigatório para services=auto'
-        required: false
-
-concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
-
-jobs:
-  ci:
-    name: ci
-    # Typecheck do Studio (~16 min) + imagem/playtests isolados + exports com npm ci.
-    # O limite do job inclui essas provas reais; não altera orçamentos do produto.
-    runs-on: ubuntu-latest
-    timeout-minutes: 45
-    services:
       marketing-postgres:
         image: postgres:16
         env:
