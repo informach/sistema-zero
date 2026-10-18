@@ -437,11 +437,24 @@ describe('os três guias do Pensa vestem a MESMA casca', () => {
   const GUIAS = [
     '../../pinta/src/components/TaskBriefPanel.tsx',
     '../../studio/src/studio/TaskGuidePanel.tsx',
-    '../../community-kids/src/components/kids/molda-mission-guide.tsx',
+    '../../member-shell/src/components/creator/molda-mission-guide.tsx',
   ]
   it('a receita existe na folha que os três consomem', () => {
     // Fora do laço: repetida a cada arquivo, ela não era anti-vácuo de nada.
     expect(semComentarios).toMatch(/\.sz-tool-guide__head\b/)
+  })
+  it('o ponto de entrada Kids encaminha para o mesmo guia compartilhado', async () => {
+    const wrapper = await Bun.file(
+      join(HERE, '../../community-kids/src/components/kids/molda-mission-guide.tsx'),
+    ).text()
+    expect(wrapper.trim()).toBe(
+      "export * from '@sistemazero/member-shell/components/creator/molda-mission-guide'",
+    )
+    const workspace = await Bun.file(
+      join(HERE, '../../member-shell/src/components/creator/molda-client.tsx'),
+    ).text()
+    expect(workspace).toContain("from './molda-mission-guide'")
+    expect(workspace).toContain('<MoldaMissionGuide')
   })
   for (const arquivo of GUIAS) {
     it(`${arquivo} usa .sz-tool-guide`, async () => {
