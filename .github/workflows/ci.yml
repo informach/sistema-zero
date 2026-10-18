@@ -73,6 +73,10 @@ jobs:
           EOF
           sudo apparmor_parser -r /etc/apparmor.d/sistemazero-playwright
 
+      - name: Preparar navegador da integração Pensa como no pipeline oficial
+        working-directory: packages/pensa
+        run: bunx playwright install --with-deps chromium
+
       - name: Testes DB fiscal (Postgres real)
         run: cd packages/fiscal && bun test tests/db
         env:
