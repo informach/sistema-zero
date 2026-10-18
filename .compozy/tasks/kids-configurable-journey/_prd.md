@@ -32,7 +32,7 @@ O administrador pedagógico vê os oito postos atuais, escolhe o que cada avanç
 | K09 | Preparação de baseline com progresso retomável e publicação atômica somente quando pronta; interface informa que a regra atual continua ativa até a publicação. Falha/retry não perde conquistas nem publica metade da mudança. |
 | K10 | Listagem e acesso direto usam a mesma política para cursos e ferramentas. Pensa verifica cada participante; Molda recebe famílias resolvidas; remix verifica requisitos do snapshot. |
 | K11 | Toda operação mantém checagem comercial, conta/perfil/audiência e regras de exclusão. Revogação/expiração pode impedir uso do produto, mas não apaga a conquista. |
-| K12 | Política pausada não concede novos avanços/capacidades; mantém conquistas e acesso de aula. Registro ausente é legado; registro inválido/erro de busca é indisponível, nunca “liberado” nem reset silencioso para legado. |
+| K12 | Política pausada retém a regra pedagógica vigente e não concede novos avanços/capacidades; mantém conquistas e gates de curso pela regra retida, além do acesso de aula. Registro ausente é legado; registro inválido/erro de busca é indisponível, nunca “liberado” nem reset silencioso para legado. |
 | K13 | JS e Python compartilham a política de capacidades, mas linguagem/ambiente da aula continua no contrato de autoria conciliado. Não adicionar Python aos grants de todos nem remover JS para liberar Pro. |
 | K14 | Nenhuma promessa fixa de recompensa ou de domínio de habilidade pode contradizer a configuração. Default mantém a copy atual; custom usa recompensas derivadas e, quando necessário, frases neutras de conquista. |
 
@@ -65,7 +65,7 @@ Escolha recomendada para o primeiro escopo, ainda sujeita à revisão de produto
 
 ### Estados vazios e falhas
 
-Ausência de registro de configuração usa o legado. Um modo explícito pausado interrompe novos ganhos, mas não bloqueia aula nem apaga conquista. Arrays vazios de capacidades significam “nenhuma capacidade nova”; uma lista vazia de requisitos de avanço não é conclusão automática. O editor exige pelo menos um requisito por avanço custom ou oferece pausar a jornada como ação explícita.
+Ausência de registro de configuração usa o legado. Um modo explícito pausado interrompe novos ganhos e guarda a política ativa que foi pausada. Ele não bloqueia aula, não apaga conquista nem troca silenciosamente uma base complete-only por showcase. Os gates de curso continuam usando o posto já conquistado e os requisitos de base retidos; marcos novos durante pausa não promovem posto nem abrem por posto as etapas futuras/recompensas. Arrays vazios de capacidades significam “nenhuma capacidade nova”; uma lista vazia de requisitos de avanço não é conclusão automática. O editor exige pelo menos um requisito por avanço custom ou oferece pausar a jornada como ação explícita.
 
 Busca de estado indisponível preserva o último dado válido para apresentação e oferece nova tentativa. Operações que gastam recursos exigem verificação atual e falham de maneira recuperável. Não tratar erro como ausência de compra, zero conquistas ou catálogo vazio.
 

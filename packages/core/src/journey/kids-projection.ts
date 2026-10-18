@@ -27,6 +27,7 @@ import {
 
 export function projectKidsJourney(input: KidsJourneyProjectionInput): KidsJourneyView {
   const policy = KidsJourneyPolicySchema.parse(input.policy)
+  const paused = policy.mode === 'paused'
   const steps = kidsJourneySteps(policy)
   const floor = JOURNEY_LEVEL_SLUGS.indexOf(input.earned.level)
   let current = Math.max(0, floor)
@@ -46,13 +47,15 @@ export function projectKidsJourney(input: KidsJourneyProjectionInput): KidsJourn
           : ('pending' as const),
     }))
     const alreadyEarned = index + 1 <= floor
-    const available = alreadyEarned || previousComplete
+    const available = alreadyEarned || (!paused && previousComplete)
     const completed =
       alreadyEarned ||
-      (available && requirements.every((requirement) => requirement.state === 'satisfied'))
+      (!paused &&
+        available &&
+        requirements.every((requirement) => requirement.state === 'satisfied'))
     if (completed) {
       current = index + 1
-      for (const capability of step.capabilities) earned.add(capability)
+      if (!paused) for (const capability of step.capabilities) earned.add(capability)
     }
     previousComplete = completed
     return {
@@ -94,10 +97,11 @@ export function resolveKidsJourneyCourseLock(
   if (
     input.course.audience !== 'kids' ||
     input.course.modality !== 'recorded' ||
+    input.course.graduationOnly ||
     !input.course.tier
   )
     return { locked: false }
-  const view = projectKidsJourney(input)
+  const policy = KidsJourneyPolicySchema.parse(input.policy)
   const foundation = input.catalog.find(
     (course) =>
       course.audience === 'kids' &&
@@ -106,7 +110,7 @@ export function resolveKidsJourneyCourseLock(
       course.tier === input.course.tier &&
       course.slot === 1,
   )
-  if (input.policy.mode === 'legacy') {
+  if (policy.mode === 'legacy') {
     const qualified: Partial<Record<JourneyCourseTier, number[]>> = {}
     for (const milestone of input.milestones) {
       if (
@@ -134,8 +138,9 @@ export function resolveKidsJourneyCourseLock(
       input.course.journeyRole,
     )
   }
+  const view = projectKidsJourney({ ...input, policy })
   const satisfied = foundation
-    ? kidsFoundationRequirements(input.policy, foundation).every((requirement) =>
+    ? kidsFoundationRequirements(policy, foundation).every((requirement) =>
         kidsRequirementSatisfied(requirement, input.milestones),
       )
     : false

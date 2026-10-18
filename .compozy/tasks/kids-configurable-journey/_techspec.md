@@ -55,10 +55,12 @@ interface KidsJourneyStep {
   requirements: readonly KidsRequirement[]
   capabilities: readonly KidsCreatorCapability[]
 }
-type KidsJourneyPolicy =
+type KidsJourneyActivePolicy =
   | { schemaVersion: 1; mode: 'legacy' }
-  | { schemaVersion: 1; mode: 'paused' }
   | { schemaVersion: 1; mode: 'configured'; steps: readonly KidsJourneyStep[] }
+type KidsJourneyPolicy =
+  | KidsJourneyActivePolicy
+  | { schemaVersion: 1; mode: 'paused'; policy: KidsJourneyActivePolicy }
 interface KidsCourseMilestone {
   courseId: string
   completed: boolean
@@ -77,6 +79,7 @@ Entradas mínimas dos projetores (complementar os views de saída com os campos 
 ```ts
 interface KidsJourneyCourseFact {
   id: string
+  graduationOnly: boolean // adaptador deriva de course.level === 'lenda'
   audience: 'kids' | 'adult'
   modality: 'recorded' | 'live'
   status: 'draft' | 'published' | 'archived'
@@ -120,6 +123,8 @@ interface KidsJourneyReadiness {
 
 `steps` configurados contém exatamente os sete avanços na ordem coder→god. Os oito postos continuam presentes: noob é entrada, não uma etapa artificial que exige zero cursos. O schema/runtime distingue `mode` explicitamente; pausa não é o mesmo que registro ausente.
 
+Pausa é um estado que retém uma política ativa validada; não aceita política vazia nem pausa aninhada. `pauseKidsJourneyPolicy(policy)` cria esse estado de forma idempotente, e `kidsJourneySteps` continua expondo os requisitos retidos. A futura publicação deve derivar essa regra da versão ativa no servidor e verificar sua igualdade/hash; não aceitar que um cliente troque os gates de curso ao mesmo tempo em que pede somente pausar.
+
 `slot` é identidade pedagógica legada, não um alias de courseId. Dois marcos do mesmo curso qualificam um slot com a precedência atual de snapshots (showcase → complete → fallback vivo). Não combinar complete de um curso e showcase de outro que ocupou o mesmo slot. Cursos explícitos satisfazem somente seu próprio ID; a mesma matéria pode ser repetida em avanços posteriores sem apagar marcos.
 
 O adaptador `legacyKidsJourneyPolicy()` deriva os requisitos incrementais de `CREATOR_JOURNEY_LEVELS`; não copia outra tabela manual. Default tem 49 requisitos de showcase distribuídos em 1+8×6. Recompensas incrementais derivam dos defaults atuais, incluindo faixas Molda. `computeStudentLevel` e `resolveJourneyCourseLock` permanecem como oráculos do comportamento legado.
@@ -134,7 +139,7 @@ analyzeKidsJourneyReadiness(input: KidsJourneyReadinessInput): KidsJourneyReadin
 compareKidsJourney(input: KidsJourneyComparisonInput): KidsJourneyImpact
 ```
 
-T1 também implementa os schemas/tipos de rede, `kidsJourneySteps`, helpers de requisito/base e `resolveKidsJourneyCourseLock`. Este último exige catálogo conhecido (array, inclusive vazio); catálogo desconhecido não pode ser convertido no fail-open de base ausente. Os consumidores existentes continuam sem usar esses contratos até T4+.
+T1 também implementa os schemas/tipos de rede, `kidsJourneySteps`, `pauseKidsJourneyPolicy`, helpers de requisito/base e `resolveKidsJourneyCourseLock`. Este último exige catálogo conhecido (array, inclusive vazio); catálogo desconhecido não pode ser convertido no fail-open de base ausente. Os consumidores existentes continuam sem usar esses contratos até T4+.
 
 Tipos de entrada carregam política/versão, marcos, concessões e fatos mínimos de catálogo. Não recebem clients, banco ou callback de persistência. Schemas Zod estritos, UUIDs, listas sem repetição, limite de 200 requisitos por avanço, slots conforme `journeySlotsForTier`, capacidades enumeradas. Não introduzir Effect-TS: projeto usa TS/Zod/ports.
 
@@ -144,7 +149,7 @@ Tipos de entrada carregam política/versão, marcos, concessões e fatos mínimo
 - Avaliar somente os avanços posteriores ao posto conquistado, em ordem; requisitos removidos de etapas vencidas não reabrem dívida. Array vazio de requisito custom é inválido, nunca avanço automático.
 - Acrescentar capacidades que a política corrente oferece em postos já atingidos; isso permite liberalização sem forçar refazer cursos. Remoção futura não apaga grants já ganhos.
 - Congelar posto e capacidade em campos distintos. O posto preservado não autoriza automaticamente uma ferramenta nova que não foi atribuída nem oferecida naquela política.
-- Pausado conserva materializado e interrompe ganhos. Antes de pausar, baseline precisa preservar o estado da regra que está saindo.
+- Pausado conserva materializado e interrompe ganhos, inclusive capacidades oferecidas a postos já conquistados mas ainda não congeladas. Antes de pausar, baseline precisa preservar o estado da regra que está saindo. Seu view continua contendo os avanços/requisitos retidos; avanços não conquistados ficam `available: false` durante pausa.
 - Não somar XP nem alterar moedas, badges, streak ou marcos durante projeção/reconciliação.
 
 View aditiva proposta:
@@ -164,6 +169,8 @@ interface KidsJourneyView {
 
 `advances` informa requisitos satisfeito/pendente/indisponível, capacidade oferecida e se o avanço já foi conquistado. `readiness` pode ser desconhecida quando catálogo falha. Não mandar nomes de outros perfis nem política administrativa completa ao aluno.
 
+O diff de requisitos/capacidades de uma pausa pura fica vazio porque a regra foi retida. A UI deve comparar também `before.mode`/`after.mode` e apresentar a transição para pausado; `changes.length === 0` sozinho não significa que a configuração é idêntica.
+
 `GamificationMeView` recebe `kidsJourney?` ao lado do `journey?` Adult. `level.slug/next` permanece coerente com Kids. `level.remaining` continua um espelho legado por etapa para clientes antigos, mas nenhuma UI custom pode inferir requisitos/capacidades dele; os novos consumidores usam `kidsJourney`. Não inventar contagens por slot para curso extra sem posição.
 
 ## Trava dos cursos e prontidão
@@ -181,6 +188,8 @@ Análise estrutural monta dependências entre avanço, curso e base. Exemplos:
 - Dependências de capacidades: bridge→studio, pro→studio, pensa→ai, molda-intermediate→molda, molda-professional→molda-intermediate. São validações cumulativas até o posto, não exigência de estarem no mesmo cartão. Reavaliar qualquer dependência adicional com evidência do consumidor.
 
 Não prometer ausência de ciclos de todo o conteúdo didático. O primeiro validador cobre as travas de jornada/base/recompensa e a vitrine conhecida; objetivos, quizzes, conteúdo de runtime e permissão comercial são informados separadamente. Ambiente JS/Python precisa ser incorporado à prontidão a partir do contrato conciliado, sem inferência por nome do curso.
+
+`graduationOnly` preserva a informação perdida por `tier: null`: o adaptador de catálogo deriva esse booleano de `course.level === 'lenda'`. Readiness rejeita conteúdo de formatura como requisito de avanço, inclusive para chegar ao topo onde esse conteúdo é oferecido. Curso normal fora da escada (`tier: null`, `graduationOnly: false`) continua distinto e pode ser requisito explícito alcançável. Isso é validação de autoria/readiness; não introduz novo gate de acesso ao curso `lenda` (o acesso direto continua pela matrícula).
 
 ## Persistência, CAS e auditoria
 

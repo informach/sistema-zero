@@ -15,6 +15,7 @@ export function kidsJourneyFacts(): KidsJourneyCourseFact[] {
     for (let slot = 1; slot <= journeySlotsForTier(tier); slot++) {
       facts.push({
         id: kidsCourseId(facts.length),
+        graduationOnly: false,
         audience: 'kids',
         modality: 'recorded',
         status: 'published',

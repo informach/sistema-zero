@@ -3,6 +3,7 @@ import {
   type KidsJourneyPolicy,
   KidsJourneyPolicySchema,
   kidsJourneySteps,
+  pauseKidsJourneyPolicy,
 } from '../src/journey/kids-policy'
 import {
   compareKidsJourney,
@@ -118,14 +119,18 @@ describe('Kids policy contracts', () => {
   test('paused stops new earnings even with all milestones', () => {
     const view = projectKidsJourney(
       kidsJourneyInput({
-        policy: { schemaVersion: 1, mode: 'paused' },
+        policy: pauseKidsJourneyPolicy({ schemaVersion: 1, mode: 'legacy' }),
         milestones: kidsMilestones(),
         earned: { level: 'coder', capabilities: ['studio', 'pinta'] },
       }),
     )
     expect(view.earned).toEqual({ level: 'coder', capabilities: ['studio', 'pinta'] })
     expect(view.missing).toEqual([])
-    expect(view.advances).toEqual([])
+    expect(view.advances).toHaveLength(7)
+    expect(
+      view.advances.filter((advance) => advance.earned).map((advance) => advance.level),
+    ).toEqual(['coder'])
+    expect(view.advances.some((advance) => !advance.earned && advance.available)).toBe(false)
   })
 
   test('readiness distinguishes unavailable catalog, legacy gaps and circular explicit courses', () => {
@@ -300,10 +305,13 @@ describe('Kids policy contracts', () => {
     const before = JSON.stringify(input)
     const impact = compareKidsJourney({
       ...input,
-      proposedPolicy: { schemaVersion: 1, mode: 'paused' },
+      proposedPolicy: pauseKidsJourneyPolicy(input.policy),
     })
     expect(impact.after.earned.level).toBe('hacker')
     expect(impact.preservedCapabilities).toEqual(['studio', 'pinta', 'ai', 'pensa'])
+    expect(impact.changes).toEqual([])
+    expect(impact.before.mode).toBe('legacy')
+    expect(impact.after.mode).toBe('paused')
     expect(JSON.stringify(input)).toBe(before)
   })
 
@@ -354,5 +362,77 @@ describe('Kids policy contracts', () => {
     expect(impact.changes[0]!.requirementsAdded).toEqual([])
     expect(impact.changes[0]!.requirementsRemoved).toEqual([])
     expect(impact.changes[0]!.requirementsChanged[0]!.after.milestone).toBe('complete')
+  })
+
+  test('normal course outside the ladder differs from graduation-only content', () => {
+    const policy = configured()
+    const steps = policy.steps.map((step, index) =>
+      index === 0
+        ? {
+            ...step,
+            requirements: [
+              {
+                kind: 'course' as const,
+                courseId: kidsCourseId(60),
+                milestone: 'complete' as const,
+              },
+            ],
+          }
+        : step,
+    )
+    const normal = {
+      ...kidsJourneyFacts()[0]!,
+      id: kidsCourseId(60),
+      tier: null,
+      slot: null,
+      journeyRole: 'extra' as const,
+      graduationOnly: false,
+    }
+    const normalCatalog = [...kidsJourneyFacts(), normal]
+    const input = kidsJourneyInput({ policy: { ...policy, steps }, catalog: normalCatalog })
+    const readiness = analyzeKidsJourneyReadiness(input)
+    expect(readiness.issues.some((issue) => issue.level === 'coder')).toBe(false)
+    const graduation = { ...normal, graduationOnly: true }
+    const catalog = [...kidsJourneyFacts(), graduation]
+    expect(analyzeKidsJourneyReadiness({ ...input, catalog }).issues).toContainEqual(
+      expect.objectContaining({
+        code: 'course-graduation-only',
+        level: 'coder',
+        severity: 'error',
+      }),
+    )
+    expect(resolveKidsJourneyCourseLock({ ...input, catalog, course: graduation })).toEqual({
+      locked: false,
+    })
+  })
+
+  test('graduation content cannot be required to reach the top where it is offered', () => {
+    const policy = configured()
+    const graduation = {
+      ...kidsJourneyFacts()[0]!,
+      id: kidsCourseId(60),
+      tier: null,
+      slot: null,
+      journeyRole: 'reward' as const,
+      graduationOnly: true,
+    }
+    const steps = policy.steps.map((step) =>
+      step.level === 'god'
+        ? {
+            ...step,
+            requirements: [
+              { kind: 'course' as const, courseId: graduation.id, milestone: 'showcase' as const },
+            ],
+          }
+        : step,
+    )
+    expect(
+      analyzeKidsJourneyReadiness({
+        policy: { ...policy, steps },
+        catalog: [...kidsJourneyFacts(), graduation],
+      }).issues,
+    ).toContainEqual(
+      expect.objectContaining({ code: 'course-graduation-only', level: 'god', severity: 'error' }),
+    )
   })
 })

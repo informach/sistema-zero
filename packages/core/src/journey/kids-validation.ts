@@ -116,6 +116,12 @@ function courseIssue(
 ): Pick<KidsJourneyIssue, 'code' | 'message'> | null {
   if (course.audience !== 'kids' || course.modality !== 'recorded')
     return { code: 'course-ineligible', message: 'Escolha um curso Kids gravado.' }
+  if (course.graduationOnly)
+    return {
+      code: 'course-graduation-only',
+      message:
+        'O curso de formatura é oferecido no topo e não pode ser requisito para chegar até ele.',
+    }
   if (course.status !== 'published')
     return { code: 'course-unpublished', message: 'O curso não está publicado no catálogo.' }
   const foundation = catalog.find(
@@ -165,7 +171,6 @@ export function analyzeKidsJourneyReadiness(
   input: KidsJourneyReadinessInput,
 ): KidsJourneyReadiness {
   const policy = KidsJourneyPolicySchema.parse(input.policy)
-  if (policy.mode === 'paused') return { status: 'ready', horizon: null, issues: [] }
   if (input.catalog === null)
     return {
       status: 'unavailable',

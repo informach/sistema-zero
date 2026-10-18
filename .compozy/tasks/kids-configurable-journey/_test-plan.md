@@ -12,6 +12,16 @@ Base `3d83a3f46` mais checkpoint documental `534fd038`; atualização ao checkpo
 - Dependências locais: junction ignorada `packages/core/node_modules` aponta ao mesmo diretório do checkout principal; sem instalação ou alteração das dependências compartilhadas.
 - TSC/build/DB/browser/Docker/suíte global **não executados**, conforme restrição do root. Testes do avaliador não provam baseline/CAS/SQL nem integração dos consumidores.
 
+### Correção após revisão independente
+
+A primeira entrega (`286614934`) perdeu o critério de base custom ao representar pausa sem regra retida: no repro complete-only, `{ locked: false }` virava `foundation-first`. O contrato agora exige `paused.policy` ativa validada (legacy/configured, sem nesting), mantém seus gates e não concede novos postos/capacidades. A revisão também levou `graduationOnly` ao fato do curso para distinguir formatura de curso normal fora da escada, preservando o acesso legado de lenda.
+
+- RED: o repro original confirmou a regressão de gate; os novos testes de pausa recusavam a forma sem regra retida. Dois testes de formatura demonstraram readiness incorretamente pronta.
+- GREEN focado atual: `bun test tests/kids-journey-pause.test.ts tests/kids-journey-policy.test.ts` → **21 pass, 0 fail, 120 asserções**, aproximadamente 205 ms.
+- Revisão independente da pausa: policy/parity/pause → **25 pass, 0 fail, 2.591 asserções**, antes da adição dos dois casos de formatura.
+- Revisão independente de formatura: os dois casos novos → **2 pass, 0 fail, 4 asserções**; ajuste aprovado no recorte puro. O futuro adaptador precisa derivar `graduationOnly` do nível real do curso.
+- A matriz inteira aguardará a janela liberada pelo root: uma execução concorrente à validação SQL/Biome atingiu o timeout de 5 s no teste agregado de locks. O timeout não foi ampliado. A branch legacy do resolver deixou de calcular projeção/readiness que não utilizava.
+
 ## Provas de domínio e default
 
 | ID | Preparação/ação | Resultado exigido |
@@ -30,12 +40,13 @@ Base `3d83a3f46` mais checkpoint documental `534fd038`; atualização ao checkpo
 | D12 | Curso explícito extra de etapa alcançável / curso reward que depende do próprio avanço | Primeiro permitido com licença; segundo gera diagnóstico de ciclo e não publica. |
 | D13 | Curso futuro, adulto, live, inexistente ou com vitrine impossível | Tipo/audiência inválida rejeitados; futuro circular aponta curso/avanço; showcase sem vitrine é indisponível, sem prometer avanço pronto. |
 | D14 | Policy configured malformada, passo repetido/fora de ordem, vazio, slot 9 | Não normalizar silenciosamente, não subir por requisito vazio. |
-| D15 | Arrays de capacidades vazios / modo paused | Vazio não libera tudo; paused conserva conquistas e interrompe ganhos. Ausente é legado. |
+| D15 | Arrays de capacidades vazios / modo paused | Vazio não libera tudo; paused conserva política/base e conquistas, interrompe ganhos e não abre futuros/rewards por marcos posteriores. Ausente é legado; paused sem policy/nesting é inválido. |
 | D16 | pro sem studio; bridge sem studio; pensa sem ai; Molda profissional sem intermediário | Rejeitar dependência cumulativa inválida. Pro+studio sem bridge é tecnicamente permitido. |
 | D17 | Mover capacidade para depois/remover na revisão seguinte | Quem conquistou conserva; novo perfil depende da regra atual, mesmo se outro perfil da família conquistou. |
 | D18 | Piso conquistado architect, novos requisitos anteriores faltantes | Não rebaixar nem pedir refazer etapas anteriores; avaliar próximo avanço a partir do piso. |
 | D19 | Política mais fácil concede capacidade a posto já conquistado | Torna elegível pela regra ativa; baseline da próxima troca protege também quem não visitou. |
 | D20 | XP alto/coins/badges sem marcos | Não substituem curso/slot; calcular jornada não muda valores nem ledger. |
+| D21 | Requisito explícito para curso normal tier=null / graduationOnly=true | O normal permanece elegível se acessível; formatura não é requisito para avançar, inclusive para god. Gate de acesso a lenda continua sem trava pedagógica nova. |
 
 Oráculos existentes: `packages/core/tests/journey.test.ts`, `journey-state.test.ts`; `packages/members/tests/unit/levels.test.ts`, `journey-migration-contract.test.ts`; `packages/community-kids/tests/journey-conformance.test.ts` e `journey-rewards-conformance.test.ts`. Acrescentar fixtures de curso apagado e legado sem snapshot sem apagar expectativas atuais.
 

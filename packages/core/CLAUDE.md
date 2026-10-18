@@ -22,9 +22,15 @@ Guia operacional deste package. Leia antes de editar.
 schemas, avanço/capacidades permanentes, simulação sem escrita e prontidão. Nenhum consumidor foi
 migrado nesta fase. O default deriva dos 8 postos/49 slots atuais; Adult continua independente.
 Posto, ferramenta global, licença, paleta curricular e linguagem/runtime são conceitos separados.
+Pausa retém a política ativa em `paused.policy` (legacy/configured, sem nesting) e interrompe novos
+ganhos; não descarta requisitos de base nem troca complete-only por showcase. Seu view mantém os
+avanços retidos, mas os não conquistados não ficam disponíveis para avanço durante pausa.
 `resolveKidsJourneyCourseLock` exige catálogo conhecido: erro de carga não é base ausente.
 Requisitos de slot preservam o retrato do curso antigo; requisito por courseId não herda outro
 ocupante da posição. Pro depende de Estúdio, sem dependência técnica da Ponte.
+`KidsJourneyCourseFact.graduationOnly` deriva de `course.level === 'lenda'`: formatura não é
+requisito para chegar ao topo, mas mantém o acesso legado por matrícula sem gate novo. Um curso
+normal fora da escada também pode ter `tier: null`, portanto não inferir formatura desse campo.
 Teste focado: `tests/kids-journey-policy.test.ts` e `tests/kids-journey-parity.test.ts`, junto de
 `journey.test.ts`/`journey-state.test.ts`. Baseline/SQL/consumidores e atualização da base ao
 checkpoint conciliado ainda são necessários antes de integrar/ativar.

@@ -80,10 +80,9 @@ export function kidsRequirementKey(requirement: KidsRequirement): string {
     : `slot:${requirement.tier}:${requirement.slot}`
 }
 
-export const KidsJourneyPolicySchema = z
+export const KidsJourneyActivePolicySchema = z
   .discriminatedUnion('mode', [
     z.strictObject({ schemaVersion: z.literal(1), mode: z.literal('legacy') }),
-    z.strictObject({ schemaVersion: z.literal(1), mode: z.literal('paused') }),
     z.strictObject({
       schemaVersion: z.literal(1),
       mode: z.literal('configured'),
@@ -126,7 +125,26 @@ export const KidsJourneyPolicySchema = z
     })
   })
   .readonly()
+export type KidsJourneyActivePolicy = z.infer<typeof KidsJourneyActivePolicySchema>
+/** Pausing retains the complete course gate policy; it is not an empty curriculum. */
+export const KidsJourneyPolicySchema = z
+  .union([
+    KidsJourneyActivePolicySchema,
+    z
+      .strictObject({
+        schemaVersion: z.literal(1),
+        mode: z.literal('paused'),
+        policy: KidsJourneyActivePolicySchema,
+      })
+      .readonly(),
+  ])
+  .readonly()
 export type KidsJourneyPolicy = z.infer<typeof KidsJourneyPolicySchema>
+
+export function pauseKidsJourneyPolicy(policy: KidsJourneyPolicy): KidsJourneyPolicy {
+  const parsed = KidsJourneyPolicySchema.parse(policy)
+  return parsed.mode === 'paused' ? parsed : { schemaVersion: 1, mode: 'paused', policy: parsed }
+}
 
 export function legacyKidsJourneyPolicy(): KidsJourneyPolicy {
   return { schemaVersion: 1, mode: 'legacy' }
@@ -151,7 +169,7 @@ function legacyCapabilities(level: JourneyLevelSlug): KidsCreatorCapability[] {
 
 /** Legacy positions remain identities even when their courses do not exist yet. */
 export function kidsJourneySteps(policy: KidsJourneyPolicy): readonly KidsJourneyStep[] {
-  if (policy.mode === 'paused') return []
+  if (policy.mode === 'paused') return kidsJourneySteps(policy.policy)
   if (policy.mode === 'configured') return policy.steps
   return CREATOR_JOURNEY_LEVELS.slice(1).map((level, index) => {
     const previous = CREATOR_JOURNEY_LEVELS[index]!
@@ -185,6 +203,8 @@ export interface KidsJourneyEarned {
 }
 export interface KidsJourneyCourseFact {
   id: string
+  /** Derived from course.level === 'lenda'; tier:null alone loses this identity. */
+  graduationOnly: boolean
   audience: 'kids' | 'adult'
   modality: 'recorded' | 'live'
   status: 'draft' | 'published' | 'archived'
@@ -210,6 +230,7 @@ export const KIDS_JOURNEY_ISSUE_CODES = [
   'catalog-unavailable',
   'course-missing',
   'course-ineligible',
+  'course-graduation-only',
   'course-unpublished',
   'course-locked',
   'showcase-missing',
