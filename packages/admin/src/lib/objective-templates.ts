@@ -1,4 +1,5 @@
 import type { SectionProjectCheck } from '@sistemazero/core/learning'
+import { kitStateFields } from '@sistemazero/studio/server-project-checks'
 
 /**
  * Modelos de objetivo (etapa 4 dos objetivos do Estúdio, 18/10/2026): pontos de partida que a
@@ -157,22 +158,26 @@ export const OBJECTIVE_TEMPLATES: readonly ObjectiveTemplate[] = [
   },
 ]
 
-/** Onde fica a meta de cada kit Pro: é o que a dica do objetivo de mudar a meta aponta. */
-const KIT_GOAL: Record<string, string> = {
-  'canvas-puzzle': 'goalLines (as linhas para vencer)',
-  'canvas-survival': 'defeatGoal (os inimigos para vencer)',
-  'phaser-arcade': 'waves (as ondas)',
-  'phaser-platformer': 'a lista seeds (cada semente conta)',
-  'three-exploration': 'goal (os cristais)',
-  'three-action': 'goal (as luzes)',
-  'canvas-grid-arena': 'targetCount (os faróis)',
-  'phaser-tactics': 'a lista units (cada rival conta)',
-  'three-tactics': 'a lista units (cada rival conta)',
-}
-
-/** Kits que mostram a vida do jogador no estado (os outros não têm vida para conferir). */
-const KIT_HEALTH: Record<string, string> = {
-  'canvas-survival': 'playerHealth',
+/**
+ * A meta de cada kit Pro: onde ela fica no `src/config.ts`, o valor de fábrica e uma meta NOVA que
+ * cabe no kit (conferida nos kits em 18/10/2026: a arena aceita no máximo um farol por ponto de
+ * nascimento, 4 de fábrica; as táticas aceitam até 6 rivais). Uma meta impossível quebraria o jogo
+ * da criança que seguisse a dica.
+ */
+const KIT_GOAL: Record<string, { where: string; from: number; to: number }> = {
+  'canvas-puzzle': { where: 'goalLines (as linhas para vencer)', from: 8, to: 10 },
+  'canvas-survival': { where: 'defeatGoal (os inimigos para vencer)', from: 10, to: 15 },
+  'phaser-arcade': { where: 'waves (as ondas)', from: 3, to: 5 },
+  'phaser-platformer': { where: 'a lista seeds: acrescente uma semente', from: 5, to: 6 },
+  'three-exploration': { where: 'goal (os cristais)', from: 8, to: 10 },
+  'three-action': { where: 'goal (as luzes)', from: 8, to: 10 },
+  'canvas-grid-arena': {
+    where: 'targetCount (os faróis; no máximo um por ponto de targetSpawns)',
+    from: 3,
+    to: 4,
+  },
+  'phaser-tactics': { where: 'a lista units: acrescente um rival (até 6)', from: 2, to: 3 },
+  'three-tactics': { where: 'a lista units: acrescente um rival (até 6)', from: 2, to: 3 },
 }
 
 /**
@@ -186,15 +191,15 @@ export function kitSuggestions(templateId: string): ObjectiveTemplate[] {
     {
       id: `${templateId}-meta`,
       title: 'Mudar a meta do jogo',
-      adjust: 'Escolha o número da meta que a aula pede e confira no gabarito.',
+      adjust: `A meta de fábrica é ${goal.from}. Escolha o número que a aula pede e confira no gabarito.`,
       where: ['kit'],
       check: {
-        label: 'Mude a meta do jogo para 12',
-        hint: `A meta fica em src/config.ts: procure ${goal}.`,
+        label: `Mude a meta do jogo para ${goal.to}`,
+        hint: `A meta fica em src/config.ts: procure ${goal.where}.`,
         rule: {
           type: 'behavior',
           steps: [],
-          expect: { target: { kind: 'game', field: 'goal' }, compare: 'equals', value: 12 },
+          expect: { target: { kind: 'game', field: 'goal' }, compare: 'equals', value: goal.to },
         },
       },
     },
@@ -216,20 +221,19 @@ export function kitSuggestions(templateId: string): ObjectiveTemplate[] {
       },
     },
   ]
-  const health = KIT_HEALTH[templateId]
-  if (health)
+  if (kitStateFields(templateId).includes('health'))
     suggestions.push({
       id: `${templateId}-vida`,
       title: 'Começar com mais vida',
-      adjust: 'Escolha o mínimo de vida e confira no gabarito.',
+      adjust: 'A vida de fábrica é 5. Escolha o mínimo que a aula pede e confira no gabarito.',
       where: ['kit'],
       check: {
-        label: 'Faça o jogador começar com pelo menos 5 de vida',
-        hint: `A vida fica em src/config.ts: procure ${health}.`,
+        label: 'Faça o jogador começar com pelo menos 6 de vida',
+        hint: 'A vida fica em src/config.ts: procure playerHealth.',
         rule: {
           type: 'behavior',
           steps: [],
-          expect: { target: { kind: 'game', field: 'health' }, compare: 'atLeast', value: 5 },
+          expect: { target: { kind: 'game', field: 'health' }, compare: 'atLeast', value: 6 },
         },
       },
     })

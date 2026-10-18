@@ -2,6 +2,7 @@
 
 import { EXECUTION_LIMITS, type SectionExecutionRule } from '@sistemazero/core/learning'
 import { Textarea } from '@sistemazero/ui/textarea'
+import { useId } from 'react'
 import { StepsEditor } from './execution-rule-editor'
 
 type Script = Extract<SectionExecutionRule, { type: 'script' }>
@@ -15,14 +16,16 @@ export function ScriptRuleEditor({
   rule,
   index,
   isPro,
+  isKit,
   onChange,
 }: {
   rule: Script
   index: number
   isPro: boolean
+  isKit: boolean
   onChange: (rule: Script) => void
 }) {
-  const id = `script-${index}`
+  const id = useId()
   return (
     <div className="space-y-3">
       <StepsEditor
@@ -45,26 +48,33 @@ export function ScriptRuleEditor({
       <div className="space-y-1 text-xs text-muted-foreground">
         <p>
           A regra é o corpo de uma função e pode usar <code>await</code>. Ela recebe:{' '}
-          {isPro ? (
+          {isPro && isKit ? (
             <>
-              <code>jogo</code> (o estado do kit: <code>jogo.score</code>, <code>jogo.phase</code>,{' '}
-              <code>jogo.goal</code>)
+              <code>jogo</code> (uma foto do estado do kit depois dos passos:{' '}
+              <code>jogo.score</code>, <code>jogo.phase</code>, <code>jogo.goal</code>)
+            </>
+          ) : isPro ? (
+            <>
+              <code>jogo</code> (vazio: este projeto Pro não é um kit; use o texto e o console)
             </>
           ) : (
             <>
-              <code>jogo</code> (as variáveis do jogo: <code>jogo.pontos</code>,{' '}
-              <code>jogo.heroi.x</code>)
+              <code>jogo</code> (uma foto das variáveis do jogo depois dos passos:{' '}
+              <code>jogo.pontos</code>, <code>jogo.heroi.x</code>)
             </>
           )}
-          , <code>texto</code> (o texto da página) e <code>console</code> (a lista do que o jogo
-          escreveu no console).
+          , <code>texto</code> (o texto da página; <code>null</code> se passar de 50 mil letras) e{' '}
+          <code>console</code> (a LISTA do que o jogo escreveu no console:{' '}
+          <code>console.includes('venceu')</code>; não dá para usar <code>console.log</code>).
         </p>
         <p>
           Exemplo:{' '}
           <code>
-            {isPro
+            {isPro && isKit
               ? "return jogo.score >= 3 && texto.includes('Pontos')"
-              : "return jogo.pontos >= 3 && console.includes('venceu')"}
+              : isPro
+                ? "return texto.includes('Você venceu')"
+                : "return jogo.pontos >= 3 && console.includes('venceu')"}
           </code>
           . Só <code>true</code> passa; erro ou mais de 3 segundos não passam.
         </p>

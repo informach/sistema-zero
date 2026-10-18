@@ -82,7 +82,7 @@ function reader(scope: string, names: string[]): string {
   // `globalThis` no lugar dela (achado do review da etapa 3). `declaredNames` já descarta `__sz*`.
   // O leitor é congelado e a propriedade não é gravável: o jogo não troca o `get` por um que
   // aprove tudo. Não é cofre (a página é da criança), é para o atalho não existir.
-  return `;(function(){var __szG=globalThis,__szK=${JSON.stringify(scope)},__szR=__szG[__szK];if(!__szR){var __szS=[];__szR=Object.freeze({get:function(__szN){for(var __szI=__szS.length-1;__szI>=0;__szI--){var __szF=__szS[__szI](__szN);if(__szF)return __szF}return null},add:function(__szF){if(typeof __szF==='function')__szS.push(__szF)}});try{Object.defineProperty(__szG,__szK,{value:__szR})}catch(__szE){return}}__szR.add(function(__szN){switch(__szN){${cases}}return null})})();`
+  return `;(function(){var __szG=globalThis,__szK=${JSON.stringify(scope)},__szR=__szG[__szK];if(!__szR){var __szS=[],__szL=[];__szR=Object.freeze({get:function(__szN){for(var __szI=__szS.length-1;__szI>=0;__szI--){var __szF=__szS[__szI](__szN);if(__szF)return __szF}return null},names:function(){var __szO=[];for(var __szI=0;__szI<__szL.length;__szI++)for(var __szJ=0;__szJ<__szL[__szI].length;__szJ++)if(__szO.indexOf(__szL[__szI][__szJ])<0)__szO.push(__szL[__szI][__szJ]);return __szO},add:function(__szF,__szN){if(typeof __szF==='function'){__szS.push(__szF);__szL.push(Array.isArray(__szN)?__szN.slice():[])}}});try{Object.defineProperty(__szG,__szK,{value:__szR})}catch(__szE){return}}__szR.add(function(__szN){switch(__szN){${cases}}return null},${JSON.stringify(names)})})();`
 }
 
 export function instrumentCheckScript(source: string, scope: string): string {

@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import {
   compareExecutionValue,
   executionProjectChecks,
+  executionRuleBudgetMs,
   executionValuesEqual,
   isExecutionObjectiveList,
   isSectionCompletion,
@@ -81,6 +82,23 @@ describe('a forma das regras que rodam o jogo', () => {
     const view = projectObjectiveView({ id: 'a', label: 'Faça andar', rule: dobro })
     expect(view).toEqual({ id: 'a', label: 'Faça andar', kind: 'function' })
     expect(JSON.stringify(view)).not.toContain('total')
+  })
+
+  test('o prazo de cada objetivo entra no teto da parte (40 s)', () => {
+    expect(executionRuleBudgetMs(anda)).toBe(300)
+    expect(executionRuleBudgetMs(dobro)).toBe(4_000)
+    expect(executionRuleBudgetMs({ type: 'script', steps: [], code: 'return true' })).toBe(3_000)
+    const espera: SectionExecutionRule = {
+      ...anda,
+      steps: [
+        { action: 'wait', ms: 10_000 },
+        { action: 'wait', ms: 5_000 },
+      ],
+    }
+    const lista = (n: number) =>
+      Array.from({ length: n }, (_, i) => ({ id: `e${i}`, rule: espera }))
+    expect(isExecutionObjectiveList(lista(2))).toBe(true)
+    expect(isExecutionObjectiveList(lista(3))).toBe(false)
   })
 
   test('separa os de execução dos de estrutura', () => {

@@ -93,9 +93,14 @@ passed, detail? }], screenshots?: { id: base64 JPEG } }` (captura só com `"scre
 o "Testar agora" da equipe manda). Projeto Pro que não compila responde 200 com todos os objetivos
 sem passar; falha do executor (página que não abre, Vite sem erro e sem fim, prazo do pedido curto)
 é 500 `CHECK_FAILED`; frequência 429. O prazo do navegador sai do que sobrou de 140 s desde o começo
-do pedido. A página recebe só os ARGUMENTOS das funções (a resposta esperada fica no script), e a
-regra em JavaScript (`script`, etapa 4) roda como expressão do protocolo do navegador (a CSP do Pro
-não barra), com `jogo`, `texto` e `console` montados dentro da própria expressão e 3 s de prazo.
+do pedido. A página recebe só os ARGUMENTOS das funções (a resposta esperada fica no script).
+⚠️ Nenhuma leitura usa `page.evaluate` (review da etapa 4: ele roda pelo `eval` da página e espera
+pelo `then` dela, que o jogo pode trocar): tudo vai pelo protocolo do navegador (`Runtime.evaluate`
+numa sessão CDP, `openProbe`). O texto da página e a regra em JavaScript (`script`, etapa 4) rodam
+num MUNDO ISOLADO (o mesmo documento, sem os globais nem os protótipos do jogo); a regra recebe uma
+FOTO em JSON do jogo depois dos passos (`jogo`: as variáveis no clássico, pelo `names()` do leitor,
+ou o estado do kit no Pro), `texto` (`null` acima de 50 mil letras) e `console` (a lista das linhas),
+com 3 s de prazo. Falha do próprio protocolo é falha do executor, nunca "não passou".
 ⚠️ A rota exige a imagem nova (o script entra no `Dockerfile`): reconstrua e implante o Worker
 antes de ligar os objetivos de execução no Members.
 

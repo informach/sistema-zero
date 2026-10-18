@@ -200,6 +200,43 @@ describe.skipIf(!available)('o executor roda o jogo e confere', () => {
     )
   }, 120_000)
 
+  test('o jogo que troca eval, then e innerText não forja o resultado (review da etapa 4)', async () => {
+    const project = createEmptyProject('p-trapaca', 'Trapaça')
+    project.files['script.js'] = [
+      'let pontos = 0',
+      "document.body.textContent = 'Fase 1'",
+      'const realEval = window.eval',
+      'window.eval = () => true',
+      'Promise.prototype.then = function (ok) { ok(true) }',
+      "Object.defineProperty(HTMLElement.prototype, 'innerText', { get() { return 'Você venceu' } })",
+    ].join('\n')
+    const result = await check(project, [
+      { id: 'regra', rule: { type: 'script', steps: [], code: 'return false' } },
+      { id: 'regra-pontos', rule: { type: 'script', steps: [], code: 'return jogo.pontos === 0' } },
+      {
+        id: 'texto',
+        rule: {
+          type: 'behavior',
+          steps: [],
+          expect: { target: { kind: 'text' }, compare: 'contains', value: 'venceu' },
+        },
+      },
+      {
+        id: 'pontos',
+        rule: {
+          type: 'behavior',
+          steps: [],
+          expect: { target: { kind: 'value', path: 'pontos' }, compare: 'equals', value: 999 },
+        },
+      },
+    ])
+    expect(result.regra?.passed).toBe(false)
+    // A metade que passa: a foto do jogo continua certa.
+    expect(result['regra-pontos']).toEqual({ passed: true })
+    expect(result.texto?.passed).toBe(false)
+    expect(result.pontos?.passed).toBe(false)
+  }, 120_000)
+
   test('jogo de blocos do Jogo 2D: o herói anda com a seta e fica parado sem ela', async () => {
     const project = createEmptyProject('p-blocos', 'Plataforma')
     project.ir = platformerExample.ir

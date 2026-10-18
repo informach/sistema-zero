@@ -172,7 +172,11 @@ describe('manifest import through the authoring HTTP boundary', () => {
       },
       sortOrder: 20,
     })
-    expect((await f.apply(await revision(await f.preview()))).status).toBe(200)
+    const aviso = await f.preview()
+    expect(JSON.stringify(await aviso.clone().json())).toContain(
+      'O gabarito do Estúdio feito no Admin fica, mas o projeto inicial mudou',
+    )
+    expect((await f.apply(await revision(aviso))).status).toBe(200)
     const studioDe = async () =>
       (await readDraft(f.app, f.lessonId)).document.blocks.find(
         (block) => block.content.kind === 'studio',
@@ -191,9 +195,18 @@ describe('manifest import through the authoring HTTP boundary', () => {
     expect(isLearningManifest(f.document)).toBe(true)
     expect((await f.apply(await revision(await f.preview()))).status).toBe(200)
     expect((await studioDe())?.solutionProject).toEqual(gabaritoDoManifesto)
-    // Gabarito torto no manifesto: o manifesto inteiro é recusado pelo core.
+    // Substituir tira o que foi feito à mão, inclusive o gabarito do Admin, e a prévia avisa.
+    delete (authored.content as { solutionProject?: unknown }).solutionProject
+    const substituir = await f.preview('replace')
+    expect(JSON.stringify(await substituir.clone().json())).toContain(
+      'O gabarito do Estúdio feito no Admin sai',
+    )
+    expect((await f.apply(await revision(substituir), 'replace')).status).toBe(200)
+    expect((await studioDe())?.solutionProject).toBeUndefined()
+    // Gabarito torto no manifesto: a rota recusa o manifesto inteiro.
     Object.assign(authored.content, { solutionProject: { name: 'sem formato' } })
     expect(isLearningManifest(f.document)).toBe(false)
+    expect((await f.preview()).status).toBe(400)
   })
 
   test('an empty lesson creates its configured Studio and reimports without changing the ID', async () => {

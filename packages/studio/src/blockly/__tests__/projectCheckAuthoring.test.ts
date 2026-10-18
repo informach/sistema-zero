@@ -7,6 +7,7 @@ import {
 import {
   evaluateStudioProjectStructure,
   evaluateStudioSectionObjectives,
+  kitStateFields,
   projectCheckAuthoring,
   studioSectionCompletionIssues,
 } from '../projectCheckAuthoring'
@@ -390,6 +391,20 @@ describe('objetivos que rodam o jogo (etapa 3, 18/10/2026)', () => {
     ])
   })
 
+  test('a vida só nos kits que a mostram', () => {
+    const vida: SectionExecutionRule = {
+      type: 'behavior',
+      steps: [],
+      expect: { target: { kind: 'game', field: 'health' }, compare: 'atLeast', value: 6 },
+    }
+    expect(pro('canvas-survival').issues(vida)).toEqual([])
+    expect(pro('canvas-puzzle').issues(vida)).toEqual([
+      'Este kit Pro não mostra a vida do jogador: confira a fase, os pontos ou a meta.',
+    ])
+    expect(kitStateFields('canvas-puzzle')).toEqual(['phase', 'score', 'goal'])
+    expect(kitStateFields('vanilla-vite')).toEqual([])
+  })
+
   test('o clique tem que caber na tela do teste (1024 por 640)', () => {
     const clique = (x: number, y: number): SectionExecutionRule => ({
       ...anda,
@@ -422,10 +437,10 @@ describe('objetivos que rodam o jogo (etapa 3, 18/10/2026)', () => {
       'No projeto Pro, confira o texto da página, o console ou o estado do kit.',
     ])
     expect(classico().issues(fase)).toEqual([
-      'O estado do jogo (fase, pontos, vida) só existe nos kits Pro.',
+      'O estado do jogo (fase, pontos, meta, vida) só existe nos kits Pro.',
     ])
     expect(pro('vanilla-vite').issues(fase)).toEqual([
-      'O estado do jogo (fase, pontos, vida) só existe nos kits Pro.',
+      'O estado do jogo (fase, pontos, meta, vida) só existe nos kits Pro.',
     ])
   })
 

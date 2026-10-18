@@ -1,5 +1,6 @@
 import {
   EXECUTION_LIMITS,
+  executionRuleBudgetMs,
   isExecutionRule,
   isSectionCompletion,
   type SectionProjectCheck,
@@ -46,6 +47,8 @@ export function parseObjectivesClipboard(
   text: string,
   existing: readonly SectionProjectCheck[],
   newId: () => string = () => crypto.randomUUID(),
+  /** A régua de autoria do bloco desta parte: o que ela acusa entra, mas com o aviso. */
+  issuesOf: (rule: SectionProjectCheck['rule']) => string[] = () => [],
 ): PastedObjectives {
   let parsed: unknown
   try {
@@ -66,9 +69,15 @@ export function parseObjectivesClipboard(
   const notes: string[] = []
   let total = existing.length
   let execution = existing.filter((check) => isExecutionRule(check.rule)).length
+  let budget = existing.reduce(
+    (sum, check) => sum + (isExecutionRule(check.rule) ? executionRuleBudgetMs(check.rule) : 0),
+    0,
+  )
   let invalid = 0
   let overTotal = 0
   let overExecution = 0
+  let overBudget = 0
+  const flagged: string[] = []
   for (const item of items) {
     if (!record(item)) {
       invalid++
@@ -90,9 +99,17 @@ export function parseObjectivesClipboard(
       overExecution++
       continue
     }
+    const cost = isExecutionRule(check.rule) ? executionRuleBudgetMs(check.rule) : 0
+    if (runs && budget + cost > EXECUTION_LIMITS.maxSectionWaitMs) {
+      overBudget++
+      continue
+    }
     checks.push(check)
     total++
     if (runs) execution++
+    budget += cost
+    const issues = issuesOf(check.rule)
+    if (issues.length) flagged.push(`"${check.label}": ${issues[0]}`)
   }
   if (invalid)
     notes.push(
@@ -108,5 +125,12 @@ export function parseObjectivesClipboard(
     notes.push(
       `${overExecution === 1 ? 'Um objetivo que roda o jogo ficou' : `${overExecution} objetivos que rodam o jogo ficaram`} de fora: a parte aceita até ${EXECUTION_LIMITS.maxObjectives} deles.`,
     )
+  if (overBudget)
+    notes.push(
+      `${overBudget === 1 ? 'Um objetivo que roda o jogo ficou' : `${overBudget} objetivos que rodam o jogo ficaram`} de fora: as esperas da parte passariam de ${EXECUTION_LIMITS.maxSectionWaitMs / 1000} segundos.`,
+    )
+  // Entrou, mas não vale neste projeto como está (veio de outro tipo de projeto): a professora
+  // precisa ajustar antes de publicar.
+  for (const line of flagged) notes.push(`Ajuste ${line}`)
   return { checks, notes }
 }

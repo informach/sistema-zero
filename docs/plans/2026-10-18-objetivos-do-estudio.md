@@ -69,16 +69,22 @@ O members chama o `studio-runtime` (Cloudflare, contêiner sem internet com Chro
 ## Etapa 4 (implementada)
 
 - **Regra em JavaScript** (`script`): passos e o corpo de uma função que devolve `true` (pode usar
-  `await`; 3 s de prazo). `jogo` são as variáveis no clássico e o estado do kit no Pro, mais `texto`
-  e `console`. Só na Ponte e no Pro (decisão da tabela acima); a autoria confere a escrita sem rodar.
-- **Modelos** no Admin ("Começar de um modelo"), filtrados pelo tipo do bloco, e **sugestões do
-  kit Pro**: mudar a meta (`game.goal`, lida do `src/config.ts`), o jogo continua começando (extra),
-  e a vida no kit que a mostra. O "Testar agora" é quem prova o modelo ajustado.
+  `await`; 3 s de prazo, que contam no teto da parte). Roda num mundo isolado do navegador sobre uma
+  FOTO do jogo depois dos passos: `jogo` são as variáveis no clássico e o estado do kit no Pro (vazio
+  no Pro sem kit), mais `texto` e `console` (uma lista). Só na Ponte e no Pro (decisão da tabela
+  acima); a autoria confere a escrita sem rodar. Review da etapa 4: o jogo não forja o veredito
+  trocando `eval`, `then` ou protótipos (provado no Chromium).
+- **Modelos** no Admin ("Começar de um modelo"), oferecidos só onde a autoria do bloco os aceita
+  (3D clássico, paleta restrita, Pro com ou sem kit), e **sugestões do kit Pro**: mudar a meta
+  (`game.goal`, lida do `src/config.ts`, com uma meta nova que cabe em cada kit), o jogo continua
+  começando (extra) e mais vida no kit que a mostra (`kitStateFields`). O "Testar agora" prova o
+  modelo ajustado.
 - **Copiar e Colar** objetivos entre partes e aulas (JSON com marcador de formato; ids novos ao
   colar; o que não cabe vira frase).
-- **Manifesto**: o bloco Estúdio aceita `solutionProject` com a régua do `initialProject`; reimportar
-  um manifesto sem gabarito NÃO apaga o que a professora fez no Admin (o que traz gabarito, manda); a
-  publicação do rascunho confere o gabarito como o inicial.
+- **Manifesto**: o bloco Estúdio aceita `solutionProject` com a régua do `initialProject`. No modo
+  de preservar, reimportar sem gabarito NÃO apaga o que a professora fez no Admin (o que traz
+  gabarito, manda); a substituição o tira. A prévia avisa nos dois casos (e quando o projeto inicial
+  mudou e o gabarito antigo ficou). A publicação do rascunho confere o gabarito como o inicial.
 
 ## Gabarito da professora
 

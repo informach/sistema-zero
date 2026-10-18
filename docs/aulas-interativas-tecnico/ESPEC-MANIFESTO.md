@@ -142,8 +142,9 @@ na seção de entrega.
 **Gabarito (`solutionProject`, 18/10/2026):** o projeto pronto da equipe, no mesmo formato do
 `initialProject`, e opcional. Ele nunca chega ao aluno. É ele que prova os objetivos da seção: a
 publicação recusa objetivo obrigatório que o gabarito não cumpre, e todo objetivo que **roda o
-jogo** exige o gabarito. Reimportar um manifesto SEM `solutionProject` preserva o gabarito que a
-equipe criou no Admin; com ele, o do manifesto vale. A antiga `activity` do bloco Estúdio
+jogo** exige o gabarito. Reimportar um manifesto SEM `solutionProject` no modo de preservar
+mantém o gabarito que a equipe criou no Admin (a substituição o tira); com ele, o do manifesto vale.
+A prévia avisa. A antiga `activity` do bloco Estúdio
 (auto-correção com nota) saiu em 18/10/2026: não a escreva, porque ela não é mais lida.
 
 **Pinta:** `initialAsset` é o desenho inicial completo. Em entregas pela galeria, `initialAsset` é

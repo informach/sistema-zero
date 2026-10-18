@@ -1,5 +1,6 @@
 import {
   EXECUTION_LIMITS,
+  type ExecutionGameField,
   evaluateProjectStructure,
   executionProjectChecks,
   executionRuleBudgetMs,
@@ -162,7 +163,9 @@ function executionIssues(
     if (target.kind === 'value' && pro)
       errors.push('No projeto Pro, confira o texto da página, o console ou o estado do kit.')
     if (target.kind === 'game' && !template?.kitVersion)
-      errors.push('O estado do jogo (fase, pontos, vida) só existe nos kits Pro.')
+      errors.push('O estado do jogo (fase, pontos, meta, vida) só existe nos kits Pro.')
+    else if (target.kind === 'game' && !kitStateFields(template?.id).includes(target.field))
+      errors.push('Este kit Pro não mostra a vida do jogador: confira a fase, os pontos ou a meta.')
   }
   if (rule.type === 'functionReturns') {
     if (pro && !rule.module)
@@ -177,6 +180,18 @@ function executionIssues(
   }
   return errors
 }
+/**
+ * O que o `inspect()` de cada kit Pro mostra (conferido nos kits, 18/10/2026): fase, pontos e meta
+ * em todos; a vida só no kit que a mostra no estado do jogo.
+ */
+const KITS_WITH_HEALTH = new Set(['canvas-survival'])
+export function kitStateFields(templateId: unknown): readonly ExecutionGameField[] {
+  if (!studioProTemplate(templateId)?.kitVersion) return []
+  return typeof templateId === 'string' && KITS_WITH_HEALTH.has(templateId)
+    ? ['phase', 'score', 'goal', 'health']
+    : ['phase', 'score', 'goal']
+}
+
 /** A tela do navegador do teste (o `check-objectives.mjs` do studio-runtime). */
 export const CHECK_VIEWPORT = { width: 1024, height: 640 } as const
 

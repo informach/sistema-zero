@@ -139,12 +139,18 @@ export function parseExpected(text: string): ExecutionJson | undefined {
 export function newExecutionRule(
   type: SectionExecutionRule['type'],
   isPro: boolean,
+  /** Pro de kit: `jogo` é o estado do kit. Pro sem kit não tem estado: só texto e console. */
+  isKit = isPro,
 ): SectionExecutionRule {
   if (type === 'script')
     return {
       type,
       steps: [{ action: 'wait', ms: 500 }],
-      code: isPro ? 'return jogo.score > 0' : 'return jogo.pontos > 0',
+      code: !isPro
+        ? 'return jogo.pontos > 0'
+        : isKit
+          ? 'return jogo.score > 0'
+          : "return texto.includes('Olá')",
     }
   if (type === 'functionReturns')
     return {

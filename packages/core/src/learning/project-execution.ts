@@ -224,14 +224,19 @@ function isStep(step: unknown): step is ExecutionStep {
 /** Quanto tempo do prazo um objetivo de execução pode gastar (esperas, teclas e casos). */
 export function executionRuleBudgetMs(rule: SectionExecutionRule): number {
   if (rule.type === 'functionReturns') return rule.cases.length * FUNCTION_CASE_BUDGET_MS
-  return rule.steps.reduce(
-    (sum, step) =>
-      sum + (step.action === 'wait' ? step.ms : step.action === 'press' ? (step.holdMs ?? 80) : 0),
-    0,
+  return (
+    (rule.type === 'script' ? SCRIPT_BUDGET_MS : 0) +
+    rule.steps.reduce(
+      (sum, step) =>
+        sum +
+        (step.action === 'wait' ? step.ms : step.action === 'press' ? (step.holdMs ?? 80) : 0),
+      0,
+    )
   )
 }
-/** O tempo máximo que o executor dá a cada caso de função. */
+/** O tempo máximo que o executor dá a cada caso de função e a cada regra em JavaScript. */
 const FUNCTION_CASE_BUDGET_MS = 2_000
+const SCRIPT_BUDGET_MS = 3_000
 
 function areSteps(steps: unknown): steps is ExecutionStep[] {
   if (!Array.isArray(steps) || steps.length > EXECUTION_LIMITS.maxSteps || !steps.every(isStep))

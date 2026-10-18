@@ -28,7 +28,10 @@ import {
   NoPublishedLessonError,
   NoShowcaseBlockError,
 } from '../../../domain/course/course.errors'
-import type { LessonBlockContent } from '../../../domain/course/lesson-block'
+import {
+  type LessonBlockContent,
+  MAX_STUDIO_PROJECT_CHARS,
+} from '../../../domain/course/lesson-block'
 import { importedLearningId } from '../../../domain/learning/learning-import'
 import { LessonDraftConflictError } from '../../../domain/learning/lesson-draft.errors'
 import { publishedLessonRevisions } from '../../../domain/learning/published-lesson-revisions'
@@ -240,9 +243,20 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
       for (const block of document.blocks)
         if (block.content.kind === 'studio') {
           assertCurrentStudioAuthoring(block.content.initialProject)
-          // O gabarito (que pode chegar pelo manifesto) passa pela mesma régua do inicial.
-          if (block.content.solutionProject !== undefined)
-            assertCurrentStudioAuthoring(block.content.solutionProject)
+          // O gabarito (que pode chegar pelo manifesto) passa pela mesma régua do inicial, com uma
+          // frase que diz que o problema é ELE.
+          const solution = block.content.solutionProject
+          if (solution !== undefined) {
+            try {
+              assertCurrentStudioAuthoring(solution)
+            } catch {
+              throw new ValidationError(
+                'Abra o gabarito do Estúdio no Studio atualizado antes de publicar a aula.',
+              )
+            }
+            if (JSON.stringify(solution).length > MAX_STUDIO_PROJECT_CHARS)
+              throw new ValidationError('O gabarito do Estúdio excede o tamanho máximo permitido.')
+          }
         }
       const revision = randomUUID()
       const updatedAt = new Date()

@@ -15,6 +15,7 @@ import {
 import { studioProTemplate } from '@sistemazero/core/studio/pro-templates'
 import {
   evaluateStudioSectionObjectives,
+  kitStateFields,
   projectCheckAuthoring,
 } from '@sistemazero/studio/server-project-checks'
 import { Button } from '@sistemazero/ui/button'
@@ -33,12 +34,12 @@ import { ObjectiveTools } from './objective-tools'
 import { ProjectRuleEditor } from './project-rule-editor'
 import { ScriptRuleEditor } from './script-rule-editor'
 
-function newRule(type: string, isPro: boolean): SectionObjectiveRule {
+function newRule(type: string, isPro: boolean, isKit: boolean): SectionObjectiveRule {
   switch (type) {
     case 'behavior':
     case 'functionReturns':
     case 'script':
-      return newExecutionRule(type, isPro)
+      return newExecutionRule(type, isPro, isKit)
     case 'usesLoop':
       return { type }
     case 'declaresVariable':
@@ -413,7 +414,7 @@ export function SectionCompletionEditor({
                 onChange({
                   ...value,
                   projectChecks: checks.map((c) =>
-                    c.id === check.id ? { ...c, rule: newRule(e.target.value, isPro) } : c,
+                    c.id === check.id ? { ...c, rule: newRule(e.target.value, isPro, isKit) } : c,
                   ),
                 })
               }
@@ -434,6 +435,7 @@ export function SectionCompletionEditor({
                 rule={check.rule}
                 index={index}
                 isPro={isPro}
+                isKit={isKit}
                 onChange={(rule) => patchCheck(check.id, (c) => ({ ...c, rule }))}
               />
             )}
@@ -443,6 +445,7 @@ export function SectionCompletionEditor({
                 index={index}
                 isPro={isPro}
                 isKit={isKit}
+                kitFields={kitStateFields(proTemplateId)}
                 onChange={(rule) => patchCheck(check.id, (c) => ({ ...c, rule }))}
               />
             )}
@@ -559,6 +562,7 @@ export function SectionCompletionEditor({
           isPro={isPro}
           {...(isKit && typeof proTemplateId === 'string' ? { kitTemplateId: proTemplateId } : {})}
           bridge={bridge}
+          issuesOf={(rule) => authoring.issues(rule)}
           onAdd={(added) => {
             setExpandedChecks((ids) => [...ids, ...added.map((check) => check.id)])
             onChange({ ...value, projectChecks: [...checks, ...added] })

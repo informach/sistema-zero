@@ -57,6 +57,20 @@ describe('os modelos de objetivo', () => {
     ]
     for (const template of doKit)
       expect(kit.issues(checkFromTemplate(template, true).rule)).toEqual([])
+    // Todo kit do catálogo: as sugestões dele são aceitas pela autoria do próprio kit.
+    for (const entry of STUDIO_PRO_TEMPLATES.filter((t) => t.kitVersion)) {
+      const autoria = projectCheckAuthoring({
+        initialProject: { kind: 'pro', tree: {}, proMeta: { templateId: entry.id } },
+      })
+      for (const template of kitSuggestions(entry.id))
+        expect([entry.id, autoria.issues(checkFromTemplate(template, true).rule)]).toEqual([
+          entry.id,
+          [],
+        ])
+    }
+    // A vida só aparece no kit que a mostra.
+    expect(kitSuggestions('canvas-puzzle').some((t) => t.id.endsWith('-vida'))).toBe(false)
+    expect(kitSuggestions('canvas-survival').some((t) => t.id.endsWith('-vida'))).toBe(true)
     // A função no Pro ganha o arquivo exportado sozinha.
     const funcao = OBJECTIVE_TEMPLATES.find((template) => template.id === 'funcao-dobro')
     if (!funcao) throw new Error('modelo ausente')
@@ -93,6 +107,31 @@ describe('copiar e colar objetivos', () => {
     ).toHaveLength(1)
   })
 
+  test('colado que a autoria acusa neste projeto entra com o aviso do que ajustar', () => {
+    const variavel: SectionProjectCheck = {
+      id: 'v',
+      label: 'O herói anda',
+      rule: {
+        type: 'behavior',
+        steps: [],
+        expect: { target: { kind: 'value', path: 'heroi.x' }, compare: 'changed' },
+      },
+    }
+    const pro = projectCheckAuthoring({
+      initialProject: { kind: 'pro', tree: {}, proMeta: { templateId: 'canvas-puzzle' } },
+    })
+    const colado = parseObjectivesClipboard(
+      serializeObjectives([variavel]),
+      [],
+      undefined,
+      (rule) => pro.issues(rule),
+    )
+    expect(colado.checks).toHaveLength(1)
+    expect(colado.notes).toEqual([
+      'Ajuste "O herói anda": No projeto Pro, confira o texto da página, o console ou o estado do kit.',
+    ])
+  })
+
   test('o que não entra vira frase, nunca some em silêncio', () => {
     expect(parseObjectivesClipboard('oi', []).notes[0]).toContain('não parece')
     const torto = parseObjectivesClipboard(
@@ -123,6 +162,38 @@ describe('copiar e colar objetivos', () => {
     const nono = parseObjectivesClipboard(serializeObjectives([roda('x'), laco]), oito)
     expect(nono.checks.map((check) => check.rule.type)).toEqual(['usesLoop'])
     expect(nono.notes[0]).toContain('que roda o jogo ficou de fora')
+    // O teto das esperas somadas da parte (40 s) também vale ao colar.
+    const longo = (id: string): SectionProjectCheck => ({
+      id,
+      label: 'espera',
+      rule: {
+        type: 'behavior',
+        steps: [
+          { action: 'wait', ms: 10_000 },
+          { action: 'wait', ms: 5_000 },
+        ],
+        expect: { target: { kind: 'text' }, compare: 'truthy' },
+      },
+    })
+    const tres = parseObjectivesClipboard(
+      serializeObjectives([longo('a'), longo('b'), longo('c')]),
+      [],
+    )
+    expect(tres.checks).toHaveLength(2)
+    expect(tres.notes[0]).toContain('passariam de 40 segundos')
+  })
+
+  test('no 3D clássico, nenhum modelo que roda o jogo é oferecido', () => {
+    const tresD = projectCheckAuthoring({
+      initialProject: { installedExtensions: [{ id: 'game-3d' }] },
+    })
+    const oferecidos = templatesFor({ pro: false, kit: false, bridge: true }).filter(
+      (template) => tresD.issues(checkFromTemplate(template, false).rule).length === 0,
+    )
+    expect(oferecidos.map((t) => t.check.rule.type).sort()).toEqual([
+      'declaresVariable',
+      'usesLoop',
+    ])
   })
 })
 
@@ -169,7 +240,7 @@ test('no editor: sugestão do kit, regra em JavaScript e colar', async () => {
     await act(async () => render())
     expect(container.querySelector('optgroup[label="Sugestões deste kit Pro"]')).not.toBeNull()
     await choose('Começar de um modelo', 'canvas-survival-meta')
-    expect(container.textContent).toContain('Escolha o número da meta')
+    expect(container.textContent).toContain('A meta de fábrica é 10.')
     await click('Usar o modelo')
     const meta = value.projectChecks?.[1]
     expect(meta?.rule).toMatchObject({ expect: { target: { kind: 'game', field: 'goal' } } })

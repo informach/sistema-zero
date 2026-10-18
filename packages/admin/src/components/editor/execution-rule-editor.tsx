@@ -38,6 +38,7 @@ export function ExecutionRuleEditor({
   index,
   isPro,
   isKit,
+  kitFields,
   onChange,
 }: {
   rule: SectionExecutionRule
@@ -45,13 +46,22 @@ export function ExecutionRuleEditor({
   isPro: boolean
   /** Projeto Pro de kit (tem fase, pontos e vida para conferir). */
   isKit: boolean
+  /** O que o kit mostra no estado (a vida só existe em alguns). */
+  kitFields?: readonly ExecutionGameField[]
   onChange: (rule: SectionExecutionRule) => void
 }) {
   if (rule.type === 'functionReturns')
     return <FunctionEditor rule={rule} index={index} isPro={isPro} onChange={onChange} />
   if (rule.type === 'behavior')
     return (
-      <BehaviorEditor rule={rule} index={index} isPro={isPro} isKit={isKit} onChange={onChange} />
+      <BehaviorEditor
+        rule={rule}
+        index={index}
+        isPro={isPro}
+        isKit={isKit}
+        kitFields={kitFields}
+        onChange={onChange}
+      />
     )
   return null
 }
@@ -191,14 +201,17 @@ function BehaviorEditor({
   index,
   isPro,
   isKit,
+  kitFields,
   onChange,
 }: {
   rule: Behavior
   index: number
   isPro: boolean
   isKit: boolean
+  kitFields?: readonly ExecutionGameField[]
   onChange: (rule: Behavior) => void
 }) {
+  const kitHas = (field: ExecutionGameField) => isKit && (!kitFields || kitFields.includes(field))
   const { target, compare } = rule.expect
   const withTarget = (next: ExecutionTarget) =>
     onChange({ ...rule, expect: { ...rule.expect, target: next } })
@@ -232,16 +245,16 @@ function BehaviorEditor({
             </option>
             <option value="text">O texto da página</option>
             <option value="console">O que o jogo escreveu no console</option>
-            <option value="game:phase" disabled={!isKit}>
+            <option value="game:phase" disabled={!kitHas('phase')}>
               A fase do kit Pro (jogando, venceu, perdeu)
             </option>
-            <option value="game:score" disabled={!isKit}>
+            <option value="game:score" disabled={!kitHas('score')}>
               Os pontos do kit Pro
             </option>
-            <option value="game:goal" disabled={!isKit}>
+            <option value="game:goal" disabled={!kitHas('goal')}>
               A meta do kit Pro (do src/config.ts)
             </option>
-            <option value="game:health" disabled={!isKit}>
+            <option value="game:health" disabled={!kitHas('health')}>
               A vida do kit Pro
             </option>
           </Select>

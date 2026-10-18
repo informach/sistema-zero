@@ -153,12 +153,13 @@ async function runObjective(objective, index) {
       if (popup !== page) void popup.close()
     })
     await page.goto(`${origin}/index.html`, { waitUntil: 'load', timeout: 15_000 })
-    await startGame(page)
+    const probe = await openProbe(page)
+    await startGame(page, probe)
     const rule = objective.rule
     if (rule.type === 'functionReturns') {
       // Só os ARGUMENTOS entram na página: a resposta esperada fica aqui fora. A página é da
       // criança, e um jogo que mexesse nos protótipos leria o gabarito e o devolveria.
-      const outcome = await page.evaluate(callFunctionCases, {
+      const outcome = await probe.main(callFunctionCases, {
         scope,
         name: rule.name,
         module: rule.module ?? null,
@@ -170,13 +171,13 @@ async function runObjective(objective, index) {
     }
     if (rule.type === 'script') {
       await runSteps(page, rule.steps)
-      const outcome = await runScriptRule(page, rule.code, lines)
+      const outcome = await runScriptRule(probe, rule.code, lines)
       const screenshot = await shoot(page, index)
       return { id: objective.id, type: rule.type, ...outcome, screenshot, errors }
     }
-    const initial = await readTarget(page, rule.expect.target, lines)
+    const initial = await readTarget(probe, rule.expect.target, lines)
     await runSteps(page, rule.steps)
-    const final = await readTarget(page, rule.expect.target, lines)
+    const final = await readTarget(probe, rule.expect.target, lines)
     const screenshot = await shoot(page, index)
     return { id: objective.id, type: rule.type, initial, final, screenshot, errors }
   } finally {
@@ -184,28 +185,32 @@ async function runObjective(objective, index) {
   }
 }
 
-async function startGame(page) {
+async function startGame(page, probe) {
   // Os kits Pro abrem numa tela de início: o teste aperta "Começar" como a criança faria. Só os
   // kits (o Worker sabe pelo modelo do bloco) esperam: os outros jogos começam no carregamento.
-  const kit =
-    options.kit === true &&
-    (await page
-      .waitForFunction(
-        () =>
-          window.__studioGame?.version === 1 &&
-          !['loading'].includes(window.__studioGame.inspect().readiness),
-        undefined,
-        { timeout: KIT_READY_MS },
-      )
-      .then(() => true)
-      .catch(() => false))
+  // A espera pergunta pela sonda (sem o `eval` da página, que o jogo pode ter trocado).
+  let kit = false
+  if (options.kit === true) {
+    const until = Date.now() + KIT_READY_MS
+    while (!kit && Date.now() < until) {
+      kit = await probe
+        .main(() => {
+          const game = window.__studioGame
+          return game?.version === 1 && game.inspect().readiness !== 'loading'
+        })
+        .catch(() => false)
+      if (!kit) await page.waitForTimeout(100)
+    }
+  }
   if (kit) {
     const start = page.locator('#start')
     if (await start.isVisible().catch(() => false)) await start.click({ timeout: 3_000 })
   }
-  await page.evaluate(
-    () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))),
-  )
+  await probe
+    .main(
+      () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))),
+    )
+    .catch(() => undefined)
   await page.waitForTimeout(SETTLE_MS)
 }
 
@@ -219,28 +224,101 @@ async function shoot(page, index) {
   return screenshot
 }
 
-// A Regra em JavaScript (etapa 4): a autora escreve o CORPO de uma função que recebe `jogo` (as
-// variáveis do jogo clássico, ou o estado do kit no Pro), `texto` (o texto da página) e
-// `console` (as linhas que o jogo escreveu) e devolve true para passar. Roda como expressão do
-// DevTools, que a CSP do Pro não barra (ela proíbe `eval` e `new Function` dentro da página).
-// ⚠️ Nada do veredito passa por código da página: a expressão devolve o valor cru e quem espera a
-// promessa é o protocolo do navegador (não o `Promise.prototype.then`, que o jogo pode trocar); as
-// entradas são montadas DENTRO da expressão, sem nome global. Só `true` passa: um número ou um
-// texto "verdadeiro" é engano da regra, não aprovação.
-async function runScriptRule(page, code, lines) {
-  const inputs = `(${prepareScriptInputs.toString()})(${JSON.stringify({ scope, lines: lines.slice(0, MAX_CONSOLE_LINES) })})`
-  const expression = `(async ({ jogo, texto, console }) => {\n${code}\n})(${inputs})`
+/**
+ * Como o teste LÊ a página sem passar por código dela (review da etapa 4). `page.evaluate` do
+ * Playwright roda a expressão pelo `eval` da página e espera o resultado pelo `then` dela: um jogo
+ * que trocasse os dois aprovaria qualquer objetivo. Aqui a leitura vai direto pelo protocolo do
+ * navegador (`Runtime.evaluate`, que espera a promessa por dentro do V8), e o que pode rodar longe
+ * do jogo roda num MUNDO ISOLADO: o mesmo documento, mas sem nenhum global nem protótipo da página.
+ * Falha do próprio protocolo (página caiu) LANÇA: é falha do executor, nunca "não passou".
+ */
+async function openProbe(page) {
+  const cdp = await page.context().newCDPSession(page)
+  const { frameTree } = await cdp.send('Page.getFrameTree')
+  const { executionContextId } = await cdp.send('Page.createIsolatedWorld', {
+    frameId: frameTree.frame.id,
+    worldName: 'sz-check',
+  })
+  const run = async (expression, isolated, timeout) => {
+    const reply = await cdp.send('Runtime.evaluate', {
+      expression,
+      returnByValue: true,
+      awaitPromise: true,
+      ...(isolated ? { contextId: executionContextId } : {}),
+      ...(timeout ? { timeout } : {}),
+    })
+    if (reply.exceptionDetails) {
+      const error = new Error(
+        reply.exceptionDetails.exception?.description?.split('\n')[0] ??
+          reply.exceptionDetails.text ??
+          'erro',
+      )
+      error.pageException = true
+      error.syntax = reply.exceptionDetails.exception?.className === 'SyntaxError'
+      throw error
+    }
+    return reply.result.value
+  }
+  return {
+    /** No mundo da página (onde estão as variáveis e o kit), sem `eval` nem `then` dela. */
+    main: (fn, arg) => run(`(${fn.toString()})(${JSON.stringify(arg)})`, false),
+    /** No mundo isolado: o documento, sem os globais do jogo. */
+    isolated: (expression, timeout) => run(expression, true, timeout),
+  }
+}
+
+// A Regra em JavaScript (etapa 4): a autora escreve o CORPO de uma função que recebe `jogo`,
+// `texto` e `console` e devolve true para passar. ⚠️ A regra roda no MUNDO ISOLADO, sobre uma
+// FOTO do jogo tirada depois dos passos (`jogo` são as variáveis no clássico e o estado do kit no
+// Pro, em JSON): nada do que o jogo fizer com `eval`, `then` ou protótipos muda o veredito.
+// `texto` é o texto da página (lido no mundo isolado; `null` quando passa de 50 mil letras, porque
+// texto cortado não prova ausência) e `console` é a LISTA das linhas escritas. Só `true` passa.
+async function runScriptRule(probe, code, lines) {
+  const snapshot = await probe.main(snapshotForScript, { scope, maxChars: MAX_VALUE_CHARS })
+  const expression = `(async () => {
+    const revive = (value) => {
+      if (Array.isArray(value)) return value.map(revive)
+      if (value && typeof value === 'object') {
+        const keys = Object.keys(value)
+        if (keys.length === 1 && typeof value.$sz === 'string') {
+          if (value.$sz === 'undefined') return undefined
+          if (value.$sz === 'NaN' || value.$sz === 'Infinity' || value.$sz === '-Infinity') return Number(value.$sz)
+          if (value.$sz === 'function') return '[função]'
+          return value
+        }
+        const out = {}
+        for (const key of keys) out[key] = revive(value[key])
+        return out
+      }
+      return value
+    }
+    const jogo = revive(${JSON.stringify(snapshot ?? {})})
+    const corpo = document.body ? document.body.innerText : ''
+    const texto = corpo.length > 50000 ? null : corpo
+    const console = ${JSON.stringify(lines.slice(0, MAX_CONSOLE_LINES))}
+    try {
+      const v = await (async () => {
+${code}
+      })()
+      return { returned: v === true ? 'true' : v === false ? 'false' : v === undefined || v === null ? 'nada' : typeof v === 'number' || typeof v === 'string' ? JSON.stringify(v).slice(0, 80) : typeof v }
+    } catch (e) {
+      return { scriptError: String((e && e.message) || e).slice(0, 200) }
+    }
+  })()`
   let timer
   const outcome = await Promise.race([
-    page.evaluate(expression).then(
-      (value) => ({ value }),
-      (error) => ({
-        scriptError: String(error?.message ?? error)
-          .replace(/^page\.evaluate:\s*/i, '')
-          .split('\n')[0]
-          .slice(0, 200),
-      }),
-    ),
+    probe.isolated(expression, SCRIPT_TIMEOUT_MS).catch((error) => {
+      // Erro de escrita da regra (ou o laço cortado pelo prazo) é da regra; o resto é do executor.
+      if (error?.pageException)
+        return {
+          scriptError: error.syntax
+            ? `erro de escrita: ${String(error.message).slice(0, 180)}`
+            : /terminat/i.test(String(error.message))
+              ? `a regra demorou mais de ${SCRIPT_TIMEOUT_MS / 1000} segundos`
+              : String(error.message).slice(0, 200),
+        }
+      throw error
+    }),
     new Promise((resolve) => {
       timer = setTimeout(
         () =>
@@ -250,20 +328,10 @@ async function runScriptRule(page, code, lines) {
     }),
   ])
   clearTimeout(timer)
-  if (typeof outcome.scriptError === 'string')
+  if (outcome && typeof outcome.scriptError === 'string')
     return { verdict: false, scriptError: outcome.scriptError }
-  const value = outcome.value
-  const returned =
-    value === true
-      ? 'true'
-      : value === false
-        ? 'false'
-        : value === undefined || value === null
-          ? 'nada'
-          : typeof value === 'number' || typeof value === 'string'
-            ? JSON.stringify(value).slice(0, 80)
-            : typeof value
-  return { verdict: value === true, returned }
+  const returned = outcome && typeof outcome.returned === 'string' ? outcome.returned : 'nada'
+  return { verdict: returned === 'true', returned }
 }
 
 async function runSteps(page, steps) {
@@ -280,9 +348,14 @@ async function runSteps(page, steps) {
   await page.waitForTimeout(SETTLE_MS)
 }
 
-async function readTarget(page, target, lines) {
+async function readTarget(probe, target, lines) {
   if (target.kind === 'console') return { found: true, value: lines.join('\n') }
-  return page.evaluate(readTargetInPage, { scope, target, maxChars: MAX_VALUE_CHARS })
+  // O texto é lido no mundo isolado: o jogo não troca o `innerText` de lá.
+  if (target.kind === 'text')
+    return probe.isolated(
+      `(() => { const t = document.body ? document.body.innerText : ''; return { found: true, value: t.length > 50000 ? { $sz: 'large' } : t } })()`,
+    )
+  return probe.main(readTargetInPage, { scope, target, maxChars: MAX_VALUE_CHARS })
 }
 
 // ---- Rodam DENTRO da página (sem acesso a nada daqui de fora). ----
@@ -339,26 +412,50 @@ function readTargetInPage({ scope, target, maxChars }) {
   }
 }
 
-function prepareScriptInputs({ scope, lines }) {
-  const reader = globalThis[scope]
-  let jogo
-  if (reader && typeof reader.get === 'function')
-    jogo = new Proxy(
-      {},
-      {
-        get: (_target, name) => (typeof name === 'string' ? reader.get(name)?.v : undefined),
-        has: (_target, name) => typeof name === 'string' && Boolean(reader.get(name)),
-      },
-    )
-  else {
-    const game = window.__studioGame
-    try {
-      jogo = game && typeof game.inspect === 'function' ? game.inspect() : {}
-    } catch {
-      jogo = {}
+function snapshotForScript({ scope, maxChars }) {
+  const toJson = (value, depth) => {
+    if (value === undefined) return { $sz: 'undefined' }
+    if (value === null || typeof value === 'boolean' || typeof value === 'string') return value
+    if (typeof value === 'number') return Number.isFinite(value) ? value : { $sz: String(value) }
+    if (typeof value === 'function') return { $sz: 'function' }
+    if (depth > 6) return { $sz: 'deep' }
+    if (Array.isArray(value)) return value.slice(0, 200).map((item) => toJson(item, depth + 1))
+    if (typeof value === 'object') {
+      const out = {}
+      for (const key of Object.keys(value).slice(0, 200)) {
+        try {
+          out[key] = toJson(value[key], depth + 1)
+        } catch {
+          out[key] = { $sz: 'error' }
+        }
+      }
+      return out
     }
+    return { $sz: typeof value }
   }
-  return { jogo, texto: (document.body?.innerText ?? '').slice(0, 50_000), console: lines }
+  const fit = (value) => {
+    const json = toJson(value, 0)
+    return JSON.stringify(json).length > maxChars ? { $sz: 'large' } : json
+  }
+  const reader = globalThis[scope]
+  if (reader && typeof reader.names === 'function') {
+    const out = {}
+    for (const name of reader.names().slice(0, 300)) {
+      try {
+        const entry = reader.get(name)
+        if (entry) out[name] = fit(entry.v)
+      } catch {
+        out[name] = { $sz: 'error' }
+      }
+    }
+    return out
+  }
+  try {
+    const game = window.__studioGame
+    return game && typeof game.inspect === 'function' ? fit(game.inspect()) : {}
+  } catch {
+    return {}
+  }
 }
 
 async function callFunctionCases({ scope, name, module, cases, timeoutMs, maxChars }) {

@@ -2,6 +2,7 @@
 
 import {
   EXECUTION_LIMITS,
+  executionRuleBudgetMs,
   isExecutionRule,
   type SectionProjectCheck,
 } from '@sistemazero/core/learning'
@@ -39,6 +40,7 @@ export function ObjectiveTools({
   isPro,
   kitTemplateId,
   bridge,
+  issuesOf = () => [],
   onAdd,
 }: {
   checks: readonly SectionProjectCheck[]
@@ -47,39 +49,51 @@ export function ObjectiveTools({
   kitTemplateId?: string
   /** O bloco clássico libera a Ponte (os modelos de código cabem). */
   bridge: boolean
+  /** A régua de autoria do bloco: modelo que ela acusaria neste projeto nem aparece. */
+  issuesOf?: (rule: SectionProjectCheck['rule']) => string[]
   onAdd: (added: SectionProjectCheck[]) => void
 }) {
   const ids = useId()
-  const suggestions = kitTemplateId ? kitSuggestions(kitTemplateId) : []
-  const templates = templatesFor({ pro: isPro, kit: Boolean(kitTemplateId), bridge })
+  // Só o que a autoria aceita NESTE projeto (3D clássico, paleta restrita, Pro sem kit…).
+  const fits = (template: ObjectiveTemplate) =>
+    issuesOf(checkFromTemplate(template, isPro, () => 'x').rule).length === 0
+  const suggestions = (kitTemplateId ? kitSuggestions(kitTemplateId) : []).filter(fits)
+  const templates = templatesFor({ pro: isPro, kit: Boolean(kitTemplateId), bridge }).filter(fits)
   const all = [...suggestions, ...templates]
   const [chosen, setChosen] = useState('')
   const [pasted, setPasted] = useState('')
-  const [copyText, setCopyText] = useState('')
+  // O texto para copiar à mão vale para a lista daquele clique: mudou a lista, ele some.
+  const [copied, setCopied] = useState<{ text: string; of: readonly SectionProjectCheck[] }>()
+  const copyText = copied && copied.of === checks ? copied.text : ''
   const [message, setMessage] = useState<string[]>([])
   const template = all.find((item) => item.id === chosen)
   const executionCount = checks.filter((check) => isExecutionRule(check.rule)).length
   const full = checks.length >= MAX_PROJECT_CHECKS
+  const budget = checks.reduce(
+    (sum, check) => sum + (isExecutionRule(check.rule) ? executionRuleBudgetMs(check.rule) : 0),
+    0,
+  )
   const templateBlocked =
     template !== undefined &&
     isExecutionRule(template.check.rule) &&
-    executionCount >= EXECUTION_LIMITS.maxObjectives
+    (executionCount >= EXECUTION_LIMITS.maxObjectives ||
+      budget + executionRuleBudgetMs(template.check.rule) > EXECUTION_LIMITS.maxSectionWaitMs)
   const copy = async () => {
     const text = serializeObjectives(checks)
     try {
       await navigator.clipboard.writeText(text)
-      setCopyText('')
+      setCopied(undefined)
       setMessage([
         `${checks.length === 1 ? 'Objetivo copiado' : `${checks.length} objetivos copiados`}. Abra outra parte e use "Colar objetivos".`,
       ])
     } catch {
       // Sem permissão para a área de transferência: o texto aparece para copiar à mão.
-      setCopyText(text)
+      setCopied({ text, of: checks })
       setMessage(['Copie o texto abaixo (Ctrl+C) e cole em outra parte.'])
     }
   }
   const paste = () => {
-    const result = parseObjectivesClipboard(pasted, checks)
+    const result = parseObjectivesClipboard(pasted, checks, undefined, issuesOf)
     if (result.checks.length) {
       onAdd(result.checks)
       setPasted('')
@@ -143,7 +157,9 @@ export function ObjectiveTools({
           {template && <p className="text-xs text-muted-foreground">{template.adjust}</p>}
           {templateBlocked && (
             <p className="text-xs text-destructive">
-              A parte já tem {EXECUTION_LIMITS.maxObjectives} objetivos que rodam o jogo.
+              Não cabe mais um objetivo que roda o jogo nesta parte (até{' '}
+              {EXECUTION_LIMITS.maxObjectives}, com {EXECUTION_LIMITS.maxSectionWaitMs / 1000}{' '}
+              segundos de esperas somadas).
             </p>
           )}
         </div>
