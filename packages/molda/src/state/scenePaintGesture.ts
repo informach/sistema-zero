@@ -13,6 +13,7 @@ import {
 } from '../scene/imagePaint'
 import { intersectImageRegions, readImageRegion } from '../scene/imageRegion'
 import { prepareScenePaintContact } from '../scene/paintContact'
+import { eraseScenePaintCutout } from '../scene/paintCutout'
 import { prepareSceneInk } from '../scene/paintInk'
 import { requireScene, SceneValidationError } from '../scene/validation'
 import type { EditorStore } from './editorStore'
@@ -38,6 +39,7 @@ export function createScenePaintGesture(
     revision: number
     prepared: MoldaSceneDocument
     region?: ScenePixelRegion
+    cutout: boolean
   } | null = null
   function cancel() {
     const current = active
@@ -59,6 +61,7 @@ export function createScenePaintGesture(
       expected?: SceneImage,
       region?: ScenePixelRegion,
       preparedDocument?: MoldaSceneDocument,
+      cutout = false,
     ) {
       cancel()
       try {
@@ -85,6 +88,7 @@ export function createScenePaintGesture(
           prepared: prepared.document,
           brush,
           revision: editor.getState().contentRevision,
+          cutout,
           ...(selectedRegion ? { region: selectedRegion } : {}),
         }
         return true
@@ -149,13 +153,16 @@ export function createScenePaintGesture(
           active.color = prepared.color
           active.target = target
         }
-        const next = paintSceneImage(active.prepared, active.target, {
+        const segment = {
           from,
           to,
           color: active.color,
           brush: active.brush,
           ...(region ? { region } : {}),
-        })
+        }
+        const next = active.cutout
+          ? eraseScenePaintCutout(active.prepared, active.target, segment)
+          : paintSceneImage(active.prepared, active.target, segment)
         if (!gestures.preview(active.token, next)) {
           active = null
           return false

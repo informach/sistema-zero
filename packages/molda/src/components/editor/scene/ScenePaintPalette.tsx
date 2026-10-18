@@ -58,7 +58,9 @@ export function ScenePaintPalette({
   const favorite = colors.some((entry) => entry.hex === hex)
   const copy = SCENE_PAINT_COPY
   const instruction = paint.eraser
-    ? copy.instructions.eraser
+    ? paint.eraseMode === 'cutout' && (paint.data?.imageKind ?? 'color') === 'color'
+      ? copy.instructions.cutout
+      : copy.instructions.eraser
     : paint.fill
       ? paint.fillScope === 'base'
         ? copy.instructions.base
@@ -77,7 +79,7 @@ export function ScenePaintPalette({
         className="mld-paint-palette shrink-0 space-y-3 border-b border-mld-border py-3"
       >
         <div className="space-y-1">
-          <h3 className="mld-display text-lg">{copy.chooseColor}</h3>
+          <h3 className="mld-display text-lg">{paint.eraser ? 'Borracha' : copy.chooseColor}</h3>
           <p className="text-sm text-mld-muted" aria-live="polite">
             {instruction}
           </p>
@@ -202,7 +204,30 @@ export function ScenePaintPalette({
             )}
           </fieldset>
         )}
-        {paint.eraser && (
+        {paint.eraser && (paint.data?.imageKind ?? 'color') === 'color' && (
+          <fieldset className="space-y-1">
+            <legend className="text-xs font-bold">Como apagar?</legend>
+            <div className="flex gap-1">
+              {(
+                [
+                  ['paint', 'Apagar tinta'],
+                  ['cutout', 'Deixar vazado'],
+                ] as const
+              ).map(([mode, label]) => (
+                <Button
+                  key={mode}
+                  size="compact"
+                  variant="outline"
+                  aria-pressed={paint.eraseMode === mode}
+                  onClick={() => paint.setEraseMode(mode)}
+                >
+                  {label}
+                </Button>
+              ))}
+            </div>
+          </fieldset>
+        )}
+        {paint.eraser && paint.eraseMode !== 'cutout' && (
           <p className="text-xs text-mld-muted">
             Apaga só o desenho
             {paint.data && paint.data.image.layers.length > 1

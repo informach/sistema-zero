@@ -1,14 +1,10 @@
-import { readFile } from 'node:fs/promises'
-import { expect, type Page, test } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 import { COPY } from '../src/core/copy'
 import { resolvePaletteColors } from '../src/core/sanitize'
 import { SCENE_PAINT_COPY as paintCopy } from '../src/core/scenePaintCopy'
-import { addScenePrimitive } from '../src/scene/commands'
-import { createSceneProject } from '../src/scene/createProject'
 import type { MoldaSceneDocument } from '../src/scene/document'
-import { sceneToJson } from '../src/scene/documentJson'
-import { readSceneDocument } from '../src/scene/readDocument'
 import { sceneBentPaint } from '../src/testing/sceneBentPaint'
+import { openPainting, savedProject } from './paint-project'
 
 test.use({ hasTouch: false, viewport: { width: 1440, height: 1000 } })
 
@@ -111,42 +107,6 @@ test('pixel details keep a usable canvas and return to the model on a narrow scr
   await expect(details).toHaveCount(0)
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
 })
-
-async function openPainting(
-  page: Page,
-  dark = false,
-  source = addScenePrimitive(
-    createSceneProject({ kind: 'empty', name: 'Pintura simples' }),
-    'box',
-    'caixa',
-  ),
-) {
-  await page.goto(`/?nivel=god${dark ? '&tema=escuro' : ''}`)
-  await page.locator('input[name="molda-backup"]').setInputFiles({
-    name: 'pintura.molda.json',
-    mimeType: 'application/json',
-    buffer: Buffer.from(JSON.stringify(sceneToJson(source))),
-  })
-  await page.getByRole('button', { name: `Modelo ${source.name}`, exact: true }).click()
-  await page.getByRole('button', { name: COPY.editor.model.views.frame, exact: true }).click()
-  await page.getByRole('button', { name: paintCopy.tab, exact: true }).click()
-  return source
-}
-
-async function savedProject(page: Page) {
-  const menu = page.locator('summary').filter({ hasText: 'Salvar e exportar' })
-  await menu.click()
-  const [download] = await Promise.all([
-    page.waitForEvent('download'),
-    page.getByRole('button', { name: 'Baixar projeto', exact: true }).click(),
-  ])
-  const file = await download.path()
-  if (!file) throw new Error('Missing project download')
-  await menu.click()
-  const result = readSceneDocument(JSON.parse(await readFile(file, 'utf8')))
-  if (result.status !== 'valid') throw new Error('Invalid painted project')
-  return result.document
-}
 
 function inkCount(project: MoldaSceneDocument) {
   return project.images.reduce(

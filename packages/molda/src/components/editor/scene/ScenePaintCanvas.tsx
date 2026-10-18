@@ -84,6 +84,7 @@ export function ScenePaintCanvas({
       <button
         ref={root}
         type="button"
+        data-paint-canvas=""
         aria-label={COPY.scene.paintCanvas}
         aria-describedby={hint}
         className={`block w-full touch-none border-0 p-0 ${sheet ? 'outline-none' : 'rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mld-accent'}`}
