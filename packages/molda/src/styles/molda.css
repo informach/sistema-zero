@@ -1627,6 +1627,7 @@
     height: 100%;
   }
   .mld-uv-sheet-outlines,
+  .mld-uv-rotate-handle,
   .mld-uv-scale-handles {
     position: absolute;
     inset: 0;
@@ -1636,12 +1637,29 @@
     pointer-events: none;
     color: var(--color-mld-text);
   }
+  .mld-uv-rotate-handle,
   .mld-uv-scale-handles {
     color: var(--color-mld-accent);
   }
   .mld-uv-scale-target {
     pointer-events: auto;
     cursor: nwse-resize;
+  }
+  .mld-uv-rotate-target {
+    pointer-events: auto;
+    cursor: grab;
+  }
+  button.mld-uv-rotate-target {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    outline: none;
+  }
+  button.mld-uv-rotate-target:active {
+    cursor: grabbing;
   }
   .mld-texture-navigation {
     display: flex;

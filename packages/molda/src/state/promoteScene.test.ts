@@ -17,6 +17,35 @@ import {
 } from './storageKeys'
 
 describe('atomic scene promotion', () => {
+  test('default promotion respects the browser capacity and preserves the source when space is insufficient', async () => {
+    const db = await nativeDatabase()
+    const original = Object.getOwnPropertyDescriptor(navigator, 'storage')
+    try {
+      const model = makeModel()
+      await db.seed(`molda:record:${model.id}`, model)
+      const before = await db.dump()
+      Object.defineProperty(navigator, 'storage', {
+        configurable: true,
+        value: { estimate: async () => ({ quota: 1024, usage: 0 }) },
+      })
+      await expect(promoteLegacyScene(db.store, model.id, model.updatedAt)).rejects.toBeInstanceOf(
+        MoldaStorageBudgetError,
+      )
+      expect(await db.dump()).toEqual(before)
+      Object.defineProperty(navigator, 'storage', {
+        configurable: true,
+        value: { estimate: async () => ({ quota: 100 * 1024 ** 2, usage: 0 }) },
+      })
+      expect((await promoteLegacyScene(db.store, model.id, model.updatedAt)).status).toBe(
+        'promoted',
+      )
+    } finally {
+      if (original) Object.defineProperty(navigator, 'storage', original)
+      else Reflect.deleteProperty(navigator, 'storage')
+      db.close()
+    }
+  })
+
   test('an already converted blob scene is verified without another promotion or original rewrite', async () => {
     const db = await nativeDatabase()
     try {

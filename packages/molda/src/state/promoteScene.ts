@@ -1,7 +1,6 @@
 import type { UseStore } from 'idb-keyval'
 import { readMoldaDocumentForId } from '../core/documentReader'
 import { checkMoldaDocumentVersion, MoldaUnsupportedVersionError } from '../core/documentVersion'
-import { MOLDA_LIMITS } from '../core/limits'
 import { structuredBytes } from '../core/structuredBytes'
 import type { MoldaSceneDocument } from '../scene/document'
 import { type LegacyMigrationIssue, migrateLegacyModel } from '../scene/migrateLegacy'
@@ -11,6 +10,7 @@ import { MoldaStorageBudgetError } from './guardedWrite'
 import { inspectSceneBlobRecords } from './sceneBlobStorage'
 import { sceneSummary } from './sceneMetadata'
 import { inspectInlineSceneRecords } from './sceneRecordInspection'
+import { sceneStorageCapacityForStore } from './sceneStorageCapacity'
 import { notifySceneStorageCommit } from './sceneStorageChannel'
 import {
   DELETED_KEY_PREFIX,
@@ -54,7 +54,7 @@ export async function promoteLegacyScene(
   withStore: UseStore,
   id: string,
   expectedUpdatedAt: number,
-  maxBytes = MOLDA_LIMITS.maxGalleryBytes,
+  maxBytes?: number,
 ): Promise<ScenePromotionResult> {
   return promoteScene(withStore, id, expectedUpdatedAt, maxBytes)
 }
@@ -64,7 +64,7 @@ export async function adoptCloudScene(
   withStore: UseStore,
   document: MoldaSceneDocument,
   expectedUpdatedAt: number | null,
-  maxBytes = MOLDA_LIMITS.maxGalleryBytes,
+  maxBytes?: number,
 ): Promise<ScenePromotionResult> {
   const read = readSceneDocument(document)
   if (read.status !== 'valid') throw new SceneValidationError(document.id, 'Cena remota inválida.')
@@ -75,16 +75,16 @@ async function promoteScene(
   withStore: UseStore,
   id: string,
   expectedUpdatedAt: number | null,
-  maxBytes: number,
+  maxBytes: number | undefined,
   incoming?: MoldaSceneDocument,
 ): Promise<ScenePromotionResult> {
   if (
     (expectedUpdatedAt !== null && !Number.isFinite(expectedUpdatedAt)) ||
-    !Number.isSafeInteger(maxBytes) ||
-    maxBytes < 1
+    (maxBytes !== undefined && (!Number.isSafeInteger(maxBytes) || maxBytes < 1))
   ) {
     return Promise.reject(new TypeError('Revisão ou orçamento inválido.'))
   }
+  const capacity = maxBytes ?? (await sceneStorageCapacityForStore(withStore, id))
   const outcome = await withStore(
     'readwrite',
     (store) =>
@@ -194,7 +194,7 @@ async function promoteScene(
               if (typeof key === 'string' && key.startsWith('molda:'))
                 bytes += structuredBytes(value)
             }
-            if (bytes > maxBytes) throw new MoldaStorageBudgetError()
+            if (bytes > capacity) throw new MoldaStorageBudgetError()
             store.put(originals, originalsKey)
             store.put(document, documentKey)
             for (const key of retired) store.delete(key)

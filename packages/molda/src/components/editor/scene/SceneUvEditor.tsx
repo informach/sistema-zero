@@ -3,6 +3,7 @@ import { COPY } from '../../../core/copy'
 import type { SceneMeshGeometry, Vec2 } from '../../../scene/document'
 import { indexMeshUv, mapMeshUv, meshUvBounds } from '../../../scene/meshUv'
 import { editMeshUv, type MeshUvOperation } from '../../../scene/meshUvOperations'
+import { prepareUvRotation } from '../../../scene/uvRotation'
 import { Button, ToolButton } from '../../ui/Button'
 import { FlipHorizontal2, FlipVertical2, Lock, LockOpen, Magnet, RotateCw } from '../../ui/icons'
 import { SceneToolbarMenu } from './SceneToolbarMenu'
@@ -104,6 +105,16 @@ export function SceneUvEditor({
                 origin[1] + (uv[1] - origin[1]) * scale[1],
               ]),
             ),
+          onRotate: (degrees: number) => {
+            const { min, max } = meshUvBounds(mesh, ids)
+            const origin: Vec2 = [min[0] / 2 + max[0] / 2, min[1] / 2 + max[1] / 2]
+            const rotate = prepareUvRotation(
+              degrees,
+              origin,
+              texture?.image ?? { width: 1, height: 1 },
+            )
+            onApplyPrepared(mapMeshUv(mesh, ids, rotate))
+          },
         }
       : undefined
   const margin = Number(padding)

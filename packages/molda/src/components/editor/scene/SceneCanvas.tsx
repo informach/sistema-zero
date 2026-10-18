@@ -368,7 +368,9 @@ function SceneCanvasAttempt({
   const movementStep = measurementStep === undefined ? localMovementStep : measurementStep
   const setMovementStep = onMeasurementStepChange ?? setLocalMovementStep
   const [transformSpace, setTransformSpace] = useState<'world' | 'local'>('world')
-  const preciseSpace = can('model.precise') ? transformSpace : 'world'
+  const [animationTransformSpace, setAnimationTransformSpace] = useState<'world' | 'local'>('local')
+  const preciseSpace =
+    mode === 'animation' ? animationTransformSpace : can('model.precise') ? transformSpace : 'world'
   const [camera, setCamera] = useState<CameraView>('free')
   useEffect(() => {
     view.viewport?.setPreviewGuide?.(previewGuide ?? null)
@@ -644,9 +646,11 @@ function SceneCanvasAttempt({
               name="molda-transform-space"
               value={preciseSpace}
               disabled={!view.viewport?.setTransformSpace}
-              onChange={(event) =>
-                setTransformSpace(event.target.value === 'local' ? 'local' : 'world')
-              }
+              onChange={(event) => {
+                const space = event.target.value === 'local' ? 'local' : 'world'
+                if (mode === 'animation') setAnimationTransformSpace(space)
+                else setTransformSpace(space)
+              }}
               className="min-h-11 rounded-lg border border-mld-border bg-mld-bg px-2"
             >
               <option value="world">Mundo</option>

@@ -341,6 +341,9 @@ test('paint uses the real UV grid, saved palette, temporary picker and one undo 
     await expect(page.getByLabel('Cor hexadecimal', { exact: true })).toBeVisible()
     await page.screenshot({ path: info.outputPath(`pintar-${width}.png`) })
   }
+  // Changing theme by navigation must wait for the final Undo to reach storage.
+  // Reload recovery has its own scenarios; this one verifies persisted paint controls.
+  await expect(page.locator('.mld-save-status')).toHaveAttribute('data-state', 'saved')
   await page.goto('/?nivel=explorer&tema=escuro')
   await page.getByRole('button', { name: 'Modelo Pintura real', exact: true }).click()
   await page.getByRole('button', { name: 'Pintar', exact: true }).click()

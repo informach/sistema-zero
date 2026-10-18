@@ -24,10 +24,10 @@ import {
   readMoldaDocumentForId,
 } from '../core/documentReader'
 import { MOLDA_DOCUMENT_WRITE_VERSION, MoldaUnsupportedVersionError } from '../core/documentVersion'
-import { MOLDA_LIMITS } from '../core/limits'
 import type { MoldaAsset } from '../core/model'
 import { guardedWrite, MoldaStorageBudgetError, removeStoredDocuments } from './guardedWrite'
 import { readRecords } from './readRecords'
+import { sceneStorageCapacityForStore } from './sceneStorageCapacity'
 import {
   DOCUMENT_KEY_PREFIX,
   DOCUMENT_PREFIXES,
@@ -219,7 +219,7 @@ function openChannel(dbName: string): BroadcastChannel | null {
 export interface CreateMoldaPersistenceOptions {
   /** Padrão: o namespace corrente (`setMoldaStorageNamespace`). */
   namespace?: string
-  /** Padrão: `MOLDA_LIMITS.maxGalleryBytes`. */
+  /** Deterministic override; otherwise uses browser capacity with a bounded fallback. */
   maxBytes?: number
 }
 
@@ -227,7 +227,8 @@ export function createMoldaPersistence(
   options: CreateMoldaPersistenceOptions = {},
 ): MoldaPersistence {
   const namespace = options.namespace ?? currentNamespace
-  const maxBytes = options.maxBytes ?? MOLDA_LIMITS.maxGalleryBytes
+  const maxBytes = (id: string) =>
+    options.maxBytes ?? (() => sceneStorageCapacityForStore(store, id))
   const dbName = moldaDbNameFor(namespace)
   const store = storeFor(dbName)
   const senderId = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
@@ -351,7 +352,7 @@ export function createMoldaPersistence(
 
     save(asset) {
       return runExclusiveWrite(dbName, async () => {
-        await guardedWrite(store, [asset], maxBytes)
+        await guardedWrite(store, [asset], maxBytes(asset.id))
         broadcast([asset.id])
       })
     },
@@ -361,7 +362,7 @@ export function createMoldaPersistence(
         const written = await guardedWrite(
           store,
           [asset],
-          maxBytes,
+          maxBytes(asset.id),
           new Map([[asset.id, expectedUpdatedAt]]),
         )
         if (written) broadcast([asset.id])
@@ -372,7 +373,7 @@ export function createMoldaPersistence(
     saveMany(assets) {
       return runExclusiveWrite(dbName, async () => {
         if (assets.length === 0) return
-        await guardedWrite(store, assets, maxBytes)
+        await guardedWrite(store, assets, maxBytes(assets[0]!.id))
         broadcast([...new Set(assets.map((asset) => asset.id))])
       })
     },

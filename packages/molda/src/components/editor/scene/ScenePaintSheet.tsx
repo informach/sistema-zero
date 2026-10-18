@@ -60,6 +60,11 @@ export function ScenePaintSheet({
     paint.cancel()
     setCancelKey((key) => key + 1)
   }
+  function resizeFromPointer(target: HTMLElement, clientX: number) {
+    const rect = target.parentElement?.getBoundingClientRect()
+    if (!rect?.width) return
+    state.setWidth(Math.max(30, Math.min(65, ((clientX - rect.left) / rect.width) * 100)))
+  }
   const materials = workshop.document.materials
   const materialsById = useMemo(
     () => new Map(materials.map((material) => [material.id, material])),
@@ -253,7 +258,8 @@ export function ScenePaintSheet({
           )}
           {adjusting && uv && (
             <p className="mld-sheet-hint">
-              Arraste os pontos ou as alças. Isso muda onde a pintura aparece. Você pode desfazer.
+              Arraste os pontos para mover. Use as alças para mudar o tamanho ou girar. Você pode
+              desfazer.
             </p>
           )}
         </div>
@@ -280,14 +286,13 @@ export function ScenePaintSheet({
         }}
         onPointerMove={(event) => {
           if (!event.currentTarget.hasPointerCapture(event.pointerId)) return
-          const rect = event.currentTarget.parentElement!.getBoundingClientRect()
-          state.setWidth(
-            Math.max(30, Math.min(65, ((event.clientX - rect.left) / rect.width) * 100)),
-          )
+          resizeFromPointer(event.currentTarget, event.clientX)
         }}
         onPointerUp={(event) => {
-          if (event.currentTarget.hasPointerCapture(event.pointerId))
+          if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+            resizeFromPointer(event.currentTarget, event.clientX)
             event.currentTarget.releasePointerCapture(event.pointerId)
+          }
         }}
       />
     </>

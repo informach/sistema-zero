@@ -16,6 +16,7 @@ export interface SceneUvCornerControl {
   onMove?(offset: Vec2): void
   proportional?: boolean
   onScale?(scale: Vec2, origin: Vec2): void
+  onRotate?(degrees: number): void
 }
 interface CornerDraft {
   cancelKey?: number

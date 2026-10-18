@@ -10,6 +10,7 @@ import { createScenePersistence } from '../../../state/scenePersistence'
 import type { SceneViewportFactory } from '../../../viewport/sceneViewportTypes'
 import { Button } from '../../ui/Button'
 import type { ResyncToStudio } from '../useStudioResync'
+import type { SceneExitMode } from './SceneExitControl'
 import type { RestoreSceneProject } from './SceneProjectRestore'
 import { SceneStart } from './SceneStart'
 import { SceneWorkshop } from './SceneWorkshop'
@@ -113,13 +114,17 @@ export function SceneWorkshopHost({
       saveNew(() => createSceneProject(input), signal),
     [saveNew],
   )
-  const leave = useCallback(() => {
-    if (!current || !scope.active) return
-    // Exit control either finished the flush or obtained explicit discard consent.
-    // In particular, unmount must NOT retry a save the child chose to discard.
-    current.flushOnClose = false
-    choose(null)
-  }, [current, scope, choose])
+  const leave = useCallback(
+    (mode: SceneExitMode) => {
+      if (!current || !scope.active) return
+      // Exit control either finished the flush or obtained explicit discard consent.
+      // In particular, unmount must NOT retry a save the child chose to discard.
+      current.flushOnClose = false
+      if (mode === 'discard') void current.editor.recovery?.discardCurrent()
+      choose(null)
+    },
+    [current, scope, choose],
+  )
   const restore: RestoreSceneProject = useCallback(
     (source, name, signal) => saveNew(() => copySceneProject(source, name), signal),
     [saveNew],
@@ -143,6 +148,7 @@ export function SceneWorkshopHost({
           key={current.id}
           editor={current.editor}
           storage={current.editor.storage}
+          recovery={current.editor.recovery}
           viewportFactory={viewportFactory}
           theme={theme}
           onExit={leave}

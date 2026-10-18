@@ -83,14 +83,14 @@ function matchesPreparedBody(
 /** Internal layout writer. Prepare/hash outside IDB, compare real dependencies and commit atomically. */
 export async function mutateSceneBlobStorage(
   withStore: UseStore,
-  maxBytes: number,
+  maxBytes: number | ((moldaBytes: number) => Promise<number>),
   id: string,
   expectedRevision: number | null,
   action: 'save' | 'restore' | 'delete',
   input?: MoldaSceneDocument,
 ): Promise<SceneWriteResult> {
   requireScene(isMoldaAssetId(id), 'id', 'Identificador de criação inválido.')
-  number(maxBytes, 'maxBytes', 1, Number.MAX_SAFE_INTEGER, true)
+  if (typeof maxBytes === 'number') number(maxBytes, 'maxBytes', 1, Number.MAX_SAFE_INTEGER, true)
   if (expectedRevision !== null)
     number(expectedRevision, 'revision', 1, Number.MAX_SAFE_INTEGER, true)
   requireScene(
@@ -107,6 +107,11 @@ export async function mutateSceneBlobStorage(
   // prepare owns ALL input fields and pixels before its first await.
   const prepared = input ? await prepareSceneStorage(input) : null
   const captured = await readSceneStorageSnapshot(withStore, id)
+  const capacity =
+    typeof maxBytes === 'number'
+      ? maxBytes
+      : await maxBytes([...captured.costs.values()].reduce((sum, bytes) => sum + bytes, 0))
+  number(capacity, 'maxBytes', 1, Number.MAX_SAFE_INTEGER, true)
   const structure = inspectSceneBlobRecordStructure(captured.records, id, captured.keys)
   const blobRead =
     prepared && structure.status === 'blob-structure' && matchesPreparedBody(structure, prepared)
@@ -148,7 +153,6 @@ export async function mutateSceneBlobStorage(
     deletedKey,
     ...oldHashes.map((hash) => `${BLOB}${hash}`),
   ]
-  const retired = new Set(oldHashes.filter((hash) => !prepared?.blobs.has(hash)))
   return withStore(
     'readwrite',
     (store) =>
@@ -225,7 +229,13 @@ export async function mutateSceneBlobStorage(
               store,
               snapshot,
               id,
-              retired,
+              new Set(
+                [...snapshot.keys]
+                  .filter(
+                    (key) => key.startsWith(BLOB) && !prepared?.blobs.has(key.slice(BLOB.length)),
+                  )
+                  .map((key) => key.slice(BLOB.length)),
+              ),
               (collection) => {
                 removals.push(...collection.removals)
                 const removed = new Set(removals)
@@ -233,7 +243,7 @@ export async function mutateSceneBlobStorage(
                 for (const [key, cost] of collection.costs)
                   if (!removed.has(key) && !changes.has(key)) bytes += cost
                 for (const value of changes.values()) bytes += structuredBytes(value)
-                if (bytes > maxBytes && action !== 'delete') throw new MoldaStorageBudgetError()
+                if (bytes > capacity && action !== 'delete') throw new MoldaStorageBudgetError()
                 for (const key of removals) store.delete(key)
                 for (const [key, value] of changes) store.put(value, key)
                 result = {

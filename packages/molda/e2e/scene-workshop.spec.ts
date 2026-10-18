@@ -11,9 +11,11 @@ import sharp from 'sharp'
 import { COPY } from '../src/core/copy'
 import { resolvePaletteColors } from '../src/core/sanitize'
 import { SCENE_PAINT_COPY } from '../src/core/scenePaintCopy'
+import { addScenePrimitive } from '../src/scene/commands'
 import type { MoldaSceneDocument } from '../src/scene/document'
 import { sceneToJson } from '../src/scene/documentJson'
-import { animatedScene } from '../src/testing/sceneAnimation'
+import { readGlb } from '../src/testing/glbRead'
+import { animatedScene, sceneAnimationClip } from '../src/testing/sceneAnimation'
 import { makeSceneSkinFixture } from '../src/testing/sceneSkin'
 
 /** Chaves do IndexedDB do playground: é assim que se prova a promoção, não pela tela. */
@@ -313,8 +315,8 @@ test('falha ao carregar a oficina preserva a criação e oferece recuperação p
   await expect(page.getByRole('button', { name: 'Mover', exact: true })).toBeVisible()
 })
 
-async function restoreProject(page: Page, source: MoldaSceneDocument) {
-  await page.goto('/?')
+async function restoreProject(page: Page, source: MoldaSceneDocument, url = '/?') {
+  await page.goto(url)
   await expect(page.getByRole('heading', { name: 'Minhas criações 3D' })).toBeVisible()
   await page.locator('input[name="molda-backup"]').setInputFiles({
     name: 'projeto.molda.json',
@@ -329,6 +331,154 @@ async function nativeProject(page: Page) {
   const file = await downloaded(page, 'Baixar projeto')
   return JSON.parse(file.bytes.toString())
 }
+
+for (const theme of ['claro', 'escuro']) {
+  test(`quota failure protects edited work through reload, native backup and recovery (${theme})`, async ({
+    page,
+  }, info) => {
+    test.setTimeout(60_000)
+    const errors: string[] = []
+    page.on('pageerror', (error) => errors.push(error.message))
+    page.on('dialog', (dialog) => void dialog.accept())
+    await page.addInitScript(() => {
+      const put = IDBObjectStore.prototype.put
+      IDBObjectStore.prototype.put = function (value, key) {
+        if (
+          typeof key === 'string' &&
+          key.startsWith('molda:scene-summary:') &&
+          sessionStorage.getItem('molda-e2e-block-save') === '1'
+        )
+          throw new DOMException('Simulated full storage', 'QuotaExceededError')
+        return put.call(this, value, key)
+      }
+    })
+    const source = { ...animatedScene(), name: 'Recuperar carrinho' }
+    await restoreProject(page, source, `/?tema=${theme}`)
+    await page.getByRole('button', { name: 'Escolher corpo', exact: true }).click()
+    await expect(page.locator('.mld-save-status')).toHaveAttribute('data-state', 'saved')
+    await page.evaluate(() => sessionStorage.setItem('molda-e2e-block-save', '1'))
+    const position = page.getByRole('spinbutton', { name: 'Posição X', exact: true })
+    await position.fill('3')
+    await position.press('Enter')
+    const failure = page.getByRole('dialog', { name: 'Vamos proteger sua criação', exact: true })
+    await expect(failure).toBeVisible()
+    await expect(
+      failure.getByText('Uma cópia de recuperação já está guardada neste dispositivo.', {
+        exact: false,
+      }),
+    ).toBeVisible()
+    await page.screenshot({ path: info.outputPath('salvamento-protegido.png') })
+    const [download] = await Promise.all([
+      page.waitForEvent('download'),
+      failure.getByRole('button', { name: 'Guardar uma cópia', exact: true }).click(),
+    ])
+    const path = await download.path()
+    if (!path) throw new Error('Missing rescue backup')
+    const backup = JSON.parse(await readFile(path, 'utf8'))
+    expect(backup.nodes).not.toEqual(sceneToJson(source).nodes)
+    await page.reload()
+    await page.getByRole('button', { name: 'Modelo Recuperar carrinho', exact: true }).click()
+    const recovery = page.getByRole('dialog', {
+      name: 'Encontramos seu trabalho mais recente',
+      exact: true,
+    })
+    await expect(recovery).toBeVisible()
+    await recovery.getByRole('button', { name: COPY.a11y.closeDialog, exact: true }).click()
+    await expect(recovery).toHaveCount(0)
+    await page.getByRole('button', { name: 'Ver trabalho encontrado', exact: true }).click()
+    await expect(recovery).toBeVisible()
+    await page.screenshot({ path: info.outputPath('continuar-trabalho.png') })
+    await page.evaluate(() => sessionStorage.removeItem('molda-e2e-block-save'))
+    await recovery.getByRole('button', { name: 'Continuar meu trabalho', exact: true }).click()
+    await expect(recovery).toHaveCount(0)
+    await expect(page.locator('.mld-save-status')).toHaveAttribute('data-state', 'saved')
+    await page.getByRole('button', { name: 'Escolher corpo', exact: true }).click()
+    await expect(page.getByRole('spinbutton', { name: 'Posição X', exact: true })).toHaveValue('3')
+    const restored = await nativeProject(page)
+    expect(restored.nodes).toEqual(backup.nodes)
+    expect(restored.geometries).toEqual(backup.geometries)
+    expect(restored.images).toEqual(backup.images)
+    expect(restored.animations).toEqual(backup.animations)
+    expect(
+      (await storageKeys(page)).filter((key) => key.startsWith('molda:scene-checkpoint:')),
+    ).toEqual([])
+    expect(errors).toEqual([])
+  })
+}
+
+test('a child can spin a resized cylinder wheel, record and export GLB to both destinations, then undo without changing the model', async ({
+  page,
+}) => {
+  const errors: string[] = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  let next = 0
+  const source = addScenePrimitive(
+    { ...animatedScene(), name: 'Giro da roda', animations: [] },
+    'cylinder',
+    'roda',
+    () => `wheel-${next++}`,
+  )
+  const wheel = source.nodes.find((node) => node.name === 'roda')!
+  wheel.transform = {
+    kind: 'trs',
+    translation: [0, 2, 0],
+    rotation: [0, 0, Math.SQRT1_2, Math.SQRT1_2],
+    scale: [2, 0.4, 1.8],
+  }
+  wheel.pivot = [0, 0, 0]
+  source.animations = [{ ...sceneAnimationClip(wheel.id), tracks: [] }]
+  await page.goto('/?nivel=god')
+  await page.locator('input[name="molda-backup"]').setInputFiles({
+    name: 'roda.molda.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from(JSON.stringify(sceneToJson(source))),
+  })
+  await page.getByRole('button', { name: 'Modelo Giro da roda', exact: true }).click()
+  await page.getByRole('button', { name: 'Escolher roda', exact: true }).click()
+  await page.getByRole('button', { name: 'Animar', exact: true }).click()
+  await page.getByRole('button', { name: 'Girar', exact: true }).click()
+  await page.getByRole('checkbox', { name: 'Marcar sozinho', exact: true }).uncheck()
+  await page.getByRole('button', { name: 'Girar no eixo Y', exact: true }).press('Shift+ArrowRight')
+  await expect(
+    page.getByText('Esse ajuste inclinaria os eixos da peça.', { exact: false }),
+  ).toHaveCount(0)
+  await page.getByRole('button', { name: 'Marcar pose', exact: true }).click()
+  const saved = await nativeProject(page)
+  expect(saved.nodes).toEqual(sceneToJson(source).nodes)
+  expect(saved.geometries).toEqual(sceneToJson(source).geometries)
+  expect(saved.images).toEqual(sceneToJson(source).images)
+  const rotation = saved.animations[0].tracks.find(
+    (track: { channel: string }) => track.channel === 'rotation',
+  )
+  expect(rotation.nodeId).toBe(wheel.id)
+  const expected = [0, Math.sin(Math.PI / 24), 0, Math.cos(Math.PI / 24)]
+  rotation.keys[0].value.forEach((value: number, axis: number) => {
+    expect(value).toBeCloseTo(expected[axis]!, 12)
+  })
+  expect(rotation.keys[0].incomingPivot).toEqual([0, 0, 0])
+  await page.getByText('Salvar e exportar', { exact: true }).click()
+  await page.getByRole('button', { name: 'Exportar GLB', exact: true }).click()
+  for (const destination of ['Para o Estúdio', 'Para outros programas']) {
+    await page.getByRole('radio', { name: destination, exact: false }).check()
+    await page.getByRole('button', { name: 'Preparar GLB', exact: true }).click()
+    await expect(
+      page.getByText('Sua cópia está pronta para conferir.', { exact: true }),
+    ).toBeVisible()
+    const accept = page.getByRole('checkbox', {
+      name: 'Li as mudanças e quero baixar esta cópia.',
+      exact: true,
+    })
+    if (await accept.count()) await accept.check()
+    await expect(page.getByRole('button', { name: 'Baixar GLB', exact: true })).toBeEnabled()
+    const file = await downloaded(page, 'Baixar GLB')
+    expect(file.name).toBe('Giro da roda.glb')
+    expect(readGlb(file.bytes).json.animations).toHaveLength(1)
+  }
+  await page.getByRole('button', { name: 'Voltar à oficina', exact: true }).click()
+  await page.getByRole('button', { name: 'Desfazer', exact: true }).click()
+  expect((await nativeProject(page)).animations).toEqual(sceneToJson(source).animations)
+  expect(errors).toEqual([])
+})
 
 /** A tinta da peça no documento: a imagem de cor do material dela, ou nada. */
 function colorImageOf(project: MoldaSceneDocument, nodeId: string) {
