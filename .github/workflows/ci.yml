@@ -24,3 +24,10 @@ jobs:
         if: always()
         working-directory: packages/community-kids
         run: bun test tests/community-composers-a11y.test.tsx --rerun-each 30
+      - name: Install comparison runtime
+        if: always()
+        run: npm install --prefix "$RUNNER_TEMP/bun-comparison" --no-audit --no-fund bun@1.4.3
+      - name: Same composer assertions with Bun 1.4.3
+        if: always()
+        working-directory: packages/community-kids
+        run: '"$RUNNER_TEMP/bun-comparison/node_modules/.bin/bun" test tests/community-composers-a11y.test.tsx --rerun-each 30'
