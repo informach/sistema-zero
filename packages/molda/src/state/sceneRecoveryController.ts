@@ -230,7 +230,7 @@ export function createSceneRecoveryController(
         publish({
           available: { ...candidate, conflict: true },
           error:
-            'A criação mudou em outra aba. Baixe o trabalho encontrado para manter as duas versões.',
+            'A criação mudou em outra aba. Baixe a cópia encontrada para manter as duas versões.',
         })
         return false
       }

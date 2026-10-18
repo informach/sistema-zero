@@ -13,6 +13,7 @@ O primeiro `git fetch origin --prune` confirmou que a branch de trabalho e `orig
 3. **O novo fallback da galeria ampliava também os limites de importação de backup.** O JSON de backup e os limites do ZIP foram separados da capacidade de armazenamento, mantendo os orçamentos anteriores de memória. A regressão recusa uma declaração externa de 200 MiB antes de tentar descompactar seu conteúdo.
 4. **Versões antigas de uma sessão já salva precisavam ser consideradas superadas.** Ao coletar um checkpoint que coincide com o projeto salvo, a inspeção não deve tentar restaurar depois os registros antigos que acabou de remover. A regressão usa um traço desfeito seguido pelo estado já salvo e exige ausência de recuperação e de avisos falsos.
 5. **O divisor da folha não aplicava a coordenada final ao soltar.** O gesto agora aplica a posição de `pointerup` antes de liberar a captura, mesmo sem movimento intermediário. Um teste de componente reproduziu a largura inalterada antes do conserto e verifica também que redimensionar a folha não altera o documento nem o histórico. O cenário WebKit aguarda o layout atualizado por condição, conservando a exigência anterior de crescimento da largura.
+6. **O gate global de linguagem infantil rejeitou “trabalho” nas mensagens de recuperação.** Os rótulos passaram a usar criação, cópia e últimas mudanças, sem abrir exceções na regra da plataforma. A falha do CI também foi reproduzida localmente com `copy-vocabulario.test.ts`.
 
 Os três testes reproduziram as falhas antes das correções; depois, os 25 testes dos dois arquivos afetados passaram.
 
@@ -31,11 +32,14 @@ O quarto teste também reproduziu o aviso falso antes da correção. O cenário 
 
 - Suíte completa do Molda: **3.394 aprovados**, zero falhas (1.104 + 1.166 + 1.124).
 - Integração com Kids: **67 aprovados**, zero falhas, incluindo nuvem, perfil e contrato do host.
+- Após o achado de vocabulário no CI, a **suíte completa do Kids passou com 1.413 testes**. A prova da oficina ao vivo passou dentro dessa suíte em aproximadamente um segundo. As verificações pesadas foram executadas em sequência após timeouts por disputa de recursos na execução paralela local; não foram ampliados timeouts nem removidas asserções.
 - Playwright completo: 117 cenários descobertos; 111 aprovações iniciais, dois achados investigados e quatro exclusões já existentes para provas específicas do Chromium. Após as correções, **16 cenários afetados passaram** em Chromium, Firefox e WebKit, incluindo os dois que haviam falhado. Isso cobre os 113 cenários executáveis do conjunto.
 - Typecheck do Molda e de `community-kids`, build do playground e `git diff --check`: aprovados.
 - Biome nos **49 arquivos de código alterados**: zero erros e zero avisos. Biome global: exit 0 em 9.099 arquivos; os avisos e informações existentes fora da entrega não bloqueiam o gate.
 - As regressões dos cinco achados falharam antes das correções e passaram depois. Capturas da recuperação nos temas claro e escuro foram inspecionadas.
 
 Logs locais em `.cache/molda-release-review-*`. O banco pessoal do usuário não foi manipulado por ferramentas; os navegadores de teste usam contextos isolados. A recuperação continua sujeita ao espaço físico da origem e oferece baixar o projeto aberto se a gravação falhar.
+
+A primeira execução remota (`39125359326`) detectou o vocabulário acima e um timeout do subprocesso de prova da oficina ao vivo. A prova isolada passou em aproximadamente um segundo; sua asserção e seu timeout não foram modificados. A suíte completa do Kids e o CI subsequente verificam novamente esse caminho.
 
 A publicação segue commit da entrega, atualização de staging local, merge preservando os históricos, novo fetch antes do push e acompanhamento do CI/deploy do SHA integrado. O SHA e o link da execução são informados no retorno de publicação.
