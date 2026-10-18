@@ -11,6 +11,7 @@ import {
   affineMultiply,
   transformPoint,
 } from '../../../scene/matrix'
+import { extrudeMeshComponents } from '../../../scene/meshComponentExtrude'
 import {
   duplicateMeshFaces,
   fillMeshHole,
@@ -19,6 +20,7 @@ import {
   mirrorMeshFaces,
 } from '../../../scene/meshComponentOperations'
 import type { SceneComponentSelection, SceneComponentSession } from '../../../scene/meshComponents'
+import { prepareMeshCreation } from '../../../scene/meshCreate'
 import { cutMeshEdgeRings } from '../../../scene/meshRingCuts'
 import { meshSymmetrySource, symmetrySourceIds } from '../../../scene/meshSymmetry'
 import { sceneGeometryMesh } from '../../../scene/parametricGeometry'
@@ -29,6 +31,8 @@ import { useMoldaToolGate } from '../../toolAccess'
 export type MeshOperationSpec =
   | { kind: 'mirror'; axis: 0 | 1 | 2; copy: boolean; continuous: boolean }
   | { kind: 'duplicate'; offset: Vec3 }
+  | { kind: 'extrude'; offset: Vec3 }
+  | { kind: 'create'; material?: string }
   | { kind: 'fill'; material?: string }
   | { kind: 'ring'; count: number; offset: number }
 interface Owner {
@@ -51,11 +55,14 @@ export function useSceneMeshOperation(
   commit: (next: MoldaSceneDocument) => MoldaSceneDocument | null,
   setSession: (selection: SceneComponentSession | null) => void,
 ) {
-  const { allowed, canUse } = useMoldaToolGate('model.mesh-pro')
+  const proGate = useMoldaToolGate('model.mesh-pro')
+  const meshGate = useMoldaToolGate('model.mesh')
   const [owner, setOwner] = useState<Owner | null>(null),
     live = useRef(owner),
     [error, setError] = useState<string | null>(null),
     [showPreview, setShowPreview] = useState(true)
+  const gate = owner?.spec.kind === 'extrude' || owner?.spec.kind === 'create' ? meshGate : proGate
+  const allowed = gate.allowed
   const move = useRef<Vec3 | null>(null)
   const show = useCallback((next: Owner | null) => {
     live.current = next
@@ -98,6 +105,7 @@ export function useSceneMeshOperation(
   }, [editor, cancel])
   const prepared = useMemo(() => {
     if (!owner) return null
+    let materials: string[] = []
     try {
       let cursor = 0
       const allocate = () => {
@@ -110,6 +118,24 @@ export function useSceneMeshOperation(
         return id
       }
       const { mesh, spec, targets } = owner
+      const creationPlan =
+        spec.kind === 'create'
+          ? prepareMeshCreation(mesh, { mode: owner.selection.mode, ids: targets })
+          : null
+      materials = creationPlan?.materials ?? []
+      const creation = creationPlan?.apply(
+        spec.kind === 'create' ? spec.material : undefined,
+        allocate,
+      )
+      const extrusion =
+        spec.kind === 'extrude'
+          ? extrudeMeshComponents(
+              mesh,
+              { mode: owner.selection.mode, ids: targets },
+              spec.offset,
+              allocate,
+            )
+          : null
       const ring =
         spec.kind === 'ring'
           ? cutMeshEdgeRings(mesh, targets, spec.count, spec.offset, allocate)
@@ -122,28 +148,44 @@ export function useSceneMeshOperation(
               { ...spec, center: meshLocalBox(owner.full).center[spec.axis] },
               allocate,
             )
-          : spec.kind === 'duplicate'
-            ? duplicateMeshFaces(mesh, targets, spec.offset, allocate, true)
-            : spec.kind === 'fill'
-              ? fillMeshHole(mesh, targets, spec.material, allocate)
-              : ring!
+          : spec.kind === 'create'
+            ? creation!
+            : spec.kind === 'extrude'
+              ? extrusion!
+              : spec.kind === 'duplicate'
+                ? duplicateMeshFaces(mesh, targets, spec.offset, allocate, true)
+                : spec.kind === 'fill'
+                  ? fillMeshHole(mesh, targets, spec.material, allocate)
+                  : ring!
       const document = editSceneMesh(
         owner.source,
         owner.selection.nodeId,
         () => result.mesh,
         allocate,
-        { symmetricNewFaces: spec.kind === 'duplicate' && !!owner.full.symmetry },
+        {
+          symmetricNewFaces:
+            (spec.kind === 'duplicate' || spec.kind === 'extrude' || spec.kind === 'create') &&
+            !!owner.full.symmetry,
+        },
       )
-      return { result, document, segments: ring?.segments ?? [], error: null }
+      const selection: SceneComponentSelection = {
+        nodeId: owner.selection.nodeId,
+        mode: creation ? creation.mode : extrusion ? owner.selection.mode : 'face',
+        ids: creation ? creation.ids : extrusion ? extrusion.ids : result.faceIds,
+      }
+      return { result, document, selection, materials, segments: ring?.segments ?? [], error: null }
     } catch (reason) {
       return {
         result: null,
         document: null,
+        materials,
         error: reason instanceof Error ? reason.message : 'Confira a seleção e os ajustes.',
       }
     }
   }, [owner])
-  const neutral = owner?.spec.kind === 'duplicate' && owner.spec.offset.every((n) => n === 0)
+  const neutral =
+    (owner?.spec.kind === 'duplicate' || owner?.spec.kind === 'extrude') &&
+    owner.spec.offset.every((n) => n === 0)
   const guide = useMemo<ScenePreviewGuideState | null>(() => {
     if (!owner) return null
     const box = meshLocalBox(owner.full),
@@ -188,22 +230,30 @@ export function useSceneMeshOperation(
     canConfirm: allowed && !!prepared?.document && !neutral && !error,
     document: showPreview && owner?.spec.kind !== 'ring' ? (prepared?.document ?? null) : null,
     selection:
-      showPreview && owner?.spec.kind === 'duplicate' && prepared?.result
-        ? ({
-            nodeId: owner.selection.nodeId,
-            mode: 'face',
-            ids: prepared.result.faceIds,
-          } as SceneComponentSelection)
+      showPreview &&
+      (owner?.spec.kind === 'duplicate' || owner?.spec.kind === 'extrude') &&
+      prepared?.result
+        ? prepared.selection
         : null,
     guide: showPreview ? guide : null,
     showPreview,
     setShowPreview,
     configure,
     cancel,
-    materials: owner?.spec.kind === 'fill' ? meshHoleMaterials(owner.mesh, owner.targets) : [],
+    materials:
+      owner?.spec.kind === 'create'
+        ? (prepared?.materials ?? [])
+        : owner?.spec.kind === 'fill'
+          ? meshHoleMaterials(owner.mesh, owner.targets)
+          : [],
     target: (ids: readonly string[]) => {
       const current = live.current
-      if (current && (current.spec.kind === 'ring' || current.spec.kind === 'fill')) {
+      if (
+        current &&
+        (current.spec.kind === 'ring' ||
+          current.spec.kind === 'fill' ||
+          current.spec.kind === 'create')
+      ) {
         show({ ...current, targets: [...ids] })
         setError(null)
       }
@@ -214,7 +264,9 @@ export function useSceneMeshOperation(
       full: SceneMeshGeometry,
     ) => {
       cancel()
-      if (!canUse()) return false
+      if (!(kind === 'extrude' || kind === 'create' ? meshGate : proGate).canUse()) return false
+      if (kind === 'extrude' && (selection.mode === 'face' || !selection.ids.length)) return false
+      if (kind === 'create' && selection.mode === 'face') return false
       const state = editor.getState(),
         index = indexSceneDocument(state.content),
         flags = evaluateSceneNodeFlags(index.scene).get(selection.nodeId)
@@ -224,9 +276,9 @@ export function useSceneMeshOperation(
       const spec: MeshOperationSpec =
         kind === 'mirror'
           ? { kind, axis: 0, copy: true, continuous: false }
-          : kind === 'duplicate'
+          : kind === 'duplicate' || kind === 'extrude'
             ? { kind, offset: [0, 0, 0] }
-            : kind === 'fill'
+            : kind === 'fill' || kind === 'create'
               ? { kind }
               : { kind, count: 1, offset: 0 }
       show({
@@ -254,11 +306,12 @@ export function useSceneMeshOperation(
     confirm: () => {
       const current = live.current
       if (
-        !canUse() ||
+        !gate.canUse() ||
         current !== owner ||
         !current ||
         !prepared?.document ||
         !prepared.result ||
+        !prepared.selection ||
         neutral ||
         error
       )
@@ -286,8 +339,8 @@ export function useSceneMeshOperation(
         setSession({
           nodeId: current.selection.nodeId,
           geometryId: full.id,
-          mode: 'face',
-          ids: symmetrySourceIds(full, 'face', prepared.result.faceIds),
+          mode: prepared.selection.mode,
+          ids: symmetrySourceIds(full, prepared.selection.mode, prepared.selection.ids),
         })
       }
       move.current = null
@@ -298,32 +351,44 @@ export function useSceneMeshOperation(
       error: null,
       begin: () => {
         const current = live.current
-        if (current?.spec.kind !== 'duplicate') return false
+        if (current?.spec.kind !== 'duplicate' && current?.spec.kind !== 'extrude') return false
         move.current = [...current.spec.offset]
         return true
       },
       preview: (delta: AffineMatrix) => {
         const current = live.current,
           offset = move.current
-        if (current?.spec.kind !== 'duplicate' || !offset) return false
+        if ((current?.spec.kind !== 'duplicate' && current?.spec.kind !== 'extrude') || !offset)
+          return false
         const inverse = affineInverse(current.world)
         if (!inverse) {
-          setError('A escala da peça precisa ser diferente de zero para mover a cópia.')
+          setError('A escala da peça precisa ser diferente de zero para mover a seleção.')
           return false
         }
         const local = affineMultiply(affineMultiply(inverse, delta), current.world)
         configure({
-          kind: 'duplicate',
+          kind: current.spec.kind,
           offset: [offset[0] + local[12], offset[1] + local[13], offset[2] + local[14]],
         })
         return true
       },
       end: (accepted: boolean) => {
-        if (!accepted && move.current) configure({ kind: 'duplicate', offset: move.current })
+        const current = live.current
+        if (
+          !accepted &&
+          move.current &&
+          (current?.spec.kind === 'duplicate' || current?.spec.kind === 'extrude')
+        )
+          configure({ kind: current.spec.kind, offset: move.current })
         move.current = null
       },
       cancel: () => {
-        if (move.current) configure({ kind: 'duplicate', offset: move.current })
+        const current = live.current
+        if (
+          move.current &&
+          (current?.spec.kind === 'duplicate' || current?.spec.kind === 'extrude')
+        )
+          configure({ kind: current.spec.kind, offset: move.current })
         move.current = null
       },
     },

@@ -18,6 +18,7 @@ export function pickSceneKnifePoint({
   nodeId,
   pointer,
   midpoint,
+  edgesOnly = false,
   closePoint,
   edges,
   vertices,
@@ -29,6 +30,7 @@ export function pickSceneKnifePoint({
   nodeId: string
   pointer: { clientX: number; clientY: number }
   midpoint: boolean
+  edgesOnly?: boolean
   closePoint?: { point: MeshKnifePoint; position: Vec3 } | null
   edges: SceneCutPicker
   vertices: SceneComponentPicker
@@ -67,18 +69,20 @@ export function pickSceneKnifePoint({
     )
       return closePoint.point
   }
-  const vertex = vertices.pick(
-    resource,
-    mesh,
-    { nodeId, mode: 'vertex', ids: [] },
-    camera,
-    {
-      ...screen,
-      radius: 12,
-    },
-    false,
-    true,
-  )
+  const vertex =
+    !edgesOnly &&
+    vertices.pick(
+      resource,
+      mesh,
+      { nodeId, mode: 'vertex', ids: [] },
+      camera,
+      {
+        ...screen,
+        radius: 12,
+      },
+      false,
+      true,
+    )
   if (vertex) return { kind: 'vertex', vertexId: symmetrySourceIds(mesh, 'vertex', [vertex])[0]! }
   const edge = edges.pick(resource, mesh, nodeId, camera, screen, midpoint)
   if (edge) {
@@ -91,8 +95,8 @@ export function pickSceneKnifePoint({
       t: sa! < sb! ? edge.t : 1 - edge.t,
     }
   }
-  if (!hit || hit.faceIndex === undefined || hit.faceIndex === null) return null
-  const faceId = resource.faceFor(hit.object, hit.faceIndex)
+  if (edgesOnly || !hit || hit.faceIndex === undefined || hit.faceIndex === null) return null
+  const faceId = resource.componentFaceFor(hit.object, hit.faceIndex)
   if (!faceId) return null
   const point = hit.object.worldToLocal(hit.point.clone())
   const sourceFace = symmetrySourceIds(mesh, 'face', [faceId])[0]!,

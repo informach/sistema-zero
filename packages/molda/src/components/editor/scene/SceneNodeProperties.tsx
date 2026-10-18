@@ -19,6 +19,7 @@ import { focusWorkshopStage } from './focusStage'
 import { SceneAdjustmentForm } from './SceneAdjustmentForm'
 import { SceneArrangeTools } from './SceneArrangeTools'
 import { SceneCurveDetails } from './SceneCurveDetails'
+import { SceneFlipControls } from './SceneFlipControls'
 import { SceneMirrors } from './SceneMirrors'
 import { ScenePivotChoices } from './SceneModelGuideControls'
 import { ScenePathProperties } from './ScenePathProperties'
@@ -133,6 +134,9 @@ export function SceneNodeProperties({
       {primary && workshop.tool === 'pivot' && can('model.pivot') && can('model.precise') && (
         <ScenePivotChoices workshop={workshop} precision />
       )}
+      <RequiresTool family="model.pieces">
+        <SceneFlipControls workshop={workshop} />
+      </RequiresTool>
       {mode && !primary && (
         <div className="space-y-3">
           <h3 className="mld-kicker">
@@ -179,7 +183,8 @@ export function SceneNodeProperties({
               geometry.to[1] - geometry.from[1],
               geometry.to[2] - geometry.from[2],
             ]}
-            min={Number.MIN_VALUE}
+            min={workshop.measurementStep}
+            step={workshop.measurementStep}
             onApply={(values) => run((source) => resizeScenePrimitive(source, primary.id, values))}
           />
         </details>

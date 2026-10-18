@@ -242,3 +242,19 @@ test('large UV island traversal and packing stay within the model budget without
   expect(meshUvBounds(result).min).toEqual([0.02, 0.02])
   expect(meshUvLayout(result).faces).toHaveLength(9216)
 })
+
+test('UV layout preserves square texels for rectangular images and filters other texture sheets', () => {
+  const mesh = makeSceneGridGeometry(2)
+  const layout = meshUvLayout(mesh, 2, ['f_0_0'])
+  const a = layout.map([0, 0]),
+    b = layout.map([1 / 16, 1 / 8])
+  expect(b[0] - a[0]).toBeCloseTo(a[1] - b[1], 12)
+  const unmap = layout.unmap(b)!
+  const translated = layout.translate([0, 0], [b[0] - a[0], b[1] - a[1]])!
+  for (const value of [unmap, translated]) {
+    expect(value[0]).toBeCloseTo(1 / 16, 12)
+    expect(value[1]).toBeCloseTo(1 / 8, 12)
+  }
+  expect(layout.faces.map((face) => face.id)).toEqual(['f_0_0'])
+  expect(layout.pick([0.5, 0.7], undefined)).toBe('f_0_0')
+})

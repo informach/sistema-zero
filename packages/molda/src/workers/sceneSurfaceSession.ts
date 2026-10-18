@@ -1,4 +1,5 @@
 import { newId } from '../core/id'
+import type { Vec3 } from '../core/model'
 import type { SceneMeshGeometry } from '../scene/document'
 import { SceneValidationError } from '../scene/validation'
 import {
@@ -16,7 +17,7 @@ export const SURFACE_WORKER_FACE_THRESHOLD = 1024
 /** One worker per preview, one in-flight request and one replaceable latest value. No input backlog. */
 export function createSceneSurfaceSession(options: {
   source: Omit<SceneSurfaceInit, 'type' | 'idSeed'>
-  onResult(mesh: SceneMeshGeometry, amount: number): void
+  onResult(mesh: SceneMeshGeometry, amount: number, offset?: Vec3): void
   onBusy(busy: boolean): void
   onError(error: unknown): void
   createWorker?: () => TaskWorker
@@ -77,7 +78,7 @@ export function createSceneSurfaceSession(options: {
         const result = readSceneSurfaceReply(reply, options.source)
         if (result.type !== 'result' || result.mesh.id !== options.source.mesh.id)
           throw new Error('Worker changed geometry identity')
-        options.onResult(result.mesh, request.amount)
+        options.onResult(result.mesh, request.amount, request.offset)
       }
       if (disposed) return
       sendNext()
@@ -108,13 +109,22 @@ export function createSceneSurfaceSession(options: {
     throw error
   }
   return {
-    update(amount: number): boolean {
+    update(amount: number, offset?: Vec3): boolean {
       if (disposed) return false
-      if (!Number.isFinite(amount)) {
+      if (
+        !Number.isFinite(amount) ||
+        (offset && (options.source.tool !== 'extrude' || offset.some((n) => !Number.isFinite(n))))
+      ) {
         fail(new RangeError('Invalid preview amount'))
         return false
       }
-      latest = { type: 'apply', requestId: ++nextId, amount }
+      const displacement: Vec3 | undefined = offset ? [offset[0], offset[1], offset[2]] : undefined
+      latest = {
+        type: 'apply',
+        requestId: ++nextId,
+        amount,
+        ...(displacement ? { offset: displacement } : {}),
+      }
       options.onBusy(true)
       sendNext()
       return !disposed

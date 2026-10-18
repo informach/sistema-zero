@@ -32,3 +32,42 @@ test('quad strips reject invalid counts, edge positions and incompatible transit
   expect(readSceneGeometry(result.mesh)).toEqual(result.mesh)
   expect(mesh).toEqual(before)
 })
+
+test('loop cuts interpolate each edge UV on trapezoid faces without a triangulation prerequisite', () => {
+  const mesh = makeSceneGridGeometry(1)
+  mesh.vertices.v_1_1![0] = 0.75
+  mesh.faces.f_0_0!.corners[2]!.uv = [0.8, 0.6]
+  const before = structuredClone(mesh)
+  const result = cutMeshEdgeRings(mesh, [meshEdgeKey('v_0_0', 'v_1_0')], 2)
+  expect(result.faceIds).toHaveLength(3)
+  expect(result.edgeIds).toHaveLength(2)
+  expect(Object.values(result.mesh.faces).every((face) => face.corners.length === 4)).toBe(true)
+  for (const corner of mesh.faces.f_0_0!.corners)
+    expect(Object.values(result.mesh.faces).flatMap((face) => face.corners)).toContainEqual(corner)
+  expect(readSceneGeometry(result.mesh)).toEqual(result.mesh)
+  expect(mesh).toEqual(before)
+})
+
+test('loop cuts stop at non-quad neighbors while sharing new border points without cracks', () => {
+  const mesh = makeSceneGridGeometry(1)
+  mesh.vertices.tip = [0.125, 0.5, 0]
+  mesh.faces.cap = {
+    corners: [
+      { vertexId: 'v_0_1', uv: [0, 0] },
+      { vertexId: 'v_1_1', uv: [1, 0] },
+      { vertexId: 'tip', uv: [0.5, 1] },
+    ],
+  }
+  const result = cutMeshEdgeRings(mesh, [meshEdgeKey('v_0_0', 'v_1_0')], 2)
+  expect(result.faceIds).toHaveLength(3)
+  expect(result.mesh.faces.cap!.corners).toHaveLength(5)
+  expect(result.mesh.faces.cap!.corners.find((c) => c.vertexId === 'tip')?.uv).toEqual([0.5, 1])
+  for (const corner of result.mesh.faces.cap!.corners)
+    if (!Object.hasOwn(mesh.vertices, corner.vertexId))
+      expect(
+        result.faceIds
+          .flatMap((id) => result.mesh.faces[id]!.corners)
+          .some((c) => c.vertexId === corner.vertexId),
+      ).toBe(true)
+  expect(readSceneGeometry(result.mesh)).toEqual(result.mesh)
+})

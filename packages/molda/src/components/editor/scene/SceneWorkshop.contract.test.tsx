@@ -202,22 +202,25 @@ describe('inventário da oficina: o que a criança alcança', () => {
     // One local/world selector in stage settings, only from the intermediate tier.
     // The reference's dismissible canvas hint adds one named button in Modelar too.
     // The surface knife and the explicit volume separation are independent actions.
-    expect(controlInventory(vazio.view.container).length).toBeLessThanOrEqual(65)
+    // Direct edge picking adds one visible stage mode alongside whole, points and faces.
+    // Group, ungroup and multiselect move into the tree; the destination selector adds one control.
+    expect(controlInventory(vazio.view.container).length).toBeLessThanOrEqual(67)
     expect(
       encaradosVazio.length,
       `encarados na abertura: ${encaradosVazio.join(' | ')}`,
-    ).toBeLessThanOrEqual(42)
+    ).toBeLessThanOrEqual(47)
     cleanup()
 
     const comPeca = mount(withPiece())
     choosePiece(comPeca.view.container)
     const encaradosPeca = frontControls(comPeca.view.container)
     // 12 coordinate inputs are now available directly, with pivot and component tools.
-    expect(controlInventory(comPeca.view.container).length).toBeLessThanOrEqual(118)
+    // Flip adds its disclosure, three axes and the in-place option, behind the disclosure.
+    expect(controlInventory(comPeca.view.container).length).toBeLessThanOrEqual(125)
     expect(
       encaradosPeca.length,
       `encarados com uma peça escolhida: ${encaradosPeca.join(' | ')}`,
-    ).toBeLessThanOrEqual(81)
+    ).toBeLessThanOrEqual(87)
   })
 
   /**
@@ -239,10 +242,13 @@ describe('inventário da oficina: o que a criança alcança', () => {
     // A real tree selection also mounts the isolated view and image actions. Scope, UV grid,
     // favorites, HSV/hex and a palette picker are the approved additions to the paint workflow.
     // One dismiss button persists the contextual hint preference, as in the reference.
-    expect(montados.length, montados.join(' | ')).toBeLessThanOrEqual(82)
+    // Two optional disclosures replace the duplicate palette eyedropper (+1 mounted control).
+    // One explicit UV-simple action repairs an existing piece without exposing UV editing tools.
+    expect(montados.length, montados.join(' | ')).toBeLessThanOrEqual(84)
     // Scope (2), UV grid and hue/hex replace the native picker; saved swatches stay bounded.
     // Named UV/material/sheet areas and the visible contextual brush section add four controls.
-    expect(encarados.length, encarados.join(' | ')).toBeLessThanOrEqual(59)
+    // Ready colors stay in front; HSV, favorites, UV/materials and layers are now closed.
+    expect(encarados.length, encarados.join(' | ')).toBeLessThanOrEqual(56)
   })
 
   test('todo controle tem nome: sem nome, a criança não acha e o leitor de tela não fala', () => {

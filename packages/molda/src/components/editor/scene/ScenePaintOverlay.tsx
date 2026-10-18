@@ -8,11 +8,13 @@ export function ScenePaintOverlay({
   height,
   draft,
   scope,
+  viewScale = 1,
 }: {
   width: number
   height: number
   draft?: ScenePaintDraft | null
   scope?: ScenePixelRegion
+  viewScale?: number
 }) {
   const bounds = draft
     ? draft.tool === 'stamp' && draft.stampSize
@@ -40,8 +42,8 @@ export function ScenePaintOverlay({
             width={scope.x1 - scope.x0 + 1}
             height={scope.y1 - scope.y0 + 1}
             fill="none"
-            strokeDasharray="4 3"
-            strokeWidth={2}
+            strokeDasharray={`${4 / viewScale} ${3 / viewScale}`}
+            strokeWidth={2 / viewScale}
             vectorEffect="non-scaling-stroke"
           />
         )}
@@ -53,7 +55,7 @@ export function ScenePaintOverlay({
               y1={draft.from[1] + 0.5}
               x2={draft.to[0] + 0.5}
               y2={draft.to[1] + 0.5}
-              strokeWidth={2}
+              strokeWidth={2 / viewScale}
               vectorEffect="non-scaling-stroke"
             />
           ) : draft.tool === 'ellipse' ? (
@@ -63,7 +65,7 @@ export function ScenePaintOverlay({
               rx={(bounds.x1 - bounds.x0 + 1) / 2}
               ry={(bounds.y1 - bounds.y0 + 1) / 2}
               fill={draft.filled ? undefined : 'none'}
-              strokeWidth={2}
+              strokeWidth={2 / viewScale}
               vectorEffect="non-scaling-stroke"
             />
           ) : (
@@ -73,8 +75,10 @@ export function ScenePaintOverlay({
               width={bounds.x1 - bounds.x0 + 1}
               height={bounds.y1 - bounds.y0 + 1}
               fill={draft.filled && draft.tool !== 'select' ? undefined : 'none'}
-              strokeWidth={2}
-              strokeDasharray={draft.tool === 'select' ? '4 3' : undefined}
+              strokeWidth={2 / viewScale}
+              strokeDasharray={
+                draft.tool === 'select' ? `${4 / viewScale} ${3 / viewScale}` : undefined
+              }
               vectorEffect="non-scaling-stroke"
             />
           ))}

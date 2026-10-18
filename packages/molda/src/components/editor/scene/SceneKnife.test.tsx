@@ -5,6 +5,7 @@ import { COPY } from '../../../core/copy'
 import { structuredBytes } from '../../../core/structuredBytes'
 import { addScenePrimitive } from '../../../scene/commands'
 import { createSceneProject } from '../../../scene/createProject'
+import { indexMeshEdges } from '../../../scene/meshTopology'
 import { sceneGeometryMesh } from '../../../scene/parametricGeometry'
 import { createDocumentEditorStore } from '../../../state/editorStore'
 import { sceneViewportProbe } from '../../../testing/sceneViewportProbe'
@@ -223,5 +224,74 @@ test('replacing the editor discards a knife draft even when both editors share t
     view.unmount()
     f.editor.getState().dispose()
     replacement.getState().dispose()
+  }
+})
+
+test('loop cut previews on hover, applies multiple positioned cuts once and restores the original with Undo', () => {
+  const f = fixture(),
+    view = renderHook(() => useSceneWorkshop(f.editor), { wrapper: StrictMode })
+  try {
+    act(() => view.result.current.select(f.node.id, false))
+    act(() => view.result.current.setTool('knife'))
+    act(() => view.result.current.knife.setMode('loop'))
+    const edgeId = [...indexMeshEdges(f.mesh).edges.keys()][0]!
+    act(() => view.result.current.knife.hover({ kind: 'edge', edgeId, t: 0.5 }))
+    expect(view.result.current.knife.guide?.cut?.segments).toHaveLength(4)
+    expect(view.result.current.knife.canConfirm).toBe(false)
+    act(() => view.result.current.knife.mark({ kind: 'edge', edgeId, t: 0.5 }))
+    act(() => view.result.current.knife.configureLoop(3, 0.1))
+    expect(view.result.current.knife.guide?.cut?.segments).toHaveLength(12)
+    expect(view.result.current.knife.guide?.cut?.provisional).toHaveLength(0)
+    expect(view.result.current.knife.guide?.points).toHaveLength(0)
+    expect(view.result.current.knife.canConfirm).toBe(true)
+    expect(f.editor.getState().content).toBe(f.source)
+    act(() => expect(view.result.current.confirmKnife()).toBe(true))
+    expect(f.editor.getState().content.nodes).toEqual(f.source.nodes)
+    expect(
+      Object.keys(sceneGeometryMesh(f.editor.getState().content.geometries[0]!).faces),
+    ).toHaveLength(18)
+    expect(view.result.current.components.selection?.ids).toHaveLength(16)
+    act(() => view.result.current.undo())
+    expect(f.editor.getState().content.geometries).toEqual(f.source.geometries)
+    expect(f.editor.getState().canUndo).toBe(false)
+  } finally {
+    view.unmount()
+    f.editor.getState().dispose()
+  }
+})
+
+test('the toolbar knife exposes Loop cut directly, keeps mode changes as drafts and discards interrupted cuts', async () => {
+  const f = fixture(),
+    probe = sceneViewportProbe()
+  const view = render(<SceneWorkshop editor={f.editor} viewportFactory={probe.factory} />)
+  try {
+    await waitFor(() => expect(probe.ports.length).toBeGreaterThan(0))
+    fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('corpo') }))
+    fireEvent.click(screen.getByRole('button', { name: 'Cortar' }))
+    const panel = within(screen.getByRole('region', { name: 'Cortar' }))
+    fireEvent.click(panel.getByRole('button', { name: 'Loop cut' }))
+    expect(
+      screen.getByText(
+        'Clique em uma linha para escolher a faixa. Enter aplica; Esc cancela. Arraste para olhar.',
+      ),
+    ).toBeDefined()
+    expect(panel.getByLabelText('Quantidade de cortes')).toBeDefined()
+    expect(probe.ports.at(-1)!.callbacks.guideInput!()!.knife!.edgesOnly).toBe(true)
+    const edgeId = [...indexMeshEdges(f.mesh).edges.keys()][0]!
+    act(() =>
+      probe.ports.at(-1)!.callbacks.guideInput!()!.knife!.mark({ kind: 'edge', edgeId, t: 0.5 }),
+    )
+    expect(panel.getByRole('button', { name: 'Aplicar corte' }).hasAttribute('disabled')).toBe(
+      false,
+    )
+    fireEvent(window, new Event('blur'))
+    expect(panel.getByRole('button', { name: 'Aplicar corte' }).hasAttribute('disabled')).toBe(true)
+    fireEvent.click(panel.getByRole('button', { name: 'Livre' }))
+    expect(probe.ports.at(-1)!.callbacks.guideInput!()!.knife!.edgesOnly).toBe(false)
+    expect(f.editor.getState().content).toBe(f.source)
+    expect(f.editor.getState().canUndo).toBe(false)
+  } finally {
+    view.unmount()
+    f.editor.getState().dispose()
   }
 })

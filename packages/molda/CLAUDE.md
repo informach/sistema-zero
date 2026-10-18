@@ -1,5 +1,37 @@
 # CLAUDE.md — @sistemazero/molda
 
+## Edição de malha e pintura UV — 17/10/2026
+
+- Cortar divide a superfície com a faca; Loop cut percorre faixas de quadriláteros. A seleção
+  de componentes fica no palco. Linhas têm a opção explícita Selecionar loop inteiro; faces
+  podem expandir para as vizinhas do mesmo plano. `componentFaceIds` identifica faces autorais,
+  separado de `faceIds`, que também representa superfícies nativas de pintura.
+- Puxar funciona em faces, linhas e pontos, inclusive pelas alças de mover. Criar face/linha,
+  inset de uma região plana, flip X/Y/Z e grupos na árvore têm comandos reversíveis. O inset
+  cria uma borda no contorno da região, preservando suas divisões internas.
+- Tamanho e posição usam passos de 1 por padrão; a opção de valores quebrados usa 0,1.
+  `measurementReference` mantém campos e alças coerentes após reflexões e pivôs personalizados.
+- Folha de pintura reúne Pintar e Ajustar mapa. Fica à esquerda do 3D, com divisor, ampliação,
+  zoom e mão; em telas estreitas, Ver modelo/Ver folha alternam a área central. O UV não fica
+  no menu Opções. Números e ferramentas avançadas ficam recolhidos em menus locais.
+- O bitmap da folha mantém as dimensões originais da imagem, inclusive em texturas retangulares.
+  Pontos e alças UV ficam em SVG com alvos medidos em pixels de tela. Enter confirma; Espaço
+  arrasta a visualização. Navegar cancela um gesto de autoria pendente. Zoom durante um arrasto
+  atualiza a origem desse arrasto para não restaurar uma câmera antiga.
+- A identidade da store faz parte das sessões UV e de arrasto na árvore. Dois editores podem
+  compartilhar exatamente o mesmo documento; substituir a store deve invalidar gestos antigos.
+- `Button size="compact"` é a variante para barras compactas, com alvo de 44 px. A observação
+  histórica sobre `px-4` abaixo vale para o tamanho padrão. `SceneToolbarMenu` mantém os menus
+  no tema do Molda sem aumentar a altura da barra.
+
+Proposta e entrega: `docs/plans/2026-10-17-molda-pintura-uv-interface-proposta.md` e
+`docs/plans/2026-10-17-molda-pintura-uv-implementacao.md`. Revisão para publicação:
+`docs/plans/2026-10-17-molda-release-review/qa/verification-report.md`.
+
+Verificação: `bun run test`, `bun run typecheck`, `bun run e2e`; build do playground com
+`bunx vite build --config playground/vite.config.ts`. O CI de staging publica o consumidor
+`community-kids` depois dos gates do monorepo.
+
 ## Oficina padrão — 14/10/2026
 
 Modelos sempre abrem na oficina com Modelar, Pintar e Animar. Não existe flag de V2,

@@ -187,3 +187,45 @@ test('knife refuses invalid or crossed paths before allocating authorial IDs and
   expect(ids).toBe(0)
   expect(mesh).toEqual(before)
 })
+
+test('knife cuts a face with non-affine corner UVs without requiring manual triangulation', () => {
+  const mesh = unitFace()
+  mesh.faces.f_0_0!.corners[2]!.uv = [0.8, 0.6]
+  const before = structuredClone(mesh)
+  const result = cutMeshWithKnife(mesh, [
+    { kind: 'edge', edgeId: meshEdgeKey('v_0_0', 'v_1_0'), t: 0.5 },
+    { kind: 'face', faceId: 'f_0_0', point: [0.75, 0.75, 0] },
+    { kind: 'edge', edgeId: meshEdgeKey('v_0_1', 'v_1_1'), t: 0.5 },
+  ])
+  expect(result.faceIds).toHaveLength(2)
+  const middle = Object.entries(result.mesh.vertices).find(
+    ([, p]) => p[0] === 0.75 && p[1] === 0.75,
+  )!
+  const uv = result.faceIds
+    .flatMap((id) => result.mesh.faces[id]!.corners)
+    .find((corner) => corner.vertexId === middle[0])!.uv
+  expect(uv[0]).toBeCloseTo(0.6)
+  expect(uv[1]).toBeCloseTo(0.45)
+  for (const corner of mesh.faces.f_0_0!.corners)
+    expect(result.faceIds.flatMap((id) => result.mesh.faces[id]!.corners)).toContainEqual(corner)
+  expect(readSceneGeometry(result.mesh)).toEqual(result.mesh)
+  expect(mesh).toEqual(before)
+})
+
+test('knife accepts a cut across a bent quad using the drawn surface for interior points', () => {
+  const mesh = unitFace()
+  mesh.vertices.v_1_1![2] = 0.4
+  const result = cutMeshWithKnife(mesh, [
+    { kind: 'vertex', vertexId: 'v_0_0' },
+    { kind: 'face', faceId: 'f_0_0', point: [0.5, 0.5, 0.2] },
+    { kind: 'vertex', vertexId: 'v_1_1' },
+  ])
+  expect(result.faceIds).toHaveLength(2)
+  expect(readSceneGeometry(result.mesh)).toEqual(result.mesh)
+  expect(() =>
+    cutMeshWithKnife(mesh, [
+      { kind: 'face', faceId: 'f_0_0', point: [0.5, 0.5, 1] },
+      { kind: 'vertex', vertexId: 'v_1_1' },
+    ]),
+  ).toThrow('superfície')
+})

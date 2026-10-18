@@ -5,9 +5,10 @@ import { dot, sub } from '../model/vec'
 import type { SceneMeshGeometry } from './document'
 import { SCENE_LIMITS } from './limits'
 import { meshFaceFrame } from './meshFaceFrame'
+import { prepareMeshRegionVertices } from './meshRegionVertices'
 import { indexMeshEdges, meshFaceRegion, meshIdAllocator, type SceneHalfEdge } from './meshTopology'
 import { triangulateFace } from './triangulate'
-import { number, requireScene } from './validation'
+import { number, requireScene, tuple } from './validation'
 
 /** Extrudes each connected planar region along its normal. No internal walls or paint resampling. */
 export function extrudeMeshFaces(
@@ -25,8 +26,14 @@ type ExtrusionFrame = Pick<
 >
 
 /** One immutable snapshot/gesture, never a global cache or a cache attached to history. */
-export function prepareMeshExtrusion(mesh: SceneMeshGeometry, ids: readonly string[]) {
+export function prepareMeshExtrusion(
+  mesh: SceneMeshGeometry,
+  ids: readonly string[],
+  options: { retainBase?: boolean } = {},
+) {
   const selected = [...ids]
+  // Thickness adds a bottom later, so its original interior points still belong to that base.
+  const retainBase = options.retainBase === true
   const frames = new ByteLru<string, ExtrusionFrame>({
     maxBytes: 8 * 1024 * 1024,
     maxEntries: SCENE_LIMITS.triangles,
@@ -44,9 +51,9 @@ export function prepareMeshExtrusion(mesh: SceneMeshGeometry, ids: readonly stri
     return value
   }
   return {
-    apply(distance: number, nextId: () => string = newId) {
+    apply(distance: number, nextId: () => string = newId, offset?: Vec3) {
       requireScene(!disposed, 'gesture', 'Esse ajuste já terminou. Escolha as faces novamente.')
-      return extrude(mesh, selected, distance, nextId, frameFor)
+      return extrude(mesh, selected, distance, nextId, frameFor, offset, retainBase)
     },
     get retainedBytes() {
       return frames.bytes
@@ -64,13 +71,17 @@ function extrude(
   distance: number,
   nextId: () => string,
   frameFor: (id: string) => ExtrusionFrame,
+  offset?: Vec3,
+  retainBase = false,
 ): SceneMeshGeometry {
   number(distance, 'distance')
+  if (offset) tuple(offset, 3, 'offset')
   const chosen = new Set(ids)
   for (const id of chosen)
     requireScene(Object.hasOwn(mesh.faces, id), 'faces', 'Essa face não existe mais.')
-  if (!distance || !chosen.size) return mesh
+  if ((offset ? offset.every((n) => n === 0) : distance === 0) || !chosen.size) return mesh
   const topology = indexMeshEdges(mesh)
+  const regionVertices = prepareMeshRegionVertices(mesh)
   const allocate = meshIdAllocator(mesh, nextId)
   const vertices = { ...mesh.vertices }
   const faces = { ...mesh.faces }
@@ -80,6 +91,11 @@ function extrude(
     const region = meshFaceRegion(topology, [seed], chosen)
     const members = new Set(region)
     const frame = frameFor(seed)
+    const displacement: Vec3 = offset ?? [
+      frame.normal[0] * distance,
+      frame.normal[1] * distance,
+      frame.normal[2] * distance,
+    ]
     const boundary: SceneHalfEdge[] = []
     const copied = new Map<string, string>()
     for (const id of region) {
@@ -107,23 +123,31 @@ function extrude(
         if (incident.filter((edge) => members.has(edge.faceId)).length === 1)
           boundary.push(incident.find((edge) => edge.faceId === id)!)
       }
+    }
+    requireScene(boundary.length > 0, 'faces', 'Escolha uma região com borda para puxar.')
+    const ownership = regionVertices(
+      region,
+      boundary.map((edge) => edge.a),
+    )
+    for (const id of ownership.points) {
+      const vertexId = retainBase || ownership.copied.has(id) ? allocate() : id
+      const p = mesh.vertices[id]!
+      vertices[vertexId] = [
+        number(p[0] + displacement[0], 'vertices'),
+        number(p[1] + displacement[1], 'vertices'),
+        number(p[2] + displacement[2], 'vertices'),
+      ]
+      copied.set(id, vertexId)
+    }
+    for (const id of region) {
+      const current = frameFor(id)
       faces[id] = {
         ...current.face,
         corners: current.face.corners.map((corner) => {
-          let vertexId = copied.get(corner.vertexId)
-          if (!vertexId) {
-            vertexId = allocate()
-            const p = mesh.vertices[corner.vertexId]!
-            vertices[vertexId] = [0, 1, 2].map((axis) =>
-              number(p[axis]! + frame.normal[axis]! * distance, 'vertices'),
-            ) as Vec3
-            copied.set(corner.vertexId, vertexId)
-          }
-          return { ...corner, vertexId }
+          return { ...corner, vertexId: copied.get(corner.vertexId)! }
         }),
       }
     }
-    requireScene(boundary.length > 0, 'faces', 'Escolha uma região com borda para puxar.')
     for (const edge of boundary) {
       const source = mesh.faces[edge.faceId]!
       // Only new walls get new unit-square UV. Existing cap corners retain the exact paint.

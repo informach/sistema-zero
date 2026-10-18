@@ -1,5 +1,6 @@
 import { COPY } from '../../../core/copy'
 import type { Vec3 } from '../../../core/model'
+import type { Bounds } from '../../../model/transform'
 import { sceneBounds } from '../../../scene/bounds'
 import { transformSceneNodes } from '../../../scene/commands'
 import type { MoldaSceneDocument } from '../../../scene/document'
@@ -74,6 +75,23 @@ export function adjustScene(
     affineMultiply(forward, affineMultiply(delta, backward)),
   )
   if (mode !== 'scale' || !keepBase || !bounds) return next
+  return preserveSceneBase(document, next, ids, bounds)
+}
+
+export function preserveSceneBase(
+  document: MoldaSceneDocument,
+  next: MoldaSceneDocument,
+  ids: readonly string[],
+  before?: Bounds,
+): MoldaSceneDocument {
+  const index = indexSceneDocument(document)
+  const bounds =
+    before ??
+    sceneBounds(index, {
+      nodeIds: selectSceneSubtrees(index.scene, ids).covered,
+      includeMirrors: false,
+    })
+  if (!bounds) return next
   const nextIndex = indexSceneDocument(next)
   const after = sceneBounds(nextIndex, {
     nodeIds: selectSceneSubtrees(nextIndex.scene, ids).covered,

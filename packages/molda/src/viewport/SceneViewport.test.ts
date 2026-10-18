@@ -14,10 +14,18 @@ import {
 } from 'three'
 import { createModelAsset } from '../core/model'
 import { structuredBytes } from '../core/structuredBytes'
-import { addScenePrimitive, convertSceneNodesToMesh, transformSceneNodes } from '../scene/commands'
+import {
+  addScenePrimitive,
+  convertSceneNodesToMesh,
+  editSceneMesh,
+  transformSceneNodes,
+} from '../scene/commands'
 import { indexSceneDocument } from '../scene/documentIndex'
 import { setSceneImageFlipbook } from '../scene/imageFlipbookCommands'
 import { type AffineMatrix, identityMatrix, transformPoint } from '../scene/matrix'
+import { meshComponentIds } from '../scene/meshComponents'
+import { prepareMeshRemoval } from '../scene/meshRemoval'
+import { meshEdgeKey } from '../scene/meshTopology'
 import { migrateLegacyModel } from '../scene/migrateLegacy'
 import { ensureScenePaintSurface } from '../scene/paintSurface'
 import { prepareSceneAnimation } from '../scene/sampleAnimation'
@@ -183,6 +191,90 @@ function setup(
 }
 
 describe('scene viewport lifecycle and picking', () => {
+  test.each([
+    'face',
+    'edge',
+    'vertex',
+  ] as const)('removing a selected %s keeps rendering and preserves surviving component targets', (mode) => {
+    const f = setup({ begin: () => true, preview: () => true, end() {} })
+    try {
+      const nodeId = f.source.nodes[0]!.id
+      const source = convertSceneNodesToMesh(f.source, [nodeId])
+      const mesh = source.geometries[0]!
+      if (mesh.kind !== 'mesh') throw new Error('Expected editable mesh')
+      const removedId = meshComponentIds(mesh, mode)[0]!
+      const removed = prepareMeshRemoval(mesh, { mode, ids: [removedId] }).apply()
+      const survivorId = meshComponentIds(removed, mode)[0]!
+      expect(survivorId).toBeDefined()
+      const selection = { nodeId, mode, ids: [removedId, survivorId] }
+      f.viewport.setDocument(source)
+      f.viewport.setSelection([nodeId])
+      f.viewport.setComponentSelection(selection)
+      f.viewport.setTransformTool('move')
+      const next = editSceneMesh(source, nodeId, () => removed)
+      expect(() => f.viewport.setDocument(next)).not.toThrow()
+      expect(() => f.viewport.setComponentSelection(selection)).not.toThrow()
+      f.tick()
+      const handles = f.canvas.parentElement!.querySelector<SVGSVGElement>(
+        '[aria-label="Alças para mover"]',
+      )!
+      expect(handles.style.display).toBe('')
+
+      // An empty component selection must not fall back to moving the whole piece.
+      f.viewport.setComponentSelection({ nodeId, mode, ids: [removedId] })
+      f.tick()
+      expect(handles.style.display).toBe('none')
+
+      // Restoring the geometry makes the removed component selectable again.
+      f.viewport.setDocument(source)
+      f.viewport.setComponentSelection({ nodeId, mode, ids: [removedId] })
+      const renders = f.count().renders
+      f.tick()
+      expect(f.count().renders).toBeGreaterThan(renders)
+      expect(handles.style.display).toBe('')
+    } finally {
+      f.close()
+    }
+  })
+
+  test('edge clicks select one segment and highlight it without outlining the whole piece', () => {
+    const f = setup({ begin: () => true, preview: () => true, end() {} })
+    try {
+      const id = f.source.nodes[0]!.id
+      const mesh = makeSceneGridGeometry(4)
+      const source = {
+        ...f.source,
+        geometries: [mesh],
+        nodes: f.source.nodes.map((node) =>
+          node.kind === 'mesh' ? { ...node, geometryId: mesh.id } : node,
+        ),
+      }
+      f.viewport.setDocument(source)
+      f.viewport.setSelection([id])
+      f.viewport.setComponentSelection({ nodeId: id, mode: 'edge', ids: [] })
+      f.viewport.frame()
+      f.tick()
+      const world = indexSceneDocument(source).scene.worldMatrices.get(id)!
+      const point = new Vector3(...transformPoint(world, [0.375, 0.5, 0])).project(
+        f.count().camera!,
+      )
+      const event = { clientX: (point.x + 1) * 160, clientY: (1 - point.y) * 90 }
+      const edge = meshEdgeKey('v_1_2', 'v_2_2')
+      f.pointer('pointerdown', 1, event)
+      f.pointer('pointerup', 1, event)
+      expect(f.faces).toEqual([edge])
+      expect(f.components).toEqual([])
+      f.viewport.setComponentSelection({ nodeId: id, mode: 'edge', ids: [edge] })
+      f.viewport.setTransformTool('move')
+      f.tick()
+      const outline = f.count().scene?.getObjectByName('molda-selection-outline')
+      expect(outline?.visible).toBe(false)
+      f.canvas.dispatchEvent(new MouseEvent('dblclick', { ...event, bubbles: true, detail: 2 }))
+      expect(f.components).toEqual([])
+    } finally {
+      f.close()
+    }
+  })
   test('camera navigation reuses shadows, while document, pose, visibility and context restoration refresh them', () => {
     const f = setup()
     try {
@@ -370,7 +462,9 @@ describe('scene viewport lifecycle and picking', () => {
     }
   })
 
-  test('movement steps snap the relative world displacement, retain fractional coordinates and undo in one step', () => {
+  test.each([
+    1, 0.1,
+  ])('movement steps snap the resulting position to %s, preserve imported values until editing and undo in one step', (step) => {
     let gesture: ReturnType<typeof createSceneTransformGesture> | undefined
     const f = setup({
       begin: () => gesture?.begin(f.source.nodes.map((node) => node.id)) ?? false,
@@ -404,7 +498,7 @@ describe('scene viewport lifecycle and picking', () => {
       f.viewport.setDocument(source)
       f.viewport.setSelection(source.nodes.map((node) => node.id))
       f.viewport.setTransformTool('move')
-      f.viewport.setMovementStep(0.5)
+      f.viewport.setMovementStep(step)
       f.viewport.setGridVisible(false)
       f.tick()
       expect(editor.getState().asset).toBe(source)
@@ -421,7 +515,7 @@ describe('scene viewport lifecycle and picking', () => {
       const original = indexSceneDocument(source).scene.worldMatrices.get(source.nodes[0]!.id)!
       const delta = moved[12] - original[12]
       expect(delta).toBeGreaterThan(0)
-      expect(delta / 0.5).toBeCloseTo(Math.round(delta / 0.5), 10)
+      expect(moved[12] / step).toBeCloseTo(Math.round(moved[12] / step), 10)
       expect(editor.getState().canUndo).toBe(false)
       f.pointer('pointerup', 1, { clientX: x + 45, clientY: y })
       expect(editor.getState().canUndo).toBe(true)

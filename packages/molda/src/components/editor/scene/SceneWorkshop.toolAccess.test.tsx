@@ -188,9 +188,11 @@ describe('a oficina no nível de entrada', () => {
     // The approved basic workshop adds cut, import, support and piece/face/point modes.
     // One additional control dismisses the viewport hint without hiding essential decisions.
     // The knife replaces Cut; volume separation adds one control inside the closed details.
-    expect(montadosVazio.length, montadosVazio.join(' | ')).toBeLessThanOrEqual(60)
+    // Direct edge picking adds one visible stage mode alongside whole, points and faces.
+    // Group, ungroup and multiselect move into the tree; the destination selector adds one control.
+    expect(montadosVazio.length, montadosVazio.join(' | ')).toBeLessThanOrEqual(62)
     // Cut, import, pivot and component selection are now explicit basic authoring actions.
-    expect(encaradosVazio.length, encaradosVazio.join(' | ')).toBeLessThanOrEqual(40)
+    expect(encaradosVazio.length, encaradosVazio.join(' | ')).toBeLessThanOrEqual(45)
     cleanup()
 
     const comPeca = mount(withPiece())
@@ -198,8 +200,9 @@ describe('a oficina no nível de entrada', () => {
     const montadosPeca = controlInventory(comPeca.view.container)
     const encaradosPeca = frontControls(comPeca.view.container)
     // Position, size, pivot and rotation contribute 12 inputs in the approved basic inspector.
-    expect(montadosPeca.length, montadosPeca.join(' | ')).toBeLessThanOrEqual(104)
-    expect(encaradosPeca.length, encaradosPeca.join(' | ')).toBeLessThanOrEqual(78)
+    // Flip contributes one disclosure, three axis actions and the in-place option.
+    expect(montadosPeca.length, montadosPeca.join(' | ')).toBeLessThanOrEqual(111)
+    expect(encaradosPeca.length, encaradosPeca.join(' | ')).toBeLessThanOrEqual(84)
   })
 
   test('nenhum controle de família trancada aparece, em nenhuma aba, nem abrindo tudo', async () => {

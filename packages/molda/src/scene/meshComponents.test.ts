@@ -1,5 +1,6 @@
 import { expect, test } from 'bun:test'
 import { makeSceneGridGeometry } from '../testing/sceneFixtures'
+import { makeSceneKnifeLoop } from '../testing/sceneKnifeLoop'
 import type { SceneMeshGeometry } from './document'
 import {
   meshComponentEdges,
@@ -8,6 +9,7 @@ import {
   type SceneComponentSelection,
   selectMeshComponents,
 } from './meshComponents'
+import { splitMeshEdges } from './meshEdges'
 import { meshEdgeKey } from './meshTopology'
 
 function connectedMeshComponents(
@@ -16,6 +18,23 @@ function connectedMeshComponents(
 ) {
   return selectMeshComponents(mesh, selection, 'connected')
 }
+
+test('a knife loop continues across its triangular side faces instead of stopping after the top segment', () => {
+  const { mesh, loop, seed } = makeSceneKnifeLoop()
+  expect(Object.values(mesh.faces).some((face) => face.corners.length === 3)).toBe(true)
+  expect(selectMeshComponents(mesh, { mode: 'edge', ids: [seed] }, 'loop').sort()).toEqual(
+    loop.sort(),
+  )
+})
+
+test('inserting points along the knife loop preserves its continuation across polygonal faces', () => {
+  const f = makeSceneKnifeLoop()
+  const split = splitMeshEdges(f.mesh, f.loop)
+  expect(Object.values(split.mesh.faces).some((face) => face.corners.length > 4)).toBe(true)
+  expect(
+    selectMeshComponents(split.mesh, { mode: 'edge', ids: [split.edgeIds[0]!] }, 'loop').sort(),
+  ).toEqual(split.edgeIds.slice().sort())
+})
 
 test('component identities include isolated points and loose edges, deduplicate shared edges and never invent diagonals', () => {
   const mesh = makeSceneGridGeometry(2)
@@ -97,7 +116,7 @@ test('native selection grows one geometric neighborhood, shrinks it and inverts 
   expect(mesh).toEqual(before)
 })
 
-test('native rings cross opposite quad sides and loops stop at poles, triangles and branching edges', () => {
+test('native rings cross opposite quad sides and loops stop at poles and branching edges', () => {
   const mesh = makeSceneGridGeometry(4)
   const ring = [meshEdgeKey('v_2_1', 'v_2_2')]
   expect(selectMeshComponents(mesh, { mode: 'edge', ids: ring }, 'ring').sort()).toEqual(
@@ -111,7 +130,10 @@ test('native rings cross opposite quad sides and loops stop at poles, triangles 
   mesh.looseEdges = [['v_2_2', 'pole']]
   expect(selectMeshComponents(mesh, { mode: 'edge', ids: loop }, 'loop')).toHaveLength(2)
   mesh.faces.f_1_1!.corners.splice(1, 1)
-  expect(selectMeshComponents(mesh, { mode: 'edge', ids: loop }, 'loop')).toEqual(loop)
+  expect(selectMeshComponents(mesh, { mode: 'edge', ids: loop }, 'loop')).toEqual([
+    meshEdgeKey('v_0_2', 'v_1_2'),
+    ...loop,
+  ])
   const branched = makeSceneGridGeometry(2)
   branched.faces.extra = branched.faces.f_0_0!
   const internal = [meshEdgeKey('v_1_0', 'v_1_1')]

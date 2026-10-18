@@ -132,7 +132,7 @@ test('pintura real, cor composta, movimento e recuperação da pose após recarr
     if (await viewMenu.evaluate((el) => el.closest('details')?.open)) await viewMenu.click()
     await page.getByRole('button', { name: 'Enquadrar', exact: true }).click()
     await page.getByRole('button', { name: 'Pintar', exact: true }).click()
-    await expect(page.getByRole('button', { name: 'Médio', exact: true })).toHaveAttribute(
+    await expect(page.getByRole('button', { name: '1 px', exact: true })).toHaveAttribute(
       'aria-pressed',
       'true',
     )
@@ -347,7 +347,10 @@ test('câmera, pivô, divisão e decisões antes de abandonar prévias', async (
     await page.getByRole('button', { name: 'Desfazer', exact: true }).click()
     expect(await snapshot()).toEqual(mesh)
     checks.push('division preview, cancellation and undo preserve source and keep both sides')
-    await page.getByRole('button', { name: 'Faces', exact: true }).click()
+    await page
+      .locator('.mld-component-root')
+      .getByRole('button', { name: 'Faces', exact: true })
+      .click()
     await page.getByRole('button', { name: 'Concluir edição', exact: true }).click()
     await page.getByRole('button', { name: 'Animar', exact: true }).click()
     await page

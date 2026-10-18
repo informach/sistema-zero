@@ -116,6 +116,7 @@ for (const theme of ['default', 'pink', 'dark'] as const) {
     await shot('03-modelar-cortar')
     await page.keyboard.press('Escape')
     await page.getByRole('button', { name: 'Pintar', exact: true }).click()
+    await page.locator('summary').filter({ hasText: 'Criar outra cor' }).click()
     await page.getByLabel('Cor hexadecimal', { exact: true }).fill('#f0352b')
     await page.getByLabel('Cor hexadecimal', { exact: true }).press('Enter')
     await page.getByRole('button', { name: 'Quadradinhos', exact: true }).click()

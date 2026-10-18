@@ -1,6 +1,7 @@
 import { useId, useMemo } from 'react'
 import type { Vec3 } from '../../../core/model'
 import { evaluateSceneNodeFlags } from '../../../scene/evaluate'
+import { snapSceneMeasurement } from '../../../scene/measurementStep'
 import {
   type SceneCoordinateField,
   scenePieceCoordinates,
@@ -80,8 +81,12 @@ export function ScenePieceCoordinates({
                 <input
                   type="number"
                   name={`${field}-${axis}`}
-                  step="any"
-                  min={field === 'dimensions' ? Number.MIN_VALUE : undefined}
+                  step={
+                    field === 'position' || field === 'dimensions'
+                      ? workshop.measurementStep
+                      : 'any'
+                  }
+                  min={field === 'dimensions' ? workshop.measurementStep : undefined}
                   aria-label={`${label} ${['X', 'Y', 'Z'][axis]}`}
                   aria-describedby={hint}
                   defaultValue={Number(coordinates[field][axis].toPrecision(12))}
@@ -102,11 +107,25 @@ export function ScenePieceCoordinates({
                     if (!(field === 'pivot' ? pivotGate : coordinatesGate).canUse()) return
                     const fieldInput = event.currentTarget
                     const displayValue = Number(coordinates[field][axis].toPrecision(12))
-                    if (!fieldInput.value.trim() || !fieldInput.validity.valid) {
+                    const raw = Number(fieldInput.value)
+                    if (
+                      !fieldInput.value.trim() ||
+                      !Number.isFinite(raw) ||
+                      (field === 'dimensions' && raw <= 0)
+                    ) {
                       fieldInput.value = String(displayValue)
                       return
                     }
-                    const value = Number(fieldInput.value)
+                    if (raw === displayValue) return
+                    const value =
+                      field === 'position' || field === 'dimensions'
+                        ? snapSceneMeasurement(
+                            raw,
+                            workshop.measurementStep,
+                            field === 'dimensions' ? workshop.measurementStep : -Infinity,
+                          )
+                        : raw
+                    fieldInput.value = String(value)
                     if (value === displayValue) return
                     const next: Vec3 = [...coordinates[field]]
                     next[axis] = value

@@ -1,5 +1,6 @@
 import { lazy, type ReactNode, Suspense, useLayoutEffect, useRef, useState } from 'react'
 import { COPY } from '../../../core/copy'
+import type { SceneMeasurementStep } from '../../../scene/measurementStep'
 import { useMoldaToolAccess } from '../../toolAccess'
 import {
   ArrowUpFromLine,
@@ -39,13 +40,14 @@ const SceneUvEditor = lazy(() =>
 export type SceneComponentToolsProps = Pick<
   ReturnType<typeof useSceneComponents>,
   | 'selection'
+  | 'loopSelection'
+  | 'coplanarSelection'
   | 'empty'
   | 'choose'
   | 'apply'
   | 'preview'
   | 'beginPreview'
   | 'transform'
-  | 'setMode'
   | 'open'
   | 'close'
   | 'splitEdges'
@@ -69,11 +71,12 @@ export type SceneComponentToolsProps = Pick<
   | 'symmetry'
   | 'stopSymmetry'
 > & {
+  measurementStep?: SceneMeasurementStep
   visualCut?: ReactNode
   onOpenUv?(): void
   onOpenWeights?(): void
   onKnife(): void
-  onDuplicateMove(): void
+  onMove(): void
 }
 
 type Page =
@@ -96,7 +99,6 @@ export function SceneComponentTools(props: SceneComponentToolsProps) {
     apply,
     preview,
     beginPreview,
-    setMode,
     blocked,
     check,
     uv,
@@ -168,6 +170,7 @@ export function SceneComponentTools(props: SceneComponentToolsProps) {
       <SceneComponentOperation
         operation={operation}
         selection={selection}
+        measurementStep={props.measurementStep}
         onKnife={props.onKnife}
         onBack={() => setPage('main')}
       />
@@ -179,6 +182,7 @@ export function SceneComponentTools(props: SceneComponentToolsProps) {
           key={preview.tool}
           tool={preview.tool}
           busy={preview.busy}
+          currentAmount={preview.tool === 'extrude' ? preview.amount : undefined}
           update={preview.update}
           confirm={preview.confirm}
           cancel={preview.cancel}
@@ -228,7 +232,7 @@ export function SceneComponentTools(props: SceneComponentToolsProps) {
               hint="Cria uma cópia das faces."
               disabled={blocked || !count}
               onClick={() => {
-                if (operation.start('duplicate')) props.onDuplicateMove()
+                if (operation.start('duplicate')) props.onMove()
               }}
             />
             <ComponentEntry
@@ -389,22 +393,6 @@ export function SceneComponentTools(props: SceneComponentToolsProps) {
             <Info aria-hidden="true" />
           </button>
         </div>
-        <fieldset disabled={blocked} className="mld-component-modes" title={copy.componentModeHint}>
-          <legend className="sr-only">{copy.componentModeLabel}</legend>
-          {(['vertex', 'edge', 'face'] as const).map((mode) => (
-            <ComponentButton
-              key={mode}
-              tone={selection.mode === mode ? 'soft' : 'neutral'}
-              aria-pressed={selection.mode === mode}
-              onClick={() => {
-                setPage('main')
-                setMode(mode)
-              }}
-            >
-              {copy.componentModes[mode]}
-            </ComponentButton>
-          ))}
-        </fieldset>
         {props.symmetry && pro && (
           <ComponentButton onClick={() => go('mirror')}>
             Espelho {['X', 'Y', 'Z'][props.symmetry.axis]} ativo
@@ -418,6 +406,32 @@ export function SceneComponentTools(props: SceneComponentToolsProps) {
                 ? copy.faceCount(count)
                 : copy.componentCounts[selection.mode](count)}
           </p>
+          {selection.mode === 'edge' && (
+            <label className="flex min-h-11 cursor-pointer items-center gap-2 text-sm text-mld-text">
+              <input
+                type="checkbox"
+                name="component-whole-loop"
+                className="size-5 accent-mld-accent disabled:opacity-50"
+                checked={props.loopSelection.enabled}
+                disabled={blocked}
+                onChange={(event) => props.loopSelection.setEnabled(event.target.checked)}
+              />
+              {copy.componentWholeLoop}
+            </label>
+          )}
+          {isFace && (
+            <label className="flex min-h-11 cursor-pointer items-center gap-2 text-sm text-mld-text">
+              <input
+                type="checkbox"
+                name="component-coplanar-faces"
+                className="size-5 accent-mld-accent disabled:opacity-50"
+                checked={props.coplanarSelection.enabled}
+                disabled={blocked}
+                onChange={(event) => props.coplanarSelection.setEnabled(event.target.checked)}
+              />
+              {copy.componentCoplanarFaces}
+            </label>
+          )}
           <fieldset disabled={blocked} className="mld-component-selection">
             <legend className="sr-only">Escolher partes da peça</legend>
             <ComponentButton
@@ -446,9 +460,13 @@ export function SceneComponentTools(props: SceneComponentToolsProps) {
           </fieldset>
           <p className="mld-component-description">
             {isFace
-              ? 'Clique nas faces para escolher.'
+              ? props.coplanarSelection.enabled
+                ? copy.componentCoplanarHint
+                : 'Clique nas faces para escolher.'
               : selection.mode === 'edge'
-                ? 'Clique nas linhas para escolher.'
+                ? props.loopSelection.enabled
+                  ? 'Clique em uma linha para selecionar o loop inteiro.'
+                  : 'Clique em uma linha para selecionar apenas um trecho.'
                 : 'Clique nos pontos para escolher.'}
           </p>
         </div>
@@ -456,6 +474,33 @@ export function SceneComponentTools(props: SceneComponentToolsProps) {
           <legend className="sr-only">Mudar a forma</legend>
           <h4>Mudar a forma</h4>
           <div className="mld-component-grid">
+            {!isFace && (
+              <ComponentButton
+                icon={Square}
+                data-component-trigger="create"
+                disabled={count < 2}
+                onClick={() => {
+                  returnTo.current = 'create'
+                  operation.start('create')
+                }}
+              >
+                {copy.createFaceEdge.label}
+              </ComponentButton>
+            )}
+            {!isFace && (
+              <ComponentButton
+                icon={ArrowUpFromLine}
+                aria-label={selection.mode === 'edge' ? 'Puxar linhas' : 'Puxar pontos'}
+                data-component-trigger="extrude"
+                disabled={!count}
+                onClick={() => {
+                  returnTo.current = 'extrude'
+                  if (operation.start('extrude')) props.onMove()
+                }}
+              >
+                Puxar
+              </ComponentButton>
+            )}
             {isFace ? (
               <>
                 {(pro
@@ -471,6 +516,7 @@ export function SceneComponentTools(props: SceneComponentToolsProps) {
                     onClick={() => {
                       returnTo.current = tool
                       beginPreview(tool)
+                      if (tool === 'extrude') props.onMove()
                     }}
                   >
                     {actionLabels[tool]}
@@ -556,16 +602,6 @@ export function SceneComponentTools(props: SceneComponentToolsProps) {
                     onClick={() => props.connectPoints('cut')}
                   >
                     Cortar face
-                  </ComponentButton>
-                )}
-                {pro && (
-                  <ComponentButton
-                    icon={Shapes}
-                    aria-label={copy.connectPoints.line}
-                    disabled={count !== 2}
-                    onClick={() => props.connectPoints('line')}
-                  >
-                    Ligar pontos
                   </ComponentButton>
                 )}
                 {pro && (

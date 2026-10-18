@@ -53,3 +53,17 @@ test('near-parallel ground view refuses movement and cancellation never commits'
   f.mover.end(true)
   expect(f.ends).toEqual([false])
 })
+
+test('body movement snaps the resulting position and leaves untouched fractional axes in place', () => {
+  const f = fixture()
+  expect(f.mover.begin(new Vector3(), 100, 100, 'front', [0.25, 0.35, 0.45])).toBe(true)
+  f.mover.move(133, 100, 1)
+  expect(f.deltas.at(-1)![12] + 0.25).toBe(2)
+  expect(f.deltas.at(-1)![13]).toBe(0)
+  expect(f.deltas.at(-1)![14]).toBe(0)
+  f.mover.end(true)
+  expect(f.mover.begin(new Vector3(), 100, 100, 'front', [0.25, 0.35, 0.45])).toBe(true)
+  f.mover.move(121, 100, 0.1)
+  expect(f.deltas.at(-1)![12] + 0.25).toBeCloseTo(1.3, 12)
+  f.mover.end(true)
+})

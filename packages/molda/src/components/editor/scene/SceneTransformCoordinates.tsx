@@ -1,6 +1,5 @@
 import { Euler, Quaternion } from 'three'
 import type { Vec3 } from '../../../core/model'
-import { animationTrs } from '../../../scene/animationTrs'
 import { transformSceneNodes } from '../../../scene/commands'
 import {
   type AffineMatrix,
@@ -9,6 +8,8 @@ import {
   composeTransform,
   quaternionFromEulerXYZ,
 } from '../../../scene/matrix'
+import { sceneLocalBounds } from '../../../scene/pivot'
+import { sceneTransformTrs } from '../../../scene/transformTrs'
 import { requireScene } from '../../../scene/validation'
 import { SceneVectorForm } from './SceneVectorForm'
 import type { useSceneWorkshop } from './useSceneWorkshop'
@@ -22,14 +23,9 @@ export function SceneTransformCoordinates({
   const { primary, index, tool, run, document } = workshop
   if (!primary || (tool !== 'move' && tool !== 'rotate' && tool !== 'scale')) return null
   const matrix = [...index.scene.worldMatrices.get(primary.id)!] as AffineMatrix
-  let pose: ReturnType<typeof animationTrs>
+  let pose: ReturnType<typeof sceneTransformTrs>
   try {
-    pose = animationTrs(matrix, {
-      space: 'local',
-      translation: [0, 0, 0],
-      rotation: [0, 0, 0, 1],
-      scale: [1, 1, 1],
-    })
+    pose = sceneTransformTrs({ kind: 'affine', matrix })
   } catch {
     return (
       <p className="text-sm text-mld-muted">
@@ -39,11 +35,12 @@ export function SceneTransformCoordinates({
     )
   }
   const angles = new Euler().setFromQuaternion(new Quaternion(...pose.rotation), 'XYZ')
+  const localSize = sceneLocalBounds(document, primary.id)?.size ?? [0, 0, 0]
   const values: Vec3 =
     tool === 'move'
       ? pose.translation
       : tool === 'scale'
-        ? pose.scale
+        ? (localSize.map((size, axis) => size * Math.abs(pose.scale[axis]!)) as Vec3)
         : [(angles.x * 180) / Math.PI, (angles.y * 180) / Math.PI, (angles.z * 180) / Math.PI]
   return (
     <SceneVectorForm
@@ -53,11 +50,13 @@ export function SceneTransformCoordinates({
           ? 'Posição atual'
           : tool === 'rotate'
             ? 'Giro atual (graus)'
-            : 'Escala atual'
+            : 'Tamanho atual'
       }
       hint="Referência: mundo. Estes são os valores atuais da peça."
       values={values}
-      min={tool === 'scale' ? Number.MIN_VALUE : undefined}
+      min={tool === 'scale' ? workshop.measurementStep : undefined}
+      step={tool === 'move' || tool === 'scale' ? workshop.measurementStep : undefined}
+      disabled={tool === 'scale' && localSize.some((size) => size <= 0)}
       onApply={(value) =>
         run((source) => {
           const inverse = affineInverse(matrix)
@@ -68,7 +67,11 @@ export function SceneTransformCoordinates({
               ? { translation: value }
               : tool === 'rotate'
                 ? { rotation: quaternionFromEulerXYZ(value) }
-                : { scale: value }),
+                : {
+                    scale: value.map(
+                      (size, axis) => (Math.sign(pose.scale[axis]!) * size) / localSize[axis]!,
+                    ) as Vec3,
+                  }),
           }
           return transformSceneNodes(
             source,

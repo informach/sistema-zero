@@ -196,7 +196,8 @@ test('advanced curves and UV keep the live stage, exact times and reversible gra
     .getByRole('button', { name: 'Pintura da face', exact: true })
     .click()
   const uv = page.getByRole('region', { name: 'Pintura da face', exact: true })
-  await expect(uv.getByRole('combobox', { name: COPY.scene.uvFace, exact: true })).toBeVisible()
+  await expect(uv.getByRole('img', { name: COPY.scene.uvCanvas, exact: true })).toBeVisible()
+  await expect(uv.getByRole('spinbutton')).toHaveCount(0)
   const canvasBounds = await stage.boundingBox(),
     uvBounds = await uv.boundingBox()
   expect(canvasBounds!.x + canvasBounds!.width).toBeLessThanOrEqual(uvBounds!.x + 1)
@@ -261,6 +262,7 @@ test('paint uses the real UV grid, saved palette, temporary picker and one undo 
     'aria-pressed',
     'true',
   )
+  await page.locator('summary').filter({ hasText: 'Criar outra cor' }).click()
   await page.getByLabel('Cor hexadecimal', { exact: true }).fill('#f0352b')
   await page.getByLabel('Cor hexadecimal', { exact: true }).press('Enter')
   await page.getByRole('button', { name: 'Guardar cor favorita', exact: true }).click()
@@ -459,7 +461,7 @@ test('move and pivot handles commit one drag, cancel interruptions and work whil
   await expect(page.getByRole('button', { name: 'Mover', exact: true })).toBeEnabled()
   await page.getByRole('button', { name: 'Mover', exact: true }).click()
   await page.getByRole('button', { name: 'Mover no eixo X', exact: true }).press('ArrowRight')
-  await expect(page.getByLabel('Posição X', { exact: true })).toHaveValue('0.1')
+  await expect(page.getByLabel('Posição X', { exact: true })).toHaveValue('1')
   await page.getByRole('button', { name: COPY.editor.undo, exact: true }).click()
   await expect(page.getByLabel('Posição X', { exact: true })).toHaveValue('0')
   await page.getByRole('button', { name: 'Pivô', exact: true }).click()

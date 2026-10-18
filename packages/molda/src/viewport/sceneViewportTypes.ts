@@ -20,6 +20,7 @@ export interface SceneGuideInput {
   knife?: {
     nodeId: string
     midpoint: boolean
+    edgesOnly?: boolean
     closePoint?: { point: MeshKnifePoint; position: Vec3 } | null
     mark(point: MeshKnifePoint): void
     hover(point: MeshKnifePoint | null): void

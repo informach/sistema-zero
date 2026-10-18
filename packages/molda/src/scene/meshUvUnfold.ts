@@ -1,9 +1,9 @@
 import type { Vec3 } from '../core/model'
 import type { SceneMeshGeometry, Vec2 } from './document'
-import { faceTurn } from './meshFaceFrame'
 import { indexMeshEdges, type SceneHalfEdge } from './meshTopology'
 import { mapMeshUv } from './meshUv'
 import { projectMeshUvFaces, requireMeshUvFaceArea } from './meshUvAutoProjection'
+import { trianglesOverlap } from './meshUvOverlap'
 import { packMeshUvGroups } from './meshUvPacking'
 import { triangulateFace } from './triangulate'
 import * as v from './validation'
@@ -28,24 +28,6 @@ function flatFace(points: Vec2[]): FlatFace | null {
   }
 }
 
-/** Strict separating axes: boundary contact is allowed; no epsilon accepts a small overlap. */
-function trianglesOverlap(a: Vec2[], b: Vec2[]) {
-  for (const [polygon, other] of [
-    [a, b],
-    [b, a],
-  ] as const) {
-    const sign = Math.sign(faceTurn(polygon[0]!, polygon[1]!, polygon[2]!))
-    if (!sign) return true // Uncertain geometry cannot authorize a join.
-    for (let i = 0; i < 3; i++) {
-      const p = polygon[i]!,
-        q = polygon[(i + 1) % 3]!
-      // Cross products keep the edge's own endpoints exactly zero. Normalizing
-      // separate normal components introduces a spurious overlap along a shared edge.
-      if (other.every((point) => faceTurn(p, q, point) * sign <= 0)) return false
-    }
-  }
-  return true
-}
 function overlap(a: FlatFace, b: FlatFace) {
   if ([0, 1].some((axis) => a.max[axis]! <= b.min[axis]! || b.max[axis]! <= a.min[axis]!))
     return false

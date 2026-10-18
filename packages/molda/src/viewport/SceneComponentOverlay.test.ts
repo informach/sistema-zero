@@ -1,9 +1,11 @@
 import { expect, test } from 'bun:test'
 import { LineSegments, Mesh, Points, Raycaster, Vector3 } from 'three'
+import { LineSegments2 } from 'three/addons/lines/LineSegments2.js'
 import { createModelAsset } from '../core/model'
 import { addSceneMirror, convertSceneNodesToMesh, setSceneNodeFlag } from '../scene/commands'
 import { meshComponentEdges } from '../scene/meshComponents'
 import { migrateLegacyModel } from '../scene/migrateLegacy'
+import { makeSceneWheelSelection } from '../testing/sceneWheelSelection'
 import { SceneComponentOverlay } from './SceneComponentOverlay'
 import { SceneRenderResource } from './sceneRenderResource'
 
@@ -21,6 +23,38 @@ function fixture() {
   if (mesh?.kind !== 'mesh') throw new Error('Missing mesh')
   return { document, nodeId, mesh }
 }
+
+test('a selected edge has its own thick yellow highlight, shared by mirrors and released on selection changes', () => {
+  const f = fixture()
+  const resource = new SceneRenderResource()
+  const overlay = new SceneComponentOverlay()
+  try {
+    resource.update(f.document)
+    const ids = [...meshComponentEdges(f.mesh).keys()]
+    overlay.update(resource, f.mesh, { nodeId: f.nodeId, mode: 'edge', ids: [ids[0]!] })
+    const line = overlay.root.children[0]?.children[1]
+    expect(line instanceof LineSegments2).toBe(true)
+    if (!(line instanceof LineSegments2)) throw new Error('Missing thick edge highlight')
+    expect(line.material.linewidth).toBeGreaterThanOrEqual(3)
+    expect(line.material.color.getHex()).toBe(0xffc21a)
+    expect(line.geometry.getAttribute('instanceStart').count).toBe(1)
+    const mirror = overlay.root.children[1]?.children[1]
+    if (!(mirror instanceof LineSegments2)) throw new Error('Missing mirror highlight')
+    expect(mirror.geometry).toBe(line.geometry)
+    let disposed = 0
+    line.geometry.addEventListener('dispose', () => {
+      disposed++
+    })
+    overlay.setThrough(true)
+    expect(line.material.depthTest).toBe(false)
+    overlay.update(resource, f.mesh, { nodeId: f.nodeId, mode: 'edge', ids: [ids[0]!, ids[1]!] })
+    expect(line.geometry.getAttribute('instanceStart').count).toBe(2)
+    expect(disposed).toBe(1)
+  } finally {
+    overlay.dispose()
+    resource.dispose()
+  }
+})
 
 test('point and edge highlights own their buffers across mode switches, mirrors and twenty open/close cycles', () => {
   const f = fixture()
@@ -52,8 +86,8 @@ test('point and edge highlights own their buffers across mode switches, mirrors 
       const edge = [...meshComponentEdges(f.mesh).keys()][0]!
       overlay.update(resource, f.mesh, { nodeId: f.nodeId, mode: 'edge', ids: [edge] })
       const line = overlay.root.children[0]!.children[1]
-      if (!(line instanceof LineSegments)) throw new Error('Missing edge marker')
-      expect(line.geometry.getAttribute('position').count).toBe(2)
+      if (!(line instanceof LineSegments2)) throw new Error('Missing edge marker')
+      expect(line.geometry.getAttribute('instanceStart').count).toBe(1)
       let lineDisposals = 0
       line.geometry.addEventListener('dispose', () => lineDisposals++)
       overlay.dispose()
@@ -178,6 +212,47 @@ test('real raycasting selects inside faces and mirrored faces without changing s
     expect(
       overlay.pick(new Raycaster(new Vector3(10, 1, 0), new Vector3(-1, 0, 0)), resource, f.nodeId),
     ).toBeNull()
+  } finally {
+    overlay.dispose()
+    resource.dispose()
+  }
+})
+
+test('a selected cylinder cap remains selectable when flush with another piece, while solid foreground still occludes it', () => {
+  const f = makeSceneWheelSelection()
+  const resource = new SceneRenderResource()
+  const overlay = new SceneComponentOverlay()
+  const ray = new Raycaster(new Vector3(0.25, 0.4, 5), new Vector3(0, 0, -1))
+  try {
+    resource.update(setSceneNodeFlag(f.document, [f.bodyId], 'hidden', true))
+    const alone = overlay.pick(ray, resource, f.wheelId)
+    expect(alone).toMatch(/^top:/)
+    overlay.update(resource, f.mesh, { nodeId: f.wheelId, mode: 'face', ids: [alone!] })
+    const highlight = overlay.root.children[0]?.children[1]
+    expect(highlight instanceof Mesh).toBe(true)
+    if (!(highlight instanceof Mesh)) throw new Error('Missing cylinder cap highlight')
+    expect(highlight.geometry.getAttribute('position').count).toBe(3)
+    resource.update(f.document)
+    expect(overlay.pick(ray, resource, f.wheelId)).toBe(alone)
+    const covered = {
+      ...f.document,
+      nodes: f.document.nodes.map((node) =>
+        node.id === f.bodyId
+          ? {
+              ...node,
+              transform: {
+                kind: 'trs' as const,
+                translation: [0, 1, 0.25] as [number, number, number],
+                rotation: [0, 0, 0, 1] as [number, number, number, number],
+                scale: [2, 1, 1] as [number, number, number],
+              },
+            }
+          : node,
+      ),
+    }
+    resource.update(covered)
+    expect(overlay.pick(ray, resource, f.wheelId)).toBeNull()
+    expect(overlay.pick(ray, resource, f.wheelId, true)).toBe(alone)
   } finally {
     overlay.dispose()
     resource.dispose()

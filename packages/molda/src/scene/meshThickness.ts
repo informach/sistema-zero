@@ -23,7 +23,7 @@ export function thickenMeshFaces(
 
 export function prepareMeshThickness(mesh: SceneMeshGeometry, ids: readonly string[]) {
   const chosen = new Set(ids)
-  const extrusion = prepareMeshExtrusion(mesh, [...chosen])
+  const extrusion = prepareMeshExtrusion(mesh, [...chosen], { retainBase: true })
   let bottom: Map<string, SceneMeshFace> | null = null
   let bottomBytes = 0
   let disposed = false

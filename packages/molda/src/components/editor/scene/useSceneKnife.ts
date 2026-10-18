@@ -10,6 +10,7 @@ import {
   type MeshKnifePoint,
   meshKnifePointPosition as position,
 } from '../../../scene/meshKnife'
+import { cutMeshEdgeRings } from '../../../scene/meshRingCuts'
 import { meshSymmetrySource } from '../../../scene/meshSymmetry'
 import { indexMeshEdges } from '../../../scene/meshTopology'
 import { sceneGeometryMesh } from '../../../scene/parametricGeometry'
@@ -29,6 +30,9 @@ interface KnifeOwner {
   extent: number
   points: MeshKnifePoint[]
   selection: SceneComponentSelection | null
+  mode: 'free' | 'loop'
+  count: number
+  offset: number
 }
 
 /** A knife session previews derived topology; only Apply creates a history entry. */
@@ -87,9 +91,19 @@ export function useSceneKnife(
       live.current = null
     }
   }, [editor, cancel, reset])
+  const loopEdge = owner?.mode === 'loop' ? (owner.points[0] ?? hover) : null
   const prepared = useMemo(() => {
-    if (!owner || owner.points.length < 2) return { result: null, error: null }
+    if (!owner) return { result: null, error: null }
     try {
+      if (owner.mode === 'loop')
+        return {
+          result:
+            loopEdge?.kind === 'edge'
+              ? cutMeshEdgeRings(owner.mesh, [loopEdge.edgeId], owner.count, owner.offset)
+              : null,
+          error: null,
+        }
+      if (owner.points.length < 2) return { result: null, error: null }
       return { result: cutMeshWithKnife(owner.mesh, owner.points), error: null }
     } catch (reason) {
       return {
@@ -97,7 +111,7 @@ export function useSceneKnife(
         error: reason instanceof Error ? reason.message : 'Corrija os pontos do corte.',
       }
     }
-  }, [owner])
+  }, [owner, loopEdge])
   const guide = useMemo<ScenePreviewGuideState | null>(() => {
     if (!owner) return null
     const points = owner.points.map((p) =>
@@ -108,22 +122,39 @@ export function useSceneKnife(
       : null
     return {
       size: owner.extent,
-      points,
+      points: owner.mode === 'free' ? points : [],
       cut: {
         midpoints: [],
         segments:
           prepared.result?.segments.map(
             ([a, b]) => [transformPoint(owner.world, a), transformPoint(owner.world, b)] as const,
           ) ?? points.slice(1).map((end, i) => [points[i]!, end] as const),
-        provisional: current && points.length ? [[points.at(-1)!, current]] : [],
+        provisional:
+          owner.mode === 'free' && current && points.length ? [[points.at(-1)!, current]] : [],
       },
       ...(current ? { hover: current } : {}),
     }
   }, [owner, hover, prepared])
   return {
     owner,
+    mode: owner?.mode ?? 'free',
+    setMode: (mode: KnifeOwner['mode']) => {
+      const current = live.current
+      if (!current || !canUse() || current.mode === mode) return
+      show({ ...current, mode, points: [], count: 1, offset: 0 })
+      setHover(null)
+      setError(null)
+    },
+    count: owner?.count ?? 1,
+    offset: owner?.offset ?? 0,
+    configureLoop: (count: number, offset: number) => {
+      const current = live.current
+      if (!current || !canUse() || current.mode !== 'loop') return
+      show({ ...current, count, offset })
+      setError(null)
+    },
     closePoint:
-      owner && owner.points.length >= 3
+      owner?.mode === 'free' && owner.points.length >= 3
         ? {
             point: owner.points[0]!,
             position: position(owner.mesh, owner.points[0]!, owner.topology),
@@ -135,7 +166,7 @@ export function useSceneKnife(
     setMidpoint,
     cancel,
     reset,
-    canConfirm: allowed && !!prepared.result && !error,
+    canConfirm: allowed && !!prepared.result && !!owner?.points.length && !error,
     hover: (point: MeshKnifePoint | null) => setHover(point),
     start: (nodeId: string, selection: SceneComponentSelection | null = null) => {
       cancel()
@@ -164,6 +195,9 @@ export function useSceneKnife(
           extent: Math.max(...(sceneLocalBounds(source, nodeId)?.size ?? [1])),
           points: [],
           selection: selection ? { ...selection, ids: [...selection.ids] } : null,
+          mode: 'free',
+          count: 1,
+          offset: 0,
         })
       } catch (reason) {
         setError(reason instanceof Error ? reason.message : 'Escolha uma peça para cortar.')
@@ -173,6 +207,16 @@ export function useSceneKnife(
       const current = live.current
       if (!current || !canUse()) return
       try {
+        if (current.mode === 'loop') {
+          requireScene(
+            point.kind === 'edge',
+            'edge',
+            'Clique em uma linha da peça para escolher a faixa do Loop cut.',
+          )
+          show({ ...current, points: [point] })
+          setError(null)
+          return
+        }
         requireScene(
           current.points.length < 64,
           'cut',
@@ -205,7 +249,8 @@ export function useSceneKnife(
     },
     confirm: () => {
       const current = live.current
-      if (!canUse() || !current || current !== owner || !prepared.result || error) return null
+      if (!canUse() || !current?.points.length || current !== owner || !prepared.result || error)
+        return null
       try {
         requireScene(
           editor.getState().content === current.source &&

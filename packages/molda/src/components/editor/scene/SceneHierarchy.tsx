@@ -19,6 +19,9 @@ import {
   TriangleRight,
   Waypoints,
 } from '../../ui/icons'
+import { SceneHierarchyName } from './SceneHierarchyName'
+import { useSceneHierarchyDrag } from './useSceneHierarchyDrag'
+import type { SceneHierarchyOrganization } from './useSceneHierarchyOrganization'
 
 /** A forma que cada linha mostra no ladrilho colorido: a da geometria, ou o tipo do nó. */
 export type SceneHierarchyShape =
@@ -60,6 +63,7 @@ export function SceneHierarchy({
   onFlag,
   poseCounts,
   paintColors,
+  organization,
 }: {
   index: SceneIndex<ModelSceneNode>
   selected: readonly string[]
@@ -69,13 +73,15 @@ export function SceneHierarchy({
   onFlag?(id: string, flag: 'hidden' | 'locked', value: boolean): void
   poseCounts?: ReadonlyMap<string, number>
   paintColors?: ReadonlyMap<string, readonly string[]>
+  organization?: SceneHierarchyOrganization
 }) {
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(() => new Set())
   const prefix = useId()
   const copy = COPY.scene
+  const drag = useSceneHierarchyDrag(organization?.owner ?? index, selected, organization)
   function branch(ids: readonly string[], depth = 0) {
     return (
-      <ul className="space-y-0.5">
+      <ul>
         {ids.map((id) => {
           const node = index.nodes.get(id)
           if (!node) return null
@@ -88,11 +94,25 @@ export function SceneHierarchy({
           const Visibility = node.hidden ? EyeOff : Eye
           return (
             <li key={id}>
-              <div className="flex items-center gap-0.5">
-                {children.length > 0 && (
+              <fieldset
+                aria-label={node.name}
+                className="mld-hierarchy-row flex min-w-0 items-center gap-0.5"
+                data-drop-target={drag.target === id || undefined}
+                onDragOver={(event) => drag.over(event, id)}
+                onDragLeave={drag.leave}
+                onDrop={(event) => {
+                  if (drag.drop(event, id))
+                    setCollapsed((before) => {
+                      const next = new Set(before)
+                      next.delete(id)
+                      return next
+                    })
+                }}
+              >
+                {children.length > 0 ? (
                   <button
                     type="button"
-                    className="grid min-h-10 w-7 shrink-0 place-items-center rounded-lg text-mld-muted hover:bg-mld-bg hover:text-mld-text focus-visible:outline-2 focus-visible:outline-mld-accent"
+                    className="mld-hierarchy-toggle grid shrink-0 place-items-center rounded-lg text-mld-muted hover:bg-mld-bg hover:text-mld-text focus-visible:outline-2 focus-visible:outline-mld-accent"
                     aria-label={open ? copy.hide(node.name) : copy.show(node.name)}
                     aria-expanded={open}
                     aria-controls={childId}
@@ -111,8 +131,14 @@ export function SceneHierarchy({
                       <ChevronRight aria-hidden="true" className="size-4" />
                     )}
                   </button>
+                ) : (
+                  <span aria-hidden="true" className="mld-hierarchy-toggle shrink-0" />
                 )}
-                <button
+                <SceneHierarchyName
+                  key={id}
+                  id={id}
+                  name={node.name}
+                  organization={organization}
                   type="button"
                   aria-label={copy.select(node.name)}
                   aria-pressed={chosen}
@@ -120,10 +146,14 @@ export function SceneHierarchy({
                     copy.nodeKind[node.kind],
                     node.hidden ? copy.hiddenHint : '',
                     node.locked ? copy.lockedHint : '',
+                    organization ? 'Duplo clique ou F2 para renomear' : '',
                   ]
                     .filter(Boolean)
                     .join(' · ')}
                   className={`mld-piece flex-1 ${node.hidden ? 'text-mld-muted' : ''}`}
+                  draggable={organization?.canDrag(id) ?? false}
+                  onDragStart={(event) => drag.start(event, id)}
+                  onDragEnd={drag.end}
                   onClick={(event) =>
                     onSelect(id, event.shiftKey || event.ctrlKey || event.metaKey)
                   }
@@ -162,7 +192,7 @@ export function SceneHierarchy({
                   {!onFlag && !poseCounts && node.hidden && (
                     <EyeOff aria-hidden="true" className="size-4 shrink-0 text-mld-muted" />
                   )}
-                </button>
+                </SceneHierarchyName>
                 {onFlag && (
                   <>
                     <button
@@ -193,14 +223,12 @@ export function SceneHierarchy({
                     </button>
                   </>
                 )}
-              </div>
+              </fieldset>
               {children.length > 0 && (
                 <div
                   id={childId}
                   hidden={!open}
-                  className={
-                    depth < 4 ? 'mt-0.5 ml-3.5 border-l border-mld-border pl-1.5' : 'mt-0.5'
-                  }
+                  className={depth < 4 ? 'mld-hierarchy-children' : undefined}
                 >
                   {branch(children, depth + 1)}
                 </div>
@@ -211,5 +239,21 @@ export function SceneHierarchy({
       </ul>
     )
   }
-  return <section aria-label={copy.hierarchy}>{branch(index.roots)}</section>
+  return (
+    <section aria-label={copy.hierarchy} className="mld-hierarchy">
+      {drag.active && (
+        <fieldset
+          aria-label="Fora dos grupos"
+          className="mld-hierarchy-root-drop"
+          data-drop-target={drag.target === null || undefined}
+          onDragOver={(event) => drag.over(event, null)}
+          onDragLeave={drag.leave}
+          onDrop={(event) => drag.drop(event, null)}
+        >
+          Soltar fora dos grupos
+        </fieldset>
+      )}
+      {branch(index.roots)}
+    </section>
+  )
 }

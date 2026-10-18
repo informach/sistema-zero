@@ -11,6 +11,7 @@ import { COPY } from '../../../core/copy'
 import { newId } from '../../../core/id'
 import type { MeshSelectionAction } from '../../../model/topologySelection'
 import { editSceneMesh } from '../../../scene/commands'
+import { sceneBaseColor, scenePalette } from '../../../scene/composite'
 import type { MoldaSceneDocument, SceneMeshGeometry } from '../../../scene/document'
 import { indexSceneDocument } from '../../../scene/documentIndex'
 import { evaluateSceneNodeFlags } from '../../../scene/evaluate'
@@ -23,6 +24,7 @@ import {
   type SceneComponentSession,
   selectMeshComponents,
 } from '../../../scene/meshComponents'
+import { meshCoplanarFaces } from '../../../scene/meshCoplanarSelection'
 import { createMeshLooseEdge, cutMeshFaceBetweenVertices } from '../../../scene/meshCut'
 import {
   MESH_ISSUE_MODES,
@@ -46,6 +48,7 @@ import { setSceneSkinWeights } from '../../../scene/skinCommands'
 import { SceneValidationError } from '../../../scene/validation'
 import type { EditorStore } from '../../../state/editorStore'
 import { useMoldaToolGate } from '../../toolAccess'
+import type { SceneUvTexture } from './SceneUvCanvas'
 import { useSceneComponentTransform } from './useSceneComponentTransform'
 import {
   type SceneFacePreviewTool,
@@ -79,6 +82,9 @@ export function useSceneComponents({
   const mirrorGate = useMoldaToolGate('model.mesh-pro')
   const uvGate = useMoldaToolGate('paint.uv')
   const [session, publishSession] = useState<SceneComponentSession | null>(null)
+  const [panelSession, setPanelSession] = useState(0)
+  const [loopSelection, setLoopSelection] = useState(false)
+  const [coplanarSelection, setCoplanarSelection] = useState(false)
   const sessionLive = useRef(session)
   sessionLive.current = session
   // Range/region picking can dispatch several selections before React renders again.
@@ -88,7 +94,7 @@ export function useSceneComponents({
     publishSession(value)
   }, [])
   // Equal document IDs/revisions in a replacement editor still belong to a new UI session.
-  const weightSession = useMemo(() => ({ editor, key: newId() }), [editor])
+  const editorSession = useMemo(() => ({ editor, key: newId() }), [editor])
   const revision = editor.getState().contentRevision
   const [softEnabled, setSoftEnabled] = useState(false)
   const [softReach, setSoftReach] = useState('1')
@@ -144,7 +150,30 @@ export function useSceneComponents({
     }
   }, [mirrorGate.allowed, preview.tool, preview.cancel, meshCheck.cancel])
   const blocked =
-    baseBlocked || (!!operation.kind && operation.kind !== 'ring' && operation.kind !== 'fill')
+    baseBlocked ||
+    (!!operation.kind &&
+      operation.kind !== 'ring' &&
+      operation.kind !== 'fill' &&
+      operation.kind !== 'create')
+  const uvPaint = useMemo<
+    { mixedImages: boolean; visibleIds?: string[]; texture?: SceneUvTexture } | undefined
+  >(() => {
+    if (node?.kind !== 'mesh' || !mesh || selection?.mode !== 'face') return undefined
+    const materialFor = (id: string) =>
+      index.materials.get(mesh.faces[id]?.materialId ?? node.materialId)
+    const material = materialFor(selection.ids.at(-1) ?? Object.keys(mesh.faces)[0] ?? '')
+    const image = material?.colorImageId ? index.images.get(material.colorImageId) : undefined
+    const mixedImages = selection.ids.some((id) => materialFor(id)?.colorImageId !== image?.id)
+    if (!material || !image || mixedImages) return { mixedImages }
+    const palette = scenePalette(editor.getState().asset)
+    return {
+      mixedImages,
+      visibleIds: Object.keys(mesh.faces).filter(
+        (id) => materialFor(id)?.colorImageId === image.id,
+      ),
+      texture: { image, palette, base: sceneBaseColor(material, palette) },
+    }
+  }, [node, mesh, selection, index, editor])
   const removal = useMemo(
     () => (selection && mesh?.kind === 'mesh' ? prepareMeshRemoval(mesh, selection) : null),
     [mesh, selection],
@@ -178,6 +207,8 @@ export function useSceneComponents({
   const softValid = softReach.trim() !== '' && Number.isFinite(softRadius) && softRadius > 0
 
   function close() {
+    setLoopSelection(false)
+    setCoplanarSelection(false)
     operation.cancel()
     activeWeights.current = null
     cancel()
@@ -187,6 +218,8 @@ export function useSceneComponents({
     setSession(null)
   }
   function open(mode: SceneComponentMode = 'face', ids: readonly string[] = []) {
+    setLoopSelection(false)
+    setCoplanarSelection(false)
     activeWeights.current = null
     cancel()
     meshCheck.cancel()
@@ -202,6 +235,8 @@ export function useSceneComponents({
     const liveFull = sceneGeometryMesh(liveGeometry)
     const liveMesh = meshSymmetrySource(liveFull)
     const alive = new Set(meshComponentIds(liveMesh, mode))
+    // Explicit mode navigation starts a panel session; diagnostic selections stay inside it.
+    setPanelSession((current) => current + 1)
     setSession({
       nodeId: liveNode.id,
       geometryId: liveMesh.id,
@@ -210,9 +245,21 @@ export function useSceneComponents({
     })
   }
   function select(componentId: string | null, add: boolean) {
-    updateSelection(componentId === null ? [] : [componentId], add, true)
+    updateSelection(
+      componentId === null ? [] : [componentId],
+      add,
+      true,
+      loopSelection,
+      coplanarSelection,
+    )
   }
-  function updateSelection(ids: readonly string[], add: boolean, toggle = false) {
+  function updateSelection(
+    ids: readonly string[],
+    add: boolean,
+    toggle = false,
+    wholeLoop = false,
+    coplanar = false,
+  ) {
     if (blocked) return
     if (!sessionLive.current || editor.getState().contentRevision !== revision) return
     cancel()
@@ -230,11 +277,17 @@ export function useSceneComponents({
       ids = symmetrySourceIds(liveFull, current.mode, ids)
       const alive = new Set(meshComponentIds(liveMesh, current.mode))
       if (ids.some((id) => !alive.has(id))) return
+      const expandLoop = wholeLoop && current.mode === 'edge' && !operation.kind
+      const expandFaces = coplanar && current.mode === 'face' && !operation.kind
+      if (expandLoop) ids = selectMeshComponents(liveMesh, { mode: 'edge', ids }, 'loop')
+      if (expandFaces) ids = meshCoplanarFaces(liveMesh, ids)
       activeWeights.current = null
       const previous = current.ids.filter((id) => alive.has(id))
       const chosen = new Set(previous)
+      const grouped = expandLoop || expandFaces
+      const removeGroup = grouped && ids.every((id) => chosen.has(id))
       for (const id of ids) {
-        if (toggle && chosen.has(id)) chosen.delete(id)
+        if (toggle && (grouped ? removeGroup : chosen.has(id))) chosen.delete(id)
         else chosen.add(id)
       }
       const next = {
@@ -323,6 +376,33 @@ export function useSceneComponents({
   }
   return {
     selection,
+    panelSession,
+    coplanarSelection: {
+      enabled: coplanarSelection,
+      setEnabled: (enabled: boolean) => {
+        if (
+          blocked ||
+          operation.kind ||
+          selection?.mode !== 'face' ||
+          enabled === coplanarSelection
+        )
+          return
+        setCoplanarSelection(enabled)
+        if (enabled && sessionLive.current?.ids.length)
+          updateSelection(sessionLive.current.ids, false, false, false, true)
+      },
+    },
+    loopSelection: {
+      enabled: loopSelection,
+      setEnabled: (enabled: boolean) => {
+        if (blocked || operation.kind || selection?.mode !== 'edge' || enabled === loopSelection)
+          return
+        setLoopSelection(enabled)
+        if (enabled && sessionLive.current?.ids.length) {
+          updateSelection(sessionLive.current.ids, false, false, true)
+        }
+      },
+    },
     empty: !!mesh && Object.keys(mesh.faces).length === 0,
     blocked,
     operation: {
@@ -364,8 +444,14 @@ export function useSceneComponents({
       selection?.mode === 'face' && mesh?.kind === 'mesh'
         ? {
             mesh,
-            sourceKey: JSON.stringify([editor.getState().asset.id, revision, selection.nodeId]),
+            sourceKey: JSON.stringify([
+              editorSession.key,
+              editor.getState().asset.id,
+              revision,
+              selection.nodeId,
+            ]),
             blocked,
+            ...uvPaint,
             ids: selection.ids,
             onSelect: select,
             onChoose: (ids: readonly string[]) => updateSelection(ids, false),
@@ -398,7 +484,7 @@ export function useSceneComponents({
       skin && selection
         ? {
             sourceKey: JSON.stringify([
-              weightSession.key,
+              editorSession.key,
               editor.getState().asset.id,
               revision,
               selection.nodeId,
@@ -493,7 +579,7 @@ export function useSceneComponents({
       },
     },
     transformTools:
-      operation.kind === 'duplicate'
+      preview.tool === 'extrude' || operation.kind === 'duplicate' || operation.kind === 'extrude'
         ? (['move'] as const)
         : operation.kind
           ? ([] as const)
@@ -509,7 +595,8 @@ export function useSceneComponents({
     },
     close,
     select,
-    selectMany: (ids: readonly string[], add: boolean) => updateSelection(ids, add),
+    selectMany: (ids: readonly string[], add: boolean) =>
+      updateSelection(ids, add, false, false, coplanarSelection),
     choose,
     apply,
     splitEdges,
@@ -608,23 +695,25 @@ export function useSceneComponents({
     preview,
     beginPreview,
     transform:
-      operation.kind === 'duplicate'
-        ? operation.transform
-        : {
-            ...transform,
-            begin: () => {
-              if (!selection?.ids.length || !editable || blocked || (softMove && !softValid))
-                return false
-              activeWeights.current = null
-              cancel()
-              const started = transform.begin(
-                { ...selection, geometryId: mesh.id },
-                mesh,
-                softMove ? softRadius : 0,
-              )
-              if (!started) activeWeights.current = weightOwner
-              return started
+      preview.tool === 'extrude'
+        ? preview.transform
+        : operation.kind === 'duplicate' || operation.kind === 'extrude'
+          ? operation.transform
+          : {
+              ...transform,
+              begin: () => {
+                if (!selection?.ids.length || !editable || blocked || (softMove && !softValid))
+                  return false
+                activeWeights.current = null
+                cancel()
+                const started = transform.begin(
+                  { ...selection, geometryId: mesh.id },
+                  mesh,
+                  softMove ? softRadius : 0,
+                )
+                if (!started) activeWeights.current = weightOwner
+                return started
+              },
             },
-          },
   }
 }

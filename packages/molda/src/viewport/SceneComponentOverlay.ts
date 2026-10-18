@@ -13,6 +13,9 @@ import {
   PointsMaterial,
   type Raycaster,
 } from 'three'
+import { LineMaterial } from 'three/addons/lines/LineMaterial.js'
+import { LineSegments2 } from 'three/addons/lines/LineSegments2.js'
+import { LineSegmentsGeometry } from 'three/addons/lines/LineSegmentsGeometry.js'
 import type { SceneMeshGeometry } from '../scene/document'
 import {
   meshComponentEdges,
@@ -60,9 +63,14 @@ export class SceneComponentOverlay {
     sizeAttenuation: false,
     depthWrite: false,
   })
-  private readonly chosenEdgeMaterial = new LineBasicMaterial({
-    color: 0x2389da,
+  private readonly chosenEdgeMaterial = new LineMaterial({
+    color: 0xffc21a,
+    linewidth: 4,
     depthWrite: false,
+    transparent: true,
+    polygonOffset: true,
+    polygonOffsetFactor: -3,
+    polygonOffsetUnits: -3,
   })
   private points: BufferGeometry | null = null
   private wire: BufferGeometry | null = null
@@ -160,16 +168,19 @@ export class SceneComponentOverlay {
         }
       } else
         for (let triangle = 0; triangle < positions.count / 3; triangle++) {
-          const id = resource.faceFor(source, triangle)
+          const id = resource.componentFaceFor(source, triangle)
           if (!id || !chosen.has(id)) continue
           for (let vertex = triangle * 3; vertex < triangle * 3 + 3; vertex++)
             kept.push(positions.getX(vertex), positions.getY(vertex), positions.getZ(vertex))
         }
       this.fill?.dispose()
-      this.fill = new BufferGeometry().setAttribute(
-        'position',
-        new BufferAttribute(Float32Array.from(kept), 3),
-      )
+      this.fill =
+        selection.mode === 'edge'
+          ? new LineSegmentsGeometry().setPositions(kept)
+          : new BufferGeometry().setAttribute(
+              'position',
+              new BufferAttribute(Float32Array.from(kept), 3),
+            )
       this.selected = selected
       // The highlight changes primitive type with the mode; all instances share its owned data.
       if (this.mode !== selection.mode) {
@@ -178,7 +189,9 @@ export class SceneComponentOverlay {
       } else
         for (const group of this.instances.values()) {
           const fill = group.children[1]
-          if (fill instanceof Mesh || fill instanceof LineSegments || fill instanceof Points)
+          if (fill instanceof LineSegments2 && this.fill instanceof LineSegmentsGeometry)
+            fill.geometry = this.fill
+          else if (fill instanceof Mesh || fill instanceof LineSegments || fill instanceof Points)
             fill.geometry = this.fill
         }
       this.mode = selection.mode
@@ -192,13 +205,20 @@ export class SceneComponentOverlay {
       if (!group) {
         group = new Group()
         group.matrixAutoUpdate = false
+        let highlight: Mesh | Points | LineSegments2
+        if (selection.mode === 'edge') {
+          if (!(this.fill instanceof LineSegmentsGeometry))
+            throw new Error('Contorno da seleção ausente.')
+          highlight = new LineSegments2(this.fill, this.chosenEdgeMaterial)
+          highlight.renderOrder = 21
+        } else
+          highlight =
+            selection.mode === 'face'
+              ? new Mesh(this.fill, this.fillMaterial)
+              : new Points(this.fill, this.chosenPointMaterial)
         group.add(
           new LineSegments(this.wire, this.wireMaterial),
-          selection.mode === 'face'
-            ? new Mesh(this.fill, this.fillMaterial)
-            : selection.mode === 'edge'
-              ? new LineSegments(this.fill, this.chosenEdgeMaterial)
-              : new Points(this.fill, this.chosenPointMaterial),
+          highlight,
           new Mesh(this.back, this.backMaterial),
         )
         if (selection.mode === 'vertex' && this.points)
@@ -239,10 +259,19 @@ export class SceneComponentOverlay {
         originals.set(proxy, object)
         return proxy
       })
-    const hit = ray.intersectObjects(targets, false)[0]
+    const hits = ray.intersectObjects(targets, false)
+    const nearest = hits[0]
+    if (!nearest) return null
+    // Prefer the part being edited on coincident surfaces; solid foreground still occludes it.
+    const tolerance = Math.max(1, nearest.distance) * 1e-7
+    const hit =
+      hits.find(
+        (candidate) =>
+          originals.has(candidate.object) && candidate.distance <= nearest.distance + tolerance,
+      ) ?? nearest
     if (!hit || hit.faceIndex === undefined || hit.faceIndex === null) return null
     const original = originals.get(hit.object)
-    return original ? resource.faceFor(original, hit.faceIndex) : null
+    return original ? resource.componentFaceFor(original, hit.faceIndex) : null
   }
 
   setThrough(through: boolean) {

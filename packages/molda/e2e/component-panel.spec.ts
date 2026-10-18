@@ -91,10 +91,16 @@ for (const theme of ['light', 'dark'] as const) {
     await panel.getByRole('button', { name: 'Faces', exact: true }).press('Escape')
     await expect(panel.getByRole('heading', { name: 'Editar peça' })).toBeVisible()
 
-    await panel.getByRole('button', { name: 'Pontos', exact: true }).click()
+    await page
+      .getByRole('group', { name: 'Escolher', exact: true })
+      .getByRole('button', { name: 'Pontos', exact: true })
+      .click()
     await expect(panel.getByText('Nenhum ponto escolhido', { exact: true })).toBeVisible()
     await expect(panel.getByRole('button', { name: COPY.scene.facePreview.extrude })).toHaveCount(0)
-    await panel.getByRole('button', { name: 'Linhas', exact: true }).click()
+    await page
+      .getByRole('group', { name: 'Escolher', exact: true })
+      .getByRole('button', { name: 'Linhas', exact: true })
+      .click()
     await expect(panel.getByText('Nenhuma linha escolhida', { exact: true })).toBeVisible()
     await page.setViewportSize({ width: 1024, height: 600 })
     await expect(panel.getByRole('button', { name: 'Concluir edição', exact: true })).toBeVisible()

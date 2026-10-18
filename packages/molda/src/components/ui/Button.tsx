@@ -25,11 +25,13 @@ const VARIANT_CLASSES: Record<ButtonVariant, string> = {
 
 export function Button({
   variant = 'outline',
+  size = 'default',
   className,
   type,
   ...props
 }: ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: ButtonVariant
+  size?: 'default' | 'compact'
   /** React 19 entrega o `ref` como prop: ele segue no spread até o `<button>`. */
   ref?: Ref<HTMLButtonElement>
 }): JSX.Element {
@@ -37,7 +39,8 @@ export function Button({
     <button
       type={type ?? 'button'}
       className={clsx(
-        'inline-flex min-h-11 items-center justify-center gap-2 px-4 text-base font-bold transition',
+        'inline-flex min-h-11 items-center justify-center font-bold transition',
+        size === 'compact' ? 'gap-1 px-2 text-xs' : 'gap-2 px-4 text-base',
         'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mld-accent',
         'disabled:cursor-not-allowed disabled:opacity-50',
         VARIANT_CLASSES[variant],

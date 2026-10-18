@@ -533,5 +533,15 @@ test('espelho de pintura acompanha o meio local, independente do pivô e de pais
   expect(centered.mirror!.bounds).toEqual(centered.bounds!)
   expect(run(2).mirror).toEqual(centered.mirror)
   expect(run(2, true).mirror).toEqual(centered.mirror)
-  expect(run(2, false, true).mirror).toEqual(centered.mirror)
+  const affine = run(2, false, true)
+  expect(affine.mirror!.bounds).toEqual(affine.bounds!)
+  expect(affine.mirror!.region).toBe(centered.mirror!.region)
+  // The larger placed surface now receives more texels. Its reflected model point is unchanged.
+  for (const sample of [centered.mirror!, affine.mirror!]) {
+    const bounds = sample.bounds!
+    expect(sample.point).toEqual([
+      bounds.x0 + Math.floor(0.35 * (bounds.x1 - bounds.x0 + 1)),
+      bounds.y0 + Math.floor(0.585 * (bounds.y1 - bounds.y0 + 1)),
+    ])
+  }
 })

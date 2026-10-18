@@ -1,11 +1,11 @@
-import { useId, useMemo, useRef, useState, useSyncExternalStore } from 'react'
+import { type CSSProperties, useId, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import { useStore } from 'zustand'
 import { COPY } from '../../../core/copy'
 import { NATIVE_IMPORT_COPY } from '../../../core/nativeImportCopy'
 import { SCENE_SHELL_COPY } from '../../../core/sceneShellCopy'
 import { triggerDownload } from '../../../export/download'
 import { exportLoadedSceneForStudio, sameSceneStudioContent } from '../../../export/studioLibrary'
-import { deleteSceneNodes, setSceneNodeFlag } from '../../../scene/commands'
+import { deleteSceneNodes } from '../../../scene/commands'
 import { scenePalette } from '../../../scene/composite'
 import type { ModelSceneNode, MoldaSceneDocument } from '../../../scene/document'
 import { sceneToJson } from '../../../scene/documentJson'
@@ -20,7 +20,7 @@ import type { SceneViewportFactory, SceneViewportPort } from '../../../viewport/
 import { useMoldaToolAccess } from '../../toolAccess'
 import { Button } from '../../ui/Button'
 import { Dialog, isMoldaDialogOpen } from '../../ui/Dialog'
-import { Crosshair, Focus, Ghost, ListChecks } from '../../ui/icons'
+import { Crosshair, Focus, Ghost } from '../../ui/icons'
 import { isTypingTarget } from '../../ui/interaction'
 import { DeferredModule } from '../DeferredEditor'
 import { WorkspaceInspector } from '../model/WorkspaceInspector'
@@ -30,7 +30,8 @@ import { SceneComponentTools } from './SceneComponentTools'
 import type { SceneExitMode } from './SceneExitControl'
 import { SceneFirstSteps } from './SceneFirstSteps'
 import { SceneGlbExportPanel } from './SceneGlbExportPanel'
-import { SceneHierarchy, type SceneHierarchyShape } from './SceneHierarchy'
+import type { SceneHierarchyShape } from './SceneHierarchy'
+import { SceneHierarchyPanel } from './SceneHierarchyPanel'
 import { SceneInspectorSections } from './SceneInspectorSections'
 import { SceneKnifePanel } from './SceneKnifePanel'
 import { SceneModelColumn } from './SceneModelColumn'
@@ -55,6 +56,7 @@ import { SceneWorkspacePanel } from './SceneWorkspacePanel'
 import { SCENE_PAINT_ADVANCED_FAMILIES } from './sceneCommandAccess'
 import { sceneCommandForShortcut } from './sceneCommandRegistry'
 import { runScenePaintShortcut } from './scenePaintShortcuts'
+import { useScenePaintSheetView } from './useScenePaintSheetView'
 import { useSceneWorkshop } from './useSceneWorkshop'
 
 const loadPaint = () => import('./ScenePaintEditor').then((module) => module.ScenePaintEditor)
@@ -89,6 +91,11 @@ export function SceneWorkshop({
   canResyncToStudio?: (id: string) => Promise<boolean>
 }) {
   const workshop = useSceneWorkshop(editor)
+  const sheetView = useScenePaintSheetView()
+  const sheetOpen = workshop.area === 'sheet' || workshop.area === 'uv'
+  const sheetStyle: CSSProperties & { '--mld-sheet-width': string } = {
+    '--mld-sheet-width': `${sheetView.width}%`,
+  }
   // Resync the exact saved snapshot, retaining its profile and explicit loss review.
   const savedAsset = useStore(editor, (state) => state.savedAsset)
   const setWorkshopMessage = workshop.setMessage
@@ -460,7 +467,12 @@ export function SceneWorkshop({
           // e sem pintura, ele solta a peça (antes só o palco fazia isso).
           event.preventDefault()
           workshop.endPaint()
-        } else if (mode === 'paint' && runScenePaintShortcut(workshop.paint, event, can)) {
+        } else if (
+          mode === 'paint' &&
+          runScenePaintShortcut(workshop.paint, event, can, () => {
+            if (workshop.area === 'uv') workshop.openArea('sheet')
+          })
+        ) {
           event.preventDefault()
         } else if (workshop.components.selection && event.key === 'Escape') {
           event.preventDefault()
@@ -638,10 +650,15 @@ export function SceneWorkshop({
             <SceneWorkspaceAreas workshop={workshop} />
             <div
               className="mld-stage-workbench"
+              data-paint-sheet={sheetOpen}
+              data-sheet-expanded={sheetView.expanded}
+              data-sheet-model={sheetView.showModel}
+              style={sheetStyle}
               data-specialized={
                 !!workshop.area && workshop.area !== 'curves' && workshop.area !== 'mesh'
               }
             >
+              {sheetOpen && <SceneWorkspacePanel workshop={workshop} sheetView={sheetView} />}
               <div className="mld-stage-viewport" data-mode={mode}>
                 {/* As ferramentas de OLHAR flutuam no alto do palco em dois cartões brancos. */}
                 <div className="mld-stage-toolbar">
@@ -682,6 +699,8 @@ export function SceneWorkshop({
                   </div>
                 </div>
                 <SceneCanvas
+                  measurementStep={workshop.measurementStep}
+                  onMeasurementStepChange={workshop.setMeasurementStep}
                   guideInput={
                     workshop.tool === 'pivot' && workshop.primary
                       ? {
@@ -704,6 +723,7 @@ export function SceneWorkshop({
                             knife: {
                               nodeId: workshop.knife.owner.nodeId,
                               midpoint: workshop.knife.midpoint,
+                              edgesOnly: workshop.knife.mode === 'loop',
                               closePoint: workshop.knife.closePoint,
                               mark: workshop.knife.mark,
                               hover: workshop.knife.hover,
@@ -777,12 +797,14 @@ export function SceneWorkshop({
                     workshop.components.operation.selection ?? workshop.components.selection
                   }
                   facePreviewOpen={
+                    workshop.area === 'uv' ||
                     editingKnife ||
                     (!!workshop.components.operation.kind &&
-                      workshop.components.operation.kind !== 'duplicate') ||
+                      workshop.components.transformTools.length === 0) ||
                     !!workshop.modelGuides.owner ||
                     workshop.placing ||
-                    workshop.components.preview.tool !== null ||
+                    (workshop.components.preview.tool !== null &&
+                      workshop.components.preview.tool !== 'extrude') ||
                     workshop.components.check.busy ||
                     !!workshop.components.check.preview
                   }
@@ -818,14 +840,16 @@ export function SceneWorkshop({
                       !workshop.paint.rotate &&
                       !workshop.paint.closeupTool,
                   }}
-                  overlay={
+                  detailPanel={
                     mode === 'paint' && workshop.paint.data && workshop.paint.closeUp ? (
                       <ScenePaintCloseUp
+                        key={`${workshop.paint.data.image.id}:${Object.values(workshop.paint.closeUp.region).join(',')}`}
                         image={workshop.paint.data.image}
                         palette={paintPalette}
                         base={paintBase ?? [0, 0, 0, 0]}
                         view={workshop.paint.closeUp}
                         drawing={workshop.paint.drawing}
+                        brush={workshop.paint.brush}
                         actions={workshop.paint.actions}
                         onClose={workshop.paint.closeCloseUp}
                       />
@@ -844,7 +868,9 @@ export function SceneWorkshop({
                   className={
                     workshop.modelGuides.owner || workshop.tool === 'cut'
                       ? 'hidden'
-                      : 'mld-stage-context'
+                      : workshop.area === 'uv'
+                        ? 'hidden'
+                        : 'mld-stage-context'
                   }
                   ref={setContextSlot}
                 />
@@ -859,7 +885,9 @@ export function SceneWorkshop({
                   </div>
                 )}
               </div>
-              {workshop.area !== 'mesh' && <SceneWorkspacePanel workshop={workshop} />}
+              {workshop.area !== 'mesh' && !sheetOpen && (
+                <SceneWorkspacePanel workshop={workshop} sheetView={sheetView} />
+              )}
             </div>
             {mode === 'animation' && (
               <DeferredModule
@@ -870,21 +898,17 @@ export function SceneWorkshop({
               />
             )}
           </div>
-          <WorkspaceInspector
-            docked
-            persistent
-            flush={editingComponents || editingKnife}
-            onBeforeClose={() => {}}
-          >
+          <WorkspaceInspector docked persistent flush onBeforeClose={() => {}}>
             {editingKnife ? (
               <SceneKnifePanel workshop={workshop} />
             ) : editingComponents ? (
               <SceneComponentTools
-                key={workshop.components.selection?.nodeId}
+                key={`${workshop.components.selection?.nodeId}:${workshop.components.panelSession}`}
                 {...workshop.components}
+                measurementStep={workshop.measurementStep}
                 close={closeFaces}
                 onKnife={() => workshop.setTool('knife')}
-                onDuplicateMove={() => workshop.setTool('move')}
+                onMove={() => workshop.setTool('move')}
                 visualCut={<SceneDivisionChoices workshop={workshop} />}
               />
             ) : (
@@ -899,58 +923,27 @@ export function SceneWorkshop({
                       backLabel={copy.glbExport.close}
                     />
                   ) : mode === 'paint' ? (
-                    <ScenePaintPalette paint={workshop.paint} palette={document} />
-                  ) : null
-                }
-                pieces={
-                  <>
-                    <div className="flex items-center justify-between gap-2 px-1 pb-1">
-                      <h3 className="mld-kicker">{copy.hierarchy}</h3>
-                      {mode === 'animation' && (
-                        <button
-                          type="button"
-                          className="mld-tree-action ml-auto"
-                          aria-label={copy.addSelection}
-                          title={copy.addSelection}
-                          aria-pressed={workshop.additive}
-                          onClick={() => workshop.setAdditive(!workshop.additive)}
-                        >
-                          <ListChecks aria-hidden="true" className="size-4" />
-                        </button>
-                      )}
-                      {document.nodes.length > 0 && (
-                        <span
-                          aria-hidden="true"
-                          className="rounded-full bg-mld-bg px-2 py-0.5 text-[0.6875rem] font-extrabold text-mld-muted tabular-nums"
-                        >
-                          {document.nodes.length}
-                        </span>
-                      )}
-                    </div>
-                    {!document.nodes.length && (
-                      <p className="px-1 text-sm text-mld-muted">{copy.empty}</p>
-                    )}
-                    <SceneHierarchy
-                      index={workshop.index.scene}
-                      selected={selected}
-                      onSelect={workshop.select}
-                      shapeOf={shapeOf}
-                      poseCounts={mode === 'animation' ? workshop.poseCounts : undefined}
-                      paintColors={mode === 'paint' ? workshop.paintColors : undefined}
-                      onFlag={
-                        mode === 'model' && can('model.pieces')
-                          ? (id, flag, value) =>
-                              run((source) => setSceneNodeFlag(source, [id], flag, value))
-                          : undefined
+                    <ScenePaintPalette
+                      paint={workshop.paint}
+                      palette={document}
+                      mapping={
+                        !sheetOpen && workshop.primary?.kind === 'mesh'
+                          ? {
+                              apply: workshop.mapPaintUv,
+                              disabled: !workshop.components.canEdit,
+                            }
+                          : null
+                      }
+                      preparation={
+                        workshop.paintIssue && {
+                          faces: workshop.paintIssue.faces,
+                          apply: workshop.splitCrookedAndPaint,
+                        }
                       }
                     />
-                    {mode === 'paint' && workshop.paintColorsStatus && (
-                      <p role="status" className="px-1 text-xs text-mld-muted">
-                        {workshop.paintColorsStatus}
-                      </p>
-                    )}
-                  </>
+                  ) : null
                 }
+                pieces={<SceneHierarchyPanel workshop={workshop} shapeOf={shapeOf} />}
               >
                 {mode === 'animation' ? (
                   <>

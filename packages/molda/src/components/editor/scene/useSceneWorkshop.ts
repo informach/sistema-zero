@@ -11,9 +11,14 @@ import { indexSceneDocument } from '../../../scene/documentIndex'
 import { SceneGraphError, selectSceneSubtrees } from '../../../scene/graph'
 import type { ScenePaintTarget } from '../../../scene/imagePaint'
 import type { AffineMatrix } from '../../../scene/matrix'
+import type { SceneMeasurementStep } from '../../../scene/measurementStep'
+import type { ScenePaintPreparationIssue } from '../../../scene/paintContact'
+import { scenePaintFaceIds } from '../../../scene/paintFaceSelection'
 import { ensureScenePaintSurface } from '../../../scene/paintSurface'
+import { cachedParametricMesh, sceneGeometryMesh } from '../../../scene/parametricGeometry'
 import { placeSceneNodesOnSupport } from '../../../scene/placement'
 import { prepareSceneAnimation } from '../../../scene/sampleAnimation'
+import { simpleScenePaintUv } from '../../../scene/simplePaintUv'
 import { SceneValidationError } from '../../../scene/validation'
 import type { EditorStore } from '../../../state/editorStore'
 import { newModelIntent } from '../../../state/newModelIntent'
@@ -41,11 +46,7 @@ export type SceneWorkshopMode = 'model' | 'paint' | 'animation'
 export type SceneWorkshopTool = SceneTransformTool | 'box' | 'lasso' | 'pivot' | 'cut' | 'knife'
 
 /** A peça tem faces tortas: pintar pede o consentimento de dividi-las em triângulos. */
-export interface ScenePaintIssue {
-  nodeId: string
-  faceId?: string
-  faces: readonly string[]
-}
+export type ScenePaintIssue = ScenePaintPreparationIssue
 
 export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
   const activeTransform = useRef<'components' | 'nodes' | null>(null)
@@ -75,8 +76,11 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
   const [message, setMessage] = useState<string | null>(null)
   const [mode, setMode] = useState<SceneWorkshopMode>('model')
   const [workspaceArea, setWorkspaceArea] = useState<SceneWorkspaceArea | null>(null)
+  const sheetFaces = useRef<{ nodeId: string; ids: readonly string[] } | null>(null)
+  const [paintFace, setPaintFace] = useState<{ nodeId: string; faceId: string } | null>(null)
   const [tool, setTool] = useState<SceneWorkshopTool>(() => (fresh ? 'move' : 'select'))
   const [looking, setLooking] = useState(false)
+  const [measurementStep, setMeasurementStep] = useState<SceneMeasurementStep>(1)
   const [placing, setPlacing] = useState(false)
   const [pivotVertical, setPivotVertical] = useState(false)
   const [pivotSnap, setPivotSnap] = useState(false)
@@ -103,7 +107,8 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
     setPlacementPreview(null)
   }, [placing, document])
   const [paintIssue, setPaintIssue] = useState<ScenePaintIssue | null>(null)
-  const paint = useScenePaint(editor, mode === 'paint')
+  const paint = useScenePaint(editor, mode === 'paint', setPaintIssue)
+  const { closeupTool, openFace } = paint
   const committedPaint = editor.getState().saveSnapshot()
   const paintIndicators = useScenePaintIndicators(mode === 'paint' ? committedPaint : null)
   const skinPaint = useSceneSkinPaint(editor)
@@ -324,6 +329,9 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
       }
       const source = editor.getState().asset
       if (!source.nodes.some((node) => node.id === nodeId)) return
+      setPaintFace((before) =>
+        faceId ? { nodeId, faceId } : before?.nodeId === nodeId ? before : null,
+      )
       setChosen([nodeId])
       if (!brush) {
         closePaint()
@@ -354,6 +362,7 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
         }
         setMessage(null)
         retargetPaint(result.target)
+        if (closeupTool && faceId !== undefined) openFace(result.document, result.target, faceId)
       } catch (error) {
         closePaint()
         setMessage(
@@ -375,6 +384,8 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
       closePaint,
       cancelPaint,
       retargetPaint,
+      closeupTool,
+      openFace,
       releasePrep,
       animation,
       animationPose,
@@ -734,18 +745,58 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
       if (next && !can(SCENE_WORKSPACE_AREAS[next].family)) return
       requestTransition(() => {
         if (next) changeMode(SCENE_WORKSPACE_AREAS[next].mode)
+        const activeNode = index.scene.nodes.get(chosenRef.current[0] ?? '')
+        const activeGeometry =
+          activeNode?.kind === 'mesh' ? index.geometries.get(activeNode.geometryId) : undefined
+        const paintFaceId =
+          activeGeometry && activeNode?.kind === 'mesh' && paint.data
+            ? Object.entries(sceneGeometryMesh(activeGeometry).faces).find(
+                ([, face]) =>
+                  (face.materialId ?? activeNode.materialId) === paint.data?.material.id,
+              )?.[0]
+            : undefined
+        const rememberedFaces =
+          sheetFaces.current && sheetFaces.current.nodeId === activeNode?.id
+            ? sheetFaces.current.ids
+            : []
+        const paintedFaces =
+          paintFace && paintFace.nodeId === activeNode?.id && activeGeometry
+            ? scenePaintFaceIds(activeGeometry, paintFace.faceId)
+            : []
+        const nextUvFaces = paintedFaces.length
+          ? paintedFaces.some((id) => rememberedFaces.includes(id))
+            ? rememberedFaces
+            : paintedFaces
+          : rememberedFaces.length
+            ? rememberedFaces
+            : paintFaceId
+              ? [paintFaceId]
+              : []
+        const selectedUvFace = area === 'uv' ? components.selection?.ids.at(-1) : undefined
+        const nativePaintFace =
+          selectedUvFace && activeGeometry
+            ? activeGeometry.kind === 'mesh'
+              ? selectedUvFace
+              : cachedParametricMesh(activeGeometry).surfaceByFace.get(selectedUvFace)
+            : undefined
         cancelGesture()
         setLooking(false)
         setTool('select')
         if (next === 'mesh' || next === 'uv' || next === 'skin') {
           closePaint()
-          releasePrep()
+          if (next !== 'uv') releasePrep()
           const componentMode = next === 'skin' ? 'vertex' : 'face'
           components.open(
             componentMode,
-            components.selection?.mode === componentMode ? components.selection.ids : [],
+            components.selection?.mode === componentMode
+              ? components.selection.ids
+              : next === 'uv'
+                ? nextUvFaces
+                : [],
           )
         } else {
+          if (area === 'uv' && activeNode)
+            sheetFaces.current = { nodeId: activeNode.id, ids: components.selection?.ids ?? [] }
           components.close()
           if (next === 'materials') {
             closePaint()
@@ -753,8 +804,13 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
           }
         }
         setWorkspaceArea(next)
-        if (!next && mode === 'paint' && chosenRef.current.length === 1)
-          choosePaint(chosenRef.current[0]!)
+        if (
+          (!next || next === 'sheet') &&
+          mode === 'paint' &&
+          chosenRef.current.length === 1 &&
+          (!paint.data || area === 'uv')
+        )
+          choosePaint(chosenRef.current[0]!, area === 'uv' ? nativePaintFace : undefined)
       })
     },
     modelGuides,
@@ -853,6 +909,14 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
     },
     looking,
     setLooking,
+    measurementStep,
+    setMeasurementStep: (step: SceneMeasurementStep) => {
+      gesture.cancel()
+      components.transform.cancel()
+      animationPose.interrupt()
+      activeTransform.current = null
+      setMeasurementStep(step)
+    },
     placing,
     placementPreview,
     startPlacement: () => {
@@ -915,6 +979,21 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
     /** Sair da oficina: o preparo que ninguém usou não vai para o disco. */
     releasePaintPreparation: () => releasePrep(),
     paint,
+    paintFaceId: paintFace && paintFace.nodeId === selected[0] ? paintFace.faceId : null,
+    mapPaintUv: () => {
+      const nodeId = chosenRef.current.length === 1 ? chosenRef.current[0] : undefined
+      if (!nodeId || !brush) return
+      requestTransition(() => {
+        cancelPaint()
+        closePaint()
+        releasePrep()
+        const next = run((source) => simpleScenePaintUv(source, nodeId))
+        if (next) {
+          choosePaint(nodeId)
+          paint.setGrid(true)
+        }
+      })
+    },
     paintColors: paintIndicators.colors,
     paintColorsStatus: paintIndicators.status,
     solidCut,
