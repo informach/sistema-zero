@@ -29,12 +29,15 @@ import {
   testSectionObjectives,
 } from '@/lib/objectives-test'
 import { ExecutionRuleEditor } from './execution-rule-editor'
+import { ObjectiveTools } from './objective-tools'
 import { ProjectRuleEditor } from './project-rule-editor'
+import { ScriptRuleEditor } from './script-rule-editor'
 
 function newRule(type: string, isPro: boolean): SectionObjectiveRule {
   switch (type) {
     case 'behavior':
     case 'functionReturns':
+    case 'script':
       return newExecutionRule(type, isPro)
     case 'usesLoop':
       return { type }
@@ -104,6 +107,13 @@ export function SectionCompletionEditor({
       ? (workspace.initialProject as { proMeta?: { templateId?: unknown } }).proMeta?.templateId
       : undefined
   const isKit = Boolean(studioProTemplate(proTemplateId)?.kitVersion)
+  // A Ponte liberada (ou nenhum modo restrito): os modelos de código cabem no clássico.
+  const allowedModes =
+    typeof workspace === 'object' && workspace !== null && 'allowedModes' in workspace
+      ? workspace.allowedModes
+      : undefined
+  const bridge =
+    !Array.isArray(allowedModes) || allowedModes.length === 0 || allowedModes.includes('bridge')
   const authoring = useMemo(
     () => projectCheckAuthoring(workspace ?? { allowBlocks: fallbackAllowBlocks }),
     [workspace, fallbackAllowBlocks],
@@ -417,8 +427,17 @@ export function SectionCompletionEditor({
               <option value="callsFunction">Chamar função</option>
               <option value="behavior">O jogo faz algo (roda o jogo)</option>
               <option value="functionReturns">A função responde certo (roda a função)</option>
+              <option value="script">Regra em JavaScript (para quem programa)</option>
             </Select>
-            {isExecutionRule(check.rule) && (
+            {check.rule.type === 'script' && (
+              <ScriptRuleEditor
+                rule={check.rule}
+                index={index}
+                isPro={isPro}
+                onChange={(rule) => patchCheck(check.id, (c) => ({ ...c, rule }))}
+              />
+            )}
+            {isExecutionRule(check.rule) && check.rule.type !== 'script' && (
               <ExecutionRuleEditor
                 rule={check.rule}
                 index={index}
@@ -533,6 +552,18 @@ export function SectionCompletionEditor({
         >
           Adicionar objetivo do Estúdio
         </Button>
+      )}
+      {hasStudio && !value.platformAction && (
+        <ObjectiveTools
+          checks={checks}
+          isPro={isPro}
+          {...(isKit && typeof proTemplateId === 'string' ? { kitTemplateId: proTemplateId } : {})}
+          bridge={bridge}
+          onAdd={(added) => {
+            setExpandedChecks((ids) => [...ids, ...added.map((check) => check.id)])
+            onChange({ ...value, projectChecks: [...checks, ...added] })
+          }}
+        />
       )}
       {hasStudio && !value.platformAction && checks.length > 0 && (
         <div className="space-y-2">

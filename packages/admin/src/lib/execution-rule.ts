@@ -75,7 +75,11 @@ export function describeExecutionRule(rule: SectionExecutionRule): string {
     return `A função ${rule.name || '(nome)'} responde certo: ${rule.cases.length} ${
       rule.cases.length === 1 ? 'caso' : 'casos'
     }`
-  if (rule.type === 'script') return `Regra em JavaScript depois de ${rule.steps.length} passos`
+  if (rule.type === 'script') {
+    const steps = rule.steps.length ? rule.steps.map(stepLabel).join(', ') : 'sem passos'
+    const first = rule.code.trim().split('\n')[0] ?? ''
+    return `Regra em JavaScript: ${steps}; ${first.length > 60 ? `${first.slice(0, 57)}...` : first}`
+  }
   const steps = rule.steps.length ? rule.steps.map(stepLabel).join(', ') : 'sem passos'
   const { target, compare, value } = rule.expect
   const tail = EXECUTION_COMPARES_WITHOUT_VALUE.includes(compare)
@@ -133,9 +137,15 @@ export function parseExpected(text: string): ExecutionJson | undefined {
 }
 
 export function newExecutionRule(
-  type: 'behavior' | 'functionReturns',
+  type: SectionExecutionRule['type'],
   isPro: boolean,
 ): SectionExecutionRule {
+  if (type === 'script')
+    return {
+      type,
+      steps: [{ action: 'wait', ms: 500 }],
+      code: isPro ? 'return jogo.score > 0' : 'return jogo.pontos > 0',
+    }
   if (type === 'functionReturns')
     return {
       type,

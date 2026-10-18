@@ -66,6 +66,20 @@ O members chama o `studio-runtime` (Cloudflare, contêiner sem internet com Chro
   (424, nada guardado), nunca "não passou"; o prazo conta do começo do pedido e a parte tem um teto
   de 40 s somados de esperas; a captura só sai no "Testar agora".
 
+## Etapa 4 (implementada)
+
+- **Regra em JavaScript** (`script`): passos e o corpo de uma função que devolve `true` (pode usar
+  `await`; 3 s de prazo). `jogo` são as variáveis no clássico e o estado do kit no Pro, mais `texto`
+  e `console`. Só na Ponte e no Pro (decisão da tabela acima); a autoria confere a escrita sem rodar.
+- **Modelos** no Admin ("Começar de um modelo"), filtrados pelo tipo do bloco, e **sugestões do
+  kit Pro**: mudar a meta (`game.goal`, lida do `src/config.ts`), o jogo continua começando (extra),
+  e a vida no kit que a mostra. O "Testar agora" é quem prova o modelo ajustado.
+- **Copiar e Colar** objetivos entre partes e aulas (JSON com marcador de formato; ids novos ao
+  colar; o que não cabe vira frase).
+- **Manifesto**: o bloco Estúdio aceita `solutionProject` com a régua do `initialProject`; reimportar
+  um manifesto sem gabarito NÃO apaga o que a professora fez no Admin (o que traz gabarito, manda); a
+  publicação do rascunho confere o gabarito como o inicial.
+
 ## Gabarito da professora
 
 `content.solutionProject` no bloco Estúdio (nunca sai para a criança). "Testar agora" roda os

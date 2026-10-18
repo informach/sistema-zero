@@ -19,6 +19,7 @@
 | Aula imersiva: menu esquerdo e lista de aulas recolhem sozinhos, título e índice saem do corpo, rodapé fixo com Anterior, Preciso de ajuda e Próxima seção | 19/09 | todo print da página de aula |
 | A coluna da esquerda do Estúdio ganhou **Blocos deste jogo** | antes de 20/09 | prints do Estúdio com a coluna à vista |
 | Cenas interativas passam a ser só experimentação; o modo "Agora é sua vez" saiu | 20/09 | prints de experiência |
+| **Objetivos do Estúdio**: embaixo do Estúdio da fase, **Verificar esta parte** mostra a lista **Objetivos desta parte** (cada um cumprido, ainda não ou ainda não verificado, e o **Desafio extra**); o painel **Objetivo do projeto** de dentro do Estúdio e a nota de 0 a 100 saíram | 18/10 | prints do Estúdio da fase com o painel lateral à vista e do cartão de verificação |
 | **Carreira do Criador virou Jornada do Criador**: o item do menu chama **Jornada**, o título de `/cursos` é **Cursos da Jornada do Criador** e o `/perfil` diz **Minha jornada** | 22/09 | todo print com o menu da esquerda à vista, e os de `/cursos`, `/perfil` e mapa |
 
 ## Aproveitáveis: já existem prints novos no `sistema-zero`

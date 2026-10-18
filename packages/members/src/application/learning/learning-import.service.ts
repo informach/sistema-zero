@@ -63,6 +63,15 @@ function importedContent(
 ): DraftBlock['content'] {
   if (!previous || previous.kind !== authored.kind) return authored
   if (authored.kind === 'pinta') return { ...authored, initialAsset: previous.initialAsset }
+  // O gabarito do Estúdio pode ter sido feito no Admin depois da importação: um manifesto que não
+  // traz gabarito não o apaga (o que traz, manda). A publicação confere se ele ainda cumpre.
+  if (
+    authored.kind === 'studio' &&
+    authored.solutionProject === undefined &&
+    previous.kind === 'studio' &&
+    previous.solutionProject !== undefined
+  )
+    return { ...authored, solutionProject: previous.solutionProject }
   if (authored.kind === 'materials' && Array.isArray(authored.items)) {
     if (!Array.isArray(previous.items) || authored.items.length === 0)
       return { ...authored, items: Array.isArray(previous.items) ? previous.items : authored.items }
