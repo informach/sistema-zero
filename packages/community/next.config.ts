@@ -53,6 +53,7 @@ const securityHeaders = [
   { key: 'X-Frame-Options', value: 'DENY' },
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+  // Entrada por voz no Pensa usa o microfone desta origem; câmera continua restrita à sala.
   { key: 'Permissions-Policy', value: 'camera=(), microphone=(self), geolocation=()' },
   // Isolamento de janela/recurso (defesa em profundidade). COOP corta a referência
   // de janela de um abridor cross-origin; CORP barra que outra origem embuta as
@@ -135,8 +136,8 @@ const nextConfig: NextConfig = {
         source: '/avatar3d/:path*',
         headers: [{ key: 'Cache-Control', value: 'public, max-age=86400' }],
       },
-      // ⭐ A SALA da oficina ao vivo (curso ao vivo, 14/10/2026), como no Kids: câmera, microfone e
-      // a tela liberados SÓ nesta rota, e o jogo do Estúdio da sala num documento temporário do R2
+      // ⭐ A SALA da oficina ao vivo (curso ao vivo, 14/10/2026), como no Kids: câmera e
+      // tela liberadas SÓ nesta rota, além do microfone e do jogo num documento temporário do R2
       // privado (o `frame-src`). O cabeçalho vale para o documento carregado: a sala se abre e se
       // deixa por navegação COMPLETA (`<a>`), nunca por `<Link>` (a aba seguiria com a câmera
       // liberada nas outras telas). A regra vem DEPOIS da geral: a chave repetida vence.

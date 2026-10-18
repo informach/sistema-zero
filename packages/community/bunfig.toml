@@ -1,0 +1,3 @@
+[test]
+# Unit contracts run with Bun; authenticated browser scenarios run with Playwright.
+root = "tests"
