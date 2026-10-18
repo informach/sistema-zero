@@ -1,21 +1,30 @@
 import { useId, useState } from 'react'
 import { COPY } from '../../../core/copy'
-import { addSceneLocator } from '../../../scene/commands'
+import { addSceneLocator, type SceneShapeKind } from '../../../scene/commands'
 import { addScenePrimitiveNear, sceneInsertionParent } from '../../../scene/placement'
 import { useMoldaToolAccess } from '../../toolAccess'
-import { Box, Circle, Crosshair, Cylinder, type LucideIcon, TriangleRight } from '../../ui/icons'
+import {
+  Box,
+  Circle,
+  Crosshair,
+  Cylinder,
+  type LucideIcon,
+  Square,
+  TriangleRight,
+} from '../../ui/icons'
 import { SCENE_TILE_GRID, SceneTile } from './SceneTile'
 import type { useSceneWorkshop } from './useSceneWorkshop'
 
-const SHAPES: ReadonlyArray<['box' | 'wedge' | 'cylinder' | 'sphere', LucideIcon]> = [
+const SHAPES: ReadonlyArray<[SceneShapeKind, LucideIcon]> = [
   ['box', Box],
   ['wedge', TriangleRight],
   ['cylinder', Cylinder],
   ['sphere', Circle],
+  ['plane', Square],
 ]
 
 /**
- * As quatro formas (`model.pieces`) e o ponto de apoio (`model.locator`), À VISTA em ladrilhos
+ * As formas (`model.pieces`) e o ponto de apoio (`model.locator`), À VISTA em ladrilhos
  * com a cor de cada forma, como as "peças prontas" da tela-modelo (11/09/2026). Antes moravam
  * atrás de um `<details>`; o que pagou a conta dos ladrilhos à vista foi "Mais ferramentas", que
  * recolheu a caixa, o laço, os grupos e a malha (a catraca dos controles encarados não sobe).
@@ -83,8 +92,8 @@ export function SceneCreateMenu({
             <SceneTile
               key={kind}
               icon={icon}
-              label={COPY.shapes[kind]}
-              ink={`var(--mld-shape-${kind})`}
+              label={kind === 'plane' ? COPY.scene.plane : COPY.shapes[kind]}
+              ink={`var(--mld-shape-${kind === 'plane' ? 'special' : kind})`}
               tint
               onClick={() =>
                 run(
@@ -92,7 +101,7 @@ export function SceneCreateMenu({
                     addScenePrimitiveNear(
                       source,
                       kind,
-                      COPY.shapes[kind],
+                      kind === 'plane' ? COPY.scene.plane : COPY.shapes[kind],
                       selected,
                       undefined,
                       explicitDestination,

@@ -139,8 +139,12 @@ test('o menu de ajustes do palco cabe inteiro e seus campos recebem clique', asy
       expect
         .soft(bounds.y + bounds.height, `${label}: borda inferior`)
         .toBeLessThanOrEqual(stage.y + stage.height)
-      const covered = await menu.evaluate((element) =>
-        Array.from(element.querySelectorAll('select, button, input')).flatMap((control) => {
+      const covered: string[] = []
+      // A short drawing area may need a scrolling menu. Each control must remain
+      // reachable and uncovered after scrolling it into that menu's visible area.
+      for (const control of await menu.locator('select, button, input').all()) {
+        await control.scrollIntoViewIfNeeded()
+        const hidden = await control.evaluate((control) => {
           const rect = control.getBoundingClientRect()
           const points = [
             { x: rect.left + 2, y: rect.top + rect.height / 2 },
@@ -148,10 +152,11 @@ test('o menu de ajustes do palco cabe inteiro e seus campos recebem clique', asy
             { x: rect.right - 2, y: rect.top + rect.height / 2 },
           ]
           return points.every(({ x, y }) => control.contains(document.elementFromPoint(x, y)))
-            ? []
-            : [control.getAttribute('name') || control.textContent?.trim()]
-        }),
-      )
+            ? null
+            : control.getAttribute('name') || control.textContent?.trim() || 'Unnamed control'
+        })
+        if (hidden) covered.push(hidden)
+      }
       expect.soft(covered, `${label}: campos descobertos`).toEqual([])
       await trigger.click()
     }

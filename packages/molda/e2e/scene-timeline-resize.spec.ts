@@ -23,7 +23,7 @@ test('timeline dragging, cancellation, collapse, resize and reopening preserve t
     await page.getByRole('button', { name: 'Animar', exact: true }).click()
   }
   await open()
-  await expect(page.getByText('Trouxe 1 criação de volta!', { exact: true })).toHaveCount(0, {
+  await expect(page.getByText(COPY.gallery.imported(1), { exact: true })).toHaveCount(0, {
     timeout: 15000,
   })
   const separator = page.getByRole('separator', { name: 'Altura da linha do tempo' })
